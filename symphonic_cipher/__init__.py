@@ -60,6 +60,9 @@ from .harmonic_scaling_law import (
     get_epsilon_threshold,
     compute_langues_metric_distance,
     validate_langues_metric_stability,
+    # Fractal Dimension Analysis
+    FractalDimensionAnalyzer,
+    # Constants
     PHI,
     LANGUES_DIMENSIONS,
     DEFAULT_EPSILON,
@@ -109,6 +112,9 @@ __all__ = [
     "get_epsilon_threshold",
     "compute_langues_metric_distance",
     "validate_langues_metric_stability",
+    # Fractal Dimension Analysis
+    "FractalDimensionAnalyzer",
+    # Constants
     "PHI",
     "LANGUES_DIMENSIONS",
     "DEFAULT_EPSILON",

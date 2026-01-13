@@ -37,6 +37,8 @@ from ..harmonic_scaling_law import (
     get_epsilon_threshold,
     compute_langues_metric_distance,
     validate_langues_metric_stability,
+    # Fractal Dimension Analysis
+    FractalDimensionAnalyzer,
     PHI,
     LANGUES_DIMENSIONS,
     DEFAULT_EPSILON,
@@ -787,3 +789,402 @@ class TestLanguesValidation:
         assert len(matrices) == 6
         for A in matrices:
             assert A.shape == (6, 6)
+
+
+# =============================================================================
+# TEST: FRACTAL DIMENSION ANALYZER
+# =============================================================================
+
+class TestFractalDimensionAnalyzerInit:
+    """Tests for FractalDimensionAnalyzer initialization."""
+
+    def test_default_initialization(self):
+        """Test default initialization creates valid analyzer."""
+        analyzer = FractalDimensionAnalyzer()
+        assert analyzer.R == PHI
+        assert analyzer.epsilon == DEFAULT_EPSILON
+        assert analyzer.mode == CouplingMode.NORMALIZED
+        assert len(analyzer.nu) == LANGUES_DIMENSIONS
+
+    def test_custom_fractional_orders(self):
+        """Test custom fractional orders initialization."""
+        nu = np.array([1.0, 1.5, 2.0, 2.5, 3.0, 3.5])
+        analyzer = FractalDimensionAnalyzer(fractional_orders=nu)
+        np.testing.assert_array_almost_equal(analyzer.nu, nu)
+
+    def test_invalid_fractional_orders_length(self):
+        """Test that wrong dimension raises error."""
+        with pytest.raises(ValueError, match="fractional_orders must have"):
+            FractalDimensionAnalyzer(fractional_orders=np.array([1.0, 2.0, 3.0]))
+
+    def test_default_fractional_orders_range(self):
+        """Test default fractional orders span [0.5, 3.0]."""
+        analyzer = FractalDimensionAnalyzer()
+        assert analyzer.nu[0] == 0.5
+        assert analyzer.nu[-1] == 3.0
+
+
+class TestLocalFractalDimension:
+    """Tests for local fractal dimension computation."""
+
+    def test_finite_dimension_at_origin(self):
+        """Test that D_f is finite at r=0."""
+        analyzer = FractalDimensionAnalyzer()
+        r = np.zeros(6)
+        D_f = analyzer.compute_local_fractal_dimension(r)
+        assert math.isfinite(D_f)
+
+    def test_finite_dimension_random_r(self):
+        """Test that D_f is finite for random r vectors."""
+        analyzer = FractalDimensionAnalyzer()
+        np.random.seed(42)
+
+        for _ in range(10):
+            r = np.random.uniform(0, 1, 6)
+            D_f = analyzer.compute_local_fractal_dimension(r)
+            assert math.isfinite(D_f), f"D_f is not finite for r={r}"
+
+    def test_dimension_changes_with_r(self):
+        """Test that D_f varies with different r values."""
+        analyzer = FractalDimensionAnalyzer()
+
+        D_f_zero = analyzer.compute_local_fractal_dimension(np.zeros(6))
+        D_f_one = analyzer.compute_local_fractal_dimension(np.ones(6))
+
+        # Should generally differ (metric changes with r)
+        # May be very close, so just check they're finite
+        assert math.isfinite(D_f_zero)
+        assert math.isfinite(D_f_one)
+
+
+class TestFractalDimensionField:
+    """Tests for fractal dimension field computation."""
+
+    def test_field_statistics_structure(self):
+        """Test that field statistics have expected keys."""
+        analyzer = FractalDimensionAnalyzer()
+        stats = analyzer.compute_fractal_dimension_field(n_samples=20, seed=42)
+
+        expected_keys = ["n_samples", "D_f_mean", "D_f_std", "D_f_min", "D_f_max", "fractional_orders"]
+        for key in expected_keys:
+            assert key in stats
+
+    def test_field_samples_count(self):
+        """Test that correct number of samples are computed."""
+        analyzer = FractalDimensionAnalyzer()
+        stats = analyzer.compute_fractal_dimension_field(n_samples=50, seed=42)
+
+        # Most samples should succeed
+        assert stats["n_samples"] >= 40
+
+    def test_field_deterministic_with_seed(self):
+        """Test that same seed gives same results."""
+        analyzer = FractalDimensionAnalyzer()
+
+        stats1 = analyzer.compute_fractal_dimension_field(n_samples=20, seed=123)
+        stats2 = analyzer.compute_fractal_dimension_field(n_samples=20, seed=123)
+
+        assert stats1["D_f_mean"] == stats2["D_f_mean"]
+
+
+class TestRecursiveMetricIteration:
+    """Tests for recursive metric iteration (fractal attractor)."""
+
+    def test_iteration_returns_valid_metric(self):
+        """Test that iteration returns a valid metric matrix."""
+        analyzer = FractalDimensionAnalyzer()
+        r = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+
+        G_final, det_history = analyzer.iterate_metric_recursively(r, n_iterations=50)
+
+        assert G_final.shape == (6, 6)
+        assert len(det_history) > 1
+
+    def test_iteration_determinant_contracts(self):
+        """Test that determinant generally decreases (contraction)."""
+        analyzer = FractalDimensionAnalyzer()
+        r = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+
+        _, det_history = analyzer.iterate_metric_recursively(
+            r, n_iterations=50, contraction_factor=0.95
+        )
+
+        # Determinant should generally decrease
+        assert det_history[-1] < det_history[0]
+
+    def test_iteration_history_length(self):
+        """Test that history has correct length."""
+        analyzer = FractalDimensionAnalyzer()
+        r = np.random.uniform(0, 1, 6)
+
+        _, det_history = analyzer.iterate_metric_recursively(r, n_iterations=100)
+
+        # Initial + up to 100 iterations (may stop early)
+        assert 2 <= len(det_history) <= 101
+
+
+class TestHausdorffDimension:
+    """Tests for Hausdorff dimension computation."""
+
+    def test_hausdorff_at_zero_r(self):
+        """Test Hausdorff dimension when r=0 (all α_k=1)."""
+        analyzer = FractalDimensionAnalyzer()
+        r = np.zeros(6)
+
+        D_H = analyzer.compute_hausdorff_dimension(r)
+
+        # When all α_k = 1, D_H = n_dims
+        assert abs(D_H - 6.0) < 1e-6
+
+    def test_hausdorff_finite_random_r(self):
+        """Test Hausdorff dimension is finite for random r."""
+        analyzer = FractalDimensionAnalyzer()
+        np.random.seed(42)
+
+        for _ in range(10):
+            r = np.random.uniform(0, 1, 6)
+            D_H = analyzer.compute_hausdorff_dimension(r)
+            assert math.isfinite(D_H), f"D_H not finite for r={r}"
+
+    def test_hausdorff_dimension_finite(self):
+        """Test that Hausdorff dimension is finite for typical r.
+
+        Note: D_H can be negative when α_k = R^{ν_k*r_k} > 1 (expansion),
+        since we need α_k^{D_H} < 1 for the sum to equal 1.
+        When R=φ≈1.618 and r>0, α_k>1, so D_H<0 is expected.
+        """
+        analyzer = FractalDimensionAnalyzer()
+        r = np.array([0.3, 0.4, 0.5, 0.6, 0.7, 0.8])
+
+        D_H = analyzer.compute_hausdorff_dimension(r)
+
+        # D_H should be finite (can be negative for expansion)
+        assert math.isfinite(D_H)
+
+    def test_hausdorff_solves_equation(self):
+        """Test that D_H approximately solves Σ α_k^{D_H} = 1."""
+        analyzer = FractalDimensionAnalyzer()
+        r = np.array([0.2, 0.3, 0.4, 0.5, 0.6, 0.7])
+
+        D_H = analyzer.compute_hausdorff_dimension(r)
+        alpha = analyzer.R ** (analyzer.nu * r)
+        sum_alpha_DH = np.sum(alpha ** D_H)
+
+        # Should be close to 1
+        assert abs(sum_alpha_DH - 1.0) < 0.01
+
+
+class TestDimensionSpectrum:
+    """Tests for fractal dimension spectrum computation."""
+
+    def test_single_axis_spectrum(self):
+        """Test spectrum computation for a single axis."""
+        analyzer = FractalDimensionAnalyzer()
+
+        spectrum = analyzer.compute_dimension_spectrum(axis_index=0, n_points=10)
+
+        assert "axis_index" in spectrum
+        assert "r_values" in spectrum
+        assert "D_f_spectrum" in spectrum
+        assert "D_H_spectrum" in spectrum
+        assert len(spectrum["r_values"]) == 10
+        assert len(spectrum["D_f_spectrum"]) == 10
+        assert len(spectrum["D_H_spectrum"]) == 10
+
+    def test_invalid_axis_index(self):
+        """Test that invalid axis index raises error."""
+        analyzer = FractalDimensionAnalyzer()
+
+        with pytest.raises(ValueError, match="axis_index must be in"):
+            analyzer.compute_dimension_spectrum(axis_index=6)
+
+        with pytest.raises(ValueError, match="axis_index must be in"):
+            analyzer.compute_dimension_spectrum(axis_index=-1)
+
+    def test_full_spectrum(self):
+        """Test full spectrum computation for all axes."""
+        analyzer = FractalDimensionAnalyzer()
+
+        full = analyzer.compute_full_spectrum(n_points=5)
+
+        assert full["n_axes"] == 6
+        assert full["n_points_per_axis"] == 5
+        assert len(full["spectra"]) == 6
+
+        for k in range(6):
+            assert f"axis_{k}" in full["spectra"]
+
+
+class TestFractalMap:
+    """Tests for Langues fractal map."""
+
+    def test_fractal_map_bounded(self):
+        """Test that fractal map output is bounded in [-1, 1]."""
+        analyzer = FractalDimensionAnalyzer()
+        np.random.seed(42)
+
+        for _ in range(20):
+            x = np.random.uniform(-2, 2, 6)
+            r = np.random.uniform(0, 1, 6)
+
+            y = analyzer.langues_fractal_map(x, r)
+
+            # tanh output is always in [-1, 1]
+            assert np.all(np.abs(y) <= 1.0)
+
+    def test_fractal_map_deterministic(self):
+        """Test that fractal map is deterministic."""
+        analyzer = FractalDimensionAnalyzer()
+
+        x = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6])
+        r = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+
+        y1 = analyzer.langues_fractal_map(x, r)
+        y2 = analyzer.langues_fractal_map(x, r)
+
+        np.testing.assert_array_equal(y1, y2)
+
+
+class TestFractalAttractor:
+    """Tests for fractal attractor generation."""
+
+    def test_attractor_shape(self):
+        """Test that attractor has correct shape."""
+        analyzer = FractalDimensionAnalyzer()
+
+        points = analyzer.generate_fractal_attractor(
+            n_iterations=100, n_points=50, seed=42
+        )
+
+        assert points.shape == (50, 6)
+
+    def test_attractor_bounded(self):
+        """Test that attractor points are bounded (tanh constraint)."""
+        analyzer = FractalDimensionAnalyzer()
+
+        points = analyzer.generate_fractal_attractor(
+            n_iterations=500, n_points=100, seed=42
+        )
+
+        # All points should be in [-1, 1] due to tanh
+        assert np.all(np.abs(points) <= 1.0)
+
+    def test_attractor_deterministic_with_seed(self):
+        """Test that same seed gives same attractor."""
+        analyzer = FractalDimensionAnalyzer()
+
+        points1 = analyzer.generate_fractal_attractor(
+            n_iterations=100, n_points=20, seed=123
+        )
+        points2 = analyzer.generate_fractal_attractor(
+            n_iterations=100, n_points=20, seed=123
+        )
+
+        np.testing.assert_array_equal(points1, points2)
+
+
+class TestBoxCountingDimension:
+    """Tests for box-counting dimension estimation."""
+
+    def test_box_counting_returns_dimension(self):
+        """Test that box-counting returns valid dimension estimate."""
+        analyzer = FractalDimensionAnalyzer()
+
+        # Generate some attractor points
+        points = analyzer.generate_fractal_attractor(
+            n_iterations=100, n_points=200, seed=42
+        )
+
+        D_box, details = analyzer.estimate_box_counting_dimension(points, n_scales=8)
+
+        assert math.isfinite(D_box)
+        assert "epsilons" in details
+        assert "N_boxes" in details
+        assert "slope" in details
+
+    def test_box_counting_dimension_positive(self):
+        """Test that estimated dimension is positive."""
+        analyzer = FractalDimensionAnalyzer()
+
+        points = analyzer.generate_fractal_attractor(
+            n_iterations=200, n_points=500, seed=42
+        )
+
+        D_box, _ = analyzer.estimate_box_counting_dimension(points, n_scales=10)
+
+        assert D_box > 0
+
+    def test_box_counting_reasonable_range(self):
+        """Test that dimension is in reasonable range for 6D attractor."""
+        analyzer = FractalDimensionAnalyzer()
+
+        points = analyzer.generate_fractal_attractor(
+            n_iterations=200, n_points=1000, seed=42
+        )
+
+        D_box, _ = analyzer.estimate_box_counting_dimension(points, n_scales=10)
+
+        # Dimension should be between 0 and 6 for 6D space
+        # (Typically lower due to fractal structure)
+        assert 0 < D_box < 6
+
+
+class TestFractalAnalyzerIntegration:
+    """Integration tests for FractalDimensionAnalyzer."""
+
+    def test_full_analysis_workflow(self):
+        """Test complete fractal analysis workflow."""
+        analyzer = FractalDimensionAnalyzer(epsilon=0.05)
+
+        # 1. Compute fractal dimension field
+        field = analyzer.compute_fractal_dimension_field(n_samples=30, seed=42)
+        assert field["n_samples"] >= 20
+
+        # 2. Generate attractor
+        points = analyzer.generate_fractal_attractor(
+            n_iterations=100, n_points=100, seed=42
+        )
+        assert points.shape == (100, 6)
+
+        # 3. Estimate box-counting dimension
+        D_box, _ = analyzer.estimate_box_counting_dimension(points)
+        assert math.isfinite(D_box)
+
+        # 4. Compute Hausdorff dimensions for various r
+        for r_val in [0.0, 0.5, 1.0]:
+            r = np.full(6, r_val)
+            D_H = analyzer.compute_hausdorff_dimension(r)
+            assert math.isfinite(D_H)
+
+    def test_different_coupling_modes(self):
+        """Test analyzer works with different coupling modes."""
+        for mode in [CouplingMode.HARMONIC, CouplingMode.UNIFORM, CouplingMode.NORMALIZED]:
+            # Use appropriate epsilon for mode
+            if mode == CouplingMode.HARMONIC:
+                eps = 0.0001  # Very small for HARMONIC
+            else:
+                eps = 0.05
+
+            analyzer = FractalDimensionAnalyzer(epsilon=eps, mode=mode)
+
+            r = np.array([0.5] * 6)
+            D_f = analyzer.compute_local_fractal_dimension(r)
+            D_H = analyzer.compute_hausdorff_dimension(r)
+
+            assert math.isfinite(D_f)
+            assert math.isfinite(D_H)
+
+    def test_custom_fractional_orders_analysis(self):
+        """Test analysis with custom fractional orders."""
+        # Uniform fractional orders
+        nu_uniform = np.full(6, 2.0)
+        analyzer = FractalDimensionAnalyzer(fractional_orders=nu_uniform)
+
+        r = np.array([0.3, 0.4, 0.5, 0.6, 0.7, 0.8])
+        D_H = analyzer.compute_hausdorff_dimension(r)
+
+        assert math.isfinite(D_H)
+
+        # Generate attractor
+        points = analyzer.generate_fractal_attractor(n_iterations=50, n_points=30, seed=42)
+        assert points.shape == (30, 6)

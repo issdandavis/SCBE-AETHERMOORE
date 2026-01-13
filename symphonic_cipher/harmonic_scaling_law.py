@@ -976,6 +976,453 @@ class LanguesMetricTensor:
         return [A.copy() for A in self._coupling_matrices]
 
 
+# =============================================================================
+# FRACTAL DIMENSION ANALYZER (FRACTIONAL-DIMENSIONAL GEOMETRY)
+# =============================================================================
+
+class FractalDimensionAnalyzer:
+    """
+    Fractal-Dimensional Analysis for the Langues Metric System.
+
+    When fractional-dimensional weighting is introduced via the Langues Metric's
+    fractional-whole coupling (ν_k), we enter fractal-dimensional geometry where
+    effective dimension is non-integer.
+
+    Standard fractal dimension:
+        D_f = log N(ε) / log(1/ε)
+
+    For the Langues system, fractional couplings induce non-integer scaling laws:
+        D_f(r) ~ ∂ ln det G_L^(ν)(r) / ∂ ln ε
+
+    Hausdorff dimension of recursive metric attractor:
+        Σ_{k=1}^{6} α_k^{D_H} = 1, where α_k = R^{ν_k r_k}
+
+    Key Insight:
+    The Langues Metric is effectively a **continuous fractal generator** embedded
+    in six dimensions. Each choice of fractional-whole couplings (ν_k) defines a
+    different fractal manifold.
+
+    Number of unique fractal topologies: M^{N_ν} = 4^6 = 4096 (before continuous
+    parameter variation). With real-valued ν_k ∈ [0,3], uncountably infinite.
+    """
+
+    def __init__(
+        self,
+        R: float = PHI,
+        epsilon: float = DEFAULT_EPSILON,
+        mode: CouplingMode = CouplingMode.NORMALIZED,
+        fractional_orders: Optional[np.ndarray] = None
+    ):
+        """
+        Initialize Fractal Dimension Analyzer.
+
+        Args:
+            R: Coordination constant (default: golden ratio φ)
+            epsilon: Base coupling strength
+            mode: Coupling mode for underlying metric
+            fractional_orders: ν_k fractional orders (default: linspace(0.5, 3.0, 6))
+        """
+        self.R = R
+        self.epsilon = epsilon
+        self.mode = mode
+        self.n_dims = LANGUES_DIMENSIONS
+
+        # Fractional orders ν_k defining self-similarity exponents
+        if fractional_orders is None:
+            self.nu = np.linspace(0.5, 3.0, self.n_dims)
+        else:
+            self.nu = np.asarray(fractional_orders, dtype=np.float64)
+            if len(self.nu) != self.n_dims:
+                raise ValueError(f"fractional_orders must have {self.n_dims} elements")
+
+        # Underlying metric tensor
+        self._metric_tensor = LanguesMetricTensor(R, epsilon, mode, validate_epsilon=False)
+
+    def compute_local_fractal_dimension(
+        self,
+        r: np.ndarray,
+        delta_epsilon: float = 1e-4
+    ) -> float:
+        """
+        Compute local fractal dimension at a point r.
+
+        D_f(r) ≈ ∂ ln det G_L(r) / ∂ ln ε
+
+        Uses finite difference approximation.
+
+        Args:
+            r: Langue parameter vector (6D)
+            delta_epsilon: Step size for numerical differentiation
+
+        Returns:
+            Local fractal dimension D_f(r)
+        """
+        r = np.asarray(r, dtype=np.float64)
+
+        # Create tensors at ε and ε + δε
+        eps_lo = max(self.epsilon - delta_epsilon, 1e-6)
+        eps_hi = self.epsilon + delta_epsilon
+
+        tensor_lo = LanguesMetricTensor(
+            self.R, eps_lo, self.mode, validate_epsilon=False
+        )
+        tensor_hi = LanguesMetricTensor(
+            self.R, eps_hi, self.mode, validate_epsilon=False
+        )
+
+        # Compute determinants
+        G_lo = tensor_lo.compute_metric(r)
+        G_hi = tensor_hi.compute_metric(r)
+
+        det_lo = np.linalg.det(G_lo)
+        det_hi = np.linalg.det(G_hi)
+
+        # Avoid log of non-positive
+        if det_lo <= 0 or det_hi <= 0:
+            return float('nan')
+
+        # D_f ≈ d(ln det G) / d(ln ε)
+        d_ln_det = np.log(det_hi) - np.log(det_lo)
+        d_ln_eps = np.log(eps_hi) - np.log(eps_lo)
+
+        return d_ln_det / d_ln_eps
+
+    def compute_fractal_dimension_field(
+        self,
+        n_samples: int = 100,
+        seed: Optional[int] = None
+    ) -> dict:
+        """
+        Compute fractal dimension field over random samples.
+
+        Args:
+            n_samples: Number of random r vectors to sample
+            seed: Random seed for reproducibility
+
+        Returns:
+            Dictionary with field statistics
+        """
+        if seed is not None:
+            np.random.seed(seed)
+
+        dimensions = []
+        r_vectors = []
+
+        for _ in range(n_samples):
+            r = np.random.uniform(0, 1, self.n_dims)
+            D_f = self.compute_local_fractal_dimension(r)
+            if not np.isnan(D_f):
+                dimensions.append(D_f)
+                r_vectors.append(r.tolist())
+
+        dimensions = np.array(dimensions)
+
+        return {
+            "n_samples": len(dimensions),
+            "D_f_mean": float(np.mean(dimensions)) if len(dimensions) > 0 else 0,
+            "D_f_std": float(np.std(dimensions)) if len(dimensions) > 0 else 0,
+            "D_f_min": float(np.min(dimensions)) if len(dimensions) > 0 else 0,
+            "D_f_max": float(np.max(dimensions)) if len(dimensions) > 0 else 0,
+            "fractional_orders": self.nu.tolist(),
+        }
+
+    def iterate_metric_recursively(
+        self,
+        r: np.ndarray,
+        n_iterations: int = 100,
+        contraction_factor: float = 0.99
+    ) -> Tuple[np.ndarray, List[float]]:
+        """
+        Iterate the metric recursively to find fractal attractor.
+
+        G_{n+1} = α * Λ(r)^T * G_n * Λ(r)
+
+        Where α < 1 is a contraction factor ensuring convergence.
+
+        Args:
+            r: Langue parameter vector
+            n_iterations: Number of iterations
+            contraction_factor: α in (0, 1) for contraction
+
+        Returns:
+            Tuple of (final metric G_∞, determinant history)
+        """
+        r = np.asarray(r, dtype=np.float64)
+        Lambda = self._metric_tensor.compute_weight_operator(r)
+
+        G_n = self._metric_tensor.G_0.copy()
+        det_history = [float(np.linalg.det(G_n))]
+
+        for _ in range(n_iterations):
+            G_n = contraction_factor * Lambda.T @ G_n @ Lambda
+            det_history.append(float(np.linalg.det(G_n)))
+
+            # Check for convergence
+            if det_history[-1] < 1e-100:
+                break
+
+        return G_n, det_history
+
+    def compute_hausdorff_dimension(
+        self,
+        r: np.ndarray,
+        tol: float = 1e-8,
+        max_iter: int = 100
+    ) -> float:
+        """
+        Compute Hausdorff dimension D_H of the fractal attractor.
+
+        Solves: Σ_{k=1}^{6} α_k^{D_H} = 1
+
+        Where α_k = R^{ν_k * r_k} are the scaling factors.
+
+        Uses bisection method on D_H ∈ [0, ∞).
+
+        Args:
+            r: Langue parameter vector defining scaling
+            tol: Convergence tolerance
+            max_iter: Maximum iterations
+
+        Returns:
+            Hausdorff dimension D_H
+        """
+        r = np.asarray(r, dtype=np.float64)
+        r = np.clip(r, 0.0, 1.0)
+
+        # Scaling factors: α_k = R^{ν_k * r_k}
+        alpha = self.R ** (self.nu * r)
+
+        # Special case: if all α_k = 1, D_H is undefined (no scaling)
+        if np.allclose(alpha, 1.0):
+            return float(self.n_dims)
+
+        # Equation to solve: f(D) = Σ α_k^D - 1 = 0
+        def f(D):
+            return np.sum(alpha ** D) - 1.0
+
+        # Bisection: f(D) decreases monotonically as D increases (for α < 1)
+        # For α > 1, D_H can be negative; for α < 1, D_H is positive
+
+        # Find bounds
+        D_lo, D_hi = -10.0, 100.0
+
+        # Check if solution exists
+        f_lo, f_hi = f(D_lo), f(D_hi)
+        if f_lo * f_hi > 0:
+            # No sign change - return estimate based on sum
+            return float(np.log(self.n_dims) / np.mean(np.log(alpha) + 1e-10))
+
+        # Bisection
+        for _ in range(max_iter):
+            D_mid = (D_lo + D_hi) / 2.0
+            f_mid = f(D_mid)
+
+            if abs(f_mid) < tol:
+                return float(D_mid)
+
+            if f_mid * f_lo < 0:
+                D_hi = D_mid
+            else:
+                D_lo = D_mid
+
+        return float((D_lo + D_hi) / 2.0)
+
+    def compute_dimension_spectrum(
+        self,
+        axis_index: int,
+        n_points: int = 50,
+        other_r_values: Optional[np.ndarray] = None
+    ) -> dict:
+        """
+        Compute fractal dimension spectrum along one langue axis.
+
+        Varies r_k from 0 to 1 while holding other r values constant.
+
+        Args:
+            axis_index: Which axis to vary (0-5)
+            n_points: Number of points along axis
+            other_r_values: Fixed values for other axes (default: 0.5)
+
+        Returns:
+            Dictionary with spectrum data
+        """
+        if axis_index < 0 or axis_index >= self.n_dims:
+            raise ValueError(f"axis_index must be in [0, {self.n_dims-1}]")
+
+        if other_r_values is None:
+            other_r_values = np.full(self.n_dims, 0.5)
+        else:
+            other_r_values = np.asarray(other_r_values, dtype=np.float64)
+
+        r_axis = np.linspace(0, 1, n_points)
+        D_f_values = []
+        D_H_values = []
+
+        for r_val in r_axis:
+            r = other_r_values.copy()
+            r[axis_index] = r_val
+
+            D_f = self.compute_local_fractal_dimension(r)
+            D_H = self.compute_hausdorff_dimension(r)
+
+            D_f_values.append(D_f)
+            D_H_values.append(D_H)
+
+        return {
+            "axis_index": axis_index,
+            "axis_name": f"r_{axis_index}",
+            "fractional_order": float(self.nu[axis_index]),
+            "r_values": r_axis.tolist(),
+            "D_f_spectrum": D_f_values,
+            "D_H_spectrum": D_H_values,
+            "other_r_values": other_r_values.tolist(),
+        }
+
+    def compute_full_spectrum(self, n_points: int = 30) -> dict:
+        """
+        Compute fractal dimension spectrum for all 6 langue axes.
+
+        Args:
+            n_points: Number of points per axis
+
+        Returns:
+            Dictionary with spectra for all axes
+        """
+        spectra = {}
+        for k in range(self.n_dims):
+            spectra[f"axis_{k}"] = self.compute_dimension_spectrum(k, n_points)
+
+        return {
+            "n_axes": self.n_dims,
+            "n_points_per_axis": n_points,
+            "fractional_orders": self.nu.tolist(),
+            "spectra": spectra,
+        }
+
+    def langues_fractal_map(
+        self,
+        x: np.ndarray,
+        r: np.ndarray
+    ) -> np.ndarray:
+        """
+        Apply the Langues fractal map to a point.
+
+        f(x; r) = tanh(φ^{r·ν} ⊙ sin(π·x))
+
+        This is a bounded, continuous map with fractal attractor.
+
+        Args:
+            x: Input point (can be 1D or nD)
+            r: Langue parameter vector
+
+        Returns:
+            Mapped point
+        """
+        x = np.asarray(x, dtype=np.float64)
+        r = np.asarray(r, dtype=np.float64)
+
+        # Compute scaling: φ^{ν_k * r_k}
+        scaling = self.R ** (self.nu * r)
+
+        # Apply fractal map with broadcasting
+        if x.ndim == 1 and len(x) == self.n_dims:
+            return np.tanh(scaling * np.sin(np.pi * x))
+        else:
+            # For arbitrary dimension, use mean scaling
+            mean_scaling = np.mean(scaling)
+            return np.tanh(mean_scaling * np.sin(np.pi * x))
+
+    def generate_fractal_attractor(
+        self,
+        n_iterations: int = 1000,
+        n_points: int = 100,
+        seed: Optional[int] = None
+    ) -> np.ndarray:
+        """
+        Generate points on the Langues fractal attractor via iteration.
+
+        Iterates the fractal map: x_{n+1} = f(x_n; r_random)
+
+        Args:
+            n_iterations: Number of iterations per point
+            n_points: Number of starting points
+            seed: Random seed
+
+        Returns:
+            Array of attractor points (n_points × n_dims)
+        """
+        if seed is not None:
+            np.random.seed(seed)
+
+        attractor_points = []
+
+        for _ in range(n_points):
+            # Random initial point
+            x = np.random.uniform(-1, 1, self.n_dims)
+
+            # Iterate
+            for _ in range(n_iterations):
+                r = np.random.uniform(0, 1, self.n_dims)
+                x = self.langues_fractal_map(x, r)
+
+            attractor_points.append(x)
+
+        return np.array(attractor_points)
+
+    def estimate_box_counting_dimension(
+        self,
+        points: np.ndarray,
+        n_scales: int = 10
+    ) -> Tuple[float, dict]:
+        """
+        Estimate fractal dimension via box-counting method.
+
+        D_f = lim_{ε→0} log N(ε) / log(1/ε)
+
+        Args:
+            points: Point cloud (n_points × n_dims)
+            n_scales: Number of box scales to use
+
+        Returns:
+            Tuple of (estimated dimension, fit details)
+        """
+        points = np.asarray(points, dtype=np.float64)
+
+        # Normalize to [0, 1]
+        p_min = points.min(axis=0)
+        p_max = points.max(axis=0)
+        p_range = p_max - p_min
+        p_range[p_range < 1e-10] = 1.0
+        points_norm = (points - p_min) / p_range
+
+        # Box sizes (log-spaced)
+        epsilons = np.logspace(-2, 0, n_scales)
+        N_boxes = []
+
+        for eps in epsilons:
+            # Count occupied boxes
+            grid_indices = (points_norm / eps).astype(int)
+            unique_boxes = set(tuple(idx) for idx in grid_indices)
+            N_boxes.append(len(unique_boxes))
+
+        N_boxes = np.array(N_boxes)
+        log_eps_inv = np.log(1.0 / epsilons)
+        log_N = np.log(N_boxes + 1)  # +1 to avoid log(0)
+
+        # Linear regression: log N = D_f * log(1/ε) + c
+        # D_f = slope
+        slope, intercept = np.polyfit(log_eps_inv, log_N, 1)
+
+        return float(slope), {
+            "epsilons": epsilons.tolist(),
+            "N_boxes": N_boxes.tolist(),
+            "log_eps_inv": log_eps_inv.tolist(),
+            "log_N": log_N.tolist(),
+            "slope": float(slope),
+            "intercept": float(intercept),
+        }
+
+
 def compute_langues_metric_distance(
     x: np.ndarray,
     y: np.ndarray,
@@ -1097,6 +1544,9 @@ __all__ = [
     "get_epsilon_threshold",
     "compute_langues_metric_distance",
     "validate_langues_metric_stability",
+
+    # Fractal Dimension Analysis
+    "FractalDimensionAnalyzer",
 
     # Hyperbolic geometry
     "hyperbolic_distance_poincare",
