@@ -41,6 +41,24 @@ from .ai_verifier import (
     IntentClassifier,
 )
 
+from .flat_slope_encoder import (
+    # Flat Slope Harmonic Encoder
+    derive_harmonic_mask,
+    synthesize_token,
+    encode_message,
+    verify_token_fingerprint,
+    verify_envelope_integrity,
+    resonance_refractor,
+    analyze_frequency_attack_resistance,
+    compare_steep_vs_flat,
+    HarmonicFingerprint,
+    EncodedMessage,
+    ModalityMask,
+    generate_key,
+    key_from_passphrase,
+    BASE_FREQUENCY_HZ,
+)
+
 from .harmonic_scaling_law import (
     HarmonicScalingLaw,
     ScalingMode,
@@ -103,6 +121,21 @@ __all__ = [
     "FeatureExtractor",
     "HarmonicVerifier",
     "IntentClassifier",
+    # Flat Slope Harmonic Encoder
+    "derive_harmonic_mask",
+    "synthesize_token",
+    "encode_message",
+    "verify_token_fingerprint",
+    "verify_envelope_integrity",
+    "resonance_refractor",
+    "analyze_frequency_attack_resistance",
+    "compare_steep_vs_flat",
+    "HarmonicFingerprint",
+    "EncodedMessage",
+    "ModalityMask",
+    "generate_key",
+    "key_from_passphrase",
+    "BASE_FREQUENCY_HZ",
     # Harmonic Scaling Law (SCBE-AETHERMOORE)
     "HarmonicScalingLaw",
     "ScalingMode",
