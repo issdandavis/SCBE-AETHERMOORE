@@ -41,13 +41,28 @@ from .ai_verifier import (
     IntentClassifier,
 )
 
+from .harmonic_scaling_law import (
+    HarmonicScalingLaw,
+    ScalingMode,
+    PQContextCommitment,
+    BehavioralRiskComponents,
+    SecurityDecisionEngine,
+    hyperbolic_distance_poincare,
+    find_nearest_trusted_realm,
+    quantum_resistant_harmonic_scaling,
+    create_context_commitment,
+    verify_test_vectors,
+)
+
 __all__ = [
+    # Core cipher components
     "SymphonicCipher",
     "ConlangDictionary",
     "ModalityEncoder",
     "FeistelPermutation",
     "HarmonicSynthesizer",
     "RWPEnvelope",
+    # DSP chain
     "GainStage",
     "MicPatternFilter",
     "DAWRoutingMatrix",
@@ -56,7 +71,19 @@ __all__ = [
     "ConvolutionReverb",
     "StereoPanner",
     "DSPChain",
+    # AI verification
     "FeatureExtractor",
     "HarmonicVerifier",
     "IntentClassifier",
+    # Harmonic Scaling Law (SCBE-AETHERMOORE)
+    "HarmonicScalingLaw",
+    "ScalingMode",
+    "PQContextCommitment",
+    "BehavioralRiskComponents",
+    "SecurityDecisionEngine",
+    "hyperbolic_distance_poincare",
+    "find_nearest_trusted_realm",
+    "quantum_resistant_harmonic_scaling",
+    "create_context_commitment",
+    "verify_test_vectors",
 ]
