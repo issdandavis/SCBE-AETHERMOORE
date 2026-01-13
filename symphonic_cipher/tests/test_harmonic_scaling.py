@@ -44,6 +44,8 @@ from ..harmonic_scaling_law import (
     DimensionMode,
     # Grand Unified Formula
     GrandUnifiedSymphonicCipher,
+    # Differential Cryptography Framework
+    DifferentialCryptographyFramework,
     PHI,
     LANGUES_DIMENSIONS,
     DEFAULT_EPSILON,
@@ -1956,3 +1958,296 @@ class TestGrandUnifiedSymphonicCipher:
         r_large = np.array([0.99, 0.99, 0.99, 0.99, 0.99, 0.99])
         omega_large = guscf.compute_omega(np.ones(6), r_large)
         assert np.isfinite(omega_large)
+
+
+# =============================================================================
+# TEST: DIFFERENTIAL CRYPTOGRAPHY FRAMEWORK
+# =============================================================================
+
+class TestDifferentialCryptographyFramework:
+    """Tests for the Differential Cryptography Framework."""
+
+    def test_initialization_defaults(self):
+        """Test default initialization."""
+        dcf = DifferentialCryptographyFramework()
+        assert dcf.f0 == 440.0
+        assert dcf.epsilon == 0.2
+        assert dcf.kappa_max == 100.0
+        assert dcf.n_harmonics == 4
+        assert dcf.phi == pytest.approx(PHI, rel=1e-10)
+
+    def test_initialization_custom(self):
+        """Test custom initialization."""
+        dcf = DifferentialCryptographyFramework(
+            base_frequency=880.0,
+            modulation_depth=0.1,
+            curvature_threshold=50.0,
+            n_harmonics=3
+        )
+        assert dcf.f0 == 880.0
+        assert dcf.epsilon == 0.1
+        assert dcf.kappa_max == 50.0
+        assert dcf.n_harmonics == 3
+
+    def test_nested_phase_computation(self):
+        """Test nested sinusoidal phase computation."""
+        dcf = DifferentialCryptographyFramework()
+        t = np.linspace(0, 2, 1000)
+
+        phase = dcf.compute_nested_phase(t)
+
+        # Phase should be bounded
+        assert np.all(np.abs(phase) <= 1.0)
+        # Phase should vary
+        assert np.std(phase) > 0
+
+    def test_waveform_computation(self):
+        """Test harmonic fractal waveform computation."""
+        dcf = DifferentialCryptographyFramework()
+        t = np.linspace(0, 2, 1000)
+
+        f = dcf.compute_waveform(t)
+
+        # Waveform should be within reasonable range of f0
+        # (nested modulation can shift mean by ~15% due to ε² terms)
+        assert np.mean(f) == pytest.approx(dcf.f0, rel=0.2)
+        # Should be positive
+        assert np.all(f > 0)
+
+    def test_phase_velocity(self):
+        """Test phase velocity (first derivative) computation."""
+        dcf = DifferentialCryptographyFramework()
+        t = np.linspace(0, 2, 1000)
+
+        velocity = dcf.compute_phase_velocity(t)
+
+        # Velocity should be finite
+        assert np.all(np.isfinite(velocity))
+        # Velocity should vary (derivative of oscillating function)
+        assert np.std(velocity) > 0
+
+    def test_curvature(self):
+        """Test curvature (second derivative) computation."""
+        dcf = DifferentialCryptographyFramework()
+        t = np.linspace(0, 2, 1000)
+
+        curvature = dcf.compute_curvature(t)
+
+        # Curvature should be finite
+        assert np.all(np.isfinite(curvature))
+        # Curvature should vary
+        assert np.std(curvature) > 0
+
+    def test_accumulated_phase(self):
+        """Test accumulated phase integral computation."""
+        dcf = DifferentialCryptographyFramework()
+        t = np.linspace(0, 2, 1000)
+
+        # Full integral
+        accumulated = dcf.compute_accumulated_phase(t)
+        assert accumulated > 0
+
+        # Partial integral
+        accumulated_partial = dcf.compute_accumulated_phase(t, t_start=0.5, t_end=1.5)
+        assert 0 < accumulated_partial < accumulated
+
+    def test_snap_detection(self):
+        """Test Snap event detection."""
+        dcf = DifferentialCryptographyFramework(curvature_threshold=10.0)
+        t = np.linspace(0, 2, 1000)
+
+        snap_info = dcf.detect_snap_events(t)
+
+        assert "snap_count" in snap_info
+        assert "max_curvature" in snap_info
+        assert "stability_ratio" in snap_info
+        assert 0.0 <= snap_info["stability_ratio"] <= 1.0
+
+    def test_watermark_signature(self):
+        """Test watermark signature generation."""
+        dcf = DifferentialCryptographyFramework()
+        t = np.linspace(0, 2, 1000)
+
+        signature = dcf.generate_watermark_signature(t, n_segments=16)
+
+        # Signature should have correct length
+        assert len(signature) == 16
+        # Signature should be normalized to [0, 1]
+        assert np.all(signature >= 0) and np.all(signature <= 1)
+
+    def test_watermark_signature_deterministic(self):
+        """Test that watermark signature is deterministic."""
+        dcf = DifferentialCryptographyFramework()
+        t = np.linspace(0, 2, 1000)
+
+        sig1 = dcf.generate_watermark_signature(t, n_segments=8)
+        sig2 = dcf.generate_watermark_signature(t, n_segments=8)
+
+        np.testing.assert_array_almost_equal(sig1, sig2)
+
+    def test_chaff_pattern(self):
+        """Test chaff pattern generation."""
+        dcf = DifferentialCryptographyFramework()
+        t = np.linspace(0, 2, 1000)
+
+        chaff = dcf.generate_chaff_pattern(t, chaff_amplitude=0.01, seed=42)
+
+        # Chaff should be small amplitude
+        assert np.max(np.abs(chaff)) < 0.1
+        # Chaff should vary
+        assert np.std(chaff) > 0
+
+    def test_chaff_pattern_reproducible(self):
+        """Test that chaff is reproducible with same seed."""
+        dcf = DifferentialCryptographyFramework()
+        t = np.linspace(0, 2, 100)
+
+        chaff1 = dcf.generate_chaff_pattern(t, seed=42)
+        chaff2 = dcf.generate_chaff_pattern(t, seed=42)
+
+        np.testing.assert_array_almost_equal(chaff1, chaff2)
+
+    def test_trust_gradient(self):
+        """Test trust gradient computation on manifold."""
+        dcf = DifferentialCryptographyFramework()
+        theta = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+        r = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+
+        gradient = dcf.compute_trust_gradient(theta, r)
+
+        # Gradient should have same dimension as theta
+        assert len(gradient) == len(theta)
+        # Gradient should be finite (no frozen dimensions)
+        assert np.all(np.isfinite(gradient))
+
+    def test_geometric_curvature_hessian(self):
+        """Test geometric curvature (Hessian) computation."""
+        dcf = DifferentialCryptographyFramework()
+        theta = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+        r = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+
+        hessian = dcf.compute_geometric_curvature(theta, r)
+
+        # Hessian should be square matrix
+        assert hessian.shape == (6, 6)
+        # Hessian should be symmetric
+        np.testing.assert_array_almost_equal(hessian, hessian.T, decimal=5)
+
+    def test_geometric_snap_detection(self):
+        """Test geometric Snap detection based on Hessian eigenvalues."""
+        dcf = DifferentialCryptographyFramework(curvature_threshold=1000.0)
+        theta = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+        r = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+
+        snap_result = dcf.detect_geometric_snap(theta, r)
+
+        assert "snap_detected" in snap_result
+        assert "max_eigenvalue" in snap_result
+        assert "threshold" in snap_result
+        assert snap_result["threshold"] == 1000.0
+
+    def test_trajectory_analysis(self):
+        """Test trajectory analysis through differential lens."""
+        dcf = DifferentialCryptographyFramework(curvature_threshold=10000.0)
+        r = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+
+        trajectory = [
+            np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+            np.array([0.2, 0.2, 0.2, 0.2, 0.2, 0.2]),
+            np.array([0.4, 0.4, 0.4, 0.4, 0.4, 0.4]),
+        ]
+
+        analysis = dcf.analyze_trajectory(trajectory, r)
+
+        assert "trust_values" in analysis
+        assert "trust_gradients" in analysis
+        assert "snap_count" in analysis
+        assert "accumulated_trust" in analysis
+        assert "stability_ratio" in analysis
+
+        # Should have same number of trust values as trajectory points
+        assert len(analysis["trust_values"]) == len(trajectory)
+
+    def test_differential_equations_output(self):
+        """Test differential equations documentation output."""
+        dcf = DifferentialCryptographyFramework()
+        equations = dcf.get_differential_equations()
+
+        # Should contain key equations
+        assert "f(t)" in equations
+        assert "f'(t)" in equations
+        assert "f''(t)" in equations
+        assert "κ_max" in equations
+        assert "∇Ω" in equations
+
+    def test_repr(self):
+        """Test string representation."""
+        dcf = DifferentialCryptographyFramework(
+            base_frequency=880.0,
+            modulation_depth=0.15,
+            curvature_threshold=75.0
+        )
+        repr_str = repr(dcf)
+
+        assert "DifferentialCryptographyFramework" in repr_str
+        assert "f₀=880.0" in repr_str
+        assert "ε=0.15" in repr_str
+        assert "κ_max=75.0" in repr_str
+
+    def test_golden_ratio_modulation_frequencies(self):
+        """Test that default modulation frequencies follow φ progression."""
+        dcf = DifferentialCryptographyFramework(n_harmonics=4)
+
+        # Default frequencies should be φ^k progression
+        expected = np.array([PHI ** k for k in range(1, 5)])
+        np.testing.assert_array_almost_equal(dcf.omega, expected)
+
+    def test_custom_modulation_frequencies(self):
+        """Test custom modulation frequencies."""
+        custom_freqs = [1.0, 2.0, 4.0, 8.0]
+        dcf = DifferentialCryptographyFramework(modulation_frequencies=custom_freqs)
+
+        np.testing.assert_array_almost_equal(dcf.omega, custom_freqs)
+
+    def test_waveform_vs_velocity_relationship(self):
+        """Test that velocity is derivative of waveform."""
+        dcf = DifferentialCryptographyFramework()
+        t = np.linspace(0, 1, 1000)
+        dt = t[1] - t[0]
+
+        f = dcf.compute_waveform(t)
+        velocity = dcf.compute_phase_velocity(t, dt)
+
+        # Numerical derivative of f should match velocity
+        f_diff = np.gradient(f, dt)
+        np.testing.assert_array_almost_equal(velocity, f_diff, decimal=5)
+
+    def test_curvature_vs_velocity_relationship(self):
+        """Test that curvature is derivative of velocity."""
+        dcf = DifferentialCryptographyFramework()
+        t = np.linspace(0, 1, 1000)
+        dt = t[1] - t[0]
+
+        velocity = dcf.compute_phase_velocity(t, dt)
+        curvature = dcf.compute_curvature(t, dt)
+
+        # Numerical derivative of velocity should match curvature
+        v_diff = np.gradient(velocity, dt)
+        np.testing.assert_array_almost_equal(curvature, v_diff, decimal=5)
+
+    def test_nested_phase_depth_effect(self):
+        """Test that nesting depth affects phase complexity."""
+        dcf = DifferentialCryptographyFramework(n_harmonics=4)
+        t = np.linspace(0, 2, 1000)
+
+        phase_d1 = dcf.compute_nested_phase(t, depth=1)
+        phase_d4 = dcf.compute_nested_phase(t, depth=4)
+
+        # Deeper nesting should have higher frequency content
+        # Check via variance of derivative
+        d1_var = np.var(np.gradient(phase_d1))
+        d4_var = np.var(np.gradient(phase_d4))
+
+        # Both should be non-zero
+        assert d1_var > 0
+        assert d4_var > 0

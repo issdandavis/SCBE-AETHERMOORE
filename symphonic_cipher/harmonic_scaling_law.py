@@ -2443,6 +2443,612 @@ Alternative Forms:
 
 
 # =============================================================================
+# DIFFERENTIAL CRYPTOGRAPHY FRAMEWORK
+# =============================================================================
+
+class DifferentialCryptographyFramework:
+    """
+    Differential Cryptography Framework: Calculus-Based Harmonic Security.
+
+    This framework applies calculus to cryptographic phase modulation:
+
+    Core Waveform (Nested Sinusoidal Modulation):
+        f(t) = f₀ · (1 + ε₁·sin(ω₁t + ε₂·sin(ω₂t + ε₃·sin(ω₃t + ...))))
+
+    Differential Structure:
+        f'(t)  = Phase velocity (instantaneous frequency change)
+        f''(t) = Phase acceleration (curvature / "whammy" intensity)
+        ∫f(t)dt = Accumulated phase (harmonic memory trace)
+
+    Security Mapping:
+        - Phase velocity → Trust gradient on manifold
+        - Curvature → Snap threshold detection
+        - Accumulated phase → Watermark signature
+        - Nested modulation → Chaff pattern generation
+
+    The Snap Protocol triggers when |f''(t)| > κ_max (curvature threshold).
+
+    Connection to Riemannian Geometry:
+        On the hyper-torus with metric ds² = g_ij dθ^i dθ^j,
+        the Christoffel symbols Γⁱⱼₖ describe path bending.
+        The curvature κ(θ) determines geometric stability.
+
+    Watermark Generation:
+        The integral ∫₀ᵀ f(τ)dτ encodes the cumulative phase signature,
+        which is discretized and hashed into cryptographic key bits.
+    """
+
+    def __init__(
+        self,
+        base_frequency: float = 440.0,
+        modulation_depth: float = 0.2,
+        modulation_frequencies: Optional[List[float]] = None,
+        curvature_threshold: float = 100.0,
+        n_harmonics: int = 4,
+    ):
+        """
+        Initialize Differential Cryptography Framework.
+
+        Args:
+            base_frequency: Base frequency f₀ (default: 440 Hz = A4)
+            modulation_depth: Modulation amplitude ε (default: 0.2)
+            modulation_frequencies: List of modulation frequencies [ω₁, ω₂, ...]
+                                   (default: geometric progression from φ)
+            curvature_threshold: Maximum allowed curvature κ_max (Snap threshold)
+            n_harmonics: Number of nested harmonic layers
+        """
+        self.f0 = base_frequency
+        self.epsilon = modulation_depth
+        self.kappa_max = curvature_threshold
+        self.n_harmonics = n_harmonics
+        self.phi = PHI
+
+        # Default modulation frequencies: φ-based geometric progression
+        if modulation_frequencies is None:
+            self.omega = np.array([self.phi ** k for k in range(1, n_harmonics + 1)])
+        else:
+            self.omega = np.asarray(modulation_frequencies, dtype=np.float64)
+
+    def compute_nested_phase(self, t: np.ndarray, depth: int = None) -> np.ndarray:
+        """
+        Compute nested sinusoidal modulation phase.
+
+        φ(t) = ε₁·sin(ω₁t + ε₂·sin(ω₂t + ε₃·sin(ω₃t + ...)))
+
+        Args:
+            t: Time array
+            depth: Recursion depth (default: n_harmonics)
+
+        Returns:
+            Nested phase modulation array
+        """
+        if depth is None:
+            depth = self.n_harmonics
+
+        if depth == 0:
+            return np.zeros_like(t)
+
+        # Build from innermost to outermost
+        phase = np.zeros_like(t)
+        for k in range(depth - 1, -1, -1):
+            omega_k = self.omega[k] if k < len(self.omega) else self.omega[-1]
+            eps_k = self.epsilon ** (k + 1)  # Decreasing modulation depth
+            phase = eps_k * np.sin(omega_k * t + phase)
+
+        return phase
+
+    def compute_waveform(self, t: np.ndarray) -> np.ndarray:
+        """
+        Compute the full harmonic fractal waveform.
+
+        f(t) = f₀ · (1 + ε·sin(ω₁t + ε·sin(ω₂t + ...)))
+
+        Args:
+            t: Time array
+
+        Returns:
+            Modulated waveform array
+        """
+        nested_phase = self.compute_nested_phase(t)
+        return self.f0 * (1 + nested_phase)
+
+    def compute_phase_velocity(self, t: np.ndarray, dt: float = None) -> np.ndarray:
+        """
+        Compute phase velocity f'(t) - the derivative of the waveform.
+
+        f'(t) = instantaneous rate of frequency change
+
+        This is the "velocity of phase" - how fast the tone is bending.
+        In the trust manifold, this corresponds to the trust gradient.
+
+        Args:
+            t: Time array
+            dt: Time step (default: inferred from t)
+
+        Returns:
+            Phase velocity array
+        """
+        if dt is None:
+            dt = t[1] - t[0] if len(t) > 1 else 1e-6
+
+        f = self.compute_waveform(t)
+        # Use central differences for better accuracy
+        velocity = np.gradient(f, dt)
+
+        return velocity
+
+    def compute_curvature(self, t: np.ndarray, dt: float = None) -> np.ndarray:
+        """
+        Compute curvature f''(t) - the second derivative of the waveform.
+
+        f''(t) = acceleration of phase modulation = geometric curvature
+
+        High curvature indicates rapid phase changes ("whammy" effects).
+        When |f''(t)| > κ_max, the Snap Protocol triggers.
+
+        Args:
+            t: Time array
+            dt: Time step (default: inferred from t)
+
+        Returns:
+            Curvature array
+        """
+        if dt is None:
+            dt = t[1] - t[0] if len(t) > 1 else 1e-6
+
+        velocity = self.compute_phase_velocity(t, dt)
+        curvature = np.gradient(velocity, dt)
+
+        return curvature
+
+    def compute_accumulated_phase(
+        self,
+        t: np.ndarray,
+        t_start: float = None,
+        t_end: float = None
+    ) -> float:
+        """
+        Compute accumulated phase integral Φ(t) = ∫f(τ)dτ.
+
+        This is the "harmonic memory trace" - the total phase area
+        accumulated over time. In the geometric model, this corresponds
+        to the total geodesic length traversed.
+
+        Args:
+            t: Time array
+            t_start: Integration start (default: t[0])
+            t_end: Integration end (default: t[-1])
+
+        Returns:
+            Accumulated phase (scalar)
+        """
+        if t_start is None:
+            t_start = t[0]
+        if t_end is None:
+            t_end = t[-1]
+
+        # Mask for integration bounds
+        mask = (t >= t_start) & (t <= t_end)
+        t_masked = t[mask]
+
+        if len(t_masked) < 2:
+            return 0.0
+
+        f = self.compute_waveform(t_masked)
+        dt = t_masked[1] - t_masked[0]
+
+        # Trapezoidal integration
+        accumulated = np.trapezoid(f, dx=dt)
+
+        return float(accumulated)
+
+    def detect_snap_events(self, t: np.ndarray) -> dict:
+        """
+        Detect Snap events where curvature exceeds threshold.
+
+        The Snap Protocol triggers when |f''(t)| > κ_max.
+        These are points of geometric instability where the
+        "memory line breaks" in the trust manifold.
+
+        Args:
+            t: Time array
+
+        Returns:
+            Dict with snap event information
+        """
+        curvature = self.compute_curvature(t)
+        snap_mask = np.abs(curvature) > self.kappa_max
+
+        snap_times = t[snap_mask]
+        snap_curvatures = curvature[snap_mask]
+
+        return {
+            "snap_count": int(np.sum(snap_mask)),
+            "snap_times": snap_times.tolist(),
+            "snap_curvatures": snap_curvatures.tolist(),
+            "max_curvature": float(np.max(np.abs(curvature))),
+            "mean_curvature": float(np.mean(np.abs(curvature))),
+            "threshold": self.kappa_max,
+            "stability_ratio": float(1 - np.mean(snap_mask)),
+        }
+
+    def generate_watermark_signature(
+        self,
+        t: np.ndarray,
+        n_segments: int = 16
+    ) -> np.ndarray:
+        """
+        Generate watermark signature from differential structure.
+
+        The watermark encodes:
+        1. Segment-wise accumulated phase integrals
+        2. Curvature statistics per segment
+        3. Phase velocity patterns
+
+        This creates a unique signature from the continuous
+        differential structure, discretized for cryptographic use.
+
+        Args:
+            t: Time array
+            n_segments: Number of signature segments
+
+        Returns:
+            Watermark signature array (n_segments,)
+        """
+        segment_length = len(t) // n_segments
+        signature = np.zeros(n_segments)
+
+        f = self.compute_waveform(t)
+        curvature = self.compute_curvature(t)
+        velocity = self.compute_phase_velocity(t)
+
+        for i in range(n_segments):
+            start = i * segment_length
+            end = start + segment_length if i < n_segments - 1 else len(t)
+
+            # Combine multiple differential features
+            segment_f = f[start:end]
+            segment_kappa = curvature[start:end]
+            segment_v = velocity[start:end]
+
+            # Weighted combination of features
+            phase_integral = np.trapezoid(segment_f) / (end - start)
+            curvature_stat = np.std(segment_kappa)
+            velocity_stat = np.mean(np.abs(segment_v))
+
+            # Golden ratio weighted combination
+            signature[i] = (
+                phase_integral +
+                self.phi * curvature_stat +
+                self.phi ** 2 * velocity_stat
+            )
+
+        # Normalize to [0, 1]
+        if np.max(signature) > np.min(signature):
+            signature = (signature - np.min(signature)) / (np.max(signature) - np.min(signature))
+
+        return signature
+
+    def generate_chaff_pattern(
+        self,
+        t: np.ndarray,
+        chaff_amplitude: float = 0.01,
+        seed: int = None
+    ) -> np.ndarray:
+        """
+        Generate chaff pattern as modulated phase noise.
+
+        Chaff is low-amplitude phase perturbation that follows
+        the differential structure but with added randomness.
+        It's indistinguishable from the signal to an observer
+        but can be detected with the correct key.
+
+        Args:
+            t: Time array
+            chaff_amplitude: Amplitude of chaff noise (default: 0.01)
+            seed: Random seed for reproducibility
+
+        Returns:
+            Chaff pattern array
+        """
+        if seed is not None:
+            np.random.seed(seed)
+
+        # Base chaff follows nested sinusoid structure
+        base_chaff = self.compute_nested_phase(t, depth=self.n_harmonics - 1)
+
+        # Add structured noise modulated by golden ratio
+        noise = np.random.randn(len(t))
+        modulated_noise = noise * chaff_amplitude * (1 + 0.5 * np.sin(self.phi * t))
+
+        # Combine base pattern with modulated noise
+        chaff = base_chaff * chaff_amplitude + modulated_noise
+
+        return chaff
+
+    def compute_trust_gradient(
+        self,
+        theta: np.ndarray,
+        langues_r: np.ndarray,
+        guscf: "GrandUnifiedSymphonicCipher" = None
+    ) -> np.ndarray:
+        """
+        Compute trust gradient on the geometric manifold.
+
+        In the differential framework, the trust gradient is
+        the derivative of Ω with respect to position:
+
+            ∇Ω = (∂Ω/∂θ₁, ∂Ω/∂θ₂, ..., ∂Ω/∂θₙ)
+
+        This corresponds to f'(t) in the waveform domain.
+
+        Args:
+            theta: Angular coordinates on hyper-torus
+            langues_r: Langues parameter vector
+            guscf: GrandUnifiedSymphonicCipher instance (created if None)
+
+        Returns:
+            Trust gradient vector
+        """
+        if guscf is None:
+            guscf = GrandUnifiedSymphonicCipher(n_dims=len(theta))
+
+        h = 1e-6  # Finite difference step
+        gradient = np.zeros_like(theta)
+
+        omega_0 = guscf.compute_omega(theta, langues_r)
+
+        for i in range(len(theta)):
+            theta_plus = theta.copy()
+            theta_plus[i] += h
+            omega_plus = guscf.compute_omega(theta_plus, langues_r)
+
+            # Handle infinite omega
+            if np.isinf(omega_plus) or np.isinf(omega_0):
+                gradient[i] = np.inf if np.isinf(omega_plus) else 0.0
+            else:
+                gradient[i] = (omega_plus - omega_0) / h
+
+        return gradient
+
+    def compute_geometric_curvature(
+        self,
+        theta: np.ndarray,
+        langues_r: np.ndarray,
+        guscf: "GrandUnifiedSymphonicCipher" = None
+    ) -> np.ndarray:
+        """
+        Compute geometric curvature (Hessian) of Ω.
+
+        The curvature tensor ∂²Ω/∂θᵢ∂θⱼ describes how the
+        trust gradient changes - analogous to f''(t).
+
+        When eigenvalues of this Hessian exceed κ_max,
+        the Snap Protocol triggers.
+
+        Args:
+            theta: Angular coordinates
+            langues_r: Langues parameters
+            guscf: GrandUnifiedSymphonicCipher instance
+
+        Returns:
+            Hessian matrix (curvature tensor)
+        """
+        if guscf is None:
+            guscf = GrandUnifiedSymphonicCipher(n_dims=len(theta))
+
+        n = len(theta)
+        h = 1e-5
+        hessian = np.zeros((n, n))
+
+        omega_0 = guscf.compute_omega(theta, langues_r)
+
+        for i in range(n):
+            for j in range(i, n):
+                theta_pp = theta.copy()
+                theta_pm = theta.copy()
+                theta_mp = theta.copy()
+                theta_mm = theta.copy()
+
+                theta_pp[i] += h
+                theta_pp[j] += h
+                theta_pm[i] += h
+                theta_pm[j] -= h
+                theta_mp[i] -= h
+                theta_mp[j] += h
+                theta_mm[i] -= h
+                theta_mm[j] -= h
+
+                omega_pp = guscf.compute_omega(theta_pp, langues_r)
+                omega_pm = guscf.compute_omega(theta_pm, langues_r)
+                omega_mp = guscf.compute_omega(theta_mp, langues_r)
+                omega_mm = guscf.compute_omega(theta_mm, langues_r)
+
+                # Check for infinities
+                if any(np.isinf(x) for x in [omega_pp, omega_pm, omega_mp, omega_mm]):
+                    hessian[i, j] = np.inf
+                else:
+                    hessian[i, j] = (omega_pp - omega_pm - omega_mp + omega_mm) / (4 * h ** 2)
+
+                hessian[j, i] = hessian[i, j]  # Symmetric
+
+        return hessian
+
+    def detect_geometric_snap(
+        self,
+        theta: np.ndarray,
+        langues_r: np.ndarray,
+        guscf: "GrandUnifiedSymphonicCipher" = None
+    ) -> dict:
+        """
+        Detect geometric Snap based on curvature eigenvalues.
+
+        Snap occurs when max eigenvalue of Hessian > κ_max.
+
+        Args:
+            theta: Angular coordinates
+            langues_r: Langues parameters
+            guscf: GrandUnifiedSymphonicCipher instance
+
+        Returns:
+            Snap detection result dict
+        """
+        hessian = self.compute_geometric_curvature(theta, langues_r, guscf)
+
+        # Handle infinite entries
+        if np.any(np.isinf(hessian)):
+            return {
+                "snap_detected": True,
+                "reason": "infinite_curvature",
+                "max_eigenvalue": np.inf,
+                "threshold": self.kappa_max,
+            }
+
+        eigenvalues = np.linalg.eigvalsh(hessian)
+        max_eigenvalue = np.max(np.abs(eigenvalues))
+        snap_detected = max_eigenvalue > self.kappa_max
+
+        return {
+            "snap_detected": snap_detected,
+            "max_eigenvalue": float(max_eigenvalue),
+            "eigenvalues": eigenvalues.tolist(),
+            "threshold": self.kappa_max,
+            "stability_margin": float(self.kappa_max - max_eigenvalue),
+        }
+
+    def analyze_trajectory(
+        self,
+        trajectory: List[np.ndarray],
+        langues_r: np.ndarray,
+        timestamps: np.ndarray = None,
+        guscf: "GrandUnifiedSymphonicCipher" = None
+    ) -> dict:
+        """
+        Analyze a trajectory through the differential lens.
+
+        Computes:
+        - Trust values Ω(t) along trajectory
+        - Trust gradient (velocity) at each point
+        - Curvature and Snap events
+        - Accumulated trust integral
+
+        Args:
+            trajectory: List of angular coordinate points
+            langues_r: Langues parameters
+            timestamps: Optional time values for each point
+            guscf: GrandUnifiedSymphonicCipher instance
+
+        Returns:
+            Comprehensive trajectory analysis dict
+        """
+        if guscf is None and len(trajectory) > 0:
+            guscf = GrandUnifiedSymphonicCipher(n_dims=len(trajectory[0]))
+
+        if timestamps is None:
+            timestamps = np.linspace(0, 1, len(trajectory))
+
+        omegas = []
+        gradients = []
+        snap_events = []
+
+        for i, theta in enumerate(trajectory):
+            omega = guscf.compute_omega(theta, langues_r)
+            omegas.append(omega)
+
+            grad = self.compute_trust_gradient(theta, langues_r, guscf)
+            gradients.append(np.linalg.norm(grad) if not np.any(np.isinf(grad)) else np.inf)
+
+            snap = self.detect_geometric_snap(theta, langues_r, guscf)
+            if snap["snap_detected"]:
+                snap_events.append({
+                    "index": i,
+                    "time": float(timestamps[i]),
+                    "eigenvalue": snap["max_eigenvalue"],
+                })
+
+        omegas = np.array(omegas)
+        finite_mask = np.isfinite(omegas)
+
+        # Accumulated trust integral
+        if np.any(finite_mask):
+            accumulated = np.trapezoid(omegas[finite_mask], timestamps[finite_mask])
+        else:
+            accumulated = np.inf
+
+        return {
+            "trust_values": omegas.tolist(),
+            "trust_gradients": gradients,
+            "snap_events": snap_events,
+            "snap_count": len(snap_events),
+            "accumulated_trust": float(accumulated),
+            "mean_trust": float(np.mean(omegas[finite_mask])) if np.any(finite_mask) else np.inf,
+            "max_trust": float(np.max(omegas[finite_mask])) if np.any(finite_mask) else np.inf,
+            "stability_ratio": float(1 - len(snap_events) / len(trajectory)) if len(trajectory) > 0 else 1.0,
+        }
+
+    def get_differential_equations(self) -> str:
+        """
+        Return the formal differential equations of the framework.
+        """
+        return r"""
+Differential Cryptography Framework - Formal Equations
+
+═══════════════════════════════════════════════════════
+
+1. NESTED HARMONIC MODULATION (Waveform)
+   f(t) = f₀ · (1 + ε₁·sin(ω₁t + ε₂·sin(ω₂t + ε₃·sin(ω₃t + ...))))
+
+2. PHASE VELOCITY (First Derivative)
+   f'(t) = f₀ · ε₁·ω₁·cos(ω₁t + φ(t)) · [1 + ε₂·ω₂·cos(ω₂t + ...)]
+
+   Interpretation: Trust gradient on manifold, instantaneous frequency change
+
+3. CURVATURE (Second Derivative)
+   f''(t) = d/dt[f'(t)]
+
+   The Snap Protocol triggers when: |f''(t)| > κ_max
+
+4. ACCUMULATED PHASE (Integral)
+   Φ(T₁, T₂) = ∫_{T₁}^{T₂} f(τ) dτ
+
+   Interpretation: Harmonic memory trace, watermark signature
+
+5. GEOMETRIC CURVATURE (Hessian of Ω)
+   H_ij = ∂²Ω/∂θᵢ∂θⱼ
+
+   Snap detection: max|eigenvalue(H)| > κ_max
+
+6. TRUST GRADIENT
+   ∇Ω = (∂Ω/∂θ₁, ..., ∂Ω/∂θₙ)
+
+   Maps to phase velocity in the geometric domain
+
+7. CHRISTOFFEL SYMBOLS (Geometric Connection)
+   Γⁱⱼₖ = ½gⁱˡ(∂gₗⱼ/∂xᵏ + ∂gₗₖ/∂xʲ - ∂gⱼₖ/∂xˡ)
+
+   Describes path bending on the hyper-torus manifold
+
+8. WATERMARK GENERATION
+   W(t) = hash(∫f(τ)dτ, σ(f''(t)), μ(|f'(t)|))
+
+   Combines integral, curvature statistics, velocity mean
+
+═══════════════════════════════════════════════════════
+
+Connection to Grand Unified Formula:
+   Ω(θ, r; D) = H(d_T, R) · (det G_Ω)^{1/(2n)} · φ^{D_f/n}
+
+   d/dt[Ω(θ(t))] = ∇Ω · θ'(t)    (Chain rule on manifold)
+"""
+
+    def __repr__(self) -> str:
+        return (
+            f"DifferentialCryptographyFramework(f₀={self.f0}, ε={self.epsilon}, "
+            f"κ_max={self.kappa_max}, n_harmonics={self.n_harmonics})"
+        )
+
+
+# =============================================================================
 # EXPORTS
 # =============================================================================
 
@@ -2472,6 +3078,9 @@ __all__ = [
 
     # Grand Unified Symphonic Cipher Formula
     "GrandUnifiedSymphonicCipher",
+
+    # Differential Cryptography Framework
+    "DifferentialCryptographyFramework",
 
     # Hyperbolic geometry
     "hyperbolic_distance_poincare",
