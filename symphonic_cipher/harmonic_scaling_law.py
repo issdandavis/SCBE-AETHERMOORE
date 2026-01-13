@@ -2016,6 +2016,433 @@ def verify_test_vectors(tolerance: float = 0.01) -> List[Tuple[bool, str]]:
 
 
 # =============================================================================
+# GRAND UNIFIED SYMPHONIC CIPHER FORMULA (Ω)
+# =============================================================================
+
+class GrandUnifiedSymphonicCipher:
+    """
+    The Grand Unified Symphonic Cipher Formula (GUSCF).
+
+    Unifies all four pillars of the Symphonic Cipher into a single scalar:
+
+        Ω(θ, r; D) = H(d_T, R) · (det G_Ω)^{1/(2n)} · φ^{D_f/n}
+
+    Where:
+        - H(d_T, R) = 1 + α·tanh(β·d_T)  [Harmonic Scaling Law]
+        - G_Ω = G_T ⊙ G_L               [Coupled Torus-Langues Metric]
+        - D_f = fractal dimension        [Complexity Measure]
+        - φ = golden ratio               [Coordination Constant]
+        - n = number of dimensions       [Torus dimensionality]
+
+    The formula captures:
+        1. **Risk Amplification** via H - bounded, monotonic risk scaling
+        2. **Linguistic Weighting** via G_L - 6D Langues metric tensor
+        3. **Geometric Integrity** via G_T - hyper-torus manifold structure
+        4. **Complexity Signature** via D_f - fractal dimensional fingerprint
+
+    Physical Interpretation:
+        Ω measures the "symphonic coherence" of a state in cipher space.
+        - Low Ω (→1): Harmonic, trusted, low-dimensional
+        - High Ω (→∞): Dissonant, distant, high-complexity
+
+    Alternative Forms:
+
+    1. Action Integral (for trajectories):
+        S[γ] = ∫_γ Ω(θ(t), r; D) dt
+
+    2. Logarithmic Form (additive):
+        ln Ω = ln H + (1/2n) ln det G_Ω + (D_f/n) ln φ
+
+    3. Partition Function (statistical):
+        Z = Σ_states exp(-β·Ω)
+
+    4. Tensor Form (6D matrix):
+        Ω_ij = H · (G_T ⊙ G_L)_ij · φ^{D_f/n}
+    """
+
+    def __init__(
+        self,
+        n_dims: int = 6,
+        alpha: float = DEFAULT_ALPHA,
+        beta: float = DEFAULT_BETA,
+        epsilon: float = DEFAULT_EPSILON,
+        dimension_modes: np.ndarray = None,
+        coupling_mode: CouplingMode = CouplingMode.NORMALIZED,
+    ):
+        """
+        Initialize the Grand Unified Symphonic Cipher.
+
+        Args:
+            n_dims: Number of dimensions (must be >= 6 for Langues integration)
+            alpha: Harmonic scaling maximum amplification
+            beta: Harmonic scaling growth rate
+            epsilon: Langues metric coupling strength
+            dimension_modes: Signed dimension vector D ∈ {-1, 0, +1}^n
+            coupling_mode: Langues metric coupling mode
+        """
+        if n_dims < 6:
+            raise ValueError("Grand Unified formula requires n_dims >= 6 for Langues integration")
+
+        self.n_dims = n_dims
+        self.alpha = alpha
+        self.beta = beta
+        self.epsilon = epsilon
+        self.phi = PHI
+
+        # Initialize all four pillars
+        self.harmonic_law = HarmonicScalingLaw(
+            alpha=alpha,
+            beta=beta,
+            require_pq_binding=False
+        )
+
+        self.langues_metric = LanguesMetricTensor(
+            epsilon=epsilon,
+            mode=coupling_mode,
+            validate_epsilon=False
+        )
+        # Store the coupling mode for inspection
+        self.langues_metric.coupling_mode = coupling_mode
+
+        if dimension_modes is None:
+            dimension_modes = np.ones(n_dims, dtype=int)  # All FORWARD
+
+        self.hyper_torus = HyperTorusManifold(
+            n_dims=n_dims,
+            dimension_modes=dimension_modes
+        )
+
+        self.fractal_analyzer = FractalDimensionAnalyzer(
+            epsilon=epsilon
+        )
+
+    def compute_omega(
+        self,
+        theta: np.ndarray,
+        r: np.ndarray,
+        theta_ref: np.ndarray = None,
+    ) -> float:
+        """
+        Compute the Grand Unified Symphonic Cipher scalar Ω.
+
+            Ω(θ, r; D) = H(d_T, R) · (det G_Ω)^{1/(2n)} · φ^{D_f/n}
+
+        Args:
+            theta: Angular coordinates on the hyper-torus (n_dims)
+            r: Langues parameter vector (6D, elements in [0, 1])
+            theta_ref: Reference point for distance (default: origin)
+
+        Returns:
+            Ω scalar value (>= 1)
+        """
+        if theta_ref is None:
+            theta_ref = np.zeros(self.n_dims)
+
+        # 1. Compute geodesic distance on hyper-torus
+        d_T, _ = self.hyper_torus.compute_geodesic_distance(theta_ref, theta)
+
+        # Handle infinite distance (frozen dimension violation)
+        if np.isinf(d_T):
+            return np.inf
+
+        # 2. Compute Harmonic scaling: H(d_T, R)
+        H = self.harmonic_law.compute(d_T)
+
+        # 3. Compute coupled metric G_Ω = G_T ⊙ G_L
+        G_T = self.hyper_torus.compute_metric_tensor(theta)
+        G_L = self.langues_metric.compute_metric(r)
+
+        # Hadamard coupling for first 6 dimensions
+        G_omega = G_T.copy()
+        for i in range(6):
+            G_omega[i, i] *= G_L[i, i]
+
+        # 4. Compute det(G_Ω)^{1/(2n)} - the "volume element" factor
+        det_G_omega = np.linalg.det(G_omega)
+        if det_G_omega <= 0:
+            det_factor = 1.0  # Degenerate case
+        else:
+            det_factor = det_G_omega ** (1.0 / (2 * self.n_dims))
+
+        # 5. Compute fractal dimension D_f
+        D_f = self.fractal_analyzer.compute_local_fractal_dimension(r)
+
+        # 6. Compute complexity factor: φ^{D_f/n}
+        complexity_factor = self.phi ** (D_f / self.n_dims)
+
+        # 7. Grand Unified Formula: Ω = H · det_factor · complexity_factor
+        omega = H * det_factor * complexity_factor
+
+        return float(omega)
+
+    def compute_omega_tensor(
+        self,
+        theta: np.ndarray,
+        r: np.ndarray,
+    ) -> np.ndarray:
+        """
+        Compute the tensorial form of Ω.
+
+            Ω_ij = H · (G_T ⊙ G_L)_ij · φ^{D_f/n}
+
+        Args:
+            theta: Angular coordinates on the hyper-torus
+            r: Langues parameter vector (6D)
+
+        Returns:
+            Ω tensor (n_dims × n_dims matrix)
+        """
+        # Get scalar factors
+        d_T, _ = self.hyper_torus.compute_geodesic_distance(np.zeros(self.n_dims), theta)
+        H = self.harmonic_law.compute(d_T) if not np.isinf(d_T) else np.inf
+        D_f = self.fractal_analyzer.compute_local_fractal_dimension(r)
+        complexity = self.phi ** (D_f / self.n_dims)
+
+        # Get coupled metric
+        G_T = self.hyper_torus.compute_metric_tensor(theta)
+        G_L = self.langues_metric.compute_metric(r)
+
+        # Hadamard coupling
+        G_omega = G_T.copy()
+        for i in range(min(6, self.n_dims)):
+            G_omega[i, i] *= G_L[i, i]
+
+        # Tensor form
+        Omega_tensor = H * complexity * G_omega
+
+        return Omega_tensor
+
+    def compute_log_omega(
+        self,
+        theta: np.ndarray,
+        r: np.ndarray,
+        theta_ref: np.ndarray = None,
+    ) -> dict:
+        """
+        Compute the logarithmic (additive) form of Ω.
+
+            ln Ω = ln H + (1/2n) ln det G_Ω + (D_f/n) ln φ
+
+        Returns decomposed contributions for analysis.
+
+        Args:
+            theta: Angular coordinates on the hyper-torus
+            r: Langues parameter vector (6D)
+            theta_ref: Reference point for distance
+
+        Returns:
+            Dict with log components and total
+        """
+        if theta_ref is None:
+            theta_ref = np.zeros(self.n_dims)
+
+        # Components
+        d_T, _ = self.hyper_torus.compute_geodesic_distance(theta_ref, theta)
+
+        if np.isinf(d_T):
+            return {
+                "log_H": np.inf,
+                "log_det_factor": 0.0,
+                "log_complexity": 0.0,
+                "log_omega": np.inf,
+                "omega": np.inf,
+            }
+
+        H = self.harmonic_law.compute(d_T)
+        log_H = np.log(H)
+
+        # Coupled metric determinant
+        G_T = self.hyper_torus.compute_metric_tensor(theta)
+        G_L = self.langues_metric.compute_metric(r)
+        G_omega = G_T.copy()
+        for i in range(6):
+            G_omega[i, i] *= G_L[i, i]
+        det_G = np.linalg.det(G_omega)
+        log_det_factor = np.log(det_G) / (2 * self.n_dims) if det_G > 0 else 0.0
+
+        # Fractal complexity
+        D_f = self.fractal_analyzer.compute_local_fractal_dimension(r)
+        log_complexity = (D_f / self.n_dims) * np.log(self.phi)
+
+        log_omega = log_H + log_det_factor + log_complexity
+
+        return {
+            "log_H": float(log_H),
+            "log_det_factor": float(log_det_factor),
+            "log_complexity": float(log_complexity),
+            "log_omega": float(log_omega),
+            "omega": float(np.exp(log_omega)),
+            "contributions": {
+                "harmonic_pct": float(log_H / log_omega * 100) if log_omega != 0 else 0,
+                "geometry_pct": float(log_det_factor / log_omega * 100) if log_omega != 0 else 0,
+                "complexity_pct": float(log_complexity / log_omega * 100) if log_omega != 0 else 0,
+            }
+        }
+
+    def compute_action_integral(
+        self,
+        trajectory: List[np.ndarray],
+        r: np.ndarray,
+    ) -> float:
+        """
+        Compute the Symphonic Action integral along a trajectory.
+
+            S[γ] = ∫_γ Ω(θ(t), r; D) dt ≈ Σ_i Ω(θ_i, r) · Δt
+
+        Args:
+            trajectory: List of angular coordinate points
+            r: Langues parameter vector (constant along trajectory)
+
+        Returns:
+            Action integral S
+        """
+        if len(trajectory) < 2:
+            return 0.0
+
+        action = 0.0
+        for i in range(1, len(trajectory)):
+            theta = trajectory[i]
+            theta_prev = trajectory[i - 1]
+
+            # Compute Ω at current point
+            omega = self.compute_omega(theta, r, theta_ref=theta_prev)
+
+            if np.isinf(omega):
+                return np.inf
+
+            # Approximate dt as 1 (uniform parameter)
+            action += omega
+
+        return float(action)
+
+    def compute_partition_function(
+        self,
+        states: List[np.ndarray],
+        r: np.ndarray,
+        temperature: float = 1.0,
+    ) -> dict:
+        """
+        Compute the statistical partition function.
+
+            Z = Σ_states exp(-Ω(state)/T)
+
+        This allows probabilistic interpretation of states.
+
+        Args:
+            states: List of state vectors (angular coordinates)
+            r: Langues parameter vector
+            temperature: Effective temperature (higher = more entropy)
+
+        Returns:
+            Dict with Z, probabilities, and entropy
+        """
+        omegas = []
+        for state in states:
+            omega = self.compute_omega(state, r)
+            omegas.append(omega)
+
+        omegas = np.array(omegas)
+
+        # Handle infinite omegas
+        finite_mask = np.isfinite(omegas)
+        if not np.any(finite_mask):
+            return {
+                "Z": 0.0,
+                "probabilities": np.zeros(len(states)),
+                "entropy": 0.0,
+                "mean_omega": np.inf,
+            }
+
+        # Boltzmann weights
+        boltzmann = np.zeros(len(states))
+        boltzmann[finite_mask] = np.exp(-omegas[finite_mask] / temperature)
+
+        Z = np.sum(boltzmann)
+        probabilities = boltzmann / Z if Z > 0 else boltzmann
+
+        # Shannon entropy
+        p_nonzero = probabilities[probabilities > 0]
+        entropy = -np.sum(p_nonzero * np.log(p_nonzero))
+
+        return {
+            "Z": float(Z),
+            "probabilities": probabilities.tolist(),
+            "entropy": float(entropy),
+            "mean_omega": float(np.mean(omegas[finite_mask])),
+            "min_omega": float(np.min(omegas[finite_mask])),
+            "max_omega": float(np.max(omegas[finite_mask])) if np.any(finite_mask) else np.inf,
+        }
+
+    def compute_coherence_score(
+        self,
+        theta: np.ndarray,
+        r: np.ndarray,
+    ) -> float:
+        """
+        Compute a normalized coherence score in [0, 1].
+
+            Coherence = 1 / (1 + ln(Ω))
+
+        High coherence (→1): State is harmonically aligned
+        Low coherence (→0): State is dissonant/distant
+
+        Args:
+            theta: Angular coordinates
+            r: Langues parameters
+
+        Returns:
+            Coherence score in [0, 1]
+        """
+        omega = self.compute_omega(theta, r)
+
+        if np.isinf(omega):
+            return 0.0
+
+        # Map Ω ∈ [1, ∞) to coherence ∈ (0, 1]
+        coherence = 1.0 / (1.0 + np.log(omega))
+
+        return float(np.clip(coherence, 0.0, 1.0))
+
+    def get_formula_latex(self) -> str:
+        """
+        Return the LaTeX representation of the Grand Unified Formula.
+        """
+        return r"""
+Grand Unified Symphonic Cipher Formula (GUSCF):
+
+    \Omega(\theta, r; \mathbf{D}) = H(d_T, R) \cdot (\det G_\Omega)^{\frac{1}{2n}} \cdot \varphi^{\frac{D_f}{n}}
+
+Where:
+    H(d_T, R) = 1 + \alpha \tanh(\beta \cdot d_T)     [Harmonic Scaling Law]
+    G_\Omega = G_T \odot G_L                          [Coupled Metric Tensor]
+    G_T = \text{Riemannian metric on } T^n            [Hyper-Torus]
+    G_L = \Lambda(r)^T \Lambda(r)                     [Langues Metric]
+    D_f = \frac{\partial \ln \det G_L}{\partial \ln \epsilon}  [Fractal Dimension]
+    \varphi = \frac{1 + \sqrt{5}}{2} \approx 1.618    [Golden Ratio]
+
+Alternative Forms:
+
+1. Logarithmic (additive):
+    \ln \Omega = \ln H + \frac{1}{2n} \ln \det G_\Omega + \frac{D_f}{n} \ln \varphi
+
+2. Action Integral:
+    S[\gamma] = \int_\gamma \Omega(\theta(t), r; \mathbf{D}) \, dt
+
+3. Partition Function:
+    Z = \sum_{\text{states}} \exp\left(-\frac{\Omega}{T}\right)
+
+4. Tensor Form:
+    \Omega_{ij} = H \cdot (G_T \odot G_L)_{ij} \cdot \varphi^{D_f/n}
+"""
+
+    def __repr__(self) -> str:
+        return (
+            f"GrandUnifiedSymphonicCipher(n_dims={self.n_dims}, "
+            f"α={self.alpha}, β={self.beta}, ε={self.epsilon}, φ={self.phi:.6f})"
+        )
+
+
+# =============================================================================
 # EXPORTS
 # =============================================================================
 
@@ -2042,6 +2469,9 @@ __all__ = [
     # Hyper-Torus Manifold (N-Dimensional Geometric Ledger)
     "HyperTorusManifold",
     "DimensionMode",
+
+    # Grand Unified Symphonic Cipher Formula
+    "GrandUnifiedSymphonicCipher",
 
     # Hyperbolic geometry
     "hyperbolic_distance_poincare",

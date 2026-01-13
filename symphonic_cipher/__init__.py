@@ -65,6 +65,8 @@ from .harmonic_scaling_law import (
     # Hyper-Torus Manifold
     HyperTorusManifold,
     DimensionMode,
+    # Grand Unified Symphonic Cipher Formula
+    GrandUnifiedSymphonicCipher,
     # Constants
     PHI,
     LANGUES_DIMENSIONS,
@@ -120,6 +122,8 @@ __all__ = [
     # Hyper-Torus Manifold (N-Dimensional Geometric Ledger)
     "HyperTorusManifold",
     "DimensionMode",
+    # Grand Unified Symphonic Cipher Formula (GUSCF)
+    "GrandUnifiedSymphonicCipher",
     # Constants
     "PHI",
     "LANGUES_DIMENSIONS",

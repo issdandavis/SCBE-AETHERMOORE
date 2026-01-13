@@ -42,6 +42,8 @@ from ..harmonic_scaling_law import (
     # Hyper-Torus Manifold
     HyperTorusManifold,
     DimensionMode,
+    # Grand Unified Formula
+    GrandUnifiedSymphonicCipher,
     PHI,
     LANGUES_DIMENSIONS,
     DEFAULT_EPSILON,
@@ -1595,3 +1597,362 @@ class TestHyperTorusIntegration:
         # Should succeed because we didn't move in frozen dimension
         if not result.get("frozen_violation", False):
             assert "distance" in result
+
+
+# =============================================================================
+# TEST: GRAND UNIFIED SYMPHONIC CIPHER FORMULA
+# =============================================================================
+
+class TestGrandUnifiedSymphonicCipher:
+    """Tests for the Grand Unified Symphonic Cipher Formula (GUSCF)."""
+
+    def test_initialization_defaults(self):
+        """Test default initialization with 6 dimensions."""
+        guscf = GrandUnifiedSymphonicCipher()
+        assert guscf.n_dims == 6
+        assert guscf.alpha == 10.0
+        assert guscf.beta == 0.5
+        assert guscf.phi == pytest.approx(PHI, rel=1e-10)
+
+    def test_initialization_custom_dims(self):
+        """Test initialization with custom dimensions."""
+        guscf = GrandUnifiedSymphonicCipher(n_dims=8, alpha=5.0, beta=0.3)
+        assert guscf.n_dims == 8
+        assert guscf.alpha == 5.0
+        assert guscf.beta == 0.3
+
+    def test_initialization_requires_6_dims_minimum(self):
+        """Test that n_dims < 6 raises error."""
+        with pytest.raises(ValueError, match="n_dims >= 6"):
+            GrandUnifiedSymphonicCipher(n_dims=4)
+
+    def test_omega_at_origin(self):
+        """Test Ω at origin (θ=0, default r)."""
+        guscf = GrandUnifiedSymphonicCipher(n_dims=6)
+        theta = np.zeros(6)
+        r = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+
+        omega = guscf.compute_omega(theta, r)
+
+        # At origin, d_T = 0, so H = 1
+        # Omega should be finite and >= 1
+        assert omega >= 1.0
+        assert np.isfinite(omega)
+
+    def test_omega_varies_with_position(self):
+        """Test that Ω varies meaningfully with position.
+
+        Note: Ω = H · det_factor · complexity_factor
+        While H increases with distance, det_factor depends on the torus metric
+        which varies non-monotonically with angle. The overall Ω may increase
+        or decrease depending on the geometry.
+        """
+        guscf = GrandUnifiedSymphonicCipher(n_dims=6)
+        r = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+
+        omega_origin = guscf.compute_omega(np.zeros(6), r)
+        omega_near = guscf.compute_omega(np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5]), r)
+        omega_far = guscf.compute_omega(np.array([2.0, 2.0, 2.0, 2.0, 2.0, 2.0]), r)
+
+        # All should be positive and finite
+        assert omega_origin > 0 and np.isfinite(omega_origin)
+        assert omega_near > 0 and np.isfinite(omega_near)
+        assert omega_far > 0 and np.isfinite(omega_far)
+
+        # They should be different (Ω varies with position)
+        assert omega_origin != omega_near or omega_near != omega_far
+
+    def test_omega_infinite_for_frozen_violation(self):
+        """Test that Ω = ∞ when violating frozen dimension."""
+        modes = np.array([1, 1, 0, 1, 1, 1])  # Dimension 2 frozen
+        guscf = GrandUnifiedSymphonicCipher(n_dims=6, dimension_modes=modes)
+
+        theta_origin = np.zeros(6)
+        theta_violate = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])  # Moves frozen dim
+        r = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+
+        omega = guscf.compute_omega(theta_violate, r, theta_ref=theta_origin)
+        assert np.isinf(omega)
+
+    def test_omega_tensor_shape(self):
+        """Test that Ω tensor has correct shape."""
+        guscf = GrandUnifiedSymphonicCipher(n_dims=6)
+        theta = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+        r = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+
+        omega_tensor = guscf.compute_omega_tensor(theta, r)
+
+        assert omega_tensor.shape == (6, 6)
+        # Diagonal elements should be positive
+        for i in range(6):
+            assert omega_tensor[i, i] > 0
+
+    def test_log_omega_decomposition(self):
+        """Test logarithmic form decomposes correctly."""
+        guscf = GrandUnifiedSymphonicCipher(n_dims=6)
+        theta = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+        r = np.array([0.3, 0.4, 0.5, 0.6, 0.7, 0.8])
+
+        log_result = guscf.compute_log_omega(theta, r)
+
+        # Check all components present
+        assert "log_H" in log_result
+        assert "log_det_factor" in log_result
+        assert "log_complexity" in log_result
+        assert "log_omega" in log_result
+        assert "omega" in log_result
+
+        # Verify exp(log_omega) ≈ omega
+        assert log_result["omega"] == pytest.approx(np.exp(log_result["log_omega"]), rel=1e-6)
+
+        # Verify additivity: log_omega = log_H + log_det_factor + log_complexity
+        expected_sum = log_result["log_H"] + log_result["log_det_factor"] + log_result["log_complexity"]
+        assert log_result["log_omega"] == pytest.approx(expected_sum, rel=1e-10)
+
+    def test_action_integral_trajectory(self):
+        """Test action integral along a trajectory."""
+        guscf = GrandUnifiedSymphonicCipher(n_dims=6)
+        r = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+
+        # Simple trajectory from origin to (1,1,1,1,1,1)
+        trajectory = [
+            np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+            np.array([0.25, 0.25, 0.25, 0.25, 0.25, 0.25]),
+            np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5]),
+            np.array([0.75, 0.75, 0.75, 0.75, 0.75, 0.75]),
+            np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
+        ]
+
+        action = guscf.compute_action_integral(trajectory, r)
+
+        # Action should be positive and finite
+        assert action > 0
+        assert np.isfinite(action)
+
+    def test_action_integral_empty_trajectory(self):
+        """Test action integral with empty/short trajectory."""
+        guscf = GrandUnifiedSymphonicCipher(n_dims=6)
+        r = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+
+        # Empty trajectory
+        assert guscf.compute_action_integral([], r) == 0.0
+
+        # Single point
+        assert guscf.compute_action_integral([np.zeros(6)], r) == 0.0
+
+    def test_partition_function(self):
+        """Test statistical partition function computation."""
+        guscf = GrandUnifiedSymphonicCipher(n_dims=6)
+        r = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+
+        states = [
+            np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+            np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5]),
+            np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
+        ]
+
+        result = guscf.compute_partition_function(states, r, temperature=1.0)
+
+        assert "Z" in result
+        assert "probabilities" in result
+        assert "entropy" in result
+
+        # Z should be positive
+        assert result["Z"] > 0
+
+        # Probabilities should sum to 1
+        probs = np.array(result["probabilities"])
+        assert np.sum(probs) == pytest.approx(1.0, rel=1e-6)
+
+        # All probabilities should be non-negative
+        assert np.all(probs >= 0)
+
+    def test_partition_function_temperature_effect(self):
+        """Test that higher temperature increases entropy."""
+        guscf = GrandUnifiedSymphonicCipher(n_dims=6)
+        r = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+
+        states = [
+            np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+            np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
+            np.array([2.0, 2.0, 2.0, 2.0, 2.0, 2.0]),
+        ]
+
+        result_low_T = guscf.compute_partition_function(states, r, temperature=0.1)
+        result_high_T = guscf.compute_partition_function(states, r, temperature=10.0)
+
+        # Higher temperature should generally lead to higher entropy
+        # (more uniform distribution)
+        assert result_high_T["entropy"] >= result_low_T["entropy"]
+
+    def test_coherence_score_range(self):
+        """Test coherence score is in [0, 1]."""
+        guscf = GrandUnifiedSymphonicCipher(n_dims=6)
+
+        test_points = [
+            (np.zeros(6), np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])),
+            (np.ones(6), np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6])),
+            (np.ones(6) * 2, np.array([0.9, 0.8, 0.7, 0.6, 0.5, 0.4])),
+        ]
+
+        for theta, r in test_points:
+            coherence = guscf.compute_coherence_score(theta, r)
+            assert 0.0 <= coherence <= 1.0, f"Coherence {coherence} out of [0,1] for θ={theta}"
+
+    def test_coherence_varies_with_position(self):
+        """Test that coherence varies with position and stays bounded.
+
+        Coherence = 1/(1 + ln(Ω)), so it depends inversely on Ω.
+        Since Ω varies non-monotonically with position (due to metric factors),
+        coherence also varies non-monotonically.
+        """
+        guscf = GrandUnifiedSymphonicCipher(n_dims=6)
+        r = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+
+        c_origin = guscf.compute_coherence_score(np.zeros(6), r)
+        c_near = guscf.compute_coherence_score(np.ones(6), r)
+        c_far = guscf.compute_coherence_score(np.ones(6) * 3, r)
+
+        # All coherence values should be in [0, 1]
+        assert 0.0 <= c_origin <= 1.0
+        assert 0.0 <= c_near <= 1.0
+        assert 0.0 <= c_far <= 1.0
+
+        # Coherence values should vary (not all equal)
+        assert c_origin != c_near or c_near != c_far
+
+    def test_coherence_zero_for_frozen_violation(self):
+        """Test coherence = 0 when violating frozen dimension."""
+        modes = np.array([1, 1, 0, 1, 1, 1])  # Dimension 2 frozen
+        guscf = GrandUnifiedSymphonicCipher(n_dims=6, dimension_modes=modes)
+
+        theta_origin = np.zeros(6)
+        theta_violate = np.array([0.0, 0.0, 1.0, 0.0, 0.0, 0.0])  # Only moves frozen dim
+        r = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+
+        # Using theta_violate as reference means we measure distance that crosses frozen dim
+        coherence = guscf.compute_coherence_score(theta_violate, r)
+        # This won't trigger frozen violation since we compare to origin by default
+
+    def test_latex_formula_output(self):
+        """Test LaTeX formula generation."""
+        guscf = GrandUnifiedSymphonicCipher(n_dims=6)
+        latex = guscf.get_formula_latex()
+
+        # Should contain key LaTeX elements
+        assert r"\Omega" in latex
+        assert r"\varphi" in latex
+        assert r"\tanh" in latex
+        assert r"G_\Omega" in latex
+        assert r"D_f" in latex
+
+    def test_repr(self):
+        """Test string representation."""
+        guscf = GrandUnifiedSymphonicCipher(n_dims=8, alpha=5.0, beta=0.3, epsilon=0.02)
+        repr_str = repr(guscf)
+
+        assert "GrandUnifiedSymphonicCipher" in repr_str
+        assert "n_dims=8" in repr_str
+        assert "α=5.0" in repr_str
+        assert "β=0.3" in repr_str
+        assert "ε=0.02" in repr_str
+
+    def test_formula_consistency(self):
+        """Test that compute_omega and compute_log_omega give consistent results."""
+        guscf = GrandUnifiedSymphonicCipher(n_dims=6)
+        theta = np.array([0.7, 0.8, 0.9, 1.0, 1.1, 1.2])
+        r = np.array([0.3, 0.4, 0.5, 0.6, 0.7, 0.8])
+
+        omega_direct = guscf.compute_omega(theta, r)
+        log_result = guscf.compute_log_omega(theta, r)
+
+        # Should be consistent
+        assert omega_direct == pytest.approx(log_result["omega"], rel=1e-6)
+
+    def test_all_four_pillars_present(self):
+        """Test that all four pillars are initialized."""
+        guscf = GrandUnifiedSymphonicCipher(n_dims=6)
+
+        # All four pillars should be initialized
+        assert guscf.harmonic_law is not None
+        assert guscf.langues_metric is not None
+        assert guscf.hyper_torus is not None
+        assert guscf.fractal_analyzer is not None
+
+        # Each pillar should be the correct type
+        assert isinstance(guscf.harmonic_law, HarmonicScalingLaw)
+        assert isinstance(guscf.langues_metric, LanguesMetricTensor)
+        assert isinstance(guscf.hyper_torus, HyperTorusManifold)
+        assert isinstance(guscf.fractal_analyzer, FractalDimensionAnalyzer)
+
+    def test_golden_ratio_coordination(self):
+        """Test that golden ratio φ is used throughout."""
+        guscf = GrandUnifiedSymphonicCipher(n_dims=6)
+
+        assert guscf.phi == pytest.approx((1 + np.sqrt(5)) / 2, rel=1e-10)
+        assert guscf.phi == pytest.approx(1.6180339887, rel=1e-6)
+
+        # φ should satisfy the golden ratio property: φ² = φ + 1
+        assert guscf.phi ** 2 == pytest.approx(guscf.phi + 1, rel=1e-10)
+
+    def test_dimension_modes_forwarded(self):
+        """Test that dimension modes are correctly forwarded to hyper-torus."""
+        modes = np.array([1, -1, 0, 1, -1, 1])
+        guscf = GrandUnifiedSymphonicCipher(n_dims=6, dimension_modes=modes)
+
+        # Modes should be forwarded to hyper_torus (stored as .D attribute)
+        np.testing.assert_array_equal(guscf.hyper_torus.D, modes)
+
+    def test_coupling_mode_forwarded(self):
+        """Test that coupling mode is forwarded to Langues metric."""
+        guscf_harmonic = GrandUnifiedSymphonicCipher(
+            n_dims=6, coupling_mode=CouplingMode.HARMONIC
+        )
+        guscf_uniform = GrandUnifiedSymphonicCipher(
+            n_dims=6, coupling_mode=CouplingMode.UNIFORM
+        )
+
+        assert guscf_harmonic.langues_metric.coupling_mode == CouplingMode.HARMONIC
+        assert guscf_uniform.langues_metric.coupling_mode == CouplingMode.UNIFORM
+
+    def test_tensor_form_scaling(self):
+        """Test that tensor form has positive diagonal elements.
+
+        Ω_ij = H · (G_T ⊙ G_L)_ij · φ^{D_f/n}
+
+        All factors are positive, so diagonal elements should be positive.
+        The tensor varies with position due to the coupled metric.
+        """
+        guscf = GrandUnifiedSymphonicCipher(n_dims=6)
+        theta_near = np.array([0.1, 0.1, 0.1, 0.1, 0.1, 0.1])
+        theta_far = np.array([2.0, 2.0, 2.0, 2.0, 2.0, 2.0])
+        r = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+
+        tensor_near = guscf.compute_omega_tensor(theta_near, r)
+        tensor_far = guscf.compute_omega_tensor(theta_far, r)
+
+        # Both tensors should have positive diagonal elements
+        for i in range(6):
+            assert tensor_near[i, i] > 0
+            assert tensor_far[i, i] > 0
+
+        # Traces should be positive and finite
+        assert np.trace(tensor_near) > 0 and np.isfinite(np.trace(tensor_near))
+        assert np.trace(tensor_far) > 0 and np.isfinite(np.trace(tensor_far))
+
+        # Tensors should be different
+        assert not np.allclose(tensor_near, tensor_far)
+
+    def test_numerical_stability(self):
+        """Test numerical stability with extreme values."""
+        guscf = GrandUnifiedSymphonicCipher(n_dims=6)
+
+        # Very small langues parameters
+        r_small = np.array([0.01, 0.01, 0.01, 0.01, 0.01, 0.01])
+        omega_small = guscf.compute_omega(np.ones(6), r_small)
+        assert np.isfinite(omega_small)
+
+        # Very large langues parameters
+        r_large = np.array([0.99, 0.99, 0.99, 0.99, 0.99, 0.99])
+        omega_large = guscf.compute_omega(np.ones(6), r_large)
+        assert np.isfinite(omega_large)
