@@ -69,6 +69,9 @@ from .harmonic_scaling_law import (
     GrandUnifiedSymphonicCipher,
     # Differential Cryptography Framework
     DifferentialCryptographyFramework,
+    # Polyhedral Hamiltonian Defense Manifold
+    Polyhedron,
+    PolyhedralHamiltonianDefense,
     # Constants
     PHI,
     LANGUES_DIMENSIONS,
@@ -128,6 +131,9 @@ __all__ = [
     "GrandUnifiedSymphonicCipher",
     # Differential Cryptography Framework
     "DifferentialCryptographyFramework",
+    # Polyhedral Hamiltonian Defense Manifold
+    "Polyhedron",
+    "PolyhedralHamiltonianDefense",
     # Constants
     "PHI",
     "LANGUES_DIMENSIONS",

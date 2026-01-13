@@ -2418,3 +2418,388 @@ class TestDifferentialCryptographyFramework:
         # Key should remain in reasonable bounds
         assert np.max(k) < 1000
         assert np.min(k) > 0.001
+
+
+# =============================================================================
+# POLYHEDRAL HAMILTONIAN DEFENSE MANIFOLD (PHDM) TESTS
+# =============================================================================
+
+class TestPolyhedralHamiltonianDefense:
+    """Test suite for Polyhedral Hamiltonian Defense Manifold."""
+
+    def test_import(self):
+        """Test that PHDM classes can be imported."""
+        from symphonic_cipher.harmonic_scaling_law import (
+            Polyhedron,
+            PolyhedralHamiltonianDefense
+        )
+
+    def test_polyhedron_creation(self):
+        """Test Polyhedron dataclass."""
+        from symphonic_cipher.harmonic_scaling_law import Polyhedron
+
+        P = Polyhedron(
+            name="Tetrahedron",
+            vertices=4,
+            edges=6,
+            faces=4,
+            centroid=np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5]),
+            symmetry_order=12,
+            genus=0
+        )
+
+        assert P.name == "Tetrahedron"
+        assert P.vertices == 4
+        assert P.edges == 6
+        assert P.faces == 4
+        assert P.symmetry_order == 12
+        assert P.genus == 0
+
+    def test_euler_characteristic(self):
+        """Test Euler characteristic: V - E + F = 2(1 - g)."""
+        from symphonic_cipher.harmonic_scaling_law import Polyhedron
+
+        # Tetrahedron: V=4, E=6, F=4, chi = 4 - 6 + 4 = 2
+        tetra = Polyhedron(
+            name="Tetrahedron",
+            vertices=4,
+            edges=6,
+            faces=4,
+            centroid=np.zeros(6),
+            symmetry_order=12,
+            genus=0
+        )
+        assert tetra.euler_characteristic() == 2
+
+        # Torus (genus=1): chi = 0
+        torus = Polyhedron(
+            name="Torus",
+            vertices=16,
+            edges=32,
+            faces=16,
+            centroid=np.zeros(6),
+            genus=1
+        )
+        assert torus.euler_characteristic() == 0
+
+    def test_topological_invariant(self):
+        """Test topological invariant hash."""
+        from symphonic_cipher.harmonic_scaling_law import Polyhedron
+
+        P = Polyhedron(
+            name="Cube",
+            vertices=8,
+            edges=12,
+            faces=6,
+            centroid=np.zeros(6),
+            symmetry_order=24,
+            genus=0
+        )
+
+        inv = P.topological_invariant()
+        assert isinstance(inv, bytes)
+        assert len(inv) == 32  # SHA256
+
+    def test_phdm_initialization(self):
+        """Test PHDM initialization."""
+        from symphonic_cipher.harmonic_scaling_law import PolyhedralHamiltonianDefense
+
+        phdm = PolyhedralHamiltonianDefense(epsilon_snap=0.1)
+
+        assert phdm.epsilon_snap == 0.1
+        assert len(phdm.polyhedra) == 16  # 16 canonical polyhedra
+        assert len(phdm.hamiltonian_path) == 16  # Path visits all
+
+    def test_hamiltonian_path_visits_all(self):
+        """Test Hamiltonian path visits each polyhedron exactly once."""
+        from symphonic_cipher.harmonic_scaling_law import PolyhedralHamiltonianDefense
+
+        phdm = PolyhedralHamiltonianDefense()
+
+        # Path should visit all polyhedra
+        visited = set(phdm.hamiltonian_path)
+        assert len(visited) == len(phdm.polyhedra)
+        assert visited == set(range(len(phdm.polyhedra)))
+
+    def test_key_chain_derivation(self):
+        """Test sequential HMAC key chain derivation."""
+        from symphonic_cipher.harmonic_scaling_law import PolyhedralHamiltonianDefense
+
+        phdm = PolyhedralHamiltonianDefense()
+        chain = phdm.derive_key_chain(initial_key=b"test_seed_key")
+
+        # Chain should have same length as path
+        assert len(chain) == len(phdm.hamiltonian_path)
+
+        # Each entry should be (Polyhedron, key_bytes)
+        for P, key in chain:
+            assert hasattr(P, 'name')
+            assert isinstance(key, bytes)
+            assert len(key) == 32  # HMAC-SHA256 output
+
+    def test_key_chain_sequential_dependency(self):
+        """Test that keys depend sequentially on predecessors."""
+        from symphonic_cipher.harmonic_scaling_law import PolyhedralHamiltonianDefense
+
+        phdm = PolyhedralHamiltonianDefense()
+        chain1 = phdm.derive_key_chain(initial_key=b"seed1")
+        chain2 = phdm.derive_key_chain(initial_key=b"seed2")
+
+        # Different seeds should give different keys
+        assert chain1[0][1] != chain2[0][1]
+
+        # Same seed should be deterministic
+        chain3 = phdm.derive_key_chain(initial_key=b"seed1")
+        assert chain1[0][1] == chain3[0][1]
+        assert chain1[-1][1] == chain3[-1][1]
+
+    def test_geodesic_curve_computation(self):
+        """Test geodesic curve γ(t) computation."""
+        from symphonic_cipher.harmonic_scaling_law import PolyhedralHamiltonianDefense
+
+        phdm = PolyhedralHamiltonianDefense()
+        gamma = phdm.compute_geodesic_curve(n_points=100)
+
+        # Curve should have correct shape
+        assert gamma.shape == (100, 6)
+
+        # Curve should be finite
+        assert np.all(np.isfinite(gamma))
+
+        # Curve should pass near centroids
+        first_centroid = phdm.polyhedra[phdm.hamiltonian_path[0]].centroid
+        dist_to_first = np.linalg.norm(gamma[0] - first_centroid)
+        assert dist_to_first < 0.1  # Should be very close
+
+    def test_curve_curvature_computation(self):
+        """Test curvature κ(t) computation along geodesic."""
+        from symphonic_cipher.harmonic_scaling_law import PolyhedralHamiltonianDefense
+
+        phdm = PolyhedralHamiltonianDefense()
+        curvature = phdm.compute_curve_curvature()
+
+        # Curvature should be non-negative
+        assert np.all(curvature >= 0)
+
+        # Curvature should be finite
+        assert np.all(np.isfinite(curvature))
+
+    def test_intrusion_detection_clean(self):
+        """Test intrusion detection with clean (on-path) states."""
+        from symphonic_cipher.harmonic_scaling_law import PolyhedralHamiltonianDefense
+
+        # Use large epsilon to tolerate numerical precision issues in Langues metric
+        phdm = PolyhedralHamiltonianDefense(epsilon_snap=5.0)
+        gamma = phdm.compute_geodesic_curve(n_points=50)
+
+        # Use exact geodesic points as states
+        states = [gamma[i] for i in range(len(gamma))]
+        timestamps = np.linspace(0, 1, len(states))
+
+        result = phdm.detect_intrusion(states, timestamps)
+
+        assert "intrusion_detected" in result
+        assert "deviations" in result
+        assert "rhythm_pattern" in result
+
+        # Deviations should be small for on-path states
+        deviations = np.array(result["deviations"])
+        assert np.max(deviations) < 5.0  # Within epsilon threshold
+
+        # Most points should be on-path
+        assert result["on_path_ratio"] > 0.9
+
+    def test_intrusion_detection_attack(self):
+        """Test intrusion detection with attack (off-path) states."""
+        from symphonic_cipher.harmonic_scaling_law import PolyhedralHamiltonianDefense
+
+        phdm = PolyhedralHamiltonianDefense(epsilon_snap=0.1)
+        gamma = phdm.compute_geodesic_curve(n_points=50)
+
+        # Inject large deviation at midpoint
+        states = [gamma[i].copy() for i in range(len(gamma))]
+        states[25] = gamma[25] + np.array([10.0, 10.0, 10.0, 10.0, 10.0, 10.0])
+
+        timestamps = np.linspace(0, 1, len(states))
+        result = phdm.detect_intrusion(states, timestamps)
+
+        # SHOULD detect intrusion
+        assert result["intrusion_detected"] == True
+        assert result["intrusion_count"] >= 1
+
+    def test_rhythm_pattern_format(self):
+        """Test 1-0 rhythm pattern format."""
+        from symphonic_cipher.harmonic_scaling_law import PolyhedralHamiltonianDefense
+
+        # Use large epsilon to tolerate numerical precision
+        phdm = PolyhedralHamiltonianDefense(epsilon_snap=5.0)
+        gamma = phdm.compute_geodesic_curve(n_points=20)
+
+        states = [gamma[i] for i in range(len(gamma))]
+        timestamps = np.linspace(0, 1, len(states))
+
+        result = phdm.detect_intrusion(states, timestamps)
+
+        # Rhythm pattern should be binary string of 1s and 0s
+        rhythm = result["rhythm_pattern"]
+        assert all(c in "01" for c in rhythm)
+        assert len(rhythm) == len(states)
+
+    def test_attack_simulation_deviation(self):
+        """Test deviation attack simulation."""
+        from symphonic_cipher.harmonic_scaling_law import PolyhedralHamiltonianDefense
+
+        phdm = PolyhedralHamiltonianDefense(epsilon_snap=0.05)
+
+        result = phdm.simulate_attack(
+            attack_type="deviation",
+            attack_magnitude=2.0,
+            attack_position=0.5
+        )
+
+        assert result["attack_type"] == "deviation"
+        assert "attack_detected" in result
+        assert "detection_details" in result
+
+        # Large deviation should be detected
+        assert result["attack_detected"] == True
+
+    def test_attack_simulation_skip(self):
+        """Test skip attack simulation."""
+        from symphonic_cipher.harmonic_scaling_law import PolyhedralHamiltonianDefense
+
+        phdm = PolyhedralHamiltonianDefense(epsilon_snap=0.1)
+
+        result = phdm.simulate_attack(
+            attack_type="skip",
+            attack_magnitude=2.0,
+            attack_position=0.3
+        )
+
+        assert result["attack_type"] == "skip"
+        assert "attack_detected" in result
+
+    def test_attack_simulation_curvature(self):
+        """Test curvature attack simulation."""
+        from symphonic_cipher.harmonic_scaling_law import PolyhedralHamiltonianDefense
+
+        phdm = PolyhedralHamiltonianDefense(epsilon_snap=0.1)
+
+        result = phdm.simulate_attack(
+            attack_type="curvature",
+            attack_magnitude=5.0,
+            attack_position=0.7
+        )
+
+        assert result["attack_type"] == "curvature"
+        assert "attack_detected" in result
+
+    def test_key_chain_integrity_valid(self):
+        """Test key chain integrity verification (valid chain)."""
+        from symphonic_cipher.harmonic_scaling_law import PolyhedralHamiltonianDefense
+
+        phdm = PolyhedralHamiltonianDefense()
+        chain = phdm.derive_key_chain(initial_key=b"integrity_test")
+
+        # Verify with same seed
+        result = phdm.verify_chain_integrity(chain, initial_key=b"integrity_test")
+
+        assert result["valid"] == True
+        assert result["integrity_ratio"] == 1.0
+
+    def test_key_chain_integrity_tampered(self):
+        """Test key chain integrity with tampered key."""
+        from symphonic_cipher.harmonic_scaling_law import PolyhedralHamiltonianDefense
+
+        phdm = PolyhedralHamiltonianDefense()
+        chain = phdm.derive_key_chain(initial_key=b"integrity_test")
+
+        # Tamper with a key in the middle
+        tampered_chain = list(chain)
+        P, key = tampered_chain[5]
+        tampered_chain[5] = (P, b"X" * 32)  # Fake key
+
+        result = phdm.verify_chain_integrity(tampered_chain, initial_key=b"integrity_test")
+
+        assert result["valid"] == False
+        assert result["integrity_ratio"] < 1.0
+
+    def test_path_summary(self):
+        """Test path summary output."""
+        from symphonic_cipher.harmonic_scaling_law import PolyhedralHamiltonianDefense
+
+        phdm = PolyhedralHamiltonianDefense()
+        summary = phdm.get_path_summary()
+
+        assert "Polyhedral Hamiltonian Path" in summary
+        assert "Tetrahedron" in summary or "Cube" in summary
+        assert "V=" in summary
+        assert "E=" in summary
+        assert "F=" in summary
+
+    def test_defense_equations(self):
+        """Test defense equations documentation."""
+        from symphonic_cipher.harmonic_scaling_law import PolyhedralHamiltonianDefense
+
+        phdm = PolyhedralHamiltonianDefense()
+        equations = phdm.get_defense_equations()
+
+        # Should contain key concepts
+        assert "HAMILTONIAN" in equations
+        assert "GEODESIC" in equations
+        assert "CURVATURE" in equations
+        assert "HMAC" in equations
+        assert "γ" in equations  # Geodesic curve
+        assert "κ(t)" in equations  # Curvature
+        assert "ε_snap" in equations  # Snap threshold
+
+    def test_threat_velocity(self):
+        """Test threat velocity computation."""
+        from symphonic_cipher.harmonic_scaling_law import PolyhedralHamiltonianDefense
+
+        phdm = PolyhedralHamiltonianDefense()
+        gamma = phdm.compute_geodesic_curve(n_points=50)
+
+        # Create states that drift away
+        states = [gamma[i].copy() for i in range(len(gamma))]
+        for i in range(25, 50):
+            states[i] = gamma[i] + np.ones(6) * (i - 25) * 0.1  # Increasing drift
+
+        timestamps = np.linspace(0, 1, len(states))
+        result = phdm.detect_intrusion(states, timestamps)
+
+        # Should have threat velocity data
+        assert "threat_velocities" in result
+        assert len(result["threat_velocities"]) == len(states)
+
+        # Velocity should increase during drift
+        velocities = result["threat_velocities"]
+        assert velocities[30] > velocities[10]  # More velocity during attack
+
+    def test_curvature_anomaly_detection(self):
+        """Test that high curvature anomalies are flagged."""
+        from symphonic_cipher.harmonic_scaling_law import PolyhedralHamiltonianDefense
+
+        phdm = PolyhedralHamiltonianDefense()
+        gamma = phdm.compute_geodesic_curve(n_points=100)
+
+        result = phdm.detect_intrusion(
+            [gamma[i] for i in range(len(gamma))],
+            np.linspace(0, 1, len(gamma))
+        )
+
+        assert "max_curvature" in result
+        assert "mean_curvature" in result
+        assert np.isfinite(result["max_curvature"])
+        assert np.isfinite(result["mean_curvature"])
+
+    def test_repr(self):
+        """Test PHDM string representation."""
+        from symphonic_cipher.harmonic_scaling_law import PolyhedralHamiltonianDefense
+
+        phdm = PolyhedralHamiltonianDefense(epsilon_snap=0.123)
+        repr_str = repr(phdm)
+
+        assert "PolyhedralHamiltonianDefense" in repr_str
+        assert "16" in repr_str  # n_polyhedra
+        assert "0.123" in repr_str  # epsilon_snap
