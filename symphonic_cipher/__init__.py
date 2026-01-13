@@ -67,6 +67,8 @@ from .harmonic_scaling_law import (
     DimensionMode,
     # Grand Unified Symphonic Cipher Formula
     GrandUnifiedSymphonicCipher,
+    # Differential Cryptography Framework
+    DifferentialCryptographyFramework,
     # Constants
     PHI,
     LANGUES_DIMENSIONS,
@@ -124,6 +126,8 @@ __all__ = [
     "DimensionMode",
     # Grand Unified Symphonic Cipher Formula (GUSCF)
     "GrandUnifiedSymphonicCipher",
+    # Differential Cryptography Framework
+    "DifferentialCryptographyFramework",
     # Constants
     "PHI",
     "LANGUES_DIMENSIONS",
