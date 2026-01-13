@@ -54,14 +54,19 @@ from .harmonic_scaling_law import (
     verify_test_vectors,
     # Langues Metric Tensor
     LanguesMetricTensor,
+    CouplingMode,
     create_coupling_matrix,
     create_baseline_metric,
+    get_epsilon_threshold,
     compute_langues_metric_distance,
     validate_langues_metric_stability,
     PHI,
     LANGUES_DIMENSIONS,
     DEFAULT_EPSILON,
     EPSILON_THRESHOLD,
+    EPSILON_THRESHOLD_HARMONIC,
+    EPSILON_THRESHOLD_UNIFORM,
+    EPSILON_THRESHOLD_NORMALIZED,
 )
 
 __all__ = [
@@ -98,12 +103,17 @@ __all__ = [
     "verify_test_vectors",
     # Langues Metric Tensor (6D Weighting System)
     "LanguesMetricTensor",
+    "CouplingMode",
     "create_coupling_matrix",
     "create_baseline_metric",
+    "get_epsilon_threshold",
     "compute_langues_metric_distance",
     "validate_langues_metric_stability",
     "PHI",
     "LANGUES_DIMENSIONS",
     "DEFAULT_EPSILON",
     "EPSILON_THRESHOLD",
+    "EPSILON_THRESHOLD_HARMONIC",
+    "EPSILON_THRESHOLD_UNIFORM",
+    "EPSILON_THRESHOLD_NORMALIZED",
 ]

@@ -31,14 +31,19 @@ from ..harmonic_scaling_law import (
     TEST_VECTORS,
     # Langues Metric Tensor
     LanguesMetricTensor,
+    CouplingMode,
     create_coupling_matrix,
     create_baseline_metric,
+    get_epsilon_threshold,
     compute_langues_metric_distance,
     validate_langues_metric_stability,
     PHI,
     LANGUES_DIMENSIONS,
     DEFAULT_EPSILON,
     EPSILON_THRESHOLD,
+    EPSILON_THRESHOLD_HARMONIC,
+    EPSILON_THRESHOLD_UNIFORM,
+    EPSILON_THRESHOLD_NORMALIZED,
 )
 
 
@@ -508,61 +513,92 @@ class TestLanguesMetricTensor:
     """Tests for the 6-dimensional Langues Metric Tensor."""
 
     def test_initialization_defaults(self):
-        """Test default initialization."""
+        """Test default initialization with NORMALIZED mode."""
         tensor = LanguesMetricTensor()
         assert tensor.R == PHI
         assert tensor.epsilon == DEFAULT_EPSILON
         assert tensor.n_dims == LANGUES_DIMENSIONS
+        assert tensor.mode == CouplingMode.NORMALIZED
 
     def test_initialization_custom_epsilon(self):
         """Test custom epsilon initialization."""
         tensor = LanguesMetricTensor(epsilon=0.03)
         assert tensor.epsilon == 0.03
 
-    def test_epsilon_threshold_validation(self):
-        """Test that epsilon >= threshold raises error when validation enabled."""
+    def test_epsilon_threshold_validation_normalized(self):
+        """Test that epsilon >= threshold raises error for NORMALIZED mode."""
+        # NORMALIZED mode has ε* ≈ 0.083, so 0.15 should fail
         with pytest.raises(ValueError, match="epsilon.*must be < threshold"):
-            LanguesMetricTensor(epsilon=0.15, validate_epsilon=True)
+            LanguesMetricTensor(epsilon=0.15, mode=CouplingMode.NORMALIZED, validate_epsilon=True)
+
+    def test_epsilon_threshold_validation_harmonic(self):
+        """Test that epsilon >= threshold raises error for HARMONIC mode."""
+        # HARMONIC mode has ε* ≈ 3.67e-4, so even 0.001 should fail
+        with pytest.raises(ValueError, match="epsilon.*must be < threshold"):
+            LanguesMetricTensor(epsilon=0.001, mode=CouplingMode.HARMONIC, validate_epsilon=True)
 
     def test_epsilon_threshold_bypass(self):
         """Test that validation can be bypassed."""
         tensor = LanguesMetricTensor(epsilon=0.15, validate_epsilon=False)
         assert tensor.epsilon == 0.15
 
+    def test_coupling_mode_thresholds(self):
+        """Test rigorous epsilon thresholds for each mode."""
+        # HARMONIC: ε* = 1/(2φ^17) ≈ 3.67e-4
+        assert abs(EPSILON_THRESHOLD_HARMONIC - 1/(2 * PHI**17)) < 1e-10
+        assert abs(get_epsilon_threshold(CouplingMode.HARMONIC) - EPSILON_THRESHOLD_HARMONIC) < 1e-10
+
+        # UNIFORM: ε* = 1/(2*6) ≈ 0.083
+        assert abs(EPSILON_THRESHOLD_UNIFORM - 1/12) < 1e-10
+        assert abs(get_epsilon_threshold(CouplingMode.UNIFORM) - EPSILON_THRESHOLD_UNIFORM) < 1e-10
+
+        # NORMALIZED: ε* = 1/(2*6) ≈ 0.083
+        assert abs(EPSILON_THRESHOLD_NORMALIZED - 1/12) < 1e-10
+        assert abs(get_epsilon_threshold(CouplingMode.NORMALIZED) - EPSILON_THRESHOLD_NORMALIZED) < 1e-10
+
     def test_baseline_metric_shape(self):
         """Test baseline metric G_0 is 6x6."""
         G_0 = create_baseline_metric()
         assert G_0.shape == (6, 6)
 
-    def test_baseline_metric_diagonal(self):
-        """Test baseline metric is diagonal with correct values."""
+    def test_baseline_metric_diagonal_harmonic(self):
+        """Test baseline metric is diagonal with correct values for HARMONIC mode."""
         R = PHI
-        G_0 = create_baseline_metric(R)
+        G_0 = create_baseline_metric(R, mode=CouplingMode.HARMONIC)
         expected_diag = [1.0, 1.0, 1.0, R, R**2, R**3]
         np.testing.assert_array_almost_equal(np.diag(G_0), expected_diag)
+
+    def test_baseline_metric_uniform(self):
+        """Test baseline metric is identity for UNIFORM mode."""
+        G_0 = create_baseline_metric(mode=CouplingMode.UNIFORM)
+        np.testing.assert_array_almost_equal(G_0, np.eye(6))
 
     def test_coupling_matrix_shape(self):
         """Test coupling matrices are 6x6."""
         for k in range(6):
-            A_k = create_coupling_matrix(k)
+            A_k = create_coupling_matrix(k, mode=CouplingMode.NORMALIZED)
             assert A_k.shape == (6, 6)
 
     def test_coupling_matrix_diagonal(self):
         """Test coupling matrix has correct diagonal term."""
         R = PHI
         for k in range(6):
-            A_k = create_coupling_matrix(k, R=R, epsilon=0.05)
+            A_k = create_coupling_matrix(k, R=R, epsilon=0.05, mode=CouplingMode.HARMONIC)
             expected_diag = k * np.log(R) if k > 0 else 0.0
             assert abs(A_k[k, k] - expected_diag) < 1e-10
 
-    def test_coupling_matrix_off_diagonal(self):
-        """Test coupling matrix has correct off-diagonal (nearest-neighbor) terms."""
+    def test_coupling_matrix_normalized_off_diagonal(self):
+        """Test normalized coupling matrix has off-diagonal terms scaled by 1/sqrt(g_k*g_{k+1})."""
         epsilon = 0.05
+        R = PHI
+        G_0_diag = np.array([1.0, 1.0, 1.0, R, R**2, R**3])
         for k in range(6):
-            A_k = create_coupling_matrix(k, epsilon=epsilon)
+            A_k = create_coupling_matrix(k, R=R, epsilon=epsilon, mode=CouplingMode.NORMALIZED, G_0_diag=G_0_diag)
             k_next = (k + 1) % 6
-            assert abs(A_k[k, k_next] - epsilon) < 1e-10
-            assert abs(A_k[k_next, k] - epsilon) < 1e-10
+            normalizer = np.sqrt(G_0_diag[k] * G_0_diag[k_next])
+            expected = epsilon / normalizer
+            assert abs(A_k[k, k_next] - expected) < 1e-10
+            assert abs(A_k[k_next, k] - expected) < 1e-10
 
     def test_weight_operator_identity_at_zero(self):
         """Test that Λ(0) = I (identity)."""
