@@ -1423,6 +1423,497 @@ class FractalDimensionAnalyzer:
         }
 
 
+# =============================================================================
+# HYPER-TORUS MANIFOLD (N-DIMENSIONAL WITH SIGNED DIRECTION VECTORS)
+# =============================================================================
+
+class DimensionMode(Enum):
+    """
+    Dimension traversal modes for the Hyper-Torus.
+
+    FORWARD (+1): Normal forward traversal in this dimension
+    BACKWARD (-1): Reversed geodesic direction (asymmetric trust)
+    FROZEN (0): Dimension locked - no movement allowed (security constraint)
+    """
+    FORWARD = 1
+    BACKWARD = -1
+    FROZEN = 0
+
+
+class HyperTorusManifold:
+    """
+    N-Dimensional Hyper-Torus Memory with Signed Dimension Vectors.
+
+    The 4D Hyper-Torus Memory is a Self-Correcting Geometric Ledger that maps
+    informational interactions onto a continuous, curved Riemannian manifold.
+    This implementation generalizes to n dimensions (T^n) with support for:
+
+    1. SIGNED DIMENSIONS (D ∈ {-1, 0, +1}^n):
+       - D_k = +1: Forward traversal (normal geodesic flow)
+       - D_k = -1: Backward traversal (reversed, asymmetric trust)
+       - D_k = 0: Frozen dimension (locked, creates hard constraint)
+
+    2. NESTED TORUS STRUCTURE:
+       For T^n, the Riemannian metric generalizes as:
+       ds² = Σᵢ gᵢᵢ(θ) dθᵢ²
+
+       where gᵢᵢ depends on the "depth" of the torus nesting:
+       - Outermost dimension: g₀₀ = R₀²
+       - Inner dimensions: gᵢᵢ = (Rᵢ + rᵢ cos θᵢ₋₁)²
+
+    3. GEOMETRIC INTEGRITY ("The Snap"):
+       A write is valid iff d_geo(P_prev, P_new) ≤ ε
+       where ε is the Trust Threshold.
+
+    4. DIRECTIONAL ASYMMETRY:
+       When D_k = -1, movement in dimension k incurs a penalty factor,
+       making it "harder to go back" in certain contexts (e.g., security).
+
+    Key Insight:
+    Logical consistency is modeled as geometric continuity. A truthful,
+    coherent narrative traces a smooth geodesic. A contradiction manifests
+    as a discontinuity—a "teleportation" that exceeds surface tension.
+
+    Integration with Langues Metric:
+    The 6 Sacred Tongues can be mapped to a 6-torus T^6, where each langue
+    dimension has its own signed traversal mode, creating a rich space of
+    valid semantic transitions.
+    """
+
+    def __init__(
+        self,
+        n_dims: int = 4,
+        major_radii: Optional[np.ndarray] = None,
+        minor_radius: float = 2.0,
+        trust_threshold: float = 1.5,
+        dimension_modes: Optional[np.ndarray] = None,
+        asymmetry_penalty: float = 2.0
+    ):
+        """
+        Initialize n-dimensional Hyper-Torus Manifold.
+
+        Args:
+            n_dims: Number of angular dimensions (default: 4 for 4D hyper-torus)
+            major_radii: Array of major radii [R_0, R_1, ..., R_{n-2}]
+                        (default: [10, 8, 6, 4, ...] geometric decay)
+            minor_radius: Radius of the innermost tube (default: 2.0)
+            trust_threshold: Maximum allowed geodesic distance ("The Snap" limit)
+            dimension_modes: Signed dimension vector D ∈ {-1, 0, +1}^n
+                           (default: all +1, forward traversal)
+            asymmetry_penalty: Multiplier for backward traversal cost (default: 2.0)
+        """
+        if n_dims < 2:
+            raise ValueError("n_dims must be >= 2 for a torus")
+
+        self.n_dims = n_dims
+        self.minor_radius = minor_radius
+        self.trust_threshold = trust_threshold
+        self.asymmetry_penalty = asymmetry_penalty
+
+        # Major radii: geometric decay from outermost to innermost
+        if major_radii is None:
+            self.major_radii = np.array([10.0 - 2*i for i in range(n_dims - 1)])
+            # Ensure all radii are positive
+            self.major_radii = np.maximum(self.major_radii, minor_radius + 0.5)
+        else:
+            self.major_radii = np.asarray(major_radii, dtype=np.float64)
+            if len(self.major_radii) != n_dims - 1:
+                raise ValueError(f"major_radii must have {n_dims - 1} elements")
+
+        # Dimension modes: D ∈ {-1, 0, +1}^n
+        if dimension_modes is None:
+            self.D = np.ones(n_dims, dtype=np.int8)  # All forward by default
+        else:
+            self.D = np.asarray(dimension_modes, dtype=np.int8)
+            if len(self.D) != n_dims:
+                raise ValueError(f"dimension_modes must have {n_dims} elements")
+            # Validate values
+            if not np.all(np.isin(self.D, [-1, 0, 1])):
+                raise ValueError("dimension_modes must contain only -1, 0, or +1")
+
+        # Count active dimensions (non-frozen)
+        self.n_active = np.sum(self.D != 0)
+
+    def set_dimension_mode(self, dim_index: int, mode: DimensionMode) -> None:
+        """
+        Set the traversal mode for a specific dimension.
+
+        Args:
+            dim_index: Which dimension to modify (0 to n_dims-1)
+            mode: DimensionMode (FORWARD, BACKWARD, or FROZEN)
+        """
+        if dim_index < 0 or dim_index >= self.n_dims:
+            raise ValueError(f"dim_index must be in [0, {self.n_dims - 1}]")
+        self.D[dim_index] = mode.value
+        self.n_active = np.sum(self.D != 0)
+
+    def freeze_dimension(self, dim_index: int) -> None:
+        """Freeze a dimension (no movement allowed)."""
+        self.set_dimension_mode(dim_index, DimensionMode.FROZEN)
+
+    def unfreeze_dimension(self, dim_index: int, backward: bool = False) -> None:
+        """Unfreeze a dimension."""
+        mode = DimensionMode.BACKWARD if backward else DimensionMode.FORWARD
+        self.set_dimension_mode(dim_index, mode)
+
+    def _stable_hash_to_angle(self, data: str) -> float:
+        """
+        Deterministically map string data to an angle in [0, 2π).
+
+        Uses SHA-256 for stability (Python's hash() is salted).
+        """
+        import hashlib
+        hash_bytes = hashlib.sha256(data.encode('utf-8')).digest()[:8]
+        hash_int = int.from_bytes(hash_bytes, 'big')
+        # Normalize to [0, 1) then scale to [0, 2π)
+        normalized = hash_int / (2**64)
+        return normalized * 2 * np.pi
+
+    def map_interaction(
+        self,
+        domain_contexts: List[str],
+        sequence_data: str
+    ) -> np.ndarray:
+        """
+        Map an interaction to n-dimensional angular coordinates.
+
+        Args:
+            domain_contexts: List of context strings for each domain dimension
+                           (should have n_dims - 1 elements for domain angles)
+            sequence_data: String for the sequence/time dimension
+
+        Returns:
+            Array of angles [θ_0, θ_1, ..., θ_{n-1}] in [0, 2π)^n
+        """
+        coordinates = np.zeros(self.n_dims, dtype=np.float64)
+
+        # Map domain dimensions
+        for i, ctx in enumerate(domain_contexts[:self.n_dims - 1]):
+            coordinates[i] = self._stable_hash_to_angle(ctx)
+
+        # Map sequence dimension (last dimension)
+        coordinates[-1] = self._stable_hash_to_angle(sequence_data)
+
+        return coordinates
+
+    def _minimal_angle_delta(self, theta1: float, theta2: float) -> float:
+        """
+        Compute minimal angular difference respecting periodic boundaries.
+
+        Minimal Image Convention for S^1:
+        Δθ = min(|θ₂ - θ₁|, 2π - |θ₂ - θ₁|)
+        """
+        diff = np.abs(theta2 - theta1)
+        return min(diff, 2 * np.pi - diff)
+
+    def _signed_angle_delta(
+        self,
+        theta1: float,
+        theta2: float,
+        dim_mode: int
+    ) -> Tuple[float, float]:
+        """
+        Compute signed angular difference with directional penalty.
+
+        Returns:
+            Tuple of (minimal_delta, effective_delta after directional scaling)
+        """
+        # Compute raw difference (signed)
+        raw_diff = theta2 - theta1
+
+        # Wrap to [-π, π]
+        while raw_diff > np.pi:
+            raw_diff -= 2 * np.pi
+        while raw_diff < -np.pi:
+            raw_diff += 2 * np.pi
+
+        minimal_delta = np.abs(raw_diff)
+
+        # Apply directional penalty based on dimension mode
+        if dim_mode == 0:  # FROZEN
+            # Frozen dimension: any movement is forbidden (infinite penalty)
+            effective_delta = np.inf if minimal_delta > 1e-10 else 0.0
+        elif dim_mode == 1:  # FORWARD
+            # Forward: no penalty for positive direction, penalty for negative
+            if raw_diff >= 0:
+                effective_delta = minimal_delta
+            else:
+                effective_delta = minimal_delta * self.asymmetry_penalty
+        else:  # BACKWARD (dim_mode == -1)
+            # Backward: penalty for positive direction
+            if raw_diff <= 0:
+                effective_delta = minimal_delta
+            else:
+                effective_delta = minimal_delta * self.asymmetry_penalty
+
+        return minimal_delta, effective_delta
+
+    def compute_metric_tensor(self, theta: np.ndarray) -> np.ndarray:
+        """
+        Compute the Riemannian metric tensor g_ij at point θ.
+
+        For nested n-torus T^n, the metric is diagonal with:
+        g_00 = R_0² (outermost)
+        g_ii = (R_i + r_{i-1} cos θ_{i-1})² for i > 0
+
+        The innermost dimension uses the minor radius.
+
+        Args:
+            theta: Angular coordinates [θ_0, ..., θ_{n-1}]
+
+        Returns:
+            n×n diagonal metric tensor
+        """
+        g = np.zeros((self.n_dims, self.n_dims), dtype=np.float64)
+
+        # Outermost dimension
+        g[0, 0] = self.major_radii[0] ** 2
+
+        # Middle dimensions
+        for i in range(1, self.n_dims - 1):
+            # Effective radius depends on angle of previous dimension
+            R_eff = self.major_radii[i] + self.major_radii[i-1] * np.cos(theta[i-1])
+            g[i, i] = R_eff ** 2
+
+        # Innermost dimension (uses minor radius)
+        if self.n_dims > 1:
+            R_eff = self.minor_radius + self.major_radii[-1] * np.cos(theta[-2])
+            g[-1, -1] = R_eff ** 2
+
+        return g
+
+    def compute_geodesic_distance(
+        self,
+        p1: np.ndarray,
+        p2: np.ndarray,
+        apply_direction: bool = True
+    ) -> Tuple[float, dict]:
+        """
+        Compute geodesic distance between two points on the hyper-torus.
+
+        For local distances, uses the Riemannian line element:
+        ds² = Σᵢ g_ii(θ̄) (Δθᵢ)²
+
+        Args:
+            p1: First point [θ_0, ..., θ_{n-1}]
+            p2: Second point [θ_0, ..., θ_{n-1}]
+            apply_direction: Whether to apply directional penalties
+
+        Returns:
+            Tuple of (distance, details dict)
+        """
+        p1 = np.asarray(p1, dtype=np.float64)
+        p2 = np.asarray(p2, dtype=np.float64)
+
+        if len(p1) != self.n_dims or len(p2) != self.n_dims:
+            raise ValueError(f"Points must have {self.n_dims} dimensions")
+
+        # Average point for metric evaluation
+        theta_avg = (p1 + p2) / 2.0
+
+        # Compute metric tensor at average point
+        g = self.compute_metric_tensor(theta_avg)
+
+        # Compute angular deltas with directional penalties
+        deltas = np.zeros(self.n_dims)
+        effective_deltas = np.zeros(self.n_dims)
+        frozen_violation = False
+
+        for i in range(self.n_dims):
+            if apply_direction:
+                delta, eff_delta = self._signed_angle_delta(p1[i], p2[i], self.D[i])
+                if np.isinf(eff_delta):
+                    frozen_violation = True
+                deltas[i] = delta
+                effective_deltas[i] = eff_delta
+            else:
+                deltas[i] = self._minimal_angle_delta(p1[i], p2[i])
+                effective_deltas[i] = deltas[i]
+
+        # Compute squared distance: ds² = Σ g_ii * dθ_i²
+        if frozen_violation:
+            distance = np.inf
+        else:
+            squared_dist = np.sum(np.diag(g) * effective_deltas**2)
+            distance = np.sqrt(squared_dist)
+
+        return distance, {
+            "raw_deltas": deltas.tolist(),
+            "effective_deltas": effective_deltas.tolist(),
+            "metric_diagonal": np.diag(g).tolist(),
+            "dimension_modes": self.D.tolist(),
+            "frozen_violation": frozen_violation,
+            "squared_distance": float(squared_dist) if not frozen_violation else np.inf,
+        }
+
+    def validate_write(
+        self,
+        previous_point: Optional[np.ndarray],
+        new_point: np.ndarray
+    ) -> dict:
+        """
+        The Snap Protocol: Validate geometric integrity of a write operation.
+
+        A write is valid iff d_geo(P_prev, P_new) ≤ ε (trust threshold).
+
+        Args:
+            previous_point: Coordinates of last accepted fact (None for genesis)
+            new_point: Proposed coordinates for new fact
+
+        Returns:
+            Validation result dict with status and metrics
+        """
+        new_point = np.asarray(new_point, dtype=np.float64)
+
+        # Genesis block: always accept
+        if previous_point is None:
+            return {
+                "status": "WRITE_SUCCESS",
+                "is_genesis": True,
+                "coordinates": new_point.tolist(),
+                "distance": 0.0,
+            }
+
+        previous_point = np.asarray(previous_point, dtype=np.float64)
+
+        # Compute geodesic distance
+        distance, details = self.compute_geodesic_distance(previous_point, new_point)
+
+        # Validate against trust threshold
+        if distance <= self.trust_threshold:
+            return {
+                "status": "WRITE_SUCCESS",
+                "is_genesis": False,
+                "coordinates": new_point.tolist(),
+                "distance": float(distance),
+                "threshold": self.trust_threshold,
+                "headroom": float(self.trust_threshold - distance),
+                **details,
+            }
+        else:
+            # THE SNAP: Geometric integrity violation
+            return {
+                "status": "WRITE_FAIL",
+                "error": "GEOMETRIC_SNAP_DETECTED",
+                "is_genesis": False,
+                "divergence": float(distance) if not np.isinf(distance) else "INFINITY",
+                "threshold": self.trust_threshold,
+                "overshoot": float(distance - self.trust_threshold) if not np.isinf(distance) else "INFINITY",
+                "frozen_violation": details.get("frozen_violation", False),
+                **details,
+            }
+
+    def compute_manifold_tension(
+        self,
+        trajectory: List[np.ndarray]
+    ) -> dict:
+        """
+        Compute cumulative tension along a trajectory on the manifold.
+
+        High tension indicates logical leaps or potential inconsistencies.
+
+        Args:
+            trajectory: List of coordinate points
+
+        Returns:
+            Tension analysis dict
+        """
+        if len(trajectory) < 2:
+            return {"total_tension": 0.0, "segments": [], "snap_count": 0}
+
+        tensions = []
+        snap_count = 0
+
+        for i in range(1, len(trajectory)):
+            dist, _ = self.compute_geodesic_distance(trajectory[i-1], trajectory[i])
+            tensions.append(dist)
+            if dist > self.trust_threshold:
+                snap_count += 1
+
+        return {
+            "total_tension": float(np.sum(tensions)),
+            "mean_tension": float(np.mean(tensions)),
+            "max_tension": float(np.max(tensions)),
+            "min_tension": float(np.min(tensions)),
+            "segments": [float(t) for t in tensions],
+            "snap_count": snap_count,
+            "integrity_ratio": 1.0 - (snap_count / len(tensions)),
+        }
+
+    def compute_hausdorff_dimension_torus(self) -> float:
+        """
+        Compute the Hausdorff dimension of the n-torus.
+
+        For T^n, the Hausdorff dimension equals the topological dimension n
+        (tori are smooth manifolds).
+
+        Returns:
+            Hausdorff dimension (equals n_dims for standard torus)
+        """
+        return float(self.n_dims)
+
+    def get_curvature_bounds(self) -> dict:
+        """
+        Get Gaussian curvature bounds for the hyper-torus.
+
+        For a standard 2-torus:
+        - Outer rim (θ=0): K = cos(θ) / (r(R + r cos θ)) = 1/(r(R+r)) > 0
+        - Inner core (θ=π): K = -1/(r(R-r)) < 0
+
+        Returns:
+            Curvature bounds dict
+        """
+        # For 2-torus section (simplified analysis)
+        R = self.major_radii[0] if len(self.major_radii) > 0 else 10.0
+        r = self.minor_radius
+
+        K_max = 1.0 / (r * (R + r))  # Outer rim
+        K_min = -1.0 / (r * (R - r)) if R > r else -np.inf  # Inner core
+
+        return {
+            "K_max": float(K_max),
+            "K_min": float(K_min),
+            "R_major": float(R),
+            "r_minor": float(r),
+            "outer_rim_tension_multiplier": float((R + r) / (R - r)) if R > r else np.inf,
+        }
+
+    def integrate_with_langues(
+        self,
+        langues_tensor: "LanguesMetricTensor",
+        langues_r: np.ndarray
+    ) -> np.ndarray:
+        """
+        Integrate Langues Metric weights into the torus metric.
+
+        The 6 Langues dimensions can modulate the first 6 torus dimensions,
+        creating a coupled Langues-Torus manifold.
+
+        Args:
+            langues_tensor: LanguesMetricTensor instance
+            langues_r: Langue parameter vector (6D)
+
+        Returns:
+            Modified metric tensor incorporating Langues weights
+        """
+        if self.n_dims < 6:
+            raise ValueError("Need at least 6 dimensions to integrate Langues")
+
+        # Get Langues metric
+        G_L = langues_tensor.compute_metric(langues_r)
+
+        # Get base torus metric at origin
+        theta_origin = np.zeros(self.n_dims)
+        g_torus = self.compute_metric_tensor(theta_origin)
+
+        # Couple the metrics: modulate first 6 torus dimensions with Langues
+        # Using Hadamard product for coupling
+        for i in range(6):
+            g_torus[i, i] *= G_L[i, i]
+
+        return g_torus
+
+
 def compute_langues_metric_distance(
     x: np.ndarray,
     y: np.ndarray,
@@ -1547,6 +2038,10 @@ __all__ = [
 
     # Fractal Dimension Analysis
     "FractalDimensionAnalyzer",
+
+    # Hyper-Torus Manifold (N-Dimensional Geometric Ledger)
+    "HyperTorusManifold",
+    "DimensionMode",
 
     # Hyperbolic geometry
     "hyperbolic_distance_poincare",
