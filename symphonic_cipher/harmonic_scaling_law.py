@@ -3041,6 +3041,374 @@ Connection to Grand Unified Formula:
    d/dt[Ω(θ(t))] = ∇Ω · θ'(t)    (Chain rule on manifold)
 """
 
+    # =========================================================================
+    # KEY EVOLUTION LAW
+    # =========================================================================
+
+    def evolve_key(
+        self,
+        t: np.ndarray,
+        k0: float = 1.0,
+        eta: float = 0.05
+    ) -> np.ndarray:
+        """
+        Evolve key according to the differential key evolution law.
+
+        The key evolves via:
+            dk/dt = η · w(t) · k(t)
+
+        Solution:
+            k(t) = k(0) · exp(η · ∫₀ᵗ w(τ) dτ)
+
+        This embeds the rhythmic watermark pattern as a continuous
+        exponential warp of the key itself.
+
+        Args:
+            t: Time array
+            k0: Initial key value k(0)
+            eta: Sensitivity constant η
+
+        Returns:
+            Evolved key array k(t)
+        """
+        # Compute watermark signal
+        f = self.compute_waveform(t)
+        w = np.sin(2 * np.pi * f * t / self.f0)  # Normalized watermark
+
+        # Cumulative integral of watermark
+        dt = t[1] - t[0] if len(t) > 1 else 1e-6
+        integral_w = np.cumsum(w) * dt
+
+        # Key evolution: k(t) = k0 * exp(η * ∫w(τ)dτ)
+        k = k0 * np.exp(eta * integral_w)
+
+        return k
+
+    def compute_key_derivative(
+        self,
+        t: np.ndarray,
+        k: np.ndarray,
+        eta: float = 0.05
+    ) -> np.ndarray:
+        """
+        Compute dk/dt = η · w(t) · k(t) directly.
+
+        Args:
+            t: Time array
+            k: Key values at each time
+            eta: Sensitivity constant
+
+        Returns:
+            Key derivative dk/dt
+        """
+        f = self.compute_waveform(t)
+        w = np.sin(2 * np.pi * f * t / self.f0)
+        dk_dt = eta * w * k
+        return dk_dt
+
+    # =========================================================================
+    # TRUST ENERGY AND STABILITY
+    # =========================================================================
+
+    def compute_trust_energy_density(
+        self,
+        t: np.ndarray,
+        theta: np.ndarray,
+        phi: np.ndarray,
+        R: float = 10.0,
+        r: float = 2.0
+    ) -> np.ndarray:
+        """
+        Compute instantaneous trust energy density on the torus.
+
+        E(t) = (R + r·cos(θ))² · (dφ/dt)² + r² · (dθ/dt)²
+
+        This is the kinetic energy of motion on the toroidal manifold.
+        High energy density indicates rapid state changes.
+
+        Args:
+            t: Time array
+            theta: θ coordinate trajectory
+            phi: φ coordinate trajectory
+            R: Major radius
+            r: Minor radius
+
+        Returns:
+            Energy density array E(t)
+        """
+        dt = t[1] - t[0] if len(t) > 1 else 1e-6
+
+        # Angular velocities
+        d_theta_dt = np.gradient(theta, dt)
+        d_phi_dt = np.gradient(phi, dt)
+
+        # Trust energy density: E(t) = g_φφ·(dφ/dt)² + g_θθ·(dθ/dt)²
+        g_phi_phi = (R + r * np.cos(theta)) ** 2
+        g_theta_theta = r ** 2
+
+        E = g_phi_phi * d_phi_dt ** 2 + g_theta_theta * d_theta_dt ** 2
+
+        return E
+
+    def compute_cumulative_trust_energy(
+        self,
+        t: np.ndarray,
+        theta: np.ndarray,
+        phi: np.ndarray,
+        R: float = 10.0,
+        r: float = 2.0
+    ) -> float:
+        """
+        Compute cumulative trust energy over a trajectory.
+
+        ε(t₁,t₂) = ∫_{t₁}^{t₂} E(t) dt
+
+        If ε exceeds E_snap, the geometric link fails (Snap).
+
+        Args:
+            t: Time array
+            theta: θ trajectory
+            phi: φ trajectory
+            R: Major radius
+            r: Minor radius
+
+        Returns:
+            Cumulative trust energy (scalar)
+        """
+        E = self.compute_trust_energy_density(t, theta, phi, R, r)
+        dt = t[1] - t[0] if len(t) > 1 else 1e-6
+
+        cumulative = np.trapezoid(E, dx=dt)
+        return float(cumulative)
+
+    def analyze_lyapunov_stability(
+        self,
+        t: np.ndarray,
+        eta: float = 0.05
+    ) -> dict:
+        """
+        Analyze Lyapunov stability of the key evolution system.
+
+        For dk/dt = η·w(t)·k(t), the system is:
+        - Stable if η·∫w(t)dt remains bounded
+        - Asymptotically stable if η·∫w(t)dt → 0
+        - Unstable if η·∫w(t)dt → ±∞
+
+        The Lyapunov exponent is:
+            λ = lim_{t→∞} (1/t) · ln|k(t)/k(0)| = η · ⟨w⟩
+
+        where ⟨w⟩ is the time-averaged watermark signal.
+
+        Args:
+            t: Time array
+            eta: Sensitivity constant
+
+        Returns:
+            Stability analysis dict
+        """
+        # Evolve key
+        k = self.evolve_key(t, k0=1.0, eta=eta)
+
+        # Compute watermark
+        f = self.compute_waveform(t)
+        w = np.sin(2 * np.pi * f * t / self.f0)
+
+        # Time-averaged watermark (should be ~0 for stability)
+        w_mean = np.mean(w)
+
+        # Lyapunov exponent estimate
+        T = t[-1] - t[0]
+        lyapunov_exponent = eta * w_mean
+
+        # Key growth rate
+        if len(t) > 1:
+            log_k_ratio = np.log(np.abs(k[-1] / k[0])) if k[0] != 0 and k[-1] != 0 else 0
+            empirical_lyapunov = log_k_ratio / T
+        else:
+            empirical_lyapunov = 0
+
+        # Key bounds
+        k_min, k_max = np.min(k), np.max(k)
+        k_range = k_max / k_min if k_min > 0 else np.inf
+
+        # Stability classification
+        if np.abs(lyapunov_exponent) < 1e-6:
+            stability = "marginally_stable"
+        elif lyapunov_exponent < 0:
+            stability = "asymptotically_stable"
+        else:
+            stability = "unstable"
+
+        # For bounded oscillatory systems, check variance
+        k_variance = np.var(k)
+        bounded = k_range < 100  # Heuristic bound
+
+        return {
+            "lyapunov_exponent": float(lyapunov_exponent),
+            "empirical_lyapunov": float(empirical_lyapunov),
+            "stability": stability,
+            "bounded": bounded,
+            "key_range": float(k_range),
+            "key_min": float(k_min),
+            "key_max": float(k_max),
+            "key_variance": float(k_variance),
+            "watermark_mean": float(w_mean),
+            "eta": eta,
+        }
+
+    def compute_stability_bounds(
+        self,
+        eta_max: float = 0.5,
+        n_samples: int = 20
+    ) -> dict:
+        """
+        Compute stability bounds for the key evolution system.
+
+        Finds the maximum η such that the system remains bounded.
+
+        The system is bounded if:
+            |η| < η_critical = 1 / (T · max|∫w(τ)dτ|)
+
+        Args:
+            eta_max: Maximum η to test
+            n_samples: Number of samples
+
+        Returns:
+            Stability bounds analysis
+        """
+        t = np.linspace(0, 10, 1000)
+        eta_values = np.linspace(0.01, eta_max, n_samples)
+
+        results = []
+        critical_eta = eta_max
+
+        for eta in eta_values:
+            k = self.evolve_key(t, k0=1.0, eta=eta)
+            k_range = np.max(k) / np.min(k) if np.min(k) > 0 else np.inf
+
+            bounded = k_range < 100 and np.all(np.isfinite(k))
+            results.append({
+                "eta": float(eta),
+                "k_range": float(k_range),
+                "bounded": bounded,
+            })
+
+            if not bounded and critical_eta == eta_max:
+                critical_eta = eta
+
+        # Find critical η (transition to unbounded)
+        bounded_etas = [r["eta"] for r in results if r["bounded"]]
+        if bounded_etas:
+            max_bounded_eta = max(bounded_etas)
+        else:
+            max_bounded_eta = 0.0
+
+        return {
+            "critical_eta": float(critical_eta),
+            "max_bounded_eta": float(max_bounded_eta),
+            "stability_margin": float(eta_max - critical_eta),
+            "samples": results,
+            "recommendation": f"Use η < {max_bounded_eta:.4f} for bounded key evolution"
+        }
+
+    def verify_energy_conservation(
+        self,
+        t: np.ndarray,
+        tolerance: float = 0.1
+    ) -> dict:
+        """
+        Verify approximate energy conservation in the harmonic system.
+
+        For a conservative oscillatory system, total energy should be
+        approximately constant. Deviation indicates dissipation or
+        external driving.
+
+        Args:
+            t: Time array
+            tolerance: Relative tolerance for "conservation"
+
+        Returns:
+            Energy conservation analysis
+        """
+        f = self.compute_waveform(t)
+        velocity = self.compute_phase_velocity(t)
+
+        # Kinetic-like energy: (1/2)·v²
+        kinetic = 0.5 * velocity ** 2
+
+        # Potential-like energy: (1/2)·ω²·(f - f₀)²
+        potential = 0.5 * (self.omega[0] ** 2) * (f - self.f0) ** 2
+
+        total_energy = kinetic + potential
+
+        E_mean = np.mean(total_energy)
+        E_std = np.std(total_energy)
+        E_relative_variation = E_std / E_mean if E_mean > 0 else np.inf
+
+        conserved = E_relative_variation < tolerance
+
+        return {
+            "conserved": conserved,
+            "mean_energy": float(E_mean),
+            "energy_std": float(E_std),
+            "relative_variation": float(E_relative_variation),
+            "tolerance": tolerance,
+            "kinetic_mean": float(np.mean(kinetic)),
+            "potential_mean": float(np.mean(potential)),
+        }
+
+    def get_stability_equations(self) -> str:
+        """
+        Return the formal stability equations.
+        """
+        return r"""
+Differential Cryptography - Stability Analysis
+═══════════════════════════════════════════════════════
+
+1. KEY EVOLUTION LAW
+   dk/dt = η · w(t) · k(t)
+   k(t) = k(0) · exp(η · ∫₀ᵗ w(τ) dτ)
+
+2. LYAPUNOV EXPONENT
+   λ = lim_{t→∞} (1/t) · ln|k(t)/k(0)|
+   λ = η · ⟨w⟩   (time-averaged watermark)
+
+   Stability Classification:
+   - λ < 0:  Asymptotically stable (key → 0)
+   - λ = 0:  Marginally stable (bounded oscillation)
+   - λ > 0:  Unstable (key → ∞)
+
+3. TRUST ENERGY DENSITY (on torus)
+   E(t) = (R + r·cos θ)² · (dφ/dt)² + r² · (dθ/dt)²
+
+4. CUMULATIVE TRUST ENERGY
+   ε(t₁,t₂) = ∫_{t₁}^{t₂} E(t) dt
+
+   Snap Condition: ε > E_snap ⟹ WRITE_FAIL
+
+5. BOUNDED STABILITY CONDITION
+   System bounded iff: |η| < η_critical
+
+   where η_critical = 1 / (T · max|∫w(τ)dτ|)
+
+6. ENERGY CONSERVATION (approximate)
+   H = (1/2)·v² + (1/2)·ω²·(f - f₀)²
+
+   dH/dt ≈ 0 for stable oscillatory system
+
+7. WATERMARK INTEGRITY CONDITION
+   Phase drift: Δφ = |φ_computed - φ_expected|
+   Valid iff: Δφ < φ_tolerance
+
+═══════════════════════════════════════════════════════
+
+Security Guarantee:
+   For bounded η and zero-mean watermark (⟨w⟩ = 0),
+   the key evolution is stable with λ = 0,
+   ensuring the cryptographic state remains finite
+   and the watermark signature extractable.
+"""
+
     def __repr__(self) -> str:
         return (
             f"DifferentialCryptographyFramework(f₀={self.f0}, ε={self.epsilon}, "
