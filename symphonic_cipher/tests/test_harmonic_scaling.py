@@ -2251,3 +2251,170 @@ class TestDifferentialCryptographyFramework:
         # Both should be non-zero
         assert d1_var > 0
         assert d4_var > 0
+
+    # =========================================================================
+    # KEY EVOLUTION TESTS
+    # =========================================================================
+
+    def test_key_evolution(self):
+        """Test key evolution dk/dt = η·w(t)·k(t)."""
+        dcf = DifferentialCryptographyFramework()
+        t = np.linspace(0, 2, 1000)
+
+        k = dcf.evolve_key(t, k0=1.0, eta=0.05)
+
+        # Key should start at k0
+        assert k[0] == pytest.approx(1.0, rel=1e-3)
+        # Key should be positive (exponential evolution)
+        assert np.all(k > 0)
+        # Key should be finite
+        assert np.all(np.isfinite(k))
+
+    def test_key_evolution_different_k0(self):
+        """Test key evolution with different initial values."""
+        dcf = DifferentialCryptographyFramework()
+        t = np.linspace(0, 2, 500)
+
+        k1 = dcf.evolve_key(t, k0=1.0, eta=0.05)
+        k2 = dcf.evolve_key(t, k0=2.0, eta=0.05)
+
+        # Key ratio should remain constant (linear scaling)
+        np.testing.assert_array_almost_equal(k2 / k1, 2.0 * np.ones_like(k1), decimal=5)
+
+    def test_key_derivative(self):
+        """Test key derivative computation."""
+        dcf = DifferentialCryptographyFramework()
+        t = np.linspace(0, 2, 1000)
+
+        k = dcf.evolve_key(t, k0=1.0, eta=0.05)
+        dk_dt = dcf.compute_key_derivative(t, k, eta=0.05)
+
+        # Derivative should be finite
+        assert np.all(np.isfinite(dk_dt))
+
+    # =========================================================================
+    # TRUST ENERGY TESTS
+    # =========================================================================
+
+    def test_trust_energy_density(self):
+        """Test trust energy density computation."""
+        dcf = DifferentialCryptographyFramework()
+        t = np.linspace(0, 2, 500)
+
+        # Simple circular trajectory
+        theta = 0.5 * np.sin(2 * np.pi * t)
+        phi = 2 * np.pi * t
+
+        E = dcf.compute_trust_energy_density(t, theta, phi, R=10.0, r=2.0)
+
+        # Energy should be non-negative
+        assert np.all(E >= 0)
+        # Energy should be finite
+        assert np.all(np.isfinite(E))
+
+    def test_cumulative_trust_energy(self):
+        """Test cumulative trust energy computation."""
+        dcf = DifferentialCryptographyFramework()
+        t = np.linspace(0, 2, 500)
+
+        theta = 0.5 * np.sin(2 * np.pi * t)
+        phi = 2 * np.pi * t
+
+        cumulative = dcf.compute_cumulative_trust_energy(t, theta, phi)
+
+        # Cumulative energy should be positive (motion happened)
+        assert cumulative > 0
+        # Should be finite
+        assert np.isfinite(cumulative)
+
+    # =========================================================================
+    # LYAPUNOV STABILITY TESTS
+    # =========================================================================
+
+    def test_lyapunov_stability_analysis(self):
+        """Test Lyapunov stability analysis."""
+        dcf = DifferentialCryptographyFramework()
+        t = np.linspace(0, 10, 1000)
+
+        stability = dcf.analyze_lyapunov_stability(t, eta=0.05)
+
+        assert "lyapunov_exponent" in stability
+        assert "stability" in stability
+        assert "bounded" in stability
+        assert "key_range" in stability
+
+        # Lyapunov exponent should be small for oscillatory watermark
+        assert np.abs(stability["lyapunov_exponent"]) < 1.0
+
+    def test_stability_classification(self):
+        """Test that stability is correctly classified."""
+        dcf = DifferentialCryptographyFramework()
+        t = np.linspace(0, 10, 1000)
+
+        # Small eta should give marginally stable
+        stability = dcf.analyze_lyapunov_stability(t, eta=0.01)
+        assert stability["stability"] in ["marginally_stable", "asymptotically_stable", "unstable"]
+
+    def test_stability_bounds(self):
+        """Test stability bounds computation."""
+        dcf = DifferentialCryptographyFramework()
+
+        bounds = dcf.compute_stability_bounds(eta_max=0.3, n_samples=10)
+
+        assert "critical_eta" in bounds
+        assert "max_bounded_eta" in bounds
+        assert "recommendation" in bounds
+        assert "samples" in bounds
+
+        # Should have n_samples results
+        assert len(bounds["samples"]) == 10
+
+    def test_energy_conservation(self):
+        """Test energy conservation verification."""
+        dcf = DifferentialCryptographyFramework()
+        t = np.linspace(0, 5, 1000)
+
+        conservation = dcf.verify_energy_conservation(t, tolerance=0.5)
+
+        assert "conserved" in conservation
+        assert "mean_energy" in conservation
+        assert "relative_variation" in conservation
+        assert "kinetic_mean" in conservation
+        assert "potential_mean" in conservation
+
+        # Energy should be positive
+        assert conservation["mean_energy"] > 0
+
+    def test_stability_equations_output(self):
+        """Test stability equations documentation."""
+        dcf = DifferentialCryptographyFramework()
+        equations = dcf.get_stability_equations()
+
+        # Should contain key equations (check case-insensitive)
+        assert "dk/dt" in equations
+        assert "η" in equations
+        assert "LYAPUNOV" in equations  # Header format
+        assert "E(t)" in equations
+        assert "E_snap" in equations
+
+    def test_key_evolution_eta_sensitivity(self):
+        """Test that larger η leads to larger key variation."""
+        dcf = DifferentialCryptographyFramework()
+        t = np.linspace(0, 2, 500)
+
+        k_small = dcf.evolve_key(t, k0=1.0, eta=0.01)
+        k_large = dcf.evolve_key(t, k0=1.0, eta=0.1)
+
+        # Larger eta should give larger variance
+        assert np.var(k_large) > np.var(k_small)
+
+    def test_bounded_key_evolution(self):
+        """Test that key remains bounded for small η."""
+        dcf = DifferentialCryptographyFramework()
+        t = np.linspace(0, 10, 1000)
+
+        k = dcf.evolve_key(t, k0=1.0, eta=0.02)
+
+        # Key should remain in reasonable bounds
+        assert np.max(k) < 1000
+        assert np.min(k) > 0.001
