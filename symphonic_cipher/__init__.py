@@ -52,6 +52,16 @@ from .harmonic_scaling_law import (
     quantum_resistant_harmonic_scaling,
     create_context_commitment,
     verify_test_vectors,
+    # Langues Metric Tensor
+    LanguesMetricTensor,
+    create_coupling_matrix,
+    create_baseline_metric,
+    compute_langues_metric_distance,
+    validate_langues_metric_stability,
+    PHI,
+    LANGUES_DIMENSIONS,
+    DEFAULT_EPSILON,
+    EPSILON_THRESHOLD,
 )
 
 __all__ = [
@@ -86,4 +96,14 @@ __all__ = [
     "quantum_resistant_harmonic_scaling",
     "create_context_commitment",
     "verify_test_vectors",
+    # Langues Metric Tensor (6D Weighting System)
+    "LanguesMetricTensor",
+    "create_coupling_matrix",
+    "create_baseline_metric",
+    "compute_langues_metric_distance",
+    "validate_langues_metric_stability",
+    "PHI",
+    "LANGUES_DIMENSIONS",
+    "DEFAULT_EPSILON",
+    "EPSILON_THRESHOLD",
 ]

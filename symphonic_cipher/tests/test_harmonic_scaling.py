@@ -29,6 +29,16 @@ from ..harmonic_scaling_law import (
     DEFAULT_BETA,
     PQ_CONTEXT_COMMITMENT_SIZE,
     TEST_VECTORS,
+    # Langues Metric Tensor
+    LanguesMetricTensor,
+    create_coupling_matrix,
+    create_baseline_metric,
+    compute_langues_metric_distance,
+    validate_langues_metric_stability,
+    PHI,
+    LANGUES_DIMENSIONS,
+    DEFAULT_EPSILON,
+    EPSILON_THRESHOLD,
 )
 
 
@@ -488,3 +498,256 @@ class TestComputeWithComponents:
         law = HarmonicScalingLaw(alpha=10.0, require_pq_binding=False)
         result = law.compute_with_components(100.0)
         assert result["saturation_percent"] > 99.9
+
+
+# =============================================================================
+# TEST: LANGUES METRIC TENSOR
+# =============================================================================
+
+class TestLanguesMetricTensor:
+    """Tests for the 6-dimensional Langues Metric Tensor."""
+
+    def test_initialization_defaults(self):
+        """Test default initialization."""
+        tensor = LanguesMetricTensor()
+        assert tensor.R == PHI
+        assert tensor.epsilon == DEFAULT_EPSILON
+        assert tensor.n_dims == LANGUES_DIMENSIONS
+
+    def test_initialization_custom_epsilon(self):
+        """Test custom epsilon initialization."""
+        tensor = LanguesMetricTensor(epsilon=0.03)
+        assert tensor.epsilon == 0.03
+
+    def test_epsilon_threshold_validation(self):
+        """Test that epsilon >= threshold raises error when validation enabled."""
+        with pytest.raises(ValueError, match="epsilon.*must be < threshold"):
+            LanguesMetricTensor(epsilon=0.15, validate_epsilon=True)
+
+    def test_epsilon_threshold_bypass(self):
+        """Test that validation can be bypassed."""
+        tensor = LanguesMetricTensor(epsilon=0.15, validate_epsilon=False)
+        assert tensor.epsilon == 0.15
+
+    def test_baseline_metric_shape(self):
+        """Test baseline metric G_0 is 6x6."""
+        G_0 = create_baseline_metric()
+        assert G_0.shape == (6, 6)
+
+    def test_baseline_metric_diagonal(self):
+        """Test baseline metric is diagonal with correct values."""
+        R = PHI
+        G_0 = create_baseline_metric(R)
+        expected_diag = [1.0, 1.0, 1.0, R, R**2, R**3]
+        np.testing.assert_array_almost_equal(np.diag(G_0), expected_diag)
+
+    def test_coupling_matrix_shape(self):
+        """Test coupling matrices are 6x6."""
+        for k in range(6):
+            A_k = create_coupling_matrix(k)
+            assert A_k.shape == (6, 6)
+
+    def test_coupling_matrix_diagonal(self):
+        """Test coupling matrix has correct diagonal term."""
+        R = PHI
+        for k in range(6):
+            A_k = create_coupling_matrix(k, R=R, epsilon=0.05)
+            expected_diag = k * np.log(R) if k > 0 else 0.0
+            assert abs(A_k[k, k] - expected_diag) < 1e-10
+
+    def test_coupling_matrix_off_diagonal(self):
+        """Test coupling matrix has correct off-diagonal (nearest-neighbor) terms."""
+        epsilon = 0.05
+        for k in range(6):
+            A_k = create_coupling_matrix(k, epsilon=epsilon)
+            k_next = (k + 1) % 6
+            assert abs(A_k[k, k_next] - epsilon) < 1e-10
+            assert abs(A_k[k_next, k] - epsilon) < 1e-10
+
+    def test_weight_operator_identity_at_zero(self):
+        """Test that Λ(0) = I (identity)."""
+        tensor = LanguesMetricTensor(epsilon=0.0, validate_epsilon=False)
+        r = np.zeros(6)
+        Lambda = tensor.compute_weight_operator(r)
+        np.testing.assert_array_almost_equal(Lambda, np.eye(6), decimal=10)
+
+    def test_weight_operator_shape(self):
+        """Test weight operator is 6x6."""
+        tensor = LanguesMetricTensor()
+        r = np.random.uniform(0, 1, 6)
+        Lambda = tensor.compute_weight_operator(r)
+        assert Lambda.shape == (6, 6)
+
+    def test_metric_tensor_shape(self):
+        """Test metric tensor G_L(r) is 6x6."""
+        tensor = LanguesMetricTensor()
+        r = np.random.uniform(0, 1, 6)
+        G_L = tensor.compute_metric(r)
+        assert G_L.shape == (6, 6)
+
+    def test_metric_tensor_symmetric(self):
+        """Test metric tensor is symmetric."""
+        tensor = LanguesMetricTensor()
+        r = np.random.uniform(0, 1, 6)
+        G_L = tensor.compute_metric(r)
+        np.testing.assert_array_almost_equal(G_L, G_L.T)
+
+    def test_metric_tensor_equals_baseline_at_zero(self):
+        """Test that G_L(0) = G_0 when epsilon=0."""
+        tensor = LanguesMetricTensor(epsilon=0.0, validate_epsilon=False)
+        r = np.zeros(6)
+        G_L = tensor.compute_metric(r)
+        np.testing.assert_array_almost_equal(G_L, tensor.G_0, decimal=10)
+
+    def test_r_vector_dimension_validation(self):
+        """Test that wrong r dimension raises error."""
+        tensor = LanguesMetricTensor()
+        with pytest.raises(ValueError, match="must have 6 elements"):
+            tensor.compute_weight_operator(np.array([0.1, 0.2, 0.3]))
+
+    def test_r_vector_clamping(self):
+        """Test that r values outside [0,1] are clamped."""
+        tensor = LanguesMetricTensor()
+        r_out_of_range = np.array([-0.5, 1.5, 0.5, 0.5, 0.5, 0.5])
+        # Should not raise, values are clamped
+        Lambda = tensor.compute_weight_operator(r_out_of_range)
+        assert Lambda.shape == (6, 6)
+
+
+class TestLanguesPositiveDefiniteness:
+    """Tests for positive definiteness of langues metric."""
+
+    def test_positive_definite_at_zero(self):
+        """Test G_L(0) is positive definite."""
+        tensor = LanguesMetricTensor()
+        r = np.zeros(6)
+        is_pd, details = tensor.validate_positive_definite(r)
+        assert is_pd
+        assert details["min_eigenvalue"] > 0
+
+    def test_positive_definite_random_r(self):
+        """Test G_L(r) is positive definite for random r."""
+        tensor = LanguesMetricTensor(epsilon=0.05)
+        np.random.seed(42)
+        for _ in range(10):
+            r = np.random.uniform(0, 1, 6)
+            is_pd, details = tensor.validate_positive_definite(r)
+            assert is_pd, f"Not positive definite for r={r}"
+
+    def test_positive_definite_extreme_r(self):
+        """Test G_L(r) is positive definite for extreme r values."""
+        tensor = LanguesMetricTensor(epsilon=0.05)
+
+        # All zeros
+        is_pd, _ = tensor.validate_positive_definite(np.zeros(6))
+        assert is_pd
+
+        # All ones
+        is_pd, _ = tensor.validate_positive_definite(np.ones(6))
+        assert is_pd
+
+        # Single dimension active
+        for k in range(6):
+            r = np.zeros(6)
+            r[k] = 1.0
+            is_pd, _ = tensor.validate_positive_definite(r)
+            assert is_pd
+
+    @pytest.mark.parametrize("epsilon", [0.01, 0.05, 0.10])
+    def test_stability_across_epsilons(self, epsilon):
+        """Test stability for different epsilon values."""
+        tensor = LanguesMetricTensor(epsilon=epsilon, validate_epsilon=False)
+        stats = tensor.validate_stability(n_trials=50, seed=42)
+
+        # For safe epsilons, all should be positive definite
+        if epsilon <= 0.05:
+            assert stats["all_positive_definite"]
+
+        # Condition number should be bounded (note: baseline G_0 has cond ~4.24
+        # due to diag(1,1,1,φ,φ²,φ³), and the langues transformation amplifies this)
+        # For ε=0.05, typical worst-case cond is ~450-500
+        assert stats["condition_number_worst"] < 1000
+
+
+class TestLanguesDistance:
+    """Tests for langues-weighted distance computation."""
+
+    def test_distance_to_self_is_zero(self):
+        """Test that d_L(x, x; r) = 0."""
+        tensor = LanguesMetricTensor()
+        x = np.random.uniform(0, 1, 6)
+        r = np.random.uniform(0, 1, 6)
+        d = tensor.compute_distance(x, x, r)
+        assert abs(d) < 1e-10
+
+    def test_distance_is_symmetric(self):
+        """Test that d_L(x, y; r) = d_L(y, x; r)."""
+        tensor = LanguesMetricTensor()
+        x = np.random.uniform(0, 1, 6)
+        y = np.random.uniform(0, 1, 6)
+        r = np.random.uniform(0, 1, 6)
+
+        d_xy = tensor.compute_distance(x, y, r)
+        d_yx = tensor.compute_distance(y, x, r)
+
+        assert abs(d_xy - d_yx) < 1e-10
+
+    def test_distance_is_positive(self):
+        """Test that d_L(x, y; r) > 0 for x != y."""
+        tensor = LanguesMetricTensor()
+        x = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6])
+        y = np.array([0.7, 0.8, 0.9, 0.1, 0.2, 0.3])
+        r = np.random.uniform(0, 1, 6)
+
+        d = tensor.compute_distance(x, y, r)
+        assert d > 0
+
+    def test_convenience_function(self):
+        """Test the convenience distance function."""
+        x = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6])
+        y = np.array([0.7, 0.8, 0.9, 0.1, 0.2, 0.3])
+        r = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+
+        d = compute_langues_metric_distance(x, y, r)
+        assert d > 0
+        assert math.isfinite(d)
+
+
+class TestLanguesValidation:
+    """Tests for validation utilities."""
+
+    def test_validate_stability_returns_dict(self):
+        """Test that validate_stability returns expected structure."""
+        tensor = LanguesMetricTensor(epsilon=0.05)
+        stats = tensor.validate_stability(n_trials=10, seed=42)
+
+        expected_keys = [
+            "n_trials", "epsilon", "all_positive_definite",
+            "min_eigenvalue_worst", "min_eigenvalue_best",
+            "max_eigenvalue_worst", "condition_number_worst",
+            "condition_number_mean"
+        ]
+        for key in expected_keys:
+            assert key in stats
+
+    def test_validate_langues_metric_stability_function(self):
+        """Test the standalone validation function."""
+        results = validate_langues_metric_stability(
+            epsilon_values=[0.01, 0.05],
+            n_trials=10,
+            seed=42
+        )
+
+        assert 0.01 in results
+        assert 0.05 in results
+        assert results[0.01]["all_positive_definite"]
+        assert results[0.05]["all_positive_definite"]
+
+    def test_get_coupling_matrices(self):
+        """Test that coupling matrices can be retrieved."""
+        tensor = LanguesMetricTensor()
+        matrices = tensor.get_coupling_matrices()
+
+        assert len(matrices) == 6
+        for A in matrices:
+            assert A.shape == (6, 6)
