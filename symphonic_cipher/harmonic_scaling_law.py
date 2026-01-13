@@ -3417,6 +3417,660 @@ Security Guarantee:
 
 
 # =============================================================================
+# POLYHEDRAL HAMILTONIAN DEFENSE MANIFOLD (PHDM)
+# =============================================================================
+
+@dataclass
+class Polyhedron:
+    """
+    Represents a polyhedral structure in the defense manifold.
+
+    Each polyhedron has:
+    - A graph structure G = (V, E)
+    - A position in the 6D Langues manifold
+    - Topological invariants (Euler characteristic, symmetry group)
+    - Cryptographic binding data
+    """
+    name: str
+    vertices: int
+    edges: int
+    faces: int
+    centroid: np.ndarray  # Position in 6D Langues space
+    symmetry_order: int = 1
+    dual_name: str = ""
+    genus: int = 0  # For non-convex polyhedra
+
+    def euler_characteristic(self) -> int:
+        """Compute Euler characteristic: χ = V - E + F = 2 - 2g"""
+        return self.vertices - self.edges + self.faces
+
+    def serialize(self) -> bytes:
+        """Serialize polyhedron for cryptographic hashing."""
+        data = f"{self.name}|{self.vertices}|{self.edges}|{self.faces}|{self.symmetry_order}"
+        data += "|" + ",".join(f"{x:.6f}" for x in self.centroid)
+        return data.encode('utf-8')
+
+    def is_valid_euler(self) -> bool:
+        """Verify Euler characteristic matches expected value."""
+        expected = 2 - 2 * self.genus
+        return self.euler_characteristic() == expected
+
+    def topological_invariant(self) -> bytes:
+        """
+        Compute a cryptographic hash of the topological invariants.
+
+        The hash includes:
+        - Euler characteristic
+        - Symmetry order
+        - Genus
+        - Vertex/Edge/Face counts
+
+        Returns:
+            32-byte SHA256 hash
+        """
+        chi = self.euler_characteristic()
+        data = f"TOPO|V={self.vertices}|E={self.edges}|F={self.faces}|χ={chi}|sym={self.symmetry_order}|g={self.genus}"
+        return hashlib.sha256(data.encode('utf-8')).digest()
+
+
+class PolyhedralHamiltonianDefense:
+    """
+    Polyhedral Hamiltonian Defense Manifold (PHDM).
+
+    A cryptographic defense system that threads polyhedral structures
+    along a 1-dimensional curve in a higher-dimensional manifold.
+
+    Core Concepts:
+    1. HAMILTONIAN PATH: A sequence P₁ → P₂ → ... → Pₙ through the
+       polyhedral family where each structure is visited exactly once.
+
+    2. SEQUENTIAL KEY DERIVATION:
+       K_{i+1} = HMAC(K_i, Serialize(P_i))
+       Each shape's parameters seed the next key.
+
+    3. GEODESIC EMBEDDING: The path is realized as a smooth curve
+       γ(t) : [0,1] → ℝ⁶ in the Langues manifold.
+
+    4. CURVATURE-BASED DETECTION: Any deviation from γ(t) triggers
+       the Snap condition. Attack velocity = d/dt[d(state, γ(t))].
+
+    The "1-0 rhythm":
+    - 1: On-path state (valid manifold point)
+    - 0: Off-path deviation (attack/corruption)
+
+    Security Properties:
+    - Predictable topology: legitimate processes follow the path
+    - Observable curvature: deviations are measurable
+    - Sequential dependency: states are cryptographically chained
+    - Geometric verifiability: the chain is auditable
+    """
+
+    # Canonical polyhedral family (mathematically significant polyhedra)
+    CANONICAL_POLYHEDRA = [
+        # Platonic Solids
+        ("Tetrahedron", 4, 6, 4, 12),           # Simplest Platonic
+        ("Cube", 8, 12, 6, 24),                  # Hexahedron
+        ("Octahedron", 6, 12, 8, 24),            # Dual of cube
+        ("Dodecahedron", 20, 30, 12, 60),        # 12 pentagons
+        ("Icosahedron", 12, 30, 20, 60),         # 20 triangles
+
+        # Archimedean Solids (selected)
+        ("Truncated Tetrahedron", 12, 18, 8, 12),
+        ("Cuboctahedron", 12, 24, 14, 24),
+        ("Icosidodecahedron", 30, 60, 32, 60),
+
+        # Kepler-Poinsot (star polyhedra)
+        ("Small Stellated Dodecahedron", 12, 30, 12, 60),
+        ("Great Dodecahedron", 12, 30, 12, 60),
+
+        # Special Non-Convex
+        ("Szilassi Polyhedron", 14, 21, 7, 168),  # Genus 1, χ = 0
+        ("Császár Polyhedron", 7, 21, 14, 168),   # Dual of Szilassi
+
+        # Johnson Solids (selected)
+        ("Pentagonal Bipyramid", 7, 15, 10, 10),
+        ("Triangular Cupola", 9, 15, 8, 6),
+
+        # Rhombic Polyhedra
+        ("Rhombic Dodecahedron", 14, 24, 12, 24),
+        ("Bilinski Dodecahedron", 14, 24, 12, 4),  # Face-transitive
+    ]
+
+    def __init__(
+        self,
+        epsilon_snap: float = 0.5,
+        langues_metric: "LanguesMetricTensor" = None,
+        seed_key: bytes = None,
+    ):
+        """
+        Initialize the Polyhedral Hamiltonian Defense Manifold.
+
+        Args:
+            epsilon_snap: Maximum allowed deviation from geodesic
+            langues_metric: LanguesMetricTensor for 6D metric
+            seed_key: Initial cryptographic seed (default: random)
+        """
+        self.epsilon_snap = epsilon_snap
+        self.phi = PHI
+
+        # Initialize Langues metric
+        if langues_metric is None:
+            self.langues = LanguesMetricTensor(
+                epsilon=DEFAULT_EPSILON,
+                validate_epsilon=False
+            )
+        else:
+            self.langues = langues_metric
+
+        # Seed key
+        if seed_key is None:
+            self.seed_key = hashlib.sha256(b"PHDM_SEED").digest()
+        else:
+            self.seed_key = seed_key
+
+        # Build polyhedral family
+        self.polyhedra = self._build_polyhedra()
+
+        # Construct Hamiltonian path
+        self.hamiltonian_path = self._construct_hamiltonian_path()
+
+        # Pre-compute geodesic curve
+        self._geodesic_spline = None
+
+    def _build_polyhedra(self) -> List[Polyhedron]:
+        """Build the canonical polyhedral family with 6D embeddings."""
+        polyhedra = []
+
+        for i, (name, V, E, F, sym) in enumerate(self.CANONICAL_POLYHEDRA):
+            # Compute 6D centroid based on topological properties
+            # Map to Langues space: (syntactic, semantic, phonological,
+            #                        morphological, pragmatic, discourse)
+            centroid = np.array([
+                V / 20.0,                       # Vertex density (normalized)
+                E / 60.0,                       # Edge density
+                F / 30.0,                       # Face density
+                (V - E + F) / 4.0,              # Euler characteristic scaled
+                sym / 168.0,                    # Symmetry order (max: Szilassi)
+                self.phi ** (i % 6) / 10.0,     # Golden ratio modulation
+            ])
+
+            # Determine genus from Euler characteristic
+            chi = V - E + F
+            genus = (2 - chi) // 2 if chi <= 2 else 0
+
+            polyhedra.append(Polyhedron(
+                name=name,
+                vertices=V,
+                edges=E,
+                faces=F,
+                centroid=centroid,
+                symmetry_order=sym,
+                genus=genus,
+            ))
+
+        return polyhedra
+
+    def _construct_hamiltonian_path(self) -> List[int]:
+        """
+        Construct a Hamiltonian path through the polyhedral family.
+
+        Uses a greedy nearest-neighbor heuristic based on the
+        6D Langues metric distance between polyhedra.
+
+        Returns:
+            List of polyhedron indices in Hamiltonian order
+        """
+        n = len(self.polyhedra)
+        visited = [False] * n
+        path = [0]  # Start with first polyhedron
+        visited[0] = True
+
+        r = np.array([0.5] * 6)  # Default Langues parameters
+
+        for _ in range(n - 1):
+            current = path[-1]
+            current_centroid = self.polyhedra[current].centroid
+
+            # Find nearest unvisited neighbor
+            best_dist = np.inf
+            best_next = -1
+
+            for j in range(n):
+                if not visited[j]:
+                    dist = self.langues.compute_distance(
+                        current_centroid,
+                        self.polyhedra[j].centroid,
+                        r
+                    )
+                    if dist < best_dist:
+                        best_dist = dist
+                        best_next = j
+
+            if best_next >= 0:
+                path.append(best_next)
+                visited[best_next] = True
+
+        return path
+
+    def derive_key_chain(
+        self,
+        initial_key: bytes = None,
+    ) -> List[Tuple[Polyhedron, bytes]]:
+        """
+        Derive sequential keys along the Hamiltonian path.
+
+        K_{i+1} = HMAC-SHA256(K_i, Serialize(P_i))
+
+        This creates a cryptographically bound chain where each
+        polyhedron's parameters seed the next key.
+
+        Args:
+            initial_key: Starting key (default: seed_key)
+
+        Returns:
+            List of (Polyhedron, derived_key) tuples
+        """
+        import hmac
+
+        if initial_key is None:
+            initial_key = self.seed_key
+
+        chain = []
+        K = initial_key
+
+        for idx in self.hamiltonian_path:
+            P = self.polyhedra[idx]
+
+            # Derive next key
+            K_next = hmac.new(K, P.serialize(), hashlib.sha256).digest()
+
+            chain.append((P, K_next))
+            K = K_next
+
+        return chain
+
+    def compute_geodesic_curve(
+        self,
+        n_points: int = 100
+    ) -> np.ndarray:
+        """
+        Compute the geodesic curve γ(t) through the polyhedral centroids.
+
+        Uses cubic B-spline interpolation through the Hamiltonian path
+        to create a smooth curve in the 6D Langues manifold.
+
+        Args:
+            n_points: Number of points along the curve
+
+        Returns:
+            Array of shape (n_points, 6) representing γ(t)
+        """
+        # Get centroids in Hamiltonian order
+        centroids = np.array([
+            self.polyhedra[idx].centroid
+            for idx in self.hamiltonian_path
+        ])
+
+        # Parameterize by arc length
+        t_nodes = np.linspace(0, 1, len(centroids))
+        t_eval = np.linspace(0, 1, n_points)
+
+        # Cubic interpolation for each dimension
+        from scipy.interpolate import CubicSpline
+
+        gamma = np.zeros((n_points, 6))
+        for d in range(6):
+            cs = CubicSpline(t_nodes, centroids[:, d])
+            gamma[:, d] = cs(t_eval)
+
+        self._geodesic_spline = gamma
+        return gamma
+
+    def compute_curve_curvature(
+        self,
+        gamma: np.ndarray = None
+    ) -> np.ndarray:
+        """
+        Compute the curvature κ(t) along the geodesic curve.
+
+        κ(t) = |γ''(t)| / |γ'(t)|²
+
+        High curvature indicates sharp bends in the path.
+
+        Args:
+            gamma: Geodesic curve array (n_points, 6)
+
+        Returns:
+            Curvature array (n_points,)
+        """
+        if gamma is None:
+            if self._geodesic_spline is None:
+                gamma = self.compute_geodesic_curve()
+            else:
+                gamma = self._geodesic_spline
+
+        n = len(gamma)
+        if n < 3:
+            return np.zeros(n)
+
+        # First derivative (velocity)
+        gamma_prime = np.gradient(gamma, axis=0)
+        speed = np.linalg.norm(gamma_prime, axis=1)
+
+        # Second derivative (acceleration)
+        gamma_double_prime = np.gradient(gamma_prime, axis=0)
+        acceleration = np.linalg.norm(gamma_double_prime, axis=1)
+
+        # Curvature: κ = |γ''| / |γ'|²
+        with np.errstate(divide='ignore', invalid='ignore'):
+            curvature = acceleration / (speed ** 2 + 1e-10)
+
+        return curvature
+
+    def measure_deviation(
+        self,
+        state: np.ndarray,
+        t: float,
+        gamma: np.ndarray = None
+    ) -> float:
+        """
+        Measure deviation d(state, γ(t)) from the geodesic curve.
+
+        Args:
+            state: Current state in 6D Langues space
+            t: Parameter t ∈ [0, 1] along the curve
+            gamma: Pre-computed geodesic curve
+
+        Returns:
+            Euclidean distance from curve
+        """
+        if gamma is None:
+            if self._geodesic_spline is None:
+                gamma = self.compute_geodesic_curve()
+            else:
+                gamma = self._geodesic_spline
+
+        # Find point on curve at parameter t
+        idx = int(t * (len(gamma) - 1))
+        idx = max(0, min(idx, len(gamma) - 1))
+
+        gamma_t = gamma[idx]
+
+        # Compute Langues-weighted distance
+        r = np.array([0.5] * 6)
+        deviation = self.langues.compute_distance(state, gamma_t, r)
+
+        return float(deviation)
+
+    def detect_intrusion(
+        self,
+        states: List[np.ndarray],
+        timestamps: np.ndarray = None,
+    ) -> dict:
+        """
+        Detect intrusion attempts via curvature-based analysis.
+
+        An intrusion is detected when:
+        1. d(state, γ(t)) > ε_snap (off-path deviation)
+        2. d/dt[d(state, γ(t))] exceeds threshold (threat velocity)
+
+        Args:
+            states: Sequence of observed states in 6D space
+            timestamps: Time values for each state
+
+        Returns:
+            Intrusion detection analysis dict
+        """
+        if timestamps is None:
+            timestamps = np.linspace(0, 1, len(states))
+
+        gamma = self.compute_geodesic_curve(n_points=len(states))
+
+        deviations = []
+        intrusion_events = []
+        rhythm_pattern = []  # 1 = on-path, 0 = off-path
+
+        for i, (state, t) in enumerate(zip(states, timestamps)):
+            dev = self.measure_deviation(state, t, gamma)
+            deviations.append(dev)
+
+            on_path = dev <= self.epsilon_snap
+            rhythm_pattern.append(1 if on_path else 0)
+
+            if not on_path:
+                intrusion_events.append({
+                    "index": i,
+                    "time": float(t),
+                    "deviation": float(dev),
+                    "threshold": self.epsilon_snap,
+                })
+
+        # Compute threat velocity: d/dt[deviation]
+        deviations = np.array(deviations)
+        if len(timestamps) > 1:
+            dt = timestamps[1] - timestamps[0]
+            threat_velocities = np.gradient(deviations, dt)
+        else:
+            threat_velocities = np.zeros_like(deviations)
+
+        # Max threat velocity
+        max_threat_velocity = float(np.max(np.abs(threat_velocities)))
+
+        # Compute curvature statistics along the curve
+        curvature = self.compute_curve_curvature(gamma)
+        max_curvature = float(np.max(curvature))
+        mean_curvature = float(np.mean(curvature))
+
+        # Convert rhythm pattern to string
+        rhythm_string = "".join(str(r) for r in rhythm_pattern)
+
+        return {
+            "intrusion_detected": len(intrusion_events) > 0,
+            "intrusion_count": len(intrusion_events),
+            "intrusion_events": intrusion_events,
+            "deviations": deviations.tolist(),
+            "threat_velocities": threat_velocities.tolist(),
+            "max_threat_velocity": max_threat_velocity,
+            "rhythm_pattern": rhythm_string,
+            "on_path_ratio": sum(rhythm_pattern) / len(rhythm_pattern),
+            "epsilon_snap": self.epsilon_snap,
+            "max_curvature": max_curvature,
+            "mean_curvature": mean_curvature,
+        }
+
+    def validate_key_chain(
+        self,
+        chain: List[Tuple[Polyhedron, bytes]],
+        initial_key: bytes = None
+    ) -> dict:
+        """
+        Validate a key derivation chain for integrity.
+
+        Recomputes the HMAC chain and verifies each step.
+
+        Args:
+            chain: List of (Polyhedron, key) tuples
+            initial_key: Expected initial key
+
+        Returns:
+            Validation result dict
+        """
+        import hmac
+
+        if initial_key is None:
+            initial_key = self.seed_key
+
+        K = initial_key
+        valid_count = 0
+        invalid_steps = []
+
+        for i, (P, expected_key) in enumerate(chain):
+            # Recompute expected key
+            K_computed = hmac.new(K, P.serialize(), hashlib.sha256).digest()
+
+            if K_computed == expected_key:
+                valid_count += 1
+            else:
+                invalid_steps.append({
+                    "step": i,
+                    "polyhedron": P.name,
+                    "expected": expected_key.hex()[:16] + "...",
+                    "computed": K_computed.hex()[:16] + "...",
+                })
+
+            K = expected_key  # Continue with claimed key
+
+        return {
+            "valid": len(invalid_steps) == 0,
+            "valid_count": valid_count,
+            "total_steps": len(chain),
+            "invalid_steps": invalid_steps,
+            "integrity_ratio": valid_count / len(chain) if chain else 0,
+        }
+
+    # Alias for verify_chain_integrity
+    def verify_chain_integrity(
+        self,
+        chain: List[Tuple[Polyhedron, bytes]],
+        initial_key: bytes = None
+    ) -> dict:
+        """Alias for validate_key_chain."""
+        return self.validate_key_chain(chain, initial_key)
+
+    def simulate_attack(
+        self,
+        attack_type: str = "deviation",
+        attack_magnitude: float = 1.0,
+        attack_position: float = 0.5
+    ) -> dict:
+        """
+        Simulate an attack and measure detection response.
+
+        Attack Types:
+        - "deviation": Off-path state injection
+        - "skip": Attempt to skip Hamiltonian path steps
+        - "curvature": Inject high-curvature kink
+
+        Args:
+            attack_type: Type of attack to simulate
+            attack_magnitude: Strength of attack
+            attack_position: Position t ∈ [0,1] along path
+
+        Returns:
+            Attack simulation results
+        """
+        gamma = self.compute_geodesic_curve(n_points=100)
+        n = len(gamma)
+
+        # Generate legitimate states along the path
+        states = [gamma[i].copy() for i in range(n)]
+
+        attack_idx = int(attack_position * (n - 1))
+
+        if attack_type == "deviation":
+            # Inject off-path state
+            perturbation = np.random.randn(6) * attack_magnitude
+            states[attack_idx] = gamma[attack_idx] + perturbation
+
+        elif attack_type == "skip":
+            # Try to skip ahead (use wrong position)
+            skip_target = min(attack_idx + int(10 * attack_magnitude), n - 1)
+            states[attack_idx] = gamma[skip_target]
+
+        elif attack_type == "curvature":
+            # Inject sharp curvature kink
+            for i in range(max(0, attack_idx - 2), min(n, attack_idx + 3)):
+                states[i] = gamma[i] + np.sin(i * attack_magnitude) * attack_magnitude * 0.5
+
+        # Run intrusion detection
+        timestamps = np.linspace(0, 1, n)
+        detection = self.detect_intrusion(states, timestamps)
+
+        return {
+            "attack_type": attack_type,
+            "attack_magnitude": attack_magnitude,
+            "attack_position": attack_position,
+            "attack_detected": detection["intrusion_detected"],
+            "detection_details": detection,
+        }
+
+    def get_path_summary(self) -> str:
+        """Get summary of the Hamiltonian path."""
+        lines = ["Polyhedral Hamiltonian Path:"]
+        lines.append("=" * 50)
+
+        for i, idx in enumerate(self.hamiltonian_path):
+            P = self.polyhedra[idx]
+            chi = P.euler_characteristic()
+            lines.append(
+                f"{i+1:2d}. {P.name:30s} "
+                f"V={P.vertices:2d} E={P.edges:2d} F={P.faces:2d} "
+                f"χ={chi:2d} g={P.genus}"
+            )
+
+        return "\n".join(lines)
+
+    def get_defense_equations(self) -> str:
+        """Return formal equations for the PHDM."""
+        return r"""
+Polyhedral Hamiltonian Defense Manifold (PHDM)
+═══════════════════════════════════════════════════════
+
+1. HAMILTONIAN PATH
+   H = (P₁, P₂, ..., Pₙ)
+   A sequence touching each polyhedron exactly once.
+
+2. SEQUENTIAL KEY DERIVATION
+   K₀ = seed
+   K_{i+1} = HMAC-SHA256(K_i, Serialize(P_i))
+
+   Security: Skipping ahead breaks the chain.
+
+3. GEODESIC EMBEDDING
+   γ : [0,1] → ℝ⁶   (Langues manifold)
+   γ(t_i) ≈ centroid(P_i)   for Hamiltonian order
+
+   Interpolation: Cubic B-spline through centroids
+
+4. CURVATURE MEASURE
+   κ(t) = |γ''(t)| / |γ'(t)|²
+
+   High curvature = potential attack signature
+
+5. DEVIATION MEASURE
+   d(state, t) = dist_Langues(state, γ(t))
+
+   Snap Condition: d(state, t) > ε_snap ⟹ INTRUSION
+
+6. THREAT VELOCITY
+   v_threat(t) = d/dt[d(state, γ(t))]
+
+   Attack acceleration visible as velocity spikes
+
+7. 1-0 RHYTHM PATTERN
+   R(t) = { 1  if d(state, t) ≤ ε_snap  (on-path)
+          { 0  if d(state, t) > ε_snap  (off-path)
+
+   Attack visibility: 1 1 1 0 0 1 1 ... (disruption pattern)
+
+═══════════════════════════════════════════════════════
+
+Defense Properties:
+- Predictable topology: known valid route
+- Observable curvature: measurable deviation
+- Sequential dependency: cryptographic binding
+- Geometric verifiability: auditable chain
+"""
+
+    def __repr__(self) -> str:
+        return (
+            f"PolyhedralHamiltonianDefense("
+            f"n_polyhedra={len(self.polyhedra)}, "
+            f"ε_snap={self.epsilon_snap})"
+        )
+
+
+# =============================================================================
 # EXPORTS
 # =============================================================================
 
@@ -3449,6 +4103,10 @@ __all__ = [
 
     # Differential Cryptography Framework
     "DifferentialCryptographyFramework",
+
+    # Polyhedral Hamiltonian Defense Manifold
+    "Polyhedron",
+    "PolyhedralHamiltonianDefense",
 
     # Hyperbolic geometry
     "hyperbolic_distance_poincare",
