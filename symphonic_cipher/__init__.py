@@ -62,6 +62,9 @@ from .harmonic_scaling_law import (
     validate_langues_metric_stability,
     # Fractal Dimension Analysis
     FractalDimensionAnalyzer,
+    # Hyper-Torus Manifold
+    HyperTorusManifold,
+    DimensionMode,
     # Constants
     PHI,
     LANGUES_DIMENSIONS,
@@ -114,6 +117,9 @@ __all__ = [
     "validate_langues_metric_stability",
     # Fractal Dimension Analysis
     "FractalDimensionAnalyzer",
+    # Hyper-Torus Manifold (N-Dimensional Geometric Ledger)
+    "HyperTorusManifold",
+    "DimensionMode",
     # Constants
     "PHI",
     "LANGUES_DIMENSIONS",

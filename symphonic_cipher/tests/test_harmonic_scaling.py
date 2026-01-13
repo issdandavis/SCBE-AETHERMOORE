@@ -39,6 +39,9 @@ from ..harmonic_scaling_law import (
     validate_langues_metric_stability,
     # Fractal Dimension Analysis
     FractalDimensionAnalyzer,
+    # Hyper-Torus Manifold
+    HyperTorusManifold,
+    DimensionMode,
     PHI,
     LANGUES_DIMENSIONS,
     DEFAULT_EPSILON,
@@ -1188,3 +1191,407 @@ class TestFractalAnalyzerIntegration:
         # Generate attractor
         points = analyzer.generate_fractal_attractor(n_iterations=50, n_points=30, seed=42)
         assert points.shape == (30, 6)
+
+
+# =============================================================================
+# TEST: HYPER-TORUS MANIFOLD (N-DIMENSIONAL GEOMETRIC LEDGER)
+# =============================================================================
+
+class TestHyperTorusManifoldInit:
+    """Tests for HyperTorusManifold initialization."""
+
+    def test_default_initialization(self):
+        """Test default 4D initialization."""
+        torus = HyperTorusManifold()
+        assert torus.n_dims == 4
+        assert torus.minor_radius == 2.0
+        assert torus.trust_threshold == 1.5
+        assert len(torus.major_radii) == 3
+        assert len(torus.D) == 4
+        assert np.all(torus.D == 1)  # All forward by default
+
+    def test_custom_dimensions(self):
+        """Test custom dimension count."""
+        torus = HyperTorusManifold(n_dims=6)
+        assert torus.n_dims == 6
+        assert len(torus.major_radii) == 5
+        assert len(torus.D) == 6
+
+    def test_custom_dimension_modes(self):
+        """Test custom dimension modes D ∈ {-1, 0, +1}."""
+        modes = np.array([1, -1, 0, 1])
+        torus = HyperTorusManifold(n_dims=4, dimension_modes=modes)
+        np.testing.assert_array_equal(torus.D, modes)
+        assert torus.n_active == 3  # Only 3 non-frozen
+
+    def test_invalid_dimension_modes(self):
+        """Test that invalid dimension modes raise error."""
+        with pytest.raises(ValueError, match="dimension_modes must contain only"):
+            HyperTorusManifold(n_dims=4, dimension_modes=np.array([1, 2, 0, -1]))
+
+    def test_invalid_n_dims(self):
+        """Test that n_dims < 2 raises error."""
+        with pytest.raises(ValueError, match="n_dims must be >= 2"):
+            HyperTorusManifold(n_dims=1)
+
+
+class TestDimensionModes:
+    """Tests for dimension mode manipulation."""
+
+    def test_freeze_dimension(self):
+        """Test freezing a dimension."""
+        torus = HyperTorusManifold(n_dims=4)
+        assert torus.D[0] == 1
+
+        torus.freeze_dimension(0)
+        assert torus.D[0] == 0
+        assert torus.n_active == 3
+
+    def test_unfreeze_dimension_forward(self):
+        """Test unfreezing a dimension as forward."""
+        torus = HyperTorusManifold(n_dims=4, dimension_modes=np.array([0, 0, 0, 0]))
+        torus.unfreeze_dimension(1, backward=False)
+        assert torus.D[1] == 1
+
+    def test_unfreeze_dimension_backward(self):
+        """Test unfreezing a dimension as backward."""
+        torus = HyperTorusManifold(n_dims=4, dimension_modes=np.array([0, 0, 0, 0]))
+        torus.unfreeze_dimension(2, backward=True)
+        assert torus.D[2] == -1
+
+    def test_set_dimension_mode_enum(self):
+        """Test setting mode via DimensionMode enum."""
+        torus = HyperTorusManifold()
+        torus.set_dimension_mode(0, DimensionMode.BACKWARD)
+        assert torus.D[0] == -1
+
+        torus.set_dimension_mode(1, DimensionMode.FROZEN)
+        assert torus.D[1] == 0
+
+
+class TestMetricTensor:
+    """Tests for Riemannian metric tensor computation."""
+
+    def test_metric_tensor_shape(self):
+        """Test metric tensor has correct shape."""
+        torus = HyperTorusManifold(n_dims=4)
+        theta = np.array([0.0, 0.5, 1.0, 1.5])
+        g = torus.compute_metric_tensor(theta)
+        assert g.shape == (4, 4)
+
+    def test_metric_tensor_diagonal(self):
+        """Test metric tensor is diagonal."""
+        torus = HyperTorusManifold(n_dims=4)
+        theta = np.array([0.0, 0.5, 1.0, 1.5])
+        g = torus.compute_metric_tensor(theta)
+
+        # Off-diagonal should be zero
+        for i in range(4):
+            for j in range(4):
+                if i != j:
+                    assert g[i, j] == 0.0
+
+    def test_metric_tensor_positive(self):
+        """Test metric tensor diagonal is positive."""
+        torus = HyperTorusManifold(n_dims=4)
+        np.random.seed(42)
+
+        for _ in range(10):
+            theta = np.random.uniform(0, 2*np.pi, 4)
+            g = torus.compute_metric_tensor(theta)
+            assert np.all(np.diag(g) > 0)
+
+
+class TestGeodesicDistance:
+    """Tests for geodesic distance computation."""
+
+    def test_distance_to_self_is_zero(self):
+        """Test that distance to self is zero."""
+        torus = HyperTorusManifold(n_dims=4)
+        p = np.array([0.5, 1.0, 1.5, 2.0])
+        dist, _ = torus.compute_geodesic_distance(p, p)
+        assert abs(dist) < 1e-10
+
+    def test_distance_symmetric(self):
+        """Test distance is symmetric when all forward."""
+        torus = HyperTorusManifold(n_dims=4)
+        p1 = np.array([0.5, 1.0, 1.5, 2.0])
+        p2 = np.array([0.6, 1.1, 1.6, 2.1])
+
+        dist1, _ = torus.compute_geodesic_distance(p1, p2, apply_direction=False)
+        dist2, _ = torus.compute_geodesic_distance(p2, p1, apply_direction=False)
+
+        assert abs(dist1 - dist2) < 1e-10
+
+    def test_distance_asymmetric_with_backward(self):
+        """Test distance is asymmetric with backward dimension."""
+        modes = np.array([1, -1, 1, 1])  # Dim 1 is backward
+        torus = HyperTorusManifold(n_dims=4, dimension_modes=modes)
+
+        p1 = np.array([0.5, 1.0, 1.5, 2.0])
+        p2 = np.array([0.5, 1.5, 1.5, 2.0])  # Move forward in dim 1
+
+        # Forward in dim 1 incurs penalty because dim 1 is BACKWARD mode
+        dist_forward, _ = torus.compute_geodesic_distance(p1, p2, apply_direction=True)
+        dist_backward, _ = torus.compute_geodesic_distance(p2, p1, apply_direction=True)
+
+        # Moving backward (p2 -> p1) should be cheaper than forward (p1 -> p2)
+        assert dist_backward < dist_forward
+
+    def test_frozen_dimension_infinite_distance(self):
+        """Test that movement in frozen dimension gives infinite distance."""
+        modes = np.array([1, 0, 1, 1])  # Dim 1 is frozen
+        torus = HyperTorusManifold(n_dims=4, dimension_modes=modes)
+
+        p1 = np.array([0.5, 1.0, 1.5, 2.0])
+        p2 = np.array([0.5, 1.1, 1.5, 2.0])  # Move in frozen dim 1
+
+        dist, details = torus.compute_geodesic_distance(p1, p2, apply_direction=True)
+
+        assert np.isinf(dist)
+        assert details["frozen_violation"]
+
+    def test_periodic_boundary(self):
+        """Test periodic boundary conditions (wrap around)."""
+        torus = HyperTorusManifold(n_dims=4)
+
+        # Near 0 and near 2π should be close
+        p1 = np.array([0.1, 0.5, 0.5, 0.5])
+        p2 = np.array([2*np.pi - 0.1, 0.5, 0.5, 0.5])
+
+        dist, _ = torus.compute_geodesic_distance(p1, p2, apply_direction=False)
+
+        # Distance should be small (0.2), not large (2π - 0.2)
+        assert dist < 5.0  # Much less than if no wrapping
+
+
+class TestSnapProtocol:
+    """Tests for the Snap protocol (geometric integrity validation)."""
+
+    def test_genesis_block_always_succeeds(self):
+        """Test that genesis block (no previous) always succeeds."""
+        torus = HyperTorusManifold()
+        p_new = np.array([0.5, 1.0, 1.5, 2.0])
+
+        result = torus.validate_write(None, p_new)
+
+        assert result["status"] == "WRITE_SUCCESS"
+        assert result["is_genesis"]
+
+    def test_small_step_succeeds(self):
+        """Test that small step passes validation."""
+        torus = HyperTorusManifold(trust_threshold=2.0)
+        p1 = np.array([0.5, 1.0, 1.5, 2.0])
+        p2 = np.array([0.51, 1.01, 1.51, 2.01])
+
+        result = torus.validate_write(p1, p2)
+
+        assert result["status"] == "WRITE_SUCCESS"
+        assert result["distance"] < 2.0
+
+    def test_large_step_fails(self):
+        """Test that large step triggers SNAP."""
+        torus = HyperTorusManifold(trust_threshold=0.5)
+        p1 = np.array([0.5, 1.0, 1.5, 2.0])
+        p2 = np.array([2.5, 3.0, 3.5, 4.0])  # Large jump
+
+        result = torus.validate_write(p1, p2)
+
+        assert result["status"] == "WRITE_FAIL"
+        assert result["error"] == "GEOMETRIC_SNAP_DETECTED"
+        assert result["divergence"] > 0.5
+
+    def test_frozen_dimension_causes_snap(self):
+        """Test that movement in frozen dimension causes SNAP."""
+        modes = np.array([1, 0, 1, 1])  # Dim 1 frozen
+        torus = HyperTorusManifold(n_dims=4, dimension_modes=modes)
+
+        p1 = np.array([0.5, 1.0, 1.5, 2.0])
+        p2 = np.array([0.5, 1.1, 1.5, 2.0])  # Move in frozen dim
+
+        result = torus.validate_write(p1, p2)
+
+        assert result["status"] == "WRITE_FAIL"
+        assert result["frozen_violation"]
+
+
+class TestManifoldTension:
+    """Tests for trajectory tension analysis."""
+
+    def test_tension_empty_trajectory(self):
+        """Test tension with single point."""
+        torus = HyperTorusManifold()
+        result = torus.compute_manifold_tension([np.array([0.5, 1.0, 1.5, 2.0])])
+
+        assert result["total_tension"] == 0.0
+        assert result["snap_count"] == 0
+
+    def test_tension_smooth_trajectory(self):
+        """Test tension on smooth trajectory."""
+        torus = HyperTorusManifold(trust_threshold=5.0)
+
+        # Smooth trajectory with small steps
+        trajectory = [np.array([0.1*i, 0.5, 0.5, 0.5]) for i in range(10)]
+
+        result = torus.compute_manifold_tension(trajectory)
+
+        assert result["snap_count"] == 0
+        assert result["integrity_ratio"] == 1.0
+        assert result["total_tension"] > 0
+
+    def test_tension_with_snaps(self):
+        """Test tension on trajectory with discontinuities."""
+        torus = HyperTorusManifold(trust_threshold=0.5)
+
+        # Trajectory with large jumps
+        trajectory = [
+            np.array([0.0, 0.5, 0.5, 0.5]),
+            np.array([0.1, 0.5, 0.5, 0.5]),  # Small step
+            np.array([3.0, 0.5, 0.5, 0.5]),  # Large jump!
+            np.array([3.1, 0.5, 0.5, 0.5]),  # Small step
+        ]
+
+        result = torus.compute_manifold_tension(trajectory)
+
+        assert result["snap_count"] >= 1
+        assert result["integrity_ratio"] < 1.0
+
+
+class TestInteractionMapping:
+    """Tests for interaction to coordinate mapping."""
+
+    def test_map_interaction_deterministic(self):
+        """Test that mapping is deterministic (stable hash)."""
+        torus = HyperTorusManifold(n_dims=4)
+
+        coords1 = torus.map_interaction(["security", "auth", "login"], "msg_001")
+        coords2 = torus.map_interaction(["security", "auth", "login"], "msg_001")
+
+        np.testing.assert_array_equal(coords1, coords2)
+
+    def test_map_interaction_different_contexts(self):
+        """Test that different contexts map to different coordinates."""
+        torus = HyperTorusManifold(n_dims=4)
+
+        coords1 = torus.map_interaction(["security", "auth", "login"], "msg_001")
+        coords2 = torus.map_interaction(["creative", "story", "fiction"], "msg_001")
+
+        assert not np.allclose(coords1, coords2)
+
+    def test_map_interaction_range(self):
+        """Test that coordinates are in [0, 2π)."""
+        torus = HyperTorusManifold(n_dims=4)
+
+        for _ in range(10):
+            ctx = [f"context_{i}" for i in range(3)]
+            seq = f"sequence_{np.random.randint(1000)}"
+            coords = torus.map_interaction(ctx, seq)
+
+            assert np.all(coords >= 0)
+            assert np.all(coords < 2 * np.pi)
+
+
+class TestCurvatureAndDimension:
+    """Tests for curvature and dimension analysis."""
+
+    def test_curvature_bounds(self):
+        """Test curvature bounds computation."""
+        torus = HyperTorusManifold(n_dims=4)
+        bounds = torus.get_curvature_bounds()
+
+        assert "K_max" in bounds
+        assert "K_min" in bounds
+        assert bounds["K_max"] > 0  # Outer rim positive curvature
+        assert bounds["K_min"] < 0  # Inner core negative curvature
+
+    def test_hausdorff_dimension(self):
+        """Test Hausdorff dimension equals n_dims."""
+        for n in [2, 4, 6, 8]:
+            torus = HyperTorusManifold(n_dims=n)
+            D_H = torus.compute_hausdorff_dimension_torus()
+            assert D_H == float(n)
+
+
+class TestLanguesIntegration:
+    """Tests for integration with Langues Metric."""
+
+    def test_langues_integration(self):
+        """Test coupling with Langues Metric tensor."""
+        torus = HyperTorusManifold(n_dims=6)
+        langues = LanguesMetricTensor(epsilon=0.05)
+        r = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+
+        coupled_metric = torus.integrate_with_langues(langues, r)
+
+        assert coupled_metric.shape == (6, 6)
+        # Diagonal should be positive
+        assert np.all(np.diag(coupled_metric) > 0)
+
+    def test_langues_integration_requires_6d(self):
+        """Test that Langues integration requires at least 6 dimensions."""
+        torus = HyperTorusManifold(n_dims=4)
+        langues = LanguesMetricTensor(epsilon=0.05)
+
+        with pytest.raises(ValueError, match="Need at least 6 dimensions"):
+            torus.integrate_with_langues(langues, np.zeros(6))
+
+
+class TestHyperTorusIntegration:
+    """Integration tests for HyperTorusManifold."""
+
+    def test_full_write_workflow(self):
+        """Test complete write validation workflow."""
+        torus = HyperTorusManifold(n_dims=4, trust_threshold=2.0)
+
+        # Genesis block
+        ctx1 = ["security", "protocol", "init"]
+        p1 = torus.map_interaction(ctx1, "step_0")
+        result1 = torus.validate_write(None, p1)
+        assert result1["status"] == "WRITE_SUCCESS"
+
+        # Valid follow-up (similar context)
+        ctx2 = ["security", "protocol", "verify"]
+        p2 = torus.map_interaction(ctx2, "step_1")
+        result2 = torus.validate_write(p1, p2)
+        # May pass or fail depending on hash - just check it completes
+        assert "status" in result2
+
+    def test_security_context_high_tension(self):
+        """Test that inner dimension metric varies with outer angle.
+
+        On a nested torus, the metric coefficient g_ii for inner dimensions
+        depends on the angle of the previous dimension via:
+        g_ii = (R_i + R_{i-1} cos θ_{i-1})²
+
+        When θ_{i-1} ≈ 0 (outer rim), cos(θ) ≈ 1, so g_ii is larger.
+        When θ_{i-1} ≈ π (inner core), cos(θ) ≈ -1, so g_ii is smaller.
+        """
+        torus = HyperTorusManifold(n_dims=4, trust_threshold=1.0)
+
+        # θ_0 ≈ 0: outer rim, affects g[1,1]
+        p_outer = np.array([0.1, 0.5, 0.5, 0.5])
+        # θ_0 ≈ π: inner core, affects g[1,1]
+        p_inner = np.array([np.pi, 0.5, 0.5, 0.5])
+
+        g_outer = torus.compute_metric_tensor(p_outer)
+        g_inner = torus.compute_metric_tensor(p_inner)
+
+        # Inner dimension (g[1,1]) should be larger when θ_0 ≈ 0
+        # because g[1,1] = (R_1 + R_0 * cos(θ_0))²
+        assert g_outer[1, 1] > g_inner[1, 1]
+
+    def test_all_dimension_modes_workflow(self):
+        """Test workflow with mixed dimension modes."""
+        modes = np.array([1, -1, 0, 1])  # Forward, Backward, Frozen, Forward
+        torus = HyperTorusManifold(n_dims=4, dimension_modes=modes, trust_threshold=5.0)
+
+        p1 = np.array([0.5, 0.5, 0.5, 0.5])
+
+        # Move only in non-frozen dimensions
+        p2 = np.array([0.6, 0.4, 0.5, 0.6])  # Dim 2 unchanged (frozen)
+
+        result = torus.validate_write(p1, p2)
+
+        # Should succeed because we didn't move in frozen dimension
+        if not result.get("frozen_violation", False):
+            assert "distance" in result
