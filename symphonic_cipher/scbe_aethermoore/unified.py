@@ -44,7 +44,7 @@ R = PHI
 # Governance thresholds
 EPSILON = 1.5              # Snap threshold (geometric divergence)
 TAU_COH = 0.9              # Coherence minimum
-ETA_TARGET = 4.0           # Entropy target
+ETA_TARGET = 4.0           # Entropy target (bits, relative to max)
 BETA = 0.1                 # Entropy decay rate
 KAPPA_MAX = 0.1            # Curvature maximum
 KAPPA_TAU_MAX = 0.1        # Time curvature maximum
@@ -52,8 +52,20 @@ KAPPA_ETA_MAX = 0.1        # Entropy curvature maximum
 LAMBDA_BOUND = 0.001       # Lyapunov exponent bound
 H_MAX = 10.0               # Harmonic scaling maximum
 DOT_TAU_MIN = 0.0          # Causality (time must flow forward)
-ETA_MIN = 2.0              # Entropy minimum
-ETA_MAX = 6.0              # Entropy maximum
+
+# Extended Entropy Bounds (supporting negentropy)
+# η ∈ [η_min, η_max] where:
+#   η < 0: Negentropy (information gain, high structure/predictability)
+#   η = 0: Maximum compression (deterministic state)
+#   η > 0: Positive entropy (disorder, randomness)
+#
+# Mathematical basis: η = H(X) - H_max = -I(X)
+# where I(X) is the information content / negentropy
+ETA_MIN = -2.0             # Minimum (allows negentropy = high structure)
+ETA_MAX = 6.0              # Maximum entropy (high disorder)
+ETA_NEGENTROPY_THRESHOLD = 0.0  # Below this = structured/predictable
+ETA_HIGH_ENTROPY_THRESHOLD = 4.0  # Above this = chaotic/suspicious
+
 DELTA_DRIFT_MAX = 0.5      # Maximum time drift
 DELTA_NOISE_MAX = 0.1      # Maximum entropy noise
 OMEGA_TIME = 2 * np.pi / 60  # Time cycle frequency
@@ -199,6 +211,201 @@ def compute_entropy(window: List) -> float:
 
     # Scale to reasonable range [ETA_MIN, ETA_MAX]
     return max(ETA_MIN, min(ETA_MAX, entropy + ETA_MIN))
+
+
+def compute_negentropy(window: List, reference_entropy: float = None) -> float:
+    """
+    Compute negentropy (information gain / structure measure).
+
+    Negentropy: I(X) = H_max - H(X) = H_ref - H(X)
+
+    Mathematical Properties:
+        - I(X) ≥ 0 always (Gibbs' inequality)
+        - I(X) = 0 for maximum entropy (uniform) distribution
+        - I(X) > 0 indicates structure/predictability
+
+    For governance:
+        - High negentropy → highly structured behavior (could be suspicious rigidity)
+        - Low negentropy → high disorder (could be masking/noise)
+        - Optimal: moderate negentropy (natural variation)
+
+    Returns: negentropy value (can be positive, mapping to negative η)
+    """
+    H = compute_entropy(window)
+
+    # Reference entropy: maximum possible for the data dimension
+    if reference_entropy is None:
+        # For D bins, H_max = log₂(D)
+        reference_entropy = np.log2(16)  # Default 16 bins
+
+    negentropy = reference_entropy - H
+    return negentropy
+
+
+def compute_relative_entropy(p: np.ndarray, q: np.ndarray) -> float:
+    """
+    Compute Kullback-Leibler divergence D_KL(P || Q).
+
+    D_KL(P || Q) = Σ p(x) log(p(x)/q(x))
+
+    Mathematical Properties:
+        - D_KL ≥ 0 (Gibbs' inequality)
+        - D_KL = 0 iff P = Q
+        - Not symmetric: D_KL(P||Q) ≠ D_KL(Q||P)
+
+    For governance:
+        - Measures divergence from expected/reference distribution
+        - High D_KL → state has diverged significantly from baseline
+        - Used in triadic distance computation
+
+    Args:
+        p: Current state distribution
+        q: Reference/expected distribution
+
+    Returns: KL divergence (non-negative)
+    """
+    # Ensure valid probability distributions
+    p = np.asarray(p, dtype=float)
+    q = np.asarray(q, dtype=float)
+
+    # Normalize
+    p = p / (np.sum(p) + 1e-10)
+    q = q / (np.sum(q) + 1e-10)
+
+    # Add small epsilon to avoid log(0)
+    eps = 1e-10
+    p = np.clip(p, eps, 1.0)
+    q = np.clip(q, eps, 1.0)
+
+    # D_KL = Σ p log(p/q)
+    return float(np.sum(p * np.log(p / q)))
+
+
+def compute_mutual_information(joint: np.ndarray) -> float:
+    """
+    Compute mutual information I(X; Y) from joint distribution.
+
+    I(X; Y) = H(X) + H(Y) - H(X, Y)
+            = Σ p(x,y) log(p(x,y) / (p(x)p(y)))
+
+    Mathematical Properties:
+        - I(X; Y) ≥ 0
+        - I(X; Y) = 0 iff X and Y are independent
+        - I(X; Y) = I(Y; X) (symmetric)
+
+    For governance:
+        - Measures information shared between state components
+        - High MI → strong coupling (could indicate coordinated attack)
+        - Low MI → independent components (healthy modular state)
+
+    Args:
+        joint: 2D joint probability distribution p(x,y)
+
+    Returns: Mutual information in bits
+    """
+    joint = np.asarray(joint, dtype=float)
+    joint = joint / (np.sum(joint) + 1e-10)
+
+    # Marginals
+    p_x = np.sum(joint, axis=1)
+    p_y = np.sum(joint, axis=0)
+
+    # Entropy computations
+    eps = 1e-10
+
+    def H(p):
+        p = p[p > eps]
+        return -np.sum(p * np.log2(p))
+
+    H_X = H(p_x)
+    H_Y = H(p_y)
+    H_XY = H(joint.flatten())
+
+    return H_X + H_Y - H_XY
+
+
+def entropy_rate_estimate(sequence: List, order: int = 1) -> float:
+    """
+    Estimate entropy rate from a sequence (Markov approximation).
+
+    h = lim_{n→∞} H(X_n | X_{n-1}, ..., X_1)
+
+    For order-k Markov approximation:
+        h_k ≈ H(X_n | X_{n-1}, ..., X_{n-k})
+
+    For governance:
+        - Lower entropy rate → more predictable sequences
+        - Higher entropy rate → more random/chaotic behavior
+        - Used to detect anomalous patterns over time
+
+    Args:
+        sequence: Observed sequence of states
+        order: Markov order (context length)
+
+    Returns: Estimated entropy rate in bits/symbol
+    """
+    if len(sequence) <= order:
+        return ETA_TARGET
+
+    # Count transitions
+    from collections import defaultdict
+    transitions = defaultdict(lambda: defaultdict(int))
+
+    for i in range(order, len(sequence)):
+        context = tuple(sequence[i-order:i])
+        next_symbol = sequence[i]
+        transitions[context][next_symbol] += 1
+
+    # Compute conditional entropy H(X | context)
+    total_entropy = 0.0
+    total_contexts = 0
+
+    for context, next_counts in transitions.items():
+        context_total = sum(next_counts.values())
+        if context_total == 0:
+            continue
+
+        # H(X | this context)
+        context_entropy = 0.0
+        for count in next_counts.values():
+            p = count / context_total
+            if p > 0:
+                context_entropy -= p * np.log2(p)
+
+        total_entropy += context_entropy * context_total
+        total_contexts += context_total
+
+    if total_contexts == 0:
+        return ETA_TARGET
+
+    return total_entropy / total_contexts
+
+
+def fisher_information(theta: float, score_fn, delta: float = 1e-5) -> float:
+    """
+    Estimate Fisher information I(θ) = E[(∂/∂θ log p(X;θ))²].
+
+    Measures the amount of information a random variable X carries
+    about parameter θ. Related to Cramér-Rao bound.
+
+    For governance:
+        - High Fisher info → state is highly sensitive to parameters
+        - Low Fisher info → state is robust/insensitive
+        - Used to assess stability of governance decisions
+
+    Args:
+        theta: Parameter value
+        score_fn: Function computing log p(X; θ)
+        delta: Finite difference step
+
+    Returns: Fisher information estimate
+    """
+    # Numerical derivative of score function
+    score_plus = score_fn(theta + delta)
+    score_minus = score_fn(theta - delta)
+    score_derivative = (score_plus - score_minus) / (2 * delta)
+
+    return score_derivative ** 2
 
 
 # =============================================================================

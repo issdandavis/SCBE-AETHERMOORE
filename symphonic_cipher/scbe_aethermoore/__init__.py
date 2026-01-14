@@ -35,6 +35,13 @@ from .unified import (
     generate_context,
     compute_entropy,
 
+    # Extended Entropy Math (negentropy support)
+    compute_negentropy,
+    compute_relative_entropy,
+    compute_mutual_information,
+    entropy_rate_estimate,
+    fisher_information,
+
     # Time axis
     tau_dot,
     tau_curvature,
@@ -73,6 +80,8 @@ from .unified import (
     ETA_TARGET,
     ETA_MIN,
     ETA_MAX,
+    ETA_NEGENTROPY_THRESHOLD,
+    ETA_HIGH_ENTROPY_THRESHOLD,
     KAPPA_MAX,
     LAMBDA_BOUND,
     H_MAX,
@@ -94,6 +103,13 @@ __all__ = [
     "governance_9d",
     "generate_context",
     "compute_entropy",
+
+    # Extended Entropy Math (negentropy support)
+    "compute_negentropy",
+    "compute_relative_entropy",
+    "compute_mutual_information",
+    "entropy_rate_estimate",
+    "fisher_information",
 
     # Time
     "tau_dot",
@@ -133,6 +149,8 @@ __all__ = [
     "ETA_TARGET",
     "ETA_MIN",
     "ETA_MAX",
+    "ETA_NEGENTROPY_THRESHOLD",
+    "ETA_HIGH_ENTROPY_THRESHOLD",
     "KAPPA_MAX",
     "LAMBDA_BOUND",
     "H_MAX",
