@@ -19,8 +19,39 @@ Central Thesis:
     Invalid states physically cannot exist on the manifold
 """
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 __author__ = "SCBE-AETHERMOORE"
+
+# CPSE - Cryptographic Physics Simulation Engine
+from .cpse import (
+    CPSEEngine,
+    CPSEState,
+    VirtualGravityThrottler,
+    FluxGenerator,
+    # Metric Tensor
+    build_metric_tensor,
+    metric_distance,
+    behavioral_cost,
+    # Harmonic Scaling
+    harmonic_cost,
+    security_level_cost,
+    # Virtual Gravity
+    lorentz_factor,
+    compute_latency_delay,
+    # Soliton
+    soliton_evolution,
+    soliton_stability,
+    compute_soliton_key,
+    # Spin Rotation
+    rotation_matrix_2d,
+    rotation_matrix_nd,
+    context_spin_angles,
+    spin_transform,
+    spin_mismatch,
+    # Flux
+    flux_noise,
+    jittered_target,
+)
 
 # Full System (recommended entry point)
 from .full_system import (
@@ -104,6 +135,29 @@ from .unified import (
 )
 
 __all__ = [
+    # CPSE - Cryptographic Physics Simulation Engine
+    "CPSEEngine",
+    "CPSEState",
+    "VirtualGravityThrottler",
+    "FluxGenerator",
+    "build_metric_tensor",
+    "metric_distance",
+    "behavioral_cost",
+    "harmonic_cost",
+    "security_level_cost",
+    "lorentz_factor",
+    "compute_latency_delay",
+    "soliton_evolution",
+    "soliton_stability",
+    "compute_soliton_key",
+    "rotation_matrix_2d",
+    "rotation_matrix_nd",
+    "context_spin_angles",
+    "spin_transform",
+    "spin_mismatch",
+    "flux_noise",
+    "jittered_target",
+
     # Full System (recommended entry point)
     "SCBEFullSystem",
     "GovernanceMode",
