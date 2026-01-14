@@ -310,10 +310,13 @@ def generate_context(t: float, secret_key: bytes = b"default") -> np.ndarray:
         0: Identity (sin wave for demo)
         1: Intent phase (complex)
         2: Trajectory coherence
-        3: Timing
+        3: Timing (canonical microseconds)
         4: Commitment hash
         5: Signature validity
     """
+    # Canonical time encoding (microseconds) for stable hashing
+    t_us = int(t * 1_000_000)
+
     # Identity (oscillating)
     v1 = np.sin(t)
 
@@ -323,11 +326,11 @@ def generate_context(t: float, secret_key: bytes = b"default") -> np.ndarray:
     # Trajectory coherence
     v3 = 0.95
 
-    # Timing
-    v4 = t
+    # Timing (canonical)
+    v4 = float(t_us)
 
-    # Commitment (key-derived hash)
-    commit_data = f"commit_{t}_{secret_key.hex()}"
+    # Commitment (key-derived hash with canonical time)
+    commit_data = f"commit|{t_us}|{secret_key.hex()}"
     v5 = stable_hash(commit_data)
 
     # Signature validity score
@@ -423,20 +426,30 @@ def quantum_fidelity(q1: complex, q2: complex) -> float:
 
 def von_neumann_entropy(q: complex) -> float:
     """
-    Simplified von Neumann entropy for single qubit.
+    Quantum state purity metric (NOT true von Neumann entropy).
 
-    S = -Tr(ρ log ρ)
+    For a complex amplitude q representing a simplified quantum state:
+        S_approx = |1 - |q||
 
-    For pure state |ψ⟩: S = 0
-    We approximate based on deviation from unit norm.
+    This is a heuristic that measures deviation from unit-norm pure state:
+        - S = 0 when |q| = 1 (pure state, normalized)
+        - S > 0 when |q| ≠ 1 (denormalized, indicates error/decoherence)
+
+    True von Neumann entropy S = -Tr(ρ log ρ) requires a density matrix ρ,
+    not a single complex amplitude. This simplified metric is used for
+    governance decisions where we want to detect quantum state anomalies.
+
+    Returns:
+        0.0 for perfectly normalized state (|q| = 1)
+        Higher values indicate denormalization (potential tampering/error)
     """
     norm = np.abs(q)
     if norm < 1e-10:
-        return 1.0  # Max entropy for null state
+        return 1.0  # Max "entropy" for null/collapsed state
 
-    # Deviation from pure state
+    # Deviation from unit-norm pure state
     deviation = np.abs(1.0 - norm)
-    return deviation  # Simplified: 0 for pure, higher for mixed
+    return deviation
 
 
 # =============================================================================
@@ -741,9 +754,18 @@ def hmac_chain_tag(
     key: bytes
 ) -> bytes:
     """
-    Compute HMAC chain tag.
+    Compute HMAC chain tag for tamper-evident chain-of-custody.
 
     T_i = HMAC_K(M_i || nonce_i || T_{i-1})
+
+    Security Properties:
+        - Tamper evidence: Any modification breaks the chain
+        - Chain-of-custody: Each block binds to previous via T_{i-1}
+        - Ordering: Nonce sequence enforces message order
+
+    Note: This provides integrity and ordering, NOT forward secrecy.
+    If master_key is compromised, entire chain can be recomputed.
+    For forward secrecy, use a KDF ratchet with key erasure.
     """
     data = message + nonce + prev_tag
     return hmac.new(key, data, hashlib.sha256).digest()
@@ -757,9 +779,16 @@ def verify_hmac_chain(
     iv: bytes = b'\x00' * 32
 ) -> bool:
     """
-    Verify HMAC chain integrity.
+    Verify HMAC chain integrity (tamper-evident chain-of-custody).
 
-    Returns True if all tags valid and nonces increasing.
+    Checks:
+        1. All tags are valid HMAC-SHA256 of (message || nonce || prev_tag)
+        2. Chain is unbroken (each tag depends on previous)
+
+    Returns True if chain integrity is intact, False if tampered.
+
+    Security: Detects any modification, insertion, or reordering of messages.
+    Does NOT provide forward secrecy - compromise of key breaks entire chain.
     """
     if len(messages) != len(nonces) or len(messages) != len(tags):
         return False
