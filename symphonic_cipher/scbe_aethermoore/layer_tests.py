@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Tuple, Any, Optional
 import time
 
-from production_v2_1 import (
+from .production_v2_1 import (
     # Constants
     PHI, R, EPSILON, TAU_COH, ETA_TARGET, ETA_MIN, ETA_MAX, D,
     GROK_THRESHOLD_LOW, GROK_THRESHOLD_HIGH, GROK_WEIGHT,
