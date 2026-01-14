@@ -134,6 +134,27 @@ from .unified import (
     MODALITY_MASKS,
 )
 
+# QASI Core - Quantized/Quasi-Adaptive Security Interface
+from .qasi_core import (
+    realify,
+    complex_norm,
+    apply_spd_weights,
+    poincare_embed,
+    clamp_ball,
+    mobius_add,
+    phase_transform,
+    breathing_transform,
+    realm_distance,
+    spectral_stability,
+    spin_coherence,
+    harmonic_scaling as qasi_harmonic_scaling,
+    risk_base,
+    risk_prime,
+    decision_from_risk,
+    RiskWeights,
+    self_test as qasi_self_test,
+)
+
 __all__ = [
     # CPSE - Cryptographic Physics Simulation Engine
     "CPSEEngine",
@@ -232,4 +253,23 @@ __all__ = [
     "CONLANG",
     "REV_CONLANG",
     "MODALITY_MASKS",
+
+    # QASI Core
+    "realify",
+    "complex_norm",
+    "apply_spd_weights",
+    "poincare_embed",
+    "clamp_ball",
+    "mobius_add",
+    "phase_transform",
+    "breathing_transform",
+    "realm_distance",
+    "spectral_stability",
+    "spin_coherence",
+    "qasi_harmonic_scaling",
+    "risk_base",
+    "risk_prime",
+    "decision_from_risk",
+    "RiskWeights",
+    "qasi_self_test",
 ]
