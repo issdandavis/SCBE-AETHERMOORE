@@ -111,6 +111,21 @@ TONGUE_WEIGHTS = [PHI**k for k in range(D)]
 # =============================================================================
 # SECTION 2: QASI CORE (Axiom-Safe Geometry)
 # =============================================================================
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │  CORE INVARIANT CODE — DO NOT MODIFY WITHOUT MATHEMATICAL VERIFICATION  │
+# │                                                                         │
+# │  These functions implement the axioms A1-A12 of the SCBE geometry.      │
+# │  Any changes must preserve:                                             │
+# │    - A1-A2: Realification isometry ||realify(c)|| = ||c||               │
+# │    - A4: Poincaré embedding maps to open ball ||u|| < 1                 │
+# │    - A5: Hyperbolic distance is symmetric and satisfies triangle ineq   │
+# │    - A6: Möbius addition preserves the ball                             │
+# │    - A7: Phase transform is an isometry                                 │
+# │    - A8: Breathing transform is a diffeomorphism (NOT isometry)         │
+# │    - A9: Realm distance is 1-Lipschitz                                  │
+# │    - A11: Triadic distance is a proper metric                           │
+# │    - A12: Harmonic scaling H(d,R) = R^(d²) is monotone in d             │
+# └─────────────────────────────────────────────────────────────────────────┘
 
 def _norm(x: np.ndarray) -> float:
     return float(np.linalg.norm(x))
@@ -200,18 +215,25 @@ def realm_distance(u: np.ndarray, centers: np.ndarray) -> float:
     return float(min(hyperbolic_distance(u, centers[k]) for k in range(centers.shape[0])))
 
 
-def spectral_stability(y: np.ndarray, hf_frac: float = 0.5, eps: float = 1e-12) -> float:
-    """A10: Spectral coherence S_spec ∈ [0,1]."""
+def spectral_stability(y: np.ndarray, eps: float = 1e-12) -> float:
+    """A10: Spectral coherence S_spec ∈ [0,1].
+
+    Measures spectral concentration: how peaked is the spectrum?
+    High concentration (few dominant frequencies) → S_spec ≈ 1
+    Flat spectrum (noise-like) → S_spec ≈ 0
+    """
     if y.size < 2:
         return 1.0
     Y = np.fft.fft(y)
-    P = np.abs(Y) ** 2
+    P = np.abs(Y[:len(Y)//2]) ** 2  # Only positive frequencies
     total = max(float(np.sum(P)), eps)
-    N = P.size
-    hf_start = max(1, int(N * (1 - hf_frac)))
-    hf_power = float(np.sum(P[hf_start:]))
-    r_hf = min(max(hf_power / total, 0.0), 1.0)
-    return float(1.0 - r_hf)
+    # Normalized spectral entropy: low entropy = high concentration
+    p_norm = P / total
+    p_norm = p_norm[p_norm > eps]
+    H = float(-np.sum(p_norm * np.log(p_norm + eps)))
+    H_max = np.log(len(P) + eps)  # Maximum entropy (flat spectrum)
+    # S_spec = 1 when concentrated, 0 when flat
+    return float(1.0 - min(1.0, H / (H_max + eps)))
 
 
 def spin_coherence(phasors: np.ndarray, eps: float = 1e-12) -> float:
@@ -220,6 +242,32 @@ def spin_coherence(phasors: np.ndarray, eps: float = 1e-12) -> float:
     num = abs(np.sum(s))
     denom = float(np.sum(np.abs(s))) + eps
     return float(min(max(num / denom, 0.0), 1.0))
+
+
+def audio_envelope_coherence(wave: np.ndarray, window_size: int = 256, eps: float = 1e-12) -> float:
+    """Audio envelope stability S_audio ∈ [0,1].
+
+    Measures consistency of audio envelope across windows.
+    Stable envelope → S_audio ≈ 1
+    Erratic envelope → S_audio ≈ 0
+    """
+    if wave.size < window_size * 2:
+        return 1.0
+    # Compute envelope via Hilbert-like approximation (abs of analytic signal)
+    analytic = wave + 1j * np.imag(np.fft.ifft(np.fft.fft(wave) * 2))
+    envelope = np.abs(analytic)
+    # Compute envelope variance in windows
+    n_windows = wave.size // window_size
+    if n_windows < 2:
+        return 1.0
+    window_means = [np.mean(envelope[i*window_size:(i+1)*window_size]) for i in range(n_windows)]
+    window_means = np.array(window_means)
+    mean_envelope = np.mean(window_means)
+    if mean_envelope < eps:
+        return 1.0
+    # Coefficient of variation: low CV = stable = high coherence
+    cv = np.std(window_means) / (mean_envelope + eps)
+    return float(max(0.0, min(1.0, 1.0 - cv)))
 
 
 def triadic_distance(d1: float, d2: float, dG: float,
@@ -362,7 +410,7 @@ def generate_context(t: float) -> np.ndarray:
 
 
 def compute_entropy(window: list) -> float:
-    """Shannon entropy of state window."""
+    """Shannon entropy of state window ∈ [0, log2(bins)]."""
     flat = []
     for v in np.array(window, dtype=object).flatten():
         if isinstance(v, (int, float)):
@@ -373,9 +421,16 @@ def compute_entropy(window: list) -> float:
             flat.append(float(hash(str(v)) % 1000) / 1000)
     if len(flat) < 2:
         return 0.0
-    hist, _ = np.histogram(flat, bins=min(16, len(flat)), density=True)
+    # Add small jitter to avoid degenerate histograms
+    flat = np.array(flat) + np.random.randn(len(flat)) * 1e-10
+    n_bins = min(16, len(flat))
+    hist, _ = np.histogram(flat, bins=n_bins)
+    # Use counts, not density, and normalize properly
     hist = hist[hist > 0]
-    return float(-np.sum(hist * np.log2(hist + 1e-9))) if len(hist) > 0 else 0.0
+    if len(hist) == 0:
+        return 0.0
+    probs = hist / hist.sum()
+    return float(-np.sum(probs * np.log2(probs + 1e-12)))
 
 
 def tau_dot(t: float) -> float:
@@ -550,8 +605,8 @@ def governance_pipeline(state: State9D, intent: float, poly: Polyhedron,
     d_tri = triadic_distance(d_star, d_auth, d_cfg)
     d_tri_norm = min(1.0, d_tri / (EPSILON + 1e-9))
 
-    # L14: Audio coherence (simulated)
-    S_audio = spectral_stability(intent_wave[:len(intent_wave)//2])
+    # L14: Audio envelope coherence
+    S_audio = audio_envelope_coherence(intent_wave)
 
     # Trust from time flow
     trust_tau = min(1.0, max(0.0, tau_dot(state.tau) / 2.0))
@@ -798,6 +853,30 @@ def self_test(verbose: bool = True) -> Dict[str, Any]:
     recovered = extract_phase(wave)
     ok_phase = abs(recovered - intent) < 0.05
     results['phase_roundtrip'] = ok_phase
+
+    # Test 9: Spectral stability variance (pure tone vs noise)
+    pure_tone = phase_modulated_intent(0.5)
+    noise = np.random.randn(len(pure_tone))
+    s_pure = spectral_stability(pure_tone)
+    s_noise = spectral_stability(noise)
+    ok_spec = s_pure > 0.9 and s_noise < 0.2  # Pure concentrated, noise flat
+    results['spectral_variance'] = ok_spec
+
+    # Test 10: Audio envelope coherence
+    s_audio = audio_envelope_coherence(pure_tone)
+    ok_audio = 0.9 <= s_audio <= 1.0  # Pure tone has stable envelope
+    results['audio_coherence'] = ok_audio
+
+    # Test 11: Entropy non-negativity
+    entropies = [compute_entropy([generate_context(float(t))]) for t in [0, 100, 1000]]
+    ok_entropy = all(e >= 0 for e in entropies)
+    results['entropy_positive'] = ok_entropy
+
+    # Test 12: Extreme coordinate handling
+    extreme = np.array([1e10 + 1e10j, 1e-10 - 1e-10j])
+    u_extreme = poincare_embed(realify(extreme))
+    ok_extreme = np.linalg.norm(u_extreme) < 1.0 and not np.any(np.isnan(u_extreme))
+    results['extreme_coords'] = ok_extreme
 
     if verbose:
         print("=" * 60)
