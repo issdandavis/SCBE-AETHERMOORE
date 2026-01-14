@@ -31,6 +31,11 @@ from production_v2_1 import (
     clamp_ball, safe_arcosh, _norm,
     # Quasicrystal (L3.5)
     QuasicrystalLattice, QUASICRYSTAL,
+    # CPSE Physics (Section 1.6)
+    lorentz_factor, compute_latency_delay, SolitonPacket, soliton_evolve,
+    soliton_key_from_secret, spin_rotation_matrix, apply_spin,
+    flux_jitter, CPSEThrottler,
+    RHO_CRITICAL, SOLITON_ALPHA, SOLITON_BETA,
     # Coherence (L9-L10)
     spectral_stability, spin_coherence, audio_envelope_coherence,
     # Risk (L11-L13)
@@ -324,6 +329,142 @@ def test_L3_5_quasicrystal() -> List[LayerTestResult]:
         expected="defect_score > 0 (periodic attack)",
         actual=f"defect_score = {defect_score:.4f}",
         drift_metrics={"defect_score": defect_score}
+    ))
+
+    return results
+
+
+# =============================================================================
+# CPSE PHYSICS ENGINE TESTS
+# =============================================================================
+
+def test_cpse_physics() -> List[LayerTestResult]:
+    """CPSE: Cryptographic Physics Simulation Engine tests."""
+    results = []
+
+    # Test 1: Lorentz factor at low density (no throttling)
+    gamma_low = lorentz_factor(10, 100)  # 10% of critical
+    passed = 1.0 <= gamma_low < 1.1
+    results.append(LayerTestResult(
+        layer="CPSE", test_id=1, test_name="lorentz_low_density",
+        passed=passed,
+        input_summary="ρ_E=10, ρ_critical=100",
+        output_summary=f"γ = {gamma_low:.6f}",
+        expected="γ ≈ 1.0 (no throttling)",
+        actual=f"γ = {gamma_low:.6f}",
+        drift_metrics={"gamma": gamma_low}
+    ))
+
+    # Test 2: Lorentz factor near critical (event horizon)
+    gamma_high = lorentz_factor(99, 100)  # 99% of critical
+    passed = gamma_high > 5.0
+    results.append(LayerTestResult(
+        layer="CPSE", test_id=2, test_name="lorentz_event_horizon",
+        passed=passed,
+        input_summary="ρ_E=99, ρ_critical=100",
+        output_summary=f"γ = {gamma_high:.4f}",
+        expected="γ >> 1 (severe throttling)",
+        actual=f"γ = {gamma_high:.4f}",
+        drift_metrics={"gamma": gamma_high}
+    ))
+
+    # Test 3: Soliton with correct key maintains amplitude
+    secret = b"authorized_key_12345"
+    phi_d = soliton_key_from_secret(secret)
+    packet = SolitonPacket(amplitude=0.8, phi_d=phi_d)
+    for _ in range(20):
+        packet = soliton_evolve(packet)
+    passed = 0.4 < packet.amplitude <= 1.0
+    results.append(LayerTestResult(
+        layer="CPSE", test_id=3, test_name="soliton_authorized",
+        passed=passed,
+        input_summary=f"A_0=0.8, Φ_d={phi_d:.6f}",
+        output_summary=f"A_20 = {packet.amplitude:.4f}",
+        expected="Amplitude maintained (0.4 < A ≤ 1.0)",
+        actual=f"A = {packet.amplitude:.4f}",
+        drift_metrics={"amplitude": packet.amplitude}
+    ))
+
+    # Test 4: Soliton without key decays (start below self-focusing threshold)
+    # At low A, α·A² < β so decay dominates
+    bad_packet = SolitonPacket(amplitude=0.5, phi_d=0.0)  # No gain, below threshold
+    for _ in range(50):
+        bad_packet = soliton_evolve(bad_packet)
+    # Without key, should decay toward 0 (or stabilize at low value)
+    passed = bad_packet.amplitude < 0.8  # Should not grow
+    results.append(LayerTestResult(
+        layer="CPSE", test_id=4, test_name="soliton_unauthorized",
+        passed=passed,
+        input_summary="A_0=0.5, Φ_d=0 (no key)",
+        output_summary=f"A_50 = {bad_packet.amplitude:.4f}",
+        expected="Amplitude controlled (A < 0.8)",
+        actual=f"A = {bad_packet.amplitude:.4f}",
+        drift_metrics={"amplitude": bad_packet.amplitude}
+    ))
+
+    # Test 5: Spin rotation preserves norm
+    v_in = np.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+    v_out = apply_spin(v_in, "context:test|time:12345")
+    norm_in = np.linalg.norm(v_in)
+    norm_out = np.linalg.norm(v_out)
+    passed = abs(norm_in - norm_out) < 1e-10
+    results.append(LayerTestResult(
+        layer="CPSE", test_id=5, test_name="spin_norm_preserving",
+        passed=passed,
+        input_summary=f"||v_in|| = {norm_in:.6f}",
+        output_summary=f"||v_out|| = {norm_out:.6f}",
+        expected="||v_out|| = ||v_in|| (isometry)",
+        actual=f"Diff = {abs(norm_in - norm_out):.2e}",
+        drift_metrics={"norm_diff": abs(norm_in - norm_out)}
+    ))
+
+    # Test 6: Different contexts produce different rotations
+    v_out1 = apply_spin(v_in, "context:A")
+    v_out2 = apply_spin(v_in, "context:B")
+    diff = np.linalg.norm(v_out1 - v_out2)
+    passed = diff > 0.1  # Should be different
+    results.append(LayerTestResult(
+        layer="CPSE", test_id=6, test_name="spin_context_dependent",
+        passed=passed,
+        input_summary="Same v_in, different contexts",
+        output_summary=f"||v_A - v_B|| = {diff:.4f}",
+        expected="Different rotations (diff > 0.1)",
+        actual=f"Diff = {diff:.4f}",
+        drift_metrics={"context_diff": diff}
+    ))
+
+    # Test 7: Flux jitter adds noise proportional to load
+    np.random.seed(42)
+    P_target = np.array([1.0, 2.0, 3.0])
+    P_low = flux_jitter(P_target.copy(), network_load=0.0)
+    P_high = flux_jitter(P_target.copy(), network_load=1.0)
+    diff_low = np.linalg.norm(P_low - P_target)
+    diff_high = np.linalg.norm(P_high - P_target)
+    passed = diff_high > diff_low  # Higher load = more jitter
+    results.append(LayerTestResult(
+        layer="CPSE", test_id=7, test_name="flux_load_scaling",
+        passed=passed,
+        input_summary="P_target, load=0 vs load=1",
+        output_summary=f"jitter_low={diff_low:.4f}, jitter_high={diff_high:.4f}",
+        expected="Higher load → more jitter",
+        actual=f"Ratio = {diff_high/(diff_low+1e-10):.2f}x",
+        drift_metrics={"jitter_ratio": diff_high/(diff_low+1e-10)}
+    ))
+
+    # Test 8: Rotation matrix is orthogonal (R^T @ R = I)
+    theta = np.array([0.5, 1.0, 1.5, 2.0, 2.5])
+    R = spin_rotation_matrix(theta)
+    RTR = R.T @ R
+    orthogonal_error = np.linalg.norm(RTR - np.eye(6))
+    passed = orthogonal_error < 1e-10
+    results.append(LayerTestResult(
+        layer="CPSE", test_id=8, test_name="rotation_orthogonal",
+        passed=passed,
+        input_summary="θ = [0.5, 1.0, 1.5, 2.0, 2.5]",
+        output_summary=f"||R^T R - I|| = {orthogonal_error:.2e}",
+        expected="R^T R = I (orthogonal)",
+        actual=f"Error = {orthogonal_error:.2e}",
+        drift_metrics={"orthogonal_error": orthogonal_error}
     ))
 
     return results
@@ -1226,6 +1367,7 @@ def run_all_tests(verbose: bool = True) -> TestSuiteResult:
         ("L1-L2: Realification", test_L1_L2_realification),
         ("L3: SPD Weighting", test_L3_spd_weighting),
         ("L3.5: Quasicrystal", test_L3_5_quasicrystal),
+        ("CPSE: Physics Engine", test_cpse_physics),
         ("L4: Poincaré Embedding", test_L4_poincare_embed),
         ("L5: Hyperbolic Distance", test_L5_hyperbolic_distance),
         ("L6: Möbius Addition", test_L6_mobius_add),
