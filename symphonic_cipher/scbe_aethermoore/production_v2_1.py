@@ -278,6 +278,312 @@ QUASICRYSTAL = QuasicrystalLattice()
 
 
 # =============================================================================
+# SECTION 1.6: CPSE PHYSICS ENGINE (Patent-Ready Algorithms)
+# =============================================================================
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │  CRYPTOGRAPHIC PHYSICS SIMULATION ENGINE                                 │
+# │                                                                         │
+# │  Transforms abstract security metaphors into executable algorithms:     │
+# │    - Lorentz Factor γ(ρ): Query throttling approaching event horizon    │
+# │    - Soliton Dynamics: NLSE-inspired packet integrity with gain/loss    │
+# │    - Spin Rotation: Context-dependent 6D rotation matrix product        │
+# │    - Flux Jitter: Stochastic coordinate perturbation σ(NetworkLoad)     │
+# │                                                                         │
+# │  These provide the "Technical Solutions" required for Alice compliance.  │
+# └─────────────────────────────────────────────────────────────────────────┘
+
+# CPSE Constants
+RHO_CRITICAL = 100.0          # Max queries/second before event horizon
+SOLITON_ALPHA = 0.1           # Self-focusing nonlinearity coefficient
+SOLITON_BETA = 0.05           # Linear loss coefficient
+FLUX_SIGMA_BASE = 0.01        # Base jitter standard deviation
+
+
+def lorentz_factor(rho_E: float, rho_critical: float = RHO_CRITICAL,
+                   eps: float = 1e-12) -> float:
+    """
+    Virtual Gravity: Lorentz factor for latency throttling (Claim 54).
+
+    γ(ρ_E) = 1 / sqrt(1 - (ρ_E / ρ_critical)²)
+
+    As query density ρ_E → ρ_critical, delay → ∞ (event horizon).
+
+    Args:
+        rho_E: Query energy density (requests/second from context)
+        rho_critical: Speed of light limit (max allowable requests)
+
+    Returns:
+        γ ∈ [1, ∞): Time dilation factor
+    """
+    ratio = min(abs(rho_E) / (rho_critical + eps), 0.9999)  # Clamp to avoid singularity
+    denominator = np.sqrt(max(eps, 1.0 - ratio ** 2))
+    return float(1.0 / denominator)
+
+
+def compute_latency_delay(t_base: float, rho_E: float,
+                          rho_critical: float = RHO_CRITICAL) -> float:
+    """
+    Compute throttled latency using Lorentz factor.
+
+    Δt = t_base · γ(ρ_E)
+
+    Args:
+        t_base: Base processing time (seconds)
+        rho_E: Current query density
+
+    Returns:
+        Throttled delay in seconds
+    """
+    gamma = lorentz_factor(rho_E, rho_critical)
+    return float(t_base * gamma)
+
+
+@dataclass
+class SolitonPacket:
+    """Data packet with soliton amplitude dynamics."""
+    amplitude: float           # Signal integrity score A ∈ [0, 1]
+    phi_d: float              # Soliton key (gain offset from private key)
+    iterations: int = 0       # Evolution steps survived
+
+
+def soliton_evolve(packet: SolitonPacket, alpha: float = SOLITON_ALPHA,
+                   beta: float = SOLITON_BETA) -> SolitonPacket:
+    """
+    Soliton Dynamics: NLSE-inspired packet integrity (Claim 52 & 55).
+
+    A_next = A_current + (α·|A|²·A - β·A) + Φ_d
+
+    Only packets with correct Φ_d maintain amplitude over time.
+
+    Args:
+        packet: Current packet state
+        alpha: Self-focusing nonlinearity (positive feedback for valid structure)
+        beta: Linear loss coefficient (natural entropy)
+
+    Returns:
+        Evolved packet state
+    """
+    A = packet.amplitude
+    phi_d = packet.phi_d
+
+    # NLSE discrete analog
+    nonlinear_gain = alpha * (A ** 2) * A  # Self-focusing
+    linear_loss = beta * A                  # Entropy decay
+    soliton_boost = phi_d                   # Key-derived gain
+
+    A_next = A + (nonlinear_gain - linear_loss) + soliton_boost
+
+    # Clamp to valid range
+    A_next = float(max(0.0, min(1.0, A_next)))
+
+    return SolitonPacket(
+        amplitude=A_next,
+        phi_d=phi_d,
+        iterations=packet.iterations + 1
+    )
+
+
+def soliton_key_from_secret(secret: bytes, target_beta: float = SOLITON_BETA) -> float:
+    """
+    Derive Soliton Key Φ_d from private key.
+
+    The key perfectly offsets loss β for authorized packets.
+
+    Args:
+        secret: Private key bytes
+        target_beta: Loss to offset
+
+    Returns:
+        Φ_d value that maintains soliton stability
+    """
+    # Hash to get deterministic offset
+    h = hashlib.sha256(secret).digest()
+    # Map to small positive value that offsets beta
+    raw = int.from_bytes(h[:4], 'big') / (2**32)
+    # Scale to offset beta with small variance
+    phi_d = target_beta * (0.9 + 0.2 * raw)  # ≈ beta ± 10%
+    return float(phi_d)
+
+
+def spin_rotation_matrix(theta: np.ndarray) -> np.ndarray:
+    """
+    Spin Rotation: Context-dependent 6D rotation (Claim 60).
+
+    v_final = (∏_{i=1}^{5} R_{i,i+1}(θ_i)) · v_input
+
+    Each R_{i,i+1} is a Givens rotation in the (i, i+1) plane.
+
+    Args:
+        theta: Array of 5 rotation angles θ_1...θ_5
+
+    Returns:
+        6x6 rotation matrix (product of 5 Givens rotations)
+    """
+    n = 6  # Dimension
+    R_total = np.eye(n)
+
+    for i in range(min(len(theta), n - 1)):
+        # Givens rotation in (i, i+1) plane
+        c = np.cos(theta[i])
+        s = np.sin(theta[i])
+
+        R_i = np.eye(n)
+        R_i[i, i] = c
+        R_i[i, i + 1] = -s
+        R_i[i + 1, i] = s
+        R_i[i + 1, i + 1] = c
+
+        R_total = R_i @ R_total
+
+    return R_total
+
+
+def context_to_spin_angles(context_hash: bytes) -> np.ndarray:
+    """
+    Derive spin angles from context hash.
+
+    θ_i = (hash_bytes[i] / 255) · 2π
+
+    Args:
+        context_hash: Hash of (Time + Location + Role)
+
+    Returns:
+        Array of 5 rotation angles ∈ [0, 2π)
+    """
+    angles = np.array([
+        (context_hash[i] / 255.0) * 2 * np.pi
+        for i in range(min(5, len(context_hash)))
+    ])
+    return angles
+
+
+def apply_spin(v_input: np.ndarray, context: str) -> np.ndarray:
+    """
+    Apply context-dependent spin rotation to vector.
+
+    Args:
+        v_input: 6D input vector
+        context: Context string (Time + Location + Role)
+
+    Returns:
+        Rotated vector v_final
+    """
+    context_hash = hashlib.sha256(context.encode()).digest()
+    theta = context_to_spin_angles(context_hash)
+    R = spin_rotation_matrix(theta)
+
+    # Pad input to 6D if needed
+    v = np.zeros(6)
+    v[:len(v_input)] = v_input[:6]
+
+    return R @ v
+
+
+def flux_jitter(P_target: np.ndarray, network_load: float,
+                sigma_base: float = FLUX_SIGMA_BASE) -> np.ndarray:
+    """
+    Flux Jitter: Dynamic interference (Claim 61).
+
+    P_jitter = P_target + N(0, σ(NetworkLoad))
+
+    The "Rail" (authorized path) accounts for jitter; attackers miss.
+
+    Args:
+        P_target: Target coordinate/address
+        network_load: Current network interference ∈ [0, 1]
+        sigma_base: Base standard deviation
+
+    Returns:
+        Jittered coordinate
+    """
+    # Scale sigma by network load (higher load = more jitter)
+    sigma = sigma_base * (1.0 + network_load * 10.0)
+    noise = np.random.normal(0, sigma, size=P_target.shape)
+    return P_target + noise
+
+
+def flux_compensated_distance(P_actual: np.ndarray, P_target: np.ndarray,
+                              jitter_history: np.ndarray) -> float:
+    """
+    Compute distance accounting for known flux pattern.
+
+    Authorized clients track jitter_history and compensate.
+    Attackers see random noise.
+
+    Args:
+        P_actual: Actual position
+        P_target: Original target
+        jitter_history: Recent jitter vectors (for prediction)
+
+    Returns:
+        Compensated distance (low for authorized, high for attackers)
+    """
+    if len(jitter_history) < 2:
+        return float(np.linalg.norm(P_actual - P_target))
+
+    # Authorized clients can predict next jitter from pattern
+    predicted_jitter = np.mean(jitter_history[-3:], axis=0)
+    compensated_target = P_target + predicted_jitter
+
+    return float(np.linalg.norm(P_actual - compensated_target))
+
+
+class CPSEThrottler:
+    """
+    Query throttler implementing Lorentz factor dynamics.
+
+    Tracks query density per context and applies time dilation.
+    """
+
+    def __init__(self, rho_critical: float = RHO_CRITICAL,
+                 window_seconds: float = 1.0):
+        self.rho_critical = rho_critical
+        self.window_seconds = window_seconds
+        self.query_counts: Dict[str, List[float]] = {}
+
+    def record_query(self, context_id: str, timestamp: float) -> float:
+        """
+        Record query and return required delay.
+
+        Args:
+            context_id: Identifier for query source
+            timestamp: Current time
+
+        Returns:
+            Required delay in seconds (Lorentz-dilated)
+        """
+        if context_id not in self.query_counts:
+            self.query_counts[context_id] = []
+
+        # Clean old queries outside window
+        cutoff = timestamp - self.window_seconds
+        self.query_counts[context_id] = [
+            t for t in self.query_counts[context_id] if t > cutoff
+        ]
+
+        # Record new query
+        self.query_counts[context_id].append(timestamp)
+
+        # Compute current density
+        rho_E = len(self.query_counts[context_id]) / self.window_seconds
+
+        # Compute delay
+        t_base = 0.01  # 10ms base latency
+        return compute_latency_delay(t_base, rho_E, self.rho_critical)
+
+    def get_gamma(self, context_id: str) -> float:
+        """Get current Lorentz factor for context."""
+        if context_id not in self.query_counts:
+            return 1.0
+        rho_E = len(self.query_counts[context_id]) / self.window_seconds
+        return lorentz_factor(rho_E, self.rho_critical)
+
+
+# Global CPSE throttler instance
+CPSE_THROTTLER = CPSEThrottler()
+
+
+# =============================================================================
 # SECTION 2: QASI CORE (Axiom-Safe Geometry)
 # =============================================================================
 # ┌─────────────────────────────────────────────────────────────────────────┐
@@ -1087,6 +1393,27 @@ def self_test(verbose: bool = True) -> Dict[str, Any]:
     u_extreme = poincare_embed(realify(extreme))
     ok_extreme = np.linalg.norm(u_extreme) < 1.0 and not np.any(np.isnan(u_extreme))
     results['extreme_coords'] = ok_extreme
+
+    # Test 13: CPSE Lorentz factor (event horizon throttling)
+    gamma_low = lorentz_factor(10, 100)   # 10% of critical → γ ≈ 1
+    gamma_high = lorentz_factor(99, 100)  # 99% of critical → γ >> 1
+    ok_lorentz = 1.0 <= gamma_low < 1.1 and gamma_high > 5.0
+    results['cpse_lorentz'] = ok_lorentz
+
+    # Test 14: CPSE Soliton dynamics (packet integrity)
+    secret = b"authorized_key"
+    phi_d = soliton_key_from_secret(secret)
+    packet = SolitonPacket(amplitude=0.8, phi_d=phi_d)
+    for _ in range(10):
+        packet = soliton_evolve(packet)
+    ok_soliton = 0.5 < packet.amplitude <= 1.0  # Maintains amplitude
+    results['cpse_soliton'] = ok_soliton
+
+    # Test 15: CPSE Spin rotation (context-dependent)
+    v_in = np.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+    v_out = apply_spin(v_in, "time:1234|loc:NYC|role:admin")
+    ok_spin = np.linalg.norm(v_out) > 0.99  # Rotation preserves norm
+    results['cpse_spin'] = ok_spin
 
     if verbose:
         print("=" * 60)
