@@ -8,7 +8,6 @@ Tests the mathematical foundations:
 """
 
 import numpy as np
-from numpy import tanh, arctanh
 
 # Optional plotting - will skip if not available
 try:
@@ -87,7 +86,8 @@ def test_chaos_sensitivity():
         print("\n[Chart saved: chaos_sensitivity.png]\n")
     else:
         print("\n[Matplotlib not available - skipping chart]\n")
-    return passed, difference
+
+    assert passed, f"Chaos divergence too small: {difference} <= 0.1"
 
 
 # =============================================================================
@@ -153,7 +153,7 @@ def test_fractal_gate():
         print(f"  {name:12} c={c:>15} → {status} (iterations: {iters})")
         vocab_results[name] = passed
 
-    return test_passed, vocab_results
+    assert test_passed, "Fractal gate failed to discriminate valid from invalid contexts"
 
 
 # =============================================================================
@@ -272,7 +272,7 @@ def test_neural_energy():
         print(f"  {name:12} E={E:7.3f} ({sigma_away:+.1f}σ) {status}")
         anomaly_results[name] = rejected
 
-    return test_passed, anomaly_results
+    assert test_passed, "Neural energy failed to separate anomalies from trained patterns"
 
 
 # =============================================================================
@@ -285,36 +285,22 @@ def run_all_tests():
     print("CPSE PHYSICS VALIDATION SUITE")
     print("=" * 70 + "\n")
 
-    results = {}
-
     # Test 1: Chaos
-    passed, diff = test_chaos_sensitivity()
-    results["chaos_sensitivity"] = passed
+    test_chaos_sensitivity()
     print()
 
     # Test 2: Fractal Gate
-    passed, vocab = test_fractal_gate()
-    results["fractal_gate"] = passed
+    test_fractal_gate()
     print()
 
     # Test 3: Neural Energy
-    passed, anomalies = test_neural_energy()
-    results["neural_energy"] = passed
+    test_neural_energy()
     print()
 
     # Summary
     print("=" * 70)
-    print("SUMMARY")
+    print("ALL CPSE PHYSICS TESTS PASSED ✓")
     print("=" * 70)
-    all_passed = all(results.values())
-    for test_name, passed in results.items():
-        status = "✓ PASS" if passed else "✗ FAIL"
-        print(f"  {test_name:25} {status}")
-    print()
-    print(f"Overall: {'ALL TESTS PASSED ✓' if all_passed else 'SOME TESTS FAILED ✗'}")
-    print("=" * 70)
-
-    return all_passed, results
 
 
 if __name__ == "__main__":
