@@ -109,6 +109,175 @@ TONGUE_WEIGHTS = [PHI**k for k in range(D)]
 
 
 # =============================================================================
+# SECTION 1.5: QUASICRYSTAL LATTICE (Icosahedral 6D→3D Validation)
+# =============================================================================
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │  QUASICRYSTAL VALIDATION LAYER                                          │
+# │                                                                         │
+# │  The 6 Sacred Tongues map to 6D lattice points in Z^6.                  │
+# │  Icosahedral projection to E_parallel (physical) and E_perp (hidden).   │
+# │  Valid states lie within acceptance window in perpendicular space.      │
+# │  Phason strain enables atomic rekeying without state regeneration.      │
+# └─────────────────────────────────────────────────────────────────────────┘
+
+class QuasicrystalLattice:
+    """
+    SCBE v3.0: Icosahedral Quasicrystal Verification System.
+    Maps 6-dimensional authentication gates onto a 3D aperiodic lattice.
+
+    The aperiodic structure prevents brute-force enumeration attacks
+    that exploit crystalline periodicity.
+    """
+
+    def __init__(self, lattice_constant: float = 1.0):
+        self.a = lattice_constant
+        # Acceptance radius in Perpendicular Space (E_perp)
+        # Points valid iff ||r_perp - phason|| < R_accept
+        self.acceptance_radius = 1.5 * self.a
+
+        # Current Phason Strain Vector (Secret Key Component)
+        self.phason_strain = np.zeros(3)
+
+        # Initialize 6D → 3D Projection Matrices
+        self.M_par, self.M_perp = self._generate_basis_matrices()
+
+    def _generate_basis_matrices(self) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Generate projection matrices from 6D Z^6 to 3D E_parallel (Physical)
+        and 3D E_perp (Internal/Window) using Icosahedral symmetry.
+        """
+        # Normalized basis vectors for icosahedral symmetry
+        norm = 1 / np.sqrt(1 + PHI**2)
+
+        # 6 basis vectors in Physical Space (E_parallel)
+        # Cyclic permutations of (1, PHI, 0)
+        e_par = np.array([
+            [1, PHI, 0],
+            [-1, PHI, 0],
+            [0, 1, PHI],
+            [0, -1, PHI],
+            [PHI, 0, 1],
+            [PHI, 0, -1]
+        ]).T * norm  # Shape (3, 6)
+
+        # 6 basis vectors in Perpendicular Space (E_perp)
+        # Related by Galois conjugation PHI → -1/PHI
+        e_perp = np.array([
+            [1, -1/PHI, 0],
+            [-1, -1/PHI, 0],
+            [0, 1, -1/PHI],
+            [0, -1, -1/PHI],
+            [-1/PHI, 0, 1],
+            [-1/PHI, 0, -1]
+        ]).T * norm  # Shape (3, 6)
+
+        return e_par, e_perp
+
+    def map_gates_to_lattice(self, gate_vector: List[float]) -> Tuple[np.ndarray, np.ndarray, bool]:
+        """
+        Map 6 inputs (SCBE Gates) to the Quasicrystal.
+
+        Args:
+            gate_vector: 6D vector from Sacred Tongues
+
+        Returns:
+            r_phys: Projected point in physical 3D space (the "Key")
+            r_perp: Point in internal space (validation check)
+            is_valid: True if point lies within Phason-shifted window
+        """
+        n = np.array(gate_vector[:6], dtype=float)
+        if len(n) < 6:
+            n = np.pad(n, (0, 6 - len(n)))
+
+        # 1. Project to Physical Space (The "Public" Lattice Point)
+        r_phys = self.M_par @ n
+
+        # 2. Project to Perpendicular Space (The "Hidden" Validation Check)
+        r_perp_raw = self.M_perp @ n
+
+        # 3. Apply Phason Strain (Atomic Rekeying)
+        distance = float(np.linalg.norm(r_perp_raw - self.phason_strain))
+        is_valid = distance < self.acceptance_radius
+
+        return r_phys, r_perp_raw, is_valid
+
+    def e_perp_coherence(self, gate_vector: List[float]) -> float:
+        """
+        Compute E_perp coherence metric ∈ [0, 1].
+
+        1.0 = perfectly centered in acceptance window
+        0.0 = at or beyond acceptance boundary
+        """
+        _, r_perp, _ = self.map_gates_to_lattice(gate_vector)
+        distance = float(np.linalg.norm(r_perp - self.phason_strain))
+        # Normalize: 1 at center, 0 at boundary
+        coherence = max(0.0, 1.0 - distance / self.acceptance_radius)
+        return float(coherence)
+
+    def apply_phason_rekey(self, entropy_seed: bytes) -> np.ndarray:
+        """
+        Apply Phason Strain ("Deformation") to the lattice.
+        Atomically invalidates the previous valid keyspace.
+
+        Returns:
+            New phason strain vector
+        """
+        h = hashlib.sha256(entropy_seed).digest()
+        # Map hash to 3 float values [-1, 1]
+        v = np.array([
+            int.from_bytes(h[0:4], 'big') / (2**32) * 2 - 1,
+            int.from_bytes(h[4:8], 'big') / (2**32) * 2 - 1,
+            int.from_bytes(h[8:12], 'big') / (2**32) * 2 - 1
+        ])
+        # Scale by acceptance radius to ensure significant shift
+        self.phason_strain = v * self.acceptance_radius * 2.0
+        return self.phason_strain
+
+    def detect_crystalline_defects(self, history_vectors: List[List[float]],
+                                   min_samples: int = 10) -> float:
+        """
+        Detect if attacker is forcing periodicity (Crystalline Defect).
+
+        Aperiodic structures should have irrational ratios between
+        successive projections. Periodic attacks show rational patterns.
+
+        Returns:
+            defect_score ∈ [0, 1]: 0 = aperiodic (safe), 1 = periodic (attack)
+        """
+        if len(history_vectors) < min_samples:
+            return 0.0
+
+        # Project all vectors to E_perp
+        perp_points = []
+        for v in history_vectors[-min_samples:]:
+            _, r_perp, _ = self.map_gates_to_lattice(v)
+            perp_points.append(r_perp)
+
+        perp_points = np.array(perp_points)
+
+        # Check for suspicious periodicity via autocorrelation
+        diffs = np.diff(perp_points, axis=0)
+        if len(diffs) < 2:
+            return 0.0
+
+        # Compute normalized variance of differences
+        # Low variance = repeating pattern = attack
+        var = float(np.var(diffs))
+        mean_norm = float(np.mean(np.linalg.norm(diffs, axis=1)))
+
+        if mean_norm < 1e-10:
+            return 1.0  # All identical = definite attack
+
+        # Normalize: high variance = low defect score
+        defect_score = float(np.exp(-var / (mean_norm + 1e-10)))
+        return min(1.0, max(0.0, defect_score))
+
+
+# Global quasicrystal instance (can be rekeyed)
+QUASICRYSTAL = QuasicrystalLattice()
+
+
+# =============================================================================
 # SECTION 2: QASI CORE (Axiom-Safe Geometry)
 # =============================================================================
 # ┌─────────────────────────────────────────────────────────────────────────┐
@@ -289,15 +458,29 @@ def harmonic_scaling(d: float, R_base: float = PHI, max_log: float = 700.0) -> T
 
 
 def risk_base(d_tri_norm: float, C_spin: float, S_spec: float,
-              trust_tau: float, S_audio: float) -> float:
-    """A12: Base risk from coherence deficits."""
-    w = 0.2
+              trust_tau: float, S_audio: float, C_qc: float = 1.0) -> float:
+    """A12: Base risk from coherence deficits.
+
+    Args:
+        d_tri_norm: Normalized triadic distance ∈ [0,1]
+        C_spin: Spin coherence ∈ [0,1]
+        S_spec: Spectral stability ∈ [0,1]
+        trust_tau: Time flow trust ∈ [0,1]
+        S_audio: Audio envelope coherence ∈ [0,1]
+        C_qc: Quasicrystal E_perp coherence ∈ [0,1]
+
+    Returns:
+        Base risk ∈ [0,1]
+    """
+    # Six coherence factors now (including quasicrystal)
+    w = 1.0 / 6.0
     return float(
         w * min(max(d_tri_norm, 0), 1) +
         w * (1 - min(max(C_spin, 0), 1)) +
         w * (1 - min(max(S_spec, 0), 1)) +
         w * (1 - min(max(trust_tau, 0), 1)) +
-        w * (1 - min(max(S_audio, 0), 1))
+        w * (1 - min(max(S_audio, 0), 1)) +
+        w * (1 - min(max(C_qc, 0), 1))
     )
 
 
@@ -548,6 +731,7 @@ def governance_pipeline(state: State9D, intent: float, poly: Polyhedron,
 
     L1-L2: Complex → Real (realification)
     L3: SPD weighting
+    L3.5: Quasicrystal validation (E_perp acceptance window)
     L4: Poincaré embedding
     L5: Hyperbolic distance
     L6: Breathing transform
@@ -557,7 +741,7 @@ def governance_pipeline(state: State9D, intent: float, poly: Polyhedron,
     L10: Spin coherence
     L11: Triadic distance
     L12: Harmonic scaling
-    L13: Risk aggregation
+    L13: Risk aggregation (includes E_perp coherence)
     L14: Audio coherence
     """
     # L1-L2: Realification
@@ -568,6 +752,15 @@ def governance_pipeline(state: State9D, intent: float, poly: Polyhedron,
     g_diag = np.array(TONGUE_WEIGHTS[:len(x)] + TONGUE_WEIGHTS[:len(x)])
     g_diag = g_diag[:len(x)]
     x_G = apply_spd_weights(x, g_diag)
+
+    # L3.5: Quasicrystal validation
+    # Map 6D context to quasicrystal lattice for aperiodic validation
+    gate_vector = [
+        float(v) if isinstance(v, (int, float)) else abs(v) if isinstance(v, complex) else 0.0
+        for v in state.context[:6]
+    ]
+    r_phys, r_perp, qc_valid = QUASICRYSTAL.map_gates_to_lattice(gate_vector)
+    C_qc = QUASICRYSTAL.e_perp_coherence(gate_vector)  # E_perp coherence ∈ [0,1]
 
     # L4: Poincaré embedding
     u = poincare_embed(x_G, alpha=1.0)
@@ -612,7 +805,7 @@ def governance_pipeline(state: State9D, intent: float, poly: Polyhedron,
     trust_tau = min(1.0, max(0.0, tau_dot(state.tau) / 2.0))
 
     # L12-L13: Risk calculation
-    rb = risk_base(d_tri_norm, C_spin, S_spec, trust_tau, S_audio)
+    rb = risk_base(d_tri_norm, C_spin, S_spec, trust_tau, S_audio, C_qc)
     rp_result = risk_prime(d_star, rb, R)
     risk_amplified_raw = rp_result["risk_prime"]
     # Normalize amplified risk to [0, 1) for decision thresholds using sigmoid
@@ -659,6 +852,8 @@ def governance_pipeline(state: State9D, intent: float, poly: Polyhedron,
         'C_spin': C_spin,
         'S_spec': S_spec,
         'S_audio': S_audio,
+        'C_qc': C_qc,           # Quasicrystal E_perp coherence
+        'qc_valid': qc_valid,   # Quasicrystal acceptance window
         'trust_tau': trust_tau,
         'f_q': f_q,
         'chi': chi,
@@ -691,12 +886,20 @@ class SwarmAgent:
 
 
 def simulate_byzantine_attack(n_agents: int = 100, byzantine_fraction: float = 0.33,
-                              verbose: bool = False, seed: Optional[int] = None) -> Dict[str, Any]:
+                              verbose: bool = False, seed: Optional[int] = None,
+                              enable_phason_rekey: bool = True) -> Dict[str, Any]:
     """
     Simulate Byzantine attack with n_agents.
 
     Byzantine agents attempt to forge states that pass governance.
     Honest agents follow protocol with states near authorized realm centers.
+
+    Args:
+        n_agents: Total number of agents
+        byzantine_fraction: Fraction of Byzantine attackers
+        verbose: Print detailed output
+        seed: Random seed for reproducibility
+        enable_phason_rekey: Apply phason strain to quasicrystal (atomic rekeying)
 
     Returns attack success/failure metrics.
     """
@@ -709,6 +912,13 @@ def simulate_byzantine_attack(n_agents: int = 100, byzantine_fraction: float = 0
     agents = []
     poly = Polyhedron(V=6, E=9, F=5)
     secret_key = os.urandom(KEY_LEN)
+
+    # Apply phason strain for session rekeying (atomic key rotation)
+    if enable_phason_rekey:
+        session_entropy = secret_key + str(time.time()).encode()
+        QUASICRYSTAL.apply_phason_rekey(session_entropy)
+        if verbose:
+            print(f"[SCBE] Phason Rekey Applied: {QUASICRYSTAL.phason_strain}")
 
     # Define authorized realm centers (trusted state patterns)
     # States near these centers will have low d* and thus low risk
