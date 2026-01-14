@@ -8,6 +8,7 @@ A 9D Quantum Hyperbolic Manifold Memory for AI governance where:
 
 Core Components:
 - unified.py: Complete 9D system with all integrations
+- full_system.py: End-to-end governance with 14-layer pipeline
 - manifold/: Hyper-torus geometry
 - governance/: Phase-breath transforms and snap protocol
 - quantum/: PQC integration via liboqs
@@ -18,8 +19,18 @@ Central Thesis:
     Invalid states physically cannot exist on the manifold
 """
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 __author__ = "SCBE-AETHERMOORE"
+
+# Full System (recommended entry point)
+from .full_system import (
+    SCBEFullSystem,
+    GovernanceMode,
+    GovernanceMetrics,
+    SystemState,
+    quick_evaluate,
+    verify_all_theorems,
+)
 
 from .unified import (
     # Main system class
@@ -93,7 +104,15 @@ from .unified import (
 )
 
 __all__ = [
-    # Main system
+    # Full System (recommended entry point)
+    "SCBEFullSystem",
+    "GovernanceMode",
+    "GovernanceMetrics",
+    "SystemState",
+    "quick_evaluate",
+    "verify_all_theorems",
+
+    # Legacy system
     "SCBEAethermoore",
     "State9D",
     "GovernanceDecision",
