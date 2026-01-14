@@ -1,14 +1,58 @@
 """
 SCBE-AETHERMOORE: Phase-Breath Hyperbolic Governance System
+============================================================
 
 A 9D Quantum Hyperbolic Manifold Memory for AI governance where:
 - Truthful actions trace smooth geodesics
 - Lies/threats manifest as geometric discontinuities (snaps)
 - Governance is geometric shape, not rule-based policy
 
+Architecture (v2.1):
+    Input State ξ(t)
+         │
+    ┌────▼────┐
+    │ 9D State │  (context, tau, eta, quantum)
+    └────┬────┘
+         │
+    ┌────▼────┐
+    │ Harmonic │  (phase modulation, conlang encoding)
+    │ Cipher   │
+    └────┬────┘
+         │
+    ┌────▼────┐
+    │ QASI    │  (Poincaré embed → hyperbolic distance → realm)
+    │ Core    │
+    └────┬────┘
+         │
+    ┌────▼────────┐
+    │ L1-L3.5-L14 │  (coherence → quasicrystal → risk → scaling)
+    │ Pipeline    │
+    └────┬────────┘
+         │
+    ┌────▼────┐
+    │ CPSE    │  (Lorentz throttling, soliton dynamics, spin)
+    │ Physics │
+    └────┬────┘
+         │
+    ┌────▼────┐
+    │ Grok    │  (truth-seeking tie-breaker if marginal)
+    │ Oracle  │
+    └────┬────┘
+         │
+    ┌────▼────┐
+    │ Decision│  → ALLOW / QUARANTINE / DENY
+    └─────────┘
+
 Core Components:
-- unified.py: Complete 9D system with all integrations
+- production_v2_1.py: Complete v2.1 system with CPSE Physics Engine
+- unified.py: Legacy 9D system with all integrations
 - full_system.py: End-to-end governance with 14-layer pipeline
+- qasi_core.py: Axiom-verified SCBE primitives
+- cpse.py: Cryptographic Physics Simulation Engine
+- layer_tests.py: Comprehensive 61-test validation suite
+- mass_system_grok.py: Grok-integrated mass governance
+
+Subdirectories:
 - manifold/: Hyper-torus geometry
 - governance/: Phase-breath transforms and snap protocol
 - quantum/: PQC integration via liboqs
@@ -155,6 +199,35 @@ from .qasi_core import (
     self_test as qasi_self_test,
 )
 
+# Production v2.1 - Complete System with CPSE Physics Engine
+from .production_v2_1 import (
+    # Quasicrystal Lattice (L3.5)
+    QuasicrystalLattice,
+
+    # CPSE Physics Engine
+    SolitonPacket,
+    CPSEThrottler,
+    lorentz_factor as cpse_lorentz_factor,
+    compute_latency_delay as cpse_latency_delay,
+    soliton_evolve,
+    spin_rotation_matrix,
+    flux_jitter,
+
+    # State & Governance
+    State9D as ProductionState9D,
+    Polyhedron as ProductionPolyhedron,
+    GrokResult,
+    GovernanceResult,
+    governance_pipeline,
+
+    # Byzantine Resistance
+    SwarmAgent,
+    simulate_byzantine_attack,
+
+    # Testing
+    self_test as production_self_test,
+)
+
 __all__ = [
     # CPSE - Cryptographic Physics Simulation Engine
     "CPSEEngine",
@@ -272,4 +345,28 @@ __all__ = [
     "decision_from_risk",
     "RiskWeights",
     "qasi_self_test",
+
+    # Production v2.1 - Quasicrystal (L3.5)
+    "QuasicrystalLattice",
+
+    # Production v2.1 - CPSE Physics Engine
+    "SolitonPacket",
+    "CPSEThrottler",
+    "cpse_lorentz_factor",
+    "cpse_latency_delay",
+    "soliton_evolve",
+    "spin_rotation_matrix",
+    "flux_jitter",
+
+    # Production v2.1 - Governance
+    "ProductionState9D",
+    "ProductionPolyhedron",
+    "GrokResult",
+    "GovernanceResult",
+    "governance_pipeline",
+
+    # Production v2.1 - Byzantine
+    "SwarmAgent",
+    "simulate_byzantine_attack",
+    "production_self_test",
 ]
