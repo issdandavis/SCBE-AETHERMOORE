@@ -746,20 +746,71 @@ def audio_envelope_coherence(wave: np.ndarray, window_size: int = 256, eps: floa
 
 
 def triadic_distance(d1: float, d2: float, dG: float,
-                     lambdas: Tuple[float, float, float] = (0.4, 0.3, 0.3)) -> float:
-    """A11: Triadic temporal distance."""
+                     lambdas: Tuple[float, float, float] = (0.4, 0.3, 0.3),
+                     flux: Optional[float] = None) -> float:
+    """A11: Triadic temporal distance with optional flux multiplier.
+
+    Per audit trace #8492: flux = sum(|a - a_prev|) / N accounts for
+    gyro-translation jitter between frames.
+
+    Args:
+        d1: Primary hyperbolic distance
+        d2: Secondary distance (e.g., auth deviation)
+        dG: Governance distance (e.g., entropy deviation)
+        lambdas: Weights for triadic combination
+        flux: Optional flux multiplier from gyro-translation delta
+
+    Returns:
+        Triadic distance, optionally flux-amplified
+    """
     l1, l2, l3 = lambdas
     s = l1 * (d1 ** 2) + l2 * (d2 ** 2) + l3 * (dG ** 2)
-    return float(np.sqrt(max(0.0, s)))
+    d_tri = float(np.sqrt(max(0.0, s)))
+
+    # Apply flux multiplier if provided (audit recommendation)
+    if flux is not None and flux > 0:
+        d_tri *= (1.0 + flux)
+
+    return d_tri
 
 
-def harmonic_scaling(d: float, R_base: float = PHI, max_log: float = 700.0) -> Tuple[float, float]:
-    """A12: H(d,R) = R^(d²)."""
+def harmonic_scaling(d: float, R_base: float = PHI, max_log: float = 700.0,
+                     zeta: Optional[float] = None,
+                     omega_ratio: float = 1.0) -> Tuple[float, float]:
+    """A12: H(d,R) = R^(d²) with optional resonance amplification.
+
+    Per audit trace #8492: Add resonance damping factor ζ for
+    resonant anomaly amplification near natural frequency.
+
+    Resonance amplification: D = 1 / sqrt((1-(ω/ω_n)²)² + (2ζ·ω/ω_n)²)
+    At resonance (ω = ω_n): D = 1/(2ζ)
+
+    Args:
+        d: Triadic distance
+        R_base: Harmonic base (default PHI)
+        max_log: Maximum log value to prevent overflow
+        zeta: Damping ratio ζ ∈ (0, 1). Lower = more resonance.
+              Typical: ζ=0.005 gives D≈100x at resonance
+        omega_ratio: ω/ω_n frequency ratio (1.0 = at resonance)
+
+    Returns:
+        (H, logH) where H is the harmonic scaling factor
+    """
     if R_base <= 1.0:
         R_base = PHI
     logH = float(np.log(R_base) * (d ** 2))
     logH_c = min(logH, max_log)
     H = float(np.exp(logH_c))
+
+    # Apply resonance amplification if damping specified
+    if zeta is not None and zeta > 0:
+        # D = 1 / sqrt((1 - r²)² + (2ζr)²) where r = ω/ω_n
+        r = omega_ratio
+        denom_sq = (1 - r**2)**2 + (2 * zeta * r)**2
+        D = 1.0 / np.sqrt(max(1e-12, denom_sq))
+        H *= D
+        logH_c += np.log(max(1e-12, D))
+
     return H, logH_c
 
 
@@ -790,11 +841,34 @@ def risk_base(d_tri_norm: float, C_spin: float, S_spec: float,
     )
 
 
-def risk_prime(d_star: float, risk_base_val: float, R_base: float = PHI) -> Dict[str, float]:
-    """A12: Risk' = Risk_base · H(d*, R)."""
-    H, logH = harmonic_scaling(d_star, R_base)
+def risk_prime(d_star: float, risk_base_val: float, R_base: float = PHI,
+               zeta: Optional[float] = None,
+               omega_ratio: float = 1.0) -> Dict[str, float]:
+    """A12: Risk' = Risk_base · H(d*, R) with optional resonance.
+
+    Per audit trace #8492: Add resonance damping ζ for anomaly amplification.
+
+    Args:
+        d_star: Realm distance
+        risk_base_val: Base risk value
+        R_base: Harmonic base (default PHI)
+        zeta: Optional resonance damping ratio
+        omega_ratio: Frequency ratio (1.0 = at resonance)
+
+    Returns:
+        Dict with risk_prime, H, logH, and resonance_factor D
+    """
+    H, logH = harmonic_scaling(d_star, R_base, zeta=zeta, omega_ratio=omega_ratio)
     rp = max(0.0, risk_base_val) * H
-    return {"risk_prime": float(rp), "H": float(H), "logH": float(logH)}
+
+    # Calculate resonance factor for forensics
+    D = 1.0
+    if zeta is not None and zeta > 0:
+        r = omega_ratio
+        denom_sq = (1 - r**2)**2 + (2 * zeta * r)**2
+        D = 1.0 / np.sqrt(max(1e-12, denom_sq))
+
+    return {"risk_prime": float(rp), "H": float(H), "logH": float(logH), "D": float(D)}
 
 
 # =============================================================================
@@ -1019,7 +1093,11 @@ def call_grok(state_summary: Dict[str, Any]) -> GrokResult:
 
 @dataclass
 class GovernanceResult:
-    """Full governance result."""
+    """Full governance result with forensic trace fields.
+
+    Per audit trace #8492: Include d_origin and S_spec for forensic
+    logging to enable trace reconstruction and anomaly debugging.
+    """
     decision: str
     output: str
     risk_base: float
@@ -1028,10 +1106,20 @@ class GovernanceResult:
     grok_result: GrokResult
     hyperbolic_state: np.ndarray
     metrics: Dict[str, float]
+    # Forensic trace fields (audit recommendation)
+    d_origin: float = 0.0          # Hyperbolic distance from origin
+    S_spec: float = 1.0            # Spectral stability
+    C_spin: float = 1.0            # Spin coherence
+    d_tri: float = 0.0             # Triadic distance (pre-normalization)
+    flux_applied: float = 0.0     # Flux multiplier used
+    zeta_applied: float = 0.0     # Resonance damping used
 
 
 def governance_pipeline(state: State9D, intent: float, poly: Polyhedron,
-                        realm_centers: Optional[np.ndarray] = None) -> GovernanceResult:
+                        realm_centers: Optional[np.ndarray] = None,
+                        flux: Optional[float] = None,
+                        zeta: Optional[float] = None,
+                        omega_ratio: float = 1.0) -> GovernanceResult:
     """
     Full L1-L14 governance pipeline with Grok integration.
 
@@ -1045,10 +1133,19 @@ def governance_pipeline(state: State9D, intent: float, poly: Polyhedron,
     L8: Realm distance
     L9: Spectral coherence
     L10: Spin coherence
-    L11: Triadic distance
-    L12: Harmonic scaling
+    L11: Triadic distance (with optional flux multiplier)
+    L12: Harmonic scaling (with optional resonance damping ζ)
     L13: Risk aggregation (includes E_perp coherence)
     L14: Audio coherence
+
+    Args:
+        state: 9D state vector
+        intent: Intent value ∈ [0,1]
+        poly: Polyhedron for topology check
+        realm_centers: Realm centers for distance calculation
+        flux: Optional flux multiplier for triadic distance (audit #8492)
+        zeta: Optional resonance damping ratio (audit #8492)
+        omega_ratio: Frequency ratio for resonance (default 1.0 = at resonance)
     """
     # L1-L2: Realification
     c_complex = state.to_complex_context()
@@ -1098,10 +1195,10 @@ def governance_pipeline(state: State9D, intent: float, poly: Polyhedron,
     ]))
     C_spin = spin_coherence(phasors)
 
-    # L11: Triadic distance
+    # L11: Triadic distance (with optional flux multiplier per audit #8492)
     d_auth = abs(intent - 0.75)  # Distance from expected intent
     d_cfg = abs(state.eta - ETA_TARGET) / ETA_TARGET
-    d_tri = triadic_distance(d_star, d_auth, d_cfg)
+    d_tri = triadic_distance(d_star, d_auth, d_cfg, flux=flux)
     d_tri_norm = min(1.0, d_tri / (EPSILON + 1e-9))
 
     # L14: Audio envelope coherence
@@ -1110,9 +1207,9 @@ def governance_pipeline(state: State9D, intent: float, poly: Polyhedron,
     # Trust from time flow
     trust_tau = min(1.0, max(0.0, tau_dot(state.tau) / 2.0))
 
-    # L12-L13: Risk calculation
+    # L12-L13: Risk calculation (with optional resonance damping per audit #8492)
     rb = risk_base(d_tri_norm, C_spin, S_spec, trust_tau, S_audio, C_qc)
-    rp_result = risk_prime(d_star, rb, R)
+    rp_result = risk_prime(d_star, rb, R, zeta=zeta, omega_ratio=omega_ratio)
     risk_amplified_raw = rp_result["risk_prime"]
     # Normalize amplified risk to [0, 1) for decision thresholds using sigmoid
     risk_amplified = 1.0 - 1.0 / (1.0 + risk_amplified_raw)
@@ -1153,6 +1250,7 @@ def governance_pipeline(state: State9D, intent: float, poly: Polyhedron,
 
     metrics = {
         'd_star': d_star,
+        'd_origin': d_origin,   # Forensic: hyperbolic distance from origin
         'd_tri': d_tri,
         'd_tri_norm': d_tri_norm,
         'C_spin': C_spin,
@@ -1164,6 +1262,7 @@ def governance_pipeline(state: State9D, intent: float, poly: Polyhedron,
         'f_q': f_q,
         'chi': chi,
         'H': rp_result['H'],
+        'D': rp_result.get('D', 1.0),  # Resonance amplification factor
     }
 
     return GovernanceResult(
@@ -1174,7 +1273,14 @@ def governance_pipeline(state: State9D, intent: float, poly: Polyhedron,
         risk_final=risk_final,
         grok_result=grok_result,
         hyperbolic_state=u_phase,
-        metrics=metrics
+        metrics=metrics,
+        # Forensic trace fields (audit #8492)
+        d_origin=d_origin,
+        S_spec=S_spec,
+        C_spin=C_spin,
+        d_tri=d_tri,
+        flux_applied=flux if flux is not None else 0.0,
+        zeta_applied=zeta if zeta is not None else 0.0
     )
 
 
