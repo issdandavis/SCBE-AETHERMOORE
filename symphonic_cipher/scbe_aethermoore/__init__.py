@@ -305,6 +305,37 @@ from .layers_9_12 import (
     self_test as layers_9_12_self_test,
 )
 
+# Layer 13: Risk Decision Engine (Lemma 13.1)
+from .layer_13 import (
+    # Decision enum
+    Decision,
+
+    # Harmonic scaling (Lemma 13.1)
+    HarmonicParams,
+    harmonic_H,
+    harmonic_derivative,
+    harmonic_vertical_wall,
+
+    # Multipliers
+    TimeMultiplier,
+    IntentMultiplier,
+
+    # Composite Risk
+    RiskComponents,
+    CompositeRisk,
+    compute_composite_risk,
+    verify_north_star,
+
+    # Decision Response
+    DecisionResponse,
+    execute_decision,
+    batch_evaluate,
+
+    # Verification
+    verify_lemma_13_1,
+    self_test as layer_13_self_test,
+)
+
 # Production v2.1 - Complete System with CPSE Physics Engine
 from .production_v2_1 import (
     # Quasicrystal Lattice (L3.5)
@@ -533,4 +564,22 @@ __all__ = [
     "AggregatedSignals",
     "process_layers_9_12",
     "layers_9_12_self_test",
+
+    # Layer 13: Risk Decision Engine (Lemma 13.1)
+    "Decision",
+    "HarmonicParams",
+    "harmonic_H",
+    "harmonic_derivative",
+    "harmonic_vertical_wall",
+    "TimeMultiplier",
+    "IntentMultiplier",
+    "RiskComponents",
+    "CompositeRisk",
+    "compute_composite_risk",
+    "verify_north_star",
+    "DecisionResponse",
+    "execute_decision",
+    "batch_evaluate",
+    "verify_lemma_13_1",
+    "layer_13_self_test",
 ]
