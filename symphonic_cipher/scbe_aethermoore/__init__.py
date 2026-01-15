@@ -336,6 +336,35 @@ from .layer_13 import (
     self_test as layer_13_self_test,
 )
 
+# Living Metric Engine: Tensor Heartbeat / Claim 61
+from .living_metric import (
+    # States
+    PressureState,
+
+    # Shock Absorber
+    ShockAbsorberParams,
+    shock_absorber,
+    shock_absorber_derivative,
+
+    # Pressure
+    PressureMetrics,
+    compute_pressure,
+
+    # Living Metric Engine
+    MetricResult,
+    LivingMetricEngine,
+
+    # Anti-fragile
+    AntifragileAnalysis,
+    verify_antifragile,
+
+    # Integration
+    integrate_with_risk_engine,
+
+    # Self-test
+    self_test as living_metric_self_test,
+)
+
 # Production v2.1 - Complete System with CPSE Physics Engine
 from .production_v2_1 import (
     # Quasicrystal Lattice (L3.5)
@@ -582,4 +611,18 @@ __all__ = [
     "batch_evaluate",
     "verify_lemma_13_1",
     "layer_13_self_test",
+
+    # Living Metric Engine: Tensor Heartbeat / Claim 61
+    "PressureState",
+    "ShockAbsorberParams",
+    "shock_absorber",
+    "shock_absorber_derivative",
+    "PressureMetrics",
+    "compute_pressure",
+    "MetricResult",
+    "LivingMetricEngine",
+    "AntifragileAnalysis",
+    "verify_antifragile",
+    "integrate_with_risk_engine",
+    "living_metric_self_test",
 ]
