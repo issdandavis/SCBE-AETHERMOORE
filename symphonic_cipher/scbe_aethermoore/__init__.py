@@ -199,6 +199,55 @@ from .qasi_core import (
     self_test as qasi_self_test,
 )
 
+# PHDM - Polyhedral Hamiltonian Defense Manifold (Claims 63-80)
+from .phdm_module import (
+    # Polyhedra definitions
+    POLYHEDRA as CANONICAL_POLYHEDRA,
+    HAMILTONIAN_PATH,
+    Polyhedron as PHDMPolyhedron,
+
+    # Core classes
+    GeodesicCurve,
+    IntrusionDetector,
+
+    # Key derivation
+    hmac_key_chain as derive_phdm_key_chain,
+    derive_session_key,
+    create_golden_path,
+    compute_phdm_subscore as phdm_subscore,
+
+    # Integration helpers
+    integrate_with_layer1,
+    integrate_with_layer7_swarm,
+    integrate_with_layer13_risk,
+
+    # Self-test
+    self_test as phdm_self_test,
+)
+
+# PQC - Post-Quantum Cryptography (Claims 2-3)
+from .pqc_module import (
+    # Interfaces
+    KEMInterface,
+    SignatureInterface,
+
+    # Implementations
+    SimulatedKEM,
+    SimulatedSignature,
+
+    # High-level API
+    PQCKeyPair,
+    PQCEnvelope,
+    PQCManager,
+
+    # Factory functions
+    get_kem,
+    get_signature,
+
+    # Self-test
+    self_test as pqc_self_test,
+)
+
 # Production v2.1 - Complete System with CPSE Physics Engine
 from .production_v2_1 import (
     # Quasicrystal Lattice (L3.5)
@@ -369,4 +418,31 @@ __all__ = [
     "SwarmAgent",
     "simulate_byzantine_attack",
     "production_self_test",
+
+    # PHDM - Polyhedral Hamiltonian Defense Manifold (Claims 63-80)
+    "CANONICAL_POLYHEDRA",
+    "HAMILTONIAN_PATH",
+    "PHDMPolyhedron",
+    "GeodesicCurve",
+    "IntrusionDetector",
+    "derive_phdm_key_chain",
+    "derive_session_key",
+    "create_golden_path",
+    "phdm_subscore",
+    "integrate_with_layer1",
+    "integrate_with_layer7_swarm",
+    "integrate_with_layer13_risk",
+    "phdm_self_test",
+
+    # PQC - Post-Quantum Cryptography (Claims 2-3)
+    "KEMInterface",
+    "SignatureInterface",
+    "SimulatedKEM",
+    "SimulatedSignature",
+    "PQCKeyPair",
+    "PQCEnvelope",
+    "PQCManager",
+    "get_kem",
+    "get_signature",
+    "pqc_self_test",
 ]
