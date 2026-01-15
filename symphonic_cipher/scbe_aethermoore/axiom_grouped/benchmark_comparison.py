@@ -7,7 +7,9 @@ Compares SCBE's hyperbolic geometry approach against:
 - LLM Guard / Lakera Guard style (pattern matching)
 - NIST-aligned adversarial detection
 
-Key differentiator: SCBE's "Harmonic Wall" exp(d²) vs linear thresholds
+Key differentiators:
+1. "Harmonic Wall" exp(d²) vs linear thresholds
+2. "Langues Metric" - 6D phase-shifted exponential with Six Sacred Tongues
 """
 
 import math
@@ -18,6 +20,12 @@ from typing import List, Tuple, Dict
 # Constants
 PHI = (1 + math.sqrt(5)) / 2
 EPS = 1e-10
+TAU = 2 * math.pi
+
+# Six Sacred Tongues (the Langues system)
+TONGUES = ["KO", "AV", "RU", "CA", "UM", "DR"]
+TONGUE_WEIGHTS = [PHI ** k for k in range(6)]  # φ^0 to φ^5
+TONGUE_PHASES = [TAU * k / 6 for k in range(6)]  # 0°, 60°, 120°, etc.
 
 
 @dataclass
@@ -124,14 +132,18 @@ class MLAnomalyDefense:
 
 class SCBEHyperbolicDefense:
     """
-    SCBE-AETHERMOORE: Hyperbolic geometry with Harmonic Wall.
+    SCBE-AETHERMOORE: Hyperbolic geometry with Harmonic Wall + Langues Metric.
 
-    Key innovation: exp(d²) creates exponential cost for deviation.
+    Key innovations:
+    1. exp(d²) "Harmonic Wall" creates exponential cost for deviation
+    2. 6D "Langues Metric" with Six Sacred Tongues (KO, AV, RU, CA, UM, DR)
+       L(x,t) = Σ w_l exp(β_l · (d_l + sin(ω_l t + φ_l)))
     """
-    name = "SCBE Hyperbolic (Harmonic Wall)"
+    name = "SCBE Hyperbolic (Harmonic Wall + Langues)"
 
     def __init__(self, mode: str = "unbounded"):
         self.mode = mode  # "bounded" or "unbounded"
+        self.time = 0  # Time parameter for phase shifts
 
     def harmonic_wall(self, d: float) -> float:
         """The Vertical Wall - exponential penalty."""
@@ -141,6 +153,40 @@ class SCBEHyperbolicDefense:
         else:
             # Production mode: clamped for numerical stability
             return PHI ** min(d ** 2, 50)
+
+    def langues_metric(self, deviation: float, coherence: float, trust: float) -> float:
+        """
+        The Langues Metric - 6D phase-shifted exponential.
+
+        Maps (deviation, coherence, trust) to 6D hyperspace:
+        [time, intent=deviation, policy=coherence, trust, risk=1-trust, entropy=deviation]
+        """
+        # Map to 6D
+        x = [
+            self.time % 1.0,     # time (normalized)
+            deviation,          # intent
+            coherence,          # policy
+            trust,              # trust
+            1 - trust,          # risk
+            deviation * 0.5,    # entropy
+        ]
+        # Ideal state
+        mu = [0.0, 0.0, 0.9, 0.9, 0.1, 0.1]
+
+        L = 0.0
+        for l in range(6):
+            w_l = TONGUE_WEIGHTS[l]
+            d_l = abs(x[l] - mu[l])
+            phi_l = TONGUE_PHASES[l]
+            beta_l = 1.0 + 0.1 * math.cos(phi_l)
+
+            # Phase-shifted deviation
+            phase_shift = math.sin(self.time + phi_l)
+            shifted_d = d_l + 0.05 * phase_shift
+
+            L += w_l * math.exp(beta_l * shifted_d)
+
+        return L
 
     def hyperbolic_distance(self, u_norm: float, v_norm: float) -> float:
         """Poincaré ball distance amplifies near boundary."""
@@ -156,7 +202,9 @@ class SCBEHyperbolicDefense:
         return math.acosh(max(1.0, arg))
 
     def assess(self, deviation: float, coherence: float, trust: float) -> Tuple[float, str]:
-        # Base risk from coherence failures (linear component)
+        self.time += 1  # Advance time for phase shifts
+
+        # === LAYER 1: Base Risk (linear component) ===
         R_base = (
             0.2 * deviation +
             0.2 * (1 - coherence) +
@@ -165,19 +213,22 @@ class SCBEHyperbolicDefense:
             0.2 * (1 - coherence * trust)
         )
 
-        # HARMONIC WALL: exponential amplification
-        # This is the KEY differentiator - exp grows MUCH faster than linear
+        # === LAYER 2: HARMONIC WALL exp(d²) ===
         H = self.harmonic_wall(deviation)
 
-        # Hyperbolic bonus: deviation maps to Poincaré distance
-        u_norm = min(deviation, 0.99)  # Map to ball
-        d_hyp = self.hyperbolic_distance(u_norm, 0.1)  # Distance from safe center
+        # === LAYER 3: LANGUES METRIC (6D phase-shifted) ===
+        L = self.langues_metric(deviation, coherence, trust)
+        L_normalized = L / sum(TONGUE_WEIGHTS)  # Normalize by base sum (~12.09)
 
-        # Final risk (scaled for comparison)
-        R_prime = R_base * H * (1 + 0.1 * min(d_hyp, 10))
+        # === LAYER 4: Hyperbolic distance amplification ===
+        u_norm = min(deviation, 0.99)
+        d_hyp = self.hyperbolic_distance(u_norm, 0.1)
 
-        # Thresholds tuned to catch drift earlier than linear systems
-        # The exponential wall means even small deviations compound
+        # === COMBINED RISK ===
+        # R' = R_base × H × (1 + L_norm) × hyperbolic_factor
+        R_prime = R_base * H * (1 + 0.2 * L_normalized) * (1 + 0.1 * min(d_hyp, 10))
+
+        # Thresholds tuned for multi-layer detection
         if R_prime < 0.5:
             return R_prime, "ALLOW"
         elif R_prime < 2.0:
@@ -293,7 +344,7 @@ def run_benchmark():
     print("  - Linear Threshold (traditional)")
     print("  - Pattern Matching (LLM Guard / Lakera style)")
     print("  - ML Anomaly Detection (statistical)")
-    print("  - SCBE Hyperbolic (Harmonic Wall)")
+    print("  - SCBE Hyperbolic (Harmonic Wall + Langues)")
     print()
     print("Based on 2025 threat landscape:")
     print("  - Multi-turn jailbreaks: 90%+ success vs frontier models (ICLR 2025)")
@@ -387,8 +438,8 @@ def run_benchmark():
     print()
 
     # Calculate rates
-    scbe_detection = sum(r["caught"] for r in results["SCBE Hyperbolic (Harmonic Wall)"].values())
-    scbe_total = sum(r["caught"] + r["missed"] for r in results["SCBE Hyperbolic (Harmonic Wall)"].values())
+    scbe_detection = sum(r["caught"] for r in results["SCBE Hyperbolic (Harmonic Wall + Langues)"].values())
+    scbe_total = sum(r["caught"] + r["missed"] for r in results["SCBE Hyperbolic (Harmonic Wall + Langues)"].values())
     scbe_rate = scbe_detection / max(1, scbe_total) * 100
 
     ml_detection = sum(r["caught"] for r in results["ML Anomaly Detection"].values())
@@ -431,6 +482,12 @@ def run_benchmark():
     print("    - Symmetry: Gauge invariance (Layers 5, 9, 10, 12)")
     print("    - Composition: Pipeline integrity (Layers 1, 14)")
     print()
+    print("  LANGUES METRIC (6D phase-shifted exponential):")
+    print("    L(x,t) = Σ w_l exp(β_l · (d_l + sin(ω_l t + φ_l)))")
+    print("    Six Sacred Tongues: KO, AV, RU, CA, UM, DR")
+    print("    Weights: φ^0=1.00, φ^1=1.62, φ^2=2.62, φ^3=4.24, φ^4=6.85, φ^5=11.09")
+    print("    Phases: 0°, 60°, 120°, 180°, 240°, 300° (six-fold symmetry)")
+    print()
 
     return results
 
@@ -449,6 +506,8 @@ def print_comparison_table():
         ("Drift Detection", "Threshold", "Pattern + Threshold", "Z-score", "Hyperbolic Distance"),
         ("Multi-Turn Aware", "No", "Limited", "Yes (learned)", "Yes (causal axiom)"),
         ("Geometry", "Euclidean", "Euclidean", "Euclidean", "Hyperbolic Poincaré"),
+        ("6D Langues Metric", "No", "No", "No", "Yes (6 Sacred Tongues)"),
+        ("Phase-Shift Weights", "No", "No", "No", "Yes (φ^k golden ratio)"),
         ("Post-Quantum Safe", "No", "No", "No", "Yes (Kyber/ML-DSA)"),
         ("Mathematical Proofs", "No", "No", "No", "Yes (12 axioms)"),
         ("Open Source", "Varies", "Yes (LLM Guard)", "Varies", "Yes"),
