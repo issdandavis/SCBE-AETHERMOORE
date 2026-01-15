@@ -5,5 +5,8 @@ scipy>=1.7.0
 # Testing
 pytest>=7.0.0
 
+# Post-Quantum Cryptography
+liboqs-python>=0.9.0
+
 # Optional: Visualization (for extended demos)
 # matplotlib>=3.5.0
