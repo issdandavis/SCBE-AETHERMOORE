@@ -272,6 +272,39 @@ from .organic_hyperbolic import (
     self_test as organic_self_test,
 )
 
+# Layers 9-12: Signal Aggregation Pillar
+from .layers_9_12 import (
+    # Layer 9: Spectral Coherence
+    SpectralAnalysis,
+    compute_spectral_coherence,
+    spectral_stability,
+
+    # Layer 10: Spin Coherence
+    SpinAnalysis,
+    compute_spin_coherence,
+    compute_spin_from_signal,
+
+    # Layer 11: Triadic Distance
+    TriadicWeights,
+    TriadicAnalysis,
+    compute_triadic_distance,
+    triadic_gradient,
+
+    # Layer 12: Harmonic Scaling & Risk
+    RiskWeights as L12RiskWeights,
+    RiskAnalysis,
+    harmonic_scaling as l12_harmonic_scaling,
+    compute_risk,
+    risk_gradient,
+
+    # Integrated Pipeline
+    AggregatedSignals,
+    process_layers_9_12,
+
+    # Self-test
+    self_test as layers_9_12_self_test,
+)
+
 # Production v2.1 - Complete System with CPSE Physics Engine
 from .production_v2_1 import (
     # Quasicrystal Lattice (L3.5)
@@ -480,4 +513,24 @@ __all__ = [
     "GovernanceEngine",
     "OrganicSCBE",
     "organic_self_test",
+
+    # Layers 9-12: Signal Aggregation Pillar
+    "SpectralAnalysis",
+    "compute_spectral_coherence",
+    "spectral_stability",
+    "SpinAnalysis",
+    "compute_spin_coherence",
+    "compute_spin_from_signal",
+    "TriadicWeights",
+    "TriadicAnalysis",
+    "compute_triadic_distance",
+    "triadic_gradient",
+    "L12RiskWeights",
+    "RiskAnalysis",
+    "l12_harmonic_scaling",
+    "compute_risk",
+    "risk_gradient",
+    "AggregatedSignals",
+    "process_layers_9_12",
+    "layers_9_12_self_test",
 ]
