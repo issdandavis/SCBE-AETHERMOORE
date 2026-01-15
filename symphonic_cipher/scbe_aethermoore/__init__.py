@@ -248,6 +248,30 @@ from .pqc_module import (
     self_test as pqc_self_test,
 )
 
+# Organic Hyperbolic Embeddings - Unified 4-Pillar System
+from .organic_hyperbolic import (
+    # Pillar 1: Input
+    InputEncoder,
+
+    # Pillar 2: State
+    State9D as OrganicState9D,
+    StateGenerator,
+
+    # Pillar 3: Hyperbolic
+    HyperbolicEngine,
+
+    # Pillar 4: Governance
+    GovernanceDecision,
+    RealmConfig,
+    GovernanceEngine,
+
+    # Integrated System
+    OrganicSCBE,
+
+    # Self-test
+    self_test as organic_self_test,
+)
+
 # Production v2.1 - Complete System with CPSE Physics Engine
 from .production_v2_1 import (
     # Quasicrystal Lattice (L3.5)
@@ -445,4 +469,15 @@ __all__ = [
     "get_kem",
     "get_signature",
     "pqc_self_test",
+
+    # Organic Hyperbolic Embeddings
+    "InputEncoder",
+    "OrganicState9D",
+    "StateGenerator",
+    "HyperbolicEngine",
+    "GovernanceDecision",
+    "RealmConfig",
+    "GovernanceEngine",
+    "OrganicSCBE",
+    "organic_self_test",
 ]
