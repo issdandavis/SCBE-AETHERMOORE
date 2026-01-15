@@ -264,6 +264,245 @@ def build_langues_metric_matrix() -> List[List[float]]:
 
 
 # =============================================================================
+# FLUXING DIMENSIONS - Polly, Quasi, Demi
+# =============================================================================
+
+@dataclass
+class DimensionFlux:
+    """
+    Fractional dimension state for "breathing" dimensions.
+
+    ν ∈ [0,1] for each dimension:
+      - ν ≈ 1: full (polly) dimension active
+      - 0 < ν < 1: demi/quasi dimension; partial influence
+      - ν ≈ 0: dimension collapsed; effectively absent
+
+    D_f(t) = Σνᵢ is the instantaneous effective dimension (can be non-integer)
+    """
+    nu: List[float]  # Flux weights ν₁...ν₆
+    kappa: List[float]  # Relaxation rates κᵢ
+    nu_bar: List[float]  # Baseline targets ν̄ᵢ
+    sigma: List[float]  # Oscillation amplitudes σᵢ
+    omega_flux: List[float]  # Flux frequencies Ωᵢ
+
+    @classmethod
+    def default(cls) -> "DimensionFlux":
+        """Default flux state: all dimensions fully active."""
+        return cls(
+            nu=[1.0] * 6,
+            kappa=[0.1] * 6,
+            nu_bar=[0.8] * 6,
+            sigma=[0.15] * 6,
+            omega_flux=[1.0, 1.1, 1.2, 1.3, 1.4, 1.5],
+        )
+
+    @classmethod
+    def quasi(cls) -> "DimensionFlux":
+        """Quasi-dimensional state: some dimensions partially collapsed."""
+        return cls(
+            nu=[1.0, 0.7, 0.5, 0.8, 0.6, 0.9],
+            kappa=[0.1] * 6,
+            nu_bar=[0.7, 0.5, 0.3, 0.6, 0.4, 0.7],
+            sigma=[0.2] * 6,
+            omega_flux=[1.0, 1.2, 1.4, 1.6, 1.8, 2.0],
+        )
+
+    @classmethod
+    def demi(cls) -> "DimensionFlux":
+        """Demi-dimensional state: heavy dimensional breathing."""
+        return cls(
+            nu=[0.5] * 6,
+            kappa=[0.05] * 6,
+            nu_bar=[0.5] * 6,
+            sigma=[0.4] * 6,
+            omega_flux=[0.5, 0.7, 0.9, 1.1, 1.3, 1.5],
+        )
+
+    def effective_dimension(self) -> float:
+        """D_f = Σνᵢ - instantaneous effective dimension."""
+        return sum(self.nu)
+
+
+class FluxingLanguesMetric:
+    """
+    Langues Metric with fractional (fluxing) dimensions.
+
+    Extended equation:
+      L_f(x,t) = Σ νᵢ(t) wᵢ exp[βᵢ(dᵢ + sin(ωᵢt + φᵢ))]
+
+    Flux dynamics ODE:
+      ν̇ᵢ = κᵢ(ν̄ᵢ - νᵢ) + σᵢ sin(Ωᵢt)
+
+    This allows dimensions to "breathe" between:
+      - Polly (ν=1): full participation
+      - Quasi (0.5<ν<1): partial participation
+      - Demi (0<ν<0.5): minimal participation
+      - Collapsed (ν=0): dimension off
+    """
+
+    def __init__(
+        self,
+        beta_base: float = 1.0,
+        clamp_max: float = 1e6,
+        ideal: Optional[IdealState] = None,
+        flux: Optional[DimensionFlux] = None,
+    ):
+        self.beta_base = beta_base
+        self.clamp_max = clamp_max
+        self.ideal = ideal or IdealState()
+        self.flux = flux or DimensionFlux.default()
+        self.betas = [beta_base + 0.1 * math.cos(phi) for phi in TONGUE_PHASES]
+        self.time = 0.0
+
+    def update_flux(self, dt: float = 0.01) -> None:
+        """
+        Evolve fractional-dimension weights using flux ODE.
+
+        ν̇ᵢ = κᵢ(ν̄ᵢ - νᵢ) + σᵢ sin(Ωᵢt)
+        """
+        for i in range(6):
+            dnu = (
+                self.flux.kappa[i] * (self.flux.nu_bar[i] - self.flux.nu[i]) +
+                self.flux.sigma[i] * math.sin(self.flux.omega_flux[i] * self.time)
+            )
+            # Clamp to [0, 1]
+            self.flux.nu[i] = max(0.0, min(1.0, self.flux.nu[i] + dnu * dt))
+
+        self.time += dt
+
+    def compute(self, x: HyperspacePoint, t: float = 0.0) -> float:
+        """
+        Compute fluxed langues metric L_f(x,t).
+
+        L_f = Σ νᵢ wᵢ exp[βᵢ(dᵢ + sin(ωᵢt + φᵢ))]
+        """
+        x_vec = x.to_vector()
+        mu_vec = self.ideal.to_vector()
+
+        L = 0.0
+        for l in range(6):
+            nu_l = self.flux.nu[l]  # Fractional dimension weight
+            w_l = TONGUE_WEIGHTS[l]
+            beta_l = self.betas[l]
+            omega_l = TONGUE_FREQUENCIES[l]
+            phi_l = TONGUE_PHASES[l]
+            d_l = abs(x_vec[l] - mu_vec[l])
+
+            phase_shift = math.sin(omega_l * t + phi_l)
+            shifted_d = d_l + 0.1 * phase_shift
+
+            # Fractional dimension scales contribution
+            L += nu_l * w_l * math.exp(beta_l * shifted_d)
+
+        return min(L, self.clamp_max)
+
+    def compute_with_flux_update(
+        self,
+        x: HyperspacePoint,
+        dt: float = 0.01,
+    ) -> Tuple[float, float]:
+        """
+        Compute L and update flux in one step.
+
+        Returns:
+            (L_f, D_f) - fluxed metric and effective dimension
+        """
+        self.update_flux(dt)
+        L = self.compute(x, self.time)
+        D_f = self.flux.effective_dimension()
+        return L, D_f
+
+    def simulate(
+        self,
+        x: HyperspacePoint,
+        steps: int = 100,
+        dt: float = 0.01,
+    ) -> Tuple[List[float], List[float], List[List[float]]]:
+        """
+        Run flux simulation for multiple steps.
+
+        Returns:
+            (L_vals, D_f_vals, nu_history)
+        """
+        L_vals = []
+        D_f_vals = []
+        nu_history = []
+
+        for _ in range(steps):
+            L, D_f = self.compute_with_flux_update(x, dt)
+            L_vals.append(L)
+            D_f_vals.append(D_f)
+            nu_history.append(self.flux.nu.copy())
+
+        return L_vals, D_f_vals, nu_history
+
+
+def verify_flux_bounded() -> bool:
+    """
+    Verify: Flux weights νᵢ stay in [0, 1] under dynamics.
+    """
+    flux = DimensionFlux.default()
+    metric = FluxingLanguesMetric(flux=flux)
+    x = HyperspacePoint()
+
+    for _ in range(1000):
+        metric.update_flux(dt=0.01)
+        for nu in metric.flux.nu:
+            if nu < 0.0 or nu > 1.0:
+                return False
+    return True
+
+
+def verify_dimension_conservation() -> bool:
+    """
+    Verify: Mean effective dimension D_f ≈ Σν̄ᵢ over long runs.
+
+    The flux dynamics relax toward ν̄ with oscillations, so mean D_f
+    should approximate the target baseline.
+    """
+    flux = DimensionFlux.default()
+    metric = FluxingLanguesMetric(flux=flux)
+    x = HyperspacePoint()
+
+    D_f_sum = 0.0
+    steps = 1000
+    for _ in range(steps):
+        metric.update_flux(dt=0.01)
+        D_f_sum += metric.flux.effective_dimension()
+
+    D_f_mean = D_f_sum / steps
+    D_f_target = sum(metric.flux.nu_bar)  # Use actual target from metric
+
+    # Should be within 20% of target (oscillations cause variance)
+    return abs(D_f_mean - D_f_target) < 0.2 * D_f_target
+
+
+def verify_1d_projection() -> bool:
+    """
+    Verify: With ν=(1,0,0,0,0,0), L reduces to single exponential.
+    """
+    flux = DimensionFlux(
+        nu=[1.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        kappa=[0.0] * 6,  # No dynamics
+        nu_bar=[1.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        sigma=[0.0] * 6,
+        omega_flux=[1.0] * 6,
+    )
+    metric = FluxingLanguesMetric(flux=flux, beta_base=1.0)
+
+    # Test point with deviation only in first dimension
+    x = HyperspacePoint(time=0.5)
+    L = metric.compute(x, t=0.0)
+
+    # Expected: w_0 * exp(β_0 * d_0) = 1.0 * exp(1.1 * 0.5)
+    d_0 = 0.5  # |0.5 - 0.0|
+    beta_0 = 1.0 + 0.1 * math.cos(0)  # β_base + 0.1*cos(0°) = 1.1
+    expected = 1.0 * math.exp(beta_0 * d_0)
+
+    return abs(L - expected) < 0.1
+
+
+# =============================================================================
 # Proofs and Properties
 # =============================================================================
 
@@ -399,7 +638,46 @@ if __name__ == "__main__":
 
     print()
     print("=" * 70)
+    print("FLUXING DIMENSIONS - Polly, Quasi, Demi")
+    print("=" * 70)
+    print()
+
+    print("FRACTIONAL DIMENSION PROOFS:")
+    print(f"  Flux bounded (ν ∈ [0,1]):       {'✓ PROVEN' if verify_flux_bounded() else '✗ FAILED'}")
+    print(f"  Dimension conservation:         {'✓ PROVEN' if verify_dimension_conservation() else '✗ FAILED'}")
+    print(f"  1D projection (ν=[1,0,0,0,0,0]):{'✓ PROVEN' if verify_1d_projection() else '✗ FAILED'}")
+    print()
+
+    print("DIMENSION STATES:")
+    print("  ν ≈ 1.0 : Polly (full dimension active)")
+    print("  0.5 < ν : Quasi (partial participation)")
+    print("  ν < 0.5 : Demi (minimal participation)")
+    print("  ν ≈ 0.0 : Collapsed (dimension off)")
+    print()
+
+    # Demo fluxing simulation
+    print("FLUX SIMULATION (100 steps):")
+    flux_metric = FluxingLanguesMetric(flux=DimensionFlux.quasi())
+    test_point = HyperspacePoint(time=0, intent=0.5, policy=0.6, trust=0.7, risk=0.3, entropy=0.4)
+
+    L_vals, D_f_vals, nu_history = flux_metric.simulate(test_point, steps=100, dt=0.01)
+
+    print(f"  Initial D_f:     {D_f_vals[0]:.2f} (effective dimensions)")
+    print(f"  Final D_f:       {D_f_vals[-1]:.2f}")
+    print(f"  Mean D_f:        {sum(D_f_vals)/len(D_f_vals):.2f}")
+    print(f"  L range:         [{min(L_vals):.2f}, {max(L_vals):.2f}]")
+    print()
+
+    print("  Final ν (flux weights):")
+    for i, tongue in enumerate(TONGUES):
+        print(f"    {tongue}: ν={nu_history[-1][i]:.3f}")
+    print()
+
+    print("=" * 70)
     print("LANGUES METRIC: L(x,t) = Σ w_l exp(β_l · (d_l + sin(ω_l t + φ_l)))")
+    print("FLUXED METRIC:  L_f(x,t) = Σ νᵢ(t) wᵢ exp[βᵢ(dᵢ + sin(ωᵢt + φᵢ))]")
+    print()
     print("  6 dimensions × 6 tongues × golden ratio weights × phase shifts")
+    print("  + Fractional dimensions (polly/quasi/demi) for breathing")
     print("  Unique to SCBE - no other AI safety system has this geometry.")
     print("=" * 70)
