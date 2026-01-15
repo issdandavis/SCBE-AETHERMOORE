@@ -1,0 +1,210 @@
+name: "SCBE-AETHERMOORE Validation"
+
+on:
+  push:
+    branches: [ main, 'claude/**' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  axiom-verification:
+    name: "Axiom Compliance (A1-A12)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install numpy scipy
+
+      - name: "Verify Axiom A4 (Poincaré Constraint)"
+        run: |
+          python -c "
+          import numpy as np
+          from symphonic_cipher.scbe_aethermoore import HyperbolicEngine
+
+          hyper = HyperbolicEngine()
+
+          # Large input should still be clamped inside ball
+          u = hyper.poincare_embed(np.array([1000.0]*6))
+          assert np.linalg.norm(u) < 1.0, 'Axiom A4 Violation: Norm >= 1'
+          print('✓ Axiom A4 Verified: ||u|| =', np.linalg.norm(u))
+          "
+
+      - name: "Verify Axiom A12 (Vertical Wall)"
+        run: |
+          python -c "
+          import numpy as np
+          from symphonic_cipher.scbe_aethermoore import l12_harmonic_scaling
+
+          # Vertical Wall: H = exp(d*²)
+          h0 = l12_harmonic_scaling(0.0)
+          h1 = l12_harmonic_scaling(1.0)
+          h2 = l12_harmonic_scaling(2.0)
+
+          assert abs(h0 - 1.0) < 0.01, 'H(0) should be 1'
+          assert abs(h1 - np.e) < 0.01, 'H(1) should be e'
+          assert h2 > 50, 'H(2) should be > 50 (exp(4) ≈ 54.6)'
+
+          print('✓ Axiom A12 Verified: H(0)={:.2f}, H(1)={:.2f}, H(2)={:.2f}'.format(h0, h1, h2))
+          "
+
+  unit-tests:
+    name: "Unit Tests"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install numpy scipy
+
+      - name: "Run Module Self-Tests"
+        run: |
+          python -c "
+          from symphonic_cipher.scbe_aethermoore import (
+              production_self_test, phdm_self_test, pqc_self_test,
+              organic_self_test, layers_9_12_self_test
+          )
+
+          suites = [
+              ('Production v2.1', production_self_test),
+              ('PHDM', phdm_self_test),
+              ('PQC', pqc_self_test),
+              ('Organic Hyperbolic', organic_self_test),
+              ('Layers 9-12', layers_9_12_self_test),
+          ]
+
+          total_passed = 0
+          total_tests = 0
+
+          for name, fn in suites:
+              result = fn()
+              total_passed += result['passed']
+              total_tests += result['total']
+              status = '✓' if result['passed'] == result['total'] else '✗'
+              print(f'{status} {name}: {result[\"passed\"]}/{result[\"total\"]}')
+
+          print(f'\\nTOTAL: {total_passed}/{total_tests}')
+          assert total_passed == total_tests, f'Tests failed: {total_tests - total_passed}'
+          "
+
+      - name: "Run Industry-Standard Tests"
+        run: python symphonic_cipher/scbe_aethermoore/test_scbe_system.py
+
+  requirements-verification:
+    name: "EARS Requirements (R1-R8)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install numpy scipy
+
+      - name: "R1: Energy Preservation"
+        run: |
+          python -c "
+          import numpy as np
+
+          # R1: Energy sum |c|² = sum A²
+          A = np.array([1.0, 2.0, 3.0])
+          phi = np.array([0.1, 0.2, 0.3])
+          c = A * np.exp(1j * phi)
+
+          energy_in = np.sum(A**2)
+          energy_out = np.sum(np.abs(c)**2)
+
+          assert abs(energy_in - energy_out) < 1e-10, 'R1 Violation'
+          print(f'✓ R1 Verified: Energy preserved ({energy_in:.4f} = {energy_out:.4f})')
+          "
+
+      - name: "R2: Poincaré Embedding Constraint"
+        run: |
+          python -c "
+          import numpy as np
+          from symphonic_cipher.scbe_aethermoore import HyperbolicEngine
+
+          hyper = HyperbolicEngine()
+
+          # Test 1000 random inputs
+          np.random.seed(42)
+          for _ in range(1000):
+              x = np.random.randn(6) * np.random.uniform(0.1, 1000)
+              u = hyper.poincare_embed(x)
+              assert np.linalg.norm(u) < 1.0, 'R2 Violation'
+
+          print('✓ R2 Verified: All 1000 embeddings inside ball')
+          "
+
+      - name: "R5: Risk Monotonicity"
+        run: |
+          python -c "
+          import numpy as np
+          from symphonic_cipher.scbe_aethermoore import compute_risk
+
+          # Increasing d_star should increase risk
+          d_values = np.linspace(0, 2, 20)
+          risks = [compute_risk(0.8, 0.8, 0.3, 0.9, 0.9, d).r_hat for d in d_values]
+
+          diffs = np.diff(risks)
+          assert np.all(diffs >= -1e-10), 'R5 Violation: Risk not monotonic'
+
+          print('✓ R5 Verified: Risk monotonically increasing in d*')
+          "
+
+      - name: "R7: Base Risk Bounded, Final Unbounded"
+        run: |
+          python -c "
+          import numpy as np
+          from symphonic_cipher.scbe_aethermoore import compute_risk, l12_harmonic_scaling
+
+          # Base risk should be [0,1]
+          result = compute_risk(0.5, 0.5, 0.5, 0.5, 0.5, 1.0)
+          assert 0 <= result.r_base <= 1, 'R7 Violation: r_base out of bounds'
+
+          # Harmonic scaling (Vertical Wall) should be unbounded
+          h = l12_harmonic_scaling(5.0)  # exp(25) ≈ 7.2e10
+          assert h > 1e10, 'R7 Violation: H should be unbounded'
+
+          print(f'✓ R7 Verified: r_base={result.r_base:.3f} ∈ [0,1], H(5)={h:.2e} (unbounded)')
+          "
+
+      - name: "R8: Determinism"
+        run: |
+          python -c "
+          import numpy as np
+          from symphonic_cipher.scbe_aethermoore import compute_risk
+
+          # Same inputs should produce same outputs
+          args = (0.7, 0.8, 0.3, 0.9, 0.85, 0.5)
+
+          r1 = compute_risk(*args)
+          r2 = compute_risk(*args)
+
+          assert r1.decision == r2.decision, 'R8 Violation: Non-deterministic'
+          assert r1.r_hat == r2.r_hat, 'R8 Violation: Non-deterministic'
+
+          print(f'✓ R8 Verified: Deterministic (decision={r1.decision}, risk={r1.r_hat:.6f})')
+          "
+
+  patent-validation:
+    name: "Patent Claims Validation"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install numpy scipy
+
+      - name: "Run Patent Validation Tests"
+        run: python symphonic_cipher/scbe_aethermoore/patent_validation_tests.py

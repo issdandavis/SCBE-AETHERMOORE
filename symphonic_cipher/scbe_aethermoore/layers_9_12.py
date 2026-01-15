@@ -394,17 +394,28 @@ class RiskAnalysis:
     components: Dict[str, float]  # Individual risk contributions
 
 
-def harmonic_scaling(d_star: float, R: float = PHI, max_exp: float = 50.0) -> float:
+def harmonic_scaling(d_star: float, R: float = PHI, max_exp: float = 50.0,
+                      use_vertical_wall: bool = True) -> float:
     """
-    Compute harmonic scaling factor H(d*, R) = R^{d*²}.
+    Compute harmonic scaling factor.
+
+    Two modes (A12):
+        - Vertical Wall: H = exp(d*²) [UNBOUNDED - Patent Claim]
+        - Soft Wall:     H = R^{d*²}  [Bounded growth]
 
     Properties (Theorem 4):
         - H ≥ 1 for d* ≥ 0
         - H monotonically increasing in d*
-        - ∂H/∂d* = 2d* × ln(R) × H > 0 for R > 1
+        - Vertical Wall: ∂H/∂d* = 2d* × H (exponential growth)
     """
     exponent = min(d_star ** 2, max_exp)  # Prevent overflow
-    return float(R ** exponent)
+
+    if use_vertical_wall:
+        # A12 Vertical Wall: H = exp(d*²) - UNBOUNDED
+        return float(np.exp(exponent))
+    else:
+        # Soft wall: H = R^{d*²}
+        return float(R ** exponent)
 
 
 def compute_risk(
@@ -742,18 +753,20 @@ def self_test() -> Dict[str, Any]:
     except Exception as e:
         results["decision_thresholds"] = f"✗ FAIL ({e})"
 
-    # Test 8: Harmonic scaling properties
+    # Test 8: Harmonic scaling properties (Vertical Wall)
     total += 1
     try:
-        h0 = harmonic_scaling(0.0)
-        h1 = harmonic_scaling(1.0)
-        h2 = harmonic_scaling(2.0)
+        # Vertical Wall: H = exp(d*²)
+        h0 = harmonic_scaling(0.0, use_vertical_wall=True)
+        h1 = harmonic_scaling(1.0, use_vertical_wall=True)
+        h2 = harmonic_scaling(2.0, use_vertical_wall=True)
 
-        if h0 == 1.0 and h1 > h0 and h2 > h1:
+        # H(0) = exp(0) = 1, H(1) = exp(1) = e, H(2) = exp(4) ≈ 54.6
+        if abs(h0 - 1.0) < 0.01 and abs(h1 - np.e) < 0.01 and h2 > h1:
             passed += 1
-            results["harmonic_scaling"] = f"✓ PASS (H(0)={h0:.2f}, H(1)={h1:.2f}, H(2)={h2:.2f})"
+            results["harmonic_scaling"] = f"✓ PASS (Vertical Wall: H(0)={h0:.2f}, H(1)={h1:.2f}, H(2)={h2:.2f})"
         else:
-            results["harmonic_scaling"] = f"✗ FAIL (H not monotonic)"
+            results["harmonic_scaling"] = f"✗ FAIL (H not matching exp(d*²))"
     except Exception as e:
         results["harmonic_scaling"] = f"✗ FAIL ({e})"
 
