@@ -365,6 +365,37 @@ from .living_metric import (
     self_test as living_metric_self_test,
 )
 
+# Fractional Dimension Flux: Claim 16
+from .fractional_flux import (
+    # States
+    ParticipationState,
+
+    # Parameters
+    FluxParams,
+    FluxState,
+
+    # Engine
+    FractionalFluxEngine,
+
+    # Weighting
+    compute_weighted_metric,
+    compute_weighted_distance,
+
+    # Snap detection
+    SnapResult,
+    detect_snap,
+
+    # Integration
+    integrate_with_living_metric,
+
+    # Breathing patterns
+    BreathingPattern,
+    apply_breathing_pattern,
+
+    # Self-test
+    self_test as fractional_flux_self_test,
+)
+
 # Production v2.1 - Complete System with CPSE Physics Engine
 from .production_v2_1 import (
     # Quasicrystal Lattice (L3.5)
@@ -625,4 +656,18 @@ __all__ = [
     "verify_antifragile",
     "integrate_with_risk_engine",
     "living_metric_self_test",
+
+    # Fractional Dimension Flux: Claim 16
+    "ParticipationState",
+    "FluxParams",
+    "FluxState",
+    "FractionalFluxEngine",
+    "compute_weighted_metric",
+    "compute_weighted_distance",
+    "SnapResult",
+    "detect_snap",
+    "integrate_with_living_metric",
+    "BreathingPattern",
+    "apply_breathing_pattern",
+    "fractional_flux_self_test",
 ]
