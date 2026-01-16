@@ -261,7 +261,6 @@ from .organic_hyperbolic import (
     HyperbolicEngine,
 
     # Pillar 4: Governance
-    GovernanceDecision,
     RealmConfig,
     GovernanceEngine,
 
