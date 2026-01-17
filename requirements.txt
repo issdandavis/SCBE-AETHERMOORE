@@ -1,0 +1,14 @@
+# SCBE-AETHERMOORE Dependencies
+# Python 3.10+ required
+
+numpy>=1.21.0
+scipy>=1.7.0
+liboqs-python>=0.7.0
+
+# Optional: Testing
+pytest>=7.0.0
+pytest-cov>=3.0.0
+
+# Optional: Development
+black>=22.0.0
+flake8>=4.0.0
