@@ -98,6 +98,20 @@ Interested in early access? See [PILOT_PROGRAM_TERMS.md](PILOT_PROGRAM_TERMS.md)
 
 For technical deep-dive, see [ARCHITECTURE_FOR_PILOTS.md](ARCHITECTURE_FOR_PILOTS.md).
 
+## Interactive Demo
+
+Try the Langues Weighting System (LWS) implementation in Google Colab:
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1xGSSnkMk2uqEJ6O7ZTHMCSv12I87TX21)
+
+**Features:**
+- Complete LWS mathematical implementation
+- Six Sacred Tongues configuration
+- Temporal evolution visualization
+- Dimensional breathing simulation
+- Core axioms and future work documentation
+
+
 ## Contributing
 
 We welcome contributions! Please read our contributing guidelines before submitting PRs.
