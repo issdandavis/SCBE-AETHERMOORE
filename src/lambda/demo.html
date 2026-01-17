@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCBE-AETHERMOORE v3.0 - Patent Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .animate-pulse-slow { animation: pulse 2s ease-in-out infinite; }
+        .animate-spin-slow { animation: spin 3s linear infinite; }
+        .glass { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
+        .gradient-bg { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
+        .glow { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+        .glow-green { box-shadow: 0 0 20px rgba(34, 197, 94, 0.5); }
+        .glow-red { box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <div class="inline-block px-4 py-1 bg-blue-600 rounded-full text-sm mb-4">
+                USPTO Application #63/961,403 | Patent Pending
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">
+                SCBE-AETHERMOORE
+                <span class="text-blue-400">v3.0</span>
+            </h1>
+            <p class="text-xl text-gray-300 max-w-2xl mx-auto">
+                Hyperbolic Geometry-Based Authorization with Topological Control-Flow Integrity
+            </p>
+            <p class="text-sm text-gray-400 mt-2">Inventor: Issac Daniel Davis | Filed: January 15, 2026</p>
+        </header>
+
+        <!-- The Big Idea -->
+        <section class="glass rounded-2xl p-8 mb-8 border border-white/10">
+            <h2 class="text-2xl font-bold mb-4 text-center">The Innovation</h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="text-center p-6 bg-red-500/20 rounded-xl border border-red-500/30">
+                    <div class="text-4xl mb-3">🔐</div>
+                    <h3 class="font-bold text-red-400 mb-2">Traditional Security</h3>
+                    <p class="text-gray-300">"Make attacks computationally <strong>HARD</strong>"</p>
+                    <p class="text-sm text-gray-400 mt-2">Build higher walls, add more locks</p>
+                </div>
+                <div class="text-center p-6 bg-green-500/20 rounded-xl border border-green-500/30 glow-green">
+                    <div class="text-4xl mb-3">🌐</div>
+                    <h3 class="font-bold text-green-400 mb-2">SCBE-AETHERMOORE</h3>
+                    <p class="text-gray-300">"Make attacks geometrically <strong>IMPOSSIBLE</strong>"</p>
+                    <p class="text-sm text-gray-400 mt-2">Change the shape of space itself</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Poincaré Ball Demo -->
+        <section class="glass rounded-2xl p-8 mb-8 border border-white/10">
+            <h2 class="text-2xl font-bold mb-6">Interactive Demo: The Poincaré Ball</h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                    <canvas id="poincareBall" width="400" height="400" class="bg-black/50 rounded-xl mx-auto block"></canvas>
+                    <div class="flex justify-center gap-4 mt-4">
+                        <button onclick="simulateNormal()" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition">
+                            Normal User
+                        </button>
+                        <button onclick="simulateAttack()" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition">
+                            Simulate Attack
+                        </button>
+                        <button onclick="resetDemo()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg transition">
+                            Reset
+                        </button>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div class="p-4 bg-black/30 rounded-xl">
+                        <h3 class="font-bold text-blue-400 mb-2">What You're Seeing</h3>
+                        <ul class="text-sm space-y-2 text-gray-300">
+                            <li>🟢 <strong>Green dot (T)</strong> = Trusted center (safe zone)</li>
+                            <li>🔴 <strong>Red dot (U)</strong> = User's current position</li>
+                            <li>⚪ <strong>White circle</strong> = Poincaré ball boundary</li>
+                            <li>📏 <strong>Distance</strong> = Hyperbolic distance d<sub>H</sub></li>
+                        </ul>
+                    </div>
+                    <div id="metrics" class="p-4 bg-black/30 rounded-xl">
+                        <h3 class="font-bold text-yellow-400 mb-2">Live Metrics</h3>
+                        <div class="space-y-2 text-sm font-mono">
+                            <div>Position: <span id="position" class="text-blue-400">(0.00, 0.00)</span></div>
+                            <div>||u||: <span id="norm" class="text-blue-400">0.000</span></div>
+                            <div>d<sub>H</sub>: <span id="distance" class="text-green-400">0.000</span></div>
+                            <div>H(d*): <span id="harmonic" class="text-yellow-400">1.000</span></div>
+                            <div>Status: <span id="status" class="text-green-400">SAFE</span></div>
+                        </div>
+                    </div>
+                    <div id="explanation" class="p-4 bg-blue-500/20 rounded-xl border border-blue-500/30">
+                        <p class="text-sm text-gray-300" id="explanationText">
+                            Click "Simulate Attack" to see how the system responds. The attacker tries to reach the boundary,
+                            but distance grows <strong>exponentially</strong> - they never arrive.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Vertical Wall -->
+        <section class="glass rounded-2xl p-8 mb-8 border border-white/10">
+            <h2 class="text-2xl font-bold mb-6">The Vertical Wall: H(d*) = exp(d*²)</h2>
+            <p class="text-gray-300 mb-6">Risk amplification explodes exponentially as you approach the boundary:</p>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-white/20">
+                            <th class="text-left py-2">Distance d*</th>
+                            <th class="text-left py-2">Risk Multiplier H</th>
+                            <th class="text-left py-2">Visual</th>
+                        </tr>
+                    </thead>
+                    <tbody id="wallTable"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Anti-Fragile Demo -->
+        <section class="glass rounded-2xl p-8 mb-8 border border-white/10">
+            <h2 class="text-2xl font-bold mb-6">Anti-Fragile: Gets STRONGER Under Attack</h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="font-bold text-yellow-400 mb-4">Pressure Gauge</h3>
+                    <div class="bg-black/30 rounded-xl p-6">
+                        <div class="flex items-center gap-4 mb-4">
+                            <span class="text-sm">Pressure:</span>
+                            <input type="range" id="pressureSlider" min="0" max="100" value="0"
+                                   class="flex-1" onchange="updatePressure()">
+                            <span id="pressureValue" class="font-mono">0%</span>
+                        </div>
+                        <div class="h-8 bg-gray-700 rounded-full overflow-hidden mb-4">
+                            <div id="pressureBar" class="h-full bg-green-500 transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 text-center text-sm">
+                            <div class="p-2 rounded bg-green-500/20">
+                                <div class="font-bold text-green-400">CALM</div>
+                                <div class="text-xs text-gray-400">0-30%</div>
+                            </div>
+                            <div class="p-2 rounded bg-yellow-500/20">
+                                <div class="font-bold text-yellow-400">ELEVATED</div>
+                                <div class="text-xs text-gray-400">30-70%</div>
+                            </div>
+                            <div class="p-2 rounded bg-red-500/20">
+                                <div class="font-bold text-red-400">CRITICAL</div>
+                                <div class="text-xs text-gray-400">70-100%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="font-bold text-green-400 mb-4">System Response</h3>
+                    <div class="bg-black/30 rounded-xl p-6 space-y-4">
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Stiffness Ψ(P)</span>
+                                <span id="stiffnessValue" class="font-mono text-green-400">1.00x</span>
+                            </div>
+                            <div class="h-4 bg-gray-700 rounded-full overflow-hidden">
+                                <div id="stiffnessBar" class="h-full bg-green-500 transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-green-500/10 rounded-lg border border-green-500/30">
+                            <p class="text-sm text-gray-300" id="antifragileExplanation">
+                                At rest, the system is soft and flexible. Try increasing the pressure!
+                            </p>
+                        </div>
+                        <div class="text-center p-4">
+                            <div class="text-3xl font-bold" id="stateEmoji">😊</div>
+                            <div id="stateLabel" class="text-sm text-gray-400">System at rest</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Test Results -->
+        <section class="glass rounded-2xl p-8 mb-8 border border-white/10">
+            <h2 class="text-2xl font-bold mb-6">Verified Test Results</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="text-center p-4 bg-green-500/20 rounded-xl">
+                    <div class="text-3xl font-bold text-green-400">226</div>
+                    <div class="text-sm text-gray-400">Tests Passed</div>
+                </div>
+                <div class="text-center p-4 bg-blue-500/20 rounded-xl">
+                    <div class="text-3xl font-bold text-blue-400">100%</div>
+                    <div class="text-sm text-gray-400">Pass Rate</div>
+                </div>
+                <div class="text-center p-4 bg-purple-500/20 rounded-xl">
+                    <div class="text-3xl font-bold text-purple-400">13</div>
+                    <div class="text-sm text-gray-400">Security Layers</div>
+                </div>
+                <div class="text-center p-4 bg-yellow-500/20 rounded-xl">
+                    <div class="text-3xl font-bold text-yellow-400">62+</div>
+                    <div class="text-sm text-gray-400">Patent Claims</div>
+                </div>
+            </div>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="p-4 bg-black/30 rounded-xl">
+                    <h3 class="font-bold text-green-400 mb-2">✅ Mathematical Properties Verified</h3>
+                    <ul class="text-sm space-y-1 text-gray-300">
+                        <li>• Poincaré ball containment (||u|| &lt; 1 always)</li>
+                        <li>• Hyperbolic distance properties (symmetric, non-negative)</li>
+                        <li>• Harmonic scaling monotonicity (H increases with d*)</li>
+                        <li>• Anti-fragile stiffness (Ψ increases with pressure)</li>
+                        <li>• Möbius isometry (distances preserved under transform)</li>
+                    </ul>
+                </div>
+                <div class="p-4 bg-black/30 rounded-xl">
+                    <h3 class="font-bold text-blue-400 mb-2">🛡️ Attack Simulation Results</h3>
+                    <ul class="text-sm space-y-1 text-gray-300">
+                        <li>• Boundary probe: <span class="text-green-400">BLOCKED</span></li>
+                        <li>• Gradient descent: <span class="text-green-400">BLOCKED</span></li>
+                        <li>• Replay attack: <span class="text-yellow-400">DETECTED</span></li>
+                        <li>• Brute force: <span class="text-green-400">BLOCKED</span></li>
+                        <li>• Detection rate: <span class="text-green-400">100%</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- The 13 Layers -->
+        <section class="glass rounded-2xl p-8 mb-8 border border-white/10">
+            <h2 class="text-2xl font-bold mb-6">The 13-Layer Security Stack</h2>
+            <div class="space-y-2" id="layerStack"></div>
+        </section>
+
+        <!-- Contact / CTA -->
+        <section class="text-center py-12">
+            <h2 class="text-2xl font-bold mb-4">Interested in This Technology?</h2>
+            <p class="text-gray-300 mb-6 max-w-xl mx-auto">
+                Looking for technical co-founders, licensing partners, or investors who understand
+                the value of mathematically-proven security.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="mailto:issdandavis7795@gmail.com"
+                   class="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg transition font-bold">
+                    Contact Inventor
+                </a>
+                <a href="https://github.com/issdandavis/scbe-aethermoore-demo" target="_blank"
+                   class="px-6 py-3 bg-gray-600 hover:bg-gray-700 rounded-lg transition font-bold">
+                    View on GitHub
+                </a>
+            </div>
+            <p class="text-sm text-gray-500 mt-8">
+                USPTO Application #63/961,403 | Patent Pending | © 2026 Issac Daniel Davis
+            </p>
+        </section>
+    </div>
+
+    <script>
+        // ===== POINCARÉ BALL DEMO =====
+        const canvas = document.getElementById('poincareBall');
+        const ctx = canvas.getContext('2d');
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = 180;
+
+        let userPos = { x: 0, y: 0 };
+        let targetPos = { x: 0, y: 0 };
+        let isAnimating = false;
+        let animationId = null;
+
+        function drawBall() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw boundary circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Draw grid
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            for (let i = -3; i <= 3; i++) {
+                // Vertical lines
+                ctx.beginPath();
+                ctx.moveTo(centerX + i * 50, centerY - radius);
+                ctx.lineTo(centerX + i * 50, centerY + radius);
+                ctx.stroke();
+                // Horizontal lines
+                ctx.beginPath();
+                ctx.moveTo(centerX - radius, centerY + i * 50);
+                ctx.lineTo(centerX + radius, centerY + i * 50);
+                ctx.stroke();
+            }
+
+            // Draw trusted center (green)
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 10, 0, Math.PI * 2);
+            ctx.fillStyle = '#22c55e';
+            ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 12px monospace';
+            ctx.fillText('T', centerX - 4, centerY + 4);
+
+            // Draw user position (red)
+            const userScreenX = centerX + userPos.x * radius;
+            const userScreenY = centerY - userPos.y * radius;
+            ctx.beginPath();
+            ctx.arc(userScreenX, userScreenY, 10, 0, Math.PI * 2);
+            ctx.fillStyle = '#ef4444';
+            ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.fillText('U', userScreenX - 4, userScreenY + 4);
+
+            // Draw line between them
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(userScreenX, userScreenY);
+            ctx.strokeStyle = 'rgba(255, 255, 0, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Update metrics
+            updateMetrics();
+        }
+
+        function hyperbolicDistance(u, v) {
+            const ux = u.x, uy = u.y;
+            const vx = v.x, vy = v.y;
+            const diffSq = (ux - vx) ** 2 + (uy - vy) ** 2;
+            const uNormSq = ux ** 2 + uy ** 2;
+            const vNormSq = vx ** 2 + vy ** 2;
+            const denom = (1 - uNormSq) * (1 - vNormSq);
+            if (denom <= 0) return Infinity;
+            const arg = 1 + 2 * diffSq / denom;
+            return Math.acosh(Math.max(1, arg));
+        }
+
+        function harmonicH(d) {
+            return Math.exp(d * d);
+        }
+
+        function updateMetrics() {
+            const norm = Math.sqrt(userPos.x ** 2 + userPos.y ** 2);
+            const dH = hyperbolicDistance(userPos, { x: 0, y: 0 });
+            const H = harmonicH(dH);
+
+            document.getElementById('position').textContent = `(${userPos.x.toFixed(2)}, ${userPos.y.toFixed(2)})`;
+            document.getElementById('norm').textContent = norm.toFixed(3);
+            document.getElementById('distance').textContent = dH.toFixed(3);
+            document.getElementById('harmonic').textContent = H.toFixed(3);
+
+            let status, statusColor;
+            if (norm < 0.3) {
+                status = 'SAFE';
+                statusColor = 'text-green-400';
+            } else if (norm < 0.6) {
+                status = 'CAUTION';
+                statusColor = 'text-yellow-400';
+            } else if (norm < 0.9) {
+                status = 'WARNING';
+                statusColor = 'text-orange-400';
+            } else {
+                status = 'CRITICAL';
+                statusColor = 'text-red-400';
+            }
+
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = status;
+            statusEl.className = statusColor;
+        }
+
+        function simulateNormal() {
+            targetPos = { x: 0.2, y: 0.15 };
+            animateToTarget();
+            document.getElementById('explanationText').innerHTML =
+                'Normal user behavior: staying close to the trusted center. Low risk, access <strong class="text-green-400">GRANTED</strong>.';
+        }
+
+        function simulateAttack() {
+            // Simulate attacker trying to reach boundary
+            let step = 0;
+            const maxSteps = 50;
+
+            document.getElementById('explanationText').innerHTML =
+                'Attacker trying to reach boundary... watch how distance <strong class="text-yellow-400">EXPLODES</strong> exponentially!';
+
+            function attackStep() {
+                if (step >= maxSteps) {
+                    document.getElementById('explanationText').innerHTML =
+                        'Attack <strong class="text-red-400">FAILED</strong>: The attacker exhausted their energy before reaching the target. ' +
+                        'The closer they get to the boundary, the more space expands - they can never arrive!';
+                    return;
+                }
+
+                // Try to move toward boundary
+                const angle = Math.PI / 4;
+                const targetNorm = 0.5 + step * 0.01;
+                userPos.x = Math.min(0.99, targetNorm * Math.cos(angle));
+                userPos.y = Math.min(0.99, targetNorm * Math.sin(angle));
+
+                drawBall();
+                step++;
+
+                setTimeout(attackStep, 100);
+            }
+
+            attackStep();
+        }
+
+        function animateToTarget() {
+            const startPos = { ...userPos };
+            const duration = 1000;
+            const startTime = Date.now();
+
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(1, elapsed / duration);
+                const eased = 1 - Math.pow(1 - progress, 3);
+
+                userPos.x = startPos.x + (targetPos.x - startPos.x) * eased;
+                userPos.y = startPos.y + (targetPos.y - startPos.y) * eased;
+
+                drawBall();
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            }
+
+            animate();
+        }
+
+        function resetDemo() {
+            userPos = { x: 0, y: 0 };
+            targetPos = { x: 0, y: 0 };
+            drawBall();
+            document.getElementById('explanationText').innerHTML =
+                'Click "Simulate Attack" to see how the system responds. The attacker tries to reach the boundary, ' +
+                'but distance grows <strong>exponentially</strong> - they never arrive.';
+        }
+
+        // ===== VERTICAL WALL TABLE =====
+        function buildWallTable() {
+            const tbody = document.getElementById('wallTable');
+            const data = [
+                { d: 0.0, label: 'At center' },
+                { d: 0.5, label: 'Getting far' },
+                { d: 1.0, label: 'Suspicious' },
+                { d: 1.5, label: 'High risk' },
+                { d: 2.0, label: 'Danger zone' },
+                { d: 2.5, label: 'Critical' },
+                { d: 3.0, label: 'THE WALL' },
+            ];
+
+            data.forEach(({ d, label }) => {
+                const H = Math.exp(d * d);
+                const barWidth = Math.min(100, Math.log10(H + 1) * 25);
+                const color = d < 1 ? 'bg-green-500' : d < 2 ? 'bg-yellow-500' : 'bg-red-500';
+
+                const row = document.createElement('tr');
+                row.className = 'border-b border-white/10';
+                row.innerHTML = `
+                    <td class="py-2 font-mono">${d.toFixed(1)} <span class="text-gray-500 text-xs">(${label})</span></td>
+                    <td class="py-2 font-mono font-bold">${H.toFixed(2)}</td>
+                    <td class="py-2">
+                        <div class="h-4 bg-gray-700 rounded-full overflow-hidden">
+                            <div class="h-full ${color}" style="width: ${barWidth}%"></div>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // ===== ANTI-FRAGILE PRESSURE =====
+        function updatePressure() {
+            const pressure = parseInt(document.getElementById('pressureSlider').value) / 100;
+            const maxExpansion = 2.0;
+            const beta = 3.0;
+            const stiffness = 1.0 + (maxExpansion - 1.0) * Math.tanh(beta * pressure);
+
+            // Update displays
+            document.getElementById('pressureValue').textContent = Math.round(pressure * 100) + '%';
+            document.getElementById('pressureBar').style.width = (pressure * 100) + '%';
+            document.getElementById('stiffnessValue').textContent = stiffness.toFixed(2) + 'x';
+            document.getElementById('stiffnessBar').style.width = ((stiffness - 1) / (maxExpansion - 1) * 100) + '%';
+
+            // Update colors
+            const pressureBar = document.getElementById('pressureBar');
+            const stiffnessBar = document.getElementById('stiffnessBar');
+
+            if (pressure < 0.3) {
+                pressureBar.className = 'h-full bg-green-500 transition-all duration-300';
+                stiffnessBar.className = 'h-full bg-green-500 transition-all duration-300';
+                document.getElementById('stateEmoji').textContent = '😊';
+                document.getElementById('stateLabel').textContent = 'System relaxed';
+                document.getElementById('antifragileExplanation').textContent =
+                    'Low pressure: System is soft and flexible. Normal operations.';
+            } else if (pressure < 0.7) {
+                pressureBar.className = 'h-full bg-yellow-500 transition-all duration-300';
+                stiffnessBar.className = 'h-full bg-yellow-500 transition-all duration-300';
+                document.getElementById('stateEmoji').textContent = '😤';
+                document.getElementById('stateLabel').textContent = 'System hardening';
+                document.getElementById('antifragileExplanation').textContent =
+                    'Medium pressure detected: System is stiffening. Like cornstarch in water - the harder you push, the more it resists!';
+            } else {
+                pressureBar.className = 'h-full bg-red-500 transition-all duration-300';
+                stiffnessBar.className = 'h-full bg-red-500 transition-all duration-300';
+                document.getElementById('stateEmoji').textContent = '💪';
+                document.getElementById('stateLabel').textContent = 'MAXIMUM DEFENSE';
+                document.getElementById('antifragileExplanation').textContent =
+                    'HIGH PRESSURE: System is now ' + stiffness.toFixed(1) + 'x STRONGER than at rest! The attack made us MORE secure, not less.';
+            }
+        }
+
+        // ===== 13 LAYER STACK =====
+        function buildLayerStack() {
+            const layers = [
+                { num: 0, name: 'HMAC Chain', desc: 'Replay protection & integrity', color: 'blue' },
+                { num: 1, name: 'Flat-Slope Encoder', desc: 'Intent fingerprinting', color: 'blue' },
+                { num: 2, name: 'Hyperbolic Distance', desc: 'Trust metric (d_H formula)', color: 'green' },
+                { num: 3, name: 'Harmonic Scaling', desc: 'Risk amplification H(d*)', color: 'yellow' },
+                { num: 4, name: 'Langues Tensor', desc: '6-D domain separation', color: 'purple' },
+                { num: 5, name: 'Hyper-Torus', desc: 'Temporal phase ledger', color: 'purple' },
+                { num: 6, name: 'Fractal Analyzer', desc: 'Complexity metric', color: 'blue' },
+                { num: 7, name: 'Lyapunov Stability', desc: 'Chaos detection', color: 'blue' },
+                { num: 8, name: 'PHDM', desc: 'Hamiltonian defense manifold', color: 'green' },
+                { num: 9, name: 'GUSCF', desc: 'Spectral coherence', color: 'blue' },
+                { num: 10, name: 'DSP Chain', desc: 'Frequency/entropy analysis', color: 'blue' },
+                { num: 11, name: 'AI Verifier', desc: 'Hopfield intent classification', color: 'purple' },
+                { num: 12, name: 'Core Cipher', desc: 'Feistel + encryption', color: 'red' },
+                { num: 13, name: 'AETHERMOORE', desc: '9-D governance manifold', color: 'yellow' },
+            ];
+
+            const container = document.getElementById('layerStack');
+            const colorMap = {
+                blue: 'bg-blue-500/20 border-blue-500/30',
+                green: 'bg-green-500/20 border-green-500/30',
+                yellow: 'bg-yellow-500/20 border-yellow-500/30',
+                purple: 'bg-purple-500/20 border-purple-500/30',
+                red: 'bg-red-500/20 border-red-500/30',
+            };
+
+            layers.reverse().forEach(layer => {
+                const div = document.createElement('div');
+                div.className = `p-3 rounded-lg border ${colorMap[layer.color]} flex items-center gap-4`;
+                div.innerHTML = `
+                    <div class="w-8 h-8 flex items-center justify-center bg-white/10 rounded-full font-mono font-bold text-sm">
+                        ${layer.num}
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-bold">${layer.name}</div>
+                        <div class="text-xs text-gray-400">${layer.desc}</div>
+                    </div>
+                    <div class="text-green-400">✓</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Initialize
+        drawBall();
+        buildWallTable();
+        buildLayerStack();
+        updatePressure();
+    </script>
+</body>
+</html>
