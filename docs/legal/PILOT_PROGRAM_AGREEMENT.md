@@ -244,7 +244,7 @@ Participant assumes all risk of using System in its environment. Provider does n
 ### 9.1 Pilot Duration
 
 - **Start:** [Effective Date]
-- **End:** 13 weeks later (Week of April 20, 2026)
+- **End:** 13 weeks later (approximately 90 days)
 - **Extension:** By mutual written agreement (cost $0, no additional terms)
 
 ### 9.2 Early Termination
