@@ -61,6 +61,23 @@ python demo.py
 
 ---
 
+## Pilot Program
+
+Interested in evaluating SCBE-AETHERMOORE for your organization? We offer a **free 90-day pilot program** for qualified participants.
+
+The pilot includes:
+- Integration support and technical assistance
+- Performance benchmarking in your test environment
+- Weekly reporting and analysis
+- Red team exercise coordination
+- Zero cost for evaluation period
+
+📄 [View Pilot Program Agreement](docs/legal/PILOT_PROGRAM_AGREEMENT.md)
+
+For inquiries, contact: issdandavis7795@gmail.com
+
+---
+
 ## Contributing
 
 We welcome contributions! Check out our [Issues](https://github.com/ISDanDavis2/scbe-aethermoore/issues) for:
