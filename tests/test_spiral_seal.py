@@ -1,5 +1,8 @@
 """
 Tests for SpiralSeal SS1 implementation.
+
+Last Updated: January 18, 2026
+Version: 2.0.0
 """
 
 import sys

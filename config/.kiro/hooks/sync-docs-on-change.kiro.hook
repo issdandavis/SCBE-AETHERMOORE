@@ -1,0 +1,21 @@
+{
+  "enabled": true,
+  "name": "Sync Documentation",
+  "description": "When source files (Python or TypeScript) are edited, prompts the agent to review changes and update relevant documentation in README or /docs folder",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "*.py",
+      "*.ts",
+      "*.tsx",
+      "*.js",
+      "*.yml",
+      "*.yaml"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A source file was just edited. Please review the changes made and determine if any documentation needs to be updated. Check the README.md and the /docs folder for relevant documentation that may need to reflect these changes. If updates are needed, make the appropriate changes to keep documentation in sync with the code. Focus on: API changes, new features, configuration changes, or behavioral modifications."
+  }
+}

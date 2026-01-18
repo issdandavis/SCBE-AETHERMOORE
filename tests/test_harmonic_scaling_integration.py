@@ -28,8 +28,9 @@ import sys
 import math
 import numpy as np
 
-# Add the symphonic_cipher module
-sys.path.insert(0, '.')
+# Add the src directory to path for imports
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 from symphonic_cipher.harmonic_scaling_law import (
     HarmonicScalingLaw,

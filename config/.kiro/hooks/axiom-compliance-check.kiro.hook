@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Axiom Compliance Check",
+  "description": "When Python math core files in src/ change, verifies A1-A12 axiom compliance to catch constraint violations early",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/*.py"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A Python file in src/ was modified. Run `python src/scbe_cpse_unified.py` to verify A1-A12 axiom compliance. Check the output for any constraint violations and report any failures. If violations are found, explain which axiom was violated and suggest fixes."
+  }
+}

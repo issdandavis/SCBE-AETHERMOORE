@@ -4,6 +4,9 @@ SCBE Comprehensive Test Suite - 100 Tests
 Tests for SpiralSeal SS1, Sacred Tongues, Axioms A1-A12,
 Harmonic Scaling, Context Vectors, and Cryptographic Primitives.
 
+Last Updated: January 18, 2026
+Version: 2.0.0
+
 Covers:
 - Sacred Tongue encoding/decoding (6 tongues × 256 tokens)
 - SpiralSeal SS1 seal/unseal operations
