@@ -433,33 +433,29 @@ The SCBE system uses FFT to analyze telemetry signals and compute spectral coher
 
 **Implementation** (`src/scbe_14layer_reference.py`):
 ```python
-def spectral_coherence(signal: np.ndarray, ε: float = 1e-8) -> float:
+def layer_9_spectral_coherence(signal: Optional[np.ndarray], 
+                                eps: float = 1e-5) -> float:
     """
-    Compute spectral coherence using FFT.
+    Layer 9: Spectral Coherence via FFT
     
-    Measures energy concentration in low vs high frequency bands.
+    Input: Time-domain signal
+    Output: S_spec ∈ [0,1]
     
-    Args:
-        signal: Time-domain signal
-        ε: Regularization to prevent division by zero
-        
-    Returns:
-        Coherence score in [0, 1], where higher means more low-frequency energy
+    A9: Low-frequency energy ratio as pattern stability measure.
     """
-    N = len(signal)
-    fft_vals = np.fft.fft(signal)
-    magnitude = np.abs(fft_vals)
+    if signal is None or len(signal) == 0:
+        return 0.5
     
-    # Split into low and high frequency bands
-    half_N = N // 2
-    low_freq_energy = np.sum(magnitude[:half_N//2]**2)
-    high_freq_energy = np.sum(magnitude[half_N//2:half_N]**2)
+    # FFT magnitude spectrum
+    fft_mag = np.abs(np.fft.fft(signal))
+    half = len(fft_mag) // 2
     
-    # Coherence as ratio (regularized)
-    total_energy = low_freq_energy + high_freq_energy + ε
-    r_HF = high_freq_energy / total_energy
+    # Low-frequency energy
+    low_energy = np.sum(fft_mag[:half])
+    total_energy = np.sum(fft_mag) + eps
     
-    return 1.0 - r_HF  # Higher when low frequencies dominate
+    S_spec = low_energy / total_energy
+    return np.clip(S_spec, 0.0, 1.0)
 ```
 
 **Interpretation**:
