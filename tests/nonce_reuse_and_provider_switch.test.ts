@@ -1,3 +1,4 @@
+import { describe, it, expect, test } from 'vitest';
 import { createEnvelope, verifyEnvelope } from '../src/crypto/envelope.js';
 
 test('nonce prefix mismatch blocks reuse across sessions', async () => {
