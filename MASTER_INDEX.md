@@ -144,6 +144,13 @@ Intent → Feistel Modulation → PCM Signal → FFT → Harmonic Fingerprint �
   - 14 theorems with complete derivations
   - Patent-ready formulations
 
+**Educational Resources**:
+- **[docs/FOURIER_SERIES_FOUNDATIONS.md](docs/FOURIER_SERIES_FOUNDATIONS.md)** (NEW)
+  - Comprehensive guide to Fourier series and FFT
+  - Applications to music and audio processing
+  - Integration with SCBE spectral analysis
+  - Mathematical foundations with practical examples
+
 **Key Theorems**:
 
 #### Hyperbolic Geometry
