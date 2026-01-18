@@ -1,0 +1,78 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scbe-aethermoore"
+version = "3.0.0"
+description = "Post-quantum hybrid encryption with hyperbolic geometry for AI safety governance"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Isaac Davis", email = "isaac@scbe.dev"}
+]
+keywords = [
+    "cryptography",
+    "post-quantum",
+    "kyber",
+    "dilithium",
+    "aes-gcm",
+    "ai-safety",
+    "hyperbolic-geometry"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security :: Cryptography",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "pycryptodome>=3.19.0",
+]
+
+[project.optional-dependencies]
+pqc = [
+    "pypqc>=0.0.6",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "hypothesis>=6.0.0",
+    "mypy>=1.0.0",
+]
+all = [
+    "scbe-aethermoore[pqc,dev]",
+]
+
+[project.urls]
+Homepage = "https://github.com/issdandavis/scbe-aethermoore-demo"
+Documentation = "https://github.com/issdandavis/scbe-aethermoore-demo/blob/main/docs/GETTING_STARTED.md"
+Repository = "https://github.com/issdandavis/scbe-aethermoore-demo.git"
+Issues = "https://github.com/issdandavis/scbe-aethermoore-demo/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["symphonic_cipher*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.md", "*.yml", "*.yaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "symphonic_cipher/tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
