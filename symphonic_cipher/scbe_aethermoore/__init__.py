@@ -269,3 +269,84 @@ except ImportError:
     quick_unseal = None
     SacredTongue = None
     SacredTongueTokenizer = None
+
+# AETHERMOORE Core Constants
+from .constants import (
+    # Mathematical Constants
+    PI, E, PHI as PHI_GOLDEN, SQRT2, SQRT5,
+    # Harmonic Ratios
+    R_FIFTH, R_FOURTH, R_THIRD, R_SIXTH, R_OCTAVE, R_PHI,
+    # AETHERMOORE Constants
+    PHI_AETHER, LAMBDA_ISAAC, OMEGA_SPIRAL, ALPHA_ABH,
+    # Physical Constants
+    C_LIGHT, PLANCK_LENGTH, PLANCK_TIME, PLANCK_CONSTANT,
+    # Defaults
+    DEFAULT_R, DEFAULT_D_MAX, DEFAULT_L, DEFAULT_TOLERANCE, DEFAULT_BASE_BITS,
+    # Core Functions
+    harmonic_scale, security_bits, security_level, harmonic_distance, octave_transpose,
+    # Data Types
+    AethermooreDimension, DIMENSIONS, CONSTANTS,
+    # Reference
+    get_harmonic_scale_table, HARMONIC_SCALE_TABLE,
+)
+
+# HAL-Attention (Harmonic Associative Lattice)
+from .hal_attention import (
+    HALConfig,
+    AttentionOutput,
+    harmonic_coupling_matrix,
+    assign_dimension_depths,
+    hal_attention,
+    multi_head_hal_attention,
+    HALAttentionLayer,
+)
+
+# Vacuum-Acoustics Kernel
+from .vacuum_acoustics import (
+    VacuumAcousticsConfig,
+    WaveSource,
+    FluxResult,
+    BottleBeamResult,
+    nodal_surface,
+    check_cymatic_resonance,
+    bottle_beam_intensity,
+    flux_redistribution,
+    is_on_nodal_line,
+    find_nodal_points,
+    compute_chladni_pattern,
+    resonance_strength,
+    create_bottle_beam_sources,
+    analyze_bottle_beam,
+)
+
+# Cymatic Voxel Storage
+from .cymatic_storage import (
+    StorageMode,
+    Voxel,
+    KDTree,
+    HolographicQRCube,
+)
+
+# Extend __all__ with new AETHERMOORE modules
+__all__.extend([
+    # Constants
+    "PI", "E", "PHI_GOLDEN", "SQRT2", "SQRT5",
+    "R_FIFTH", "R_FOURTH", "R_THIRD", "R_SIXTH", "R_OCTAVE", "R_PHI",
+    "PHI_AETHER", "LAMBDA_ISAAC", "OMEGA_SPIRAL", "ALPHA_ABH",
+    "C_LIGHT", "PLANCK_LENGTH", "PLANCK_TIME", "PLANCK_CONSTANT",
+    "DEFAULT_R", "DEFAULT_D_MAX", "DEFAULT_L", "DEFAULT_TOLERANCE", "DEFAULT_BASE_BITS",
+    "harmonic_scale", "security_bits", "security_level", "harmonic_distance", "octave_transpose",
+    "AethermooreDimension", "DIMENSIONS", "CONSTANTS",
+    "get_harmonic_scale_table", "HARMONIC_SCALE_TABLE",
+    # HAL-Attention
+    "HALConfig", "AttentionOutput",
+    "harmonic_coupling_matrix", "assign_dimension_depths",
+    "hal_attention", "multi_head_hal_attention", "HALAttentionLayer",
+    # Vacuum-Acoustics
+    "VacuumAcousticsConfig", "WaveSource", "FluxResult", "BottleBeamResult",
+    "nodal_surface", "check_cymatic_resonance", "bottle_beam_intensity",
+    "flux_redistribution", "is_on_nodal_line", "find_nodal_points",
+    "compute_chladni_pattern", "resonance_strength", "create_bottle_beam_sources", "analyze_bottle_beam",
+    # Cymatic Storage
+    "StorageMode", "Voxel", "KDTree", "HolographicQRCube",
+])
