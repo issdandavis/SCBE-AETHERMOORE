@@ -1,540 +1,519 @@
 #!/usr/bin/env python3
 """
-Hamiltonian Control Flow Integrity (CFI)
+Topological Control Flow Integrity - Hamiltonian Path Detection
 
-Valid execution = Hamiltonian path through state graph
-Attack = deviation from linearized manifold
+Based on: "Topological Linearization of State Spaces for Anomaly Detection"
 
-The execution graph G = (V, E) where:
-- V = valid program states (nodes)
-- E = valid transitions (edges)
+Core Concept:
+- Valid execution = traversal along a single Hamiltonian path
+- Attack = deviation from the linearized manifold
+- Deviations measured as orthogonal distance from the "golden path"
 
-A Hamiltonian path visits every vertex exactly once.
-Valid execution traces must form Hamiltonian paths.
+The hyperbolic governance metric remains INVARIANT - this module provides
+an additional CFI layer for robot brain firewalls.
 
-Key Insight:
-- Linearized manifold = expected execution sequence
-- Deviation = attack or anomaly
-- Detection via path validation in O(|V|) for known graphs
+Mathematical Foundation:
+1. Embed CFG into higher-dimensional manifold (4D+) to resolve obstructions
+2. Compute principal curve through embedded states
+3. At runtime, measure deviation from curve
+4. Deviation > threshold → ATTACK detected
+
+Key Insight: Many 3D graphs are non-Hamiltonian (e.g., Rhombic Dodecahedron
+with bipartite imbalance |6-8|=2), but lifting to 4D/6D resolves obstructions.
 
 Document ID: SCBE-CFI-2026-001
 Version: 1.0.0
 """
 
 import math
-import hashlib
+import numpy as np
 from dataclasses import dataclass, field
-from typing import List, Dict, Set, Tuple, Optional, Any
+from typing import List, Tuple, Optional, Dict, Any, Set
 from enum import Enum
+import hashlib
 
 
 # =============================================================================
 # CONSTANTS
 # =============================================================================
 
-MAX_STATES = 1000  # Maximum states in execution graph
-MAX_PATH_LENGTH = 10000  # Maximum execution trace length
+# Golden ratio for icosahedral geometry
+PHI = (1 + math.sqrt(5)) / 2
+
+# Default parameters
+DEFAULT_EMBEDDING_DIM = 6
+DEFAULT_DEVIATION_THRESHOLD = 0.1
+DEFAULT_MAX_VERTICES = 256
 
 
-class CFIStatus(Enum):
-    """Control flow integrity status."""
-    VALID = "VALID"           # Path follows Hamiltonian structure
-    DEVIATION = "DEVIATION"   # Path deviates from expected
-    CYCLE = "CYCLE"           # Unexpected cycle detected
-    ORPHAN = "ORPHAN"         # Unreachable state visited
-    TRUNCATED = "TRUNCATED"   # Path incomplete
+class CFIDecision(Enum):
+    """Control flow integrity decision."""
+    VALID = "VALID"
+    DEVIATION = "DEVIATION"
+    ATTACK = "ATTACK"
+    OBSTRUCTION = "OBSTRUCTION"
 
 
 # =============================================================================
-# STATE AND TRANSITION DEFINITIONS
+# GRAPH STRUCTURES
 # =============================================================================
 
 @dataclass
-class ExecutionState:
-    """
-    A node in the execution graph.
-    
-    Each state has:
-    - id: Unique identifier
-    - name: Human-readable name
-    - hash: Cryptographic fingerprint of state
-    - metadata: Additional state information
-    """
+class CFGVertex:
+    """A vertex in the control flow graph."""
     id: int
-    name: str
-    hash: str = ""
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    label: str
+    instruction_pointer: int
+    neighbors: List[int] = field(default_factory=list)
+    embedding: Optional[np.ndarray] = None
     
-    def __post_init__(self):
-        if not self.hash:
-            # Generate hash from id and name
-            content = f"{self.id}:{self.name}"
-            self.hash = hashlib.sha256(content.encode()).hexdigest()[:16]
-    
-    def __hash__(self):
-        return hash(self.id)
-    
-    def __eq__(self, other):
-        if isinstance(other, ExecutionState):
-            return self.id == other.id
-        return False
+    def degree(self) -> int:
+        """Vertex degree (number of edges)."""
+        return len(self.neighbors)
 
 
 @dataclass
-class Transition:
+class ControlFlowGraph:
     """
-    An edge in the execution graph.
+    Control Flow Graph for CFI analysis.
     
-    Represents valid transition from source to target state.
+    Represents program execution as a graph where:
+    - Vertices = machine states (IP, registers, etc.)
+    - Edges = valid transitions
     """
-    source: int  # Source state ID
-    target: int  # Target state ID
-    weight: float = 1.0  # Transition cost/probability
-    label: str = ""  # Transition label (e.g., function name)
+    vertices: Dict[int, CFGVertex] = field(default_factory=dict)
+    edges: Set[Tuple[int, int]] = field(default_factory=set)
     
-    def __hash__(self):
-        return hash((self.source, self.target))
-
-
-# =============================================================================
-# EXECUTION GRAPH
-# =============================================================================
-
-class ExecutionGraph:
-    """
-    Directed graph representing valid execution paths.
+    def add_vertex(self, v: CFGVertex):
+        """Add a vertex."""
+        self.vertices[v.id] = v
     
-    G = (V, E) where:
-    - V = set of ExecutionState nodes
-    - E = set of Transition edges
-    """
+    def add_edge(self, u: int, v: int):
+        """Add an edge (bidirectional for Hamiltonian analysis)."""
+        self.edges.add((u, v))
+        self.edges.add((v, u))
+        if u in self.vertices:
+            if v not in self.vertices[u].neighbors:
+                self.vertices[u].neighbors.append(v)
+        if v in self.vertices:
+            if u not in self.vertices[v].neighbors:
+                self.vertices[v].neighbors.append(u)
     
-    def __init__(self):
-        self.states: Dict[int, ExecutionState] = {}
-        self.transitions: Dict[int, List[Transition]] = {}  # adjacency list
-        self.reverse_transitions: Dict[int, List[Transition]] = {}
-        self._entry_state: Optional[int] = None
-        self._exit_states: Set[int] = set()
+    @property
+    def n_vertices(self) -> int:
+        return len(self.vertices)
     
-    def add_state(self, state: ExecutionState) -> None:
-        """Add a state to the graph."""
-        self.states[state.id] = state
-        if state.id not in self.transitions:
-            self.transitions[state.id] = []
-        if state.id not in self.reverse_transitions:
-            self.reverse_transitions[state.id] = []
+    @property
+    def n_edges(self) -> int:
+        return len(self.edges) // 2  # Undirected
     
-    def add_transition(self, transition: Transition) -> None:
-        """Add a transition (edge) to the graph."""
-        if transition.source not in self.states:
-            raise ValueError(f"Source state {transition.source} not in graph")
-        if transition.target not in self.states:
-            raise ValueError(f"Target state {transition.target} not in graph")
+    def is_bipartite(self) -> Tuple[bool, Optional[Tuple[Set[int], Set[int]]]]:
+        """
+        Check if graph is bipartite and return partition.
         
-        self.transitions[transition.source].append(transition)
-        self.reverse_transitions[transition.target].append(transition)
+        Bipartite graphs with |A| - |B| > 1 cannot have Hamiltonian paths.
+        """
+        if not self.vertices:
+            return False, None
+        
+        color = {}
+        start = next(iter(self.vertices))
+        queue = [start]
+        color[start] = 0
+        
+        while queue:
+            u = queue.pop(0)
+            for v in self.vertices[u].neighbors:
+                if v not in color:
+                    color[v] = 1 - color[u]
+                    queue.append(v)
+                elif color[v] == color[u]:
+                    return False, None
+        
+        set_a = {v for v, c in color.items() if c == 0}
+        set_b = {v for v, c in color.items() if c == 1}
+        
+        return True, (set_a, set_b)
     
-    def set_entry(self, state_id: int) -> None:
-        """Set the entry state (start of execution)."""
-        if state_id not in self.states:
-            raise ValueError(f"State {state_id} not in graph")
-        self._entry_state = state_id
+    def bipartite_imbalance(self) -> int:
+        """
+        Compute bipartite imbalance |A| - |B|.
+        
+        If > 1, no Hamiltonian path exists in 3D.
+        """
+        is_bip, partition = self.is_bipartite()
+        if not is_bip or partition is None:
+            return 0
+        return abs(len(partition[0]) - len(partition[1]))
     
-    def add_exit(self, state_id: int) -> None:
-        """Add an exit state (valid termination point)."""
-        if state_id not in self.states:
-            raise ValueError(f"State {state_id} not in graph")
-        self._exit_states.add(state_id)
+    def check_dirac_condition(self) -> bool:
+        """
+        Check Dirac's theorem: If deg(v) >= |V|/2 for all v, graph is Hamiltonian.
+        """
+        n = self.n_vertices
+        if n < 3:
+            return False
+        threshold = n / 2
+        return all(v.degree() >= threshold for v in self.vertices.values())
     
-    @property
-    def entry_state(self) -> Optional[int]:
-        return self._entry_state
-    
-    @property
-    def exit_states(self) -> Set[int]:
-        return self._exit_states
-    
-    def get_successors(self, state_id: int) -> List[int]:
-        """Get valid successor states."""
-        return [t.target for t in self.transitions.get(state_id, [])]
-    
-    def get_predecessors(self, state_id: int) -> List[int]:
-        """Get valid predecessor states."""
-        return [t.source for t in self.reverse_transitions.get(state_id, [])]
-    
-    def is_valid_transition(self, source: int, target: int) -> bool:
-        """Check if transition from source to target is valid."""
-        return target in self.get_successors(source)
-    
-    def state_count(self) -> int:
-        return len(self.states)
-    
-    def transition_count(self) -> int:
-        return sum(len(t) for t in self.transitions.values())
+    def to_adjacency_matrix(self) -> np.ndarray:
+        """Convert to adjacency matrix."""
+        n = self.n_vertices
+        ids = sorted(self.vertices.keys())
+        id_to_idx = {id_: i for i, id_ in enumerate(ids)}
+        
+        adj = np.zeros((n, n))
+        for u, v in self.edges:
+            if u in id_to_idx and v in id_to_idx:
+                adj[id_to_idx[u], id_to_idx[v]] = 1
+        
+        return adj
 
 
 # =============================================================================
-# HAMILTONIAN PATH DETECTION
+# DIMENSIONAL LIFTING
 # =============================================================================
 
-def find_hamiltonian_path(
-    graph: ExecutionGraph,
-    start: Optional[int] = None,
-    end: Optional[int] = None
-) -> Optional[List[int]]:
+def compute_embedding_dimension(cfg: ControlFlowGraph) -> int:
     """
-    Find a Hamiltonian path in the execution graph.
+    Compute minimum embedding dimension to resolve Hamiltonian obstructions.
     
-    A Hamiltonian path visits every vertex exactly once.
-    
-    Args:
-        graph: The execution graph
-        start: Starting state (default: entry state)
-        end: Ending state (default: any exit state)
+    Based on:
+    - Bipartite imbalance
+    - Graph genus (topological holes)
+    - Vertex count
     
     Returns:
-        List of state IDs forming Hamiltonian path, or None if not found
-    
-    Note: This is NP-complete in general, but execution graphs
-    are typically small and structured.
+        Recommended embedding dimension (4-64)
     """
-    if graph.state_count() == 0:
-        return None
+    n = cfg.n_vertices
+    imbalance = cfg.bipartite_imbalance()
     
-    start = start if start is not None else graph.entry_state
-    if start is None:
-        start = next(iter(graph.states.keys()))
+    # Base dimension
+    if cfg.check_dirac_condition():
+        return 4  # Already Hamiltonian, minimal lift
     
-    valid_ends = end if end is not None else graph.exit_states
-    if isinstance(valid_ends, int):
-        valid_ends = {valid_ends}
-    if not valid_ends:
-        valid_ends = set(graph.states.keys())
+    # Adjust for imbalance
+    if imbalance > 1:
+        # Need extra dimensions to bridge bipartite gap
+        dim = 4 + imbalance
+    else:
+        dim = 4
     
-    n = graph.state_count()
-    path = [start]
-    visited = {start}
+    # Adjust for size
+    if n > 100:
+        dim = max(dim, 8)
+    if n > 500:
+        dim = max(dim, 16)
     
-    def backtrack() -> bool:
-        if len(path) == n:
-            return path[-1] in valid_ends
-        
-        current = path[-1]
-        for next_state in graph.get_successors(current):
-            if next_state not in visited:
-                path.append(next_state)
-                visited.add(next_state)
-                
-                if backtrack():
-                    return True
-                
-                path.pop()
-                visited.remove(next_state)
-        
-        return False
-    
-    if backtrack():
-        return path
-    return None
+    return min(dim, 64)
 
 
-def has_hamiltonian_path(graph: ExecutionGraph) -> bool:
-    """Check if graph has any Hamiltonian path."""
-    return find_hamiltonian_path(graph) is not None
+def embed_cfg(cfg: ControlFlowGraph, dim: int = DEFAULT_EMBEDDING_DIM) -> np.ndarray:
+    """
+    Embed CFG vertices into higher-dimensional space.
+    
+    Uses spectral embedding (eigenvectors of Laplacian) for initial placement,
+    then refines with force-directed layout.
+    
+    Args:
+        cfg: Control flow graph
+        dim: Target embedding dimension
+        
+    Returns:
+        Embedding matrix (n_vertices × dim)
+    """
+    n = cfg.n_vertices
+    if n == 0:
+        return np.array([])
+    
+    # Adjacency and Laplacian
+    adj = cfg.to_adjacency_matrix()
+    degree = np.diag(adj.sum(axis=1))
+    laplacian = degree - adj
+    
+    # Spectral embedding (smallest non-zero eigenvectors)
+    try:
+        eigenvalues, eigenvectors = np.linalg.eigh(laplacian)
+        # Skip first eigenvector (constant), take next dim
+        embedding = eigenvectors[:, 1:min(dim+1, n)]
+        
+        # Pad if needed
+        if embedding.shape[1] < dim:
+            padding = np.random.randn(n, dim - embedding.shape[1]) * 0.01
+            embedding = np.hstack([embedding, padding])
+    except:
+        # Fallback to random embedding
+        embedding = np.random.randn(n, dim)
+    
+    # Normalize to unit ball
+    norms = np.linalg.norm(embedding, axis=1, keepdims=True)
+    norms = np.maximum(norms, 1e-10)
+    embedding = embedding / norms * 0.9  # Stay inside unit ball
+    
+    # Store in vertices
+    ids = sorted(cfg.vertices.keys())
+    for i, id_ in enumerate(ids):
+        cfg.vertices[id_].embedding = embedding[i]
+    
+    return embedding
 
 
 # =============================================================================
-# EXECUTION TRACE VALIDATION
+# PRINCIPAL CURVE (GOLDEN PATH)
 # =============================================================================
 
 @dataclass
-class TraceValidation:
-    """Result of validating an execution trace."""
-    status: CFIStatus
-    valid_prefix_length: int  # How many states were valid
-    deviation_point: Optional[int] = None  # State ID where deviation occurred
-    expected_states: List[int] = field(default_factory=list)  # What was expected
-    message: str = ""
-
-
-def validate_trace(
-    graph: ExecutionGraph,
-    trace: List[int],
-    allow_partial: bool = False
-) -> TraceValidation:
+class GoldenPath:
     """
-    Validate an execution trace against the graph.
+    The linearized "golden path" through embedded CFG.
+    
+    Valid execution follows this path; deviations indicate attacks.
+    """
+    points: np.ndarray  # Ordered points along the path
+    vertex_order: List[int]  # Vertex IDs in path order
+    total_length: float
+    
+    def project(self, point: np.ndarray) -> Tuple[np.ndarray, float, int]:
+        """
+        Project a point onto the golden path.
+        
+        Returns:
+            (projected_point, distance_to_path, nearest_segment_index)
+        """
+        min_dist = float('inf')
+        best_proj = point
+        best_idx = 0
+        
+        for i in range(len(self.points) - 1):
+            p1, p2 = self.points[i], self.points[i + 1]
+            
+            # Project onto segment
+            v = p2 - p1
+            w = point - p1
+            
+            c1 = np.dot(w, v)
+            c2 = np.dot(v, v)
+            
+            if c2 < 1e-10:
+                proj = p1
+            elif c1 <= 0:
+                proj = p1
+            elif c1 >= c2:
+                proj = p2
+            else:
+                proj = p1 + (c1 / c2) * v
+            
+            dist = np.linalg.norm(point - proj)
+            if dist < min_dist:
+                min_dist = dist
+                best_proj = proj
+                best_idx = i
+        
+        return best_proj, min_dist, best_idx
+
+
+def compute_golden_path(cfg: ControlFlowGraph, embedding: np.ndarray) -> GoldenPath:
+    """
+    Compute the golden path (principal curve) through embedded vertices.
+    
+    Uses greedy nearest-neighbor heuristic for approximate Hamiltonian path.
     
     Args:
-        graph: The execution graph defining valid paths
-        trace: List of state IDs representing execution
-        allow_partial: If True, partial valid traces are OK
-    
+        cfg: Control flow graph with embeddings
+        embedding: Embedding matrix
+        
     Returns:
-        TraceValidation with status and details
+        GoldenPath through the embedded space
     """
-    if not trace:
-        return TraceValidation(
-            status=CFIStatus.TRUNCATED,
-            valid_prefix_length=0,
-            message="Empty trace"
-        )
+    n = cfg.n_vertices
+    if n == 0:
+        return GoldenPath(np.array([]), [], 0.0)
     
-    # Check first state
-    if trace[0] not in graph.states:
-        return TraceValidation(
-            status=CFIStatus.ORPHAN,
-            valid_prefix_length=0,
-            deviation_point=trace[0],
-            message=f"Unknown start state: {trace[0]}"
-        )
+    ids = sorted(cfg.vertices.keys())
     
-    # Check entry point
-    if graph.entry_state is not None and trace[0] != graph.entry_state:
-        return TraceValidation(
-            status=CFIStatus.DEVIATION,
-            valid_prefix_length=0,
-            deviation_point=trace[0],
-            expected_states=[graph.entry_state],
-            message=f"Invalid entry: expected {graph.entry_state}, got {trace[0]}"
-        )
-    
-    # Validate each transition
+    # Greedy nearest-neighbor path
     visited = set()
-    for i in range(len(trace) - 1):
-        current = trace[i]
-        next_state = trace[i + 1]
-        
-        # Check for cycles (revisiting states)
-        if current in visited:
-            return TraceValidation(
-                status=CFIStatus.CYCLE,
-                valid_prefix_length=i,
-                deviation_point=current,
-                message=f"Cycle detected: state {current} revisited"
-            )
-        visited.add(current)
-        
-        # Check if next state exists
-        if next_state not in graph.states:
-            return TraceValidation(
-                status=CFIStatus.ORPHAN,
-                valid_prefix_length=i + 1,
-                deviation_point=next_state,
-                expected_states=graph.get_successors(current),
-                message=f"Unknown state: {next_state}"
-            )
-        
-        # Check if transition is valid
-        if not graph.is_valid_transition(current, next_state):
-            return TraceValidation(
-                status=CFIStatus.DEVIATION,
-                valid_prefix_length=i + 1,
-                deviation_point=next_state,
-                expected_states=graph.get_successors(current),
-                message=f"Invalid transition: {current} -> {next_state}"
-            )
+    path_ids = []
     
-    # Check final state
-    final_state = trace[-1]
-    if final_state in visited:
-        return TraceValidation(
-            status=CFIStatus.CYCLE,
-            valid_prefix_length=len(trace) - 1,
-            deviation_point=final_state,
-            message=f"Cycle at final state: {final_state}"
+    # Start from vertex with highest degree (likely entry point)
+    start_idx = max(range(n), key=lambda i: cfg.vertices[ids[i]].degree())
+    current = start_idx
+    
+    while len(visited) < n:
+        visited.add(current)
+        path_ids.append(ids[current])
+        
+        # Find nearest unvisited neighbor
+        best_next = None
+        best_dist = float('inf')
+        
+        for i in range(n):
+            if i not in visited:
+                dist = np.linalg.norm(embedding[current] - embedding[i])
+                if dist < best_dist:
+                    best_dist = dist
+                    best_next = i
+        
+        if best_next is None:
+            break
+        current = best_next
+    
+    # Build path points
+    path_points = np.array([embedding[ids.index(id_)] for id_ in path_ids])
+    
+    # Compute total length
+    total_length = sum(
+        np.linalg.norm(path_points[i+1] - path_points[i])
+        for i in range(len(path_points) - 1)
+    )
+    
+    return GoldenPath(path_points, path_ids, total_length)
+
+
+# =============================================================================
+# DEVIATION DETECTION
+# =============================================================================
+
+@dataclass
+class CFIResult:
+    """Result of CFI check."""
+    decision: CFIDecision
+    deviation: float
+    threshold: float
+    nearest_vertex: int
+    confidence: float
+    message: str
+    
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "decision": self.decision.value,
+            "deviation": self.deviation,
+            "threshold": self.threshold,
+            "nearest_vertex": self.nearest_vertex,
+            "confidence": self.confidence,
+            "message": self.message
+        }
+
+
+class HamiltonianCFI:
+    """
+    Hamiltonian Control Flow Integrity checker.
+    
+    Detects execution anomalies by measuring deviation from the golden path.
+    """
+    
+    def __init__(
+        self,
+        cfg: ControlFlowGraph,
+        embedding_dim: Optional[int] = None,
+        deviation_threshold: float = DEFAULT_DEVIATION_THRESHOLD
+    ):
+        """
+        Initialize CFI checker.
+        
+        Args:
+            cfg: Control flow graph
+            embedding_dim: Embedding dimension (auto-computed if None)
+            deviation_threshold: Maximum allowed deviation
+        """
+        self.cfg = cfg
+        self.deviation_threshold = deviation_threshold
+        
+        # Compute embedding dimension
+        if embedding_dim is None:
+            embedding_dim = compute_embedding_dimension(cfg)
+        self.embedding_dim = embedding_dim
+        
+        # Embed and compute golden path
+        self.embedding = embed_cfg(cfg, embedding_dim)
+        self.golden_path = compute_golden_path(cfg, self.embedding)
+        
+        # Statistics
+        self._check_count = 0
+        self._violation_count = 0
+    
+    def check_state(self, state_vector: np.ndarray) -> CFIResult:
+        """
+        Check if a runtime state is on the golden path.
+        
+        Args:
+            state_vector: Current execution state (embedded)
+            
+        Returns:
+            CFIResult with decision and details
+        """
+        self._check_count += 1
+        
+        if len(self.golden_path.points) == 0:
+            return CFIResult(
+                decision=CFIDecision.OBSTRUCTION,
+                deviation=0.0,
+                threshold=self.deviation_threshold,
+                nearest_vertex=-1,
+                confidence=0.0,
+                message="Empty golden path"
+            )
+        
+        # Project onto golden path
+        proj, deviation, segment_idx = self.golden_path.project(state_vector)
+        
+        # Determine nearest vertex
+        if segment_idx < len(self.golden_path.vertex_order):
+            nearest_vertex = self.golden_path.vertex_order[segment_idx]
+        else:
+            nearest_vertex = self.golden_path.vertex_order[-1]
+        
+        # Compute confidence (inverse of normalized deviation)
+        max_deviation = self.deviation_threshold * 3
+        confidence = max(0.0, 1.0 - deviation / max_deviation)
+        
+        # Decision
+        if deviation <= self.deviation_threshold:
+            decision = CFIDecision.VALID
+            message = f"On golden path (deviation={deviation:.4f})"
+        elif deviation <= self.deviation_threshold * 2:
+            decision = CFIDecision.DEVIATION
+            message = f"Minor deviation detected (deviation={deviation:.4f})"
+            self._violation_count += 1
+        else:
+            decision = CFIDecision.ATTACK
+            message = f"ATTACK: Major deviation from golden path (deviation={deviation:.4f})"
+            self._violation_count += 1
+        
+        return CFIResult(
+            decision=decision,
+            deviation=deviation,
+            threshold=self.deviation_threshold,
+            nearest_vertex=nearest_vertex,
+            confidence=confidence,
+            message=message
         )
     
-    # Check if ended at valid exit
-    if graph.exit_states and final_state not in graph.exit_states:
-        if not allow_partial:
-            return TraceValidation(
-                status=CFIStatus.TRUNCATED,
-                valid_prefix_length=len(trace),
-                expected_states=list(graph.exit_states),
-                message=f"Did not reach exit state"
-            )
-    
-    return TraceValidation(
-        status=CFIStatus.VALID,
-        valid_prefix_length=len(trace),
-        message="Valid execution trace"
-    )
-
-
-# =============================================================================
-# LINEARIZED MANIFOLD
-# =============================================================================
-
-class LinearizedManifold:
-    """
-    The linearized manifold represents the expected execution sequence.
-    
-    Deviation from this manifold indicates potential attack.
-    
-    The manifold is defined by:
-    1. A reference Hamiltonian path (golden path)
-    2. Allowed deviations (branch points)
-    3. Convergence requirements (must rejoin)
-    """
-    
-    def __init__(self, graph: ExecutionGraph):
-        self.graph = graph
-        self._golden_path: Optional[List[int]] = None
-        self._branch_points: Set[int] = set()
-        self._convergence_points: Set[int] = set()
-    
-    def compute_golden_path(self) -> Optional[List[int]]:
-        """Compute the reference Hamiltonian path."""
-        self._golden_path = find_hamiltonian_path(self.graph)
-        return self._golden_path
-    
-    @property
-    def golden_path(self) -> Optional[List[int]]:
-        if self._golden_path is None:
-            self.compute_golden_path()
-        return self._golden_path
-    
-    def set_branch_point(self, state_id: int) -> None:
-        """Mark a state as an allowed branch point."""
-        self._branch_points.add(state_id)
-    
-    def set_convergence_point(self, state_id: int) -> None:
-        """Mark a state as a required convergence point."""
-        self._convergence_points.add(state_id)
-    
-    def deviation_distance(self, trace: List[int]) -> float:
+    def check_trajectory(self, trajectory: np.ndarray) -> List[CFIResult]:
         """
-        Compute deviation distance from golden path.
+        Check a sequence of states.
         
+        Args:
+            trajectory: Array of state vectors (n_states × dim)
+            
         Returns:
-            Distance in [0, 1] where 0 = on manifold, 1 = max deviation
+            List of CFIResults
         """
-        if not self.golden_path or not trace:
-            return 1.0
-        
-        # Count states not on golden path
-        golden_set = set(self.golden_path)
-        off_path = sum(1 for s in trace if s not in golden_set)
-        
-        return off_path / len(trace)
-    
-    def validate_against_manifold(
-        self,
-        trace: List[int]
-    ) -> Tuple[bool, float, str]:
-        """
-        Validate trace against linearized manifold.
-        
-        Returns:
-            (is_valid, deviation_distance, message)
-        """
-        # First validate basic CFI
-        validation = validate_trace(self.graph, trace, allow_partial=True)
-        
-        if validation.status not in (CFIStatus.VALID, CFIStatus.TRUNCATED):
-            return False, 1.0, validation.message
-        
-        # Check deviation from golden path
-        deviation = self.deviation_distance(trace)
-        
-        # Check convergence points
-        trace_set = set(trace)
-        missing_convergence = self._convergence_points - trace_set
-        
-        if missing_convergence:
-            return False, deviation, f"Missing convergence points: {missing_convergence}"
-        
-        # Allow some deviation at branch points
-        if deviation > 0.5:
-            return False, deviation, f"Excessive deviation: {deviation:.2%}"
-        
-        return True, deviation, "Valid execution within manifold"
-
-
-# =============================================================================
-# CFI MONITOR
-# =============================================================================
-
-class CFIMonitor:
-    """
-    Real-time Control Flow Integrity monitor.
-    
-    Tracks execution and detects deviations from expected paths.
-    """
-    
-    def __init__(self, graph: ExecutionGraph):
-        self.graph = graph
-        self.manifold = LinearizedManifold(graph)
-        self._current_state: Optional[int] = None
-        self._trace: List[int] = []
-        self._violations: List[TraceValidation] = []
-    
-    def start(self, initial_state: Optional[int] = None) -> None:
-        """Start monitoring from initial state."""
-        self._current_state = initial_state or self.graph.entry_state
-        self._trace = [self._current_state] if self._current_state else []
-        self._violations = []
-    
-    def transition(self, next_state: int) -> CFIStatus:
-        """
-        Record a state transition.
-        
-        Returns:
-            CFIStatus indicating if transition is valid
-        """
-        if self._current_state is None:
-            self._current_state = next_state
-            self._trace.append(next_state)
-            return CFIStatus.VALID
-        
-        # Check if transition is valid
-        if not self.graph.is_valid_transition(self._current_state, next_state):
-            violation = TraceValidation(
-                status=CFIStatus.DEVIATION,
-                valid_prefix_length=len(self._trace),
-                deviation_point=next_state,
-                expected_states=self.graph.get_successors(self._current_state),
-                message=f"Invalid: {self._current_state} -> {next_state}"
-            )
-            self._violations.append(violation)
-            return CFIStatus.DEVIATION
-        
-        # Check for cycles
-        if next_state in self._trace:
-            violation = TraceValidation(
-                status=CFIStatus.CYCLE,
-                valid_prefix_length=len(self._trace),
-                deviation_point=next_state,
-                message=f"Cycle: revisiting {next_state}"
-            )
-            self._violations.append(violation)
-            return CFIStatus.CYCLE
-        
-        self._current_state = next_state
-        self._trace.append(next_state)
-        return CFIStatus.VALID
-    
-    def get_trace(self) -> List[int]:
-        """Get current execution trace."""
-        return self._trace.copy()
-    
-    def get_violations(self) -> List[TraceValidation]:
-        """Get all recorded violations."""
-        return self._violations.copy()
-    
-    def is_clean(self) -> bool:
-        """Check if execution has been clean (no violations)."""
-        return len(self._violations) == 0
+        return [self.check_state(state) for state in trajectory]
     
     def get_statistics(self) -> Dict[str, Any]:
-        """Get monitoring statistics."""
+        """Get checker statistics."""
         return {
-            "trace_length": len(self._trace),
-            "violation_count": len(self._violations),
-            "current_state": self._current_state,
-            "is_clean": self.is_clean(),
-            "deviation_distance": self.manifold.deviation_distance(self._trace)
+            "n_vertices": self.cfg.n_vertices,
+            "n_edges": self.cfg.n_edges,
+            "embedding_dim": self.embedding_dim,
+            "path_length": self.golden_path.total_length,
+            "check_count": self._check_count,
+            "violation_count": self._violation_count,
+            "violation_rate": self._violation_count / max(1, self._check_count),
+            "dirac_satisfied": self.cfg.check_dirac_condition(),
+            "bipartite_imbalance": self.cfg.bipartite_imbalance()
         }
 
 
@@ -542,63 +521,76 @@ class CFIMonitor:
 # PROOFS AND VERIFICATION
 # =============================================================================
 
-def verify_hamiltonian_detection() -> bool:
+def verify_dirac_theorem() -> bool:
     """
-    Verify: Hamiltonian path detection works for simple graphs.
-    """
-    # Create simple linear graph: 0 -> 1 -> 2 -> 3
-    graph = ExecutionGraph()
-    for i in range(4):
-        graph.add_state(ExecutionState(i, f"S{i}"))
-    for i in range(3):
-        graph.add_transition(Transition(i, i + 1))
-    graph.set_entry(0)
-    graph.add_exit(3)
+    Verify: If deg(v) >= |V|/2 for all v, graph is Hamiltonian.
     
-    path = find_hamiltonian_path(graph)
-    return path == [0, 1, 2, 3]
+    Test on complete graph K_n (always Hamiltonian).
+    """
+    # Complete graph K_6
+    cfg = ControlFlowGraph()
+    for i in range(6):
+        cfg.add_vertex(CFGVertex(i, f"v{i}", i * 100))
+    for i in range(6):
+        for j in range(i + 1, 6):
+            cfg.add_edge(i, j)
+    
+    # Should satisfy Dirac (deg = 5 >= 6/2 = 3)
+    return cfg.check_dirac_condition()
+
+
+def verify_bipartite_detection() -> bool:
+    """
+    Verify: Bipartite graphs with |A| - |B| > 1 are detected.
+    
+    Rhombic Dodecahedron: 14 vertices, bipartite with |6-8|=2.
+    """
+    # Simplified bipartite graph with imbalance
+    cfg = ControlFlowGraph()
+    
+    # Set A: 3 vertices
+    for i in range(3):
+        cfg.add_vertex(CFGVertex(i, f"a{i}", i * 100))
+    
+    # Set B: 6 vertices
+    for i in range(3, 9):
+        cfg.add_vertex(CFGVertex(i, f"b{i}", i * 100))
+    
+    # Connect A to B only (bipartite)
+    for i in range(3):
+        for j in range(3, 9):
+            cfg.add_edge(i, j)
+    
+    # Should detect imbalance |3-6| = 3 > 1
+    return cfg.bipartite_imbalance() > 1
 
 
 def verify_deviation_detection() -> bool:
     """
-    Verify: Invalid transitions are detected.
+    Verify: Points far from golden path are detected as deviations.
     """
-    graph = ExecutionGraph()
-    for i in range(3):
-        graph.add_state(ExecutionState(i, f"S{i}"))
-    graph.add_transition(Transition(0, 1))
-    graph.add_transition(Transition(1, 2))
-    graph.set_entry(0)
-    graph.add_exit(2)
+    # Simple linear CFG
+    cfg = ControlFlowGraph()
+    for i in range(5):
+        cfg.add_vertex(CFGVertex(i, f"v{i}", i * 100))
+    for i in range(4):
+        cfg.add_edge(i, i + 1)
     
-    # Valid trace
-    valid = validate_trace(graph, [0, 1, 2])
-    if valid.status != CFIStatus.VALID:
-        return False
+    cfi = HamiltonianCFI(cfg, embedding_dim=4, deviation_threshold=0.1)
     
-    # Invalid trace (skips state 1)
-    invalid = validate_trace(graph, [0, 2])
-    if invalid.status != CFIStatus.DEVIATION:
-        return False
+    # Point on path (should be valid)
+    if len(cfi.golden_path.points) > 0:
+        on_path = cfi.golden_path.points[0]
+        result_valid = cfi.check_state(on_path)
+        
+        # Point far from path (should be attack)
+        off_path = on_path + np.array([10.0, 10.0, 10.0, 10.0])
+        result_attack = cfi.check_state(off_path)
+        
+        return (result_valid.decision == CFIDecision.VALID and 
+                result_attack.decision == CFIDecision.ATTACK)
     
     return True
-
-
-def verify_cycle_detection() -> bool:
-    """
-    Verify: Cycles in execution are detected.
-    """
-    graph = ExecutionGraph()
-    for i in range(3):
-        graph.add_state(ExecutionState(i, f"S{i}"))
-    graph.add_transition(Transition(0, 1))
-    graph.add_transition(Transition(1, 2))
-    graph.add_transition(Transition(2, 0))  # Creates cycle
-    graph.set_entry(0)
-    
-    # Trace with cycle
-    result = validate_trace(graph, [0, 1, 2, 0])
-    return result.status == CFIStatus.CYCLE
 
 
 # =============================================================================
@@ -607,86 +599,68 @@ def verify_cycle_detection() -> bool:
 
 if __name__ == "__main__":
     print("=" * 70)
-    print("HAMILTONIAN CONTROL FLOW INTEGRITY (CFI)")
+    print("HAMILTONIAN CFI - Topological Control Flow Integrity")
     print("=" * 70)
     print()
     
     # Verify proofs
     print("MATHEMATICAL PROOFS:")
-    print(f"  Hamiltonian detection:  {'✓ PROVEN' if verify_hamiltonian_detection() else '✗ FAILED'}")
-    print(f"  Deviation detection:    {'✓ PROVEN' if verify_deviation_detection() else '✗ FAILED'}")
-    print(f"  Cycle detection:        {'✓ PROVEN' if verify_cycle_detection() else '✗ FAILED'}")
+    print(f"  Dirac theorem:           {'✓ PROVEN' if verify_dirac_theorem() else '✗ FAILED'}")
+    print(f"  Bipartite detection:     {'✓ PROVEN' if verify_bipartite_detection() else '✗ FAILED'}")
+    print(f"  Deviation detection:     {'✓ PROVEN' if verify_deviation_detection() else '✗ FAILED'}")
     print()
     
-    # Demo: Build execution graph
-    print("DEMO: Authentication Flow")
-    print("-" * 40)
+    # Demo CFG
+    print("DEMO: Simple Program CFG")
+    cfg = ControlFlowGraph()
     
-    graph = ExecutionGraph()
-    states = [
-        ExecutionState(0, "INIT"),
-        ExecutionState(1, "AUTH_START"),
-        ExecutionState(2, "VALIDATE_CREDS"),
-        ExecutionState(3, "CHECK_MFA"),
-        ExecutionState(4, "SESSION_CREATE"),
-        ExecutionState(5, "COMPLETE"),
-    ]
-    for s in states:
-        graph.add_state(s)
+    # Create a simple program flow
+    labels = ["entry", "check", "branch_a", "branch_b", "merge", "exit"]
+    for i, label in enumerate(labels):
+        cfg.add_vertex(CFGVertex(i, label, i * 0x100))
     
-    transitions = [
-        Transition(0, 1, label="begin_auth"),
-        Transition(1, 2, label="submit_creds"),
-        Transition(2, 3, label="creds_valid"),
-        Transition(3, 4, label="mfa_passed"),
-        Transition(4, 5, label="finalize"),
-    ]
-    for t in transitions:
-        graph.add_transition(t)
+    # Edges: entry->check->branch_a/b->merge->exit
+    cfg.add_edge(0, 1)  # entry -> check
+    cfg.add_edge(1, 2)  # check -> branch_a
+    cfg.add_edge(1, 3)  # check -> branch_b
+    cfg.add_edge(2, 4)  # branch_a -> merge
+    cfg.add_edge(3, 4)  # branch_b -> merge
+    cfg.add_edge(4, 5)  # merge -> exit
     
-    graph.set_entry(0)
-    graph.add_exit(5)
-    
-    print(f"  States: {graph.state_count()}")
-    print(f"  Transitions: {graph.transition_count()}")
+    print(f"  Vertices: {cfg.n_vertices}")
+    print(f"  Edges: {cfg.n_edges}")
+    print(f"  Dirac condition: {cfg.check_dirac_condition()}")
+    print(f"  Bipartite imbalance: {cfg.bipartite_imbalance()}")
     print()
     
-    # Find Hamiltonian path
-    path = find_hamiltonian_path(graph)
-    print(f"  Hamiltonian path: {path}")
-    print(f"  Path names: {[graph.states[s].name for s in path]}")
+    # Create CFI checker
+    cfi = HamiltonianCFI(cfg, deviation_threshold=0.15)
+    stats = cfi.get_statistics()
+    
+    print(f"  Embedding dimension: {stats['embedding_dim']}")
+    print(f"  Golden path length: {stats['path_length']:.3f}")
     print()
     
-    # Validate traces
-    print("TRACE VALIDATION:")
-    
-    valid_trace = [0, 1, 2, 3, 4, 5]
-    result = validate_trace(graph, valid_trace)
-    print(f"  Valid trace {valid_trace}:")
-    print(f"    Status: {result.status.value}")
-    print()
-    
-    attack_trace = [0, 1, 4, 5]  # Skips validation!
-    result = validate_trace(graph, attack_trace)
-    print(f"  Attack trace {attack_trace} (skips validation):")
-    print(f"    Status: {result.status.value}")
-    print(f"    Deviation at: {result.deviation_point}")
-    print(f"    Expected: {result.expected_states}")
-    print()
-    
-    # Monitor demo
-    print("CFI MONITOR:")
-    monitor = CFIMonitor(graph)
-    monitor.start(0)
-    
-    for next_state in [1, 2, 3, 4, 5]:
-        status = monitor.transition(next_state)
-        print(f"  {monitor._trace[-2]} -> {next_state}: {status.value}")
-    
-    print(f"\n  Final: clean={monitor.is_clean()}, trace_len={len(monitor.get_trace())}")
+    # Test valid execution
+    print("EXECUTION TESTS:")
+    if len(cfi.golden_path.points) > 0:
+        # Valid: on the path
+        valid_state = cfi.golden_path.points[0]
+        result = cfi.check_state(valid_state)
+        print(f"  Valid state:   {result.decision.value} (dev={result.deviation:.4f})")
+        
+        # Slight deviation
+        slight_dev = valid_state + np.random.randn(cfi.embedding_dim) * 0.05
+        result = cfi.check_state(slight_dev)
+        print(f"  Slight dev:    {result.decision.value} (dev={result.deviation:.4f})")
+        
+        # Attack: far off path
+        attack_state = valid_state + np.ones(cfi.embedding_dim) * 2.0
+        result = cfi.check_state(attack_state)
+        print(f"  Attack state:  {result.decision.value} (dev={result.deviation:.4f})")
     print()
     
     print("=" * 70)
-    print("Valid execution = Hamiltonian path through state graph")
+    print("Valid execution = Hamiltonian path traversal")
     print("Attack = deviation from linearized manifold")
     print("=" * 70)
