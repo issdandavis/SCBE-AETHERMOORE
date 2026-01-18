@@ -1,9 +1,9 @@
 # Langues Weighting System (LWS)
 ## Mathematical Specification, Proofs, and Worked Examples
 
-**Version**: 1.0
-**Date**: January 17, 2026
-**Author**: Isaac Thorne / SpiralVerse OS
+**Version**: 1.1
+**Date**: January 18, 2026
+**Author**: Issac Thorne / SpiralVerse OS
 **Patent Reference**: USPTO #63/961,403
 
 ---
