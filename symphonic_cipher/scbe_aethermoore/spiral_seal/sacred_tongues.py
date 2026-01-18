@@ -213,6 +213,65 @@ class SacredTongueTokenizer:
         """Get the byte value for a token string (prefix'suffix format)."""
         return self._decode_tables[tongue][token_str]
 
+    # =========================================================================
+    # Compatibility API (matches test expectations)
+    # =========================================================================
+
+    def encode_byte(self, byte_val: int) -> str:
+        """Encode a single byte to a token string (prefix'suffix format).
+
+        Note: This method requires the tokenizer to be constructed with a tongue.
+        Use SacredTongueTokenizer(tongue_code) to create a tongue-specific tokenizer.
+        """
+        if not hasattr(self, '_default_tongue'):
+            raise ValueError("Use SacredTongueTokenizer(tongue_code) for single-byte encoding")
+        token = self._encode_tables[self._default_tongue][byte_val]
+        return token.short
+
+    def decode_token(self, token_str: str) -> int:
+        """Decode a token string (prefix'suffix format) to a byte.
+
+        Note: This method requires the tokenizer to be constructed with a tongue.
+        """
+        if not hasattr(self, '_default_tongue'):
+            raise ValueError("Use SacredTongueTokenizer(tongue_code) for token decoding")
+        return self._decode_tables[self._default_tongue][token_str]
+
+
+class SacredTongueTokenizerCompat(SacredTongueTokenizer):
+    """Tongue-specific tokenizer for compatibility with simplified API.
+
+    Usage:
+        tokenizer = SacredTongueTokenizerCompat('ko')  # Kor'aelin
+        token = tokenizer.encode_byte(0x00)  # Returns "sil'a"
+        byte_val = tokenizer.decode_token("sil'a")  # Returns 0
+    """
+
+    def __init__(self, tongue_code: str):
+        super().__init__()
+        # Map tongue code to enum
+        code_to_tongue = {t.value: t for t in SacredTongue}
+        if tongue_code not in code_to_tongue:
+            raise ValueError(f"Unknown tongue code: {tongue_code}")
+        self._default_tongue = code_to_tongue[tongue_code]
+
+    def encode_byte(self, byte_val: int) -> str:
+        """Encode a single byte to a token string (prefix'suffix format)."""
+        token = self._encode_tables[self._default_tongue][byte_val]
+        return token.short
+
+    def decode_token(self, token_str: str) -> int:
+        """Decode a token string (prefix'suffix format) to a byte."""
+        return self._decode_tables[self._default_tongue][token_str]
+
+    def encode(self, data: bytes) -> List[str]:
+        """Encode bytes to a list of token strings."""
+        return [self.encode_byte(b) for b in data]
+
+    def decode(self, tokens: List[str]) -> bytes:
+        """Decode a list of token strings back to bytes."""
+        return bytes(self.decode_token(t) for t in tokens)
+
 
 # =============================================================================
 # TONGUE DOMAIN MAPPINGS (for SS1 format)
@@ -340,3 +399,148 @@ def get_tokenizer() -> SacredTongueTokenizer:
     if _tokenizer is None:
         _tokenizer = SacredTongueTokenizer()
     return _tokenizer
+
+
+# =============================================================================
+# COMPATIBILITY API - TONGUES dict
+# =============================================================================
+
+@dataclass
+class TongueInfo:
+    """Information about a Sacred Tongue for compatibility API."""
+    code: str
+    name: str
+    prefixes: List[str]
+    suffixes: List[str]
+
+    def get_token(self, byte_val: int) -> str:
+        """Get token for a byte value."""
+        prefix_idx = byte_val >> 4
+        suffix_idx = byte_val & 0x0F
+        return f"{self.prefixes[prefix_idx]}'{self.suffixes[suffix_idx]}"
+
+    def get_byte(self, token: str) -> int:
+        """Get byte value for a token."""
+        if "'" not in token:
+            raise ValueError(f"Invalid token format: {token}")
+        prefix, suffix = token.split("'", 1)
+        prefix_idx = self.prefixes.index(prefix)
+        suffix_idx = self.suffixes.index(suffix)
+        return (prefix_idx << 4) | suffix_idx
+
+
+# Build TONGUES dict for compatibility
+TONGUES: Dict[str, TongueInfo] = {}
+for tongue in SacredTongue:
+    prefixes, suffixes = TONGUE_WORDLISTS[tongue]
+    TONGUES[tongue.value] = TongueInfo(
+        code=tongue.value,
+        name=tongue.name,
+        prefixes=list(prefixes),
+        suffixes=list(suffixes)
+    )
+
+
+# =============================================================================
+# SS1 BLOB FORMAT/PARSE FUNCTIONS
+# =============================================================================
+
+def encode_to_spelltext(data: bytes, section: str) -> str:
+    """Encode bytes to spelltext for a specific section.
+
+    Args:
+        data: Raw bytes to encode
+        section: Section name ('salt', 'nonce', 'ct', 'tag', 'aad', 'veil')
+
+    Returns:
+        Encoded string with tongue prefix, e.g., "ru:khar'ak drath'eth"
+    """
+    tongue = get_tongue_for_domain(section)
+    tokenizer = get_tokenizer()
+    tokens = tokenizer.encode(data, tongue)
+    token_strs = " ".join(t.short for t in tokens)
+    return f"{tongue.value}:{token_strs}"
+
+
+def decode_from_spelltext(spelltext: str, section: str) -> bytes:
+    """Decode spelltext back to bytes.
+
+    Args:
+        spelltext: Encoded string (with or without tongue prefix)
+        section: Section name to determine tongue
+
+    Returns:
+        Decoded bytes
+    """
+    tongue = get_tongue_for_domain(section)
+    tongue_prefix = f"{tongue.value}:"
+
+    # Remove tongue prefix if present
+    if spelltext.startswith(tongue_prefix):
+        spelltext = spelltext[len(tongue_prefix):]
+
+    tokenizer = get_tokenizer()
+    return tokenizer.decode_from_string(spelltext, tongue, " ")
+
+
+def format_ss1_blob(kid: str, aad: str, salt: bytes, nonce: bytes,
+                    ciphertext: bytes, tag: bytes) -> str:
+    """Format components into SS1 blob string.
+
+    Args:
+        kid: Key ID
+        aad: Associated authenticated data (plaintext string)
+        salt: Salt bytes
+        nonce: Nonce bytes
+        ciphertext: Ciphertext bytes
+        tag: Authentication tag bytes
+
+    Returns:
+        SS1 formatted string
+    """
+    parts = [
+        "SS1",
+        f"kid={kid}",
+        f"aad={aad}",
+        f"salt={encode_to_spelltext(salt, 'salt')}",
+        f"nonce={encode_to_spelltext(nonce, 'nonce')}",
+        f"ct={encode_to_spelltext(ciphertext, 'ct')}",
+        f"tag={encode_to_spelltext(tag, 'tag')}"
+    ]
+    return "|".join(parts)
+
+
+def parse_ss1_blob(blob: str) -> Dict[str, any]:
+    """Parse SS1 blob string back to components.
+
+    Args:
+        blob: SS1 formatted string
+
+    Returns:
+        Dict with keys: version, kid, aad, salt, nonce, ct, tag
+    """
+    parts = blob.split("|")
+    if parts[0] != "SS1":
+        raise ValueError(f"Invalid SS1 blob version: {parts[0]}")
+
+    result = {"version": "SS1"}
+
+    for part in parts[1:]:
+        if "=" not in part:
+            continue
+        key, value = part.split("=", 1)
+
+        if key == "kid":
+            result["kid"] = value
+        elif key == "aad":
+            result["aad"] = value
+        elif key == "salt":
+            result["salt"] = decode_from_spelltext(value, "salt")
+        elif key == "nonce":
+            result["nonce"] = decode_from_spelltext(value, "nonce")
+        elif key == "ct":
+            result["ct"] = decode_from_spelltext(value, "ct")
+        elif key == "tag":
+            result["tag"] = decode_from_spelltext(value, "tag")
+
+    return result

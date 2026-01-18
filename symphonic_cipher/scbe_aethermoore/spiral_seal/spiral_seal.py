@@ -845,3 +845,131 @@ def get_crypto_backend_info() -> Dict[str, bool]:
             AEADType.HMAC_CTR.value
         )
     }
+
+
+# =============================================================================
+# COMPATIBILITY CLASS - SpiralSealSS1
+# =============================================================================
+
+class SpiralSealSS1:
+    """
+    SpiralSeal SS1 - Compatibility wrapper matching test API.
+
+    This class provides a simplified API for sealing/unsealing secrets
+    with Sacred Tongue encoding.
+
+    Usage:
+        ss = SpiralSealSS1(master_secret=b'0' * 32, kid='k01')
+
+        # Seal plaintext
+        blob = ss.seal(b"my secret", aad="service=api")
+
+        # Unseal
+        plaintext = ss.unseal(blob, aad="service=api")
+    """
+
+    def __init__(self, master_secret: bytes, kid: Optional[str] = None):
+        """Initialize SpiralSealSS1.
+
+        Args:
+            master_secret: 32-byte master secret key
+            kid: Key ID (auto-generated if not provided)
+        """
+        from .sacred_tongues import format_ss1_blob, parse_ss1_blob
+
+        self._master_secret = master_secret
+        self._kid = kid or os.urandom(4).hex()
+        self._seal = SpiralSeal(master_key=master_secret)
+        self._format_blob = format_ss1_blob
+        self._parse_blob = parse_ss1_blob
+
+    def seal(self, plaintext: bytes, aad: str = "") -> str:
+        """Seal (encrypt) plaintext.
+
+        Args:
+            plaintext: Data to encrypt
+            aad: Associated authenticated data string
+
+        Returns:
+            SS1 formatted string
+        """
+        result = self._seal.seal(plaintext, aad=aad.encode() if aad else None)
+
+        # Format using the compatibility blob format
+        return self._format_blob(
+            kid=self._kid,
+            aad=aad,
+            salt=result.salt,
+            nonce=result.nonce,
+            ciphertext=result.ciphertext,
+            tag=result.tag
+        )
+
+    def unseal(self, blob: str, aad: str = "") -> bytes:
+        """Unseal (decrypt) an SS1 blob.
+
+        Args:
+            blob: SS1 formatted string
+            aad: Associated authenticated data (must match seal)
+
+        Returns:
+            Decrypted plaintext
+
+        Raises:
+            ValueError: If authentication fails or AAD mismatch
+        """
+        parsed = self._parse_blob(blob)
+
+        # Check AAD
+        if parsed.get("aad", "") != aad:
+            raise ValueError(f"AAD mismatch: expected '{aad}', got '{parsed.get('aad', '')}'")
+
+        return self._seal.unseal(
+            salt=parsed["salt"],
+            nonce=parsed["nonce"],
+            ciphertext=parsed["ct"],
+            tag=parsed["tag"],
+            aad=aad.encode() if aad else b""
+        )
+
+    def rotate_key(self, new_kid: str, new_secret: bytes):
+        """Rotate to a new key.
+
+        Args:
+            new_kid: New key ID
+            new_secret: New 32-byte master secret
+        """
+        self._kid = new_kid
+        self._master_secret = new_secret
+        self._seal = SpiralSeal(master_key=new_secret)
+
+    @staticmethod
+    def get_status() -> Dict[str, Any]:
+        """Get backend status information."""
+        _try_load_cryptography()
+
+        # Check PQC availability
+        pqc_available = False
+        try:
+            from ..pqc import Kyber768, Dilithium3
+            pqc_available = True
+        except ImportError:
+            pass
+
+        return {
+            "version": "SS1",
+            "key_exchange": {
+                "backend": "kyber768" if pqc_available else "ecdh",
+                "pqc_available": pqc_available
+            },
+            "signatures": {
+                "backend": "dilithium3" if pqc_available else "ecdsa",
+                "pqc_available": pqc_available
+            },
+            "kdf": {
+                "backend": "argon2id" if _ARGON2_AVAILABLE else "scrypt" if _CRYPTOGRAPHY_AVAILABLE else "hkdf"
+            },
+            "aead": {
+                "backend": "xchacha20-poly1305" if _NACL_AVAILABLE else "aes-256-gcm" if _CRYPTOGRAPHY_AVAILABLE else "hmac-ctr"
+            }
+        }

@@ -31,6 +31,17 @@ Full Usage:
     # Later, decrypt
     plaintext = seal.unseal_string(ss1_string)
 
+Compatibility API (matches test expectations):
+    from symphonic_cipher.scbe_aethermoore.spiral_seal import SpiralSealSS1, seal, unseal
+
+    ss = SpiralSealSS1(master_secret=b'0' * 32, kid='k01')
+    blob = ss.seal(b"secret", aad="service=api")
+    plaintext = ss.unseal(blob, aad="service=api")
+
+    # Or one-shot:
+    blob = seal(b"secret", master_secret=b'0' * 32, aad="test", kid="k01")
+    plaintext = unseal(blob, master_secret=b'0' * 32, aad="test")
+
 The Six Sacred Tongues:
     - Kor'aelin (ko): Flow/Intent → encodes nonce
     - Avali (av): Context/Greeting → encodes aad
@@ -45,12 +56,15 @@ from .sacred_tongues import (
     # Core classes
     SacredTongue,
     SacredTongueTokenizer,
+    SacredTongueTokenizerCompat,
     Token,
+    TongueInfo,
 
     # Wordlists and mappings
     TONGUE_WORDLISTS,
     DOMAIN_TONGUE_MAP,
     SPIRALSCRIPT_KEYWORDS,
+    TONGUES,  # Compatibility dict
 
     # Functions
     get_tongue_for_domain,
@@ -58,6 +72,12 @@ from .sacred_tongues import (
     get_combined_alphabet,
     get_magical_signature,
     get_tongue_keywords,
+
+    # Compatibility functions
+    encode_to_spelltext,
+    decode_from_spelltext,
+    format_ss1_blob,
+    parse_ss1_blob,
 )
 
 # SpiralSeal Encryption
@@ -66,6 +86,7 @@ from .spiral_seal import (
     SpiralSeal,
     VeiledSeal,
     PQCSpiralSeal,
+    SpiralSealSS1,  # Compatibility class
 
     # Result types
     SpiralSealResult,
@@ -93,22 +114,33 @@ from .spiral_seal import (
     KEY_ID_SIZE,
 )
 
+# Convenience seal/unseal functions
+from .seal import seal, unseal
+
 __all__ = [
     # Sacred Tongues
     "SacredTongue",
     "SacredTongueTokenizer",
+    "SacredTongueTokenizerCompat",
     "Token",
+    "TongueInfo",
     "TONGUE_WORDLISTS",
     "DOMAIN_TONGUE_MAP",
     "SPIRALSCRIPT_KEYWORDS",
+    "TONGUES",
     "get_tongue_for_domain",
     "get_tokenizer",
     "get_combined_alphabet",
     "get_magical_signature",
     "get_tongue_keywords",
+    "encode_to_spelltext",
+    "decode_from_spelltext",
+    "format_ss1_blob",
+    "parse_ss1_blob",
 
     # SpiralSeal
     "SpiralSeal",
+    "SpiralSealSS1",
     "VeiledSeal",
     "PQCSpiralSeal",
     "SpiralSealResult",
@@ -117,6 +149,8 @@ __all__ = [
     "AEADType",
     "quick_seal",
     "quick_unseal",
+    "seal",
+    "unseal",
     "get_crypto_backend_info",
     "derive_key",
     "derive_key_argon2id",
