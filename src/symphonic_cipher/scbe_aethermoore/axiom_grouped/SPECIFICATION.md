@@ -110,20 +110,25 @@ Risk' = Risk_base + wa·(1 - Saudio)
 
 ### 3. Hamiltonian CFI (`hamiltonian_cfi.py`)
 
-Control Flow Integrity via Hamiltonian path detection:
+Topological Control Flow Integrity via spectral embedding and golden path detection:
 
-- **Valid execution** = Hamiltonian path through state graph G=(V,E)
-- **Attack** = deviation from linearized manifold
-- **Detection** = O(|V|) path validation
+- **Valid execution** = traversal along Hamiltonian "golden path"
+- **Attack** = deviation from linearized manifold in embedded space
+- **Detection** = spectral embedding + principal curve projection
+
+**Key Insight:** Many 3D graphs are non-Hamiltonian (e.g., Rhombic Dodecahedron with bipartite imbalance |6-8|=2), but lifting to 4D/6D resolves obstructions.
 
 ```python
-class ExecutionGraph:
-    states: Dict[int, ExecutionState]
-    transitions: Dict[int, List[Transition]]
+class ControlFlowGraph:
+    vertices: Dict[int, CFGVertex]
+    edges: Set[Tuple[int, int]]
 
-def validate_trace(graph, trace) -> TraceValidation:
-    # Returns VALID, DEVIATION, CYCLE, ORPHAN, or TRUNCATED
+class HamiltonianCFI:
+    def check_state(state_vector) -> CFIResult:
+        # Returns VALID, DEVIATION, ATTACK, or OBSTRUCTION
 ```
+
+**Dirac's Theorem:** If deg(v) ≥ |V|/2 for all v, graph is Hamiltonian.
 
 ---
 
@@ -144,9 +149,9 @@ def validate_trace(graph, trace) -> TraceValidation:
 3. ✓ Flux sensitivity: different frames → flux > 0
 
 ### Hamiltonian CFI (3 proofs)
-1. ✓ Hamiltonian detection: finds valid paths
-2. ✓ Deviation detection: invalid transitions caught
-3. ✓ Cycle detection: revisited states flagged
+1. ✓ Dirac theorem: deg(v) ≥ |V|/2 → Hamiltonian
+2. ✓ Bipartite detection: |A| - |B| > 1 detected
+3. ✓ Deviation detection: off-path states flagged
 
 ---
 
@@ -172,7 +177,7 @@ Context → L1-L4 → Poincaré Ball → L5 (dℍ) → L6-L7 (Breath/Phase)
 from axiom_grouped import (
     LanguesMetric, FluxingLanguesMetric, DimensionFlux,
     AudioAxisProcessor, AudioFeatures,
-    CFIMonitor, ExecutionGraph, validate_trace
+    HamiltonianCFI, ControlFlowGraph, CFGVertex
 )
 
 # Langues governance
@@ -186,9 +191,12 @@ features = processor.process_frame(audio_signal)
 risk_adjusted = processor.integrate_risk(base_risk, features)
 
 # CFI monitoring
-monitor = CFIMonitor(execution_graph)
-monitor.start(initial_state=0)
-status = monitor.transition(next_state)
+cfg = ControlFlowGraph()
+cfg.add_vertex(CFGVertex(0, "entry", 0x100))
+cfg.add_vertex(CFGVertex(1, "process", 0x200))
+cfg.add_edge(0, 1)
+cfi = HamiltonianCFI(cfg)
+result = cfi.check_state(state_vector)
 ```
 
 ---
