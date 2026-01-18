@@ -13,6 +13,9 @@ Core Components:
 - governance/: Phase-breath transforms and snap protocol
 - quantum/: PQC integration via liboqs
 - layers/: 14-layer mapping system
+- pqc/: Post-Quantum Cryptography (Kyber768 + Dilithium3)
+- qc_lattice/: Quasicrystal Lattice + PHDM (16 polyhedra)
+- spiral_seal/: SpiralSeal SS1 encryption with Sacred Tongues
 
 Central Thesis:
     AI safety = geometric + temporal + entropic + quantum continuity
@@ -232,4 +235,37 @@ __all__ = [
     "CONLANG",
     "REV_CONLANG",
     "MODALITY_MASKS",
+
+    # SpiralSeal SS1 (Sacred Tongue Encryption)
+    "SpiralSeal",
+    "VeiledSeal",
+    "PQCSpiralSeal",
+    "SpiralSealResult",
+    "quick_seal",
+    "quick_unseal",
+    "SacredTongue",
+    "SacredTongueTokenizer",
 ]
+
+# SpiralSeal SS1 - Sacred Tongue Encryption Envelope
+try:
+    from .spiral_seal import (
+        SpiralSeal,
+        VeiledSeal,
+        PQCSpiralSeal,
+        SpiralSealResult,
+        quick_seal,
+        quick_unseal,
+        SacredTongue,
+        SacredTongueTokenizer,
+    )
+except ImportError:
+    # Graceful degradation if spiral_seal not available
+    SpiralSeal = None
+    VeiledSeal = None
+    PQCSpiralSeal = None
+    SpiralSealResult = None
+    quick_seal = None
+    quick_unseal = None
+    SacredTongue = None
+    SacredTongueTokenizer = None
