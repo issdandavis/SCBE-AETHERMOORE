@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  scbe-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: scbe-aethermoore
+    ports:
+      - "3000:3000"
+      - "8000:8000"
+    volumes:
+      - ./src:/app/src:ro
+      - ./demo:/app/demo:ro
+    environment:
+      - NODE_ENV=production
+      - PYTHONUNBUFFERED=1
+      - SCBE_LOG_LEVEL=info
+    restart: unless-stopped
+    networks:
+      - scbe-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  scbe-demo:
+    image: nginx:alpine
+    container_name: scbe-demo
+    ports:
+      - "8080:80"
+    volumes:
+      - ./scbe-aethermoore:/usr/share/nginx/html:ro
+    restart: unless-stopped
+    networks:
+      - scbe-network
+    depends_on:
+      - scbe-app
+
+networks:
+  scbe-network:
+    driver: bridge

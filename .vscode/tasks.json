@@ -1,0 +1,204 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build TypeScript",
+      "type": "npm",
+      "script": "build",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$tsc"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Watch TypeScript",
+      "type": "npm",
+      "script": "build:watch",
+      "isBackground": true,
+      "problemMatcher": ["$tsc-watch"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Type Check",
+      "type": "npm",
+      "script": "typecheck",
+      "problemMatcher": ["$tsc"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Run Python Tests",
+      "type": "shell",
+      "command": "pytest",
+      "args": [
+        "tests/",
+        "-v",
+        "--cov=src",
+        "--cov-report=html"
+      ],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Run TypeScript Tests",
+      "type": "npm",
+      "script": "test",
+      "group": "test",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Run All Tests",
+      "dependsOn": [
+        "Run Python Tests",
+        "Run TypeScript Tests"
+      ],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
+    },
+    {
+      "label": "Format Python Code",
+      "type": "shell",
+      "command": "black",
+      "args": [
+        "src/",
+        "tests/"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Format TypeScript Code",
+      "type": "shell",
+      "command": "npx",
+      "args": [
+        "prettier",
+        "--write",
+        "src/**/*.ts",
+        "tests/**/*.ts"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Lint Python",
+      "type": "shell",
+      "command": "flake8",
+      "args": [
+        "src/",
+        "tests/",
+        "--max-line-length=120"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Run SCBE CLI",
+      "type": "shell",
+      "command": "python",
+      "args": [
+        "scbe-cli.py"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true
+      }
+    },
+    {
+      "label": "Package NPM",
+      "type": "npm",
+      "script": "package",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Clean Build",
+      "type": "npm",
+      "script": "clean",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Full Build Pipeline",
+      "dependsOn": [
+        "Clean Build",
+        "Type Check",
+        "Build TypeScript",
+        "Run All Tests"
+      ],
+      "dependsOrder": "sequence",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Open Customer Demo",
+      "type": "shell",
+      "command": "start",
+      "args": [
+        "scbe-aethermoore/customer-demo.html"
+      ],
+      "windows": {
+        "command": "start",
+        "args": [
+          "scbe-aethermoore/customer-demo.html"
+        ]
+      },
+      "linux": {
+        "command": "xdg-open",
+        "args": [
+          "scbe-aethermoore/customer-demo.html"
+        ]
+      },
+      "osx": {
+        "command": "open",
+        "args": [
+          "scbe-aethermoore/customer-demo.html"
+        ]
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "never"
+      }
+    }
+  ]
+}
