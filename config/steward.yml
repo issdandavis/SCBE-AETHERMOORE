@@ -1,0 +1,11 @@
+version: 1
+review:
+  sla_ms: 10000
+  reason_codes: [SCOPE_WIDE, NEW_PROVIDER, LOW_TRUST, SENSITIVE_FLOW, ANOMALY]
+  approvers_min: 1
+  quorum_critical: 2
+audit:
+  sample_allow_pct: 1.0
+notifications:
+  slack_channel: "#aethermoore-guard"
+  pagerduty_service: "Sentinel-Steward"
