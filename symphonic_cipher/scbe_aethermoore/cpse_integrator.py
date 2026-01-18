@@ -25,7 +25,7 @@ With C1-C3, the existing E.2 and E.3 proofs survive unchanged.
 
 import math
 from dataclasses import dataclass
-from typing import Dict, Any
+from typing import Dict
 
 
 def clip(x: float, lo: float = 0.0, hi: float = 1.0) -> float:

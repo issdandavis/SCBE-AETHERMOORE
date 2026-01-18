@@ -1,0 +1,133 @@
+name: SCBE-AETHERMOORE Release & Deploy
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type (patch, minor, major)'
+        required: false
+        default: 'patch'
+      sync_demo:
+        description: 'Sync to demo repository'
+        required: false
+        default: 'true'
+
+env:
+  PYTHON_VERSION: '3.11'
+  DEMO_REPO: 'issdandavis/scbe-aethermoore-demo'
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest numpy scipy
+          
+      - name: Run v3.0 Core Tests
+        run: |
+          cd symphonic_cipher
+          python -c "from scbe_aethermoore_core import SCBEAethermooreVerifier; print('v3.0 Core: OK')"
+          
+      - name: Run Full Test Suite
+        run: |
+          cd symphonic_cipher
+          pytest tests/ -v --tb=short
+          
+      - name: Validate Patent Modules
+        run: |
+          cd symphonic_cipher
+          python -c "
+from topological_cfi import TopologicalCFI
+from dual_lattice_consensus import DualLatticeConsensus
+print('Topological CFI: OK')
+print('Dual Lattice Consensus: OK')
+"
+
+  release:
+    name: Create Release
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: SCBE-AETHERMOORE ${{ steps.version.outputs.VERSION }}
+          body: |
+            ## SCBE-AETHERMOORE ${{ steps.version.outputs.VERSION }}
+            
+            ### Quantum-Resistant Authorization System
+            
+            **Key Features:**
+            - 13-Layer Cryptographic-Geometric Stack
+            - Hyperbolic Geometry Authorization
+            - Dual-Lattice Consensus (ML-KEM-768 + ML-DSA-65)
+            - Anti-Fragile Defense Manifold
+            
+            **Files:**
+            - `scbe_aethermoore_core.py` - Golden Master v3.0
+            - `topological_cfi.py` - Hamiltonian CFI
+            - `dual_lattice_consensus.py` - PQC Consensus
+            
+            See CHANGELOG.md for details.
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+
+  sync-demo:
+    name: Sync to Demo Repository
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Prepare Demo Files
+        run: |
+          mkdir -p demo-package
+          cp -r symphonic_cipher/scbe_aethermoore_core.py demo-package/
+          cp -r symphonic_cipher/topological_cfi.py demo-package/
+          cp -r symphonic_cipher/dual_lattice_consensus.py demo-package/
+          cp -r symphonic_cipher/tests/ demo-package/tests/
+          echo "# SCBE-AETHERMOORE Demo" > demo-package/README.md
+          echo "" >> demo-package/README.md
+          echo "Public demo of the SCBE-AETHERMOORE Quantum Security System." >> demo-package/README.md
+          echo "" >> demo-package/README.md
+          echo "## Quick Start" >> demo-package/README.md
+          echo "\`\`\`python" >> demo-package/README.md
+          echo "from scbe_aethermoore_core import SCBEAethermooreVerifier" >> demo-package/README.md
+          echo "verifier = SCBEAethermooreVerifier(b'your_key')" >> demo-package/README.md
+          echo "\`\`\`" >> demo-package/README.md
+          
+      - name: Upload Demo Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: scbe-demo-package
+          path: demo-package/
+          retention-days: 30
