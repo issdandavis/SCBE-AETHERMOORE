@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\integrate\_cubature.py
+# hypothesis_version: 6.148.8
+
+[0.0, 1e-08, 10000, 'converged', 'cubature', 'gauss-kronrod', 'genz-malik', 'gk15', 'gk21', 'inf', 'not_converged']

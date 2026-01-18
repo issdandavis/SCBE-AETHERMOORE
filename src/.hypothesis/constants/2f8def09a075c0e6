@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_differentialevolution.py
+# hypothesis_version: 6.148.8
+
+[0.0, 0.01, 0.5, 0.7, 1.0, 1000, 'L-BFGS-B', '__iter__', '__len__', '_best1', '_best2', '_currenttobest1', '_rand1', '_rand2', '_randtobest1', 'best1bin', 'best1exp', 'best2bin', 'best2exp', 'currenttobest1bin', 'currenttobest1exp', 'deferred', 'float', 'halton', 'ignore', 'immediate', 'in progress', 'latinhypercube', 'maxfev', 'maxiter', 'message', 'nit', 'rand1bin', 'rand1exp', 'rand2bin', 'rand2exp', 'random', 'randtobest1bin', 'randtobest1exp', 'seed', 'sobol', 'success', 'trust-constr', 'warning_flag']

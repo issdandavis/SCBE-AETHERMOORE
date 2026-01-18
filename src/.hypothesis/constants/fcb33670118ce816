@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_hessian_update_strategy.py
+# hypothesis_version: 6.148.8
+
+[-1.0, 0.0, 1e-08, 0.2, 1.0, 'BFGS', 'SR1', 'auto', 'd', 'damp_update', 'hess', 'inv_hess', 'skip_update', 'symv', 'syr', 'syr2']

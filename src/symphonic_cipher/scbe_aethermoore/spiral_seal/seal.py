@@ -3,6 +3,9 @@ SpiralSeal SS1 - High-Level API
 ================================
 Post-quantum hybrid encryption using Kyber768 + Dilithium3 + AES-256-GCM.
 
+Last Updated: January 18, 2026
+Version: 1.1.0
+
 This is the main entry point for the 14-layer SCBE pipeline's cryptographic
 operations. It provides:
 

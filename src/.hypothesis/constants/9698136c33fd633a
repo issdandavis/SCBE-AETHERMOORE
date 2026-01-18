@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_slsqp_py.py
+# hypothesis_version: 6.148.8
+
+[0.0, 1e-06, 10.0, 100, '2-point', '3-point', 'F', 'acc', 'alpha', 'approx_jacobian', 'args', 'callback', 'cs', 'disp', 'eps', 'eq', 'exact', 'f0', 'fmin_slsqp', 'ftol', 'fun', 'gs', 'h1', 'h2', 'h3', 'h4', 'ignore', 'inconsistent', 'ineq', 'iprint', 'iter', 'itermax', 'jac', 'line', 'm', 'maxiter', 'meq', 'message', 'mode', 'n', 'nit', 'real floating', 'reset', 'restructuredtext en', 'status', 't', 't0', 'tol', 'type', 'x']

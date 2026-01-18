@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_minimize.py
+# hypothesis_version: 6.148.8
+
+['2-point', 'AllInteger', 'BFGS', 'L-BFGS-B', 'SLSQP', '_custom', 'barrier_tol', 'bfgs', 'bounded', 'brent', 'cg', 'cobyla', 'cobyqa', 'disp', 'dogleg', 'fatol', 'final_tr_radius', 'ftol', 'fun', 'golden', 'gtol', 'hess_inv', 'intermediate_result', 'jac', 'l-bfgs-b', 'minimize', 'minimize_scalar', 'nelder-mead', 'new', 'newton-cg', 'old', 'powell', 'return_all', 'slsqp', 'stop_iteration', 'tnc', 'tol', 'trust-constr', 'trust-exact', 'trust-krylov', 'trust-ncg', 'xatol', 'xtol']

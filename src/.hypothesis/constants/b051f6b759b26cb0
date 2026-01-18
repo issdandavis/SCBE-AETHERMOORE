@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\_lib\array_api_compat\numpy\linalg.py
+# hypothesis_version: 6.148.8
+
+['DD->D', 'LinAlgError', 'call', 'cond', 'dd->d', 'det', 'eig', 'eigvals', 'eigvalsh', 'ignore', 'inv', 'lstsq', 'matrix_power', 'multi_dot', 'norm', 'solve', 'tensorinv', 'tensorsolve', 'vector_norm']

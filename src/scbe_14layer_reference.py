@@ -6,6 +6,9 @@ Direct mapping to mathematical specifications from proof document.
 Each function matches the LaTeX specification exactly.
 
 Reference: scbe_proofs_complete.tex
+
+Hook Test: This comment triggers Axiom Compliance + Test Sync + Sync Docs hooks
+Last verified: 2026-01-17
 """
 
 import sys

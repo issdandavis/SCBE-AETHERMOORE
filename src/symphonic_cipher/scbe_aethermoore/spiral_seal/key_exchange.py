@@ -3,6 +3,9 @@ Post-Quantum Key Exchange - Kyber768
 =====================================
 Wrapper for Kyber768 key encapsulation mechanism (KEM).
 
+Last Updated: January 18, 2026
+Version: 1.1.0
+
 Security level: ~AES-192 equivalent (NIST Level 3)
 Collision probability: ~2^-128
 

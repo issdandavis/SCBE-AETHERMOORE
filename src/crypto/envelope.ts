@@ -37,6 +37,7 @@ export interface Envelope {
   nonce: string;    // base64url (96-bit)
   tag: string;      // base64url (128-bit)
   ciphertext: string; // base64url
+  salt: string;     // base64url (256-bit) - for key derivation
 }
 
 export type CreateParams = {
@@ -89,7 +90,7 @@ export async function createEnvelope(p: CreateParams): Promise<Envelope> {
 
   // 2) Derive subkeys via HKDF: k_enc, k_nonce, k_log
   const ikm = await getMasterKey(p.kid);
-  const salt = crypto.randomBytes(32); // per-process salt; in prod you may pin/rotate by policy
+  const salt = crypto.randomBytes(32); // per-envelope salt; in prod you may pin/rotate by policy
   const infoBase = Buffer.from(`scbe:derivation:v1|env=${p.env}|provider=${p.provider_id}|intent=${p.intent_id}`);
   const k_enc = hkdfSha256(ikm, salt, Buffer.concat([infoBase, Buffer.from('|k=enc')]), 32);
   const k_nonce = hkdfSha256(ikm, salt, Buffer.concat([infoBase, Buffer.from('|k=nonce')]), 32);
@@ -116,7 +117,8 @@ export async function createEnvelope(p: CreateParams): Promise<Envelope> {
       kid: p.kid,
       nonce: b64u(nonce),
       tag: b64u(tag),
-      ciphertext: b64u(ct)
+      ciphertext: b64u(ct),
+      salt: b64u(salt)
     };
 
     metrics.timing('envelope_create_ms', metrics.now() - t0, {
@@ -156,7 +158,8 @@ export async function verifyEnvelope(p: VerifyParams): Promise<{ body: any }> {
 
   // 3) Key derivation (must bind env/provider/intent)
   const ikm = await getMasterKey(envelope.kid);
-  const salt = Buffer.alloc(32, 0); // must match create() policy; demo uses fresh salt => bind via info anyway
+  const salt = fromB64u(envelope.salt);
+  if (salt.length !== 32) throw new Error('bad salt size');
   const infoBase = Buffer.from(`scbe:derivation:v1|env=${envelope.aad.env}|provider=${envelope.aad.provider_id}|intent=${envelope.aad.intent_id}`);
   const k_enc = hkdfSha256(ikm, salt, Buffer.concat([infoBase, Buffer.from('|k=enc')]), 32);
   const k_nonce = hkdfSha256(ikm, salt, Buffer.concat([infoBase, Buffer.from('|k=nonce')]), 32);

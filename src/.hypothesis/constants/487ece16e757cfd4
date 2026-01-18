@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\_lib\array_api_extra\_lib\_funcs.py
+# hypothesis_version: 6.148.8
+
+[1e-08, 1e-05, 1.0, 'apply_where', 'atleast_nd', 'bool', 'boolean indexing', 'broadcast_shapes', 'complex floating', 'cov', 'create_diagonal', 'expand_dims', 'integral', 'kron', 'nunique', 'pad', 'real floating', 'setdiff1d', 'sinc']

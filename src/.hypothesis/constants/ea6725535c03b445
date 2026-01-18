@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\linalg\_decomp_svd.py
+# hypothesis_version: 6.148.8
+
+[-1.0, 0.0, 0.5, 1.0, 'A', 'A has a NaN entry', 'B', 'SVD did not converge', '_lwork', 'a', 'diagsvd', 'expected matrix', 'gesdd', 'gesvd', 'null_space', 'orth', 'preferred', 's', 'subspace_angles', 'svd', 'svdvals']

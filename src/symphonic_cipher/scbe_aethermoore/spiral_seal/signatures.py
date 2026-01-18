@@ -3,6 +3,9 @@ Post-Quantum Digital Signatures - Dilithium3
 =============================================
 Wrapper for Dilithium3 digital signature scheme.
 
+Last Updated: January 18, 2026
+Version: 1.1.0
+
 Security level: ~AES-192 equivalent (NIST Level 3)
 Collision probability: ~2^-128
 

@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\integrate\_ivp\ivp.py
+# hypothesis_version: 6.148.8
+
+['BDF', 'DOP853', 'LSODA', 'RK23', 'RK45', 'Radau', 'direction', 'failed', 'finished', 'jac', 'left', 'right', 'terminal']

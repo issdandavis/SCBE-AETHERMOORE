@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\Crypto\Util\_raw_api.py
+# hypothesis_version: 6.148.8
+
+[256, ', ', '.', "Cannot load '%s': %s", "Not found '%s'", 'RTLD_DEEPBIND', 'Win', '__pypy__', 'buf', 'cffi', 'const uint8_t*', 'ctypes', 'format', 'internal', 'itemsize', 'len', 'ndim', 'nt', 'obj', 'readonly', 'shape', 'smalltable', 'strides', 'suboffsets', 'uint8_t[1]', 'uint8_t[]', 'void *[1]']

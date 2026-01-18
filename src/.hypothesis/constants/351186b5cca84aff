@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_minpack_py.py
+# hypothesis_version: 6.148.8
+
+[0.0, 1e-08, 1.49012e-08, 0.5, 1.0, 2.0, 100, 200, 500, '.', '2-point', 'An error occurred.', 'Dfun', '__name__', 'args', 'band', 'col_deriv', 'curve_fit', 'del2', 'diag', 'eps', 'factor', 'fixed_point', 'fjac', 'fprime', 'fsolve', 'fun', 'func', 'fvec', 'hybr', 'ipvt', 'iteration', 'leastsq', 'lm', 'max_nfev', 'maxfev', 'message', 'nfev', 'njev', 'omit', 'propagate', 'qtf', 'r', 'raise', 'status', 'trf', 'trtri', 'unknown', 'x', 'xtol']
