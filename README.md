@@ -140,7 +140,61 @@ python symphonic_cipher/scbe_aethermoore/axiom_grouped/langues_metric.py
 
 ## Symphonic Cipher (Original)
 
-**Intent-Modulated Conlang + Harmonic Verification System**
+**Quantum-Resistant Geometric Security System**
+
+---
+
+## Quick Start (For Non-Coders)
+
+**What this does:** Protects your data using math, geometry, and quantum-safe encryption.
+
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Test everything works (should see "84 passed")
+pip install pytest && python -m pytest tests/test_pqc.py -v
+
+# 3. Try it out
+python -c "
+from symphonic_cipher.scbe_aethermoore.qc_lattice import quick_validate
+result = quick_validate('user123', 'read_data')
+print(f'Decision: {result.decision.value}')
+print(f'Confidence: {result.confidence:.0%}')
+"
+```
+
+---
+
+## What's In This Codebase
+
+| Folder | What It Does |
+|--------|--------------|
+| `pqc/` | **Quantum-safe encryption** - Uses Kyber768 + Dilithium3 (unbreakable by quantum computers) |
+| `qc_lattice/` | **Geometric verification** - Uses quasicrystals (never-repeating patterns) and 16 3D shapes |
+| Core files | **Math engine** - 9-dimensional calculations, 14-layer security pipeline |
+
+---
+
+## For AWS Lambda
+
+```python
+from symphonic_cipher.scbe_aethermoore.qc_lattice import IntegratedAuditChain
+import json
+
+chain = IntegratedAuditChain(use_pqc=True)
+
+def lambda_handler(event, context):
+    validation, sig = chain.add_entry(event['user'], event['action'])
+    return {
+        'statusCode': 200 if validation.decision.value == 'ALLOW' else 403,
+        'body': json.dumps({'decision': validation.decision.value})
+    }
+```
+
+---
+
+## Original System: Intent-Modulated Conlang + Harmonic Verification System
 
 A mathematically rigorous authentication protocol that combines:
 - Private conlang (constructed language) dictionary mapping
@@ -311,12 +365,77 @@ Extended vocabulary supports negative IDs (e.g., "shadow" = -1 → 410 Hz).
 
 MIT License
 
+---
+
+## Advanced Modules (New)
+
+### Post-Quantum Cryptography (PQC)
+
+Quantum-safe encryption using NIST-approved algorithms:
+
+| Algorithm | Purpose | Size |
+|-----------|---------|------|
+| **Kyber768** | Key exchange | 1184 byte public key |
+| **Dilithium3** | Digital signatures | 3293 byte signature |
+
+```python
+from symphonic_cipher.scbe_aethermoore.pqc import Kyber768, Dilithium3
+
+# Key exchange
+keypair = Kyber768.generate_keypair()
+result = Kyber768.encapsulate(keypair.public_key)
+shared_secret = Kyber768.decapsulate(keypair.secret_key, result.ciphertext)
+
+# Signatures
+sig_keys = Dilithium3.generate_keypair()
+signature = Dilithium3.sign(sig_keys.secret_key, b"message")
+is_valid = Dilithium3.verify(sig_keys.public_key, b"message", signature)
+```
+
+### Quasicrystal Lattice
+
+6D → 3D projection for geometric verification:
+
+- **Phason Shift**: Instant key rotation without changing logic
+- **Crystallinity Detection**: Catches periodic attack patterns
+- **Golden Ratio**: Icosahedral symmetry (never-repeating patterns)
+
+### PHDM (16 Polyhedra)
+
+| Type | Shapes | Count |
+|------|--------|-------|
+| Platonic | Tetrahedron, Cube, Octahedron, Dodecahedron, Icosahedron | 5 |
+| Archimedean | Truncated Tetrahedron, Cuboctahedron, Icosidodecahedron | 3 |
+| Kepler-Poinsot | Small Stellated Dodecahedron, Great Dodecahedron | 2 |
+| Toroidal | Szilassi, Császár | 2 |
+| Johnson | Pentagonal Bipyramid, Triangular Cupola | 2 |
+| Rhombic | Rhombic Dodecahedron, Bilinski Dodecahedron | 2 |
+
+---
+
+## Key Terms (Glossary)
+
+| Term | Simple Meaning |
+|------|----------------|
+| **Kyber768** | Secure key sharing that quantum computers can't break |
+| **Dilithium3** | Digital signatures that quantum computers can't forge |
+| **Quasicrystal** | Ordered pattern that never repeats (like Penrose tiles) |
+| **Phason** | Shifts the "valid region" for instant key rotation |
+| **HMAC Chain** | Linked records where each depends on the previous |
+| **Hamiltonian Path** | Route visiting each shape exactly once |
+| **Golden Ratio (φ)** | 1.618... - appears in icosahedral geometry |
+
+---
+
 ## References
 
 - HMAC-SHA256: RFC 2104
 - Feistel Networks: Luby-Rackoff, 1988
 - Biquad Filters: Audio EQ Cookbook
 - MFCC: Davis & Mermelstein, 1980
+- Kyber: NIST PQC Round 3 Winner
+- Dilithium: NIST PQC Round 3 Winner
+- Icosahedral Quasicrystals: Shechtman et al., 1984
 - Poincaré Ball Model: Hyperbolic Geometry
 - Möbius Addition: Gyrogroup Theory
 

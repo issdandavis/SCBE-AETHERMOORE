@@ -98,6 +98,25 @@ from .pqc_hmac import (
     AUDIT_CHAIN_IV,
 )
 
+# PQC Harmonic Enhancement (AETHERMOORE integration)
+from .pqc_harmonic import (
+    SecurityDimension,
+    HarmonicKeyMaterial,
+    harmonic_key_stretch,
+    fast_harmonic_key,
+    HarmonicPQCSession,
+    create_harmonic_pqc_session,
+    verify_harmonic_pqc_session,
+    Vector6DKey,
+    derive_key_from_vector,
+    vector_proximity_key,
+    analyze_harmonic_security,
+    print_security_table,
+    HarmonicKyberOrchestrator,
+    HARMONIC_SCALE_TABLE,
+    BASE_SECURITY_BITS,
+)
+
 # PQC Audit chain
 from .pqc_audit import (
     # Audit types
@@ -181,6 +200,23 @@ __all__ = [
 
     # Audit - Integration
     "PQCAuditIntegration",
+
+    # Harmonic Enhancement
+    "SecurityDimension",
+    "HarmonicKeyMaterial",
+    "harmonic_key_stretch",
+    "fast_harmonic_key",
+    "HarmonicPQCSession",
+    "create_harmonic_pqc_session",
+    "verify_harmonic_pqc_session",
+    "Vector6DKey",
+    "derive_key_from_vector",
+    "vector_proximity_key",
+    "analyze_harmonic_security",
+    "print_security_table",
+    "HarmonicKyberOrchestrator",
+    "HARMONIC_SCALE_TABLE",
+    "BASE_SECURITY_BITS",
 ]
 
 __version__ = "1.0.0"
