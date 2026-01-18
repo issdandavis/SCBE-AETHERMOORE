@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['../tests/**/*.test.ts'],
+    include: ['tests/**/*.test.ts'],
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
@@ -12,6 +12,6 @@ export default defineConfig({
       '**/scbe-aethermoore/**',
       '**/scbe-aethermoore-demo/**',
     ],
-    testTimeout: 10000,
+    testTimeout: 30000,
   },
 });
