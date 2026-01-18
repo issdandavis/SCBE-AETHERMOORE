@@ -280,10 +280,11 @@ SCBE_Production_Pack/
 5. **[AWS Lambda Deployment](docs/AWS_LAMBDA_DEPLOYMENT.md)** - Production deployment guide.
 6. **[Comprehensive Math Spec](docs/COMPREHENSIVE_MATH_SCBE.md)** - All axioms A1-A14 with proofs.
 7. **[Langues Weighting System](docs/LANGUES_WEIGHTING_SYSTEM.md)** - Six Sacred Tongues mathematical framework.
+8. **[Fourier Series Foundations](docs/FOURIER_SERIES_FOUNDATIONS.md)** - Mathematical foundations of FFT and applications to music/audio.
 
 ### For Developers
-8. **[src/.kiro/specs/scbe-axiom-core/requirements.md](src/.kiro/specs/scbe-axiom-core/requirements.md)** - 18 functional requirements with acceptance criteria.
-9. **[src/.kiro/specs/scbe-axiom-core/tasks.md](src/.kiro/specs/scbe-axiom-core/tasks.md)** - Implementation task breakdown.
+9. **[src/.kiro/specs/scbe-axiom-core/requirements.md](src/.kiro/specs/scbe-axiom-core/requirements.md)** - 18 functional requirements with acceptance criteria.
+10. **[src/.kiro/specs/scbe-axiom-core/tasks.md](src/.kiro/specs/scbe-axiom-core/tasks.md)** - Implementation task breakdown.
 
 ---
 
