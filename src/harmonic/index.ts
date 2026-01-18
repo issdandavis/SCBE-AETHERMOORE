@@ -7,11 +7,11 @@
  * - Layer 5: Invariant Hyperbolic Metric
  * - Layer 6: Breath Transform
  * - Layer 7: Phase Modulation
- * - Layer 8: Multi-Well Potential
+ * - Layer 8: Multi-Well Potential / SpiralSeal SS1 Envelope Encoding
  * - Layer 12: Harmonic Scaling H(d, R) = R^(d²)
  * - Layer 14: Audio Axis / Vacuum Acoustics
  *
- * Plus: Langues Metric, HAL Attention, Hamiltonian CFI
+ * Plus: Langues Metric, HAL Attention, Hamiltonian CFI, Sacred Tongue Tokenizer
  *
  * @module harmonic
  */
@@ -138,3 +138,48 @@ export {
   // Pipeline utility
   applyHyperbolicPipeline,
 } from './hyperbolic.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Sacred Tongues - Definitions
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  type TongueSpec,
+  type TongueCode,
+  type SS1Section,
+  KOR_AELIN,
+  AVALI,
+  RUNETHIC,
+  CASSISIVADAN,
+  UMBROTH,
+  DRAUMRIC,
+  TONGUES as SACRED_TONGUES,
+  SECTION_TONGUES,
+  getTongueForSection,
+} from './sacredTongues.js';
+
+// ═══════════════════════════════════════════════════════════════
+// SpiralSeal SS1 - Sacred Tongue Cryptographic Encoding
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Tokenizer
+  SacredTongueTokenizer,
+  encodeToSpelltext,
+  decodeFromSpelltext,
+
+  // SS1 Format
+  type SS1Blob,
+  formatSS1Blob,
+  parseSS1Blob,
+
+  // Crypto
+  randomBytes,
+  seal,
+  unseal,
+  SpiralSealSS1,
+
+  // LWS Integration
+  computeLWSWeights,
+  computeLWSScore,
+} from './spiralSeal.js';
