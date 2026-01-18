@@ -14,7 +14,6 @@ This provides end-to-end governance from raw intent to final decision.
 
 import numpy as np
 import hashlib
-import hmac
 import os
 import time
 from dataclasses import dataclass, field
@@ -44,12 +43,7 @@ from .unified import (
 
 from .layers import (
     FourteenLayerPipeline, RiskLevel, RiskAssessment,
-    layer_1_complex_context, layer_2_realify, layer_3_weighted,
-    layer_4_poincare, layer_5_hyperbolic_distance,
-    layer_6_breathing, layer_7_phase,
-    layer_8_multi_well, layer_9_spectral_coherence,
-    layer_10_spin_coherence, layer_11_triadic_distance,
-    layer_12_harmonic_scaling, layer_13_decision, layer_14_audio_axis,
+    layer_5_hyperbolic_distance,
     verify_theorem_A_metric_invariance,
     verify_theorem_B_continuity,
     verify_theorem_C_risk_monotonicity,
