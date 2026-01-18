@@ -74,28 +74,33 @@ from .audio_axis import (
     verify_flux_sensitivity,
 )
 
-# Hamiltonian CFI
+# Hamiltonian CFI (Topological Control Flow Integrity)
 from .hamiltonian_cfi import (
+    # Constants
+    PHI as CFI_PHI,
+    DEFAULT_EMBEDDING_DIM,
+    DEFAULT_DEVIATION_THRESHOLD,
+    DEFAULT_MAX_VERTICES,
+    
     # Enums
-    CFIStatus,
+    CFIDecision,
     
     # Classes
-    ExecutionState,
-    Transition,
-    ExecutionGraph,
-    TraceValidation,
-    LinearizedManifold,
-    CFIMonitor,
+    CFGVertex,
+    ControlFlowGraph,
+    GoldenPath,
+    CFIResult,
+    HamiltonianCFI,
     
     # Functions
-    find_hamiltonian_path,
-    has_hamiltonian_path,
-    validate_trace,
+    compute_embedding_dimension,
+    embed_cfg,
+    compute_golden_path,
     
     # Verification
-    verify_hamiltonian_detection,
+    verify_dirac_theorem,
+    verify_bipartite_detection,
     verify_deviation_detection,
-    verify_cycle_detection,
 )
 
 __all__ = [
@@ -150,20 +155,23 @@ __all__ = [
     "verify_hf_detection",
     "verify_flux_sensitivity",
     
-    # === Hamiltonian CFI ===
-    "CFIStatus",
-    "ExecutionState",
-    "Transition",
-    "ExecutionGraph",
-    "TraceValidation",
-    "LinearizedManifold",
-    "CFIMonitor",
-    "find_hamiltonian_path",
-    "has_hamiltonian_path",
-    "validate_trace",
-    "verify_hamiltonian_detection",
+    # === Hamiltonian CFI (Topological) ===
+    "CFI_PHI",
+    "DEFAULT_EMBEDDING_DIM",
+    "DEFAULT_DEVIATION_THRESHOLD",
+    "DEFAULT_MAX_VERTICES",
+    "CFIDecision",
+    "CFGVertex",
+    "ControlFlowGraph",
+    "GoldenPath",
+    "CFIResult",
+    "HamiltonianCFI",
+    "compute_embedding_dimension",
+    "embed_cfg",
+    "compute_golden_path",
+    "verify_dirac_theorem",
+    "verify_bipartite_detection",
     "verify_deviation_detection",
-    "verify_cycle_detection",
 ]
 
 __version__ = "2.0.0"
