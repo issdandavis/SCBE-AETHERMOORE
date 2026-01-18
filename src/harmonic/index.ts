@@ -183,3 +183,94 @@ export {
   computeLWSWeights,
   computeLWSScore,
 } from './spiralSeal.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Post-Quantum Cryptography (PQC)
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Types
+  type MLKEMLevel,
+  type MLDSALevel,
+  type MLKEMKeyPair,
+  type MLDSAKeyPair,
+  type EncapsulationResult,
+  type HybridEncryptionResult,
+  type PQCConfig,
+
+  // ML-KEM (Kyber) - Key Encapsulation
+  mlkemKeyGen,
+  mlkemEncapsulate,
+  mlkemDecapsulate,
+
+  // ML-DSA (Dilithium) - Digital Signatures
+  mldsaKeyGen,
+  mldsaSign,
+  mldsaVerify,
+
+  // Utilities
+  secureRandomBytes,
+  shake128,
+  shake256,
+  ntt,
+  invNtt,
+
+  // High-level API
+  PQCProvider,
+  defaultPQCProvider,
+} from './pqc.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Quasicrystal Lattice
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Constants
+  PHI,
+  PHI_INV,
+  SILVER_RATIO,
+
+  // Types
+  type Point2D,
+  type PenroseTileType,
+  type PenroseTile,
+  type LatticePoint,
+  type DiffractionPeak,
+  type QCLatticeConfig,
+
+  // Fibonacci
+  fibonacciSequence,
+  fibonacciWord,
+  fibonacci1D,
+  fibonacci2D,
+
+  // Penrose Tiling
+  penroseRhombus,
+  penroseDeflate,
+  penroseInitial,
+  penroseTiling,
+  penroseToLattice,
+
+  // Ammann-Beenker
+  ammannBeenkerSquare,
+  ammannBeenkerRhombus,
+
+  // Cut-and-Project
+  cutAndProject2D,
+  quasicrystal5to2,
+  quasicrystal4to2,
+
+  // Diffraction
+  diffractionPattern,
+  checkRotationalSymmetry,
+
+  // SCBE Integration
+  scbeToQuasicrystal,
+  nearestQCVertex,
+  quasicrystalPotential,
+  quasicrystalHash,
+
+  // Provider
+  QCLatticeProvider,
+  defaultQCLattice,
+} from './qcLattice.js';
