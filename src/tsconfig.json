@@ -19,7 +19,8 @@
     "crypto/**/*.ts",
     "metrics/**/*.ts",
     "rollout/**/*.ts",
-    "selfHealing/**/*.ts"
+    "selfHealing/**/*.ts",
+    "harmonic/**/*.ts"
   ],
   "exclude": [
     "node_modules",

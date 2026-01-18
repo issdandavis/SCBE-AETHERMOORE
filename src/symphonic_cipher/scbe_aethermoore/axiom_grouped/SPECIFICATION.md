@@ -201,12 +201,74 @@ result = cfi.check_state(state_vector)
 
 ---
 
+## TypeScript Implementation
+
+The harmonic module (`src/harmonic/`) provides TypeScript implementations:
+
+```typescript
+import {
+  // Core harmonic scaling (Layer 12)
+  harmonicScale, securityBits, securityLevel, harmonicDistance,
+
+  // HAL Attention
+  halAttention, harmonicCouplingMatrix, HALConfig,
+
+  // Langues Metric (6D governance)
+  LanguesMetric, FluxingLanguesMetric, TONGUES,
+
+  // Audio Axis (Layer 14)
+  AudioAxisProcessor, AudioFeatures,
+
+  // Hamiltonian CFI
+  HamiltonianCFI, ControlFlowGraph, createVertex,
+
+  // Hyperbolic geometry (Layers 5-8)
+  hyperbolicDistance, mobiusAdd, breathTransform, phaseModulation,
+  multiWellPotential,
+
+  // Vacuum Acoustics
+  nodalSurface, checkCymaticResonance, bottleBeamIntensity
+} from './harmonic/index.js';
+```
+
+---
+
+## Roadmap / TODO
+
+### Production Readiness
+
+- [ ] **Replace PQC stubs with liboqs/pqcrypto** - Current post-quantum crypto uses placeholder implementations; integrate liboqs (Open Quantum Safe) or pqcrypto for production-grade Kyber/Dilithium
+- [ ] **Add PHDM tests** - Need comprehensive test coverage for topological verification in the Poincaré Half-Disk Model
+- [ ] **Integrate qc_lattice with pipeline** - Quasicrystal lattice modules are currently standalone; wire into main SCBE governance pipeline
+
+### Verification & Testing
+
+- [ ] **Quasicrystal diffraction tests** - Verify aperiodicity fingerprint matches theoretical Penrose/Ammann-Beenker patterns
+- [ ] **Golden path validation** - Add fuzz testing for Hamiltonian CFI path detection
+- [ ] **Boundary condition tests** - Verify Poincaré ball ‖p‖ < 1 invariant is maintained through all transforms
+
+### Performance Optimization
+
+- [ ] **PHDM Hamiltonian path optimization** - Current brute-force O(n!) path finding should use Ore's theorem optimization: if deg(u) + deg(v) ≥ |V| for all non-adjacent u,v, graph is Hamiltonian
+- [ ] **Parallel FFT for Audio Axis** - Batch processing for multi-channel audio telemetry
+- [ ] **SIMD vectorization for hyperbolic ops** - Möbius addition and breath transforms are vectorizable
+
+### Future Enhancements
+
+- [ ] **Spectral Channel (L9)** - Full FFT coherence implementation
+- [ ] **Spin Channel (L10)** - Quaternion stability scoring
+- [ ] **Triadic Consensus (L11)** - 3-node Byzantine agreement protocol
+- [ ] **Sacred Tongue Tokenizer integration** - Wire SS1 spell-text encoding into TypeScript module
+
+---
+
 ## References
 
 - SCBE Patent Specification (docs/SCBE_PATENT_SPECIFICATION.md)
 - Comprehensive Math (docs/COMPREHENSIVE_MATH_SCBE.md)
 - Axioms A1-A12 (docs/AXIOMS.md)
 - SpiralSeal SS1 (docs/SPIRALSEAL_SS1_COMPLETE.md)
+- AETHERMOORE Design Specification (docs/AETHER-SPEC-2026-001.md)
 
 ---
 
