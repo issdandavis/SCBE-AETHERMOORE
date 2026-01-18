@@ -123,7 +123,7 @@ Building complex sounds by summing individual sinusoidal harmonics:
 #### Square Wave (Brassy/Reedy Sound)
 
 $$
-f(t) = \frac{4}{\pi} \sum_{n=1,3,5,...}^\infty \frac{1}{n} \sin(2\pi n f_0 t)
+f(t) = \frac{4}{\pi} \sum_{\substack{n=1 \\ n \text{ odd}}}^\infty \frac{1}{n} \sin(2\pi n f_0 t)
 $$
 
 - Contains only odd harmonics
@@ -143,7 +143,7 @@ $$
 #### Triangle Wave (Flute-Like Sound)
 
 $$
-f(t) = \frac{8}{\pi^2} \sum_{n=1,3,5,...}^\infty \frac{(-1)^{(n-1)/2}}{n^2} \sin(2\pi n f_0 t)
+f(t) = \frac{8}{\pi^2} \sum_{\substack{n=1 \\ n \text{ odd}}}^\infty \frac{(-1)^{(n-1)/2}}{n^2} \sin(2\pi n f_0 t)
 $$
 
 - Contains only odd harmonics
