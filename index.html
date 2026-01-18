@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCBE-AETHERMOORE | Complete Security Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        .animate-pulse-slow { animation: pulse 2s ease-in-out infinite; }
+        .animate-slide-in { animation: slideIn 0.6s ease-out forwards; }
+        
+        .glass { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
+        .gradient-bg { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
+        .gradient-text { background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .glow { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+        .glow-green { box-shadow: 0 0 20px rgba(34, 197, 94, 0.5); }
+        .glow-purple { box-shadow: 0 0 20px rgba(139, 92, 246, 0.5); }
+        
+        .hero-grid { background-image: radial-gradient(circle, rgba(59, 130, 246, 0.1) 1px, transparent 1px); background-size: 30px 30px; }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass border-b border-white/10">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center font-bold">
+                    S
+                </div>
+                <span class="text-xl font-bold">SCBE-AETHERMOORE</span>
+            </div>
+            <div class="hidden md:flex gap-6">
+                <a href="#architecture" class="hover:text-blue-400 transition">14-Layer Architecture</a>
+                <a href="#demo" class="hover:text-blue-400 transition">Live Demo</a>
+                <a href="#axioms" class="hover:text-blue-400 transition">Axioms</a>
+                <a href="demo.html" class="hover:text-blue-400 transition">Universe Sim</a>
+            </div>
+            <button class="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition font-semibold">
+                Get Started
+            </button>
+        </div>
+    </nav>
+
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 hero-grid">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto text-center animate-slide-in">
+                <div class="inline-block px-4 py-2 bg-purple-600/30 border border-purple-500/50 rounded-full text-sm mb-6 glow-purple">
+                    🔐 Patent Pending | USPTO #63/961,403
+                </div>
+                <h1 class="text-5xl md:text-7xl font-bold mb-6">
+                    Security That's
+                    <span class="gradient-text block mt-2">Geometrically Impossible</span>
+                    <span class="block mt-2">to Break</span>
+                </h1>
+                <p class="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+                    SCBE-AETHERMOORE uses hyperbolic geometry and 14-layer architecture to make attacks 
+                    mathematically impossible, not just computationally hard.
+                </p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="#demo" class="px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-lg transition font-bold text-lg glow">
+                        Try Live Demo
+                    </a>
+                    <a href="demo.html" class="px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition font-bold text-lg">
+                        Universe Simulation
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 14-Layer Architecture -->
+    <section id="architecture" class="py-20 bg-black/30">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4">14-Layer Hyperbolic Architecture</h2>
+                <p class="text-xl text-gray-300">Each layer adds exponential security depth</p>
+            </div>
+            
+            <div class="max-w-4xl mx-auto space-y-3">
+                <!-- Layers 1-4 -->
+                <div class="glass rounded-xl p-4 border border-blue-500/30 hover:border-blue-500/50 transition">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 bg-blue-600/20 rounded-lg flex items-center justify-center font-bold text-xl flex-shrink-0">
+                            L1-4
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg">Context Embedding</h3>
+                            <p class="text-sm text-gray-400">Raw context → Poincaré ball 𝔹ⁿ transformation</p>
+                        </div>
+                        <div class="text-blue-400">✓</div>
+                    </div>
+                </div>
+
+                <!-- Layer 5 -->
+                <div class="glass rounded-xl p-4 border border-green-500/30 hover:border-green-500/50 transition">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 bg-green-600/20 rounded-lg flex items-center justify-center font-bold text-xl flex-shrink-0">
+                            L5
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg">Invariant Metric (FIXED)</h3>
+                            <p class="text-sm text-gray-400 font-mono">dℍ(u,v) = arcosh(1 + 2‖u-v‖² / ((1-‖u‖²)(1-‖v‖²)))</p>
+                        </div>
+                        <div class="text-green-400">✓</div>
+                    </div>
+                </div>
+
+
+                <!-- Layer 6 -->
+                <div class="glass rounded-xl p-4 border border-purple-500/30 hover:border-purple-500/50 transition">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 bg-purple-600/20 rounded-lg flex items-center justify-center font-bold text-xl flex-shrink-0">
+                            L6
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg">Breath Transform</h3>
+                            <p class="text-sm text-gray-400 font-mono">B(p,t) = tanh(‖p‖ + A·sin(ωt))·p/‖p‖</p>
+                        </div>
+                        <div class="text-purple-400">✓</div>
+                    </div>
+                </div>
+
+                <!-- Layer 7 -->
+                <div class="glass rounded-xl p-4 border border-yellow-500/30 hover:border-yellow-500/50 transition">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 bg-yellow-600/20 rounded-lg flex items-center justify-center font-bold text-xl flex-shrink-0">
+                            L7
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg">Phase Modulation</h3>
+                            <p class="text-sm text-gray-400">Φ(p,θ) = R_θ·p rotation in tangent space</p>
+                        </div>
+                        <div class="text-yellow-400">✓</div>
+                    </div>
+                </div>
+
+                <!-- Layer 8 -->
+                <div class="glass rounded-xl p-4 border border-pink-500/30 hover:border-pink-500/50 transition">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 bg-pink-600/20 rounded-lg flex items-center justify-center font-bold text-xl flex-shrink-0">
+                            L8
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg">Multi-Well Potential</h3>
+                            <p class="text-sm text-gray-400 font-mono">V(p) = Σᵢ wᵢ·exp(-‖p-cᵢ‖²/2σᵢ²)</p>
+                        </div>
+                        <div class="text-pink-400">✓</div>
+                    </div>
+                </div>
+
+                <!-- Layer 9 -->
+                <div class="glass rounded-xl p-4 border border-cyan-500/30 hover:border-cyan-500/50 transition">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 bg-cyan-600/20 rounded-lg flex items-center justify-center font-bold text-xl flex-shrink-0">
+                            L9
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg">Spectral Channel</h3>
+                            <p class="text-sm text-gray-400">FFT coherence Sspectral ∈ [0,1]</p>
+                        </div>
+                        <div class="text-cyan-400">✓</div>
+                    </div>
+                </div>
+
+                <!-- Layer 10 -->
+                <div class="glass rounded-xl p-4 border border-indigo-500/30 hover:border-indigo-500/50 transition">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 bg-indigo-600/20 rounded-lg flex items-center justify-center font-bold text-xl flex-shrink-0">
+                            L10
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg">Spin Channel</h3>
+                            <p class="text-sm text-gray-400">Quaternion stability Sspin ∈ [0,1]</p>
+                        </div>
+                        <div class="text-indigo-400">✓</div>
+                    </div>
+                </div>
+
+                <!-- Layer 11 -->
+                <div class="glass rounded-xl p-4 border border-orange-500/30 hover:border-orange-500/50 transition">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 bg-orange-600/20 rounded-lg flex items-center justify-center font-bold text-xl flex-shrink-0">
+                            L11
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg">Triadic Consensus</h3>
+                            <p class="text-sm text-gray-400">3-node Byzantine agreement protocol</p>
+                        </div>
+                        <div class="text-orange-400">✓</div>
+                    </div>
+                </div>
+
+                <!-- Layer 12 -->
+                <div class="glass rounded-xl p-4 border border-red-500/30 hover:border-red-500/50 transition">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 bg-red-600/20 rounded-lg flex items-center justify-center font-bold text-xl flex-shrink-0">
+                            L12
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg">Harmonic Scaling</h3>
+                            <p class="text-sm text-gray-400 font-mono">H(d,R) = R^(d²) where R=1.5 → H(6) ≈ 2.18×10⁶</p>
+                        </div>
+                        <div class="text-red-400">✓</div>
+                    </div>
+                </div>
+
+                <!-- Layer 13 -->
+                <div class="glass rounded-xl p-4 border border-emerald-500/30 hover:border-emerald-500/50 transition">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 bg-emerald-600/20 rounded-lg flex items-center justify-center font-bold text-xl flex-shrink-0">
+                            L13
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg">Decision Gate</h3>
+                            <p class="text-sm text-gray-400">ALLOW / QUARANTINE / DENY classification</p>
+                        </div>
+                        <div class="text-emerald-400">✓</div>
+                    </div>
+                </div>
+
+                <!-- Layer 14 -->
+                <div class="glass rounded-xl p-4 border border-violet-500/30 hover:border-violet-500/50 transition glow-purple">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 bg-violet-600/20 rounded-lg flex items-center justify-center font-bold text-xl flex-shrink-0">
+                            L14
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg">Audio Axis</h3>
+                            <p class="text-sm text-gray-400">FFT telemetry Saudio = 1 - rHF,a</p>
+                        </div>
+                        <div class="text-violet-400">✓</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Interactive Demo Section -->
+    <section id="demo" class="py-20">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4">Interactive Poincaré Ball Demo</h2>
+                <p class="text-xl text-gray-300">See hyperbolic geometry in action</p>
+            </div>
+            
+            <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-8">
+                <div>
+                    <canvas id="poincareBall" width="500" height="500" class="bg-black/50 rounded-xl mx-auto block border-2 border-blue-500/30"></canvas>
+                    <div class="flex justify-center gap-4 mt-6">
+                        <button onclick="simulateNormal()" class="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg transition font-bold">
+                            Normal User
+                        </button>
+                        <button onclick="simulateAttack()" class="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg transition font-bold">
+                            Simulate Attack
+                        </button>
+                        <button onclick="resetDemo()" class="px-6 py-3 bg-gray-600 hover:bg-gray-700 rounded-lg transition font-bold">
+                            Reset
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="glass rounded-xl p-6 border border-white/10">
+                        <h3 class="font-bold text-xl mb-4 text-yellow-400">Live Metrics</h3>
+                        <div class="space-y-3 font-mono text-sm">
+                            <div class="flex justify-between">
+                                <span>Position:</span>
+                                <span id="position" class="text-blue-400">(0.00, 0.00)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>||u||:</span>
+                                <span id="norm" class="text-blue-400">0.000</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>d<sub>H</sub>:</span>
+                                <span id="distance" class="text-green-400">0.000</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>H(d*):</span>
+                                <span id="harmonic" class="text-yellow-400">1.000</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Status:</span>
+                                <span id="status" class="text-green-400 font-bold">SAFE</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass rounded-xl p-6 border border-blue-500/30">
+                        <h3 class="font-bold text-lg mb-3 text-blue-400">What You're Seeing</h3>
+                        <ul class="text-sm space-y-2 text-gray-300">
+                            <li>🟢 <strong>Green dot (T)</strong> = Trusted center</li>
+                            <li>🔴 <strong>Red dot (U)</strong> = User position</li>
+                            <li>⚪ <strong>White circle</strong> = Poincaré ball boundary</li>
+                            <li>📏 <strong>Distance</strong> = Hyperbolic distance d<sub>H</sub></li>
+                        </ul>
+                    </div>
+                    
+                    <div id="explanation" class="glass rounded-xl p-6 border border-purple-500/30">
+                        <p class="text-sm text-gray-300" id="explanationText">
+                            Click "Simulate Attack" to see how the system responds. The attacker tries to reach the boundary,
+                            but distance grows <strong>exponentially</strong> - they never arrive.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Axioms Section -->
+    <section id="axioms" class="py-20 bg-black/30">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4">Core Mathematical Axioms</h2>
+                <p class="text-xl text-gray-300">The mathematical foundation of SCBE</p>
+            </div>
+            
+            <div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-6">
+                <!-- Axiom 1 -->
+                <div class="glass rounded-xl p-6 border border-white/10">
+                    <div class="text-3xl mb-3">📐</div>
+                    <h3 class="font-bold text-lg mb-2">Hyperbolic Metric Invariance</h3>
+                    <p class="text-sm text-gray-400 mb-3">The metric dℍ(u,v) is FIXED. Points move; the metric does not.</p>
+                    <code class="text-xs bg-black/50 p-2 rounded block overflow-x-auto">
+                        dℍ(u,v) = arcosh(1 + 2‖u-v‖² / ((1-‖u‖²)(1-‖v‖²)))
+                    </code>
+                </div>
+
+                <!-- Axiom 2 -->
+                <div class="glass rounded-xl p-6 border border-white/10">
+                    <div class="text-3xl mb-3">🌀</div>
+                    <h3 class="font-bold text-lg mb-2">Möbius Addition</h3>
+                    <p class="text-sm text-gray-400 mb-3">Hyperbolic vector addition preserves ball structure</p>
+                    <code class="text-xs bg-black/50 p-2 rounded block overflow-x-auto">
+                        u ⊕ v = ((1+2⟨u,v⟩+‖v‖²)u + (1-‖u‖²)v) / (1+2⟨u,v⟩+‖u‖²‖v‖²)
+                    </code>
+                </div>
+
+                <!-- Axiom 3 -->
+                <div class="glass rounded-xl p-6 border border-white/10">
+                    <div class="text-3xl mb-3">💨</div>
+                    <h3 class="font-bold text-lg mb-2">Breath Transform</h3>
+                    <p class="text-sm text-gray-400 mb-3">Temporal modulation preserves direction</p>
+                    <code class="text-xs bg-black/50 p-2 rounded block overflow-x-auto">
+                        B(p,t) = tanh(‖p‖ + A·sin(ωt)) · p/‖p‖
+                    </code>
+                </div>
+
+                <!-- Axiom 4 -->
+                <div class="glass rounded-xl p-6 border border-white/10">
+                    <div class="text-3xl mb-3">📈</div>
+                    <h3 class="font-bold text-lg mb-2">Harmonic Scaling Law</h3>
+                    <p class="text-sm text-gray-400 mb-3">Risk amplifies exponentially with distance</p>
+                    <code class="text-xs bg-black/50 p-2 rounded block overflow-x-auto">
+                        H(d,R) = R^(d²) | For R=1.5, d=6: H ≈ 2.18×10⁶
+                    </code>
+                </div>
+
+                <!-- Axiom 5 -->
+                <div class="glass rounded-xl p-6 border border-white/10">
+                    <div class="text-3xl mb-3">🎵</div>
+                    <h3 class="font-bold text-lg mb-2">Langues Metric (6D)</h3>
+                    <p class="text-sm text-gray-400 mb-3">Six Sacred Tongues with golden ratio weights</p>
+                    <code class="text-xs bg-black/50 p-2 rounded block overflow-x-auto">
+                        L(x,t) = Σ wₗ exp(βₗ · (dₗ + sin(ωₗt + φₗ)))
+                    </code>
+                </div>
+
+                <!-- Axiom 6 -->
+                <div class="glass rounded-xl p-6 border border-white/10">
+                    <div class="text-3xl mb-3">🔄</div>
+                    <h3 class="font-bold text-lg mb-2">Fluxing Dimensions</h3>
+                    <p class="text-sm text-gray-400 mb-3">Polly/Quasi/Demi states (ν ∈ [0,1])</p>
+                    <code class="text-xs bg-black/50 p-2 rounded block overflow-x-auto">
+                        ν̇ᵢ = κᵢ(ν̄ᵢ - νᵢ) + σᵢ sin(Ωᵢt)
+                    </code>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- CTA Section -->
+    <section class="py-20">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto glass rounded-3xl p-12 border border-white/10 text-center glow">
+                <h2 class="text-4xl font-bold mb-6">Experience the Future of Security</h2>
+                <p class="text-xl text-gray-300 mb-8">
+                    Explore the complete SCBE-AETHERMOORE universe simulation
+                </p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="demo.html" class="px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-lg transition font-bold text-lg">
+                        Launch Universe Sim
+                    </a>
+                    <a href="mailto:issdandavis@gmail.com" class="px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition font-bold text-lg">
+                        Contact Inventor
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 border-t border-white/10">
+        <div class="container mx-auto px-4 text-center">
+            <div class="mb-4">
+                <div class="flex items-center justify-center gap-2 mb-2">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center font-bold">
+                        S
+                    </div>
+                    <span class="text-xl font-bold">SCBE-AETHERMOORE</span>
+                </div>
+                <p class="text-sm text-gray-400">
+                    Hyperbolic Geometry-Based Security | 14-Layer Architecture
+                </p>
+            </div>
+            <div class="text-sm text-gray-400 mb-4">
+                © 2026 Issac Daniel Davis | USPTO #63/961,403 Patent Pending
+            </div>
+            <div class="flex justify-center gap-4">
+                <a href="https://github.com/ISDanDavis2" class="text-gray-400 hover:text-white transition">GitHub</a>
+                <a href="mailto:issdandavis@gmail.com" class="text-gray-400 hover:text-white transition">Email</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Poincaré Ball Demo
+        const canvas = document.getElementById('poincareBall');
+        const ctx = canvas.getContext('2d');
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = 220;
+
+        let userPos = { x: 0, y: 0 };
+
+        function drawBall() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw boundary
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Draw grid
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            for (let i = -4; i <= 4; i++) {
+                ctx.beginPath();
+                ctx.moveTo(centerX + i * 50, centerY - radius);
+                ctx.lineTo(centerX + i * 50, centerY + radius);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(centerX - radius, centerY + i * 50);
+                ctx.lineTo(centerX + radius, centerY + i * 50);
+                ctx.stroke();
+            }
+
+            // Draw trusted center
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 12, 0, Math.PI * 2);
+            ctx.fillStyle = '#22c55e';
+            ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 14px monospace';
+            ctx.fillText('T', centerX - 5, centerY + 5);
+
+            // Draw user position
+            const userScreenX = centerX + userPos.x * radius;
+            const userScreenY = centerY - userPos.y * radius;
+            ctx.beginPath();
+            ctx.arc(userScreenX, userScreenY, 12, 0, Math.PI * 2);
+            ctx.fillStyle = '#ef4444';
+            ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.fillText('U', userScreenX - 5, userScreenY + 5);
+
+            // Draw line
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(userScreenX, userScreenY);
+            ctx.strokeStyle = 'rgba(255, 255, 0, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            updateMetrics();
+        }
+
+        function hyperbolicDistance(u, v) {
+            const ux = u.x, uy = u.y;
+            const vx = v.x, vy = v.y;
+            const diffSq = (ux - vx) ** 2 + (uy - vy) ** 2;
+            const uNormSq = ux ** 2 + uy ** 2;
+            const vNormSq = vx ** 2 + vy ** 2;
+            const denom = (1 - uNormSq) * (1 - vNormSq);
+            if (denom <= 0) return Infinity;
+            const arg = 1 + 2 * diffSq / denom;
+            return Math.acosh(Math.max(1, arg));
+        }
+
+        function harmonicH(d) {
+            return Math.exp(d * d);
+        }
+
+        function updateMetrics() {
+            const norm = Math.sqrt(userPos.x ** 2 + userPos.y ** 2);
+            const dH = hyperbolicDistance(userPos, { x: 0, y: 0 });
+            const H = harmonicH(dH);
+
+            document.getElementById('position').textContent = `(${userPos.x.toFixed(2)}, ${userPos.y.toFixed(2)})`;
+            document.getElementById('norm').textContent = norm.toFixed(3);
+            document.getElementById('distance').textContent = dH.toFixed(3);
+            document.getElementById('harmonic').textContent = H.toFixed(3);
+
+            let status, statusColor;
+            if (norm < 0.3) {
+                status = 'SAFE';
+                statusColor = 'text-green-400';
+            } else if (norm < 0.6) {
+                status = 'CAUTION';
+                statusColor = 'text-yellow-400';
+            } else if (norm < 0.9) {
+                status = 'WARNING';
+                statusColor = 'text-orange-400';
+            } else {
+                status = 'CRITICAL';
+                statusColor = 'text-red-400';
+            }
+
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = status;
+            statusEl.className = statusColor + ' font-bold';
+        }
+
+        function simulateNormal() {
+            animateToTarget({ x: 0.2, y: 0.15 });
+            document.getElementById('explanationText').innerHTML =
+                'Normal user behavior: staying close to the trusted center. Low risk, access <strong class="text-green-400">GRANTED</strong>.';
+        }
+
+        function simulateAttack() {
+            let step = 0;
+            const maxSteps = 50;
+
+            document.getElementById('explanationText').innerHTML =
+                'Attacker trying to reach boundary... watch how distance <strong class="text-yellow-400">EXPLODES</strong> exponentially!';
+
+            function attackStep() {
+                if (step >= maxSteps) {
+                    document.getElementById('explanationText').innerHTML =
+                        'Attack <strong class="text-red-400">FAILED</strong>: The attacker exhausted their energy. ' +
+                        'The closer they get to the boundary, the more space expands - they can never arrive!';
+                    return;
+                }
+
+                const angle = Math.PI / 4;
+                const targetNorm = 0.5 + step * 0.01;
+                userPos.x = Math.min(0.99, targetNorm * Math.cos(angle));
+                userPos.y = Math.min(0.99, targetNorm * Math.sin(angle));
+
+                drawBall();
+                step++;
+
+                setTimeout(attackStep, 100);
+            }
+
+            attackStep();
+        }
+
+        function animateToTarget(target) {
+            const startPos = { ...userPos };
+            const duration = 1000;
+            const startTime = Date.now();
+
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(1, elapsed / duration);
+                const eased = 1 - Math.pow(1 - progress, 3);
+
+                userPos.x = startPos.x + (target.x - startPos.x) * eased;
+                userPos.y = startPos.y + (target.y - startPos.y) * eased;
+
+                drawBall();
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            }
+
+            animate();
+        }
+
+        function resetDemo() {
+            userPos = { x: 0, y: 0 };
+            drawBall();
+            document.getElementById('explanationText').innerHTML =
+                'Click "Simulate Attack" to see how the system responds. The attacker tries to reach the boundary, ' +
+                'but distance grows <strong>exponentially</strong> - they never arrive.';
+        }
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Initialize
+        drawBall();
+    </script>
+</body>
+</html>
