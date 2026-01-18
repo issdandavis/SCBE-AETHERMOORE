@@ -12,6 +12,10 @@
       "import": "./dist/src/index.js",
       "types": "./dist/src/index.d.ts"
     },
+    "./harmonic": {
+      "import": "./dist/src/harmonic/index.js",
+      "types": "./dist/src/harmonic/index.d.ts"
+    },
     "./crypto": {
       "import": "./dist/src/crypto/index.js",
       "types": "./dist/src/crypto/index.d.ts"
@@ -27,7 +31,7 @@
     "build": "npm run clean && npm run build:src",
     "build:src": "tsc -p tsconfig.json",
     "build:watch": "tsc -p tsconfig.json --watch",
-    "test": "echo \"Tests require harmonic module fixes\" && exit 0",
+    "test": "vitest run",
     "test:python": "pytest tests/ -v",
     "test:all": "npm test && npm run test:python",
     "typecheck": "tsc --noEmit",
@@ -57,12 +61,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ISDanDavis2/scbe-aethermoore.git"
+    "url": "git+https://github.com/issdandavis/scbe-aethermoore-demo.git"
   },
   "bugs": {
-    "url": "https://github.com/ISDanDavis2/scbe-aethermoore/issues"
+    "url": "https://github.com/issdandavis/scbe-aethermoore-demo/issues"
   },
-  "homepage": "https://github.com/ISDanDavis2/scbe-aethermoore#readme",
+  "homepage": "https://github.com/issdandavis/scbe-aethermoore-demo#readme",
   "engines": {
     "node": ">=18.0.0"
   },
