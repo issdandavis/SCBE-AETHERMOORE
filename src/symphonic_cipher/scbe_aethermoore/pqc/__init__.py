@@ -116,6 +116,36 @@ from .pqc_audit import (
     PQCAuditIntegration,
 )
 
+# PQC Harmonic Enhancement (AETHERMOORE Integration)
+from .pqc_harmonic import (
+    # Security dimensions
+    SecurityDimension,
+    HARMONIC_SCALE_TABLE,
+    BASE_SECURITY_BITS,
+
+    # Harmonic key derivation
+    HarmonicKeyMaterial,
+    harmonic_key_stretch,
+    fast_harmonic_key,
+
+    # Harmonic PQC sessions
+    HarmonicPQCSession,
+    create_harmonic_pqc_session,
+    verify_harmonic_pqc_session,
+
+    # 6D Vector keys
+    Vector6DKey,
+    derive_key_from_vector,
+    vector_proximity_key,
+
+    # Security analysis
+    analyze_harmonic_security,
+    print_security_table,
+
+    # Orchestrator
+    HarmonicKyberOrchestrator,
+)
+
 __all__ = [
     # Core - Key Encapsulation
     "Kyber768",
@@ -181,6 +211,33 @@ __all__ = [
 
     # Audit - Integration
     "PQCAuditIntegration",
+
+    # Harmonic - Security Dimensions
+    "SecurityDimension",
+    "HARMONIC_SCALE_TABLE",
+    "BASE_SECURITY_BITS",
+
+    # Harmonic - Key Derivation
+    "HarmonicKeyMaterial",
+    "harmonic_key_stretch",
+    "fast_harmonic_key",
+
+    # Harmonic - PQC Sessions
+    "HarmonicPQCSession",
+    "create_harmonic_pqc_session",
+    "verify_harmonic_pqc_session",
+
+    # Harmonic - 6D Vector Keys
+    "Vector6DKey",
+    "derive_key_from_vector",
+    "vector_proximity_key",
+
+    # Harmonic - Security Analysis
+    "analyze_harmonic_security",
+    "print_security_table",
+
+    # Harmonic - Orchestrator
+    "HarmonicKyberOrchestrator",
 ]
 
 __version__ = "1.0.0"
