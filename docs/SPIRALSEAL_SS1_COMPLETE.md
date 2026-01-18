@@ -1,6 +1,8 @@
 # SpiralSeal SS1 - Complete Implementation Reference
 
 > Post-Quantum Hybrid Encryption with Sacred Tongue Spell-Text Encoding
+> 
+> Last Updated: January 18, 2026 | Version 1.1.0
 
 ## Overview
 
