@@ -227,7 +227,12 @@ import {
   multiWellPotential,
 
   // Vacuum Acoustics
-  nodalSurface, checkCymaticResonance, bottleBeamIntensity
+  nodalSurface, checkCymaticResonance, bottleBeamIntensity,
+
+  // SpiralSeal SS1 (Layer 8 Envelope Encoding)
+  SacredTongueTokenizer, seal, unseal, SpiralSealSS1,
+  encodeToSpelltext, decodeFromSpelltext,
+  SACRED_TONGUES, formatSS1Blob, parseSS1Blob
 } from './harmonic/index.js';
 ```
 
@@ -258,7 +263,7 @@ import {
 - [ ] **Spectral Channel (L9)** - Full FFT coherence implementation
 - [ ] **Spin Channel (L10)** - Quaternion stability scoring
 - [ ] **Triadic Consensus (L11)** - 3-node Byzantine agreement protocol
-- [ ] **Sacred Tongue Tokenizer integration** - Wire SS1 spell-text encoding into TypeScript module
+- [x] **Sacred Tongue Tokenizer integration** - ✅ SS1 spell-text encoding wired into TypeScript module (`src/harmonic/spiralSeal.ts`)
 
 ---
 
