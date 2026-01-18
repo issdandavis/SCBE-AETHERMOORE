@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Config Validation",
+  "description": "When YAML config files are edited, validate alert thresholds and sentinel rules for consistency",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "config/*.yml"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A configuration file was just edited. Please validate the changes for consistency. Check that: alert thresholds in scbe.alerts.yml are reasonable, sentinel.yml rate limits and risk weights are properly configured, and steward.yml review policies have valid SLA values. Flag any inconsistencies or potentially dangerous threshold changes."
+  }
+}

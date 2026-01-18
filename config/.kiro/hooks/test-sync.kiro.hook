@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "name": "Test Sync",
+  "description": "When source files are edited, check if corresponding test files need updates for coverage",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/**/*.py",
+      "src/**/*.ts"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A source file was just edited. Please check if the corresponding test files in the tests/ directory need updates. Look for: new functions or methods that lack test coverage, changed behavior that existing tests don't cover, and edge cases introduced by the changes. Suggest specific test additions if gaps are found."
+  },
+  "workspaceFolderName": "config",
+  "shortName": "test-sync"
+}
