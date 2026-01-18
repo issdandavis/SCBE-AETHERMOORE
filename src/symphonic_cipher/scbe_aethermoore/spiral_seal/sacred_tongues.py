@@ -4,6 +4,9 @@ Sacred Tongue Tokenizer - SS1 Spell-Text Encoding
 Deterministic 256-word lists (16 prefixes × 16 suffixes) for each of the
 Six Sacred Tongues. Each byte maps to exactly one token.
 
+Last Updated: January 18, 2026
+Version: 1.1.0
+
 Token format: prefix'suffix (apostrophe as morpheme seam)
 
 Section tongues (canonical mapping):
@@ -15,7 +18,7 @@ Section tongues (canonical mapping):
 - redaction → Umbroth (um) - veil
 """
 
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Any
 from dataclasses import dataclass
 
 
@@ -222,13 +225,6 @@ def encode_to_spelltext(data: bytes, section: str) -> str:
 def decode_from_spelltext(spelltext: str, section: str) -> bytes:
     """
     Decode spell-text using the canonical tongue for a given section.
-    
-    Args:
-        spelltext: Spell-text encoded string
-        section: One of 'aad', 'salt', 'nonce', 'ct', 'tag', 'redact'
-    
-    Returns:
-        Decoded bytes
     """
     tongue_code = SECTION_TONGUES.get(section, 'ca')
     tokenizer = SacredTongueTokenizer(tongue_code)
@@ -261,7 +257,7 @@ def format_ss1_blob(
     return '|'.join(parts)
 
 
-def parse_ss1_blob(blob: str) -> Dict[str, any]:
+def parse_ss1_blob(blob: str) -> Dict[str, Any]:
     """
     Parse an SS1 spell-text blob.
     
@@ -272,7 +268,7 @@ def parse_ss1_blob(blob: str) -> Dict[str, any]:
         raise ValueError("Invalid SS1 blob: must start with 'SS1|'")
     
     parts = blob.split('|')
-    result = {'version': 'SS1'}
+    result: Dict[str, Any] = {'version': 'SS1'}
     
     for part in parts[1:]:  # Skip 'SS1' prefix
         if '=' not in part:
@@ -299,22 +295,11 @@ def compute_lws_weights(tongue_code: str) -> List[float]:
     
     Uses golden ratio powers (φ^i) for importance hierarchy,
     normalized to sum to 1.
-    
-    Args:
-        tongue_code: Sacred Tongue code
-    
-    Returns:
-        List of 16 weights (one per prefix)
     """
     PHI = 1.618033988749895  # Golden ratio
-    
-    # Generate golden ratio powers
     weights = [PHI ** i for i in range(16)]
-    
-    # Normalize to sum to 1
     total = sum(weights)
     weights = [w / total for w in weights]
-    
     return weights
 
 
@@ -325,14 +310,10 @@ def get_tongue_signature(tongue_code: str) -> bytes:
     This is used for authentication and verification in the
     polyglot interoperability layer.
     
-    Args:
-        tongue_code: Sacred Tongue code
-    
     Returns:
         32-byte SHA-256 hash of the tongue's vocabulary
     """
     import hashlib
-    
     tongue = TONGUES[tongue_code]
     vocab_str = '|'.join(tongue.prefixes) + '||' + '|'.join(tongue.suffixes)
     return hashlib.sha256(vocab_str.encode('utf-8')).digest()

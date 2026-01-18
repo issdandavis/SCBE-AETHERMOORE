@@ -11,6 +11,15 @@ Mathematical Contract:
 - All extra channels bounded and enter risk monotonically with nonnegative weights
 """
 
+import sys
+
+# Set UTF-8 encoding for Windows compatibility
+if sys.platform == 'win32':
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8')
+    if hasattr(sys.stderr, 'reconfigure'):
+        sys.stderr.reconfigure(encoding='utf-8')
+
 import numpy as np
 from typing import Tuple, List, Dict, Optional, Literal
 from dataclasses import dataclass

@@ -1,6 +1,9 @@
 """
 Cryptographic utilities for SpiralSeal SS1.
 AES-256-GCM encryption/decryption with constant-time operations.
+
+Last Updated: January 18, 2026
+Version: 1.1.0
 """
 
 import os

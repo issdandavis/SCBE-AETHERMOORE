@@ -2,7 +2,9 @@ import crypto from 'node:crypto';
 
 export function hkdfSha256(ikm: Buffer, salt: Buffer, info: Buffer, len: number): Buffer {
   if ((crypto as any).hkdfSync) {
-    return (crypto as any).hkdfSync('sha256', ikm, salt, info, len);
+    const result = (crypto as any).hkdfSync('sha256', ikm, salt, info, len);
+    // hkdfSync returns ArrayBuffer in newer Node versions, convert to Buffer
+    return Buffer.from(result);
   }
   // Fallback implementation
   const prk = crypto.createHmac('sha256', salt).update(ikm).digest();
