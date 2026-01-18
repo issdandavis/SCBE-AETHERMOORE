@@ -35,7 +35,7 @@ from .sacred_tongues import (
     SacredTongueTokenizer,
     get_tongue_for_domain,
     get_tokenizer,
-    DOMAIN_TONGUE_MAP
+    DOMAIN_TONGUE_MAP,
 )
 
 
@@ -347,14 +347,15 @@ class SpiralSealResult:
     def to_ss1_string(self) -> str:
         """Serialize to SS1 wire format."""
         kid_hex = self.key_id.hex()
+        # Tokens already include tongue prefix (e.g., "ru:khar'eth ru:drath'ul")
         return (
             f"{SS1_VERSION}|"
             f"kid={kid_hex}|"
-            f"aad=av:{self.aad_tokens}|"
-            f"salt=ru:{self.salt_tokens}|"
-            f"nonce=ko:{self.nonce_tokens}|"
-            f"ct=ca:{self.ct_tokens}|"
-            f"tag=dr:{self.tag_tokens}"
+            f"aad={self.aad_tokens}|"
+            f"salt={self.salt_tokens}|"
+            f"nonce={self.nonce_tokens}|"
+            f"ct={self.ct_tokens}|"
+            f"tag={self.tag_tokens}"
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -509,12 +510,13 @@ class SpiralSeal:
         # Encrypt
         ciphertext, tag = self._encrypt(key, nonce, plaintext, aad)
 
-        # Encode each component in its Sacred Tongue
-        salt_tokens = self._tokenizer.encode_to_string(salt, SacredTongue.RUNETHIC, " ")
-        nonce_tokens = self._tokenizer.encode_to_string(nonce, SacredTongue.KORAELIN, " ")
-        ct_tokens = self._tokenizer.encode_to_string(ciphertext, SacredTongue.CASSISIVADAN, " ")
-        tag_tokens = self._tokenizer.encode_to_string(tag, SacredTongue.DRAUMRIC, " ")
-        aad_tokens = self._tokenizer.encode_to_string(aad, SacredTongue.AVALI, " ") if aad else ""
+        # Encode each component in its Sacred Tongue (with prefix for verification)
+        from .sacred_tongues import encode_to_spelltext
+        salt_tokens = encode_to_spelltext(salt, 'salt')
+        nonce_tokens = encode_to_spelltext(nonce, 'nonce')
+        ct_tokens = encode_to_spelltext(ciphertext, 'ct')
+        tag_tokens = encode_to_spelltext(tag, 'tag')
+        aad_tokens = encode_to_spelltext(aad, 'aad') if aad else ""
 
         return SpiralSealResult(
             key_id=self._key_id,
@@ -576,12 +578,13 @@ class SpiralSeal:
         Returns:
             Decrypted plaintext
         """
-        # Decode tokens back to bytes
-        salt = self._tokenizer.decode_from_string(salt_tokens, SacredTongue.RUNETHIC, " ")
-        nonce = self._tokenizer.decode_from_string(nonce_tokens, SacredTongue.KORAELIN, " ")
-        ciphertext = self._tokenizer.decode_from_string(ct_tokens, SacredTongue.CASSISIVADAN, " ")
-        tag = self._tokenizer.decode_from_string(tag_tokens, SacredTongue.DRAUMRIC, " ")
-        aad = self._tokenizer.decode_from_string(aad_tokens, SacredTongue.AVALI, " ") if aad_tokens else b""
+        # Decode tokens back to bytes (handles tokens with or without prefix)
+        from .sacred_tongues import decode_from_spelltext
+        salt = decode_from_spelltext(salt_tokens, 'salt')
+        nonce = decode_from_spelltext(nonce_tokens, 'nonce')
+        ciphertext = decode_from_spelltext(ct_tokens, 'ct')
+        tag = decode_from_spelltext(tag_tokens, 'tag')
+        aad = decode_from_spelltext(aad_tokens, 'aad') if aad_tokens else b""
 
         return self.unseal(salt, nonce, ciphertext, tag, aad)
 
@@ -610,17 +613,13 @@ class SpiralSeal:
                 key, value = part.split("=", 1)
                 components[key] = value
 
-        # Remove tongue prefixes and decode
-        def strip_tongue(s: str) -> str:
-            if ":" in s:
-                return s.split(":", 1)[1]
-            return s
-
-        salt_tokens = strip_tongue(components.get("salt", ""))
-        nonce_tokens = strip_tongue(components.get("nonce", ""))
-        ct_tokens = strip_tongue(components.get("ct", ""))
-        tag_tokens = strip_tongue(components.get("tag", ""))
-        aad_tokens = strip_tongue(components.get("aad", ""))
+        # Tokens include tongue prefixes (e.g., "ru:khar'eth ru:drath'ul")
+        # decode_from_spelltext handles stripping prefixes from each token
+        salt_tokens = components.get("salt", "")
+        nonce_tokens = components.get("nonce", "")
+        ct_tokens = components.get("ct", "")
+        tag_tokens = components.get("tag", "")
+        aad_tokens = components.get("aad", "")
 
         return self.unseal_tokens(salt_tokens, nonce_tokens, ct_tokens, tag_tokens, aad_tokens)
 
@@ -697,7 +696,8 @@ class VeiledSeal(SpiralSeal):
         else:
             veil_bytes = hashlib.sha256(veil_id.encode()).digest()[:4]
 
-        veil_marker = self._tokenizer.encode_to_string(veil_bytes, SacredTongue.UMBROTH, "'")
+        from .sacred_tongues import encode_to_spelltext
+        veil_marker = encode_to_spelltext(veil_bytes, 'veil')
 
         # Redacted form for logs
         redacted_form = f"um:veil({veil_marker})"
