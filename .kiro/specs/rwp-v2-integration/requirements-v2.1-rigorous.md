@@ -108,10 +108,11 @@ Valid tongue identifiers (case-sensitive):
 **Requirements**:
 - Keys MUST be sorted lexicographically (Unicode code point order)
 - No whitespace between tokens
-- Numbers MUST use minimal representation (no leading zeros, no trailing zeros after decimal)
+- Numbers MUST be serialized per RFC 8785 (minimal representation, no leading zeros, no trailing zeros after decimal)
 - Strings MUST use minimal escaping (only `\"`, `\\`, control characters)
 - No `NaN` or `Infinity` values allowed
-- Floating-point numbers MUST be rounded to 15 significant digits (IEEE 754 double precision)
+- **AAD canonicalization MUST apply recursively to all nested objects and arrays per RFC 8785**
+- If an implementation cannot guarantee RFC 8785 number formatting, it MUST reject floats or round to a fixed policy and document the deviation
 
 **Example**:
 ```json
@@ -128,6 +129,12 @@ Valid tongue identifiers (case-sensitive):
 - MUST use URL-safe alphabet: `A-Za-z0-9-_`
 - MUST NOT include padding (`=` characters)
 - MUST encode raw bytes (not hex strings)
+- Decoder MUST accept only canonical form (strict mode - reject invalid characters)
+- Payload MUST be raw bytes, not JSON-encoded-by-mistake
+
+**Nonce Encoding**:
+- Minimum 16 bytes, base64url encoded
+- Uniqueness scope defined in FR-5.1
 
 **Example**:
 ```
@@ -136,9 +143,28 @@ Base64URL:    "AQIDBA"  (no padding)
 NOT:          "AQIDBA==" (padding forbidden)
 ```
 
-#### FR-2.3: Canonical Signing String
+#### FR-2.3: Canonical Signing String Construction
 
-The canonical string for HMAC signing MUST be constructed as:
+**What Bytes Are Signed**: The envelope object **excluding the `sigs` field**, canonicalized via RFC 8785, then serialized as a pipe-delimited string.
+
+**Construction Algorithm**:
+
+```
+SignObject = {
+  ver: envelope.ver,
+  primary_tongue: envelope.primary_tongue,
+  kid: envelope.kid,
+  ts: envelope.ts,
+  nonce: envelope.nonce,
+  aad: envelope.aad,  // omit if not present
+  payload: envelope.payload
+}
+
+canonical_json = RFC8785_Canonicalize(SignObject)
+C = canonical_json
+```
+
+**Alternative** (explicit byte concatenation - simpler but more rigid):
 
 ```
 C = ver || "|" || primary_tongue || "|" || canonical_aad || "|" || ts || "|" || nonce || "|" || payload
@@ -154,7 +180,9 @@ Where:
 - `||` = string concatenation (no separator bytes)
 - `"|"` = literal pipe character (0x7C)
 
-**Example**:
+**Decision Required**: Choose **Option A** (recommended - canonical JSON of envelope-without-sigs) or **Option B** (explicit concatenation) before implementation.
+
+**Example (Option B)**:
 ```
 2.1|RU|{"action":"execute","mode":"STRICT"}|1737161234567|AQIDBA|SGVsbG8gV29ybGQ
 ```
@@ -232,9 +260,13 @@ valid_tongues = [tongue for tongue in sigs if verify(tongue) == PASS]
 
 A tongue is "valid" if and only if:
 - ✅ Key exists for that tongue
-- ✅ HMAC tag matches exactly
+- ✅ HMAC tag matches exactly (constant-time comparison)
 - ✅ Key ID (`kid[tongue]`) is not expired
-- ✅ Envelope fields are within replay window (see FR-5)
+
+**Handling Unknown Keys**:
+- If a tongue is present in `sigs` but no key exists for `kid[tongue]`, that tongue is marked **INVALID** (not added to `valid_tongues`)
+- Verification continues for other tongues
+- If `primary_tongue` has unknown key, entire envelope is **DENIED** (see FR-4.3)
 
 #### FR-4.3: Primary Tongue Requirement
 
@@ -250,18 +282,19 @@ The `primary_tongue` signature MUST verify successfully.
 
 Nonce uniqueness MUST be enforced per:
 
+**Option A** (Recommended if sender identity available):
 ```
 scope = (sender_id, primary_tongue)
 ```
 
-**Rationale**: Allows same nonce across different senders or tongues, but prevents replay within scope.
-
-**Alternative** (if sender_id not available):
+**Option B** (Simpler, if sender identity not available):
 ```
 scope = (primary_tongue)
 ```
 
-**Decision Required**: Choose one scope definition before implementation.
+**Rationale**: Allows same nonce across different senders or tongues, but prevents replay within scope.
+
+**Decision Required**: Choose one scope definition before implementation. **Default: Option B** (primary_tongue only).
 
 #### FR-5.2: Nonce Storage
 
@@ -269,6 +302,7 @@ scope = (primary_tongue)
 - In-memory LRU cache with TTL
 - Cache size: 10,000 nonces
 - TTL: 120 seconds (2× replay window)
+- Key format: `{scope}:{nonce_value}`
 
 **Phase 3+** (future):
 - Optional shared store (Redis/DynamoDB)
@@ -277,27 +311,34 @@ scope = (primary_tongue)
 
 #### FR-5.3: Timestamp Validation
 
+**Replay Window Parameters**:
+- `W` = replay window = 60,000 ms (60 seconds)
+- `S` = clock skew tolerance = 5,000 ms (5 seconds)
+
+**Validation Rule**:
 ```
-|ts_now - envelope.ts| ≤ τ_max
+reject if ts > now + S  (future timestamp beyond skew)
+reject if ts < now - W  (expired timestamp)
 ```
 
 Where:
-- `ts_now` = current Unix timestamp (milliseconds)
-- `envelope.ts` = timestamp from envelope
-- `τ_max` = 60,000 ms (60 seconds)
+- `ts` = envelope.ts (Unix milliseconds)
+- `now` = current Unix timestamp (milliseconds)
 
 **Constraint**: Reject if timestamp is outside window.
 
 #### FR-5.4: Nonce Recording Atomicity
 
-Nonce MUST be recorded if and only if:
-- ✅ Cryptographic verification passes (HMAC valid)
-- ✅ Timestamp is within window
-- ✅ Nonce has not been seen before
+**Insertion Rule**: Nonce MUST be recorded if and only if:
+1. ✅ Cryptographic verification passes (HMAC valid for primary_tongue)
+2. ✅ Timestamp is within window (FR-5.3)
+3. ✅ Nonce has not been seen before (atomic check-and-insert)
 
-**CRITICAL**: Record nonce even if policy enforcement fails (QUARANTINE).
+**CRITICAL**: Record nonce **even if policy enforcement fails** (QUARANTINE).
 
 **Rationale**: Prevents attacker from probing with same nonce repeatedly.
+
+**Cache Insert Timing**: Insert nonce **after crypto verifies** but **before policy evaluation** to prevent replay/probing loops.
 
 ---
 
@@ -326,15 +367,27 @@ Where:
 
 #### FR-6.3: Decision Logic
 
+**Primary Tongue Requirement**: Primary tongue signature MUST be valid (enforced in FR-4.3).
+
+**Policy Evaluation**:
 ```
 if primary_tongue not in valid_tongues:
-    return DENY
+    return DENY  // Already enforced in FR-4.3, but double-check here
     
-if len(valid_tongues) >= required_count(policy_mode):
+required_count = {
+    "STANDARD": 1,
+    "STRICT": 2,
+    "SECRET": 3,
+    "CRITICAL": 6
+}[policy_mode]
+
+if len(valid_tongues) >= required_count:
     return ALLOW
 else:
     return QUARANTINE
 ```
+
+**Signature Order**: Signature order in `sigs` object is irrelevant (JSON object keys are unordered).
 
 ---
 
@@ -426,10 +479,12 @@ result = timingSafeEqual(Buffer.from(expected), Buffer.from(received));
 #### NFR-3.1: Cross-Language Compatibility
 
 TypeScript and Python implementations MUST produce identical:
-- Canonical signing strings
-- HMAC signatures
-- Base64URL encodings
-- JSON canonicalization
+- Canonical signing strings (byte-for-byte)
+- HMAC signatures (hex-encoded, lowercase)
+- Base64URL encodings (no padding)
+- JSON canonicalization (RFC 8785)
+
+**Verification**: 10 interop test vectors (see NFR-4.2) MUST pass in both directions.
 
 #### NFR-3.2: Build Outputs
 
@@ -438,13 +493,15 @@ TypeScript and Python implementations MUST produce identical:
 - `dist/esm/` - ES Modules (modern bundlers)
 - `package.json` exports map with `import` and `require` conditions
 - Requires Node.js 18+
+- Enables tree-shaking and modern tooling
 
 **Option 2** (Simpler): CommonJS only
 - `"type": "commonjs"` in package.json
 - Single `dist/` output
 - Compatible with Node.js 14+
+- Simpler build pipeline
 
-**Decision Required**: Choose one option before implementation.
+**Decision Required**: Choose one option before implementation. **Default: Option 1** (dual build for modern ecosystem compatibility).
 
 ### NFR-4: Testing
 
@@ -458,23 +515,47 @@ TypeScript and Python implementations MUST produce identical:
 #### NFR-4.2: Interop Test Vectors
 
 Minimum 10 fixed test vectors with:
-- Known keys
-- Known envelopes (JSON)
-- Expected signatures (hex)
+- Known master key (test-only, 32 bytes hex)
+- Known envelope (JSON with all fields)
+- Expected canonical signing string
+- Expected signatures per tongue (hex, 64 chars)
 - Both languages MUST produce identical results
 
-**Format**:
+**Test Vector Schema**:
 ```json
 {
-  "test_id": "vector_001",
-  "master_key": "hex(32 bytes)",
-  "envelope": { ... },
+  "test_id": "vector_001_basic",
+  "description": "Single signature, no AAD",
+  "master_key": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "envelope": {
+    "ver": "2.1",
+    "primary_tongue": "RU",
+    "kid": { "RU": "test-key-001" },
+    "ts": 1737161234567,
+    "nonce": "AQIDBAUG BwgJCgsMDQ4PEA",
+    "payload": "SGVsbG8gV29ybGQ"
+  },
+  "expected_canonical_string": "2.1|RU||1737161234567|AQIDBAUGBwgJCgsMDQ4PEA|SGVsbG8gV29ybGQ",
   "expected_sigs": {
-    "RU": "hex(64 chars)",
-    "UM": "hex(64 chars)"
-  }
+    "RU": "a1b2c3d4e5f6...hex(64 chars)"
+  },
+  "expected_result": "ALLOW"
 }
 ```
+
+**Required Test Cases**:
+1. Single signature, no AAD
+2. Single signature, with AAD (nested objects)
+3. Multi-signature (3 tongues)
+4. All 6 tongues (CRITICAL mode)
+5. Empty payload (edge case)
+6. Maximum nonce size (128 bytes)
+7. AAD with special characters (escaping test)
+8. AAD with numbers (canonicalization test)
+9. Expired timestamp (should DENY)
+10. Duplicate nonce (should DENY on second attempt)
+
+**Validation**: Both TypeScript and Python MUST generate identical `expected_canonical_string` and `expected_sigs` for vectors 1-8.
 
 ---
 
