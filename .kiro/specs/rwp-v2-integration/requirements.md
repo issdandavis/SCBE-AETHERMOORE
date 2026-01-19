@@ -266,7 +266,7 @@ RWP v2.1 builds on Sacred Tongues to enable secure, policy-enforced communicatio
 
 ### 4.4 Maintainability
 
-**NFR-4.4.1**: Code MUST have 95%+ test coverage
+**NFR-4.4.1**: Code MUST have 95%+ test coverage (lines, functions, branches, statements)
 
 **NFR-4.4.2**: All functions MUST have JSDoc/docstring comments
 
@@ -276,17 +276,45 @@ RWP v2.1 builds on Sacred Tongues to enable secure, policy-enforced communicatio
 
 **NFR-4.4.5**: Code MUST follow project style guide
 
-### 4.5 Compatibility
+### 4.5 Testing
 
-**NFR-4.5.1**: TypeScript implementation MUST work with Node.js 18+
+**NFR-4.5.1**: MUST include unit tests for all core functions
 
-**NFR-4.5.2**: Python implementation MUST work with Python 3.9+
+**NFR-4.5.2**: MUST include property-based tests using fast-check (TypeScript) and hypothesis (Python)
 
-**NFR-4.5.3**: Envelope format MUST be language-agnostic (JSON)
+**NFR-4.5.3**: Property-based tests MUST run minimum 100 iterations
 
-**NFR-4.5.4**: Envelopes MUST be interoperable across languages
+**NFR-4.5.4**: MUST include interoperability tests (TypeScript ↔ Python)
 
-**NFR-4.5.5**: API MUST be backward compatible within v2.x
+**NFR-4.5.5**: MUST include requirement traceability comments in all tests
+
+**NFR-4.5.6**: MUST test all acceptance criteria with automated tests
+
+### 4.5 Testing
+
+**NFR-4.5.1**: MUST include unit tests for all core functions
+
+**NFR-4.5.2**: MUST include property-based tests using fast-check (TypeScript) and hypothesis (Python)
+
+**NFR-4.5.3**: Property-based tests MUST run minimum 100 iterations
+
+**NFR-4.5.4**: MUST include interoperability tests (TypeScript ↔ Python)
+
+**NFR-4.5.5**: MUST include requirement traceability comments in all tests
+
+**NFR-4.5.6**: MUST test all acceptance criteria with automated tests
+
+### 4.6 Compatibility
+
+**NFR-4.6.1**: TypeScript implementation MUST work with Node.js 18+
+
+**NFR-4.6.2**: Python implementation MUST work with Python 3.9+
+
+**NFR-4.6.3**: Envelope format MUST be language-agnostic (JSON)
+
+**NFR-4.6.4**: Envelopes MUST be interoperable across languages
+
+**NFR-4.6.5**: API MUST be backward compatible within v2.x
 
 ---
 
