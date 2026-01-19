@@ -2,6 +2,8 @@
 
 > **Hyperbolic Geometry-Based Security with 14-Layer Architecture**
 
+[![npm version](https://badge.fury.io/js/scbe-aethermoore.svg)](https://www.npmjs.com/package/scbe-aethermoore)
+[![npm downloads](https://img.shields.io/npm/dm/scbe-aethermoore.svg)](https://www.npmjs.com/package/scbe-aethermoore)
 [![Patent Pending](https://img.shields.io/badge/Patent-USPTO%20%2363%2F961%2C403-blue)](https://github.com/ISDanDavis2/scbe-aethermoore)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue)](https://www.typescriptlang.org/)

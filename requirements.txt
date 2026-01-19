@@ -19,3 +19,19 @@ scipy>=1.7.0
 pytest>=7.0.0
 pytest-cov>=3.0.0
 hypothesis>=6.0.0
+
+# ============================================================
+# RWP v3.0 Dependencies (Phase 2 - Protocol Layer)
+# ============================================================
+
+# Argon2id KDF (RFC 9106) - Password-based key derivation
+argon2-cffi>=23.1.0
+
+# XChaCha20-Poly1305 AEAD - Authenticated encryption
+pycryptodome>=3.20.0
+
+# Post-Quantum Cryptography (optional, for ML-KEM-768 + ML-DSA-65)
+# Uncomment for quantum-resistant encryption
+# liboqs-python>=0.10.0
+
+# Note: scipy>=1.7.0 already included above for FFT (Layer 9 spectral analysis)
