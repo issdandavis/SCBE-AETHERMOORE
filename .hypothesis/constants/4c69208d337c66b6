@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\dateutil\parser\isoparser.py
+# hypothesis_version: 6.148.8
+
+[b'+', b'-', b'-+Zz', b':', b'W', b'Z', b'[\\.,]([0-9]+)', b'z', 128, 365, ' {} for year {}', '0123456789', 'ASCII character', 'ISO string too short', 'ISO time too short', 'Invalid ISO format', 'Invalid common day', 'Invalid common month', 'Invalid ordinal day', 'Invalid week: {}', 'Invalid weekday: {}', 'ascii', 'components: {!r}', 'isoparse', 'isoparser', 'read']

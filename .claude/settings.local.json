@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git pull:*)",
+      "Bash(git push:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat\\(spiralSeal\\): Add SpiralSeal SS1 Sacred Tongue cryptographic encoding\n\nImplements the complete SpiralSeal SS1 system for steganographic\nencryption that transforms ciphertext into fantasy language spell-text.\n\nNew files:\n- sacredTongues.ts: Six Sacred Tongue definitions \\(KO, AV, RU, CA, UM, DR\\)\n  with 16×16 prefix/suffix grids for 256 unique tokens per tongue\n- spiralSeal.ts: Full SS1 implementation including:\n  - SacredTongueTokenizer: Bijective byte↔token encoding\n  - SS1 format parser/formatter with domain separation\n  - AES-256-GCM encryption via Web Crypto API\n  - HKDF key derivation with kid-based rotation\n  - Langues Weighting System integration\n\nSS1 Format: SS1|kid=<id>|aad=<ctx>|ru:<salt>|ko:<nonce>|ca:<ct>|dr:<tag>\n\nSection-to-tongue mapping:\n- Salt → Runethic \\(RU\\) - historical binding\n- Nonce → Kor''aelin \\(KO\\) - command authority\n- Ciphertext → Cassisivadan \\(CA\\) - divine invocation\n- Tag → Draumric \\(DR\\) - power amplification\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\ndocs: Update SPECIFICATION.md with SpiralSeal SS1 TypeScript integration\n\n- Mark Sacred Tongue Tokenizer integration as complete ✅\n- Add SS1 imports to TypeScript usage example\n- Reference spiralSeal.ts implementation\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(npx vitest run)",
+      "Bash(node:*)",
+      "Bash(npx.cmd vitest:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfix: Add vitest imports to test files and create distribution builder\n\n- Add vitest imports to acceptance, nonce, and performance test files\n- Create root-level vitest.config.ts excluding duplicate folders\n- Update src/vitest.config.ts with exclusion patterns\n- Add BUILD_DIST.bat for creating standalone distribution package\n\nAll 413 tests now pass with proper vitest imports.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+    ]
+  }
+}

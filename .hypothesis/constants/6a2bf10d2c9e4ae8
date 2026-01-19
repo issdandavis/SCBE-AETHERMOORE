@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_nonlin.py
+# hypothesis_version: 6.148.8
+
+[1e-08, 0.001, 0.01, 0.1, 0.5, 0.9, 0.9999, 1.0, 100, ', ', 'BroydenFirst', 'Invalid line search', 'InverseJacobian', 'KrylovJacobian', 'NoConvergence', 'Unknown matrix type', '__array_wrap__', 'alpha', 'anderson', 'args', 'armijo', 'array must be square', 'atol', 'axpy', 'broyden1', 'broyden2', 'broyden_params', 'diagbroyden', 'dotc', 'dtype', 'economic', 'excitingmixing', 'fun', 'inner_', 'krylov', 'kwargs', 'lgmres', 'linearmixing', 'matmat', 'matvec', 'maxiter', 'message', 'newton_krylov', 'nit', 'outer_k', 'outer_v', 'prepend_outer_v', 'restart', 'rmatvec', 'rsolve', 'rtol', 'scal', 'self', 'setup', 'shape', 'simple', 'solve', 'status', 'store_outer_Av', 'success', 'svd', 'todense', 'update', 'wolfe']

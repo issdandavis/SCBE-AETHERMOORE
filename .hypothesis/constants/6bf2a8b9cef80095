@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\sparse\linalg\_isolve\__init__.py
+# hypothesis_version: 6.148.8
+
+['bicg', 'bicgstab', 'cg', 'cgs', 'gcrotmk', 'gmres', 'lgmres', 'lsmr', 'lsqr', 'minres', 'qmr', 'tfqmr']

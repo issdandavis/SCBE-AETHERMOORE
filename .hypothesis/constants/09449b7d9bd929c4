@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\sparse\_sputils.py
+# hypothesis_version: 6.148.8
+
+[', ', 'C', 'SparseArray', 'broadcast_shapes', 'bsr', 'coo', 'copy', 'csc', 'csr', 'dia', 'get_sum_dtype', 'getdata', 'getdtype', 'isdense', 'isintlike', 'ismatrix', 'isscalarlike', 'issequence', 'isshape', 'native', 'newshape', 'order', 'sp.spmatrix', 'sparse', 'u', 'upcast']

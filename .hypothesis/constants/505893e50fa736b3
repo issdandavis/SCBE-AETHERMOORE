@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\numpy\polynomial\polynomial.py
+# hypothesis_version: 6.148.8
+
+[-1.0, 0.0, 1.0, '1', '?bBhHiIlLqQpP', 'Polynomial', 'deg', 'polyadd', 'polycompanion', 'polyder', 'polydiv', 'polydomain', 'polyfit', 'polyfromroots', 'polygrid2d', 'polygrid3d', 'polyint', 'polyline', 'polymul', 'polymulx', 'polyone', 'polypow', 'polyroots', 'polysub', 'polytrim', 'polyval', 'polyval2d', 'polyval3d', 'polyvalfromroots', 'polyvander', 'polyvander2d', 'polyvander3d', 'polyx', 'polyzero', 'the axis']

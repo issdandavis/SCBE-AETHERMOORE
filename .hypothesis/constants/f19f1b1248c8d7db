@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\integrate\_ivp\bdf.py
+# hypothesis_version: 6.148.8
+
+[-0.185, -0.0823, -0.0415, 1e-06, 0.001, 0.03, 0.2, 0.5, 0.9, 'csc', 'ignore']

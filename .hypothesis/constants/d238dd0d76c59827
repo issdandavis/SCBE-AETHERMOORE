@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\signal\_support_alternative_backends.py
+# hypothesis_version: 6.148.8
+
+['_signature', 'convolve', 'convolve2d', 'correlate', 'correlate2d', 'csd', 'detrend', 'envelope', 'fftconvolve', 'freqz_sos', 'get_window', 'istft', 'lfilter_zi', 'remez', 'signal', 'sosfilt_zi', 'sosfreqz', 'welch']

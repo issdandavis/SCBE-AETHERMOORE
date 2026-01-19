@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\fftpack\realtransforms.py
+# hypothesis_version: 6.148.8
+
+['_realtransforms', 'dct', 'dctn', 'dst', 'dstn', 'fftpack', 'idct', 'idctn', 'idst', 'idstn', 'realtransforms']

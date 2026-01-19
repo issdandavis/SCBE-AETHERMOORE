@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\special\_multiufuncs.py
+# hypothesis_version: 6.148.8
+
+['->', 'assoc_legendre_p', 'assoc_legendre_p_all', 'axes', 'diff_n', 'dtype', 'legendre_p', 'legendre_p_all', 'n', 'out', 'resolve_dtypes', 'resolve_out_shapes', 'sph_harm_y', 'sph_harm_y_all', 'sph_legendre_p', 'sph_legendre_p_all']

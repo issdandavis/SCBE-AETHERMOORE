@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\_lib\_pep440.py
+# hypothesis_version: 6.148.8
+
+['*', '*final', '*final-', '+', '+{}', '-', '-Infinity', '.', '00000000', '0123456789', '@', 'Infinity', 'InvalidVersion', 'LegacyVersion', 'VERSION_PATTERN', 'Version', '[\\._-]', '\\s*$', '^\\s*', '_Version', 'a', 'alpha', 'b', 'beta', 'c', 'dev', 'dev_l', 'dev_n', 'epoch', 'final-', 'local', 'parse', 'post', 'post_l', 'post_n1', 'post_n2', 'pre', 'pre_l', 'pre_n', 'preview', 'r', 'rc', 'release', 'rev']

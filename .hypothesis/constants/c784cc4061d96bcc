@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\signal\spectral.py
+# hypothesis_version: 6.148.8
+
+['_spectral_py', 'check_COLA', 'check_NOLA', 'coherence', 'csd', 'get_window', 'istft', 'lombscargle', 'periodogram', 'signal', 'spectral', 'spectrogram', 'stft', 'welch']

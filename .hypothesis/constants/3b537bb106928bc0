@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\dateutil\relativedelta.py
+# hypothesis_version: 6.148.8
+
+[7.0, 1000000.0, 120, 151, 181, 212, 243, 273, 304, 334, 366, 86400, 999999, 1000000, ', ', 'FR', 'MO', 'SA', 'SU', 'TH', 'TU', 'WE', 'day', 'days', 'hour', 'hours', 'leapdays', 'microsecond', 'microseconds', 'minute', 'minutes', 'month', 'months', 'relativedelta', 'second', 'seconds', 'weekday', 'year', 'years', '{attr}={value:+g}', '{attr}={value}', '{classname}({attrs})']

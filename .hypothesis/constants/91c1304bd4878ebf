@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\signal\signaltools.py
+# hypothesis_version: 6.148.8
+
+['_signaltools', 'cheby1', 'choose_conv_method', 'convolve', 'convolve2d', 'correlate', 'correlate2d', 'correlation_lags', 'decimate', 'deconvolve', 'detrend', 'dlti', 'fftconvolve', 'filtfilt', 'firwin', 'get_window', 'hilbert', 'hilbert2', 'invres', 'invresz', 'lfilter', 'lfilter_zi', 'lfiltic', 'medfilt', 'medfilt2d', 'oaconvolve', 'order_filter', 'resample', 'resample_poly', 'residue', 'residuez', 'signal', 'signaltools', 'sosfilt', 'sosfilt_zi', 'sosfiltfilt', 'unique_roots', 'upfirdn', 'vectorstrength', 'wiener']

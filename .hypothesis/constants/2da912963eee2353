@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\signal\ltisys.py
+# hypothesis_version: 6.148.8
+
+['StateSpace', 'TransferFunction', 'ZerosPolesGain', '_ltisys', 'abcd_normalize', 'bode', 'cont2discrete', 'dbode', 'dfreqresp', 'dimpulse', 'dlsim', 'dlti', 'dstep', 'freqresp', 'freqs', 'freqs_zpk', 'freqz', 'freqz_zpk', 'impulse', 'lsim', 'lti', 'ltisys', 'normalize', 'place_poles', 'signal', 'ss2tf', 'ss2zpk', 'step', 'tf2ss', 'tf2zpk', 'zpk2ss', 'zpk2tf']

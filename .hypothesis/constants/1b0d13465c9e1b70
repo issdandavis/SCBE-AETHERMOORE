@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\signal\_ltisys.py
+# hypothesis_version: 6.148.8
+
+[0.0, 0.001, 1.0, 20.0, 100.0, 180.0, 100, 10000, 'A must be square', 'KNV0', 'StateSpace', 'TransferFunction', 'Unknown system type', 'YT', 'ZerosPolesGain', 'bode', 'dbode', 'dfreqresp', 'dimpulse', 'dlsim', 'dlti', 'dstep', 'dt', 'freqresp', 'full', 'impulse', 'in YT_real', 'lsim', 'lti', 'place_poles', 'step', 'zoh']
