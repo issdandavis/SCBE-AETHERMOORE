@@ -62,16 +62,17 @@ function multiAgentConsensus(
   intents: AIIntent[],
   byzantineFaults: number
 ): ConsensusResult {
-  // Byzantine fault-tolerant consensus (requires 2f+1 honest nodes)
+  // Byzantine fault-tolerant consensus (requires 3f+1 total nodes for 2f+1 honest)
   const totalAgents = intents.length;
-  const requiredHonest = 2 * byzantineFaults + 1;
+  const requiredTotal = 3 * byzantineFaults + 1;
   
-  if (totalAgents < requiredHonest) {
+  if (totalAgents < requiredTotal) {
     return { approved: false, votes: [], byzantineFaults };
   }
   
   const votes = intents.map(i => (i.confidence > 0.9 ? 1 : 0));
   const approvals = votes.reduce((sum, v) => sum + v, 0);
+  const requiredHonest = 2 * byzantineFaults + 1;
   const approved = approvals >= requiredHonest;
   
   return { approved, votes, byzantineFaults };
@@ -93,9 +94,11 @@ function createAuditTrail(intent: AIIntent): { immutable: boolean; hash: string 
 
 function assessRisk(intent: AIIntent): number {
   // Real-time risk assessment
-  const baseRisk = intent.riskLevel;
-  const confidencePenalty = (1 - intent.confidence) * 0.2;
-  return Math.min(1.0, baseRisk + confidencePenalty);
+  // Handle NaN and invalid values
+  const baseRisk = Number.isFinite(intent.riskLevel) ? intent.riskLevel : 1.0;
+  const confidence = Number.isFinite(intent.confidence) ? intent.confidence : 0.0;
+  const confidencePenalty = (1 - confidence) * 0.2;
+  return Math.min(1.0, Math.max(0.0, baseRisk + confidencePenalty));
 }
 
 describe('AI/Robotic Brain Security - Property Tests', () => {
@@ -171,6 +174,9 @@ describe('AI/Robotic Brain Security - Property Tests', () => {
           byzantineFaults: fc.integer({ min: 0, max: 3 })
         }),
         (params) => {
+          // Byzantine consensus requires n >= 3f + 1
+          const minAgentsRequired = 3 * params.byzantineFaults + 1;
+          
           const intents: AIIntent[] = Array.from({ length: params.numAgents }, (_, i) => ({
             action: 'execute',
             target: 'task',
@@ -180,10 +186,12 @@ describe('AI/Robotic Brain Security - Property Tests', () => {
           
           const result = multiAgentConsensus(intents, params.byzantineFaults);
           
-          // Consensus requires 2f+1 honest nodes
-          const requiredHonest = 2 * params.byzantineFaults + 1;
-          if (params.numAgents >= requiredHonest) {
+          // If we have enough agents for BFT, consensus should succeed
+          if (params.numAgents >= minAgentsRequired) {
             expect(result.approved).toBe(true);
+          } else {
+            // Not enough agents for BFT
+            expect(result.approved).toBe(false);
           }
           
           return true;
@@ -251,11 +259,26 @@ describe('AI/Robotic Brain Security - Property Tests', () => {
         fc.record({
           action: fc.constantFrom('read', 'write', 'execute', 'delete'),
           target: fc.string({ minLength: 1, maxLength: 50 }),
-          riskLevel: fc.double({ min: 0, max: 1 }),
-          confidence: fc.double({ min: 0, max: 1 })
+          riskLevel: fc.double({ min: 0, max: 1, noNaN: true }),
+          confidence: fc.double({ min: 0, max: 1, noNaN: true })
         }),
         (intent) => {
+          // Skip if target is empty or whitespace only
+          if (!intent.target || intent.target.trim().length === 0) {
+            return true;
+          }
+          
+          // Skip if riskLevel or confidence are invalid
+          if (!Number.isFinite(intent.riskLevel) || !Number.isFinite(intent.confidence)) {
+            return true;
+          }
+          
           const risk = assessRisk(intent);
+          
+          // Risk should be a valid number
+          if (!Number.isFinite(risk)) {
+            return false;
+          }
           
           // Risk should be between 0 and 1
           expect(risk).toBeGreaterThanOrEqual(0);

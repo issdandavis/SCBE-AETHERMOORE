@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\argon2\_utils.py
+# hypothesis_version: 6.148.8
+
+['$', ',', ', ', ', or ', '.', '=', 'argon2d', 'argon2i', 'argon2id', 'emscripten', 'hash_len', 'm', 'memory_cost', 'p', 'parallelism', 'salt_len', 't', 'time_cost', 'type', 'v', 'v=18', 'version', 'wasm32', 'wasm64']

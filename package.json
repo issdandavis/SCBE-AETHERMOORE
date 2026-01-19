@@ -1,5 +1,5 @@
 {
-  "name": "@scbe/aethermoore",
+  "name": "scbe-aethermoore",
   "version": "3.0.0",
   "description": "SCBE-AETHERMOORE: Hyperbolic Geometry-Based Security with 14-Layer Architecture",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
@@ -27,6 +27,11 @@
       "import": "./dist/src/crypto/index.js",
       "require": "./dist/src/crypto/index.js",
       "types": "./dist/src/crypto/index.d.ts"
+    },
+    "./spiralverse": {
+      "import": "./dist/src/spiralverse/index.js",
+      "require": "./dist/src/spiralverse/index.js",
+      "types": "./dist/src/spiralverse/index.d.ts"
     }
   },
   "files": [
