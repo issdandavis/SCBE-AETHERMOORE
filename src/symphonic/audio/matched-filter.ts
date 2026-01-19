@@ -7,7 +7,7 @@
  * Patent: USPTO #63/961,403
  */
 
-import { AudioProfile, VerificationResult } from './types';
+import { AudioProfile, VerificationResult, computeBeta } from './types';
 
 /**
  * Compute matched-filter projections
@@ -63,7 +63,7 @@ export function verifyWatermark(
   profile: AudioProfile
 ): VerificationResult {
   const N = profile.N;
-  const beta = profile.beta;
+  const beta = computeBeta(profile);  // Compute beta from profile
   const E_min = profile.E_min;
   const clipThreshold = profile.clipThreshold;
   
