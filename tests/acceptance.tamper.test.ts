@@ -20,8 +20,11 @@ test('Body tamper fails auth', async () => {
     ttlMs: 60_000, content_type: 'application/json', schema_hash: 'hash',
     request_id: 'r2', session_id: 's1', body: {a:1}
   });
-  // mutate ciphertext
-  envl.ciphertext = envl.ciphertext.slice(0,-1) + (envl.ciphertext.slice(-1) === 'A' ? 'B' : 'A');
+  // mutate ciphertext - flip bits in the middle of the ciphertext
+  const ct = envl.ciphertext;
+  const mid = Math.floor(ct.length / 2);
+  const flipped = ct.charCodeAt(mid) ^ 0xFF;
+  envl.ciphertext = ct.slice(0, mid) + String.fromCharCode(flipped % 128 || 65) + ct.slice(mid + 1);
   await expect(verifyEnvelope({ envelope: envl, session_id: 's1' })).rejects.toThrow();
 });
 
