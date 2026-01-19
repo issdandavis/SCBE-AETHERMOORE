@@ -71,7 +71,7 @@ function multiAgentConsensus(
   }
   
   const votes = intents.map(i => (i.confidence > 0.9 ? 1 : 0));
-  const approvals = votes.reduce((sum, v) => sum + v, 0);
+  const approvals = votes.reduce((sum, v) => sum + v, 0 as number);
   const requiredHonest = 2 * byzantineFaults + 1;
   const approved = approvals >= requiredHonest;
   
