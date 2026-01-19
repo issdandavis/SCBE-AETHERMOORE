@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\sparse\linalg\_dsolve\__init__.py
+# hypothesis_version: 6.148.8
+
+['MatrixRankWarning', 'SuperLU', 'factorized', 'is_sptriangular', 'spbandwidth', 'spilu', 'splu', 'spsolve', 'spsolve_triangular', 'use_solver']

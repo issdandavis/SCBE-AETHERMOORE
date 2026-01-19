@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\matplotlib\colors.py
+# hypothesis_version: 6.148.8
+
+[-0.5, 0.0, 1e-10, 1e-06, 0.25, 0.5, 1.0, 2.0, 4.0, 6.0, 255, 256, 315, 512, ' BivarColormap', ' colormap', '#', ', ', '02x', 'Abstract class only', 'Accent', 'Author', 'Dark2', 'Description', 'Invalid vmin or vmax', 'LogNorm', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3', 'Software', 'Title', '\\A#[a-fA-F0-9]{3}\\Z', '\\A#[a-fA-F0-9]{4}\\Z', '\\A#[a-fA-F0-9]{6}\\Z', '\\A#[a-fA-F0-9]{8}\\Z', '\\AC[0-9]+\\Z', '_r', '_resample', 'alpha', 'ascii', 'axes.prop_cycle', 'bivariate colormap', 'blue', 'both', 'changed', 'circle', 'circleignore', 'clip', 'color', 'f', 'from image', 'from_list', 'gray', 'green', 'grey', 'hsv', 'if', 'ignore', 'k', 'mask', 'max', 'min', 'neither', 'none', 'overlay', 'petroff10', 'png', 'red', 'sRGB_add', 'sRGB_sub', 'self', 'soft', 'square', 'tab10', 'tab20', 'tab20b', 'tab20c', 'uint8', 'vmax', 'vmin']

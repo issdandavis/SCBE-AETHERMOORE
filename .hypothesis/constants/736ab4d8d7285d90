@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\signal\waveforms.py
+# hypothesis_version: 6.148.8
+
+['_waveforms', 'chirp', 'gausspulse', 'sawtooth', 'signal', 'square', 'sweep_poly', 'unit_impulse', 'waveforms']

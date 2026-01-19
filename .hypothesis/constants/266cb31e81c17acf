@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\signal\_spline_filters.py
+# hypothesis_version: 6.148.8
+
+[-1.5, -1.0, -0.5, 0.0, 1e-06, 0.001, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 12.0, 144.0, 144, 'cspline1d', 'cspline1d_eval', 'cspline2d', 'gauss_spline', 'qspline1d', 'qspline1d_eval', 'qspline2d', 'spline_filter', 'symiirorder1', 'symiirorder2']

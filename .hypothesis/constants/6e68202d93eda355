@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\stats\mstats_extras.py
+# hypothesis_version: 6.148.8
+
+['_mstats_extras', 'compare_medians_ms', 'hdmedian', 'hdquantiles', 'hdquantiles_sd', 'idealfourths', 'median_cihs', 'mjci', 'mquantiles_cimj', 'mstats', 'mstats_extras', 'rsh', 'stats', 'trimmed_mean_ci']

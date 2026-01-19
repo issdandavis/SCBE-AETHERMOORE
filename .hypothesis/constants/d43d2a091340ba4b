@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\pyparsing\util.py
+# hypothesis_version: 6.148.8
+
+[128, '([a-z])([A-Z])', '?', '?:', 'C', '\\', '\\1_\\2', '\\^-[]', '\\^-][', '\\n', '\\t', '__func__', '__init__', 'configuration', 'self', '|']

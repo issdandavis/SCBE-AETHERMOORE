@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\linalg\decomp.py
+# hypothesis_version: 6.148.8
+
+['LinAlgError', '_decomp', 'cdf2rdf', 'decomp', 'eig', 'eig_banded', 'eigh', 'eigh_tridiagonal', 'eigvals', 'eigvals_banded', 'eigvalsh', 'eigvalsh_tridiagonal', 'get_lapack_funcs', 'hessenberg', 'linalg', 'norm']

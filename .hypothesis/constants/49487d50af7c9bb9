@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\_lib\array_api_compat\numpy\_aliases.py
+# hypothesis_version: 6.148.8
+
+['Any', 'acos', 'acosh', 'asarray', 'asin', 'asinh', 'astype', 'atan', 'atan2', 'atanh', 'bitwise_invert', 'bitwise_left_shift', 'bitwise_right_shift', 'bool', 'concat', 'count_nonzero', 'get_xp', 'isdtype', 'np', 'pow', 'take_along_axis', 'unstack', 'vecdot']

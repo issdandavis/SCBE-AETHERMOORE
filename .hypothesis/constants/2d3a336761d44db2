@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\matplotlib\style\core.py
+# hypothesis_version: 6.148.8
+
+['- {}', '.', 'In %s: %s', 'available', 'backend', 'backend_fallback', 'classic', 'context', 'date.epoch', 'default', 'docstring.hardcopy', 'figure.raise_window', 'interactive', 'keys', 'library', 'mpl15', 'mpl20', 'mplstyle', 'reload_library', 'savefig.directory', 'stylelib', 'timezone', 'tk.window_focus', 'toolbar', 'use', 'webagg.address', 'webagg.port', 'webagg.port_retries']

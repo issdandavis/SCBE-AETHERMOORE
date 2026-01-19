@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_highspy\_highs_wrapper.py
+# hypothesis_version: 6.148.8
+
+['Invalid option name.', 'Unknown option type.', 'crossover_nit', 'fun', 'ipm_nit', 'lambda', 'marg_bnds', 'message', 'mip_dual_bound', 'mip_gap', 'mip_node_count', 'off', 'on', 'parallel', 'presolve', 'sense', 'simplex_nit', 'slack', 'status', 'x']

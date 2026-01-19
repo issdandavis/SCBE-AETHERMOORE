@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\coverage\parser.py
+# hypothesis_version: 6.148.8
+
+[1000, ' or ', '%10s %5s %-20r %r', '([{', ')]}', '0', ':', '<code>', 'AnnAssign', 'Assert', 'Assign', 'AugAssign', 'COVERAGE_AST_DUMP', 'COVERAGE_TRACK_ARCS', 'Delete', 'Expr', 'False', 'Global', 'Import', 'ImportFrom', 'None', 'Nonlocal', 'Pass', 'True', '__annotate__', '__debug__', 'exec', 'exit the module', 'lineno']

@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\stats\morestats.py
+# hypothesis_version: 6.148.8
+
+['_morestats', 'anderson', 'anderson_ksamp', 'ansari', 'bartlett', 'bayes_mvs', 'boxcox', 'boxcox_llf', 'boxcox_normmax', 'boxcox_normplot', 'chi2_contingency', 'circmean', 'circstd', 'circvar', 'distributions', 'find_repeats', 'fligner', 'kstat', 'kstatvar', 'levene', 'median_test', 'mood', 'morestats', 'mvsdist', 'ppcc_max', 'ppcc_plot', 'probplot', 'shapiro', 'stats', 'wilcoxon', 'yeojohnson', 'yeojohnson_llf', 'yeojohnson_normmax', 'yeojohnson_normplot']

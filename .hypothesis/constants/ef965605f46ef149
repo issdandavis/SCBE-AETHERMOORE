@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\dateutil\tz\_common.py
+# hypothesis_version: 6.148.8
+
+['%s(...)', 'day', 'enfold', 'fold', 'hour', 'microsecond', 'minute', 'month', 'second', 'tzinfo', 'tzname_in_python2', 'year']

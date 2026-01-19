@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_lsq\least_squares.py
+# hypothesis_version: 6.148.8
+
+[-1.5, -0.5, 1e-08, 0.5, 1.0, 100.0, 100, '2-point', '3-point', '`x0` must be real.', 'cs', 'dogbox', 'exact', 'ftol', 'fvec', 'gtol', 'jac', 'linear', 'lm', 'lsmr', 'nfev', 'njev', 'regularize', 'trf', 'xtol']

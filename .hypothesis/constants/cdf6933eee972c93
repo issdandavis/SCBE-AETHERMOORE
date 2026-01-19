@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\linalg\decomp_schur.py
+# hypothesis_version: 6.148.8
+
+['LinAlgError', '_decomp_schur', 'decomp_schur', 'eigvals', 'get_lapack_funcs', 'linalg', 'norm', 'rsf2csf', 'schur']

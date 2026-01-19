@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\sparse\linalg\_eigen\lobpcg\lobpcg.py
+# hypothesis_version: 6.148.8
+
+[0.0, ' preconditioning\n\n', 'CARRAY', 'Cholesky has failed.', 'No constraints\n\n', 'Solving ', 'float32', 'generalized', 'gramA', 'gramB', 'lobpcg', 'out', 'standard']

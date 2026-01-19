@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\stats\_survival.py
+# hypothesis_version: 6.148.8
+
+[0.05, 0.95, 'cdf', 'ecdf', 'greater', 'ignore', 'less', 'linear', 'log-log', 'logrank', 'post', 'previous', 'sample', 'sf', 'two-sided', 'uncensored', 'where', 'x', 'y']

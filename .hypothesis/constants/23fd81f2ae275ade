@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_root_scalar.py
+# hypothesis_version: 6.148.8
+
+['2-point', '_x', 'bisect', 'brenth', 'brentq', 'halley', 'maxiter', 'newton', 'ridder', 'root_scalar', 'rtol', 'secant', 'tol', 'toms748', 'xtol']

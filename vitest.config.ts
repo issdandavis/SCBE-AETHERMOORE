@@ -13,5 +13,25 @@ export default defineConfig({
       '**/scbe-aethermoore-demo/**',
     ],
     testTimeout: 30000,
+    // Enterprise test suite configuration
+    coverage: {
+      provider: 'c8',
+      reporter: ['text', 'json', 'html'],
+      exclude: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/tests/**',
+        '**/*.test.ts',
+        '**/*.config.ts',
+      ],
+      all: true,
+      lines: 95,
+      functions: 95,
+      branches: 95,
+      statements: 95,
+    },
+    // Property-based testing configuration
+    // Each property test should run minimum 100 iterations
+    // Use fast-check with { numRuns: 100 } or higher
   },
 });

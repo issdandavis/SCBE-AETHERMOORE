@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\linalg\lapack.py
+# hypothesis_version: 6.148.8
+
+['Default ``\\1``\n', 'LAPACK', 'clapack', 'corghr', 'corghr_lwork', 'corgqr', 'corgrq', 'cormqr', 'cunghr', 'cunghr_lwork', 'cungqr', 'cungrq', 'cunmqr', 'dtype', 'flapack', 'flapack_64', 'get_lapack_funcs', 'int_dtype', 'preferred', 's', 'zorghr', 'zorghr_lwork', 'zorgqr', 'zorgrq', 'zormqr', 'zunghr', 'zunghr_lwork', 'zungqr', 'zungrq', 'zunmqr']
