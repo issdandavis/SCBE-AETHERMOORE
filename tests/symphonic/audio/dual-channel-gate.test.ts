@@ -110,15 +110,17 @@ describe('Dual-Channel Consensus Gate', () => {
       const bins = Array.from({ length: 32 }, (_, i) => 100 + i * 20);
       const phases = Array.from({ length: 32 }, () => 0);
       
-      const watermark = generateWatermark(challenge, bins, phases, 4096, 0.05); // Higher gamma
-      const result = verifyWatermark(watermark, challenge, bins, phases, {
-        ...PROFILE_16K,
-        beta: 0.01, // Lower threshold for test
-        E_min: 0.0001
-      });
+      // Use higher gamma for clean test
+      const testProfile = { ...PROFILE_16K, gamma: 0.1 };
+      const watermark = generateWatermark(challenge, bins, phases, 4096, testProfile.gamma);
+      const result = verifyWatermark(watermark, challenge, bins, phases, testProfile);
       
       expect(result.passed).toBe(true);
       expect(result.correlation).toBeGreaterThan(0);
+      
+      // Verify correlation is close to expected
+      const expected = testProfile.gamma * Math.sqrt(testProfile.b);
+      expect(result.correlation).toBeCloseTo(expected, 1);
     });
 
     it('should reject wrong challenge', () => {
@@ -358,21 +360,24 @@ describe('Dual-Channel Consensus Gate', () => {
       expect(PROFILE_16K.SR).toBe(16000);
       expect(PROFILE_16K.N).toBe(4096);
       expect(PROFILE_16K.b).toBe(32);
-      expect(PROFILE_16K.beta).toBeGreaterThan(0);
+      expect(PROFILE_16K.betaFactor).toBeGreaterThan(0);
+      expect(PROFILE_16K.betaFactor).toBeLessThan(1);
     });
 
     it('should have valid 44K profile', () => {
       expect(PROFILE_44K.SR).toBe(44100);
       expect(PROFILE_44K.N).toBe(8192);
       expect(PROFILE_44K.b).toBe(48);
-      expect(PROFILE_44K.beta).toBeGreaterThan(0);
+      expect(PROFILE_44K.betaFactor).toBeGreaterThan(0);
+      expect(PROFILE_44K.betaFactor).toBeLessThan(1);
     });
 
     it('should have valid 48K profile', () => {
       expect(PROFILE_48K.SR).toBe(48000);
       expect(PROFILE_48K.N).toBe(8192);
       expect(PROFILE_48K.b).toBe(64);
-      expect(PROFILE_48K.beta).toBeGreaterThan(0);
+      expect(PROFILE_48K.betaFactor).toBeGreaterThan(0);
+      expect(PROFILE_48K.betaFactor).toBeLessThan(1);
     });
   });
 });
