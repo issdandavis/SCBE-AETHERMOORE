@@ -105,10 +105,12 @@ pytest tests/ -v
 1. Pytest failure: `tests/test_scbe_comprehensive.py::TestEdgeCasesAndFaults::test_98_timing_consistency`
    - Symptom: Assertion comparing std deviation to 50 percent of mean.
    - Cause: Timing variance on busy machines or aggressive CPU scaling.
-   - Mitigation:
-     - Close background CPU-heavy apps.
-     - Re-run the test on an idle machine.
-     - Consider pinning CPU performance mode before running tests.
+    - Mitigation:
+      - Close background CPU-heavy apps.
+      - Re-run the test on an idle machine.
+      - Consider pinning CPU performance mode before running tests.
+   - Override: Set `SCBE_TIMING_STDDEV_RATIO=0.75` (or higher) to relax the
+     consistency threshold in variable environments.
 
 2. Pytest XPASS in `tests/test_known_limitations.py`
    - Symptom: Tests marked XFAIL unexpectedly pass.
