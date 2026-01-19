@@ -613,3 +613,60 @@ if __name__ == "__main__":
     print("\n" + "=" * 80)
     print("✓ ALL 14 LAYERS VERIFIED")
     print("=" * 80)
+
+
+# =============================================================================
+# ALIASES FOR BACKWARD COMPATIBILITY
+# =============================================================================
+# These aliases allow tests to import functions with simpler names.
+
+
+def poincare_embed(x: np.ndarray, alpha: float = 1.0,
+                   epsilon: float = 0.01, eps_ball: float = None) -> np.ndarray:
+    """
+    Backward-compatible wrapper for layer_4_poincare_embedding.
+    Accepts 'epsilon' parameter name for backward compatibility.
+    """
+    if eps_ball is None:
+        eps_ball = epsilon
+    return layer_4_poincare_embedding(x, alpha=alpha, eps_ball=eps_ball)
+
+
+# Layer 5
+hyperbolic_distance = layer_5_hyperbolic_distance
+
+# Layer 6
+breathing_transform = layer_6_breathing_transform
+
+# Layer 9
+spectral_coherence = layer_9_spectral_coherence
+
+# Layer 10
+spin_coherence = layer_10_spin_coherence
+
+
+def weighted_transform(x: np.ndarray, G: Optional[np.ndarray] = None,
+                       return_matrix: bool = False):
+    """
+    Backward-compatible wrapper for layer_3_weighted_transform.
+    Optionally returns the G matrix used.
+    """
+    n = len(x)
+
+    if G is None:
+        # Default: Golden ratio weighting
+        phi = 1.618
+        D = n // 2
+        weights = np.array([phi ** k for k in range(D)])
+        weights = weights / np.sum(weights)
+        G = np.diag(np.tile(weights, 2))
+
+    result = layer_3_weighted_transform(x, G)
+
+    if return_matrix:
+        return result, G
+    return result
+
+
+# Layer 12
+harmonic_scale = layer_12_harmonic_scaling

@@ -1162,15 +1162,18 @@ class TestAdversarialAttackResistance:
         """Related keys should produce unrelated ciphertexts."""
         plaintext = b"test message"
         aad = "test"
-        
+
         ciphertexts = []
-        for i in range(256):
-            key = bytes([i]) + b'\x00' * 31
+        # Use 1-256 to avoid all-zeros key (rejected by security validation)
+        for i in range(1, 257):
+            # Use non-zero first byte to avoid null key validation
+            first_byte = i if i < 256 else 1
+            key = bytes([first_byte]) + bytes([i % 256]) + b'\x00' * 30
             ss = SpiralSealSS1(master_secret=key)
             sealed = ss.seal(plaintext, aad=aad)
             parsed = parse_ss1_blob(sealed)
             ciphertexts.append(parsed['ct'])
-        
+
         # All ciphertexts should be unique
         assert len(set(ciphertexts)) == 256
     

@@ -220,7 +220,7 @@ class TestAccessControlViolations:
         sealed = self.ss.seal(plaintext, aad="context")
         
         # Rotate to new key
-        self.ss.rotate_key(new_kid="prod-v2", new_secret=os.urandom(32))
+        self.ss.rotate_key(new_kid="prod-v2", new_master_secret=os.urandom(32))
         
         # Old sealed data should fail with new key
         with pytest.raises(Exception):
@@ -465,18 +465,23 @@ class TestFailableByDesignSummary:
     def test_F30_all_failable_categories_covered(self):
         """F30: All security boundary categories MUST be tested."""
         categories = [
-            "CryptographicBoundaryViolations",
-            "GeometricConstraintViolations",
-            "AxiomViolations",
-            "AccessControlViolations",
-            "TemporalViolations",
-            "LatticeStructureViolations",
-            "DecisionBoundaryViolations",
-            "MalformedInputViolations",
+            "TestCryptographicBoundaryViolations",
+            "TestGeometricConstraintViolations",
+            "TestAxiomViolations",
+            "TestAccessControlViolations",
+            "TestTemporalViolations",
+            "TestLatticeStructureViolations",
+            "TestDecisionBoundaryViolations",
+            "TestMalformedInputViolations",
         ]
-        
+
+        # Get all classes defined in this module
+        import sys
+        module = sys.modules[__name__]
+        module_classes = [name for name in dir(module) if name.startswith('Test')]
+
         # Verify all categories exist
         for cat in categories:
-            assert cat in dir(), f"Missing test category: {cat}"
-        
+            assert cat in module_classes, f"Missing test category: {cat}"
+
         print(f"\n✓ All {len(categories)} failable-by-design categories covered")
