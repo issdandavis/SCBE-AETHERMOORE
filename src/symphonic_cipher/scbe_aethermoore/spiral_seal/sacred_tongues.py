@@ -120,90 +120,173 @@ SECTION_TONGUES = {
 class SacredTongueTokenizer:
     """
     Encode/decode bytes to Sacred Tongue spell-text tokens.
-    
-    Each byte maps deterministically to one token:
-        byte b → prefix[b >> 4] + "'" + suffix[b & 0x0F]
-    
+
+    Design:
+      - 1 byte → 1 token via hi/lo nibble:
+          hi = (b >> 4) & 0x0F → prefix index
+          lo =  b       & 0x0F → suffix index
+      - Token string format: prefix + "'" + suffix.
+      - Deterministic and bijective per tongue.
+
     Example:
         byte 0x2A (42) → prefix[2] + "'" + suffix[10]
         In Kor'aelin: vel'an
+
+    Usage:
+        # Single-tongue mode (default tongue for operations)
+        tokenizer = SacredTongueTokenizer('ko')
+
+        # Multi-tongue mode (all tongues available)
+        tokenizer = SacredTongueTokenizer(TONGUES)
     """
-    
-    def __init__(self, tongue_code: str = 'ko'):
+
+    def __init__(self, tongues_or_code):
         """
-        Initialize tokenizer for a specific Sacred Tongue.
-        
+        Initialize tokenizer with Sacred Tongues.
+
         Args:
-            tongue_code: One of 'ko', 'av', 'ru', 'ca', 'um', 'dr'
+            tongues_or_code: Either:
+                - str: A single tongue code ('ko', 'av', 'ru', 'ca', 'um', 'dr')
+                       Uses all tongues but sets this as default.
+                - Dict[str, TongueSpec]: Dictionary of tongue specs keyed by code
         """
-        if tongue_code not in TONGUES:
-            raise ValueError(f"Unknown tongue: {tongue_code}. Valid: {list(TONGUES.keys())}")
-        
-        self.tongue = TONGUES[tongue_code]
-        self._build_lookup_tables()
+        # Handle both API styles: single tongue code (str) or full dict
+        if isinstance(tongues_or_code, str):
+            # Single tongue code - use global TONGUES but set default
+            if tongues_or_code not in TONGUES:
+                raise KeyError(f"Unknown tongue code: {tongues_or_code}")
+            self.tongues = TONGUES
+            self.default_tongue = tongues_or_code
+        else:
+            # Full dictionary of tongue specs
+            self.tongues = tongues_or_code
+            self.default_tongue = 'ko'  # Default to Kor'aelin
+        self._build_tables()
     
-    def _build_lookup_tables(self):
-        """Build forward and reverse lookup tables."""
-        # Forward: byte → token
-        self._byte_to_token: List[str] = []
-        for b in range(256):
-            pi = b >> 4        # High nibble (0-15)
-            si = b & 0x0F      # Low nibble (0-15)
-            token = f"{self.tongue.prefixes[pi]}'{self.tongue.suffixes[si]}"
-            self._byte_to_token.append(token)
+    def _build_tables(self) -> None:
+        """Precompute per-tongue byte↔token lookup tables."""
+        self.byte_to_token: Dict[str, Dict[int, str]] = {}
+        self.token_to_byte: Dict[str, Dict[str, int]] = {}
         
-        # Reverse: token → byte
-        self._token_to_byte: Dict[str, int] = {
-            token: b for b, token in enumerate(self._byte_to_token)
-        }
+        for code, spec in self.tongues.items():
+            if len(spec.prefixes) != 16 or len(spec.suffixes) != 16:
+                raise ValueError(f"Tongue {code} must have 16 prefixes and 16 suffixes")
+            
+            b2t: Dict[int, str] = {}
+            t2b: Dict[str, int] = {}
+            
+            for b in range(256):
+                hi = (b >> 4) & 0x0F      # prefix index
+                lo = b & 0x0F            # suffix index
+                token = spec.prefixes[hi] + "'" + spec.suffixes[lo]
+                b2t[b] = token
+                t2b[token] = b
+            
+            self.byte_to_token[code] = b2t
+            self.token_to_byte[code] = t2b
     
-    def encode_byte(self, b: int) -> str:
-        """Encode a single byte to a token."""
+    # ---------- low-level, single-tongue API ----------
+    
+    def encode_bytes(self, tongue_code: str, data: bytes) -> List[str]:
+        """Encode raw bytes into tokens of a single Sacred Tongue."""
+        if tongue_code not in self.byte_to_token:
+            raise KeyError(f"Unknown tongue code: {tongue_code}")
+        table = self.byte_to_token[tongue_code]
+        return [table[b] for b in data]
+    
+    def decode_tokens(self, tongue_code: str, tokens: List[str]) -> bytes:
+        """Decode tokens of a single Sacred Tongue back into bytes."""
+        if tongue_code not in self.token_to_byte:
+            raise KeyError(f"Unknown tongue code: {tongue_code}")
+        table = self.token_to_byte[tongue_code]
+        try:
+            return bytes(table[t] for t in tokens)
+        except KeyError as e:
+            raise ValueError(f"Invalid token for tongue {tongue_code}: {e}")
+    
+    # ---------- section-aware API (RWP SS1) ----------
+    
+    def encode_section(self, section: str, data: bytes) -> List[str]:
+        """
+        Encode a section (aad/salt/nonce/ct/tag/redact) using its canonical tongue.
+        """
+        tongue_code = SECTION_TONGUES[section]
+        return self.encode_bytes(tongue_code, data)
+    
+    def decode_section(self, section: str, tokens: List[str]) -> bytes:
+        """
+        Decode tokens from a section (aad/salt/nonce/ct/tag/redact) to raw bytes.
+        """
+        tongue_code = SECTION_TONGUES[section]
+        return self.decode_tokens(tongue_code, tokens)
+    
+    # ---------- legacy API (backward compatibility) ----------
+
+    def encode_byte(self, b: int, tongue_code: str = None) -> str:
+        """Encode a single byte to a token (legacy API)."""
+        if tongue_code is None:
+            tongue_code = self.default_tongue
         if not 0 <= b <= 255:
             raise ValueError(f"Byte must be 0-255, got {b}")
-        return self._byte_to_token[b]
-    
-    def decode_token(self, token: str) -> int:
-        """Decode a single token to a byte."""
-        if token not in self._token_to_byte:
+        return self.byte_to_token[tongue_code][b]
+
+    def decode_token(self, token: str, tongue_code: str = None) -> int:
+        """Decode a single token to a byte (legacy API)."""
+        if tongue_code is None:
+            tongue_code = self.default_tongue
+        if token not in self.token_to_byte[tongue_code]:
             raise ValueError(f"Unknown token: {token}")
-        return self._token_to_byte[token]
-    
-    def encode(self, data: bytes) -> str:
+        return self.token_to_byte[tongue_code][token]
+
+    def encode(self, data: bytes, tongue_code: str = None) -> str:
         """
-        Encode bytes to space-separated spell-text tokens.
-        
+        Encode bytes to space-separated spell-text tokens (legacy API).
+
         Args:
             data: Raw bytes to encode
-        
+            tongue_code: Tongue to use (default: instance default tongue)
+
         Returns:
             Space-separated token string with tongue prefix
             Example: "ko:sil'a ko:vel'an ko:thul'ir"
         """
-        tokens = [f"{self.tongue.code}:{self._byte_to_token[b]}" for b in data]
+        if tongue_code is None:
+            tongue_code = self.default_tongue
+        tokens = [f"{tongue_code}:{self.byte_to_token[tongue_code][b]}" for b in data]
         return ' '.join(tokens)
-    
-    def decode(self, spelltext: str) -> bytes:
+
+    def decode(self, spelltext: str, tongue_code: str = None) -> bytes:
         """
-        Decode spell-text tokens back to bytes.
-        
+        Decode spell-text tokens back to bytes (legacy API).
+
         Args:
             spelltext: Space-separated tokens (with or without tongue prefix)
-        
+            tongue_code: Tongue to use (default: instance default tongue)
+
         Returns:
             Decoded bytes
         """
+        if tongue_code is None:
+            tongue_code = self.default_tongue
         result = []
         for token in spelltext.split():
             # Strip tongue prefix if present (e.g., "ko:sil'a" → "sil'a")
             if ':' in token:
                 _, token = token.split(':', 1)
-            result.append(self._token_to_byte[token])
+            result.append(self.token_to_byte[tongue_code][token])
         return bytes(result)
 
 
 # =============================================================================
-# HIGH-LEVEL ENCODING FUNCTIONS
+# SINGLETON INSTANCE
+# =============================================================================
+
+# Singleton instance you can import and use
+SACRED_TONGUE_TOKENIZER = SacredTongueTokenizer(TONGUES)
+
+
+# =============================================================================
+# HIGH-LEVEL ENCODING FUNCTIONS (legacy API)
 # =============================================================================
 
 def encode_to_spelltext(data: bytes, section: str) -> str:
@@ -218,8 +301,7 @@ def encode_to_spelltext(data: bytes, section: str) -> str:
         Spell-text encoded string
     """
     tongue_code = SECTION_TONGUES.get(section, 'ca')  # Default to Cassisivadan
-    tokenizer = SacredTongueTokenizer(tongue_code)
-    return tokenizer.encode(data)
+    return SACRED_TONGUE_TOKENIZER.encode(data, tongue_code)
 
 
 def decode_from_spelltext(spelltext: str, section: str) -> bytes:
@@ -227,8 +309,7 @@ def decode_from_spelltext(spelltext: str, section: str) -> bytes:
     Decode spell-text using the canonical tongue for a given section.
     """
     tongue_code = SECTION_TONGUES.get(section, 'ca')
-    tokenizer = SacredTongueTokenizer(tongue_code)
-    return tokenizer.decode(spelltext)
+    return SACRED_TONGUE_TOKENIZER.decode(spelltext, tongue_code)
 
 
 def format_ss1_blob(
