@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_linprog_ip.py
+# hypothesis_version: 6.148.8
+
+[1e-08, 0.1, 0.99995, 1.0, 1000, '-', 'COLAMD', 'Dual Feasibility   ', 'Duality Gap        ', 'MMD_ATA', 'MMD_AT_PLUS_A', 'NATURAL', 'Objective          ', 'Path Parameter     ', 'Primal Feasibility ', 'Step            ', 'complete', 'con', 'csc', 'fun', 'ignore', 'message', 'nit', 'phase', 'pos', 'slack', 'status', 'success', 'x']

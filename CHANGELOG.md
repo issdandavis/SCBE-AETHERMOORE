@@ -5,6 +5,24 @@ All notable changes to SCBE-AETHERMOORE will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2026-01-18
+
+### Added
+- **Polyhedral Hamiltonian Defense Manifold (PHDM)** - Topological intrusion detection system
+  - 16 canonical polyhedra with verified Euler characteristics
+  - Hamiltonian path with sequential HMAC key chaining
+  - Geodesic curve interpolation in 6D Langues space
+  - Curvature-based anomaly detection
+  - Deviation monitoring with threat velocity computation
+  - 1-0 rhythm pattern visualization
+  - Attack simulation (deviation, skip, curvature)
+  - 33 comprehensive tests (all passing)
+  - Complete TypeScript implementation matching Python version
+
+### Changed
+- Updated harmonic module exports to include PHDM
+- Enhanced README with PHDM feature description
+
 ## [3.0.0] - 2026-01-18
 
 ### 🎉 Major Release - Complete Customer-Ready Package

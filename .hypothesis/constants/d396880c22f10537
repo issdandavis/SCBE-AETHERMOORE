@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\linalg\blas.py
+# hypothesis_version: 6.148.8
+
+['?bBhHef', 'BLAS', 'D', 'F', 'FORTRAN', 'G', 'c', 'cblas', 'cdot', 'cdotc', 'cger', 'cgerc', 'cnrm2', 'complex128', 'complex64', 'd', 'ddot', 'ddotc', 'ddotu', 'dznrm2', 'fblas', 'fblas_64', 'find_best_blas_type', 'float32', 'float64', 'g', 'get_blas_funcs', 'iIlLqQd', 'preferred', 's', 'scnrm2', 'sdot', 'sdotc', 'sdotu', 'z', 'zdot', 'zdotc', 'zger', 'zgerc', 'znrm2']

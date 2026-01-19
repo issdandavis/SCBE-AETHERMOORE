@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\numpy\core\__init__.py
+# hypothesis_version: 6.148.8
+
+['_dtype', '_dtype_ctypes', '_internal', '_multiarray_umath', 'arrayprint', 'defchararray', 'einsumfunc', 'fromnumeric', 'function_base', 'getlimits', 'multiarray', 'numeric', 'numerictypes', 'overrides', 'records', 'shape_base', 'umath']

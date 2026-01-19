@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\ndimage\_filters.py
+# hypothesis_version: 6.148.8
+
+[-0.5, 0.0, 1e-15, 0.5, 4.0, 100.0, 100, 'axis', 'biu', 'c', 'constant', 'constant_values', 'convolve', 'convolve1d', 'correlate', 'correlate1d', 'edge', 'float32', 'footprint', 'gaussian_filter', 'gaussian_filter1d', 'gaussian_laplace', 'generic_filter', 'generic_filter1d', 'generic_laplace', 'grid-constant', 'grid-mirror', 'grid-wrap', 'int64', 'integral', 'invalid filter size', 'invalid origin', 'invalid percentile', 'laplace', 'maximum_filter', 'maximum_filter1d', 'median', 'median_filter', 'minimum_filter', 'minimum_filter1d', 'mirror', 'nearest', 'numeric', 'percentile', 'percentile_filter', 'prewitt', 'rank', 'rank_filter', 'reflect', 'sobel', 'symmetric', 'uniform_filter', 'uniform_filter1d', 'unsafe', 'valid', 'vectorized_filter', 'weights', 'wrap']

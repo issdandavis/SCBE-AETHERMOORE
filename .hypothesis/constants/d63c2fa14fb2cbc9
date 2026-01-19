@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\signal\lti_conversion.py
+# hypothesis_version: 6.148.8
+
+['_lti_conversion', 'abcd_normalize', 'cont2discrete', 'lti_conversion', 'normalize', 'signal', 'ss2tf', 'ss2zpk', 'tf2ss', 'tf2zpk', 'zpk2ss', 'zpk2tf']

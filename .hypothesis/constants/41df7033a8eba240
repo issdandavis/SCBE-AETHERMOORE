@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\mpl_toolkits\mplot3d\axis3d.py
+# hypothesis_version: 6.148.8
+
+[0.08, 0.1, 0.2, 0.5, 0.75, 0.9, 1.0, 8.0, 21.0, 72.0, 180, 360, '-', '3.6', 'adir', 'anchor', 'args', 'axes', 'axes.edgecolor', 'axes.linewidth', 'axis3d', 'axisline', 'both', 'center', 'color', 'd_intervalx', 'data', 'default', 'get_data_interval', 'get_view_interval', 'grid', 'grid.color', 'grid.linestyle', 'grid.linewidth', 'grid3d', 'ha', 'i', 'intervalx', 'intervaly', 'inward_factor', 'juggled', 'kwargs', 'label', 'left', 'lines.linewidth', 'linestyle', 'linewidth', 'lower', 'none', 'outward_factor', 'pane3d', 'right', 'rotate_label', 'rotation_mode', 'tick', 'tickdir', 'upper', 'v_intervalx', 'va', 'view', 'x', 'xtick.major.width', 'xtick.minor.width', 'xy_dataLim', 'xy_viewLim', 'xz', 'y', 'ytick.major.width', 'ytick.minor.width', 'z', 'zz_dataLim', 'zz_viewLim']

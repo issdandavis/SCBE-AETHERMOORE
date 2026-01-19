@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_trustregion_constr\qp_subproblem.py
+# hypothesis_version: 6.148.8
+
+[1e-25, 0.01, 0.1, 'allvecs', 'box_intersections', 'csc', 'eqp_kktfact', 'hits_boundary', 'intersect', 'modified_dogleg', 'niter', 'projected_cg', 'sphere_intersections', 'stop_cond', 'ta', 'tb']

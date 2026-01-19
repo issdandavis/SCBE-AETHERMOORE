@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_linprog.py
+# hypothesis_version: 6.148.8
+
+[1e-09, 500, 'Iter:   X:', 'autoscale', 'complete', 'con', 'disp', 'f = ', 'float', 'fun', 'highs', 'highs-ds', 'highs-ipm', 'interior-point', 'ipm', 'linprog', 'message', 'nit', 'phase', 'presolve', 'restructuredtext en', 'revised simplex', 'rr', 'rr_method', 'simplex', 'slack', 'status', 'success', 'tol', 'x', 'x = ']

@@ -1,0 +1,39 @@
+# Source files (only ship dist/)
+src/
+tests/
+examples/
+
+# Config files
+tsconfig*.json
+vitest.config.ts
+.kiro/
+.vscode/
+.github/
+
+# Development files
+*.test.ts
+*.spec.ts
+.env*
+.git/
+.gitignore
+
+# Build artifacts
+node_modules/
+.pytest_cache/
+__pycache__/
+*.pyc
+
+# Documentation (keep README.md)
+docs/
+*.md
+!README.md
+
+# Other repos
+scbe-aethermoore/
+scbe-aethermoore-demo/
+aws-lambda-simple-web-app/
+hioujhn/
+
+# Misc
+*.log
+.DS_Store

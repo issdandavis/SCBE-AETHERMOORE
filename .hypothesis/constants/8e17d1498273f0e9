@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\numpy\polynomial\legendre.py
+# hypothesis_version: 6.148.8
+
+[-1.0, 0.0, 1.0, 2.0, '?bBhHiIlLqQpP', 'Legendre', 'P', 'deg', 'leg2poly', 'legadd', 'legcompanion', 'legder', 'legdiv', 'legdomain', 'legfit', 'legfromroots', 'leggauss', 'leggrid2d', 'leggrid3d', 'legint', 'legline', 'legmul', 'legmulx', 'legone', 'legpow', 'legroots', 'legsub', 'legtrim', 'legval', 'legval2d', 'legval3d', 'legvander', 'legvander2d', 'legvander3d', 'legweight', 'legx', 'legzero', 'poly2leg', 'the axis']

@@ -116,6 +116,10 @@ class SpiralSealSS1:
         if len(master_secret) != 32:
             raise ValueError("master_secret must be 32 bytes")
         
+        # Reject null/zero keys (security requirement)
+        if master_secret == b'\x00' * 32:
+            raise ValueError("master_secret cannot be all zeros (null key)")
+        
         self._master_secret = master_secret
         
         # Generate PQC keys if in hybrid mode

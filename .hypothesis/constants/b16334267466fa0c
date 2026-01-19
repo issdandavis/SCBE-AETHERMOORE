@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\interpolate\_cubic.py
+# hypothesis_version: 6.148.8
+
+[-0.5, 0.0, 1e-15, 1e-09, 0.5, 1.0, 2.0, 3.0, 'Akima1DInterpolator', 'CubicHermiteSpline', 'CubicSpline', 'PchipInterpolator', 'akima', 'clamped', 'ignore', 'makima', 'natural', 'not-a-knot', 'pchip_interpolate', 'periodic']

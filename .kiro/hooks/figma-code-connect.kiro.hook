@@ -3,11 +3,20 @@
   "description": "Check if UI component should be connected to Figma design",
   "version": "1.0.0",
   "when": {
-    "type": "fileEdited",
-    "patterns": ["**/*.tsx", "**/*.jsx", "**/*.ts", "**/*.html", "**/lambda/**/*"]
+    "type": "fileCreated",
+    "patterns": [
+      "**/*.tsx",
+      "**/*.jsx",
+      "**/*.ts",
+      "**/*.html",
+      "**/lambda/**/*"
+    ]
   },
   "then": {
     "type": "askAgent",
     "prompt": "When a new component file is created or updated, ask the user if they would like to confirm if the code has been correctly attached to the Figma component of the same name. If the user approves: first run the get code connect map tool for the last Figma URL provided by the user. You can prompt them to provide it again if it's unavailable. If the response is empty, run the add code connect map tool, otherwise tell the user they already have code mapped to that component. If the user rejects: Do not run any additional tools."
-  }
+  },
+  "enabled": true,
+  "workspaceFolderName": "SCBE_Production_Pack",
+  "shortName": "figma-code-connect"
 }

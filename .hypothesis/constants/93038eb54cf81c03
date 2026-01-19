@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\pyparsing\common.py
+# hypothesis_version: 6.148.8
+
+['%Y-%m-%d', '%Y-%m-%dT%H:%M:%S.%f', '(?:', '(?P<host>', '(?P<path>\\/[^?# ]*)?', '(?P<url>', ')', ')+', ')?', ',', '-', '/', ':', '::', '::ffff:', 'IPv4 address', 'IPv6 address', 'ISO8601 date', 'ISO8601 datetime', 'MAC address', 'UUID', '[+-]?\\d+', '[0-9a-fA-F]{1,4}', 'comma separated list', 'commaItem', 'convertToDate', 'convertToDatetime', 'convertToFloat', 'convertToInteger', 'downcaseTokens', 'fnumber', 'fraction', 'full IPv6 address', 'hex integer', 'hex_integer', 'identifier', 'ieee_float', 'integer', 'mixed IPv6 address', 'number', 'real number', 'short IPv6 address', 'signed integer', 'stripHTMLTags', 'upcaseTokens', 'url', '|']

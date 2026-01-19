@@ -1,285 +1,274 @@
 # SCBE-AETHERMOORE Quick Start Guide
 
-Get up and running with SCBE-AETHERMOORE in 5 minutes!
+## Installation
 
-## 🚀 Installation
-
-### Option 1: NPM Package (Recommended)
-
+### TypeScript/Node.js
 ```bash
 npm install @scbe/aethermoore
 ```
 
-### Option 2: From Source
-
+### Python
 ```bash
-git clone https://github.com/ISDanDavis2/scbe-aethermoore.git
-cd scbe-aethermoore
+pip install -e .
+```
+
+## TypeScript Examples
+
+### 1. Hyperbolic Distance Calculation
+
+```typescript
+import { HyperbolicPoint, poincareDistance } from '@scbe/aethermoore/harmonic';
+
+// Create points in Poincaré ball (must satisfy ||p|| < 1)
+const p1: HyperbolicPoint = { x: 0.5, y: 0.3, z: 0.1 };
+const p2: HyperbolicPoint = { x: 0.2, y: 0.4, z: 0.2 };
+
+// Calculate hyperbolic distance
+const distance = poincareDistance(p1, p2);
+console.log(`Hyperbolic distance: ${distance}`);
+```
+
+### 2. Harmonic Scaling
+
+```typescript
+import { harmonicScale } from '@scbe/aethermoore/harmonic';
+
+// Calculate harmonic scaling: H(d,R) = R^(d²)
+const dimension = 6;
+const baseRisk = 1.5;
+const scaledRisk = harmonicScale(dimension, baseRisk);
+
+console.log(`Harmonic scaling H(${dimension}, ${baseRisk}) = ${scaledRisk}`);
+// Output: ~2.18×10⁶
+```
+
+### 3. Envelope Encryption
+
+```typescript
+import { encrypt, decrypt } from '@scbe/aethermoore/crypto';
+
+const plaintext = "Sensitive data";
+const key = "my-secret-key";
+
+// Encrypt
+const ciphertext = await encrypt(plaintext, key);
+console.log(`Encrypted: ${ciphertext}`);
+
+// Decrypt
+const decrypted = await decrypt(ciphertext, key);
+console.log(`Decrypted: ${decrypted}`);
+```
+
+### 4. Nonce Management
+
+```typescript
+import { NonceManager } from '@scbe/aethermoore/crypto';
+
+const nonceManager = new NonceManager();
+
+// Generate nonce
+const nonce = nonceManager.generate();
+console.log(`Nonce: ${nonce}`);
+
+// Validate nonce (prevents replay attacks)
+const isValid = nonceManager.validate(nonce);
+console.log(`Valid: ${isValid}`); // true first time, false on replay
+```
+
+### 5. Circuit Breaker Pattern
+
+```typescript
+import { CircuitBreaker } from '@scbe/aethermoore/rollout';
+
+const breaker = new CircuitBreaker({
+  failureThreshold: 5,
+  resetTimeout: 60000, // 1 minute
+});
+
+async function riskyOperation() {
+  return breaker.execute(async () => {
+    // Your operation here
+    const response = await fetch('https://api.example.com/data');
+    return response.json();
+  });
+}
+
+try {
+  const result = await riskyOperation();
+  console.log('Success:', result);
+} catch (error) {
+  console.error('Circuit breaker opened:', error);
+}
+```
+
+## Python Examples
+
+### 1. Symphonic Cipher Signing
+
+```python
+from symphonic_cipher.core import SymphonicCipher
+
+# Initialize cipher
+cipher = SymphonicCipher()
+
+# Sign transaction intent
+intent = '{"amount": 500, "to": "0x123..."}'
+signature = cipher.sign(intent, key="my-secret-key")
+print(f"Signature: {signature}")
+
+# Verify signature
+is_valid = cipher.verify(intent, signature, key="my-secret-key")
+print(f"Valid: {is_valid}")
+```
+
+### 2. Harmonic Scaling Law
+
+```python
+from symphonic_cipher.harmonic_scaling_law import harmonic_scale
+
+# Calculate H(d,R) = R^(d²)
+dimension = 6
+base_risk = 1.5
+scaled = harmonic_scale(dimension, base_risk)
+
+print(f"H({dimension}, {base_risk}) = {scaled:.2e}")
+# Output: ~2.18e+06
+```
+
+### 3. Dual Lattice Consensus
+
+```python
+from symphonic_cipher.dual_lattice_consensus import DualLatticeConsensus
+
+# Initialize consensus system
+consensus = DualLatticeConsensus(num_nodes=3)
+
+# Submit transaction
+tx = {"amount": 100, "to": "0xabc"}
+result = consensus.submit_transaction(tx)
+
+print(f"Consensus reached: {result['consensus']}")
+print(f"Signatures: {result['signatures']}")
+```
+
+### 4. Topological CFI (Control Flow Integrity)
+
+```python
+from symphonic_cipher.topological_cfi import TopologicalCFI
+
+# Initialize CFI
+cfi = TopologicalCFI()
+
+# Define control flow graph
+cfi.add_edge("start", "process")
+cfi.add_edge("process", "validate")
+cfi.add_edge("validate", "end")
+
+# Validate execution path
+path = ["start", "process", "validate", "end"]
+is_valid = cfi.validate_path(path)
+
+print(f"Path valid: {is_valid}")
+```
+
+### 5. Flat Slope Encoder
+
+```python
+from symphonic_cipher.flat_slope_encoder import FlatSlopeEncoder
+
+# Initialize encoder
+encoder = FlatSlopeEncoder()
+
+# Encode data with flat slope property
+data = b"Hello, SCBE!"
+encoded = encoder.encode(data)
+
+print(f"Encoded: {encoded.hex()}")
+
+# Decode
+decoded = encoder.decode(encoded)
+print(f"Decoded: {decoded.decode()}")
+```
+
+## Cross-Language Integration
+
+### TypeScript → Python
+
+```typescript
+// TypeScript: Generate hyperbolic point
+import { HyperbolicPoint } from '@scbe/aethermoore/harmonic';
+
+const point: HyperbolicPoint = { x: 0.5, y: 0.3, z: 0.1 };
+console.log(JSON.stringify(point));
+// Output: {"x":0.5,"y":0.3,"z":0.1}
+```
+
+```python
+# Python: Use the point
+import json
+
+point_json = '{"x":0.5,"y":0.3,"z":0.1}'
+point = json.loads(point_json)
+
+# Use in SCBE calculations
+from symphonic_cipher.core import calculate_risk
+risk = calculate_risk(point)
+print(f"Risk: {risk}")
+```
+
+## Running Tests
+
+### TypeScript
+```bash
+npm test
+```
+
+### Python
+```bash
+pytest tests/ -v
+```
+
+### All Tests
+```bash
+npm run test:all
+```
+
+## Next Steps
+
+1. **Explore Examples**: Check `examples/` directory for more code samples
+2. **Read Documentation**: See `docs/` for detailed API reference
+3. **Try Demos**: Open `scbe-aethermoore/customer-demo.html` in browser
+4. **Review Architecture**: Read `ARCHITECTURE_FOR_PILOTS.md`
+
+## Common Issues
+
+### TypeScript: Module not found
+```bash
 npm install
 npm run build
 ```
 
-### Option 3: Docker
-
+### Python: Import errors
 ```bash
-docker pull ghcr.io/isdandavis2/scbe-aethermoore:latest
-docker run -it ghcr.io/isdandavis2/scbe-aethermoore:latest
+pip install -e .
+# or
+export PYTHONPATH="${PYTHONPATH}:$(pwd)/src"
 ```
 
-## 🎮 Try the Interactive Demo
-
-### Web Demo (No Installation Required)
-
-1. Open `scbe-aethermoore/customer-demo.html` in your browser
-2. Try encrypting a message
-3. Run attack simulations
-4. View live metrics
-
-**Features:**
-- Real-time encryption/decryption
-- 4 attack simulations (Brute Force, Replay, MITM, Quantum)
-- Live performance charts
-- 14-layer status monitoring
-
-### Python CLI
-
-```bash
-python scbe-cli.py
-```
-
-**Available Commands:**
-```
-scbe> encrypt    # Encrypt a message
-scbe> decrypt    # Decrypt a message
-scbe> attack     # Run attack simulation
-scbe> metrics    # View system metrics
-scbe> help       # Show help
-scbe> exit       # Exit CLI
-```
-
-## 💻 Basic Usage
-
-### TypeScript/JavaScript
-
-```typescript
-import { DEFAULT_CONFIG, VERSION } from '@scbe/aethermoore';
-import { encrypt, decrypt } from '@scbe/aethermoore/crypto';
-
-console.log(`SCBE-AETHERMOORE ${VERSION}`);
-
-// Encrypt data
-const plaintext = "Hello, World!";
-const key = "my-secret-key";
-const ciphertext = encrypt(plaintext, key);
-
-console.log('Encrypted:', ciphertext);
-
-// Decrypt data
-const decrypted = decrypt(ciphertext, key);
-console.log('Decrypted:', decrypted);
-```
-
-### Python
-
-```python
-from src.symphonic_cipher.scbe_aethermoore_v2_1_production import SCBEAethermoore
-
-# Initialize SCBE
-scbe = SCBEAethermoore()
-
-# Encrypt
-plaintext = "Hello, World!"
-key = "my-secret-key"
-ciphertext = scbe.encrypt(plaintext, key)
-
-print(f"Encrypted: {ciphertext}")
-
-# Decrypt
-decrypted = scbe.decrypt(ciphertext, key)
-print(f"Decrypted: {decrypted}")
-```
-
-## 🏗️ Understanding the 14 Layers
-
-SCBE uses a 14-layer architecture for security:
-
-| Layer | Function | Purpose |
-|-------|----------|---------|
-| L1-4 | Context Embedding | Map data to hyperbolic space |
-| L5 | Invariant Metric | Calculate hyperbolic distances |
-| L6 | Breath Transform | Temporal modulation |
-| L7 | Phase Modulation | Rotation in hyperbolic space |
-| L8 | Multi-Well Potential | Energy landscape |
-| L9 | Spectral Channel | Frequency analysis |
-| L10 | Spin Channel | Quaternion stability |
-| L11 | Triadic Consensus | Byzantine agreement |
-| L12 | Harmonic Scaling | Risk amplification |
-| L13 | Decision Gate | Allow/Quarantine/Deny |
-| L14 | Audio Axis | Telemetry |
-
-## 📊 Performance Expectations
-
-- **Latency**: <50ms average
-- **Throughput**: 10,000+ requests/second
-- **Security**: 256-bit equivalent strength
-- **Quantum Resistance**: Yes (post-quantum primitives)
-
-## 🎯 Common Use Cases
-
-### 1. Secure Data Encryption
-
-```typescript
-import { encrypt, decrypt } from '@scbe/aethermoore/crypto';
-
-const sensitiveData = { ssn: "123-45-6789", name: "John Doe" };
-const encrypted = encrypt(JSON.stringify(sensitiveData), "secret-key");
-
-// Store or transmit encrypted data
-// ...
-
-// Later, decrypt
-const decrypted = JSON.parse(decrypt(encrypted, "secret-key"));
-```
-
-### 2. API Security
-
-```typescript
-import express from 'express';
-import { encrypt, decrypt } from '@scbe/aethermoore/crypto';
-
-const app = express();
-
-app.post('/secure-endpoint', (req, res) => {
-  const encryptedPayload = req.body.data;
-  const decrypted = decrypt(encryptedPayload, process.env.API_KEY);
-  
-  // Process decrypted data
-  const result = processData(decrypted);
-  
-  // Return encrypted response
-  res.json({ data: encrypt(result, process.env.API_KEY) });
-});
-```
-
-### 3. File Encryption
-
-```python
-from src.symphonic_cipher.scbe_aethermoore_v2_1_production import SCBEAethermoore
-
-scbe = SCBEAethermoore()
-
-# Encrypt file
-with open('sensitive.txt', 'r') as f:
-    plaintext = f.read()
-
-encrypted = scbe.encrypt(plaintext, "file-key")
-
-with open('sensitive.enc', 'w') as f:
-    f.write(encrypted)
-
-# Decrypt file
-with open('sensitive.enc', 'r') as f:
-    encrypted = f.read()
-
-decrypted = scbe.decrypt(encrypted, "file-key")
-
-with open('decrypted.txt', 'w') as f:
-    f.write(decrypted)
-```
-
-## 🔒 Security Best Practices
-
-1. **Key Management**
-   - Use strong, random keys (minimum 32 characters)
-   - Store keys securely (environment variables, key vaults)
-   - Rotate keys regularly
-
-2. **Input Validation**
-   - Always validate input before encryption
-   - Sanitize data to prevent injection attacks
-
-3. **Error Handling**
-   - Don't expose detailed error messages
-   - Log security events for monitoring
-
-4. **Updates**
-   - Keep SCBE updated to latest version
-   - Monitor security advisories
-
-## 🧪 Testing Your Integration
-
-```typescript
-import { encrypt, decrypt } from '@scbe/aethermoore/crypto';
-
-// Test roundtrip
-const original = "Test message";
-const key = "test-key-12345";
-const encrypted = encrypt(original, key);
-const decrypted = decrypt(encrypted, key);
-
-console.assert(original === decrypted, "Roundtrip failed!");
-console.log("✓ Encryption/Decryption working correctly");
-```
-
-## 📚 Next Steps
-
-- **Read the Docs**: Check out the full [README.md](README.md)
-- **Explore Examples**: See [examples/](examples/) directory
-- **Run Tests**: `npm test` and `pytest tests/`
-- **View Architecture**: Read [ARCHITECTURE_FOR_PILOTS.md](ARCHITECTURE_FOR_PILOTS.md)
-- **Try Demos**: Open the interactive demos in `scbe-aethermoore/`
-
-## 🆘 Troubleshooting
-
-### Issue: Module not found
-
-```bash
-# Ensure dependencies are installed
-npm install
-pip install -r requirements.txt
-```
-
-### Issue: Build fails
-
+### Tests failing
 ```bash
 # Clean and rebuild
 npm run clean
 npm run build
+npm test
 ```
 
-### Issue: Tests fail
+## Support
 
-```bash
-# Check Node.js version (must be >= 18)
-node --version
-
-# Check Python version (must be >= 3.9)
-python --version
-
-# Reinstall dependencies
-rm -rf node_modules package-lock.json
-npm install
-```
-
-### Issue: TypeScript errors
-
-```bash
-# Run type check
-npm run typecheck
-
-# Check tsconfig.json is correct
-```
-
-## 💬 Getting Help
-
-- **GitHub Issues**: Report bugs or request features
-- **Discussions**: Ask questions and share ideas
+- **Issues**: https://github.com/issdandavis/scbe-aethermoore-demo/issues
 - **Email**: issdandavis@gmail.com
-
-## 🎉 You're Ready!
-
-You now have SCBE-AETHERMOORE up and running. Start building secure applications with hyperbolic geometry-based security!
+- **Documentation**: See `docs/` directory
 
 ---
 
-**Happy Coding! 🚀**
+**Ready to build secure systems with hyperbolic geometry!** 🌌🔐

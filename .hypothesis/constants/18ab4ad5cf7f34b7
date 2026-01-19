@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_zeros_py.py
+# hypothesis_version: 6.148.8
+
+[0.0, 2e-12, 1.48e-08, 0.0001, 0.33, 0.5, 1.0, 2.0, 100, 'Derivative was zero.', 'No error', 'RootResults', 'all', 'bisect', 'brenth', 'brentq', 'converged', 'convergence error', 'halley', 'newton', 'result', 'ridder', 'root', 'secant', 'sign error', 'some', 'toms748', 'value error', 'zero_der']

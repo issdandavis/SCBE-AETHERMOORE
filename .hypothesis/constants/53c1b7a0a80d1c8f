@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\sparse\_compressed.py
+# hypothesis_version: 6.148.8
+
+[0.001, 'CF', '_eldiv_', '_elmul_', '_ge_', '_gt_', '_has_sorted_indices', '_le_', '_lt_', '_matvec', '_matvecs', '_minus_', '_ne_', '_plus_', 'axis out of bounds', 'blocksize', 'cannot be broadcast', 'cf', 'clip', 'csc', 'csr', 'i', 'indices must be >= 0', 'mergesort']

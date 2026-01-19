@@ -1,0 +1,44 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.GeneratorArbitrary = void 0;
+const Arbitrary_js_1 = require("../../check/arbitrary/definition/Arbitrary.js");
+const Stream_js_1 = require("../../stream/Stream.js");
+const globals_js_1 = require("../../utils/globals.js");
+const GeneratorValueBuilder_js_1 = require("./builders/GeneratorValueBuilder.js");
+const StableArbitraryGeneratorCache_js_1 = require("./builders/StableArbitraryGeneratorCache.js");
+const TupleArbitrary_js_1 = require("./TupleArbitrary.js");
+class GeneratorArbitrary extends Arbitrary_js_1.Arbitrary {
+    constructor() {
+        super(...arguments);
+        this.arbitraryCache = (0, StableArbitraryGeneratorCache_js_1.buildStableArbitraryGeneratorCache)(StableArbitraryGeneratorCache_js_1.naiveIsEqual);
+    }
+    generate(mrng, biasFactor) {
+        return (0, GeneratorValueBuilder_js_1.buildGeneratorValue)(mrng, biasFactor, () => [], this.arbitraryCache);
+    }
+    canShrinkWithoutContext(value) {
+        return false;
+    }
+    shrink(_value, context) {
+        if (context === undefined) {
+            return Stream_js_1.Stream.nil();
+        }
+        const safeContext = context;
+        const mrng = safeContext.mrng;
+        const biasFactor = safeContext.biasFactor;
+        const history = safeContext.history;
+        return (0, TupleArbitrary_js_1.tupleShrink)(history.map((c) => c.arb), history.map((c) => c.value), history.map((c) => c.context)).map((shrink) => {
+            function computePreBuiltValues() {
+                const subValues = shrink.value;
+                const subContexts = shrink.context;
+                return (0, globals_js_1.safeMap)(history, (entry, index) => ({
+                    arb: entry.arb,
+                    value: subValues[index],
+                    context: subContexts[index],
+                    mrng: entry.mrng,
+                }));
+            }
+            return (0, GeneratorValueBuilder_js_1.buildGeneratorValue)(mrng, biasFactor, computePreBuiltValues, this.arbitraryCache);
+        });
+    }
+}
+exports.GeneratorArbitrary = GeneratorArbitrary;

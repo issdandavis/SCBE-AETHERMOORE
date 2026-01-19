@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\interpolate\_rbfinterp.py
+# hypothesis_version: 6.148.8
+
+[0.0, 1.0, 1000000, 'C', 'RBFInterpolator', 'Singular matrix.', 'cubic', 'gaussian', 'inverse_multiquadric', 'inverse_quadratic', 'linear', 'long', 'multiquadric', 'quintic', 'thin_plate_spline']

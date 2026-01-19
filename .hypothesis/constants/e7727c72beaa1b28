@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\PIL\GifImagePlugin.py
+# hypothesis_version: 6.148.8
+
+[b'\x00', b'\n', b'!', b',', b'87a', b'89a', b';', b'GIF', b'GIF87a', b'GIF89a', b'NETSCAPE2.0', 128, 249, 254, 255, 512, 768, '.gif', '1', '256', 'Compuserve GIF', 'GIF', 'L', 'LA', 'P', 'RGB', 'RGBA', 'a', 'append_images', 'b', 'background', 'comment', 'convert', 'disposal', 'duration', 'extension', 'flush', 'g', 'gif', 'im', 'image/gif', 'include_color_table', 'interlace', 'loop', 'max', 'not a GIF file', 'optimize', 'palette', 'ppmquant', 'ppmtogif', 'r', 'transparency', 'version', 'wb']

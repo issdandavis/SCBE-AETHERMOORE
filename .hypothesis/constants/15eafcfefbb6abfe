@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\signal\_short_time_fft.py
+# hypothesis_version: 6.148.8
+
+[0.0, 0.5, 1.0, 'None!', 'ShortTimeFFT', 'centered', 'constant', 'edge', 'even', 'ft', 'linear', 'magnitude', 'odd', 'onesided', 'onesided2X', 'psd', 'reflect', 'tf', 'twosided', 'unitary', 'zeros']

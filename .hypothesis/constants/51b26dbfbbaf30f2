@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\sparse\_base.py
+# hypothesis_version: 6.148.8
+
+[0.0, 1.0, 10.1, '\n  :\t:\n', '\n  Coords\tValues\n', '!=', '<', '<=', '==', '>', '>=', 'Block Sparse Column', 'Block Sparse Row', 'COOrdinate', 'D', 'DIAgonal', 'Dictionary Of Keys', 'F', 'JAgged Diagonal', 'Linpack BAnded', 'List of Lists', 'Nonsymmetric SKyline', 'SparseWarning', 'Symmetric SKyline', 'Undefined', 'Variable Block Row', '_elmul_', '_spbase', 'array', 'bsc', 'bsr', 'coo', 'csc', 'csr', 'd', 'dia', 'dod', 'dok', 'egd', 'f', 'inconsistent shape', 'inconsistent shapes', 'index out of bounds', 'issparse', 'isspmatrix', 'jad', 'lba', 'lil', 'matrix', 'msc', 'msr', 'negative', 'nsk', 'positive', 'sparray', 'ssk', 'sss', 'to', 'und', 'unsafe', 'uss', 'vbr']

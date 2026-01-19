@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+"""
+SCBE-AETHERMOORE Unified Launcher
+Usage: scbe [cli|agent|demo]
+       @scbe (in terminal)
+"""
+import sys
+import os
+import subprocess
+
+def show_help():
+    """Display help message"""
+    print("SCBE-AETHERMOORE v3.0.0")
+    print("")
+    print("Usage: ./scbe [command]")
+    print("")
+    print("Commands:")
+    print("  cli      - Interactive CLI with tutorial")
+    print("  agent    - AI coding assistant")
+    print("  demo     - Encryption demo")
+    print("  memory   - AI memory shard demo (60-second story)")
+    print("")
+    print("Examples:")
+    print("  ./scbe cli")
+    print("  ./scbe agent")
+    print("  ./scbe demo")
+    print("  ./scbe memory")
+
+def main():
+    """Main launcher"""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Get command from arguments
+    if len(sys.argv) < 2:
+        show_help()
+        return
+    
+    command = sys.argv[1].lower()
+    
+    # Map commands to scripts
+    scripts = {
+        'cli': 'scbe-cli.py',
+        'agent': 'scbe-agent.py',
+        'demo': 'demo-cli.py',
+        'memory': 'demo_memory_shard.py'
+    }
+    
+    if command in scripts:
+        script_path = os.path.join(script_dir, scripts[command])
+        subprocess.run([sys.executable, script_path])
+    else:
+        print(f"Unknown command: {command}")
+        print("")
+        show_help()
+
+if __name__ == "__main__":
+    main()

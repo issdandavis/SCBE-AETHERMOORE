@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\matplotlib\transforms.py
+# hypothesis_version: 6.148.8
+
+[0.0, 1e-15, 1e-10, 1e-05, 0.001, 0.5, 1.0, 2.0, 72.0, 1000000.0, '(', '(%s)-1', ')', ',', '3.9', '=', 'C', 'E', 'N', 'NE', 'NW', 'Only defined in 2D', 'S', 'SE', 'SW', 'Singular Bbox.', 'W', '_a', '_b', '_base_transform', '_bbox', '_boxin', '_boxout', '_child', '_locked_points', '_mtx', '_parents', '_t', '_transform', '_x', '_y', 'dots', 'get_matrix', 'has_inverse', 'ignore', 'inches', 'inverted', 'is_affine', 'is_separable', 'points']

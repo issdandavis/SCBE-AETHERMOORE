@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\sparse\dok.py
+# hypothesis_version: 6.148.8
+
+['_dok', 'dok', 'dok_matrix', 'isspmatrix_dok', 'sparse', 'spmatrix']

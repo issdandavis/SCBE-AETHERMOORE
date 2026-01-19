@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\_lib\array_api_extra\_lib\_utils\_helpers.py
+# hypothesis_version: 6.148.8
+
+[0.145, 'P', 'T', '_meta', 'asarrays', 'bool', 'boolean indexing', 'capabilities', 'complex floating', 'eager_shape', 'in1d', 'integral', 'is_python_scalar', 'jax_autojit', 'mean', 'meta_namespace', 'obj', 'pickle_flatten', 'pickle_unflatten', 'real floating']

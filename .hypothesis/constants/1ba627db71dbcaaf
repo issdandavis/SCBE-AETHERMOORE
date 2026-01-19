@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\matplotlib\_afm.py
+# hypothesis_version: 6.148.8
+
+[b' ', b',', b'0', b';', b'Ascender', b'CapHeight', b'Capheight', b'CharacterSet', b'Characters', b'Comment', b'Descender', b'EncodingScheme', b'EndComposites', b'EndKernPairs', b'FamilyName', b'FontBBox', b'FontName', b'FullName', b'IsFixedPitch', b'ItalicAngle', b'KPX', b'Notice', b'StartCharMetrics', b'StartComposites', b'StartFontMetrics', b'StartKernData', b'StartKernPairs', b'StdHW', b'StdVW', b'UnderlinePosition', b'UnderlineThickness', b'Version', b'Weight', b'XHeight', b'false', b'no', 1000000000.0, 128, ',', '.', ';', 'B', 'Bad composites parse', 'Bad kern pairs parse', 'Bad parse', 'C', 'CharMetrics', 'CompositePart', 'EndCharMetrics', 'Euro', 'N', 'Not an AFM file', 'WX', 'latin-1', 'minus', 'name, dx, dy', 'question', 'utf8', 'width, name, bbox', '−']

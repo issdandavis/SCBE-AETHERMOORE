@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\_lib\_uarray\_backend.py
+# hypothesis_version: 6.148.8
+
+['.', 'Dispatchable', '_BackendState', '_Function', '_SetBackendContext', '_SkipBackendContext', '__module__', '__qualname__', '__self__', 'all_of_type', 'clear_backends', 'create_multimethod', 'determine_backend', 'dispatch_type', 'generate_multimethod', 'get_state', 'mark_as', 'register_backend', 'reset_state', 'set', 'set_backend', 'set_global_backend', 'set_state', 'skip', 'skip_backend']

@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\signal\_peak_finding.py
+# hypothesis_version: 6.148.8
+
+[0.5, 4.0, 'C', 'argrelextrema', 'argrelmax', 'argrelmin', 'clip', 'find_peaks', 'find_peaks_cwt', 'left_bases', 'left_edges', 'left_ips', 'left_thresholds', 'peak_heights', 'peak_prominences', 'peak_widths', 'plateau_sizes', 'prominences', 'right_bases', 'right_edges', 'right_ips', 'right_thresholds', 'safe', 'width_heights', 'widths']

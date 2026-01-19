@@ -4,20 +4,28 @@
   "description": "SCBE-AETHERMOORE: Hyperbolic Geometry-Based Security with 14-Layer Architecture",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "license": "MIT",
-  "type": "module",
+  "type": "commonjs",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/src/index.js",
+      "require": "./dist/src/index.js",
       "types": "./dist/src/index.d.ts"
     },
     "./harmonic": {
       "import": "./dist/src/harmonic/index.js",
+      "require": "./dist/src/harmonic/index.js",
       "types": "./dist/src/harmonic/index.d.ts"
+    },
+    "./symphonic": {
+      "import": "./dist/src/symphonic/index.js",
+      "require": "./dist/src/symphonic/index.js",
+      "types": "./dist/src/symphonic/index.d.ts"
     },
     "./crypto": {
       "import": "./dist/src/crypto/index.js",
+      "require": "./dist/src/crypto/index.js",
       "types": "./dist/src/crypto/index.d.ts"
     }
   },
@@ -75,12 +83,13 @@
   },
   "devDependencies": {
     "@types/jest": "^29.5.0",
+    "fast-check": "^4.5.3",
     "prettier": "^3.2.0",
     "rimraf": "^5.0.10",
-    "ts-node": "^10.9.0",
+    "ts-node": "^1.7.1",
     "typedoc": "^0.25.0",
     "typescript": "^5.4.0",
-    "vitest": "^1.2.0"
+    "vitest": "^4.0.17"
   },
   "bin": {
     "scbe": "./scbe-cli.py"

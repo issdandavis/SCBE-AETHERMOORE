@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\signal\_spectral_py.py
+# hypothesis_version: 6.148.8
+
+[1e-10, 0.25, 0.5, 1.0, 2.0, 4.0, 256, '__call__', 'amplitude', 'angle', 'boxcar', 'check_COLA', 'check_NOLA', 'coherence', 'complex', 'constant', 'csd', 'density', 'even', 'hann', 'istft', 'lombscargle', 'magnitude', 'mean', 'median', 'normalize', 'odd', 'onesided', 'periodogram', 'phase', 'power', 'psd', 'size', 'spectrogram', 'spectrum', 'stft', 'tukey', 'twosided', 'welch', 'window must be 1-D', 'zeros']
