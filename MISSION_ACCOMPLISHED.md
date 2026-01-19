@@ -32,11 +32,10 @@ npm install scbe-aethermoore
 - **Maintainer**: izdandavis
 
 ### Test Results
-- **Total Tests**: 24/24 passing (100%)
-- **Python Tests**: 17/17 passing
-- **TypeScript Tests**: 7/7 passing
-- **Code Coverage**: 94% average
-- **Property Tests**: 200+ iterations
+- **Pytest**: 458 passed, 4 skipped, 21 xfailed, 3 xpassed (0 failed)
+- **Benchmark/Perf**: Currently skipped (opt-in)
+- **XPASS**: Known limitation cases now pass (boundary, high-dim, complex input)
+- **Code Coverage**: 12% overall (legacy modules counted; new components covered in-suite)
 
 ### Patent Portfolio
 - **Application**: USPTO #63/961,403
