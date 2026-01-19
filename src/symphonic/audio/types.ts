@@ -16,9 +16,23 @@ export interface AudioProfile {
   b: number;               // Challenge bits
   delta_k_min: number;     // Minimum bin spacing
   gamma: number;           // Mix gain
-  beta: number;            // Correlation threshold
+  betaFactor: number;      // Threshold factor (0.3-0.6)
   E_min: number;           // Minimum energy
   clipThreshold: number;   // Clipping threshold
+}
+
+/**
+ * Compute expected correlation for clean watermark
+ */
+export function expectedCorrelation(profile: AudioProfile): number {
+  return profile.gamma * Math.sqrt(profile.b);
+}
+
+/**
+ * Compute beta threshold from profile
+ */
+export function computeBeta(profile: AudioProfile): number {
+  return profile.betaFactor * expectedCorrelation(profile);
 }
 
 export interface BinSelection {
@@ -56,7 +70,7 @@ export const PROFILE_16K: AudioProfile = {
   b: 32,
   delta_k_min: 12,
   gamma: 0.02,
-  beta: 0.35 * 0.02 * Math.sqrt(32),
+  betaFactor: 0.4,  // 40% of expected correlation
   E_min: 0.001,
   clipThreshold: 0.95
 };
@@ -72,7 +86,7 @@ export const PROFILE_44K: AudioProfile = {
   b: 48,
   delta_k_min: 11,
   gamma: 0.015,
-  beta: 0.32 * 0.015 * Math.sqrt(48),
+  betaFactor: 0.35,  // 35% of expected correlation
   E_min: 0.0008,
   clipThreshold: 0.95
 };
@@ -88,7 +102,7 @@ export const PROFILE_48K: AudioProfile = {
   b: 64,
   delta_k_min: 10,
   gamma: 0.01,
-  beta: 0.30 * 0.01 * Math.sqrt(64),
+  betaFactor: 0.30,  // 30% of expected correlation
   E_min: 0.0005,
   clipThreshold: 0.95
 };
