@@ -59,18 +59,26 @@ Layer 1: Foundation (Mathematical Axioms)
 ### 1. **RWP v3.0 - Hybrid Post-Quantum Cryptography**
 
 **Location**: `src/crypto/rwp_v3.py`, `src/spiralverse/rwp.ts`  
-**Spec**: `.kiro/specs/rwp-v2-integration/`
+**Spec**: `.kiro/specs/rwp-v2-integration/`  
+**Status**: ⚠️ **Specification complete, reference implementation only**
 
 **Integration Points**:
-- **Layer 12**: ML-KEM-768 key encapsulation + ML-DSA-65 signatures
+- **Layer 12**: ML-KEM-768 key encapsulation + ML-DSA-65 signatures (specified)
 - **Layer 10**: Triadic verification with Sacred Tongues
 - **Layer 3**: Langues Weighting System for trust scoring
 
 **Key Features**:
-- Hybrid classical + PQC signatures (belt-and-suspenders)
-- 128-bit quantum security
-- Backward compatible with RWP v2.1
-- Crypto-agility (classical-only, hybrid, PQC-only modes)
+- Hybrid classical + PQC signatures (belt-and-suspenders) - **design complete**
+- 128-bit quantum security - **mathematically verified**
+- Backward compatible with RWP v2.1 - **implemented**
+- Crypto-agility (classical-only, hybrid, PQC-only modes) - **specified**
+
+**Implementation Status**:
+- ✅ Complete mathematical specification with security proofs
+- ✅ Reference implementation demonstrating feasibility
+- ⚠️ Using HMAC-SHA256 placeholders (not real ML-KEM/ML-DSA yet)
+- ❌ No liboqs integration (planned Q2 2026)
+- ❌ No FIPS 140-3 validation (requires production deployment)
 
 **Files**:
 ```
@@ -367,29 +375,36 @@ qm_results = quantum_mechanics({
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     Production Deployment                    │
+│              Deployment Architecture (Planned)               │
 └─────────────────────────────────────────────────────────────┘
 
 Frontend (Browser/Node.js)
     ↓
-TypeScript Modules
+TypeScript Modules (✅ Implemented)
 ├── Space Tor Router (3D pathfinding)
 ├── Trust Manager (Layer 3)
-├── RWP v3 (hybrid PQC)
+├── RWP v2.1 (HMAC-SHA256) ✅
+├── RWP v3.0 (PQC spec, reference impl) ⚠️
 ├── PHDM (intrusion detection)
 └── Symphonic Cipher (audio encryption)
     ↓
 Backend (Python/AWS Lambda)
-├── RWP v3 Server
-├── Physics Simulation
-├── Sacred Tongues Encoding
-└── Compliance Monitoring
+├── RWP v2.1 Server ✅
+├── RWP v3.0 (planned Q2 2026) ⚠️
+├── Physics Simulation ✅
+├── Sacred Tongues Encoding ✅
+└── Compliance Monitoring (framework) ⚠️
     ↓
-Infrastructure
+Infrastructure (Planned)
 ├── AWS Lambda (serverless)
 ├── DynamoDB (state storage)
 ├── CloudWatch (monitoring)
 └── S3 (artifact storage)
+
+Legend:
+✅ Production-ready
+⚠️ Prototype/specification stage
+❌ Not yet implemented
 ```
 
 ---
@@ -606,4 +621,7 @@ See `LICENSE` file for details.
 
 **Last Updated**: January 18, 2026  
 **Version**: 4.0.0  
-**Status**: Production Ready ✅
+**Status**: Prototype Stage - Mathematically Sound, Reference Implementations ✅  
+**Production Readiness**: Q3-Q4 2026 (pending PQC integration and audits)
+
+**See Also**: `IMPLEMENTATION_STATUS_HONEST.md` for detailed capability assessment
