@@ -236,6 +236,13 @@ print(f"Decision: {result['decision']}")
 | L13 | Decision Gate | ALLOW / QUARANTINE / DENY |
 | L14 | Audio Axis | FFT telemetry Saudio = 1 - rHF,a |
 
+### Layer 14: Audio Axis / Hybrid PQC
+
+🔗  [Sacred Tongue Harmonic Verification – Mathematical Specification (Version 3.0)](docs/RWP_v3_SACRED_TONGUE_HARMONIC_VERIFICATION.md)
+
+Future extension to RWP v3 (Q2 2026).  
+Implements intent-modulated audio verification via harmonic synthesis and Feistel-obfuscated token ordering.
+
 ## 📐 Core Mathematical Axioms
 
 ### 1. Hyperbolic Metric Invariance
