@@ -310,3 +310,42 @@ SCBE-AETHERMOORE v4.0 is a **well-specified, mathematically sound, prototype-sta
 **Status**: Honest Technical Assessment ✅  
 **Last Updated**: January 18, 2026
 
+---
+
+## 6️⃣ TL;DR (Actionable Essence)
+
+What you have:
+- Private dictionary `𝒟` mapping tokens → ids; intent modality `M`; keyed Feistel permutation on ids; optional harmonic (audio) verification; HMAC envelope with nonce/timestamp replay guard.
+
+What you don’t have:
+- Any physics-based hardness proof or zero-latency claim; PQC hardware integration still planned.
+
+What you can claim (software-only):
+- Intent-modulated authentication using a private dictionary, a keyed structural permutation, and a multi-signature envelope. Optional audio channel as a second factor.
+
+What adds real security:
+- HMAC envelope over canonical string; fresh nonce + timestamp replay window; Feistel permutation keyed by per-message secret `K_msg = HMAC(k_master, "msg_key" || nonce)`; without `𝒟` and `K_msg`, an attacker cannot reconstruct the command; audio channel is secondary, not primary.
+
+Next step:
+- Implement the minimal TS/Python demo, lock down dictionary + keys, and file provisional claims using the clean language above.
+
+---
+
+### Mathematics-Only Core (for simulation)
+
+- Dictionary: `𝒟: τ ↔ id(τ) ∈ {0,…,|𝒟|-1}` (bijection).
+- Per-message key: `K_msg = HMAC(k_master, "msg_key" || nonce_96b)`.
+- Feistel permutation (R rounds, e.g., 4):
+  - Split ids vector `v` into halves `L(0), R(0)`.
+  - Round `r`: `k(r) = HMAC(K_msg, "round" || r) mod 256`; `L(r+1)=R(r)`; `R(r+1)=L(r) ⊕ F(R(r),k(r))`; `F(x,k)_i = x_i ⊕ k_i mod |k|`.
+  - Output `v' = [L(R); R(R)]`.
+- Harmonic synthesis (optional audio):
+  - Frequencies per token: `f_i = 440 + id_i*30`.
+  - Mask per modality `ℳ(M)`: STRICT {1,3,5}, ADAPTIVE {1..H_max}, PROBE {1}.
+  - Waveform: `x(t) = Σ_i Σ_{h∈ℳ(M)} (1/h) sin(2π (f_i h) t)`, sampled at 44.1 kHz for 0.5 s; normalize to [-1,1].
+- Envelope (RWP v3-like):
+  - Canonical string `C = "v3." || tongue || AAD_canon || ts || nonce || b64url(payload)`.
+  - Signature `sig = HMAC(k_master, C)` (hex).
+  - Replay check: reject if `|now - ts| > τ_max` or nonce seen.
+  - Verification: recompute `sig`, timing-safe compare; invert Feistel with same `K_msg` to recover ids; optional FFT to confirm overtone mask within `ε_f`, amplitude within `ε_a`.
+
