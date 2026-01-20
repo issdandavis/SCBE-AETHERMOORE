@@ -184,7 +184,7 @@ def layer_6_breathing_transform(u: np.ndarray, b: float,
 # LAYER 7: Phase Transform
 # =============================================================================
 def layer_7_phase_transform(u: np.ndarray, a: np.ndarray, Q: np.ndarray,
-                           eps: float = 1e-5) -> np.ndarray:
+                           eps: float = 1e-10) -> np.ndarray:
     """
     Layer 7: Phase Transform (Isometry)
 
@@ -192,14 +192,27 @@ def layer_7_phase_transform(u: np.ndarray, a: np.ndarray, Q: np.ndarray,
     Output: ũ = Q · (a ⊕ u)
 
     A7: Möbius addition ⊕ followed by rotation (preserves distances)
+
+    Note: When a = 0, this reduces to pure rotation Q @ u, which is an isometry.
     """
+    a_norm_sq = np.linalg.norm(a) ** 2
+
+    # Special case: when a ≈ 0, Möbius addition is identity
+    # This avoids numerical errors from eps in denominator
+    if a_norm_sq < 1e-20:
+        # Pure rotation (isometry)
+        return Q @ u
+
     # Möbius addition: a ⊕ u
     u_norm_sq = np.linalg.norm(u) ** 2
-    a_norm_sq = np.linalg.norm(a) ** 2
     au_dot = np.dot(a, u)
 
     numerator = (1 + 2 * au_dot + u_norm_sq) * a + (1 - a_norm_sq) * u
-    denominator = 1 + 2 * au_dot + a_norm_sq * u_norm_sq + eps
+    denominator = 1 + 2 * au_dot + a_norm_sq * u_norm_sq
+
+    # Only add eps if denominator is too small (avoid division by zero)
+    if abs(denominator) < eps:
+        denominator = eps if denominator >= 0 else -eps
 
     shifted = numerator / denominator
 
