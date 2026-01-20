@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\Crypto\Hash\Poly1305.py
+# hypothesis_version: 6.148.8
+
+[160, '%02x', 'MAC check failed', 'Unknown parameters: ', 'cipher', 'data', 'key', 'nonce']

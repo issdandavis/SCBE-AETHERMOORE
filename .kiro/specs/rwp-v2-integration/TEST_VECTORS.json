@@ -1,0 +1,252 @@
+{
+  "version": "2.1.0",
+  "description": "RWP v2.1 Interoperability Test Vectors",
+  "note": "Both TypeScript and Python implementations MUST produce identical canonical strings and signatures",
+  "vectors": [
+    {
+      "test_id": "vector_001_basic",
+      "description": "Single signature, no AAD",
+      "master_key": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "envelope": {
+        "ver": "2.1",
+        "primary_tongue": "RU",
+        "kid": {
+          "RU": "test-key-001"
+        },
+        "ts": 1737161234567,
+        "nonce": "AQIDBAUGBwgJCgsMDQ4PEA",
+        "payload": "SGVsbG8gV29ybGQ"
+      },
+      "expected_canonical_string": "TODO: Generate after choosing Option A or B",
+      "expected_sigs": {
+        "RU": "TODO: Generate with HMAC-SHA256"
+      },
+      "expected_result": "ALLOW"
+    },
+    {
+      "test_id": "vector_002_with_aad",
+      "description": "Single signature, with AAD (nested objects)",
+      "master_key": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "envelope": {
+        "ver": "2.1",
+        "primary_tongue": "RU",
+        "kid": {
+          "RU": "test-key-001"
+        },
+        "ts": 1737161234567,
+        "nonce": "AQIDBAUGBwgJCgsMDQ4PEA",
+        "aad": {
+          "action": "execute",
+          "mode": "STRICT",
+          "priority": 1,
+          "metadata": {
+            "user": "alice",
+            "session": "abc123"
+          }
+        },
+        "payload": "SGVsbG8gV29ybGQ"
+      },
+      "expected_canonical_string": "TODO: Generate after choosing Option A or B",
+      "expected_sigs": {
+        "RU": "TODO: Generate with HMAC-SHA256"
+      },
+      "expected_result": "ALLOW"
+    },
+    {
+      "test_id": "vector_003_multi_sig",
+      "description": "Multi-signature (3 tongues)",
+      "master_key": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "envelope": {
+        "ver": "2.1",
+        "primary_tongue": "RU",
+        "kid": {
+          "RU": "test-key-001",
+          "UM": "test-key-001",
+          "DR": "test-key-001"
+        },
+        "ts": 1737161234567,
+        "nonce": "AQIDBAUGBwgJCgsMDQ4PEA",
+        "aad": {
+          "action": "execute",
+          "mode": "SECRET"
+        },
+        "payload": "SGVsbG8gV29ybGQ"
+      },
+      "expected_canonical_string": "TODO: Generate after choosing Option A or B",
+      "expected_sigs": {
+        "RU": "TODO: Generate with HMAC-SHA256",
+        "UM": "TODO: Generate with HMAC-SHA256",
+        "DR": "TODO: Generate with HMAC-SHA256"
+      },
+      "expected_result": "ALLOW"
+    },
+    {
+      "test_id": "vector_004_all_tongues",
+      "description": "All 6 tongues (CRITICAL mode)",
+      "master_key": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "envelope": {
+        "ver": "2.1",
+        "primary_tongue": "KO",
+        "kid": {
+          "KO": "test-key-001",
+          "AV": "test-key-001",
+          "RU": "test-key-001",
+          "CA": "test-key-001",
+          "UM": "test-key-001",
+          "DR": "test-key-001"
+        },
+        "ts": 1737161234567,
+        "nonce": "AQIDBAUGBwgJCgsMDQ4PEA",
+        "aad": {
+          "action": "launch",
+          "mode": "CRITICAL"
+        },
+        "payload": "Q3JpdGljYWxQYXlsb2Fk"
+      },
+      "expected_canonical_string": "TODO: Generate after choosing Option A or B",
+      "expected_sigs": {
+        "KO": "TODO: Generate with HMAC-SHA256",
+        "AV": "TODO: Generate with HMAC-SHA256",
+        "RU": "TODO: Generate with HMAC-SHA256",
+        "CA": "TODO: Generate with HMAC-SHA256",
+        "UM": "TODO: Generate with HMAC-SHA256",
+        "DR": "TODO: Generate with HMAC-SHA256"
+      },
+      "expected_result": "ALLOW"
+    },
+    {
+      "test_id": "vector_005_empty_payload",
+      "description": "Empty payload (edge case)",
+      "master_key": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "envelope": {
+        "ver": "2.1",
+        "primary_tongue": "RU",
+        "kid": {
+          "RU": "test-key-001"
+        },
+        "ts": 1737161234567,
+        "nonce": "AQIDBAUGBwgJCgsMDQ4PEA",
+        "payload": ""
+      },
+      "expected_canonical_string": "TODO: Generate after choosing Option A or B",
+      "expected_sigs": {
+        "RU": "TODO: Generate with HMAC-SHA256"
+      },
+      "expected_result": "ALLOW"
+    },
+    {
+      "test_id": "vector_006_max_nonce",
+      "description": "Maximum nonce size (128 bytes)",
+      "master_key": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "envelope": {
+        "ver": "2.1",
+        "primary_tongue": "RU",
+        "kid": {
+          "RU": "test-key-001"
+        },
+        "ts": 1737161234567,
+        "nonce": "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMkJSYnKCkqKywtLi8wMTIzNDU2Nzg5Ojs8PT4_QEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaW1xdXl9gYWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXp7fH1-fw",
+        "payload": "SGVsbG8gV29ybGQ"
+      },
+      "expected_canonical_string": "TODO: Generate after choosing Option A or B",
+      "expected_sigs": {
+        "RU": "TODO: Generate with HMAC-SHA256"
+      },
+      "expected_result": "ALLOW"
+    },
+    {
+      "test_id": "vector_007_special_chars",
+      "description": "AAD with special characters (escaping test)",
+      "master_key": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "envelope": {
+        "ver": "2.1",
+        "primary_tongue": "RU",
+        "kid": {
+          "RU": "test-key-001"
+        },
+        "ts": 1737161234567,
+        "nonce": "AQIDBAUGBwgJCgsMDQ4PEA",
+        "aad": {
+          "message": "Hello \"World\"",
+          "path": "C:\\Users\\test",
+          "unicode": "こんにちは"
+        },
+        "payload": "SGVsbG8gV29ybGQ"
+      },
+      "expected_canonical_string": "TODO: Generate after choosing Option A or B",
+      "expected_sigs": {
+        "RU": "TODO: Generate with HMAC-SHA256"
+      },
+      "expected_result": "ALLOW"
+    },
+    {
+      "test_id": "vector_008_numbers",
+      "description": "AAD with numbers (canonicalization test)",
+      "master_key": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "envelope": {
+        "ver": "2.1",
+        "primary_tongue": "RU",
+        "kid": {
+          "RU": "test-key-001"
+        },
+        "ts": 1737161234567,
+        "nonce": "AQIDBAUGBwgJCgsMDQ4PEA",
+        "aad": {
+          "integer": 42,
+          "float": 3.14159,
+          "negative": -100,
+          "zero": 0
+        },
+        "payload": "SGVsbG8gV29ybGQ"
+      },
+      "expected_canonical_string": "TODO: Generate after choosing Option A or B",
+      "expected_sigs": {
+        "RU": "TODO: Generate with HMAC-SHA256"
+      },
+      "expected_result": "ALLOW"
+    },
+    {
+      "test_id": "vector_009_expired",
+      "description": "Expired timestamp (should DENY)",
+      "master_key": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "envelope": {
+        "ver": "2.1",
+        "primary_tongue": "RU",
+        "kid": {
+          "RU": "test-key-001"
+        },
+        "ts": 1000000000000,
+        "nonce": "AQIDBAUGBwgJCgsMDQ4PEA",
+        "payload": "SGVsbG8gV29ybGQ"
+      },
+      "expected_canonical_string": "TODO: Generate after choosing Option A or B",
+      "expected_sigs": {
+        "RU": "TODO: Generate with HMAC-SHA256"
+      },
+      "expected_result": "DENY",
+      "expected_reason": "timestamp_expired"
+    },
+    {
+      "test_id": "vector_010_replay",
+      "description": "Duplicate nonce (should DENY on second attempt)",
+      "master_key": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "envelope": {
+        "ver": "2.1",
+        "primary_tongue": "RU",
+        "kid": {
+          "RU": "test-key-001"
+        },
+        "ts": 1737161234567,
+        "nonce": "AQIDBAUGBwgJCgsMDQ4PEA",
+        "payload": "SGVsbG8gV29ybGQ"
+      },
+      "expected_canonical_string": "TODO: Generate after choosing Option A or B",
+      "expected_sigs": {
+        "RU": "TODO: Generate with HMAC-SHA256"
+      },
+      "expected_result": "DENY",
+      "expected_reason": "nonce_replay",
+      "note": "First attempt should ALLOW, second attempt with same nonce should DENY"
+    }
+  ]
+}

@@ -283,19 +283,31 @@ describe('Enterprise Compliance - Property Tests', () => {
           pciDss: fc.double({ min: 0.98, max: 1.0, noNaN: true })
         }),
         (scores) => {
-          const overallScore = (
-            scores.soc2 +
-            scores.iso27001 +
-            scores.fips140 +
-            scores.commonCriteria +
-            scores.nistCsf +
+          // Validate all scores are finite
+          const allScores = [
+            scores.soc2,
+            scores.iso27001,
+            scores.fips140,
+            scores.commonCriteria,
+            scores.nistCsf,
             scores.pciDss
           ) / 6;
 
+          ];
+          
+          if (!allScores.every(Number.isFinite)) {
+            return true; // Skip invalid test cases
+          }
+          
+          const overallScore = allScores.reduce((sum, score) => sum + score, 0) / allScores.length;
+          
           // Overall compliance score should exceed 98%
+          expect(Number.isFinite(overallScore)).toBe(true);
           expect(overallScore).toBeGreaterThan(config.complianceScoreTarget);
 
           return overallScore > config.complianceScoreTarget;
+          
+          return Number.isFinite(overallScore) && overallScore > config.complianceScoreTarget;
         }
       ),
       { numRuns: TestConfig.propertyTests.minIterations }
