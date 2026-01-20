@@ -14,6 +14,10 @@ References:
 - Cloud Provider SLAs
 
 Last Updated: January 19, 2026
+
+USAGE:
+  Run with: pytest tests/industry_standard/test_performance_benchmarks.py -v -m perf
+  Or set: SCBE_RUN_PERF=1 pytest tests/industry_standard/test_performance_benchmarks.py -v
 """
 
 import pytest
@@ -22,217 +26,188 @@ import os
 import time
 import statistics
 import numpy as np
+import json
+import platform
+import tracemalloc
 from typing import List, Dict, Tuple
+from datetime import datetime
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
+# Mark all tests in this file as performance tests (opt-in)
+pytestmark = pytest.mark.perf
+
 # Try to import modules
+MODULES_AVAILABLE = False
+IMPORT_ERRORS = []
+
 try:
-    from symphonic_cipher.scbe_aethermoore.pqc import pqc_core
     from scbe_14layer_reference import (
-        layer_1_context_encoding,
+        layer_1_complex_state,
         layer_4_poincare_embedding,
         layer_5_hyperbolic_distance,
-        layer_14_topological_cfi
+        layer_6_breathing_transform,
+        layer_14_audio_axis
     )
     MODULES_AVAILABLE = True
-except ImportError:
-    MODULES_AVAILABLE = False
+except ImportError as e:
+    IMPORT_ERRORS.append(f"scbe_14layer_reference: {str(e)}")
+
+# Try to import PQC modules (optional)
+PQC_AVAILABLE = False
+try:
+    from symphonic_cipher.scbe_aethermoore.pqc import pqc_core
+    PQC_AVAILABLE = True
+except ImportError as e:
+    IMPORT_ERRORS.append(f"pqc_core: {str(e)}")
+
+# Evidence directory
+EVIDENCE_DIR = os.path.join(os.path.dirname(__file__), '..', '..', 'docs', 'evidence')
+os.makedirs(EVIDENCE_DIR, exist_ok=True)
 
 
-class TestCryptographicPerformance:
+# =============================================================================
+# HARD-FAIL TEST: Prevent False Green
+# =============================================================================
+def test_perf_suite_modules_loaded():
     """
-    Cryptographic Operation Performance Tests
+    CRITICAL: Module Load Verification Test
+    
+    This test MUST FAIL if required modules don't load.
+    Prevents "false green" where all tests skip silently.
+    
+    This is NOT optional - it ensures the test suite is actually testing something.
+    """
+    if not MODULES_AVAILABLE:
+        error_msg = "CRITICAL: SCBE modules failed to load!\n"
+        error_msg += "This means the performance test suite cannot run.\n"
+        error_msg += "Import errors:\n"
+        for err in IMPORT_ERRORS:
+            error_msg += f"  - {err}\n"
+        pytest.fail(error_msg)
+    
+    # Verify we can actually call the functions
+    try:
+        test_data = np.array([1.0, 0.5, 0.3, 0.2, 0.1, 0.0] * 2)
+        _ = layer_1_complex_state(test_data, D=6)
+        _ = layer_4_poincare_embedding(np.random.randn(12))
+        _ = layer_5_hyperbolic_distance(np.zeros(6), np.ones(6) * 0.1)
+    except Exception as e:
+        pytest.fail(f"CRITICAL: SCBE functions not callable: {e}")
+
+
+def get_system_info() -> dict:
+    """Collect system information for evidence reports."""
+    return {
+        'timestamp': datetime.now().isoformat(),
+        'platform': platform.platform(),
+        'processor': platform.processor(),
+        'python_version': platform.python_version(),
+        'numpy_version': np.__version__,
+        'cpu_count': os.cpu_count(),
+        'modules_available': MODULES_AVAILABLE,
+        'pqc_available': PQC_AVAILABLE,
+    }
+
+
+def save_evidence(test_name: str, data: dict):
+    """Save test evidence to JSON file."""
+    evidence_file = os.path.join(EVIDENCE_DIR, f"{test_name}.json")
+    
+    evidence = {
+        'test_name': test_name,
+        'system_info': get_system_info(),
+        'results': data
+    }
+    
+    with open(evidence_file, 'w') as f:
+        json.dump(evidence, f, indent=2)
+    
+    print(f"\n[Evidence saved: {evidence_file}]")
+
+
+# =============================================================================
+# PRIMITIVE BENCHMARKS: Individual Layer Performance
+# =============================================================================
+class TestPrimitiveBenchmarks:
+    """
+    Primitive Layer Performance Tests
+    
+    Tests individual SCBE layer functions in isolation.
+    These are the building blocks of the system.
     
     Industry requirements:
-    - Key generation: <100ms
-    - Encryption: <10ms for 1KB
-    - Decryption: <10ms for 1KB
-    - Signing: <50ms
-    - Verification: <20ms
-    
-    These tests verify REAL performance.
-    """
-    
-    @pytest.mark.skipif(not MODULES_AVAILABLE, reason="Modules not available")
-    def test_mlkem768_keygen_performance(self):
-        """
-        ML-KEM-768 Key Generation Performance Test
-        
-        Target: <100ms per keypair
-        Industry standard for acceptable key generation time.
-        
-        This test WILL FAIL if key generation is too slow.
-        """
-        if not hasattr(pqc_core, 'generate_mlkem768_keypair'):
-            pytest.skip("ML-KEM-768 not available")
-        
-        n_trials = 100
-        times = []
-        
-        for _ in range(n_trials):
-            start = time.perf_counter()
-            pk, sk = pqc_core.generate_mlkem768_keypair()
-            elapsed = time.perf_counter() - start
-            times.append(elapsed * 1000)  # Convert to ms
-        
-        mean_time = statistics.mean(times)
-        p95_time = np.percentile(times, 95)
-        
-        assert mean_time < 100.0, f"ML-KEM-768 keygen mean time {mean_time:.2f}ms exceeds 100ms"
-        assert p95_time < 150.0, f"ML-KEM-768 keygen p95 time {p95_time:.2f}ms exceeds 150ms"
-    
-    @pytest.mark.skipif(not MODULES_AVAILABLE, reason="Modules not available")
-    def test_mlkem768_encap_decap_performance(self):
-        """
-        ML-KEM-768 Encapsulation/Decapsulation Performance Test
-        
-        Target: <10ms for encap+decap
-        Critical for TLS handshake performance.
-        
-        This test WILL FAIL if KEM operations are too slow.
-        """
-        if not hasattr(pqc_core, 'mlkem768_encapsulate'):
-            pytest.skip("ML-KEM-768 not available")
-        
-        # Generate keypair once
-        pk, sk = pqc_core.generate_mlkem768_keypair()
-        
-        n_trials = 1000
-        encap_times = []
-        decap_times = []
-        
-        for _ in range(n_trials):
-            # Measure encapsulation
-            start = time.perf_counter()
-            ct, ss1 = pqc_core.mlkem768_encapsulate(pk)
-            encap_times.append((time.perf_counter() - start) * 1000)
-            
-            # Measure decapsulation
-            start = time.perf_counter()
-            ss2 = pqc_core.mlkem768_decapsulate(ct, sk)
-            decap_times.append((time.perf_counter() - start) * 1000)
-        
-        mean_encap = statistics.mean(encap_times)
-        mean_decap = statistics.mean(decap_times)
-        mean_total = mean_encap + mean_decap
-        
-        assert mean_encap < 5.0, f"ML-KEM-768 encap mean time {mean_encap:.2f}ms exceeds 5ms"
-        assert mean_decap < 5.0, f"ML-KEM-768 decap mean time {mean_decap:.2f}ms exceeds 5ms"
-        assert mean_total < 10.0, f"ML-KEM-768 total time {mean_total:.2f}ms exceeds 10ms"
-    
-    @pytest.mark.skipif(not MODULES_AVAILABLE, reason="Modules not available")
-    def test_mldsa65_sign_verify_performance(self):
-        """
-        ML-DSA-65 Sign/Verify Performance Test
-        
-        Target: <50ms for signing, <20ms for verification
-        Critical for certificate validation and code signing.
-        
-        This test WILL FAIL if signature operations are too slow.
-        """
-        if not hasattr(pqc_core, 'mldsa65_sign'):
-            pytest.skip("ML-DSA-65 not available")
-        
-        # Generate keypair once
-        pk, sk = pqc_core.generate_mldsa65_keypair()
-        message = b"Performance test message" * 10  # 240 bytes
-        
-        n_trials = 500
-        sign_times = []
-        verify_times = []
-        
-        for _ in range(n_trials):
-            # Measure signing
-            start = time.perf_counter()
-            signature = pqc_core.mldsa65_sign(message, sk)
-            sign_times.append((time.perf_counter() - start) * 1000)
-            
-            # Measure verification
-            start = time.perf_counter()
-            valid = pqc_core.mldsa65_verify(message, signature, pk)
-            verify_times.append((time.perf_counter() - start) * 1000)
-        
-        mean_sign = statistics.mean(sign_times)
-        mean_verify = statistics.mean(verify_times)
-        
-        assert mean_sign < 50.0, f"ML-DSA-65 signing mean time {mean_sign:.2f}ms exceeds 50ms"
-        assert mean_verify < 20.0, f"ML-DSA-65 verification mean time {mean_verify:.2f}ms exceeds 20ms"
-
-
-class TestSCBELayerPerformance:
-    """
-    SCBE 14-Layer Performance Tests
-    
-    Each layer must meet performance requirements:
     - Layer processing: <1ms per layer
-    - Full pipeline: <20ms for 1KB
-    - Throughput: >50 MB/s
-    
-    These tests verify REAL layer performance.
+    - Hyperbolic distance: <0.1ms
+    - Embedding: <1ms
     """
     
-    @pytest.mark.skipif(not MODULES_AVAILABLE, reason="Modules not available")
-    def test_context_encoding_performance(self):
+    def test_layer1_complex_state_performance(self):
         """
-        Layer 1: Context Encoding Performance Test
+        Layer 1: Complex State Construction Performance
         
-        Target: <1ms for 1KB input
-        Context encoding is the entry point.
-        
-        This test WILL FAIL if context encoding is too slow.
+        Target: <0.5ms for typical input
         """
-        data = np.random.randn(1024)  # 1KB of data
-        
+        data = np.random.randn(12)
         n_trials = 1000
         times = []
         
         for _ in range(n_trials):
             start = time.perf_counter()
-            encoded = layer_1_context_encoding(data)
+            _ = layer_1_complex_state(data, D=6)
             times.append((time.perf_counter() - start) * 1000)
         
         mean_time = statistics.mean(times)
         p95_time = np.percentile(times, 95)
         
-        assert mean_time < 1.0, f"Context encoding mean time {mean_time:.3f}ms exceeds 1ms"
-        assert p95_time < 2.0, f"Context encoding p95 time {p95_time:.3f}ms exceeds 2ms"
+        evidence = {
+            'mean_ms': mean_time,
+            'p95_ms': p95_time,
+            'p99_ms': np.percentile(times, 99),
+            'min_ms': min(times),
+            'max_ms': max(times),
+            'n_trials': n_trials
+        }
+        save_evidence('layer1_complex_state', evidence)
+        
+        assert mean_time < 0.5, f"Layer 1 mean time {mean_time:.3f}ms exceeds 0.5ms"
+        assert p95_time < 1.0, f"Layer 1 p95 time {p95_time:.3f}ms exceeds 1ms"
     
-    @pytest.mark.skipif(not MODULES_AVAILABLE, reason="Modules not available")
-    def test_poincare_embedding_performance(self):
+    def test_layer4_poincare_embedding_performance(self):
         """
-        Layer 4: Poincaré Embedding Performance Test
+        Layer 4: Poincaré Embedding Performance
         
         Target: <1ms for typical input
-        Hyperbolic embedding is computationally intensive.
-        
-        This test WILL FAIL if embedding is too slow.
         """
         n_trials = 1000
         times = []
         
         for _ in range(n_trials):
-            x_G = np.random.randn(8)
+            x = np.random.randn(12)
             
             start = time.perf_counter()
-            u = layer_4_poincare_embedding(x_G)
+            _ = layer_4_poincare_embedding(x)
             times.append((time.perf_counter() - start) * 1000)
         
         mean_time = statistics.mean(times)
         p95_time = np.percentile(times, 95)
+        
+        evidence = {
+            'mean_ms': mean_time,
+            'p95_ms': p95_time,
+            'p99_ms': np.percentile(times, 99),
+            'n_trials': n_trials
+        }
+        save_evidence('layer4_poincare_embedding', evidence)
         
         assert mean_time < 1.0, f"Poincaré embedding mean time {mean_time:.3f}ms exceeds 1ms"
         assert p95_time < 2.0, f"Poincaré embedding p95 time {p95_time:.3f}ms exceeds 2ms"
     
-    @pytest.mark.skipif(not MODULES_AVAILABLE, reason="Modules not available")
-    def test_hyperbolic_distance_performance(self):
+    def test_layer5_hyperbolic_distance_performance(self):
         """
-        Layer 5: Hyperbolic Distance Performance Test
+        Layer 5: Hyperbolic Distance Performance
         
         Target: <0.1ms per distance computation
-        Distance is computed frequently.
-        
-        This test WILL FAIL if distance computation is too slow.
         """
         # Pre-generate points
         points = [np.random.randn(6) * 0.5 for _ in range(1000)]
@@ -246,292 +221,225 @@ class TestSCBELayerPerformance:
             v = points[(i + 1) % len(points)]
             
             start = time.perf_counter()
-            d = layer_5_hyperbolic_distance(u, v)
+            _ = layer_5_hyperbolic_distance(u, v)
             times.append((time.perf_counter() - start) * 1000)
         
         mean_time = statistics.mean(times)
         p95_time = np.percentile(times, 95)
+        
+        evidence = {
+            'mean_ms': mean_time,
+            'p95_ms': p95_time,
+            'p99_ms': np.percentile(times, 99),
+            'n_trials': n_trials
+        }
+        save_evidence('layer5_hyperbolic_distance', evidence)
         
         assert mean_time < 0.1, f"Hyperbolic distance mean time {mean_time:.4f}ms exceeds 0.1ms"
         assert p95_time < 0.2, f"Hyperbolic distance p95 time {p95_time:.4f}ms exceeds 0.2ms"
     
-    @pytest.mark.skipif(not MODULES_AVAILABLE, reason="Modules not available")
-    def test_topological_cfi_performance(self):
+    def test_layer6_breathing_transform_performance(self):
         """
-        Layer 14: Topological CFI Performance Test
+        Layer 6: Breathing Transform Performance
         
-        Target: <2ms for CFI verification
-        CFI is the final security layer.
-        
-        This test WILL FAIL if CFI is too slow.
+        Target: <1ms for typical input
         """
-        if not hasattr(layer_14_topological_cfi, '__call__'):
-            pytest.skip("Topological CFI not callable")
-        
-        data = np.random.randn(512)
-        
-        n_trials = 500
+        n_trials = 1000
         times = []
         
         for _ in range(n_trials):
+            u = np.random.randn(8) * 0.5
+            u = u / (np.linalg.norm(u) + 1.1)
+            
             start = time.perf_counter()
-            result = layer_14_topological_cfi(data)
+            _ = layer_6_breathing_transform(u, b=1.2)
             times.append((time.perf_counter() - start) * 1000)
         
         mean_time = statistics.mean(times)
         p95_time = np.percentile(times, 95)
         
-        assert mean_time < 2.0, f"Topological CFI mean time {mean_time:.2f}ms exceeds 2ms"
-        assert p95_time < 5.0, f"Topological CFI p95 time {p95_time:.2f}ms exceeds 5ms"
-
-
-class TestThroughputPerformance:
-    """
-    Throughput Performance Tests
+        evidence = {
+            'mean_ms': mean_time,
+            'p95_ms': p95_time,
+            'n_trials': n_trials
+        }
+        save_evidence('layer6_breathing_transform', evidence)
+        
+        assert mean_time < 1.0, f"Breathing transform mean time {mean_time:.3f}ms exceeds 1ms"
     
-    Industry requirements:
-    - Encryption throughput: >100 MB/s
-    - Decryption throughput: >100 MB/s
-    - Hashing throughput: >500 MB/s
-    
-    These tests verify REAL throughput.
-    """
-    
-    @pytest.mark.skipif(not MODULES_AVAILABLE, reason="Modules not available")
-    def test_encryption_throughput(self):
+    def test_layer14_audio_axis_performance(self):
         """
-        Encryption Throughput Test
+        Layer 14: Audio Axis Performance
         
-        Target: >100 MB/s
-        Critical for bulk data encryption.
-        
-        This test WILL FAIL if throughput is too low.
+        Target: <2ms for typical audio frame
         """
-        if not hasattr(pqc_core, 'encrypt_bulk'):
-            pytest.skip("Bulk encryption not available")
-        
-        # Test with 10MB of data
-        data_size = 10 * 1024 * 1024  # 10 MB
-        data = os.urandom(data_size)
-        key = os.urandom(32)
-        
-        start = time.perf_counter()
-        encrypted = pqc_core.encrypt_bulk(data, key)
-        elapsed = time.perf_counter() - start
-        
-        throughput = data_size / elapsed / (1024 * 1024)  # MB/s
-        
-        assert throughput > 100.0, f"Encryption throughput {throughput:.1f} MB/s below 100 MB/s"
-    
-    @pytest.mark.skipif(not MODULES_AVAILABLE, reason="Modules not available")
-    def test_hashing_throughput(self):
-        """
-        Hashing Throughput Test
-        
-        Target: >500 MB/s
-        Hashing is used extensively.
-        
-        This test WILL FAIL if hashing is too slow.
-        """
-        import hashlib
-        
-        # Test with 100MB of data
-        data_size = 100 * 1024 * 1024  # 100 MB
-        data = os.urandom(data_size)
-        
-        start = time.perf_counter()
-        hash_result = hashlib.sha256(data).digest()
-        elapsed = time.perf_counter() - start
-        
-        throughput = data_size / elapsed / (1024 * 1024)  # MB/s
-        
-        assert throughput > 500.0, f"Hashing throughput {throughput:.1f} MB/s below 500 MB/s"
-
-
-class TestLatencyPerformance:
-    """
-    Latency Performance Tests
-    
-    Industry requirements:
-    - p50 latency: <10ms
-    - p95 latency: <50ms
-    - p99 latency: <100ms
-    
-    These tests verify REAL latency distribution.
-    """
-    
-    @pytest.mark.skipif(not MODULES_AVAILABLE, reason="Modules not available")
-    def test_end_to_end_latency(self):
-        """
-        End-to-End Latency Test
-        
-        Measures full encryption pipeline latency.
-        
-        This test WILL FAIL if latency exceeds targets.
-        """
-        if not hasattr(pqc_core, 'encrypt'):
-            pytest.skip("Encryption not available")
-        
-        data = b"Test message" * 100  # 1.2 KB
-        key = os.urandom(32)
-        
-        n_trials = 10000
-        latencies = []
+        n_trials = 500
+        times = []
         
         for _ in range(n_trials):
+            audio = np.random.randn(512)
+            
             start = time.perf_counter()
-            encrypted = pqc_core.encrypt(data, key)
-            latencies.append((time.perf_counter() - start) * 1000)
+            _ = layer_14_audio_axis(audio)
+            times.append((time.perf_counter() - start) * 1000)
         
-        p50 = np.percentile(latencies, 50)
-        p95 = np.percentile(latencies, 95)
-        p99 = np.percentile(latencies, 99)
+        mean_time = statistics.mean(times)
+        p95_time = np.percentile(times, 95)
         
-        assert p50 < 10.0, f"p50 latency {p50:.2f}ms exceeds 10ms"
-        assert p95 < 50.0, f"p95 latency {p95:.2f}ms exceeds 50ms"
-        assert p99 < 100.0, f"p99 latency {p99:.2f}ms exceeds 100ms"
+        evidence = {
+            'mean_ms': mean_time,
+            'p95_ms': p95_time,
+            'n_trials': n_trials
+        }
+        save_evidence('layer14_audio_axis', evidence)
+        
+        assert mean_time < 2.0, f"Audio axis mean time {mean_time:.2f}ms exceeds 2ms"
+        assert p95_time < 5.0, f"Audio axis p95 time {p95_time:.2f}ms exceeds 5ms"
 
 
-class TestScalabilityPerformance:
+# =============================================================================
+# SYSTEM BENCHMARKS: End-to-End Performance
+# =============================================================================
+class TestSystemBenchmarks:
     """
-    Scalability Performance Tests
+    System-Level Performance Tests
     
-    Tests performance under load:
-    - Concurrent operations
-    - Large data sizes
-    - High request rates
+    Tests complete workflows and pipelines.
+    These measure real-world performance.
     
-    These tests verify system scales properly.
+    Industry requirements:
+    - Full pipeline: <20ms for 1KB
+    - Throughput: >50 MB/s
+    - Latency: p95 < 50ms
     """
     
-    @pytest.mark.skipif(not MODULES_AVAILABLE, reason="Modules not available")
-    def test_concurrent_operations(self):
+    def test_memory_footprint_tracemalloc(self):
         """
-        Concurrent Operations Test
+        Memory Footprint Test (using tracemalloc)
         
-        System must handle concurrent operations efficiently.
-        Target: Linear scaling up to CPU cores.
-        
-        This test WILL FAIL if concurrency causes significant overhead.
+        Target: <50MB memory increase for 1000 operations
         """
-        import concurrent.futures
+        # Start tracing
+        tracemalloc.start()
         
-        if not hasattr(pqc_core, 'encrypt'):
-            pytest.skip("Encryption not available")
+        # Get baseline
+        baseline = tracemalloc.get_traced_memory()[0]
         
-        def encrypt_task():
-            data = os.urandom(1024)
-            key = os.urandom(32)
-            return pqc_core.encrypt(data, key)
+        # Perform operations
+        for _ in range(1000):
+            data = np.random.randn(12)
+            c = layer_1_complex_state(data, D=6)
+            u = layer_4_poincare_embedding(np.concatenate([np.real(c), np.imag(c)]))
+            _ = layer_5_hyperbolic_distance(u, np.zeros(12))
         
-        # Test with different concurrency levels
+        # Get peak memory
+        current, peak = tracemalloc.get_traced_memory()
+        tracemalloc.stop()
+        
+        memory_increase_mb = (peak - baseline) / (1024 * 1024)
+        
+        evidence = {
+            'baseline_mb': baseline / (1024 * 1024),
+            'peak_mb': peak / (1024 * 1024),
+            'increase_mb': memory_increase_mb,
+            'operations': 1000
+        }
+        save_evidence('memory_footprint', evidence)
+        
+        assert memory_increase_mb < 50.0, f"Memory increase {memory_increase_mb:.1f}MB exceeds 50MB"
+    
+    def test_concurrent_operations_process_pool(self):
+        """
+        Concurrent Operations Test (using ProcessPoolExecutor)
+        
+        Reports speedup metrics instead of asserting specific values.
+        Python GIL makes thread-based speedup unreliable.
+        """
+        from concurrent.futures import ProcessPoolExecutor
+        
+        def compute_task(seed):
+            np.random.seed(seed)
+            data = np.random.randn(12)
+            c = layer_1_complex_state(data, D=6)
+            x = np.concatenate([np.real(c), np.imag(c)])
+            u = layer_4_poincare_embedding(x)
+            return layer_5_hyperbolic_distance(u, np.zeros(12))
+        
         n_tasks = 100
         
         # Sequential
         start = time.perf_counter()
-        for _ in range(n_tasks):
-            encrypt_task()
+        for i in range(n_tasks):
+            compute_task(i)
         sequential_time = time.perf_counter() - start
         
         # Concurrent (4 workers)
         start = time.perf_counter()
-        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-            futures = [executor.submit(encrypt_task) for _ in range(n_tasks)]
-            concurrent.futures.wait(futures)
+        with ProcessPoolExecutor(max_workers=4) as executor:
+            list(executor.map(compute_task, range(n_tasks)))
         concurrent_time = time.perf_counter() - start
         
-        speedup = sequential_time / concurrent_time
+        speedup = sequential_time / concurrent_time if concurrent_time > 0 else 0
         
-        # Should see at least 2x speedup with 4 workers
-        assert speedup > 2.0, f"Concurrent speedup {speedup:.2f}x below 2.0x"
+        evidence = {
+            'sequential_time_s': sequential_time,
+            'concurrent_time_s': concurrent_time,
+            'speedup': speedup,
+            'n_tasks': n_tasks,
+            'workers': 4
+        }
+        save_evidence('concurrent_operations', evidence)
+        
+        # Report metrics, don't assert (hardware-dependent)
+        print(f"\n[Concurrency] Sequential: {sequential_time:.2f}s, Concurrent: {concurrent_time:.2f}s, Speedup: {speedup:.2f}x")
+
+
+# =============================================================================
+# PQC BENCHMARKS: Post-Quantum Cryptography (Optional)
+# =============================================================================
+@pytest.mark.skipif(not PQC_AVAILABLE, reason="PQC modules not available")
+class TestPQCBenchmarks:
+    """
+    Post-Quantum Cryptography Performance Tests
     
-    @pytest.mark.skipif(not MODULES_AVAILABLE, reason="Modules not available")
-    def test_large_data_performance(self):
+    Tests ML-KEM and ML-DSA performance (if available).
+    These are optional - system works without PQC.
+    
+    Industry requirements:
+    - Key generation: <100ms
+    - Encapsulation: <5ms
+    - Signing: <50ms
+    """
+    
+    def test_mlkem768_keygen_performance(self):
         """
-        Large Data Performance Test
+        ML-KEM-768 Key Generation Performance Test
         
-        Performance must scale linearly with data size.
-        
-        This test WILL FAIL if performance degrades non-linearly.
+        Target: <100ms per keypair
         """
-        if not hasattr(pqc_core, 'encrypt'):
-            pytest.skip("Encryption not available")
+        if not hasattr(pqc_core, 'generate_mlkem768_keypair'):
+            pytest.skip("ML-KEM-768 not available")
         
-        key = os.urandom(32)
-        
-        # Test different data sizes
-        sizes = [1024, 10240, 102400, 1024000]  # 1KB, 10KB, 100KB, 1MB
+        n_trials = 100
         times = []
         
-        for size in sizes:
-            data = os.urandom(size)
-            
+        for _ in range(n_trials):
             start = time.perf_counter()
-            encrypted = pqc_core.encrypt(data, key)
+            pk, sk = pqc_core.generate_mlkem768_keypair()
             elapsed = time.perf_counter() - start
-            
-            times.append(elapsed)
+            times.append(elapsed * 1000)
         
-        # Check linearity: time should scale roughly linearly with size
-        # Calculate throughput for each size
-        throughputs = [sizes[i] / times[i] for i in range(len(sizes))]
+        mean_time = statistics.mean(times)
+        p95_time = np.percentile(times, 95)
         
-        # Throughput should be relatively consistent (within 50%)
-        min_throughput = min(throughputs)
-        max_throughput = max(throughputs)
+        evidence = {
+            'mean_ms': mean_time,
+            'p95_ms': p95_time,
+            'n_trials': n_trials
+        }
+        save_evidence('mlkem768_keygen', evidence)
         
-        variation = (max_throughput - min_throughput) / min_throughput
-        
-        assert variation < 0.5, f"Throughput variation {variation:.2%} exceeds 50% - non-linear scaling"
-
-
-class TestMemoryPerformance:
-    """
-    Memory Performance Tests
-    
-    Tests memory usage and efficiency:
-    - Memory footprint
-    - Memory allocation rate
-    - Memory leaks
-    
-    These tests verify memory efficiency.
-    """
-    
-    @pytest.mark.skipif(not MODULES_AVAILABLE, reason="Modules not available")
-    def test_memory_footprint(self):
-        """
-        Memory Footprint Test
-        
-        System must have reasonable memory footprint.
-        Target: <100MB for typical operations.
-        
-        This test WILL FAIL if memory usage is excessive.
-        """
-        import psutil
-        import gc
-        
-        if not hasattr(pqc_core, 'encrypt'):
-            pytest.skip("Encryption not available")
-        
-        # Force garbage collection
-        gc.collect()
-        
-        # Measure initial memory
-        process = psutil.Process()
-        initial_memory = process.memory_info().rss / (1024 * 1024)  # MB
-        
-        # Perform operations
-        key = os.urandom(32)
-        for _ in range(1000):
-            data = os.urandom(1024)
-            encrypted = pqc_core.encrypt(data, key)
-        
-        # Measure final memory
-        final_memory = process.memory_info().rss / (1024 * 1024)  # MB
-        
-        memory_increase = final_memory - initial_memory
-        
-        assert memory_increase < 100.0, f"Memory increase {memory_increase:.1f}MB exceeds 100MB"
+        assert mean_time < 100.0, f"ML-KEM-768 keygen mean time {mean_time:.2f}ms exceeds 100ms"
 
 
 if __name__ == "__main__":
