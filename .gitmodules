@@ -1,0 +1,3 @@
+[submodule "aws-lambda-simple-web-app"]
+	path = aws-lambda-simple-web-app
+	url = https://github.com/issdandavis/aws-lambda-simple-web-app.git
