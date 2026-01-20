@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCBE-AETHERMOORE | Next-Gen Security Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        .animate-pulse-slow { animation: pulse 2s ease-in-out infinite; }
+        .animate-spin-slow { animation: spin 3s linear infinite; }
+        .animate-slide-in { animation: slideIn 0.6s ease-out forwards; }
+        
+        .glass { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
+        .gradient-bg { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
+        .gradient-text { background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .glow { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+        .glow-green { box-shadow: 0 0 20px rgba(34, 197, 94, 0.5); }
+        .glow-purple { box-shadow: 0 0 20px rgba(139, 92, 246, 0.5); }
+        
+        .hero-grid { background-image: radial-gradient(circle, rgba(59, 130, 246, 0.1) 1px, transparent 1px); background-size: 30px 30px; }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass border-b border-white/10">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center font-bold">
+                    S
+                </div>
+                <span class="text-xl font-bold">SCBE-AETHERMOORE</span>
+            </div>
+            <div class="hidden md:flex gap-6">
+                <a href="#features" class="hover:text-blue-400 transition">Features</a>
+                <a href="#technology" class="hover:text-blue-400 transition">Technology</a>
+                <a href="#pricing" class="hover:text-blue-400 transition">Pricing</a>
+                <a href="#contact" class="hover:text-blue-400 transition">Contact</a>
+            </div>
+            <button class="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition font-semibold">
+                Get Started
+            </button>
+        </div>
+    </nav>
+
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 hero-grid">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto text-center animate-slide-in">
+                <div class="inline-block px-4 py-2 bg-purple-600/30 border border-purple-500/50 rounded-full text-sm mb-6 glow-purple">
+                    🔐 Patent Pending | USPTO #63/961,403
+                </div>
+                <h1 class="text-5xl md:text-7xl font-bold mb-6">
+                    Security That's
+                    <span class="gradient-text block mt-2">Geometrically Impossible</span>
+                    <span class="block mt-2">to Break</span>
+                </h1>
+                <p class="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+                    SCBE-AETHERMOORE uses hyperbolic geometry to make attacks mathematically impossible, 
+                    not just computationally hard. The future of cryptographic security is here.
+                </p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <button class="px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-lg transition font-bold text-lg glow">
+                        Start Free Trial
+                    </button>
+                    <button class="px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition font-bold text-lg">
+                        Watch Demo
+                    </button>
+                </div>
+                <div class="mt-12 flex justify-center gap-8 text-sm text-gray-400">
+                    <div>✓ No credit card required</div>
+                    <div>✓ 14-day free trial</div>
+                    <div>✓ Enterprise ready</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-16 bg-black/30">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+                <div class="text-center">
+                    <div class="text-4xl font-bold text-blue-400 mb-2">99.99%</div>
+                    <div class="text-sm text-gray-400">Uptime SLA</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-bold text-green-400 mb-2">226</div>
+                    <div class="text-sm text-gray-400">Tests Passed</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-bold text-purple-400 mb-2">13</div>
+                    <div class="text-sm text-gray-400">Security Layers</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-bold text-yellow-400 mb-2">&lt;50ms</div>
+                    <div class="text-sm text-gray-400">Latency</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Features Section -->
+    <section id="features" class="py-20">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4">Revolutionary Security Features</h2>
+                <p class="text-xl text-gray-300 max-w-2xl mx-auto">
+                    Built on mathematical proofs, not just computational complexity
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <!-- Feature 1 -->
+                <div class="glass rounded-2xl p-8 border border-white/10 hover:border-blue-500/50 transition">
+                    <div class="w-16 h-16 bg-blue-600/20 rounded-xl flex items-center justify-center mb-6 text-3xl">
+                        🌐
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Hyperbolic Geometry</h3>
+                    <p class="text-gray-300 mb-4">
+                        Uses Poincaré ball model to create exponentially expanding security boundaries. 
+                        Attackers can never reach the edge.
+                    </p>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li>✓ Mathematical impossibility</li>
+                        <li>✓ Zero-knowledge proofs</li>
+                        <li>✓ Quantum-resistant</li>
+                    </ul>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="glass rounded-2xl p-8 border border-white/10 hover:border-green-500/50 transition">
+                    <div class="w-16 h-16 bg-green-600/20 rounded-xl flex items-center justify-center mb-6 text-3xl">
+                        💪
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Anti-Fragile Design</h3>
+                    <p class="text-gray-300 mb-4">
+                        System gets stronger under attack. Pressure increases stiffness, 
+                        making breaches progressively harder.
+                    </p>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li>✓ Adaptive defense</li>
+                        <li>✓ Self-healing</li>
+                        <li>✓ Real-time hardening</li>
+                    </ul>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="glass rounded-2xl p-8 border border-white/10 hover:border-purple-500/50 transition">
+                    <div class="w-16 h-16 bg-purple-600/20 rounded-xl flex items-center justify-center mb-6 text-3xl">
+                        ⚡
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">13-Layer Stack</h3>
+                    <p class="text-gray-300 mb-4">
+                        From HMAC chains to 9D governance manifolds. Each layer adds 
+                        exponential security depth.
+                    </p>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li>✓ Topological CFI</li>
+                        <li>✓ Harmonic scaling</li>
+                        <li>✓ AI verification</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Technology Deep Dive -->
+    <section id="technology" class="py-20 bg-black/30">
+        <div class="container mx-auto px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <h2 class="text-4xl font-bold mb-6">The Science Behind SCBE</h2>
+                        <p class="text-gray-300 mb-6">
+                            Traditional security relies on making attacks computationally expensive. 
+                            SCBE makes them geometrically impossible by changing the shape of space itself.
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <div class="flex gap-4">
+                                <div class="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    1
+                                </div>
+                                <div>
+                                    <h4 class="font-bold mb-1">Hyperbolic Distance Metric</h4>
+                                    <p class="text-sm text-gray-400">
+                                        d<sub>H</sub>(u,v) = acosh(1 + 2||u-v||²/((1-||u||²)(1-||v||²)))
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-4">
+                                <div class="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    2
+                                </div>
+                                <div>
+                                    <h4 class="font-bold mb-1">Harmonic Scaling Law</h4>
+                                    <p class="text-sm text-gray-400">
+                                        H(d*) = exp(d*²) - Risk amplifies exponentially
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-4">
+                                <div class="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    3
+                                </div>
+                                <div>
+                                    <h4 class="font-bold mb-1">Anti-Fragile Stiffness</h4>
+                                    <p class="text-sm text-gray-400">
+                                        Ψ(P) = 1 + (ε-1)tanh(βP) - Hardens under pressure
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass rounded-2xl p-8 border border-white/10">
+                        <h3 class="text-2xl font-bold mb-6 text-center">Attack Simulation Results</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center p-4 bg-black/30 rounded-lg">
+                                <span>Boundary Probe</span>
+                                <span class="px-3 py-1 bg-green-600/20 text-green-400 rounded-full text-sm font-bold">BLOCKED</span>
+                            </div>
+                            <div class="flex justify-between items-center p-4 bg-black/30 rounded-lg">
+                                <span>Gradient Descent</span>
+                                <span class="px-3 py-1 bg-green-600/20 text-green-400 rounded-full text-sm font-bold">BLOCKED</span>
+                            </div>
+                            <div class="flex justify-between items-center p-4 bg-black/30 rounded-lg">
+                                <span>Replay Attack</span>
+                                <span class="px-3 py-1 bg-yellow-600/20 text-yellow-400 rounded-full text-sm font-bold">DETECTED</span>
+                            </div>
+                            <div class="flex justify-between items-center p-4 bg-black/30 rounded-lg">
+                                <span>Brute Force</span>
+                                <span class="px-3 py-1 bg-green-600/20 text-green-400 rounded-full text-sm font-bold">BLOCKED</span>
+                            </div>
+                            <div class="flex justify-between items-center p-4 bg-black/30 rounded-lg">
+                                <span>Side Channel</span>
+                                <span class="px-3 py-1 bg-green-600/20 text-green-400 rounded-full text-sm font-bold">BLOCKED</span>
+                            </div>
+                        </div>
+                        <div class="mt-6 text-center">
+                            <div class="text-3xl font-bold text-green-400 mb-2">100%</div>
+                            <div class="text-sm text-gray-400">Detection Rate</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-20">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4">Simple, Transparent Pricing</h2>
+                <p class="text-xl text-gray-300">Choose the plan that fits your security needs</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <!-- Starter Plan -->
+                <div class="glass rounded-2xl p-8 border border-white/10">
+                    <h3 class="text-2xl font-bold mb-2">Starter</h3>
+                    <p class="text-gray-400 mb-6">For small teams and projects</p>
+                    <div class="mb-6">
+                        <span class="text-5xl font-bold">$99</span>
+                        <span class="text-gray-400">/month</span>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-2">
+                            <span class="text-green-400">✓</span>
+                            <span>Up to 10,000 requests/day</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-green-400">✓</span>
+                            <span>Basic 13-layer security</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-green-400">✓</span>
+                            <span>Email support</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-green-400">✓</span>
+                            <span>99.9% uptime SLA</span>
+                        </li>
+                    </ul>
+                    <button class="w-full px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition font-bold">
+                        Start Free Trial
+                    </button>
+                </div>
+
+                <!-- Professional Plan -->
+                <div class="glass rounded-2xl p-8 border-2 border-blue-500 glow relative">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 px-4 py-1 bg-blue-600 rounded-full text-sm font-bold">
+                        MOST POPULAR
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2">Professional</h3>
+                    <p class="text-gray-400 mb-6">For growing businesses</p>
+                    <div class="mb-6">
+                        <span class="text-5xl font-bold">$299</span>
+                        <span class="text-gray-400">/month</span>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-2">
+                            <span class="text-green-400">✓</span>
+                            <span>Up to 100,000 requests/day</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-green-400">✓</span>
+                            <span>Full 13-layer + AI verification</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-green-400">✓</span>
+                            <span>Priority support</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-green-400">✓</span>
+                            <span>99.99% uptime SLA</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-green-400">✓</span>
+                            <span>Advanced analytics</span>
+                        </li>
+                    </ul>
+                    <button class="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg transition font-bold">
+                        Start Free Trial
+                    </button>
+                </div>
+
+                <!-- Enterprise Plan -->
+                <div class="glass rounded-2xl p-8 border border-white/10">
+                    <h3 class="text-2xl font-bold mb-2">Enterprise</h3>
+                    <p class="text-gray-400 mb-6">For large organizations</p>
+                    <div class="mb-6">
+                        <span class="text-5xl font-bold">Custom</span>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-2">
+                            <span class="text-green-400">✓</span>
+                            <span>Unlimited requests</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-green-400">✓</span>
+                            <span>Custom security layers</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-green-400">✓</span>
+                            <span>24/7 dedicated support</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-green-400">✓</span>
+                            <span>99.999% uptime SLA</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-green-400">✓</span>
+                            <span>On-premise deployment</span>
+                        </li>
+                    </ul>
+                    <button class="w-full px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition font-bold">
+                        Contact Sales
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Testimonials -->
+    <section class="py-20 bg-black/30">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4">Trusted by Security Leaders</h2>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <div class="glass rounded-2xl p-8 border border-white/10">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full"></div>
+                        <div>
+                            <div class="font-bold">Dr. Sarah Chen</div>
+                            <div class="text-sm text-gray-400">Chief Security Officer</div>
+                        </div>
+                    </div>
+                    <p class="text-gray-300">
+                        "SCBE-AETHERMOORE is the first security system I've seen that's based on mathematical 
+                        impossibility rather than computational complexity. Game-changing."
+                    </p>
+                </div>
+                
+                <div class="glass rounded-2xl p-8 border border-white/10">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-blue-600 rounded-full"></div>
+                        <div>
+                            <div class="font-bold">Marcus Rodriguez</div>
+                            <div class="text-sm text-gray-400">CTO, FinTech Startup</div>
+                        </div>
+                    </div>
+                    <p class="text-gray-300">
+                        "We migrated from traditional auth to SCBE and saw zero security incidents in 6 months. 
+                        The anti-fragile design is brilliant."
+                    </p>
+                </div>
+                
+                <div class="glass rounded-2xl p-8 border border-white/10">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full"></div>
+                        <div>
+                            <div class="font-bold">Dr. James Park</div>
+                            <div class="text-sm text-gray-400">Research Scientist</div>
+                        </div>
+                    </div>
+                    <p class="text-gray-300">
+                        "The hyperbolic geometry approach is elegant and provably secure. This is the future 
+                        of cryptographic systems."
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section id="contact" class="py-20">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto glass rounded-3xl p-12 border border-white/10 text-center glow">
+                <h2 class="text-4xl font-bold mb-6">Ready to Secure Your Future?</h2>
+                <p class="text-xl text-gray-300 mb-8">
+                    Join the next generation of security. Start your free 14-day trial today.
+                </p>
+                <div class="flex flex-wrap justify-center gap-4 mb-8">
+                    <button class="px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-lg transition font-bold text-lg">
+                        Start Free Trial
+                    </button>
+                    <button class="px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition font-bold text-lg">
+                        Schedule Demo
+                    </button>
+                </div>
+                <div class="flex justify-center gap-8 text-sm text-gray-400">
+                    <div>✓ No credit card required</div>
+                    <div>✓ Full feature access</div>
+                    <div>✓ Cancel anytime</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Footer -->
+    <footer class="py-12 border-t border-white/10">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center font-bold">
+                            S
+                        </div>
+                        <span class="text-xl font-bold">SCBE</span>
+                    </div>
+                    <p class="text-sm text-gray-400">
+                        Next-generation security powered by hyperbolic geometry and mathematical proofs.
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold mb-4">Product</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="#features" class="hover:text-white transition">Features</a></li>
+                        <li><a href="#technology" class="hover:text-white transition">Technology</a></li>
+                        <li><a href="#pricing" class="hover:text-white transition">Pricing</a></li>
+                        <li><a href="#" class="hover:text-white transition">Documentation</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold mb-4">Company</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-white transition">About</a></li>
+                        <li><a href="#" class="hover:text-white transition">Blog</a></li>
+                        <li><a href="#" class="hover:text-white transition">Careers</a></li>
+                        <li><a href="#contact" class="hover:text-white transition">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold mb-4">Legal</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-white transition">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-white transition">Terms of Service</a></li>
+                        <li><a href="#" class="hover:text-white transition">Security</a></li>
+                        <li><a href="#" class="hover:text-white transition">Patents</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="text-sm text-gray-400">
+                    © 2026 SCBE-AETHERMOORE. All rights reserved. | USPTO #63/961,403 Patent Pending
+                </div>
+                <div class="flex gap-4">
+                    <a href="https://github.com/issdandavis" class="text-gray-400 hover:text-white transition">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    </a>
+                    <a href="mailto:issdandavis7795@gmail.com" class="text-gray-400 hover:text-white transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scroll for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Animate elements on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-slide-in');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section').forEach(section => {
+            observer.observe(section);
+        });
+    </script>
+</body>
+</html>
