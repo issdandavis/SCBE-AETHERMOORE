@@ -15,7 +15,7 @@ WARN="${OUTDIR}/warnings.txt"
 touch "${WARN}"
 
 log() { echo "[$(date +"%H:%M:%S")] $*"; }
-w()   { echo "WARNING: $*" | tee -a "${WARN}" >/dev/null; }
+w()   { echo "WARNING: $*" | tee -a "${WARN}" >&2; }
 
 # ---- Basic repo/system fingerprints
 log "Writing system + repo info..."
