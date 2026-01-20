@@ -291,22 +291,18 @@ describe('Enterprise Compliance - Property Tests', () => {
             scores.commonCriteria,
             scores.nistCsf,
             scores.pciDss,
-          ) / 6;
-
           ];
-          
+
           if (!allScores.every(Number.isFinite)) {
             return true; // Skip invalid test cases
           }
-          
+
           const overallScore = allScores.reduce((sum, score) => sum + score, 0) / allScores.length;
-          
+
           // Overall compliance score should exceed 98%
           expect(Number.isFinite(overallScore)).toBe(true);
           expect(overallScore).toBeGreaterThan(config.complianceScoreTarget);
 
-          return overallScore > config.complianceScoreTarget;
-          
           return Number.isFinite(overallScore) && overallScore > config.complianceScoreTarget;
         }
       ),
