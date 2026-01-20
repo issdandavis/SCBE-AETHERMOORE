@@ -16,7 +16,7 @@ Run: uvicorn src.api.main:app --reload
 from fastapi import FastAPI, HTTPException, Header, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional, Dict
 import numpy as np
 import hashlib
@@ -134,22 +134,28 @@ class SealRequest(BaseModel):
     plaintext: str = Field(..., max_length=4096, description="Data to seal (max 4KB)")
     agent: str = Field(..., min_length=1, max_length=256, description="Agent identifier")
     topic: str = Field(..., min_length=1, max_length=256, description="Topic/category")
-    position: List[int] = Field(..., min_items=6, max_items=6, description="6D position vector")
-    
-    @validator('position')
+    position: List[int] = Field(..., min_length=6, max_length=6, description="6D position vector")
+
+    @field_validator('position')
+    @classmethod
     def validate_position(cls, v):
+        if len(v) != 6:
+            raise ValueError("Position must contain exactly 6 integers")
         if not all(isinstance(x, int) for x in v):
             raise ValueError("Position must contain integers")
         return v
 
 
 class RetrieveRequest(BaseModel):
-    position: List[int] = Field(..., min_items=6, max_items=6)
+    position: List[int] = Field(..., min_length=6, max_length=6)
     agent: str = Field(..., min_length=1, max_length=256)
-    context: str = Field(..., regex="^(internal|external|untrusted)$")
-    
-    @validator('position')
+    context: str = Field(..., pattern="^(internal|external|untrusted)$")
+
+    @field_validator('position')
+    @classmethod
     def validate_position(cls, v):
+        if len(v) != 6:
+            raise ValueError("Position must contain exactly 6 integers")
         if not all(isinstance(x, int) for x in v):
             raise ValueError("Position must contain integers")
         return v
