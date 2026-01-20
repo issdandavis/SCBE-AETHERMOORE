@@ -13,7 +13,7 @@
  * - arXiv:2406.15055 (SaTor: Satellite Routing)
  */
 
-import { TrustManager } from './trust-manager';
+import { TrustManager } from './trust-manager.js';
 
 export interface RelayNode {
   id: string;

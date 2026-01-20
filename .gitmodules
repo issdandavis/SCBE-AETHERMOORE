@@ -1,0 +1,27 @@
+[submodule "aws-lambda-simple-web-app"]
+	path = aws-lambda-simple-web-app
+	url = https://github.com/issdandavis/aws-lambda-simple-web-app.git
+[submodule "external_repos/Spiralverse-AetherMoore"]
+	path = external_repos/Spiralverse-AetherMoore
+	url = https://github.com/issdandavis/Spiralverse-AetherMoore.git
+[submodule "external_repos/aws-lambda-simple-web-app"]
+	path = external_repos/aws-lambda-simple-web-app
+	url = https://github.com/issdandavis/aws-lambda-simple-web-app.git
+[submodule "external_repos/aws-lambda-simple-web-app-fresh"]
+	path = external_repos/aws-lambda-simple-web-app-fresh
+	url = https://github.com/issdandavis/aws-lambda-simple-web-app.git
+[submodule "external_repos/scbe-quantum-prototype"]
+	path = external_repos/scbe-quantum-prototype
+	url = https://github.com/issdandavis/scbe-quantum-prototype.git
+[submodule "external_repos/scbe-security-gate"]
+	path = external_repos/scbe-security-gate
+	url = https://github.com/issdandavis/scbe-security-gate.git
+[submodule "hioujhn"]
+	path = hioujhn
+	url = https://github.com/issdandavis/hioujhn.git
+[submodule "scbe-aethermoore"]
+	path = scbe-aethermoore
+	url = https://github.com/issdandavis/scbe-aethermoore.git
+[submodule "scbe-aethermoore-demo"]
+	path = scbe-aethermoore-demo
+	url = https://github.com/issdandavis/scbe-aethermoore-demo.git

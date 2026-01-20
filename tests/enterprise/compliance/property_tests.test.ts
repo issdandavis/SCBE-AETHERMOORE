@@ -290,9 +290,7 @@ describe('Enterprise Compliance - Property Tests', () => {
             scores.fips140,
             scores.commonCriteria,
             scores.nistCsf,
-            scores.pciDss,
-          ) / 6;
-
+            scores.pciDss
           ];
           
           if (!allScores.every(Number.isFinite)) {
