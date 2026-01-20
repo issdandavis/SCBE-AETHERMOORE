@@ -8,10 +8,11 @@
  * @packageDocumentation
  */
 
-// Namespace exports for convenient access (scbe.symphonic, scbe.crypto)
+// Namespace exports for convenient access (scbe.symphonic, scbe.crypto, scbe.spiralverse)
 import * as symphonic from './symphonic/index.js';
 import * as crypto from './crypto/index.js';
-export { symphonic, crypto };
+import * as spiralverse from './spiralverse/index.js';
+export { symphonic, crypto, spiralverse };
 
 // Core Crypto Exports (also available at top level)
 export * from './crypto/envelope.js';

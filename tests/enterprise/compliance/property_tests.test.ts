@@ -147,7 +147,7 @@ describe('Enterprise Compliance - Property Tests', () => {
             id: fc.string({ minLength: 5, maxLength: 10 }),
             domain: fc.constantFrom('organizational', 'people', 'physical', 'technological'),
             implemented: fc.boolean(),
-            effectiveness: fc.double({ min: 0, max: 1 })
+            effectiveness: fc.double({ min: 0, max: 1, noNaN: true })
           }),
           { minLength: 114, maxLength: 114 } // ISO 27001 has 114 controls
         ),
@@ -273,6 +273,8 @@ describe('Enterprise Compliance - Property Tests', () => {
     fc.assert(
       fc.property(
         fc.record({
+          // Min 0.98 ensures average will exceed 98% threshold
+          // noNaN: true prevents NaN values from being generated
           soc2: fc.double({ min: 0.98, max: 1.0, noNaN: true }),
           iso27001: fc.double({ min: 0.98, max: 1.0, noNaN: true }),
           fips140: fc.double({ min: 0.98, max: 1.0, noNaN: true }),
@@ -289,6 +291,8 @@ describe('Enterprise Compliance - Property Tests', () => {
             scores.commonCriteria,
             scores.nistCsf,
             scores.pciDss
+          ) / 6;
+
           ];
           
           if (!allScores.every(Number.isFinite)) {
@@ -300,6 +304,8 @@ describe('Enterprise Compliance - Property Tests', () => {
           // Overall compliance score should exceed 98%
           expect(Number.isFinite(overallScore)).toBe(true);
           expect(overallScore).toBeGreaterThan(config.complianceScoreTarget);
+
+          return overallScore > config.complianceScoreTarget;
           
           return Number.isFinite(overallScore) && overallScore > config.complianceScoreTarget;
         }

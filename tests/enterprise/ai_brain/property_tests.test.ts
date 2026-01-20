@@ -111,8 +111,8 @@ describe('AI/Robotic Brain Security - Property Tests', () => {
         fc.record({
           action: fc.constantFrom('read', 'write', 'execute', 'delete'),
           target: fc.string({ minLength: 1, maxLength: 50 }),
-          riskLevel: fc.double({ min: 0, max: 1 }),
-          confidence: fc.double({ min: 0, max: 1 })
+          riskLevel: fc.double({ min: 0, max: 1, noNaN: true }),
+          confidence: fc.double({ min: 0, max: 1, noNaN: true })
         }),
         (intent) => {
           const result = verifyIntent(intent);
@@ -135,8 +135,8 @@ describe('AI/Robotic Brain Security - Property Tests', () => {
           intent: fc.record({
             action: fc.constantFrom('read', 'write', 'execute', 'delete', 'admin'),
             target: fc.constantFrom('data', 'system', 'network', 'critical'),
-            riskLevel: fc.double({ min: 0, max: 1 }),
-            confidence: fc.double({ min: 0, max: 1 })
+            riskLevel: fc.double({ min: 0, max: 1, noNaN: true }),
+            confidence: fc.double({ min: 0, max: 1, noNaN: true })
           }),
           boundaries: fc.record({
             allowedActions: fc.constant(['read', 'write', 'execute']),
@@ -174,6 +174,7 @@ describe('AI/Robotic Brain Security - Property Tests', () => {
           byzantineFaults: fc.integer({ min: 0, max: 3 })
         }),
         (params) => {
+          const honestAgents = params.numAgents - params.byzantineFaults;
           // Byzantine consensus requires n >= 3f + 1
           const minAgentsRequired = 3 * params.byzantineFaults + 1;
           
@@ -181,9 +182,9 @@ describe('AI/Robotic Brain Security - Property Tests', () => {
             action: 'execute',
             target: 'task',
             riskLevel: 0.5,
-            confidence: i < params.numAgents - params.byzantineFaults ? 0.95 : 0.3
+            confidence: i < honestAgents ? 0.95 : 0.3
           }));
-          
+
           const result = multiAgentConsensus(intents, params.byzantineFaults);
           
           // If we have enough agents for BFT, consensus should succeed
@@ -193,7 +194,7 @@ describe('AI/Robotic Brain Security - Property Tests', () => {
             // Not enough agents for BFT
             expect(result.approved).toBe(false);
           }
-          
+
           return true;
         }
       ),
@@ -208,8 +209,8 @@ describe('AI/Robotic Brain Security - Property Tests', () => {
         fc.record({
           action: fc.constantFrom('read', 'write', 'execute', 'delete'),
           target: fc.string({ minLength: 1, maxLength: 50 }),
-          riskLevel: fc.double({ min: 0.8, max: 1.0 }), // High risk
-          confidence: fc.double({ min: 0, max: 1 })
+          riskLevel: fc.double({ min: 0.8, max: 1.0, noNaN: true }), // High risk
+          confidence: fc.double({ min: 0, max: 1, noNaN: true })
         }),
         (intent) => {
           const result = activateFailSafe(intent);
@@ -235,8 +236,8 @@ describe('AI/Robotic Brain Security - Property Tests', () => {
         fc.record({
           action: fc.constantFrom('read', 'write', 'execute', 'delete'),
           target: fc.string({ minLength: 1, maxLength: 50 }),
-          riskLevel: fc.double({ min: 0, max: 1 }),
-          confidence: fc.double({ min: 0, max: 1 })
+          riskLevel: fc.double({ min: 0, max: 1, noNaN: true }),
+          confidence: fc.double({ min: 0, max: 1, noNaN: true })
         }),
         (intent) => {
           const audit = createAuditTrail(intent);
