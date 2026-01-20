@@ -13,7 +13,7 @@ FastAPI implementation with:
 Run: uvicorn src.api.main:app --reload
 """
 
-from fastapi import FastAPI, HTTPException, Header, Depends, Request
+from fastapi import FastAPI, HTTPException, Header, Depends, Request, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, field_validator
@@ -162,7 +162,7 @@ class RetrieveRequest(BaseModel):
 
 
 class SimulateAttackRequest(BaseModel):
-    position: List[int] = Field(..., min_items=6, max_items=6)
+    position: List[int] = Field(..., min_length=6, max_length=6)
     agent: str = Field(default="malicious_bot")
     context: str = Field(default="untrusted")
 
@@ -316,9 +316,9 @@ async def retrieve_memory(
 
 @app.get("/governance-check", tags=["Governance"])
 async def governance_check(
-    agent: str = Field(..., description="Agent identifier"),
-    topic: str = Field(..., description="Topic/category"),
-    context: str = Field(..., regex="^(internal|external|untrusted)$")
+    agent: str = Query(..., description="Agent identifier"),
+    topic: str = Query(..., description="Topic/category"),
+    context: str = Query(..., pattern="^(internal|external|untrusted)$", description="Context: internal/external/untrusted")
 ):
     """
     ## Governance Check
