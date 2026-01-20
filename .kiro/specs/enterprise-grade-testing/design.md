@@ -4,7 +4,7 @@
 **Version:** 3.2.0-enterprise  
 **Status:** Design  
 **Created:** January 18, 2026  
-**Author:** Isaac Daniel Davis
+**Author:** Issac Daniel Davis
 
 ## Overview
 
@@ -18,6 +18,32 @@ This document describes the design of a comprehensive enterprise-grade testing s
 4. **Enterprise Compliance**: Meet SOC 2, ISO 27001, FIPS 140-3, Common Criteria EAL4+ standards
 5. **Extreme Resilience**: Validate 1M req/s throughput, 10K concurrent attacks, 99.999% uptime
 
+### Key Design Decisions
+
+**Decision 1: Dual Testing Approach (Unit + Property-Based)**  
+*Rationale:* Unit tests provide concrete examples and fast feedback, while property-based tests discover edge cases through randomization. This combination ensures both specific scenario validation and broad input coverage, maximizing confidence in correctness.
+
+**Decision 2: TypeScript as Primary Language**  
+*Rationale:* TypeScript provides type safety, excellent tooling (Vitest), and seamless integration with the existing SCBE codebase. Python is used secondarily for physics simulations and cryptographic implementations that benefit from NumPy/SciPy.
+
+**Decision 3: 41 Correctness Properties**  
+*Rationale:* Each property maps directly to one or more acceptance criteria from requirements, ensuring complete traceability. Properties are executable specifications that can be validated through property-based testing, providing formal evidence of correctness.
+
+**Decision 4: Quantum Simulation (Not Real Quantum Hardware)**  
+*Rationale:* Real quantum computers are expensive, limited in availability, and still experimental. Classical simulation of quantum algorithms (Shor's, Grover's) provides sufficient validation of post-quantum resistance while being reproducible and cost-effective. Phase 2 will add real quantum hardware testing.
+
+**Decision 5: Compliance Dashboard with Tailwind CSS**  
+*Rationale:* Matches existing SCBE design system (dark theme, glass effects, semantic colors). HTML/Tailwind provides universal accessibility without requiring specialized tools, making compliance status visible to all stakeholders.
+
+**Decision 6: Test Orchestration Engine**  
+*Rationale:* Centralized orchestration enables parallel execution, dependency management, and comprehensive reporting. This architecture scales to thousands of tests while maintaining execution order guarantees where needed.
+
+**Decision 7: Evidence Archival for Audits**  
+*Rationale:* Enterprise compliance requires immutable audit trails. Cryptographic hashing and tamper-evident storage ensure evidence integrity for third-party audits and certification bodies.
+
+**Decision 8: Human-in-the-Loop for Critical Changes**  
+*Rationale:* While autonomous agents can generate code, critical changes (security-sensitive, production deployment) require human approval. This balances automation efficiency with safety oversight, meeting enterprise risk management requirements.
+
 ### Scope
 
 **In Scope:**
@@ -25,7 +51,7 @@ This document describes the design of a comprehensive enterprise-grade testing s
 - Post-quantum cryptography validation (ML-KEM, ML-DSA, lattice-based)
 - AI/robotic brain security testing (intent verification, governance, consensus)
 - Agentic coding system testing (code generation, vulnerability scanning, rollback)
-- Enterprise compliance testing (SOC 2, ISO 27001, FIPS 140-3, Common Criteria)
+- Enterprise compliance testing (SOC 2, ISO 27001, FIPS 140-3, Common Criteria, NIST CSF, PCI DSS)
 - Stress testing (load, concurrency, latency, memory, DDoS, recovery)
 - Security testing (fuzzing, side-channel, fault injection, oracle attacks)
 - Formal verification (model checking, theorem proving, property-based testing)
@@ -34,7 +60,7 @@ This document describes the design of a comprehensive enterprise-grade testing s
 - Production deployment infrastructure
 - Third-party audit execution (we provide evidence)
 - Certification body submissions
-- Real quantum computer testing (simulation only)
+- Real quantum computer testing (simulation only - deferred to Phase 2)
 
 
 ## Architecture
@@ -309,6 +335,46 @@ interface RollbackManager {
   
   // Get version history
   getHistory(limit?: number): CodeVersion[];
+}
+
+interface HumanInLoopOrchestrator {
+  // Request human approval for critical change
+  requestApproval(change: CriticalChange): Promise<ApprovalResult>;
+  
+  // Check if change requires human approval
+  requiresApproval(change: CodeChange): boolean;
+  
+  // Get approval status
+  getApprovalStatus(changeId: string): ApprovalStatus;
+  
+  // Timeout and auto-deny if no response
+  setApprovalTimeout(timeout: number): void;
+}
+
+interface CriticalChange {
+  id: string;
+  type: 'security-sensitive' | 'production-deployment' | 'high-risk';
+  code: string;
+  intent: string;
+  riskScore: number;
+  impactAnalysis: ImpactAnalysis;
+  requestedBy: string;
+  timestamp: number;
+}
+
+interface ApprovalResult {
+  approved: boolean;
+  approver?: string;
+  timestamp: number;
+  comments?: string;
+  conditions?: string[]; // Conditional approval with requirements
+}
+
+interface ApprovalStatus {
+  status: 'pending' | 'approved' | 'denied' | 'timeout';
+  requestedAt: number;
+  respondedAt?: number;
+  approver?: string;
 }
 ```
 
@@ -866,42 +932,110 @@ interface TestConfiguration {
 *For any* generated code, all applicable OWASP and CWE checks should be executed and reported, demonstrating comprehensive compliance validation.  
 **Validates: Requirements AC-3.6**
 
+**Property 18: Human-in-the-Loop Verification**  
+*For any* critical code change (security-sensitive, production deployment, or high-risk), the system should require human approval before execution, demonstrating that autonomous agents cannot make critical changes without oversight.  
+**Validates: Requirements AC-3.5**
+
 
 ### Enterprise Compliance Properties
 
-**Property 18: FIPS 140-3 Test Vector Compliance**  
-*For any* FIPS 140-3 test vector and cryptographic algorithm, the implementation should produce the expected output, demonstrating cryptographic correctness.  
+**Property 19: SOC 2 Control Compliance**  
+*For any* SOC 2 Trust Services Criterion, the system should pass all control tests, demonstrating compliance with security, availability, processing integrity, confidentiality, and privacy requirements.  
+**Validates: Requirements AC-4.1**
+
+**Property 20: ISO 27001 Control Compliance**  
+*For any* ISO 27001 control (93 controls across organizational, people, physical, and technological themes), the system should meet the control requirements, demonstrating comprehensive information security management.  
+**Validates: Requirements AC-4.2**
+
+**Property 21: FIPS 140-3 Test Vector Compliance**  
+*For any* FIPS 140-3 test vector and cryptographic algorithm, the implementation should produce the expected output, demonstrating cryptographic correctness and Level 3 compliance readiness.  
 **Validates: Requirements AC-4.3**
+
+**Property 22: Common Criteria Security Target Compliance**  
+*For any* Common Criteria security target requirement, the system should meet the security functional requirements (SFRs) and security assurance requirements (SARs), demonstrating EAL4+ readiness.  
+**Validates: Requirements AC-4.4**
+
+**Property 23: NIST Cybersecurity Framework Alignment**  
+*For any* NIST CSF function (Identify, Protect, Detect, Respond, Recover), the system should implement the corresponding categories and subcategories, demonstrating comprehensive cybersecurity posture.  
+**Validates: Requirements AC-4.5**
+
+**Property 24: PCI DSS Level 1 Compliance**  
+*For any* PCI DSS requirement (if applicable to payment processing), the system should meet all 12 requirements and 78 sub-requirements, demonstrating payment card data security.  
+**Validates: Requirements AC-4.6**
 
 ### Stress Testing Properties
 
-**Property 19: Throughput Under Load**  
+**Property 25: Throughput Under Load**  
 *For any* sustained load test at 1M requests/second, the system should handle all requests without errors, demonstrating enterprise-scale throughput capacity.  
 **Validates: Requirements AC-5.1**
 
-**Property 20: Concurrent Attack Resilience**  
+**Property 26: Concurrent Attack Resilience**  
 *For any* simulation of 10,000 concurrent attacks, the system should remain operational and maintain core functionality, demonstrating resilience under attack.  
 **Validates: Requirements AC-5.2**
 
-**Property 21: Latency Bounds Under Load**  
+**Property 27: Latency Bounds Under Load**  
 *For any* request under sustained load, the P95 latency should be <10ms, demonstrating that the system maintains responsiveness under stress.  
 **Validates: Requirements AC-5.3**
 
-**Property 22: Graceful Degradation**  
+**Property 28: Memory Leak Prevention**  
+*For any* 72-hour soak test, the system should maintain stable memory usage with zero memory leaks, demonstrating long-term stability.  
+**Validates: Requirements AC-5.4**
+
+**Property 29: Graceful Degradation**  
 *For any* DDoS attack simulation, the system should degrade gracefully while maintaining core security functions, demonstrating that attacks don't cause catastrophic failure.  
 **Validates: Requirements AC-5.5**
 
-**Property 23: Auto-Recovery**  
+**Property 30: Auto-Recovery**  
 *For any* injected failure, the system should recover automatically without manual intervention, demonstrating self-healing capabilities.  
 **Validates: Requirements AC-5.6**
 
+### Security Testing Properties
+
+**Property 31: Fuzzing Crash Resistance**  
+*For any* fuzzed input (1 billion random inputs), the system should not crash or hang, demonstrating robustness against malformed inputs.  
+**Validates: Requirements TEST-6.1**
+
+**Property 32: Constant-Time Operations**  
+*For any* cryptographic operation, the execution time should be independent of secret values, demonstrating resistance to timing side-channel attacks.  
+**Validates: Requirements TEST-6.2**
+
+**Property 33: Fault Injection Resilience**  
+*For any* injected fault (1000 random faults), the system should either handle the error gracefully or fail-safe, demonstrating resilience to hardware faults.  
+**Validates: Requirements TEST-6.3**
+
+**Property 34: Oracle Attack Resistance**  
+*For any* cryptographic oracle attack (padding oracle, timing oracle), the system should not leak information, demonstrating resistance to oracle-based attacks.  
+**Validates: Requirements TEST-6.4**
+
+**Property 35: Protocol Implementation Correctness**  
+*For any* security protocol implementation (TLS, HMAC, etc.), the implementation should conform to the specification and resist known attacks.  
+**Validates: Requirements TEST-6.5**
+
+### Formal Verification Properties
+
+**Property 36: Model Checking Correctness**  
+*For any* TLA+ or Alloy specification, the model checker should verify all safety and liveness properties, demonstrating formal correctness of the design.  
+**Validates: Requirements TEST-7.1**
+
+**Property 37: Theorem Proving Soundness**  
+*For any* Coq or Isabelle proof, the theorem prover should verify the proof is sound and complete, demonstrating mathematical correctness.  
+**Validates: Requirements TEST-7.2**
+
+**Property 38: Symbolic Execution Coverage**  
+*For any* code path, symbolic execution should explore all feasible paths and identify potential vulnerabilities, demonstrating comprehensive path coverage.  
+**Validates: Requirements TEST-7.3**
+
+**Property 39: Property-Based Test Universality**  
+*For any* property-based test, the test should run at least 100 iterations with randomly generated inputs, demonstrating broad input coverage.  
+**Validates: Requirements TEST-7.5**
+
 ### Integration Properties
 
-**Property 24: End-to-End Security**  
+**Property 40: End-to-End Security**  
 *For any* complete workflow (encryption → storage → retrieval → decryption), all security properties should be maintained throughout, demonstrating that security is preserved across the entire system.  
 **Validates: Requirements AC-1.1, AC-1.2, AC-1.3, AC-1.4, AC-1.5, AC-1.6**
 
-**Property 25: Test Coverage Completeness**  
+**Property 41: Test Coverage Completeness**  
 *For any* requirement in the requirements document, there should exist at least one test that validates it, demonstrating complete requirements coverage.  
 **Validates: All requirements**
 
@@ -1049,22 +1183,32 @@ Each property test must include a comment tag referencing the design property:
 - Property tests: Random intents, random risk scores, random agent configurations
 - Coverage: Intent verification, governance, consensus, fail-safe, audit
 
-**3. Agentic Coding Tests (Properties 13-17)**
+**3. Agentic Coding Tests (Properties 13-18)**
 - Unit tests: Known vulnerabilities (OWASP Top 10), specific compliance rules
 - Property tests: Random code generation, random security constraints
-- Coverage: Code generation, vulnerability scanning, intent verification, rollback
+- Coverage: Code generation, vulnerability scanning, intent verification, rollback, human-in-the-loop
 
-**4. Compliance Tests (Property 18)**
-- Unit tests: Each SOC 2 control, each ISO 27001 control
-- Property tests: FIPS test vectors, cryptographic correctness
-- Coverage: All compliance standards (SOC 2, ISO 27001, FIPS 140-3, Common Criteria)
+**4. Compliance Tests (Properties 19-24)**
+- Unit tests: Each SOC 2 control, each ISO 27001 control, each PCI DSS requirement
+- Property tests: FIPS test vectors, cryptographic correctness, Common Criteria security targets
+- Coverage: All compliance standards (SOC 2, ISO 27001, FIPS 140-3, Common Criteria, NIST CSF, PCI DSS)
 
-**5. Stress Tests (Properties 19-23)**
+**5. Stress Tests (Properties 25-30)**
 - Unit tests: Specific load scenarios, known bottlenecks
 - Property tests: Random load patterns, random attack types
-- Coverage: Throughput, latency, concurrency, memory, DDoS, recovery
+- Coverage: Throughput, latency, concurrency, memory leaks, DDoS, recovery
 
-**6. Integration Tests (Properties 24-25)**
+**6. Security Tests (Properties 31-35)**
+- Unit tests: Known vulnerabilities, specific attack vectors
+- Property tests: Random fuzzing inputs, random fault injections
+- Coverage: Fuzzing, side-channel analysis, fault injection, oracle attacks, protocol analysis
+
+**7. Formal Verification Tests (Properties 36-39)**
+- Unit tests: Specific correctness proofs, known edge cases
+- Property tests: Random input generation for property-based testing
+- Coverage: Model checking, theorem proving, symbolic execution, property-based testing
+
+**8. Integration Tests (Properties 40-41)**
 - Unit tests: Specific workflows, component interactions
 - Property tests: Random end-to-end scenarios
 - Coverage: Complete system workflows, requirements traceability
@@ -1220,7 +1364,8 @@ tests/
 │   │   ├── vulnerability_scan.test.ts
 │   │   ├── intent_code_alignment.test.ts
 │   │   ├── rollback.test.ts
-│   │   └── compliance_check.test.ts
+│   │   ├── compliance_check.test.ts
+│   │   └── human_in_loop.test.ts
 │   ├── compliance/
 │   │   ├── soc2.test.ts
 │   │   ├── iso27001.test.ts
