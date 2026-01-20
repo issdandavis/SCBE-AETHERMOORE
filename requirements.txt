@@ -1,21 +1,86 @@
-# SCBE 14-Layer System - Python Dependencies
-# Core mathematical and signal processing libraries
+# SCBE-AETHERMOORE v3.0.0 - Python Dependencies
+# Production-ready cryptographic framework
+# Patent Documentation: USPTO Provisional Application #63/961,403
+# Last Updated: January 18, 2026
 
-# NumPy - Array operations and linear algebra
-numpy>=1.20.0
+# ============================================================================
+# CORE NUMERICAL COMPUTING
+# ============================================================================
+# Pinned for patent reproducibility and USPTO validation evidence
+numpy>=1.24.0,<2.0.0      # Hyperbolic geometry, FFT for spectral analysis
+scipy>=1.10.0,<2.0.0      # Scientific computing, optimization
 
-# SciPy - Scientific computing (signal processing, optimization)
-scipy>=1.7.0
+# ============================================================================
+# CRYPTOGRAPHIC PRIMITIVES
+# ============================================================================
+cryptography>=41.0.0       # SHA-256, HMAC chains, PQC wrappers, X.509
+argon2-cffi>=23.1.0       # Argon2id KDF for RWP v3.0 (0.5s/attempt)
+pynacl>=1.5.0             # XChaCha20-Poly1305 AEAD (256-bit)
+pycryptodome>=3.20.0      # Additional crypto primitives
 
-# Optional: Visualization
-# Uncomment if running demo_scbe_system.py visualization
-# matplotlib>=3.3.0
+# ============================================================================
+# POST-QUANTUM CRYPTOGRAPHY (PRODUCTION-REQUIRED)
+# ============================================================================
+# Required for patent claims 9-12 (ML-KEM-768, ML-DSA-65)
+# Uncomment for production deployment with PQC
+# liboqs-python>=0.10.0   # NIST-approved PQC algorithms
 
-# Optional: Enhanced numerical stability
-# Uncomment for production deployments
-# mpmath>=1.2.0
+# ============================================================================
+# AWS LAMBDA DEPLOYMENT
+# ============================================================================
+# Required for ARN: arn:aws:lambda:us-west-2:861870144562
+boto3>=1.28.0,<2.0.0      # AWS SDK for Lambda, S3, DynamoDB
+botocore>=1.31.0,<2.0.0   # Low-level AWS interface
 
-# Development dependencies (testing)
-pytest>=7.0.0
-pytest-cov>=3.0.0
-hypothesis>=6.0.0
+# ============================================================================
+# TESTING FRAMEWORK
+# ============================================================================
+pytest>=7.4.0,<9.0.0
+pytest-cov>=4.1.0
+pytest-asyncio>=0.21.0
+pytest-mock>=3.11.0
+pytest-typeguard>=2.13.3
+pytest-benchmark>=4.0.0   # Performance benchmarking (optional)
+
+# ============================================================================
+# PROPERTY-BASED TESTING
+# ============================================================================
+# Required for 200+ property test iterations (enterprise-grade testing)
+hypothesis>=6.82.0,<7.0.0
+
+# ============================================================================
+# CODE QUALITY
+# ============================================================================
+black>=23.7.0
+flake8>=6.1.0
+mypy>=1.5.0
+
+# ============================================================================
+# TYPE HINTS
+# ============================================================================
+types-requests>=2.31.0
+
+# ============================================================================
+# OPTIONAL: GPU-ACCELERATED HYPERBOLIC OPERATIONS
+# ============================================================================
+# Uncomment for production-scale hyperbolic geometry (Poincaré ball)
+# torch>=2.0.0,<3.0.0     # GPU-accelerated tensor operations
+
+# ============================================================================
+# OPTIONAL: VISUALIZATION (for demos)
+# ============================================================================
+# matplotlib>=3.8.0       # Plotting and visualization
+
+# ============================================================================
+# DEPLOYMENT NOTES
+# ============================================================================
+# AWS Lambda Constraints:
+# - Max package size: 250 MB (unzipped), 50 MB (zipped)
+# - Max memory: 10,240 MB
+# - Max timeout: 900 seconds (15 minutes)
+#
+# To generate exact version lock file for USPTO validation:
+#   pip freeze > requirements-lock.txt
+#
+# Patent Deadline: January 31, 2026 (13 days remaining)
+# Reduction to Practice: This requirements.txt serves as evidence
