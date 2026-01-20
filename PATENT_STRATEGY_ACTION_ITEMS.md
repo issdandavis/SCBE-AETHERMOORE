@@ -8,7 +8,9 @@
 
 ## Executive Summary
 
-Based on examiner simulation feedback and technical assessment, the following five critical improvements have been identified to strengthen patent claims and address architectural vulnerabilities.
+Based on USPTO simulation feedback, code reviews, and mathematical proofs audit, the following critical improvements have been identified to strengthen patent claims, address architectural vulnerabilities, and "de-metaphysicize" scientifically problematic claims.
+
+**Key Finding**: The math is valid, but physics metaphors trigger § 101 (Abstract Idea) and § 112 (Enablement) rejections.
 
 ---
 
@@ -46,7 +48,38 @@ function computeAsymptoticLatency(
 
 ---
 
-## 2. Remove the Orchestration Bottleneck
+## 2. Delete "Entropy Export" Claim (Claim 57)
+
+**Issue**: Claim 57's entropy export to "null-space" violates the Second Law of Thermodynamics and was rejected as scientifically invalid.
+
+**Solution**: Delete claim or redefine as **"Signal Attenuation"**
+
+| Before | After |
+|--------|-------|
+| "Export entropy to null-space" | "Signal Attenuation via noise injection" |
+| Thermodynamic violation | Standard signal processing |
+
+**Implementation**:
+```python
+def signal_attenuation(active_channels: list, noise_floor: float) -> dict:
+    """
+    Inject calibrated noise into unused spectrum channels
+    to maintain SNR in active channels.
+
+    NOT claiming thermodynamic entropy export.
+    Standard signal processing technique.
+    """
+    unused = get_unused_channels(active_channels)
+    for channel in unused:
+        inject_noise(channel, noise_floor)
+    return {"attenuated": len(unused), "snr_maintained": True}
+```
+
+**Priority**: CRITICAL - Remove before patent filing
+
+---
+
+## 3. Remove the Orchestration Bottleneck
 
 **Issue**: Centralized Mail/Coordinator and in-memory `orchestratorQueue` identified as single point of failure. Will break at 50–100 concurrent tasks.
 
@@ -86,7 +119,7 @@ AFTER:
 
 ---
 
-## 3. Symphonic Cipher: Pivot from "Intent" to "Entropy"
+## 4. Symphonic Cipher: Pivot from "Intent" to "Entropy"
 
 **Issue**: "Intent Detection" via FFT is scientifically shaky and prone to deepfake attacks. Modern AI can clone timbre and jitter.
 
@@ -127,7 +160,7 @@ function verifySpectralEntropy(
 
 ---
 
-## 4. Implement True Sacred Tongue Vocabularies
+## 5. Implement True Sacred Tongue Vocabularies
 
 **Issue**: `SacredTongueTokenizer._generate_vocabularies()` is currently a stub using placeholder tokens (e.g., `'token0'`), undermining the claim of "phonetic elegance".
 
@@ -167,7 +200,7 @@ def generate_koraelin_token(byte_value: int) -> str:
 
 ---
 
-## 5. Security Gate: Integrate the "Waiting Room"
+## 6. Security Gate: Integrate the "Waiting Room"
 
 **Issue**: Security Gate (Waiting Room) specification exists only as design document; not wired into main API entry point.
 
@@ -228,11 +261,21 @@ function securityGate(request: Request): Response {
 
 | Action Item | Priority | Risk Level | Effort |
 |-------------|----------|------------|--------|
-| 2. Redis/BullMQ Architecture | 🔴 CRITICAL | System failure | Medium |
-| 1. Rename Acoustic Black Hole | 🟡 HIGH | Patent rejection | Low |
-| 3. Spectral Entropy Pivot | 🟡 HIGH | Scientific credibility | Medium |
-| 5. Security Gate Integration | 🟡 HIGH | Security vulnerability | Medium |
-| 4. Sacred Tongue Vocabularies | ✅ DONE | N/A | Already implemented |
+| 2. Delete Entropy Export Claim | 🔴 CRITICAL | Patent rejection (§ 101) | Low |
+| 1. Rename Acoustic Black Hole | 🔴 CRITICAL | Patent rejection (§ 101) | Low |
+| 3. Redis/BullMQ Architecture | 🔴 CRITICAL | System failure | Medium |
+| 4. Spectral Entropy Pivot | 🟡 HIGH | Scientific credibility | Medium |
+| 6. Security Gate Integration | 🟡 HIGH | Security vulnerability | Medium |
+| 5. Sacred Tongue Vocabularies | ✅ DONE | N/A | Already implemented |
+
+### Additional Actions from Audit
+
+| Action Item | Priority | Category |
+|-------------|----------|----------|
+| Remove CI/CD `continue-on-error: true` | 🔴 CRITICAL | Security |
+| Clarify planetary seeding as arbitrary constants | 🟡 MEDIUM | Documentation |
+| Migrate to AWS Secrets Manager | 🟡 HIGH | Security |
+| Add Adaptive Dwell (exponential backoff) | 🟡 HIGH | Security |
 
 ---
 
