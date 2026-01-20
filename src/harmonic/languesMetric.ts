@@ -16,7 +16,7 @@ const PHI = (1 + Math.sqrt(5)) / 2;
 
 /** The Six Sacred Tongues */
 export const TONGUES = ['KO', 'AV', 'RU', 'CA', 'UM', 'DR'] as const;
-export type Tongue = typeof TONGUES[number];
+export type Tongue = (typeof TONGUES)[number];
 
 /** Dimension flux state */
 export type FluxState = 'Polly' | 'Quasi' | 'Demi' | 'Collapsed';
@@ -156,13 +156,15 @@ export class FluxingLanguesMetric extends LanguesMetric {
     super(config);
 
     // Default flux configuration
-    this.fluxes = fluxes ?? TONGUES.map((_, i) => ({
-      nu: 1.0,
-      nuBar: 0.8,
-      kappa: 0.1,
-      sigma: 0.05,
-      omega: 0.5 * (i + 1),
-    }));
+    this.fluxes =
+      fluxes ??
+      TONGUES.map((_, i) => ({
+        nu: 1.0,
+        nuBar: 0.8,
+        kappa: 0.1,
+        sigma: 0.05,
+        omega: 0.5 * (i + 1),
+      }));
   }
 
   /**
@@ -171,8 +173,7 @@ export class FluxingLanguesMetric extends LanguesMetric {
    */
   updateFlux(t: number, dt: number): void {
     for (const flux of this.fluxes) {
-      const nuDot = flux.kappa * (flux.nuBar - flux.nu) +
-                    flux.sigma * Math.sin(flux.omega * t);
+      const nuDot = flux.kappa * (flux.nuBar - flux.nu) + flux.sigma * Math.sin(flux.omega * t);
       flux.nu = Math.max(0, Math.min(1, flux.nu + nuDot * dt));
     }
   }
@@ -181,14 +182,14 @@ export class FluxingLanguesMetric extends LanguesMetric {
    * Get current flux values
    */
   getFluxValues(): number[] {
-    return this.fluxes.map(f => f.nu);
+    return this.fluxes.map((f) => f.nu);
   }
 
   /**
    * Get flux states for all dimensions
    */
   getFluxStates(): FluxState[] {
-    return this.fluxes.map(f => getFluxState(f.nu));
+    return this.fluxes.map((f) => getFluxState(f.nu));
   }
 
   /**

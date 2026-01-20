@@ -12,18 +12,21 @@ Shared utilities, helpers, and mock generators for enterprise testing.
 ## Utilities
 
 ### Test Helpers
+
 - Assertion helpers for common patterns
 - Test fixture management
 - Error handling utilities
 - Logging and debugging tools
 
 ### Mock Generators
+
 - Random data generation for property-based tests
 - Cryptographic key generation
 - AI intent generation
 - Code artifact generation
 
 ### Quantum Simulator
+
 - Classical simulation of quantum algorithms
 - Shor's algorithm (RSA factoring)
 - Grover's algorithm (key search)
@@ -31,6 +34,7 @@ Shared utilities, helpers, and mock generators for enterprise testing.
 - Security bit measurement
 
 ### Performance Monitor
+
 - Throughput measurement
 - Latency tracking (P50, P95, P99)
 - Memory profiling

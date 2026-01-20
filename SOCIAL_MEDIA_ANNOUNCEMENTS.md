@@ -170,7 +170,7 @@ What problems could this solve in your domain?
 
 **Body**:
 
-```
+````
 I've just published SCBE-AetherMoore v3.0.0, a novel cryptographic framework that combines post-quantum cryptography with hyperbolic geometry for context-bound encryption.
 
 **Key Features:**
@@ -202,15 +202,17 @@ Designed for Mars missions where traditional TLS requires 42 minutes for handsha
 **Installation:**
 ```bash
 npm i scbe-aethermoore
-```
+````
 
 Feedback welcome! This is v3.0.0 with Sacred Tongue integration. Future v4.0.0 will add dimensional theory (thin membrane manifolds, Space Tor, neural defensive networks).
 
 **Questions I'm happy to answer:**
+
 - How does hyperbolic geometry provide super-exponential forgery cost?
 - What are Sacred Tongues and how do they enable spectral binding?
 - How does pre-synchronization work for Mars communication?
 - What's the performance overhead compared to traditional crypto?
+
 ```
 
 ---
@@ -222,39 +224,46 @@ Feedback welcome! This is v3.0.0 with Sacred Tongue integration. Future v4.0.0 w
 **Body**:
 
 ```
+
 Just published a cryptographic framework that solves a real problem for Mars missions: traditional TLS requires 42 minutes for handshake due to 14-minute light delay.
 
 SCBE (Spectral Context-Bound Encryption) uses pre-synchronized "Sacred Tongue" vocabularies to enable zero-latency encryption. Think of it as a shared cryptographic language that both parties agree on before the mission.
 
 **Technical highlights:**
+
 - Post-quantum: ML-KEM-768 + ML-DSA-65 (NIST-approved)
 - Hyperbolic geometry: Poincaré ball model for context binding
 - Spectral binding: 6 harmonic frequencies for semantic security
 - 14-layer architecture: From context encoding to topological CFI
 
 **Production-ready:**
+
 - 24/24 tests passing
 - 94% code coverage
 - TypeScript + Python implementations
 - MIT licensed
 
 **Installation:**
+
 ```bash
 npm i scbe-aethermoore
 ```
 
 **Links:**
+
 - npm: https://www.npmjs.com/package/scbe-aethermoore
 - GitHub: https://github.com/issdandavis/scbe-aethermoore-demo
 
 Built this over 16 months in Port Angeles, WA. Patent application filed. Feedback appreciated!
 
 **Why this matters:**
+
 - Mars missions need crypto that works with 14-minute delays
 - Post-quantum crypto is becoming critical (NIST standards finalized)
 - Context-bound security is the future (not just possession-based)
 
 **Try it:**
+
 ```typescript
 import { RWPv3, SacredTongueTokenizer } from 'scbe-aethermoore';
 
@@ -266,6 +275,7 @@ const decrypted = await rwp.decrypt(password, encrypted);
 ```
 
 Questions welcome!
+
 ```
 
 ---
@@ -277,33 +287,39 @@ Questions welcome!
 **Body**:
 
 ```
+
 I've been working on a problem that will become critical for Mars missions: how do you do secure communication with a 14-minute light delay?
 
 Traditional TLS requires 3 round-trips for handshake:
+
 1. Client Hello → 14 min → Server
 2. Server Hello → 14 min → Client
 3. Key Exchange → 14 min → Server
-**Total: 42 minutes before you can send encrypted data**
+   **Total: 42 minutes before you can send encrypted data**
 
 SCBE-AetherMoore solves this with "pre-synchronized cryptographic vocabularies" (Sacred Tongues):
+
 - Both parties agree on a shared vocabulary before the mission
 - Messages are encoded using spectral binding (6 harmonic frequencies)
 - No handshake needed—encryption starts immediately
-**Total: 0 minutes (just the 14-minute light delay for message delivery)**
+  **Total: 0 minutes (just the 14-minute light delay for message delivery)**
 
 **Technical details:**
+
 - Post-quantum crypto (ML-KEM-768, ML-DSA-65)
 - Hyperbolic geometry for context binding
 - 14-layer security architecture
 - MIT licensed, production-ready
 
 **Links:**
+
 - npm: https://www.npmjs.com/package/scbe-aethermoore
 - GitHub: https://github.com/issdandavis/scbe-aethermoore-demo
 
 This is v3.0.0. I'm planning a Mars demo UI next week to visualize the latency difference.
 
 Thoughts? Would NASA/SpaceX/ESA be interested in this?
+
 ```
 
 ---
@@ -317,11 +333,13 @@ Thoughts? Would NASA/SpaceX/ESA be interested in this?
 **Comment** (post this after submitting):
 
 ```
+
 Author here. I built this to solve a specific problem: Mars communication has a 14-minute light delay, so traditional TLS requires 42 minutes for handshake (3 round-trips).
 
 SCBE uses pre-synchronized cryptographic vocabularies ("Sacred Tongues") to enable zero-latency encryption. Both parties agree on a shared vocabulary before the mission, then use it to encode messages with spectral binding.
 
 Technical details:
+
 - Post-quantum: ML-KEM-768 + ML-DSA-65 (NIST-approved)
 - Hyperbolic geometry: Poincaré ball for context binding
 - 14-layer security architecture
@@ -335,6 +353,7 @@ Happy to answer questions!
 
 Installation: npm i scbe-aethermoore
 GitHub: https://github.com/issdandavis/scbe-aethermoore-demo
+
 ```
 
 ---
@@ -348,6 +367,7 @@ GitHub: https://github.com/issdandavis/scbe-aethermoore-demo
 **Body**:
 
 ```
+
 Dear NASA Technology Transfer Team,
 
 I'm writing to introduce SCBE-AetherMoore, a novel cryptographic framework designed specifically for interplanetary communication with long light delays.
@@ -359,12 +379,14 @@ Mars missions face a 14-minute light delay, making traditional TLS handshakes ta
 SCBE uses pre-synchronized cryptographic vocabularies to enable zero-latency encryption. Both parties agree on a shared vocabulary before the mission, eliminating the need for handshakes.
 
 **Technical Highlights:**
+
 - Post-quantum crypto (NIST-approved ML-KEM-768, ML-DSA-65)
 - Hyperbolic geometry for context-bound security
 - Sacred Tongue spectral binding (6 harmonic frequencies)
 - 14-layer security architecture
 
 **Status:**
+
 - Production-ready (24/24 tests passing, 94% coverage)
 - Published on npm: https://www.npmjs.com/package/scbe-aethermoore
 - Patent application filed (USPTO #63/961,403)
@@ -380,6 +402,7 @@ Issac Daniel Davis
 Port Angeles, Washington
 issdandavis@gmail.com
 https://github.com/issdandavis/scbe-aethermoore-demo
+
 ```
 
 ---
@@ -391,6 +414,7 @@ https://github.com/issdandavis/scbe-aethermoore-demo
 **Body**:
 
 ```
+
 Dear ESA Technology Transfer Team,
 
 I'm reaching out to introduce SCBE-AetherMoore, a cryptographic framework designed for secure communication with long light delays (e.g., Mars missions).
@@ -402,12 +426,14 @@ Traditional TLS requires 42 minutes for handshake with Mars (14-minute light del
 SCBE eliminates handshake latency through pre-synchronized cryptographic vocabularies, enabling immediate encryption.
 
 **Technical Features:**
+
 - Post-quantum cryptography (NIST standards)
 - Hyperbolic geometry for super-exponential forgery cost
 - Spectral binding for semantic security
 - 14-layer architecture
 
 **Availability:**
+
 - Open source (MIT license)
 - npm: https://www.npmjs.com/package/scbe-aethermoore
 - GitHub: https://github.com/issdandavis/scbe-aethermoore-demo
@@ -419,6 +445,7 @@ I'm interested in discussing how SCBE could support ESA's Mars exploration progr
 Best regards,
 Issac Daniel Davis
 issdandavis@gmail.com
+
 ```
 
 ---
@@ -504,7 +531,8 @@ issdandavis@gmail.com
 
 ---
 
-**Generated**: January 18, 2026  
-**Status**: ✅ READY TO ANNOUNCE  
-**Package**: https://www.npmjs.com/package/scbe-aethermoore  
+**Generated**: January 18, 2026
+**Status**: ✅ READY TO ANNOUNCE
+**Package**: https://www.npmjs.com/package/scbe-aethermoore
 **Next Action**: Start posting! 📢
+```

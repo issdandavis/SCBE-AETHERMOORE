@@ -18,6 +18,7 @@ Implement the Real World Protocol (RWP) v2.1 for secure AI-to-AI communication u
 ### 1.2 Context
 
 This is Phase 2 of the SCBE-AETHERMOORE unified platform. The foundation (v3.0.0) is complete with:
+
 - ✅ Sacred Tongues (6 domains: KO, AV, RU, CA, UM, DR)
 - ✅ Post-quantum cryptography (ML-KEM, ML-DSA)
 - ✅ 14-layer SCBE architecture
@@ -28,6 +29,7 @@ RWP v2.1 builds on Sacred Tongues to enable secure, policy-enforced communicatio
 ### 1.3 Goals
 
 **Primary Goals**:
+
 1. Enable secure AI-to-AI communication with multi-signature consensus
 2. Implement policy-based authorization (standard, strict, secret, critical)
 3. Prevent replay attacks with timestamp + nonce validation
@@ -35,6 +37,7 @@ RWP v2.1 builds on Sacred Tongues to enable secure, policy-enforced communicatio
 5. Support both TypeScript and Python implementations
 
 **Success Criteria**:
+
 - Agents can send/receive RWP envelopes
 - Policy enforcement works correctly
 - Replay attacks are prevented
@@ -53,6 +56,7 @@ RWP v2.1 builds on Sacred Tongues to enable secure, policy-enforced communicatio
 **So that** my communications are authenticated and tamper-proof
 
 **Acceptance Criteria**:
+
 - AC-2.1.1: Agent can create RWP envelope with payload
 - AC-2.1.2: Agent can sign envelope with multiple tongues
 - AC-2.1.3: Agent can send envelope to another agent
@@ -67,6 +71,7 @@ RWP v2.1 builds on Sacred Tongues to enable secure, policy-enforced communicatio
 **So that** critical operations require stronger authentication
 
 **Acceptance Criteria**:
+
 - AC-2.2.1: Standard policy accepts any valid signature
 - AC-2.2.2: Strict policy requires RU (Policy) tongue signature
 - AC-2.2.3: Secret policy requires UM (Security) tongue signature
@@ -81,6 +86,7 @@ RWP v2.1 builds on Sacred Tongues to enable secure, policy-enforced communicatio
 **So that** old messages cannot be reused maliciously
 
 **Acceptance Criteria**:
+
 - AC-2.3.1: Each envelope has unique nonce
 - AC-2.3.2: Each envelope has timestamp
 - AC-2.3.3: Envelopes outside replay window are rejected
@@ -95,6 +101,7 @@ RWP v2.1 builds on Sacred Tongues to enable secure, policy-enforced communicatio
 **So that** no single agent can authorize dangerous operations
 
 **Acceptance Criteria**:
+
 - AC-2.4.1: Envelope can have multiple signatures (1-6 tongues)
 - AC-2.4.2: Each signature is domain-separated by tongue
 - AC-2.4.3: Verification returns list of valid tongues
@@ -109,6 +116,7 @@ RWP v2.1 builds on Sacred Tongues to enable secure, policy-enforced communicatio
 **So that** I can rotate keys and maintain security
 
 **Acceptance Criteria**:
+
 - AC-2.5.1: Keyring stores keys for all 6 tongues
 - AC-2.5.2: Keys can be loaded from secure storage
 - AC-2.5.3: Keys can be rotated without breaking existing envelopes
@@ -123,6 +131,7 @@ RWP v2.1 builds on Sacred Tongues to enable secure, policy-enforced communicatio
 **So that** I can integrate with different parts of the system
 
 **Acceptance Criteria**:
+
 - AC-2.6.1: TypeScript SDK creates valid envelopes
 - AC-2.6.2: Python SDK creates valid envelopes
 - AC-2.6.3: TypeScript can verify Python-created envelopes
@@ -539,6 +548,7 @@ RWP v2.1 builds on Sacred Tongues to enable secure, policy-enforced communicatio
 ---
 
 **Approval**:
+
 - [ ] Product Owner
 - [ ] Technical Lead
 - [ ] Security Engineer
@@ -546,6 +556,6 @@ RWP v2.1 builds on Sacred Tongues to enable secure, policy-enforced communicatio
 
 ---
 
-*"From 'Do you have the key?' to 'Are you the right entity, in the right context, at the right time, doing the right thing, for the right reason?'"*
+_"From 'Do you have the key?' to 'Are you the right entity, in the right context, at the right time, doing the right thing, for the right reason?'"_
 
 🛡️ **Secure. Semantic. Scalable.**

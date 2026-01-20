@@ -11,6 +11,7 @@
 **Context-Bound Cryptographic Authorization System With Multi-Stage Verification and Fail-to-Noise Output**
 
 Alternative titles:
+
 - "Distributed Authorization Using Context Commitments, Behavioral Energy Models, and Trust Decay"
 - "Cryptographic Access Control With Chaos-Based Diffusion and Self-Excluding Swarm Consensus"
 
@@ -90,6 +91,7 @@ The present invention provides a context-bound cryptographic authorization syste
 The following definitions apply throughout this specification:
 
 **"Context Vector"**: A 6-dimensional vector c = (c₁, c₂, c₃, c₄, c₅, c₆) where:
+
 - c₁ = Unix timestamp (seconds since epoch)
 - c₂ = Device identifier (numeric hash)
 - c₃ = Threat level (0.0 to 10.0 scale)
@@ -105,7 +107,7 @@ The following definitions apply throughout this specification:
 
 **"Phase Lock"**: A temporal binding mechanism where expected phase φ_expected(t) = (2π(t - epoch) / period) mod 2π must match actual phase within tolerance.
 
-**"Fractal Gate"**: An early-rejection mechanism using Julia set iteration z_{n+1} = z_n² + c where bounded orbits indicate valid intent/context combinations.
+**"Fractal Gate"**: An early-rejection mechanism using Julia set iteration z\_{n+1} = z_n² + c where bounded orbits indicate valid intent/context combinations.
 
 **"Energy Function"**: The Hopfield network energy E(c) = -½(c')ᵀWc' + θᵀc' where c' is the normalized context, W is the learned weight matrix, and θ is the bias vector.
 
@@ -115,11 +117,11 @@ The following definitions apply throughout this specification:
 
 **"Authorization Failure"**: Any condition where verification stages reject the request, including context mismatch, intent mismatch, trajectory deviation, phase drift, energy threshold exceedance, fractal escape, or trust deficit.
 
-**"Chaos Parameters"**: Values r ∈ [3.97, 4.0) and x₀ ∈ [0.1, 0.9] derived from key material that control logistic map iteration x_{n+1} = r·x_n·(1 - x_n).
+**"Chaos Parameters"**: Values r ∈ [3.97, 4.0) and x₀ ∈ [0.1, 0.9] derived from key material that control logistic map iteration x\_{n+1} = r·x_n·(1 - x_n).
 
 **"Spectral Diffusion"**: Encryption by FFT phase rotation S' = S ⊙ exp(2πi·chaos_vector) where chaos_vector is derived from chaos parameters.
 
-**"Geodesic Distance"**: A weighted distance metric d_geo = √(w_p·δ_p² + w_m·δ_m² + w_h·δ_h² + w_φ·δ_φ²) measuring deviation from expected intent.
+**"Geodesic Distance"**: A weighted distance metric d*geo = √(w_p·δ_p² + w_m·δ_m² + w_h·δ_h² + w*φ·δ_φ²) measuring deviation from expected intent.
 
 **"Self-Exclusion"**: The automatic removal of nodes from consensus participation when trust score τ falls below participation threshold τ_participate, without explicit revocation messages.
 
@@ -134,55 +136,65 @@ The following definitions apply throughout this specification:
 The SCBE-AETHERMOORE system comprises the following modules:
 
 #### B.1 Context Acquisition Module
+
 - Collects 6-dimensional context vector from system sensors
 - Validates ranges and units
 - Provides canonical serialization
 
 #### B.2 Canonicalization and Hashing Module
+
 - Computes context commitment χ = SHA256(canon(c))
 - Ensures deterministic byte ordering
 - Generates cryptographic binding
 
 #### B.3 Intent Configuration Module
+
 - Maps vocabulary terms to Julia set basin parameters
 - Computes intent fingerprint F_I
 - Validates harmonic and phase ranges
 
 #### B.4 Trajectory and Phase Lock Module
+
 - Stores trajectory waypoints
 - Interpolates expected intent at current time
 - Tracks phase drift accumulation
 - Detects replay attempts
 
 #### B.5 Behavioral Energy Module (Hopfield)
+
 - Maintains learned weight matrix W
 - Computes energy E(c) for incoming contexts
 - Applies adaptive threshold E_threshold = μ_E + k·σ_E
 - Computes gradient margin for adversarial detection
 
 #### B.6 Fractal Gate Module
-- Iterates Julia set z_{n+1} = z_n² + c
+
+- Iterates Julia set z\_{n+1} = z_n² + c
 - Applies escape criterion |z| > R_escape
 - Provides early rejection for invalid combinations
 
 #### B.7 Swarm Trust Module
+
 - Maintains trust scores τ_i for all nodes
 - Computes trust-weighted centroid
 - Updates trust with decay for Byzantine behavior
 - Enforces participation threshold
 
 #### B.8 PQC Module
+
 - Implements ML-KEM-768 key encapsulation
 - Implements ML-DSA-65 signatures
 - Verifies payload integrity
 
 #### B.9 Spectral Diffusion Module
+
 - Derives chaos parameters from key material
 - Applies FFT phase rotation for encryption
 - Applies inverse rotation for decryption
 - Produces noise on parameter mismatch
 
 #### B.10 Logging and Audit Module
+
 - Records non-sensitive verification outcomes
 - Tracks swarm health metrics
 - Provides forensic trace fields
@@ -192,6 +204,7 @@ The SCBE-AETHERMOORE system comprises the following modules:
 ### SECTION C: DATA STRUCTURES
 
 #### C.1 Context Vector
+
 ```
 struct ContextVector {
     timestamp: float64      // Unix timestamp, seconds
@@ -204,6 +217,7 @@ struct ContextVector {
 ```
 
 #### C.2 Intent Configuration
+
 ```
 struct IntentConfig {
     primary: string         // Vocabulary term (e.g., "sil'kor")
@@ -214,6 +228,7 @@ struct IntentConfig {
 ```
 
 #### C.3 Trajectory Waypoint
+
 ```
 struct Waypoint {
     intent: IntentConfig
@@ -222,6 +237,7 @@ struct Waypoint {
 ```
 
 #### C.4 Trust State
+
 ```
 struct TrustState {
     node_id: uint64
@@ -233,6 +249,7 @@ struct TrustState {
 ```
 
 #### C.5 Cryptographic Envelope
+
 ```
 struct SCBEEnvelope {
     version: uint8          // Protocol version
@@ -252,48 +269,57 @@ struct SCBEEnvelope {
 The verification pipeline processes stages in order of computational cost:
 
 **Stage 1: Intent Match** - O(1)
+
 - Compare provided intent against expected intent from trajectory
 - Reject if primary or modifier mismatch
 
 **Stage 2: Trajectory Coherence** - O(1)
+
 - Compute geodesic distance d_geo
 - Reject if d_geo > ε_coherence
 
 **Stage 3: Phase Lock** - O(1)
+
 - Compute expected phase φ_expected(t)
 - Compute phase deviation
 - Update drift accumulator D
 - Reject if deviation > 2×tolerance OR D > max_drift
 
 **Stage 4: Behavioral Energy** - O(d²) where d = context dimension
+
 - Normalize context c' = tanh((c - μ) / σ)
 - Compute energy E(c) = -½(c')ᵀWc' + θᵀc'
 - Compute gradient margin δ_min
 - Reject if E > E_threshold OR δ_min < ε_robust
 
 **Stage 5: Fractal Gate** - O(N) where N = max iterations (typically 50)
+
 - Derive basin parameter c from intent
-- Iterate z_{n+1} = z_n² + c
+- Iterate z\_{n+1} = z_n² + c
 - Reject if |z| > R_escape before N iterations
 
 **Stage 6: Swarm Consensus** - O(n) where n = node count
+
 - Compute trust-weighted centroid
 - Compute node deviation from centroid
 - Update trust scores
 - Reject if τ < τ_participate OR insufficient consensus
 
 **Stage 7: PQC Verification** - O(k) where k = security parameter
+
 - Verify ML-DSA signature
 - Perform ML-KEM decapsulation
 - Reject if signature invalid
 
 **Stage 8: Spectral Decryption** - O(m log m) where m = message length
+
 - Derive chaos parameters from shared secret + context
 - Generate chaos sequence
 - Apply inverse FFT phase rotation
 - Output plaintext (or noise if parameters wrong)
 
 **Rejection Statistics** (estimated):
+
 - 70% of attacks fail at Stage 1-3 (cost: O(1))
 - 25% fail at Stage 4-6 (cost: O(d² + N + n))
 - 5% reach Stage 7-8 (cost: O(k + m log m))
@@ -431,6 +457,7 @@ function fractal_gate(z₀, c, N=50, R=2.0):
 ```
 
 **Vocabulary Basin Mappings:**
+
 - sil'kor → c = -0.4 + 0.0j (stable, always bounded)
 - nav'een → c = -1.0 + 0.0j (bounded)
 - thel'vori → c = -0.125 + 0.744j (bounded, high chaos)
@@ -542,6 +569,7 @@ function fail_to_noise(ciphertext_length):
 ```
 
 **Property:** Attacker cannot distinguish "close guess" from "random guess" because:
+
 1. Chaos amplification (6000×) ensures any parameter deviation produces maximally different output
 2. Spectral rotation affects all frequencies equally
 3. No error message reveals which stage failed
@@ -551,49 +579,55 @@ function fail_to_noise(ciphertext_length):
 ### SECTION F: PARAMETER TABLES
 
 #### F.1 Chaos Parameters
-| Parameter | Range | Default | Notes |
-|-----------|-------|---------|-------|
-| r | [3.97, 4.0) | 3.99 | Chaotic regime |
-| x₀ | [0.1, 0.9] | 0.5 | Avoids fixed points |
-| N (iterations) | [50, 500] | 100 | Higher = more amplification |
+
+| Parameter      | Range       | Default | Notes                       |
+| -------------- | ----------- | ------- | --------------------------- |
+| r              | [3.97, 4.0) | 3.99    | Chaotic regime              |
+| x₀             | [0.1, 0.9]  | 0.5     | Avoids fixed points         |
+| N (iterations) | [50, 500]   | 100     | Higher = more amplification |
 
 #### F.2 Fractal Gate Parameters
-| Parameter | Range | Default | Notes |
-|-----------|-------|---------|-------|
-| Max iterations | [30, 100] | 50 | Cost vs. security |
-| Escape radius | [1.5, 3.0] | 2.0 | Standard Julia bound |
-| z₀ derivation | From context hash | - | Deterministic |
+
+| Parameter      | Range             | Default | Notes                |
+| -------------- | ----------------- | ------- | -------------------- |
+| Max iterations | [30, 100]         | 50      | Cost vs. security    |
+| Escape radius  | [1.5, 3.0]        | 2.0     | Standard Julia bound |
+| z₀ derivation  | From context hash | -       | Deterministic        |
 
 #### F.3 Hopfield Parameters
-| Parameter | Range | Default | Notes |
-|-----------|-------|---------|-------|
-| k (threshold) | [2, 4] | 3 | Standard deviations |
-| ε_robust | [0.05, 0.2] | 0.1 | Gradient margin |
-| Capacity N_max | [100, 10000] | 1000 | Patterns stored |
+
+| Parameter      | Range        | Default | Notes               |
+| -------------- | ------------ | ------- | ------------------- |
+| k (threshold)  | [2, 4]       | 3       | Standard deviations |
+| ε_robust       | [0.05, 0.2]  | 0.1     | Gradient margin     |
+| Capacity N_max | [100, 10000] | 1000    | Patterns stored     |
 
 #### F.4 Trajectory Parameters
-| Parameter | Range | Default | Notes |
-|-----------|-------|---------|-------|
-| ε_coherence | [0.1, 0.25] | 0.15 | Geodesic threshold |
-| Phase period | [30, 120]s | 60s | Drift window |
-| Phase tolerance | [0.05, 0.2]π | 0.1π | Jitter allowance |
-| Max drift | [0.5, 2.0]π | 1.0π | Accumulated limit |
+
+| Parameter       | Range        | Default | Notes              |
+| --------------- | ------------ | ------- | ------------------ |
+| ε_coherence     | [0.1, 0.25]  | 0.15    | Geodesic threshold |
+| Phase period    | [30, 120]s   | 60s     | Drift window       |
+| Phase tolerance | [0.05, 0.2]π | 0.1π    | Jitter allowance   |
+| Max drift       | [0.5, 2.0]π  | 1.0π    | Accumulated limit  |
 
 #### F.5 Swarm Parameters
-| Parameter | Range | Default | Notes |
-|-----------|-------|---------|-------|
-| α (memory) | [0.8, 0.95] | 0.9 | Trust persistence |
-| τ_participate | [0.2, 0.4] | 0.3 | Participation threshold |
-| d_max | [1.0, 3.0] | 2.0 | Deviation scaling |
-| Decay rate | [0.1, 0.2] | 0.15 | Byzantine penalty |
-| Gain rate | [0.02, 0.1] | 0.05 | Honest reward |
+
+| Parameter     | Range       | Default | Notes                   |
+| ------------- | ----------- | ------- | ----------------------- |
+| α (memory)    | [0.8, 0.95] | 0.9     | Trust persistence       |
+| τ_participate | [0.2, 0.4]  | 0.3     | Participation threshold |
+| d_max         | [1.0, 3.0]  | 2.0     | Deviation scaling       |
+| Decay rate    | [0.1, 0.2]  | 0.15    | Byzantine penalty       |
+| Gain rate     | [0.02, 0.1] | 0.05    | Honest reward           |
 
 #### F.6 Harmonic Scaling
-| Parameter | Range | Default | Notes |
-|-----------|-------|---------|-------|
-| R_base | [PHI, e] | PHI ≈ 1.618 | Harmonic base |
-| h (degree) | [1, 7] | 3 | Harmonic level |
-| ζ (damping) | [0.001, 0.1] | 0.005 | Resonance |
+
+| Parameter   | Range        | Default     | Notes          |
+| ----------- | ------------ | ----------- | -------------- |
+| R_base      | [PHI, e]     | PHI ≈ 1.618 | Harmonic base  |
+| h (degree)  | [1, 7]       | 3           | Harmonic level |
+| ζ (damping) | [0.001, 0.1] | 0.005       | Resonance      |
 
 ---
 
@@ -676,6 +710,7 @@ lockout_duration = 2^failed_attempts seconds
 ```
 
 Example progression:
+
 - 1 failure: 2 seconds
 - 5 failures: 32 seconds
 - 10 failures: 1024 seconds (~17 minutes)
@@ -687,10 +722,12 @@ Example progression:
 #### I.1 Test 1: Chaos Sensitivity (Claim 4)
 
 **Setup:**
+
 - r_base = 3.99, Δr = 0.0001
 - x₀ = 0.5, N = 50 iterations
 
 **Result:**
+
 - x_base = 0.3082...
 - x_perturbed = 0.9138...
 - Divergence = 0.6056
@@ -701,6 +738,7 @@ Example progression:
 #### I.2 Test 2: Fractal Gate (Claims 7-8)
 
 **Setup:**
+
 - z₀ = 0.1 + 0.1j, max_iter = 50, escape_radius = 2.0
 
 **Results:**
@@ -716,11 +754,13 @@ Example progression:
 #### I.3 Test 3: Neural Energy (Claim 10)
 
 **Setup:**
+
 - 10 training patterns (similar contexts)
 - 1 novel pattern (adversarial context)
 - k = 3 (threshold multiplier)
 
 **Results:**
+
 - Average trained energy: -0.6181
 - Novel pattern energy: -0.1776
 - Energy separation: 0.4405
@@ -731,6 +771,7 @@ Example progression:
 #### I.4 Test 4: Trajectory Coherence (Claim 25)
 
 **Setup:**
+
 - Trajectory: Intent A at t=0, Intent B at t=60
 - ε_coherence = 0.15
 
@@ -747,12 +788,14 @@ Example progression:
 #### I.5 Test 5: Swarm Auto-Exclusion (Claim 34)
 
 **Setup:**
+
 - 5 normal nodes, 1 rogue node
 - Initial trust τ = 0.5 for all
 - 15 update rounds
 - τ_participate = 0.3
 
 **Results:**
+
 - Normal nodes final trust: 1.000 (PARTICIPATING)
 - Rogue node final trust: 0.000 (EXCLUDED)
 - Rounds to exclusion: ~10
@@ -801,10 +844,11 @@ r = 3.97 + (k_diff[0:4] mod 300) / 100000
 x₀ = 0.1 + (k_diff[4:8] mod 8000) / 10000
 
 **Claim 5:** The method of Claim 1, wherein the fractal gate uses vocabulary mappings including:
+
 - sil'kor → c = -0.4 + 0.0j
 - thel'vori → c = -0.125 + 0.744j
 
-**Claim 6:** The method of Claim 1, wherein the geodesic distance uses weights w_p=2, w_m=1.5, w_h=1, w_φ=0.5.
+**Claim 6:** The method of Claim 1, wherein the geodesic distance uses weights w*p=2, w_m=1.5, w_h=1, w*φ=0.5.
 
 **Claim 7:** The method of Claim 1, wherein the energy threshold is E_threshold = μ_E + k·σ_E with k ∈ [2, 4].
 
@@ -826,17 +870,17 @@ A context-bound cryptographic authorization system implementing multi-stage veri
 
 ## APPENDIX: CLAIM SUPPORT MAP
 
-| Claim | Specification Section | Test Evidence |
-|-------|----------------------|---------------|
-| 1 | D (Processing Order), E.1-E.10 | Tests 1-5 |
-| 2 | B (System Overview) | Architecture |
-| 4 | E.2 (Key Derivation) | Test 1 |
-| 5 | E.6 (Fractal Gate), Vocabulary | Test 2 |
-| 6 | E.7 (Geodesic Distance) | Test 4 |
-| 7 | E.5 (Hopfield) | Test 3 |
-| 8 | E.9 (Swarm Trust) | Test 5 |
-| 9 | F.6 (Harmonic Scaling) | AETHERMOORE |
-| 10 | D (Processing Order) | Benchmark |
+| Claim | Specification Section          | Test Evidence |
+| ----- | ------------------------------ | ------------- |
+| 1     | D (Processing Order), E.1-E.10 | Tests 1-5     |
+| 2     | B (System Overview)            | Architecture  |
+| 4     | E.2 (Key Derivation)           | Test 1        |
+| 5     | E.6 (Fractal Gate), Vocabulary | Test 2        |
+| 6     | E.7 (Geodesic Distance)        | Test 4        |
+| 7     | E.5 (Hopfield)                 | Test 3        |
+| 8     | E.9 (Swarm Trust)              | Test 5        |
+| 9     | F.6 (Harmonic Scaling)         | AETHERMOORE   |
+| 10    | D (Processing Order)           | Benchmark     |
 
 ---
 

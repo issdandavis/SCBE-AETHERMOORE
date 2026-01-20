@@ -219,9 +219,7 @@ describe('bottleBeamIntensity', () => {
   // ═══════════════════════════════════════════════════════════════
   describe('Single source', () => {
     it('intensity = 1 at any distance for single source', () => {
-      const sources: AcousticSource[] = [
-        { pos: [0, 0, 0], phase: 0 },
-      ];
+      const sources: AcousticSource[] = [{ pos: [0, 0, 0], phase: 0 }];
       const wavelength = 0.1;
 
       // Single source: |e^(ikr)|² = 1
@@ -317,9 +315,7 @@ describe('bottleBeamIntensity', () => {
   // ═══════════════════════════════════════════════════════════════
   describe('Numerical stability', () => {
     it('handles very small distances (near source)', () => {
-      const sources: AcousticSource[] = [
-        { pos: [0, 0, 0], phase: 0 },
-      ];
+      const sources: AcousticSource[] = [{ pos: [0, 0, 0], phase: 0 }];
 
       // Very close to source
       const intensity = bottleBeamIntensity([1e-10, 0, 0], sources, 1.0);
@@ -328,9 +324,7 @@ describe('bottleBeamIntensity', () => {
     });
 
     it('handles large distances', () => {
-      const sources: AcousticSource[] = [
-        { pos: [0, 0, 0], phase: 0 },
-      ];
+      const sources: AcousticSource[] = [{ pos: [0, 0, 0], phase: 0 }];
 
       const intensity = bottleBeamIntensity([1e6, 0, 0], sources, 1.0);
 
@@ -543,7 +537,9 @@ describe('cavityResonance', () => {
   // ═══════════════════════════════════════════════════════════════
   describe('Mathematical correctness', () => {
     it('f = (c/2) √((n/Lx)² + (m/Ly)² + (l/Lz)²)', () => {
-      const n = 2, m = 3, l = 4;
+      const n = 2,
+        m = 3,
+        l = 4;
       const dimensions: Vector3D = [1, 2, 3];
       const c = 343;
 

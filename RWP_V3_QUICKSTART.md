@@ -28,6 +28,7 @@ python examples/rwp_v3_demo.py
 ```
 
 Expected output:
+
 ```
 ╔══════════════════════════════════════════════════════════════════════╗
 ║              RWP v3.0 Complete Demo - Mars Communication            ║
@@ -120,14 +121,14 @@ print(decoded)  # b"Hello, Mars!"
 
 ## Sacred Tongues Reference
 
-| Tongue | Code | Domain | Frequency | Use Case |
-|--------|------|--------|-----------|----------|
-| Kor'aelin | `ko` | Nonce/Intent | 440.0 Hz | Flow control |
-| Avali | `av` | AAD/Metadata | 523.25 Hz | Headers |
-| Runethic | `ru` | Salt/Binding | 329.63 Hz | Key derivation |
-| Cassisivadan | `ca` | Ciphertext | 659.25 Hz | Encrypted data |
-| Umbroth | `um` | Redaction | 293.66 Hz | Concealment |
-| Draumric | `dr` | Tag/Structure | 392.0 Hz | Authentication |
+| Tongue       | Code | Domain        | Frequency | Use Case       |
+| ------------ | ---- | ------------- | --------- | -------------- |
+| Kor'aelin    | `ko` | Nonce/Intent  | 440.0 Hz  | Flow control   |
+| Avali        | `av` | AAD/Metadata  | 523.25 Hz | Headers        |
+| Runethic     | `ru` | Salt/Binding  | 329.63 Hz | Key derivation |
+| Cassisivadan | `ca` | Ciphertext    | 659.25 Hz | Encrypted data |
+| Umbroth      | `um` | Redaction     | 293.66 Hz | Concealment    |
+| Draumric     | `dr` | Tag/Structure | 392.0 Hz  | Authentication |
 
 ---
 
@@ -162,16 +163,16 @@ ARGON2_PARAMS = {
 
 ## Performance Targets
 
-| Operation | Target | Notes |
-|-----------|--------|-------|
-| Encrypt (no PQC) | <10ms | Argon2id overhead |
-| Decrypt (no PQC) | <5ms | Argon2id overhead |
-| Encrypt (with PQC) | <50ms | ML-KEM encapsulation |
-| Decrypt (with PQC) | <30ms | ML-KEM decapsulation |
-| Token encoding | <1ms | Constant-time lookup |
-| Token decoding | <1ms | Constant-time lookup |
-| Spectral fingerprint | <2ms | SHA-256 + multiply |
-| Throughput | 1000+ env/s | Parallel processing |
+| Operation            | Target      | Notes                |
+| -------------------- | ----------- | -------------------- |
+| Encrypt (no PQC)     | <10ms       | Argon2id overhead    |
+| Decrypt (no PQC)     | <5ms        | Argon2id overhead    |
+| Encrypt (with PQC)   | <50ms       | ML-KEM encapsulation |
+| Decrypt (with PQC)   | <30ms       | ML-KEM decapsulation |
+| Token encoding       | <1ms        | Constant-time lookup |
+| Token decoding       | <1ms        | Constant-time lookup |
+| Spectral fingerprint | <2ms        | SHA-256 + multiply   |
+| Throughput           | 1000+ env/s | Parallel processing  |
 
 ---
 
@@ -288,6 +289,7 @@ python -c "from examples.rwp_v3_demo import demo_basic_encryption; demo_basic_en
 ### Issue: `ImportError: No module named 'argon2'`
 
 **Solution**:
+
 ```bash
 pip install argon2-cffi
 ```
@@ -295,6 +297,7 @@ pip install argon2-cffi
 ### Issue: `ImportError: No module named 'Crypto'`
 
 **Solution**:
+
 ```bash
 pip install pycryptodome
 ```
@@ -302,6 +305,7 @@ pip install pycryptodome
 ### Issue: `ImportError: No module named 'oqs'`
 
 **Solution** (optional, for PQC):
+
 ```bash
 pip install liboqs-python
 ```

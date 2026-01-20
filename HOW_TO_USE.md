@@ -46,13 +46,15 @@ console.log('Decrypted:', decrypted);
 Press Enter. You should see your message encrypted and decrypted!
 
 **Recommended import style** (subpath imports):
+
 ```javascript
 // Import specific modules directly
-const { Feistel, FFT, HybridCrypto } = require('@scbe/aethermoore/symphonic');  
+const { Feistel, FFT, HybridCrypto } = require('@scbe/aethermoore/symphonic');
 const { BloomFilter, HKDF } = require('@scbe/aethermoore/crypto');
 ```
 
 **Alternative import style** (namespace export in v3.0.0+ builds):
+
 ```javascript
 const scbe = require('@scbe/aethermoore');
 const cipher = new scbe.symphonic.Feistel();
@@ -86,7 +88,10 @@ console.log('\n=== FFT Demo ===');
 const fft = new FFT();
 const signal = [1, 0, -1, 0]; // Simple wave
 const spectrum = fft.forward(signal);
-console.log('Frequency Spectrum:', spectrum.map(c => c.magnitude().toFixed(2)));
+console.log(
+  'Frequency Spectrum:',
+  spectrum.map((c) => c.magnitude().toFixed(2))
+);
 
 // Example 3: Hybrid Crypto (PQC + Classical)
 console.log('\n=== Hybrid Crypto Demo ===');
@@ -112,6 +117,7 @@ node test.js
 Your package includes:
 
 ### Symphonic Cipher
+
 - `Feistel` - Balanced Feistel network encryption
 - `FFT` - Fast Fourier Transform for frequency analysis
 - `Complex` - Complex number math
@@ -120,6 +126,7 @@ Your package includes:
 - `SymphonicAgent` - AI agent with encryption
 
 ### Crypto Tools
+
 - `BloomFilter` - Probabilistic data structure
 - `Envelope` - Secure message envelopes
 - `HKDF` - Key derivation
@@ -127,11 +134,13 @@ Your package includes:
 - `ReplayGuard` - Prevent replay attacks
 
 ### Self-Healing
+
 - `QuickFixBot` - Auto-fix common issues
 - `DeepHealing` - Advanced recovery
 - `Coordinator` - Orchestrate healing
 
 ### Rollout
+
 - `CanaryDeployment` - Gradual rollouts
 - `CircuitBreaker` - Fault tolerance
 
@@ -140,6 +149,7 @@ Your package includes:
 ## Simple Examples
 
 ### Encrypt/Decrypt Text
+
 ```javascript
 const { Feistel } = require('@scbe/aethermoore/symphonic');
 const cipher = new Feistel();
@@ -148,6 +158,7 @@ const decrypted = cipher.decryptString(encrypted, 'password');
 ```
 
 ### Analyze Frequencies
+
 ```javascript
 const { FFT } = require('@scbe/aethermoore/symphonic');
 const fft = new FFT();
@@ -155,6 +166,7 @@ const spectrum = fft.forward([1, 2, 3, 4]);
 ```
 
 ### Create AI Agent
+
 ```javascript
 const { SymphonicAgent } = require('@scbe/aethermoore/symphonic');
 const agent = new SymphonicAgent('agent-1');
@@ -174,14 +186,17 @@ const result = agent.processIntent({ action: 'encrypt', data: 'secret' });
 ## Troubleshooting
 
 **Error: Cannot find module '@scbe/aethermoore'**
+
 - Make sure you ran: `npm install git+https://github.com/issdandavis/scbe-aethermoore-demo.git`
 - Check that `node_modules/@scbe/aethermoore` folder exists
 
 **Error: crypto module not found**
+
 - You need Node.js version 18 or higher
 - Check version: `node --version`
 
 **Import errors**
+
 - Use `require()` not `import` (unless using ES modules)
 - Prefer subpath imports: `require('@scbe/aethermoore/symphonic')`
 - If you use `require('@scbe/aethermoore').symphonic`, ensure you're on v3.0.0+ builds

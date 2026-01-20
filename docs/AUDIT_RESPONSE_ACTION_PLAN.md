@@ -26,12 +26,13 @@ The comprehensive audit identified that while the **mathematical foundations are
 
 **Action**: Rewrite as rate-limiting mechanism.
 
-| Before | After |
-|--------|-------|
+| Before                                               | After                                                                               |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------- |
 | "Acoustic Black Hole creates infinite time dilation" | "Asymptotic Latency Throttling where query latency L(n) scales super-exponentially" |
-| γ → ∞ (physics metaphor) | L(n) = O(1.5^(d²)) where d = attack density |
+| γ → ∞ (physics metaphor)                             | L(n) = O(1.5^(d²)) where d = attack density                                         |
 
 **Implementation**:
+
 ```python
 # OLD: Time dilation metaphor
 def acoustic_black_hole(query):
@@ -58,12 +59,13 @@ def asymptotic_latency_throttle(query, attack_density: float) -> float:
 
 **Action**: Redefine as noise injection for SNR maintenance.
 
-| Before | After |
-|--------|-------|
+| Before                                              | After                                                                |
+| --------------------------------------------------- | -------------------------------------------------------------------- |
 | "Export entropy to null-space to bypass Second Law" | "Signal Attenuation via noise injection in unused spectrum channels" |
-| Thermodynamic violation | Standard signal processing |
+| Thermodynamic violation                             | Standard signal processing                                           |
 
 **Implementation**:
+
 ```python
 # OLD: Entropy export (pseudoscience)
 def export_entropy_to_null_space(signal):
@@ -100,18 +102,20 @@ def signal_attenuation(active_channels: list, noise_floor: float) -> dict:
 ### 2.1 Reframe "Intent Detection" → "Signal Complexity Analysis"
 
 **Problem**: Claiming to detect psychological "intent" via jitter/shimmer is:
+
 - Scientifically weak
 - Vulnerable to deepfakes
 - Not patentable under § 101
 
 **Action**: Rebrand as liveness detection distinguishing signal types.
 
-| Before | After |
-|--------|-------|
+| Before                                         | After                                                                        |
+| ---------------------------------------------- | ---------------------------------------------------------------------------- |
 | "Detect malicious intent via Symphonic Cipher" | "Signal Complexity Verification distinguishing synthetic vs organic signals" |
-| Psychological claim | Information-theoretic claim |
+| Psychological claim                            | Information-theoretic claim                                                  |
 
 **Technical Basis**:
+
 ```python
 def signal_complexity_analysis(signal: np.ndarray) -> dict:
     """
@@ -133,6 +137,7 @@ def signal_complexity_analysis(signal: np.ndarray) -> dict:
 ```
 
 **Files to Update**:
+
 - `src/symphonic/cipher.ts` - Update comments
 - `docs/` - Rename "Intent Detection" references
 - Patent claims - Reframe language
@@ -145,12 +150,13 @@ def signal_complexity_analysis(signal: np.ndarray) -> dict:
 
 **Action**: Keep for branding, redefine technically as "Deterministic External Seed Sources."
 
-| Before | After |
-|--------|-------|
+| Before                                           | After                                                                 |
+| ------------------------------------------------ | --------------------------------------------------------------------- |
 | "Planetary frequencies provide cosmic alignment" | "Deterministic External Seed Sources for reproducible initialization" |
-| Mystical branding | Technical specification |
+| Mystical branding                                | Technical specification                                               |
 
 **Implementation**:
+
 ```python
 # Planetary constants (kept for branding consistency)
 PLANETARY_SEEDS = {
@@ -187,12 +193,12 @@ Selected for aesthetic/branding consistency only.
 # BEFORE (insecure)
 - name: Security Scan
   run: npm audit
-  continue-on-error: true  # BAD: Allows vulnerable builds
+  continue-on-error: true # BAD: Allows vulnerable builds
 
 # AFTER (secure)
 - name: Security Scan
   run: npm audit --audit-level=critical
-  continue-on-error: false  # GOOD: Blocks vulnerable builds
+  continue-on-error: false # GOOD: Blocks vulnerable builds
 ```
 
 **Priority**: HIGH - This is a critical security gap.
@@ -202,6 +208,7 @@ Selected for aesthetic/branding consistency only.
 ### 3.2 Replace ProtonMail Bridge with Message Queue
 
 **Problem**: Local email bridge is:
+
 - Single point of failure
 - Not horizontally scalable
 - Bottleneck for agent orchestration
@@ -209,6 +216,7 @@ Selected for aesthetic/branding consistency only.
 **Action**: Migrate to Redis/BullMQ or Kafka.
 
 **Current Architecture**:
+
 ```
 ProtonMail Bridge → Mail/Coordinator → Agents
       ↑
@@ -216,6 +224,7 @@ ProtonMail Bridge → Mail/Coordinator → Agents
 ```
 
 **Target Architecture**:
+
 ```
 Ingest (any) → Redis/BullMQ → Agent Workers (N)
                     ↓
@@ -224,11 +233,11 @@ Ingest (any) → Redis/BullMQ → Agent Workers (N)
 
 **Implementation Options**:
 
-| Option | Pros | Cons |
-|--------|------|------|
+| Option         | Pros                                | Cons              |
+| -------------- | ----------------------------------- | ----------------- |
 | Redis + BullMQ | Simple, fast, good for <1M msgs/day | Single-node limit |
-| Kafka | Unlimited scale, replay | Complex ops |
-| AWS SQS | Managed, cheap | AWS lock-in |
+| Kafka          | Unlimited scale, replay             | Complex ops       |
+| AWS SQS        | Managed, cheap                      | AWS lock-in       |
 
 **Recommendation**: Start with **Redis + BullMQ** (already considering per audit). Migrate to Kafka if volume exceeds 1M msgs/day.
 
@@ -241,11 +250,13 @@ Ingest (any) → Redis/BullMQ → Agent Workers (N)
 **Action**: Use Temporal or Airflow for state management.
 
 **Current**:
+
 ```
 Agents → Notion API (3 req/sec limit) → State
 ```
 
 **Target**:
+
 ```
 Agents → Temporal/Airflow → State
               ↓
@@ -253,6 +264,7 @@ Agents → Temporal/Airflow → State
 ```
 
 **Recommendation**: **Temporal** for:
+
 - Durable execution
 - Automatic retries
 - Workflow versioning
@@ -267,6 +279,7 @@ Agents → Temporal/Airflow → State
 **Concept**: Waiting room with exponentially increasing delays.
 
 **Implementation**:
+
 ```python
 class SecurityGate:
     """
@@ -314,6 +327,7 @@ class SecurityGate:
 ### 4.2 Centralize Secrets Management
 
 **Problem**: Secrets in environment variables lack:
+
 - Rotation policies
 - Audit trails
 - Access controls
@@ -322,15 +336,16 @@ class SecurityGate:
 
 **Options**:
 
-| Solution | Best For | Cost |
-|----------|----------|------|
-| HashiCorp Vault | Multi-cloud, on-prem | Self-hosted or $$$$ |
-| AWS Secrets Manager | AWS-native | $0.40/secret/month |
-| 1Password Connect | Small teams | $7.99/user/month |
+| Solution            | Best For             | Cost                |
+| ------------------- | -------------------- | ------------------- |
+| HashiCorp Vault     | Multi-cloud, on-prem | Self-hosted or $$$$ |
+| AWS Secrets Manager | AWS-native           | $0.40/secret/month  |
+| 1Password Connect   | Small teams          | $7.99/user/month    |
 
 **Recommendation**: **AWS Secrets Manager** (already on AWS Lambda).
 
 **Implementation**:
+
 ```python
 # BEFORE: Environment variables
 import os
@@ -350,6 +365,7 @@ pqc_key = get_secret('scbe/pqc/private-key')  # Rotatable, audited
 ```
 
 **Rotation Policy**:
+
 - PQC keys: 90 days
 - API tokens: 30 days
 - Database credentials: 7 days
@@ -361,6 +377,7 @@ pqc_key = get_secret('scbe/pqc/private-key')  # Rotatable, audited
 ### 5.1 Symphonic Cipher Refactor
 
 **Files to Update**:
+
 - `src/symphonic/cipher.ts`
 - `docs/FULL_SYSTEM_ENABLEMENT.md`
 - `.kiro/specs/symphonic-cipher/`
@@ -376,18 +393,18 @@ pqc_key = get_secret('scbe/pqc/private-key')  # Rotatable, audited
 
 ## Action Item Summary
 
-| # | Action | Priority | Owner | Status |
-|---|--------|----------|-------|--------|
-| 1 | Rename Time Dilation → Asymptotic Latency Throttling | Critical | Patent | TODO |
-| 2 | Delete/Redefine Entropy Export → Signal Attenuation | Critical | Patent | TODO |
-| 3 | Reframe Intent Detection → Signal Complexity Analysis | High | Docs | TODO |
-| 4 | Clarify Planetary Seeding as arbitrary constants | Medium | Docs | TODO |
-| 5 | Remove `continue-on-error: true` from CI/CD | Critical | DevOps | TODO |
-| 6 | Plan Redis/BullMQ migration | High | Arch | TODO |
-| 7 | Evaluate Temporal for workflow | Medium | Arch | TODO |
-| 8 | Implement Adaptive Dwell Duration | High | Security | TODO |
-| 9 | Migrate to AWS Secrets Manager | High | Security | TODO |
-| 10 | Update Symphonic Cipher docs | Medium | Docs | TODO |
+| #   | Action                                                | Priority | Owner    | Status |
+| --- | ----------------------------------------------------- | -------- | -------- | ------ |
+| 1   | Rename Time Dilation → Asymptotic Latency Throttling  | Critical | Patent   | TODO   |
+| 2   | Delete/Redefine Entropy Export → Signal Attenuation   | Critical | Patent   | TODO   |
+| 3   | Reframe Intent Detection → Signal Complexity Analysis | High     | Docs     | TODO   |
+| 4   | Clarify Planetary Seeding as arbitrary constants      | Medium   | Docs     | TODO   |
+| 5   | Remove `continue-on-error: true` from CI/CD           | Critical | DevOps   | TODO   |
+| 6   | Plan Redis/BullMQ migration                           | High     | Arch     | TODO   |
+| 7   | Evaluate Temporal for workflow                        | Medium   | Arch     | TODO   |
+| 8   | Implement Adaptive Dwell Duration                     | High     | Security | TODO   |
+| 9   | Migrate to AWS Secrets Manager                        | High     | Security | TODO   |
+| 10  | Update Symphonic Cipher docs                          | Medium   | Docs     | TODO   |
 
 ---
 
@@ -401,13 +418,13 @@ pqc_key = get_secret('scbe/pqc/private-key')  # Rotatable, audited
 
 ## Appendix: USPTO Rejection Summary
 
-| Claim | Issue | Rejection | Resolution |
-|-------|-------|-----------|------------|
-| 54 | Acoustic Black Hole / Time Dilation | § 101, § 112 | Asymptotic Latency Throttling |
-| 57 | Entropy Export to Null-Space | § 101, § 112 | Signal Attenuation |
-| Intent Claims | Psychological detection | § 101 | Signal Complexity Analysis |
-| Planetary Seeds | No crypto advantage | § 112 | Deterministic External Seeds |
+| Claim           | Issue                               | Rejection    | Resolution                    |
+| --------------- | ----------------------------------- | ------------ | ----------------------------- |
+| 54              | Acoustic Black Hole / Time Dilation | § 101, § 112 | Asymptotic Latency Throttling |
+| 57              | Entropy Export to Null-Space        | § 101, § 112 | Signal Attenuation            |
+| Intent Claims   | Psychological detection             | § 101        | Signal Complexity Analysis    |
+| Planetary Seeds | No crypto advantage                 | § 112        | Deterministic External Seeds  |
 
 ---
 
-*This document should be reviewed by patent counsel before filing amendments.*
+_This document should be reviewed by patent counsel before filing amendments._

@@ -28,13 +28,13 @@ H(d, R) = R^(d²)
 
 With R = e ≈ 2.718:
 
-| d | H(d) | 2×H(d/2) | Ratio |
-|---|------|----------|-------|
-| 0.5 | 1.284 | - | - |
-| 1.0 | 2.718 | 2.568 | **1.058** |
-| 1.5 | 12.18 | 3.78 | **3.22** |
-| 2.0 | 54.6 | 6.91 | **7.90** |
-| 3.0 | 8103 | 54.4 | **149** |
+| d   | H(d)  | 2×H(d/2) | Ratio     |
+| --- | ----- | -------- | --------- |
+| 0.5 | 1.284 | -        | -         |
+| 1.0 | 2.718 | 2.568    | **1.058** |
+| 1.5 | 12.18 | 3.78     | **3.22**  |
+| 2.0 | 54.6  | 6.91     | **7.90**  |
+| 3.0 | 8103  | 54.4     | **149**   |
 
 ### Why Ratio is ~1.058 at d=0.5 → d=1.0
 
@@ -77,6 +77,7 @@ def test_harmonic_scaling_super_exponential():
 ```
 
 **Why this is best**:
+
 - Preserves the clean R=e (natural constant)
 - Still proves super-exponential (growth faster than any polynomial)
 - Matches real physics analogies (energy scaling in hyperbolic space)
@@ -92,6 +93,7 @@ def harmonicScale(distance: float, R: float = 4.0) -> float:
 ```
 
 New values with R=4.0:
+
 - H(0.5) ≈ 1.414
 - H(1.0) = 4.0
 - Ratio ≈ 1.414 (feels punchier for demos)
@@ -299,11 +301,11 @@ After applying fixes:
 
 ## 8. Summary
 
-| Issue | Root Cause | Fix |
-|-------|------------|-----|
-| "Weak" super-exponential | Test too aggressive | Relax threshold for small d |
-| Distance formula | Missing 2.0 factor | Add explicit `2.0 *` |
-| Rotation isometry | Wrong Möbius formula | Use full gyrovector conjugation |
+| Issue                    | Root Cause           | Fix                             |
+| ------------------------ | -------------------- | ------------------------------- |
+| "Weak" super-exponential | Test too aggressive  | Relax threshold for small d     |
+| Distance formula         | Missing 2.0 factor   | Add explicit `2.0 *`            |
+| Rotation isometry        | Wrong Möbius formula | Use full gyrovector conjugation |
 
 **Estimated effort**: 30–90 minutes (copy-paste + run tests)
 

@@ -313,8 +313,6 @@ export class SymphonicAgent {
 /**
  * Creates a Symphonic Agent with default settings.
  */
-export function createSymphonicAgent(
-  config?: Partial<SymphonicAgentConfig>
-): SymphonicAgent {
+export function createSymphonicAgent(config?: Partial<SymphonicAgentConfig>): SymphonicAgent {
   return new SymphonicAgent(config);
 }

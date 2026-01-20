@@ -10,6 +10,7 @@
 ## Overview
 
 SCBE-AETHERMOORE is a post-quantum hybrid encryption system combining:
+
 - **14-layer hyperbolic geometry** for AI safety governance
 - **SpiralSeal SS1** for authenticated encryption (AES-256-GCM + Kyber768 + Dilithium3)
 - **Six Sacred Tongues** for spell-text encoding
@@ -39,6 +40,7 @@ pip install -e .
 ## Dependencies
 
 ### Required
+
 ```
 numpy>=1.24.0
 scipy>=1.10.0
@@ -46,11 +48,13 @@ pycryptodome>=3.19.0
 ```
 
 ### Optional (for real post-quantum crypto)
+
 ```
 pypqc>=0.0.6          # Real Kyber768 + Dilithium3 (NIST PQC)
 ```
 
 ### Development
+
 ```
 pytest>=7.0.0
 pytest-cov>=4.0.0
@@ -137,12 +141,12 @@ print(f"Risk: {risk_level}, Decision: {decision}")
 
 Configure via environment for production:
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `SCBE_MASTER_SECRET` | (none) | 32-byte hex-encoded master secret |
-| `SCBE_KID` | `k01` | Key identifier for rotation |
-| `SCBE_MODE` | `symmetric` | `symmetric` or `hybrid` |
-| `SCBE_METRICS_BACKEND` | `stdout` | `stdout`, `prometheus`, `datadog` |
+| Variable               | Default     | Description                       |
+| ---------------------- | ----------- | --------------------------------- |
+| `SCBE_MASTER_SECRET`   | (none)      | 32-byte hex-encoded master secret |
+| `SCBE_KID`             | `k01`       | Key identifier for rotation       |
+| `SCBE_MODE`            | `symmetric` | `symmetric` or `hybrid`           |
+| `SCBE_METRICS_BACKEND` | `stdout`    | `stdout`, `prometheus`, `datadog` |
 
 ```bash
 export SCBE_MASTER_SECRET=$(openssl rand -hex 32)
@@ -201,27 +205,28 @@ Before deploying to production:
 
 ### SpiralSealSS1
 
-| Method | Description |
-|--------|-------------|
-| `seal(plaintext, aad, sign)` | Encrypt and return SS1 blob |
-| `unseal(blob, aad, verify_sig)` | Decrypt SS1 blob |
-| `sign(message)` | Dilithium3 signature (hybrid mode) |
-| `verify(message, signature)` | Verify signature |
-| `rotate_key(new_kid, new_secret)` | Rotate master secret |
-| `get_status()` | Get crypto backend status |
+| Method                            | Description                        |
+| --------------------------------- | ---------------------------------- |
+| `seal(plaintext, aad, sign)`      | Encrypt and return SS1 blob        |
+| `unseal(blob, aad, verify_sig)`   | Decrypt SS1 blob                   |
+| `sign(message)`                   | Dilithium3 signature (hybrid mode) |
+| `verify(message, signature)`      | Verify signature                   |
+| `rotate_key(new_kid, new_secret)` | Rotate master secret               |
+| `get_status()`                    | Get crypto backend status          |
 
 ### LanguesMetric
 
-| Method | Description |
-|--------|-------------|
-| `compute(point)` | Compute Langues metric L |
-| `risk_level(L)` | Get risk level and decision |
+| Method           | Description                 |
+| ---------------- | --------------------------- |
+| `compute(point)` | Compute Langues metric L    |
+| `risk_level(L)`  | Get risk level and decision |
 
 ---
 
 ## Troubleshooting
 
 ### "No cryptographic backend available"
+
 ```bash
 pip install pycryptodome
 # or
@@ -229,11 +234,13 @@ pip install cryptography
 ```
 
 ### "Using classical fallback"
+
 ```bash
 pip install pypqc
 ```
 
 ### Import errors
+
 ```bash
 pip install -e .  # Reinstall in editable mode
 ```
@@ -248,4 +255,4 @@ pip install -e .  # Reinstall in editable mode
 
 ---
 
-*SCBE-AETHERMOORE: Post-quantum AI safety infrastructure.*
+_SCBE-AETHERMOORE: Post-quantum AI safety infrastructure._

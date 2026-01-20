@@ -198,16 +198,12 @@ describe('halAttention', () => {
   // Helper to create test tensors
   const createTensor = (batch: number, seq: number, dim: number, fill: number = 0.1): Tensor3D => {
     return Array.from({ length: batch }, () =>
-      Array.from({ length: seq }, () =>
-        Array.from({ length: dim }, () => fill)
-      )
+      Array.from({ length: seq }, () => Array.from({ length: dim }, () => fill))
     );
   };
 
   const createDimTensor = (batch: number, seq: number, fill: number = 1): Tensor2D => {
-    return Array.from({ length: batch }, () =>
-      Array.from({ length: seq }, () => fill)
-    );
+    return Array.from({ length: batch }, () => Array.from({ length: seq }, () => fill));
   };
 
   // ═══════════════════════════════════════════════════════════════
@@ -266,9 +262,13 @@ describe('halAttention', () => {
     it('output is weighted combination of V', () => {
       const Q = createTensor(1, 1, 8, 0.5);
       const K = createTensor(1, 3, 8, 0.5);
-      const V: Tensor3D = [[[1, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 1, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 1, 0, 0, 0, 0, 0]]];
+      const V: Tensor3D = [
+        [
+          [1, 0, 0, 0, 0, 0, 0, 0],
+          [0, 1, 0, 0, 0, 0, 0, 0],
+          [0, 0, 1, 0, 0, 0, 0, 0],
+        ],
+      ];
       const d_Q = createDimTensor(1, 1, 1);
       const d_K = createDimTensor(1, 3, 1);
 
@@ -291,7 +291,12 @@ describe('halAttention', () => {
       // Create scenario where harmonic coupling matters
       const Q = createTensor(1, 2, 4, 0.5);
       const K = createTensor(1, 2, 4, 0.5);
-      const V: Tensor3D = [[[1, 0, 0, 0], [0, 1, 0, 0]]];
+      const V: Tensor3D = [
+        [
+          [1, 0, 0, 0],
+          [0, 1, 0, 0],
+        ],
+      ];
 
       // Different dimension vectors
       const d_Q_low = [[1, 1]];
@@ -410,10 +415,14 @@ describe('halAttention', () => {
     it('softmax normalization ensures valid probability distribution', () => {
       const Q = createTensor(1, 1, 4, 0.5);
       const K = createTensor(1, 4, 4, 0.5);
-      const V: Tensor3D = [[[1, 0, 0, 0],
-                           [0, 1, 0, 0],
-                           [0, 0, 1, 0],
-                           [0, 0, 0, 1]]];
+      const V: Tensor3D = [
+        [
+          [1, 0, 0, 0],
+          [0, 1, 0, 0],
+          [0, 0, 1, 0],
+          [0, 0, 0, 1],
+        ],
+      ];
       const d_Q = [[2]];
       const d_K = [[1, 2, 3, 4]];
 
@@ -448,9 +457,24 @@ describe('halAttention', () => {
   describe('Golden test vectors', () => {
     it('HAL attention matches expected for simple case', () => {
       // Simple 1-batch, 2-seq, 2-dim case
-      const Q: Tensor3D = [[[1, 0], [0, 1]]];
-      const K: Tensor3D = [[[1, 0], [0, 1]]];
-      const V: Tensor3D = [[[1, 2], [3, 4]]];
+      const Q: Tensor3D = [
+        [
+          [1, 0],
+          [0, 1],
+        ],
+      ];
+      const K: Tensor3D = [
+        [
+          [1, 0],
+          [0, 1],
+        ],
+      ];
+      const V: Tensor3D = [
+        [
+          [1, 2],
+          [3, 4],
+        ],
+      ];
       const d_Q = [[1, 1]];
       const d_K = [[1, 1]];
 

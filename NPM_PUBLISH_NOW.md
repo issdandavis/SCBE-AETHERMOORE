@@ -26,6 +26,7 @@ npm login
 ```
 
 **You'll be prompted for**:
+
 - Username
 - Password
 - Email
@@ -53,26 +54,27 @@ npm publish scbe-aethermoore-3.0.0.tgz --access public
 ```
 
 **Why `--access public`?**
+
 - Scoped packages (`@scbe/aethermoore`) default to private
 - `--access public` makes it free and publicly available
 
 ### Expected Output
 
 ```
-npm notice 
+npm notice
 npm notice 📦  scbe-aethermoore@3.0.0
-npm notice === Tarball Contents === 
+npm notice === Tarball Contents ===
 npm notice 143kB scbe-aethermoore-3.0.0.tgz
-npm notice === Tarball Details === 
-npm notice name:          scbe-aethermoore                        
-npm notice version:       3.0.0                                   
-npm notice filename:      scbe-aethermoore-3.0.0.tgz              
-npm notice package size:  143.0 kB                                
-npm notice unpacked size: 1.2 MB                                  
-npm notice shasum:        [hash]                                  
-npm notice integrity:     [integrity hash]                        
-npm notice total files:   172                                     
-npm notice 
+npm notice === Tarball Details ===
+npm notice name:          scbe-aethermoore
+npm notice version:       3.0.0
+npm notice filename:      scbe-aethermoore-3.0.0.tgz
+npm notice package size:  143.0 kB
+npm notice unpacked size: 1.2 MB
+npm notice shasum:        [hash]
+npm notice integrity:     [integrity hash]
+npm notice total files:   172
+npm notice
 npm notice Publishing to https://registry.npmjs.org/
 + scbe-aethermoore@3.0.0
 ```
@@ -88,6 +90,7 @@ npm view scbe-aethermoore
 ```
 
 **Expected Output**:
+
 ```
 scbe-aethermoore@3.0.0 | MIT | deps: 1 | versions: 1
 SCBE-AETHERMOORE: Hyperbolic Geometry-Based Security with 14-Layer Architecture
@@ -181,7 +184,8 @@ npm: https://www.npmjs.com/package/scbe-aethermoore
 ### Reddit Posts
 
 **r/cryptography**:
-```
+
+````
 Title: [Release] SCBE-AetherMoore v3.0.0: Quantum-resistant context-bound encryption with hyperbolic geometry
 
 Body:
@@ -216,13 +220,15 @@ Designed for Mars missions where traditional TLS requires 42 minutes for handsha
 **Installation:**
 ```bash
 npm i scbe-aethermoore
-```
+````
 
 Feedback welcome! This is v3.0.0 with Sacred Tongue integration. Future v4.0.0 will add dimensional theory (thin membrane manifolds, Space Tor, neural defensive networks).
+
 ```
 
 **r/programming**:
 ```
+
 Title: SCBE-AetherMoore: Zero-latency quantum-resistant encryption for Mars communication
 
 Body:
@@ -231,12 +237,14 @@ Just published a cryptographic framework that solves a real problem for Mars mis
 SCBE (Spectral Context-Bound Encryption) uses pre-synchronized "Sacred Tongue" vocabularies to enable zero-latency encryption. Think of it as a shared cryptographic language that both parties agree on before the mission.
 
 **Technical highlights:**
+
 - Post-quantum: ML-KEM-768 + ML-DSA-65 (NIST-approved)
 - Hyperbolic geometry: Poincaré ball model for context binding
 - Spectral binding: 6 harmonic frequencies for semantic security
 - 14-layer architecture: From context encoding to topological CFI
 
 **Production-ready:**
+
 - 24/24 tests passing
 - 94% code coverage
 - TypeScript + Python implementations
@@ -246,11 +254,13 @@ npm: https://www.npmjs.com/package/scbe-aethermoore
 GitHub: https://github.com/issdandavis/scbe-aethermoore-demo
 
 Built this over 16 months in Port Angeles, WA. Patent application filed. Feedback appreciated!
+
 ```
 
 ### Hacker News
 
 ```
+
 Title: SCBE-AetherMoore: Zero-latency quantum-resistant encryption for Mars
 
 URL: https://www.npmjs.com/package/scbe-aethermoore
@@ -261,6 +271,7 @@ Author here. I built this to solve a specific problem: Mars communication has a 
 SCBE uses pre-synchronized cryptographic vocabularies ("Sacred Tongues") to enable zero-latency encryption. Both parties agree on a shared vocabulary before the mission, then use it to encode messages with spectral binding.
 
 Technical details:
+
 - Post-quantum: ML-KEM-768 + ML-DSA-65
 - Hyperbolic geometry: Poincaré ball for context binding
 - 14-layer security architecture
@@ -269,7 +280,8 @@ Technical details:
 This is v3.0.0 with Sacred Tongue integration. Patent application filed. MIT licensed.
 
 Happy to answer questions!
-```
+
+````
 
 ---
 
@@ -280,7 +292,7 @@ Happy to answer questions!
 Check downloads:
 ```bash
 npm view scbe-aethermoore
-```
+````
 
 Or visit: https://npm-stat.com/charts.html?package=scbe-aethermoore
 
@@ -303,6 +315,7 @@ Or visit: https://npm-stat.com/charts.html?package=scbe-aethermoore
 ## 🎯 STEP 6: NEXT ACTIONS (WEEK 1)
 
 ### Day 1 (Today)
+
 - [x] Publish npm package
 - [ ] Add npm badges to README
 - [ ] Post on Twitter/LinkedIn
@@ -310,11 +323,13 @@ Or visit: https://npm-stat.com/charts.html?package=scbe-aethermoore
 - [ ] Post on Hacker News
 
 ### Day 2-6
+
 - [ ] Build Mars demo UI
 - [ ] Integrate SCBE demo code
 - [ ] Record 3-minute demo video
 
 ### Day 7
+
 - [ ] Submit to NASA/ESA innovation portals
 - [ ] Post demo video on YouTube
 - [ ] Share on social media
@@ -326,6 +341,7 @@ Or visit: https://npm-stat.com/charts.html?package=scbe-aethermoore
 ### Error: "You must be logged in to publish packages"
 
 **Solution**:
+
 ```bash
 npm login
 ```
@@ -333,6 +349,7 @@ npm login
 ### Error: "You do not have permission to publish"
 
 **Solution**: Add `--access public` flag:
+
 ```bash
 npm publish scbe-aethermoore-3.0.0.tgz --access public
 ```
@@ -340,6 +357,7 @@ npm publish scbe-aethermoore-3.0.0.tgz --access public
 ### Error: "Package name too similar to existing package"
 
 **Solution**: npm might flag similar names. If this happens:
+
 1. Check if `scbe-aethermoore` is already taken
 2. If taken, use `@yourusername/scbe-aethermoore` (scoped package)
 3. Update package.json `name` field
@@ -350,6 +368,7 @@ npm publish scbe-aethermoore-3.0.0.tgz --access public
 ### Error: "Version 3.0.0 already published"
 
 **Solution**: You can't republish the same version. Either:
+
 1. Unpublish (within 72 hours): `npm unpublish scbe-aethermoore@3.0.0`
 2. Or bump version: `npm version patch` (3.0.1)
 
@@ -358,16 +377,19 @@ npm publish scbe-aethermoore-3.0.0.tgz --access public
 ## 💰 MONETIZATION (FUTURE)
 
 ### Free tier (npm package)
+
 - Open source (MIT license)
 - Community support
 - GitHub issues
 
 ### Paid tiers (future)
+
 - **Starter**: $99/month (10K req/month, email support)
 - **Professional**: $499/month (100K req/month, priority support)
 - **Enterprise**: $2,499/month (unlimited, SLA, dedicated support)
 
 ### Revenue projections
+
 - **Year 1**: $1M-2M ARR (100-200 customers)
 - **Year 2**: $5M-10M ARR (500-1000 customers)
 - **Year 3**: $20M-40M ARR (2000-4000 customers)

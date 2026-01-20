@@ -23,29 +23,29 @@ export { Complex } from './Complex.js';
 export { FFT, type FFTResult } from './FFT.js';
 
 // Feistel Network cipher
-export {
-    Feistel,
-    createFeistel,
-    type FeistelConfig
-} from './Feistel.js';
+export { Feistel, createFeistel, type FeistelConfig } from './Feistel.js';
 
 // Z-Base-32 encoding
 export { ZBase32, getAlphabet } from './ZBase32.js';
 
 // Symphonic Agent (audio synthesis simulation)
 export {
-    SymphonicAgent,
-    createSymphonicAgent, type SymphonicAgentConfig, type SynthesisResult
+  SymphonicAgent,
+  createSymphonicAgent,
+  type SymphonicAgentConfig,
+  type SynthesisResult,
 } from './SymphonicAgent.js';
 
 // Hybrid Crypto (main interface)
 export {
-    HybridCrypto,
-    createHybridCrypto,
-    signIntent,
-    verifyIntent,
-    type HarmonicSignature, type HybridCryptoConfig, type SignedEnvelope,
-    type VerificationResult
+  HybridCrypto,
+  createHybridCrypto,
+  signIntent,
+  verifyIntent,
+  type HarmonicSignature,
+  type HybridCryptoConfig,
+  type SignedEnvelope,
+  type VerificationResult,
 } from './HybridCrypto.js';
 
 /**
@@ -72,4 +72,3 @@ export function quickVerify(intent: string, signature: string, key: string): boo
 
 // Dual-Channel Consensus (Audio Module)
 export * from './audio/index.js';
-

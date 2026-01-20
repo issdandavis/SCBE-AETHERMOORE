@@ -14,12 +14,6 @@
     "resolveJsonModule": true,
     "composite": false
   },
-  "include": [
-    "**/*.test.ts",
-    "**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["**/*.test.ts", "**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }

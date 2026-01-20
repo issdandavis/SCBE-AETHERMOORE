@@ -1,6 +1,6 @@
 /**
  * SCBE-AETHERMOORE Basic TypeScript Examples
- * 
+ *
  * Run with: npx ts-node examples/typescript-basic.ts
  */
 
@@ -53,7 +53,7 @@ try {
     failureThreshold: 3,
     resetTimeout: 5000,
   });
-  
+
   console.log('  Circuit breaker initialized');
   console.log(`  State: ${breaker.getState()}`);
 } catch (error) {

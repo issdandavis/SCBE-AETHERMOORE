@@ -46,9 +46,7 @@ export class FFT {
 
     // Validation: N must be power of 2
     if ((n & (n - 1)) !== 0 || n === 0) {
-      throw new Error(
-        `FFT input length must be a non-zero power of 2, got ${n}`
-      );
+      throw new Error(`FFT input length must be a non-zero power of 2, got ${n}`);
     }
 
     // 1. Bit-Reversal Permutation
@@ -165,10 +163,7 @@ export class FFT {
    * @param highFreqThreshold Fraction of spectrum considered "high frequency" (default 0.5)
    * @returns Coherence score in [0, 1]
    */
-  static spectralCoherence(
-    signal: number[],
-    highFreqThreshold: number = 0.5
-  ): number {
+  static spectralCoherence(signal: number[], highFreqThreshold: number = 0.5): number {
     const result = FFT.analyze(signal);
     const n = result.n;
     const halfN = Math.floor(n / 2);
@@ -238,10 +233,7 @@ export class FFT {
    * @param fingerprintSize Number of samples to extract (default 32)
    * @returns Fingerprint as magnitude samples
    */
-  static extractFingerprint(
-    spectrum: Complex[],
-    fingerprintSize: number = 32
-  ): number[] {
+  static extractFingerprint(spectrum: Complex[], fingerprintSize: number = 32): number[] {
     const magnitudes = spectrum.map((c) => c.magnitude);
     const step = Math.max(1, Math.floor(magnitudes.length / fingerprintSize));
 

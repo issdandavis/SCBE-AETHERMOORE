@@ -51,8 +51,8 @@ export class SacredTongueTokenizer {
     this.tokenToByte = new Map();
 
     for (let b = 0; b < 256; b++) {
-      const prefixIdx = b >> 4;        // High nibble (0-15)
-      const suffixIdx = b & 0x0F;      // Low nibble (0-15)
+      const prefixIdx = b >> 4; // High nibble (0-15)
+      const suffixIdx = b & 0x0f; // Low nibble (0-15)
       const token = `${tongue.prefixes[prefixIdx]}'${tongue.suffixes[suffixIdx]}`;
       this.byteToToken.push(token);
       this.tokenToByte.set(token, b);
@@ -190,7 +190,7 @@ export function formatSS1Blob(
   salt: Uint8Array,
   nonce: Uint8Array,
   ciphertext: Uint8Array,
-  tag: Uint8Array,
+  tag: Uint8Array
 ): string {
   const parts = [
     'SS1',
@@ -271,7 +271,7 @@ async function hkdfDerive(
   masterSecret: Uint8Array,
   salt: Uint8Array,
   info: Uint8Array,
-  length: number = 32,
+  length: number = 32
 ): Promise<Uint8Array> {
   // Check if Web Crypto is available
   if (typeof crypto === 'undefined' || !crypto.subtle) {
@@ -279,13 +279,9 @@ async function hkdfDerive(
   }
 
   // Import master secret as HKDF key
-  const keyMaterial = await crypto.subtle.importKey(
-    'raw',
-    masterSecret,
-    'HKDF',
-    false,
-    ['deriveBits'],
-  );
+  const keyMaterial = await crypto.subtle.importKey('raw', masterSecret, 'HKDF', false, [
+    'deriveBits',
+  ]);
 
   // Derive key using HKDF
   const derivedBits = await crypto.subtle.deriveBits(
@@ -296,7 +292,7 @@ async function hkdfDerive(
       info: info,
     },
     keyMaterial,
-    length * 8,
+    length * 8
   );
 
   return new Uint8Array(derivedBits);
@@ -309,19 +305,13 @@ async function aesGcmEncrypt(
   plaintext: Uint8Array,
   key: Uint8Array,
   nonce: Uint8Array,
-  aad: Uint8Array,
+  aad: Uint8Array
 ): Promise<{ ciphertext: Uint8Array; tag: Uint8Array }> {
   if (typeof crypto === 'undefined' || !crypto.subtle) {
     throw new Error('Web Crypto API not available');
   }
 
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw',
-    key,
-    'AES-GCM',
-    false,
-    ['encrypt'],
-  );
+  const cryptoKey = await crypto.subtle.importKey('raw', key, 'AES-GCM', false, ['encrypt']);
 
   const result = await crypto.subtle.encrypt(
     {
@@ -331,7 +321,7 @@ async function aesGcmEncrypt(
       tagLength: 128,
     },
     cryptoKey,
-    plaintext,
+    plaintext
   );
 
   // Result includes ciphertext + tag (last 16 bytes)
@@ -350,19 +340,13 @@ async function aesGcmDecrypt(
   tag: Uint8Array,
   key: Uint8Array,
   nonce: Uint8Array,
-  aad: Uint8Array,
+  aad: Uint8Array
 ): Promise<Uint8Array> {
   if (typeof crypto === 'undefined' || !crypto.subtle) {
     throw new Error('Web Crypto API not available');
   }
 
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw',
-    key,
-    'AES-GCM',
-    false,
-    ['decrypt'],
-  );
+  const cryptoKey = await crypto.subtle.importKey('raw', key, 'AES-GCM', false, ['decrypt']);
 
   // Combine ciphertext + tag for Web Crypto
   const combined = new Uint8Array(ciphertext.length + tag.length);
@@ -377,7 +361,7 @@ async function aesGcmDecrypt(
       tagLength: 128,
     },
     cryptoKey,
-    combined,
+    combined
   );
 
   return new Uint8Array(result);
@@ -400,7 +384,7 @@ export async function seal(
   plaintext: Uint8Array,
   masterSecret: Uint8Array,
   aad: string,
-  kid: string = 'k01',
+  kid: string = 'k01'
 ): Promise<string> {
   // 1. Generate random salt (16 bytes)
   const salt = randomBytes(16);
@@ -429,7 +413,7 @@ export async function seal(
 export async function unseal(
   blob: string,
   masterSecret: Uint8Array,
-  aad: string,
+  aad: string
 ): Promise<Uint8Array> {
   // 1. Parse SS1 blob
   const parsed = parseSS1Blob(blob);
@@ -502,12 +486,7 @@ export class SpiralSealSS1 {
     return {
       version: 'SS1',
       kid: this.kid,
-      capabilities: [
-        'AES-256-GCM',
-        'HKDF-SHA256',
-        'Sacred Tongue encoding',
-        'Key rotation',
-      ],
+      capabilities: ['AES-256-GCM', 'HKDF-SHA256', 'Sacred Tongue encoding', 'Key rotation'],
     };
   }
 }

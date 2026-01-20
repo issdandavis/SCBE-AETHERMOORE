@@ -17,6 +17,7 @@
 6. [Symphonic Cipher](#section-6-symphonic-cipher)
 7. [Testing Framework](#section-7-testing-framework)
 8. [Build and Deployment](#section-8-build-and-deployment)
+
 - [Appendix A: Complete File Structure](#appendix-a-complete-file-structure)
 - [Appendix B: Key Dependencies](#appendix-b-key-dependencies)
 - [Appendix C: Mathematical Constants](#appendix-c-mathematical-constants)
@@ -65,7 +66,7 @@ function euclideanNorm(v: number[]): number {
 }
 
 function negate(v: number[]): number[] {
-  return v.map(x => -x);
+  return v.map((x) => -x);
 }
 ```
 
@@ -108,9 +109,7 @@ function mobiusAddition(x: number[], y: number[], c: number): number[] {
   const numeratorCoeffY = 1 - c * normXSq;
   const denominator = 1 + 2 * c * dotXY + c * c * normXSq * normYSq;
 
-  return x.map((xi, i) =>
-    (numeratorCoeffX * xi + numeratorCoeffY * y[i]) / denominator
-  );
+  return x.map((xi, i) => (numeratorCoeffX * xi + numeratorCoeffY * y[i]) / denominator);
 }
 
 function dot(a: number[], b: number[]): number {
@@ -145,6 +144,7 @@ H(d, R) = φ^d / (1 + e^(-R))
 ```
 
 Where:
+
 - φ = 1.618033988749895 (Golden Ratio)
 - d = hyperbolic distance
 - R = reputation score [-∞, +∞]
@@ -169,7 +169,7 @@ function harmonicScalingLaw(distance: number, reputation: number): number {
 // Inverse: Given H, find required reputation for distance d
 function requiredReputation(H: number, distance: number): number {
   const exponentialTerm = Math.pow(PHI, distance);
-  return -Math.log((exponentialTerm / H) - 1);
+  return -Math.log(exponentialTerm / H - 1);
 }
 ```
 
@@ -194,15 +194,15 @@ def required_reputation(H: float, distance: float) -> float:
 
 ```typescript
 // Example 1: Low distance, neutral reputation
-const H1 = harmonicScalingLaw(1.0, 0.0);  // ≈ 0.809
+const H1 = harmonicScalingLaw(1.0, 0.0); // ≈ 0.809
 
 // Example 2: High distance, high reputation
-const H2 = harmonicScalingLaw(5.0, 3.0);  // ≈ 10.67
+const H2 = harmonicScalingLaw(5.0, 3.0); // ≈ 10.67
 
 // Example 3: Security threshold check
 const threshold = 5.0;
 const distance = 3.0;
-const minReputation = requiredReputation(threshold, distance);  // ≈ 0.466
+const minReputation = requiredReputation(threshold, distance); // ≈ 0.466
 ```
 
 ---
@@ -249,22 +249,22 @@ const AXIOMS: Axiom[] = [
     id: 1,
     name: 'Reflexivity',
     statement: 'd(x, x) = 0 for all x',
-    verify: (ctx) => hyperbolicDistance(ctx.point, ctx.point) === 0
+    verify: (ctx) => hyperbolicDistance(ctx.point, ctx.point) === 0,
   },
   {
     id: 2,
     name: 'Symmetry',
     statement: 'd(x, y) = d(y, x) for all x, y',
-    verify: (ctx) => Math.abs(
-      hyperbolicDistance(ctx.x, ctx.y) - hyperbolicDistance(ctx.y, ctx.x)
-    ) < 1e-10
+    verify: (ctx) =>
+      Math.abs(hyperbolicDistance(ctx.x, ctx.y) - hyperbolicDistance(ctx.y, ctx.x)) < 1e-10,
   },
   {
     id: 3,
     name: 'Triangle Inequality',
     statement: 'd(x, z) ≤ d(x, y) + d(y, z)',
-    verify: (ctx) => hyperbolicDistance(ctx.x, ctx.z) <=
-      hyperbolicDistance(ctx.x, ctx.y) + hyperbolicDistance(ctx.y, ctx.z) + 1e-10
+    verify: (ctx) =>
+      hyperbolicDistance(ctx.x, ctx.z) <=
+      hyperbolicDistance(ctx.x, ctx.y) + hyperbolicDistance(ctx.y, ctx.z) + 1e-10,
   },
   // ... 10 more axioms
 ];
@@ -274,11 +274,11 @@ const AXIOMS: Axiom[] = [
 
 ```typescript
 function verifyAllAxioms(context: SecurityContext): AxiomResult[] {
-  return AXIOMS.map(axiom => ({
+  return AXIOMS.map((axiom) => ({
     id: axiom.id,
     name: axiom.name,
     passed: axiom.verify(context),
-    timestamp: Date.now()
+    timestamp: Date.now(),
   }));
 }
 ```
@@ -294,6 +294,7 @@ dC/dt = α·∇H(C) + β·N(t) + γ·F(C, t)
 ```
 
 Where:
+
 - C = context vector (6D, one per Sacred Tongue)
 - H = Hamiltonian (energy function)
 - N(t) = noise term
@@ -303,7 +304,7 @@ Where:
 
 ```typescript
 interface ContextState {
-  vector: number[];  // 6D context
+  vector: number[]; // 6D context
   timestamp: number;
   threatLevel: number;
 }
@@ -319,8 +320,8 @@ function evolveContext(
   const noise = generateSecureNoise(6);
   const force = computeThreatForce(state.threatLevel, state.vector);
 
-  const newVector = state.vector.map((c, i) =>
-    c + dt * (alpha * gradient[i] + beta * noise[i] + gamma * force[i])
+  const newVector = state.vector.map(
+    (c, i) => c + dt * (alpha * gradient[i] + beta * noise[i] + gamma * force[i])
   );
 
   // Project back into Poincaré ball
@@ -329,7 +330,7 @@ function evolveContext(
   return {
     vector: projected,
     timestamp: state.timestamp + dt,
-    threatLevel: state.threatLevel
+    threatLevel: state.threatLevel,
   };
 }
 ```
@@ -345,6 +346,7 @@ L(x, t) = Σ(l=1 to 6) w_l · exp[β_l · (d_l + sin(ω_l·t + φ_l))]
 ```
 
 Where:
+
 - w_l = golden ratio scaling weights
 - d_l = distance from ideal trust for tongue l
 - ω_l, φ_l = oscillation parameters
@@ -353,37 +355,34 @@ Where:
 
 ```typescript
 const TONGUE_WEIGHTS = {
-  ko: 1.000,  // Kor'aelin (Control)
-  av: 1.125,  // Avali (I/O)
-  ru: 1.250,  // Runethic (Policy)
-  ca: 1.333,  // Cassisivadan (Compute)
-  um: 1.500,  // Umbroth (Security)
-  dr: 1.667,  // Draumric (Structure)
+  ko: 1.0, // Kor'aelin (Control)
+  av: 1.125, // Avali (I/O)
+  ru: 1.25, // Runethic (Policy)
+  ca: 1.333, // Cassisivadan (Compute)
+  um: 1.5, // Umbroth (Security)
+  dr: 1.667, // Draumric (Structure)
 };
 
 const TONGUE_FREQUENCIES = {
-  ko: 440.0,   // A4 - intent clarity
-  av: 523.25,  // C5 - structure
-  ru: 329.63,  // E4 - foundation
-  ca: 659.25,  // E5 - entropy
-  um: 293.66,  // D4 - concealment
-  dr: 392.0,   // G4 - integrity
+  ko: 440.0, // A4 - intent clarity
+  av: 523.25, // C5 - structure
+  ru: 329.63, // E4 - foundation
+  ca: 659.25, // E5 - entropy
+  um: 293.66, // D4 - concealment
+  dr: 392.0, // G4 - integrity
 };
 
-function languesWeighting(
-  trustVector: Record<TongueID, number>,
-  timestamp: number
-): number {
+function languesWeighting(trustVector: Record<TongueID, number>, timestamp: number): number {
   let total = 0;
   const tongues: TongueID[] = ['ko', 'av', 'ru', 'ca', 'um', 'dr'];
 
   for (const tongue of tongues) {
     const w = TONGUE_WEIGHTS[tongue];
-    const d = 1 - trustVector[tongue];  // Distance from ideal (1.0)
+    const d = 1 - trustVector[tongue]; // Distance from ideal (1.0)
     const omega = TONGUE_FREQUENCIES[tongue] * 2 * Math.PI;
-    const phi = tongue.charCodeAt(0);  // Phase based on tongue code
+    const phi = tongue.charCodeAt(0); // Phase based on tongue code
 
-    const oscillation = Math.sin(omega * timestamp / 1000 + phi);
+    const oscillation = Math.sin((omega * timestamp) / 1000 + phi);
     total += w * Math.exp(0.1 * (d + 0.1 * oscillation));
   }
 
@@ -399,14 +398,14 @@ Conformal breathing transforms for temporal security.
 
 ```typescript
 function breathTransform(data: Uint8Array, phase: number): Uint8Array {
-  const breathRate = 0.25;  // Cycles per second
+  const breathRate = 0.25; // Cycles per second
   const amplitude = 0.1;
 
   const breathFactor = 1 + amplitude * Math.sin(2 * Math.PI * breathRate * phase);
 
-  return data.map(byte => {
+  return data.map((byte) => {
     const scaled = byte * breathFactor;
-    return Math.round(scaled) & 0xFF;
+    return Math.round(scaled) & 0xff;
   });
 }
 ```
@@ -425,9 +424,7 @@ function phaseSpaceEncrypt(
   const phasePoints = mapToPhaseSpace(plaintext);
 
   // Apply hyperbolic transformation
-  const transformed = phasePoints.map(point =>
-    mobiusAddition(point, phaseVector, 1.0)
-  );
+  const transformed = phasePoints.map((point) => mobiusAddition(point, phaseVector, 1.0));
 
   // Encrypt with key
   return encryptPhasePoints(transformed, key);
@@ -457,15 +454,15 @@ FFT-based transformations.
 ```typescript
 function spectralAnalysis(signal: Complex[]): SpectralResult {
   const spectrum = fft(signal);
-  const magnitudes = spectrum.map(c => c.magnitude);
-  const phases = spectrum.map(c => Math.atan2(c.im, c.re));
+  const magnitudes = spectrum.map((c) => c.magnitude);
+  const phases = spectrum.map((c) => Math.atan2(c.im, c.re));
 
   return {
     spectrum,
     magnitudes,
     phases,
     dominantFrequency: findDominant(magnitudes),
-    entropy: shannonEntropy(magnitudes)
+    entropy: shannonEntropy(magnitudes),
   };
 }
 ```
@@ -494,21 +491,16 @@ Spectral coherence verification using the Harmonic Scaling Law.
 ### 2.6.1 Coherence Calculation
 
 ```typescript
-function spectralCoherence(
-  signal1: Complex[],
-  signal2: Complex[]
-): number {
+function spectralCoherence(signal1: Complex[], signal2: Complex[]): number {
   const spectrum1 = fft(signal1);
   const spectrum2 = fft(signal2);
 
   // Cross-spectral density
-  const crossSpectrum = spectrum1.map((s1, i) =>
-    s1.mul(spectrum2[i].conjugate())
-  );
+  const crossSpectrum = spectrum1.map((s1, i) => s1.mul(spectrum2[i].conjugate()));
 
   // Auto-spectral densities
-  const auto1 = spectrum1.map(s => s.mul(s.conjugate()));
-  const auto2 = spectrum2.map(s => s.mul(s.conjugate()));
+  const auto1 = spectrum1.map((s) => s.mul(s.conjugate()));
+  const auto2 = spectrum2.map((s) => s.mul(s.conjugate()));
 
   // Coherence = |Sxy|² / (Sxx * Syy)
   let coherenceSum = 0;
@@ -551,13 +543,13 @@ function triadicVerify(
     }
   }
 
-  const quorumMet = requiredTongues.every(t => validTongues.includes(t));
+  const quorumMet = requiredTongues.every((t) => validTongues.includes(t));
 
   return {
     valid: quorumMet,
     signatures,
     quorum: validTongues.length,
-    requiredQuorum: requiredTongues.length
+    requiredQuorum: requiredTongues.length,
   };
 }
 ```
@@ -569,10 +561,7 @@ Dynamic policy enforcement based on threat level.
 ```typescript
 type GovernanceDecision = 'ALLOW' | 'QUARANTINE' | 'DENY' | 'SNAP';
 
-function adaptiveDecision(
-  request: SecurityRequest,
-  context: SecurityContext
-): GovernanceDecision {
+function adaptiveDecision(request: SecurityRequest, context: SecurityContext): GovernanceDecision {
   const threatScore = assessThreat(request, context);
   const trustScore = languesWeighting(context.trustVector, Date.now());
   const ratio = threatScore / trustScore;
@@ -580,7 +569,7 @@ function adaptiveDecision(
   if (ratio < 0.2) return 'ALLOW';
   if (ratio < 0.5) return 'QUARANTINE';
   if (ratio < 0.8) return 'DENY';
-  return 'SNAP';  // Immediate termination
+  return 'SNAP'; // Immediate termination
 }
 ```
 
@@ -601,22 +590,13 @@ async function hybridKeyExchange(
   remotePublicKeys: { classical: Uint8Array; pqc: Uint8Array }
 ): Promise<Uint8Array> {
   // Classical ECDH
-  const classicalSecret = await ecdh(
-    localKeyPair.classical.privateKey,
-    remotePublicKeys.classical
-  );
+  const classicalSecret = await ecdh(localKeyPair.classical.privateKey, remotePublicKeys.classical);
 
   // ML-KEM encapsulation
-  const { ciphertext, sharedSecret: pqcSecret } = await mlKemEncapsulate(
-    remotePublicKeys.pqc
-  );
+  const { ciphertext, sharedSecret: pqcSecret } = await mlKemEncapsulate(remotePublicKeys.pqc);
 
   // Combine secrets with HKDF
-  const combinedSecret = await hkdf(
-    concat(classicalSecret, pqcSecret),
-    32,
-    'SCBE-HybridKEX-v1'
-  );
+  const combinedSecret = await hkdf(concat(classicalSecret, pqcSecret), 32, 'SCBE-HybridKEX-v1');
 
   return combinedSecret;
 }
@@ -626,14 +606,11 @@ async function hybridKeyExchange(
 
 ```typescript
 interface HybridSignature {
-  classical: Uint8Array;  // Ed25519
-  pqc: Uint8Array;        // ML-DSA-65
+  classical: Uint8Array; // Ed25519
+  pqc: Uint8Array; // ML-DSA-65
 }
 
-async function hybridSign(
-  message: Uint8Array,
-  keyPair: HybridKeyPair
-): Promise<HybridSignature> {
+async function hybridSign(message: Uint8Array, keyPair: HybridKeyPair): Promise<HybridSignature> {
   const classical = await ed25519Sign(message, keyPair.classical.privateKey);
   const pqc = await mlDsaSign(message, keyPair.pqc.privateKey);
 
@@ -645,12 +622,8 @@ async function hybridVerify(
   signature: HybridSignature,
   publicKeys: { classical: Uint8Array; pqc: Uint8Array }
 ): Promise<boolean> {
-  const classicalValid = await ed25519Verify(
-    message, signature.classical, publicKeys.classical
-  );
-  const pqcValid = await mlDsaVerify(
-    message, signature.pqc, publicKeys.pqc
-  );
+  const classicalValid = await ed25519Verify(message, signature.classical, publicKeys.classical);
+  const pqcValid = await mlDsaVerify(message, signature.pqc, publicKeys.pqc);
 
   // Both must be valid (belt and suspenders)
   return classicalValid && pqcValid;
@@ -715,7 +688,7 @@ interface CymaticPattern {
   frequency: number;
   amplitude: number;
   phase: number;
-  nodes: number;  // Number of nodal lines
+  nodes: number; // Number of nodal lines
 }
 
 function generateCymaticSignature(
@@ -769,7 +742,7 @@ async function processSecurityPipeline(
 
   // Layer 1: Verify axioms
   const axiomResults = verifyAllAxioms(context);
-  if (!axiomResults.every(r => r.passed)) {
+  if (!axiomResults.every((r) => r.passed)) {
     return { status: 'REJECTED', reason: 'Axiom violation', layer: 1 };
   }
 
@@ -789,12 +762,7 @@ async function processSecurityPipeline(
   }
 
   // Layer 10: Triadic verification
-  const triadic = triadicVerify(
-    request.payload,
-    request.signatures,
-    config.keyring,
-    config.policy
-  );
+  const triadic = triadicVerify(request.payload, request.signatures, config.keyring, config.policy);
   if (!triadic.valid) {
     return { status: 'REJECTED', reason: 'Signature quorum not met', layer: 10 };
   }
@@ -822,7 +790,7 @@ async function processSecurityPipeline(
     coherence,
     trustWeight,
     cymaticSignature: cymaticSig,
-    decision
+    decision,
   };
 }
 ```
@@ -843,9 +811,9 @@ async function aesGcmEncrypt(
 ): Promise<{ ciphertext: Uint8Array; nonce: Uint8Array; tag: Uint8Array }> {
   const nonce = crypto.getRandomValues(new Uint8Array(12));
 
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw', key, { name: 'AES-GCM' }, false, ['encrypt']
-  );
+  const cryptoKey = await crypto.subtle.importKey('raw', key, { name: 'AES-GCM' }, false, [
+    'encrypt',
+  ]);
 
   const encrypted = await crypto.subtle.encrypt(
     { name: 'AES-GCM', iv: nonce, additionalData: aad, tagLength: 128 },
@@ -871,9 +839,9 @@ async function aesGcmDecrypt(
   tag: Uint8Array,
   aad: Uint8Array = new Uint8Array(0)
 ): Promise<Uint8Array> {
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw', key, { name: 'AES-GCM' }, false, ['decrypt']
-  );
+  const cryptoKey = await crypto.subtle.importKey('raw', key, { name: 'AES-GCM' }, false, [
+    'decrypt',
+  ]);
 
   const combined = concat(ciphertext, tag);
 
@@ -916,16 +884,16 @@ async function hkdf(
   info: string,
   salt: Uint8Array = new Uint8Array(32)
 ): Promise<Uint8Array> {
-  const keyMaterial = await crypto.subtle.importKey(
-    'raw', ikm, { name: 'HKDF' }, false, ['deriveBits']
-  );
+  const keyMaterial = await crypto.subtle.importKey('raw', ikm, { name: 'HKDF' }, false, [
+    'deriveBits',
+  ]);
 
   const derived = await crypto.subtle.deriveBits(
     {
       name: 'HKDF',
       hash: 'SHA-256',
       salt: salt,
-      info: new TextEncoder().encode(info)
+      info: new TextEncoder().encode(info),
     },
     keyMaterial,
     length * 8
@@ -961,11 +929,11 @@ def hkdf_derive(ikm: bytes, length: int, info: str, salt: bytes = None) -> bytes
 
 ```typescript
 const ARGON2_PARAMS = {
-  memory: 65536,      // 64 MiB
-  iterations: 3,      // Time cost
-  parallelism: 4,     // Parallel lanes
-  hashLength: 32,     // Output length
-  type: 'argon2id'    // Hybrid mode
+  memory: 65536, // 64 MiB
+  iterations: 3, // Time cost
+  parallelism: 4, // Parallel lanes
+  hashLength: 32, // Output length
+  type: 'argon2id', // Hybrid mode
 };
 ```
 
@@ -1024,25 +992,25 @@ interface Polyhedron {
   vertices: number;
   edges: number;
   faces: number;
-  eulerCharacteristic: number;  // V - E + F = 2 for convex
+  eulerCharacteristic: number; // V - E + F = 2 for convex
 }
 
 const CANONICAL_POLYHEDRA: Polyhedron[] = [
-  { name: 'Tetrahedron',     vertices: 4,  edges: 6,   faces: 4,  eulerCharacteristic: 2 },
-  { name: 'Cube',            vertices: 8,  edges: 12,  faces: 6,  eulerCharacteristic: 2 },
-  { name: 'Octahedron',      vertices: 6,  edges: 12,  faces: 8,  eulerCharacteristic: 2 },
-  { name: 'Dodecahedron',    vertices: 20, edges: 30,  faces: 12, eulerCharacteristic: 2 },
-  { name: 'Icosahedron',     vertices: 12, edges: 30,  faces: 20, eulerCharacteristic: 2 },
-  { name: 'Truncated Tetra', vertices: 12, edges: 18,  faces: 8,  eulerCharacteristic: 2 },
-  { name: 'Cuboctahedron',   vertices: 12, edges: 24,  faces: 14, eulerCharacteristic: 2 },
-  { name: 'Truncated Cube',  vertices: 24, edges: 36,  faces: 14, eulerCharacteristic: 2 },
-  { name: 'Truncated Octa',  vertices: 24, edges: 36,  faces: 14, eulerCharacteristic: 2 },
-  { name: 'Rhombicubocta',   vertices: 24, edges: 48,  faces: 26, eulerCharacteristic: 2 },
+  { name: 'Tetrahedron', vertices: 4, edges: 6, faces: 4, eulerCharacteristic: 2 },
+  { name: 'Cube', vertices: 8, edges: 12, faces: 6, eulerCharacteristic: 2 },
+  { name: 'Octahedron', vertices: 6, edges: 12, faces: 8, eulerCharacteristic: 2 },
+  { name: 'Dodecahedron', vertices: 20, edges: 30, faces: 12, eulerCharacteristic: 2 },
+  { name: 'Icosahedron', vertices: 12, edges: 30, faces: 20, eulerCharacteristic: 2 },
+  { name: 'Truncated Tetra', vertices: 12, edges: 18, faces: 8, eulerCharacteristic: 2 },
+  { name: 'Cuboctahedron', vertices: 12, edges: 24, faces: 14, eulerCharacteristic: 2 },
+  { name: 'Truncated Cube', vertices: 24, edges: 36, faces: 14, eulerCharacteristic: 2 },
+  { name: 'Truncated Octa', vertices: 24, edges: 36, faces: 14, eulerCharacteristic: 2 },
+  { name: 'Rhombicubocta', vertices: 24, edges: 48, faces: 26, eulerCharacteristic: 2 },
   { name: 'Truncated Cubocta', vertices: 48, edges: 72, faces: 26, eulerCharacteristic: 2 },
-  { name: 'Snub Cube',       vertices: 24, edges: 60,  faces: 38, eulerCharacteristic: 2 },
-  { name: 'Icosidodeca',     vertices: 30, edges: 60,  faces: 32, eulerCharacteristic: 2 },
+  { name: 'Snub Cube', vertices: 24, edges: 60, faces: 38, eulerCharacteristic: 2 },
+  { name: 'Icosidodeca', vertices: 30, edges: 60, faces: 32, eulerCharacteristic: 2 },
   { name: 'Truncated Dodeca', vertices: 60, edges: 90, faces: 32, eulerCharacteristic: 2 },
-  { name: 'Truncated Icosa', vertices: 60, edges: 90,  faces: 32, eulerCharacteristic: 2 },
+  { name: 'Truncated Icosa', vertices: 60, edges: 90, faces: 32, eulerCharacteristic: 2 },
   { name: 'Rhombicosidodeca', vertices: 60, edges: 120, faces: 62, eulerCharacteristic: 2 },
 ];
 ```
@@ -1102,13 +1070,13 @@ async function computeHamiltonianPath(
 
 ```typescript
 interface GeodesicPoint {
-  position: number[];  // 6D
-  tangent: number[];   // 6D
+  position: number[]; // 6D
+  tangent: number[]; // 6D
   curvature: number;
 }
 
 function computeGeodesicCurve(
-  points: number[][],  // Control points in 6D
+  points: number[][], // Control points in 6D
   numSamples: number
 ): GeodesicPoint[] {
   const curve: GeodesicPoint[] = [];
@@ -1166,15 +1134,13 @@ function detectAnomaly(
   }
 
   const detected = totalScore > threshold;
-  const recommendation =
-    totalScore < 0.3 ? 'ALLOW' :
-    totalScore < 0.7 ? 'QUARANTINE' : 'BLOCK';
+  const recommendation = totalScore < 0.3 ? 'ALLOW' : totalScore < 0.7 ? 'QUARANTINE' : 'BLOCK';
 
   return {
     detected,
     anomalyScore: totalScore,
     affectedPolyhedra,
-    recommendation
+    recommendation,
   };
 }
 ```
@@ -1185,14 +1151,14 @@ function detectAnomaly(
 
 ## 5.1 Six Sacred Tongues
 
-| Code | Name | Domain | Harmonic Frequency |
-|------|------|--------|-------------------|
-| KO | Kor'aelin | nonce/flow/intent | 440 Hz (A4) |
-| AV | Avali | aad/header/metadata | 523.25 Hz (C5) |
-| RU | Runethic | salt/binding | 329.63 Hz (E4) |
-| CA | Cassisivadan | ciphertext/bitcraft | 659.25 Hz (E5) |
-| UM | Umbroth | redaction/veil | 293.66 Hz (D4) |
-| DR | Draumric | tag/structure | 392 Hz (G4) |
+| Code | Name         | Domain              | Harmonic Frequency |
+| ---- | ------------ | ------------------- | ------------------ |
+| KO   | Kor'aelin    | nonce/flow/intent   | 440 Hz (A4)        |
+| AV   | Avali        | aad/header/metadata | 523.25 Hz (C5)     |
+| RU   | Runethic     | salt/binding        | 329.63 Hz (E4)     |
+| CA   | Cassisivadan | ciphertext/bitcraft | 659.25 Hz (E5)     |
+| UM   | Umbroth      | redaction/veil      | 293.66 Hz (D4)     |
+| DR   | Draumric     | tag/structure       | 392 Hz (G4)        |
 
 ## 5.2 Encoding/Decoding
 
@@ -1244,16 +1210,16 @@ interface RWPv3Envelope {
   mode: 'hybrid' | 'pqc-only' | 'classical';
 
   // Sections (each encoded in appropriate tongue)
-  aad: string;       // Avali encoded
-  salt: string;      // Runethic encoded
-  nonce: string;     // Kor'aelin encoded
-  ct: string;        // Cassisivadan encoded
-  tag: string;       // Draumric encoded
+  aad: string; // Avali encoded
+  salt: string; // Runethic encoded
+  nonce: string; // Kor'aelin encoded
+  ct: string; // Cassisivadan encoded
+  tag: string; // Draumric encoded
 
   // Signatures
   sigs: {
-    classical?: string;  // Ed25519
-    pqc?: string;        // ML-DSA-65
+    classical?: string; // Ed25519
+    pqc?: string; // ML-DSA-65
   };
 
   // Metadata
@@ -1368,7 +1334,7 @@ function feistelEncrypt(
     R = newR;
   }
 
-  return { left: R, right: L };  // Swap for final
+  return { left: R, right: L }; // Swap for final
 }
 
 function feistelFunction(data: Uint8Array, key: Uint8Array): Uint8Array {
@@ -1399,7 +1365,7 @@ function fft(signal: Complex[]): Complex[] {
   // Iterative Cooley-Tukey
   for (let size = 2; size <= N; size *= 2) {
     const halfSize = size / 2;
-    const angleStep = -2 * Math.PI / size;
+    const angleStep = (-2 * Math.PI) / size;
 
     for (let i = 0; i < N; i += size) {
       for (let j = 0; j < halfSize; j++) {
@@ -1449,19 +1415,17 @@ function extractFingerprint(signal: Complex[]): HarmonicFingerprint {
   const spectrum = fft(signal);
   const N = spectrum.length;
 
-  const magnitudes = spectrum.map(c => c.magnitude);
-  const phases = spectrum.map(c => Math.atan2(c.im, c.re));
+  const magnitudes = spectrum.map((c) => c.magnitude);
+  const phases = spectrum.map((c) => Math.atan2(c.im, c.re));
 
   // Find dominant frequencies (peaks)
   const peaks = findPeaks(magnitudes, 5);
-  const dominantFrequencies = peaks.map(i => i / N);
+  const dominantFrequencies = peaks.map((i) => i / N);
 
   // Shannon entropy
   const totalMag = magnitudes.reduce((a, b) => a + b, 0);
-  const probs = magnitudes.map(m => m / totalMag);
-  const entropy = -probs
-    .filter(p => p > 0)
-    .reduce((sum, p) => sum + p * Math.log2(p), 0);
+  const probs = magnitudes.map((m) => m / totalMag);
+  const entropy = -probs.filter((p) => p > 0).reduce((sum, p) => sum + p * Math.log2(p), 0);
 
   return { magnitudes, phases, dominantFrequencies, entropy };
 }
@@ -1477,7 +1441,7 @@ function quantizeFingerprint(fp: HarmonicFingerprint): Uint8Array {
   }
 
   // Entropy (scaled)
-  quantized.push(Math.round(fp.entropy * 25.5));  // Max ~10 bits
+  quantized.push(Math.round(fp.entropy * 25.5)); // Max ~10 bits
 
   return new Uint8Array(quantized);
 }
@@ -1511,7 +1475,7 @@ async function symphonicSign(
   const mixed = concat(left, right);
 
   // 3. FFT and fingerprint
-  const complexSignal = mixed.map(b => new Complex(b / 255, 0));
+  const complexSignal = mixed.map((b) => new Complex(b / 255, 0));
   const fingerprint = extractFingerprint(complexSignal);
   const quantized = quantizeFingerprint(fingerprint);
 
@@ -1533,7 +1497,7 @@ async function symphonicVerify(
 ): Promise<boolean> {
   // 1. Regenerate fingerprint from message
   const signal = messageToSignal(message);
-  const complexSignal = signal.map(b => new Complex(b / 255, 0));
+  const complexSignal = signal.map((b) => new Complex(b / 255, 0));
   const fingerprint = extractFingerprint(complexSignal);
   const expected = quantizeFingerprint(fingerprint);
 
@@ -1544,11 +1508,11 @@ async function symphonicVerify(
 
   // 3. Verify both signatures
   const classicalValid = await ed25519Verify(
-    signature.fingerprint, signature.classical, publicKeys.classical
+    signature.fingerprint,
+    signature.classical,
+    publicKeys.classical
   );
-  const pqcValid = await mlDsaVerify(
-    signature.fingerprint, signature.pqc, publicKeys.pqc
-  );
+  const pqcValid = await mlDsaVerify(signature.fingerprint, signature.pqc, publicKeys.pqc);
 
   return classicalValid && pqcValid;
 }
@@ -1726,10 +1690,10 @@ export default {
         lines: 95,
         functions: 95,
         branches: 95,
-        statements: 95
-      }
-    }
-  }
+        statements: 95,
+      },
+    },
+  },
 };
 ```
 
@@ -1897,7 +1861,7 @@ services:
   scbe:
     build: .
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - NODE_ENV=production
       - REDIS_URL=redis://redis:6379
@@ -1907,7 +1871,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis_data:/data
 
@@ -2006,6 +1970,7 @@ METRICS_ENABLED=true
 ## Pre-Launch Checklist
 
 ### Security
+
 - [ ] All secrets in environment variables (not hardcoded)
 - [ ] TLS 1.3 enabled for all connections
 - [ ] Rate limiting configured
@@ -2013,24 +1978,28 @@ METRICS_ENABLED=true
 - [ ] Security headers set (CSP, HSTS, etc.)
 
 ### Cryptography
+
 - [ ] ML-KEM-768 key rotation schedule defined
 - [ ] Argon2id parameters validated for hardware
 - [ ] Nonce generation uses CSPRNG
 - [ ] Key material zeroed after use
 
 ### Testing
+
 - [ ] All 41 properties passing
 - [ ] Coverage >95%
 - [ ] Load test completed (target: 1M req/s)
 - [ ] Penetration test scheduled
 
 ### Compliance
+
 - [ ] SOC 2 controls documented
 - [ ] ISO 27001 controls mapped
 - [ ] FIPS 140-3 validation (if required)
 - [ ] Audit logging enabled
 
 ### Operations
+
 - [ ] Monitoring dashboards created
 - [ ] Alerting configured
 - [ ] Backup/restore tested
@@ -2089,23 +2058,23 @@ scbe-aethermoore-demo/
 
 ## TypeScript
 
-| Package | Version | Purpose |
-|---------|---------|---------|
-| typescript | ^5.3.0 | Language |
-| vitest | ^1.0.0 | Testing |
-| fast-check | ^3.14.0 | Property testing |
-| @noble/hashes | ^1.3.0 | Cryptographic hashes |
-| @noble/curves | ^1.2.0 | Elliptic curves |
+| Package       | Version | Purpose              |
+| ------------- | ------- | -------------------- |
+| typescript    | ^5.3.0  | Language             |
+| vitest        | ^1.0.0  | Testing              |
+| fast-check    | ^3.14.0 | Property testing     |
+| @noble/hashes | ^1.3.0  | Cryptographic hashes |
+| @noble/curves | ^1.2.0  | Elliptic curves      |
 
 ## Python
 
-| Package | Version | Purpose |
-|---------|---------|---------|
-| numpy | ^1.24.0 | Numerical computing |
-| cryptography | ^41.0.0 | Crypto primitives |
-| argon2-cffi | ^23.1.0 | Password hashing |
-| hypothesis | ^6.88.0 | Property testing |
-| pytest | ^7.4.0 | Testing framework |
+| Package      | Version | Purpose             |
+| ------------ | ------- | ------------------- |
+| numpy        | ^1.24.0 | Numerical computing |
+| cryptography | ^41.0.0 | Crypto primitives   |
+| argon2-cffi  | ^23.1.0 | Password hashing    |
+| hypothesis   | ^6.88.0 | Property testing    |
+| pytest       | ^7.4.0  | Testing framework   |
 
 ---
 
@@ -2120,22 +2089,22 @@ const CURVATURE = 1.0;
 
 // Harmonic frequencies (Hz)
 const FREQUENCIES = {
-  A4: 440.0,    // Kor'aelin
-  C5: 523.25,   // Avali
-  E4: 329.63,   // Runethic
-  E5: 659.25,   // Cassisivadan
-  D4: 293.66,   // Umbroth
-  G4: 392.0,    // Draumric
+  A4: 440.0, // Kor'aelin
+  C5: 523.25, // Avali
+  E4: 329.63, // Runethic
+  E5: 659.25, // Cassisivadan
+  D4: 293.66, // Umbroth
+  G4: 392.0, // Draumric
 };
 
 // Security parameters
 const MIN_ENTROPY_BITS = 7.9;
 const MIN_COHERENCE = 0.7;
-const NONCE_BYTES = 24;  // XChaCha20
-const KEY_BYTES = 32;    // AES-256
+const NONCE_BYTES = 24; // XChaCha20
+const KEY_BYTES = 32; // AES-256
 
 // Argon2id parameters (RFC 9106)
-const ARGON2_MEMORY = 65536;      // 64 MiB
+const ARGON2_MEMORY = 65536; // 64 MiB
 const ARGON2_ITERATIONS = 3;
 const ARGON2_PARALLELISM = 4;
 ```
@@ -2146,14 +2115,14 @@ const ARGON2_PARALLELISM = 4;
 
 ## USPTO Provisional Application #63/961,403
 
-| Claim | Description | Implementation |
-|-------|-------------|----------------|
-| 1-5 | 14-Layer SCBE Architecture | `src/scbe/pipeline.ts` |
-| 6-10 | Langues Weighting System | `src/spaceTor/trust-manager.ts` |
-| 11-15 | Sacred Tongue Encoding | `src/crypto/sacred_tongues.py` |
-| 16-20 | PHDM Intrusion Detection | `src/harmonic/phdm.ts` |
-| 21-25 | Harmonic Scaling Law | `src/symphonic/harmonic.ts` |
-| 26-30 | Phase-Coupled Dimensionality | `src/scbe/layers/spin.ts` |
+| Claim | Description                  | Implementation                  |
+| ----- | ---------------------------- | ------------------------------- |
+| 1-5   | 14-Layer SCBE Architecture   | `src/scbe/pipeline.ts`          |
+| 6-10  | Langues Weighting System     | `src/spaceTor/trust-manager.ts` |
+| 11-15 | Sacred Tongue Encoding       | `src/crypto/sacred_tongues.py`  |
+| 16-20 | PHDM Intrusion Detection     | `src/harmonic/phdm.ts`          |
+| 21-25 | Harmonic Scaling Law         | `src/symphonic/harmonic.ts`     |
+| 26-30 | Phase-Coupled Dimensionality | `src/scbe/layers/spin.ts`       |
 
 **Total Claims**: 30+
 **Status**: Ready for non-provisional conversion

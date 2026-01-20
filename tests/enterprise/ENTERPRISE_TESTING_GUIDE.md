@@ -34,84 +34,84 @@ The SCBE Enterprise Testing Suite is a comprehensive testing framework designed 
 
 ### Quantum Security (Properties 1-6)
 
-| Property | Description | Target | Status |
-|----------|-------------|--------|--------|
-| 1 | Shor's Algorithm Resistance | RSA-4096 secure | ✅ Pass |
-| 2 | Grover's Algorithm Resistance | AES-256 → 128-bit security | ✅ Pass |
-| 3 | ML-KEM (Kyber) Resistance | 256-bit post-quantum | ✅ Pass |
-| 4 | ML-DSA (Dilithium) Resistance | 256-bit post-quantum | ✅ Pass |
-| 5 | Lattice Problem Hardness | SVP/CVP hard | ✅ Pass |
-| 6 | Quantum Security Bits | ≥256 bits | ✅ Pass |
+| Property | Description                   | Target                     | Status  |
+| -------- | ----------------------------- | -------------------------- | ------- |
+| 1        | Shor's Algorithm Resistance   | RSA-4096 secure            | ✅ Pass |
+| 2        | Grover's Algorithm Resistance | AES-256 → 128-bit security | ✅ Pass |
+| 3        | ML-KEM (Kyber) Resistance     | 256-bit post-quantum       | ✅ Pass |
+| 4        | ML-DSA (Dilithium) Resistance | 256-bit post-quantum       | ✅ Pass |
+| 5        | Lattice Problem Hardness      | SVP/CVP hard               | ✅ Pass |
+| 6        | Quantum Security Bits         | ≥256 bits                  | ✅ Pass |
 
 ### AI Safety (Properties 7-12)
 
-| Property | Description | Target | Status |
-|----------|-------------|--------|--------|
-| 7 | Intent Verification Accuracy | >99.9% | ✅ Pass |
-| 8 | Governance Boundary Enforcement | 100% enforcement | ✅ Pass |
-| 9 | Byzantine Fault-Tolerant Consensus | 2f+1 honest nodes | ✅ Pass |
-| 10 | Fail-Safe Activation Time | <100ms | ✅ Pass |
-| 11 | Audit Trail Immutability | Cryptographic hash | ✅ Pass |
-| 12 | Real-Time Risk Assessment | 0.0-1.0 scale | ✅ Pass |
+| Property | Description                        | Target             | Status  |
+| -------- | ---------------------------------- | ------------------ | ------- |
+| 7        | Intent Verification Accuracy       | >99.9%             | ✅ Pass |
+| 8        | Governance Boundary Enforcement    | 100% enforcement   | ✅ Pass |
+| 9        | Byzantine Fault-Tolerant Consensus | 2f+1 honest nodes  | ✅ Pass |
+| 10       | Fail-Safe Activation Time          | <100ms             | ✅ Pass |
+| 11       | Audit Trail Immutability           | Cryptographic hash | ✅ Pass |
+| 12       | Real-Time Risk Assessment          | 0.0-1.0 scale      | ✅ Pass |
 
 ### Agentic Coding (Properties 13-18)
 
-| Property | Description | Target | Status |
-|----------|-------------|--------|--------|
-| 13 | Secure Code Generation | Security score >0.8 | ✅ Pass |
-| 14 | Vulnerability Detection Rate | >95% | ✅ Pass |
-| 15 | Intent-Based Code Verification | 70% match threshold | ✅ Pass |
-| 16 | Rollback Mechanism | <500ms | ✅ Pass |
-| 17 | OWASP/CWE Compliance | Zero violations | ✅ Pass |
-| 18 | Human-in-the-Loop | Critical code approval | ✅ Pass |
+| Property | Description                    | Target                 | Status  |
+| -------- | ------------------------------ | ---------------------- | ------- |
+| 13       | Secure Code Generation         | Security score >0.8    | ✅ Pass |
+| 14       | Vulnerability Detection Rate   | >95%                   | ✅ Pass |
+| 15       | Intent-Based Code Verification | 70% match threshold    | ✅ Pass |
+| 16       | Rollback Mechanism             | <500ms                 | ✅ Pass |
+| 17       | OWASP/CWE Compliance           | Zero violations        | ✅ Pass |
+| 18       | Human-in-the-Loop              | Critical code approval | ✅ Pass |
 
 ### Compliance (Properties 19-24)
 
-| Property | Description | Target | Status |
-|----------|-------------|--------|--------|
-| 19 | SOC 2 Type II | 100% control coverage | ✅ Pass |
-| 20 | ISO 27001:2022 | 114/114 controls | ✅ Pass |
-| 21 | FIPS 140-3 | Level 3 certification | ✅ Pass |
-| 22 | Common Criteria | EAL4+ readiness | ✅ Pass |
-| 23 | NIST CSF | 5/5 functions | ✅ Pass |
-| 24 | PCI DSS | Level 1 compliance | ✅ Pass |
+| Property | Description     | Target                | Status  |
+| -------- | --------------- | --------------------- | ------- |
+| 19       | SOC 2 Type II   | 100% control coverage | ✅ Pass |
+| 20       | ISO 27001:2022  | 114/114 controls      | ✅ Pass |
+| 21       | FIPS 140-3      | Level 3 certification | ✅ Pass |
+| 22       | Common Criteria | EAL4+ readiness       | ✅ Pass |
+| 23       | NIST CSF        | 5/5 functions         | ✅ Pass |
+| 24       | PCI DSS         | Level 1 compliance    | ✅ Pass |
 
 ### Stress Testing (Properties 25-30)
 
-| Property | Description | Target | Status |
-|----------|-------------|--------|--------|
-| 25 | Throughput | 1M req/s | ✅ Pass |
-| 26 | Concurrent Attacks | 10K attacks | ✅ Pass |
-| 27 | Latency (P95) | <10ms | ✅ Pass |
-| 28 | Memory Leaks | Zero leaks (72h) | ✅ Pass |
-| 29 | DDoS Resistance | 100Gbps | ✅ Pass |
-| 30 | Auto-Recovery | <5 seconds | ✅ Pass |
+| Property | Description        | Target           | Status  |
+| -------- | ------------------ | ---------------- | ------- |
+| 25       | Throughput         | 1M req/s         | ✅ Pass |
+| 26       | Concurrent Attacks | 10K attacks      | ✅ Pass |
+| 27       | Latency (P95)      | <10ms            | ✅ Pass |
+| 28       | Memory Leaks       | Zero leaks (72h) | ✅ Pass |
+| 29       | DDoS Resistance    | 100Gbps          | ✅ Pass |
+| 30       | Auto-Recovery      | <5 seconds       | ✅ Pass |
 
 ### Security Testing (Properties 31-35)
 
-| Property | Description | Target | Status |
-|----------|-------------|--------|--------|
-| 31 | Fuzzing Coverage | 1B inputs | ✅ Pass |
-| 32 | Side-Channel Resistance | <1% timing variance | ✅ Pass |
-| 33 | Fault Injection | 1000 faults | ✅ Pass |
-| 34 | Cryptographic Oracle Attacks | Zero successes | ✅ Pass |
-| 35 | Protocol Analysis | TLS 1.3, HMAC | ✅ Pass |
+| Property | Description                  | Target              | Status  |
+| -------- | ---------------------------- | ------------------- | ------- |
+| 31       | Fuzzing Coverage             | 1B inputs           | ✅ Pass |
+| 32       | Side-Channel Resistance      | <1% timing variance | ✅ Pass |
+| 33       | Fault Injection              | 1000 faults         | ✅ Pass |
+| 34       | Cryptographic Oracle Attacks | Zero successes      | ✅ Pass |
+| 35       | Protocol Analysis            | TLS 1.3, HMAC       | ✅ Pass |
 
 ### Formal Verification (Properties 36-39)
 
-| Property | Description | Target | Status |
-|----------|-------------|--------|--------|
-| 36 | Model Checking | TLA+ specs | ✅ Pass |
-| 37 | Theorem Proving | Coq proofs | ✅ Pass |
-| 38 | Symbolic Execution | Path coverage | ✅ Pass |
-| 39 | Property-Based Testing | 10K properties | ✅ Pass |
+| Property | Description            | Target         | Status  |
+| -------- | ---------------------- | -------------- | ------- |
+| 36       | Model Checking         | TLA+ specs     | ✅ Pass |
+| 37       | Theorem Proving        | Coq proofs     | ✅ Pass |
+| 38       | Symbolic Execution     | Path coverage  | ✅ Pass |
+| 39       | Property-Based Testing | 10K properties | ✅ Pass |
 
 ### Integration (Properties 40-41)
 
-| Property | Description | Target | Status |
-|----------|-------------|--------|--------|
-| 40 | End-to-End Security | Full workflow | ✅ Pass |
-| 41 | Requirements Coverage | 100% traceability | ✅ Pass |
+| Property | Description           | Target            | Status  |
+| -------- | --------------------- | ----------------- | ------- |
+| 40       | End-to-End Security   | Full workflow     | ✅ Pass |
+| 41       | Requirements Coverage | 100% traceability | ✅ Pass |
 
 ## Test Categories
 
@@ -120,10 +120,12 @@ The SCBE Enterprise Testing Suite is a comprehensive testing framework designed 
 Tests quantum attack resistance and post-quantum cryptography.
 
 **Files:**
+
 - `property_tests.test.ts` - Properties 1-6
 - `setup_verification.test.ts` - Infrastructure validation
 
 **Run:**
+
 ```bash
 npm test -- tests/enterprise/quantum/
 ```
@@ -133,9 +135,11 @@ npm test -- tests/enterprise/quantum/
 Tests AI safety, governance, and autonomous agent security.
 
 **Files:**
+
 - `property_tests.test.ts` - Properties 7-12
 
 **Run:**
+
 ```bash
 npm test -- tests/enterprise/ai_brain/
 ```
@@ -145,9 +149,11 @@ npm test -- tests/enterprise/ai_brain/
 Tests agentic coding system security and vulnerability detection.
 
 **Files:**
+
 - `property_tests.test.ts` - Properties 13-18
 
 **Run:**
+
 ```bash
 npm test -- tests/enterprise/agentic/
 ```
@@ -157,9 +163,11 @@ npm test -- tests/enterprise/agentic/
 Tests enterprise compliance standards (SOC 2, ISO 27001, FIPS 140-3, etc.).
 
 **Files:**
+
 - `property_tests.test.ts` - Properties 19-24
 
 **Run:**
+
 ```bash
 npm test -- tests/enterprise/compliance/
 ```
@@ -169,9 +177,11 @@ npm test -- tests/enterprise/compliance/
 Tests system performance under extreme load.
 
 **Files:**
+
 - `property_tests.test.ts` - Properties 25-30 (to be created)
 
 **Run:**
+
 ```bash
 npm test -- tests/enterprise/stress/
 ```
@@ -181,9 +191,11 @@ npm test -- tests/enterprise/stress/
 Tests security mechanisms including fuzzing and side-channel analysis.
 
 **Files:**
+
 - `property_tests.test.ts` - Properties 31-35 (to be created)
 
 **Run:**
+
 ```bash
 npm test -- tests/enterprise/security/
 ```
@@ -193,9 +205,11 @@ npm test -- tests/enterprise/security/
 Tests formal verification methods.
 
 **Files:**
+
 - `property_tests.test.ts` - Properties 36-39 (to be created)
 
 **Run:**
+
 ```bash
 npm test -- tests/enterprise/formal/
 ```
@@ -205,9 +219,11 @@ npm test -- tests/enterprise/formal/
 Tests end-to-end workflows and requirements coverage.
 
 **Files:**
+
 - `property_tests.test.ts` - Properties 40-41 (to be created)
 
 **Run:**
+
 ```bash
 npm test -- tests/enterprise/integration/
 ```
@@ -269,6 +285,7 @@ The compliance dashboard provides real-time visibility into test results and com
 **Location:** `tests/reporting/compliance_dashboard.html`
 
 **Features:**
+
 - Executive summary with overall compliance score
 - Quantum security metrics
 - AI safety dashboard
@@ -278,6 +295,7 @@ The compliance dashboard provides real-time visibility into test results and com
 - Test execution status
 
 **Open Dashboard:**
+
 ```bash
 # Windows
 start tests/reporting/compliance_dashboard.html
@@ -296,6 +314,7 @@ xdg-open tests/reporting/compliance_dashboard.html
 Property-based testing validates that properties (invariants) hold for a wide range of inputs, rather than testing specific examples.
 
 **Example:**
+
 ```typescript
 // Instead of testing specific values:
 expect(encrypt(decrypt(data))).toBe(data); // One test case
@@ -316,14 +335,11 @@ import fc from 'fast-check';
 
 it('Property: Encryption is reversible', () => {
   fc.assert(
-    fc.property(
-      fc.string({ minLength: 1, maxLength: 1000 }),
-      (plaintext) => {
-        const ciphertext = encrypt(plaintext);
-        const decrypted = decrypt(ciphertext);
-        return decrypted === plaintext;
-      }
-    ),
+    fc.property(fc.string({ minLength: 1, maxLength: 1000 }), (plaintext) => {
+      const ciphertext = encrypt(plaintext);
+      const decrypted = decrypt(ciphertext);
+      return decrypted === plaintext;
+    }),
     { numRuns: 100 }
   );
 });
@@ -347,6 +363,7 @@ def test_encryption_reversible(plaintext):
 ### Target Coverage: 95%
 
 All tests must achieve minimum 95% coverage across:
+
 - Lines
 - Functions
 - Branches
@@ -369,6 +386,7 @@ start htmlcov/index.html # Windows
 ### Coverage Reports
 
 Reports are generated in multiple formats:
+
 - **HTML:** `htmlcov/index.html` (Python), `coverage/index.html` (TypeScript)
 - **JSON:** `coverage.json`
 - **Terminal:** Displayed after test run
@@ -382,6 +400,7 @@ Reports are generated in multiple formats:
 **Evidence:** Automated test reports, audit logs, compliance dashboard
 
 **Requirements:**
+
 - Security controls: 64/64
 - Availability controls: 12/12
 - Confidentiality controls: 18/18
@@ -393,6 +412,7 @@ Reports are generated in multiple formats:
 **Certification:** Ready for external audit
 
 **Domains:**
+
 - Organizational: 37/37
 - People: 8/8
 - Physical: 35/35
@@ -431,30 +451,30 @@ export const TestConfig = {
   propertyTests: {
     minIterations: 100,
     maxIterations: 1000,
-    timeout: 60000
+    timeout: 60000,
   },
   quantum: {
     maxQubits: 20,
-    targetSecurityBits: 256
+    targetSecurityBits: 256,
   },
   aiSafety: {
     intentVerificationAccuracy: 0.999,
-    riskThreshold: 0.8
+    riskThreshold: 0.8,
   },
   compliance: {
     controlCoverageTarget: 1.0,
-    complianceScoreTarget: 0.98
+    complianceScoreTarget: 0.98,
   },
   stress: {
     targetThroughput: 1000000,
-    concurrentAttacks: 10000
+    concurrentAttacks: 10000,
   },
   coverage: {
     lines: 95,
     functions: 95,
     branches: 95,
-    statements: 95
-  }
+    statements: 95,
+  },
 };
 ```
 
@@ -479,6 +499,7 @@ jobs:
 ### Test Reports
 
 Reports are automatically generated and uploaded:
+
 - Coverage reports
 - Compliance dashboard
 - Test execution logs
@@ -510,6 +531,7 @@ Reports are automatically generated and uploaded:
 ## Support
 
 For questions or issues:
+
 - Review this guide
 - Check test configuration
 - Review compliance dashboard

@@ -45,6 +45,7 @@ http://localhost:8000/demo/mars-communication.html
 ### The Problem
 
 **Mars missions face a critical communication challenge**:
+
 - **Light delay**: 14 minutes (one-way) at average Earth-Mars distance
 - **Traditional TLS**: Requires 3 round-trips for handshake
   - Round 1: Client Hello → 14 min → Server
@@ -55,6 +56,7 @@ http://localhost:8000/demo/mars-communication.html
 ### The Solution
 
 **SCBE-AETHERMOORE with Sacred Tongue**:
+
 - **Pre-synchronized vocabulary**: 6 tongues × 256 tokens (agreed before mission)
 - **Spectral binding**: 6 harmonic frequencies for semantic security
 - **Poincaré ball embedding**: ||u|| < 1.0 constraint
@@ -89,6 +91,7 @@ Open `demo/mars-communication.html` in your browser.
 ### Step 4: Observe the Statistics
 
 The dashboard shows:
+
 - **Light Delay**: 14:00 minutes (constant)
 - **TLS Handshake**: 42:00 minutes (traditional approach)
 - **SCBE Handshake**: 0:00 minutes (zero-latency)
@@ -101,11 +104,13 @@ The dashboard shows:
 ### 1. Real-Time Encryption Visualization
 
 **Sacred Tongue Tokenization**:
+
 - Each message byte is encoded into a Sacred Tongue token
 - 6 tongues rotate: Kor'aelin, Avali, Runethic, Cassisivadan, Umbroth, Draumric
 - Tokens displayed in color-coded format (purple, blue, green, yellow, red, indigo)
 
 **Example**:
+
 ```
 Message: "Hello Mars"
 Tokens: Kor'aelin:48 Avali:65 Runethic:6c Cassisivadan:6c Umbroth:6f ...
@@ -114,11 +119,13 @@ Tokens: Kor'aelin:48 Avali:65 Runethic:6c Cassisivadan:6c Umbroth:6f ...
 ### 2. Communication Logs
 
 **Earth Ground Station Log**:
+
 - Shows outgoing messages
 - Displays encryption process
 - Tracks incoming messages from Mars
 
 **Mars Base Alpha Log**:
+
 - Shows outgoing messages
 - Displays encryption process
 - Tracks incoming messages from Earth
@@ -126,12 +133,14 @@ Tokens: Kor'aelin:48 Avali:65 Runethic:6c Cassisivadan:6c Umbroth:6f ...
 ### 3. Technical Comparison
 
 **Traditional TLS**:
+
 - ✗ Round 1: Client Hello → 14 min → Server
 - ✗ Round 2: Server Hello → 14 min → Client
 - ✗ Round 3: Key Exchange → 14 min → Server
 - **Total**: 42 minutes
 
 **SCBE Sacred Tongue**:
+
 - ✓ Pre-synchronized vocabulary
 - ✓ Spectral binding (6 harmonics)
 - ✓ Poincaré ball embedding
@@ -140,6 +149,7 @@ Tokens: Kor'aelin:48 Avali:65 Runethic:6c Cassisivadan:6c Umbroth:6f ...
 ### 4. Sacred Tongue Visualization
 
 **6 Tongues**:
+
 1. **Kor'aelin** (Purple) - 256 tokens
 2. **Avali** (Blue) - 256 tokens
 3. **Runethic** (Green) - 256 tokens
@@ -156,10 +166,12 @@ Tokens: Kor'aelin:48 Avali:65 Runethic:6c Cassisivadan:6c Umbroth:6f ...
 ### Simulation Speed Control
 
 **Keyboard Shortcuts**:
+
 - Press **`+`** to speed up simulation (2x, 4x, 8x, ... up to 120x)
 - Press **`-`** to slow down simulation (back to 1x real-time)
 
 **Example**:
+
 - Default: 1x (14 minutes = 14 real minutes)
 - 60x speed: 14 minutes = 14 seconds
 - 120x speed: 14 minutes = 7 seconds
@@ -169,25 +181,28 @@ Tokens: Kor'aelin:48 Avali:65 Runethic:6c Cassisivadan:6c Umbroth:6f ...
 **Try these messages**:
 
 1. **Simple greeting**:
+
    ```
    Hello Mars! This is Earth Ground Station. How are you?
    ```
 
 2. **Technical update**:
+
    ```
-   Mars Base Alpha, we're sending supply coordinates: 
+   Mars Base Alpha, we're sending supply coordinates:
    Lat 18.65°N, Lon 77.58°E. ETA 6 months.
    ```
 
 3. **Emergency alert**:
+
    ```
-   URGENT: Solar flare detected. Recommend shelter protocol 
+   URGENT: Solar flare detected. Recommend shelter protocol
    Alpha-7. Confirm receipt.
    ```
 
 4. **Scientific data**:
    ```
-   Atmospheric pressure: 610 Pa. Temperature: -63°C. 
+   Atmospheric pressure: 610 Pa. Temperature: -63°C.
    Wind speed: 7 m/s. All systems nominal.
    ```
 
@@ -198,6 +213,7 @@ Tokens: Kor'aelin:48 Avali:65 Runethic:6c Cassisivadan:6c Umbroth:6f ...
 ### Sacred Tongue Tokenization
 
 **Algorithm**:
+
 1. Convert message to UTF-8 bytes
 2. For each byte:
    - Select tongue (rotate through 6 tongues)
@@ -206,15 +222,17 @@ Tokens: Kor'aelin:48 Avali:65 Runethic:6c Cassisivadan:6c Umbroth:6f ...
 3. Display tokens in color-coded format
 
 **Example**:
+
 ```javascript
-Message: "Hi"
-Bytes: [0x48, 0x69]
-Tokens: ["Kor'aelin:48", "Avali:69"]
+Message: 'Hi';
+Bytes: [0x48, 0x69];
+Tokens: ["Kor'aelin:48", 'Avali:69'];
 ```
 
 ### Encryption Flow
 
 **SCBE Process**:
+
 1. **Tokenization**: Message → Sacred Tongue tokens
 2. **Spectral Binding**: Apply 6 harmonic frequencies
 3. **Poincaré Embedding**: Map to hyperbolic space (||u|| < 1.0)
@@ -227,6 +245,7 @@ Tokens: ["Kor'aelin:48", "Avali:69"]
 ### Light Delay Calculation
 
 **Earth-Mars Distance**:
+
 - Minimum: 54.6 million km (3.03 light-minutes)
 - Average: 225 million km (12.5 light-minutes)
 - Maximum: 401 million km (22.3 light-minutes)
@@ -240,6 +259,7 @@ Tokens: ["Kor'aelin:48", "Avali:69"]
 ### 1. Social Media Posts
 
 **Twitter/X**:
+
 ```
 🔴 Mars communication demo is LIVE!
 
@@ -252,19 +272,20 @@ Try it: [link to demo]
 ```
 
 **LinkedIn**:
+
 ```
 Excited to share our Mars communication demo!
 
-The problem: Traditional TLS requires 42 minutes for handshake 
+The problem: Traditional TLS requires 42 minutes for handshake
 due to 14-minute light delay (3 round-trips).
 
-Our solution: SCBE-AETHERMOORE with Sacred Tongue spectral 
-binding enables zero-latency encryption via pre-synchronized 
+Our solution: SCBE-AETHERMOORE with Sacred Tongue spectral
+binding enables zero-latency encryption via pre-synchronized
 vocabularies.
 
 Try the interactive demo: [link]
 
-This is critical for future Mars missions where real-time 
+This is critical for future Mars missions where real-time
 communication is essential for safety and operations.
 
 #innovation #space #cryptography #mars
@@ -273,12 +294,13 @@ communication is essential for safety and operations.
 ### 2. Investor Pitch
 
 **Elevator Pitch**:
-"We've solved the Mars communication problem. Traditional encryption 
-requires 42 minutes for handshake. Our technology enables immediate 
-encryption with zero latency. This is critical for $100B+ Mars 
+"We've solved the Mars communication problem. Traditional encryption
+requires 42 minutes for handshake. Our technology enables immediate
+encryption with zero latency. This is critical for $100B+ Mars
 colonization market."
 
 **Demo Script**:
+
 1. Show TLS handshake time (42 minutes)
 2. Show SCBE handshake time (0 minutes)
 3. Send live message from Earth to Mars
@@ -288,18 +310,19 @@ colonization market."
 ### 3. NASA/ESA Outreach
 
 **Email Template**:
+
 ```
 Subject: Zero-Latency Encryption for Mars Missions
 
 Dear [NASA/ESA Contact],
 
-I'm writing to introduce SCBE-AETHERMOORE, a novel cryptographic 
+I'm writing to introduce SCBE-AETHERMOORE, a novel cryptographic
 framework designed specifically for interplanetary communication.
 
-Problem: Traditional TLS requires 42 minutes for handshake with 
+Problem: Traditional TLS requires 42 minutes for handshake with
 Mars (3 round-trips × 14-minute light delay).
 
-Solution: Our Sacred Tongue spectral binding enables zero-latency 
+Solution: Our Sacred Tongue spectral binding enables zero-latency
 encryption via pre-synchronized vocabularies.
 
 Interactive Demo: [link to demo]
@@ -310,7 +333,7 @@ Technical Details:
 - Poincaré ball embedding for hyperbolic security
 - Patent pending (USPTO #63/961,403)
 
-Would you be interested in evaluating this technology for future 
+Would you be interested in evaluating this technology for future
 Mars missions?
 
 Best regards,
@@ -325,6 +348,7 @@ issdandavis@gmail.com
 ### Issue 1: Demo doesn't load
 
 **Solution**:
+
 - Check browser console for errors (F12)
 - Ensure JavaScript is enabled
 - Try a different browser (Chrome, Firefox, Edge)
@@ -332,6 +356,7 @@ issdandavis@gmail.com
 ### Issue 2: Messages don't send
 
 **Solution**:
+
 - Ensure message text area is not empty
 - Check browser console for errors
 - Refresh page and try again
@@ -339,6 +364,7 @@ issdandavis@gmail.com
 ### Issue 3: Tokens don't display
 
 **Solution**:
+
 - Ensure message contains text
 - Check that Sacred Tongue tokenization is working
 - Verify browser supports TextEncoder API
@@ -346,6 +372,7 @@ issdandavis@gmail.com
 ### Issue 4: Simulation too slow
 
 **Solution**:
+
 - Press `+` key to speed up simulation
 - Default is 1x (real-time), can go up to 120x
 - Press `-` key to slow down
@@ -393,12 +420,14 @@ issdandavis@gmail.com
 ### System Requirements
 
 **Browser**:
+
 - Chrome 90+
 - Firefox 88+
 - Safari 14+
 - Edge 90+
 
 **Features Used**:
+
 - HTML5
 - CSS3 (Tailwind CSS via CDN)
 - JavaScript ES6+
@@ -430,6 +459,7 @@ issdandavis@gmail.com
 **Patent**: USPTO #63/961,403 (Provisional)
 
 **Links**:
+
 - npm: https://www.npmjs.com/package/scbe-aethermoore
 - GitHub: https://github.com/issdandavis/scbe-aethermoore-demo
 - Demo: demo/mars-communication.html

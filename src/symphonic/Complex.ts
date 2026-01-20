@@ -110,10 +110,7 @@ export class Complex {
    * z = r * e^(i*theta) = r*cos(theta) + i*r*sin(theta)
    */
   static fromPolar(magnitude: number, phase: number): Complex {
-    return new Complex(
-      magnitude * Math.cos(phase),
-      magnitude * Math.sin(phase)
-    );
+    return new Complex(magnitude * Math.cos(phase), magnitude * Math.sin(phase));
   }
 
   /**
@@ -141,10 +138,7 @@ export class Complex {
    * Checks if two complex numbers are approximately equal.
    */
   equals(other: Complex, epsilon: number = 1e-10): boolean {
-    return (
-      Math.abs(this.re - other.re) < epsilon &&
-      Math.abs(this.im - other.im) < epsilon
-    );
+    return Math.abs(this.re - other.re) < epsilon && Math.abs(this.im - other.im) < epsilon;
   }
 
   /**

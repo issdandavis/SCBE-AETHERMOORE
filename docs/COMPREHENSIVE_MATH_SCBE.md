@@ -23,7 +23,7 @@ The SCBE (Spectral Context-Bound Encryption) Security Gate is a mathematically r
 
 All proofs hinge on this contract:
 
-- Hyperbolic state stays inside compact sub-ball **𝔹ⁿ_{1-ε}**
+- Hyperbolic state stays inside compact sub-ball **𝔹ⁿ\_{1-ε}**
 - All ratio features use denominator floor **ε > 0**
 - All extra channels are bounded and enter risk monotonically with nonnegative weights
 
@@ -47,7 +47,7 @@ A configuration ("choice script") is a tuple:
 
 The context state satisfies **c(t) ∈ ℂᴰ** for all t in the time index set.
 
-For end-to-end stability: ‖c(t)‖_ℂ ≤ M for some M < ∞.
+For end-to-end stability: ‖c(t)‖\_ℂ ≤ M for some M < ∞.
 
 ### Axiom A2 (Realification Isometry)
 
@@ -57,7 +57,7 @@ Define Φ₁: ℂᴰ → ℝⁿ by:
 Φ₁(z₁,...,z_D) := (Re(z₁),...,Re(z_D), Im(z₁),...,Im(z_D))
 ```
 
-Then Φ₁ is a real-linear isometry: ‖c‖_ℂ = ‖Φ₁(c)‖_ℝ
+Then Φ₁ is a real-linear isometry: ‖c‖*ℂ = ‖Φ₁(c)‖*ℝ
 
 ### Axiom A3 (SPD Weighting)
 
@@ -76,14 +76,14 @@ Let α > 0 and ε_ball ∈ (0,1).
 Ψ_α(0) := 0
 ```
 
-**Clamping operator** Π_ε: 𝔹ⁿ → 𝔹ⁿ_{1-ε}:
+**Clamping operator** Π*ε: 𝔹ⁿ → 𝔹ⁿ*{1-ε}:
 
 ```
 Π_ε(u) := u                      if ‖u‖ ≤ 1-ε
 Π_ε(u) := (1-ε) · u/‖u‖          otherwise
 ```
 
-All hyperbolic states: **u := Π_ε(Ψ_α(x_G))**
+All hyperbolic states: **u := Π*ε(Ψ*α(x_G))**
 
 ### Axiom A5 (Fixed Hyperbolic Metric)
 
@@ -122,7 +122,7 @@ T_phase(·;t) **IS an isometry** of (𝔹ⁿ, d_H).
 
 ### Axiom A8 (Realms)
 
-Realm centers satisfy **μ_k ∈ 𝔹ⁿ_{1-ε}** for k = 1,...,K.
+Realm centers satisfy **μ*k ∈ 𝔹ⁿ*{1-ε}** for k = 1,...,K.
 
 Define realm distance:
 
@@ -130,7 +130,7 @@ Define realm distance:
 d*(u) := min_{k=1,...,K} d_H(u, μ_k)
 ```
 
-**A8 FIX**: All realm centers must be clamped: μ_k ← Π_ε(μ_k) before use.
+**A8 FIX**: All realm centers must be clamped: μ*k ← Π*ε(μ_k) before use.
 
 ### Axiom A9 (Signal Regularization)
 
@@ -161,7 +161,7 @@ d̃_tri(t) := min(1, d_tri(t)/d_scale) ∈ [0,1]
 
 ### Axiom A12 (Risk Functional)
 
-Weights satisfy w_d, w_c, w_s, w_τ, w_a ≥ 0 and **Σw = 1**.
+Weights satisfy w*d, w_c, w_s, w*τ, w_a ≥ 0 and **Σw = 1**.
 
 Harmonic scaling:
 
@@ -182,6 +182,7 @@ Risk'(t) := Risk_base(t) · H(d*(t), R)
 ```
 
 Decision thresholds θ₁ < θ₂:
+
 - Risk' < θ₁ → **ALLOW**
 - θ₁ ≤ Risk' < θ₂ → **QUARANTINE**
 - Risk' ≥ θ₂ → **DENY**
@@ -190,22 +191,22 @@ Decision thresholds θ₁ < θ₂:
 
 ## Fourteen-Layer Pipeline
 
-| Layer | Name | Input | Output | Key Operation |
-|-------|------|-------|--------|---------------|
-| L1 | Complex Context | A, Φ | c ∈ ℂᴰ | c_k = a_k·e^{iφ_k} |
-| L2 | Realification | c | x ∈ ℝ²ᴰ | x = [Re(c), Im(c)] |
-| L3 | Weighted Transform | x | x_G | x_G = G^{1/2}·x |
-| L4 | Poincaré Embedding | x_G | u ∈ 𝔹ⁿ | u = Π_ε(Ψ_α(x_G)) |
-| L5 | Möbius Stabilization | u | u' | u' = u ⊕ (-μ_k) |
-| L6 | Breathing | u' | u_b | Diffeomorphism (NOT isometry) |
-| L7 | Phase Transform | u_b | u_f | Isometry: Q·(a ⊕ u_b) |
-| L8 | Realm Distance | u_f | d* | min_k d_H(u_f, μ_k) |
-| L9 | Spectral Coherence | Telemetry | S_spec | FFT energy ratio |
-| L10 | Spin Coherence | Phases | C_spin | |Σe^{iθ}|/N |
-| L11 | Behavioral Trust | x | τ | Hopfield energy sigmoid |
-| L12 | Harmonic Scaling | d* | H | R^{(d*)²} |
-| L13 | Composite Risk | All signals | Risk' | Weighted sum × H |
-| L14 | Audio Telemetry | Audio | S_audio | Phase stability |
+| Layer | Name                 | Input       | Output  | Key Operation                 |
+| ----- | -------------------- | ----------- | ------- | ----------------------------- | ------- | --- |
+| L1    | Complex Context      | A, Φ        | c ∈ ℂᴰ  | c_k = a_k·e^{iφ_k}            |
+| L2    | Realification        | c           | x ∈ ℝ²ᴰ | x = [Re(c), Im(c)]            |
+| L3    | Weighted Transform   | x           | x_G     | x_G = G^{1/2}·x               |
+| L4    | Poincaré Embedding   | x_G         | u ∈ 𝔹ⁿ  | u = Π*ε(Ψ*α(x_G))             |
+| L5    | Möbius Stabilization | u           | u'      | u' = u ⊕ (-μ_k)               |
+| L6    | Breathing            | u'          | u_b     | Diffeomorphism (NOT isometry) |
+| L7    | Phase Transform      | u_b         | u_f     | Isometry: Q·(a ⊕ u_b)         |
+| L8    | Realm Distance       | u_f         | d\*     | min_k d_H(u_f, μ_k)           |
+| L9    | Spectral Coherence   | Telemetry   | S_spec  | FFT energy ratio              |
+| L10   | Spin Coherence       | Phases      | C_spin  |                               | Σe^{iθ} | /N  |
+| L11   | Behavioral Trust     | x           | τ       | Hopfield energy sigmoid       |
+| L12   | Harmonic Scaling     | d\*         | H       | R^{(d\*)²}                    |
+| L13   | Composite Risk       | All signals | Risk'   | Weighted sum × H              |
+| L14   | Audio Telemetry      | Audio       | S_audio | Phase stability               |
 
 ---
 
@@ -221,11 +222,12 @@ Risk'(t) ∈ [0, R^{D_max²}]
 
 where D_max is the maximum possible realm distance.
 
-**Proof**: By A4 clamping, all states stay in 𝔹ⁿ_{1-ε}. By A10, all coherence signals are in [0,1]. By A12, base risk is convex combination of [0,1] values, hence in [0,1]. Harmonic scaling is bounded for bounded d*. ∎
+**Proof**: By A4 clamping, all states stay in 𝔹ⁿ\_{1-ε}. By A10, all coherence signals are in [0,1]. By A12, base risk is convex combination of [0,1] values, hence in [0,1]. Harmonic scaling is bounded for bounded d\*. ∎
 
 ### Theorem 2 (Monotonicity)
 
 For fixed other inputs, Risk' is:
+
 - **Increasing** in d̃_tri (higher deviation → higher risk)
 - **Decreasing** in C_spin, S_spec, τ, S_audio (higher coherence → lower risk)
 
@@ -236,6 +238,7 @@ For fixed other inputs, Risk' is:
 The map c(t) → Risk'(t) is continuous on the bounded domain.
 
 **Proof**: Each layer is continuous:
+
 - L1-L3: Linear/smooth operations
 - L4: tanh is smooth, clamping is Lipschitz
 - L5-L7: Möbius addition and rotation are smooth on interior
@@ -255,17 +258,17 @@ async function createGatedEnvelope(params: CreateParams, riskResult: RiskResult)
   if (riskResult.decision === 'DENY') {
     throw new Error('Risk threshold exceeded');
   }
-  
+
   const envelope = await createEnvelope({
     ...params,
     // Include risk metadata in AAD
     schema_hash: computeSchemaHash(params.body, riskResult),
   });
-  
+
   if (riskResult.decision === 'QUARANTINE') {
     envelope.aad.audit_flag = true;
   }
-  
+
   return envelope;
 }
 ```
@@ -273,6 +276,7 @@ async function createGatedEnvelope(params: CreateParams, riskResult: RiskResult)
 ### Audit Trail
 
 Every envelope creation logs:
+
 - Risk' value
 - Decision (ALLOW/QUARANTINE/DENY)
 - Coherence signals snapshot

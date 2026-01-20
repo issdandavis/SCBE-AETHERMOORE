@@ -26,26 +26,20 @@ import { EventEmitter } from 'events';
 // ============================================================
 
 export type AgentRole =
-  | 'captain'      // Orchestrator
-  | 'architect'    // System design
-  | 'researcher'   // Information gathering
-  | 'developer'    // Code implementation
-  | 'qa'           // Testing & validation
-  | 'security'     // Security review
-  | 'reviewer'     // Code review
-  | 'documenter'   // Documentation
-  | 'deployer'     // Deployment ops
-  | 'monitor';     // System monitoring
+  | 'captain' // Orchestrator
+  | 'architect' // System design
+  | 'researcher' // Information gathering
+  | 'developer' // Code implementation
+  | 'qa' // Testing & validation
+  | 'security' // Security review
+  | 'reviewer' // Code review
+  | 'documenter' // Documentation
+  | 'deployer' // Deployment ops
+  | 'monitor'; // System monitoring
 
 export type JobPriority = 'critical' | 'high' | 'normal' | 'low';
 
-export type JobStatus =
-  | 'pending'
-  | 'active'
-  | 'completed'
-  | 'failed'
-  | 'delayed'
-  | 'waiting';
+export type JobStatus = 'pending' | 'active' | 'completed' | 'failed' | 'delayed' | 'waiting';
 
 export interface FleetJob {
   id: string;
@@ -389,10 +383,7 @@ export class FleetOrchestrator extends EventEmitter {
   /**
    * Process a job (called by agent workers)
    */
-  async processJob(
-    job: FleetJob,
-    processor: (job: FleetJob) => Promise<unknown>
-  ): Promise<void> {
+  async processJob(job: FleetJob, processor: (job: FleetJob) => Promise<unknown>): Promise<void> {
     const agent = job.assignedTo ? this.agents.get(job.assignedTo) : null;
 
     try {

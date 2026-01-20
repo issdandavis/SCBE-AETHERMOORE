@@ -1,6 +1,6 @@
 /**
  * Setup Verification Test
- * 
+ *
  * This test verifies that the enterprise testing infrastructure is properly configured.
  */
 

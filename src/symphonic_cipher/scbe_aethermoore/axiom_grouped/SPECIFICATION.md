@@ -3,7 +3,7 @@
 **Document ID:** SCBE-SPEC-2026-001  
 **Version:** 3.0.0  
 **Date:** January 18, 2026  
-**Author:** Isaac Davis  
+**Author:** Isaac Davis
 
 ---
 
@@ -17,47 +17,54 @@ SCBE (Spectral Context-Bound Encryption) implements a 14-layer hyperbolic geomet
 
 ## 14-Layer Architecture
 
-| Layer | Name | Function |
-|-------|------|----------|
-| L1-L4 | Context Embedding | Raw context → Poincaré ball 𝔹ⁿ |
-| L5 | Invariant Metric | `dℍ(u,v)` - hyperbolic distance (FIXED) |
-| L6 | Breath Transform | `B(p,t) = tanh(‖p‖ + A·sin(ωt))·p/‖p‖` |
-| L7 | Phase Modulation | `Φ(p,θ) = R_θ·p` rotation in tangent space |
-| L8 | Multi-Well Potential | `V(p) = Σᵢ wᵢ·exp(-‖p-cᵢ‖²/2σᵢ²)` |
-| L9 | Spectral Channel | FFT coherence `Sspectral ∈ [0,1]` |
-| L10 | Spin Channel | Quaternion stability `Sspin ∈ [0,1]` |
-| L11 | Triadic Consensus | 3-node Byzantine agreement |
-| L12 | Harmonic Scaling | `H(d,R) = R^(d²)` where R=1.5 |
-| L13 | Decision Gate | ALLOW / QUARANTINE / DENY |
-| L14 | Audio Axis | FFT telemetry `Saudio = 1 - rHF,a` |
+| Layer | Name                 | Function                                   |
+| ----- | -------------------- | ------------------------------------------ |
+| L1-L4 | Context Embedding    | Raw context → Poincaré ball 𝔹ⁿ             |
+| L5    | Invariant Metric     | `dℍ(u,v)` - hyperbolic distance (FIXED)    |
+| L6    | Breath Transform     | `B(p,t) = tanh(‖p‖ + A·sin(ωt))·p/‖p‖`     |
+| L7    | Phase Modulation     | `Φ(p,θ) = R_θ·p` rotation in tangent space |
+| L8    | Multi-Well Potential | `V(p) = Σᵢ wᵢ·exp(-‖p-cᵢ‖²/2σᵢ²)`          |
+| L9    | Spectral Channel     | FFT coherence `Sspectral ∈ [0,1]`          |
+| L10   | Spin Channel         | Quaternion stability `Sspin ∈ [0,1]`       |
+| L11   | Triadic Consensus    | 3-node Byzantine agreement                 |
+| L12   | Harmonic Scaling     | `H(d,R) = R^(d²)` where R=1.5              |
+| L13   | Decision Gate        | ALLOW / QUARANTINE / DENY                  |
+| L14   | Audio Axis           | FFT telemetry `Saudio = 1 - rHF,a`         |
 
 ---
 
 ## Core Mathematical Objects
 
 ### Hyperbolic Metric (L5) - INVARIANT
+
 ```
 dℍ(u,v) = arcosh(1 + 2‖u-v‖² / ((1-‖u‖²)(1-‖v‖²)))
 ```
+
 This metric is **fixed**. Points move; the metric does not.
 
 ### Möbius Addition
+
 ```
 u ⊕ v = ((1 + 2⟨u,v⟩ + ‖v‖²)u + (1 - ‖u‖²)v) / (1 + 2⟨u,v⟩ + ‖u‖²‖v‖²)
 ```
 
 ### Breath Transform (L6)
+
 ```
 B(p, t) = tanh(‖p‖ + A·sin(ωt)) · p/‖p‖
 ```
+
 - A ∈ [0, 0.1]: amplitude bound
 - ω: breathing frequency
 - Preserves direction, modulates radius
 
 ### Harmonic Scaling (L12)
+
 ```
 H(d, R) = R^(d²)
 ```
+
 For R=1.5, d=6: H = 1.5^36 ≈ 2.18 × 10⁶
 
 ---
@@ -77,17 +84,18 @@ L(x,t) = Σ wₗ exp(βₗ · (dₗ + sin(ωₗt + φₗ)))
 **Phases:** φₗ = 2πk/6 (60° intervals)
 
 **Fluxing Dimensions (Polly/Quasi/Demi):**
+
 ```
 L_f(x,t) = Σ νᵢ(t) wᵢ exp[βᵢ(dᵢ + sin(ωᵢt + φᵢ))]
 ν̇ᵢ = κᵢ(ν̄ᵢ - νᵢ) + σᵢ sin(Ωᵢt)
 ```
 
-| ν Value | State | Meaning |
-|---------|-------|---------|
-| ν ≈ 1.0 | Polly | Full dimension active |
-| 0.5 < ν | Quasi | Partial participation |
-| ν < 0.5 | Demi | Minimal participation |
-| ν ≈ 0.0 | Collapsed | Dimension off |
+| ν Value | State     | Meaning               |
+| ------- | --------- | --------------------- |
+| ν ≈ 1.0 | Polly     | Full dimension active |
+| 0.5 < ν | Quasi     | Partial participation |
+| ν < 0.5 | Demi      | Minimal participation |
+| ν ≈ 0.0 | Collapsed | Dimension off         |
 
 ### 2. Audio Axis (`audio_axis.py`) - Layer 14
 
@@ -104,6 +112,7 @@ faudio(t) = [Ea, Ca, Fa, rHF,a]
 - **Saudio** = 1 - rHF,a — Audio stability score
 
 **Risk Integration:**
+
 ```
 Risk' = Risk_base + wa·(1 - Saudio)
 ```
@@ -135,6 +144,7 @@ class HamiltonianCFI:
 ## Mathematical Proofs
 
 ### Langues Metric (7 proofs)
+
 1. ✓ Monotonicity: ∂L/∂dₗ > 0
 2. ✓ Phase bounded: sin ∈ [-1,1]
 3. ✓ Golden weights: wₗ = φˡ
@@ -144,11 +154,13 @@ class HamiltonianCFI:
 7. ✓ 1D projection correctness
 
 ### Audio Axis (3 proofs)
+
 1. ✓ Stability bounded: Saudio ∈ [0,1]
 2. ✓ HF detection: high-freq signals → high rHF,a
 3. ✓ Flux sensitivity: different frames → flux > 0
 
 ### Hamiltonian CFI (3 proofs)
+
 1. ✓ Dirac theorem: deg(v) ≥ |V|/2 → Hamiltonian
 2. ✓ Bipartite detection: |A| - |B| > 1 detected
 3. ✓ Deviation detection: off-path states flagged
@@ -208,31 +220,52 @@ The harmonic module (`src/harmonic/`) provides TypeScript implementations:
 ```typescript
 import {
   // Core harmonic scaling (Layer 12)
-  harmonicScale, securityBits, securityLevel, harmonicDistance,
+  harmonicScale,
+  securityBits,
+  securityLevel,
+  harmonicDistance,
 
   // HAL Attention
-  halAttention, harmonicCouplingMatrix, HALConfig,
+  halAttention,
+  harmonicCouplingMatrix,
+  HALConfig,
 
   // Langues Metric (6D governance)
-  LanguesMetric, FluxingLanguesMetric, TONGUES,
+  LanguesMetric,
+  FluxingLanguesMetric,
+  TONGUES,
 
   // Audio Axis (Layer 14)
-  AudioAxisProcessor, AudioFeatures,
+  AudioAxisProcessor,
+  AudioFeatures,
 
   // Hamiltonian CFI
-  HamiltonianCFI, ControlFlowGraph, createVertex,
+  HamiltonianCFI,
+  ControlFlowGraph,
+  createVertex,
 
   // Hyperbolic geometry (Layers 5-8)
-  hyperbolicDistance, mobiusAdd, breathTransform, phaseModulation,
+  hyperbolicDistance,
+  mobiusAdd,
+  breathTransform,
+  phaseModulation,
   multiWellPotential,
 
   // Vacuum Acoustics
-  nodalSurface, checkCymaticResonance, bottleBeamIntensity,
+  nodalSurface,
+  checkCymaticResonance,
+  bottleBeamIntensity,
 
   // SpiralSeal SS1 (Layer 8 Envelope Encoding)
-  SacredTongueTokenizer, seal, unseal, SpiralSealSS1,
-  encodeToSpelltext, decodeFromSpelltext,
-  SACRED_TONGUES, formatSS1Blob, parseSS1Blob
+  SacredTongueTokenizer,
+  seal,
+  unseal,
+  SpiralSealSS1,
+  encodeToSpelltext,
+  decodeFromSpelltext,
+  SACRED_TONGUES,
+  formatSS1Blob,
+  parseSS1Blob,
 } from './harmonic/index.js';
 ```
 
@@ -277,4 +310,4 @@ import {
 
 ---
 
-*SCBE-AETHERMOORE: Where hyperbolic geometry meets AI safety.*
+_SCBE-AETHERMOORE: Where hyperbolic geometry meets AI safety._

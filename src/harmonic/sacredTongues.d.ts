@@ -18,16 +18,16 @@
  * Tongue specification interface
  */
 export interface TongueSpec {
-    /** 2-letter code (ko, av, ru, ca, um, dr) */
-    code: string;
-    /** Full name */
-    name: string;
-    /** 16 prefixes */
-    prefixes: readonly string[];
-    /** 16 suffixes */
-    suffixes: readonly string[];
-    /** Domain/purpose */
-    domain: string;
+  /** 2-letter code (ko, av, ru, ca, um, dr) */
+  code: string;
+  /** Full name */
+  name: string;
+  /** 16 prefixes */
+  prefixes: readonly string[];
+  /** 16 suffixes */
+  suffixes: readonly string[];
+  /** Domain/purpose */
+  domain: string;
 }
 /**
  * Kor'aelin - Command authority, flow, intent
