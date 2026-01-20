@@ -1,0 +1,23 @@
+=== PROOF PACK ===
+timestamp_local=2026-01-20_105222
+
+=== OS ===
+Linux runsc 4.4.0 #1 SMP Sun Jan 10 15:06:54 PST 2016 x86_64 x86_64 x86_64 GNU/Linux
+
+=== USER / PWD ===
+root
+/home/user/scbe-aethermoore-demo
+
+=== GIT ===
+commit=4420908c9aa5369db19007941fb0f43d5942f549
+branch=claude/commit-push-changes-0RVWa
+status:
+?? docs/evidence/
+
+=== NODE ===
+v22.21.1
+10.9.4
+
+=== PYTHON ===
+Python 3.11.14
+pip 24.0 from /usr/lib/python3/dist-packages/pip (python 3.11)
