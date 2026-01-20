@@ -1,0 +1,5 @@
+# Kiro MCP Manager - Sensitive configuration files
+.kiro/settings/
+
+# Performance test evidence files (hardware-specific)
+docs/evidence/*.json
