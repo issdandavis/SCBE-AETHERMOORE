@@ -2,7 +2,7 @@
 Constant 2: Cymatic Voxel Storage
 cos(n·π·x)·cos(m·π·y) - cos(m·π·x)·cos(n·π·y) = 0
 
-Author: Isaac Davis (@issdandavis)
+Author: Issac Davis (@issdandavis)
 Date: January 18, 2026
 Patent: USPTO #63/961,403
 
