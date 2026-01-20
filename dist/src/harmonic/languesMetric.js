@@ -10,7 +10,8 @@
  * Phases: φₗ = 2πk/6 (60° intervals)
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FluxingLanguesMetric = exports.LanguesMetric = exports.getFluxState = exports.TONGUES = void 0;
+exports.FluxingLanguesMetric = exports.LanguesMetric = exports.TONGUES = void 0;
+exports.getFluxState = getFluxState;
 /** Golden ratio φ = (1 + √5) / 2 */
 const PHI = (1 + Math.sqrt(5)) / 2;
 /** The Six Sacred Tongues */
@@ -27,7 +28,6 @@ function getFluxState(nu) {
         return 'Demi';
     return 'Collapsed';
 }
-exports.getFluxState = getFluxState;
 /**
  * Langues Metric - 6D governance cost function
  */
@@ -113,13 +113,15 @@ class FluxingLanguesMetric extends LanguesMetric {
     constructor(config = {}, fluxes) {
         super(config);
         // Default flux configuration
-        this.fluxes = fluxes ?? exports.TONGUES.map((_, i) => ({
-            nu: 1.0,
-            nuBar: 0.8,
-            kappa: 0.1,
-            sigma: 0.05,
-            omega: 0.5 * (i + 1),
-        }));
+        this.fluxes =
+            fluxes ??
+                exports.TONGUES.map((_, i) => ({
+                    nu: 1.0,
+                    nuBar: 0.8,
+                    kappa: 0.1,
+                    sigma: 0.05,
+                    omega: 0.5 * (i + 1),
+                }));
     }
     /**
      * Update flux values according to dynamics
@@ -127,8 +129,7 @@ class FluxingLanguesMetric extends LanguesMetric {
      */
     updateFlux(t, dt) {
         for (const flux of this.fluxes) {
-            const nuDot = flux.kappa * (flux.nuBar - flux.nu) +
-                flux.sigma * Math.sin(flux.omega * t);
+            const nuDot = flux.kappa * (flux.nuBar - flux.nu) + flux.sigma * Math.sin(flux.omega * t);
             flux.nu = Math.max(0, Math.min(1, flux.nu + nuDot * dt));
         }
     }
@@ -136,13 +137,13 @@ class FluxingLanguesMetric extends LanguesMetric {
      * Get current flux values
      */
     getFluxValues() {
-        return this.fluxes.map(f => f.nu);
+        return this.fluxes.map((f) => f.nu);
     }
     /**
      * Get flux states for all dimensions
      */
     getFluxStates() {
-        return this.fluxes.map(f => getFluxState(f.nu));
+        return this.fluxes.map((f) => getFluxState(f.nu));
     }
     /**
      * Compute fluxing Langues metric

@@ -9,7 +9,11 @@
  * - Octave transposition
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.octaveTranspose = exports.harmonicDistance = exports.securityLevel = exports.securityBits = exports.harmonicScale = void 0;
+exports.harmonicScale = harmonicScale;
+exports.securityBits = securityBits;
+exports.securityLevel = securityLevel;
+exports.harmonicDistance = harmonicDistance;
+exports.octaveTranspose = octaveTranspose;
 const constants_js_1 = require("./constants.js");
 const assertions_js_1 = require("./assertions.js");
 /**
@@ -30,7 +34,6 @@ function harmonicScale(d, R = constants_js_1.CONSTANTS.DEFAULT_R) {
     (0, assertions_js_1.assertFinite)(y, 'harmonicScale overflow');
     return y;
 }
-exports.harmonicScale = harmonicScale;
 /**
  * Calculate security bits with harmonic amplification
  *
@@ -45,7 +48,6 @@ function securityBits(baseBits, d, R = constants_js_1.CONSTANTS.DEFAULT_R) {
         throw new RangeError('R must be > 0');
     return baseBits + d * d * (0, assertions_js_1.log2)(R);
 }
-exports.securityBits = securityBits;
 /**
  * Calculate security level with harmonic scaling
  *
@@ -57,7 +59,6 @@ exports.securityBits = securityBits;
 function securityLevel(base, d, R = constants_js_1.CONSTANTS.DEFAULT_R) {
     return base * harmonicScale(d, R);
 }
-exports.securityLevel = securityLevel;
 /**
  * Harmonic distance in 6D phase space with weighted dimensions
  *
@@ -77,7 +78,6 @@ function harmonicDistance(u, v) {
     }
     return Math.sqrt(s);
 }
-exports.harmonicDistance = harmonicDistance;
 /**
  * Transpose a frequency by octaves
  *
@@ -90,5 +90,4 @@ function octaveTranspose(freq, octaves) {
         throw new RangeError('freq must be > 0');
     return freq * Math.pow(2, octaves);
 }
-exports.octaveTranspose = octaveTranspose;
 //# sourceMappingURL=harmonicScaling.js.map

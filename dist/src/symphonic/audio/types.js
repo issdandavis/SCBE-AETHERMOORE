@@ -6,21 +6,21 @@
  * Patent: USPTO #63/961,403
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PROFILE_48K = exports.PROFILE_44K = exports.PROFILE_16K = exports.computeBeta = exports.expectedCorrelation = void 0;
+exports.PROFILE_48K = exports.PROFILE_44K = exports.PROFILE_16K = void 0;
+exports.expectedCorrelation = expectedCorrelation;
+exports.computeBeta = computeBeta;
 /**
  * Compute expected correlation for clean watermark
  */
 function expectedCorrelation(profile) {
     return profile.gamma * Math.sqrt(profile.b);
 }
-exports.expectedCorrelation = expectedCorrelation;
 /**
  * Compute beta threshold from profile
  */
 function computeBeta(profile) {
     return profile.betaFactor * expectedCorrelation(profile);
 }
-exports.computeBeta = computeBeta;
 /**
  * Predefined audio profiles for different use cases
  */
@@ -37,7 +37,7 @@ exports.PROFILE_16K = {
     gamma: 0.02,
     betaFactor: 0.4, // 40% of expected correlation
     E_min: 0.001,
-    clipThreshold: 0.95
+    clipThreshold: 0.95,
 };
 exports.PROFILE_44K = {
     SR: 44100,
@@ -52,7 +52,7 @@ exports.PROFILE_44K = {
     gamma: 0.015,
     betaFactor: 0.35, // 35% of expected correlation
     E_min: 0.0008,
-    clipThreshold: 0.95
+    clipThreshold: 0.95,
 };
 exports.PROFILE_48K = {
     SR: 48000,
@@ -65,8 +65,8 @@ exports.PROFILE_48K = {
     b: 64,
     delta_k_min: 10,
     gamma: 0.01,
-    betaFactor: 0.30, // 30% of expected correlation
+    betaFactor: 0.3, // 30% of expected correlation
     E_min: 0.0005,
-    clipThreshold: 0.95
+    clipThreshold: 0.95,
 };
 //# sourceMappingURL=types.js.map
