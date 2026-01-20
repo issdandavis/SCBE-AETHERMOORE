@@ -1,5 +1,5 @@
 {
-  "name": "@scbe/aethermoore",
+  "name": "scbe-aethermoore",
   "version": "3.0.0",
   "description": "SCBE-AETHERMOORE: Hyperbolic Geometry-Based Security with 14-Layer Architecture",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
@@ -9,24 +9,29 @@
   "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js",
-      "require": "./dist/src/index.js",
-      "types": "./dist/src/index.d.ts"
+      "require": "./dist/src/index.js"
     },
     "./harmonic": {
+      "types": "./dist/src/harmonic/index.d.ts",
       "import": "./dist/src/harmonic/index.js",
-      "require": "./dist/src/harmonic/index.js",
-      "types": "./dist/src/harmonic/index.d.ts"
+      "require": "./dist/src/harmonic/index.js"
     },
     "./symphonic": {
+      "types": "./dist/src/symphonic/index.d.ts",
       "import": "./dist/src/symphonic/index.js",
-      "require": "./dist/src/symphonic/index.js",
-      "types": "./dist/src/symphonic/index.d.ts"
+      "require": "./dist/src/symphonic/index.js"
     },
     "./crypto": {
+      "types": "./dist/src/crypto/index.d.ts",
       "import": "./dist/src/crypto/index.js",
-      "require": "./dist/src/crypto/index.js",
-      "types": "./dist/src/crypto/index.d.ts"
+      "require": "./dist/src/crypto/index.js"
+    },
+    "./spiralverse": {
+      "types": "./dist/src/spiralverse/index.d.ts",
+      "import": "./dist/src/spiralverse/index.js",
+      "require": "./dist/src/spiralverse/index.js"
     }
   },
   "files": [

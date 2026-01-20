@@ -9,7 +9,8 @@
       "Bash(npx vitest run)",
       "Bash(node:*)",
       "Bash(npx.cmd vitest:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nfix: Add vitest imports to test files and create distribution builder\n\n- Add vitest imports to acceptance, nonce, and performance test files\n- Create root-level vitest.config.ts excluding duplicate folders\n- Update src/vitest.config.ts with exclusion patterns\n- Add BUILD_DIST.bat for creating standalone distribution package\n\nAll 413 tests now pass with proper vitest imports.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfix: Add vitest imports to test files and create distribution builder\n\n- Add vitest imports to acceptance, nonce, and performance test files\n- Create root-level vitest.config.ts excluding duplicate folders\n- Update src/vitest.config.ts with exclusion patterns\n- Add BUILD_DIST.bat for creating standalone distribution package\n\nAll 413 tests now pass with proper vitest imports.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(python -m pytest:*)"
     ]
   }
 }

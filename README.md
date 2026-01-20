@@ -2,6 +2,8 @@
 
 > **Hyperbolic Geometry-Based Security with 14-Layer Architecture**
 
+[![npm version](https://badge.fury.io/js/scbe-aethermoore.svg)](https://www.npmjs.com/package/scbe-aethermoore)
+[![npm downloads](https://img.shields.io/npm/dm/scbe-aethermoore.svg)](https://www.npmjs.com/package/scbe-aethermoore)
 [![Patent Pending](https://img.shields.io/badge/Patent-USPTO%20%2363%2F961%2C403-blue)](https://github.com/ISDanDavis2/scbe-aethermoore)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue)](https://www.typescriptlang.org/)
@@ -233,6 +235,13 @@ print(f"Decision: {result['decision']}")
 | L12 | Harmonic Scaling | H(d,R) = R^(d²) where R=1.5 |
 | L13 | Decision Gate | ALLOW / QUARANTINE / DENY |
 | L14 | Audio Axis | FFT telemetry Saudio = 1 - rHF,a |
+
+### Layer 14: Audio Axis / Hybrid PQC
+
+🔗  [Sacred Tongue Harmonic Verification – Mathematical Specification (Version 3.0)](docs/RWP_v3_SACRED_TONGUE_HARMONIC_VERIFICATION.md)
+
+Future extension to RWP v3 (Q2 2026).  
+Implements intent-modulated audio verification via harmonic synthesis and Feistel-obfuscated token ordering.
 
 ## 📐 Core Mathematical Axioms
 
