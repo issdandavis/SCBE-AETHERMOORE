@@ -11,6 +11,7 @@
 ### ✅ What's VERIFIED (Tested & Passing)
 
 **431 tests passing** covering:
+
 - Core cryptographic operations (encryption, decryption, signatures)
 - Hyperbolic geometry (Poincaré ball, hyperbolic distance)
 - Harmonic scaling (H(d,R) = R^(d²))
@@ -24,6 +25,7 @@
 ### 🚧 What's PARTIALLY VERIFIED (Some Tests Failing)
 
 **10 tests failing** in:
+
 - Geometric constraint enforcement (4 failures)
 - Axiom boundary conditions (2 failures)
 - Access control edge cases (1 failure)
@@ -34,6 +36,7 @@
 ### 📝 What's THEORETICAL (Not Yet Tested)
 
 Some axioms from `docs/AXIOMS.md` are mathematically sound but lack comprehensive test coverage:
+
 - Axiom 4: Bounded Temporal Breathing (partial coverage)
 - Axiom 5: Smoothness (C-infinity) (not explicitly tested)
 - Axiom 6: Lyapunov Stability (not explicitly tested)
@@ -44,11 +47,13 @@ Some axioms from `docs/AXIOMS.md` are mathematically sound but lack comprehensiv
 ## Detailed Axiom Status
 
 ### ✅ Axiom 1: Positivity of Cost
+
 **Status**: VERIFIED ✓
 
 **Statement**: All authentication costs are strictly positive.
 
 **Test Coverage**:
+
 - `test_F14_risk_must_be_bounded_below` - PASSED
 - `test_F25_high_risk_must_deny` - PASSED
 - Risk calculation tests in `test_combined_protocol.py` - PASSED
@@ -58,11 +63,13 @@ Some axioms from `docs/AXIOMS.md` are mathematically sound but lack comprehensiv
 ---
 
 ### ✅ Axiom 2: Monotonicity of Deviation
+
 **Status**: VERIFIED ✓
 
 **Statement**: Increased deviation from ideal state strictly increases cost.
 
 **Test Coverage**:
+
 - `test_harmonic_uniqueness` - PASSED
 - `test_attacker_resistance` - PASSED
 - Harmonic scaling tests show monotonic increase
@@ -72,11 +79,13 @@ Some axioms from `docs/AXIOMS.md` are mathematically sound but lack comprehensiv
 ---
 
 ### ✅ Axiom 3: Convexity of the Cost Surface
+
 **Status**: VERIFIED ✓
 
 **Statement**: Cost function is convex, ensuring unique global minimum.
 
 **Test Coverage**:
+
 - Harmonic scaling law tests - PASSED
 - Risk landscape is convex by construction (exp(d²))
 
@@ -85,11 +94,13 @@ Some axioms from `docs/AXIOMS.md` are mathematically sound but lack comprehensiv
 ---
 
 ### 🚧 Axiom 4: Bounded Temporal Breathing
+
 **Status**: PARTIALLY VERIFIED ⚠️
 
 **Statement**: Temporal oscillations perturb cost within finite bounds.
 
 **Test Coverage**:
+
 - `test_F20_stale_timestamp_should_be_detectable` - PASSED
 - `test_F19_nonce_reuse_detection` - PASSED
 - **Missing**: Explicit L_min ≤ L(x,t) ≤ L_max verification
@@ -101,6 +112,7 @@ Some axioms from `docs/AXIOMS.md` are mathematically sound but lack comprehensiv
 ---
 
 ### 📝 Axiom 5: Smoothness (C-infinity)
+
 **Status**: THEORETICAL (Not Explicitly Tested)
 
 **Statement**: All cost functions are infinitely differentiable.
@@ -114,6 +126,7 @@ Some axioms from `docs/AXIOMS.md` are mathematically sound but lack comprehensiv
 ---
 
 ### 📝 Axiom 6: Lyapunov Stability
+
 **Status**: THEORETICAL (Not Explicitly Tested)
 
 **Statement**: System converges to ideal state under gradient descent.
@@ -127,11 +140,13 @@ Some axioms from `docs/AXIOMS.md` are mathematically sound but lack comprehensiv
 ---
 
 ### ✅ Axiom 7: Harmonic Resonance (Gate Coherence)
+
 **Status**: VERIFIED ✓
 
 **Statement**: Valid authentication requires all six gates to resonate.
 
 **Test Coverage**:
+
 - `test_F26_zero_coherence_must_not_allow` - PASSED
 - `test_F13_coherence_outside_unit_interval_must_clamp` - FAILED (boundary case)
 - Coherence tests in `test_combined_protocol.py` - PASSED
@@ -143,11 +158,13 @@ Some axioms from `docs/AXIOMS.md` are mathematically sound but lack comprehensiv
 ---
 
 ### ✅ Axiom 8: Quantum Resistance via Lattice Hardness
+
 **Status**: VERIFIED ✓
 
 **Statement**: Security reduces to LWE/SVP hardness.
 
 **Test Coverage**:
+
 - ML-KEM (Kyber768) tests - PASSED
 - ML-DSA (Dilithium3) tests - PASSED
 - Lattice structure tests - PASSED
@@ -158,11 +175,13 @@ Some axioms from `docs/AXIOMS.md` are mathematically sound but lack comprehensiv
 ---
 
 ### 🚧 Axiom 9: Hyperbolic Geometry Embedding
+
 **Status**: PARTIALLY VERIFIED ⚠️
 
 **Statement**: Authentication trajectories exist in Poincaré ball.
 
 **Test Coverage**:
+
 - `test_hyperbolic_aqm` - PASSED
 - `test_hyperbolic_routing` - PASSED
 - `test_F09_point_outside_poincare_ball_must_clamp` - FAILED
@@ -176,11 +195,13 @@ Some axioms from `docs/AXIOMS.md` are mathematically sound but lack comprehensiv
 ---
 
 ### ✅ Axiom 10: Golden Ratio Weighting
+
 **Status**: VERIFIED ✓
 
 **Statement**: Langue weights follow golden ratio progression.
 
 **Test Coverage**:
+
 - `test_F21_langues_weights_must_be_positive` - PASSED
 - Golden ratio weighting in 6D metric - PASSED
 
@@ -189,6 +210,7 @@ Some axioms from `docs/AXIOMS.md` are mathematically sound but lack comprehensiv
 ---
 
 ### 📝 Axiom 11: Fractional Dimension Flux
+
 **Status**: THEORETICAL (Not Implemented)
 
 **Statement**: Effective dimension varies continuously via flux coefficients.
@@ -202,11 +224,13 @@ Some axioms from `docs/AXIOMS.md` are mathematically sound but lack comprehensiv
 ---
 
 ### ✅ Axiom 12: Topological Attack Detection
+
 **Status**: VERIFIED ✓
 
 **Statement**: Control-flow attacks create detectable topology deviations.
 
 **Test Coverage**:
+
 - `test_F23_phdm_energy_conservation` - PASSED
 - PHDM intrusion detection tests - PASSED
 - Topological CFI tests - PASSED
@@ -216,11 +240,13 @@ Some axioms from `docs/AXIOMS.md` are mathematically sound but lack comprehensiv
 ---
 
 ### ✅ Axiom 13: Atomic Rekeying
+
 **Status**: VERIFIED ✓
 
 **Statement**: Cryptographic state rekeys atomically upon threat.
 
 **Test Coverage**:
+
 - `test_F16_cross_kid_access_must_fail` - FAILED (API issue, not concept)
 - Key rotation tests - PASSED
 - Atomic state transitions - PASSED
@@ -236,6 +262,7 @@ Some axioms from `docs/AXIOMS.md` are mathematically sound but lack comprehensiv
 ### ✅ Passing Tests (431)
 
 **Cryptographic Core**:
+
 - ✓ Encryption/decryption (AES-GCM)
 - ✓ Signature generation/verification
 - ✓ Key derivation (HKDF)
@@ -244,24 +271,28 @@ Some axioms from `docs/AXIOMS.md` are mathematically sound but lack comprehensiv
 - ✓ Tag verification
 
 **Hyperbolic Geometry**:
+
 - ✓ Poincaré ball embedding (core)
 - ✓ Hyperbolic distance calculation
 - ✓ Möbius addition
 - ✓ Harmonic scaling (H = R^(d²))
 
 **Sacred Tongues**:
+
 - ✓ 6 tongue tokenization
 - ✓ Spell-text encoding
 - ✓ Domain separation
 - ✓ Bijective mapping
 
 **Post-Quantum Crypto**:
+
 - ✓ ML-KEM (Kyber768)
 - ✓ ML-DSA (Dilithium3)
 - ✓ Lattice operations
 - ✓ Quantum resistance
 
 **Security**:
+
 - ✓ Nonce reuse detection
 - ✓ Timestamp validation
 - ✓ Access control
@@ -273,32 +304,28 @@ Some axioms from `docs/AXIOMS.md` are mathematically sound but lack comprehensiv
 ### 🚧 Failing Tests (10)
 
 **Geometric Constraints (4 failures)**:
+
 1. `test_F09_point_outside_poincare_ball_must_clamp` - Clamping not enforced
 2. `test_F10_negative_hyperbolic_distance_impossible` - Distance validation missing
 3. `test_F11_breathing_must_preserve_ball_containment` - Breath transform escapes ball
 4. `test_F12_harmonic_scale_must_be_positive` - Negative scale not prevented
 
-**Axiom Boundaries (2 failures)**:
-5. `test_F13_coherence_outside_unit_interval_must_clamp` - Coherence clamping missing
-6. `test_F15_spd_matrix_must_be_positive_definite` - SPD check not enforced
+**Axiom Boundaries (2 failures)**: 5. `test_F13_coherence_outside_unit_interval_must_clamp` - Coherence clamping missing 6. `test_F15_spd_matrix_must_be_positive_definite` - SPD check not enforced
 
-**Access Control (1 failure)**:
-7. `test_F16_cross_kid_access_must_fail` - API signature mismatch
+**Access Control (1 failure)**: 7. `test_F16_cross_kid_access_must_fail` - API signature mismatch
 
-**Adversarial (1 failure)**:
-8. `test_150_related_key_attack` - Null key validation missing
+**Adversarial (1 failure)**: 8. `test_150_related_key_attack` - Null key validation missing
 
-**Performance (1 failure)**:
-9. `test_98_timing_consistency` - Timing variance too high
+**Performance (1 failure)**: 9. `test_98_timing_consistency` - Timing variance too high
 
-**Coverage (1 failure)**:
-10. `test_F30_all_failable_categories_covered` - Test categorization incomplete
+**Coverage (1 failure)**: 10. `test_F30_all_failable_categories_covered` - Test categorization incomplete
 
 ---
 
 ### 📝 Expected Failures (23 xfailed)
 
 These are **intentionally marked as expected failures** for features not yet implemented:
+
 - Advanced quantum attack simulations
 - Full Byzantine consensus
 - Complete formal verification
@@ -312,15 +339,15 @@ These are **intentionally marked as expected failures** for features not yet imp
 
 ### By Category
 
-| Category | Axioms | Verified | Partial | Theoretical | Score |
-|----------|--------|----------|---------|-------------|-------|
-| **Geometric** | 4 | 2 | 2 | 0 | 50% |
-| **Cryptographic** | 3 | 3 | 0 | 0 | 100% |
-| **Temporal** | 1 | 0 | 1 | 0 | 50% |
-| **Stability** | 2 | 1 | 0 | 1 | 50% |
-| **Quantum** | 1 | 1 | 0 | 0 | 100% |
-| **Topological** | 1 | 1 | 0 | 0 | 100% |
-| **Harmonic** | 1 | 1 | 0 | 0 | 100% |
+| Category          | Axioms | Verified | Partial | Theoretical | Score |
+| ----------------- | ------ | -------- | ------- | ----------- | ----- |
+| **Geometric**     | 4      | 2        | 2       | 0           | 50%   |
+| **Cryptographic** | 3      | 3        | 0       | 0           | 100%  |
+| **Temporal**      | 1      | 0        | 1       | 0           | 50%   |
+| **Stability**     | 2      | 1        | 0       | 1           | 50%   |
+| **Quantum**       | 1      | 1        | 0       | 0           | 100%  |
+| **Topological**   | 1      | 1        | 0       | 0           | 100%  |
+| **Harmonic**      | 1      | 1        | 0       | 0           | 100%  |
 
 ### Overall Score
 
@@ -337,6 +364,7 @@ These are **intentionally marked as expected failures** for features not yet imp
 ### ✅ **Production-Ready Components**
 
 These are **fully verified and working**:
+
 1. **Cryptographic Core** - 100% verified
 2. **Sacred Tongues Protocol** - 100% verified
 3. **SpiralSeal SS1 Cipher** - 100% verified
@@ -409,13 +437,13 @@ These are **mathematically sound but not tested**:
 ✅ **"Post-quantum crypto implemented and tested"** - TRUE  
 ✅ **"Hyperbolic geometry working in production"** - TRUE  
 ✅ **"Sacred Tongues protocol fully functional"** - TRUE  
-✅ **"Patent-pending mathematical innovations"** - TRUE  
+✅ **"Patent-pending mathematical innovations"** - TRUE
 
 ### What You Should Qualify
 
 ⚠️ **"All 13 axioms fully verified"** - PARTIAL (9/13 fully, 3/13 partial, 1/13 theoretical)  
 ⚠️ **"100% test coverage"** - NO (97.7% pass rate, some edge cases need fixes)  
-⚠️ **"Production-ready for all use cases"** - MOSTLY (core is solid, some edge cases need polish)  
+⚠️ **"Production-ready for all use cases"** - MOSTLY (core is solid, some edge cases need polish)
 
 ### What's Honest
 
@@ -426,6 +454,7 @@ These are **mathematically sound but not tested**:
 ## Action Items (Priority Order)
 
 ### High Priority (Affects Claims)
+
 1. ✅ Fix geometric boundary clamping (4 tests)
 2. ✅ Fix coherence clamping (1 test)
 3. ✅ Fix `rotate_key()` API (1 test)
@@ -433,6 +462,7 @@ These are **mathematically sound but not tested**:
 **Impact**: Brings pass rate to 99.3% (438/441)
 
 ### Medium Priority (Polish)
+
 4. ⚠️ Add temporal breathing bound tests
 5. ⚠️ Optimize timing consistency
 6. ⚠️ Complete test categorization
@@ -440,6 +470,7 @@ These are **mathematically sound but not tested**:
 **Impact**: Improves robustness and documentation
 
 ### Low Priority (Future Work)
+
 7. 📝 Add Lyapunov stability tests
 8. 📝 Add C-infinity smoothness tests
 9. 📝 Implement fractional dimension flux
@@ -455,6 +486,7 @@ These are **mathematically sound but not tested**:
 **You have a solid, working system with 431 passing tests (97.7% pass rate).**
 
 **Core functionality is verified**:
+
 - ✅ Cryptography works
 - ✅ Hyperbolic geometry works
 - ✅ Sacred Tongues works
@@ -463,13 +495,15 @@ These are **mathematically sound but not tested**:
 - ✅ PHDM works
 
 **Minor issues exist**:
+
 - 🚧 10 edge case tests need fixes (2.3% of tests)
 - 🚧 Some boundary conditions need clamping
 - 🚧 Some theoretical axioms need explicit tests
 
 **This is normal for v3.0.0** - you have a strong foundation with room for polish.
 
-**Recommendation**: 
+**Recommendation**:
+
 1. Fix the 10 failing tests (should take 1-2 days)
 2. Add explicit axiom verification tests (1 week)
 3. Document known limitations honestly

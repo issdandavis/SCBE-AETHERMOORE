@@ -10,31 +10,31 @@
 
 ## Pilot Program Details
 
-| Parameter | Value |
-|-----------|-------|
-| **Duration** | 90 Days |
-| **Start Date** | January 20, 2026 |
-| **End Date** | April 20, 2026 |
-| **Cost** | $0 (Free) |
-| **Support** | Full technical support included |
+| Parameter      | Value                           |
+| -------------- | ------------------------------- |
+| **Duration**   | 90 Days                         |
+| **Start Date** | January 20, 2026                |
+| **End Date**   | April 20, 2026                  |
+| **Cost**       | $0 (Free)                       |
+| **Support**    | Full technical support included |
 
 ---
 
 ## Success Metrics
 
-| Metric | Target |
-|--------|--------|
-| Missed Attacks | 0 |
-| False Positive Rate | <5% |
-| Runtime Overhead | <0.5% |
-| Latency Impact | <5ms |
+| Metric              | Target |
+| ------------------- | ------ |
+| Missed Attacks      | 0      |
+| False Positive Rate | <5%    |
+| Runtime Overhead    | <0.5%  |
+| Latency Impact      | <5ms   |
 
 ---
 
 ## What's Included
 
 - Initial deployment assistance
-- Configuration guidance  
+- Configuration guidance
 - Real-time monitoring
 - Weekly status reports
 - Full technical documentation
@@ -59,4 +59,4 @@ GitHub: github.com/issdandavis/scbe-aethermoore-demo
 
 ---
 
-*Last Updated: January 17, 2026*
+_Last Updated: January 17, 2026_

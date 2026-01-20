@@ -13,14 +13,14 @@ async function main() {
     schema_hash: 'deadbeef',
     request_id: 'req-' + Math.random().toString(36).slice(2, 10),
     session_id: 'session-123',
-    body: { hello: 'world' }
+    body: { hello: 'world' },
   });
 
   const out = await verifyEnvelope({ envelope: envl, session_id: 'session-123' });
   console.log('DECRYPTED:', out.body);
 }
 
-main().catch(e => {
+main().catch((e) => {
   console.error('error', e.message);
   process.exit(1);
 });

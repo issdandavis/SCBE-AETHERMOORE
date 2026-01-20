@@ -40,12 +40,7 @@
       "label": "Run Python Tests",
       "type": "shell",
       "command": "pytest",
-      "args": [
-        "tests/",
-        "-v",
-        "--cov=src",
-        "--cov-report=html"
-      ],
+      "args": ["tests/", "-v", "--cov=src", "--cov-report=html"],
       "group": {
         "kind": "test",
         "isDefault": true
@@ -69,10 +64,7 @@
     },
     {
       "label": "Run All Tests",
-      "dependsOn": [
-        "Run Python Tests",
-        "Run TypeScript Tests"
-      ],
+      "dependsOn": ["Run Python Tests", "Run TypeScript Tests"],
       "dependsOrder": "parallel",
       "problemMatcher": []
     },
@@ -80,10 +72,7 @@
       "label": "Format Python Code",
       "type": "shell",
       "command": "black",
-      "args": [
-        "src/",
-        "tests/"
-      ],
+      "args": ["src/", "tests/"],
       "problemMatcher": [],
       "presentation": {
         "reveal": "silent",
@@ -94,12 +83,7 @@
       "label": "Format TypeScript Code",
       "type": "shell",
       "command": "npx",
-      "args": [
-        "prettier",
-        "--write",
-        "src/**/*.ts",
-        "tests/**/*.ts"
-      ],
+      "args": ["prettier", "--write", "src/**/*.ts", "tests/**/*.ts"],
       "problemMatcher": [],
       "presentation": {
         "reveal": "silent",
@@ -110,11 +94,7 @@
       "label": "Lint Python",
       "type": "shell",
       "command": "flake8",
-      "args": [
-        "src/",
-        "tests/",
-        "--max-line-length=120"
-      ],
+      "args": ["src/", "tests/", "--max-line-length=120"],
       "problemMatcher": [],
       "presentation": {
         "reveal": "always",
@@ -125,9 +105,7 @@
       "label": "Run SCBE CLI",
       "type": "shell",
       "command": "python",
-      "args": [
-        "scbe-cli.py"
-      ],
+      "args": ["scbe-cli.py"],
       "problemMatcher": [],
       "presentation": {
         "reveal": "always",
@@ -157,12 +135,7 @@
     },
     {
       "label": "Full Build Pipeline",
-      "dependsOn": [
-        "Clean Build",
-        "Type Check",
-        "Build TypeScript",
-        "Run All Tests"
-      ],
+      "dependsOn": ["Clean Build", "Type Check", "Build TypeScript", "Run All Tests"],
       "dependsOrder": "sequence",
       "problemMatcher": [],
       "presentation": {
@@ -174,26 +147,18 @@
       "label": "Open Customer Demo",
       "type": "shell",
       "command": "start",
-      "args": [
-        "scbe-aethermoore/customer-demo.html"
-      ],
+      "args": ["scbe-aethermoore/customer-demo.html"],
       "windows": {
         "command": "start",
-        "args": [
-          "scbe-aethermoore/customer-demo.html"
-        ]
+        "args": ["scbe-aethermoore/customer-demo.html"]
       },
       "linux": {
         "command": "xdg-open",
-        "args": [
-          "scbe-aethermoore/customer-demo.html"
-        ]
+        "args": ["scbe-aethermoore/customer-demo.html"]
       },
       "osx": {
         "command": "open",
-        "args": [
-          "scbe-aethermoore/customer-demo.html"
-        ]
+        "args": ["scbe-aethermoore/customer-demo.html"]
       },
       "problemMatcher": [],
       "presentation": {

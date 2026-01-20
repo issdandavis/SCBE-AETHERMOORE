@@ -7,9 +7,11 @@ Make the SCBE CLI available globally in your terminal like `@scbe` or just `scbe
 ### Windows
 
 1. **Add to PATH**:
+
    ```cmd
    setx PATH "%PATH%;C:\path\to\scbe-aethermoore-demo"
    ```
+
    Replace `C:\path\to\scbe-aethermoore-demo` with your actual path.
 
 2. **Restart your terminal** and type:
@@ -20,18 +22,21 @@ Make the SCBE CLI available globally in your terminal like `@scbe` or just `scbe
 ### macOS / Linux
 
 1. **Make executable**:
+
    ```bash
    chmod +x scbe
    ```
 
 2. **Add to PATH** (choose one):
-   
+
    **Option A: Symlink to /usr/local/bin**
+
    ```bash
    sudo ln -s $(pwd)/scbe /usr/local/bin/scbe
    ```
-   
+
    **Option B: Add to ~/.bashrc or ~/.zshrc**
+
    ```bash
    echo 'export PATH="$PATH:/path/to/scbe-aethermoore-demo"' >> ~/.bashrc
    source ~/.bashrc
@@ -63,6 +68,7 @@ scbe> tutorial
 ```
 
 This will walk you through:
+
 - What SCBE is
 - How it works
 - Quick start guide
@@ -144,6 +150,7 @@ your data.
 ### Python not found
 
 Make sure Python 3.7+ is installed:
+
 ```bash
 python --version
 ```
@@ -151,9 +158,11 @@ python --version
 ## Uninstall
 
 ### Windows
+
 Remove the directory from your PATH environment variable.
 
 ### macOS / Linux
+
 ```bash
 # If you used symlink
 sudo rm /usr/local/bin/scbe

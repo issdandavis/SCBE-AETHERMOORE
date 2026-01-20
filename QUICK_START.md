@@ -3,11 +3,13 @@
 ## 🚀 60-Second Quick Start
 
 ### Installation
+
 ```bash
 cd C:\Users\issda\Downloads\SCBE_Production_Pack
 ```
 
 ### Launch the CLI
+
 ```bash
 python scbe-cli.py
 ```
@@ -18,7 +20,6 @@ python scbe-cli.py
    ```
    scbe> tutorial
    ```
-   
 2. **Learn the basics** (select option 1-5)
    - Option 1: What is SCBE?
    - Option 2: How does it work?
@@ -28,6 +29,7 @@ python scbe-cli.py
    - Option 0: Back to main menu
 
 3. **Encrypt a message**
+
    ```
    scbe> encrypt
    Enter message: Hello, World!
@@ -35,6 +37,7 @@ python scbe-cli.py
    ```
 
 4. **Decrypt the message**
+
    ```
    scbe> decrypt
    Enter ciphertext: [paste the ciphertext from step 3]
@@ -49,38 +52,43 @@ python scbe-cli.py
 
 ## 📖 Available Commands
 
-| Command | Description |
-|---------|-------------|
+| Command    | Description                        |
+| ---------- | ---------------------------------- |
 | `tutorial` | Interactive tutorial (START HERE!) |
-| `encrypt` | Encrypt a message |
-| `decrypt` | Decrypt a message |
-| `attack` | Run attack simulation |
-| `metrics` | Display system metrics |
-| `help` | Show available commands |
-| `exit` | Exit the CLI |
+| `encrypt`  | Encrypt a message                  |
+| `decrypt`  | Decrypt a message                  |
+| `attack`   | Run attack simulation              |
+| `metrics`  | Display system metrics             |
+| `help`     | Show available commands            |
+| `exit`     | Exit the CLI                       |
 
 ## 💡 Important Notes
 
 ### Tutorial Navigation
+
 - When you type `tutorial`, you enter the tutorial menu
 - Select topics by typing numbers **1-5** (inside the tutorial menu)
 - Type **0** to return to the main menu
 - After viewing a topic, you'll automatically return to the tutorial menu
 
 ### Common Mistakes
+
 ❌ **Wrong**: Typing `2` at the main `scbe>` prompt
+
 ```
 scbe> 2
 Unknown command: 2
 ```
 
 ✅ **Correct**: Type `tutorial` first, then select option 2
+
 ```
 scbe> tutorial
 Select topic (0-5): 2
 ```
 
 ### Exit Options
+
 - Type `exit` at the main prompt
 - Press `Ctrl+C` to interrupt
 - Press `Ctrl+D` (Unix) or `Ctrl+Z` (Windows) for EOF
@@ -118,19 +126,24 @@ Goodbye! 👋
 ## 🔧 Troubleshooting
 
 ### "No such file or directory"
+
 Make sure you're in the correct directory:
+
 ```bash
 cd C:\Users\issda\Downloads\SCBE_Production_Pack
 python scbe-cli.py
 ```
 
 ### "Unknown command"
+
 - Commands must be typed at the `scbe>` prompt
 - Tutorial options (1-5) only work inside the tutorial menu
 - Type `help` to see all available commands
 
 ### EOF Errors
+
 All EOF errors are now handled gracefully. If you see one, it means:
+
 - You pressed Ctrl+D (Unix) or Ctrl+Z (Windows)
 - Input was piped and reached end of file
 - The CLI will exit cleanly

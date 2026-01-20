@@ -28,11 +28,7 @@
       "type": "debugpy",
       "request": "launch",
       "module": "pytest",
-      "args": [
-        "${file}",
-        "-v",
-        "-s"
-      ],
+      "args": ["${file}", "-v", "-s"],
       "console": "integratedTerminal",
       "justMyCode": false,
       "env": {
@@ -44,10 +40,7 @@
       "type": "debugpy",
       "request": "launch",
       "module": "pytest",
-      "args": [
-        "tests/",
-        "-v"
-      ],
+      "args": ["tests/", "-v"],
       "console": "integratedTerminal",
       "justMyCode": false,
       "env": {
@@ -58,30 +51,18 @@
       "name": "Node: Run TypeScript",
       "type": "node",
       "request": "launch",
-      "runtimeArgs": [
-        "--loader",
-        "ts-node/esm"
-      ],
-      "args": [
-        "${file}"
-      ],
+      "runtimeArgs": ["--loader", "ts-node/esm"],
+      "args": ["${file}"],
       "cwd": "${workspaceFolder}",
       "internalConsoleOptions": "openOnSessionStart",
-      "skipFiles": [
-        "<node_internals>/**"
-      ]
+      "skipFiles": ["<node_internals>/**"]
     },
     {
       "name": "Node: Vitest Current File",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test",
-        "--",
-        "${file}"
-      ],
+      "runtimeArgs": ["run", "test", "--", "${file}"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen"
     },
@@ -90,10 +71,7 @@
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test"
-      ],
+      "runtimeArgs": ["run", "test"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen"
     },
@@ -102,18 +80,13 @@
       "type": "node",
       "request": "attach",
       "port": 9229,
-      "skipFiles": [
-        "<node_internals>/**"
-      ]
+      "skipFiles": ["<node_internals>/**"]
     }
   ],
   "compounds": [
     {
       "name": "Full Test Suite",
-      "configurations": [
-        "Python: All Tests",
-        "Node: Vitest All Tests"
-      ],
+      "configurations": ["Python: All Tests", "Node: Vitest All Tests"],
       "stopAll": true
     }
   ]

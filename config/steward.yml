@@ -7,5 +7,5 @@ review:
 audit:
   sample_allow_pct: 1.0
 notifications:
-  slack_channel: "#aethermoore-guard"
-  pagerduty_service: "Sentinel-Steward"
+  slack_channel: '#aethermoore-guard'
+  pagerduty_service: 'Sentinel-Steward'

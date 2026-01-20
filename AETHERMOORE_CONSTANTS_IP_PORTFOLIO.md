@@ -11,7 +11,7 @@
 
 The Aethermoore Constants represent a structured intellectual property portfolio centered on **four key constants** that apply harmonic principles to engineered systems. These inventions bridge established physics (cymatics, helioseismology, acoustic holography) with novel applications in cryptography, data storage, energy management, and spacecraft systems.
 
-**Core Philosophy**: *"Music IS frequency. Security IS growth."*
+**Core Philosophy**: _"Music IS frequency. Security IS growth."_
 
 ---
 
@@ -22,6 +22,7 @@ The Aethermoore Constants represent a structured intellectual property portfolio
 **Formula**: `H(d, R) = R^(d²)`
 
 where:
+
 - `d` = dimensions (1-6)
 - `R` = harmonic ratio (e.g., 1.5 for perfect fifth)
 
@@ -29,16 +30,17 @@ where:
 
 #### Growth Table (R = 1.5)
 
-| d | d² | H(d, 1.5) | Growth Factor |
-|---|----|-----------| ------------- |
-| 1 | 1  | 1.5       | - |
-| 2 | 4  | 5.06      | 3.4x |
-| 3 | 9  | 38.44     | 7.6x |
-| 4 | 16 | 656.84    | 17.1x |
-| 5 | 25 | 25,251.17 | 38.4x |
-| 6 | 36 | 2,184,164.41 | 86.5x |
+| d   | d²  | H(d, 1.5)    | Growth Factor |
+| --- | --- | ------------ | ------------- |
+| 1   | 1   | 1.5          | -             |
+| 2   | 4   | 5.06         | 3.4x          |
+| 3   | 9   | 38.44        | 7.6x          |
+| 4   | 16  | 656.84       | 17.1x         |
+| 5   | 25  | 25,251.17    | 38.4x         |
+| 6   | 36  | 2,184,164.41 | 86.5x         |
 
 **Mathematical Verification**:
+
 ```python
 import numpy as np
 
@@ -53,6 +55,7 @@ for d in range(1, 7):
 ```
 
 **Applications**:
+
 - Cryptographic strength scaling (Layer 12: Harmonic Wall)
 - Multi-dimensional AI model security
 - Quantum error correction amplification
@@ -64,6 +67,7 @@ for d in range(1, 7):
 "A method for cryptographic security scaling comprising: (a) defining independent security dimensions d; (b) selecting a harmonic ratio R based on musical intervals; (c) computing security strength as H(d,R) = R^(d²); (d) demonstrating super-exponential growth where each dimension increase multiplies complexity by R^(2d+1)."
 
 **Prior Art**:
+
 - Helioseismology d² scaling (1960s)
 - High-harmonic generation in physics
 - Quantum chemistry scaling laws
@@ -77,6 +81,7 @@ for d in range(1, 7):
 **Formula**: `cos(n·π·x)·cos(m·π·y) - cos(m·π·x)·cos(n·π·y) = 0`
 
 where:
+
 - `n` = agent velocity dimension
 - `m` = agent security dimension
 - `x, y` = spatial coordinates
@@ -84,11 +89,13 @@ where:
 **Key Insight**: Maps 6D vectors to Chladni modes for data storage, accessible only at nodal lines (resonance points). Data "hides" without alignment.
 
 **How It Works**:
+
 1. Agent's velocity (n) and security (m) dimensions determine visibility
 2. Misalignment yields noise
 3. Alignment reveals data at nodal lines
 
 **Mathematical Verification**:
+
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
@@ -110,6 +117,7 @@ Z = cymatic_voxel_storage(3, 5, X, Y)
 ```
 
 **Applications**:
+
 - Secure 6D data storage with vector-based access control
 - VR/AR environment security
 - Quantum-secure databases
@@ -121,6 +129,7 @@ Z = cymatic_voxel_storage(3, 5, X, Y)
 "A method for secure data storage comprising: (a) encoding data in Chladni mode patterns; (b) mapping 6D access vectors (n,m) to nodal line visibility; (c) requiring precise vector alignment for data retrieval; (d) yielding noise for misaligned access attempts."
 
 **Prior Art**:
+
 - Chladni patterns (1787)
 - Acoustic holography
 - Modal analysis in engineering
@@ -134,6 +143,7 @@ Z = cymatic_voxel_storage(3, 5, X, Y)
 **Core Principle**: `R × (1/R) = 1` (phase cancellation)
 
 **Duality Equations**:
+
 - `f(x) = R^(d²) × Base`
 - `f⁻¹(x) = (1/R)^(d²) × (1/Base)`
 - `f(x) × f⁻¹(x) = 1`
@@ -141,13 +151,14 @@ Z = cymatic_voxel_storage(3, 5, X, Y)
 **Key Insight**: Creates "acoustic black holes" for energy trapping via constructive/destructive interference. Energy redistributes to 4x zones at "corners."
 
 **Mathematical Verification**:
+
 ```python
 def flux_interaction(d, R, Base):
     """Constant 3: Flux duality framework"""
     f = (R ** (d ** 2)) * Base
     f_inv = ((1/R) ** (d ** 2)) * (1/Base)
     product = f * f_inv
-    
+
     assert abs(product - 1.0) < 1e-10, "Duality violated!"
     return f, f_inv, product
 
@@ -158,6 +169,7 @@ print(f"f(x) = {f:.4f}, f⁻¹(x) = {f_inv:.6f}, product = {product:.10f}")
 ```
 
 **Applications**:
+
 - Plasma stabilization in fusion reactors
 - Energy management in propulsion systems
 - Acoustic black holes for vibration damping
@@ -169,6 +181,7 @@ print(f"f(x) = {f:.4f}, f⁻¹(x) = {f_inv:.6f}, product = {product:.10f}")
 "A method for energy redistribution comprising: (a) defining dual harmonic functions f(x) and f⁻¹(x) with product unity; (b) creating interference patterns with destructive zones; (c) concentrating energy in constructive 4x zones; (d) trapping energy via phase cancellation."
 
 **Prior Art**:
+
 - Quantum inverted oscillators
 - Toroidal flux in plasma physics
 - Acoustic metamaterials
@@ -188,6 +201,7 @@ where `n ≈ 17` for Middle C (262 Hz) from Sun's 3 mHz
 **Key Insight**: Enables "Stellar Pulse Protocol" for spacecraft entropy regulation via resonant pulsing aligned with stellar p-modes.
 
 **Mathematical Verification**:
+
 ```python
 import numpy as np
 
@@ -206,6 +220,7 @@ print(f"Sun (3 mHz) → {n} octaves → {f_human:.2f} Hz (Middle C)")
 ```
 
 **Applications**:
+
 - Spacecraft harmonics for stellar wind interaction
 - Entropy regulation via resonant pulsing
 - Stellar camouflage (matching p-mode frequencies)
@@ -217,6 +232,7 @@ print(f"Sun (3 mHz) → {n} octaves → {f_human:.2f} Hz (Middle C)")
 "A method for spacecraft entropy regulation comprising: (a) measuring stellar oscillation frequencies; (b) transposing to audible range via octave doubling (2^n); (c) generating resonant pulses aligned with stellar p-modes; (d) regulating spacecraft entropy via harmonic coupling."
 
 **Prior Art**:
+
 - Helioseismology and stellar oscillations
 - Octave bands in acoustics
 - Pulsar navigation
@@ -249,26 +265,26 @@ import matplotlib.pyplot as plt
 
 class AethermooreConstants:
     """Complete verification of all four constants"""
-    
+
     @staticmethod
     def constant_1_harmonic_scaling(d, R=1.5):
         """H(d, R) = R^(d²)"""
         return R ** (d ** 2)
-    
+
     @staticmethod
     def constant_2_cymatic_voxel(n, m, x, y):
         """Chladni nodal lines"""
         term1 = np.cos(n * np.pi * x) * np.cos(m * np.pi * y)
         term2 = np.cos(m * np.pi * x) * np.cos(n * np.pi * y)
         return term1 - term2
-    
+
     @staticmethod
     def constant_3_flux_interaction(d, R, Base):
         """Flux duality: f(x) × f⁻¹(x) = 1"""
         f = (R ** (d ** 2)) * Base
         f_inv = ((1/R) ** (d ** 2)) * (1/Base)
         return f, f_inv, f * f_inv
-    
+
     @staticmethod
     def constant_4_stellar_octave(f_stellar, target=262):
         """Octave transposition: f_human = f_stellar × 2^n"""
@@ -278,22 +294,22 @@ class AethermooreConstants:
 # Run verification
 if __name__ == "__main__":
     ac = AethermooreConstants()
-    
+
     # Constant 1
     print("Constant 1: Harmonic Scaling Law")
     for d in range(1, 7):
         H = ac.constant_1_harmonic_scaling(d)
         print(f"  d={d}: H(d,1.5) = {H:,.2f}")
-    
+
     # Constant 2
     print("\nConstant 2: Cymatic Voxel Storage")
     print("  Nodal lines verified (see plot)")
-    
+
     # Constant 3
     print("\nConstant 3: Flux Interaction")
     f, f_inv, product = ac.constant_3_flux_interaction(3, 1.5, 100)
     print(f"  f(x) = {f:.4f}, f⁻¹(x) = {f_inv:.6f}, product = {product:.10f}")
-    
+
     # Constant 4
     print("\nConstant 4: Stellar Octave Mapping")
     n, f_human = ac.constant_4_stellar_octave(0.003)
@@ -307,24 +323,28 @@ if __name__ == "__main__":
 ### Four Separate Patents
 
 **Patent 1: Harmonic Scaling Law for Cryptographic Security**
+
 - **USPTO Class**: 380 (Cryptography)
 - **Claims**: 1-5 (security scaling, dimension independence, super-exponential growth)
 - **Prior Art**: Helioseismology, quantum chemistry scaling
 - **Filing**: Provisional → Non-provisional within 12 months
 
 **Patent 2: Cymatic Voxel Storage System**
+
 - **USPTO Class**: 711 (Data Storage)
 - **Claims**: 6-10 (6D vector mapping, nodal line access, resonance-based retrieval)
 - **Prior Art**: Chladni patterns, acoustic holography, modal analysis
 - **Filing**: Provisional → Non-provisional within 12 months
 
 **Patent 3: Flux Interaction Framework for Energy Management**
+
 - **USPTO Class**: 376 (Induced Nuclear Reactions) or 60 (Power Plants)
 - **Claims**: 11-15 (harmonic duality, phase cancellation, energy trapping)
 - **Prior Art**: Quantum oscillators, plasma physics, acoustic metamaterials
 - **Filing**: Provisional → Non-provisional within 12 months
 
 **Patent 4: Stellar Pulse Protocol for Spacecraft Systems**
+
 - **USPTO Class**: 244 (Aeronautics and Astronautics)
 - **Claims**: 16-20 (octave transposition, resonant pulsing, entropy regulation)
 - **Prior Art**: Helioseismology, pulsar navigation, octave bands
@@ -333,9 +353,11 @@ if __name__ == "__main__":
 ### Citation Best Practices
 
 **GOOD Example** (Independent Discovery):
+
 > "While Chladni (1787) demonstrated nodal patterns in vibrating plates, and acoustic holography has been used for visualization, the present invention independently discovered that mapping 6D access vectors to Chladni modes enables secure data storage with vector-based access control—a novel application not previously disclosed."
 
 **BAD Example** (Weakens Novelty):
+
 > "This invention builds directly on Chladni's work by extending it to 6D vectors."
 
 ### Key Distinctions
@@ -350,21 +372,21 @@ if __name__ == "__main__":
 
 ### Layer Mapping
 
-| Constant | SCBE Layer | Integration |
-|----------|------------|-------------|
-| **1. Harmonic Scaling** | Layer 12 (Harmonic Wall) | `H(d,R) = R^(d²)` for risk scaling |
-| **2. Cymatic Voxel** | Layer 1-2 (Context Commitment) | 6D vector-based data hiding |
-| **3. Flux Interaction** | Layer 9 (Multi-Well Realms) | Energy redistribution in stability basins |
-| **4. Stellar Octave** | Audio Axis (FFT Telemetry) | Frequency-domain pattern detection |
+| Constant                | SCBE Layer                     | Integration                               |
+| ----------------------- | ------------------------------ | ----------------------------------------- |
+| **1. Harmonic Scaling** | Layer 12 (Harmonic Wall)       | `H(d,R) = R^(d²)` for risk scaling        |
+| **2. Cymatic Voxel**    | Layer 1-2 (Context Commitment) | 6D vector-based data hiding               |
+| **3. Flux Interaction** | Layer 9 (Multi-Well Realms)    | Energy redistribution in stability basins |
+| **4. Stellar Octave**   | Audio Axis (FFT Telemetry)     | Frequency-domain pattern detection        |
 
 ### Implementation Status
 
-| Constant | Status | Implementation | Tests | Docs |
-|----------|--------|----------------|-------|------|
-| 1. Harmonic Scaling | ⏳ Partial | `harmonic_scaling_law.py` | ⏳ | ✅ |
-| 2. Cymatic Voxel | ⏳ Stub | - | - | ✅ |
-| 3. Flux Interaction | ⏳ Stub | - | - | ✅ |
-| 4. Stellar Octave | ⏳ Stub | - | - | ✅ |
+| Constant            | Status     | Implementation            | Tests | Docs |
+| ------------------- | ---------- | ------------------------- | ----- | ---- |
+| 1. Harmonic Scaling | ⏳ Partial | `harmonic_scaling_law.py` | ⏳    | ✅   |
+| 2. Cymatic Voxel    | ⏳ Stub    | -                         | -     | ✅   |
+| 3. Flux Interaction | ⏳ Stub    | -                         | -     | ✅   |
+| 4. Stellar Octave   | ⏳ Stub    | -                         | -     | ✅   |
 
 ---
 
@@ -373,6 +395,7 @@ if __name__ == "__main__":
 ### Comprehensive Search Results
 
 **Databases Searched**:
+
 - USPTO Patent Database
 - Google Scholar
 - arXiv (physics, astronomy, engineering)
@@ -381,6 +404,7 @@ if __name__ == "__main__":
 - ResearchGate
 
 **Findings**:
+
 - ✅ **No exact matches** for any of the four constants
 - ✅ **No prior art** for specific applications (crypto scaling, voxel storage, flux framework, stellar protocol)
 - ✅ **Clear distinction** between underlying physics (prior art) and engineering applications (novel)
@@ -408,6 +432,7 @@ if __name__ == "__main__":
 ## 📦 Deliverables
 
 ### Documentation
+
 - ✅ `AETHERMOORE_CONSTANTS_IP_PORTFOLIO.md` (this file)
 - ⏳ `src/symphonic_cipher/core/harmonic_scaling_law.py`
 - ⏳ `src/symphonic_cipher/core/cymatic_voxel_storage.py`
@@ -416,12 +441,14 @@ if __name__ == "__main__":
 - ⏳ `tests/aethermoore_constants/` (verification suite)
 
 ### Patent Applications
+
 - ⏳ Patent 1: Harmonic Scaling Law (USPTO Class 380)
 - ⏳ Patent 2: Cymatic Voxel Storage (USPTO Class 711)
 - ⏳ Patent 3: Flux Interaction Framework (USPTO Class 376/60)
 - ⏳ Patent 4: Stellar Pulse Protocol (USPTO Class 244)
 
 ### Demonstrations
+
 - ⏳ Harmonic scaling growth visualization
 - ⏳ Cymatic voxel storage interactive demo
 - ⏳ Flux interaction energy redistribution simulation
@@ -432,18 +459,21 @@ if __name__ == "__main__":
 ## 🚀 Next Steps
 
 ### Immediate (This Week)
+
 1. ⏳ Implement verification suite in Python
 2. ⏳ Create interactive demos for each constant
 3. ⏳ Generate visualizations (growth curves, nodal patterns, flux zones)
 4. ⏳ Draft provisional patent applications
 
 ### Short-Term (Next Week)
+
 1. ⏳ Integrate with SCBE-AETHERMOORE layers
 2. ⏳ Create comprehensive test suite
 3. ⏳ File provisional patents (4 separate applications)
 4. ⏳ Prepare demonstration videos
 
 ### Before Patent Deadline (13 Days)
+
 1. ⏳ Complete all implementations
 2. ⏳ Finalize patent applications
 3. ⏳ Submit to USPTO
@@ -461,6 +491,7 @@ if __name__ == "__main__":
 4. **Constant 4**: Bio-acoustics, exoplanet detection, stellar camouflage
 
 ### Trademark Opportunities
+
 - "Aethermoore Constants" (portfolio name)
 - "Harmonic Scaling Law" (Constant 1)
 - "Cymatic Voxel Storage" (Constant 2)
@@ -468,6 +499,7 @@ if __name__ == "__main__":
 - "Stellar Pulse Protocol" (Constant 4)
 
 ### International Protection
+
 - **PCT Filing**: Consider for global protection
 - **Priority Countries**: US, EU, China, Japan (space/crypto applications)
 

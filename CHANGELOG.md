@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [3.1.0] - 2026-01-18
 
 ### Added
+
 - **Polyhedral Hamiltonian Defense Manifold (PHDM)** - Topological intrusion detection system
   - 16 canonical polyhedra with verified Euler characteristics
   - Hamiltonian path with sequential HMAC key chaining
@@ -20,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Complete TypeScript implementation matching Python version
 
 ### Changed
+
 - Updated harmonic module exports to include PHDM
 - Enhanced README with PHDM feature description
 
@@ -28,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 🎉 Major Release - Complete Customer-Ready Package
 
 #### Added
+
 - **Interactive Customer Demo** (`scbe-aethermoore/customer-demo.html`)
   - Real-time encryption/decryption interface
   - Attack simulation with 4 attack types (Brute Force, Replay, MITM, Quantum)
@@ -82,6 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Package metadata and keywords
 
 #### Changed
+
 - **TypeScript Configuration**
   - Implemented project references for proper multi-directory support
   - Separate configs for src, tests, and examples
@@ -93,6 +97,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Patent information and licensing details
 
 #### Fixed
+
 - TypeScript rootDir errors with tests and examples
 - Build process for clean dist output
 - Module exports for proper ESM support
@@ -100,6 +105,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Technical Details
 
 #### 14-Layer Architecture
+
 1. **L1-4**: Context Embedding → Poincaré ball 𝔹ⁿ
 2. **L5**: Invariant Metric - dℍ(u,v) hyperbolic distance
 3. **L6**: Breath Transform - B(p,t) = tanh(‖p‖ + A·sin(ωt))·p/‖p‖
@@ -113,6 +119,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 11. **L14**: Audio Axis - FFT telemetry
 
 #### Performance Metrics
+
 - **Latency**: <50ms average
 - **Throughput**: 10,000+ requests/second
 - **Uptime**: 99.99% SLA
@@ -120,22 +127,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Security**: 256-bit equivalent strength
 
 #### Patent Information
+
 - **Status**: Patent Pending
 - **Application**: USPTO #63/961,403
 - **Filed**: January 15, 2026
 - **Inventor**: Issac Daniel Davis
 
 ### Breaking Changes
+
 None - this is the initial major release.
 
 ### Migration Guide
+
 This is the first production release. No migration needed.
 
 ### Known Issues
+
 - Harmonic module has TypeScript type compatibility issues (excluded from build)
 - Some tests require additional test runner configuration
 
 ### Roadmap for v3.1.0
+
 - [ ] Fix harmonic module TypeScript errors
 - [ ] Add REST API server
 - [ ] Implement PQC (Post-Quantum Cryptography) module
@@ -148,6 +160,7 @@ This is the first production release. No migration needed.
 ## [2.1.0] - 2025-12-XX (Internal)
 
 ### Added
+
 - Initial 14-layer implementation
 - Hyperbolic geometry primitives
 - Basic encryption/decryption
@@ -157,6 +170,7 @@ This is the first production release. No migration needed.
 ## [1.0.0] - 2025-06-XX (Prototype)
 
 ### Added
+
 - Proof of concept
 - Core mathematical framework
 - Initial testing suite

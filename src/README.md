@@ -50,4 +50,4 @@ MIT License - See LICENSE file.
 
 ---
 
-*SCBE-AETHERMOORE: Hyperbolic geometry for AI safety.*
+_SCBE-AETHERMOORE: Hyperbolic geometry for AI safety._
