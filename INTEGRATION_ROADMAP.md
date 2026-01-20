@@ -580,6 +580,14 @@ Popular automation platform.
 
 ---
 
+## 🛡️ **Security Hardening + Anti-Malware**
+- **Playbook**: See `SECURITY_HARDENING_PLAYBOOK.md` for the full stack (endpoint AV/EDR, IDS/NDR, supply chain scanning, sandboxing, and runbooks).
+- **Tooling (evergreen, open-source first)**: ClamAV + YARA, Falco (eBPF), osquery, Wazuh/CrowdSec, Zeek/Suricata, AdGuard/Pi-hole, syft→grype or trivy, semgrep/bandit/ruff, gitleaks, cosign, gVisor/Kata/Firecracker.
+- **User flexibility**: Baseline protections always on; high-assurance and isolation modes for regulated tenants; overrides require justification + logging.
+- **Self-hosted coding platform**: Coder or Gitpod Self-Hosted (or `code-server`) on signed devcontainers/Nix images with pre-commit gates (semgrep, trivy, syft/grype, gitleaks) and sandboxed runtimes (gVisor/Kata). Ephemeral by default; persistence only for approved volumes.
+
+---
+
 ## 🧪 **Testing Strategy**
 
 ### **Unit Tests**

@@ -9,6 +9,7 @@
 # Pinned for patent reproducibility and USPTO validation evidence
 numpy>=1.24.0,<2.0.0      # Hyperbolic geometry, FFT for spectral analysis
 scipy>=1.10.0,<2.0.0      # Scientific computing, optimization
+matplotlib>=3.5.0         # Visualization for benchmarks and analysis
 
 # ============================================================================
 # CRYPTOGRAPHIC PRIMITIVES
@@ -39,7 +40,7 @@ pytest>=7.4.0,<9.0.0
 pytest-cov>=4.1.0
 pytest-asyncio>=0.21.0
 pytest-mock>=3.11.0
-pytest-typeguard>=2.13.3
+typeguard>=2.13.3
 pytest-benchmark>=4.0.0   # Performance benchmarking (optional)
 
 # ============================================================================
