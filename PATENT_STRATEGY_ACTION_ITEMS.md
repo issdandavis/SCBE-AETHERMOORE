@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-Based on examiner simulation feedback and technical assessment, the following six critical improvements have been identified to strengthen patent claims and address architectural vulnerabilities.
+Based on examiner simulation feedback and technical assessment, the following five critical improvements have been identified to strengthen patent claims and address architectural vulnerabilities.
 
 ---
 
@@ -167,29 +167,7 @@ def generate_koraelin_token(byte_value: int) -> str:
 
 ---
 
-## 5. Immediate Filing: Human Microgeneration
-
-**Issue**: Active gym pilots create an "on-sale bar" risk that could invalidate the patent if not filed immediately.
-
-**Solution**: File **Non-Provisional Utility Patent IMMEDIATELY**
-
-**Priority Order**:
-1. ⚠️ **Human Microgeneration** - FILE NOW (priority date risk)
-2. Space Tor Provisional - Can wait
-
-**Risk Assessment**:
-- Public pilots = potential on-sale bar under 35 U.S.C. § 102(a)(1)
-- 1-year grace period may have started
-- Filing secures priority date against own public disclosures
-
-**Action Required**:
-- [ ] Finalize Human Microgeneration patent claims
-- [ ] File Non-Provisional Utility Patent with USPTO
-- [ ] Obtain priority date before gym pilot expansion
-
----
-
-## 6. Security Gate: Integrate the "Waiting Room"
+## 5. Security Gate: Integrate the "Waiting Room"
 
 **Issue**: Security Gate (Waiting Room) specification exists only as design document; not wired into main API entry point.
 
@@ -250,22 +228,20 @@ function securityGate(request: Request): Response {
 
 | Action Item | Priority | Risk Level | Effort |
 |-------------|----------|------------|--------|
-| 5. Human Microgeneration Filing | 🔴 CRITICAL | Patent invalidation | Low (legal) |
 | 2. Redis/BullMQ Architecture | 🔴 CRITICAL | System failure | Medium |
 | 1. Rename Acoustic Black Hole | 🟡 HIGH | Patent rejection | Low |
 | 3. Spectral Entropy Pivot | 🟡 HIGH | Scientific credibility | Medium |
-| 6. Security Gate Integration | 🟡 HIGH | Security vulnerability | Medium |
-| 4. Sacred Tongue Vocabularies | 🟢 MEDIUM | Claim weakness | High |
+| 5. Security Gate Integration | 🟡 HIGH | Security vulnerability | Medium |
+| 4. Sacred Tongue Vocabularies | ✅ DONE | N/A | Already implemented |
 
 ---
 
 ## Next Steps
 
-1. **Today**: Initiate Human Microgeneration patent filing
-2. **This Week**: Begin Redis/BullMQ migration
-3. **This Sprint**: Rename Acoustic Black Hole in all documentation
-4. **Next Sprint**: Implement Spectral Entropy Verification
-5. **Ongoing**: Generate full Sacred Tongue vocabularies
+1. **This Week**: Begin Redis/BullMQ migration (fleet mechanisms)
+2. **This Sprint**: Rename Acoustic Black Hole in all documentation
+3. **Next Sprint**: Implement Spectral Entropy Verification
+4. **Ship It**: Focus on productization and deployment
 
 ---
 
