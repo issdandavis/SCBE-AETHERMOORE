@@ -3,7 +3,7 @@
 **Feature Name**: spiralverse-architecture  
 **Status**: Draft  
 **Created**: 2026-01-19  
-**Author**: Isaac Davis (@issdandavis)  
+**Author**: Issac Daniel Davis (@issdandavis)  
 **Patent**: USPTO #63/961,403
 
 ## Executive Summary
