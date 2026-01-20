@@ -19,7 +19,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpiralSealSS1 = exports.SacredTongueTokenizer = exports.getTongueForSection = exports.UMBROTH = exports.SECTION_TONGUES = exports.SACRED_TONGUES = exports.RUNETHIC = exports.KOR_AELIN = exports.DRAUMRIC = exports.CASSISIVADAN = exports.AVALI = exports.projectToBall = exports.phaseModulation = exports.multiWellPotential = exports.multiWellGradient = exports.multiPhaseModulation = exports.mobiusAdd = exports.logMap0 = exports.inverseBreathTransform = exports.hyperbolicDistance = exports.expMap0 = exports.breathTransform = exports.applyHyperbolicPipeline = exports.createVertex = exports.HamiltonianCFI = exports.ControlFlowGraph = exports.generateTestSignal = exports.generateNoise = exports.AudioAxisProcessor = exports.getFluxState = exports.TONGUES = exports.LanguesMetric = exports.FluxingLanguesMetric = exports.standingWaveAmplitude = exports.nodalSurface = exports.fluxRedistribution = exports.checkCymaticResonance = exports.cavityResonance = exports.bottleBeamIntensity = exports.harmonicCouplingMatrix = exports.halAttention = exports.securityLevel = exports.securityBits = exports.octaveTranspose = exports.harmonicScale = exports.harmonicDistance = exports.log2 = exports.assertIntGE = exports.assertFinite = exports.CONSTANTS = void 0;
 exports.PHDMDeviationDetector = exports.CubicSpline6D = exports.CANONICAL_POLYHEDRA = exports.scbeToQuasicrystal = exports.quasicrystalPotential = exports.quasicrystalHash = exports.quasicrystal5to2 = exports.quasicrystal4to2 = exports.penroseToLattice = exports.penroseTiling = exports.penroseRhombus = exports.penroseInitial = exports.penroseDeflate = exports.nearestQCVertex = exports.fibonacciWord = exports.fibonacciSequence = exports.fibonacci2D = exports.fibonacci1D = exports.diffractionPattern = exports.defaultQCLattice = exports.cutAndProject2D = exports.checkRotationalSymmetry = exports.ammannBeenkerSquare = exports.ammannBeenkerRhombus = exports.SILVER_RATIO = exports.QCLatticeProvider = exports.PHI_INV = exports.PHI = exports.shake256 = exports.shake128 = exports.secureRandomBytes = exports.ntt = exports.mlkemKeyGen = exports.mlkemEncapsulate = exports.mlkemDecapsulate = exports.mldsaVerify = exports.mldsaSign = exports.mldsaKeyGen = exports.invNtt = exports.defaultPQCProvider = exports.PQCProvider = exports.unseal = exports.seal = exports.randomBytes = exports.parseSS1Blob = exports.formatSS1Blob = exports.encodeToSpelltext = exports.decodeFromSpelltext = exports.computeLWSWeights = exports.computeLWSScore = void 0;
-exports.topologicalHash = exports.serializePolyhedron = exports.isValidTopology = exports.eulerCharacteristic = exports.distance6D = exports.computeCentroid = exports.PolyhedralHamiltonianDefenseManifold = exports.PHDMHamiltonianPath = void 0;
+exports.audioAxis = exports.riskDecision = exports.harmonicScalingPipeline = exports.triadicTemporal = exports.spinCoherence = exports.spectralCoherence = exports.realmDistance = exports.phaseTransform = exports.breathingTransformPipeline = exports.hyperbolicDistancePipeline = exports.poincareEmbedding = exports.weightedTransform = exports.realification = exports.complexState = exports.scbe14LayerPipeline = exports.mobiusRotatePipeline = exports.mobiusAddPipeline = exports.layer14AudioAxis = exports.layer13RiskDecision = exports.layer12HarmonicScaling = exports.layer11TriadicTemporal = exports.layer10SpinCoherence = exports.layer9SpectralCoherence = exports.layer8RealmDistance = exports.layer7PhaseTransform = exports.layer6BreathingTransform = exports.layer5HyperbolicDistance = exports.layer4PoincareEmbedding = exports.layer3WeightedTransform = exports.layer2Realification = exports.layer1ComplexState = exports.topologicalHash = exports.serializePolyhedron = exports.isValidTopology = exports.eulerCharacteristic = exports.distance6D = exports.computeCentroid = exports.PolyhedralHamiltonianDefenseManifold = exports.PHDMHamiltonianPath = void 0;
 // ═══════════════════════════════════════════════════════════════
 // Constants and Types
 // ═══════════════════════════════════════════════════════════════
@@ -205,4 +205,43 @@ Object.defineProperty(exports, "eulerCharacteristic", { enumerable: true, get: f
 Object.defineProperty(exports, "isValidTopology", { enumerable: true, get: function () { return phdm_js_1.isValidTopology; } });
 Object.defineProperty(exports, "serializePolyhedron", { enumerable: true, get: function () { return phdm_js_1.serializePolyhedron; } });
 Object.defineProperty(exports, "topologicalHash", { enumerable: true, get: function () { return phdm_js_1.topologicalHash; } });
+// ═══════════════════════════════════════════════════════════════
+// Complete 14-Layer Pipeline
+// ═══════════════════════════════════════════════════════════════
+var pipeline14_js_1 = require("./pipeline14.js");
+// Individual Layer Functions
+Object.defineProperty(exports, "layer1ComplexState", { enumerable: true, get: function () { return pipeline14_js_1.layer1ComplexState; } });
+Object.defineProperty(exports, "layer2Realification", { enumerable: true, get: function () { return pipeline14_js_1.layer2Realification; } });
+Object.defineProperty(exports, "layer3WeightedTransform", { enumerable: true, get: function () { return pipeline14_js_1.layer3WeightedTransform; } });
+Object.defineProperty(exports, "layer4PoincareEmbedding", { enumerable: true, get: function () { return pipeline14_js_1.layer4PoincareEmbedding; } });
+Object.defineProperty(exports, "layer5HyperbolicDistance", { enumerable: true, get: function () { return pipeline14_js_1.layer5HyperbolicDistance; } });
+Object.defineProperty(exports, "layer6BreathingTransform", { enumerable: true, get: function () { return pipeline14_js_1.layer6BreathingTransform; } });
+Object.defineProperty(exports, "layer7PhaseTransform", { enumerable: true, get: function () { return pipeline14_js_1.layer7PhaseTransform; } });
+Object.defineProperty(exports, "layer8RealmDistance", { enumerable: true, get: function () { return pipeline14_js_1.layer8RealmDistance; } });
+Object.defineProperty(exports, "layer9SpectralCoherence", { enumerable: true, get: function () { return pipeline14_js_1.layer9SpectralCoherence; } });
+Object.defineProperty(exports, "layer10SpinCoherence", { enumerable: true, get: function () { return pipeline14_js_1.layer10SpinCoherence; } });
+Object.defineProperty(exports, "layer11TriadicTemporal", { enumerable: true, get: function () { return pipeline14_js_1.layer11TriadicTemporal; } });
+Object.defineProperty(exports, "layer12HarmonicScaling", { enumerable: true, get: function () { return pipeline14_js_1.layer12HarmonicScaling; } });
+Object.defineProperty(exports, "layer13RiskDecision", { enumerable: true, get: function () { return pipeline14_js_1.layer13RiskDecision; } });
+Object.defineProperty(exports, "layer14AudioAxis", { enumerable: true, get: function () { return pipeline14_js_1.layer14AudioAxis; } });
+// Möbius Operations
+Object.defineProperty(exports, "mobiusAddPipeline", { enumerable: true, get: function () { return pipeline14_js_1.mobiusAdd; } });
+Object.defineProperty(exports, "mobiusRotatePipeline", { enumerable: true, get: function () { return pipeline14_js_1.mobiusRotate; } });
+// Full Pipeline
+Object.defineProperty(exports, "scbe14LayerPipeline", { enumerable: true, get: function () { return pipeline14_js_1.scbe14LayerPipeline; } });
+// Aliases
+Object.defineProperty(exports, "complexState", { enumerable: true, get: function () { return pipeline14_js_1.complexState; } });
+Object.defineProperty(exports, "realification", { enumerable: true, get: function () { return pipeline14_js_1.realification; } });
+Object.defineProperty(exports, "weightedTransform", { enumerable: true, get: function () { return pipeline14_js_1.weightedTransform; } });
+Object.defineProperty(exports, "poincareEmbedding", { enumerable: true, get: function () { return pipeline14_js_1.poincareEmbedding; } });
+Object.defineProperty(exports, "hyperbolicDistancePipeline", { enumerable: true, get: function () { return pipeline14_js_1.hyperbolicDistance; } });
+Object.defineProperty(exports, "breathingTransformPipeline", { enumerable: true, get: function () { return pipeline14_js_1.breathingTransform; } });
+Object.defineProperty(exports, "phaseTransform", { enumerable: true, get: function () { return pipeline14_js_1.phaseTransform; } });
+Object.defineProperty(exports, "realmDistance", { enumerable: true, get: function () { return pipeline14_js_1.realmDistance; } });
+Object.defineProperty(exports, "spectralCoherence", { enumerable: true, get: function () { return pipeline14_js_1.spectralCoherence; } });
+Object.defineProperty(exports, "spinCoherence", { enumerable: true, get: function () { return pipeline14_js_1.spinCoherence; } });
+Object.defineProperty(exports, "triadicTemporal", { enumerable: true, get: function () { return pipeline14_js_1.triadicTemporal; } });
+Object.defineProperty(exports, "harmonicScalingPipeline", { enumerable: true, get: function () { return pipeline14_js_1.harmonicScaling; } });
+Object.defineProperty(exports, "riskDecision", { enumerable: true, get: function () { return pipeline14_js_1.riskDecision; } });
+Object.defineProperty(exports, "audioAxis", { enumerable: true, get: function () { return pipeline14_js_1.audioAxis; } });
 //# sourceMappingURL=index.js.map
