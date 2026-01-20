@@ -31,6 +31,7 @@
 **SCBE-AETHERMOORE** (Spiralverse Context-Bound Enforcement - AETHERMOORE) is a mathematically rigorous AI governance framework that uses **hyperbolic geometry** to make attacks physically impossible rather than just computationally difficult.
 
 ### Core Innovation
+
 Traditional security: "Make attacks hard"
 SCBE security: "Make attacks geometrically impossible"
 
@@ -185,6 +186,7 @@ Where:
 | ZERO | ν ≈ 0.0 | Inactive dimension |
 
 **Breathing Demo**:
+
 ```
 Time | D_f    | ε_snap | States
 ─────┼────────┼────────┼────────
@@ -212,6 +214,7 @@ Where:
 ```
 
 **Anti-Fragile Demonstration**:
+
 ```
   Pressure | Stiffness | Energy    | Behavior
   ─────────┼───────────┼───────────┼─────────────────────
@@ -221,6 +224,7 @@ Where:
 ```
 
 **Key Insight**: When attacked, the metric space EXPANDS.
+
 - Attacker at distance 10 from target
 - System detects attack, pressure increases
 - Space expands to distance 15,000 from target
@@ -251,6 +255,7 @@ Else:
 | **Combined** | **BOTH** | **Level 3** | **192 min** |
 
 **Settling Wave**:
+
 ```
   t= 0.0: K=+0.297 ██████████████████████
   t= 2.5: K=-0.918 ██████████
@@ -265,7 +270,8 @@ Key only exists at t_arrival (constructive interference maximum)
 
 ## Lemma 13.1: Mathematical Proof
 
-**Statement**: Let Risk' = B × H(d*) × T × I, where:
+**Statement**: Let Risk' = B × H(d\*) × T × I, where:
+
 - B = Behavioral_Risk ≥ 0
 - H(d*) = 1 + α tanh(β d*), hence 1 ≤ H ≤ 1 + α
 - T = Time_Multi ≥ 1
@@ -273,15 +279,16 @@ Key only exists at t_arrival (constructive interference maximum)
 
 **Properties Proven**:
 
-| # | Property | Proof |
-|---|----------|-------|
-| 1 | Non-negativity | All factors ≥ 0 → product ≥ 0 |
-| 2 | Lower bound | H≥1, T≥1, I≥1 → Risk' ≥ B |
-| 3 | Upper bound | Clamped inputs → Risk' < ∞ |
-| 4 | Monotonicity | ∂Risk'/∂x > 0 for all inputs |
-| 5 | Decidability | Continuous → level sets partition space |
+| #   | Property       | Proof                                   |
+| --- | -------------- | --------------------------------------- |
+| 1   | Non-negativity | All factors ≥ 0 → product ≥ 0           |
+| 2   | Lower bound    | H≥1, T≥1, I≥1 → Risk' ≥ B               |
+| 3   | Upper bound    | Clamped inputs → Risk' < ∞              |
+| 4   | Monotonicity   | ∂Risk'/∂x > 0 for all inputs            |
+| 5   | Decidability   | Continuous → level sets partition space |
 
 **Corollary (North-Star Enforcement)**:
+
 > "Truth must cost something structural."
 
 Any deviation from perfect alignment GUARANTEES Risk' > baseline.
@@ -292,19 +299,20 @@ Any deviation from perfect alignment GUARANTEES Risk' > baseline.
 
 ### Attack Types Tested
 
-| Attack | Strategy | Result | Detection |
-|--------|----------|--------|-----------|
-| BOUNDARY_PROBE | Push toward ‖u‖→1 | BLOCKED | Layer 13 |
-| GRADIENT_DESCENT | Follow optimal path | BLOCKED | Layer 13 |
-| REPLAY | Replay old valid states | SNAPPED | Fractional Flux |
-| DIMENSION_COLLAPSE | Flatten to 2D | DETECTED | Layer 13 |
-| OSCILLATION | Inject HF noise | SNAPPED | Fractional Flux |
-| SWARM_INFILTRATION | Slow stealth | DETECTED | Layer 13 |
-| BRUTE_FORCE | Massive parallel | SNAPPED | Fractional Flux |
+| Attack             | Strategy                | Result   | Detection       |
+| ------------------ | ----------------------- | -------- | --------------- |
+| BOUNDARY_PROBE     | Push toward ‖u‖→1       | BLOCKED  | Layer 13        |
+| GRADIENT_DESCENT   | Follow optimal path     | BLOCKED  | Layer 13        |
+| REPLAY             | Replay old valid states | SNAPPED  | Fractional Flux |
+| DIMENSION_COLLAPSE | Flatten to 2D           | DETECTED | Layer 13        |
+| OSCILLATION        | Inject HF noise         | SNAPPED  | Fractional Flux |
+| SWARM_INFILTRATION | Slow stealth            | DETECTED | Layer 13        |
+| BRUTE_FORCE        | Massive parallel        | SNAPPED  | Fractional Flux |
 
 ### Why Attacks Fail
 
 **The Exponential Wall**:
+
 ```
 Attacker distance from target: d* = 0.6
   H(0.6) = exp(0.36) = 1.43      ← Risk multiplied by 1.43
@@ -326,27 +334,32 @@ The space expands FASTER than the attacker can traverse it.
 ## Mathematical Formulas Reference
 
 ### Core Invariant (Layer 5)
+
 ```
 d_ℍ(u,v) = arcosh(1 + 2‖u-v‖²/((1-‖u‖²)(1-‖v‖²)))
 ```
 
 ### Möbius Addition (Layer 7)
+
 ```
 a ⊕ u = [(1 + 2⟨a,u⟩ + ‖u‖²)a + (1 - ‖a‖²)u] / [1 + 2⟨a,u⟩ + ‖a‖²‖u‖²]
 ```
 
 ### Harmonic Scaling (Layer 12)
+
 ```
 H(d*, R) = exp(d*²)              ← Vertical Wall (unbounded)
 H(d*, R) = 1 + α tanh(β d*)      ← Soft Wall (bounded [1, 1+α])
 ```
 
 ### Composite Risk (Layer 13)
+
 ```
 Risk' = Behavioral_Risk × H(d*) × Time_Multi × Intent_Multi
 ```
 
 ### Fractional Flux (Claim 16)
+
 ```
 ν̇_i = κ_i(ν̄_i - ν_i) + σ_i sin(Ω_i t)
 D_f(t) = Σ ν_i
@@ -354,12 +367,14 @@ D_f(t) = Σ ν_i
 ```
 
 ### Shock Absorber (Claim 61)
+
 ```
 Ψ(P) = 1 + (max - 1) × tanh(β × P)
 G_final = G_intent × Ψ(P)
 ```
 
 ### Dual Lattice Consensus (Claim 62)
+
 ```
 Consensus = Kyber_valid ∧ Dilithium_valid ∧ (Δt < ε)
 K(t) = Σ C_n sin(ω_n t + φ_n)    where φ_n = π/2 - ω_n × t_arrival
@@ -543,16 +558,19 @@ elif result.decision == "DENY":
 ## Patent Summary
 
 ### Patent 1: 14-Layer Hyperbolic Governance
+
 - **Claims 1-14**: Each layer as method step
 - **Key Innovation**: Invariant d_ℍ metric as "governance law"
 - **Novelty**: Geometric impossibility vs computational difficulty
 
 ### Patent 2: Topological Linearization for CFI
+
 - **Core Claim**: Dimensional lifting resolves non-Hamiltonian graphs
 - **Detection Rate**: 99% for ROP attacks (vs 70% label-based)
 - **Application**: Control-flow integrity via topology
 
 ### Patent 3: Dynamic Resilience Claims
+
 - **Claim 16**: Fractional Dimension Flux (ODE breathing)
 - **Claim 61**: Living Metric / Tensor Heartbeat (anti-fragile)
 - **Claim 62**: Dual Lattice Consensus (quantum security)
@@ -564,6 +582,7 @@ elif result.decision == "DENY":
 **Status**: LOCKED & ARCHIVED
 
 **Core Axioms A1-A12**:
+
 - A1: Complex context representation
 - A2: Realification isometry
 - A3: Positive definite weighting
@@ -581,6 +600,6 @@ elif result.decision == "DENY":
 
 ---
 
-*Document generated: January 15, 2026*
-*Branch: claude/harmonic-scaling-law-8E3Mm*
-*Total Tests: 88/88 passing*
+_Document generated: January 15, 2026_
+_Branch: claude/harmonic-scaling-law-8E3Mm_
+_Total Tests: 88/88 passing_

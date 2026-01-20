@@ -18,7 +18,7 @@ export function nextNonce(prefix: Buffer, sessionId: string): { nonce: Buffer; c
   counters.set(key, next);
 
   // Rotate before wrap
-  if (next === 0xFFFFFFFF) {
+  if (next === 0xffffffff) {
     throw new Error('nonce counter exhausted; rotate key/session');
   }
   const counterBuf = Buffer.alloc(4);

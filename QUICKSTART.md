@@ -3,11 +3,13 @@
 ## Installation
 
 ### TypeScript/Node.js
+
 ```bash
 npm install @scbe/aethermoore
 ```
 
 ### Python
+
 ```bash
 pip install -e .
 ```
@@ -47,8 +49,8 @@ console.log(`Harmonic scaling H(${dimension}, ${baseRisk}) = ${scaledRisk}`);
 ```typescript
 import { encrypt, decrypt } from '@scbe/aethermoore/crypto';
 
-const plaintext = "Sensitive data";
-const key = "my-secret-key";
+const plaintext = 'Sensitive data';
+const key = 'my-secret-key';
 
 // Encrypt
 const ciphertext = await encrypt(plaintext, key);
@@ -219,16 +221,19 @@ print(f"Risk: {risk}")
 ## Running Tests
 
 ### TypeScript
+
 ```bash
 npm test
 ```
 
 ### Python
+
 ```bash
 pytest tests/ -v
 ```
 
 ### All Tests
+
 ```bash
 npm run test:all
 ```
@@ -243,12 +248,14 @@ npm run test:all
 ## Common Issues
 
 ### TypeScript: Module not found
+
 ```bash
 npm install
 npm run build
 ```
 
 ### Python: Import errors
+
 ```bash
 pip install -e .
 # or
@@ -256,6 +263,7 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)/src"
 ```
 
 ### Tests failing
+
 ```bash
 # Clean and rebuild
 npm run clean

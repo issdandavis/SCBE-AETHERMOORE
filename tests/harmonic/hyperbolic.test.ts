@@ -38,7 +38,7 @@ const randomBallPoint = (dim: number, maxNorm: number = 0.9): number[] => {
   const v = Array.from({ length: dim }, () => Math.random() * 2 - 1);
   const n = norm(v);
   const r = Math.random() * maxNorm;
-  return v.map(x => (x / n) * r);
+  return v.map((x) => (x / n) * r);
 };
 
 describe('hyperbolicDistance - L5 Invariant Metric', () => {
@@ -160,7 +160,7 @@ describe('mobiusAdd - Gyrovector Addition', () => {
 
     it('⊖v ⊕ v = 0 (inverse)', () => {
       const v = [0.3, 0.4, 0.2];
-      const minusV = v.map(x => -x);
+      const minusV = v.map((x) => -x);
       const result = mobiusAdd(minusV, v);
       expect(norm(result)).toBeCloseTo(0, 8);
     });
@@ -326,7 +326,8 @@ describe('phaseModulation - L7 Phase Modulation', () => {
 
     it('composition: rotate by θ₁ then θ₂ = rotate by θ₁ + θ₂', () => {
       const p = [0.5, 0.3, 0.1, 0];
-      const theta1 = 0.5, theta2 = 0.7;
+      const theta1 = 0.5,
+        theta2 = 0.7;
       const r1 = phaseModulation(phaseModulation(p, theta1, [0, 1]), theta2, [0, 1]);
       const r2 = phaseModulation(p, theta1 + theta2, [0, 1]);
       r1.forEach((x, i) => expect(x).toBeCloseTo(r2[i], 8));
@@ -422,10 +423,7 @@ describe('applyHyperbolicPipeline', () => {
       const p = randomBallPoint(3);
       const t = Math.random() * 10;
       const theta = Math.random() * 2 * Math.PI;
-      const result = applyHyperbolicPipeline(
-        p, t, theta,
-        { amplitude: 0.05, omega: 1.0 }
-      );
+      const result = applyHyperbolicPipeline(p, t, theta, { amplitude: 0.05, omega: 1.0 });
       expect(norm(result.point)).toBeLessThan(1);
     }
   });
@@ -473,10 +471,7 @@ describe('Stress tests', () => {
       const p = randomBallPoint(3);
       const t = Math.random() * 100;
       const theta = Math.random() * 2 * Math.PI;
-      const result = applyHyperbolicPipeline(
-        p, t, theta,
-        { amplitude: 0.05, omega: 1.0 }
-      );
+      const result = applyHyperbolicPipeline(p, t, theta, { amplitude: 0.05, omega: 1.0 });
       expect(norm(result.point)).toBeLessThan(1);
       expect(Number.isFinite(result.distance)).toBe(true);
     }

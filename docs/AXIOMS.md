@@ -14,6 +14,7 @@ The SCBE-AETHERMOORE system is built upon the following formal axioms:
 ---
 
 ### Axiom 1: Positivity of Cost
+
 **Statement**: All authentication costs are strictly positive.
 
 ```
@@ -26,6 +27,7 @@ L(x, t) > 0
 ---
 
 ### Axiom 2: Monotonicity of Deviation
+
 **Statement**: Increased deviation from the ideal state strictly increases cost.
 
 ```
@@ -38,6 +40,7 @@ dL/dd_l > 0
 ---
 
 ### Axiom 3: Convexity of the Cost Surface
+
 **Statement**: The cost function is convex in deviations, ensuring a unique global minimum.
 
 ```
@@ -50,6 +53,7 @@ d^2L/dd_l^2 > 0
 ---
 
 ### Axiom 4: Bounded Temporal Breathing
+
 **Statement**: Temporal oscillations perturb the cost within finite, known bounds.
 
 ```
@@ -64,6 +68,7 @@ L_max = sum(w_l * exp[beta_l * (d_l + 1)])
 ---
 
 ### Axiom 5: Smoothness (C-infinity)
+
 **Statement**: All cost functions and their derivatives are continuous and infinitely differentiable.
 
 ```
@@ -75,6 +80,7 @@ L in C^infinity(R^n x R)
 ---
 
 ### Axiom 6: Lyapunov Stability
+
 **Statement**: Under gradient descent dynamics, the system converges to the ideal state.
 
 ```
@@ -87,6 +93,7 @@ V_dot = -k * ||grad(L)||^2 <= 0
 ---
 
 ### Axiom 7: Harmonic Resonance (Gate Coherence)
+
 **Statement**: Valid authentication requires all six verification gates to resonate in harmony.
 
 ```
@@ -99,6 +106,7 @@ Gate_l.status == RESONANT
 ---
 
 ### Axiom 8: Quantum Resistance via Lattice Hardness
+
 **Statement**: Security reduces to the hardness of lattice problems (LWE/SVP).
 
 ```
@@ -111,6 +119,7 @@ Reduces to: LWE with dimension n >= 768
 ---
 
 ### Axiom 9: Hyperbolic Geometry Embedding
+
 **Statement**: Authentication trajectories exist in hyperbolic space (Poincare ball model).
 
 ```
@@ -123,6 +132,7 @@ d(u, v) = arcosh(1 + 2*||u-v||^2 / ((1-||u||^2)*(1-||v||^2)))
 ---
 
 ### Axiom 10: Golden Ratio Weighting
+
 **Statement**: Langue weights follow the golden ratio progression.
 
 ```
@@ -135,6 +145,7 @@ where phi = (1 + sqrt(5)) / 2 ~ 1.618
 ---
 
 ### Axiom 11: Fractional Dimension Flux
+
 **Statement**: Effective dimension can vary continuously via flux coefficients.
 
 ```
@@ -147,6 +158,7 @@ where nu_l(t) in [0, 1]
 ---
 
 ### Axiom 12: Topological Attack Detection
+
 **Statement**: Control-flow attacks create detectable deviations in manifold topology.
 
 ```
@@ -159,6 +171,7 @@ Exists topological invariant I such that I(P) != I(P_valid)
 ---
 
 ### Axiom 13: Atomic Rekeying
+
 **Statement**: Upon threat detection, cryptographic state rekeys atomically.
 
 ```
@@ -176,18 +189,23 @@ If threat_detected:
 From these axioms, we derive:
 
 ### Theorem 1 (Existence of Optimal State)
-Axioms 2, 3 => There exists a unique x* minimizing L(x, t).
+
+Axioms 2, 3 => There exists a unique x\* minimizing L(x, t).
 
 ### Theorem 2 (Stability Under Perturbation)
-Axioms 4, 5, 6 => Small perturbations decay exponentially to x*.
+
+Axioms 4, 5, 6 => Small perturbations decay exponentially to x\*.
 
 ### Theorem 3 (Quantum Security)
+
 Axioms 8, 9 => Security parameter >= 128 bits against quantum adversaries.
 
 ### Theorem 4 (Attack Detection Completeness)
+
 Axioms 7, 12 => All control-flow attacks are detectable with probability >= 0.92.
 
 ### Theorem 5 (Performance Bound)
+
 Axioms 1, 5 => Verification overhead <= 0.5% of baseline computation.
 
 ---
@@ -195,6 +213,7 @@ Axioms 1, 5 => Verification overhead <= 0.5% of baseline computation.
 ## Axiom Consistency
 
 The axiom system is:
+
 - **Consistent**: No axiom contradicts another
 - **Independent**: No axiom is derivable from others
 - **Complete**: Sufficient to derive all system properties

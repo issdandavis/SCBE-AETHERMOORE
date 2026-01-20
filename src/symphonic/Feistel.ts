@@ -105,9 +105,7 @@ export class Feistel {
     const keys: Uint8Array[] = [];
 
     // Hash the master key for uniform distribution
-    const masterHash = createHash(this.config.hashAlgorithm)
-      .update(masterKey)
-      .digest();
+    const masterHash = createHash(this.config.hashAlgorithm).update(masterKey).digest();
 
     for (let i = 0; i < this.config.rounds; i++) {
       // K_i = HMAC(Master, Round_Index)
@@ -127,8 +125,7 @@ export class Feistel {
    * @returns Encrypted/modulated data
    */
   encrypt(data: Uint8Array, key: string | Uint8Array): Uint8Array {
-    const keyBuffer =
-      typeof key === 'string' ? new TextEncoder().encode(key) : key;
+    const keyBuffer = typeof key === 'string' ? new TextEncoder().encode(key) : key;
 
     // Ensure even length by padding if necessary
     let workingData = data;
@@ -171,8 +168,7 @@ export class Feistel {
    * @returns Decrypted data
    */
   decrypt(data: Uint8Array, key: string | Uint8Array): Uint8Array {
-    const keyBuffer =
-      typeof key === 'string' ? new TextEncoder().encode(key) : key;
+    const keyBuffer = typeof key === 'string' ? new TextEncoder().encode(key) : key;
 
     const halfLen = data.length / 2;
     let left = data.slice(0, halfLen);
@@ -266,8 +262,6 @@ export class Feistel {
 /**
  * Creates a Feistel cipher with default settings.
  */
-export function createFeistel(
-  config?: Partial<FeistelConfig>
-): Feistel {
+export function createFeistel(config?: Partial<FeistelConfig>): Feistel {
   return new Feistel(config);
 }

@@ -12,6 +12,7 @@
 ### 1. Fix Layer 9 Proof Text ✅
 
 **Files to Update**:
+
 - `docs/MATHEMATICAL_PROOFS.md`
 - `docs/COMPREHENSIVE_MATH_SCBE.md`
 - Any other documents referencing Layer 9
@@ -19,6 +20,7 @@
 **Find and Replace**:
 
 **OLD TEXT** (incorrect - duplicated from Layer 5):
+
 ```
 Layer 9: Spectral Coherence (S_spec = E_low / (E_low + E_high + ε))
 Key Property: Energy partition is invariant (Parseval's theorem)
@@ -28,6 +30,7 @@ Detailed Proof:
 ```
 
 **NEW TEXT** (correct):
+
 ```
 Layer 9: Spectral Coherence
 
@@ -57,6 +60,7 @@ Detailed Proof:
 ### 2. Clarify H(d,R) as Cost Function ✅
 
 **Files to Update**:
+
 - `ARCHITECTURE_5_LAYERS.md`
 - `docs/MATHEMATICAL_PROOFS.md`
 - `README.md`
@@ -65,11 +69,13 @@ Detailed Proof:
 **Find and Replace**:
 
 **OLD TEXT** (misleading):
+
 ```
 H(d,R) = R^{d²} provides super-exponential scaling for hardness
 ```
 
 **NEW TEXT** (correct):
+
 ```
 H(d*,R) = R^{d*²} is a COST FUNCTION for governance decisions, where:
 - d* = hyperbolic distance to nearest policy attractor
@@ -89,18 +95,21 @@ from the underlying HMAC-SHA256 and ML-DSA primitives, not from H.
 ### 3. Update Breathing Transform Description ✅
 
 **Files to Update**:
+
 - `ARCHITECTURE_5_LAYERS.md`
 - `docs/MATHEMATICAL_PROOFS.md`
 
 **Find and Replace**:
 
 **OLD TEXT** (incorrect):
+
 ```
 Layer 6: Breathing Transform
 Key Property: Preserves ball and metric invariance (isometry)
 ```
 
 **NEW TEXT** (correct):
+
 ```
 Layer 6: Breathing Transform
 Key Property: Radial warping preserves ball (‖T‖ < 1) and is conformal.
@@ -129,11 +138,13 @@ After making changes, verify:
 ### Short-Term (This Week)
 
 1. **Run Verification Code**
+
    ```bash
    python scbe_verification.py
    python layer9_corrected.py
    python rwp_v3_hybrid.py
    ```
+
    - Confirm all tests pass
    - Save output as verification report
 

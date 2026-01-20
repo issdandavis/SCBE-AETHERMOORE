@@ -23,6 +23,7 @@
 ## 🎯 OPTION 1: PUBLISH NPM PACKAGE (DO THIS FIRST)
 
 ### Why First?
+
 1. **Establishes prior art** - Public timestamp for your invention
 2. **Zero friction** - Package already built
 3. **Instant credibility** - npm downloads > GitHub stars
@@ -42,24 +43,28 @@ npm view scbe-aethermoore
 ```
 
 ### Expected Output
+
 ```
 + scbe-aethermoore@3.0.0
 ```
 
 ### After Publishing
+
 1. **Tweet/Post**:
+
    ```
    🚀 SCBE-AetherMoore v3.0.0 published!
-   
-   Quantum-resistant context-bound encryption with Sacred Tongue 
+
+   Quantum-resistant context-bound encryption with Sacred Tongue
    spectral binding. Zero-latency Mars communication ready.
-   
+
    npm i scbe-aethermoore
-   
+
    #cryptography #quantum #security #mars
    ```
 
 2. **Add npm badge to README**:
+
    ```markdown
    [![npm version](https://badge.fury.io/js/scbe-aethermoore.svg)](https://www.npmjs.com/package/scbe-aethermoore)
    ```
@@ -76,21 +81,25 @@ npm view scbe-aethermoore
 ## 📜 OPTION 2: FILE PATENT CIP (WITHIN 12 MONTHS)
 
 ### Timeline
+
 - **Provisional filed**: January 15, 2026
 - **CIP deadline**: January 15, 2027 (12 months)
 - **Recommended**: File by March 2026 (2 months)
 
 ### What to Prepare
+
 1. **Clean up Claims 17-18** (Sacred Tongue integration)
 2. **Add flow diagram** (Sacred Tongue → RWP → SCBE pipeline)
 3. **Collect test logs** (Exhibit A - experimental evidence)
 4. **Consult patent attorney** ($2K-5K for small firm)
 
 ### Cost
+
 - **DIY** (not recommended): $300 (USPTO fees only)
 - **With attorney**: $2K-5K (small firm), $10K+ (big firm)
 
 ### Why Wait?
+
 - You have 12 months from provisional filing
 - Publishing package first establishes prior art
 - More time to refine claims with attorney
@@ -100,11 +109,13 @@ npm view scbe-aethermoore
 ## 🔴 OPTION 3: BUILD MARS DEMO (WEEK 1)
 
 ### Why This Matters
+
 - **Demonstrates real value** to NASA/ESA/SpaceX
 - **Viral content** (Mars + crypto + quantum)
 - **Strengthens patent** (working prototype)
 
 ### What to Build
+
 ```
 Simple web UI:
 ┌─────────────────────────────────────────────────────┐
@@ -122,12 +133,14 @@ Simple web UI:
 ```
 
 ### Features
+
 1. Two chat windows (Earth / Mars)
 2. Simulated 14-minute delay
 3. Show Sacred Tongue tokens encoding in real-time
 4. Compare: TLS (42 min) vs SCBE (0 min)
 
 ### Timeline
+
 - **Day 1-2**: Build UI (HTML + Tailwind CSS)
 - **Day 3-4**: Integrate SCBE demo code
 - **Day 5**: Record 3-minute demo video
@@ -139,16 +152,19 @@ Simple web UI:
 ## 📝 OPTION 4: WRITE THE PAPER (MONTH 2-3)
 
 ### Where to Submit
+
 1. **Preprint**: arXiv (cryptography section) - instant, free, citable
 2. **Conference**: USENIX Security, ACM CCS, IEEE S&P (6-12 month review)
 3. **Journal**: IEEE TIFS (12-18 month review)
 
 ### Title Ideas
+
 - "Sacred Tongue Cryptography: Spectral Binding for Quantum-Resistant Context-Bound Encryption"
 - "Zero-Latency Interplanetary Communication via Pre-Synchronized Cryptographic Vocabularies"
 - "Hyperbolic Geometry for Super-Exponential Cost Amplification in Context Forgery Attacks"
 
 ### Timeline
+
 - **Week 1-2**: Write draft (8-12 pages)
 - **Week 3**: Internal review
 - **Week 4**: Submit to arXiv
@@ -159,6 +175,7 @@ Simple web UI:
 ## 🎯 RECOMMENDED ORDER: 1 → 3 → 2 → 4
 
 ### Week 1
+
 ```
 Day 1: Publish NPM package (1 hour) ✅
 Day 2-6: Build Mars demo (4 days)
@@ -166,6 +183,7 @@ Day 7: Record + post demo video (1 day)
 ```
 
 ### Week 2-4
+
 ```
 Week 2: Prepare CIP materials
 Week 3: Consult patent attorney
@@ -173,6 +191,7 @@ Week 4: File CIP application
 ```
 
 ### Month 2-3
+
 ```
 Month 2: Write paper draft
 Month 3: Submit to arXiv + conference
@@ -245,4 +264,3 @@ Before you publish, verify:
 **Generated**: January 18, 2026  
 **Status**: ✅ READY TO SHIP  
 **Next Action**: `npm publish --access public`
-

@@ -62,17 +62,20 @@ Layer 1: Foundation (Mathematical Axioms)
 **Spec**: `.kiro/specs/rwp-v2-integration/`
 
 **Integration Points**:
+
 - **Layer 12**: ML-KEM-768 key encapsulation + ML-DSA-65 signatures
 - **Layer 10**: Triadic verification with Sacred Tongues
 - **Layer 3**: Langues Weighting System for trust scoring
 
 **Key Features**:
+
 - Hybrid classical + PQC signatures (belt-and-suspenders)
 - 128-bit quantum security
 - Backward compatible with RWP v2.1
 - Crypto-agility (classical-only, hybrid, PQC-only modes)
 
 **Files**:
+
 ```
 src/crypto/
 ├── rwp_v3.py                    # Python implementation
@@ -99,17 +102,20 @@ src/spiralverse/
 **Tests**: `tests/spaceTor/`
 
 **Integration Points**:
+
 - **Layer 12**: Hybrid QKD + algorithmic key derivation
 - **Layer 3**: Trust Manager with Langues Weighting System
 - **Layer 11**: Adaptive path selection based on threat level
 
 **Key Features**:
+
 - 3D spatial pathfinding (light lag optimization)
 - Multipath routing for combat scenarios
 - Quantum + classical hybrid encryption
 - 6D trust scoring across Sacred Tongues
 
 **Files**:
+
 ```
 src/spaceTor/
 ├── space-tor-router.ts          # 3D spatial pathfinding
@@ -121,6 +127,7 @@ tests/spaceTor/
 ```
 
 **Mathematical Foundation**:
+
 ```
 L(x,t) = Σ(l=1 to 6) w_l * exp[β_l * (d_l + sin(ω_l*t + φ_l))]
 where:
@@ -138,17 +145,20 @@ where:
 **Spec**: `.kiro/specs/phdm-intrusion-detection/`
 
 **Integration Points**:
+
 - **Layer 6**: Hamiltonian path verification
 - **Layer 9**: Harmonic resonance detection
 - **Layer 13**: Self-healing intrusion response
 
 **Key Features**:
+
 - 16 canonical polyhedra for anomaly detection
 - 6D geodesic distance metrics
 - HMAC chaining for path integrity
 - Real-time intrusion detection
 
 **Files**:
+
 ```
 src/harmonic/
 └── phdm.ts                      # PHDM implementation
@@ -166,17 +176,20 @@ tests/harmonic/
 **Spec**: `.kiro/specs/symphonic-cipher/`
 
 **Integration Points**:
+
 - **Layer 7**: FFT-based spectral transformations
 - **Layer 9**: Harmonic scaling law
 - **Layer 14**: Audio axis cymatic patterns
 
 **Key Features**:
+
 - Complex number encryption with FFT
 - Feistel network structure
 - ZBase32 encoding
 - Hybrid cryptography integration
 
 **Files**:
+
 ```
 src/symphonic/
 ├── audio/
@@ -196,17 +209,20 @@ src/symphonic_cipher/            # Python implementation
 **Location**: `aws-lambda-simple-web-app/physics_sim/`
 
 **Integration Points**:
+
 - **Layer 5**: Phase space encryption (relativity calculations)
 - **Layer 7**: Spectral layer (quantum mechanics)
 - **Layer 6**: Potential energy calculations
 
 **Key Features**:
+
 - Real physics only (CODATA 2018 constants)
 - Classical mechanics, quantum mechanics, electromagnetism
 - Thermodynamics, special/general relativity
 - AWS Lambda ready
 
 **Files**:
+
 ```
 aws-lambda-simple-web-app/physics_sim/
 ├── __init__.py                  # Module exports
@@ -222,17 +238,20 @@ aws-lambda-simple-web-app/physics_sim/
 **Spec**: `.kiro/specs/enterprise-grade-testing/`
 
 **Integration Points**:
+
 - Tests all 14 layers
 - 41 correctness properties
 - Property-based testing (100+ iterations)
 
 **Key Features**:
+
 - Quantum attack simulations (Shor's, Grover's)
 - AI safety and governance tests
 - Compliance (SOC 2, ISO 27001, FIPS 140-3)
 - Stress testing (1M req/s, 10K concurrent attacks)
 
 **Files**:
+
 ```
 tests/enterprise/
 ├── quantum/                     # Properties 1-6
@@ -324,13 +343,13 @@ const phdm = new PHDM();
 const envelope = await rwp.createEnvelope({
   tongue: 'KO',
   payload: data,
-  mode: 'STRICT'
+  mode: 'STRICT',
 });
 
 // Route through Space Tor with trust scoring
 const path = router.selectPath(source, destination, {
   combatMode: true,
-  minTrust: 0.8
+  minTrust: 0.8,
 });
 
 // Monitor for intrusions with PHDM
@@ -399,6 +418,7 @@ Infrastructure
 ### Property-Based Testing (100+ iterations)
 
 **TypeScript (fast-check)**:
+
 ```typescript
 import fc from 'fast-check';
 
@@ -407,7 +427,7 @@ it('Property: RWP v3 envelope integrity', () => {
     fc.property(
       fc.record({
         payload: fc.uint8Array({ minLength: 1, maxLength: 1024 }),
-        tongue: fc.constantFrom('KO', 'AV', 'RU', 'CA', 'UM', 'DR')
+        tongue: fc.constantFrom('KO', 'AV', 'RU', 'CA', 'UM', 'DR'),
       }),
       (params) => {
         const envelope = rwp.createEnvelope(params);
@@ -421,6 +441,7 @@ it('Property: RWP v3 envelope integrity', () => {
 ```
 
 **Python (hypothesis)**:
+
 ```python
 from hypothesis import given, strategies as st
 
@@ -438,13 +459,13 @@ def test_rwp_v3_envelope_integrity(payload, tongue):
 
 ## Performance Benchmarks
 
-| Component | Throughput | Latency (p99) | Security Bits |
-|-----------|-----------|---------------|---------------|
-| RWP v3 Envelope Creation | 10K/s | 2ms | 128 (quantum) |
-| Space Tor Path Selection | 50K/s | 1ms | N/A |
-| Trust Manager Scoring | 100K/s | 0.5ms | N/A |
-| PHDM Anomaly Detection | 1M/s | 0.1ms | N/A |
-| Physics Simulation | 5K/s | 5ms | N/A |
+| Component                | Throughput | Latency (p99) | Security Bits |
+| ------------------------ | ---------- | ------------- | ------------- |
+| RWP v3 Envelope Creation | 10K/s      | 2ms           | 128 (quantum) |
+| Space Tor Path Selection | 50K/s      | 1ms           | N/A           |
+| Trust Manager Scoring    | 100K/s     | 0.5ms         | N/A           |
+| PHDM Anomaly Detection   | 1M/s       | 0.1ms         | N/A           |
+| Physics Simulation       | 5K/s       | 5ms           | N/A           |
 
 ---
 
@@ -452,13 +473,13 @@ def test_rwp_v3_envelope_integrity(payload, tongue):
 
 ### Quantum Threat Model
 
-| Attack Vector | Mitigation | Security Margin |
-|--------------|------------|-----------------|
-| Shor's Algorithm | ML-KEM-768 lattice | 128-bit quantum |
-| Grover's Algorithm | 256-bit keys | 128-bit quantum |
-| Side-Channel | Constant-time ops | Timing-safe |
-| Replay | Nonce + timestamp | 60s window |
-| MITM | Dual signatures | Hybrid security |
+| Attack Vector      | Mitigation         | Security Margin |
+| ------------------ | ------------------ | --------------- |
+| Shor's Algorithm   | ML-KEM-768 lattice | 128-bit quantum |
+| Grover's Algorithm | 256-bit keys       | 128-bit quantum |
+| Side-Channel       | Constant-time ops  | Timing-safe     |
+| Replay             | Nonce + timestamp  | 60s window      |
+| MITM               | Dual signatures    | Hybrid security |
 
 ### Compliance Status
 
@@ -545,7 +566,7 @@ import { createSCBESystem } from './src';
 const scbe = createSCBESystem({
   mode: 'hybrid',
   quantumResistant: true,
-  trustThreshold: 0.8
+  trustThreshold: 0.8,
 });
 
 const result = await scbe.encrypt(data);
@@ -564,16 +585,19 @@ envelope = rwp.create_envelope(payload=data, tongue='KO')
 ## Roadmap
 
 ### v4.1.0 (Q2 2026)
+
 - [ ] Real liboqs-python integration
 - [ ] Dimensional flux ODE implementation
 - [ ] Demi crystals support
 
 ### v4.2.0 (Q3 2026)
+
 - [ ] Intent-modulated harmonic verification
 - [ ] Tri poly crystals
 - [ ] Enhanced audio axis
 
 ### v5.0.0 (Q4 2026)
+
 - [ ] Full quantum network support
 - [ ] Multi-agent orchestration
 - [ ] Production-grade self-healing

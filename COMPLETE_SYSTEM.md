@@ -39,6 +39,7 @@ SCBE-AETHERMOORE v3.0.0
 ## Quick Start
 
 ### Windows
+
 ```bash
 # Interactive CLI with tutorial
 scbe.bat cli
@@ -54,6 +55,7 @@ scbe.bat memory
 ```
 
 ### Unix/Linux/Mac
+
 ```bash
 # Make executable (first time only)
 chmod +x scbe
@@ -74,6 +76,7 @@ chmod +x scbe
 ## Component 1: Interactive CLI
 
 ### Features
+
 - **5-Module Tutorial System**
   1. What is SCBE?
   2. How does it work?
@@ -98,6 +101,7 @@ chmod +x scbe
   - Security level indicators
 
 ### Usage Example
+
 ```bash
 $ python scbe-cli.py
 
@@ -127,6 +131,7 @@ Select topic (0-5): 1
 ```
 
 ### Tutorial Flow
+
 1. User types `tutorial` at main prompt
 2. Tutorial menu displays with 5 options
 3. User selects a topic (1-5)
@@ -140,9 +145,11 @@ Select topic (0-5): 1
 ### Features
 
 #### 🤖 Natural Language Q&A
+
 Ask questions about SCBE, cryptography, and security in plain English.
 
 **Topics Covered:**
+
 - SCBE architecture and concepts
 - Quantum resistance
 - Security features
@@ -150,9 +157,11 @@ Ask questions about SCBE, cryptography, and security in plain English.
 - Best practices
 
 #### � Secure Web Search
+
 Search the web with SCBE-encrypted queries for privacy protection.
 
 **How it works:**
+
 1. User enters search query
 2. Query is encrypted with SCBE
 3. Encrypted query sent to search API
@@ -160,29 +169,35 @@ Search the web with SCBE-encrypted queries for privacy protection.
 5. User's search remains private
 
 #### 💻 Code Library
+
 Ready-to-use code examples for both languages:
 
 **Python Examples:**
+
 - Encrypt/decrypt messages
 - Generate harmonic signatures
 - Feistel network operations
 - Sacred Tongues encoding
 
 **TypeScript Examples:**
+
 - Harmonic scaling
 - Post-quantum cryptography
 - Quasicrystal lattice
 - PQC providers
 
 #### 🛡️ Security Scanner ("Antivirus for Code")
+
 Scans your code for security vulnerabilities so "none of our agents get a cold"!
 
 **Detects:**
+
 - **Critical**: eval(), exec() usage
 - **High**: Hardcoded credentials, SQL injection
 - **Medium**: Insecure random, command injection
 
 **Example:**
+
 ```bash
 agent> scan
 Paste your code (press Ctrl+D when done):
@@ -205,6 +220,7 @@ db.execute(f"SELECT * FROM users WHERE id = {user_id}")
 ```
 
 ### Usage Example
+
 ```bash
 $ python scbe-agent.py
 
@@ -246,12 +262,14 @@ Search: post-quantum cryptography
 ## Component 3: Demo System
 
 ### Features
+
 - Live encryption/decryption demonstrations
 - Performance benchmarking
 - Visual security metrics
 - Real-time attack simulations
 
 ### Usage
+
 ```bash
 $ python demo-cli.py
 # Interactive demo with visual feedback
@@ -268,18 +286,21 @@ This demo ties together ALL the SCBE-AETHERMOORE components into one pitch-ready
 ### What It Demonstrates
 
 1. **SEAL** - Encrypt memory with SpiralSeal SS1 (Sacred Tongue encoding)
+
    ```
    Plaintext: "Hello, AETHERMOORE!"
    → SS1:ru'tor'vik'thal:a3f2e1d4c5b6...
    ```
 
 2. **STORE** - Place in 6D harmonic voxel coordinate
+
    ```
    Position: (1, 2, 3, 5, 8, 13)  # Fibonacci sequence
    Harmonic signature: 7a3e9f2b...
    ```
 
 3. **GOVERN** - Multi-layer authorization check
+
    ```
    Risk score: 0.0842
    Harmonic amplification: 1.42x
@@ -399,6 +420,7 @@ This demo is **pitch-ready** - you can show it to buyers in 60 seconds and demon
 5. ✅ Real-world scenarios (trusted vs untrusted access)
 
 It's the perfect artifact for:
+
 - Sales demos
 - Technical presentations
 - README examples
@@ -408,11 +430,13 @@ It's the perfect artifact for:
 ## Integration Points
 
 ### CLI ↔ Agent Integration
+
 - CLI teaches concepts → Agent provides code
 - CLI shows attacks → Agent explains defenses
 - CLI metrics → Agent interprets results
 
 ### Agent ↔ Demo Integration
+
 - Agent code examples → Demo executes them
 - Agent security scan → Demo shows vulnerabilities
 - Agent search → Demo shows implementations
@@ -422,6 +446,7 @@ It's the perfect artifact for:
 **Scenario: New developer wants to use SCBE**
 
 1. **Learn** (CLI Tutorial)
+
    ```bash
    scbe.bat cli
    scbe> tutorial
@@ -429,6 +454,7 @@ It's the perfect artifact for:
    ```
 
 2. **Ask Questions** (AI Agent)
+
    ```bash
    scbe.bat agent
    agent> ask
@@ -437,12 +463,14 @@ It's the perfect artifact for:
    ```
 
 3. **Get Code** (Agent Code Library)
+
    ```bash
    agent> code
    # Copy Python encryption example
    ```
 
 4. **Scan for Security** (Agent Scanner)
+
    ```bash
    agent> scan
    # Paste your code to check for vulnerabilities
@@ -457,6 +485,7 @@ It's the perfect artifact for:
 ## Security Features
 
 ### Multi-Layer Defense
+
 All three components use SCBE's 14-layer security:
 
 1. Context Embedding
@@ -475,6 +504,7 @@ All three components use SCBE's 14-layer security:
 14. Topological CFI
 
 ### "No Cold Agents" Protection
+
 The security scanner ensures your code (and our agents) stay healthy:
 
 - **Prevents**: Code injection, credential leaks, SQL injection
@@ -484,10 +514,12 @@ The security scanner ensures your code (and our agents) stay healthy:
 ## Installation
 
 ### Prerequisites
+
 - Python 3.8+ (3.11+ recommended)
 - pip (Python package manager)
 
 ### Setup
+
 ```bash
 # Clone repository
 git clone https://github.com/ISDanDavis2/scbe-aethermoore.git
@@ -514,6 +546,7 @@ python demo-cli.py
 ### For End Users
 
 **Windows:**
+
 ```bash
 # Download SCBE_Production_Pack.zip
 # Extract to C:\Users\YourName\SCBE
@@ -521,6 +554,7 @@ python demo-cli.py
 ```
 
 **Mac/Linux:**
+
 ```bash
 # Download and extract
 # chmod +x scbe
@@ -530,6 +564,7 @@ python demo-cli.py
 ### For Developers
 
 **Python:**
+
 ```python
 from symphonic_cipher import SymphonicCipher
 
@@ -538,6 +573,7 @@ encrypted = cipher.encrypt("Hello", "key")
 ```
 
 **TypeScript:**
+
 ```typescript
 import { HybridCrypto } from '@scbe/aethermoore';
 
@@ -566,6 +602,7 @@ pyinstaller --onefile --name SCBE-Demo demo-cli.py
 ```
 
 ### Distribution Package
+
 ```
 SCBE_Production_Pack/
 ├── SCBE-CLI.exe        # Interactive CLI
@@ -610,6 +647,7 @@ A: This is fixed in v3.0.0. Update to latest version.
 ## Roadmap
 
 ### Current (v3.0.0)
+
 ✅ Interactive CLI with 5-module tutorial
 ✅ AI Agent with Q&A, search, code library
 ✅ Security scanner ("antivirus")
@@ -617,6 +655,7 @@ A: This is fixed in v3.0.0. Update to latest version.
 ✅ Cross-platform support
 
 ### Future (v3.1.0+)
+
 - [ ] Online AI model integration
 - [ ] Real-time web search API
 - [ ] Extended code library (more languages)

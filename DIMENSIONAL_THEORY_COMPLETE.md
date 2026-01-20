@@ -1,4 +1,5 @@
 # SCBE Dimensional Theory Integration
+
 ## Thin Membrane Manifolds, Space Tor, and Neural Defense
 
 **Author**: Issac Daniel Davis  
@@ -26,7 +27,7 @@ This document extends SCBE-AetherMoore v3.0.0 with cutting-edge dimensional theo
 
 ### Mathematical Foundation
 
-A **thin membrane** is a codimension-1 hypersurface approximating the boundary of 
+A **thin membrane** is a codimension-1 hypersurface approximating the boundary of
 our higher-dimensional manifold (Poincaré ball in hyperbolic space).
 
 **Core Equations**:
@@ -50,6 +51,7 @@ Flux Interpretation:
 ```
 
 **Golden Ratio Scaling**:
+
 ```
 Membrane curvature: κ = 1/φ ≈ 0.618
 where φ = (1 + √5)/2 = 1.618... (golden ratio)
@@ -88,13 +90,13 @@ KAPPA = 1 / PHI  # Golden curvature ≈ 0.618
 class ThinMembraneManifold:
     """
     Thin membrane boundary for holistic governance.
-    
+
     Mathematical basis:
     - Thin-shell approximation from differential geometry
     - Membrane computing (P-systems, bio-inspired)
     - Holographic boundaries (AdS/CFT analogy)
     """
-    
+
     def __init__(self, epsilon=0.01):
         """
         Args:
@@ -103,65 +105,65 @@ class ThinMembraneManifold:
         self.epsilon = epsilon
         self.kappa_inner = KAPPA  # 0.618
         self.kappa_outer = PHI    # 1.618
-    
-    def compute_flux(self, context: np.ndarray, 
+
+    def compute_flux(self, context: np.ndarray,
                      intent_velocity: np.ndarray) -> float:
         """
         Compute intent flux through membrane boundary.
-        
+
         Args:
             context: 6D context vector (from Layer 1-4)
             intent_velocity: Velocity vector (from spin states)
-        
+
         Returns:
             flux: Positive = inward (allow), Negative = outward (reject)
         """
         r = np.linalg.norm(context)
-        
+
         # Check if context is near membrane boundary
         if abs(r - 1.0) > self.epsilon:
             return 0.0  # Outside membrane region
-        
+
         # Compute normal vector (outward)
         if r > 0:
             normal = context / r
         else:
             normal = np.zeros(DIM)
-        
+
         # Flux = v · n (dot product)
         flux = np.dot(intent_velocity, normal)
-        
+
         # Amplify repulsion near boundary (negative flux)
         if flux < 0:
             # Apply golden curvature scaling
             flux *= -self.kappa_outer * (1 - r)
-        
+
         return flux
-    
-    def is_coherent(self, context: np.ndarray, 
+
+    def is_coherent(self, context: np.ndarray,
                     intent_velocity: np.ndarray,
                     threshold: float = 0.0) -> bool:
         """
         Check if intent is coherent (inward flux).
-        
+
         Args:
             context: 6D context vector
             intent_velocity: Velocity vector
             threshold: Minimum flux for coherence
-        
+
         Returns:
             True if coherent (Φ > threshold), False otherwise
         """
         flux = self.compute_flux(context, intent_velocity)
         return flux > threshold
-    
+
     def breathing_boundary(self, stress: float) -> float:
         """
         Adaptive membrane thickness based on system stress.
-        
+
         Args:
             stress: System stress level (0-1)
-        
+
         Returns:
             New epsilon value
         """
@@ -190,10 +192,10 @@ print(f"Flux (anomaly): {flux_bad:.4f}")  # Expected: Negative (reject)
 ```
 
 **Key Insight**: The membrane acts as a "breathing" boundary that:
+
 - Allows coherent intent (inward flux)
 - Repels anomalies (outward flux with golden ratio amplification)
 - Adapts thickness based on system stress
-
 
 ---
 
@@ -202,6 +204,7 @@ print(f"Flux (anomaly): {flux_bad:.4f}")  # Expected: Negative (reject)
 ### Problem Statement
 
 Traditional Tor routing fails in space due to:
+
 1. **14-minute Mars RTT** makes TLS handshake impractical
 2. **3D spatial geometry** requires distance-aware routing
 3. **Combat scenarios** need redundant multipath routing
@@ -239,12 +242,12 @@ export class SpaceTorRouter {
   private nodes: Map<string, RelayNode>;
 
   constructor(nodes: RelayNode[]) {
-    this.nodes = new Map(nodes.map(n => [n.id, n]));
+    this.nodes = new Map(nodes.map((n) => [n.id, n]));
   }
 
   /**
    * Calculate 3-hop path balancing latency vs trust.
-   * 
+   *
    * Mathematical basis:
    * - Cost = (Distance * distWeight) - (Trust * (1 - distWeight))
    * - Lower cost is better
@@ -258,27 +261,24 @@ export class SpaceTorRouter {
     minTrust: number = 60
   ): RelayNode[] {
     // 1. Filter usable nodes
-    const candidates = Array.from(this.nodes.values())
-      .filter(n => n.trustScore >= minTrust && n.load < 0.9);
+    const candidates = Array.from(this.nodes.values()).filter(
+      (n) => n.trustScore >= minTrust && n.load < 0.9
+    );
 
     // 2. Entry Node: Prioritize trust (Guard Node) close to origin
-    const entryCandidates = candidates.filter(n => n.trustScore > 80);
+    const entryCandidates = candidates.filter((n) => n.trustScore > 80);
     const entry = this.selectWeightedNode(
-      entryCandidates, 
-      origin, 
-      0.7  // 70% weight on distance
+      entryCandidates,
+      origin,
+      0.7 // 70% weight on distance
     );
 
     // 3. Exit Node: Prioritize exit capabilities close to destination
     const exit = this.selectWeightedNode(candidates, dest, 0.8);
 
     // 4. Middle Node: Maximum entropy (randomness) to break correlation
-    const middleCandidates = candidates.filter(
-      n => n.id !== entry.id && n.id !== exit.id
-    );
-    const middle = middleCandidates[
-      Math.floor(Math.random() * middleCandidates.length)
-    ];
+    const middleCandidates = candidates.filter((n) => n.id !== entry.id && n.id !== exit.id);
+    const middle = middleCandidates[Math.floor(Math.random() * middleCandidates.length)];
 
     return [entry, middle, exit];
   }
@@ -293,12 +293,10 @@ export class SpaceTorRouter {
   ): RelayNode {
     return pool.reduce((best, current) => {
       const dist = this.distance3D(current.coords, target);
-      const cost = (dist * distWeight) - 
-                   (current.trustScore * (1 - distWeight));
+      const cost = dist * distWeight - current.trustScore * (1 - distWeight);
 
       const bestDist = this.distance3D(best.coords, target);
-      const bestCost = (bestDist * distWeight) - 
-                       (best.trustScore * (1 - distWeight));
+      const bestCost = bestDist * distWeight - best.trustScore * (1 - distWeight);
 
       return cost < bestCost ? current : best;
     });
@@ -309,9 +307,7 @@ export class SpaceTorRouter {
     p2: { x: number; y: number; z: number }
   ): number {
     return Math.sqrt(
-      Math.pow(p2.x - p1.x, 2) +
-      Math.pow(p2.y - p1.y, 2) +
-      Math.pow(p2.z - p1.z, 2)
+      Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2) + Math.pow(p2.z - p1.z, 2)
     );
   }
 }
@@ -327,15 +323,12 @@ import * as crypto from 'crypto';
 export class HybridSpaceCrypto {
   /**
    * Build onion encryption from Exit → Entry.
-   * 
+   *
    * Hybrid approach:
    * - QKD-capable nodes: Use quantum-derived keys
    * - Classical nodes: Use ML-KEM-768 (Kyber)
    */
-  public async buildOnion(
-    payload: Buffer,
-    path: RelayNode[]
-  ): Promise<Buffer> {
+  public async buildOnion(payload: Buffer, path: RelayNode[]): Promise<Buffer> {
     let onion = payload;
 
     // Iterate backwards (Exit Node first)
@@ -347,28 +340,19 @@ export class HybridSpaceCrypto {
 
       // 2. Encrypt the current onion
       const iv = crypto.randomBytes(16);
-      const cipher = crypto.createCipheriv(
-        'aes-256-gcm',
-        symmetricKey,
-        iv
-      );
-      const encryptedData = Buffer.concat([
-        cipher.update(onion),
-        cipher.final()
-      ]);
+      const cipher = crypto.createCipheriv('aes-256-gcm', symmetricKey, iv);
+      const encryptedData = Buffer.concat([cipher.update(onion), cipher.final()]);
       const authTag = cipher.getAuthTag();
 
       // 3. Wrap with Routing Header
-      const nextHopId = (i === path.length - 1) 
-        ? 'DESTINATION' 
-        : path[i + 1].id;
+      const nextHopId = i === path.length - 1 ? 'DESTINATION' : path[i + 1].id;
 
       onion = Buffer.concat([
         Buffer.from(JSON.stringify({ next: nextHopId })),
-        Buffer.from('::'),  // Delimiter
+        Buffer.from('::'), // Delimiter
         iv,
         authTag,
-        encryptedData
+        encryptedData,
       ]);
     }
 
@@ -389,11 +373,7 @@ export class HybridSpaceCrypto {
    */
   private simulateQKD(nodeId: string): Buffer {
     // Entangled photon exchange simulation
-    return crypto.scryptSync(
-      nodeId,
-      'quantum_entanglement_salt',
-      32
-    );
+    return crypto.scryptSync(nodeId, 'quantum_entanglement_salt', 32);
   }
 
   /**
@@ -403,10 +383,8 @@ export class HybridSpaceCrypto {
   private deriveMLKEMKey(nodeId: string): Buffer {
     // In production, use liboqs ML-KEM implementation
     // For now, use HKDF with high-entropy seed
-    const seed = crypto.createHash('sha256')
-      .update(nodeId)
-      .digest();
-    
+    const seed = crypto.createHash('sha256').update(nodeId).digest();
+
     return crypto.hkdfSync(
       'sha256',
       seed,
@@ -447,9 +425,7 @@ export class TrustManager {
         break;
       case 'QKD_ERROR':
         score = 0; // Immediate blacklist (eavesdropper detected)
-        console.error(
-          `CRITICAL: Node ${nodeId} COMPROMISED. QKD collapse.`
-        );
+        console.error(`CRITICAL: Node ${nodeId} COMPROMISED. QKD collapse.`);
         break;
     }
 
@@ -491,17 +467,13 @@ export class CombatNetwork {
       const pathA = this.router.calculatePath(origin, dest, 70);
       const pathB = this.router.calculatePath(origin, dest, 70);
 
-      console.log(
-        `[COMBAT] Primary: ${pathA.map(n => n.id).join(' → ')}`
-      );
-      console.log(
-        `[COMBAT] Backup:  ${pathB.map(n => n.id).join(' → ')}`
-      );
+      console.log(`[COMBAT] Primary: ${pathA.map((n) => n.id).join(' → ')}`);
+      console.log(`[COMBAT] Backup:  ${pathB.map((n) => n.id).join(' → ')}`);
 
       // 2. Encrypt & Send Parallel
       const [onionA, onionB] = await Promise.all([
         this.crypto.buildOnion(payload, pathA),
-        this.crypto.buildOnion(payload, pathB)
+        this.crypto.buildOnion(payload, pathB),
       ]);
 
       // 3. Dispatch (Fire and Forget)
@@ -516,9 +488,7 @@ export class CombatNetwork {
   }
 
   private transmit(entryNode: RelayNode, packet: Buffer) {
-    console.log(
-      `Transmitting ${packet.length} bytes to ${entryNode.id}`
-    );
+    console.log(`Transmitting ${packet.length} bytes to ${entryNode.id}`);
     // Hardware interface mock
   }
 }
@@ -528,16 +498,31 @@ export class CombatNetwork {
 
 ```typescript
 // Test: Mars Communication (Earth → Mars)
-const origin = { x: 1.0, y: 0.0, z: 0.0 };  // Earth (1 AU)
-const dest = { x: 1.52, y: 0.0, z: 0.0 };   // Mars (1.52 AU)
+const origin = { x: 1.0, y: 0.0, z: 0.0 }; // Earth (1 AU)
+const dest = { x: 1.52, y: 0.0, z: 0.0 }; // Mars (1.52 AU)
 
 const nodes: RelayNode[] = [
-  { id: 'EARTH-GUARD-1', coords: { x: 1.0, y: 0.1, z: 0.0 }, 
-    trustScore: 95, quantumCapable: true, load: 0.3 },
-  { id: 'ASTEROID-RELAY-1', coords: { x: 1.3, y: 0.0, z: 0.1 }, 
-    trustScore: 70, quantumCapable: false, load: 0.5 },
-  { id: 'MARS-EXIT-1', coords: { x: 1.5, y: 0.0, z: 0.0 }, 
-    trustScore: 85, quantumCapable: true, load: 0.4 }
+  {
+    id: 'EARTH-GUARD-1',
+    coords: { x: 1.0, y: 0.1, z: 0.0 },
+    trustScore: 95,
+    quantumCapable: true,
+    load: 0.3,
+  },
+  {
+    id: 'ASTEROID-RELAY-1',
+    coords: { x: 1.3, y: 0.0, z: 0.1 },
+    trustScore: 70,
+    quantumCapable: false,
+    load: 0.5,
+  },
+  {
+    id: 'MARS-EXIT-1',
+    coords: { x: 1.5, y: 0.0, z: 0.0 },
+    trustScore: 85,
+    quantumCapable: true,
+    load: 0.4,
+  },
 ];
 
 const router = new SpaceTorRouter(nodes);
@@ -548,7 +533,7 @@ await network.send(
   'Rover status: All systems nominal',
   origin,
   dest,
-  true  // Combat mode (multipath)
+  true // Combat mode (multipath)
 );
 
 // Output:
@@ -559,11 +544,11 @@ await network.send(
 ```
 
 **Key Advantages**:
+
 1. **Zero TLS handshake** - Pre-synchronized keys
 2. **3D spatial optimization** - Minimizes light-lag
 3. **Combat redundancy** - Survives relay destruction
 4. **Hybrid PQC + QKD** - Quantum-resistant + information-theoretic security
-
 
 ---
 
@@ -572,6 +557,7 @@ await network.send(
 ### Problem Statement
 
 Traditional cryptographic systems fail against:
+
 1. **Adversarial perturbations** - Carefully crafted inputs that pass validation
 2. **Zero-day behavioral attacks** - Novel attack patterns
 3. **Rogue node infiltration** - Compromised nodes in swarm
@@ -579,6 +565,7 @@ Traditional cryptographic systems fail against:
 ### Solution: Hopfield Energy Landscape
 
 A **Hopfield network** is a recurrent neural network where:
+
 - Valid contexts sit in **energy minima** (attractor basins)
 - Adversarial contexts have **high energy** → automatic rejection
 - The weight matrix **W** encodes correlations between valid behavioral dimensions
@@ -611,114 +598,114 @@ import numpy as np
 class NeuralDefensiveLayer:
     """
     Hopfield energy landscape for adversarial detection.
-    
+
     Mathematical basis:
     - Hopfield networks (recurrent neural networks)
     - Energy-based models (Boltzmann machines)
     - Adversarial robustness (gradient-based detection)
     """
-    
+
     def __init__(self, dim=6):
         self.dim = dim
         self.W = np.zeros((dim, dim))  # Weight matrix
         self.theta = np.zeros(dim)     # Threshold vector
         self.energy_threshold = 0.0    # Learned threshold
-    
+
     def train(self, valid_contexts: np.ndarray):
         """
         Learn weight matrix from valid behavioral patterns.
-        
+
         Uses Hebbian learning: W = (1/N) Σ c_i c_i^T
-        
+
         Args:
             valid_contexts: (N, dim) array of valid context vectors
         """
         N = valid_contexts.shape[0]
-        
+
         # Hebbian learning rule
         self.W = (1 / N) * (valid_contexts.T @ valid_contexts)
-        
+
         # Set diagonal to zero (no self-connections)
         np.fill_diagonal(self.W, 0)
-        
+
         # Compute threshold as mean context
         self.theta = np.mean(valid_contexts, axis=0)
-        
+
         # Set energy threshold (95th percentile of valid energies)
         valid_energies = [self.compute_energy(c) for c in valid_contexts]
         self.energy_threshold = np.percentile(valid_energies, 95)
-    
+
     def compute_energy(self, context: np.ndarray) -> float:
         """
         Compute Hopfield energy for context.
-        
+
         Args:
             context: 6D context vector
-        
+
         Returns:
             energy: Lower = more valid, Higher = more anomalous
         """
         return -0.5 * context @ self.W @ context + self.theta @ context
-    
+
     def compute_confidence(self, context: np.ndarray) -> float:
         """
         Compute neural confidence (0-1).
-        
+
         Args:
             context: 6D context vector
-        
+
         Returns:
             confidence: 1.0 = high confidence (valid), 0.0 = low (anomalous)
         """
         energy = self.compute_energy(context)
-        
+
         # Sigmoid transformation: E → [0, 1]
         # Lower energy → higher confidence
         confidence = 1.0 / (1.0 + np.exp(energy - self.energy_threshold))
-        
+
         return confidence
-    
+
     def compute_adversarial_margin(self, context: np.ndarray) -> float:
         """
         Compute adversarial robustness margin.
-        
+
         Small margin = context near decision boundary = suspicious
-        
+
         Args:
             context: 6D context vector
-        
+
         Returns:
             margin: Minimum perturbation to cross decision boundary
         """
         energy = self.compute_energy(context)
         gradient = -self.W @ context + self.theta
-        
+
         energy_margin = abs(energy - self.energy_threshold)
         gradient_norm = np.linalg.norm(gradient)
-        
+
         if gradient_norm > 0:
             return energy_margin / gradient_norm
         else:
             return float('inf')  # Flat region (very stable)
-    
-    def is_valid(self, context: np.ndarray, 
+
+    def is_valid(self, context: np.ndarray,
                  confidence_threshold: float = 0.7,
                  margin_threshold: float = 0.1) -> bool:
         """
         Check if context is valid (not adversarial).
-        
+
         Args:
             context: 6D context vector
             confidence_threshold: Minimum confidence (0-1)
             margin_threshold: Minimum adversarial margin
-        
+
         Returns:
             True if valid, False if adversarial
         """
         confidence = self.compute_confidence(context)
         margin = self.compute_adversarial_margin(context)
-        
-        return (confidence >= confidence_threshold and 
+
+        return (confidence >= confidence_threshold and
                 margin >= margin_threshold)
 ```
 
@@ -728,56 +715,56 @@ class NeuralDefensiveLayer:
 class SwarmNeuralConsensus:
     """
     Distributed Hopfield network for swarm immune response.
-    
+
     Each node is a "neuron" in distributed network.
     Trust scores decay when behavior diverges from swarm.
     """
-    
+
     def __init__(self, nodes: list):
         self.nodes = nodes  # List of node IDs
         self.trust_scores = {node: 1.0 for node in nodes}
         self.neural_layer = NeuralDefensiveLayer()
-    
+
     def train_swarm(self, valid_behaviors: np.ndarray):
         """
         Train swarm neural network on valid behaviors.
-        
+
         Args:
             valid_behaviors: (N, dim) array of valid context vectors
         """
         self.neural_layer.train(valid_behaviors)
-    
-    def validate_node(self, node_id: str, 
+
+    def validate_node(self, node_id: str,
                       context: np.ndarray) -> float:
         """
         Validate node behavior and update trust score.
-        
+
         Args:
             node_id: Node identifier
             context: Node's current context vector
-        
+
         Returns:
             Updated trust score (0-1)
         """
         confidence = self.neural_layer.compute_confidence(context)
         margin = self.neural_layer.compute_adversarial_margin(context)
-        
+
         # Update trust score (exponential moving average)
         alpha = 0.1  # Learning rate
         current_trust = self.trust_scores.get(node_id, 0.5)
-        
+
         # Combine confidence and margin
         behavioral_score = 0.7 * confidence + 0.3 * min(margin, 1.0)
-        
+
         new_trust = (1 - alpha) * current_trust + alpha * behavioral_score
         self.trust_scores[node_id] = new_trust
-        
+
         return new_trust
-    
+
     def compute_swarm_health(self) -> float:
         """
         Compute overall swarm health (0-100%).
-        
+
         Returns:
             health: Percentage of nodes with trust > 0.5
         """
@@ -785,14 +772,14 @@ class SwarmNeuralConsensus:
             1 for trust in self.trust_scores.values() if trust > 0.5
         )
         return 100.0 * healthy_nodes / len(self.nodes)
-    
+
     def exclude_rogue_nodes(self, threshold: float = 0.3) -> list:
         """
         Automatically exclude rogue nodes (trust < threshold).
-        
+
         Args:
             threshold: Minimum trust to remain in swarm
-        
+
         Returns:
             List of excluded node IDs
         """
@@ -800,11 +787,11 @@ class SwarmNeuralConsensus:
             node for node, trust in self.trust_scores.items()
             if trust < threshold
         ]
-        
+
         for node in excluded:
             del self.trust_scores[node]
             self.nodes.remove(node)
-        
+
         return excluded
 ```
 
@@ -843,7 +830,7 @@ for node in nodes:
     else:
         # Normal nodes have valid behavior
         context = valid_contexts[np.random.randint(0, 100)]
-    
+
     trust = swarm.validate_node(node, context)
     print(f"{node}: Trust = {trust:.4f}")
 
@@ -864,11 +851,11 @@ print(f"Swarm Health: {health:.2f}%")
 ```
 
 **Key Advantages**:
+
 1. **Adversarial detection** - Gradient-based margin computation
 2. **Zero-day protection** - Energy landscape detects novel attacks
 3. **Automatic exclusion** - Rogue nodes self-exclude via trust decay
 4. **Distributed consensus** - No central authority required
-
 
 ---
 
@@ -877,6 +864,7 @@ print(f"Swarm Health: {health:.2f}%")
 ### Applying Full System to Quantum Problems
 
 **Threat Model**:
+
 1. **Shor's Algorithm** - Breaks RSA/ECDSA (factoring/discrete log)
 2. **Grover's Algorithm** - Speeds search (O(√N))
 3. **Harvest Attacks** - Collect now, decrypt later
@@ -907,13 +895,13 @@ print(f"Swarm Health: {health:.2f}%")
 
 ### Metrics Stack-Up (100 Trials)
 
-| Metric | Static PQC | Quantum Proxy | SCBE (Full) | SCBE Lead? |
-|--------|------------|---------------|-------------|------------|
-| **Shor Resistance** | Infinite (lattice-hard) | 0 (breaks classical) | Infinite + Intent Bind | ✅ Yes (added layer) |
-| **Grover Progress** (P(t) at t=100) | 0.5% | 2.2% | 0.0001% (regresses) | ✅ Strong Lead |
-| **Anomaly Detection** | 85% | 70% | 98% (spectral + membrane + neural) | ✅ Lead |
-| **Latency** (ms, 1000 ops) | 15 | 12 | 22 (adaptive) | ⚠️ Comparable (security trade-off) |
-| **Resilience** (Sustained Attack Survival) | 80% | 40% | 99% (entropic + triage + neural) | ✅ Strong Lead |
+| Metric                                     | Static PQC              | Quantum Proxy        | SCBE (Full)                        | SCBE Lead?                         |
+| ------------------------------------------ | ----------------------- | -------------------- | ---------------------------------- | ---------------------------------- |
+| **Shor Resistance**                        | Infinite (lattice-hard) | 0 (breaks classical) | Infinite + Intent Bind             | ✅ Yes (added layer)               |
+| **Grover Progress** (P(t) at t=100)        | 0.5%                    | 2.2%                 | 0.0001% (regresses)                | ✅ Strong Lead                     |
+| **Anomaly Detection**                      | 85%                     | 70%                  | 98% (spectral + membrane + neural) | ✅ Lead                            |
+| **Latency** (ms, 1000 ops)                 | 15                      | 12                   | 22 (adaptive)                      | ⚠️ Comparable (security trade-off) |
+| **Resilience** (Sustained Attack Survival) | 80%                     | 40%                  | 99% (entropic + triage + neural)   | ✅ Strong Lead                     |
 
 ### Mathematical Analysis
 
@@ -980,6 +968,7 @@ Small margin → detected as adversarial
 ### Verdict
 
 **SCBE leads in practical quantum-proofing**:
+
 - ✅ Static PQC resists but lacks adaptive intent
 - ✅ Quantum proxies fragile to sustained attacks
 - ✅ SCBE superior for AI swarms and space communication
@@ -995,127 +984,117 @@ Small margin → detected as adversarial
 **Claim 19 (Independent): Thin Membrane Manifold Governance**
 
 > A cryptographic system comprising:
-> 
-> (a) A thin membrane manifold layer approximating a codimension-1 hypersurface 
->     at radius r = 1 - ε in a hyperbolic Poincaré ball, where ε represents 
->     membrane thickness;
-> 
+>
+> (a) A thin membrane manifold layer approximating a codimension-1 hypersurface
+> at radius r = 1 - ε in a hyperbolic Poincaré ball, where ε represents
+> membrane thickness;
+>
 > (b) An intent flux computation module configured to compute:
->     Φ = ∫_S v · n dS
->     where v is intent velocity vector and n is outward normal vector;
-> 
+> Φ = ∫_S v · n dS
+> where v is intent velocity vector and n is outward normal vector;
+>
 > (c) A golden ratio curvature scaling module applying:
->     κ = 1/φ for inner membrane (low tension)
->     κ = φ for outer membrane (high repulsion)
->     where φ = (1 + √5)/2 is the golden ratio;
-> 
-> (d) A governance decision module configured to:
->     - Allow contexts with positive flux (Φ > 0, inward coherence)
->     - Reject contexts with negative flux (Φ < 0, outward repulsion)
->     - Amplify repulsion by factor -κ_outer · (1 - r) near boundary;
-> 
+> κ = 1/φ for inner membrane (low tension)
+> κ = φ for outer membrane (high repulsion)
+> where φ = (1 + √5)/2 is the golden ratio;
+>
+> (d) A governance decision module configured to: - Allow contexts with positive flux (Φ > 0, inward coherence) - Reject contexts with negative flux (Φ < 0, outward repulsion) - Amplify repulsion by factor -κ_outer · (1 - r) near boundary;
+>
 > (e) An adaptive breathing boundary module adjusting ε based on system stress.
 
 **Claim 20 (Dependent): Space Tor 3D Spatial Routing**
 
 > The system of Claim 19, further comprising a space-native onion routing layer:
-> 
+>
 > (a) A 3D spatial router selecting relay nodes based on:
->     Cost = (Distance * w_dist) - (Trust * (1 - w_dist))
->     where Distance is computed in 3D Astronomical Units;
-> 
-> (b) A hybrid cryptographic module combining:
->     - Quantum Key Distribution (QKD) for quantum-capable nodes
->     - ML-KEM-768 key encapsulation for classical nodes;
-> 
+> Cost = (Distance _ w_dist) - (Trust _ (1 - w_dist))
+> where Distance is computed in 3D Astronomical Units;
+>
+> (b) A hybrid cryptographic module combining: - Quantum Key Distribution (QKD) for quantum-capable nodes - ML-KEM-768 key encapsulation for classical nodes;
+>
 > (c) A combat multipath module generating disjoint paths for redundancy;
-> 
-> (d) A trust management module updating node scores based on:
->     - SUCCESS: +0.5 (slow trust building)
->     - TIMEOUT: -5 (latency punishment)
->     - BAD_SIGNATURE: -20 (tampering)
->     - QKD_ERROR: 0 (immediate blacklist).
+>
+> (d) A trust management module updating node scores based on: - SUCCESS: +0.5 (slow trust building) - TIMEOUT: -5 (latency punishment) - BAD_SIGNATURE: -20 (tampering) - QKD_ERROR: 0 (immediate blacklist).
 
 **Claim 21 (Independent): Neural Defensive Cryptography**
 
 > A cryptographic authorization system comprising:
-> 
+>
 > (a) A Hopfield energy landscape module computing:
->     E(c) = -½ cᵀWc + θᵀc
->     where c is context vector, W is weight matrix learned from valid 
->     behavioral patterns via Hebbian learning, and θ is threshold vector;
-> 
+> E(c) = -½ cᵀWc + θᵀc
+> where c is context vector, W is weight matrix learned from valid
+> behavioral patterns via Hebbian learning, and θ is threshold vector;
+>
 > (b) A confidence computation module transforming energy to confidence:
->     confidence = 1 / (1 + exp(E - E_threshold))
->     where lower energy yields higher confidence;
-> 
+> confidence = 1 / (1 + exp(E - E_threshold))
+> where lower energy yields higher confidence;
+>
 > (c) An adversarial margin computation module calculating:
->     margin = |E - E_threshold| / ||∇E||
->     where small margin indicates context near decision boundary;
-> 
-> (d) A validation module rejecting contexts with:
->     - confidence < 0.7, or
->     - margin < 0.1 (adversarial perturbation detected);
-> 
+> margin = |E - E_threshold| / ||∇E||
+> where small margin indicates context near decision boundary;
+>
+> (d) A validation module rejecting contexts with: - confidence < 0.7, or - margin < 0.1 (adversarial perturbation detected);
+>
 > (e) A training module learning W from historical valid contexts using:
->     W = (1/N) Σ c_i c_i^T (Hebbian rule).
+> W = (1/N) Σ c_i c_i^T (Hebbian rule).
 
 **Claim 22 (Dependent): Swarm Immune Cryptography**
 
 > The system of Claim 21, further comprising a distributed swarm consensus layer:
-> 
-> (a) A swarm neural network where each node is a neuron in distributed 
->     Hopfield network;
-> 
+>
+> (a) A swarm neural network where each node is a neuron in distributed
+> Hopfield network;
+>
 > (b) A trust score update module computing:
->     trust_new = (1 - α) · trust_old + α · behavioral_score
->     where behavioral_score = 0.7 · confidence + 0.3 · min(margin, 1.0);
-> 
+> trust_new = (1 - α) · trust_old + α · behavioral_score
+> where behavioral_score = 0.7 · confidence + 0.3 · min(margin, 1.0);
+>
 > (c) An automatic exclusion module removing nodes with trust < 0.3;
-> 
-> (d) A swarm health computation module calculating percentage of nodes 
->     with trust > 0.5;
-> 
-> (e) A distributed training module where nodes collectively learn W without 
->     central authority.
+>
+> (d) A swarm health computation module calculating percentage of nodes
+> with trust > 0.5;
+>
+> (e) A distributed training module where nodes collectively learn W without
+> central authority.
 
 **Claim 23 (Dependent): Quantum Threat Mitigation**
 
 > The system of Claims 19-22, configured to mitigate quantum threats via:
-> 
-> (a) Shor's algorithm resistance through ML-KEM-768 lattice-based keys 
->     bound to context via hash(K || c);
-> 
+>
+> (a) Shor's algorithm resistance through ML-KEM-768 lattice-based keys
+> bound to context via hash(K || c);
+>
 > (b) Grover's algorithm resistance through entropic expansion:
->     N(t) = N₀ e^(kt)
->     causing Grover work to diverge as e^(kt/2);
-> 
+> N(t) = N₀ e^(kt)
+> causing Grover work to diverge as e^(kt/2);
+>
 > (c) Quantum noise detection through negative membrane flux:
->     Φ_quantum < 0 → repulsion to sinks;
-> 
+> Φ_quantum < 0 → repulsion to sinks;
+>
 > (d) Adversarial quantum state detection through energy landscape:
->     E(c_adv) > E_threshold → rejection.
+> E(c_adv) > E_threshold → rejection.
 
 **Claim 24 (Dependent): Mars Communication Protocol**
 
 > The system of Claim 20, optimized for Mars communication:
-> 
+>
 > (a) Pre-synchronized Sacred Tongue vocabularies eliminating TLS handshake;
-> 
+>
 > (b) Zero-latency communication despite 14-minute round-trip time;
-> 
+>
 > (c) Self-authenticating envelopes via Poly1305 MAC + spectral coherence;
-> 
+>
 > (d) 3D spatial routing minimizing light-lag through asteroid belt relays;
-> 
-> (e) Combat redundancy via disjoint multipath routing surviving relay 
->     destruction or jamming.
+>
+> (e) Combat redundancy via disjoint multipath routing surviving relay
+> destruction or jamming.
 
 ### Patent Value Addition
 
 **Claims 19-24 Value**: $10M-25M
 
 **Rationale**:
+
 - Novel thin membrane manifold governance (no prior art)
 - Space-native Tor architecture (first 3D spatial routing)
 - Neural defensive cryptography (Hopfield energy landscapes)
@@ -1123,7 +1102,6 @@ Small margin → detected as adversarial
 - Quantum threat mitigation (comprehensive defense stack)
 
 **Total Patent Portfolio Value**: $25M-75M (Claims 1-24)
-
 
 ---
 
@@ -1343,44 +1321,45 @@ Small margin → detected as adversarial
 
 ### Comprehensive Test Results
 
-| Metric | Value | Target | Status |
-|--------|-------|--------|--------|
-| **Quantum Security** |
+| Metric                      | Value                   | Target   | Status  |
+| --------------------------- | ----------------------- | -------- | ------- |
+| **Quantum Security**        |
 | Shor's Algorithm Resistance | Infinite (lattice-hard) | Infinite | ✅ Pass |
-| Grover Progress (t=100) | 0.0001% | <0.1% | ✅ Pass |
-| ML-KEM Security Bits | 256 | ≥256 | ✅ Pass |
-| ML-DSA Security Bits | 256 | ≥256 | ✅ Pass |
-| **Neural Defense** |
-| Valid Context Confidence | 0.8284 | >0.7 | ✅ Pass |
-| Adversarial Margin | 0.3521 | >0.1 | ✅ Pass |
-| Anomaly Detection Rate | 98% | >95% | ✅ Pass |
-| False Positive Rate | 2% | <5% | ✅ Pass |
-| **Thin Membrane** |
-| Coherent Flux (inward) | +0.4500 | >0 | ✅ Pass |
-| Anomalous Flux (outward) | -1.2944 | <0 | ✅ Pass |
-| Golden Ratio Scaling | 1.618 | φ | ✅ Pass |
-| Membrane Thickness | 0.01 | <0.05 | ✅ Pass |
-| **Swarm Consensus** |
-| Valid Node Trust | 0.8284 | >0.5 | ✅ Pass |
-| Rogue Node Trust | 0.4500 | <0.5 | ✅ Pass |
-| Swarm Health | 100% | >90% | ✅ Pass |
-| Exclusion Accuracy | 100% | >95% | ✅ Pass |
-| **Space Tor** |
-| 3D Routing Latency | 18ms | <20ms | ✅ Pass |
-| Trust Score Accuracy | 95% | >90% | ✅ Pass |
-| Multipath Redundancy | 2 paths | ≥2 | ✅ Pass |
-| QKD Success Rate | 100% | >99% | ✅ Pass |
-| **Overall System** |
-| Total Tests Passing | 506/506 | 100% | ✅ Pass |
-| Code Coverage | 96.8% | >95% | ✅ Pass |
-| Throughput | 1.2M req/s | >1M | ✅ Pass |
-| P50 Latency | 4.2ms | <5ms | ✅ Pass |
-| P99 Latency | 18.3ms | <20ms | ✅ Pass |
-| Uptime | 99.99% | >99.9% | ✅ Pass |
+| Grover Progress (t=100)     | 0.0001%                 | <0.1%    | ✅ Pass |
+| ML-KEM Security Bits        | 256                     | ≥256     | ✅ Pass |
+| ML-DSA Security Bits        | 256                     | ≥256     | ✅ Pass |
+| **Neural Defense**          |
+| Valid Context Confidence    | 0.8284                  | >0.7     | ✅ Pass |
+| Adversarial Margin          | 0.3521                  | >0.1     | ✅ Pass |
+| Anomaly Detection Rate      | 98%                     | >95%     | ✅ Pass |
+| False Positive Rate         | 2%                      | <5%      | ✅ Pass |
+| **Thin Membrane**           |
+| Coherent Flux (inward)      | +0.4500                 | >0       | ✅ Pass |
+| Anomalous Flux (outward)    | -1.2944                 | <0       | ✅ Pass |
+| Golden Ratio Scaling        | 1.618                   | φ        | ✅ Pass |
+| Membrane Thickness          | 0.01                    | <0.05    | ✅ Pass |
+| **Swarm Consensus**         |
+| Valid Node Trust            | 0.8284                  | >0.5     | ✅ Pass |
+| Rogue Node Trust            | 0.4500                  | <0.5     | ✅ Pass |
+| Swarm Health                | 100%                    | >90%     | ✅ Pass |
+| Exclusion Accuracy          | 100%                    | >95%     | ✅ Pass |
+| **Space Tor**               |
+| 3D Routing Latency          | 18ms                    | <20ms    | ✅ Pass |
+| Trust Score Accuracy        | 95%                     | >90%     | ✅ Pass |
+| Multipath Redundancy        | 2 paths                 | ≥2       | ✅ Pass |
+| QKD Success Rate            | 100%                    | >99%     | ✅ Pass |
+| **Overall System**          |
+| Total Tests Passing         | 506/506                 | 100%     | ✅ Pass |
+| Code Coverage               | 96.8%                   | >95%     | ✅ Pass |
+| Throughput                  | 1.2M req/s              | >1M      | ✅ Pass |
+| P50 Latency                 | 4.2ms                   | <5ms     | ✅ Pass |
+| P99 Latency                 | 18.3ms                  | <20ms    | ✅ Pass |
+| Uptime                      | 99.99%                  | >99.9%   | ✅ Pass |
 
 ### Security Analysis Summary
 
 **Threat Coverage**:
+
 - ✅ Shor's Algorithm (quantum factoring)
 - ✅ Grover's Algorithm (quantum search)
 - ✅ Harvest attacks (collect now, decrypt later)
@@ -1393,6 +1372,7 @@ Small margin → detected as adversarial
 - ✅ Context manipulation
 
 **Defense Mechanisms**:
+
 1. **Post-Quantum Cryptography** (ML-KEM-768, ML-DSA-65)
 2. **Context Binding** (Poincaré embedding)
 3. **Neural Defense** (Hopfield energy landscape)
@@ -1409,12 +1389,14 @@ Small margin → detected as adversarial
 ### Patent Portfolio Value: $25M - $75M
 
 **Claims 1-18 (Original)**: $15M-50M
+
 - 14-layer security architecture
 - Sacred Tongue tokenization
 - PHDM intrusion detection
 - Hyperbolic authorization
 
 **Claims 19-24 (Dimensional Theory)**: $10M-25M
+
 - Thin membrane manifold governance
 - Space Tor 3D spatial routing
 - Neural defensive cryptography
@@ -1425,12 +1407,14 @@ Small margin → detected as adversarial
 ### Market Opportunity
 
 **Total Addressable Market (TAM)**: $10B-20B
+
 - Post-quantum cryptography: $15B (2030)
 - Context-aware security: $8B (2028)
 - Space communication: $5B (2030)
 - AI safety & governance: $12B (2030)
 
 **Target Customers**:
+
 1. **Space Agencies** (NASA, ESA, SpaceX) - $2M-10M/contract
 2. **Defense/Intelligence** (DoD, NSA, NATO) - $500K-5M/contract
 3. **Healthcare** (Hospital networks, EHR) - $100K-500K/year
@@ -1441,22 +1425,26 @@ Small margin → detected as adversarial
 ### Revenue Projections
 
 **Year 1 (2026)**: $2M-5M ARR
+
 - 10 design partners (free)
 - 30 paying customers ($50K-250K each)
 - 2-3 government contracts ($500K-2M each)
 
 **Year 2 (2027)**: $10M-20M ARR
+
 - 100 enterprise customers
 - 5-10 government contracts
 - AWS/Azure marketplace traction
 
 **Year 3 (2028)**: $30M-60M ARR
+
 - 500 enterprise customers
 - 20+ government contracts
 - International expansion
 - Strategic partnerships
 
 **Exit Options**:
+
 - **Strategic Acquisition**: $50M-150M (2027-2028)
 - **IPO**: $200M-500M valuation (2029-2030)
 
@@ -1508,4 +1496,3 @@ A **$25M-75M enterprise security platform** with:
 **Status**: Production Ready + Advanced Research  
 **Patent Value**: $25M-75M (Claims 1-24)  
 **Market Opportunity**: $10B-20B TAM
-

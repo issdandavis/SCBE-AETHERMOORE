@@ -27,11 +27,13 @@ L(n) = k · (1 - ρ_E / ρ_crit)^(-1/2)
 ```
 
 **Benefits**:
+
 - Keeps the mathematics (g₀₀ metric)
 - Frames it as a concrete software engineering technique (DDoS protection)
 - Removes cosmological phenomenon language that triggers § 101 rejections
 
 **Implementation**:
+
 ```typescript
 function computeAsymptoticLatency(
   threatDensity: number,
@@ -54,12 +56,13 @@ function computeAsymptoticLatency(
 
 **Solution**: Delete claim or redefine as **"Signal Attenuation"**
 
-| Before | After |
-|--------|-------|
+| Before                         | After                                    |
+| ------------------------------ | ---------------------------------------- |
 | "Export entropy to null-space" | "Signal Attenuation via noise injection" |
-| Thermodynamic violation | Standard signal processing |
+| Thermodynamic violation        | Standard signal processing               |
 
 **Implementation**:
+
 ```python
 def signal_attenuation(active_channels: list, noise_floor: float) -> dict:
     """
@@ -86,6 +89,7 @@ def signal_attenuation(active_channels: list, noise_floor: float) -> dict:
 **Solution**: Replace with **distributed Redis/BullMQ architecture**
 
 **Architecture Change**:
+
 ```
 BEFORE:
 ┌──────────────────────────────────────┐
@@ -110,6 +114,7 @@ AFTER:
 ```
 
 **Benefits**:
+
 - Survives server restarts
 - Scales horizontally
 - Preserves cryptographic state of active negotiations
@@ -126,34 +131,35 @@ AFTER:
 **Solution**: Rebrand to **"Spectral Entropy Verification"**
 
 **What to Claim**:
+
 - DO NOT claim to detect human emotion
 - DO claim detection of high-entropy spectral sidebands
 - Reference the 4% sideband energy observed in adaptive simulations
 - Target: Shannon entropy > 7.9 bits
 
 **Mathematical Basis**:
+
 ```typescript
 function verifySpectralEntropy(
   spectralCoefficients: Complex[],
   minEntropyBits: number = 7.9
 ): { valid: boolean; entropy: number } {
   // Calculate Shannon entropy of magnitude distribution
-  const magnitudes = spectralCoefficients.map(c => Math.sqrt(c.re**2 + c.im**2));
+  const magnitudes = spectralCoefficients.map((c) => Math.sqrt(c.re ** 2 + c.im ** 2));
   const total = magnitudes.reduce((sum, m) => sum + m, 0);
-  const probabilities = magnitudes.map(m => m / total);
+  const probabilities = magnitudes.map((m) => m / total);
 
-  const entropy = -probabilities
-    .filter(p => p > 0)
-    .reduce((sum, p) => sum + p * Math.log2(p), 0);
+  const entropy = -probabilities.filter((p) => p > 0).reduce((sum, p) => sum + p * Math.log2(p), 0);
 
   return {
     valid: entropy >= minEntropyBits,
-    entropy
+    entropy,
   };
 }
 ```
 
 **Benefits**:
+
 - Mathematically provable
 - Not psychological (avoids subjective claims)
 - Resistant to deepfake attacks (entropy is harder to fake than timbre)
@@ -167,11 +173,13 @@ function verifySpectralEntropy(
 **Solution**: Implement **Deterministic Morpheme Generator**
 
 **Requirements**:
+
 - Generate full 16×16 grid (256 tokens) for all six tongues
 - Implement specific prefixes and suffixes per tongue
 - Ensure deterministic mapping (e.g., token `0x2A` → `vel'an` in Kor'aelin)
 
 **Kor'aelin Example**:
+
 ```python
 KORAELIN_PREFIXES = ['sil', 'kor', 'vel', 'thar', 'dra', 'mel', 'vor', 'kel',
                      'ral', 'sen', 'var', 'nir', 'eth', 'lor', 'cas', 'umi']
@@ -207,6 +215,7 @@ def generate_koraelin_token(byte_value: int) -> str:
 **Solution**: Insert **Mandatory Dwell Logic** into SpiralverseSDK handshake
 
 **Implementation Flow**:
+
 ```
 Request → Calculate H(d,R) → Check Threat Score → Decision
                                     │
@@ -220,6 +229,7 @@ Request → Calculate H(d,R) → Check Threat Score → Decision
 ```
 
 **Harmonic Scaling Law**:
+
 ```typescript
 function calculateDwellTime(distance: number, reputation: number): number {
   // H(d, R) = harmonic scaling law
@@ -236,7 +246,7 @@ function securityGate(request: Request): Response {
     // Fail-to-Noise: Return random bytes instead of 403
     return new Response(crypto.getRandomValues(new Uint8Array(256)), {
       status: 200, // Looks normal to attacker
-      headers: { 'Content-Type': 'application/octet-stream' }
+      headers: { 'Content-Type': 'application/octet-stream' },
     });
   }
 
@@ -251,6 +261,7 @@ function securityGate(request: Request): Response {
 ```
 
 **Key Points**:
+
 - Insert BEFORE any ML-KEM key exchange
 - Use "Fail-to-Noise" (random bytes) instead of standard 403 error
 - Makes enumeration attacks computationally expensive
@@ -259,23 +270,23 @@ function securityGate(request: Request): Response {
 
 ## Priority Matrix
 
-| Action Item | Priority | Risk Level | Effort |
-|-------------|----------|------------|--------|
-| 2. Delete Entropy Export Claim | 🔴 CRITICAL | Patent rejection (§ 101) | Low |
-| 1. Rename Acoustic Black Hole | 🔴 CRITICAL | Patent rejection (§ 101) | Low |
-| 3. Redis/BullMQ Architecture | 🔴 CRITICAL | System failure | Medium |
-| 4. Spectral Entropy Pivot | 🟡 HIGH | Scientific credibility | Medium |
-| 6. Security Gate Integration | 🟡 HIGH | Security vulnerability | Medium |
-| 5. Sacred Tongue Vocabularies | ✅ DONE | N/A | Already implemented |
+| Action Item                    | Priority    | Risk Level               | Effort              |
+| ------------------------------ | ----------- | ------------------------ | ------------------- |
+| 2. Delete Entropy Export Claim | 🔴 CRITICAL | Patent rejection (§ 101) | Low                 |
+| 1. Rename Acoustic Black Hole  | 🔴 CRITICAL | Patent rejection (§ 101) | Low                 |
+| 3. Redis/BullMQ Architecture   | 🔴 CRITICAL | System failure           | Medium              |
+| 4. Spectral Entropy Pivot      | 🟡 HIGH     | Scientific credibility   | Medium              |
+| 6. Security Gate Integration   | 🟡 HIGH     | Security vulnerability   | Medium              |
+| 5. Sacred Tongue Vocabularies  | ✅ DONE     | N/A                      | Already implemented |
 
 ### Additional Actions from Audit
 
-| Action Item | Priority | Category |
-|-------------|----------|----------|
-| Remove CI/CD `continue-on-error: true` | 🔴 CRITICAL | Security |
-| Clarify planetary seeding as arbitrary constants | 🟡 MEDIUM | Documentation |
-| Migrate to AWS Secrets Manager | 🟡 HIGH | Security |
-| Add Adaptive Dwell (exponential backoff) | 🟡 HIGH | Security |
+| Action Item                                      | Priority    | Category      |
+| ------------------------------------------------ | ----------- | ------------- |
+| Remove CI/CD `continue-on-error: true`           | 🔴 CRITICAL | Security      |
+| Clarify planetary seeding as arbitrary constants | 🟡 MEDIUM   | Documentation |
+| Migrate to AWS Secrets Manager                   | 🟡 HIGH     | Security      |
+| Add Adaptive Dwell (exponential backoff)         | 🟡 HIGH     | Security      |
 
 ---
 

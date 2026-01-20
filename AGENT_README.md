@@ -5,6 +5,7 @@ Your AI-powered coding assistant for secure development with SCBE-AETHERMOORE.
 ## Features
 
 ### 🤖 AI Chat Assistant
+
 Ask questions about SCBE, cryptography, security, and coding in natural language.
 
 ```bash
@@ -14,6 +15,7 @@ Agent: SCBE works through a multi-stage process...
 ```
 
 ### 🔍 Secure Web Search
+
 Search the web with SCBE-encrypted queries for privacy.
 
 ```bash
@@ -24,14 +26,17 @@ Search: post-quantum cryptography
 ```
 
 ### 💻 Code Library
+
 Access ready-to-use code examples for Python and TypeScript.
 
 **Python Examples:**
+
 - Encrypt/decrypt messages
 - Generate harmonic signatures
 - Feistel network operations
 
 **TypeScript Examples:**
+
 - Harmonic scaling
 - Post-quantum cryptography
 - Quasicrystal lattice
@@ -43,9 +48,11 @@ Select language (1-2): 1
 ```
 
 ### 🛡️ Security Scanner
+
 "Antivirus" for your code - scans for security vulnerabilities.
 
 **Detects:**
+
 - Dangerous functions (eval, exec)
 - Hardcoded credentials
 - SQL injection risks
@@ -93,14 +100,14 @@ agent> help
 
 ### Commands
 
-| Command | Description |
-|---------|-------------|
-| `ask` | Chat with AI assistant |
-| `search` | Secure web search |
-| `code` | View code examples |
-| `scan` | Security vulnerability scanner |
-| `help` | Show help |
-| `exit` | Exit agent |
+| Command  | Description                    |
+| -------- | ------------------------------ |
+| `ask`    | Chat with AI assistant         |
+| `search` | Secure web search              |
+| `code`   | View code examples             |
+| `scan`   | Security vulnerability scanner |
+| `help`   | Show help                      |
+| `exit`   | Exit agent                     |
 
 ## Examples
 
@@ -109,7 +116,7 @@ agent> help
 ```bash
 agent> ask
 You: What is SCBE?
-Agent: SCBE (Spectral Context-Bound Encryption) is a next-generation 
+Agent: SCBE (Spectral Context-Bound Encryption) is a next-generation
 security framework that uses hyperbolic geometry and signal processing...
 
 You: Is it quantum-resistant?
@@ -197,14 +204,17 @@ The AI assistant can help with:
 The scanner checks for:
 
 ### Critical Vulnerabilities
+
 - `eval()` usage - Can execute arbitrary code
 - `exec()` usage - Can execute arbitrary code
 
 ### High Severity
+
 - Hardcoded credentials (passwords, API keys, tokens)
 - SQL injection risks (string concatenation in queries)
 
 ### Medium Severity
+
 - Insecure random number generation
 - Command injection risks (os.system, subprocess)
 

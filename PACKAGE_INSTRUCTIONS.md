@@ -5,6 +5,7 @@
 ### Step 1: Double-Click `MAKE_PACKAGE_READY.bat`
 
 This will:
+
 - ✅ Build your TypeScript code
 - ✅ Add the compiled files to git
 - ✅ Push everything to GitHub
@@ -16,6 +17,7 @@ This will:
 ### Step 2: Double-Click `TEST_PACKAGE.bat`
 
 This will:
+
 - ✅ Test if people can install your package
 - ✅ Make sure it works correctly
 - ✅ Clean up after itself
@@ -39,18 +41,21 @@ npm install git+https://github.com/issdandavis/scbe-aethermoore-demo.git
 ### If `MAKE_PACKAGE_READY.bat` fails:
 
 **Error: "npm is not recognized"**
+
 - You need to install Node.js first
 - Download from: https://nodejs.org/
 - Choose the "LTS" version (left button)
 - Restart your computer after installing
 
 **Error: "Build failed"**
+
 - Open a command prompt in your project folder
 - Type: `npm install`
 - Press Enter and wait
 - Then try `MAKE_PACKAGE_READY.bat` again
 
 **Error: "Push failed"**
+
 - Make sure you're connected to the internet
 - Make sure you're logged into GitHub in your terminal
 - Try: `git push` manually to see the error
@@ -60,11 +65,13 @@ npm install git+https://github.com/issdandavis/scbe-aethermoore-demo.git
 ### If `TEST_PACKAGE.bat` fails:
 
 **Error: "Installation failed"**
+
 - Your package isn't ready yet
 - Run `MAKE_PACKAGE_READY.bat` first
 - Make sure it completed successfully
 
 **Error: "Package doesn't work"**
+
 - The compiled files might be missing
 - Check if `dist/src/` folder exists in your project
 - Run `MAKE_PACKAGE_READY.bat` again
@@ -76,7 +83,7 @@ npm install git+https://github.com/issdandavis/scbe-aethermoore-demo.git
 Before sharing your package, make sure:
 
 - [ ] You ran `MAKE_PACKAGE_READY.bat` successfully
-- [ ] You ran `TEST_PACKAGE.bat` successfully  
+- [ ] You ran `TEST_PACKAGE.bat` successfully
 - [ ] Both showed "SUCCESS!" at the end
 - [ ] You can see the `dist/` folder in your project
 

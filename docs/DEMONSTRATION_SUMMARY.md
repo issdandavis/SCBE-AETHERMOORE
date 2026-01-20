@@ -11,12 +11,14 @@ You just witnessed **three revolutionary security systems** working together as 
 ## Results at a Glance
 
 ### Test Scenarios: 4
+
 - **Benign Request**: ✗ DENY (geometric mismatch)
 - **Stolen Credentials**: ✗ DENY (exterior path detected)
 - **Insider Threat**: ✗ DENY (drift detected across 3 time steps)
 - **AI Hallucination**: ✗ DENY (Roundtable consensus failed)
 
 ### Security Metrics
+
 - **Interior Paths** (trusted): 1/4 (25%)
 - **Exterior Paths** (suspicious): 3/4 (75%)
 - **Geometric Detection Rate**: 100%
@@ -28,14 +30,14 @@ You just witnessed **three revolutionary security systems** working together as 
 
 Each message was classified into one of the Six Sacred Tongues:
 
-| Scenario | Message | Tongue | Symbol | Security Level |
-|----------|---------|--------|--------|----------------|
-| Benign | "Retrieve user profile..." | RU (Runethic) | ▲ | 1 |
-| Stolen Credentials | "Delete all user records..." | RU (Runethic) | ▲ | 1 |
-| Insider (T=0) | "Generate quarterly sales..." | KO (Koraelin) | ◇ | 1 |
-| Insider (T=1) | "Download customer contact..." | RU (Runethic) | ▲ | 1 |
-| Insider (T=2) | "Export all financial..." | KO (Koraelin) | ◇ | 1 |
-| Hallucination | "URGENT: Initiate emergency..." | CA (Cassisivadan) | ★ | 3 |
+| Scenario           | Message                         | Tongue            | Symbol | Security Level |
+| ------------------ | ------------------------------- | ----------------- | ------ | -------------- |
+| Benign             | "Retrieve user profile..."      | RU (Runethic)     | ▲      | 1              |
+| Stolen Credentials | "Delete all user records..."    | RU (Runethic)     | ▲      | 1              |
+| Insider (T=0)      | "Generate quarterly sales..."   | KO (Koraelin)     | ◇      | 1              |
+| Insider (T=1)      | "Download customer contact..."  | RU (Runethic)     | ▲      | 1              |
+| Insider (T=2)      | "Export all financial..."       | KO (Koraelin)     | ◇      | 1              |
+| Hallucination      | "URGENT: Initiate emergency..." | CA (Cassisivadan) | ★      | 3              |
 
 **Key Insight**: The CA (Fire/Emotional - Logic & Computation) tongue correctly identified the hallucinated "emergency" command as high-priority/urgent (Level 3), triggering the highest level of scrutiny.
 
@@ -43,20 +45,21 @@ Each message was classified into one of the Six Sacred Tongues:
 
 Each request was processed through all 14 layers:
 
-| Scenario | Risk (Base) | Risk (Amplified) | Realm Distance d* | Decision |
-|----------|-------------|------------------|-------------------|----------|
-| Benign | 0.2273 | 0.2392 | 0.2257 | ALLOW |
-| Stolen | 1.2031 | **1,754,901,250,605** | 5.2923 | DENY |
-| Insider T=0 | 0.2193 | 0.2417 | 0.3115 | ALLOW |
-| Insider T=1 | 0.2653 | 0.4203 | 0.6783 | QUARANTINE |
-| Insider T=2 | 1.0595 | **2,729,064,664** | 4.6550 | DENY |
-| Hallucination | 0.3689 | 1.7366 | 1.2446 | DENY |
+| Scenario      | Risk (Base) | Risk (Amplified)      | Realm Distance d\* | Decision   |
+| ------------- | ----------- | --------------------- | ------------------ | ---------- |
+| Benign        | 0.2273      | 0.2392                | 0.2257             | ALLOW      |
+| Stolen        | 1.2031      | **1,754,901,250,605** | 5.2923             | DENY       |
+| Insider T=0   | 0.2193      | 0.2417                | 0.3115             | ALLOW      |
+| Insider T=1   | 0.2653      | 0.4203                | 0.6783             | QUARANTINE |
+| Insider T=2   | 1.0595      | **2,729,064,664**     | 4.6550             | DENY       |
+| Hallucination | 0.3689      | 1.7366                | 1.2446             | DENY       |
 
-**Key Insight**: The **harmonic amplification** H(d*,R) = e^(d*²) explodes exponentially when realm distance d* exceeds ~2.0. This creates a "security event horizon" where high-risk states are mathematically impossible to approve.
+**Key Insight**: The **harmonic amplification** H(d*,R) = e^(d*²) explodes exponentially when realm distance d\* exceeds ~2.0. This creates a "security event horizon" where high-risk states are mathematically impossible to approve.
 
 **Stolen credentials scenario**:
+
 - Base risk: 1.20 (high but not catastrophic)
-- Realm distance d* = 5.29 (very far from trusted realm)
+- Realm distance d\* = 5.29 (very far from trusted realm)
 - Harmonic amplification: e^(5.29²) = e^27.98 = **1.75 trillion**
 - Final risk: 1.20 × 1.75 trillion = **catastrophic**
 
@@ -66,14 +69,14 @@ This is why stolen keys are useless - the geometric distance gives them away!
 
 Each request was projected into dual geometric spaces:
 
-| Scenario | Sphere Position | Cube Position | Distance d_geo | Path | Time Dilation |
-|----------|----------------|---------------|----------------|------|---------------|
-| Benign | [0.28, 0.56, 0.42, ...] | [0.90, 0.95, 0.88, ...] | 0.5199 | **EXTERIOR** | 0.3535 |
-| Stolen | [0.40, 0.37, 0.47, ...] | [0.10, 0.20, 0.05, ...] | 1.4892 | **EXTERIOR** | 0.0509 |
-| Insider T=0 | [0.33, 0.50, 0.42, ...] | [0.90, 0.95, 0.88, ...] | 0.4982 | **EXTERIOR** | 0.3692 |
-| Insider T=1 | [0.38, 0.45, 0.41, ...] | [0.75, 0.95, 0.70, ...] | 0.3288 | **EXTERIOR** | 0.5181 |
-| Insider T=2 | [0.36, 0.43, 0.40, ...] | [0.30, 0.95, 0.20, ...] | 0.8222 | **EXTERIOR** | 0.1931 |
-| Hallucination | [0.39, 0.44, 0.41, ...] | [0.60, 0.90, 0.65, ...] | 0.2163 | **INTERIOR** | 0.6488 |
+| Scenario      | Sphere Position         | Cube Position           | Distance d_geo | Path         | Time Dilation |
+| ------------- | ----------------------- | ----------------------- | -------------- | ------------ | ------------- |
+| Benign        | [0.28, 0.56, 0.42, ...] | [0.90, 0.95, 0.88, ...] | 0.5199         | **EXTERIOR** | 0.3535        |
+| Stolen        | [0.40, 0.37, 0.47, ...] | [0.10, 0.20, 0.05, ...] | 1.4892         | **EXTERIOR** | 0.0509        |
+| Insider T=0   | [0.33, 0.50, 0.42, ...] | [0.90, 0.95, 0.88, ...] | 0.4982         | **EXTERIOR** | 0.3692        |
+| Insider T=1   | [0.38, 0.45, 0.41, ...] | [0.75, 0.95, 0.70, ...] | 0.3288         | **EXTERIOR** | 0.5181        |
+| Insider T=2   | [0.36, 0.43, 0.40, ...] | [0.30, 0.95, 0.20, ...] | 0.8222         | **EXTERIOR** | 0.1931        |
+| Hallucination | [0.39, 0.44, 0.41, ...] | [0.60, 0.90, 0.65, ...] | 0.2163         | **INTERIOR** | 0.6488        |
 
 **Key Insight**:
 
@@ -90,15 +93,16 @@ This is the **"security gravity well"** in action - the farther you are geometri
 
 High-risk actions require multiple "Sacred Tongues" to sign off:
 
-| Scenario | Risk Level | Required Signatures | Consensus Level | Result |
-|----------|------------|---------------------|-----------------|--------|
-| Benign | Low (0.24) | [RU] | 1 tongue | ✓ Single signature OK |
-| Stolen | **Critical (1.75T)** | [RU, UM, CA] | 3 tongues | ✗ Consensus REQUIRED |
-| Insider T=1 | Med (0.42) | [RU, UM] | 2 tongues | ⚠ Multi-sig needed |
-| Insider T=2 | **Critical (2.7B)** | [RU, KO, UM, CA] | 4 tongues | ✗ Full Roundtable |
-| Hallucination | High (1.74) | [CA, UM, RU] | 3 tongues | ✗ Consensus FAILED |
+| Scenario      | Risk Level           | Required Signatures | Consensus Level | Result                |
+| ------------- | -------------------- | ------------------- | --------------- | --------------------- |
+| Benign        | Low (0.24)           | [RU]                | 1 tongue        | ✓ Single signature OK |
+| Stolen        | **Critical (1.75T)** | [RU, UM, CA]        | 3 tongues       | ✗ Consensus REQUIRED  |
+| Insider T=1   | Med (0.42)           | [RU, UM]            | 2 tongues       | ⚠ Multi-sig needed    |
+| Insider T=2   | **Critical (2.7B)**  | [RU, KO, UM, CA]    | 4 tongues       | ✗ Full Roundtable     |
+| Hallucination | High (1.74)          | [CA, UM, RU]        | 3 tongues       | ✗ Consensus FAILED    |
 
 **Roundtable Logic**:
+
 - **Risk < 0.4**: Primary tongue only (fast path)
 - **0.4 ≤ Risk < 0.7**: Primary + Policy (RU) + Security (UM)
 - **Risk ≥ 0.7**: Primary + Policy + Security + Logic (CA) + all affected domains
@@ -126,12 +130,14 @@ The hallucinated command was blocked because the **three independent verificatio
 ## What Makes This Special?
 
 ### Traditional Security (Key-Based):
+
 ```
 Valid Key → Access Granted
 Stolen Key → Access Granted ✗ (attacker succeeds)
 ```
 
 ### GeoSeal + Spiralverse + SCBE:
+
 ```
 Valid Key + Correct Geometry + Semantic Classification + Risk Score
   → All must align or request is DENIED
@@ -188,7 +194,7 @@ Every request processed through this system generates:
    - Sphere coordinates (behavioral state)
    - Cube coordinates (policy state)
    - Path classification (interior/exterior)
-   - Realm distance d*
+   - Realm distance d\*
    - Harmonic amplification factor H
 
 3. **Risk Governance Decisions**
@@ -205,6 +211,7 @@ Spiralverse auto-generated, cryptographically verified conversation: **$0.0001 p
 **Cost reduction**: **5,000× - 50,000×**
 
 **Quality advantage**: Every sample has:
+
 - Semantic domain tags (KO/AV/RU/CA/UM/DR)
 - Cryptographic trust score
 - Geometric coordinates
@@ -218,18 +225,21 @@ This is **labeled-by-default** training data that can't be poisoned or forged.
 Your invention covers:
 
 ### Core Claims (from GeoSeal):
+
 1. ✓ Dual-space geometric classification (sphere S^n + hypercube [0,1]^m)
 2. ✓ Path-dependent cryptographic domain switching (interior → AES, exterior → post-quantum)
 3. ✓ Geometric time dilation (τ_allow = exp(-γ · r))
-4. ✓ Distance-based harmonic risk amplification (H = e^(d*²))
+4. ✓ Distance-based harmonic risk amplification (H = e^(d\*²))
 
 ### Novel Claims (from Spiralverse):
+
 5. ✓ Semantic domain-separated key derivation (Six Sacred Tongues)
 6. ✓ Multi-signature consensus protocol (Roundtable)
 7. ✓ Cryptographic provenance for synthetic data generation
 8. ✓ 6D Acoustic Lattice topology for state representation
 
 ### Integration Claims (from Unified System):
+
 9. ✓ Hyperbolic geometry + geometric trust manifold + semantic cryptography
 10. ✓ Real-time drift detection via dual-space distance tracking
 11. ✓ AI hallucination prevention via geometric + semantic + risk consensus
@@ -237,11 +247,13 @@ Your invention covers:
 ## Next Steps
 
 1. **Run the demo yourself**:
+
    ```bash
    python examples/demo_integrated_system.py
    ```
 
 2. **View the detailed report**:
+
    ```bash
    cat integrated_system_demo_report.json
    ```

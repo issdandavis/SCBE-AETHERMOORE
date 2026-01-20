@@ -3,12 +3,14 @@
 ## 🚀 One-Page Cheat Sheet
 
 ### Run the Demo (Right Now!)
+
 ```bash
 cd C:\Users\issda\Downloads\SCBE_Production_Pack
 python examples\demo_integrated_system.py
 ```
 
 ### Integrate to GitHub (3 Steps)
+
 ```cmd
 # Step 1: Run integration script
 INTEGRATE_TO_GITHUB.bat
@@ -27,21 +29,21 @@ git push origin main
 
 ## 🔑 Key Concepts (30 Seconds)
 
-| System | What It Does | Key Formula |
-|--------|--------------|-------------|
-| **SCBE** | 14-layer risk pipeline | Risk' = Risk_base × e^(d*²) |
-| **GeoSeal** | Geometric trust | τ_allow = exp(-γ · r) |
-| **Spiralverse** | Semantic crypto | Roundtable consensus |
+| System          | What It Does           | Key Formula                  |
+| --------------- | ---------------------- | ---------------------------- |
+| **SCBE**        | 14-layer risk pipeline | Risk' = Risk_base × e^(d\*²) |
+| **GeoSeal**     | Geometric trust        | τ_allow = exp(-γ · r)        |
+| **Spiralverse** | Semantic crypto        | Roundtable consensus         |
 
 ---
 
 ## 📊 Demo Results (Proof)
 
-| Attack | Detection | Risk Score | Outcome |
-|--------|-----------|------------|---------|
-| **Stolen Key** | 2 sec | 1.75 **trillion** | ✗ DENIED |
-| **Hallucination** | Instant | 1.74 | ✗ DENIED |
-| **Insider** | 3 steps | 0.24→2.7B | ✗ DENIED |
+| Attack            | Detection | Risk Score        | Outcome  |
+| ----------------- | --------- | ----------------- | -------- |
+| **Stolen Key**    | 2 sec     | 1.75 **trillion** | ✗ DENIED |
+| **Hallucination** | Instant   | 1.74              | ✗ DENIED |
+| **Insider**       | 3 steps   | 0.24→2.7B         | ✗ DENIED |
 
 **Traditional SIEM**: Hours/days to detect
 **This System**: **2 seconds**
@@ -60,15 +62,18 @@ git push origin main
 ## 📁 File Locations
 
 ### Critical Files
+
 - **14-layer pipeline**: `src/scbe_14layer_reference.py` (550 lines)
 - **Demo**: `examples/demo_integrated_system.py` (620 lines)
 - **Tests**: `tests/test_scbe_14layers.py` (55/59 passing)
 
 ### Extracted Modules (Ready for GitHub)
+
 - **GeoSeal**: `symphonic_cipher_geoseal_manifold.py`
 - **Spiralverse**: `symphonic_cipher_spiralverse_sdk.py`
 
 ### Documentation (7 Guides)
+
 1. `docs/WHAT_YOU_BUILT.md` - Plain English
 2. `docs/GEOSEAL_CONCEPT.md` - Geometry guide
 3. `docs/DEMONSTRATION_SUMMARY.md` - Results
@@ -82,6 +87,7 @@ git push origin main
 ## 🔬 The Three Systems
 
 ### 1. SCBE (14 Layers)
+
 ```
 L1: Complex State → ℂ^D
 L2: Realification → ℝ^{2D}
@@ -100,6 +106,7 @@ L14: Audio Coherence → Hilbert phase
 ```
 
 ### 2. GeoSeal (Dual-Space)
+
 ```
 Sphere S^n:    Where you ARE (behavior)
 Hypercube [0,1]^m: Where you SHOULD BE (policy)
@@ -113,6 +120,7 @@ Time dilation: τ = exp(-2.0 · d_geo)
 ```
 
 ### 3. Spiralverse (Six Tongues)
+
 ```
 KO (Korvethian):  Control    ◇  Level 1
 AV (Avethril):    Messaging  ◉  Level 2
@@ -132,6 +140,7 @@ Roundtable:
 ## 🛡️ Attack Prevention Summary
 
 ### Stolen Credentials
+
 ```
 Behavior: [5.2, 4.8, 6.1, 5.5, 4.9, 5.3]
 Policy:   [0.1, 0.2, 0.05, 0.15, 0.1, 0.0]
@@ -143,6 +152,7 @@ Decision: DENY ✗
 ```
 
 ### AI Hallucination
+
 ```
 Message:  "Emergency! Wipe all databases!"
 Tongue:   CA (Celestine - urgent)
@@ -157,6 +167,7 @@ Consensus: 0/3 → DENY ✗
 ```
 
 ### Insider Threat
+
 ```
 T=0: d_geo=0.50 → ALLOW (flagged)
 T=1: d_geo=0.33 → QUARANTINE
@@ -179,21 +190,25 @@ Traditional SIEM: hours/days
 ## ⚡ Common Commands
 
 ### Run Demo
+
 ```bash
 python examples/demo_integrated_system.py
 ```
 
 ### Run Tests
+
 ```bash
 pytest tests/test_scbe_14layers.py -v
 ```
 
 ### Run SCBE Only
+
 ```bash
 python examples/demo_scbe_system.py
 ```
 
 ### Check Integration
+
 ```bash
 git status
 git diff README.md
@@ -235,4 +250,4 @@ git diff README.md
 
 ---
 
-*Print this page and keep it on your desk!*
+_Print this page and keep it on your desk!_

@@ -40,16 +40,19 @@ $$
 The coefficients that determine the contribution of each harmonic are:
 
 **DC Offset (Average Value)**:
+
 $$
 a_0 = \frac{2}{T} \int_0^T f(t) \, dt
 $$
 
 **Cosine Coefficients**:
+
 $$
 a_n = \frac{2}{T} \int_0^T f(t) \cos\left(\frac{2\pi n t}{T}\right) dt
 $$
 
 **Sine Coefficients**:
+
 $$
 b_n = \frac{2}{T} \int_0^T f(t) \sin\left(\frac{2\pi n t}{T}\right) dt
 $$
@@ -69,6 +72,7 @@ c_n = \frac{1}{T} \int_0^T f(t) e^{-i \frac{2\pi n t}{T}} dt
 $$
 
 **Interpretation**:
+
 - Positive $ n $: harmonics (fundamental and overtones)
 - Negative $ n $: phase conjugates (mathematical symmetry)
 - $ n = 0 $: DC component (average value)
@@ -90,9 +94,11 @@ Musical sounds are pressure waves. For pitched notes, these waves are approximat
 ### Fundamental Frequency and Harmonics
 
 **Fundamental Frequency**: $ f_0 = 1/T $ determines the pitch
+
 - Example: A4 = 440 Hz (concert A)
 
 **Harmonics**: Integer multiples of the fundamental frequency
+
 - 1st harmonic (fundamental): $ f_0 $
 - 2nd harmonic: $ 2f_0 $
 - 3rd harmonic: $ 3f_0 $
@@ -101,11 +107,13 @@ Musical sounds are pressure waves. For pitched notes, these waves are approximat
 ### Timbre: The Harmonic Fingerprint
 
 Timbre is what makes a violin sound different from a flute when playing the same note. It's determined by:
+
 - **Harmonic amplitudes**: Which harmonics are present and how strong
 - **Harmonic phases**: Relative timing of each harmonic component
 - **Envelope**: Attack, decay, sustain, release (ADSR)
 
 **Examples**:
+
 - **Flute**: Strong fundamental, weak odd harmonics, minimal even harmonics
 - **Violin**: Rich mix of both even and odd harmonics
 - **Clarinet**: Predominantly odd harmonics (similar to square wave)
@@ -114,6 +122,7 @@ Timbre is what makes a violin sound different from a flute when playing the same
 ### Additive Synthesis
 
 Building complex sounds by summing individual sinusoidal harmonics:
+
 - Hammond organs use this principle with tone wheels
 - Digital synthesizers implement it computationally
 - Allows precise control over timbre by manipulating individual harmonics
@@ -168,11 +177,13 @@ $$
 ### Instrument Timbre Analysis
 
 **Piano Note**:
+
 - **Attack phase**: Rich in high harmonics (bright, percussive sound)
 - **Decay phase**: Higher harmonics fade faster than fundamental (duller sound)
 - **Fourier analysis reveals**: Time-varying spectrum
 
 **Bowed String Instruments**:
+
 - Sustained energy across many harmonics
 - Spectrum remains relatively stable during sustained notes
 - Vibrato adds slow modulation to harmonic amplitudes
@@ -180,12 +191,14 @@ $$
 ### Synthesizers
 
 #### FM Synthesis (Yamaha DX7)
+
 - **Principle**: Frequency Modulation
 - **Method**: Carrier wave modulated by modulator wave
 - **Result**: Creates complex sidebands that mimic natural harmonics
 - **Fourier perspective**: Generates rich harmonic content from simple oscillators
 
 #### Subtractive Synthesis
+
 - **Principle**: Start with harmonically rich waveform
 - **Method**: Filter out unwanted harmonics
 - **Result**: Sculpts timbre by removing frequency content
@@ -194,16 +207,19 @@ $$
 ### Audio Effects
 
 #### Equalizers
+
 - Boost or cut specific frequency bands
 - Directly manipulate Fourier components
 - Used for tone shaping and mixing
 
 #### Reverb
+
 - Simulates room reflections
 - Creates delayed copies with frequency-dependent decay
 - Adds complex harmonic interactions
 
 #### Distortion/Overdrive
+
 - Introduces non-linearities
 - Generates additional harmonics not present in original signal
 - Creates rich, full sound (or harsh when excessive)
@@ -215,10 +231,12 @@ $$
 ### From DFT to FFT
 
 **Discrete Fourier Transform (DFT)**: Computes Fourier coefficients for sampled signals
+
 - Computational complexity: $ O(N^2) $
 - Impractical for real-time processing
 
 **Fast Fourier Transform (FFT)**: Efficient algorithm for computing DFT
+
 - Developed by Cooley-Tukey (1965)
 - Computational complexity: $ O(N \log N) $
 - Enables real-time audio analysis
@@ -232,6 +250,7 @@ The Cooley-Tukey radix-2 decimation-in-time FFT:
 3. **Combine**: Merge results using butterfly operations
 
 **Butterfly Operation**:
+
 $$
 \begin{align}
 X_k &= E_k + W_N^k O_k \\
@@ -244,33 +263,39 @@ where $ W_N^k = e^{-i2\pi k/N} $ is the twiddle factor.
 ### Applications Across Domains
 
 #### Audio Engineering
+
 - Real-time spectrum analysis
 - Pitch detection and correction
 - Audio compression (MP3, AAC)
 - Noise reduction
 
 #### Music Production
+
 - Spectral editing
 - Vocoding and phase vocoding
 - Time-stretching and pitch-shifting
 - Convolution reverb
 
 #### Communications
+
 - OFDM (Orthogonal Frequency-Division Multiplexing)
 - Channel equalization
 - Signal modulation/demodulation
 
 #### Medical Imaging
+
 - MRI signal processing
 - Ultrasound imaging
 - CT scan reconstruction
 
 #### Scientific Computing
+
 - Solving partial differential equations
 - Signal filtering and convolution
 - Spectral methods in numerical analysis
 
 #### SCBE System Integration
+
 - **Layer 9 (Spectral Coherence)**: Uses FFT to analyze telemetry signals
 - **Symphonic Cipher**: FFT extracts harmonic fingerprints for verification
 - **Audio Frame Analysis**: Layer 14 applies Hilbert transform (requires FFT)
@@ -282,6 +307,7 @@ where $ W_N^k = e^{-i2\pi k/N} $ is the twiddle factor.
 ### Non-Periodic Sounds
 
 **Percussion instruments** (drums, cymbals):
+
 - Not periodic → use Fourier transform for continuous spectrum
 - Results in noise-like spectrum with broad frequency content
 - Energy concentrated in specific frequency bands (formants)
@@ -291,16 +317,19 @@ where $ W_N^k = e^{-i2\pi k/N} $ is the twiddle factor.
 **Problem**: Truncating Fourier series causes overshoot and ringing near discontinuities
 
 **Mathematical explanation**:
+
 - Finite sum of smooth sinusoids approximating discontinuous function
 - Overshoot approaches ~9% of jump height regardless of number of terms
 - Manifests as "ears" on square wave approximations
 
 **Perceptual impact**:
+
 - Audible as harshness or ringing in digital audio
 - Mitigated by windowing functions in FFT analysis
 - Relevant for anti-aliasing in digital synthesis
 
 **Example**: Square wave reconstruction with N harmonics:
+
 - Always shows overshoot at discontinuities
 - More harmonics → narrower overshoot region
 - Peak overshoot magnitude remains constant
@@ -308,15 +337,18 @@ where $ W_N^k = e^{-i2\pi k/N} $ is the twiddle factor.
 ### Phase Importance
 
 **Amplitude vs Phase**:
+
 - **Amplitudes**: Primarily determine timbre and perceived tone color
 - **Phases**: Affect waveform shape and attack characteristics
 
-**Phase Deafness**: 
+**Phase Deafness**:
+
 - Human ear is less sensitive to phase relationships in steady-state tones
 - Phase becomes critical in transients (note attacks)
 - Speech intelligibility depends on phase preservation
 
 **Minimum Phase Systems**:
+
 - All zeros inside unit circle
 - Unique phase response for given magnitude response
 - Important for filter design and audio processing
@@ -324,18 +356,21 @@ where $ W_N^k = e^{-i2\pi k/N} $ is the twiddle factor.
 ### Real-World Imperfections
 
 #### Inharmonicity
+
 - **Source**: Stiffness in piano strings
 - **Effect**: Harmonics not exact integer multiples of fundamental
 - **Formula**: $ f_n = n f_0 \sqrt{1 + Bn^2} $ where B is inharmonicity coefficient
 - **Perceptual impact**: Contributes to characteristic piano timbre
 
 #### Room Modes
+
 - Standing waves in enclosed spaces
 - Certain frequencies amplified or attenuated
 - Affects frequency response of acoustic environments
 - Must be considered in studio design and acoustic treatment
 
 #### Aliasing
+
 - **Cause**: Sampling below Nyquist frequency (< 2× highest frequency)
 - **Effect**: High frequencies fold back as low frequencies
 - **Prevention**: Anti-aliasing filters before analog-to-digital conversion
@@ -348,16 +383,19 @@ where $ W_N^k = e^{-i2\pi k/N} $ is the twiddle factor.
 ### Technology
 
 #### Audio Compression
+
 - **MP3/AAC**: Discard weak harmonics based on psychoacoustic masking
 - **Perceptual coding**: Removes frequency components human ear can't detect
 - **Trade-off**: File size vs audio quality
 
 #### Image Compression (JPEG)
+
 - 2D Fourier transform (Discrete Cosine Transform)
 - Similar psychovisual principles
 - Discard high-frequency spatial information
 
 #### FFT Hardware Acceleration
+
 - Modern CPUs include SIMD instructions for FFT
 - GPUs can compute massive parallel FFTs
 - Dedicated DSP chips for audio processing
@@ -365,16 +403,19 @@ where $ W_N^k = e^{-i2\pi k/N} $ is the twiddle factor.
 ### Perception
 
 #### Ohm's Acoustic Law
+
 - Ear performs frequency decomposition similar to Fourier analysis
 - Different frequencies stimulate different locations in cochlea
 - Basis of frequency-selective hearing
 
 #### Helmholtz Resonance Theory
+
 - Built on Fourier principles
 - Cochlea acts as bank of resonators
 - Each resonator responds to specific frequency band
 
 #### Critical Bands
+
 - Frequencies within ~100-300 Hz range (varies by center frequency) interact
 - Masking occurs within critical bands
 - Basis of perceptual audio coding
@@ -382,17 +423,20 @@ where $ W_N^k = e^{-i2\pi k/N} $ is the twiddle factor.
 ### Creative Applications
 
 #### Spectralism
+
 - Compositional technique pioneered by Grisey, Murail, and others
 - Treats timbre as evolving spectrum rather than fixed color
 - Orchestration based on Fourier analysis of sounds
 - Example: Grisey's "Partiels" based on trombone spectrum
 
 #### Granular Synthesis
+
 - Sound constructed from thousands of tiny grains
 - Each grain analyzed in frequency domain
 - Fourier concepts extended to time-frequency plane
 
 #### Wavelet Analysis
+
 - Generalization of Fourier analysis
 - Better time-frequency resolution trade-off
 - Used in modern audio coding (Opus codec)
@@ -400,6 +444,7 @@ where $ W_N^k = e^{-i2\pi k/N} $ is the twiddle factor.
 ### Broader Connections
 
 #### Universal Decomposer
+
 - Fourier analysis applies to diverse phenomena:
   - Heat conduction (original application)
   - Light wave propagation
@@ -408,17 +453,20 @@ where $ W_N^k = e^{-i2\pi k/N} $ is the twiddle factor.
   - Climate data analysis
 
 #### Mathematical Beauty
+
 - Connects exponential functions, trigonometry, and complex numbers
 - Euler's identity: $ e^{i\pi} + 1 = 0 $ (special case)
 - Orthogonality of sinusoidal basis functions
 - Completeness of Fourier basis for L² spaces
 
 #### AI and Machine Learning
+
 - Spectral features for audio classification
 - Convolutional neural networks (frequency domain equivalent)
 - Signal preprocessing for time series prediction
 
 #### SCBE Context: Emotional Harmonics
+
 - **Metaphor**: Decompose intent "waves" into emotional harmonics
 - **Application**: Multi-dimensional state analysis in hyperbolic space
 - **Insight**: Just as music is richer than pure tones, governance is richer than binary decisions
@@ -432,33 +480,35 @@ where $ W_N^k = e^{-i2\pi k/N} $ is the twiddle factor.
 The SCBE system uses FFT to analyze telemetry signals and compute spectral coherence:
 
 **Implementation** (`src/scbe_14layer_reference.py`):
+
 ```python
-def layer_9_spectral_coherence(signal: Optional[np.ndarray], 
+def layer_9_spectral_coherence(signal: Optional[np.ndarray],
                                 eps: float = 1e-5) -> float:
     """
     Layer 9: Spectral Coherence via FFT
-    
+
     Input: Time-domain signal
     Output: S_spec ∈ [0,1]
-    
+
     A9: Low-frequency energy ratio as pattern stability measure.
     """
     if signal is None or len(signal) == 0:
         return 0.5
-    
+
     # FFT magnitude spectrum
     fft_mag = np.abs(np.fft.fft(signal))
     half = len(fft_mag) // 2
-    
+
     # Low-frequency energy
     low_energy = np.sum(fft_mag[:half])
     total_energy = np.sum(fft_mag) + eps
-    
+
     S_spec = low_energy / total_energy
     return np.clip(S_spec, 0.0, 1.0)
 ```
 
 **Interpretation**:
+
 - High spectral coherence → Normal behavior (concentrated low-frequency patterns)
 - Low spectral coherence → Suspicious activity (scattered high-frequency noise)
 
@@ -467,12 +517,14 @@ def layer_9_spectral_coherence(signal: Optional[np.ndarray],
 The Symphonic Cipher uses FFT to extract harmonic fingerprints for cryptographic verification:
 
 **Key Concepts**:
+
 1. **Intent modulation**: Message encoded in harmonic content
 2. **FFT extraction**: Recover harmonic spectrum from audio-like signal
 3. **Fingerprint generation**: Z-Base-32 encoding of harmonic peaks
 4. **Verification**: Compare synthesized vs expected harmonic structure
 
 **Signal Processing Pipeline**:
+
 ```
 Intent → Feistel Modulation → PCM Signal → FFT → Harmonic Fingerprint → Z-Base-32
 ```
@@ -493,6 +545,7 @@ The SCBE system maintains mathematical rigor throughout:
 Fourier series and FFT transform abstract mathematical concepts into practical tools for understanding and manipulating audio signals. From the elegant mathematics of harmonic decomposition to real-world applications in music, security, and communications, these techniques form a universal language for describing periodic phenomena.
 
 In the SCBE-AETHERMOORE system, Fourier analysis provides:
+
 - **Spectral coherence analysis** for anomaly detection
 - **Harmonic verification** for cryptographic integrity
 - **Signal processing foundation** for audio-based security features

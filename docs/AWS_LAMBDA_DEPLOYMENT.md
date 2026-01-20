@@ -25,16 +25,19 @@ The Lambda handler implements two key patent seams:
 ### Python Backend Integration
 
 **SCBE 14-Layer Pipeline** (`src/scbe_14layer_reference.py`)
+
 - Processes complex state through hyperbolic geometry
 - Returns ALLOW/QUARANTINE/DENY decisions
 - Integrates with Lambda via Python subprocess or API Gateway
 
 **AetherMoore Core** (`src/aethermoore.py`)
+
 - Quantum-resistant AQM (Active Queue Management)
 - Soliton wave dynamics for packet scheduling
 - Physics-based traffic shaping
 
 **Symphonic Cipher** (`src/symphonic_cipher/`)
+
 - FFT-based harmonic verification
 - Dual-lattice consensus (Kyber + Dilithium)
 - Flat-slope encoding for covert channels
@@ -51,6 +54,7 @@ const authorized = TrajectoryKernel.authorize(kernel);
 ```
 
 **Advantages:**
+
 - Zero npm dependencies
 - <1MB deployment package
 - Cold start: ~100ms
@@ -86,6 +90,7 @@ def lambda_handler(event, context):
 ```
 
 **Dependencies (requirements.txt):**
+
 ```
 numpy>=1.20.0
 scipy>=1.7.0
@@ -217,6 +222,7 @@ python tests/stress_test.py
 ```
 
 **Simulates:**
+
 - 1000 concurrent requests
 - Attack scenarios (DDoS, malicious packets)
 - Normal traffic patterns
@@ -238,6 +244,7 @@ curl -X POST http://localhost:3000/classify \
 ```
 
 **Expected response:**
+
 ```json
 {
   "decision": "QUARANTINE",
@@ -245,8 +252,8 @@ curl -X POST http://localhost:3000/classify \
   "distance": 0.3822,
   "coherence": {
     "C_spin": 0.964,
-    "S_spec": 0.500,
-    "tau": 0.500,
+    "S_spec": 0.5,
+    "tau": 0.5,
     "S_audio": 0.989
   }
 }
@@ -263,6 +270,7 @@ curl -X POST http://localhost:3000/classify \
 ### Provisioned Concurrency
 
 For production traffic:
+
 ```bash
 aws lambda put-provisioned-concurrency-config \
   --function-name scbe-14layer-governance \
@@ -271,6 +279,7 @@ aws lambda put-provisioned-concurrency-config \
 ```
 
 **Benefits:**
+
 - Eliminates cold starts
 - Consistent <100ms latency
 - Cost: ~$20/month for 10 provisioned instances
@@ -278,6 +287,7 @@ aws lambda put-provisioned-concurrency-config \
 ### CloudWatch Metrics
 
 Monitor:
+
 - `Invocations` - Total requests
 - `Duration` - Execution time
 - `Errors` - Failed invocations
@@ -294,19 +304,12 @@ Monitor:
   "Statement": [
     {
       "Effect": "Allow",
-      "Action": [
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ],
+      "Action": ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
       "Resource": "arn:aws:logs:*:*:*"
     },
     {
       "Effect": "Allow",
-      "Action": [
-        "kms:Decrypt",
-        "kms:GenerateDataKey"
-      ],
+      "Action": ["kms:Decrypt", "kms:GenerateDataKey"],
       "Resource": "arn:aws:kms:us-east-1:123456789:key/*"
     }
   ]
@@ -333,16 +336,19 @@ Lambda function code and environment variables are encrypted using AWS KMS.
 ## Cost Estimation
 
 **Assumptions:**
+
 - 1M requests/month
 - 500ms average duration
 - 512 MB memory
 
 **Lambda Costs:**
+
 - Requests: 1M × $0.20/1M = $0.20
 - Compute: 1M × 0.5s × (512/1024) × $0.0000166667 = $4.17
 - **Total: ~$4.37/month**
 
 **API Gateway:**
+
 - 1M requests × $3.50/1M = $3.50
 
 **Grand Total: ~$7.87/month** (excluding data transfer)
