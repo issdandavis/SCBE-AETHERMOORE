@@ -225,7 +225,7 @@ Layer  7: Spectral (Frequency Domain)
 Layer  6: Potential (Energy-Based Security)
 Layer  5: Phase (Phase Space Encryption)
 Layer  4: Breath (Temporal Dynamics)
-Layer  3: Metric (Langues Weighting)
+Layer  3: Metric (Langue Weighting)
 Layer  2: Context (Contextual Encryption)
 Layer  1: Foundation (Mathematical Axioms)
 ```
@@ -335,9 +335,9 @@ function evolveContext(
 }
 ```
 
-## 2.4 Layer 3: Metric (Langues Weighting System)
+## 2.4 Layer 3: Metric (Langue Weighting System)
 
-The Langues Weighting System provides 6D trust scoring across Sacred Tongues.
+The Langue Weighting System provides 6D trust scoring across Sacred Tongues.
 
 ### 2.4.1 Weighting Formula
 
@@ -2118,7 +2118,7 @@ const ARGON2_PARALLELISM = 4;
 | Claim | Description                  | Implementation                  |
 | ----- | ---------------------------- | ------------------------------- |
 | 1-5   | 14-Layer SCBE Architecture   | `src/scbe/pipeline.ts`          |
-| 6-10  | Langues Weighting System     | `src/spaceTor/trust-manager.ts` |
+| 6-10  | Langue Weighting System     | `src/spaceTor/trust-manager.ts` |
 | 11-15 | Sacred Tongue Encoding       | `src/crypto/sacred_tongues.py`  |
 | 16-20 | PHDM Intrusion Detection     | `src/harmonic/phdm.ts`          |
 | 21-25 | Harmonic Scaling Law         | `src/symphonic/harmonic.ts`     |

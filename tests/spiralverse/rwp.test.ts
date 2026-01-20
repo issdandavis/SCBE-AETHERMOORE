@@ -23,13 +23,10 @@ import {
   signRoundtable,
   verifyRoundtable,
   clearNonceCache,
-  // enforcePolicy,
   checkPolicy,
   getRequiredTongues,
   suggestPolicy,
   type Keyring,
-  // type TongueID,
-  // type PolicyLevel,
 } from '../../src/spiralverse';
 
 // Test keyring (32-byte keys for HMAC-SHA256)
