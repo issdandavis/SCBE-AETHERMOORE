@@ -77,7 +77,7 @@ We welcome contributions! Check out our [Issues](https://github.com/ISDanDavis2/
 
 **Patent Pending**: US Provisional Application #63/961,403  
 **Title**: "System and Method for Hyperbolic Geometry-Based Authorization with Topological Control-Flow Integrity"  
-**Inventor**: Isaac Davis  
+**Inventor**: Issac Daniel Davis  
 **Filed**: January 15, 2026
 
 This code is released under Apache 2.0 license which includes patent grant provisions.
@@ -86,6 +86,6 @@ This code is released under Apache 2.0 license which includes patent grant provi
 
 ## Contact
 
-- **Author**: Isaac Davis (@davisissac)
+- **Author**: Issac Davis (@davisissac)
 - **Slack**: aethermorething.slack.com
 - **ORCID**: 0009-0002-3936-9369
