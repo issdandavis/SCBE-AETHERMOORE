@@ -1,0 +1,13 @@
+=== npm ls --depth=0 ===
+scbe-aethermoore@3.0.0 /home/user/scbe-aethermoore-demo
++-- @scbe/aethermoore@3.0.0 extraneous
++-- @types/jest@29.5.14
++-- @types/node@20.19.30
++-- fast-check@4.5.3
++-- prettier@3.8.0
++-- rimraf@5.0.10
++-- ts-node@1.7.1
++-- typedoc@0.25.13
++-- typescript@5.4.5
+`-- vitest@4.0.17
+
