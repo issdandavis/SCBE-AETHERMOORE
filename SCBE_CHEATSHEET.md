@@ -92,7 +92,7 @@ const pqc = new PQCProvider();
 const { publicKey, privateKey } = pqc.generateKeyPair();
 
 // Encrypt
-const ciphertext = pqc.encrypt(publicKey, "secret message");
+const ciphertext = pqc.encrypt(publicKey, 'secret message');
 
 // Decrypt
 const plaintext = pqc.decrypt(privateKey, ciphertext);
@@ -154,25 +154,25 @@ except Exception as e:
 
 ## 📊 Performance Targets
 
-| Operation | Target | Typical |
-|-----------|--------|---------|
-| Encryption | <1ms | 0.5ms |
-| Decryption | <1ms | 0.5ms |
-| FFT (N=1024) | <500μs | 300μs |
-| Feistel (6 rounds) | <100μs | 50μs |
-| Signature Gen | <1ms | 0.8ms |
-| Signature Verify | <1ms | 0.7ms |
+| Operation          | Target | Typical |
+| ------------------ | ------ | ------- |
+| Encryption         | <1ms   | 0.5ms   |
+| Decryption         | <1ms   | 0.5ms   |
+| FFT (N=1024)       | <500μs | 300μs   |
+| Feistel (6 rounds) | <100μs | 50μs    |
+| Signature Gen      | <1ms   | 0.8ms   |
+| Signature Verify   | <1ms   | 0.7ms   |
 
 ## 🛡️ Security Guarantees
 
-| Attack Type | Resistance | Notes |
-|-------------|------------|-------|
-| Brute Force | 2^256 | Keyspace too large |
-| Replay | 100% | Nonce tracking |
-| MITM | 100% | Tag verification |
-| Quantum | 128-bit PQ | Post-quantum primitives |
-| Side-Channel | Timing-safe | Constant-time ops |
-| Differential | Avalanche | 1-bit → 50% change |
+| Attack Type  | Resistance  | Notes                   |
+| ------------ | ----------- | ----------------------- |
+| Brute Force  | 2^256       | Keyspace too large      |
+| Replay       | 100%        | Nonce tracking          |
+| MITM         | 100%        | Tag verification        |
+| Quantum      | 128-bit PQ  | Post-quantum primitives |
+| Side-Channel | Timing-safe | Constant-time ops       |
+| Differential | Avalanche   | 1-bit → 50% change      |
 
 ## 🎯 Common Use Cases
 
@@ -208,10 +208,7 @@ with open('secret.enc', 'rb') as f:
 
 ```typescript
 // Generate auth token
-const token = crypto.generateHarmonicSignature(
-  JSON.stringify({ userId, timestamp }),
-  apiSecret
-);
+const token = crypto.generateHarmonicSignature(JSON.stringify({ userId, timestamp }), apiSecret);
 
 // Verify token
 const isValid = crypto.verifyHarmonicSignature(
@@ -224,20 +221,24 @@ const isValid = crypto.verifyHarmonicSignature(
 ## 🔧 Troubleshooting
 
 ### "Decryption failed"
+
 - Check that you're using the same key for encrypt/decrypt
 - Verify the ciphertext wasn't corrupted
 - Ensure you're using the same SCBE version
 
 ### "Nonce already used"
+
 - Generate a new nonce for each message
 - Don't reuse nonces across sessions
 
 ### "Invalid signature"
+
 - Verify the intent string matches exactly
 - Check that the key is correct
 - Ensure no whitespace differences
 
 ### "Performance too slow"
+
 - Check payload size (target: <1KB)
 - Verify FFT size is power of 2
 - Profile with `metrics` command

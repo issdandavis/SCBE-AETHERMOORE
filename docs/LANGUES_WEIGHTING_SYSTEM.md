@@ -24,29 +24,29 @@ d_l = |x_l - μ_l|,  x ∈ ℝ^6
 
 ### Symbol Table
 
-| Symbol | Meaning | Typical Value |
-|--------|---------|---------------|
+| Symbol  | Meaning                | Typical Value                                               |
+| ------- | ---------------------- | ----------------------------------------------------------- |
 | **w_l** | Langue harmonic weight | KO: 1.0, AV: 1.125, RU: 1.25, CA: 1.333, UM: 1.5, DR: 1.667 |
-| **β_l** | Growth coefficient | 0.5–2.0 |
-| **ω_l** | Temporal frequency | 2π/T_l |
-| **φ_l** | Phase offset | 2πk/6 |
-| **μ_l** | Ideal (trusted) value | Context dependent |
+| **β_l** | Growth coefficient     | 0.5–2.0                                                     |
+| **ω_l** | Temporal frequency     | 2π/T_l                                                      |
+| **φ_l** | Phase offset           | 2πk/6                                                       |
+| **μ_l** | Ideal (trusted) value  | Context dependent                                           |
 
 ---
 
 ## Proven Mathematical Properties
 
-| Property | Proof Sketch |
-|----------|--------------|
-| **Positivity** | w_l > 0, exp > 0 ⇒ L > 0 |
-| **Monotonicity** | ∂L/∂d_l = w_l β_l e^(β_l(...)) > 0. Deviations always increase cost. |
-| **Bounded Oscillation** | sin term ∈ [-1,1] ⇒ e^(β_l(d_l-1)) ≤ ... ≤ e^(β_l(d_l+1)) |
-| **Convexity** | ∂²L/∂d_l² = (β_l)² L_l > 0 ⇒ convex in each dimension |
-| **Smoothness** | Analytic composition ⇒ L ∈ C^∞(ℝ^6 × ℝ) |
-| **Normalization** | L_N = L/L_max ∈ (0,1] |
-| **Gradient Field** | ∇L = w_l β_l e^(β_l(...)) sgn(x_l - μ_l). Descent gives stable convergence. |
-| **Energy Integral** | Cycle mean E_L = Σ w_l e^(β_l d_l) I_0(β_l) (Bessel I_0) |
-| **Lyapunov Stability** | V = L - L(μ,t) ≥ 0; V̇ = -k‖∇L‖² ≤ 0. Stable around ideal. |
+| Property                | Proof Sketch                                                                |
+| ----------------------- | --------------------------------------------------------------------------- |
+| **Positivity**          | w_l > 0, exp > 0 ⇒ L > 0                                                    |
+| **Monotonicity**        | ∂L/∂d_l = w_l β_l e^(β_l(...)) > 0. Deviations always increase cost.        |
+| **Bounded Oscillation** | sin term ∈ [-1,1] ⇒ e^(β_l(d_l-1)) ≤ ... ≤ e^(β_l(d_l+1))                   |
+| **Convexity**           | ∂²L/∂d_l² = (β_l)² L_l > 0 ⇒ convex in each dimension                       |
+| **Smoothness**          | Analytic composition ⇒ L ∈ C^∞(ℝ^6 × ℝ)                                     |
+| **Normalization**       | L_N = L/L_max ∈ (0,1]                                                       |
+| **Gradient Field**      | ∇L = w_l β_l e^(β_l(...)) sgn(x_l - μ_l). Descent gives stable convergence. |
+| **Energy Integral**     | Cycle mean E_L = Σ w_l e^(β_l d_l) I_0(β_l) (Bessel I_0)                    |
+| **Lyapunov Stability**  | V = L - L(μ,t) ≥ 0; V̇ = -k‖∇L‖² ≤ 0. Stable around ideal.                   |
 
 ---
 
@@ -68,17 +68,18 @@ Flux coefficients allow each dimension to **breathe** without altering continuit
 
 ### Dimensional Modes
 
-| Mode | ν_l Range | Meaning |
-|------|-----------|---------|
-| **Polly** | ν_l = 1.0 | Full dimensional participation |
-| **Demi** | 0.5 < ν_l < 1.0 | Partial participation |
-| **Quasi** | ν_l < 0.5 | Weak participation |
+| Mode      | ν_l Range       | Meaning                        |
+| --------- | --------------- | ------------------------------ |
+| **Polly** | ν_l = 1.0       | Full dimensional participation |
+| **Demi**  | 0.5 < ν_l < 1.0 | Partial participation          |
+| **Quasi** | ν_l < 0.5       | Weak participation             |
 
 ---
 
 ## Worked Example
 
 For:
+
 - **x** = (0.8, 0.6, 0.4, 0.2, 0.1, 0.9)
 - **μ** = (0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
 - **β_l** = 1
@@ -109,7 +110,7 @@ const mu = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5];
 const w = [1, 1.125, 1.25, 1.333, 1.5, 1.667];
 const beta = [1, 1, 1, 1, 1, 1];
 const omega = [1, 2, 3, 4, 5, 6];
-const phi = [0, Math.PI/3, 2*Math.PI/3, Math.PI, 4*Math.PI/3, 5*Math.PI/3];
+const phi = [0, Math.PI / 3, (2 * Math.PI) / 3, Math.PI, (4 * Math.PI) / 3, (5 * Math.PI) / 3];
 const t = 1.0;
 
 const L = languesMetric(x, mu, w, beta, omega, phi, t);
@@ -126,7 +127,7 @@ import numpy as np
 def langues_metric(x, mu, w, beta, omega, phi, t, nu=None):
     """
     Compute Langues metric L(x,t)
-    
+
     Args:
         x: 6D trust vector
         mu: Ideal values [6]
@@ -136,7 +137,7 @@ def langues_metric(x, mu, w, beta, omega, phi, t, nu=None):
         phi: Phase offsets [6]
         t: Current time
         nu: Flux coefficients [6] (optional)
-    
+
     Returns:
         Langues metric L(x,t)
     """
@@ -162,32 +163,33 @@ print("L(x,t) =", langues_metric(x, mu, w, beta, omega, phi, t))
 
 ## Integration with SCBE-AETHERMOORE
 
-| Layer | How LWS Connects |
-|-------|------------------|
+| Layer                         | How LWS Connects                                             |
+| ----------------------------- | ------------------------------------------------------------ |
 | **3 – Langues Metric Tensor** | Implements L() for tongue weighting and golden-ratio scaling |
-| **4–5 – Poincaré / Metric** | Feeds weighted coordinates into hyperbolic embedding |
-| **6 – Breathing Transform** | Uses flux ν_l(t) for dimensional breathing |
-| **9 – Multi-Well Realms** | Realm cost derived from aggregated L |
-| **12 – Harmonic Wall** | H(d,R) = R^(d²) uses d = normalized L |
-| **13 – AETHERMOORE** | α_L L_f(ξ,t) term in Snap potential V(x) |
+| **4–5 – Poincaré / Metric**   | Feeds weighted coordinates into hyperbolic embedding         |
+| **6 – Breathing Transform**   | Uses flux ν_l(t) for dimensional breathing                   |
+| **9 – Multi-Well Realms**     | Realm cost derived from aggregated L                         |
+| **12 – Harmonic Wall**        | H(d,R) = R^(d²) uses d = normalized L                        |
+| **13 – AETHERMOORE**          | α_L L_f(ξ,t) term in Snap potential V(x)                     |
 
 ---
 
 ## Semantic Interpretation
 
-| Mathematical Effect | Semantic Meaning |
-|---------------------|------------------|
-| **High L** | High friction / mistrust / risk |
-| **Low L** | Aligned, low-resistance path |
-| **Phase oscillation** | Contextual "breath" / intent modulation |
-| **Flux ν < 1** | Partial or demi dimension (reduced influence) |
-| **β, w tuning** | Control emotional intensity or domain priority |
+| Mathematical Effect   | Semantic Meaning                               |
+| --------------------- | ---------------------------------------------- |
+| **High L**            | High friction / mistrust / risk                |
+| **Low L**             | Aligned, low-resistance path                   |
+| **Phase oscillation** | Contextual "breath" / intent modulation        |
+| **Flux ν < 1**        | Partial or demi dimension (reduced influence)  |
+| **β, w tuning**       | Control emotional intensity or domain priority |
 
 ---
 
 ## Validation
 
 **Monte-Carlo (10⁴ samples)**:
+
 - Mean L ≈ 7.2 ± 2.5
 - Correlation (L vs Σd) ≈ 0.97 → strong monotonicity
 - Stable under time-phase perturbations (no divergence over 10⁶ steps)
@@ -199,13 +201,7 @@ print("L(x,t) =", langues_metric(x, mu, w, beta, omega, phi, t))
 `/src/spaceTor/trust-manager.ts` exports:
 
 ```typescript
-export {
-  TrustManager,
-  languesMetric,
-  languesMetricFlux,
-  DEFAULT_LANGUES_PARAMS,
-  SacredTongue
-};
+export { TrustManager, languesMetric, languesMetricFlux, DEFAULT_LANGUES_PARAMS, SacredTongue };
 ```
 
 and includes the equations and properties documented here for **Layer 3**.
@@ -224,7 +220,7 @@ const trustManager = new TrustManager();
 const trustVector = [0.8, 0.6, 0.4, 0.2, 0.1, 0.9]; // 6D trust across Sacred Tongues
 const score = trustManager.computeTrustScore('node-123', trustVector);
 
-console.log('Trust Level:', score.level);        // HIGH, MEDIUM, LOW, or CRITICAL
+console.log('Trust Level:', score.level); // HIGH, MEDIUM, LOW, or CRITICAL
 console.log('Normalized Score:', score.normalized); // ∈ [0,1]
 console.log('Contributions:', score.contributions); // Per-tongue breakdown
 

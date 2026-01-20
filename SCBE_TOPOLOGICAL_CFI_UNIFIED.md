@@ -1,4 +1,5 @@
 # SCBE-AETHERMOORE + Topological Linearization CFI
+
 ## Unified Technical & Patent Strategy Document
 
 **Version**: 3.0.0  
@@ -17,23 +18,23 @@ This document unifies two complementary cryptographic and security innovations:
 
 ### Strategic Value Proposition
 
-| Metric | SCBE Uniqueness | Topological CFI | Combined System |
-|--------|----------------|-----------------|-----------------|
-| **Uniqueness (U)** | 0.98 (98% vs. Kyber/Dilithium) | Novel topology-based CFI | 0.99 (system synergy) |
-| **Improvement (I)** | 28% F1-score gain | 90% attack detection | 0.29 (combined) |
-| **Deployability (D)** | 0.99 (226/226 tests, <2ms) | 0.95 (O(1) overhead) | 0.97 (integrated) |
-| **Competitive Advantage** | 30× vs. Kyber | 1.3× vs. LLVM CFI | 40× combined |
+| Metric                    | SCBE Uniqueness                | Topological CFI          | Combined System       |
+| ------------------------- | ------------------------------ | ------------------------ | --------------------- |
+| **Uniqueness (U)**        | 0.98 (98% vs. Kyber/Dilithium) | Novel topology-based CFI | 0.99 (system synergy) |
+| **Improvement (I)**       | 28% F1-score gain              | 90% attack detection     | 0.29 (combined)       |
+| **Deployability (D)**     | 0.99 (226/226 tests, <2ms)     | 0.95 (O(1) overhead)     | 0.97 (integrated)     |
+| **Competitive Advantage** | 30× vs. Kyber                  | 1.3× vs. LLVM CFI        | 40× combined          |
 
 ### Quantified Risk Profile
 
-| Risk Category | Level | Mitigation | Residual Risk |
-|--------------|-------|------------|---------------|
-| Patent (§101/§112) | Medium | Axiomatic proofs, flux ODE | 15% |
-| Market Skepticism | Medium | 3-5 pilot deployments | 12% |
-| Competitive Response | Medium | Patent thicket | 17.5% |
-| Technical Exploit | Low | Formal proofs, audits | 6.4% |
-| Regulatory | Low | NIST/NSA alignment | 4.5% |
-| **Aggregate Risk** | — | Transparent quantification | **25.8%** |
+| Risk Category        | Level  | Mitigation                 | Residual Risk |
+| -------------------- | ------ | -------------------------- | ------------- |
+| Patent (§101/§112)   | Medium | Axiomatic proofs, flux ODE | 15%           |
+| Market Skepticism    | Medium | 3-5 pilot deployments      | 12%           |
+| Competitive Response | Medium | Patent thicket             | 17.5%         |
+| Technical Exploit    | Low    | Formal proofs, audits      | 6.4%          |
+| Regulatory           | Low    | NIST/NSA alignment         | 4.5%          |
+| **Aggregate Risk**   | —      | Transparent quantification | **25.8%**     |
 
 ---
 
@@ -67,28 +68,29 @@ a ⊕ u = ((1 + 2⟨a,u⟩ + ||u||²)a + (1 - ||a||²)u) / (1 + 2⟨a,u⟩ + ||a
 ```
 
 **Properties**:
+
 - Non-commutative but associative (gyrogroup structure)
 - Preserves ball constraint: if ||a|| < 1 and ||u|| < 1, then ||a ⊕ u|| < 1
 - Deterministic: same inputs → same outputs (key derivation stable)
 
 ### 1.2 14-Layer Mathematical Mapping
 
-| Layer | Symbol | Definition | Endpoint | Parameters |
-|-------|--------|------------|----------|------------|
-| **1** | c(t) ∈ ℂ^D | Complex context vector | /authorize | D (dimension) |
-| **2** | x(t) = [ℜ(c), ℑ(c)]^T | Realification (2D) | /authorize | n = 2D |
-| **3** | x_G(t) = G^(1/2)x(t) | Weighted transform | /authorize | G (SPD matrix) |
-| **4** | u(t) = tanh(||x_G||)x_G/||x_G|| | Poincaré embedding | /geometry | ε (scale), δ_ball |
-| **5** | d_H(u,v) | Hyperbolic metric (invariant) | /drift, /authorize | None (invariant) |
-| **6** | T_breath(u;t) | Radial warping (breathing) | /authorize | b(t) (breath factor) |
-| **7** | T_phase(u;t) | Möbius translation + rotation | /derive, /authorize | a(t), Q(t) ∈ O(n) |
-| **8** | d(t) = min_k d_H(ũ(t), ρ_k) | Multi-well realms | /authorize | K (realm count) |
-| **9** | S_spec = 1 - r_HF | FFT spectral coherence | /drift | hf_frac, N (FFT) |
-| **10** | C_spin(t) | Spin coherence (phase) | /derive, /authorize | A_j, ω_j, φ_j |
-| **11** | d_tri | Triadic temporal distance | /drift | τ_1, τ_2, τ_3 |
-| **12** | H(d,R) = R^(d²) | Harmonic scaling | /authorize | R (base, e^2.718) |
-| **13** | Risk' | Composite risk score | /authorize, /teams | Thresholds, weights |
-| **14** | f_audio(t) | Audio telemetry axis | /drift, /authorize | w_a, hf_frac_audio |
+| Layer  | Symbol                      | Definition                    | Endpoint            | Parameters           |
+| ------ | --------------------------- | ----------------------------- | ------------------- | -------------------- | ----- | --- | --- | --- | --- | ------------------ | --------- | ----------------- |
+| **1**  | c(t) ∈ ℂ^D                  | Complex context vector        | /authorize          | D (dimension)        |
+| **2**  | x(t) = [ℜ(c), ℑ(c)]^T       | Realification (2D)            | /authorize          | n = 2D               |
+| **3**  | x_G(t) = G^(1/2)x(t)        | Weighted transform            | /authorize          | G (SPD matrix)       |
+| **4**  | u(t) = tanh(                |                               | x_G                 |                      | )x_G/ |     | x_G |     |     | Poincaré embedding | /geometry | ε (scale), δ_ball |
+| **5**  | d_H(u,v)                    | Hyperbolic metric (invariant) | /drift, /authorize  | None (invariant)     |
+| **6**  | T_breath(u;t)               | Radial warping (breathing)    | /authorize          | b(t) (breath factor) |
+| **7**  | T_phase(u;t)                | Möbius translation + rotation | /derive, /authorize | a(t), Q(t) ∈ O(n)    |
+| **8**  | d(t) = min_k d_H(ũ(t), ρ_k) | Multi-well realms             | /authorize          | K (realm count)      |
+| **9**  | S_spec = 1 - r_HF           | FFT spectral coherence        | /drift              | hf_frac, N (FFT)     |
+| **10** | C_spin(t)                   | Spin coherence (phase)        | /derive, /authorize | A_j, ω_j, φ_j        |
+| **11** | d_tri                       | Triadic temporal distance     | /drift              | τ_1, τ_2, τ_3        |
+| **12** | H(d,R) = R^(d²)             | Harmonic scaling              | /authorize          | R (base, e^2.718)    |
+| **13** | Risk'                       | Composite risk score          | /authorize, /teams  | Thresholds, weights  |
+| **14** | f_audio(t)                  | Audio telemetry axis          | /drift, /authorize  | w_a, hf_frac_audio   |
 
 ### 1.3 Layer 14: Audio Axis (Deterministic Telemetry)
 
@@ -132,6 +134,7 @@ H(d,R) = R^(d²) where R > 1
 ```
 
 **Properties**:
+
 - H(0,R) = 1 (no amplification at realm center)
 - Superexponential growth as d → ∞
 - Derivative: ∂H/∂d = 2d ln(R) R^(d²) > 0 for d > 0
@@ -149,15 +152,16 @@ where d_scale = median_k{d_H(origin, ρ_k)}
 Risk' = (w_d d̃_tri + w_c(1-C_spin) + w_s(1-S_spec) + w_ε(1-ε) + w_a(1-S_audio)) × H(d,R)
 ```
 
-where w_d + w_c + w_s + w_ε + w_a = 1
+where w*d + w_c + w_s + w*ε + w_a = 1
 
 ### 1.5 Competitive Advantage Metrics
 
 #### Uniqueness (U = 0.98)
 
 Feature Basis:
+
 ```
-F = {Post-Quantum, Behavioral Verification, Hyperbolic Geometry, 
+F = {Post-Quantum, Behavioral Verification, Hyperbolic Geometry,
      Fail-to-Noise, Lyapunov Proof, Deployability}
 ```
 
@@ -165,6 +169,7 @@ F = {Post-Quantum, Behavioral Verification, Hyperbolic Geometry,
 **SCBE**: |F_SCBE| = 6 (all features)
 
 **Rarity Weights**:
+
 - Behavioral verification: w = 0.85
 - Hyperbolic geometry: w = 0.95
 - Fail-to-noise: w = 0.98
@@ -199,6 +204,7 @@ A = S / Risk-Adjusted = 0.271 / 0.01 ≈ 30× stronger than Kyber
 ### 1.6 Adaptive Governance & Dimensional Breathing
 
 **Fractional-dimension flux**: Dimensions ε_i(t) ∈ [0,1] breathe between:
+
 - **Polly** (full, ε = 1)
 - **Demi** (partial, 0.5 < ε < 1)
 - **Quasi** (weak, ε < 0.5)
@@ -210,24 +216,25 @@ Snap(t) = 0.5 × D_f(t) where D_f = Σ ε_i(t)
 ```
 
 **Operational Example**:
+
 - Baseline (threat = 0.2): D_f = 6, Snap = 3
 - Attack detected (threat = 0.8): D_f = 2, Snap = 1
 - All-clear (threat = 0.1): D_f = 6, Snap = 3
 
 ### 1.7 Default Parameters
 
-| Parameter | Default Value | Notes |
-|-----------|--------------|-------|
-| R (harmonic base) | e ≈ 2.718 | Natural exponential |
-| ε (embedding scale) | 1.0 | Poincaré embedding |
-| δ_ball | 10^-5 | Ball boundary margin |
-| ε (division safety) | 10^-10 | Prevents division by zero |
-| hf_frac | 0.3 | High-frequency cutoff (30%) |
-| N (FFT window) | 256 | Samples per FFT frame |
-| w_d, w_c, w_s, w_ε, w_a | 0.2 each | Equal weighting (sum = 1.0) |
-| τ_1 (ALLOW threshold) | 0.3 | Risk below → ALLOW |
-| τ_2 (DENY threshold) | 0.7 | Risk above → DENY |
-| K (realm count) | 4 | Number of trust zones |
+| Parameter               | Default Value | Notes                       |
+| ----------------------- | ------------- | --------------------------- |
+| R (harmonic base)       | e ≈ 2.718     | Natural exponential         |
+| ε (embedding scale)     | 1.0           | Poincaré embedding          |
+| δ_ball                  | 10^-5         | Ball boundary margin        |
+| ε (division safety)     | 10^-10        | Prevents division by zero   |
+| hf_frac                 | 0.3           | High-frequency cutoff (30%) |
+| N (FFT window)          | 256           | Samples per FFT frame       |
+| w*d, w_c, w_s, w*ε, w_a | 0.2 each      | Equal weighting (sum = 1.0) |
+| τ_1 (ALLOW threshold)   | 0.3           | Risk below → ALLOW          |
+| τ_2 (DENY threshold)    | 0.7           | Risk above → DENY           |
+| K (realm count)         | 4             | Number of trust zones       |
 
 ---
 
@@ -238,6 +245,7 @@ Snap(t) = 0.5 × D_f(t) where D_f = Σ ε_i(t)
 **Central Hypothesis**: Valid program execution is a single, non-repeating Hamiltonian path through a state-space graph. Attacks deviate orthogonally from this path.
 
 **Key Advantages vs. Label-Based CFI**:
+
 - **Pre-computable**: Embed graph offline; runtime query is O(1)
 - **Detection Rate**: 90%+ on ROP/data-flow attacks (vs. ~70% label CFI)
 - **No Runtime Overhead**: Traditional CFI adds 10-20% latency; topological ~0.5%
@@ -253,6 +261,7 @@ For graph G = (V, E): Find path π visiting each v ∈ V exactly once:
 ```
 
 **Solvability Conditions** (Dirac-Ore Theorems, 1952):
+
 - If deg(v) ≥ |V|/2 for all v, then G is Hamiltonian
 - For bipartite graphs: Hamiltonian path exists iff ||A| - |B|| ≤ 1
 
@@ -288,24 +297,26 @@ For graph G = (V, E): Find path π visiting each v ∈ V exactly once:
 #### Case 3: Learned Embeddings (d ≥ 64)
 
 **Algorithms**:
+
 - Node2Vec (Grover-Leskovec, 2016): Biased random walks
 - UMAP (McInnes et al., 2018): Topological dimensionality reduction
 - Principal Curve Fitting (Hastie-Stuetzle, 1989)
 
 **Benchmark** (|V| = 256 CFG, RTX 4090):
+
 - Embedding time: ~200 ms
 - Deviation threshold: δ = 0.05
 - ROC AUC (attack detection): 0.98
 
 ### 2.4 Attack Path Detection: Taxonomy & Rates
 
-| Attack Type | Detection Rate | Mechanism | Nuances |
-|------------|----------------|-----------|---------|
-| ROP (return-oriented) | 99% | Large orthogonal excursion | Gadget chain jumps >0.2 units |
-| Data-Only (memory) | 70% | Medium deviation | Improved to 95% with memory-hash |
-| Speculative (branch) | 50-80% | Micro-deviations (δ < 0.05) | Needs finer IP sampling |
-| Jump-Oriented (JOP) | 95% | Similar to ROP | Slightly better than ROP |
-| **Aggregate** | **~90%** | — | 90% attack surface reduction |
+| Attack Type           | Detection Rate | Mechanism                   | Nuances                          |
+| --------------------- | -------------- | --------------------------- | -------------------------------- |
+| ROP (return-oriented) | 99%            | Large orthogonal excursion  | Gadget chain jumps >0.2 units    |
+| Data-Only (memory)    | 70%            | Medium deviation            | Improved to 95% with memory-hash |
+| Speculative (branch)  | 50-80%         | Micro-deviations (δ < 0.05) | Needs finer IP sampling          |
+| Jump-Oriented (JOP)   | 95%            | Similar to ROP              | Slightly better than ROP         |
+| **Aggregate**         | **~90%**       | —                           | 90% attack surface reduction     |
 
 ### 2.5 Computational Implementation
 
@@ -323,17 +334,17 @@ def embed_and_linearize(cfg: nx.DiGraph, dim: int = 64):
     n2v = Node2Vec(cfg, dimensions=dim, walk_length=30, num_walks=10)
     model = n2v.fit(window=10, min_count=1, batch_words=4)
     embedding = np.array([model.wv[str(node)] for node in cfg.nodes()])
-    
+
     # Step 2: Reduce to 1D via PCA (principal curve proxy)
     pca = PCA(n_components=1)
     curve_1d = pca.fit_transform(embedding)
-    
+
     # Step 3: Fit NearestNeighbors for runtime queries
     nn_searcher = NearestNeighbors(n_neighbors=1).fit(curve_1d)
-    
+
     return embedding, curve_1d, nn_searcher, pca
 
-def detect_deviation(runtime_state: np.ndarray, curve_1d: np.ndarray, 
+def detect_deviation(runtime_state: np.ndarray, curve_1d: np.ndarray,
                      nn_searcher: NearestNeighbors, threshold: float = 0.05):
     """Query if runtime state deviates from linearized path."""
     distances, _ = nn_searcher.kneighbors(runtime_state.reshape(1, -1))
@@ -345,20 +356,22 @@ def detect_deviation(runtime_state: np.ndarray, curve_1d: np.ndarray,
 
 #### Prior Art Differentiation
 
-| Approach | Year | Limitation | Your Gap |
-|----------|------|------------|----------|
-| LLVM CFI | 2015 | Label-based, ~10-20% latency | Topological pre-computation, O(1) |
-| Control-Flow Guard | 2015 | Pointer-based, coarse | Fine-grained manifold deviations |
-| Pointer Authentication | 2016 | Cryptographic tags | Formal Hamiltonian structure |
-| Graph Anomaly Detection | 2015-2020 | Network traffic, not CFI | CFI-specific instantiation |
+| Approach                | Year      | Limitation                   | Your Gap                          |
+| ----------------------- | --------- | ---------------------------- | --------------------------------- |
+| LLVM CFI                | 2015      | Label-based, ~10-20% latency | Topological pre-computation, O(1) |
+| Control-Flow Guard      | 2015      | Pointer-based, coarse        | Fine-grained manifold deviations  |
+| Pointer Authentication  | 2016      | Cryptographic tags           | Formal Hamiltonian structure      |
+| Graph Anomaly Detection | 2015-2020 | Network traffic, not CFI     | CFI-specific instantiation        |
 
 #### Non-Obviousness Arguments
 
 **Unexpected Result**:
+
 - Dimensional lifting resolves graph obstructions → 90%+ detection vs. 70% in label CFI
 - Principal-curve fitting converges in polynomial time for |V| ≤ 256
 
 **Teaching Away**:
+
 - Prior art teaches label/pointer integrity (not topological embedding)
 - No teaching of Hamiltonian-path constraint for executable code
 
@@ -380,6 +393,7 @@ def detect_deviation(runtime_state: np.ndarray, curve_1d: np.ndarray,
 ### 3.1 Multi-Layered Defense
 
 **How They Complement**:
+
 - **SCBE Governance** (Layers 1-14): Protects authorization decisions
 - **Topological CFI**: Protects code execution integrity
 
@@ -405,6 +419,7 @@ def detect_deviation(runtime_state: np.ndarray, curve_1d: np.ndarray,
 ```
 
 **Synergy Effect**:
+
 - SCBE flags authorization anomalies → CFI rejects off-path instructions
 - CFI detects code anomalies → SCBE escalates risk, tightens breathing
 - Audio telemetry correlates with CFI deviations for dual-modal risk scoring
@@ -412,6 +427,7 @@ def detect_deviation(runtime_state: np.ndarray, curve_1d: np.ndarray,
 ### 3.2 Adaptive Governance Responding to Manifold Excursions
 
 **Operational Loop**:
+
 1. Baseline: Snap(t) = 0.5 × D_f(t) (e.g., 4/6 dimensions active)
 2. CFI detects deviation: Deviation > δ threshold
 3. SCBE escalation: Risk' increases by w_cfi × deviation
@@ -425,41 +441,44 @@ def detect_deviation(runtime_state: np.ndarray, curve_1d: np.ndarray,
 
 ### 4.1 Revenue Model (12-Month Projections)
 
-| Revenue Stream | Model | Conservative Year 1 | Aggressive Year 1 |
-|---------------|-------|---------------------|-------------------|
-| Open-Source Core | Community adoption | ~5k-10k GitHub stars | ~10k-15k stars |
-| Enterprise License | $50k-500k/customer/year | $100k (1-2 pilots) | $400k (3-5 pilots) |
-| Consulting | Custom integration | $50k-200k | $500k-1M |
-| Patent Licensing | Cross-license revenue | $20k-50k | $150k-300k |
-| **Total** | — | **$250k-500k** | **$1M-3M** |
+| Revenue Stream     | Model                   | Conservative Year 1  | Aggressive Year 1  |
+| ------------------ | ----------------------- | -------------------- | ------------------ |
+| Open-Source Core   | Community adoption      | ~5k-10k GitHub stars | ~10k-15k stars     |
+| Enterprise License | $50k-500k/customer/year | $100k (1-2 pilots)   | $400k (3-5 pilots) |
+| Consulting         | Custom integration      | $50k-200k            | $500k-1M           |
+| Patent Licensing   | Cross-license revenue   | $20k-50k             | $150k-300k         |
+| **Total**          | —                       | **$250k-500k**       | **$1M-3M**         |
 
 ### 4.2 Go-To-Market Roadmap
 
 **Phase 1: Foundation (Q1 2026, Jan-Mar)**
+
 - Academic validation (publish Hamiltonian CFI paper)
 - Open-source release (SCBE core + topological CFI library)
 - Patent filing (provisional, then non-provisional)
 
 **Phase 2: Pilot Deployments (Q2-Q3 2026, Apr-Sep)**
+
 - Secure 2-3 enterprise pilots (aerospace, embedded, financial)
 - Validate detection rates (90%+ ROP, 70%+ data-only)
 - Benchmark latency (AWS Lambda <50ms/query)
 
 **Phase 3: Scale & Monetization (Q4 2026, Oct-Dec)**
+
 - Close 3-5 enterprise licenses ($150k-500k each)
 - File non-provisional patent (Dec 2026)
 - Trademark branding (SCBE, AETHERMOORE)
 
 ### 4.3 Risk Analysis with Residual Quantification
 
-| Risk | Level | Mitigation | Confidence | Residual Risk |
-|------|-------|------------|------------|---------------|
-| Patent (§101/§112) | Medium | Axiomatic proofs, flux ODE | 75% approval | 15% |
-| Market Skepticism | Medium | 3-5 pilots, published proofs | 65% Year 1 adoption | 12% |
-| Competitive Response | Medium | Speed-to-market, proprietary extensions | 70% differentiation | 17.5% |
-| Technical Exploit | Low | Formal proofs, audits, bug bounties | 95% security | 6.4% |
-| Regulatory | Low | NIST/NSA alignment, export control | 85% approval | 4.5% |
-| **Aggregate Risk** | — | Transparent residual quantification | — | **25.8%** |
+| Risk                 | Level  | Mitigation                              | Confidence          | Residual Risk |
+| -------------------- | ------ | --------------------------------------- | ------------------- | ------------- |
+| Patent (§101/§112)   | Medium | Axiomatic proofs, flux ODE              | 75% approval        | 15%           |
+| Market Skepticism    | Medium | 3-5 pilots, published proofs            | 65% Year 1 adoption | 12%           |
+| Competitive Response | Medium | Speed-to-market, proprietary extensions | 70% differentiation | 17.5%         |
+| Technical Exploit    | Low    | Formal proofs, audits, bug bounties     | 95% security        | 6.4%          |
+| Regulatory           | Low    | NIST/NSA alignment, export control      | 85% approval        | 4.5%          |
+| **Aggregate Risk**   | —      | Transparent residual quantification     | —                   | **25.8%**     |
 
 ---
 

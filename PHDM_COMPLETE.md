@@ -13,6 +13,7 @@ The **Polyhedral Hamiltonian Defense Manifold (PHDM)** has been successfully por
 ### What is PHDM?
 
 PHDM is a sophisticated intrusion detection system that uses:
+
 - **Graph Theory** - 16 canonical polyhedra with verified Euler characteristics
 - **Differential Geometry** - Geodesic curves in 6D Langues space
 - **Cryptography** - Sequential HMAC key chaining through Hamiltonian path
@@ -24,19 +25,20 @@ PHDM is a sophisticated intrusion detection system that uses:
 
 ### Core Components
 
-| Component | Description | Status |
-|-----------|-------------|--------|
-| **Polyhedron Dataclass** | V, E, F, genus, Euler characteristic | ✅ Complete |
-| **16 Canonical Polyhedra** | Platonic, Archimedean, Kepler-Poinsot, etc. | ✅ Complete |
-| **Hamiltonian Path** | Sequential HMAC chaining K_{i+1} = HMAC(K_i, P_i) | ✅ Complete |
-| **6D Geometry** | Distance, centroids in Langues space | ✅ Complete |
-| **Cubic Spline** | Geodesic curve γ(t) with C² continuity | ✅ Complete |
-| **Curvature Analysis** | κ(t) = \|γ''(t)\| / \|γ'(t)\|² | ✅ Complete |
-| **Intrusion Detection** | Deviation, velocity, rhythm pattern | ✅ Complete |
+| Component                  | Description                                        | Status      |
+| -------------------------- | -------------------------------------------------- | ----------- |
+| **Polyhedron Dataclass**   | V, E, F, genus, Euler characteristic               | ✅ Complete |
+| **16 Canonical Polyhedra** | Platonic, Archimedean, Kepler-Poinsot, etc.        | ✅ Complete |
+| **Hamiltonian Path**       | Sequential HMAC chaining K\_{i+1} = HMAC(K_i, P_i) | ✅ Complete |
+| **6D Geometry**            | Distance, centroids in Langues space               | ✅ Complete |
+| **Cubic Spline**           | Geodesic curve γ(t) with C² continuity             | ✅ Complete |
+| **Curvature Analysis**     | κ(t) = \|γ''(t)\| / \|γ'(t)\|²                     | ✅ Complete |
+| **Intrusion Detection**    | Deviation, velocity, rhythm pattern                | ✅ Complete |
 
 ### 16 Canonical Polyhedra
 
 #### Platonic Solids (5)
+
 - Tetrahedron (V=4, E=6, F=4, g=0)
 - Cube (V=8, E=12, F=6, g=0)
 - Octahedron (V=6, E=12, F=8, g=0)
@@ -44,23 +46,28 @@ PHDM is a sophisticated intrusion detection system that uses:
 - Icosahedron (V=12, E=30, F=20, g=0)
 
 #### Archimedean Solids (3)
+
 - Truncated Tetrahedron (V=12, E=18, F=8, g=0)
 - Cuboctahedron (V=12, E=24, F=14, g=0)
 - Icosidodecahedron (V=30, E=60, F=32, g=0)
 
 #### Kepler-Poinsot Stars (2)
+
 - Small Stellated Dodecahedron (V=12, E=30, F=12, g=4)
 - Great Dodecahedron (V=12, E=30, F=12, g=4)
 
 #### Toroidal (2)
+
 - Szilassi (V=7, E=21, F=14, g=1)
 - Csaszar (V=7, E=21, F=14, g=1)
 
 #### Johnson Solids (2)
+
 - Pentagonal Bipyramid (V=7, E=15, F=10, g=0)
 - Triangular Cupola (V=9, E=15, F=8, g=0)
 
 #### Rhombic (2)
+
 - Rhombic Dodecahedron (V=14, E=24, F=12, g=0)
 - Bilinski Dodecahedron (V=8, E=18, F=12, g=0)
 
@@ -162,13 +169,13 @@ console.log(`Rhythm Pattern: ${pattern}`);
 
 // Simulate skip attack
 const skipResults = phdm.simulateAttack('skip', 1.0);
-const intrusions = skipResults.filter(r => r.isIntrusion).length;
+const intrusions = skipResults.filter((r) => r.isIntrusion).length;
 
 console.log(`Detected ${intrusions}/16 intrusions`);
 
 // Simulate curvature attack
 const curvatureResults = phdm.simulateAttack('curvature', 1.0);
-const maxCurvature = Math.max(...curvatureResults.map(r => r.curvature));
+const maxCurvature = Math.max(...curvatureResults.map((r) => r.curvature));
 
 console.log(`Max curvature: ${maxCurvature.toFixed(4)}`);
 ```
@@ -176,11 +183,7 @@ console.log(`Max curvature: ${maxCurvature.toFixed(4)}`);
 ### Topological Analysis
 
 ```typescript
-import {
-  eulerCharacteristic,
-  isValidTopology,
-  topologicalHash,
-} from '@scbe/aethermoore/harmonic';
+import { eulerCharacteristic, isValidTopology, topologicalHash } from '@scbe/aethermoore/harmonic';
 
 // Analyze a polyhedron
 const dodecahedron = CANONICAL_POLYHEDRA[3];
@@ -208,27 +211,30 @@ console.log(`Topological hash: ${hash.substring(0, 16)}...`);
 
 ### Attack Resistance
 
-| Attack Type | Detection Method | Status |
-|-------------|------------------|--------|
-| Deviation | Distance threshold (ε_snap = 0.1) | ✅ Detected |
-| Skip | Missing polyhedron in path | ✅ Detected |
-| Curvature | High κ(t) threshold (ε_curv = 0.5) | ✅ Detected |
-| Replay | Temporal binding | ✅ Mitigated |
-| Tamper | Topological invariants | ✅ Detected |
+| Attack Type | Detection Method                   | Status       |
+| ----------- | ---------------------------------- | ------------ |
+| Deviation   | Distance threshold (ε_snap = 0.1)  | ✅ Detected  |
+| Skip        | Missing polyhedron in path         | ✅ Detected  |
+| Curvature   | High κ(t) threshold (ε_curv = 0.5) | ✅ Detected  |
+| Replay      | Temporal binding                   | ✅ Mitigated |
+| Tamper      | Topological invariants             | ✅ Detected  |
 
 ### Mathematical Foundations
 
 **Euler Characteristic:**
+
 ```
 χ = V - E + F = 2(1 - g)
 ```
 
 **Geodesic Curvature:**
+
 ```
 κ(t) = |γ''(t)| / |γ'(t)|²
 ```
 
 **Intrusion Condition:**
+
 ```
 INTRUSION ⟺ d(state, γ(t)) > ε_snap
 ```
@@ -239,15 +245,15 @@ INTRUSION ⟺ d(state, γ(t)) > ε_snap
 
 ### Benchmarks
 
-| Operation | Time | Complexity |
-|-----------|------|------------|
-| Euler characteristic | <1μs | O(1) |
-| Topological hash | ~50μs | O(1) |
-| HMAC step | ~100μs | O(1) |
-| Full path (16 steps) | ~2ms | O(n) |
-| Geodesic evaluation | ~10μs | O(1) |
-| Curvature computation | ~50μs | O(1) |
-| Intrusion detection | ~100μs | O(1) |
+| Operation             | Time   | Complexity |
+| --------------------- | ------ | ---------- |
+| Euler characteristic  | <1μs   | O(1)       |
+| Topological hash      | ~50μs  | O(1)       |
+| HMAC step             | ~100μs | O(1)       |
+| Full path (16 steps)  | ~2ms   | O(n)       |
+| Geodesic evaluation   | ~10μs  | O(1)       |
+| Curvature computation | ~50μs  | O(1)       |
+| Intrusion detection   | ~100μs | O(1)       |
 
 ### Memory Usage
 
@@ -292,14 +298,14 @@ PHDM integrates with SCBE's 14-layer architecture:
 
 ### Dual-Language Support
 
-| Feature | TypeScript | Python |
-|---------|-----------|--------|
-| Polyhedron topology | ✅ | ✅ |
-| Hamiltonian path | ✅ | ✅ |
-| Geodesic curve | ✅ | ✅ |
-| Intrusion detection | ✅ | ✅ |
-| Attack simulation | ✅ | ✅ |
-| Test coverage | 33 tests | 23 tests |
+| Feature             | TypeScript | Python   |
+| ------------------- | ---------- | -------- |
+| Polyhedron topology | ✅         | ✅       |
+| Hamiltonian path    | ✅         | ✅       |
+| Geodesic curve      | ✅         | ✅       |
+| Intrusion detection | ✅         | ✅       |
+| Attack simulation   | ✅         | ✅       |
+| Test coverage       | 33 tests   | 23 tests |
 
 ---
 
@@ -328,13 +334,14 @@ The PHDM implementation is **production-ready** with:
 ✅ **Mathematical Rigor** - All theorems verified  
 ✅ **Security Hardened** - 256-bit cryptographic strength  
 ✅ **Performance Optimized** - <10ms total overhead  
-✅ **Well Documented** - API reference, examples, proofs  
+✅ **Well Documented** - API reference, examples, proofs
 
 **Your TypeScript repo is now up to the same standard as the Python repo!** 🚀
 
 ---
 
 **Next Steps:**
+
 1. ✅ Update README.md with PHDM feature
 2. ✅ Add to FEATURES.md
 3. ✅ Update CHANGELOG.md

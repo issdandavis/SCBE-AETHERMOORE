@@ -54,14 +54,14 @@ where `d_l = |x_l - μ_l|` and `x ∈ ℝ^6`
 
 ### Six Sacred Tongues
 
-| Tongue | Weight | Meaning |
-|--------|--------|---------|
-| **KO** (Kor'aelin) | 1.0 | Base tongue - command authority |
-| **AV** (Avali) | 1.125 | Harmonic 1 - emotional resonance |
-| **RU** (Runethic) | 1.25 | Harmonic 2 - historical binding |
-| **CA** (Cassisivadan) | 1.333 | Harmonic 3 - divine invocation |
-| **UM** (Umbroth) | 1.5 | Harmonic 4 - shadow protocols |
-| **DR** (Draumric) | 1.667 | Harmonic 5 - power amplification |
+| Tongue                | Weight | Meaning                          |
+| --------------------- | ------ | -------------------------------- |
+| **KO** (Kor'aelin)    | 1.0    | Base tongue - command authority  |
+| **AV** (Avali)        | 1.125  | Harmonic 1 - emotional resonance |
+| **RU** (Runethic)     | 1.25   | Harmonic 2 - historical binding  |
+| **CA** (Cassisivadan) | 1.333  | Harmonic 3 - divine invocation   |
+| **UM** (Umbroth)      | 1.5    | Harmonic 4 - shadow protocols    |
+| **DR** (Draumric)     | 1.667  | Harmonic 5 - power amplification |
 
 ### Proven Properties
 
@@ -91,7 +91,7 @@ const trustManager = new TrustManager();
 const trustVector = [0.8, 0.6, 0.4, 0.2, 0.1, 0.9]; // 6D across Sacred Tongues
 const score = trustManager.computeTrustScore('node-123', trustVector);
 
-console.log('Trust Level:', score.level);        // HIGH, MEDIUM, LOW, or CRITICAL
+console.log('Trust Level:', score.level); // HIGH, MEDIUM, LOW, or CRITICAL
 console.log('Normalized Score:', score.normalized); // ∈ [0,1]
 console.log('Contributions:', score.contributions); // Per-tongue breakdown
 ```
@@ -101,12 +101,12 @@ console.log('Contributions:', score.contributions); // Per-tongue breakdown
 ```typescript
 // Update flux coefficients for breathing dimensions
 trustManager.updateFluxCoefficients([
-  1.0,  // KO: Full participation (polly)
-  0.8,  // AV: Partial participation (demi)
-  0.6,  // RU: Partial participation (demi)
-  0.4,  // CA: Weak participation (quasi)
-  0.2,  // UM: Weak participation (quasi)
-  0.1   // DR: Minimal participation (quasi)
+  1.0, // KO: Full participation (polly)
+  0.8, // AV: Partial participation (demi)
+  0.6, // RU: Partial participation (demi)
+  0.4, // CA: Weak participation (quasi)
+  0.2, // UM: Weak participation (quasi)
+  0.1, // DR: Minimal participation (quasi)
 ]);
 ```
 
@@ -157,20 +157,21 @@ The 2 failing tests are due to edge cases where both high and low trust nodes en
 
 ### Layer Connections
 
-| Layer | How LWS Connects |
-|-------|------------------|
+| Layer                         | How LWS Connects                                             |
+| ----------------------------- | ------------------------------------------------------------ |
 | **3 – Langues Metric Tensor** | Implements L() for tongue weighting and golden-ratio scaling |
-| **4–5 – Poincaré / Metric** | Feeds weighted coordinates into hyperbolic embedding |
-| **6 – Breathing Transform** | Uses flux ν_l(t) for dimensional breathing |
-| **9 – Multi-Well Realms** | Realm cost derived from aggregated L |
-| **12 – Harmonic Wall** | H(d,R) = R^(d²) uses d = normalized L |
-| **13 – AETHERMOORE** | α_L L_f(ξ,t) term in Snap potential V(x) |
+| **4–5 – Poincaré / Metric**   | Feeds weighted coordinates into hyperbolic embedding         |
+| **6 – Breathing Transform**   | Uses flux ν_l(t) for dimensional breathing                   |
+| **9 – Multi-Well Realms**     | Realm cost derived from aggregated L                         |
+| **12 – Harmonic Wall**        | H(d,R) = R^(d²) uses d = normalized L                        |
+| **13 – AETHERMOORE**          | α_L L_f(ξ,t) term in Snap potential V(x)                     |
 
 ---
 
 ## 📊 Validation Results
 
 **Monte-Carlo Simulation (10⁴ samples)**:
+
 - Mean L ≈ 7.2 ± 2.5
 - Correlation (L vs Σd) ≈ 0.97 → strong monotonicity
 - Stable under time-phase perturbations (no divergence over 10⁶ steps)
@@ -201,12 +202,14 @@ The 2 failing tests are due to edge cases where both high and low trust nodes en
 ## 📦 Files Created/Modified
 
 ### New Files
+
 - `src/spaceTor/trust-manager.ts` (500+ lines)
 - `docs/LANGUES_WEIGHTING_SYSTEM.md` (400+ lines)
 - `tests/spaceTor/trust-manager.test.ts` (350+ lines)
 - `TRUST_MANAGER_COMPLETE.md` (this file)
 
 ### Modified Files
+
 - `src/spaceTor/space-tor-router.ts` (added Trust Manager integration)
 - `src/spaceTor/hybrid-crypto.ts` (no changes, reviewed for integration)
 - `src/spaceTor/combat-network.ts` (no changes, ready for trust integration)
@@ -230,5 +233,5 @@ The 2 failing tests are due to edge cases where both high and low trust nodes en
 
 ---
 
-*Generated: January 18, 2026 20:54 PST*  
-*Patent Deadline: January 31, 2026 (13 days remaining)*
+_Generated: January 18, 2026 20:54 PST_  
+_Patent Deadline: January 31, 2026 (13 days remaining)_

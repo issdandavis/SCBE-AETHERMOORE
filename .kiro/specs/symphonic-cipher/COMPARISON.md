@@ -22,19 +22,20 @@ We have **TWO** repositories:
 
 Located in: `scbe-aethermoore-demo/src/symphonic_cipher/`
 
-| File | Purpose | Status |
-|------|---------|--------|
-| `core.py` | Dictionary mapping, Feistel, HKDF | ✅ Complete |
-| `dsp.py` | DSP pipeline (gain, EQ, reverb) | ✅ Complete |
-| `harmonic_scaling_law.py` | Harmonic scaling H(d,R) | ✅ Complete |
-| `topological_cfi.py` | Control flow integrity | ✅ Complete |
-| `dual_lattice_consensus.py` | Byzantine consensus | ✅ Complete |
-| `flat_slope_encoder.py` | Flat slope encoding | ✅ Complete |
-| `ai_verifier.py` | AI-based verification | ✅ Complete |
+| File                        | Purpose                           | Status      |
+| --------------------------- | --------------------------------- | ----------- |
+| `core.py`                   | Dictionary mapping, Feistel, HKDF | ✅ Complete |
+| `dsp.py`                    | DSP pipeline (gain, EQ, reverb)   | ✅ Complete |
+| `harmonic_scaling_law.py`   | Harmonic scaling H(d,R)           | ✅ Complete |
+| `topological_cfi.py`        | Control flow integrity            | ✅ Complete |
+| `dual_lattice_consensus.py` | Byzantine consensus               | ✅ Complete |
+| `flat_slope_encoder.py`     | Flat slope encoding               | ✅ Complete |
+| `ai_verifier.py`            | AI-based verification             | ✅ Complete |
 
 ### Python Implementation Details
 
 **From `core.py`:**
+
 ```python
 # Constants
 BASE_FREQ = 440.0       # Hz
@@ -47,6 +48,7 @@ KEY_LEN_BITS = 256      # Key length
 ```
 
 **Key Classes:**
+
 - `ConlangDictionary` - Token to ID mapping
 - `ModalityEncoder` - Overtone masks per intent
 - `FeistelPermutation` - 4-round XOR-based scrambling
@@ -61,49 +63,53 @@ KEY_LEN_BITS = 256      # Key length
 
 Based on the technical reference document, we need:
 
-| Component | File | Status | Priority |
-|-----------|------|--------|----------|
-| Complex Numbers | `src/symphonic/core/Complex.ts` | ❌ Missing | 🔴 Critical |
-| FFT (Cooley-Tukey) | `src/symphonic/core/FFT.ts` | ❌ Missing | 🔴 Critical |
-| Feistel Network | `src/symphonic/core/Feistel.ts` | ❌ Missing | 🔴 Critical |
-| Z-Base-32 Encoding | `src/symphonic/core/ZBase32.ts` | ❌ Missing | 🔴 Critical |
-| Symphonic Agent | `src/symphonic/agents/SymphonicAgent.ts` | ❌ Missing | 🟡 High |
-| Hybrid Crypto | `src/symphonic/crypto/HybridCrypto.ts` | ❌ Missing | 🟡 High |
-| API Server | `src/symphonic/server.ts` | ❌ Missing | 🟢 Medium |
+| Component          | File                                     | Status     | Priority    |
+| ------------------ | ---------------------------------------- | ---------- | ----------- |
+| Complex Numbers    | `src/symphonic/core/Complex.ts`          | ❌ Missing | 🔴 Critical |
+| FFT (Cooley-Tukey) | `src/symphonic/core/FFT.ts`              | ❌ Missing | 🔴 Critical |
+| Feistel Network    | `src/symphonic/core/Feistel.ts`          | ❌ Missing | 🔴 Critical |
+| Z-Base-32 Encoding | `src/symphonic/core/ZBase32.ts`          | ❌ Missing | 🔴 Critical |
+| Symphonic Agent    | `src/symphonic/agents/SymphonicAgent.ts` | ❌ Missing | 🟡 High     |
+| Hybrid Crypto      | `src/symphonic/crypto/HybridCrypto.ts`   | ❌ Missing | 🟡 High     |
+| API Server         | `src/symphonic/server.ts`                | ❌ Missing | 🟢 Medium   |
 
 ### Key Differences: Python vs TypeScript
 
-| Aspect | Python (Demo) | TypeScript (Needed) |
-|--------|---------------|---------------------|
-| **FFT Library** | NumPy (`np.fft.fft`) | Custom implementation |
-| **Feistel Rounds** | 4 rounds | 6 rounds (per spec) |
-| **Encoding** | Base64 | Z-Base-32 |
-| **Dependencies** | NumPy, SciPy | Zero (Node.js crypto only) |
-| **Use Case** | Conlang tokens | Transaction intents (JSON) |
-| **Signal Duration** | 0.5 seconds | Variable (based on payload) |
-| **Sample Rate** | 44,100 Hz | Not applicable (byte stream) |
+| Aspect              | Python (Demo)        | TypeScript (Needed)          |
+| ------------------- | -------------------- | ---------------------------- |
+| **FFT Library**     | NumPy (`np.fft.fft`) | Custom implementation        |
+| **Feistel Rounds**  | 4 rounds             | 6 rounds (per spec)          |
+| **Encoding**        | Base64               | Z-Base-32                    |
+| **Dependencies**    | NumPy, SciPy         | Zero (Node.js crypto only)   |
+| **Use Case**        | Conlang tokens       | Transaction intents (JSON)   |
+| **Signal Duration** | 0.5 seconds          | Variable (based on payload)  |
+| **Sample Rate**     | 44,100 Hz            | Not applicable (byte stream) |
 
 ## 🔄 Migration Strategy
 
 ### Option 1: Port Python to TypeScript (Recommended)
 
 **Pros:**
+
 - Proven algorithm (Python version works)
 - Can reference Python code for correctness
 - Maintain consistency across implementations
 
 **Cons:**
+
 - NumPy FFT → Custom FFT (more work)
 - Different use case (conlang → JSON intents)
 
 ### Option 2: Fresh TypeScript Implementation
 
 **Pros:**
+
 - Optimized for TypeScript/Node.js
 - Zero dependencies from start
 - Follows technical reference document exactly
 
 **Cons:**
+
 - More testing needed
 - No reference implementation
 
@@ -169,26 +175,26 @@ Based on the technical reference document, we need:
 
 ## 📊 Feature Parity Matrix
 
-| Feature | Python (Demo) | TypeScript (Main) | Notes |
-|---------|---------------|-------------------|-------|
-| **Core Math** |
-| Complex Numbers | ✅ Built-in | ❌ Need class | Port required |
-| FFT | ✅ NumPy | ❌ Custom needed | Port algorithm |
-| Feistel (4 rounds) | ✅ Complete | ❌ Need 6 rounds | Adapt |
-| HKDF | ✅ Complete | ✅ Exists in crypto | Reuse |
-| **Encoding** |
-| Base64 | ✅ Used | ❌ Not needed | - |
-| Z-Base-32 | ❌ Not used | ❌ Need new | Implement |
-| **Synthesis** |
-| Harmonic Synthesis | ✅ Audio-based | ❌ Need byte-based | Adapt |
-| Spectrum Analysis | ✅ NumPy FFT | ❌ Custom FFT | Port |
-| **Integration** |
-| Conlang Tokens | ✅ Complete | ❌ Not needed | Different use case |
-| JSON Intents | ❌ Not used | ❌ Need new | New feature |
-| API Server | ❌ Not in Python | ❌ Need new | New feature |
-| **Testing** |
-| Unit Tests | ✅ pytest | ❌ Need vitest | Port tests |
-| Integration Tests | ✅ Complete | ❌ Need new | New tests |
+| Feature            | Python (Demo)    | TypeScript (Main)   | Notes              |
+| ------------------ | ---------------- | ------------------- | ------------------ |
+| **Core Math**      |
+| Complex Numbers    | ✅ Built-in      | ❌ Need class       | Port required      |
+| FFT                | ✅ NumPy         | ❌ Custom needed    | Port algorithm     |
+| Feistel (4 rounds) | ✅ Complete      | ❌ Need 6 rounds    | Adapt              |
+| HKDF               | ✅ Complete      | ✅ Exists in crypto | Reuse              |
+| **Encoding**       |
+| Base64             | ✅ Used          | ❌ Not needed       | -                  |
+| Z-Base-32          | ❌ Not used      | ❌ Need new         | Implement          |
+| **Synthesis**      |
+| Harmonic Synthesis | ✅ Audio-based   | ❌ Need byte-based  | Adapt              |
+| Spectrum Analysis  | ✅ NumPy FFT     | ❌ Custom FFT       | Port               |
+| **Integration**    |
+| Conlang Tokens     | ✅ Complete      | ❌ Not needed       | Different use case |
+| JSON Intents       | ❌ Not used      | ❌ Need new         | New feature        |
+| API Server         | ❌ Not in Python | ❌ Need new         | New feature        |
+| **Testing**        |
+| Unit Tests         | ✅ pytest        | ❌ Need vitest      | Port tests         |
+| Integration Tests  | ✅ Complete      | ❌ Need new         | New tests          |
 
 ## 🎯 Key Decisions
 
@@ -197,6 +203,7 @@ Based on the technical reference document, we need:
 **Decision:** Implement custom Cooley-Tukey FFT in TypeScript
 
 **Rationale:**
+
 - Zero dependencies requirement
 - Python uses NumPy (not portable)
 - Technical reference provides full algorithm
@@ -207,6 +214,7 @@ Based on the technical reference document, we need:
 **Decision:** Use 6 rounds (not 4 like Python)
 
 **Rationale:**
+
 - Technical reference specifies 6 rounds
 - Better security margin
 - Minimal performance impact (<100μs)
@@ -216,6 +224,7 @@ Based on the technical reference document, we need:
 **Decision:** Use Z-Base-32 (not Base64)
 
 **Rationale:**
+
 - Human-readable (verbal confirmation)
 - Reduces transcription errors
 - Technical reference specifies Z-Base-32
@@ -225,6 +234,7 @@ Based on the technical reference document, we need:
 **Decision:** JSON intents (not conlang tokens)
 
 **Rationale:**
+
 - Main repo is for blockchain/RWP v3
 - Python demo is for conlang research
 - Different target audience
@@ -234,6 +244,7 @@ Based on the technical reference document, we need:
 ### Functional Requirements
 
 ✅ **Port Complete** when:
+
 1. All TypeScript components implemented
 2. All unit tests pass
 3. Integration tests pass
@@ -242,6 +253,7 @@ Based on the technical reference document, we need:
 ### Compatibility Requirements
 
 ✅ **Cross-Language Compatible** when:
+
 1. Same FFT input → same output (Python vs TypeScript)
 2. Same Feistel key + data → same output
 3. Test vectors validate across languages
@@ -249,6 +261,7 @@ Based on the technical reference document, we need:
 ### Performance Requirements
 
 ✅ **Performance Acceptable** when:
+
 1. FFT (N=1024): <500μs
 2. Signing (1KB): <1ms
 3. Verification (1KB): <1ms

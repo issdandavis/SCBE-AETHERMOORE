@@ -218,7 +218,8 @@ export class ControlFlowGraph {
     const ids = this.getVertexIds();
     for (let i = 0; i < ids.length; i++) {
       for (let j = i + 1; j < ids.length; j++) {
-        const u = ids[i], v = ids[j];
+        const u = ids[i],
+          v = ids[j];
         if (!this.hasEdge(u, v)) {
           if (this.degree(u) + this.degree(v) < n) {
             return false;
@@ -246,8 +247,8 @@ export class ControlFlowGraph {
     // Likely Hamiltonian if:
     // - Satisfies Dirac or Ore, OR
     // - Is bipartite with |A| = |B|
-    const likelyHamiltonian = satisfiesDirac || satisfiesOre ||
-      (bipartite.isBipartite && bipartite.imbalance === 0);
+    const likelyHamiltonian =
+      satisfiesDirac || satisfiesOre || (bipartite.isBipartite && bipartite.imbalance === 0);
 
     return {
       satisfiesDirac,
@@ -291,7 +292,7 @@ export class HamiltonianCFI {
     const n2 = this.cfg.getNeighbors(v2);
 
     // Jaccard similarity of neighborhoods
-    const intersection = n1.filter(x => n2.includes(x)).length;
+    const intersection = n1.filter((x) => n2.includes(x)).length;
     const union = new Set([...n1, ...n2]).size;
 
     if (union === 0) return 1.0;
@@ -380,11 +381,7 @@ export class HamiltonianCFI {
     return null;
   }
 
-  private dfsHamiltonian(
-    path: number[],
-    visited: Set<number>,
-    target: number,
-  ): number[] | null {
+  private dfsHamiltonian(path: number[], visited: Set<number>, target: number): number[] | null {
     if (path.length === target) {
       return path;
     }
@@ -414,7 +411,7 @@ export function createVertex(
   id: number,
   label: string,
   address: number,
-  metadata?: Record<string, unknown>,
+  metadata?: Record<string, unknown>
 ): CFGVertex {
   return { id, label, address, metadata };
 }

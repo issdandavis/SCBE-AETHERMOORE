@@ -16,17 +16,17 @@ The user provided a **production-ready RWP v3.0 implementation** that significan
 
 ## Comparison: v2.1 vs v3.0
 
-| Feature | v2.1 (Planned) | v3.0 (Implemented) | Improvement |
-|---------|----------------|-------------------|-------------|
-| **Key Derivation** | HMAC-SHA256 | Argon2id (RFC 9106) | 🔥 Password cracking resistant |
-| **Encryption** | AES-256-GCM | XChaCha20-Poly1305 | ✅ Better nonce handling |
-| **PQC Support** | Optional (future) | ML-KEM-768 + ML-DSA-65 | 🚀 Full quantum resistance |
-| **Key Exchange** | Pre-shared keys | Hybrid PQC (XOR mode) | 🔐 No key exchange round-trip |
-| **Signatures** | HMAC-based | ML-DSA-65 (Dilithium3) | 🛡️ Quantum-resistant |
-| **Encoding** | Base64 | Sacred Tongue tokens | 🎵 Spectral validation |
-| **Replay Protection** | Timestamp + nonce | Timestamp + nonce (same) | ✅ Same |
-| **Policy Matrix** | 4 levels | 4 levels (same) | ✅ Same |
-| **SCBE Integration** | Layer 1-4 | Layer 1-9 (spectral) | 🌟 Harmonic fingerprints |
+| Feature               | v2.1 (Planned)    | v3.0 (Implemented)       | Improvement                    |
+| --------------------- | ----------------- | ------------------------ | ------------------------------ |
+| **Key Derivation**    | HMAC-SHA256       | Argon2id (RFC 9106)      | 🔥 Password cracking resistant |
+| **Encryption**        | AES-256-GCM       | XChaCha20-Poly1305       | ✅ Better nonce handling       |
+| **PQC Support**       | Optional (future) | ML-KEM-768 + ML-DSA-65   | 🚀 Full quantum resistance     |
+| **Key Exchange**      | Pre-shared keys   | Hybrid PQC (XOR mode)    | 🔐 No key exchange round-trip  |
+| **Signatures**        | HMAC-based        | ML-DSA-65 (Dilithium3)   | 🛡️ Quantum-resistant           |
+| **Encoding**          | Base64            | Sacred Tongue tokens     | 🎵 Spectral validation         |
+| **Replay Protection** | Timestamp + nonce | Timestamp + nonce (same) | ✅ Same                        |
+| **Policy Matrix**     | 4 levels          | 4 levels (same)          | ✅ Same                        |
+| **SCBE Integration**  | Layer 1-4         | Layer 1-9 (spectral)     | 🌟 Harmonic fingerprints       |
 
 ---
 
@@ -37,11 +37,13 @@ The user provided a **production-ready RWP v3.0 implementation** that significan
 **What**: Each RWP section bound to unique harmonic frequency (440Hz-659Hz range)
 
 **Why Novel**:
+
 - No prior art combines linguistic tokenization with spectral validation
 - Layer 9 coherence check validates frequency-domain integrity
 - Attack detection: Swapping ct ↔ tag tokens triggers spectral mismatch
 
 **Patent Claim 17**:
+
 > A system for quantum-resistant context-bound encryption comprising:
 > (a) deriving a base key via Argon2id KDF;
 > (b) encapsulating a post-quantum shared secret using ML-KEM-768;
@@ -55,11 +57,13 @@ The user provided a **production-ready RWP v3.0 implementation** that significan
 **What**: ML-KEM shared secret XORed into Argon2id-derived key
 
 **Why Novel**:
+
 - Context = (GPS, time, mission_id) influences key derivation
 - Even with stolen ML-KEM key, wrong context → decoy plaintext
 - Combines PQC with geometric security (hyperbolic space)
 
 **Patent Claim 18**:
+
 > The system of claim 17, wherein context validation comprises:
 > extracting Sacred Tongue tokens;
 > computing harmonic fingerprints via weighted FFT;
@@ -72,6 +76,7 @@ The user provided a **production-ready RWP v3.0 implementation** that significan
 **What**: Pre-synchronized Sacred Tongue vocabularies eliminate TLS handshake
 
 **Why Novel**:
+
 - 14-minute RTT eliminated (no key exchange needed)
 - Envelope self-authenticates via Layer 8 topology check
 - Spectral coherence validation (Layer 9)
@@ -86,11 +91,13 @@ The user provided a **production-ready RWP v3.0 implementation** that significan
 ### Security Stack Upgrade
 
 **v2.1 (Planned)**:
+
 ```
 Password → HMAC-SHA256 → AES-256-GCM → Base64
 ```
 
 **v3.0 (Implemented)**:
+
 ```
 Password → Argon2id (64MB, 3 iter) → XChaCha20-Poly1305
                 ↓
@@ -103,25 +110,25 @@ Password → Argon2id (64MB, 3 iter) → XChaCha20-Poly1305
 
 ### Performance Comparison
 
-| Operation | v2.1 (Estimated) | v3.0 (Target) | Notes |
-|-----------|------------------|---------------|-------|
-| Encrypt (no PQC) | <5ms | <10ms | Argon2id overhead |
-| Decrypt (no PQC) | <3ms | <5ms | Argon2id overhead |
-| Encrypt (with PQC) | N/A | <50ms | ML-KEM encapsulation |
-| Decrypt (with PQC) | N/A | <30ms | ML-KEM decapsulation |
-| Token encoding | <1ms | <1ms | Constant-time lookup |
-| Spectral fingerprint | N/A | <2ms | SHA-256 + multiply |
+| Operation            | v2.1 (Estimated) | v3.0 (Target) | Notes                |
+| -------------------- | ---------------- | ------------- | -------------------- |
+| Encrypt (no PQC)     | <5ms             | <10ms         | Argon2id overhead    |
+| Decrypt (no PQC)     | <3ms             | <5ms          | Argon2id overhead    |
+| Encrypt (with PQC)   | N/A              | <50ms         | ML-KEM encapsulation |
+| Decrypt (with PQC)   | N/A              | <30ms         | ML-KEM decapsulation |
+| Token encoding       | <1ms             | <1ms          | Constant-time lookup |
+| Spectral fingerprint | N/A              | <2ms          | SHA-256 + multiply   |
 
 ### Security Comparison
 
-| Attack Vector | v2.1 | v3.0 | Improvement |
-|---------------|------|------|-------------|
-| Quantum (Shor's) | ❌ Vulnerable | ✅ Resistant | ML-KEM-768 |
-| Quantum (Grover's) | ⚠️ Weakened | ✅ Resistant | 256-bit keys |
-| Password cracking | ⚠️ Moderate | ✅ Strong | Argon2id (64MB) |
-| Replay attacks | ✅ Protected | ✅ Protected | Nonce + timestamp |
-| Tampering | ✅ Detected | ✅ Detected | Poly1305 + spectral |
-| Side-channel | ⚠️ Possible | ✅ Mitigated | Constant-time ops |
+| Attack Vector      | v2.1          | v3.0         | Improvement         |
+| ------------------ | ------------- | ------------ | ------------------- |
+| Quantum (Shor's)   | ❌ Vulnerable | ✅ Resistant | ML-KEM-768          |
+| Quantum (Grover's) | ⚠️ Weakened   | ✅ Resistant | 256-bit keys        |
+| Password cracking  | ⚠️ Moderate   | ✅ Strong    | Argon2id (64MB)     |
+| Replay attacks     | ✅ Protected  | ✅ Protected | Nonce + timestamp   |
+| Tampering          | ✅ Detected   | ✅ Detected  | Poly1305 + spectral |
+| Side-channel       | ⚠️ Possible   | ✅ Mitigated | Constant-time ops   |
 
 ---
 
@@ -188,6 +195,7 @@ pip install argon2-cffi pycryptodome liboqs-python numpy
 ```
 
 **Package Details**:
+
 - `argon2-cffi` (v23.1.0+): RFC 9106 Argon2id KDF
 - `pycryptodome` (v3.20.0+): XChaCha20-Poly1305 AEAD
 - `liboqs-python` (v0.10.0+): ML-KEM-768 + ML-DSA-65 (NIST PQC)
@@ -256,16 +264,16 @@ def test_scbe_full_pipeline():
 
 ### Target Metrics (v3.0)
 
-| Operation | Target | Measured | Status |
-|-----------|--------|----------|--------|
-| Encrypt (no PQC) | <10ms | TBD | 🔄 Pending |
-| Decrypt (no PQC) | <5ms | TBD | 🔄 Pending |
-| Encrypt (with PQC) | <50ms | TBD | 🔄 Pending |
-| Decrypt (with PQC) | <30ms | TBD | 🔄 Pending |
-| Token encoding | <1ms | TBD | 🔄 Pending |
-| Token decoding | <1ms | TBD | 🔄 Pending |
-| Spectral fingerprint | <2ms | TBD | 🔄 Pending |
-| Throughput | 1000+ env/s | TBD | 🔄 Pending |
+| Operation            | Target      | Measured | Status     |
+| -------------------- | ----------- | -------- | ---------- |
+| Encrypt (no PQC)     | <10ms       | TBD      | 🔄 Pending |
+| Decrypt (no PQC)     | <5ms        | TBD      | 🔄 Pending |
+| Encrypt (with PQC)   | <50ms       | TBD      | 🔄 Pending |
+| Decrypt (with PQC)   | <30ms       | TBD      | 🔄 Pending |
+| Token encoding       | <1ms        | TBD      | 🔄 Pending |
+| Token decoding       | <1ms        | TBD      | 🔄 Pending |
+| Spectral fingerprint | <2ms        | TBD      | 🔄 Pending |
+| Throughput           | 1000+ env/s | TBD      | 🔄 Pending |
 
 ### Benchmark Script
 
@@ -305,6 +313,7 @@ python -m pytest tests/crypto/ -v --benchmark  # Run benchmarks
 **Covers**: RWP v3.0 spectral binding + hybrid PQC
 
 **Claim 17 (Method)**:
+
 - Argon2id KDF for password → key derivation
 - ML-KEM-768 for quantum-resistant key exchange
 - XOR hybrid mode (base key + PQC shared secret)
@@ -313,6 +322,7 @@ python -m pytest tests/crypto/ -v --benchmark  # Run benchmarks
 - Spectral coherence validation
 
 **Claim 18 (System)**:
+
 - Sacred Tongue token extraction
 - Harmonic fingerprint computation (weighted FFT)
 - Hyperbolic Poincaré ball embedding
@@ -320,6 +330,7 @@ python -m pytest tests/crypto/ -v --benchmark  # Run benchmarks
 - Super-exponential cost amplification H(d,R) = R^(d²)
 
 **Supporting Materials**:
+
 - Spectral binding diagrams (Layer 9)
 - Hybrid PQC architecture diagrams
 - Performance benchmarks
@@ -333,6 +344,7 @@ python -m pytest tests/crypto/ -v --benchmark  # Run benchmarks
 ### Unique Value Proposition
 
 **No competitor offers**:
+
 1. Quantum-resistant encryption (ML-KEM-768 + ML-DSA-65)
 2. Spectral validation (harmonic fingerprints)
 3. Zero-latency Mars communication (pre-sync'd vocabularies)

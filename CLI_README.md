@@ -5,12 +5,15 @@
 ## 🎯 Quick Start
 
 ### Try the Demo (No Installation)
+
 ```bash
 python demo-cli.py
 ```
+
 Watch an automated demo showing SCBE's capabilities!
 
 ### Run Interactively
+
 ```bash
 # Windows
 scbe.bat
@@ -34,6 +37,7 @@ The interactive tutorial covers:
 ## 📦 Installation
 
 ### Option 1: Run Locally (Easiest)
+
 ```bash
 # Windows
 scbe.bat
@@ -44,6 +48,7 @@ chmod +x scbe
 ```
 
 ### Option 2: Install Globally
+
 See `CLI_SETUP.md` for detailed instructions on adding `scbe` to your PATH.
 
 ## 🚀 Commands
@@ -112,18 +117,21 @@ processing to protect your data.
 ## 🎬 Features
 
 ### Interactive Tutorial
+
 - 5 comprehensive modules
 - No trade secrets exposed
 - Suitable for all skill levels
 - Learn at your own pace
 
 ### Hands-On Demos
+
 - Encrypt/decrypt messages
 - Run attack simulations
 - View real-time metrics
 - Test security features
 
 ### Educational Content
+
 - High-level concepts
 - Security guarantees
 - Real-world use cases
@@ -132,6 +140,7 @@ processing to protect your data.
 ## 🔐 Security
 
 The CLI tutorial is designed to be:
+
 - ✅ Educational and informative
 - ✅ Safe for public release
 - ✅ Free of trade secrets
@@ -140,18 +149,21 @@ The CLI tutorial is designed to be:
 ## 🌟 Why Use the CLI?
 
 ### For Learning
+
 - **Interactive** - Learn by doing
 - **Comprehensive** - Covers all aspects
 - **Accessible** - No coding required
 - **Safe** - No sensitive information exposed
 
 ### For Development
+
 - **Quick Testing** - Encrypt/decrypt instantly
 - **Attack Simulation** - Test defenses
 - **Metrics Dashboard** - Monitor performance
 - **API Examples** - See code in action
 
 ### For Presentations
+
 - **Automated Demo** - Run `demo-cli.py`
 - **Visual Appeal** - Typewriter effects
 - **Professional** - Clean, polished output
@@ -160,25 +172,31 @@ The CLI tutorial is designed to be:
 ## 🎯 Target Audience
 
 ### Beginners
+
 Learn what SCBE is and how to use it without any prior knowledge.
 
 ### Developers
+
 Get hands-on experience with encryption APIs and see code examples.
 
 ### Security Engineers
+
 Understand the 14-layer architecture and attack resistance mechanisms.
 
 ### Business Users
+
 Explore use cases and understand the value proposition.
 
 ## 🚀 Getting Started
 
 1. **Run the demo**:
+
    ```bash
    python demo-cli.py
    ```
 
 2. **Start the CLI**:
+
    ```bash
    scbe.bat  # Windows
    ./scbe    # macOS/Linux

@@ -10,9 +10,11 @@
 ## 📋 Kiro Steering Documents
 
 ### Product Vision
+
 **Location:** [config/.kiro/steering/product.md](config/.kiro/steering/product.md)
 
 **Core Capabilities:**
+
 - Hyperbolic Risk Governance (Poincaré ball, Axioms A1-A12)
 - AES-256-GCM Cryptographic Protection
 - Replay Prevention (Bloom filter + nonce management)
@@ -21,11 +23,13 @@
 - Risk-Gated Decisions (ALLOW/QUARANTINE/DENY)
 
 **Mathematical Contract:**
-- All states remain in compact sub-ball 𝔹ⁿ_{1-ε}
+
+- All states remain in compact sub-ball 𝔹ⁿ\_{1-ε}
 - All ratios use denominator floor ε > 0
 - All channels bounded, monotonic risk weights
 
 ### Architecture Structure
+
 **Location:** [config/.kiro/steering/structure.md](config/.kiro/steering/structure.md)
 
 ```
@@ -45,14 +49,17 @@ SCBE_Production_Pack/
 ```
 
 ### Technology Stack
+
 **Location:** [config/.kiro/steering/tech.md](config/.kiro/steering/tech.md)
 
 **Core:**
+
 - Python 3.11+ (NumPy, SciPy)
 - TypeScript/Node.js (native crypto)
 - AWS Lambda (serverless deployment)
 
 **Cryptography:**
+
 - AES-256-GCM (authenticated encryption)
 - CRYSTALS-Kyber (ML-KEM-768)
 - CRYSTALS-Dilithium (ML-DSA-65)
@@ -65,27 +72,29 @@ SCBE_Production_Pack/
 ## 🔬 Axiom Core Specifications
 
 ### Requirements Document
+
 **Location:** [src/.kiro/specs/scbe-axiom-core/requirements.md](src/.kiro/specs/scbe-axiom-core/requirements.md)
 
 **18 Functional Requirements (A1-A14):**
 
-| Axiom | Requirement | Validates |
-|-------|-------------|-----------|
-| A1-A2 | Input Domain & Realification | Complex → Real transform, norm preservation |
-| A3 | SPD Weighting | Symmetric positive definite matrix G |
-| A4 | Poincaré Embedding + Clamping | Maps to 𝔹ⁿ_{1-ε}, safety clamping |
-| A5 | Hyperbolic Distance | Poincaré ball metric d_ℍ |
-| A6 | Breathing Transform | Radial scaling (diffeomorphism, NOT isometry) |
-| A7 | Phase Transform Isometry | Möbius addition + rotation (isometry) |
-| A8 | Realm Distance | Min distance to K realm centers |
-| A9 | Signal Regularization | Denominator floor ε > 0 |
-| A10 | Coherence Features | All coherence ∈ [0,1] |
-| A11 | Triadic Temporal | Weighted ℓ² norm, normalized |
-| A12 | Risk Functional | Harmonic amplification H(d*, R) = R^{d*²} |
-| A13 | Quasi-Dimensional Multi-Sphere | Stereographic projection to Riemann spheres |
-| A14 | Conformal Invariants | Möbius consistency, cross-ratio preservation |
+| Axiom | Requirement                    | Validates                                     |
+| ----- | ------------------------------ | --------------------------------------------- |
+| A1-A2 | Input Domain & Realification   | Complex → Real transform, norm preservation   |
+| A3    | SPD Weighting                  | Symmetric positive definite matrix G          |
+| A4    | Poincaré Embedding + Clamping  | Maps to 𝔹ⁿ\_{1-ε}, safety clamping            |
+| A5    | Hyperbolic Distance            | Poincaré ball metric d_ℍ                      |
+| A6    | Breathing Transform            | Radial scaling (diffeomorphism, NOT isometry) |
+| A7    | Phase Transform Isometry       | Möbius addition + rotation (isometry)         |
+| A8    | Realm Distance                 | Min distance to K realm centers               |
+| A9    | Signal Regularization          | Denominator floor ε > 0                       |
+| A10   | Coherence Features             | All coherence ∈ [0,1]                         |
+| A11   | Triadic Temporal               | Weighted ℓ² norm, normalized                  |
+| A12   | Risk Functional                | Harmonic amplification H(d*, R) = R^{d*²}     |
+| A13   | Quasi-Dimensional Multi-Sphere | Stereographic projection to Riemann spheres   |
+| A14   | Conformal Invariants           | Möbius consistency, cross-ratio preservation  |
 
 **Key Glossary:**
+
 - **Poincaré Ball (𝔹ⁿ):** Open unit ball with hyperbolic metric
 - **Riemann Sphere (S²):** ℂ ∪ {∞}, conformal to sphere
 - **Stereographic Projection:** F: S² \ {N} → ℂ
@@ -95,6 +104,7 @@ SCBE_Production_Pack/
 - **Phase:** Hyperbolic translation + rotation (preserves distances)
 
 ### Design Document
+
 **Location:** [src/.kiro/specs/scbe-axiom-core/design.md](src/.kiro/specs/scbe-axiom-core/design.md)
 
 **Component Architecture:**
@@ -121,15 +131,18 @@ SCBE_Production_Pack/
 ```
 
 **Key Classes:**
+
 - `SCBEConfig`: Configuration with A1-A12 validation
 - `HyperbolicOps`: Static methods for Poincaré operations
 - `QuasiDimensionalOps`: Stereographic projection, multi-sphere
 - `SCBESystem`: 14-layer pipeline executor
 
 ### Implementation Tasks
+
 **Location:** [src/.kiro/specs/scbe-axiom-core/tasks.md](src/.kiro/specs/scbe-axiom-core/tasks.md)
 
 **Implementation Plan:**
+
 1. Set up property-based testing (hypothesis)
 2. Implement hyperbolic operations (A4-A7)
 3. Implement context transforms (A1-A3)
@@ -140,6 +153,7 @@ SCBE_Production_Pack/
 8. End-to-end testing
 
 **17 Property-Based Tests:**
+
 - Property 1-2: Realification (isometry, dimension)
 - Property 3-4: Poincaré embedding (boundedness, clamping)
 - Property 5-6: Hyperbolic distance (symmetry, denominator)
@@ -157,9 +171,11 @@ SCBE_Production_Pack/
 ### Python Mathematical Core
 
 #### [src/scbe_14layer_reference.py](src/scbe_14layer_reference.py) (550 lines)
+
 **Status:** ✅ Production Ready (93.2% test coverage)
 
 **14 Layers:**
+
 ```python
 def layer_1_complex_state(t, D) -> ℂ^D
 def layer_2_realification(c) -> ℝ^{2D}
@@ -183,10 +199,13 @@ def scbe_14layer_pipeline(t, D, breathing_factor, ...) -> Dict
 **Test Results:** 55/59 passing (4 minor tolerance issues)
 
 #### [src/scbe_cpse_unified.py](src/scbe_cpse_unified.py)
+
 **CPSE Integration:** Chaos/Fractal/Energy deviation channels
 
 #### [src/aethermoore.py](src/aethermoore.py) (NEW - from Lambda repo)
+
 **AQM Core:** Quantum-resistant Active Queue Management
+
 - Soliton wave packet scheduling
 - Physics-based traffic shaping
 - Integration with SCBE pipeline
@@ -194,29 +213,35 @@ def scbe_14layer_pipeline(t, D, breathing_factor, ...) -> Dict
 ### TypeScript Cryptographic Envelope
 
 #### [src/crypto/envelope.ts](src/crypto/envelope.ts)
+
 **Main API:**
+
 ```typescript
-async function createEnvelope(params: CreateParams): Promise<Envelope>
-async function verifyEnvelope(env: Envelope, key: Buffer): Promise<Body>
+async function createEnvelope(params: CreateParams): Promise<Envelope>;
+async function verifyEnvelope(env: Envelope, key: Buffer): Promise<Body>;
 ```
 
 **Risk-Gated:**
+
 ```typescript
 async function createGatedEnvelope(
-    params: CreateParams,
-    riskResult: RiskResult
-): Promise<Envelope | null>
+  params: CreateParams,
+  riskResult: RiskResult
+): Promise<Envelope | null>;
 ```
 
 #### [src/crypto/replayGuard.ts](src/crypto/replayGuard.ts)
+
 **Replay Prevention:** Bloom filter + nonce map
 
 #### [src/crypto/kms.ts](src/crypto/kms.ts)
+
 **Key Management:** HKDF-based key derivation
 
 ### Symphonic Cipher Module (NEW)
 
 #### [src/symphonic_cipher/](src/symphonic_cipher/)
+
 **Complete Post-Quantum Integration:**
 
 - **core.py:** Main cipher logic
@@ -227,6 +252,7 @@ async function createGatedEnvelope(
 - **topological_cfi.py:** Control flow integrity
 
 **SCBE-AetherMoore Integration:**
+
 - [scbe_aethermoore/fourteen_layer_pipeline.py](src/symphonic_cipher/scbe_aethermoore/layers/fourteen_layer_pipeline.py)
 - [scbe_aethermoore/cpse.py](src/symphonic_cipher/scbe_aethermoore/cpse.py)
 - [scbe_aethermoore/dual_lattice.py](src/symphonic_cipher/scbe_aethermoore/dual_lattice.py)
@@ -236,7 +262,9 @@ async function createGatedEnvelope(
 ### Physics Simulation (NEW)
 
 #### [src/physics_sim/core.py](src/physics_sim/core.py)
+
 **Soliton Dynamics:**
+
 - Quantum-resistant AQM
 - Wave packet scheduling
 - Traffic shaping algorithms
@@ -244,7 +272,9 @@ async function createGatedEnvelope(
 ### AWS Lambda Deployment (NEW)
 
 #### [src/lambda/index.js](src/lambda/index.js)
+
 **Zero-Dependency Handler:**
+
 ```javascript
 const ManifoldClassifier = {
     classify(context) -> { lane, laneBit, confidence }
@@ -256,6 +286,7 @@ const TrajectoryKernel = {
 ```
 
 **5-Variable Authorization:**
+
 - Origin (source hash)
 - Velocity (temporal delta)
 - Curvature (history analysis)
@@ -263,6 +294,7 @@ const TrajectoryKernel = {
 - Signature (payload hash)
 
 #### [src/lambda/demo.html](src/lambda/demo.html)
+
 **Interactive Web Demo:** API testing interface
 
 ---
@@ -272,24 +304,30 @@ const TrajectoryKernel = {
 ### Core Tests
 
 #### [tests/test_scbe_14layers.py](tests/test_scbe_14layers.py) (435 lines)
+
 **59 Test Cases:**
+
 - 55 passing (93.2%)
 - 4 tolerance issues (non-critical)
 
 **Coverage:**
+
 - L1-L14: Individual layer validation
 - Full pipeline: End-to-end integration
 - Edge cases: Boundary conditions
 - Axiom compliance: A1-A12 verification
 
 #### [tests/stress_test.py](tests/stress_test.py) (NEW)
+
 **Load Testing:**
+
 - 1000 concurrent requests
 - Attack scenarios (DDoS, malicious)
 - Normal traffic patterns
 - Performance metrics
 
 #### Additional Test Files (NEW)
+
 - [test_aethermoore_validation.py](tests/test_aethermoore_validation.py)
 - [test_combined_protocol.py](tests/test_combined_protocol.py)
 - [test_flat_slope.py](tests/test_flat_slope.py)
@@ -299,6 +337,7 @@ const TrajectoryKernel = {
 ### Symphonic Cipher Tests
 
 #### [src/symphonic_cipher/tests/](src/symphonic_cipher/tests/)
+
 - test_axiom_verification.py
 - test_core.py
 - test_cpse_physics.py
@@ -315,10 +354,13 @@ const TrajectoryKernel = {
 ### Mathematical Proofs
 
 #### [docs/COMPREHENSIVE_MATH_SCBE.md](docs/COMPREHENSIVE_MATH_SCBE.md)
+
 **Complete LaTeX Proofs:** All 18 theorems for A1-A14
 
 #### [docs/LANGUES_WEIGHTING_SYSTEM.md](docs/LANGUES_WEIGHTING_SYSTEM.md) (600+ lines)
+
 **Six Sacred Tongues:**
+
 - KO, AV, RU, CA, UM, DR
 - Golden ratio weighting: φ^k
 - Fractional dimension flux: νₗ(t) ∈ [0,1]
@@ -327,7 +369,9 @@ const TrajectoryKernel = {
 ### Deployment Guides
 
 #### [docs/AWS_LAMBDA_DEPLOYMENT.md](docs/AWS_LAMBDA_DEPLOYMENT.md) (NEW)
+
 **Complete Deployment Guide:**
+
 - 3 deployment options (Node.js, Python, Hybrid)
 - Packaging instructions
 - API Gateway setup
@@ -336,6 +380,7 @@ const TrajectoryKernel = {
 - Security configuration
 
 #### [docs/lambda/](docs/lambda/) (NEW)
+
 - PATENT_CLAIMS_COVERAGE.md
 - SCBE_PATENT_PORTFOLIO.md
 - SCBE_SYSTEM_OVERVIEW.md
@@ -344,12 +389,15 @@ const TrajectoryKernel = {
 ### Status Reports
 
 #### [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md)
+
 **Current Status:**
+
 - Test Results: 55/59 (93.2%)
 - Platform Issues: RESOLVED (UTF-8 encoding)
 - Production Ready: ✅
 
 #### [MASTER_INDEX.md](MASTER_INDEX.md)
+
 **Navigation Hub:** Complete system overview
 
 ---
@@ -359,20 +407,26 @@ const TrajectoryKernel = {
 ### Operational Thresholds
 
 #### [config/scbe.alerts.yml](config/scbe.alerts.yml)
+
 **Alert Definitions:**
+
 - GCM encryption failures
 - Nonce reuse detection
 - Latency thresholds
 - Error rates
 
 #### [config/sentinel.yml](config/sentinel.yml)
+
 **Gating Rules:**
+
 - Rate limits
 - Risk weight configuration
 - Decision thresholds
 
 #### [config/steward.yml](config/steward.yml)
+
 **Review Policies:**
+
 - SLA requirements
 - Approver lists
 - Escalation paths
@@ -382,6 +436,7 @@ const TrajectoryKernel = {
 ## 🚀 Quick Start Commands
 
 ### Run Tests
+
 ```bash
 # Core SCBE tests
 python tests/test_scbe_14layers.py
@@ -397,6 +452,7 @@ npm test
 ```
 
 ### Run Demos
+
 ```bash
 # Interactive Python demo (7 scenarios)
 python examples/demo_scbe_system.py
@@ -409,6 +465,7 @@ python src/aethermoore.py
 ```
 
 ### AWS Lambda Deployment
+
 ```bash
 # Package
 mkdir lambda_package
@@ -429,6 +486,7 @@ aws lambda create-function \
 ## 📊 System Metrics
 
 ### Performance
+
 - **Single Pipeline:** 50-100ms
 - **Throughput:** 10-20 decisions/sec/core
 - **Memory:** ~10MB per instance
@@ -436,6 +494,7 @@ aws lambda create-function \
 - **Lambda Warm:** 50-100ms
 
 ### Security
+
 - **Quantum Resistance:** 2^-128 collision probability
 - **Encryption:** AES-256-GCM
 - **Key Derivation:** HKDF-SHA256
@@ -443,6 +502,7 @@ aws lambda create-function \
 - **PQC:** CRYSTALS-Kyber (ML-KEM-768) + Dilithium (ML-DSA-65)
 
 ### Test Coverage
+
 - **Core Tests:** 55/59 (93.2%)
 - **Total Test Files:** 130+
 - **Integration Tests:** Full pipeline validated
@@ -486,9 +546,10 @@ aws lambda create-function \
 **USPTO #63/961,403** - Filed
 
 **Key Claims:**
+
 1. Hyperbolic risk governance via Poincaré ball
 2. Breathing + Phase transform composition
-3. Harmonic scaling with R^{d*²} amplification
+3. Harmonic scaling with R^{d\*²} amplification
 4. Six Sacred Tongues weighting (φ^k)
 5. Fractional dimension flux
 6. Symphonic Cipher FFT verification

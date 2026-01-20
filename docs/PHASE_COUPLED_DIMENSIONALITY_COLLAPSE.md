@@ -16,11 +16,13 @@ The SCBE system uses 6-dimensional context vectors, but not all dimensions are e
 ## 1. Domain
 
 **Input**: Complex-valued context vector `c(t) ∈ ℂ^D` where:
+
 - `D = 6` (KO, AV, RU, CA, UM, DR dimensions)
 - Each `c_i(t)` has magnitude and phase: `c_i(t) = |c_i(t)| · e^(i·φ_i(t))`
 - Time series available: `{c(t-Δ), c(t-2Δ), ..., c(t-NΔ)}`
 
 **Parameters**:
+
 - `Δ`: Time window for phase coherence measurement (default: 1 second)
 - `N`: Number of historical samples (default: 10)
 - `τ`: Coherence threshold for dimension activation (default: 0.7)
@@ -38,15 +40,18 @@ For each dimension `i ∈ {1,...,D}`, compute phase coherence over time window:
 ```
 
 where:
+
 ```
 Δφ_i(t,Δ) = arg(c_i(t)) - arg(c_i(t-Δ))
 ```
 
-**In English**: 
+**In English**:
+
 - If phase is stable (small Δφ), then `e^(i·Δφ) ≈ 1` → `ρ_i ≈ 1`
 - If phase drifts randomly, then `e^(i·Δφ)` averages to 0 → `ρ_i ≈ 0`
 
 **Discrete Implementation**:
+
 ```
 ρ_i(t) = (1/N) · |Σ_{k=1}^N e^(i·Δφ_i(t-kΔ,Δ))|
 ```
@@ -66,16 +71,19 @@ Define the **collapse operator** that attenuates incoherent dimensions:
 Define two measures of effective dimensionality:
 
 **Hard threshold**:
+
 ```
 D_eff^hard(t) = Σ_{i=1}^D 𝟙[ρ_i(t) > τ]
 ```
 
 **Soft (continuous)**:
+
 ```
 D_eff^soft(t) = Σ_{i=1}^D ρ_i(t)
 ```
 
 **Interpretation**:
+
 - `D_eff = 6`: All dimensions coherent (polly mode)
 - `D_eff ≈ 3`: Half dimensions drifting (demi mode)
 - `D_eff < 2`: Severe drift (quasi mode, high alert)
@@ -87,12 +95,14 @@ D_eff^soft(t) = Σ_{i=1}^D ρ_i(t)
 **Phase Coherence Preservation**:
 
 For a stable system with no external perturbations:
+
 ```
 d/dt ρ_i(t) ≈ 0  (for all i)
 ```
 
 **Proof Sketch**:
 If `φ_i(t) = ω_i·t + φ_0` (constant angular velocity), then:
+
 ```
 Δφ_i(t,Δ) = ω_i·Δ  (constant)
 e^(i·Δφ_i) = e^(i·ω_i·Δ)  (constant)
@@ -112,6 +122,7 @@ M_collapse(t) = D - D_eff^soft(t) = Σ_{i=1}^D (1 - ρ_i(t))
 ```
 
 **Interpretation**:
+
 - `M_collapse = 0`: No collapse (all dimensions active)
 - `M_collapse = D`: Complete collapse (all dimensions incoherent)
 
@@ -134,6 +145,7 @@ Let `c(t)` be a context vector with phase drift `σ_φ` (standard deviation of p
 Assume phase increments are Gaussian: `Δφ ~ 𝒩(0, σ_φ²·Δ²)`.
 
 Then:
+
 ```
 𝔼[e^(i·Δφ)] = ∫ e^(i·x) · (1/√(2πσ²)) · e^(-x²/(2σ²)) dx
             = e^(-σ²/2)  (characteristic function of Gaussian)
@@ -142,6 +154,7 @@ Then:
 where `σ² = σ_φ²·Δ²`.
 
 Therefore:
+
 ```
 ρ_i = |𝔼[e^(i·Δφ)]| ≤ e^(-σ_φ²·Δ²/2)
 ```
@@ -155,11 +168,13 @@ Therefore:
 ### 6.1 Layer 3 (Langues Metric Tensor)
 
 Current formula:
+
 ```
 L(x,t) = Σ_{l=1}^6 w_l · exp[β_l · (d_l + sin(ω_l·t + φ_l))]
 ```
 
 **PCDC Enhancement**:
+
 ```
 L_PCDC(x,t) = Σ_{l=1}^6 ρ_l(t) · w_l · exp[β_l · (d_l + sin(ω_l·t + φ_l))]
 ```
@@ -179,6 +194,7 @@ mode(t) = {
 ```
 
 **Flux Coefficients**:
+
 ```
 flux_polly  = 1.0  (all dimensions active)
 flux_demi   = 0.5  (half dimensions active)
@@ -188,6 +204,7 @@ flux_quasi  = 0.1  (minimal dimensions active)
 ### 6.3 Authorization Tightening
 
 **Decision Rule**:
+
 ```
 threshold(t) = base_threshold · (D / D_eff(t))
 ```
@@ -202,18 +219,18 @@ threshold(t) = base_threshold · (D / D_eff(t))
 
 ```typescript
 interface PhaseCoherence {
-  rho: number[];           // Per-dimension coherence [0,1]
-  D_eff_hard: number;      // Hard threshold count
-  D_eff_soft: number;      // Soft continuous sum
-  M_collapse: number;      // Collapse metric
+  rho: number[]; // Per-dimension coherence [0,1]
+  D_eff_hard: number; // Hard threshold count
+  D_eff_soft: number; // Soft continuous sum
+  M_collapse: number; // Collapse metric
   mode: 'polly' | 'demi' | 'quasi';
 }
 
 interface PCDCConfig {
-  D: number;               // Number of dimensions (6)
-  Delta: number;           // Time window (seconds)
-  N: number;               // Historical samples
-  tau: number;             // Coherence threshold
+  D: number; // Number of dimensions (6)
+  Delta: number; // Time window (seconds)
+  N: number; // Historical samples
+  tau: number; // Coherence threshold
 }
 ```
 
@@ -222,13 +239,13 @@ interface PCDCConfig {
 ```typescript
 class PCDC {
   private config: PCDCConfig;
-  private history: Complex[][];  // [time][dimension]
-  
+  private history: Complex[][]; // [time][dimension]
+
   constructor(config: PCDCConfig) {
     this.config = config;
     this.history = [];
   }
-  
+
   /**
    * Update with new context vector
    */
@@ -238,33 +255,33 @@ class PCDC {
       this.history.shift();
     }
   }
-  
+
   /**
    * Compute phase coherence for dimension i
    */
   computeCoherence(i: number): number {
     if (this.history.length < 2) return 1.0;
-    
+
     let sum_real = 0;
     let sum_imag = 0;
     let count = 0;
-    
+
     for (let k = 1; k < this.history.length; k++) {
       const phi_curr = this.history[k][i].arg();
-      const phi_prev = this.history[k-1][i].arg();
+      const phi_prev = this.history[k - 1][i].arg();
       const delta_phi = phi_curr - phi_prev;
-      
+
       sum_real += Math.cos(delta_phi);
       sum_imag += Math.sin(delta_phi);
       count++;
     }
-    
+
     const avg_real = sum_real / count;
     const avg_imag = sum_imag / count;
-    
+
     return Math.sqrt(avg_real * avg_real + avg_imag * avg_imag);
   }
-  
+
   /**
    * Compute full phase coherence state
    */
@@ -272,19 +289,19 @@ class PCDC {
     const rho: number[] = [];
     let D_eff_hard = 0;
     let D_eff_soft = 0;
-    
+
     for (let i = 0; i < this.config.D; i++) {
       const rho_i = this.computeCoherence(i);
       rho.push(rho_i);
-      
+
       if (rho_i > this.config.tau) {
         D_eff_hard++;
       }
       D_eff_soft += rho_i;
     }
-    
+
     const M_collapse = this.config.D - D_eff_soft;
-    
+
     let mode: 'polly' | 'demi' | 'quasi';
     if (D_eff_soft > 5.5) {
       mode = 'polly';
@@ -293,16 +310,16 @@ class PCDC {
     } else {
       mode = 'quasi';
     }
-    
+
     return {
       rho,
       D_eff_hard,
       D_eff_soft,
       M_collapse,
-      mode
+      mode,
     };
   }
-  
+
   /**
    * Apply collapse operator
    */
@@ -325,61 +342,58 @@ describe('PCDC Invariants', () => {
     const pcdc = new PCDC({ D: 6, Delta: 1, N: 10, tau: 0.7 });
     // Add stable phases
     for (let t = 0; t < 20; t++) {
-      const c = Array.from({ length: 6 }, (_, i) => 
-        Complex.fromPolar(1, i * 0.1 * t)
-      );
+      const c = Array.from({ length: 6 }, (_, i) => Complex.fromPolar(1, i * 0.1 * t));
       pcdc.update(c);
     }
-    
+
     const state = pcdc.computeState();
-    state.rho.forEach(rho_i => {
+    state.rho.forEach((rho_i) => {
       expect(rho_i).toBeGreaterThanOrEqual(0);
       expect(rho_i).toBeLessThanOrEqual(1);
     });
   });
-  
+
   it('stable phases → high coherence', () => {
     const pcdc = new PCDC({ D: 6, Delta: 1, N: 10, tau: 0.7 });
     // Constant phase velocity
     for (let t = 0; t < 20; t++) {
-      const c = Array.from({ length: 6 }, (_, i) => 
-        Complex.fromPolar(1, 0.5 * t)  // Same velocity for all
+      const c = Array.from(
+        { length: 6 },
+        (_, i) => Complex.fromPolar(1, 0.5 * t) // Same velocity for all
       );
       pcdc.update(c);
     }
-    
+
     const state = pcdc.computeState();
     expect(state.D_eff_soft).toBeGreaterThan(5.5);
     expect(state.mode).toBe('polly');
   });
-  
+
   it('drifting phases → low coherence', () => {
     const pcdc = new PCDC({ D: 6, Delta: 1, N: 10, tau: 0.7 });
     // Random phase drift
     for (let t = 0; t < 20; t++) {
-      const c = Array.from({ length: 6 }, () => 
-        Complex.fromPolar(1, Math.random() * 2 * Math.PI)
-      );
+      const c = Array.from({ length: 6 }, () => Complex.fromPolar(1, Math.random() * 2 * Math.PI));
       pcdc.update(c);
     }
-    
+
     const state = pcdc.computeState();
     expect(state.D_eff_soft).toBeLessThan(3.0);
     expect(state.mode).toBe('quasi');
   });
-  
+
   it('collapse operator preserves magnitude scaling', () => {
     const pcdc = new PCDC({ D: 6, Delta: 1, N: 10, tau: 0.7 });
     // Add some history
     for (let t = 0; t < 10; t++) {
-      pcdc.update(Array.from({ length: 6 }, () => 
-        Complex.fromPolar(1, Math.random() * 2 * Math.PI)
-      ));
+      pcdc.update(
+        Array.from({ length: 6 }, () => Complex.fromPolar(1, Math.random() * 2 * Math.PI))
+      );
     }
-    
+
     const c = Array.from({ length: 6 }, () => Complex.fromPolar(2, 0));
     const c_collapsed = pcdc.collapse(c);
-    
+
     // Collapsed magnitudes should be ≤ original
     c_collapsed.forEach((c_i, i) => {
       expect(c_i.abs()).toBeLessThanOrEqual(c[i].abs());
@@ -393,11 +407,11 @@ describe('PCDC Invariants', () => {
 ```typescript
 it('detects drift according to theorem', () => {
   const pcdc = new PCDC({ D: 6, Delta: 1, N: 10, tau: 0.7 });
-  
+
   // Simulate Gaussian drift with σ_φ = 0.5
   const sigma_phi = 0.5;
   const Delta = 1;
-  
+
   for (let t = 0; t < 20; t++) {
     const c = Array.from({ length: 6 }, () => {
       const drift = sigma_phi * Math.sqrt(Delta) * randn();
@@ -405,10 +419,10 @@ it('detects drift according to theorem', () => {
     });
     pcdc.update(c);
   }
-  
+
   const state = pcdc.computeState();
-  const expected_rho = Math.exp(-sigma_phi * sigma_phi * Delta * Delta / 2);
-  
+  const expected_rho = Math.exp((-sigma_phi * sigma_phi * Delta * Delta) / 2);
+
   // Average coherence should be close to theoretical bound
   const avg_rho = state.D_eff_soft / 6;
   expect(avg_rho).toBeLessThan(expected_rho * 1.5); // Allow some slack
@@ -423,8 +437,8 @@ it('detects drift according to theorem', () => {
 
 "A method for adaptive dimensionality reduction comprising:
 (a) receiving complex-valued context vector c(t) ∈ ℂ^D;
-(b) computing per-dimension phase coherence ρ_i(t) = |𝔼[e^(i·Δφ_i)]|;
-(c) defining collapse operator Π_ρ(c)_i = ρ_i · c_i;
+(b) computing per-dimension phase coherence ρ*i(t) = |𝔼[e^(i·Δφ_i)]|;
+(c) defining collapse operator Π*ρ(c)\_i = ρ_i · c_i;
 (d) computing effective dimensionality D_eff = Σ ρ_i;
 (e) adjusting authorization threshold based on D_eff;
 wherein incoherent dimensions are automatically suppressed."
@@ -432,6 +446,7 @@ wherein incoherent dimensions are automatically suppressed."
 ### Claim 2: Breathing Mode Classification
 
 "The method of claim 1, wherein dimensional modes are classified as:
+
 - polly mode if D_eff > 5.5 (all dimensions active);
 - demi mode if 3.0 ≤ D_eff ≤ 5.5 (partial activation);
 - quasi mode if D_eff < 3.0 (minimal activation)."
@@ -439,7 +454,7 @@ wherein incoherent dimensions are automatically suppressed."
 ### Claim 3: Drift Detection Bound
 
 "The method of claim 1, wherein phase coherence satisfies:
-ρ_i ≤ e^(-σ_φ²·Δ²/2)
+ρ*i ≤ e^(-σ*φ²·Δ²/2)
 where σ_φ is phase drift standard deviation."
 
 ---
@@ -447,11 +462,13 @@ where σ_φ is phase drift standard deviation."
 ## 10. Comparison to Prior Art
 
 ### What's NOT New
+
 - Phase coherence measurement (signal processing)
 - Dimensionality reduction (PCA, autoencoders)
 - Adaptive thresholds (anomaly detection)
 
 ### What IS New
+
 - **Phase-derived continuous dimensionality** for security contexts
 - **Automatic dimension suppression** based on temporal coherence
 - **Breathing modes** (polly/demi/quasi) as formal mathematical states
@@ -471,4 +488,3 @@ where σ_φ is phase drift standard deviation."
 **Status**: ✅ MATHEMATICALLY SPECIFIED | ⏳ IMPLEMENTATION PENDING | 🔐 PATENT-READY  
 **Generated**: January 18, 2026 21:20 PST  
 **Patent Deadline**: 13 days remaining
-

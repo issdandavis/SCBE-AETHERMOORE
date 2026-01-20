@@ -31,6 +31,7 @@ npm login
 ```
 
 You'll be prompted for:
+
 - **Username:** Your NPM username
 - **Password:** Your NPM password
 - **Email:** Your NPM email
@@ -64,17 +65,21 @@ Get your token from: https://www.npmjs.com/settings/YOUR_USERNAME/tokens
 ## 📤 Publishing Steps
 
 ### Step 1: Login to NPM
+
 ```bash
 npm login
 ```
 
 ### Step 2: Verify Package
+
 ```bash
 npm pack --dry-run
 ```
+
 This shows what will be published without actually publishing.
 
 ### Step 3: Publish Package
+
 ```bash
 npm publish --access public
 ```
@@ -82,6 +87,7 @@ npm publish --access public
 **Note:** Use `--access public` because the package is scoped (`@scbe/aethermoore`)
 
 ### Step 4: Verify Publication
+
 ```bash
 npm view @scbe/aethermoore
 ```
@@ -93,17 +99,20 @@ npm view @scbe/aethermoore
 If you don't want to publish to NPM yet, you can distribute the tarball directly:
 
 ### Share the Tarball
+
 ```bash
 # The file is ready:
 scbe-aethermoore-3.0.0.tgz
 ```
 
 ### Users Install From Tarball
+
 ```bash
 npm install /path/to/scbe-aethermoore-3.0.0.tgz
 ```
 
 ### Or Install From URL
+
 ```bash
 npm install https://your-server.com/scbe-aethermoore-3.0.0.tgz
 ```
@@ -115,6 +124,7 @@ npm install https://your-server.com/scbe-aethermoore-3.0.0.tgz
 If you want to keep it private, you can:
 
 ### Option 1: GitHub Packages
+
 ```bash
 # Update package.json
 {
@@ -131,12 +141,14 @@ npm publish
 ```
 
 ### Option 2: Private NPM Registry
+
 ```bash
 # Use Verdaccio, Nexus, or Artifactory
 npm publish --registry=https://your-private-registry.com
 ```
 
 ### Option 3: NPM Private Packages
+
 ```bash
 # Requires paid NPM account
 npm publish --access restricted
@@ -163,16 +175,19 @@ Before publishing, verify:
 ## 🎯 What Happens After Publishing
 
 ### Immediate
+
 1. Package appears on NPM: https://www.npmjs.com/package/@scbe/aethermoore
 2. Users can install: `npm install @scbe/aethermoore`
 3. Documentation visible on NPM
 
 ### Within 24 Hours
+
 1. Package indexed by search engines
 2. Download stats start tracking
 3. Dependency graphs update
 
 ### Ongoing
+
 1. Monitor downloads: https://npm-stat.com/charts.html?package=@scbe/aethermoore
 2. Respond to issues: GitHub Issues
 3. Release updates: v3.0.1, v3.1.0, etc.
@@ -182,16 +197,19 @@ Before publishing, verify:
 ## 📊 Package Visibility
 
 ### NPM Registry
+
 - **URL:** https://www.npmjs.com/package/@scbe/aethermoore
 - **Install:** `npm install @scbe/aethermoore`
 - **Visibility:** Public (with `--access public`)
 
 ### GitHub
+
 - **Repo:** https://github.com/your-org/scbe-aethermoore
 - **Releases:** https://github.com/your-org/scbe-aethermoore/releases
 - **Tag:** v3.0.0
 
 ### Documentation
+
 - **Docs Site:** https://scbe-aethermoore.dev
 - **API Docs:** https://scbe-aethermoore.dev/api
 - **Examples:** https://scbe-aethermoore.dev/examples
@@ -201,11 +219,13 @@ Before publishing, verify:
 ## 🔄 Version Management
 
 ### Semantic Versioning
+
 - **Major (3.x.x):** Breaking changes
 - **Minor (x.0.x):** New features (backward compatible)
 - **Patch (x.x.0):** Bug fixes
 
 ### Publishing Updates
+
 ```bash
 # Patch release (3.0.1)
 npm version patch
@@ -225,16 +245,19 @@ npm publish
 ## 🛡️ Security Best Practices
 
 ### Enable 2FA
+
 ```bash
 npm profile enable-2fa auth-and-writes
 ```
 
 ### Use NPM Tokens
+
 - Create tokens for CI/CD
 - Set expiration dates
 - Revoke unused tokens
 
 ### Monitor Security
+
 ```bash
 # Check for vulnerabilities
 npm audit
@@ -248,11 +271,13 @@ npm audit fix
 ## 📞 Support After Publishing
 
 ### For Users
+
 - **Issues:** https://github.com/your-org/scbe-aethermoore/issues
 - **Discussions:** https://github.com/your-org/scbe-aethermoore/discussions
 - **Discord:** https://discord.gg/scbe-aethermoore
 
 ### For Contributors
+
 - **Contributing:** See CONTRIBUTING.md
 - **Code of Conduct:** See CODE_OF_CONDUCT.md
 - **Pull Requests:** Welcome!
@@ -262,17 +287,20 @@ npm audit fix
 ## 🎉 Next Steps
 
 ### Right Now
+
 1. **Login to NPM:** `npm login`
 2. **Publish:** `npm publish --access public`
 3. **Verify:** `npm view @scbe/aethermoore`
 
 ### This Week
+
 4. Create GitHub release (v3.0.0)
 5. Update documentation site
 6. Announce on social media
 7. Submit to awesome lists
 
 ### This Month
+
 8. Monitor downloads and feedback
 9. Fix any reported issues (v3.0.1)
 10. Plan next features (v3.1.0)
@@ -282,17 +310,21 @@ npm audit fix
 ## 💡 Tips
 
 ### First Time Publishing?
+
 - Start with `npm pack --dry-run` to see what will be published
 - Use `npm publish --dry-run` to test without actually publishing
 - You can unpublish within 72 hours if needed: `npm unpublish @scbe/aethermoore@3.0.0`
 
 ### Package Name Taken?
+
 If `@scbe/aethermoore` is taken, you can:
+
 - Use your username: `@issacdavis/scbe-aethermoore`
 - Use different name: `@scbe/aethermoore-core`
 - Contact NPM support to claim abandoned packages
 
 ### Want to Test First?
+
 ```bash
 # Install locally to test
 npm install ./scbe-aethermoore-3.0.0.tgz
@@ -312,11 +344,13 @@ node -e "const scbe = require('@scbe/aethermoore'); console.log(scbe);"
 ## 📚 Resources
 
 ### NPM Documentation
+
 - **Publishing:** https://docs.npmjs.com/cli/v9/commands/npm-publish
 - **Scoped Packages:** https://docs.npmjs.com/cli/v9/using-npm/scope
 - **2FA:** https://docs.npmjs.com/configuring-two-factor-authentication
 
 ### Package Management
+
 - **Semantic Versioning:** https://semver.org/
 - **Package.json:** https://docs.npmjs.com/cli/v9/configuring-npm/package-json
 - **NPM Scripts:** https://docs.npmjs.com/cli/v9/using-npm/scripts

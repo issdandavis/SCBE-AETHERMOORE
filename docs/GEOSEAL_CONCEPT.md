@@ -11,12 +11,14 @@ Think of it like this: Traditional security is a locked door - if you steal the 
 Your invention uses **two mathematical spaces** at the same time:
 
 ### 1. The Behavior Sphere (S^n)
+
 - **What it represents:** How a user/agent/AI is ACTUALLY behaving right now
 - **Shape:** A sphere (like Earth's surface)
 - **What gets plotted:** Real-time actions, message patterns, request sequences
 - **Think of it as:** "Where you are right now based on what you're doing"
 
 ### 2. The Policy Hypercube ([0,1]^m)
+
 - **What it represents:** What the user/agent SHOULD be allowed to do
 - **Shape:** A hypercube (imagine a multi-dimensional box)
 - **What gets plotted:** Permissions, access levels, allowed operations
@@ -27,13 +29,17 @@ Your invention uses **two mathematical spaces** at the same time:
 Here's where it gets brilliant:
 
 ### Interior Paths (Trusted)
+
 When your behavior sphere position matches your policy hypercube position, your requests travel through **interior space** - a fast, trusted path. The system uses:
+
 - **Fast crypto:** AES-256-GCM (standard encryption)
 - **Quick decisions:** Low latency
 - **Green light:** Full access
 
 ### Exterior Paths (Suspicious)
+
 When your behavior doesn't match your permissions - even if you have valid credentials - your requests get routed through **exterior space**. The system automatically:
+
 - **Upgrades crypto:** Switches to post-quantum (CRYSTALS-Kyber)
 - **Adds scrutiny:** More verification steps
 - **Slows time:** Deliberate time dilation (like moving through thick honey)
@@ -42,11 +48,13 @@ When your behavior doesn't match your permissions - even if you have valid crede
 ## Why This Is Revolutionary
 
 ### Traditional Security:
+
 ```
 Attacker steals API key → Uses it → Gets full access ✗
 ```
 
 ### GeoSeal Security:
+
 ```
 Attacker steals API key
 → But their behavior doesn't match expected geometry
@@ -76,11 +84,13 @@ You know how time runs slower near a black hole? GeoSeal does the same thing wit
 The system uses two clever techniques to make this work at any scale:
 
 ### HEALPix Tiling (for the sphere)
+
 - **What it is:** Hierarchical Equal Area isoLatitude Pixelization
 - **Why it matters:** Can zoom from continent-level to street-level precision
 - **In practice:** Can detect both broad behavioral shifts and tiny anomalies
 
 ### Morton Codes (for the hypercube)
+
 - **What it is:** Z-order space-filling curves
 - **Why it matters:** Turns multi-dimensional positions into single numbers
 - **In practice:** Makes lookups lightning-fast (like a ZIP code for permissions)
@@ -130,16 +140,19 @@ The system uses two clever techniques to make this work at any scale:
 Here's the genius part - every cryptographic operation is **bound to geometry**:
 
 ### Traditional Crypto:
+
 ```
 Key + Message = Ciphertext
 ```
 
 ### GeoSeal Crypto:
+
 ```
 Key + Message + Sphere_Position + Cube_Position + Path_Type = Ciphertext
 ```
 
 The **Additional Authenticated Data (AAD)** includes:
+
 ```json
 {
   "request_id": "req_xyz",
@@ -171,22 +184,26 @@ Your invention covers:
 GeoSeal fits perfectly with the existing SCBE system:
 
 ### Layer 4 (Poincaré Embedding)
+
 - **Behavior sphere** can use Poincaré ball geometry (isomorphic mapping)
 - Hyperbolic distance d_H already computed
 - Realm centers μ_k become "trusted geometric anchors"
 
 ### Layer 8 (Realm Distance)
-- d*(u) = min_k d_H(u, μ_k) IS the geometric distance
+
+- d\*(u) = min_k d_H(u, μ_k) IS the geometric distance
 - Already computing this in current implementation
 - Just expose for path classification
 
 ### Layer 13 (Composite Risk)
+
 - Risk'(t) = Risk_base(t) · H(d*, R) where H = e^(d*²)
 - **H is the harmonic amplification based on geometric distance**
-- Interior path: d* ≈ 0 → H ≈ 1 → low risk
-- Exterior path: d* >> 0 → H >> 1 → amplified risk
+- Interior path: d\* ≈ 0 → H ≈ 1 → low risk
+- Exterior path: d\* >> 0 → H >> 1 → amplified risk
 
 ### New Integration Point: Path Classifier
+
 ```python
 def classify_path(sphere_pos, cube_pos, epsilon=0.1):
     """
@@ -214,17 +231,20 @@ def classify_path(sphere_pos, cube_pos, epsilon=0.1):
 What you can measure in real-time:
 
 ### Geometric Metrics
+
 - `geoseal.path.interior.count` - requests on trusted paths
 - `geoseal.path.exterior.count` - requests on suspicious paths
 - `geoseal.distance.sphere_cube` - behavioral vs policy distance
 - `geoseal.timedilation.factor` - how much slowdown applied
 
 ### Security Metrics
+
 - `geoseal.crypto.upgrade.count` - AES → post-quantum switches
 - `geoseal.lane_bit.flip.count` - path classification changes
 - `geoseal.trajectory.drift.rate` - how fast behavior is changing
 
 ### Performance Metrics
+
 - `geoseal.latency.interior` - fast path response times
 - `geoseal.latency.exterior` - slow path response times (intentional)
 - `geoseal.cpu.tiling.overhead` - cost of HEALPix/Morton lookups
@@ -232,18 +252,21 @@ What you can measure in real-time:
 ## Why This Changes Everything
 
 ### For Corporate Security Teams:
-- **Zero-trust by geometry:** Don't just verify identity, verify *behavior path*
+
+- **Zero-trust by geometry:** Don't just verify identity, verify _behavior path_
 - **Quantum-ready:** Automatically upgrades crypto when needed
 - **Audit-proof:** Every decision has geometric coordinates
 - **AI-native:** Works for human users, API clients, and AI agents equally
 
 ### For AI Multi-Agent Systems:
+
 - **Agent coordination:** Each agent has sphere position (state) + cube position (authority)
 - **Rogue agent detection:** Geometric drift triggers automatic quarantine
 - **Scalable trust:** Can handle millions of agents with hierarchical tiling
 - **Explainable decisions:** "Agent denied because sphere position (0.9,0.1,0.8) outside cube bounds (0.2,0.5,0.1)"
 
 ### For Regulators & Auditors:
+
 - **Tamper-evident:** Geometric coordinates in cryptographic AAD
 - **Deterministic:** Same inputs always produce same geometry
 - **Traceable:** Full audit trail with spatial coordinates
@@ -289,6 +312,7 @@ And because it's all mathematical, it can't be faked, forged, or bypassed. The g
 ---
 
 **Next Steps:**
+
 1. See [docs/AWS_LAMBDA_DEPLOYMENT.md](AWS_LAMBDA_DEPLOYMENT.md) for deployment guide
 2. See [KIRO_SYSTEM_MAP.md](../KIRO_SYSTEM_MAP.md) for complete system architecture
 3. See [COMPREHENSIVE_MATH_SCBE.md](COMPREHENSIVE_MATH_SCBE.md) for mathematical proofs

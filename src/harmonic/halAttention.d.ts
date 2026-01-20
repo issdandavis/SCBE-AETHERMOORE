@@ -11,16 +11,16 @@ import { Tensor2D, Tensor3D } from './constants.js';
  * HAL configuration interface
  */
 export interface HALConfig {
-    /** Model dimension */
-    d_model: number;
-    /** Number of attention heads */
-    n_heads: number;
-    /** Base ratio for harmonic coupling (default: R^(1/5)) */
-    R?: number;
-    /** Maximum dimension for normalization */
-    d_max?: number;
-    /** Whether to normalize coupling matrix */
-    normalize?: boolean;
+  /** Model dimension */
+  d_model: number;
+  /** Number of attention heads */
+  n_heads: number;
+  /** Base ratio for harmonic coupling (default: R^(1/5)) */
+  R?: number;
+  /** Maximum dimension for normalization */
+  d_max?: number;
+  /** Whether to normalize coupling matrix */
+  normalize?: boolean;
 }
 /**
  * Compute harmonic coupling matrix Λ
@@ -34,7 +34,12 @@ export interface HALConfig {
  * @param normalize - Whether to subtract max for numerical stability
  * @returns Coupling matrix
  */
-export declare function harmonicCouplingMatrix(d_Q: number[], d_K: number[], R?: number, normalize?: boolean): number[][];
+export declare function harmonicCouplingMatrix(
+  d_Q: number[],
+  d_K: number[],
+  R?: number,
+  normalize?: boolean
+): number[][];
 /**
  * HAL Attention: Attention with harmonic coupling
  *
@@ -50,5 +55,12 @@ export declare function harmonicCouplingMatrix(d_Q: number[], d_K: number[], R?:
  * @param config - HAL configuration
  * @returns Output tensor [batch, seq_q, d_model]
  */
-export declare function halAttention(Q: Tensor3D, K: Tensor3D, V: Tensor3D, d_Q: Tensor2D, d_K: Tensor2D, config: HALConfig): Tensor3D;
+export declare function halAttention(
+  Q: Tensor3D,
+  K: Tensor3D,
+  V: Tensor3D,
+  d_Q: Tensor2D,
+  d_K: Tensor2D,
+  config: HALConfig
+): Tensor3D;
 //# sourceMappingURL=halAttention.d.ts.map

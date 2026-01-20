@@ -22,6 +22,7 @@ You provided a **production-ready RWP v3.0 implementation** that significantly e
 ### 1. Enhanced Sacred Tongue Tokenizer (`src/crypto/sacred_tongues.py`)
 
 **Features**:
+
 - ✅ 6 Sacred Tongues with harmonic frequencies (440Hz-659Hz)
 - ✅ Constant-time encoding/decoding (O(1) lookup tables)
 - ✅ Spectral fingerprint computation for Layer 9 validation
@@ -29,6 +30,7 @@ You provided a **production-ready RWP v3.0 implementation** that significantly e
 - ✅ RWP v3.0 section API
 
 **Security Properties**:
+
 - Bijective: Each byte → exactly one token per tongue
 - Collision-free: 256 unique tokens per tongue
 - Constant-time: No timing side-channels
@@ -37,6 +39,7 @@ You provided a **production-ready RWP v3.0 implementation** that significantly e
 ### 2. RWP v3.0 Protocol (`src/crypto/rwp_v3.py`)
 
 **Security Stack**:
+
 1. **Argon2id KDF** (RFC 9106): Password → 256-bit key
    - 64 MB memory, 3 iterations, 4 threads
    - Password cracking resistant
@@ -60,6 +63,7 @@ You provided a **production-ready RWP v3.0 implementation** that significantly e
 ### 3. Complete Demo Script (`examples/rwp_v3_demo.py`)
 
 **5 Comprehensive Demos**:
+
 - ✅ Demo 1: Basic encryption (Argon2id + XChaCha20-Poly1305)
 - ✅ Demo 2: Hybrid PQC encryption (ML-KEM-768 + ML-DSA-65)
 - ✅ Demo 3: Spectral validation (harmonic fingerprints)
@@ -69,6 +73,7 @@ You provided a **production-ready RWP v3.0 implementation** that significantly e
 ### 4. Comprehensive Documentation
 
 **Created Files**:
+
 - ✅ `.kiro/specs/rwp-v2-integration/requirements.md` - Original requirements
 - ✅ `.kiro/specs/rwp-v2-integration/IMPLEMENTATION_NOTES.md` - Implementation details
 - ✅ `.kiro/specs/rwp-v2-integration/RWP_V3_UPGRADE.md` - v2.1 → v3.0 upgrade summary
@@ -84,6 +89,7 @@ You provided a **production-ready RWP v3.0 implementation** that significantly e
 **What**: Each RWP section bound to unique harmonic frequency (440Hz-659Hz range)
 
 **Why Novel**:
+
 - No prior art combines linguistic tokenization with spectral validation
 - Layer 9 coherence check validates frequency-domain integrity
 - Attack detection: Swapping ct ↔ tag tokens triggers spectral mismatch
@@ -95,6 +101,7 @@ You provided a **production-ready RWP v3.0 implementation** that significantly e
 **What**: ML-KEM shared secret XORed into Argon2id-derived key
 
 **Why Novel**:
+
 - Context = (GPS, time, mission_id) influences key derivation
 - Even with stolen ML-KEM key, wrong context → decoy plaintext
 - Combines PQC with geometric security (hyperbolic space)
@@ -106,6 +113,7 @@ You provided a **production-ready RWP v3.0 implementation** that significantly e
 **What**: Pre-synchronized Sacred Tongue vocabularies eliminate TLS handshake
 
 **Why Novel**:
+
 - 14-minute RTT eliminated (no key exchange needed)
 - Envelope self-authenticates via Layer 8 topology check
 - Spectral coherence validation (Layer 9)
@@ -116,15 +124,15 @@ You provided a **production-ready RWP v3.0 implementation** that significantly e
 
 ## 📊 Comparison: v2.1 vs v3.0
 
-| Feature | v2.1 (Planned) | v3.0 (Implemented) | Improvement |
-|---------|----------------|-------------------|-------------|
-| Key Derivation | HMAC-SHA256 | Argon2id (RFC 9106) | 🔥 Password cracking resistant |
-| Encryption | AES-256-GCM | XChaCha20-Poly1305 | ✅ Better nonce handling |
-| PQC Support | Optional (future) | ML-KEM-768 + ML-DSA-65 | 🚀 Full quantum resistance |
-| Key Exchange | Pre-shared keys | Hybrid PQC (XOR mode) | 🔐 No key exchange round-trip |
-| Signatures | HMAC-based | ML-DSA-65 (Dilithium3) | 🛡️ Quantum-resistant |
-| Encoding | Base64 | Sacred Tongue tokens | 🎵 Spectral validation |
-| SCBE Integration | Layer 1-4 | Layer 1-9 (spectral) | 🌟 Harmonic fingerprints |
+| Feature          | v2.1 (Planned)    | v3.0 (Implemented)     | Improvement                    |
+| ---------------- | ----------------- | ---------------------- | ------------------------------ |
+| Key Derivation   | HMAC-SHA256       | Argon2id (RFC 9106)    | 🔥 Password cracking resistant |
+| Encryption       | AES-256-GCM       | XChaCha20-Poly1305     | ✅ Better nonce handling       |
+| PQC Support      | Optional (future) | ML-KEM-768 + ML-DSA-65 | 🚀 Full quantum resistance     |
+| Key Exchange     | Pre-shared keys   | Hybrid PQC (XOR mode)  | 🔐 No key exchange round-trip  |
+| Signatures       | HMAC-based        | ML-DSA-65 (Dilithium3) | 🛡️ Quantum-resistant           |
+| Encoding         | Base64            | Sacred Tongue tokens   | 🎵 Spectral validation         |
+| SCBE Integration | Layer 1-4         | Layer 1-9 (spectral)   | 🌟 Harmonic fingerprints       |
 
 **Result**: v3.0 is a **major upgrade** over v2.1!
 
@@ -143,6 +151,7 @@ You provided a **production-ready RWP v3.0 implementation** that significantly e
 - [x] SCBE context encoder (Layer 1-4 pipeline)
 
 ### 🚧 In Progress (Next Steps)
+
 - [ ] Unit tests (95%+ coverage)
 - [ ] Property-based tests (100 iterations)
 - [ ] Integration tests (SCBE pipeline)
@@ -295,6 +304,7 @@ print(message)  # "Hello, Mars!"
 **Goal**: Demonstrate zero-latency Mars communication
 
 **Steps**:
+
 1. Run `python examples/rwp_v3_demo.py`
 2. Create Mars simulation (14-min delay)
 3. Record demo video
@@ -308,6 +318,7 @@ print(message)  # "Hello, Mars!"
 **Goal**: Demonstrate secure AI agent communication
 
 **Steps**:
+
 1. Integrate RWP v3.0 with Fleet Engine (Phase 3)
 2. Create multi-agent demo (10 agents)
 3. Show consensus via multi-signature envelopes
@@ -321,6 +332,7 @@ print(message)  # "Hello, Mars!"
 **Goal**: Protect novel IP (Claims 17-18)
 
 **Steps**:
+
 1. Validate SCBE context encoder
 2. Run performance benchmarks
 3. Create patent diagrams
@@ -334,6 +346,7 @@ print(message)  # "Hello, Mars!"
 **Goal**: Complete Phase 2 (v3.1.0)
 
 **Steps**:
+
 1. Integrate SCBE context encoder into governance demos
 2. Write comprehensive tests
 3. Port to TypeScript
@@ -349,12 +362,14 @@ print(message)  # "Hello, Mars!"
 ### My Recommendation: **Option 1 + Option 3**
 
 **Why**:
+
 1. **Mars pilot program** demonstrates real-world value (NASA/ESA interest)
 2. **Patent filing** protects IP before public disclosure
 3. **Quick wins** (1 week + 2 months = 10 weeks total)
 4. **High ROI** ($10M-50M/year + $15M-50M patent value)
 
 **Timeline**:
+
 - Week 1: Mars demo video
 - Week 2-4: SCBE context encoder
 - Week 5-8: Performance benchmarks + patent diagrams

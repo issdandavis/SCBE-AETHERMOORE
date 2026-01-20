@@ -3,6 +3,7 @@
 **Intent-Modulated Conlang + Harmonic Verification System**
 
 A mathematically rigorous authentication protocol that combines:
+
 - Private conlang (constructed language) dictionary mapping
 - Modality-driven harmonic synthesis
 - Key-driven Feistel permutation
@@ -40,11 +41,11 @@ Bijection between lexical tokens and integer IDs:
 
 Each modality M determines which overtones are emitted via mask M(M):
 
-| Modality | Mask M(M) | Description |
-|----------|-----------|-------------|
-| STRICT | {1, 3, 5} | Odd harmonics (binary intent) |
+| Modality | Mask M(M)       | Description                     |
+| -------- | --------------- | ------------------------------- |
+| STRICT   | {1, 3, 5}       | Odd harmonics (binary intent)   |
 | ADAPTIVE | {1, 2, 3, 4, 5} | Full series (non-binary intent) |
-| PROBE | {1} | Fundamental only |
+| PROBE    | {1}             | Fundamental only                |
 
 ### 3. Per-Message Secret (Section 4)
 
@@ -68,6 +69,7 @@ x(t) = Σᵢ Σₕ∈M(M) (1/h) sin(2π(f₀ + vᵢ'·Δf)·h·t)
 ```
 
 Where:
+
 - f₀ = 440 Hz (base frequency)
 - Δf = 30 Hz (frequency step per token ID)
 
@@ -77,7 +79,7 @@ Where:
 - **Mic Pattern Filter**: v₂[i] = v₁[i] · (a + (1-a)·cos(θᵢ - θ_axis))
 - **Parametric EQ**: Biquad IIR filter with peak/shelf modes
 - **Compressor**: Piecewise-linear gain reduction with attack/release
-- **Convolution Reverb**: z[n] = (x * h)[n]
+- **Convolution Reverb**: z[n] = (x \* h)[n]
 - **Stereo Panning**: Constant-power law L/R distribution
 
 ### 7. RWP v3 Envelope (Section 7)
@@ -177,6 +179,7 @@ python demo.py
 ```
 
 This demonstrates all components:
+
 1. Dictionary mapping
 2. Modality encoding
 3. Feistel permutation
@@ -205,32 +208,32 @@ pytest symphonic_cipher/tests/ -v
 
 ## Constants
 
-| Symbol | Value | Description |
-|--------|-------|-------------|
-| f₀ | 440 Hz | Base frequency (A4) |
-| Δf | 30 Hz | Frequency step per token ID |
-| H_max | 5 | Maximum overtone index |
-| SR | 44,100 Hz | Sample rate |
-| T_sec | 0.5 s | Waveform duration |
-| R | 4 | Feistel rounds |
-| τ_max | 60,000 ms | Replay window |
-| ε_f | 2 Hz | Frequency tolerance |
-| ε_a | 0.15 | Amplitude tolerance |
+| Symbol | Value     | Description                 |
+| ------ | --------- | --------------------------- |
+| f₀     | 440 Hz    | Base frequency (A4)         |
+| Δf     | 30 Hz     | Frequency step per token ID |
+| H_max  | 5         | Maximum overtone index      |
+| SR     | 44,100 Hz | Sample rate                 |
+| T_sec  | 0.5 s     | Waveform duration           |
+| R      | 4         | Feistel rounds              |
+| τ_max  | 60,000 ms | Replay window               |
+| ε_f    | 2 Hz      | Frequency tolerance         |
+| ε_a    | 0.15      | Amplitude tolerance         |
 
 ## Conlang Vocabulary
 
 Default vocabulary:
 
-| Token | ID | Frequency |
-|-------|-----|-----------|
-| korah | 0 | 440 Hz |
-| aelin | 1 | 470 Hz |
-| dahru | 2 | 500 Hz |
-| melik | 3 | 530 Hz |
-| sorin | 4 | 560 Hz |
-| tivar | 5 | 590 Hz |
-| ulmar | 6 | 620 Hz |
-| vexin | 7 | 650 Hz |
+| Token | ID  | Frequency |
+| ----- | --- | --------- |
+| korah | 0   | 440 Hz    |
+| aelin | 1   | 470 Hz    |
+| dahru | 2   | 500 Hz    |
+| melik | 3   | 530 Hz    |
+| sorin | 4   | 560 Hz    |
+| tivar | 5   | 590 Hz    |
+| ulmar | 6   | 620 Hz    |
+| vexin | 7   | 650 Hz    |
 
 Extended vocabulary supports negative IDs (e.g., "shadow" = -1 → 410 Hz).
 

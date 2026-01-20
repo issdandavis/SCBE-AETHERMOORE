@@ -51,18 +51,18 @@ export interface PQCConfig {
 
 export const ML_KEM_768_PARAMS = {
   name: 'ML-KEM-768',
-  securityLevel: 3,           // NIST Level 3
-  publicKeySize: 1184,        // bytes
-  secretKeySize: 2400,        // bytes
-  ciphertextSize: 1088,       // bytes
-  sharedSecretSize: 32,       // bytes
-  n: 256,                     // polynomial degree
-  k: 3,                       // module rank
-  q: 3329,                    // modulus
-  eta1: 2,                    // noise parameter
-  eta2: 2,                    // noise parameter
-  du: 10,                     // ciphertext compression
-  dv: 4,                      // ciphertext compression
+  securityLevel: 3, // NIST Level 3
+  publicKeySize: 1184, // bytes
+  secretKeySize: 2400, // bytes
+  ciphertextSize: 1088, // bytes
+  sharedSecretSize: 32, // bytes
+  n: 256, // polynomial degree
+  k: 3, // module rank
+  q: 3329, // modulus
+  eta1: 2, // noise parameter
+  eta2: 2, // noise parameter
+  du: 10, // ciphertext compression
+  dv: 4, // ciphertext compression
 } as const;
 
 // ============================================================
@@ -71,19 +71,19 @@ export const ML_KEM_768_PARAMS = {
 
 export const ML_DSA_65_PARAMS = {
   name: 'ML-DSA-65',
-  securityLevel: 3,           // NIST Level 3
-  publicKeySize: 1952,        // bytes
-  secretKeySize: 4032,        // bytes
-  signatureSize: 3293,        // bytes
-  n: 256,                     // polynomial degree
-  k: 6,                       // module rank (public)
-  l: 5,                       // module rank (private)
-  q: 8380417,                 // modulus
-  eta: 4,                     // secret key range
-  tau: 49,                    // number of +/-1 in challenge
-  gamma1: 524288,             // y coefficient range (2^19)
-  gamma2: 261888,             // low-order rounding range
-  beta: 196,                  // tau * eta
+  securityLevel: 3, // NIST Level 3
+  publicKeySize: 1952, // bytes
+  secretKeySize: 4032, // bytes
+  signatureSize: 3293, // bytes
+  n: 256, // polynomial degree
+  k: 6, // module rank (public)
+  l: 5, // module rank (private)
+  q: 8380417, // modulus
+  eta: 4, // secret key range
+  tau: 49, // number of +/-1 in challenge
+  gamma1: 524288, // y coefficient range (2^19)
+  gamma2: 261888, // low-order rounding range
+  beta: 196, // tau * eta
 } as const;
 
 // ============================================================
@@ -210,10 +210,7 @@ export class MLKEM768 {
 
   private deriveSharedSecret(key1: Uint8Array, key2: Uint8Array): Uint8Array {
     return new Uint8Array(
-      createHash('sha256')
-        .update(Buffer.from(key1))
-        .update(Buffer.from(key2))
-        .digest()
+      createHash('sha256').update(Buffer.from(key1)).update(Buffer.from(key2)).digest()
     );
   }
 
@@ -458,10 +455,7 @@ export class HybridKEM {
     const classical = {
       ciphertext: new Uint8Array(classicalRandom),
       sharedSecret: new Uint8Array(
-        createHash('sha256')
-          .update(classicalRandom)
-          .update(publicKey.classical.publicKey)
-          .digest()
+        createHash('sha256').update(classicalRandom).update(publicKey.classical.publicKey).digest()
       ),
     };
 

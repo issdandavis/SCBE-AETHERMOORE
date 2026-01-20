@@ -21,6 +21,7 @@ SCBE-AETHERMOORE is a framework for **agent-to-agent governance and communicatio
 - Outputs are **fail-closed** with **low-leak error behavior** (no helpful oracle)
 
 Think of it as:
+
 > **"Crypto for the message + math-based rules for whether the agent is allowed to act on it."**
 
 ---
@@ -45,6 +46,7 @@ Designed for situations like:
 5. Output a governance decision
 
 This produces a score that's:
+
 - **Auditable** — you can show the math
 - **Stable** — small changes don't cause chaotic decisions
 - **Integratable** — wraps around existing systems
@@ -60,22 +62,22 @@ This produces a score that's:
 
 ### 14-Layer Reference Model
 
-| Layer | Name | Function |
-|-------|------|----------|
-| 1 | Complex State | Context → complex vector (amplitude + phase) |
-| 2 | Realification | ℂᴰ → ℝ²ᴰ embedding |
-| 3 | Weighted Transform | SPD metric weighting |
-| 4 | Poincaré Embedding | Map to hyperbolic ball (‖u‖ < 1) |
-| 5 | Hyperbolic Distance | d_ℍ(u,v) via arcosh formula |
-| 6 | Breathing Transform | Temporal modulation (diffeomorphism) |
-| 7 | Phase Transform | Möbius isometry (gyrovector addition) |
-| 8 | Realm Distance | Min distance to trusted zone centers |
-| 9 | Spectral Coherence | FFT-based pattern stability |
-| 10 | Spin Coherence | Phase alignment measure |
-| 11 | Triadic Temporal | Multi-timescale distance aggregation |
-| 12 | Harmonic Scaling | Risk amplifier: H(d,R) = φᵈ / (1 + e⁻ᴿ) |
-| 13 | Risk Decision | ALLOW / QUARANTINE / DENY |
-| 14 | Audio Axis | Hilbert transform telemetry |
+| Layer | Name                | Function                                     |
+| ----- | ------------------- | -------------------------------------------- |
+| 1     | Complex State       | Context → complex vector (amplitude + phase) |
+| 2     | Realification       | ℂᴰ → ℝ²ᴰ embedding                           |
+| 3     | Weighted Transform  | SPD metric weighting                         |
+| 4     | Poincaré Embedding  | Map to hyperbolic ball (‖u‖ < 1)             |
+| 5     | Hyperbolic Distance | d_ℍ(u,v) via arcosh formula                  |
+| 6     | Breathing Transform | Temporal modulation (diffeomorphism)         |
+| 7     | Phase Transform     | Möbius isometry (gyrovector addition)        |
+| 8     | Realm Distance      | Min distance to trusted zone centers         |
+| 9     | Spectral Coherence  | FFT-based pattern stability                  |
+| 10    | Spin Coherence      | Phase alignment measure                      |
+| 11    | Triadic Temporal    | Multi-timescale distance aggregation         |
+| 12    | Harmonic Scaling    | Risk amplifier: H(d,R) = φᵈ / (1 + e⁻ᴿ)      |
+| 13    | Risk Decision       | ALLOW / QUARANTINE / DENY                    |
+| 14    | Audio Axis          | Hilbert transform telemetry                  |
 
 > **Note:** Context vectors are configurable dimension (typically 6D or 12D depending on integration).
 
@@ -106,23 +108,27 @@ This produces a score that's:
 ## Quick Start
 
 ### Python Demo
+
 ```bash
 pip install numpy scipy argon2-cffi pycryptodome
 python demo_memory_shard.py
 ```
 
 ### TypeScript
+
 ```bash
 npm install
 npm test
 ```
 
 ### Run Proof Pack
+
 ```bash
 ./scripts/make_proof_pack.sh
 ```
 
 This generates evidence at `docs/evidence/<timestamp>/` containing:
+
 - `system_info.txt` — environment details
 - `npm_test_output.txt` — test results
 - `pytest_output.txt` — Python test results
@@ -142,12 +148,12 @@ This generates evidence at `docs/evidence/<timestamp>/` containing:
 
 ## Key Differentiator
 
-| Traditional Security | SCBE-AETHERMOORE |
-|---------------------|------------------|
+| Traditional Security   | SCBE-AETHERMOORE                                  |
+| ---------------------- | ------------------------------------------------- |
 | "Do you have the key?" | "Are you the right entity, in the right context?" |
-| Possession-based | Context-based |
-| Binary (yes/no) | Three-way (allow/quarantine/deny) |
-| Opaque ML models | Deterministic, auditable math |
+| Possession-based       | Context-based                                     |
+| Binary (yes/no)        | Three-way (allow/quarantine/deny)                 |
+| Opaque ML models       | Deterministic, auditable math                     |
 
 ---
 
@@ -171,27 +177,28 @@ scbe-aethermoore-demo/
 
 ## Roadmap
 
-| Track | Status | Description |
-|-------|--------|-------------|
-| **Pilot** | ✅ Now | Demos + integration adapters + runbooks |
-| **Security** | 🔄 In Progress | Independent audit + threat model + adversarial harness |
-| **Enterprise** | ⏳ Planned | SOC 2 Type II + pentest + operational readiness |
+| Track          | Status         | Description                                            |
+| -------------- | -------------- | ------------------------------------------------------ |
+| **Pilot**      | ✅ Now         | Demos + integration adapters + runbooks                |
+| **Security**   | 🔄 In Progress | Independent audit + threat model + adversarial harness |
+| **Enterprise** | ⏳ Planned     | SOC 2 Type II + pentest + operational readiness        |
 
 ---
 
 ## Comparison: Darktrace vs SCBE-AETHERMOORE
 
-| Dimension | Darktrace | SCBE-AETHERMOORE |
-|-----------|-----------|------------------|
-| **Maturity** | 10+ yrs, thousands of deployments | Pilot-ready prototype |
-| **Mechanism** | ML + behavioral baselining | Deterministic scoring + thresholds |
-| **Explainability** | Good (factors, summaries) | Excellent (explicit score components) |
-| **AI/Agent Focus** | Generalized endpoint security | Purpose-built for agent-to-agent |
-| **Prevention** | Mostly detection + response | Action gating (deny/quarantine) |
-| **False Positives** | Tuned over time | Deterministic thresholds, tuneable |
-| **PQC** | Varies by deployment | Optional, environment-dependent |
+| Dimension           | Darktrace                         | SCBE-AETHERMOORE                      |
+| ------------------- | --------------------------------- | ------------------------------------- |
+| **Maturity**        | 10+ yrs, thousands of deployments | Pilot-ready prototype                 |
+| **Mechanism**       | ML + behavioral baselining        | Deterministic scoring + thresholds    |
+| **Explainability**  | Good (factors, summaries)         | Excellent (explicit score components) |
+| **AI/Agent Focus**  | Generalized endpoint security     | Purpose-built for agent-to-agent      |
+| **Prevention**      | Mostly detection + response       | Action gating (deny/quarantine)       |
+| **False Positives** | Tuned over time                   | Deterministic thresholds, tuneable    |
+| **PQC**             | Varies by deployment              | Optional, environment-dependent       |
 
 **Positioning:**
+
 - **Darktrace:** Detect weird behavior in networks
 - **SCBE-AETHERMOORE:** Govern what AI agents are allowed to do to each other
 
@@ -214,15 +221,15 @@ scbe-aethermoore-demo/
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| `QUICKSTART.md` | Get running in 5 minutes |
-| `FULL_SYSTEM_ENABLEMENT.md` | Complete technical specification (~20K words) |
-| `SYSTEM_INTEGRATION.md` | Component integration guide |
-| `docs/ENTERPRISE_TESTING_GUIDE.md` | 41 correctness properties |
-| `docs/AUDIT_RESPONSE_ACTION_PLAN.md` | Patent + security fixes |
-| `PATENT_STRATEGY_ACTION_ITEMS.md` | Critical improvements |
+| Document                             | Description                                   |
+| ------------------------------------ | --------------------------------------------- |
+| `QUICKSTART.md`                      | Get running in 5 minutes                      |
+| `FULL_SYSTEM_ENABLEMENT.md`          | Complete technical specification (~20K words) |
+| `SYSTEM_INTEGRATION.md`              | Component integration guide                   |
+| `docs/ENTERPRISE_TESTING_GUIDE.md`   | 41 correctness properties                     |
+| `docs/AUDIT_RESPONSE_ACTION_PLAN.md` | Patent + security fixes                       |
+| `PATENT_STRATEGY_ACTION_ITEMS.md`    | Critical improvements                         |
 
 ---
 
-*Built for the age of autonomous agents.*
+_Built for the age of autonomous agents._

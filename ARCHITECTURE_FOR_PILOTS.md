@@ -17,6 +17,7 @@
 Poincare ball model with hyperbolic distances to trusted realms.
 
 **Technical Implementation:**
+
 ```
 u(t) = tanh(alpha ||x_G||) * x_G / ||x_G||
 d_H via arcosh formula
@@ -29,6 +30,7 @@ d_H via arcosh formula
 Continuous governance adaptation preserving hyperbolic metric.
 
 **Technical Implementation:**
+
 ```
 T_breath with b(t) scaling
 T_phase with Mobius additions
@@ -41,6 +43,7 @@ T_phase with Mobius additions
 Dimensional lifting for Hamiltonian connectivity.
 
 **Technical Implementation:**
+
 ```
 Embed non-Hamiltonian graphs into d >= 4
 Runtime deviation check: Alert if delta(v) > tau
@@ -53,6 +56,7 @@ Runtime deviation check: Alert if delta(v) > tau
 Super-exponential amplification of deviations.
 
 **Technical Implementation:**
+
 ```
 H(d*, R) = R^(d*^2) with R = 1.5
 ```
@@ -63,14 +67,14 @@ H(d*, R) = R^(d*^2) with R = 1.5
 
 Risk is calculated via a 6-dimensional context vector:
 
-| Component | Description | Range |
-|-----------|-------------|-------|
-| x1 | GPS latitude (normalized) | [-1, 1] |
-| x2 | GPS longitude (normalized) | [-1, 1] |
-| x3 | Time of day (radians) | [0, 2pi] |
-| x4 | Device fingerprint hash | [0, 1] |
-| x5 | Behavioral biometric score | [0, 1] |
-| x6 | Network threat level | [-5, +10] |
+| Component | Description                | Range     |
+| --------- | -------------------------- | --------- |
+| x1        | GPS latitude (normalized)  | [-1, 1]   |
+| x2        | GPS longitude (normalized) | [-1, 1]   |
+| x3        | Time of day (radians)      | [0, 2pi]  |
+| x4        | Device fingerprint hash    | [0, 1]    |
+| x5        | Behavioral biometric score | [0, 1]    |
+| x6        | Network threat level       | [-5, +10] |
 
 ---
 
@@ -96,16 +100,19 @@ LAMBDA_SECURITY = 256    # Security parameter (bits)
 ## Integration Requirements
 
 ### Minimum System Requirements
+
 - Python 3.10+
 - 2 GB RAM minimum
 - NumPy, SciPy, liboqs-python
 
 ### Phase 1: Userspace Integration
+
 - No kernel modifications required
 - Compatible with nginx, OpenSSH
 - Expected overhead: <0.5% CPU, ~1ms latency
 
 ### Supported IDS/SIEM Integration
+
 - ELK Stack (Elasticsearch, Logstash, Kibana)
 - Splunk
 - Suricata
@@ -115,13 +122,13 @@ LAMBDA_SECURITY = 256    # Security parameter (bits)
 
 ## Performance Metrics
 
-| Metric | Target | Notes |
-|--------|--------|-------|
-| False Positive Reduction | 20% | vs Euclidean metrics |
-| Detection Rate (ROP) | >92% | vs 70% LLVM CFI |
-| Runtime Overhead | <0.5% | vs 10-20% traditional |
-| Latency | <1ms | per authentication |
-| Brute-Force Resistance | 2000x | at d*=6 |
+| Metric                   | Target | Notes                 |
+| ------------------------ | ------ | --------------------- |
+| False Positive Reduction | 20%    | vs Euclidean metrics  |
+| Detection Rate (ROP)     | >92%   | vs 70% LLVM CFI       |
+| Runtime Overhead         | <0.5%  | vs 10-20% traditional |
+| Latency                  | <1ms   | per authentication    |
+| Brute-Force Resistance   | 2000x  | at d\*=6              |
 
 ---
 
@@ -138,6 +145,7 @@ LAMBDA_SECURITY = 256    # Security parameter (bits)
 **Status:** 226/226 tests passing
 
 Run tests:
+
 ```bash
 python -m pytest tests/ -v
 ```

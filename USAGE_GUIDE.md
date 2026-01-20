@@ -7,11 +7,13 @@ The SCBE-AETHERMOORE package is **production-ready** with both TypeScript and Py
 ## Quick Install
 
 ### TypeScript/Node.js
+
 ```bash
 npm install @scbe/aethermoore
 ```
 
 ### Python
+
 ```bash
 pip install -e .
 ```
@@ -19,6 +21,7 @@ pip install -e .
 ## What You Get
 
 ### TypeScript Features
+
 - ✅ **Crypto Module**: Envelope encryption, HKDF, JCS, KMS, nonce management, replay guards, bloom filters
 - ✅ **Harmonic Module**: Hyperbolic geometry, Poincaré ball, harmonic scaling, PQC, quasicrystal lattice
 - ✅ **Metrics Module**: Telemetry and monitoring
@@ -26,6 +29,7 @@ pip install -e .
 - ✅ **Self-Healing Module**: Coordinator, deep healing, quick fix bot
 
 ### Python Features
+
 - ✅ **Symphonic Cipher**: FFT-based signing, Feistel network, harmonic synthesis
 - ✅ **Harmonic Scaling Law**: H(d,R) = R^(d²) calculations
 - ✅ **Dual Lattice Consensus**: Byzantine fault tolerance
@@ -88,6 +92,7 @@ SCBE-AETHERMOORE v3.0
 ## Use Cases
 
 ### 1. Blockchain Transaction Signing (Python)
+
 ```python
 from symphonic_cipher.core import SymphonicCipher
 
@@ -97,6 +102,7 @@ signature = cipher.sign(intent, key="secret")
 ```
 
 ### 2. Replay Attack Prevention (TypeScript)
+
 ```typescript
 import { NonceManager } from '@scbe/aethermoore/crypto';
 
@@ -107,6 +113,7 @@ const isValid = manager.validate(nonce); // true first time only
 ```
 
 ### 3. Circuit Breaker for APIs (TypeScript)
+
 ```typescript
 import { CircuitBreaker } from '@scbe/aethermoore/rollout';
 
@@ -117,6 +124,7 @@ const result = await breaker.execute(async () => {
 ```
 
 ### 4. Harmonic Risk Scaling (Python)
+
 ```python
 from symphonic_cipher.harmonic_scaling_law import harmonic_scale
 
@@ -126,6 +134,7 @@ risk = harmonic_scale(dimension=6, base_risk=1.5)
 ```
 
 ### 5. Byzantine Consensus (Python)
+
 ```python
 from symphonic_cipher.dual_lattice_consensus import DualLatticeConsensus
 
@@ -154,16 +163,19 @@ data = json.loads('{"x":0.5,"y":0.3,"z":0.1}')
 ## Testing
 
 ### TypeScript
+
 ```bash
 npm test
 ```
 
 ### Python
+
 ```bash
 pytest tests/ -v
 ```
 
 ### All Tests
+
 ```bash
 npm run test:all
 ```
@@ -191,20 +203,26 @@ npm run test:all
 ## FAQ
 
 ### Q: Do I need both TypeScript and Python?
+
 **A**: No! Use whichever fits your stack:
+
 - TypeScript: For web/Node.js apps (crypto, harmonic, metrics)
 - Python: For data science/ML (symphonic cipher, consensus)
 
 ### Q: Can they work together?
+
 **A**: Yes! Exchange data via JSON. TypeScript handles web layer, Python handles heavy crypto.
 
 ### Q: Is the Symphonic Cipher available in TypeScript?
+
 **A**: Not yet. Use Python for Symphonic Cipher features. TypeScript port is optional (see `.kiro/specs/symphonic-cipher/`).
 
 ### Q: What's the license?
+
 **A**: MIT License. Patent pending (USPTO #63/961,403) - commercial use requires licensing.
 
 ### Q: Is it production-ready?
+
 **A**: Yes! 226 tests passing, documented, and actively maintained.
 
 ---

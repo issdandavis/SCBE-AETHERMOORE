@@ -1,10 +1,10 @@
 /**
  * Hybrid Encryption Layer (Quantum + Algorithmic)
- * 
+ *
  * Handles "Onion" wrapping with distinction between:
  * - Quantum Key Distribution (QKD) capable nodes
  * - Algorithmic derivation (π^φ system) for legacy nodes
- * 
+ *
  * References:
  * - arXiv:2505.13239 (Network-wide QKD with Onion Routing)
  * - arXiv:2502.06657 (Onion Routing Key Distribution for QKDN)
@@ -24,10 +24,10 @@ interface OnionLayer {
 export class HybridSpaceCrypto {
   /**
    * Logic: Layer encryption from Exit -> Entry
-   * 
+   *
    * Builds onion encryption layers backwards (exit first, entry last)
    * so that each relay can peel one layer to reveal next hop.
-   * 
+   *
    * @param payload - Original data to encrypt
    * @param path - Array of relay nodes [entry, middle, exit]
    * @returns Encrypted onion packet
@@ -45,25 +45,16 @@ export class HybridSpaceCrypto {
       // 2. Encrypt the current onion
       const iv = crypto.randomBytes(16);
       const cipher = crypto.createCipheriv('aes-256-gcm', symmetricKey, iv);
-      const encryptedData = Buffer.concat([
-        cipher.update(onion),
-        cipher.final()
-      ]);
+      const encryptedData = Buffer.concat([cipher.update(onion), cipher.final()]);
       const authTag = cipher.getAuthTag();
 
       // 3. Wrap with Routing Header (Where to go next)
-      const nextHopId = (i === path.length - 1) ? 'DESTINATION' : path[i + 1].id;
-      
+      const nextHopId = i === path.length - 1 ? 'DESTINATION' : path[i + 1].id;
+
       const header = Buffer.from(JSON.stringify({ next: nextHopId }));
       const delimiter = Buffer.from('::');
 
-      onion = Buffer.concat([
-        header,
-        delimiter,
-        iv,
-        authTag,
-        encryptedData
-      ]);
+      onion = Buffer.concat([header, delimiter, iv, authTag, encryptedData]);
     }
 
     return onion;
@@ -71,7 +62,7 @@ export class HybridSpaceCrypto {
 
   /**
    * Decrypt one layer of the onion
-   * 
+   *
    * @param onion - Encrypted onion packet
    * @param node - Current relay node
    * @returns Decrypted inner onion and next hop ID
@@ -103,17 +94,14 @@ export class HybridSpaceCrypto {
     const decipher = crypto.createDecipheriv('aes-256-gcm', symmetricKey, iv);
     decipher.setAuthTag(authTag);
 
-    const innerOnion = Buffer.concat([
-      decipher.update(encryptedData),
-      decipher.final()
-    ]);
+    const innerOnion = Buffer.concat([decipher.update(encryptedData), decipher.final()]);
 
     return { nextHopId, innerOnion };
   }
 
   /**
    * Key exchange handshake
-   * 
+   *
    * @param node - Relay node
    * @returns 32-byte symmetric key
    */
@@ -127,10 +115,10 @@ export class HybridSpaceCrypto {
 
   /**
    * Simulation of Entangled Photon exchange (QKD)
-   * 
+   *
    * In production, this interfaces with quantum hardware drivers.
    * For now, we simulate with deterministic key derivation.
-   * 
+   *
    * @param nodeId - Node identifier
    * @returns 32-byte quantum-derived key
    */
@@ -142,10 +130,10 @@ export class HybridSpaceCrypto {
 
   /**
    * Deterministic Key Generation based on math constants (π^φ system)
-   * 
+   *
    * Uses transcendental numbers (π, φ) for high-entropy key derivation
    * when quantum channels are unavailable.
-   * 
+   *
    * @param nodeId - Node identifier
    * @returns 32-byte algorithmically-derived key
    */
@@ -155,13 +143,13 @@ export class HybridSpaceCrypto {
 
     // Algorithmic derivation simulating high-entropy chaos
     const derived = Math.pow(seed * Math.PI, phi);
-    
+
     return crypto.createHash('sha256').update(derived.toString()).digest();
   }
 
   /**
    * Verify onion integrity
-   * 
+   *
    * @param onion - Onion packet to verify
    * @returns True if onion structure is valid
    */
@@ -172,7 +160,7 @@ export class HybridSpaceCrypto {
 
       const headerBuf = onion.slice(0, delimiterIndex);
       const header = JSON.parse(headerBuf.toString());
-      
+
       return typeof header.next === 'string' && header.next.length > 0;
     } catch {
       return false;

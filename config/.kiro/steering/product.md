@@ -17,7 +17,8 @@ SCBE (Spectral Context-Bound Encryption) is a unified security framework combini
 ## Mathematical Contract
 
 All proofs hinge on:
-- Hyperbolic state stays inside compact sub-ball 𝔹ⁿ_{1-ε}
+
+- Hyperbolic state stays inside compact sub-ball 𝔹ⁿ\_{1-ε}
 - All ratio features use denominator floor ε > 0
 - All channels bounded and enter risk monotonically with nonnegative weights
 

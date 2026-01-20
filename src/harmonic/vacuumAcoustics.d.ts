@@ -12,25 +12,25 @@ import { Vector3D, Vector6D } from './constants.js';
  * Vacuum-Acoustics configuration
  */
 export interface VacuumAcousticsConfig {
-    /** Box size */
-    L?: number;
-    /** Speed of sound */
-    c?: number;
-    /** Damping coefficient */
-    gamma: number;
-    /** Base ratio */
-    R?: number;
-    /** Grid resolution */
-    resolution?: number;
+  /** Box size */
+  L?: number;
+  /** Speed of sound */
+  c?: number;
+  /** Damping coefficient */
+  gamma: number;
+  /** Base ratio */
+  R?: number;
+  /** Grid resolution */
+  resolution?: number;
 }
 /**
  * Acoustic source definition
  */
 export interface AcousticSource {
-    /** Position in 3D space */
-    pos: Vector3D;
-    /** Phase offset in radians */
-    phase: number;
+  /** Position in 3D space */
+  pos: Vector3D;
+  /** Phase offset in radians */
+  phase: number;
 }
 /**
  * Nodal surface function for cymatic patterns
@@ -59,7 +59,12 @@ export declare function nodalSurface(x: [number, number], n: number, m: number, 
  * @param L - Box size
  * @returns True if target is on a nodal line
  */
-export declare function checkCymaticResonance(agentVector: Vector6D, targetPosition: [number, number], tolerance?: number, L?: number): boolean;
+export declare function checkCymaticResonance(
+  agentVector: Vector6D,
+  targetPosition: [number, number],
+  tolerance?: number,
+  L?: number
+): boolean;
 /**
  * Calculate bottle beam intensity at a point
  *
@@ -72,7 +77,11 @@ export declare function checkCymaticResonance(agentVector: Vector6D, targetPosit
  * @param wavelength - Acoustic wavelength
  * @returns Intensity (dimensionless)
  */
-export declare function bottleBeamIntensity(position: Vector3D, sources: AcousticSource[], wavelength: number): number;
+export declare function bottleBeamIntensity(
+  position: Vector3D,
+  sources: AcousticSource[],
+  wavelength: number
+): number;
 /**
  * Flux redistribution for interference cancellation
  *
@@ -83,9 +92,12 @@ export declare function bottleBeamIntensity(position: Vector3D, sources: Acousti
  * @param phaseOffset - Phase difference between interfering waves
  * @returns Object with canceled energy and corner distribution
  */
-export declare function fluxRedistribution(amplitude: number, phaseOffset: number): {
-    canceled: number;
-    corners: [number, number, number, number];
+export declare function fluxRedistribution(
+  amplitude: number,
+  phaseOffset: number
+): {
+  canceled: number;
+  corners: [number, number, number, number];
 };
 /**
  * Calculate standing wave amplitude at a point
@@ -99,7 +111,13 @@ export declare function fluxRedistribution(amplitude: number, phaseOffset: numbe
  * @param omega - Angular frequency (2πf)
  * @returns Amplitude at (x, t)
  */
-export declare function standingWaveAmplitude(x: number, t: number, A0: number, k: number, omega: number): number;
+export declare function standingWaveAmplitude(
+  x: number,
+  t: number,
+  A0: number,
+  k: number,
+  omega: number
+): number;
 /**
  * Find resonant frequencies for a box cavity
  *
@@ -112,5 +130,11 @@ export declare function standingWaveAmplitude(x: number, t: number, A0: number, 
  * @param c - Speed of sound
  * @returns Resonant frequency
  */
-export declare function cavityResonance(n: number, m: number, l: number, dimensions: Vector3D, c?: number): number;
+export declare function cavityResonance(
+  n: number,
+  m: number,
+  l: number,
+  dimensions: Vector3D,
+  c?: number
+): number;
 //# sourceMappingURL=vacuumAcoustics.d.ts.map

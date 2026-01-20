@@ -13,6 +13,7 @@ This is the complete SCBE-AETHERMOORE story in one sentence.
 ## What It Demonstrates
 
 ### 1. SEAL - SpiralSeal SS1 Cipher
+
 ```
 Input:  "Hello, AETHERMOORE!"
 Output: SS1:ru'tor'vik'thal:a3f2e1d4c5b6...
@@ -23,6 +24,7 @@ Output: SS1:ru'tor'vik'thal:a3f2e1d4c5b6...
 - AAD binding (agent + topic)
 
 ### 2. STORE - 6D Harmonic Voxel
+
 ```
 Position: (1, 2, 3, 5, 8, 13)  # Fibonacci sequence
 ```
@@ -32,6 +34,7 @@ Position: (1, 2, 3, 5, 8, 13)  # Fibonacci sequence
 - Harmonic signature for integrity
 
 ### 3. GOVERN - Multi-Layer Authorization
+
 ```
 Risk score: 0.0842
 Harmonic amplification: 1.42x
@@ -43,6 +46,7 @@ Decision: ALLOW
 - ALLOW / QUARANTINE / DENY decisions
 
 ### 4. UNSEAL - Conditional Retrieval
+
 ```
 ✓ Governance: ALLOW
 ✓ Decryption: SUCCESS
@@ -122,24 +126,28 @@ python demo_memory_shard.py --risk high
 ## Scenarios Demonstrated
 
 ### Scenario 1: Trusted Access (ALLOW)
+
 - Agent: ash (trusted)
 - Topic: aethermoore (normal)
 - Context: internal
 - **Result**: ✓ SUCCESS - Memory retrieved
 
 ### Scenario 2: Untrusted Access (DENY)
+
 - Agent: malicious_bot (untrusted)
 - Topic: aethermoore (normal)
 - Context: untrusted
 - **Result**: ✗ BLOCKED - Fail-to-noise
 
 ### Scenario 3: Sensitive Topic (QUARANTINE/DENY)
+
 - Agent: ash (trusted)
 - Topic: secrets (restricted)
 - Context: internal
 - **Result**: ⚠ QUARANTINE - Elevated monitoring
 
 ### Scenario 4: Hostile Access (DENY)
+
 - Agent: hacker (untrusted)
 - Topic: secrets (restricted)
 - Context: public
@@ -148,14 +156,16 @@ python demo_memory_shard.py --risk high
 ## Technical Details
 
 ### Simplified Version (demo_memory_shard.py)
+
 - **Purpose**: Quick demo for pitches and presentations
 - **Components**: SpiralSeal SS1, Harmonic storage, Governance
 - **Runtime**: ~5 seconds
 - **Dependencies**: None (pure Python)
 
 ### Full Version (aws-lambda-simple-web-app/demo_memory_shard.py)
+
 - **Purpose**: Complete implementation with all layers
-- **Components**: 
+- **Components**:
   - SpiralSeal SS1 with real Sacred Tongues
   - Post-quantum cryptography (Kyber768 + Dilithium3)
   - Dual lattice consensus (MLWE + MSIS)
@@ -168,18 +178,21 @@ python demo_memory_shard.py --risk high
 ## Why This Matters
 
 ### For Sales & Marketing
+
 - ✅ **60-second pitch**: Complete story in one demo
 - ✅ **Visual**: Clear output showing all layers
 - ✅ **Scenarios**: Trusted vs untrusted access
 - ✅ **Fail-to-noise**: Security that doesn't leak information
 
 ### For Technical Audiences
+
 - ✅ **End-to-end**: All components integrated
 - ✅ **Realistic**: Real-world access patterns
 - ✅ **Extensible**: Easy to add more scenarios
 - ✅ **Testable**: Can be automated for CI/CD
 
 ### For Documentation
+
 - ✅ **Example**: Shows how to use the system
 - ✅ **Reference**: Demonstrates best practices
 - ✅ **Tutorial**: Teaches the concepts
@@ -188,17 +201,20 @@ python demo_memory_shard.py --risk high
 ## Integration with Other Components
 
 ### CLI Tutorial → Memory Demo
+
 1. User learns concepts in CLI tutorial
 2. User runs memory demo to see it in action
 3. User understands the complete system
 
 ### AI Agent → Memory Demo
+
 1. User asks agent "How does SCBE work?"
 2. Agent explains the concepts
 3. User runs memory demo to see it live
 4. User gets code examples from agent
 
 ### Complete Workflow
+
 ```bash
 # 1. Learn the concepts
 scbe.bat cli
@@ -220,18 +236,21 @@ agent> code
 ## Next Steps
 
 ### For Developers
+
 1. Run the demo: `python demo_memory_shard.py`
 2. Read the code to understand the implementation
 3. Modify scenarios to test different cases
 4. Integrate into your own projects
 
 ### For Buyers
+
 1. Watch the 60-second demo
 2. See trusted vs untrusted access
 3. Understand fail-to-noise security
 4. Request full implementation details
 
 ### For Researchers
+
 1. Study the harmonic scaling mathematics
 2. Analyze the governance decision logic
 3. Explore the 6D coordinate system

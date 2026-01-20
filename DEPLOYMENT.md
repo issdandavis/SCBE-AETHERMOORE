@@ -27,17 +27,20 @@ Complete guide for deploying SCBE-AETHERMOORE in production environments.
 ### Publishing to NPM
 
 1. **Build the package**
+
    ```bash
    npm run build
    ```
 
 2. **Test the package locally**
+
    ```bash
    npm pack
    npm install ./scbe-aethermoore-3.0.0.tgz
    ```
 
 3. **Login to NPM**
+
    ```bash
    npm login
    ```
@@ -138,25 +141,25 @@ import { encrypt, decrypt } from '@scbe/aethermoore/crypto';
 
 export const handler = async (event: any) => {
   const { action, data, key } = JSON.parse(event.body);
-  
+
   try {
     if (action === 'encrypt') {
       const ciphertext = encrypt(data, key);
       return {
         statusCode: 200,
-        body: JSON.stringify({ ciphertext })
+        body: JSON.stringify({ ciphertext }),
       };
     } else if (action === 'decrypt') {
       const plaintext = decrypt(data, key);
       return {
         statusCode: 200,
-        body: JSON.stringify({ plaintext })
+        body: JSON.stringify({ plaintext }),
       };
     }
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: error.message })
+      body: JSON.stringify({ error: error.message }),
     };
   }
 };
@@ -185,39 +188,39 @@ spec:
         app: scbe
     spec:
       containers:
-      - name: scbe
-        image: ghcr.io/isdandavis2/scbe-aethermoore:3.0.0
-        ports:
-        - containerPort: 3000
-        - containerPort: 8000
-        env:
-        - name: NODE_ENV
-          value: "production"
-        - name: SCBE_LOG_LEVEL
-          value: "info"
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "250m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
-        livenessProbe:
-          exec:
-            command:
-            - python
-            - -c
-            - "import sys; sys.exit(0)"
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          exec:
-            command:
-            - python
-            - -c
-            - "import sys; sys.exit(0)"
-          initialDelaySeconds: 5
-          periodSeconds: 5
+        - name: scbe
+          image: ghcr.io/isdandavis2/scbe-aethermoore:3.0.0
+          ports:
+            - containerPort: 3000
+            - containerPort: 8000
+          env:
+            - name: NODE_ENV
+              value: 'production'
+            - name: SCBE_LOG_LEVEL
+              value: 'info'
+          resources:
+            requests:
+              memory: '256Mi'
+              cpu: '250m'
+            limits:
+              memory: '512Mi'
+              cpu: '500m'
+          livenessProbe:
+            exec:
+              command:
+                - python
+                - -c
+                - 'import sys; sys.exit(0)'
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - python
+                - -c
+                - 'import sys; sys.exit(0)'
+            initialDelaySeconds: 5
+            periodSeconds: 5
 ```
 
 ### Create Service
@@ -232,12 +235,12 @@ spec:
   selector:
     app: scbe
   ports:
-  - name: http
-    port: 80
-    targetPort: 3000
-  - name: api
-    port: 8000
-    targetPort: 8000
+    - name: http
+      port: 80
+      targetPort: 3000
+    - name: api
+      port: 8000
+      targetPort: 8000
   type: LoadBalancer
 ```
 
@@ -307,7 +310,7 @@ export const config = {
   maxRequestsPerSecond: 10000,
   timeout: 50, // ms
   enableTelemetry: true,
-  logLevel: 'info'
+  logLevel: 'info',
 };
 ```
 
@@ -321,15 +324,19 @@ import { CloudWatchClient, PutMetricDataCommand } from '@aws-sdk/client-cloudwat
 const cloudwatch = new CloudWatchClient({ region: 'us-east-1' });
 
 async function logMetric(metricName: string, value: number) {
-  await cloudwatch.send(new PutMetricDataCommand({
-    Namespace: 'SCBE',
-    MetricData: [{
-      MetricName: metricName,
-      Value: value,
-      Unit: 'Count',
-      Timestamp: new Date()
-    }]
-  }));
+  await cloudwatch.send(
+    new PutMetricDataCommand({
+      Namespace: 'SCBE',
+      MetricData: [
+        {
+          MetricName: metricName,
+          Value: value,
+          Unit: 'Count',
+          Timestamp: new Date(),
+        },
+      ],
+    })
+  );
 }
 ```
 
@@ -340,13 +347,13 @@ import { register, Counter, Histogram } from 'prom-client';
 
 const encryptionCounter = new Counter({
   name: 'scbe_encryptions_total',
-  help: 'Total number of encryptions'
+  help: 'Total number of encryptions',
 });
 
 const latencyHistogram = new Histogram({
   name: 'scbe_latency_seconds',
   help: 'Encryption latency in seconds',
-  buckets: [0.01, 0.05, 0.1, 0.5, 1]
+  buckets: [0.01, 0.05, 0.1, 0.5, 1],
 });
 ```
 
@@ -360,8 +367,8 @@ const logger = winston.createLogger({
   format: winston.format.json(),
   transports: [
     new winston.transports.File({ filename: 'error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'combined.log' })
-  ]
+    new winston.transports.File({ filename: 'combined.log' }),
+  ],
 });
 
 logger.info('Encryption started', { userId: 'user123', dataSize: 1024 });
@@ -372,6 +379,7 @@ logger.info('Encryption started', { userId: 'user123', dataSize: 1024 });
 ### Key Management
 
 1. **Use AWS Secrets Manager or HashiCorp Vault**
+
    ```bash
    aws secretsmanager create-secret \
      --name scbe/encryption-key \
@@ -399,11 +407,11 @@ logger.info('Encryption started', { userId: 'user123', dataSize: 1024 });
 // middleware/auth.ts
 export function requireAuth(req, res, next) {
   const apiKey = req.headers['x-api-key'];
-  
+
   if (!apiKey || !validateApiKey(apiKey)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
-  
+
   next();
 }
 ```
@@ -420,7 +428,7 @@ const cache = new NodeCache({ stdTTL: 600 });
 function getCachedOrCompute(key: string, computeFn: () => any) {
   const cached = cache.get(key);
   if (cached) return cached;
-  
+
   const result = computeFn();
   cache.set(key, result);
   return result;
@@ -467,6 +475,7 @@ server {
 ## 🔄 CI/CD Pipeline
 
 GitHub Actions automatically handles:
+
 - Testing on push
 - Building on merge to main
 - Publishing on tag creation
@@ -477,6 +486,7 @@ See `.github/workflows/` for details.
 ## 📞 Support
 
 For deployment issues:
+
 - GitHub Issues: https://github.com/ISDanDavis2/scbe-aethermoore/issues
 - Email: issdandavis@gmail.com
 

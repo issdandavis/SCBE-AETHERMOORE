@@ -67,7 +67,7 @@ describe('AudioAxisProcessor', () => {
     });
 
     it('energy increases with amplitude', () => {
-      const lowAmp = generateTestSignal(440, 0.05, 44100).map(x => x * 0.5);
+      const lowAmp = generateTestSignal(440, 0.05, 44100).map((x) => x * 0.5);
       const highAmp = generateTestSignal(440, 0.05, 44100);
 
       processor.reset();

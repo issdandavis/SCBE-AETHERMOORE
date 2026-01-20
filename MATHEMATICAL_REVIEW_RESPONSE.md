@@ -26,6 +26,7 @@ The SCBE-AETHERMOORE framework is mathematically sound with verifiable cryptogra
 **Claim**: d_ℍ(u,v) satisfies metric axioms with exponential volume growth
 
 **Verification Results**:
+
 ```
 Axiom                Result
 ─────────────────────────────────────────
@@ -46,6 +47,7 @@ Triangle inequality  d(u,v) ≤ d(u,w) + d(w,v) ✓
 **Claim**: L(x,t) is positive, convex, and stable
 
 **Verification Results**:
+
 ```
 Property     Test Result
 ─────────────────────────────────────────
@@ -55,8 +57,9 @@ Stability    L(x,t) > L(μ,t) (decreases toward center) ✓
 ```
 
 **Mathematical Proof**:
+
 - Positivity: exp > 0, w_ℓ > 0 ⟹ L > 0
-- Convexity: ∂²L/∂d_ℓ² = w_ℓ β_ℓ² exp(...) > 0
+- Convexity: ∂²L/∂d*ℓ² = w*ℓ β_ℓ² exp(...) > 0
 - Stability: Lyapunov function V = L satisfies V̇ ≤ 0 under gradient descent
 
 ---
@@ -66,6 +69,7 @@ Stability    L(x,t) > L(μ,t) (decreases toward center) ✓
 **Claim**: C_spin ∈ [0,1], rotation invariant
 
 **Verification Results**:
+
 ```
 Test Case              Result
 ─────────────────────────────────────────
@@ -75,6 +79,7 @@ Rotation shift π/3     |ΔC| = 2.78×10⁻¹⁷ ✓
 ```
 
 **Mathematical Proof**: C_spin = ||Σ s_i|| / M where s_i = e^(iθ_i)
+
 - Bounded: 0 ≤ ||Σ s_i|| ≤ M
 - Rotation invariant: Multiplying all s_i by e^(iφ) doesn't change ||Σ s_i||
 
@@ -85,6 +90,7 @@ Rotation shift π/3     |ΔC| = 2.78×10⁻¹⁷ ✓
 **Claim**: Multi-signature protocol with 128-bit post-quantum security
 
 **Verification Results**:
+
 ```
 Attack                Security Level
 ─────────────────────────────────────────
@@ -106,6 +112,7 @@ where q = number of queries. This provides 128-bit post-quantum security against
 **Claim**: Super-exponential scaling for governance cost
 
 **Verification Results**:
+
 ```
 d*    H(d*,φ) = φ^(d*²)
 ─────────────────────────────────────────
@@ -129,6 +136,7 @@ d*    H(d*,φ) = φ^(d*²)
 **Problem**: Section 4.1, Layer 9 contains copy-pasted text from Layer 5.
 
 **Current (incorrect)**:
+
 ```
 Layer 9: Spectral Coherence (S_spec = E_low / (E_low + E_high + ε))
 Key Property: Energy partition is invariant (Parseval's theorem)
@@ -140,6 +148,7 @@ Detailed Proof:
 This is the hyperbolic distance formula, not spectral coherence!
 
 **Corrected Proof**:
+
 ```
 Layer 9: Spectral Coherence
 
@@ -171,10 +180,12 @@ Detailed Proof:
 **Problem**: Document states "H(d,R) = R^{d²} provides super-exponential scaling for hardness."
 
 This conflates:
+
 - **Cost function scaling** (what H actually does)
 - **Cryptographic hardness** (implies reduction to hard problem)
 
 **Corrected Language**:
+
 ```
 H(d*,R) = R^{d*²} is a COST FUNCTION for governance decisions, where:
 - d* = hyperbolic distance to nearest policy attractor
@@ -197,11 +208,12 @@ from the underlying HMAC-SHA256 and ML-DSA primitives, not from H.
 
 **Correction**: T_breath is NOT an isometry. It preserves the ball (‖T(u)‖ < 1) but scales distances from origin:
 
-d_ℍ(0, T_breath(u)) = b · d_ℍ(0, u)
+d*ℍ(0, T_breath(u)) = b · d*ℍ(0, u)
 
 This is a **conformal map** (preserves angles), not an isometry (preserves distances).
 
 **Corrected Claim**:
+
 ```
 Layer 6: Breathing Transform
 
@@ -217,19 +229,19 @@ NOT an isometry - intentionally scales origin distances by factor b(t).
 
 ### Classical Cryptography
 
-| Component | Algorithm | Security (bits) |
-|-----------|-----------|-----------------|
-| Integrity | HMAC-SHA256 | 256 classical, 128 quantum |
-| Nonce | 128-bit random | 2⁻⁶⁴ collision for 2³² messages |
-| Timestamp | 60s window | Prevents replay |
+| Component | Algorithm      | Security (bits)                 |
+| --------- | -------------- | ------------------------------- |
+| Integrity | HMAC-SHA256    | 256 classical, 128 quantum      |
+| Nonce     | 128-bit random | 2⁻⁶⁴ collision for 2³² messages |
+| Timestamp | 60s window     | Prevents replay                 |
 
 ### Post-Quantum Upgrade (ML-DSA-65 + ML-KEM-768)
 
-| Component | NIST Level | Quantum Security |
-|-----------|------------|------------------|
-| Signatures | 3 | 128-bit |
-| Key exchange | 3 | 128-bit |
-| Hybrid mode | 3 | min(HMAC, PQC) = 128-bit |
+| Component    | NIST Level | Quantum Security         |
+| ------------ | ---------- | ------------------------ |
+| Signatures   | 3          | 128-bit                  |
+| Key exchange | 3          | 128-bit                  |
+| Hybrid mode  | 3          | min(HMAC, PQC) = 128-bit |
 
 ### Multi-Signature Consensus
 
@@ -246,11 +258,13 @@ Effective security = min(128k, 256) bits (capped by hash output)
 ### 1. Separate Claims by Category
 
 **Governance Claims (Novel)**:
+
 - Hyperbolic embedding for AI policy enforcement
 - Breathing transform for adaptive posture
 - Multi-well realm structure for multi-policy systems
 
 **Security Claims (Incremental)**:
+
 - Domain separation using semantic prefixes
 - Hybrid classical/PQC signature scheme
 - m-of-k consensus matrix
@@ -265,11 +279,11 @@ Frame as "technical improvements to computer systems":
 
 ### 3. Prior Art Distinctions
 
-| Component | Prior Art | Your Novel Contribution |
-|-----------|-----------|-------------------------|
-| Poincaré embeddings | Nickel & Kiela 2017 | Application to AI governance |
-| HMAC multi-sig | Bellare & Rogaway 2000 | Sacred Tongue domain separation |
-| Conformal maps | Ganea 2018 | Dynamic b(t) breathing for posture |
+| Component           | Prior Art              | Your Novel Contribution            |
+| ------------------- | ---------------------- | ---------------------------------- |
+| Poincaré embeddings | Nickel & Kiela 2017    | Application to AI governance       |
+| HMAC multi-sig      | Bellare & Rogaway 2000 | Sacred Tongue domain separation    |
+| Conformal maps      | Ganea 2018             | Dynamic b(t) breathing for posture |
 
 ---
 
@@ -301,18 +315,21 @@ The framework is **mathematically sound and ready for patent filing** after:
 ## 🎯 NEXT STEPS
 
 ### Immediate (This Week)
+
 1. ✅ Apply 3 corrections to all documents
 2. ✅ Run verification code to confirm fixes
 3. ✅ Update patent claims with corrected language
 4. ✅ Create corrected Layer 9 proof document
 
 ### Short-Term (Q1 2026)
+
 1. File patent continuation-in-part with corrected claims
 2. Submit verification code as supplementary material
 3. Create mathematical appendix for patent application
 4. Prepare response to potential USPTO objections
 
 ### Medium-Term (Q2 2026)
+
 1. Publish research paper with verified proofs
 2. Submit to peer review (cryptography + AI safety)
 3. Present at conferences (NIPS, CRYPTO, IEEE S&P)
@@ -348,6 +365,7 @@ The framework is **mathematically sound and ready for patent filing** after:
 ## 🙏 ACKNOWLEDGMENTS
 
 **Huge thanks to the reviewer (Claude/Anthropic) for**:
+
 - Rigorous mathematical verification
 - Executable verification code
 - Patent-compliant claim language

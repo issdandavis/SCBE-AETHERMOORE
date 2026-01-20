@@ -193,7 +193,7 @@ describe('LanguesMetric', () => {
           Math.random() * 2,
         ];
         const grad = metric.gradient(point, Math.random() * 10);
-        grad.forEach(g => expect(g).toBeGreaterThan(0));
+        grad.forEach((g) => expect(g).toBeGreaterThan(0));
       }
     });
 
@@ -270,12 +270,12 @@ describe('FluxingLanguesMetric', () => {
   describe('Flux dynamics', () => {
     it('initial flux values are 1.0 (Polly state)', () => {
       const values = metric.getFluxValues();
-      values.forEach(v => expect(v).toBe(1.0));
+      values.forEach((v) => expect(v).toBe(1.0));
     });
 
     it('flux states start as Polly', () => {
       const states = metric.getFluxStates();
-      states.forEach(s => expect(s).toBe('Polly'));
+      states.forEach((s) => expect(s).toBe('Polly'));
     });
 
     it('updateFlux changes flux values over time', () => {
@@ -297,7 +297,7 @@ describe('FluxingLanguesMetric', () => {
       for (let t = 0; t < 100; t += 0.1) {
         metric.updateFlux(t, 0.1);
         const values = metric.getFluxValues();
-        values.forEach(v => {
+        values.forEach((v) => {
           expect(v).toBeGreaterThanOrEqual(0);
           expect(v).toBeLessThanOrEqual(1);
         });
@@ -322,7 +322,7 @@ describe('FluxingLanguesMetric', () => {
       }
 
       const values = testMetric.getFluxValues();
-      values.forEach(v => {
+      values.forEach((v) => {
         // Should have moved toward nuBar = 0.8 (relaxed tolerance)
         expect(v).toBeGreaterThan(0.55);
       });
@@ -400,7 +400,7 @@ describe('Mathematical proofs', () => {
     // Verified in gradient tests above - all gradients positive
     const point: Vector6D = [1, 1, 1, 1, 1, 1];
     const grad = metric.gradient(point, 0);
-    grad.forEach(g => expect(g).toBeGreaterThan(0));
+    grad.forEach((g) => expect(g).toBeGreaterThan(0));
   });
 
   it('Proof 2: Phase bounded sin ∈ [-1,1]', () => {
@@ -421,7 +421,7 @@ describe('Mathematical proofs', () => {
 
   it('Proof 4: Six-fold symmetry 60° phases', () => {
     for (let k = 0; k < 6; k++) {
-      expect(metric.phases[k]).toBeCloseTo(k * Math.PI / 3, 10);
+      expect(metric.phases[k]).toBeCloseTo((k * Math.PI) / 3, 10);
     }
   });
 
@@ -430,7 +430,7 @@ describe('Mathematical proofs', () => {
     for (let t = 0; t < 200; t++) {
       fluxMetric.updateFlux(t * 0.1, 0.1);
       const values = fluxMetric.getFluxValues();
-      values.forEach(v => {
+      values.forEach((v) => {
         expect(v).toBeGreaterThanOrEqual(0);
         expect(v).toBeLessThanOrEqual(1);
       });

@@ -98,10 +98,10 @@ class RWP3Envelope:
     nonce: bytes = b""
     payload: bytes = b""
     aad: bytes = b""
-    
+
     # Classical signatures (HMAC-SHA256)
     classical_sigs: Dict[SacredTongue, bytes] = None
-    
+
     # Post-quantum signatures (ML-DSA-65)
     pqc_sigs: Dict[SacredTongue, bytes] = None
 ```
@@ -127,7 +127,7 @@ def sign_tongue(tongue: SacredTongue,
                 timestamp: int,
                 aad: bytes = b"") -> bytes:
     """Domain-separated HMAC-SHA256 signature.
-    
+
     sig = HMAC-SHA256(key, tongue_prefix || payload || nonce || timestamp || aad)
     """
     message = tongue.value + payload + nonce + struct.pack(">Q", timestamp) + aad
@@ -141,12 +141,12 @@ def ml_dsa_sign(tongue: SacredTongue,
                 sk: bytes,  # Secret key
                 message: bytes) -> bytes:
     """ML-DSA-65 signature (NIST FIPS 204).
-    
+
     Production implementation:
         from oqs import Signature
         sig = Signature("ML-DSA-65")
         signature = sig.sign(message)
-    
+
     Parameters:
         - Security level: NIST Level 3 (~128-bit quantum)
         - Public key size: 1952 bytes
@@ -154,10 +154,10 @@ def ml_dsa_sign(tongue: SacredTongue,
     """
     # Domain separation: prepend tongue prefix
     pqc_message = tongue.value + message
-    
+
     # Production: Use liboqs
     # signature = sig.sign(pqc_message)
-    
+
     return signature
 ```
 
@@ -172,15 +172,15 @@ def verify_roundtable_v3(envelope: RWP3Envelope,
                          required_tongues: List[SacredTongue],
                          replay_window_ms: int = 60000) -> Tuple[bool, List[SacredTongue]]:
     """Verify RWP v3.0 envelope with hybrid signatures.
-    
+
     In HYBRID mode, BOTH classical and PQC signatures must verify.
     """
     verified = []
-    
+
     for tongue in required_tongues:
         classical_ok = False
         pqc_ok = False
-        
+
         # Verify classical signature
         if envelope.mode in [HybridPQCMode.CLASSICAL_ONLY, HybridPQCMode.HYBRID]:
             if tongue in envelope.classical_sigs and tongue in classical_keyring:
@@ -194,7 +194,7 @@ def verify_roundtable_v3(envelope: RWP3Envelope,
                     envelope.aad,
                     replay_window_ms
                 )
-        
+
         # Verify PQC signature
         if envelope.mode in [HybridPQCMode.PQC_ONLY, HybridPQCMode.HYBRID]:
             if tongue in envelope.pqc_sigs and tongue in pqc_keyring:
@@ -207,7 +207,7 @@ def verify_roundtable_v3(envelope: RWP3Envelope,
                     pqc_message,
                     envelope.pqc_sigs[tongue]
                 )
-        
+
         # Check mode requirements
         if envelope.mode == HybridPQCMode.CLASSICAL_ONLY and classical_ok:
             verified.append(tongue)
@@ -215,7 +215,7 @@ def verify_roundtable_v3(envelope: RWP3Envelope,
             verified.append(tongue)
         elif envelope.mode == HybridPQCMode.HYBRID and classical_ok and pqc_ok:
             verified.append(tongue)
-    
+
     success = len(verified) >= len(required_tongues)
     return success, verified
 ```
@@ -354,6 +354,7 @@ Hybrid:                   ~2-4 ms
 ### Network Overhead
 
 For k=3 tongues in hybrid mode:
+
 ```
 Classical only:           96 bytes (3 × 32)
 Hybrid:                   10,023 bytes (3 × 3341)
@@ -361,6 +362,7 @@ Overhead:                 ~100× increase
 ```
 
 **Mitigation Strategies**:
+
 - Signature compression (if supported by PQC library)
 - Batch verification for multiple envelopes
 - Selective hybrid mode (critical operations only)
@@ -375,6 +377,7 @@ Overhead:                 ~100× increase
 **Claim**: If either HMAC-SHA256 or ML-DSA-65 is secure, the hybrid scheme is secure.
 
 **Proof Sketch**:
+
 1. Attacker must forge both signatures to succeed
 2. If HMAC is secure, attacker cannot forge classical signature
 3. If ML-DSA is secure, attacker cannot forge PQC signature
@@ -386,6 +389,7 @@ Overhead:                 ~100× increase
 **Claim**: Signatures from different Sacred Tongues cannot be confused.
 
 **Proof Sketch**:
+
 1. Each signature includes tongue prefix in message
 2. sig_KO = HMAC(key, "KO" || message)
 3. sig_AV = HMAC(key, "AV" || message)
@@ -397,6 +401,7 @@ Overhead:                 ~100× increase
 **Claim**: Envelopes cannot be replayed outside the time window.
 
 **Proof Sketch**:
+
 1. Each envelope includes timestamp and random nonce
 2. Verifier checks |t_now - t_envelope| ≤ window
 3. Verifier maintains nonce cache for window duration
@@ -551,6 +556,6 @@ See `rwp_v3_hybrid_pqc.py` for the complete reference implementation with:
 
 ---
 
-*"Quantum-safe today, quantum-proof tomorrow."*
+_"Quantum-safe today, quantum-proof tomorrow."_
 
 🔐 **Secure. Hybrid. Future-Proof.**
