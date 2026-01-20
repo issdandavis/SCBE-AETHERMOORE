@@ -1,2 +1,0 @@
-WARNING: npm test failed (exit code 127). See docs/evidence/2026-01-20_234851/npm_test_output.txt
-WARNING: pytest failed (exit code 1). See docs/evidence/2026-01-20_234851/pytest_output.txt
