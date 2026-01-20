@@ -17,10 +17,10 @@
  */
 export { Complex } from './Complex.js';
 export { FFT, type FFTResult } from './FFT.js';
-export { Feistel, createFeistel, type FeistelConfig, } from './Feistel.js';
+export { Feistel, createFeistel, type FeistelConfig } from './Feistel.js';
 export { ZBase32, getAlphabet } from './ZBase32.js';
-export { SymphonicAgent, createSymphonicAgent, type SynthesisResult, type SymphonicAgentConfig, } from './SymphonicAgent.js';
-export { HybridCrypto, createHybridCrypto, signIntent, verifyIntent, type HarmonicSignature, type SignedEnvelope, type VerificationResult, type HybridCryptoConfig, } from './HybridCrypto.js';
+export { SymphonicAgent, createSymphonicAgent, type SymphonicAgentConfig, type SynthesisResult } from './SymphonicAgent.js';
+export { HybridCrypto, createHybridCrypto, signIntent, verifyIntent, type HarmonicSignature, type HybridCryptoConfig, type SignedEnvelope, type VerificationResult } from './HybridCrypto.js';
 /**
  * Version of the Symphonic Cipher TypeScript implementation
  */
@@ -33,4 +33,5 @@ export declare function quickSign(intent: string, key: string): string;
  * Quick verify function for simple use cases
  */
 export declare function quickVerify(intent: string, signature: string, key: string): boolean;
+export * from './audio/index.js';
 //# sourceMappingURL=index.d.ts.map

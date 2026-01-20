@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "GitKraken": {
+      "args": [
+        "mcp",
+        "--host=kiro",
+        "--source=gitlens",
+        "--scheme=kiro"
+      ],
+      "command": "c:\\Users\\issda\\AppData\\Roaming\\Kiro\\User\\globalStorage\\eamodio.gitlens\\gk.exe",
+      "type": "stdio",
+      "autoApprove": [
+        "git_status",
+        "git_add_or_commit",
+        "git_push",
+        "git_log_or_diff",
+        "git_branch",
+        "git_checkout",
+        "repository_get_file_content"
+      ]
+    }
+  }
+}

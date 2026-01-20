@@ -198,8 +198,8 @@ def layer_7_phase_transform(u: np.ndarray, a: np.ndarray, Q: np.ndarray,
     a_norm_sq = np.linalg.norm(a) ** 2
     au_dot = np.dot(a, u)
 
-    numerator = (1 + 2*au_dot + a_norm_sq) * u + (1 - u_norm_sq) * a
-    denominator = 1 + 2*au_dot + u_norm_sq * a_norm_sq + eps
+    numerator = (1 + 2 * au_dot + u_norm_sq) * a + (1 - a_norm_sq) * u
+    denominator = 1 + 2 * au_dot + a_norm_sq * u_norm_sq + eps
 
     shifted = numerator / denominator
 
