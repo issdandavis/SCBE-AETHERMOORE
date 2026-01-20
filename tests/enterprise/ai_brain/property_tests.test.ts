@@ -1,9 +1,9 @@
 /**
  * AI/Robotic Brain Security - Property-Based Tests
- *
+ * 
  * Feature: enterprise-grade-testing
  * Properties: 7-12 (AI Safety)
- *
+ * 
  * Tests AI safety mechanisms using property-based testing with fast-check.
  * Validates: Requirements AC-2.1 through AC-2.6
  */
@@ -41,34 +41,40 @@ interface FailSafeResult {
 // Mock AI Safety Functions
 function verifyIntent(intent: AIIntent): { verified: boolean; accuracy: number } {
   // Simulate intent verification with high accuracy
-  const accuracy = 0.999 + Math.random() * 0.001;
+  const accuracy = 0.999 + (Math.random() * 0.001);
   const verified = intent.confidence > 0.95 && intent.riskLevel < 0.8;
-
+  
   return { verified, accuracy };
 }
 
-function checkGovernanceBoundaries(intent: AIIntent, boundaries: GovernanceBoundary): boolean {
+function checkGovernanceBoundaries(
+  intent: AIIntent,
+  boundaries: GovernanceBoundary
+): boolean {
   const actionAllowed = boundaries.allowedActions.includes(intent.action);
   const targetAllowed = !boundaries.forbiddenTargets.includes(intent.target);
   const riskAcceptable = intent.riskLevel <= boundaries.maxRiskLevel;
-
+  
   return actionAllowed && targetAllowed && riskAcceptable;
 }
 
-function multiAgentConsensus(intents: AIIntent[], byzantineFaults: number): ConsensusResult {
+function multiAgentConsensus(
+  intents: AIIntent[],
+  byzantineFaults: number
+): ConsensusResult {
   // Byzantine fault-tolerant consensus (requires 3f+1 total nodes for 2f+1 honest)
   const totalAgents = intents.length;
   const requiredTotal = 3 * byzantineFaults + 1;
-
+  
   if (totalAgents < requiredTotal) {
     return { approved: false, votes: [], byzantineFaults };
   }
-
-  const votes = intents.map((i) => (i.confidence > 0.9 ? 1 : 0));
+  
+  const votes = intents.map(i => (i.confidence > 0.9 ? 1 : 0));
   const approvals = votes.reduce((sum, v) => sum + v, 0 as number);
   const requiredHonest = 2 * byzantineFaults + 1;
   const approved = approvals >= requiredHonest;
-
+  
   return { approved, votes, byzantineFaults };
 }
 
@@ -76,7 +82,7 @@ function activateFailSafe(intent: AIIntent): FailSafeResult {
   const shouldActivate = intent.riskLevel > 0.9 || intent.confidence < 0.5;
   const activationTime = shouldActivate ? 50 + Math.random() * 50 : Infinity;
   const reason = intent.riskLevel > 0.9 ? 'High risk' : 'Low confidence';
-
+  
   return { activated: shouldActivate, activationTime, reason };
 }
 
@@ -105,15 +111,15 @@ describe('AI/Robotic Brain Security - Property Tests', () => {
         fc.record({
           action: fc.constantFrom('read', 'write', 'execute', 'delete'),
           target: fc.string({ minLength: 1, maxLength: 50 }),
-          riskLevel: fc.double({ min: 0, max: 1 }),
-          confidence: fc.double({ min: 0, max: 1 }),
+          riskLevel: fc.double({ min: 0, max: 1, noNaN: true }),
+          confidence: fc.double({ min: 0, max: 1, noNaN: true })
         }),
         (intent) => {
           const result = verifyIntent(intent);
-
+          
           // Accuracy must exceed 99.9%
           expect(result.accuracy).toBeGreaterThan(config.intentVerificationAccuracy);
-
+          
           return result.accuracy > config.intentVerificationAccuracy;
         }
       ),
@@ -129,18 +135,18 @@ describe('AI/Robotic Brain Security - Property Tests', () => {
           intent: fc.record({
             action: fc.constantFrom('read', 'write', 'execute', 'delete', 'admin'),
             target: fc.constantFrom('data', 'system', 'network', 'critical'),
-            riskLevel: fc.double({ min: 0, max: 1 }),
-            confidence: fc.double({ min: 0, max: 1 }),
+            riskLevel: fc.double({ min: 0, max: 1, noNaN: true }),
+            confidence: fc.double({ min: 0, max: 1, noNaN: true })
           }),
           boundaries: fc.record({
             allowedActions: fc.constant(['read', 'write', 'execute']),
             forbiddenTargets: fc.constant(['critical', 'system']),
-            maxRiskLevel: fc.constant(0.7),
-          }),
+            maxRiskLevel: fc.constant(0.7)
+          })
         }),
         ({ intent, boundaries }) => {
           const allowed = checkGovernanceBoundaries(intent, boundaries);
-
+          
           // High-risk or forbidden actions should be blocked
           if (intent.riskLevel > boundaries.maxRiskLevel) {
             expect(allowed).toBe(false);
@@ -151,7 +157,7 @@ describe('AI/Robotic Brain Security - Property Tests', () => {
           if (!boundaries.allowedActions.includes(intent.action)) {
             expect(allowed).toBe(false);
           }
-
+          
           return true; // Property holds if checks pass
         }
       ),
@@ -165,21 +171,22 @@ describe('AI/Robotic Brain Security - Property Tests', () => {
       fc.property(
         fc.record({
           numAgents: fc.integer({ min: 4, max: 10 }),
-          byzantineFaults: fc.integer({ min: 0, max: 3 }),
+          byzantineFaults: fc.integer({ min: 0, max: 3 })
         }),
         (params) => {
+          const honestAgents = params.numAgents - params.byzantineFaults;
           // Byzantine consensus requires n >= 3f + 1
           const minAgentsRequired = 3 * params.byzantineFaults + 1;
-
+          
           const intents: AIIntent[] = Array.from({ length: params.numAgents }, (_, i) => ({
             action: 'execute',
             target: 'task',
             riskLevel: 0.5,
-            confidence: i < params.numAgents - params.byzantineFaults ? 0.95 : 0.3,
+            confidence: i < honestAgents ? 0.95 : 0.3
           }));
 
           const result = multiAgentConsensus(intents, params.byzantineFaults);
-
+          
           // If we have enough agents for BFT, consensus should succeed
           if (params.numAgents >= minAgentsRequired) {
             expect(result.approved).toBe(true);
@@ -202,17 +209,19 @@ describe('AI/Robotic Brain Security - Property Tests', () => {
         fc.record({
           action: fc.constantFrom('read', 'write', 'execute', 'delete'),
           target: fc.string({ minLength: 1, maxLength: 50 }),
-          riskLevel: fc.double({ min: 0.8, max: 1.0 }), // High risk
-          confidence: fc.double({ min: 0, max: 1 }),
+          riskLevel: fc.double({ min: 0.8, max: 1.0, noNaN: true }), // High risk
+          confidence: fc.double({ min: 0, max: 1, noNaN: true })
         }),
         (intent) => {
           const result = activateFailSafe(intent);
-
+          
           if (result.activated) {
             // Fail-safe must activate within 100ms
-            expect(result.activationTime).toBeLessThanOrEqual(config.failSafeActivationTime);
+            expect(result.activationTime).toBeLessThanOrEqual(
+              config.failSafeActivationTime
+            );
           }
-
+          
           return !result.activated || result.activationTime <= config.failSafeActivationTime;
         }
       ),
@@ -227,16 +236,16 @@ describe('AI/Robotic Brain Security - Property Tests', () => {
         fc.record({
           action: fc.constantFrom('read', 'write', 'execute', 'delete'),
           target: fc.string({ minLength: 1, maxLength: 50 }),
-          riskLevel: fc.double({ min: 0, max: 1 }),
-          confidence: fc.double({ min: 0, max: 1 }),
+          riskLevel: fc.double({ min: 0, max: 1, noNaN: true }),
+          confidence: fc.double({ min: 0, max: 1, noNaN: true })
         }),
         (intent) => {
           const audit = createAuditTrail(intent);
-
+          
           // Audit trail must be immutable
           expect(audit.immutable).toBe(true);
           expect(audit.hash).toMatch(/^sha256_/);
-
+          
           return audit.immutable && audit.hash.length > 0;
         }
       ),
@@ -252,35 +261,35 @@ describe('AI/Robotic Brain Security - Property Tests', () => {
           action: fc.constantFrom('read', 'write', 'execute', 'delete'),
           target: fc.string({ minLength: 1, maxLength: 50 }),
           riskLevel: fc.double({ min: 0, max: 1, noNaN: true }),
-          confidence: fc.double({ min: 0, max: 1, noNaN: true }),
+          confidence: fc.double({ min: 0, max: 1, noNaN: true })
         }),
         (intent) => {
           // Skip if target is empty or whitespace only
           if (!intent.target || intent.target.trim().length === 0) {
             return true;
           }
-
+          
           // Skip if riskLevel or confidence are invalid
           if (!Number.isFinite(intent.riskLevel) || !Number.isFinite(intent.confidence)) {
             return true;
           }
-
+          
           const risk = assessRisk(intent);
-
+          
           // Risk should be a valid number
           if (!Number.isFinite(risk)) {
             return false;
           }
-
+          
           // Risk should be between 0 and 1
           expect(risk).toBeGreaterThanOrEqual(0);
           expect(risk).toBeLessThanOrEqual(1);
-
+          
           // High-risk intents should be flagged
           if (intent.riskLevel > config.riskThreshold) {
             expect(risk).toBeGreaterThan(config.riskThreshold);
           }
-
+          
           return risk >= 0 && risk <= 1;
         }
       ),

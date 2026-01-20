@@ -15,7 +15,7 @@ All formulas follow the mathematical specification exactly.
 __version__ = "1.0.0"
 __author__ = "Spiralverse RWP v3"
 
-from .core import (
+from .symphonic_core import (
     SymphonicCipher,
     ConlangDictionary,
     ModalityEncoder,
