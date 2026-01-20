@@ -8,7 +8,8 @@
  * Patent: USPTO #63/961,403
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyWatermark = exports.computeProjections = void 0;
+exports.computeProjections = computeProjections;
+exports.verifyWatermark = verifyWatermark;
 const types_1 = require("./types");
 /**
  * Compute matched-filter projections
@@ -29,14 +30,13 @@ function computeProjections(audio, bins, phases, N) {
         // p_j = (2/N) · Σ y[n] · sin(2π k_j · n/N + φ_j)
         let p_j = 0;
         for (let n = 0; n < N; n++) {
-            p_j += audio[n] * Math.sin(2 * Math.PI * k_j * n / N + phi_j);
+            p_j += audio[n] * Math.sin((2 * Math.PI * k_j * n) / N + phi_j);
         }
-        p_j *= (2 / N);
+        p_j *= 2 / N;
         projections.push(p_j);
     }
     return projections;
 }
-exports.computeProjections = computeProjections;
 /**
  * Verify challenge-bound watermark
  *
@@ -77,8 +77,7 @@ function verifyWatermark(audio, challenge, bins, phases, profile) {
         projections,
         energy,
         clipped,
-        passed
+        passed,
     };
 }
-exports.verifyWatermark = verifyWatermark;
 //# sourceMappingURL=matched-filter.js.map

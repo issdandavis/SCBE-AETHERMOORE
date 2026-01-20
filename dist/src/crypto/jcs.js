@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.canonicalize = void 0;
+exports.canonicalize = canonicalize;
 /**
  * Minimal JCS (RFC 8785-like) canonicalization: UTF-8, lexicographic sorting of keys,
  * no insignificant whitespace, stable numbers.
@@ -8,7 +8,6 @@ exports.canonicalize = void 0;
 function canonicalize(value) {
     return JSON.stringify(sort(value));
 }
-exports.canonicalize = canonicalize;
 function sort(x) {
     if (x === null || typeof x !== 'object')
         return normalizeNumber(x);

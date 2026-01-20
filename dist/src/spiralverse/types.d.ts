@@ -9,8 +9,6 @@
  * @version 2.1.0
  * @since 2026-01-18
  */
-/// <reference types="node" />
-/// <reference types="node" />
 /**
  * Sacred Tongue identifiers (6 domains)
  */
@@ -26,7 +24,7 @@ export type PolicyLevel = 'standard' | 'strict' | 'secret' | 'critical';
  */
 export interface RWP2MultiEnvelope<T = any> {
     /** Protocol version (always "2.1") */
-    ver: "2.1";
+    ver: '2.1';
     /** Primary tongue indicating intent domain */
     primary_tongue: TongueID;
     /** Additional authenticated data (metadata) */

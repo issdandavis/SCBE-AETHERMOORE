@@ -9,7 +9,8 @@
  */
 import * as symphonic from './symphonic/index.js';
 import * as crypto from './crypto/index.js';
-export { symphonic, crypto };
+import * as spiralverse from './spiralverse/index.js';
+export { symphonic, crypto, spiralverse };
 export * from './crypto/envelope.js';
 export * from './crypto/hkdf.js';
 export * from './crypto/jcs.js';
