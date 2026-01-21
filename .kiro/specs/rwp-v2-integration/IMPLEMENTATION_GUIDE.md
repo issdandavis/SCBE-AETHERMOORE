@@ -12,11 +12,11 @@
 
 Review the 3 decision points and document your choices:
 
-| Decision       | Default                   | Your Choice | Rationale  |
-| -------------- | ------------------------- | ----------- | ---------- |
-| Build Output   | Option 1 (dual CJS+ESM)   | ****\_****  | ****\_**** |
-| Signing String | Option A (canonical JSON) | ****\_****  | ****\_**** |
-| Nonce Scope    | Option B (tongue only)    | ****\_****  | ****\_**** |
+| Decision       | Default                   | Your Choice    | Rationale      |
+| -------------- | ------------------------- | -------------- | -------------- |
+| Build Output   | Option 1 (dual CJS+ESM)   | \***\*\_\*\*** | \***\*\_\*\*** |
+| Signing String | Option A (canonical JSON) | \***\*\_\*\*** | \***\*\_\*\*** |
+| Nonce Scope    | Option B (tongue only)    | \***\*\_\*\*** | \***\*\_\*\*** |
 
 **Recommendation**: Accept all defaults unless you have specific constraints.
 
