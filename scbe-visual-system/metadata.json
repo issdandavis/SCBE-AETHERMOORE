@@ -1,0 +1,5 @@
+{
+  "name": "Visual Computer",
+  "description": "Use your pen to control a virtual OS. Create AI wallpapers, take actions on folders, and summarize emails, leveraging the multimodal understanding capabilities of Gemini 3 Pro.",
+  "requestFramePermissions": []
+}
