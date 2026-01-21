@@ -127,6 +127,62 @@ class MetricsStore:
 metrics_store = MetricsStore()
 
 # ============================================================================
+# SEALED BLOB STORAGE (In-memory for MVP)
+# ============================================================================
+
+class SealedBlobStorage:
+    """In-memory storage for sealed blobs with TTL expiry."""
+
+    def __init__(self, default_ttl: int = 3600):
+        self.blobs: Dict[str, dict] = {}
+        self.default_ttl = default_ttl
+
+    def _make_key(self, agent: str, topic: str, position: List[float]) -> str:
+        """Create unique key from agent, topic, and position."""
+        pos_str = ",".join(f"{p:.4f}" for p in position)
+        key_input = f"{agent}:{topic}:{pos_str}"
+        return hashlib.sha256(key_input.encode()).hexdigest()[:32]
+
+    def store(self, agent: str, topic: str, position: List[float],
+              sealed_blob: bytes, metadata: dict = None) -> str:
+        """Store sealed blob and return storage key."""
+        key = self._make_key(agent, topic, position)
+        self.blobs[key] = {
+            "sealed_blob": sealed_blob,
+            "agent": agent,
+            "topic": topic,
+            "position": position,
+            "metadata": metadata or {},
+            "created_at": time.time(),
+            "expires_at": time.time() + self.default_ttl
+        }
+        return key
+
+    def retrieve(self, agent: str, topic: str, position: List[float]) -> Optional[dict]:
+        """Retrieve stored blob if exists and not expired."""
+        key = self._make_key(agent, topic, position)
+        entry = self.blobs.get(key)
+
+        if not entry:
+            return None
+
+        # Check expiry
+        if time.time() > entry["expires_at"]:
+            del self.blobs[key]
+            return None
+
+        return entry
+
+    def cleanup_expired(self):
+        """Remove expired entries."""
+        now = time.time()
+        expired_keys = [k for k, v in self.blobs.items() if now > v["expires_at"]]
+        for key in expired_keys:
+            del self.blobs[key]
+
+sealed_storage = SealedBlobStorage()
+
+# ============================================================================
 # MODELS
 # ============================================================================
 
@@ -224,13 +280,28 @@ async def seal_memory(
             password=password
         )
         
+        # Store sealed blob for later retrieval
+        storage_key = sealed_storage.store(
+            agent=request.agent,
+            topic=request.topic,
+            position=request.position,
+            sealed_blob=sealed_blob,
+            metadata={
+                "risk_base": float(result['risk_base']),
+                "risk_prime": float(result['risk_prime']),
+                "decision": result['decision'],
+                "H": float(result['H'])
+            }
+        )
+
         # Record metrics
         metrics_store.record_seal(request.agent, result['risk_base'])
-        
+
         return {
             "status": "sealed",
             "data": {
                 "sealed_blob": sealed_blob.hex(),
+                "storage_key": storage_key,
                 "position": request.position,
                 "risk_score": float(result['risk_base']),
                 "risk_prime": float(result['risk_prime']),
@@ -294,13 +365,42 @@ async def retrieve_memory(
                 }
             }
         
-        # ALLOW or QUARANTINE - retrieve plaintext
-        # TODO: Retrieve actual sealed blob from storage
-        # For MVP, return mock plaintext
+        # ALLOW or QUARANTINE - retrieve and decrypt plaintext
+        stored = sealed_storage.retrieve(request.agent, request.topic, request.position)
+
+        if not stored:
+            return {
+                "status": "not_found",
+                "data": {
+                    "plaintext": None,
+                    "governance_result": result['decision'],
+                    "error": "No sealed blob found for this agent/topic/position combination"
+                }
+            }
+
+        # Decrypt the sealed blob
+        try:
+            rwp = RWPv3Protocol()
+            password = f"{request.agent}:{request.topic}".encode()
+            plaintext_bytes = rwp.decrypt(
+                ciphertext=stored["sealed_blob"],
+                password=password
+            )
+            plaintext = plaintext_bytes.decode('utf-8')
+        except Exception as decrypt_error:
+            return {
+                "status": "decrypt_failed",
+                "data": {
+                    "plaintext": None,
+                    "governance_result": result['decision'],
+                    "error": f"Decryption failed: {str(decrypt_error)}"
+                }
+            }
+
         return {
             "status": "retrieved" if result['decision'] == "ALLOW" else "quarantined",
             "data": {
-                "plaintext": "[MOCK] Retrieved plaintext data",
+                "plaintext": plaintext,
                 "governance_result": result['decision'],
                 "risk_score": float(result['risk_base']),
                 "risk_prime": float(result['risk_prime']),
