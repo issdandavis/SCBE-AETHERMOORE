@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\numpy\polynomial\laguerre.py
+# hypothesis_version: 6.148.8
+
+[0.0, 1.0, 2.0, '?bBhHiIlLqQpP', 'L', 'Laguerre', 'deg', 'lag2poly', 'lagadd', 'lagcompanion', 'lagder', 'lagdiv', 'lagdomain', 'lagfit', 'lagfromroots', 'laggauss', 'laggrid2d', 'laggrid3d', 'lagint', 'lagline', 'lagmul', 'lagmulx', 'lagone', 'lagpow', 'lagroots', 'lagsub', 'lagtrim', 'lagval', 'lagval2d', 'lagval3d', 'lagvander', 'lagvander2d', 'lagvander3d', 'lagweight', 'lagx', 'lagzero', 'poly2lag', 'the axis']

@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\numpy\core\_ufunc_config.py
+# hypothesis_version: 6.148.8
+
+[10000000.0, '_no_nep50_warning', 'call', 'divide', 'errstate', 'getbufsize', 'geterr', 'geterrcall', 'ignore', 'invalid', 'log', 'numpy', 'over', 'print', 'raise', 'setbufsize', 'seterr', 'seterrcall', 'under', 'warn', 'write']

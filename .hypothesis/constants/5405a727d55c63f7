@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\_pytest\config\argparsing.py
+# hypothesis_version: 6.148.8
+
+[0.0, '*', ', ', '-', '--', '<notset>', '=', '???', '@', 'Argument({})', 'Custom options', '_', '_config_source_hint', '_long_opts: ', '_short_opts: ', 'args', 'bool', 'default', 'default dest help', 'default: ', 'dest', 'dest: ', 'file_or_dir', 'float', 'int', 'linelist', 'pathlist', 'paths', 'string', 'type', 'type: ', 'width']

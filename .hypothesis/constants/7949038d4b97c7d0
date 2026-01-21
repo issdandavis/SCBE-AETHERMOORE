@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\pytest_benchmark\session.py
+# hypothesis_version: 6.148.8
+
+['\t{} - {}', ' ({})', '-', 'NOW', 'PYTEST_XDIST_WORKER', 'benchmark_autosave', 'benchmark_columns', 'benchmark_compare', 'benchmark_cprofile', 'benchmark_disable', 'benchmark_disable_gc', 'benchmark_enable', 'benchmark_group_by', 'benchmark_histogram', 'benchmark_json', 'benchmark_max_time', 'benchmark_min_rounds', 'benchmark_min_time', 'benchmark_name', 'benchmark_netrc', 'benchmark_only', 'benchmark_quiet', 'benchmark_save', 'benchmark_save_data', 'benchmark_skip', 'benchmark_sort', 'benchmark_storage', 'benchmark_timer', 'benchmark_verbose', 'benchmark_warmup', 'benchmarks', 'cProfile (time in s)', 'cprofile', 'cprofile_dump', 'cprofile_loops', 'disable_gc', 'dist', 'fullname', 'max_time', 'min_rounds', 'min_time', 'no', 'path', 'slaveinput', 'source', 'stats', 'timer', 'warmup', 'warmup_iterations']

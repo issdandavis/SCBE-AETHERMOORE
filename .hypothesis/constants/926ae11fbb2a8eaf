@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\numpy\core\_type_aliases.py
+# hypothesis_version: 6.148.8
+
+['%s%d', '%s_', 'P', 'a', 'bool', 'bool_', 'byte', 'bytes', 'bytes_', 'cdouble', 'cfloat', 'clongdouble', 'clongfloat', 'complex', 'complex_', 'csingle', 'datetime', 'double', 'float', 'float_', 'i%d', 'int', 'int%d', 'int0', 'int_', 'intc', 'intp', 'long', 'longcomplex', 'longdouble', 'longfloat', 'longlong', 'object', 'object_', 'others', 'p', 'short', 'single', 'singlecomplex', 'str', 'str_', 'string', 'string_', 'timedelta', 'u', 'u%d', 'uint', 'uint%d', 'uint0', 'uintc', 'uintp', 'ulong', 'unicode', 'unicode_', 'void']

@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\numpy\compat\py3k.py
+# hypothesis_version: 6.148.8
+
+['Path', 'U', '__iter__', 'asbytes', 'asbytes_nested', 'asstr', 'asunicode', 'asunicode_nested', 'basestring', 'bytes', 'getexception', 'integer_types', 'is_pathlib_path', 'isfileobj', 'iso-8859-1', 'latin1', 'long', 'npy_load_module', 'open_latin1', 'os_PathLike', 'os_fspath', 'pickle', 'r', 'sixu', 'strchar', 'unicode']

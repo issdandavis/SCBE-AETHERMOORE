@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\numpy\core\records.py
+# hypothesis_version: 6.148.8
+
+[113, '%% %ds: %%s', ',', ', ', '<', '=', '>', 'B', 'C', 'I', 'L', 'N', 'S', 'Unknown input type', '[], shape=%s', '__array_interface__', 'aligned', 'array', 'array(', 'b', 'byteorder', 'dtype', 'f%d', 'f1', 'format_parser', 'formats', 'fromarrays', 'fromfile', 'fromrecords', 'fromstring', 'f{}', 'getfield', 'i', 'l', 'n', 'names', 'numpy', 'numpy.rec', 'offsets', 'rb', 'readinto', 'rec.array(', 'recarray', 'record', 's', 'setfield', 'titles', '|']

@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\numpy\lib\polynomial.py
+# hypothesis_version: 6.148.8
+
+[0.0, 1e-14, 1.0, '%.4g', '%s', '%s %s', '%s %s**%d', '%s + %s', '%s - %s', '%s**%d', '%sj', '(%s + %sj)', '-', '.0000', '0', 'Cannot set attribute', 'RankWarning', '\\*\\*([0-9]*)', 'always', 'b', 'coeffs', 'expected deg >= 0', 'f', 'full', 'numpy', 'poly', 'poly1d', 'poly1d(%s)', 'polyadd', 'polyder', 'polydiv', 'polyfit', 'polyint', 'polymul', 'polysub', 'polyval', 'roots', 'unscaled', 'x']
