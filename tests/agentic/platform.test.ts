@@ -197,7 +197,7 @@ describe('AgenticCoderPlatform', () => {
         type: 'implement',
         title: 'Hello World',
         description: 'Create a hello world function',
-        complexity: 'simple'
+        complexity: 'moderate'  // Use moderate to get multiple agents
       });
       
       const result = await platform.executeTask(task.id);
@@ -236,7 +236,7 @@ describe('AgenticCoderPlatform', () => {
         type: 'implement',
         title: 'Stats Test',
         description: 'Test agent stats',
-        complexity: 'simple'
+        complexity: 'moderate'  // Use moderate to get multiple agents
       });
       
       await platform.executeTask(task.id);
@@ -264,7 +264,7 @@ describe('AgenticCoderPlatform', () => {
         type: 'implement',
         title: 'Stats Task',
         description: 'Test statistics',
-        complexity: 'simple'
+        complexity: 'moderate'  // Use moderate to get multiple agents
       });
       
       await platform.executeTask(task.id);
@@ -284,7 +284,7 @@ describe('AgenticCoderPlatform', () => {
         type: 'implement',
         title: 'Event Test',
         description: 'Test events',
-        complexity: 'simple'
+        complexity: 'moderate'  // Use moderate to get multiple agents
       });
       
       await platform.executeTask(task.id);
@@ -371,7 +371,7 @@ describe('CollaborationEngine', () => {
     
     const confidence = engine.calculateGroupConfidence(contributions);
     
-    expect(confidence).toBe(0.85);
+    expect(confidence).toBeCloseTo(0.85, 10);
   });
 });
 
