@@ -23,8 +23,8 @@ pycryptodome>=3.20.0      # Additional crypto primitives
 # POST-QUANTUM CRYPTOGRAPHY (PRODUCTION-REQUIRED)
 # ============================================================================
 # Required for patent claims 9-12 (ML-KEM-768, ML-DSA-65)
-# Uncomment for production deployment with PQC
-# liboqs-python>=0.10.0   # NIST-approved PQC algorithms
+# NIST FIPS 203 (ML-KEM) and FIPS 204 (ML-DSA) compliant
+liboqs-python>=0.10.0     # NIST-approved PQC algorithms (Open Quantum Safe)
 
 # ============================================================================
 # AWS LAMBDA DEPLOYMENT
