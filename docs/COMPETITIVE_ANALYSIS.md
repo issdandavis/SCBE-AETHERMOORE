@@ -180,8 +180,8 @@ H(d, R) = φ^d / (1 + e^(-R))
 
 SCBE-AETHERMOORE is pilot-ready with specialized AI agent governance that Darktrace doesn't offer.
 
-**Contact**: [Your sales contact]
-**Demo**: [Demo link]
+**Contact**: sales@scbe-aethermoore.com
+**Demo**: https://scbe-aethermoore.com/demo
 **Documentation**: See `FULL_SYSTEM_ENABLEMENT.md`
 
 ---
