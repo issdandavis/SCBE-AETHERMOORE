@@ -14,11 +14,13 @@ This document summarizes the rigorous technical review fixes applied to RWP v2.1
 ## 1. Credibility Fixes
 
 ### Before (Overclaim):
+
 ```markdown
 **Status**: Production Ready ✅
 ```
 
 ### After (Honest):
+
 ```markdown
 **Status**: Requirements Complete - Ready for Implementation
 ```
@@ -30,6 +32,7 @@ This document summarizes the rigorous technical review fixes applied to RWP v2.1
 ## 2. PQC Contradiction Fixed
 
 ### Before (Contradictory):
+
 ```markdown
 ✅ Post-quantum cryptography (ML-KEM, ML-DSA)
 ...
@@ -37,11 +40,14 @@ FR-3.2.1: MUST use HMAC-SHA256 signatures
 ```
 
 ### After (Clear):
+
 ```markdown
 ### 1.2 What This Document Does NOT Cover
+
 - ❌ Post-quantum cryptography (ML-KEM, ML-DSA) - **Future enhancement (v3.0+)**
 
 ### 1.3 Current Implementation Status
+
 - ✅ **v2.1.0**: HMAC-SHA256 multi-signatures (this spec)
 - ⚠️ **v3.0**: PQC upgrade with ML-DSA planned (Q2 2026)
 ```
@@ -53,13 +59,16 @@ FR-3.2.1: MUST use HMAC-SHA256 signatures
 ## 3. Canonicalization Specification (Critical for Interop)
 
 ### Before (Missing):
+
 ```markdown
 Sign: ver|primary_tongue|aad|ts|nonce|payload
 ```
 
 ### After (Complete):
+
 ```markdown
 ### FR-2.1: AAD Canonicalization
+
 - MUST use RFC 8785 JSON Canonicalization Scheme
 - Keys sorted lexicographically
 - No whitespace
@@ -68,12 +77,14 @@ Sign: ver|primary_tongue|aad|ts|nonce|payload
 - If implementation cannot guarantee RFC 8785 number formatting, MUST reject floats or document deviation
 
 ### FR-2.2: Base64URL Encoding
-- Alphabet: A-Za-z0-9-_
+
+- Alphabet: A-Za-z0-9-\_
 - NO padding (= forbidden)
 - Decoder MUST accept only canonical form (strict mode)
 - Payload MUST be raw bytes, not JSON-encoded-by-mistake
 
 ### FR-2.3: Canonical Signing String Construction
+
 **Option A** (Recommended): Canonical JSON of envelope-without-sigs
 **Option B**: Explicit pipe-delimited concatenation
 **Decision Required**: Choose one before implementation
@@ -86,20 +97,24 @@ Sign: ver|primary_tongue|aad|ts|nonce|payload
 ## 4. Build Output Decision Point
 
 ### Before (Ambiguous):
+
 ```markdown
 TypeScript MUST compile to CommonJS
 ```
 
 ### After (Explicit):
+
 ```markdown
 ### NFR-3.2: Build Outputs
 
 **Option 1** (Recommended): Dual build
+
 - dist/cjs/ - CommonJS
 - dist/esm/ - ES Modules
 - Requires Node.js 18+
 
 **Option 2** (Simpler): CommonJS only
+
 - Single dist/ output
 - Compatible with Node.js 14+
 
@@ -113,19 +128,24 @@ TypeScript MUST compile to CommonJS
 ## 5. Nonce Scope and Atomic Insertion
 
 ### Before (Vague):
+
 ```markdown
 Nonce uniqueness enforced
 ```
 
 ### After (Precise):
+
 ```markdown
 ### FR-5.1: Nonce Uniqueness Scope
+
 **Option A**: scope = (sender_id, primary_tongue)
 **Option B**: scope = (primary_tongue)
 **Decision Required**: Choose one. **Default: Option B**
 
 ### FR-5.4: Nonce Recording Atomicity
+
 **Insertion Rule**: Record nonce if and only if:
+
 1. ✅ Crypto verification passes
 2. ✅ Timestamp within window
 3. ✅ Nonce not seen before (atomic check-and-insert)
@@ -141,20 +161,24 @@ Nonce uniqueness enforced
 ## 6. Timestamp Validation Parameters
 
 ### Before (Imprecise):
+
 ```markdown
 |ts_now - envelope.ts| ≤ 60 seconds
 ```
 
 ### After (Explicit):
+
 ```markdown
 ### FR-5.3: Timestamp Validation
+
 **Replay Window Parameters**:
+
 - W = replay window = 60,000 ms (60 seconds)
 - S = clock skew tolerance = 5,000 ms (5 seconds)
 
 **Validation Rule**:
-reject if ts > now + S  (future timestamp beyond skew)
-reject if ts < now - W  (expired timestamp)
+reject if ts > now + S (future timestamp beyond skew)
+reject if ts < now - W (expired timestamp)
 ```
 
 **Why**: Separate replay window (W) and clock skew (S) parameters enable proper distributed system clock handling.
@@ -164,14 +188,18 @@ reject if ts < now - W  (expired timestamp)
 ## 7. Unknown Key Handling
 
 ### Before (Undefined):
+
 ```markdown
 Verify signatures for all tongues
 ```
 
 ### After (Explicit):
+
 ```markdown
 ### FR-4.2: Valid Tongues List
+
 **Handling Unknown Keys**:
+
 - If tongue present in sigs but no key exists for kid[tongue], mark **INVALID**
 - Verification continues for other tongues
 - If primary_tongue has unknown key, entire envelope **DENIED**
@@ -184,13 +212,16 @@ Verify signatures for all tongues
 ## 8. Performance Requirements (Measurable)
 
 ### Before (Vague):
+
 ```markdown
 High performance
 ```
 
 ### After (Measurable):
+
 ```markdown
 ### NFR-1.1: Envelope Creation
+
 - **Throughput**: ≥10,000 envelopes/second (single core)
 - **Latency**: p95 < 2ms, p99 < 5ms
 - **Assumptions**:
@@ -206,25 +237,29 @@ High performance
 ## 9. Interop Test Vectors (Complete Schema)
 
 ### Before (Incomplete):
+
 ```markdown
 10 interop test vectors required
 ```
 
 ### After (Complete):
+
 ```markdown
 ### NFR-4.2: Interop Test Vectors
+
 **Test Vector Schema**:
 {
-  "test_id": "vector_001_basic",
-  "description": "Single signature, no AAD",
-  "master_key": "hex(32 bytes)",
-  "envelope": { ... },
-  "expected_canonical_string": "...",
-  "expected_sigs": { "RU": "hex(64 chars)" },
-  "expected_result": "ALLOW"
+"test_id": "vector_001_basic",
+"description": "Single signature, no AAD",
+"master_key": "hex(32 bytes)",
+"envelope": { ... },
+"expected_canonical_string": "...",
+"expected_sigs": { "RU": "hex(64 chars)" },
+"expected_result": "ALLOW"
 }
 
 **Required Test Cases**:
+
 1. Single signature, no AAD
 2. Single signature, with AAD (nested objects)
 3. Multi-signature (3 tongues)
@@ -244,14 +279,15 @@ High performance
 ## 10. Decision Points Tracking
 
 ### New Section Added:
+
 ```markdown
 ## Summary of Decision Points
 
-| Decision | Options | Default | Priority |
-|----------|---------|---------|----------|
-| **Build Output** | Option 1 (dual) or Option 2 (CJS only) | Option 1 | HIGH |
-| **Signing String** | Option A (JSON) or Option B (pipe) | Option A | HIGH |
-| **Nonce Scope** | Option A (sender+tongue) or Option B (tongue) | Option B | MEDIUM |
+| Decision           | Options                                       | Default  | Priority |
+| ------------------ | --------------------------------------------- | -------- | -------- |
+| **Build Output**   | Option 1 (dual) or Option 2 (CJS only)        | Option 1 | HIGH     |
+| **Signing String** | Option A (JSON) or Option B (pipe)            | Option A | HIGH     |
+| **Nonce Scope**    | Option A (sender+tongue) or Option B (tongue) | Option B | MEDIUM   |
 
 **Recommendation**: Accept all defaults for modern ecosystem compatibility
 ```

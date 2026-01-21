@@ -17,11 +17,13 @@ This document addresses the five priority fixes identified in the engineering re
 ## Priority 1: Context Vector and Transcript Binding (L2 → HKDF)
 
 ### Problem Identified
-L2 claimed "contextual encryption" without defining what context *is* or how it's cryptographically bound.
+
+L2 claimed "contextual encryption" without defining what context _is_ or how it's cryptographically bound.
 
 ### Solution Implemented
 
 #### Context Vector Definition (152 bytes total)
+
 ```
 ctx = (
     client_id      : 32 bytes  // X25519 or ML-KEM public key fingerprint
@@ -34,6 +36,7 @@ ctx = (
 ```
 
 #### Transcript Binding
+
 ```
 transcript = SHA3-256(
     "SCBE-v1-transcript" ||
@@ -45,6 +48,7 @@ transcript = SHA3-256(
 ```
 
 #### Key Derivation
+
 ```
 PRK = HKDF-Extract(
     salt = "SCBE-session-v1",
@@ -59,6 +63,7 @@ session_keys = HKDF-Expand(
 ```
 
 ### Test Vector Results
+
 ```
 Context Vector:
   client_id:      0101010101010101...
@@ -77,20 +82,23 @@ Session Keys:
 ```
 
 ### Security Properties
+
 - **Replay Protection**: Transcript hash ensures keys are cryptographically committed to full session state
 - **Binding**: Adversary cannot replay context on different links without detection
 - **Downgrade Prevention**: Algorithm identifiers included in transcript hash
 
 ---
 
-## Priority 2: Define *d* in H(d,R) and Decision Thresholds
+## Priority 2: Define _d_ in H(d,R) and Decision Thresholds
 
 ### Problem Identified
-Harm function H(d,R) = R^(d²) used *d* without specifying what it measures.
+
+Harm function H(d,R) = R^(d²) used _d_ without specifying what it measures.
 
 ### Solution Implemented
 
 #### Embedding Space
+
 ```
 Model: Poincaré ball B^n_c with curvature c = -1
 (n = 6 for Langues space, n = 16 for PHDM)
@@ -100,6 +108,7 @@ d_H(x, y) = arcosh(1 + 2 * ||x - y||² / ((1 - ||x||²)(1 - ||y||²)))
 ```
 
 #### Harm Function
+
 ```
 Let:
   x_current  = current state embedding in B^n_c
@@ -117,6 +126,7 @@ Properties:
 ```
 
 #### Omega Decision Function
+
 ```
 Inputs:
   - harm_score     = H(d, R)
@@ -126,7 +136,7 @@ Inputs:
   - spectral_score ∈ [0, 1]      // from L7 FFT analysis
 
 Aggregation:
-  Ω = pqc_valid × harm_score × (1 - drift_norm/drift_max) × 
+  Ω = pqc_valid × harm_score × (1 - drift_norm/drift_max) ×
       triadic_stable × spectral_score
 
 Decision thresholds (policy-configurable):
@@ -139,6 +149,7 @@ Output:
 ```
 
 ### Implementation Status
+
 - ✅ Poincaré distance metric defined
 - ✅ Harm function with explicit decay properties
 - ✅ Omega aggregation with measurable thresholds
@@ -149,11 +160,13 @@ Output:
 ## Priority 3: Fix Triadic Invariant Definition
 
 ### Problem Identified
+
 Δ_ijk = det([v_i, v_j, v_k]) required defining v_i and handling dimensionality.
 
 ### Solution Implemented
 
 #### Triadic Invariant Construction
+
 ```
 Given: 6 tongues with Langues-Rhythm sequences H^(i)_n
 
@@ -161,7 +174,7 @@ Step 1: Construct 3D vectors from rhythm values
 For tongue i at breath n:
   v_i(n) = (
     H^(i)_n mod 2^21,           // x-component
-    H^(i)_{n-1} mod 2^21,       // y-component  
+    H^(i)_{n-1} mod 2^21,       // y-component
     H^(i)_{n-2} mod 2^21        // z-component
   ) normalized to unit sphere
 
@@ -181,6 +194,7 @@ Step 3: Stability check
 ```
 
 ### Test Vector Results
+
 ```
 n | Δ_012 Clean | Δ_012 Perturbed | |Δ_diff| | Stable (ε=0.1)?
 --|-------------|-----------------|---------|----------------
@@ -192,6 +206,7 @@ n | Δ_012 Clean | Δ_012 Perturbed | |Δ_diff| | Stable (ε=0.1)?
 ```
 
 ### Security Properties
+
 - **Consensus Detection**: Δ_ijk ≈ 0 indicates coplanar vectors (degenerate state)
 - **Stability Monitoring**: Rapid changes in Δ_ijk signal anomalies
 - **Multi-tongue Verification**: Requires agreement across 3+ tongues
@@ -201,11 +216,13 @@ n | Δ_012 Clean | Δ_012 Perturbed | |Δ_diff| | Stable (ε=0.1)?
 ## Priority 4: CFI Token Generation in L14
 
 ### Problem Identified
+
 "Audio/Topological CFI" was metaphor without verification mechanics.
 
 ### Solution Implemented
 
 #### CFI Token Construction
+
 ```
 Purpose: Detect control-flow deviation in execution traces
 
@@ -225,11 +242,11 @@ Trace collection:
 
 Token generation:
   nonce = HKDF-Expand(session_key, "cfi-nonce", 16)
-  
+
   // Rolling hash chain
   h_0 = H(nonce)
   h_i = H(h_{i-1} || pc_i || target_i)  for i = 1..k
-  
+
   cfi_token = HMAC-SHA3-256(
     key = session_key,
     msg = h_k || breath_index || node_id
@@ -242,6 +259,7 @@ Verification:
 ```
 
 #### Octave Mapping (Optional Encoding Layer)
+
 ```
 Purpose: Format-preserving representation for side-channel resistance
 
@@ -253,6 +271,7 @@ Security reduces to the HMAC construction above.
 ```
 
 ### Implementation Status
+
 - ✅ CFI token generation with rolling hash chain
 - ✅ HMAC-based verification
 - ✅ Octave mapping as optional encoding (not security primitive)
@@ -263,11 +282,13 @@ Security reduces to the HMAC construction above.
 ## Priority 5: Clarify "Hybrid" or Remove It
 
 ### Problem Identified
+
 "RWP v3 Hybrid" didn't specify what's being hybridized.
 
 ### Solution Implemented: True PQC + Classical Hybrid
 
 #### Hybrid Key Agreement
+
 ```
 Rationale: Protect against PQC algorithm uncertainty
 
@@ -277,13 +298,13 @@ PQC component: ML-KEM-768
 Key schedule:
   ss_classical = X25519(sk_a, pk_b)
   ss_pqc = ML-KEM.Decaps(sk, ct)
-  
+
   combined_ss = HKDF-Extract(
     salt = "SCBE-hybrid-v1",
     IKM = ss_classical || ss_pqc
   )
 
-Security claim: 
+Security claim:
   Combined key is secure if EITHER X25519 OR ML-KEM remains unbroken.
 
 Downgrade prevention:
@@ -293,6 +314,7 @@ Downgrade prevention:
 ```
 
 ### Alternative: Pure PQC Suite
+
 ```
 If not doing classical hybridization:
 
@@ -301,11 +323,12 @@ If not doing classical hybridization:
   - ML-DSA-65 for signatures
   - HKDF-SHA3-256 for key derivation
   - AES-256-GCM for symmetric encryption
-  
+
 No classical components included.
 ```
 
 ### Implementation Status
+
 - ✅ Hybrid mode specified with X25519 + ML-KEM-768
 - ✅ Downgrade prevention mechanisms defined
 - ✅ Pure PQC alternative documented
@@ -315,11 +338,13 @@ No classical components included.
 ## Horadam Module Corrections
 
 ### Problem Identified
+
 Predictability concerns about Horadam sequences.
 
 ### Solution Implemented
 
 #### Horadam Security Considerations
+
 ```
 Seeds MUST be derived from secret material:
   (α_i, β_i) = HKDF-Expand(
@@ -346,6 +371,7 @@ Attack resistance:
 ### Test Vector Results
 
 #### Clean Sequences (No Drift)
+
 ```
 Tongue | α_i (hex)        | β_i (hex)        | H_0 ... H_5 (hex)
 -------|------------------|------------------|------------------
@@ -360,6 +386,7 @@ Norm δ(n): All 0.0000 (no drift)
 ```
 
 #### Perturbed Sequences (1% Start Noise)
+
 ```
 Tongue | δ_0      | δ_1      | δ_2      | δ_5      | δ_10     | δ_20     | δ_31
 -------|----------|----------|----------|----------|----------|----------|----------
@@ -387,11 +414,13 @@ Note: Drifts amplify ~φ^n; by n=31, norms ~10^18 (log to detect early)
 ## Proprietary Blocks: Security Framing
 
 ### Problem Identified
+
 "Symphonic Cipher" etc. treated as decorative without proper framing.
 
 ### Solution Implemented
 
 #### Security Model
+
 ```
 These are NOT cryptographic primitives. They are:
   1. Format-preserving encodings
@@ -401,7 +430,7 @@ These are NOT cryptographic primitives. They are:
 Security model:
   All security guarantees reduce to:
     - ML-KEM-768 (IND-CCA2)
-    - ML-DSA-65 (EUF-CMA)  
+    - ML-DSA-65 (EUF-CMA)
     - AES-256-GCM (IND-CPA + INT-CTXT)
     - HKDF-SHA3-256 (PRF security)
 
@@ -414,16 +443,19 @@ Proprietary transforms provide:
 #### Component Roles
 
 **SYMPHONIC CIPHER**
+
 - Role: Complex-domain representation of encrypted payloads
 - Applied: INSIDE AES-GCM envelope, not replacing it
 - Claim: Format transform, not cryptographic primitive
 
 **CYMATIC VOXEL STORAGE**
+
 - Role: 3D spatial encoding for storage/retrieval efficiency
 - Applied: To already-encrypted data
 - Claim: Storage optimization, not encryption
 
 **FLUX INTERACTION FRAMEWORK**
+
 - Role: Rate limiting and flow control based on trust metrics
 - Applied: At routing layer
 - Claim: Traffic engineering, not cryptography
@@ -433,6 +465,7 @@ Proprietary transforms provide:
 ## Missing Security Elements Added
 
 ### Replay Protection
+
 ```
 - Session nonces: 256-bit random, included in transcript
 - Timestamps: Checked within ±30 second window
@@ -440,6 +473,7 @@ Proprietary transforms provide:
 ```
 
 ### Key Lifecycle
+
 ```
 - Rotation: Automatic rekey every 2^20 messages or 24 hours
 - Ratcheting: Forward secrecy via DH ratchet every epoch
@@ -447,6 +481,7 @@ Proprietary transforms provide:
 ```
 
 ### Threat Model
+
 ```
 Adversary capabilities:
   1. Network adversary (observe, inject, modify, delay)
@@ -460,6 +495,7 @@ Out of scope:
 ```
 
 ### Audit Immutability
+
 ```
 - Merkle tree over audit log entries
 - Root signed by ML-DSA key
@@ -470,31 +506,33 @@ Out of scope:
 
 ## Layer Input/Output Table
 
-| Layer | Inputs | Outputs | Invariants |
-|-------|--------|---------|------------|
-| L1 | Raw intent, credentials | ctx vector | ctx well-formed |
-| L2 | ctx, kem_ct, dsa_pk | transcript hash | binding complete |
-| L3 | Base trust, H^(i)_n | 6D Langues vector | \|\|w\|\| ≤ 1 |
-| L4 | Clock, events | Breath index n | n monotonic |
-| L5 | State variables | Poincaré embedding x | \|\|x\|\| < 1 |
-| L6 | x, δ(n) | PHDM energy E | E bounded |
-| L7 | Encrypted payload | Spectral score | Score in [0,1] |
-| L8 | Behavior signals | Spin/phase encoding | Phase consistent |
-| L9 | Audio/spectral | Resonance match | Match above threshold |
-| L10 | v_i(n) vectors | Δ_ijk values | \|ΔΔ\| < ε |
-| L11 | All scores | Decision + attestation | Thresholds respected |
-| L12 | Transcript | Session keys | KEM/DSA valid |
-| L13 | Ω output, δ(n) | Route selection | Route exists |
-| L14 | Execution trace | CFI token | Token verifies |
+| Layer | Inputs                  | Outputs                | Invariants            |
+| ----- | ----------------------- | ---------------------- | --------------------- |
+| L1    | Raw intent, credentials | ctx vector             | ctx well-formed       |
+| L2    | ctx, kem_ct, dsa_pk     | transcript hash        | binding complete      |
+| L3    | Base trust, H^(i)\_n    | 6D Langues vector      | \|\|w\|\| ≤ 1         |
+| L4    | Clock, events           | Breath index n         | n monotonic           |
+| L5    | State variables         | Poincaré embedding x   | \|\|x\|\| < 1         |
+| L6    | x, δ(n)                 | PHDM energy E          | E bounded             |
+| L7    | Encrypted payload       | Spectral score         | Score in [0,1]        |
+| L8    | Behavior signals        | Spin/phase encoding    | Phase consistent      |
+| L9    | Audio/spectral          | Resonance match        | Match above threshold |
+| L10   | v_i(n) vectors          | Δ_ijk values           | \|ΔΔ\| < ε            |
+| L11   | All scores              | Decision + attestation | Thresholds respected  |
+| L12   | Transcript              | Session keys           | KEM/DSA valid         |
+| L13   | Ω output, δ(n)          | Route selection        | Route exists          |
+| L14   | Execution trace         | CFI token              | Token verifies        |
 
 ---
 
 ## Flux Continuity Equation Mapping
 
 ### Problem Identified
+
 Flux conservation needed network-level interpretation.
 
 ### Solution Implemented
+
 ```
 FLUX CONSERVATION IN NETWORK TERMS
 ──────────────────────────────────
@@ -525,6 +563,7 @@ Measurement:
 ## Implementation Status
 
 ### Completed ✅
+
 1. ✅ Context vector definition and serialization
 2. ✅ Transcript binding with SHA3-256
 3. ✅ Session key derivation via HKDF
@@ -537,12 +576,14 @@ Measurement:
 10. ✅ Security framing for proprietary blocks
 
 ### In Progress ⏳
+
 1. ⏳ Poincaré distance metric implementation
 2. ⏳ Omega decision function integration
 3. ⏳ CFI trace instrumentation
 4. ⏳ Flux continuity monitoring
 
 ### Pending 📋
+
 1. 📋 Full protocol specification with message flows
 2. 📋 Patent claims language
 3. 📋 Formal security proofs
@@ -553,6 +594,7 @@ Measurement:
 ## Test Vector Files
 
 ### Generated Files
+
 - `tests/test_horadam_transcript_vectors.py` - Complete test vector implementation
 - Test output demonstrates:
   - Deterministic Horadam sequence generation
@@ -563,6 +605,7 @@ Measurement:
   - Session key derivation
 
 ### Usage
+
 ```bash
 # Run test vector generation
 python tests/test_horadam_transcript_vectors.py
@@ -575,16 +618,19 @@ python tests/test_horadam_transcript_vectors.py
 ## Next Steps
 
 ### Option 1: Complete Protocol Specification
+
 - Message flows with state machines
 - Formal definitions for all layers
 - Security proofs for key properties
 
 ### Option 2: Patent Claims Language
+
 - Structured around novel combinations
 - Transcript binding + Horadam drift + hyperbolic decision geometry
 - Clear distinction from prior art
 
 ### Option 3: Additional Test Vectors ✅ COMPLETED
+
 - Horadam/transcript constructions
 - Implementation correctness demonstrations
 - Edge case coverage
@@ -594,18 +640,21 @@ python tests/test_horadam_transcript_vectors.py
 ## Security Properties Summary
 
 ### Cryptographic Foundations
+
 - **ML-KEM-768**: IND-CCA2 secure key encapsulation
 - **ML-DSA-65**: EUF-CMA secure signatures
 - **AES-256-GCM**: IND-CPA + INT-CTXT symmetric encryption
 - **HKDF-SHA3-256**: PRF-secure key derivation
 
 ### Novel Contributions
+
 - **Transcript Binding**: Cryptographic commitment to full session context
 - **Horadam Drift Detection**: One-way anomaly detection from recurrence mixing
 - **Triadic Consensus**: Multi-tongue stability verification
 - **Hyperbolic Decision Geometry**: Poincaré-based trust metrics
 
 ### Defense in Depth
+
 - Proprietary transforms provide additional layers (not primary security)
 - Forensic watermarking for audit trails
 - Side-channel resistant representations

@@ -15,13 +15,13 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpaceTorRouter = void 0;
-const trust_manager_1 = require("./trust-manager");
+const trust_manager_js_1 = require("./trust-manager.js");
 class SpaceTorRouter {
     nodes;
     trustManager;
     constructor(nodes, trustManager) {
         this.nodes = new Map(nodes.map((n) => [n.id, n]));
-        this.trustManager = trustManager || new trust_manager_1.TrustManager();
+        this.trustManager = trustManager || new trust_manager_js_1.TrustManager();
         // Initialize trust manager with node trust vectors
         for (const node of nodes) {
             if (node.trustVector) {

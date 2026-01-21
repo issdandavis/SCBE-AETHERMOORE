@@ -47,8 +47,8 @@ class PathHealthMonitor {
     getHealth(nodeIds) {
         const key = this.getPathKey(nodeIds);
         const history = this.pathHistory.get(key) || [];
-        const successCount = history.filter(h => h.success).length;
-        const failureCount = history.filter(h => !h.success).length;
+        const successCount = history.filter((h) => h.success).length;
+        const failureCount = history.filter((h) => !h.success).length;
         const totalLatency = history.reduce((sum, h) => sum + h.latencyMs, 0);
         return {
             pathId: key,
@@ -57,7 +57,7 @@ class PathHealthMonitor {
             successRate: history.length > 0 ? successCount / history.length : 1,
             averageLatencyMs: history.length > 0 ? totalLatency / history.length : 0,
             lastUsed: history.length > 0 ? history[history.length - 1].timestamp : 0,
-            nodeIds
+            nodeIds,
         };
     }
     /**
@@ -116,11 +116,11 @@ class CombatNetwork {
                 enabled: true,
                 timeoutMs: 30000, // 30 seconds default
                 maxRetries: 3,
-                ...config?.acknowledgment
+                ...config?.acknowledgment,
             },
             minDisjointPaths: 2,
             healthTrackingWindow: 100,
-            ...config
+            ...config,
         };
         this.healthMonitor = new PathHealthMonitor(this.config.healthTrackingWindow);
     }
@@ -141,10 +141,10 @@ class CombatNetwork {
             const paths = this.generateDisjointPaths(origin, dest, 70, this.config.minDisjointPaths);
             for (let i = 0; i < paths.length; i++) {
                 const pathId = i === 0 ? 'PRIMARY' : `BACKUP-${i}`;
-                console.log(`[COMBAT] Routing via ${pathId}: ${paths[i].map(n => n.id).join(' -> ')}`);
+                console.log(`[COMBAT] Routing via ${pathId}: ${paths[i].map((n) => n.id).join(' -> ')}`);
             }
             // Encrypt & Send in Parallel
-            const onions = await Promise.all(paths.map(path => this.crypto.buildOnion(payload, path)));
+            const onions = await Promise.all(paths.map((path) => this.crypto.buildOnion(payload, path)));
             // Dispatch with acknowledgment handling
             const transmissions = paths.map((path, i) => {
                 const pathId = i === 0 ? 'PRIMARY' : `BACKUP-${i}`;
@@ -156,7 +156,7 @@ class CombatNetwork {
         else {
             // Standard Routing
             const path = this.router.calculatePath(origin, dest, 50);
-            console.log(`[STANDARD] Routing via: ${path.map(n => n.id).join(' -> ')}`);
+            console.log(`[STANDARD] Routing via: ${path.map((n) => n.id).join(' -> ')}`);
             const onion = await this.crypto.buildOnion(payload, path);
             const result = await this.transmitWithAck(path, onion, 'STANDARD');
             results.push(result);
@@ -182,20 +182,20 @@ class CombatNetwork {
                 // Calculate path excluding all previously used nodes
                 const path = this.router.calculateDisjointPath(origin, dest, minTrust, usedNodes);
                 // Verify path health before using
-                const nodeIds = path.map(n => n.id);
+                const nodeIds = path.map((n) => n.id);
                 if (!this.healthMonitor.isHealthy(nodeIds)) {
                     console.warn(`[COMBAT] Path ${i + 1} has poor health, attempting alternative`);
                     // Try to find healthier alternative
                     const altPath = this.findHealthyAlternative(origin, dest, minTrust, usedNodes);
                     if (altPath) {
                         paths.push(altPath);
-                        altPath.forEach(n => usedNodes.add(n.id));
+                        altPath.forEach((n) => usedNodes.add(n.id));
                         continue;
                     }
                 }
                 paths.push(path);
                 // Mark all nodes in this path as used
-                path.forEach(node => usedNodes.add(node.id));
+                path.forEach((node) => usedNodes.add(node.id));
             }
             catch (error) {
                 if (i === 0) {
@@ -222,12 +222,12 @@ class CombatNetwork {
                 // Lower trust threshold slightly for alternatives
                 const adjustedTrust = Math.max(minTrust - attempt * 5, 30);
                 const path = this.router.calculateDisjointPath(origin, dest, adjustedTrust, excludeNodes);
-                const nodeIds = path.map(n => n.id);
+                const nodeIds = path.map((n) => n.id);
                 if (this.healthMonitor.isHealthy(nodeIds)) {
                     return path;
                 }
                 // Add unhealthy path nodes to exclusion for next attempt
-                path.forEach(n => excludeNodes.add(n.id));
+                path.forEach((n) => excludeNodes.add(n.id));
             }
             catch {
                 continue;
@@ -241,7 +241,7 @@ class CombatNetwork {
      * Enhancement #4: Acknowledgment handling with confirmation and retries
      */
     async transmitWithAck(path, packet, pathId) {
-        const nodeIds = path.map(n => n.id);
+        const nodeIds = path.map((n) => n.id);
         let retries = 0;
         let lastError;
         while (retries <= this.config.acknowledgment.maxRetries) {
@@ -255,7 +255,7 @@ class CombatNetwork {
                     return {
                         ...result,
                         acknowledged,
-                        retries
+                        retries,
                     };
                 }
                 // No ack required
@@ -279,7 +279,7 @@ class CombatNetwork {
             latencyMs: 0,
             acknowledged: false,
             retries,
-            error: lastError || 'Max retries exceeded'
+            error: lastError || 'Max retries exceeded',
         };
     }
     /**
@@ -301,7 +301,7 @@ class CombatNetwork {
                 pathId,
                 latencyMs: Date.now() - startTime,
                 acknowledged: false,
-                retries: 0
+                retries: 0,
             };
         }
         catch (error) {
@@ -311,7 +311,7 @@ class CombatNetwork {
                 latencyMs: Date.now() - startTime,
                 acknowledged: false,
                 retries: 0,
-                error: error instanceof Error ? error.message : 'Unknown error'
+                error: error instanceof Error ? error.message : 'Unknown error',
             };
         }
     }
@@ -319,7 +319,7 @@ class CombatNetwork {
      * Wait for acknowledgment from destination
      */
     waitForAck(pathId, timeoutMs) {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             const timeout = setTimeout(() => {
                 this.pendingAcks.delete(pathId);
                 resolve(false); // Timeout - no ack received
@@ -359,7 +359,7 @@ class CombatNetwork {
      * Sleep utility
      */
     sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
+        return new Promise((resolve) => setTimeout(resolve, ms));
     }
     // ============================================================================
     // Statistics & Monitoring (Enhancement #3)
@@ -374,14 +374,14 @@ class CombatNetwork {
                 totalNodes: 0,
                 quantumCapableNodes: 0,
                 averageLoad: 0,
-                averageTrust: 0
+                averageTrust: 0,
             };
         }
         return {
             totalNodes: nodes.length,
-            quantumCapableNodes: nodes.filter(n => n.quantumCapable).length,
+            quantumCapableNodes: nodes.filter((n) => n.quantumCapable).length,
             averageLoad: nodes.reduce((sum, n) => sum + n.load, 0) / nodes.length,
-            averageTrust: nodes.reduce((sum, n) => sum + n.trustScore, 0) / nodes.length
+            averageTrust: nodes.reduce((sum, n) => sum + n.trustScore, 0) / nodes.length,
         };
     }
     /**
