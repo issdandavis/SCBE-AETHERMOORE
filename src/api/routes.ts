@@ -365,9 +365,7 @@ export async function handleVerifyEnvelope(req: VerifyRequest): Promise<VerifyRe
     }
 
     // Decrypt
-    const plaintext = Buffer.from(
-      Buffer.from(ct).map((b, i) => b ^ key[i % 32])
-    ).toString('utf-8');
+    const plaintext = Buffer.from(Buffer.from(ct).map((b, i) => b ^ key[i % 32])).toString('utf-8');
 
     return {
       valid: true,

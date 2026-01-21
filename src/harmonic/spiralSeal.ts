@@ -282,7 +282,10 @@ async function hkdfDerive(
   // Note: Cast to ArrayBuffer for Web Crypto API compatibility
   const keyMaterial = await crypto.subtle.importKey(
     'raw',
-    masterSecret.buffer.slice(masterSecret.byteOffset, masterSecret.byteOffset + masterSecret.byteLength) as ArrayBuffer,
+    masterSecret.buffer.slice(
+      masterSecret.byteOffset,
+      masterSecret.byteOffset + masterSecret.byteLength
+    ) as ArrayBuffer,
     'HKDF',
     false,
     ['deriveBits']
@@ -328,11 +331,17 @@ async function aesGcmEncrypt(
     {
       name: 'AES-GCM',
       iv: nonce.buffer.slice(nonce.byteOffset, nonce.byteOffset + nonce.byteLength) as ArrayBuffer,
-      additionalData: aad.buffer.slice(aad.byteOffset, aad.byteOffset + aad.byteLength) as ArrayBuffer,
+      additionalData: aad.buffer.slice(
+        aad.byteOffset,
+        aad.byteOffset + aad.byteLength
+      ) as ArrayBuffer,
       tagLength: 128,
     },
     cryptoKey,
-    plaintext.buffer.slice(plaintext.byteOffset, plaintext.byteOffset + plaintext.byteLength) as ArrayBuffer
+    plaintext.buffer.slice(
+      plaintext.byteOffset,
+      plaintext.byteOffset + plaintext.byteLength
+    ) as ArrayBuffer
   );
 
   // Result includes ciphertext + tag (last 16 bytes)
@@ -374,11 +383,17 @@ async function aesGcmDecrypt(
     {
       name: 'AES-GCM',
       iv: nonce.buffer.slice(nonce.byteOffset, nonce.byteOffset + nonce.byteLength) as ArrayBuffer,
-      additionalData: aad.buffer.slice(aad.byteOffset, aad.byteOffset + aad.byteLength) as ArrayBuffer,
+      additionalData: aad.buffer.slice(
+        aad.byteOffset,
+        aad.byteOffset + aad.byteLength
+      ) as ArrayBuffer,
       tagLength: 128,
     },
     cryptoKey,
-    combined.buffer.slice(combined.byteOffset, combined.byteOffset + combined.byteLength) as ArrayBuffer
+    combined.buffer.slice(
+      combined.byteOffset,
+      combined.byteOffset + combined.byteLength
+    ) as ArrayBuffer
   );
 
   return new Uint8Array(result);

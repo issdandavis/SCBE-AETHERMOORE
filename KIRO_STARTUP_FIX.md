@@ -6,6 +6,7 @@
 ## Root Cause
 
 The Aurora DSQL power was installed but not configured with required AWS credentials:
+
 - `${CLUSTER}` - Aurora DSQL cluster identifier
 - `${REGION}` - AWS region (e.g., us-east-1)
 - `${AWS_PROFILE}` - AWS CLI profile name
@@ -23,6 +24,7 @@ Location: `~/.kiro/settings/mcp.json`
 ```
 
 ### PowerShell Command Used
+
 ```powershell
 $configPath = "$env:USERPROFILE\.kiro\settings\mcp.json"
 $config = Get-Content $configPath -Raw | ConvertFrom-Json
@@ -43,6 +45,7 @@ $config | ConvertTo-Json -Depth 10 | Set-Content $configPath
 To re-enable and configure:
 
 1. Set environment variables:
+
    ```bash
    # Windows PowerShell
    $env:CLUSTER = "your-cluster-id"
@@ -73,6 +76,7 @@ To re-enable and configure:
 ## Other Active Powers
 
 Your other powers should work fine:
+
 - ✓ GitKraken (git operations)
 - ✓ Figma (design integration)
 - ✓ Cloud Architect (AWS pricing, docs, API)

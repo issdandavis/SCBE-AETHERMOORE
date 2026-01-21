@@ -20,7 +20,7 @@ import {
   verifySpectralCoherenceBounds,
   checkPhaseInvariance,
   magnitudeSquared,
-  Complex
+  Complex,
 } from '../../src/spectral/index.js';
 
 describe('Layer 9: Spectral Coherence', () => {
@@ -49,7 +49,7 @@ describe('Layer 9: Spectral Coherence', () => {
         }
       }
 
-      const peakFreq = peakIndex * sampleRate / X.length;
+      const peakFreq = (peakIndex * sampleRate) / X.length;
 
       // Peak should be near the input frequency (within 2 Hz due to spectral leakage)
       expect(Math.abs(peakFreq - freq)).toBeLessThan(2);
@@ -58,7 +58,7 @@ describe('Layer 9: Spectral Coherence', () => {
     it('should satisfy conjugate symmetry for real signals', () => {
       const signal = generateTestSignal(1000, 0.5, [
         { freq: 10, amplitude: 1 },
-        { freq: 50, amplitude: 0.5 }
+        { freq: 50, amplitude: 0.5 },
       ]);
 
       const X = fft(signal);
@@ -81,7 +81,7 @@ describe('Layer 9: Spectral Coherence', () => {
     it('should conserve energy between time and frequency domains', () => {
       const signal = generateTestSignal(1000, 1, [
         { freq: 5, amplitude: 1 },
-        { freq: 200, amplitude: 0.3 }
+        { freq: 200, amplitude: 0.3 },
       ]);
 
       const X = fft(signal);
@@ -145,7 +145,7 @@ describe('Layer 9: Spectral Coherence', () => {
     it('should compute S_spec for mixed signal', () => {
       const signal = generateTestSignal(1000, 1, [
         { freq: 5, amplitude: 1 },
-        { freq: 200, amplitude: 0.3 }
+        { freq: 200, amplitude: 0.3 },
       ]);
       const result = computeSpectralCoherence(signal, 1000, 50);
 
@@ -157,7 +157,10 @@ describe('Layer 9: Spectral Coherence', () => {
     it('should always be bounded to [0, 1]', () => {
       fc.assert(
         fc.property(
-          fc.array(fc.double({ min: -10, max: 10, noNaN: true }), { minLength: 64, maxLength: 512 }),
+          fc.array(fc.double({ min: -10, max: 10, noNaN: true }), {
+            minLength: 64,
+            maxLength: 512,
+          }),
           fc.double({ min: 1, max: 500, noNaN: true }),
           (signal, cutoff) => {
             if (signal.length < 2) return true;
@@ -174,7 +177,7 @@ describe('Layer 9: Spectral Coherence', () => {
       const signal = generateTestSignal(1000, 1, [
         { freq: 10, amplitude: 1 },
         { freq: 100, amplitude: 0.5 },
-        { freq: 300, amplitude: 0.2 }
+        { freq: 300, amplitude: 0.2 },
       ]);
       const result = computeSpectralCoherence(signal, 1000, 50);
 
@@ -190,11 +193,15 @@ describe('Layer 9: Spectral Coherence', () => {
     it('should be invariant to phase shifts', () => {
       const components = [
         { freq: 5, amplitude: 1 },
-        { freq: 200, amplitude: 0.3 }
+        { freq: 200, amplitude: 0.3 },
       ];
 
       const { invariant, maxDifference } = checkPhaseInvariance(
-        1000, 1, components, 50, 0.01  // Allow 1% tolerance for windowing effects
+        1000,
+        1,
+        components,
+        50,
+        0.01 // Allow 1% tolerance for windowing effects
       );
 
       expect(invariant).toBe(true);
@@ -209,8 +216,12 @@ describe('Layer 9: Spectral Coherence', () => {
           fc.double({ min: 0, max: 2 * Math.PI, noNaN: true }),
           fc.double({ min: 0, max: 2 * Math.PI, noNaN: true }),
           (freq, amp, phase1, phase2) => {
-            const signal1 = generateTestSignal(1000, 0.5, [{ freq, amplitude: amp, phase: phase1 }]);
-            const signal2 = generateTestSignal(1000, 0.5, [{ freq, amplitude: amp, phase: phase2 }]);
+            const signal1 = generateTestSignal(1000, 0.5, [
+              { freq, amplitude: amp, phase: phase1 },
+            ]);
+            const signal2 = generateTestSignal(1000, 0.5, [
+              { freq, amplitude: amp, phase: phase2 },
+            ]);
 
             const result1 = computeSpectralCoherence(signal1, 1000, 50);
             const result2 = computeSpectralCoherence(signal2, 1000, 50);
@@ -236,7 +247,7 @@ describe('Layer 9: Spectral Coherence', () => {
       for (let lowAmp = 0.1; lowAmp <= 2.0; lowAmp += 0.3) {
         const signal = generateTestSignal(1000, 1, [
           { freq: 5, amplitude: lowAmp },
-          { freq: 200, amplitude: 1 }
+          { freq: 200, amplitude: 1 },
         ]);
         const result = computeSpectralCoherence(signal, 1000, cutoff);
         results.push(result.S_spec);
@@ -256,7 +267,7 @@ describe('Layer 9: Spectral Coherence', () => {
       for (let highAmp = 0.1; highAmp <= 2.0; highAmp += 0.3) {
         const signal = generateTestSignal(1000, 1, [
           { freq: 5, amplitude: 1 },
-          { freq: 200, amplitude: highAmp }
+          { freq: 200, amplitude: highAmp },
         ]);
         const result = computeSpectralCoherence(signal, 1000, cutoff);
         results.push(result.S_spec);
@@ -356,9 +367,7 @@ describe('Layer 9: Spectral Coherence', () => {
 
   describe('Numerical Stability', () => {
     it('should handle very small amplitudes', () => {
-      const signal = generateTestSignal(1000, 0.5, [
-        { freq: 10, amplitude: 1e-10 }
-      ]);
+      const signal = generateTestSignal(1000, 0.5, [{ freq: 10, amplitude: 1e-10 }]);
       const result = computeSpectralCoherence(signal, 1000, 50);
 
       expect(Number.isFinite(result.S_spec)).toBe(true);
@@ -366,9 +375,7 @@ describe('Layer 9: Spectral Coherence', () => {
     });
 
     it('should handle very large amplitudes', () => {
-      const signal = generateTestSignal(1000, 0.5, [
-        { freq: 10, amplitude: 1e6 }
-      ]);
+      const signal = generateTestSignal(1000, 0.5, [{ freq: 10, amplitude: 1e6 }]);
       const result = computeSpectralCoherence(signal, 1000, 50);
 
       expect(Number.isFinite(result.S_spec)).toBe(true);
@@ -378,7 +385,7 @@ describe('Layer 9: Spectral Coherence', () => {
     it('should produce consistent results across multiple runs', () => {
       const signal = generateTestSignal(1000, 1, [
         { freq: 25, amplitude: 1 },
-        { freq: 175, amplitude: 0.5 }
+        { freq: 175, amplitude: 0.5 },
       ]);
 
       const results = [];
@@ -402,7 +409,7 @@ describe('Layer 9 Mathematical Properties Summary', () => {
   it('AC-9.1: Parseval theorem holds', () => {
     const signal = generateTestSignal(1000, 1, [
       { freq: 5, amplitude: 1 },
-      { freq: 200, amplitude: 0.3 }
+      { freq: 200, amplitude: 0.3 },
     ]);
     const X = fft(signal);
     const { relativeError } = verifyParseval(signal, X);
@@ -420,10 +427,14 @@ describe('Layer 9 Mathematical Properties Summary', () => {
 
   it('AC-9.3: S_spec is phase-invariant', () => {
     const { invariant, maxDifference } = checkPhaseInvariance(
-      1000, 1,
-      [{ freq: 20, amplitude: 1 }, { freq: 150, amplitude: 0.5 }],
+      1000,
+      1,
+      [
+        { freq: 20, amplitude: 1 },
+        { freq: 150, amplitude: 0.5 },
+      ],
       50,
-      0.01  // Allow 1% tolerance for windowing effects
+      0.01 // Allow 1% tolerance for windowing effects
     );
     expect(invariant).toBe(true);
     expect(maxDifference).toBeLessThan(0.01);
@@ -432,7 +443,7 @@ describe('Layer 9 Mathematical Properties Summary', () => {
   it('AC-9.4: Energy partition is complete (E_total = E_low + E_high)', () => {
     const signal = generateTestSignal(1000, 1, [
       { freq: 10, amplitude: 2 },
-      { freq: 200, amplitude: 1 }
+      { freq: 200, amplitude: 1 },
     ]);
     const result = computeSpectralCoherence(signal, 1000, 50);
 
@@ -443,7 +454,7 @@ describe('Layer 9 Mathematical Properties Summary', () => {
     const lowOnly = generateTestSignal(1000, 0.5, [{ freq: 10, amplitude: 1 }]);
     const mixed = generateTestSignal(1000, 0.5, [
       { freq: 10, amplitude: 1 },
-      { freq: 200, amplitude: 1 }
+      { freq: 200, amplitude: 1 },
     ]);
     const highOnly = generateTestSignal(1000, 0.5, [{ freq: 200, amplitude: 1 }]);
 

@@ -22,17 +22,20 @@
 ### 1. **Dual-Lattice KEM+DSA Design is Real**
 
 The RWP v3.0 specification defines a **genuine hybrid construction**:
+
 - ML-KEM-768 for key encapsulation (lattice-based)
 - ML-DSA-65 for digital signatures (lattice-based)
 - Classical HMAC-SHA256 as fallback
 - Belt-and-suspenders: both must verify
 
 **Why This Matters**:
+
 - Matches NIST PQC direction (FIPS 203, 204, 205)
 - Architecturally sound (not hand-wavy)
 - Security analysis is mathematically correct (128-bit quantum security)
 
 **Current Status**:
+
 - ✅ Complete specification with exact algorithms
 - ✅ Reference implementation demonstrates feasibility
 - ⚠️ Using HMAC placeholders (not real ML-KEM/ML-DSA yet)
@@ -45,21 +48,24 @@ The RWP v3.0 specification defines a **genuine hybrid construction**:
 Not just theory - these are **executable Python/TypeScript programs**:
 
 #### A. 14-Layer SCBE Simulation (`harmonic_scaling_law.py`)
+
 ```python
 # Real code that executes:
 for layer in range(1, 15):
     output = layer_function(input_data, params)
     verify_invariants(output)
-    
+
 # Produces: numerical outputs, risk curves, layer interactions
 ```
 
-**Evidence**: 
+**Evidence**:
+
 - File exists in repo
 - Can be independently run
 - Outputs match theoretical predictions
 
 #### B. Symphonic Cipher + Harmonic Verification
+
 ```python
 # Real Feistel + FFT + HMAC pipeline:
 v_permuted = feistel_permute(token_ids, K_msg, rounds=4)
@@ -68,11 +74,13 @@ envelope = hmac_sign(waveform, k_master)
 ```
 
 **Evidence**:
+
 - Reference implementation in `.kiro/specs/rwp-v2-integration/HARMONIC_VERIFICATION_SPEC.md`
 - Monte Carlo testing performed
 - FFT verification passes
 
 #### C. Layer 9 Spectral Coherence (`SCBE_LAYER9_CORRECTED_PROOF.py`)
+
 ```python
 # Parseval's theorem verification:
 time_energy = np.sum(np.abs(x)**2)
@@ -81,6 +89,7 @@ assert np.isclose(time_energy, freq_energy, rtol=1e-5)
 ```
 
 **Evidence**:
+
 - Executable Python with numpy/scipy
 - Numerical proof of energy conservation
 - Can be independently verified
@@ -90,12 +99,14 @@ assert np.isclose(time_energy, freq_energy, rtol=1e-5)
 ### 3. **Architecture is Coherent**
 
 The 14-layer stack isn't arbitrary - each layer has:
+
 - **Mathematical definition** (formulas, not prose)
 - **Integration points** (how layers connect)
 - **Numerical verification** (simulations that run)
 - **Security properties** (what each layer provides)
 
 **Example - Layer 3 (Langues Weighting)**:
+
 ```
 Mathematical Definition:
 L(x,t) = Σ(l=1 to 6) w_l * exp[β_l * (d_l + sin(ω_l*t + φ_l))]
@@ -120,21 +131,25 @@ Security Property:
 ## What's NOT Real (Honest Assessment)
 
 ### ❌ Real NIST PQC Libraries
+
 - Not using liboqs-python or liboqs-c
 - HMAC-SHA256 placeholders instead of ML-KEM/ML-DSA
 - **Timeline**: Q2 2026
 
 ### ❌ Quantum Hardware Integration
+
 - No real QKD (BB84, E91)
 - Algorithmic key derivation (π^φ) as placeholder
 - **Timeline**: Hardware-dependent
 
 ### ❌ Third-Party Audits
+
 - No SOC 2, ISO 27001, FIPS 140-3, Common Criteria
 - Self-verified only
 - **Timeline**: Requires funding + production deployment
 
 ### ❌ Production Deployment
+
 - No live system with real users
 - No operational metrics
 - **Timeline**: Q3-Q4 2026
@@ -144,6 +159,7 @@ Security Property:
 ## Honest Phrasing Guide
 
 ### ✅ GOOD (Accurate)
+
 - "RWP v3.0 **specification** defines ML-KEM-768 + ML-DSA-65 hybrid construction"
 - "**Reference implementation** demonstrates feasibility"
 - "Mathematical foundations **numerically verified** in simulations"
@@ -151,6 +167,7 @@ Security Property:
 - "PHDM **uses** 16 canonical polyhedra for intrusion detection"
 
 ### ❌ BAD (Misleading)
+
 - "RWP v3.0 **is production-ready** with NIST PQC"
 - "System **is SOC 2 certified**"
 - "All 41 enterprise properties **verified**"
@@ -158,6 +175,7 @@ Security Property:
 - "**Deployed** with real users"
 
 ### ⚠️ QUALIFIED (Acceptable with Context)
+
 - "RWP v3.0 **designed for** ML-KEM-768 + ML-DSA-65 (integration planned Q2 2026)"
 - "System **implements** SOC 2 controls (third-party audit pending)"
 - "Enterprise testing **framework** supports 41 properties (full implementation Q3 2026)"
@@ -168,6 +186,7 @@ Security Property:
 ## What External Reviewers Will Find
 
 ### ✅ In the Repos (Verifiable)
+
 - Multiple repositories with consistent structure
 - Mathematical specifications with formulas
 - Working TypeScript and Python code
@@ -176,6 +195,7 @@ Security Property:
 - Documentation matching code
 
 ### ❌ NOT in the Repos (Missing)
+
 - liboqs integration
 - SOC 2 / ISO 27001 / FIPS paperwork
 - Third-party audit reports
@@ -187,34 +207,37 @@ Security Property:
 
 ## Capability Matrix
 
-| Component | Math | Spec | Prototype | Production | Audited |
-|-----------|------|------|-----------|------------|---------|
-| RWP v2.1 | ✅ | ✅ | ✅ | ✅ | ❌ |
-| RWP v3.0 PQC | ✅ | ✅ | ✅ | ❌ | ❌ |
-| Space Tor | ✅ | ✅ | ✅ | ❌ | ❌ |
-| Trust Manager | ✅ | ✅ | ✅ | ✅ | ❌ |
-| PHDM | ✅ | ✅ | ✅ | ❌ | ❌ |
-| Symphonic Cipher | ✅ | ✅ | ✅ | ❌ | ❌ |
-| Physics Sim | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Enterprise Tests | ✅ | ✅ | ⚠️ | ❌ | ❌ |
+| Component        | Math | Spec | Prototype | Production | Audited |
+| ---------------- | ---- | ---- | --------- | ---------- | ------- |
+| RWP v2.1         | ✅   | ✅   | ✅        | ✅         | ❌      |
+| RWP v3.0 PQC     | ✅   | ✅   | ✅        | ❌         | ❌      |
+| Space Tor        | ✅   | ✅   | ✅        | ❌         | ❌      |
+| Trust Manager    | ✅   | ✅   | ✅        | ✅         | ❌      |
+| PHDM             | ✅   | ✅   | ✅        | ❌         | ❌      |
+| Symphonic Cipher | ✅   | ✅   | ✅        | ❌         | ❌      |
+| Physics Sim      | ✅   | ✅   | ✅        | ✅         | ❌      |
+| Enterprise Tests | ✅   | ✅   | ⚠️        | ❌         | ❌      |
 
 ---
 
 ## Why This Matters
 
 ### For Technical Reviewers
+
 - **Math is solid**: Can independently verify simulations
 - **Architecture is coherent**: Not random buzzwords
 - **Prototypes work**: Can run the code
 - **Honest about gaps**: Clear what's not done yet
 
 ### For Investors
+
 - **Real technical foundation**: Not vaporware
 - **Clear roadmap**: Knows what's needed for production
 - **Transparent**: Honest about current state
 - **Credible**: Won't overpromise
 
 ### For Collaborators
+
 - **Can build on this**: Specs are complete
 - **Can verify claims**: Simulations are executable
 - **Can contribute**: Clear what needs work
@@ -225,6 +248,7 @@ Security Property:
 ## Bottom Line
 
 **SCBE-AETHERMOORE v4.0 is**:
+
 - ✅ Mathematically sound
 - ✅ Well-specified
 - ✅ Prototype-stage
@@ -233,12 +257,14 @@ Security Property:
 - ❌ Not audited yet
 
 **It's more than vibes because**:
+
 1. Dual-lattice KEM+DSA design is architecturally sound
 2. Simulations actually ran and produced consistent results
 3. Reference implementations demonstrate feasibility
 4. Mathematical foundations are verifiable
 
 **It's honest because**:
+
 1. Clear about what's implemented vs. planned
 2. Doesn't claim audits that haven't happened
 3. Transparent about using placeholders

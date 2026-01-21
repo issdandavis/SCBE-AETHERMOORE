@@ -1,10 +1,10 @@
 /**
  * RWP v2.1 Multi-Signature Envelopes - Tests
  * ===========================================
- * 
+ *
  * Feature: rwp-v2-integration
  * Validates: Requirements AC-2.1.1 through AC-2.6.6
- * 
+ *
  * @module tests/spiralverse/rwp
  */
 
