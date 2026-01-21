@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-Based on USPTO simulation feedback, code reviews, and mathematical proofs audit, the following critical improvements have been identified to strengthen patent claims, address architectural vulnerabilities, and "de-metaphysicize" scientifically problematic claims.
+Based on USPTO simulation feedback, code reviews, and mathematical proofs audit, critical improvements have been identified to strengthen patent claims, address architectural vulnerabilities, and "de-metaphysicize" scientifically problematic claims. Five items are listed below, with one already implemented and four requiring action.
 
 **Key Finding**: The math is valid, but physics metaphors trigger § 101 (Abstract Idea) and § 112 (Enablement) rejections.
 

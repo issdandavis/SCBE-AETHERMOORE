@@ -306,7 +306,20 @@ def layer_4_poincare_embedding(x_G: np.ndarray, alpha: float = 1.0,
 
 **Formula**:
 ```
-B(p, t) = tanh(‖p‖ + A·sin(ωt)) · p/‖p‖
+Layer 14: Audio Axis (Topological CFI)
+Layer 13: Anti-Fragile (Self-Healing)
+Layer 12: Quantum (ML-KEM-768 + ML-DSA-65)
+Layer 11: Decision (Adaptive Security)
+Layer 10: Triadic (Three-way Verification)
+Layer  9: Harmonic (Resonance Security)
+Layer  8: Spin (Quantum Spin States)
+Layer  7: Spectral (Frequency Domain)
+Layer  6: Potential (Energy-Based Security)
+Layer  5: Phase (Phase Space Encryption)
+Layer  4: Breath (Temporal Dynamics)
+Layer  3: Metric (Langue Weighting)
+Layer  2: Context (Contextual Encryption)
+Layer  1: Foundation (Mathematical Axioms)
 ```
 
 Where:
@@ -466,7 +479,9 @@ def layer_11_triadic_temporal(d1: float, d2: float, dG: float,
     return min(1.0, d_tri / d_scale)
 ```
 
+## 2.4 Layer 3: Metric (Langue Weighting System)
 
+The Langue Weighting System provides 6D trust scoring across Sacred Tongues.
 
 ### Layer 13: Risk Decision
 
@@ -2785,7 +2800,14 @@ MIT License - See LICENSE file for details.
 
 ---
 
-# Appendix: Complete Code Listings
+| Claim | Description                  | Implementation                  |
+| ----- | ---------------------------- | ------------------------------- |
+| 1-5   | 14-Layer SCBE Architecture   | `src/scbe/pipeline.ts`          |
+| 6-10  | Langue Weighting System     | `src/spaceTor/trust-manager.ts` |
+| 11-15 | Sacred Tongue Encoding       | `src/crypto/sacred_tongues.py`  |
+| 16-20 | PHDM Intrusion Detection     | `src/harmonic/phdm.ts`          |
+| 21-25 | Harmonic Scaling Law         | `src/symphonic/harmonic.ts`     |
+| 26-30 | Phase-Coupled Dimensionality | `src/scbe/layers/spin.ts`       |
 
 This enablement document provides all necessary mathematical foundations, algorithms, and implementation details to recreate the SCBE-AETHERMOORE system from scratch. All code is production-ready and tested with 1,100+ passing tests.
 
