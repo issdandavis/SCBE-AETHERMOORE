@@ -54,7 +54,7 @@ def test_atmosphere():
     assert_close(T_sl, 288.15, 0.001, "Sea level temperature")
     assert_close(P_sl, 101325, 0.001, "Sea level pressure")
     assert_close(rho_sl, 1.225, 0.01, "Sea level density")
-    print(f"  [OK] Sea level: T={T_sl:.2f}K, P={P_sl:.0f}Pa, ρ={rho_sl:.3f}kg/m^3")
+    print(f"  [OK] Sea level: T={T_sl:.2f}K, P={P_sl:.0f}Pa, rho={rho_sl:.3f}kg/m^3")
 
     # Test 2: Tropopause (11 km)
     T_11 = isa_temperature(11000)
@@ -96,13 +96,13 @@ def test_fluids():
     )
 
     # Test 1: Reynolds number
-    # Water in pipe: V=1m/s, D=0.1m, ρ=1000kg/m^3, μ=0.001Pa·s
+    # Water in pipe: V=1m/s, D=0.1m, rho=1000kg/m^3, mu=0.001Pa*s
     Re = reynolds_number(1.0, 0.1, 1000, 0.001)
     assert_close(Re, 100000, 0.01, "Reynolds number")
     print(f"  [OK] Reynolds number (pipe flow): Re={Re:.0f}")
 
     # Test 2: Drag force
-    # Sphere in air: Cd=0.47, ρ=1.225, V=10m/s, A=0.01m^2
+    # Sphere in air: Cd=0.47, rho=1.225, V=10m/s, A=0.01m^2
     D = drag_force(0.47, 1.225, 10, 0.01)
     expected_D = 0.5 * 0.47 * 1.225 * 100 * 0.01
     assert_close(D, expected_D, 0.001, "Drag force")
@@ -126,7 +126,7 @@ def test_fluids():
     # At Mach 1, P/P0 = 0.5283 for γ=1.4
     P_ratio = isentropic_pressure_ratio(1.0)
     assert_close(P_ratio, 0.5283, 0.01, "Isentropic pressure ratio at M=1")
-    print(f"  [OK] Isentropic P/P₀ at M=1: {P_ratio:.4f}")
+    print(f"  [OK] Isentropic P/P0 at M=1: {P_ratio:.4f}")
 
     print("\n[OK] All fluid dynamics tests passed")
 
@@ -167,9 +167,9 @@ def test_orbital():
     r1 = RADIUS_EARTH + 400000   # LEO
     r2 = 42164000                 # GEO
     transfer = hohmann_transfer(r1, r2, MU_EARTH)
-    # Total ΔV for LEO->GEO ~ 3.9 km/s
-    assert_close(transfer['delta_v_total_m_s'] / 1000, 3.9, 0.1, "Hohmann ΔV")
-    print(f"  [OK] Hohmann LEO->GEO: ΔV={transfer['delta_v_total_m_s']/1000:.2f} km/s")
+    # Total Delta_V for LEO->GEO ~ 3.9 km/s
+    assert_close(transfer['delta_v_total_m_s'] / 1000, 3.9, 0.1, "Hohmann Delta_V")
+    print(f"  [OK] Hohmann LEO->GEO: Delta_V={transfer['delta_v_total_m_s']/1000:.2f} km/s")
 
     # Test 5: Comprehensive orbital mechanics
     orbit = orbital_mechanics({
@@ -222,7 +222,7 @@ def test_nuclear():
     })
     assert 'binding_energy_MeV' in nuc
     assert 'decay_constant_per_s' in nuc
-    print(f"  [OK] U-235: B={nuc['binding_energy_MeV']:.1f} MeV, λ={nuc['decay_constant_per_s']:.2e}/s")
+    print(f"  [OK] U-235: B={nuc['binding_energy_MeV']:.1f} MeV, lambda={nuc['decay_constant_per_s']:.2e}/s")
 
     print("\n[OK] All nuclear physics tests passed")
 
@@ -315,10 +315,10 @@ def test_waves_optics():
     print(f"  [OK] Thin lens: d_o=30cm, f=10cm -> d_i={lens['image_distance_m']*100:.0f}cm")
 
     # Test 4: Young's double slit fringe spacing
-    # λ=500nm, d=0.1mm, L=1m -> Δy=5mm
+    # lambda=500nm, d=0.1mm, L=1m -> Delta_y=5mm
     dy = young_fringe_spacing(500e-9, 0.1e-3, 1.0)
     assert_close(dy * 1000, 5.0, 0.01, "Young's fringe spacing")
-    print(f"  [OK] Young's double slit: Δy={dy*1000:.1f}mm")
+    print(f"  [OK] Young's double slit: Delta_y={dy*1000:.1f}mm")
 
     # Test 5: Sound speed in air
     v_sound = sound_speed_air(20)  # 20degC
@@ -356,10 +356,10 @@ def test_numerical():
     assert_close(root, math.sqrt(2), 1e-10, "Newton-Raphson root finding")
     print(f"  [OK] Newton-Raphson: sqrt2 = {root:.12f} ({iters} iterations)")
 
-    # Test 3: Simpson integration (∫sin(x)dx from 0 to pi = 2)
+    # Test 3: Simpson integration (integralsin(x)dx from 0 to pi = 2)
     integral = simpson_rule(math.sin, 0, math.pi, n=100)
     assert_close(integral, 2.0, 1e-6, "Simpson integration")
-    print(f"  [OK] Simpson: ∫sin(x)dx = {integral:.10f}")
+    print(f"  [OK] Simpson: integralsin(x)dx = {integral:.10f}")
 
     # Test 4: RK4 ODE solver (simple harmonic oscillator)
     # x'' = -x, solution: x(t) = cos(t) for x(0)=1, v(0)=0
@@ -447,7 +447,7 @@ def test_simulator():
     # Momentum should be conserved
     dp = sum((p_initial[i] - p_final[i])**2 for i in range(3))**0.5
     assert dp < 1e-10, f"Momentum conservation error: {dp}"
-    print(f"  [OK] Momentum conservation: Δp = {dp:.2e}")
+    print(f"  [OK] Momentum conservation: Delta_p = {dp:.2e}")
 
     print("\n[OK] All simulator tests passed")
 
