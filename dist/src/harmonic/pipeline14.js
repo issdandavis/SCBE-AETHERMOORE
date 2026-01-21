@@ -520,7 +520,11 @@ function scbe14LayerPipeline(t, config = {}) {
     // === LAYER 12: Harmonic Scaling ===
     const l12_harmonic = layer12HarmonicScaling(l8_realmDist, R);
     // === Compute Base Risk ===
-    const riskBase = wD * l8_realmDist + wC * (1 - l9_spectral) + wS * (1 - l10_spin) + wTau * l11_triadic + wA * 0.5;
+    const riskBase = wD * l8_realmDist +
+        wC * (1 - l9_spectral) +
+        wS * (1 - l10_spin) +
+        wTau * l11_triadic +
+        wA * 0.5;
     // === LAYER 13: Risk Decision ===
     const { decision: l13_decision, riskPrime } = layer13RiskDecision(riskBase, l12_harmonic, theta1, theta2);
     // === LAYER 14: Audio Axis ===

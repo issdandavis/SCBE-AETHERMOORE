@@ -34,8 +34,8 @@ env:
 jobs:
   sync-to-gumroad:
     runs-on: ubuntu-latest
-    if: (github.event_name == 'push' || github.event.inputs.sync_direction != 'from-gumroad') && secrets.CROSS_REPO_TOKEN != ''
-
+    if: (github.event_name == 'push' || github.event.inputs.sync_direction != 'from-gumroad') 
+    
     steps:
       - name: Checkout scbe-aethermoore-demo
         uses: actions/checkout@v4
@@ -54,39 +54,39 @@ jobs:
       - name: Sync symphonic_cipher to gumroad
         run: |
           echo "🔄 Syncing SCBE components to gumroad-automation-demo"
-
+          
           # Create sync directory
           mkdir -p target/.sync
           mkdir -p target/scbe_aethermoore
-
+          
           # Sync symphonic_cipher
           if [ -d "source/symphonic_cipher" ]; then
             mkdir -p target/symphonic_cipher
             rsync -av source/symphonic_cipher/ target/symphonic_cipher/
             echo "✅ Synced symphonic_cipher/"
           fi
-
+          
           # Sync src (core SCBE code)
           if [ -d "source/src" ]; then
             mkdir -p target/scbe_aethermoore/src
             rsync -av source/src/ target/scbe_aethermoore/src/
             echo "✅ Synced src/"
           fi
-
+          
           # Sync demo content for SELLABLE_PACKAGES
           if [ -d "source/demo" ]; then
             mkdir -p target/SELLABLE_PACKAGES/scbe-demo-latest
             rsync -av source/demo/ target/SELLABLE_PACKAGES/scbe-demo-latest/
             echo "✅ Synced demo to SELLABLE_PACKAGES"
           fi
-
+          
           # Sync docs
           if [ -d "source/docs" ]; then
             mkdir -p target/scbe_aethermoore/docs
             rsync -av source/docs/ target/scbe_aethermoore/docs/
             echo "✅ Synced docs/"
           fi
-
+          
           # Create version manifest
           echo '{"source": "scbe-aethermoore-demo", "version": "3.0.0", "timestamp": "'$(date -Iseconds)'", "commit": "${{ github.sha }}"}' > target/scbe_aethermoore/VERSION.json
 
@@ -112,25 +112,25 @@ jobs:
     runs-on: ubuntu-latest
     needs: [sync-to-gumroad]
     if: success()
-
+    
     steps:
       - name: Checkout gumroad-automation-demo
         uses: actions/checkout@v4
         with:
           repository: ${{ env.TARGET_REPO }}
           token: ${{ secrets.CROSS_REPO_TOKEN }}
-
+          
       - name: Update SCBE package in SELLABLE_PACKAGES
         run: |
           echo "📦 Updating SELLABLE_PACKAGES with latest SCBE"
-
+          
           # Update distribution info
           if [ -f "SELLABLE_PACKAGES/distribution_info.json" ]; then
             # Add SCBE entry to distribution
             jq '.packages += [{"name": "scbe-aethermoore-v3.0", "source": "scbe-aethermoore-demo", "updated": "'$(date -Iseconds)'"}]' \
               SELLABLE_PACKAGES/distribution_info.json > tmp.json && mv tmp.json SELLABLE_PACKAGES/distribution_info.json
           fi
-
+          
       - name: Commit distribution update
         run: |
           git config user.name "GitHub Actions Bot"
@@ -147,7 +147,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [sync-to-gumroad, update-sellable-packages]
     if: always()
-
+    
     steps:
       - name: Generate sync report
         run: |

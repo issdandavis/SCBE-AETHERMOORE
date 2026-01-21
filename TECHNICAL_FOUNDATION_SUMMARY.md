@@ -14,6 +14,7 @@
 **Specification**: `.kiro/specs/rwp-v2-integration/requirements-v2.1-rigorous.md`
 
 **What It Does** (Software-Only):
+
 - HMAC-SHA256 multi-signature envelopes
 - Nonce-based replay protection (60s window)
 - Per-tongue key derivation (domain separation)
@@ -21,12 +22,14 @@
 - Constant-time signature comparison
 
 **Real Security** (Provable):
+
 - ✅ Integrity: HMAC-SHA256 (FIPS 198-1)
 - ✅ Replay protection: Nonce + timestamp + LRU cache
 - ✅ Multi-party authorization: Requires N of 6 signatures
 - ✅ Timing attack resistance: Constant-time comparison
 
 **Test Evidence**:
+
 ```bash
 npm test -- tests/spiralverse/rwp.test.ts
 pytest tests/test_sacred_tongue_integration.py
@@ -42,6 +45,7 @@ pytest tests/test_sacred_tongue_integration.py
 **Reference Implementation**: Pseudocode provided
 
 **What It Does** (Software-Only):
+
 1. **Private Dictionary**: Tokens → numeric IDs (obscures meaning)
 2. **Modality Flag**: Intent class (STRICT, ADAPTIVE, PROBE)
 3. **Feistel Permutation**: 4-round keyed permutation (hides token order)
@@ -49,6 +53,7 @@ pytest tests/test_sacred_tongue_integration.py
 5. **RWP v3 Envelope**: HMAC-signed JSON with replay protection
 
 **Real Security** (Provable):
+
 - ✅ Lexical obscurity: Private dictionary (security by obscurity)
 - ✅ Structural ambiguity: Keyed permutation (cryptographic)
 - ✅ Intent separation: Modality flag (deterministic)
@@ -56,6 +61,7 @@ pytest tests/test_sacred_tongue_integration.py
 - ✅ Envelope integrity: HMAC-SHA256 (cryptographic)
 
 **What It's NOT**:
+
 - ❌ NOT physics-based security (no hardness proof)
 - ❌ NOT quantum-resistant (uses HMAC-SHA256)
 - ❌ Audio is second factor, not primary protection
@@ -73,18 +79,21 @@ pytest tests/test_sacred_tongue_integration.py
 **Tests**: `tests/spaceTor/trust-manager.test.ts`
 
 **What It Does** (Software-Only):
+
 - 3D spatial pathfinding (minimizes distance × latency)
 - Trust scoring across 6 domains (Langues Weighting)
 - Multipath routing for redundancy (combat mode)
 - Pre-synchronized keys (reduces handshake round-trips)
 
 **Real Security** (Provable):
+
 - ✅ Reduces interactive handshakes (fewer round-trips)
 - ✅ Store-and-forward tolerates delays (DTN-style)
 - ✅ Multipath redundancy (reliability)
 - ✅ Trust-based node selection (6D scoring)
 
 **What It's NOT**:
+
 - ❌ NOT "zero latency" (physics: 4-24 min Earth↔Mars)
 - ❌ NOT quantum key distribution (no real QKD hardware)
 - ❌ Algorithmic key derivation, not quantum entanglement
@@ -102,22 +111,26 @@ pytest tests/test_sacred_tongue_integration.py
 **Tests**: `tests/harmonic/phdm.test.ts`
 
 **What It Does** (Software-Only):
+
 - 16 canonical polyhedra (geometric anomaly detection)
 - 6D geodesic distance metrics (Hamiltonian path)
 - HMAC chaining for path integrity
 - Real-time anomaly scoring
 
 **Real Security** (Provable):
+
 - ✅ Geometric anomaly detection (rule-based)
 - ✅ Path integrity verification (HMAC chaining)
 - ✅ 6D distance metrics (mathematical)
 
 **Measured Performance** (Synthetic Dataset):
+
 - TPR: 87% at FPR 5%
 - Detection latency: 0.2ms (p95)
 - Dataset: 1,000 normal + 100 anomaly samples
 
 **What It's NOT**:
+
 - ❌ NOT tested on real-world attack data
 - ❌ NOT ML-based (rule-based only)
 - ❌ NOT integrated with SIEM systems
@@ -133,15 +146,15 @@ pytest tests/test_sacred_tongue_integration.py
 
 ### Threat Model
 
-| Threat | Mitigation | Provable? |
-|--------|-----------|-----------|
-| **Eavesdropping** | Private dictionary + keyed permutation | ✅ Yes (cryptographic) |
-| **Replay** | Nonce + timestamp + LRU cache | ✅ Yes (standard practice) |
-| **Tampering** | HMAC-SHA256 integrity | ✅ Yes (FIPS 198-1) |
-| **Impersonation** | Multi-signature policy (N of 6) | ✅ Yes (cryptographic) |
-| **Partial knowledge** | Feistel permutation (keyed) | ✅ Yes (cryptographic) |
-| **Audio-only attack** | Overtone pattern verification | ⚠️ Second factor (not primary) |
-| **Quantum attacks** | HMAC-SHA256 (128-bit vs Grover) | ⚠️ Classical only (PQC planned) |
+| Threat                | Mitigation                             | Provable?                       |
+| --------------------- | -------------------------------------- | ------------------------------- |
+| **Eavesdropping**     | Private dictionary + keyed permutation | ✅ Yes (cryptographic)          |
+| **Replay**            | Nonce + timestamp + LRU cache          | ✅ Yes (standard practice)      |
+| **Tampering**         | HMAC-SHA256 integrity                  | ✅ Yes (FIPS 198-1)             |
+| **Impersonation**     | Multi-signature policy (N of 6)        | ✅ Yes (cryptographic)          |
+| **Partial knowledge** | Feistel permutation (keyed)            | ✅ Yes (cryptographic)          |
+| **Audio-only attack** | Overtone pattern verification          | ⚠️ Second factor (not primary)  |
+| **Quantum attacks**   | HMAC-SHA256 (128-bit vs Grover)        | ⚠️ Classical only (PQC planned) |
 
 ### What Adds Real Security
 
@@ -250,6 +263,7 @@ pytest tests/test_sacred_tongue_integration.py
 **Honest Claim Structure**:
 
 "A method for intent-modulated authentication comprising:
+
 1. A private dictionary mapping lexical tokens to numeric identifiers
 2. A modality flag indicating intent class
 3. A keyed Feistel permutation of token identifiers
@@ -257,12 +271,14 @@ pytest tests/test_sacred_tongue_integration.py
 5. A multi-signature envelope with HMAC integrity and replay protection"
 
 **What to AVOID**:
+
 - ❌ "Physics-based security"
 - ❌ "Quantum-resistant" (unless using real PQC)
 - ❌ "Zero latency"
 - ❌ "Infinite security"
 
 **What to INCLUDE**:
+
 - ✅ "Deterministic software operations"
 - ✅ "Cryptographic primitives (HMAC-SHA256)"
 - ✅ "Structured ambiguity (private dictionary + keyed permutation)"
@@ -273,6 +289,7 @@ pytest tests/test_sacred_tongue_integration.py
 ## Bottom Line (Honest)
 
 **What's Real**:
+
 - Solid mathematical foundations (numerically verified)
 - Working prototypes for all major components
 - Complete specifications with security analysis
@@ -280,6 +297,7 @@ pytest tests/test_sacred_tongue_integration.py
 - Standard cryptographic primitives (HMAC, nonce, Feistel)
 
 **What's Not Real Yet**:
+
 - Production-grade PQC implementation (using HMAC placeholders)
 - Third-party security audits
 - Compliance certifications (org-level required)
