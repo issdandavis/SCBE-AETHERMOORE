@@ -551,6 +551,248 @@ export function getPQCStatus(): {
 }
 
 // ============================================================
+// DUAL LATTICE CONSENSUS (Patent USPTO #63/961,403)
+// ============================================================
+
+/**
+ * Consensus result enum matching Python implementation
+ */
+export enum ConsensusResult {
+  ACCEPT = 'accept',
+  REJECT = 'reject',
+  KEM_FAIL = 'kem_fail',
+  DSA_FAIL = 'dsa_fail',
+  CONSENSUS_FAIL = 'consensus_fail',
+}
+
+/**
+ * Authorization context for dual lattice binding
+ */
+export interface AuthorizationContext {
+  userId: string;
+  deviceFingerprint: string;
+  timestamp: number;
+  sessionNonce: Uint8Array;
+  threatLevel: number;
+}
+
+/**
+ * Authorization token structure
+ */
+export interface AuthorizationToken {
+  payload: {
+    context: string;
+    decision: string;
+    timestamp: number;
+    kemCiphertext: string;
+  };
+  signature: string;
+  consensusHash: string;
+  sessionKeyId: string;
+}
+
+/**
+ * Dual-Lattice Consensus System
+ *
+ * Implements patent claims for post-quantum cryptographic binding:
+ * - ML-KEM-768 (Kyber) for key encapsulation
+ * - ML-DSA-65 (Dilithium) for digital signatures
+ * - Both must agree for authorization (factor of 2 quantum resistance improvement)
+ *
+ * Per NIST FIPS 203 and FIPS 204 standards.
+ */
+export class DualLatticeConsensus {
+  private kem: MLKEM768;
+  private dsa: MLDSA65;
+  private kemKeyPair: MLKEMKeyPair | null = null;
+  private dsaKeyPair: MLDSAKeyPair | null = null;
+  private decisionLog: Array<{ timestamp: number; result: string; sessionKeyId: string }> = [];
+
+  private static readonly TIMESTAMP_WINDOW = 60_000; // 60 seconds
+
+  constructor() {
+    this.kem = MLKEM768.getInstance();
+    this.dsa = MLDSA65.getInstance();
+  }
+
+  /**
+   * Initialize key pairs for the consensus system
+   */
+  async initialize(): Promise<void> {
+    this.kemKeyPair = await this.kem.generateKeyPair();
+    this.dsaKeyPair = await this.dsa.generateKeyPair();
+  }
+
+  /**
+   * Create a dual-signed authorization token
+   * Both KEM-derived key and DSA signature required
+   */
+  async createAuthorizationToken(
+    context: AuthorizationContext,
+    decision: string
+  ): Promise<AuthorizationToken> {
+    if (!this.kemKeyPair || !this.dsaKeyPair) {
+      await this.initialize();
+    }
+
+    // Step 1: KEM encapsulation for session key
+    const { ciphertext, sharedSecret } = await this.kem.encapsulate(this.kemKeyPair!.publicKey);
+
+    // Step 2: Build token payload
+    const contextBytes = this.serializeContext(context);
+    const payload = {
+      context: toHex(contextBytes),
+      decision,
+      timestamp: context.timestamp,
+      kemCiphertext: toHex(ciphertext),
+    };
+    const payloadBytes = new TextEncoder().encode(JSON.stringify(payload));
+
+    // Step 3: DSA signature over payload
+    const signature = await this.dsa.sign(payloadBytes, this.dsaKeyPair!.secretKey);
+
+    // Step 4: Dual-lattice consensus hash (both algorithms must agree)
+    const kemHash = this.hashWithDomain(sharedSecret, 'kem_domain');
+    const dsaHash = this.hashWithDomain(this.dsaKeyPair!.secretKey.slice(0, 32), 'dsa_domain');
+    const consensusHash = this.combineHashes(kemHash, dsaHash);
+
+    // Session key ID for tracking
+    const sessionKeyId = toHex(
+      new Uint8Array(createHash('sha256').update(Buffer.from(sharedSecret)).digest())
+    ).slice(0, 16);
+
+    return {
+      payload,
+      signature: toHex(signature),
+      consensusHash: toHex(consensusHash).slice(0, 16),
+      sessionKeyId,
+    };
+  }
+
+  /**
+   * Verify a dual-signed authorization token
+   * Both KEM decapsulation and DSA verification must succeed
+   */
+  async verifyAuthorizationToken(
+    token: AuthorizationToken
+  ): Promise<{ result: ConsensusResult; reason: string }> {
+    if (!this.kemKeyPair || !this.dsaKeyPair) {
+      return { result: ConsensusResult.REJECT, reason: 'not_initialized' };
+    }
+
+    try {
+      // Step 1: Verify timestamp freshness
+      const now = Date.now();
+      if (now - token.payload.timestamp > DualLatticeConsensus.TIMESTAMP_WINDOW) {
+        return { result: ConsensusResult.REJECT, reason: 'timestamp_expired' };
+      }
+
+      // Step 2: KEM decapsulation
+      const ciphertext = fromHex(token.payload.kemCiphertext);
+      const sessionKey = await this.kem.decapsulate(ciphertext, this.kemKeyPair.secretKey);
+
+      // Step 3: DSA verification
+      const payloadBytes = new TextEncoder().encode(JSON.stringify(token.payload));
+      const signature = fromHex(token.signature);
+      const isValid = await this.dsa.verify(payloadBytes, signature, this.dsaKeyPair.publicKey);
+
+      if (!isValid) {
+        return { result: ConsensusResult.DSA_FAIL, reason: 'signature_invalid' };
+      }
+
+      // Step 4: Dual-lattice consensus check
+      const kemHash = this.hashWithDomain(sessionKey, 'kem_domain');
+      const dsaHash = this.hashWithDomain(this.dsaKeyPair.secretKey.slice(0, 32), 'dsa_domain');
+      const expectedConsensus = toHex(this.combineHashes(kemHash, dsaHash)).slice(0, 16);
+
+      if (token.consensusHash !== expectedConsensus) {
+        return { result: ConsensusResult.CONSENSUS_FAIL, reason: 'consensus_mismatch' };
+      }
+
+      // All checks passed
+      this.decisionLog.push({
+        timestamp: now,
+        result: 'accept',
+        sessionKeyId: token.sessionKeyId,
+      });
+
+      return { result: ConsensusResult.ACCEPT, reason: 'verified' };
+    } catch (error) {
+      return { result: ConsensusResult.REJECT, reason: String(error) };
+    }
+  }
+
+  /**
+   * Get the decision log
+   */
+  getDecisionLog(): Array<{ timestamp: number; result: string; sessionKeyId: string }> {
+    return [...this.decisionLog];
+  }
+
+  /**
+   * Check if PQC backend is available
+   */
+  isPQCAvailable(): boolean {
+    return isPQCAvailable();
+  }
+
+  /**
+   * Get PQC status
+   */
+  getPQCStatus(): { available: boolean; implementation: 'native' | 'stub'; algorithms: string[] } {
+    return getPQCStatus();
+  }
+
+  // Private helper methods
+  private serializeContext(context: AuthorizationContext): Uint8Array {
+    const encoder = new TextEncoder();
+    const userIdBytes = encoder.encode(context.userId);
+    const deviceBytes = encoder.encode(context.deviceFingerprint);
+    const timestampBytes = new Uint8Array(8);
+    new DataView(timestampBytes.buffer).setBigUint64(0, BigInt(context.timestamp), false);
+    const threatBytes = new Uint8Array(4);
+    new DataView(threatBytes.buffer).setUint32(0, Math.floor(context.threatLevel * 1000), false);
+
+    const result = new Uint8Array(
+      userIdBytes.length +
+        deviceBytes.length +
+        timestampBytes.length +
+        context.sessionNonce.length +
+        threatBytes.length
+    );
+
+    let offset = 0;
+    result.set(userIdBytes, offset);
+    offset += userIdBytes.length;
+    result.set(deviceBytes, offset);
+    offset += deviceBytes.length;
+    result.set(timestampBytes, offset);
+    offset += timestampBytes.length;
+    result.set(context.sessionNonce, offset);
+    offset += context.sessionNonce.length;
+    result.set(threatBytes, offset);
+
+    return result;
+  }
+
+  private hashWithDomain(data: Uint8Array, domain: string): Uint8Array {
+    return new Uint8Array(
+      createHash('sha256')
+        .update(Buffer.from(data))
+        .update(Buffer.from(domain))
+        .digest()
+        .slice(0, 8)
+    );
+  }
+
+  private combineHashes(hash1: Uint8Array, hash2: Uint8Array): Uint8Array {
+    return new Uint8Array(
+      createHash('sha256').update(Buffer.from(hash1)).update(Buffer.from(hash2)).digest()
+    );
+  }
+}
+
+// ============================================================
 // EXPORTS
 // ============================================================
 
@@ -558,6 +800,8 @@ export const pqc = {
   MLKEM768,
   MLDSA65,
   HybridKEM,
+  DualLatticeConsensus,
+  ConsensusResult,
   ML_KEM_768_PARAMS,
   ML_DSA_65_PARAMS,
   toHex,
