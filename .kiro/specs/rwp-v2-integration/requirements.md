@@ -608,15 +608,15 @@ STEP 3 – Feistel permutation
 v' = FeistelPermute(ids, K_msg) // Eq. (5)
 
 STEP 4 – Harmonic synthesis (optional)
-if audio_requested:
+if audio*requested:
 x = zeros(L)
 slice_len = floor(L / len(v'))
 for i, id_i in enumerate(v'):
 f_i = BASE_F + id_i * Δf
 for h in Mask(modality): // Eq. (6) mask ℳ(M)
-for n in range(i*slice_len, (i+1)_slice_len):
+for n in range(i*slice_len, (i+1)\_slice_len):
 t = n / SR
-x[n] += sin(2π _ f_i _ h _ t) / h
+x[n] += sin(2π * f*i * h \_ t) / h
 normalize x to [-1,1]
 
 STEP 5 – Envelope assembly
