@@ -1,6 +1,14 @@
 # Sacred Tongue Spectral Map
 
-> Visual mapping of the Six Sacred Tongues to their chromatic signatures and SCBE layer connections
+> Visual mapping of the Six Sacred Tongues to their chromatic signatures and SCBE 14-layer connections
+
+## System Verification
+
+✅ **This map matches the actual SCBE-AETHERMOORE v3.0 implementation:**
+- 14-layer security pipeline (not 13)
+- 6 Sacred Tongues with golden ratio weighting
+- Spectral Identity System for visual verification
+- Post-quantum cryptography (ML-KEM-768, ML-DSA-65)
 
 ## Color-Coded Sacred Tongue Hierarchy
 
@@ -189,6 +197,93 @@ For web implementations, use these CSS custom properties:
   --trust-critical: #EF4444; /* Red */
 }
 ```
+
+---
+
+## Complete 14-Layer to Sacred Tongue Mapping
+
+```
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                    SCBE 14-LAYER PIPELINE × SACRED TONGUE MAPPING                     ║
+╠══════════════════════════════════════════════════════════════════════════════════════╣
+║                                                                                       ║
+║  LAYER    NAME                    TONGUE    COLOR       FUNCTION                      ║
+║  ─────────────────────────────────────────────────────────────────────────────────── ║
+║                                                                                       ║
+║  ┌─────┐                                                                              ║
+║  │ L1  │  Complex State          KO ████   #8B0000    Time features → ℂ^D            ║
+║  │ L2  │  Realification          KO ████   #8B0000    ℂ^D → ℝ^{2D} isometry          ║
+║  └─────┘                                                                              ║
+║     │                                                                                 ║
+║     │ Golden Ratio: φ¹ = 1.000 (Foundation)                                          ║
+║     ▼                                                                                 ║
+║  ┌─────┐                                                                              ║
+║  │ L3  │  Weighted Transform     AV ████   #FFBF00    SPD matrix G^{1/2}·x           ║
+║  │ L4  │  Poincaré Embedding     AV ████   #FFBF00    ℝ^n → 𝔹^n ball                 ║
+║  └─────┘                                                                              ║
+║     │                                                                                 ║
+║     │ Golden Ratio: φ² = 1.125 (Temporal)                                            ║
+║     ▼                                                                                 ║
+║  ┌─────┐                                                                              ║
+║  │ L5  │  Hyperbolic Distance    RU ████   #50C878    d_ℍ(u,v) = arcosh(...)        ║
+║  │ L6  │  Breathing Transform    RU ████   #50C878    B(p,t) diffeomorphism          ║
+║  └─────┘                                                                              ║
+║     │                                                                                 ║
+║     │ Golden Ratio: φ³ = 1.250 (Verification)                                        ║
+║     ▼                                                                                 ║
+║  ┌─────┐                                                                              ║
+║  │ L7  │  Phase Transform        CA ████   #0F52BA    Möbius + rotation              ║
+║  │ L8  │  Realm Distance         CA ████   #0F52BA    min d_ℍ(u, μ_k)               ║
+║  └─────┘                                                                              ║
+║     │                                                                                 ║
+║     │ Golden Ratio: φ⁴ = 1.333 (Consensus)                                           ║
+║     ▼                                                                                 ║
+║  ┌─────┐                                                                              ║
+║  │ L9  │  Spectral Coherence     UM ████   #9966CC    FFT analysis S_spectral        ║
+║  │ L10 │  Spin Coherence         UM ████   #9966CC    Quaternion S_spin              ║
+║  └─────┘                                                                              ║
+║     │                                                                                 ║
+║     │ Golden Ratio: φ⁵ = 1.500 (Trust)                                               ║
+║     ▼                                                                                 ║
+║  ┌─────┐                                                                              ║
+║  │ L11 │  Triadic Temporal       DR ████   #3D3D3D    3-window aggregation           ║
+║  │ L12 │  Harmonic Scaling       DR ████   #3D3D3D    H(d) = R^(d²)                  ║
+║  └─────┘                                                                              ║
+║     │                                                                                 ║
+║     │ Golden Ratio: φ⁶ = 1.667 (Deep Security)                                       ║
+║     ▼                                                                                 ║
+║  ┌─────────────────────────────────────────────────────────────────────────────────┐ ║
+║  │ L13 │  Risk Decision          VIOLET    #9400D3    ALLOW / QUARANTINE / DENY     │ ║
+║  │ L14 │  Audio Axis             VIOLET    #9400D3    FFT telemetry S_audio         │ ║
+║  └─────────────────────────────────────────────────────────────────────────────────┘ ║
+║                                                                                       ║
+║  LEGEND:  ████ = Base color    φ = Golden ratio (1.618...)                           ║
+║                                                                                       ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+```
+
+---
+
+## Layer Functions (Mathematical)
+
+| Layer | Formula | Sacred Tongue |
+|-------|---------|---------------|
+| L1 | `c = A × exp(iφ)` | KO (Koraelin) |
+| L2 | `x = [Re(c), Im(c)]` | KO (Koraelin) |
+| L3 | `x_G = G^{1/2} × x` | AV (Avali) |
+| L4 | `p = tanh(α‖x‖) × x/‖x‖` | AV (Avali) |
+| L5 | `d_ℍ = arcosh(1 + 2‖u-v‖²/((1-‖u‖²)(1-‖v‖²)))` | RU (Runethic) |
+| L6 | `B(p,t) = tanh(‖p‖ + A·sin(ωt)) × p/‖p‖` | RU (Runethic) |
+| L7 | `Φ(p,a,Q) = Q × (p ⊕ a)` | CA (Cassisivadan) |
+| L8 | `d_realm = min_k d_ℍ(u, μ_k)` | CA (Cassisivadan) |
+| L9 | `S_spectral = ‖FFT(signal)‖_peak / ‖FFT(signal)‖_total` | UM (Umbroth) |
+| L10 | `S_spin = ‖Σ exp(iθ_k)‖ / N` | UM (Umbroth) |
+| L11 | `d_triadic = λ₁d₁ + λ₂d₂ + λ₃d_G` | DR (Draumric) |
+| L12 | `H(d) = R^(d²)` where R=1.5 | DR (Draumric) |
+| L13 | `Decision = {ALLOW if Risk<θ₁, QUARANTINE if θ₁≤Risk<θ₂, DENY if Risk≥θ₂}` | VIOLET |
+| L14 | `S_audio = 1 - rHF` (high-frequency ratio) | VIOLET |
+
+---
 
 ## Usage in Code
 
