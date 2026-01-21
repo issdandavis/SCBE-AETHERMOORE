@@ -350,12 +350,15 @@ class TestSystemBenchmarks:
     
     def test_concurrent_operations_process_pool(self):
         """
-        Concurrent Operations Test (using ProcessPoolExecutor)
+        Concurrent Operations Test (using ThreadPoolExecutor)
         
         Reports speedup metrics instead of asserting specific values.
-        Python GIL makes thread-based speedup unreliable.
+        Note: Using ThreadPoolExecutor instead of ProcessPoolExecutor to avoid
+        pickling issues with local functions on Windows.
         """
-        from concurrent.futures import ProcessPoolExecutor
+        from concurrent.futures import ThreadPoolExecutor
+        
+        n_tasks = 100
         
         def compute_task(seed):
             np.random.seed(seed)
@@ -365,17 +368,15 @@ class TestSystemBenchmarks:
             u = layer_4_poincare_embedding(x)
             return layer_5_hyperbolic_distance(u, np.zeros(12))
         
-        n_tasks = 100
-        
         # Sequential
         start = time.perf_counter()
         for i in range(n_tasks):
             compute_task(i)
         sequential_time = time.perf_counter() - start
         
-        # Concurrent (4 workers)
+        # Concurrent (4 workers) - using ThreadPoolExecutor for cross-platform compatibility
         start = time.perf_counter()
-        with ProcessPoolExecutor(max_workers=4) as executor:
+        with ThreadPoolExecutor(max_workers=4) as executor:
             list(executor.map(compute_task, range(n_tasks)))
         concurrent_time = time.perf_counter() - start
         
