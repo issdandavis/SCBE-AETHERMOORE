@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\numpy\core\_add_newdocs_scalars.py
+# hypothesis_version: 6.148.8
+
+['as_integer_ratio', 'bit_count', 'bool_', 'byte', 'bytes_', 'cdouble', 'cfloat', 'clongdouble', 'clongfloat', 'complex128', 'complex192', 'complex256', 'complex64', 'complex_', 'csingle', 'datetime64', 'double', 'float128', 'float16', 'float32', 'float64', 'float96', 'float_', 'half', 'int16', 'int32', 'int64', 'int8', 'int_', 'intc', 'integer', 'intp', 'is_integer', 'longcomplex', 'longdouble', 'longfloat', 'longlong', 'object_', 'short', 'single', 'singlecomplex', 'str_', 'string_', 'timedelta64', 'ubyte', 'uint', 'uint16', 'uint32', 'uint64', 'uint8', 'uintc', 'uintp', 'ulonglong', 'unicode_', 'unknown', 'ushort', 'void', 'win32']

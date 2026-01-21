@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\pytest_benchmark\stats.py
+# hypothesis_version: 6.148.8
+
+[0.25, 0.75, 1.5, 'cprofile', 'cumtime', 'cumtime_per', 'data', 'extra_info', 'fullname', 'function_name', 'group', 'hd15iqr', 'iqr', 'iqr_outliers', 'iterations', 'ld15iqr', 'max', 'mean', 'median', 'min', 'name', 'ncalls', 'ncalls_recursion', 'ops', 'options', 'outliers', 'param', 'params', 'q1', 'q3', 'rounds', 'stats', 'stddev', 'stddev_outliers', 'total', 'tottime', 'tottime_per']
