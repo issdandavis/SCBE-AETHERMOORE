@@ -634,6 +634,7 @@ Popular automation platform.
 ---
 
 ## 🛡️ **Security Hardening + Anti-Malware**
+
 - **Playbook**: See `SECURITY_HARDENING_PLAYBOOK.md` for the full stack (endpoint AV/EDR, IDS/NDR, supply chain scanning, sandboxing, and runbooks).
 - **Tooling (evergreen, open-source first)**: ClamAV + YARA, Falco (eBPF), osquery, Wazuh/CrowdSec, Zeek/Suricata, AdGuard/Pi-hole, syft→grype or trivy, semgrep/bandit/ruff, gitleaks, cosign, gVisor/Kata/Firecracker.
 - **User flexibility**: Baseline protections always on; high-assurance and isolation modes for regulated tenants; overrides require justification + logging.

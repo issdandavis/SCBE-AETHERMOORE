@@ -597,10 +597,7 @@ export interface Pipeline14Result {
  * @param config - Pipeline configuration
  * @returns Comprehensive metrics dictionary
  */
-export function scbe14LayerPipeline(
-  t: number[],
-  config: Pipeline14Config = {}
-): Pipeline14Result {
+export function scbe14LayerPipeline(t: number[], config: Pipeline14Config = {}): Pipeline14Result {
   const {
     D = 6,
     alpha = 1.0,
@@ -677,7 +674,11 @@ export function scbe14LayerPipeline(
 
   // === Compute Base Risk ===
   const riskBase =
-    wD * l8_realmDist + wC * (1 - l9_spectral) + wS * (1 - l10_spin) + wTau * l11_triadic + wA * 0.5;
+    wD * l8_realmDist +
+    wC * (1 - l9_spectral) +
+    wS * (1 - l10_spin) +
+    wTau * l11_triadic +
+    wA * 0.5;
 
   // === LAYER 13: Risk Decision ===
   const { decision: l13_decision, riskPrime } = layer13RiskDecision(
