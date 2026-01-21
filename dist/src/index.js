@@ -35,12 +35,14 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DEFAULT_CONFIG = exports.ARCHITECTURE_LAYERS = exports.PATENT_NUMBER = exports.VERSION = exports.crypto = exports.symphonic = void 0;
-// Namespace exports for convenient access (scbe.symphonic, scbe.crypto)
+exports.DEFAULT_CONFIG = exports.ARCHITECTURE_LAYERS = exports.PATENT_NUMBER = exports.VERSION = exports.spiralverse = exports.crypto = exports.symphonic = void 0;
+// Namespace exports for convenient access (scbe.symphonic, scbe.crypto, scbe.spiralverse)
 const symphonic = __importStar(require("./symphonic/index.js"));
 exports.symphonic = symphonic;
 const crypto = __importStar(require("./crypto/index.js"));
 exports.crypto = crypto;
+const spiralverse = __importStar(require("./spiralverse/index.js"));
+exports.spiralverse = spiralverse;
 // Core Crypto Exports (also available at top level)
 __exportStar(require("./crypto/envelope.js"), exports);
 __exportStar(require("./crypto/hkdf.js"), exports);

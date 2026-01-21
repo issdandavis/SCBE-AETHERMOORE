@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\numpy\core\fromnumeric.py
+# hypothesis_version: 6.148.8
+
+['C', 'K', 'all', 'alltrue', 'amax', 'amin', 'any', 'argmax', 'argmin', 'argpartition', 'argsort', 'around', 'choose', 'clip', 'compress', 'cumprod', 'cumproduct', 'cumsum', 'diagonal', 'introselect', 'keepdims', 'left', 'max', 'mean', 'min', 'ndim', 'nonzero', 'numpy', 'partition', 'prod', 'product', 'ptp', 'put', 'raise', 'ravel', 'repeat', 'reshape', 'resize', 'round', 'round_', 'searchsorted', 'shape', 'size', 'sometrue', 'sort', 'squeeze', 'std', 'sum', 'swapaxes', 'take', 'trace', 'transpose', 'var', 'where']
