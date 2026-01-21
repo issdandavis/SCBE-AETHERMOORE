@@ -205,3 +205,18 @@ export {
     type Polyhedron
 } from './phdm.js';
 
+// ═══════════════════════════════════════════════════════════════
+// Spectral Identity - Rainbow Chromatic Fingerprinting
+// ═══════════════════════════════════════════════════════════════
+
+export {
+
+    // Constants
+    SPECTRAL_BANDS,
+    // Generator
+    SpectralIdentityGenerator, TONGUE_COLORS, spectralGenerator, type HSL,
+    // Types
+    type RGB, type SpectralBand,
+    type SpectralIdentity
+} from './spectral-identity.js';
+
