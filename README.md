@@ -9,6 +9,35 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue)](https://www.typescriptlang.org/)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18.0.0-green)](https://nodejs.org/)
 
+---
+
+## 🚀 Quick Demo (2 minutes)
+
+```bash
+# Clone and run
+git clone https://github.com/ISDanDavis2/scbe-aethermoore.git
+cd scbe-aethermoore
+pip install -r requirements.txt
+npm install
+
+# Run the demo
+python demo.py
+```
+
+**Expected output:**
+- ✅ Trusted agent → QUARANTINE (low risk)
+- 🚫 Hacker attack → DENY + fail-to-noise
+- ✅ 14-layer pipeline verified
+- ✅ 1150/1170 tests passing (98.3%)
+
+**Start the API:**
+```bash
+python src/api/main.py
+# Open http://localhost:8000/docs for Swagger UI
+```
+
+---
+
 ## ✅ Buyer Quick Start
 Start here if you just want to run it: `QUICKSTART.md`  
 Node examples: `HOW_TO_USE.md`
