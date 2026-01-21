@@ -3,3 +3,5 @@
 
 # Performance test evidence files (hardware-specific)
 docs/evidence/*.json
+docs/evidence/*/
+docs/evidence/*.tar.gz
