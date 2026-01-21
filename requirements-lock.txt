@@ -168,7 +168,7 @@ protobuf==5.29.5
 psutil==7.2.1
 publication==0.0.3
 py-openapi-schema-to-json-schema==0.0.3
-pyasn1==0.6.1
+pyasn1==0.6.2
 pyasn1_modules==0.4.2
 pycodestyle==2.14.0
 pycparser==2.23
