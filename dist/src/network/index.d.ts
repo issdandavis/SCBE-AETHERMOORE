@@ -11,5 +11,5 @@
  */
 export { SpaceTorRouter, type RelayNode } from './space-tor-router.js';
 export { HybridSpaceCrypto } from './hybrid-crypto.js';
-export { CombatNetwork, type TransmissionResult, type PathHealth, type AcknowledgmentConfig, type CombatNetworkConfig } from './combat-network.js';
+export { CombatNetwork, type TransmissionResult, type PathHealth, type AcknowledgmentConfig, type CombatNetworkConfig, } from './combat-network.js';
 //# sourceMappingURL=index.d.ts.map
