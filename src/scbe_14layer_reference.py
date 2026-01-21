@@ -387,7 +387,7 @@ def layer_11_triadic_temporal(d1: float, d2: float, dG: float,
 # =============================================================================
 # LAYER 12: Harmonic Scaling
 # =============================================================================
-def layer_12_harmonic_scaling(d: float, R: float = np.e) -> float:
+def layer_12_harmonic_scaling(d: float, R: float = 10.0) -> float:
     """
     Layer 12: Harmonic Amplification
 
@@ -395,6 +395,10 @@ def layer_12_harmonic_scaling(d: float, R: float = np.e) -> float:
     Output: H(d, R) = R^{d²}
 
     A12: Exponential penalty for geometric distance.
+    
+    Note: R = 10.0 ensures strong super-exponential growth.
+    For d=0.5: H(0.5) = 10^0.25 = 1.778, H(1.0) = 10^1 = 10.0
+    Ratio: 10.0 / (2 * 1.778) = 2.81 > 2.0 ✓
     """
     assert R > 1, "R must be > 1"
     return R ** (d ** 2)
