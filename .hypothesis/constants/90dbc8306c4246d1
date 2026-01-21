@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\numpy\core\_dtype.py
+# hypothesis_version: 6.148.8
+
+[121, '\x00', '%d', "'%s%c%d'", "'%s%d'", "'%sM8%s'", "'%sU%d'", "'%sU'", "'%sm8%s'", "'?'", "'O'", "'S%d'", "'S'", "'V%d'", "'V'", "'bool'", '(', '({!r}, {!r}), ', '({}, {})', ')', ',', ', ', ", 'aligned'%sTrue}", ', align=True', ':', ': ', '=', 'M', 'O', 'S', 'U', 'V', '[', '[{}]', '[{}{}]', ']', "], 'formats'%s[", "], 'itemsize'%s%d", "], 'offsets'%s[", "], 'titles'%s[", 'b', 'bool', 'bytes', 'c', 'complex', 'datetime', 'dtype({})', 'f', 'float', 'generic', 'i', 'int', 'm', 'object', 'str', 'timedelta', 'u', 'uint', 'void', '{!r}, ', "{'names'%s[", '{}', '{}, {}', '|', '}']
