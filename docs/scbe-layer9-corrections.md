@@ -250,7 +250,7 @@ constitutes novel subject matter.
 
 **Technical specification:** "A method for dynamically adjusting hyperbolic policy boundaries comprising:
 (a) receiving a breathing parameter b(t) from environmental telemetry;
-(b) applying the transform T_breath(u;t) = tanh(b(t) _ artanh(||u||)) _ (u/||u||) to embedded state vectors u in the Poincare ball;
+(b) applying the transform T*breath(u;t) = tanh(b(t) * artanh(||u||)) \_ (u/||u||) to embedded state vectors u in the Poincare ball;
 (c) wherein b(t) > 1 contracts the effective policy radius (containment posture) and b(t) < 1 expands it (permissive posture);
 (d) computing governance decisions using the transformed vectors."
 
