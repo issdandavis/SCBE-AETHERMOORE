@@ -704,6 +704,25 @@
     </main>
 
     <script>
+      // ========================================
+      // SCBE Dashboard - Real-time WebSocket
+      // ========================================
+
+      // Configuration
+      const WS_URL = window.location.protocol === 'https:'
+        ? `wss://${window.location.host}/ws/dashboard`
+        : `ws://${window.location.hostname}:8000/ws/dashboard`;
+
+      let ws = null;
+      let reconnectAttempts = 0;
+      const MAX_RECONNECT = 5;
+      let useMockData = false;
+
+      // DOM elements
+      const feed = document.getElementById('decision-feed');
+      const statusIndicator = document.querySelector('.bg-green-500.animate-pulse');
+      const statusText = document.querySelector('.text-green-400');
+
       // Update UTC time
       function updateTime() {
         const now = new Date();
@@ -712,77 +731,168 @@
       setInterval(updateTime, 1000);
       updateTime();
 
-      // Simulate live decision feed
-      const decisions = [
-        'ALLOW',
-        'ALLOW',
-        'ALLOW',
-        'ALLOW',
-        'ALLOW',
-        'ALLOW',
-        'ALLOW',
-        'ALLOW',
-        'QUARANTINE',
-        'DENY',
-      ];
-      const agents = ['user_12847', 'agent_ash', 'api_client', 'service_worker', 'external_api'];
-      const topics = ['query', 'mutation', 'auth', 'data_access', 'admin'];
-
-      function generateDecision() {
-        const decision = decisions[Math.floor(Math.random() * decisions.length)];
-        const agent = agents[Math.floor(Math.random() * agents.length)];
-        const topic = topics[Math.floor(Math.random() * topics.length)];
-        const risk = (Math.random() * 0.5).toFixed(3);
-        const dStar = (Math.random() * 0.3).toFixed(3);
-        const time = new Date().toISOString().split('T')[1].slice(0, 12);
-
+      // Format decision for display
+      function formatDecision(d) {
+        const time = d.timestamp ? d.timestamp.split('T')[1].slice(0, 12) : new Date().toISOString().split('T')[1].slice(0, 12);
         let statusClass = 'status-allow';
-        if (decision === 'QUARANTINE') statusClass = 'status-quarantine';
-        if (decision === 'DENY') statusClass = 'status-deny';
+        if (d.decision === 'QUARANTINE') statusClass = 'status-quarantine';
+        if (d.decision === 'DENY') statusClass = 'status-deny';
 
         return `<div class="p-1.5 bg-white/5 rounded flex items-center justify-between">
-        <span class="text-gray-500">${time}</span>
-        <span class="text-gray-400">${agent}</span>
-        <span class="text-gray-500">${topic}</span>
-        <span class="text-gray-400">d*=${dStar}</span>
-        <span class="${statusClass} font-bold">${decision}</span>
-      </div>`;
+          <span class="text-gray-500">${time}</span>
+          <span class="text-gray-400">${d.agent || 'unknown'}</span>
+          <span class="text-gray-500">${d.topic || 'query'}</span>
+          <span class="text-gray-400">d*=${(d.d_star || 0).toFixed(3)}</span>
+          <span class="${statusClass} font-bold">${d.decision}</span>
+        </div>`;
       }
 
-      const feed = document.getElementById('decision-feed');
-
-      // Initial population
-      for (let i = 0; i < 30; i++) {
-        feed.innerHTML = generateDecision() + feed.innerHTML;
-      }
-
-      // Live updates
-      setInterval(() => {
-        feed.innerHTML = generateDecision() + feed.innerHTML;
-        // Keep only last 50 entries
+      // Add decision to feed
+      function addDecision(d) {
+        feed.innerHTML = formatDecision(d) + feed.innerHTML;
         while (feed.children.length > 50) {
           feed.removeChild(feed.lastChild);
         }
-      }, 350);
+      }
 
-      // Simulate metric updates
+      // Update metrics display
+      function updateMetrics(m) {
+        if (m.decisions_per_sec !== undefined) {
+          document.getElementById('decisions-sec').textContent = Math.round(m.decisions_per_sec).toLocaleString();
+        }
+        if (m.allow_rate !== undefined) {
+          document.getElementById('allow-rate').textContent = (m.allow_rate * 100).toFixed(1) + '%';
+        }
+        if (m.quarantine_rate !== undefined) {
+          document.getElementById('quarantine-rate').textContent = (m.quarantine_rate * 100).toFixed(1) + '%';
+        }
+        if (m.deny_rate !== undefined) {
+          document.getElementById('deny-rate').textContent = (m.deny_rate * 100).toFixed(1) + '%';
+        }
+        if (m.avg_latency_ms !== undefined) {
+          document.getElementById('avg-latency').textContent = m.avg_latency_ms.toFixed(1) + 'ms';
+        }
+        if (m.active_agents !== undefined) {
+          document.getElementById('active-agents').textContent = m.active_agents;
+        }
+        if (m.kem_ops_per_sec !== undefined) {
+          document.getElementById('kem-ops').textContent = m.kem_ops_per_sec.toLocaleString();
+        }
+        if (m.dsa_ops_per_sec !== undefined) {
+          document.getElementById('dsa-ops').textContent = m.dsa_ops_per_sec.toLocaleString();
+        }
+      }
+
+      // Connect to WebSocket
+      function connectWebSocket() {
+        try {
+          ws = new WebSocket(WS_URL);
+
+          ws.onopen = () => {
+            console.log('WebSocket connected to', WS_URL);
+            reconnectAttempts = 0;
+            useMockData = false;
+            statusIndicator.classList.remove('bg-yellow-500', 'bg-red-500');
+            statusIndicator.classList.add('bg-green-500');
+            statusText.textContent = 'Live';
+            statusText.classList.remove('text-yellow-400', 'text-red-400');
+            statusText.classList.add('text-green-400');
+          };
+
+          ws.onmessage = (event) => {
+            const msg = JSON.parse(event.data);
+
+            if (msg.type === 'init') {
+              // Initial state
+              if (msg.metrics) updateMetrics(msg.metrics);
+              if (msg.history) {
+                feed.innerHTML = '';
+                msg.history.reverse().forEach(d => addDecision(d));
+              }
+            } else if (msg.type === 'decision') {
+              // New decision
+              addDecision(msg.data);
+              if (msg.metrics) updateMetrics(msg.metrics);
+            }
+          };
+
+          ws.onclose = () => {
+            console.log('WebSocket disconnected');
+            statusIndicator.classList.remove('bg-green-500');
+            statusIndicator.classList.add('bg-yellow-500');
+            statusText.textContent = 'Reconnecting...';
+            statusText.classList.remove('text-green-400');
+            statusText.classList.add('text-yellow-400');
+
+            if (reconnectAttempts < MAX_RECONNECT) {
+              reconnectAttempts++;
+              setTimeout(connectWebSocket, 2000 * reconnectAttempts);
+            } else {
+              startMockMode();
+            }
+          };
+
+          ws.onerror = (err) => {
+            console.error('WebSocket error:', err);
+            ws.close();
+          };
+
+        } catch (e) {
+          console.error('WebSocket connection failed:', e);
+          startMockMode();
+        }
+      }
+
+      // Fallback to mock data if API unavailable
+      function startMockMode() {
+        if (useMockData) return;
+        useMockData = true;
+        console.log('Switching to mock data mode');
+
+        statusIndicator.classList.remove('bg-green-500', 'bg-yellow-500');
+        statusIndicator.classList.add('bg-red-500');
+        statusText.textContent = 'Demo Mode';
+        statusText.classList.remove('text-green-400', 'text-yellow-400');
+        statusText.classList.add('text-red-400');
+
+        const mockDecisions = ['ALLOW', 'ALLOW', 'ALLOW', 'ALLOW', 'ALLOW', 'ALLOW', 'ALLOW', 'ALLOW', 'QUARANTINE', 'DENY'];
+        const mockAgents = ['user_12847', 'agent_ash', 'api_client', 'service_worker', 'external_api'];
+        const mockTopics = ['query', 'mutation', 'auth', 'data_access', 'admin'];
+
+        setInterval(() => {
+          if (!useMockData) return;
+          addDecision({
+            timestamp: new Date().toISOString(),
+            agent: mockAgents[Math.floor(Math.random() * mockAgents.length)],
+            topic: mockTopics[Math.floor(Math.random() * mockTopics.length)],
+            decision: mockDecisions[Math.floor(Math.random() * mockDecisions.length)],
+            risk_score: Math.random() * 0.5,
+            d_star: Math.random() * 0.3
+          });
+        }, 350);
+
+        setInterval(() => {
+          if (!useMockData) return;
+          updateMetrics({
+            decisions_per_sec: 2700 + Math.floor(Math.random() * 300),
+            kem_ops_per_sec: 12000 + Math.floor(Math.random() * 2000),
+            dsa_ops_per_sec: 8000 + Math.floor(Math.random() * 1000)
+          });
+          document.getElementById('d-star').textContent = (0.1 + Math.random() * 0.1).toFixed(3);
+          document.getElementById('h-value').textContent = (1.0 + Math.random() * 0.1).toFixed(3);
+          document.getElementById('risk-prime').textContent = (0.15 + Math.random() * 0.15).toFixed(3);
+        }, 2000);
+      }
+
+      // Ping to keep connection alive
       setInterval(() => {
-        document.getElementById('decisions-sec').textContent = (
-          2700 + Math.floor(Math.random() * 300)
-        ).toLocaleString();
-        document.getElementById('d-star').textContent = (0.1 + Math.random() * 0.1).toFixed(3);
-        document.getElementById('h-value').textContent = (1.0 + Math.random() * 0.1).toFixed(3);
-        document.getElementById('risk-prime').textContent = (0.15 + Math.random() * 0.15).toFixed(
-          3
-        );
-        document.getElementById('kem-ops').textContent = (
-          12000 + Math.floor(Math.random() * 2000)
-        ).toLocaleString();
-        document.getElementById('dsa-ops').textContent = (
-          8000 + Math.floor(Math.random() * 1000)
-        ).toLocaleString();
-        document.getElementById('pending-jobs').textContent = Math.floor(40 + Math.random() * 20);
-      }, 2000);
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send('ping');
+        }
+      }, 30000);
+
+      // Start connection
+      connectWebSocket();
     </script>
   </body>
 </html>
