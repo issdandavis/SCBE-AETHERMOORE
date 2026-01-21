@@ -12,17 +12,20 @@ docs/evidence/*.tar.gz
 .env.*.local
 .env.production
 
-# Node.js
+# Node.js (anywhere in repo)
 node_modules/
+**/node_modules/
 npm-debug.log*
+package-lock.json
 
 # Build outputs
 dist/
 build/
 *.tsbuildinfo
 
-# Python
+# Python (anywhere in repo)
 __pycache__/
+**/__pycache__/
 *.py[cod]
 *$py.class
 .pytest_cache/
