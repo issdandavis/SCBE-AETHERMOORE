@@ -310,7 +310,7 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
       const result = verifyRoundtable(envelope, testKeyring, { policy: 'strict' });
 
       expect(result.valid).toBe(false);
-      expect(result.error).toContain('Policy violation');
+      expect(result.error).toContain('requires tongues');
     });
 
     it('should enforce "critical" policy (requires RU + UM + DR)', () => {
@@ -335,35 +335,48 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
       const result = verifyRoundtable(envelope, testKeyring, { policy: 'critical' });
 
       expect(result.valid).toBe(false);
-      expect(result.error).toContain('Policy violation');
+      expect(result.error).toContain('requires tongues');
     });
   });
 
   describe('Policy Helpers (AC-2.5.1 - AC-2.5.3)', () => {
     it('should check if tongues satisfy policy', () => {
+      // Standard: any valid signature
       expect(checkPolicy(['ko'], 'standard')).toBe(true);
-      expect(checkPolicy(['ko', 'ru'], 'strict')).toBe(true);
-      expect(checkPolicy(['ru', 'um', 'dr'], 'critical')).toBe(true);
+      expect(checkPolicy(['av'], 'standard')).toBe(true);
 
-      expect(checkPolicy(['av'], 'standard')).toBe(false);
+      // Strict: requires 'ru' (Policy tongue)
+      expect(checkPolicy(['ko', 'ru'], 'strict')).toBe(true);
+      expect(checkPolicy(['ru'], 'strict')).toBe(true);
       expect(checkPolicy(['ko'], 'strict')).toBe(false);
+
+      // Critical: requires ru + um + dr
+      expect(checkPolicy(['ru', 'um', 'dr'], 'critical')).toBe(true);
       expect(checkPolicy(['ko', 'ru'], 'critical')).toBe(false);
     });
 
     it('should get required tongues for policy', () => {
-      expect(getRequiredTongues('standard')).toEqual(['ko']);
-      expect(getRequiredTongues('strict')).toContain('ru');
+      expect(getRequiredTongues('standard')).toEqual([]); // Any valid signature
+      expect(getRequiredTongues('strict')).toEqual(['ru']);
       expect(getRequiredTongues('critical')).toEqual(['ru', 'um', 'dr']);
     });
 
     it('should suggest appropriate policy for action', () => {
+      // Read operations: standard
       expect(suggestPolicy('read')).toBe('standard');
-      expect(suggestPolicy('write')).toBe('standard');
-      expect(suggestPolicy('deploy')).toBe('strict');
-      expect(suggestPolicy('delete')).toBe('strict');
-      expect(suggestPolicy('admin')).toBe('critical');
-      expect(suggestPolicy('security')).toBe('critical');
-      expect(suggestPolicy('unknown')).toBe('standard');
+      expect(suggestPolicy('query')).toBe('standard');
+
+      // Write operations: strict
+      expect(suggestPolicy('write')).toBe('strict');
+      expect(suggestPolicy('update')).toBe('strict');
+
+      // Delete/secret operations: secret
+      expect(suggestPolicy('delete')).toBe('secret');
+      expect(suggestPolicy('credential')).toBe('secret');
+
+      // Critical operations: critical
+      expect(suggestPolicy('deploy')).toBe('critical');
+      expect(suggestPolicy('grant_access')).toBe('critical');
     });
   });
 

@@ -69,9 +69,11 @@ function validateISO27001Controls(controls: ISO27001Control[]): ComplianceScore 
 
 function validateFIPS140(tests: FIPS140Test[]): { compliant: boolean; level: number } {
   const allPassed = tests.every((t) => t.passed);
-  const maxLevel = Math.max(...tests.map((t) => t.level));
+  const minLevel = Math.min(...tests.map((t) => t.level));
 
-  return { compliant: allPassed, level: allPassed ? maxLevel : 0 };
+  // FIPS 140-3 requires all tests pass AND minimum level 3
+  const compliant = allPassed && minLevel >= 3;
+  return { compliant, level: compliant ? minLevel : 0 };
 }
 
 function validateCommonCriteria(eal: number): { certified: boolean; level: string } {
