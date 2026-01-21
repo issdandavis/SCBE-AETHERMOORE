@@ -10,19 +10,14 @@
  * - CombatNetwork: Multipath routing with path health monitoring
  */
 
-export {
-  SpaceTorRouter,
-  type RelayNode
-} from './space-tor-router.js';
+export { SpaceTorRouter, type RelayNode } from './space-tor-router.js';
 
-export {
-  HybridSpaceCrypto
-} from './hybrid-crypto.js';
+export { HybridSpaceCrypto } from './hybrid-crypto.js';
 
 export {
   CombatNetwork,
   type TransmissionResult,
   type PathHealth,
   type AcknowledgmentConfig,
-  type CombatNetworkConfig
+  type CombatNetworkConfig,
 } from './combat-network.js';

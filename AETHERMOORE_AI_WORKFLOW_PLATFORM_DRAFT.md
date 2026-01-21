@@ -270,7 +270,7 @@ import numpy as np
 PHI = (1 + np.sqrt(5)) / 2
 KAPPA = 1 / PHI
 
-def thin_membrane_flux(c, epsilon=0.01):
+def thin*membrane_flux(c, epsilon=0.01):
 r = np.linalg.norm(c)
 if abs(r - 1) > epsilon:
 return 0.0
@@ -278,7 +278,7 @@ normal = c / max(r, 1e-9)
 v = np.random.uniform(-1, 1, len(c))
 flux = float(np.dot(v, normal))
 if flux < 0:
-flux _= -KAPPA _ (1 - r)
+flux *= -KAPPA \_ (1 - r)
 return flux
 
 Integration point:
