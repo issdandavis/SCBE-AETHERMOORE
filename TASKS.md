@@ -42,6 +42,16 @@
 - [x] Documentation (~50K words)
 - [x] Patent Filing (USPTO #63/961,403)
 
+### Pilot Fixes (January 21, 2026)
+
+- [x] RWP v2.1 test suite enabled
+- [x] API storage layer (seal → store → retrieve → decrypt)
+- [x] Body tamper acceptance test enabled
+- [x] API keys moved to environment variables
+- [x] CORS configuration secured
+- [x] Dockerfile health check improved
+- [x] Test coverage thresholds adjusted (80%)
+
 ---
 
 ## In Progress 🔄

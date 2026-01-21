@@ -44,12 +44,13 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# CORS for demo
+# CORS configuration - restrict in production
+CORS_ORIGINS = os.environ.get("SCBE_CORS_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TODO: Restrict in production
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=CORS_ORIGINS if CORS_ORIGINS != ["*"] else ["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-API-Key"],
 )
 
 # ============================================================================
@@ -227,20 +228,45 @@ class SimulateAttackRequest(BaseModel):
 # AUTH
 # ============================================================================
 
-VALID_API_KEYS = {
-    "demo_key_12345": "demo_user",
-    "pilot_key_67890": "pilot_customer",
-}
+def get_valid_api_keys() -> dict:
+    """
+    Load API keys from environment variables.
+
+    Expected format: SCBE_API_KEYS="key1:user1,key2:user2"
+    Falls back to demo keys only in development mode.
+    """
+    env_keys = os.environ.get("SCBE_API_KEYS", "")
+    is_production = os.environ.get("SCBE_ENV", "development") == "production"
+
+    if env_keys:
+        # Parse from environment: "key1:user1,key2:user2"
+        keys = {}
+        for pair in env_keys.split(","):
+            if ":" in pair:
+                key, user = pair.strip().split(":", 1)
+                keys[key] = user
+        return keys
+    elif is_production:
+        raise RuntimeError("SCBE_API_KEYS environment variable required in production")
+    else:
+        # Development fallback only
+        return {
+            "demo_key_12345": "demo_user",
+            "pilot_key_67890": "pilot_customer",
+        }
+
+# Cache API keys at startup
+VALID_API_KEYS = get_valid_api_keys()
 
 async def verify_api_key(x_api_key: str = Header(...)):
     """Verify API key and return user identifier."""
     if x_api_key not in VALID_API_KEYS:
         raise HTTPException(401, "Invalid API key")
-    
+
     # Check rate limit
     if not rate_limiter.is_allowed(x_api_key):
         raise HTTPException(429, "Rate limit exceeded (100 req/min)")
-    
+
     return VALID_API_KEYS[x_api_key]
 
 

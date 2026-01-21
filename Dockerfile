@@ -62,9 +62,9 @@ COPY README.md LICENSE ./
 # Expose ports
 EXPOSE 3000 8000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD python -c "import sys; sys.exit(0)"
+# Health check - verify API is responding
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:8000/health || exit 1
 
 # Default command
 CMD ["python", "scbe-cli.py"]
