@@ -2,9 +2,7 @@
   "mcpServers": {
     "bedrock-agentcore-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.amazon-bedrock-agentcore-mcp-server@latest"
-      ],
+      "args": ["awslabs.amazon-bedrock-agentcore-mcp-server@latest"],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"
       },
@@ -23,9 +21,7 @@
       },
       "disabled": false,
       "autoApprove": [],
-      "args": [
-        "awslabs.amazon-kendra-index-mcp-server@latest"
-      ],
+      "args": ["awslabs.amazon-kendra-index-mcp-server@latest"],
       "documentation_url": "https://awslabs.github.io/mcp/servers/amazon-kendra-index-mcp-server/",
       "category": "AI & Machine Learning"
     },
@@ -38,17 +34,13 @@
       },
       "disabled": false,
       "autoApprove": [],
-      "args": [
-        "awslabs.amazon-keyspaces-mcp-server@latest"
-      ],
+      "args": ["awslabs.amazon-keyspaces-mcp-server@latest"],
       "documentation_url": "https://awslabs.github.io/mcp/servers/amazon-keyspaces-mcp-server/",
       "category": "Data & Analytics"
     },
     "awslabs.amazon-mq-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.amazon-mq-mcp-server@latest"
-      ],
+      "args": ["awslabs.amazon-mq-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "your-aws-profile",
         "AWS_REGION": "us-east-1"
@@ -58,9 +50,7 @@
     },
     "Neptune Query": {
       "command": "uvx",
-      "args": [
-        "awslabs.amazon-neptune-mcp-server@latest"
-      ],
+      "args": ["awslabs.amazon-neptune-mcp-server@latest"],
       "env": {
         "FASTMCP_LOG_LEVEL": "INFO",
         "NEPTUNE_ENDPOINT": "<INSERT NEPTUNE ENDPOINT IN FORMAT SPECIFIED BELOW>"
@@ -79,9 +69,7 @@
       },
       "disabled": false,
       "autoApprove": [],
-      "args": [
-        "awslabs.amazon-qbusiness-anonymous-mcp-server@latest"
-      ],
+      "args": ["awslabs.amazon-qbusiness-anonymous-mcp-server@latest"],
       "documentation_url": "https://awslabs.github.io/mcp/servers/amazon-qbusiness-anonymous-mcp-server/",
       "category": "AI & Machine Learning"
     },
@@ -94,17 +82,13 @@
       },
       "disabled": false,
       "autoApprove": [],
-      "args": [
-        "awslabs.amazon-qindex-mcp-server@latest"
-      ],
+      "args": ["awslabs.amazon-qindex-mcp-server@latest"],
       "documentation_url": "https://awslabs.github.io/mcp/servers/amazon-qindex-mcp-server/",
       "category": "AI & Machine Learning"
     },
     "awslabs.amazon-sns-sqs-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.amazon-sns-sqs-mcp-server@latest"
-      ],
+      "args": ["awslabs.amazon-sns-sqs-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "your-aws-profile",
         "AWS_REGION": "us-east-1"
@@ -135,9 +119,7 @@
     },
     "awslabs.aws-api-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.aws-api-mcp-server@latest"
-      ],
+      "args": ["awslabs.aws-api-mcp-server@latest"],
       "env": {
         "AWS_REGION": "us-east-1"
       },
@@ -148,9 +130,7 @@
     },
     "awslabs.aws-appsync-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.aws-appsync-mcp-server@latest"
-      ],
+      "args": ["awslabs.aws-appsync-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "your-aws-profile",
         "AWS_REGION": "us-east-1",
@@ -163,10 +143,7 @@
     },
     "awslabs.aws-bedrock-custom-model-import-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.aws-bedrock-custom-model-import-mcp-server@latest",
-        "--allow-write"
-      ],
+      "args": ["awslabs.aws-bedrock-custom-model-import-mcp-server@latest", "--allow-write"],
       "env": {
         "AWS_PROFILE": "your-aws-profile",
         "AWS_REGION": "us-east-1",
@@ -180,9 +157,7 @@
     },
     "bedrock-data-automation-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.aws-bedrock-data-automation-mcp-server@latest"
-      ],
+      "args": ["awslabs.aws-bedrock-data-automation-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "your-aws-profile",
         "AWS_REGION": "us-east-1",
@@ -204,18 +179,13 @@
       "autoApprove": [],
       "disabled": false,
       "transportType": "stdio",
-      "args": [
-        "awslabs.aws-dataprocessing-mcp-server@latest",
-        "--allow-write"
-      ],
+      "args": ["awslabs.aws-dataprocessing-mcp-server@latest", "--allow-write"],
       "documentation_url": "https://awslabs.github.io/mcp/servers/aws-dataprocessing-mcp-server/",
       "category": "Specialized Services"
     },
     "awslabs.aws-diagram-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.aws-diagram-mcp-server"
-      ],
+      "args": ["awslabs.aws-diagram-mcp-server"],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"
       },
@@ -226,9 +196,7 @@
     },
     "awslabs.aws-documentation-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.aws-documentation-mcp-server@latest"
-      ],
+      "args": ["awslabs.aws-documentation-mcp-server@latest"],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR",
         "AWS_DOCUMENTATION_PARTITION": "aws",
@@ -246,17 +214,13 @@
         "AWS_PROFILE": "your-profile",
         "FASTMCP_LOG_LEVEL": "WARNING"
       },
-      "args": [
-        "awslabs.aws-healthomics-mcp-server@latest"
-      ],
+      "args": ["awslabs.aws-healthomics-mcp-server@latest"],
       "documentation_url": "https://awslabs.github.io/mcp/servers/aws-healthomics-mcp-server/",
       "category": "Healthcare & Lifesciences"
     },
     "awslabs.aws-iac-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.aws-iac-mcp-server@latest"
-      ],
+      "args": ["awslabs.aws-iac-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "your-named-profile",
         "FASTMCP_LOG_LEVEL": "ERROR"
@@ -268,9 +232,7 @@
     },
     "aws-iot-sitewise": {
       "command": "uvx",
-      "args": [
-        "awslabs.aws-iot-sitewise-mcp-server@latest"
-      ],
+      "args": ["awslabs.aws-iot-sitewise-mcp-server@latest"],
       "env": {
         "AWS_REGION": "us-west-2",
         "AWS_PROFILE": "your-profile-name",
@@ -282,19 +244,13 @@
     },
     "aws-knowledge-mcp-server": {
       "command": "uvx",
-      "args": [
-        "fastmcp",
-        "run",
-        "https://knowledge-mcp.global.api.aws"
-      ],
+      "args": ["fastmcp", "run", "https://knowledge-mcp.global.api.aws"],
       "documentation_url": "https://awslabs.github.io/mcp/servers/aws-knowledge-mcp-server/",
       "category": "Getting Started with AWS"
     },
     "awslabs.aws-location-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.aws-location-mcp-server@latest"
-      ],
+      "args": ["awslabs.aws-location-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "your-aws-profile",
         "AWS_REGION": "us-east-1",
@@ -312,18 +268,13 @@
       },
       "disabled": false,
       "autoApprove": [],
-      "args": [
-        "awslabs.aws-msk-mcp-server@latest",
-        "--allow-writes"
-      ],
+      "args": ["awslabs.aws-msk-mcp-server@latest", "--allow-writes"],
       "documentation_url": "https://awslabs.github.io/mcp/servers/aws-msk-mcp-server/",
       "category": "Integration & Messaging"
     },
     "awslabs.aws-network-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.aws-network-mcp-server@latest"
-      ],
+      "args": ["awslabs.aws-network-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "your-aws-profile",
         "AWS_REGION": "us-west-2"
@@ -335,9 +286,7 @@
     },
     "awslabs.aws-pricing-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.aws-pricing-mcp-server@latest"
-      ],
+      "args": ["awslabs.aws-pricing-mcp-server@latest"],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR",
         "AWS_PROFILE": "your-aws-profile",
@@ -381,9 +330,7 @@
     },
     "awslabs.bedrock-kb-retrieval-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.bedrock-kb-retrieval-mcp-server@latest"
-      ],
+      "args": ["awslabs.bedrock-kb-retrieval-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "your-profile-name",
         "AWS_REGION": "us-east-1",
@@ -398,9 +345,7 @@
     },
     "awslabs.billing-cost-management-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.billing-cost-management-mcp-server@latest"
-      ],
+      "args": ["awslabs.billing-cost-management-mcp-server@latest"],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR",
         "AWS_PROFILE": "your-aws-profile",
@@ -413,9 +358,7 @@
     },
     "awslabs.ccapi-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.ccapi-mcp-server@latest"
-      ],
+      "args": ["awslabs.ccapi-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "your-named-profile",
         "DEFAULT_TAGS": "enabled",
@@ -429,9 +372,7 @@
     },
     "awslabs.cdk-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.cdk-mcp-server@latest"
-      ],
+      "args": ["awslabs.cdk-mcp-server@latest"],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"
       },
@@ -442,9 +383,7 @@
     },
     "awslabs.cfn-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.cfn-mcp-server@latest"
-      ],
+      "args": ["awslabs.cfn-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "your-named-profile"
       },
@@ -457,9 +396,7 @@
       "autoApprove": [],
       "disabled": false,
       "command": "uvx",
-      "args": [
-        "awslabs.cloudtrail-mcp-server@latest"
-      ],
+      "args": ["awslabs.cloudtrail-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "[The AWS Profile Name to use for AWS access]",
         "FASTMCP_LOG_LEVEL": "ERROR"
@@ -479,9 +416,7 @@
         "FASTMCP_LOG_LEVEL": "ERROR"
       },
       "transportType": "stdio",
-      "args": [
-        "awslabs.cloudwatch-applicationsignals-mcp-server@latest"
-      ],
+      "args": ["awslabs.cloudwatch-applicationsignals-mcp-server@latest"],
       "documentation_url": "https://awslabs.github.io/mcp/servers/cloudwatch-applicationsignals-mcp-server/",
       "category": "Uncategorized"
     },
@@ -489,9 +424,7 @@
       "autoApprove": [],
       "disabled": false,
       "command": "uvx",
-      "args": [
-        "awslabs.cloudwatch-appsignals-mcp-server@latest"
-      ],
+      "args": ["awslabs.cloudwatch-appsignals-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "[The AWS Profile Name to use for AWS access]",
         "AWS_REGION": "[AWS Region]",
@@ -505,9 +438,7 @@
       "autoApprove": [],
       "disabled": false,
       "command": "uvx",
-      "args": [
-        "awslabs.cloudwatch-mcp-server@latest"
-      ],
+      "args": ["awslabs.cloudwatch-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "[The AWS Profile Name to use for AWS access]",
         "FASTMCP_LOG_LEVEL": "ERROR"
@@ -518,9 +449,7 @@
     },
     "awslabs.code-doc-gen-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.code-doc-gen-mcp-server@latest"
-      ],
+      "args": ["awslabs.code-doc-gen-mcp-server@latest"],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"
       },
@@ -536,17 +465,13 @@
       },
       "autoApprove": [],
       "disabled": false,
-      "args": [
-        "awslabs.core-mcp-server@latest"
-      ],
+      "args": ["awslabs.core-mcp-server@latest"],
       "documentation_url": "https://awslabs.github.io/mcp/servers/core-mcp-server/",
       "category": "Specialized Services"
     },
     "awslabs.cost-explorer-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.cost-explorer-mcp-server@latest"
-      ],
+      "args": ["awslabs.cost-explorer-mcp-server@latest"],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR",
         "AWS_PROFILE": "your-aws-profile"
@@ -558,9 +483,7 @@
     },
     "awslabs.document-loader-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.document-loader-mcp-server@latest"
-      ],
+      "args": ["awslabs.document-loader-mcp-server@latest"],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"
       },
@@ -577,17 +500,13 @@
       },
       "disabled": false,
       "autoApprove": [],
-      "args": [
-        "awslabs.documentdb-mcp-server@latest"
-      ],
+      "args": ["awslabs.documentdb-mcp-server@latest"],
       "documentation_url": "https://awslabs.github.io/mcp/servers/documentdb-mcp-server/",
       "category": "Data & Analytics"
     },
     "awslabs.dynamodb-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.dynamodb-mcp-server@latest"
-      ],
+      "args": ["awslabs.dynamodb-mcp-server@latest"],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"
       },
@@ -606,11 +525,7 @@
         "ALLOW_WRITE": "false",
         "ALLOW_SENSITIVE_DATA": "false"
       },
-      "args": [
-        "--from",
-        "awslabs-ecs-mcp-server",
-        "ecs-mcp-server"
-      ],
+      "args": ["--from", "awslabs-ecs-mcp-server", "ecs-mcp-server"],
       "documentation_url": "https://awslabs.github.io/mcp/servers/ecs-mcp-server/",
       "category": "Infrastructure & Deployment"
     },
@@ -622,19 +537,13 @@
         "FASTMCP_LOG_LEVEL": "ERROR"
       },
       "transportType": "stdio",
-      "args": [
-        "awslabs.eks-mcp-server@latest",
-        "--allow-write",
-        "--allow-sensitive-data-access"
-      ],
+      "args": ["awslabs.eks-mcp-server@latest", "--allow-write", "--allow-sensitive-data-access"],
       "documentation_url": "https://awslabs.github.io/mcp/servers/eks-mcp-server/",
       "category": "Infrastructure & Deployment"
     },
     "awslabs.elasticache-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.elasticache-mcp-server@latest"
-      ],
+      "args": ["awslabs.elasticache-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "default",
         "AWS_REGION": "us-west-2",
@@ -647,9 +556,7 @@
     },
     "awslabs.finch-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.finch-mcp-server@latest"
-      ],
+      "args": ["awslabs.finch-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "default",
         "AWS_REGION": "us-west-2",
@@ -663,9 +570,7 @@
     },
     "awslabs.frontend-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.frontend-mcp-server@latest"
-      ],
+      "args": ["awslabs.frontend-mcp-server@latest"],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"
       },
@@ -676,9 +581,7 @@
     },
     "awslabs.git-repo-research-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.git-repo-research-mcp-server@latest"
-      ],
+      "args": ["awslabs.git-repo-research-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "your-profile-name",
         "AWS_REGION": "us-west-2",
@@ -692,9 +595,7 @@
     },
     "healthlake": {
       "command": "uvx",
-      "args": [
-        "awslabs.healthlake-mcp-server@latest"
-      ],
+      "args": ["awslabs.healthlake-mcp-server@latest"],
       "env": {
         "AWS_REGION": "us-east-1",
         "AWS_PROFILE": "your-profile-name",
@@ -705,9 +606,7 @@
     },
     "awslabs.iam-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.iam-mcp-server@latest"
-      ],
+      "args": ["awslabs.iam-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "your-aws-profile",
         "AWS_REGION": "us-east-1",
@@ -718,9 +617,7 @@
     },
     "awslabs.lambda-tool-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.lambda-tool-mcp-server@latest"
-      ],
+      "args": ["awslabs.lambda-tool-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "your-aws-profile",
         "AWS_REGION": "us-east-1",
@@ -735,9 +632,7 @@
     },
     "awslabs.memcached-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.memcached-mcp-server@latest"
-      ],
+      "args": ["awslabs.memcached-mcp-server@latest"],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR",
         "MEMCACHED_HOST": "your-memcached-host",
@@ -775,9 +670,7 @@
     },
     "awslabs.nova-canvas-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.nova-canvas-mcp-server@latest"
-      ],
+      "args": ["awslabs.nova-canvas-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "your-aws-profile",
         "AWS_REGION": "us-east-1",
@@ -790,9 +683,7 @@
     },
     "awslabs.openapi-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.openapi-mcp-server@latest"
-      ],
+      "args": ["awslabs.openapi-mcp-server@latest"],
       "env": {
         "API_NAME": "your-api-name",
         "API_BASE_URL": "https://api.example.com",
@@ -835,9 +726,7 @@
     },
     "prometheus": {
       "command": "uvx",
-      "args": [
-        "awslabs.prometheus-mcp-server@latest"
-      ],
+      "args": ["awslabs.prometheus-mcp-server@latest"],
       "env": {
         "FASTMCP_LOG_LEVEL": "DEBUG"
       },
@@ -846,9 +735,7 @@
     },
     "awslabs.redshift-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.redshift-mcp-server@latest"
-      ],
+      "args": ["awslabs.redshift-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "default",
         "AWS_DEFAULT_REGION": "us-east-1",
@@ -861,9 +748,7 @@
     },
     "awslabs.s3-tables-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.s3-tables-mcp-server@latest"
-      ],
+      "args": ["awslabs.s3-tables-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "your-aws-profile",
         "AWS_REGION": "us-east-1"
@@ -889,9 +774,7 @@
     },
     "awslabs.stepfunctions-tool-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.stepfunctions-tool-mcp-server@latest"
-      ],
+      "args": ["awslabs.stepfunctions-tool-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "your-aws-profile",
         "AWS_REGION": "us-east-1",
@@ -906,9 +789,7 @@
     },
     "awslabs.syntheticdata-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.syntheticdata-mcp-server"
-      ],
+      "args": ["awslabs.syntheticdata-mcp-server"],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR",
         "AWS_PROFILE": "your-aws-profile",
@@ -921,9 +802,7 @@
     },
     "awslabs.terraform-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.terraform-mcp-server@latest"
-      ],
+      "args": ["awslabs.terraform-mcp-server@latest"],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"
       },
@@ -934,9 +813,7 @@
     },
     "awslabs.timestream-for-influxdb-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.timestream-for-influxdb-mcp-server@latest"
-      ],
+      "args": ["awslabs.timestream-for-influxdb-mcp-server@latest"],
       "env": {
         "AWS_PROFILE": "your-aws-profile",
         "AWS_REGION": "us-east-1",
@@ -949,9 +826,7 @@
     },
     "awslabs.valkey-mcp-server": {
       "command": "uvx",
-      "args": [
-        "awslabs.valkey-mcp-server@latest"
-      ],
+      "args": ["awslabs.valkey-mcp-server@latest"],
       "env": {
         "VALKEY_HOST": "127.0.0.1",
         "VALKEY_PORT": "6379",
@@ -971,9 +846,7 @@
       },
       "disabled": false,
       "autoApprove": [],
-      "args": [
-        "awslabs.well-architected-security-mcp-server@latest"
-      ],
+      "args": ["awslabs.well-architected-security-mcp-server@latest"],
       "documentation_url": "https://awslabs.github.io/mcp/servers/well-architected-security-mcp-server/",
       "category": "Developer Tools & Support"
     }

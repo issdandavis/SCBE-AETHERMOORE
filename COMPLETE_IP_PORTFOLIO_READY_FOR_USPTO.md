@@ -310,7 +310,7 @@ f(x) = 3844.34, f⁻¹(x) = 0.000260, product = 1.0000000000
 - Temporal oscillation in signal processing
 
 **Novelty Statement**:
-"While trust scoring and golden ratios are known, the present invention independently discovered that applying L(x,t) = Σ w_l _ exp[β_l _ (d_l + sin(ω_l\*t + φ_l))] to distributed networks with Six Sacred Tongues provides dynamic trust scoring—a novel application not previously disclosed."
+"While trust scoring and golden ratios are known, the present invention independently discovered that applying L(x,t) = Σ w*l * exp[β_l _ (d_l + sin(ω_l\*t + φ_l))] to distributed networks with Six Sacred Tongues provides dynamic trust scoring—a novel application not previously disclosed."
 
 ---
 

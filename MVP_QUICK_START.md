@@ -3,27 +3,32 @@
 ## Get the API Running in 5 Minutes
 
 ### Prerequisites
+
 ```bash
 python >= 3.10
 pip install fastapi uvicorn pydantic numpy scipy
 ```
 
 ### Step 1: Install Dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ### Step 2: Start the API
+
 ```bash
 python src/api/main.py
 ```
 
 Or with uvicorn:
+
 ```bash
 uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### Step 3: Open Swagger Docs
+
 ```
 http://localhost:8000/docs
 ```
@@ -33,6 +38,7 @@ http://localhost:8000/docs
 ## Test the API (5 Examples)
 
 ### Example 1: Seal Memory
+
 ```bash
 curl -X POST "http://localhost:8000/seal-memory" \
   -H "X-API-Key: demo_key_12345" \
@@ -46,6 +52,7 @@ curl -X POST "http://localhost:8000/seal-memory" \
 ```
 
 **Response:**
+
 ```json
 {
   "status": "sealed",
@@ -61,6 +68,7 @@ curl -X POST "http://localhost:8000/seal-memory" \
 ---
 
 ### Example 2: Retrieve Memory (Internal Context)
+
 ```bash
 curl -X POST "http://localhost:8000/retrieve-memory" \
   -H "X-API-Key: demo_key_12345" \
@@ -73,6 +81,7 @@ curl -X POST "http://localhost:8000/retrieve-memory" \
 ```
 
 **Response (ALLOW):**
+
 ```json
 {
   "status": "retrieved",
@@ -87,6 +96,7 @@ curl -X POST "http://localhost:8000/retrieve-memory" \
 ---
 
 ### Example 3: Retrieve Memory (Untrusted Context - DENY)
+
 ```bash
 curl -X POST "http://localhost:8000/retrieve-memory" \
   -H "X-API-Key: demo_key_12345" \
@@ -99,6 +109,7 @@ curl -X POST "http://localhost:8000/retrieve-memory" \
 ```
 
 **Response (DENY - Fail to Noise):**
+
 ```json
 {
   "status": "denied",
@@ -114,11 +125,13 @@ curl -X POST "http://localhost:8000/retrieve-memory" \
 ---
 
 ### Example 4: Governance Check (No Auth Required)
+
 ```bash
 curl "http://localhost:8000/governance-check?agent=agent_123&topic=finance&context=external"
 ```
 
 **Response:**
+
 ```json
 {
   "status": "ok",
@@ -140,6 +153,7 @@ curl "http://localhost:8000/governance-check?agent=agent_123&topic=finance&conte
 ---
 
 ### Example 5: Simulate Attack (Demo)
+
 ```bash
 curl -X POST "http://localhost:8000/simulate-attack" \
   -H "Content-Type: application/json" \
@@ -151,6 +165,7 @@ curl -X POST "http://localhost:8000/simulate-attack" \
 ```
 
 **Response:**
+
 ```json
 {
   "status": "simulated",
@@ -221,30 +236,30 @@ print("Governance:", response.json())
 ## JavaScript Client Example
 
 ```javascript
-const API_URL = "http://localhost:8000";
-const API_KEY = "demo_key_12345";
+const API_URL = 'http://localhost:8000';
+const API_KEY = 'demo_key_12345';
 
 // Seal memory
 const sealResponse = await fetch(`${API_URL}/seal-memory`, {
-  method: "POST",
+  method: 'POST',
   headers: {
-    "X-API-Key": API_KEY,
-    "Content-Type": "application/json"
+    'X-API-Key': API_KEY,
+    'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    plaintext: "secret data",
-    agent: "agent_123",
-    topic: "finance",
-    position: [10, 20, 30, 40, 50, 60]
-  })
+    plaintext: 'secret data',
+    agent: 'agent_123',
+    topic: 'finance',
+    position: [10, 20, 30, 40, 50, 60],
+  }),
 });
-console.log("Seal:", await sealResponse.json());
+console.log('Seal:', await sealResponse.json());
 
 // Governance check (no auth)
 const govResponse = await fetch(
   `${API_URL}/governance-check?agent=agent_123&topic=finance&context=external`
 );
-console.log("Governance:", await govResponse.json());
+console.log('Governance:', await govResponse.json());
 ```
 
 ---
@@ -252,16 +267,19 @@ console.log("Governance:", await govResponse.json());
 ## Docker Quick Start
 
 ### Build Image
+
 ```bash
 docker build -t scbe-api .
 ```
 
 ### Run Container
+
 ```bash
 docker run -p 8000:8000 scbe-api
 ```
 
 ### Docker Compose
+
 ```bash
 docker-compose up
 ```
@@ -271,10 +289,12 @@ docker-compose up
 ## API Authentication
 
 ### Valid API Keys (MVP)
+
 - `demo_key_12345` - Demo user
 - `pilot_key_67890` - Pilot customer
 
 ### Rate Limits
+
 - 100 requests per minute per API key
 - Returns 429 error when exceeded
 
@@ -293,6 +313,7 @@ docker-compose up
 ## Troubleshooting
 
 ### Import Errors
+
 ```bash
 # Ensure you're in the project root
 cd /path/to/SCBE_Production_Pack
@@ -302,12 +323,14 @@ pip install -r requirements.txt
 ```
 
 ### Port Already in Use
+
 ```bash
 # Use different port
 uvicorn src.api.main:app --port 8001
 ```
 
 ### CORS Issues
+
 - CORS is enabled for all origins in MVP
 - Restrict in production by editing `allow_origins` in `main.py`
 

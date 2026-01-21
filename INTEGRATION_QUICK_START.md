@@ -12,7 +12,7 @@
 ✅ **PHDM** - Polyhedral Hamiltonian Defense Manifold (intrusion detection)  
 ✅ **Symphonic Cipher** - Complex number encryption with FFT  
 ✅ **Physics Sim** - Real physics calculations (CODATA 2018)  
-✅ **Enterprise Tests** - 41 correctness properties with property-based testing  
+✅ **Enterprise Tests** - 41 correctness properties with property-based testing
 
 ---
 
@@ -37,13 +37,13 @@ python examples/rwp_v3_sacred_tongue_demo.py
 
 ## Component Locations
 
-| Component | TypeScript | Python | Tests | Spec |
-|-----------|-----------|--------|-------|------|
-| **RWP v3** | `src/spiralverse/rwp.ts` | `src/crypto/rwp_v3.py` | `tests/spiralverse/` | `.kiro/specs/rwp-v2-integration/` |
-| **Space Tor** | `src/spaceTor/*.ts` | N/A | `tests/spaceTor/` | Inline docs |
-| **PHDM** | `src/harmonic/phdm.ts` | N/A | `tests/harmonic/` | `.kiro/specs/phdm-intrusion-detection/` |
-| **Symphonic** | `src/symphonic/` | `src/symphonic_cipher/` | `tests/symphonic/` | `.kiro/specs/symphonic-cipher/` |
-| **Physics** | N/A | `aws-lambda-simple-web-app/physics_sim/` | `physics_sim/test_physics.py` | Inline docs |
+| Component     | TypeScript               | Python                                   | Tests                         | Spec                                    |
+| ------------- | ------------------------ | ---------------------------------------- | ----------------------------- | --------------------------------------- |
+| **RWP v3**    | `src/spiralverse/rwp.ts` | `src/crypto/rwp_v3.py`                   | `tests/spiralverse/`          | `.kiro/specs/rwp-v2-integration/`       |
+| **Space Tor** | `src/spaceTor/*.ts`      | N/A                                      | `tests/spaceTor/`             | Inline docs                             |
+| **PHDM**      | `src/harmonic/phdm.ts`   | N/A                                      | `tests/harmonic/`             | `.kiro/specs/phdm-intrusion-detection/` |
+| **Symphonic** | `src/symphonic/`         | `src/symphonic_cipher/`                  | `tests/symphonic/`            | `.kiro/specs/symphonic-cipher/`         |
+| **Physics**   | N/A                      | `aws-lambda-simple-web-app/physics_sim/` | `physics_sim/test_physics.py` | Inline docs                             |
 
 ---
 
@@ -65,13 +65,13 @@ const router = new SpaceTorRouter(nodes, trustManager);
 const envelope = await rwp.createEnvelope({
   tongue: 'KO',
   payload: 'Secret message',
-  mode: 'STRICT'
+  mode: 'STRICT',
 });
 
 // Route through Space Tor
 const path = router.selectPath(source, destination, {
   combatMode: true,
-  minTrust: 0.8
+  minTrust: 0.8,
 });
 
 console.log('Envelope:', envelope);
@@ -133,21 +133,25 @@ print(f"Photon energy: {qm['photon_energy_eV']} eV")
 ## Key Integration Points
 
 ### 1. RWP v3 ↔ Space Tor
+
 - RWP v3 creates secure envelopes
 - Space Tor routes them through trusted nodes
 - Trust Manager scores nodes using Layer 3 Langues Weighting
 
 ### 2. PHDM ↔ Trust Manager
+
 - PHDM detects anomalies using 6D geodesic distance
 - Trust Manager adjusts trust scores based on anomalies
 - Both use Hamiltonian path verification (Layer 6)
 
 ### 3. Symphonic Cipher ↔ Physics
+
 - Symphonic uses FFT (Layer 7)
 - Physics provides quantum mechanics calculations
 - Both contribute to spectral coherence (Layer 9)
 
 ### 4. Enterprise Tests ↔ All Components
+
 - 41 properties test entire stack
 - Property-based testing (100+ iterations)
 - Covers quantum attacks, AI safety, compliance
@@ -157,6 +161,7 @@ print(f"Photon energy: {qm['photon_energy_eV']} eV")
 ## Testing Strategy
 
 ### Run All Tests
+
 ```bash
 # TypeScript (fast-check)
 npm test
@@ -173,6 +178,7 @@ pytest tests/test_sacred_tongue_integration.py
 ```
 
 ### Property-Based Test Example
+
 ```typescript
 // TypeScript
 fc.assert(
@@ -199,13 +205,13 @@ def test_envelope_integrity(payload, tongue):
 
 ## Performance
 
-| Operation | Throughput | Latency (p99) |
-|-----------|-----------|---------------|
-| RWP v3 Envelope | 10K/s | 2ms |
-| Space Tor Routing | 50K/s | 1ms |
-| Trust Scoring | 100K/s | 0.5ms |
-| PHDM Detection | 1M/s | 0.1ms |
-| Physics Calc | 5K/s | 5ms |
+| Operation         | Throughput | Latency (p99) |
+| ----------------- | ---------- | ------------- |
+| RWP v3 Envelope   | 10K/s      | 2ms           |
+| Space Tor Routing | 50K/s      | 1ms           |
+| Trust Scoring     | 100K/s     | 0.5ms         |
+| PHDM Detection    | 1M/s       | 0.1ms         |
+| Physics Calc      | 5K/s       | 5ms           |
 
 ---
 
