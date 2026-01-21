@@ -34,7 +34,7 @@ env:
 jobs:
   sync-to-gumroad:
     runs-on: ubuntu-latest
-    if: (github.event_name == 'push' || github.event.inputs.sync_direction != 'from-gumroad') && secrets.CROSS_REPO_TOKEN != ''
+    if: (github.event_name == 'push' || github.event.inputs.sync_direction != 'from-gumroad') 
     
     steps:
       - name: Checkout scbe-aethermoore-demo
