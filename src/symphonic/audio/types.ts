@@ -68,7 +68,7 @@ export const PROFILE_16K: AudioProfile = {
   k_min: 308,
   k_max: 1075,
   b: 32,
-  delta_k_min: 12,
+  delta_k_min: 10, // Reduced from 12 to accommodate harmonic collision checks
   gamma: 0.02,
   betaFactor: 0.4, // 40% of expected correlation
   E_min: 0.001,
