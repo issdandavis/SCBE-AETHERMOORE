@@ -2193,7 +2193,7 @@ This document provides complete technical specifications for recreating the SCBE
 3. Deploy using Docker or NPM package
 4. Integrate into your security infrastructure
 
-For questions or support, contact: issdandavis@gmail.com
+For questions or support, contact: issdandavis@gmail.comA
 
 ---
 

@@ -11,6 +11,8 @@ import { SpectralIdentityGenerator } from '../harmonic/spectral-identity';
 import { TrustManager } from '../spaceTor/trust-manager';
 import { AgentRegistrationOptions, AgentRegistry } from './agent-registry';
 import { GovernanceManager, RoundtableOptions } from './governance';
+import { PollyPad, PollyPadManager } from './polly-pad';
+import { SwarmCoordinator } from './swarm';
 import { TaskCreationOptions, TaskDispatcher } from './task-dispatcher';
 import {
     AgentCapability,
@@ -27,15 +29,21 @@ import {
 export interface FleetManagerConfig {
   /** Auto-assign tasks when created */
   autoAssign?: boolean;
-  
+
   /** Auto-cleanup completed tasks after ms */
   taskRetentionMs?: number;
-  
+
   /** Health check interval ms */
   healthCheckIntervalMs?: number;
-  
+
   /** Enable security alerts */
   enableSecurityAlerts?: boolean;
+
+  /** Enable Polly Pads for agents */
+  enablePollyPads?: boolean;
+
+  /** Auto-create swarm for new agents */
+  defaultSwarmId?: string;
 }
 
 /**
@@ -50,6 +58,8 @@ export class FleetManager {
   private registry: AgentRegistry;
   private dispatcher: TaskDispatcher;
   private governance: GovernanceManager;
+  private pollyPadManager?: PollyPadManager;
+  private swarmCoordinator?: SwarmCoordinator;
   private config: FleetManagerConfig;
   private eventLog: FleetEvent[] = [];
   private eventListeners: ((event: FleetEvent) => void)[] = [];
@@ -61,21 +71,41 @@ export class FleetManager {
       taskRetentionMs: 24 * 60 * 60 * 1000, // 24 hours
       healthCheckIntervalMs: 60000, // 1 minute
       enableSecurityAlerts: true,
+      enablePollyPads: true,
       ...config
     };
-    
+
     // Initialize core components
     this.trustManager = new TrustManager();
     this.spectralGenerator = new SpectralIdentityGenerator();
     this.registry = new AgentRegistry(this.trustManager);
     this.dispatcher = new TaskDispatcher(this.registry);
     this.governance = new GovernanceManager(this.registry);
-    
+
+    // Initialize Polly Pad system if enabled
+    if (this.config.enablePollyPads) {
+      this.pollyPadManager = new PollyPadManager();
+      this.swarmCoordinator = new SwarmCoordinator(this.pollyPadManager);
+
+      // Create default swarm if specified
+      if (this.config.defaultSwarmId) {
+        this.swarmCoordinator.createSwarm({
+          id: this.config.defaultSwarmId,
+          name: 'Default Fleet Swarm',
+          minCoherence: 0.5,
+          fluxDecayRate: 0.01,
+          syncIntervalMs: 5000,
+          maxPads: 50
+        });
+        this.swarmCoordinator.startAutoSync(this.config.defaultSwarmId);
+      }
+    }
+
     // Wire up event forwarding
     this.registry.onEvent(e => this.handleEvent(e));
     this.dispatcher.onEvent(e => this.handleEvent(e));
     this.governance.onEvent(e => this.handleEvent(e));
-    
+
     // Start health checks
     if (this.config.healthCheckIntervalMs) {
       this.startHealthChecks();
@@ -88,7 +118,24 @@ export class FleetManager {
    * Register a new agent
    */
   public registerAgent(options: AgentRegistrationOptions): FleetAgent {
-    return this.registry.registerAgent(options);
+    const agent = this.registry.registerAgent(options);
+
+    // Auto-create Polly Pad for agent
+    if (this.pollyPadManager) {
+      const pad = this.pollyPadManager.createPad(
+        agent.id,
+        `${agent.name}'s Pad`,
+        options.maxGovernanceTier || 'KO',
+        options.initialTrustVector || [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+      );
+
+      // Add to default swarm if configured
+      if (this.swarmCoordinator && this.config.defaultSwarmId) {
+        this.swarmCoordinator.addPadToSwarm(this.config.defaultSwarmId, pad.id);
+      }
+    }
+
+    return agent;
   }
   
   /**
@@ -242,6 +289,127 @@ export class FleetManager {
     return this.governance.getRequiredTier(action);
   }
   
+  // ==================== Polly Pads ====================
+
+  /**
+   * Get Polly Pad for an agent
+   */
+  public getAgentPad(agentId: string): PollyPad | undefined {
+    return this.pollyPadManager?.getPadByAgent(agentId);
+  }
+
+  /**
+   * Get all Polly Pads
+   */
+  public getAllPads(): PollyPad[] {
+    return this.pollyPadManager?.getAllPads() ?? [];
+  }
+
+  /**
+   * Add note to agent's pad
+   */
+  public addPadNote(
+    agentId: string,
+    title: string,
+    content: string,
+    tags: string[] = []
+  ) {
+    const pad = this.pollyPadManager?.getPadByAgent(agentId);
+    if (!pad || !this.pollyPadManager) return undefined;
+
+    return this.pollyPadManager.addNote(pad.id, {
+      title,
+      content,
+      tags,
+      shared: false
+    });
+  }
+
+  /**
+   * Add sketch to agent's pad
+   */
+  public addPadSketch(
+    agentId: string,
+    name: string,
+    data: string,
+    type: 'diagram' | 'flowchart' | 'wireframe' | 'freehand' | 'architecture' = 'freehand'
+  ) {
+    const pad = this.pollyPadManager?.getPadByAgent(agentId);
+    if (!pad || !this.pollyPadManager) return undefined;
+
+    return this.pollyPadManager.addSketch(pad.id, {
+      name,
+      data,
+      type,
+      shared: false
+    });
+  }
+
+  /**
+   * Add tool to agent's pad
+   */
+  public addPadTool(
+    agentId: string,
+    name: string,
+    description: string,
+    type: 'snippet' | 'template' | 'script' | 'prompt' | 'config',
+    content: string
+  ) {
+    const pad = this.pollyPadManager?.getPadByAgent(agentId);
+    if (!pad || !this.pollyPadManager) return undefined;
+
+    return this.pollyPadManager.addTool(pad.id, {
+      name,
+      description,
+      type,
+      content
+    });
+  }
+
+  /**
+   * Record task completion on agent's pad
+   */
+  public recordPadTaskCompletion(agentId: string, success: boolean): void {
+    const pad = this.pollyPadManager?.getPadByAgent(agentId);
+    if (!pad || !this.pollyPadManager) return;
+
+    this.pollyPadManager.recordTaskCompletion(pad.id, success);
+  }
+
+  /**
+   * Audit an agent's pad
+   */
+  public auditPad(agentId: string, auditorId: string) {
+    const pad = this.pollyPadManager?.getPadByAgent(agentId);
+    if (!pad || !this.pollyPadManager) return undefined;
+
+    return this.pollyPadManager.auditPad(pad.id, auditorId);
+  }
+
+  /**
+   * Get pad statistics for an agent
+   */
+  public getPadStats(agentId: string) {
+    const pad = this.pollyPadManager?.getPadByAgent(agentId);
+    if (!pad || !this.pollyPadManager) return undefined;
+
+    return this.pollyPadManager.getPadStats(pad.id);
+  }
+
+  /**
+   * Get swarm coordinator
+   */
+  public getSwarmCoordinator(): SwarmCoordinator | undefined {
+    return this.swarmCoordinator;
+  }
+
+  /**
+   * Get Polly Pad manager
+   */
+  public getPollyPadManager(): PollyPadManager | undefined {
+    return this.pollyPadManager;
+  }
+
   // ==================== Fleet Statistics ====================
   
   /**
@@ -342,7 +510,12 @@ export class FleetManager {
     if (this.healthCheckInterval) {
       clearInterval(this.healthCheckInterval);
     }
-    
+
+    // Shutdown swarm coordinator
+    if (this.swarmCoordinator) {
+      this.swarmCoordinator.shutdown();
+    }
+
     // Cancel all pending tasks
     for (const task of this.getPendingTasks()) {
       this.cancelTask(task.id);
