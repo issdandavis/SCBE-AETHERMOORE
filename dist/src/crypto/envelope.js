@@ -3,7 +3,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyEnvelope = exports.createEnvelope = void 0;
+exports.createEnvelope = createEnvelope;
+exports.verifyEnvelope = verifyEnvelope;
 const node_crypto_1 = __importDefault(require("node:crypto"));
 const hkdf_js_1 = require("./hkdf.js");
 const jcs_js_1 = require("./jcs.js");
@@ -47,7 +48,7 @@ async function createEnvelope(p) {
         schema_hash: p.schema_hash,
         canonical_body_hash,
         request_id: p.request_id,
-        replay_nonce: node_crypto_1.default.randomBytes(16).toString('hex')
+        replay_nonce: node_crypto_1.default.randomBytes(16).toString('hex'),
     };
     // 2) Derive subkeys via HKDF: k_enc, k_nonce, k_log
     const ikm = await (0, kms_js_1.getMasterKey)(p.kid);
@@ -75,10 +76,13 @@ async function createEnvelope(p) {
             nonce: b64u(nonce),
             tag: b64u(tag),
             ciphertext: b64u(ct),
-            salt: b64u(salt)
+            salt: b64u(salt),
         };
         telemetry_js_1.metrics.timing('envelope_create_ms', telemetry_js_1.metrics.now() - t0, {
-            provider_id: p.provider_id, model_id: p.model_id, intent_id: p.intent_id, phase: p.phase
+            provider_id: p.provider_id,
+            model_id: p.model_id,
+            intent_id: p.intent_id,
+            phase: p.phase,
         });
         return envl;
     }
@@ -87,7 +91,6 @@ async function createEnvelope(p) {
         throw e;
     }
 }
-exports.createEnvelope = createEnvelope;
 async function verifyEnvelope(p) {
     const t0 = telemetry_js_1.metrics.now();
     const { envelope } = p;
@@ -134,11 +137,16 @@ async function verifyEnvelope(p) {
         decipher.setAuthTag(tag);
         const pt = Buffer.concat([decipher.update(ct), decipher.final()]);
         telemetry_js_1.metrics.timing('envelope_verify_ms', telemetry_js_1.metrics.now() - t0, {
-            provider_id: envelope.aad.provider_id, model_id: envelope.aad.model_id, intent_id: envelope.aad.intent_id, phase: envelope.aad.phase
+            provider_id: envelope.aad.provider_id,
+            model_id: envelope.aad.model_id,
+            intent_id: envelope.aad.intent_id,
+            phase: envelope.aad.phase,
         });
         // Fail-to-noise policy: return opaque error details (we already threw on failure)
         const contentType = envelope.aad.content_type || 'application/json';
-        const body = contentType.includes('json') ? JSON.parse(pt.toString('utf8')) : pt.toString('utf8');
+        const body = contentType.includes('json')
+            ? JSON.parse(pt.toString('utf8'))
+            : pt.toString('utf8');
         return { body };
     }
     catch (e) {
@@ -147,5 +155,4 @@ async function verifyEnvelope(p) {
         throw new Error('auth-failed');
     }
 }
-exports.verifyEnvelope = verifyEnvelope;
 //# sourceMappingURL=envelope.js.map

@@ -15,7 +15,10 @@
  * @module symphonic/HybridCrypto
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyIntent = exports.signIntent = exports.createHybridCrypto = exports.HybridCrypto = void 0;
+exports.HybridCrypto = void 0;
+exports.createHybridCrypto = createHybridCrypto;
+exports.signIntent = signIntent;
+exports.verifyIntent = verifyIntent;
 const crypto_1 = require("crypto");
 const SymphonicAgent_js_1 = require("./SymphonicAgent.js");
 const ZBase32_js_1 = require("./ZBase32.js");
@@ -65,10 +68,7 @@ class HybridCrypto {
             nonce,
             intent,
         ].join('|');
-        const hmac = (0, crypto_1.createHmac)('sha256', secretKey)
-            .update(hmacData)
-            .digest('hex')
-            .substring(0, 32);
+        const hmac = (0, crypto_1.createHmac)('sha256', secretKey).update(hmacData).digest('hex').substring(0, 32);
         const signature = {
             fingerprint: encodedFingerprint,
             coherence: synthesis.coherence,
@@ -251,19 +251,16 @@ exports.HybridCrypto = HybridCrypto;
 function createHybridCrypto(config) {
     return new HybridCrypto(config);
 }
-exports.createHybridCrypto = createHybridCrypto;
 /**
  * Convenience function to sign an intent.
  */
 function signIntent(intent, secretKey) {
     return new HybridCrypto().sign(intent, secretKey);
 }
-exports.signIntent = signIntent;
 /**
  * Convenience function to verify a signed envelope.
  */
 function verifyIntent(envelope, secretKey) {
     return new HybridCrypto().verify(envelope, secretKey);
 }
-exports.verifyIntent = verifyIntent;
 //# sourceMappingURL=HybridCrypto.js.map

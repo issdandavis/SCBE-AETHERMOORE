@@ -10,7 +10,9 @@ class CircuitBreaker {
         this.failRateThreshold = failRateThreshold;
         this.windowMs = windowMs;
     }
-    getState() { return this.state; }
+    getState() {
+        return this.state;
+    }
     evaluate(failureRate) {
         if (this.state === 'open')
             return;
@@ -24,7 +26,10 @@ class CircuitBreaker {
             this.state = 'half-open';
         }
     }
-    close() { this.state = 'closed'; this.openedAt = 0; }
+    close() {
+        this.state = 'closed';
+        this.openedAt = 0;
+    }
 }
 exports.CircuitBreaker = CircuitBreaker;
 //# sourceMappingURL=circuitBreaker.js.map

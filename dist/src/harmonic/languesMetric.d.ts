@@ -11,7 +11,7 @@
 import { Vector6D } from './constants.js';
 /** The Six Sacred Tongues */
 export declare const TONGUES: readonly ["KO", "AV", "RU", "CA", "UM", "DR"];
-export type Tongue = typeof TONGUES[number];
+export type Tongue = (typeof TONGUES)[number];
 /** Dimension flux state */
 export type FluxState = 'Polly' | 'Quasi' | 'Demi' | 'Collapsed';
 /** Decision outcome from risk evaluation */

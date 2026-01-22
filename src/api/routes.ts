@@ -290,7 +290,7 @@ export async function handleCreateEnvelope(req: EnvelopeRequest): Promise<Envelo
   const key = createHash('sha256').update(req.password).update(salt).digest();
 
   // Encrypt (simplified - in production use XChaCha20-Poly1305)
-  const ct = Buffer.from(req.plaintext).map((b, i) => b ^ key[i % 32]);
+  const ct = Buffer.from(Buffer.from(req.plaintext).map((b, i) => b ^ key[i % 32]));
   const tag = createHash('sha256').update(key).update(ct).update(aad).digest().slice(0, 16);
 
   // Encode to Sacred Tongue format (simplified)
@@ -365,9 +365,7 @@ export async function handleVerifyEnvelope(req: VerifyRequest): Promise<VerifyRe
     }
 
     // Decrypt
-    const plaintext = Buffer.from(ct)
-      .map((b, i) => b ^ key[i % 32])
-      .toString('utf-8');
+    const plaintext = Buffer.from(Buffer.from(ct).map((b, i) => b ^ key[i % 32])).toString('utf-8');
 
     return {
       valid: true,
