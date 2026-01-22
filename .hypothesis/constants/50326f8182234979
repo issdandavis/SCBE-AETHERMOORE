@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_runpy.py
+# hypothesis_version: 6.150.2
+
+['%s: %s', '.', '.__main__', '.py', '<run_path>', 'No module named %s', 'NullImporter', '__main__', '__path__', 'be directly executed', 'exec', 'imp', 'run_module', 'run_path']

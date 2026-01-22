@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_suspended_frames.py
+# hypothesis_version: 6.150.2
+
+['%s=%s', '%s[%r]', '(return) %s', '*', 'Unexpected scope: %s', '_pydev_stop_at_break', 'attributes', 'bytearray', 'bytes', 'change_var_from_name', 'evaluateName', 'globals', 'hex', 'hide', 'inline', 'locals', 'name', 'presentationHint', 'rawString', 'readOnly', 'str', 'type', 'value', 'variablesReference']

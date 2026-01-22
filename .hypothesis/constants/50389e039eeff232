@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/adapter/../../debugpy/launcher/../../debugpy/../debugpy/__init__.py
+# hypothesis_version: 6.150.2
+
+['__version__', 'breakpoint', 'configure', 'connect', 'debug_this_thread', 'get_cli_options', 'is_client_connected', 'listen', 'log_to', 'trace_this_thread', 'wait_for_client']

@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_frame_utils.py
+# hypothesis_version: 6.150.2
+
+[b' ', 128, 2048, 65536, '\n    current_frame: ', '\n    exc_desc: ', '\n    exc_type: ', '\n    trace_obj: ', '\n)', '\n--- Chained ---\n', ' -> ', '%s::%s %s', ',', '<Unknown context>', 'FramesList(', 'None', 'Stack: %s\n', 'Traceback: %s\n', '__cause__', '__context__', '__exception__', '_cached_', 'f_back', 'f_lineno', 'pydev_import_hook.py', 'pydev_monkey_qt.py', 'utf-8', '{%r, %r, %r}']
