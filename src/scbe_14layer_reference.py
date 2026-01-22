@@ -39,14 +39,15 @@ def layer_1_complex_state(t: np.ndarray, D: int) -> np.ndarray:
     """
     # Split input into amplitudes and phases
     if len(t) >= 2 * D:
-        amplitudes = t[:D]
-        phases = t[D:2*D]
+        amplitudes = np.array(t[:D])
+        phases = np.array(t[D:2*D])
     else:
         # Handle shorter inputs
         amplitudes = np.ones(D)
         phases = np.zeros(D)
-        amplitudes[:len(t)//2] = t[:len(t)//2] if len(t) >= 2 else [1.0]
-        phases[:len(t)//2] = t[len(t)//2:] if len(t) >= 2 else [0.0]
+        if len(t) >= 2:
+            amplitudes[:len(t)//2] = t[:len(t)//2]
+            phases[:len(t)//2] = t[len(t)//2:]
 
     # A1: Map to complex space
     c = amplitudes * np.exp(1j * phases)

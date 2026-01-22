@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 SCBE-AETHERMOORE Quick Demo (v3.0.0)
 ====================================
@@ -20,6 +21,13 @@ import os
 import traceback
 from datetime import datetime
 
+# Fix Windows console encoding
+if sys.platform == 'win32':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except:
+        pass
+
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
@@ -30,13 +38,23 @@ BUILD_DATE = "2026-01-20"
 def print_header():
     """Print demo header with ASCII art."""
     print("\n" + "="*70)
-    print("""
+    try:
+        print("""
     ███████╗ ██████╗██████╗ ███████╗
     ██╔════╝██╔════╝██╔══██╗██╔════╝
     ███████╗██║     ██████╔╝█████╗  
     ╚════██║██║     ██╔══██╗██╔══╝  
     ███████║╚██████╗██████╔╝███████╗
     ╚══════╝ ╚═════╝╚═════╝ ╚══════╝
+    
+    AETHERMOORE Security Engine v{version}
+    Spectral Context-Bound Encryption
+    """.format(version=VERSION))
+    except UnicodeEncodeError:
+        # Fallback for terminals that don't support Unicode
+        print("""
+    SCBE-AETHERMOORE
+    ================
     
     AETHERMOORE Security Engine v{version}
     Spectral Context-Bound Encryption
