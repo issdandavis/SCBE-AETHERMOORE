@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCBE AetherMoore 14-Layer Stack UI</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🔮 SCBE AetherMoore Protocol</h1>
+            <p class="subtitle">14-Layer Symphonic Cipher Stack</p>
+        </header>
+        
+        <div class="dashboard">
+            <div class="layer-stack" id="layerStack">
+                <!-- Layers will be dynamically generated -->
+            </div>
+            
+            <div class="control-panel">
+                <h2>Control Panel</h2>
+                <div class="controls">
+                    <button id="runAll" class="btn btn-primary">▶ Run All Layers</button>
+                    <button id="stopAll" class="btn btn-danger">⏹ Stop</button>
+                    <button id="resetAll" class="btn btn-secondary">↻ Reset</button>
+                </div>
+                
+                <div class="input-section">
+                    <h3>Input Data</h3>
+                    <textarea id="inputData" placeholder="Enter input vector..."></textarea>
+                    <button id="processInput" class="btn btn-primary">Process</button>
+                </div>
+                
+                <div class="output-section">
+                    <h3>Output</h3>
+                    <div id="outputDisplay" class="output-display"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="metrics-panel">
+            <h2>Layer Metrics</h2>
+            <div id="metricsDisplay" class="metrics-grid"></div>
+        </div>
+    </div>
+    <script src="components/LayerStack.js"></script>
+</body>
+</html>
