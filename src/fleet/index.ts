@@ -1,9 +1,9 @@
 /**
  * SCBE Fleet Management System
- * 
+ *
  * Integrates SCBE security (TrustManager, SpectralIdentity) with
  * AI Workflow Architect's agent orchestration for secure AI fleet management.
- * 
+ *
  * Features:
  * - Agent registration with spectral identity
  * - Sacred Tongue governance for agent actions
@@ -12,7 +12,7 @@
  * - Roundtable consensus for critical operations
  * - Polly Pads: Personal agent workspaces with dimensional flux
  * - Swarm coordination with flux ODE dynamics
- * 
+ *
  * @module fleet
  */
 
@@ -40,6 +40,5 @@ export {
   PollyPadManager,
   TIER_THRESHOLDS,
   getNextTier,
-  getXPForNextTier
+  getXPForNextTier,
 } from './polly-pad';
-

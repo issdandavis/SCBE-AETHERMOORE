@@ -364,10 +364,10 @@ export function verifyRoundtable(
   // Check policy if specified
   if (options.policy) {
     const required = POLICY_REQUIREMENTS[options.policy];
-    const hasAllRequired = required.every(t => validTongues.includes(t));
+    const hasAllRequired = required.every((t) => validTongues.includes(t));
 
     if (!hasAllRequired) {
-      const missing = required.filter(t => !validTongues.includes(t));
+      const missing = required.filter((t) => !validTongues.includes(t));
       return {
         valid: false,
         validTongues,
@@ -409,7 +409,7 @@ export function verifyRoundtable(
  */
 export function checkPolicy(tongues: TongueID[], policy: PolicyLevel): boolean {
   const required = POLICY_REQUIREMENTS[policy];
-  return required.every(t => tongues.includes(t));
+  return required.every((t) => tongues.includes(t));
 }
 
 /**

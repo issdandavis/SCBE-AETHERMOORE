@@ -1,6 +1,6 @@
 /**
  * Agentic Coder Platform Types
- * 
+ *
  * @module agentic/types
  */
 
@@ -10,13 +10,13 @@ import { SpectralIdentity } from '../harmonic/spectral-identity';
 /**
  * Built-in agent roles (aligned with Sacred Tongues)
  */
-export type AgentRole = 
-  | 'architect'  // KO - System design
-  | 'coder'      // AV - Implementation
-  | 'reviewer'   // RU - Code review
-  | 'tester'     // CA - Testing
-  | 'security'   // UM - Security
-  | 'deployer';  // DR - Deployment
+export type AgentRole =
+  | 'architect' // KO - System design
+  | 'coder' // AV - Implementation
+  | 'reviewer' // RU - Code review
+  | 'tester' // CA - Testing
+  | 'security' // UM - Security
+  | 'deployer'; // DR - Deployment
 
 /**
  * Agent role to Sacred Tongue mapping
@@ -27,7 +27,7 @@ export const ROLE_TONGUE_MAP: Record<AgentRole, string> = {
   reviewer: 'RU',
   tester: 'CA',
   security: 'UM',
-  deployer: 'DR'
+  deployer: 'DR',
 };
 
 /**
@@ -39,23 +39,23 @@ export const ROLE_TIER_MAP: Record<AgentRole, GovernanceTier> = {
   reviewer: 'RU',
   tester: 'CA',
   security: 'UM',
-  deployer: 'DR'
+  deployer: 'DR',
 };
 
 /**
  * Coding task types
  */
-export type CodingTaskType = 
-  | 'design'           // Architecture/design task
-  | 'implement'        // Code implementation
-  | 'review'           // Code review
-  | 'test'             // Write/run tests
-  | 'security_audit'   // Security analysis
-  | 'deploy'           // Deployment task
-  | 'refactor'         // Code refactoring
-  | 'debug'            // Bug fixing
-  | 'document'         // Documentation
-  | 'optimize';        // Performance optimization
+export type CodingTaskType =
+  | 'design' // Architecture/design task
+  | 'implement' // Code implementation
+  | 'review' // Code review
+  | 'test' // Write/run tests
+  | 'security_audit' // Security analysis
+  | 'deploy' // Deployment task
+  | 'refactor' // Code refactoring
+  | 'debug' // Bug fixing
+  | 'document' // Documentation
+  | 'optimize'; // Performance optimization
 
 /**
  * Task complexity levels
@@ -65,10 +65,10 @@ export type TaskComplexity = 'simple' | 'moderate' | 'complex';
 /**
  * Collaboration mode
  */
-export type CollaborationMode = 
-  | 'solo'        // Single agent
-  | 'pair'        // Two agents
-  | 'trio';       // Three agents
+export type CollaborationMode =
+  | 'solo' // Single agent
+  | 'pair' // Two agents
+  | 'trio'; // Three agents
 
 /**
  * Agent contribution to a task
@@ -92,7 +92,7 @@ export interface CodingTask {
   title: string;
   description: string;
   complexity: TaskComplexity;
-  
+
   /** Input context (code, requirements, etc.) */
   context: {
     files?: string[];
@@ -100,26 +100,26 @@ export interface CodingTask {
     requirements?: string;
     constraints?: string[];
   };
-  
+
   /** Expected output format */
   expectedOutput: 'code' | 'review' | 'tests' | 'report' | 'plan';
-  
+
   /** Language/framework */
   language?: string;
   framework?: string;
-  
+
   /** Task status */
   status: 'pending' | 'in_progress' | 'review' | 'completed' | 'failed';
-  
+
   /** Assigned agent group */
   assignedGroup?: string;
-  
+
   /** Contributions from agents */
   contributions: AgentContribution[];
-  
+
   /** Final output */
   output?: string;
-  
+
   /** Timestamps */
   createdAt: number;
   startedAt?: number;
@@ -132,25 +132,25 @@ export interface CodingTask {
 export interface TaskGroup {
   id: string;
   name: string;
-  
+
   /** Agent IDs in this group (1-3) */
   agents: string[];
-  
+
   /** Current task being worked on */
   currentTask?: string;
-  
+
   /** Collaboration mode */
   mode: CollaborationMode;
-  
+
   /** Group status */
   status: 'idle' | 'working' | 'reviewing' | 'blocked';
-  
+
   /** Tasks completed by this group */
   tasksCompleted: number;
-  
+
   /** Group success rate */
   successRate: number;
-  
+
   /** Created timestamp */
   createdAt: number;
 }
@@ -163,29 +163,29 @@ export interface BuiltInAgent {
   role: AgentRole;
   name: string;
   description: string;
-  
+
   /** AI provider and model */
   provider: string;
   model: string;
-  
+
   /** System prompt for this agent */
   systemPrompt: string;
-  
+
   /** Specializations */
   specializations: string[];
-  
+
   /** Trust vector (6D Sacred Tongue) */
   trustVector: number[];
-  
+
   /** Spectral identity */
   spectralIdentity?: SpectralIdentity;
-  
+
   /** Current status */
   status: 'available' | 'busy' | 'offline';
-  
+
   /** Current group assignment */
   currentGroup?: string;
-  
+
   /** Statistics */
   stats: {
     tasksCompleted: number;
@@ -215,16 +215,16 @@ export interface CollaborationMessage {
 export interface PlatformConfig {
   /** Maximum agents per group */
   maxAgentsPerGroup: number;
-  
+
   /** Maximum concurrent tasks */
   maxConcurrentTasks: number;
-  
+
   /** Default AI provider */
   defaultProvider: string;
-  
+
   /** Enable consensus for complex tasks */
   requireConsensus: boolean;
-  
+
   /** Minimum confidence threshold */
   minConfidence: number;
 }
@@ -237,7 +237,7 @@ export const DEFAULT_PLATFORM_CONFIG: PlatformConfig = {
   maxConcurrentTasks: 5,
   defaultProvider: 'openai',
   requireConsensus: true,
-  minConfidence: 0.7
+  minConfidence: 0.7,
 };
 
 /**
@@ -253,7 +253,7 @@ export const TASK_AGENT_RECOMMENDATIONS: Record<CodingTaskType, AgentRole[]> = {
   refactor: ['coder', 'reviewer'],
   debug: ['coder', 'tester'],
   document: ['architect', 'coder'],
-  optimize: ['coder', 'reviewer', 'tester']
+  optimize: ['coder', 'reviewer', 'tester'],
 };
 
 /**
@@ -262,5 +262,5 @@ export const TASK_AGENT_RECOMMENDATIONS: Record<CodingTaskType, AgentRole[]> = {
 export const COMPLEXITY_GROUP_SIZE: Record<TaskComplexity, CollaborationMode> = {
   simple: 'solo',
   moderate: 'pair',
-  complex: 'trio'
+  complex: 'trio',
 };

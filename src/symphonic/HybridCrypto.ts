@@ -130,10 +130,7 @@ export class HybridCrypto {
       intent,
     ].join('|');
 
-    const hmac = createHmac('sha256', secretKey)
-      .update(hmacData)
-      .digest('hex')
-      .substring(0, 32);
+    const hmac = createHmac('sha256', secretKey).update(hmacData).digest('hex').substring(0, 32);
 
     const signature: HarmonicSignature = {
       fingerprint: encodedFingerprint,
@@ -257,19 +254,14 @@ export class HybridCrypto {
    * @param secretKey Secret key
    * @returns Verification result
    */
-  verifyCompact(
-    intent: string,
-    compactSig: string,
-    secretKey: string
-  ): VerificationResult {
+  verifyCompact(intent: string, compactSig: string, secretKey: string): VerificationResult {
     try {
       const parts = compactSig.split('~');
       if (parts.length !== 6) {
         return { valid: false, reason: 'Invalid compact signature format' };
       }
 
-      const [fingerprint, coherenceStr, domFreqStr, timestampB64, nonce, hmac] =
-        parts;
+      const [fingerprint, coherenceStr, domFreqStr, timestampB64, nonce, hmac] = parts;
 
       const signature: HarmonicSignature = {
         fingerprint,
@@ -342,9 +334,7 @@ export class HybridCrypto {
 /**
  * Creates a HybridCrypto instance with default settings.
  */
-export function createHybridCrypto(
-  config?: Partial<HybridCryptoConfig>
-): HybridCrypto {
+export function createHybridCrypto(config?: Partial<HybridCryptoConfig>): HybridCrypto {
   return new HybridCrypto(config);
 }
 
@@ -358,9 +348,6 @@ export function signIntent(intent: string, secretKey: string): SignedEnvelope {
 /**
  * Convenience function to verify a signed envelope.
  */
-export function verifyIntent(
-  envelope: SignedEnvelope,
-  secretKey: string
-): VerificationResult {
+export function verifyIntent(envelope: SignedEnvelope, secretKey: string): VerificationResult {
   return new HybridCrypto().verify(envelope, secretKey);
 }

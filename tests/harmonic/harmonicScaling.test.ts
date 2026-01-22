@@ -157,8 +157,7 @@ describe('harmonicScale - H(d, R) = R^(d²)', () => {
   describe('Property-based tests', () => {
     const randomInt = (min: number, max: number) =>
       Math.floor(Math.random() * (max - min + 1)) + min;
-    const randomFloat = (min: number, max: number) =>
-      Math.random() * (max - min) + min;
+    const randomFloat = (min: number, max: number) => Math.random() * (max - min) + min;
 
     it('H(d, R) > 0 for all valid inputs (100 trials)', () => {
       for (let i = 0; i < 100; i++) {

@@ -21,9 +21,11 @@
 // ═══════════════════════════════════════════════════════════════
 
 export {
-    CONSTANTS, type Tensor2D,
-    type Tensor3D, type Vector3D,
-    type Vector6D
+  CONSTANTS,
+  type Tensor2D,
+  type Tensor3D,
+  type Vector3D,
+  type Vector6D,
 } from './constants.js';
 
 export { assertFinite, assertIntGE, log2 } from './assertions.js';
@@ -33,24 +35,32 @@ export { assertFinite, assertIntGE, log2 } from './assertions.js';
 // ═══════════════════════════════════════════════════════════════
 
 export {
-    harmonicDistance, harmonicScale, octaveTranspose, securityBits,
-    securityLevel
+  harmonicDistance,
+  harmonicScale,
+  octaveTranspose,
+  securityBits,
+  securityLevel,
 } from './harmonicScaling.js';
 
 // ═══════════════════════════════════════════════════════════════
 // HAL - Harmonic Attention Layer
 // ═══════════════════════════════════════════════════════════════
 
-export {
-    halAttention, harmonicCouplingMatrix, type HALConfig
-} from './halAttention.js';
+export { halAttention, harmonicCouplingMatrix, type HALConfig } from './halAttention.js';
 
 // ═══════════════════════════════════════════════════════════════
 // Layer 14: Vacuum-Acoustics Kernel
 // ═══════════════════════════════════════════════════════════════
 
 export {
-    bottleBeamIntensity, cavityResonance, checkCymaticResonance, fluxRedistribution, nodalSurface, standingWaveAmplitude, type AcousticSource, type VacuumAcousticsConfig
+  bottleBeamIntensity,
+  cavityResonance,
+  checkCymaticResonance,
+  fluxRedistribution,
+  nodalSurface,
+  standingWaveAmplitude,
+  type AcousticSource,
+  type VacuumAcousticsConfig,
 } from './vacuumAcoustics.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -58,8 +68,15 @@ export {
 // ═══════════════════════════════════════════════════════════════
 
 export {
-    FluxingLanguesMetric, LanguesMetric, TONGUES, getFluxState, type Decision,
-    type DimensionFlux, type FluxState, type LanguesMetricConfig, type Tongue
+  FluxingLanguesMetric,
+  LanguesMetric,
+  TONGUES,
+  getFluxState,
+  type Decision,
+  type DimensionFlux,
+  type FluxState,
+  type LanguesMetricConfig,
+  type Tongue,
 } from './languesMetric.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -67,7 +84,11 @@ export {
 // ═══════════════════════════════════════════════════════════════
 
 export {
-    AudioAxisProcessor, generateNoise, generateTestSignal, type AudioAxisConfig, type AudioFeatures
+  AudioAxisProcessor,
+  generateNoise,
+  generateTestSignal,
+  type AudioAxisConfig,
+  type AudioFeatures,
 } from './audioAxis.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -75,9 +96,13 @@ export {
 // ═══════════════════════════════════════════════════════════════
 
 export {
-    ControlFlowGraph,
-    HamiltonianCFI,
-    createVertex, type BipartiteResult, type CFGVertex, type CFIResult, type HamiltonianCheck
+  ControlFlowGraph,
+  HamiltonianCFI,
+  createVertex,
+  type BipartiteResult,
+  type CFGVertex,
+  type CFIResult,
+  type HamiltonianCheck,
 } from './hamiltonianCFI.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -85,17 +110,25 @@ export {
 // ═══════════════════════════════════════════════════════════════
 
 export {
-
-    // Pipeline utility
-    applyHyperbolicPipeline, breathTransform, expMap0,
-    // Layer 5: Invariant Metric
-    hyperbolicDistance, inverseBreathTransform, logMap0, mobiusAdd, multiPhaseModulation, multiWellGradient, multiWellPotential,
-    // Layer 7: Phase Modulation
-    phaseModulation, projectToBall,
-    // Layer 6: Breath Transform
-    type BreathConfig,
-    // Layer 8: Multi-Well Potential
-    type Well
+  // Pipeline utility
+  applyHyperbolicPipeline,
+  breathTransform,
+  expMap0,
+  // Layer 5: Invariant Metric
+  hyperbolicDistance,
+  inverseBreathTransform,
+  logMap0,
+  mobiusAdd,
+  multiPhaseModulation,
+  multiWellGradient,
+  multiWellPotential,
+  // Layer 7: Phase Modulation
+  phaseModulation,
+  projectToBall,
+  // Layer 6: Breath Transform
+  type BreathConfig,
+  // Layer 8: Multi-Well Potential
+  type Well,
 } from './hyperbolic.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -103,8 +136,18 @@ export {
 // ═══════════════════════════════════════════════════════════════
 
 export {
-    AVALI, CASSISIVADAN, DRAUMRIC, KOR_AELIN, RUNETHIC, TONGUES as SACRED_TONGUES,
-    SECTION_TONGUES, UMBROTH, getTongueForSection, type SS1Section, type TongueCode, type TongueSpec
+  AVALI,
+  CASSISIVADAN,
+  DRAUMRIC,
+  KOR_AELIN,
+  RUNETHIC,
+  TONGUES as SACRED_TONGUES,
+  SECTION_TONGUES,
+  UMBROTH,
+  getTongueForSection,
+  type SS1Section,
+  type TongueCode,
+  type TongueSpec,
 } from './sacredTongues.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -112,18 +155,23 @@ export {
 // ═══════════════════════════════════════════════════════════════
 
 export {
-    // Tokenizer
-    SacredTongueTokenizer, SpiralSealSS1, computeLWSScore,
-    // LWS Integration
-    computeLWSWeights, decodeFromSpelltext, encodeToSpelltext, formatSS1Blob,
-    parseSS1Blob,
+  // Tokenizer
+  SacredTongueTokenizer,
+  SpiralSealSS1,
+  computeLWSScore,
+  // LWS Integration
+  computeLWSWeights,
+  decodeFromSpelltext,
+  encodeToSpelltext,
+  formatSS1Blob,
+  parseSS1Blob,
 
-    // Crypto
-    randomBytes,
-    seal,
-    unseal,
-    // SS1 Format
-    type SS1Blob
+  // Crypto
+  randomBytes,
+  seal,
+  unseal,
+  // SS1 Format
+  type SS1Blob,
 } from './spiralSeal.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -131,24 +179,31 @@ export {
 // ═══════════════════════════════════════════════════════════════
 
 export {
-
-    // High-level API
-    PQCProvider,
-    defaultPQCProvider, invNtt,
-    // ML-DSA (Dilithium) - Digital Signatures
-    mldsaKeyGen,
-    mldsaSign,
-    mldsaVerify, mlkemDecapsulate, mlkemEncapsulate,
-    // ML-KEM (Kyber) - Key Encapsulation
-    mlkemKeyGen, ntt,
-    // Utilities
-    secureRandomBytes,
-    shake128,
-    shake256, type EncapsulationResult,
-    type HybridEncryptionResult, type MLDSAKeyPair, type MLDSALevel,
-    type MLKEMKeyPair,
-    // Types
-    type MLKEMLevel, type PQCConfig
+  // High-level API
+  PQCProvider,
+  defaultPQCProvider,
+  invNtt,
+  // ML-DSA (Dilithium) - Digital Signatures
+  mldsaKeyGen,
+  mldsaSign,
+  mldsaVerify,
+  mlkemDecapsulate,
+  mlkemEncapsulate,
+  // ML-KEM (Kyber) - Key Encapsulation
+  mlkemKeyGen,
+  ntt,
+  // Utilities
+  secureRandomBytes,
+  shake128,
+  shake256,
+  type EncapsulationResult,
+  type HybridEncryptionResult,
+  type MLDSAKeyPair,
+  type MLDSALevel,
+  type MLKEMKeyPair,
+  // Types
+  type MLKEMLevel,
+  type PQCConfig,
 } from './pqc.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -156,29 +211,46 @@ export {
 // ═══════════════════════════════════════════════════════════════
 
 export {
-    // Constants
-    PHI,
-    PHI_INV,
-    // Provider
-    QCLatticeProvider, SILVER_RATIO, ammannBeenkerRhombus,
-    // Ammann-Beenker
-    ammannBeenkerSquare, checkRotationalSymmetry,
-    // Cut-and-Project
-    cutAndProject2D, defaultQCLattice,
-    // Diffraction
-    diffractionPattern, fibonacci1D,
-    fibonacci2D,
-    // Fibonacci
-    fibonacciSequence,
-    fibonacciWord, nearestQCVertex, penroseDeflate,
-    penroseInitial,
-    // Penrose Tiling
-    penroseRhombus, penroseTiling,
-    penroseToLattice, quasicrystal4to2, quasicrystal5to2, quasicrystalHash, quasicrystalPotential,
-    // SCBE Integration
-    scbeToQuasicrystal, type DiffractionPeak, type LatticePoint, type PenroseTile, type PenroseTileType,
-    // Types
-    type Point2D, type QCLatticeConfig
+  // Constants
+  PHI,
+  PHI_INV,
+  // Provider
+  QCLatticeProvider,
+  SILVER_RATIO,
+  ammannBeenkerRhombus,
+  // Ammann-Beenker
+  ammannBeenkerSquare,
+  checkRotationalSymmetry,
+  // Cut-and-Project
+  cutAndProject2D,
+  defaultQCLattice,
+  // Diffraction
+  diffractionPattern,
+  fibonacci1D,
+  fibonacci2D,
+  // Fibonacci
+  fibonacciSequence,
+  fibonacciWord,
+  nearestQCVertex,
+  penroseDeflate,
+  penroseInitial,
+  // Penrose Tiling
+  penroseRhombus,
+  penroseTiling,
+  penroseToLattice,
+  quasicrystal4to2,
+  quasicrystal5to2,
+  quasicrystalHash,
+  quasicrystalPotential,
+  // SCBE Integration
+  scbeToQuasicrystal,
+  type DiffractionPeak,
+  type LatticePoint,
+  type PenroseTile,
+  type PenroseTileType,
+  // Types
+  type Point2D,
+  type QCLatticeConfig,
 } from './qcLattice.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -186,23 +258,28 @@ export {
 // ═══════════════════════════════════════════════════════════════
 
 export {
+  // Canonical Polyhedra
+  CANONICAL_POLYHEDRA,
+  CubicSpline6D,
 
-    // Canonical Polyhedra
-    CANONICAL_POLYHEDRA, CubicSpline6D,
-
-    // Intrusion Detection
-    PHDMDeviationDetector,
-    // Hamiltonian Path
-    PHDMHamiltonianPath,
-    // Complete System
-    PolyhedralHamiltonianDefenseManifold, computeCentroid,
-    // 6D Geometry
-    distance6D,
-    // Topology
-    eulerCharacteristic,
-    isValidTopology, serializePolyhedron, topologicalHash, type IntrusionResult, type Point6D,
-    // Types
-    type Polyhedron
+  // Intrusion Detection
+  PHDMDeviationDetector,
+  // Hamiltonian Path
+  PHDMHamiltonianPath,
+  // Complete System
+  PolyhedralHamiltonianDefenseManifold,
+  computeCentroid,
+  // 6D Geometry
+  distance6D,
+  // Topology
+  eulerCharacteristic,
+  isValidTopology,
+  serializePolyhedron,
+  topologicalHash,
+  type IntrusionResult,
+  type Point6D,
+  // Types
+  type Polyhedron,
 } from './phdm.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -210,13 +287,15 @@ export {
 // ═══════════════════════════════════════════════════════════════
 
 export {
-
-    // Constants
-    SPECTRAL_BANDS,
-    // Generator
-    SpectralIdentityGenerator, TONGUE_COLORS, spectralGenerator, type HSL,
-    // Types
-    type RGB, type SpectralBand,
-    type SpectralIdentity
+  // Constants
+  SPECTRAL_BANDS,
+  // Generator
+  SpectralIdentityGenerator,
+  TONGUE_COLORS,
+  spectralGenerator,
+  type HSL,
+  // Types
+  type RGB,
+  type SpectralBand,
+  type SpectralIdentity,
 } from './spectral-identity.js';
-

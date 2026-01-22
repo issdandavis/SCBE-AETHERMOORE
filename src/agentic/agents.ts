@@ -1,6 +1,6 @@
 /**
  * Built-in Agents - 6 specialized coding agents
- * 
+ *
  * @module agentic/agents
  */
 
@@ -105,7 +105,7 @@ When collaborating:
 - Follow Architect's infrastructure design
 - Ensure Tester's tests pass before deployment
 
-Output format: Deployment scripts, CI/CD configs, infrastructure code.`
+Output format: Deployment scripts, CI/CD configs, infrastructure code.`,
 };
 
 /**
@@ -117,7 +117,7 @@ const AGENT_SPECIALIZATIONS: Record<AgentRole, string[]> = {
   reviewer: ['code-quality', 'best-practices', 'performance', 'maintainability'],
   tester: ['unit-testing', 'integration-testing', 'e2e-testing', 'tdd', 'coverage'],
   security: ['vulnerability-assessment', 'penetration-testing', 'encryption', 'authentication'],
-  deployer: ['docker', 'kubernetes', 'aws', 'ci-cd', 'terraform']
+  deployer: ['docker', 'kubernetes', 'aws', 'ci-cd', 'terraform'],
 };
 
 /**
@@ -135,7 +135,7 @@ const ROLE_TRUST_VECTORS: Record<AgentRole, number[]> = {
   // UM dominant - high in fifth dimension
   security: [0.7, 0.6, 0.8, 0.7, 0.9, 0.6],
   // DR dominant - high in sixth dimension
-  deployer: [0.6, 0.6, 0.7, 0.8, 0.8, 0.9]
+  deployer: [0.6, 0.6, 0.7, 0.8, 0.8, 0.9],
 };
 
 /**
@@ -147,7 +147,7 @@ const AGENT_NAMES: Record<AgentRole, string> = {
   reviewer: 'Sage',
   tester: 'Probe',
   security: 'Shield',
-  deployer: 'Launch'
+  deployer: 'Launch',
 };
 
 /**
@@ -156,12 +156,12 @@ const AGENT_NAMES: Record<AgentRole, string> = {
 export function createBuiltInAgents(provider: string = 'openai'): BuiltInAgent[] {
   const spectralGenerator = new SpectralIdentityGenerator();
   const roles: AgentRole[] = ['architect', 'coder', 'reviewer', 'tester', 'security', 'deployer'];
-  
-  return roles.map(role => {
+
+  return roles.map((role) => {
     const id = `builtin-${role}-${ROLE_TONGUE_MAP[role].toLowerCase()}`;
     const trustVector = ROLE_TRUST_VECTORS[role];
     const spectralIdentity = spectralGenerator.generateIdentity(id, trustVector);
-    
+
     return {
       id,
       role,
@@ -177,8 +177,8 @@ export function createBuiltInAgents(provider: string = 'openai'): BuiltInAgent[]
       stats: {
         tasksCompleted: 0,
         avgConfidence: 0,
-        avgTokensPerTask: 0
-      }
+        avgTokensPerTask: 0,
+      },
     };
   });
 }
@@ -194,7 +194,7 @@ function getModelForRole(role: AgentRole, provider: string): string {
       reviewer: 'gpt-4o',
       tester: 'gpt-4o-mini',
       security: 'gpt-4o',
-      deployer: 'gpt-4o-mini'
+      deployer: 'gpt-4o-mini',
     },
     anthropic: {
       architect: 'claude-3-opus',
@@ -202,10 +202,10 @@ function getModelForRole(role: AgentRole, provider: string): string {
       reviewer: 'claude-3-opus',
       tester: 'claude-3-sonnet',
       security: 'claude-3-opus',
-      deployer: 'claude-3-sonnet'
-    }
+      deployer: 'claude-3-sonnet',
+    },
   };
-  
+
   return models[provider]?.[role] || 'gpt-4o';
 }
 
@@ -213,19 +213,19 @@ function getModelForRole(role: AgentRole, provider: string): string {
  * Get agent by role
  */
 export function getAgentByRole(agents: BuiltInAgent[], role: AgentRole): BuiltInAgent | undefined {
-  return agents.find(a => a.role === role);
+  return agents.find((a) => a.role === role);
 }
 
 /**
  * Get available agents
  */
 export function getAvailableAgents(agents: BuiltInAgent[]): BuiltInAgent[] {
-  return agents.filter(a => a.status === 'available');
+  return agents.filter((a) => a.status === 'available');
 }
 
 /**
  * Get agents by specialization
  */
 export function getAgentsBySpecialization(agents: BuiltInAgent[], spec: string): BuiltInAgent[] {
-  return agents.filter(a => a.specializations.includes(spec));
+  return agents.filter((a) => a.specializations.includes(spec));
 }
