@@ -100,19 +100,26 @@ export class SpaceTorRouter {
     const eligibleNodes = this.getEligibleNodes(minTrust, constraints);
 
     if (eligibleNodes.length < this.minPathLength) {
-      throw new Error(`Insufficient eligible nodes: ${eligibleNodes.length} < ${this.minPathLength}`);
+      throw new Error(
+        `Insufficient eligible nodes: ${eligibleNodes.length} < ${this.minPathLength}`
+      );
     }
 
     // Select Entry Node (closest to origin with good trust)
     const entryNode = this.selectNode(eligibleNodes, origin, 'entry', constraints?.excludeNodes);
 
     // Select Exit Node (closest to destination)
-    const remainingForExit = eligibleNodes.filter(n => n.id !== entryNode.id);
+    const remainingForExit = eligibleNodes.filter((n) => n.id !== entryNode.id);
     const exitNode = this.selectNode(remainingForExit, dest, 'exit', constraints?.excludeNodes);
 
     // Select Middle Node (balanced between entry and exit, highest trust)
-    const remainingForMiddle = remainingForExit.filter(n => n.id !== exitNode.id);
-    const middleNode = this.selectMiddleNode(remainingForMiddle, entryNode, exitNode, constraints?.excludeNodes);
+    const remainingForMiddle = remainingForExit.filter((n) => n.id !== exitNode.id);
+    const middleNode = this.selectMiddleNode(
+      remainingForMiddle,
+      entryNode,
+      exitNode,
+      constraints?.excludeNodes
+    );
 
     return [entryNode, middleNode, exitNode];
   }
@@ -132,11 +139,8 @@ export class SpaceTorRouter {
   /**
    * Get nodes that meet minimum trust and other constraints
    */
-  private getEligibleNodes(
-    minTrust: number,
-    constraints?: Partial<PathConstraints>
-  ): RelayNode[] {
-    return Array.from(this.nodes.values()).filter(node => {
+  private getEligibleNodes(minTrust: number, constraints?: Partial<PathConstraints>): RelayNode[] {
+    return Array.from(this.nodes.values()).filter((node) => {
       if (node.trustScore < minTrust) return false;
       if (constraints?.maxLoad !== undefined && node.load > constraints.maxLoad) return false;
       if (constraints?.requireQuantum && !node.quantumCapable) return false;
@@ -154,9 +158,7 @@ export class SpaceTorRouter {
     role: 'entry' | 'exit',
     excludeNodes?: Set<string>
   ): RelayNode {
-    const filtered = excludeNodes
-      ? candidates.filter(n => !excludeNodes.has(n.id))
-      : candidates;
+    const filtered = excludeNodes ? candidates.filter((n) => !excludeNodes.has(n.id)) : candidates;
 
     if (filtered.length === 0) {
       throw new Error(`No eligible nodes for ${role} role`);
@@ -182,9 +184,7 @@ export class SpaceTorRouter {
     exit: RelayNode,
     excludeNodes?: Set<string>
   ): RelayNode {
-    const filtered = excludeNodes
-      ? candidates.filter(n => !excludeNodes.has(n.id))
-      : candidates;
+    const filtered = excludeNodes ? candidates.filter((n) => !excludeNodes.has(n.id)) : candidates;
 
     if (filtered.length === 0) {
       throw new Error('No eligible nodes for middle role');
@@ -194,7 +194,7 @@ export class SpaceTorRouter {
     const midpoint = {
       x: (entry.coords.x + exit.coords.x) / 2,
       y: (entry.coords.y + exit.coords.y) / 2,
-      z: (entry.coords.z + exit.coords.z) / 2
+      z: (entry.coords.z + exit.coords.z) / 2,
     };
 
     return filtered.reduce((best, node) => {
@@ -216,9 +216,7 @@ export class SpaceTorRouter {
     a: { x: number; y: number; z: number },
     b: { x: number; y: number; z: number }
   ): number {
-    return Math.sqrt(
-      (a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2
-    );
+    return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2);
   }
 
   /**

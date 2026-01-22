@@ -78,12 +78,7 @@ describe('FFT', () => {
 
   it('should transform DC signal', () => {
     // Constant signal should have all energy at DC (k=0)
-    const signal = [
-      new Complex(1, 0),
-      new Complex(1, 0),
-      new Complex(1, 0),
-      new Complex(1, 0),
-    ];
+    const signal = [new Complex(1, 0), new Complex(1, 0), new Complex(1, 0), new Complex(1, 0)];
     const spectrum = FFT.transform(signal);
     expect(spectrum[0].magnitude).toBeCloseTo(4, 5);
     expect(spectrum[1].magnitude).toBeCloseTo(0, 5);
@@ -93,24 +88,14 @@ describe('FFT', () => {
 
   it('should transform alternating signal', () => {
     // [1, -1, 1, -1] should have energy at Nyquist (k=N/2)
-    const signal = [
-      new Complex(1, 0),
-      new Complex(-1, 0),
-      new Complex(1, 0),
-      new Complex(-1, 0),
-    ];
+    const signal = [new Complex(1, 0), new Complex(-1, 0), new Complex(1, 0), new Complex(-1, 0)];
     const spectrum = FFT.transform(signal);
     expect(spectrum[0].magnitude).toBeCloseTo(0, 5);
     expect(spectrum[2].magnitude).toBeCloseTo(4, 5); // Nyquist
   });
 
   it('should inverse transform correctly', () => {
-    const original = [
-      new Complex(1, 0),
-      new Complex(2, 0),
-      new Complex(3, 0),
-      new Complex(4, 0),
-    ];
+    const original = [new Complex(1, 0), new Complex(2, 0), new Complex(3, 0), new Complex(4, 0)];
     const spectrum = FFT.transform(original);
     const recovered = FFT.inverse(spectrum);
 
@@ -130,7 +115,9 @@ describe('FFT', () => {
 
   it('should compute spectral coherence', () => {
     // Low frequency signal should have high coherence
-    const lowFreq = Array(64).fill(0).map((_, i) => Math.sin(2 * Math.PI * i / 32));
+    const lowFreq = Array(64)
+      .fill(0)
+      .map((_, i) => Math.sin((2 * Math.PI * i) / 32));
     const coherence = FFT.spectralCoherence(lowFreq);
     expect(coherence).toBeGreaterThan(0.5);
   });

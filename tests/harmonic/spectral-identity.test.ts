@@ -1,18 +1,18 @@
 /**
  * Spectral Identity System Tests
- * 
+ *
  * Tests for the Rainbow Chromatic Fingerprinting system that maps
  * multi-dimensional trust vectors to unique color signatures.
- * 
+ *
  * @module tests/harmonic/spectral-identity
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
-    SPECTRAL_BANDS,
-    SpectralIdentityGenerator,
-    TONGUE_COLORS,
-    spectralGenerator
+  SPECTRAL_BANDS,
+  SpectralIdentityGenerator,
+  TONGUE_COLORS,
+  spectralGenerator,
 } from '../../src/harmonic/spectral-identity.js';
 
 describe('SpectralIdentityGenerator', () => {
@@ -47,7 +47,7 @@ describe('SpectralIdentityGenerator', () => {
       const identity = generator.generateIdentity('test', trustVector);
 
       // Should not throw, values should be clamped
-      expect(identity.spectrum.every(v => v >= 0 && v <= 1)).toBe(true);
+      expect(identity.spectrum.every((v) => v >= 0 && v <= 1)).toBe(true);
     });
 
     it('should generate unique identities for different trust vectors', () => {
@@ -92,8 +92,14 @@ describe('SpectralIdentityGenerator', () => {
 
     it('should have 7 bands (ROYGBIV)', () => {
       expect(SPECTRAL_BANDS).toHaveLength(7);
-      expect(SPECTRAL_BANDS.map(b => b.name)).toEqual([
-        'Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Indigo', 'Violet'
+      expect(SPECTRAL_BANDS.map((b) => b.name)).toEqual([
+        'Red',
+        'Orange',
+        'Yellow',
+        'Green',
+        'Blue',
+        'Indigo',
+        'Violet',
       ]);
     });
   });
@@ -109,12 +115,8 @@ describe('SpectralIdentityGenerator', () => {
       const highTrust = generator.generateIdentity('high', [0.9, 0.9, 0.9, 0.9, 0.9, 0.9]);
 
       // High trust should have brighter colors
-      const lowBrightness = lowTrust.tongueSignature.reduce(
-        (sum, c) => sum + c.r + c.g + c.b, 0
-      );
-      const highBrightness = highTrust.tongueSignature.reduce(
-        (sum, c) => sum + c.r + c.g + c.b, 0
-      );
+      const lowBrightness = lowTrust.tongueSignature.reduce((sum, c) => sum + c.r + c.g + c.b, 0);
+      const highBrightness = highTrust.tongueSignature.reduce((sum, c) => sum + c.r + c.g + c.b, 0);
 
       expect(highBrightness).toBeGreaterThan(lowBrightness);
     });
@@ -238,7 +240,7 @@ describe('SpectralIdentityGenerator', () => {
 
 describe('SPECTRAL_BANDS', () => {
   it('should map to SCBE 14 layers', () => {
-    const allLayers = SPECTRAL_BANDS.flatMap(b => b.layers);
+    const allLayers = SPECTRAL_BANDS.flatMap((b) => b.layers);
     const uniqueLayers = [...new Set(allLayers)].sort((a, b) => a - b);
 
     // Should cover layers 1-14
