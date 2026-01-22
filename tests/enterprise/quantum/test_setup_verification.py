@@ -26,10 +26,10 @@ class TestEnterpriseSetup:
         """Verify test markers are configured."""
         # This test should be auto-marked as 'quantum' based on file path
         markers = [marker.name for marker in request.node.iter_markers()]
-        assert 'quantum' in markers
+        assert "quantum" in markers
 
     def test_config_fixture(self, test_config):
         """Verify test configuration fixture is available."""
         assert test_config is not None
-        assert 'quantum' in test_config
-        assert test_config['quantum']['target_security_bits'] == 256
+        assert "quantum" in test_config
+        assert test_config["quantum"]["target_security_bits"] == 256

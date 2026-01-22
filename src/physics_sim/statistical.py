@@ -17,21 +17,21 @@ import math
 from typing import Dict, Any, Tuple, Optional, Callable, List
 from dataclasses import dataclass
 
-
 # =============================================================================
 # CONSTANTS
 # =============================================================================
 
-BOLTZMANN = 1.380649e-23      # Boltzmann constant (J/K)
-PLANCK = 6.62607015e-34       # Planck constant (J·s)
+BOLTZMANN = 1.380649e-23  # Boltzmann constant (J/K)
+PLANCK = 6.62607015e-34  # Planck constant (J·s)
 HBAR = PLANCK / (2 * math.pi)
-AVOGADRO = 6.02214076e23      # Avogadro's number
-GAS_CONSTANT = 8.314462618    # J/(mol·K)
+AVOGADRO = 6.02214076e23  # Avogadro's number
+GAS_CONSTANT = 8.314462618  # J/(mol·K)
 
 
 # =============================================================================
 # PARTITION FUNCTIONS
 # =============================================================================
+
 
 def translational_partition_function(m: float, V: float, T: float) -> float:
     """
@@ -48,7 +48,7 @@ def translational_partition_function(m: float, V: float, T: float) -> float:
         Translational partition function
     """
     lambda_db = PLANCK / math.sqrt(2 * math.pi * m * BOLTZMANN * T)
-    return V / lambda_db ** 3
+    return V / lambda_db**3
 
 
 def thermal_wavelength(m: float, T: float) -> float:
@@ -67,8 +67,7 @@ def thermal_wavelength(m: float, T: float) -> float:
     return PLANCK / math.sqrt(2 * math.pi * m * BOLTZMANN * T)
 
 
-def rotational_partition_function_linear(B: float, T: float,
-                                        sigma: int = 1) -> float:
+def rotational_partition_function_linear(B: float, T: float, sigma: int = 1) -> float:
     """
     Calculate rotational partition function for linear molecule.
 
@@ -123,8 +122,9 @@ def vibrational_partition_function(nu: float, T: float) -> float:
     return 1 / (1 - math.exp(-x))
 
 
-def electronic_partition_function(degeneracies: List[int],
-                                 energies: List[float], T: float) -> float:
+def electronic_partition_function(
+    degeneracies: List[int], energies: List[float], T: float
+) -> float:
     """
     Calculate electronic partition function.
 
@@ -148,6 +148,7 @@ def electronic_partition_function(degeneracies: List[int],
 # DISTRIBUTION FUNCTIONS
 # =============================================================================
 
+
 def maxwell_boltzmann_speed_distribution(v: float, m: float, T: float) -> float:
     """
     Maxwell-Boltzmann speed distribution.
@@ -164,7 +165,7 @@ def maxwell_boltzmann_speed_distribution(v: float, m: float, T: float) -> float:
     """
     alpha = m / (2 * BOLTZMANN * T)
     prefactor = 4 * math.pi * (alpha / math.pi) ** 1.5
-    return prefactor * v ** 2 * math.exp(-alpha * v ** 2)
+    return prefactor * v**2 * math.exp(-alpha * v**2)
 
 
 def maxwell_boltzmann_energy_distribution(E: float, T: float) -> float:
@@ -322,13 +323,14 @@ def planck_spectral_radiance(nu: float, T: float) -> float:
     if x > 700:
         return 0
 
-    prefactor = 2 * PLANCK * nu ** 3 / C ** 2
+    prefactor = 2 * PLANCK * nu**3 / C**2
     return prefactor / (math.exp(x) - 1)
 
 
 # =============================================================================
 # THERMODYNAMIC QUANTITIES
 # =============================================================================
+
 
 def helmholtz_free_energy(Z: float, T: float) -> float:
     """
@@ -360,7 +362,7 @@ def internal_energy_from_Z(Z: float, T: float, dZ_dT: float) -> float:
     Returns:
         Internal energy (J)
     """
-    return BOLTZMANN * T ** 2 * dZ_dT / Z
+    return BOLTZMANN * T**2 * dZ_dT / Z
 
 
 def entropy_from_Z(Z: float, T: float, U: float) -> float:
@@ -399,10 +401,10 @@ def heat_capacity_ideal_gas(dof: int, n: float = 1) -> Dict[str, float]:
     gamma = C_P / C_V
 
     return {
-        'C_V_J_per_K': C_V,
-        'C_P_J_per_K': C_P,
-        'gamma': gamma,
-        'dof': dof,
+        "C_V_J_per_K": C_V,
+        "C_P_J_per_K": C_P,
+        "gamma": gamma,
+        "dof": dof,
     }
 
 
@@ -425,6 +427,7 @@ def equipartition_energy(dof: int, T: float) -> float:
 # =============================================================================
 # BOLTZMANN ENTROPY
 # =============================================================================
+
 
 def boltzmann_entropy(W: int) -> float:
     """
@@ -484,6 +487,7 @@ def mixing_entropy(n1: float, n2: float) -> float:
 # QUANTUM STATISTICS
 # =============================================================================
 
+
 def fermi_energy_3d(n: float, m: float) -> float:
     """
     Calculate Fermi energy for 3D free electron gas.
@@ -497,7 +501,7 @@ def fermi_energy_3d(n: float, m: float) -> float:
     Returns:
         Fermi energy (J)
     """
-    return (HBAR ** 2 / (2 * m)) * (3 * math.pi ** 2 * n) ** (2/3)
+    return (HBAR**2 / (2 * m)) * (3 * math.pi**2 * n) ** (2 / 3)
 
 
 def fermi_temperature(E_F: float) -> float:
@@ -531,8 +535,7 @@ def bose_einstein_condensation_temperature(n: float, m: float) -> float:
         Critical temperature (K)
     """
     zeta_3_2 = 2.612  # Riemann zeta function at 3/2
-    return (2 * math.pi * HBAR ** 2 / (m * BOLTZMANN)) * \
-           (n / zeta_3_2) ** (2/3)
+    return (2 * math.pi * HBAR**2 / (m * BOLTZMANN)) * (n / zeta_3_2) ** (2 / 3)
 
 
 def debye_temperature_from_speed(v_s: float, n: float) -> float:
@@ -548,7 +551,7 @@ def debye_temperature_from_speed(v_s: float, n: float) -> float:
     Returns:
         Debye temperature (K)
     """
-    return (HBAR * v_s / BOLTZMANN) * (6 * math.pi ** 2 * n) ** (1/3)
+    return (HBAR * v_s / BOLTZMANN) * (6 * math.pi**2 * n) ** (1 / 3)
 
 
 def debye_heat_capacity(T: float, theta_D: float, N: int = 1) -> float:
@@ -573,7 +576,7 @@ def debye_heat_capacity(T: float, theta_D: float, N: int = 1) -> float:
 
     # Low temperature limit (Debye T³ law)
     if x_max > 10:
-        return (12 * math.pi ** 4 / 5) * N * BOLTZMANN * (T / theta_D) ** 3
+        return (12 * math.pi**4 / 5) * N * BOLTZMANN * (T / theta_D) ** 3
 
     # Numerical integration (Simpson's rule)
     def integrand(x):
@@ -582,7 +585,7 @@ def debye_heat_capacity(T: float, theta_D: float, N: int = 1) -> float:
         ex = math.exp(x)
         if ex > 1e300:
             return 0
-        return x ** 4 * ex / (ex - 1) ** 2
+        return x**4 * ex / (ex - 1) ** 2
 
     # Integrate from 0 to x_max
     n_steps = 1000
@@ -601,6 +604,7 @@ def debye_heat_capacity(T: float, theta_D: float, N: int = 1) -> float:
 # =============================================================================
 # PHASE TRANSITIONS
 # =============================================================================
+
 
 def clausius_clapeyron(dP_dT: float, T: float, delta_V: float) -> float:
     """
@@ -675,6 +679,7 @@ def landau_order_parameter(T: float, T_c: float, beta: float = 0.5) -> float:
 # COMPREHENSIVE STATISTICAL MECHANICS CALCULATION
 # =============================================================================
 
+
 def statistical_mechanics(params: Dict[str, Any]) -> Dict[str, Any]:
     """
     Comprehensive statistical mechanics calculation.
@@ -694,74 +699,74 @@ def statistical_mechanics(params: Dict[str, Any]) -> Dict[str, Any]:
     """
     results = {}
 
-    T = params.get('temperature', 300)
-    m = params.get('mass', 1.67e-27)  # Default: ~proton mass
-    V = params.get('volume', 1e-3)    # Default: 1 liter
+    T = params.get("temperature", 300)
+    m = params.get("mass", 1.67e-27)  # Default: ~proton mass
+    V = params.get("volume", 1e-3)  # Default: 1 liter
 
-    results['temperature_K'] = T
-    results['kT_J'] = BOLTZMANN * T
-    results['kT_eV'] = BOLTZMANN * T / 1.602e-19
+    results["temperature_K"] = T
+    results["kT_J"] = BOLTZMANN * T
+    results["kT_eV"] = BOLTZMANN * T / 1.602e-19
 
     # Thermal wavelength
     lambda_th = thermal_wavelength(m, T)
-    results['thermal_wavelength_m'] = lambda_th
+    results["thermal_wavelength_m"] = lambda_th
 
     # Translational partition function
     Z_trans = translational_partition_function(m, V, T)
-    results['Z_translational'] = Z_trans
+    results["Z_translational"] = Z_trans
 
     # Characteristic speeds
-    results['most_probable_speed_m_s'] = most_probable_speed(m, T)
-    results['mean_speed_m_s'] = mean_speed(m, T)
-    results['rms_speed_m_s'] = rms_speed(m, T)
+    results["most_probable_speed_m_s"] = most_probable_speed(m, T)
+    results["mean_speed_m_s"] = mean_speed(m, T)
+    results["rms_speed_m_s"] = rms_speed(m, T)
 
     # Average energy
-    results['avg_kinetic_energy_J'] = equipartition_energy(3, T)  # 3 trans DOF
+    results["avg_kinetic_energy_J"] = equipartition_energy(3, T)  # 3 trans DOF
 
     # Quantum statistics
-    particle_type = params.get('particle_type', 'classical')
-    n = params.get('number_density')
+    particle_type = params.get("particle_type", "classical")
+    n = params.get("number_density")
 
-    if n and particle_type == 'fermion':
+    if n and particle_type == "fermion":
         E_F = fermi_energy_3d(n, m)
         T_F = fermi_temperature(E_F)
-        results['fermi_energy_J'] = E_F
-        results['fermi_energy_eV'] = E_F / 1.602e-19
-        results['fermi_temperature_K'] = T_F
-        results['degeneracy_parameter_T_TF'] = T / T_F
+        results["fermi_energy_J"] = E_F
+        results["fermi_energy_eV"] = E_F / 1.602e-19
+        results["fermi_temperature_K"] = T_F
+        results["degeneracy_parameter_T_TF"] = T / T_F
 
-    elif n and particle_type == 'boson':
+    elif n and particle_type == "boson":
         T_c = bose_einstein_condensation_temperature(n, m)
-        results['BEC_critical_temperature_K'] = T_c
+        results["BEC_critical_temperature_K"] = T_c
         if T < T_c:
-            results['condensate_fraction'] = 1 - (T / T_c) ** 1.5
+            results["condensate_fraction"] = 1 - (T / T_c) ** 1.5
 
     # Distribution at specific energy
-    if 'energy' in params:
-        E = params['energy']
-        mu = params.get('chemical_potential', 0)
+    if "energy" in params:
+        E = params["energy"]
+        mu = params.get("chemical_potential", 0)
 
-        results['MB_energy_distribution'] = maxwell_boltzmann_energy_distribution(E, T)
+        results["MB_energy_distribution"] = maxwell_boltzmann_energy_distribution(E, T)
 
-        if particle_type == 'fermion':
-            results['FD_occupation'] = fermi_dirac_distribution(E, mu, T)
-        elif particle_type == 'boson' and E > mu:
-            results['BE_occupation'] = bose_einstein_distribution(E, mu, T)
+        if particle_type == "fermion":
+            results["FD_occupation"] = fermi_dirac_distribution(E, mu, T)
+        elif particle_type == "boson" and E > mu:
+            results["BE_occupation"] = bose_einstein_distribution(E, mu, T)
 
     # Blackbody radiation
-    if 'frequency' in params:
-        nu = params['frequency']
-        results['planck_occupation'] = planck_distribution(nu, T)
-        results['spectral_radiance_W_m2_sr_Hz'] = planck_spectral_radiance(nu, T)
+    if "frequency" in params:
+        nu = params["frequency"]
+        results["planck_occupation"] = planck_distribution(nu, T)
+        results["spectral_radiance_W_m2_sr_Hz"] = planck_spectral_radiance(nu, T)
 
     # Heat capacity (ideal gas)
-    dof = params.get('degrees_of_freedom', 3)
-    results['heat_capacity'] = heat_capacity_ideal_gas(dof)
+    dof = params.get("degrees_of_freedom", 3)
+    results["heat_capacity"] = heat_capacity_ideal_gas(dof)
 
     # Debye model
-    if 'debye_temperature' in params:
-        theta_D = params['debye_temperature']
-        N = params.get('num_atoms', 1)
-        results['debye_heat_capacity_J_K'] = debye_heat_capacity(T, theta_D, N)
+    if "debye_temperature" in params:
+        theta_D = params["debye_temperature"]
+        N = params.get("num_atoms", 1)
+        results["debye_heat_capacity_J_K"] = debye_heat_capacity(T, theta_D, N)
 
     return results

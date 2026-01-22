@@ -8,13 +8,17 @@ cryptographic operations using post-quantum resistant algorithms.
 """
 
 from .seal import SpiralSealSS1
-from .sacred_tongues import SacredTongueTokenizer, encode_to_spelltext, decode_from_spelltext
+from .sacred_tongues import (
+    SacredTongueTokenizer,
+    encode_to_spelltext,
+    decode_from_spelltext,
+)
 
 __all__ = [
-    'SpiralSealSS1',
-    'SacredTongueTokenizer',
-    'encode_to_spelltext',
-    'decode_from_spelltext',
+    "SpiralSealSS1",
+    "SacredTongueTokenizer",
+    "encode_to_spelltext",
+    "decode_from_spelltext",
 ]
 
-__version__ = '0.1.0'
+__version__ = "0.1.0"

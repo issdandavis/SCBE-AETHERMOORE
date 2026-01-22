@@ -32,13 +32,14 @@ from dataclasses import dataclass, field
 from typing import List, Tuple, Dict, Optional, Any
 from enum import Enum
 
-
 # =============================================================================
 # SECTION 1: POLYHEDRA DEFINITIONS
 # =============================================================================
 
+
 class PolyhedronType(Enum):
     """Classification of the 16 canonical polyhedra."""
+
     PLATONIC = "platonic"
     ARCHIMEDEAN = "archimedean"
     KEPLER_POINSOT = "kepler_poinsot"
@@ -53,14 +54,15 @@ class Polyhedron:
 
     Claim 63(b): Defining 16 canonical polyhedra
     """
+
     name: str
     poly_type: PolyhedronType
-    vertices: int          # V
-    edges: int             # E
-    faces: int             # F
-    euler_char: int        # V - E + F = 2 (convex) or other
+    vertices: int  # V
+    edges: int  # E
+    faces: int  # F
+    euler_char: int  # V - E + F = 2 (convex) or other
     centroid_6d: np.ndarray  # Position in 6D Langues space
-    symmetry_group: str    # Symmetry group name
+    symmetry_group: str  # Symmetry group name
     dual: Optional[str] = None
 
     def __post_init__(self):
@@ -68,7 +70,9 @@ class Polyhedron:
         if self.poly_type in [PolyhedronType.PLATONIC, PolyhedronType.ARCHIMEDEAN]:
             expected_euler = 2
             actual_euler = self.vertices - self.edges + self.faces
-            assert actual_euler == expected_euler, f"{self.name}: V-E+F={actual_euler}, expected {expected_euler}"
+            assert (
+                actual_euler == expected_euler
+            ), f"{self.name}: V-E+F={actual_euler}, expected {expected_euler}"
 
 
 # Golden ratio for icosahedral symmetry
@@ -80,130 +84,174 @@ POLYHEDRA = [
     Polyhedron(
         name="Tetrahedron",
         poly_type=PolyhedronType.PLATONIC,
-        vertices=4, edges=6, faces=4, euler_char=2,
+        vertices=4,
+        edges=6,
+        faces=4,
+        euler_char=2,
         centroid_6d=np.array([0.0, 0.0, 0.0, 0.0, 0.0, 1.0]),
         symmetry_group="Td",
-        dual="Tetrahedron"
+        dual="Tetrahedron",
     ),
     Polyhedron(
         name="Cube",
         poly_type=PolyhedronType.PLATONIC,
-        vertices=8, edges=12, faces=6, euler_char=2,
+        vertices=8,
+        edges=12,
+        faces=6,
+        euler_char=2,
         centroid_6d=np.array([0.1, 0.0, 0.0, 0.0, 0.0, 0.9]),
         symmetry_group="Oh",
-        dual="Octahedron"
+        dual="Octahedron",
     ),
     Polyhedron(
         name="Octahedron",
         poly_type=PolyhedronType.PLATONIC,
-        vertices=6, edges=12, faces=8, euler_char=2,
+        vertices=6,
+        edges=12,
+        faces=8,
+        euler_char=2,
         centroid_6d=np.array([0.2, 0.1, 0.0, 0.0, 0.0, 0.8]),
         symmetry_group="Oh",
-        dual="Cube"
+        dual="Cube",
     ),
     Polyhedron(
         name="Dodecahedron",
         poly_type=PolyhedronType.PLATONIC,
-        vertices=20, edges=30, faces=12, euler_char=2,
+        vertices=20,
+        edges=30,
+        faces=12,
+        euler_char=2,
         centroid_6d=np.array([0.3, 0.2, 0.1, 0.0, 0.0, 0.7]),
         symmetry_group="Ih",
-        dual="Icosahedron"
+        dual="Icosahedron",
     ),
     Polyhedron(
         name="Icosahedron",
         poly_type=PolyhedronType.PLATONIC,
-        vertices=12, edges=30, faces=20, euler_char=2,
+        vertices=12,
+        edges=30,
+        faces=20,
+        euler_char=2,
         centroid_6d=np.array([0.4, 0.3, 0.2, 0.1, 0.0, 0.6]),
         symmetry_group="Ih",
-        dual="Dodecahedron"
+        dual="Dodecahedron",
     ),
-
     # Archimedean Solids (3 selected)
     Polyhedron(
         name="TruncatedTetrahedron",
         poly_type=PolyhedronType.ARCHIMEDEAN,
-        vertices=12, edges=18, faces=8, euler_char=2,
+        vertices=12,
+        edges=18,
+        faces=8,
+        euler_char=2,
         centroid_6d=np.array([0.5, 0.4, 0.3, 0.2, 0.1, 0.5]),
         symmetry_group="Td",
-        dual="TriakisTetrahedron"
+        dual="TriakisTetrahedron",
     ),
     Polyhedron(
         name="Cuboctahedron",
         poly_type=PolyhedronType.ARCHIMEDEAN,
-        vertices=12, edges=24, faces=14, euler_char=2,
+        vertices=12,
+        edges=24,
+        faces=14,
+        euler_char=2,
         centroid_6d=np.array([0.6, 0.5, 0.4, 0.3, 0.2, 0.4]),
         symmetry_group="Oh",
-        dual="RhombicDodecahedron"
+        dual="RhombicDodecahedron",
     ),
     Polyhedron(
         name="Icosidodecahedron",
         poly_type=PolyhedronType.ARCHIMEDEAN,
-        vertices=30, edges=60, faces=32, euler_char=2,
+        vertices=30,
+        edges=60,
+        faces=32,
+        euler_char=2,
         centroid_6d=np.array([0.7, 0.6, 0.5, 0.4, 0.3, 0.3]),
         symmetry_group="Ih",
-        dual="RhombicTriacontahedron"
+        dual="RhombicTriacontahedron",
     ),
-
     # Kepler-Poinsot Solids (2) - Star polyhedra
     Polyhedron(
         name="SmallStellatedDodecahedron",
         poly_type=PolyhedronType.KEPLER_POINSOT,
-        vertices=12, edges=30, faces=12, euler_char=-6,  # Non-convex
+        vertices=12,
+        edges=30,
+        faces=12,
+        euler_char=-6,  # Non-convex
         centroid_6d=np.array([0.8, 0.7, 0.6, 0.5, 0.4, 0.2]),
-        symmetry_group="Ih"
+        symmetry_group="Ih",
     ),
     Polyhedron(
         name="GreatDodecahedron",
         poly_type=PolyhedronType.KEPLER_POINSOT,
-        vertices=12, edges=30, faces=12, euler_char=-6,
+        vertices=12,
+        edges=30,
+        faces=12,
+        euler_char=-6,
         centroid_6d=np.array([0.9, 0.8, 0.7, 0.6, 0.5, 0.1]),
-        symmetry_group="Ih"
+        symmetry_group="Ih",
     ),
-
     # Catalan Solids (3) - Duals of Archimedean
     Polyhedron(
         name="TriakisTetrahedron",
         poly_type=PolyhedronType.CATALAN,
-        vertices=8, edges=18, faces=12, euler_char=2,
+        vertices=8,
+        edges=18,
+        faces=12,
+        euler_char=2,
         centroid_6d=np.array([0.15, 0.25, 0.35, 0.45, 0.55, 0.65]),
-        symmetry_group="Td"
+        symmetry_group="Td",
     ),
     Polyhedron(
         name="RhombicDodecahedron",
         poly_type=PolyhedronType.CATALAN,
-        vertices=14, edges=24, faces=12, euler_char=2,
+        vertices=14,
+        edges=24,
+        faces=12,
+        euler_char=2,
         centroid_6d=np.array([0.25, 0.35, 0.45, 0.55, 0.65, 0.55]),
-        symmetry_group="Oh"
+        symmetry_group="Oh",
     ),
     Polyhedron(
         name="RhombicTriacontahedron",
         poly_type=PolyhedronType.CATALAN,
-        vertices=32, edges=60, faces=30, euler_char=2,
+        vertices=32,
+        edges=60,
+        faces=30,
+        euler_char=2,
         centroid_6d=np.array([0.35, 0.45, 0.55, 0.65, 0.75, 0.45]),
-        symmetry_group="Ih"
+        symmetry_group="Ih",
     ),
-
     # Johnson Solids (3 selected) - Convex, non-uniform
     Polyhedron(
         name="SquarePyramid",  # J1
         poly_type=PolyhedronType.JOHNSON,
-        vertices=5, edges=8, faces=5, euler_char=2,
+        vertices=5,
+        edges=8,
+        faces=5,
+        euler_char=2,
         centroid_6d=np.array([0.45, 0.55, 0.65, 0.75, 0.85, 0.35]),
-        symmetry_group="C4v"
+        symmetry_group="C4v",
     ),
     Polyhedron(
         name="Pentagonal Pyramid",  # J2
         poly_type=PolyhedronType.JOHNSON,
-        vertices=6, edges=10, faces=6, euler_char=2,
+        vertices=6,
+        edges=10,
+        faces=6,
+        euler_char=2,
         centroid_6d=np.array([0.55, 0.65, 0.75, 0.85, 0.95, 0.25]),
-        symmetry_group="C5v"
+        symmetry_group="C5v",
     ),
     Polyhedron(
         name="TriangularCupola",  # J3
         poly_type=PolyhedronType.JOHNSON,
-        vertices=9, edges=15, faces=8, euler_char=2,
+        vertices=9,
+        edges=15,
+        faces=8,
+        euler_char=2,
         centroid_6d=np.array([0.65, 0.75, 0.85, 0.95, 0.85, 0.15]),
-        symmetry_group="C3v"
+        symmetry_group="C3v",
     ),
 ]
 
@@ -215,18 +263,18 @@ POLYHEDRA = [
 # Hamiltonian path through the 16 polyhedra (Claim 63(a))
 # This ordering visits each polyhedron exactly once
 HAMILTONIAN_PATH = [
-    0,   # Tetrahedron (start)
-    1,   # Cube
-    2,   # Octahedron
-    6,   # Cuboctahedron (bridges cube/octahedron)
+    0,  # Tetrahedron (start)
+    1,  # Cube
+    2,  # Octahedron
+    6,  # Cuboctahedron (bridges cube/octahedron)
     11,  # RhombicDodecahedron
-    3,   # Dodecahedron
-    4,   # Icosahedron
-    7,   # Icosidodecahedron
+    3,  # Dodecahedron
+    4,  # Icosahedron
+    7,  # Icosidodecahedron
     12,  # RhombicTriacontahedron
-    8,   # SmallStellatedDodecahedron
-    9,   # GreatDodecahedron
-    5,   # TruncatedTetrahedron
+    8,  # SmallStellatedDodecahedron
+    9,  # GreatDodecahedron
+    5,  # TruncatedTetrahedron
     10,  # TriakisTetrahedron
     13,  # SquarePyramid
     14,  # PentagonalPyramid
@@ -249,7 +297,10 @@ def verify_hamiltonian_path() -> bool:
 # SECTION 3: HMAC KEY CHAIN
 # =============================================================================
 
-def hmac_key_chain(shared_secret: bytes, polyhedra_order: List[int] = None) -> List[bytes]:
+
+def hmac_key_chain(
+    shared_secret: bytes, polyhedra_order: List[int] = None
+) -> List[bytes]:
     """
     Sequential HMAC chain through polyhedra (Claim 63(b)).
 
@@ -273,7 +324,7 @@ def hmac_key_chain(shared_secret: bytes, polyhedra_order: List[int] = None) -> L
         poly = POLYHEDRA[idx]
         # Serialize polyhedron properties
         data = f"{poly.name}|{poly.vertices}|{poly.edges}|{poly.faces}|{poly.symmetry_group}"
-        data_bytes = data.encode('utf-8')
+        data_bytes = data.encode("utf-8")
 
         # HMAC-SHA256
         K_next = hmac.new(K, data_bytes, hashlib.sha256).digest()
@@ -297,6 +348,7 @@ def derive_session_key(shared_secret: bytes) -> bytes:
 # SECTION 4: GEODESIC CURVE IN 6D LANGUES SPACE
 # =============================================================================
 
+
 @dataclass
 class GeodesicCurve:
     """
@@ -310,15 +362,16 @@ class GeodesicCurve:
     - dim 4: load (0 to 1)
     - dim 5: stability (0 to 1)
     """
+
     waypoints: List[np.ndarray]  # Polyhedra centroids in order
-    timestamps: List[float]       # Time at each waypoint
+    timestamps: List[float]  # Time at each waypoint
 
     def __post_init__(self):
         assert len(self.waypoints) == len(self.timestamps)
         assert len(self.waypoints) >= 2
         # Ensure timestamps are monotonic
         for i in range(1, len(self.timestamps)):
-            assert self.timestamps[i] > self.timestamps[i-1]
+            assert self.timestamps[i] > self.timestamps[i - 1]
 
     def evaluate(self, t: float) -> np.ndarray:
         """
@@ -334,16 +387,16 @@ class GeodesicCurve:
 
         # Find segment
         for i in range(len(self.timestamps) - 1):
-            if self.timestamps[i] <= t <= self.timestamps[i+1]:
+            if self.timestamps[i] <= t <= self.timestamps[i + 1]:
                 # Linear interpolation within segment
-                t0, t1 = self.timestamps[i], self.timestamps[i+1]
+                t0, t1 = self.timestamps[i], self.timestamps[i + 1]
                 alpha = (t - t0) / (t1 - t0)
 
                 # Smoothstep for smoother transitions
                 alpha_smooth = alpha * alpha * (3 - 2 * alpha)
 
                 p0 = self.waypoints[i]
-                p1 = self.waypoints[i+1]
+                p1 = self.waypoints[i + 1]
                 return (1 - alpha_smooth) * p0 + alpha_smooth * p1
 
         return self.waypoints[-1].copy()
@@ -390,12 +443,13 @@ class GeodesicCurve:
         normal_component = gamma_double_prime - tangential_component
 
         # Curvature = |γ''⊥| / |γ'|²
-        kappa = np.linalg.norm(normal_component) / (norm_prime ** 2)
+        kappa = np.linalg.norm(normal_component) / (norm_prime**2)
         return float(kappa)
 
 
-def create_golden_path(shared_secret: bytes,
-                       total_duration: float = 60.0) -> GeodesicCurve:
+def create_golden_path(
+    shared_secret: bytes, total_duration: float = 60.0
+) -> GeodesicCurve:
     """
     Create the "golden path" geodesic through all polyhedra.
 
@@ -418,9 +472,7 @@ def create_golden_path(shared_secret: bytes,
 
         # Small perturbation from key (< 0.01 per dimension)
         key_bytes = keys[i]
-        perturbation = np.array([
-            (b % 100) / 10000.0 - 0.005 for b in key_bytes[:6]
-        ])
+        perturbation = np.array([(b % 100) / 10000.0 - 0.005 for b in key_bytes[:6]])
         centroid += perturbation
 
         waypoints.append(centroid)
@@ -433,6 +485,7 @@ def create_golden_path(shared_secret: bytes,
 # SECTION 5: INTRUSION DETECTION
 # =============================================================================
 
+
 @dataclass
 class IntrusionDetector:
     """
@@ -444,9 +497,10 @@ class IntrusionDetector:
     detection uses deviation threshold. High curvature at waypoint
     transitions is expected for piecewise paths.
     """
+
     golden_path: GeodesicCurve
-    epsilon_snap: float = 0.1         # Deviation threshold (6D Euclidean)
-    kappa_warning: float = 1e6        # Curvature warning threshold (informational)
+    epsilon_snap: float = 0.1  # Deviation threshold (6D Euclidean)
+    kappa_warning: float = 1e6  # Curvature warning threshold (informational)
     history: List[Tuple[float, float, bool]] = field(default_factory=list)
 
     def check_state(self, state: np.ndarray, t: float) -> Dict[str, Any]:
@@ -487,7 +541,7 @@ class IntrusionDetector:
             "high_curvature": kappa > self.kappa_warning,
             "expected_state": expected,
             "actual_state": state,
-            "timestamp": t
+            "timestamp": t,
         }
 
     def get_threat_level(self, t: float) -> float:
@@ -507,9 +561,10 @@ class IntrusionDetector:
 # SECTION 6: PHDM SUBSCORE FOR LAYER 14
 # =============================================================================
 
-def compute_phdm_subscore(detector: IntrusionDetector,
-                          state: np.ndarray,
-                          t: float) -> float:
+
+def compute_phdm_subscore(
+    detector: IntrusionDetector, state: np.ndarray, t: float
+) -> float:
     """
     Compute s_phdm subscore for unified energy function Ω.
 
@@ -539,9 +594,10 @@ def compute_phdm_subscore(detector: IntrusionDetector,
 # SECTION 7: INTEGRATION WITH EXISTING LAYERS
 # =============================================================================
 
-def integrate_with_layer1(context_vector: np.ndarray,
-                          golden_path: GeodesicCurve,
-                          t: float) -> np.ndarray:
+
+def integrate_with_layer1(
+    context_vector: np.ndarray, golden_path: GeodesicCurve, t: float
+) -> np.ndarray:
     """
     Layer 0.5: Inject polyhedra centroids into context before Layer 1.
 
@@ -559,9 +615,9 @@ def integrate_with_layer1(context_vector: np.ndarray,
         return context_vector
 
 
-def integrate_with_layer7_swarm(golden_path: GeodesicCurve,
-                                 node_states: List[np.ndarray],
-                                 t: float) -> float:
+def integrate_with_layer7_swarm(
+    golden_path: GeodesicCurve, node_states: List[np.ndarray], t: float
+) -> float:
     """
     Layer 7: Swarm nodes use γ(t) as expected trajectory.
 
@@ -577,9 +633,9 @@ def integrate_with_layer7_swarm(golden_path: GeodesicCurve,
     return float(consensus)
 
 
-def integrate_with_layer13_risk(kappa: float,
-                                 base_risk: float,
-                                 kappa_weight: float = 0.3) -> float:
+def integrate_with_layer13_risk(
+    kappa: float, base_risk: float, kappa_weight: float = 0.3
+) -> float:
     """
     Layer 13: Risk function incorporates κ(t) for curvature-based scaling.
 
@@ -597,6 +653,7 @@ def integrate_with_layer13_risk(kappa: float,
 # =============================================================================
 # SECTION 8: SELF-TESTS
 # =============================================================================
+
 
 def self_test() -> Dict[str, Any]:
     """
@@ -687,7 +744,9 @@ def self_test() -> Dict[str, Any]:
         result = detector.check_state(on_path_state, 30.0)
         if result["decision"] == "ALLOW":
             passed += 1
-            results["intrusion_on_path"] = f"✓ PASS (ALLOW, dev={result['deviation']:.4f})"
+            results["intrusion_on_path"] = (
+                f"✓ PASS (ALLOW, dev={result['deviation']:.4f})"
+            )
         else:
             results["intrusion_on_path"] = f"✗ FAIL (unexpected DENY)"
     except Exception as e:
@@ -700,7 +759,9 @@ def self_test() -> Dict[str, Any]:
         result = detector.check_state(off_path_state, 30.0)
         if result["decision"] == "DENY":
             passed += 1
-            results["intrusion_off_path"] = f"✓ PASS (DENY, dev={result['deviation']:.4f})"
+            results["intrusion_off_path"] = (
+                f"✓ PASS (DENY, dev={result['deviation']:.4f})"
+            )
         else:
             results["intrusion_off_path"] = f"✗ FAIL (unexpected ALLOW)"
     except Exception as e:
@@ -713,7 +774,9 @@ def self_test() -> Dict[str, Any]:
         off_path_score = compute_phdm_subscore(detector, off_path_state, 30.0)
         if on_path_score > off_path_score:
             passed += 1
-            results["phdm_subscore"] = f"✓ PASS (on={on_path_score:.3f} > off={off_path_score:.3f})"
+            results["phdm_subscore"] = (
+                f"✓ PASS (on={on_path_score:.3f} > off={off_path_score:.3f})"
+            )
         else:
             results["phdm_subscore"] = "✗ FAIL (scores inverted)"
     except Exception as e:
@@ -723,7 +786,7 @@ def self_test() -> Dict[str, Any]:
         "passed": passed,
         "total": total,
         "results": results,
-        "success_rate": f"{passed}/{total} ({100*passed/total:.1f}%)"
+        "success_rate": f"{passed}/{total} ({100*passed/total:.1f}%)",
     }
 
 
