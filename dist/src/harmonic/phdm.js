@@ -24,15 +24,31 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PolyhedralHamiltonianDefenseManifold = exports.PHDMDeviationDetector = exports.CubicSpline6D = exports.computeCentroid = exports.distance6D = exports.PHDMHamiltonianPath = exports.CANONICAL_POLYHEDRA = exports.serializePolyhedron = exports.topologicalHash = exports.isValidTopology = exports.eulerCharacteristic = void 0;
+exports.PolyhedralHamiltonianDefenseManifold = exports.PHDMDeviationDetector = exports.CubicSpline6D = exports.PHDMHamiltonianPath = exports.CANONICAL_POLYHEDRA = void 0;
+exports.eulerCharacteristic = eulerCharacteristic;
+exports.isValidTopology = isValidTopology;
+exports.topologicalHash = topologicalHash;
+exports.serializePolyhedron = serializePolyhedron;
+exports.distance6D = distance6D;
+exports.computeCentroid = computeCentroid;
 const crypto = __importStar(require("crypto"));
 /**
  * Compute Euler characteristic: χ = V - E + F = 2(1-g)
@@ -40,7 +56,6 @@ const crypto = __importStar(require("crypto"));
 function eulerCharacteristic(poly) {
     return poly.vertices - poly.edges + poly.faces;
 }
-exports.eulerCharacteristic = eulerCharacteristic;
 /**
  * Verify topological validity: χ = 2(1-g)
  */
@@ -49,7 +64,6 @@ function isValidTopology(poly) {
     const expected = 2 * (1 - poly.genus);
     return chi === expected;
 }
-exports.isValidTopology = isValidTopology;
 /**
  * Generate topological hash (SHA256) for tamper detection
  */
@@ -57,7 +71,6 @@ function topologicalHash(poly) {
     const data = `${poly.name}:${poly.vertices}:${poly.edges}:${poly.faces}:${poly.genus}`;
     return crypto.createHash('sha256').update(data).digest('hex');
 }
-exports.topologicalHash = topologicalHash;
 /**
  * Serialize polyhedron for HMAC input
  */
@@ -67,7 +80,6 @@ function serializePolyhedron(poly) {
     const data = `${poly.name}|V=${poly.vertices}|E=${poly.edges}|F=${poly.faces}|χ=${chi}|g=${poly.genus}|hash=${hash}`;
     return Buffer.from(data, 'utf-8');
 }
-exports.serializePolyhedron = serializePolyhedron;
 /**
  * 16 Canonical Polyhedra
  */
@@ -179,7 +191,6 @@ function distance6D(p1, p2) {
     const dx6 = p1.x6 - p2.x6;
     return Math.sqrt(dx1 * dx1 + dx2 * dx2 + dx3 * dx3 + dx4 * dx4 + dx5 * dx5 + dx6 * dx6);
 }
-exports.distance6D = distance6D;
 /**
  * Compute centroid of polyhedron in 6D space
  * Maps topological properties to 6D coordinates
@@ -195,7 +206,6 @@ function computeCentroid(poly) {
         x6: Math.log(poly.vertices + poly.edges + poly.faces), // Complexity
     };
 }
-exports.computeCentroid = computeCentroid;
 /**
  * Cubic spline interpolation in 6D
  */
@@ -321,7 +331,7 @@ class CubicSpline6D {
         const d2Mag = Math.sqrt(d2.x1 ** 2 + d2.x2 ** 2 + d2.x3 ** 2 + d2.x4 ** 2 + d2.x5 ** 2 + d2.x6 ** 2);
         if (d1Mag < 1e-10)
             return 0;
-        return d2Mag / (d1Mag ** 2);
+        return d2Mag / d1Mag ** 2;
     }
 }
 exports.CubicSpline6D = CubicSpline6D;
@@ -358,8 +368,7 @@ class PHDMDeviationDetector {
         // Curvature at current position
         const curvature = this.geodesic.curvature(t);
         // Intrusion detection
-        const isIntrusion = deviation > this.snapThreshold ||
-            curvature > this.curvatureThreshold;
+        const isIntrusion = deviation > this.snapThreshold || curvature > this.curvatureThreshold;
         // 1-0 rhythm pattern (1=safe, 0=intrusion)
         const rhythmBit = isIntrusion ? '0' : '1';
         return {
@@ -408,7 +417,7 @@ class PHDMDeviationDetector {
      * Generate full rhythm pattern from results
      */
     static getRhythmPattern(results) {
-        return results.map(r => r.rhythmPattern).join('');
+        return results.map((r) => r.rhythmPattern).join('');
     }
 }
 exports.PHDMDeviationDetector = PHDMDeviationDetector;

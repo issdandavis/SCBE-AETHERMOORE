@@ -7,8 +7,6 @@
  * Part of SCBE-AETHERMOORE v3.0.0
  * Patent: USPTO #63/961,403
  */
-/// <reference types="node" />
-/// <reference types="node" />
 import { AudioProfile, DecisionOutcome } from './types';
 export interface VerifyRequest {
     AAD: Buffer;

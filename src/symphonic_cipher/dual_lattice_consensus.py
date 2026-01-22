@@ -12,23 +12,36 @@ Per NIST FIPS 203 and FIPS 204 standards.
 Improves quantum resistance by factor of 2 through consensus.
 
 Author: Issac Davis / SpiralVerse OS
-Date: January 15, 2026
+Date: January 21, 2026
+Patent: USPTO #63/961,403
 """
 
 import hashlib
-import hmac
 import os
 import time
 from typing import Tuple, Dict, Optional, Any
 from dataclasses import dataclass
 from enum import Enum
-import numpy as np
+
+# Import real PQC from liboqs wrapper (with fallback to stubs)
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from crypto.pqc_liboqs import (
+    MLKEM768,
+    MLDSA65,
+    is_liboqs_available,
+    get_pqc_backend,
+    compute_consensus_hash,
+)
 
 # Constants
 KEY_LEN = 32
-SIG_LEN = 64  # Simplified; real Dilithium3 is ~3293 bytes
 NONCE_LEN = 12
 TIMESTAMP_WINDOW = 60_000  # 60 seconds in ms
+
+# Log PQC backend at import time
+_PQC_BACKEND = get_pqc_backend()
+print(f"[DualLatticeConsensus] PQC Backend: {_PQC_BACKEND}")
 
 
 class ConsensusResult(Enum):
@@ -48,7 +61,7 @@ class AuthorizationContext:
     timestamp: int
     session_nonce: bytes
     threat_level: float
-    
+
     def to_bytes(self) -> bytes:
         """Serialize context for cryptographic binding."""
         return (
@@ -58,79 +71,6 @@ class AuthorizationContext:
             self.session_nonce +
             int(self.threat_level * 1000).to_bytes(4, 'big')
         )
-
-
-class MLKEM768:
-    """
-    ML-KEM-768 (Kyber) Key Encapsulation Mechanism.
-    Simulated implementation per NIST FIPS 203.
-    In production: use liboqs-python or pqcrypto.
-    """
-    
-    def __init__(self, seed: bytes = None):
-        self.seed = seed or os.urandom(KEY_LEN)
-        # Derive keypair from seed
-        self.public_key = hashlib.sha256(self.seed + b"kyber_pk").digest()
-        self.secret_key = hashlib.sha256(self.seed + b"kyber_sk").digest()
-        
-    def encapsulate(self) -> Tuple[bytes, bytes]:
-        """
-        Generate ciphertext and shared secret.
-        Returns (ciphertext, shared_secret).
-        """
-        ephemeral = os.urandom(KEY_LEN)
-        # Simulate Kyber encapsulation
-        ct = hashlib.sha256(self.public_key + ephemeral).digest()
-        ss = hashlib.sha256(ct + self.secret_key + ephemeral).digest()
-        return ct, ss
-    
-    def decapsulate(self, ciphertext: bytes) -> bytes:
-        """
-        Recover shared secret from ciphertext.
-        """
-        ss = hashlib.sha256(ciphertext + self.secret_key).digest()
-        return ss
-    
-    def get_public_key(self) -> bytes:
-        return self.public_key
-
-
-class MLDSA65:
-    """
-    ML-DSA-65 (Dilithium) Digital Signature Algorithm.
-    Simulated implementation per NIST FIPS 204.
-    In production: use liboqs-python or pqcrypto.
-    """
-    
-    def __init__(self, seed: bytes = None):
-        self.seed = seed or os.urandom(KEY_LEN)
-        # Derive keypair from seed
-        self.public_key = hashlib.sha256(self.seed + b"dilithium_pk").digest()
-        self.secret_key = hashlib.sha256(self.seed + b"dilithium_sk").digest()
-        
-    def sign(self, message: bytes) -> bytes:
-        """
-        Sign a message.
-        Returns signature bytes.
-        """
-        # Simulate Dilithium signature
-        sig = hmac.new(
-            self.secret_key,
-            message,
-            hashlib.sha512
-        ).digest()
-        return sig
-    
-    def verify(self, message: bytes, signature: bytes) -> bool:
-        """
-        Verify a signature.
-        Returns True if valid.
-        """
-        expected = self.sign(message)
-        return hmac.compare_digest(expected, signature)
-    
-    def get_public_key(self) -> bytes:
-        return self.public_key
 
 
 class DualLatticeConsensus:
@@ -240,13 +180,15 @@ def run_dual_lattice_demo():
     print("="*60)
     print("DUAL-LATTICE CONSENSUS DEMONSTRATION")
     print("ML-KEM-768 (Kyber) + ML-DSA-65 (Dilithium)")
+    print(f"Backend: {get_pqc_backend()}")
     print("="*60)
-    
+
     # Initialize consensus system
     dlc = DualLatticeConsensus()
     print(f"\nInitialized with shared seed")
-    print(f"  KEM Public Key: {dlc.kem.get_public_key().hex()[:32]}...")
-    print(f"  DSA Public Key: {dlc.dsa.get_public_key().hex()[:32]}...")
+    print(f"  KEM Public Key: {dlc.kem.public_key.hex()[:32]}...")
+    print(f"  DSA Public Key: {dlc.dsa.public_key.hex()[:32]}...")
+    print(f"  Using liboqs: {is_liboqs_available()}")
     
     # Create authorization context
     context = AuthorizationContext(

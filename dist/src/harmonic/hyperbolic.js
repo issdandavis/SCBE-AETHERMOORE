@@ -11,7 +11,18 @@
  * L7: Phase Modulation Φ(p,θ) = R_θ·p rotation in tangent space
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.applyHyperbolicPipeline = exports.multiWellGradient = exports.multiWellPotential = exports.multiPhaseModulation = exports.phaseModulation = exports.inverseBreathTransform = exports.breathTransform = exports.logMap0 = exports.expMap0 = exports.projectToBall = exports.mobiusAdd = exports.hyperbolicDistance = void 0;
+exports.hyperbolicDistance = hyperbolicDistance;
+exports.mobiusAdd = mobiusAdd;
+exports.projectToBall = projectToBall;
+exports.expMap0 = expMap0;
+exports.logMap0 = logMap0;
+exports.breathTransform = breathTransform;
+exports.inverseBreathTransform = inverseBreathTransform;
+exports.phaseModulation = phaseModulation;
+exports.multiPhaseModulation = multiPhaseModulation;
+exports.multiWellPotential = multiWellPotential;
+exports.multiWellGradient = multiWellGradient;
+exports.applyHyperbolicPipeline = applyHyperbolicPipeline;
 /** Small epsilon for numerical stability */
 const EPSILON = 1e-10;
 /**
@@ -45,7 +56,7 @@ function dot(u, v) {
  * Scale a vector by a scalar
  */
 function scale(v, s) {
-    return v.map(x => x * s);
+    return v.map((x) => x * s);
 }
 /**
  * Add two vectors
@@ -85,7 +96,6 @@ function hyperbolicDistance(u, v) {
     // arcosh(x) = ln(x + sqrt(x² - 1))
     return Math.acosh(Math.max(1, arg));
 }
-exports.hyperbolicDistance = hyperbolicDistance;
 /**
  * Möbius addition in the Poincaré ball
  *
@@ -110,7 +120,6 @@ function mobiusAdd(u, v) {
     }
     return result;
 }
-exports.mobiusAdd = mobiusAdd;
 /**
  * Project a point onto the Poincaré ball (clamp to ‖p‖ < 1)
  *
@@ -124,7 +133,6 @@ function projectToBall(p, maxNorm = 1 - EPSILON) {
         return [...p];
     return scale(p, maxNorm / n);
 }
-exports.projectToBall = projectToBall;
 /**
  * Exponential map from tangent space to Poincaré ball at origin
  *
@@ -140,7 +148,6 @@ function expMap0(v) {
     const factor = Math.tanh(n / 2) / n;
     return scale(v, factor);
 }
-exports.expMap0 = expMap0;
 /**
  * Logarithmic map from Poincaré ball to tangent space at origin
  *
@@ -158,7 +165,6 @@ function logMap0(p) {
     const factor = (2 * atanh) / n;
     return scale(p, factor);
 }
-exports.logMap0 = logMap0;
 /**
  * Breath Transform (Layer 6)
  *
@@ -183,7 +189,6 @@ function breathTransform(p, t, config = { amplitude: 0.05, omega: 1.0 }) {
     // Scale to new radius while preserving direction
     return scale(p, newRadius / n);
 }
-exports.breathTransform = breathTransform;
 /**
  * Inverse breath transform (approximate recovery)
  *
@@ -202,7 +207,6 @@ function inverseBreathTransform(bp, t, config = { amplitude: 0.05, omega: 1.0 })
     const originalRadius = Math.max(0, atanh - A * Math.sin(config.omega * t));
     return scale(bp, originalRadius / n);
 }
-exports.inverseBreathTransform = inverseBreathTransform;
 // ═══════════════════════════════════════════════════════════════
 // Layer 7: Phase Modulation
 // ═══════════════════════════════════════════════════════════════
@@ -232,7 +236,6 @@ function phaseModulation(p, theta, plane = [0, 1]) {
     result[j] = p[i] * sin + p[j] * cos;
     return result;
 }
-exports.phaseModulation = phaseModulation;
 /**
  * Multi-plane phase modulation
  *
@@ -249,7 +252,6 @@ function multiPhaseModulation(p, rotations) {
     }
     return result;
 }
-exports.multiPhaseModulation = multiPhaseModulation;
 /**
  * Multi-Well Potential (Layer 8)
  *
@@ -270,7 +272,6 @@ function multiWellPotential(p, wells) {
     }
     return V;
 }
-exports.multiWellPotential = multiWellPotential;
 /**
  * Gradient of multi-well potential
  *
@@ -286,14 +287,13 @@ function multiWellGradient(p, wells) {
         const diff = sub(p, well.center);
         const distSq = normSq(diff);
         const expTerm = Math.exp(-distSq / (2 * well.sigma * well.sigma));
-        const factor = -well.weight * expTerm / (well.sigma * well.sigma);
+        const factor = (-well.weight * expTerm) / (well.sigma * well.sigma);
         for (let i = 0; i < p.length; i++) {
             grad[i] += factor * diff[i];
         }
     }
     return grad;
 }
-exports.multiWellGradient = multiWellGradient;
 // ═══════════════════════════════════════════════════════════════
 // Utility: Combined Transform Pipeline
 // ═══════════════════════════════════════════════════════════════
@@ -327,5 +327,4 @@ function applyHyperbolicPipeline(p, t, theta, breathConfig, wells) {
     const distance = hyperbolicDistance(origin, point);
     return { point, potential, distance };
 }
-exports.applyHyperbolicPipeline = applyHyperbolicPipeline;
 //# sourceMappingURL=hyperbolic.js.map

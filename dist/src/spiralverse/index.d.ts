@@ -43,8 +43,8 @@
  * }
  * ```
  */
-export { clearNonceCache, destroyNonceCache, getNonceCacheSize, signRoundtable, verifyRoundtable } from './rwp';
-export { POLICY_MATRIX, checkPolicy, enforcePolicy, getPolicyDescription, getRequiredTongues, suggestPolicy } from './policy';
-export type { EnvelopeOptions, Keyring, NonceCacheEntry, PolicyLevel, PolicyMatrix, RWP2MultiEnvelope, TongueID, TongueSpec, VerificationOptions, VerificationResult } from './types';
+export { clearNonceCache, destroyNonceCache, getNonceCacheSize, signRoundtable, verifyRoundtable, } from './rwp';
+export { POLICY_MATRIX, checkPolicy, enforcePolicy, getPolicyDescription, getRequiredTongues, suggestPolicy, } from './policy';
+export type { EnvelopeOptions, Keyring, NonceCacheEntry, PolicyLevel, PolicyMatrix, RWP2MultiEnvelope, TongueID, TongueSpec, VerificationOptions, VerificationResult, } from './types';
 export { PolicyError, RWPError, ReplayError, SignatureError } from './types';
 //# sourceMappingURL=index.d.ts.map

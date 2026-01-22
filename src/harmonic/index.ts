@@ -281,3 +281,49 @@ export {
   // Types
   type Polyhedron,
 } from './phdm.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Complete 14-Layer Pipeline
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Individual Layer Functions
+  layer1ComplexState,
+  layer2Realification,
+  layer3WeightedTransform,
+  layer4PoincareEmbedding,
+  layer5HyperbolicDistance,
+  layer6BreathingTransform,
+  layer7PhaseTransform,
+  layer8RealmDistance,
+  layer9SpectralCoherence,
+  layer10SpinCoherence,
+  layer11TriadicTemporal,
+  layer12HarmonicScaling,
+  layer13RiskDecision,
+  layer14AudioAxis,
+  // Möbius Operations
+  mobiusAdd as mobiusAddPipeline,
+  mobiusRotate as mobiusRotatePipeline,
+  // Full Pipeline
+  scbe14LayerPipeline,
+  // Aliases
+  complexState,
+  realification,
+  weightedTransform,
+  poincareEmbedding,
+  hyperbolicDistance as hyperbolicDistancePipeline,
+  breathingTransform as breathingTransformPipeline,
+  phaseTransform,
+  realmDistance,
+  spectralCoherence,
+  spinCoherence,
+  triadicTemporal,
+  harmonicScaling as harmonicScalingPipeline,
+  riskDecision,
+  audioAxis,
+  // Types
+  type Decision as PipelineDecision,
+  type Pipeline14Config,
+  type Pipeline14Result,
+} from './pipeline14.js';
