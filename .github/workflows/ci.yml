@@ -74,7 +74,7 @@ jobs:
     
     - name: Run Python tests
       run: |
-        pytest tests/ -v --cov=src --cov-report=xml --cov-report=term
+        PYTHONPATH=. pytest tests/ -v --cov=src --cov-report=xml --cov-report=term
     
     - name: Upload coverage
       uses: codecov/codecov-action@v4
