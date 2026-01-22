@@ -75,9 +75,9 @@ export interface LatticePoint {
  * Diffraction peak
  */
 export interface DiffractionPeak {
-  k: Point2D;           // Wave vector
-  intensity: number;    // Peak intensity
-  order: number;        // Diffraction order
+  k: Point2D; // Wave vector
+  intensity: number; // Peak intensity
+  order: number; // Diffraction order
 }
 
 /**
@@ -150,12 +150,9 @@ export function fibonacci1D(generations: number, a: number = 1): number[] {
  * Generate 2D Fibonacci lattice
  * Uses two 1D Fibonacci lattices rotated by golden angle
  */
-export function fibonacci2D(
-  n: number,
-  a: number = 1
-): LatticePoint[] {
+export function fibonacci2D(n: number, a: number = 1): LatticePoint[] {
   const points: LatticePoint[] = [];
-  const goldenAngle = 2 * Math.PI / (PHI * PHI);
+  const goldenAngle = (2 * Math.PI) / (PHI * PHI);
 
   for (let i = 0; i < n; i++) {
     // Sunflower pattern using golden angle
@@ -226,7 +223,7 @@ export function penroseDeflate(tiles: PenroseTile[]): PenroseTile[] {
       newTiles.push(
         createTile('thick_rhombus', [A, E, B, lerpPoint(A, B, 0.5)], tile.angle),
         createTile('thick_rhombus', [E, C, D, F], tile.angle + PI_5),
-        createTile('thin_rhombus', [E, F, B, lerpPoint(B, E, 0.5)], tile.angle - PI_5),
+        createTile('thin_rhombus', [E, F, B, lerpPoint(B, E, 0.5)], tile.angle - PI_5)
       );
     } else if (tile.type === 'thin_rhombus') {
       // Thin rhombus -> 1 thick + 1 thin
@@ -235,7 +232,7 @@ export function penroseDeflate(tiles: PenroseTile[]): PenroseTile[] {
 
       newTiles.push(
         createTile('thick_rhombus', [A, E, B, lerpPoint(A, B, 0.5)], tile.angle),
-        createTile('thin_rhombus', [E, C, D, lerpPoint(C, D, 0.5)], tile.angle + PI_5),
+        createTile('thin_rhombus', [E, C, D, lerpPoint(C, D, 0.5)], tile.angle + PI_5)
       );
     }
   }
@@ -262,11 +259,7 @@ export function penroseInitial(center: Point2D, size: number): PenroseTile[] {
 /**
  * Generate Penrose tiling with n deflation steps
  */
-export function penroseTiling(
-  center: Point2D,
-  size: number,
-  generations: number
-): PenroseTile[] {
+export function penroseTiling(center: Point2D, size: number, generations: number): PenroseTile[] {
   let tiles = penroseInitial(center, size);
 
   for (let i = 0; i < generations; i++) {
@@ -305,19 +298,12 @@ export function penroseToLattice(tiles: PenroseTile[]): LatticePoint[] {
 /**
  * Generate Ammann-Beenker square tile
  */
-export function ammannBeenkerSquare(
-  center: Point2D,
-  angle: number,
-  size: number
-): Point2D[] {
+export function ammannBeenkerSquare(center: Point2D, angle: number, size: number): Point2D[] {
   const vertices: Point2D[] = [];
 
   for (let i = 0; i < 4; i++) {
-    const theta = angle + i * Math.PI / 2;
-    vertices.push([
-      center[0] + size * Math.cos(theta),
-      center[1] + size * Math.sin(theta),
-    ]);
+    const theta = angle + (i * Math.PI) / 2;
+    vertices.push([center[0] + size * Math.cos(theta), center[1] + size * Math.sin(theta)]);
   }
 
   return vertices;
@@ -326,11 +312,7 @@ export function ammannBeenkerSquare(
 /**
  * Generate Ammann-Beenker rhombus (45° acute angle)
  */
-export function ammannBeenkerRhombus(
-  center: Point2D,
-  angle: number,
-  size: number
-): Point2D[] {
+export function ammannBeenkerRhombus(center: Point2D, angle: number, size: number): Point2D[] {
   const vertices: Point2D[] = [];
   const halfAngle = Math.PI / 8;
 
@@ -339,12 +321,9 @@ export function ammannBeenkerRhombus(
 
   for (let i = 0; i < 4; i++) {
     const isLong = i % 2 === 1;
-    const theta = angle + i * Math.PI / 2 + (isLong ? halfAngle : 0);
+    const theta = angle + (i * Math.PI) / 2 + (isLong ? halfAngle : 0);
     const r = isLong ? r2 : r1;
-    vertices.push([
-      center[0] + r * Math.cos(theta),
-      center[1] + r * Math.sin(theta),
-    ]);
+    vertices.push([center[0] + r * Math.cos(theta), center[1] + r * Math.sin(theta)]);
   }
 
   return vertices;
@@ -372,7 +351,7 @@ export function cutAndProject2D(
   for (let d = 0; d < 2; d++) {
     projMatrix[d] = [];
     for (let i = 0; i < nDimensions; i++) {
-      projMatrix[d][i] = Math.cos(2 * Math.PI * (d * nDimensions + i + 1) / (2 * nDimensions));
+      projMatrix[d][i] = Math.cos((2 * Math.PI * (d * nDimensions + i + 1)) / (2 * nDimensions));
     }
   }
 
@@ -381,7 +360,7 @@ export function cutAndProject2D(
   for (let d = 0; d < nDimensions - 2; d++) {
     intMatrix[d] = [];
     for (let i = 0; i < nDimensions; i++) {
-      intMatrix[d][i] = Math.sin(2 * Math.PI * (d * nDimensions + i + 1) / (2 * nDimensions));
+      intMatrix[d][i] = Math.sin((2 * Math.PI * (d * nDimensions + i + 1)) / (2 * nDimensions));
     }
   }
 
@@ -463,7 +442,8 @@ export function diffractionPattern(
       const k: Point2D = [kx * dk, ky * dk];
 
       // Calculate structure factor
-      let re = 0, im = 0;
+      let re = 0,
+        im = 0;
       for (const p of points) {
         const phase = k[0] * p.position[0] + k[1] * p.position[1];
         re += p.weight * Math.cos(phase);
@@ -496,7 +476,7 @@ export function checkRotationalSymmetry(
   n: number,
   tolerance: number = 0.1
 ): { hasSymmetry: boolean; score: number } {
-  const angleStep = 2 * Math.PI / n;
+  const angleStep = (2 * Math.PI) / n;
   let matchScore = 0;
   let totalScore = 0;
 
@@ -517,9 +497,7 @@ export function checkRotationalSymmetry(
       let matchIntensity = 0;
 
       for (const other of peaks) {
-        const dist = Math.sqrt(
-          (other.k[0] - targetK[0]) ** 2 + (other.k[1] - targetK[1]) ** 2
-        );
+        const dist = Math.sqrt((other.k[0] - targetK[0]) ** 2 + (other.k[1] - targetK[1]) ** 2);
         if (dist < minDist) {
           minDist = dist;
           matchIntensity = other.intensity;
@@ -555,7 +533,7 @@ export function scbeToQuasicrystal(v: Vector6D): LatticePoint {
   const pos: Point2D = [0, 0];
   for (let d = 0; d < 2; d++) {
     for (let i = 0; i < 6; i++) {
-      pos[d] += projMatrix[d][i] * v[i] / Math.sqrt(2 + PHI);
+      pos[d] += (projMatrix[d][i] * v[i]) / Math.sqrt(2 + PHI);
     }
   }
 
@@ -577,10 +555,7 @@ export function nearestQCVertex(
   let nearest = lattice[0];
 
   for (const lp of lattice) {
-    const dist = Math.sqrt(
-      (point[0] - lp.position[0]) ** 2 +
-      (point[1] - lp.position[1]) ** 2
-    );
+    const dist = Math.sqrt((point[0] - lp.position[0]) ** 2 + (point[1] - lp.position[1]) ** 2);
     if (dist < minDist) {
       minDist = dist;
       nearest = lp;
@@ -628,10 +603,7 @@ export function quasicrystalHash(
     const radius = ((byte % 16) + 1) * 0.1;
 
     // Move in quasicrystal space
-    current = [
-      current[0] + radius * Math.cos(angle) * PHI,
-      current[1] + radius * Math.sin(angle),
-    ];
+    current = [current[0] + radius * Math.cos(angle) * PHI, current[1] + radius * Math.sin(angle)];
 
     // Snap to nearest lattice point
     const { nearest } = nearestQCVertex(current, lattice);

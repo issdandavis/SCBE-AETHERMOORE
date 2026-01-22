@@ -22,9 +22,5 @@
   ],
   "author": "SCBE-AETHERMOORE",
   "license": "MIT",
-  "steeringFiles": [
-    "getting-started.md",
-    "lattice-operations.md",
-    "axiom-verification.md"
-  ]
+  "steeringFiles": ["getting-started.md", "lattice-operations.md", "axiom-verification.md"]
 }

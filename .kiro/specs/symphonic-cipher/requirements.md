@@ -21,11 +21,13 @@ Integration of the **Symphonic Cipher** into SCBE-AETHERMOORE SDK, introducing F
 ## 👥 User Stories
 
 ### US-1: Transaction Signing (Developer)
+
 **As a** blockchain developer  
 **I want to** sign transaction intents using harmonic fingerprints  
 **So that** I can provide quantum-resistant, signal-based verification
 
 **Acceptance Criteria:**
+
 - AC-1.1: Can generate harmonic signature from intent string and private key
 - AC-1.2: Signature is deterministic (same input → same output)
 - AC-1.3: Signature generation completes in <1ms for 1KB payload
@@ -33,11 +35,13 @@ Integration of the **Symphonic Cipher** into SCBE-AETHERMOORE SDK, introducing F
 - AC-1.5: Different intents produce completely different signatures (avalanche effect)
 
 ### US-2: Signature Verification (Validator)
+
 **As a** network validator  
 **I want to** verify harmonic signatures  
 **So that** I can validate transaction authenticity
 
 **Acceptance Criteria:**
+
 - AC-2.1: Can verify signature by re-synthesizing harmonics
 - AC-2.2: Verification uses constant-time comparison
 - AC-2.3: Invalid signatures are rejected
@@ -45,11 +49,13 @@ Integration of the **Symphonic Cipher** into SCBE-AETHERMOORE SDK, introducing F
 - AC-2.5: Verification completes in <1ms for 1KB payload
 
 ### US-3: API Integration (Backend Engineer)
+
 **As a** backend engineer  
 **I want to** expose signing/verification via REST API  
 **So that** clients can use the Symphonic Cipher
 
 **Acceptance Criteria:**
+
 - AC-3.1: POST /sign-intent endpoint accepts intent and key
 - AC-3.2: POST /verify-intent endpoint validates signatures
 - AC-3.3: API returns proper HTTP status codes (200, 400, 401, 500)
@@ -57,11 +63,13 @@ Integration of the **Symphonic Cipher** into SCBE-AETHERMOORE SDK, introducing F
 - AC-3.5: API includes method identifier in response
 
 ### US-4: Zero Dependencies (Security Engineer)
+
 **As a** security engineer  
 **I want** all cryptographic primitives implemented without external libraries  
 **So that** I can audit the entire codebase and reduce supply-chain attacks
 
 **Acceptance Criteria:**
+
 - AC-4.1: FFT implemented using only built-in Math functions
 - AC-4.2: Feistel network uses only Node.js crypto module
 - AC-4.3: Z-Base-32 encoding implemented from scratch
@@ -69,11 +77,13 @@ Integration of the **Symphonic Cipher** into SCBE-AETHERMOORE SDK, introducing F
 - AC-4.5: No external dependencies added to package.json
 
 ### US-5: Performance Monitoring (DevOps)
+
 **As a** DevOps engineer  
 **I want to** monitor Symphonic Cipher performance  
 **So that** I can ensure SLA compliance
 
 **Acceptance Criteria:**
+
 - AC-5.1: Signing latency metrics exposed
 - AC-5.2: Verification latency metrics exposed
 - AC-5.3: FFT computation time tracked separately
@@ -83,6 +93,7 @@ Integration of the **Symphonic Cipher** into SCBE-AETHERMOORE SDK, introducing F
 ## 🔧 Technical Requirements
 
 ### TR-1: FFT Implementation
+
 - **TR-1.1:** Implement Cooley-Tukey Radix-2 DIT algorithm
 - **TR-1.2:** Support power-of-2 input sizes (N = 2^k)
 - **TR-1.3:** Implement bit-reversal permutation
@@ -91,6 +102,7 @@ Integration of the **Symphonic Cipher** into SCBE-AETHERMOORE SDK, introducing F
 - **TR-1.6:** Use iterative approach (avoid stack overflow)
 
 ### TR-2: Complex Number Arithmetic
+
 - **TR-2.1:** Implement Complex class with re/im properties
 - **TR-2.2:** Support add, sub, mul operations
 - **TR-2.3:** Implement magnitude calculation
@@ -98,6 +110,7 @@ Integration of the **Symphonic Cipher** into SCBE-AETHERMOORE SDK, introducing F
 - **TR-2.5:** Use double-precision floating point
 
 ### TR-3: Feistel Network
+
 - **TR-3.1:** Implement balanced Feistel structure
 - **TR-3.2:** Use 6 rounds for sufficient diffusion
 - **TR-3.3:** Round function: F(R, K) = HMAC-SHA256(K, R)
@@ -105,6 +118,7 @@ Integration of the **Symphonic Cipher** into SCBE-AETHERMOORE SDK, introducing F
 - **TR-3.5:** Handle odd-length buffers with padding
 
 ### TR-4: Z-Base-32 Encoding
+
 - **TR-4.1:** Use alphabet: "ybndrfg8ejkmcpqxot1uwisza345h769"
 - **TR-4.2:** Implement 5-bit to character mapping
 - **TR-4.3:** Handle bit-shifting for byte-to-base32 conversion
@@ -112,6 +126,7 @@ Integration of the **Symphonic Cipher** into SCBE-AETHERMOORE SDK, introducing F
 - **TR-4.5:** Validate input characters on decode
 
 ### TR-5: Symphonic Agent
+
 - **TR-5.1:** Orchestrate Intent → Signal → Spectrum pipeline
 - **TR-5.2:** Normalize bytes (0-255) to float (-1.0 to 1.0)
 - **TR-5.3:** Extract magnitude fingerprint from spectrum
@@ -119,6 +134,7 @@ Integration of the **Symphonic Cipher** into SCBE-AETHERMOORE SDK, introducing F
 - **TR-5.5:** Discard phase information (magnitude-only fingerprint)
 
 ### TR-6: Hybrid Crypto Integration
+
 - **TR-6.1:** Integrate SymphonicAgent into HybridCrypto class
 - **TR-6.2:** Implement generateHarmonicSignature method
 - **TR-6.3:** Implement verifyHarmonicSignature method
@@ -126,6 +142,7 @@ Integration of the **Symphonic Cipher** into SCBE-AETHERMOORE SDK, introducing F
 - **TR-6.5:** Use timing-safe comparison for verification
 
 ### TR-7: API Server
+
 - **TR-7.1:** Implement Express server on port 3000
 - **TR-7.2:** POST /sign-intent endpoint
 - **TR-7.3:** POST /verify-intent endpoint
@@ -135,6 +152,7 @@ Integration of the **Symphonic Cipher** into SCBE-AETHERMOORE SDK, introducing F
 ## 🔒 Security Requirements
 
 ### SR-1: Cryptographic Security
+
 - **SR-1.1:** Feistel round keys derived from master key via HMAC
 - **SR-1.2:** Distinct round keys for each round (counter-based)
 - **SR-1.3:** Timing-safe signature comparison
@@ -142,6 +160,7 @@ Integration of the **Symphonic Cipher** into SCBE-AETHERMOORE SDK, introducing F
 - **SR-1.5:** Secure random number generation where needed
 
 ### SR-2: Attack Resistance
+
 - **SR-2.1:** Replay attacks prevented (key-dependent modulation)
 - **SR-2.2:** Harmonic collision resistance (SHA-256 HMAC strength)
 - **SR-2.3:** Avalanche effect (1-bit change → completely different spectrum)
@@ -151,6 +170,7 @@ Integration of the **Symphonic Cipher** into SCBE-AETHERMOORE SDK, introducing F
 ## 📊 Performance Requirements
 
 ### PR-1: Latency Targets
+
 - **PR-1.1:** Signing: <1ms for 1KB payload
 - **PR-1.2:** Verification: <1ms for 1KB payload
 - **PR-1.3:** FFT: <500μs for N=1024
@@ -158,6 +178,7 @@ Integration of the **Symphonic Cipher** into SCBE-AETHERMOORE SDK, introducing F
 - **PR-1.5:** Total overhead: <2ms end-to-end
 
 ### PR-2: Scalability
+
 - **PR-2.1:** Support payloads up to 16KB
 - **PR-2.2:** Linear degradation with payload size
 - **PR-2.3:** Handle 1000+ requests/second
@@ -167,6 +188,7 @@ Integration of the **Symphonic Cipher** into SCBE-AETHERMOORE SDK, introducing F
 ## 🧪 Testing Requirements
 
 ### TEST-1: Unit Tests
+
 - **TEST-1.1:** Complex number arithmetic (add, sub, mul, magnitude)
 - **TEST-1.2:** FFT correctness (known input/output pairs)
 - **TEST-1.3:** Bit-reversal permutation
@@ -174,6 +196,7 @@ Integration of the **Symphonic Cipher** into SCBE-AETHERMOORE SDK, introducing F
 - **TEST-1.5:** Z-Base-32 encode/decode round-trip
 
 ### TEST-2: Integration Tests
+
 - **TEST-2.1:** End-to-end signing and verification
 - **TEST-2.2:** Invalid signature rejection
 - **TEST-2.3:** Tampered intent detection
@@ -181,6 +204,7 @@ Integration of the **Symphonic Cipher** into SCBE-AETHERMOORE SDK, introducing F
 - **TEST-2.5:** Error handling paths
 
 ### TEST-3: Property-Based Tests
+
 - **TEST-3.1:** FFT linearity property
 - **TEST-3.2:** Feistel reversibility
 - **TEST-3.3:** Signature determinism
@@ -188,6 +212,7 @@ Integration of the **Symphonic Cipher** into SCBE-AETHERMOORE SDK, introducing F
 - **TEST-3.5:** Encoding round-trip for random data
 
 ### TEST-4: Performance Tests
+
 - **TEST-4.1:** Benchmark FFT for various N
 - **TEST-4.2:** Benchmark signing for various payload sizes
 - **TEST-4.3:** Benchmark verification
@@ -224,6 +249,7 @@ tests/
 ## 🚀 Deployment Requirements
 
 ### DR-1: Package Integration
+
 - **DR-1.1:** Export Symphonic module from main index.ts
 - **DR-1.2:** Update package.json version to 3.1.0-alpha
 - **DR-1.3:** Add TypeScript declarations
@@ -231,6 +257,7 @@ tests/
 - **DR-1.5:** Add examples to examples/ directory
 
 ### DR-2: API Deployment
+
 - **DR-2.1:** Docker container for API server
 - **DR-2.2:** Environment variable configuration
 - **DR-2.3:** Health check endpoint
@@ -240,6 +267,7 @@ tests/
 ## 📚 Documentation Requirements
 
 ### DOC-1: Technical Documentation
+
 - **DOC-1.1:** API reference for all public methods
 - **DOC-1.2:** Mathematical foundations (FFT, Feistel)
 - **DOC-1.3:** Security analysis
@@ -247,6 +275,7 @@ tests/
 - **DOC-1.5:** Integration guide
 
 ### DOC-2: User Documentation
+
 - **DOC-2.1:** Quick start guide
 - **DOC-2.2:** Code examples
 - **DOC-2.3:** API endpoint documentation

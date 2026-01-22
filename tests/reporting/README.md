@@ -21,6 +21,7 @@ Compliance dashboards, security scorecards, and executive summaries.
 ## Design System
 
 All dashboards follow the SCBE design system:
+
 - Dark gradient background (`#1a1a2e` → `#16213e` → `#0f3460`)
 - Glass effect cards with Tailwind CSS
 - Semantic colors: Green=safe, Red=danger, Yellow=warning, Blue=info

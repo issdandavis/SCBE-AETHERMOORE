@@ -6,8 +6,6 @@
  * Part of SCBE-AETHERMOORE v3.0.0
  * Patent: USPTO #63/961,403
  */
-/// <reference types="node" />
-/// <reference types="node" />
 import { BinSelection } from './types';
 /**
  * Select bins and phases deterministically from challenge
