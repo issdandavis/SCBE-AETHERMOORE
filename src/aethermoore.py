@@ -55,25 +55,41 @@ def t_grid():
 
 
 def square_wave(ids):
-    """Binary (strict) – odd‑harmonic square‑wave approximation."""
+    """Binary (strict) – odd-harmonic square-wave approximation."""
+    tokens = list(ids)
+    if not tokens:
+        raise ValueError("ids must contain at least one token")
+
     t = t_grid()
     out = np.zeros_like(t)
-    seg = len(t) // len(ids)
-    for i, k in enumerate(ids):
+    seg = len(t) // len(tokens)
+    if seg == 0:
+        raise ValueError("ids length exceeds sampling grid resolution")
+
+    for i, k in enumerate(tokens):
         f = F0 + k * DELTA_F
         start, stop = i * seg, (i + 1) * seg
         for h in (1, 3, 5, 7, 9, 11, 13, 15):
             out[start:stop] += (1 / h) * np.sin(2 * np.pi * f * h * t[start:stop])
-    return out / np.max(np.abs(out))
+
+    max_val = float(np.max(np.abs(out)))
+    return out if max_val == 0.0 else out / max_val
 
 
 def adaptive_wave(ids):
     """Non‑binary – full harmonic series + jitter + 6 Hz vibrato."""
+    tokens = list(ids)
+    if not tokens:
+        raise ValueError("ids must contain at least one token")
+
     rng = np.random.default_rng(seed=42)  # reproducible demo
     t = t_grid()
     out = np.zeros_like(t)
-    seg = len(t) // len(ids)
-    for i, k in enumerate(ids):
+    seg = len(t) // len(tokens)
+    if seg == 0:
+        raise ValueError("ids length exceeds sampling grid resolution")
+
+    for i, k in enumerate(tokens):
         f = F0 + k * DELTA_F
         start, stop = i * seg, (i + 1) * seg
         for h in range(1, MAX_HARM + 1):
@@ -83,30 +99,49 @@ def adaptive_wave(ids):
             out[start:stop] += amp * np.sin(
                 2 * np.pi * f * h * vib * t[start:stop] + phase
             )
-    return out / np.max(np.abs(out))
+    max_val = float(np.max(np.abs(out)))
+    return out if max_val == 0.0 else out / max_val
 
 
 # ----------------------------------------------------------------------
 # 3. FEISTEL PERMUTATION (key‑driven)
 # ----------------------------------------------------------------------
 def feistel_perm(ids, key):
-    """Four‑round Feistel, XOR‑based, operates on uint8."""
+    """Four-round Feistel, XOR-based, operates on uint8."""
     arr = np.array(ids, dtype=np.uint8)
-    left, right = arr[: len(arr) // 2].copy(), arr[len(arr) // 2 :].copy()
+    if arr.size <= 1:
+        return arr.copy()
+
+    work = arr
+    tail = None
+    if arr.size % 2 == 1:
+        # Hold onto the trailing token so Feistel operates on even length
+        tail = arr[-1:]
+        work = arr[:-1]
+    mid = work.size // 2
+    left, right = work[:mid].copy(), work[mid:].copy()
+
     for r in range(4):
         sub = hmac.new(key, f"rnd{r}".encode(), hashlib.sha256).digest()
         sub = np.frombuffer(sub, dtype=np.uint8)
         sub = np.resize(sub, right.shape)
         new_right = left ^ sub
         left, right = right, new_right
-    return np.concatenate([left, right])
+
+    permuted = np.concatenate([left, right])
+    if tail is not None:
+        permuted = np.concatenate([permuted, tail])
+    return permuted
 
 
 # ----------------------------------------------------------------------
 # 4. FEATURE EXTRACTION (FFT → fingerprint)
 # ----------------------------------------------------------------------
 def fingerprint(signal):
-    """Return a 256‑byte descriptor (first 16 harmonics + jitter + shimmer)."""
+    """Return a 256-byte descriptor (first 16 harmonics + jitter + shimmer)."""
+    if signal.size == 0:
+        raise ValueError("signal must contain samples")
+
     N = len(signal)
     X = np.abs(fft(signal))[: N // 2]
     freqs = fftfreq(N, 1 / FS)[: N // 2]
@@ -126,7 +161,8 @@ def fingerprint(signal):
     zero_cross = np.where(np.diff(np.signbit(signal)))[0]
     jitter = float(np.std(np.diff(zero_cross))) if len(zero_cross) > 1 else 0.0
     env = np.abs(signal)
-    shimmer = float(np.std(env)) / float(np.mean(env))
+    mean_env = float(np.mean(env))
+    shimmer = float(np.std(env)) / mean_env if mean_env else 0.0
 
     vec = np.array([f0] + harms + [jitter, shimmer], dtype=np.float32)
     return vec.tobytes()

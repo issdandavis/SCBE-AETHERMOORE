@@ -94,7 +94,7 @@ jobs:
             "timestamp": "${TIMESTAMP}",
             "commit": "${{ github.sha }}"
           }
-EOF
+          EOF
 
       - name: Commit and push to gumroad
         working-directory: target

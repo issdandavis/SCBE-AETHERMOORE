@@ -21,6 +21,9 @@ import matplotlib.pyplot as plt
 from typing import Tuple, List
 from dataclasses import dataclass
 import struct
+import pytest
+
+from src.aethermoore import adaptive_wave, feistel_perm, fingerprint, square_wave
 
 # ==============================================================================
 # CONSTANTS FROM AETHERMOORE SPEC
@@ -293,6 +296,34 @@ def test_mars_frequency():
         f"\n  ✓ VALIDATED: Mars frequency {f_mars:.2f} Hz derived from orbital mechanics"
     )
     return match
+
+
+# ==============================================================================
+# ROBUSTNESS CHECKS
+# ==============================================================================
+
+
+def test_square_wave_rejects_empty_input():
+    with pytest.raises(ValueError):
+        square_wave([])
+
+
+def test_adaptive_wave_rejects_empty_input():
+    with pytest.raises(ValueError):
+        adaptive_wave([])
+
+
+def test_feistel_perm_preserves_length_for_odd_count():
+    tokens = [0, 1, 2]
+    key = b"unit-test-key"
+    permuted = feistel_perm(tokens, key)
+    assert len(permuted) == len(tokens)
+    assert permuted[-1] == tokens[-1]
+
+
+def test_fingerprint_requires_samples():
+    with pytest.raises(ValueError):
+        fingerprint(np.array([]))
 
 
 # ==============================================================================
