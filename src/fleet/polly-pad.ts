@@ -15,12 +15,7 @@
  */
 
 import { SpectralIdentity } from '../harmonic/spectral-identity';
-import { GovernanceTier } from './types';
-
-/**
- * Dimensional state based on flux coefficient ν
- */
-export type DimensionalState = 'POLLY' | 'QUASI' | 'DEMI' | 'COLLAPSED';
+import { DimensionalState, GovernanceTier, getDimensionalState } from './types';
 
 /**
  * Audit status for pad review
@@ -199,16 +194,6 @@ export const TIER_THRESHOLDS: Record<GovernanceTier, { xp: number; name: string;
   UM: { xp: 1000, name: 'University',   description: 'Security tasks, high trust' },
   DR: { xp: 2000, name: 'Doctorate',    description: 'Architectural decisions, full autonomy' }
 };
-
-/**
- * Get dimensional state from flux coefficient
- */
-export function getDimensionalState(nu: number): DimensionalState {
-  if (nu >= 0.9) return 'POLLY';
-  if (nu >= 0.5) return 'QUASI';
-  if (nu > 0.1) return 'DEMI';
-  return 'COLLAPSED';
-}
 
 /**
  * Get next tier in progression

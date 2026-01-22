@@ -13,8 +13,8 @@
  * @module fleet/swarm
  */
 
-import { DimensionalState, getDimensionalState, PollyPad, PollyPadManager } from './polly-pad';
-import { GovernanceTier } from './types';
+import { PollyPad, PollyPadManager } from './polly-pad';
+import { DimensionalState, GovernanceTier, getDimensionalState } from './types';
 
 /**
  * Swarm configuration
