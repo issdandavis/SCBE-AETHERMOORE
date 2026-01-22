@@ -19,8 +19,27 @@
 export * from './agent-registry';
 export * from './fleet-manager';
 export * from './governance';
-export * from './polly-pad';
 export * from './swarm';
 export * from './task-dispatcher';
+
+// Export types (canonical source for shared types)
 export * from './types';
+
+// Export polly-pad specific items (excluding types already exported from ./types)
+export {
+  // Polly-pad specific types
+  AuditEntry,
+  AuditStatus,
+  GrowthMilestone,
+  // Polly-pad interfaces (canonical source)
+  PadNote,
+  PadSketch,
+  PadTool,
+  PollyPad,
+  // Polly-pad specific functions and classes
+  PollyPadManager,
+  TIER_THRESHOLDS,
+  getNextTier,
+  getXPForNextTier
+} from './polly-pad';
 

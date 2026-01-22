@@ -8,11 +8,11 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
     PollyPadManager,
     TIER_THRESHOLDS,
-    getDimensionalState,
     getNextTier,
     getXPForNextTier
 } from '../../src/fleet/polly-pad';
 import { SwarmCoordinator } from '../../src/fleet/swarm';
+import { getDimensionalState } from '../../src/fleet/types';
 
 describe('PollyPadManager', () => {
   let manager: PollyPadManager;
@@ -59,7 +59,8 @@ describe('PollyPadManager', () => {
       expect(getDimensionalState(0.7)).toBe('QUASI');
       expect(getDimensionalState(0.5)).toBe('QUASI');
       expect(getDimensionalState(0.3)).toBe('DEMI');
-      expect(getDimensionalState(0.1)).toBe('COLLAPSED');
+      expect(getDimensionalState(0.1)).toBe('DEMI');  // 0.1 is the DEMI threshold
+      expect(getDimensionalState(0.09)).toBe('COLLAPSED');  // Below 0.1 is COLLAPSED
       expect(getDimensionalState(0)).toBe('COLLAPSED');
     });
 
