@@ -1,3 +1,29 @@
+/**
+ * @file envelope.ts
+ * @module crypto/envelope
+ * @component Cryptographic Envelope System
+ * @version 3.0.0
+ * @since 2026-01-20
+ *
+ * SCBE Cryptographic Envelope - Sealed, tamper-evident message containers
+ *
+ * Features:
+ * - AES-256-GCM authenticated encryption
+ * - HKDF-SHA256 key derivation
+ * - Nonce management with replay prevention
+ * - AAD (Additional Authenticated Data) binding
+ * - Risk-gated envelope creation
+ *
+ * Usage:
+ * ```typescript
+ * const envelope = await createEnvelope({
+ *   body: { message: 'secret' },
+ *   aad: { intent_id: 'auth-001', ... }
+ * });
+ * const decrypted = await verifyEnvelope(envelope, key);
+ * ```
+ */
+
 import crypto from 'node:crypto';
 import { hkdfSha256 } from './hkdf.js';
 import { canonicalize } from './jcs.js';
