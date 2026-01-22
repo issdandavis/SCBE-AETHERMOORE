@@ -30,6 +30,7 @@ from enum import Enum
 
 class SetupPhase(Enum):
     """Phases of the setup process."""
+
     WELCOME = "welcome"
     SYSTEM_CHECK = "system_check"
     KNOWLEDGE_SELECTION = "knowledge_selection"
@@ -43,6 +44,7 @@ class SetupPhase(Enum):
 @dataclass
 class SystemRequirements:
     """System requirements check results."""
+
     python_version: str
     python_ok: bool
     memory_gb: float
@@ -56,6 +58,7 @@ class SystemRequirements:
 @dataclass
 class SetupProfile:
     """User's setup configuration profile."""
+
     profile_name: str
     use_case: str  # "business", "research", "security", "custom"
     selected_packs: List[str] = field(default_factory=list)
@@ -229,11 +232,12 @@ Choose a setup option to continue:
         import platform
 
         python_version = platform.python_version()
-        python_ok = tuple(map(int, python_version.split('.')[:2])) >= (3, 10)
+        python_ok = tuple(map(int, python_version.split(".")[:2])) >= (3, 10)
 
         # Memory check (simplified)
         try:
             import psutil
+
             memory_gb = psutil.virtual_memory().total / (1024**3)
         except ImportError:
             memory_gb = 8.0  # Assume 8GB if can't check
@@ -245,7 +249,7 @@ Choose a setup option to continue:
 
         # Check dependencies
         missing_deps = []
-        required = ['numpy', 'scipy']
+        required = ["numpy", "scipy"]
         for dep in required:
             try:
                 __import__(dep)
@@ -301,26 +305,29 @@ Choose a setup option to continue:
 
         # Get recommendations based on use case
         recommendations = self.PACK_RECOMMENDATIONS.get(
-            self.profile.use_case,
-            {"essential": [], "recommended": [], "optional": []}
+            self.profile.use_case, {"essential": [], "recommended": [], "optional": []}
         )
 
         # Import pack info
         try:
             from ..science_packs import SCIENCE_PACKS, get_pack_info
+
             all_packs = []
             for category, packs in SCIENCE_PACKS.items():
                 for name, pack in packs.items():
-                    all_packs.append({
-                        "name": name,
-                        "category": category,
-                        "description": pack.description,
-                        "size_mb": pack.size_mb,
-                        "dependencies": pack.dependencies,
-                        "essential": name in recommendations.get("essential", []),
-                        "recommended": name in recommendations.get("recommended", []),
-                        "selected": name in self.profile.selected_packs,
-                    })
+                    all_packs.append(
+                        {
+                            "name": name,
+                            "category": category,
+                            "description": pack.description,
+                            "size_mb": pack.size_mb,
+                            "dependencies": pack.dependencies,
+                            "essential": name in recommendations.get("essential", []),
+                            "recommended": name
+                            in recommendations.get("recommended", []),
+                            "selected": name in self.profile.selected_packs,
+                        }
+                    )
         except ImportError:
             all_packs = []
 
@@ -346,7 +353,8 @@ Packs marked RECOMMENDED will enhance your experience.
             "packs": all_packs,
             "current_selection": self.profile.selected_packs,
             "total_size_mb": sum(
-                p["size_mb"] for p in all_packs
+                p["size_mb"]
+                for p in all_packs
                 if p["name"] in self.profile.selected_packs
             ),
         }
@@ -504,9 +512,7 @@ All data is stored securely using SCBE encryption.
         }
 
     def import_portfolio(
-        self,
-        file_path: Optional[str] = None,
-        enable_cloud_backup: bool = False
+        self, file_path: Optional[str] = None, enable_cloud_backup: bool = False
     ) -> Dict[str, Any]:
         """Import portfolio data."""
         self.profile.portfolio_path = file_path
@@ -545,17 +551,21 @@ All data is stored securely using SCBE encryption.
 
         # Save configuration
         config_file = self.config_path / "setup_profile.json"
-        with open(config_file, 'w') as f:
-            json.dump({
-                "profile_name": self.profile.profile_name,
-                "use_case": self.profile.use_case,
-                "selected_packs": self.profile.selected_packs,
-                "agent_config": self.profile.agent_config,
-                "security_level": self.profile.security_level,
-                "portfolio_path": self.profile.portfolio_path,
-                "cloud_backup": self.profile.cloud_backup,
-                "created_at": self.profile.created_at.isoformat(),
-            }, f, indent=2)
+        with open(config_file, "w") as f:
+            json.dump(
+                {
+                    "profile_name": self.profile.profile_name,
+                    "use_case": self.profile.use_case,
+                    "selected_packs": self.profile.selected_packs,
+                    "agent_config": self.profile.agent_config,
+                    "security_level": self.profile.security_level,
+                    "portfolio_path": self.profile.portfolio_path,
+                    "cloud_backup": self.profile.cloud_backup,
+                    "created_at": self.profile.created_at.isoformat(),
+                },
+                f,
+                indent=2,
+            )
 
         self._log("Setup completed successfully")
 
@@ -580,31 +590,36 @@ Next Steps:
 4. View the audit logs
 
 For help, see the documentation or ask the Research agent.
-            """.strip().format(config_path=config_file),
+            """.strip().format(
+                config_path=config_file
+            ),
             "config_saved_to": str(config_file),
             "setup_log": self.setup_log,
         }
 
     def _log(self, message: str):
         """Log setup event."""
-        self.setup_log.append({
-            "timestamp": datetime.now().isoformat(),
-            "phase": self.current_phase.value,
-            "message": message,
-        })
+        self.setup_log.append(
+            {
+                "timestamp": datetime.now().isoformat(),
+                "phase": self.current_phase.value,
+                "message": message,
+            }
+        )
 
 
 # =============================================================================
 # CLI INTERFACE
 # =============================================================================
 
+
 def run_interactive_setup():
     """Run interactive setup in CLI mode."""
     assistant = SetupAssistant()
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("  SCBE-AETHERMOORE SETUP ASSISTANT")
-    print("="*60 + "\n")
+    print("=" * 60 + "\n")
 
     # Welcome
     welcome = assistant.get_welcome_message()
@@ -619,7 +634,7 @@ def run_interactive_setup():
     template_id = options[int(choice) - 1] if choice.isdigit() else "custom"
 
     # System check
-    print("\n" + "-"*40)
+    print("\n" + "-" * 40)
     result = assistant.select_template(template_id)
     print("\nSystem Check Results:")
     for check, info in result["checks"].items():
@@ -630,7 +645,9 @@ def run_interactive_setup():
             else:
                 print(f"  {status} Dependencies: All installed")
         else:
-            print(f"  {status} {check.title()}: {info['value']} (required: {info['required']})")
+            print(
+                f"  {status} {check.title()}: {info['value']} (required: {info['required']})"
+            )
 
     if not result["all_ok"]:
         print("\nSome requirements not met. Please fix issues and try again.")
@@ -639,7 +656,7 @@ def run_interactive_setup():
     input("\nPress Enter to continue...")
 
     # Knowledge packs
-    print("\n" + "-"*40)
+    print("\n" + "-" * 40)
     packs = assistant.get_knowledge_selection()
     print(packs["message"])
 
@@ -647,21 +664,31 @@ def run_interactive_setup():
         print("\nAvailable packs (enter numbers to select, comma-separated):")
         for i, pack in enumerate(packs.get("packs", [])[:10], 1):
             marker = "*" if pack.get("selected") else " "
-            print(f"  {i}.{marker} {pack['name']} ({pack['category']}) - {pack['size_mb']}MB")
+            print(
+                f"  {i}.{marker} {pack['name']} ({pack['category']}) - {pack['size_mb']}MB"
+            )
 
-        selection = input("\nSelect packs (e.g., 1,3,5) or Enter to keep defaults: ").strip()
+        selection = input(
+            "\nSelect packs (e.g., 1,3,5) or Enter to keep defaults: "
+        ).strip()
         if selection:
-            indices = [int(x.strip()) - 1 for x in selection.split(",") if x.strip().isdigit()]
-            selected = [packs["packs"][i]["name"] for i in indices if i < len(packs["packs"])]
+            indices = [
+                int(x.strip()) - 1 for x in selection.split(",") if x.strip().isdigit()
+            ]
+            selected = [
+                packs["packs"][i]["name"] for i in indices if i < len(packs["packs"])
+            ]
             assistant.select_packs(selected)
     else:
-        print(f"\nUsing template packs: {', '.join(assistant.profile.selected_packs) or 'None'}")
+        print(
+            f"\nUsing template packs: {', '.join(assistant.profile.selected_packs) or 'None'}"
+        )
         assistant.select_packs(assistant.profile.selected_packs)
 
     input("\nPress Enter to continue...")
 
     # Agent configuration
-    print("\n" + "-"*40)
+    print("\n" + "-" * 40)
     agents = assistant.get_agent_configuration()
     print(agents["message"])
     print("\nCurrent agent team:")
@@ -672,7 +699,7 @@ def run_interactive_setup():
     assistant.configure_agents(agents.get("current_agents", []))
 
     # Security setup
-    print("\n" + "-"*40)
+    print("\n" + "-" * 40)
     security = assistant.get_security_setup()
     print(security["message"])
     print("\nSecurity Levels:")
@@ -684,19 +711,19 @@ def run_interactive_setup():
     assistant.set_security_level(assistant.profile.security_level)
 
     # Portfolio import
-    print("\n" + "-"*40)
+    print("\n" + "-" * 40)
     portfolio = assistant.get_portfolio_import()
     print(portfolio["message"])
 
     import_choice = input("\nImport portfolio? (y/n): ").strip().lower()
-    if import_choice == 'y':
+    if import_choice == "y":
         path = input("Enter file path: ").strip()
         assistant.import_portfolio(path if path else None)
     else:
         assistant.import_portfolio(None)
 
     # Final review
-    print("\n" + "-"*40)
+    print("\n" + "-" * 40)
     review = assistant.get_final_review()
     print(review["message"])
     print("\nConfiguration Summary:")
@@ -707,11 +734,11 @@ def run_interactive_setup():
     print(f"  Security: {config['security_level']}")
 
     confirm = input("\nProceed with installation? (y/n): ").strip().lower()
-    if confirm == 'y':
+    if confirm == "y":
         result = assistant.complete_setup()
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print(result["message"])
-        print("="*60)
+        print("=" * 60)
     else:
         print("\nSetup cancelled.")
 

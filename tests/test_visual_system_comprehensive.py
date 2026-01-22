@@ -22,11 +22,12 @@ import hashlib
 from typing import Dict, List, Tuple, Any
 from dataclasses import dataclass
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 # =============================================================================
 # SACRED TONGUE VERIFICATION TESTS (Axiom 7)
 # =============================================================================
+
 
 class TestSacredTongueSystem:
     """
@@ -44,12 +45,37 @@ class TestSacredTongueSystem:
     PHI = (1 + math.sqrt(5)) / 2  # Golden ratio
 
     SACRED_TONGUES = {
-        'KO': {'name': "Kor'aelin", 'domain': 'Control', 'weight': 1.000, 'tier': 'kindergarten'},
-        'AV': {'name': 'Avali', 'domain': 'I/O', 'weight': 1.618, 'tier': 'elementary'},
-        'RU': {'name': 'Ruvaleth', 'domain': 'Memory', 'weight': 2.618, 'tier': 'middle'},
-        'CA': {'name': 'Calandros', 'domain': 'Compute', 'weight': 4.236, 'tier': 'high_school'},
-        'UM': {'name': 'Umbralis', 'domain': 'Network', 'weight': 6.854, 'tier': 'undergraduate'},
-        'DR': {'name': 'Draeconis', 'domain': 'Governance', 'weight': 11.090, 'tier': 'doctorate'},
+        "KO": {
+            "name": "Kor'aelin",
+            "domain": "Control",
+            "weight": 1.000,
+            "tier": "kindergarten",
+        },
+        "AV": {"name": "Avali", "domain": "I/O", "weight": 1.618, "tier": "elementary"},
+        "RU": {
+            "name": "Ruvaleth",
+            "domain": "Memory",
+            "weight": 2.618,
+            "tier": "middle",
+        },
+        "CA": {
+            "name": "Calandros",
+            "domain": "Compute",
+            "weight": 4.236,
+            "tier": "high_school",
+        },
+        "UM": {
+            "name": "Umbralis",
+            "domain": "Network",
+            "weight": 6.854,
+            "tier": "undergraduate",
+        },
+        "DR": {
+            "name": "Draeconis",
+            "domain": "Governance",
+            "weight": 11.090,
+            "tier": "doctorate",
+        },
     }
 
     def test_sacred_tongue_count(self):
@@ -58,12 +84,13 @@ class TestSacredTongueSystem:
 
     def test_golden_ratio_weights(self):
         """Verify weights follow golden ratio sequence: w_l = phi^(l-1)."""
-        tongues = ['KO', 'AV', 'RU', 'CA', 'UM', 'DR']
+        tongues = ["KO", "AV", "RU", "CA", "UM", "DR"]
         for i, tongue in enumerate(tongues):
-            expected_weight = self.PHI ** i
-            actual_weight = self.SACRED_TONGUES[tongue]['weight']
-            assert abs(actual_weight - expected_weight) < 0.01, \
-                f"{tongue} weight should be {expected_weight:.3f}, got {actual_weight}"
+            expected_weight = self.PHI**i
+            actual_weight = self.SACRED_TONGUES[tongue]["weight"]
+            assert (
+                abs(actual_weight - expected_weight) < 0.01
+            ), f"{tongue} weight should be {expected_weight:.3f}, got {actual_weight}"
 
     def test_harmonic_resonance_calculation(self):
         """Test harmonic resonance formula: R = sum(w_l * cos(2*pi*f_l*t))."""
@@ -71,8 +98,7 @@ class TestSacredTongueSystem:
         frequencies = [1.0, 1.618, 2.618, 4.236, 6.854, 11.090]  # Harmonic frequencies
 
         resonance = sum(
-            self.PHI ** i * math.cos(2 * math.pi * frequencies[i] * t)
-            for i in range(6)
+            self.PHI**i * math.cos(2 * math.pi * frequencies[i] * t) for i in range(6)
         )
 
         # Resonance should be a valid number
@@ -82,12 +108,12 @@ class TestSacredTongueSystem:
     def test_all_gates_required_for_auth(self):
         """Axiom 7: All 6 gates must resonate for valid authentication."""
         gate_resonances = {
-            'KO': 0.95,
-            'AV': 0.88,
-            'RU': 0.92,
-            'CA': 0.96,
-            'UM': 0.89,
-            'DR': 0.91,
+            "KO": 0.95,
+            "AV": 0.88,
+            "RU": 0.92,
+            "CA": 0.96,
+            "UM": 0.89,
+            "DR": 0.91,
         }
 
         threshold = 0.85
@@ -95,23 +121,32 @@ class TestSacredTongueSystem:
         assert all_pass, "All 6 gates must pass threshold for authentication"
 
         # Test with one gate failing
-        gate_resonances['CA'] = 0.50
+        gate_resonances["CA"] = 0.50
         some_fail = not all(r >= threshold for r in gate_resonances.values())
         assert some_fail, "Auth should fail if any gate fails"
 
     def test_hierarchical_tier_ordering(self):
         """Verify tier ordering: KO < AV < RU < CA < UM < DR."""
-        tier_order = ['kindergarten', 'elementary', 'middle', 'high_school', 'undergraduate', 'doctorate']
-        tongues = ['KO', 'AV', 'RU', 'CA', 'UM', 'DR']
+        tier_order = [
+            "kindergarten",
+            "elementary",
+            "middle",
+            "high_school",
+            "undergraduate",
+            "doctorate",
+        ]
+        tongues = ["KO", "AV", "RU", "CA", "UM", "DR"]
 
         for i, tongue in enumerate(tongues):
-            assert self.SACRED_TONGUES[tongue]['tier'] == tier_order[i], \
-                f"{tongue} should have tier {tier_order[i]}"
+            assert (
+                self.SACRED_TONGUES[tongue]["tier"] == tier_order[i]
+            ), f"{tongue} should have tier {tier_order[i]}"
 
 
 # =============================================================================
 # HYPERBOLIC GEOMETRY TESTS (Axioms 9, 12)
 # =============================================================================
+
 
 class TestHyperbolicGeometry:
     """
@@ -123,6 +158,7 @@ class TestHyperbolicGeometry:
     def hyperbolic_distance(self, u: List[float], v: List[float]) -> float:
         """Calculate hyperbolic distance in Poincare ball."""
         import numpy as np
+
         u = np.array(u)
         v = np.array(v)
 
@@ -133,11 +169,11 @@ class TestHyperbolicGeometry:
 
         # Clamp to ensure we stay in the ball
         if norm_u >= 1.0 or norm_v >= 1.0:
-            return float('inf')
+            return float("inf")
 
         denominator = (1 - norm_u**2) * (1 - norm_v**2)
         if denominator <= 0:
-            return float('inf')
+            return float("inf")
 
         arg = 1 + (2 * norm_diff**2) / denominator
         return float(np.arccosh(max(1.0, arg)))
@@ -198,7 +234,7 @@ class TestHyperbolicGeometry:
         def path_length(traj):
             total = 0
             for i in range(len(traj) - 1):
-                total += self.hyperbolic_distance(traj[i], traj[i+1])
+                total += self.hyperbolic_distance(traj[i], traj[i + 1])
             return total
 
         valid_length = path_length(valid_trajectory)
@@ -213,6 +249,7 @@ class TestHyperbolicGeometry:
 # ENTROPIC DEFENSE ENGINE TESTS (3-Tier Antivirus)
 # =============================================================================
 
+
 class TestEntropicDefenseEngine:
     """
     Tests for the 3-tier Entropic Defense Engine based on SCBE axioms.
@@ -226,25 +263,28 @@ class TestEntropicDefenseEngine:
         """Tier 1: Harmonic resonance signature scanning."""
         # Simulate scanning 6 harmonic gates
         scan_results = {
-            'KO': {'amplitude': 0.95, 'phase': 0.1, 'resonance': 0.92},
-            'AV': {'amplitude': 0.88, 'phase': 0.2, 'resonance': 0.85},
-            'RU': {'amplitude': 0.91, 'phase': 0.15, 'resonance': 0.89},
-            'CA': {'amplitude': 0.94, 'phase': 0.12, 'resonance': 0.91},
-            'UM': {'amplitude': 0.87, 'phase': 0.18, 'resonance': 0.84},
-            'DR': {'amplitude': 0.93, 'phase': 0.11, 'resonance': 0.90},
+            "KO": {"amplitude": 0.95, "phase": 0.1, "resonance": 0.92},
+            "AV": {"amplitude": 0.88, "phase": 0.2, "resonance": 0.85},
+            "RU": {"amplitude": 0.91, "phase": 0.15, "resonance": 0.89},
+            "CA": {"amplitude": 0.94, "phase": 0.12, "resonance": 0.91},
+            "UM": {"amplitude": 0.87, "phase": 0.18, "resonance": 0.84},
+            "DR": {"amplitude": 0.93, "phase": 0.11, "resonance": 0.90},
         }
 
         # All gates must resonate above threshold
         threshold = 0.80
-        all_clear = all(g['resonance'] >= threshold for g in scan_results.values())
+        all_clear = all(g["resonance"] >= threshold for g in scan_results.values())
         assert all_clear, "Tier 1 scan should pass when all gates resonate"
 
         # Calculate composite resonance
-        total_weight = sum(1.618 ** i for i in range(6))
-        weighted_resonance = sum(
-            scan_results[g]['resonance'] * (1.618 ** i)
-            for i, g in enumerate(['KO', 'AV', 'RU', 'CA', 'UM', 'DR'])
-        ) / total_weight
+        total_weight = sum(1.618**i for i in range(6))
+        weighted_resonance = (
+            sum(
+                scan_results[g]["resonance"] * (1.618**i)
+                for i, g in enumerate(["KO", "AV", "RU", "CA", "UM", "DR"])
+            )
+            / total_weight
+        )
 
         assert weighted_resonance > 0.85, "Composite resonance should be high"
 
@@ -268,16 +308,18 @@ class TestEntropicDefenseEngine:
 
             curvatures = []
             for i in range(1, len(traj) - 1):
-                p1 = np.array(traj[i-1])
+                p1 = np.array(traj[i - 1])
                 p2 = np.array(traj[i])
-                p3 = np.array(traj[i+1])
+                p3 = np.array(traj[i + 1])
 
                 v1 = p2 - p1
                 v2 = p3 - p2
 
                 # Angle change indicates curvature
                 if np.linalg.norm(v1) > 0 and np.linalg.norm(v2) > 0:
-                    cos_angle = np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
+                    cos_angle = np.dot(v1, v2) / (
+                        np.linalg.norm(v1) * np.linalg.norm(v2)
+                    )
                     cos_angle = np.clip(cos_angle, -1, 1)
                     curvatures.append(abs(np.arccos(cos_angle)))
 
@@ -297,7 +339,9 @@ class TestEntropicDefenseEngine:
         ]
 
         anomalous_curvature = calculate_curvature(anomalous_trajectory)
-        assert anomalous_curvature > 0.5, "Anomalous trajectory should have high curvature"
+        assert (
+            anomalous_curvature > 0.5
+        ), "Anomalous trajectory should have high curvature"
 
     def test_tier3_quantum_lattice_verification(self):
         """Tier 3: LWE/SVP lattice-based verification."""
@@ -337,6 +381,7 @@ class TestEntropicDefenseEngine:
 
     def test_threat_classification(self):
         """Test threat classification based on all 3 tiers."""
+
         @dataclass
         class ThreatReport:
             tier1_score: float  # 0-1, harmonic resonance
@@ -375,6 +420,7 @@ class TestEntropicDefenseEngine:
 # FLEET MANAGEMENT TESTS
 # =============================================================================
 
+
 class TestFleetManagement:
     """
     Tests for Fleet Management system with distributed AI agents.
@@ -387,14 +433,15 @@ class TestFleetManagement:
 
     def test_dimensional_flux_states(self):
         """Test dimensional flux state classification."""
+
         def classify_flux_state(nu: float) -> str:
             """Classify dimensional flux state based on nu value."""
             if nu >= 0.8:
-                return "POLLY"      # Full participation
+                return "POLLY"  # Full participation
             elif nu >= 0.5:
-                return "QUASI"      # Partial sync
+                return "QUASI"  # Partial sync
             elif nu >= 0.1:
-                return "DEMI"       # Minimal
+                return "DEMI"  # Minimal
             else:
                 return "COLLAPSED"  # Archived
 
@@ -405,21 +452,22 @@ class TestFleetManagement:
 
     def test_polly_pad_xp_system(self):
         """Test Polly Pad XP accumulation."""
+
         class PollyPad:
             def __init__(self):
                 self.xp = 0
-                self.items = {'notes': 0, 'sketches': 0, 'tools': 0}
+                self.items = {"notes": 0, "sketches": 0, "tools": 0}
 
             def add_note(self):
-                self.items['notes'] += 1
+                self.items["notes"] += 1
                 self.xp += 10
 
             def add_sketch(self):
-                self.items['sketches'] += 1
+                self.items["sketches"] += 1
                 self.xp += 15
 
             def add_tool(self):
-                self.items['tools'] += 1
+                self.items["tools"] += 1
                 self.xp += 25
 
             def get_tier(self) -> str:
@@ -455,34 +503,42 @@ class TestFleetManagement:
     def test_fleet_agent_roles(self):
         """Test multi-agent orchestration roles."""
         AGENT_ROLES = {
-            'ORCHESTRATOR': {
-                'tier': 'DR',
-                'description': 'Task steering and architectural decisions',
-                'capabilities': ['task_decomposition', 'priority_setting', 'resource_allocation']
+            "ORCHESTRATOR": {
+                "tier": "DR",
+                "description": "Task steering and architectural decisions",
+                "capabilities": [
+                    "task_decomposition",
+                    "priority_setting",
+                    "resource_allocation",
+                ],
             },
-            'NAVIGATOR': {
-                'tier': 'CA',
-                'description': 'Context and mapping, logic and planning',
-                'capabilities': ['context_management', 'route_planning', 'dependency_analysis']
+            "NAVIGATOR": {
+                "tier": "CA",
+                "description": "Context and mapping, logic and planning",
+                "capabilities": [
+                    "context_management",
+                    "route_planning",
+                    "dependency_analysis",
+                ],
             },
-            'EXECUTOR': {
-                'tier': 'AV',
-                'description': 'Code execution and I/O operations',
-                'capabilities': ['code_execution', 'file_io', 'api_calls']
-            }
+            "EXECUTOR": {
+                "tier": "AV",
+                "description": "Code execution and I/O operations",
+                "capabilities": ["code_execution", "file_io", "api_calls"],
+            },
         }
 
         assert len(AGENT_ROLES) == 3, "Must have 3 agent roles"
-        assert AGENT_ROLES['ORCHESTRATOR']['tier'] == 'DR'
-        assert AGENT_ROLES['NAVIGATOR']['tier'] == 'CA'
-        assert AGENT_ROLES['EXECUTOR']['tier'] == 'AV'
+        assert AGENT_ROLES["ORCHESTRATOR"]["tier"] == "DR"
+        assert AGENT_ROLES["NAVIGATOR"]["tier"] == "CA"
+        assert AGENT_ROLES["EXECUTOR"]["tier"] == "AV"
 
         # Verify hierarchical relationship
-        tier_levels = {'KO': 0, 'AV': 1, 'RU': 2, 'CA': 3, 'UM': 4, 'DR': 5}
+        tier_levels = {"KO": 0, "AV": 1, "RU": 2, "CA": 3, "UM": 4, "DR": 5}
 
-        orch_level = tier_levels[AGENT_ROLES['ORCHESTRATOR']['tier']]
-        nav_level = tier_levels[AGENT_ROLES['NAVIGATOR']['tier']]
-        exec_level = tier_levels[AGENT_ROLES['EXECUTOR']['tier']]
+        orch_level = tier_levels[AGENT_ROLES["ORCHESTRATOR"]["tier"]]
+        nav_level = tier_levels[AGENT_ROLES["NAVIGATOR"]["tier"]]
+        exec_level = tier_levels[AGENT_ROLES["EXECUTOR"]["tier"]]
 
         assert orch_level > nav_level > exec_level, "Hierarchical ordering required"
 
@@ -490,6 +546,7 @@ class TestFleetManagement:
 # =============================================================================
 # KNOWLEDGE BASE TESTS
 # =============================================================================
+
 
 class TestKnowledgeBase:
     """
@@ -527,11 +584,11 @@ class TestKnowledgeBase:
     def test_category_coverage(self):
         """Knowledge base should cover all categories."""
         CATEGORIES = [
-            'axioms',
-            'sacred_tongues',
-            'architecture',
-            'tutorials',
-            'api',
+            "axioms",
+            "sacred_tongues",
+            "architecture",
+            "tutorials",
+            "api",
         ]
 
         assert len(CATEGORIES) >= 5, "Must have at least 5 knowledge categories"
@@ -545,26 +602,27 @@ class TestKnowledgeBase:
 # 14-LAYER SECURITY STACK INTEGRATION TESTS
 # =============================================================================
 
+
 class TestSecurityStackIntegration:
     """
     Integration tests for the complete 14-layer security stack.
     """
 
     SECURITY_LAYERS = [
-        {'id': 1, 'name': 'Input Validation', 'function': 'Request sanitization'},
-        {'id': 2, 'name': 'Authentication', 'function': 'Multi-factor identity'},
-        {'id': 3, 'name': 'Authorization', 'function': 'Role-based access'},
-        {'id': 4, 'name': 'Session Management', 'function': 'Secure sessions'},
-        {'id': 5, 'name': 'PQC Encryption', 'function': 'Kyber-768'},
-        {'id': 6, 'name': 'Integrity Check', 'function': 'Data verification'},
-        {'id': 7, 'name': 'Rate Limiting', 'function': 'DDoS protection'},
-        {'id': 8, 'name': 'Logging & Audit', 'function': 'Audit trails'},
-        {'id': 9, 'name': 'Error Handling', 'function': 'Secure errors'},
-        {'id': 10, 'name': 'API Security', 'function': 'Endpoint protection'},
-        {'id': 11, 'name': 'Network Security', 'function': 'TLS/transport'},
-        {'id': 12, 'name': 'Hyperbolic Boundary', 'function': 'Geometric trust'},
-        {'id': 13, 'name': 'Harmonic Resonance', 'function': '6-gate verification'},
-        {'id': 14, 'name': 'Quantum Lattice', 'function': 'LWE/SVP hardness'},
+        {"id": 1, "name": "Input Validation", "function": "Request sanitization"},
+        {"id": 2, "name": "Authentication", "function": "Multi-factor identity"},
+        {"id": 3, "name": "Authorization", "function": "Role-based access"},
+        {"id": 4, "name": "Session Management", "function": "Secure sessions"},
+        {"id": 5, "name": "PQC Encryption", "function": "Kyber-768"},
+        {"id": 6, "name": "Integrity Check", "function": "Data verification"},
+        {"id": 7, "name": "Rate Limiting", "function": "DDoS protection"},
+        {"id": 8, "name": "Logging & Audit", "function": "Audit trails"},
+        {"id": 9, "name": "Error Handling", "function": "Secure errors"},
+        {"id": 10, "name": "API Security", "function": "Endpoint protection"},
+        {"id": 11, "name": "Network Security", "function": "TLS/transport"},
+        {"id": 12, "name": "Hyperbolic Boundary", "function": "Geometric trust"},
+        {"id": 13, "name": "Harmonic Resonance", "function": "6-gate verification"},
+        {"id": 14, "name": "Quantum Lattice", "function": "LWE/SVP hardness"},
     ]
 
     def test_layer_count(self):
@@ -574,56 +632,60 @@ class TestSecurityStackIntegration:
     def test_layer_ordering(self):
         """Verify layers are in correct order."""
         for i, layer in enumerate(self.SECURITY_LAYERS):
-            assert layer['id'] == i + 1, f"Layer {i+1} has wrong ID"
+            assert layer["id"] == i + 1, f"Layer {i+1} has wrong ID"
 
     def test_all_layers_have_function(self):
         """Each layer must have a defined function."""
         for layer in self.SECURITY_LAYERS:
-            assert layer['name'], f"Layer {layer['id']} must have name"
-            assert layer['function'], f"Layer {layer['id']} must have function"
+            assert layer["name"], f"Layer {layer['id']} must have name"
+            assert layer["function"], f"Layer {layer['id']} must have function"
 
     def test_security_decision_flow(self):
         """Test decision flow through all layers."""
+
         def process_request(request_data: dict) -> dict:
             """Simulate processing through all 14 layers."""
             result = {
-                'layers_passed': [],
-                'decision': 'ALLOW',
-                'risk_score': 0.0,
+                "layers_passed": [],
+                "decision": "ALLOW",
+                "risk_score": 0.0,
             }
 
             # Simulate each layer
             for layer in self.SECURITY_LAYERS:
                 # Each layer contributes to risk score
-                layer_risk = 0.05 * (1 - 0.01 * layer['id'])  # Decreasing risk per layer
-                result['risk_score'] += layer_risk
-                result['layers_passed'].append(layer['id'])
+                layer_risk = 0.05 * (
+                    1 - 0.01 * layer["id"]
+                )  # Decreasing risk per layer
+                result["risk_score"] += layer_risk
+                result["layers_passed"].append(layer["id"])
 
                 # Check if any layer triggers denial
-                if result['risk_score'] > 0.7:
-                    result['decision'] = 'DENY'
+                if result["risk_score"] > 0.7:
+                    result["decision"] = "DENY"
                     break
-                elif result['risk_score'] > 0.4:
-                    result['decision'] = 'QUARANTINE'
+                elif result["risk_score"] > 0.4:
+                    result["decision"] = "QUARANTINE"
 
             return result
 
         # Normal request
-        result = process_request({'data': 'normal'})
-        assert len(result['layers_passed']) == 14, "All layers should be processed"
-        assert result['decision'] == 'ALLOW', "Normal request should be allowed"
+        result = process_request({"data": "normal"})
+        assert len(result["layers_passed"]) == 14, "All layers should be processed"
+        assert result["decision"] == "ALLOW", "Normal request should be allowed"
 
     def test_pqc_layer_integration(self):
         """Test PQC layer (Layer 5) functionality."""
         pqc_layer = self.SECURITY_LAYERS[4]
-        assert pqc_layer['name'] == 'PQC Encryption'
-        assert 'Kyber' in pqc_layer['function']
+        assert pqc_layer["name"] == "PQC Encryption"
+        assert "Kyber" in pqc_layer["function"]
 
     def test_quantum_layers_present(self):
         """Verify quantum-resistant layers are present."""
         quantum_layers = [
-            layer for layer in self.SECURITY_LAYERS
-            if 'Quantum' in layer['name'] or 'PQC' in layer['name']
+            layer
+            for layer in self.SECURITY_LAYERS
+            if "Quantum" in layer["name"] or "PQC" in layer["name"]
         ]
         assert len(quantum_layers) >= 2, "Must have at least 2 quantum-related layers"
 
@@ -632,43 +694,44 @@ class TestSecurityStackIntegration:
 # VISUAL SYSTEM APP TESTS
 # =============================================================================
 
+
 class TestVisualSystemApps:
     """
     Tests for Visual System application components.
     """
 
     APPS = [
-        {'id': 'security', 'name': 'Security', 'category': 'security'},
-        {'id': 'cryptolab', 'name': 'Crypto Lab', 'category': 'security'},
-        {'id': 'defense', 'name': 'Defense', 'category': 'security'},
-        {'id': 'agents', 'name': 'Agents', 'category': 'security'},
-        {'id': 'fleet', 'name': 'Fleet', 'category': 'security'},
-        {'id': 'knowledge', 'name': 'Docs', 'category': 'knowledge'},
-        {'id': 'pollypad', 'name': 'Polly Pad', 'category': 'ai'},
-        {'id': 'code', 'name': 'IDE', 'category': 'productivity'},
-        {'id': 'automator', 'name': 'Automator', 'category': 'productivity'},
-        {'id': 'mail', 'name': 'Mail', 'category': 'productivity'},
-        {'id': 'slides', 'name': 'Slides', 'category': 'productivity'},
+        {"id": "security", "name": "Security", "category": "security"},
+        {"id": "cryptolab", "name": "Crypto Lab", "category": "security"},
+        {"id": "defense", "name": "Defense", "category": "security"},
+        {"id": "agents", "name": "Agents", "category": "security"},
+        {"id": "fleet", "name": "Fleet", "category": "security"},
+        {"id": "knowledge", "name": "Docs", "category": "knowledge"},
+        {"id": "pollypad", "name": "Polly Pad", "category": "ai"},
+        {"id": "code", "name": "IDE", "category": "productivity"},
+        {"id": "automator", "name": "Automator", "category": "productivity"},
+        {"id": "mail", "name": "Mail", "category": "productivity"},
+        {"id": "slides", "name": "Slides", "category": "productivity"},
     ]
 
     def test_security_apps_exist(self):
         """Verify security suite apps exist."""
-        security_apps = [app for app in self.APPS if app['category'] == 'security']
+        security_apps = [app for app in self.APPS if app["category"] == "security"]
         assert len(security_apps) >= 5, "Must have at least 5 security apps"
 
     def test_all_apps_have_unique_ids(self):
         """Each app must have a unique ID."""
-        ids = [app['id'] for app in self.APPS]
+        ids = [app["id"] for app in self.APPS]
         assert len(ids) == len(set(ids)), "App IDs must be unique"
 
     def test_defense_app_exists(self):
         """Defense (Entropic Defense Engine) app must exist."""
-        defense_apps = [app for app in self.APPS if app['id'] == 'defense']
+        defense_apps = [app for app in self.APPS if app["id"] == "defense"]
         assert len(defense_apps) == 1, "Defense app must exist"
 
     def test_knowledge_app_exists(self):
         """Knowledge Base app must exist."""
-        knowledge_apps = [app for app in self.APPS if app['id'] == 'knowledge']
+        knowledge_apps = [app for app in self.APPS if app["id"] == "knowledge"]
         assert len(knowledge_apps) == 1, "Knowledge app must exist"
 
 

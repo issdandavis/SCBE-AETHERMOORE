@@ -37,28 +37,28 @@ from enum import Enum
 # =============================================================================
 
 PHI = (1 + np.sqrt(5)) / 2  # Golden ratio ≈ 1.618
-E = np.e                     # Euler's number ≈ 2.718
-EPSILON = 1e-10              # Numerical safety
+E = np.e  # Euler's number ≈ 2.718
+EPSILON = 1e-10  # Numerical safety
 
 
 # =============================================================================
 # LAYER 9: SPECTRAL COHERENCE (Axiom A9)
 # =============================================================================
 
+
 @dataclass
 class SpectralAnalysis:
     """Results from spectral coherence analysis."""
-    s_spec: float           # Spectral coherence [0,1]
-    r_hf: float             # High-frequency ratio
-    total_power: float      # Total spectral power
-    dominant_freq: int      # Dominant frequency bin
-    bandwidth: float        # Spectral bandwidth
+
+    s_spec: float  # Spectral coherence [0,1]
+    r_hf: float  # High-frequency ratio
+    total_power: float  # Total spectral power
+    dominant_freq: int  # Dominant frequency bin
+    bandwidth: float  # Spectral bandwidth
 
 
 def compute_spectral_coherence(
-    signal: np.ndarray,
-    hf_cutoff: float = 0.5,
-    window: Optional[str] = "hann"
+    signal: np.ndarray, hf_cutoff: float = 0.5, window: Optional[str] = "hann"
 ) -> SpectralAnalysis:
     """
     Layer 9: Compute spectral coherence from signal.
@@ -80,8 +80,7 @@ def compute_spectral_coherence(
     """
     if len(signal) < 4:
         return SpectralAnalysis(
-            s_spec=1.0, r_hf=0.0, total_power=0.0,
-            dominant_freq=0, bandwidth=0.0
+            s_spec=1.0, r_hf=0.0, total_power=0.0, dominant_freq=0, bandwidth=0.0
         )
 
     # Apply window function
@@ -101,8 +100,7 @@ def compute_spectral_coherence(
     total_power = np.sum(power)
     if total_power < EPSILON:
         return SpectralAnalysis(
-            s_spec=0.5, r_hf=0.5, total_power=0.0,
-            dominant_freq=0, bandwidth=0.0
+            s_spec=0.5, r_hf=0.5, total_power=0.0, dominant_freq=0, bandwidth=0.0
         )
 
     # High-frequency ratio
@@ -119,18 +117,20 @@ def compute_spectral_coherence(
     # Spectral bandwidth (spread around centroid)
     freqs = np.arange(len(power))
     centroid = np.sum(freqs * power) / total_power
-    bandwidth = np.sqrt(np.sum((freqs - centroid)**2 * power) / total_power)
+    bandwidth = np.sqrt(np.sum((freqs - centroid) ** 2 * power) / total_power)
 
     return SpectralAnalysis(
         s_spec=float(np.clip(s_spec, 0, 1)),
         r_hf=float(r_hf),
         total_power=float(total_power),
         dominant_freq=dominant_freq,
-        bandwidth=float(bandwidth)
+        bandwidth=float(bandwidth),
     )
 
 
-def spectral_stability(signal: np.ndarray, reference: Optional[np.ndarray] = None) -> float:
+def spectral_stability(
+    signal: np.ndarray, reference: Optional[np.ndarray] = None
+) -> float:
     """
     Compute spectral stability relative to reference.
 
@@ -168,12 +168,14 @@ def spectral_stability(signal: np.ndarray, reference: Optional[np.ndarray] = Non
 # LAYER 10: SPIN COHERENCE (Axiom A10)
 # =============================================================================
 
+
 @dataclass
 class SpinAnalysis:
     """Results from spin coherence analysis."""
-    c_spin: float           # Spin coherence [0,1]
-    mean_phase: float       # Mean phase angle
-    phase_variance: float   # Circular variance
+
+    c_spin: float  # Spin coherence [0,1]
+    mean_phase: float  # Mean phase angle
+    phase_variance: float  # Circular variance
     alignment_vector: Tuple[float, float]  # (cos, sin) of mean
 
 
@@ -196,8 +198,7 @@ def compute_spin_coherence(phases: np.ndarray) -> SpinAnalysis:
     """
     if len(phases) == 0:
         return SpinAnalysis(
-            c_spin=1.0, mean_phase=0.0, phase_variance=0.0,
-            alignment_vector=(1.0, 0.0)
+            c_spin=1.0, mean_phase=0.0, phase_variance=0.0, alignment_vector=(1.0, 0.0)
         )
 
     # Convert to unit vectors on complex plane
@@ -222,7 +223,7 @@ def compute_spin_coherence(phases: np.ndarray) -> SpinAnalysis:
         c_spin=float(np.clip(c_spin, 0, 1)),
         mean_phase=float(mean_phase),
         phase_variance=float(phase_variance),
-        alignment_vector=alignment_vector
+        alignment_vector=alignment_vector,
     )
 
 
@@ -234,8 +235,7 @@ def compute_spin_from_signal(signal: np.ndarray, hop_size: int = 256) -> SpinAna
     """
     if len(signal) < hop_size * 2:
         return SpinAnalysis(
-            c_spin=1.0, mean_phase=0.0, phase_variance=0.0,
-            alignment_vector=(1.0, 0.0)
+            c_spin=1.0, mean_phase=0.0, phase_variance=0.0, alignment_vector=(1.0, 0.0)
         )
 
     # Short-time Fourier transform (simplified)
@@ -243,7 +243,7 @@ def compute_spin_from_signal(signal: np.ndarray, hop_size: int = 256) -> SpinAna
     phases = []
 
     for i in range(n_frames):
-        frame = signal[i * hop_size:(i + 1) * hop_size]
+        frame = signal[i * hop_size : (i + 1) * hop_size]
         fft = np.fft.rfft(frame)
 
         # Get phase of dominant frequency
@@ -257,9 +257,11 @@ def compute_spin_from_signal(signal: np.ndarray, hop_size: int = 256) -> SpinAna
 # LAYER 11: TRIADIC TEMPORAL DISTANCE (Axiom A11)
 # =============================================================================
 
+
 @dataclass
 class TriadicWeights:
     """Weights for triadic distance aggregation."""
+
     lambda_1: float = 0.4  # Hyperbolic distance weight
     lambda_2: float = 0.3  # Authentication distance weight
     lambda_3: float = 0.3  # Configuration distance weight
@@ -276,10 +278,11 @@ class TriadicWeights:
 @dataclass
 class TriadicAnalysis:
     """Results from triadic distance computation."""
-    d_tri: float            # Raw triadic distance
-    d_tri_norm: float       # Normalized [0,1]
+
+    d_tri: float  # Raw triadic distance
+    d_tri_norm: float  # Normalized [0,1]
     components: Tuple[float, float, float]  # (d1, d2, d3)
-    weights: Tuple[float, float, float]     # (λ1, λ2, λ3)
+    weights: Tuple[float, float, float]  # (λ1, λ2, λ3)
 
 
 def compute_triadic_distance(
@@ -287,7 +290,7 @@ def compute_triadic_distance(
     d_auth: float,
     d_config: float,
     weights: Optional[TriadicWeights] = None,
-    scale: float = 3.0
+    scale: float = 3.0,
 ) -> TriadicAnalysis:
     """
     Layer 11: Compute triadic temporal distance.
@@ -313,9 +316,9 @@ def compute_triadic_distance(
 
     # Weighted L2 norm (Axiom A11)
     d_tri_sq = (
-        weights.lambda_1 * d_hyperbolic**2 +
-        weights.lambda_2 * d_auth**2 +
-        weights.lambda_3 * d_config**2
+        weights.lambda_1 * d_hyperbolic**2
+        + weights.lambda_2 * d_auth**2
+        + weights.lambda_3 * d_config**2
     )
     d_tri = np.sqrt(d_tri_sq)
 
@@ -326,7 +329,7 @@ def compute_triadic_distance(
         d_tri=float(d_tri),
         d_tri_norm=float(d_tri_norm),
         components=(d_hyperbolic, d_auth, d_config),
-        weights=(weights.lambda_1, weights.lambda_2, weights.lambda_3)
+        weights=(weights.lambda_1, weights.lambda_2, weights.lambda_3),
     )
 
 
@@ -334,7 +337,7 @@ def triadic_gradient(
     d_hyperbolic: float,
     d_auth: float,
     d_config: float,
-    weights: Optional[TriadicWeights] = None
+    weights: Optional[TriadicWeights] = None,
 ) -> Tuple[float, float, float]:
     """
     Compute gradient of triadic distance w.r.t. each component.
@@ -362,19 +365,22 @@ def triadic_gradient(
 # LAYER 12: HARMONIC SCALING & RISK (Axiom A12)
 # =============================================================================
 
+
 @dataclass
 class RiskWeights:
     """Weights for composite risk computation."""
-    w_spectral: float = 0.20   # Spectral coherence weight
-    w_spin: float = 0.20       # Spin coherence weight
-    w_triadic: float = 0.25    # Triadic distance weight
-    w_trust: float = 0.20      # Trust/swarm weight
-    w_audio: float = 0.15      # Audio coherence weight
+
+    w_spectral: float = 0.20  # Spectral coherence weight
+    w_spin: float = 0.20  # Spin coherence weight
+    w_triadic: float = 0.25  # Triadic distance weight
+    w_trust: float = 0.20  # Trust/swarm weight
+    w_audio: float = 0.15  # Audio coherence weight
 
     def __post_init__(self):
         # Normalize
-        total = (self.w_spectral + self.w_spin + self.w_triadic +
-                 self.w_trust + self.w_audio)
+        total = (
+            self.w_spectral + self.w_spin + self.w_triadic + self.w_trust + self.w_audio
+        )
         if total > EPSILON:
             self.w_spectral /= total
             self.w_spin /= total
@@ -386,16 +392,18 @@ class RiskWeights:
 @dataclass
 class RiskAnalysis:
     """Results from risk computation."""
-    r_base: float           # Base risk [0,1]
-    H: float                # Harmonic scaling factor
-    r_prime: float          # Amplified risk
-    r_hat: float            # Final normalized risk [0,1]
-    decision: str           # ALLOW / QUARANTINE / DENY
+
+    r_base: float  # Base risk [0,1]
+    H: float  # Harmonic scaling factor
+    r_prime: float  # Amplified risk
+    r_hat: float  # Final normalized risk [0,1]
+    decision: str  # ALLOW / QUARANTINE / DENY
     components: Dict[str, float]  # Individual risk contributions
 
 
-def harmonic_scaling(d_star: float, R: float = PHI, max_exp: float = 50.0,
-                      use_vertical_wall: bool = True) -> float:
+def harmonic_scaling(
+    d_star: float, R: float = PHI, max_exp: float = 50.0, use_vertical_wall: bool = True
+) -> float:
     """
     Compute harmonic scaling factor.
 
@@ -408,14 +416,14 @@ def harmonic_scaling(d_star: float, R: float = PHI, max_exp: float = 50.0,
         - H monotonically increasing in d*
         - Vertical Wall: ∂H/∂d* = 2d* × H (exponential growth)
     """
-    exponent = min(d_star ** 2, max_exp)  # Prevent overflow
+    exponent = min(d_star**2, max_exp)  # Prevent overflow
 
     if use_vertical_wall:
         # A12 Vertical Wall: H = exp(d*²) - UNBOUNDED
         return float(np.exp(exponent))
     else:
         # Soft wall: H = R^{d*²}
-        return float(R ** exponent)
+        return float(R**exponent)
 
 
 def compute_risk(
@@ -429,7 +437,7 @@ def compute_risk(
     R: float = PHI,
     rho: float = 1.0,
     allow_threshold: float = 0.3,
-    deny_threshold: float = 0.7
+    deny_threshold: float = 0.7,
 ) -> RiskAnalysis:
     """
     Layer 12: Compute final risk score.
@@ -504,7 +512,7 @@ def compute_risk(
             "triadic": risk_triadic,
             "trust": risk_trust,
             "audio": risk_audio,
-        }
+        },
     )
 
 
@@ -516,7 +524,7 @@ def risk_gradient(
     s_audio: float,
     d_star: float,
     weights: Optional[RiskWeights] = None,
-    R: float = PHI
+    R: float = PHI,
 ) -> Dict[str, float]:
     """
     Compute gradient of R̂ w.r.t. each input.
@@ -527,7 +535,9 @@ def risk_gradient(
         weights = RiskWeights()
 
     # Current risk
-    analysis = compute_risk(s_spec, c_spin, d_tri_norm, tau, s_audio, d_star, weights, R)
+    analysis = compute_risk(
+        s_spec, c_spin, d_tri_norm, tau, s_audio, d_star, weights, R
+    )
 
     # Numerical gradient (small perturbation)
     eps = 1e-6
@@ -554,9 +564,11 @@ def risk_gradient(
 # INTEGRATED LAYER 9-12 PIPELINE
 # =============================================================================
 
+
 @dataclass
 class AggregatedSignals:
     """Complete signal aggregation from Layers 9-12."""
+
     # Layer 9
     spectral: SpectralAnalysis
     # Layer 10
@@ -575,7 +587,7 @@ def process_layers_9_12(
     d_config: float,
     d_star: float,
     tau: float = 1.0,
-    s_audio: float = 1.0
+    s_audio: float = 1.0,
 ) -> AggregatedSignals:
     """
     Complete Layer 9-12 pipeline.
@@ -609,20 +621,16 @@ def process_layers_9_12(
         d_tri_norm=triadic.d_tri_norm,
         tau=tau,
         s_audio=s_audio,
-        d_star=d_star
+        d_star=d_star,
     )
 
-    return AggregatedSignals(
-        spectral=spectral,
-        spin=spin,
-        triadic=triadic,
-        risk=risk
-    )
+    return AggregatedSignals(spectral=spectral, spin=spin, triadic=triadic, risk=risk)
 
 
 # =============================================================================
 # SELF-TESTS
 # =============================================================================
+
 
 def self_test() -> Dict[str, Any]:
     """Run Layer 9-12 self-tests."""
@@ -645,7 +653,9 @@ def self_test() -> Dict[str, Any]:
         if 0 <= analysis.s_spec <= 1 and 0 <= noise_analysis.s_spec <= 1:
             if analysis.s_spec > noise_analysis.s_spec:
                 passed += 1
-                results["spectral_bounds"] = f"✓ PASS (tone={analysis.s_spec:.3f}, noise={noise_analysis.s_spec:.3f})"
+                results["spectral_bounds"] = (
+                    f"✓ PASS (tone={analysis.s_spec:.3f}, noise={noise_analysis.s_spec:.3f})"
+                )
             else:
                 results["spectral_bounds"] = f"✗ FAIL (tone should be more coherent)"
         else:
@@ -661,13 +671,15 @@ def self_test() -> Dict[str, Any]:
         aligned_analysis = compute_spin_coherence(aligned)
 
         # Random phases
-        random_phases = np.random.uniform(0, 2*np.pi, 100)
+        random_phases = np.random.uniform(0, 2 * np.pi, 100)
         random_analysis = compute_spin_coherence(random_phases)
 
         if 0 <= aligned_analysis.c_spin <= 1 and 0 <= random_analysis.c_spin <= 1:
             if aligned_analysis.c_spin > random_analysis.c_spin:
                 passed += 1
-                results["spin_bounds"] = f"✓ PASS (aligned={aligned_analysis.c_spin:.3f}, random={random_analysis.c_spin:.3f})"
+                results["spin_bounds"] = (
+                    f"✓ PASS (aligned={aligned_analysis.c_spin:.3f}, random={random_analysis.c_spin:.3f})"
+                )
             else:
                 results["spin_bounds"] = f"✗ FAIL (aligned should be more coherent)"
         else:
@@ -694,7 +706,9 @@ def self_test() -> Dict[str, Any]:
     total += 1
     try:
         d_star_values = np.linspace(0, 2, 20)
-        risk_values = [compute_risk(0.8, 0.8, 0.3, 0.9, 0.9, d).r_hat for d in d_star_values]
+        risk_values = [
+            compute_risk(0.8, 0.8, 0.3, 0.9, 0.9, d).r_hat for d in d_star_values
+        ]
 
         diffs = np.diff(risk_values)
         if np.all(diffs >= -EPSILON):
@@ -731,7 +745,9 @@ def self_test() -> Dict[str, Any]:
         if 0 <= good_risk.r_hat <= 1 and 0 <= bad_risk.r_hat <= 1:
             if good_risk.r_hat < bad_risk.r_hat:
                 passed += 1
-                results["risk_bounds"] = f"✓ PASS (good={good_risk.r_hat:.3f}, bad={bad_risk.r_hat:.3f})"
+                results["risk_bounds"] = (
+                    f"✓ PASS (good={good_risk.r_hat:.3f}, bad={bad_risk.r_hat:.3f})"
+                )
             else:
                 results["risk_bounds"] = f"✗ FAIL (good should be less risky)"
         else:
@@ -747,9 +763,13 @@ def self_test() -> Dict[str, Any]:
 
         if allow.decision == "ALLOW" and deny.decision == "DENY":
             passed += 1
-            results["decision_thresholds"] = f"✓ PASS (allow={allow.r_hat:.3f}→ALLOW, deny={deny.r_hat:.3f}→DENY)"
+            results["decision_thresholds"] = (
+                f"✓ PASS (allow={allow.r_hat:.3f}→ALLOW, deny={deny.r_hat:.3f}→DENY)"
+            )
         else:
-            results["decision_thresholds"] = f"✗ FAIL (wrong decisions: {allow.decision}, {deny.decision})"
+            results["decision_thresholds"] = (
+                f"✗ FAIL (wrong decisions: {allow.decision}, {deny.decision})"
+            )
     except Exception as e:
         results["decision_thresholds"] = f"✗ FAIL ({e})"
 
@@ -764,7 +784,9 @@ def self_test() -> Dict[str, Any]:
         # H(0) = exp(0) = 1, H(1) = exp(1) = e, H(2) = exp(4) ≈ 54.6
         if abs(h0 - 1.0) < 0.01 and abs(h1 - np.e) < 0.01 and h2 > h1:
             passed += 1
-            results["harmonic_scaling"] = f"✓ PASS (Vertical Wall: H(0)={h0:.2f}, H(1)={h1:.2f}, H(2)={h2:.2f})"
+            results["harmonic_scaling"] = (
+                f"✓ PASS (Vertical Wall: H(0)={h0:.2f}, H(1)={h1:.2f}, H(2)={h2:.2f})"
+            )
         else:
             results["harmonic_scaling"] = f"✗ FAIL (H not matching exp(d*²))"
     except Exception as e:
@@ -784,14 +806,18 @@ def self_test() -> Dict[str, Any]:
             d_config=0.1,
             d_star=0.2,
             tau=0.9,
-            s_audio=0.95
+            s_audio=0.95,
         )
 
         if aggregated.risk.decision == "ALLOW":
             passed += 1
-            results["full_pipeline"] = f"✓ PASS (R̂={aggregated.risk.r_hat:.3f}→{aggregated.risk.decision})"
+            results["full_pipeline"] = (
+                f"✓ PASS (R̂={aggregated.risk.r_hat:.3f}→{aggregated.risk.decision})"
+            )
         else:
-            results["full_pipeline"] = f"✗ FAIL (expected ALLOW, got {aggregated.risk.decision})"
+            results["full_pipeline"] = (
+                f"✗ FAIL (expected ALLOW, got {aggregated.risk.decision})"
+            )
     except Exception as e:
         results["full_pipeline"] = f"✗ FAIL ({e})"
 
@@ -800,12 +826,12 @@ def self_test() -> Dict[str, Any]:
     try:
         # Bad signals should never get ALLOW
         bad_result = compute_risk(
-            s_spec=0.1,    # Low spectral coherence
-            c_spin=0.2,    # Low spin coherence
-            d_tri_norm=0.9, # High triadic distance
-            tau=0.1,       # Low trust
-            s_audio=0.1,   # Low audio coherence
-            d_star=2.0     # Far from realm
+            s_spec=0.1,  # Low spectral coherence
+            c_spin=0.2,  # Low spin coherence
+            d_tri_norm=0.9,  # High triadic distance
+            tau=0.1,  # Low trust
+            s_audio=0.1,  # Low audio coherence
+            d_star=2.0,  # Far from realm
         )
 
         if bad_result.decision != "ALLOW":
@@ -820,7 +846,7 @@ def self_test() -> Dict[str, Any]:
         "passed": passed,
         "total": total,
         "success_rate": f"{passed}/{total} ({100*passed/total:.1f}%)",
-        "results": results
+        "results": results,
     }
 
 

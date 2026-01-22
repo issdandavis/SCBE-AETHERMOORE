@@ -22,16 +22,16 @@ DURATION = 0.5
 N_SAMPLES = int(SAMPLE_RATE * DURATION)
 
 
-def get_harmonic_mask(token_id: int, secret_key: bytes, max_harmonics: int = 8) -> Set[int]:
+def get_harmonic_mask(
+    token_id: int, secret_key: bytes, max_harmonics: int = 8
+) -> Set[int]:
     """
     Derive which harmonics are active for a given token.
 
     Returns set of harmonic indices (1-based).
     """
     mask_seed = hmac.new(
-        secret_key,
-        f"token:{token_id}".encode(),
-        hashlib.sha256
+        secret_key, f"token:{token_id}".encode(), hashlib.sha256
     ).digest()
 
     harmonics = set()
@@ -73,7 +73,7 @@ def analyze_spectrum(signal: np.ndarray) -> dict:
     """
     # FFT
     spectrum = np.abs(np.fft.rfft(signal))
-    freqs = np.fft.rfftfreq(len(signal), 1/SAMPLE_RATE)
+    freqs = np.fft.rfftfreq(len(signal), 1 / SAMPLE_RATE)
 
     # Find peaks at harmonic frequencies
     detected_harmonics = {}
@@ -84,7 +84,9 @@ def analyze_spectrum(signal: np.ndarray) -> dict:
         magnitude = spectrum[idx]
 
         # Normalize to max
-        detected_harmonics[h] = magnitude / np.max(spectrum) if np.max(spectrum) > 0 else 0
+        detected_harmonics[h] = (
+            magnitude / np.max(spectrum) if np.max(spectrum) > 0 else 0
+        )
 
     return detected_harmonics
 
@@ -93,9 +95,9 @@ def test_encoding_uniqueness():
     """
     Test 1: Do different tokens produce different harmonic signatures?
     """
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" TEST 1: Encoding Uniqueness")
-    print("="*60)
+    print("=" * 60)
 
     secret_key = b"test_secret_key_12345"
 
@@ -130,9 +132,9 @@ def test_key_dependency():
     """
     Test 2: Do different keys produce different signatures for same token?
     """
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" TEST 2: Key Dependency")
-    print("="*60)
+    print("=" * 60)
 
     key1 = b"secret_key_alpha"
     key2 = b"secret_key_beta"
@@ -157,9 +159,9 @@ def test_spectrum_analysis():
     """
     Test 3: Can we recover harmonics from the generated signal?
     """
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" TEST 3: Spectrum Analysis (Encode → FFT → Decode)")
-    print("="*60)
+    print("=" * 60)
 
     secret_key = b"spectrum_test_key"
 
@@ -191,9 +193,9 @@ def test_attacker_without_key():
 
     Attack: Collect multiple signals, try to cluster by spectrum similarity.
     """
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" TEST 4: Attacker Without Key")
-    print("="*60)
+    print("=" * 60)
 
     secret_key = b"victim_secret_key"
 
@@ -218,8 +220,8 @@ def test_attacker_without_key():
     from scipy.cluster.hierarchy import fcluster, linkage
 
     # Hierarchical clustering
-    Z = linkage(intercepted, method='ward')
-    predicted_clusters = fcluster(Z, t=8, criterion='maxclust')
+    Z = linkage(intercepted, method="ward")
+    predicted_clusters = fcluster(Z, t=8, criterion="maxclust")
 
     # How well do clusters match true labels?
     # (Adjusted Rand Index or simple purity)
@@ -255,9 +257,9 @@ def test_with_key_decoding():
     """
     Test 5: Can legitimate receiver decode with the key?
     """
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" TEST 5: Legitimate Decoding (with key)")
-    print("="*60)
+    print("=" * 60)
 
     secret_key = b"shared_secret_key"
 
@@ -308,9 +310,9 @@ def test_interference_multiple_tokens():
     Test 6: What happens when multiple tokens are encoded simultaneously?
     (The "resonance refractoring" idea)
     """
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" TEST 6: Multiple Token Interference")
-    print("="*60)
+    print("=" * 60)
 
     secret_key = b"interference_test"
 
@@ -360,22 +362,22 @@ def test_interference_multiple_tokens():
 
 def run_all_tests():
     """Run all tests and summarize."""
-    print("\n" + "#"*60)
+    print("\n" + "#" * 60)
     print(" FLAT SLOPE HARMONIC ENCODING - VALIDATION")
-    print("#"*60)
+    print("#" * 60)
 
     results = {}
 
-    results['uniqueness'] = test_encoding_uniqueness()
-    results['key_dependency'] = test_key_dependency()
-    results['spectrum_recovery'] = test_spectrum_analysis()
-    results['attacker_resistance'] = test_attacker_without_key()
-    results['legitimate_decoding'] = test_with_key_decoding()
-    results['interference'] = test_interference_multiple_tokens()
+    results["uniqueness"] = test_encoding_uniqueness()
+    results["key_dependency"] = test_key_dependency()
+    results["spectrum_recovery"] = test_spectrum_analysis()
+    results["attacker_resistance"] = test_attacker_without_key()
+    results["legitimate_decoding"] = test_with_key_decoding()
+    results["interference"] = test_interference_multiple_tokens()
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" SUMMARY")
-    print("="*60)
+    print("=" * 60)
 
     for test_name, passed in results.items():
         status = "✓ PASS" if passed else "✗ FAIL"
@@ -383,13 +385,13 @@ def run_all_tests():
 
     all_passed = all(results.values())
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     if all_passed:
         print(" VERDICT: Math checks out! ✓")
     else:
         failed = [k for k, v in results.items() if not v]
         print(f" VERDICT: Issues found in: {failed}")
-    print("="*60 + "\n")
+    print("=" * 60 + "\n")
 
     return all_passed
 

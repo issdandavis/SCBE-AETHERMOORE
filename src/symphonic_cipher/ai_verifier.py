@@ -15,7 +15,6 @@ from typing import Dict, List, Optional, Tuple, Set
 from dataclasses import dataclass
 from enum import Enum
 
-
 # =============================================================================
 # CONSTANTS
 # =============================================================================
@@ -31,6 +30,7 @@ AMP_TOLERANCE = 0.15  # Relative amplitude tolerance
 # FEATURE VECTOR DEFINITION (Section 4.1)
 # =============================================================================
 
+
 @dataclass
 class AudioFeatures:
     """
@@ -41,41 +41,44 @@ class AudioFeatures:
 
     Typical dimension d ≈ 30.
     """
-    rms: float                      # Root Mean Square (overall level)
-    spectral_centroid: float        # Brightness measure
-    spectral_flatness: float        # Noise-like vs tone-like
-    mfcc: np.ndarray               # Mel-frequency cepstral coefficients (13)
-    harmonic_mask: np.ndarray      # Binary vector m_h for harmonic presence
-    dynamic_range: float           # 20 log10(max/rms)
-    pan_spread: float              # Stereo width (0 for mono)
-    zero_crossing_rate: float      # Temporal texture measure
-    spectral_rolloff: float        # Frequency below which 85% energy
-    spectral_bandwidth: float      # Spread around centroid
+
+    rms: float  # Root Mean Square (overall level)
+    spectral_centroid: float  # Brightness measure
+    spectral_flatness: float  # Noise-like vs tone-like
+    mfcc: np.ndarray  # Mel-frequency cepstral coefficients (13)
+    harmonic_mask: np.ndarray  # Binary vector m_h for harmonic presence
+    dynamic_range: float  # 20 log10(max/rms)
+    pan_spread: float  # Stereo width (0 for mono)
+    zero_crossing_rate: float  # Temporal texture measure
+    spectral_rolloff: float  # Frequency below which 85% energy
+    spectral_bandwidth: float  # Spread around centroid
 
     # Additional security features
-    jitter: float                  # Pitch instability (F0 variance)
-    shimmer: float                 # Amplitude instability
-    sideband_energy_ratio: float   # Energy in sidebands vs fundamentals
-    phase_coherence: float         # Phase alignment across harmonics
+    jitter: float  # Pitch instability (F0 variance)
+    shimmer: float  # Amplitude instability
+    sideband_energy_ratio: float  # Energy in sidebands vs fundamentals
+    phase_coherence: float  # Phase alignment across harmonics
 
     def to_vector(self) -> np.ndarray:
         """Convert to flat feature vector for neural network input."""
-        return np.concatenate([
-            [self.rms],
-            [self.spectral_centroid],
-            [self.spectral_flatness],
-            self.mfcc,
-            self.harmonic_mask,
-            [self.dynamic_range],
-            [self.pan_spread],
-            [self.zero_crossing_rate],
-            [self.spectral_rolloff],
-            [self.spectral_bandwidth],
-            [self.jitter],
-            [self.shimmer],
-            [self.sideband_energy_ratio],
-            [self.phase_coherence]
-        ])
+        return np.concatenate(
+            [
+                [self.rms],
+                [self.spectral_centroid],
+                [self.spectral_flatness],
+                self.mfcc,
+                self.harmonic_mask,
+                [self.dynamic_range],
+                [self.pan_spread],
+                [self.zero_crossing_rate],
+                [self.spectral_rolloff],
+                [self.spectral_bandwidth],
+                [self.jitter],
+                [self.shimmer],
+                [self.sideband_energy_ratio],
+                [self.phase_coherence],
+            ]
+        )
 
     @property
     def dimension(self) -> int:
@@ -86,6 +89,7 @@ class AudioFeatures:
 # =============================================================================
 # FEATURE EXTRACTOR
 # =============================================================================
+
 
 class FeatureExtractor:
     """
@@ -106,7 +110,7 @@ class FeatureExtractor:
         n_mfcc: int = 13,
         n_mels: int = 40,
         fft_size: int = 2048,
-        hop_size: int = 512
+        hop_size: int = 512,
     ):
         """
         Initialize feature extractor.
@@ -138,8 +142,11 @@ class FeatureExtractor:
         high_freq = self.sample_rate / 2
 
         # Mel scale conversion
-        def hz_to_mel(f): return 2595 * np.log10(1 + f / 700)
-        def mel_to_hz(m): return 700 * (10 ** (m / 2595) - 1)
+        def hz_to_mel(f):
+            return 2595 * np.log10(1 + f / 700)
+
+        def mel_to_hz(m):
+            return 700 * (10 ** (m / 2595) - 1)
 
         # Mel points
         low_mel = hz_to_mel(low_freq)
@@ -148,7 +155,9 @@ class FeatureExtractor:
         hz_points = mel_to_hz(mel_points)
 
         # FFT bin frequencies
-        fft_bins = np.floor((self.fft_size + 1) * hz_points / self.sample_rate).astype(int)
+        fft_bins = np.floor((self.fft_size + 1) * hz_points / self.sample_rate).astype(
+            int
+        )
 
         # Create filterbank
         filterbank = np.zeros((self.n_mels, self.fft_size // 2 + 1))
@@ -156,7 +165,9 @@ class FeatureExtractor:
             for k in range(fft_bins[m], fft_bins[m + 1]):
                 filterbank[m, k] = (k - fft_bins[m]) / (fft_bins[m + 1] - fft_bins[m])
             for k in range(fft_bins[m + 1], fft_bins[m + 2]):
-                filterbank[m, k] = (fft_bins[m + 2] - k) / (fft_bins[m + 2] - fft_bins[m + 1])
+                filterbank[m, k] = (fft_bins[m + 2] - k) / (
+                    fft_bins[m + 2] - fft_bins[m + 1]
+                )
 
         return filterbank
 
@@ -166,12 +177,10 @@ class FeatureExtractor:
 
         RMS = sqrt(1/N * sum(x[n]^2))
         """
-        return float(np.sqrt(np.mean(signal ** 2)))
+        return float(np.sqrt(np.mean(signal**2)))
 
     def _compute_spectral_centroid(
-        self,
-        magnitudes: np.ndarray,
-        frequencies: np.ndarray
+        self, magnitudes: np.ndarray, frequencies: np.ndarray
     ) -> float:
         """
         Compute spectral centroid (brightness measure).
@@ -219,7 +228,7 @@ class FeatureExtractor:
 
         for i in range(n_frames):
             start = i * self.hop_size
-            frame = signal[start:start + self.fft_size]
+            frame = signal[start : start + self.fft_size]
             if len(frame) < self.fft_size:
                 frame = np.pad(frame, (0, self.fft_size - len(frame)))
 
@@ -240,7 +249,10 @@ class FeatureExtractor:
         # DCT to get MFCC
         mfcc = np.zeros(self.n_mfcc)
         for n in range(self.n_mfcc):
-            mfcc[n] = np.sum(mel_spec * np.cos(np.pi * n * (np.arange(self.n_mels) + 0.5) / self.n_mels))
+            mfcc[n] = np.sum(
+                mel_spec
+                * np.cos(np.pi * n * (np.arange(self.n_mels) + 0.5) / self.n_mels)
+            )
 
         return mfcc
 
@@ -255,17 +267,14 @@ class FeatureExtractor:
         return float(np.mean(sign_changes) / 2)
 
     def _compute_spectral_rolloff(
-        self,
-        magnitudes: np.ndarray,
-        frequencies: np.ndarray,
-        threshold: float = 0.85
+        self, magnitudes: np.ndarray, frequencies: np.ndarray, threshold: float = 0.85
     ) -> float:
         """
         Compute spectral rolloff frequency.
 
         Frequency below which threshold% of total energy is contained.
         """
-        cumulative_energy = np.cumsum(magnitudes ** 2)
+        cumulative_energy = np.cumsum(magnitudes**2)
         total_energy = cumulative_energy[-1]
         if total_energy == 0:
             return 0.0
@@ -273,10 +282,7 @@ class FeatureExtractor:
         return float(frequencies[min(rolloff_idx, len(frequencies) - 1)])
 
     def _compute_spectral_bandwidth(
-        self,
-        magnitudes: np.ndarray,
-        frequencies: np.ndarray,
-        centroid: float
+        self, magnitudes: np.ndarray, frequencies: np.ndarray, centroid: float
     ) -> float:
         """
         Compute spectral bandwidth (spread around centroid).
@@ -299,7 +305,11 @@ class FeatureExtractor:
         if len(zero_crossings) < 3:
             return 0.0
         intervals = np.diff(zero_crossings)
-        return float(np.std(intervals) / np.mean(intervals)) if np.mean(intervals) > 0 else 0.0
+        return (
+            float(np.std(intervals) / np.mean(intervals))
+            if np.mean(intervals) > 0
+            else 0.0
+        )
 
     def _compute_shimmer(self, signal: np.ndarray) -> float:
         """
@@ -318,7 +328,7 @@ class FeatureExtractor:
         magnitudes: np.ndarray,
         frequencies: np.ndarray,
         fundamental: float,
-        max_harmonic: int = 5
+        max_harmonic: int = 5,
     ) -> Tuple[np.ndarray, float]:
         """
         Detect harmonic peaks and compute sideband energy ratio.
@@ -340,12 +350,14 @@ class FeatureExtractor:
                 peak_mag = np.max(magnitudes[mask])
                 if peak_mag > 0.1 * np.max(magnitudes):  # Significant peak
                     harmonic_mask[h - 1] = 1
-                    fundamental_energy += peak_mag ** 2
+                    fundamental_energy += peak_mag**2
 
             # Check for sidebands (energy in between harmonics)
             if h < max_harmonic:
                 sideband_freq = (target_freq + fundamental * (h + 1)) / 2
-                sideband_mask = np.abs(frequencies - sideband_freq) <= 10  # Wider tolerance
+                sideband_mask = (
+                    np.abs(frequencies - sideband_freq) <= 10
+                )  # Wider tolerance
                 if np.any(sideband_mask):
                     sideband_energy += np.sum(magnitudes[sideband_mask] ** 2)
 
@@ -359,7 +371,7 @@ class FeatureExtractor:
         fft_complex: np.ndarray,
         frequencies: np.ndarray,
         fundamental: float,
-        max_harmonic: int = 5
+        max_harmonic: int = 5,
     ) -> float:
         """
         Compute phase coherence across harmonics.
@@ -413,7 +425,9 @@ class FeatureExtractor:
         spectral_centroid = self._compute_spectral_centroid(magnitudes, frequencies)
         spectral_flatness = self._compute_spectral_flatness(magnitudes)
         spectral_rolloff = self._compute_spectral_rolloff(magnitudes, frequencies)
-        spectral_bandwidth = self._compute_spectral_bandwidth(magnitudes, frequencies, spectral_centroid)
+        spectral_bandwidth = self._compute_spectral_bandwidth(
+            magnitudes, frequencies, spectral_centroid
+        )
 
         # MFCC
         mfcc = self._compute_mfcc(signal)
@@ -451,7 +465,7 @@ class FeatureExtractor:
             jitter=jitter,
             shimmer=shimmer,
             sideband_energy_ratio=sideband_ratio,
-            phase_coherence=phase_coherence
+            phase_coherence=phase_coherence,
         )
 
     def extract_stereo(self, stereo_signal: np.ndarray) -> AudioFeatures:
@@ -476,7 +490,7 @@ class FeatureExtractor:
 
         # Compute pan spread (stereo width)
         # Using instantaneous pan angle variance
-        with np.errstate(divide='ignore', invalid='ignore'):
+        with np.errstate(divide="ignore", invalid="ignore"):
             pan_angle = np.arctan2(right, left)
             pan_angle = np.nan_to_num(pan_angle, nan=0.0)
             features.pan_spread = float(np.std(pan_angle))
@@ -488,8 +502,10 @@ class FeatureExtractor:
 # HARMONIC VERIFIER
 # =============================================================================
 
+
 class VerificationResult(Enum):
     """Verification outcome."""
+
     PASS = "pass"
     FAIL_REPLAY = "fail_replay"
     FAIL_SYNTHETIC = "fail_synthetic"
@@ -501,6 +517,7 @@ class VerificationResult(Enum):
 @dataclass
 class VerificationReport:
     """Detailed verification report."""
+
     result: VerificationResult
     confidence: float  # 0.0 to 1.0
     harmonic_match: bool
@@ -528,7 +545,7 @@ class HarmonicVerifier:
         base_freq: float = BASE_FREQ,
         freq_step: float = FREQ_STEP,
         freq_tolerance: float = FREQ_TOLERANCE,
-        amp_tolerance: float = AMP_TOLERANCE
+        amp_tolerance: float = AMP_TOLERANCE,
     ):
         """
         Initialize harmonic verifier.
@@ -556,7 +573,7 @@ class HarmonicVerifier:
         self,
         magnitudes: np.ndarray,
         frequencies: np.ndarray,
-        threshold_ratio: float = 0.2
+        threshold_ratio: float = 0.2,
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Find significant peaks in spectrum.
@@ -575,7 +592,7 @@ class HarmonicVerifier:
         # Simple local maxima detection
         local_max = np.zeros_like(magnitudes, dtype=bool)
         for i in range(1, len(magnitudes) - 1):
-            if magnitudes[i] > magnitudes[i-1] and magnitudes[i] > magnitudes[i+1]:
+            if magnitudes[i] > magnitudes[i - 1] and magnitudes[i] > magnitudes[i + 1]:
                 local_max[i] = True
 
         combined_mask = peak_mask & local_max
@@ -583,9 +600,7 @@ class HarmonicVerifier:
         return frequencies[combined_mask], magnitudes[combined_mask]
 
     def verify_fundamentals(
-        self,
-        peak_freqs: np.ndarray,
-        expected_ids: np.ndarray
+        self, peak_freqs: np.ndarray, expected_ids: np.ndarray
     ) -> Tuple[bool, List[int]]:
         """
         Verify that expected fundamental frequencies are present.
@@ -607,10 +622,7 @@ class HarmonicVerifier:
         return len(missing) == 0, missing
 
     def verify_overtone_mask(
-        self,
-        peak_freqs: np.ndarray,
-        fundamental: float,
-        expected_mask: Set[int]
+        self, peak_freqs: np.ndarray, fundamental: float, expected_mask: Set[int]
     ) -> Tuple[bool, Set[int], Set[int]]:
         """
         Verify that overtone pattern matches expected modality mask.
@@ -645,7 +657,7 @@ class HarmonicVerifier:
         self,
         signal: np.ndarray,
         declared_modality: str,
-        expected_ids: Optional[np.ndarray] = None
+        expected_ids: Optional[np.ndarray] = None,
     ) -> VerificationReport:
         """
         Perform complete harmonic verification.
@@ -677,7 +689,9 @@ class HarmonicVerifier:
         expected_mask = self._modality_masks.get(declared_modality, {1, 2, 3, 4, 5})
 
         # Estimate fundamental (strongest peak in expected range)
-        base_range_mask = (peak_freqs >= self.base_freq - 50) & (peak_freqs <= self.base_freq + 300)
+        base_range_mask = (peak_freqs >= self.base_freq - 50) & (
+            peak_freqs <= self.base_freq + 300
+        )
         if not np.any(base_range_mask):
             return VerificationReport(
                 result=VerificationResult.FAIL_TAMPERED,
@@ -687,7 +701,7 @@ class HarmonicVerifier:
                 phase_check=False,
                 jitter_check=False,
                 message="No peaks found in expected frequency range",
-                details=details
+                details=details,
             )
 
         filtered_peaks = peak_freqs[base_range_mask]
@@ -712,7 +726,7 @@ class HarmonicVerifier:
                 phase_check=False,
                 jitter_check=False,
                 message=f"Harmonic mask mismatch for {declared_modality}",
-                details=details
+                details=details,
             )
 
         # Check sideband energy (indicates biological origin)
@@ -727,7 +741,9 @@ class HarmonicVerifier:
             # Sidebands between this and next harmonic
             if h + 1 in expected_mask:
                 sideband_freq = (fundamental * h + fundamental * (h + 1)) / 2
-                sb_mask = (frequencies >= sideband_freq - 10) & (frequencies <= sideband_freq + 10)
+                sb_mask = (frequencies >= sideband_freq - 10) & (
+                    frequencies <= sideband_freq + 10
+                )
                 sideband_energy += np.sum(magnitudes[sb_mask] ** 2)
 
         total = fundamental_energy + sideband_energy
@@ -761,7 +777,9 @@ class HarmonicVerifier:
         zero_crossings = np.where(np.diff(np.signbit(signal)))[0]
         if len(zero_crossings) > 2:
             intervals = np.diff(zero_crossings)
-            jitter_ratio = np.std(intervals) / np.mean(intervals) if np.mean(intervals) > 0 else 0
+            jitter_ratio = (
+                np.std(intervals) / np.mean(intervals) if np.mean(intervals) > 0 else 0
+            )
             details["jitter_ratio"] = float(jitter_ratio)
             # Biological signals have jitter > 0.01, synthetic often < 0.005
             jitter_check = jitter_ratio > 0.003
@@ -782,7 +800,7 @@ class HarmonicVerifier:
                 phase_check=phase_check,
                 jitter_check=jitter_check,
                 message="Audio appears to be synthetic/replayed",
-                details=details
+                details=details,
             )
 
         if not jitter_check:
@@ -794,7 +812,7 @@ class HarmonicVerifier:
                 phase_check=phase_check,
                 jitter_check=jitter_check,
                 message="Audio lacks expected jitter (possible replay)",
-                details=details
+                details=details,
             )
 
         return VerificationReport(
@@ -805,13 +823,14 @@ class HarmonicVerifier:
             phase_check=phase_check,
             jitter_check=jitter_check,
             message="Verification successful",
-            details=details
+            details=details,
         )
 
 
 # =============================================================================
 # NEURAL NETWORK INTENT CLASSIFIER (Section 4.2)
 # =============================================================================
+
 
 class IntentClassifier:
     """
@@ -835,7 +854,7 @@ class IntentClassifier:
         self,
         input_dim: int = 30,
         hidden_dims: Tuple[int, int] = (64, 32),
-        threshold: float = 0.85
+        threshold: float = 0.85,
     ):
         """
         Initialize classifier.
@@ -923,7 +942,7 @@ class IntentClassifier:
             if len(x) < self.input_dim:
                 x = np.pad(x, (0, self.input_dim - len(x)))
             else:
-                x = x[:self.input_dim]
+                x = x[: self.input_dim]
 
         # Normalize features
         x = (x - np.mean(x)) / (np.std(x) + 1e-8)
@@ -933,12 +952,7 @@ class IntentClassifier:
 
         return is_authentic, probability
 
-    def train_step(
-        self,
-        x: np.ndarray,
-        y: int,
-        learning_rate: float = 0.01
-    ) -> float:
+    def train_step(self, x: np.ndarray, y: int, learning_rate: float = 0.01) -> float:
         """
         Single training step with backpropagation.
 
@@ -996,7 +1010,7 @@ class IntentClassifier:
         y: np.ndarray,
         epochs: int = 100,
         learning_rate: float = 0.01,
-        verbose: bool = False
+        verbose: bool = False,
     ) -> List[float]:
         """
         Train the classifier on a dataset.
@@ -1035,19 +1049,22 @@ class IntentClassifier:
         """Save network weights to file."""
         np.savez(
             path,
-            W1=self.W1, b1=self.b1,
-            W2=self.W2, b2=self.b2,
-            W3=self.W3, b3=self.b3,
-            threshold=self.threshold
+            W1=self.W1,
+            b1=self.b1,
+            W2=self.W2,
+            b2=self.b2,
+            W3=self.W3,
+            b3=self.b3,
+            threshold=self.threshold,
         )
 
     def load_weights(self, path: str) -> None:
         """Load network weights from file."""
         data = np.load(path)
-        self.W1 = data['W1']
-        self.b1 = data['b1']
-        self.W2 = data['W2']
-        self.b2 = data['b2']
-        self.W3 = data['W3']
-        self.b3 = data['b3']
-        self.threshold = float(data['threshold'])
+        self.W1 = data["W1"]
+        self.b1 = data["b1"]
+        self.W2 = data["W2"]
+        self.b2 = data["b2"]
+        self.W3 = data["W3"]
+        self.b3 = data["b3"]
+        self.threshold = float(data["threshold"])

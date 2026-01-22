@@ -20,18 +20,19 @@ import base64
 from typing import Tuple, Set, List, Dict
 import numpy as np
 import matplotlib
-matplotlib.use('Agg')
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from scipy.fftpack import fft, fftfreq
 
 # ==============================================================================
 # CONSTANTS
 # ==============================================================================
-FS = 44_100              # Sample rate (Hz)
-DURATION = 0.5           # Duration per token (seconds)
-BASE_FREQ = 440.0        # FLAT SLOPE: All tokens use same fundamental
+FS = 44_100  # Sample rate (Hz)
+DURATION = 0.5  # Duration per token (seconds)
+BASE_FREQ = 440.0  # FLAT SLOPE: All tokens use same fundamental
 N_SAMPLES = int(FS * DURATION)
-MAX_HARMONICS = 12       # Harmonics 1-12
+MAX_HARMONICS = 12  # Harmonics 1-12
 NONCE_BYTES = 12
 
 # Secret key (in production, use secure key management)
@@ -41,16 +42,25 @@ MASTER_KEY = b"test-key-for-demo-only-32bytes!"
 # CONLANG DICTIONARY
 # ==============================================================================
 CONLANG = {
-    "shadow": -1, "gleam": -2, "flare": -3,
-    "korah": 0, "aelin": 1, "dahru": 2,
-    "melik": 3, "sorin": 4, "tivar": 5,
-    "ulmar": 6, "vexin": 7, "zephyr": 8,
+    "shadow": -1,
+    "gleam": -2,
+    "flare": -3,
+    "korah": 0,
+    "aelin": 1,
+    "dahru": 2,
+    "melik": 3,
+    "sorin": 4,
+    "tivar": 5,
+    "ulmar": 6,
+    "vexin": 7,
+    "zephyr": 8,
 }
 REV_CONLANG = {v: k for k, v in CONLANG.items()}
 
 # ==============================================================================
 # FLAT SLOPE + AETHERMOORE ENCODING
 # ==============================================================================
+
 
 def derive_harmonic_mask(token_id: int, key: bytes) -> Set[int]:
     """
@@ -78,7 +88,7 @@ def derive_phases(token_id: int, key: bytes, nonce: bytes) -> Dict[int, float]:
         data = f"phase:{token_id}:{h}".encode() + nonce
         ph_bytes = hmac.new(key, data, hashlib.sha256).digest()[:4]
         # Convert to phase [0, 2π)
-        phases[h] = (int.from_bytes(ph_bytes, 'big') / (2**32)) * 2 * np.pi
+        phases[h] = (int.from_bytes(ph_bytes, "big") / (2**32)) * 2 * np.pi
     return phases
 
 
@@ -87,7 +97,7 @@ def flat_slope_adaptive_encode(
     key: bytes,
     nonce: bytes,
     add_vibrato: bool = True,
-    add_jitter: bool = True
+    add_jitter: bool = True,
 ) -> Tuple[np.ndarray, Set[int]]:
     """
     COMBINED ENCODING:
@@ -103,7 +113,7 @@ def flat_slope_adaptive_encode(
 
     # Seed RNG with key+nonce for reproducible jitter (receiver can verify)
     rng_seed = int.from_bytes(
-        hmac.new(key, b"jitter" + nonce, hashlib.sha256).digest()[:4], 'big'
+        hmac.new(key, b"jitter" + nonce, hashlib.sha256).digest()[:4], "big"
     )
     rng = np.random.default_rng(seed=rng_seed)
 
@@ -160,6 +170,7 @@ def flat_slope_binary_encode(token_id: int, key: bytes) -> Tuple[np.ndarray, Set
 # FEISTEL PERMUTATION
 # ==============================================================================
 
+
 def feistel_permute(ids: List[int], key: bytes) -> List[int]:
     """
     4-round Feistel permutation on token IDs.
@@ -205,14 +216,15 @@ def feistel_unpermute(perm_ids: List[int], key: bytes) -> List[int]:
 # FFT FINGERPRINT
 # ==============================================================================
 
+
 def extract_fingerprint(signal: np.ndarray) -> Dict:
     """
     Extract spectral fingerprint from signal.
     Returns: harmonic magnitudes, detected harmonics, jitter, shimmer, entropy
     """
     N = len(signal)
-    X = np.abs(fft(signal))[:N//2]
-    freqs = fftfreq(N, 1/FS)[:N//2]
+    X = np.abs(fft(signal))[: N // 2]
+    freqs = fftfreq(N, 1 / FS)[: N // 2]
 
     # Find harmonics (peaks near expected frequencies)
     detected_harmonics = set()
@@ -247,13 +259,14 @@ def extract_fingerprint(signal: np.ndarray) -> Dict:
         "harmonic_magnitudes": harmonic_mags,
         "jitter": jitter,
         "shimmer": shimmer,
-        "entropy": entropy
+        "entropy": entropy,
     }
 
 
 # ==============================================================================
 # RWP v3 ENVELOPE
 # ==============================================================================
+
 
 def make_envelope(fingerprint_bytes: bytes, mode: str, tongue: str = "KO") -> Dict:
     """Create HMAC-signed envelope with replay protection."""
@@ -287,7 +300,9 @@ def verify_envelope(env: Dict, max_age_ms: int = 60_000) -> bool:
         return False
 
     # Recompute signature
-    canon = f"v3.{hdr['tongue']}.{hdr['mode']}.{hdr['ts']}.{hdr['nonce']}.{env['payload']}"
+    canon = (
+        f"v3.{hdr['tongue']}.{hdr['mode']}.{hdr['ts']}.{hdr['nonce']}.{env['payload']}"
+    )
     expected = hmac.new(MASTER_KEY, canon.encode(), hashlib.sha256).hexdigest()
 
     return hmac.compare_digest(expected, env["sig"])
@@ -297,11 +312,12 @@ def verify_envelope(env: Dict, max_age_ms: int = 60_000) -> bool:
 # TESTS
 # ==============================================================================
 
+
 def test_harmonic_uniqueness():
     """Test that different tokens have different harmonic signatures."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" TEST 1: Harmonic Uniqueness (Flat Slope)")
-    print("="*60)
+    print("=" * 60)
 
     masks = {}
     for word, token_id in CONLANG.items():
@@ -320,9 +336,9 @@ def test_harmonic_uniqueness():
 
 def test_phase_nonce_dependency():
     """Test that different nonces produce different waveforms."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" TEST 2: Nonce-Dependent Phase (Anti-Replay)")
-    print("="*60)
+    print("=" * 60)
 
     token_id = 0
     nonce1 = b"nonce_000001"
@@ -347,7 +363,9 @@ def test_phase_nonce_dependency():
     print(f"  Different waveform: {different_waveform}")
 
     passed = same_harmonics and different_waveform
-    print(f"\n  {'✓ PASS' if passed else '✗ FAIL'}: Nonce changes waveform while preserving harmonics")
+    print(
+        f"\n  {'✓ PASS' if passed else '✗ FAIL'}: Nonce changes waveform while preserving harmonics"
+    )
     return passed
 
 
@@ -356,9 +374,9 @@ def test_attacker_resistance():
     Test if attacker can distinguish tokens by spectral analysis.
     IMPROVED: With random phase, attacker correlation should be low.
     """
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" TEST 3: Attacker Resistance (Phase Randomization)")
-    print("="*60)
+    print("=" * 60)
 
     # Attacker observes multiple transmissions of the same token
     # with DIFFERENT nonces
@@ -374,7 +392,7 @@ def test_attacker_resistance():
     # Compute pairwise correlations
     correlations = []
     for i in range(num_samples):
-        for j in range(i+1, num_samples):
+        for j in range(i + 1, num_samples):
             corr = np.corrcoef(waveforms[i], waveforms[j])[0, 1]
             correlations.append(corr)
 
@@ -391,7 +409,7 @@ def test_attacker_resistance():
 
     binary_correlations = []
     for i in range(num_samples):
-        for j in range(i+1, num_samples):
+        for j in range(i + 1, num_samples):
             corr = np.corrcoef(binary_waveforms[i], binary_waveforms[j])[0, 1]
             binary_correlations.append(corr)
 
@@ -401,16 +419,20 @@ def test_attacker_resistance():
     # Adaptive should have LOWER correlation than binary
     better_resistance = avg_corr < binary_avg_corr * 0.5
 
-    print(f"\n  Adaptive mode {'✓ BETTER' if better_resistance else '✗ SIMILAR'} than binary")
-    print(f"  {'✓ PASS' if better_resistance else '✗ FAIL'}: Phase randomization defeats correlation")
+    print(
+        f"\n  Adaptive mode {'✓ BETTER' if better_resistance else '✗ SIMILAR'} than binary"
+    )
+    print(
+        f"  {'✓ PASS' if better_resistance else '✗ FAIL'}: Phase randomization defeats correlation"
+    )
     return better_resistance
 
 
 def test_feistel_roundtrip():
     """Test Feistel permutation is reversible."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" TEST 4: Feistel Permutation Roundtrip")
-    print("="*60)
+    print("=" * 60)
 
     original = [0, 1, 2, 3]  # "korah aelin dahru melik"
     print(f"  Original IDs: {original}")
@@ -428,9 +450,9 @@ def test_feistel_roundtrip():
 
 def test_envelope_verification():
     """Test RWP envelope create/verify."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" TEST 5: RWP Envelope Verification")
-    print("="*60)
+    print("=" * 60)
 
     # Create envelope
     dummy_fingerprint = b"test_fingerprint_data_here"
@@ -459,9 +481,9 @@ def test_envelope_verification():
 
 def test_legitimate_decode():
     """Test full encode/decode pipeline (without Feistel, which scrambles IDs)."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" TEST 6: Full Encode/Decode Pipeline")
-    print("="*60)
+    print("=" * 60)
 
     # Simulate encoding multiple tokens
     # NOTE: In real protocol, Feistel permutes ORDER of tokens, not the IDs themselves
@@ -513,9 +535,9 @@ def test_legitimate_decode():
 
 def test_binary_vs_adaptive_entropy():
     """Compare entropy between binary and adaptive modes."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" TEST 7: Binary vs Adaptive Entropy")
-    print("="*60)
+    print("=" * 60)
 
     token_id = 0
     nonce = os.urandom(NONCE_BYTES)
@@ -537,17 +559,19 @@ def test_binary_vs_adaptive_entropy():
     print(f"    Shimmer: {adaptive_fp['shimmer']:.4f}")
 
     # Adaptive should have higher entropy
-    higher_entropy = adaptive_fp['entropy'] > binary_fp['entropy'] * 0.9
+    higher_entropy = adaptive_fp["entropy"] > binary_fp["entropy"] * 0.9
 
-    print(f"\n  {'✓ PASS' if higher_entropy else '✗ FAIL'}: Adaptive has sufficient entropy")
+    print(
+        f"\n  {'✓ PASS' if higher_entropy else '✗ FAIL'}: Adaptive has sufficient entropy"
+    )
     return higher_entropy
 
 
 def plot_comparison():
     """Generate comparison plot."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" GENERATING COMPARISON PLOT")
-    print("="*60)
+    print("=" * 60)
 
     token_id = 0
     nonce = os.urandom(NONCE_BYTES)
@@ -560,23 +584,23 @@ def plot_comparison():
     fig, axes = plt.subplots(2, 2, figsize=(12, 8))
 
     # Waveforms
-    axes[0, 0].plot(t[:2000], binary_sig[:2000], alpha=0.7, label='Binary')
-    axes[0, 0].plot(t[:2000], adaptive_sig[:2000], alpha=0.7, label='Adaptive')
-    axes[0, 0].set_title('Waveforms (first 2000 samples)')
+    axes[0, 0].plot(t[:2000], binary_sig[:2000], alpha=0.7, label="Binary")
+    axes[0, 0].plot(t[:2000], adaptive_sig[:2000], alpha=0.7, label="Adaptive")
+    axes[0, 0].set_title("Waveforms (first 2000 samples)")
     axes[0, 0].legend()
-    axes[0, 0].set_xlabel('Time (s)')
+    axes[0, 0].set_xlabel("Time (s)")
 
     # FFT
     N = len(binary_sig)
-    freqs = fftfreq(N, 1/FS)[:N//2]
-    binary_fft = np.abs(fft(binary_sig))[:N//2]
-    adaptive_fft = np.abs(fft(adaptive_sig))[:N//2]
+    freqs = fftfreq(N, 1 / FS)[: N // 2]
+    binary_fft = np.abs(fft(binary_sig))[: N // 2]
+    adaptive_fft = np.abs(fft(adaptive_sig))[: N // 2]
 
-    axes[0, 1].plot(freqs[:5000], binary_fft[:5000], alpha=0.7, label='Binary')
-    axes[0, 1].plot(freqs[:5000], adaptive_fft[:5000], alpha=0.7, label='Adaptive')
-    axes[0, 1].set_title('Frequency Spectrum')
+    axes[0, 1].plot(freqs[:5000], binary_fft[:5000], alpha=0.7, label="Binary")
+    axes[0, 1].plot(freqs[:5000], adaptive_fft[:5000], alpha=0.7, label="Adaptive")
+    axes[0, 1].set_title("Frequency Spectrum")
     axes[0, 1].legend()
-    axes[0, 1].set_xlabel('Frequency (Hz)')
+    axes[0, 1].set_xlabel("Frequency (Hz)")
 
     # Harmonic comparison
     harmonics = list(range(1, MAX_HARMONICS + 1))
@@ -591,12 +615,12 @@ def plot_comparison():
 
     x = np.arange(len(harmonics))
     width = 0.35
-    axes[1, 0].bar(x - width/2, binary_mags, width, label='Binary')
-    axes[1, 0].bar(x + width/2, adaptive_mags, width, label='Adaptive')
-    axes[1, 0].set_title('Harmonic Magnitudes')
+    axes[1, 0].bar(x - width / 2, binary_mags, width, label="Binary")
+    axes[1, 0].bar(x + width / 2, adaptive_mags, width, label="Adaptive")
+    axes[1, 0].set_title("Harmonic Magnitudes")
     axes[1, 0].set_xticks(x)
     axes[1, 0].set_xticklabels(harmonics)
-    axes[1, 0].set_xlabel('Harmonic')
+    axes[1, 0].set_xlabel("Harmonic")
     axes[1, 0].legend()
 
     # Nonce correlation test
@@ -607,14 +631,19 @@ def plot_comparison():
         corr = np.corrcoef(adaptive_sig, sig_i)[0, 1]
         correlations.append(corr)
 
-    axes[1, 1].hist(correlations, bins=20, edgecolor='black')
-    axes[1, 1].axvline(np.mean(correlations), color='r', linestyle='--', label=f'Mean: {np.mean(correlations):.3f}')
-    axes[1, 1].set_title('Cross-Nonce Correlation Distribution')
-    axes[1, 1].set_xlabel('Correlation')
+    axes[1, 1].hist(correlations, bins=20, edgecolor="black")
+    axes[1, 1].axvline(
+        np.mean(correlations),
+        color="r",
+        linestyle="--",
+        label=f"Mean: {np.mean(correlations):.3f}",
+    )
+    axes[1, 1].set_title("Cross-Nonce Correlation Distribution")
+    axes[1, 1].set_xlabel("Correlation")
     axes[1, 1].legend()
 
     plt.tight_layout()
-    plt.savefig('combined_protocol_analysis.png', dpi=150)
+    plt.savefig("combined_protocol_analysis.png", dpi=150)
     plt.close()
 
     print("  Saved: combined_protocol_analysis.png")
@@ -624,10 +653,11 @@ def plot_comparison():
 # MAIN
 # ==============================================================================
 
+
 def main():
-    print("="*60)
+    print("=" * 60)
     print(" COMBINED PROTOCOL: Flat Slope + AetherMoore")
-    print("="*60)
+    print("=" * 60)
     print(f"\n  Base frequency: {BASE_FREQ} Hz (flat slope)")
     print(f"  Sample rate:    {FS} Hz")
     print(f"  Duration:       {DURATION} s")
@@ -635,20 +665,20 @@ def main():
 
     results = {}
 
-    results['uniqueness'] = test_harmonic_uniqueness()
-    results['nonce_dependency'] = test_phase_nonce_dependency()
-    results['attacker_resistance'] = test_attacker_resistance()
-    results['feistel_roundtrip'] = test_feistel_roundtrip()
-    results['envelope_verification'] = test_envelope_verification()
-    results['legitimate_decode'] = test_legitimate_decode()
-    results['entropy_comparison'] = test_binary_vs_adaptive_entropy()
+    results["uniqueness"] = test_harmonic_uniqueness()
+    results["nonce_dependency"] = test_phase_nonce_dependency()
+    results["attacker_resistance"] = test_attacker_resistance()
+    results["feistel_roundtrip"] = test_feistel_roundtrip()
+    results["envelope_verification"] = test_envelope_verification()
+    results["legitimate_decode"] = test_legitimate_decode()
+    results["entropy_comparison"] = test_binary_vs_adaptive_entropy()
 
     plot_comparison()
 
     # Summary
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" SUMMARY")
-    print("="*60)
+    print("=" * 60)
 
     passed = sum(1 for v in results.values() if v)
     total = len(results)

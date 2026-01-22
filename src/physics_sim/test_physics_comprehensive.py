@@ -15,21 +15,23 @@ import sys
 import os
 
 # Add parent path for imports
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 
 def print_test_header(name: str):
     """Print test section header."""
     print(f"\n{'='*70}")
     print(f" {name}")
-    print('='*70)
+    print("=" * 70)
 
 
 def assert_close(actual, expected, tol=0.01, msg=""):
     """Assert values are within tolerance."""
     if abs(expected) > 1e-10:
         rel_error = abs(actual - expected) / abs(expected)
-        assert rel_error < tol, f"{msg}: Expected {expected}, got {actual} (rel error: {rel_error:.2%})"
+        assert (
+            rel_error < tol
+        ), f"{msg}: Expected {expected}, got {actual} (rel error: {rel_error:.2%})"
     else:
         assert abs(actual - expected) < tol, f"{msg}: Expected {expected}, got {actual}"
 
@@ -38,12 +40,17 @@ def assert_close(actual, expected, tol=0.01, msg=""):
 # ATMOSPHERIC PHYSICS TESTS
 # =============================================================================
 
+
 def test_atmosphere():
     print_test_header("ATMOSPHERIC PHYSICS TESTS")
 
     from src.physics_sim.atmosphere import (
-        isa_temperature, isa_pressure, isa_density, speed_of_sound,
-        atmosphere, mach_number
+        isa_temperature,
+        isa_pressure,
+        isa_density,
+        speed_of_sound,
+        atmosphere,
+        mach_number,
     )
 
     # Test 1: Sea level conditions
@@ -75,9 +82,9 @@ def test_atmosphere():
     print(f"  [OK] Mach 2 check: M={M:.2f}")
 
     # Test 5: Comprehensive atmosphere function
-    atm = atmosphere({'altitude': 10000, 'velocity': 250})
-    assert 'temperature_K' in atm
-    assert 'mach_number' in atm
+    atm = atmosphere({"altitude": 10000, "velocity": 250})
+    assert "temperature_K" in atm
+    assert "mach_number" in atm
     print(f"  [OK] Comprehensive test at 10km: M={atm['mach_number']:.3f}")
 
     print("\n[OK] All atmospheric physics tests passed")
@@ -87,12 +94,16 @@ def test_atmosphere():
 # FLUID DYNAMICS TESTS
 # =============================================================================
 
+
 def test_fluids():
     print_test_header("FLUID DYNAMICS TESTS")
 
     from src.physics_sim.fluids import (
-        reynolds_number, drag_force, bernoulli_velocity,
-        normal_shock_mach, isentropic_pressure_ratio
+        reynolds_number,
+        drag_force,
+        bernoulli_velocity,
+        normal_shock_mach,
+        isentropic_pressure_ratio,
     )
 
     # Test 1: Reynolds number
@@ -135,13 +146,18 @@ def test_fluids():
 # ORBITAL MECHANICS TESTS
 # =============================================================================
 
+
 def test_orbital():
     print_test_header("ORBITAL MECHANICS TESTS")
 
     from src.physics_sim.orbital import (
-        orbital_period, circular_velocity, escape_velocity,
-        hohmann_transfer, orbital_mechanics,
-        MU_EARTH, RADIUS_EARTH
+        orbital_period,
+        circular_velocity,
+        escape_velocity,
+        hohmann_transfer,
+        orbital_mechanics,
+        MU_EARTH,
+        RADIUS_EARTH,
     )
 
     # Test 1: LEO orbital period (ISS at ~400km)
@@ -164,21 +180,27 @@ def test_orbital():
     print(f"  [OK] Earth escape velocity: {V_escape/1000:.2f} km/s")
 
     # Test 4: Hohmann transfer (LEO to GEO)
-    r1 = RADIUS_EARTH + 400000   # LEO
-    r2 = 42164000                 # GEO
+    r1 = RADIUS_EARTH + 400000  # LEO
+    r2 = 42164000  # GEO
     transfer = hohmann_transfer(r1, r2, MU_EARTH)
     # Total Delta_V for LEO->GEO ~ 3.9 km/s
-    assert_close(transfer['delta_v_total_m_s'] / 1000, 3.9, 0.1, "Hohmann Delta_V")
-    print(f"  [OK] Hohmann LEO->GEO: Delta_V={transfer['delta_v_total_m_s']/1000:.2f} km/s")
+    assert_close(transfer["delta_v_total_m_s"] / 1000, 3.9, 0.1, "Hohmann Delta_V")
+    print(
+        f"  [OK] Hohmann LEO->GEO: Delta_V={transfer['delta_v_total_m_s']/1000:.2f} km/s"
+    )
 
     # Test 5: Comprehensive orbital mechanics
-    orbit = orbital_mechanics({
-        'central_body': 'earth',
-        'altitude': 400000,
-    })
-    assert 'period_min' in orbit
-    assert 'escape_velocity_m_s' in orbit
-    print(f"  [OK] Comprehensive orbit: T={orbit['period_min']:.1f} min, e={orbit['eccentricity']:.4f}")
+    orbit = orbital_mechanics(
+        {
+            "central_body": "earth",
+            "altitude": 400000,
+        }
+    )
+    assert "period_min" in orbit
+    assert "escape_velocity_m_s" in orbit
+    print(
+        f"  [OK] Comprehensive orbit: T={orbit['period_min']:.1f} min, e={orbit['eccentricity']:.4f}"
+    )
 
     print("\n[OK] All orbital mechanics tests passed")
 
@@ -187,12 +209,16 @@ def test_orbital():
 # NUCLEAR PHYSICS TESTS
 # =============================================================================
 
+
 def test_nuclear():
     print_test_header("NUCLEAR PHYSICS TESTS")
 
     from src.physics_sim.nuclear import (
-        decay_constant, remaining_nuclei, binding_energy_per_nucleon,
-        nuclear_physics, fission_energy_U235
+        decay_constant,
+        remaining_nuclei,
+        binding_energy_per_nucleon,
+        nuclear_physics,
+        fission_energy_U235,
     )
 
     # Test 1: C-14 decay (half-life = 5730 years)
@@ -211,18 +237,18 @@ def test_nuclear():
 
     # Test 3: U-235 fission energy
     fission = fission_energy_U235()
-    assert_close(fission['total_release'], 200, 0.1, "U-235 fission energy")
+    assert_close(fission["total_release"], 200, 0.1, "U-235 fission energy")
     print(f"  [OK] U-235 fission: {fission['total_release']:.0f} MeV")
 
     # Test 4: Nuclear physics comprehensive
-    nuc = nuclear_physics({
-        'nuclide': 'U-235',
-        'initial_nuclei': 1e20,
-        'time': 1e9  # 1 billion seconds
-    })
-    assert 'binding_energy_MeV' in nuc
-    assert 'decay_constant_per_s' in nuc
-    print(f"  [OK] U-235: B={nuc['binding_energy_MeV']:.1f} MeV, lambda={nuc['decay_constant_per_s']:.2e}/s")
+    nuc = nuclear_physics(
+        {"nuclide": "U-235", "initial_nuclei": 1e20, "time": 1e9}  # 1 billion seconds
+    )
+    assert "binding_energy_MeV" in nuc
+    assert "decay_constant_per_s" in nuc
+    print(
+        f"  [OK] U-235: B={nuc['binding_energy_MeV']:.1f} MeV, lambda={nuc['decay_constant_per_s']:.2e}/s"
+    )
 
     print("\n[OK] All nuclear physics tests passed")
 
@@ -231,13 +257,18 @@ def test_nuclear():
 # STATISTICAL MECHANICS TESTS
 # =============================================================================
 
+
 def test_statistical():
     print_test_header("STATISTICAL MECHANICS TESTS")
 
     from src.physics_sim.statistical import (
-        most_probable_speed, mean_speed, rms_speed,
-        fermi_energy_3d, maxwell_boltzmann_speed_distribution,
-        statistical_mechanics, BOLTZMANN
+        most_probable_speed,
+        mean_speed,
+        rms_speed,
+        fermi_energy_3d,
+        maxwell_boltzmann_speed_distribution,
+        statistical_mechanics,
+        BOLTZMANN,
     )
 
     # Test 1: Maxwell-Boltzmann speeds for N2 at 300K
@@ -265,18 +296,22 @@ def test_statistical():
     # Approximate integral by summing
     dv = 10
     v_max = 2000
-    total = sum(maxwell_boltzmann_speed_distribution(v, m_N2, T) * dv
-                for v in range(1, v_max, dv))
+    total = sum(
+        maxwell_boltzmann_speed_distribution(v, m_N2, T) * dv
+        for v in range(1, v_max, dv)
+    )
     assert_close(total, 1.0, 0.05, "MB distribution normalization")
     print(f"  [OK] MB distribution integral: {total:.4f}")
 
     # Test 4: Comprehensive statistical mechanics
-    stat = statistical_mechanics({
-        'temperature': 300,
-        'mass': m_N2,
-        'volume': 0.0224,  # ~1 mol at STP
-    })
-    assert 'rms_speed_m_s' in stat
+    stat = statistical_mechanics(
+        {
+            "temperature": 300,
+            "mass": m_N2,
+            "volume": 0.0224,  # ~1 mol at STP
+        }
+    )
+    assert "rms_speed_m_s" in stat
     print(f"  [OK] Comprehensive: v_rms={stat['rms_speed_m_s']:.0f} m/s")
 
     print("\n[OK] All statistical mechanics tests passed")
@@ -286,13 +321,18 @@ def test_statistical():
 # WAVES AND OPTICS TESTS
 # =============================================================================
 
+
 def test_waves_optics():
     print_test_header("WAVES AND OPTICS TESTS")
 
     from src.physics_sim.waves_optics import (
-        snells_law, critical_angle, thin_lens_equation,
-        young_fringe_spacing, sound_speed_air, doppler_shift_moving_source,
-        waves_optics
+        snells_law,
+        critical_angle,
+        thin_lens_equation,
+        young_fringe_spacing,
+        sound_speed_air,
+        doppler_shift_moving_source,
+        waves_optics,
     )
 
     # Test 1: Snell's law (air to glass)
@@ -311,8 +351,10 @@ def test_waves_optics():
     # Test 3: Thin lens equation
     lens = thin_lens_equation(f=0.1, d_o=0.3)  # f=10cm, object at 30cm
     # 1/di = 1/0.1 - 1/0.3 = 10 - 3.33 = 6.67, di = 0.15m
-    assert_close(lens['image_distance_m'], 0.15, 0.01, "Thin lens image distance")
-    print(f"  [OK] Thin lens: d_o=30cm, f=10cm -> d_i={lens['image_distance_m']*100:.0f}cm")
+    assert_close(lens["image_distance_m"], 0.15, 0.01, "Thin lens image distance")
+    print(
+        f"  [OK] Thin lens: d_o=30cm, f=10cm -> d_i={lens['image_distance_m']*100:.0f}cm"
+    )
 
     # Test 4: Young's double slit fringe spacing
     # lambda=500nm, d=0.1mm, L=1m -> Delta_y=5mm
@@ -338,12 +380,16 @@ def test_waves_optics():
 # NUMERICAL METHODS TESTS
 # =============================================================================
 
+
 def test_numerical():
     print_test_header("NUMERICAL METHODS TESTS")
 
     from src.physics_sim.numerical import (
-        bisection, newton_raphson, simpson_rule, rk4_solve,
-        particle_swarm_optimization
+        bisection,
+        newton_raphson,
+        simpson_rule,
+        rk4_solve,
+        particle_swarm_optimization,
     )
 
     # Test 1: Bisection (find sqrt2)
@@ -352,7 +398,7 @@ def test_numerical():
     print(f"  [OK] Bisection: sqrt2 = {root:.10f} ({iters} iterations)")
 
     # Test 2: Newton-Raphson (find sqrt2)
-    root, iters = newton_raphson(lambda x: x**2 - 2, lambda x: 2*x, 1.5)
+    root, iters = newton_raphson(lambda x: x**2 - 2, lambda x: 2 * x, 1.5)
     assert_close(root, math.sqrt(2), 1e-10, "Newton-Raphson root finding")
     print(f"  [OK] Newton-Raphson: sqrt2 = {root:.12f} ({iters} iterations)")
 
@@ -366,7 +412,7 @@ def test_numerical():
     def harmonic(t, y):
         return [y[1], -y[0]]
 
-    times, states = rk4_solve(harmonic, [1.0, 0.0], (0, 2*math.pi), h=0.01)
+    times, states = rk4_solve(harmonic, [1.0, 0.0], (0, 2 * math.pi), h=0.01)
     final_x = states[-1][0]
     # After one period, should return to x=1
     assert_close(final_x, 1.0, 0.001, "RK4 harmonic oscillator")
@@ -380,7 +426,9 @@ def test_numerical():
         sphere, [(-5, 5), (-5, 5)], n_particles=20, max_iter=50
     )
     assert_close(best_val, 0.0, 0.1, "PSO optimization")
-    print(f"  [OK] PSO minimum: f({best_pos[0]:.4f}, {best_pos[1]:.4f}) = {best_val:.6f}")
+    print(
+        f"  [OK] PSO minimum: f({best_pos[0]:.4f}, {best_pos[1]:.4f}) = {best_val:.6f}"
+    )
 
     print("\n[OK] All numerical methods tests passed")
 
@@ -389,13 +437,18 @@ def test_numerical():
 # SIMULATOR TESTS
 # =============================================================================
 
+
 def test_simulator():
     print_test_header("PHYSICS SIMULATOR TESTS")
 
     from src.physics_sim.simulator import (
-        create_projectile_simulation, create_orbital_simulation,
-        PhysicsSimulator, SimulationConfig, IntegrationMethod,
-        Particle, GravityCalculator
+        create_projectile_simulation,
+        create_orbital_simulation,
+        PhysicsSimulator,
+        SimulationConfig,
+        IntegrationMethod,
+        Particle,
+        GravityCalculator,
     )
 
     # Test 1: Projectile motion (no drag)
@@ -413,10 +466,7 @@ def test_simulator():
 
     # Test 2: Energy conservation in orbital simulation
     sim2 = create_orbital_simulation(
-        central_mass=5.972e24,
-        orbiter_mass=1000,
-        orbital_radius=7e6,
-        eccentricity=0.1
+        central_mass=5.972e24, orbiter_mass=1000, orbital_radius=7e6, eccentricity=0.1
     )
 
     E_initial = sim2.total_energy()
@@ -445,7 +495,7 @@ def test_simulator():
     p_final = sim3.total_momentum()
 
     # Momentum should be conserved
-    dp = sum((p_initial[i] - p_final[i])**2 for i in range(3))**0.5
+    dp = sum((p_initial[i] - p_final[i]) ** 2 for i in range(3)) ** 0.5
     assert dp < 1e-10, f"Momentum conservation error: {dp}"
     print(f"  [OK] Momentum conservation: Delta_p = {dp:.2e}")
 
@@ -456,44 +506,48 @@ def test_simulator():
 # CORE PHYSICS TESTS (from original test_physics.py)
 # =============================================================================
 
+
 def test_core_physics():
     print_test_header("CORE PHYSICS TESTS")
 
     from src.physics_sim.core import (
-        classical_mechanics, quantum_mechanics, electromagnetism,
-        thermodynamics, relativity, C, ELECTRON_MASS, ELEMENTARY_CHARGE
+        classical_mechanics,
+        quantum_mechanics,
+        electromagnetism,
+        thermodynamics,
+        relativity,
+        C,
+        ELECTRON_MASS,
+        ELEMENTARY_CHARGE,
     )
 
     # Test 1: Classical mechanics
-    result = classical_mechanics({'mass': 10, 'acceleration': 5})
-    assert result['force'] == 50, "F=ma"
+    result = classical_mechanics({"mass": 10, "acceleration": 5})
+    assert result["force"] == 50, "F=ma"
     print(f"  [OK] F=ma: {result['force']}N")
 
     # Test 2: Quantum - hydrogen ground state
-    result = quantum_mechanics({'principal_quantum_number': 1})
-    assert_close(result['hydrogen_energy_eV'], -13.6, 0.01, "Hydrogen ground state")
+    result = quantum_mechanics({"principal_quantum_number": 1})
+    assert_close(result["hydrogen_energy_eV"], -13.6, 0.01, "Hydrogen ground state")
     print(f"  [OK] Hydrogen ground state: {result['hydrogen_energy_eV']:.1f} eV")
 
     # Test 3: Electromagnetism - Coulomb
-    result = electromagnetism({
-        'charge1': ELEMENTARY_CHARGE,
-        'charge2': ELEMENTARY_CHARGE,
-        'distance': 1e-10
-    })
-    assert result['coulomb_force'] > 0, "Like charges repel"
+    result = electromagnetism(
+        {"charge1": ELEMENTARY_CHARGE, "charge2": ELEMENTARY_CHARGE, "distance": 1e-10}
+    )
+    assert result["coulomb_force"] > 0, "Like charges repel"
     print(f"  [OK] Coulomb force: {result['coulomb_force']:.2e}N (repulsive)")
 
     # Test 4: Thermodynamics - Carnot efficiency
-    result = thermodynamics({
-        'hot_temperature': 500,
-        'cold_temperature': 300
-    })
-    assert_close(result['carnot_efficiency'], 0.4, 0.01, "Carnot efficiency")
-    print(f"  [OK] Carnot efficiency (500K->300K): {result['carnot_efficiency']*100:.0f}%")
+    result = thermodynamics({"hot_temperature": 500, "cold_temperature": 300})
+    assert_close(result["carnot_efficiency"], 0.4, 0.01, "Carnot efficiency")
+    print(
+        f"  [OK] Carnot efficiency (500K->300K): {result['carnot_efficiency']*100:.0f}%"
+    )
 
     # Test 5: Relativity - electron rest mass energy
-    result = relativity({'mass': ELECTRON_MASS})
-    assert_close(result['rest_energy_MeV'], 0.511, 0.01, "Electron rest energy")
+    result = relativity({"mass": ELECTRON_MASS})
+    assert_close(result["rest_energy_MeV"], 0.511, 0.01, "Electron rest energy")
     print(f"  [OK] Electron rest energy: {result['rest_energy_MeV']:.3f} MeV")
 
     print("\n[OK] All core physics tests passed")
@@ -503,11 +557,12 @@ def test_core_physics():
 # MAIN TEST RUNNER
 # =============================================================================
 
+
 def run_all_tests():
     """Run all physics simulation tests."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print(" COMPREHENSIVE PHYSICS SIMULATION TEST SUITE")
-    print("="*70)
+    print("=" * 70)
 
     test_core_physics()
     test_atmosphere()
@@ -519,9 +574,9 @@ def run_all_tests():
     test_numerical()
     test_simulator()
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print(" ALL PHYSICS SIMULATION TESTS PASSED [OK]")
-    print("="*70)
+    print("=" * 70)
     print("""
 Modules Tested:
   • core.py         - Classical, quantum, EM, thermo, relativity

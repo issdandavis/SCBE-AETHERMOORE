@@ -62,8 +62,12 @@ def run_tests():
 
     # AI Orchestration test
     print("\n--- AI Orchestration Tests ---")
-    run_command('python -c "from src.ai_orchestration.security import PromptSanitizer; print(\'Security module OK\')"')
-    run_command('python -c "from src.science_packs import get_total_pack_count; print(f\'Science packs: {get_total_pack_count()}\')"')
+    run_command(
+        "python -c \"from src.ai_orchestration.security import PromptSanitizer; print('Security module OK')\""
+    )
+    run_command(
+        "python -c \"from src.science_packs import get_total_pack_count; print(f'Science packs: {get_total_pack_count()}')\""
+    )
 
 
 def build_package():
@@ -109,9 +113,9 @@ def install_package():
 
 def print_summary():
     """Print build summary."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("  SCBE-AETHERMOORE v3.1.0 Build Summary")
-    print("="*60)
+    print("=" * 60)
 
     # Count modules
     modules = {
@@ -143,7 +147,7 @@ def print_summary():
     print("\nQuick Start:")
     print("  python -m ai_orchestration.setup_assistant")
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
 
 
 def main():
@@ -154,9 +158,9 @@ def main():
     do_clean = "--clean" in args
     do_install = "--install" in args
 
-    print("="*60)
+    print("=" * 60)
     print("  SCBE-AETHERMOORE Package Builder")
-    print("="*60)
+    print("=" * 60)
 
     # Change to project root
     script_dir = Path(__file__).parent

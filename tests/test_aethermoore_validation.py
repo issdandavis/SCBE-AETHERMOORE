@@ -15,7 +15,8 @@ Tests the mathematical foundations of the AETHERMOORE framework:
 
 import numpy as np
 import matplotlib
-matplotlib.use('Agg')
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from typing import Tuple, List
 from dataclasses import dataclass
@@ -41,6 +42,7 @@ Q16_16_SCALE = 2**16
 # TEST 1: HYPERBOLIC AQM (TIME DILATION)
 # ==============================================================================
 
+
 def hyperbolic_drop_probability(q: float, th_min: float, K: float) -> float:
     """
     Hyperbolic dropping function from AD-RED/DFRED.
@@ -65,9 +67,9 @@ def linear_drop_probability(q: float, th_min: float, th_max: float) -> float:
 
 def test_hyperbolic_aqm():
     """Test that hyperbolic AQM creates steeper drop curves than linear."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" TEST 1: Hyperbolic AQM (Time Dilation)")
-    print("="*60)
+    print("=" * 60)
 
     K = 100  # Buffer size
     th_min = 20  # Minimum threshold
@@ -107,22 +109,26 @@ def test_hyperbolic_aqm():
         return 1 / (1 + np.exp(-k * (q - q0)))
 
     sigmoid_probs = [sigmoid_drop(q) for q in queue_levels]
-    sigmoid_horizon = next((q for q, p in zip(queue_levels, sigmoid_probs) if p > 0.9), K)
+    sigmoid_horizon = next(
+        (q for q, p in zip(queue_levels, sigmoid_probs) if p > 0.9), K
+    )
 
     print(f"\n  Sigmoid (true hyperbolic) 90% drop at queue = {sigmoid_horizon:.1f}")
 
     # Plot comparison
     plt.figure(figsize=(10, 6))
-    plt.plot(queue_levels, linear_probs, label='Linear RED', linewidth=2)
-    plt.plot(queue_levels, hyper_probs, label='AD-RED (Document)', linewidth=2)
-    plt.plot(queue_levels, sigmoid_probs, label='Sigmoid (True Hyperbolic)', linewidth=2)
-    plt.axhline(y=0.9, color='r', linestyle='--', label='Event Horizon (90%)')
-    plt.xlabel('Queue Occupancy')
-    plt.ylabel('Drop Probability')
+    plt.plot(queue_levels, linear_probs, label="Linear RED", linewidth=2)
+    plt.plot(queue_levels, hyper_probs, label="AD-RED (Document)", linewidth=2)
+    plt.plot(
+        queue_levels, sigmoid_probs, label="Sigmoid (True Hyperbolic)", linewidth=2
+    )
+    plt.axhline(y=0.9, color="r", linestyle="--", label="Event Horizon (90%)")
+    plt.xlabel("Queue Occupancy")
+    plt.ylabel("Drop Probability")
     plt.title('Hyperbolic AQM: "Time Dilation" via Drop Probability')
     plt.legend()
     plt.grid(True, alpha=0.3)
-    plt.savefig('aethermoore_aqm.png', dpi=150)
+    plt.savefig("aethermoore_aqm.png", dpi=150)
     plt.close()
 
     print("\n  Saved: aethermoore_aqm.png")
@@ -134,28 +140,31 @@ def test_hyperbolic_aqm():
 # TEST 2: LORENTZ FACTOR (RELATIVISTIC TIME DILATION)
 # ==============================================================================
 
+
 def lorentz_factor(v: float, c: float = 1.0) -> float:
     """
     Calculate Lorentz factor γ = 1/√(1 - v²/c²)
     As v → c, γ → ∞ (time dilation)
     """
     if v >= c:
-        return float('inf')
-    return 1.0 / np.sqrt(1 - (v/c)**2)
+        return float("inf")
+    return 1.0 / np.sqrt(1 - (v / c) ** 2)
 
 
 def test_lorentz_factor():
     """Test Lorentz factor for routing metric dilation."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" TEST 2: Lorentz Factor (Relativistic Routing)")
-    print("="*60)
+    print("=" * 60)
 
     c = 1.0  # Normalized "speed of light" (network capacity)
 
     velocities = [0.0, 0.5, 0.9, 0.99, 0.999, 0.9999]
 
-    print(f"\n  {'Threat Velocity (v/c)':<25} {'Lorentz Factor (γ)':<20} {'Path Dilation'}")
-    print("  " + "-"*65)
+    print(
+        f"\n  {'Threat Velocity (v/c)':<25} {'Lorentz Factor (γ)':<20} {'Path Dilation'}"
+    )
+    print("  " + "-" * 65)
 
     for v in velocities:
         gamma = lorentz_factor(v, c)
@@ -166,7 +175,7 @@ def test_lorentz_factor():
     base_cost = 10  # Base routing cost
     print(f"\n  Base routing cost = {base_cost}")
     print(f"\n  {'Threat Level':<15} {'v/c':<10} {'Dilated Cost'}")
-    print("  " + "-"*40)
+    print("  " + "-" * 40)
 
     threat_levels = [
         ("Legitimate", 0.1),
@@ -188,14 +197,15 @@ def test_lorentz_factor():
 # TEST 3: COX CONSTANT VERIFICATION
 # ==============================================================================
 
+
 def verify_cox_constant():
     """
     Verify Cox constant c where c = e^(π/c)
     This is the TAHS harmonic equilibrium point.
     """
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" TEST 3: Cox Constant (TAHS Equilibrium)")
-    print("="*60)
+    print("=" * 60)
 
     # Solve c = e^(π/c) via Newton-Raphson
     # f(c) = c - e^(π/c) = 0
@@ -205,7 +215,7 @@ def verify_cox_constant():
 
     print(f"\n  Solving c = e^(π/c) via Newton-Raphson:")
     print(f"  {'Iteration':<12} {'c value':<20} {'f(c)':<15} {'Error'}")
-    print("  " + "-"*60)
+    print("  " + "-" * 60)
 
     for i in range(20):
         exp_term = np.exp(np.pi / c)
@@ -224,7 +234,7 @@ def verify_cox_constant():
     print(f"  Verification: e^(π/c) = {np.exp(np.pi/c):.15f}")
 
     # Verify
-    residual = abs(c - np.exp(np.pi/c))
+    residual = abs(c - np.exp(np.pi / c))
     verified = residual < 1e-10
     match = abs(c - COX_CONSTANT_EXPECTED) < 0.001
 
@@ -240,14 +250,15 @@ def verify_cox_constant():
 # TEST 4: MARS FREQUENCY DERIVATION
 # ==============================================================================
 
+
 def test_mars_frequency():
     """
     Verify Mars frequency derivation from orbital period.
     f = (1/T_orb) × 2^33 ≈ 144.72 Hz
     """
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" TEST 4: Mars Frequency (Temporal Seed)")
-    print("="*60)
+    print("=" * 60)
 
     # Mars orbital period
     T_orb_days = MARS_ORBITAL_PERIOD_DAYS
@@ -261,14 +272,14 @@ def test_mars_frequency():
 
     # Octave up to audible range
     octave = MARS_OCTAVE
-    f_mars = f_base * (2 ** octave)
+    f_mars = f_base * (2**octave)
 
     print(f"  Octave multiplier: 2^{octave} = {2**octave:.2e}")
     print(f"\n  Calculated Mars frequency: {f_mars:.4f} Hz")
     print(f"  Expected value:            {MARS_FREQUENCY_EXPECTED} Hz")
 
     # Tick duration
-    tick_ms = (1000 / f_mars)
+    tick_ms = 1000 / f_mars
     print(f"\n  Tick duration: {tick_ms:.4f} ms")
 
     # Grid decoupling check
@@ -278,13 +289,16 @@ def test_mars_frequency():
 
     match = abs(f_mars - MARS_FREQUENCY_EXPECTED) < 0.1
 
-    print(f"\n  ✓ VALIDATED: Mars frequency {f_mars:.2f} Hz derived from orbital mechanics")
+    print(
+        f"\n  ✓ VALIDATED: Mars frequency {f_mars:.2f} Hz derived from orbital mechanics"
+    )
     return match
 
 
 # ==============================================================================
 # TEST 5: HYPERBOLIC DISTANCE (LORENTZIAN ROUTING)
 # ==============================================================================
+
 
 def hyperbolic_distance(r1: float, theta1: float, r2: float, theta2: float) -> float:
     """
@@ -302,27 +316,29 @@ def euclidean_distance(r1: float, theta1: float, r2: float, theta2: float) -> fl
     """Euclidean distance in polar coordinates for comparison."""
     x1, y1 = r1 * np.cos(theta1), r1 * np.sin(theta1)
     x2, y2 = r2 * np.cos(theta2), r2 * np.sin(theta2)
-    return np.sqrt((x2-x1)**2 + (y2-y1)**2)
+    return np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
 
 def test_hyperbolic_routing():
     """Test hyperbolic vs Euclidean distance for routing metrics."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" TEST 5: Hyperbolic Distance (Lorentzian Routing)")
-    print("="*60)
+    print("=" * 60)
 
     # Test nodes at various radii (hierarchy depth)
     print("\n  Comparing Euclidean vs Hyperbolic distances:")
-    print(f"  {'Node A':<15} {'Node B':<15} {'Euclidean':<12} {'Hyperbolic':<12} {'Ratio'}")
-    print("  " + "-"*65)
+    print(
+        f"  {'Node A':<15} {'Node B':<15} {'Euclidean':<12} {'Hyperbolic':<12} {'Ratio'}"
+    )
+    print("  " + "-" * 65)
 
     test_cases = [
         # (r1, θ1, r2, θ2)
-        ((1, 0), (1, np.pi/4)),      # Same level, nearby
-        ((1, 0), (1, np.pi)),        # Same level, opposite
-        ((1, 0), (3, 0)),            # Same angle, different level
-        ((2, 0), (2, np.pi/2)),      # Mid level, perpendicular
-        ((4, 0), (4, np.pi)),        # Deep level, opposite
+        ((1, 0), (1, np.pi / 4)),  # Same level, nearby
+        ((1, 0), (1, np.pi)),  # Same level, opposite
+        ((1, 0), (3, 0)),  # Same angle, different level
+        ((2, 0), (2, np.pi / 2)),  # Mid level, perpendicular
+        ((4, 0), (4, np.pi)),  # Deep level, opposite
     ]
 
     for (r1, t1), (r2, t2) in test_cases:
@@ -330,7 +346,9 @@ def test_hyperbolic_routing():
         d_hyp = hyperbolic_distance(r1, t1, r2, t2)
         ratio = d_hyp / d_euc if d_euc > 0 else 0
 
-        print(f"  ({r1:.1f}, {t1:.2f})     ({r2:.1f}, {t2:.2f})     {d_euc:<12.4f} {d_hyp:<12.4f} {ratio:.2f}x")
+        print(
+            f"  ({r1:.1f}, {t1:.2f})     ({r2:.1f}, {t2:.2f})     {d_euc:<12.4f} {d_hyp:<12.4f} {ratio:.2f}x"
+        )
 
     # Key insight: hyperbolic space expands exponentially with radius
     print(f"\n  Key insight: In hyperbolic space, periphery nodes are")
@@ -345,22 +363,24 @@ def test_hyperbolic_routing():
 # TEST 6: Q16.16 FIXED-POINT ARITHMETIC
 # ==============================================================================
 
+
 @dataclass
 class Q16_16:
     """Q16.16 fixed-point number (16 bits integer, 16 bits fraction)."""
+
     raw: int
 
     @classmethod
-    def from_float(cls, f: float) -> 'Q16_16':
+    def from_float(cls, f: float) -> "Q16_16":
         return cls(int(f * Q16_16_SCALE))
 
     def to_float(self) -> float:
         return self.raw / Q16_16_SCALE
 
-    def __add__(self, other: 'Q16_16') -> 'Q16_16':
+    def __add__(self, other: "Q16_16") -> "Q16_16":
         return Q16_16(self.raw + other.raw)
 
-    def __mul__(self, other: 'Q16_16') -> 'Q16_16':
+    def __mul__(self, other: "Q16_16") -> "Q16_16":
         # Multiply and shift back
         return Q16_16((self.raw * other.raw) >> 16)
 
@@ -370,9 +390,9 @@ class Q16_16:
 
 def test_fixed_point():
     """Test Q16.16 fixed-point arithmetic for determinism."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" TEST 6: Q16.16 Fixed-Point Arithmetic")
-    print("="*60)
+    print("=" * 60)
 
     # Test basic operations
     a = Q16_16.from_float(3.14159)
@@ -404,7 +424,9 @@ def test_fixed_point():
         results.add(z.raw)
 
     deterministic = len(results) == 1
-    print(f"\n  Determinism test (1000 iterations): {'✓ PASS' if deterministic else '✗ FAIL'}")
+    print(
+        f"\n  Determinism test (1000 iterations): {'✓ PASS' if deterministic else '✗ FAIL'}"
+    )
     print(f"  Unique results: {len(results)}")
 
     # Compare to IEEE 754 floating point (which can vary)
@@ -418,6 +440,7 @@ def test_fixed_point():
 # TEST 7: TAHS HARMONIC SCALING
 # ==============================================================================
 
+
 def tahs_expansion_factor(p: float) -> float:
     """
     TAHS expansion factor: f = e^(π/p)
@@ -428,16 +451,16 @@ def tahs_expansion_factor(p: float) -> float:
 
 def test_tahs_harmonic():
     """Test TAHS harmonic scaling law."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" TEST 7: TAHS Harmonic Scaling")
-    print("="*60)
+    print("=" * 60)
 
     # Show the scaling law
     print(f"\n  TAHS Scaling Law: f = e^(π/p)")
     print(f"  Where p = periodicity, f = expansion factor")
 
     print(f"\n  {'Periodicity (p)':<20} {'Expansion (f)':<20} {'Interpretation'}")
-    print("  " + "-"*60)
+    print("  " + "-" * 60)
 
     periodicities = [
         (1.0, "Very high frequency (noise)"),
@@ -479,6 +502,7 @@ def test_tahs_harmonic():
 # TEST 8: SOLITON PROPAGATION (NLSE)
 # ==============================================================================
 
+
 def nlse_soliton(x: np.ndarray, t: float, amplitude: float = 1.0) -> np.ndarray:
     """
     Analytical soliton solution to the Nonlinear Schrödinger Equation:
@@ -495,9 +519,9 @@ def nlse_soliton(x: np.ndarray, t: float, amplitude: float = 1.0) -> np.ndarray:
 
 def test_soliton_propagation():
     """Test soliton (self-reinforcing wave packet) propagation."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" TEST 8: Soliton Propagation (NLSE)")
-    print("="*60)
+    print("=" * 60)
 
     x = np.linspace(-10, 10, 500)
     times = [0, 2, 4, 6, 8]
@@ -507,7 +531,7 @@ def test_soliton_propagation():
 
     # Track peak amplitude over time
     print(f"\n  {'Time':<10} {'Peak Amplitude':<20} {'Width (FWHM)'}")
-    print("  " + "-"*45)
+    print("  " + "-" * 45)
 
     plt.figure(figsize=(12, 5))
 
@@ -523,14 +547,14 @@ def test_soliton_propagation():
 
         print(f"  {t:<10.1f} {peak:<20.6f} {fwhm:.4f}")
 
-        plt.plot(x, amplitude, label=f't = {t}', alpha=0.7)
+        plt.plot(x, amplitude, label=f"t = {t}", alpha=0.7)
 
-    plt.xlabel('Position (x)')
-    plt.ylabel('|u(x,t)|')
-    plt.title('Soliton Propagation: Shape Preservation')
+    plt.xlabel("Position (x)")
+    plt.ylabel("|u(x,t)|")
+    plt.title("Soliton Propagation: Shape Preservation")
     plt.legend()
     plt.grid(True, alpha=0.3)
-    plt.savefig('aethermoore_soliton.png', dpi=150)
+    plt.savefig("aethermoore_soliton.png", dpi=150)
     plt.close()
 
     print(f"\n  Saved: aethermoore_soliton.png")
@@ -542,11 +566,11 @@ def test_soliton_propagation():
     u1 = nlse_soliton(x - 5, 0, amplitude=1.0)
     u2 = nlse_soliton(x + 5, 0, amplitude=1.0)
 
-    total_energy_before = np.sum(np.abs(u1)**2 + np.abs(u2)**2)
+    total_energy_before = np.sum(np.abs(u1) ** 2 + np.abs(u2) ** 2)
 
     # Superposition (simplified - real collision needs full PDE solve)
     u_combined = u1 + u2
-    total_energy_combined = np.sum(np.abs(u_combined)**2)
+    total_energy_combined = np.sum(np.abs(u_combined) ** 2)
 
     print(f"    Energy before: {total_energy_before:.4f}")
     print(f"    Energy combined: {total_energy_combined:.4f}")
@@ -560,27 +584,48 @@ def test_soliton_propagation():
 # ORIGINALITY ASSESSMENT
 # ==============================================================================
 
+
 def assess_originality():
     """Assess what's real science vs novel application vs speculative."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" ORIGINALITY ASSESSMENT")
-    print("="*60)
+    print("=" * 60)
 
     assessment = [
         ("Hyperbolic AQM", "REAL", "Established: AD-RED, DFRED papers exist"),
-        ("Lorentz Factor Routing", "NOVEL APPLICATION", "Physics real, network application novel"),
-        ("Cox Constant (TAHS)", "REAL MATH", "Transcendental fixed point, novel ML use"),
+        (
+            "Lorentz Factor Routing",
+            "NOVEL APPLICATION",
+            "Physics real, network application novel",
+        ),
+        (
+            "Cox Constant (TAHS)",
+            "REAL MATH",
+            "Transcendental fixed point, novel ML use",
+        ),
         ("Mars Frequency", "SPECULATIVE", "Math correct, security benefit unproven"),
         ("Hyperbolic Routing", "REAL", "Well-studied in network theory"),
-        ("6D Geometric Algebra", "REAL + NOVEL", "Clifford algebra real, 6D security novel"),
-        ("Digital Solitons", "NOVEL APPLICATION", "Physics real, data integrity use novel"),
+        (
+            "6D Geometric Algebra",
+            "REAL + NOVEL",
+            "Clifford algebra real, 6D security novel",
+        ),
+        (
+            "Digital Solitons",
+            "NOVEL APPLICATION",
+            "Physics real, data integrity use novel",
+        ),
         ("Q16.16 Fixed-Point", "REAL", "Standard embedded systems technique"),
-        ("PINNs for Security", "NOVEL APPLICATION", "PINNs exist, security use emerging"),
+        (
+            "PINNs for Security",
+            "NOVEL APPLICATION",
+            "PINNs exist, security use emerging",
+        ),
         ("Lattice Crypto (Kyber)", "REAL", "NIST standardized 2024"),
     ]
 
     print(f"\n  {'Component':<25} {'Status':<20} {'Notes'}")
-    print("  " + "-"*75)
+    print("  " + "-" * 75)
 
     for component, status, notes in assessment:
         print(f"  {component:<25} {status:<20} {notes}")
@@ -599,29 +644,30 @@ def assess_originality():
 # MAIN
 # ==============================================================================
 
+
 def main():
-    print("="*60)
+    print("=" * 60)
     print(" AETHERMOORE VALIDATION TEST SUITE")
     print(" Testing Mathematical Foundations")
-    print("="*60)
+    print("=" * 60)
 
     results = {}
 
-    results['hyperbolic_aqm'] = test_hyperbolic_aqm()
-    results['lorentz_factor'] = test_lorentz_factor()
-    results['cox_constant'] = verify_cox_constant()
-    results['mars_frequency'] = test_mars_frequency()
-    results['hyperbolic_routing'] = test_hyperbolic_routing()
-    results['fixed_point'] = test_fixed_point()
-    results['tahs_harmonic'] = test_tahs_harmonic()
-    results['soliton'] = test_soliton_propagation()
+    results["hyperbolic_aqm"] = test_hyperbolic_aqm()
+    results["lorentz_factor"] = test_lorentz_factor()
+    results["cox_constant"] = verify_cox_constant()
+    results["mars_frequency"] = test_mars_frequency()
+    results["hyperbolic_routing"] = test_hyperbolic_routing()
+    results["fixed_point"] = test_fixed_point()
+    results["tahs_harmonic"] = test_tahs_harmonic()
+    results["soliton"] = test_soliton_propagation()
 
     assess_originality()
 
     # Summary
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print(" TEST SUMMARY")
-    print("="*60)
+    print("=" * 60)
 
     passed = sum(1 for v in results.values() if v)
     total = len(results)

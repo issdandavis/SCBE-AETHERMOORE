@@ -50,26 +50,31 @@ EPSILON = 1e-10
 
 class PressureState(Enum):
     """System pressure states."""
-    CALM = "CALM"           # P < 0.2
-    ELEVATED = "ELEVATED"   # 0.2 ≤ P < 0.5
-    HIGH = "HIGH"           # 0.5 ≤ P < 0.8
-    CRITICAL = "CRITICAL"   # P ≥ 0.8
+
+    CALM = "CALM"  # P < 0.2
+    ELEVATED = "ELEVATED"  # 0.2 ≤ P < 0.5
+    HIGH = "HIGH"  # 0.5 ≤ P < 0.8
+    CRITICAL = "CRITICAL"  # P ≥ 0.8
 
 
 # =============================================================================
 # SHOCK ABSORBER FUNCTIONS
 # =============================================================================
 
+
 @dataclass
 class ShockAbsorberParams:
     """Parameters for conditional matrix growth."""
-    beta: float = 3.0           # Steepness of tanh response
+
+    beta: float = 3.0  # Steepness of tanh response
     max_expansion: float = 2.0  # Maximum stiffness multiplier
-    decay_rate: float = 0.1     # Hysteresis decay per timestep
-    sensitivity: float = 1.0    # Pressure sensitivity
+    decay_rate: float = 0.1  # Hysteresis decay per timestep
+    sensitivity: float = 1.0  # Pressure sensitivity
 
 
-def shock_absorber(pressure: float, params: Optional[ShockAbsorberParams] = None) -> float:
+def shock_absorber(
+    pressure: float, params: Optional[ShockAbsorberParams] = None
+) -> float:
     """
     Compute conditional growth factor Ψ(P).
 
@@ -100,7 +105,9 @@ def shock_absorber(pressure: float, params: Optional[ShockAbsorberParams] = None
     return float(growth)
 
 
-def shock_absorber_derivative(pressure: float, params: Optional[ShockAbsorberParams] = None) -> float:
+def shock_absorber_derivative(
+    pressure: float, params: Optional[ShockAbsorberParams] = None
+) -> float:
     """
     Compute ∂Ψ/∂P for sensitivity analysis.
 
@@ -119,14 +126,16 @@ def shock_absorber_derivative(pressure: float, params: Optional[ShockAbsorberPar
 # PRESSURE COMPUTATION
 # =============================================================================
 
+
 @dataclass
 class PressureMetrics:
     """System pressure computation inputs."""
-    request_rate: float = 0.0       # Requests per second (normalized)
-    error_rate: float = 0.0         # Error rate [0, 1]
+
+    request_rate: float = 0.0  # Requests per second (normalized)
+    error_rate: float = 0.0  # Error rate [0, 1]
     entropy_deviation: float = 0.0  # Deviation from target entropy
-    risk_score: float = 0.0         # From Layer 13
-    latency_spike: float = 0.0      # Latency above baseline
+    risk_score: float = 0.0  # From Layer 13
+    latency_spike: float = 0.0  # Latency above baseline
 
     # Weights for combining
     w_request: float = 0.2
@@ -147,11 +156,11 @@ def compute_pressure(metrics: PressureMetrics) -> Tuple[float, PressureState]:
     """
     # Weighted sum
     P = (
-        metrics.w_request * np.clip(metrics.request_rate, 0, 1) +
-        metrics.w_error * np.clip(metrics.error_rate, 0, 1) +
-        metrics.w_entropy * np.clip(metrics.entropy_deviation, 0, 1) +
-        metrics.w_risk * np.clip(metrics.risk_score, 0, 1) +
-        metrics.w_latency * np.clip(metrics.latency_spike, 0, 1)
+        metrics.w_request * np.clip(metrics.request_rate, 0, 1)
+        + metrics.w_error * np.clip(metrics.error_rate, 0, 1)
+        + metrics.w_entropy * np.clip(metrics.entropy_deviation, 0, 1)
+        + metrics.w_risk * np.clip(metrics.risk_score, 0, 1)
+        + metrics.w_latency * np.clip(metrics.latency_spike, 0, 1)
     )
 
     P = float(np.clip(P, 0, 1))
@@ -173,15 +182,17 @@ def compute_pressure(metrics: PressureMetrics) -> Tuple[float, PressureState]:
 # LIVING METRIC ENGINE
 # =============================================================================
 
+
 @dataclass
 class MetricResult:
     """Result from metric computation."""
-    G: np.ndarray               # Final metric tensor
-    G_intent: np.ndarray        # Intent-deformed metric
-    stiffness: float            # Shock absorber factor
-    energy: float               # Trace of G (total "size")
-    pressure: float             # Input pressure
-    state: PressureState        # Pressure state
+
+    G: np.ndarray  # Final metric tensor
+    G_intent: np.ndarray  # Intent-deformed metric
+    stiffness: float  # Shock absorber factor
+    energy: float  # Trace of G (total "size")
+    pressure: float  # Input pressure
+    state: PressureState  # Pressure state
 
 
 class LivingMetricEngine:
@@ -201,7 +212,7 @@ class LivingMetricEngine:
         dim: int = 6,
         R: float = PHI,
         epsilon: float = 0.05,
-        params: Optional[ShockAbsorberParams] = None
+        params: Optional[ShockAbsorberParams] = None,
     ):
         """
         Initialize living metric engine.
@@ -218,7 +229,7 @@ class LivingMetricEngine:
         self.params = params or ShockAbsorberParams()
 
         # Resting metric: G₀ = diag(R^k)
-        self.G0 = np.diag([R ** k for k in range(dim)])
+        self.G0 = np.diag([R**k for k in range(dim)])
 
         # Hysteresis state (remembers recent pressure)
         self._pressure_history: List[float] = []
@@ -245,10 +256,7 @@ class LivingMetricEngine:
         return generator
 
     def compute_metric(
-        self,
-        r_weights: np.ndarray,
-        pressure: float = 0.0,
-        use_hysteresis: bool = True
+        self, r_weights: np.ndarray, pressure: float = 0.0, use_hysteresis: bool = True
     ) -> MetricResult:
         """
         Compute living metric tensor with conditional growth.
@@ -270,8 +278,10 @@ class LivingMetricEngine:
         """
         # Ensure r_weights matches dimension
         if len(r_weights) < self.dim:
-            r_weights = np.pad(r_weights, (0, self.dim - len(r_weights)), constant_values=0.5)
-        r_weights = r_weights[:self.dim]
+            r_weights = np.pad(
+                r_weights, (0, self.dim - len(r_weights)), constant_values=0.5
+            )
+        r_weights = r_weights[: self.dim]
 
         # 1. Compute intent deformation
         generator = self._compute_generator(r_weights)
@@ -286,9 +296,8 @@ class LivingMetricEngine:
 
             # Effective pressure decays toward current
             self._effective_pressure = (
-                (1 - self.params.decay_rate) * self._effective_pressure +
-                self.params.decay_rate * pressure
-            )
+                1 - self.params.decay_rate
+            ) * self._effective_pressure + self.params.decay_rate * pressure
             # But never below current (attacks ramp up quickly)
             effective_P = max(self._effective_pressure, pressure * 0.8)
         else:
@@ -312,15 +321,11 @@ class LivingMetricEngine:
             stiffness=stiffness,
             energy=float(energy),
             pressure=effective_P,
-            state=state
+            state=state,
         )
 
     def compute_distance(
-        self,
-        u: np.ndarray,
-        v: np.ndarray,
-        r_weights: np.ndarray,
-        pressure: float = 0.0
+        self, u: np.ndarray, v: np.ndarray, r_weights: np.ndarray, pressure: float = 0.0
     ) -> float:
         """
         Compute distance in living metric.
@@ -348,22 +353,24 @@ class LivingMetricEngine:
 # ANTI-FRAGILE VERIFICATION
 # =============================================================================
 
+
 @dataclass
 class AntifragileAnalysis:
     """Analysis of anti-fragile properties."""
-    calm_energy: float          # Energy at P=0.1
-    stress_energy: float        # Energy at P=0.9
-    expansion_ratio: float      # stress/calm
-    distance_calm: float        # Distance at P=0.1
-    distance_stress: float      # Distance at P=0.9
+
+    calm_energy: float  # Energy at P=0.1
+    stress_energy: float  # Energy at P=0.9
+    expansion_ratio: float  # stress/calm
+    distance_calm: float  # Distance at P=0.1
+    distance_stress: float  # Distance at P=0.9
     distance_amplification: float  # How much harder for attacker
-    is_antifragile: bool        # Does system get stronger?
+    is_antifragile: bool  # Does system get stronger?
 
 
 def verify_antifragile(
     engine: LivingMetricEngine,
     r_weights: np.ndarray,
-    test_vectors: Optional[Tuple[np.ndarray, np.ndarray]] = None
+    test_vectors: Optional[Tuple[np.ndarray, np.ndarray]] = None,
 ) -> AntifragileAnalysis:
     """
     Verify that the system exhibits anti-fragile behavior.
@@ -393,7 +400,9 @@ def verify_antifragile(
     dist_stress = engine.compute_distance(u, v, r_weights, pressure=0.9)
 
     # Compute ratios
-    expansion = result_stress.energy / result_calm.energy if result_calm.energy > 0 else 1.0
+    expansion = (
+        result_stress.energy / result_calm.energy if result_calm.energy > 0 else 1.0
+    )
     amplification = dist_stress / dist_calm if dist_calm > 0 else 1.0
 
     # Anti-fragile: system expands under pressure
@@ -406,7 +415,7 @@ def verify_antifragile(
         distance_calm=dist_calm,
         distance_stress=dist_stress,
         distance_amplification=amplification,
-        is_antifragile=is_antifragile
+        is_antifragile=is_antifragile,
     )
 
 
@@ -414,11 +423,12 @@ def verify_antifragile(
 # INTEGRATION WITH LAYER 13
 # =============================================================================
 
+
 def integrate_with_risk_engine(
     engine: LivingMetricEngine,
     risk_prime: float,
     r_weights: np.ndarray,
-    max_pressure: float = 1.0
+    max_pressure: float = 1.0,
 ) -> MetricResult:
     """
     Integrate living metric with Layer 13 risk.
@@ -438,6 +448,7 @@ def integrate_with_risk_engine(
 # SELF-TESTS
 # =============================================================================
 
+
 def self_test() -> Dict[str, Any]:
     """Run living metric self-tests."""
     results = {}
@@ -453,7 +464,9 @@ def self_test() -> Dict[str, Any]:
 
         if abs(psi_0 - 1.0) < 0.01 and 1.9 < psi_1 <= 2.0:
             passed += 1
-            results["shock_absorber_bounds"] = f"✓ PASS (Ψ(0)={psi_0:.3f}, Ψ(1)={psi_1:.3f})"
+            results["shock_absorber_bounds"] = (
+                f"✓ PASS (Ψ(0)={psi_0:.3f}, Ψ(1)={psi_1:.3f})"
+            )
         else:
             results["shock_absorber_bounds"] = f"✗ FAIL (Ψ(0)={psi_0}, Ψ(1)={psi_1})"
     except Exception as e:
@@ -465,7 +478,10 @@ def self_test() -> Dict[str, Any]:
         P_values = np.linspace(0, 1, 50)
         psi_values = [shock_absorber(P) for P in P_values]
 
-        monotonic = all(psi_values[i] <= psi_values[i+1] + EPSILON for i in range(len(psi_values)-1))
+        monotonic = all(
+            psi_values[i] <= psi_values[i + 1] + EPSILON
+            for i in range(len(psi_values) - 1)
+        )
         if monotonic:
             passed += 1
             results["shock_absorber_monotonic"] = "✓ PASS (Ψ monotonically increasing)"
@@ -482,7 +498,9 @@ def self_test() -> Dict[str, Any]:
 
         result_calm = engine.compute_metric(intent, pressure=0.1, use_hysteresis=False)
         engine.reset_hysteresis()
-        result_stress = engine.compute_metric(intent, pressure=0.9, use_hysteresis=False)
+        result_stress = engine.compute_metric(
+            intent, pressure=0.9, use_hysteresis=False
+        )
 
         if result_stress.energy > result_calm.energy:
             ratio = result_stress.energy / result_calm.energy
@@ -525,7 +543,9 @@ def self_test() -> Dict[str, Any]:
 
         if analysis.is_antifragile:
             passed += 1
-            results["antifragile"] = f"✓ PASS (expansion={analysis.expansion_ratio:.2f}x, dist_amp={analysis.distance_amplification:.2f}x)"
+            results["antifragile"] = (
+                f"✓ PASS (expansion={analysis.expansion_ratio:.2f}x, dist_amp={analysis.distance_amplification:.2f}x)"
+            )
         else:
             results["antifragile"] = "✗ FAIL (not anti-fragile)"
     except Exception as e:
@@ -543,7 +563,9 @@ def self_test() -> Dict[str, Any]:
             eigenvalues = np.linalg.eigvalsh(result.G)
 
             if np.any(eigenvalues <= 0):
-                results["positive_definite"] = f"✗ FAIL (non-positive eigenvalue at P={P})"
+                results["positive_definite"] = (
+                    f"✗ FAIL (non-positive eigenvalue at P={P})"
+                )
                 break
         else:
             passed += 1
@@ -569,7 +591,9 @@ def self_test() -> Dict[str, Any]:
         # Hysteresis: after-spike should have higher energy
         if result_after.energy > result_fresh.energy:
             passed += 1
-            results["hysteresis"] = f"✓ PASS (memory retained: {result_after.energy:.2f} > {result_fresh.energy:.2f})"
+            results["hysteresis"] = (
+                f"✓ PASS (memory retained: {result_after.energy:.2f} > {result_fresh.energy:.2f})"
+            )
         else:
             results["hysteresis"] = "✗ FAIL (no hysteresis effect)"
     except Exception as e:
@@ -580,7 +604,12 @@ def self_test() -> Dict[str, Any]:
     try:
         # Test state thresholds directly
         P_values = [0.1, 0.35, 0.65, 0.9]
-        expected_states = [PressureState.CALM, PressureState.ELEVATED, PressureState.HIGH, PressureState.CRITICAL]
+        expected_states = [
+            PressureState.CALM,
+            PressureState.ELEVATED,
+            PressureState.HIGH,
+            PressureState.CRITICAL,
+        ]
 
         all_correct = True
         for P, expected in zip(P_values, expected_states):
@@ -612,11 +641,15 @@ def self_test() -> Dict[str, Any]:
         intent = np.array([0.5] * 6)
 
         # Low risk → low pressure
-        result_low = integrate_with_risk_engine(engine, risk_prime=0.1, r_weights=intent)
+        result_low = integrate_with_risk_engine(
+            engine, risk_prime=0.1, r_weights=intent
+        )
 
         # High risk → high pressure
         engine.reset_hysteresis()
-        result_high = integrate_with_risk_engine(engine, risk_prime=5.0, r_weights=intent)
+        result_high = integrate_with_risk_engine(
+            engine, risk_prime=5.0, r_weights=intent
+        )
 
         if result_high.stiffness > result_low.stiffness:
             passed += 1
@@ -641,11 +674,16 @@ def self_test() -> Dict[str, Any]:
             distances.append(d)
 
         # All distances should be increasing
-        all_increasing = all(distances[i] <= distances[i+1] + EPSILON for i in range(len(distances)-1))
+        all_increasing = all(
+            distances[i] <= distances[i + 1] + EPSILON
+            for i in range(len(distances) - 1)
+        )
 
         if all_increasing:
             passed += 1
-            results["attack_simulation"] = f"✓ PASS (d grows: {distances[0]:.2f} → {distances[-1]:.2f})"
+            results["attack_simulation"] = (
+                f"✓ PASS (d grows: {distances[0]:.2f} → {distances[-1]:.2f})"
+            )
         else:
             results["attack_simulation"] = "✗ FAIL (distance not monotonic in P)"
     except Exception as e:
@@ -655,7 +693,7 @@ def self_test() -> Dict[str, Any]:
         "passed": passed,
         "total": total,
         "success_rate": f"{passed}/{total} ({100*passed/total:.1f}%)",
-        "results": results
+        "results": results,
     }
 
 
@@ -694,7 +732,9 @@ if __name__ == "__main__":
     for P in [0.1, 0.3, 0.5, 0.7, 0.9]:
         engine.reset_hysteresis()
         result = engine.compute_metric(intent, pressure=P, use_hysteresis=False)
-        print(f"  {P*100:5.0f}%   | {result.stiffness:9.3f} | {result.energy:9.2f} | {result.state.value}")
+        print(
+            f"  {P*100:5.0f}%   | {result.stiffness:9.3f} | {result.energy:9.2f} | {result.state.value}"
+        )
 
     # Anti-fragile summary
     print("\n" + "-" * 70)

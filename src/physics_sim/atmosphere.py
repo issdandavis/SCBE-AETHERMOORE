@@ -17,20 +17,19 @@ import math
 from typing import Dict, Any, Tuple, Optional
 from dataclasses import dataclass
 
-
 # =============================================================================
 # ATMOSPHERIC CONSTANTS
 # =============================================================================
 
 # Sea level standard values (ISA)
 SEA_LEVEL_TEMPERATURE = 288.15  # K (15°C)
-SEA_LEVEL_PRESSURE = 101325.0   # Pa
-SEA_LEVEL_DENSITY = 1.225       # kg/m³
+SEA_LEVEL_PRESSURE = 101325.0  # Pa
+SEA_LEVEL_DENSITY = 1.225  # kg/m³
 
 # Gas constants
-GAMMA_AIR = 1.4                 # Heat capacity ratio for air
-R_SPECIFIC_AIR = 287.058        # Specific gas constant for air (J/(kg·K))
-MOLAR_MASS_AIR = 0.0289644      # kg/mol
+GAMMA_AIR = 1.4  # Heat capacity ratio for air
+R_SPECIFIC_AIR = 287.058  # Specific gas constant for air (J/(kg·K))
+MOLAR_MASS_AIR = 0.0289644  # kg/mol
 
 # Gravitational acceleration (standard)
 G0 = 9.80665  # m/s²
@@ -45,22 +44,24 @@ SUTHERLAND_T0 = 273.15  # K
 # ISA LAYER DEFINITIONS (Geopotential altitude)
 # =============================================================================
 
+
 @dataclass
 class ISALayer:
     """ISA atmospheric layer definition."""
-    h_base: float      # Base geopotential altitude (m)
-    T_base: float      # Base temperature (K)
+
+    h_base: float  # Base geopotential altitude (m)
+    T_base: float  # Base temperature (K)
     lapse_rate: float  # Temperature lapse rate (K/m), negative = cooling
 
 
 ISA_LAYERS = [
-    ISALayer(0,      288.15,  -0.0065),    # Troposphere
-    ISALayer(11000,  216.65,   0.0),       # Tropopause
-    ISALayer(20000,  216.65,   0.001),     # Stratosphere 1
-    ISALayer(32000,  228.65,   0.0028),    # Stratosphere 2
-    ISALayer(47000,  270.65,   0.0),       # Stratopause
-    ISALayer(51000,  270.65,  -0.0028),    # Mesosphere 1
-    ISALayer(71000,  214.65,  -0.002),     # Mesosphere 2
+    ISALayer(0, 288.15, -0.0065),  # Troposphere
+    ISALayer(11000, 216.65, 0.0),  # Tropopause
+    ISALayer(20000, 216.65, 0.001),  # Stratosphere 1
+    ISALayer(32000, 228.65, 0.0028),  # Stratosphere 2
+    ISALayer(47000, 270.65, 0.0),  # Stratopause
+    ISALayer(51000, 270.65, -0.0028),  # Mesosphere 1
+    ISALayer(71000, 214.65, -0.002),  # Mesosphere 2
 ]
 
 # Maximum valid altitude for ISA model
@@ -70,6 +71,7 @@ MAX_ALTITUDE = 86000  # m
 # =============================================================================
 # CORE ISA FUNCTIONS
 # =============================================================================
+
 
 def _get_layer(altitude: float) -> Tuple[ISALayer, int]:
     """Get the ISA layer for a given altitude."""
@@ -189,9 +191,12 @@ def dynamic_viscosity(temperature: float) -> float:
     Returns:
         Dynamic viscosity in Pa·s
     """
-    return (SUTHERLAND_MU0 *
-            (temperature / SUTHERLAND_T0) ** 1.5 *
-            (SUTHERLAND_T0 + SUTHERLAND_C) / (temperature + SUTHERLAND_C))
+    return (
+        SUTHERLAND_MU0
+        * (temperature / SUTHERLAND_T0) ** 1.5
+        * (SUTHERLAND_T0 + SUTHERLAND_C)
+        / (temperature + SUTHERLAND_C)
+    )
 
 
 def kinematic_viscosity(temperature: float, density: float) -> float:
@@ -213,6 +218,7 @@ def kinematic_viscosity(temperature: float, density: float) -> float:
 # =============================================================================
 # COMPRESSIBILITY AND MACH NUMBER
 # =============================================================================
+
 
 def mach_number(velocity: float, temperature: float) -> float:
     """
@@ -244,7 +250,7 @@ def stagnation_temperature(T_static: float, mach: float) -> float:
     Returns:
         Stagnation temperature in Kelvin
     """
-    return T_static * (1 + (GAMMA_AIR - 1) / 2 * mach ** 2)
+    return T_static * (1 + (GAMMA_AIR - 1) / 2 * mach**2)
 
 
 def stagnation_pressure(P_static: float, mach: float) -> float:
@@ -261,7 +267,7 @@ def stagnation_pressure(P_static: float, mach: float) -> float:
         Stagnation pressure in Pascals
     """
     exponent = GAMMA_AIR / (GAMMA_AIR - 1)
-    return P_static * (1 + (GAMMA_AIR - 1) / 2 * mach ** 2) ** exponent
+    return P_static * (1 + (GAMMA_AIR - 1) / 2 * mach**2) ** exponent
 
 
 def dynamic_pressure(density: float, velocity: float) -> float:
@@ -277,7 +283,7 @@ def dynamic_pressure(density: float, velocity: float) -> float:
     Returns:
         Dynamic pressure in Pascals
     """
-    return 0.5 * density * velocity ** 2
+    return 0.5 * density * velocity**2
 
 
 def impact_pressure(P_static: float, mach: float) -> float:
@@ -304,8 +310,8 @@ def impact_pressure(P_static: float, mach: float) -> float:
         gp1 = GAMMA_AIR + 1
         gm1 = GAMMA_AIR - 1
 
-        term1 = (gp1 ** 2 * mach ** 2) / (4 * GAMMA_AIR * mach ** 2 - 2 * gm1)
-        term2 = (1 - GAMMA_AIR + 2 * GAMMA_AIR * mach ** 2) / gp1
+        term1 = (gp1**2 * mach**2) / (4 * GAMMA_AIR * mach**2 - 2 * gm1)
+        term2 = (1 - GAMMA_AIR + 2 * GAMMA_AIR * mach**2) / gp1
 
         P02_P1 = (term1 ** (GAMMA_AIR / gm1)) * term2
         P02 = P02_P1 * P_static
@@ -349,6 +355,7 @@ def partial_pressure(total_pressure: float, gas: str) -> float:
 # =============================================================================
 # ALTITUDE CONVERSIONS
 # =============================================================================
+
 
 def geopotential_to_geometric(h_geopotential: float) -> float:
     """
@@ -443,6 +450,7 @@ def density_altitude(temperature: float, pressure: float) -> float:
 # COMPREHENSIVE ATMOSPHERE CALCULATION
 # =============================================================================
 
+
 def atmosphere(params: Dict[str, Any]) -> Dict[str, Any]:
     """
     Comprehensive atmospheric physics calculation.
@@ -461,11 +469,11 @@ def atmosphere(params: Dict[str, Any]) -> Dict[str, Any]:
     results = {}
 
     # Determine altitude
-    if 'geometric_altitude' in params:
-        h_geo = geometric_to_geopotential(params['geometric_altitude'])
-        results['geopotential_altitude'] = h_geo
-    elif 'altitude' in params:
-        h_geo = params['altitude']
+    if "geometric_altitude" in params:
+        h_geo = geometric_to_geopotential(params["geometric_altitude"])
+        results["geopotential_altitude"] = h_geo
+    elif "altitude" in params:
+        h_geo = params["altitude"]
     else:
         h_geo = 0  # Sea level default
 
@@ -479,61 +487,69 @@ def atmosphere(params: Dict[str, Any]) -> Dict[str, Any]:
     mu = dynamic_viscosity(T)
     nu = kinematic_viscosity(T, rho)
 
-    results.update({
-        'temperature_K': T,
-        'temperature_C': T - 273.15,
-        'pressure_Pa': P,
-        'pressure_hPa': P / 100,
-        'pressure_atm': P / 101325,
-        'density_kg_m3': rho,
-        'speed_of_sound_m_s': a,
-        'dynamic_viscosity_Pa_s': mu,
-        'kinematic_viscosity_m2_s': nu,
-    })
+    results.update(
+        {
+            "temperature_K": T,
+            "temperature_C": T - 273.15,
+            "pressure_Pa": P,
+            "pressure_hPa": P / 100,
+            "pressure_atm": P / 101325,
+            "density_kg_m3": rho,
+            "speed_of_sound_m_s": a,
+            "dynamic_viscosity_Pa_s": mu,
+            "kinematic_viscosity_m2_s": nu,
+        }
+    )
 
     # Velocity-dependent properties
-    if 'velocity' in params:
-        V = params['velocity']
+    if "velocity" in params:
+        V = params["velocity"]
         M = mach_number(V, T)
         q = dynamic_pressure(rho, V)
         T0 = stagnation_temperature(T, M)
         P0 = stagnation_pressure(P, M)
         q_impact = impact_pressure(P, M)
 
-        results.update({
-            'mach_number': M,
-            'dynamic_pressure_Pa': q,
-            'stagnation_temperature_K': T0,
-            'stagnation_pressure_Pa': P0,
-            'impact_pressure_Pa': q_impact,
-            'flow_regime': 'subsonic' if M < 0.8 else
-                          'transonic' if M < 1.2 else
-                          'supersonic' if M < 5 else 'hypersonic'
-        })
+        results.update(
+            {
+                "mach_number": M,
+                "dynamic_pressure_Pa": q,
+                "stagnation_temperature_K": T0,
+                "stagnation_pressure_Pa": P0,
+                "impact_pressure_Pa": q_impact,
+                "flow_regime": (
+                    "subsonic"
+                    if M < 0.8
+                    else (
+                        "transonic"
+                        if M < 1.2
+                        else "supersonic" if M < 5 else "hypersonic"
+                    )
+                ),
+            }
+        )
 
         # Reynolds number per unit length
         Re_per_m = rho * V / mu
-        results['reynolds_per_meter'] = Re_per_m
+        results["reynolds_per_meter"] = Re_per_m
 
     # Pressure altitude
-    if 'measured_pressure' in params:
-        h_pressure = pressure_altitude(params['measured_pressure'])
-        results['pressure_altitude_m'] = h_pressure
-        results['pressure_altitude_ft'] = h_pressure * 3.28084
+    if "measured_pressure" in params:
+        h_pressure = pressure_altitude(params["measured_pressure"])
+        results["pressure_altitude_m"] = h_pressure
+        results["pressure_altitude_ft"] = h_pressure * 3.28084
 
     # Density altitude
-    if 'measured_temperature' in params and 'measured_pressure' in params:
+    if "measured_temperature" in params and "measured_pressure" in params:
         h_density = density_altitude(
-            params['measured_temperature'],
-            params['measured_pressure']
+            params["measured_temperature"], params["measured_pressure"]
         )
-        results['density_altitude_m'] = h_density
-        results['density_altitude_ft'] = h_density * 3.28084
+        results["density_altitude_m"] = h_density
+        results["density_altitude_ft"] = h_density * 3.28084
 
     # Partial pressures of main gases
-    results['partial_pressures_Pa'] = {
-        gas: partial_pressure(P, gas)
-        for gas in ['N2', 'O2', 'Ar', 'CO2']
+    results["partial_pressures_Pa"] = {
+        gas: partial_pressure(P, gas) for gas in ["N2", "O2", "Ar", "CO2"]
     }
 
     return results
