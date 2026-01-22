@@ -25,12 +25,12 @@ import {
 
 // Test keyring (32-byte keys for HMAC-SHA256)
 const testKeyring: Keyring = {
-  ko: randomBytes(32),  // Kor'aelin (Control)
-  av: randomBytes(32),  // Avali (I/O)
-  ru: randomBytes(32),  // Runethic (Policy)
-  ca: randomBytes(32),  // Cassisivadan (Compute)
-  um: randomBytes(32),  // Umbroth (Security)
-  dr: randomBytes(32),  // Draumric (Structure)
+  ko: randomBytes(32), // Kor'aelin (Control)
+  av: randomBytes(32), // Avali (I/O)
+  ru: randomBytes(32), // Runethic (Policy)
+  ca: randomBytes(32), // Cassisivadan (Compute)
+  um: randomBytes(32), // Umbroth (Security)
+  dr: randomBytes(32), // Draumric (Structure)
 };
 
 describe('RWP v2.1 Multi-Signature Envelopes', () => {
@@ -43,10 +43,10 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
       const payload = { action: 'read', resource: 'file.txt' };
       const envelope = signRoundtable(
         payload,
-        'ko',           // primaryTongue
-        'test-aad',     // aad
-        testKeyring,    // keyring
-        ['ko']          // signingTongues
+        'ko', // primaryTongue
+        'test-aad', // aad
+        testKeyring, // keyring
+        ['ko'] // signingTongues
       );
 
       // Verify envelope structure
@@ -63,10 +63,10 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
       const payload = { action: 'deploy', target: 'production' };
       const envelope = signRoundtable(
         payload,
-        'ko',                    // primaryTongue (Control)
-        'deploy-metadata',       // aad
-        testKeyring,             // keyring
-        ['ko', 'ru', 'um']       // signingTongues (Control, Policy, Security)
+        'ko', // primaryTongue (Control)
+        'deploy-metadata', // aad
+        testKeyring, // keyring
+        ['ko', 'ru', 'um'] // signingTongues (Control, Policy, Security)
       );
 
       // Verify envelope structure
@@ -93,7 +93,7 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
         'test-aad',
         testKeyring,
         ['ko'],
-        { kid: 'key-123' }  // Optional key ID
+        { kid: 'key-123' } // Optional key ID
       );
 
       expect(envelope.kid).toBe('key-123');
@@ -135,7 +135,7 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
           'ko',
           'test-aad',
           incompleteKeyring as any,
-          ['ko', 'ru']  // ru key is missing
+          ['ko', 'ru'] // ru key is missing
         );
       }).toThrow('Missing key for tongue: ru');
     });
@@ -156,13 +156,11 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
 
     it('should verify valid envelope with multiple signatures', () => {
       const payload = { action: 'deploy', target: 'production' };
-      const envelope = signRoundtable(
-        payload,
+      const envelope = signRoundtable(payload, 'ko', 'deploy-metadata', testKeyring, [
         'ko',
-        'deploy-metadata',
-        testKeyring,
-        ['ko', 'ru', 'um']
-      );
+        'ru',
+        'um',
+      ]);
 
       const result = verifyRoundtable(envelope, testKeyring);
 
@@ -234,14 +232,9 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
       const payload = { action: 'read', resource: 'file.txt' };
       const oldTimestamp = Date.now() - 400000; // 6 minutes ago (beyond 5-minute window)
 
-      const envelope = signRoundtable(
-        payload,
-        'ko',
-        'test-aad',
-        testKeyring,
-        ['ko'],
-        { timestamp: oldTimestamp }
-      );
+      const envelope = signRoundtable(payload, 'ko', 'test-aad', testKeyring, ['ko'], {
+        timestamp: oldTimestamp,
+      });
 
       const result = verifyRoundtable(envelope, testKeyring);
 
@@ -253,14 +246,9 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
       const payload = { action: 'read', resource: 'file.txt' };
       const futureTimestamp = Date.now() + 120000; // 2 minutes in future (beyond 1-minute skew)
 
-      const envelope = signRoundtable(
-        payload,
-        'ko',
-        'test-aad',
-        testKeyring,
-        ['ko'],
-        { timestamp: futureTimestamp }
-      );
+      const envelope = signRoundtable(payload, 'ko', 'test-aad', testKeyring, ['ko'], {
+        timestamp: futureTimestamp,
+      });
 
       const result = verifyRoundtable(envelope, testKeyring);
 
@@ -272,14 +260,9 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
       const payload = { action: 'read', resource: 'file.txt' };
       const slightlyFutureTimestamp = Date.now() + 30000; // 30 seconds in future (within 1-minute skew)
 
-      const envelope = signRoundtable(
-        payload,
-        'ko',
-        'test-aad',
-        testKeyring,
-        ['ko'],
-        { timestamp: slightlyFutureTimestamp }
-      );
+      const envelope = signRoundtable(payload, 'ko', 'test-aad', testKeyring, ['ko'], {
+        timestamp: slightlyFutureTimestamp,
+      });
 
       const result = verifyRoundtable(envelope, testKeyring);
 
@@ -318,13 +301,12 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
 
     it('should enforce "critical" policy (requires RU + UM + DR)', () => {
       const payload = { action: 'deploy', target: 'production' };
-      const envelope = signRoundtable(
-        payload,
+      const envelope = signRoundtable(payload, 'ko', 'test-aad', testKeyring, [
         'ko',
-        'test-aad',
-        testKeyring,
-        ['ko', 'ru', 'um', 'dr']
-      );
+        'ru',
+        'um',
+        'dr',
+      ]);
 
       const result = verifyRoundtable(envelope, testKeyring, { policy: 'critical' });
 
@@ -374,7 +356,7 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
     it('should handle large payloads', () => {
       const largePayload = {
         data: 'x'.repeat(10000),
-        metadata: { items: Array(100).fill({ id: 1, name: 'test' }) }
+        metadata: { items: Array(100).fill({ id: 1, name: 'test' }) },
       };
 
       const envelope = signRoundtable(largePayload, 'ko', 'test-aad', testKeyring, ['ko']);
@@ -388,7 +370,7 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
       const payload = {
         text: 'Hello 世界 🌍',
         symbols: '!@#$%^&*()_+-=[]{}|;:\'",.<>?/\\',
-        unicode: '\u0000\u001f\u007f\uffff'
+        unicode: '\u0000\u001f\u007f\uffff',
       };
 
       const envelope = signRoundtable(payload, 'ko', 'test-aad', testKeyring, ['ko']);
@@ -411,14 +393,9 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
       const payload = { action: 'read' };
       const customNonce = randomBytes(16);
 
-      const envelope = signRoundtable(
-        payload,
-        'ko',
-        'test-aad',
-        testKeyring,
-        ['ko'],
-        { nonce: customNonce }
-      );
+      const envelope = signRoundtable(payload, 'ko', 'test-aad', testKeyring, ['ko'], {
+        nonce: customNonce,
+      });
 
       expect(envelope.nonce).toBe(customNonce.toString('base64url'));
 
@@ -428,13 +405,7 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
 
     it('should handle partial keyring in verification', () => {
       const payload = { action: 'read' };
-      const envelope = signRoundtable(
-        payload,
-        'ko',
-        'test-aad',
-        testKeyring,
-        ['ko', 'ru', 'um']
-      );
+      const envelope = signRoundtable(payload, 'ko', 'test-aad', testKeyring, ['ko', 'ru', 'um']);
 
       // Verify with partial keyring (only ko and ru keys)
       const partialKeyring = {
@@ -455,17 +426,17 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
       const payload = { action: 'read' };
 
       // Create multiple envelopes concurrently
-      const envelopes = Array(10).fill(null).map(() =>
-        signRoundtable(payload, 'ko', 'test-aad', testKeyring, ['ko'])
-      );
+      const envelopes = Array(10)
+        .fill(null)
+        .map(() => signRoundtable(payload, 'ko', 'test-aad', testKeyring, ['ko']));
 
       // All should have unique nonces
-      const nonces = envelopes.map(env => env.nonce);
+      const nonces = envelopes.map((env) => env.nonce);
       const uniqueNonces = new Set(nonces);
       expect(uniqueNonces.size).toBe(10);
 
       // All should verify successfully
-      envelopes.forEach(envelope => {
+      envelopes.forEach((envelope) => {
         const result = verifyRoundtable(envelope, testKeyring);
         expect(result.valid).toBe(true);
       });

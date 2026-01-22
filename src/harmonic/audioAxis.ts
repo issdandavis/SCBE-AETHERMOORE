@@ -53,7 +53,8 @@ function computeDFT(signal: number[]): number[] {
   const spectrum: number[] = new Array(Math.floor(N / 2) + 1);
 
   for (let k = 0; k < spectrum.length; k++) {
-    let re = 0, im = 0;
+    let re = 0,
+      im = 0;
     for (let n = 0; n < N; n++) {
       const angle = (2 * Math.PI * k * n) / N;
       re += signal[n] * Math.cos(angle);
@@ -212,13 +213,13 @@ export class AudioAxisProcessor {
 export function generateTestSignal(
   frequency: number,
   duration: number,
-  sampleRate: number = 44100,
+  sampleRate: number = 44100
 ): number[] {
   const samples = Math.floor(duration * sampleRate);
   const signal: number[] = new Array(samples);
 
   for (let n = 0; n < samples; n++) {
-    signal[n] = Math.sin(2 * Math.PI * frequency * n / sampleRate);
+    signal[n] = Math.sin((2 * Math.PI * frequency * n) / sampleRate);
   }
 
   return signal;
