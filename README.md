@@ -186,6 +186,34 @@ This produces a score that's:
 
 ---
 
+## Test Suite Overview
+
+**692 tests** across 25 test files covering all critical paths:
+
+| Category | Tests | What's Covered |
+|----------|-------|----------------|
+| **Hyperbolic Geometry** | ~180 | Poincaré ball embedding, distance metrics, Möbius transforms, boundary behavior |
+| **Harmonic Pipeline** | ~120 | 14-layer pipeline, scaling functions, CFI properties, audio axis |
+| **Enterprise Compliance** | ~100 | FIPS 140-3 properties, SOC 2 controls, agentic guardrails, quantum readiness |
+| **Spectral Coherence** | ~80 | FFT stability, phase alignment, pattern detection |
+| **Network Security** | ~70 | Combat routing, trust management, path health tracking |
+| **Crypto & Envelope** | ~60 | Nonce reuse prevention, tamper detection, provider switching |
+| **Integration** | ~82 | RWP policy enforcement, performance budgets, acceptance tests |
+
+```bash
+# Run all tests
+npm test
+
+# Run specific category
+npm test -- tests/harmonic/
+npm test -- tests/enterprise/
+
+# Run with coverage
+npm test -- --coverage
+```
+
+---
+
 ## Demo Output
 
 When you run `python demo_memory_shard.py`, you'll see:
