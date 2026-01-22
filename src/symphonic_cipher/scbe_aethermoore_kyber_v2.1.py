@@ -51,10 +51,17 @@ OMEGA_TIME = 2 * np.pi / 60
 
 # Conlang Dictionary
 CONLANG = {
-    "shadow": -1, "gleam": -2, "flare": -3,
-    "korah": 0, "aelin": 1, "dahru": 2,
-    "melik": 3, "sorin": 4, "tivar": 5,
-    "ulmar": 6, "vexin": 7
+    "shadow": -1,
+    "gleam": -2,
+    "flare": -3,
+    "korah": 0,
+    "aelin": 1,
+    "dahru": 2,
+    "melik": 3,
+    "sorin": 4,
+    "tivar": 5,
+    "ulmar": 6,
+    "vexin": 7,
 }
 REV_CONLANG = {v: k for k, v in CONLANG.items()}
 
@@ -62,18 +69,19 @@ REV_CONLANG = {v: k for k, v in CONLANG.items()}
 # KYBER KEY EXCHANGE (ML-KEM-768 Simulation)
 # =============================================================================
 
+
 class KyberKEM:
     """
     Simulated ML-KEM-768 (Kyber) Key Encapsulation Mechanism.
     In production: use liboqs-python or NIST FIPS 203 implementation.
     """
-    
+
     def __init__(self, master_key: Optional[bytes] = None):
         self.master_key = master_key or os.urandom(KEY_LEN)
         # Simulate keypair derivation
         self.pk = hashlib.sha256(self.master_key + b"public").digest()
         self.sk = hashlib.sha256(self.master_key + b"secret").digest()
-    
+
     def encapsulate(self) -> Tuple[bytes, bytes]:
         """Generate ciphertext and shared secret."""
         # Ephemeral randomness
@@ -83,13 +91,13 @@ class KyberKEM:
         # Shared secret
         ss = hashlib.sha256(ct + self.sk + r).digest()
         return ct, ss
-    
+
     def decapsulate(self, ct: bytes) -> bytes:
         """Recover shared secret from ciphertext."""
         # In real Kyber: use sk to decrypt ct and derive ss
         ss = hashlib.sha256(ct + self.sk).digest()
         return ss
-    
+
     def derive_session_key(self) -> bytes:
         """One-shot: encapsulate and return session key."""
         ct, ss = self.encapsulate()
@@ -97,12 +105,15 @@ class KyberKEM:
         session_key = hashlib.sha256(ss + b"session").digest()
         return session_key
 
+
 # =============================================================================
 # HYPERBOLIC PRIMITIVES (Poincare Ball)
 # =============================================================================
 
+
 def poincare_norm(z: np.ndarray) -> float:
     return float(np.linalg.norm(z))
+
 
 def project_to_ball(z: np.ndarray, radius: float = R_BALL) -> np.ndarray:
     norm = poincare_norm(z)
@@ -110,32 +121,39 @@ def project_to_ball(z: np.ndarray, radius: float = R_BALL) -> np.ndarray:
         return z * (radius - EPSILON_SAFE) / (norm + EPSILON_SAFE)
     return z
 
+
 def mobius_add(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     a, b = project_to_ball(a), project_to_ball(b)
     a_sq, b_sq = np.dot(a, a), np.dot(b, b)
     ab = np.dot(a, b)
-    num = (1 + 2*ab + b_sq) * a + (1 - a_sq) * b
-    denom = 1 + 2*ab + a_sq * b_sq + EPSILON_SAFE
+    num = (1 + 2 * ab + b_sq) * a + (1 - a_sq) * b
+    denom = 1 + 2 * ab + a_sq * b_sq + EPSILON_SAFE
     return project_to_ball(num / denom)
+
 
 def poincare_distance(a: np.ndarray, b: np.ndarray) -> float:
     diff = mobius_add(-a, b)
     norm = min(poincare_norm(diff), R_BALL - EPSILON_SAFE)
     return 2 * np.arctanh(norm)
 
+
 def harmonic_risk(d: float, R: float = PHI) -> float:
     return min(R ** max(0, min(d, 10)), H_MAX)
 
+
 def breath_envelope(t: float, omega: float = OMEGA_TIME) -> float:
     return 0.5 * (1 + np.cos(omega * t))
+
 
 # =============================================================================
 # 9D STATE MACHINE
 # =============================================================================
 
+
 def stable_hash(data: str) -> float:
     hash_int = int(hashlib.sha256(data.encode()).hexdigest(), 16)
     return hash_int / (2**256 - 1) * 2 * np.pi
+
 
 def compute_entropy(window: Sequence[float]) -> float:
     flat = np.asarray(window, dtype=float).flatten()
@@ -148,44 +166,50 @@ def compute_entropy(window: Sequence[float]) -> float:
     entropy = float(np.sum(hist * np.log2(hist + EPSILON_SAFE)))
     return -entropy
 
+
 def tau_dot(t: float) -> float:
     return 1.0 + DELTA_DRIFT_MAX * np.sin(OMEGA_TIME * t)
 
+
 class State9D:
     """Full 9-dimensional state container with Kyber session."""
-    
+
     def __init__(self, kyber: Optional[KyberKEM] = None, t: Optional[float] = None):
         self.t = t if t else time.time()
         self.kyber = kyber or KyberKEM()
         self.session_key = self.kyber.derive_session_key()
-        
+
         # 6D context with randomness for proper entropy
-        self.context = np.array([
-            stable_hash(f"id_{self.t}"),
-            np.random.uniform(0.1, 0.9),
-            0.95 + np.random.uniform(-0.05, 0.05),
-            self.t % (2 * np.pi),
-            stable_hash(f"commit_{self.t}"),
-            0.88 + np.random.uniform(-0.05, 0.05)
-        ])
-        
+        self.context = np.array(
+            [
+                stable_hash(f"id_{self.t}"),
+                np.random.uniform(0.1, 0.9),
+                0.95 + np.random.uniform(-0.05, 0.05),
+                self.t % (2 * np.pi),
+                stable_hash(f"commit_{self.t}"),
+                0.88 + np.random.uniform(-0.05, 0.05),
+            ]
+        )
+
         self.tau = self.t
         diverse = np.concatenate([self.context, np.random.rand(10)])
         self.eta = np.clip(compute_entropy(diverse.tolist()), ETA_MIN, ETA_MAX)
         self.quantum = np.exp(-1j * self.t)
         self.trajectory = []
-    
+
     def to_poincare(self, dim: int = 3) -> np.ndarray:
         raw = self.context[:dim].astype(float)
         norm = np.linalg.norm(raw)
         if norm > EPSILON_SAFE:
             raw = raw / norm * 0.8
         return project_to_ball(raw)
-    
+
     def update(self, dt: float = 0.1):
         self.t += dt
         self.tau += dt
-        self.eta = np.clip(self.eta + BETA * (ETA_TARGET - self.eta) * dt, ETA_MIN, ETA_MAX)
+        self.eta = np.clip(
+            self.eta + BETA * (ETA_TARGET - self.eta) * dt, ETA_MIN, ETA_MAX
+        )
         self.quantum *= np.exp(-1j * dt)
         self.trajectory.append(self.to_poincare())
         if len(self.trajectory) > 100:
@@ -207,7 +231,9 @@ class State9D:
 class HyperbolicAgent(State9D):
     """Agent wrapper implementing the 9D state dynamics."""
 
-    def __init__(self, agent_id: str, kyber: Optional[KyberKEM] = None, t: Optional[float] = None):
+    def __init__(
+        self, agent_id: str, kyber: Optional[KyberKEM] = None, t: Optional[float] = None
+    ):
         self.agent_id = agent_id
         super().__init__(kyber=kyber, t=t)
 
@@ -221,8 +247,10 @@ class HyperbolicAgent(State9D):
 # PART 4: 14-LAYER GOVERNANCE SYSTEM
 # ==============================================================================
 
+
 class L1_AxiomVerifier:
     """Layer 1: Verify SCBE axioms."""
+
     def __init__(self, kyber: KyberKEM, agent: HyperbolicAgent):
         self.kyber = kyber
         self.agent = agent
@@ -254,7 +282,7 @@ class L1_AxiomVerifier:
             "A1_entropy_bounds": self.verify_axiom_A1(),
             "A2_breath_periodicity": self.verify_axiom_A2(),
             "A3_poincare_bound": self.verify_axiom_A3(),
-            "A4_quantum_coherence": self.verify_axiom_A4()
+            "A4_quantum_coherence": self.verify_axiom_A4(),
         }
         self.verification_cache.update(results)
         return results
@@ -262,6 +290,7 @@ class L1_AxiomVerifier:
 
 class L2_PhaseVerifier:
     """Layer 2: Verify phase-breath alignment."""
+
     def __init__(self, agent: HyperbolicAgent):
         self.agent = agent
 
@@ -275,15 +304,16 @@ class L2_PhaseVerifier:
 
 class L3_HyperbolicDistance:
     """Layer 3: Verify hyperbolic geodesic distances."""
+
     def __init__(self, agent: HyperbolicAgent):
         self.agent = agent
 
     def compute_distance(self, p1: np.ndarray, p2: np.ndarray) -> float:
         """Compute hyperbolic distance in Poincare ball."""
-        diff_sq = np.sum((p1 - p2)**2)
+        diff_sq = np.sum((p1 - p2) ** 2)
         denom = (1 - np.sum(p1**2)) * (1 - np.sum(p2**2))
         if denom <= 0:
-            return float('inf')
+            return float("inf")
         cosh_d = 1 + 2 * diff_sq / denom
         return float(np.arccosh(max(1.0, cosh_d)))
 
@@ -293,14 +323,15 @@ class L3_HyperbolicDistance:
         if len(trajectory) < 2:
             return True, 0.0
         max_dist = max(
-            self.compute_distance(trajectory[i], trajectory[i+1])
-            for i in range(len(trajectory)-1)
+            self.compute_distance(trajectory[i], trajectory[i + 1])
+            for i in range(len(trajectory) - 1)
         )
         return bool(max_dist < 3.0), float(max_dist)
 
 
 class L4_EntropyFlow:
     """Layer 4: Monitor entropy flow dynamics."""
+
     def __init__(self, agent: HyperbolicAgent):
         self.agent = agent
         self.history: List[float] = []
@@ -321,6 +352,7 @@ class L4_EntropyFlow:
 
 class L5_QuantumCoherence:
     """Layer 5: Monitor quantum coherence preservation."""
+
     def __init__(self, agent: HyperbolicAgent):
         self.agent = agent
 
@@ -332,6 +364,7 @@ class L5_QuantumCoherence:
 
 class L6_SessionKey:
     """Layer 6: Kyber session key management."""
+
     def __init__(self, kyber: KyberKEM):
         self.kyber = kyber
         self.session_key: Optional[bytes] = None
@@ -351,6 +384,7 @@ class L6_SessionKey:
 
 class L7_TrajectorySmooth:
     """Layer 7: Verify trajectory smoothness."""
+
     def __init__(self, agent: HyperbolicAgent):
         self.agent = agent
 
@@ -359,15 +393,20 @@ class L7_TrajectorySmooth:
         trajectory = self.agent.get_trajectory()
         if len(trajectory) < 3:
             return True, 0.0
-        velocities = [trajectory[i+1] - trajectory[i] for i in range(len(trajectory)-1)]
-        accels = [np.linalg.norm(velocities[i+1] - velocities[i]) 
-                  for i in range(len(velocities)-1)]
+        velocities = [
+            trajectory[i + 1] - trajectory[i] for i in range(len(trajectory) - 1)
+        ]
+        accels = [
+            np.linalg.norm(velocities[i + 1] - velocities[i])
+            for i in range(len(velocities) - 1)
+        ]
         max_accel = float(max(accels)) if accels else 0.0
         return bool(max_accel < 0.5), max_accel
 
 
 class L8_BoundaryProximity:
     """Layer 8: Monitor proximity to Poincare ball boundary."""
+
     def __init__(self, agent: HyperbolicAgent):
         self.agent = agent
 
@@ -381,6 +420,7 @@ class L8_BoundaryProximity:
 
 class L9_CryptographicIntegrity:
     """Layer 9: Verify cryptographic binding integrity."""
+
     def __init__(self, kyber: KyberKEM, agent: HyperbolicAgent):
         self.kyber = kyber
         self.agent = agent
@@ -396,6 +436,7 @@ class L9_CryptographicIntegrity:
 
 class L10_TemporalConsistency:
     """Layer 10: Verify temporal evolution consistency."""
+
     def __init__(self, agent: HyperbolicAgent):
         self.agent = agent
         self.tau_history: List[float] = []
@@ -410,14 +451,17 @@ class L10_TemporalConsistency:
         """Check tau evolves monotonically."""
         if len(self.tau_history) < 2:
             return True, 0.0
-        diffs = [self.tau_history[i+1] - self.tau_history[i] 
-                 for i in range(len(self.tau_history)-1)]
+        diffs = [
+            self.tau_history[i + 1] - self.tau_history[i]
+            for i in range(len(self.tau_history) - 1)
+        ]
         positive_ratio = sum(1 for d in diffs if d >= 0) / len(diffs)
         return bool(positive_ratio > 0.8), float(positive_ratio)
 
 
 class L11_ManifoldCurvature:
     """Layer 11: Monitor manifold curvature bounds."""
+
     def __init__(self, agent: HyperbolicAgent):
         self.agent = agent
 
@@ -426,12 +470,13 @@ class L11_ManifoldCurvature:
         pos = self.agent.to_poincare()
         r = np.linalg.norm(pos)
         # Hyperbolic curvature increases near boundary
-        curvature = float(2 / (1 - r**2)) if r < 0.999 else float('inf')
+        curvature = float(2 / (1 - r**2)) if r < 0.999 else float("inf")
         return bool(curvature < 100), curvature
 
 
 class L12_EnergyConservation:
     """Layer 12: Verify energy-like conservation."""
+
     def __init__(self, agent: HyperbolicAgent):
         self.agent = agent
         self.energy_history: List[float] = []
@@ -457,6 +502,7 @@ class L12_EnergyConservation:
 
 class L13_DecisionBoundary:
     """Layer 13: Final decision boundary check."""
+
     def __init__(self, layers: Dict[str, Any]):
         self.layers = layers
         self.threshold = 0.7
@@ -466,7 +512,7 @@ class L13_DecisionBoundary:
         passed = 0
         total = 0
         for name, layer in self.layers.items():
-            if hasattr(layer, 'verify'):
+            if hasattr(layer, "verify"):
                 result = layer.verify()
                 if isinstance(result, tuple):
                     passed += 1 if result[0] else 0
@@ -479,6 +525,7 @@ class L13_DecisionBoundary:
 
 class L14_GovernanceDecision:
     """Layer 14: Final governance decision (ALLOW/DENY)."""
+
     def __init__(self, l13: L13_DecisionBoundary):
         self.l13 = l13
         self.decision_log: List[Dict] = []
@@ -487,12 +534,14 @@ class L14_GovernanceDecision:
         """Make final ALLOW/DENY decision."""
         passed, ratio = self.l13.aggregate()
         decision = "ALLOW" if passed else "DENY"
-        self.decision_log.append({
-            "timestamp": time.time(),
-            "decision": decision,
-            "ratio": ratio,
-            "context": context
-        })
+        self.decision_log.append(
+            {
+                "timestamp": time.time(),
+                "decision": decision,
+                "ratio": ratio,
+                "context": context,
+            }
+        )
         return decision
 
     def get_log(self) -> List[Dict]:
@@ -503,16 +552,17 @@ class L14_GovernanceDecision:
 # PART 5: MAIN ORCHESTRATOR CLASS
 # ==============================================================================
 
+
 class SCBE_AETHERMOORE_Kyber:
     """Main orchestrator for SCBE-AETHERMOORE with Kyber KEM integration."""
-    
+
     def __init__(self, agent_id: str = "agent_001"):
         self.agent_id = agent_id
-        
+
         # Core components
         self.kyber = KyberKEM()
         self.agent = HyperbolicAgent(agent_id, kyber=self.kyber)
-        
+
         # Initialize all 14 layers
         self.l1 = L1_AxiomVerifier(self.kyber, self.agent)
         self.l2 = L2_PhaseVerifier(self.agent)
@@ -526,17 +576,26 @@ class SCBE_AETHERMOORE_Kyber:
         self.l10 = L10_TemporalConsistency(self.agent)
         self.l11 = L11_ManifoldCurvature(self.agent)
         self.l12 = L12_EnergyConservation(self.agent)
-        
+
         # Aggregate layers for L13
         self.layers = {
-            "L1": self.l1, "L2": self.l2, "L3": self.l3, "L4": self.l4,
-            "L5": self.l5, "L6": self.l6, "L7": self.l7, "L8": self.l8,
-            "L9": self.l9, "L10": self.l10, "L11": self.l11, "L12": self.l12
+            "L1": self.l1,
+            "L2": self.l2,
+            "L3": self.l3,
+            "L4": self.l4,
+            "L5": self.l5,
+            "L6": self.l6,
+            "L7": self.l7,
+            "L8": self.l8,
+            "L9": self.l9,
+            "L10": self.l10,
+            "L11": self.l11,
+            "L12": self.l12,
         }
-        
+
         self.l13 = L13_DecisionBoundary(self.layers)
         self.l14 = L14_GovernanceDecision(self.l13)
-        
+
         # Generate initial session key
         self.l6.generate()
 
@@ -550,10 +609,10 @@ class SCBE_AETHERMOORE_Kyber:
     def run_governance_check(self, context: str = "") -> Dict[str, Any]:
         """Run full 14-layer governance check."""
         results = {}
-        
+
         # L1: Axiom verification
         results["L1_axioms"] = self.l1.verify_all()
-        
+
         # L2-L12: Individual layer checks
         results["L2_phase"] = self.l2.verify()
         results["L3_distance"] = self.l3.verify()
@@ -566,14 +625,14 @@ class SCBE_AETHERMOORE_Kyber:
         results["L10_temporal"] = self.l10.verify()
         results["L11_curvature"] = self.l11.verify()
         results["L12_energy"] = self.l12.verify()
-        
+
         # L13: Aggregate
         results["L13_aggregate"] = self.l13.aggregate()
-        
+
         # L14: Final decision
         decision = self.l14.decide(context)
         results["L14_decision"] = decision
-        
+
         return results
 
     def get_state(self) -> Dict[str, Any]:
@@ -584,7 +643,7 @@ class SCBE_AETHERMOORE_Kyber:
             "eta": self.agent.get_eta(),
             "quantum_coherence": self.agent.get_quantum_coherence(),
             "poincare_position": self.agent.to_poincare().tolist(),
-            "session_key_valid": self.l6.verify()[0]
+            "session_key_valid": self.l6.verify()[0],
         }
 
 
@@ -592,20 +651,21 @@ class SCBE_AETHERMOORE_Kyber:
 # PART 6: EXECUTION AND TESTING
 # ==============================================================================
 
+
 def run_full_test() -> Dict[str, Any]:
     """Run comprehensive test of SCBE-AETHERMOORE-Kyber system."""
-    print("="*60)
+    print("=" * 60)
     print("SCBE-AETHERMOORE-KYBER v2.1 PRODUCTION TEST")
-    print("="*60)
-    
+    print("=" * 60)
+
     # Initialize system
     system = SCBE_AETHERMOORE_Kyber("test_agent")
-    
+
     # Run several time steps
     print("\nRunning 50 time steps...")
     for i in range(50):
         system.step(0.1)
-    
+
     # Get state
     state = system.get_state()
     print(f"\nAgent State:")
@@ -613,35 +673,45 @@ def run_full_test() -> Dict[str, Any]:
     print(f"  eta: {state['eta']:.4f}")
     print(f"  quantum_coherence: {state['quantum_coherence']:.4f}")
     print(f"  poincare_position: {[f'{x:.4f}' for x in state['poincare_position']]}")
-    
+
     # Run governance check
-    print("\n" + "-"*60)
+    print("\n" + "-" * 60)
     print("14-LAYER GOVERNANCE CHECK")
-    print("-"*60)
-    
+    print("-" * 60)
+
     results = system.run_governance_check("production_test")
-    
+
     # Print L1 axiom results
     print("\nL1 - Axiom Verification:")
     for axiom, passed in results["L1_axioms"].items():
         status = "PASS" if passed else "FAIL"
         print(f"  {axiom}: {status}")
-    
+
     # Print L2-L12 results
     print("\nL2-L12 Layer Checks:")
-    for key in ["L2_phase", "L3_distance", "L4_entropy", "L5_coherence",
-                "L6_session_key", "L7_smoothness", "L8_boundary", 
-                "L9_crypto", "L10_temporal", "L11_curvature", "L12_energy"]:
+    for key in [
+        "L2_phase",
+        "L3_distance",
+        "L4_entropy",
+        "L5_coherence",
+        "L6_session_key",
+        "L7_smoothness",
+        "L8_boundary",
+        "L9_crypto",
+        "L10_temporal",
+        "L11_curvature",
+        "L12_energy",
+    ]:
         result = results[key]
         passed, value = result if isinstance(result, tuple) else (result, "N/A")
         status = "PASS" if passed else "FAIL"
         print(f"  {key}: {status} (value={value})")
-    
+
     # Print aggregate and decision
     print(f"\nL13 - Aggregate: {results['L13_aggregate']}")
     print(f"\nL14 - FINAL DECISION: {results['L14_decision']}")
-    print("="*60)
-    
+    print("=" * 60)
+
     return results
 
 
