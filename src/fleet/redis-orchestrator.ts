@@ -1,7 +1,11 @@
 /**
- * Redis/BullMQ Fleet Orchestrator
- * ================================
- * Distributed agent orchestration replacing in-memory queue
+ * @file redis-orchestrator.ts
+ * @module fleet/redis-orchestrator
+ * @component Fleet Management System
+ * @version 3.0.0
+ * @since 2026-01-20
+ *
+ * Redis/BullMQ Fleet Orchestrator - Distributed agent coordination
  *
  * Architecture:
  * - Captain: Orchestrator (task routing, prioritization)
@@ -9,14 +13,21 @@
  * - Redis: Persistent job queue with automatic retry
  * - BullMQ: Job processing with concurrency control
  *
+ * Agent Roles (in execution order):
+ * 1. captain     - Task routing & orchestration
+ * 2. architect   - System design
+ * 3. researcher  - Information gathering
+ * 4. developer   - Implementation
+ * 5. reviewer    - Code review
+ * 6. qa          - Quality assurance
+ * 7. devops      - Deployment
+ * 8. security    - Security audit
+ *
  * Benefits:
  * - Survives server restarts (job persistence)
  * - Horizontal scaling (multiple workers)
- * - Preserves cryptographic state
+ * - Preserves cryptographic state via SCBE envelopes
  * - No single point of failure
- *
- * @module fleet/redis-orchestrator
- * @version 1.0.0
  */
 
 import { EventEmitter } from 'events';

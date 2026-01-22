@@ -1,14 +1,28 @@
 #!/usr/bin/env python3
 """
-SCBE-AETHERMOORE MVP API
-========================
-6 essential endpoints for sellable MVP.
+@file: main.py
+@module: api
+@component: REST API Server
+@version: 3.0.0
+@since: 2026-01-20
 
-FastAPI implementation with:
-- API key authentication
-- Rate limiting
-- Comprehensive error handling
-- Swagger documentation
+SCBE-AETHERMOORE MVP API - 6 essential endpoints for sellable MVP.
+
+Endpoints:
+    GET  /health          - Health check
+    GET  /agents          - List registered agents
+    POST /seal-memory     - Seal a memory shard with governance
+    POST /retrieve-memory - Retrieve with authorization check
+    POST /verify          - Verify envelope integrity
+    GET  /audit           - Get audit trail
+    WS   /ws/dashboard    - Real-time decision streaming
+
+Features:
+    - API key authentication
+    - Rate limiting (100 req/min)
+    - Comprehensive error handling
+    - Swagger documentation at /docs
+    - WebSocket real-time streaming
 
 Run: uvicorn src.api.main:app --reload
 """
