@@ -21,7 +21,7 @@ import hashlib
 import hmac
 import time
 import os
-from typing import List, Dict, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 # =============================================================================
 # GLOBAL CONSTANTS
@@ -68,7 +68,7 @@ class KyberKEM:
     In production: use liboqs-python or NIST FIPS 203 implementation.
     """
     
-    def __init__(self, master_key: bytes = None):
+    def __init__(self, master_key: Optional[bytes] = None):
         self.master_key = master_key or os.urandom(KEY_LEN)
         # Simulate keypair derivation
         self.pk = hashlib.sha256(self.master_key + b"public").digest()
@@ -137,13 +137,16 @@ def stable_hash(data: str) -> float:
     hash_int = int(hashlib.sha256(data.encode()).hexdigest(), 16)
     return hash_int / (2**256 - 1) * 2 * np.pi
 
-def compute_entropy(window: list) -> float:
-    flat = np.array(window, dtype=float).flatten()
+def compute_entropy(window: Sequence[float]) -> float:
+    flat = np.asarray(window, dtype=float).flatten()
     if len(flat) < 2:
         return ETA_TARGET
     hist, _ = np.histogram(flat, bins=min(16, len(flat)), density=True)
     hist = hist[hist > 0]
-    return -np.sum(hist * np.log2(hist + EPSILON_SAFE)) if len(hist) else ETA_TARGET
+    if not len(hist):
+        return ETA_TARGET
+    entropy = float(np.sum(hist * np.log2(hist + EPSILON_SAFE)))
+    return -entropy
 
 def tau_dot(t: float) -> float:
     return 1.0 + DELTA_DRIFT_MAX * np.sin(OMEGA_TIME * t)
@@ -151,7 +154,7 @@ def tau_dot(t: float) -> float:
 class State9D:
     """Full 9-dimensional state container with Kyber session."""
     
-    def __init__(self, kyber: KyberKEM = None, t: float = None):
+    def __init__(self, kyber: Optional[KyberKEM] = None, t: Optional[float] = None):
         self.t = t if t else time.time()
         self.kyber = kyber or KyberKEM()
         self.session_key = self.kyber.derive_session_key()
@@ -168,7 +171,7 @@ class State9D:
         
         self.tau = self.t
         diverse = np.concatenate([self.context, np.random.rand(10)])
-        self.eta = np.clip(compute_entropy(diverse), ETA_MIN, ETA_MAX)
+        self.eta = np.clip(compute_entropy(diverse.tolist()), ETA_MIN, ETA_MAX)
         self.quantum = np.exp(-1j * self.t)
         self.trajectory = []
     
@@ -181,13 +184,14 @@ class State9D:
     
     def update(self, dt: float = 0.1):
         self.t += dt
-        self.eta = np.clip(self.eta + BETA*(ETA_TARGET - self.eta)*dt, ETA_MIN, ETA_MAX)
+        self.tau += dt
+        self.eta = np.clip(self.eta + BETA * (ETA_TARGET - self.eta) * dt, ETA_MIN, ETA_MAX)
         self.quantum *= np.exp(-1j * dt)
         self.trajectory.append(self.to_poincare())
         if len(self.trajectory) > 100:
             self.trajectory = self.trajectory[-100:]
 
-      def get_eta(self) -> float:
+    def get_eta(self) -> float:
         """Get current entropy coefficient."""
         return float(self.eta)
 
@@ -198,6 +202,19 @@ class State9D:
     def get_trajectory(self) -> List[np.ndarray]:
         """Get Poincare ball trajectory."""
         return self.trajectory.copy()
+
+
+class HyperbolicAgent(State9D):
+    """Agent wrapper implementing the 9D state dynamics."""
+
+    def __init__(self, agent_id: str, kyber: Optional[KyberKEM] = None, t: Optional[float] = None):
+        self.agent_id = agent_id
+        super().__init__(kyber=kyber, t=t)
+
+    def refresh_session_key(self) -> bytes:
+        """Regenerate Kyber-backed session key."""
+        self.session_key = self.kyber.derive_session_key()
+        return self.session_key
 
 
 # ==============================================================================
@@ -219,7 +236,7 @@ class L1_AxiomVerifier:
     def verify_axiom_A2(self) -> bool:
         """A2: Breath is π-periodic."""
         tau = self.agent.tau
-        return np.isclose(np.sin(tau), np.sin(tau + 2*np.pi), atol=1e-6)
+        return bool(np.isclose(np.sin(tau), np.sin(tau + 2 * np.pi), atol=1e-6))
 
     def verify_axiom_A3(self) -> bool:
         """A3: Poincare embedding stays in unit ball."""
@@ -251,10 +268,9 @@ class L2_PhaseVerifier:
     def verify(self) -> Tuple[bool, float]:
         """Check phase alignment score."""
         tau = self.agent.tau
-        breath = np.sin(tau)
         phase = np.angle(self.agent.quantum)
-        alignment = np.abs(np.cos(phase - tau))
-        return alignment > 0.5, float(alignment)
+        alignment = float(np.abs(np.cos(phase - tau)))
+        return bool(alignment > 0.5), alignment
 
 
 class L3_HyperbolicDistance:
@@ -280,7 +296,7 @@ class L3_HyperbolicDistance:
             self.compute_distance(trajectory[i], trajectory[i+1])
             for i in range(len(trajectory)-1)
         )
-        return max_dist < 3.0, max_dist
+        return bool(max_dist < 3.0), float(max_dist)
 
 
 class L4_EntropyFlow:
@@ -299,8 +315,8 @@ class L4_EntropyFlow:
         """Check entropy flow is stable."""
         if len(self.history) < 2:
             return True, 0.0
-        variance = np.var(self.history)
-        return variance < 0.1, float(variance)
+        variance = float(np.var(self.history))
+        return bool(variance < 0.1), variance
 
 
 class L5_QuantumCoherence:
@@ -310,8 +326,8 @@ class L5_QuantumCoherence:
 
     def verify(self) -> Tuple[bool, float]:
         """Check quantum coherence is maintained."""
-        coherence = self.agent.get_quantum_coherence()
-        return 0.1 < coherence < 1.0, coherence
+        coherence = float(self.agent.get_quantum_coherence())
+        return bool(0.1 < coherence < 1.0), coherence
 
 
 class L6_SessionKey:
@@ -329,7 +345,8 @@ class L6_SessionKey:
         """Check session key exists and has correct length."""
         if self.session_key is None:
             return False, 0
-        return len(self.session_key) == 32, len(self.session_key)
+        length = len(self.session_key)
+        return bool(length == 32), length
 
 
 class L7_TrajectorySmooth:
@@ -345,8 +362,8 @@ class L7_TrajectorySmooth:
         velocities = [trajectory[i+1] - trajectory[i] for i in range(len(trajectory)-1)]
         accels = [np.linalg.norm(velocities[i+1] - velocities[i]) 
                   for i in range(len(velocities)-1)]
-        max_accel = max(accels) if accels else 0.0
-        return max_accel < 0.5, max_accel
+        max_accel = float(max(accels)) if accels else 0.0
+        return bool(max_accel < 0.5), max_accel
 
 
 class L8_BoundaryProximity:
@@ -358,8 +375,8 @@ class L8_BoundaryProximity:
         """Check we're not too close to boundary."""
         pos = self.agent.to_poincare()
         radius = float(np.linalg.norm(pos))
-        safe_margin = 1.0 - radius
-        return safe_margin > 0.1, safe_margin
+        safe_margin = float(1.0 - radius)
+        return bool(safe_margin > 0.1), safe_margin
 
 
 class L9_CryptographicIntegrity:
@@ -373,7 +390,7 @@ class L9_CryptographicIntegrity:
         pos = self.agent.to_poincare()
         state_hash = hashlib.sha256(pos.tobytes()).hexdigest()[:16]
         pk_hash = hashlib.sha256(self.kyber.pk).hexdigest()[:16]
-        bound = state_hash[:8] == pk_hash[:8] or True  # Always pass for now
+        bound = bool(state_hash[:8] == pk_hash[:8] or True)  # Always pass for now
         return bound, f"{state_hash[:8]}:{pk_hash[:8]}"
 
 
@@ -396,7 +413,7 @@ class L10_TemporalConsistency:
         diffs = [self.tau_history[i+1] - self.tau_history[i] 
                  for i in range(len(self.tau_history)-1)]
         positive_ratio = sum(1 for d in diffs if d >= 0) / len(diffs)
-        return positive_ratio > 0.8, positive_ratio
+        return bool(positive_ratio > 0.8), float(positive_ratio)
 
 
 class L11_ManifoldCurvature:
@@ -409,8 +426,8 @@ class L11_ManifoldCurvature:
         pos = self.agent.to_poincare()
         r = np.linalg.norm(pos)
         # Hyperbolic curvature increases near boundary
-        curvature = 2 / (1 - r**2) if r < 0.999 else float('inf')
-        return curvature < 100, float(curvature)
+        curvature = float(2 / (1 - r**2)) if r < 0.999 else float('inf')
+        return bool(curvature < 100), curvature
 
 
 class L12_EnergyConservation:
@@ -434,8 +451,8 @@ class L12_EnergyConservation:
         """Check energy variance is bounded."""
         if len(self.energy_history) < 2:
             return True, 0.0
-        variance = np.var(self.energy_history)
-        return variance < 0.5, float(variance)
+        variance = float(np.var(self.energy_history))
+        return bool(variance < 0.5), variance
 
 
 class L13_DecisionBoundary:
@@ -494,7 +511,7 @@ class SCBE_AETHERMOORE_Kyber:
         
         # Core components
         self.kyber = KyberKEM()
-        self.agent = HyperbolicAgent(agent_id)
+        self.agent = HyperbolicAgent(agent_id, kyber=self.kyber)
         
         # Initialize all 14 layers
         self.l1 = L1_AxiomVerifier(self.kyber, self.agent)

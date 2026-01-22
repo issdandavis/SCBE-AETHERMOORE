@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/adapter/../../debugpy/launcher/../../debugpy/../debugpy/common/log.py
+# hypothesis_version: 6.150.2
+
+['    {0}=={1}\n', '$REPR {0!r}', '$STACK:\n\n{0}', '$THREADS:\n\n{0}', '$VARS {0!r}', '({0})', '09.3f', '<stderr>', 'Also logging to {0}.', 'DEBUGPY_LOG_DIR', 'DEBUGPY_LOG_STDERR', 'Error evaluating {0}', 'Installed packages:\n', 'System paths:\n', '_to_files', 'debug', 'debugpy.__file__', 'error', 'exc_info', 'info', 'level', 'os.__file__', 'prefix', 'site-packages', 'sys.base_prefix', 'sys.executable', 'sys.prefix', 'sys.real_prefix', 'threading.__file__', 'utf-8', 'w', 'warning', 'warning error', '{0}', '{0}+{1:', '{0}<missing>\n', '{0}{1}', '}: ']

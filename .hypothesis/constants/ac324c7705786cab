@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/_pydev_bundle/pydev_is_thread_alive.py
+# hypothesis_version: 6.150.2
+
+['_Thread__stopped', '_handle', '_is_stopped', '_os_thread_handle', '_started']

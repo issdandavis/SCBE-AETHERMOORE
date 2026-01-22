@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/pydevd_plugins/jinja2_debug.py
+# hypothesis_version: 6.150.2
+
+['<module>', 'BlockReference', 'Jinja2 %s', 'LoopContext', 'Macro', 'MissingType', 'Template', 'TemplateNotFound', 'TemplateReference', 'TemplateSyntaxError', 'TemplatesNotFound', 'UndefinedError', '_', '_Context__obj', '__jinja_template__', '__name__', 'block ', 'block_', 'call', 'context', 'event', 'jinja2', 'jinja2-line', 'jinja2.', 'jinja2_breakpoints', 'jinja2_stop', 'l_', 'line', 'loop', 'macro', 'render', 'return', 'root', 'self', 'template']

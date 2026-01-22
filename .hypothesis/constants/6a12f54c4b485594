@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/_pydevd_frame_eval/vendored/bytecode/flags.py
+# hypothesis_version: 6.150.2
+
+[128, 256, 512, 524288, 1048576, 8388608, 16777216, 'BEFORE_ASYNC_WITH', 'DELETE_DEREF', 'DELETE_NAME', 'END_ASYNC_FOR', 'GET_AITER', 'GET_ANEXT', 'GET_AWAITABLE', 'LOAD_CLASSDEREF', 'LOAD_CLOSURE', 'LOAD_DEREF', 'LOAD_NAME', 'SETUP_ASYNC_WITH', 'STORE_DEREF', 'STORE_NAME', 'YIELD_FROM', 'YIELD_VALUE']

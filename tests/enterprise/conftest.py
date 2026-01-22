@@ -110,6 +110,11 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "integration: Integration tests")
     config.addinivalue_line("markers", "property: Property-based tests")
     config.addinivalue_line("markers", "slow: Slow-running tests")
+    config.addinivalue_line(
+        "markers",
+        "perf: Performance benchmark tests - opt-in and hardware-dependent",
+    )
+    config.addinivalue_line("markers", "benchmark: Benchmark tests")
 
 
 def pytest_collection_modifyitems(config, items):

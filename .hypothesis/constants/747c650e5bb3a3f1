@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/adapter/../../debugpy/launcher/../../debugpy/../debugpy/public_api.py
+# hypothesis_version: 6.150.2
+
+['code', 'connect', 'file', 'listen', 'module', 'pid', 'version']

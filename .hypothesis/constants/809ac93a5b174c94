@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_reload.py
+# hypothesis_version: 6.150.2
+
+['Added:', 'ClassType', 'Updating: ', '_', '__bases__', '__builtins__', '__class__', '__code__', '__dict__', '__doc__', '__file__', '__func__', '__main__', '__main_reloaded__', '__metaclass__', '__name__', '__xreload_old_new__', 'co_positions', 'co_qualname', 'code reload: %s\n', 'func_code', 'im_func', 'line', 'replace', 'to', 'to namespace']

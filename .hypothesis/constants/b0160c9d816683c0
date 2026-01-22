@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/pydevd_plugins/extensions/types/pydevd_plugin_numpy_types.py
+# hypothesis_version: 6.150.2
+
+[1024, '%0', 'Unable to handle:', '[', '[0:%s] ', '__internals__', 'array is empty', 'biufc', 'd', 'dtype', 'java', 'max', 'min', 'ndarray', 'not a numeric object', 'numpy', 'shape', 'size']
