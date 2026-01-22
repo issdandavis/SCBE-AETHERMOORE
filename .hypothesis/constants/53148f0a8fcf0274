@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/pydevd_tracing.py
+# hypothesis_version: 6.150.2
+
+['%s', '%s\n', '%s%s%s', '.dll', '.dylib', '.so', 'Call Location:\n', 'Error loading: %s', 'amd64', 'arm64', 'attach', 'attach_', 'attach_linux_', 'gettotalrefcount', 'gevent', 'i386', 'pydev_do_not_trace', 'pydevd_tracing', 'threading', 'threadpool', 'x86', 'x86_64']

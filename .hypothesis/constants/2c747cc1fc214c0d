@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_process_net_command.py
+# hypothesis_version: 6.150.2
+
+[0.5, '-', '.', '1', ';', '@_@NEW_LINE_CHAR@_@', '@_@TAB_CHAR@_@', 'EVALUATE', 'EVALUATE_UNBUFFERED', 'GET_COMPLETIONS', 'LINE', 'NONE', 'None', 'REPLACE:', 'STDERR', 'STDOUT', 'True', 'UNIX', 'WINDOWS', 'break_on_caught', 'break_on_uncaught', 'break_on_user_caught', 'debug', 'django', 'exception_types', 'force', 'ignore_libraries', 'localRoot', 'offset=', 'pathMappings', 'pydev_do_not_trace', 'python', 'remoteRoot', 'true', 'unexpected command ', '|', '||']

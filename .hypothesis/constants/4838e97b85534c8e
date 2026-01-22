@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/adapter/../../debugpy/launcher/../../debugpy/../debugpy/server/api.py
+# hypothesis_version: 6.150.2
+
+[512, 134217728, '--for-server', '--host', '--log-dir', '--port', '/debugpy.pydevd.log', 'Initial environment:', 'ascii', 'auto', 'breakpoint()', 'client', 'configure{0!r}', 'debug_this_thread()', 'debugpy.server', 'debugpy_launcher.py', 'error', 'hex', 'host', 'info', 'invalid port number', 'log_to{0!r}', 'none', 'notify_stdin', 'port', 'posix', 'pyqt4', 'pyqt5', 'pyside', 'pyside2', 'python', 'pythonEnv', 'qt', 'rb', 'server', 'subProcess', 'suspend', 'utf-8', 'wait_for_client()', 'win32', '{0!r} must be a {1}', '{0}() failed:', '{0}({1!r}, **{2!r})']

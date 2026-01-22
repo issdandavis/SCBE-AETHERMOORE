@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/_pydevd_frame_eval/vendored/bytecode/instr.py
+# hypothesis_version: 6.150.2
+
+[255, 2147483647, '<%r>', '<%s %r>', '<%s lineno=%s>', 'BINARY_', 'BREAK_LOOP', 'BUILD_', 'CALL_', 'CALL_FINALLY', 'CONTAINS_OP', 'CONTINUE_LOOP', 'DICT_MERGE', 'DICT_UPDATE', 'DUP_TOP', 'EXTENDED_ARG', 'FORMAT_VALUE', 'FOR_ITER', 'GET_', 'IMPORT_NAME', 'INPLACE_', 'IS_OP', 'JUMP_ABSOLUTE', 'JUMP_FORWARD', 'JUMP_IF_', 'JUMP_IF_FALSE_OR_POP', 'JUMP_IF_TRUE_OR_POP', 'LIST_APPEND', 'LIST_EXTEND', 'LIST_TO_TUPLE', 'LOAD_ATTR', 'MAKE_FUNCTION', 'MAP_ADD', 'NOP', 'RAISE_VARARGS', 'RERAISE', 'RETURN_VALUE', 'ROT_FOUR', 'ROT_N', 'ROT_THREE', 'ROT_TWO', 'SETUP_ASYNC_WITH', 'SETUP_EXCEPT', 'SETUP_FINALLY', 'SETUP_WITH', 'SET_ADD', 'SET_UPDATE', 'UNARY_', 'UNPACK_', '_arg', '_lineno', '_name', '_opcode', 'invalid lineno', 'name', 'offset']

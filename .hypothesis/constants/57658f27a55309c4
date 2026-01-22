@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_xml.py
+# hypothesis_version: 6.150.2
+
+[300, ' />\n', ' isContainer="True"', ' isRetVal="True"', ' scope="', ' value="%s"', '"', '%s: %s', '&', '&amp;', '&gt;', '&lt;', '&quot;', "'", "'>", '.', '...', '/>_= ', '<', '>', 'PyJavaInstance', 'Unable to get Type', '__class__', '__module__', '_pydev_stop_at_break', 'get_str_in_context', 'java', 'qualifier="%s"', 'replace', 'utf-8']

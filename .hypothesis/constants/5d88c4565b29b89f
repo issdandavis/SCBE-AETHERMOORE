@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/_pydevd_frame_eval/vendored/bytecode/concrete.py
+# hypothesis_version: 6.150.2
+
+[b'\xfe\x00', b'\xff\x00', -128, -127, 127, 254, 255, 'Bb', 'EXTENDED_ARG', '_extended_args', '_size', 'offset']
