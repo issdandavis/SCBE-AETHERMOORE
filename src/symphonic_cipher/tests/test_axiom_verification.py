@@ -27,6 +27,7 @@ DELTA_NOISE_MAX = 0.05
 # SECTION 1: RISK MONOTONICITY VERIFICATION (A12)
 # =============================================================================
 
+
 def verify_risk_monotonicity() -> Tuple[bool, Dict[str, Any]]:
     """
     Theorem A12.1: Risk is monotone decreasing in coherence signals.
@@ -35,10 +36,11 @@ def verify_risk_monotonicity() -> Tuple[bool, Dict[str, Any]]:
 
     Returns (passed, details)
     """
+
     def risk_prime(s_j: float, w_j: float = 0.2, d_star: float = 0.5) -> float:
         """Simplified risk with one coherence term."""
         tau_grok = w_j * s_j
-        H = R ** (d_star ** 2)
+        H = R ** (d_star**2)
         risk_base = 1 - tau_grok
         return risk_base * H
 
@@ -53,7 +55,7 @@ def verify_risk_monotonicity() -> Tuple[bool, Dict[str, Any]]:
         "min_diff": float(np.min(diffs)),
         "max_diff": float(np.max(diffs)),
         "all_decreasing": passed,
-        "theorem": "A12.1: ∂R'/∂s_j ≤ 0"
+        "theorem": "A12.1: ∂R'/∂s_j ≤ 0",
     }
 
 
@@ -65,6 +67,7 @@ def verify_composite_continuity() -> Tuple[bool, Dict[str, Any]]:
 
     Returns (passed, details)
     """
+
     def composite_map(c: float) -> float:
         """Simulate layers 1-13 end-to-end."""
         # L2: Realify
@@ -84,7 +87,7 @@ def verify_composite_continuity() -> Tuple[bool, Dict[str, Any]]:
         d_H = np.arccosh(1 + 2 * norm_u**2 / ((1 - norm_u**2) + 1e-9))
 
         # L12-13: Harmonic scaling and risk
-        H = R ** (d_H ** 2)
+        H = R ** (d_H**2)
         return float(0.5 * H)  # Simplified risk
 
     c_vals = np.linspace(0.01, 1.0, 100)
@@ -102,13 +105,14 @@ def verify_composite_continuity() -> Tuple[bool, Dict[str, Any]]:
     return passed, {
         "lipschitz_estimate": max_lip,
         "continuous": passed,
-        "theorem": "B: Composite map Lipschitz"
+        "theorem": "B: Composite map Lipschitz",
     }
 
 
 # =============================================================================
 # SECTION 2: ADVERSARIAL ROBUSTNESS (Theorem C)
 # =============================================================================
+
 
 def verify_adversarial_forge_resistance() -> Tuple[bool, Dict[str, Any]]:
     """
@@ -120,6 +124,7 @@ def verify_adversarial_forge_resistance() -> Tuple[bool, Dict[str, Any]]:
 
     Returns (passed, details)
     """
+
     def can_achieve_d_star(target_d_star: float, realm_center: np.ndarray) -> bool:
         """
         Check if adversary can construct u to achieve target d*.
@@ -165,7 +170,7 @@ def verify_adversarial_forge_resistance() -> Tuple[bool, Dict[str, Any]]:
         "target_d_star": target_d_star,
         "tolerance": tolerance,
         "brute_force_infeasible": passed,
-        "theorem": "C: High-dim search infeasible without secrets"
+        "theorem": "C: High-dim search infeasible without secrets",
     }
 
 
@@ -209,13 +214,14 @@ def verify_timing_attack_resistance() -> Tuple[bool, Dict[str, Any]]:
         "constant_operations": constant_ops,
         "no_early_exits": no_early_exits,
         "timing_independent": passed,
-        "lemma": "C.1: Constant-op arcosh"
+        "lemma": "C.1: Constant-op arcosh",
     }
 
 
 # =============================================================================
 # SECTION 3: AUDIO ROBUSTNESS (Theorem 14.2)
 # =============================================================================
+
 
 def verify_audio_robustness() -> Tuple[bool, Dict[str, Any]]:
     """
@@ -225,13 +231,14 @@ def verify_audio_robustness() -> Tuple[bool, Dict[str, Any]]:
 
     Returns (passed, details)
     """
+
     def audio_stability(wave: np.ndarray) -> Tuple[float, float]:
         """Compute S_audio and r_HF from wave."""
         fft_mag = np.abs(np.fft.fft(wave))
         N = len(fft_mag)
 
         # High frequency = upper half of spectrum
-        hf_power = np.sum(fft_mag[N//4:3*N//4])
+        hf_power = np.sum(fft_mag[N // 4 : 3 * N // 4])
         total_power = np.sum(fft_mag) + 1e-12
 
         r_HF = hf_power / total_power
@@ -274,7 +281,7 @@ def verify_audio_robustness() -> Tuple[bool, Dict[str, Any]]:
         "bounds_ok": bounds_ok,
         "definition_ok": definition_ok,
         "monotonic_in_rHF": monotonic_ok,
-        "theorem": "14.2: S_audio = 1 - r_HF ∈ [0,1]"
+        "theorem": "14.2: S_audio = 1 - r_HF ∈ [0,1]",
     }
 
 
@@ -286,6 +293,7 @@ def verify_snr_bound() -> Tuple[bool, Dict[str, Any]]:
 
     Returns (passed, details)
     """
+
     def noise_ratio(snr_db: float) -> float:
         """Compute noise power ratio at given SNR."""
         # SNR = signal_power / noise_power
@@ -299,7 +307,7 @@ def verify_snr_bound() -> Tuple[bool, Dict[str, Any]]:
 
     # Noise ratio should decrease with SNR
     ratios = [noise_ratios[s] for s in snr_levels]
-    monotone_decrease = all(ratios[i] > ratios[i+1] for i in range(len(ratios)-1))
+    monotone_decrease = all(ratios[i] > ratios[i + 1] for i in range(len(ratios) - 1))
 
     # At SNR=20dB, noise is 1% of signal; at SNR=30dB, noise is 0.1%
     snr_20_ok = noise_ratios[20] < 0.02  # Less than 2%
@@ -313,13 +321,14 @@ def verify_snr_bound() -> Tuple[bool, Dict[str, Any]]:
         "snr_20db_ratio": noise_ratios[20],
         "snr_30db_ratio": noise_ratios[30],
         "bounds_ok": snr_20_ok and snr_30_ok,
-        "lemma": "14.3: Higher SNR → lower noise ratio"
+        "lemma": "14.3: Higher SNR → lower noise ratio",
     }
 
 
 # =============================================================================
 # SECTION 4: ADAPTIVE REALMS (Theorem 8.2)
 # =============================================================================
+
 
 def verify_adaptive_realm_convergence() -> Tuple[bool, Dict[str, Any]]:
     """
@@ -329,7 +338,10 @@ def verify_adaptive_realm_convergence() -> Tuple[bool, Dict[str, Any]]:
 
     Returns (passed, details)
     """
-    def adaptive_realm_update(mu: np.ndarray, u: np.ndarray, alpha: float = 0.1) -> np.ndarray:
+
+    def adaptive_realm_update(
+        mu: np.ndarray, u: np.ndarray, alpha: float = 0.1
+    ) -> np.ndarray:
         """Update realm center toward observed point."""
         diff = u - mu
         norm_diff = np.linalg.norm(diff) + 1e-9
@@ -368,7 +380,7 @@ def verify_adaptive_realm_convergence() -> Tuple[bool, Dict[str, Any]]:
         "converged": converged,
         "monotonic_decrease": monotonic,
         "ball_invariant": ball_invariant,
-        "theorem": "8.2: Adaptive update converges for α < 1"
+        "theorem": "8.2: Adaptive update converges for α < 1",
     }
 
 
@@ -378,6 +390,7 @@ def verify_realm_separation() -> Tuple[bool, Dict[str, Any]]:
 
     Returns (passed, details)
     """
+
     def hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
         """Poincaré ball distance."""
         u_norm = np.linalg.norm(u)
@@ -403,7 +416,7 @@ def verify_realm_separation() -> Tuple[bool, Dict[str, Any]]:
         realm_centers.append(center)
 
     # Compute pairwise distances
-    min_distance = float('inf')
+    min_distance = float("inf")
     for i in range(n_realms):
         for j in range(i + 1, n_realms):
             d = hyperbolic_distance(realm_centers[i], realm_centers[j])
@@ -417,13 +430,14 @@ def verify_realm_separation() -> Tuple[bool, Dict[str, Any]]:
         "min_pairwise_distance": min_distance,
         "separation_threshold": threshold,
         "well_separated": separated,
-        "lemma": "8.3: Disjoint realm balls"
+        "lemma": "8.3: Disjoint realm balls",
     }
 
 
 # =============================================================================
 # SECTION 5: WEIGHT NORMALIZATION (Theorem 13.1)
 # =============================================================================
+
 
 def verify_weight_normalization() -> Tuple[bool, Dict[str, Any]]:
     """
@@ -433,6 +447,7 @@ def verify_weight_normalization() -> Tuple[bool, Dict[str, Any]]:
 
     Returns (passed, details)
     """
+
     def risk_with_weights(signals: np.ndarray, weights: np.ndarray) -> float:
         """Compute risk with given weights."""
         weights = weights / np.sum(weights)  # Normalize
@@ -465,13 +480,14 @@ def verify_weight_normalization() -> Tuple[bool, Dict[str, Any]]:
         "weight_schemes": results,
         "max_entropy_scheme": max_entropy_scheme,
         "equal_maximizes_entropy": passed,
-        "theorem": "13.1: Any w_i > 0 preserves monotonicity"
+        "theorem": "13.1: Any w_i > 0 preserves monotonicity",
     }
 
 
 # =============================================================================
 # SECTION 6: STABILITY (OU Process)
 # =============================================================================
+
 
 def verify_entropy_stability() -> Tuple[bool, Dict[str, Any]]:
     """
@@ -482,6 +498,7 @@ def verify_entropy_stability() -> Tuple[bool, Dict[str, Any]]:
 
     Returns (passed, details)
     """
+
     def simulate_entropy(n_steps: int = 1000, dt: float = 0.01) -> np.ndarray:
         """Simulate OU process for entropy."""
         eta = ETA_TARGET
@@ -507,7 +524,7 @@ def verify_entropy_stability() -> Tuple[bool, Dict[str, Any]]:
     mean_variance = float(np.mean(variances))
 
     # Theoretical variance: σ²/(2β) = DELTA_NOISE_MAX² / (2 * BETA)
-    theoretical_var = (DELTA_NOISE_MAX ** 2) / (2 * BETA)
+    theoretical_var = (DELTA_NOISE_MAX**2) / (2 * BETA)
 
     # Should be reasonably close (within factor of 10 due to discretization)
     passed = mean_variance < 10 * theoretical_var
@@ -516,13 +533,14 @@ def verify_entropy_stability() -> Tuple[bool, Dict[str, Any]]:
         "empirical_variance": mean_variance,
         "theoretical_variance": theoretical_var,
         "bounded": passed,
-        "process": "Ornstein-Uhlenbeck η̇ = β(η_target - η) + noise"
+        "process": "Ornstein-Uhlenbeck η̇ = β(η_target - η) + noise",
     }
 
 
 # =============================================================================
 # MAIN: RUN ALL VERIFICATION SIMS
 # =============================================================================
+
 
 def run_all_verifications(verbose: bool = True) -> Dict[str, Any]:
     """Run all verification simulations."""
@@ -570,13 +588,14 @@ def run_all_verifications(verbose: bool = True) -> Dict[str, Any]:
         "passed": passed_count,
         "total": len(verifications),
         "all_passed": passed_count == len(verifications),
-        "results": results
+        "results": results,
     }
 
 
 # =============================================================================
 # PYTEST-COMPATIBLE TEST FUNCTIONS
 # =============================================================================
+
 
 def test_risk_monotonicity():
     """Test A12.1: Risk monotone in coherence signals."""

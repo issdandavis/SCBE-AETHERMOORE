@@ -30,7 +30,8 @@ import numpy as np
 
 # Add the src directory to path for imports
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from symphonic_cipher.harmonic_scaling_law import (
     HarmonicScalingLaw,
@@ -63,7 +64,7 @@ def print_result(test_name: str, passed: bool, details: str = ""):
     symbol = "[+]" if passed else "[X]"
     print(f"{symbol} {test_name}: {status}")
     if details:
-        for line in details.split('\n'):
+        for line in details.split("\n"):
             print(f"    {line}")
 
 
@@ -94,7 +95,9 @@ def test_specification_vectors() -> bool:
     print(f"\nParameters: alpha={law.alpha}, beta={law.beta}")
     print(f"Tolerance: {tolerance}")
     print()
-    print(f"{'d*':>6} | {'tanh(calc)':>10} | {'tanh(exp)':>10} | {'H(calc)':>10} | {'H(exp)':>10} | Status")
+    print(
+        f"{'d*':>6} | {'tanh(calc)':>10} | {'tanh(exp)':>10} | {'H(calc)':>10} | {'H(exp)':>10} | Status"
+    )
     print("-" * 72)
 
     for d_star, expected_tanh, expected_H in TEST_VECTORS:
@@ -106,8 +109,10 @@ def test_specification_vectors() -> bool:
         passed = tanh_ok and H_ok
 
         status = "OK" if passed else "MISMATCH"
-        print(f"{d_star:>6.1f} | {computed_tanh:>10.4f} | {expected_tanh:>10.4f} | "
-              f"{computed_H:>10.4f} | {expected_H:>10.4f} | {status}")
+        print(
+            f"{d_star:>6.1f} | {computed_tanh:>10.4f} | {expected_tanh:>10.4f} | "
+            f"{computed_H:>10.4f} | {expected_H:>10.4f} | {status}"
+        )
 
         if not passed:
             all_passed = False
@@ -130,7 +135,21 @@ def test_bounded_monotonic() -> bool:
     law = HarmonicScalingLaw(alpha=10.0, beta=0.5, require_pq_binding=False)
     H_min, H_max = 1.0, 1.0 + law.alpha
 
-    test_values = [0.0, 0.001, 0.01, 0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 100.0, 1000.0, 1e6, 1e10]
+    test_values = [
+        0.0,
+        0.001,
+        0.01,
+        0.1,
+        0.5,
+        1.0,
+        2.0,
+        5.0,
+        10.0,
+        100.0,
+        1000.0,
+        1e6,
+        1e10,
+    ]
 
     bounded_ok = True
     monotonic_ok = True
@@ -192,7 +211,9 @@ def test_hyperbolic_distance() -> bool:
     d_uv = hyperbolic_distance_poincare(u, v)
     d_vu = hyperbolic_distance_poincare(v, u)
     symmetry_ok = abs(d_uv - d_vu) < 1e-10
-    print(f"  Symmetry: d(u,v)={d_uv:.6f}, d(v,u)={d_vu:.6f} {'OK' if symmetry_ok else 'FAIL'}")
+    print(
+        f"  Symmetry: d(u,v)={d_uv:.6f}, d(v,u)={d_vu:.6f} {'OK' if symmetry_ok else 'FAIL'}"
+    )
     all_passed &= symmetry_ok
 
     # Test 3: From origin formula
@@ -202,7 +223,9 @@ def test_hyperbolic_distance() -> bool:
     d_computed = hyperbolic_distance_poincare(origin, point)
     d_expected = 2 * np.arctanh(r)
     origin_ok = abs(d_computed - d_expected) < 0.01
-    print(f"  From origin: computed={d_computed:.6f}, expected={d_expected:.6f} {'OK' if origin_ok else 'FAIL'}")
+    print(
+        f"  From origin: computed={d_computed:.6f}, expected={d_expected:.6f} {'OK' if origin_ok else 'FAIL'}"
+    )
     all_passed &= origin_ok
 
     # Test 4: Boundary behavior (distance increases)
@@ -210,7 +233,9 @@ def test_hyperbolic_distance() -> bool:
     d2 = hyperbolic_distance_poincare(origin, np.array([0.5, 0.0]))
     d3 = hyperbolic_distance_poincare(origin, np.array([0.9, 0.0]))
     boundary_ok = d1 < d2 < d3
-    print(f"  Boundary behavior: d(0.1)={d1:.4f} < d(0.5)={d2:.4f} < d(0.9)={d3:.4f} {'OK' if boundary_ok else 'FAIL'}")
+    print(
+        f"  Boundary behavior: d(0.1)={d1:.4f} < d(0.5)={d2:.4f} < d(0.9)={d3:.4f} {'OK' if boundary_ok else 'FAIL'}"
+    )
     all_passed &= boundary_ok
 
     print_result("Hyperbolic Distance", all_passed)
@@ -264,12 +289,12 @@ def test_quantum_resistant_binding() -> bool:
 
     # Test 4: Context commitment creation
     ctx = create_context_commitment(
-        d_star=1.5,
-        behavioral_risk=0.3,
-        session_id=b"test_session"
+        d_star=1.5, behavioral_risk=0.3, session_id=b"test_session"
     )
     commitment_size_ok = len(ctx) == 32
-    print(f"  Context commitment size: {len(ctx)} bytes {'OK' if commitment_size_ok else 'FAIL'}")
+    print(
+        f"  Context commitment size: {len(ctx)} bytes {'OK' if commitment_size_ok else 'FAIL'}"
+    )
     all_passed &= commitment_size_ok
 
     # Test 5: PQContextCommitment class
@@ -277,7 +302,9 @@ def test_quantum_resistant_binding() -> bool:
     verify_ok = pq_commitment.verify(b"test_data")
     verify_fail = not pq_commitment.verify(b"wrong_data")
     pq_class_ok = verify_ok and verify_fail
-    print(f"  PQContextCommitment verify: correct={verify_ok}, wrong_rejected={verify_fail} {'OK' if pq_class_ok else 'FAIL'}")
+    print(
+        f"  PQContextCommitment verify: correct={verify_ok}, wrong_rejected={verify_fail} {'OK' if pq_class_ok else 'FAIL'}"
+    )
     all_passed &= pq_class_ok
 
     print_result("Quantum-Resistant Binding", all_passed)
@@ -300,14 +327,12 @@ def test_security_decision_engine() -> bool:
 
     engine = SecurityDecisionEngine(
         scaling_law=HarmonicScalingLaw(alpha=10.0, require_pq_binding=False),
-        risk_threshold=0.7
+        risk_threshold=0.7,
     )
 
     # Scenario 1: Accept (crypto valid, low risk, close to trusted realm)
     decision1, details1 = engine.evaluate(
-        crypto_valid=True,
-        behavioral_risk=0.1,
-        d_star=0.5
+        crypto_valid=True, behavioral_risk=0.1, d_star=0.5
     )
     scenario1_ok = decision1 is True
     print(f"\n  Scenario 1: Accept (valid crypto, low risk)")
@@ -318,9 +343,7 @@ def test_security_decision_engine() -> bool:
 
     # Scenario 2: Reject (crypto invalid)
     decision2, details2 = engine.evaluate(
-        crypto_valid=False,
-        behavioral_risk=0.1,
-        d_star=0.5
+        crypto_valid=False, behavioral_risk=0.1, d_star=0.5
     )
     scenario2_ok = decision2 is False
     print(f"\n  Scenario 2: Reject (invalid crypto)")
@@ -330,26 +353,26 @@ def test_security_decision_engine() -> bool:
 
     # Scenario 3: Reject (high risk due to large d*)
     decision3, details3 = engine.evaluate(
-        crypto_valid=True,
-        behavioral_risk=0.5,
-        d_star=5.0  # Far from trusted realm
+        crypto_valid=True, behavioral_risk=0.5, d_star=5.0  # Far from trusted realm
     )
     scenario3_ok = decision3 is False
     print(f"\n  Scenario 3: Reject (high scaled risk)")
     print(f"    crypto_valid=True, risk=0.5, d*=5.0")
     print(f"    H={details3['H']:.4f}, final_risk={details3['final_risk']:.4f}")
-    print(f"    Decision: {decision3} (expected False) {'OK' if scenario3_ok else 'FAIL'}")
+    print(
+        f"    Decision: {decision3} (expected False) {'OK' if scenario3_ok else 'FAIL'}"
+    )
     all_passed &= scenario3_ok
 
     # Scenario 4: Edge case at threshold
     engine_tight = SecurityDecisionEngine(
         scaling_law=HarmonicScalingLaw(alpha=10.0, require_pq_binding=False),
-        risk_threshold=0.5
+        risk_threshold=0.5,
     )
     decision4, details4 = engine_tight.evaluate(
         crypto_valid=True,
         behavioral_risk=0.1,
-        d_star=0.0  # Perfect match: H=1, final_risk=0.1
+        d_star=0.0,  # Perfect match: H=1, final_risk=0.1
     )
     scenario4_ok = decision4 is True
     print(f"\n  Scenario 4: Edge case (perfect match)")
@@ -398,7 +421,9 @@ def test_behavioral_risk_components() -> bool:
     )
     risk_partial = partial.compute()
     partial_ok = 0.0 < risk_partial < 1.0
-    print(f"  Partial deviation: risk={risk_partial:.6f} {'OK' if partial_ok else 'FAIL'}")
+    print(
+        f"  Partial deviation: risk={risk_partial:.6f} {'OK' if partial_ok else 'FAIL'}"
+    )
     all_passed &= partial_ok
 
     print_result("Behavioral Risk Components", all_passed)
@@ -422,15 +447,21 @@ def test_scaling_modes() -> bool:
     H_log_1 = law_log.compute(1.0)
     H_log_7 = law_log.compute(7.0)
     log_ok = abs(H_log_1 - 1.0) < 0.01 and abs(H_log_7 - 3.0) < 0.01
-    print(f"  LOGARITHMIC: H(1)={H_log_1:.4f}~1, H(7)={H_log_7:.4f}~3 {'OK' if log_ok else 'FAIL'}")
+    print(
+        f"  LOGARITHMIC: H(1)={H_log_1:.4f}~1, H(7)={H_log_7:.4f}~3 {'OK' if log_ok else 'FAIL'}"
+    )
     all_passed &= log_ok
 
     # Linear clipped mode
-    law_linear = HarmonicScalingLaw(alpha=10.0, mode=ScalingMode.LINEAR_CLIPPED, require_pq_binding=False)
+    law_linear = HarmonicScalingLaw(
+        alpha=10.0, mode=ScalingMode.LINEAR_CLIPPED, require_pq_binding=False
+    )
     H_lin_5 = law_linear.compute(5.0)
     H_lin_15 = law_linear.compute(15.0)
     linear_ok = abs(H_lin_5 - 6.0) < 1e-10 and abs(H_lin_15 - 11.0) < 1e-10
-    print(f"  LINEAR_CLIPPED: H(5)={H_lin_5:.4f}=6, H(15)={H_lin_15:.4f}=11 (clipped) {'OK' if linear_ok else 'FAIL'}")
+    print(
+        f"  LINEAR_CLIPPED: H(5)={H_lin_5:.4f}=6, H(15)={H_lin_15:.4f}=11 (clipped) {'OK' if linear_ok else 'FAIL'}"
+    )
     all_passed &= linear_ok
 
     print_result("Alternative Scaling Modes", all_passed)
@@ -449,8 +480,8 @@ def test_find_nearest_realm() -> bool:
 
     point = np.array([0.3, 0.3])
     realms = [
-        np.array([0.1, 0.1]),   # Index 0 - closest
-        np.array([0.7, 0.7]),   # Index 1
+        np.array([0.1, 0.1]),  # Index 0 - closest
+        np.array([0.7, 0.7]),  # Index 1
         np.array([-0.5, 0.0]),  # Index 2
     ]
 

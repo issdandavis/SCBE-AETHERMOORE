@@ -25,9 +25,17 @@ from datetime import datetime
 from pathlib import Path
 
 from .agents import (
-    Agent, AgentRole, AgentStatus, AgentConfig, AgentMessage,
-    SecurityAgent, ResearchAgent, BusinessAgent, EngineerAgent, CoordinatorAgent,
-    create_agent
+    Agent,
+    AgentRole,
+    AgentStatus,
+    AgentConfig,
+    AgentMessage,
+    SecurityAgent,
+    ResearchAgent,
+    BusinessAgent,
+    EngineerAgent,
+    CoordinatorAgent,
+    create_agent,
 )
 from .tasks import Task, Workflow, TaskResult, TaskStatus, WorkflowExecutor
 from .security import SecurityGate, SecurityConfig, ThreatLevel
@@ -37,6 +45,7 @@ from .logging import AuditLogger, WorkflowTracker, SecureStorage, LogLevel, LogC
 @dataclass
 class OrchestratorConfig:
     """Configuration for the orchestrator."""
+
     max_agents: int = 50
     max_concurrent_tasks: int = 100
     enable_security: bool = True
@@ -150,10 +159,12 @@ class Orchestrator:
             LogCategory.SYSTEM,
             "orchestrator",
             "Orchestrator started",
-            {"config": {
-                "max_agents": self.config.max_agents,
-                "security_enabled": self.config.enable_security,
-            }}
+            {
+                "config": {
+                    "max_agents": self.config.max_agents,
+                    "security_enabled": self.config.enable_security,
+                }
+            },
         )
 
         # Start message processing
@@ -172,7 +183,7 @@ class Orchestrator:
             LogCategory.SYSTEM,
             "orchestrator",
             "Orchestrator stopped",
-            {"uptime_seconds": (datetime.now() - self.started_at).total_seconds()}
+            {"uptime_seconds": (datetime.now() - self.started_at).total_seconds()},
         )
 
         self.audit_logger.flush()
@@ -181,23 +192,18 @@ class Orchestrator:
     # AGENT MANAGEMENT
     # =========================================================================
 
-    def create_agent(
-        self,
-        role: AgentRole,
-        name: str,
-        **kwargs
-    ) -> Agent:
+    def create_agent(self, role: AgentRole, name: str, **kwargs) -> Agent:
         """Create and register a new agent."""
         if self.registry.count() >= self.config.max_agents:
-            raise RuntimeError(f"Maximum agent limit reached ({self.config.max_agents})")
+            raise RuntimeError(
+                f"Maximum agent limit reached ({self.config.max_agents})"
+            )
 
         agent = create_agent(role, name, **kwargs)
         self.registry.register(agent)
 
         self.audit_logger.log_agent_action(
-            agent.id,
-            "created",
-            {"name": name, "role": role.value}
+            agent.id, "created", {"name": name, "role": role.value}
         )
 
         return agent
@@ -209,9 +215,7 @@ class Orchestrator:
             return False
 
         self.audit_logger.log_agent_action(
-            agent_id,
-            "removed",
-            {"name": agent.name, "role": agent.role.value}
+            agent_id, "removed", {"name": agent.name, "role": agent.role.value}
         )
 
         return self.registry.unregister(agent_id)
@@ -250,14 +254,16 @@ class Orchestrator:
 
         # Security check
         if self.security_gate:
-            allowed, sanitized, events = self.security_gate.check_input(content, sender_id)
+            allowed, sanitized, events = self.security_gate.check_input(
+                content, sender_id
+            )
 
             for event in events:
                 self.audit_logger.log_security_event(
                     sender_id,
                     event.threat_type.value,
                     {"threat_level": event.threat_level.name, "blocked": event.blocked},
-                    LogLevel.WARNING if event.blocked else LogLevel.INFO
+                    LogLevel.WARNING if event.blocked else LogLevel.INFO,
                 )
 
             if not allowed:
@@ -282,12 +288,15 @@ class Orchestrator:
         if self.security_gate:
             signed_content = self.security_gate.sign_message(content, sender_id)
             message.content = signed_content
-            message.signature = signed_content.split(':')[0]
+            message.signature = signed_content.split(":")[0]
 
         # Log communication
         import hashlib
+
         content_hash = hashlib.sha256(content.encode()).hexdigest()[:16]
-        self.audit_logger.log_communication(sender_id, receiver_id, message_type, content_hash)
+        self.audit_logger.log_communication(
+            sender_id, receiver_id, message_type, content_hash
+        )
 
         # Queue for delivery
         await self.message_queue.put(message)
@@ -298,16 +307,13 @@ class Orchestrator:
         """Process message queue."""
         while self.is_running:
             try:
-                message = await asyncio.wait_for(
-                    self.message_queue.get(),
-                    timeout=1.0
-                )
+                message = await asyncio.wait_for(self.message_queue.get(), timeout=1.0)
 
                 receiver = self.registry.get(message.receiver_id)
                 if receiver:
                     # Verify message if security enabled
                     content = message.content
-                    if self.security_gate and ':' in content:
+                    if self.security_gate and ":" in content:
                         valid, original = self.security_gate.verify_message(
                             content, message.sender_id
                         )
@@ -317,7 +323,7 @@ class Orchestrator:
                             self.audit_logger.log_security_event(
                                 message.sender_id,
                                 "invalid_signature",
-                                {"receiver": message.receiver_id}
+                                {"receiver": message.receiver_id},
                             )
                             continue
 
@@ -339,7 +345,7 @@ class Orchestrator:
                     LogCategory.SYSTEM,
                     "orchestrator",
                     f"Message processing error: {str(e)}",
-                    {}
+                    {},
                 )
 
     # =========================================================================
@@ -374,7 +380,7 @@ class Orchestrator:
             task.id,
             "started",
             agent.id,
-            {"task_type": task.task_type, "input": task.input_data}
+            {"task_type": task.task_type, "input": task.input_data},
         )
 
         try:
@@ -396,7 +402,7 @@ class Orchestrator:
                 task.id,
                 "completed",
                 agent.id,
-                {"execution_time_ms": result.execution_time_ms}
+                {"execution_time_ms": result.execution_time_ms},
             )
 
         except Exception as e:
@@ -408,10 +414,7 @@ class Orchestrator:
             )
 
             self.audit_logger.log_task_event(
-                task.id,
-                "failed",
-                agent.id,
-                {"error": str(e)}
+                task.id, "failed", agent.id, {"error": str(e)}
             )
 
         finally:
@@ -423,10 +426,7 @@ class Orchestrator:
     async def execute_workflow(self, workflow: Workflow) -> Dict[str, Any]:
         """Execute a complete workflow."""
         self.workflow_tracker.start_workflow(
-            workflow.id,
-            workflow.name,
-            "orchestrator",
-            workflow.metadata
+            workflow.id, workflow.name, "orchestrator", workflow.metadata
         )
 
         async def task_executor(task: Task) -> TaskResult:
@@ -436,16 +436,14 @@ class Orchestrator:
                 task.name,
                 result.status.value,
                 result.agent_id or "unknown",
-                result.output
+                result.output,
             )
             return result
 
         result = await self.workflow_executor.execute_workflow(workflow, task_executor)
 
         self.workflow_tracker.complete_workflow(
-            workflow.id,
-            result.get("status", "unknown"),
-            result
+            workflow.id, result.get("status", "unknown"), result
         )
 
         return result
@@ -469,7 +467,7 @@ class Orchestrator:
             LogCategory.SYSTEM,
             "orchestrator",
             f"Knowledge pack loaded: {pack_name}",
-            {"pack_name": pack_name}
+            {"pack_name": pack_name},
         )
 
         return True
@@ -503,7 +501,8 @@ class Orchestrator:
                 "is_running": self.is_running,
                 "uptime_seconds": (
                     (datetime.now() - self.started_at).total_seconds()
-                    if self.started_at else 0
+                    if self.started_at
+                    else 0
                 ),
             },
             "agents": {
@@ -520,7 +519,8 @@ class Orchestrator:
             "knowledge_bases": self.get_loaded_knowledge(),
             "security": (
                 self.security_gate.get_security_report()
-                if self.security_gate else {"enabled": False}
+                if self.security_gate
+                else {"enabled": False}
             ),
             "workflows": {
                 "active": len(self.workflow_tracker.get_active_workflows()),
@@ -535,9 +535,7 @@ class Orchestrator:
     ) -> Dict[str, Any]:
         """Generate audit report."""
         logs = self.audit_logger.query(
-            start_time=start_time,
-            end_time=end_time,
-            limit=10000
+            start_time=start_time, end_time=end_time, limit=10000
         )
 
         return {
@@ -555,13 +553,16 @@ class Orchestrator:
                 for level in LogLevel
             },
             "chain_integrity": self.audit_logger.verify_chain_integrity(),
-            "workflow_summary": self.workflow_tracker.generate_report(start_time, end_time),
+            "workflow_summary": self.workflow_tracker.generate_report(
+                start_time, end_time
+            ),
         }
 
 
 # =============================================================================
 # CONVENIENCE FUNCTIONS
 # =============================================================================
+
 
 def create_orchestrator(
     enable_security: bool = True,

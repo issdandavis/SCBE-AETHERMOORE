@@ -34,11 +34,11 @@ def spectral_coherence_demo():
 
     # FFT
     X = fft(signal)
-    freqs = fftfreq(N, 1/fs)
+    freqs = fftfreq(N, 1 / fs)
 
     # Power spectrum (one-sided)
-    P = np.abs(X[:N//2])**2
-    freqs_pos = freqs[:N//2]
+    P = np.abs(X[: N // 2]) ** 2
+    freqs_pos = freqs[: N // 2]
 
     # Define low/high frequency cutoff
     f_cutoff = 50  # Hz
@@ -88,7 +88,7 @@ Detailed Proof:
 
     # Verify Parseval's theorem
     time_energy = np.sum(signal**2)
-    freq_energy = np.sum(np.abs(X)**2) / N
+    freq_energy = np.sum(np.abs(X) ** 2) / N
 
     print(f"\nParseval verification:")
     print(f"  Time-domain energy: {time_energy:.4f}")
@@ -98,10 +98,11 @@ Detailed Proof:
     # Phase invariance check
     print(f"\n--- PHASE INVARIANCE CHECK ---")
     # Shift signal phase
-    signal_shifted = np.sin(2 * np.pi * low_freq * t + np.pi/3) + \
-                     0.3 * np.sin(2 * np.pi * high_freq * t + np.pi/2)
+    signal_shifted = np.sin(2 * np.pi * low_freq * t + np.pi / 3) + 0.3 * np.sin(
+        2 * np.pi * high_freq * t + np.pi / 2
+    )
     X_shifted = fft(signal_shifted)
-    P_shifted = np.abs(X_shifted[:N//2])**2
+    P_shifted = np.abs(X_shifted[: N // 2]) ** 2
 
     E_low_shifted = np.sum(P_shifted[low_mask])
     E_high_shifted = np.sum(P_shifted[high_mask])
@@ -131,14 +132,14 @@ def stft_coherence():
     t = np.linspace(0, 2, 2000)
 
     # Linear chirp from 10 Hz to 200 Hz
-    chirp = np.sin(2 * np.pi * (10 + 95*t) * t)
+    chirp = np.sin(2 * np.pi * (10 + 95 * t) * t)
 
     # STFT parameters
     nperseg = 128
     f, times, Zxx = stft(chirp, fs=fs, nperseg=nperseg)
 
     # Power for each frame
-    P = np.abs(Zxx)**2
+    P = np.abs(Zxx) ** 2
 
     # High-frequency ratio per frame
     f_cutoff_idx = np.searchsorted(f, 100)  # 100 Hz cutoff
@@ -149,9 +150,11 @@ def stft_coherence():
     print(f"Cutoff: 100 Hz")
 
     print(f"\nS_audio over time (sampled frames):")
-    for i in [0, len(times)//4, len(times)//2, 3*len(times)//4, -1]:
-        print(f"  t={times[i]:.2f}s: S_audio = {S_audio[i]:.4f} "
-              f"({'low freq dominant' if S_audio[i] > 0.5 else 'high freq dominant'})")
+    for i in [0, len(times) // 4, len(times) // 2, 3 * len(times) // 4, -1]:
+        print(
+            f"  t={times[i]:.2f}s: S_audio = {S_audio[i]:.4f} "
+            f"({'low freq dominant' if S_audio[i] > 0.5 else 'high freq dominant'})"
+        )
 
     print(f"""
 Proof (Parseval for STFT):
@@ -177,11 +180,11 @@ def compute_spectral_coherence(signal: np.ndarray, fs: float, f_cutoff: float) -
     """
     N = len(signal)
     X = fft(signal)
-    freqs = fftfreq(N, 1/fs)
+    freqs = fftfreq(N, 1 / fs)
 
     # Power spectrum (one-sided)
-    P = np.abs(X[:N//2])**2
-    freqs_pos = freqs[:N//2]
+    P = np.abs(X[: N // 2]) ** 2
+    freqs_pos = freqs[: N // 2]
 
     low_mask = freqs_pos < f_cutoff
     E_low = np.sum(P[low_mask])

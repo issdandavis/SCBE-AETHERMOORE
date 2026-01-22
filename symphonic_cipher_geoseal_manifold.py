@@ -64,19 +64,20 @@ class GeoSealManifold:
             Point in [0,1]^m hypercube
         """
         # Extract policy-relevant features (all already in [0,1])
-        cube_point = np.array([
-            features.get('trust_score', 0.5),
-            features.get('uptime', 0.5),
-            features.get('approval_rate', 0.5),
-            features.get('coherence', 0.5),
-            features.get('stability', 0.5),
-            features.get('relationship_age', 0.5),
-        ])
+        cube_point = np.array(
+            [
+                features.get("trust_score", 0.5),
+                features.get("uptime", 0.5),
+                features.get("approval_rate", 0.5),
+                features.get("coherence", 0.5),
+                features.get("stability", 0.5),
+                features.get("relationship_age", 0.5),
+            ]
+        )
         # Clamp to [0,1] to be safe
         return np.clip(cube_point, 0, 1)
 
-    def geometric_distance(self, sphere_pos: np.ndarray,
-                          cube_pos: np.ndarray) -> float:
+    def geometric_distance(self, sphere_pos: np.ndarray, cube_pos: np.ndarray) -> float:
         """
         Compute geometric distance between sphere and cube positions.
 
@@ -108,7 +109,7 @@ class GeoSealManifold:
         Returns:
             'interior' (trusted) or 'exterior' (suspicious)
         """
-        return 'interior' if distance < threshold else 'exterior'
+        return "interior" if distance < threshold else "exterior"
 
     def time_dilation_factor(self, distance: float, gamma: float = 2.0) -> float:
         """
@@ -137,8 +138,13 @@ class GeoSealManifold:
         """
         return np.exp(-gamma * distance)
 
-    def compute_allowed_latency(self, distance: float, base_latency: float = 50.0,
-                               max_latency: float = 2000.0, gamma: float = 2.0) -> float:
+    def compute_allowed_latency(
+        self,
+        distance: float,
+        base_latency: float = 50.0,
+        max_latency: float = 2000.0,
+        gamma: float = 2.0,
+    ) -> float:
         """
         Compute allowed latency based on geometric distance.
 
@@ -158,9 +164,9 @@ class GeoSealManifold:
         else:  # Exterior path - slow down
             return max_latency
 
-    def compute_required_pow_bits(self, distance: float,
-                                  min_bits: int = 0,
-                                  max_bits: int = 24) -> int:
+    def compute_required_pow_bits(
+        self, distance: float, min_bits: int = 0, max_bits: int = 24
+    ) -> int:
         """
         Compute required proof-of-work bits based on distance.
 
@@ -198,31 +204,33 @@ class GeoSealManifold:
         pow_bits = self.compute_required_pow_bits(distance)
 
         return {
-            'sphere_position': sphere_pos.tolist(),
-            'cube_position': cube_pos.tolist(),
-            'geometric_distance': distance,
-            'path': path,
-            'time_dilation': dilation,
-            'allowed_latency_ms': latency,
-            'required_pow_bits': pow_bits,
-            'geometric_classification': 'trusted_interior' if path == 'interior' else 'exterior_governance'
+            "sphere_position": sphere_pos.tolist(),
+            "cube_position": cube_pos.tolist(),
+            "geometric_distance": distance,
+            "path": path,
+            "time_dilation": dilation,
+            "allowed_latency_ms": latency,
+            "required_pow_bits": pow_bits,
+            "geometric_classification": (
+                "trusted_interior" if path == "interior" else "exterior_governance"
+            ),
         }
 
 
 # Example usage
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Initialize manifold
     manifold = GeoSealManifold(dimension=6)
 
     # Example 1: Trusted user
     context_trusted = np.array([0.1, 0.2, 0.15, 0.1, 0.12, 0.18])
     features_trusted = {
-        'trust_score': 0.9,
-        'uptime': 0.95,
-        'approval_rate': 0.88,
-        'coherence': 0.92,
-        'stability': 0.90,
-        'relationship_age': 0.85
+        "trust_score": 0.9,
+        "uptime": 0.95,
+        "approval_rate": 0.88,
+        "coherence": 0.92,
+        "stability": 0.90,
+        "relationship_age": 0.85,
     }
 
     sphere_pos = manifold.project_to_sphere(context_trusted)
@@ -238,12 +246,12 @@ if __name__ == '__main__':
     # Example 2: Suspicious user (stolen credentials)
     context_suspicious = np.array([5.2, 4.8, 6.1, 5.5, 4.9, 5.3])
     features_suspicious = {
-        'trust_score': 0.1,
-        'uptime': 0.2,
-        'approval_rate': 0.05,
-        'coherence': 0.15,
-        'stability': 0.1,
-        'relationship_age': 0.0
+        "trust_score": 0.1,
+        "uptime": 0.2,
+        "approval_rate": 0.05,
+        "coherence": 0.15,
+        "stability": 0.1,
+        "relationship_age": 0.0,
     }
 
     sphere_pos2 = manifold.project_to_sphere(context_suspicious)

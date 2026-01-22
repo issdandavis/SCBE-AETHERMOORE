@@ -54,20 +54,19 @@ Version: 1.0.0
 __version__ = "1.0.0"
 __all__ = [
     # Pack registry
-    'SCIENCE_PACKS',
-    'get_pack_info',
-    'list_available_packs',
-    'get_installed_packs',
-    'install_pack',
-    'PackStatus',
-
+    "SCIENCE_PACKS",
+    "get_pack_info",
+    "list_available_packs",
+    "get_installed_packs",
+    "install_pack",
+    "PackStatus",
     # Categories
-    'PHYSICAL_SCIENCES',
-    'LIFE_SCIENCES',
-    'MATHEMATICAL_SCIENCES',
-    'ENGINEERING',
-    'COMPUTER_SCIENCE',
-    'SOCIAL_SCIENCES',
+    "PHYSICAL_SCIENCES",
+    "LIFE_SCIENCES",
+    "MATHEMATICAL_SCIENCES",
+    "ENGINEERING",
+    "COMPUTER_SCIENCE",
+    "SOCIAL_SCIENCES",
 ]
 
 from enum import Enum
@@ -79,6 +78,7 @@ from pathlib import Path
 
 class PackStatus(Enum):
     """Status of a science pack."""
+
     NOT_INSTALLED = "not_installed"
     INSTALLED = "installed"
     ACTIVE = "active"
@@ -89,6 +89,7 @@ class PackStatus(Enum):
 @dataclass
 class SciencePack:
     """Represents a science module pack."""
+
     name: str
     category: str
     description: str
@@ -114,8 +115,15 @@ PHYSICAL_SCIENCES = {
         status=PackStatus.INSTALLED,
         size_mb=2.5,
         modules=[
-            "core", "atmosphere", "fluids", "orbital", "nuclear",
-            "statistical", "waves_optics", "numerical", "simulator"
+            "core",
+            "atmosphere",
+            "fluids",
+            "orbital",
+            "nuclear",
+            "statistical",
+            "waves_optics",
+            "numerical",
+            "simulator",
         ],
         textbook_refs=[
             "Halliday & Resnick - Fundamentals of Physics (OpenStax)",
@@ -124,9 +132,8 @@ PHYSICAL_SCIENCES = {
         ],
         paper_refs=[
             "arXiv:2301.00001 - Modern Computational Physics Methods",
-        ]
+        ],
     ),
-
     "chemistry": SciencePack(
         name="Computational Chemistry",
         category="Physical Sciences",
@@ -135,8 +142,14 @@ PHYSICAL_SCIENCES = {
         dependencies=["physics_sim"],
         size_mb=5.2,
         modules=[
-            "molecular", "quantum_chem", "kinetics", "thermochem",
-            "spectroscopy", "electrochemistry", "organic", "inorganic"
+            "molecular",
+            "quantum_chem",
+            "kinetics",
+            "thermochem",
+            "spectroscopy",
+            "electrochemistry",
+            "organic",
+            "inorganic",
         ],
         textbook_refs=[
             "OpenStax Chemistry 2e (Free)",
@@ -145,9 +158,8 @@ PHYSICAL_SCIENCES = {
         ],
         paper_refs=[
             "doi:10.1021/acs.jctc.0c01234 - DFT Advances 2024",
-        ]
+        ],
     ),
-
     "astronomy": SciencePack(
         name="Computational Astronomy",
         category="Physical Sciences",
@@ -156,8 +168,13 @@ PHYSICAL_SCIENCES = {
         dependencies=["physics_sim"],
         size_mb=3.8,
         modules=[
-            "celestial", "stellar", "galactic", "cosmology",
-            "exoplanets", "radio_astronomy", "spectral_analysis"
+            "celestial",
+            "stellar",
+            "galactic",
+            "cosmology",
+            "exoplanets",
+            "radio_astronomy",
+            "spectral_analysis",
         ],
         textbook_refs=[
             "OpenStax Astronomy (Free)",
@@ -165,9 +182,8 @@ PHYSICAL_SCIENCES = {
         ],
         paper_refs=[
             "arXiv:2312.00001 - JWST Early Science Results",
-        ]
+        ],
     ),
-
     "earth_science": SciencePack(
         name="Earth & Planetary Science",
         category="Physical Sciences",
@@ -176,8 +192,13 @@ PHYSICAL_SCIENCES = {
         dependencies=["physics_sim", "chemistry"],
         size_mb=4.5,
         modules=[
-            "geology", "meteorology", "oceanography", "climate",
-            "seismology", "hydrology", "geophysics"
+            "geology",
+            "meteorology",
+            "oceanography",
+            "climate",
+            "seismology",
+            "hydrology",
+            "geophysics",
         ],
         textbook_refs=[
             "OpenStax Earth Science (Free)",
@@ -185,9 +206,8 @@ PHYSICAL_SCIENCES = {
         ],
         paper_refs=[
             "doi:10.1038/s41586-024-00001 - Climate Model Advances",
-        ]
+        ],
     ),
-
     "materials": SciencePack(
         name="Materials Science",
         category="Physical Sciences",
@@ -196,8 +216,13 @@ PHYSICAL_SCIENCES = {
         dependencies=["physics_sim", "chemistry"],
         size_mb=3.2,
         modules=[
-            "solid_state", "crystallography", "nanomaterials",
-            "polymers", "ceramics", "metals", "semiconductors"
+            "solid_state",
+            "crystallography",
+            "nanomaterials",
+            "polymers",
+            "ceramics",
+            "metals",
+            "semiconductors",
         ],
         textbook_refs=[
             "Callister - Materials Science and Engineering",
@@ -205,7 +230,7 @@ PHYSICAL_SCIENCES = {
         ],
         paper_refs=[
             "doi:10.1126/science.2024001 - 2D Materials Review",
-        ]
+        ],
     ),
 }
 
@@ -221,8 +246,13 @@ LIFE_SCIENCES = {
         version="1.0.0",
         size_mb=4.8,
         modules=[
-            "cell_biology", "molecular", "genetics", "evolution",
-            "developmental", "systems_biology", "synthetic_biology"
+            "cell_biology",
+            "molecular",
+            "genetics",
+            "evolution",
+            "developmental",
+            "systems_biology",
+            "synthetic_biology",
         ],
         textbook_refs=[
             "OpenStax Biology 2e (Free)",
@@ -230,9 +260,8 @@ LIFE_SCIENCES = {
         ],
         paper_refs=[
             "doi:10.1016/j.cell.2024.001 - Single Cell Genomics",
-        ]
+        ],
     ),
-
     "neuroscience": SciencePack(
         name="Computational Neuroscience",
         category="Life Sciences",
@@ -241,8 +270,13 @@ LIFE_SCIENCES = {
         dependencies=["biology"],
         size_mb=6.1,
         modules=[
-            "hodgkin_huxley", "neural_networks", "synaptic",
-            "brain_regions", "cognitive", "vision", "motor_control"
+            "hodgkin_huxley",
+            "neural_networks",
+            "synaptic",
+            "brain_regions",
+            "cognitive",
+            "vision",
+            "motor_control",
         ],
         textbook_refs=[
             "Dayan & Abbott - Theoretical Neuroscience (MIT)",
@@ -250,9 +284,8 @@ LIFE_SCIENCES = {
         ],
         paper_refs=[
             "arXiv:2401.00001 - Large Scale Brain Simulation",
-        ]
+        ],
     ),
-
     "ecology": SciencePack(
         name="Computational Ecology",
         category="Life Sciences",
@@ -261,8 +294,13 @@ LIFE_SCIENCES = {
         dependencies=["biology"],
         size_mb=2.9,
         modules=[
-            "population", "predator_prey", "food_webs", "ecosystems",
-            "conservation", "biogeography", "climate_ecology"
+            "population",
+            "predator_prey",
+            "food_webs",
+            "ecosystems",
+            "conservation",
+            "biogeography",
+            "climate_ecology",
         ],
         textbook_refs=[
             "Gotelli - A Primer of Ecology",
@@ -270,9 +308,8 @@ LIFE_SCIENCES = {
         ],
         paper_refs=[
             "doi:10.1111/ele.2024.001 - Biodiversity Crisis Modeling",
-        ]
+        ],
     ),
-
     "bioinformatics": SciencePack(
         name="Bioinformatics",
         category="Life Sciences",
@@ -281,8 +318,13 @@ LIFE_SCIENCES = {
         dependencies=["biology"],
         size_mb=5.5,
         modules=[
-            "sequence_alignment", "phylogenetics", "genomics",
-            "proteomics", "structural", "transcriptomics", "metagenomics"
+            "sequence_alignment",
+            "phylogenetics",
+            "genomics",
+            "proteomics",
+            "structural",
+            "transcriptomics",
+            "metagenomics",
         ],
         textbook_refs=[
             "Pevsner - Bioinformatics and Functional Genomics",
@@ -290,9 +332,8 @@ LIFE_SCIENCES = {
         ],
         paper_refs=[
             "doi:10.1038/s41592-024-001 - AlphaFold3 Methods",
-        ]
+        ],
     ),
-
     "pharmacology": SciencePack(
         name="Computational Pharmacology",
         category="Life Sciences",
@@ -301,8 +342,13 @@ LIFE_SCIENCES = {
         dependencies=["biology", "chemistry"],
         size_mb=3.7,
         modules=[
-            "pharmacokinetics", "pharmacodynamics", "drug_design",
-            "toxicology", "adme", "drug_interactions", "clinical_trials"
+            "pharmacokinetics",
+            "pharmacodynamics",
+            "drug_design",
+            "toxicology",
+            "adme",
+            "drug_interactions",
+            "clinical_trials",
         ],
         textbook_refs=[
             "Goodman & Gilman - Pharmacological Basis of Therapeutics",
@@ -310,7 +356,7 @@ LIFE_SCIENCES = {
         ],
         paper_refs=[
             "doi:10.1038/s41573-024-001 - AI Drug Discovery",
-        ]
+        ],
     ),
 }
 
@@ -326,8 +372,12 @@ MATHEMATICAL_SCIENCES = {
         version="1.0.0",
         size_mb=2.1,
         modules=[
-            "number_theory", "topology", "abstract_algebra",
-            "real_analysis", "complex_analysis", "differential_geometry"
+            "number_theory",
+            "topology",
+            "abstract_algebra",
+            "real_analysis",
+            "complex_analysis",
+            "differential_geometry",
         ],
         textbook_refs=[
             "Rudin - Principles of Mathematical Analysis",
@@ -336,9 +386,8 @@ MATHEMATICAL_SCIENCES = {
         ],
         paper_refs=[
             "arXiv:2401.00001 - Advances in Algebraic Topology",
-        ]
+        ],
     ),
-
     "applied_math": SciencePack(
         name="Applied Mathematics",
         category="Mathematical Sciences",
@@ -346,8 +395,13 @@ MATHEMATICAL_SCIENCES = {
         version="1.0.0",
         size_mb=3.4,
         modules=[
-            "numerical_linear_algebra", "ode_solvers", "pde_solvers",
-            "optimization", "dynamical_systems", "chaos", "control_theory"
+            "numerical_linear_algebra",
+            "ode_solvers",
+            "pde_solvers",
+            "optimization",
+            "dynamical_systems",
+            "chaos",
+            "control_theory",
         ],
         textbook_refs=[
             "Strang - Linear Algebra (MIT OpenCourseWare)",
@@ -356,9 +410,8 @@ MATHEMATICAL_SCIENCES = {
         ],
         paper_refs=[
             "doi:10.1137/20M1001 - Modern Numerical Methods",
-        ]
+        ],
     ),
-
     "statistics": SciencePack(
         name="Statistical Computing",
         category="Mathematical Sciences",
@@ -366,8 +419,13 @@ MATHEMATICAL_SCIENCES = {
         version="1.0.0",
         size_mb=4.2,
         modules=[
-            "bayesian", "frequentist", "hypothesis_testing", "regression",
-            "time_series", "monte_carlo", "causal_inference"
+            "bayesian",
+            "frequentist",
+            "hypothesis_testing",
+            "regression",
+            "time_series",
+            "monte_carlo",
+            "causal_inference",
         ],
         textbook_refs=[
             "OpenStax Statistics (Free)",
@@ -376,9 +434,8 @@ MATHEMATICAL_SCIENCES = {
         ],
         paper_refs=[
             "arXiv:2312.00001 - Modern Causal Inference",
-        ]
+        ],
     ),
-
     "cryptography": SciencePack(
         name="Cryptographic Systems",
         category="Mathematical Sciences",
@@ -387,8 +444,14 @@ MATHEMATICAL_SCIENCES = {
         status=PackStatus.INSTALLED,  # Core to SCBE
         size_mb=3.8,
         modules=[
-            "symmetric", "asymmetric", "lattice", "elliptic_curves",
-            "post_quantum", "zero_knowledge", "mpc", "homomorphic"
+            "symmetric",
+            "asymmetric",
+            "lattice",
+            "elliptic_curves",
+            "post_quantum",
+            "zero_knowledge",
+            "mpc",
+            "homomorphic",
         ],
         textbook_refs=[
             "Katz & Lindell - Modern Cryptography",
@@ -397,9 +460,8 @@ MATHEMATICAL_SCIENCES = {
         paper_refs=[
             "NIST PQC Standard (2024)",
             "arXiv:2401.00001 - Lattice Attacks Survey",
-        ]
+        ],
     ),
-
     "logic": SciencePack(
         name="Mathematical Logic",
         category="Mathematical Sciences",
@@ -407,8 +469,13 @@ MATHEMATICAL_SCIENCES = {
         version="1.0.0",
         size_mb=1.8,
         modules=[
-            "propositional", "predicate", "modal", "proof_theory",
-            "model_theory", "computability", "type_theory"
+            "propositional",
+            "predicate",
+            "modal",
+            "proof_theory",
+            "model_theory",
+            "computability",
+            "type_theory",
         ],
         textbook_refs=[
             "Enderton - A Mathematical Introduction to Logic",
@@ -416,7 +483,7 @@ MATHEMATICAL_SCIENCES = {
         ],
         paper_refs=[
             "arXiv:2312.00001 - Lean 4 Formalization Methods",
-        ]
+        ],
     ),
 }
 
@@ -433,8 +500,13 @@ ENGINEERING = {
         dependencies=["physics_sim", "applied_math"],
         size_mb=4.1,
         modules=[
-            "circuits", "signals", "power_systems", "control_systems",
-            "electromagnetics", "electronics", "digital_systems"
+            "circuits",
+            "signals",
+            "power_systems",
+            "control_systems",
+            "electromagnetics",
+            "electronics",
+            "digital_systems",
         ],
         textbook_refs=[
             "OpenStax University Physics Vol 2 (Free)",
@@ -443,9 +515,8 @@ ENGINEERING = {
         ],
         paper_refs=[
             "IEEE Spectrum - Power Grid Modernization 2024",
-        ]
+        ],
     ),
-
     "mechanical": SciencePack(
         name="Mechanical Engineering",
         category="Engineering",
@@ -454,8 +525,14 @@ ENGINEERING = {
         dependencies=["physics_sim"],
         size_mb=5.3,
         modules=[
-            "statics", "dynamics", "fea", "cfd", "heat_transfer",
-            "machine_design", "vibrations", "robotics"
+            "statics",
+            "dynamics",
+            "fea",
+            "cfd",
+            "heat_transfer",
+            "machine_design",
+            "vibrations",
+            "robotics",
         ],
         textbook_refs=[
             "Beer & Johnston - Mechanics of Materials",
@@ -463,9 +540,8 @@ ENGINEERING = {
         ],
         paper_refs=[
             "doi:10.1115/1.2024001 - Additive Manufacturing Methods",
-        ]
+        ],
     ),
-
     "aerospace": SciencePack(
         name="Aerospace Engineering",
         category="Engineering",
@@ -474,8 +550,13 @@ ENGINEERING = {
         dependencies=["physics_sim", "mechanical"],
         size_mb=4.7,
         modules=[
-            "aerodynamics", "propulsion", "flight_dynamics", "structures",
-            "spacecraft_design", "astrodynamics", "avionics"
+            "aerodynamics",
+            "propulsion",
+            "flight_dynamics",
+            "structures",
+            "spacecraft_design",
+            "astrodynamics",
+            "avionics",
         ],
         textbook_refs=[
             "Anderson - Fundamentals of Aerodynamics",
@@ -483,9 +564,8 @@ ENGINEERING = {
         ],
         paper_refs=[
             "AIAA Journal - Hypersonic Vehicle Design 2024",
-        ]
+        ],
     ),
-
     "civil": SciencePack(
         name="Civil Engineering",
         category="Engineering",
@@ -494,8 +574,13 @@ ENGINEERING = {
         dependencies=["physics_sim", "mechanical"],
         size_mb=3.9,
         modules=[
-            "structural", "geotechnical", "transportation", "water_resources",
-            "construction", "environmental_eng", "surveying"
+            "structural",
+            "geotechnical",
+            "transportation",
+            "water_resources",
+            "construction",
+            "environmental_eng",
+            "surveying",
         ],
         textbook_refs=[
             "Hibbeler - Structural Analysis",
@@ -503,9 +588,8 @@ ENGINEERING = {
         ],
         paper_refs=[
             "ASCE - Infrastructure Resilience 2024",
-        ]
+        ],
     ),
-
     "biomedical": SciencePack(
         name="Biomedical Engineering",
         category="Engineering",
@@ -514,8 +598,13 @@ ENGINEERING = {
         dependencies=["biology", "mechanical"],
         size_mb=4.4,
         modules=[
-            "biomechanics", "medical_imaging", "prosthetics", "tissue_eng",
-            "biosensors", "drug_delivery", "neural_engineering"
+            "biomechanics",
+            "medical_imaging",
+            "prosthetics",
+            "tissue_eng",
+            "biosensors",
+            "drug_delivery",
+            "neural_engineering",
         ],
         textbook_refs=[
             "Enderle - Biomedical Engineering",
@@ -523,7 +612,7 @@ ENGINEERING = {
         ],
         paper_refs=[
             "doi:10.1038/s41551-024-001 - Neural Interface Advances",
-        ]
+        ],
     ),
 }
 
@@ -539,8 +628,14 @@ COMPUTER_SCIENCE = {
         version="1.0.0",
         size_mb=2.3,
         modules=[
-            "sorting", "searching", "graphs", "dynamic_programming",
-            "complexity", "np_hard", "approximation", "randomized"
+            "sorting",
+            "searching",
+            "graphs",
+            "dynamic_programming",
+            "complexity",
+            "np_hard",
+            "approximation",
+            "randomized",
         ],
         textbook_refs=[
             "CLRS - Introduction to Algorithms (MIT)",
@@ -549,9 +644,8 @@ COMPUTER_SCIENCE = {
         ],
         paper_refs=[
             "arXiv:2401.00001 - Quantum Algorithm Speedups",
-        ]
+        ],
     ),
-
     "ai_ml": SciencePack(
         name="AI & Machine Learning",
         category="Computer Science",
@@ -560,8 +654,15 @@ COMPUTER_SCIENCE = {
         dependencies=["algorithms", "statistics"],
         size_mb=8.2,
         modules=[
-            "neural_networks", "deep_learning", "cnn", "rnn", "transformers",
-            "reinforcement_learning", "nlp", "computer_vision", "generative"
+            "neural_networks",
+            "deep_learning",
+            "cnn",
+            "rnn",
+            "transformers",
+            "reinforcement_learning",
+            "nlp",
+            "computer_vision",
+            "generative",
         ],
         textbook_refs=[
             "Goodfellow - Deep Learning (Free)",
@@ -571,9 +672,8 @@ COMPUTER_SCIENCE = {
         paper_refs=[
             "arXiv:2401.00001 - Transformer Architecture Survey 2024",
             "arXiv:2312.00001 - RLHF Methods",
-        ]
+        ],
     ),
-
     "distributed": SciencePack(
         name="Distributed Systems",
         category="Computer Science",
@@ -582,8 +682,14 @@ COMPUTER_SCIENCE = {
         dependencies=["algorithms"],
         size_mb=3.1,
         modules=[
-            "consensus", "blockchain", "p2p", "cloud", "replication",
-            "sharding", "consistency", "fault_tolerance"
+            "consensus",
+            "blockchain",
+            "p2p",
+            "cloud",
+            "replication",
+            "sharding",
+            "consistency",
+            "fault_tolerance",
         ],
         textbook_refs=[
             "Tanenbaum - Distributed Systems",
@@ -591,9 +697,8 @@ COMPUTER_SCIENCE = {
         ],
         paper_refs=[
             "arXiv:2312.00001 - Byzantine Fault Tolerance Survey",
-        ]
+        ],
     ),
-
     "security": SciencePack(
         name="Computer Security",
         category="Computer Science",
@@ -603,8 +708,14 @@ COMPUTER_SCIENCE = {
         dependencies=["algorithms", "cryptography"],
         size_mb=4.6,
         modules=[
-            "cryptanalysis", "protocols", "network_security", "web_security",
-            "binary_analysis", "malware", "forensics", "secure_coding"
+            "cryptanalysis",
+            "protocols",
+            "network_security",
+            "web_security",
+            "binary_analysis",
+            "malware",
+            "forensics",
+            "secure_coding",
         ],
         textbook_refs=[
             "Anderson - Security Engineering (Free)",
@@ -612,9 +723,8 @@ COMPUTER_SCIENCE = {
         ],
         paper_refs=[
             "USENIX Security 2024 - Best Papers",
-        ]
+        ],
     ),
-
     "quantum_computing": SciencePack(
         name="Quantum Computing",
         category="Computer Science",
@@ -623,8 +733,14 @@ COMPUTER_SCIENCE = {
         dependencies=["physics_sim", "algorithms"],
         size_mb=3.5,
         modules=[
-            "qubits", "gates", "circuits", "algorithms", "error_correction",
-            "simulation", "variational", "quantum_ml"
+            "qubits",
+            "gates",
+            "circuits",
+            "algorithms",
+            "error_correction",
+            "simulation",
+            "variational",
+            "quantum_ml",
         ],
         textbook_refs=[
             "Nielsen & Chuang - Quantum Computation",
@@ -632,7 +748,7 @@ COMPUTER_SCIENCE = {
         ],
         paper_refs=[
             "arXiv:2401.00001 - Quantum Error Correction Advances",
-        ]
+        ],
     ),
 }
 
@@ -649,8 +765,13 @@ SOCIAL_SCIENCES = {
         dependencies=["statistics"],
         size_mb=2.8,
         modules=[
-            "econometrics", "game_theory", "market_sim", "abm",
-            "financial_modeling", "auction_theory", "mechanism_design"
+            "econometrics",
+            "game_theory",
+            "market_sim",
+            "abm",
+            "financial_modeling",
+            "auction_theory",
+            "mechanism_design",
         ],
         textbook_refs=[
             "OpenStax Principles of Economics (Free)",
@@ -658,9 +779,8 @@ SOCIAL_SCIENCES = {
         ],
         paper_refs=[
             "doi:10.1257/aer.2024.001 - Computational Economics Survey",
-        ]
+        ],
     ),
-
     "sociology": SciencePack(
         name="Computational Sociology",
         category="Social Sciences",
@@ -669,8 +789,12 @@ SOCIAL_SCIENCES = {
         dependencies=["statistics"],
         size_mb=2.2,
         modules=[
-            "network_analysis", "abm_social", "opinion_dynamics",
-            "segregation", "diffusion", "collective_behavior"
+            "network_analysis",
+            "abm_social",
+            "opinion_dynamics",
+            "segregation",
+            "diffusion",
+            "collective_behavior",
         ],
         textbook_refs=[
             "Easley & Kleinberg - Networks, Crowds, and Markets (Free)",
@@ -678,9 +802,8 @@ SOCIAL_SCIENCES = {
         ],
         paper_refs=[
             "arXiv:2312.00001 - Computational Social Science Methods",
-        ]
+        ],
     ),
-
     "psychology": SciencePack(
         name="Computational Psychology",
         category="Social Sciences",
@@ -689,8 +812,13 @@ SOCIAL_SCIENCES = {
         dependencies=["statistics", "neuroscience"],
         size_mb=2.5,
         modules=[
-            "cognitive_models", "decision_theory", "memory", "attention",
-            "learning", "emotion", "social_cognition"
+            "cognitive_models",
+            "decision_theory",
+            "memory",
+            "attention",
+            "learning",
+            "emotion",
+            "social_cognition",
         ],
         textbook_refs=[
             "Anderson - Cognitive Psychology and Its Implications",
@@ -698,9 +826,8 @@ SOCIAL_SCIENCES = {
         ],
         paper_refs=[
             "doi:10.1037/rev2024001 - Computational Models of Mind",
-        ]
+        ],
     ),
-
     "linguistics": SciencePack(
         name="Computational Linguistics",
         category="Social Sciences",
@@ -709,8 +836,14 @@ SOCIAL_SCIENCES = {
         dependencies=["ai_ml"],
         size_mb=3.9,
         modules=[
-            "nlp_core", "formal_grammars", "semantics", "pragmatics",
-            "morphology", "syntax", "phonology", "language_models"
+            "nlp_core",
+            "formal_grammars",
+            "semantics",
+            "pragmatics",
+            "morphology",
+            "syntax",
+            "phonology",
+            "language_models",
         ],
         textbook_refs=[
             "Jurafsky & Martin - Speech and Language Processing (Free)",
@@ -718,7 +851,7 @@ SOCIAL_SCIENCES = {
         ],
         paper_refs=[
             "arXiv:2401.00001 - Large Language Model Survey",
-        ]
+        ],
     ),
 }
 
@@ -746,10 +879,7 @@ def get_pack_info(pack_name: str) -> Optional[SciencePack]:
 
 def list_available_packs() -> Dict[str, List[str]]:
     """List all available packs by category."""
-    return {
-        category: list(packs.keys())
-        for category, packs in SCIENCE_PACKS.items()
-    }
+    return {category: list(packs.keys()) for category, packs in SCIENCE_PACKS.items()}
 
 
 def get_installed_packs() -> List[SciencePack]:

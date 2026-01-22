@@ -23,6 +23,7 @@ class SacredTongue:
     - Symbolic representation
     - Purpose in the system
     """
+
     code: str
     name: str
     domain: str
@@ -67,84 +68,252 @@ class SpiralverseSDK:
         - Unicode symbols for visual representation
         """
         return {
-            'KO': SacredTongue(
-                code='KO',
-                name='Korvethian',
-                domain='Light/Logic',
-                function='Control & Orchestration',
+            "KO": SacredTongue(
+                code="KO",
+                name="Korvethian",
+                domain="Light/Logic",
+                function="Control & Orchestration",
                 security_level=1,  # Kyber-512 equivalent
                 keywords=[
-                    'patent', 'claim', 'technical', 'specification', 'algorithm',
-                    'system', 'method', 'process', 'logic', 'proof',
-                    'vel', 'sil', 'keth', 'return'
+                    "patent",
+                    "claim",
+                    "technical",
+                    "specification",
+                    "algorithm",
+                    "system",
+                    "method",
+                    "process",
+                    "logic",
+                    "proof",
+                    "vel",
+                    "sil",
+                    "keth",
+                    "return",
                 ],
-                symbols=['◇', '◆', '◈', '⬖', '⬗', '⬘', '⬙', '⬚', '⟐', '⟑', '⟢', '⟣', '⟤', '⟥', '⬡', '⬢']
+                symbols=[
+                    "◇",
+                    "◆",
+                    "◈",
+                    "⬖",
+                    "⬗",
+                    "⬘",
+                    "⬙",
+                    "⬚",
+                    "⟐",
+                    "⟑",
+                    "⟢",
+                    "⟣",
+                    "⟤",
+                    "⟥",
+                    "⬡",
+                    "⬢",
+                ],
             ),
-            'AV': SacredTongue(
-                code='AV',
-                name='Avethril',
-                domain='Air/Abstract',
-                function='I/O & Messaging',
+            "AV": SacredTongue(
+                code="AV",
+                name="Avethril",
+                domain="Air/Abstract",
+                function="I/O & Messaging",
                 security_level=2,  # Kyber-768 equivalent
                 keywords=[
-                    'quantum', 'threat', 'vulnerability', 'security', 'encryption',
-                    'cryptographic', 'abstract', 'concept', 'theory',
-                    'serin', 'nurel', 'lumenna'
+                    "quantum",
+                    "threat",
+                    "vulnerability",
+                    "security",
+                    "encryption",
+                    "cryptographic",
+                    "abstract",
+                    "concept",
+                    "theory",
+                    "serin",
+                    "nurel",
+                    "lumenna",
                 ],
-                symbols=['◎', '◉', '○', '●', '◐', '◑', '◒', '◓', '◔', '◕', '◖', '◗', '◌', '◍', '◯', '⬤']
+                symbols=[
+                    "◎",
+                    "◉",
+                    "○",
+                    "●",
+                    "◐",
+                    "◑",
+                    "◒",
+                    "◓",
+                    "◔",
+                    "◕",
+                    "◖",
+                    "◗",
+                    "◌",
+                    "◍",
+                    "◯",
+                    "⬤",
+                ],
             ),
-            'RU': SacredTongue(
-                code='RU',
-                name='Runevast',
-                domain='Earth/Organic',
-                function='Policy & Constraints',
+            "RU": SacredTongue(
+                code="RU",
+                name="Runevast",
+                domain="Earth/Organic",
+                function="Policy & Constraints",
                 security_level=1,  # Kyber-512 equivalent
                 keywords=[
-                    'market', 'business', 'commercial', 'value', 'revenue',
-                    'customer', 'growth', 'organic', 'natural', 'data',
-                    'khar', 'drath', 'bront', 'ordinance'
+                    "market",
+                    "business",
+                    "commercial",
+                    "value",
+                    "revenue",
+                    "customer",
+                    "growth",
+                    "organic",
+                    "natural",
+                    "data",
+                    "khar",
+                    "drath",
+                    "bront",
+                    "ordinance",
                 ],
-                symbols=['▲', '▽', '◄', '►', '△', '▷', '◁', '▼', '▸', '◂', '▴', '▾', '◃', '▹', '⬟', '⬠']
+                symbols=[
+                    "▲",
+                    "▽",
+                    "◄",
+                    "►",
+                    "△",
+                    "▷",
+                    "◁",
+                    "▼",
+                    "▸",
+                    "◂",
+                    "▴",
+                    "▾",
+                    "◃",
+                    "▹",
+                    "⬟",
+                    "⬠",
+                ],
             ),
-            'CA': SacredTongue(
-                code='CA',
-                name='Celestine',
-                domain='Fire/Emotional',
-                function='Logic & Computation',
+            "CA": SacredTongue(
+                code="CA",
+                name="Celestine",
+                domain="Fire/Emotional",
+                function="Logic & Computation",
                 security_level=3,  # Kyber-1024 equivalent
                 keywords=[
-                    'urgent', 'critical', 'immediate', 'priority', 'deadline',
-                    'timeline', 'action', 'now', 'emergency', 'important',
-                    'klik', 'spira', 'ifta', 'thena', 'elsa'
+                    "urgent",
+                    "critical",
+                    "immediate",
+                    "priority",
+                    "deadline",
+                    "timeline",
+                    "action",
+                    "now",
+                    "emergency",
+                    "important",
+                    "klik",
+                    "spira",
+                    "ifta",
+                    "thena",
+                    "elsa",
                 ],
-                symbols=['★', '☆', '✦', '✧', '✨', '✩', '✪', '✫', '✬', '✭', '✮', '✯', '✰', '⭐', '🌟', '💫']
+                symbols=[
+                    "★",
+                    "☆",
+                    "✦",
+                    "✧",
+                    "✨",
+                    "✩",
+                    "✪",
+                    "✫",
+                    "✬",
+                    "✭",
+                    "✮",
+                    "✯",
+                    "✰",
+                    "⭐",
+                    "🌟",
+                    "💫",
+                ],
             ),
-            'UM': SacredTongue(
-                code='UM',
-                name='Umbralis',
-                domain='Cosmos/Wisdom',
-                function='Security & Privacy',
+            "UM": SacredTongue(
+                code="UM",
+                name="Umbralis",
+                domain="Cosmos/Wisdom",
+                function="Security & Privacy",
                 security_level=2,  # Kyber-768 equivalent
                 keywords=[
-                    'strategy', 'recommendation', 'advice', 'wisdom', 'guidance',
-                    'approach', 'plan', 'roadmap', 'vision', 'insight',
-                    'veil', 'hollow', 'sandbox', 'narshul', 'secure'
+                    "strategy",
+                    "recommendation",
+                    "advice",
+                    "wisdom",
+                    "guidance",
+                    "approach",
+                    "plan",
+                    "roadmap",
+                    "vision",
+                    "insight",
+                    "veil",
+                    "hollow",
+                    "sandbox",
+                    "narshul",
+                    "secure",
                 ],
-                symbols=['✴', '✵', '✶', '✷', '✸', '✹', '✺', '✻', '✼', '✽', '❂', '❃', '❄', '❅', '❆', '❇']
+                symbols=[
+                    "✴",
+                    "✵",
+                    "✶",
+                    "✷",
+                    "✸",
+                    "✹",
+                    "✺",
+                    "✻",
+                    "✼",
+                    "✽",
+                    "❂",
+                    "❃",
+                    "❄",
+                    "❅",
+                    "❆",
+                    "❇",
+                ],
             ),
-            'DR': SacredTongue(
-                code='DR',
-                name='Draconic',
-                domain='Water/Hidden',
-                function='Types & Structures',
+            "DR": SacredTongue(
+                code="DR",
+                name="Draconic",
+                domain="Water/Hidden",
+                function="Types & Structures",
                 security_level=3,  # Kyber-1024 equivalent
                 keywords=[
-                    'implementation', 'proprietary', 'secret', 'confidential',
-                    'internal', 'hidden', 'private', 'protected', 'classified',
-                    'tharn', 'anvil', 'seal', 'interface', 'struct'
+                    "implementation",
+                    "proprietary",
+                    "secret",
+                    "confidential",
+                    "internal",
+                    "hidden",
+                    "private",
+                    "protected",
+                    "classified",
+                    "tharn",
+                    "anvil",
+                    "seal",
+                    "interface",
+                    "struct",
                 ],
-                symbols=['◈', '◊', '⬥', '⬦', '⬧', '⬨', '⬩', '⬪', '⬫', '⬬', '⟠', '⟡', '⧫', '⬭', '⬮', '⬯']
-            )
+                symbols=[
+                    "◈",
+                    "◊",
+                    "⬥",
+                    "⬦",
+                    "⬧",
+                    "⬨",
+                    "⬩",
+                    "⬪",
+                    "⬫",
+                    "⬬",
+                    "⟠",
+                    "⟡",
+                    "⧫",
+                    "⬭",
+                    "⬮",
+                    "⬯",
+                ],
+            ),
         }
 
     def classify_intent(self, message: str) -> Tuple[str, float]:
@@ -215,10 +384,10 @@ class SpiralverseSDK:
         # High-risk actions require Roundtable consensus
         if action_risk > 0.7:
             # Critical actions need all three governance layers
-            required.extend(['RU', 'UM', 'CA'])  # Policy, Security, Logic
+            required.extend(["RU", "UM", "CA"])  # Policy, Security, Logic
         elif action_risk > 0.4:
             # Medium-risk needs Policy + Security
-            required.extend(['RU', 'UM'])
+            required.extend(["RU", "UM"])
 
         # Remove duplicates and return
         return list(set(required))
@@ -240,16 +409,16 @@ class SpiralverseSDK:
             - Exterior + Level 1: Hybrid (AES + ML-KEM-768)
             - Exterior + Level 2/3: Full Post-Quantum (ML-KEM + ML-DSA)
         """
-        if path_classification == 'interior':
+        if path_classification == "interior":
             if security_level == 1:
-                return 'AES-256-GCM'
+                return "AES-256-GCM"
             else:
-                return 'AES-256-GCM + HMAC-SHA256'
+                return "AES-256-GCM + HMAC-SHA256"
         else:  # exterior
             if security_level <= 2:
-                return 'HYBRID (AES + ML-KEM-768)'
+                return "HYBRID (AES + ML-KEM-768)"
             else:
-                return 'POST-QUANTUM (ML-KEM-1024 + ML-DSA-87)'
+                return "POST-QUANTUM (ML-KEM-1024 + ML-DSA-87)"
 
     def get_tongue_symbol(self, tongue_code: str, index: int = 0) -> str:
         """
@@ -263,7 +432,7 @@ class SpiralverseSDK:
             Unicode symbol string
         """
         if tongue_code not in self.tongues:
-            return '?'
+            return "?"
 
         tongue = self.tongues[tongue_code]
         if index >= len(tongue.symbols):
@@ -287,21 +456,21 @@ class SpiralverseSDK:
         required_sigs = self.requires_roundtable(tongue_code, risk_score)
 
         return {
-            'tongue_code': tongue_code,
-            'tongue_name': tongue.name,
-            'tongue_domain': tongue.domain,
-            'tongue_function': tongue.function,
-            'security_level': tongue.security_level,
-            'classification_confidence': confidence,
-            'symbol': tongue.symbols[0],
-            'required_consensus': required_sigs,
-            'consensus_level': len(required_sigs),
-            'roundtable_active': len(required_sigs) > 1
+            "tongue_code": tongue_code,
+            "tongue_name": tongue.name,
+            "tongue_domain": tongue.domain,
+            "tongue_function": tongue.function,
+            "security_level": tongue.security_level,
+            "classification_confidence": confidence,
+            "symbol": tongue.symbols[0],
+            "required_consensus": required_sigs,
+            "consensus_level": len(required_sigs),
+            "roundtable_active": len(required_sigs) > 1,
         }
 
 
 # Example usage
-if __name__ == '__main__':
+if __name__ == "__main__":
     sdk = SpiralverseSDK()
 
     # Example 1: Normal command

@@ -4,6 +4,7 @@ from strands.models import BedrockModel
 # https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html
 MODEL_ID = "global.anthropic.claude-sonnet-4-5-20250929-v1:0"
 
+
 def load_model() -> BedrockModel:
     """
     Get Bedrock model client.

@@ -41,7 +41,7 @@ TAU = 2 * math.pi  # Full circle
 TONGUES = ["KO", "AV", "RU", "CA", "UM", "DR"]
 
 # Tongue weights: φ^k progression (1, φ, φ², φ³, φ⁴, φ⁵)
-TONGUE_WEIGHTS = [PHI ** k for k in range(6)]
+TONGUE_WEIGHTS = [PHI**k for k in range(6)]
 
 # Tongue phases: 0°, 60°, 120°, 180°, 240°, 300° (radians)
 TONGUE_PHASES = [TAU * k / 6 for k in range(6)]
@@ -49,12 +49,12 @@ TONGUE_PHASES = [TAU * k / 6 for k in range(6)]
 # Default frequencies (based on harmonic intervals)
 # From the "Sacred Tongues" harmonic ratios
 TONGUE_FREQUENCIES = [
-    1.0,      # KO - root (unison)
-    9/8,      # AV - major second
-    5/4,      # RU - major third
-    4/3,      # CA - perfect fourth
-    3/2,      # UM - perfect fifth
-    5/3,      # DR - major sixth
+    1.0,  # KO - root (unison)
+    9 / 8,  # AV - major second
+    5 / 4,  # RU - major third
+    4 / 3,  # CA - perfect fourth
+    3 / 2,  # UM - perfect fifth
+    5 / 3,  # DR - major sixth
 ]
 
 # Dimension names for the 6D hyperspace
@@ -64,6 +64,7 @@ DIMENSIONS = ["time", "intent", "policy", "trust", "risk", "entropy"]
 @dataclass
 class HyperspacePoint:
     """A point in the 6D langues hyperspace."""
+
     time: float = 0.0
     intent: float = 0.0
     policy: float = 0.0
@@ -72,28 +73,42 @@ class HyperspacePoint:
     entropy: float = 0.1
 
     def to_vector(self) -> List[float]:
-        return [self.time, self.intent, self.policy, self.trust, self.risk, self.entropy]
+        return [
+            self.time,
+            self.intent,
+            self.policy,
+            self.trust,
+            self.risk,
+            self.entropy,
+        ]
 
     @classmethod
     def from_vector(cls, v: List[float]) -> "HyperspacePoint":
         return cls(
-            time=v[0], intent=v[1], policy=v[2],
-            trust=v[3], risk=v[4], entropy=v[5]
+            time=v[0], intent=v[1], policy=v[2], trust=v[3], risk=v[4], entropy=v[5]
         )
 
 
 @dataclass
 class IdealState:
     """Ideal/safe state μ for computing deviations."""
-    time: float = 0.0      # Relative time anchor
-    intent: float = 0.0    # Neutral intent
-    policy: float = 0.5    # Balanced policy
-    trust: float = 0.9     # High trust
-    risk: float = 0.1      # Low risk
-    entropy: float = 0.2   # Low entropy
+
+    time: float = 0.0  # Relative time anchor
+    intent: float = 0.0  # Neutral intent
+    policy: float = 0.5  # Balanced policy
+    trust: float = 0.9  # High trust
+    risk: float = 0.1  # Low risk
+    entropy: float = 0.2  # Low entropy
 
     def to_vector(self) -> List[float]:
-        return [self.time, self.intent, self.policy, self.trust, self.risk, self.entropy]
+        return [
+            self.time,
+            self.intent,
+            self.policy,
+            self.trust,
+            self.risk,
+            self.entropy,
+        ]
 
 
 class LanguesMetric:
@@ -245,7 +260,7 @@ def langues_distance(
     for l in range(6):
         w_l = TONGUE_WEIGHTS[l]
         diff = v1[l] - v2[l]
-        d_sq += w_l * diff ** 2
+        d_sq += w_l * diff**2
 
     return math.sqrt(d_sq)
 
@@ -267,6 +282,7 @@ def build_langues_metric_matrix() -> List[List[float]]:
 # FLUXING DIMENSIONS - Polly, Quasi, Demi
 # =============================================================================
 
+
 @dataclass
 class DimensionFlux:
     """
@@ -279,6 +295,7 @@ class DimensionFlux:
 
     D_f(t) = Σνᵢ is the instantaneous effective dimension (can be non-integer)
     """
+
     nu: List[float]  # Flux weights ν₁...ν₆
     kappa: List[float]  # Relaxation rates κᵢ
     nu_bar: List[float]  # Baseline targets ν̄ᵢ
@@ -361,10 +378,9 @@ class FluxingLanguesMetric:
         ν̇ᵢ = κᵢ(ν̄ᵢ - νᵢ) + σᵢ sin(Ωᵢt)
         """
         for i in range(6):
-            dnu = (
-                self.flux.kappa[i] * (self.flux.nu_bar[i] - self.flux.nu[i]) +
-                self.flux.sigma[i] * math.sin(self.flux.omega_flux[i] * self.time)
-            )
+            dnu = self.flux.kappa[i] * (
+                self.flux.nu_bar[i] - self.flux.nu[i]
+            ) + self.flux.sigma[i] * math.sin(self.flux.omega_flux[i] * self.time)
             # Clamp to [0, 1]
             self.flux.nu[i] = max(0.0, min(1.0, self.flux.nu[i] + dnu * dt))
 
@@ -506,6 +522,7 @@ def verify_1d_projection() -> bool:
 # Proofs and Properties
 # =============================================================================
 
+
 def verify_monotonicity() -> bool:
     """
     Verify Theorem: ∂L/∂d_l > 0 for all l.
@@ -513,7 +530,9 @@ def verify_monotonicity() -> bool:
     The langues metric is monotonically increasing in each deviation.
     """
     metric = LanguesMetric()
-    ideal = HyperspacePoint(time=0, intent=0, policy=0.5, trust=0.9, risk=0.1, entropy=0.2)
+    ideal = HyperspacePoint(
+        time=0, intent=0, policy=0.5, trust=0.9, risk=0.1, entropy=0.2
+    )
     metric.ideal = IdealState(*ideal.to_vector())
 
     # Test: increasing deviation should increase L
@@ -586,17 +605,27 @@ if __name__ == "__main__":
 
     print("SIX SACRED TONGUES:")
     for i, tongue in enumerate(TONGUES):
-        print(f"  {tongue}: weight=φ^{i}={TONGUE_WEIGHTS[i]:.4f}, "
-              f"phase={math.degrees(TONGUE_PHASES[i]):.0f}°, "
-              f"freq={TONGUE_FREQUENCIES[i]:.3f}")
+        print(
+            f"  {tongue}: weight=φ^{i}={TONGUE_WEIGHTS[i]:.4f}, "
+            f"phase={math.degrees(TONGUE_PHASES[i]):.0f}°, "
+            f"freq={TONGUE_FREQUENCIES[i]:.3f}"
+        )
     print()
 
     # Verify properties
     print("MATHEMATICAL PROOFS:")
-    print(f"  Monotonicity (∂L/∂d_l > 0):     {'✓ PROVEN' if verify_monotonicity() else '✗ FAILED'}")
-    print(f"  Phase bounded (sin ∈ [-1,1]):   {'✓ PROVEN' if verify_phase_bounded() else '✗ FAILED'}")
-    print(f"  Golden weights (w_l = φ^l):     {'✓ PROVEN' if verify_tongue_weights() else '✗ FAILED'}")
-    print(f"  Six-fold symmetry (60° phases): {'✓ PROVEN' if verify_six_fold_symmetry() else '✗ FAILED'}")
+    print(
+        f"  Monotonicity (∂L/∂d_l > 0):     {'✓ PROVEN' if verify_monotonicity() else '✗ FAILED'}"
+    )
+    print(
+        f"  Phase bounded (sin ∈ [-1,1]):   {'✓ PROVEN' if verify_phase_bounded() else '✗ FAILED'}"
+    )
+    print(
+        f"  Golden weights (w_l = φ^l):     {'✓ PROVEN' if verify_tongue_weights() else '✗ FAILED'}"
+    )
+    print(
+        f"  Six-fold symmetry (60° phases): {'✓ PROVEN' if verify_six_fold_symmetry() else '✗ FAILED'}"
+    )
     print()
 
     # Demo computations
@@ -606,19 +635,25 @@ if __name__ == "__main__":
     print()
 
     # Safe state
-    safe = HyperspacePoint(time=0, intent=0, policy=0.5, trust=0.9, risk=0.1, entropy=0.2)
+    safe = HyperspacePoint(
+        time=0, intent=0, policy=0.5, trust=0.9, risk=0.1, entropy=0.2
+    )
     L_safe = metric.compute(safe)
     risk, decision = metric.risk_level(L_safe)
     print(f"  Safe state:      L={L_safe:.2f} → {risk} → {decision}")
 
     # Moderate drift
-    drift = HyperspacePoint(time=0, intent=0.5, policy=0.3, trust=0.7, risk=0.4, entropy=0.3)
+    drift = HyperspacePoint(
+        time=0, intent=0.5, policy=0.3, trust=0.7, risk=0.4, entropy=0.3
+    )
     L_drift = metric.compute(drift)
     risk, decision = metric.risk_level(L_drift)
     print(f"  Moderate drift:  L={L_drift:.2f} → {risk} → {decision}")
 
     # High deviation (attack)
-    attack = HyperspacePoint(time=0, intent=1.5, policy=0.1, trust=0.2, risk=0.9, entropy=0.8)
+    attack = HyperspacePoint(
+        time=0, intent=1.5, policy=0.1, trust=0.2, risk=0.9, entropy=0.8
+    )
     L_attack = metric.compute(attack)
     risk, decision = metric.risk_level(L_attack)
     print(f"  Attack state:    L={L_attack:.2f} → {risk} → {decision}")
@@ -630,9 +665,15 @@ if __name__ == "__main__":
     print()
 
     print("FRACTIONAL DIMENSION PROOFS:")
-    print(f"  Flux bounded (ν ∈ [0,1]):       {'✓ PROVEN' if verify_flux_bounded() else '✗ FAILED'}")
-    print(f"  Dimension conservation:         {'✓ PROVEN' if verify_dimension_conservation() else '✗ FAILED'}")
-    print(f"  1D projection (ν=[1,0,0,0,0,0]):{'✓ PROVEN' if verify_1d_projection() else '✗ FAILED'}")
+    print(
+        f"  Flux bounded (ν ∈ [0,1]):       {'✓ PROVEN' if verify_flux_bounded() else '✗ FAILED'}"
+    )
+    print(
+        f"  Dimension conservation:         {'✓ PROVEN' if verify_dimension_conservation() else '✗ FAILED'}"
+    )
+    print(
+        f"  1D projection (ν=[1,0,0,0,0,0]):{'✓ PROVEN' if verify_1d_projection() else '✗ FAILED'}"
+    )
     print()
 
     print("DIMENSION STATES:")
@@ -645,7 +686,9 @@ if __name__ == "__main__":
     # Demo fluxing simulation
     print("FLUX SIMULATION (100 steps):")
     flux_metric = FluxingLanguesMetric(flux=DimensionFlux.quasi())
-    test_point = HyperspacePoint(time=0, intent=0.5, policy=0.6, trust=0.7, risk=0.3, entropy=0.4)
+    test_point = HyperspacePoint(
+        time=0, intent=0.5, policy=0.6, trust=0.7, risk=0.3, entropy=0.4
+    )
 
     L_vals, D_f_vals, nu_history = flux_metric.simulate(test_point, steps=100, dt=0.01)
 

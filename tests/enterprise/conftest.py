@@ -9,7 +9,9 @@ from typing import Generator, Any
 from hypothesis import settings, Verbosity
 
 # Configure hypothesis for property-based testing
-settings.register_profile("enterprise", max_examples=100, deadline=None, verbosity=Verbosity.verbose)
+settings.register_profile(
+    "enterprise", max_examples=100, deadline=None, verbosity=Verbosity.verbose
+)
 settings.load_profile("enterprise")
 
 

@@ -10,14 +10,14 @@ import sys
 import os
 
 # Set UTF-8 encoding for Windows compatibility
-if sys.platform == 'win32':
+if sys.platform == "win32":
     # Reconfigure stdout/stderr to use UTF-8 encoding
-    if hasattr(sys.stdout, 'reconfigure'):
-        sys.stdout.reconfigure(encoding='utf-8')
-    if hasattr(sys.stderr, 'reconfigure'):
-        sys.stderr.reconfigure(encoding='utf-8')
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8")
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 import numpy as np
 from scbe_14layer_reference import *
@@ -56,21 +56,25 @@ class TestSCBE14Layers:
         # Test 2: Zero phases → real output
         t_real = np.concatenate([np.ones(self.D), np.zeros(self.D)])
         c_real = layer_1_complex_state(t_real, self.D)
-        self.assert_test(np.allclose(np.imag(c_real), 0), "Zero phases produce real values")
+        self.assert_test(
+            np.allclose(np.imag(c_real), 0), "Zero phases produce real values"
+        )
 
         # Test 3: Amplitude encoding
         amplitudes = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
         phases = np.zeros(self.D)
         t = np.concatenate([amplitudes, phases])
         c = layer_1_complex_state(t, self.D)
-        self.assert_test(np.allclose(np.abs(c), amplitudes), "Amplitudes correctly encoded")
+        self.assert_test(
+            np.allclose(np.abs(c), amplitudes), "Amplitudes correctly encoded"
+        )
 
     def test_layer_2_realification(self):
         """Test Layer 2: Realification."""
         print("\n[Layer 2] Realification Tests:")
 
         # Test 1: Dimension doubling
-        c = np.array([1+2j, 3+4j, 5+6j, 7+8j, 9+10j, 11+12j])
+        c = np.array([1 + 2j, 3 + 4j, 5 + 6j, 7 + 8j, 9 + 10j, 11 + 12j])
         x = layer_2_realification(c)
         self.assert_test(x.shape == (2 * self.D,), "Output dimension is 2D")
         self.assert_test(np.isrealobj(x), "Output is real-valued")
@@ -83,10 +87,12 @@ class TestSCBE14Layers:
         self.assert_test(np.isclose(c_norm, x_norm), "Isometry: norm preserved")
 
         # Test 3: Invertibility
-        real_part = x[:self.D]
-        imag_part = x[self.D:]
+        real_part = x[: self.D]
+        imag_part = x[self.D :]
         c_recovered = real_part + 1j * imag_part
-        self.assert_test(np.allclose(c, c_recovered), "Invertible: can recover complex state")
+        self.assert_test(
+            np.allclose(c, c_recovered), "Invertible: can recover complex state"
+        )
 
     def test_layer_3_weighted_transform(self):
         """Test Layer 3: Weighted transform."""
@@ -103,7 +109,9 @@ class TestSCBE14Layers:
         # Test 3: Custom SPD matrix
         G = np.eye(self.n)
         x_G_identity = layer_3_weighted_transform(x, G)
-        self.assert_test(np.allclose(x, x_G_identity), "Identity matrix → identity transform")
+        self.assert_test(
+            np.allclose(x, x_G_identity), "Identity matrix → identity transform"
+        )
 
         # Test 4: Linearity
         x1 = np.random.randn(self.n)
@@ -123,7 +131,9 @@ class TestSCBE14Layers:
 
         # Test 2: Clamping to compact sub-ball
         max_norm = 1.0 - self.eps_ball
-        self.assert_test(np.linalg.norm(u) <= max_norm, f"Clamped to ||u|| ≤ {max_norm}")
+        self.assert_test(
+            np.linalg.norm(u) <= max_norm, f"Clamped to ||u|| ≤ {max_norm}"
+        )
 
         # Test 3: Zero input → zero output
         u_zero = layer_4_poincare_embedding(np.zeros(self.n))
@@ -172,7 +182,9 @@ class TestSCBE14Layers:
 
         # Test 3: b < 1 contracts radius
         u_contract = layer_6_breathing_transform(u, b=0.7)
-        self.assert_test(np.linalg.norm(u_contract) < np.linalg.norm(u), "b < 1 contracts")
+        self.assert_test(
+            np.linalg.norm(u_contract) < np.linalg.norm(u), "b < 1 contracts"
+        )
 
         # Test 4: b = 1 approximately identity
         u_identity = layer_6_breathing_transform(u, b=1.0)
@@ -184,7 +196,9 @@ class TestSCBE14Layers:
         u_b = layer_6_breathing_transform(u, b=1.5)
         v_b = layer_6_breathing_transform(v, b=1.5)
         d_after = layer_5_hyperbolic_distance(u_b, v_b)
-        self.assert_test(not np.isclose(d_before, d_after), "NOT isometry (distance changes)")
+        self.assert_test(
+            not np.isclose(d_before, d_after), "NOT isometry (distance changes)"
+        )
 
     def test_layer_7_phase_transform(self):
         """Test Layer 7: Phase transform (isometry)."""
@@ -215,7 +229,10 @@ class TestSCBE14Layers:
         v_rot = layer_7_phase_transform(v, a, Q_rot)
         d_after = layer_5_hyperbolic_distance(u_rot, v_rot)
 
-        self.assert_test(np.isclose(d_before, d_after, rtol=0.01), "Rotation preserves distance (isometry)")
+        self.assert_test(
+            np.isclose(d_before, d_after, rtol=0.01),
+            "Rotation preserves distance (isometry)",
+        )
 
     def test_layer_8_realm_distance(self):
         """Test Layer 8: Realm distance."""
@@ -247,7 +264,7 @@ class TestSCBE14Layers:
         self.assert_test(0 <= S_spec <= 1, "S_spec ∈ [0, 1]")
 
         # Test 2: Pure low-frequency signal → high coherence
-        signal_low = np.sin(np.linspace(0, 2*np.pi, 256))
+        signal_low = np.sin(np.linspace(0, 2 * np.pi, 256))
         S_low = layer_9_spectral_coherence(signal_low)
         self.assert_test(S_low > 0.5, "Low-frequency signal → high coherence")
 
@@ -294,8 +311,9 @@ class TestSCBE14Layers:
 
         # Test 2: Weights sum to 1 (validated internally)
         try:
-            d_tri = layer_11_triadic_temporal(0.1, 0.2, 0.3,
-                                             lambda1=0.33, lambda2=0.33, lambda3=0.34)
+            d_tri = layer_11_triadic_temporal(
+                0.1, 0.2, 0.3, lambda1=0.33, lambda2=0.33, lambda3=0.34
+            )
             self.assert_test(True, "Weights sum to 1 validation passes")
         except AssertionError:
             self.assert_test(False, "Weights sum to 1 validation passes")
@@ -346,8 +364,10 @@ class TestSCBE14Layers:
         decision_amp = layer_13_risk_decision(0.3, H=2.0, theta1=0.33, theta2=0.67)
         # 0.3 * 1.0 = 0.3 < 0.33 → ALLOW
         # 0.3 * 2.0 = 0.6 > 0.33 → QUARANTINE or DENY
-        self.assert_test(decision_no_amp == "ALLOW" and decision_amp != "ALLOW",
-                        "Harmonic amplification escalates decision")
+        self.assert_test(
+            decision_no_amp == "ALLOW" and decision_amp != "ALLOW",
+            "Harmonic amplification escalates decision",
+        )
 
     def test_layer_14_audio_axis(self):
         """Test Layer 14: Audio axis."""
@@ -359,7 +379,7 @@ class TestSCBE14Layers:
         self.assert_test(0 <= S_audio <= 1, "S_audio ∈ [0, 1]")
 
         # Test 2: Pure tone → high stability
-        audio_tone = np.sin(np.linspace(0, 10*np.pi, 512))
+        audio_tone = np.sin(np.linspace(0, 10 * np.pi, 512))
         S_tone = layer_14_audio_axis(audio_tone)
         self.assert_test(S_tone > 0.3, "Pure tone → moderate/high stability")
 
@@ -381,27 +401,37 @@ class TestSCBE14Layers:
             return
 
         # Test 2: All required keys present
-        required_keys = ['decision', 'risk_base', 'risk_prime', 'd_star',
-                        'coherence', 'geometry']
+        required_keys = [
+            "decision",
+            "risk_base",
+            "risk_prime",
+            "d_star",
+            "coherence",
+            "geometry",
+        ]
         all_present = all(k in result for k in required_keys)
         self.assert_test(all_present, "All required output keys present")
 
         # Test 3: Decision is valid
         valid_decisions = ["ALLOW", "QUARANTINE", "DENY"]
-        self.assert_test(result['decision'] in valid_decisions,
-                        f"Valid decision: {result['decision']}")
+        self.assert_test(
+            result["decision"] in valid_decisions,
+            f"Valid decision: {result['decision']}",
+        )
 
         # Test 4: Risk values are non-negative
-        self.assert_test(result['risk_base'] >= 0 and result['risk_prime'] >= 0,
-                        "Risk values are non-negative")
+        self.assert_test(
+            result["risk_base"] >= 0 and result["risk_prime"] >= 0,
+            "Risk values are non-negative",
+        )
 
         # Test 5: Coherence values in [0, 1]
-        coherence = result['coherence']
+        coherence = result["coherence"]
         all_in_range = all(0 <= v <= 1 for v in coherence.values())
         self.assert_test(all_in_range, "All coherence values ∈ [0, 1]")
 
         # Test 6: Geometry values valid
-        geometry = result['geometry']
+        geometry = result["geometry"]
         all_in_ball = all(v < 1.0 for v in geometry.values())
         self.assert_test(all_in_ball, "All geometry norms < 1")
 

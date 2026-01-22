@@ -72,7 +72,9 @@ class SCBEContextEncoder:
         weights = np.array([1.0, 1.1, 1.25, 1.33, 1.5, 1.66] * 2)
         return weights[: len(x)] * x
 
-    def embed_to_poincare_ball(self, x_weighted: np.ndarray, alpha: float = 1.5) -> np.ndarray:
+    def embed_to_poincare_ball(
+        self, x_weighted: np.ndarray, alpha: float = 1.5
+    ) -> np.ndarray:
         """
         Layer 4: Embed into Poincare ball.
         """

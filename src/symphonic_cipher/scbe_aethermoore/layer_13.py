@@ -43,6 +43,7 @@ EPSILON = 1e-10
 
 class Decision(Enum):
     """Layer 13 decision outcomes."""
+
     ALLOW = "ALLOW"
     WARN = "WARN"
     REVIEW = "REVIEW"
@@ -55,11 +56,13 @@ class Decision(Enum):
 # HARMONIC SCALING (Lemma 13.1)
 # =============================================================================
 
+
 @dataclass
 class HarmonicParams:
     """Parameters for harmonic scaling H(d*)."""
-    alpha: float = 1.0      # Amplitude: H ∈ [1, 1+α]
-    beta: float = 1.0       # Steepness: controls transition rate
+
+    alpha: float = 1.0  # Amplitude: H ∈ [1, 1+α]
+    beta: float = 1.0  # Steepness: controls transition rate
 
     def __post_init__(self):
         assert self.alpha > 0, "α must be positive"
@@ -95,7 +98,9 @@ def harmonic_H(d_star: float, params: Optional[HarmonicParams] = None) -> float:
     return float(H)
 
 
-def harmonic_derivative(d_star: float, params: Optional[HarmonicParams] = None) -> float:
+def harmonic_derivative(
+    d_star: float, params: Optional[HarmonicParams] = None
+) -> float:
     """
     Compute ∂H/∂d* for sensitivity analysis.
 
@@ -116,13 +121,14 @@ def harmonic_vertical_wall(d_star: float, max_exp: float = 50.0) -> float:
 
     Use for patent demonstration; Lemma 13.1 uses tanh for bounded ops.
     """
-    exponent = min(d_star ** 2, max_exp)
+    exponent = min(d_star**2, max_exp)
     return float(np.exp(exponent))
 
 
 # =============================================================================
 # MULTIPLIERS (Lemma 13.1)
 # =============================================================================
+
 
 @dataclass
 class TimeMultiplier:
@@ -131,9 +137,10 @@ class TimeMultiplier:
 
     Time_Multi ≥ 1, derived from triadic temporal deviation.
     """
-    base: float = 1.0           # Minimum value
-    scale: float = 1.0          # Scaling factor
-    d_temporal: float = 0.0     # Temporal deviation
+
+    base: float = 1.0  # Minimum value
+    scale: float = 1.0  # Scaling factor
+    d_temporal: float = 0.0  # Temporal deviation
 
     @property
     def value(self) -> float:
@@ -149,9 +156,10 @@ class IntentMultiplier:
     Intent_Multi ≥ 1, from langues r_k ratios and philosophy vectoring.
     Phase-shifted φ-tuned harmonic.
     """
-    base: float = 1.0           # Minimum value
-    phi_shift: float = 0.0      # Phase shift for emotional cost
-    r_k: float = 1.0            # Langues ratio
+
+    base: float = 1.0  # Minimum value
+    phi_shift: float = 0.0  # Phase shift for emotional cost
+    r_k: float = 1.0  # Langues ratio
     intent_deviation: float = 0.0  # Intent misalignment
 
     @property
@@ -169,21 +177,23 @@ class IntentMultiplier:
 # COMPOSITE RISK (Lemma 13.1)
 # =============================================================================
 
+
 @dataclass
 class RiskComponents:
     """Input components for composite risk computation."""
-    behavioral_risk: float      # From upstream verifiers (Layers 9-12)
-    d_star: float               # Realm distance (Layer 8)
+
+    behavioral_risk: float  # From upstream verifiers (Layers 9-12)
+    d_star: float  # Realm distance (Layer 8)
     time_multi: TimeMultiplier  # Temporal cost
     intent_multi: IntentMultiplier  # Intent cost
 
     def validate(self) -> bool:
         """Verify Lemma 13.1 preconditions."""
         return (
-            self.behavioral_risk >= 0 and
-            self.d_star >= 0 and
-            self.time_multi.value >= 1.0 and
-            self.intent_multi.value >= 1.0
+            self.behavioral_risk >= 0
+            and self.d_star >= 0
+            and self.time_multi.value >= 1.0
+            and self.intent_multi.value >= 1.0
         )
 
 
@@ -194,6 +204,7 @@ class CompositeRisk:
 
     Lemma 13.1: Risk' = Behavioral_Risk × H(d*) × Time_Multi × Intent_Multi
     """
+
     # Input factors
     behavioral_risk: float
     H: float
@@ -201,12 +212,12 @@ class CompositeRisk:
     intent_multi: float
 
     # Computed values
-    risk_prime: float           # Raw composite risk
-    risk_normalized: float      # Optional normalization [0,1]
+    risk_prime: float  # Raw composite risk
+    risk_normalized: float  # Optional normalization [0,1]
 
     # Decision
     decision: Decision
-    confidence: float           # Distance from threshold
+    confidence: float  # Distance from threshold
 
     # Diagnostics
     components: Dict[str, float]
@@ -216,10 +227,10 @@ class CompositeRisk:
 def compute_composite_risk(
     components: RiskComponents,
     harmonic_params: Optional[HarmonicParams] = None,
-    theta_1: float = 0.5,       # ALLOW threshold
-    theta_2: float = 2.0,       # DENY threshold
+    theta_1: float = 0.5,  # ALLOW threshold
+    theta_2: float = 2.0,  # DENY threshold
     normalize: bool = True,
-    rho: float = 1.0            # Normalization scale
+    rho: float = 1.0,  # Normalization scale
 ) -> CompositeRisk:
     """
     Compute Layer 13 composite risk per Lemma 13.1.
@@ -296,10 +307,10 @@ def compute_composite_risk(
     # Property 4: Compute gradients for monotonicity verification
     dH_dd = harmonic_derivative(d_star, harmonic_params)
     gradients = {
-        "dRisk_dB": H * T * I,                      # > 0
-        "dRisk_dd_star": B * T * I * dH_dd,         # > 0 (via chain rule)
-        "dRisk_dT": B * H * I,                      # > 0
-        "dRisk_dI": B * H * T,                      # > 0
+        "dRisk_dB": H * T * I,  # > 0
+        "dRisk_dd_star": B * T * I * dH_dd,  # > 0 (via chain rule)
+        "dRisk_dT": B * H * I,  # > 0
+        "dRisk_dI": B * H * T,  # > 0
     }
 
     return CompositeRisk(
@@ -318,13 +329,14 @@ def compute_composite_risk(
             "intent_multi": I,
             "d_star": d_star,
         },
-        gradients=gradients
+        gradients=gradients,
     )
 
 
 # =============================================================================
 # NORTH STAR ENFORCEMENT (Corollary)
 # =============================================================================
+
 
 def verify_north_star(components: RiskComponents) -> Dict[str, Any]:
     """
@@ -343,7 +355,7 @@ def verify_north_star(components: RiskComponents) -> Dict[str, Any]:
         behavioral_risk=components.behavioral_risk,
         d_star=0.0,
         time_multi=TimeMultiplier(base=1.0, d_temporal=0.0),
-        intent_multi=IntentMultiplier(base=1.0, intent_deviation=0.0)
+        intent_multi=IntentMultiplier(base=1.0, intent_deviation=0.0),
     )
     baseline = compute_composite_risk(perfect)
 
@@ -356,10 +368,10 @@ def verify_north_star(components: RiskComponents) -> Dict[str, Any]:
         "cost_increase": cost_increase,
         "north_star_enforced": cost_increase >= -EPSILON,
         "structural_cost": {
-            "geometric": result.H - 1.0,          # From d*
-            "temporal": result.time_multi - 1.0,   # From time deviation
-            "intent": result.intent_multi - 1.0,   # From intent misalignment
-        }
+            "geometric": result.H - 1.0,  # From d*
+            "temporal": result.time_multi - 1.0,  # From time deviation
+            "intent": result.intent_multi - 1.0,  # From intent misalignment
+        },
     }
 
 
@@ -367,9 +379,11 @@ def verify_north_star(components: RiskComponents) -> Dict[str, Any]:
 # DECISION RESPONSE ACTIONS
 # =============================================================================
 
+
 @dataclass
 class DecisionResponse:
     """Complete Layer 13 decision with response action."""
+
     decision: Decision
     risk: CompositeRisk
     action: str
@@ -382,7 +396,7 @@ def execute_decision(
     harmonic_params: Optional[HarmonicParams] = None,
     theta_1: float = 0.5,
     theta_2: float = 2.0,
-    fail_to_noise: bool = True
+    fail_to_noise: bool = True,
 ) -> DecisionResponse:
     """
     Execute Layer 13 decision with appropriate response.
@@ -395,9 +409,7 @@ def execute_decision(
         - REJECT: Block with error response
         - SNAP: Fail-to-noise (inject randomness)
     """
-    risk = compute_composite_risk(
-        components, harmonic_params, theta_1, theta_2
-    )
+    risk = compute_composite_risk(components, harmonic_params, theta_1, theta_2)
 
     actions = {
         Decision.ALLOW: "PASS_THROUGH",
@@ -412,15 +424,16 @@ def execute_decision(
     noise_injected = False
 
     # Fail-to-noise on DENY (per patent)
-    if fail_to_noise and risk.decision in [Decision.DENY, Decision.REJECT, Decision.SNAP]:
+    if fail_to_noise and risk.decision in [
+        Decision.DENY,
+        Decision.REJECT,
+        Decision.SNAP,
+    ]:
         noise_injected = True
         action = "INJECT_NOISE"
 
     return DecisionResponse(
-        decision=risk.decision,
-        risk=risk,
-        action=action,
-        noise_injected=noise_injected
+        decision=risk.decision, risk=risk, action=action, noise_injected=noise_injected
     )
 
 
@@ -428,11 +441,12 @@ def execute_decision(
 # BATCH PROCESSING
 # =============================================================================
 
+
 def batch_evaluate(
     requests: List[RiskComponents],
     harmonic_params: Optional[HarmonicParams] = None,
     theta_1: float = 0.5,
-    theta_2: float = 2.0
+    theta_2: float = 2.0,
 ) -> Dict[str, Any]:
     """
     Evaluate batch of requests for statistics.
@@ -440,8 +454,7 @@ def batch_evaluate(
     Returns decision distribution and risk statistics.
     """
     results = [
-        compute_composite_risk(r, harmonic_params, theta_1, theta_2)
-        for r in requests
+        compute_composite_risk(r, harmonic_params, theta_1, theta_2) for r in requests
     ]
 
     decisions = [r.decision for r in results]
@@ -453,7 +466,11 @@ def batch_evaluate(
             "ALLOW": sum(1 for d in decisions if d == Decision.ALLOW),
             "WARN": sum(1 for d in decisions if d == Decision.WARN),
             "REVIEW": sum(1 for d in decisions if d == Decision.REVIEW),
-            "DENY": sum(1 for d in decisions if d in [Decision.DENY, Decision.REJECT, Decision.SNAP]),
+            "DENY": sum(
+                1
+                for d in decisions
+                if d in [Decision.DENY, Decision.REJECT, Decision.SNAP]
+            ),
         },
         "risk_stats": {
             "min": min(risks) if risks else 0,
@@ -461,13 +478,14 @@ def batch_evaluate(
             "mean": np.mean(risks) if risks else 0,
             "std": np.std(risks) if risks else 0,
         },
-        "results": results
+        "results": results,
     }
 
 
 # =============================================================================
 # LEMMA 13.1 VERIFICATION TESTS
 # =============================================================================
+
 
 def verify_lemma_13_1() -> Dict[str, Any]:
     """
@@ -480,14 +498,24 @@ def verify_lemma_13_1() -> Dict[str, Any]:
     # Property 1: Non-negativity
     test_cases = [
         RiskComponents(0.0, 0.0, TimeMultiplier(), IntentMultiplier()),
-        RiskComponents(0.5, 1.0, TimeMultiplier(d_temporal=0.5), IntentMultiplier(intent_deviation=0.5)),
-        RiskComponents(1.0, 3.0, TimeMultiplier(d_temporal=2.0), IntentMultiplier(intent_deviation=2.0)),
+        RiskComponents(
+            0.5,
+            1.0,
+            TimeMultiplier(d_temporal=0.5),
+            IntentMultiplier(intent_deviation=0.5),
+        ),
+        RiskComponents(
+            1.0,
+            3.0,
+            TimeMultiplier(d_temporal=2.0),
+            IntentMultiplier(intent_deviation=2.0),
+        ),
     ]
 
     non_neg = all(compute_composite_risk(c).risk_prime >= 0 for c in test_cases)
     results["property_1_non_negativity"] = {
         "verified": non_neg,
-        "proof": "All factors ≥ 0 → product ≥ 0"
+        "proof": "All factors ≥ 0 → product ≥ 0",
     }
 
     # Property 2: Lower bound (Risk' ≥ Behavioral_Risk)
@@ -497,7 +525,7 @@ def verify_lemma_13_1() -> Dict[str, Any]:
     )
     results["property_2_lower_bound"] = {
         "verified": lower_bound,
-        "proof": "H ≥ 1, T ≥ 1, I ≥ 1 → B×H×T×I ≥ B×1×1×1 = B"
+        "proof": "H ≥ 1, T ≥ 1, I ≥ 1 → B×H×T×I ≥ B×1×1×1 = B",
     }
 
     # Property 3: Upper bound (contextual)
@@ -505,13 +533,13 @@ def verify_lemma_13_1() -> Dict[str, Any]:
     max_H = 1.0 + params.alpha  # = 2.0
     max_T = 10.0  # Assumed clamp
     max_I = 10.0  # Assumed clamp
-    max_B = 1.0   # Assumed clamp
+    max_B = 1.0  # Assumed clamp
     theoretical_max = max_B * max_H * max_T * max_I
 
     results["property_3_upper_bound"] = {
         "verified": True,
         "theoretical_max": theoretical_max,
-        "proof": f"Risk' ≤ {max_B} × {max_H} × {max_T} × {max_I} = {theoretical_max}"
+        "proof": f"Risk' ≤ {max_B} × {max_H} × {max_T} × {max_I} = {theoretical_max}",
     }
 
     # Property 4: Monotonicity
@@ -522,7 +550,7 @@ def verify_lemma_13_1() -> Dict[str, Any]:
         ).risk_prime
         for d in d_values
     ]
-    monotonic_d = all(risks[i] <= risks[i+1] + EPSILON for i in range(len(risks)-1))
+    monotonic_d = all(risks[i] <= risks[i + 1] + EPSILON for i in range(len(risks) - 1))
 
     B_values = np.linspace(0, 1, 50)
     risks_B = [
@@ -531,13 +559,15 @@ def verify_lemma_13_1() -> Dict[str, Any]:
         ).risk_prime
         for B in B_values
     ]
-    monotonic_B = all(risks_B[i] <= risks_B[i+1] + EPSILON for i in range(len(risks_B)-1))
+    monotonic_B = all(
+        risks_B[i] <= risks_B[i + 1] + EPSILON for i in range(len(risks_B) - 1)
+    )
 
     results["property_4_monotonicity"] = {
         "verified": monotonic_d and monotonic_B,
         "monotonic_in_d_star": monotonic_d,
         "monotonic_in_behavioral_risk": monotonic_B,
-        "proof": "∂Risk'/∂x > 0 for all x (partial derivatives positive)"
+        "proof": "∂Risk'/∂x > 0 for all x (partial derivatives positive)",
     }
 
     # Property 5: Threshold decidability
@@ -545,37 +575,47 @@ def verify_lemma_13_1() -> Dict[str, Any]:
 
     allow_case = compute_composite_risk(
         RiskComponents(0.1, 0.1, TimeMultiplier(), IntentMultiplier()),
-        theta_1=theta_1, theta_2=theta_2
+        theta_1=theta_1,
+        theta_2=theta_2,
     )
     deny_case = compute_composite_risk(
-        RiskComponents(1.0, 3.0, TimeMultiplier(d_temporal=2.0), IntentMultiplier(intent_deviation=2.0)),
-        theta_1=theta_1, theta_2=theta_2
+        RiskComponents(
+            1.0,
+            3.0,
+            TimeMultiplier(d_temporal=2.0),
+            IntentMultiplier(intent_deviation=2.0),
+        ),
+        theta_1=theta_1,
+        theta_2=theta_2,
     )
 
     decidable = (
-        allow_case.decision == Decision.ALLOW and
-        deny_case.decision == Decision.DENY
+        allow_case.decision == Decision.ALLOW and deny_case.decision == Decision.DENY
     )
 
     results["property_5_threshold_decidability"] = {
         "verified": decidable,
-        "allow_case": {"risk": allow_case.risk_prime, "decision": allow_case.decision.value},
-        "deny_case": {"risk": deny_case.risk_prime, "decision": deny_case.decision.value},
-        "proof": "Continuous Risk' → level sets partition state space"
+        "allow_case": {
+            "risk": allow_case.risk_prime,
+            "decision": allow_case.decision.value,
+        },
+        "deny_case": {
+            "risk": deny_case.risk_prime,
+            "decision": deny_case.decision.value,
+        },
+        "proof": "Continuous Risk' → level sets partition state space",
     }
 
     # Overall
     all_verified = all(r["verified"] for r in results.values())
 
-    return {
-        "lemma_13_1_verified": all_verified,
-        "properties": results
-    }
+    return {"lemma_13_1_verified": all_verified, "properties": results}
 
 
 # =============================================================================
 # SELF-TESTS
 # =============================================================================
+
 
 def self_test() -> Dict[str, Any]:
     """Run Layer 13 self-tests."""
@@ -604,7 +644,9 @@ def self_test() -> Dict[str, Any]:
         d_values = np.linspace(0, 5, 100)
         H_values = [harmonic_H(d) for d in d_values]
 
-        monotonic = all(H_values[i] <= H_values[i+1] + EPSILON for i in range(len(H_values)-1))
+        monotonic = all(
+            H_values[i] <= H_values[i + 1] + EPSILON for i in range(len(H_values) - 1)
+        )
         if monotonic:
             passed += 1
             results["harmonic_monotonic"] = "✓ PASS (H monotonically increasing)"
@@ -620,7 +662,7 @@ def self_test() -> Dict[str, Any]:
             behavioral_risk=0.5,
             d_star=1.0,
             time_multi=TimeMultiplier(d_temporal=0.5),
-            intent_multi=IntentMultiplier(intent_deviation=0.5)
+            intent_multi=IntentMultiplier(intent_deviation=0.5),
         )
         risk = compute_composite_risk(components)
 
@@ -640,7 +682,7 @@ def self_test() -> Dict[str, Any]:
             behavioral_risk=B,
             d_star=1.0,
             time_multi=TimeMultiplier(d_temporal=0.5),
-            intent_multi=IntentMultiplier(intent_deviation=0.5)
+            intent_multi=IntentMultiplier(intent_deviation=0.5),
         )
         risk = compute_composite_risk(components)
 
@@ -662,11 +704,13 @@ def self_test() -> Dict[str, Any]:
                 behavioral_risk=0.5,
                 d_star=d,
                 time_multi=TimeMultiplier(),
-                intent_multi=IntentMultiplier()
+                intent_multi=IntentMultiplier(),
             )
             risks.append(compute_composite_risk(components).risk_prime)
 
-        monotonic = all(risks[i] <= risks[i+1] + EPSILON for i in range(len(risks)-1))
+        monotonic = all(
+            risks[i] <= risks[i + 1] + EPSILON for i in range(len(risks) - 1)
+        )
         if monotonic:
             passed += 1
             results["monotonic_d_star"] = f"✓ PASS (Risk' ↑ as d* ↑)"
@@ -683,14 +727,23 @@ def self_test() -> Dict[str, Any]:
         good_risk = compute_composite_risk(good, theta_1=0.5, theta_2=2.0)
 
         # Bad case → DENY
-        bad = RiskComponents(1.0, 3.0, TimeMultiplier(d_temporal=2.0), IntentMultiplier(intent_deviation=2.0))
+        bad = RiskComponents(
+            1.0,
+            3.0,
+            TimeMultiplier(d_temporal=2.0),
+            IntentMultiplier(intent_deviation=2.0),
+        )
         bad_risk = compute_composite_risk(bad, theta_1=0.5, theta_2=2.0)
 
         if good_risk.decision == Decision.ALLOW and bad_risk.decision == Decision.DENY:
             passed += 1
-            results["threshold_decidability"] = f"✓ PASS (ALLOW={good_risk.risk_prime:.2f}, DENY={bad_risk.risk_prime:.2f})"
+            results["threshold_decidability"] = (
+                f"✓ PASS (ALLOW={good_risk.risk_prime:.2f}, DENY={bad_risk.risk_prime:.2f})"
+            )
         else:
-            results["threshold_decidability"] = f"✗ FAIL ({good_risk.decision}, {bad_risk.decision})"
+            results["threshold_decidability"] = (
+                f"✗ FAIL ({good_risk.decision}, {bad_risk.decision})"
+            )
     except Exception as e:
         results["threshold_decidability"] = f"✗ FAIL ({e})"
 
@@ -701,7 +754,7 @@ def self_test() -> Dict[str, Any]:
             behavioral_risk=0.5,
             d_star=1.0,
             time_multi=TimeMultiplier(d_temporal=0.5),
-            intent_multi=IntentMultiplier(intent_deviation=0.5)
+            intent_multi=IntentMultiplier(intent_deviation=0.5),
         )
         ns = verify_north_star(components)
 
@@ -720,7 +773,7 @@ def self_test() -> Dict[str, Any]:
             behavioral_risk=0.5,
             d_star=1.0,
             time_multi=TimeMultiplier(d_temporal=0.5),
-            intent_multi=IntentMultiplier(intent_deviation=0.5)
+            intent_multi=IntentMultiplier(intent_deviation=0.5),
         )
         risk = compute_composite_risk(components)
 
@@ -741,7 +794,9 @@ def self_test() -> Dict[str, Any]:
             passed += 1
             results["lemma_13_1"] = "✓ PASS (all 5 properties verified)"
         else:
-            failed = [k for k, v in verification["properties"].items() if not v["verified"]]
+            failed = [
+                k for k, v in verification["properties"].items() if not v["verified"]
+            ]
             results["lemma_13_1"] = f"✗ FAIL (failed: {failed})"
     except Exception as e:
         results["lemma_13_1"] = f"✗ FAIL ({e})"
@@ -764,7 +819,7 @@ def self_test() -> Dict[str, Any]:
         "passed": passed,
         "total": total,
         "success_rate": f"{passed}/{total} ({100*passed/total:.1f}%)",
-        "results": results
+        "results": results,
     }
 
 

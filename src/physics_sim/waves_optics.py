@@ -17,13 +17,12 @@ import math
 from typing import Dict, Any, Tuple, Optional, List
 from dataclasses import dataclass
 
-
 # =============================================================================
 # CONSTANTS
 # =============================================================================
 
-C = 299792458              # Speed of light in vacuum (m/s)
-PLANCK = 6.62607015e-34    # Planck constant (J·s)
+C = 299792458  # Speed of light in vacuum (m/s)
+PLANCK = 6.62607015e-34  # Planck constant (J·s)
 VACUUM_PERMITTIVITY = 8.8541878128e-12  # ε₀ (F/m)
 VACUUM_PERMEABILITY = 1.25663706212e-6  # μ₀ (H/m)
 
@@ -31,6 +30,7 @@ VACUUM_PERMEABILITY = 1.25663706212e-6  # μ₀ (H/m)
 # =============================================================================
 # BASIC WAVE PROPERTIES
 # =============================================================================
+
 
 def wave_velocity(frequency: float, wavelength: float) -> float:
     """
@@ -144,8 +144,10 @@ def group_velocity(d_omega_dk: float) -> float:
 # WAVE AMPLITUDE AND INTENSITY
 # =============================================================================
 
-def wave_displacement(A: float, k: float, x: float, omega: float, t: float,
-                     phi: float = 0) -> float:
+
+def wave_displacement(
+    A: float, k: float, x: float, omega: float, t: float, phi: float = 0
+) -> float:
     """
     Calculate wave displacement at position x and time t.
 
@@ -165,8 +167,9 @@ def wave_displacement(A: float, k: float, x: float, omega: float, t: float,
     return A * math.sin(k * x - omega * t + phi)
 
 
-def wave_intensity(amplitude: float, velocity: float, density: float,
-                  omega: float) -> float:
+def wave_intensity(
+    amplitude: float, velocity: float, density: float, omega: float
+) -> float:
     """
     Calculate wave intensity (power per unit area).
 
@@ -181,7 +184,7 @@ def wave_intensity(amplitude: float, velocity: float, density: float,
     Returns:
         Intensity (W/m²)
     """
-    return 0.5 * density * velocity * omega ** 2 * amplitude ** 2
+    return 0.5 * density * velocity * omega**2 * amplitude**2
 
 
 def intensity_ratio_db(I1: float, I2: float) -> float:
@@ -221,8 +224,10 @@ def inverse_square_law(I0: float, r0: float, r: float) -> float:
 # INTERFERENCE
 # =============================================================================
 
-def two_source_interference(A1: float, A2: float, phi1: float,
-                           phi2: float) -> Tuple[float, float]:
+
+def two_source_interference(
+    A1: float, A2: float, phi1: float, phi2: float
+) -> Tuple[float, float]:
     """
     Calculate resultant amplitude from two-source interference.
 
@@ -238,7 +243,7 @@ def two_source_interference(A1: float, A2: float, phi1: float,
     delta_phi = phi2 - phi1
 
     # Resultant amplitude
-    A_sq = A1 ** 2 + A2 ** 2 + 2 * A1 * A2 * math.cos(delta_phi)
+    A_sq = A1**2 + A2**2 + 2 * A1 * A2 * math.cos(delta_phi)
     A = math.sqrt(A_sq)
 
     # Resultant phase
@@ -302,8 +307,7 @@ def young_fringe_spacing(wavelength: float, d: float, L: float) -> float:
     return wavelength * L / d
 
 
-def thin_film_constructive(n: float, t: float, wavelength: float,
-                          m: int = 0) -> bool:
+def thin_film_constructive(n: float, t: float, wavelength: float, m: int = 0) -> bool:
     """
     Check if thin film interference is constructive.
 
@@ -333,6 +337,7 @@ def thin_film_constructive(n: float, t: float, wavelength: float,
 # =============================================================================
 # DIFFRACTION
 # =============================================================================
+
 
 def single_slit_minima(wavelength: float, a: float, m: int) -> float:
     """
@@ -451,6 +456,7 @@ def airy_disk_radius(wavelength: float, f_number: float) -> float:
 # GEOMETRIC OPTICS
 # =============================================================================
 
+
 def snells_law(n1: float, theta1: float, n2: float) -> float:
     """
     Calculate refracted angle using Snell's law.
@@ -507,8 +513,9 @@ def brewsters_angle(n1: float, n2: float) -> float:
     return math.atan(n2 / n1)
 
 
-def thin_lens_equation(f: float, d_o: float = None,
-                       d_i: float = None) -> Dict[str, float]:
+def thin_lens_equation(
+    f: float, d_o: float = None, d_i: float = None
+) -> Dict[str, float]:
     """
     Calculate image properties using thin lens equation.
 
@@ -522,42 +529,41 @@ def thin_lens_equation(f: float, d_o: float = None,
     Returns:
         Dictionary with calculated values
     """
-    results = {'focal_length_m': f}
+    results = {"focal_length_m": f}
 
     if d_o is not None:
         # Calculate image distance
         if abs(d_o - f) < 1e-15:
-            d_i = float('inf')  # Object at focal point
+            d_i = float("inf")  # Object at focal point
         else:
             d_i = 1 / (1 / f - 1 / d_o)
 
-        results['object_distance_m'] = d_o
-        results['image_distance_m'] = d_i
+        results["object_distance_m"] = d_o
+        results["image_distance_m"] = d_i
 
         # Magnification
-        m = -d_i / d_o if d_o != 0 else float('inf')
-        results['magnification'] = m
-        results['image_type'] = 'real' if d_i > 0 else 'virtual'
-        results['image_orientation'] = 'inverted' if m < 0 else 'upright'
+        m = -d_i / d_o if d_o != 0 else float("inf")
+        results["magnification"] = m
+        results["image_type"] = "real" if d_i > 0 else "virtual"
+        results["image_orientation"] = "inverted" if m < 0 else "upright"
 
     elif d_i is not None:
         # Calculate object distance
         if abs(d_i - f) < 1e-15:
-            d_o = float('inf')
+            d_o = float("inf")
         else:
             d_o = 1 / (1 / f - 1 / d_i)
 
-        results['object_distance_m'] = d_o
-        results['image_distance_m'] = d_i
+        results["object_distance_m"] = d_o
+        results["image_distance_m"] = d_i
 
-        m = -d_i / d_o if d_o != 0 else float('inf')
-        results['magnification'] = m
+        m = -d_i / d_o if d_o != 0 else float("inf")
+        results["magnification"] = m
 
     return results
 
 
-def lensmakers_equation(n: float, R1: float, R2: float,
-                       n_medium: float = 1.0) -> float:
+def lensmakers_equation(n: float, R1: float, R2: float, n_medium: float = 1.0) -> float:
     """
     Calculate lens focal length using lensmaker's equation.
 
@@ -578,8 +584,9 @@ def lensmakers_equation(n: float, R1: float, R2: float,
     return 1 / inv_f
 
 
-def spherical_mirror_equation(R: float, d_o: float = None,
-                             d_i: float = None) -> Dict[str, float]:
+def spherical_mirror_equation(
+    R: float, d_o: float = None, d_i: float = None
+) -> Dict[str, float]:
     """
     Calculate image properties for spherical mirror.
 
@@ -632,6 +639,7 @@ def numerical_aperture(n: float, theta_max: float) -> float:
 # SOUND AND ACOUSTICS
 # =============================================================================
 
+
 def sound_speed_air(T_celsius: float) -> float:
     """
     Calculate speed of sound in air.
@@ -666,9 +674,9 @@ def sound_speed_medium(bulk_modulus: float, density: float) -> float:
     return math.sqrt(bulk_modulus / density)
 
 
-def doppler_shift_moving_source(f_source: float, v_source: float,
-                               v_sound: float,
-                               approaching: bool = True) -> float:
+def doppler_shift_moving_source(
+    f_source: float, v_source: float, v_sound: float, approaching: bool = True
+) -> float:
     """
     Calculate Doppler shifted frequency (moving source).
 
@@ -689,9 +697,9 @@ def doppler_shift_moving_source(f_source: float, v_source: float,
         return f_source * v_sound / (v_sound + v_source)
 
 
-def doppler_shift_moving_observer(f_source: float, v_observer: float,
-                                 v_sound: float,
-                                 approaching: bool = True) -> float:
+def doppler_shift_moving_observer(
+    f_source: float, v_observer: float, v_sound: float, approaching: bool = True
+) -> float:
     """
     Calculate Doppler shifted frequency (moving observer).
 
@@ -781,6 +789,7 @@ def resonance_tube_closed(L: float, v: float, n: int = 1) -> float:
 # =============================================================================
 # ELECTROMAGNETIC WAVES
 # =============================================================================
+
 
 def em_wave_speed(epsilon_r: float = 1, mu_r: float = 1) -> float:
     """
@@ -901,6 +910,7 @@ def classify_em_wave(wavelength: float) -> str:
 # COMPREHENSIVE WAVES AND OPTICS CALCULATION
 # =============================================================================
 
+
 def waves_optics(params: Dict[str, Any]) -> Dict[str, Any]:
     """
     Comprehensive waves and optics calculation.
@@ -914,85 +924,86 @@ def waves_optics(params: Dict[str, Any]) -> Dict[str, Any]:
     results = {}
 
     # Basic wave properties
-    if 'frequency' in params and 'wavelength' in params:
-        f = params['frequency']
-        lam = params['wavelength']
+    if "frequency" in params and "wavelength" in params:
+        f = params["frequency"]
+        lam = params["wavelength"]
         v = wave_velocity(f, lam)
-        results['wave_velocity_m_s'] = v
-        results['angular_frequency_rad_s'] = angular_frequency(f)
-        results['wave_number_rad_m'] = wave_number(lam)
-        results['period_s'] = 1 / f
+        results["wave_velocity_m_s"] = v
+        results["angular_frequency_rad_s"] = angular_frequency(f)
+        results["wave_number_rad_m"] = wave_number(lam)
+        results["period_s"] = 1 / f
 
     # EM wave classification
-    if 'wavelength' in params:
-        lam = params['wavelength']
-        results['em_wave_type'] = classify_em_wave(lam)
-        results['em_frequency_Hz'] = wavelength_to_frequency(lam)
+    if "wavelength" in params:
+        lam = params["wavelength"]
+        results["em_wave_type"] = classify_em_wave(lam)
+        results["em_frequency_Hz"] = wavelength_to_frequency(lam)
 
     # Snell's law
-    if 'n1' in params and 'n2' in params and 'angle_incident' in params:
-        n1 = params['n1']
-        n2 = params['n2']
-        theta1 = params['angle_incident']
+    if "n1" in params and "n2" in params and "angle_incident" in params:
+        n1 = params["n1"]
+        n2 = params["n2"]
+        theta1 = params["angle_incident"]
 
         try:
             theta2 = snells_law(n1, theta1, n2)
-            results['refracted_angle_rad'] = theta2
-            results['refracted_angle_deg'] = math.degrees(theta2)
+            results["refracted_angle_rad"] = theta2
+            results["refracted_angle_deg"] = math.degrees(theta2)
         except ValueError:
-            results['total_internal_reflection'] = True
+            results["total_internal_reflection"] = True
 
         # Critical angle (if applicable)
         if n1 > n2:
             theta_c = critical_angle(n1, n2)
-            results['critical_angle_rad'] = theta_c
-            results['critical_angle_deg'] = math.degrees(theta_c)
+            results["critical_angle_rad"] = theta_c
+            results["critical_angle_deg"] = math.degrees(theta_c)
 
         # Brewster's angle
         theta_B = brewsters_angle(n1, n2)
-        results['brewster_angle_rad'] = theta_B
-        results['brewster_angle_deg'] = math.degrees(theta_B)
+        results["brewster_angle_rad"] = theta_B
+        results["brewster_angle_deg"] = math.degrees(theta_B)
 
     # Thin lens
-    if 'focal_length' in params:
-        f = params['focal_length']
-        d_o = params.get('object_distance')
+    if "focal_length" in params:
+        f = params["focal_length"]
+        d_o = params.get("object_distance")
         lens_results = thin_lens_equation(f, d_o)
-        results['lens'] = lens_results
+        results["lens"] = lens_results
 
     # Diffraction
-    if 'slit_width' in params and 'wavelength' in params:
-        a = params['slit_width']
-        lam = params['wavelength']
+    if "slit_width" in params and "wavelength" in params:
+        a = params["slit_width"]
+        lam = params["wavelength"]
 
-        results['first_minimum_angle_rad'] = single_slit_minima(lam, a, 1)
-        results['first_minimum_angle_deg'] = math.degrees(
-            results['first_minimum_angle_rad'])
+        results["first_minimum_angle_rad"] = single_slit_minima(lam, a, 1)
+        results["first_minimum_angle_deg"] = math.degrees(
+            results["first_minimum_angle_rad"]
+        )
 
     # Double slit
-    if 'slit_separation' in params and 'wavelength' in params:
-        d = params['slit_separation']
-        lam = params['wavelength']
-        L = params.get('screen_distance', 1.0)
+    if "slit_separation" in params and "wavelength" in params:
+        d = params["slit_separation"]
+        lam = params["wavelength"]
+        L = params.get("screen_distance", 1.0)
 
-        results['fringe_spacing_m'] = young_fringe_spacing(lam, d, L)
-        results['first_maximum_angle_rad'] = young_double_slit_maxima(lam, d, 1)
+        results["fringe_spacing_m"] = young_fringe_spacing(lam, d, L)
+        results["first_maximum_angle_rad"] = young_double_slit_maxima(lam, d, 1)
 
     # Sound
-    if 'temperature_celsius' in params:
-        T = params['temperature_celsius']
+    if "temperature_celsius" in params:
+        T = params["temperature_celsius"]
         v_sound = sound_speed_air(T)
-        results['sound_speed_m_s'] = v_sound
+        results["sound_speed_m_s"] = v_sound
 
     # Doppler effect
-    if 'source_frequency' in params and 'source_velocity' in params:
-        f_s = params['source_frequency']
-        v_s = params['source_velocity']
-        v_sound = params.get('sound_speed', 343)
-        approaching = params.get('approaching', True)
+    if "source_frequency" in params and "source_velocity" in params:
+        f_s = params["source_frequency"]
+        v_s = params["source_velocity"]
+        v_sound = params.get("sound_speed", 343)
+        approaching = params.get("approaching", True)
 
         f_obs = doppler_shift_moving_source(f_s, v_s, v_sound, approaching)
-        results['observed_frequency_Hz'] = f_obs
-        results['frequency_shift_Hz'] = f_obs - f_s
+        results["observed_frequency_Hz"] = f_obs
+        results["frequency_shift_Hz"] = f_obs - f_s
 
     return results

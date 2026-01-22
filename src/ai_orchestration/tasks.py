@@ -26,6 +26,7 @@ from datetime import datetime
 
 class TaskStatus(Enum):
     """Task execution status."""
+
     PENDING = "pending"
     QUEUED = "queued"
     RUNNING = "running"
@@ -37,6 +38,7 @@ class TaskStatus(Enum):
 
 class TaskPriority(Enum):
     """Task priority levels."""
+
     LOW = 1
     NORMAL = 2
     HIGH = 3
@@ -46,6 +48,7 @@ class TaskPriority(Enum):
 @dataclass
 class TaskResult:
     """Result of a task execution."""
+
     task_id: str
     status: TaskStatus
     output: Optional[Dict[str, Any]] = None
@@ -63,7 +66,9 @@ class TaskResult:
             "output": self.output,
             "error": self.error,
             "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
             "execution_time_ms": self.execution_time_ms,
             "agent_id": self.agent_id,
             "retries": self.retries,
@@ -78,6 +83,7 @@ class Task:
     Tasks can have dependencies on other tasks and will only
     execute when all dependencies are complete.
     """
+
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     name: str = ""
     description: str = ""
@@ -109,7 +115,9 @@ class Task:
             "assigned_agent": self.assigned_agent,
             "created_at": self.created_at.isoformat(),
             "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
             "result": self.result.to_dict() if self.result else None,
             "max_retries": self.max_retries,
             "retry_count": self.retry_count,
@@ -127,6 +135,7 @@ class Task:
 @dataclass
 class WorkflowStep:
     """A step in a workflow, wrapping a task with additional workflow context."""
+
     task: Task
     on_success: Optional[str] = None  # next step name
     on_failure: Optional[str] = None  # step to run on failure
@@ -135,6 +144,7 @@ class WorkflowStep:
 
 class WorkflowStatus(Enum):
     """Workflow execution status."""
+
     DRAFT = "draft"
     READY = "ready"
     RUNNING = "running"
@@ -156,6 +166,7 @@ class Workflow:
     - Error handling and recovery
     - Progress tracking
     """
+
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     name: str = ""
     description: str = ""
@@ -175,14 +186,11 @@ class Workflow:
         task: Task,
         on_success: Optional[str] = None,
         on_failure: Optional[str] = None,
-        condition: Optional[Callable[[Dict], bool]] = None
+        condition: Optional[Callable[[Dict], bool]] = None,
     ):
         """Add a step to the workflow."""
         self.steps[name] = WorkflowStep(
-            task=task,
-            on_success=on_success,
-            on_failure=on_failure,
-            condition=condition
+            task=task, on_success=on_success, on_failure=on_failure, condition=condition
         )
         if not self.entry_point:
             self.entry_point = name
@@ -190,7 +198,8 @@ class Workflow:
     def get_ready_tasks(self) -> List[Task]:
         """Get all tasks that are ready to execute."""
         completed = {
-            name for name, step in self.steps.items()
+            name
+            for name, step in self.steps.items()
             if step.task.status == TaskStatus.COMPLETED
         }
 
@@ -208,16 +217,15 @@ class Workflow:
         """Get workflow progress."""
         total = len(self.steps)
         completed = sum(
-            1 for step in self.steps.values()
+            1
+            for step in self.steps.values()
             if step.task.status == TaskStatus.COMPLETED
         )
         failed = sum(
-            1 for step in self.steps.values()
-            if step.task.status == TaskStatus.FAILED
+            1 for step in self.steps.values() if step.task.status == TaskStatus.FAILED
         )
         running = sum(
-            1 for step in self.steps.values()
-            if step.task.status == TaskStatus.RUNNING
+            1 for step in self.steps.values() if step.task.status == TaskStatus.RUNNING
         )
 
         return {
@@ -241,7 +249,9 @@ class Workflow:
             "entry_point": self.entry_point,
             "created_at": self.created_at.isoformat(),
             "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
             "steps": {
                 name: {
                     "task": step.task.to_dict(),
@@ -250,9 +260,7 @@ class Workflow:
                 }
                 for name, step in self.steps.items()
             },
-            "results": {
-                k: v.to_dict() for k, v in self.results.items()
-            },
+            "results": {k: v.to_dict() for k, v in self.results.items()},
             "progress": self.get_progress(),
             "metadata": self.metadata,
         }
@@ -285,10 +293,7 @@ class TaskQueue:
 
     def get_ready_tasks(self) -> List[Task]:
         """Get all tasks ready for execution, sorted by priority."""
-        ready = [
-            task for task in self.tasks.values()
-            if task.is_ready(self.completed)
-        ]
+        ready = [task for task in self.tasks.values() if task.is_ready(self.completed)]
         return sorted(ready, key=lambda t: t.priority.value, reverse=True)
 
     def get_status(self) -> Dict[str, int]:
@@ -310,9 +315,7 @@ class WorkflowExecutor:
         self.execution_log: List[Dict[str, Any]] = []
 
     async def execute_workflow(
-        self,
-        workflow: Workflow,
-        agent_executor: Callable[[Task], TaskResult]
+        self, workflow: Workflow, agent_executor: Callable[[Task], TaskResult]
     ) -> Dict[str, Any]:
         """
         Execute a workflow to completion.
@@ -328,10 +331,13 @@ class WorkflowExecutor:
         workflow.started_at = datetime.now()
         self.active_workflows[workflow.id] = workflow
 
-        self._log_event("workflow_started", {
-            "workflow_id": workflow.id,
-            "name": workflow.name,
-        })
+        self._log_event(
+            "workflow_started",
+            {
+                "workflow_id": workflow.id,
+                "name": workflow.name,
+            },
+        )
 
         # Add all tasks to queue
         for name, step in workflow.steps.items():
@@ -354,10 +360,12 @@ class WorkflowExecutor:
                     continue
 
                 # Execute ready tasks (can be parallel)
-                results = await asyncio.gather(*[
-                    self._execute_task(task, agent_executor, workflow)
-                    for task in ready_tasks
-                ])
+                results = await asyncio.gather(
+                    *[
+                        self._execute_task(task, agent_executor, workflow)
+                        for task in ready_tasks
+                    ]
+                )
 
                 # Process results
                 for task, result in zip(ready_tasks, results):
@@ -367,7 +375,7 @@ class WorkflowExecutor:
                     # Find next step based on success/failure
                     step = next(
                         (s for s in workflow.steps.values() if s.task.id == task.id),
-                        None
+                        None,
                     )
                     if step:
                         if result.status == TaskStatus.COMPLETED and step.on_success:
@@ -381,7 +389,8 @@ class WorkflowExecutor:
 
             # Determine final status
             failed_count = sum(
-                1 for step in workflow.steps.values()
+                1
+                for step in workflow.steps.values()
                 if step.task.status == TaskStatus.FAILED
             )
 
@@ -392,45 +401,52 @@ class WorkflowExecutor:
 
         except Exception as e:
             workflow.status = WorkflowStatus.FAILED
-            self._log_event("workflow_error", {
-                "workflow_id": workflow.id,
-                "error": str(e),
-            })
+            self._log_event(
+                "workflow_error",
+                {
+                    "workflow_id": workflow.id,
+                    "error": str(e),
+                },
+            )
 
         workflow.completed_at = datetime.now()
 
-        self._log_event("workflow_completed", {
-            "workflow_id": workflow.id,
-            "status": workflow.status.value,
-            "duration_ms": (
-                workflow.completed_at - workflow.started_at
-            ).total_seconds() * 1000,
-        })
+        self._log_event(
+            "workflow_completed",
+            {
+                "workflow_id": workflow.id,
+                "status": workflow.status.value,
+                "duration_ms": (
+                    workflow.completed_at - workflow.started_at
+                ).total_seconds()
+                * 1000,
+            },
+        )
 
         return workflow.to_dict()
 
     async def _execute_task(
-        self,
-        task: Task,
-        executor: Callable[[Task], TaskResult],
-        workflow: Workflow
+        self, task: Task, executor: Callable[[Task], TaskResult], workflow: Workflow
     ) -> TaskResult:
         """Execute a single task with retry logic."""
         task.status = TaskStatus.RUNNING
         task.started_at = datetime.now()
 
-        self._log_event("task_started", {
-            "task_id": task.id,
-            "name": task.name,
-            "workflow_id": workflow.id,
-        })
+        self._log_event(
+            "task_started",
+            {
+                "task_id": task.id,
+                "name": task.name,
+                "workflow_id": workflow.id,
+            },
+        )
 
         while task.retry_count <= task.max_retries:
             try:
                 # Execute with timeout
                 result = await asyncio.wait_for(
                     asyncio.create_task(self._run_executor(executor, task)),
-                    timeout=task.timeout_seconds
+                    timeout=task.timeout_seconds,
                 )
 
                 task.completed_at = datetime.now()
@@ -440,38 +456,50 @@ class WorkflowExecutor:
 
                 if result.status == TaskStatus.COMPLETED:
                     task.status = TaskStatus.COMPLETED
-                    self._log_event("task_completed", {
-                        "task_id": task.id,
-                        "execution_time_ms": result.execution_time_ms,
-                    })
+                    self._log_event(
+                        "task_completed",
+                        {
+                            "task_id": task.id,
+                            "execution_time_ms": result.execution_time_ms,
+                        },
+                    )
                     return result
 
                 # Task failed, maybe retry
                 task.retry_count += 1
                 if task.retry_count <= task.max_retries:
                     task.status = TaskStatus.RETRYING
-                    self._log_event("task_retry", {
-                        "task_id": task.id,
-                        "retry_count": task.retry_count,
-                    })
-                    await asyncio.sleep(2 ** task.retry_count)  # Exponential backoff
+                    self._log_event(
+                        "task_retry",
+                        {
+                            "task_id": task.id,
+                            "retry_count": task.retry_count,
+                        },
+                    )
+                    await asyncio.sleep(2**task.retry_count)  # Exponential backoff
                 else:
                     task.status = TaskStatus.FAILED
                     return result
 
             except asyncio.TimeoutError:
                 task.retry_count += 1
-                self._log_event("task_timeout", {
-                    "task_id": task.id,
-                    "timeout_seconds": task.timeout_seconds,
-                })
+                self._log_event(
+                    "task_timeout",
+                    {
+                        "task_id": task.id,
+                        "timeout_seconds": task.timeout_seconds,
+                    },
+                )
 
             except Exception as e:
                 task.retry_count += 1
-                self._log_event("task_error", {
-                    "task_id": task.id,
-                    "error": str(e),
-                })
+                self._log_event(
+                    "task_error",
+                    {
+                        "task_id": task.id,
+                        "error": str(e),
+                    },
+                )
 
         # Exhausted retries
         task.status = TaskStatus.FAILED
@@ -494,11 +522,13 @@ class WorkflowExecutor:
 
     def _log_event(self, event_type: str, data: Dict[str, Any]):
         """Log an execution event."""
-        self.execution_log.append({
-            "timestamp": datetime.now().isoformat(),
-            "event": event_type,
-            "data": data,
-        })
+        self.execution_log.append(
+            {
+                "timestamp": datetime.now().isoformat(),
+                "event": event_type,
+                "data": data,
+            }
+        )
 
     def get_execution_log(self) -> List[Dict[str, Any]]:
         """Get the execution log."""
@@ -508,6 +538,7 @@ class WorkflowExecutor:
 # =============================================================================
 # WORKFLOW TEMPLATES
 # =============================================================================
+
 
 def create_security_audit_workflow(target: str) -> Workflow:
     """Create a workflow for security auditing."""

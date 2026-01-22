@@ -13,12 +13,13 @@ from typing import Optional
 
 VERSION = "3.0.0"
 
+
 class SCBECLI:
     """Command-line interface for SCBE operations"""
-    
+
     def __init__(self):
         self.key: Optional[bytes] = None
-    
+
     def safe_input(self, prompt: str) -> str:
         """Safe input that handles EOF gracefully"""
         try:
@@ -26,7 +27,7 @@ class SCBECLI:
         except (EOFError, KeyboardInterrupt):
             print("\n")
             return ""
-        
+
     def banner(self):
         """Display welcome banner"""
         print(f"""
@@ -35,73 +36,73 @@ class SCBECLI:
 ║     Hyperbolic Geometry-Based Security Framework          ║
 ╚═══════════════════════════════════════════════════════════╝
         """)
-    
+
     def simple_encrypt(self, plaintext: str, key: str) -> str:
         """Simple XOR-based encryption for demo purposes"""
-        key_bytes = key.encode('utf-8')
-        plain_bytes = plaintext.encode('utf-8')
-        
+        key_bytes = key.encode("utf-8")
+        plain_bytes = plaintext.encode("utf-8")
+
         encrypted = bytearray()
         for i, byte in enumerate(plain_bytes):
             encrypted.append(byte ^ key_bytes[i % len(key_bytes)] ^ (i * 7))
-        
-        return base64.b64encode(bytes(encrypted)).decode('utf-8')
-    
+
+        return base64.b64encode(bytes(encrypted)).decode("utf-8")
+
     def simple_decrypt(self, ciphertext: str, key: str) -> str:
         """Simple XOR-based decryption for demo purposes"""
-        key_bytes = key.encode('utf-8')
-        encrypted = base64.b64decode(ciphertext.encode('utf-8'))
-        
+        key_bytes = key.encode("utf-8")
+        encrypted = base64.b64decode(ciphertext.encode("utf-8"))
+
         decrypted = bytearray()
         for i, byte in enumerate(encrypted):
             decrypted.append(byte ^ key_bytes[i % len(key_bytes)] ^ (i * 7))
-        
-        return bytes(decrypted).decode('utf-8')
-    
+
+        return bytes(decrypted).decode("utf-8")
+
     def cmd_encrypt(self):
         """Interactive encryption"""
         print("\n🔐 ENCRYPT MESSAGE")
         print("=" * 60)
-        
+
         message = self.safe_input("Enter message to encrypt: ")
         if not message:
             return
         key = self.safe_input("Enter encryption key: ")
         if not key:
             return
-        
+
         start = time.time()
         ciphertext = self.simple_encrypt(message, key)
         elapsed = (time.time() - start) * 1000
-        
+
         print(f"\n✓ Encrypted successfully in {elapsed:.2f}ms")
         print(f"\nCiphertext: {ciphertext}")
         print(f"Length: {len(ciphertext)} bytes")
         print(f"Layers: 14")
         print(f"Security: 256-bit equivalent")
-        
+
     def cmd_decrypt(self):
         """Interactive decryption"""
         print("\n🔓 DECRYPT MESSAGE")
         print("=" * 60)
-        
+
         ciphertext = self.safe_input("Enter ciphertext: ")
         if not ciphertext:
             return
         key = self.safe_input("Enter decryption key: ")
         if not key:
             return
-        
+
         try:
             start = time.time()
             plaintext = self.simple_decrypt(ciphertext, key)
             elapsed = (time.time() - start) * 1000
-            
+
             print(f"\n✓ Decrypted successfully in {elapsed:.2f}ms")
             print(f"\nPlaintext: {plaintext}")
         except Exception as e:
             print(f"\n❌ Decryption failed: {str(e)}")
-    
+
     def cmd_attack_sim(self):
         """Run attack simulation"""
         print("\n⚔️  ATTACK SIMULATION")
@@ -111,21 +112,21 @@ class SCBECLI:
         print("  2. Replay Attack")
         print("  3. Man-in-the-Middle")
         print("  4. Quantum Attack")
-        
+
         choice = self.safe_input("\nSelect attack (1-4): ")
-        
+
         attacks = {
-            '1': self._sim_brute_force,
-            '2': self._sim_replay,
-            '3': self._sim_mitm,
-            '4': self._sim_quantum
+            "1": self._sim_brute_force,
+            "2": self._sim_replay,
+            "3": self._sim_mitm,
+            "4": self._sim_quantum,
         }
-        
+
         if choice in attacks:
             attacks[choice]()
         elif choice:
             print("Invalid choice")
-    
+
     def _sim_brute_force(self):
         """Simulate brute force attack"""
         print("\n🔨 Running Brute Force Attack...")
@@ -136,12 +137,12 @@ class SCBECLI:
             "Keys tried: 10,000,000",
             "Time elapsed: 1000 years (estimated)",
             "❌ ATTACK FAILED: Keyspace too large (2^256)",
-            "✓ SCBE DEFENSE: Harmonic scaling active"
+            "✓ SCBE DEFENSE: Harmonic scaling active",
         ]
         for step in steps:
             print(f"  {step}")
             time.sleep(0.3)
-    
+
     def _sim_replay(self):
         """Simulate replay attack"""
         print("\n🔄 Running Replay Attack...")
@@ -150,12 +151,12 @@ class SCBECLI:
             "Message captured: 0x4a7f2e...",
             "Attempting to replay message...",
             "❌ ATTACK BLOCKED: Nonce already used",
-            "✓ SCBE DEFENSE: Replay guard active"
+            "✓ SCBE DEFENSE: Replay guard active",
         ]
         for step in steps:
             print(f"  {step}")
             time.sleep(0.3)
-    
+
     def _sim_mitm(self):
         """Simulate MITM attack"""
         print("\n🎭 Running Man-in-the-Middle Attack...")
@@ -163,12 +164,12 @@ class SCBECLI:
             "Intercepting communication...",
             "Attempting to modify ciphertext...",
             "❌ ATTACK FAILED: Tag verification failed",
-            "✓ SCBE DEFENSE: Topological CFI active"
+            "✓ SCBE DEFENSE: Topological CFI active",
         ]
         for step in steps:
             print(f"  {step}")
             time.sleep(0.3)
-    
+
     def _sim_quantum(self):
         """Simulate quantum attack"""
         print("\n⚛️  Running Quantum Attack...")
@@ -176,17 +177,17 @@ class SCBECLI:
             "Initializing quantum simulator...",
             "Running Shor's algorithm...",
             "❌ ATTACK FAILED: Post-quantum primitives detected",
-            "✓ SCBE DEFENSE: Quantum-resistant by design"
+            "✓ SCBE DEFENSE: Quantum-resistant by design",
         ]
         for step in steps:
             print(f"  {step}")
             time.sleep(0.3)
-    
+
     def cmd_metrics(self):
         """Display system metrics"""
         print("\n📊 SYSTEM METRICS")
         print("=" * 60)
-        
+
         metrics = {
             "Uptime": "99.99%",
             "Requests/Day": "1.2M",
@@ -194,24 +195,33 @@ class SCBECLI:
             "Attacks Blocked": "100%",
             "Active Layers": "14/14",
             "Security Level": "256-bit",
-            "Quantum Resistant": "Yes"
+            "Quantum Resistant": "Yes",
         }
-        
+
         for key, value in metrics.items():
             print(f"  {key:.<30} {value}")
-        
+
         print("\n14-Layer Status:")
         layers = [
-            "Context Embedding", "Invariant Metric", "Breath Transform",
-            "Phase Modulation", "Multi-Well Potential", "Spectral Channel",
-            "Spin Channel", "Triadic Consensus", "Harmonic Scaling",
-            "Decision Gate", "Audio Axis", "Quantum Resistance",
-            "Anti-Fragile Mode", "Topological CFI"
+            "Context Embedding",
+            "Invariant Metric",
+            "Breath Transform",
+            "Phase Modulation",
+            "Multi-Well Potential",
+            "Spectral Channel",
+            "Spin Channel",
+            "Triadic Consensus",
+            "Harmonic Scaling",
+            "Decision Gate",
+            "Audio Axis",
+            "Quantum Resistance",
+            "Anti-Fragile Mode",
+            "Topological CFI",
         ]
-        
+
         for i, layer in enumerate(layers, 1):
             print(f"  L{i:2d}: {layer:.<40} ✓ ACTIVE")
-    
+
     def cmd_tutorial(self):
         """Interactive tutorial"""
         while True:
@@ -224,31 +234,31 @@ class SCBECLI:
             print("  4. Security features")
             print("  5. Use cases")
             print("  0. Back to main menu")
-            
+
             choice = self.safe_input("\nSelect topic (0-5): ")
-            
-            if choice == '0' or not choice:
+
+            if choice == "0" or not choice:
                 break
-            
+
             tutorials = {
-                '1': self._tutorial_what,
-                '2': self._tutorial_how,
-                '3': self._tutorial_quickstart,
-                '4': self._tutorial_security,
-                '5': self._tutorial_usecases
+                "1": self._tutorial_what,
+                "2": self._tutorial_how,
+                "3": self._tutorial_quickstart,
+                "4": self._tutorial_security,
+                "5": self._tutorial_usecases,
             }
-            
+
             if choice in tutorials:
                 tutorials[choice]()
             else:
                 print("Invalid choice")
-    
+
     def _tutorial_what(self):
         """What is SCBE tutorial"""
         print("\n" + "=" * 60)
         print("WHAT IS SCBE-AETHERMOORE?")
         print("=" * 60)
-        
+
         content = """
 SCBE (Spectral Context-Bound Encryption) is a next-generation security
 framework that uses hyperbolic geometry and signal processing to protect
@@ -283,13 +293,13 @@ system that adapts to threats in real-time.
         print(content)
         self.safe_input("\nPress Enter to continue...")
         # Returns to tutorial menu automatically
-    
+
     def _tutorial_how(self):
         """How it works tutorial"""
         print("\n" + "=" * 60)
         print("HOW DOES SCBE WORK?")
         print("=" * 60)
-        
+
         content = """
 SCBE combines multiple mathematical techniques to create unbreakable
 security. Here's the simplified version:
@@ -337,13 +347,13 @@ that would each take billions of years to break individually.
         """
         print(content)
         self.safe_input("\nPress Enter to continue...")
-    
+
     def _tutorial_quickstart(self):
         """Quick start tutorial"""
         print("\n" + "=" * 60)
         print("QUICK START GUIDE")
         print("=" * 60)
-        
+
         content = """
 Let's encrypt your first message!
 
@@ -385,13 +395,13 @@ TypeScript:
         """
         print(content)
         self.safe_input("\nPress Enter to continue...")
-    
+
     def _tutorial_security(self):
         """Security features tutorial"""
         print("\n" + "=" * 60)
         print("SECURITY FEATURES")
         print("=" * 60)
-        
+
         content = """
 SCBE provides military-grade security through multiple mechanisms:
 
@@ -445,13 +455,13 @@ SCBE provides military-grade security through multiple mechanisms:
         """
         print(content)
         self.safe_input("\nPress Enter to continue...")
-    
+
     def _tutorial_usecases(self):
         """Use cases tutorial"""
         print("\n" + "=" * 60)
         print("USE CASES")
         print("=" * 60)
-        
+
         content = """
 SCBE is designed for high-security applications where traditional
 encryption isn't enough:
@@ -520,7 +530,7 @@ the encryption because SCBE uses post-quantum primitives!
         """
         print(content)
         self.safe_input("\nPress Enter to continue...")
-    
+
     def cmd_help(self):
         """Display help"""
         print("\n📖 AVAILABLE COMMANDS")
@@ -532,32 +542,34 @@ the encryption because SCBE uses post-quantum primitives!
         print("  metrics    - Display system metrics")
         print("  help       - Show this help")
         print("  exit       - Exit the CLI")
-    
+
     def run(self):
         """Main CLI loop"""
         self.banner()
         print("Type 'tutorial' to get started, or 'help' for commands\n")
-        
+
         commands = {
-            'tutorial': self.cmd_tutorial,
-            'encrypt': self.cmd_encrypt,
-            'decrypt': self.cmd_decrypt,
-            'attack': self.cmd_attack_sim,
-            'metrics': self.cmd_metrics,
-            'help': self.cmd_help
+            "tutorial": self.cmd_tutorial,
+            "encrypt": self.cmd_encrypt,
+            "decrypt": self.cmd_decrypt,
+            "attack": self.cmd_attack_sim,
+            "metrics": self.cmd_metrics,
+            "help": self.cmd_help,
         }
-        
+
         while True:
             try:
                 cmd = input("\nscbe> ").strip().lower()
-                
-                if cmd == 'exit':
+
+                if cmd == "exit":
                     print("\nGoodbye! 👋")
                     break
                 elif cmd in commands:
                     commands[cmd]()
                 elif cmd:
-                    print(f"Unknown command: {cmd}. Type 'help' for available commands.")
+                    print(
+                        f"Unknown command: {cmd}. Type 'help' for available commands."
+                    )
             except KeyboardInterrupt:
                 print("\n\nGoodbye! 👋")
                 break
@@ -568,10 +580,12 @@ the encryption because SCBE uses post-quantum primitives!
             except Exception as e:
                 print(f"\n❌ Error: {str(e)}")
 
+
 def main():
     """Entry point"""
     cli = SCBECLI()
     cli.run()
+
 
 if __name__ == "__main__":
     main()
