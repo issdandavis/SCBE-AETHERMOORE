@@ -121,8 +121,7 @@ class Complex {
      * Checks if two complex numbers are approximately equal.
      */
     equals(other, epsilon = 1e-10) {
-        return (Math.abs(this.re - other.re) < epsilon &&
-            Math.abs(this.im - other.im) < epsilon);
+        return Math.abs(this.re - other.re) < epsilon && Math.abs(this.im - other.im) < epsilon;
     }
     /**
      * Returns a string representation.

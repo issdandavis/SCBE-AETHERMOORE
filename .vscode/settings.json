@@ -82,5 +82,8 @@
   },
   "terminal.integrated.env.osx": {
     "PYTHONPATH": "${workspaceFolder}/src"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
   }
 }

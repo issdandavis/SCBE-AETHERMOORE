@@ -57,7 +57,6 @@ export const VERSION = '1.0.0';
  * Quick sign function for simple use cases
  */
 export function quickSign(intent: string, key: string): string {
-  const { HybridCrypto } = require('./HybridCrypto.js');
   return new HybridCrypto().signCompact(intent, key);
 }
 
@@ -65,7 +64,6 @@ export function quickSign(intent: string, key: string): string {
  * Quick verify function for simple use cases
  */
 export function quickVerify(intent: string, signature: string, key: string): boolean {
-  const { HybridCrypto } = require('./HybridCrypto.js');
   const result = new HybridCrypto().verifyCompact(intent, signature, key);
   return result.valid;
 }

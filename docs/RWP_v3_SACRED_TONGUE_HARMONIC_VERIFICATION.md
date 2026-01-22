@@ -18,29 +18,29 @@ This document provides the **complete mathematical specification** for the Sacre
 
 ## 1. Global Notation
 
-| Symbol | Meaning |
-|--------|---------|
-| 𝒟 | Private dictionary (bijection between lexical tokens and integer IDs) |
-| τ ∈ 𝒟 | A token (word) from the dictionary |
-| id(τ) ∈ ℕ | Integer identifier of token τ |
-| M ∈ 𝕄 | Modality (intent class): {STRICT, ADAPTIVE, PROBE} |
-| k_master ∈ {0,1}^ℓ | Long-term secret key (ℓ = 256 bits) |
-| n ∈ {0,…,N-1} | Message-level nonce (12 bytes → 96 bits) |
-| t ∈ ℝ⁺ | Unix timestamp (milliseconds) |
-| K_msg ∈ {0,1}^ℓ | Per-message secret derived from k_master and n |
-| σ ∈ {KO,RU,UM,DR,SR,…} | "Tongue" (domain identifier) for multi-signature policy |
-| ℱ | Finite field of 8-bit bytes (ℤ/256ℤ) |
-| ⊕ | Bitwise XOR |
-| ‖·‖₂ | Euclidean (ℓ₂) norm |
-| FFT(·) | Discrete Fourier Transform |
-| ℋ | Harmonic synthesis operator |
-| HMAC_K(m) | HMAC-SHA-256 of message m keyed with K |
-| BASE_F = 440 Hz | Reference pitch (A4) |
-| Δf = 30 Hz | Frequency step per token ID |
-| H_max ∈ ℕ | Maximum overtone index (e.g., 5) |
-| SR = 44,100 Hz | Sample rate for audio synthesis |
-| T_sec = 0.5 s | Duration of generated waveform |
-| L = SR·T_sec | Total number of audio samples |
+| Symbol                 | Meaning                                                               |
+| ---------------------- | --------------------------------------------------------------------- |
+| 𝒟                      | Private dictionary (bijection between lexical tokens and integer IDs) |
+| τ ∈ 𝒟                  | A token (word) from the dictionary                                    |
+| id(τ) ∈ ℕ              | Integer identifier of token τ                                         |
+| M ∈ 𝕄                  | Modality (intent class): {STRICT, ADAPTIVE, PROBE}                    |
+| k_master ∈ {0,1}^ℓ     | Long-term secret key (ℓ = 256 bits)                                   |
+| n ∈ {0,…,N-1}          | Message-level nonce (12 bytes → 96 bits)                              |
+| t ∈ ℝ⁺                 | Unix timestamp (milliseconds)                                         |
+| K_msg ∈ {0,1}^ℓ        | Per-message secret derived from k_master and n                        |
+| σ ∈ {KO,RU,UM,DR,SR,…} | "Tongue" (domain identifier) for multi-signature policy               |
+| ℱ                      | Finite field of 8-bit bytes (ℤ/256ℤ)                                  |
+| ⊕                      | Bitwise XOR                                                           |
+| ‖·‖₂                   | Euclidean (ℓ₂) norm                                                   |
+| FFT(·)                 | Discrete Fourier Transform                                            |
+| ℋ                      | Harmonic synthesis operator                                           |
+| HMAC_K(m)              | HMAC-SHA-256 of message m keyed with K                                |
+| BASE_F = 440 Hz        | Reference pitch (A4)                                                  |
+| Δf = 30 Hz             | Frequency step per token ID                                           |
+| H_max ∈ ℕ              | Maximum overtone index (e.g., 5)                                      |
+| SR = 44,100 Hz         | Sample rate for audio synthesis                                       |
+| T_sec = 0.5 s          | Duration of generated waveform                                        |
+| L = SR·T_sec           | Total number of audio samples                                         |
 
 ---
 
@@ -53,6 +53,7 @@ The private dictionary 𝒟 is a bijection:
 ```
 
 **Example**:
+
 ```python
 𝒟 = {"korah": 0, "aelin": 1, "dahru": 2, ...}
 ```
@@ -67,13 +68,14 @@ The inverse mapping `rev(id)` is also defined.
 
 Each modality M is assigned a mode-mask ℳ(M) ⊆ {1,…,H_max} that determines which overtones are emitted.
 
-| Modality | Mask ℳ(M) | Description |
-|----------|-----------|-------------|
-| STRICT | {1,3,5} | Odd harmonics only |
+| Modality | Mask ℳ(M)   | Description          |
+| -------- | ----------- | -------------------- |
+| STRICT   | {1,3,5}     | Odd harmonics only   |
 | ADAPTIVE | {1,…,H_max} | Full harmonic series |
-| PROBE | {1} | Fundamental only |
+| PROBE    | {1}         | Fundamental only     |
 
 **Mathematical Definition**:
+
 ```
 ℳ(M) = { {1,3,5}         if M = STRICT
          {1,…,H_max}     if M = ADAPTIVE
@@ -91,6 +93,7 @@ K_msg = HKDF(k_master, info = n, len = ℓ)
 ```
 
 **Practical Implementation** (single HMAC-SHA-256):
+
 ```
 K_msg = HMAC_k_master(ASCII("msg_key" ∥ n))
 ```
@@ -102,6 +105,7 @@ K_msg = HMAC_k_master(ASCII("msg_key" ∥ n))
 ## 5. Key-Driven Feistel Permutation (Structure Layer)
 
 Let the token vector be:
+
 ```
 v = [id(τ₀), id(τ₁), …, id(τₘ₋₁)]ᵀ ∈ ℕᵐ
 ```
@@ -113,23 +117,27 @@ Apply a balanced Feistel network with R = 4 rounds.
 For each round r = 0,…,R-1:
 
 1. **Derive round sub-key** (byte-wise) from K_msg:
+
    ```
    k⁽ʳ⁾ = HMAC_K_msg(ASCII("round" ∥ r)) mod 256
    ```
 
 2. **Split v into left/right halves** (if m is odd, right half gets extra element):
+
    ```
    L⁽⁰⁾ = v₀:⌊m/2⌋₋₁
    R⁽⁰⁾ = v⌊m/2⌋:m₋₁
    ```
 
 3. **Iterate**:
+
    ```
    L⁽ʳ⁺¹⁾ = R⁽ʳ⁾
    R⁽ʳ⁺¹⁾ = L⁽ʳ⁾ ⊕ F(R⁽ʳ⁾, k⁽ʳ⁾)
    ```
-   
+
    where the round function F is byte-wise XOR:
+
    ```
    F(x, k)ᵢ = xᵢ ⊕ kᵢ mod |k|
    ```
@@ -152,6 +160,7 @@ x(t) = ∑ᵢ₌₀ᵐ⁻¹ ∑ₕ∈ℳ(M) (1/h) sin(2π(f₀ + v'ᵢ·Δf)·h�
 ```
 
 where:
+
 - f₀ = BASE_F = 440 Hz
 - Δf = 30 Hz
 - Factor 1/h provides amplitude roll-off for higher overtones
@@ -170,14 +179,14 @@ x[n] = x(n/SR),  n = 0,…,L-1,  L = SR·T_sec
 
 ### Header Fields
 
-| Field | Value / Computation |
-|-------|---------------------|
-| ver | Constant string "3" |
-| tongue | Chosen domain identifier σ |
-| aad | Associative array of auxiliary data (e.g., {action:"execute", mode:M}) |
-| ts | Current Unix time in milliseconds (t) |
-| nonce | Random 12-byte value n (Base64URL encoded) |
-| kid | Identifier of the master key ("master" in demo) |
+| Field  | Value / Computation                                                    |
+| ------ | ---------------------------------------------------------------------- |
+| ver    | Constant string "3"                                                    |
+| tongue | Chosen domain identifier σ                                             |
+| aad    | Associative array of auxiliary data (e.g., {action:"execute", mode:M}) |
+| ts     | Current Unix time in milliseconds (t)                                  |
+| nonce  | Random 12-byte value n (Base64URL encoded)                             |
+| kid    | Identifier of the master key ("master" in demo)                        |
 
 ### Canonical String Construction
 
@@ -251,19 +260,19 @@ If payload is audio:
 
 ## 9. Parameter Summary (Concrete Simulation)
 
-| Symbol | Value (Example) |
-|--------|-----------------|
-| 𝒟 | {"korah":0, "aelin":1, "dahru":2, ...} |
-| H_max | 5 |
-| M set | {STRICT, ADAPTIVE, PROBE} |
-| ℳ(STRICT) | {1,3,5} |
-| ℳ(ADAPTIVE) | {1,2,3,4,5} |
-| ℳ(PROBE) | {1} |
-| R (Feistel rounds) | 4 |
-| ℓ (key length) | 256 bits |
-| τ_max (replay window) | 60 s |
-| ε_f (frequency tolerance) | 2 Hz |
-| ε_a (amplitude tolerance) | 0.15 (relative) |
+| Symbol                    | Value (Example)                        |
+| ------------------------- | -------------------------------------- |
+| 𝒟                         | {"korah":0, "aelin":1, "dahru":2, ...} |
+| H_max                     | 5                                      |
+| M set                     | {STRICT, ADAPTIVE, PROBE}              |
+| ℳ(STRICT)                 | {1,3,5}                                |
+| ℳ(ADAPTIVE)               | {1,2,3,4,5}                            |
+| ℳ(PROBE)                  | {1}                                    |
+| R (Feistel rounds)        | 4                                      |
+| ℓ (key length)            | 256 bits                               |
+| τ_max (replay window)     | 60 s                                   |
+| ε_f (frequency tolerance) | 2 Hz                                   |
+| ε_a (amplitude tolerance) | 0.15 (relative)                        |
 
 ---
 
@@ -420,38 +429,38 @@ if __name__ == "__main__":
     aad = {"action": "execute", "mode": modality}
     master_key = random.randbytes(KEY_LEN)
     nonce_raw = random.randbytes(NONCE_BYTES)
-    
+
     # Tokenization
     tokens = phrase.split()
     ids = [id_token(t) for t in tokens]
-    
+
     # Derive msg key
     msg_key = derive_msg_key(master_key, nonce_raw)
-    
+
     # Permute
     permuted = feistel_permute(ids, msg_key)
-    
+
     # Synth waveform
     waveform = synth_waveform(permuted, modality)
-    
+
     # Envelope
     envelope, _ = sign_envelope(master_key, tongue, aad, waveform, nonce_raw=nonce_raw)
-    
+
     print('Envelope created:', envelope['header'])
-    
+
     # Verify
     valid, msg = verify_envelope(envelope, master_key)
     print('Verification:', valid, msg)
-    
+
     if valid:
         # Decode payload
         payload_bytes = base64.urlsafe_b64decode(envelope['payload'] + '==')
         recovered_wave = np.frombuffer(payload_bytes, dtype=np.float32)
-        
+
         # Verify harmonics
         harmonics_ok = verify_harmonics(recovered_wave, permuted, modality)
         print('Harmonics OK:', harmonics_ok)
-        
+
         # Reverse permute
         msg_key_rec = derive_msg_key(master_key, base64.urlsafe_b64decode(envelope['header']['nonce'] + '=='))
         recovered_ids = feistel_permute(permuted, msg_key_rec)
@@ -464,12 +473,14 @@ if __name__ == "__main__":
 ## 11. Integration with RWP v2.1
 
 ### Current State (v2.1)
+
 - HMAC-SHA256 multi-signatures only
 - No audio verification
 - No Feistel permutation
 - No harmonic synthesis
 
 ### Future State (v3.0)
+
 - **Adds** harmonic verification (this spec)
 - **Keeps** HMAC-SHA256 signatures
 - **Adds** Feistel permutation for token order obfuscation
@@ -486,16 +497,19 @@ if __name__ == "__main__":
 ## 12. Security Considerations
 
 ### Strengths
+
 - **Intent Verification**: Modality encoding prevents replay across different intent classes
 - **Token Obfuscation**: Feistel permutation hides original token order
 - **Harmonic Binding**: Audio waveform cryptographically bound to envelope via MAC
 
 ### Limitations
+
 - **Dictionary Size**: Limited by Nyquist frequency (|𝒟| < 148 for current parameters)
 - **Audio Channel**: Requires reliable audio transmission (susceptible to noise)
 - **FFT Resolution**: Frequency tolerance ε_f limited by FFT bin width
 
 ### Mitigations
+
 - Use HMAC-SHA256 as primary authentication (audio is secondary verification)
 - Increase sample rate SR or decrease Δf for larger dictionaries
 - Apply error correction codes to audio payload
@@ -516,6 +530,7 @@ if __name__ == "__main__":
 ### Test Vector 1: STRICT Mode
 
 **Input**:
+
 - Phrase: "korah aelin dahru"
 - Modality: STRICT
 - Tongue: KO
@@ -523,6 +538,7 @@ if __name__ == "__main__":
 - Nonce: `0xABCD...` (12 bytes)
 
 **Expected**:
+
 - Permuted IDs: `[2, 0, 1]` (example, depends on key)
 - Harmonics: {1, 3, 5} for each token
 - Envelope signature: `0x...` (64 hex chars)
@@ -530,6 +546,7 @@ if __name__ == "__main__":
 ### Test Vector 2: ADAPTIVE Mode
 
 **Input**:
+
 - Phrase: "korah aelin"
 - Modality: ADAPTIVE
 - Tongue: RU
@@ -537,6 +554,7 @@ if __name__ == "__main__":
 - Nonce: `0xEF01...` (12 bytes)
 
 **Expected**:
+
 - Permuted IDs: `[1, 0]` (example)
 - Harmonics: {1, 2, 3, 4, 5} for each token
 - Envelope signature: `0x...` (64 hex chars)

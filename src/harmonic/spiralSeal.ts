@@ -279,17 +279,25 @@ async function hkdfDerive(
   }
 
   // Import master secret as HKDF key
-  const keyMaterial = await crypto.subtle.importKey('raw', masterSecret, 'HKDF', false, [
-    'deriveBits',
-  ]);
+  // Note: Cast to ArrayBuffer for Web Crypto API compatibility
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    masterSecret.buffer.slice(
+      masterSecret.byteOffset,
+      masterSecret.byteOffset + masterSecret.byteLength
+    ) as ArrayBuffer,
+    'HKDF',
+    false,
+    ['deriveBits']
+  );
 
   // Derive key using HKDF
   const derivedBits = await crypto.subtle.deriveBits(
     {
       name: 'HKDF',
       hash: 'SHA-256',
-      salt: salt,
-      info: info,
+      salt: salt.buffer.slice(salt.byteOffset, salt.byteOffset + salt.byteLength) as ArrayBuffer,
+      info: info.buffer.slice(info.byteOffset, info.byteOffset + info.byteLength) as ArrayBuffer,
     },
     keyMaterial,
     length * 8
@@ -311,17 +319,29 @@ async function aesGcmEncrypt(
     throw new Error('Web Crypto API not available');
   }
 
-  const cryptoKey = await crypto.subtle.importKey('raw', key, 'AES-GCM', false, ['encrypt']);
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    key.buffer.slice(key.byteOffset, key.byteOffset + key.byteLength) as ArrayBuffer,
+    'AES-GCM',
+    false,
+    ['encrypt']
+  );
 
   const result = await crypto.subtle.encrypt(
     {
       name: 'AES-GCM',
-      iv: nonce,
-      additionalData: aad,
+      iv: nonce.buffer.slice(nonce.byteOffset, nonce.byteOffset + nonce.byteLength) as ArrayBuffer,
+      additionalData: aad.buffer.slice(
+        aad.byteOffset,
+        aad.byteOffset + aad.byteLength
+      ) as ArrayBuffer,
       tagLength: 128,
     },
     cryptoKey,
-    plaintext
+    plaintext.buffer.slice(
+      plaintext.byteOffset,
+      plaintext.byteOffset + plaintext.byteLength
+    ) as ArrayBuffer
   );
 
   // Result includes ciphertext + tag (last 16 bytes)
@@ -346,7 +366,13 @@ async function aesGcmDecrypt(
     throw new Error('Web Crypto API not available');
   }
 
-  const cryptoKey = await crypto.subtle.importKey('raw', key, 'AES-GCM', false, ['decrypt']);
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    key.buffer.slice(key.byteOffset, key.byteOffset + key.byteLength) as ArrayBuffer,
+    'AES-GCM',
+    false,
+    ['decrypt']
+  );
 
   // Combine ciphertext + tag for Web Crypto
   const combined = new Uint8Array(ciphertext.length + tag.length);
@@ -356,12 +382,18 @@ async function aesGcmDecrypt(
   const result = await crypto.subtle.decrypt(
     {
       name: 'AES-GCM',
-      iv: nonce,
-      additionalData: aad,
+      iv: nonce.buffer.slice(nonce.byteOffset, nonce.byteOffset + nonce.byteLength) as ArrayBuffer,
+      additionalData: aad.buffer.slice(
+        aad.byteOffset,
+        aad.byteOffset + aad.byteLength
+      ) as ArrayBuffer,
       tagLength: 128,
     },
     cryptoKey,
-    combined
+    combined.buffer.slice(
+      combined.byteOffset,
+      combined.byteOffset + combined.byteLength
+    ) as ArrayBuffer
   );
 
   return new Uint8Array(result);

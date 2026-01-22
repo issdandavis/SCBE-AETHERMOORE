@@ -7,6 +7,49 @@ set -euo pipefail
 # Generates reproducible evidence of system functionality
 # for compliance, audits, and demonstrations.
 
+# ---- Dependency validation
+# Check for required commands and exit early with clear error messages if missing
+check_dependencies() {
+  local missing_deps=()
+  local required_commands=("git" "node" "npm" "python3" "tar")
+  local optional_commands=("pytest")
+  
+  # Check required commands
+  for cmd in "${required_commands[@]}"; do
+    if ! command -v "$cmd" >/dev/null 2>&1; then
+      missing_deps+=("$cmd")
+    fi
+  done
+  
+  # If critical dependencies are missing, fail early
+  if [ ${#missing_deps[@]} -gt 0 ]; then
+    echo "ERROR: Missing required dependencies:" >&2
+    for dep in "${missing_deps[@]}"; do
+      echo "  - $dep" >&2
+    done
+    echo "" >&2
+    echo "Please install the missing dependencies before running this script." >&2
+    exit 1
+  fi
+  
+  # Warn about optional dependencies
+  for cmd in "${optional_commands[@]}"; do
+    if ! command -v "$cmd" >/dev/null 2>&1; then
+      # Check if pytest is available as Python module
+      if [ "$cmd" = "pytest" ]; then
+        if ! python3 -m pytest --version >/dev/null 2>&1; then
+          echo "WARNING: pytest not found as command or Python module. Python tests will be skipped." >&2
+        fi
+      else
+        echo "WARNING: Optional command '$cmd' not found. Some features may be limited." >&2
+      fi
+    fi
+  done
+}
+
+# Validate all dependencies before proceeding
+check_dependencies
+
 STAMP="$(date +"%Y-%m-%d_%H%M%S")"
 OUTDIR="docs/evidence/${STAMP}"
 mkdir -p "${OUTDIR}"
@@ -15,7 +58,7 @@ WARN="${OUTDIR}/warnings.txt"
 touch "${WARN}"
 
 log() { echo "[$(date +"%H:%M:%S")] $*"; }
-w()   { echo "WARNING: $*" | tee -a "${WARN}" >/dev/null; }
+w()   { echo "WARNING: $*" | tee -a "${WARN}" >&2; }
 
 # ---- Basic repo/system fingerprints
 log "Writing system + repo info..."
