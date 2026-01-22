@@ -1,11 +1,20 @@
 /**
- * SCBE Harmonic Scaling (Layer 12)
+ * @file harmonicScaling.ts
+ * @module harmonic/harmonicScaling
+ * @layer Layer 12
+ * @component Risk Amplification Engine
+ * @version 3.0.0
+ * @since 2026-01-20
  *
- * Core mathematical functions for harmonic scaling:
- * - H(d, R) = R^(d²) - Exponential risk amplification
- * - Security bit calculations
- * - Harmonic distance in 6D space
- * - Octave transposition
+ * SCBE Harmonic Scaling - Creates exponential "hard walls" for risk amplification.
+ *
+ * Layer 12: H(d, R) = R^(d²) - Super-exponential risk amplification
+ *
+ * Key functions:
+ * - harmonicScale(d, R) - Core risk amplifier
+ * - securityBits(H) - Convert to security bit equivalent
+ * - harmonicDistance6D(a, b) - 6D space distance
+ * - octaveTranspose(f, n) - Frequency transposition
  */
 
 import { CONSTANTS, Vector6D } from './constants.js';
