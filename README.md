@@ -340,7 +340,17 @@ MIT License - see [LICENSE](./LICENSE) file for details
 **Issac Daniel Davis**
 - Email: issdandavis@gmail.com
 - GitHub: [@ISDanDavis2](https://github.com/ISDanDavis2)
+- Proton Mail: [issdandavis@proton.me](mailto:issdandavis@proton.me)
 
+## 📬 Feedback & Contact
+
+We'd love to hear from you! Whether you have questions, bug reports, feature requests, or just want to share how you're using SCBE-AETHERMOORE:
+
+- **📧 Email**: [issdandavis@proton.me](mailto:issdandavis@proton.me)
+- **📝 Feedback Form**: [Submit Feedback](https://docs.google.com/forms/d/1vPUDabDORaYzZwymSeKVZba0vtHFtxF8Qa7B7qciZJs/viewform)
+- **📓 Documentation & Roadmap**: [Notion Page](https://www.notion.so/SCBE-AETHERMOORE-Executive-Summary-2ecf96de82e581839d69ee31e5c15175)
+- **🐛 Bug Reports**: [GitHub Issues](https://github.com/ISDanDavis2/scbe-aethermoore/issues)
+- **💬 Discussions**: [GitHub Discussions](https://github.com/ISDanDavis2/scbe-aethermoore/discussions)
 ## 🙏 Acknowledgments
 
 Built on principles of hyperbolic geometry, anti-fragile systems, and mathematical security proofs.
