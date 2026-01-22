@@ -26,19 +26,19 @@ import numpy as np
 # GLOBAL CONSTANTS (Section 1: Global Notation)
 # =============================================================================
 
-BASE_FREQ = 440.0       # Hz - Reference pitch (A4)
-FREQ_STEP = 30.0        # Hz - Frequency step per token ID
-MAX_HARMONIC = 5        # H_max - Maximum overtone index
-SAMPLE_RATE = 44_100    # SR - Sample rate for audio synthesis
-DURATION_SEC = 0.5      # T_sec - Duration of generated waveform
+BASE_FREQ = 440.0  # Hz - Reference pitch (A4)
+FREQ_STEP = 30.0  # Hz - Frequency step per token ID
+MAX_HARMONIC = 5  # H_max - Maximum overtone index
+SAMPLE_RATE = 44_100  # SR - Sample rate for audio synthesis
+DURATION_SEC = 0.5  # T_sec - Duration of generated waveform
 L_SAMPLES = int(SAMPLE_RATE * DURATION_SEC)  # L - Total audio samples
-KEY_LEN_BITS = 256      # ℓ - Key length in bits
+KEY_LEN_BITS = 256  # ℓ - Key length in bits
 KEY_LEN_BYTES = KEY_LEN_BITS // 8
-NONCE_BYTES = 12        # 96 bits
-FEISTEL_ROUNDS = 4      # R - Number of Feistel rounds
+NONCE_BYTES = 12  # 96 bits
+FEISTEL_ROUNDS = 4  # R - Number of Feistel rounds
 REPLAY_WINDOW_MS = 60_000  # τ_max - Replay window in milliseconds
-FREQ_TOLERANCE = 2.0    # ε_f - Frequency tolerance in Hz
-AMP_TOLERANCE = 0.15    # ε_a - Amplitude tolerance (relative)
+FREQ_TOLERANCE = 2.0  # ε_f - Frequency tolerance in Hz
+AMP_TOLERANCE = 0.15  # ε_a - Amplitude tolerance (relative)
 
 # Golden Ratio - used for aperiodic lattice spacing
 PHI = (1 + np.sqrt(5)) / 2  # ≈ 1.618033988749895
@@ -50,6 +50,7 @@ K_BOLTZMANN = 1.380649e-23  # J/K
 # =============================================================================
 # SECTION 2: DICTIONARY MAPPING
 # =============================================================================
+
 
 class ConlangDictionary:
     """
@@ -177,15 +178,17 @@ class ConlangDictionary:
 # SECTION 3: MODALITY ENCODING
 # =============================================================================
 
+
 class Modality(Enum):
     """
     Intent modality M ∈ M = {STRICT, ADAPTIVE, PROBE}.
 
     Each modality determines which overtones are emitted via the mask M(M).
     """
-    STRICT = "STRICT"      # Binary - odd harmonics only
+
+    STRICT = "STRICT"  # Binary - odd harmonics only
     ADAPTIVE = "ADAPTIVE"  # Non-binary - full series
-    PROBE = "PROBE"        # Fundamental only
+    PROBE = "PROBE"  # Fundamental only
 
 
 class ModalityEncoder:
@@ -245,6 +248,7 @@ class ModalityEncoder:
 # SECTION 4: PER-MESSAGE SECRET DERIVATION
 # =============================================================================
 
+
 def derive_msg_key(master_key: bytes, nonce: bytes) -> bytes:
     """
     Derive per-message secret K_msg from master key and nonce.
@@ -259,11 +263,7 @@ def derive_msg_key(master_key: bytes, nonce: bytes) -> bytes:
     Returns:
         Per-message secret K_msg (256 bits).
     """
-    return hmac.new(
-        master_key,
-        b"msg_key" + nonce,
-        hashlib.sha256
-    ).digest()
+    return hmac.new(master_key, b"msg_key" + nonce, hashlib.sha256).digest()
 
 
 def generate_nonce() -> bytes:
@@ -279,6 +279,7 @@ def generate_master_key() -> bytes:
 # =============================================================================
 # SECTION 5: KEY-DRIVEN FEISTEL PERMUTATION
 # =============================================================================
+
 
 class FeistelPermutation:
     """
@@ -310,11 +311,7 @@ class FeistelPermutation:
 
         k^(r) = HMAC_{K_msg}(ASCII("round" || r)) mod 256
         """
-        return hmac.new(
-            msg_key,
-            f"round{round_idx}".encode(),
-            hashlib.sha256
-        ).digest()
+        return hmac.new(msg_key, f"round{round_idx}".encode(), hashlib.sha256).digest()
 
     def _round_function(self, right: np.ndarray, sub_key: bytes) -> np.ndarray:
         """
@@ -354,7 +351,7 @@ class FeistelPermutation:
 
             # Pad f_output to match left size if needed
             if len(f_output) > len(left):
-                f_output = f_output[:len(left)]
+                f_output = f_output[: len(left)]
             elif len(f_output) < len(left):
                 f_output = np.pad(f_output, (0, len(left) - len(f_output)))
 
@@ -384,7 +381,7 @@ class FeistelPermutation:
             f_output = self._round_function(left, sub_key)
 
             if len(f_output) > len(right):
-                f_output = f_output[:len(right)]
+                f_output = f_output[: len(right)]
             elif len(f_output) < len(right):
                 f_output = np.pad(f_output, (0, len(right) - len(f_output)))
 
@@ -398,6 +395,7 @@ class FeistelPermutation:
 # =============================================================================
 # SECTION 6: HARMONIC SYNTHESIS OPERATOR H
 # =============================================================================
+
 
 class HarmonicSynthesizer:
     """
@@ -420,7 +418,7 @@ class HarmonicSynthesizer:
         base_freq: float = BASE_FREQ,
         freq_step: float = FREQ_STEP,
         sample_rate: int = SAMPLE_RATE,
-        duration: float = DURATION_SEC
+        duration: float = DURATION_SEC,
     ):
         """
         Initialize harmonic synthesizer.
@@ -444,7 +442,7 @@ class HarmonicSynthesizer:
         self,
         permuted_ids: np.ndarray,
         modality: Modality,
-        modality_encoder: Optional[ModalityEncoder] = None
+        modality_encoder: Optional[ModalityEncoder] = None,
     ) -> np.ndarray:
         """
         Generate audio waveform from permuted token IDs.
@@ -471,7 +469,9 @@ class HarmonicSynthesizer:
             f_i = self.base_freq + int(token_id) * self.freq_step
 
             if f_i <= 0:
-                raise ValueError(f"Token ID {token_id} produces non-positive frequency {f_i} Hz")
+                raise ValueError(
+                    f"Token ID {token_id} produces non-positive frequency {f_i} Hz"
+                )
 
             # Time slice for this token
             start = i * slice_len
@@ -494,7 +494,7 @@ class HarmonicSynthesizer:
         self,
         permuted_ids: np.ndarray,
         modality: Modality,
-        modality_encoder: Optional[ModalityEncoder] = None
+        modality_encoder: Optional[ModalityEncoder] = None,
     ) -> np.ndarray:
         """
         Generate continuous (overlapping) synthesis instead of sliced.
@@ -524,9 +524,11 @@ class HarmonicSynthesizer:
 # SECTION 7: RWP v3 ENVELOPE CONSTRUCTION
 # =============================================================================
 
+
 @dataclass
 class EnvelopeHeader:
     """RWP v3 envelope header fields."""
+
     ver: str = "3"
     tongue: str = "KO"  # Domain identifier σ
     aad: Dict[str, str] = field(default_factory=dict)  # Auxiliary data
@@ -584,7 +586,7 @@ class RWPEnvelope:
         modality: Modality,
         nonce: Optional[bytes] = None,
         timestamp: Optional[int] = None,
-        extra_aad: Optional[Dict[str, str]] = None
+        extra_aad: Optional[Dict[str, str]] = None,
     ) -> Dict:
         """
         Create RWP v3 envelope.
@@ -617,28 +619,26 @@ class RWPEnvelope:
             aad=aad,
             ts=timestamp,
             nonce=self._b64url_encode(nonce),
-            kid="master"
+            kid="master",
         )
 
         # Encode payload
         payload_b64 = self._b64url_encode(payload)
 
         # Build canonical string
-        canonical = ".".join([
-            "v3",
-            header.tongue,
-            self._canonical_aad(header.aad),
-            str(header.ts),
-            header.nonce,
-            payload_b64
-        ])
+        canonical = ".".join(
+            [
+                "v3",
+                header.tongue,
+                self._canonical_aad(header.aad),
+                str(header.ts),
+                header.nonce,
+                payload_b64,
+            ]
+        )
 
         # Compute MAC
-        sig = hmac.new(
-            self.master_key,
-            canonical.encode(),
-            hashlib.sha256
-        ).hexdigest()
+        sig = hmac.new(self.master_key, canonical.encode(), hashlib.sha256).hexdigest()
 
         return {
             "header": {
@@ -647,17 +647,17 @@ class RWPEnvelope:
                 "aad": header.aad,
                 "ts": header.ts,
                 "nonce": header.nonce,
-                "kid": header.kid
+                "kid": header.kid,
             },
             "payload": payload_b64,
-            "sig": sig
+            "sig": sig,
         }
 
     def verify(
         self,
         envelope: Dict,
         audio_check: bool = True,
-        expected_modality: Optional[Modality] = None
+        expected_modality: Optional[Modality] = None,
     ) -> Tuple[bool, str]:
         """
         Verify RWP v3 envelope (Section 8: Verification Procedure).
@@ -684,7 +684,10 @@ class RWPEnvelope:
         ts = header.get("ts", 0)
 
         if abs(now_ms - ts) > REPLAY_WINDOW_MS:
-            return False, f"Timestamp outside replay window (delta={abs(now_ms - ts)} ms)"
+            return (
+                False,
+                f"Timestamp outside replay window (delta={abs(now_ms - ts)} ms)",
+            )
 
         nonce = header.get("nonce", "")
         if nonce in self._seen_nonces:
@@ -692,19 +695,19 @@ class RWPEnvelope:
         self._seen_nonces.add(nonce)
 
         # Step 2: Re-compute MAC
-        canonical = ".".join([
-            "v3",
-            header.get("tongue", ""),
-            self._canonical_aad(header.get("aad", {})),
-            str(ts),
-            nonce,
-            payload_b64
-        ])
+        canonical = ".".join(
+            [
+                "v3",
+                header.get("tongue", ""),
+                self._canonical_aad(header.get("aad", {})),
+                str(ts),
+                nonce,
+                payload_b64,
+            ]
+        )
 
         expected_sig = hmac.new(
-            self.master_key,
-            canonical.encode(),
-            hashlib.sha256
+            self.master_key, canonical.encode(), hashlib.sha256
         ).hexdigest()
 
         if not hmac.compare_digest(expected_sig, sig):
@@ -713,16 +716,16 @@ class RWPEnvelope:
         # Step 3: Optional harmonic verification
         if audio_check:
             try:
-                pcm = np.frombuffer(
-                    self._b64url_decode(payload_b64),
-                    dtype=np.float32
-                )
+                pcm = np.frombuffer(self._b64url_decode(payload_b64), dtype=np.float32)
 
                 mode_str = header.get("aad", {}).get("mode", "ADAPTIVE")
                 declared_modality = Modality(mode_str)
 
                 if expected_modality and declared_modality != expected_modality:
-                    return False, f"Modality mismatch: expected {expected_modality.value}, got {declared_modality.value}"
+                    return (
+                        False,
+                        f"Modality mismatch: expected {expected_modality.value}, got {declared_modality.value}",
+                    )
 
                 # Basic FFT verification (detailed check in ai_verifier module)
                 # Check that we have valid audio data
@@ -743,6 +746,7 @@ class RWPEnvelope:
 # MAIN CIPHER CLASS - COMBINES ALL COMPONENTS
 # =============================================================================
 
+
 class SymphonicCipher:
     """
     Complete Symphonic Cipher implementation.
@@ -759,7 +763,7 @@ class SymphonicCipher:
     def __init__(
         self,
         master_key: Optional[bytes] = None,
-        dictionary: Optional[ConlangDictionary] = None
+        dictionary: Optional[ConlangDictionary] = None,
     ):
         """
         Initialize Symphonic Cipher.
@@ -780,7 +784,7 @@ class SymphonicCipher:
         phrase: str,
         modality: Modality = Modality.ADAPTIVE,
         tongue: str = "KO",
-        return_components: bool = False
+        return_components: bool = False,
     ) -> Union[Dict, Tuple[Dict, Dict]]:
         """
         Encode a conlang phrase into a signed envelope.
@@ -805,14 +809,13 @@ class SymphonicCipher:
         permuted_ids = self.feistel.permute(ids, msg_key)
 
         # Step 4: Synthesize audio
-        waveform = self.synthesizer.synthesize(permuted_ids, modality, self.modality_encoder)
+        waveform = self.synthesizer.synthesize(
+            permuted_ids, modality, self.modality_encoder
+        )
 
         # Step 5: Create envelope
         envelope = self.envelope.create(
-            payload=waveform.tobytes(),
-            tongue=tongue,
-            modality=modality,
-            nonce=nonce
+            payload=waveform.tobytes(), tongue=tongue, modality=modality, nonce=nonce
         )
 
         if return_components:
@@ -822,16 +825,14 @@ class SymphonicCipher:
                 "nonce": nonce.hex(),
                 "msg_key": msg_key.hex(),
                 "waveform_samples": len(waveform),
-                "waveform_rms": float(np.sqrt(np.mean(waveform ** 2)))
+                "waveform_rms": float(np.sqrt(np.mean(waveform**2))),
             }
             return envelope, components
 
         return envelope
 
     def decode(
-        self,
-        envelope: Dict,
-        expected_modality: Optional[Modality] = None
+        self, envelope: Dict, expected_modality: Optional[Modality] = None
     ) -> Tuple[bool, Optional[str], str]:
         """
         Verify and decode an envelope.
@@ -845,9 +846,7 @@ class SymphonicCipher:
         """
         # Verify envelope
         success, message = self.envelope.verify(
-            envelope,
-            audio_check=True,
-            expected_modality=expected_modality
+            envelope, audio_check=True, expected_modality=expected_modality
         )
 
         if not success:

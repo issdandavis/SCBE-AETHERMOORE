@@ -18,7 +18,6 @@ from typing import Optional, Tuple, List, Union
 from dataclasses import dataclass
 from enum import Enum
 
-
 # =============================================================================
 # CONSTANTS
 # =============================================================================
@@ -29,6 +28,7 @@ DEFAULT_SAMPLE_RATE = 44_100
 # =============================================================================
 # SECTION 3.2: GAIN STAGING
 # =============================================================================
+
 
 class GainStage:
     """
@@ -90,13 +90,15 @@ class GainStage:
 # SECTION 3.3: MIC PATTERN FILTER
 # =============================================================================
 
+
 class MicPattern(Enum):
     """Microphone polar pattern types."""
-    OMNI = "omni"            # a = 0
-    CARDIOID = "cardioid"    # a = 0.5
+
+    OMNI = "omni"  # a = 0
+    CARDIOID = "cardioid"  # a = 0.5
     SUPERCARDIOID = "supercardioid"  # a = 0.63
     HYPERCARDIOID = "hypercardioid"  # a = 0.75
-    FIGURE_8 = "figure_8"    # a = 1.0
+    FIGURE_8 = "figure_8"  # a = 1.0
 
 
 class MicPatternFilter:
@@ -124,11 +126,7 @@ class MicPatternFilter:
         MicPattern.FIGURE_8: 1.0,
     }
 
-    def __init__(
-        self,
-        pattern: MicPattern = MicPattern.OMNI,
-        axis_angle: float = 0.0
-    ):
+    def __init__(self, pattern: MicPattern = MicPattern.OMNI, axis_angle: float = 0.0):
         """
         Initialize mic pattern filter.
 
@@ -141,9 +139,7 @@ class MicPatternFilter:
         self.a = self.PATTERN_COEFFICIENTS[pattern]
 
     def process(
-        self,
-        signal: np.ndarray,
-        source_angles: Optional[np.ndarray] = None
+        self, signal: np.ndarray, source_angles: Optional[np.ndarray] = None
     ) -> np.ndarray:
         """
         Apply directional weighting to signal.
@@ -179,6 +175,7 @@ class MicPatternFilter:
 # =============================================================================
 # SECTION 3.6: DAW ROUTING MATRIX
 # =============================================================================
+
 
 class DAWRoutingMatrix:
     """
@@ -237,10 +234,7 @@ class DAWRoutingMatrix:
             dry_wet_ratio: Amount of signal sent to wet bus (α).
         """
         self.num_channels = 2
-        self._matrix = np.array([
-            [1.0, 0.0],
-            [dry_wet_ratio, 1.0]
-        ], dtype=np.float64)
+        self._matrix = np.array([[1.0, 0.0], [dry_wet_ratio, 1.0]], dtype=np.float64)
 
     def process(self, signal: np.ndarray) -> np.ndarray:
         """
@@ -268,8 +262,10 @@ class DAWRoutingMatrix:
 # SECTION 3.7: PARAMETRIC EQ (BIQUAD)
 # =============================================================================
 
+
 class EQType(Enum):
     """Types of biquad EQ filters."""
+
     LOWPASS = "lowpass"
     HIGHPASS = "highpass"
     BANDPASS = "bandpass"
@@ -282,6 +278,7 @@ class EQType(Enum):
 @dataclass
 class BiquadCoefficients:
     """Biquad filter coefficients."""
+
     b0: float
     b1: float
     b2: float
@@ -325,10 +322,7 @@ class ParametricEQ:
         self._output_state = np.zeros(2)  # [y[n-1], y[n-2]]
 
     def calculate_peak_coefficients(
-        self,
-        center_freq: float,
-        gain_db: float,
-        q: float
+        self, center_freq: float, gain_db: float, q: float
     ) -> BiquadCoefficients:
         """
         Calculate biquad coefficients for peaking EQ.
@@ -354,18 +348,11 @@ class ParametricEQ:
 
         # Normalize by a0
         return BiquadCoefficients(
-            b0=b0 / a0,
-            b1=b1 / a0,
-            b2=b2 / a0,
-            a0=1.0,
-            a1=a1 / a0,
-            a2=a2 / a0
+            b0=b0 / a0, b1=b1 / a0, b2=b2 / a0, a0=1.0, a1=a1 / a0, a2=a2 / a0
         )
 
     def calculate_lowpass_coefficients(
-        self,
-        cutoff_freq: float,
-        q: float = 0.707
+        self, cutoff_freq: float, q: float = 0.707
     ) -> BiquadCoefficients:
         """Calculate biquad coefficients for lowpass filter."""
         omega = 2 * np.pi * cutoff_freq / self.sample_rate
@@ -380,14 +367,11 @@ class ParametricEQ:
         a2 = 1 - alpha
 
         return BiquadCoefficients(
-            b0=b0 / a0, b1=b1 / a0, b2=b2 / a0,
-            a0=1.0, a1=a1 / a0, a2=a2 / a0
+            b0=b0 / a0, b1=b1 / a0, b2=b2 / a0, a0=1.0, a1=a1 / a0, a2=a2 / a0
         )
 
     def calculate_highpass_coefficients(
-        self,
-        cutoff_freq: float,
-        q: float = 0.707
+        self, cutoff_freq: float, q: float = 0.707
     ) -> BiquadCoefficients:
         """Calculate biquad coefficients for highpass filter."""
         omega = 2 * np.pi * cutoff_freq / self.sample_rate
@@ -402,8 +386,7 @@ class ParametricEQ:
         a2 = 1 - alpha
 
         return BiquadCoefficients(
-            b0=b0 / a0, b1=b1 / a0, b2=b2 / a0,
-            a0=1.0, a1=a1 / a0, a2=a2 / a0
+            b0=b0 / a0, b1=b1 / a0, b2=b2 / a0, a0=1.0, a1=a1 / a0, a2=a2 / a0
         )
 
     def set_peak(self, center_freq: float, gain_db: float, q: float) -> None:
@@ -445,11 +428,13 @@ class ParametricEQ:
         for n in range(len(signal)):
             # y[n] = b₀x[n] + b₁x[n-1] + b₂x[n-2] - a₁y[n-1] - a₂y[n-2]
             x_n = signal[n]
-            y_n = (c.b0 * x_n +
-                   c.b1 * self._state[0] +
-                   c.b2 * self._state[1] -
-                   c.a1 * self._output_state[0] -
-                   c.a2 * self._output_state[1])
+            y_n = (
+                c.b0 * x_n
+                + c.b1 * self._state[0]
+                + c.b2 * self._state[1]
+                - c.a1 * self._output_state[0]
+                - c.a2 * self._output_state[1]
+            )
 
             # Update state
             self._state[1] = self._state[0]
@@ -471,6 +456,7 @@ class ParametricEQ:
             return signal
 
         from scipy.signal import lfilter
+
         c = self._coeffs
         b = [c.b0, c.b1, c.b2]
         a = [1.0, c.a1, c.a2]
@@ -480,6 +466,7 @@ class ParametricEQ:
 # =============================================================================
 # SECTION 3.8: DYNAMIC RANGE COMPRESSOR
 # =============================================================================
+
 
 class DynamicCompressor:
     """
@@ -505,7 +492,7 @@ class DynamicCompressor:
         ratio: float = 4.0,
         attack_ms: float = 10.0,
         release_ms: float = 100.0,
-        sample_rate: int = DEFAULT_SAMPLE_RATE
+        sample_rate: int = DEFAULT_SAMPLE_RATE,
     ):
         """
         Initialize compressor.
@@ -587,6 +574,7 @@ class DynamicCompressor:
 # SECTION 3.9: CONVOLUTION REVERB
 # =============================================================================
 
+
 class ConvolutionReverb:
     """
     Convolution reverb using room impulse response (RIR).
@@ -606,7 +594,7 @@ class ConvolutionReverb:
         self,
         impulse_response: Optional[np.ndarray] = None,
         wet_mix: float = 0.3,
-        sample_rate: int = DEFAULT_SAMPLE_RATE
+        sample_rate: int = DEFAULT_SAMPLE_RATE,
     ):
         """
         Initialize convolution reverb.
@@ -671,7 +659,7 @@ class ConvolutionReverb:
             Signal with reverb y_reverb[n].
         """
         # Convolve: z[n] = (x * h)[n]
-        wet = np.convolve(signal, self._ir, mode='full')[:len(signal)]
+        wet = np.convolve(signal, self._ir, mode="full")[: len(signal)]
 
         # Mix: y = (1-w)·x + w·z
         return (1 - self.wet_mix) * signal + self.wet_mix * wet
@@ -683,13 +671,15 @@ class ConvolutionReverb:
         Uses overlap-add method for efficiency.
         """
         from scipy.signal import fftconvolve
-        wet = fftconvolve(signal, self._ir, mode='full')[:len(signal)]
+
+        wet = fftconvolve(signal, self._ir, mode="full")[: len(signal)]
         return (1 - self.wet_mix) * signal + self.wet_mix * wet
 
 
 # =============================================================================
 # SECTION 3.10: STEREO PANNING
 # =============================================================================
+
 
 class StereoPanner:
     """
@@ -781,6 +771,7 @@ class StereoPanner:
 # DSP CHAIN - COMBINES ALL STAGES
 # =============================================================================
 
+
 class DSPChain:
     """
     Complete DSP processing chain combining all studio stages.
@@ -825,7 +816,7 @@ class DSPChain:
         threshold_db: float = -20.0,
         ratio: float = 4.0,
         attack_ms: float = 10.0,
-        release_ms: float = 100.0
+        release_ms: float = 100.0,
     ) -> None:
         """Configure compressor parameters."""
         self.compressor = DynamicCompressor(
@@ -833,15 +824,12 @@ class DSPChain:
             ratio=ratio,
             attack_ms=attack_ms,
             release_ms=release_ms,
-            sample_rate=self.sample_rate
+            sample_rate=self.sample_rate,
         )
 
     def configure_reverb(self, wet_mix: float = 0.3, decay_time: float = 0.5) -> None:
         """Configure reverb parameters."""
-        self.reverb = ConvolutionReverb(
-            wet_mix=wet_mix,
-            sample_rate=self.sample_rate
-        )
+        self.reverb = ConvolutionReverb(wet_mix=wet_mix, sample_rate=self.sample_rate)
         if decay_time != 0.5:
             self.reverb._ir = self.reverb._generate_simple_ir(decay_time)
 
@@ -858,12 +846,12 @@ class DSPChain:
             enabled: Whether stage is enabled.
         """
         stage_map = {
-            'gain': '_enable_gain',
-            'mic': '_enable_mic',
-            'eq': '_enable_eq',
-            'compression': '_enable_compression',
-            'reverb': '_enable_reverb',
-            'panning': '_enable_panning',
+            "gain": "_enable_gain",
+            "mic": "_enable_mic",
+            "eq": "_enable_eq",
+            "compression": "_enable_compression",
+            "reverb": "_enable_reverb",
+            "panning": "_enable_panning",
         }
         if stage in stage_map:
             setattr(self, stage_map[stage], enabled)

@@ -24,7 +24,7 @@ import sys
 import os
 
 # Add source to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 
 import numpy as np
 
@@ -33,15 +33,16 @@ try:
     from scbe_14layer_reference import (
         scbe_14layer_pipeline,
         layer_5_hyperbolic_distance,
-        layer_12_harmonic_scaling
+        layer_12_harmonic_scaling,
     )
     from spiralverse_core import (
         EnvelopeCore,
         SecurityGateCore,
         Agent6D,
         harmonic_complexity,
-        TONGUES
+        TONGUES,
     )
+
     FULL_IMPORT = True
 except ImportError:
     FULL_IMPORT = False
@@ -51,48 +52,59 @@ except ImportError:
 # DISPLAY UTILITIES
 # ============================================================================
 
+
 class Colors:
     """ANSI color codes for terminal output"""
-    HEADER = '\033[95m'
-    BLUE = '\033[94m'
-    CYAN = '\033[96m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    RED = '\033[91m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-    END = '\033[0m'
+
+    HEADER = "\033[95m"
+    BLUE = "\033[94m"
+    CYAN = "\033[96m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    RED = "\033[91m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+    END = "\033[0m"
+
 
 def print_header(text: str):
     print(f"\n{Colors.BOLD}{Colors.HEADER}{'='*70}")
     print(f" {text}")
     print(f"{'='*70}{Colors.END}\n")
 
+
 def print_section(text: str):
     print(f"\n{Colors.BOLD}{Colors.CYAN}--- {text} ---{Colors.END}\n")
+
 
 def print_success(text: str):
     print(f"{Colors.GREEN}[OK] {text}{Colors.END}")
 
+
 def print_warning(text: str):
     print(f"{Colors.YELLOW}[!!] {text}{Colors.END}")
+
 
 def print_error(text: str):
     print(f"{Colors.RED}[XX] {text}{Colors.END}")
 
+
 def print_metric(label: str, value: str, unit: str = ""):
     print(f"  {Colors.BOLD}{label}:{Colors.END} {value} {unit}")
+
 
 def slow_print(text: str, delay: float = 0.03):
     """Print text character by character for dramatic effect"""
     for char in text:
-        print(char, end='', flush=True)
+        print(char, end="", flush=True)
         time.sleep(delay)
     print()
+
 
 # ============================================================================
 # PRODUCT DEMO
 # ============================================================================
+
 
 async def demo_the_problem():
     """Show why traditional security fails"""
@@ -125,8 +137,11 @@ Answer: The attacker gets in. Every. Single. Time.
         print()
         await asyncio.sleep(0.3)
 
-    slow_print("\nTraditional security is possession-based. If you have the key, you're in.")
+    slow_print(
+        "\nTraditional security is possession-based. If you have the key, you're in."
+    )
     print(f"\n{Colors.BOLD}We need something better.{Colors.END}")
+
 
 async def demo_the_solution():
     """Show what SCBE-AETHERMOORE does differently"""
@@ -155,7 +170,9 @@ Only if ALL FIVE answers align do you get access.
     ]
 
     for layer_range, name, description in layers:
-        print(f"  {Colors.CYAN}{layer_range}{Colors.END}: {Colors.BOLD}{name}{Colors.END}")
+        print(
+            f"  {Colors.CYAN}{layer_range}{Colors.END}: {Colors.BOLD}{name}{Colors.END}"
+        )
         print(f"       {description}")
         await asyncio.sleep(0.2)
 
@@ -171,6 +188,7 @@ Only if ALL FIVE answers align do you get access.
 
 Attackers can't hide. Small deviations = massive risk amplification.
 """)
+
 
 async def demo_live_attack():
     """Live demonstration of attack being blocked"""
@@ -228,16 +246,18 @@ async def demo_live_attack():
         t_attack,
         D=6,
         breathing_factor=1.5,  # Elevated due to suspicious behavior
-        w_d=0.30,   # Higher weight on distance
-        w_c=0.15,   # Coherence
-        w_s=0.15,   # Spectral
-        w_tau=0.30, # Higher weight on trust
-        w_a=0.10    # Audio (weights sum to 1.0)
+        w_d=0.30,  # Higher weight on distance
+        w_c=0.15,  # Coherence
+        w_s=0.15,  # Spectral
+        w_tau=0.30,  # Higher weight on trust
+        w_a=0.10,  # Audio (weights sum to 1.0)
     )
 
     print()
     print_metric("Risk Score", f"{result_attack['risk_base']:.4f}")
-    print_metric("Harmonic Factor", f"{result_attack['H']:.2f}x", "(massive amplification!)")
+    print_metric(
+        "Harmonic Factor", f"{result_attack['H']:.2f}x", "(massive amplification!)"
+    )
     print_metric("Final Risk", f"{result_attack['risk_prime']:.4f}")
     print_error(f"Decision: {result_attack['decision']}")
 
@@ -268,6 +288,7 @@ async def demo_live_attack():
   SCBE-AETHERMOORE: Blocked before data accessed
 """)
 
+
 async def demo_envelope_security():
     """Demonstrate the secure envelope system"""
     print_header("SECURE COMMUNICATION: RWP Envelope System")
@@ -285,26 +306,23 @@ async def demo_envelope_security():
         "amount": 50000,
         "from_account": "CORP-001",
         "to_account": "VENDOR-042",
-        "authorization": "CFO-APPROVED"
+        "authorization": "CFO-APPROVED",
     }
 
     print(f"  Original Message: {json.dumps(message, indent=4)}")
 
     # Seal the message
     sealed = EnvelopeCore.seal(
-        tongue="KO",
-        origin="FinanceBot",
-        payload=message,
-        secret_key=secret_key
+        tongue="KO", origin="FinanceBot", payload=message, secret_key=secret_key
     )
 
     print_section("Sealed Envelope")
 
     print_metric("Protocol", "RWP Demo v1.0")
     print_metric("Tongue", f"{sealed['tongue']} ({TONGUES[sealed['tongue']]})")
-    print_metric("Nonce", sealed['nonce'], "(replay protection)")
-    print_metric("Encryption", sealed['enc'])
-    print_metric("Signature", sealed['sig'][:40] + "...")
+    print_metric("Nonce", sealed["nonce"], "(replay protection)")
+    print_metric("Encryption", sealed["enc"])
+    print_metric("Signature", sealed["sig"][:40] + "...")
     print()
     print(f"  Encrypted Payload: {sealed['payload'][:50]}...")
 
@@ -335,6 +353,7 @@ async def demo_envelope_security():
         print(f"  Attacker receives: {result['data'][:32]}... (deterministic noise)")
     else:
         print_success("  Message verified and decrypted")
+
 
 async def demo_pricing_roi():
     """Show pricing tiers and ROI"""
@@ -400,6 +419,7 @@ Scenario: Mid-size bank with 10 AI agents
   Payback period: ~5 days
 """)
 
+
 async def demo_summary():
     """Final summary and call to action"""
     print_header("SUMMARY: Why SCBE-AETHERMOORE?")
@@ -451,9 +471,11 @@ async def demo_summary():
 {Colors.BOLD}{Colors.GREEN}Thank you for watching!{Colors.END}
 """)
 
+
 # ============================================================================
 # MAIN
 # ============================================================================
+
 
 async def main():
     """Run the complete product showcase"""
@@ -503,6 +525,7 @@ async def main():
 
     print(f"\n{Colors.BOLD}Demo complete. Questions?{Colors.END}\n")
 
+
 async def main_auto():
     """Non-interactive version for automated demos/recordings"""
     print(f"""
@@ -545,13 +568,16 @@ async def main_auto():
 
 if __name__ == "__main__":
     import argparse
+
     parser = argparse.ArgumentParser(description="SCBE-AETHERMOORE Product Showcase")
-    parser.add_argument("--auto", action="store_true", help="Run in non-interactive mode")
+    parser.add_argument(
+        "--auto", action="store_true", help="Run in non-interactive mode"
+    )
     args = parser.parse_args()
 
     # Handle Windows terminal colors
-    if sys.platform == 'win32':
-        os.system('color')
+    if sys.platform == "win32":
+        os.system("color")
 
     if args.auto:
         asyncio.run(main_auto())

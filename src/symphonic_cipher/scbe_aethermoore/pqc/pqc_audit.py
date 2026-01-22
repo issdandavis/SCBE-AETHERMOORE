@@ -16,18 +16,29 @@ from typing import Tuple, Optional, List, Dict, Any, Union
 from enum import Enum
 
 from .pqc_core import (
-    Dilithium3, DilithiumKeyPair, Kyber768, KyberKeyPair,
-    derive_hybrid_key, get_backend, PQCBackend,
-    DILITHIUM3_SIGNATURE_SIZE
+    Dilithium3,
+    DilithiumKeyPair,
+    Kyber768,
+    KyberKeyPair,
+    derive_hybrid_key,
+    get_backend,
+    PQCBackend,
+    DILITHIUM3_SIGNATURE_SIZE,
 )
 from .pqc_hmac import (
-    PQCHMACChain, PQCKeyMaterial, KeyDerivationMode,
-    pqc_hmac_chain_tag, NONCE_BYTES, KEY_LEN, AUDIT_CHAIN_IV
+    PQCHMACChain,
+    PQCKeyMaterial,
+    KeyDerivationMode,
+    pqc_hmac_chain_tag,
+    NONCE_BYTES,
+    KEY_LEN,
+    AUDIT_CHAIN_IV,
 )
 
 
 class AuditDecision(Enum):
     """Governance decisions for audit entries (matches unified.py)."""
+
     ALLOW = "ALLOW"
     DENY = "DENY"
     QUARANTINE = "QUARANTINE"
@@ -42,6 +53,7 @@ class PQCAuditEntry:
     Contains both HMAC chain binding and Dilithium3 signature
     for quantum-resistant integrity.
     """
+
     # Core audit data
     identity: str
     intent: str
@@ -64,30 +76,52 @@ class PQCAuditEntry:
     def to_bytes(self) -> bytes:
         """Serialize entry to bytes for signing/verification."""
         return (
-            self.identity.encode('utf-8') + b'|' +
-            self.intent.encode('utf-8') + b'|' +
-            str(self.timestamp).encode('utf-8') + b'|' +
-            self.decision.value.encode('utf-8') + b'|' +
-            str(self.chain_position).encode('utf-8') + b'|' +
-            self.nonce + b'|' +
-            self.hmac_tag + b'|' +
-            self.prev_tag
+            self.identity.encode("utf-8")
+            + b"|"
+            + self.intent.encode("utf-8")
+            + b"|"
+            + str(self.timestamp).encode("utf-8")
+            + b"|"
+            + self.decision.value.encode("utf-8")
+            + b"|"
+            + str(self.chain_position).encode("utf-8")
+            + b"|"
+            + self.nonce
+            + b"|"
+            + self.hmac_tag
+            + b"|"
+            + self.prev_tag
         )
 
     @classmethod
-    def signable_data(cls, identity: str, intent: str, timestamp: float,
-                      decision: AuditDecision, chain_position: int,
-                      nonce: bytes, hmac_tag: bytes, prev_tag: bytes) -> bytes:
+    def signable_data(
+        cls,
+        identity: str,
+        intent: str,
+        timestamp: float,
+        decision: AuditDecision,
+        chain_position: int,
+        nonce: bytes,
+        hmac_tag: bytes,
+        prev_tag: bytes,
+    ) -> bytes:
         """Generate signable data before entry creation."""
         return (
-            identity.encode('utf-8') + b'|' +
-            intent.encode('utf-8') + b'|' +
-            str(timestamp).encode('utf-8') + b'|' +
-            decision.value.encode('utf-8') + b'|' +
-            str(chain_position).encode('utf-8') + b'|' +
-            nonce + b'|' +
-            hmac_tag + b'|' +
-            prev_tag
+            identity.encode("utf-8")
+            + b"|"
+            + intent.encode("utf-8")
+            + b"|"
+            + str(timestamp).encode("utf-8")
+            + b"|"
+            + decision.value.encode("utf-8")
+            + b"|"
+            + str(chain_position).encode("utf-8")
+            + b"|"
+            + nonce
+            + b"|"
+            + hmac_tag
+            + b"|"
+            + prev_tag
         )
 
     def verify_signature(self) -> bool:
@@ -108,7 +142,7 @@ class PQCAuditEntry:
             "prev_tag": self.prev_tag.hex(),
             "signature": self.signature.hex(),
             "signer_public_key": self.signer_public_key.hex(),
-            "entry_id": self.entry_id.hex()
+            "entry_id": self.entry_id.hex(),
         }
 
     @classmethod
@@ -125,13 +159,14 @@ class PQCAuditEntry:
             prev_tag=bytes.fromhex(data["prev_tag"]),
             signature=bytes.fromhex(data["signature"]),
             signer_public_key=bytes.fromhex(data["signer_public_key"]),
-            entry_id=bytes.fromhex(data["entry_id"])
+            entry_id=bytes.fromhex(data["entry_id"]),
         )
 
 
 @dataclass
 class AuditChainVerification:
     """Result of audit chain verification."""
+
     is_valid: bool
     hmac_valid: bool
     signatures_valid: bool
@@ -169,10 +204,12 @@ class PQCAuditChain:
         assert result.is_valid
     """
 
-    def __init__(self,
-                 kem_keypair: Optional[KyberKeyPair] = None,
-                 sig_keypair: Optional[DilithiumKeyPair] = None,
-                 hmac_chain: Optional[PQCHMACChain] = None):
+    def __init__(
+        self,
+        kem_keypair: Optional[KyberKeyPair] = None,
+        sig_keypair: Optional[DilithiumKeyPair] = None,
+        hmac_chain: Optional[PQCHMACChain] = None,
+    ):
         """
         Initialize PQC audit chain.
 
@@ -198,8 +235,9 @@ class PQCAuditChain:
         self._chain_iv = AUDIT_CHAIN_IV
 
     @classmethod
-    def create_new(cls,
-                   key_mode: KeyDerivationMode = KeyDerivationMode.HYBRID) -> "PQCAuditChain":
+    def create_new(
+        cls, key_mode: KeyDerivationMode = KeyDerivationMode.HYBRID
+    ) -> "PQCAuditChain":
         """Create a new PQC audit chain with fresh keys."""
         hmac_chain = PQCHMACChain.create_new(mode=key_mode)
         return cls(hmac_chain=hmac_chain)
@@ -224,12 +262,14 @@ class PQCAuditChain:
         """Get the PQC backend being used."""
         return get_backend()
 
-    def add_entry(self,
-                  identity: str,
-                  intent: str,
-                  decision: AuditDecision,
-                  timestamp: Optional[float] = None,
-                  nonce: Optional[bytes] = None) -> PQCAuditEntry:
+    def add_entry(
+        self,
+        identity: str,
+        intent: str,
+        decision: AuditDecision,
+        timestamp: Optional[float] = None,
+        nonce: Optional[bytes] = None,
+    ) -> PQCAuditEntry:
         """
         Add a new signed entry to the audit chain.
 
@@ -253,7 +293,7 @@ class PQCAuditChain:
         prev_tag = self._hmac_chain.get_latest_tag()
 
         # Create audit data for HMAC
-        audit_data = f"{identity}|{intent}|{timestamp}|{decision.value}".encode('utf-8')
+        audit_data = f"{identity}|{intent}|{timestamp}|{decision.value}".encode("utf-8")
 
         # Add to HMAC chain and get tag
         hmac_tag = self._hmac_chain.append(audit_data, nonce)
@@ -263,8 +303,14 @@ class PQCAuditChain:
 
         # Create signable data
         signable = PQCAuditEntry.signable_data(
-            identity, intent, timestamp, decision,
-            chain_position, nonce, hmac_tag, prev_tag
+            identity,
+            intent,
+            timestamp,
+            decision,
+            chain_position,
+            nonce,
+            hmac_tag,
+            prev_tag,
         )
 
         # Sign with Dilithium3
@@ -281,7 +327,7 @@ class PQCAuditChain:
             hmac_tag=hmac_tag,
             prev_tag=prev_tag,
             signature=signature,
-            signer_public_key=self._sig_keypair.public_key
+            signer_public_key=self._sig_keypair.public_key,
         )
 
         self._entries.append(entry)
@@ -302,12 +348,11 @@ class PQCAuditChain:
             return False, "Invalid Dilithium3 signature"
 
         # Verify HMAC tag computation
-        audit_data = f"{entry.identity}|{entry.intent}|{entry.timestamp}|{entry.decision.value}".encode('utf-8')
+        audit_data = f"{entry.identity}|{entry.intent}|{entry.timestamp}|{entry.decision.value}".encode(
+            "utf-8"
+        )
         expected_tag = pqc_hmac_chain_tag(
-            audit_data,
-            entry.nonce,
-            entry.prev_tag,
-            self._hmac_chain.key_material
+            audit_data, entry.nonce, entry.prev_tag, self._hmac_chain.key_material
         )
 
         if not hmac.compare_digest(entry.hmac_tag, expected_tag):
@@ -326,10 +371,7 @@ class PQCAuditChain:
         """
         if not self._entries:
             return AuditChainVerification(
-                is_valid=True,
-                hmac_valid=True,
-                signatures_valid=True,
-                entries_checked=0
+                is_valid=True, hmac_valid=True, signatures_valid=True, entries_checked=0
             )
 
         # Verify HMAC chain
@@ -340,7 +382,7 @@ class PQCAuditChain:
                 hmac_valid=False,
                 signatures_valid=False,
                 entries_checked=len(self._entries),
-                error_message="HMAC chain verification failed"
+                error_message="HMAC chain verification failed",
             )
 
         # Verify each signature and chain binding
@@ -354,7 +396,7 @@ class PQCAuditChain:
                     signatures_valid=False,
                     entries_checked=i + 1,
                     first_invalid_index=i,
-                    error_message=f"Chain binding broken at entry {i}"
+                    error_message=f"Chain binding broken at entry {i}",
                 )
 
             # Verify signature
@@ -365,7 +407,7 @@ class PQCAuditChain:
                     signatures_valid=False,
                     entries_checked=i + 1,
                     first_invalid_index=i,
-                    error_message=f"Invalid signature at entry {i}"
+                    error_message=f"Invalid signature at entry {i}",
                 )
 
             prev_tag = entry.hmac_tag
@@ -374,7 +416,7 @@ class PQCAuditChain:
             is_valid=True,
             hmac_valid=True,
             signatures_valid=True,
-            entries_checked=len(self._entries)
+            entries_checked=len(self._entries),
         )
 
     def get_entry(self, index: int) -> Optional[PQCAuditEntry]:
@@ -391,12 +433,11 @@ class PQCAuditChain:
         """Get all entries with a specific decision."""
         return [e for e in self._entries if e.decision == decision]
 
-    def get_entries_in_range(self,
-                             start_time: float,
-                             end_time: float) -> List[PQCAuditEntry]:
+    def get_entries_in_range(
+        self, start_time: float, end_time: float
+    ) -> List[PQCAuditEntry]:
         """Get entries within a time range."""
-        return [e for e in self._entries
-                if start_time <= e.timestamp <= end_time]
+        return [e for e in self._entries if start_time <= e.timestamp <= end_time]
 
     def get_chain_digest(self) -> bytes:
         """
@@ -424,7 +465,7 @@ class PQCAuditChain:
             "hmac_chain": self._hmac_chain.export_state(),
             "sig_public_key": self._sig_keypair.public_key.hex(),
             "chain_digest": self.get_chain_digest().hex(),
-            "backend": get_backend().value
+            "backend": get_backend().value,
         }
 
     def get_audit_summary(self) -> Dict[str, Any]:
@@ -435,7 +476,7 @@ class PQCAuditChain:
                 "decisions": {},
                 "identities": [],
                 "time_range": None,
-                "chain_valid": True
+                "chain_valid": True,
             }
 
         decisions = {}
@@ -451,18 +492,20 @@ class PQCAuditChain:
             "identities": list(identities),
             "time_range": {
                 "start": self._entries[0].timestamp,
-                "end": self._entries[-1].timestamp
+                "end": self._entries[-1].timestamp,
             },
-            "chain_valid": self.verify_chain().is_valid
+            "chain_valid": self.verify_chain().is_valid,
         }
 
 
-def create_audit_entry_signature(identity: str,
-                                 intent: str,
-                                 decision: str,
-                                 timestamp: float,
-                                 chain_tag: bytes,
-                                 sig_keypair: DilithiumKeyPair) -> bytes:
+def create_audit_entry_signature(
+    identity: str,
+    intent: str,
+    decision: str,
+    timestamp: float,
+    chain_tag: bytes,
+    sig_keypair: DilithiumKeyPair,
+) -> bytes:
     """
     Create a standalone PQC signature for an audit entry.
 
@@ -481,23 +524,29 @@ def create_audit_entry_signature(identity: str,
         Dilithium3 signature bytes
     """
     signable = (
-        identity.encode('utf-8') + b'|' +
-        intent.encode('utf-8') + b'|' +
-        str(timestamp).encode('utf-8') + b'|' +
-        decision.encode('utf-8') + b'|' +
-        chain_tag
+        identity.encode("utf-8")
+        + b"|"
+        + intent.encode("utf-8")
+        + b"|"
+        + str(timestamp).encode("utf-8")
+        + b"|"
+        + decision.encode("utf-8")
+        + b"|"
+        + chain_tag
     )
 
     return Dilithium3.sign(sig_keypair.secret_key, signable)
 
 
-def verify_audit_entry_signature(identity: str,
-                                 intent: str,
-                                 decision: str,
-                                 timestamp: float,
-                                 chain_tag: bytes,
-                                 signature: bytes,
-                                 public_key: bytes) -> bool:
+def verify_audit_entry_signature(
+    identity: str,
+    intent: str,
+    decision: str,
+    timestamp: float,
+    chain_tag: bytes,
+    signature: bytes,
+    public_key: bytes,
+) -> bool:
     """
     Verify a standalone PQC signature for an audit entry.
 
@@ -514,11 +563,15 @@ def verify_audit_entry_signature(identity: str,
         True if signature is valid
     """
     signable = (
-        identity.encode('utf-8') + b'|' +
-        intent.encode('utf-8') + b'|' +
-        str(timestamp).encode('utf-8') + b'|' +
-        decision.encode('utf-8') + b'|' +
-        chain_tag
+        identity.encode("utf-8")
+        + b"|"
+        + intent.encode("utf-8")
+        + b"|"
+        + str(timestamp).encode("utf-8")
+        + b"|"
+        + decision.encode("utf-8")
+        + b"|"
+        + chain_tag
     )
 
     return Dilithium3.verify(public_key, signable, signature)
@@ -573,14 +626,16 @@ class PQCAuditIntegration:
         Returns:
             Dilithium3 signature
         """
-        signable = audit_data + b'|' + chain_tag
+        signable = audit_data + b"|" + chain_tag
         return Dilithium3.sign(self._sig_keypair.secret_key, signable)
 
-    def verify_entry(self,
-                     audit_data: bytes,
-                     chain_tag: bytes,
-                     signature: bytes,
-                     public_key: Optional[bytes] = None) -> bool:
+    def verify_entry(
+        self,
+        audit_data: bytes,
+        chain_tag: bytes,
+        signature: bytes,
+        public_key: Optional[bytes] = None,
+    ) -> bool:
         """
         Verify a signed audit entry.
 
@@ -596,11 +651,10 @@ class PQCAuditIntegration:
         if public_key is None:
             public_key = self._sig_keypair.public_key
 
-        signable = audit_data + b'|' + chain_tag
+        signable = audit_data + b"|" + chain_tag
         return Dilithium3.verify(public_key, signable, signature)
 
-    def batch_sign(self,
-                   entries: List[Tuple[bytes, bytes]]) -> List[bytes]:
+    def batch_sign(self, entries: List[Tuple[bytes, bytes]]) -> List[bytes]:
         """
         Sign multiple entries.
 
@@ -612,9 +666,11 @@ class PQCAuditIntegration:
         """
         return [self.sign_entry(data, tag) for data, tag in entries]
 
-    def batch_verify(self,
-                     entries: List[Tuple[bytes, bytes, bytes]],
-                     public_key: Optional[bytes] = None) -> List[bool]:
+    def batch_verify(
+        self,
+        entries: List[Tuple[bytes, bytes, bytes]],
+        public_key: Optional[bytes] = None,
+    ) -> List[bool]:
         """
         Verify multiple entries.
 
@@ -625,5 +681,6 @@ class PQCAuditIntegration:
         Returns:
             List of verification results
         """
-        return [self.verify_entry(data, tag, sig, public_key)
-                for data, tag, sig in entries]
+        return [
+            self.verify_entry(data, tag, sig, public_key) for data, tag, sig in entries
+        ]

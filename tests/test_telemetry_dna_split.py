@@ -24,19 +24,21 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 
 class StrandType(Enum):
     """DNA strand type for test data."""
+
     EXPECTED = "expected"  # Template strand - specification
-    ACTUAL = "actual"      # Coding strand - implementation
+    ACTUAL = "actual"  # Coding strand - implementation
 
 
 class MutationType(Enum):
     """Types of mutations (deviations) detected."""
-    INSERTION = "insertion"      # Extra data present
-    DELETION = "deletion"        # Data missing
+
+    INSERTION = "insertion"  # Extra data present
+    DELETION = "deletion"  # Data missing
     SUBSTITUTION = "substitution"  # Data changed
     TRANSPOSITION = "transposition"  # Data reordered
 
@@ -53,6 +55,7 @@ class TestStrand:
         timestamp: When this strand was created
         source: Where this data came from
     """
+
     strand_type: StrandType
     data: Dict[str, Any]
     checksum: str = ""
@@ -83,6 +86,7 @@ class Mutation:
         actual: What was found
         severity: 1-10 severity score
     """
+
     mutation_type: MutationType
     path: str
     expected: Any
@@ -103,6 +107,7 @@ class DNATestResult:
         passed: Whether test passed (no critical mutations)
         correction_suggestions: Suggested fixes
     """
+
     test_name: str
     expected_strand: TestStrand
     actual_strand: TestStrand
@@ -126,27 +131,24 @@ class DNASplitTester:
         self.verbose = verbose
         self.results: List[DNATestResult] = []
 
-    def create_expected_strand(self, test_name: str, spec: Dict[str, Any]) -> TestStrand:
+    def create_expected_strand(
+        self, test_name: str, spec: Dict[str, Any]
+    ) -> TestStrand:
         """Create the expected (template) strand from specification."""
         return TestStrand(
-            strand_type=StrandType.EXPECTED,
-            data=spec,
-            source=f"spec:{test_name}"
+            strand_type=StrandType.EXPECTED, data=spec, source=f"spec:{test_name}"
         )
 
-    def create_actual_strand(self, test_name: str, result: Dict[str, Any]) -> TestStrand:
+    def create_actual_strand(
+        self, test_name: str, result: Dict[str, Any]
+    ) -> TestStrand:
         """Create the actual (coding) strand from implementation."""
         return TestStrand(
-            strand_type=StrandType.ACTUAL,
-            data=result,
-            source=f"impl:{test_name}"
+            strand_type=StrandType.ACTUAL, data=result, source=f"impl:{test_name}"
         )
 
     def compare_strands(
-        self,
-        test_name: str,
-        expected: TestStrand,
-        actual: TestStrand
+        self, test_name: str, expected: TestStrand, actual: TestStrand
     ) -> DNATestResult:
         """
         Compare two strands and identify mutations.
@@ -168,17 +170,14 @@ class DNASplitTester:
             actual_strand=actual,
             mutations=mutations,
             passed=passed,
-            correction_suggestions=corrections
+            correction_suggestions=corrections,
         )
 
         self.results.append(result)
         return result
 
     def _find_mutations(
-        self,
-        expected: Dict[str, Any],
-        actual: Dict[str, Any],
-        path: str = ""
+        self, expected: Dict[str, Any], actual: Dict[str, Any], path: str = ""
     ) -> List[Mutation]:
         """Recursively find mutations between expected and actual."""
         mutations = []
@@ -188,56 +187,62 @@ class DNASplitTester:
             current_path = f"{path}.{key}" if path else key
 
             if key not in actual:
-                mutations.append(Mutation(
-                    mutation_type=MutationType.DELETION,
-                    path=current_path,
-                    expected=expected[key],
-                    actual=None,
-                    severity=self._calculate_severity(key, expected[key])
-                ))
+                mutations.append(
+                    Mutation(
+                        mutation_type=MutationType.DELETION,
+                        path=current_path,
+                        expected=expected[key],
+                        actual=None,
+                        severity=self._calculate_severity(key, expected[key]),
+                    )
+                )
             elif isinstance(expected[key], dict) and isinstance(actual[key], dict):
                 # Recurse into nested dicts
-                mutations.extend(self._find_mutations(
-                    expected[key], actual[key], current_path
-                ))
+                mutations.extend(
+                    self._find_mutations(expected[key], actual[key], current_path)
+                )
             elif expected[key] != actual[key]:
-                mutations.append(Mutation(
-                    mutation_type=MutationType.SUBSTITUTION,
-                    path=current_path,
-                    expected=expected[key],
-                    actual=actual[key],
-                    severity=self._calculate_severity(key, expected[key])
-                ))
+                mutations.append(
+                    Mutation(
+                        mutation_type=MutationType.SUBSTITUTION,
+                        path=current_path,
+                        expected=expected[key],
+                        actual=actual[key],
+                        severity=self._calculate_severity(key, expected[key]),
+                    )
+                )
 
         # Check for insertions (in actual but not expected)
         for key in actual:
             current_path = f"{path}.{key}" if path else key
 
             if key not in expected:
-                mutations.append(Mutation(
-                    mutation_type=MutationType.INSERTION,
-                    path=current_path,
-                    expected=None,
-                    actual=actual[key],
-                    severity=3  # Insertions are usually lower severity
-                ))
+                mutations.append(
+                    Mutation(
+                        mutation_type=MutationType.INSERTION,
+                        path=current_path,
+                        expected=None,
+                        actual=actual[key],
+                        severity=3,  # Insertions are usually lower severity
+                    )
+                )
 
         return mutations
 
     def _calculate_severity(self, key: str, value: Any) -> int:
         """Calculate mutation severity based on field importance."""
         # Critical fields
-        critical_fields = {'security_level', 'pqc_status', 'decision', 'risk_score'}
+        critical_fields = {"security_level", "pqc_status", "decision", "risk_score"}
         if key in critical_fields:
             return 10
 
         # Important fields
-        important_fields = {'status', 'layer_count', 'checksum', 'signature'}
+        important_fields = {"status", "layer_count", "checksum", "signature"}
         if key in important_fields:
             return 7
 
         # Moderate fields
-        moderate_fields = {'timestamp', 'version', 'count'}
+        moderate_fields = {"timestamp", "version", "count"}
         if key in moderate_fields:
             return 5
 
@@ -267,30 +272,30 @@ class DNASplitTester:
     def generate_audit_report(self) -> Dict[str, Any]:
         """Generate comprehensive audit report of all tests."""
         return {
-            'timestamp': datetime.utcnow().isoformat(),
-            'total_tests': len(self.results),
-            'passed': sum(1 for r in self.results if r.passed),
-            'failed': sum(1 for r in self.results if not r.passed),
-            'total_mutations': sum(len(r.mutations) for r in self.results),
-            'critical_mutations': sum(
-                len([m for m in r.mutations if m.severity >= 7])
-                for r in self.results
+            "timestamp": datetime.utcnow().isoformat(),
+            "total_tests": len(self.results),
+            "passed": sum(1 for r in self.results if r.passed),
+            "failed": sum(1 for r in self.results if not r.passed),
+            "total_mutations": sum(len(r.mutations) for r in self.results),
+            "critical_mutations": sum(
+                len([m for m in r.mutations if m.severity >= 7]) for r in self.results
             ),
-            'tests': [
+            "tests": [
                 {
-                    'name': r.test_name,
-                    'passed': r.passed,
-                    'mutations': len(r.mutations),
-                    'corrections': r.correction_suggestions
+                    "name": r.test_name,
+                    "passed": r.passed,
+                    "mutations": len(r.mutations),
+                    "corrections": r.correction_suggestions,
                 }
                 for r in self.results
-            ]
+            ],
         }
 
 
 # =============================================================================
 # TESTS FOR DNA SPLIT SYSTEM
 # =============================================================================
+
 
 class TestDNASplitSystem:
     """Tests for the DNA Split testing system itself."""
@@ -299,8 +304,8 @@ class TestDNASplitSystem:
         """Test creating test strands."""
         tester = DNASplitTester()
 
-        spec = {'layer_count': 14, 'status': 'active'}
-        strand = tester.create_expected_strand('test1', spec)
+        spec = {"layer_count": 14, "status": "active"}
+        strand = tester.create_expected_strand("test1", spec)
 
         assert strand.strand_type == StrandType.EXPECTED
         assert strand.data == spec
@@ -309,8 +314,8 @@ class TestDNASplitSystem:
 
     def test_checksum_consistency(self):
         """Same data should produce same checksum."""
-        data1 = {'a': 1, 'b': 2}
-        data2 = {'b': 2, 'a': 1}  # Same data, different order
+        data1 = {"a": 1, "b": 2}
+        data2 = {"b": 2, "a": 1}  # Same data, different order
 
         strand1 = TestStrand(StrandType.EXPECTED, data1)
         strand2 = TestStrand(StrandType.EXPECTED, data2)
@@ -322,38 +327,38 @@ class TestDNASplitSystem:
         """Test detection of missing fields."""
         tester = DNASplitTester()
 
-        expected = tester.create_expected_strand('test', {
-            'layer_count': 14,
-            'pqc_status': 'active'
-        })
+        expected = tester.create_expected_strand(
+            "test", {"layer_count": 14, "pqc_status": "active"}
+        )
 
-        actual = tester.create_actual_strand('test', {
-            'layer_count': 14
-            # pqc_status missing
-        })
+        actual = tester.create_actual_strand(
+            "test",
+            {
+                "layer_count": 14
+                # pqc_status missing
+            },
+        )
 
-        result = tester.compare_strands('test', expected, actual)
+        result = tester.compare_strands("test", expected, actual)
 
         assert not result.passed  # Critical field missing
         assert len(result.mutations) == 1
         assert result.mutations[0].mutation_type == MutationType.DELETION
-        assert result.mutations[0].path == 'pqc_status'
+        assert result.mutations[0].path == "pqc_status"
 
     def test_mutation_detection_substitution(self):
         """Test detection of changed values."""
         tester = DNASplitTester()
 
-        expected = tester.create_expected_strand('test', {
-            'security_level': 3,
-            'status': 'active'
-        })
+        expected = tester.create_expected_strand(
+            "test", {"security_level": 3, "status": "active"}
+        )
 
-        actual = tester.create_actual_strand('test', {
-            'security_level': 1,  # Wrong!
-            'status': 'active'
-        })
+        actual = tester.create_actual_strand(
+            "test", {"security_level": 1, "status": "active"}  # Wrong!
+        )
 
-        result = tester.compare_strands('test', expected, actual)
+        result = tester.compare_strands("test", expected, actual)
 
         assert not result.passed  # security_level is critical
         assert len(result.mutations) == 1
@@ -363,16 +368,13 @@ class TestDNASplitSystem:
         """Test detection of extra fields."""
         tester = DNASplitTester()
 
-        expected = tester.create_expected_strand('test', {
-            'status': 'active'
-        })
+        expected = tester.create_expected_strand("test", {"status": "active"})
 
-        actual = tester.create_actual_strand('test', {
-            'status': 'active',
-            'extra_field': 'unexpected'
-        })
+        actual = tester.create_actual_strand(
+            "test", {"status": "active", "extra_field": "unexpected"}
+        )
 
-        result = tester.compare_strands('test', expected, actual)
+        result = tester.compare_strands("test", expected, actual)
 
         assert result.passed  # Insertions are usually low severity
         assert len(result.mutations) == 1
@@ -382,36 +384,45 @@ class TestDNASplitSystem:
         """Test comparison of nested structures."""
         tester = DNASplitTester()
 
-        expected = tester.create_expected_strand('test', {
-            'layers': {
-                'pqc': {'status': 'active', 'algorithm': 'kyber768'},
-                'harmonic': {'gates': 6}
-            }
-        })
+        expected = tester.create_expected_strand(
+            "test",
+            {
+                "layers": {
+                    "pqc": {"status": "active", "algorithm": "kyber768"},
+                    "harmonic": {"gates": 6},
+                }
+            },
+        )
 
-        actual = tester.create_actual_strand('test', {
-            'layers': {
-                'pqc': {'status': 'inactive', 'algorithm': 'kyber768'},  # Wrong status
-                'harmonic': {'gates': 6}
-            }
-        })
+        actual = tester.create_actual_strand(
+            "test",
+            {
+                "layers": {
+                    "pqc": {
+                        "status": "inactive",
+                        "algorithm": "kyber768",
+                    },  # Wrong status
+                    "harmonic": {"gates": 6},
+                }
+            },
+        )
 
-        result = tester.compare_strands('test', expected, actual)
+        result = tester.compare_strands("test", expected, actual)
 
         assert len(result.mutations) == 1
-        assert result.mutations[0].path == 'layers.pqc.status'
+        assert result.mutations[0].path == "layers.pqc.status"
 
     def test_correction_suggestions(self):
         """Test that corrections are suggested."""
         tester = DNASplitTester()
 
-        expected = tester.create_expected_strand('test', {'count': 10})
-        actual = tester.create_actual_strand('test', {'count': 5})
+        expected = tester.create_expected_strand("test", {"count": 10})
+        actual = tester.create_actual_strand("test", {"count": 5})
 
-        result = tester.compare_strands('test', expected, actual)
+        result = tester.compare_strands("test", expected, actual)
 
         assert len(result.correction_suggestions) > 0
-        assert 'count' in result.correction_suggestions[0]
+        assert "count" in result.correction_suggestions[0]
 
     def test_audit_report_generation(self):
         """Test audit report generation."""
@@ -419,20 +430,21 @@ class TestDNASplitSystem:
 
         # Run a few tests
         for i in range(3):
-            expected = tester.create_expected_strand(f'test{i}', {'value': i})
-            actual = tester.create_actual_strand(f'test{i}', {'value': i})
-            tester.compare_strands(f'test{i}', expected, actual)
+            expected = tester.create_expected_strand(f"test{i}", {"value": i})
+            actual = tester.create_actual_strand(f"test{i}", {"value": i})
+            tester.compare_strands(f"test{i}", expected, actual)
 
         report = tester.generate_audit_report()
 
-        assert report['total_tests'] == 3
-        assert report['passed'] == 3
-        assert report['failed'] == 0
+        assert report["total_tests"] == 3
+        assert report["passed"] == 3
+        assert report["failed"] == 0
 
 
 # =============================================================================
 # SCBE 14-LAYER DNA SPLIT TESTS
 # =============================================================================
+
 
 class TestSCBE14LayerDNASplit:
     """DNA-split tests for the SCBE 14-layer security system."""
@@ -444,117 +456,122 @@ class TestSCBE14LayerDNASplit:
     def test_layer_configuration_integrity(self):
         """Verify 14-layer configuration matches specification."""
         expected_spec = {
-            'layer_count': 14,
-            'layers': {
-                1: {'name': 'Input Validation', 'critical': True},
-                2: {'name': 'Authentication', 'critical': True},
-                3: {'name': 'Authorization', 'critical': True},
-                4: {'name': 'Session Management', 'critical': True},
-                5: {'name': 'PQC Encryption', 'critical': True, 'algorithm': 'Kyber-768'},
-                6: {'name': 'Integrity Check', 'critical': True},
-                7: {'name': 'Rate Limiting', 'critical': False},
-                8: {'name': 'Logging & Audit', 'critical': False},
-                9: {'name': 'Error Handling', 'critical': False},
-                10: {'name': 'API Security', 'critical': True},
-                11: {'name': 'Network Security', 'critical': True},
-                12: {'name': 'Hyperbolic Boundary', 'critical': True},
-                13: {'name': 'Harmonic Resonance', 'critical': True},
-                14: {'name': 'Quantum Lattice', 'critical': True},
-            }
+            "layer_count": 14,
+            "layers": {
+                1: {"name": "Input Validation", "critical": True},
+                2: {"name": "Authentication", "critical": True},
+                3: {"name": "Authorization", "critical": True},
+                4: {"name": "Session Management", "critical": True},
+                5: {
+                    "name": "PQC Encryption",
+                    "critical": True,
+                    "algorithm": "Kyber-768",
+                },
+                6: {"name": "Integrity Check", "critical": True},
+                7: {"name": "Rate Limiting", "critical": False},
+                8: {"name": "Logging & Audit", "critical": False},
+                9: {"name": "Error Handling", "critical": False},
+                10: {"name": "API Security", "critical": True},
+                11: {"name": "Network Security", "critical": True},
+                12: {"name": "Hyperbolic Boundary", "critical": True},
+                13: {"name": "Harmonic Resonance", "critical": True},
+                14: {"name": "Quantum Lattice", "critical": True},
+            },
         }
 
         # Simulate actual implementation (matching spec)
         actual_impl = expected_spec.copy()
 
-        expected = self.tester.create_expected_strand('14layer_config', expected_spec)
-        actual = self.tester.create_actual_strand('14layer_config', actual_impl)
+        expected = self.tester.create_expected_strand("14layer_config", expected_spec)
+        actual = self.tester.create_actual_strand("14layer_config", actual_impl)
 
-        result = self.tester.compare_strands('14layer_config', expected, actual)
+        result = self.tester.compare_strands("14layer_config", expected, actual)
 
         assert result.passed, f"Config mismatch: {result.corrections}"
 
     def test_pqc_parameters(self):
         """Verify PQC parameters match NIST FIPS 203/204."""
         expected_spec = {
-            'kyber768': {
-                'n': 256,
-                'k': 3,
-                'q': 3329,
-                'eta1': 2,
-                'eta2': 2,
-                'security_level': 3,
+            "kyber768": {
+                "n": 256,
+                "k": 3,
+                "q": 3329,
+                "eta1": 2,
+                "eta2": 2,
+                "security_level": 3,
             },
-            'dilithium3': {
-                'n': 256,
-                'q': 8380417,
-                'security_level': 3,
-            }
+            "dilithium3": {
+                "n": 256,
+                "q": 8380417,
+                "security_level": 3,
+            },
         }
 
         # Actual implementation should match
         actual_impl = expected_spec.copy()
 
-        expected = self.tester.create_expected_strand('pqc_params', expected_spec)
-        actual = self.tester.create_actual_strand('pqc_params', actual_impl)
+        expected = self.tester.create_expected_strand("pqc_params", expected_spec)
+        actual = self.tester.create_actual_strand("pqc_params", actual_impl)
 
-        result = self.tester.compare_strands('pqc_params', expected, actual)
+        result = self.tester.compare_strands("pqc_params", expected, actual)
 
         assert result.passed
 
     def test_sacred_tongue_weights(self):
         """Verify Sacred Tongue golden ratio weights."""
         import math
+
         phi = (1 + math.sqrt(5)) / 2
 
         expected_spec = {
-            'tongues': {
-                'KO': {'weight': 1.0},
-                'AV': {'weight': round(phi, 3)},
-                'RU': {'weight': round(phi ** 2, 3)},
-                'CA': {'weight': round(phi ** 3, 3)},
-                'UM': {'weight': round(phi ** 4, 3)},
-                'DR': {'weight': round(phi ** 5, 3)},
+            "tongues": {
+                "KO": {"weight": 1.0},
+                "AV": {"weight": round(phi, 3)},
+                "RU": {"weight": round(phi**2, 3)},
+                "CA": {"weight": round(phi**3, 3)},
+                "UM": {"weight": round(phi**4, 3)},
+                "DR": {"weight": round(phi**5, 3)},
             }
         }
 
         actual_impl = expected_spec.copy()
 
-        expected = self.tester.create_expected_strand('sacred_weights', expected_spec)
-        actual = self.tester.create_actual_strand('sacred_weights', actual_impl)
+        expected = self.tester.create_expected_strand("sacred_weights", expected_spec)
+        actual = self.tester.create_actual_strand("sacred_weights", actual_impl)
 
-        result = self.tester.compare_strands('sacred_weights', expected, actual)
+        result = self.tester.compare_strands("sacred_weights", expected, actual)
 
         assert result.passed
 
     def test_entropic_defense_tiers(self):
         """Verify 3-tier Entropic Defense Engine configuration."""
         expected_spec = {
-            'tier_count': 3,
-            'tiers': {
+            "tier_count": 3,
+            "tiers": {
                 1: {
-                    'name': 'Harmonic Resonance',
-                    'axiom': 7,
-                    'gates': 6,
+                    "name": "Harmonic Resonance",
+                    "axiom": 7,
+                    "gates": 6,
                 },
                 2: {
-                    'name': 'Hyperbolic Deviation',
-                    'axioms': [9, 12],
-                    'model': 'poincare_ball',
+                    "name": "Hyperbolic Deviation",
+                    "axioms": [9, 12],
+                    "model": "poincare_ball",
                 },
                 3: {
-                    'name': 'Quantum Lattice',
-                    'axioms': [8, 13],
-                    'hardness': 'LWE/SVP',
+                    "name": "Quantum Lattice",
+                    "axioms": [8, 13],
+                    "hardness": "LWE/SVP",
                 },
-            }
+            },
         }
 
         actual_impl = expected_spec.copy()
 
-        expected = self.tester.create_expected_strand('entropic_defense', expected_spec)
-        actual = self.tester.create_actual_strand('entropic_defense', actual_impl)
+        expected = self.tester.create_expected_strand("entropic_defense", expected_spec)
+        actual = self.tester.create_actual_strand("entropic_defense", actual_impl)
 
-        result = self.tester.compare_strands('entropic_defense', expected, actual)
+        result = self.tester.compare_strands("entropic_defense", expected, actual)
 
         assert result.passed
 
@@ -582,13 +599,12 @@ class TestSCBE14LayerDNASplit:
 
         # Save report to file
         report_path = os.path.join(
-            os.path.dirname(__file__),
-            'test_telemetry_dna_audit_report.json'
+            os.path.dirname(__file__), "test_telemetry_dna_audit_report.json"
         )
-        with open(report_path, 'w') as f:
+        with open(report_path, "w") as f:
             json.dump(report, f, indent=2)
 
-        assert report['failed'] == 0, "Some tests failed - check audit report"
+        assert report["failed"] == 0, "Some tests failed - check audit report"
 
 
 # =============================================================================

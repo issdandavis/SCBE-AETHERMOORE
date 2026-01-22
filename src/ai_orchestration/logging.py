@@ -28,6 +28,7 @@ import secrets
 
 class LogLevel(Enum):
     """Log severity levels."""
+
     DEBUG = 10
     INFO = 20
     WARNING = 30
@@ -38,6 +39,7 @@ class LogLevel(Enum):
 
 class LogCategory(Enum):
     """Categories for log entries."""
+
     AGENT = "agent"
     TASK = "task"
     WORKFLOW = "workflow"
@@ -51,6 +53,7 @@ class LogCategory(Enum):
 @dataclass
 class LogEntry:
     """A single log entry with integrity verification."""
+
     id: str
     timestamp: datetime
     level: LogLevel
@@ -76,22 +79,26 @@ class LogEntry:
 
     def compute_hash(self) -> str:
         """Compute hash for integrity verification."""
-        content = json.dumps({
-            "id": self.id,
-            "timestamp": self.timestamp.isoformat(),
-            "level": self.level.name,
-            "category": self.category.value,
-            "source": self.source,
-            "message": self.message,
-            "data": self.data,
-            "previous_hash": self.previous_hash,
-        }, sort_keys=True)
+        content = json.dumps(
+            {
+                "id": self.id,
+                "timestamp": self.timestamp.isoformat(),
+                "level": self.level.name,
+                "category": self.category.value,
+                "source": self.source,
+                "message": self.message,
+                "data": self.data,
+                "previous_hash": self.previous_hash,
+            },
+            sort_keys=True,
+        )
         return hashlib.sha256(content.encode()).hexdigest()
 
 
 @dataclass
 class FileChange:
     """Record of a file change."""
+
     file_path: str
     change_type: str  # created, modified, deleted
     timestamp: datetime
@@ -104,6 +111,7 @@ class FileChange:
 @dataclass
 class DecisionRecord:
     """Record of an AI decision for audit."""
+
     decision_id: str
     timestamp: datetime
     agent_id: str
@@ -296,21 +304,25 @@ class AuditLogger:
             # Verify hash matches
             computed = entry.compute_hash()
             if computed != entry.hash:
-                issues.append({
-                    "entry_id": entry.id,
-                    "issue": "hash_mismatch",
-                    "expected": entry.hash,
-                    "computed": computed,
-                })
+                issues.append(
+                    {
+                        "entry_id": entry.id,
+                        "issue": "hash_mismatch",
+                        "expected": entry.hash,
+                        "computed": computed,
+                    }
+                )
 
             # Verify chain
             if entry.previous_hash != previous_hash:
-                issues.append({
-                    "entry_id": entry.id,
-                    "issue": "chain_break",
-                    "expected_previous": previous_hash,
-                    "actual_previous": entry.previous_hash,
-                })
+                issues.append(
+                    {
+                        "entry_id": entry.id,
+                        "issue": "chain_break",
+                        "expected_previous": previous_hash,
+                        "actual_previous": entry.previous_hash,
+                    }
+                )
 
             previous_hash = entry.hash
             verified_count += 1
@@ -369,7 +381,7 @@ class AuditLogger:
             for e in entries:
                 lines.append(
                     f"{e.id},{e.timestamp.isoformat()},{e.level.name},"
-                    f"{e.category.value},{e.source},\"{e.message}\""
+                    f'{e.category.value},{e.source},"{e.message}"'
                 )
             return "\n".join(lines)
         else:
@@ -389,21 +401,19 @@ class AuditLogger:
         data = json.dumps([e.to_dict() for e in self.current_entries])
 
         if self.enable_compression:
-            with gzip.open(filepath, 'wt', encoding='utf-8') as f:
+            with gzip.open(filepath, "wt", encoding="utf-8") as f:
                 f.write(data)
         else:
-            with open(filepath, 'w', encoding='utf-8') as f:
+            with open(filepath, "w", encoding="utf-8") as f:
                 f.write(data)
 
         # Sign the file
         signature = hmac.new(
-            self.signing_key,
-            data.encode(),
-            hashlib.sha256
+            self.signing_key, data.encode(), hashlib.sha256
         ).hexdigest()
 
         sig_path = self.storage_path / f"{filename}.sig"
-        with open(sig_path, 'w') as f:
+        with open(sig_path, "w") as f:
             f.write(signature)
 
         self.current_entries = []
@@ -418,14 +428,14 @@ class AuditLogger:
             "file_index": self.current_file_index,
         }
         state_path = self.storage_path / "chain_state.json"
-        with open(state_path, 'w') as f:
+        with open(state_path, "w") as f:
             json.dump(state, f)
 
     def _load_chain_state(self):
         """Load chain state from disk."""
         state_path = self.storage_path / "chain_state.json"
         if state_path.exists():
-            with open(state_path, 'r') as f:
+            with open(state_path, "r") as f:
                 state = json.load(f)
                 self.last_hash = state.get("last_hash")
                 self.entry_counter = state.get("entry_counter", 0)
@@ -559,16 +569,10 @@ class WorkflowTracker:
         workflows = self.completed_workflows.copy()
 
         if start_time:
-            workflows = [
-                w for w in workflows
-                if w["started_at"] >= start_time
-            ]
+            workflows = [w for w in workflows if w["started_at"] >= start_time]
 
         if end_time:
-            workflows = [
-                w for w in workflows
-                if w["started_at"] <= end_time
-            ]
+            workflows = [w for w in workflows if w["started_at"] <= end_time]
 
         if not workflows:
             return {"workflows": [], "summary": {}}
@@ -594,6 +598,7 @@ class WorkflowTracker:
 # =============================================================================
 # SECURE STORAGE INTEGRATION
 # =============================================================================
+
 
 class SecureStorage:
     """
@@ -632,7 +637,7 @@ class SecureStorage:
 
         # Store file
         file_path = self.storage_path / f"{key}.enc"
-        with open(file_path, 'wb') as f:
+        with open(file_path, "wb") as f:
             f.write(encrypted)
 
         # Update manifest
@@ -655,7 +660,7 @@ class SecureStorage:
         if not file_path.exists():
             return None
 
-        with open(file_path, 'rb') as f:
+        with open(file_path, "rb") as f:
             encrypted = f.read()
 
         data = self._decrypt(encrypted)
@@ -693,7 +698,7 @@ class SecureStorage:
     def _encrypt(self, data: bytes) -> bytes:
         """Encrypt data (simplified XOR for demo; use AES-256-GCM in production)."""
         key_bytes = self.encryption_key * (len(data) // len(self.encryption_key) + 1)
-        return bytes(a ^ b for a, b in zip(data, key_bytes[:len(data)]))
+        return bytes(a ^ b for a, b in zip(data, key_bytes[: len(data)]))
 
     def _decrypt(self, data: bytes) -> bytes:
         """Decrypt data."""
@@ -702,12 +707,12 @@ class SecureStorage:
     def _save_manifest(self):
         """Save manifest to disk."""
         manifest_path = self.storage_path / "manifest.json"
-        with open(manifest_path, 'w') as f:
+        with open(manifest_path, "w") as f:
             json.dump(self.manifest, f, indent=2)
 
     def _load_manifest(self):
         """Load manifest from disk."""
         manifest_path = self.storage_path / "manifest.json"
         if manifest_path.exists():
-            with open(manifest_path, 'r') as f:
+            with open(manifest_path, "r") as f:
                 self.manifest = json.load(f)

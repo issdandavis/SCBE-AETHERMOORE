@@ -20,18 +20,15 @@ from .langues_metric import (
     TONGUE_PHASES,
     TONGUE_FREQUENCIES,
     DIMENSIONS,
-    
     # Core classes
     HyperspacePoint,
     IdealState,
     LanguesMetric,
     DimensionFlux,
     FluxingLanguesMetric,
-    
     # Functions
     langues_distance,
     build_langues_metric_matrix,
-    
     # Verification functions
     verify_monotonicity,
     verify_phase_bounded,
@@ -49,14 +46,11 @@ from .audio_axis import (
     DEFAULT_HF_FRAC,
     DEFAULT_SAMPLE_RATE,
     DEFAULT_WA,
-    
     # Enums
     AudioStability,
-    
     # Classes
     AudioFeatures,
     AudioAxisProcessor,
-    
     # Functions
     compute_fft,
     extract_energy,
@@ -67,7 +61,6 @@ from .audio_axis import (
     extract_audio_features,
     audio_risk_additive,
     audio_risk_multiplicative,
-    
     # Verification
     verify_stability_bounded,
     verify_hf_detection,
@@ -81,22 +74,18 @@ from .hamiltonian_cfi import (
     DEFAULT_EMBEDDING_DIM,
     DEFAULT_DEVIATION_THRESHOLD,
     DEFAULT_MAX_VERTICES,
-    
     # Enums
     CFIDecision,
-    
     # Classes
     CFGVertex,
     ControlFlowGraph,
     GoldenPath,
     CFIResult,
     HamiltonianCFI,
-    
     # Functions
     compute_embedding_dimension,
     embed_cfg,
     compute_golden_path,
-    
     # Verification
     verify_dirac_theorem,
     verify_bipartite_detection,
@@ -113,18 +102,15 @@ __all__ = [
     "TONGUE_PHASES",
     "TONGUE_FREQUENCIES",
     "DIMENSIONS",
-    
     # Core classes
     "HyperspacePoint",
     "IdealState",
     "LanguesMetric",
     "DimensionFlux",
     "FluxingLanguesMetric",
-    
     # Functions
     "langues_distance",
     "build_langues_metric_matrix",
-    
     # Verification functions
     "verify_monotonicity",
     "verify_phase_bounded",
@@ -133,7 +119,6 @@ __all__ = [
     "verify_flux_bounded",
     "verify_dimension_conservation",
     "verify_1d_projection",
-    
     # === Layer 14: Audio Axis ===
     "DEFAULT_N_FFT",
     "DEFAULT_HF_FRAC",
@@ -154,7 +139,6 @@ __all__ = [
     "verify_stability_bounded",
     "verify_hf_detection",
     "verify_flux_sensitivity",
-    
     # === Hamiltonian CFI (Topological) ===
     "CFI_PHI",
     "DEFAULT_EMBEDDING_DIM",

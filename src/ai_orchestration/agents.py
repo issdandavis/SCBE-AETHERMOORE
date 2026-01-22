@@ -30,6 +30,7 @@ from abc import ABC, abstractmethod
 
 class AgentRole(Enum):
     """Predefined agent roles."""
+
     SECURITY = "security"
     RESEARCH = "research"
     BUSINESS = "business"
@@ -41,6 +42,7 @@ class AgentRole(Enum):
 
 class AgentStatus(Enum):
     """Agent operational status."""
+
     IDLE = "idle"
     BUSY = "busy"
     PAUSED = "paused"
@@ -51,6 +53,7 @@ class AgentStatus(Enum):
 @dataclass
 class AgentCapability:
     """Defines what an agent can do."""
+
     name: str
     description: str
     input_schema: Dict[str, Any]
@@ -63,6 +66,7 @@ class AgentCapability:
 @dataclass
 class AgentMessage:
     """Secure message between agents."""
+
     id: str
     sender_id: str
     receiver_id: str
@@ -92,6 +96,7 @@ class AgentMessage:
 @dataclass
 class AgentConfig:
     """Agent configuration."""
+
     role: AgentRole
     name: str
     description: str
@@ -204,6 +209,7 @@ class Agent(ABC):
 # SPECIALIZED AGENTS
 # =============================================================================
 
+
 class SecurityAgent(Agent):
     """
     Agent specialized for security monitoring, threat detection, and compliance.
@@ -270,17 +276,20 @@ class SecurityAgent(Agent):
         ]
 
         import re
+
         for name, pattern, level in threat_patterns:
             if re.search(pattern, content, re.IGNORECASE):
                 threats.append({"type": name, "level": level})
                 if level in ("high", "critical"):
                     risk_level = level
 
-        self.threat_log.append({
-            "timestamp": datetime.now().isoformat(),
-            "threats_found": len(threats),
-            "risk_level": risk_level,
-        })
+        self.threat_log.append(
+            {
+                "timestamp": datetime.now().isoformat(),
+                "threats_found": len(threats),
+                "risk_level": risk_level,
+            }
+        )
 
         return {
             "threats": threats,
@@ -296,19 +305,23 @@ class SecurityAgent(Agent):
         for entry in log_entries:
             # Check for suspicious patterns
             if entry.get("failed_attempts", 0) > 5:
-                findings.append({
-                    "type": "brute_force_attempt",
-                    "entry": entry,
-                    "severity": "high",
-                })
+                findings.append(
+                    {
+                        "type": "brute_force_attempt",
+                        "entry": entry,
+                        "severity": "high",
+                    }
+                )
                 compliance = False
 
             if entry.get("privilege_change"):
-                findings.append({
-                    "type": "privilege_escalation",
-                    "entry": entry,
-                    "severity": "medium",
-                })
+                findings.append(
+                    {
+                        "type": "privilege_escalation",
+                        "entry": entry,
+                        "severity": "medium",
+                    }
+                )
 
         return {
             "findings": findings,
@@ -322,7 +335,9 @@ class SecurityAgent(Agent):
             "period": period,
             "total_scans": len(self.threat_log),
             "threats_detected": sum(t["threats_found"] for t in self.threat_log),
-            "high_risk_events": sum(1 for t in self.threat_log if t["risk_level"] in ("high", "critical")),
+            "high_risk_events": sum(
+                1 for t in self.threat_log if t["risk_level"] in ("high", "critical")
+            ),
             "generated_at": datetime.now().isoformat(),
         }
 
@@ -368,13 +383,11 @@ class ResearchAgent(Agent):
 
         if task_type == "search_knowledge":
             return await self._search(
-                task_data.get("query", ""),
-                task_data.get("domains", [])
+                task_data.get("query", ""), task_data.get("domains", [])
             )
         elif task_type == "summarize":
             return await self._summarize(
-                task_data.get("content", ""),
-                task_data.get("max_length", 500)
+                task_data.get("content", ""), task_data.get("max_length", 500)
             )
 
         return {"error": f"Unknown task type: {task_type}"}
@@ -392,12 +405,17 @@ class ResearchAgent(Agent):
             # Simple keyword search (real implementation would use embeddings)
             if isinstance(knowledge, dict):
                 for key, value in knowledge.items():
-                    if query.lower() in str(key).lower() or query.lower() in str(value).lower():
-                        results.append({
-                            "source": pack_name,
-                            "key": key,
-                            "content": str(value)[:500],
-                        })
+                    if (
+                        query.lower() in str(key).lower()
+                        or query.lower() in str(value).lower()
+                    ):
+                        results.append(
+                            {
+                                "source": pack_name,
+                                "key": key,
+                                "content": str(value)[:500],
+                            }
+                        )
                         sources.append(pack_name)
 
         return {
@@ -410,8 +428,8 @@ class ResearchAgent(Agent):
     async def _summarize(self, content: str, max_length: int) -> Dict[str, Any]:
         """Summarize content."""
         # Simple extractive summary (real implementation would use ML)
-        sentences = content.split('. ')
-        summary = '. '.join(sentences[:max(1, len(sentences) // 3)])
+        sentences = content.split(". ")
+        summary = ". ".join(sentences[: max(1, len(sentences) // 3)])
 
         if len(summary) > max_length:
             summary = summary[:max_length] + "..."
@@ -464,8 +482,7 @@ class BusinessAgent(Agent):
             return await self._analyze_portfolio(task_data.get("portfolio_data", {}))
         elif task_type == "generate_report":
             return await self._generate_report(
-                task_data.get("report_type", "summary"),
-                task_data.get("data", {})
+                task_data.get("report_type", "summary"), task_data.get("data", {})
             )
 
         return {"error": f"Unknown task type: {task_type}"}
@@ -475,10 +492,7 @@ class BusinessAgent(Agent):
         self.portfolio_data = portfolio
 
         # Basic analysis
-        total_value = sum(
-            item.get("value", 0)
-            for item in portfolio.get("assets", [])
-        )
+        total_value = sum(item.get("value", 0) for item in portfolio.get("assets", []))
 
         return {
             "analysis": {
@@ -492,7 +506,9 @@ class BusinessAgent(Agent):
             ],
         }
 
-    async def _generate_report(self, report_type: str, data: Dict[str, Any]) -> Dict[str, Any]:
+    async def _generate_report(
+        self, report_type: str, data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Generate business report."""
         return {
             "report": {
@@ -542,13 +558,11 @@ class EngineerAgent(Agent):
 
         if task_type == "generate_code":
             return await self._generate_code(
-                task_data.get("spec", ""),
-                task_data.get("language", "python")
+                task_data.get("spec", ""), task_data.get("language", "python")
             )
         elif task_type == "run_tests":
             return await self._run_tests(
-                task_data.get("code", ""),
-                task_data.get("test_cases", [])
+                task_data.get("code", ""), task_data.get("test_cases", [])
             )
 
         return {"error": f"Unknown task type: {task_type}"}
@@ -669,13 +683,11 @@ class CoordinatorAgent(Agent):
     async def _check_all_status(self) -> Dict[str, Any]:
         """Check status of all managed agents."""
         return {
-            "agents": [
-                agent.get_status()
-                for agent in self.managed_agents.values()
-            ],
+            "agents": [agent.get_status() for agent in self.managed_agents.values()],
             "total": len(self.managed_agents),
             "active": sum(
-                1 for a in self.managed_agents.values()
+                1
+                for a in self.managed_agents.values()
                 if a.status in (AgentStatus.IDLE, AgentStatus.BUSY)
             ),
         }
@@ -684,19 +696,20 @@ class CoordinatorAgent(Agent):
         """Balance tasks across available agents."""
         assignments = []
         available = [
-            a for a in self.managed_agents.values()
-            if a.status == AgentStatus.IDLE
+            a for a in self.managed_agents.values() if a.status == AgentStatus.IDLE
         ]
 
         for i, task in enumerate(tasks):
             if available:
                 agent = available[i % len(available)]
                 task_id = str(uuid.uuid4())
-                assignments.append({
-                    "task_id": task_id,
-                    "agent_id": agent.id,
-                    "agent_name": agent.name,
-                })
+                assignments.append(
+                    {
+                        "task_id": task_id,
+                        "agent_id": agent.id,
+                        "agent_name": agent.name,
+                    }
+                )
                 self.task_assignments[task_id] = agent.id
 
         return {

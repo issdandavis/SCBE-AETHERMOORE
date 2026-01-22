@@ -37,22 +37,19 @@ Version: 1.0.0
 __version__ = "1.0.0"
 __all__ = [
     # Core classes
-    'Orchestrator',
-    'Agent',
-    'Task',
-    'Workflow',
-
+    "Orchestrator",
+    "Agent",
+    "Task",
+    "Workflow",
     # Security
-    'SecurityGate',
-    'PromptSanitizer',
-    'OutputValidator',
-
+    "SecurityGate",
+    "PromptSanitizer",
+    "OutputValidator",
     # Logging
-    'AuditLogger',
-    'WorkflowTracker',
-
+    "AuditLogger",
+    "WorkflowTracker",
     # Registry
-    'AgentRegistry',
+    "AgentRegistry",
 ]
 
 from .orchestrator import Orchestrator, AgentRegistry

@@ -22,29 +22,38 @@ import json
 
 # Import numerical methods
 from .numerical import (
-    euler_step, rk4_step, verlet_step, leapfrog_step,
-    vec_add, vec_sub, vec_scale, vec_norm, vec_cross_3d, vec_dot
+    euler_step,
+    rk4_step,
+    verlet_step,
+    leapfrog_step,
+    vec_add,
+    vec_sub,
+    vec_scale,
+    vec_norm,
+    vec_cross_3d,
+    vec_dot,
 )
-
 
 # =============================================================================
 # CONSTANTS
 # =============================================================================
 
-G = 6.67430e-11         # Gravitational constant (m³/(kg·s²))
-C = 299792458           # Speed of light (m/s)
-EARTH_MASS = 5.972e24   # kg
+G = 6.67430e-11  # Gravitational constant (m³/(kg·s²))
+C = 299792458  # Speed of light (m/s)
+EARTH_MASS = 5.972e24  # kg
 EARTH_RADIUS = 6.371e6  # m
-SUN_MASS = 1.989e30     # kg
-AU = 1.495978707e11     # m
+SUN_MASS = 1.989e30  # kg
+AU = 1.495978707e11  # m
 
 
 # =============================================================================
 # SIMULATION CONFIGURATION
 # =============================================================================
 
+
 class IntegrationMethod(Enum):
     """Available integration methods."""
+
     EULER = "euler"
     RK4 = "rk4"
     VERLET = "verlet"
@@ -54,15 +63,16 @@ class IntegrationMethod(Enum):
 @dataclass
 class SimulationConfig:
     """Configuration for physics simulation."""
-    dt: float = 0.01                    # Time step (s)
-    t_max: float = 10.0                 # Maximum simulation time (s)
+
+    dt: float = 0.01  # Time step (s)
+    t_max: float = 10.0  # Maximum simulation time (s)
     method: IntegrationMethod = IntegrationMethod.RK4
     adaptive_step: bool = False
     tolerance: float = 1e-6
     max_iterations: int = 1000000
-    save_interval: int = 1              # Save every N steps
+    save_interval: int = 1  # Save every N steps
     enable_collisions: bool = True
-    boundary_mode: str = "none"         # "none", "reflect", "periodic"
+    boundary_mode: str = "none"  # "none", "reflect", "periodic"
     boundary_size: Optional[List[float]] = None
 
 
@@ -70,9 +80,11 @@ class SimulationConfig:
 # PARTICLE / BODY CLASSES
 # =============================================================================
 
+
 @dataclass
 class Particle:
     """A point particle for simulations."""
+
     mass: float
     position: List[float]
     velocity: List[float]
@@ -85,7 +97,7 @@ class Particle:
 
     def kinetic_energy(self) -> float:
         """Calculate kinetic energy."""
-        v_sq = sum(v ** 2 for v in self.velocity)
+        v_sq = sum(v**2 for v in self.velocity)
         return 0.5 * self.mass * v_sq
 
     def momentum(self) -> List[float]:
@@ -101,16 +113,18 @@ class Particle:
 @dataclass
 class Spring:
     """A spring connecting two particles."""
+
     particle1_idx: int
     particle2_idx: int
-    k: float           # Spring constant (N/m)
-    rest_length: float # Equilibrium length (m)
+    k: float  # Spring constant (N/m)
+    rest_length: float  # Equilibrium length (m)
     damping: float = 0.0
 
 
 # =============================================================================
 # FORCE CALCULATORS
 # =============================================================================
+
 
 class ForceCalculator:
     """Base class for force calculators."""
@@ -140,13 +154,13 @@ class GravityCalculator(ForceCalculator):
                 r_mag = vec_norm(r)
 
                 # Add softening
-                r_soft = math.sqrt(r_mag ** 2 + self.softening ** 2)
+                r_soft = math.sqrt(r_mag**2 + self.softening**2)
 
                 if r_soft < 1e-10:
                     continue
 
                 # Force magnitude
-                F_mag = self.G * p1.mass * p2.mass / (r_soft ** 2)
+                F_mag = self.G * p1.mass * p2.mass / (r_soft**2)
 
                 # Force direction (unit vector)
                 r_hat = vec_scale(r, 1 / r_mag) if r_mag > 1e-10 else [0, 0, 0]
@@ -174,7 +188,7 @@ class DragCalculator(ForceCalculator):
 
     def __init__(self, density: float = 1.225, Cd: float = 0.47):
         self.density = density  # Air density (kg/m³)
-        self.Cd = Cd            # Drag coefficient
+        self.Cd = Cd  # Drag coefficient
 
     def calculate(self, particles: List[Particle], t: float) -> None:
         for p in particles:
@@ -184,8 +198,8 @@ class DragCalculator(ForceCalculator):
 
             # F_drag = -½ρCdAv² (opposite to velocity)
             # Using cross-sectional area A = πr²
-            A = math.pi * p.radius ** 2 if p.radius > 0 else 0.01
-            F_mag = 0.5 * self.density * self.Cd * A * v_mag ** 2
+            A = math.pi * p.radius**2 if p.radius > 0 else 0.01
+            F_mag = 0.5 * self.density * self.Cd * A * v_mag**2
 
             # Direction opposite to velocity
             v_hat = vec_scale(p.velocity, -1 / v_mag)
@@ -259,7 +273,7 @@ class ElectrostaticCalculator(ForceCalculator):
                     continue
 
                 # Coulomb force: F = kq1q2/r²
-                F_mag = self.k * p1.charge * p2.charge / (r_mag ** 2)
+                F_mag = self.k * p1.charge * p2.charge / (r_mag**2)
 
                 r_hat = vec_scale(r, 1 / r_mag)
                 F = vec_scale(r_hat, F_mag)
@@ -288,7 +302,7 @@ class CentralForceCalculator(ForceCalculator):
                 continue
 
             # F = -GMm/r² (attractive)
-            F_mag = self.G * self.mass * p.mass / (r_mag ** 2)
+            F_mag = self.G * self.mass * p.mass / (r_mag**2)
 
             r_hat = vec_scale(r, 1 / r_mag)
             F = vec_scale(r_hat, -F_mag)
@@ -298,6 +312,7 @@ class CentralForceCalculator(ForceCalculator):
 # =============================================================================
 # PHYSICS SIMULATOR
 # =============================================================================
+
 
 class PhysicsSimulator:
     """
@@ -353,8 +368,8 @@ class PhysicsSimulator:
         """Set state from flattened vector."""
         idx = 0
         for p in self.particles:
-            p.position = list(state[idx:idx + 3])
-            p.velocity = list(state[idx + 3:idx + 6])
+            p.position = list(state[idx : idx + 3])
+            p.velocity = list(state[idx + 3 : idx + 6])
             idx += 6
 
     def derivative(self, t: float, state: List[float]) -> List[float]:
@@ -400,7 +415,7 @@ class PhysicsSimulator:
                 # Update position
                 p.position = vec_add(
                     vec_add(p.position, vec_scale(p.velocity, dt)),
-                    vec_scale(p.acceleration, dt ** 2 / 2)
+                    vec_scale(p.acceleration, dt**2 / 2),
                 )
 
             # Calculate new forces
@@ -527,17 +542,17 @@ class PhysicsSimulator:
     def _save_state(self) -> None:
         """Save current state to history."""
         state = {
-            'time': self.time,
-            'step': self.step_count,
-            'particles': [
+            "time": self.time,
+            "step": self.step_count,
+            "particles": [
                 {
-                    'name': p.name,
-                    'position': p.position[:],
-                    'velocity': p.velocity[:],
-                    'kinetic_energy': p.kinetic_energy()
+                    "name": p.name,
+                    "position": p.position[:],
+                    "velocity": p.velocity[:],
+                    "kinetic_energy": p.kinetic_energy(),
                 }
                 for p in self.particles
-            ]
+            ],
         }
         self.history.append(state)
 
@@ -606,9 +621,10 @@ class PhysicsSimulator:
 # PRESET SIMULATIONS
 # =============================================================================
 
-def create_projectile_simulation(v0: float, angle_deg: float,
-                                height: float = 0,
-                                with_drag: bool = False) -> PhysicsSimulator:
+
+def create_projectile_simulation(
+    v0: float, angle_deg: float, height: float = 0, with_drag: bool = False
+) -> PhysicsSimulator:
     """
     Create a projectile motion simulation.
 
@@ -633,7 +649,7 @@ def create_projectile_simulation(v0: float, angle_deg: float,
         position=[0.0, height, 0.0],
         velocity=[vx, vy, 0.0],
         name="Projectile",
-        radius=0.1
+        radius=0.1,
     )
     sim.add_particle(projectile)
     sim.add_force_calculator(UniformGravityCalculator())
@@ -644,9 +660,12 @@ def create_projectile_simulation(v0: float, angle_deg: float,
     return sim
 
 
-def create_orbital_simulation(central_mass: float, orbiter_mass: float,
-                            orbital_radius: float,
-                            eccentricity: float = 0) -> PhysicsSimulator:
+def create_orbital_simulation(
+    central_mass: float,
+    orbiter_mass: float,
+    orbital_radius: float,
+    eccentricity: float = 0,
+) -> PhysicsSimulator:
     """
     Create an orbital mechanics simulation.
 
@@ -661,12 +680,12 @@ def create_orbital_simulation(central_mass: float, orbiter_mass: float,
     """
     # Calculate orbital period for time step
     mu = G * central_mass
-    period = 2 * math.pi * math.sqrt(orbital_radius ** 3 / mu)
+    period = 2 * math.pi * math.sqrt(orbital_radius**3 / mu)
 
     config = SimulationConfig(
         dt=period / 1000,  # 1000 steps per orbit
         t_max=period * 2,
-        method=IntegrationMethod.LEAPFROG  # Good for orbital mechanics
+        method=IntegrationMethod.LEAPFROG,  # Good for orbital mechanics
     )
     sim = PhysicsSimulator(config)
 
@@ -676,7 +695,7 @@ def create_orbital_simulation(central_mass: float, orbiter_mass: float,
         position=[0.0, 0.0, 0.0],
         velocity=[0.0, 0.0, 0.0],
         name="Central",
-        fixed=True
+        fixed=True,
     )
     sim.add_particle(central)
 
@@ -688,7 +707,7 @@ def create_orbital_simulation(central_mass: float, orbiter_mass: float,
         mass=orbiter_mass,
         position=[r_p, 0.0, 0.0],
         velocity=[0.0, v_p, 0.0],
-        name="Orbiter"
+        name="Orbiter",
     )
     sim.add_particle(orbiter)
 
@@ -697,9 +716,9 @@ def create_orbital_simulation(central_mass: float, orbiter_mass: float,
     return sim
 
 
-def create_spring_pendulum_simulation(mass: float, k: float,
-                                     rest_length: float,
-                                     initial_angle: float) -> PhysicsSimulator:
+def create_spring_pendulum_simulation(
+    mass: float, k: float, rest_length: float, initial_angle: float
+) -> PhysicsSimulator:
     """
     Create a spring pendulum simulation.
 
@@ -721,7 +740,7 @@ def create_spring_pendulum_simulation(mass: float, k: float,
         position=[0.0, 0.0, 0.0],
         velocity=[0.0, 0.0, 0.0],
         name="Pivot",
-        fixed=True
+        fixed=True,
     )
     sim.add_particle(pivot)
 
@@ -731,20 +750,13 @@ def create_spring_pendulum_simulation(mass: float, k: float,
     y = -rest_length * math.cos(angle_rad)
 
     bob = Particle(
-        mass=mass,
-        position=[x, y, 0.0],
-        velocity=[0.0, 0.0, 0.0],
-        name="Bob"
+        mass=mass, position=[x, y, 0.0], velocity=[0.0, 0.0, 0.0], name="Bob"
     )
     sim.add_particle(bob)
 
     # Spring connecting pivot to bob
     spring = Spring(
-        particle1_idx=0,
-        particle2_idx=1,
-        k=k,
-        rest_length=rest_length,
-        damping=0.1
+        particle1_idx=0, particle2_idx=1, k=k, rest_length=rest_length, damping=0.1
     )
 
     sim.add_force_calculator(UniformGravityCalculator())
@@ -753,8 +765,9 @@ def create_spring_pendulum_simulation(mass: float, k: float,
     return sim
 
 
-def create_n_body_simulation(n: int, box_size: float = 1e10,
-                            mass_range: Tuple[float, float] = (1e24, 1e26)) -> PhysicsSimulator:
+def create_n_body_simulation(
+    n: int, box_size: float = 1e10, mass_range: Tuple[float, float] = (1e24, 1e26)
+) -> PhysicsSimulator:
     """
     Create an N-body gravitational simulation with random initial conditions.
 
@@ -771,7 +784,7 @@ def create_n_body_simulation(n: int, box_size: float = 1e10,
     config = SimulationConfig(
         dt=86400,  # 1 day
         t_max=86400 * 365,  # 1 year
-        method=IntegrationMethod.LEAPFROG
+        method=IntegrationMethod.LEAPFROG,
     )
     sim = PhysicsSimulator(config)
 
@@ -780,21 +793,18 @@ def create_n_body_simulation(n: int, box_size: float = 1e10,
         position = [
             random.uniform(-box_size, box_size),
             random.uniform(-box_size, box_size),
-            random.uniform(-box_size, box_size)
+            random.uniform(-box_size, box_size),
         ]
         # Random velocity (scaled to box size)
         v_scale = math.sqrt(G * sum(mass_range) / 2 / box_size) * 0.1
         velocity = [
             random.uniform(-v_scale, v_scale),
             random.uniform(-v_scale, v_scale),
-            random.uniform(-v_scale, v_scale)
+            random.uniform(-v_scale, v_scale),
         ]
 
         particle = Particle(
-            mass=mass,
-            position=position,
-            velocity=velocity,
-            name=f"Body_{i}"
+            mass=mass, position=position, velocity=velocity, name=f"Body_{i}"
         )
         sim.add_particle(particle)
 

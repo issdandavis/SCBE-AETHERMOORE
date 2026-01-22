@@ -14,11 +14,11 @@ Last verified: 2026-01-17
 import sys
 
 # Set UTF-8 encoding for Windows compatibility
-if sys.platform == 'win32':
-    if hasattr(sys.stdout, 'reconfigure'):
-        sys.stdout.reconfigure(encoding='utf-8')
-    if hasattr(sys.stderr, 'reconfigure'):
-        sys.stderr.reconfigure(encoding='utf-8')
+if sys.platform == "win32":
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8")
 
 import numpy as np
 from typing import Tuple, List, Optional
@@ -40,14 +40,14 @@ def layer_1_complex_state(t: np.ndarray, D: int) -> np.ndarray:
     # Split input into amplitudes and phases
     if len(t) >= 2 * D:
         amplitudes = np.array(t[:D])
-        phases = np.array(t[D:2*D])
+        phases = np.array(t[D : 2 * D])
     else:
         # Handle shorter inputs
         amplitudes = np.ones(D)
         phases = np.zeros(D)
         if len(t) >= 2:
-            amplitudes[:len(t)//2] = t[:len(t)//2]
-            phases[:len(t)//2] = t[len(t)//2:]
+            amplitudes[: len(t) // 2] = t[: len(t) // 2]
+            phases[: len(t) // 2] = t[len(t) // 2 :]
 
     # A1: Map to complex space
     c = amplitudes * np.exp(1j * phases)
@@ -73,7 +73,9 @@ def layer_2_realification(c: np.ndarray) -> np.ndarray:
 # =============================================================================
 # LAYER 3: Weighted Transform
 # =============================================================================
-def layer_3_weighted_transform(x: np.ndarray, G: Optional[np.ndarray] = None) -> np.ndarray:
+def layer_3_weighted_transform(
+    x: np.ndarray, G: Optional[np.ndarray] = None
+) -> np.ndarray:
     """
     Layer 3: SPD Weighted Transform
 
@@ -88,7 +90,7 @@ def layer_3_weighted_transform(x: np.ndarray, G: Optional[np.ndarray] = None) ->
         # Default: Golden ratio weighting
         phi = 1.618
         D = n // 2
-        weights = np.array([phi ** k for k in range(D)])
+        weights = np.array([phi**k for k in range(D)])
         weights = weights / np.sum(weights)
         G_sqrt = np.diag(np.sqrt(np.tile(weights, 2)))
     else:
@@ -102,8 +104,9 @@ def layer_3_weighted_transform(x: np.ndarray, G: Optional[np.ndarray] = None) ->
 # =============================================================================
 # LAYER 4: Poincaré Embedding
 # =============================================================================
-def layer_4_poincare_embedding(x_G: np.ndarray, alpha: float = 1.0,
-                               eps_ball: float = 0.01) -> np.ndarray:
+def layer_4_poincare_embedding(
+    x_G: np.ndarray, alpha: float = 1.0, eps_ball: float = 0.01
+) -> np.ndarray:
     """
     Layer 4: Poincaré Ball Embedding with Clamping
 
@@ -133,8 +136,9 @@ def layer_4_poincare_embedding(x_G: np.ndarray, alpha: float = 1.0,
 # =============================================================================
 # LAYER 5: Hyperbolic Distance
 # =============================================================================
-def layer_5_hyperbolic_distance(u: np.ndarray, v: np.ndarray,
-                               eps: float = 1e-5) -> float:
+def layer_5_hyperbolic_distance(
+    u: np.ndarray, v: np.ndarray, eps: float = 1e-5
+) -> float:
     """
     Layer 5: Poincaré Ball Metric
 
@@ -148,7 +152,7 @@ def layer_5_hyperbolic_distance(u: np.ndarray, v: np.ndarray,
     v_factor = 1.0 - np.linalg.norm(v) ** 2
 
     # Denominator bounded below by eps² due to clamping
-    denom = max(u_factor * v_factor, eps ** 2)
+    denom = max(u_factor * v_factor, eps**2)
     arg = 1.0 + 2.0 * diff_norm_sq / denom
 
     return np.arccosh(max(arg, 1.0))
@@ -157,8 +161,9 @@ def layer_5_hyperbolic_distance(u: np.ndarray, v: np.ndarray,
 # =============================================================================
 # LAYER 6: Breathing Transform
 # =============================================================================
-def layer_6_breathing_transform(u: np.ndarray, b: float,
-                               b_min: float = 0.5, b_max: float = 2.0) -> np.ndarray:
+def layer_6_breathing_transform(
+    u: np.ndarray, b: float, b_min: float = 0.5, b_max: float = 2.0
+) -> np.ndarray:
     """
     Layer 6: Breathing Map (Diffeomorphism, NOT Isometry)
 
@@ -184,8 +189,9 @@ def layer_6_breathing_transform(u: np.ndarray, b: float,
 # =============================================================================
 # LAYER 7: Phase Transform
 # =============================================================================
-def layer_7_phase_transform(u: np.ndarray, a: np.ndarray, Q: np.ndarray,
-                           eps: float = 1e-10) -> np.ndarray:
+def layer_7_phase_transform(
+    u: np.ndarray, a: np.ndarray, Q: np.ndarray, eps: float = 1e-10
+) -> np.ndarray:
     """
     Layer 7: Phase Transform (Isometry)
 
@@ -229,8 +235,9 @@ def layer_7_phase_transform(u: np.ndarray, a: np.ndarray, Q: np.ndarray,
 # =============================================================================
 # LAYER 8: Realm Distance
 # =============================================================================
-def layer_8_realm_distance(u: np.ndarray, realms: List[np.ndarray],
-                          eps: float = 1e-5) -> Tuple[float, np.ndarray]:
+def layer_8_realm_distance(
+    u: np.ndarray, realms: List[np.ndarray], eps: float = 1e-5
+) -> Tuple[float, np.ndarray]:
     """
     Layer 8: Minimum Distance to Realm Centers
 
@@ -239,10 +246,7 @@ def layer_8_realm_distance(u: np.ndarray, realms: List[np.ndarray],
 
     A8: Computes proximity to known safe regions.
     """
-    distances = np.array([
-        layer_5_hyperbolic_distance(u, mu, eps)
-        for mu in realms
-    ])
+    distances = np.array([layer_5_hyperbolic_distance(u, mu, eps) for mu in realms])
 
     d_star = np.min(distances)
     return d_star, distances
@@ -251,8 +255,9 @@ def layer_8_realm_distance(u: np.ndarray, realms: List[np.ndarray],
 # =============================================================================
 # LAYER 9: Spectral Coherence
 # =============================================================================
-def layer_9_spectral_coherence(signal: Optional[np.ndarray],
-                              eps: float = 1e-5) -> float:
+def layer_9_spectral_coherence(
+    signal: Optional[np.ndarray], eps: float = 1e-5
+) -> float:
     """
     Layer 9: Spectral Coherence via FFT
 
@@ -300,9 +305,15 @@ def layer_10_spin_coherence(phasors: np.ndarray) -> float:
 # =============================================================================
 # LAYER 11: Triadic Temporal Aggregation
 # =============================================================================
-def layer_11_triadic_temporal(d1: float, d2: float, dG: float,
-                             lambda1: float = 0.33, lambda2: float = 0.34,
-                             lambda3: float = 0.33, d_scale: float = 1.0) -> float:
+def layer_11_triadic_temporal(
+    d1: float,
+    d2: float,
+    dG: float,
+    lambda1: float = 0.33,
+    lambda2: float = 0.34,
+    lambda3: float = 0.33,
+    d_scale: float = 1.0,
+) -> float:
     """
     Layer 11: Triadic Temporal Distance
 
@@ -331,20 +342,21 @@ def layer_12_harmonic_scaling(d: float, R: float = 10.0) -> float:
     Output: H(d, R) = R^{d²}
 
     A12: Exponential penalty for geometric distance.
-    
+
     Note: R = 10.0 ensures strong super-exponential growth.
     For d=0.5: H(0.5) = 10^0.25 = 1.778, H(1.0) = 10^1 = 10.0
     Ratio: 10.0 / (2 * 1.778) = 2.81 > 2.0 ✓
     """
     assert R > 1, "R must be > 1"
-    return R ** (d ** 2)
+    return R ** (d**2)
 
 
 # =============================================================================
 # LAYER 13: Risk Decision
 # =============================================================================
-def layer_13_risk_decision(Risk_base: float, H: float,
-                          theta1: float = 0.33, theta2: float = 0.67) -> str:
+def layer_13_risk_decision(
+    Risk_base: float, H: float, theta1: float = 0.33, theta2: float = 0.67
+) -> str:
     """
     Layer 13: Three-Way Risk Decision
 
@@ -414,7 +426,7 @@ def scbe_14layer_pipeline(
     eps_ball: float = 0.01,
     R: float = np.e,
     theta1: float = 0.33,
-    theta2: float = 0.67
+    theta2: float = 0.67,
 ) -> dict:
     """
     Execute full 14-layer SCBE pipeline.
@@ -495,11 +507,11 @@ def scbe_14layer_pipeline(
     assert abs(w_d + w_c + w_s + w_tau + w_a - 1.0) < 1e-6, "Weights must sum to 1"
 
     Risk_base = (
-        w_d * d_tri_norm +
-        w_c * (1.0 - C_spin) +
-        w_s * (1.0 - S_spec) +
-        w_tau * (1.0 - tau) +
-        w_a * (1.0 - S_audio)
+        w_d * d_tri_norm
+        + w_c * (1.0 - C_spin)
+        + w_s * (1.0 - S_spec)
+        + w_tau * (1.0 - tau)
+        + w_a * (1.0 - S_audio)
     )
 
     decision = layer_13_risk_decision(Risk_base, H, theta1, theta2)
@@ -508,24 +520,24 @@ def scbe_14layer_pipeline(
     # RETURN RESULTS
     # =========================================================================
     return {
-        'decision': decision,
-        'risk_base': Risk_base,
-        'risk_prime': Risk_base * H,
-        'd_star': d_star,
-        'd_tri_norm': d_tri_norm,
-        'H': H,
-        'coherence': {
-            'C_spin': C_spin,
-            'S_spec': S_spec,
-            'tau': tau,
-            'S_audio': S_audio,
+        "decision": decision,
+        "risk_base": Risk_base,
+        "risk_prime": Risk_base * H,
+        "d_star": d_star,
+        "d_tri_norm": d_tri_norm,
+        "H": H,
+        "coherence": {
+            "C_spin": C_spin,
+            "S_spec": S_spec,
+            "tau": tau,
+            "S_audio": S_audio,
         },
-        'geometry': {
-            'u_norm': np.linalg.norm(u),
-            'u_breath_norm': np.linalg.norm(u_breath),
-            'u_final_norm': np.linalg.norm(u_final),
+        "geometry": {
+            "u_norm": np.linalg.norm(u),
+            "u_breath_norm": np.linalg.norm(u_breath),
+            "u_final_norm": np.linalg.norm(u_final),
         },
-        'all_realm_distances': all_distances,
+        "all_realm_distances": all_distances,
     }
 
 
@@ -539,8 +551,9 @@ if __name__ == "__main__":
 
     # Test individual layers
     print("\n[Layer 1] Complex State:")
-    t = np.array([0.5, 0.3, 0.2, 0.1, 0.4, 0.6,  # amplitudes
-                  0.0, 0.5, 1.0, 1.5, 2.0, 2.5])  # phases
+    t = np.array(
+        [0.5, 0.3, 0.2, 0.1, 0.4, 0.6, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5]  # amplitudes
+    )  # phases
     c = layer_1_complex_state(t, D=6)
     print(f"  c.shape = {c.shape}, ||c|| = {np.linalg.norm(c):.4f}")
 
@@ -572,12 +585,12 @@ if __name__ == "__main__":
     print(f"  ||u_phase|| = {np.linalg.norm(u_phase):.6f}")
 
     print("\n[Layer 8] Realm Distance:")
-    realms = [np.zeros(12), 0.1*np.ones(12), 0.2*np.ones(12)]
+    realms = [np.zeros(12), 0.1 * np.ones(12), 0.2 * np.ones(12)]
     d_star, distances = layer_8_realm_distance(u_phase, realms)
     print(f"  d* = {d_star:.6f}, all distances = {distances}")
 
     print("\n[Layer 9] Spectral Coherence:")
-    signal = np.sin(np.linspace(0, 4*np.pi, 256))
+    signal = np.sin(np.linspace(0, 4 * np.pi, 256))
     S_spec = layer_9_spectral_coherence(signal)
     print(f"  S_spec = {S_spec:.6f}")
 
@@ -611,21 +624,17 @@ if __name__ == "__main__":
     print("=" * 80)
 
     result = scbe_14layer_pipeline(
-        t=t,
-        D=6,
-        breathing_factor=1.1,
-        telemetry_signal=signal,
-        audio_frame=audio
+        t=t, D=6, breathing_factor=1.1, telemetry_signal=signal, audio_frame=audio
     )
 
     print(f"\nDecision: {result['decision']}")
     print(f"Risk (base):  {result['risk_base']:.6f}")
     print(f"Risk (prime): {result['risk_prime']:.6f}")
     print(f"\nCoherence Metrics:")
-    for k, v in result['coherence'].items():
+    for k, v in result["coherence"].items():
         print(f"  {k}: {v:.6f}")
     print(f"\nGeometry:")
-    for k, v in result['geometry'].items():
+    for k, v in result["geometry"].items():
         print(f"  {k}: {v:.6f}")
 
     print("\n" + "=" * 80)
@@ -639,8 +648,9 @@ if __name__ == "__main__":
 # These aliases allow tests to import functions with simpler names.
 
 
-def poincare_embed(x: np.ndarray, alpha: float = 1.0,
-                   epsilon: float = 0.01, eps_ball: float = None) -> np.ndarray:
+def poincare_embed(
+    x: np.ndarray, alpha: float = 1.0, epsilon: float = 0.01, eps_ball: float = None
+) -> np.ndarray:
     """
     Backward-compatible wrapper for layer_4_poincare_embedding.
     Accepts 'epsilon' parameter name for backward compatibility.
@@ -663,8 +673,9 @@ spectral_coherence = layer_9_spectral_coherence
 spin_coherence = layer_10_spin_coherence
 
 
-def weighted_transform(x: np.ndarray, G: Optional[np.ndarray] = None,
-                       return_matrix: bool = False):
+def weighted_transform(
+    x: np.ndarray, G: Optional[np.ndarray] = None, return_matrix: bool = False
+):
     """
     Backward-compatible wrapper for layer_3_weighted_transform.
     Optionally returns the G matrix used.
@@ -675,7 +686,7 @@ def weighted_transform(x: np.ndarray, G: Optional[np.ndarray] = None,
         # Default: Golden ratio weighting
         phi = 1.618
         D = n // 2
-        weights = np.array([phi ** k for k in range(D)])
+        weights = np.array([phi**k for k in range(D)])
         weights = weights / np.sum(weights)
         G = np.diag(np.tile(weights, 2))
 

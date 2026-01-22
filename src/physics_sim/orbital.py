@@ -18,7 +18,6 @@ from typing import Dict, Any, Tuple, Optional, List
 from dataclasses import dataclass
 import numpy as np
 
-
 # =============================================================================
 # GRAVITATIONAL CONSTANTS
 # =============================================================================
@@ -51,15 +50,17 @@ J2_EARTH = 1.08263e-3
 # ORBITAL ELEMENTS
 # =============================================================================
 
+
 @dataclass
 class OrbitalElements:
     """Classical Keplerian orbital elements."""
-    a: float        # Semi-major axis (m)
-    e: float        # Eccentricity
-    i: float        # Inclination (rad)
-    omega: float    # Argument of periapsis (rad)
-    Omega: float    # Longitude of ascending node (rad)
-    nu: float       # True anomaly (rad)
+
+    a: float  # Semi-major axis (m)
+    e: float  # Eccentricity
+    i: float  # Inclination (rad)
+    omega: float  # Argument of periapsis (rad)
+    Omega: float  # Longitude of ascending node (rad)
+    nu: float  # True anomaly (rad)
 
     @property
     def period(self) -> float:
@@ -68,22 +69,23 @@ class OrbitalElements:
 
     def to_dict(self) -> Dict[str, float]:
         return {
-            'semi_major_axis_m': self.a,
-            'eccentricity': self.e,
-            'inclination_rad': self.i,
-            'inclination_deg': math.degrees(self.i),
-            'argument_of_periapsis_rad': self.omega,
-            'argument_of_periapsis_deg': math.degrees(self.omega),
-            'longitude_ascending_node_rad': self.Omega,
-            'longitude_ascending_node_deg': math.degrees(self.Omega),
-            'true_anomaly_rad': self.nu,
-            'true_anomaly_deg': math.degrees(self.nu),
+            "semi_major_axis_m": self.a,
+            "eccentricity": self.e,
+            "inclination_rad": self.i,
+            "inclination_deg": math.degrees(self.i),
+            "argument_of_periapsis_rad": self.omega,
+            "argument_of_periapsis_deg": math.degrees(self.omega),
+            "longitude_ascending_node_rad": self.Omega,
+            "longitude_ascending_node_deg": math.degrees(self.Omega),
+            "true_anomaly_rad": self.nu,
+            "true_anomaly_deg": math.degrees(self.nu),
         }
 
 
 # =============================================================================
 # BASIC ORBITAL MECHANICS
 # =============================================================================
+
 
 def orbital_period(a: float, mu: float) -> float:
     """
@@ -98,7 +100,7 @@ def orbital_period(a: float, mu: float) -> float:
     Returns:
         Orbital period (s)
     """
-    return 2 * math.pi * math.sqrt(a ** 3 / mu)
+    return 2 * math.pi * math.sqrt(a**3 / mu)
 
 
 def orbital_velocity(r: float, a: float, mu: float) -> float:
@@ -164,7 +166,7 @@ def specific_orbital_energy(r: float, v: float, mu: float) -> float:
     Returns:
         Specific orbital energy (J/kg)
     """
-    return v ** 2 / 2 - mu / r
+    return v**2 / 2 - mu / r
 
 
 def semi_major_axis_from_energy(epsilon: float, mu: float) -> float:
@@ -181,7 +183,7 @@ def semi_major_axis_from_energy(epsilon: float, mu: float) -> float:
         Semi-major axis (m)
     """
     if epsilon >= 0:
-        return float('inf')  # Hyperbolic or parabolic
+        return float("inf")  # Hyperbolic or parabolic
     return -mu / (2 * epsilon)
 
 
@@ -264,7 +266,7 @@ def radius_at_true_anomaly(a: float, e: float, nu: float) -> float:
     Returns:
         Radius (m)
     """
-    return a * (1 - e ** 2) / (1 + e * math.cos(nu))
+    return a * (1 - e**2) / (1 + e * math.cos(nu))
 
 
 def velocity_at_true_anomaly(a: float, e: float, nu: float, mu: float) -> float:
@@ -303,6 +305,7 @@ def flight_path_angle(e: float, nu: float) -> float:
 # =============================================================================
 # ANOMALY CONVERSIONS
 # =============================================================================
+
 
 def true_to_eccentric_anomaly(nu: float, e: float) -> float:
     """
@@ -407,7 +410,7 @@ def time_of_flight(nu1: float, nu2: float, a: float, e: float, mu: float) -> flo
     M1 = mean_anomaly(E1, e)
     M2 = mean_anomaly(E2, e)
 
-    n = math.sqrt(mu / a ** 3)  # Mean motion
+    n = math.sqrt(mu / a**3)  # Mean motion
 
     return (M2 - M1) / n
 
@@ -415,6 +418,7 @@ def time_of_flight(nu1: float, nu2: float, a: float, e: float, mu: float) -> flo
 # =============================================================================
 # ORBITAL MANEUVERS
 # =============================================================================
+
 
 def hohmann_transfer(r1: float, r2: float, mu: float) -> Dict[str, float]:
     """
@@ -450,21 +454,22 @@ def hohmann_transfer(r1: float, r2: float, mu: float) -> Dict[str, float]:
     T_transfer = orbital_period(a_transfer, mu) / 2
 
     return {
-        'transfer_semi_major_axis_m': a_transfer,
-        'delta_v1_m_s': delta_v1,
-        'delta_v2_m_s': delta_v2,
-        'delta_v_total_m_s': delta_v_total,
-        'transfer_time_s': T_transfer,
-        'transfer_time_days': T_transfer / 86400,
-        'v1_circular_m_s': v1_circular,
-        'v2_circular_m_s': v2_circular,
-        'v1_transfer_m_s': v1_transfer,
-        'v2_transfer_m_s': v2_transfer,
+        "transfer_semi_major_axis_m": a_transfer,
+        "delta_v1_m_s": delta_v1,
+        "delta_v2_m_s": delta_v2,
+        "delta_v_total_m_s": delta_v_total,
+        "transfer_time_s": T_transfer,
+        "transfer_time_days": T_transfer / 86400,
+        "v1_circular_m_s": v1_circular,
+        "v2_circular_m_s": v2_circular,
+        "v1_transfer_m_s": v1_transfer,
+        "v2_transfer_m_s": v2_transfer,
     }
 
 
-def bi_elliptic_transfer(r1: float, r2: float, r_b: float,
-                        mu: float) -> Dict[str, float]:
+def bi_elliptic_transfer(
+    r1: float, r2: float, r_b: float, mu: float
+) -> Dict[str, float]:
     """
     Calculate bi-elliptic transfer parameters.
 
@@ -506,14 +511,14 @@ def bi_elliptic_transfer(r1: float, r2: float, r_b: float,
     T_total = T1 + T2
 
     return {
-        'delta_v1_m_s': delta_v1,
-        'delta_v2_m_s': delta_v2,
-        'delta_v3_m_s': delta_v3,
-        'delta_v_total_m_s': delta_v_total,
-        'transfer_time_s': T_total,
-        'transfer_time_days': T_total / 86400,
-        'a1_m': a1,
-        'a2_m': a2,
+        "delta_v1_m_s": delta_v1,
+        "delta_v2_m_s": delta_v2,
+        "delta_v3_m_s": delta_v3,
+        "delta_v_total_m_s": delta_v_total,
+        "transfer_time_s": T_total,
+        "transfer_time_days": T_total / 86400,
+        "a1_m": a1,
+        "a2_m": a2,
     }
 
 
@@ -547,12 +552,13 @@ def combined_plane_change(v1: float, v2: float, delta_i: float) -> float:
     Returns:
         Required delta-v (m/s)
     """
-    return math.sqrt(v1 ** 2 + v2 ** 2 - 2 * v1 * v2 * math.cos(delta_i))
+    return math.sqrt(v1**2 + v2**2 - 2 * v1 * v2 * math.cos(delta_i))
 
 
 # =============================================================================
 # SPHERE OF INFLUENCE
 # =============================================================================
+
 
 def sphere_of_influence(a: float, m_body: float, m_primary: float) -> float:
     """
@@ -573,7 +579,7 @@ def sphere_of_influence(a: float, m_body: float, m_primary: float) -> float:
 
 # Pre-calculated SOI values (m)
 SOI_EARTH = 9.24e8  # From Sun
-SOI_MOON = 6.62e7   # From Earth
+SOI_MOON = 6.62e7  # From Earth
 SOI_MARS = 5.77e8
 SOI_JUPITER = 4.82e10
 
@@ -581,6 +587,7 @@ SOI_JUPITER = 4.82e10
 # =============================================================================
 # HYPERBOLIC TRAJECTORIES
 # =============================================================================
+
 
 def hyperbolic_excess_velocity(v_inf: float, r_p: float, mu: float) -> float:
     """
@@ -596,7 +603,7 @@ def hyperbolic_excess_velocity(v_inf: float, r_p: float, mu: float) -> float:
     Returns:
         Periapsis velocity (m/s)
     """
-    return math.sqrt(v_inf ** 2 + 2 * mu / r_p)
+    return math.sqrt(v_inf**2 + 2 * mu / r_p)
 
 
 def hyperbolic_eccentricity(v_inf: float, r_p: float, mu: float) -> float:
@@ -613,7 +620,7 @@ def hyperbolic_eccentricity(v_inf: float, r_p: float, mu: float) -> float:
     Returns:
         Eccentricity (> 1 for hyperbola)
     """
-    return 1 + r_p * v_inf ** 2 / mu
+    return 1 + r_p * v_inf**2 / mu
 
 
 def turn_angle(e: float) -> float:
@@ -653,8 +660,15 @@ def gravity_assist_delta_v(v_inf: float, turn_angle: float) -> float:
 # PERTURBATIONS
 # =============================================================================
 
-def j2_nodal_precession(a: float, e: float, i: float, mu: float = MU_EARTH,
-                       J2: float = J2_EARTH, R: float = RADIUS_EARTH) -> float:
+
+def j2_nodal_precession(
+    a: float,
+    e: float,
+    i: float,
+    mu: float = MU_EARTH,
+    J2: float = J2_EARTH,
+    R: float = RADIUS_EARTH,
+) -> float:
     """
     Calculate nodal precession rate due to J2.
 
@@ -671,14 +685,20 @@ def j2_nodal_precession(a: float, e: float, i: float, mu: float = MU_EARTH,
     Returns:
         Nodal precession rate (rad/s)
     """
-    n = math.sqrt(mu / a ** 3)  # Mean motion
-    p = a * (1 - e ** 2)  # Semi-latus rectum
+    n = math.sqrt(mu / a**3)  # Mean motion
+    p = a * (1 - e**2)  # Semi-latus rectum
 
     return -1.5 * n * J2 * (R / p) ** 2 * math.cos(i)
 
 
-def j2_apsidal_precession(a: float, e: float, i: float, mu: float = MU_EARTH,
-                         J2: float = J2_EARTH, R: float = RADIUS_EARTH) -> float:
+def j2_apsidal_precession(
+    a: float,
+    e: float,
+    i: float,
+    mu: float = MU_EARTH,
+    J2: float = J2_EARTH,
+    R: float = RADIUS_EARTH,
+) -> float:
     """
     Calculate apsidal precession rate due to J2.
 
@@ -695,15 +715,19 @@ def j2_apsidal_precession(a: float, e: float, i: float, mu: float = MU_EARTH,
     Returns:
         Apsidal precession rate (rad/s)
     """
-    n = math.sqrt(mu / a ** 3)
-    p = a * (1 - e ** 2)
+    n = math.sqrt(mu / a**3)
+    p = a * (1 - e**2)
 
     return 0.75 * n * J2 * (R / p) ** 2 * (5 * math.cos(i) ** 2 - 1)
 
 
-def sun_synchronous_inclination(a: float, e: float = 0, mu: float = MU_EARTH,
-                                J2: float = J2_EARTH,
-                                R: float = RADIUS_EARTH) -> float:
+def sun_synchronous_inclination(
+    a: float,
+    e: float = 0,
+    mu: float = MU_EARTH,
+    J2: float = J2_EARTH,
+    R: float = RADIUS_EARTH,
+) -> float:
     """
     Calculate inclination for sun-synchronous orbit.
 
@@ -722,8 +746,8 @@ def sun_synchronous_inclination(a: float, e: float = 0, mu: float = MU_EARTH,
     # Target precession rate (1 revolution per year)
     target_rate = 2 * math.pi / (365.25 * 86400)
 
-    n = math.sqrt(mu / a ** 3)
-    p = a * (1 - e ** 2)
+    n = math.sqrt(mu / a**3)
+    p = a * (1 - e**2)
 
     # -3/2 * n * J2 * (R/p)² * cos(i) = target_rate
     # cos(i) = -target_rate / (3/2 * n * J2 * (R/p)²)
@@ -739,6 +763,7 @@ def sun_synchronous_inclination(a: float, e: float = 0, mu: float = MU_EARTH,
 # =============================================================================
 # LAGRANGE POINTS
 # =============================================================================
+
 
 def lagrange_l1_distance(a: float, m1: float, m2: float) -> float:
     """
@@ -778,6 +803,7 @@ def lagrange_l2_distance(a: float, m1: float, m2: float) -> float:
 # COMPREHENSIVE ORBITAL MECHANICS CALCULATION
 # =============================================================================
 
+
 def orbital_mechanics(params: Dict[str, Any]) -> Dict[str, Any]:
     """
     Comprehensive orbital mechanics calculation.
@@ -799,72 +825,72 @@ def orbital_mechanics(params: Dict[str, Any]) -> Dict[str, Any]:
     results = {}
 
     # Get central body parameters
-    body = params.get('central_body', 'earth').lower()
+    body = params.get("central_body", "earth").lower()
     body_params = {
-        'earth': {'mu': MU_EARTH, 'R': RADIUS_EARTH, 'J2': J2_EARTH},
-        'sun': {'mu': MU_SUN, 'R': RADIUS_SUN, 'J2': 0},
-        'moon': {'mu': MU_MOON, 'R': RADIUS_MOON, 'J2': 0},
-        'mars': {'mu': MU_MARS, 'R': RADIUS_MARS, 'J2': 1.96e-3},
-        'jupiter': {'mu': MU_JUPITER, 'R': 6.9911e7, 'J2': 0.01475},
+        "earth": {"mu": MU_EARTH, "R": RADIUS_EARTH, "J2": J2_EARTH},
+        "sun": {"mu": MU_SUN, "R": RADIUS_SUN, "J2": 0},
+        "moon": {"mu": MU_MOON, "R": RADIUS_MOON, "J2": 0},
+        "mars": {"mu": MU_MARS, "R": RADIUS_MARS, "J2": 1.96e-3},
+        "jupiter": {"mu": MU_JUPITER, "R": 6.9911e7, "J2": 0.01475},
     }
 
     if body in body_params:
-        mu = body_params[body]['mu']
-        R_body = body_params[body]['R']
-        J2 = body_params[body]['J2']
+        mu = body_params[body]["mu"]
+        R_body = body_params[body]["R"]
+        J2 = body_params[body]["J2"]
     else:
-        mu = params.get('mu', MU_EARTH)
-        R_body = params.get('body_radius', RADIUS_EARTH)
-        J2 = params.get('J2', 0)
+        mu = params.get("mu", MU_EARTH)
+        R_body = params.get("body_radius", RADIUS_EARTH)
+        J2 = params.get("J2", 0)
 
-    results['central_body'] = body
-    results['mu_m3_s2'] = mu
-    results['body_radius_m'] = R_body
+    results["central_body"] = body
+    results["mu_m3_s2"] = mu
+    results["body_radius_m"] = R_body
 
     # Determine orbital elements
-    if 'altitude' in params:
+    if "altitude" in params:
         # Circular orbit from altitude
-        r = R_body + params['altitude']
+        r = R_body + params["altitude"]
         a = r
         e = 0.0
-    elif 'r_periapsis' in params and 'r_apoapsis' in params:
-        r_p = params['r_periapsis']
-        r_a = params['r_apoapsis']
+    elif "r_periapsis" in params and "r_apoapsis" in params:
+        r_p = params["r_periapsis"]
+        r_a = params["r_apoapsis"]
         a = (r_p + r_a) / 2
         e = eccentricity_from_apse(r_a, r_p)
-    elif 'semi_major_axis' in params:
-        a = params['semi_major_axis']
-        e = params.get('eccentricity', 0.0)
+    elif "semi_major_axis" in params:
+        a = params["semi_major_axis"]
+        e = params.get("eccentricity", 0.0)
     else:
         # Default: LEO
         a = R_body + 400000  # 400 km altitude
         e = 0.0
 
     # Inclination
-    i = params.get('inclination', 0.0)
-    if params.get('inclination_unit', 'deg') == 'deg':
+    i = params.get("inclination", 0.0)
+    if params.get("inclination_unit", "deg") == "deg":
         i = math.radians(i)
 
     # True anomaly
-    nu = params.get('true_anomaly', 0.0)
-    if params.get('anomaly_unit', 'deg') == 'deg':
+    nu = params.get("true_anomaly", 0.0)
+    if params.get("anomaly_unit", "deg") == "deg":
         nu = math.radians(nu)
 
     # Basic orbital properties
     r_p = periapsis_radius(a, e)
-    r_a = apoapsis_radius(a, e) if e < 1 else float('inf')
-    T = orbital_period(a, mu) if e < 1 else float('inf')
+    r_a = apoapsis_radius(a, e) if e < 1 else float("inf")
+    T = orbital_period(a, mu) if e < 1 else float("inf")
 
-    results['semi_major_axis_m'] = a
-    results['eccentricity'] = e
-    results['inclination_deg'] = math.degrees(i)
-    results['periapsis_radius_m'] = r_p
-    results['periapsis_altitude_m'] = r_p - R_body
-    results['apoapsis_radius_m'] = r_a
-    results['apoapsis_altitude_m'] = r_a - R_body if e < 1 else float('inf')
-    results['period_s'] = T
-    results['period_min'] = T / 60 if T < float('inf') else float('inf')
-    results['period_hours'] = T / 3600 if T < float('inf') else float('inf')
+    results["semi_major_axis_m"] = a
+    results["eccentricity"] = e
+    results["inclination_deg"] = math.degrees(i)
+    results["periapsis_radius_m"] = r_p
+    results["periapsis_altitude_m"] = r_p - R_body
+    results["apoapsis_radius_m"] = r_a
+    results["apoapsis_altitude_m"] = r_a - R_body if e < 1 else float("inf")
+    results["period_s"] = T
+    results["period_min"] = T / 60 if T < float("inf") else float("inf")
+    results["period_hours"] = T / 3600 if T < float("inf") else float("inf")
 
     # Velocities
     v_p = orbital_velocity(r_p, a, mu)
@@ -872,59 +898,59 @@ def orbital_mechanics(params: Dict[str, Any]) -> Dict[str, Any]:
     v_circular = circular_velocity(r_p, mu)
     v_escape = escape_velocity(r_p, mu)
 
-    results['periapsis_velocity_m_s'] = v_p
-    results['apoapsis_velocity_m_s'] = v_a
-    results['circular_velocity_m_s'] = v_circular
-    results['escape_velocity_m_s'] = v_escape
+    results["periapsis_velocity_m_s"] = v_p
+    results["apoapsis_velocity_m_s"] = v_a
+    results["circular_velocity_m_s"] = v_circular
+    results["escape_velocity_m_s"] = v_escape
 
     # At current true anomaly
     r_current = radius_at_true_anomaly(a, e, nu)
     v_current = velocity_at_true_anomaly(a, e, nu, mu)
     gamma = flight_path_angle(e, nu)
 
-    results['current_radius_m'] = r_current
-    results['current_velocity_m_s'] = v_current
-    results['flight_path_angle_deg'] = math.degrees(gamma)
+    results["current_radius_m"] = r_current
+    results["current_velocity_m_s"] = v_current
+    results["flight_path_angle_deg"] = math.degrees(gamma)
 
     # Energy and angular momentum
     epsilon = specific_orbital_energy(r_current, v_current, mu)
     h = specific_angular_momentum(r_current, v_current, gamma)
 
-    results['specific_orbital_energy_J_kg'] = epsilon
-    results['specific_angular_momentum_m2_s'] = h
+    results["specific_orbital_energy_J_kg"] = epsilon
+    results["specific_angular_momentum_m2_s"] = h
 
     # Orbit classification
     if e == 0:
-        orbit_type = 'circular'
+        orbit_type = "circular"
     elif e < 1:
-        orbit_type = 'elliptical'
+        orbit_type = "elliptical"
     elif e == 1:
-        orbit_type = 'parabolic'
+        orbit_type = "parabolic"
     else:
-        orbit_type = 'hyperbolic'
-    results['orbit_type'] = orbit_type
+        orbit_type = "hyperbolic"
+    results["orbit_type"] = orbit_type
 
     # J2 perturbations (if applicable)
     if J2 > 0 and e < 1:
         omega_dot = j2_apsidal_precession(a, e, i, mu, J2, R_body)
         Omega_dot = j2_nodal_precession(a, e, i, mu, J2, R_body)
 
-        results['nodal_precession_deg_day'] = math.degrees(Omega_dot) * 86400
-        results['apsidal_precession_deg_day'] = math.degrees(omega_dot) * 86400
+        results["nodal_precession_deg_day"] = math.degrees(Omega_dot) * 86400
+        results["apsidal_precession_deg_day"] = math.degrees(omega_dot) * 86400
 
         # Check sun-synchronous
-        if body == 'earth' and e < 0.2:
+        if body == "earth" and e < 0.2:
             try:
                 i_ss = sun_synchronous_inclination(a, e, mu, J2, R_body)
-                results['sun_sync_inclination_deg'] = math.degrees(i_ss)
+                results["sun_sync_inclination_deg"] = math.degrees(i_ss)
             except ValueError:
-                results['sun_sync_inclination_deg'] = None
+                results["sun_sync_inclination_deg"] = None
 
     # Hohmann transfer (if target given)
-    if 'transfer_to' in params:
-        r_target = params['transfer_to']
+    if "transfer_to" in params:
+        r_target = params["transfer_to"]
         if r_target != r_p:  # Only if different orbit
             hohmann = hohmann_transfer(r_p, r_target, mu)
-            results['hohmann_transfer'] = hohmann
+            results["hohmann_transfer"] = hohmann
 
     return results

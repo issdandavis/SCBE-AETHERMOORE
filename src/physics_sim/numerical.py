@@ -18,7 +18,6 @@ from typing import Dict, Any, Tuple, Optional, Callable, List, Union
 from dataclasses import dataclass
 import random
 
-
 # =============================================================================
 # TYPE ALIASES
 # =============================================================================
@@ -32,6 +31,7 @@ ScalarFunc = Callable[[float], float]
 # =============================================================================
 # VECTOR OPERATIONS
 # =============================================================================
+
 
 def vec_add(a: Vector, b: Vector) -> Vector:
     """Add two vectors."""
@@ -55,7 +55,7 @@ def vec_dot(a: Vector, b: Vector) -> float:
 
 def vec_norm(a: Vector) -> float:
     """Euclidean norm of a vector."""
-    return math.sqrt(sum(ai ** 2 for ai in a))
+    return math.sqrt(sum(ai**2 for ai in a))
 
 
 def vec_normalize(a: Vector) -> Vector:
@@ -71,13 +71,14 @@ def vec_cross_3d(a: Vector, b: Vector) -> Vector:
     return [
         a[1] * b[2] - a[2] * b[1],
         a[2] * b[0] - a[0] * b[2],
-        a[0] * b[1] - a[1] * b[0]
+        a[0] * b[1] - a[1] * b[0],
     ]
 
 
 # =============================================================================
 # ODE SOLVERS
 # =============================================================================
+
 
 def euler_step(f: ODEFunc, t: float, y: Vector, h: float) -> Vector:
     """
@@ -98,8 +99,9 @@ def euler_step(f: ODEFunc, t: float, y: Vector, h: float) -> Vector:
     return vec_add(y, vec_scale(k, h))
 
 
-def euler_solve(f: ODEFunc, y0: Vector, t_span: Tuple[float, float],
-               h: float) -> Tuple[List[float], List[Vector]]:
+def euler_solve(
+    f: ODEFunc, y0: Vector, t_span: Tuple[float, float], h: float
+) -> Tuple[List[float], List[Vector]]:
     """
     Solve ODE using Euler method.
 
@@ -154,15 +156,13 @@ def rk4_step(f: ODEFunc, t: float, y: Vector, h: float) -> Vector:
     k4 = f(t + h, vec_add(y, vec_scale(k3, h)))
 
     # y + h/6 * (k1 + 2*k2 + 2*k3 + k4)
-    weighted = vec_add(
-        vec_add(k1, vec_scale(k2, 2)),
-        vec_add(vec_scale(k3, 2), k4)
-    )
+    weighted = vec_add(vec_add(k1, vec_scale(k2, 2)), vec_add(vec_scale(k3, 2), k4))
     return vec_add(y, vec_scale(weighted, h / 6))
 
 
-def rk4_solve(f: ODEFunc, y0: Vector, t_span: Tuple[float, float],
-             h: float) -> Tuple[List[float], List[Vector]]:
+def rk4_solve(
+    f: ODEFunc, y0: Vector, t_span: Tuple[float, float], h: float
+) -> Tuple[List[float], List[Vector]]:
     """
     Solve ODE using RK4 method.
 
@@ -192,8 +192,9 @@ def rk4_solve(f: ODEFunc, y0: Vector, t_span: Tuple[float, float],
     return times, states
 
 
-def rk45_adaptive_step(f: ODEFunc, t: float, y: Vector, h: float,
-                       tol: float = 1e-6) -> Tuple[Vector, float, float]:
+def rk45_adaptive_step(
+    f: ODEFunc, t: float, y: Vector, h: float, tol: float = 1e-6
+) -> Tuple[Vector, float, float]:
     """
     Adaptive RK4-5 (Fehlberg) step with error estimation.
 
@@ -210,43 +211,84 @@ def rk45_adaptive_step(f: ODEFunc, t: float, y: Vector, h: float,
         Tuple of (new_state, actual_step_used, next_step_suggestion)
     """
     # Fehlberg coefficients
-    a2 = 1/4
-    a3, b31, b32 = 3/8, 3/32, 9/32
-    a4, b41, b42, b43 = 12/13, 1932/2197, -7200/2197, 7296/2197
-    a5, b51, b52, b53, b54 = 1, 439/216, -8, 3680/513, -845/4104
-    a6, b61, b62, b63, b64, b65 = 1/2, -8/27, 2, -3544/2565, 1859/4104, -11/40
+    a2 = 1 / 4
+    a3, b31, b32 = 3 / 8, 3 / 32, 9 / 32
+    a4, b41, b42, b43 = 12 / 13, 1932 / 2197, -7200 / 2197, 7296 / 2197
+    a5, b51, b52, b53, b54 = 1, 439 / 216, -8, 3680 / 513, -845 / 4104
+    a6, b61, b62, b63, b64, b65 = 1 / 2, -8 / 27, 2, -3544 / 2565, 1859 / 4104, -11 / 40
 
     # 4th order coefficients
-    c1, c3, c4, c5 = 25/216, 1408/2565, 2197/4104, -1/5
+    c1, c3, c4, c5 = 25 / 216, 1408 / 2565, 2197 / 4104, -1 / 5
 
     # 5th order coefficients
-    d1, d3, d4, d5, d6 = 16/135, 6656/12825, 28561/56430, -9/50, 2/55
+    d1, d3, d4, d5, d6 = 16 / 135, 6656 / 12825, 28561 / 56430, -9 / 50, 2 / 55
 
     k1 = f(t, y)
     k2 = f(t + a2 * h, vec_add(y, vec_scale(k1, a2 * h)))
-    k3 = f(t + a3 * h, vec_add(vec_add(y, vec_scale(k1, b31 * h)),
-                                vec_scale(k2, b32 * h)))
-    k4 = f(t + a4 * h, vec_add(vec_add(vec_add(y, vec_scale(k1, b41 * h)),
-                                        vec_scale(k2, b42 * h)),
-                                vec_scale(k3, b43 * h)))
-    k5 = f(t + a5 * h, vec_add(vec_add(vec_add(vec_add(y, vec_scale(k1, b51 * h)),
-                                                vec_scale(k2, b52 * h)),
-                                        vec_scale(k3, b53 * h)),
-                                vec_scale(k4, b54 * h)))
-    k6 = f(t + a6 * h, vec_add(vec_add(vec_add(vec_add(vec_add(y,
-                                vec_scale(k1, b61 * h)), vec_scale(k2, b62 * h)),
-                                vec_scale(k3, b63 * h)), vec_scale(k4, b64 * h)),
-                                vec_scale(k5, b65 * h)))
+    k3 = f(
+        t + a3 * h, vec_add(vec_add(y, vec_scale(k1, b31 * h)), vec_scale(k2, b32 * h))
+    )
+    k4 = f(
+        t + a4 * h,
+        vec_add(
+            vec_add(vec_add(y, vec_scale(k1, b41 * h)), vec_scale(k2, b42 * h)),
+            vec_scale(k3, b43 * h),
+        ),
+    )
+    k5 = f(
+        t + a5 * h,
+        vec_add(
+            vec_add(
+                vec_add(vec_add(y, vec_scale(k1, b51 * h)), vec_scale(k2, b52 * h)),
+                vec_scale(k3, b53 * h),
+            ),
+            vec_scale(k4, b54 * h),
+        ),
+    )
+    k6 = f(
+        t + a6 * h,
+        vec_add(
+            vec_add(
+                vec_add(
+                    vec_add(vec_add(y, vec_scale(k1, b61 * h)), vec_scale(k2, b62 * h)),
+                    vec_scale(k3, b63 * h),
+                ),
+                vec_scale(k4, b64 * h),
+            ),
+            vec_scale(k5, b65 * h),
+        ),
+    )
 
     # 4th order solution
-    y4 = vec_add(y, vec_scale(vec_add(vec_add(vec_add(
-        vec_scale(k1, c1), vec_scale(k3, c3)),
-        vec_scale(k4, c4)), vec_scale(k5, c5)), h))
+    y4 = vec_add(
+        y,
+        vec_scale(
+            vec_add(
+                vec_add(
+                    vec_add(vec_scale(k1, c1), vec_scale(k3, c3)), vec_scale(k4, c4)
+                ),
+                vec_scale(k5, c5),
+            ),
+            h,
+        ),
+    )
 
     # 5th order solution
-    y5 = vec_add(y, vec_scale(vec_add(vec_add(vec_add(vec_add(
-        vec_scale(k1, d1), vec_scale(k3, d3)),
-        vec_scale(k4, d4)), vec_scale(k5, d5)), vec_scale(k6, d6)), h))
+    y5 = vec_add(
+        y,
+        vec_scale(
+            vec_add(
+                vec_add(
+                    vec_add(
+                        vec_add(vec_scale(k1, d1), vec_scale(k3, d3)), vec_scale(k4, d4)
+                    ),
+                    vec_scale(k5, d5),
+                ),
+                vec_scale(k6, d6),
+            ),
+            h,
+        ),
+    )
 
     # Error estimate
     error = vec_norm(vec_sub(y5, y4))
@@ -260,8 +302,9 @@ def rk45_adaptive_step(f: ODEFunc, t: float, y: Vector, h: float,
     return y5, h, h_new
 
 
-def verlet_step(x: Vector, v: Vector, a_func: Callable[[Vector], Vector],
-               h: float) -> Tuple[Vector, Vector]:
+def verlet_step(
+    x: Vector, v: Vector, a_func: Callable[[Vector], Vector], h: float
+) -> Tuple[Vector, Vector]:
     """
     Velocity Verlet integration step (for position-dependent forces).
 
@@ -281,7 +324,7 @@ def verlet_step(x: Vector, v: Vector, a_func: Callable[[Vector], Vector],
     a = a_func(x)
 
     # Update position
-    x_new = vec_add(vec_add(x, vec_scale(v, h)), vec_scale(a, h ** 2 / 2))
+    x_new = vec_add(vec_add(x, vec_scale(v, h)), vec_scale(a, h**2 / 2))
 
     # Calculate new acceleration
     a_new = a_func(x_new)
@@ -292,8 +335,9 @@ def verlet_step(x: Vector, v: Vector, a_func: Callable[[Vector], Vector],
     return x_new, v_new
 
 
-def leapfrog_step(x: Vector, v: Vector, a_func: Callable[[Vector], Vector],
-                 h: float) -> Tuple[Vector, Vector]:
+def leapfrog_step(
+    x: Vector, v: Vector, a_func: Callable[[Vector], Vector], h: float
+) -> Tuple[Vector, Vector]:
     """
     Leapfrog integration step.
 
@@ -331,8 +375,10 @@ def leapfrog_step(x: Vector, v: Vector, a_func: Callable[[Vector], Vector],
 # ROOT FINDING
 # =============================================================================
 
-def bisection(f: ScalarFunc, a: float, b: float, tol: float = 1e-10,
-             max_iter: int = 100) -> Tuple[float, int]:
+
+def bisection(
+    f: ScalarFunc, a: float, b: float, tol: float = 1e-10, max_iter: int = 100
+) -> Tuple[float, int]:
     """
     Find root using bisection method.
 
@@ -367,8 +413,9 @@ def bisection(f: ScalarFunc, a: float, b: float, tol: float = 1e-10,
     return (a + b) / 2, max_iter
 
 
-def newton_raphson(f: ScalarFunc, df: ScalarFunc, x0: float,
-                  tol: float = 1e-10, max_iter: int = 100) -> Tuple[float, int]:
+def newton_raphson(
+    f: ScalarFunc, df: ScalarFunc, x0: float, tol: float = 1e-10, max_iter: int = 100
+) -> Tuple[float, int]:
     """
     Find root using Newton-Raphson method.
 
@@ -403,8 +450,9 @@ def newton_raphson(f: ScalarFunc, df: ScalarFunc, x0: float,
     return x, max_iter
 
 
-def secant_method(f: ScalarFunc, x0: float, x1: float,
-                 tol: float = 1e-10, max_iter: int = 100) -> Tuple[float, int]:
+def secant_method(
+    f: ScalarFunc, x0: float, x1: float, tol: float = 1e-10, max_iter: int = 100
+) -> Tuple[float, int]:
     """
     Find root using secant method (derivative-free).
 
@@ -439,6 +487,7 @@ def secant_method(f: ScalarFunc, x0: float, x1: float,
 # =============================================================================
 # NUMERICAL INTEGRATION
 # =============================================================================
+
 
 def simpson_rule(f: ScalarFunc, a: float, b: float, n: int = 100) -> float:
     """
@@ -520,8 +569,7 @@ def gauss_legendre_5(f: ScalarFunc, a: float, b: float) -> float:
     return total * half_width
 
 
-def adaptive_simpson(f: ScalarFunc, a: float, b: float,
-                    tol: float = 1e-8) -> float:
+def adaptive_simpson(f: ScalarFunc, a: float, b: float, tol: float = 1e-8) -> float:
     """
     Adaptive Simpson's rule integration.
 
@@ -533,6 +581,7 @@ def adaptive_simpson(f: ScalarFunc, a: float, b: float,
     Returns:
         Approximate integral
     """
+
     def _simpson(fa, fb, fc, a, b):
         return (b - a) / 6 * (fa + 4 * fc + fb)
 
@@ -550,8 +599,9 @@ def adaptive_simpson(f: ScalarFunc, a: float, b: float,
         if abs(S_total - S) < 15 * tol:
             return S_total + (S_total - S) / 15  # Richardson extrapolation
         else:
-            return (_adaptive(a, c, fa, fc, fd, S_left, tol / 2) +
-                   _adaptive(c, b, fc, fb, fe, S_right, tol / 2))
+            return _adaptive(a, c, fa, fc, fd, S_left, tol / 2) + _adaptive(
+                c, b, fc, fb, fe, S_right, tol / 2
+            )
 
     fa = f(a)
     fb = f(b)
@@ -565,8 +615,8 @@ def adaptive_simpson(f: ScalarFunc, a: float, b: float,
 # INTERPOLATION
 # =============================================================================
 
-def linear_interpolate(x: float, x_data: List[float],
-                      y_data: List[float]) -> float:
+
+def linear_interpolate(x: float, x_data: List[float], y_data: List[float]) -> float:
     """
     Linear interpolation.
 
@@ -590,8 +640,9 @@ def linear_interpolate(x: float, x_data: List[float],
     return y_data[-1]
 
 
-def cubic_spline_coefficients(x_data: List[float],
-                             y_data: List[float]) -> List[Tuple[float, ...]]:
+def cubic_spline_coefficients(
+    x_data: List[float], y_data: List[float]
+) -> List[Tuple[float, ...]]:
     """
     Calculate natural cubic spline coefficients.
 
@@ -611,8 +662,9 @@ def cubic_spline_coefficients(x_data: List[float],
     # Build tridiagonal matrix equation
     alpha = [0.0] * (n + 1)
     for i in range(1, n):
-        alpha[i] = (3 / h[i] * (y_data[i + 1] - y_data[i]) -
-                   3 / h[i - 1] * (y_data[i] - y_data[i - 1]))
+        alpha[i] = 3 / h[i] * (y_data[i + 1] - y_data[i]) - 3 / h[i - 1] * (
+            y_data[i] - y_data[i - 1]
+        )
 
     l = [1.0] + [0.0] * n
     mu = [0.0] * (n + 1)
@@ -641,8 +693,9 @@ def cubic_spline_coefficients(x_data: List[float],
     return coeffs
 
 
-def cubic_spline_interpolate(x: float, x_data: List[float],
-                            coeffs: List[Tuple[float, ...]]) -> float:
+def cubic_spline_interpolate(
+    x: float, x_data: List[float], coeffs: List[Tuple[float, ...]]
+) -> float:
     """
     Evaluate cubic spline at point.
 
@@ -656,27 +709,30 @@ def cubic_spline_interpolate(x: float, x_data: List[float],
     """
     # Find interval
     for i, (a, b, c, d, x0) in enumerate(coeffs):
-        x_upper = x_data[i + 1] if i < len(coeffs) - 1 else float('inf')
+        x_upper = x_data[i + 1] if i < len(coeffs) - 1 else float("inf")
         if x0 <= x <= x_upper or i == len(coeffs) - 1:
             dx = x - x0
-            return a + b * dx + c * dx ** 2 + d * dx ** 3
+            return a + b * dx + c * dx**2 + d * dx**3
 
     # Use first interval for extrapolation below
     a, b, c, d, x0 = coeffs[0]
     dx = x - x0
-    return a + b * dx + c * dx ** 2 + d * dx ** 3
+    return a + b * dx + c * dx**2 + d * dx**3
 
 
 # =============================================================================
 # OPTIMIZATION
 # =============================================================================
 
-def gradient_descent(f: Callable[[Vector], float],
-                    grad_f: Callable[[Vector], Vector],
-                    x0: Vector,
-                    learning_rate: float = 0.01,
-                    tol: float = 1e-8,
-                    max_iter: int = 10000) -> Tuple[Vector, float, int]:
+
+def gradient_descent(
+    f: Callable[[Vector], float],
+    grad_f: Callable[[Vector], Vector],
+    x0: Vector,
+    learning_rate: float = 0.01,
+    tol: float = 1e-8,
+    max_iter: int = 10000,
+) -> Tuple[Vector, float, int]:
     """
     Gradient descent optimization.
 
@@ -708,13 +764,15 @@ def gradient_descent(f: Callable[[Vector], float],
     return x, f(x), max_iter
 
 
-def particle_swarm_optimization(f: Callable[[Vector], float],
-                               bounds: List[Tuple[float, float]],
-                               n_particles: int = 30,
-                               max_iter: int = 100,
-                               w: float = 0.7,
-                               c1: float = 1.5,
-                               c2: float = 1.5) -> Tuple[Vector, float, int]:
+def particle_swarm_optimization(
+    f: Callable[[Vector], float],
+    bounds: List[Tuple[float, float]],
+    n_particles: int = 30,
+    max_iter: int = 100,
+    w: float = 0.7,
+    c1: float = 1.5,
+    c2: float = 1.5,
+) -> Tuple[Vector, float, int]:
     """
     Particle Swarm Optimization (PSO).
 
@@ -786,8 +844,9 @@ def particle_swarm_optimization(f: Callable[[Vector], float],
     return global_best_pos, global_best_val, max_iter
 
 
-def golden_section_search(f: ScalarFunc, a: float, b: float,
-                         tol: float = 1e-8) -> Tuple[float, float, int]:
+def golden_section_search(
+    f: ScalarFunc, a: float, b: float, tol: float = 1e-8
+) -> Tuple[float, float, int]:
     """
     Golden section search for 1D optimization.
 
@@ -831,6 +890,7 @@ def golden_section_search(f: ScalarFunc, a: float, b: float,
 # COMPREHENSIVE NUMERICAL METHODS
 # =============================================================================
 
+
 def numerical_methods(params: Dict[str, Any]) -> Dict[str, Any]:
     """
     Demonstrate numerical methods.
@@ -842,36 +902,37 @@ def numerical_methods(params: Dict[str, Any]) -> Dict[str, Any]:
         Results dictionary
     """
     results = {}
-    method = params.get('method', 'rk4')
+    method = params.get("method", "rk4")
 
-    if method == 'root_finding':
+    if method == "root_finding":
         # Example: find root of x² - 2 (i.e., √2)
-        f = lambda x: x ** 2 - 2
+        f = lambda x: x**2 - 2
         df = lambda x: 2 * x
 
         root, iters = bisection(f, 1, 2)
-        results['bisection_root'] = root
-        results['bisection_iterations'] = iters
+        results["bisection_root"] = root
+        results["bisection_iterations"] = iters
 
         root, iters = newton_raphson(f, df, 1.5)
-        results['newton_root'] = root
-        results['newton_iterations'] = iters
+        results["newton_root"] = root
+        results["newton_iterations"] = iters
 
-    elif method == 'integration':
+    elif method == "integration":
         # Example: integrate sin(x) from 0 to π (should be 2)
         import math
+
         f = math.sin
 
-        results['simpson'] = simpson_rule(f, 0, math.pi, n=100)
-        results['trapezoid'] = trapezoid_rule(f, 0, math.pi, n=100)
-        results['gauss_5pt'] = gauss_legendre_5(f, 0, math.pi)
-        results['exact'] = 2.0
+        results["simpson"] = simpson_rule(f, 0, math.pi, n=100)
+        results["trapezoid"] = trapezoid_rule(f, 0, math.pi, n=100)
+        results["gauss_5pt"] = gauss_legendre_5(f, 0, math.pi)
+        results["exact"] = 2.0
 
-    elif method == 'ode_harmonic':
+    elif method == "ode_harmonic":
         # Simple harmonic oscillator: x'' = -ω²x
         # State: [x, v], derivatives: [v, -ω²x]
-        omega = params.get('omega', 1.0)
-        f = lambda t, y: [y[1], -omega ** 2 * y[0]]
+        omega = params.get("omega", 1.0)
+        f = lambda t, y: [y[1], -(omega**2) * y[0]]
 
         y0 = [1.0, 0.0]  # x=1, v=0
         t_span = (0, 2 * math.pi / omega)  # One period
@@ -880,9 +941,9 @@ def numerical_methods(params: Dict[str, Any]) -> Dict[str, Any]:
         times, states = rk4_solve(f, y0, t_span, h)
 
         # Final state should be close to initial
-        results['initial_state'] = y0
-        results['final_state'] = states[-1]
-        results['num_steps'] = len(times)
-        results['final_error'] = vec_norm(vec_sub(states[-1], y0))
+        results["initial_state"] = y0
+        results["final_state"] = states[-1]
+        results["num_steps"] = len(times)
+        results["final_error"] = vec_norm(vec_sub(states[-1], y0))
 
     return results

@@ -9,7 +9,7 @@ import sys
 import os
 
 # Add the src folder to path so we can import SCBE
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "..", "src"))
 
 import numpy as np
 from bedrock_agentcore.runtime import BedrockAgentCoreApp
@@ -27,23 +27,20 @@ scbe_system = SCBESystem()
 
 
 @tool
-def analyze_risk(
-    context_description: str,
-    risk_level: str = "medium"
-) -> dict:
+def analyze_risk(context_description: str, risk_level: str = "medium") -> dict:
     """
     Analyze a context and return SCBE risk assessment.
-    
+
     Args:
         context_description: A description of the context to analyze
         risk_level: Hint about expected risk - 'low', 'medium', or 'high'
-    
+
     Returns:
         Risk assessment with decision (ALLOW/QUARANTINE/DENY)
     """
     # Generate synthetic signals based on the context
     np.random.seed(hash(context_description) % 2**32)
-    
+
     # Adjust signal generation based on risk hint
     if risk_level == "low":
         base_amp = 0.3
@@ -54,19 +51,19 @@ def analyze_risk(
     else:
         base_amp = 0.5
         noise = 0.2
-    
+
     amplitudes = np.clip(np.random.rand(6) * base_amp + noise, 0, 1)
     phases = np.random.rand(6) * 2 * np.pi
     telemetry = np.sin(np.linspace(0, 4 * np.pi, 256)) + np.random.randn(256) * noise
-    
+
     result = scbe_system.process_context(
         amplitudes=amplitudes,
         phases=phases,
         breathing_factor=1.0,
         phase_shift=0.0,
-        telemetry_signal=telemetry
+        telemetry_signal=telemetry,
     )
-    
+
     return {
         "context": context_description,
         "decision": result["decision"],
@@ -75,9 +72,9 @@ def analyze_risk(
         "coherence": {
             "spin": round(result["coherence"]["C_spin"], 4),
             "spectral": round(result["coherence"]["S_spec"], 4),
-            "trust": round(result["coherence"]["tau_trust"], 4)
+            "trust": round(result["coherence"]["tau_trust"], 4),
         },
-        "hyperbolic_distance": round(result["d_star"], 4)
+        "hyperbolic_distance": round(result["d_star"], 4),
     }
 
 
@@ -85,7 +82,7 @@ def analyze_risk(
 def get_system_config() -> dict:
     """
     Get the current SCBE system configuration and thresholds.
-    
+
     Returns:
         Current configuration parameters
     """
@@ -93,39 +90,33 @@ def get_system_config() -> dict:
     return {
         "dimensions": cfg.D,
         "realms": cfg.K,
-        "thresholds": {
-            "allow_below": cfg.theta1,
-            "deny_above": cfg.theta2
-        },
+        "thresholds": {"allow_below": cfg.theta1, "deny_above": cfg.theta2},
         "risk_weights": {
             "distance": cfg.w_d,
             "spin_coherence": cfg.w_c,
             "spectral_coherence": cfg.w_s,
             "trust": cfg.w_tau,
-            "audio": cfg.w_a
+            "audio": cfg.w_a,
         },
-        "breathing_bounds": {
-            "min": cfg.b_min,
-            "max": cfg.b_max
-        }
+        "breathing_bounds": {"min": cfg.b_min, "max": cfg.b_max},
     }
 
 
-@tool  
+@tool
 def explain_decision(decision: str) -> str:
     """
     Explain what an SCBE decision means.
-    
+
     Args:
         decision: The decision to explain - ALLOW, QUARANTINE, or DENY
-    
+
     Returns:
         Human-readable explanation
     """
     explanations = {
         "ALLOW": "✅ ALLOW: The context passed all risk checks. The risk score is below the first threshold (θ₁). Safe to proceed.",
         "QUARANTINE": "⚠️ QUARANTINE: The context has moderate risk. The score is between θ₁ and θ₂. Flagged for human review or additional verification.",
-        "DENY": "🚫 DENY: The context exceeds acceptable risk levels. The score is above θ₂. Action should be blocked."
+        "DENY": "🚫 DENY: The context exceeds acceptable risk levels. The score is above θ₂. Action should be blocked.",
     }
     return explanations.get(decision.upper(), f"Unknown decision: {decision}")
 
@@ -150,7 +141,7 @@ You have access to tools to:
 3. explain_decision - Explain what ALLOW/QUARANTINE/DENY means
 
 Be helpful and explain results in simple terms. When users describe a scenario, 
-use analyze_risk to assess it and explain the outcome."""
+use analyze_risk to assess it and explain the outcome.""",
 )
 
 
@@ -158,10 +149,8 @@ use analyze_risk to assess it and explain the outcome."""
 async def invoke(payload: dict) -> dict:
     """Main entrypoint for the agent."""
     prompt = payload.get("prompt", "Hello")
-    
+
     # Run the agent
     response = agent(prompt)
-    
-    return {
-        "response": str(response)
-    }
+
+    return {"response": str(response)}
