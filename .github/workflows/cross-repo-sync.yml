@@ -1,4 +1,3 @@
-git add -A && git commit -m 'style: apply black formatting to python files' && git push
 # Cross-Repository Sync Workflow (SCBE-AETHERMOORE-DEMO -> GUMROAD)
 # Syncs shared symphonic_cipher components between repos
 # Enables bidirectional coding across Claude Code and other environments
@@ -35,7 +34,7 @@ env:
 jobs:
   sync-to-gumroad:
     runs-on: ubuntu-latest
-    if: (github.event_name == 'push' || github.event.inputs.sync_direction != 'from-gumroad') && secrets.CROSS_REPO_TOKEN != ''
+    if: github.event_name == 'push' || github.event.inputs.sync_direction != 'from-gumroad'
     
     steps:
       - name: Checkout scbe-aethermoore-demo
