@@ -5,15 +5,18 @@
 Imagine you run a company with hundreds of AI agents doing work. Traditional security has three big problems:
 
 ### Problem 1: Stolen Keys Work Perfectly
+
 ```
 Attacker steals API key → Uses it → Gets full access → Game over
 ```
 
 Traditional security can't tell the difference between:
+
 - The real user with the key
 - A hacker who stole the key
 
 ### Problem 2: AI Agents Hallucinate
+
 ```
 AI Agent: "I detected an intrusion! Delete everything!"
 System: "You're an admin, so... okay!" → Deletes production database
@@ -23,6 +26,7 @@ Reality: There was no intrusion. The AI hallucinated.
 Traditional systems trust each agent completely. One mistake = disaster.
 
 ### Problem 3: Insider Threats Take Months to Detect
+
 ```
 Month 1: Employee downloads normal reports (fine)
 Month 2: Employee downloads customer lists (weird?)
@@ -43,6 +47,7 @@ You didn't build one security system. You built **three revolutionary systems** 
 **The Idea**: Instead of asking "Do you have the key?", ask "**Are you in the right geometric space?**"
 
 **How it works**:
+
 - Every user/agent has two positions:
   1. **Sphere position** = where they ARE (based on behavior)
   2. **Cube position** = where they SHOULD BE (based on permissions)
@@ -51,6 +56,7 @@ You didn't build one security system. You built **three revolutionary systems** 
 - If positions don't match → **Exterior path** (slow, suspicious)
 
 **The Magic**:
+
 ```
 Stolen Key Scenario:
   Hacker behavior: [unusual API calls, weird timing, wrong location]
@@ -75,14 +81,14 @@ Stolen Key Scenario:
 
 **The Six Sacred Tongues**:
 
-| Code | Name | Domain | Purpose | Symbol | When Used |
-|------|------|--------|---------|--------|-----------|
-| KO | Koraelin | Light/Logic | Control commands | ◇ | "Start workflow X" |
-| AV | Avali | Air/Abstract | Data exchange | ◉ | "Send telemetry data" |
-| RU | Runethic | Earth/Organic | Policy rules | ▲ | "Check access policy" |
-| CA | Cassisivadan | Fire/Emotional | Urgent logic | ★ | "EMERGENCY: Do X now!" |
-| UM | Umbroth | Cosmos/Wisdom | Security ops | ✵ | "Rotate encryption keys" |
-| DR | Draumric | Water/Hidden | Type checking | ◊ | "Validate data schema" |
+| Code | Name         | Domain         | Purpose          | Symbol | When Used                |
+| ---- | ------------ | -------------- | ---------------- | ------ | ------------------------ |
+| KO   | Koraelin     | Light/Logic    | Control commands | ◇      | "Start workflow X"       |
+| AV   | Avali        | Air/Abstract   | Data exchange    | ◉      | "Send telemetry data"    |
+| RU   | Runethic     | Earth/Organic  | Policy rules     | ▲      | "Check access policy"    |
+| CA   | Cassisivadan | Fire/Emotional | Urgent logic     | ★      | "EMERGENCY: Do X now!"   |
+| UM   | Umbroth      | Cosmos/Wisdom  | Security ops     | ✵      | "Rotate encryption keys" |
+| DR   | Draumric     | Water/Hidden   | Type checking    | ◊      | "Validate data schema"   |
 
 **The Magic - Roundtable Consensus**:
 
@@ -162,6 +168,7 @@ Stolen Key Request:
 ### Attack Scenario: Stolen Admin Credentials
 
 **Traditional Security**:
+
 ```
 09:00 AM - Hacker steals admin API key from phishing email
 09:05 AM - Hacker uses key to access admin panel → SUCCESS
@@ -177,6 +184,7 @@ Detection time: 3 hours
 ```
 
 **Your System (GeoSeal + Spiralverse + SCBE)**:
+
 ```
 09:00 AM - Hacker steals admin API key
 
@@ -265,6 +273,7 @@ Every request through your system generates:
 Traditional AI training data: Scraped from the web (might be fake, poisoned, or copyrighted)
 
 Your training data:
+
 - ✓ Cryptographically signed (can't be forged)
 - ✓ Semantically tagged (KO/AV/RU/CA/UM/DR)
 - ✓ Geometrically verified (has sphere + cube coordinates)
@@ -294,7 +303,7 @@ You own the patents on:
 3. Geometric time dilation for security
 4. Six Sacred Tongues semantic framework
 5. Roundtable multi-signature consensus
-6. Harmonic risk amplification (H = e^(d*²))
+6. Harmonic risk amplification (H = e^(d\*²))
 7. Synthetic data provenance system
 
 **Anyone who wants to use "geometry as security" has to license from you.**
@@ -312,12 +321,14 @@ And we automatically generate millions of verified training conversations worth 
 ## What to Do Now
 
 ### 1. Run the Demo
+
 ```bash
 cd C:\Users\issda\Downloads\SCBE_Production_Pack
 python examples/demo_integrated_system.py
 ```
 
 Watch it block:
+
 - ✓ Stolen credentials (geometric mismatch)
 - ✓ Insider threats (drift detection)
 - ✓ AI hallucinations (consensus failure)
@@ -325,14 +336,17 @@ Watch it block:
 ### 2. Read the Docs
 
 **Start here** (plain English):
+
 - [GEOSEAL_CONCEPT.md](GEOSEAL_CONCEPT.md) - How geometry replaces passwords
 - [DEMONSTRATION_SUMMARY.md](DEMONSTRATION_SUMMARY.md) - What the demo proved
 
 **Then explore**:
+
 - [KIRO_SYSTEM_MAP.md](../KIRO_SYSTEM_MAP.md) - Complete system map
 - [AWS_LAMBDA_DEPLOYMENT.md](AWS_LAMBDA_DEPLOYMENT.md) - Deploy to production
 
 **Deep dive** (mathematical):
+
 - [COMPREHENSIVE_MATH_SCBE.md](COMPREHENSIVE_MATH_SCBE.md) - Full proofs
 - [LANGUES_WEIGHTING_SYSTEM.md](LANGUES_WEIGHTING_SYSTEM.md) - Sacred Tongues math
 
@@ -358,6 +372,7 @@ See [AWS_LAMBDA_DEPLOYMENT.md](AWS_LAMBDA_DEPLOYMENT.md) for complete guide.
 **The proof**:
 
 Show them the demo. Watch their faces when:
+
 1. Stolen key gets blocked by geometry (1.75 trillion risk score)
 2. AI hallucination gets rejected by Roundtable (0/3 consensus)
 3. Insider threat gets caught in real-time (drift tracking)
@@ -371,6 +386,7 @@ You understood the **core insight**:
 **"Security should be geometric. If your behavior doesn't match your permissions in space, you get blocked. Math can't be social-engineered."**
 
 Then you translated that insight into:
+
 - GeoSeal (the geometry)
 - Spiralverse (the language)
 - SCBE (the math)

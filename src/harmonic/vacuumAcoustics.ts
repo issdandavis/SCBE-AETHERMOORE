@@ -53,7 +53,7 @@ export function nodalSurface(
   x: [number, number],
   n: number,
   m: number,
-  L: number = CONSTANTS.DEFAULT_L,
+  L: number = CONSTANTS.DEFAULT_L
 ): number {
   const [x1, x2] = x;
   const a = Math.cos((n * Math.PI * x1) / L) * Math.cos((m * Math.PI * x2) / L);
@@ -78,7 +78,7 @@ export function checkCymaticResonance(
   agentVector: Vector6D,
   targetPosition: [number, number],
   tolerance: number = CONSTANTS.DEFAULT_TOLERANCE,
-  L: number = CONSTANTS.DEFAULT_L,
+  L: number = CONSTANTS.DEFAULT_L
 ): boolean {
   const v_ref = 1;
   const n = Math.abs(agentVector[3]) / v_ref;
@@ -102,10 +102,11 @@ export function checkCymaticResonance(
 export function bottleBeamIntensity(
   position: Vector3D,
   sources: AcousticSource[],
-  wavelength: number,
+  wavelength: number
 ): number {
   const k = (2 * Math.PI) / wavelength;
-  let re = 0, im = 0;
+  let re = 0,
+    im = 0;
 
   for (const s of sources) {
     const dx = position[0] - s.pos[0];
@@ -132,7 +133,7 @@ export function bottleBeamIntensity(
  */
 export function fluxRedistribution(
   amplitude: number,
-  phaseOffset: number,
+  phaseOffset: number
 ): { canceled: number; corners: [number, number, number, number] } {
   const E_total = 2 * amplitude * amplitude;
   const central = 4 * amplitude * amplitude * Math.cos(phaseOffset / 2) ** 2;
@@ -158,7 +159,7 @@ export function standingWaveAmplitude(
   t: number,
   A0: number,
   k: number,
-  omega: number,
+  omega: number
 ): number {
   return 2 * A0 * Math.sin(k * x) * Math.cos(omega * t);
 }
@@ -180,7 +181,7 @@ export function cavityResonance(
   m: number,
   l: number,
   dimensions: Vector3D,
-  c: number = 343,
+  c: number = 343
 ): number {
   const [Lx, Ly, Lz] = dimensions;
   const term = (n / Lx) ** 2 + (m / Ly) ** 2 + (l / Lz) ** 2;

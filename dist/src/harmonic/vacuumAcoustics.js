@@ -9,7 +9,12 @@
  * - Flux redistribution
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.cavityResonance = exports.standingWaveAmplitude = exports.fluxRedistribution = exports.bottleBeamIntensity = exports.checkCymaticResonance = exports.nodalSurface = void 0;
+exports.nodalSurface = nodalSurface;
+exports.checkCymaticResonance = checkCymaticResonance;
+exports.bottleBeamIntensity = bottleBeamIntensity;
+exports.fluxRedistribution = fluxRedistribution;
+exports.standingWaveAmplitude = standingWaveAmplitude;
+exports.cavityResonance = cavityResonance;
 const constants_js_1 = require("./constants.js");
 /**
  * Nodal surface function for cymatic patterns
@@ -30,7 +35,6 @@ function nodalSurface(x, n, m, L = constants_js_1.CONSTANTS.DEFAULT_L) {
     const b = Math.cos((m * Math.PI * x1) / L) * Math.cos((n * Math.PI * x2) / L);
     return a - b;
 }
-exports.nodalSurface = nodalSurface;
 /**
  * Check if a target position lies on a cymatic resonance nodal line
  *
@@ -51,7 +55,6 @@ function checkCymaticResonance(agentVector, targetPosition, tolerance = constant
     const N = nodalSurface(targetPosition, n, m, L);
     return Math.abs(N) < tolerance;
 }
-exports.checkCymaticResonance = checkCymaticResonance;
 /**
  * Calculate bottle beam intensity at a point
  *
@@ -78,7 +81,6 @@ function bottleBeamIntensity(position, sources, wavelength) {
     }
     return re * re + im * im;
 }
-exports.bottleBeamIntensity = bottleBeamIntensity;
 /**
  * Flux redistribution for interference cancellation
  *
@@ -96,7 +98,6 @@ function fluxRedistribution(amplitude, phaseOffset) {
     const each = canceled / 4;
     return { canceled, corners: [each, each, each, each] };
 }
-exports.fluxRedistribution = fluxRedistribution;
 /**
  * Calculate standing wave amplitude at a point
  *
@@ -112,7 +113,6 @@ exports.fluxRedistribution = fluxRedistribution;
 function standingWaveAmplitude(x, t, A0, k, omega) {
     return 2 * A0 * Math.sin(k * x) * Math.cos(omega * t);
 }
-exports.standingWaveAmplitude = standingWaveAmplitude;
 /**
  * Find resonant frequencies for a box cavity
  *
@@ -130,5 +130,4 @@ function cavityResonance(n, m, l, dimensions, c = 343) {
     const term = (n / Lx) ** 2 + (m / Ly) ** 2 + (l / Lz) ** 2;
     return (c / 2) * Math.sqrt(term);
 }
-exports.cavityResonance = cavityResonance;
 //# sourceMappingURL=vacuumAcoustics.js.map

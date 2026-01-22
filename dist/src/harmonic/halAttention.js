@@ -8,7 +8,8 @@
  * - Batched tensor operations
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.halAttention = exports.harmonicCouplingMatrix = void 0;
+exports.harmonicCouplingMatrix = harmonicCouplingMatrix;
+exports.halAttention = halAttention;
 const constants_js_1 = require("./constants.js");
 /**
  * Compute harmonic coupling matrix Λ
@@ -41,17 +42,16 @@ function harmonicCouplingMatrix(d_Q, d_K, R = constants_js_1.CONSTANTS.R_FIFTH, 
     }
     return M;
 }
-exports.harmonicCouplingMatrix = harmonicCouplingMatrix;
 /**
  * Row-wise softmax normalization
  */
 function softmaxRowWise(M) {
-    return M.map(row => {
+    return M.map((row) => {
         const maxVal = Math.max(...row);
-        const a = row.map(x => x - maxVal);
+        const a = row.map((x) => x - maxVal);
         const e = a.map(Math.exp);
         const Z = e.reduce((p, c) => p + c, 0) || 1;
-        return e.map(x => x / Z);
+        return e.map((x) => x / Z);
     });
 }
 /**
@@ -116,7 +116,7 @@ function halAttention(Q, K, V, d_Q, d_K, config) {
             throw new RangeError('d_model mismatch');
         }
         // Scaled dot-product: S = (Q × K^T) / √d_model
-        const S = matMul(Qb, transpose(Kb)).map(row => row.map(x => x / Math.sqrt(d_model)));
+        const S = matMul(Qb, transpose(Kb)).map((row) => row.map((x) => x / Math.sqrt(d_model)));
         // Harmonic coupling: S = S ⊙ Λ
         const Lambda = harmonicCouplingMatrix(d_Q[b], d_K[b], R, normalize);
         for (let i = 0; i < n; i++) {
@@ -131,5 +131,4 @@ function halAttention(Q, K, V, d_Q, d_K, config) {
     }
     return out;
 }
-exports.halAttention = halAttention;
 //# sourceMappingURL=halAttention.js.map

@@ -3,9 +3,14 @@ type State = 'closed' | 'open' | 'half-open';
 export class CircuitBreaker {
   private state: State = 'closed';
   private openedAt = 0;
-  constructor(private failRateThreshold = 0.005, private windowMs = 300_000) {}
+  constructor(
+    private failRateThreshold = 0.005,
+    private windowMs = 300_000
+  ) {}
 
-  getState() { return this.state; }
+  getState() {
+    return this.state;
+  }
 
   evaluate(failureRate: number) {
     if (this.state === 'open') return;
@@ -21,5 +26,8 @@ export class CircuitBreaker {
     }
   }
 
-  close() { this.state = 'closed'; this.openedAt = 0; }
+  close() {
+    this.state = 'closed';
+    this.openedAt = 0;
+  }
 }

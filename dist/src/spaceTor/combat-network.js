@@ -35,24 +35,24 @@ class CombatNetwork {
             // 1. Generate Disjoint Paths (Paths that don't share middle nodes)
             const pathA = this.router.calculatePath(origin, dest, 70);
             const pathB = this.generateDisjointPath(pathA, origin, dest, 70);
-            console.log(`[COMBAT] Routing via Primary: ${pathA.map(n => n.id).join(' -> ')}`);
-            console.log(`[COMBAT] Routing via Backup:  ${pathB.map(n => n.id).join(' -> ')}`);
+            console.log(`[COMBAT] Routing via Primary: ${pathA.map((n) => n.id).join(' -> ')}`);
+            console.log(`[COMBAT] Routing via Backup:  ${pathB.map((n) => n.id).join(' -> ')}`);
             // 2. Encrypt & Send Parallel
             const [onionA, onionB] = await Promise.all([
                 this.crypto.buildOnion(payload, pathA),
-                this.crypto.buildOnion(payload, pathB)
+                this.crypto.buildOnion(payload, pathB),
             ]);
             // 3. Dispatch (Fire and Forget)
             const [resultA, resultB] = await Promise.all([
                 this.transmit(pathA[0], onionA, 'PRIMARY'),
-                this.transmit(pathB[0], onionB, 'BACKUP')
+                this.transmit(pathB[0], onionB, 'BACKUP'),
             ]);
             results.push(resultA, resultB);
         }
         else {
             // Standard Routing
             const path = this.router.calculatePath(origin, dest, 50);
-            console.log(`[STANDARD] Routing via: ${path.map(n => n.id).join(' -> ')}`);
+            console.log(`[STANDARD] Routing via: ${path.map((n) => n.id).join(' -> ')}`);
             const onion = await this.crypto.buildOnion(payload, path);
             const result = await this.transmit(path[0], onion, 'STANDARD');
             results.push(result);
@@ -110,7 +110,7 @@ class CombatNetwork {
             return {
                 success: true,
                 pathId,
-                latencyMs: Date.now() - startTime
+                latencyMs: Date.now() - startTime,
             };
         }
         catch (error) {
@@ -118,7 +118,7 @@ class CombatNetwork {
                 success: false,
                 pathId,
                 latencyMs: Date.now() - startTime,
-                error: error instanceof Error ? error.message : 'Unknown error'
+                error: error instanceof Error ? error.message : 'Unknown error',
             };
         }
     }
@@ -139,7 +139,7 @@ class CombatNetwork {
      * Sleep utility for simulating delays
      */
     sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
+        return new Promise((resolve) => setTimeout(resolve, ms));
     }
     /**
      * Get network statistics
@@ -148,9 +148,9 @@ class CombatNetwork {
         const nodes = this.router.getNodes();
         return {
             totalNodes: nodes.length,
-            quantumCapableNodes: nodes.filter(n => n.quantumCapable).length,
+            quantumCapableNodes: nodes.filter((n) => n.quantumCapable).length,
             averageLoad: nodes.reduce((sum, n) => sum + n.load, 0) / nodes.length,
-            averageTrust: nodes.reduce((sum, n) => sum + n.trustScore, 0) / nodes.length
+            averageTrust: nodes.reduce((sum, n) => sum + n.trustScore, 0) / nodes.length,
         };
     }
 }

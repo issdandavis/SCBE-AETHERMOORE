@@ -106,7 +106,7 @@ The present invention provides a context-bound cryptographic authorization syste
 
 **Poincaré Ball**: The open unit ball 𝔹^n = {x ∈ ℝ^n : ||x|| < 1} equipped with the hyperbolic metric.
 
-**Clamping Operator**: A projection Π_ε: 𝔹^n → 𝔹^n_{1-ε} that ensures all points remain strictly inside a sub-ball of radius 1-ε, guaranteeing numerical stability.
+**Clamping Operator**: A projection Π*ε: 𝔹^n → 𝔹^n*{1-ε} that ensures all points remain strictly inside a sub-ball of radius 1-ε, guaranteeing numerical stability.
 
 **Breathing Transform**: A radial scaling diffeomorphism T_breath(u; b) = tanh(b·artanh(||u||))·u/||u|| that adapts to time-varying dynamics while preserving ball membership. CRITICAL: This is NOT an isometry.
 
@@ -114,9 +114,9 @@ The present invention provides a context-bound cryptographic authorization syste
 
 **Möbius Addition**: The gyroassociative operation ⊕ on the Poincaré ball defined by the formula in Axiom A5.
 
-**Realm**: A reference point μ_k ∈ 𝔹^n_{1-ε} representing an expected or authorized state region.
+**Realm**: A reference point μ*k ∈ 𝔹^n*{1-ε} representing an expected or authorized state region.
 
-**Realm Distance**: d*(u) = min_k d_H(u, μ_k), the minimum hyperbolic distance from current state to any realm center.
+**Realm Distance**: d\*(u) = min_k d_H(u, μ_k), the minimum hyperbolic distance from current state to any realm center.
 
 **Coherence Signal**: A bounded scalar in [0,1] measuring alignment with expected patterns (spectral, spin, audio, trust).
 
@@ -124,7 +124,7 @@ The present invention provides a context-bound cryptographic authorization syste
 
 **Base Risk**: Risk_base = Σ w_i·(1 - coherence_i), a weighted sum of coherence deficits.
 
-**Amplified Risk**: Risk' = Risk_base · H(d*, R), the final risk value after harmonic amplification.
+**Amplified Risk**: Risk' = Risk_base · H(d\*, R), the final risk value after harmonic amplification.
 
 **Fail-to-Noise Output**: When authorization fails for any reason, the system outputs cryptographically random noise indistinguishable from valid ciphertext, preventing adversaries from learning failure causes.
 
@@ -141,11 +141,11 @@ The SCBE system comprises the following modules executed in order:
 5. **Möbius Stabilization Module**: Shifts state relative to assigned realm
 6. **Breathing Module**: Applies time-varying radial scaling (diffeomorphism)
 7. **Phase Transform Module**: Applies hyperbolic isometry
-8. **Realm Distance Module**: Computes d* = min_k d_H(u, μ_k)
+8. **Realm Distance Module**: Computes d\* = min_k d_H(u, μ_k)
 9. **Spectral Coherence Module**: Computes S_spec from FFT energy ratios
 10. **Spin Coherence Module**: Computes C_spin from phasor alignment
 11. **Behavioral Trust Module**: Computes τ from Hopfield energy
-12. **Harmonic Scaling Module**: Computes H(d*, R)
+12. **Harmonic Scaling Module**: Computes H(d\*, R)
 13. **Composite Risk Module**: Computes Risk' and decision
 14. **Audio Coherence Module**: Computes S_audio from phase stability
 15. **Cryptographic Envelope Module**: Creates/verifies AES-256-GCM envelopes
@@ -154,6 +154,7 @@ The SCBE system comprises the following modules executed in order:
 ### 5.3 DATA STRUCTURES
 
 #### Context Vector
+
 ```
 c(t) = (c_1, c_2, ..., c_D) ∈ ℂ^D
 where c_k = a_k · e^{iφ_k}
@@ -163,6 +164,7 @@ Update frequency: configurable (default 100ms)
 ```
 
 #### Configuration Θ
+
 ```
 Θ = {
   D: int,           // Complex dimension (default 6)
@@ -181,6 +183,7 @@ Update frequency: configurable (default 100ms)
 ```
 
 #### Envelope Structure
+
 ```
 Envelope = {
   aad: {
@@ -217,7 +220,7 @@ The system processes authorization requests in the following order, designed to 
 3. **Nonce Prefix Validation** (O(1)): Reject if nonce prefix doesn't match session
 4. **Context Commitment Verification** (O(n)): Reject if hash mismatch
 5. **Poincaré Embedding + Clamping** (O(n)): Compute bounded state
-6. **Realm Distance Computation** (O(K·n)): Compute d*
+6. **Realm Distance Computation** (O(K·n)): Compute d\*
 7. **Coherence Signal Extraction** (O(n log n) for FFT): Compute S_spec, C_spin, τ, S_audio
 8. **Risk Computation** (O(1)): Compute Risk' and decision
 9. **Cryptographic Verification** (O(n)): AES-256-GCM decrypt + verify
@@ -227,6 +230,7 @@ If any step fails, the system immediately proceeds to fail-to-noise output witho
 ### 5.5 ALGORITHMS
 
 #### Algorithm 1: Poincaré Embedding with Clamping (A4)
+
 ```
 Input: x ∈ ℝ^n, α > 0, ε_ball ∈ (0,1)
 Output: u ∈ 𝔹^n_{1-ε_ball}
@@ -241,6 +245,7 @@ Output: u ∈ 𝔹^n_{1-ε_ball}
 ```
 
 #### Algorithm 2: Hyperbolic Distance (A5)
+
 ```
 Input: u, v ∈ 𝔹^n_{1-ε}, ε > 0
 Output: d_H(u, v) ∈ [0, ∞)
@@ -254,6 +259,7 @@ Output: d_H(u, v) ∈ [0, ∞)
 ```
 
 #### Algorithm 3: Breathing Transform (A6)
+
 ```
 Input: u ∈ 𝔹^n, b ∈ [b_min, b_max]
 Output: u_b ∈ 𝔹^n
@@ -268,6 +274,7 @@ d_H(T_breath(u), T_breath(v)) ≠ d_H(u, v) unless b = 1
 ```
 
 #### Algorithm 4: Phase Transform (A7)
+
 ```
 Input: u ∈ 𝔹^n, a ∈ 𝔹^n, Q ∈ O(n)
 Output: u_p ∈ 𝔹^n
@@ -280,6 +287,7 @@ d_H(T_phase(u), T_phase(v)) = d_H(u, v)
 ```
 
 #### Algorithm 5: Möbius Addition (A5)
+
 ```
 Input: u, v ∈ 𝔹^n, ε > 0
 Output: u ⊕ v ∈ 𝔹^n
@@ -296,6 +304,7 @@ Output: u ⊕ v ∈ 𝔹^n
 ```
 
 #### Algorithm 6: Composite Risk (A12)
+
 ```
 Input: d̃_tri, C_spin, S_spec, τ, S_audio, d*, weights, R, θ_1, θ_2
 Output: Risk', Decision
@@ -310,6 +319,7 @@ Output: Risk', Decision
 ```
 
 #### Algorithm 7: Fail-to-Noise Output
+
 ```
 Input: failure_reason (internal only)
 Output: noise_output (indistinguishable from valid ciphertext)
@@ -331,39 +341,43 @@ Adversary cannot distinguish:
 ### 5.6 PARAMETER TABLES
 
 #### Embedding Parameters
-| Parameter | Symbol | Default | Range | Description |
-|-----------|--------|---------|-------|-------------|
-| Complex dimension | D | 6 | [1, ∞) | Dimension of context space |
-| Embedding scale | α | 1.0 | (0, ∞) | Poincaré embedding scale |
-| Clamping margin | ε_ball | 0.01 | (0, 1) | Distance from ball boundary |
-| Denominator floor | ε | 1e-5 | (0, 1) | Numerical stability floor |
+
+| Parameter         | Symbol | Default | Range  | Description                 |
+| ----------------- | ------ | ------- | ------ | --------------------------- |
+| Complex dimension | D      | 6       | [1, ∞) | Dimension of context space  |
+| Embedding scale   | α      | 1.0     | (0, ∞) | Poincaré embedding scale    |
+| Clamping margin   | ε_ball | 0.01    | (0, 1) | Distance from ball boundary |
+| Denominator floor | ε      | 1e-5    | (0, 1) | Numerical stability floor   |
 
 #### Breathing Parameters
-| Parameter | Symbol | Default | Range | Description |
-|-----------|--------|---------|-------|-------------|
-| Minimum breathing | b_min | 0.5 | (0, ∞) | Lower bound on breathing |
-| Maximum breathing | b_max | 2.0 | (0, ∞) | Upper bound on breathing |
+
+| Parameter         | Symbol | Default | Range  | Description              |
+| ----------------- | ------ | ------- | ------ | ------------------------ |
+| Minimum breathing | b_min  | 0.5     | (0, ∞) | Lower bound on breathing |
+| Maximum breathing | b_max  | 2.0     | (0, ∞) | Upper bound on breathing |
 
 #### Risk Parameters
-| Parameter | Symbol | Default | Range | Description |
-|-----------|--------|---------|-------|-------------|
-| Triadic weight | w_d | 0.20 | [0, 1] | Weight for d̃_tri |
-| Spin weight | w_c | 0.20 | [0, 1] | Weight for C_spin |
-| Spectral weight | w_s | 0.20 | [0, 1] | Weight for S_spec |
-| Trust weight | w_τ | 0.20 | [0, 1] | Weight for τ |
-| Audio weight | w_a | 0.20 | [0, 1] | Weight for S_audio |
-| Harmonic base | R | e ≈ 2.718 | (1, ∞) | Base for H(d*, R) |
-| Allow threshold | θ_1 | 0.33 | (0, 1) | Below = ALLOW |
-| Deny threshold | θ_2 | 0.67 | (0, 1) | Above = DENY |
+
+| Parameter       | Symbol | Default   | Range  | Description        |
+| --------------- | ------ | --------- | ------ | ------------------ |
+| Triadic weight  | w_d    | 0.20      | [0, 1] | Weight for d̃_tri   |
+| Spin weight     | w_c    | 0.20      | [0, 1] | Weight for C_spin  |
+| Spectral weight | w_s    | 0.20      | [0, 1] | Weight for S_spec  |
+| Trust weight    | w_τ    | 0.20      | [0, 1] | Weight for τ       |
+| Audio weight    | w_a    | 0.20      | [0, 1] | Weight for S_audio |
+| Harmonic base   | R      | e ≈ 2.718 | (1, ∞) | Base for H(d\*, R) |
+| Allow threshold | θ_1    | 0.33      | (0, 1) | Below = ALLOW      |
+| Deny threshold  | θ_2    | 0.67      | (0, 1) | Above = DENY       |
 
 #### Cryptographic Parameters
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| Cipher | AES-256-GCM | Authenticated encryption |
-| Nonce size | 96 bits | 64-bit prefix + 32-bit counter |
-| Tag size | 128 bits | GCM authentication tag |
-| KDF | HKDF-SHA256 | Key derivation |
-| Hash | SHA-256 | Context commitment |
+
+| Parameter  | Default     | Description                    |
+| ---------- | ----------- | ------------------------------ |
+| Cipher     | AES-256-GCM | Authenticated encryption       |
+| Nonce size | 96 bits     | 64-bit prefix + 32-bit counter |
+| Tag size   | 128 bits    | GCM authentication tag         |
+| KDF        | HKDF-SHA256 | Key derivation                 |
+| Hash       | SHA-256     | Context commitment             |
 
 ### 5.7 TECHNICAL IMPROVEMENTS
 
@@ -373,7 +387,7 @@ The present invention provides the following technical improvements over prior s
 
 2. **Eliminated Attacker Feedback Channels**: Fail-to-noise outputs produce cryptographically indistinguishable responses regardless of failure cause, preventing oracle attacks and timing analysis.
 
-3. **Provable Geometric Stability**: Clamping operators guarantee all hyperbolic states remain in compact sub-ball 𝔹^n_{1-ε}, ensuring bounded denominators and numerical stability under adversarial inputs.
+3. **Provable Geometric Stability**: Clamping operators guarantee all hyperbolic states remain in compact sub-ball 𝔹^n\_{1-ε}, ensuring bounded denominators and numerical stability under adversarial inputs.
 
 4. **Monotone Risk Functional**: Mathematical proof that higher coherence signals always produce lower risk, preventing adversarial manipulation of risk computation.
 
@@ -391,16 +405,17 @@ The present invention further comprises a Sacred Tongue tokenization system inte
 
 A Sacred Tongue is a bijective encoding scheme mapping bytes [0, 255] to unique human-readable tokens with distinct harmonic frequency signatures. The system implements 6 Sacred Tongues:
 
-| Tongue | Base Frequency | Token Count | Example Tokens |
-|--------|----------------|-------------|----------------|
-| Kor'aelin | 440 Hz (A4) | 256 | "Kor'aelin-Sha", "Kor'aelin-Thal" |
-| Avali | 523 Hz (C5) | 256 | "Avali-Kree", "Avali-Vex" |
-| Runethic | 329 Hz (E4) | 256 | "Runethic-Gorn", "Runethic-Zeph" |
-| Cassisivadan | 659 Hz (E5) | 256 | "Cassisivadan-Lux", "Cassisivadan-Nyx" |
-| Umbroth | 293 Hz (D4) | 256 | "Umbroth-Drak", "Umbroth-Myr" |
-| Draumric | 392 Hz (G4) | 256 | "Draumric-Fael", "Draumric-Quin" |
+| Tongue       | Base Frequency | Token Count | Example Tokens                         |
+| ------------ | -------------- | ----------- | -------------------------------------- |
+| Kor'aelin    | 440 Hz (A4)    | 256         | "Kor'aelin-Sha", "Kor'aelin-Thal"      |
+| Avali        | 523 Hz (C5)    | 256         | "Avali-Kree", "Avali-Vex"              |
+| Runethic     | 329 Hz (E4)    | 256         | "Runethic-Gorn", "Runethic-Zeph"       |
+| Cassisivadan | 659 Hz (E5)    | 256         | "Cassisivadan-Lux", "Cassisivadan-Nyx" |
+| Umbroth      | 293 Hz (D4)    | 256         | "Umbroth-Drak", "Umbroth-Myr"          |
+| Draumric     | 392 Hz (G4)    | 256         | "Draumric-Fael", "Draumric-Quin"       |
 
 Each tongue comprises 16 prefixes and 16 suffixes forming 256 unique tokens via Cartesian product. The bijective mapping ensures:
+
 - **Constant-time encoding/decoding**: O(1) lookup via hash tables
 - **Collision-free**: All 256 tokens per tongue are distinct
 - **Spectral uniqueness**: Each tongue has a unique harmonic signature
@@ -410,6 +425,7 @@ Each tongue comprises 16 prefixes and 16 suffixes forming 256 unique tokens via 
 The Realm-Weighted Protocol (RWP) v3.0 implements hybrid post-quantum cryptography:
 
 **Key Derivation**:
+
 ```
 base_key = Argon2id(password, salt, t=3, m=64MB, p=4, len=32)
 pqc_shared_secret = ML-KEM-768.Encapsulate(recipient_public_key)
@@ -417,6 +433,7 @@ hybrid_key = base_key ⊕ pqc_shared_secret
 ```
 
 **Encryption**:
+
 ```
 (ciphertext, tag) = XChaCha20-Poly1305.Encrypt(
     key=hybrid_key,
@@ -427,6 +444,7 @@ hybrid_key = base_key ⊕ pqc_shared_secret
 ```
 
 **Sacred Tongue Encoding**:
+
 ```
 envelope = {
     salt: encode_tongue(salt_bytes, tongue=Kor'aelin),
@@ -443,6 +461,7 @@ envelope = {
 Each envelope section is validated via spectral fingerprinting:
 
 **Algorithm 8: Spectral Fingerprint Computation**
+
 ```
 Input: token_sequence, base_frequency
 Output: (amplitude, phase)
@@ -462,6 +481,7 @@ Output: (amplitude, phase)
 Sacred Tongue tokens are embedded into SCBE Layer 1-4 pipeline:
 
 **Layer 1 (Complex Context)**:
+
 ```
 For each tongue k ∈ {1, 2, 3, 4, 5, 6}:
     (A_k, φ_k) ← spectral_fingerprint(envelope[section_k], freq_k)
@@ -470,16 +490,19 @@ context_vector ← [c_1, c_2, c_3, c_4, c_5, c_6] ∈ ℂ^6
 ```
 
 **Layer 2 (Realification)**:
+
 ```
 x ← [Re(c_1), Re(c_2), ..., Re(c_6), Im(c_1), Im(c_2), ..., Im(c_6)] ∈ ℝ^{12}
 ```
 
 **Layer 3 (Langues Weighting)**:
+
 ```
 x_G ← G^{1/2} · x where G is SPD matrix
 ```
 
 **Layer 4 (Poincaré Embedding)**:
+
 ```
 u ← Ψ_α(x_G) with clamping: ||u|| ≤ 1-ε
 ```
@@ -500,6 +523,7 @@ H(d*, R) ← R^{(d*)²}    // Super-exponential amplification
 Sacred Tongue pre-synchronization enables zero-latency authentication:
 
 **Traditional TLS Handshake** (Mars communication):
+
 ```
 Earth → Mars: ClientHello (14 min)
 Mars → Earth: ServerHello + Certificate (14 min)
@@ -508,6 +532,7 @@ Total RTT: 42 minutes
 ```
 
 **RWP v3.0 with Sacred Tongues**:
+
 ```
 Pre-deployment: Synchronize Sacred Tongue vocabularies
 Earth → Mars: Self-authenticating envelope (0 min handshake)
@@ -518,11 +543,13 @@ Total RTT: 0 minutes (one-way transmission only)
 #### 5.8.7 Security Analysis
 
 **Threat Model**:
+
 - **Quantum Adversary**: Possesses large-scale quantum computer capable of breaking RSA-2048 and ECDSA-P256
 - **Classical Adversary**: Possesses unlimited classical computing power
 - **Oracle Access**: Can submit arbitrary decryption requests and observe timing/outputs
 
 **Security Guarantees**:
+
 1. **Post-Quantum Confidentiality**: ML-KEM-768 provides 256-bit quantum security (NIST Level 5)
 2. **Password-Based Defense**: Argon2id with 64 MB memory resists GPU/ASIC attacks
 3. **Hybrid Security**: min(classical, quantum) = 256-bit security
@@ -531,6 +558,7 @@ Total RTT: 0 minutes (one-way transmission only)
 6. **Oracle Attack Mitigation**: Fail-to-noise outputs prevent distinguishing failure causes
 
 **Performance**:
+
 - Encryption latency: ~503ms (dominated by Argon2id KDF)
 - Decryption latency: ~502ms (dominated by Argon2id KDF)
 - Context encoding (Layer 1-4): ~0.9ms
@@ -550,11 +578,11 @@ A computer-implemented method for context-bound cryptographic authorization, com
 
 (c) embedding the real vector into a Poincaré ball 𝔹^n via a hyperbolic embedding function with a clamping operator ensuring ||u|| ≤ 1-ε for a predetermined margin ε > 0;
 
-(d) computing a realm distance d* as the minimum hyperbolic distance from the embedded state to a plurality of realm centers;
+(d) computing a realm distance d\* as the minimum hyperbolic distance from the embedded state to a plurality of realm centers;
 
 (e) extracting one or more coherence signals bounded in [0,1] from input data;
 
-(f) computing an amplified risk value Risk' = Risk_base · H(d*, R) where Risk_base is a weighted sum of coherence deficits and H is a harmonic scaling function;
+(f) computing an amplified risk value Risk' = Risk_base · H(d\*, R) where Risk_base is a weighted sum of coherence deficits and H is a harmonic scaling function;
 
 (g) determining an authorization decision from {ALLOW, QUARANTINE, DENY} based on comparing Risk' to predetermined thresholds θ_1 < θ_2;
 
@@ -592,7 +620,7 @@ implement a fail-to-noise module producing indistinguishable outputs on failure.
 
 ### Dependent Claims
 
-**Claim 3**: The method of claim 1, wherein the clamping operator Π_ε projects points outside 𝔹^n_{1-ε} to the boundary via Π_ε(u) = (1-ε)·u/||u||.
+**Claim 3**: The method of claim 1, wherein the clamping operator Π*ε projects points outside 𝔹^n*{1-ε} to the boundary via Π_ε(u) = (1-ε)·u/||u||.
 
 **Claim 4**: The method of claim 1, wherein the hyperbolic embedding uses the formula Ψ_α(x) = tanh(α||x||)·x/||x|| for x ≠ 0.
 
@@ -606,7 +634,7 @@ implement a fail-to-noise module producing indistinguishable outputs on failure.
 
 **Claim 9**: The method of claim 1, further comprising applying a phase transform T_phase(u) = Q·(a ⊕ u) that is a hyperbolic isometry preserving d_H.
 
-**Claim 10**: The method of claim 1, wherein the risk weights satisfy w_d + w_c + w_s + w_τ + w_a = 1 with all weights non-negative.
+**Claim 10**: The method of claim 1, wherein the risk weights satisfy w*d + w_c + w_s + w*τ + w_a = 1 with all weights non-negative.
 
 **Claim 11**: The method of claim 1, wherein QUARANTINE decision triggers setting an audit_flag in the cryptographic envelope.
 
@@ -654,11 +682,11 @@ The method of claim 17, wherein context validation comprises:
 
 (e) embedding said weighted vector into hyperbolic Poincaré ball 𝔹^n via tanh-based projection with clamping operator ensuring ||u|| ≤ 1-ε for predetermined margin ε > 0;
 
-(f) computing geodesic distance d* in hyperbolic space as minimum distance from embedded state u to a plurality of trusted realm centers μ_k representing authorized contexts;
+(f) computing geodesic distance d\* in hyperbolic space as minimum distance from embedded state u to a plurality of trusted realm centers μ_k representing authorized contexts;
 
-(g) applying super-exponential cost amplification H(d*, R) = R^{(d*)²} where R > 1 is harmonic base and d* is realm distance, wherein adversaries attempting to forge contexts outside trusted realms face exponentially increasing computational cost; and
+(g) applying super-exponential cost amplification H(d*, R) = R^{(d*)²} where R > 1 is harmonic base and d\* is realm distance, wherein adversaries attempting to forge contexts outside trusted realms face exponentially increasing computational cost; and
 
-(h) rejecting decryption requests when d* exceeds predetermined threshold, producing cryptographically random noise output indistinguishable from valid plaintext to prevent oracle attacks.
+(h) rejecting decryption requests when d\* exceeds predetermined threshold, producing cryptographically random noise output indistinguishable from valid plaintext to prevent oracle attacks.
 
 ### Dependent Claims (Sacred Tongue Integration)
 
@@ -693,6 +721,7 @@ A context-bound cryptographic authorization system combining hyperbolic geometry
 ## 8. EXPERIMENTAL EVIDENCE
 
 ### 8.1 Test Environment
+
 - Python 3.11
 - NumPy 1.24+
 - SciPy 1.11+
@@ -701,29 +730,29 @@ A context-bound cryptographic authorization system combining hyperbolic geometry
 
 ### 8.2 Axiom Compliance Verification
 
-| Axiom | Property | Test Result |
-|-------|----------|-------------|
-| A4 | Poincaré embedding boundedness | ✓ All outputs ||u|| < 1-ε |
-| A5 | Hyperbolic distance symmetry | ✓ d_H(u,v) = d_H(v,u) |
-| A6 | Breathing ball preservation | ✓ Output remains in 𝔹^n |
-| A6 | Breathing non-isometry | ✓ Distances change when b ≠ 1 |
-| A7 | Phase transform isometry | ✓ Distances preserved |
-| A8 | Realm center boundedness | ✓ All ||μ_k|| ≤ 1-ε |
-| A12 | Risk monotonicity | ✓ ∂Risk'/∂coherence < 0 |
-| A12 | Weights sum to 1 | ✓ Σw = 1.0 |
+| Axiom | Property                       | Test Result                   |
+| ----- | ------------------------------ | ----------------------------- | --- | --- | --- | ----- |
+| A4    | Poincaré embedding boundedness | ✓ All outputs                 |     | u   |     | < 1-ε |
+| A5    | Hyperbolic distance symmetry   | ✓ d_H(u,v) = d_H(v,u)         |
+| A6    | Breathing ball preservation    | ✓ Output remains in 𝔹^n       |
+| A6    | Breathing non-isometry         | ✓ Distances change when b ≠ 1 |
+| A7    | Phase transform isometry       | ✓ Distances preserved         |
+| A8    | Realm center boundedness       | ✓ All                         |     | μ_k |     | ≤ 1-ε |
+| A12   | Risk monotonicity              | ✓ ∂Risk'/∂coherence < 0       |
+| A12   | Weights sum to 1               | ✓ Σw = 1.0                    |
 
 ### 8.3 Performance Benchmarks
 
-| Operation | Time (μs) | Notes |
-|-----------|-----------|-------|
-| Poincaré embedding | 12 | Including clamping |
-| Hyperbolic distance | 8 | Single pair |
-| Breathing transform | 15 | |
-| Phase transform | 22 | Including Möbius |
-| Risk computation | 5 | |
-| Full pipeline | 180 | All 14 layers |
-| Envelope creation | 450 | AES-256-GCM |
-| Envelope verification | 380 | |
+| Operation             | Time (μs) | Notes              |
+| --------------------- | --------- | ------------------ |
+| Poincaré embedding    | 12        | Including clamping |
+| Hyperbolic distance   | 8         | Single pair        |
+| Breathing transform   | 15        |                    |
+| Phase transform       | 22        | Including Möbius   |
+| Risk computation      | 5         |                    |
+| Full pipeline         | 180       | All 14 layers      |
+| Envelope creation     | 450       | AES-256-GCM        |
+| Envelope verification | 380       |                    |
 
 ### 8.4 Sacred Tongue Integration Test Results
 
@@ -731,16 +760,17 @@ A context-bound cryptographic authorization system combining hyperbolic geometry
 **Pass Rate**: 100% (17/17 functional tests passing)
 **Date**: January 18, 2026
 
-| Test Category | Tests | Pass | Notes |
-|---------------|-------|------|-------|
-| Sacred Tongue Tokenizer | 5 | 5 | Bijectivity, uniqueness, determinism |
-| RWP v3.0 Protocol | 3 | 3 | Encrypt/decrypt, invalid password |
-| SCBE Context Encoder | 4 | 4 | Layer 1-4 pipeline |
-| Integration Tests | 3 | 3 | Mars comms, spectral validation |
-| Property-Based Tests | 3 | 2 | 1 skipped (Hypothesis timeout) |
-| Performance Benchmarks | 3 | 0 | Requires pytest-benchmark (optional) |
+| Test Category           | Tests | Pass | Notes                                |
+| ----------------------- | ----- | ---- | ------------------------------------ |
+| Sacred Tongue Tokenizer | 5     | 5    | Bijectivity, uniqueness, determinism |
+| RWP v3.0 Protocol       | 3     | 3    | Encrypt/decrypt, invalid password    |
+| SCBE Context Encoder    | 4     | 4    | Layer 1-4 pipeline                   |
+| Integration Tests       | 3     | 3    | Mars comms, spectral validation      |
+| Property-Based Tests    | 3     | 2    | 1 skipped (Hypothesis timeout)       |
+| Performance Benchmarks  | 3     | 0    | Requires pytest-benchmark (optional) |
 
 **Key Validation Results**:
+
 - ✓ All 256 bytes × 6 tongues verified (bijective mapping)
 - ✓ 256 distinct tokens per tongue (collision-free)
 - ✓ Harmonic fingerprints are deterministic
@@ -749,6 +779,7 @@ A context-bound cryptographic authorization system combining hyperbolic geometry
 - ✓ Zero-latency Mars communication demonstrated (4 messages, 137-143 tokens each)
 
 **Performance Metrics** (256-byte message):
+
 - Encryption: ~503ms (dominated by Argon2id KDF)
 - Decryption: ~502ms (dominated by Argon2id KDF)
 - Context encoding (Layer 1-4): ~0.9ms
@@ -757,6 +788,6 @@ A context-bound cryptographic authorization system combining hyperbolic geometry
 
 ---
 
-*Document Version: 2.0*
-*Date: January 18, 2026*
-*Inventor: Issac Davis*
+_Document Version: 2.0_
+_Date: January 18, 2026_
+_Inventor: Issac Davis_

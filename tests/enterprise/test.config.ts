@@ -1,6 +1,6 @@
 /**
  * Enterprise-Grade Testing Suite Configuration
- * 
+ *
  * This configuration defines thresholds, timeouts, and settings for the
  * enterprise test suite.
  */

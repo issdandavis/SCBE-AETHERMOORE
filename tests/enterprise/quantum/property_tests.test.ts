@@ -1,9 +1,9 @@
 /**
  * Quantum Attack Resistance - Property-Based Tests
- * 
+ *
  * Feature: enterprise-grade-testing
  * Properties: 1-6 (Quantum Security)
- * 
+ *
  * Tests quantum attack resistance using property-based testing with fast-check.
  * Validates: Requirements AC-1.1 through AC-1.6
  */
@@ -38,7 +38,7 @@ function simulateShorAttack(key: RSAKey, qubits: number): QuantumAttackResult {
   const success = qubits >= requiredQubits;
   const timeComplexity = success ? 2 ** 20 : 2 ** 80;
   const securityBits = success ? 0 : key.keySize / 2;
-  
+
   return { success, timeComplexity, securityBits };
 }
 
@@ -48,7 +48,7 @@ function simulateGroverAttack(keySize: number, qubits: number): QuantumAttackRes
   const success = qubits >= requiredQubits && keySize < 256;
   const timeComplexity = success ? 2 ** (keySize / 2) : 2 ** keySize;
   const securityBits = success ? keySize / 2 : keySize;
-  
+
   return { success, timeComplexity, securityBits };
 }
 
@@ -57,7 +57,7 @@ function testMLKEMResistance(securityLevel: number, qubits: number): QuantumAtta
   const latticeHardness = securityLevel * 1.5; // Lattice problems are harder
   const success = qubits >= latticeHardness;
   const securityBits = success ? 0 : securityLevel;
-  
+
   return { success, timeComplexity: 2 ** securityBits, securityBits };
 }
 
@@ -66,7 +66,7 @@ function testMLDSAResistance(securityLevel: number, qubits: number): QuantumAtta
   const latticeHardness = securityLevel * 1.5;
   const success = qubits >= latticeHardness;
   const securityBits = success ? 0 : securityLevel;
-  
+
   return { success, timeComplexity: 2 ** securityBits, securityBits };
 }
 
@@ -75,7 +75,7 @@ function testLatticeHardness(dimension: number, qubits: number): QuantumAttackRe
   const hardness = Math.log2(dimension) * 20; // Exponential hardness
   const success = qubits >= hardness;
   const securityBits = success ? 0 : hardness;
-  
+
   return { success, timeComplexity: 2 ** securityBits, securityBits };
 }
 
@@ -83,21 +83,21 @@ describe('Quantum Attack Resistance - Property Tests', () => {
   const config = TestConfig.quantum;
 
   // Property 1: Shor's Algorithm Resistance
-  it('Property 1: Shor\'s Algorithm Resistance', () => {
+  it("Property 1: Shor's Algorithm Resistance", () => {
     fc.assert(
       fc.property(
         fc.record({
           keySize: fc.integer({ min: 2048, max: 4096 }),
-          qubits: fc.integer({ min: 10, max: config.maxQubits })
+          qubits: fc.integer({ min: 10, max: config.maxQubits }),
         }),
         (params) => {
           const rsaKey = generateRSAKey(params.keySize);
           const result = simulateShorAttack(rsaKey, params.qubits);
-          
+
           // Attack should fail with limited qubits
           expect(result.success).toBe(false);
           expect(result.securityBits).toBeGreaterThanOrEqual(128);
-          
+
           return !result.success && result.securityBits >= 128;
         }
       ),
@@ -106,21 +106,21 @@ describe('Quantum Attack Resistance - Property Tests', () => {
   });
 
   // Property 2: Grover's Algorithm Resistance
-  it('Property 2: Grover\'s Algorithm Resistance', () => {
+  it("Property 2: Grover's Algorithm Resistance", () => {
     fc.assert(
       fc.property(
         fc.record({
           keySize: fc.integer({ min: 256, max: 512 }),
-          qubits: fc.integer({ min: 10, max: config.maxQubits })
+          qubits: fc.integer({ min: 10, max: config.maxQubits }),
         }),
         (params) => {
           const result = simulateGroverAttack(params.keySize, params.qubits);
-          
+
           // For 256-bit keys, Grover provides 128-bit security
           if (params.keySize >= 256) {
             expect(result.securityBits).toBeGreaterThanOrEqual(128);
           }
-          
+
           return result.securityBits >= 128 || params.keySize < 256;
         }
       ),
@@ -134,15 +134,15 @@ describe('Quantum Attack Resistance - Property Tests', () => {
       fc.property(
         fc.record({
           securityLevel: fc.constantFrom(128, 192, 256),
-          qubits: fc.integer({ min: 10, max: config.maxQubits })
+          qubits: fc.integer({ min: 10, max: config.maxQubits }),
         }),
         (params) => {
           const result = testMLKEMResistance(params.securityLevel, params.qubits);
-          
+
           // ML-KEM should resist quantum attacks
           expect(result.success).toBe(false);
           expect(result.securityBits).toBeGreaterThanOrEqual(128);
-          
+
           return !result.success && result.securityBits >= 128;
         }
       ),
@@ -156,15 +156,15 @@ describe('Quantum Attack Resistance - Property Tests', () => {
       fc.property(
         fc.record({
           securityLevel: fc.constantFrom(128, 192, 256),
-          qubits: fc.integer({ min: 10, max: config.maxQubits })
+          qubits: fc.integer({ min: 10, max: config.maxQubits }),
         }),
         (params) => {
           const result = testMLDSAResistance(params.securityLevel, params.qubits);
-          
+
           // ML-DSA should resist quantum attacks
           expect(result.success).toBe(false);
           expect(result.securityBits).toBeGreaterThanOrEqual(128);
-          
+
           return !result.success && result.securityBits >= 128;
         }
       ),
@@ -178,15 +178,15 @@ describe('Quantum Attack Resistance - Property Tests', () => {
       fc.property(
         fc.record({
           dimension: fc.integer({ min: 512, max: 1024 }),
-          qubits: fc.integer({ min: 10, max: config.maxQubits })
+          qubits: fc.integer({ min: 10, max: config.maxQubits }),
         }),
         (params) => {
           const result = testLatticeHardness(params.dimension, params.qubits);
-          
+
           // Lattice problems should be hard even for quantum computers
           expect(result.success).toBe(false);
           expect(result.securityBits).toBeGreaterThanOrEqual(128);
-          
+
           return !result.success && result.securityBits >= 128;
         }
       ),
@@ -200,11 +200,11 @@ describe('Quantum Attack Resistance - Property Tests', () => {
       fc.property(
         fc.record({
           algorithm: fc.constantFrom('ML-KEM', 'ML-DSA', 'SPHINCS+'),
-          securityLevel: fc.constantFrom(128, 192, 256)
+          securityLevel: fc.constantFrom(128, 192, 256),
         }),
         (params) => {
           let securityBits = 0;
-          
+
           switch (params.algorithm) {
             case 'ML-KEM':
             case 'ML-DSA':
@@ -214,10 +214,10 @@ describe('Quantum Attack Resistance - Property Tests', () => {
               securityBits = params.securityLevel;
               break;
           }
-          
+
           // Target: 256-bit post-quantum security
           expect(securityBits).toBeGreaterThanOrEqual(128);
-          
+
           return securityBits >= 128;
         }
       ),

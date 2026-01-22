@@ -4,32 +4,32 @@
 
 ### Geometric Axioms (A1-A8)
 
-| Axiom | Name | Requirement | Test |
-|-------|------|-------------|------|
-| A1 | Input Domain | t ∈ ℂ^D | `test_complex_state_construction` |
-| A2 | Realification | ℂ^D → ℝ^{2D} isometry | `test_realification_isometry` |
-| A3 | SPD Weighting | G positive definite | `test_weighted_transform_spd` |
-| A4 | Poincaré Embed | ‖u‖ < 1 - ε | `test_poincare_clamping` |
-| A5 | Hyperbolic Distance | Metric properties | `test_hyperbolic_distance_metric` |
-| A6 | Breathing | Diffeomorphism | `test_breathing_diffeomorphism` |
-| A7 | Phase Transform | Isometry | `test_phase_isometry` |
-| A8 | Realm Distance | min_k d_H(u, μ_k) | `test_realm_distance` |
+| Axiom | Name                | Requirement           | Test                              |
+| ----- | ------------------- | --------------------- | --------------------------------- |
+| A1    | Input Domain        | t ∈ ℂ^D               | `test_complex_state_construction` |
+| A2    | Realification       | ℂ^D → ℝ^{2D} isometry | `test_realification_isometry`     |
+| A3    | SPD Weighting       | G positive definite   | `test_weighted_transform_spd`     |
+| A4    | Poincaré Embed      | ‖u‖ < 1 - ε           | `test_poincare_clamping`          |
+| A5    | Hyperbolic Distance | Metric properties     | `test_hyperbolic_distance_metric` |
+| A6    | Breathing           | Diffeomorphism        | `test_breathing_diffeomorphism`   |
+| A7    | Phase Transform     | Isometry              | `test_phase_isometry`             |
+| A8    | Realm Distance      | min_k d_H(u, μ_k)     | `test_realm_distance`             |
 
 ### Signal Axioms (A9-A11)
 
-| Axiom | Name | Requirement | Test |
-|-------|------|-------------|------|
-| A9 | Regularization | Bounded denominators | `test_signal_regularization` |
-| A10 | Coherence | All features ∈ [0,1] | `test_coherence_bounds` |
-| A11 | Triadic | Weighted temporal norms | `test_triadic_aggregation` |
+| Axiom | Name           | Requirement             | Test                         |
+| ----- | -------------- | ----------------------- | ---------------------------- |
+| A9    | Regularization | Bounded denominators    | `test_signal_regularization` |
+| A10   | Coherence      | All features ∈ [0,1]    | `test_coherence_bounds`      |
+| A11   | Triadic        | Weighted temporal norms | `test_triadic_aggregation`   |
 
 ### Risk Axioms (A12-A14)
 
-| Axiom | Name | Requirement | Test |
-|-------|------|-------------|------|
-| A12 | Harmonic | H = exp(d*²) | `test_harmonic_amplification` |
-| A13 | Quasi-Dimensional | Multi-sphere geometry | `test_quasi_dimensional` |
-| A14 | Conformal | Möbius consistency | `test_conformal_invariants` |
+| Axiom | Name              | Requirement           | Test                          |
+| ----- | ----------------- | --------------------- | ----------------------------- |
+| A12   | Harmonic          | H = exp(d\*²)         | `test_harmonic_amplification` |
+| A13   | Quasi-Dimensional | Multi-sphere geometry | `test_quasi_dimensional`      |
+| A14   | Conformal         | Möbius consistency    | `test_conformal_invariants`   |
 
 ## Running Verification
 
@@ -133,6 +133,7 @@ python tests/compliance_report.py --format markdown --output tests/scbe_complian
 ```
 
 Report includes:
+
 - Pass/fail status for each axiom
 - Test coverage metrics
 - Performance benchmarks

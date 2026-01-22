@@ -101,8 +101,6 @@ INPUT                                                              OUTPUT
                     +-----------------+
 ```
 
-
-
 ---
 
 ## FIG. 3: Verification-Order Flowchart (Cheapest Reject First)
@@ -295,8 +293,6 @@ v
     * Numerical stability under adversarial inputs
 ```
 
-
-
 ---
 
 ## FIG. 6: Breathing Transform (Diffeomorphism)
@@ -368,7 +364,7 @@ v
 +-------------------------------------------------------------------------+
 
     FORMULA: T_phase(u) = Q * (a (+) u)
-    
+
     where:
       (+) = Mobius addition
       Q   = orthogonal rotation matrix in O(n)
@@ -424,7 +420,7 @@ v
                             (1 - ||u||^2) * (1 - ||v||^2)
 
     WITH DENOMINATOR FLOOR:
-    
+
     denom = max( (1 - ||u||^2) * (1 - ||v||^2), eps^2 )
 
     +---------------------------------------------------------------------+
@@ -474,8 +470,6 @@ v
     |                                                                     |
     +---------------------------------------------------------------------+
 ```
-
-
 
 ---
 
@@ -695,8 +689,6 @@ v
     +---------------------------------------------------------------------+
 ```
 
-
-
 ---
 
 ## FIG. 12: Fail-to-Noise Output Behavior
@@ -710,4 +702,5 @@ v
     FAILURE MODES (ALL PRODUCE IDENTICAL OUTPUT):
     +---------------------------------------------------------------------+
     |                                                                     |
-    |   FAILURE TYPE        
+    |   FAILURE TYPE
+```

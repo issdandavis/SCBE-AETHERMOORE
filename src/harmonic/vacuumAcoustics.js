@@ -22,10 +22,10 @@ import { CONSTANTS } from './constants.js';
  * @returns Nodal surface value
  */
 export function nodalSurface(x, n, m, L = CONSTANTS.DEFAULT_L) {
-    const [x1, x2] = x;
-    const a = Math.cos((n * Math.PI * x1) / L) * Math.cos((m * Math.PI * x2) / L);
-    const b = Math.cos((m * Math.PI * x1) / L) * Math.cos((n * Math.PI * x2) / L);
-    return a - b;
+  const [x1, x2] = x;
+  const a = Math.cos((n * Math.PI * x1) / L) * Math.cos((m * Math.PI * x2) / L);
+  const b = Math.cos((m * Math.PI * x1) / L) * Math.cos((n * Math.PI * x2) / L);
+  return a - b;
 }
 /**
  * Check if a target position lies on a cymatic resonance nodal line
@@ -40,12 +40,17 @@ export function nodalSurface(x, n, m, L = CONSTANTS.DEFAULT_L) {
  * @param L - Box size
  * @returns True if target is on a nodal line
  */
-export function checkCymaticResonance(agentVector, targetPosition, tolerance = CONSTANTS.DEFAULT_TOLERANCE, L = CONSTANTS.DEFAULT_L) {
-    const v_ref = 1;
-    const n = Math.abs(agentVector[3]) / v_ref;
-    const m = agentVector[5];
-    const N = nodalSurface(targetPosition, n, m, L);
-    return Math.abs(N) < tolerance;
+export function checkCymaticResonance(
+  agentVector,
+  targetPosition,
+  tolerance = CONSTANTS.DEFAULT_TOLERANCE,
+  L = CONSTANTS.DEFAULT_L
+) {
+  const v_ref = 1;
+  const n = Math.abs(agentVector[3]) / v_ref;
+  const m = agentVector[5];
+  const N = nodalSurface(targetPosition, n, m, L);
+  return Math.abs(N) < tolerance;
 }
 /**
  * Calculate bottle beam intensity at a point
@@ -60,18 +65,19 @@ export function checkCymaticResonance(agentVector, targetPosition, tolerance = C
  * @returns Intensity (dimensionless)
  */
 export function bottleBeamIntensity(position, sources, wavelength) {
-    const k = (2 * Math.PI) / wavelength;
-    let re = 0, im = 0;
-    for (const s of sources) {
-        const dx = position[0] - s.pos[0];
-        const dy = position[1] - s.pos[1];
-        const dz = position[2] - s.pos[2];
-        const r = Math.sqrt(dx * dx + dy * dy + dz * dz) + 1e-12;
-        const theta = k * r + s.phase;
-        re += Math.cos(theta);
-        im += Math.sin(theta);
-    }
-    return re * re + im * im;
+  const k = (2 * Math.PI) / wavelength;
+  let re = 0,
+    im = 0;
+  for (const s of sources) {
+    const dx = position[0] - s.pos[0];
+    const dy = position[1] - s.pos[1];
+    const dz = position[2] - s.pos[2];
+    const r = Math.sqrt(dx * dx + dy * dy + dz * dz) + 1e-12;
+    const theta = k * r + s.phase;
+    re += Math.cos(theta);
+    im += Math.sin(theta);
+  }
+  return re * re + im * im;
 }
 /**
  * Flux redistribution for interference cancellation
@@ -84,11 +90,11 @@ export function bottleBeamIntensity(position, sources, wavelength) {
  * @returns Object with canceled energy and corner distribution
  */
 export function fluxRedistribution(amplitude, phaseOffset) {
-    const E_total = 2 * amplitude * amplitude;
-    const central = 4 * amplitude * amplitude * Math.cos(phaseOffset / 2) ** 2;
-    const canceled = Math.max(0, E_total - central);
-    const each = canceled / 4;
-    return { canceled, corners: [each, each, each, each] };
+  const E_total = 2 * amplitude * amplitude;
+  const central = 4 * amplitude * amplitude * Math.cos(phaseOffset / 2) ** 2;
+  const canceled = Math.max(0, E_total - central);
+  const each = canceled / 4;
+  return { canceled, corners: [each, each, each, each] };
 }
 /**
  * Calculate standing wave amplitude at a point
@@ -103,7 +109,7 @@ export function fluxRedistribution(amplitude, phaseOffset) {
  * @returns Amplitude at (x, t)
  */
 export function standingWaveAmplitude(x, t, A0, k, omega) {
-    return 2 * A0 * Math.sin(k * x) * Math.cos(omega * t);
+  return 2 * A0 * Math.sin(k * x) * Math.cos(omega * t);
 }
 /**
  * Find resonant frequencies for a box cavity
@@ -118,8 +124,8 @@ export function standingWaveAmplitude(x, t, A0, k, omega) {
  * @returns Resonant frequency
  */
 export function cavityResonance(n, m, l, dimensions, c = 343) {
-    const [Lx, Ly, Lz] = dimensions;
-    const term = (n / Lx) ** 2 + (m / Ly) ** 2 + (l / Lz) ** 2;
-    return (c / 2) * Math.sqrt(term);
+  const [Lx, Ly, Lz] = dimensions;
+  const term = (n / Lx) ** 2 + (m / Ly) ** 2 + (l / Lz) ** 2;
+  return (c / 2) * Math.sqrt(term);
 }
 //# sourceMappingURL=vacuumAcoustics.js.map

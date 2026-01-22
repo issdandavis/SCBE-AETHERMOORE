@@ -178,6 +178,7 @@ start src/lambda/demo.html
 ```
 
 The demo shows:
+
 - Interactive Poincaré ball with hyperbolic distance
 - Risk amplification via H(d*) = exp(d*²)
 - Anti-fragile stiffness response

@@ -44,7 +44,7 @@ function dot(u: number[], v: number[]): number {
  * Scale a vector by a scalar
  */
 function scale(v: number[], s: number): number[] {
-  return v.map(x => x * s);
+  return v.map((x) => x * s);
 }
 
 /**
@@ -195,7 +195,7 @@ export interface BreathConfig {
 export function breathTransform(
   p: number[],
   t: number,
-  config: BreathConfig = { amplitude: 0.05, omega: 1.0 },
+  config: BreathConfig = { amplitude: 0.05, omega: 1.0 }
 ): number[] {
   const n = norm(p);
   if (n < EPSILON) return p.map(() => 0);
@@ -221,7 +221,7 @@ export function breathTransform(
 export function inverseBreathTransform(
   bp: number[],
   t: number,
-  config: BreathConfig = { amplitude: 0.05, omega: 1.0 },
+  config: BreathConfig = { amplitude: 0.05, omega: 1.0 }
 ): number[] {
   const n = norm(bp);
   if (n < EPSILON) return bp.map(() => 0);
@@ -255,7 +255,7 @@ export function inverseBreathTransform(
 export function phaseModulation(
   p: number[],
   theta: number,
-  plane: [number, number] = [0, 1],
+  plane: [number, number] = [0, 1]
 ): number[] {
   const [i, j] = plane;
   if (i >= p.length || j >= p.length || i === j) {
@@ -284,7 +284,7 @@ export function phaseModulation(
  */
 export function multiPhaseModulation(
   p: number[],
-  rotations: Array<{ theta: number; plane: [number, number] }>,
+  rotations: Array<{ theta: number; plane: [number, number] }>
 ): number[] {
   let result = [...p];
   for (const { theta, plane } of rotations) {
@@ -346,7 +346,7 @@ export function multiWellGradient(p: number[], wells: Well[]): number[] {
     const diff = sub(p, well.center);
     const distSq = normSq(diff);
     const expTerm = Math.exp(-distSq / (2 * well.sigma * well.sigma));
-    const factor = -well.weight * expTerm / (well.sigma * well.sigma);
+    const factor = (-well.weight * expTerm) / (well.sigma * well.sigma);
 
     for (let i = 0; i < p.length; i++) {
       grad[i] += factor * diff[i];
@@ -375,7 +375,7 @@ export function applyHyperbolicPipeline(
   t: number,
   theta: number,
   breathConfig?: BreathConfig,
-  wells?: Well[],
+  wells?: Well[]
 ): { point: number[]; potential: number; distance: number } {
   // Ensure point is in ball
   let point = projectToBall(p);

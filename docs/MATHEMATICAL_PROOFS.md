@@ -9,7 +9,7 @@
 This document provides rigorous, complete proofs for all mathematical claims in the 14-layer Spectral Context-Bound Encryption (SCBE) hyperbolic governance system. Each theorem is proven from first principles using:
 
 - Complex Analysis
-- Riemannian Geometry  
+- Riemannian Geometry
 - Signal Processing
 - Topology
 
@@ -42,7 +42,7 @@ The map Ψ_α: ℝⁿ → 𝔹ⁿ defined by:
 
 satisfies ‖u‖ < 1 for all x ∈ ℝⁿ, i.e., maps into 𝔹ⁿ.
 
-**Proof:** For x = 0, Ψ_α(0) = 0 ∈ 𝔹ⁿ since ‖0‖ = 0 < 1. For x ≠ 0, let r := α‖x‖ ≥ 0. Then Ψ_α(x) = tanh(r) · (x/‖x‖). Since x/‖x‖ is a unit vector with ‖x/‖x‖‖ = 1, and tanh: ℝ → (-1, 1) is bounded with |tanh(r)| < 1 for all r ∈ ℝ, we have ‖Ψ_α(x)‖ = |tanh(r)| · 1 = |tanh(r)| < 1. Thus Ψ_α(x) ∈ 𝔹ⁿ for all x ∈ ℝⁿ. ∎
+**Proof:** For x = 0, Ψ*α(0) = 0 ∈ 𝔹ⁿ since ‖0‖ = 0 < 1. For x ≠ 0, let r := α‖x‖ ≥ 0. Then Ψ*α(x) = tanh(r) · (x/‖x‖). Since x/‖x‖ is a unit vector with ‖x/‖x‖‖ = 1, and tanh: ℝ → (-1, 1) is bounded with |tanh(r)| < 1 for all r ∈ ℝ, we have ‖Ψ*α(x)‖ = |tanh(r)| · 1 = |tanh(r)| < 1. Thus Ψ*α(x) ∈ 𝔹ⁿ for all x ∈ ℝⁿ. ∎
 
 ### Layer 5: Hyperbolic Distance (The Invariant Metric)
 
@@ -58,10 +58,10 @@ is a true metric, satisfying:
 
 1. **Non-negativity:** d_ℍ(u, v) ≥ 0 for all u, v ∈ 𝔹ⁿ
 2. **Identity of Indiscernibles:** d_ℍ(u, v) = 0 ⟺ u = v
-3. **Symmetry:** d_ℍ(u, v) = d_ℍ(v, u) for all u, v
-4. **Triangle Inequality:** d_ℍ(u, w) ≤ d_ℍ(u, v) + d_ℍ(v, w) for all u, v, w
+3. **Symmetry:** d*ℍ(u, v) = d*ℍ(v, u) for all u, v
+4. **Triangle Inequality:** d*ℍ(u, w) ≤ d*ℍ(u, v) + d_ℍ(v, w) for all u, v, w
 
-**Proof:** (1) Since arcosh: [1, ∞) → [0, ∞) is non-negative and increasing, and the argument 1 + 2‖u-v‖²/((1-‖u‖²)(1-‖v‖²)) ≥ 1, we have d_ℍ ≥ 0. (2) If u = v, then ‖u-v‖ = 0, so d_ℍ(u,u) = arcosh(1) = 0. Conversely, if d_ℍ(u,v) = 0, then the argument equals 1, implying ‖u-v‖² = 0, hence u = v. (3) Since ‖u-v‖ = ‖v-u‖ and the formula is symmetric in u and v, d_ℍ(u,v) = d_ℍ(v,u). (4) This is a classical result in Riemannian geometry - the Poincaré ball has constant negative sectional curvature -1, and the hyperbolic distance is the geodesic distance of this Riemannian metric, which satisfies the triangle inequality by general Riemannian geometry. ∎
+**Proof:** (1) Since arcosh: [1, ∞) → [0, ∞) is non-negative and increasing, and the argument 1 + 2‖u-v‖²/((1-‖u‖²)(1-‖v‖²)) ≥ 1, we have d*ℍ ≥ 0. (2) If u = v, then ‖u-v‖ = 0, so d*ℍ(u,u) = arcosh(1) = 0. Conversely, if d*ℍ(u,v) = 0, then the argument equals 1, implying ‖u-v‖² = 0, hence u = v. (3) Since ‖u-v‖ = ‖v-u‖ and the formula is symmetric in u and v, d*ℍ(u,v) = d_ℍ(v,u). (4) This is a classical result in Riemannian geometry - the Poincaré ball has constant negative sectional curvature -1, and the hyperbolic distance is the geodesic distance of this Riemannian metric, which satisfies the triangle inequality by general Riemannian geometry. ∎
 
 **Theorem 5.2 (Metric Invariance)**
 
@@ -88,7 +88,7 @@ with R > 1 is strictly increasing in d for d > 0:
 **Corollary 12.2 (Boundary Behavior)**
 
 - H(0, R) = R⁰ = 1: No amplification at realm center
-- lim_{d→∞} H(d, R) = ∞: Exponential explosion far from safe regions
+- lim\_{d→∞} H(d, R) = ∞: Exponential explosion far from safe regions
 - Growth rate: d² in exponent produces superexponential amplification
 
 ## 🔐 Security Implications

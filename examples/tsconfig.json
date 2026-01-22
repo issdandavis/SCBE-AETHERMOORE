@@ -6,7 +6,5 @@
     "composite": true
   },
   "include": ["./**/*"],
-  "references": [
-    { "path": ".." }
-  ]
+  "references": [{ "path": ".." }]
 }

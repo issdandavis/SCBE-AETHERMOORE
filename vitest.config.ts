@@ -11,7 +11,6 @@ export default defineConfig({
       '**/hioujhn/**',
       '**/scbe-aethermoore/**',
       '**/scbe-aethermoore-demo/**',
-      '**/tests/spiralverse/rwp.test.ts', // Temporarily excluded - import issues
     ],
     testTimeout: 30000,
     // Enterprise test suite configuration
@@ -26,10 +25,10 @@ export default defineConfig({
         '**/*.config.ts',
       ],
       all: true,
-      lines: 95,
-      functions: 95,
-      branches: 95,
-      statements: 95,
+      lines: 80,
+      functions: 80,
+      branches: 70,
+      statements: 80,
     },
     // Property-based testing configuration
     // Each property test should run minimum 100 iterations

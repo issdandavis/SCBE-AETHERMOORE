@@ -19,6 +19,7 @@ SCBE_Production_Pack/
 ## Core Modules
 
 ### src/crypto/ (TypeScript Security Core)
+
 - `envelope.ts`: Main API (`createEnvelope`, `verifyEnvelope`)
 - `kms.ts`: Key management abstraction
 - `nonceManager.ts`: Session-scoped nonce generation
@@ -26,21 +27,25 @@ SCBE_Production_Pack/
 - `hkdf.ts`, `jcs.ts`, `bloom.ts`: Cryptographic utilities
 
 ### src/scbe_cpse_unified.py (Python Mathematical Core)
+
 - `SCBEConfig`: Configuration dataclass with A1-A12 validation
 - `HyperbolicOps`: Poincaré ball operations (embed, clamp, distance, Möbius)
 - `SCBESystem`: 14-layer pipeline (L1-L14)
 - `test_axiom_compliance()`: Axiom verification
 
 ### src/metrics/ (Observability)
+
 - `telemetry.ts`: Pluggable metrics with dimensional tags
 
 ### src/rollout/ (Deployment Safety)
+
 - `canary.ts`: Staged rollout manager (5%→25%→50%→100%)
 - `circuitBreaker.ts`: Failure-driven circuit breaker
 
 ## Configuration Files
 
 ### config/ (Operational Thresholds)
+
 - `scbe.alerts.yml`: Alert thresholds (GCM failures, nonce reuse, latency)
 - `sentinel.yml`: Gating rules (rate limits, risk weights)
 - `steward.yml`: Review policies (SLA, approvers)
@@ -48,6 +53,7 @@ SCBE_Production_Pack/
 ## Documentation
 
 ### docs/
+
 - `COMPREHENSIVE_MATH_SCBE.md`: Full mathematical specification with axioms A1-A12
 - `SCBE_Production_Security_Spec.md`: Production security requirements
 

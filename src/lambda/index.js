@@ -28,14 +28,14 @@ const ManifoldClassifier = {
 
   objectDepth(obj, d = 0) {
     if (typeof obj !== 'object' || obj === null) return d;
-    return Math.max(...Object.values(obj).map(v => this.objectDepth(v, d + 1)), d);
+    return Math.max(...Object.values(obj).map((v) => this.objectDepth(v, d + 1)), d);
   },
 
   computeLaneBit(geometry) {
     const { entropy, complexity, depth } = geometry;
     const r = Math.sqrt(entropy * entropy + (complexity / 100) ** 2);
     const theta = Math.atan2(depth, entropy) * this.PHI;
-    const projection = Math.sin(theta) * r / (1 + Math.abs(Math.cos(theta * this.PHI)));
+    const projection = (Math.sin(theta) * r) / (1 + Math.abs(Math.cos(theta * this.PHI)));
     const normalized = (Math.tanh(projection) + 1) / 2;
     return { laneBit: normalized >= this.LANE_THRESHOLD ? 1 : 0, confidence: normalized };
   },
@@ -45,9 +45,11 @@ const ManifoldClassifier = {
     const { laneBit, confidence } = this.computeLaneBit(geometry);
     return {
       lane: laneBit === 0 ? 'brain' : 'oversight',
-      laneBit, confidence: Math.round(confidence * 1000) / 1000, geometry
+      laneBit,
+      confidence: Math.round(confidence * 1000) / 1000,
+      geometry,
     };
-  }
+  },
 };
 
 // SEAM 2: Trajectory + Drift Coherence Kernel (5-variable authorization)
@@ -62,14 +64,14 @@ const TrajectoryKernel = {
       velocity: this.computeVelocity(request.timestamp || now, now),
       curvature: this.computeCurvature(request.history || []),
       phase: this.computePhase(now),
-      signature: this.computeSignature(request)
+      signature: this.computeSignature(request),
     };
   },
 
   hashOrigin(sourceId) {
     let hash = 0;
     for (let i = 0; i < sourceId.length; i++) {
-      hash = ((hash << 5) - hash) + sourceId.charCodeAt(i);
+      hash = (hash << 5) - hash + sourceId.charCodeAt(i);
       hash |= 0;
     }
     return Math.abs(Math.sin(hash));
@@ -82,20 +84,23 @@ const TrajectoryKernel = {
 
   computeCurvature(history) {
     if (history.length < 3) return 0.5;
-    const diffs = [], diffs2 = [];
-    for (let i = 1; i < history.length; i++) diffs.push(history[i] - history[i-1]);
-    for (let i = 1; i < diffs.length; i++) diffs2.push(diffs[i] - diffs[i-1]);
+    const diffs = [],
+      diffs2 = [];
+    for (let i = 1; i < history.length; i++) diffs.push(history[i] - history[i - 1]);
+    for (let i = 1; i < diffs.length; i++) diffs2.push(diffs[i] - diffs[i - 1]);
     const avgCurve = diffs2.reduce((a, b) => a + b, 0) / diffs2.length;
     return Math.tanh(avgCurve / 100) * 0.5 + 0.5;
   },
 
-  computePhase(now) { return (now % 60000) / 60000; },
+  computePhase(now) {
+    return (now % 60000) / 60000;
+  },
 
   computeSignature(request) {
     const payload = JSON.stringify(request.payload || {});
     let sig = 0;
-    for (let i = 0; i < payload.length; i++) sig = (sig * 31 + payload.charCodeAt(i)) & 0xFFFFFFFF;
-    return (sig >>> 0) / 0xFFFFFFFF;
+    for (let i = 0; i < payload.length; i++) sig = (sig * 31 + payload.charCodeAt(i)) & 0xffffffff;
+    return (sig >>> 0) / 0xffffffff;
   },
 
   computeCoherence(kernel) {
@@ -115,12 +120,13 @@ const TrajectoryKernel = {
     const drift = this.computeDrift(kernel);
     const authorized = coherence >= this.COHERENCE_THRESHOLD && drift <= this.DRIFT_TOLERANCE;
     return {
-      authorized, kernel,
+      authorized,
+      kernel,
       coherence: Math.round(coherence * 1000) / 1000,
       drift: Math.round(drift * 1000) / 1000,
-      thresholds: { coherence: this.COHERENCE_THRESHOLD, drift: this.DRIFT_TOLERANCE }
+      thresholds: { coherence: this.COHERENCE_THRESHOLD, drift: this.DRIFT_TOLERANCE },
     };
-  }
+  },
 };
 
 // Lambda Handler - API Gateway Integration
@@ -130,12 +136,16 @@ exports.handler = async (event) => {
   const respond = (statusCode, body) => ({
     statusCode,
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
   });
 
   try {
     if (method === 'GET' && path === '/health') {
-      return respond(200, { status: 'healthy', seams: ['manifold-dual-lane', 'trajectory-kernel'], ts: Date.now() });
+      return respond(200, {
+        status: 'healthy',
+        seams: ['manifold-dual-lane', 'trajectory-kernel'],
+        ts: Date.now(),
+      });
     }
 
     const body = event.body ? JSON.parse(event.body) : {};
@@ -152,9 +162,19 @@ exports.handler = async (event) => {
       const classification = ManifoldClassifier.classify({ payload: body, route: 'oversight' });
       const verification = TrajectoryKernel.verify({ payload: body, ...body });
       if (!verification.authorized) {
-        return respond(403, { error: 'Trajectory verification failed', classification, verification });
+        return respond(403, {
+          error: 'Trajectory verification failed',
+          classification,
+          verification,
+        });
       }
-      return respond(200, { processed: true, lane: 'oversight', latency: 'strict', classification, verification });
+      return respond(200, {
+        processed: true,
+        lane: 'oversight',
+        latency: 'strict',
+        classification,
+        verification,
+      });
     }
 
     if (method === 'POST' && path === '/verify') {
@@ -162,7 +182,10 @@ exports.handler = async (event) => {
       return respond(verification.authorized ? 200 : 403, verification);
     }
 
-    return respond(404, { error: 'Not found', endpoints: ['/health', '/brain-lane', '/oversight-lane', '/verify'] });
+    return respond(404, {
+      error: 'Not found',
+      endpoints: ['/health', '/brain-lane', '/oversight-lane', '/verify'],
+    });
   } catch (err) {
     return respond(500, { error: 'Internal error', message: err.message });
   }

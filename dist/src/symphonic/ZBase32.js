@@ -13,7 +13,8 @@
  * @module symphonic/ZBase32
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAlphabet = exports.ZBase32 = void 0;
+exports.ZBase32 = void 0;
+exports.getAlphabet = getAlphabet;
 /**
  * Z-Base-32 alphabet optimized for human usability
  * Most common characters map to easiest-to-write symbols
@@ -200,5 +201,4 @@ exports.ZBase32 = ZBase32;
 function getAlphabet() {
     return ALPHABET;
 }
-exports.getAlphabet = getAlphabet;
 //# sourceMappingURL=ZBase32.js.map
