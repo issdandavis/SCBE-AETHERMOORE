@@ -53,42 +53,48 @@ jobs:
 
       - name: Sync symphonic_cipher to gumroad
         run: |
+          set -euo pipefail
           echo "🔄 Syncing SCBE components to gumroad-automation-demo"
-          
-          # Create sync directory
+
+          VERSION="3.0.0"
+          TIMESTAMP="$(date -Iseconds)"
+
           mkdir -p target/.sync
           mkdir -p target/scbe_aethermoore
-          
-          # Sync symphonic_cipher
+          mkdir -p target/SELLABLE_PACKAGES
+
           if [ -d "source/symphonic_cipher" ]; then
             mkdir -p target/symphonic_cipher
-            rsync -av source/symphonic_cipher/ target/symphonic_cipher/
+            rsync -av --delete source/symphonic_cipher/ target/symphonic_cipher/
             echo "✅ Synced symphonic_cipher/"
           fi
-          
-          # Sync src (core SCBE code)
+
           if [ -d "source/src" ]; then
             mkdir -p target/scbe_aethermoore/src
-            rsync -av source/src/ target/scbe_aethermoore/src/
+            rsync -av --delete source/src/ target/scbe_aethermoore/src/
             echo "✅ Synced src/"
           fi
-          
-          # Sync demo content for SELLABLE_PACKAGES
+
           if [ -d "source/demo" ]; then
             mkdir -p target/SELLABLE_PACKAGES/scbe-demo-latest
-            rsync -av source/demo/ target/SELLABLE_PACKAGES/scbe-demo-latest/
+            rsync -av --delete source/demo/ target/SELLABLE_PACKAGES/scbe-demo-latest/
             echo "✅ Synced demo to SELLABLE_PACKAGES"
           fi
-          
-          # Sync docs
+
           if [ -d "source/docs" ]; then
             mkdir -p target/scbe_aethermoore/docs
-            rsync -av source/docs/ target/scbe_aethermoore/docs/
+            rsync -av --delete source/docs/ target/scbe_aethermoore/docs/
             echo "✅ Synced docs/"
           fi
-          
-          # Create version manifest
-          echo '{"source": "scbe-aethermoore-demo", "version": "3.0.0", "timestamp": "'$(date -Iseconds)'", "commit": "${{ github.sha }}"}' > target/scbe_aethermoore/VERSION.json
+
+          cat <<EOF > target/scbe_aethermoore/VERSION.json
+          {
+            "source": "scbe-aethermoore-demo",
+            "version": "${VERSION}",
+            "timestamp": "${TIMESTAMP}",
+            "commit": "${{ github.sha }}"
+          }
+EOF
 
       - name: Commit and push to gumroad
         working-directory: target
@@ -99,11 +105,10 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to sync"
           else
-            git commit -m "🔄 Sync SCBE v3.0 from scbe-aethermoore-demo [skip ci]
-            
-            Source: ${{ github.repository }}@${{ github.sha }}
-            Triggered by: ${{ github.actor }}
-            Components: symphonic_cipher, src, demo, docs"
+            git commit -m "🔄 Sync SCBE v3.0 from scbe-aethermoore-demo [skip ci]" \
+              -m "Source: ${{ github.repository }}@${{ github.sha }}" \
+              -m "Triggered by: ${{ github.actor }}" \
+              -m "Components: symphonic_cipher, src, demo, docs"
             git push
             echo "✅ Changes pushed to gumroad-automation-demo"
           fi
@@ -126,9 +131,14 @@ jobs:
           
           # Update distribution info
           if [ -f "SELLABLE_PACKAGES/distribution_info.json" ]; then
-            # Add SCBE entry to distribution
-            jq '.packages += [{"name": "scbe-aethermoore-v3.0", "source": "scbe-aethermoore-demo", "updated": "'$(date -Iseconds)'"}]' \
-              SELLABLE_PACKAGES/distribution_info.json > tmp.json && mv tmp.json SELLABLE_PACKAGES/distribution_info.json
+            UPDATED="$(date -Iseconds)"
+            jq --arg updated "$UPDATED" '
+              if has("packages") then
+                .packages += [{"name": "scbe-aethermoore-v3.0", "source": "scbe-aethermoore-demo", "updated": $updated}]
+              else
+                . + {"packages": [{"name": "scbe-aethermoore-v3.0", "source": "scbe-aethermoore-demo", "updated": $updated}]}
+              end
+            ' SELLABLE_PACKAGES/distribution_info.json > tmp.json && mv tmp.json SELLABLE_PACKAGES/distribution_info.json
           fi
           
       - name: Commit distribution update

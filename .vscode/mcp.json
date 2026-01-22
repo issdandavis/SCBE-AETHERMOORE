@@ -8,7 +8,7 @@
 				"-i",
 				"--rm",
 				"-e",
-				"GITHUB_PERSONAL_ACCESS_TOKEN=${input:token}",
+				"GITHUB_TOKEN=${input:token}",
 				"ghcr.io/github/github-mcp-server:0.29.0"
 			],
 			"gallery": "https://api.mcp.github.com",
