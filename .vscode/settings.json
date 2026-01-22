@@ -33,9 +33,7 @@
   "python.analysis.autoImportCompletions": true,
   "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,
-  "python.testing.pytestArgs": [
-    "tests"
-  ],
+  "python.testing.pytestArgs": ["tests"],
   "python.linting.enabled": true,
   "python.linting.flake8Enabled": true,
   "python.linting.mypyEnabled": true,

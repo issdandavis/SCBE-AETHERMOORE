@@ -19,13 +19,12 @@ import { assertIntGE, assertFinite, log2 } from './assertions.js';
  * @returns Scaled value
  */
 export function harmonicScale(d, R = CONSTANTS.DEFAULT_R) {
-    assertIntGE('d', d, 1);
-    if (!(R > 0))
-        throw new RangeError('R must be > 0');
-    const e = d * d * Math.log(R);
-    const y = Math.exp(e);
-    assertFinite(y, 'harmonicScale overflow');
-    return y;
+  assertIntGE('d', d, 1);
+  if (!(R > 0)) throw new RangeError('R must be > 0');
+  const e = d * d * Math.log(R);
+  const y = Math.exp(e);
+  assertFinite(y, 'harmonicScale overflow');
+  return y;
 }
 /**
  * Calculate security bits with harmonic amplification
@@ -36,10 +35,9 @@ export function harmonicScale(d, R = CONSTANTS.DEFAULT_R) {
  * @returns Amplified security bits
  */
 export function securityBits(baseBits, d, R = CONSTANTS.DEFAULT_R) {
-    assertIntGE('d', d, 1);
-    if (!(R > 0))
-        throw new RangeError('R must be > 0');
-    return baseBits + d * d * log2(R);
+  assertIntGE('d', d, 1);
+  if (!(R > 0)) throw new RangeError('R must be > 0');
+  return baseBits + d * d * log2(R);
 }
 /**
  * Calculate security level with harmonic scaling
@@ -50,7 +48,7 @@ export function securityBits(baseBits, d, R = CONSTANTS.DEFAULT_R) {
  * @returns Scaled security level
  */
 export function securityLevel(base, d, R = CONSTANTS.DEFAULT_R) {
-    return base * harmonicScale(d, R);
+  return base * harmonicScale(d, R);
 }
 /**
  * Harmonic distance in 6D phase space with weighted dimensions
@@ -62,14 +60,14 @@ export function securityLevel(base, d, R = CONSTANTS.DEFAULT_R) {
  * @returns Weighted Euclidean distance
  */
 export function harmonicDistance(u, v) {
-    const R5 = CONSTANTS.R_FIFTH;
-    const g = [1, 1, 1, R5, R5 * R5, R5 * R5 * R5];
-    let s = 0;
-    for (let i = 0; i < 6; i++) {
-        const d = u[i] - v[i];
-        s += g[i] * d * d;
-    }
-    return Math.sqrt(s);
+  const R5 = CONSTANTS.R_FIFTH;
+  const g = [1, 1, 1, R5, R5 * R5, R5 * R5 * R5];
+  let s = 0;
+  for (let i = 0; i < 6; i++) {
+    const d = u[i] - v[i];
+    s += g[i] * d * d;
+  }
+  return Math.sqrt(s);
 }
 /**
  * Transpose a frequency by octaves
@@ -79,8 +77,7 @@ export function harmonicDistance(u, v) {
  * @returns Transposed frequency
  */
 export function octaveTranspose(freq, octaves) {
-    if (!(freq > 0))
-        throw new RangeError('freq must be > 0');
-    return freq * Math.pow(2, octaves);
+  if (!(freq > 0)) throw new RangeError('freq must be > 0');
+  return freq * Math.pow(2, octaves);
 }
 //# sourceMappingURL=harmonicScaling.js.map

@@ -12,7 +12,9 @@
  * @module spaceTor/trust-manager
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.languesMetricFlux = exports.languesMetric = exports.TrustManager = exports.DEFAULT_LANGUES_PARAMS = exports.SacredTongue = void 0;
+exports.TrustManager = exports.DEFAULT_LANGUES_PARAMS = exports.SacredTongue = void 0;
+exports.languesMetric = languesMetric;
+exports.languesMetricFlux = languesMetricFlux;
 /**
  * Sacred Tongue identifiers
  */
@@ -23,7 +25,7 @@ var SacredTongue;
     SacredTongue[SacredTongue["RUNETHIC"] = 2] = "RUNETHIC";
     SacredTongue[SacredTongue["CASSISIVADAN"] = 3] = "CASSISIVADAN";
     SacredTongue[SacredTongue["UMBROTH"] = 4] = "UMBROTH";
-    SacredTongue[SacredTongue["DRAUMRIC"] = 5] = "DRAUMRIC"; // DR - Harmonic 5 (w=1.667)
+    SacredTongue[SacredTongue["DRAUMRIC"] = 5] = "DRAUMRIC";
 })(SacredTongue || (exports.SacredTongue = SacredTongue = {}));
 /**
  * Default Langues parameters (production-ready)
@@ -36,11 +38,11 @@ exports.DEFAULT_LANGUES_PARAMS = {
     // Temporal frequencies (2π/T_l)
     omega: [1, 2, 3, 4, 5, 6],
     // Phase offsets (2πk/6)
-    phi: [0, Math.PI / 3, 2 * Math.PI / 3, Math.PI, 4 * Math.PI / 3, 5 * Math.PI / 3],
+    phi: [0, Math.PI / 3, (2 * Math.PI) / 3, Math.PI, (4 * Math.PI) / 3, (5 * Math.PI) / 3],
     // Ideal values (neutral trust)
     mu: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
     // Full dimensional participation (polly mode)
-    nu: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    nu: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
 };
 /**
  * Trust Manager for Space Tor network
@@ -182,7 +184,7 @@ class TrustManager {
             normalized,
             contributions,
             gradient,
-            level
+            level,
         };
     }
     /**
@@ -218,7 +220,7 @@ class TrustManager {
                 trustVector,
                 lastUpdate: Date.now(),
                 history: [score],
-                anomalies: []
+                anomalies: [],
             });
         }
     }
@@ -306,7 +308,7 @@ class TrustManager {
             mediumTrust,
             lowTrust,
             criticalTrust,
-            averageScore: this.nodes.size > 0 ? totalScore / this.nodes.size : 0
+            averageScore: this.nodes.size > 0 ? totalScore / this.nodes.size : 0,
         };
     }
     /**
@@ -340,7 +342,6 @@ function languesMetric(x, mu, w, beta, omega, phi, t, nu) {
     }
     return L;
 }
-exports.languesMetric = languesMetric;
 /**
  * Langues metric with flux (breathing dimensions)
  *
@@ -357,7 +358,6 @@ exports.languesMetric = languesMetric;
 function languesMetricFlux(x, mu, w, beta, omega, phi, t, nu) {
     return languesMetric(x, mu, w, beta, omega, phi, t, nu);
 }
-exports.languesMetricFlux = languesMetricFlux;
 /**
  * Export all functions for Layer 3 integration
  */
@@ -366,6 +366,6 @@ exports.default = {
     languesMetric,
     languesMetricFlux,
     DEFAULT_LANGUES_PARAMS: exports.DEFAULT_LANGUES_PARAMS,
-    SacredTongue
+    SacredTongue,
 };
 //# sourceMappingURL=trust-manager.js.map

@@ -1,0 +1,5 @@
+ERROR: usage: pytest [options] [file_or_dir] [file_or_dir] [...]
+pytest: error: unrecognized arguments: --cov=src --cov-report=term-missing --cov-report=html --cov-report=json
+  inifile: /home/user/scbe-aethermoore-demo/pytest.ini
+  rootdir: /home/user/scbe-aethermoore-demo
+

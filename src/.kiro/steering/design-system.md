@@ -5,6 +5,7 @@ This document provides guidance for integrating Figma designs into the SCBE Prod
 ## Project Overview
 
 SCBE is primarily a cryptographic/mathematical backend system with:
+
 - **TypeScript**: Cryptographic envelope, metrics, rollout, self-healing modules
 - **Python**: Mathematical core (14-layer hyperbolic geometry pipeline)
 - **HTML/CSS**: Demo UI using Tailwind CSS
@@ -12,6 +13,7 @@ SCBE is primarily a cryptographic/mathematical backend system with:
 ## Styling Approach
 
 ### Primary: Tailwind CSS
+
 The project uses Tailwind CSS via CDN for demo/UI components:
 
 ```html
@@ -19,43 +21,51 @@ The project uses Tailwind CSS via CDN for demo/UI components:
 ```
 
 ### Custom CSS Patterns
+
 Custom animations and effects are defined inline:
 
 ```css
 /* Glass morphism effect */
-.glass { 
-  background: rgba(255,255,255,0.1); 
-  backdrop-filter: blur(10px); 
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 /* Gradient backgrounds */
-.gradient-bg { 
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); 
+.gradient-bg {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
 }
 
 /* Glow effects */
-.glow { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
-.glow-green { box-shadow: 0 0 20px rgba(34, 197, 94, 0.5); }
-.glow-red { box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
+.glow {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+}
+.glow-green {
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
+}
+.glow-red {
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+}
 ```
 
 ## Color Palette
 
-| Purpose | Tailwind Class | Hex |
-|---------|---------------|-----|
-| Primary Blue | `blue-600` | #2563eb |
-| Success Green | `green-500` | #22c55e |
-| Warning Yellow | `yellow-400` | #facc15 |
-| Danger Red | `red-500` | #ef4444 |
-| Purple Accent | `purple-500` | #a855f7 |
-| Background Dark | Custom | #1a1a2e |
-| Text Primary | `white` | #ffffff |
-| Text Secondary | `gray-300` | #d1d5db |
-| Text Muted | `gray-400` | #9ca3af |
+| Purpose         | Tailwind Class | Hex     |
+| --------------- | -------------- | ------- |
+| Primary Blue    | `blue-600`     | #2563eb |
+| Success Green   | `green-500`    | #22c55e |
+| Warning Yellow  | `yellow-400`   | #facc15 |
+| Danger Red      | `red-500`      | #ef4444 |
+| Purple Accent   | `purple-500`   | #a855f7 |
+| Background Dark | Custom         | #1a1a2e |
+| Text Primary    | `white`        | #ffffff |
+| Text Secondary  | `gray-300`     | #d1d5db |
+| Text Muted      | `gray-400`     | #9ca3af |
 
 ## Component Patterns
 
 ### Cards/Sections
+
 ```html
 <section class="glass rounded-2xl p-8 mb-8 border border-white/10">
   <!-- content -->
@@ -63,25 +73,26 @@ Custom animations and effects are defined inline:
 ```
 
 ### Status Indicators
+
 ```html
 <!-- Safe/Success -->
 <div class="p-4 bg-green-500/20 rounded-xl border border-green-500/30">
-
-<!-- Warning -->
-<div class="p-4 bg-yellow-500/20 rounded-xl border border-yellow-500/30">
-
-<!-- Danger/Error -->
-<div class="p-4 bg-red-500/20 rounded-xl border border-red-500/30">
+  <!-- Warning -->
+  <div class="p-4 bg-yellow-500/20 rounded-xl border border-yellow-500/30">
+    <!-- Danger/Error -->
+    <div class="p-4 bg-red-500/20 rounded-xl border border-red-500/30"></div>
+  </div>
+</div>
 ```
 
 ### Buttons
+
 ```html
-<button class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition">
-  Action
-</button>
+<button class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition">Action</button>
 ```
 
 ### Metrics Display
+
 ```html
 <div class="font-mono text-sm">
   <span class="text-blue-400">value</span>

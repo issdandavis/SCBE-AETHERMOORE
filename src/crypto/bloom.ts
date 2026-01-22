@@ -17,14 +17,16 @@ export class BloomFilter {
   add(s: string) {
     for (let i = 0; i < this.k; i++) {
       const bit = this.hN(s, i);
-      const byte = bit >> 3, mask = 1 << (bit & 7);
+      const byte = bit >> 3,
+        mask = 1 << (bit & 7);
       this.bits[byte] |= mask;
     }
   }
   mightHave(s: string) {
     for (let i = 0; i < this.k; i++) {
       const bit = this.hN(s, i);
-      const byte = bit >> 3, mask = 1 << (bit & 7);
+      const byte = bit >> 3,
+        mask = 1 << (bit & 7);
       if ((this.bits[byte] & mask) === 0) return false;
     }
     return true;

@@ -15,46 +15,43 @@ const EPSILON = 1e-10;
  * Compute Euclidean norm of a vector
  */
 function norm(v) {
-    let sum = 0;
-    for (const x of v)
-        sum += x * x;
-    return Math.sqrt(sum);
+  let sum = 0;
+  for (const x of v) sum += x * x;
+  return Math.sqrt(sum);
 }
 /**
  * Compute squared Euclidean norm
  */
 function normSq(v) {
-    let sum = 0;
-    for (const x of v)
-        sum += x * x;
-    return sum;
+  let sum = 0;
+  for (const x of v) sum += x * x;
+  return sum;
 }
 /**
  * Dot product of two vectors
  */
 function dot(u, v) {
-    let sum = 0;
-    for (let i = 0; i < u.length; i++)
-        sum += u[i] * v[i];
-    return sum;
+  let sum = 0;
+  for (let i = 0; i < u.length; i++) sum += u[i] * v[i];
+  return sum;
 }
 /**
  * Scale a vector by a scalar
  */
 function scale(v, s) {
-    return v.map(x => x * s);
+  return v.map((x) => x * s);
 }
 /**
  * Add two vectors
  */
 function add(u, v) {
-    return u.map((x, i) => x + v[i]);
+  return u.map((x, i) => x + v[i]);
 }
 /**
  * Subtract two vectors
  */
 function sub(u, v) {
-    return u.map((x, i) => x - v[i]);
+  return u.map((x, i) => x - v[i]);
 }
 // ═══════════════════════════════════════════════════════════════
 // Layer 5: Invariant Hyperbolic Metric
@@ -71,16 +68,16 @@ function sub(u, v) {
  * @returns Hyperbolic distance
  */
 export function hyperbolicDistance(u, v) {
-    const diff = sub(u, v);
-    const diffNormSq = normSq(diff);
-    const uNormSq = normSq(u);
-    const vNormSq = normSq(v);
-    // Clamp to ensure points are inside the ball
-    const uFactor = Math.max(EPSILON, 1 - uNormSq);
-    const vFactor = Math.max(EPSILON, 1 - vNormSq);
-    const arg = 1 + (2 * diffNormSq) / (uFactor * vFactor);
-    // arcosh(x) = ln(x + sqrt(x² - 1))
-    return Math.acosh(Math.max(1, arg));
+  const diff = sub(u, v);
+  const diffNormSq = normSq(diff);
+  const uNormSq = normSq(u);
+  const vNormSq = normSq(v);
+  // Clamp to ensure points are inside the ball
+  const uFactor = Math.max(EPSILON, 1 - uNormSq);
+  const vFactor = Math.max(EPSILON, 1 - vNormSq);
+  const arg = 1 + (2 * diffNormSq) / (uFactor * vFactor);
+  // arcosh(x) = ln(x + sqrt(x² - 1))
+  return Math.acosh(Math.max(1, arg));
 }
 /**
  * Möbius addition in the Poincaré ball
@@ -94,17 +91,17 @@ export function hyperbolicDistance(u, v) {
  * @returns Möbius sum u ⊕ v
  */
 export function mobiusAdd(u, v) {
-    const uv = dot(u, v);
-    const uNormSq = normSq(u);
-    const vNormSq = normSq(v);
-    const numeratorCoeffU = 1 + 2 * uv + vNormSq;
-    const numeratorCoeffV = 1 - uNormSq;
-    const denominator = 1 + 2 * uv + uNormSq * vNormSq;
-    const result = [];
-    for (let i = 0; i < u.length; i++) {
-        result.push((numeratorCoeffU * u[i] + numeratorCoeffV * v[i]) / denominator);
-    }
-    return result;
+  const uv = dot(u, v);
+  const uNormSq = normSq(u);
+  const vNormSq = normSq(v);
+  const numeratorCoeffU = 1 + 2 * uv + vNormSq;
+  const numeratorCoeffV = 1 - uNormSq;
+  const denominator = 1 + 2 * uv + uNormSq * vNormSq;
+  const result = [];
+  for (let i = 0; i < u.length; i++) {
+    result.push((numeratorCoeffU * u[i] + numeratorCoeffV * v[i]) / denominator);
+  }
+  return result;
 }
 /**
  * Project a point onto the Poincaré ball (clamp to ‖p‖ < 1)
@@ -114,10 +111,9 @@ export function mobiusAdd(u, v) {
  * @returns Projected point inside ball
  */
 export function projectToBall(p, maxNorm = 1 - EPSILON) {
-    const n = norm(p);
-    if (n < maxNorm)
-        return [...p];
-    return scale(p, maxNorm / n);
+  const n = norm(p);
+  if (n < maxNorm) return [...p];
+  return scale(p, maxNorm / n);
 }
 /**
  * Exponential map from tangent space to Poincaré ball at origin
@@ -128,11 +124,10 @@ export function projectToBall(p, maxNorm = 1 - EPSILON) {
  * @returns Point in Poincaré ball
  */
 export function expMap0(v) {
-    const n = norm(v);
-    if (n < EPSILON)
-        return v.map(() => 0);
-    const factor = Math.tanh(n / 2) / n;
-    return scale(v, factor);
+  const n = norm(v);
+  if (n < EPSILON) return v.map(() => 0);
+  const factor = Math.tanh(n / 2) / n;
+  return scale(v, factor);
 }
 /**
  * Logarithmic map from Poincaré ball to tangent space at origin
@@ -143,13 +138,12 @@ export function expMap0(v) {
  * @returns Tangent vector at origin
  */
 export function logMap0(p) {
-    const n = norm(p);
-    if (n < EPSILON)
-        return p.map(() => 0);
-    // arctanh(x) = 0.5 * ln((1+x)/(1-x))
-    const atanh = 0.5 * Math.log((1 + n) / (1 - n + EPSILON));
-    const factor = (2 * atanh) / n;
-    return scale(p, factor);
+  const n = norm(p);
+  if (n < EPSILON) return p.map(() => 0);
+  // arctanh(x) = 0.5 * ln((1+x)/(1-x))
+  const atanh = 0.5 * Math.log((1 + n) / (1 - n + EPSILON));
+  const factor = (2 * atanh) / n;
+  return scale(p, factor);
 }
 /**
  * Breath Transform (Layer 6)
@@ -165,15 +159,14 @@ export function logMap0(p) {
  * @returns Transformed point
  */
 export function breathTransform(p, t, config = { amplitude: 0.05, omega: 1.0 }) {
-    const n = norm(p);
-    if (n < EPSILON)
-        return p.map(() => 0);
-    // Clamp amplitude to [0, 0.1] as per spec
-    const A = Math.max(0, Math.min(0.1, config.amplitude));
-    // Modulated radius
-    const newRadius = Math.tanh(n + A * Math.sin(config.omega * t));
-    // Scale to new radius while preserving direction
-    return scale(p, newRadius / n);
+  const n = norm(p);
+  if (n < EPSILON) return p.map(() => 0);
+  // Clamp amplitude to [0, 0.1] as per spec
+  const A = Math.max(0, Math.min(0.1, config.amplitude));
+  // Modulated radius
+  const newRadius = Math.tanh(n + A * Math.sin(config.omega * t));
+  // Scale to new radius while preserving direction
+  return scale(p, newRadius / n);
 }
 /**
  * Inverse breath transform (approximate recovery)
@@ -184,14 +177,13 @@ export function breathTransform(p, t, config = { amplitude: 0.05, omega: 1.0 }) 
  * @returns Approximate original point
  */
 export function inverseBreathTransform(bp, t, config = { amplitude: 0.05, omega: 1.0 }) {
-    const n = norm(bp);
-    if (n < EPSILON)
-        return bp.map(() => 0);
-    const A = Math.max(0, Math.min(0.1, config.amplitude));
-    // atanh(n) - A·sin(ωt) gives approximate original radius
-    const atanh = 0.5 * Math.log((1 + n) / (1 - n + EPSILON));
-    const originalRadius = Math.max(0, atanh - A * Math.sin(config.omega * t));
-    return scale(bp, originalRadius / n);
+  const n = norm(bp);
+  if (n < EPSILON) return bp.map(() => 0);
+  const A = Math.max(0, Math.min(0.1, config.amplitude));
+  // atanh(n) - A·sin(ωt) gives approximate original radius
+  const atanh = 0.5 * Math.log((1 + n) / (1 - n + EPSILON));
+  const originalRadius = Math.max(0, atanh - A * Math.sin(config.omega * t));
+  return scale(bp, originalRadius / n);
 }
 // ═══════════════════════════════════════════════════════════════
 // Layer 7: Phase Modulation
@@ -210,17 +202,17 @@ export function inverseBreathTransform(bp, t, config = { amplitude: 0.05, omega:
  * @returns Rotated point
  */
 export function phaseModulation(p, theta, plane = [0, 1]) {
-    const [i, j] = plane;
-    if (i >= p.length || j >= p.length || i === j) {
-        throw new RangeError('Invalid rotation plane');
-    }
-    const result = [...p];
-    const cos = Math.cos(theta);
-    const sin = Math.sin(theta);
-    // Givens rotation in plane (i, j)
-    result[i] = p[i] * cos - p[j] * sin;
-    result[j] = p[i] * sin + p[j] * cos;
-    return result;
+  const [i, j] = plane;
+  if (i >= p.length || j >= p.length || i === j) {
+    throw new RangeError('Invalid rotation plane');
+  }
+  const result = [...p];
+  const cos = Math.cos(theta);
+  const sin = Math.sin(theta);
+  // Givens rotation in plane (i, j)
+  result[i] = p[i] * cos - p[j] * sin;
+  result[j] = p[i] * sin + p[j] * cos;
+  return result;
 }
 /**
  * Multi-plane phase modulation
@@ -232,11 +224,11 @@ export function phaseModulation(p, theta, plane = [0, 1]) {
  * @returns Transformed point
  */
 export function multiPhaseModulation(p, rotations) {
-    let result = [...p];
-    for (const { theta, plane } of rotations) {
-        result = phaseModulation(result, theta, plane);
-    }
-    return result;
+  let result = [...p];
+  for (const { theta, plane } of rotations) {
+    result = phaseModulation(result, theta, plane);
+  }
+  return result;
 }
 /**
  * Multi-Well Potential (Layer 8)
@@ -250,13 +242,13 @@ export function multiPhaseModulation(p, rotations) {
  * @returns Potential energy at point p
  */
 export function multiWellPotential(p, wells) {
-    let V = 0;
-    for (const well of wells) {
-        const diff = sub(p, well.center);
-        const distSq = normSq(diff);
-        V += well.weight * Math.exp(-distSq / (2 * well.sigma * well.sigma));
-    }
-    return V;
+  let V = 0;
+  for (const well of wells) {
+    const diff = sub(p, well.center);
+    const distSq = normSq(diff);
+    V += well.weight * Math.exp(-distSq / (2 * well.sigma * well.sigma));
+  }
+  return V;
 }
 /**
  * Gradient of multi-well potential
@@ -268,17 +260,17 @@ export function multiWellPotential(p, wells) {
  * @returns Gradient vector
  */
 export function multiWellGradient(p, wells) {
-    const grad = p.map(() => 0);
-    for (const well of wells) {
-        const diff = sub(p, well.center);
-        const distSq = normSq(diff);
-        const expTerm = Math.exp(-distSq / (2 * well.sigma * well.sigma));
-        const factor = -well.weight * expTerm / (well.sigma * well.sigma);
-        for (let i = 0; i < p.length; i++) {
-            grad[i] += factor * diff[i];
-        }
+  const grad = p.map(() => 0);
+  for (const well of wells) {
+    const diff = sub(p, well.center);
+    const distSq = normSq(diff);
+    const expTerm = Math.exp(-distSq / (2 * well.sigma * well.sigma));
+    const factor = (-well.weight * expTerm) / (well.sigma * well.sigma);
+    for (let i = 0; i < p.length; i++) {
+      grad[i] += factor * diff[i];
     }
-    return grad;
+  }
+  return grad;
 }
 // ═══════════════════════════════════════════════════════════════
 // Utility: Combined Transform Pipeline
@@ -294,23 +286,23 @@ export function multiWellGradient(p, wells) {
  * @returns Transformed point and potential value
  */
 export function applyHyperbolicPipeline(p, t, theta, breathConfig, wells) {
-    // Ensure point is in ball
-    let point = projectToBall(p);
-    // L6: Breath transform
-    if (breathConfig) {
-        point = breathTransform(point, t, breathConfig);
-    }
-    // L7: Phase modulation
-    if (theta !== 0) {
-        point = phaseModulation(point, theta);
-    }
-    // Ensure still in ball after transforms
-    point = projectToBall(point);
-    // L8: Compute potential (doesn't modify point)
-    const potential = wells ? multiWellPotential(point, wells) : 0;
-    // L5: Compute distance from origin (for reference)
-    const origin = point.map(() => 0);
-    const distance = hyperbolicDistance(origin, point);
-    return { point, potential, distance };
+  // Ensure point is in ball
+  let point = projectToBall(p);
+  // L6: Breath transform
+  if (breathConfig) {
+    point = breathTransform(point, t, breathConfig);
+  }
+  // L7: Phase modulation
+  if (theta !== 0) {
+    point = phaseModulation(point, theta);
+  }
+  // Ensure still in ball after transforms
+  point = projectToBall(point);
+  // L8: Compute potential (doesn't modify point)
+  const potential = wells ? multiWellPotential(point, wells) : 0;
+  // L5: Compute distance from origin (for reference)
+  const origin = point.map(() => 0);
+  const distance = hyperbolicDistance(origin, point);
+  return { point, potential, distance };
 }
 //# sourceMappingURL=hyperbolic.js.map

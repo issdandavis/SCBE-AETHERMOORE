@@ -4,7 +4,11 @@ exports.metrics = void 0;
 const node_perf_hooks_1 = require("node:perf_hooks");
 const backend = process.env.SCBE_METRICS_BACKEND || 'stdout';
 function fmt(name, value, tags) {
-    const t = tags ? Object.entries(tags).map(([k, v]) => `${k}=${v}`).join(' ') : '';
+    const t = tags
+        ? Object.entries(tags)
+            .map(([k, v]) => `${k}=${v}`)
+            .join(' ')
+        : '';
     return `[metric] ${name}=${value} ${t}`.trim();
 }
 exports.metrics = {
@@ -17,6 +21,8 @@ exports.metrics = {
         if (backend === 'stdout')
             console.log(fmt(name, value, tags));
     },
-    now() { return node_perf_hooks_1.performance.now(); }
+    now() {
+        return node_perf_hooks_1.performance.now();
+    },
 };
 //# sourceMappingURL=telemetry.js.map

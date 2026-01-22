@@ -22,8 +22,8 @@ export interface AAD {
   model_id: string;
   intent_id: string;
   phase: string;
-  ts: number;          // ms epoch
-  ttl: number;         // ms
+  ts: number; // ms epoch
+  ttl: number; // ms
   content_type: string;
   schema_hash: string; // SHA-256 hex
   canonical_body_hash: string; // SHA-256 hex
@@ -32,12 +32,12 @@ export interface AAD {
 }
 
 export interface Envelope {
-  aad: AAD;         // logged only as hashes/ids in production
-  kid: string;      // key id
-  nonce: string;    // base64url (96-bit)
-  tag: string;      // base64url (128-bit)
+  aad: AAD; // logged only as hashes/ids in production
+  kid: string; // key id
+  nonce: string; // base64url (96-bit)
+  tag: string; // base64url (128-bit)
   ciphertext: string; // base64url
-  salt: string;     // base64url (256-bit) - for key derivation
+  salt: string; // base64url (256-bit) - for key derivation
 }
 
 export type CreateParams = {
@@ -52,7 +52,7 @@ export type CreateParams = {
   schema_hash: string;
   request_id: string;
   session_id: string; // for nonce prefix derivation
-  body: any;          // object/string
+  body: any; // object/string
 };
 
 const replay = new ReplayGuard({
@@ -85,13 +85,15 @@ export async function createEnvelope(p: CreateParams): Promise<Envelope> {
     schema_hash: p.schema_hash,
     canonical_body_hash,
     request_id: p.request_id,
-    replay_nonce: crypto.randomBytes(16).toString('hex')
+    replay_nonce: crypto.randomBytes(16).toString('hex'),
   };
 
   // 2) Derive subkeys via HKDF: k_enc, k_nonce, k_log
   const ikm = await getMasterKey(p.kid);
   const salt = crypto.randomBytes(32); // per-envelope salt; in prod you may pin/rotate by policy
-  const infoBase = Buffer.from(`scbe:derivation:v1|env=${p.env}|provider=${p.provider_id}|intent=${p.intent_id}`);
+  const infoBase = Buffer.from(
+    `scbe:derivation:v1|env=${p.env}|provider=${p.provider_id}|intent=${p.intent_id}`
+  );
   const k_enc = hkdfSha256(ikm, salt, Buffer.concat([infoBase, Buffer.from('|k=enc')]), 32);
   const k_nonce = hkdfSha256(ikm, salt, Buffer.concat([infoBase, Buffer.from('|k=nonce')]), 32);
   const k_log = hkdfSha256(ikm, salt, Buffer.concat([infoBase, Buffer.from('|k=log')]), 32);
@@ -99,7 +101,7 @@ export async function createEnvelope(p: CreateParams): Promise<Envelope> {
 
   // 3) Nonce discipline
   const prefix = deriveNoncePrefix(k_nonce, p.session_id); // 64-bit
-  const { nonce } = nextNonce(prefix, p.session_id);       // 64b || 32b counter => 96-bit
+  const { nonce } = nextNonce(prefix, p.session_id); // 64b || 32b counter => 96-bit
 
   // 4) AAD canonicalization (hashes only logged in prod)
   const aadStr = canonicalize(aad);
@@ -118,11 +120,14 @@ export async function createEnvelope(p: CreateParams): Promise<Envelope> {
       nonce: b64u(nonce),
       tag: b64u(tag),
       ciphertext: b64u(ct),
-      salt: b64u(salt)
+      salt: b64u(salt),
     };
 
     metrics.timing('envelope_create_ms', metrics.now() - t0, {
-      provider_id: p.provider_id, model_id: p.model_id, intent_id: p.intent_id, phase: p.phase
+      provider_id: p.provider_id,
+      model_id: p.model_id,
+      intent_id: p.intent_id,
+      phase: p.phase,
     });
     return envl;
   } catch (e) {
@@ -160,7 +165,9 @@ export async function verifyEnvelope(p: VerifyParams): Promise<{ body: any }> {
   const ikm = await getMasterKey(envelope.kid);
   const salt = fromB64u(envelope.salt);
   if (salt.length !== 32) throw new Error('bad salt size');
-  const infoBase = Buffer.from(`scbe:derivation:v1|env=${envelope.aad.env}|provider=${envelope.aad.provider_id}|intent=${envelope.aad.intent_id}`);
+  const infoBase = Buffer.from(
+    `scbe:derivation:v1|env=${envelope.aad.env}|provider=${envelope.aad.provider_id}|intent=${envelope.aad.intent_id}`
+  );
   const k_enc = hkdfSha256(ikm, salt, Buffer.concat([infoBase, Buffer.from('|k=enc')]), 32);
   const k_nonce = hkdfSha256(ikm, salt, Buffer.concat([infoBase, Buffer.from('|k=nonce')]), 32);
 
@@ -186,11 +193,16 @@ export async function verifyEnvelope(p: VerifyParams): Promise<{ body: any }> {
     decipher.setAuthTag(tag);
     const pt = Buffer.concat([decipher.update(ct), decipher.final()]);
     metrics.timing('envelope_verify_ms', metrics.now() - t0, {
-      provider_id: envelope.aad.provider_id, model_id: envelope.aad.model_id, intent_id: envelope.aad.intent_id, phase: envelope.aad.phase
+      provider_id: envelope.aad.provider_id,
+      model_id: envelope.aad.model_id,
+      intent_id: envelope.aad.intent_id,
+      phase: envelope.aad.phase,
     });
     // Fail-to-noise policy: return opaque error details (we already threw on failure)
     const contentType = envelope.aad.content_type || 'application/json';
-    const body = contentType.includes('json') ? JSON.parse(pt.toString('utf8')) : pt.toString('utf8');
+    const body = contentType.includes('json')
+      ? JSON.parse(pt.toString('utf8'))
+      : pt.toString('utf8');
     return { body };
   } catch (e) {
     metrics.incr('gcm_failures', 1, { op: 'verify' });

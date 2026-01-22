@@ -16,7 +16,16 @@
  * SS1|kid=<key_id>|aad=<context>|<salt_spell>|<nonce_spell>|<ct_spell>|<tag_spell>
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.computeLWSScore = exports.computeLWSWeights = exports.SpiralSealSS1 = exports.unseal = exports.seal = exports.randomBytes = exports.parseSS1Blob = exports.formatSS1Blob = exports.decodeFromSpelltext = exports.encodeToSpelltext = exports.SacredTongueTokenizer = void 0;
+exports.SpiralSealSS1 = exports.SacredTongueTokenizer = void 0;
+exports.encodeToSpelltext = encodeToSpelltext;
+exports.decodeFromSpelltext = decodeFromSpelltext;
+exports.formatSS1Blob = formatSS1Blob;
+exports.parseSS1Blob = parseSS1Blob;
+exports.randomBytes = randomBytes;
+exports.seal = seal;
+exports.unseal = unseal;
+exports.computeLWSWeights = computeLWSWeights;
+exports.computeLWSScore = computeLWSScore;
 const sacredTongues_js_1 = require("./sacredTongues.js");
 // ═══════════════════════════════════════════════════════════════
 // Sacred Tongue Tokenizer
@@ -42,7 +51,7 @@ class SacredTongueTokenizer {
         this.tokenToByte = new Map();
         for (let b = 0; b < 256; b++) {
             const prefixIdx = b >> 4; // High nibble (0-15)
-            const suffixIdx = b & 0x0F; // Low nibble (0-15)
+            const suffixIdx = b & 0x0f; // Low nibble (0-15)
             const token = `${tongue.prefixes[prefixIdx]}'${tongue.suffixes[suffixIdx]}`;
             this.byteToToken.push(token);
             this.tokenToByte.set(token, b);
@@ -130,7 +139,6 @@ function encodeToSpelltext(data, section) {
     const tokenizer = new SacredTongueTokenizer(tongueCode);
     return `${tongueCode}:${tokenizer.encodeCompact(data)}`;
 }
-exports.encodeToSpelltext = encodeToSpelltext;
 /**
  * Decode spell-text using the canonical tongue for a section
  */
@@ -144,7 +152,6 @@ function decodeFromSpelltext(spelltext, section) {
     }
     return tokenizer.decode(text);
 }
-exports.decodeFromSpelltext = decodeFromSpelltext;
 /**
  * Format a complete SS1 spell-text blob
  */
@@ -160,7 +167,6 @@ function formatSS1Blob(kid, aad, salt, nonce, ciphertext, tag) {
     ];
     return parts.join('|');
 }
-exports.formatSS1Blob = formatSS1Blob;
 /**
  * Parse an SS1 spell-text blob
  */
@@ -206,7 +212,6 @@ function parseSS1Blob(blob) {
         throw new Error('SS1 blob missing tag');
     return result;
 }
-exports.parseSS1Blob = parseSS1Blob;
 // ═══════════════════════════════════════════════════════════════
 // Crypto Utilities (Web Crypto API)
 // ═══════════════════════════════════════════════════════════════
@@ -226,7 +231,6 @@ function randomBytes(length) {
     }
     return bytes;
 }
-exports.randomBytes = randomBytes;
 /**
  * HKDF key derivation (simplified - uses SHA-256)
  */
@@ -236,13 +240,14 @@ async function hkdfDerive(masterSecret, salt, info, length = 32) {
         throw new Error('Web Crypto API not available');
     }
     // Import master secret as HKDF key
-    const keyMaterial = await crypto.subtle.importKey('raw', masterSecret, 'HKDF', false, ['deriveBits']);
+    // Note: Cast to ArrayBuffer for Web Crypto API compatibility
+    const keyMaterial = await crypto.subtle.importKey('raw', masterSecret.buffer.slice(masterSecret.byteOffset, masterSecret.byteOffset + masterSecret.byteLength), 'HKDF', false, ['deriveBits']);
     // Derive key using HKDF
     const derivedBits = await crypto.subtle.deriveBits({
         name: 'HKDF',
         hash: 'SHA-256',
-        salt: salt,
-        info: info,
+        salt: salt.buffer.slice(salt.byteOffset, salt.byteOffset + salt.byteLength),
+        info: info.buffer.slice(info.byteOffset, info.byteOffset + info.byteLength),
     }, keyMaterial, length * 8);
     return new Uint8Array(derivedBits);
 }
@@ -253,13 +258,13 @@ async function aesGcmEncrypt(plaintext, key, nonce, aad) {
     if (typeof crypto === 'undefined' || !crypto.subtle) {
         throw new Error('Web Crypto API not available');
     }
-    const cryptoKey = await crypto.subtle.importKey('raw', key, 'AES-GCM', false, ['encrypt']);
+    const cryptoKey = await crypto.subtle.importKey('raw', key.buffer.slice(key.byteOffset, key.byteOffset + key.byteLength), 'AES-GCM', false, ['encrypt']);
     const result = await crypto.subtle.encrypt({
         name: 'AES-GCM',
-        iv: nonce,
-        additionalData: aad,
+        iv: nonce.buffer.slice(nonce.byteOffset, nonce.byteOffset + nonce.byteLength),
+        additionalData: aad.buffer.slice(aad.byteOffset, aad.byteOffset + aad.byteLength),
         tagLength: 128,
-    }, cryptoKey, plaintext);
+    }, cryptoKey, plaintext.buffer.slice(plaintext.byteOffset, plaintext.byteOffset + plaintext.byteLength));
     // Result includes ciphertext + tag (last 16 bytes)
     const combined = new Uint8Array(result);
     const ciphertext = combined.slice(0, -16);
@@ -273,17 +278,17 @@ async function aesGcmDecrypt(ciphertext, tag, key, nonce, aad) {
     if (typeof crypto === 'undefined' || !crypto.subtle) {
         throw new Error('Web Crypto API not available');
     }
-    const cryptoKey = await crypto.subtle.importKey('raw', key, 'AES-GCM', false, ['decrypt']);
+    const cryptoKey = await crypto.subtle.importKey('raw', key.buffer.slice(key.byteOffset, key.byteOffset + key.byteLength), 'AES-GCM', false, ['decrypt']);
     // Combine ciphertext + tag for Web Crypto
     const combined = new Uint8Array(ciphertext.length + tag.length);
     combined.set(ciphertext);
     combined.set(tag, ciphertext.length);
     const result = await crypto.subtle.decrypt({
         name: 'AES-GCM',
-        iv: nonce,
-        additionalData: aad,
+        iv: nonce.buffer.slice(nonce.byteOffset, nonce.byteOffset + nonce.byteLength),
+        additionalData: aad.buffer.slice(aad.byteOffset, aad.byteOffset + aad.byteLength),
         tagLength: 128,
-    }, cryptoKey, combined);
+    }, cryptoKey, combined.buffer.slice(combined.byteOffset, combined.byteOffset + combined.byteLength));
     return new Uint8Array(result);
 }
 // ═══════════════════════════════════════════════════════════════
@@ -311,7 +316,6 @@ async function seal(plaintext, masterSecret, aad, kid = 'k01') {
     // 4. Format SS1 blob
     return formatSS1Blob(kid, aad, salt, nonce, ciphertext, tag);
 }
-exports.seal = seal;
 /**
  * Unseal an SS1 spell-text blob back to plaintext
  *
@@ -334,7 +338,6 @@ async function unseal(blob, masterSecret, aad) {
     const aadBytes = new TextEncoder().encode(aad);
     return aesGcmDecrypt(parsed.ciphertext, parsed.tag, key, parsed.nonce, aadBytes);
 }
-exports.unseal = unseal;
 /**
  * SpiralSeal SS1 class for stateful operations
  */
@@ -383,12 +386,7 @@ class SpiralSealSS1 {
         return {
             version: 'SS1',
             kid: this.kid,
-            capabilities: [
-                'AES-256-GCM',
-                'HKDF-SHA256',
-                'Sacred Tongue encoding',
-                'Key rotation',
-            ],
+            capabilities: ['AES-256-GCM', 'HKDF-SHA256', 'Sacred Tongue encoding', 'Key rotation'],
         };
     }
 }
@@ -420,7 +418,6 @@ function computeLWSWeights(tongueCode) {
     }
     return weights;
 }
-exports.computeLWSWeights = computeLWSWeights;
 /**
  * Compute combined LWS score for a spell-text string
  */
@@ -449,5 +446,4 @@ function computeLWSScore(spelltext) {
     }
     return totalCount > 0 ? totalScore / totalCount : 0;
 }
-exports.computeLWSScore = computeLWSScore;
 //# sourceMappingURL=spiralSeal.js.map

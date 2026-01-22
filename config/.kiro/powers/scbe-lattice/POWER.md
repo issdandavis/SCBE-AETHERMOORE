@@ -63,21 +63,25 @@ All lattice operations must satisfy A1-A12:
 ## Usage
 
 ### Visualize Lattice Structure
+
 ```
 Ask: "Show me the Poincaré ball embedding for this risk vector"
 ```
 
 ### Check Axiom Compliance
+
 ```
 Ask: "Verify axiom compliance for the Langues tensor"
 ```
 
 ### Analyze Inter-Lattice Connections
+
 ```
 Ask: "How does the PHDM connect to the Aethermoore manifold?"
 ```
 
 ### Generate Lattice Metrics
+
 ```
 Ask: "Generate metrics for all lattice structures"
 ```

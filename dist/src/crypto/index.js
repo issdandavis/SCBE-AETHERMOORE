@@ -2,6 +2,12 @@
 /**
  * SCBE Cryptographic Module
  * Core encryption and security primitives
+ *
+ * Includes:
+ * - Post-Quantum Cryptography (ML-KEM-768, ML-DSA-65)
+ * - Envelope encryption
+ * - Key management
+ * - Replay protection
  */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -25,4 +31,5 @@ __exportStar(require("./kms.js"), exports);
 __exportStar(require("./nonceManager.js"), exports);
 __exportStar(require("./replayGuard.js"), exports);
 __exportStar(require("./bloom.js"), exports);
+__exportStar(require("./pqc.js"), exports);
 //# sourceMappingURL=index.js.map

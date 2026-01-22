@@ -23,31 +23,35 @@ Thank you for your interest in contributing to SCBE-AETHERMOORE! This document p
 ### Setup Development Environment
 
 1. **Fork and Clone**
+
    ```bash
    git clone https://github.com/YOUR_USERNAME/scbe-aethermoore.git
    cd scbe-aethermoore
    ```
 
 2. **Install Dependencies**
+
    ```bash
    # Node.js dependencies
    npm install
-   
+
    # Python dependencies
    pip install -r requirements.txt
    pip install pytest pytest-cov hypothesis black flake8 mypy
    ```
 
 3. **Build the Project**
+
    ```bash
    npm run build
    ```
 
 4. **Run Tests**
+
    ```bash
    # TypeScript tests
    npm test
-   
+
    # Python tests
    pytest tests/ -v
    ```
@@ -63,6 +67,7 @@ git checkout -b fix/your-bug-fix
 ```
 
 Branch naming conventions:
+
 - `feature/` - New features
 - `fix/` - Bug fixes
 - `docs/` - Documentation changes
@@ -106,6 +111,7 @@ git commit -m "test: add property-based tests for harmonic scaling"
 ```
 
 Commit types:
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation only
@@ -121,6 +127,7 @@ git push origin feature/your-feature-name
 ```
 
 Then create a Pull Request on GitHub with:
+
 - Clear title and description
 - Reference any related issues
 - Screenshots/demos if applicable
@@ -159,11 +166,11 @@ export function encrypt(plaintext: string, key: string): string {
 def encrypt(plaintext: str, key: str) -> str:
     """
     Encrypts data using SCBE 14-layer architecture.
-    
+
     Args:
         plaintext: The data to encrypt
         key: Encryption key
-        
+
     Returns:
         Encrypted ciphertext
     """
@@ -185,7 +192,7 @@ describe('encrypt', () => {
     const result = encrypt('hello', 'key123');
     expect(result).toBeDefined();
   });
-  
+
   it('should throw error for empty key', () => {
     expect(() => encrypt('hello', '')).toThrow();
   });
@@ -226,6 +233,7 @@ def test_encrypt_decrypt_roundtrip(plaintext: str, key: str):
 Instead, email: issdandavis@gmail.com
 
 Include:
+
 - Description of the vulnerability
 - Steps to reproduce
 - Potential impact
@@ -246,6 +254,7 @@ We will respond within 48 hours.
 ### 14-Layer Architecture
 
 When modifying layers, ensure:
+
 - Mathematical correctness
 - Backward compatibility
 - Performance impact is measured
@@ -293,6 +302,7 @@ By contributing, you agree that your contributions will be licensed under the MI
 ## 🙏 Recognition
 
 Contributors will be recognized in:
+
 - CHANGELOG.md
 - GitHub contributors page
 - Release notes

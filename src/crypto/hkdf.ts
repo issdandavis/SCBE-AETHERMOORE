@@ -12,7 +12,10 @@ export function hkdfSha256(ikm: Buffer, salt: Buffer, info: Buffer, len: number)
   let t = Buffer.alloc(0);
   let okm = Buffer.alloc(0);
   for (let i = 0; i < n; i++) {
-    t = crypto.createHmac('sha256', prk).update(Buffer.concat([t, info, Buffer.from([i+1])])).digest();
+    t = crypto
+      .createHmac('sha256', prk)
+      .update(Buffer.concat([t, info, Buffer.from([i + 1])]))
+      .digest();
     okm = Buffer.concat([okm, t]);
   }
   return okm.subarray(0, len);

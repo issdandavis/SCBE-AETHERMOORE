@@ -71,16 +71,16 @@ The envelope MUST conform to this exact JSON schema:
 
 #### FR-1.2: Field Definitions
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `ver` | string | YES | Protocol version (exactly "2.1") |
-| `primary_tongue` | string | YES | Primary Sacred Tongue (KO, AV, RU, CA, UM, DR) |
-| `kid` | object | YES | Per-tongue key identifiers (map: tongue → key_id) |
-| `ts` | integer | YES | Unix timestamp in milliseconds (UTC) |
-| `nonce` | string | YES | Base64URL-encoded random bytes (≥16 bytes, no padding) |
-| `aad` | object | NO | Additional authenticated data (canonicalized for signing) |
-| `payload` | string | YES | Base64URL-encoded payload bytes (no padding) |
-| `sigs` | object | YES | Per-tongue HMAC-SHA256 signatures (map: tongue → hex_sig) |
+| Field            | Type    | Required | Description                                               |
+| ---------------- | ------- | -------- | --------------------------------------------------------- |
+| `ver`            | string  | YES      | Protocol version (exactly "2.1")                          |
+| `primary_tongue` | string  | YES      | Primary Sacred Tongue (KO, AV, RU, CA, UM, DR)            |
+| `kid`            | object  | YES      | Per-tongue key identifiers (map: tongue → key_id)         |
+| `ts`             | integer | YES      | Unix timestamp in milliseconds (UTC)                      |
+| `nonce`          | string  | YES      | Base64URL-encoded random bytes (≥16 bytes, no padding)    |
+| `aad`            | object  | NO       | Additional authenticated data (canonicalized for signing) |
+| `payload`        | string  | YES      | Base64URL-encoded payload bytes (no padding)              |
+| `sigs`           | object  | YES      | Per-tongue HMAC-SHA256 signatures (map: tongue → hex_sig) |
 
 #### FR-1.3: Sacred Tongues
 
@@ -106,6 +106,7 @@ Valid tongue identifiers (case-sensitive):
 **Solution**: AAD MUST be serialized using **JSON Canonicalization Scheme (RFC 8785)** prior to signing.
 
 **Requirements**:
+
 - Keys MUST be sorted lexicographically (Unicode code point order)
 - No whitespace between tokens
 - Numbers MUST be serialized per RFC 8785 (minimal representation, no leading zeros, no trailing zeros after decimal)
@@ -115,6 +116,7 @@ Valid tongue identifiers (case-sensitive):
 - If an implementation cannot guarantee RFC 8785 number formatting, it MUST reject floats or round to a fixed policy and document the deviation
 
 **Example**:
+
 ```json
 // Input (any order, whitespace):
 { "mode": "STRICT", "action": "execute", "priority": 1 }
@@ -126,6 +128,7 @@ Valid tongue identifiers (case-sensitive):
 #### FR-2.2: Base64URL Encoding
 
 **Requirements**:
+
 - MUST use URL-safe alphabet: `A-Za-z0-9-_`
 - MUST NOT include padding (`=` characters)
 - MUST encode raw bytes (not hex strings)
@@ -133,10 +136,12 @@ Valid tongue identifiers (case-sensitive):
 - Payload MUST be raw bytes, not JSON-encoded-by-mistake
 
 **Nonce Encoding**:
+
 - Minimum 16 bytes, base64url encoded
 - Uniqueness scope defined in FR-5.1
 
 **Example**:
+
 ```
 Input bytes:  [0x01, 0x02, 0x03, 0x04]
 Base64URL:    "AQIDBA"  (no padding)
@@ -171,6 +176,7 @@ C = ver || "|" || primary_tongue || "|" || canonical_aad || "|" || ts || "|" || 
 ```
 
 Where:
+
 - `ver` = exactly "2.1"
 - `primary_tongue` = tongue identifier (e.g., "RU")
 - `canonical_aad` = RFC 8785 canonicalized JSON (or empty string if no AAD)
@@ -183,6 +189,7 @@ Where:
 **Decision Required**: Choose **Option A** (recommended - canonical JSON of envelope-without-sigs) or **Option B** (explicit concatenation) before implementation.
 
 **Example (Option B)**:
+
 ```
 2.1|RU|{"action":"execute","mode":"STRICT"}|1737161234567|AQIDBA|SGVsbG8gV29ybGQ
 ```
@@ -200,6 +207,7 @@ k_tongue = HMAC-SHA256(k_master, "tongue:" || tongue_id)
 ```
 
 Where:
+
 - `k_master` = 256-bit master secret (32 bytes)
 - `tongue_id` = tongue identifier (e.g., "RU")
 - Output = 256-bit derived key (32 bytes)
@@ -215,6 +223,7 @@ sig_tongue = HMAC-SHA256(k_tongue, C)
 ```
 
 Where:
+
 - `k_tongue` = derived key from FR-3.1
 - `C` = canonical signing string from FR-2.3
 - Output = 256-bit HMAC tag (32 bytes)
@@ -259,11 +268,13 @@ valid_tongues = [tongue for tongue in sigs if verify(tongue) == PASS]
 ```
 
 A tongue is "valid" if and only if:
+
 - ✅ Key exists for that tongue
 - ✅ HMAC tag matches exactly (constant-time comparison)
 - ✅ Key ID (`kid[tongue]`) is not expired
 
 **Handling Unknown Keys**:
+
 - If a tongue is present in `sigs` but no key exists for `kid[tongue]`, that tongue is marked **INVALID** (not added to `valid_tongues`)
 - Verification continues for other tongues
 - If `primary_tongue` has unknown key, entire envelope is **DENIED** (see FR-4.3)
@@ -283,11 +294,13 @@ The `primary_tongue` signature MUST verify successfully.
 Nonce uniqueness MUST be enforced per:
 
 **Option A** (Recommended if sender identity available):
+
 ```
 scope = (sender_id, primary_tongue)
 ```
 
 **Option B** (Simpler, if sender identity not available):
+
 ```
 scope = (primary_tongue)
 ```
@@ -299,12 +312,14 @@ scope = (primary_tongue)
 #### FR-5.2: Nonce Storage
 
 **Phase 2 MVP** (current):
+
 - In-memory LRU cache with TTL
 - Cache size: 10,000 nonces
 - TTL: 120 seconds (2× replay window)
 - Key format: `{scope}:{nonce_value}`
 
 **Phase 3+** (future):
+
 - Optional shared store (Redis/DynamoDB)
 - Key format: `nonce:{scope}:{nonce_value}`
 - TTL: Automatic expiration after replay window
@@ -312,16 +327,19 @@ scope = (primary_tongue)
 #### FR-5.3: Timestamp Validation
 
 **Replay Window Parameters**:
+
 - `W` = replay window = 60,000 ms (60 seconds)
 - `S` = clock skew tolerance = 5,000 ms (5 seconds)
 
 **Validation Rule**:
+
 ```
 reject if ts > now + S  (future timestamp beyond skew)
 reject if ts < now - W  (expired timestamp)
 ```
 
 Where:
+
 - `ts` = envelope.ts (Unix milliseconds)
 - `now` = current Unix timestamp (milliseconds)
 
@@ -330,6 +348,7 @@ Where:
 #### FR-5.4: Nonce Recording Atomicity
 
 **Insertion Rule**: Nonce MUST be recorded if and only if:
+
 1. ✅ Cryptographic verification passes (HMAC valid for primary_tongue)
 2. ✅ Timestamp is within window (FR-5.3)
 3. ✅ Nonce has not been seen before (atomic check-and-insert)
@@ -346,12 +365,12 @@ Where:
 
 #### FR-6.1: Policy Modes
 
-| Mode | Required Tongues | Description |
-|------|------------------|-------------|
-| `STANDARD` | primary_tongue | Single signature (default) |
-| `STRICT` | primary_tongue + 1 other | Two signatures required |
-| `SECRET` | primary_tongue + 2 others | Three signatures required |
-| `CRITICAL` | All 6 tongues | Full consensus required |
+| Mode       | Required Tongues          | Description                |
+| ---------- | ------------------------- | -------------------------- |
+| `STANDARD` | primary_tongue            | Single signature (default) |
+| `STRICT`   | primary_tongue + 1 other  | Two signatures required    |
+| `SECRET`   | primary_tongue + 2 others | Three signatures required  |
+| `CRITICAL` | All 6 tongues             | Full consensus required    |
 
 #### FR-6.2: Policy Evaluation
 
@@ -360,6 +379,7 @@ policy_result = evaluate_policy(valid_tongues, policy_mode)
 ```
 
 Where:
+
 - `valid_tongues` = list from FR-4.2
 - `policy_mode` = one of {STANDARD, STRICT, SECRET, CRITICAL}
 
@@ -370,10 +390,11 @@ Where:
 **Primary Tongue Requirement**: Primary tongue signature MUST be valid (enforced in FR-4.3).
 
 **Policy Evaluation**:
+
 ```
 if primary_tongue not in valid_tongues:
     return DENY  // Already enforced in FR-4.3, but double-check here
-    
+
 required_count = {
     "STANDARD": 1,
     "STRICT": 2,
@@ -439,7 +460,7 @@ Internal logs MAY include detailed failure reasons:
 
 - **Throughput**: ≥10,000 envelopes/second (single core)
 - **Latency**: p95 < 2ms, p99 < 5ms
-- **Assumptions**: 
+- **Assumptions**:
   - Payload size ≤ 64KB
   - 1-3 signatures per envelope
   - Nonce cache size = 10,000
@@ -463,12 +484,14 @@ Internal logs MAY include detailed failure reasons:
 All signature comparisons MUST use constant-time algorithms.
 
 **Example** (Python):
+
 ```python
 import hmac
 result = hmac.compare_digest(expected_sig, received_sig)
 ```
 
 **Example** (TypeScript):
+
 ```typescript
 import { timingSafeEqual } from 'crypto';
 result = timingSafeEqual(Buffer.from(expected), Buffer.from(received));
@@ -479,6 +502,7 @@ result = timingSafeEqual(Buffer.from(expected), Buffer.from(received));
 #### NFR-3.1: Cross-Language Compatibility
 
 TypeScript and Python implementations MUST produce identical:
+
 - Canonical signing strings (byte-for-byte)
 - HMAC signatures (hex-encoded, lowercase)
 - Base64URL encodings (no padding)
@@ -489,6 +513,7 @@ TypeScript and Python implementations MUST produce identical:
 #### NFR-3.2: Build Outputs
 
 **Option 1** (Recommended): Dual build
+
 - `dist/cjs/` - CommonJS (Node.js)
 - `dist/esm/` - ES Modules (modern bundlers)
 - `package.json` exports map with `import` and `require` conditions
@@ -496,6 +521,7 @@ TypeScript and Python implementations MUST produce identical:
 - Enables tree-shaking and modern tooling
 
 **Option 2** (Simpler): CommonJS only
+
 - `"type": "commonjs"` in package.json
 - Single `dist/` output
 - Compatible with Node.js 14+
@@ -515,6 +541,7 @@ TypeScript and Python implementations MUST produce identical:
 #### NFR-4.2: Interop Test Vectors
 
 Minimum 10 fixed test vectors with:
+
 - Known master key (test-only, 32 bytes hex)
 - Known envelope (JSON with all fields)
 - Expected canonical signing string
@@ -522,6 +549,7 @@ Minimum 10 fixed test vectors with:
 - Both languages MUST produce identical results
 
 **Test Vector Schema**:
+
 ```json
 {
   "test_id": "vector_001_basic",
@@ -544,6 +572,7 @@ Minimum 10 fixed test vectors with:
 ```
 
 **Required Test Cases**:
+
 1. Single signature, no AAD
 2. Single signature, with AAD (nested objects)
 3. Multi-signature (3 tongues)
@@ -716,6 +745,7 @@ The design document MUST specify:
 ```
 
 **Canonical Signing String**:
+
 ```
 2.1|RU|{"action":"execute","mode":"STRICT","priority":1}|1737161234567|AQIDBAUGBwgJCgsMDQ4PEA|SGVsbG8gV29ybGQ
 ```

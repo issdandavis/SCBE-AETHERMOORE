@@ -84,13 +84,13 @@ describe('Sacred Tongue Definitions', () => {
       });
 
       it('no prefix contains apostrophe', () => {
-        spec.prefixes.forEach(p => {
+        spec.prefixes.forEach((p) => {
           expect(p.includes("'")).toBe(false);
         });
       });
 
       it('no suffix contains apostrophe', () => {
-        spec.suffixes.forEach(s => {
+        spec.suffixes.forEach((s) => {
           expect(s.includes("'")).toBe(false);
         });
       });
@@ -110,7 +110,7 @@ describe('Section-to-Tongue Mapping', () => {
     expect(SECTION_TONGUES.salt).toBe('ru');
   });
 
-  it('nonce → Kor\'aelin (ko)', () => {
+  it("nonce → Kor'aelin (ko)", () => {
     expect(SECTION_TONGUES.nonce).toBe('ko');
   });
 
@@ -134,7 +134,7 @@ describe('SacredTongueTokenizer', () => {
   const tongues: TongueCode[] = ['ko', 'av', 'ru', 'ca', 'um', 'dr'];
 
   describe('Token format', () => {
-    tongues.forEach(code => {
+    tongues.forEach((code) => {
       it(`${code}: tokens have format prefix'suffix`, () => {
         const tokenizer = new SacredTongueTokenizer(code);
         for (let b = 0; b < 256; b++) {
@@ -147,7 +147,7 @@ describe('SacredTongueTokenizer', () => {
   });
 
   describe('Bijective mapping (256-byte roundtrip)', () => {
-    tongues.forEach(code => {
+    tongues.forEach((code) => {
       it(`${code}: all 256 bytes encode/decode losslessly`, () => {
         const tokenizer = new SacredTongueTokenizer(code);
         for (let b = 0; b < 256; b++) {
@@ -168,13 +168,13 @@ describe('SacredTongueTokenizer', () => {
 
     it('byte 0xFF → prefix[15] + suffix[15]', () => {
       const tokenizer = new SacredTongueTokenizer('ko');
-      const token = tokenizer.encodeByte(0xFF);
+      const token = tokenizer.encodeByte(0xff);
       expect(token).toBe("vara'esh");
     });
 
     it('byte 0x2A (42) → prefix[2] + suffix[10]', () => {
       const tokenizer = new SacredTongueTokenizer('ko');
-      const token = tokenizer.encodeByte(0x2A);
+      const token = tokenizer.encodeByte(0x2a);
       expect(token).toBe("vel'an");
     });
 
@@ -187,7 +187,7 @@ describe('SacredTongueTokenizer', () => {
   });
 
   describe('Bulk encode/decode', () => {
-    tongues.forEach(code => {
+    tongues.forEach((code) => {
       it(`${code}: arbitrary byte arrays roundtrip correctly`, () => {
         const tokenizer = new SacredTongueTokenizer(code);
         const data = new Uint8Array([0, 127, 255, 42, 100, 200]);
@@ -232,7 +232,7 @@ describe('SacredTongueTokenizer', () => {
     it('isValidToken returns false for invalid tokens', () => {
       const tokenizer = new SacredTongueTokenizer('ko');
       expect(tokenizer.isValidToken("invalid'token")).toBe(false);
-      expect(tokenizer.isValidToken("foo")).toBe(false);
+      expect(tokenizer.isValidToken('foo')).toBe(false);
     });
   });
 
@@ -270,7 +270,7 @@ describe('Section Encoding', () => {
     const sections: Array<'salt' | 'nonce' | 'ct' | 'tag'> = ['salt', 'nonce', 'ct', 'tag'];
     const data = randomBytes(32);
 
-    sections.forEach(section => {
+    sections.forEach((section) => {
       const encoded = encodeToSpelltext(data, section);
       const decoded = decodeFromSpelltext(encoded, section);
       expect(Array.from(decoded)).toEqual(Array.from(data));
@@ -497,7 +497,7 @@ describe('LWS Integration', () => {
 
     it('weights are based on golden ratio', () => {
       const weights = computeLWSWeights('ko');
-      weights.forEach(w => {
+      weights.forEach((w) => {
         expect(w).toBeGreaterThan(0);
         // Should be some power of PHI
         const log = Math.log(w) / Math.log(PHI);
@@ -537,7 +537,7 @@ describe('Stress tests', () => {
     const tongues: TongueCode[] = ['ko', 'av', 'ru', 'ca', 'um', 'dr'];
     let totalRoundtrips = 0;
 
-    tongues.forEach(code => {
+    tongues.forEach((code) => {
       const tokenizer = new SacredTongueTokenizer(code);
       for (let b = 0; b < 256; b++) {
         const token = tokenizer.encodeByte(b);

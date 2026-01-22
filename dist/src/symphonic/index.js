@@ -31,7 +31,9 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.quickVerify = exports.quickSign = exports.VERSION = exports.verifyIntent = exports.signIntent = exports.createHybridCrypto = exports.HybridCrypto = exports.createSymphonicAgent = exports.SymphonicAgent = exports.getAlphabet = exports.ZBase32 = exports.createFeistel = exports.Feistel = exports.FFT = exports.Complex = void 0;
+exports.VERSION = exports.verifyIntent = exports.signIntent = exports.createHybridCrypto = exports.HybridCrypto = exports.createSymphonicAgent = exports.SymphonicAgent = exports.getAlphabet = exports.ZBase32 = exports.createFeistel = exports.Feistel = exports.FFT = exports.Complex = void 0;
+exports.quickSign = quickSign;
+exports.quickVerify = quickVerify;
 // Complex number class
 var Complex_js_1 = require("./Complex.js");
 Object.defineProperty(exports, "Complex", { enumerable: true, get: function () { return Complex_js_1.Complex; } });
@@ -67,7 +69,6 @@ function quickSign(intent, key) {
     const { HybridCrypto } = require('./HybridCrypto.js');
     return new HybridCrypto().signCompact(intent, key);
 }
-exports.quickSign = quickSign;
 /**
  * Quick verify function for simple use cases
  */
@@ -76,7 +77,6 @@ function quickVerify(intent, signature, key) {
     const result = new HybridCrypto().verifyCompact(intent, signature, key);
     return result.valid;
 }
-exports.quickVerify = quickVerify;
 // Dual-Channel Consensus (Audio Module)
 __exportStar(require("./audio/index.js"), exports);
 //# sourceMappingURL=index.js.map

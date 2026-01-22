@@ -10,7 +10,12 @@
  * @since 2026-01-18
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.suggestPolicy = exports.getPolicyDescription = exports.checkPolicy = exports.getRequiredTongues = exports.enforcePolicy = exports.POLICY_MATRIX = void 0;
+exports.POLICY_MATRIX = void 0;
+exports.enforcePolicy = enforcePolicy;
+exports.getRequiredTongues = getRequiredTongues;
+exports.checkPolicy = checkPolicy;
+exports.getPolicyDescription = getPolicyDescription;
+exports.suggestPolicy = suggestPolicy;
 const types_1 = require("./types");
 /**
  * Default policy matrix
@@ -52,7 +57,7 @@ function enforcePolicy(validTongues, policy = 'standard') {
         return true;
     }
     // Check if all required tongues are present
-    const missing = required.filter(t => !validTongues.includes(t));
+    const missing = required.filter((t) => !validTongues.includes(t));
     if (missing.length > 0) {
         throw new types_1.PolicyError(`Policy '${policy}' requires tongues [${required.join(', ')}], ` +
             `but missing [${missing.join(', ')}]. ` +
@@ -60,7 +65,6 @@ function enforcePolicy(validTongues, policy = 'standard') {
     }
     return true;
 }
-exports.enforcePolicy = enforcePolicy;
 /**
  * Get required tongues for a policy level
  *
@@ -70,7 +74,6 @@ exports.enforcePolicy = enforcePolicy;
 function getRequiredTongues(policy) {
     return exports.POLICY_MATRIX[policy];
 }
-exports.getRequiredTongues = getRequiredTongues;
 /**
  * Check if a set of tongues satisfies a policy (without throwing)
  *
@@ -86,7 +89,6 @@ function checkPolicy(validTongues, policy = 'standard') {
         return false;
     }
 }
-exports.checkPolicy = checkPolicy;
 /**
  * Get policy level description
  *
@@ -102,7 +104,6 @@ function getPolicyDescription(policy) {
     };
     return descriptions[policy];
 }
-exports.getPolicyDescription = getPolicyDescription;
 /**
  * Suggest appropriate policy level based on operation type
  *
@@ -121,22 +122,30 @@ exports.getPolicyDescription = getPolicyDescription;
 function suggestPolicy(operation) {
     const op = operation.toLowerCase();
     // Critical operations
-    if (op.includes('deploy') || op.includes('grant') || op.includes('revoke') ||
-        op.includes('delete_resource') || op.includes('modify_permission')) {
+    if (op.includes('deploy') ||
+        op.includes('grant') ||
+        op.includes('revoke') ||
+        op.includes('delete_resource') ||
+        op.includes('modify_permission')) {
         return 'critical';
     }
     // Secret operations
-    if (op.includes('delete') || op.includes('secret') || op.includes('credential') ||
-        op.includes('key') || op.includes('password')) {
+    if (op.includes('delete') ||
+        op.includes('secret') ||
+        op.includes('credential') ||
+        op.includes('key') ||
+        op.includes('password')) {
         return 'secret';
     }
     // Strict operations
-    if (op.includes('write') || op.includes('update') || op.includes('create') ||
-        op.includes('modify') || op.includes('config')) {
+    if (op.includes('write') ||
+        op.includes('update') ||
+        op.includes('create') ||
+        op.includes('modify') ||
+        op.includes('config')) {
         return 'strict';
     }
     // Standard operations (read, query, list, etc.)
     return 'standard';
 }
-exports.suggestPolicy = suggestPolicy;
 //# sourceMappingURL=policy.js.map

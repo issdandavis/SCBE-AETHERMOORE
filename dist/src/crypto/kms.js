@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMasterKey = void 0;
+exports.getMasterKey = getMasterKey;
 /**
  * Replace with your real KMS/HSM integration.
  * Contract: getMasterKey(kid) returns a 32-byte key (Buffer) with export disabled in production.
@@ -19,5 +19,4 @@ async function getMasterKey(kid) {
     cache.set(kid, key);
     return key;
 }
-exports.getMasterKey = getMasterKey;
 //# sourceMappingURL=kms.js.map

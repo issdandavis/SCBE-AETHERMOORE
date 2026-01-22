@@ -1,0 +1,898 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SCBE-AETHERMOORE Monitoring Dashboard v4.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.6;
+        }
+      }
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @keyframes glow {
+        0%,
+        100% {
+          box-shadow: 0 0 5px currentColor;
+        }
+        50% {
+          box-shadow: 0 0 20px currentColor;
+        }
+      }
+      .animate-pulse-slow {
+        animation: pulse 2s ease-in-out infinite;
+      }
+      .animate-spin-slow {
+        animation: spin 8s linear infinite;
+      }
+      .animate-glow {
+        animation: glow 2s ease-in-out infinite;
+      }
+      .glass {
+        background: rgba(15, 23, 42, 0.8);
+        backdrop-filter: blur(12px);
+      }
+      .gradient-bg {
+        background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #0d1b2a 100%);
+      }
+      .status-allow {
+        color: #22c55e;
+        text-shadow: 0 0 10px #22c55e;
+      }
+      .status-quarantine {
+        color: #eab308;
+        text-shadow: 0 0 10px #eab308;
+      }
+      .status-deny {
+        color: #ef4444;
+        text-shadow: 0 0 10px #ef4444;
+      }
+      .poincare-ball {
+        background: radial-gradient(circle at 30% 30%, #1e3a5f 0%, #0a1929 70%, #000 100%);
+        border-radius: 50%;
+      }
+      .layer-active {
+        border-left: 3px solid #22c55e;
+      }
+      .layer-inactive {
+        border-left: 3px solid #374151;
+      }
+      .metric-card {
+        transition: all 0.3s ease;
+      }
+      .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      }
+    </style>
+  </head>
+  <body class="gradient-bg min-h-screen text-white">
+    <!-- Top Navigation Bar -->
+    <nav class="glass border-b border-white/10 px-6 py-4 sticky top-0 z-50">
+      <div class="flex items-center justify-between max-w-[1800px] mx-auto">
+        <div class="flex items-center gap-4">
+          <div class="w-10 h-10 poincare-ball flex items-center justify-center">
+            <span class="text-xl">&#x267E;</span>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold">SCBE-AETHERMOORE</h1>
+            <p class="text-xs text-gray-400">Quantum-Resistant Security Framework v4.0.0</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-6">
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+            <span class="text-sm text-green-400">System Online</span>
+          </div>
+          <div class="text-right">
+            <div class="text-xs text-gray-400">UTC Time</div>
+            <div class="text-sm font-mono" id="utc-time">--:--:--</div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="max-w-[1800px] mx-auto p-6 space-y-6">
+      <!-- Row 1: Key Metrics -->
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div class="metric-card glass rounded-xl p-4 border border-white/10">
+          <div class="text-xs text-gray-400 uppercase tracking-wide">Decisions/sec</div>
+          <div class="text-3xl font-bold text-blue-400" id="decisions-sec">2,847</div>
+          <div class="text-xs text-green-400 mt-1">+12% from avg</div>
+        </div>
+        <div class="metric-card glass rounded-xl p-4 border border-white/10">
+          <div class="text-xs text-gray-400 uppercase tracking-wide">Allow Rate</div>
+          <div class="text-3xl font-bold text-green-400" id="allow-rate">94.2%</div>
+          <div class="text-xs text-gray-400 mt-1">Last 1000 req</div>
+        </div>
+        <div class="metric-card glass rounded-xl p-4 border border-white/10">
+          <div class="text-xs text-gray-400 uppercase tracking-wide">Quarantine</div>
+          <div class="text-3xl font-bold text-yellow-400" id="quarantine-rate">4.8%</div>
+          <div class="text-xs text-gray-400 mt-1">Under review</div>
+        </div>
+        <div class="metric-card glass rounded-xl p-4 border border-white/10">
+          <div class="text-xs text-gray-400 uppercase tracking-wide">Deny Rate</div>
+          <div class="text-3xl font-bold text-red-400" id="deny-rate">1.0%</div>
+          <div class="text-xs text-gray-400 mt-1">Blocked threats</div>
+        </div>
+        <div class="metric-card glass rounded-xl p-4 border border-white/10">
+          <div class="text-xs text-gray-400 uppercase tracking-wide">Avg Latency</div>
+          <div class="text-3xl font-bold text-purple-400" id="avg-latency">4.2ms</div>
+          <div class="text-xs text-green-400 mt-1">Target: <5ms</div>
+        </div>
+        <div class="metric-card glass rounded-xl p-4 border border-white/10">
+          <div class="text-xs text-gray-400 uppercase tracking-wide">Active Agents</div>
+          <div class="text-3xl font-bold text-cyan-400" id="active-agents">8</div>
+          <div class="text-xs text-gray-400 mt-1">Fleet online</div>
+        </div>
+      </div>
+
+      <!-- Row 2: Main Panels -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- 14-Layer Pipeline Status -->
+        <div class="glass rounded-xl border border-white/10 overflow-hidden">
+          <div class="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+            <h2 class="font-bold">14-Layer Pipeline</h2>
+            <span class="text-xs text-green-400">All layers operational</span>
+          </div>
+          <div class="p-4 space-y-1 text-sm" id="layer-status">
+            <div
+              class="flex items-center justify-between py-1.5 px-2 rounded layer-active bg-green-500/10"
+            >
+              <span class="text-gray-300">L1: Complex State</span>
+              <span class="text-green-400 font-mono text-xs">2.1ms</span>
+            </div>
+            <div
+              class="flex items-center justify-between py-1.5 px-2 rounded layer-active bg-green-500/10"
+            >
+              <span class="text-gray-300">L2: Realification</span>
+              <span class="text-green-400 font-mono text-xs">0.3ms</span>
+            </div>
+            <div
+              class="flex items-center justify-between py-1.5 px-2 rounded layer-active bg-green-500/10"
+            >
+              <span class="text-gray-300">L3: Weighted Transform</span>
+              <span class="text-green-400 font-mono text-xs">0.8ms</span>
+            </div>
+            <div
+              class="flex items-center justify-between py-1.5 px-2 rounded layer-active bg-green-500/10"
+            >
+              <span class="text-gray-300">L4: Poincare Embedding</span>
+              <span class="text-green-400 font-mono text-xs">1.2ms</span>
+            </div>
+            <div
+              class="flex items-center justify-between py-1.5 px-2 rounded layer-active bg-green-500/10"
+            >
+              <span class="text-gray-300">L5: Hyperbolic Distance</span>
+              <span class="text-green-400 font-mono text-xs">0.5ms</span>
+            </div>
+            <div
+              class="flex items-center justify-between py-1.5 px-2 rounded layer-active bg-green-500/10"
+            >
+              <span class="text-gray-300">L6: Breathing Transform</span>
+              <span class="text-green-400 font-mono text-xs">0.4ms</span>
+            </div>
+            <div
+              class="flex items-center justify-between py-1.5 px-2 rounded layer-active bg-blue-500/10"
+            >
+              <span class="text-gray-300">L7: Phase Transform (Mobius)</span>
+              <span class="text-blue-400 font-mono text-xs">1.8ms</span>
+            </div>
+            <div
+              class="flex items-center justify-between py-1.5 px-2 rounded layer-active bg-green-500/10"
+            >
+              <span class="text-gray-300">L8: Realm Distance</span>
+              <span class="text-green-400 font-mono text-xs">0.6ms</span>
+            </div>
+            <div
+              class="flex items-center justify-between py-1.5 px-2 rounded layer-active bg-green-500/10"
+            >
+              <span class="text-gray-300">L9: Spectral Coherence</span>
+              <span class="text-green-400 font-mono text-xs">0.9ms</span>
+            </div>
+            <div
+              class="flex items-center justify-between py-1.5 px-2 rounded layer-active bg-green-500/10"
+            >
+              <span class="text-gray-300">L10: Spin Coherence</span>
+              <span class="text-green-400 font-mono text-xs">0.4ms</span>
+            </div>
+            <div
+              class="flex items-center justify-between py-1.5 px-2 rounded layer-active bg-green-500/10"
+            >
+              <span class="text-gray-300">L11: Triadic Temporal</span>
+              <span class="text-green-400 font-mono text-xs">0.3ms</span>
+            </div>
+            <div
+              class="flex items-center justify-between py-1.5 px-2 rounded layer-active bg-purple-500/10"
+            >
+              <span class="text-gray-300">L12: Harmonic Scaling</span>
+              <span class="text-purple-400 font-mono text-xs">0.2ms</span>
+            </div>
+            <div
+              class="flex items-center justify-between py-1.5 px-2 rounded layer-active bg-yellow-500/10"
+            >
+              <span class="text-gray-300">L13: Risk Decision</span>
+              <span class="text-yellow-400 font-mono text-xs">0.1ms</span>
+            </div>
+            <div
+              class="flex items-center justify-between py-1.5 px-2 rounded layer-active bg-green-500/10"
+            >
+              <span class="text-gray-300">L14: Audio Axis</span>
+              <span class="text-green-400 font-mono text-xs">0.7ms</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hyperbolic Geometry Visualization -->
+        <div class="glass rounded-xl border border-white/10 overflow-hidden">
+          <div class="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+            <h2 class="font-bold">Poincare Ball Visualization</h2>
+            <span class="text-xs text-gray-400">6D projected to 2D</span>
+          </div>
+          <div class="p-4 flex flex-col items-center">
+            <div class="relative w-64 h-64 poincare-ball border border-blue-500/30">
+              <!-- Center origin -->
+              <div
+                class="absolute w-2 h-2 bg-white/50 rounded-full"
+                style="top: 50%; left: 50%; transform: translate(-50%, -50%)"
+              ></div>
+
+              <!-- Realm centers (safe zones) -->
+              <div
+                class="absolute w-3 h-3 bg-green-500 rounded-full animate-pulse"
+                style="top: 45%; left: 48%"
+                title="Realm: Origin"
+              ></div>
+              <div
+                class="absolute w-3 h-3 bg-green-500 rounded-full"
+                style="top: 35%; left: 55%"
+                title="Realm: Trusted"
+              ></div>
+              <div
+                class="absolute w-3 h-3 bg-green-500 rounded-full"
+                style="top: 55%; left: 40%"
+                title="Realm: Verified"
+              ></div>
+              <div
+                class="absolute w-3 h-3 bg-green-500 rounded-full"
+                style="top: 60%; left: 60%"
+                title="Realm: Standard"
+              ></div>
+
+              <!-- Sample points (requests) -->
+              <div
+                class="absolute w-2 h-2 bg-green-400 rounded-full animate-pulse"
+                style="top: 42%; left: 52%"
+                title="Allow"
+              ></div>
+              <div
+                class="absolute w-2 h-2 bg-green-400 rounded-full"
+                style="top: 48%; left: 45%"
+                title="Allow"
+              ></div>
+              <div
+                class="absolute w-2 h-2 bg-yellow-400 rounded-full animate-glow"
+                style="top: 30%; left: 35%"
+                title="Quarantine"
+              ></div>
+              <div
+                class="absolute w-2 h-2 bg-red-500 rounded-full"
+                style="top: 15%; left: 70%"
+                title="Deny"
+              ></div>
+
+              <!-- Boundary ring -->
+              <div
+                class="absolute inset-2 border border-dashed border-red-500/30 rounded-full"
+              ></div>
+
+              <!-- Labels -->
+              <div
+                class="absolute text-xs text-red-400/70"
+                style="top: 5%; left: 50%; transform: translateX(-50%)"
+              >
+                Deny Zone
+              </div>
+              <div
+                class="absolute text-xs text-yellow-400/70"
+                style="top: 20%; left: 50%; transform: translateX(-50%)"
+              >
+                Quarantine
+              </div>
+              <div
+                class="absolute text-xs text-green-400/70"
+                style="top: 50%; left: 50%; transform: translate(-50%, -50%)"
+              >
+                Safe
+              </div>
+            </div>
+
+            <div class="mt-4 grid grid-cols-3 gap-4 text-center text-xs w-full">
+              <div>
+                <div class="text-gray-400">d* (min dist)</div>
+                <div class="text-lg font-mono text-blue-400" id="d-star">0.127</div>
+              </div>
+              <div>
+                <div class="text-gray-400">H(d*, R)</div>
+                <div class="text-lg font-mono text-purple-400" id="h-value">1.043</div>
+              </div>
+              <div>
+                <div class="text-gray-400">Risk'</div>
+                <div class="text-lg font-mono text-yellow-400" id="risk-prime">0.218</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Decision Feed -->
+        <div class="glass rounded-xl border border-white/10 overflow-hidden">
+          <div class="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+            <h2 class="font-bold">Live Decision Feed</h2>
+            <span class="text-xs text-gray-400" id="feed-rate">~2.8k/sec</span>
+          </div>
+          <div class="p-2 h-[420px] overflow-y-auto text-xs font-mono space-y-1" id="decision-feed">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 3: Security & Crypto -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- PQC Crypto Status -->
+        <div class="glass rounded-xl border border-white/10 overflow-hidden">
+          <div class="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+            <h2 class="font-bold">Post-Quantum Cryptography</h2>
+            <span class="px-2 py-0.5 bg-green-600 rounded text-xs">NIST Compliant</span>
+          </div>
+          <div class="p-4 grid grid-cols-2 gap-4">
+            <div class="p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
+              <div class="flex items-center gap-2 mb-2">
+                <div
+                  class="w-8 h-8 rounded bg-blue-600 flex items-center justify-center text-xs font-bold"
+                >
+                  KEM
+                </div>
+                <div>
+                  <div class="font-bold">ML-KEM-768</div>
+                  <div class="text-xs text-gray-400">Key Encapsulation</div>
+                </div>
+              </div>
+              <div class="space-y-1 text-xs">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Public Key</span>
+                  <span class="text-blue-400">1,184 bytes</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Ciphertext</span>
+                  <span class="text-blue-400">1,088 bytes</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Security Level</span>
+                  <span class="text-green-400">NIST Level 3</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Encap/sec</span>
+                  <span class="text-cyan-400" id="kem-ops">12,847</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-4 bg-purple-500/10 rounded-lg border border-purple-500/20">
+              <div class="flex items-center gap-2 mb-2">
+                <div
+                  class="w-8 h-8 rounded bg-purple-600 flex items-center justify-center text-xs font-bold"
+                >
+                  DSA
+                </div>
+                <div>
+                  <div class="font-bold">ML-DSA-65</div>
+                  <div class="text-xs text-gray-400">Digital Signatures</div>
+                </div>
+              </div>
+              <div class="space-y-1 text-xs">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Public Key</span>
+                  <span class="text-purple-400">1,952 bytes</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Signature</span>
+                  <span class="text-purple-400">3,293 bytes</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Security Level</span>
+                  <span class="text-green-400">NIST Level 3</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Sign/sec</span>
+                  <span class="text-cyan-400" id="dsa-ops">8,421</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-4 bg-green-500/10 rounded-lg border border-green-500/20">
+              <div class="flex items-center gap-2 mb-2">
+                <div
+                  class="w-8 h-8 rounded bg-green-600 flex items-center justify-center text-xs font-bold"
+                >
+                  SYM
+                </div>
+                <div>
+                  <div class="font-bold">XChaCha20-Poly1305</div>
+                  <div class="text-xs text-gray-400">Symmetric AEAD</div>
+                </div>
+              </div>
+              <div class="space-y-1 text-xs">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Key Size</span>
+                  <span class="text-green-400">256 bits</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Nonce</span>
+                  <span class="text-green-400">192 bits</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Tag</span>
+                  <span class="text-green-400">128 bits</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Throughput</span>
+                  <span class="text-cyan-400">2.1 GB/s</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
+              <div class="flex items-center gap-2 mb-2">
+                <div
+                  class="w-8 h-8 rounded bg-yellow-600 flex items-center justify-center text-xs font-bold"
+                >
+                  KDF
+                </div>
+                <div>
+                  <div class="font-bold">Argon2id</div>
+                  <div class="text-xs text-gray-400">Key Derivation</div>
+                </div>
+              </div>
+              <div class="space-y-1 text-xs">
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Time Cost</span>
+                  <span class="text-yellow-400">3 iterations</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Memory</span>
+                  <span class="text-yellow-400">64 MB</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Parallelism</span>
+                  <span class="text-yellow-400">4 threads</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-400">Derive Time</span>
+                  <span class="text-cyan-400">~500ms</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fleet Status -->
+        <div class="glass rounded-xl border border-white/10 overflow-hidden">
+          <div class="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+            <h2 class="font-bold">Fleet Agent Status</h2>
+            <span class="text-xs text-gray-400">Redis/BullMQ Orchestration</span>
+          </div>
+          <div class="p-4">
+            <div class="grid grid-cols-5 gap-2 mb-4">
+              <div class="text-center p-2 bg-green-500/20 rounded-lg border border-green-500/30">
+                <div
+                  class="w-8 h-8 mx-auto rounded-full bg-green-600 flex items-center justify-center mb-1"
+                >
+                  <span class="text-xs font-bold">C</span>
+                </div>
+                <div class="text-xs">Captain</div>
+                <div class="text-[10px] text-green-400">Online</div>
+              </div>
+              <div class="text-center p-2 bg-blue-500/20 rounded-lg border border-blue-500/30">
+                <div
+                  class="w-8 h-8 mx-auto rounded-full bg-blue-600 flex items-center justify-center mb-1"
+                >
+                  <span class="text-xs font-bold">A</span>
+                </div>
+                <div class="text-xs">Architect</div>
+                <div class="text-[10px] text-blue-400">Busy</div>
+              </div>
+              <div class="text-center p-2 bg-purple-500/20 rounded-lg border border-purple-500/30">
+                <div
+                  class="w-8 h-8 mx-auto rounded-full bg-purple-600 flex items-center justify-center mb-1"
+                >
+                  <span class="text-xs font-bold">R</span>
+                </div>
+                <div class="text-xs">Researcher</div>
+                <div class="text-[10px] text-purple-400">Busy</div>
+              </div>
+              <div class="text-center p-2 bg-cyan-500/20 rounded-lg border border-cyan-500/30">
+                <div
+                  class="w-8 h-8 mx-auto rounded-full bg-cyan-600 flex items-center justify-center mb-1"
+                >
+                  <span class="text-xs font-bold">D</span>
+                </div>
+                <div class="text-xs">Developer</div>
+                <div class="text-[10px] text-cyan-400">Busy</div>
+              </div>
+              <div class="text-center p-2 bg-yellow-500/20 rounded-lg border border-yellow-500/30">
+                <div
+                  class="w-8 h-8 mx-auto rounded-full bg-yellow-600 flex items-center justify-center mb-1"
+                >
+                  <span class="text-xs font-bold">Q</span>
+                </div>
+                <div class="text-xs">QA</div>
+                <div class="text-[10px] text-yellow-400">Idle</div>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <div class="text-xs text-gray-400 uppercase tracking-wide mb-2">Queue Status</div>
+              <div class="flex items-center justify-between text-sm p-2 bg-white/5 rounded">
+                <span>Pending Jobs</span>
+                <span class="font-mono text-blue-400" id="pending-jobs">47</span>
+              </div>
+              <div class="flex items-center justify-between text-sm p-2 bg-white/5 rounded">
+                <span>Active Jobs</span>
+                <span class="font-mono text-green-400" id="active-jobs">8</span>
+              </div>
+              <div class="flex items-center justify-between text-sm p-2 bg-white/5 rounded">
+                <span>Completed (24h)</span>
+                <span class="font-mono text-gray-400" id="completed-jobs">12,847</span>
+              </div>
+              <div class="flex items-center justify-between text-sm p-2 bg-white/5 rounded">
+                <span>Failed (24h)</span>
+                <span class="font-mono text-red-400" id="failed-jobs">3</span>
+              </div>
+            </div>
+
+            <div class="mt-4 p-3 bg-green-500/10 rounded-lg border border-green-500/20">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                <span class="text-sm font-bold text-green-400">Redis Cluster Healthy</span>
+              </div>
+              <div class="text-xs text-gray-400 mt-1">3 nodes | 99.99% uptime | 847MB used</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 4: Security Gate & Sacred Tongues -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Security Gate -->
+        <div class="glass rounded-xl border border-white/10 overflow-hidden">
+          <div class="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+            <h2 class="font-bold">Security Gate (Waiting Room)</h2>
+            <span class="text-xs text-green-400">Adaptive Dwell Active</span>
+          </div>
+          <div class="p-4">
+            <div class="grid grid-cols-3 gap-4 mb-4">
+              <div class="text-center p-3 bg-green-500/20 rounded-lg">
+                <div class="text-2xl font-bold text-green-400" id="gate-allow">2,682</div>
+                <div class="text-xs text-gray-400">Passed</div>
+              </div>
+              <div class="text-center p-3 bg-yellow-500/20 rounded-lg">
+                <div class="text-2xl font-bold text-yellow-400" id="gate-dwell">134</div>
+                <div class="text-xs text-gray-400">Dwelling</div>
+              </div>
+              <div class="text-center p-3 bg-red-500/20 rounded-lg">
+                <div class="text-2xl font-bold text-red-400" id="gate-deny">31</div>
+                <div class="text-xs text-gray-400">Fail-to-Noise</div>
+              </div>
+            </div>
+
+            <div class="space-y-2 text-sm">
+              <div class="text-xs text-gray-400 uppercase tracking-wide">
+                Dwell Time Distribution
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-20 text-xs">0-1s</span>
+                <div class="flex-1 bg-gray-700 rounded-full h-2">
+                  <div class="bg-green-500 h-2 rounded-full" style="width: 75%"></div>
+                </div>
+                <span class="text-xs text-gray-400">75%</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-20 text-xs">1-5s</span>
+                <div class="flex-1 bg-gray-700 rounded-full h-2">
+                  <div class="bg-yellow-500 h-2 rounded-full" style="width: 18%"></div>
+                </div>
+                <span class="text-xs text-gray-400">18%</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-20 text-xs">5-30s</span>
+                <div class="flex-1 bg-gray-700 rounded-full h-2">
+                  <div class="bg-orange-500 h-2 rounded-full" style="width: 6%"></div>
+                </div>
+                <span class="text-xs text-gray-400">6%</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-20 text-xs">>30s</span>
+                <div class="flex-1 bg-gray-700 rounded-full h-2">
+                  <div class="bg-red-500 h-2 rounded-full" style="width: 1%"></div>
+                </div>
+                <span class="text-xs text-gray-400">1%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sacred Tongue Tokenizer -->
+        <div class="glass rounded-xl border border-white/10 overflow-hidden">
+          <div class="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+            <h2 class="font-bold">Sacred Tongue Tokenizer</h2>
+            <span class="text-xs text-gray-400">6 Tongues x 256 Tokens</span>
+          </div>
+          <div class="p-4">
+            <div class="grid grid-cols-3 gap-2 mb-4">
+              <div class="p-2 bg-red-500/20 rounded text-center border border-red-500/30">
+                <div class="font-bold text-red-400">KO</div>
+                <div class="text-[10px] text-gray-400">Kor'aelin</div>
+                <div class="text-xs text-gray-500">Control</div>
+              </div>
+              <div class="p-2 bg-blue-500/20 rounded text-center border border-blue-500/30">
+                <div class="font-bold text-blue-400">AV</div>
+                <div class="text-[10px] text-gray-400">Avali</div>
+                <div class="text-xs text-gray-500">I/O</div>
+              </div>
+              <div class="p-2 bg-purple-500/20 rounded text-center border border-purple-500/30">
+                <div class="font-bold text-purple-400">RU</div>
+                <div class="text-[10px] text-gray-400">Runethic</div>
+                <div class="text-xs text-gray-500">Policy</div>
+              </div>
+              <div class="p-2 bg-green-500/20 rounded text-center border border-green-500/30">
+                <div class="font-bold text-green-400">CA</div>
+                <div class="text-[10px] text-gray-400">Cassisivadan</div>
+                <div class="text-xs text-gray-500">Compute</div>
+              </div>
+              <div class="p-2 bg-yellow-500/20 rounded text-center border border-yellow-500/30">
+                <div class="font-bold text-yellow-400">UM</div>
+                <div class="text-[10px] text-gray-400">Umbroth</div>
+                <div class="text-xs text-gray-500">Security</div>
+              </div>
+              <div class="p-2 bg-cyan-500/20 rounded text-center border border-cyan-500/30">
+                <div class="font-bold text-cyan-400">DR</div>
+                <div class="text-[10px] text-gray-400">Draumric</div>
+                <div class="text-xs text-gray-500">Structure</div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-white/5 rounded-lg">
+              <div class="text-xs text-gray-400 mb-2">Sample Envelope (SS1 Format)</div>
+              <div class="font-mono text-xs break-all text-blue-300">
+                SS1:vel'an:flux'dat:bind'if:calc'num:seal'crit:weave'hex
+              </div>
+            </div>
+
+            <div class="mt-3 grid grid-cols-2 gap-2 text-xs">
+              <div class="p-2 bg-white/5 rounded flex justify-between">
+                <span class="text-gray-400">Tokens/sec</span>
+                <span class="text-cyan-400 font-mono">847,293</span>
+              </div>
+              <div class="p-2 bg-white/5 rounded flex justify-between">
+                <span class="text-gray-400">Bijectivity</span>
+                <span class="text-green-400">100%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="text-center text-gray-500 text-xs py-4">
+        <p>SCBE-AETHERMOORE v4.0.0 | Quantum-Resistant Security Framework</p>
+        <p class="mt-1">Dashboard v1.0 | Real-time Monitoring</p>
+      </footer>
+    </main>
+
+    <script>
+      // ========================================
+      // SCBE Dashboard - Real-time WebSocket
+      // ========================================
+
+      // Configuration
+      const WS_URL = window.location.protocol === 'https:'
+        ? `wss://${window.location.host}/ws/dashboard`
+        : `ws://${window.location.hostname}:8000/ws/dashboard`;
+
+      let ws = null;
+      let reconnectAttempts = 0;
+      const MAX_RECONNECT = 5;
+      let useMockData = false;
+
+      // DOM elements
+      const feed = document.getElementById('decision-feed');
+      const statusIndicator = document.querySelector('.bg-green-500.animate-pulse');
+      const statusText = document.querySelector('.text-green-400');
+
+      // Update UTC time
+      function updateTime() {
+        const now = new Date();
+        document.getElementById('utc-time').textContent = now.toUTCString().split(' ')[4];
+      }
+      setInterval(updateTime, 1000);
+      updateTime();
+
+      // Format decision for display
+      function formatDecision(d) {
+        const time = d.timestamp ? d.timestamp.split('T')[1].slice(0, 12) : new Date().toISOString().split('T')[1].slice(0, 12);
+        let statusClass = 'status-allow';
+        if (d.decision === 'QUARANTINE') statusClass = 'status-quarantine';
+        if (d.decision === 'DENY') statusClass = 'status-deny';
+
+        return `<div class="p-1.5 bg-white/5 rounded flex items-center justify-between">
+          <span class="text-gray-500">${time}</span>
+          <span class="text-gray-400">${d.agent || 'unknown'}</span>
+          <span class="text-gray-500">${d.topic || 'query'}</span>
+          <span class="text-gray-400">d*=${(d.d_star || 0).toFixed(3)}</span>
+          <span class="${statusClass} font-bold">${d.decision}</span>
+        </div>`;
+      }
+
+      // Add decision to feed
+      function addDecision(d) {
+        feed.innerHTML = formatDecision(d) + feed.innerHTML;
+        while (feed.children.length > 50) {
+          feed.removeChild(feed.lastChild);
+        }
+      }
+
+      // Update metrics display
+      function updateMetrics(m) {
+        if (m.decisions_per_sec !== undefined) {
+          document.getElementById('decisions-sec').textContent = Math.round(m.decisions_per_sec).toLocaleString();
+        }
+        if (m.allow_rate !== undefined) {
+          document.getElementById('allow-rate').textContent = (m.allow_rate * 100).toFixed(1) + '%';
+        }
+        if (m.quarantine_rate !== undefined) {
+          document.getElementById('quarantine-rate').textContent = (m.quarantine_rate * 100).toFixed(1) + '%';
+        }
+        if (m.deny_rate !== undefined) {
+          document.getElementById('deny-rate').textContent = (m.deny_rate * 100).toFixed(1) + '%';
+        }
+        if (m.avg_latency_ms !== undefined) {
+          document.getElementById('avg-latency').textContent = m.avg_latency_ms.toFixed(1) + 'ms';
+        }
+        if (m.active_agents !== undefined) {
+          document.getElementById('active-agents').textContent = m.active_agents;
+        }
+        if (m.kem_ops_per_sec !== undefined) {
+          document.getElementById('kem-ops').textContent = m.kem_ops_per_sec.toLocaleString();
+        }
+        if (m.dsa_ops_per_sec !== undefined) {
+          document.getElementById('dsa-ops').textContent = m.dsa_ops_per_sec.toLocaleString();
+        }
+      }
+
+      // Connect to WebSocket
+      function connectWebSocket() {
+        try {
+          ws = new WebSocket(WS_URL);
+
+          ws.onopen = () => {
+            console.log('WebSocket connected to', WS_URL);
+            reconnectAttempts = 0;
+            useMockData = false;
+            statusIndicator.classList.remove('bg-yellow-500', 'bg-red-500');
+            statusIndicator.classList.add('bg-green-500');
+            statusText.textContent = 'Live';
+            statusText.classList.remove('text-yellow-400', 'text-red-400');
+            statusText.classList.add('text-green-400');
+          };
+
+          ws.onmessage = (event) => {
+            const msg = JSON.parse(event.data);
+
+            if (msg.type === 'init') {
+              // Initial state
+              if (msg.metrics) updateMetrics(msg.metrics);
+              if (msg.history) {
+                feed.innerHTML = '';
+                msg.history.reverse().forEach(d => addDecision(d));
+              }
+            } else if (msg.type === 'decision') {
+              // New decision
+              addDecision(msg.data);
+              if (msg.metrics) updateMetrics(msg.metrics);
+            }
+          };
+
+          ws.onclose = () => {
+            console.log('WebSocket disconnected');
+            statusIndicator.classList.remove('bg-green-500');
+            statusIndicator.classList.add('bg-yellow-500');
+            statusText.textContent = 'Reconnecting...';
+            statusText.classList.remove('text-green-400');
+            statusText.classList.add('text-yellow-400');
+
+            if (reconnectAttempts < MAX_RECONNECT) {
+              reconnectAttempts++;
+              setTimeout(connectWebSocket, 2000 * reconnectAttempts);
+            } else {
+              startMockMode();
+            }
+          };
+
+          ws.onerror = (err) => {
+            console.error('WebSocket error:', err);
+            ws.close();
+          };
+
+        } catch (e) {
+          console.error('WebSocket connection failed:', e);
+          startMockMode();
+        }
+      }
+
+      // Fallback to mock data if API unavailable
+      function startMockMode() {
+        if (useMockData) return;
+        useMockData = true;
+        console.log('Switching to mock data mode');
+
+        statusIndicator.classList.remove('bg-green-500', 'bg-yellow-500');
+        statusIndicator.classList.add('bg-red-500');
+        statusText.textContent = 'Demo Mode';
+        statusText.classList.remove('text-green-400', 'text-yellow-400');
+        statusText.classList.add('text-red-400');
+
+        const mockDecisions = ['ALLOW', 'ALLOW', 'ALLOW', 'ALLOW', 'ALLOW', 'ALLOW', 'ALLOW', 'ALLOW', 'QUARANTINE', 'DENY'];
+        const mockAgents = ['user_12847', 'agent_ash', 'api_client', 'service_worker', 'external_api'];
+        const mockTopics = ['query', 'mutation', 'auth', 'data_access', 'admin'];
+
+        setInterval(() => {
+          if (!useMockData) return;
+          addDecision({
+            timestamp: new Date().toISOString(),
+            agent: mockAgents[Math.floor(Math.random() * mockAgents.length)],
+            topic: mockTopics[Math.floor(Math.random() * mockTopics.length)],
+            decision: mockDecisions[Math.floor(Math.random() * mockDecisions.length)],
+            risk_score: Math.random() * 0.5,
+            d_star: Math.random() * 0.3
+          });
+        }, 350);
+
+        setInterval(() => {
+          if (!useMockData) return;
+          updateMetrics({
+            decisions_per_sec: 2700 + Math.floor(Math.random() * 300),
+            kem_ops_per_sec: 12000 + Math.floor(Math.random() * 2000),
+            dsa_ops_per_sec: 8000 + Math.floor(Math.random() * 1000)
+          });
+          document.getElementById('d-star').textContent = (0.1 + Math.random() * 0.1).toFixed(3);
+          document.getElementById('h-value').textContent = (1.0 + Math.random() * 0.1).toFixed(3);
+          document.getElementById('risk-prime').textContent = (0.15 + Math.random() * 0.15).toFixed(3);
+        }, 2000);
+      }
+
+      // Ping to keep connection alive
+      setInterval(() => {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send('ping');
+        }
+      }, 30000);
+
+      // Start connection
+      connectWebSocket();
+    </script>
+  </body>
+</html>

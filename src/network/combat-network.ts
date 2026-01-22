@@ -58,7 +58,8 @@ export interface CombatNetworkConfig {
 // ============================================================================
 
 class PathHealthMonitor {
-  private pathHistory: Map<string, { success: boolean; latencyMs: number; timestamp: number }[]> = new Map();
+  private pathHistory: Map<string, { success: boolean; latencyMs: number; timestamp: number }[]> =
+    new Map();
   private readonly maxHistorySize: number;
 
   constructor(historySize: number = 100) {
@@ -91,8 +92,8 @@ class PathHealthMonitor {
     const key = this.getPathKey(nodeIds);
     const history = this.pathHistory.get(key) || [];
 
-    const successCount = history.filter(h => h.success).length;
-    const failureCount = history.filter(h => !h.success).length;
+    const successCount = history.filter((h) => h.success).length;
+    const failureCount = history.filter((h) => !h.success).length;
     const totalLatency = history.reduce((sum, h) => sum + h.latencyMs, 0);
 
     return {
@@ -102,7 +103,7 @@ class PathHealthMonitor {
       successRate: history.length > 0 ? successCount / history.length : 1,
       averageLatencyMs: history.length > 0 ? totalLatency / history.length : 0,
       lastUsed: history.length > 0 ? history[history.length - 1].timestamp : 0,
-      nodeIds
+      nodeIds,
     };
   }
 
@@ -159,7 +160,8 @@ class PathHealthMonitor {
 export class CombatNetwork {
   private readonly healthMonitor: PathHealthMonitor;
   private readonly config: CombatNetworkConfig;
-  private pendingAcks: Map<string, { resolve: (ack: boolean) => void; timeout: NodeJS.Timeout }> = new Map();
+  private pendingAcks: Map<string, { resolve: (ack: boolean) => void; timeout: NodeJS.Timeout }> =
+    new Map();
 
   constructor(
     private router: SpaceTorRouter,
@@ -171,11 +173,11 @@ export class CombatNetwork {
         enabled: true,
         timeoutMs: 30000, // 30 seconds default
         maxRetries: 3,
-        ...config?.acknowledgment
+        ...config?.acknowledgment,
       },
       minDisjointPaths: 2,
       healthTrackingWindow: 100,
-      ...config
+      ...config,
     };
 
     this.healthMonitor = new PathHealthMonitor(this.config.healthTrackingWindow);
@@ -205,13 +207,11 @@ export class CombatNetwork {
 
       for (let i = 0; i < paths.length; i++) {
         const pathId = i === 0 ? 'PRIMARY' : `BACKUP-${i}`;
-        console.log(`[COMBAT] Routing via ${pathId}: ${paths[i].map(n => n.id).join(' -> ')}`);
+        console.log(`[COMBAT] Routing via ${pathId}: ${paths[i].map((n) => n.id).join(' -> ')}`);
       }
 
       // Encrypt & Send in Parallel
-      const onions = await Promise.all(
-        paths.map(path => this.crypto.buildOnion(payload, path))
-      );
+      const onions = await Promise.all(paths.map((path) => this.crypto.buildOnion(payload, path)));
 
       // Dispatch with acknowledgment handling
       const transmissions = paths.map((path, i) => {
@@ -224,7 +224,7 @@ export class CombatNetwork {
     } else {
       // Standard Routing
       const path = this.router.calculatePath(origin, dest, 50);
-      console.log(`[STANDARD] Routing via: ${path.map(n => n.id).join(' -> ')}`);
+      console.log(`[STANDARD] Routing via: ${path.map((n) => n.id).join(' -> ')}`);
 
       const onion = await this.crypto.buildOnion(payload, path);
       const result = await this.transmitWithAck(path, onion, 'STANDARD');
@@ -260,14 +260,14 @@ export class CombatNetwork {
         const path = this.router.calculateDisjointPath(origin, dest, minTrust, usedNodes);
 
         // Verify path health before using
-        const nodeIds = path.map(n => n.id);
+        const nodeIds = path.map((n) => n.id);
         if (!this.healthMonitor.isHealthy(nodeIds)) {
           console.warn(`[COMBAT] Path ${i + 1} has poor health, attempting alternative`);
           // Try to find healthier alternative
           const altPath = this.findHealthyAlternative(origin, dest, minTrust, usedNodes);
           if (altPath) {
             paths.push(altPath);
-            altPath.forEach(n => usedNodes.add(n.id));
+            altPath.forEach((n) => usedNodes.add(n.id));
             continue;
           }
         }
@@ -275,7 +275,7 @@ export class CombatNetwork {
         paths.push(path);
 
         // Mark all nodes in this path as used
-        path.forEach(node => usedNodes.add(node.id));
+        path.forEach((node) => usedNodes.add(node.id));
       } catch (error) {
         if (i === 0) {
           // Must have at least one path
@@ -311,13 +311,13 @@ export class CombatNetwork {
         const adjustedTrust = Math.max(minTrust - attempt * 5, 30);
         const path = this.router.calculateDisjointPath(origin, dest, adjustedTrust, excludeNodes);
 
-        const nodeIds = path.map(n => n.id);
+        const nodeIds = path.map((n) => n.id);
         if (this.healthMonitor.isHealthy(nodeIds)) {
           return path;
         }
 
         // Add unhealthy path nodes to exclusion for next attempt
-        path.forEach(n => excludeNodes.add(n.id));
+        path.forEach((n) => excludeNodes.add(n.id));
       } catch {
         continue;
       }
@@ -336,7 +336,7 @@ export class CombatNetwork {
     packet: Buffer,
     pathId: string
   ): Promise<TransmissionResult> {
-    const nodeIds = path.map(n => n.id);
+    const nodeIds = path.map((n) => n.id);
     let retries = 0;
     let lastError: string | undefined;
 
@@ -354,7 +354,7 @@ export class CombatNetwork {
           return {
             ...result,
             acknowledged,
-            retries
+            retries,
           };
         }
 
@@ -383,7 +383,7 @@ export class CombatNetwork {
       latencyMs: 0,
       acknowledged: false,
       retries,
-      error: lastError || 'Max retries exceeded'
+      error: lastError || 'Max retries exceeded',
     };
   }
 
@@ -415,7 +415,7 @@ export class CombatNetwork {
         pathId,
         latencyMs: Date.now() - startTime,
         acknowledged: false,
-        retries: 0
+        retries: 0,
       };
     } catch (error) {
       return {
@@ -424,7 +424,7 @@ export class CombatNetwork {
         latencyMs: Date.now() - startTime,
         acknowledged: false,
         retries: 0,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -433,7 +433,7 @@ export class CombatNetwork {
    * Wait for acknowledgment from destination
    */
   private waitForAck(pathId: string, timeoutMs: number): Promise<boolean> {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const timeout = setTimeout(() => {
         this.pendingAcks.delete(pathId);
         resolve(false); // Timeout - no ack received
@@ -442,12 +442,15 @@ export class CombatNetwork {
       this.pendingAcks.set(pathId, { resolve, timeout });
 
       // Simulate acknowledgment for testing (80% success rate)
-      setTimeout(() => {
-        if (this.pendingAcks.has(pathId)) {
-          const ackSuccess = Math.random() > 0.2;
-          this.receiveAck(pathId, ackSuccess);
-        }
-      }, Math.random() * 50 + 10);
+      setTimeout(
+        () => {
+          if (this.pendingAcks.has(pathId)) {
+            const ackSuccess = Math.random() > 0.2;
+            this.receiveAck(pathId, ackSuccess);
+          }
+        },
+        Math.random() * 50 + 10
+      );
     });
   }
 
@@ -470,9 +473,7 @@ export class CombatNetwork {
     // Speed of light: ~300,000 km/s
     // 1 AU ≈ 150 million km
     // Light travel time for 1 AU ≈ 500 seconds = 500,000 ms
-    const distance = Math.sqrt(
-      node.coords.x ** 2 + node.coords.y ** 2 + node.coords.z ** 2
-    );
+    const distance = Math.sqrt(node.coords.x ** 2 + node.coords.y ** 2 + node.coords.z ** 2);
     return distance * 500000; // ms per AU
   }
 
@@ -480,7 +481,7 @@ export class CombatNetwork {
    * Sleep utility
    */
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   // ============================================================================
@@ -503,15 +504,15 @@ export class CombatNetwork {
         totalNodes: 0,
         quantumCapableNodes: 0,
         averageLoad: 0,
-        averageTrust: 0
+        averageTrust: 0,
       };
     }
 
     return {
       totalNodes: nodes.length,
-      quantumCapableNodes: nodes.filter(n => n.quantumCapable).length,
+      quantumCapableNodes: nodes.filter((n) => n.quantumCapable).length,
       averageLoad: nodes.reduce((sum, n) => sum + n.load, 0) / nodes.length,
-      averageTrust: nodes.reduce((sum, n) => sum + n.trustScore, 0) / nodes.length
+      averageTrust: nodes.reduce((sum, n) => sum + n.trustScore, 0) / nodes.length,
     };
   }
 

@@ -19,6 +19,7 @@ python examples/demo_scbe_system.py
 ```
 
 This demonstrates:
+
 - 14-layer SCBE pipeline execution
 - Risk scoring with harmonic amplification
 - Decision gating (ALLOW/QUARANTINE/DENY)
@@ -102,15 +103,15 @@ print(f"Harmonic: {result['harmonic_scale']:.4f}")
 
 ## File Map
 
-| Component | File |
-|-----------|------|
+| Component         | File                            |
+| ----------------- | ------------------------------- |
 | 14-Layer Pipeline | `src/scbe_14layer_reference.py` |
-| Unified CPSE | `src/scbe_cpse_unified.py` |
-| Aethermoore Core | `src/aethermoore.py` |
-| Symphonic Cipher | `src/symphonic_cipher/core.py` |
-| Tests | `tests/test_scbe_14layers.py` |
-| Demo | `examples/demo_scbe_system.py` |
-| Compliance | `tests/compliance_report.py` |
+| Unified CPSE      | `src/scbe_cpse_unified.py`      |
+| Aethermoore Core  | `src/aethermoore.py`            |
+| Symphonic Cipher  | `src/symphonic_cipher/core.py`  |
+| Tests             | `tests/test_scbe_14layers.py`   |
+| Demo              | `examples/demo_scbe_system.py`  |
+| Compliance        | `tests/compliance_report.py`    |
 
 ## Next Steps
 

@@ -41,7 +41,7 @@ describe('CombatNetwork', () => {
     load,
     quantumCapable,
     lastSeen: Date.now(),
-    bandwidth: 1000
+    bandwidth: 1000,
   });
 
   beforeEach(() => {
@@ -73,10 +73,10 @@ describe('CombatNetwork', () => {
       acknowledgment: {
         enabled: true,
         timeoutMs: 1000, // Short timeout for tests
-        maxRetries: 2
+        maxRetries: 2,
       },
       minDisjointPaths: 2,
-      healthTrackingWindow: 50
+      healthTrackingWindow: 50,
     });
   });
 
@@ -126,8 +126,8 @@ describe('CombatNetwork', () => {
       expect(paths.length).toBeGreaterThanOrEqual(1);
 
       if (paths.length >= 2) {
-        const path1Nodes = new Set(paths[0].map(n => n.id));
-        const path2Nodes = new Set(paths[1].map(n => n.id));
+        const path1Nodes = new Set(paths[0].map((n) => n.id));
+        const path2Nodes = new Set(paths[1].map((n) => n.id));
 
         // No node should appear in both paths
         for (const nodeId of path1Nodes) {
@@ -244,8 +244,8 @@ describe('CombatNetwork', () => {
         acknowledgment: {
           enabled: false,
           timeoutMs: 1000,
-          maxRetries: 0
-        }
+          maxRetries: 0,
+        },
       });
 
       const results = await noAckNet.send('Test', earthCoords, marsCoords, false);
@@ -349,7 +349,7 @@ describe('CombatNetwork', () => {
 
     it('should allow partial config override', () => {
       const partialNet = new CombatNetwork(router, crypto, {
-        minDisjointPaths: 3
+        minDisjointPaths: 3,
       });
 
       // Should use provided value
@@ -359,7 +359,7 @@ describe('CombatNetwork', () => {
 
     it('should use custom health tracking window', async () => {
       const smallWindowNet = new CombatNetwork(router, crypto, {
-        healthTrackingWindow: 5
+        healthTrackingWindow: 5,
       });
 
       // Send more messages than the window size
@@ -388,7 +388,7 @@ describe('CombatNetwork', () => {
       const results = await Promise.all(transmissions);
 
       expect(results).toHaveLength(3);
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result).toHaveLength(1);
         expect(result[0].success).toBe(true);
       });
@@ -403,7 +403,7 @@ describe('CombatNetwork', () => {
       const results = await Promise.all(transmissions);
 
       expect(results).toHaveLength(2);
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result.length).toBeGreaterThanOrEqual(1);
       });
     });
@@ -431,7 +431,7 @@ describe('SpaceTorRouter', () => {
     load,
     quantumCapable,
     lastSeen: Date.now(),
-    bandwidth: 1000
+    bandwidth: 1000,
   });
 
   beforeEach(() => {
@@ -489,23 +489,15 @@ describe('SpaceTorRouter', () => {
     });
 
     it('should calculate path', () => {
-      const path = router.calculatePath(
-        { x: 0, y: 0, z: 0 },
-        { x: 4, y: 0, z: 0 },
-        70
-      );
+      const path = router.calculatePath({ x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 0 }, 70);
 
       expect(path.length).toBeGreaterThanOrEqual(3); // Entry, Middle, Exit
     });
 
     it('should respect minimum trust', () => {
-      const path = router.calculatePath(
-        { x: 0, y: 0, z: 0 },
-        { x: 4, y: 0, z: 0 },
-        70
-      );
+      const path = router.calculatePath({ x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 0 }, 70);
 
-      path.forEach(node => {
+      path.forEach((node) => {
         expect(node.trustScore).toBeGreaterThanOrEqual(70);
       });
     });
@@ -520,22 +512,18 @@ describe('SpaceTorRouter', () => {
       );
 
       // Path should not include excluded nodes
-      path.forEach(node => {
+      path.forEach((node) => {
         expect(excludeNodes.has(node.id)).toBe(false);
       });
     });
 
     it('should throw when insufficient nodes', () => {
       const smallRouter = new SpaceTorRouter([
-        createNode('ONLY-1', { x: 1, y: 0, z: 0 }, 90, 0.2, true)
+        createNode('ONLY-1', { x: 1, y: 0, z: 0 }, 90, 0.2, true),
       ]);
 
       expect(() => {
-        smallRouter.calculatePath(
-          { x: 0, y: 0, z: 0 },
-          { x: 2, y: 0, z: 0 },
-          70
-        );
+        smallRouter.calculatePath({ x: 0, y: 0, z: 0 }, { x: 2, y: 0, z: 0 }, 70);
       }).toThrow('Insufficient eligible nodes');
     });
   });
@@ -562,7 +550,7 @@ describe('HybridSpaceCrypto', () => {
     load,
     quantumCapable,
     lastSeen: Date.now(),
-    bandwidth: 1000
+    bandwidth: 1000,
   });
 
   beforeEach(() => {

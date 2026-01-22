@@ -14,7 +14,8 @@
  * @module symphonic/SymphonicAgent
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createSymphonicAgent = exports.SymphonicAgent = void 0;
+exports.SymphonicAgent = void 0;
+exports.createSymphonicAgent = createSymphonicAgent;
 const FFT_js_1 = require("./FFT.js");
 const Feistel_js_1 = require("./Feistel.js");
 const DEFAULT_CONFIG = {
@@ -242,5 +243,4 @@ exports.SymphonicAgent = SymphonicAgent;
 function createSymphonicAgent(config) {
     return new SymphonicAgent(config);
 }
-exports.createSymphonicAgent = createSymphonicAgent;
 //# sourceMappingURL=SymphonicAgent.js.map

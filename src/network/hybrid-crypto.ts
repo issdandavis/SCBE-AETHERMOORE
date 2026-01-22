@@ -116,7 +116,7 @@ export class HybridSpaceCrypto {
   public generateKeyPair(): KeyPair {
     return {
       publicKey: randomBytes(32),
-      privateKey: randomBytes(32)
+      privateKey: randomBytes(32),
     };
   }
 

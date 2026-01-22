@@ -19,8 +19,8 @@ export { Complex } from './Complex.js';
 export { FFT, type FFTResult } from './FFT.js';
 export { Feistel, createFeistel, type FeistelConfig } from './Feistel.js';
 export { ZBase32, getAlphabet } from './ZBase32.js';
-export { SymphonicAgent, createSymphonicAgent, type SymphonicAgentConfig, type SynthesisResult } from './SymphonicAgent.js';
-export { HybridCrypto, createHybridCrypto, signIntent, verifyIntent, type HarmonicSignature, type HybridCryptoConfig, type SignedEnvelope, type VerificationResult } from './HybridCrypto.js';
+export { SymphonicAgent, createSymphonicAgent, type SymphonicAgentConfig, type SynthesisResult, } from './SymphonicAgent.js';
+export { HybridCrypto, createHybridCrypto, signIntent, verifyIntent, type HarmonicSignature, type HybridCryptoConfig, type SignedEnvelope, type VerificationResult, } from './HybridCrypto.js';
 /**
  * Version of the Symphonic Cipher TypeScript implementation
  */

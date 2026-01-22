@@ -7,8 +7,8 @@ services:
       dockerfile: Dockerfile
     container_name: scbe-aethermoore
     ports:
-      - "3000:3000"
-      - "8000:8000"
+      - '3000:3000'
+      - '8000:8000'
     volumes:
       - ./src:/app/src:ro
       - ./demo:/app/demo:ro
@@ -20,7 +20,7 @@ services:
     networks:
       - scbe-network
     healthcheck:
-      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      test: ['CMD', 'python', '-c', 'import sys; sys.exit(0)']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -30,7 +30,7 @@ services:
     image: nginx:alpine
     container_name: scbe-demo
     ports:
-      - "8080:80"
+      - '8080:80'
     volumes:
       - ./scbe-aethermoore:/usr/share/nginx/html:ro
     restart: unless-stopped

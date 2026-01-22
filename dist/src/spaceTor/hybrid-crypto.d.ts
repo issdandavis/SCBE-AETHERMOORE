@@ -10,8 +10,6 @@
  * - arXiv:2502.06657 (Onion Routing Key Distribution for QKDN)
  * - arXiv:1507.05724 (HORNET: High-speed Onion Routing)
  */
-/// <reference types="node" />
-/// <reference types="node" />
 import type { RelayNode } from './space-tor-router';
 export declare class HybridSpaceCrypto {
     /**

@@ -15,11 +15,13 @@ This is the SCBE (Spectral Context-Bound Encryption) project - a security framew
 ## Testing Framework
 
 ### Property-Based Testing
+
 - **TypeScript**: Use `fast-check` library with minimum 100 iterations per property
 - **Python**: Use `hypothesis` library with minimum 100 iterations per property
 - **Coverage Target**: 95% (lines, functions, branches, statements)
 
 ### Test Structure
+
 ```
 tests/
 ├── enterprise/          # Enterprise-grade test suite
@@ -37,6 +39,7 @@ tests/
 ```
 
 ### Test Requirements
+
 - All tests must include requirement traceability comments
 - Property tests must run minimum 100 iterations
 - Use dual testing approach: unit tests + property-based tests
@@ -45,25 +48,58 @@ tests/
 ## Styling Approach
 
 ### Tailwind CSS
+
 The project uses Tailwind CSS via CDN for the demo UI (`src/lambda/demo.html`).
 
 **Custom Styles Pattern:**
+
 ```css
 /* Custom animations */
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* Utility classes */
-.animate-pulse-slow { animation: pulse 2s ease-in-out infinite; }
-.animate-spin-slow { animation: spin 3s linear infinite; }
-.glass { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
-.gradient-bg { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
-.glow { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
-.glow-green { box-shadow: 0 0 20px rgba(34, 197, 94, 0.5); }
-.glow-red { box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
+.animate-pulse-slow {
+  animation: pulse 2s ease-in-out infinite;
+}
+.animate-spin-slow {
+  animation: spin 3s linear infinite;
+}
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+.gradient-bg {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
+.glow {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+}
+.glow-green {
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
+}
+.glow-red {
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+}
 ```
 
 ### Color Palette
+
 - **Primary Background**: Dark gradient (`#1a1a2e` → `#16213e` → `#0f3460`)
 - **Text**: White (`text-white`), Gray variants (`text-gray-300`, `text-gray-400`)
 - **Accent Colors**:
@@ -76,6 +112,7 @@ The project uses Tailwind CSS via CDN for the demo UI (`src/lambda/demo.html`).
 ### Component Patterns
 
 **Glass Card:**
+
 ```html
 <section class="glass rounded-2xl p-8 mb-8 border border-white/10">
   <!-- content -->
@@ -83,20 +120,19 @@ The project uses Tailwind CSS via CDN for the demo UI (`src/lambda/demo.html`).
 ```
 
 **Status Badge:**
+
 ```html
-<div class="inline-block px-4 py-1 bg-blue-600 rounded-full text-sm">
-  Badge Text
-</div>
+<div class="inline-block px-4 py-1 bg-blue-600 rounded-full text-sm">Badge Text</div>
 ```
 
 **Button:**
+
 ```html
-<button class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition">
-  Button Text
-</button>
+<button class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition">Button Text</button>
 ```
 
 **Metric Card:**
+
 ```html
 <div class="text-center p-4 bg-green-500/20 rounded-xl">
   <div class="text-3xl font-bold text-green-400">Value</div>
@@ -130,6 +166,7 @@ tests/
 ## Enterprise Testing Suite
 
 ### Test Categories (41 Correctness Properties)
+
 1. **Quantum (Properties 1-6)** - Shor's/Grover's resistance, ML-KEM, ML-DSA, lattice hardness
 2. **AI Safety (Properties 7-12)** - Intent verification, governance, consensus, fail-safe
 3. **Agentic (Properties 13-18)** - Code generation, vulnerability scanning, rollback
@@ -140,6 +177,7 @@ tests/
 8. **Integration (Properties 40-41)** - End-to-end security, requirements coverage
 
 ### Running Tests
+
 ```bash
 # TypeScript tests
 npm test                              # All tests
@@ -169,7 +207,6 @@ When converting Figma designs to code:
 - No CDN configuration (local assets)
 - PNG format for screenshots and diagrams
 
-
 ## Compliance Dashboard Design
 
 When creating compliance dashboards and reports:
@@ -183,6 +220,7 @@ When creating compliance dashboards and reports:
    - Blue: Informational, metrics
 
 **Dashboard Sections:**
+
 - Executive Summary (overall score, standards status)
 - Quantum Security Metrics (security bits, PQC status)
 - AI Safety Dashboard (intent accuracy, governance violations)
@@ -191,6 +229,7 @@ When creating compliance dashboards and reports:
 - Test Execution Status (passed/failed/skipped)
 
 **Example Dashboard Card:**
+
 ```html
 <section class="glass rounded-2xl p-8 mb-8 border border-white/10">
   <h2 class="text-2xl font-bold text-white mb-6">Quantum Security</h2>
@@ -198,9 +237,7 @@ When creating compliance dashboards and reports:
     <div class="text-center p-6 bg-blue-500/20 rounded-xl">
       <div class="text-4xl font-bold text-blue-400">256</div>
       <div class="text-sm text-gray-400">Security Bits</div>
-      <div class="mt-2 inline-block px-3 py-1 bg-green-600 rounded-full text-xs">
-        Target Met
-      </div>
+      <div class="mt-2 inline-block px-3 py-1 bg-green-600 rounded-full text-xs">Target Met</div>
     </div>
   </div>
 </section>
@@ -209,18 +246,19 @@ When creating compliance dashboards and reports:
 ## Test Implementation Guidelines
 
 ### Property-Based Test Pattern
+
 ```typescript
 // TypeScript with fast-check
 import fc from 'fast-check';
 
 // Feature: enterprise-grade-testing, Property 1: Shor's Algorithm Resistance
 // Validates: Requirements AC-1.1
-it('Property 1: Shor\'s Algorithm Resistance', () => {
+it("Property 1: Shor's Algorithm Resistance", () => {
   fc.assert(
     fc.property(
       fc.record({
         keySize: fc.integer({ min: 2048, max: 4096 }),
-        qubits: fc.integer({ min: 10, max: 100 })
+        qubits: fc.integer({ min: 10, max: 100 }),
       }),
       (params) => {
         const rsaKey = generateRSAKey(params.keySize);
@@ -253,19 +291,21 @@ def test_property_1_shors_algorithm_resistance(key_size, qubits):
 ```
 
 ### Unit Test Pattern
+
 ```typescript
 // TypeScript unit test
-describe('Shor\'s Algorithm Edge Cases', () => {
+describe("Shor's Algorithm Edge Cases", () => {
   it('should fail to factor RSA-2048 key', () => {
     const rsaKey = generateRSAKey(2048);
     const result = simulateShorAttack(rsaKey, 20);
     expect(result.success).toBe(false);
-    expect(result.timeComplexity).toBeGreaterThan(2**80);
+    expect(result.timeComplexity).toBeGreaterThan(2 ** 80);
   });
 });
 ```
 
 ### Test Markers (pytest)
+
 - `@pytest.mark.quantum` - Quantum attack tests
 - `@pytest.mark.ai_safety` - AI safety tests
 - `@pytest.mark.agentic` - Agentic coding tests
@@ -281,7 +321,9 @@ describe('Shor\'s Algorithm Edge Cases', () => {
 ## SCBE Architecture Integration
 
 ### 14-Layer Security Stack
+
 When testing, ensure coverage of all layers:
+
 1. **Context Layer** - Contextual encryption
 2. **Metric Layer** - Distance-based security
 3. **Breath Layer** - Temporal dynamics
@@ -298,16 +340,19 @@ When testing, ensure coverage of all layers:
 14. **Topological CFI** - Control flow integrity
 
 ### Post-Quantum Cryptography
+
 - **ML-KEM (Kyber768)** - Key encapsulation mechanism
 - **ML-DSA (Dilithium3)** - Digital signature algorithm
 - **Lattice-based primitives** - Foundation for PQC
 
 ### PHDM (Polyhedral Hamiltonian Defense Manifold)
+
 - 16 canonical polyhedra for intrusion detection
 - Hamiltonian path with HMAC chaining
 - 6D geodesic distance for anomaly detection
 
 ### Symphonic Cipher
+
 - Complex number encryption
 - FFT-based transformations
 - Feistel network structure

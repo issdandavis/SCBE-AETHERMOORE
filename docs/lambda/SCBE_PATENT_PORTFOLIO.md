@@ -1251,7 +1251,7 @@ SCBE-AETHERMOORE embeds all behavioral states into **hyperbolic geometry** (Poin
 
 ---
 
-*Document generated: January 15, 2026*
-*Branch: claude/harmonic-scaling-law-8E3Mm*
-*Version: v3.0*
-*Total Tests: 88/88 passing*
+_Document generated: January 15, 2026_
+_Branch: claude/harmonic-scaling-law-8E3Mm_
+_Version: v3.0_
+_Total Tests: 88/88 passing_

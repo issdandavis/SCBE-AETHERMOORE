@@ -11,7 +11,11 @@
  * @since 2026-01-18
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.destroyNonceCache = exports.getNonceCacheSize = exports.clearNonceCache = exports.verifyRoundtable = exports.signRoundtable = void 0;
+exports.signRoundtable = signRoundtable;
+exports.verifyRoundtable = verifyRoundtable;
+exports.clearNonceCache = clearNonceCache;
+exports.getNonceCacheSize = getNonceCacheSize;
+exports.destroyNonceCache = destroyNonceCache;
 const crypto_1 = require("crypto");
 const policy_1 = require("./policy");
 const types_1 = require("./types");
@@ -41,7 +45,9 @@ class NonceCache {
         // LRU eviction if cache is full
         if (this.cache.size >= this.maxSize) {
             const firstKey = this.cache.keys().next().value;
-            this.cache.delete(firstKey);
+            if (firstKey !== undefined) {
+                this.cache.delete(firstKey);
+            }
         }
         this.cache.set(nonce, { nonce, timestamp });
     }
@@ -174,7 +180,6 @@ function signRoundtable(payload, primaryTongue, aad, keyring, signingTongues, op
     }
     return { ...env, sigs };
 }
-exports.signRoundtable = signRoundtable;
 /**
  * Verify RWP v2.1 multi-signature envelope
  *
@@ -260,26 +265,22 @@ function verifyRoundtable(env, keyring, options = {}) {
         };
     }
 }
-exports.verifyRoundtable = verifyRoundtable;
 /**
  * Clear nonce cache (for testing)
  */
 function clearNonceCache() {
     nonceCache.clear();
 }
-exports.clearNonceCache = clearNonceCache;
 /**
  * Get nonce cache size (for monitoring)
  */
 function getNonceCacheSize() {
     return nonceCache.size();
 }
-exports.getNonceCacheSize = getNonceCacheSize;
 /**
  * Destroy nonce cache (cleanup)
  */
 function destroyNonceCache() {
     nonceCache.destroy();
 }
-exports.destroyNonceCache = destroyNonceCache;
 //# sourceMappingURL=rwp.js.map
