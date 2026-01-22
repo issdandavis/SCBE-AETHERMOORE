@@ -66,7 +66,10 @@
     "*.yml": "yaml",
     "*.yaml": "yaml"
   },
-  "editor.rulers": [80, 120],
+  "editor.rulers": [
+    80,
+    120
+  ],
   "editor.bracketPairColorization.enabled": true,
   "editor.guides.bracketPairs": true,
   "workbench.colorCustomizations": {
@@ -87,5 +90,10 @@
   },
   "[jsonc]": {
     "editor.defaultFormatter": "vscode.json-language-features"
-  }
+  },
+  "cSpell.words": [
+    "AETHERMOORE",
+    "issdandavis",
+    "SCBE"
+  ]
 }
