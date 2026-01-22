@@ -13,7 +13,8 @@
  * @module symphonic/Feistel
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createFeistel = exports.Feistel = void 0;
+exports.Feistel = void 0;
+exports.createFeistel = createFeistel;
 const crypto_1 = require("crypto");
 const DEFAULT_CONFIG = {
     rounds: 6,
@@ -89,9 +90,7 @@ class Feistel {
     deriveRoundKeys(masterKey) {
         const keys = [];
         // Hash the master key for uniform distribution
-        const masterHash = (0, crypto_1.createHash)(this.config.hashAlgorithm)
-            .update(masterKey)
-            .digest();
+        const masterHash = (0, crypto_1.createHash)(this.config.hashAlgorithm).update(masterKey).digest();
         for (let i = 0; i < this.config.rounds; i++) {
             // K_i = HMAC(Master, Round_Index)
             const hmac = (0, crypto_1.createHmac)(this.config.hashAlgorithm, masterHash);
@@ -118,8 +117,8 @@ class Feistel {
             workingData[data.length] = 0;
         }
         const halfLen = workingData.length / 2;
-        let left = workingData.slice(0, halfLen);
-        let right = workingData.slice(halfLen);
+        let left = new Uint8Array(workingData.slice(0, halfLen));
+        let right = new Uint8Array(workingData.slice(halfLen));
         const roundKeys = this.deriveRoundKeys(keyBuffer);
         // Feistel rounds
         for (let i = 0; i < this.config.rounds; i++) {
@@ -145,8 +144,8 @@ class Feistel {
     decrypt(data, key) {
         const keyBuffer = typeof key === 'string' ? new TextEncoder().encode(key) : key;
         const halfLen = data.length / 2;
-        let left = data.slice(0, halfLen);
-        let right = data.slice(halfLen);
+        let left = new Uint8Array(data.slice(0, halfLen));
+        let right = new Uint8Array(data.slice(halfLen));
         const roundKeys = this.deriveRoundKeys(keyBuffer);
         // Feistel decryption: same rounds but in reverse order
         for (let i = this.config.rounds - 1; i >= 0; i--) {
@@ -229,5 +228,4 @@ exports.Feistel = Feistel;
 function createFeistel(config) {
     return new Feistel(config);
 }
-exports.createFeistel = createFeistel;
 //# sourceMappingURL=Feistel.js.map

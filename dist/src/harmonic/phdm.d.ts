@@ -7,8 +7,6 @@
  *
  * @module harmonic/phdm
  */
-/// <reference types="node" />
-/// <reference types="node" />
 /**
  * Polyhedron representation with topological properties
  */

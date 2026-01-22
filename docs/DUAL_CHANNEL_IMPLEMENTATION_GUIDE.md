@@ -10,6 +10,7 @@
 ## 🎯 Terminology Clarification
 
 ### Recommended Name
+
 **"Challenge-Bound Acoustic Evidence"** or **"Acoustic Challenge-Response Watermark"**
 
 **NOT**: "Voice biometric" or "Deepfake-proof" (avoid regulatory/accuracy claims)
@@ -29,6 +30,7 @@ The "dual lattice" refers to two independent discrete structures:
    - Matched-filter verification
 
 **Consensus**: Intersection of acceptance sets from both lattices
+
 ```
 ALLOW ⟺ S_crypto(t) = 1 ∧ S_audio(t) = 1
 ```
@@ -43,29 +45,30 @@ ALLOW ⟺ S_crypto(t) = 1 ∧ S_audio(t) = 1
 
 ```typescript
 const PROFILE_16K: AudioProfile = {
-  SR: 16000,              // Sample rate (Hz)
-  N: 4096,                // Frame size (samples) ≈ 256 ms
+  SR: 16000, // Sample rate (Hz)
+  N: 4096, // Frame size (samples) ≈ 256 ms
   binResolution: 3.90625, // SR/N (Hz per bin)
-  
+
   // Frequency band
-  f_min: 1200,            // Hz
-  f_max: 4200,            // Hz
-  k_min: 308,             // ⌈1200/(16000/4096)⌉
-  k_max: 1075,            // ⌊4200/(16000/4096)⌋
-  
+  f_min: 1200, // Hz
+  f_max: 4200, // Hz
+  k_min: 308, // ⌈1200/(16000/4096)⌉
+  k_max: 1075, // ⌊4200/(16000/4096)⌋
+
   // Watermark parameters
-  b: 32,                  // Challenge bits
-  delta_k_min: 12,        // Bin spacing (≈ 47 Hz)
-  gamma: 0.02,            // Mix gain (1-3%)
+  b: 32, // Challenge bits
+  delta_k_min: 12, // Bin spacing (≈ 47 Hz)
+  gamma: 0.02, // Mix gain (1-3%)
   beta: 0.35 * 0.02 * Math.sqrt(32), // Correlation threshold ≈ 0.0396
-  
+
   // Robustness
-  E_min: 0.001,           // Minimum watermark energy
-  clipThreshold: 0.95     // Max amplitude before clipping
+  E_min: 0.001, // Minimum watermark energy
+  clipThreshold: 0.95, // Max amplitude before clipping
 };
 ```
 
 **Why these values?**
+
 - 256 ms frames: Good balance between latency and frequency resolution
 - 1200-4200 Hz: Avoids low-frequency voice fundamentals and high-frequency rolloff
 - 12-bin spacing: Reduces leakage/crosstalk between adjacent bins
@@ -79,29 +82,30 @@ const PROFILE_16K: AudioProfile = {
 
 ```typescript
 const PROFILE_48K: AudioProfile = {
-  SR: 48000,              // Sample rate (Hz)
-  N: 8192,                // Frame size (samples) ≈ 171 ms
-  binResolution: 5.859,   // SR/N (Hz per bin)
-  
+  SR: 48000, // Sample rate (Hz)
+  N: 8192, // Frame size (samples) ≈ 171 ms
+  binResolution: 5.859, // SR/N (Hz per bin)
+
   // Frequency band
-  f_min: 2500,            // Hz
-  f_max: 12000,           // Hz
-  k_min: 427,             // ⌈2500/5.859⌉
-  k_max: 2048,            // ⌊12000/5.859⌋
-  
+  f_min: 2500, // Hz
+  f_max: 12000, // Hz
+  k_min: 427, // ⌈2500/5.859⌉
+  k_max: 2048, // ⌊12000/5.859⌋
+
   // Watermark parameters
-  b: 64,                  // Challenge bits
-  delta_k_min: 10,        // Bin spacing (≈ 59 Hz)
-  gamma: 0.01,            // Mix gain (0.5-2%)
-  beta: 0.30 * 0.01 * Math.sqrt(64), // Correlation threshold ≈ 0.024
-  
+  b: 64, // Challenge bits
+  delta_k_min: 10, // Bin spacing (≈ 59 Hz)
+  gamma: 0.01, // Mix gain (0.5-2%)
+  beta: 0.3 * 0.01 * Math.sqrt(64), // Correlation threshold ≈ 0.024
+
   // Robustness
-  E_min: 0.0005,          // Minimum watermark energy
-  clipThreshold: 0.95     // Max amplitude before clipping
+  E_min: 0.0005, // Minimum watermark energy
+  clipThreshold: 0.95, // Max amplitude before clipping
 };
 ```
 
 **Why these values?**
+
 - 171 ms frames: Shorter latency with better frequency resolution
 - 2500-12000 Hz: Higher band for more stealth, avoids voice energy
 - 64 bits: More challenge entropy, better security
@@ -115,29 +119,30 @@ const PROFILE_48K: AudioProfile = {
 
 ```typescript
 const PROFILE_44K: AudioProfile = {
-  SR: 44100,              // Sample rate (Hz)
-  N: 8192,                // Frame size (samples) ≈ 186 ms
-  binResolution: 5.383,   // SR/N (Hz per bin)
-  
+  SR: 44100, // Sample rate (Hz)
+  N: 8192, // Frame size (samples) ≈ 186 ms
+  binResolution: 5.383, // SR/N (Hz per bin)
+
   // Frequency band
-  f_min: 2000,            // Hz
-  f_max: 9000,            // Hz
-  k_min: 372,             // ⌈2000/5.383⌉
-  k_max: 1672,            // ⌊9000/5.383⌋
-  
+  f_min: 2000, // Hz
+  f_max: 9000, // Hz
+  k_min: 372, // ⌈2000/5.383⌉
+  k_max: 1672, // ⌊9000/5.383⌋
+
   // Watermark parameters
-  b: 48,                  // Challenge bits
-  delta_k_min: 11,        // Bin spacing (≈ 59 Hz)
-  gamma: 0.015,           // Mix gain (1-2%)
+  b: 48, // Challenge bits
+  delta_k_min: 11, // Bin spacing (≈ 59 Hz)
+  gamma: 0.015, // Mix gain (1-2%)
   beta: 0.32 * 0.015 * Math.sqrt(48), // Correlation threshold ≈ 0.0332
-  
+
   // Robustness
-  E_min: 0.0008,          // Minimum watermark energy
-  clipThreshold: 0.95     // Max amplitude before clipping
+  E_min: 0.0008, // Minimum watermark energy
+  clipThreshold: 0.95, // Max amplitude before clipping
 };
 ```
 
 **Why these values?**
+
 - 186 ms frames: Standard for consumer audio processing
 - 2000-9000 Hz: Balanced band for voice + music
 - 48 bits: Good security/performance tradeoff
@@ -151,38 +156,38 @@ const PROFILE_44K: AudioProfile = {
 
 ```typescript
 interface AudioProfile {
-  SR: number;              // Sample rate (Hz)
-  N: number;               // Frame size (samples)
-  binResolution: number;   // Hz per bin
-  f_min: number;           // Minimum frequency (Hz)
-  f_max: number;           // Maximum frequency (Hz)
-  k_min: number;           // Minimum bin index
-  k_max: number;           // Maximum bin index
-  b: number;               // Challenge bits
-  delta_k_min: number;     // Minimum bin spacing
-  gamma: number;           // Mix gain
-  beta: number;            // Correlation threshold
-  E_min: number;           // Minimum energy
-  clipThreshold: number;   // Clipping threshold
+  SR: number; // Sample rate (Hz)
+  N: number; // Frame size (samples)
+  binResolution: number; // Hz per bin
+  f_min: number; // Minimum frequency (Hz)
+  f_max: number; // Maximum frequency (Hz)
+  k_min: number; // Minimum bin index
+  k_max: number; // Maximum bin index
+  b: number; // Challenge bits
+  delta_k_min: number; // Minimum bin spacing
+  gamma: number; // Mix gain
+  beta: number; // Correlation threshold
+  E_min: number; // Minimum energy
+  clipThreshold: number; // Clipping threshold
 }
 
 interface BinSelection {
-  bins: number[];          // Selected bin indices
-  phases: number[];        // Per-bin phases
+  bins: number[]; // Selected bin indices
+  phases: number[]; // Per-bin phases
 }
 
 interface WatermarkResult {
-  waveform: Float32Array;  // Watermark signal
-  bins: number[];          // Used bins
-  phases: number[];        // Used phases
+  waveform: Float32Array; // Watermark signal
+  bins: number[]; // Used bins
+  phases: number[]; // Used phases
 }
 
 interface VerificationResult {
-  correlation: number;     // Correlation score
-  projections: number[];   // Per-bin projections
-  energy: number;          // Total watermark energy
-  clipped: boolean;        // Clipping detected
-  passed: boolean;         // Threshold check
+  correlation: number; // Correlation score
+  projections: number[]; // Per-bin projections
+  energy: number; // Total watermark energy
+  clipped: boolean; // Clipping detected
+  passed: boolean; // Threshold check
 }
 ```
 
@@ -195,7 +200,7 @@ import * as crypto from 'crypto';
 
 /**
  * Select bins and phases deterministically from challenge
- * 
+ *
  * @param seed - HMAC-derived seed from (K, τ, n, c)
  * @param b - Number of bits (bins to select)
  * @param k_min - Minimum bin index
@@ -212,23 +217,24 @@ function selectBinsAndPhases(
 ): BinSelection {
   // Use seed as PRNG state
   const rng = crypto.createHash('sha256').update(seed);
-  
+
   const bins: number[] = [];
   const phases: number[] = [];
   const used = new Set<number>();
-  
+
   let attempts = 0;
   const maxAttempts = b * 100;
-  
+
   while (bins.length < b && attempts < maxAttempts) {
     // Generate candidate bin
-    const hash = crypto.createHash('sha256')
+    const hash = crypto
+      .createHash('sha256')
       .update(seed)
       .update(Buffer.from([attempts]))
       .digest();
-    
+
     const candidate = k_min + (hash.readUInt32BE(0) % (k_max - k_min + 1));
-    
+
     // Check spacing constraint
     let valid = true;
     for (const existing of bins) {
@@ -236,36 +242,39 @@ function selectBinsAndPhases(
         valid = false;
         break;
       }
-      
+
       // Avoid harmonic collisions (2x, 3x)
-      if (Math.abs(candidate - 2 * existing) < delta_k_min ||
-          Math.abs(candidate - 3 * existing) < delta_k_min) {
+      if (
+        Math.abs(candidate - 2 * existing) < delta_k_min ||
+        Math.abs(candidate - 3 * existing) < delta_k_min
+      ) {
         valid = false;
         break;
       }
     }
-    
+
     if (valid && !used.has(candidate)) {
       bins.push(candidate);
       used.add(candidate);
-      
+
       // Derive phase from same seed
-      const phaseHash = crypto.createHash('sha256')
+      const phaseHash = crypto
+        .createHash('sha256')
         .update(seed)
         .update(Buffer.from('phase'))
         .update(Buffer.from([bins.length]))
         .digest();
-      
-      phases.push(2 * Math.PI * (phaseHash.readUInt32BE(0) / 0xFFFFFFFF));
+
+      phases.push(2 * Math.PI * (phaseHash.readUInt32BE(0) / 0xffffffff));
     }
-    
+
     attempts++;
   }
-  
+
   if (bins.length < b) {
     throw new Error(`Could not select ${b} bins with spacing ${delta_k_min}`);
   }
-  
+
   return { bins, phases };
 }
 ```
@@ -277,7 +286,7 @@ function selectBinsAndPhases(
 ```typescript
 /**
  * Generate challenge-bound watermark
- * 
+ *
  * @param challenge - Challenge bitstring
  * @param bins - Selected bin indices
  * @param phases - Per-bin phases
@@ -294,25 +303,25 @@ function generateWatermark(
 ): Float32Array {
   const b = bins.length;
   const a_j = 1 / Math.sqrt(b); // Normalized amplitude
-  
+
   const waveform = new Float32Array(N);
-  
+
   for (let n = 0; n < N; n++) {
     let sample = 0;
-    
+
     for (let j = 0; j < b; j++) {
       const k_j = bins[j];
       const phi_j = phases[j];
       const c_j = challenge[j]; // 0 or 1
-      
+
       // s[n] = Σ a_j · (-1)^(c_j) · sin(2π k_j · n/N + φ_j)
       const sign = c_j === 0 ? 1 : -1;
-      sample += a_j * sign * Math.sin(2 * Math.PI * k_j * n / N + phi_j);
+      sample += a_j * sign * Math.sin((2 * Math.PI * k_j * n) / N + phi_j);
     }
-    
+
     waveform[n] = gamma * sample;
   }
-  
+
   return waveform;
 }
 ```
@@ -324,7 +333,7 @@ function generateWatermark(
 ```typescript
 /**
  * Compute matched-filter projections
- * 
+ *
  * @param audio - Received audio samples
  * @param bins - Expected bin indices
  * @param phases - Expected phases
@@ -338,27 +347,27 @@ function computeProjections(
   N: number
 ): number[] {
   const projections: number[] = [];
-  
+
   for (let j = 0; j < bins.length; j++) {
     const k_j = bins[j];
     const phi_j = phases[j];
-    
+
     // p_j = (2/N) · Σ y[n] · sin(2π k_j · n/N + φ_j)
     let p_j = 0;
     for (let n = 0; n < N; n++) {
-      p_j += audio[n] * Math.sin(2 * Math.PI * k_j * n / N + phi_j);
+      p_j += audio[n] * Math.sin((2 * Math.PI * k_j * n) / N + phi_j);
     }
-    p_j *= (2 / N);
-    
+    p_j *= 2 / N;
+
     projections.push(p_j);
   }
-  
+
   return projections;
 }
 
 /**
  * Verify challenge-bound watermark
- * 
+ *
  * @param audio - Received audio samples
  * @param challenge - Expected challenge bitstring
  * @param bins - Expected bin indices
@@ -377,10 +386,10 @@ function verifyWatermark(
   const beta = profile.beta;
   const E_min = profile.E_min;
   const clipThreshold = profile.clipThreshold;
-  
+
   // Compute projections
   const projections = computeProjections(audio, bins, phases, N);
-  
+
   // Compute correlation
   let correlation = 0;
   for (let j = 0; j < bins.length; j++) {
@@ -388,23 +397,23 @@ function verifyWatermark(
     const sign = c_j === 0 ? 1 : -1;
     correlation += sign * projections[j];
   }
-  
+
   // Compute total watermark energy
   const energy = projections.reduce((sum, p) => sum + p * p, 0);
-  
+
   // Check for clipping
   const maxAmplitude = Math.max(...Array.from(audio).map(Math.abs));
   const clipped = maxAmplitude >= clipThreshold;
-  
+
   // Decision
   const passed = correlation >= beta && energy >= E_min && !clipped;
-  
+
   return {
     correlation,
     projections,
     energy,
     clipped,
-    passed
+    passed,
   };
 }
 ```
@@ -416,7 +425,7 @@ function verifyWatermark(
 ```typescript
 /**
  * Dual-Channel Consensus Gate
- * 
+ *
  * Combines cryptographic transcript verification with
  * challenge-bound acoustic watermark verification.
  */
@@ -425,14 +434,14 @@ class DualChannelGate {
   private K: Buffer; // Master key
   private N_seen: Set<string>; // Nonce set
   private W: number; // Time window (seconds)
-  
+
   constructor(profile: AudioProfile, K: Buffer, W: number = 60) {
     this.profile = profile;
     this.K = K;
     this.N_seen = new Set();
     this.W = W;
   }
-  
+
   /**
    * Verify request with dual-channel consensus
    */
@@ -451,32 +460,33 @@ class DualChannelGate {
       AAD,
       Buffer.from(tau.toString()),
       Buffer.from(nonce),
-      P
+      P,
     ]);
-    
+
     const expectedTag = crypto.createHmac('sha256', this.K).update(C).digest();
     const V_mac = crypto.timingSafeEqual(tag, expectedTag);
-    
+
     const tau_recv = Date.now() / 1000;
     const V_time = Math.abs(tau_recv - tau) <= this.W;
-    
+
     const V_nonce = !this.N_seen.has(nonce);
-    
+
     const S_crypto = V_mac && V_time && V_nonce;
-    
+
     if (!S_crypto) {
       return 'DENY';
     }
-    
+
     // --- Audio Channel ---
     // Derive bins/phases from challenge
-    const seed = crypto.createHmac('sha256', this.K)
+    const seed = crypto
+      .createHmac('sha256', this.K)
       .update(Buffer.from('bins'))
       .update(Buffer.from(tau.toString()))
       .update(Buffer.from(nonce))
       .update(Buffer.from(challenge))
       .digest();
-    
+
     const { bins, phases } = selectBinsAndPhases(
       seed,
       this.profile.b,
@@ -484,15 +494,15 @@ class DualChannelGate {
       this.profile.k_max,
       this.profile.delta_k_min
     );
-    
+
     // Verify watermark
     const result = verifyWatermark(audio, challenge, bins, phases, this.profile);
-    
+
     const S_audio = result.passed;
-    
+
     // Update nonce set (prevent replay)
     this.N_seen.add(nonce);
-    
+
     // Decision logic
     if (S_audio) {
       return 'ALLOW';
@@ -500,7 +510,7 @@ class DualChannelGate {
       return 'QUARANTINE';
     }
   }
-  
+
   /**
    * Generate challenge for client
    */
@@ -513,7 +523,7 @@ class DualChannelGate {
     }
     return challenge;
   }
-  
+
   /**
    * Clear old nonces (TTL cleanup)
    */
@@ -534,6 +544,7 @@ class DualChannelGate {
 **Problem**: Watermark is deterministic given (K, τ, n, c). Adaptive attacker can query and learn.
 
 **Mitigation**:
+
 ```typescript
 // Rate limit attempts per session
 const MAX_ATTEMPTS_PER_SESSION = 3;
@@ -548,6 +559,7 @@ const SESSION_KEY_TTL = 3600; // 1 hour
 **Problem**: Variable-length audio degrades matched filter.
 
 **Mitigation**:
+
 ```typescript
 // Enforce exact N samples
 if (audio.length !== profile.N) {
@@ -559,7 +571,7 @@ function applyWindow(audio: Float32Array, N: number): Float32Array {
   const windowed = new Float32Array(N);
   for (let n = 0; n < N; n++) {
     // Hann window
-    const w = 0.5 * (1 - Math.cos(2 * Math.PI * n / (N - 1)));
+    const w = 0.5 * (1 - Math.cos((2 * Math.PI * n) / (N - 1)));
     windowed[n] = audio[n] * w;
   }
   return windowed;
@@ -584,20 +596,21 @@ function testReplayDetection() {
   const profile = PROFILE_16K;
   const K = crypto.randomBytes(32);
   const gate = new DualChannelGate(profile, K);
-  
+
   // Generate challenge
   const challenge = gate.generateChallenge();
-  
+
   // Derive bins/phases
   const tau = Date.now() / 1000;
   const nonce = crypto.randomBytes(16).toString('hex');
-  const seed = crypto.createHmac('sha256', K)
+  const seed = crypto
+    .createHmac('sha256', K)
     .update(Buffer.from('bins'))
     .update(Buffer.from(tau.toString()))
     .update(Buffer.from(nonce))
     .update(Buffer.from(challenge))
     .digest();
-  
+
   const { bins, phases } = selectBinsAndPhases(
     seed,
     profile.b,
@@ -605,21 +618,21 @@ function testReplayDetection() {
     profile.k_max,
     profile.delta_k_min
   );
-  
+
   // Generate watermark
   const watermark = generateWatermark(challenge, bins, phases, profile.N, profile.gamma);
-  
+
   // Simulate voice + watermark
   const voice = new Float32Array(profile.N);
   for (let i = 0; i < voice.length; i++) {
     voice[i] = 0.1 * Math.random(); // Simulated voice
   }
-  
+
   const audio = new Float32Array(profile.N);
   for (let i = 0; i < audio.length; i++) {
     audio[i] = voice[i] + watermark[i];
   }
-  
+
   // Test 1: Fresh challenge (should ALLOW)
   const AAD = Buffer.from('test');
   const P = Buffer.from('payload');
@@ -628,17 +641,17 @@ function testReplayDetection() {
     AAD,
     Buffer.from(tau.toString()),
     Buffer.from(nonce),
-    P
+    P,
   ]);
   const tag = crypto.createHmac('sha256', K).update(C).digest();
-  
+
   const result1 = gate.verify(AAD, P, tau, nonce, tag, audio, challenge);
   console.log('Fresh challenge:', result1); // Should be ALLOW
-  
+
   // Test 2: Replay (same nonce, should DENY)
   const result2 = gate.verify(AAD, P, tau, nonce, tag, audio, challenge);
   console.log('Replay (same nonce):', result2); // Should be DENY
-  
+
   // Test 3: New challenge, old audio (should QUARANTINE)
   const newChallenge = gate.generateChallenge();
   const newNonce = crypto.randomBytes(16).toString('hex');
@@ -647,10 +660,10 @@ function testReplayDetection() {
     AAD,
     Buffer.from(tau.toString()),
     Buffer.from(newNonce),
-    P
+    P,
   ]);
   const newTag = crypto.createHmac('sha256', K).update(newC).digest();
-  
+
   const result3 = gate.verify(AAD, P, tau, newNonce, newTag, audio, newChallenge);
   console.log('New challenge, old audio:', result3); // Should be QUARANTINE
 }
@@ -660,11 +673,11 @@ function testReplayDetection() {
 
 ## 📊 Performance Benchmarks
 
-| Profile | Frame Duration | Latency | Throughput |
-|---------|----------------|---------|------------|
-| 16 kHz  | 256 ms         | ~15 ms  | ~65 req/s  |
-| 44.1 kHz| 186 ms         | ~20 ms  | ~50 req/s  |
-| 48 kHz  | 171 ms         | ~25 ms  | ~40 req/s  |
+| Profile  | Frame Duration | Latency | Throughput |
+| -------- | -------------- | ------- | ---------- |
+| 16 kHz   | 256 ms         | ~15 ms  | ~65 req/s  |
+| 44.1 kHz | 186 ms         | ~20 ms  | ~50 req/s  |
+| 48 kHz   | 171 ms         | ~25 ms  | ~40 req/s  |
 
 **Note**: Latency includes watermark generation + matched filtering + correlation.
 
@@ -680,7 +693,7 @@ import { TrustManager } from './spaceTor/trust-manager';
 class TriadicConsensus {
   private dualChannel: DualChannelGate;
   private trustManager: TrustManager;
-  
+
   verify(request: Request): 'ALLOW' | 'QUARANTINE' | 'DENY' {
     // 1. Dual-channel consensus
     const dcResult = this.dualChannel.verify(
@@ -692,13 +705,10 @@ class TriadicConsensus {
       request.audio,
       request.challenge
     );
-    
+
     // 2. Trust scoring (Layer 3)
-    const trustScore = this.trustManager.computeTrustScore(
-      request.nodeId,
-      request.trustVector
-    );
-    
+    const trustScore = this.trustManager.computeTrustScore(request.nodeId, request.trustVector);
+
     // 3. Triadic consensus
     if (dcResult === 'ALLOW' && trustScore.level === 'HIGH') {
       return 'ALLOW';
@@ -724,11 +734,7 @@ class TriadicConsensus {
   "version": "3.0.0",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist/",
-    "README.md",
-    "LICENSE"
-  ],
+  "files": ["dist/", "README.md", "LICENSE"],
   "exports": {
     ".": {
       "import": "./dist/index.js",

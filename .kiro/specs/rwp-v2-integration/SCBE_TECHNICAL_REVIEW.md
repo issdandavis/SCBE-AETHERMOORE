@@ -27,11 +27,11 @@ All core mathematical claims have been numerically verified.
 
 **Verification**:
 
-| Axiom | Result |
-|-------|--------|
-| Non-negativity | d(u,v) = 1.135 ≥ 0 ✓ |
-| Identity | d(u,u) = 0.00 ✓ |
-| Symmetry | d(u,v) = d(v,u) ✓ |
+| Axiom               | Result                     |
+| ------------------- | -------------------------- |
+| Non-negativity      | d(u,v) = 1.135 ≥ 0 ✓       |
+| Identity            | d(u,u) = 0.00 ✓            |
+| Symmetry            | d(u,v) = d(v,u) ✓          |
 | Triangle inequality | d(u,v) ≤ d(u,w) + d(w,v) ✓ |
 
 **Volume growth**: For n=6 dimensions, Vol(B₁₀)/Vol(B₁) ≈ 7.23×10¹⁹
@@ -42,17 +42,18 @@ All core mathematical claims have been numerically verified.
 
 **Verification**:
 
-| Property | Test Result |
-|----------|-------------|
-| Positivity | L(x,t) = 1.37 > 0 ✓ |
-| Convexity | ∂²L/∂d²ℓ > 0 for all ℓ ✓ |
-| Stability | L(x,t) > L(μ,t) (decreases toward center) ✓ |
+| Property   | Test Result                                 |
+| ---------- | ------------------------------------------- |
+| Positivity | L(x,t) = 1.37 > 0 ✓                         |
+| Convexity  | ∂²L/∂d²ℓ > 0 for all ℓ ✓                    |
+| Stability  | L(x,t) > L(μ,t) (decreases toward center) ✓ |
 
 ### 3. Spin Coherence (Layer 10)
 
 **Claim**: C_spin ∈ [0,1], rotation invariant.
 
 **Verification**:
+
 - All aligned: C = 1.0000 ✓
 - Uniform: C = 0.0000 ✓
 - Rotation shift π/3: |ΔC| = 2.78×10⁻¹⁷ ✓
@@ -63,11 +64,11 @@ All core mathematical claims have been numerically verified.
 
 **Verification**:
 
-| Attack | Security Level |
-|--------|----------------|
-| Classical collision | 128-bit |
-| Grover (quantum) | 128-bit |
-| Replay | Prevented by timestamp + nonce |
+| Attack              | Security Level                 |
+| ------------------- | ------------------------------ |
+| Classical collision | 128-bit                        |
+| Grover (quantum)    | 128-bit                        |
+| Replay              | Prevented by timestamp + nonce |
 
 ---
 
@@ -78,6 +79,7 @@ All core mathematical claims have been numerically verified.
 **Problem**: Section 4.1, Layer 9 contains copy-pasted text from Layer 5.
 
 **Current (incorrect)**:
+
 ```
 Layer 9: Spectral Coherence (S_spec = E_low / (E_low + E_high + ε))
 Key Property: Energy partition is invariant (Parseval's theorem)
@@ -86,9 +88,11 @@ Detailed Proof:
 δ = 2‖u-v‖² / ((1-‖u‖²)(1-‖v‖²)) ≥0 (norms)
 ...
 ```
-*This is the hyperbolic distance formula, not spectral coherence!*
+
+_This is the hyperbolic distance formula, not spectral coherence!_
 
 **Corrected proof**:
+
 ```
 Layer 9: Spectral Coherence
 
@@ -116,11 +120,12 @@ Detailed Proof:
 
 ---
 
-### Correction 2: H(d*,R) Claim Clarification
+### Correction 2: H(d\*,R) Claim Clarification
 
 **Problem**: Document states "H(d,R) = R^{d²} provides super-exponential scaling for hardness."
 
 This conflates two distinct concepts:
+
 1. **Cost function scaling** (what H actually does)
 2. **Cryptographic hardness** (implies reduction to hard problem)
 
@@ -139,6 +144,7 @@ from the underlying HMAC-SHA256 and ML-DSA primitives, not from H.
 ```
 
 **Patent Claim Language**:
+
 ```
 "A computer-implemented method for computing governance cost comprising:
 (a) embedding context vectors into a Poincaré ball model of hyperbolic space;
@@ -168,6 +174,7 @@ d_ℍ(0, T_breath(u)) = b · d_ℍ(0, u)
 This is a **conformal map** (preserves angles), not an isometry (preserves distances).
 
 **Corrected claim**:
+
 ```
 Layer 6: Breathing Transform
 
@@ -181,19 +188,19 @@ NOT an isometry - intentionally scales origin distances by factor b(t).
 
 ### Classical Cryptography
 
-| Component | Algorithm | Security (bits) |
-|-----------|-----------|-----------------|
-| Integrity | HMAC-SHA256 | 256 classical, 128 quantum |
-| Nonce | 128-bit random | 2⁻⁶⁴ collision for 2³² messages |
-| Timestamp | 60s window | Prevents replay |
+| Component | Algorithm      | Security (bits)                 |
+| --------- | -------------- | ------------------------------- |
+| Integrity | HMAC-SHA256    | 256 classical, 128 quantum      |
+| Nonce     | 128-bit random | 2⁻⁶⁴ collision for 2³² messages |
+| Timestamp | 60s window     | Prevents replay                 |
 
 ### Post-Quantum Upgrade (ML-DSA-65 + ML-KEM-768)
 
-| Component | NIST Level | Quantum Security |
-|-----------|------------|------------------|
-| Signatures | 3 | 128-bit |
-| Key exchange | 3 | 128-bit |
-| Hybrid mode | 3 | min(HMAC, PQC) = 128-bit |
+| Component    | NIST Level | Quantum Security         |
+| ------------ | ---------- | ------------------------ |
+| Signatures   | 3          | 128-bit                  |
+| Key exchange | 3          | 128-bit                  |
+| Hybrid mode  | 3          | min(HMAC, PQC) = 128-bit |
 
 ### Multi-Signature Consensus
 
@@ -211,11 +218,13 @@ Effective security = min(128k, 256) bits (capped by hash output)
 ### 1. Separate Claims by Category
 
 **Governance claims (novel)**:
+
 - Hyperbolic embedding for AI policy enforcement
 - Breathing transform for adaptive posture
 - Multi-well realm structure for multi-policy systems
 
 **Security claims (incremental)**:
+
 - Domain separation using semantic prefixes
 - Hybrid classical/PQC signature scheme
 - m-of-k consensus matrix
@@ -230,11 +239,11 @@ Frame as "technical improvements to computer systems":
 
 ### 3. Prior Art Distinctions
 
-| Component | Prior Art | Your Novel Contribution |
-|-----------|-----------|-------------------------|
-| Poincaré embeddings | Nickel & Kiela 2017 | Application to AI governance |
-| HMAC multi-sig | Bellare & Rogaway 2000 | Sacred Tongue domain separation |
-| Conformal maps | Ganea 2018 | Dynamic b(t) breathing for posture |
+| Component           | Prior Art              | Your Novel Contribution            |
+| ------------------- | ---------------------- | ---------------------------------- |
+| Poincaré embeddings | Nickel & Kiela 2017    | Application to AI governance       |
+| HMAC multi-sig      | Bellare & Rogaway 2000 | Sacred Tongue domain separation    |
+| Conformal maps      | Ganea 2018             | Dynamic b(t) breathing for posture |
 
 ---
 
@@ -263,12 +272,13 @@ wherein the super-exponential growth of H in d ensures that deviations from trus
 "A cryptographic protocol for multi-domain intent verification comprising:
 (a) partitioning cryptographic operations into K semantic domains (tongues) T_1,...,T_K;
 (b) for each domain T_k, computing a domain-separated HMAC:
-    sig_k = HMAC-SHA256(key_k || T_k, payload || nonce || timestamp);
+sig_k = HMAC-SHA256(key_k || T_k, payload || nonce || timestamp);
 (c) requiring consensus of at least m-of-K signatures for policy level P,
-    where m is determined by a configurable policy matrix;
+where m is determined by a configurable policy matrix;
 (d) verifying signatures with timing-safe comparison to prevent side-channel attacks."
 
 **Prior art distinction**: While HMAC and multi-signature schemes exist independently, the combination of:
+
 - Domain-separated prefixes (Sacred Tongues)
 - Configurable m-of-K consensus matrix
 - Integration with hyperbolic governance metrics
@@ -284,9 +294,9 @@ constitutes novel subject matter.
 "A method for dynamically adjusting hyperbolic policy boundaries comprising:
 (a) receiving a breathing parameter b(t) from environmental telemetry;
 (b) applying the transform T_breath(u;t) = tanh(b(t) · artanh(||u||)) · (u/||u||)
-    to embedded state vectors u in the Poincaré ball;
+to embedded state vectors u in the Poincaré ball;
 (c) wherein b(t) > 1 contracts the effective policy radius (containment posture)
-    and b(t) < 1 expands it (permissive posture);
+and b(t) < 1 expands it (permissive posture);
 (d) computing governance decisions using the transformed vectors."
 
 **Mathematical novelty**: While conformal maps in hyperbolic space are known, their application to dynamic policy adjustment in AI governance is novel.
@@ -297,20 +307,20 @@ constitutes novel subject matter.
 
 ### HMAC-SHA256 Multi-Signature
 
-| Attack Model | Security Level | Justification |
-|--------------|----------------|---------------|
-| Classical collision | 128-bit | Birthday bound: 2^{128} queries |
-| Classical preimage | 256-bit | Direct hash inversion |
-| Grover (quantum) | 128-bit | √(2^{256}) = 2^{128} |
-| k-signature forgery | 128-bit | Independent keys, AND of events |
+| Attack Model        | Security Level | Justification                   |
+| ------------------- | -------------- | ------------------------------- |
+| Classical collision | 128-bit        | Birthday bound: 2^{128} queries |
+| Classical preimage  | 256-bit        | Direct hash inversion           |
+| Grover (quantum)    | 128-bit        | √(2^{256}) = 2^{128}            |
+| k-signature forgery | 128-bit        | Independent keys, AND of events |
 
 ### Post-Quantum Upgrade Path
 
-| Component | Algorithm | NIST Level | Security (quantum) |
-|-----------|-----------|------------|-------------------|
-| Key exchange | ML-KEM-768 | 3 | 128-bit |
-| Signatures | ML-DSA-65 | 3 | 128-bit |
-| Hybrid mode | HMAC + ML-DSA | 3 | min(128, 128) = 128-bit |
+| Component    | Algorithm     | NIST Level | Security (quantum)      |
+| ------------ | ------------- | ---------- | ----------------------- |
+| Key exchange | ML-KEM-768    | 3          | 128-bit                 |
+| Signatures   | ML-DSA-65     | 3          | 128-bit                 |
+| Hybrid mode  | HMAC + ML-DSA | 3          | min(128, 128) = 128-bit |
 
 ---
 
@@ -335,12 +345,12 @@ constitutes novel subject matter.
 
 ## 35 U.S.C. § 101 (Alice) Compliance Checklist
 
-| Claim Element | Abstract Idea Risk | Technical Improvement |
-|---------------|-------------------|----------------------|
-| Hyperbolic metric | Math formula (risky) | "Improves anomaly detection by exponential volume growth" |
-| Multi-signature | Economic practice (risky) | "Cryptographic protocol with timing-safe verification" |
-| Breathing transform | Math formula (risky) | "Dynamic adjustment reduces false positives by 15%" |
-| Domain separation | Organization of data | "Prevents signature confusion attacks in multi-agent systems" |
+| Claim Element       | Abstract Idea Risk        | Technical Improvement                                         |
+| ------------------- | ------------------------- | ------------------------------------------------------------- |
+| Hyperbolic metric   | Math formula (risky)      | "Improves anomaly detection by exponential volume growth"     |
+| Multi-signature     | Economic practice (risky) | "Cryptographic protocol with timing-safe verification"        |
+| Breathing transform | Math formula (risky)      | "Dynamic adjustment reduces false positives by 15%"           |
+| Domain separation   | Organization of data      | "Prevents signature confusion attacks in multi-agent systems" |
 
 **Recommended language**: Frame all claims as "computer-implemented methods that improve the functioning of the computer system itself" (Alice step 2B), not as abstract ideas implemented on a generic computer.
 
@@ -381,16 +391,19 @@ The framework is **mathematically sound** and ready for patent filing after:
 ## Quantum Threat Timeline (Estimates)
 
 ### 2025: Current Status
+
 - No cryptographically relevant quantum computers
 - RSA-2048, ECDSA-256, HMAC-SHA256 remain secure
 - NIST PQC standards published (FIPS 203, 204, 205)
 
 ### 2030: Near-Term
+
 - Possible 1000+ logical qubits (still not enough)
 - HMAC-SHA256 reduced to 128-bit (still secure)
 - Recommendation: Deploy hybrid now for crypto-agility
 
 ### 2035+: Long-Term
+
 - Potential threat to RSA-2048, ECDSA-256
 - HMAC-SHA256: 128-bit quantum security (Grover)
 - ML-DSA-65: Designed for quantum resistance
@@ -404,6 +417,6 @@ The framework is **mathematically sound** and ready for patent filing after:
 
 ---
 
-*"Mathematically sound. Cryptographically secure. Patent-ready."*
+_"Mathematically sound. Cryptographically secure. Patent-ready."_
 
 🔐 **Verified. Corrected. Ready.**

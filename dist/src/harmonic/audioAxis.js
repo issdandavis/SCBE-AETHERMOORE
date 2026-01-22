@@ -12,7 +12,9 @@
  * - Saudio = 1 - rHF,a — Audio stability score
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateNoise = exports.generateTestSignal = exports.AudioAxisProcessor = void 0;
+exports.AudioAxisProcessor = void 0;
+exports.generateTestSignal = generateTestSignal;
+exports.generateNoise = generateNoise;
 /** Small epsilon for numerical stability */
 const EPSILON = 1e-10;
 /**
@@ -163,11 +165,10 @@ function generateTestSignal(frequency, duration, sampleRate = 44100) {
     const samples = Math.floor(duration * sampleRate);
     const signal = new Array(samples);
     for (let n = 0; n < samples; n++) {
-        signal[n] = Math.sin(2 * Math.PI * frequency * n / sampleRate);
+        signal[n] = Math.sin((2 * Math.PI * frequency * n) / sampleRate);
     }
     return signal;
 }
-exports.generateTestSignal = generateTestSignal;
 /**
  * Generate white noise
  */
@@ -178,5 +179,4 @@ function generateNoise(samples) {
     }
     return signal;
 }
-exports.generateNoise = generateNoise;
 //# sourceMappingURL=audioAxis.js.map
