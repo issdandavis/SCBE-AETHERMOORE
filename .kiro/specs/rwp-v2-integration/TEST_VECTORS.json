@@ -2,6 +2,7 @@
   "version": "2.1.0",
   "description": "RWP v2.1 Interoperability Test Vectors",
   "note": "Both TypeScript and Python implementations MUST produce identical canonical strings and signatures",
+  "canonical_format": "version.primary_tongue.signing_tongue.aad.payload.nonce.timestamp",
   "vectors": [
     {
       "test_id": "vector_001_basic",
@@ -17,15 +18,15 @@
         "nonce": "AQIDBAUGBwgJCgsMDQ4PEA",
         "payload": "SGVsbG8gV29ybGQ"
       },
-      "expected_canonical_string": "TODO: Generate after choosing Option A or B",
+      "expected_canonical_string": "2.1.ru.ru..SGVsbG8gV29ybGQ.AQIDBAUGBwgJCgsMDQ4PEA.1737161234567",
       "expected_sigs": {
-        "RU": "TODO: Generate with HMAC-SHA256"
+        "RU": "7mEY-53jeVhX6O80PgVucxhnTxdSTsPkgfmUcB59MyA"
       },
       "expected_result": "ALLOW"
     },
     {
       "test_id": "vector_002_with_aad",
-      "description": "Single signature, with AAD (nested objects)",
+      "description": "Single signature, with AAD (nested objects, keys sorted)",
       "master_key": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
       "envelope": {
         "ver": "2.1",
@@ -46,9 +47,9 @@
         },
         "payload": "SGVsbG8gV29ybGQ"
       },
-      "expected_canonical_string": "TODO: Generate after choosing Option A or B",
+      "expected_canonical_string": "2.1.ru.ru.{\"action\":\"execute\",\"metadata\":{\"session\":\"abc123\",\"user\":\"alice\"},\"mode\":\"STRICT\",\"priority\":1}.SGVsbG8gV29ybGQ.AQIDBAUGBwgJCgsMDQ4PEA.1737161234567",
       "expected_sigs": {
-        "RU": "TODO: Generate with HMAC-SHA256"
+        "RU": "tvctUKfhUu7La6MoXAB1WBsIYgMTnVrvUu4kKkMeY5Y"
       },
       "expected_result": "ALLOW"
     },
@@ -72,11 +73,15 @@
         },
         "payload": "SGVsbG8gV29ybGQ"
       },
-      "expected_canonical_string": "TODO: Generate after choosing Option A or B",
+      "expected_canonical_strings": {
+        "RU": "2.1.ru.ru.{\"action\":\"execute\",\"mode\":\"SECRET\"}.SGVsbG8gV29ybGQ.AQIDBAUGBwgJCgsMDQ4PEA.1737161234567",
+        "UM": "2.1.ru.um.{\"action\":\"execute\",\"mode\":\"SECRET\"}.SGVsbG8gV29ybGQ.AQIDBAUGBwgJCgsMDQ4PEA.1737161234567",
+        "DR": "2.1.ru.dr.{\"action\":\"execute\",\"mode\":\"SECRET\"}.SGVsbG8gV29ybGQ.AQIDBAUGBwgJCgsMDQ4PEA.1737161234567"
+      },
       "expected_sigs": {
-        "RU": "TODO: Generate with HMAC-SHA256",
-        "UM": "TODO: Generate with HMAC-SHA256",
-        "DR": "TODO: Generate with HMAC-SHA256"
+        "RU": "8JwiX8G62VMowUdijec8aV2oFIDlLtwYC3ytM5gqFxw",
+        "UM": "PvCDA-BwslXtqPtitk2U6sSFid2y9JdA-E6D7NZbxxI",
+        "DR": "_eWcgb5_YjolkKqwIGjPqNAutBIdDI_RttH_MEzC3Cg"
       },
       "expected_result": "ALLOW"
     },
@@ -103,14 +108,13 @@
         },
         "payload": "Q3JpdGljYWxQYXlsb2Fk"
       },
-      "expected_canonical_string": "TODO: Generate after choosing Option A or B",
       "expected_sigs": {
-        "KO": "TODO: Generate with HMAC-SHA256",
-        "AV": "TODO: Generate with HMAC-SHA256",
-        "RU": "TODO: Generate with HMAC-SHA256",
-        "CA": "TODO: Generate with HMAC-SHA256",
-        "UM": "TODO: Generate with HMAC-SHA256",
-        "DR": "TODO: Generate with HMAC-SHA256"
+        "KO": "DLdIuTYsbQvhC2dy-CsYqhLeztN7xjbPxoW9ntA9G3g",
+        "AV": "bEwKwLU7qO6mntZwMvGCk6x17GCnHsPdxyaMF3cVpA0",
+        "RU": "cbeS4xdMYgl5XbRyFswEzLPh7jvZYE3-4RLHQj6pn1E",
+        "CA": "LIHQ9GHeb7r7tVW6WSoB6Jl_YTeav-y5z8bEUIzxrMY",
+        "UM": "Zh9THv4C0EsjmIOAqqxM8FP-ytnJBAtpTKZPyZFlMSw",
+        "DR": "xKsU9Czbj9Beqnzmhe0egcEXNdpZ_JkrQkSp9JvzXYE"
       },
       "expected_result": "ALLOW"
     },
@@ -128,9 +132,9 @@
         "nonce": "AQIDBAUGBwgJCgsMDQ4PEA",
         "payload": ""
       },
-      "expected_canonical_string": "TODO: Generate after choosing Option A or B",
+      "expected_canonical_string": "2.1.ru.ru...AQIDBAUGBwgJCgsMDQ4PEA.1737161234567",
       "expected_sigs": {
-        "RU": "TODO: Generate with HMAC-SHA256"
+        "RU": "vgcBn1vRMPizahVPqvq9OttH-LS_OZYZiIzhTLbivtY"
       },
       "expected_result": "ALLOW"
     },
@@ -148,9 +152,9 @@
         "nonce": "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMkJSYnKCkqKywtLi8wMTIzNDU2Nzg5Ojs8PT4_QEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaW1xdXl9gYWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXp7fH1-fw",
         "payload": "SGVsbG8gV29ybGQ"
       },
-      "expected_canonical_string": "TODO: Generate after choosing Option A or B",
+      "expected_canonical_string": "2.1.ru.ru..SGVsbG8gV29ybGQ.AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMkJSYnKCkqKywtLi8wMTIzNDU2Nzg5Ojs8PT4_QEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaW1xdXl9gYWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXp7fH1-fw.1737161234567",
       "expected_sigs": {
-        "RU": "TODO: Generate with HMAC-SHA256"
+        "RU": "Swedj_FUViBq-kXXMBNiq-Vwca98dzENlwHF_4Pef3k"
       },
       "expected_result": "ALLOW"
     },
@@ -173,9 +177,9 @@
         },
         "payload": "SGVsbG8gV29ybGQ"
       },
-      "expected_canonical_string": "TODO: Generate after choosing Option A or B",
+      "expected_canonical_string": "2.1.ru.ru.{\"message\":\"Hello \\\"World\\\"\",\"path\":\"C:\\\\Users\\\\test\",\"unicode\":\"こんにちは\"}.SGVsbG8gV29ybGQ.AQIDBAUGBwgJCgsMDQ4PEA.1737161234567",
       "expected_sigs": {
-        "RU": "TODO: Generate with HMAC-SHA256"
+        "RU": "3mEbAxszPivO1qMJQRSM11akjR-Gw10qnhAUdYGS2tU"
       },
       "expected_result": "ALLOW"
     },
@@ -199,9 +203,9 @@
         },
         "payload": "SGVsbG8gV29ybGQ"
       },
-      "expected_canonical_string": "TODO: Generate after choosing Option A or B",
+      "expected_canonical_string": "2.1.ru.ru.{\"float\":3.14159,\"integer\":42,\"negative\":-100,\"zero\":0}.SGVsbG8gV29ybGQ.AQIDBAUGBwgJCgsMDQ4PEA.1737161234567",
       "expected_sigs": {
-        "RU": "TODO: Generate with HMAC-SHA256"
+        "RU": "X1mKwKmz0jxHX_4pWuwUEmsb2p9Cmcn6lM7a8eONor4"
       },
       "expected_result": "ALLOW"
     },
@@ -219,9 +223,9 @@
         "nonce": "AQIDBAUGBwgJCgsMDQ4PEA",
         "payload": "SGVsbG8gV29ybGQ"
       },
-      "expected_canonical_string": "TODO: Generate after choosing Option A or B",
+      "expected_canonical_string": "2.1.ru.ru..SGVsbG8gV29ybGQ.AQIDBAUGBwgJCgsMDQ4PEA.1000000000000",
       "expected_sigs": {
-        "RU": "TODO: Generate with HMAC-SHA256"
+        "RU": "rJHrLXpFZTmUN24iZtv6tTvp_Si5QDkeJF5PNA7Ykkc"
       },
       "expected_result": "DENY",
       "expected_reason": "timestamp_expired"
@@ -240,9 +244,9 @@
         "nonce": "AQIDBAUGBwgJCgsMDQ4PEA",
         "payload": "SGVsbG8gV29ybGQ"
       },
-      "expected_canonical_string": "TODO: Generate after choosing Option A or B",
+      "expected_canonical_string": "2.1.ru.ru..SGVsbG8gV29ybGQ.AQIDBAUGBwgJCgsMDQ4PEA.1737161234567",
       "expected_sigs": {
-        "RU": "TODO: Generate with HMAC-SHA256"
+        "RU": "7mEY-53jeVhX6O80PgVucxhnTxdSTsPkgfmUcB59MyA"
       },
       "expected_result": "DENY",
       "expected_reason": "nonce_replay",

@@ -3,54 +3,36 @@
 
 # Performance test evidence files (hardware-specific)
 docs/evidence/*.json
-docs/evidence/*/
-docs/evidence/*.tar.gz
 
-# Environment files (NEVER commit secrets)
-.env
-.env.local
-.env.*.local
-.env.production
-
-# Node.js (anywhere in repo)
-node_modules/
-**/node_modules/
-npm-debug.log*
-package-lock.json
-
-# Build outputs
-dist/
-build/
-*.tsbuildinfo
-
-# Python (anywhere in repo)
+# Python bytecode cache
 __pycache__/
-**/__pycache__/
-*.py[cod]
-*$py.class
+*.pyc
+*.pyo
+
+# Node.js
+node_modules/
+npm-debug.log*
+
+# Build output
+dist/
+
+# Test coverage
+.coverage
+coverage/
+coverage.xml
+htmlcov/
 .pytest_cache/
-*.egg-info/
-.eggs/
-venv/
-.venv/
 
 # IDE
-.idea/
 .vscode/
+.idea/
 *.swp
 *.swo
-*~
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Coverage reports
-coverage/
-.nyc_output/
-htmlcov/
-.coverage
-
-# Logs
-*.log
-logs/
+# Environment
+.env
+.env.local
