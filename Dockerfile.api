@@ -1,0 +1,50 @@
+# SCBE-AETHERMOORE API Dockerfile
+# Build: docker build -f Dockerfile.api -t scbe-api:latest .
+# Run:   docker run -p 8080:8080 -e SCBE_API_KEY=your_key scbe-api:latest
+#
+# SECURITY: Container runs as non-root user (UID 1000)
+# SECURITY: No hardcoded secrets - SCBE_API_KEY must be set at runtime
+
+FROM python:3.11-slim AS builder
+
+# Install build dependencies
+WORKDIR /build
+COPY requirements.txt .
+RUN pip install --no-cache-dir --target=/install -r requirements.txt && \
+    pip install --no-cache-dir --target=/install fastapi uvicorn[standard] pydantic
+
+# Production image
+FROM python:3.11-slim
+
+# Security: Create non-root user
+RUN groupadd -r scbe && useradd -r -g scbe -u 1000 scbe
+
+# Set working directory
+WORKDIR /app
+
+# Copy installed packages from builder
+COPY --from=builder /install /usr/local/lib/python3.11/site-packages/
+
+# Copy application code
+COPY --chown=scbe:scbe api/ ./api/
+COPY --chown=scbe:scbe src/ ./src/
+
+# Set environment variables
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+ENV SCBE_LOG_LEVEL=INFO
+# SECURITY: No default API key - must be provided at runtime
+# ENV SCBE_API_KEY is intentionally NOT set
+
+# Security: Switch to non-root user
+USER scbe
+
+# Expose port
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8080/v1/health')" || exit 1
+
+# Run the API
+CMD ["python", "-m", "uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8080"]

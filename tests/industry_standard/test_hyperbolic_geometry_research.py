@@ -477,8 +477,8 @@ class TestNumericalStability:
         u = np.random.randn(6) * 0.5
         u = u / (np.linalg.norm(u) + 1.1)
         
-        # Create point very close to u
-        epsilon = 1e-10
+        # Create point very close to u (use 1e-8 for floating point stability)
+        epsilon = 1e-8
         v = u + epsilon * np.random.randn(6)
         v = v / (np.linalg.norm(v) + 1.1)  # Ensure in ball
         

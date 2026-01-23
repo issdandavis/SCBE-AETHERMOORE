@@ -1,0 +1,41 @@
+# SCBE-AETHERMOORE API Stack
+# Run: docker-compose -f docker-compose.api.yml up -d
+# Test: curl http://localhost:8080/v1/health
+
+version: '3.8'
+
+services:
+  scbe-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "8080:8080"
+    environment:
+      - SCBE_API_KEY=${SCBE_API_KEY:-sk_test_demo_key_12345}
+      - SCBE_LOG_LEVEL=INFO
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Optional: Redis for distributed state (future)
+  # redis:
+  #   image: redis:7-alpine
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+
+  # Optional: Prometheus for metrics (future)
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+# volumes:
+#   redis_data:
