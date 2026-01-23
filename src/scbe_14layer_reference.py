@@ -321,7 +321,29 @@ def layer_7_phase_transform(u: np.ndarray, a: np.ndarray, Q: np.ndarray,
     # Step 2: Translate by a using Möbius addition
     u_translated = mobius_add(a, u_rotated, eps)
 
-    return u_translated
+    # Möbius addition: a ⊕ u
+    u_norm_sq = np.linalg.norm(u) ** 2
+    au_dot = np.dot(a, u)
+
+    numerator = (1 + 2 * au_dot + u_norm_sq) * a + (1 - a_norm_sq) * u
+    raw_denominator = 1 + 2 * au_dot + a_norm_sq * u_norm_sq
+    # Only add eps when denominator is close to zero to avoid numerical issues
+    denominator = raw_denominator if abs(raw_denominator) > eps else eps
+    denominator = 1 + 2 * au_dot + a_norm_sq * u_norm_sq
+
+    # Only add eps if denominator is too small (avoid division by zero)
+    if abs(denominator) < eps:
+        denominator = eps if denominator >= 0 else -eps
+
+    shifted = numerator / denominator
+
+    # Ensure stays in ball
+    norm = np.linalg.norm(shifted)
+    if norm >= 1.0:
+        shifted = 0.99 * shifted / norm
+
+    # Apply rotation
+    return Q @ shifted
 
 
 # =============================================================================

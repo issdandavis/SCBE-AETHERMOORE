@@ -282,10 +282,7 @@ async function hkdfDerive(
   // Note: Cast to ArrayBuffer for Web Crypto API compatibility
   const keyMaterial = await crypto.subtle.importKey(
     'raw',
-    masterSecret.buffer.slice(
-      masterSecret.byteOffset,
-      masterSecret.byteOffset + masterSecret.byteLength
-    ) as ArrayBuffer,
+    new Uint8Array(masterSecret) as BufferSource,
     'HKDF',
     false,
     ['deriveBits']
@@ -296,8 +293,8 @@ async function hkdfDerive(
     {
       name: 'HKDF',
       hash: 'SHA-256',
-      salt: salt.buffer.slice(salt.byteOffset, salt.byteOffset + salt.byteLength) as ArrayBuffer,
-      info: info.buffer.slice(info.byteOffset, info.byteOffset + info.byteLength) as ArrayBuffer,
+      salt: new Uint8Array(salt) as BufferSource,
+      info: new Uint8Array(info) as BufferSource,
     },
     keyMaterial,
     length * 8
@@ -321,7 +318,7 @@ async function aesGcmEncrypt(
 
   const cryptoKey = await crypto.subtle.importKey(
     'raw',
-    key.buffer.slice(key.byteOffset, key.byteOffset + key.byteLength) as ArrayBuffer,
+    new Uint8Array(key) as BufferSource,
     'AES-GCM',
     false,
     ['encrypt']
@@ -330,18 +327,12 @@ async function aesGcmEncrypt(
   const result = await crypto.subtle.encrypt(
     {
       name: 'AES-GCM',
-      iv: nonce.buffer.slice(nonce.byteOffset, nonce.byteOffset + nonce.byteLength) as ArrayBuffer,
-      additionalData: aad.buffer.slice(
-        aad.byteOffset,
-        aad.byteOffset + aad.byteLength
-      ) as ArrayBuffer,
+      iv: new Uint8Array(nonce) as BufferSource,
+      additionalData: new Uint8Array(aad) as BufferSource,
       tagLength: 128,
     },
     cryptoKey,
-    plaintext.buffer.slice(
-      plaintext.byteOffset,
-      plaintext.byteOffset + plaintext.byteLength
-    ) as ArrayBuffer
+    new Uint8Array(plaintext) as BufferSource,
   );
 
   // Result includes ciphertext + tag (last 16 bytes)
@@ -368,7 +359,7 @@ async function aesGcmDecrypt(
 
   const cryptoKey = await crypto.subtle.importKey(
     'raw',
-    key.buffer.slice(key.byteOffset, key.byteOffset + key.byteLength) as ArrayBuffer,
+    new Uint8Array(key) as BufferSource,
     'AES-GCM',
     false,
     ['decrypt']
@@ -382,11 +373,8 @@ async function aesGcmDecrypt(
   const result = await crypto.subtle.decrypt(
     {
       name: 'AES-GCM',
-      iv: nonce.buffer.slice(nonce.byteOffset, nonce.byteOffset + nonce.byteLength) as ArrayBuffer,
-      additionalData: aad.buffer.slice(
-        aad.byteOffset,
-        aad.byteOffset + aad.byteLength
-      ) as ArrayBuffer,
+      iv: new Uint8Array(nonce) as BufferSource,
+      additionalData: new Uint8Array(aad) as BufferSource,
       tagLength: 128,
     },
     cryptoKey,

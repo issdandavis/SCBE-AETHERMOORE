@@ -1,0 +1,59 @@
+{
+  "name": "scbe-aethermoore",
+  "version": "3.0.0",
+  "description": "Spectral Context-Bound Encryption + Hyperbolic Governance for AI-to-AI Communication",
+  "main": "dist/api/index.js",
+  "types": "dist/api/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/api/index.js",
+      "types": "./dist/api/index.d.ts"
+    },
+    "./harmonic": {
+      "import": "./dist/harmonic/index.js",
+      "types": "./dist/harmonic/index.d.ts"
+    },
+    "./spiralverse": {
+      "import": "./dist/spiralverse/index.js",
+      "types": "./dist/spiralverse/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "ai-security",
+    "agent-governance",
+    "hyperbolic-geometry",
+    "multi-agent",
+    "cryptography",
+    "pqc",
+    "post-quantum",
+    "envelope-signing"
+  ],
+  "author": "Issac Daniel Davis <issdandavis@gmail.com>",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/issdandavis/scbe-aethermoore-demo"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "typescript": ">=5.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ]
+}
