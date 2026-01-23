@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Build outputs
+release/
+coverage/
+
+# Test artifacts
+test-output.log
