@@ -37,6 +37,7 @@ export {
 } from './SymphonicAgent.js';
 
 // Hybrid Crypto (main interface)
+import { HybridCrypto as HybridCryptoClass } from './HybridCrypto.js';
 export {
   HybridCrypto,
   createHybridCrypto,
@@ -47,6 +48,9 @@ export {
   type SignedEnvelope,
   type VerificationResult,
 } from './HybridCrypto.js';
+
+// Re-export for internal use
+const HybridCrypto = HybridCryptoClass;
 
 /**
  * Version of the Symphonic Cipher TypeScript implementation
