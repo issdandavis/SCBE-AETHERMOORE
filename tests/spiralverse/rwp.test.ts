@@ -18,7 +18,7 @@ import {
   getRequiredTongues,
   suggestPolicy,
   type Keyring,
-} from '../../src/spiralverse';
+} from '../../src/spiralverse/index.js';
 
 // Test keyring (32-byte keys for HMAC-SHA256)
 const testKeyring: Keyring = {
@@ -107,13 +107,13 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
 
     it('should throw error if payload is missing', () => {
       expect(() => {
-        signRoundtable(null as any, 'ko', 'test-aad', testKeyring, ['ko']);
+        signRoundtable(null as unknown as object, 'ko', 'test-aad', testKeyring, ['ko']);
       }).toThrow('Payload is required');
     });
 
     it('should throw error if primary tongue is missing', () => {
       expect(() => {
-        signRoundtable({ action: 'read' }, '' as any, 'test-aad', testKeyring, ['ko']);
+        signRoundtable({ action: 'read' }, '' as 'ko', 'test-aad', testKeyring, ['ko']);
       }).toThrow('Primary tongue is required');
     });
 
@@ -131,7 +131,7 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
           { action: 'read' },
           'ko',
           'test-aad',
-          incompleteKeyring as any,
+          incompleteKeyring,
           ['ko', 'ru']  // ru key is missing
         );
       }).toThrow('Missing key for tongue: ru');
@@ -203,7 +203,7 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
       const envelope = signRoundtable(payload, 'ko', 'test-aad', testKeyring, ['ko']);
 
       // Change version
-      envelope.ver = '1.0' as any;
+      (envelope as { ver: string }).ver = '1.0';
 
       const result = verifyRoundtable(envelope, testKeyring);
 
@@ -229,7 +229,7 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
 
     it('should reject envelope with old timestamp', () => {
       const payload = { action: 'read', resource: 'file.txt' };
-      const oldTimestamp = Date.now() - 400000; // 6 minutes ago (beyond 5-minute window)
+      const oldTimestamp = Date.now() - 400000; // 6+ minutes ago (beyond 5-minute window)
 
       const envelope = signRoundtable(
         payload,
@@ -347,7 +347,9 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
 
       // Strict: requires 'ru' (Policy tongue)
       expect(checkPolicy(['ko', 'ru'], 'strict')).toBe(true);
-      expect(checkPolicy(['ru'], 'strict')).toBe(true);
+      expect(checkPolicy(['ru', 'um', 'dr'], 'critical')).toBe(true);
+
+      expect(checkPolicy(['av'], 'standard')).toBe(false);
       expect(checkPolicy(['ko'], 'strict')).toBe(false);
 
       // Critical: requires ru + um + dr
@@ -447,12 +449,12 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
       );
 
       // Verify with partial keyring (only ko and ru keys)
-      const partialKeyring = {
+      const partialKeyring: Keyring = {
         ko: testKeyring.ko,
         ru: testKeyring.ru,
       };
 
-      const result = verifyRoundtable(envelope, partialKeyring as any);
+      const result = verifyRoundtable(envelope, partialKeyring);
 
       // Should succeed with 2 valid signatures (ko and ru)
       expect(result.valid).toBe(true);
