@@ -8,12 +8,12 @@ on:
 permissions:
   contents: write
   packages: write
+  id-token: write
 
 jobs:
   build:
     name: Build Release
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -43,7 +43,9 @@ jobs:
     name: Publish to NPM
     needs: build
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -61,15 +63,12 @@ jobs:
         run: npm run build
 
       - name: Publish to NPM
-        run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public
 
   github-release:
     name: Create GitHub Release
     needs: build
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -90,19 +89,19 @@ jobs:
           body: |
             ## SCBE-AETHERMOORE v${{ steps.version.outputs.VERSION }}
 
-            ### 🚀 Installation
+            ### Installation
             ```bash
-            npm install @scbe/aethermoore@${{ steps.version.outputs.VERSION }}
+            npm install scbe-aethermoore@${{ steps.version.outputs.VERSION }}
             ```
 
-            ### 📦 What's Included
+            ### What's Included
             - 14-Layer Security Architecture
             - Hyperbolic Geometry-Based Encryption
             - Quantum-Resistant Cryptography
             - Interactive Demo UI
             - Python CLI Tool
 
-            ### 📊 Performance
+            ### Performance
             - Latency: <50ms
             - Uptime: 99.99%
             - Test Coverage: 226 tests
@@ -121,7 +120,6 @@ jobs:
     name: Build and Push Docker Image
     needs: build
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
