@@ -67,6 +67,24 @@ os.makedirs(EVIDENCE_DIR, exist_ok=True)
 
 
 # =============================================================================
+# Module-level function for ProcessPoolExecutor (must be picklable)
+# =============================================================================
+def _process_pool_compute_task(seed):
+    """
+    Compute task for ProcessPoolExecutor tests.
+    Must be at module level to be picklable.
+    """
+    if not MODULES_AVAILABLE:
+        return 0.0
+    np.random.seed(seed)
+    data = np.random.randn(12)
+    c = layer_1_complex_state(data, D=6)
+    x = np.concatenate([np.real(c), np.imag(c)])
+    u = layer_4_poincare_embedding(x)
+    return layer_5_hyperbolic_distance(u, np.zeros(12))
+
+
+# =============================================================================
 # HARD-FAIL TEST: Prevent False Green
 # =============================================================================
 def test_perf_suite_modules_loaded():
@@ -351,36 +369,28 @@ class TestSystemBenchmarks:
     def test_concurrent_operations_process_pool(self):
         """
         Concurrent Operations Test (using ProcessPoolExecutor)
-        
+
         Reports speedup metrics instead of asserting specific values.
         Python GIL makes thread-based speedup unreliable.
         """
         from concurrent.futures import ProcessPoolExecutor
-        
-        def compute_task(seed):
-            np.random.seed(seed)
-            data = np.random.randn(12)
-            c = layer_1_complex_state(data, D=6)
-            x = np.concatenate([np.real(c), np.imag(c)])
-            u = layer_4_poincare_embedding(x)
-            return layer_5_hyperbolic_distance(u, np.zeros(12))
-        
+
         n_tasks = 100
-        
-        # Sequential
+
+        # Sequential (using module-level function)
         start = time.perf_counter()
         for i in range(n_tasks):
-            compute_task(i)
+            _process_pool_compute_task(i)
         sequential_time = time.perf_counter() - start
-        
-        # Concurrent (4 workers)
+
+        # Concurrent (4 workers) - uses module-level function which is picklable
         start = time.perf_counter()
         with ProcessPoolExecutor(max_workers=4) as executor:
-            list(executor.map(compute_task, range(n_tasks)))
+            list(executor.map(_process_pool_compute_task, range(n_tasks)))
         concurrent_time = time.perf_counter() - start
-        
+
         speedup = sequential_time / concurrent_time if concurrent_time > 0 else 0
-        
+
         evidence = {
             'sequential_time_s': sequential_time,
             'concurrent_time_s': concurrent_time,

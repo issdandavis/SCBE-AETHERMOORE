@@ -62,13 +62,19 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# CORS configuration - restrict in production
-CORS_ORIGINS = os.environ.get("SCBE_CORS_ORIGINS", "*").split(",")
+# CORS configuration - restrict in production via environment variable
+ALLOWED_ORIGINS = os.getenv("CORS_ORIGINS", "*").split(",")
+if ALLOWED_ORIGINS == ["*"]:
+    # Development mode - allow all origins with warning
+    import warnings
+    warnings.warn("CORS_ORIGINS not set - allowing all origins (development mode)")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=CORS_ORIGINS if CORS_ORIGINS != ["*"] else ["*"],
-    allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization", "X-API-Key"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Authorization", "Content-Type", "X-API-Key"],
+    allow_credentials=True,
 )
 
 # ============================================================================
@@ -146,60 +152,51 @@ class MetricsStore:
 metrics_store = MetricsStore()
 
 # ============================================================================
-# SEALED BLOB STORAGE (In-memory for MVP)
+# BLOB STORAGE (In-memory for MVP, replaceable with Redis/S3)
 # ============================================================================
 
-class SealedBlobStorage:
-    """In-memory storage for sealed blobs with TTL expiry."""
+class BlobStore:
+    """
+    In-memory sealed blob storage for MVP.
 
-    def __init__(self, default_ttl: int = 3600):
-        self.blobs: Dict[str, dict] = {}
-        self.default_ttl = default_ttl
+    In production, replace with:
+    - Redis for fast key-value access
+    - S3/GCS for persistent blob storage
+    - PostgreSQL for transactional needs
+    """
 
-    def _make_key(self, agent: str, topic: str, position: List[float]) -> str:
-        """Create unique key from agent, topic, and position."""
-        pos_str = ",".join(f"{p:.4f}" for p in position)
-        key_input = f"{agent}:{topic}:{pos_str}"
-        return hashlib.sha256(key_input.encode()).hexdigest()[:32]
+    def __init__(self, max_blobs: int = 10000):
+        self.blobs: Dict[str, Dict] = {}
+        self.max_blobs = max_blobs
 
-    def store(self, agent: str, topic: str, position: List[float],
-              sealed_blob: bytes, metadata: dict = None) -> str:
-        """Store sealed blob and return storage key."""
-        key = self._make_key(agent, topic, position)
-        self.blobs[key] = {
-            "sealed_blob": sealed_blob,
-            "agent": agent,
-            "topic": topic,
-            "position": position,
-            "metadata": metadata or {},
-            "created_at": time.time(),
-            "expires_at": time.time() + self.default_ttl
+    def store(self, blob_id: str, sealed_blob: bytes, plaintext: str, metadata: dict):
+        """Store a sealed blob with metadata."""
+        if len(self.blobs) >= self.max_blobs:
+            # Evict oldest entries (simple LRU)
+            oldest = sorted(self.blobs.items(), key=lambda x: x[1]['created_at'])[:100]
+            for key, _ in oldest:
+                del self.blobs[key]
+
+        self.blobs[blob_id] = {
+            'sealed_blob': sealed_blob,
+            'plaintext': plaintext,
+            'metadata': metadata,
+            'created_at': time.time()
         }
-        return key
+        return blob_id
 
-    def retrieve(self, agent: str, topic: str, position: List[float]) -> Optional[dict]:
-        """Retrieve stored blob if exists and not expired."""
-        key = self._make_key(agent, topic, position)
-        entry = self.blobs.get(key)
+    def retrieve(self, blob_id: str) -> Optional[Dict]:
+        """Retrieve a stored blob by ID."""
+        return self.blobs.get(blob_id)
 
-        if not entry:
-            return None
+    def delete(self, blob_id: str) -> bool:
+        """Delete a blob (for GDPR/compliance)."""
+        if blob_id in self.blobs:
+            del self.blobs[blob_id]
+            return True
+        return False
 
-        # Check expiry
-        if time.time() > entry["expires_at"]:
-            del self.blobs[key]
-            return None
-
-        return entry
-
-    def cleanup_expired(self):
-        """Remove expired entries."""
-        now = time.time()
-        expired_keys = [k for k, v in self.blobs.items() if now > v["expires_at"]]
-        for key in expired_keys:
-            del self.blobs[key]
-
-sealed_storage = SealedBlobStorage()
+blob_store = BlobStore()
 
 # ============================================================================
 # MODELS
@@ -222,6 +219,7 @@ class SealRequest(BaseModel):
 
 
 class RetrieveRequest(BaseModel):
+    blob_id: str = Field(..., min_length=1, max_length=64, description="Blob ID from seal response")
     position: List[int] = Field(..., min_length=6, max_length=6)
     agent: str = Field(..., min_length=1, max_length=256)
     context: str = Field(..., pattern="^(internal|external|untrusted)$")
@@ -325,37 +323,31 @@ async def seal_memory(
             password=password
         )
 
-        # Store sealed blob for later retrieval
-        storage_key = sealed_storage.store(
-            agent=request.agent,
-            topic=request.topic,
-            position=request.position,
+        # Generate blob ID and store
+        blob_id = hashlib.sha256(
+            f"{request.agent}:{request.topic}:{time.time()}".encode()
+        ).hexdigest()[:16]
+
+        blob_store.store(
+            blob_id=blob_id,
             sealed_blob=sealed_blob,
+            plaintext=request.plaintext,
             metadata={
-                "risk_base": float(result['risk_base']),
-                "risk_prime": float(result['risk_prime']),
+                "agent": request.agent,
+                "topic": request.topic,
+                "position": request.position,
                 "decision": result['decision'],
-                "H": float(result['H'])
+                "risk_score": float(result['risk_base'])
             }
         )
 
         # Record metrics
         metrics_store.record_seal(request.agent, result['risk_base'])
 
-        # Calculate latency and broadcast to dashboard
-        latency_ms = (time.perf_counter() - start_time) * 1000
-        await record_and_broadcast_decision(
-            agent=request.agent,
-            topic=request.topic,
-            decision=result['decision'],
-            risk_score=float(result['risk_prime']),
-            d_star=float(result['d_star']),
-            latency_ms=latency_ms
-        )
-
         return {
             "status": "sealed",
             "data": {
+                "blob_id": blob_id,
                 "sealed_blob": sealed_blob.hex(),
                 "storage_key": storage_key,
                 "position": request.position,
@@ -388,6 +380,15 @@ async def retrieve_memory(
     """
     start_time = time.perf_counter()
     try:
+        # Retrieve blob from storage
+        stored = blob_store.retrieve(request.blob_id)
+        if not stored:
+            raise HTTPException(404, f"Blob not found: {request.blob_id}")
+
+        # Verify agent matches
+        if stored['metadata'].get('agent') != request.agent:
+            raise HTTPException(403, "Agent mismatch - access denied")
+
         # Convert position to numpy array
         position_array = np.array(request.position, dtype=float)
 
@@ -409,20 +410,9 @@ async def retrieve_memory(
         denied = (result['decision'] == "DENY")
         metrics_store.record_retrieval(request.agent, denied)
 
-        # Calculate latency and broadcast to dashboard
-        latency_ms = (time.perf_counter() - start_time) * 1000
-        await record_and_broadcast_decision(
-            agent=request.agent,
-            topic=request.topic,
-            decision=result['decision'],
-            risk_score=float(result['risk_prime']),
-            d_star=float(result['d_star']),
-            latency_ms=latency_ms
-        )
-        
         # Check governance decision
         if result['decision'] == "DENY":
-            # Fail to noise - return random data
+            # Fail to noise - return random data instead of actual plaintext
             fail_noise = np.random.bytes(32).hex()
             return {
                 "status": "denied",
@@ -433,43 +423,13 @@ async def retrieve_memory(
                     "reason": f"High risk: {request.context} context, d*={result['d_star']:.3f}"
                 }
             }
-        
-        # ALLOW or QUARANTINE - retrieve and decrypt plaintext
-        stored = sealed_storage.retrieve(request.agent, request.topic, request.position)
 
-        if not stored:
-            return {
-                "status": "not_found",
-                "data": {
-                    "plaintext": None,
-                    "governance_result": result['decision'],
-                    "error": "No sealed blob found for this agent/topic/position combination"
-                }
-            }
-
-        # Decrypt the sealed blob
-        try:
-            rwp = RWPv3Protocol()
-            password = f"{request.agent}:{request.topic}".encode()
-            plaintext_bytes = rwp.decrypt(
-                ciphertext=stored["sealed_blob"],
-                password=password
-            )
-            plaintext = plaintext_bytes.decode('utf-8')
-        except Exception as decrypt_error:
-            return {
-                "status": "decrypt_failed",
-                "data": {
-                    "plaintext": None,
-                    "governance_result": result['decision'],
-                    "error": f"Decryption failed: {str(decrypt_error)}"
-                }
-            }
-
+        # ALLOW or QUARANTINE - retrieve actual plaintext from storage
         return {
             "status": "retrieved" if result['decision'] == "ALLOW" else "quarantined",
             "data": {
-                "plaintext": plaintext,
+                "blob_id": request.blob_id,
+                "plaintext": stored['plaintext'],
                 "governance_result": result['decision'],
                 "risk_score": float(result['risk_base']),
                 "risk_prime": float(result['risk_prime']),
@@ -478,7 +438,9 @@ async def retrieve_memory(
                 }
             }
         }
-        
+
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(500, f"Retrieve failed: {str(e)}")
 

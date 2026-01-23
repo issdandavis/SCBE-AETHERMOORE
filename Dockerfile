@@ -97,7 +97,7 @@ COPY --from=ts-builder /app/node_modules ./node_modules
 COPY --from=ts-builder /app/package.json ./
 
 # Copy demo files
-COPY scbe-aethermoore/ ./demo/
+COPY demo/ ./demo/
 
 # Copy documentation
 COPY README.md LICENSE ./

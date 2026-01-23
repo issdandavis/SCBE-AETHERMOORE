@@ -296,6 +296,7 @@ describe('Enterprise Compliance - Property Tests', () => {
             scores.fips140,
             scores.commonCriteria,
             scores.nistCsf,
+            scores.pciDss
             scores.pciDss,
           ];
 
@@ -309,7 +310,7 @@ describe('Enterprise Compliance - Property Tests', () => {
           expect(Number.isFinite(overallScore)).toBe(true);
           expect(overallScore).toBeGreaterThan(config.complianceScoreTarget);
 
-          return Number.isFinite(overallScore) && overallScore > config.complianceScoreTarget;
+          return overallScore > config.complianceScoreTarget;
         }
       ),
       { numRuns: TestConfig.propertyTests.minIterations }

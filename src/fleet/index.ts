@@ -1,34 +1,22 @@
 /**
- * @file index.ts
+ * SCBE Fleet Management System
+ * 
+ * Integrates SCBE security (TrustManager, SpectralIdentity) with
+ * AI Workflow Architect's agent orchestration for secure AI fleet management.
+ * 
+ * Features:
+ * - Agent registration with spectral identity
+ * - Sacred Tongue governance for agent actions
+ * - Trust-based task assignment
+ * - Fleet-wide security monitoring
+ * - Roundtable consensus for critical operations
+ * 
  * @module fleet
- * @component Fleet Management System
- * @version 3.0.0
- * @since 2026-01-20
- *
- * SCBE Fleet Module - Distributed agent orchestration with Redis/BullMQ
- *
- * Exports:
- * - FleetOrchestrator  - Main orchestrator class
- * - AgentRole          - Agent role type (captain, architect, etc.)
- * - FleetTask          - Task interface
- * - TaskResult         - Result interface
- * - FleetConfig        - Configuration options
- *
- * Usage:
- * ```typescript
- * import { FleetOrchestrator } from '@scbe/fleet';
- *
- * const fleet = new FleetOrchestrator({
- *   redisUrl: 'redis://localhost:6379',
- *   maxConcurrency: 10
- * });
- *
- * await fleet.submitTask({
- *   type: 'implement',
- *   payload: { feature: 'new-feature' },
- *   priority: 'high'
- * });
- * ```
  */
 
-export * from './redis-orchestrator.js';
+export * from './agent-registry';
+export * from './fleet-manager';
+export * from './governance';
+export * from './task-dispatcher';
+export * from './types';
+
