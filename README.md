@@ -1,6 +1,8 @@
 # SCBE-AETHERMOORE v4.0
 
 > **Spectral Context-Bound Encryption + Hyperbolic Governance for AI-to-AI Communication**
+>
+> **⚖️ Patent Pending (USPTO #63/961,403)** - Methods for Hyperbolic Governance and Quantum-Resistant Context Binding
 
 [![Patent Pending](https://img.shields.io/badge/Patent-USPTO%20%2363%2F961%2C403-blue)](https://github.com/ISDanDavis2/scbe-aethermoore)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
