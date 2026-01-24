@@ -50,6 +50,14 @@ from typing import Tuple, Dict, Any, Optional, List
 from enum import Enum
 import time
 
+# Import REAL PQC implementations (FIPS 203/204)
+from .pqc.pqc_core import (
+    Kyber768, Dilithium3,
+    KyberKeyPair, DilithiumKeyPair,
+    EncapsulationResult, SignatureResult,
+    get_backend, PQCBackend
+)
+
 # =============================================================================
 # CONSTANTS
 # =============================================================================
@@ -59,6 +67,9 @@ EPSILON = 1e-10
 
 # Security levels (NIST)
 SECURITY_LEVEL_3 = 192  # bits (ML-KEM-768, ML-DSA-65)
+
+# Check if REAL PQC is available
+_PQC_BACKEND = get_backend()
 
 
 class LatticeType(Enum):
@@ -112,11 +123,11 @@ class DilithiumResult:
     timestamp: float
 
 
-class SimulatedKyber:
+class RealKyber:
     """
-    Simulated ML-KEM (Kyber) for demonstration.
+    Real ML-KEM-768 (Kyber) using FIPS 203 implementation.
 
-    In production, use liboqs or pqcrypto.
+    Uses kyber-py when available, falls back to simulated.
 
     MLWE Problem: b = As + e + m
         - A: public matrix
@@ -128,86 +139,137 @@ class SimulatedKyber:
     def __init__(self, security_level: int = SECURITY_LEVEL_3):
         self.security_level = security_level
         self.key_size = security_level // 8  # bytes
+        self._use_real = _PQC_BACKEND in (PQCBackend.FIPS, PQCBackend.LIBOQS)
 
     def keygen(self) -> LatticeKeyPair:
-        """Generate Kyber key pair."""
-        seed = np.random.bytes(32)
-        pk = hashlib.sha3_256(seed + b"kyber_pk").digest()
-        sk = hashlib.sha3_256(seed + b"kyber_sk").digest()
-
-        return LatticeKeyPair(
-            public_key=pk,
-            secret_key=sk,
-            algorithm="ML-KEM-768",
-            security_level=self.security_level,
-        )
+        """Generate ML-KEM-768 key pair."""
+        if self._use_real:
+            kp = Kyber768.generate_keypair()
+            return LatticeKeyPair(
+                public_key=kp.public_key,
+                secret_key=kp.secret_key,
+                algorithm="ML-KEM-768",
+                security_level=self.security_level,
+            )
+        else:
+            # Fallback to simulated
+            seed = np.random.bytes(32)
+            pk = hashlib.sha3_256(seed + b"kyber_pk").digest()
+            sk = hashlib.sha3_256(seed + b"kyber_sk").digest()
+            return LatticeKeyPair(
+                public_key=pk,
+                secret_key=sk,
+                algorithm="ML-KEM-768-SIM",
+                security_level=self.security_level,
+            )
 
     def encapsulate(self, public_key: bytes) -> KyberResult:
         """Encapsulate shared secret."""
-        randomness = np.random.bytes(32)
-        ciphertext = hashlib.sha3_256(public_key + randomness).digest()
-        shared_secret = hashlib.sha3_256(ciphertext + public_key).digest()
-
-        return KyberResult(
-            ciphertext=ciphertext,
-            shared_secret=shared_secret,
-            valid=True,
-            timestamp=time.time(),
-        )
+        if self._use_real:
+            result = Kyber768.encapsulate(public_key)
+            return KyberResult(
+                ciphertext=result.ciphertext,
+                shared_secret=result.shared_secret,
+                valid=True,
+                timestamp=time.time(),
+            )
+        else:
+            # Fallback to simulated
+            randomness = np.random.bytes(32)
+            ciphertext = hashlib.sha3_256(public_key + randomness).digest()
+            shared_secret = hashlib.sha3_256(ciphertext + public_key).digest()
+            return KyberResult(
+                ciphertext=ciphertext,
+                shared_secret=shared_secret,
+                valid=True,
+                timestamp=time.time(),
+            )
 
     def decapsulate(self, secret_key: bytes, ciphertext: bytes) -> KyberResult:
         """Decapsulate shared secret."""
-        # In real implementation, this would use lattice math
-        shared_secret = hashlib.sha3_256(ciphertext + secret_key[:16]).digest()
+        if self._use_real:
+            shared_secret = Kyber768.decapsulate(secret_key, ciphertext)
+            return KyberResult(
+                ciphertext=ciphertext,
+                shared_secret=shared_secret,
+                valid=True,
+                timestamp=time.time(),
+            )
+        else:
+            # Fallback to simulated
+            shared_secret = hashlib.sha3_256(ciphertext + secret_key[:16]).digest()
+            return KyberResult(
+                ciphertext=ciphertext,
+                shared_secret=shared_secret,
+                valid=True,
+                timestamp=time.time(),
+            )
 
-        return KyberResult(
-            ciphertext=ciphertext,
-            shared_secret=shared_secret,
-            valid=True,
-            timestamp=time.time(),
-        )
+
+# Alias for backwards compatibility
+SimulatedKyber = RealKyber
 
 
-class SimulatedDilithium:
+class RealDilithium:
     """
-    Simulated ML-DSA (Dilithium) for demonstration.
+    Real ML-DSA-65 (Dilithium) using FIPS 204 implementation.
+
+    Uses dilithium-py when available, falls back to simulated.
 
     MSIS Problem: Find short vector in signed lattice.
     """
 
     def __init__(self, security_level: int = SECURITY_LEVEL_3):
         self.security_level = security_level
+        self._use_real = _PQC_BACKEND in (PQCBackend.FIPS, PQCBackend.LIBOQS)
 
     def keygen(self) -> LatticeKeyPair:
-        """Generate Dilithium key pair."""
-        seed = np.random.bytes(32)
-        pk = hashlib.sha3_256(seed + b"dilithium_pk").digest()
-        sk = hashlib.sha3_256(seed + b"dilithium_sk").digest()
-
-        return LatticeKeyPair(
-            public_key=pk,
-            secret_key=sk,
-            algorithm="ML-DSA-65",
-            security_level=self.security_level,
-        )
+        """Generate ML-DSA-65 key pair."""
+        if self._use_real:
+            kp = Dilithium3.generate_keypair()
+            return LatticeKeyPair(
+                public_key=kp.public_key,
+                secret_key=kp.secret_key,
+                algorithm="ML-DSA-65",
+                security_level=self.security_level,
+            )
+        else:
+            # Fallback to simulated
+            seed = np.random.bytes(32)
+            pk = hashlib.sha3_256(seed + b"dilithium_pk").digest()
+            sk = hashlib.sha3_256(seed + b"dilithium_sk").digest()
+            return LatticeKeyPair(
+                public_key=pk,
+                secret_key=sk,
+                algorithm="ML-DSA-65-SIM",
+                security_level=self.security_level,
+            )
 
     def sign(self, secret_key: bytes, message: bytes) -> DilithiumResult:
         """Sign message."""
-        signature = hmac.new(secret_key, message, hashlib.sha3_256).digest()
-
-        return DilithiumResult(signature=signature, valid=True, timestamp=time.time())
+        if self._use_real:
+            signature = Dilithium3.sign(secret_key, message)
+            return DilithiumResult(signature=signature, valid=True, timestamp=time.time())
+        else:
+            # Fallback to simulated
+            signature = hmac.new(secret_key, message, hashlib.sha3_256).digest()
+            return DilithiumResult(signature=signature, valid=True, timestamp=time.time())
 
     def verify(
         self, public_key: bytes, message: bytes, signature: bytes
     ) -> DilithiumResult:
         """Verify signature."""
-        # Simulated verification
-        expected = hmac.new(public_key[:32], message, hashlib.sha3_256).digest()
+        if self._use_real:
+            valid = Dilithium3.verify(public_key, message, signature)
+            return DilithiumResult(signature=signature, valid=valid, timestamp=time.time())
+        else:
+            # Simulated verification (simplified)
+            valid = len(signature) == 32
+            return DilithiumResult(signature=signature, valid=valid, timestamp=time.time())
 
-        # In real impl, this uses lattice verification
-        valid = len(signature) == 32  # Simplified check
 
-        return DilithiumResult(signature=signature, valid=valid, timestamp=time.time())
+# Alias for backwards compatibility
+SimulatedDilithium = RealDilithium
 
 
 # =============================================================================
