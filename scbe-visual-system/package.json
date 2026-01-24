@@ -52,8 +52,7 @@
       "icon": "assets/icon.icns"
     },
     "win": {
-      "target": ["nsis", "portable"],
-      "icon": "assets/icon.ico"
+      "target": ["nsis", "portable"]
     },
     "linux": {
       "category": "Utility",
@@ -62,10 +61,7 @@
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "installerIcon": "assets/icon.ico",
-      "uninstallerIcon": "assets/icon.ico",
-      "installerHeaderIcon": "assets/icon.ico"
+      "allowToChangeInstallationDirectory": true
     }
   }
 }
