@@ -3,3 +3,18 @@
 
 # Performance test evidence files (hardware-specific)
 docs/evidence/*.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.coverage
+coverage.json
+htmlcov/
+
+# Hypothesis (property-based testing)
+.hypothesis/
+
+# Test artifacts
+tests/test_telemetry_*.json
+**/test_output.txt
