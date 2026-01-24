@@ -25,34 +25,61 @@ DILITHIUM3_PUBLIC_KEY_SIZE = 1952
 DILITHIUM3_SECRET_KEY_SIZE = 4016
 DILITHIUM3_SIGNATURE_SIZE = 3293
 
-# Try to import liboqs, fallback to mock if unavailable
-_LIBOQS_AVAILABLE = False
+# Try to import PQC libraries in order of preference:
+# 1. kyber-py / dilithium-py (pure Python FIPS 203/204 implementations)
+# 2. liboqs (native library with Python bindings)
+# 3. Mock implementation (hashlib-based fallback)
+
+_PQC_BACKEND = "mock"
+_kyber_py = None
+_dilithium_py = None
 _oqs = None
 
+# Try kyber-py and dilithium-py first (pure Python, FIPS 203/204 compliant)
 try:
-    import oqs
-
-    _oqs = oqs
-    _LIBOQS_AVAILABLE = True
+    from kyber_py.ml_kem import ML_KEM_768 as _ML_KEM_768
+    from dilithium_py.ml_dsa import ML_DSA_65 as _ML_DSA_65
+    _kyber_py = _ML_KEM_768
+    _dilithium_py = _ML_DSA_65
+    _PQC_BACKEND = "fips"
 except ImportError:
     pass
+
+# Try liboqs as secondary option
+if _PQC_BACKEND == "mock":
+    try:
+        import oqs
+        _oqs = oqs
+        _PQC_BACKEND = "liboqs"
+    except ImportError:
+        pass
 
 
 class PQCBackend(Enum):
     """Available PQC backends."""
 
+    FIPS = "fips"  # kyber-py / dilithium-py (FIPS 203/204)
     LIBOQS = "liboqs"
     MOCK = "mock"
 
 
 def get_backend() -> PQCBackend:
     """Return the currently active PQC backend."""
-    return PQCBackend.LIBOQS if _LIBOQS_AVAILABLE else PQCBackend.MOCK
+    if _PQC_BACKEND == "fips":
+        return PQCBackend.FIPS
+    elif _PQC_BACKEND == "liboqs":
+        return PQCBackend.LIBOQS
+    return PQCBackend.MOCK
 
 
 def is_liboqs_available() -> bool:
     """Check if liboqs is available."""
-    return _LIBOQS_AVAILABLE
+    return _PQC_BACKEND == "liboqs"
+
+
+def is_fips_available() -> bool:
+    """Check if FIPS 203/204 implementations are available."""
+    return _PQC_BACKEND == "fips"
 
 
 @dataclass
@@ -300,16 +327,70 @@ class _LiboqsDilithium:
 
 
 # =============================================================================
+# FIPS 203/204 Implementation (using kyber-py and dilithium-py)
+# =============================================================================
+
+
+class _FipsKyber:
+    """ML-KEM-768 (Kyber) implementation using kyber-py (FIPS 203)."""
+
+    @staticmethod
+    def generate_keypair() -> KyberKeyPair:
+        """Generate an ML-KEM-768 keypair using kyber-py."""
+        ek, dk = _kyber_py.keygen()
+        return KyberKeyPair(public_key=bytes(ek), secret_key=bytes(dk))
+
+    @staticmethod
+    def encapsulate(public_key: bytes) -> EncapsulationResult:
+        """Encapsulate using ML-KEM-768 public key."""
+        shared_secret, ciphertext = _kyber_py.encaps(public_key)
+        return EncapsulationResult(
+            ciphertext=bytes(ciphertext), shared_secret=bytes(shared_secret)
+        )
+
+    @staticmethod
+    def decapsulate(secret_key: bytes, ciphertext: bytes) -> bytes:
+        """Decapsulate using ML-KEM-768 secret key."""
+        shared_secret = _kyber_py.decaps(secret_key, ciphertext)
+        return bytes(shared_secret)
+
+
+class _FipsDilithium:
+    """ML-DSA-65 (Dilithium) implementation using dilithium-py (FIPS 204)."""
+
+    @staticmethod
+    def generate_keypair() -> DilithiumKeyPair:
+        """Generate an ML-DSA-65 keypair using dilithium-py."""
+        pk, sk = _dilithium_py.keygen()
+        return DilithiumKeyPair(public_key=bytes(pk), secret_key=bytes(sk))
+
+    @staticmethod
+    def sign(secret_key: bytes, message: bytes) -> bytes:
+        """Sign message using ML-DSA-65 secret key."""
+        signature = _dilithium_py.sign(secret_key, message)
+        return bytes(signature)
+
+    @staticmethod
+    def verify(public_key: bytes, message: bytes, signature: bytes) -> bool:
+        """Verify signature using ML-DSA-65 public key."""
+        return _dilithium_py.verify(public_key, message, signature)
+
+
+# =============================================================================
 # Public API - Unified Interface
 # =============================================================================
 
 
 class Kyber768:
     """
-    Kyber768 Key Encapsulation Mechanism (KEM).
+    Kyber768 / ML-KEM-768 Key Encapsulation Mechanism (KEM).
 
-    Provides quantum-resistant key exchange. Uses liboqs when available,
-    falls back to hashlib-based mock for testing/development.
+    Provides quantum-resistant key exchange following NIST FIPS 203.
+
+    Backend selection (in order of preference):
+    1. kyber-py (FIPS 203 compliant pure Python)
+    2. liboqs (native library)
+    3. Mock implementation (for testing)
 
     Usage:
         # Generate keypair
@@ -327,7 +408,13 @@ class Kyber768:
         assert shared_secret_sender == shared_secret_receiver
     """
 
-    _impl = _LiboqsKyber if _LIBOQS_AVAILABLE else _MockKyber
+    # Select implementation based on available backend
+    if _PQC_BACKEND == "fips":
+        _impl = _FipsKyber
+    elif _PQC_BACKEND == "liboqs":
+        _impl = _LiboqsKyber
+    else:
+        _impl = _MockKyber
 
     @classmethod
     def generate_keypair(cls) -> KyberKeyPair:
@@ -381,10 +468,14 @@ class Kyber768:
 
 class Dilithium3:
     """
-    Dilithium3 Digital Signature Algorithm.
+    Dilithium3 / ML-DSA-65 Digital Signature Algorithm.
 
-    Provides quantum-resistant digital signatures. Uses liboqs when available,
-    falls back to hashlib-based mock for testing/development.
+    Provides quantum-resistant digital signatures following NIST FIPS 204.
+
+    Backend selection (in order of preference):
+    1. dilithium-py (FIPS 204 compliant pure Python)
+    2. liboqs (native library)
+    3. Mock implementation (for testing)
 
     Usage:
         # Generate keypair
@@ -399,7 +490,13 @@ class Dilithium3:
         assert is_valid
     """
 
-    _impl = _LiboqsDilithium if _LIBOQS_AVAILABLE else _MockDilithium
+    # Select implementation based on available backend
+    if _PQC_BACKEND == "fips":
+        _impl = _FipsDilithium
+    elif _PQC_BACKEND == "liboqs":
+        _impl = _LiboqsDilithium
+    else:
+        _impl = _MockDilithium
 
     @classmethod
     def generate_keypair(cls) -> DilithiumKeyPair:
