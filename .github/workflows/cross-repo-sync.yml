@@ -1,5 +1,5 @@
 # Cross-Repository Sync Workflow (SCBE-AETHERMOORE-DEMO -> GUMROAD)
-# Syncs shared symphonic_cipher components between repos
+ # Syncs shared symphonic_cipher components between repos
 # Enables bidirectional coding across Claude Code and other environments
 
 name: Cross-Repo Sync (SCBE -> Gumroad)
