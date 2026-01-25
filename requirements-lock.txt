@@ -104,7 +104,7 @@ opentelemetry-instrumentation-asgi==0.54b1
 opentelemetry-instrumentation-asyncpg==0.54b1
 opentelemetry-instrumentation-aws-lambda==0.54b1
 opentelemetry-instrumentation-boto==0.54b1
-opentelemetry-instrumentation-boto3sqs==0.54b1
+opentelemetry-instrumentation-boto3sqs==0.60b1
 opentelemetry-instrumentation-botocore==0.54b1
 opentelemetry-instrumentation-cassandra==0.54b1
 opentelemetry-instrumentation-celery==0.54b1
