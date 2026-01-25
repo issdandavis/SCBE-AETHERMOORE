@@ -1,0 +1,168 @@
+name: Deploy SCBE to AWS Lambda
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-west-2
+  FUNCTION_NAME: scbe-aethermoore-api-production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install mangum fastapi pydantic
+
+      - name: Create deployment package
+        run: |
+          mkdir -p package
+          cp -r api package/
+          cp -r src package/
+          cp aws/lambda_handler.py package/
+          pip install --target ./package mangum fastapi pydantic
+          cd package && zip -r ../deployment.zip . -x "*.pyc" -x "__pycache__/*"
+
+      - name: Check if Lambda function exists
+        id: check_function
+        run: |
+          if aws lambda get-function --function-name $FUNCTION_NAME 2>/dev/null; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Lambda function
+        if: steps.check_function.outputs.exists == 'false'
+        run: |
+          # Create IAM role if needed
+          aws iam create-role \
+            --role-name scbe-lambda-execution-role \
+            --assume-role-policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"lambda.amazonaws.com"},"Action":"sts:AssumeRole"}]}' \
+            2>/dev/null || true
+
+          aws iam attach-role-policy \
+            --role-name scbe-lambda-execution-role \
+            --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole \
+            2>/dev/null || true
+
+          sleep 10
+
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          ROLE_ARN="arn:aws:iam::${ACCOUNT_ID}:role/scbe-lambda-execution-role"
+
+          aws lambda create-function \
+            --function-name $FUNCTION_NAME \
+            --runtime python3.11 \
+            --handler lambda_handler.handler \
+            --role $ROLE_ARN \
+            --zip-file fileb://deployment.zip \
+            --timeout 30 \
+            --memory-size 512 \
+            --environment "Variables={SCBE_ENV=production,SCBE_LOG_LEVEL=INFO,SCBE_API_KEY=${{ secrets.SCBE_API_KEY }}}"
+
+      - name: Update Lambda function
+        if: steps.check_function.outputs.exists == 'true'
+        run: |
+          aws lambda update-function-code \
+            --function-name $FUNCTION_NAME \
+            --zip-file fileb://deployment.zip
+
+          aws lambda update-function-configuration \
+            --function-name $FUNCTION_NAME \
+            --environment "Variables={SCBE_ENV=production,SCBE_LOG_LEVEL=INFO,SCBE_API_KEY=${{ secrets.SCBE_API_KEY }}}"
+
+      - name: Setup API Gateway
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          API_NAME="scbe-aethermoore-api"
+
+          # Check for existing API
+          API_ID=$(aws apigatewayv2 get-apis --query "Items[?Name=='${API_NAME}'].ApiId" --output text)
+
+          if [ -z "$API_ID" ]; then
+            echo "Creating new API Gateway..."
+            API_ID=$(aws apigatewayv2 create-api \
+              --name $API_NAME \
+              --protocol-type HTTP \
+              --cors-configuration "AllowOrigins=*,AllowMethods=*,AllowHeaders=*" \
+              --query ApiId --output text)
+
+            # Create integration
+            FUNCTION_ARN="arn:aws:lambda:${AWS_REGION}:${ACCOUNT_ID}:function:${FUNCTION_NAME}"
+
+            INTEGRATION_ID=$(aws apigatewayv2 create-integration \
+              --api-id $API_ID \
+              --integration-type AWS_PROXY \
+              --integration-uri $FUNCTION_ARN \
+              --payload-format-version "2.0" \
+              --query IntegrationId --output text)
+
+            # Create route
+            aws apigatewayv2 create-route \
+              --api-id $API_ID \
+              --route-key '$default' \
+              --target "integrations/${INTEGRATION_ID}"
+
+            # Create stage
+            aws apigatewayv2 create-stage \
+              --api-id $API_ID \
+              --stage-name production \
+              --auto-deploy
+
+            # Add permission
+            aws lambda add-permission \
+              --function-name $FUNCTION_NAME \
+              --statement-id "apigateway-invoke-${API_ID}" \
+              --action lambda:InvokeFunction \
+              --principal apigateway.amazonaws.com \
+              --source-arn "arn:aws:execute-api:${AWS_REGION}:${ACCOUNT_ID}:${API_ID}/*" \
+              2>/dev/null || true
+          fi
+
+          echo "API_ID=$API_ID" >> $GITHUB_ENV
+          echo "API_URL=https://${API_ID}.execute-api.${AWS_REGION}.amazonaws.com/production" >> $GITHUB_ENV
+
+      - name: Test deployment
+        run: |
+          sleep 5
+          echo "Testing health endpoint..."
+          curl -s "${API_URL}/v1/health" | jq .
+
+      - name: Deployment summary
+        run: |
+          echo "============================================"
+          echo "SCBE-AETHERMOORE Deployed Successfully!"
+          echo "============================================"
+          echo ""
+          echo "API URL: ${API_URL}"
+          echo ""
+          echo "Endpoints:"
+          echo "  Health:    ${API_URL}/v1/health"
+          echo "  Authorize: ${API_URL}/v1/authorize"
+          echo "  Consensus: ${API_URL}/v1/consensus"
+          echo "============================================"
