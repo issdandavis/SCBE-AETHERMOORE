@@ -3,6 +3,7 @@
 ## Introduction
 
 Unified SCBE (Spectral Context-Bound Encryption) system combining:
+
 1. **Mathematical Core (Python)**: 14-layer hyperbolic geometry pipeline with axioms A1-A12
 2. **Cryptographic Envelope (TypeScript)**: AES-256-GCM authenticated encryption for AI model interactions
 
@@ -23,7 +24,7 @@ The mathematical core computes risk governance decisions (ALLOW/QUARANTINE/DENY)
 - **Conformal_Factor**: λ(u) = 2/(1-‖u‖²) relating Euclidean and hyperbolic metrics
 - **Realm**: Reference point μ_k in 𝔹^n for distance computation
 - **Risk_Functional**: Weighted combination of deviation features with harmonic amplification
-- **Clamping_Operator**: Projects points to 𝔹^n_{1-ε} to maintain numerical stability
+- **Clamping_Operator**: Projects points to 𝔹^n\_{1-ε} to maintain numerical stability
 - **Envelope**: Cryptographic wrapper with AAD, nonce, tag, and ciphertext
 - **CPSE**: Coherent Probabilistic State Estimation - stress test channels
 - **North_Pole**: N = (0,0,1) on S², maps to ∞ under stereographic projection
@@ -58,12 +59,12 @@ The mathematical core computes risk governance decisions (ALLOW/QUARANTINE/DENY)
 
 #### Acceptance Criteria
 
-1. THE Poincare_Embedding Ψ_α SHALL map ℝ^n → 𝔹^n via tanh(α‖x‖)·x/‖x‖ for x≠0
+1. THE Poincare*Embedding Ψ*α SHALL map ℝ^n → 𝔹^n via tanh(α‖x‖)·x/‖x‖ for x≠0
 2. WHEN x=0, THE Poincare_Embedding SHALL return 0
-3. THE Clamping_Operator Π_ε SHALL project points to 𝔹^n_{1-ε} (ball of radius 1-ε)
+3. THE Clamping*Operator Π*ε SHALL project points to 𝔹^n\_{1-ε} (ball of radius 1-ε)
 4. WHEN ‖u‖ ≤ 1-ε, THE Clamping_Operator SHALL return u unchanged
 5. WHEN ‖u‖ > 1-ε, THE Clamping_Operator SHALL return (1-ε)·u/‖u‖
-6. THE System SHALL always apply clamping after Poincaré embedding: u = Π_ε(Ψ_α(x_G))
+6. THE System SHALL always apply clamping after Poincaré embedding: u = Π*ε(Ψ*α(x_G))
 
 ### Requirement 4: Hyperbolic Distance (A5)
 
@@ -73,7 +74,7 @@ The mathematical core computes risk governance decisions (ALLOW/QUARANTINE/DENY)
 
 1. THE Hyperbolic_Distance d_H SHALL implement the Poincaré ball metric
 2. THE Hyperbolic_Distance SHALL compute arcosh(1 + 2‖u-v‖²/((1-‖u‖²)(1-‖v‖²)))
-3. WHEN both points are clamped to 𝔹^n_{1-ε}, THE denominator SHALL be bounded below by ε²
+3. WHEN both points are clamped to 𝔹^n\_{1-ε}, THE denominator SHALL be bounded below by ε²
 4. THE Hyperbolic_Distance SHALL be symmetric: d_H(u,v) = d_H(v,u)
 
 ### Requirement 5: Breathing Transform (A6)
@@ -106,10 +107,10 @@ The mathematical core computes risk governance decisions (ALLOW/QUARANTINE/DENY)
 
 #### Acceptance Criteria
 
-1. THE Realm_Centers μ_k SHALL satisfy μ_k ∈ 𝔹^n_{1-ε} for k=1,...,K
-2. THE Realm_Distance d*(u) SHALL compute min_k d_H(u, μ_k)
+1. THE Realm*Centers μ_k SHALL satisfy μ_k ∈ 𝔹^n*{1-ε} for k=1,...,K
+2. THE Realm_Distance d\*(u) SHALL compute min_k d_H(u, μ_k)
 3. IF realm centers are not clamped, THEN THE System SHALL clamp them before use
-4. WHERE co-moving realms are used, THE System SHALL update μ'_k(t) = T_phase(μ_k; t)
+4. WHERE co-moving realms are used, THE System SHALL update μ'\_k(t) = T_phase(μ_k; t)
 
 ### Requirement 8: Signal Regularization (A9)
 
@@ -152,10 +153,10 @@ The mathematical core computes risk governance decisions (ALLOW/QUARANTINE/DENY)
 
 #### Acceptance Criteria
 
-1. THE Risk_Weights SHALL satisfy w_d, w_c, w_s, w_τ, w_a ≥ 0 and w_d + w_c + w_s + w_τ + w_a = 1
+1. THE Risk*Weights SHALL satisfy w_d, w_c, w_s, w*τ, w*a ≥ 0 and w_d + w_c + w_s + w*τ + w_a = 1
 2. THE Harmonic_Scaling H(d*, R) SHALL compute R^{(d*)²} with R > 1
-3. THE Base_Risk SHALL compute w_d·d̃_tri + w_c·(1-C_spin) + w_s·(1-S_spec) + w_τ·(1-τ) + w_a·(1-S_audio)
-4. THE Amplified_Risk Risk'(t) SHALL compute Risk_base(t) · H(d*(t), R)
+3. THE Base*Risk SHALL compute w_d·d̃_tri + w_c·(1-C_spin) + w_s·(1-S_spec) + w*τ·(1-τ) + w_a·(1-S_audio)
+4. THE Amplified_Risk Risk'(t) SHALL compute Risk_base(t) · H(d\*(t), R)
 5. THE Decision_Thresholds θ_1 < θ_2 SHALL partition risk into ALLOW/QUARANTINE/DENY
 6. WHEN Risk' < θ_1, THE System SHALL output ALLOW
 7. WHEN θ_1 ≤ Risk' < θ_2, THE System SHALL output QUARANTINE
@@ -170,8 +171,7 @@ The mathematical core computes risk governance decisions (ALLOW/QUARANTINE/DENY)
 1. THE System SHALL validate all parameters in configuration Θ at initialization
 2. IF any axiom constraint is violated, THEN THE System SHALL reject the configuration with specific error
 3. THE System SHALL verify: α > 0, ε_ball ∈ (0,1), ε > 0, G is SPD, b_min ≤ b_max, weights sum to 1, R > 1, θ_1 < θ_2
-4. THE System SHALL verify all realm centers are within 𝔹^n_{1-ε}
-
+4. THE System SHALL verify all realm centers are within 𝔹^n\_{1-ε}
 
 ### Requirement 13: CPSE Stress Channel Integration
 
@@ -227,7 +227,7 @@ The mathematical core computes risk governance decisions (ALLOW/QUARANTINE/DENY)
 
 #### Acceptance Criteria
 
-1. THE Quasi_Slice_Operator Σ_k SHALL partition ℝ^{2D} into K orthogonal 2D slices: Σ_k(x) = (x_{2k-1}, x_{2k}) for k=1,...,D
+1. THE Quasi*Slice_Operator Σ_k SHALL partition ℝ^{2D} into K orthogonal 2D slices: Σ_k(x) = (x*{2k-1}, x\_{2k}) for k=1,...,D
 2. THE Stereographic_Projection F SHALL map each 2D slice to the Riemann sphere S²: F(u,v) = (2u/d, 2v/d, (u²+v²-1)/d) where d = u²+v²+1
 3. THE Inverse_Projection F⁻¹ SHALL map S² \ {N} → ℂ via F⁻¹(x,y,z) = (x+iy)/(1-z)
 4. WHEN a slice approaches infinity (‖slice‖ → ∞), THE System SHALL map to north pole N=(0,0,1) and flag as boundary_risk

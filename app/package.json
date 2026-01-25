@@ -1,0 +1,18 @@
+{
+  "name": "scbe-aethermoore-app",
+  "version": "1.0.0",
+  "description": "SCBE-AETHERMOORE + Spiralverse Integrated Application",
+  "main": "server.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node server.js",
+    "dev": "ts-node server.ts"
+  },
+  "dependencies": {
+    "@types/node": "^20.11.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "ts-node": "^10.9.0"
+  }
+}

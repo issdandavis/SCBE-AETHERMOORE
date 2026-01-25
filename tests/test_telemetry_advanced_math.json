@@ -1,0 +1,21 @@
+{
+  "session_start": 1768905520.6010275,
+  "session_duration_ms": 2033.8809490203857,
+  "total_tests": 1,
+  "passed_tests": 1,
+  "failed_tests": 0,
+  "tests": [
+    {
+      "test_name": "Harmonic Scaling Super-Exponential",
+      "category": "Harmonic Scaling",
+      "start_time": 1768905520.6111798,
+      "end_time": 1768905522.6332805,
+      "duration_ms": 2022.1006870269775,
+      "iterations": 4,
+      "passed": true,
+      "metrics": {
+        "min_superexp_ratio": 2.8117066259517456
+      }
+    }
+  ]
+}

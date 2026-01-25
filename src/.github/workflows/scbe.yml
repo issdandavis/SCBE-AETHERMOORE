@@ -1,25 +1,25 @@
-name: "SCBE-AETHERMOORE Validation"
+name: 'SCBE-AETHERMOORE Validation'
 
 on:
   push:
-    branches: [ main, 'claude/**' ]
+    branches: [main, 'claude/**']
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   axiom-verification:
-    name: "Axiom Compliance (A1-A12)"
+    name: 'Axiom Compliance (A1-A12)'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: '3.11'
 
       - name: Install dependencies
         run: pip install numpy scipy
 
-      - name: "Verify Axiom A4 (Poincaré Constraint)"
+      - name: 'Verify Axiom A4 (Poincaré Constraint)'
         run: |
           python -c "
           import numpy as np
@@ -33,7 +33,7 @@ jobs:
           print('✓ Axiom A4 Verified: ||u|| =', np.linalg.norm(u))
           "
 
-      - name: "Verify Axiom A12 (Vertical Wall)"
+      - name: 'Verify Axiom A12 (Vertical Wall)'
         run: |
           python -c "
           import numpy as np
@@ -52,18 +52,18 @@ jobs:
           "
 
   unit-tests:
-    name: "Unit Tests"
+    name: 'Unit Tests'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: '3.11'
 
       - name: Install dependencies
         run: pip install numpy scipy
 
-      - name: "Run Module Self-Tests"
+      - name: 'Run Module Self-Tests'
         run: |
           python -c "
           from symphonic_cipher.scbe_aethermoore import (
@@ -93,22 +93,22 @@ jobs:
           assert total_passed == total_tests, f'Tests failed: {total_tests - total_passed}'
           "
 
-      - name: "Run Industry-Standard Tests"
+      - name: 'Run Industry-Standard Tests'
         run: python symphonic_cipher/scbe_aethermoore/test_scbe_system.py
 
   requirements-verification:
-    name: "EARS Requirements (R1-R8)"
+    name: 'EARS Requirements (R1-R8)'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: '3.11'
 
       - name: Install dependencies
         run: pip install numpy scipy
 
-      - name: "R1: Energy Preservation"
+      - name: 'R1: Energy Preservation'
         run: |
           python -c "
           import numpy as np
@@ -125,7 +125,7 @@ jobs:
           print(f'✓ R1 Verified: Energy preserved ({energy_in:.4f} = {energy_out:.4f})')
           "
 
-      - name: "R2: Poincaré Embedding Constraint"
+      - name: 'R2: Poincaré Embedding Constraint'
         run: |
           python -c "
           import numpy as np
@@ -143,7 +143,7 @@ jobs:
           print('✓ R2 Verified: All 1000 embeddings inside ball')
           "
 
-      - name: "R5: Risk Monotonicity"
+      - name: 'R5: Risk Monotonicity'
         run: |
           python -c "
           import numpy as np
@@ -159,7 +159,7 @@ jobs:
           print('✓ R5 Verified: Risk monotonically increasing in d*')
           "
 
-      - name: "R7: Base Risk Bounded, Final Unbounded"
+      - name: 'R7: Base Risk Bounded, Final Unbounded'
         run: |
           python -c "
           import numpy as np
@@ -176,7 +176,7 @@ jobs:
           print(f'✓ R7 Verified: r_base={result.r_base:.3f} ∈ [0,1], H(5)={h:.2e} (unbounded)')
           "
 
-      - name: "R8: Determinism"
+      - name: 'R8: Determinism'
         run: |
           python -c "
           import numpy as np
@@ -195,16 +195,16 @@ jobs:
           "
 
   patent-validation:
-    name: "Patent Claims Validation"
+    name: 'Patent Claims Validation'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: '3.11'
 
       - name: Install dependencies
         run: pip install numpy scipy
 
-      - name: "Run Patent Validation Tests"
+      - name: 'Run Patent Validation Tests'
         run: python symphonic_cipher/scbe_aethermoore/patent_validation_tests.py

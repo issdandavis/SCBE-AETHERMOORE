@@ -12,27 +12,29 @@
 
 Review the 3 decision points and document your choices:
 
-| Decision | Default | Your Choice | Rationale |
-|----------|---------|-------------|-----------|
-| Build Output | Option 1 (dual CJS+ESM) | _________ | _________ |
-| Signing String | Option A (canonical JSON) | _________ | _________ |
-| Nonce Scope | Option B (tongue only) | _________ | _________ |
+| Decision       | Default                   | Your Choice    | Rationale      |
+| -------------- | ------------------------- | -------------- | -------------- |
+| Build Output   | Option 1 (dual CJS+ESM)   | \***\*\_\*\*** | \***\*\_\*\*** |
+| Signing String | Option A (canonical JSON) | \***\*\_\*\*** | \***\*\_\*\*** |
+| Nonce Scope    | Option B (tongue only)    | \***\*\_\*\*** | \***\*\_\*\*** |
 
 **Recommendation**: Accept all defaults unless you have specific constraints.
 
 ### Step 1.2: Select Libraries
 
 #### TypeScript Libraries
+
 ```json
 {
   "dependencies": {
-    "canonicalize": "^2.0.0",  // RFC 8785 JSON canonicalization
+    "canonicalize": "^2.0.0" // RFC 8785 JSON canonicalization
     // OR implement custom per RFC 8785
   }
 }
 ```
 
 #### Python Libraries
+
 ```python
 # requirements.txt
 canonicaljson==2.0.0  # RFC 8785 JSON canonicalization
@@ -42,6 +44,7 @@ canonicaljson==2.0.0  # RFC 8785 JSON canonicalization
 ### Step 1.3: Document Decisions
 
 Create `IMPLEMENTATION_DECISIONS.md`:
+
 ```markdown
 # RWP v2.1 Implementation Decisions
 
@@ -49,18 +52,22 @@ Create `IMPLEMENTATION_DECISIONS.md`:
 **Team**: [Your Team]
 
 ## Decision 1: Build Output
+
 **Choice**: Option 1 (dual CJS+ESM)
 **Rationale**: Modern ecosystem compatibility, tree-shaking support
 
 ## Decision 2: Signing String Construction
+
 **Choice**: Option A (canonical JSON of envelope-without-sigs)
 **Rationale**: Consistent with JSON-first design, easier to maintain
 
 ## Decision 3: Nonce Scope
+
 **Choice**: Option B (primary_tongue only)
 **Rationale**: Simpler implementation, sender identity not available in MVP
 
 ## RFC 8785 Library
+
 **TypeScript**: canonicalize npm package
 **Python**: canonicaljson pip package
 ```
@@ -76,9 +83,7 @@ Create `IMPLEMENTATION_DECISIONS.md`:
 import { createHmac } from 'crypto';
 
 function deriveTongueKey(masterKey: Buffer, tongueId: string): Buffer {
-  return createHmac('sha256', masterKey)
-    .update(`tongue:${tongueId}`)
-    .digest();
+  return createHmac('sha256', masterKey).update(`tongue:${tongueId}`).digest();
 }
 ```
 
@@ -98,6 +103,7 @@ def derive_tongue_key(master_key: bytes, tongue_id: str) -> bytes:
 ### Step 2.2: Implement Canonical Signing String
 
 **If you chose Option A** (canonical JSON):
+
 ```typescript
 // TypeScript
 import canonicalize from 'canonicalize';
@@ -110,7 +116,7 @@ function buildSigningString(envelope: Envelope): string {
     ts: envelope.ts,
     nonce: envelope.nonce,
     ...(envelope.aad && { aad: envelope.aad }),
-    payload: envelope.payload
+    payload: envelope.payload,
   };
   return canonicalize(signObject) || '';
 }
@@ -135,6 +141,7 @@ def build_signing_string(envelope: dict) -> bytes:
 ```
 
 **If you chose Option B** (pipe-delimited):
+
 ```typescript
 // TypeScript
 import canonicalize from 'canonicalize';
@@ -147,7 +154,7 @@ function buildSigningString(envelope: Envelope): string {
     canonicalAad,
     envelope.ts.toString(),
     envelope.nonce,
-    envelope.payload
+    envelope.payload,
   ].join('|');
 }
 ```
@@ -159,9 +166,7 @@ function buildSigningString(envelope: Envelope): string {
 import { createHmac } from 'crypto';
 
 function generateSignature(tongueKey: Buffer, canonicalString: string): string {
-  return createHmac('sha256', tongueKey)
-    .update(canonicalString, 'utf-8')
-    .digest('hex');
+  return createHmac('sha256', tongueKey).update(canonicalString, 'utf-8').digest('hex');
 }
 ```
 
@@ -186,13 +191,16 @@ Run your key derivation and signature generation for each test vector:
 // generate-test-vectors.ts
 import fs from 'fs';
 
-const masterKey = Buffer.from('0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef', 'hex');
+const masterKey = Buffer.from(
+  '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+  'hex'
+);
 const vectors = JSON.parse(fs.readFileSync('TEST_VECTORS.json', 'utf-8'));
 
 for (const vector of vectors.vectors) {
   const canonicalString = buildSigningString(vector.envelope);
   vector.expected_canonical_string = canonicalString;
-  
+
   vector.expected_sigs = {};
   for (const tongue of Object.keys(vector.envelope.kid)) {
     const tongueKey = deriveTongueKey(masterKey, tongue);
@@ -240,11 +248,11 @@ export interface Envelope {
 
 export class EnvelopeBuilder {
   private masterKey: Buffer;
-  
+
   constructor(masterKey: Buffer) {
     this.masterKey = masterKey;
   }
-  
+
   build(
     primaryTongue: string,
     tongues: string[],
@@ -253,13 +261,13 @@ export class EnvelopeBuilder {
   ): Envelope {
     // Generate nonce (16 bytes minimum)
     const nonce = randomBytes(16).toString('base64url');
-    
+
     // Build kid map
     const kid: Record<string, string> = {};
     for (const tongue of tongues) {
       kid[tongue] = `key-${Date.now()}`; // Replace with actual key ID lookup
     }
-    
+
     // Build envelope without sigs
     const envelope: Partial<Envelope> = {
       ver: '2.1',
@@ -268,19 +276,19 @@ export class EnvelopeBuilder {
       ts: Date.now(),
       nonce,
       ...(aad && { aad }),
-      payload: payload.toString('base64url')
+      payload: payload.toString('base64url'),
     };
-    
+
     // Generate canonical signing string
     const canonicalString = buildSigningString(envelope as Envelope);
-    
+
     // Generate signatures
     const sigs: Record<string, string> = {};
     for (const tongue of tongues) {
       const tongueKey = deriveTongueKey(this.masterKey, tongue);
       sigs[tongue] = generateSignature(tongueKey, canonicalString);
     }
-    
+
     return { ...envelope, sigs } as Envelope;
   }
 }
@@ -295,7 +303,7 @@ import { timingSafeEqual } from 'crypto';
 export enum VerificationResult {
   ALLOW = 'ALLOW',
   DENY = 'DENY',
-  QUARANTINE = 'QUARANTINE'
+  QUARANTINE = 'QUARANTINE',
 }
 
 export class EnvelopeVerifier {
@@ -303,12 +311,12 @@ export class EnvelopeVerifier {
   private nonceCache: Set<string>;
   private replayWindow: number = 60_000; // 60 seconds
   private clockSkew: number = 5_000; // 5 seconds
-  
+
   constructor(masterKey: Buffer) {
     this.masterKey = masterKey;
     this.nonceCache = new Set();
   }
-  
+
   verify(envelope: Envelope, policyMode: string): VerificationResult {
     // Step 1: Validate timestamp
     const now = Date.now();
@@ -318,46 +326,46 @@ export class EnvelopeVerifier {
     if (envelope.ts < now - this.replayWindow) {
       return VerificationResult.DENY; // Expired timestamp
     }
-    
+
     // Step 2: Build canonical signing string
     const canonicalString = buildSigningString(envelope);
-    
+
     // Step 3: Verify signatures (constant-time)
     const validTongues: string[] = [];
     for (const [tongue, receivedSig] of Object.entries(envelope.sigs)) {
       const tongueKey = deriveTongueKey(this.masterKey, tongue);
       const expectedSig = generateSignature(tongueKey, canonicalString);
-      
+
       // Constant-time comparison
       const receivedBuf = Buffer.from(receivedSig, 'hex');
       const expectedBuf = Buffer.from(expectedSig, 'hex');
-      
-      if (receivedBuf.length === expectedBuf.length && 
-          timingSafeEqual(receivedBuf, expectedBuf)) {
+
+      if (receivedBuf.length === expectedBuf.length && timingSafeEqual(receivedBuf, expectedBuf)) {
         validTongues.push(tongue);
       }
     }
-    
+
     // Step 4: Check primary tongue
     if (!validTongues.includes(envelope.primary_tongue)) {
       return VerificationResult.DENY;
     }
-    
+
     // Step 5: Check nonce replay (atomic check-and-insert)
     const nonceKey = `${envelope.primary_tongue}:${envelope.nonce}`;
     if (this.nonceCache.has(nonceKey)) {
       return VerificationResult.DENY; // Replay detected
     }
     this.nonceCache.add(nonceKey); // Record nonce BEFORE policy check
-    
+
     // Step 6: Evaluate policy
-    const requiredCount = {
-      'STANDARD': 1,
-      'STRICT': 2,
-      'SECRET': 3,
-      'CRITICAL': 6
-    }[policyMode] || 1;
-    
+    const requiredCount =
+      {
+        STANDARD: 1,
+        STRICT: 2,
+        SECRET: 3,
+        CRITICAL: 6,
+      }[policyMode] || 1;
+
     if (validTongues.length >= requiredCount) {
       return VerificationResult.ALLOW;
     } else {
@@ -388,7 +396,7 @@ class EnvelopeVerifier:
         self.nonce_cache: set = set()
         self.replay_window = 60_000  # 60 seconds
         self.clock_skew = 5_000  # 5 seconds
-    
+
     def verify(self, envelope: dict, policy_mode: str) -> VerificationResult:
         # Step 1: Validate timestamp
         now = int(time.time() * 1000)
@@ -396,30 +404,30 @@ class EnvelopeVerifier:
             return VerificationResult.DENY
         if envelope['ts'] < now - self.replay_window:
             return VerificationResult.DENY
-        
+
         # Step 2: Build canonical signing string
         canonical_string = build_signing_string(envelope)
-        
+
         # Step 3: Verify signatures (constant-time)
         valid_tongues = []
         for tongue, received_sig in envelope['sigs'].items():
             tongue_key = derive_tongue_key(self.master_key, tongue)
             expected_sig = generate_signature(tongue_key, canonical_string)
-            
+
             # Constant-time comparison
             if hmac.compare_digest(received_sig, expected_sig):
                 valid_tongues.append(tongue)
-        
+
         # Step 4: Check primary tongue
         if envelope['primary_tongue'] not in valid_tongues:
             return VerificationResult.DENY
-        
+
         # Step 5: Check nonce replay
         nonce_key = f"{envelope['primary_tongue']}:{envelope['nonce']}"
         if nonce_key in self.nonce_cache:
             return VerificationResult.DENY
         self.nonce_cache.add(nonce_key)
-        
+
         # Step 6: Evaluate policy
         required_count = {
             'STANDARD': 1,
@@ -427,7 +435,7 @@ class EnvelopeVerifier:
             'SECRET': 3,
             'CRITICAL': 6
         }.get(policy_mode, 1)
-        
+
         if len(valid_tongues) >= required_count:
             return VerificationResult.ALLOW
         else:
@@ -446,27 +454,30 @@ import { describe, it, expect } from 'vitest';
 import { EnvelopeBuilder, EnvelopeVerifier, VerificationResult } from './envelope';
 
 describe('RWP v2.1 Envelope', () => {
-  const masterKey = Buffer.from('0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef', 'hex');
-  
+  const masterKey = Buffer.from(
+    '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+    'hex'
+  );
+
   it('should create and verify valid envelope', () => {
     const builder = new EnvelopeBuilder(masterKey);
     const verifier = new EnvelopeVerifier(masterKey);
-    
+
     const envelope = builder.build('RU', ['RU'], Buffer.from('Hello World'));
     const result = verifier.verify(envelope, 'STANDARD');
-    
+
     expect(result).toBe(VerificationResult.ALLOW);
   });
-  
+
   it('should reject replayed nonce', () => {
     const builder = new EnvelopeBuilder(masterKey);
     const verifier = new EnvelopeVerifier(masterKey);
-    
+
     const envelope = builder.build('RU', ['RU'], Buffer.from('Hello World'));
-    
+
     const result1 = verifier.verify(envelope, 'STANDARD');
     expect(result1).toBe(VerificationResult.ALLOW);
-    
+
     const result2 = verifier.verify(envelope, 'STANDARD');
     expect(result2).toBe(VerificationResult.DENY); // Replay detected
   });
@@ -482,12 +493,12 @@ import fs from 'fs';
 
 describe('RWP v2.1 Interop Test Vectors', () => {
   const vectors = JSON.parse(fs.readFileSync('TEST_VECTORS_COMPLETE.json', 'utf-8'));
-  
+
   for (const vector of vectors.vectors) {
     it(`should pass ${vector.test_id}: ${vector.description}`, () => {
       const masterKey = Buffer.from(vector.master_key, 'hex');
       const verifier = new EnvelopeVerifier(masterKey);
-      
+
       const result = verifier.verify(vector.envelope, 'STANDARD');
       expect(result).toBe(vector.expected_result);
     });
@@ -512,6 +523,7 @@ npm run test:interop:py-to-ts
 ### Step 5.1: API Documentation
 
 Generate API docs from code:
+
 ```bash
 # TypeScript
 npm run docs  # Uses TypeDoc
@@ -523,6 +535,7 @@ pdoc --html envelope_verifier.py
 ### Step 5.2: Usage Examples
 
 Create `examples/` directory with:
+
 - `basic-usage.ts` / `basic_usage.py`
 - `multi-signature.ts` / `multi_signature.py`
 - `policy-modes.ts` / `policy_modes.py`
@@ -556,6 +569,7 @@ Before deploying to production:
 **Cause**: Canonicalization differences
 
 **Fix**:
+
 1. Print canonical signing string from both implementations
 2. Compare byte-for-byte (use hex dump)
 3. Check RFC 8785 number formatting
@@ -566,6 +580,7 @@ Before deploying to production:
 **Cause**: Cache not persisting or scope incorrect
 
 **Fix**:
+
 1. Verify nonce is recorded after crypto passes
 2. Check scope key format matches FR-5.1
 3. Ensure atomic check-and-insert
@@ -575,6 +590,7 @@ Before deploying to production:
 **Cause**: Inefficient canonicalization or crypto
 
 **Fix**:
+
 1. Profile with `perf` (Linux) or `Instruments` (macOS)
 2. Cache derived tongue keys if master key doesn't change
 3. Use native crypto libraries (not pure JS/Python)

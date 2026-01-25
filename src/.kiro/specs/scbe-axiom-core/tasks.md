@@ -3,6 +3,7 @@
 ## Overview
 
 Implementation of the unified SCBE (Spectral Context-Bound Encryption) system combining:
+
 1. Python 14-layer hyperbolic geometry pipeline with A1-A12 axiom compliance
 2. TypeScript cryptographic envelope with risk-gated creation
 3. Property-based tests for all 17 correctness properties
@@ -19,7 +20,7 @@ Implementation of the unified SCBE (Spectral Context-Bound Encryption) system co
   - [ ] 2.1 Implement Poincaré embedding with clamping
     - Implement `poincare_embed(x, alpha)` function
     - Implement `clamp(u, eps_ball)` function
-    - Ensure output always in 𝔹^n_{1-ε}
+    - Ensure output always in 𝔹^n\_{1-ε}
     - _Requirements: 3.1, 3.3, 3.4, 3.5_
 
   - [ ] 2.2 Write property test for Poincaré embedding boundedness
@@ -77,7 +78,7 @@ Implementation of the unified SCBE (Spectral Context-Bound Encryption) system co
 
 - [ ] 4. Implement context transforms (A1-A3)
   - [ ] 4.1 Implement realification map
-    - Implement `layer1_complex_context(amplitudes, phases)` 
+    - Implement `layer1_complex_context(amplitudes, phases)`
     - Implement `layer2_realification(c)` function
     - Output dimension = 2D, preserve norm
     - _Requirements: 1.1, 1.2, 1.3_
@@ -143,7 +144,7 @@ Implementation of the unified SCBE (Spectral Context-Bound Encryption) system co
 
   - [ ] 6.4 Implement harmonic scaling
     - Implement `layer12_harmonic_scaling(d_star)` function
-    - Compute R^{d*²}
+    - Compute R^{d\*²}
     - _Requirements: 11.2_
 
   - [ ] 6.5 Implement composite risk
@@ -233,7 +234,7 @@ Implementation of the unified SCBE (Spectral Context-Bound Encryption) system co
 
   - [ ] 11.3 Implement Hamiltonian path traversal
     - Visit each polyhedron exactly once
-    - Sequential HMAC: K_{i+1} = HMAC-SHA256(K_i, Serialize(P_i))
+    - Sequential HMAC: K\_{i+1} = HMAC-SHA256(K_i, Serialize(P_i))
     - _Requirements: 13.1, 13.5_
 
   - [ ] 11.4 Implement geodesic curve γ(t)

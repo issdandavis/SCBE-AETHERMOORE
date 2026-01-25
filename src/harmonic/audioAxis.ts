@@ -1,14 +1,21 @@
 /**
- * SCBE Audio Axis - Layer 14
+ * @file audioAxis.ts
+ * @module harmonic/audioAxis
+ * @layer Layer 14
+ * @component Audio Telemetry Engine
+ * @version 3.0.0
+ * @since 2026-01-20
  *
- * FFT-based telemetry without altering the invariant metric.
- * faudio(t) = [Ea, Ca, Fa, rHF,a]
+ * SCBE Audio Axis - FFT-based telemetry without altering the invariant metric.
  *
- * - Ea = log(ε + Σₙ a[n]²) — Frame energy
- * - Ca = (Σₖ fₖ·Pₐ[k]) / (Σₖ Pₐ[k]) — Spectral centroid
- * - Fa = Σₖ (√Pₐ[k] - √Pₐ_prev[k])² — Spectral flux
- * - rHF,a = Σₖ∈Khigh Pₐ[k] / Σₖ Pₐ[k] — High-frequency ratio
- * - Saudio = 1 - rHF,a — Audio stability score
+ * Layer 14: f_audio(t) = [E_a, C_a, F_a, r_HF,a]
+ *
+ * Features:
+ * - E_a = log(ε + Σₙ a[n]²) — Frame energy
+ * - C_a = (Σₖ fₖ·Pₐ[k]) / (Σₖ Pₐ[k]) — Spectral centroid
+ * - F_a = Σₖ (√Pₐ[k] - √Pₐ_prev[k])² — Spectral flux
+ * - r_HF,a = Σₖ∈Khigh Pₐ[k] / Σₖ Pₐ[k] — High-frequency ratio
+ * - S_audio = 1 - r_HF,a — Audio stability score ∈ [0,1]
  */
 
 /** Small epsilon for numerical stability */

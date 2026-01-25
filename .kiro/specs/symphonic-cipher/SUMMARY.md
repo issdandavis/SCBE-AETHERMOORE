@@ -6,13 +6,13 @@ The **Symphonic Cipher** is a revolutionary cryptographic signing method that tr
 
 ## 🆚 Traditional vs Symphonic
 
-| Aspect | Traditional (ECDSA) | Symphonic Cipher |
-|--------|-------------------|------------------|
-| **Data Treatment** | Static binary blob | Dynamic waveform |
-| **Verification** | Discrete logarithm | Spectral analysis |
-| **Domain** | Arithmetic | Signal processing |
-| **Attack Surface** | Algebraic | Orthogonal (different) |
-| **Human Readable** | No (hex) | Yes (Z-Base-32) |
+| Aspect             | Traditional (ECDSA) | Symphonic Cipher       |
+| ------------------ | ------------------- | ---------------------- |
+| **Data Treatment** | Static binary blob  | Dynamic waveform       |
+| **Verification**   | Discrete logarithm  | Spectral analysis      |
+| **Domain**         | Arithmetic          | Signal processing      |
+| **Attack Surface** | Algebraic           | Orthogonal (different) |
+| **Human Readable** | No (hex)            | Yes (Z-Base-32)        |
 
 ## 🔄 How It Works (Simple Explanation)
 
@@ -26,21 +26,26 @@ The **Symphonic Cipher** is a revolutionary cryptographic signing method that tr
 ```
 
 **Example:**
+
 - Input: `{"amount": 500, "to": "0x123..."}`
 - Output: `ybndrfg8ejkmcpqxot1uwisza345h769...` (32 characters)
 
 ## 🎯 Why This Matters
 
 ### 1. **Quantum Resistance**
+
 Traditional signatures (ECDSA) are vulnerable to quantum computers. The Symphonic Cipher adds a layer that's resistant to Shor's algorithm.
 
 ### 2. **Unique Security Model**
+
 Attacks that work on arithmetic crypto (like factoring) don't work on signal-based crypto. You'd need to break SHA-256 HMAC to forge signatures.
 
 ### 3. **Visual/Audio Proof**
+
 The signature literally represents the "sound" of your transaction. You could theoretically hear if a transaction is valid!
 
 ### 4. **Supply Chain Security**
+
 Zero external dependencies = no npm package vulnerabilities. Everything is auditable in your codebase.
 
 ## 🏗️ Architecture
@@ -90,66 +95,78 @@ Zero external dependencies = no npm package vulnerabilities. Everything is audit
 ## 🔧 Components to Build
 
 ### 1. **Complex.ts** - Complex Number Math
+
 ```typescript
 class Complex {
-  constructor(public re: number, public im: number) {}
-  add(other: Complex): Complex
-  mul(other: Complex): Complex
-  get magnitude(): number
+  constructor(
+    public re: number,
+    public im: number
+  ) {}
+  add(other: Complex): Complex;
+  mul(other: Complex): Complex;
+  get magnitude(): number;
 }
 ```
 
 ### 2. **FFT.ts** - Fast Fourier Transform
+
 ```typescript
 class FFT {
-  static transform(input: Complex[]): Complex[]
-  static prepareSignal(data: number[]): Complex[]
+  static transform(input: Complex[]): Complex[];
+  static prepareSignal(data: number[]): Complex[];
 }
 ```
 
 ### 3. **Feistel.ts** - Scrambling Network
+
 ```typescript
 class Feistel {
-  encrypt(data: Buffer, key: string): Buffer
-  decrypt(data: Buffer, key: string): Buffer
+  encrypt(data: Buffer, key: string): Buffer;
+  decrypt(data: Buffer, key: string): Buffer;
 }
 ```
 
 ### 4. **ZBase32.ts** - Human-Readable Encoding
+
 ```typescript
 class ZBase32 {
-  static encode(buffer: Buffer): string
-  static decode(input: string): Buffer
+  static encode(buffer: Buffer): string;
+  static decode(input: string): Buffer;
 }
 ```
 
 ### 5. **SymphonicAgent.ts** - Orchestrator
+
 ```typescript
 class SymphonicAgent {
-  synthesizeHarmonics(intent: string, key: string): {
-    signal: number[],
-    spectrum: Complex[]
-  }
-  extractFingerprint(spectrum: Complex[]): number[]
+  synthesizeHarmonics(
+    intent: string,
+    key: string
+  ): {
+    signal: number[];
+    spectrum: Complex[];
+  };
+  extractFingerprint(spectrum: Complex[]): number[];
 }
 ```
 
 ### 6. **HybridCrypto.ts** - Public API
+
 ```typescript
 class HybridCrypto {
-  generateHarmonicSignature(intent: string, key: string): string
-  verifyHarmonicSignature(intent: string, key: string, sig: string): boolean
+  generateHarmonicSignature(intent: string, key: string): string;
+  verifyHarmonicSignature(intent: string, key: string, sig: string): boolean;
 }
 ```
 
 ## 📊 Performance Targets
 
-| Operation | Target | Typical Payload |
-|-----------|--------|-----------------|
-| Signing | <1ms | 1KB JSON |
-| Verification | <1ms | 1KB JSON |
-| FFT (N=1024) | <500μs | - |
-| Feistel (6 rounds) | <100μs | 1KB |
+| Operation          | Target | Typical Payload |
+| ------------------ | ------ | --------------- |
+| Signing            | <1ms   | 1KB JSON        |
+| Verification       | <1ms   | 1KB JSON        |
+| FFT (N=1024)       | <500μs | -               |
+| Feistel (6 rounds) | <100μs | 1KB             |
 
 ## 🧪 Testing Strategy
 
@@ -179,7 +196,7 @@ src/
 ✅ **Performance:** <1ms signing/verification for 1KB payloads  
 ✅ **Security:** Resistant to replay, collision, and timing attacks  
 ✅ **Quality:** >90% test coverage, zero TypeScript errors  
-✅ **Documentation:** Complete API docs and examples  
+✅ **Documentation:** Complete API docs and examples
 
 ## 🎯 Next Steps
 

@@ -1,0 +1,89 @@
+
+============================================================
+ AI MEMORY SHARD DEMO v3.0.0
+============================================================
+SCBE-AETHERMOORE Cryptographic Memory System
+Demonstrating: SpiralSeal SS1 + Harmonic Storage + Governance
+
+--- PHASE 1: SEAL MEMORY ---
+Plaintext: 'Hello, AETHERMOORE!'
+Agent: ash
+Topic: aethermoore
+Position: (1, 2, 3, 5, 8, 13) (Fibonacci sequence)
+
+Sealed blob (SS1 format):
+  SS1:nyx'mora'luna'vel:2c070f165e646f09190e63672b7d485f465732
+
+--- PHASE 2: HARMONIC VOXEL STORAGE ---
+Stored at 6D position: (1, 2, 3, 5, 8, 13)
+  x, y, z: Spatial coordinates
+  v: Velocity (mode n)
+  phase: Phase angle
+  mode: Cymatic mode m
+
+Harmonic signature: 96c84c4630b7892d
+
+--- PHASE 3: GOVERNED RETRIEVAL ---
+Retrieval context: internal (risk_level=normal)
+=== Memory Retrieval @ position (1, 2, 3, 5, 8, 13) ===
+Agent: ash, Topic: aethermoore, Context: internal
+
+[1] GOVERNANCE CHECK
+    Decision: ALLOW
+    Reason: Risk acceptable: 0.000 < 0.2
+    Risk: 0.0000
+    Harmonic factor: 1000.00x
+
+[2] DECRYPTION
+    >>> SUCCESS: Memory retrieved
+
+--- SUMMARY ---
+Status: ✓ SUCCESS
+Governance: ALLOW
+Risk score: 0.0000
+Harmonic amplification: 1000.00x
+
+Recovered plaintext: 'Hello, AETHERMOORE!'
+
+--- BONUS: UNTRUSTED AGENT ATTEMPT ---
+Agent: malicious_bot
+Context: untrusted
+Decision: QUARANTINE
+Reason: Elevated risk: 0.268 in quarantine range
+Risk score: 0.2683
+Harmonic amplification: 6.70x
+
+--- BONUS: SENSITIVE TOPIC ACCESS ---
+Trusted agent 'ash' accessing 'secrets':
+  Decision: ALLOW
+  Risk: 0.1732
+
+Hostile agent 'hacker' accessing 'secrets':
+  Decision: DENY
+  Reason: Risk too high: 0.422 >= 0.4
+  Risk: 0.4219
+  Result: <fail-to-noise> (blocked)
+
+--- THE 60-SECOND STORY ---
+
+We seal AI memories with Sacred Tongue crypto (SpiralSeal SS1).
+Where you store it in 6D space determines your risk level.
+Harmonic scaling amplifies that risk super-exponentially.
+Only if governance approves do you get the memory back.
+
+This demonstrates:
+  ✓ SpiralSeal SS1 cipher with spell-text encoding
+  ✓ 6D harmonic voxel storage (Fibonacci positions)
+  ✓ Governance engine with risk scoring
+  ✓ Harmonic scaling for risk amplification
+  ✓ Fail-to-noise security (blocked = noise)
+
+The full version includes:
+  • Post-quantum cryptography (Kyber768 + Dilithium3)
+  • Dual lattice consensus verification
+  • Quasicrystal validation
+  • Cymatic resonance checking
+  • Physics-based acoustic traps
+
+See aws-lambda-simple-web-app/demo_memory_shard.py for the complete implementation.
+    

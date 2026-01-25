@@ -13,6 +13,7 @@ The user provided a **production-ready RWP v3.0 implementation** with significan
 ### Key Upgrades
 
 **v2.1 (Original Plan)** → **v3.0 (Implemented)**:
+
 - HMAC-SHA256 → **Argon2id KDF + XChaCha20-Poly1305 AEAD**
 - Optional PQC → **Full ML-KEM-768 + ML-DSA-65 integration**
 - Basic replay protection → **Hybrid PQC key exchange**
@@ -25,6 +26,7 @@ The user provided a **production-ready RWP v3.0 implementation** with significan
 ### 1. Enhanced Sacred Tongue Tokenizer (`src/crypto/sacred_tongues.py`)
 
 **New Features**:
+
 - ✅ Harmonic frequency binding (440Hz-659Hz range)
 - ✅ Spectral fingerprint computation for Layer 9 validation
 - ✅ Constant-time lookup tables (O(1) encoding/decoding)
@@ -32,6 +34,7 @@ The user provided a **production-ready RWP v3.0 implementation** with significan
 - ✅ RWP v3.0 section API (`encode_section`, `decode_section`)
 
 **Security Properties**:
+
 - Bijective: Each byte → exactly one token per tongue
 - Collision-free: 256 unique tokens per tongue
 - Constant-time: No timing side-channels
@@ -40,6 +43,7 @@ The user provided a **production-ready RWP v3.0 implementation** with significan
 ### 2. RWP v3.0 Protocol (`src/crypto/rwp_v3.py`)
 
 **Security Stack**:
+
 1. **Argon2id KDF** (RFC 9106): Password → 256-bit key
    - Time cost: 3 iterations (~0.5s)
    - Memory cost: 64 MB
@@ -64,6 +68,7 @@ The user provided a **production-ready RWP v3.0 implementation** with significan
    - Spectral coherence validation
 
 **API**:
+
 ```python
 # High-level convenience API
 envelope = rwp_encrypt_message(
@@ -87,6 +92,7 @@ message = rwp_decrypt_message(
 ### 1. Sacred Tongue Spectral Binding (NEW)
 
 **Claim 17 (Method)**:
+
 > A system for quantum-resistant context-bound encryption comprising:
 > (a) deriving a base key via Argon2id KDF from password and salt;
 > (b) encapsulating a post-quantum shared secret using ML-KEM-768;
@@ -96,6 +102,7 @@ message = rwp_decrypt_message(
 > (f) validating envelope integrity via spectral coherence analysis of said harmonic frequencies.
 
 **Why Novel**:
+
 - Each RWP section bound to unique harmonic frequency (440Hz-659Hz)
 - Layer 9 coherence check validates frequency-domain integrity
 - Attack: Swapping ct ↔ tag tokens triggers spectral mismatch
@@ -104,6 +111,7 @@ message = rwp_decrypt_message(
 ### 2. Hybrid PQC + Context-Bound Encryption (NEW)
 
 **Claim 18 (System)**:
+
 > The system of claim 17, wherein context validation comprises:
 > extracting Sacred Tongue tokens from envelope sections;
 > computing per-tongue harmonic fingerprints via weighted FFT;
@@ -112,6 +120,7 @@ message = rwp_decrypt_message(
 > applying super-exponential cost amplification H(d,R) = R^(d²) where d exceeds threshold.
 
 **Why Novel**:
+
 - ML-KEM shared secret XORed into Argon2id-derived key
 - Context = (GPS, time, mission_id) → influences key derivation
 - Even with stolen ML-KEM key, wrong context → decoy plaintext
@@ -120,6 +129,7 @@ message = rwp_decrypt_message(
 ### 3. Zero-Latency Mars Communication (ENHANCED)
 
 **Existing + New**:
+
 - Pre-synchronized Sacred Tongue vocabularies (existing)
 - No TLS handshake (14-min RTT eliminated) (existing)
 - **NEW**: Envelope self-authenticates via Layer 8 topology check
@@ -137,6 +147,7 @@ pip install argon2-cffi pycryptodome liboqs-python numpy
 ```
 
 **Package Details**:
+
 - `argon2-cffi`: RFC 9106 Argon2id KDF
 - `pycryptodome`: XChaCha20-Poly1305 AEAD
 - `liboqs-python`: ML-KEM-768 + ML-DSA-65 (NIST PQC)
@@ -225,34 +236,34 @@ def test_encrypt_decrypt_roundtrip():
     protocol = RWPv3Protocol(enable_pqc=False)
     password = b"test-password"
     plaintext = b"Hello, Mars!"
-    
+
     envelope = protocol.encrypt(password, plaintext)
     decrypted = protocol.decrypt(password, envelope)
-    
+
     assert decrypted == plaintext
 
 def test_pqc_hybrid_mode():
     """ML-KEM-768 hybrid encryption works."""
     protocol = RWPv3Protocol(enable_pqc=True)
-    
+
     # Generate ML-KEM keypair
     public_key = protocol.kem.generate_keypair()
     secret_key = protocol.kem.export_secret_key()
-    
+
     # Encrypt with PQC
     envelope = protocol.encrypt(
         password=b"test",
         plaintext=b"PQC test",
         ml_kem_public_key=public_key
     )
-    
+
     # Decrypt with PQC
     decrypted = protocol.decrypt(
         password=b"test",
         envelope=envelope,
         ml_kem_secret_key=secret_key
     )
-    
+
     assert decrypted == b"PQC test"
 ```
 
@@ -281,7 +292,7 @@ def test_property_wrong_password_fails(password, plaintext):
     """Property: Wrong password always fails."""
     protocol = RWPv3Protocol(enable_pqc=False)
     envelope = protocol.encrypt(password, plaintext)
-    
+
     wrong_password = password + b"wrong"
     with pytest.raises(ValueError):
         protocol.decrypt(wrong_password, envelope)
@@ -298,11 +309,11 @@ def test_scbe_full_pipeline():
         message="Hello, Mars!",
         metadata={"timestamp": "2026-01-18T17:21:00Z"}
     )
-    
+
     # SCBE context encoding
     encoder = SCBEContextEncoder()
     u = encoder.full_pipeline(envelope_dict)
-    
+
     # Validate hyperbolic embedding
     assert np.linalg.norm(u) < 1.0  # Inside Poincaré ball
     assert u.shape == (12,)  # 6D complex → 12D real
@@ -314,15 +325,15 @@ def test_scbe_full_pipeline():
 
 ### Target Metrics
 
-| Operation | Target | Measured |
-|-----------|--------|----------|
-| Encrypt (no PQC) | <10ms | TBD |
-| Decrypt (no PQC) | <5ms | TBD |
-| Encrypt (with PQC) | <50ms | TBD |
-| Decrypt (with PQC) | <30ms | TBD |
-| Token encoding | <1ms | TBD |
-| Token decoding | <1ms | TBD |
-| Spectral fingerprint | <2ms | TBD |
+| Operation            | Target | Measured |
+| -------------------- | ------ | -------- |
+| Encrypt (no PQC)     | <10ms  | TBD      |
+| Decrypt (no PQC)     | <5ms   | TBD      |
+| Encrypt (with PQC)   | <50ms  | TBD      |
+| Decrypt (with PQC)   | <30ms  | TBD      |
+| Token encoding       | <1ms   | TBD      |
+| Token decoding       | <1ms   | TBD      |
+| Spectral fingerprint | <2ms   | TBD      |
 
 ### Benchmark Script
 
@@ -334,17 +345,17 @@ def benchmark_encryption():
     protocol = RWPv3Protocol(enable_pqc=False)
     password = b"benchmark-password"
     plaintext = b"A" * 256  # 256-byte message
-    
+
     # Warmup
     for _ in range(10):
         protocol.encrypt(password, plaintext)
-    
+
     # Benchmark
     start = time.perf_counter()
     for _ in range(1000):
         protocol.encrypt(password, plaintext)
     end = time.perf_counter()
-    
+
     avg_time = (end - start) / 1000 * 1000  # ms
     print(f"Encryption: {avg_time:.2f}ms")
 
@@ -428,12 +439,14 @@ if __name__ == "__main__":
 ### Threat Model
 
 **Assumptions**:
+
 - Attacker has quantum computer (Shor's algorithm)
 - Attacker can intercept envelopes
 - Attacker can tamper with envelopes
 - Attacker does NOT have password or ML-KEM secret key
 
 **Protections**:
+
 - ✅ Quantum-resistant: ML-KEM-768 + ML-DSA-65
 - ✅ Authenticated encryption: XChaCha20-Poly1305
 - ✅ Key derivation: Argon2id (password cracking resistant)

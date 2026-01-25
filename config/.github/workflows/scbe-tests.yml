@@ -1,10 +1,10 @@
-name: "SCBE Axiom Compliance Tests"
+name: 'SCBE Axiom Compliance Tests'
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
   workflow_dispatch:
 
 permissions:
@@ -14,46 +14,46 @@ jobs:
   typescript-tests:
     name: TypeScript Crypto Tests
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Run TypeScript tests
         run: npm test
-      
+
       - name: Type check
         run: npx tsc --noEmit
 
   python-axiom-tests:
     name: Python Axiom Compliance
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install numpy scipy
-      
+
       - name: Run SCBE axiom compliance
         run: python src/scbe_cpse_unified.py
-      
+
       - name: Verify axioms A1-A12
         run: |
           python -c "
@@ -66,26 +66,26 @@ jobs:
     name: Integration Tests
     runs-on: ubuntu-latest
     needs: [typescript-tests, python-axiom-tests]
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
+
       - name: Install all dependencies
         run: |
           npm ci
           pip install numpy scipy
-      
+
       - name: Run integration tests
         run: |
           echo "Running TypeScript envelope tests..."

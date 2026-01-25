@@ -21,7 +21,7 @@ test('AAD tamper fails auth (noise only)', async () => {
   await expect(verifyEnvelope({ envelope: envl, session_id: 's1' })).rejects.toThrow();
 });
 
-test.skip('Body tamper fails auth', async () => {
+test('Body tamper fails auth', async () => {
   const envl = await createEnvelope({
     kid: 'key-v1',
     env: 'prod',
