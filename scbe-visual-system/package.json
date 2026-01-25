@@ -28,7 +28,7 @@
     "@vitest/coverage-v8": "^2.0.0",
     "concurrently": "^9.0.0",
     "electron": "^35.0.0",
-    "electron-builder": "^26.0.0",
+    "electron-builder": "^26.4.0",
     "jsdom": "^27.4.0",
     "typescript": "~5.8.2",
     "vite": "^6.3.0",
