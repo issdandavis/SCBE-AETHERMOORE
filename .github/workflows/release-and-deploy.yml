@@ -53,11 +53,11 @@ jobs:
         run: |
           cd symphonic_cipher
           python -c "
-from topological_cfi import TopologicalCFI
-from dual_lattice_consensus import DualLatticeConsensus
-print('Topological CFI: OK')
-print('Dual Lattice Consensus: OK')
-"
+          from topological_cfi import TopologicalCFI
+          from dual_lattice_consensus import DualLatticeConsensus
+          print('Topological CFI: OK')
+          print('Dual Lattice Consensus: OK')
+          "
 
   release:
     name: Create Release
