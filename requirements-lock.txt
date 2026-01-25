@@ -67,7 +67,7 @@ Jinja2==3.1.6
 jiter==0.12.0
 jmespath==1.0.1
 jsii==1.122.0
-jsonschema==4.25.1
+jsonschema==4.26.0
 jsonschema-path==0.3.4
 jsonschema-specifications==2025.9.1
 kiwisolver==1.4.9
