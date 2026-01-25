@@ -1,0 +1,20 @@
+# AWS Lambda dependencies for SCBE-AETHERMOORE API
+# Use: pip install -r requirements-lambda.txt -t ./package
+
+# FastAPI and ASGI adapter
+fastapi>=0.104.0
+pydantic>=2.5.0
+mangum>=0.17.0
+
+# Core dependencies
+numpy>=1.26.0
+scipy>=1.11.0
+
+# Security (minimal set for Lambda)
+cryptography>=41.0.0
+
+# Optional: Firebase persistence
+# firebase-admin>=6.2.0
+
+# Note: Some packages from main requirements.txt are excluded
+# to keep Lambda package size under 50MB limit

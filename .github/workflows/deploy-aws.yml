@@ -1,0 +1,214 @@
+name: Deploy SCBE to AWS Lambda
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'api/**'
+      - 'aws/**'
+      - '.github/workflows/deploy-aws.yml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+env:
+  AWS_REGION: us-west-2
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest fastapi pydantic httpx
+
+      - name: Run API tests
+        run: |
+          python -c "from api.main import app; print('API module loads successfully')"
+
+  build:
+    name: Build Lambda Package
+    needs: test
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-name: ${{ steps.package.outputs.artifact-name }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies to package directory
+        run: |
+          mkdir -p lambda_package
+          pip install -r aws/requirements-lambda.txt -t lambda_package/ --no-cache-dir
+
+      - name: Copy application code
+        run: |
+          cp -r api lambda_package/
+          cp aws/lambda_handler.py lambda_package/
+
+      - name: Create deployment package
+        id: package
+        run: |
+          cd lambda_package
+          zip -r ../scbe-lambda-package.zip . -x "*.pyc" -x "__pycache__/*" -x "*.dist-info/*"
+          cd ..
+          echo "Package size: $(du -h scbe-lambda-package.zip | cut -f1)"
+          echo "artifact-name=scbe-lambda-package" >> $GITHUB_OUTPUT
+
+      - name: Upload Lambda package
+        uses: actions/upload-artifact@v4
+        with:
+          name: scbe-lambda-package
+          path: scbe-lambda-package.zip
+          retention-days: 7
+
+  deploy-staging:
+    name: Deploy to Staging
+    needs: build
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Lambda package
+        uses: actions/download-artifact@v4
+        with:
+          name: scbe-lambda-package
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to Lambda (Staging)
+        run: |
+          aws lambda update-function-code \
+            --function-name scbe-aethermoore-api-staging \
+            --zip-file fileb://scbe-lambda-package.zip
+
+      - name: Update Lambda configuration
+        run: |
+          aws lambda update-function-configuration \
+            --function-name scbe-aethermoore-api-staging \
+            --handler lambda_handler.lambda_handler \
+            --runtime python3.11 \
+            --memory-size 512 \
+            --timeout 30
+
+      - name: Wait for Lambda update
+        run: |
+          aws lambda wait function-updated \
+            --function-name scbe-aethermoore-api-staging
+
+      - name: Test deployment
+        run: |
+          # Get the function URL or API Gateway URL
+          FUNCTION_URL=$(aws lambda get-function-url-config \
+            --function-name scbe-aethermoore-api-staging \
+            --query 'FunctionUrl' --output text 2>/dev/null || echo "")
+
+          if [ -n "$FUNCTION_URL" ]; then
+            echo "Testing health endpoint..."
+            curl -s "${FUNCTION_URL}v1/health" | jq .
+          else
+            echo "No function URL configured. Test via API Gateway."
+          fi
+
+  deploy-production:
+    name: Deploy to Production
+    needs: build
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Lambda package
+        uses: actions/download-artifact@v4
+        with:
+          name: scbe-lambda-package
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Check if Lambda function exists
+        id: check-function
+        run: |
+          if aws lambda get-function --function-name scbe-aethermoore-api-production 2>/dev/null; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Lambda function (if needed)
+        if: steps.check-function.outputs.exists == 'false'
+        run: |
+          echo "Lambda function does not exist. Create it manually or via Infrastructure-as-Code."
+          echo "Required configuration:"
+          echo "  - Function name: scbe-aethermoore-api-production"
+          echo "  - Runtime: python3.11"
+          echo "  - Handler: lambda_handler.lambda_handler"
+          echo "  - Memory: 512 MB"
+          echo "  - Timeout: 30 seconds"
+          echo "  - Environment variables: SCBE_API_KEY"
+          exit 1
+
+      - name: Deploy to Lambda (Production)
+        if: steps.check-function.outputs.exists == 'true'
+        run: |
+          aws lambda update-function-code \
+            --function-name scbe-aethermoore-api-production \
+            --zip-file fileb://scbe-lambda-package.zip
+
+      - name: Update Lambda configuration
+        if: steps.check-function.outputs.exists == 'true'
+        run: |
+          aws lambda update-function-configuration \
+            --function-name scbe-aethermoore-api-production \
+            --handler lambda_handler.lambda_handler \
+            --runtime python3.11 \
+            --memory-size 512 \
+            --timeout 30
+
+      - name: Wait for Lambda update
+        if: steps.check-function.outputs.exists == 'true'
+        run: |
+          aws lambda wait function-updated \
+            --function-name scbe-aethermoore-api-production
+
+      - name: Verify deployment
+        if: steps.check-function.outputs.exists == 'true'
+        run: |
+          echo "Deployment complete!"
+          aws lambda get-function \
+            --function-name scbe-aethermoore-api-production \
+            --query 'Configuration.{FunctionName:FunctionName,Runtime:Runtime,MemorySize:MemorySize,LastModified:LastModified}' \
+            --output table
