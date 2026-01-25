@@ -1,5 +1,12 @@
 # SCBE Production Pack Changelog
 
+## [2026-01-25] - Repo Maintenance & Sync
+
+- Added devcontainer configuration for local Kubernetes tooling (non-runtime).
+- Restored submodule mapping for `external_repos/ai-workflow-architect`.
+- Updated `external_repos/visual-computer-kindle-ai` submodule pointer after app updates.
+- No changes to core runtime logic.
+
 ## [2026-01-24] - Session Cleanup & Fixes
 
 ### Restored

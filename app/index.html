@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCBE-AETHERMOORE Control Center</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    @keyframes glow { 0%, 100% { box-shadow: 0 0 5px currentColor; } 50% { box-shadow: 0 0 20px currentColor; } }
+    .animate-pulse-slow { animation: pulse 2s ease-in-out infinite; }
+    .animate-glow { animation: glow 2s ease-in-out infinite; }
+    .glass { background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(12px); }
+    .gradient-bg { background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #0d1b2a 100%); }
+    .status-allow { color: #22c55e; text-shadow: 0 0 10px #22c55e; }
+    .status-quarantine { color: #eab308; text-shadow: 0 0 10px #eab308; }
+    .status-deny { color: #ef4444; text-shadow: 0 0 10px #ef4444; }
+    .poincare-ball { background: radial-gradient(circle at 30% 30%, #1e3a5f 0%, #0a1929 70%, #000 100%); border-radius: 50%; }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen text-white font-mono">
+  <!-- Navigation -->
+  <nav class="glass border-b border-white/10 px-6 py-4 sticky top-0 z-50">
+    <div class="flex items-center justify-between max-w-7xl mx-auto">
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 poincare-ball flex items-center justify-center">
+          <span class="text-xl">∞</span>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold">SCBE-AETHERMOORE</h1>
+          <p class="text-xs text-gray-400">Control Center v4.0.0</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-6">
+        <div id="connection-status" class="flex items-center gap-2">
+          <div class="w-2 h-2 rounded-full bg-red-500"></div>
+          <span class="text-sm text-red-400">Disconnected</span>
+        </div>
+        <span class="text-xs text-gray-500">Patent: USPTO #63/961,403</span>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    <!-- Top Stats -->
+    <div class="grid grid-cols-4 gap-4 mb-8">
+      <div class="glass rounded-lg p-4 border border-white/10">
+        <div class="text-gray-400 text-xs mb-1">DECISIONS</div>
+        <div id="stat-decisions" class="text-2xl font-bold">0</div>
+      </div>
+      <div class="glass rounded-lg p-4 border border-white/10">
+        <div class="text-gray-400 text-xs mb-1">ALLOWED</div>
+        <div id="stat-allowed" class="text-2xl font-bold status-allow">0</div>
+      </div>
+      <div class="glass rounded-lg p-4 border border-white/10">
+        <div class="text-gray-400 text-xs mb-1">QUARANTINED</div>
+        <div id="stat-quarantine" class="text-2xl font-bold status-quarantine">0</div>
+      </div>
+      <div class="glass rounded-lg p-4 border border-white/10">
+        <div class="text-gray-400 text-xs mb-1">DENIED</div>
+        <div id="stat-denied" class="text-2xl font-bold status-deny">0</div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-3 gap-6">
+      <!-- Left: Command Panel -->
+      <div class="glass rounded-lg p-6 border border-white/10">
+        <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+          <span class="text-cyan-400">⚡</span> Command Center
+        </h2>
+
+        <div class="space-y-4">
+          <div>
+            <label class="text-xs text-gray-400 block mb-1">Agent ID</label>
+            <input id="agent-id" type="text" value="robot-001"
+              class="w-full bg-black/30 border border-white/20 rounded px-3 py-2 text-sm">
+          </div>
+
+          <div>
+            <label class="text-xs text-gray-400 block mb-1">Action</label>
+            <select id="action-select"
+              class="w-full bg-black/30 border border-white/20 rounded px-3 py-2 text-sm">
+              <option value="move">move (Tier 1)</option>
+              <option value="query_state">query_state (Tier 2)</option>
+              <option value="execute_command">execute_command (Tier 3)</option>
+              <option value="deploy">deploy (Tier 4 - Critical)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-xs text-gray-400 block mb-1">Security Tier</label>
+            <select id="security-tier"
+              class="w-full bg-black/30 border border-white/20 rounded px-3 py-2 text-sm">
+              <option value="1">Tier 1 - Low (KO only)</option>
+              <option value="2" selected>Tier 2 - Medium (KO + RU)</option>
+              <option value="3">Tier 3 - High (KO + RU + UM)</option>
+              <option value="4">Tier 4 - Critical (4+ tongues)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-xs text-gray-400 block mb-1">Position (x, y, z)</label>
+            <div class="grid grid-cols-3 gap-2">
+              <input id="pos-x" type="number" value="10" class="bg-black/30 border border-white/20 rounded px-2 py-1 text-sm">
+              <input id="pos-y" type="number" value="20" class="bg-black/30 border border-white/20 rounded px-2 py-1 text-sm">
+              <input id="pos-z" type="number" value="5" class="bg-black/30 border border-white/20 rounded px-2 py-1 text-sm">
+            </div>
+          </div>
+
+          <button id="send-command"
+            class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded transition">
+            SEND COMMAND
+          </button>
+        </div>
+      </div>
+
+      <!-- Middle: 14-Layer Pipeline -->
+      <div class="glass rounded-lg p-6 border border-white/10">
+        <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+          <span class="text-purple-400">◉</span> 14-Layer Pipeline
+        </h2>
+
+        <div id="layers-display" class="space-y-1 text-xs">
+          <!-- Layers will be populated here -->
+          <div class="text-gray-500 text-center py-8">Send a command to see pipeline results</div>
+        </div>
+      </div>
+
+      <!-- Right: Decision & Envelope -->
+      <div class="space-y-6">
+        <!-- Decision Display -->
+        <div class="glass rounded-lg p-6 border border-white/10">
+          <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+            <span class="text-green-400">✓</span> Governance Decision
+          </h2>
+
+          <div id="decision-display" class="text-center py-6">
+            <div class="text-6xl mb-2">—</div>
+            <div class="text-gray-400">Awaiting command</div>
+          </div>
+
+          <div class="mt-4 grid grid-cols-2 gap-4 text-xs">
+            <div>
+              <div class="text-gray-400">Risk Score</div>
+              <div id="risk-score" class="text-lg font-bold">—</div>
+            </div>
+            <div>
+              <div class="text-gray-400">Timestamp</div>
+              <div id="decision-time" class="text-lg font-bold">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Envelope Display -->
+        <div class="glass rounded-lg p-6 border border-white/10">
+          <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+            <span class="text-yellow-400">📜</span> Spiralverse Envelope
+          </h2>
+
+          <div id="envelope-display" class="text-xs space-y-2">
+            <div class="text-gray-500 text-center py-4">No envelope created</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Audit Log -->
+    <div class="mt-8 glass rounded-lg p-6 border border-white/10">
+      <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+        <span class="text-orange-400">📋</span> Audit Trail
+      </h2>
+
+      <div id="audit-log" class="space-y-2 max-h-64 overflow-y-auto text-xs font-mono">
+        <div class="text-gray-500">No audit entries yet</div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API_URL = 'http://localhost:3000';
+    let stats = { decisions: 0, allowed: 0, quarantine: 0, denied: 0 };
+
+    // Check connection
+    async function checkConnection() {
+      try {
+        const res = await fetch(`${API_URL}/health`);
+        if (res.ok) {
+          document.getElementById('connection-status').innerHTML = `
+            <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+            <span class="text-sm text-green-400">Connected</span>
+          `;
+          return true;
+        }
+      } catch (e) {}
+      document.getElementById('connection-status').innerHTML = `
+        <div class="w-2 h-2 rounded-full bg-red-500"></div>
+        <span class="text-sm text-red-400">Disconnected</span>
+      `;
+      return false;
+    }
+
+    // Send command
+    async function sendCommand() {
+      const agentId = document.getElementById('agent-id').value;
+      const action = document.getElementById('action-select').value;
+      const securityTier = parseInt(document.getElementById('security-tier').value);
+      const position = [
+        parseFloat(document.getElementById('pos-x').value),
+        parseFloat(document.getElementById('pos-y').value),
+        parseFloat(document.getElementById('pos-z').value)
+      ];
+
+      try {
+        const res = await fetch(`${API_URL}/command`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action, agentId, params: { position }, securityTier })
+        });
+
+        const data = await res.json();
+        updateDisplay(data);
+        updateStats(data.governance.decision);
+        addAuditEntry(data);
+      } catch (e) {
+        console.error('Command failed:', e);
+        alert('Failed to send command. Is the server running?');
+      }
+    }
+
+    // Update display
+    function updateDisplay(data) {
+      const { governance, envelope } = data;
+
+      // Update decision
+      const decisionEl = document.getElementById('decision-display');
+      const decisionClass = governance.decision === 'ALLOW' ? 'status-allow' :
+                          governance.decision === 'QUARANTINE' ? 'status-quarantine' : 'status-deny';
+      const decisionIcon = governance.decision === 'ALLOW' ? '✓' :
+                          governance.decision === 'QUARANTINE' ? '⚠' : '✗';
+
+      decisionEl.innerHTML = `
+        <div class="text-6xl mb-2 ${decisionClass} animate-glow">${decisionIcon}</div>
+        <div class="text-2xl font-bold ${decisionClass}">${governance.decision}</div>
+      `;
+
+      document.getElementById('risk-score').textContent = governance.riskScore.toFixed(4);
+      document.getElementById('decision-time').textContent = new Date(governance.timestamp).toLocaleTimeString();
+
+      // Update layers
+      const layersEl = document.getElementById('layers-display');
+      layersEl.innerHTML = governance.layers.map(l => `
+        <div class="flex items-center gap-2 py-1 ${l.passed ? 'text-green-400' : 'text-red-400'}">
+          <span class="w-4">${l.passed ? '✓' : '✗'}</span>
+          <span class="w-6 text-gray-500">L${l.layer}</span>
+          <span class="flex-1">${l.name}</span>
+          <span class="text-gray-400">${l.score.toFixed(3)}</span>
+        </div>
+      `).join('');
+
+      // Update envelope
+      const envelopeEl = document.getElementById('envelope-display');
+      if (envelope) {
+        envelopeEl.innerHTML = `
+          <div class="bg-black/30 rounded p-2 mb-2">
+            <div class="text-gray-400 mb-1">Spelltext:</div>
+            <div class="text-cyan-400 break-all">${envelope.spelltext || 'N/A'}</div>
+          </div>
+          <div class="bg-black/30 rounded p-2 mb-2">
+            <div class="text-gray-400 mb-1">Signatures:</div>
+            <div class="text-yellow-400">${envelope.signatures?.join(', ') || 'None'}</div>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div class="bg-black/30 rounded p-2">
+              <div class="text-gray-400">Nonce</div>
+              <div class="text-xs truncate">${envelope.nonce || 'N/A'}</div>
+            </div>
+            <div class="bg-black/30 rounded p-2">
+              <div class="text-gray-400">Timestamp</div>
+              <div class="text-xs">${envelope.ts || 'N/A'}</div>
+            </div>
+          </div>
+        `;
+      } else {
+        envelopeEl.innerHTML = `<div class="text-red-400 text-center py-4">Envelope not created (command denied)</div>`;
+      }
+    }
+
+    // Update stats
+    function updateStats(decision) {
+      stats.decisions++;
+      if (decision === 'ALLOW') stats.allowed++;
+      else if (decision === 'QUARANTINE') stats.quarantine++;
+      else stats.denied++;
+
+      document.getElementById('stat-decisions').textContent = stats.decisions;
+      document.getElementById('stat-allowed').textContent = stats.allowed;
+      document.getElementById('stat-quarantine').textContent = stats.quarantine;
+      document.getElementById('stat-denied').textContent = stats.denied;
+    }
+
+    // Add audit entry
+    function addAuditEntry(data) {
+      const auditEl = document.getElementById('audit-log');
+      const entry = document.createElement('div');
+      const decisionClass = data.governance.decision === 'ALLOW' ? 'text-green-400' :
+                          data.governance.decision === 'QUARANTINE' ? 'text-yellow-400' : 'text-red-400';
+
+      entry.className = 'bg-black/20 rounded p-2 flex items-center gap-4';
+      entry.innerHTML = `
+        <span class="text-gray-500">${new Date().toLocaleTimeString()}</span>
+        <span class="${decisionClass} font-bold">${data.governance.decision}</span>
+        <span class="text-gray-400">Risk: ${data.governance.riskScore.toFixed(3)}</span>
+        <span class="flex-1 truncate">${JSON.stringify(data.envelope?.signatures || [])}</span>
+      `;
+
+      if (auditEl.children[0]?.textContent === 'No audit entries yet') {
+        auditEl.innerHTML = '';
+      }
+      auditEl.insertBefore(entry, auditEl.firstChild);
+    }
+
+    // Event listeners
+    document.getElementById('send-command').addEventListener('click', sendCommand);
+
+    // Initial check
+    checkConnection();
+    setInterval(checkConnection, 5000);
+  </script>
+</body>
+</html>

@@ -22,6 +22,6 @@
 [submodule "scbe-aethermoore"]
 	path = scbe-aethermoore
 	url = https://github.com/issdandavis/scbe-aethermoore.git
-[submodule "scbe-aethermoore-demo"]
-	path = scbe-aethermoore-demo
-	url = https://github.com/issdandavis/scbe-aethermoore-demo.git
+[submodule "spiralverse-protocol"]
+	path = spiralverse-protocol
+	url = https://github.com/issdandavis/spiralverse-protocol.git

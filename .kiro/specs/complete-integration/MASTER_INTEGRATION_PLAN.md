@@ -12,6 +12,7 @@
 **What We're Doing**: Integrating all scattered pieces into ONE unified SCBE-AETHERMOORE platform.
 
 **Current State**:
+
 - ✅ v3.0.0 Foundation: Security core (SCBE 14-layer, Sacred Tongues, RWP v3.0, PHDM, PQC)
 - 🆕 AetherMoore Document: Orchestration layer (Fleet, Roundtable, Autonomy, LWS, Dirichlet)
 - 📦 Scattered Repos: Multiple GitHub repos with pieces
@@ -23,6 +24,7 @@
 ## 📊 Current Inventory (What You Have)
 
 ### **Repo 1: scbe-aethermoore-demo** (Main - Current)
+
 ```
 ✅ src/crypto/
    ├── sacred_tongues.py        # Sacred Tongues v2.0 (spectral binding)
@@ -47,6 +49,7 @@
 ```
 
 ### **Repo 2: ai-workflow-platform** (AetherMoore Document)
+
 ```
 🆕 Fleet Engine                  # 10 agent roles, parallel execution
 🆕 Roundtable Service            # Consensus debates (4 modes)
@@ -58,22 +61,26 @@
 ```
 
 ### **Repo 3: aws-lambda-simple-web-app**
+
 ```
 🆕 AWS Deployment Demo           # Lambda functions, API Gateway
 🆕 Demo HTML pages               # Product landing, customer demo
 ```
 
 ### **Repo 4: Spiralverse-AetherMoore**
+
 ```
 🆕 Mathematical Framework        # Additional proofs, formulas
 ```
 
 ### **Repo 5: scbe-security-gate**
+
 ```
 🆕 Security Protocol             # Additional RWP implementations
 ```
 
 ### **Repo 6: scbe-quantum-prototype**
+
 ```
 🆕 Quantum-Resistant Prototype   # PQC experiments
 ```
@@ -192,9 +199,11 @@ scbe-aethermoore-demo/  (ONE UNIFIED REPO)
 ## 📋 Integration Phases (Detailed Plan)
 
 ### **Phase 3.1: Metrics Layer + Phase-Shift Extension** (Week 1-2)
+
 **Goal**: Implement LWS + Dirichlet integration + Phase-Shifted Defense
 
 **Tasks**:
+
 1. Create `src/metrics/langues.ts`
    - Implement 6D Langues Weighting System
    - Golden ratio weights (φ = 1.618...)
@@ -213,7 +222,7 @@ scbe-aethermoore-demo/  (ONE UNIFIED REPO)
 
 4. **🆕 Create `src/harmonic/phase_shift.ts`** (NEW!)
    - Fold-based phase modulation: φ(r) = κ·sin(ω·fold(r))
-   - Phase-extended metric: d_φ(u,v) = d_ℍ(u,v) + φ·sin(θ·r)
+   - Phase-extended metric: d*φ(u,v) = d*ℍ(u,v) + φ·sin(θ·r)
    - Superimposed balls (Venn diagram topology)
    - Phase coherence detection
    - Arrhythmic defense automation
@@ -226,6 +235,7 @@ scbe-aethermoore-demo/  (ONE UNIFIED REPO)
    - Quantum resistance simulation (Grover's algorithm)
 
 **Deliverables**:
+
 - ✅ LWS implementation (TypeScript + Python)
 - ✅ Dirichlet integration
 - ✅ Breathing transform
@@ -237,9 +247,11 @@ scbe-aethermoore-demo/  (ONE UNIFIED REPO)
 ---
 
 ### **Phase 3.2: Fleet Engine** (Week 3-4)
+
 **Goal**: Implement multi-agent orchestration
 
 **Tasks**:
+
 1. Create `src/orchestration/fleet/engine.ts`
    - Core orchestration logic
    - Task decomposition
@@ -276,6 +288,7 @@ scbe-aethermoore-demo/  (ONE UNIFIED REPO)
    - Performance benchmarks (1000+ tasks/sec)
 
 **Deliverables**:
+
 - ✅ Fleet Engine implementation
 - ✅ 10 agent roles
 - ✅ RWP v3.0 integration
@@ -285,9 +298,11 @@ scbe-aethermoore-demo/  (ONE UNIFIED REPO)
 ---
 
 ### **Phase 3.3: Roundtable Service** (Week 5-6)
+
 **Goal**: Implement consensus-based decision making
 
 **Tasks**:
+
 1. Create `src/orchestration/roundtable/service.ts`
    - Consensus engine
    - Session management
@@ -318,6 +333,7 @@ scbe-aethermoore-demo/  (ONE UNIFIED REPO)
    - Consensus algorithm verification
 
 **Deliverables**:
+
 - ✅ Roundtable Service implementation
 - ✅ 4 debate modes
 - ✅ Byzantine fault tolerance
@@ -327,9 +343,11 @@ scbe-aethermoore-demo/  (ONE UNIFIED REPO)
 ---
 
 ### **Phase 3.4: Autonomy Engine** (Week 7-8)
+
 **Goal**: Implement 3-level autonomy system
 
 **Tasks**:
+
 1. Create `src/orchestration/autonomy/engine.ts`
    - 3 autonomy levels:
      1. Level 1 (Supervised): Human approval required
@@ -370,6 +388,7 @@ scbe-aethermoore-demo/  (ONE UNIFIED REPO)
    - Approval workflow tests
 
 **Deliverables**:
+
 - ✅ Autonomy Engine implementation
 - ✅ 14-action matrix
 - ✅ Approval workflow
@@ -379,9 +398,11 @@ scbe-aethermoore-demo/  (ONE UNIFIED REPO)
 ---
 
 ### **Phase 3.5: Vector Memory** (Week 9-10)
+
 **Goal**: Implement semantic search with embeddings
 
 **Tasks**:
+
 1. Create `src/orchestration/memory/store.ts`
    - Memory storage (in-memory + persistent)
    - CRUD operations
@@ -408,6 +429,7 @@ scbe-aethermoore-demo/  (ONE UNIFIED REPO)
    - Performance benchmarks (<50ms retrieval)
 
 **Deliverables**:
+
 - ✅ Vector Memory implementation
 - ✅ Semantic search
 - ✅ 6D harmonic integration
@@ -417,9 +439,11 @@ scbe-aethermoore-demo/  (ONE UNIFIED REPO)
 ---
 
 ### **Phase 4.0: Integrations** (Week 11-12)
+
 **Goal**: Implement workflow integrations
 
 **Tasks**:
+
 1. Create `src/integrations/n8n/`
    - Custom SCBE nodes
    - RWP v3.0 envelope creation/verification
@@ -449,6 +473,7 @@ scbe-aethermoore-demo/  (ONE UNIFIED REPO)
    - Performance benchmarks
 
 **Deliverables**:
+
 - ✅ n8n custom nodes
 - ✅ Make.com modules
 - ✅ Zapier app
@@ -461,6 +486,7 @@ scbe-aethermoore-demo/  (ONE UNIFIED REPO)
 ## 🔗 Integration Points (How Everything Connects)
 
 ### **1. Sacred Tongues → Fleet Engine**
+
 ```typescript
 // Fleet Engine uses Sacred Tongues for routing
 const task = {
@@ -473,31 +499,34 @@ fleetEngine.assignTask(task);  // Routes to Security agent
 ```
 
 ### **2. RWP v3.0 → Roundtable**
+
 ```typescript
 // Roundtable uses RWP envelopes for consensus
 const envelope = signRoundtable(
   { primary_tongue: 'RU', payload: proposal },
   keyring,
-  ['RU', 'UM', 'DR']  // Critical policy: 3 signatures
+  ['RU', 'UM', 'DR'] // Critical policy: 3 signatures
 );
 
 roundtable.submitProposal(envelope);
 ```
 
 ### **3. LWS → Autonomy Engine**
+
 ```typescript
 // Autonomy uses LWS for risk weighting
 const context = languesMetric(x, mu, w, beta, omega, phi, t);
 const risk = autonomyEngine.computeRisk(action, context);
 
 if (risk < threshold) {
-  autonomyEngine.executeAction(action);  // Autonomous
+  autonomyEngine.executeAction(action); // Autonomous
 } else {
-  autonomyEngine.requestApproval(action);  // Escalate
+  autonomyEngine.requestApproval(action); // Escalate
 }
 ```
 
 ### **4. PHDM → Fleet Engine**
+
 ```typescript
 // Fleet uses PHDM for intrusion detection
 const anomaly = phdm.detectAnomaly(agentBehavior);
@@ -509,9 +538,10 @@ if (anomaly.detected) {
 ```
 
 ### **5. Vector Memory → All Components**
+
 ```typescript
 // All components use Vector Memory for context
-const memories = vectorMemory.search(query, k=5);
+const memories = vectorMemory.search(query, (k = 5));
 const context = fleetEngine.buildContext(memories);
 
 roundtable.debate(proposal, context);
@@ -522,6 +552,7 @@ roundtable.debate(proposal, context);
 ## 📊 Success Metrics
 
 ### **Technical Metrics**
+
 - ✅ Test coverage: 95%+ (lines, functions, branches)
 - ✅ Performance: <100ms task routing, <5s consensus
 - ✅ Scalability: 1000+ agents, 10K+ tasks/sec
@@ -529,12 +560,14 @@ roundtable.debate(proposal, context);
 - ✅ Uptime: 99.99%
 
 ### **Integration Metrics**
+
 - ✅ All components integrated
 - ✅ End-to-end workflows functional
 - ✅ 100% API documentation coverage
 - ✅ 3+ workflow integrations (n8n, Make, Zapier)
 
 ### **Business Metrics**
+
 - ✅ Patent filed (Claims 17-18 + orchestration)
 - ✅ Market value: $5M-12M (complete platform)
 - ✅ TAM: $110M-500M/year
@@ -544,17 +577,20 @@ roundtable.debate(proposal, context);
 ## 🚀 Next Steps
 
 ### **Immediate (This Week)**
+
 1. ✅ Review this master plan
 2. 🔄 Show me more pieces you have
 3. 🔄 Create detailed specs for each phase
 4. 🔄 Set up project board (GitHub Projects)
 
 ### **Short-Term (Next 2 Weeks)**
+
 5. Implement Phase 3.1 (Metrics Layer)
 6. Write comprehensive tests
 7. Document API
 
 ### **Medium-Term (Next 3 Months)**
+
 8. Complete Phases 3.2-3.5 (Orchestration)
 9. Implement Phase 4.0 (Integrations)
 10. File patent continuation-in-part
