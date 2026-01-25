@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCBE-AETHERMOORE Interactive Demo</title>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --secondary: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg-dark: #0f172a;
+      --bg-card: #1e293b;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --border: #334155;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      background: var(--bg-dark);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+      position: relative;
+    }
+
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+
+    .patent {
+      font-size: 0.8rem;
+      color: var(--warning);
+      margin-top: 0.5rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid var(--border);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 40px rgba(99, 102, 241, 0.1);
+    }
+
+    .card h2 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card h2 .layer {
+      background: var(--primary);
+      color: white;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+    }
+
+    /* Poincaré Ball Canvas */
+    #poincare-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    #poincare-canvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: radial-gradient(circle, #1a1a2e 0%, #0f0f23 100%);
+      border: 2px solid var(--primary);
+      cursor: crosshair;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .control-group {
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .control-group label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.3rem;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--primary);
+    }
+
+    input[type="number"],
+    input[type="text"] {
+      width: 100%;
+      padding: 0.5rem;
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: inherit;
+    }
+
+    button {
+      padding: 0.7rem 1.5rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: bold;
+      transition: transform 0.1s, opacity 0.1s;
+    }
+
+    button:hover {
+      transform: scale(1.02);
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    button.secondary {
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+    }
+
+    button.danger {
+      background: linear-gradient(135deg, var(--danger), #dc2626);
+    }
+
+    /* Metrics Display */
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .metric {
+      background: var(--bg-dark);
+      padding: 0.75rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .metric-value {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: var(--secondary);
+    }
+
+    .metric-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    /* Layer Pipeline */
+    .layer-pipeline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+
+    .layer-item {
+      padding: 0.4rem 0.8rem;
+      background: var(--bg-dark);
+      border-radius: 20px;
+      font-size: 0.75rem;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+
+    .layer-item.active {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .layer-item.completed {
+      background: var(--secondary);
+      border-color: var(--secondary);
+    }
+
+    /* Risk Meter */
+    .risk-meter {
+      width: 100%;
+      height: 20px;
+      background: var(--bg-dark);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 1rem 0;
+    }
+
+    .risk-fill {
+      height: 100%;
+      transition: width 0.3s, background 0.3s;
+      border-radius: 10px;
+    }
+
+    .risk-low { background: var(--secondary); }
+    .risk-medium { background: var(--warning); }
+    .risk-high { background: var(--danger); }
+
+    /* Log Console */
+    .console {
+      background: #000;
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: 'SF Mono', monospace;
+      font-size: 0.85rem;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .console-line {
+      padding: 0.2rem 0;
+      border-bottom: 1px solid #1a1a1a;
+    }
+
+    .console-line.info { color: var(--text); }
+    .console-line.success { color: var(--secondary); }
+    .console-line.warning { color: var(--warning); }
+    .console-line.error { color: var(--danger); }
+
+    /* Quasicrystal Display */
+    #qc-canvas {
+      width: 100%;
+      aspect-ratio: 1;
+      background: var(--bg-dark);
+      border-radius: 8px;
+    }
+
+    /* Animations */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .pulsing {
+      animation: pulse 2s infinite;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+      }
+    }
+
+    /* Sacred Tongues */
+    .tongue-display {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+
+    .tongue-chip {
+      padding: 0.3rem 0.6rem;
+      background: var(--bg-dark);
+      border-radius: 4px;
+      font-size: 0.75rem;
+      border-left: 3px solid var(--primary);
+    }
+
+    .tongue-chip.ko { border-color: #ef4444; }
+    .tongue-chip.av { border-color: #f59e0b; }
+    .tongue-chip.ru { border-color: #10b981; }
+    .tongue-chip.ca { border-color: #3b82f6; }
+    .tongue-chip.um { border-color: #8b5cf6; }
+    .tongue-chip.dr { border-color: #ec4899; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>SCBE-AETHERMOORE</h1>
+      <p class="subtitle">14-Layer Hyperbolic Geometry Security Framework</p>
+      <p class="patent">USPTO Patent #63/961,403 | Post-Quantum Ready</p>
+    </header>
+
+    <div class="grid">
+      <!-- Poincaré Ball Visualization -->
+      <div class="card">
+        <h2><span class="layer">L5-L8</span> Poincaré Ball Model</h2>
+        <div id="poincare-container">
+          <canvas id="poincare-canvas" width="400" height="400"></canvas>
+        </div>
+        <div class="metrics">
+          <div class="metric">
+            <div class="metric-value" id="metric-distance">0.000</div>
+            <div class="metric-label">Hyperbolic Distance</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value" id="metric-harmonic">1.000</div>
+            <div class="metric-label">H(d,R) Scaling</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value" id="metric-position">(0.00, 0.00)</div>
+            <div class="metric-label">Ball Position</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value" id="metric-breath">0.00</div>
+            <div class="metric-label">Breath Phase</div>
+          </div>
+        </div>
+        <div class="controls">
+          <div class="control-group">
+            <label>Breath Amplitude (A)</label>
+            <input type="range" id="breath-amp" min="0" max="0.1" step="0.01" value="0.05">
+          </div>
+          <div class="control-group">
+            <label>Breath Frequency (ω)</label>
+            <input type="range" id="breath-freq" min="0.1" max="5" step="0.1" value="1">
+          </div>
+        </div>
+      </div>
+
+      <!-- 14-Layer Pipeline -->
+      <div class="card">
+        <h2><span class="layer">Pipeline</span> Layer Execution</h2>
+        <div class="layer-pipeline" id="layer-pipeline">
+          <span class="layer-item" data-layer="1">L1: Complex</span>
+          <span class="layer-item" data-layer="2">L2: Realify</span>
+          <span class="layer-item" data-layer="3">L3: Weight</span>
+          <span class="layer-item" data-layer="4">L4: Embed</span>
+          <span class="layer-item" data-layer="5">L5: Metric</span>
+          <span class="layer-item" data-layer="6">L6: Breath</span>
+          <span class="layer-item" data-layer="7">L7: Phase</span>
+          <span class="layer-item" data-layer="8">L8: Realm</span>
+          <span class="layer-item" data-layer="9">L9: Spectral</span>
+          <span class="layer-item" data-layer="10">L10: Spin</span>
+          <span class="layer-item" data-layer="11">L11: Triadic</span>
+          <span class="layer-item" data-layer="12">L12: Harmonic</span>
+          <span class="layer-item" data-layer="13">L13: Risk</span>
+          <span class="layer-item" data-layer="14">L14: Audio</span>
+        </div>
+        <div class="risk-meter">
+          <div class="risk-fill risk-low" id="risk-fill" style="width: 15%"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">
+          <span>Safe</span>
+          <span id="risk-value">Risk: 0.15</span>
+          <span>Critical</span>
+        </div>
+        <div class="controls" style="margin-top: 1rem;">
+          <button onclick="runPipeline()">Execute Pipeline</button>
+          <button class="secondary" onclick="resetPipeline()">Reset</button>
+          <button class="danger" onclick="simulateAttack()">Simulate Attack</button>
+        </div>
+      </div>
+
+      <!-- Harmonic Scaling -->
+      <div class="card">
+        <h2><span class="layer">L12</span> Harmonic Scaling H(d, R) = R^(d²)</h2>
+        <p style="color: var(--text-muted); margin-bottom: 1rem; font-size: 0.9rem;">
+          The harmonic scaling law amplifies security through dimensional exponentiation.
+        </p>
+        <div class="controls">
+          <div class="control-group">
+            <label>Dimension (d)</label>
+            <input type="number" id="harmonic-d" min="1" max="10" value="6">
+          </div>
+          <div class="control-group">
+            <label>Ratio (R)</label>
+            <input type="number" id="harmonic-r" min="1" max="3" step="0.1" value="1.5">
+          </div>
+        </div>
+        <div class="metrics" style="margin-top: 1rem;">
+          <div class="metric">
+            <div class="metric-value" id="h-result">2,184,164</div>
+            <div class="metric-label">H(6, 1.5) Result</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value" id="h-bits">+21.06</div>
+            <div class="metric-label">Security Bits Added</div>
+          </div>
+        </div>
+        <button onclick="calculateHarmonic()" style="margin-top: 1rem; width: 100%;">Calculate</button>
+      </div>
+
+      <!-- Six Sacred Tongues -->
+      <div class="card">
+        <h2><span class="layer">LWS</span> Six Sacred Tongues</h2>
+        <div class="tongue-display">
+          <span class="tongue-chip ko">KO: Kor'Aelin (1.000)</span>
+          <span class="tongue-chip av">AV: Avali (1.125)</span>
+          <span class="tongue-chip ru">RU: Runethic (1.250)</span>
+          <span class="tongue-chip ca">CA: Cassisivadan (1.333)</span>
+          <span class="tongue-chip um">UM: Umbroth (1.500)</span>
+          <span class="tongue-chip dr">DR: Draumric (1.667)</span>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin: 1rem 0;">
+          L(x,t) = Σ wₗ · exp[βₗ(dₗ + sin(ωₗt + φₗ))]
+        </p>
+        <div class="metric" style="margin-top: 1rem;">
+          <div class="metric-value" id="langues-value">4.875</div>
+          <div class="metric-label">Total Langues Weight (Σwₗ)</div>
+        </div>
+      </div>
+
+      <!-- Post-Quantum Cryptography -->
+      <div class="card">
+        <h2><span class="layer">PQC</span> Post-Quantum Cryptography</h2>
+        <p style="color: var(--text-muted); margin-bottom: 1rem; font-size: 0.9rem;">
+          Quantum-resistant algorithms ready for the post-quantum era.
+        </p>
+        <div class="metrics">
+          <div class="metric">
+            <div class="metric-value">ML-KEM-768</div>
+            <div class="metric-label">Key Encapsulation</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">ML-DSA-65</div>
+            <div class="metric-label">Digital Signatures</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">192-bit</div>
+            <div class="metric-label">Classical Security</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">96-bit</div>
+            <div class="metric-label">Quantum Security</div>
+          </div>
+        </div>
+        <button onclick="generatePQCKeys()" style="margin-top: 1rem; width: 100%;">Generate PQC Keys</button>
+        <div id="pqc-output" style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);"></div>
+      </div>
+
+      <!-- Quasicrystal Lattice -->
+      <div class="card">
+        <h2><span class="layer">QC</span> Quasicrystal Lattice</h2>
+        <canvas id="qc-canvas" width="300" height="300"></canvas>
+        <div class="metrics" style="margin-top: 1rem;">
+          <div class="metric">
+            <div class="metric-value">φ = 1.618</div>
+            <div class="metric-label">Golden Ratio</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">5-fold</div>
+            <div class="metric-label">Symmetry</div>
+          </div>
+        </div>
+        <div class="controls">
+          <div class="control-group">
+            <label>Generations</label>
+            <input type="range" id="qc-gen" min="1" max="5" value="3" onchange="drawQuasicrystal()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Console Log -->
+      <div class="card" style="grid-column: span 2;">
+        <h2><span class="layer">Log</span> System Console</h2>
+        <div class="console" id="console">
+          <div class="console-line info">[INIT] SCBE-AETHERMOORE v3.0.0</div>
+          <div class="console-line info">[INIT] 14-layer pipeline ready</div>
+          <div class="console-line success">[PQC] Post-quantum cryptography module loaded</div>
+          <div class="console-line success">[QC] Quasicrystal lattice initialized (φ = 1.618...)</div>
+        </div>
+      </div>
+    </div>
+
+    <footer style="text-align: center; margin-top: 3rem; color: var(--text-muted); font-size: 0.85rem;">
+      <p>SCBE-AETHERMOORE © 2026 Isaac Thorne / SpiralVerse OS</p>
+      <p>USPTO Patent #63/961,403 | <a href="https://github.com/ISDanDavis2/scbe-aethermoore" style="color: var(--primary);">GitHub</a></p>
+    </footer>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════
+    // Constants
+    // ═══════════════════════════════════════════════════════════════
+    const PHI = (1 + Math.sqrt(5)) / 2;
+    const R = 1.5;
+    const PI = Math.PI;
+
+    // ═══════════════════════════════════════════════════════════════
+    // State
+    // ═══════════════════════════════════════════════════════════════
+    let state = {
+      position: { x: 0, y: 0 },
+      breathPhase: 0,
+      risk: 0.15,
+      currentLayer: 0,
+      pipelineRunning: false,
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // Poincaré Ball
+    // ═══════════════════════════════════════════════════════════════
+    const canvas = document.getElementById('poincare-canvas');
+    const ctx = canvas.getContext('2d');
+
+    function drawPoincareBall() {
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+      const radius = Math.min(cx, cy) - 10;
+
+      // Clear
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Background gradient
+      const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+      gradient.addColorStop(0, '#1a1a3e');
+      gradient.addColorStop(1, '#0a0a1a');
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, 2 * PI);
+      ctx.fill();
+
+      // Grid lines (hyperbolic geodesics approximation)
+      ctx.strokeStyle = 'rgba(99, 102, 241, 0.1)';
+      ctx.lineWidth = 1;
+      for (let i = 0.2; i < 1; i += 0.2) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius * i, 0, 2 * PI);
+        ctx.stroke();
+      }
+      for (let angle = 0; angle < 2 * PI; angle += PI / 6) {
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + radius * Math.cos(angle), cy + radius * Math.sin(angle));
+        ctx.stroke();
+      }
+
+      // Boundary circle
+      ctx.strokeStyle = 'rgba(99, 102, 241, 0.5)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, 2 * PI);
+      ctx.stroke();
+
+      // Apply breath transform to position
+      const amp = parseFloat(document.getElementById('breath-amp').value);
+      const freq = parseFloat(document.getElementById('breath-freq').value);
+      const breathFactor = Math.tanh(
+        Math.sqrt(state.position.x ** 2 + state.position.y ** 2) +
+        amp * Math.sin(freq * state.breathPhase)
+      );
+
+      // Draw point
+      const norm = Math.sqrt(state.position.x ** 2 + state.position.y ** 2);
+      const scale = norm > 0 ? breathFactor / norm : 1;
+      const px = cx + state.position.x * scale * radius;
+      const py = cy + state.position.y * scale * radius;
+
+      // Glow effect
+      const glowGradient = ctx.createRadialGradient(px, py, 0, px, py, 20);
+      glowGradient.addColorStop(0, 'rgba(16, 185, 129, 0.8)');
+      glowGradient.addColorStop(1, 'rgba(16, 185, 129, 0)');
+      ctx.fillStyle = glowGradient;
+      ctx.beginPath();
+      ctx.arc(px, py, 20, 0, 2 * PI);
+      ctx.fill();
+
+      // Point
+      ctx.fillStyle = '#10b981';
+      ctx.beginPath();
+      ctx.arc(px, py, 8, 0, 2 * PI);
+      ctx.fill();
+
+      // Origin marker
+      ctx.fillStyle = 'rgba(99, 102, 241, 0.5)';
+      ctx.beginPath();
+      ctx.arc(cx, cy, 4, 0, 2 * PI);
+      ctx.fill();
+
+      // Update metrics
+      const hypDist = hyperbolicDistance(0, 0, state.position.x, state.position.y);
+      document.getElementById('metric-distance').textContent = hypDist.toFixed(3);
+      document.getElementById('metric-position').textContent =
+        `(${state.position.x.toFixed(2)}, ${state.position.y.toFixed(2)})`;
+      document.getElementById('metric-breath').textContent = (state.breathPhase % (2 * PI)).toFixed(2);
+
+      const d = Math.max(1, Math.ceil(hypDist * 3));
+      const H = Math.pow(R, d * d);
+      document.getElementById('metric-harmonic').textContent = H > 1000 ? H.toExponential(2) : H.toFixed(1);
+    }
+
+    function hyperbolicDistance(x1, y1, x2, y2) {
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const diffNormSq = dx * dx + dy * dy;
+      const u1NormSq = x1 * x1 + y1 * y1;
+      const u2NormSq = x2 * x2 + y2 * y2;
+      const factor1 = Math.max(1e-10, 1 - u1NormSq);
+      const factor2 = Math.max(1e-10, 1 - u2NormSq);
+      const arg = 1 + (2 * diffNormSq) / (factor1 * factor2);
+      return Math.acosh(Math.max(1, arg));
+    }
+
+    canvas.addEventListener('click', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width * 2 - 1;
+      const y = (e.clientY - rect.top) / rect.height * 2 - 1;
+
+      // Clamp to ball interior
+      const norm = Math.sqrt(x * x + y * y);
+      const maxNorm = 0.95;
+      if (norm > maxNorm) {
+        state.position.x = x / norm * maxNorm;
+        state.position.y = y / norm * maxNorm;
+      } else {
+        state.position.x = x;
+        state.position.y = y;
+      }
+
+      drawPoincareBall();
+      log('info', `Position updated: (${state.position.x.toFixed(3)}, ${state.position.y.toFixed(3)})`);
+    });
+
+    // Breath animation
+    function animateBreath() {
+      state.breathPhase += 0.05;
+      drawPoincareBall();
+      requestAnimationFrame(animateBreath);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // Harmonic Scaling
+    // ═══════════════════════════════════════════════════════════════
+    function calculateHarmonic() {
+      const d = parseInt(document.getElementById('harmonic-d').value);
+      const r = parseFloat(document.getElementById('harmonic-r').value);
+      const H = Math.pow(r, d * d);
+      const bits = d * d * Math.log2(r);
+
+      document.getElementById('h-result').textContent = H > 1000000
+        ? H.toExponential(3)
+        : H.toLocaleString('en-US', { maximumFractionDigits: 0 });
+      document.getElementById('h-bits').textContent = `+${bits.toFixed(2)}`;
+
+      log('success', `H(${d}, ${r}) = ${H.toExponential(4)}, +${bits.toFixed(2)} security bits`);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // Pipeline Execution
+    // ═══════════════════════════════════════════════════════════════
+    async function runPipeline() {
+      if (state.pipelineRunning) return;
+      state.pipelineRunning = true;
+
+      const layers = document.querySelectorAll('.layer-item');
+      log('info', 'Starting 14-layer pipeline execution...');
+
+      for (let i = 0; i < layers.length; i++) {
+        layers[i].classList.add('active');
+        state.currentLayer = i + 1;
+
+        // Simulate processing
+        await new Promise(r => setTimeout(r, 200));
+
+        layers[i].classList.remove('active');
+        layers[i].classList.add('completed');
+
+        // Update risk based on layer
+        state.risk = Math.max(0.05, state.risk * (1 - 0.05 * Math.random()));
+        updateRiskMeter();
+      }
+
+      log('success', `Pipeline complete. Final risk: ${(state.risk * 100).toFixed(1)}%`);
+      state.pipelineRunning = false;
+    }
+
+    function resetPipeline() {
+      const layers = document.querySelectorAll('.layer-item');
+      layers.forEach(l => {
+        l.classList.remove('active', 'completed');
+      });
+      state.risk = 0.15;
+      state.currentLayer = 0;
+      updateRiskMeter();
+      log('info', 'Pipeline reset');
+    }
+
+    function simulateAttack() {
+      state.risk = 0.7 + Math.random() * 0.25;
+      updateRiskMeter();
+      log('error', `ATTACK DETECTED! Risk elevated to ${(state.risk * 100).toFixed(1)}%`);
+      log('warning', 'Initiating countermeasures...');
+
+      // Animate risk reduction
+      const reduceRisk = () => {
+        if (state.risk > 0.2) {
+          state.risk *= 0.95;
+          updateRiskMeter();
+          setTimeout(reduceRisk, 100);
+        } else {
+          log('success', 'Attack mitigated. System stabilized.');
+        }
+      };
+      setTimeout(reduceRisk, 1000);
+    }
+
+    function updateRiskMeter() {
+      const fill = document.getElementById('risk-fill');
+      const value = document.getElementById('risk-value');
+
+      fill.style.width = `${state.risk * 100}%`;
+      fill.className = 'risk-fill ' +
+        (state.risk < 0.3 ? 'risk-low' : state.risk < 0.6 ? 'risk-medium' : 'risk-high');
+
+      value.textContent = `Risk: ${(state.risk).toFixed(2)}`;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // PQC Demo
+    // ═══════════════════════════════════════════════════════════════
+    function generatePQCKeys() {
+      const output = document.getElementById('pqc-output');
+      output.innerHTML = 'Generating ML-KEM-768 key pair...';
+
+      setTimeout(() => {
+        const pkLen = 1184;
+        const skLen = 2400;
+        output.innerHTML = `✓ Public Key: ${pkLen} bytes | Secret Key: ${skLen} bytes`;
+        log('success', `PQC key pair generated (ML-KEM-768)`);
+      }, 500);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // Quasicrystal Visualization
+    // ═══════════════════════════════════════════════════════════════
+    function drawQuasicrystal() {
+      const qcCanvas = document.getElementById('qc-canvas');
+      const qcCtx = qcCanvas.getContext('2d');
+      const cx = qcCanvas.width / 2;
+      const cy = qcCanvas.height / 2;
+      const gen = parseInt(document.getElementById('qc-gen').value);
+
+      qcCtx.fillStyle = '#0f172a';
+      qcCtx.fillRect(0, 0, qcCanvas.width, qcCanvas.height);
+
+      // Generate Fibonacci spiral points
+      const goldenAngle = 2 * PI / (PHI * PHI);
+      const points = [];
+      const n = 50 * gen;
+
+      for (let i = 0; i < n; i++) {
+        const r = 5 * Math.sqrt(i);
+        const theta = i * goldenAngle;
+        points.push({
+          x: cx + r * Math.cos(theta),
+          y: cy + r * Math.sin(theta),
+        });
+      }
+
+      // Draw connections
+      qcCtx.strokeStyle = 'rgba(99, 102, 241, 0.3)';
+      qcCtx.lineWidth = 0.5;
+      for (let i = 0; i < points.length; i++) {
+        for (let j = i + 1; j < Math.min(i + 10, points.length); j++) {
+          const dx = points[i].x - points[j].x;
+          const dy = points[i].y - points[j].y;
+          if (dx * dx + dy * dy < 1000) {
+            qcCtx.beginPath();
+            qcCtx.moveTo(points[i].x, points[i].y);
+            qcCtx.lineTo(points[j].x, points[j].y);
+            qcCtx.stroke();
+          }
+        }
+      }
+
+      // Draw points
+      points.forEach((p, i) => {
+        const hue = (i / n) * 360;
+        qcCtx.fillStyle = `hsla(${hue}, 70%, 60%, 0.8)`;
+        qcCtx.beginPath();
+        qcCtx.arc(p.x, p.y, 2, 0, 2 * PI);
+        qcCtx.fill();
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // Console Logging
+    // ═══════════════════════════════════════════════════════════════
+    function log(level, message) {
+      const console = document.getElementById('console');
+      const time = new Date().toLocaleTimeString();
+      const line = document.createElement('div');
+      line.className = `console-line ${level}`;
+      line.textContent = `[${time}] ${message}`;
+      console.appendChild(line);
+      console.scrollTop = console.scrollHeight;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // Initialize
+    // ═══════════════════════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', () => {
+      drawPoincareBall();
+      animateBreath();
+      drawQuasicrystal();
+      calculateHarmonic();
+      updateRiskMeter();
+      log('success', 'System initialized and ready');
+    });
+
+    // Event listeners for controls
+    document.getElementById('breath-amp').addEventListener('input', drawPoincareBall);
+    document.getElementById('breath-freq').addEventListener('input', drawPoincareBall);
+    document.getElementById('harmonic-d').addEventListener('change', calculateHarmonic);
+    document.getElementById('harmonic-r').addEventListener('change', calculateHarmonic);
+  </script>
+</body>
+</html>

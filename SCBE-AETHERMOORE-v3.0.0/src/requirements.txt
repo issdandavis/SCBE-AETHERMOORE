@@ -1,0 +1,9 @@
+# SCBE Python Dependencies
+# Mathematical Core (14-layer hyperbolic geometry pipeline)
+
+numpy>=1.24.0
+scipy>=1.11.0
+
+# Optional: for enhanced testing
+pytest>=7.4.0
+pytest-cov>=4.1.0

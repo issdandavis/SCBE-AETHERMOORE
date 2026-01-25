@@ -1,0 +1,23 @@
+version: 1
+limits:
+  dwell:
+    min_ms: 100
+    max_ms: 5000
+  rate:
+    bursts_per_minute: 60
+    sustained_per_minute: 600
+weights:
+  depth: 0.25
+  scopes: 0.25
+  provider: 0.20
+  user: 0.15
+  sensitive_nodes: 0.15
+thresholds:
+  allow_max: 0.35
+  review_max: 0.65
+providers:
+  openai: 0.20
+  groq: 0.25
+  huggingface: 0.25
+  gemini: 0.25
+  other: 0.35
