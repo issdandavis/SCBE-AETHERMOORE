@@ -25,3 +25,12 @@
 [submodule "spiralverse-protocol"]
 	path = spiralverse-protocol
 	url = https://github.com/issdandavis/spiralverse-protocol.git
+[submodule "external_repos/ai-workflow-architect"]
+	path = external_repos/ai-workflow-architect
+	url = git@github.com:issdandavis/Kiro_Version_ai-workflow-architect.git
+[submodule "external_repos/visual-computer-kindle-ai"]
+	path = external_repos/visual-computer-kindle-ai
+	url = git@github.com:issdandavis/visual-computer-kindle-ai.git
+[submodule "external_repos/spiralverse-protocol"]
+	path = external_repos/spiralverse-protocol
+	url = git@github.com:issdandavis/spiralverse-protocol.git

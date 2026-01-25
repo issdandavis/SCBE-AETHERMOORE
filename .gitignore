@@ -19,6 +19,10 @@ htmlcov/
 tests/test_telemetry_*.json
 **/test_output.txt
 
+# Local generated images
+aethermoore_aqm.png
+aethermoore_soliton.png
+
 # Node / frontend
 node_modules/
 dist/
