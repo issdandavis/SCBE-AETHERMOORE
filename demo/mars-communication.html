@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCBE Mars Communication Demo - Zero-Latency Encryption</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes signal-pulse { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.2); opacity: 1; } }
+        
+        .animate-pulse-slow { animation: pulse-slow 2s ease-in-out infinite; }
+        .animate-spin-slow { animation: spin-slow 3s linear infinite; }
+        .animate-signal { animation: signal-pulse 1.5s ease-in-out infinite; }
+        
+        .glass {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        }
+        
+        .glow { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+        .glow-green { box-shadow: 0 0 20px rgba(34, 197, 94, 0.5); }
+        .glow-red { box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
+        .glow-orange { box-shadow: 0 0 20px rgba(249, 115, 22, 0.5); }
+        
+        .message-bubble {
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .token-display {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            color: #60a5fa;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white p-8">
+    <!-- Header -->
+    <header class="text-center mb-12">
+        <h1 class="text-5xl font-bold mb-4 glow">🔴 Mars Communication Demo</h1>
+        <p class="text-xl text-gray-300 mb-2">SCBE-AETHERMOORE v3.0.0 - Zero-Latency Quantum-Resistant Encryption</p>
+        <p class="text-sm text-gray-400">Demonstrating Sacred Tongue spectral binding for interplanetary communication</p>
+    </header>
+
+    <!-- Stats Dashboard -->
+    <section class="glass rounded-2xl p-6 mb-8">
+        <h2 class="text-2xl font-bold mb-4">Communication Statistics</h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="text-center p-4 bg-blue-500/20 rounded-xl">
+                <div class="text-3xl font-bold text-blue-400" id="light-delay">14:00</div>
+                <div class="text-sm text-gray-400">Light Delay (min)</div>
+            </div>
+            <div class="text-center p-4 bg-red-500/20 rounded-xl">
+                <div class="text-3xl font-bold text-red-400" id="tls-time">42:00</div>
+                <div class="text-sm text-gray-400">TLS Handshake (min)</div>
+            </div>
+            <div class="text-center p-4 bg-green-500/20 rounded-xl glow-green">
+                <div class="text-3xl font-bold text-green-400" id="scbe-time">0:00</div>
+                <div class="text-sm text-gray-400">SCBE Handshake (min)</div>
+            </div>
+            <div class="text-center p-4 bg-purple-500/20 rounded-xl">
+                <div class="text-3xl font-bold text-purple-400" id="messages-sent">0</div>
+                <div class="text-sm text-gray-400">Messages Sent</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Communication Panels -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <!-- Earth Station -->
+        <section class="glass rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-bold">🌍 Earth Ground Station</h2>
+                <div class="px-3 py-1 bg-green-600 rounded-full text-sm glow-green">ONLINE</div>
+            </div>
+            
+            <div class="mb-4 p-4 bg-black/30 rounded-lg h-64 overflow-y-auto" id="earth-log">
+                <div class="text-gray-400 text-sm">Waiting for messages...</div>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm text-gray-400 mb-2">Message to Mars:</label>
+                <textarea 
+                    id="earth-message" 
+                    class="w-full p-3 bg-black/30 rounded-lg border border-white/10 text-white resize-none"
+                    rows="3"
+                    placeholder="Type your message here..."
+                ></textarea>
+            </div>
+            
+            <button 
+                onclick="sendFromEarth()" 
+                class="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg transition font-bold glow"
+            >
+                📡 Send to Mars (14 min delay)
+            </button>
+        </section>
+
+        <!-- Mars Station -->
+        <section class="glass rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-bold">🔴 Mars Base Alpha</h2>
+                <div class="px-3 py-1 bg-orange-600 rounded-full text-sm glow-orange">ONLINE</div>
+            </div>
+            
+            <div class="mb-4 p-4 bg-black/30 rounded-lg h-64 overflow-y-auto" id="mars-log">
+                <div class="text-gray-400 text-sm">Waiting for messages...</div>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm text-gray-400 mb-2">Message to Earth:</label>
+                <textarea 
+                    id="mars-message" 
+                    class="w-full p-3 bg-black/30 rounded-lg border border-white/10 text-white resize-none"
+                    rows="3"
+                    placeholder="Type your message here..."
+                ></textarea>
+            </div>
+            
+            <button 
+                onclick="sendFromMars()" 
+                class="w-full px-6 py-3 bg-orange-600 hover:bg-orange-700 rounded-lg transition font-bold glow-orange"
+            >
+                📡 Send to Earth (14 min delay)
+            </button>
+        </section>
+    </div>
+
+    <!-- Technical Details -->
+    <section class="glass rounded-2xl p-6 mb-8">
+        <h2 class="text-2xl font-bold mb-4">🔐 Encryption Details</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-lg font-bold text-blue-400 mb-2">Traditional TLS</h3>
+                <ul class="text-sm text-gray-300 space-y-2">
+                    <li>✗ Round 1: Client Hello → 14 min → Server</li>
+                    <li>✗ Round 2: Server Hello → 14 min → Client</li>
+                    <li>✗ Round 3: Key Exchange → 14 min → Server</li>
+                    <li class="text-red-400 font-bold">Total: 42 minutes before encryption starts</li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-green-400 mb-2">SCBE Sacred Tongue</h3>
+                <ul class="text-sm text-gray-300 space-y-2">
+                    <li>✓ Pre-synchronized vocabulary (6 tongues × 256 tokens)</li>
+                    <li>✓ Spectral binding (6 harmonic frequencies)</li>
+                    <li>✓ Poincaré ball embedding (||u|| < 1.0)</li>
+                    <li class="text-green-400 font-bold">Total: 0 minutes (immediate encryption)</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sacred Tongue Visualization -->
+    <section class="glass rounded-2xl p-6">
+        <h2 class="text-2xl font-bold mb-4">🎵 Sacred Tongue Tokenization</h2>
+        <div class="mb-4">
+            <label class="block text-sm text-gray-400 mb-2">Current Message Tokens:</label>
+            <div id="token-display" class="p-4 bg-black/30 rounded-lg token-display min-h-[100px]">
+                <span class="text-gray-500">Tokens will appear here when you send a message...</span>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+            <div class="p-3 bg-purple-500/20 rounded-lg">
+                <div class="font-bold text-purple-400">Kor'aelin</div>
+                <div class="text-gray-400">Tongue 1 (256 tokens)</div>
+            </div>
+            <div class="p-3 bg-blue-500/20 rounded-lg">
+                <div class="font-bold text-blue-400">Avali</div>
+                <div class="text-gray-400">Tongue 2 (256 tokens)</div>
+            </div>
+            <div class="p-3 bg-green-500/20 rounded-lg">
+                <div class="font-bold text-green-400">Runethic</div>
+                <div class="text-gray-400">Tongue 3 (256 tokens)</div>
+            </div>
+            <div class="p-3 bg-yellow-500/20 rounded-lg">
+                <div class="font-bold text-yellow-400">Cassisivadan</div>
+                <div class="text-gray-400">Tongue 4 (256 tokens)</div>
+            </div>
+            <div class="p-3 bg-red-500/20 rounded-lg">
+                <div class="font-bold text-red-400">Umbroth</div>
+                <div class="text-gray-400">Tongue 5 (256 tokens)</div>
+            </div>
+            <div class="p-3 bg-indigo-500/20 rounded-lg">
+                <div class="font-bold text-indigo-400">Draumric</div>
+                <div class="text-gray-400">Tongue 6 (256 tokens)</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="text-center mt-12 text-gray-400 text-sm">
+        <p>SCBE-AETHERMOORE v3.0.0 | Patent Pending (USPTO #63/961,403)</p>
+        <p class="mt-2">
+            <a href="https://www.npmjs.com/package/scbe-aethermoore" class="text-blue-400 hover:text-blue-300">npm</a> | 
+            <a href="https://github.com/issdandavis/scbe-aethermoore-demo" class="text-blue-400 hover:text-blue-300">GitHub</a>
+        </p>
+    </footer>
+
+    <script>
+        // Configuration
+        const LIGHT_DELAY_MS = 14 * 60 * 1000; // 14 minutes in milliseconds
+        const LIGHT_DELAY_SECONDS = 14 * 60; // 14 minutes in seconds
+        let messageCount = 0;
+        let simulationSpeed = 1; // 1 = real-time, 60 = 1 second = 1 minute
+
+        // Sacred Tongue tokens (simplified for demo)
+        const TONGUES = ['Kor\'aelin', 'Avali', 'Runethic', 'Cassisivadan', 'Umbroth', 'Draumric'];
+        
+        function generateTokens(message) {
+            // Simulate Sacred Tongue tokenization
+            const bytes = new TextEncoder().encode(message);
+            const tokens = [];
+            for (let i = 0; i < bytes.length; i++) {
+                const tongue = TONGUES[i % 6];
+                const token = bytes[i].toString(16).padStart(2, '0');
+                tokens.push(`${tongue}:${token}`);
+            }
+            return tokens;
+        }
+
+        function displayTokens(tokens) {
+            const display = document.getElementById('token-display');
+            display.innerHTML = tokens.map((token, i) => {
+                const colors = ['text-purple-400', 'text-blue-400', 'text-green-400', 'text-yellow-400', 'text-red-400', 'text-indigo-400'];
+                const color = colors[i % 6];
+                return `<span class="${color}">${token}</span>`;
+            }).join(' ');
+        }
+
+        function addLog(location, message, type = 'info') {
+            const log = document.getElementById(`${location}-log`);
+            const timestamp = new Date().toLocaleTimeString();
+            const colors = {
+                'info': 'text-blue-400',
+                'success': 'text-green-400',
+                'warning': 'text-yellow-400',
+                'error': 'text-red-400'
+            };
+            const color = colors[type] || colors['info'];
+            
+            const entry = document.createElement('div');
+            entry.className = `mb-2 ${color}`;
+            entry.innerHTML = `<span class="text-gray-500">[${timestamp}]</span> ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function updateTimer(elementId, seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            document.getElementById(elementId).textContent = 
+                `${minutes}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function sendFromEarth() {
+            const messageInput = document.getElementById('earth-message');
+            const message = messageInput.value.trim();
+            
+            if (!message) {
+                alert('Please enter a message');
+                return;
+            }
+
+            // Generate tokens
+            const tokens = generateTokens(message);
+            displayTokens(tokens);
+
+            // Log on Earth
+            addLog('earth', `📤 Sending: "${message}"`, 'info');
+            addLog('earth', `🔐 Encrypted with ${tokens.length} Sacred Tongue tokens`, 'success');
+            addLog('earth', `📡 Transmitting to Mars (14 min light delay)...`, 'warning');
+
+            // Simulate transmission delay
+            let elapsed = 0;
+            const interval = setInterval(() => {
+                elapsed++;
+                if (elapsed >= LIGHT_DELAY_SECONDS / simulationSpeed) {
+                    clearInterval(interval);
+                    // Message arrives at Mars
+                    addLog('mars', `📥 Received encrypted message from Earth`, 'success');
+                    addLog('mars', `🔓 Decrypting with pre-synchronized Sacred Tongue...`, 'info');
+                    setTimeout(() => {
+                        addLog('mars', `✅ Decrypted: "${message}"`, 'success');
+                    }, 500);
+                }
+            }, 1000 / simulationSpeed);
+
+            // Update message count
+            messageCount++;
+            document.getElementById('messages-sent').textContent = messageCount;
+
+            // Clear input
+            messageInput.value = '';
+        }
+
+        function sendFromMars() {
+            const messageInput = document.getElementById('mars-message');
+            const message = messageInput.value.trim();
+            
+            if (!message) {
+                alert('Please enter a message');
+                return;
+            }
+
+            // Generate tokens
+            const tokens = generateTokens(message);
+            displayTokens(tokens);
+
+            // Log on Mars
+            addLog('mars', `📤 Sending: "${message}"`, 'info');
+            addLog('mars', `🔐 Encrypted with ${tokens.length} Sacred Tongue tokens`, 'success');
+            addLog('mars', `📡 Transmitting to Earth (14 min light delay)...`, 'warning');
+
+            // Simulate transmission delay
+            let elapsed = 0;
+            const interval = setInterval(() => {
+                elapsed++;
+                if (elapsed >= LIGHT_DELAY_SECONDS / simulationSpeed) {
+                    clearInterval(interval);
+                    // Message arrives at Earth
+                    addLog('earth', `📥 Received encrypted message from Mars`, 'success');
+                    addLog('earth', `🔓 Decrypting with pre-synchronized Sacred Tongue...`, 'info');
+                    setTimeout(() => {
+                        addLog('earth', `✅ Decrypted: "${message}"`, 'success');
+                    }, 500);
+                }
+            }, 1000 / simulationSpeed);
+
+            // Update message count
+            messageCount++;
+            document.getElementById('messages-sent').textContent = messageCount;
+
+            // Clear input
+            messageInput.value = '';
+        }
+
+        // Initialize
+        window.onload = function() {
+            addLog('earth', '🌍 Earth Ground Station initialized', 'success');
+            addLog('earth', '🔐 Sacred Tongue vocabulary pre-synchronized', 'success');
+            addLog('mars', '🔴 Mars Base Alpha initialized', 'success');
+            addLog('mars', '🔐 Sacred Tongue vocabulary pre-synchronized', 'success');
+            
+            // Show welcome message
+            setTimeout(() => {
+                addLog('earth', '✅ Ready to send encrypted messages to Mars', 'info');
+                addLog('mars', '✅ Ready to send encrypted messages to Earth', 'info');
+            }, 1000);
+        };
+
+        // Speed control (for demo purposes)
+        document.addEventListener('keydown', function(e) {
+            if (e.key === '+') {
+                simulationSpeed = Math.min(simulationSpeed * 2, 120);
+                console.log(`Simulation speed: ${simulationSpeed}x`);
+            } else if (e.key === '-') {
+                simulationSpeed = Math.max(simulationSpeed / 2, 1);
+                console.log(`Simulation speed: ${simulationSpeed}x`);
+            }
+        });
+    </script>
+</body>
+</html>

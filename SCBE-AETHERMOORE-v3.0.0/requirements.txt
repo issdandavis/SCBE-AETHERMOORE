@@ -1,0 +1,20 @@
+# SCBE 14-Layer System - Python Dependencies
+# Core mathematical and signal processing libraries
+
+# NumPy - Array operations and linear algebra
+numpy>=1.20.0
+
+# SciPy - Scientific computing (signal processing, optimization)
+scipy>=1.7.0
+
+# Optional: Visualization
+# Uncomment if running demo_scbe_system.py visualization
+# matplotlib>=3.3.0
+
+# Optional: Enhanced numerical stability
+# Uncomment for production deployments
+# mpmath>=1.2.0
+
+# Development dependencies (testing)
+# pytest>=7.0.0
+# pytest-cov>=3.0.0

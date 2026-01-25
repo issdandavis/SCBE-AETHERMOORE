@@ -1,0 +1,10 @@
+version: 1
+windows:
+  short: 5m
+thresholds:
+  gcm_failures_rate: 0.005   # >0.5%
+  nonce_reuse_any: 0         # >0
+  replay_rejects_abs: 50     # >50 per window
+  phase_skew_ms_p99: 2000
+  verify_ms_p99: 50
+  fail_to_noise_spike_x: 10

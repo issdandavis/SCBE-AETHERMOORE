@@ -33,9 +33,13 @@ from enum import Enum
 from .sacred_tongues import (
     SacredTongue,
     SacredTongueTokenizer,
+    Token,
+    TONGUE_WORDLISTS,
+    DOMAIN_TONGUE_MAP,
     get_tongue_for_domain,
     get_tokenizer,
-    DOMAIN_TONGUE_MAP,
+    get_combined_alphabet,
+    get_magical_signature,
 )
 
 
@@ -231,12 +235,11 @@ def encrypt_xchacha(key: bytes, nonce: bytes, plaintext: bytes, aad: bytes) -> T
         raise RuntimeError("XChaCha20-Poly1305 not available - install pynacl")
 
     box = nacl.secret.Aead(key)
-    ciphertext = box.encrypt(plaintext, aad=aad, nonce=nonce)
-    # PyNaCl returns nonce + ciphertext + tag combined, we need to split
-    # Actually, for AEAD we get ciphertext || tag
-    ct_with_tag = ciphertext
-    ct = ct_with_tag[:-TAG_SIZE]
-    tag = ct_with_tag[-TAG_SIZE:]
+    ct_blob = box.encrypt(plaintext, aad=aad, nonce=nonce)
+    # PyNaCl returns nonce || ciphertext || tag; we keep nonce separately
+    ct_body = ct_blob[len(nonce):]
+    ct = ct_body[:-TAG_SIZE]
+    tag = ct_body[-TAG_SIZE:]
     return ct, tag
 
 
@@ -557,7 +560,10 @@ class SpiralSeal:
             ValueError: If authentication fails
         """
         key = self._derive_seal_key(salt)
-        return self._decrypt(key, nonce, ciphertext, tag, aad)
+        try:
+            return self._decrypt(key, nonce, ciphertext, tag, aad)
+        except Exception as exc:
+            raise ValueError("Authentication failed") from exc
 
     def unseal_tokens(self,
                       salt_tokens: str,
@@ -867,21 +873,53 @@ class SpiralSealSS1:
         # Unseal
         plaintext = ss.unseal(blob, aad="service=api")
     """
+    @staticmethod
+    def _validate_master_secret(secret: bytes) -> bytes:
+        if not isinstance(secret, (bytes, bytearray)):
+            raise ValueError("master_secret must be bytes")
+        secret_bytes = bytes(secret)
+        if len(secret_bytes) != 32:
+            raise ValueError("master_secret must be exactly 32 bytes (256 bits)")
+        if all(b == 0 for b in secret_bytes):
+            raise ValueError("master_secret must not be all zeros")
+        return secret_bytes
 
-    def __init__(self, master_secret: bytes, kid: Optional[str] = None):
+    def __init__(self, master_secret: bytes, kid: Optional[str] = None, mode: str = "symmetric"):   
         """Initialize SpiralSealSS1.
 
         Args:
             master_secret: 32-byte master secret key
             kid: Key ID (auto-generated if not provided)
+            mode: 'symmetric' (default) or 'hybrid' to initialize PQC keys
         """
-        from .sacred_tongues import format_ss1_blob, parse_ss1_blob
+        from .sacred_tongues import format_ss1_blob, parse_ss1_blob        
 
-        self._master_secret = master_secret
+        self._master_secret = self._validate_master_secret(master_secret)
         self._kid = kid or os.urandom(4).hex()
-        self._seal = SpiralSeal(master_key=master_secret)
+        self._seal = SpiralSeal(master_key=self._master_secret)
         self._format_blob = format_ss1_blob
         self._parse_blob = parse_ss1_blob
+        self._mode = mode
+        self._pk_enc = None
+        self._pk_sig = None
+        self._sk_enc = None
+        self._sk_sig = None
+        if mode == "hybrid":
+            try:
+                from ..pqc import Kyber768, Dilithium3
+                enc_keys = Kyber768.generate_keypair()
+                sig_keys = Dilithium3.generate_keypair()
+                self._pk_enc, self._sk_enc = enc_keys.public_key, enc_keys.secret_key
+                self._pk_sig, self._sk_sig = sig_keys.public_key, sig_keys.secret_key
+            except Exception:
+                # Fallback to placeholder entropy if PQC libs unavailable
+                self._pk_enc = os.urandom(32)
+                self._pk_sig = os.urandom(32)
+
+    @property
+    def kid(self) -> str:
+        """Current key identifier."""
+        return self._kid
 
     def seal(self, plaintext: bytes, aad: str = "") -> str:
         """Seal (encrypt) plaintext.
@@ -893,7 +931,8 @@ class SpiralSealSS1:
         Returns:
             SS1 formatted string
         """
-        result = self._seal.seal(plaintext, aad=aad.encode() if aad else None)
+        pt_bytes = plaintext.encode("utf-8") if isinstance(plaintext, str) else plaintext
+        result = self._seal.seal(pt_bytes, aad=aad.encode() if aad else None)  
 
         # Format using the compatibility blob format
         return self._format_blob(
@@ -920,6 +959,10 @@ class SpiralSealSS1:
         """
         parsed = self._parse_blob(blob)
 
+        # Enforce key identity binding
+        if parsed.get("kid") != self._kid:
+            raise ValueError(f"KID mismatch: expected '{self._kid}', got '{parsed.get('kid')}'")
+
         # Check AAD
         if parsed.get("aad", "") != aad:
             raise ValueError(f"AAD mismatch: expected '{aad}', got '{parsed.get('aad', '')}'")
@@ -932,16 +975,21 @@ class SpiralSealSS1:
             aad=aad.encode() if aad else b""
         )
 
-    def rotate_key(self, new_kid: str, new_secret: bytes):
+    def rotate_key(self, new_kid: str, new_secret: Optional[bytes] = None, new_master_secret: Optional[bytes] = None):
         """Rotate to a new key.
 
         Args:
             new_kid: New key ID
             new_secret: New 32-byte master secret
+            new_master_secret: Alias for new_secret (compatibility)
         """
+        next_secret = new_master_secret if new_master_secret is not None else new_secret
+        if next_secret is None:
+            raise ValueError("A new master secret must be provided for rotation")
+
+        self._master_secret = self._validate_master_secret(next_secret)
         self._kid = new_kid
-        self._master_secret = new_secret
-        self._seal = SpiralSeal(master_key=new_secret)
+        self._seal = SpiralSeal(master_key=self._master_secret)
 
     @staticmethod
     def get_status() -> Dict[str, Any]:

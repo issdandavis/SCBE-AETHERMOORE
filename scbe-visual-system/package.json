@@ -1,0 +1,81 @@
+{
+  "name": "scbe-visual-system",
+  "description": "Quantum-Safe Fleet Tablet OS - USPTO #63/961,403",
+  "private": true,
+  "version": "3.0.0",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "npm run build && electron-builder",
+    "electron:pack": "npm run build && electron-builder --dir",
+    "start:system": "node scripts/start-system.js",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage"
+  },
+  "dependencies": {
+    "@google/genai": "^1.27.0",
+    "lucide-react": "^0.548.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "@vitest/coverage-v8": "^2.0.0",
+    "concurrently": "^9.0.0",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0",
+    "jsdom": "^27.4.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0",
+    "vitest": "^2.0.0",
+    "wait-on": "^8.0.0"
+  },
+  "build": {
+    "appId": "com.aethermoorgames.scbe",
+    "productName": "SCBE Visual System",
+    "copyright": "Copyright © 2026 Aethermoor Games - USPTO #63/961,403",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "assets/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "assets/icon.icns"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "linux": {
+      "category": "Utility",
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "assets/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "installerHeaderIcon": "assets/icon.ico"
+    }
+  }
+}

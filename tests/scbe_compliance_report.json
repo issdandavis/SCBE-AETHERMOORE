@@ -1,0 +1,1138 @@
+{
+  "generated_at": "2026-01-18T01:22:47.603796",
+  "scbe_version": "3.0.0",
+  "total_tests": 150,
+  "passed_tests": 150,
+  "failed_tests": 0,
+  "pass_rate": 1.0,
+  "frameworks_covered": [
+    "HIPAA/HITECH",
+    "NIST 800-53",
+    "FIPS 140-3",
+    "PCI-DSS v4.0",
+    "SOX Section 302/404",
+    "GDPR",
+    "ISO 27001:2022",
+    "IEC 62443",
+    "SOC 2 Type II",
+    "FedRAMP",
+    "CMMC 2.0",
+    "FDA 21 CFR Part 11",
+    "NERC CIP"
+  ],
+  "layers_covered": [
+    "L1: Input Validation",
+    "L2: Context Embedding",
+    "L3: Hyperbolic Projection",
+    "L4: Spectral Analysis",
+    "L5: Coherence Signals",
+    "L6: Risk Functional",
+    "L7: Decision Gate",
+    "L8: Cryptographic Envelope",
+    "L9: AAD Binding",
+    "L10: Seal/Unseal",
+    "L11: Post-Quantum Crypto",
+    "L12: Audit Trail",
+    "L13: Self-Healing",
+    "L14: Observability"
+  ],
+  "axioms_validated": [
+    "A1: Boundedness (||u|| < 1)",
+    "A2: Continuity (Lipschitz)",
+    "A3: Encryption (AES-256-GCM)",
+    "A4: Nonce Uniqueness",
+    "A5: Pseudonymization",
+    "A6: Least Privilege",
+    "A7: Fail-to-Noise",
+    "A8: Key Lifecycle",
+    "A9: Context Binding (AAD)",
+    "A10: Audit Completeness",
+    "A11: Monotonic Recovery",
+    "A12: Bounded Failure"
+  ],
+  "test_results": [
+    {
+      "test_id": "101",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "102",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "103",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "104",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "105",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "106",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "107",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "108",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "109",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "110",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "111",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "112",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "113",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "114",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "115",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "116",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "117",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "118",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "119",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "120",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "121",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "122",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "123",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "124",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "125",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "126",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "127",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "128",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "129",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "130",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "131",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "132",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "133",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "134",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "135",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "136",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "137",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "138",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "139",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "140",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "141",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "142",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "143",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "144",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "145",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "146",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "147",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "148",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "149",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "150",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "151",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "152",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "153",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "154",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "155",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "156",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "157",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "158",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "159",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "160",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "161",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "162",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "163",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "164",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "165",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "166",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "167",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "168",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "169",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "170",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "171",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "172",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "173",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "174",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "175",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "176",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "177",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "178",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "179",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "180",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "181",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "182",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "183",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "184",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "185",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "186",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "187",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "188",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "189",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "190",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "191",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "192",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "193",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "194",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "195",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "196",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "197",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "198",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "199",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "200",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "201",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "202",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "203",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "204",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "205",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "206",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "207",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "208",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "209",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "210",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "211",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "212",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "213",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "214",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "215",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "216",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "217",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "218",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "219",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "220",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "221",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "222",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "223",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "224",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "225",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "226",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "227",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "228",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "229",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "230",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "231",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "232",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "233",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "234",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "235",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "236",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "237",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "238",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "239",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "240",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "241",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "242",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "243",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "244",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "245",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "246",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "247",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "248",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "249",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    },
+    {
+      "test_id": "250",
+      "passed": true,
+      "duration_ms": 0,
+      "error_message": null
+    }
+  ],
+  "summary_by_framework": {
+    "HIPAA/HITECH": {
+      "total": 23,
+      "passed": 23,
+      "failed": 0,
+      "coverage": "100.0%"
+    },
+    "NIST 800-53": {
+      "total": 74,
+      "passed": 74,
+      "failed": 0,
+      "coverage": "100.0%"
+    },
+    "FIPS 140-3": {
+      "total": 31,
+      "passed": 31,
+      "failed": 0,
+      "coverage": "100.0%"
+    },
+    "PCI-DSS v4.0": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "coverage": "100.0%"
+    },
+    "SOX Section 302/404": {
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "coverage": "100.0%"
+    },
+    "GDPR": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "coverage": "100.0%"
+    },
+    "ISO 27001:2022": {
+      "total": 3,
+      "passed": 3,
+      "failed": 0,
+      "coverage": "100.0%"
+    },
+    "IEC 62443": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "coverage": "100.0%"
+    },
+    "SOC 2 Type II": {
+      "total": 17,
+      "passed": 17,
+      "failed": 0,
+      "coverage": "100.0%"
+    },
+    "FedRAMP": {
+      "total": 0,
+      "passed": 0,
+      "failed": 0,
+      "coverage": "N/A"
+    },
+    "CMMC 2.0": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "coverage": "100.0%"
+    },
+    "FDA 21 CFR Part 11": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "coverage": "100.0%"
+    },
+    "NERC CIP": {
+      "total": 2,
+      "passed": 2,
+      "failed": 0,
+      "coverage": "100.0%"
+    }
+  },
+  "summary_by_layer": {
+    "L1: Input Validation": {
+      "total": 4,
+      "passed": 4,
+      "coverage": "100.0%"
+    },
+    "L2: Context Embedding": {
+      "total": 0,
+      "passed": 0,
+      "coverage": "N/A"
+    },
+    "L3: Hyperbolic Projection": {
+      "total": 0,
+      "passed": 0,
+      "coverage": "N/A"
+    },
+    "L4: Spectral Analysis": {
+      "total": 0,
+      "passed": 0,
+      "coverage": "N/A"
+    },
+    "L5: Coherence Signals": {
+      "total": 0,
+      "passed": 0,
+      "coverage": "N/A"
+    },
+    "L6: Risk Functional": {
+      "total": 0,
+      "passed": 0,
+      "coverage": "N/A"
+    },
+    "L7: Decision Gate": {
+      "total": 10,
+      "passed": 10,
+      "coverage": "100.0%"
+    },
+    "L8: Cryptographic Envelope": {
+      "total": 89,
+      "passed": 89,
+      "coverage": "100.0%"
+    },
+    "L9: AAD Binding": {
+      "total": 34,
+      "passed": 34,
+      "coverage": "100.0%"
+    },
+    "L10: Seal/Unseal": {
+      "total": 14,
+      "passed": 14,
+      "coverage": "100.0%"
+    },
+    "L11: Post-Quantum Crypto": {
+      "total": 21,
+      "passed": 21,
+      "coverage": "100.0%"
+    },
+    "L12: Audit Trail": {
+      "total": 16,
+      "passed": 16,
+      "coverage": "100.0%"
+    },
+    "L13: Self-Healing": {
+      "total": 15,
+      "passed": 15,
+      "coverage": "100.0%"
+    },
+    "L14: Observability": {
+      "total": 10,
+      "passed": 10,
+      "coverage": "100.0%"
+    }
+  },
+  "summary_by_severity": {
+    "critical": {
+      "total": 99,
+      "passed": 99,
+      "failed": 0
+    },
+    "high": {
+      "total": 32,
+      "passed": 32,
+      "failed": 0
+    },
+    "medium": {
+      "total": 19,
+      "passed": 19,
+      "failed": 0
+    },
+    "low": {
+      "total": 0,
+      "passed": 0,
+      "failed": 0
+    }
+  },
+  "lattice_coverage": {
+    "Poincar\u00e9 Ball (Hyperbolic)": 0,
+    "Langues 6D Tensor": 10,
+    "Hyper-Torus Phase Space": 0,
+    "Penrose Quasicrystal Lattice": 20,
+    "Projective Hamiltonian Defense Manifold": 14,
+    "SpiralSeal SS1 Structure": 17,
+    "9D Aethermoore Governance Manifold": 15
+  }
+}

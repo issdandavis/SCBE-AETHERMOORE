@@ -100,65 +100,71 @@ class TestSacredTongue:
 
     def test_invalid_domain_raises(self):
         """Unknown domain should raise ValueError."""
-        with pytest.raises(ValueError, match="Unknown domain"):
+        with pytest.raises(ValueError, match="Unknown section"):
             get_tongue_for_domain("invalid")
 
 
 class TestSacredTongueTokenizer:
     """Test the SacredTongueTokenizer class."""
 
-    @pytest.fixture
-    def tokenizer(self):
-        return SacredTongueTokenizer()
-
-    def test_encode_single_byte(self, tokenizer):
+    def test_encode_single_byte(self):
         """Encode a single byte and verify token structure."""
-        tokens = tokenizer.encode(b"\x00", SacredTongue.KORAELIN)
-        assert len(tokens) == 1
-        token = tokens[0]
-        assert token.tongue == SacredTongue.KORAELIN
-        assert token.byte_value == 0
+        tokenizer = SacredTongueTokenizer("ko")
+        result = tokenizer.encode(b"\x00")
+        # Returns format like "ko:sil'a"
+        assert result.startswith("ko:")
+        assert "'" in result
+        # Verify round-trip
+        decoded = tokenizer.decode(result)
+        assert decoded == b"\x00"
 
-    def test_encode_all_bytes(self, tokenizer):
+    def test_encode_all_bytes(self):
         """Encode all 256 bytes and verify round-trip."""
         all_bytes = bytes(range(256))
         for tongue in SacredTongue:
-            tokens = tokenizer.encode(all_bytes, tongue)
-            assert len(tokens) == 256
+            tokenizer = SacredTongueTokenizer(tongue.value)
+            encoded = tokenizer.encode(all_bytes)
             # Decode back
-            decoded = tokenizer.decode(tokens)
+            decoded = tokenizer.decode(encoded)
             assert decoded == all_bytes
 
-    def test_encode_to_string_format(self, tokenizer):
+    def test_encode_to_string_format(self):
         """Verify string format: tongue:prefix'suffix."""
-        result = tokenizer.encode_to_string(b"\x00", SacredTongue.KORAELIN)
+        tokenizer = SacredTongueTokenizer("ko")
+        result = tokenizer.encode_to_string(b"\x00")
         assert result.startswith("ko:")
         assert "'" in result
 
-    def test_decode_from_string_roundtrip(self, tokenizer):
+    def test_decode_from_string_roundtrip(self):
         """String encoding round-trip."""
         original = b"Hello, World!"
         for tongue in SacredTongue:
-            encoded = tokenizer.encode_to_string(original, tongue, " ")
-            decoded = tokenizer.decode_from_string(encoded, tongue, " ")
+            tokenizer = SacredTongueTokenizer(tongue.value)
+            encoded = tokenizer.encode_to_string(original, " ")
+            decoded = tokenizer.decode_from_string(encoded, " ")
             assert decoded == original
 
-    def test_token_to_byte_mapping(self, tokenizer):
+    def test_token_to_byte_mapping(self):
         """Verify byte = prefix_index * 16 + suffix_index."""
         for tongue in SacredTongue:
             prefixes, suffixes = TONGUE_WORDLISTS[tongue]
+            tokenizer = SacredTongueTokenizer(tongue.value)
             for byte_val in range(256):
                 expected_prefix_idx = byte_val >> 4
                 expected_suffix_idx = byte_val & 0x0F
-                token = tokenizer.get_token_for_byte(byte_val, tongue)
-                assert token.prefix == prefixes[expected_prefix_idx]
-                assert token.suffix == suffixes[expected_suffix_idx]
-                assert token.byte_value == byte_val
+                token = tokenizer.encode_byte(byte_val)
+                # Token format is "prefix'suffix"
+                expected_token = f"{prefixes[expected_prefix_idx]}'{suffixes[expected_suffix_idx]}"
+                assert token == expected_token
+                # Verify reverse mapping
+                decoded_byte = tokenizer.decode_token(token)
+                assert decoded_byte == byte_val
 
-    def test_decode_unknown_token_raises(self, tokenizer):
+    def test_decode_unknown_token_raises(self):
         """Unknown token should raise ValueError."""
+        tokenizer = SacredTongueTokenizer("ko")
         with pytest.raises(ValueError, match="Unknown token"):
-            tokenizer.decode_from_string("invalid'token", SacredTongue.KORAELIN)
+            tokenizer.decode_token("invalid'token")
 
     def test_get_tokenizer_singleton(self):
         """get_tokenizer() should return same instance."""
