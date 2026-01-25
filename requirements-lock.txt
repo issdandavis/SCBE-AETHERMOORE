@@ -149,7 +149,7 @@ opentelemetry-propagator-ot-trace==0.54b1
 opentelemetry-proto==1.33.1
 opentelemetry-sdk==1.33.1
 opentelemetry-sdk-extension-aws==2.0.2
-opentelemetry-semantic-conventions==0.54b1
+opentelemetry-semantic-conventions==0.60b1
 opentelemetry-util-http==0.54b1
 packaging==25.0
 pandas==2.3.3
