@@ -9,6 +9,7 @@ This section contains archived documentation and reference materials from earlie
 The `archive/` folder contains legacy documentation including:
 
 - Original technical specifications
+- SCBE Master Architecture Index (legacy draft)
 - Development summaries
 - Historical test reports
 - Earlier versions of guides
