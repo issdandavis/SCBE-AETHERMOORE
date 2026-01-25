@@ -97,8 +97,8 @@
     "vitest": "^4.0.17"
   },
   "overrides": {
-    "tar": "^7.4.0",
-    "esbuild": "^0.24.0"
+    "tar": ">=7.0.0",
+    "esbuild": ">=0.25.0"
   },
   "bin": {
     "scbe": "./scbe-cli.py"
