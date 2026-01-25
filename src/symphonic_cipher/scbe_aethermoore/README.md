@@ -39,17 +39,17 @@ scbe_aethermoore/
 
 ## 14-Layer Pipeline
 
-| Layer | Function |
-|-------|----------|
-| L1-L4 | Context → Poincaré ball embedding |
-| L5 | Invariant hyperbolic metric dℍ |
-| L6-L7 | Breath transform + phase modulation |
-| L8 | Multi-well potential landscape |
-| L9-L10 | Spectral + spin coherence channels |
-| L11 | Triadic Byzantine consensus |
-| L12 | Harmonic scaling H(d,R) = R^(d²) |
-| L13 | Decision gate (ALLOW/QUARANTINE/DENY) |
-| L14 | Audio axis FFT telemetry |
+| Layer  | Function                              |
+| ------ | ------------------------------------- |
+| L1-L4  | Context → Poincaré ball embedding     |
+| L5     | Invariant hyperbolic metric dℍ        |
+| L6-L7  | Breath transform + phase modulation   |
+| L8     | Multi-well potential landscape        |
+| L9-L10 | Spectral + spin coherence channels    |
+| L11    | Triadic Byzantine consensus           |
+| L12    | Harmonic scaling H(d,R) = R^(d²)      |
+| L13    | Decision gate (ALLOW/QUARANTINE/DENY) |
+| L14    | Audio axis FFT telemetry              |
 
 ## Quick Start
 
@@ -100,4 +100,4 @@ pytest tests/test_scbe_14layers.py -v
 
 ---
 
-*SCBE-AETHERMOORE: Hyperbolic geometry for AI safety.*
+_SCBE-AETHERMOORE: Hyperbolic geometry for AI safety._

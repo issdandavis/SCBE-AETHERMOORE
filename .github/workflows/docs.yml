@@ -2,7 +2,7 @@ name: Documentation
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
       - 'docs/**'
       - 'README.md'
@@ -18,7 +18,7 @@ jobs:
   build-docs:
     name: Build Documentation
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -42,9 +42,12 @@ jobs:
     - name: Copy demo files
       run: |
         mkdir -p docs-build/demo
-        cp scbe-aethermoore/customer-demo.html docs-build/demo/index.html
-        cp scbe-aethermoore/index.html docs-build/demo/landing.html
-        cp scbe-aethermoore/demo.html docs-build/demo/universe.html
+        cp demo/index.html docs-build/demo/index.html
+        cp demo/mars-communication.html docs-build/demo/mars-communication.html
+        # Copy additional demo files if they exist
+        if [ -f "demo/roundtable-demo.ts" ]; then
+          cp demo/roundtable-demo.ts docs-build/demo/
+        fi
     
     - name: Create index page
       run: |
@@ -77,10 +80,10 @@ jobs:
                         <p class="text-gray-300">Try SCBE encryption live</p>
                     </a>
                     
-                    <a href="demo/landing.html" class="block p-8 bg-white/10 rounded-2xl hover:bg-white/20 transition">
-                        <div class="text-4xl mb-4">🌌</div>
-                        <h2 class="text-2xl font-bold mb-2">Product Page</h2>
-                        <p class="text-gray-300">Full feature showcase</p>
+                    <a href="demo/mars-communication.html" class="block p-8 bg-white/10 rounded-2xl hover:bg-white/20 transition">
+                        <div class="text-4xl mb-4">🚀</div>
+                        <h2 class="text-2xl font-bold mb-2">Mars Communication</h2>
+                        <p class="text-gray-300">Deep space secure messaging demo</p>
                     </a>
                 </div>
                 
@@ -107,8 +110,8 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    
+
     steps:
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,272 +1,189 @@
-#!/bin/bash
-# SCBE-AETHERMOORE Proof Pack Generator
-# Creates a comprehensive package of mathematical proofs, documentation, and evidence
-# for patent filing, technical review, or academic submission
+#!/usr/bin/env bash
+set -euo pipefail
 
-set -e
-
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-PACK_NAME="scbe_proof_pack_${TIMESTAMP}"
-PACK_DIR="proof_packs/${PACK_NAME}"
-
-echo "=================================="
-echo "SCBE-AETHERMOORE Proof Pack Generator"
-echo "=================================="
-echo "Timestamp: ${TIMESTAMP}"
-echo "Output: ${PACK_DIR}"
-echo ""
-
-# Create directory structure
-mkdir -p "${PACK_DIR}"/{mathematical_proofs,demos,specifications,test_results,patent_docs,architecture}
-
-echo "[1/8] Copying mathematical proofs..."
-cp -r docs/MATHEMATICAL_PROOFS.md "${PACK_DIR}/mathematical_proofs/"
-cp -r docs/AXIOMS.md "${PACK_DIR}/mathematical_proofs/" 2>/dev/null || true
-cp -r docs/COMPREHENSIVE_MATH_SCBE.md "${PACK_DIR}/mathematical_proofs/" 2>/dev/null || true
-cp -r docs/FOURIER_SERIES_FOUNDATIONS.md "${PACK_DIR}/mathematical_proofs/" 2>/dev/null || true
-cp -r MATHEMATICAL_FOUNDATION_COMPLETE.md "${PACK_DIR}/mathematical_proofs/" 2>/dev/null || true
-cp -r THEORETICAL_AXIOMS_COMPLETE.md "${PACK_DIR}/mathematical_proofs/" 2>/dev/null || true
-
-echo "[2/8] Copying demo scripts..."
-cp spiralverse_core.py "${PACK_DIR}/demos/" 2>/dev/null || true
-cp demo_spiralverse_story.py "${PACK_DIR}/demos/" 2>/dev/null || true
-cp demo_memory_shard.py "${PACK_DIR}/demos/" 2>/dev/null || true
-cp examples/rwp_v3_sacred_tongue_demo.py "${PACK_DIR}/demos/" 2>/dev/null || true
-
-echo "[3/8] Copying specifications..."
-cp -r .kiro/specs/spiralverse-architecture "${PACK_DIR}/specifications/" 2>/dev/null || true
-cp -r .kiro/specs/sacred-tongue-pqc-integration "${PACK_DIR}/specifications/" 2>/dev/null || true
-cp -r .kiro/specs/enterprise-grade-testing "${PACK_DIR}/specifications/" 2>/dev/null || true
-cp SPIRALVERSE_EXPLAINED_SIMPLE.md "${PACK_DIR}/specifications/" 2>/dev/null || true
-cp SPIRALVERSE_MASTER_PACK_COMPLETE.md "${PACK_DIR}/specifications/" 2>/dev/null || true
-
-echo "[4/8] Copying test results..."
-cp TEST_RESULTS_SUMMARY.md "${PACK_DIR}/test_results/" 2>/dev/null || true
-cp TEST_SUITE_EXECUTIVE_SUMMARY.md "${PACK_DIR}/test_results/" 2>/dev/null || true
-cp AXIOM_VERIFICATION_STATUS.md "${PACK_DIR}/test_results/" 2>/dev/null || true
-cp VERIFICATION_REPORT.md "${PACK_DIR}/test_results/" 2>/dev/null || true
-
-echo "[5/8] Copying patent documentation..."
-cp PATENT_PROVISIONAL_APPLICATION.md "${PACK_DIR}/patent_docs/" 2>/dev/null || true
-cp PATENT_CLAIMS_QUICK_REFERENCE.md "${PACK_DIR}/patent_docs/" 2>/dev/null || true
-cp PATENT_CLAIMS_CORRECTED.md "${PACK_DIR}/patent_docs/" 2>/dev/null || true
-cp COMPLETE_IP_PORTFOLIO_READY_FOR_USPTO.md "${PACK_DIR}/patent_docs/" 2>/dev/null || true
-cp AETHERMOORE_CONSTANTS_IP_PORTFOLIO.md "${PACK_DIR}/patent_docs/" 2>/dev/null || true
-
-echo "[6/8] Copying architecture documentation..."
-cp ARCHITECTURE_5_LAYERS.md "${PACK_DIR}/architecture/" 2>/dev/null || true
-cp SCBE_SYSTEM_ARCHITECTURE_COMPLETE.md "${PACK_DIR}/architecture/" 2>/dev/null || true
-cp SCBE_TOPOLOGICAL_CFI_UNIFIED.md "${PACK_DIR}/architecture/" 2>/dev/null || true
-cp docs/DUAL_CHANNEL_CONSENSUS.md "${PACK_DIR}/architecture/" 2>/dev/null || true
-cp DIMENSIONAL_THEORY_COMPLETE.md "${PACK_DIR}/architecture/" 2>/dev/null || true
-
-echo "[7/8] Copying core implementation..."
-cp src/scbe_14layer_reference.py "${PACK_DIR}/architecture/" 2>/dev/null || true
-cp src/api/main.py "${PACK_DIR}/architecture/mvp_api.py" 2>/dev/null || true
-
-echo "[8/8] Creating README and manifest..."
-
-cat > "${PACK_DIR}/README.md" << 'EOF'
+# =============================
 # SCBE-AETHERMOORE Proof Pack
+# =============================
+# Generates reproducible evidence of system functionality
+# for compliance, audits, and demonstrations.
 
-**Generated**: $(date)
-**Patent**: USPTO #63/961,403
-**Author**: Isaac Daniel Davis (@issdandavis)
+# ---- Dependency validation
+# Check for required commands and exit early with clear error messages if missing
+check_dependencies() {
+  local missing_deps=()
+  local required_commands=("git" "node" "npm" "python3" "tar")
+  local optional_commands=("pytest")
+  
+  # Check required commands
+  for cmd in "${required_commands[@]}"; do
+    if ! command -v "$cmd" >/dev/null 2>&1; then
+      missing_deps+=("$cmd")
+    fi
+  done
+  
+  # If critical dependencies are missing, fail early
+  if [ ${#missing_deps[@]} -gt 0 ]; then
+    echo "ERROR: Missing required dependencies:" >&2
+    for dep in "${missing_deps[@]}"; do
+      echo "  - $dep" >&2
+    done
+    echo "" >&2
+    echo "Please install the missing dependencies before running this script." >&2
+    exit 1
+  fi
+  
+  # Warn about optional dependencies
+  for cmd in "${optional_commands[@]}"; do
+    if ! command -v "$cmd" >/dev/null 2>&1; then
+      # Check if pytest is available as Python module
+      if [ "$cmd" = "pytest" ]; then
+        if ! python3 -m pytest --version >/dev/null 2>&1; then
+          echo "WARNING: pytest not found as command or Python module. Python tests will be skipped." >&2
+        fi
+      else
+        echo "WARNING: Optional command '$cmd' not found. Some features may be limited." >&2
+      fi
+    fi
+  done
+}
 
-## Contents
+# Validate all dependencies before proceeding
+check_dependencies
 
-### 1. Mathematical Proofs (`mathematical_proofs/`)
-- Complete mathematical foundations
-- Axiom verification
-- Fourier series foundations
-- Theoretical proofs
+STAMP="$(date +"%Y-%m-%d_%H%M%S")"
+OUTDIR="docs/evidence/${STAMP}"
+mkdir -p "${OUTDIR}"
 
-### 2. Demonstrations (`demos/`)
-- Spiralverse Protocol demo (security-corrected)
-- Memory shard demo
-- RWP v3 Sacred Tongue demo
-- Working code examples
+WARN="${OUTDIR}/warnings.txt"
+touch "${WARN}"
 
-### 3. Specifications (`specifications/`)
-- Spiralverse architecture requirements
-- Sacred Tongue PQC integration
-- Enterprise-grade testing spec
-- Master Pack documentation
+log() { echo "[$(date +"%H:%M:%S")] $*"; }
+w()   { echo "WARNING: $*" | tee -a "${WARN}" >&2; }
 
-### 4. Test Results (`test_results/`)
-- Comprehensive test suite results
-- Axiom verification status
-- Executive summary
-- Verification reports
+# ---- Basic repo/system fingerprints
+log "Writing system + repo info..."
+{
+  echo "=== PROOF PACK ==="
+  echo "timestamp_local=${STAMP}"
+  echo
+  echo "=== OS ==="
+  (uname -a) 2>/dev/null || true
+  echo
+  echo "=== USER / PWD ==="
+  (whoami) 2>/dev/null || true
+  (pwd) 2>/dev/null || true
+  echo
+  echo "=== GIT ==="
+  if command -v git >/dev/null 2>&1; then
+    git rev-parse --is-inside-work-tree >/dev/null 2>&1 && {
+      echo "commit=$(git rev-parse HEAD 2>/dev/null || true)"
+      echo "branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
+      echo "status:"
+      git status --porcelain 2>/dev/null || true
+    }
+  else
+    echo "git_not_found"
+  fi
+  echo
+  echo "=== NODE ==="
+  (node -v) 2>/dev/null || echo "node_not_found"
+  (npm -v) 2>/dev/null || echo "npm_not_found"
+  echo
+  echo "=== PYTHON ==="
+  (python3 -V) 2>/dev/null || echo "python3_not_found"
+  (pip3 -V) 2>/dev/null || echo "pip3_not_found"
+} > "${OUTDIR}/system_info.txt"
 
-### 5. Patent Documentation (`patent_docs/`)
-- Provisional application
-- Patent claims (corrected)
-- IP portfolio (USPTO-ready)
-- AetherMoore constants IP
+# ---- Dependency snapshots (helpful for reproducibility)
+log "Capturing dependency snapshots (best effort)..."
+{
+  echo "=== npm ls --depth=0 ==="
+  if command -v npm >/dev/null 2>&1; then
+    npm ls --depth=0 2>&1 || true
+  else
+    echo "npm_not_found"
+  fi
+} > "${OUTDIR}/npm_deps.txt"
 
-### 6. Architecture (`architecture/`)
-- 5-layer architecture
-- 14-layer SCBE stack
-- Topological CFI
-- Dual-channel consensus
-- Core implementation
+{
+  echo "=== pip freeze ==="
+  if command -v pip3 >/dev/null 2>&1; then
+    pip3 freeze 2>&1 || true
+  else
+    echo "pip3_not_found"
+  fi
+} > "${OUTDIR}/pip_freeze.txt"
 
-## Key Innovations
+# ---- Run TypeScript/Node tests
+if [ -f "package.json" ]; then
+  log "Running npm test..."
+  START="$(date +%s)"
+  set +e
+  npm test > "${OUTDIR}/npm_test_output.txt" 2>&1
+  RC=$?
+  set -e
+  END="$(date +%s)"
+  echo "exit_code=${RC}" > "${OUTDIR}/npm_test_exit_code.txt"
+  echo "duration_seconds=$((END-START))" > "${OUTDIR}/npm_test_duration.txt"
+  if [ "${RC}" -ne 0 ]; then
+    w "npm test failed (exit code ${RC}). See ${OUTDIR}/npm_test_output.txt"
+  fi
+else
+  w "package.json not found; skipping npm test"
+fi
 
-1. **Six Sacred Tongues**: Multi-signature approval system
-2. **Harmonic Complexity**: Musical pricing H(d,R) = 1.5^(d²)
-3. **6D Vector Navigation**: Geometric trust in hyperbolic space
-4. **RWP v2.1 Envelope**: Tamper-proof message format
-5. **Fail-to-Noise**: Deterministic noise on errors
-6. **Security Gate**: Adaptive dwell time
-7. **Roundtable Consensus**: Multi-key vault system
-8. **Trust Decay**: Exponential trust degradation
+# ---- Run Python tests (pytest)
+if command -v pytest >/dev/null 2>&1 || [ -d "tests" ]; then
+  log "Running pytest..."
+  START="$(date +%s)"
+  set +e
+  if command -v pytest >/dev/null 2>&1; then
+    pytest -q > "${OUTDIR}/pytest_output.txt" 2>&1
+    RC=$?
+  else
+    python3 -m pytest -q > "${OUTDIR}/pytest_output.txt" 2>&1
+    RC=$?
+  fi
+  set -e
+  END="$(date +%s)"
+  echo "exit_code=${RC}" > "${OUTDIR}/pytest_exit_code.txt"
+  echo "duration_seconds=$((END-START))" > "${OUTDIR}/pytest_duration.txt"
+  if [ "${RC}" -ne 0 ]; then
+    w "pytest failed (exit code ${RC}). See ${OUTDIR}/pytest_output.txt"
+  fi
+else
+  w "pytest not found and no tests/ directory; skipping pytest"
+fi
 
-## Security Properties
+# ---- Run the memory shard demo (find the demo script)
+DEMO=""
+if [ -f "demo_memory_shard.py" ]; then
+  DEMO="demo_memory_shard.py"
+elif [ -f "aws-lambda-simple-web-app/demo_memory_shard.py" ]; then
+  DEMO="aws-lambda-simple-web-app/demo_memory_shard.py"
+fi
 
-| Property | Status | Implementation |
-|----------|--------|----------------|
-| Confidentiality | ✅ Demo-grade | HMAC-XOR with per-message keystream |
-| Integrity | ✅ Production | HMAC-SHA256 signature |
-| Authenticity | ✅ Production | HMAC signature over AAD + payload |
-| Replay Protection | ✅ Production | Nonce cache + timestamp window |
-| Fail-to-Noise | ✅ Production | Deterministic HMAC-based noise |
-| Timing Safety | ✅ Production | `hmac.compare_digest` |
-| Async Safety | ✅ Production | `await asyncio.sleep()` |
+if [ -n "${DEMO}" ]; then
+  log "Running demo: ${DEMO}"
+  set +e
+  python3 "${DEMO}" > "${OUTDIR}/demo_memory_shard_output.txt" 2>&1
+  RC=$?
+  set -e
+  echo "exit_code=${RC}" > "${OUTDIR}/demo_memory_shard_exit_code.txt"
+  if [ "${RC}" -ne 0 ]; then
+    w "demo_memory_shard.py failed (exit code ${RC}). See ${OUTDIR}/demo_memory_shard_output.txt"
+  fi
+else
+  w "demo_memory_shard.py not found (looked in repo root and aws-lambda-simple-web-app/)."
+fi
 
-## Usage
+# ---- Optional: zip it for sharing
+log "Creating tar.gz archive..."
+tar -czf "${OUTDIR}.tar.gz" -C "docs/evidence" "${STAMP}" 2>/dev/null || w "tar failed; you can zip manually"
 
-### Run Demos
-```bash
-cd demos/
-python demo_spiralverse_story.py
-```
-
-### Review Specifications
-```bash
-cd specifications/
-cat spiralverse-architecture/requirements.md
-```
-
-### Verify Tests
-```bash
-cd test_results/
-cat TEST_RESULTS_SUMMARY.md
-```
-
-## Patent Claims
-
-1. **6D Vector Swarm Navigation**: Distance-adaptive protocol complexity
-2. **Polyglot Modular Alphabet**: Six Sacred Tongues with cryptographic binding
-3. **Self-Modifying Cipher Selection**: Context-aware encryption algorithm selection
-4. **Proximity-Based Compression**: Bandwidth optimization via geometric proximity
-
-## Contact
-
-**Isaac Daniel Davis**
-- GitHub: @issdandavis
-- Patent: USPTO #63/961,403
-
----
-
-**This proof pack contains all evidence for:**
-- Patent filing and prosecution
-- Technical review and audit
-- Academic publication
-- Investor due diligence
-- Customer demonstrations
-EOF
-
-# Create manifest
-cat > "${PACK_DIR}/MANIFEST.txt" << EOF
-SCBE-AETHERMOORE Proof Pack Manifest
-Generated: ${TIMESTAMP}
-
-Directory Structure:
-====================
-
-mathematical_proofs/
-  - MATHEMATICAL_PROOFS.md
-  - AXIOMS.md
-  - COMPREHENSIVE_MATH_SCBE.md
-  - FOURIER_SERIES_FOUNDATIONS.md
-  - MATHEMATICAL_FOUNDATION_COMPLETE.md
-  - THEORETICAL_AXIOMS_COMPLETE.md
-
-demos/
-  - spiralverse_core.py (production-grade core)
-  - demo_spiralverse_story.py (narrative demo)
-  - demo_memory_shard.py
-  - rwp_v3_sacred_tongue_demo.py
-
-specifications/
-  - spiralverse-architecture/ (complete requirements)
-  - sacred-tongue-pqc-integration/
-  - enterprise-grade-testing/
-  - SPIRALVERSE_EXPLAINED_SIMPLE.md
-  - SPIRALVERSE_MASTER_PACK_COMPLETE.md
-
-test_results/
-  - TEST_RESULTS_SUMMARY.md
-  - TEST_SUITE_EXECUTIVE_SUMMARY.md
-  - AXIOM_VERIFICATION_STATUS.md
-  - VERIFICATION_REPORT.md
-
-patent_docs/
-  - PATENT_PROVISIONAL_APPLICATION.md
-  - PATENT_CLAIMS_QUICK_REFERENCE.md
-  - PATENT_CLAIMS_CORRECTED.md
-  - COMPLETE_IP_PORTFOLIO_READY_FOR_USPTO.md
-  - AETHERMOORE_CONSTANTS_IP_PORTFOLIO.md
-
-architecture/
-  - ARCHITECTURE_5_LAYERS.md
-  - SCBE_SYSTEM_ARCHITECTURE_COMPLETE.md
-  - SCBE_TOPOLOGICAL_CFI_UNIFIED.md
-  - DUAL_CHANNEL_CONSENSUS.md
-  - DIMENSIONAL_THEORY_COMPLETE.md
-  - scbe_14layer_reference.py
-  - mvp_api.py
-
-Total Files: $(find "${PACK_DIR}" -type f | wc -l)
-Total Size: $(du -sh "${PACK_DIR}" | cut -f1)
-
-Checksum (SHA256):
-$(find "${PACK_DIR}" -type f -exec sha256sum {} \; | sort | sha256sum)
-EOF
-
-# Create archive
-echo ""
-echo "Creating archive..."
-cd proof_packs
-tar -czf "${PACK_NAME}.tar.gz" "${PACK_NAME}/"
-ARCHIVE_SIZE=$(du -sh "${PACK_NAME}.tar.gz" | cut -f1)
-
-echo ""
-echo "=================================="
-echo "✅ Proof Pack Complete!"
-echo "=================================="
-echo "Directory: ${PACK_DIR}"
-echo "Archive: proof_packs/${PACK_NAME}.tar.gz"
-echo "Size: ${ARCHIVE_SIZE}"
-echo ""
-echo "Contents:"
-echo "  - Mathematical proofs"
-echo "  - Working demos"
-echo "  - Complete specifications"
-echo "  - Test results"
-echo "  - Patent documentation"
-echo "  - Architecture docs"
-echo ""
-echo "Next steps:"
-echo "  1. Review: cat ${PACK_DIR}/README.md"
-echo "  2. Verify: cat ${PACK_DIR}/MANIFEST.txt"
-echo "  3. Share: proof_packs/${PACK_NAME}.tar.gz"
-echo ""
-echo "Ready for:"
-echo "  ✓ Patent filing"
-echo "  ✓ Technical review"
-echo "  ✓ Academic submission"
-echo "  ✓ Investor due diligence"
-echo "=================================="
+log "DONE."
+log "Proof pack folder: ${OUTDIR}"
+log "Archive (if created): ${OUTDIR}.tar.gz"
+if [ -s "${WARN}" ]; then
+  log "Warnings recorded in: ${WARN}"
+fi

@@ -1,19 +1,19 @@
 {
-	"folders": [
-		{
-			"path": "../../../config"
-		},
-		{
-			"path": "../../../docs"
-		},
-		{
-			"path": "../../../examples"
-		},
-		{
-			"path": "../.."
-		},
-		{
-			"path": "../../../tests"
-		}
-	]
+  "folders": [
+    {
+      "path": "../../../config",
+    },
+    {
+      "path": "../../../docs",
+    },
+    {
+      "path": "../../../examples",
+    },
+    {
+      "path": "../..",
+    },
+    {
+      "path": "../../../tests",
+    },
+  ],
 }
