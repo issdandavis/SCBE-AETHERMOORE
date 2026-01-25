@@ -20,6 +20,7 @@ if sys.platform == "win32":
     if hasattr(sys.stderr, "reconfigure"):
         sys.stderr.reconfigure(encoding="utf-8")
 
+import hashlib
 import numpy as np
 from typing import Tuple, List, Optional
 from scipy.signal import hilbert
@@ -329,6 +330,7 @@ def layer_7_phase_transform(
     u_translated = mobius_add(a, u_rotated, eps)
 
     # Möbius addition: a ⊕ u
+    a_norm_sq = np.linalg.norm(a) ** 2
     u_norm_sq = np.linalg.norm(u) ** 2
     au_dot = np.dot(a, u)
 
