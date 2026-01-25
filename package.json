@@ -96,6 +96,10 @@
     "typescript": "^5.4.0",
     "vitest": "^4.0.17"
   },
+  "overrides": {
+    "tar": "^7.4.0",
+    "esbuild": "^0.24.0"
+  },
   "bin": {
     "scbe": "./scbe-cli.py"
   }
