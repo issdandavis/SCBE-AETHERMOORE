@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\fft\_basic_backend.py
+# hypothesis_version: 6.148.8
+
+['backward', 'fft', 'fftn', 'forward', 'hfft', 'ifft', 'ifftn', 'ihfft', 'irfft', 'irfftn', 'ortho', 'plan', 'rfft', 'rfftn', 'workers']

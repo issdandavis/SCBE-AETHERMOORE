@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/pydevd_plugins/extensions/types/pydevd_plugin_pandas_types.py
+# hypothesis_version: 6.150.2
+
+['<error getting: %s>', '<unable to get>', 'DataFrame', 'Series', 'Styler', 'T', '__dict__', '_series', 'clipboard', 'data', 'display.max_columns', 'display.max_colwidth', 'display.max_rows', 'java', 'pandas.core.frame', 'pandas.core.series', 'repl', 'style']

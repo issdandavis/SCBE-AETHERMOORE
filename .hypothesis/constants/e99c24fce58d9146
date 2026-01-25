@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\numpy\f2py\_isocbind.py
+# hypothesis_version: 6.148.8
+
+['c_bool', 'c_char', 'c_double', 'c_double_complex', 'c_float', 'c_float_complex', 'c_int', 'c_int16_t', 'c_int32_t', 'c_int64_t', 'c_int8_t', 'c_int_fast16_t', 'c_int_fast32_t', 'c_int_fast64_t', 'c_int_fast8_t', 'c_int_least16_t', 'c_int_least32_t', 'c_int_least64_t', 'c_int_least8_t', 'c_intmax_t', 'c_intptr_t', 'c_long', 'c_long_double', 'c_long_long', 'c_ptrdiff_t', 'c_short', 'c_signed_char', 'c_size_t', 'char', 'character', 'complex', 'complex_double', 'complex_float', 'complex_long_double', 'double', 'float', 'int', 'integer', 'logical', 'long', 'long_double', 'long_long', 'real', 'short', 'signed_char', 'unsigned', 'unsigned_char']

@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_trustregion_constr\report.py
+# hypothesis_version: 6.148.8
+
+['-', 'CG iter', 'CG stop', '^+13.4e', '^10.2e', '^13.2e', '^7', 'barrier param', 'c viol', 'f evals', 'niter', 'obj func', 'opt', 'penalty', 'tr radius', '|']

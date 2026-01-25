@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_linprog_simplex.py
+# hypothesis_version: 6.148.8
+
+[1e-09, 10000.0, 1000, 'complete', 'con', 'fun', 'message', 'nit', 'phase', 'slack', 'status', 'success', 'x']

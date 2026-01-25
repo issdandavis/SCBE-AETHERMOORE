@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\dateutil\tz\win.py
+# hypothesis_version: 6.148.8
+
+['\x00', ',-', '=3l16h', '=8h', '@', '@tzres', 'Bias', 'DaylightBias', 'DaylightName', 'DaylightStart', 'Display', 'Dlt', 'StandardBias', 'StandardName', 'StandardStart', 'Std', 'TZI', 'tzres', 'tzres.dll', 'tzwin', 'tzwin(%s)', 'tzwinlocal', 'tzwinlocal(%s)', 'tzwinlocal()', 'user32', '{kn}\\{name}', '{kn}\\{sn}']

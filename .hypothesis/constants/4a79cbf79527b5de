@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_resolver.py
+# hypothesis_version: 6.150.2
+
+['%0', '%r', '%s (%s)', '%s (id: %s)', "'", '(', '.%s', '...', '.__dict__[%s]', '0x', '0x%0', ':', 'None', 'Unable to handle:', '[%s:%s]', '[%s]', '_', '__', "__' (", '__class__', '__dict__', '__internals__', '_errors', 'd', 'errors', 'f_locals', 'frame object', 'hex', 'len(%s)', 'maxlen', 'more', 'stack', 'x']

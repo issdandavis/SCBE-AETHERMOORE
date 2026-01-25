@@ -1,0 +1,30 @@
+{
+  "name": "scbe-lattice",
+  "displayName": "SCBE Lattice Manager",
+  "version": "1.0.0",
+  "description": "Manage and visualize multi-dimensional lattice structures in SCBE-AETHERMOORE including Poincaré ball, Langues tensor, quasicrystal, PHDM, and Aethermoore manifolds",
+  "keywords": [
+    "scbe",
+    "lattice",
+    "hyperbolic",
+    "poincare",
+    "langues",
+    "quasicrystal",
+    "phdm",
+    "aethermoore",
+    "manifold",
+    "tensor",
+    "geometry",
+    "multi-dimensional",
+    "risk",
+    "security",
+    "cryptography"
+  ],
+  "author": "SCBE-AETHERMOORE",
+  "license": "MIT",
+  "steeringFiles": [
+    "getting-started.md",
+    "lattice-operations.md",
+    "axiom-verification.md"
+  ]
+}

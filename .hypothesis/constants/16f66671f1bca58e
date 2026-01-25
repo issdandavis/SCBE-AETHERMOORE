@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\PIL\BmpImagePlugin.py
+# hypothesis_version: 6.148.8
+
+[b'\x00', b'BM', 0.5, 39.3701, 108, 124, 255, 256, 992, 2016, 31744, 63488, 65280, 65536, 16711680, 4278190080, '.bmp', '.dib', '1', 'A', 'ABGR', 'BGAR', 'BGR', 'BGR;15', 'BGR;16', 'BGRA', 'BGRX', 'BGXR', 'BITFIELDS', 'BMP', 'DIB', 'JPEG', 'L', 'Not a BMP file', 'P', 'P;1', 'P;4', 'PNG', 'RAW', 'RGB', 'RGBA', 'RLE4', 'RLE8', 'Windows Bitmap', 'XBGR', 'a_mask', 'b_mask', 'bits', 'bmp_rle', 'colors', 'compression', 'data_size', 'direction', 'dpi', 'g_mask', 'header_size', 'height', 'image/bmp', 'palette_padding', 'pixels_per_meter', 'planes', 'r_mask', 'raw', 'rgb_mask', 'rgba_mask', 'width', 'y_flip']

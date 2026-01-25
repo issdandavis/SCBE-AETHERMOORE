@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\ndimage\filters.py
+# hypothesis_version: 6.148.8
+
+['_filters', 'convolve', 'convolve1d', 'correlate', 'correlate1d', 'filters', 'gaussian_filter', 'gaussian_filter1d', 'gaussian_laplace', 'generic_filter', 'generic_filter1d', 'generic_laplace', 'laplace', 'maximum_filter', 'maximum_filter1d', 'median_filter', 'minimum_filter', 'minimum_filter1d', 'ndimage', 'percentile_filter', 'prewitt', 'rank_filter', 'sobel', 'uniform_filter', 'uniform_filter1d']

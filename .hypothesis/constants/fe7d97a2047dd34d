@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\stats\_fit.py
+# hypothesis_version: 6.148.8
+
+[0.0, 0.001, 0.25, 0.5, 1.0, 200, 300, 9999, '*', ', ', '-', '--', '.', ': ', 'C0', 'C1', 'CDF', 'Data', 'Empirical CDF', 'FitParams', 'GoodnessOfFitResult', 'Histogram of Data', 'P-P', 'PDF', 'PMF', 'Percentiles', 'Q-Q', 'Quantiles', 'Reference', 'ad', 'alternative', 'bounds', 'cdf', 'cvm', 'equal', 'f', 'filliben', 'fit_result', 'greater', 'hist', 'histogram', 'ignore', 'integrality', 'k', 'ks', 'left', 'less', 'loc', 'message', 'mid', 'mle', 'mse', 'none', 'null_distribution', 'o', 'params', 'pdf', 'pmf', 'pp', 'pvalue', 'qq', 'random_state', 'scale', 'statistic', 'success', 'x', 'x0']

@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\argon2\_password_hasher.py
+# hypothesis_version: 6.148.8
+
+[b'$argon2d$', b'$argon2i$', b'$argon2id', '_parameters', 'ascii', 'encoding', 'utf-8']

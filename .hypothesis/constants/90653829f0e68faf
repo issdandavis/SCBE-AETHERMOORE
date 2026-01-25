@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\linalg\matfuncs.py
+# hypothesis_version: 6.148.8
+
+['_matfuncs', 'coshm', 'cosm', 'expm', 'expm_cond', 'expm_frechet', 'funm', 'inv', 'khatri_rao', 'linalg', 'logm', 'matfuncs', 'norm', 'rsf2csf', 'schur', 'signm', 'sinhm', 'sinm', 'solve', 'sqrtm', 'svd', 'tanhm', 'tanm']

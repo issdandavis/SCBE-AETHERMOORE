@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\numpy\polynomial\polyutils.py
+# hypothesis_version: 6.148.8
+
+[0.0, 100000000.0, '(', ')', '+', '0', 'Complex', 'Power is too large', 'as_series', 'expected deg >= 0', 'fixed', 'floatmode', 'format_float', 'getdomain', 'infstr', 'iu', 'k', 'mapdomain', 'mapparms', 'nanstr', 'precision', 'sign', 'trimcoef', 'trimseq']

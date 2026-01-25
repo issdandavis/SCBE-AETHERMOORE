@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_shgo.py
+# hypothesis_version: 6.148.8
+
+[-1e+50, 0.0, 1e-12, 0.0001, 1e+50, 100, ', ', '=', 'Failed to converge', 'Neighbors:', 'QH6239', 'SLSQP', 'Tri', '_custom', 'args', 'bfgs', 'bounds', 'bounds in kwarg:', 'callback', 'catol', 'cg', 'cobyla', 'cobyqa', 'constraints', 'custom', 'disp', 'dogleg', 'euclidean', 'f_min', 'f_tol', 'feasibility_tol', 'ftol', 'fun', 'funl', 'halton', 'hess', 'hessp', 'ineq', 'infty_constraints', 'jac', 'l-bfgs-b', 'local_iter', 'maxev', 'maxfev', 'maxiter', 'maxtime', 'method', 'minhgrd', 'minimize_every_iter', 'nelder-mead', 'newton-cg', 'nhev', 'njev', 'old', 'options', 'points', 'powell', 'shgo', 'simplices', 'simplicial', 'size.', 'slsqp', 'sobol', 'symmetry', 'tnc', 'trust-constr', 'trust-exact', 'trust-krylov', 'trust-ncg', 'type', 'x', 'x0', 'xl']

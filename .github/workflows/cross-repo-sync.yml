@@ -1,0 +1,177 @@
+# Cross-Repository Sync Workflow (SCBE-AETHERMOORE-DEMO -> GUMROAD)
+ # Syncs shared symphonic_cipher components between repos
+# Enables bidirectional coding across Claude Code and other environments
+
+name: Cross-Repo Sync (SCBE -> Gumroad)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'symphonic_cipher/**'
+      - 'src/**'
+      - 'demo/**'
+      - 'docs/**'
+  workflow_dispatch:
+    inputs:
+      sync_direction:
+        description: 'Sync direction'
+        required: true
+        default: 'to-gumroad'
+        type: choice
+        options:
+          - to-gumroad
+          - from-gumroad
+          - bidirectional
+
+env:
+  TARGET_REPO: issdandavis/gumroad-automation-demo
+  SHARED_PATHS: |
+    symphonic_cipher
+    src
+    demo
+
+jobs:
+  sync-to-gumroad:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event.inputs.sync_direction != 'from-gumroad'
+    
+    steps:
+      - name: Checkout scbe-aethermoore-demo
+        uses: actions/checkout@v4
+        with:
+          path: source
+          fetch-depth: 0
+
+      - name: Checkout gumroad-automation-demo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.TARGET_REPO }}
+          token: ${{ secrets.CROSS_REPO_TOKEN }}
+          path: target
+          fetch-depth: 0
+
+      - name: Sync symphonic_cipher to gumroad
+        run: |
+          set -euo pipefail
+          echo "🔄 Syncing SCBE components to gumroad-automation-demo"
+
+          VERSION="3.0.0"
+          TIMESTAMP="$(date -Iseconds)"
+
+          mkdir -p target/.sync
+          mkdir -p target/scbe_aethermoore
+          mkdir -p target/SELLABLE_PACKAGES
+
+          if [ -d "source/symphonic_cipher" ]; then
+            mkdir -p target/symphonic_cipher
+            rsync -av --delete source/symphonic_cipher/ target/symphonic_cipher/
+            echo "✅ Synced symphonic_cipher/"
+          fi
+
+          if [ -d "source/src" ]; then
+            mkdir -p target/scbe_aethermoore/src
+            rsync -av --delete source/src/ target/scbe_aethermoore/src/
+            echo "✅ Synced src/"
+          fi
+
+          if [ -d "source/demo" ]; then
+            mkdir -p target/SELLABLE_PACKAGES/scbe-demo-latest
+            rsync -av --delete source/demo/ target/SELLABLE_PACKAGES/scbe-demo-latest/
+            echo "✅ Synced demo to SELLABLE_PACKAGES"
+          fi
+
+          if [ -d "source/docs" ]; then
+            mkdir -p target/scbe_aethermoore/docs
+            rsync -av --delete source/docs/ target/scbe_aethermoore/docs/
+            echo "✅ Synced docs/"
+          fi
+
+          cat <<EOF > target/scbe_aethermoore/VERSION.json
+          {
+            "source": "scbe-aethermoore-demo",
+            "version": "${VERSION}",
+            "timestamp": "${TIMESTAMP}",
+            "commit": "${{ github.sha }}"
+          }
+          EOF
+
+      - name: Commit and push to gumroad
+        working-directory: target
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No changes to sync"
+          else
+            git commit -m "🔄 Sync SCBE v3.0 from scbe-aethermoore-demo [skip ci]" \
+              -m "Source: ${{ github.repository }}@${{ github.sha }}" \
+              -m "Triggered by: ${{ github.actor }}" \
+              -m "Components: symphonic_cipher, src, demo, docs"
+            git push
+            echo "✅ Changes pushed to gumroad-automation-demo"
+          fi
+
+  update-sellable-packages:
+    runs-on: ubuntu-latest
+    needs: [sync-to-gumroad]
+    if: success()
+    
+    steps:
+      - name: Checkout gumroad-automation-demo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.TARGET_REPO }}
+          token: ${{ secrets.CROSS_REPO_TOKEN }}
+          
+      - name: Update SCBE package in SELLABLE_PACKAGES
+        run: |
+          echo "📦 Updating SELLABLE_PACKAGES with latest SCBE"
+          
+          # Update distribution info
+          if [ -f "SELLABLE_PACKAGES/distribution_info.json" ]; then
+            UPDATED="$(date -Iseconds)"
+            jq --arg updated "$UPDATED" '
+              if has("packages") then
+                .packages += [{"name": "scbe-aethermoore-v3.0", "source": "scbe-aethermoore-demo", "updated": $updated}]
+              else
+                . + {"packages": [{"name": "scbe-aethermoore-v3.0", "source": "scbe-aethermoore-demo", "updated": $updated}]}
+              end
+            ' SELLABLE_PACKAGES/distribution_info.json > tmp.json && mv tmp.json SELLABLE_PACKAGES/distribution_info.json
+          fi
+          
+      - name: Commit distribution update
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add SELLABLE_PACKAGES/
+          if git diff --staged --quiet; then
+            echo "No package updates"
+          else
+            git commit -m "📦 Update SCBE in SELLABLE_PACKAGES [skip ci]"
+            git push
+          fi
+
+  create-sync-report:
+    runs-on: ubuntu-latest
+    needs: [sync-to-gumroad, update-sellable-packages]
+    if: always()
+    
+    steps:
+      - name: Generate sync report
+        run: |
+          echo "## 🔄 SCBE Cross-Repo Sync Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Source | scbe-aethermoore-demo |" >> $GITHUB_STEP_SUMMARY
+          echo "| Target | gumroad-automation-demo |" >> $GITHUB_STEP_SUMMARY
+          echo "| Version | 3.0.0 |" >> $GITHUB_STEP_SUMMARY
+          echo "| Timestamp | $(date -Iseconds) |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Synced Components" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ symphonic_cipher/" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ src/ (SCBE core)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ demo/ -> SELLABLE_PACKAGES" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ docs/" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_lbfgsb_py.py
+# hypothesis_version: 6.148.8
+
+[0.0, 2.220446049250313e-09, 1e-08, 1e-05, 10000000.0, 301, 302, 401, 402, 501, 502, 503, 504, 505, 601, 602, 603, 604, 701, 702, 703, 704, 705, 706, 707, 708, 709, 710, 711, 712, 713, 15000, ': ', 'ABNORMAL', 'CONVERGENCE', 'ERROR', 'FACTR < 0', 'FG', 'FTOL < 0', 'GTOL < 0', 'INITIAL G >= 0', 'INVALID NBD', 'LbfgsInvHessProduct', 'M <= 0', 'N <= 0', 'NEW_X', 'NO FEASIBLE SOLUTION', 'RESTART', 'START', 'STOP', 'STP < STPMIN', 'STP = STPMAX', 'STP = STPMIN', 'STP > STPMAX', 'STPMAX < STPMIN', 'STPMIN < 0', 'WARNING', 'XTOL < 0', 'XTOL TEST SATISFIED', 'callback', 'disp', 'eps', 'fmin_l_bfgs_b', 'ftol', 'fun', 'funcalls', 'grad', 'gtol', 'ij,ij->i', 'iprint', 'jac', 'maxcor', 'maxfun', 'maxiter', 'maxls', 'message', 'nfev', 'nit', 'status', 'task', 'warnflag', 'x']

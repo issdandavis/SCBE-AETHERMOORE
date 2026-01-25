@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\_lib\_testutils.py
+# hypothesis_version: 6.148.8
+
+[1.0, 1000.0, 1024.0, 1000000.0, 1000000000.0, 1000000000000.0, '-', '--buildtype=release', '--cov=', '--markers', '--native-file', '--pyargs', '--showlocals', '--tb=short', '--version', '--vsenv', '-m', '-n', '-vv', '/proc/meminfo', '3.0.8', ':', 'EXT_SUFFIX', 'G', 'Gb', 'Gib', 'HOST_GNU_TYPE', 'IS_MUSL', 'Invalid size string', 'M', 'Mb', 'Mib', 'PytestTester', 'SCIPY_AVAILABLE_MEM', 'T', 'Tb', 'Tib', '[binaries]\n', '^\\s*(\\d+)\\s*({})\\s*$', '_TestPythranFunc', '_cython_examples', 'b', 'build', 'cached', 'check_free_memory', 'compile', 'editable', 'extending', 'extending_cpp', 'fast', 'full', 'k', 'kb', 'kib', 'linux', 'memavailable', 'memfree', 'meson', 'musl', 'not slow', 'setup', 'tests', 'v', 'w', 'win32', 'xdist', '|']

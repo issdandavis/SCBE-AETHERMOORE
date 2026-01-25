@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\matplotlib\colorbar.py
+# hypothesis_version: 6.148.8
+
+[0.0, 1e-10, 1e-06, 1e-05, 0.05, 0.1, 0.15, 0.5, 1.0, 2.0, '<colorbar>', 'CS', '_colorbar_info', '_get_view', '_scale', '_set_view', '_set_view_from_bbox', 'anchor', 'aspect', 'auto', 'axes.edgecolor', 'axes.linewidth', 'both', 'bottom', 'changed', 'colorbar', 'colorbar_extend', 'drag_pan', 'extend', 'flat', 'function', 'get_subplotspec', 'horizontal', 'in', 'left', 'linear', 'location', 'locator: %r', 'log', 'mappable', 'max', 'min', 'neither', 'none', 'orientation', 'outline', 'pad', 'panchor', 'parents', 'proportional', 'right', 'ticklocation', 'top', 'uniform', 'vertical', 'xlim_changed', 'xtick.minor.visible', 'ylim_changed', 'ytick.minor.visible']
