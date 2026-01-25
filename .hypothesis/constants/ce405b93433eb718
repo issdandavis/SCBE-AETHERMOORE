@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\fftpack\__init__.py
+# hypothesis_version: 6.148.8
+
+['cc_diff', 'cs_diff', 'dct', 'dctn', 'diff', 'dst', 'dstn', 'fft', 'fft2', 'fftfreq', 'fftn', 'fftshift', 'hilbert', 'idct', 'idctn', 'idst', 'idstn', 'ifft', 'ifft2', 'ifftn', 'ifftshift', 'ihilbert', 'irfft', 'itilbert', 'next_fast_len', 'rfft', 'rfftfreq', 'sc_diff', 'shift', 'ss_diff', 'tilbert']

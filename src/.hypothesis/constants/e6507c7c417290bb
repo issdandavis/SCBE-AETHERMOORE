@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\_lib\array_api_compat\common\_linalg.py
+# hypothesis_version: 6.148.8
+
+['2', 'EighResult', 'QRResult', 'SVDResult', 'SlogdetResult', 'cholesky', 'complete', 'complex floating', 'cross', 'diagonal', 'eigh', 'fro', 'get_xp', 'isdtype', 'math', 'matmul', 'matrix_norm', 'matrix_rank', 'matrix_transpose', 'normalize_axis_tuple', 'np', 'nuc', 'outer', 'pinv', 'qr', 'reduced', 'slogdet', 'svd', 'svdvals', 'tensordot', 'trace', 'tuple[int, ...]', 'vecdot', 'vector_norm']

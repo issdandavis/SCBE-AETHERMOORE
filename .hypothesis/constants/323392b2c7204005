@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\stats\_hypotests.py
+# hypothesis_version: 6.148.8
+
+[-1.7, -0.45, 0.0, 1e-16, 1e-13, 1e-10, 1e-07, 0.003, 0.25, 0.4, 0.5, 0.8, 0.95, 1.0, 1.5, 3.0, 10.1, 144, 'asymptotic', 'auto', 'average', 'barnard_exact', 'bool', 'boschloo_exact', 'cramervonmises', 'cramervonmises_2samp', 'epps_singleton_2samp', 'exact', 'float', 'greater', 'ignore', 'less', 'poisson_means_test', 'pvalue', 'sobol', 'somersd', 'statistic', 'tukey_hsd', 'two-sided']

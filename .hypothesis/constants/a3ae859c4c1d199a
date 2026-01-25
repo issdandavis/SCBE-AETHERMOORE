@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\sparse\_matrix_io.py
+# hypothesis_version: 6.148.8
+
+['_array', '_is_array', '_matrix', 'ascii', 'bsr', 'col', 'coo', 'csc', 'csr', 'data', 'dia', 'format', 'indices', 'indptr', 'load_npz', 'offsets', 'row', 'save_npz', 'shape']

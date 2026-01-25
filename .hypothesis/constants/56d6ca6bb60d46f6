@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\ndimage\_interpolation.py
+# hypothesis_version: 6.148.8
+
+[0.0, 0.5, 'affine_transform', 'constant', 'edge', 'geometric_transform', 'grid-constant', 'grid-wrap', 'map_coordinates', 'mirror', 'nearest', 'rotate', 'shift', 'spline_filter', 'spline_filter1d', 'wrap', 'zoom']

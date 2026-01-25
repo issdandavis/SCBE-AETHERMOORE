@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/pydevd_file_utils.py
+# hypothesis_version: 6.150.2
+
+['!', '"%s"', '"%s=>%s"', '$py.class', ', ', '.', '.egg', '.py', '.pyc', '.zip', '/', '1', '<', '<frozen', '<string>', 'False', 'UNIX', 'WIN', 'WINDOWS', '[]', '\\', '__file__', '_get_filename', 'build/bdist.', 'build\\bdist.', 'get_filename', 'lower', 'none', 'purelib', 'r', 'site-packages', 'true', 'win32', '~']

@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\fftpack\basic.py
+# hypothesis_version: 6.148.8
+
+['_basic', 'basic', 'fft', 'fft2', 'fftn', 'fftpack', 'ifft', 'ifft2', 'ifftn', 'irfft', 'rfft']

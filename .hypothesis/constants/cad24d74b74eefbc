@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\nonlin.py
+# hypothesis_version: 6.148.8
+
+['BroydenFirst', 'InverseJacobian', 'KrylovJacobian', '_nonlin', 'anderson', 'broyden1', 'broyden2', 'diagbroyden', 'excitingmixing', 'linearmixing', 'newton_krylov', 'nonlin', 'optimize']

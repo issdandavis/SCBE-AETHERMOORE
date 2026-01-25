@@ -1,0 +1,302 @@
+{
+  "timestamp": "2026-01-18T00:25:41.931440",
+  "system_version": "SCBE-GeoSeal-Spiralverse v1.0",
+  "scenarios": {
+    "benign_request": {
+      "decision": "DENY",
+      "risk_score": 0.23916836872735045,
+      "spiralverse": {
+        "tongue": "RU",
+        "tongue_name": "Runethic",
+        "confidence": 0.1,
+        "symbol": "▲",
+        "required_consensus": [
+          "RU"
+        ]
+      },
+      "scbe": {
+        "decision": "ALLOW",
+        "realm_distance": 0.22574140550713948,
+        "spectral_coherence": 0.7739467327871724,
+        "spin_coherence": 0.9994223056795696,
+        "trust_score": 0.5
+      },
+      "geoseal": {
+        "path": "exterior",
+        "sphere_position": [
+          0.2780998390775747,
+          0.5561996781551494,
+          0.41714975861636194,
+          0.2780998390775747,
+          0.33371980689308955,
+          0.5005797103396343
+        ],
+        "cube_position": [
+          0.9,
+          0.95,
+          0.88,
+          0.92,
+          0.9,
+          0.85
+        ],
+        "geometric_distance": 0.5198658934150674,
+        "time_dilation": 0.353549495874034
+      },
+      "execution": {
+        "crypto_mode": "POST-QUANTUM",
+        "latency_ms": 2000,
+        "timestamp": "2026-01-18T00:25:41.927437"
+      }
+    },
+    "stolen_credentials": {
+      "decision": "DENY",
+      "risk_score": 1754901250605.1743,
+      "spiralverse": {
+        "tongue": "RU",
+        "tongue_name": "Runethic",
+        "confidence": 0.1,
+        "symbol": "▲",
+        "required_consensus": [
+          "RU",
+          "UM",
+          "CA"
+        ]
+      },
+      "scbe": {
+        "decision": "DENY",
+        "realm_distance": 5.292310349504398,
+        "spectral_coherence": 0.9183597518095804,
+        "spin_coherence": 0.9691305595743258,
+        "trust_score": 0.5
+      },
+      "geoseal": {
+        "path": "exterior",
+        "sphere_position": [
+          0.3992447479691472,
+          0.36853361350998204,
+          0.46834480050226884,
+          0.4222780988135211,
+          0.37621139712477336,
+          0.4069225315839385
+        ],
+        "cube_position": [
+          0.1,
+          0.2,
+          0.05,
+          0.15,
+          0.1,
+          0.0
+        ],
+        "geometric_distance": 1.4892133167190271,
+        "time_dilation": 0.050872812512654214
+      },
+      "execution": {
+        "crypto_mode": "POST-QUANTUM",
+        "latency_ms": 2000,
+        "timestamp": "2026-01-18T00:25:41.928345"
+      }
+    },
+    "insider_threat": [
+      {
+        "decision": "DENY",
+        "risk_score": 0.24169330891296253,
+        "spiralverse": {
+          "tongue": "KO",
+          "tongue_name": "Koraelin",
+          "confidence": 0.0,
+          "symbol": "◇",
+          "required_consensus": [
+            "KO"
+          ]
+        },
+        "scbe": {
+          "decision": "ALLOW",
+          "realm_distance": 0.3115055148315788,
+          "spectral_coherence": 0.8434798584615784,
+          "spin_coherence": 0.9994223056795695,
+          "trust_score": 0.5
+        },
+        "geoseal": {
+          "path": "exterior",
+          "sphere_position": [
+            0.33365788078253733,
+            0.5004868211738059,
+            0.41707235097817164,
+            0.33365788078253733,
+            0.367023668860791,
+            0.46712103309555225
+          ],
+          "cube_position": [
+            0.9,
+            0.95,
+            0.88,
+            0.92,
+            0.9,
+            0.85
+          ],
+          "geometric_distance": 0.49818886552254643,
+          "time_dilation": 0.3692144158092748
+        },
+        "execution": {
+          "crypto_mode": "POST-QUANTUM",
+          "latency_ms": 2000,
+          "timestamp": "2026-01-18T00:25:41.929117"
+        }
+      },
+      {
+        "decision": "DENY",
+        "risk_score": 0.4203105801115924,
+        "spiralverse": {
+          "tongue": "RU",
+          "tongue_name": "Runethic",
+          "confidence": 0.2,
+          "symbol": "▲",
+          "required_consensus": [
+            "RU",
+            "UM"
+          ]
+        },
+        "scbe": {
+          "decision": "QUARANTINE",
+          "realm_distance": 0.6783329696820232,
+          "spectral_coherence": 0.9185973216807128,
+          "spin_coherence": 0.9994223056795696,
+          "trust_score": 0.5
+        },
+        "geoseal": {
+          "path": "exterior",
+          "sphere_position": [
+            0.37589735133660535,
+            0.45107682160392637,
+            0.4134870864702659,
+            0.37589735133660535,
+            0.3909332453900696,
+            0.43604092755046214
+          ],
+          "cube_position": [
+            0.75,
+            0.95,
+            0.7,
+            0.8,
+            0.85,
+            0.85
+          ],
+          "geometric_distance": 0.3288365995747142,
+          "time_dilation": 0.5180553448193314
+        },
+        "execution": {
+          "crypto_mode": "POST-QUANTUM",
+          "latency_ms": 2000,
+          "timestamp": "2026-01-18T00:25:41.929869"
+        }
+      },
+      {
+        "decision": "DENY",
+        "risk_score": 2729064664.466838,
+        "spiralverse": {
+          "tongue": "KO",
+          "tongue_name": "Koraelin",
+          "confidence": 0.0,
+          "symbol": "◇",
+          "required_consensus": [
+            "RU",
+            "KO",
+            "UM",
+            "CA"
+          ]
+        },
+        "scbe": {
+          "decision": "DENY",
+          "realm_distance": 4.655046733190765,
+          "spectral_coherence": 0.9197525186712848,
+          "spin_coherence": 0.9867110518941611,
+          "trust_score": 0.5
+        },
+        "geoseal": {
+          "path": "exterior",
+          "sphere_position": [
+            0.3638580421983424,
+            0.4331643359504076,
+            0.39851118907437494,
+            0.38118461563635875,
+            0.4158377625123913,
+            0.4504909093884239
+          ],
+          "cube_position": [
+            0.3,
+            0.95,
+            0.2,
+            0.35,
+            0.4,
+            0.85
+          ],
+          "geometric_distance": 0.8221865142989406,
+          "time_dilation": 0.19313361409476965
+        },
+        "execution": {
+          "crypto_mode": "POST-QUANTUM",
+          "latency_ms": 2000,
+          "timestamp": "2026-01-18T00:25:41.930606"
+        }
+      }
+    ],
+    "hallucination_prevention": {
+      "decision": "DENY",
+      "risk_score": 1.7365854421269373,
+      "spiralverse": {
+        "tongue": "CA",
+        "tongue_name": "Cassisivadan",
+        "confidence": 0.2,
+        "symbol": "★",
+        "required_consensus": [
+          "CA",
+          "UM",
+          "RU"
+        ]
+      },
+      "scbe": {
+        "decision": "DENY",
+        "realm_distance": 1.2445978896016767,
+        "spectral_coherence": 0.9449952923426358,
+        "spin_coherence": 0.9994223056795696,
+        "trust_score": 0.5
+      },
+      "geoseal": {
+        "path": "interior",
+        "sphere_position": [
+          0.3876331155888031,
+          0.4360872550374034,
+          0.4118601853131032,
+          0.3876331155888031,
+          0.3973239434785231,
+          0.42639642714768333
+        ],
+        "cube_position": [
+          0.6,
+          0.9,
+          0.65,
+          0.7,
+          0.68,
+          0.75
+        ],
+        "geometric_distance": 0.21628388497152828,
+        "time_dilation": 0.6488408797349604
+      },
+      "execution": {
+        "crypto_mode": "POST-QUANTUM",
+        "latency_ms": 2000,
+        "timestamp": "2026-01-18T00:25:41.931393"
+      }
+    }
+  },
+  "system_metrics": {
+    "total_scenarios": 4,
+    "allow_count": 0,
+    "deny_count": 3,
+    "quarantine_count": 0
+  },
+  "geometric_trust_verification": {
+    "interior_paths": 1,
+    "exterior_paths": 2
+  }
+}

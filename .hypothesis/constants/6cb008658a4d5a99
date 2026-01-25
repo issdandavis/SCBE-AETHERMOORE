@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_linprog_highs.py
+# hypothesis_version: 6.148.8
+
+[0.0, 'Time limit reached. ', 'con', 'crossover_nit', 'dantzig', 'devex', 'eqlin', 'fun', 'highs_debug_level', 'ignore', 'ineqlin', 'ipm_iteration_limit', 'ipm_nit', 'lambda', 'log_to_console', 'lower', 'marg_bnds', 'marginals', 'message', 'mip_dual_bound', 'mip_gap', 'mip_max_nodes', 'mip_node_count', 'mip_rel_gap', 'nit', 'output_flag', 'presolve', 'residual', 'sense', 'simplex_nit', 'simplex_strategy', 'slack', 'solver', 'status', 'steepest', 'steepest-devex', 'success', 'time_limit', 'upper', 'x']

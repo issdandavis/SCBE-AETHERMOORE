@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_dual_annealing.py
+# hypothesis_version: 6.148.8
+
+[-5.0, 0.0, 1e-10, 2e-05, 0.5, 1.0, 2.0, 2.62, 3.0, 4.0, 5230.0, 10000000.0, 100000000.0, 100, 1000, 'L-BFGS-B', 'args', 'bounds', 'dual_annealing', 'hess', 'hessp', 'jac', 'maxiter', 'method', 'nhev', 'njev', 'options', 'seed']

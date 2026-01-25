@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\coverage\collector.py
+# hypothesis_version: 6.148.8
+
+[1048575, 'T', 'check_include', 'concur_id_func', 'disable_plugin', 'eventlet', 'file_tracers', 'gevent', 'greenlet', 'module', 'nothing', 'post_fork', 'self._collectors:', 'should_start_context', 'switch_context', 'thread', 'threading', '|']

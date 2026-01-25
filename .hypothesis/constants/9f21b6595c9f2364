@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\spatial\_geometric_slerp.py
+# hypothesis_version: 6.148.8
+
+[1e-09, 1e-07, 1.0, 2.0, 'geometric_slerp', 'npt.ArrayLike', 'tol must be a float']

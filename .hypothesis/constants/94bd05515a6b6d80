@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\pyparsing\helpers.py
+# hypothesis_version: 6.148.8
+
+[' | ', '#.*', '(', '(prev) ', ')', ',', '.*', '/', '// comment', '//(?:\\\\\\n|[^\\n])*', ':', ';', '<', '<!--[\\s\\S]*?-->', '</', '=', '>', 'C style comment', 'C++ style comment', 'FollowedBy>', 'HTML comment', 'INDENT', 'Python style comment', 'UNINDENT', '_-:', '_:', '_original_end', '_original_start', 'any tag', 'arrayLen', 'asKeyword', 'asString', 'common HTML entity', 'countedArray', 'delimitedList', 'delimited_list', 'dictOf', 'empty', 'end', 'ignoreExpr', 'illegal nesting', 'indented block', 'infixNotation', 'intExpr', 'locn_end', 'locn_start', 'makeHTMLTags', 'makeXMLTags', 'matchPreviousExpr', 'matchPreviousLiteral', 'nestedExpr', 'not a peer entry', 'not a subentry', 'not an unindent', 'oneOf', 'originalTextFor', 'replaceHTMLEntity', 'rest of line', 'start', 'tag', 'useRegex', 'value', '|']

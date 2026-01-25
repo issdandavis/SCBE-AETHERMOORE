@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\linalg\_special_matrices.py
+# hypothesis_version: 6.148.8
+
+[0.0, 1.0, 'CONTIGUOUS', 'block_diag', 'circulant', 'companion', 'constant', 'convolution_matrix', 'dft', 'f', 'fiedler', 'fiedler_companion', 'full', 'hadamard', 'hankel', 'helmert', 'hilbert', 'invhilbert', 'invpascal', 'kron', 'leslie', 'lower', 'n', 'pascal', 's', 'same', 'sqrtn', 'symmetric', 'toeplitz', 'upper', 'valid']

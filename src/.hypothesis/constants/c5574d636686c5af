@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_linesearch.py
+# hypothesis_version: 6.148.8
+
+[0.0, 1e-14, 1e-08, 0.0001, 0.1, 0.2, 0.5, 0.85, 0.9, 0.96, 1.0, 1.01, 2.0, 3.0, 100, 'LineSearchWarning', 'line_search_armijo', 'line_search_wolfe1', 'line_search_wolfe2', 'raise', 'scalar_search_wolfe1', 'scalar_search_wolfe2']

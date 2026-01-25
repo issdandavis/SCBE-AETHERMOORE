@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\ndimage\_ni_docstrings.py
+# hypothesis_version: 6.148.8
+
+["Default is 'mirror'", 'Default not replaced', 'axis', 'cval', 'docfiller', 'extra_arguments', 'extra_keywords', 'input', 'mode_interp_constant', 'mode_interp_mirror', 'mode_multiple', 'mode_reflect', 'nan', 'origin', 'origin_multiple', 'output', 'prefilter', 'size_foot']

@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\_lib\array_api_compat\common\_fft.py
+# hypothesis_version: 6.148.8
+
+[1.0, 'backward', 'cpu', 'fft', 'fftfreq', 'fftn', 'fftshift', 'forward', 'hfft', 'ifft', 'ifftn', 'ifftshift', 'ihfft', 'irfft', 'irfftn', 'ortho', 'rfft', 'rfftfreq', 'rfftn']

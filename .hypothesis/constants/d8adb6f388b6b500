@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\numpy\lib\shape_base.py
+# hypothesis_version: 6.148.8
+
+['__array_prepare__', '__array_priority__', '__array_wrap__', 'apply_along_axis', 'apply_over_axes', 'array_split', 'column_stack', 'dsplit', 'dstack', 'expand_dims', 'get_array_wrap', 'hsplit', 'kron', 'numpy', 'put_along_axis', 'row_stack', 'split', 'take_along_axis', 'tile', 'vsplit']

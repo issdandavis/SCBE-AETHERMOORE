@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\sparse\linalg\_dsolve\linsolve.py
+# hypothesis_version: 6.148.8
+
+['A is singular.', 'ColPerm', 'MatrixRankWarning', 'N', 'NATURAL', 'SuperLU', 'SymmetricMode', 'T', 'assumeSortedIndices', 'coo', 'csc', 'csr', 'dD', 'di', 'dia', 'dl', 'dok', 'factorized', 'ignore', 'is_sptriangular', 'l', 'lil', 'spbandwidth', 'spilu', 'splu', 'spsolve', 'spsolve_triangular', 'u', 'useUmfpack', 'use_solver', 'zi', 'zl']

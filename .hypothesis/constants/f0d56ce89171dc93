@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\pyparsing\testing.py
+# hypothesis_version: 6.148.8
+
+[100, 127, 9216, 9225, 9249, 9251, 9267, '0', '1234567890', '__compat__', '__diag__', 'default_whitespace', 'failed runTests', 'literal_string_class', 'packrat_cache_size', 'packrat_enabled', 'packrat_parse', 'recursion_enabled', 'unicode', 'verbose_stacktrace', '|', '␊']

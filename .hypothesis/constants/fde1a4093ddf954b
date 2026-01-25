@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\numpy\polynomial\hermite.py
+# hypothesis_version: 6.148.8
+
+[-1.0, -0.5, 0.0, 0.5, 1.0, 2.0, '?bBhHiIlLqQpP', 'H', 'Hermite', 'deg', 'herm2poly', 'hermadd', 'hermcompanion', 'hermder', 'hermdiv', 'hermdomain', 'hermfit', 'hermfromroots', 'hermgauss', 'hermgrid2d', 'hermgrid3d', 'hermint', 'hermline', 'hermmul', 'hermmulx', 'hermone', 'hermpow', 'hermroots', 'hermsub', 'hermtrim', 'hermval', 'hermval2d', 'hermval3d', 'hermvander', 'hermvander2d', 'hermvander3d', 'hermweight', 'hermx', 'hermzero', 'poly2herm', 'the axis']

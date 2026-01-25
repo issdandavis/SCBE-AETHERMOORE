@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_filtering.py
+# hypothesis_version: 6.150.2
+
+['**', '.', '/', ':', ';', 'ExcludeFilter', 'IDE_PROJECT_ROOTS', 'In library: %s (%s)', 'In project: %s (%s)', 'LIBRARY_ROOTS', 'LIBRARY_ROOTS %s\n', 'PYDEVD_FILTERS', 'PYDEVD_FILTERS %s', '\\', '__file__', 'getsitepackages', 'getusersitepackages', 'pip-global', 'platlib', 'platstdlib', 'purelib', 'site-packages', 'stdlib', '{']

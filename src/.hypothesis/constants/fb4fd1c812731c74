@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\sparse\coo.py
+# hypothesis_version: 6.148.8
+
+['_coo', 'coo', 'coo_matrix', 'isspmatrix_coo', 'sparse', 'spmatrix']

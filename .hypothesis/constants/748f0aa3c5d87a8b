@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\sparse\construct.py
+# hypothesis_version: 6.148.8
+
+['_construct', 'block_diag', 'bmat', 'bsr_matrix', 'construct', 'coo_matrix', 'csc_matrix', 'csr_matrix', 'dia_matrix', 'diags', 'eye', 'get_index_dtype', 'hstack', 'identity', 'issparse', 'kron', 'kronsum', 'rand', 'random', 'sparse', 'spdiags', 'vstack']

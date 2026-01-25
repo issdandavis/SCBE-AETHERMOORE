@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_dcsrch.py
+# hypothesis_version: 6.148.8
+
+[b'CONV', b'CONVERGENCE', b'ERROR', b'ERROR: FTOL .LT. ZERO', b'ERROR: GTOL .LT. ZERO', b'ERROR: INITIAL G .GE. ZERO', b'ERROR: STP .GT. STPMAX', b'ERROR: STP .LT. STPMIN', b'ERROR: STPMAX .LT. STPMIN', b'ERROR: STPMIN .LT. ZERO', b'ERROR: XTOL .LT. ZERO', b'FG', b'START', b'WARN', b'WARNING: ROUNDING ERRORS PREVENT PROGRESS', b'WARNING: STP = STPMAX', b'WARNING: STP = STPMIN', b'WARNING: XTOL TEST SATISFIED', 0.0, 0.5, 0.66, 1.1, 2.0, 3.0, 4.0, 100, 'ignore']

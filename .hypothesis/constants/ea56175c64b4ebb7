@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\sparse\linalg\_expm_multiply.py
+# hypothesis_version: 6.148.8
+
+[-1.0, 2.29e-16, 2.58e-08, 1.39e-05, 0.00034, 0.0024, 0.00907, 0.0238, 0.05, 0.0896, 0.144, 0.214, 0.3, 0.4, 0.514, 0.641, 0.781, 0.931, 1.0, 1.09, 1.26, 1.44, 1.62, 1.82, 2.01, 2.22, 2.43, 2.64, 2.86, 3.08, 3.31, 3.54, 4.7, 6.0, 7.2, 8.5, 9.9, 'economic', 'endpoint', 'expm_multiply', 'internal error', 'num', 'retstep']

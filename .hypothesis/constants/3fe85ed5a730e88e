@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\sparse\linalg\_isolve\iterative.py
+# hypothesis_version: 6.148.8
+
+[0.0, 1e-05, 0.25, 1.0, 1.5, 'bicg', 'bicgstab', 'cg', 'cgs', 'gmres', 'lartg', 'left', 'legacy', 'pr_norm', 'psolve', 'qmr', 'right', 'x']

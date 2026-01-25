@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\fft\__init__.py
+# hypothesis_version: 6.148.8
+
+['dct', 'dctn', 'dst', 'dstn', 'fft', 'fft2', 'fftfreq', 'fftn', 'fftshift', 'fht', 'fhtoffset', 'get_workers', 'hfft', 'hfft2', 'hfftn', 'idct', 'idctn', 'idst', 'idstn', 'ifft', 'ifft2', 'ifftn', 'ifftshift', 'ifht', 'ihfft', 'ihfft2', 'ihfftn', 'irfft', 'irfft2', 'irfftn', 'next_fast_len', 'prev_fast_len', 'register_backend', 'rfft', 'rfft2', 'rfftfreq', 'rfftn', 'set_backend', 'set_global_backend', 'set_workers', 'skip_backend']

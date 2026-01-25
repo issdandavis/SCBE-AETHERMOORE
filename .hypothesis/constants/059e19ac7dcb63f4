@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\__config__.py
+# hypothesis_version: 6.148.8
+
+['0.18.0', '0.3.29.dev', '10.3.0', '3.0.1', '3.1.6', '3.14', 'Build Dependencies', 'Compilers', 'D:/a/scipy/scipy', 'False', 'Machine Information', 'Python Information', 'True', 'args', 'blas', 'build', 'c', 'c++', 'cc', 'commands', 'config-tool', 'cpu', 'cross-compiled', 'cython', 'detection method', 'dicts', 'endian', 'false', 'family', 'fortran', 'found', 'gcc', 'gfortran', 'host', 'include directory', 'lapack', 'ld.bfd', 'lib directory', 'linker', 'linker args', 'little', 'name', 'path', 'pc file directory', 'pkgconfig', 'pybind11', 'pythran', 'scipy-openblas', 'show', 'stdout', 'system', 'unknown', 'version', 'windows', 'x86_64']

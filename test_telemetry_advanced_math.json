@@ -1,0 +1,71 @@
+{
+  "session_start": 1768884445.6983156,
+  "session_duration_ms": 24.164199829101562,
+  "total_tests": 5,
+  "passed_tests": 5,
+  "failed_tests": 0,
+  "tests": [
+    {
+      "test_name": "Poincar\u00e9 Ball Containment",
+      "category": "Hyperbolic Geometry",
+      "start_time": 1768884445.6983178,
+      "end_time": 1768884445.700234,
+      "duration_ms": 1.9161701202392578,
+      "iterations": 100,
+      "passed": true,
+      "metrics": {
+        "max_norm": 0.9900000000000002,
+        "violations": 0.0,
+        "containment_margin": 0.009999999999999787
+      }
+    },
+    {
+      "test_name": "Triangle Inequality",
+      "category": "Hyperbolic Geometry",
+      "start_time": 1768884445.7003226,
+      "end_time": 1768884445.7035186,
+      "duration_ms": 3.1960010528564453,
+      "iterations": 100,
+      "passed": true,
+      "metrics": {
+        "violations": 0.0
+      }
+    },
+    {
+      "test_name": "Harmonic Scaling Monotonicity",
+      "category": "Harmonic Scaling",
+      "start_time": 1768884445.703703,
+      "end_time": 1768884445.7042315,
+      "duration_ms": 0.5285739898681641,
+      "iterations": 100,
+      "passed": true,
+      "metrics": {
+        "violations": 0.0
+      }
+    },
+    {
+      "test_name": "Coherence Bounds",
+      "category": "Coherence Measures",
+      "start_time": 1768884445.7043872,
+      "end_time": 1768884445.72109,
+      "duration_ms": 16.702890396118164,
+      "iterations": 150,
+      "passed": true,
+      "metrics": {
+        "violations": 0.0
+      }
+    },
+    {
+      "test_name": "Euler Characteristic",
+      "category": "Topological Invariants",
+      "start_time": 1768884445.7211967,
+      "end_time": 1768884445.7212074,
+      "duration_ms": 0.010728836059570312,
+      "iterations": 5,
+      "passed": true,
+      "metrics": {
+        "violations": 0.0
+      }
+    }
+  ]
+}

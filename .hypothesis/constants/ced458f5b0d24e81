@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\__init__.py
+# hypothesis_version: 6.148.8
+
+['1.25.2', '2.6.0', 'LowLevelCallable', '__version__', 'cluster', 'constants', 'datasets', 'differentiate', 'fft', 'fftpack', 'integrate', 'interpolate', 'io', 'linalg', 'ndimage', 'odr', 'optimize', 'scipy.libs', 'show_config', 'signal', 'sparse', 'spatial', 'special', 'stats', 'test']

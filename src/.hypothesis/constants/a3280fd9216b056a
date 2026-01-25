@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\numpy\ctypeslib\_ctypeslib.py
+# hypothesis_version: 6.148.8
+
+[',', '.dll', '.dylib', '.so', '<', '=', '>', 'ALIGNED', 'C_CONTIGUOUS', 'EXT_SUFFIX', 'F_CONTIGUOUS', 'OWNDATA', 'Overlapping fields', 'S', 'WRITEABLE', 'WRITEBACKIFCOPY', '_', '_%dd', '__module__', '_dtype_', '_fields_', '_flags_', '_ndim_', '_pack_', '_shape_', 'any', 'as_array', 'as_ctypes', 'as_ctypes_type', 'c_intp', 'darwin', 'data', 'load_library', 'ndpointer', 'numpy.ctypeslib', 'shape', 'strides', 'struct', 'typestr', 'union', 'version', 'win', 'x']

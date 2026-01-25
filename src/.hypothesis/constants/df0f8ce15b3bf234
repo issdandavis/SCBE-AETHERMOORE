@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\sparse\linalg\_eigen\arpack\arpack.py
+# hypothesis_version: 6.148.8
+
+[-9999, 1000, 'A', 'ArpackError', 'ArpackNoConvergence', 'BE', 'D', 'DF', 'F', 'FD', 'G', 'I', 'LA', 'LI', 'LM', 'LR', 'N must be positive.', 'Normal exit.', 'SA', 'SI', 'SM', 'SR', 'Unknown error', 'buckling', 'c', 'cayley', 'csr', 'd', 'dtype', 'eigs', 'eigsh', 'f', 'fd', 'fdFD', 'i', 'int', 'naupd', 'neupd', 'normal', 'r', 'restructuredtext en', 's', 'saupd', 'seupd', 'z']

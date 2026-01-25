@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\interpolate\_interpolate.py
+# hypothesis_version: 6.148.8
+
+[0.0, 1.0, 2.0, 'BPoly', 'NdPPoly', 'PPoly', '__len__', '`x` array is all-nan', '`x` is not sorted.', 'append', 'axis', 'c', 'cubic', 'extrapolate', 'fill_value', 'fill_value (above)', 'fill_value (below)', 'interp1d', 'interp2d', 'lagrange', 'left', 'linear', 'mergesort', 'nearest', 'nearest-up', 'next', 'periodic', 'prepend', 'previous', 'quadratic', 'right', 'slinear', 'spline', 'x', 'zero']

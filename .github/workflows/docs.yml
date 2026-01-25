@@ -1,0 +1,114 @@
+name: Documentation
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - 'README.md'
+      - 'src/**/*.ts'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-docs:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Generate TypeDoc
+      run: |
+        npx typedoc --out docs-build/api src/index.ts \
+          --name "SCBE-AETHERMOORE API" \
+          --readme README.md \
+          --theme default
+    
+    - name: Copy demo files
+      run: |
+        mkdir -p docs-build/demo
+        cp scbe-aethermoore/customer-demo.html docs-build/demo/index.html
+        cp scbe-aethermoore/index.html docs-build/demo/landing.html
+        cp scbe-aethermoore/demo.html docs-build/demo/universe.html
+    
+    - name: Create index page
+      run: |
+        cat > docs-build/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>SCBE-AETHERMOORE Documentation</title>
+            <script src="https://cdn.tailwindcss.com"></script>
+            <style>
+                .gradient-bg { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
+            </style>
+        </head>
+        <body class="gradient-bg min-h-screen text-white">
+            <div class="container mx-auto px-4 py-16">
+                <h1 class="text-5xl font-bold mb-8 text-center">SCBE-AETHERMOORE Documentation</h1>
+                
+                <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <a href="api/" class="block p-8 bg-white/10 rounded-2xl hover:bg-white/20 transition">
+                        <div class="text-4xl mb-4">📚</div>
+                        <h2 class="text-2xl font-bold mb-2">API Reference</h2>
+                        <p class="text-gray-300">Complete TypeScript API documentation</p>
+                    </a>
+                    
+                    <a href="demo/" class="block p-8 bg-white/10 rounded-2xl hover:bg-white/20 transition">
+                        <div class="text-4xl mb-4">🎮</div>
+                        <h2 class="text-2xl font-bold mb-2">Interactive Demo</h2>
+                        <p class="text-gray-300">Try SCBE encryption live</p>
+                    </a>
+                    
+                    <a href="demo/landing.html" class="block p-8 bg-white/10 rounded-2xl hover:bg-white/20 transition">
+                        <div class="text-4xl mb-4">🌌</div>
+                        <h2 class="text-2xl font-bold mb-2">Product Page</h2>
+                        <p class="text-gray-300">Full feature showcase</p>
+                    </a>
+                </div>
+                
+                <div class="mt-16 text-center">
+                    <a href="https://github.com/ISDanDavis2/scbe-aethermoore" 
+                       class="inline-block px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-lg transition font-bold">
+                        View on GitHub
+                    </a>
+                </div>
+            </div>
+        </body>
+        </html>
+        EOF
+    
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: docs-build
+
+  deploy-docs:
+    name: Deploy to GitHub Pages
+    needs: build-docs
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4

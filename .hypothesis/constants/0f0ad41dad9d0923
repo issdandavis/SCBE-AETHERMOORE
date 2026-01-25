@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\sparse\_bsr.py
+# hypothesis_version: 6.148.8
+
+['_ge_', '_gt_', '_le_', '_lt_', '_ne_', 'array', 'bsr', 'bsr_array', 'bsr_matrix', 'csr', 'data should be 3-D', 'i', 'isspmatrix_bsr', 'matrix', 'need to infer shape', 'restructuredtext en', 'x']

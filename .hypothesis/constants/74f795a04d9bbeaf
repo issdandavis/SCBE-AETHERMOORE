@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\ndimage\measurements.py
+# hypothesis_version: 6.148.8
+
+['_measurements', 'center_of_mass', 'extrema', 'find_objects', 'histogram', 'label', 'maximum', 'maximum_position', 'mean', 'measurements', 'median', 'minimum', 'minimum_position', 'ndimage', 'standard_deviation', 'sum', 'sum_labels', 'variance', 'watershed_ift']

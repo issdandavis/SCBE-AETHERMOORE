@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\integrate\_quadpack_py.py
+# hypothesis_version: 6.148.8
+
+[0.0, 5e-29, 1.49e-08, 'IntegrationWarning', 'Unknown error.', 'alg', 'alg-log', 'alg-loga', 'alg-logb', 'cauchy', 'cos', 'dblquad', 'depth', 'epsabs', 'epsrel', 'imag', 'neval', 'nquad', 'points', 'quad', 'real', 'sin', 'tplquad', 'unexpected kwargs', 'unknown']

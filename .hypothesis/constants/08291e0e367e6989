@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\numpy\_core\getlimits.py
+# hypothesis_version: 6.148.8
+
+['%12.5e', '%15.7e', '%24.16e', '%s', '%s%d', '-max', '<undefined>', '_fmt', '_repr', 'double', 'dtype', 'eps', 'epsneg', 'finfo', 'fmt', 'half', 'iinfo', 'itype', 'iu', 'long double', 'machep', 'max', 'maxexp', 'min', 'minexp', 'negep', 'nexp', 'numpy', 'precision', 'resolution', 'single', 'smallest_normal', 'smallest_subnormal', 'tiny', 'title', 'u']
