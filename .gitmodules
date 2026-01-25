@@ -3,7 +3,7 @@
 	url = https://github.com/issdandavis/aws-lambda-simple-web-app.git
 [submodule "external_repos/Spiralverse-AetherMoore"]
 	path = external_repos/Spiralverse-AetherMoore
-	url = https://github.com/issdandavis/Spiralverse-AetherMoore.git
+	url = git@github.com:issdandavis/Spiralverse-AetherMoore.git
 [submodule "external_repos/aws-lambda-simple-web-app"]
 	path = external_repos/aws-lambda-simple-web-app
 	url = https://github.com/issdandavis/aws-lambda-simple-web-app.git
