@@ -33,7 +33,7 @@
     "typescript": "~5.8.2",
     "vite": "^7.3.1",
     "vitest": "^4.0.18",
-    "wait-on": "^8.0.0"
+    "wait-on": "^9.0.3"
   },
   "overrides": {
     "tar": ">=7.0.0",
