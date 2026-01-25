@@ -12,6 +12,7 @@ Welcome to the official documentation for SCBE-AETHERMOORE, a quantum-resistant 
 |---------|-------------|
 | [Executive Summary](executive-summary.md) | High-level overview for decision makers |
 | [Getting Started](getting-started.md) | Installation and first steps |
+| [Developer Guide (MMD)](scbe-developer-guide.mmd) | Full technical guide for export |
 | [Architecture](../01-architecture/README.md) | System design and components |
 | [Technical Reference](../02-technical/README.md) | Mathematical foundations and APIs |
 | [Deployment](../03-deployment/README.md) | Production deployment guides |
