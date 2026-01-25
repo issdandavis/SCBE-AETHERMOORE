@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\linalg\_misc.py
+# hypothesis_version: 6.148.8
+
+['1', 'LinAlgError', 'LinAlgWarning', '__array__', 'fdFD', 'i', 'lange', 'norm', 'nrm2', 'preferred']

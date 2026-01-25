@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/pydevconsole.py
+# hypothesis_version: 6.150.2
+
+[20.0, 259, 1024, 4096, '-1', '<input>', '@LINE@', 'IPYTHONENABLE', 'PYDEV_ECLIPSE_PID', 'True', '__main__', 'exec', 'exitfunc', 'interpreter', 'kill', 'single', 'win32']

@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/_pydev_bundle/_pydev_filesystem_encoding.py
+# hypothesis_version: 6.150.2
+
+['ISO-8859-1', 'decode', 'encode', 'mbcs', 'os.name', 'utf-8', 'win', 'win32']

@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\numpy\polynomial\chebyshev.py
+# hypothesis_version: 6.148.8
+
+[-1.0, 0.0, 0.5, 1.0, 2.0, '?bBhHiIlLqQpP', 'Chebyshev', 'Power is too large', 'T', 'cheb2poly', 'chebadd', 'chebcompanion', 'chebder', 'chebdiv', 'chebdomain', 'chebfit', 'chebfromroots', 'chebgauss', 'chebgrid2d', 'chebgrid3d', 'chebint', 'chebinterpolate', 'chebline', 'chebmul', 'chebmulx', 'chebone', 'chebpow', 'chebpts1', 'chebpts2', 'chebroots', 'chebsub', 'chebtrim', 'chebval', 'chebval2d', 'chebval3d', 'chebvander', 'chebvander2d', 'chebvander3d', 'chebweight', 'chebx', 'chebzero', 'deg', 'deg must be an int', 'expected deg >= 0', 'iu', 'npts must be >= 1', 'npts must be >= 2', 'npts must be integer', 'poly2cheb', 'the axis']

@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_net_command_factory_xml.py
+# hypothesis_version: 6.150.2
+
+['\n\n%s\n', ' message="%s"', ' stop_reason="%s"', ' suspend_type="%s"', '%s\t%s', '...', '/>_= ', '/>_= \t', '</frame>', '</thread></xml>', '</xml>', '<process/>', '<thread id="%s"', '<xml>', '>', 'Error: %s', '[Chained Exc: %s] %s', 'arg', 'do_wait_suspend', 'exc_desc="%s" ', 'exc_type="%s" ', 'file="%s" line="%s">', 'pydevd.py', 'stop_reason', 'thread_id', 'trace']

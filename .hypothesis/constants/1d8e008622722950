@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\matplotlib\projections\geo.py
+# hypothesis_version: 6.148.8
+
+[0.0, 1e-15, 1e-09, 0.001, 0.087, 0.25, 0.5, 1.0, 1.1, 2.0, -180, 180, '%f°%s, %f°%s', 'C', 'E', 'N', 'S', 'W', 'aitoff', 'axes.grid', 'bottom', 'box', 'center', 'equal', 'geo', 'grid', 'hammer', 'lambert', 'left', 'linear', 'mollweide', 'none', 'right', 'tick1', 'tick2', 'top']

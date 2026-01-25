@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\minpack.py
+# hypothesis_version: 6.148.8
+
+['OptimizeResult', 'OptimizeWarning', '_minpack_py', 'curve_fit', 'fixed_point', 'fsolve', 'least_squares', 'leastsq', 'minpack', 'optimize', 'zeros']

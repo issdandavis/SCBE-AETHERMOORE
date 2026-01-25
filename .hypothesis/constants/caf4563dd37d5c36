@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\special\orthogonal.py
+# hypothesis_version: 6.148.8
+
+['_orthogonal', 'airy', 'c_roots', 'cg_roots', 'chebyc', 'chebys', 'chebyt', 'chebyu', 'gegenbauer', 'genlaguerre', 'h_roots', 'he_roots', 'hermite', 'hermitenorm', 'j_roots', 'jacobi', 'js_roots', 'l_roots', 'la_roots', 'laguerre', 'legendre', 'orthogonal', 'p_roots', 'ps_roots', 'roots_chebyc', 'roots_chebys', 'roots_chebyt', 'roots_chebyu', 'roots_gegenbauer', 'roots_genlaguerre', 'roots_hermite', 'roots_hermitenorm', 'roots_jacobi', 'roots_laguerre', 'roots_legendre', 'roots_sh_chebyt', 'roots_sh_chebyu', 'roots_sh_jacobi', 'roots_sh_legendre', 's_roots', 'sh_chebyt', 'sh_chebyu', 'sh_jacobi', 'sh_legendre', 'special', 't_roots', 'ts_roots', 'u_roots', 'us_roots']

@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_collect_bytecode_info.py
+# hypothesis_version: 6.150.2
+
+[9999999, ' - ', ' = ', ' end block ', ' except ', ' raises: %s', '%s.\n', '%s. ', '%s{%s}', '(', ')', '):', '+ NULL', ', ', '.', '<unknown>', 'BUILD_TUPLE', 'CALL', 'CALL_FUNCTION', 'COMPARE_OP', 'DUP_TOP', 'JUMP_ABSOLUTE', 'JUMP_FORWARD', 'LOAD_ATTR', 'LOAD_CONST', 'LOAD_CONST(code)', 'LOAD_FAST', 'LOAD_GLOBAL', 'LOAD_NAME', 'NULL', 'NULL + ', 'POP_EXCEPT', 'POP_JUMP_IF_FALSE', 'POP_TOP', 'PRECALL', 'RAISE_VARARGS', 'RESUME', 'RETURN_CONST', 'RETURN_VALUE', 'SETUP_EXCEPT', 'SETUP_FINALLY', 'STORE_FAST', 'STORE_NAME', 'Unhandled: %', '_Instruction', '_TargetInfo(', 'co_lines', 'co_lnotab', 'end_lineno', 'exception match', 'lineno', 'offset', 'raise', 'raise ', 'rb', 'return ', 'try(', '{return: %s}', '{try:', '|', '}']

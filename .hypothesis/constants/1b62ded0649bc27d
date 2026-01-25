@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\_lib\array_api_compat\common\_typing.py
+# hypothesis_version: 6.148.8
+
+['Array', 'Capabilities', 'DType', 'DTypeKind', 'DTypesAll', 'DTypesAny', 'DTypesBool', 'DTypesComplex', 'DTypesIntegral', 'DTypesNumeric', 'DTypesReal', 'DTypesSigned', 'DTypesUnsigned', 'DefaultDTypes', 'Device', 'HasShape', 'JustComplex', 'JustFloat', 'JustInt', 'Namespace', 'NestedSequence', '_T_co', 'bool', 'boolean indexing', 'complex floating', 'indexing', 'integral', 'max dimensions', 'numeric', 'real floating', 'signed integer', 'unsigned integer']

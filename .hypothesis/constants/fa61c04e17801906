@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\stats\_resampling.py
+# hypothesis_version: 6.148.8
+
+[0.0, 0.01, 0.95, 1.0, 100, 9999, 10000, 'BCa', 'axis', 'basic', 'bca', 'bootstrap', 'data', 'greater', 'independent', 'less', 'monte_carlo_test', 'pairings', 'percentile', 'permutation_test', 'permuted', 'pvalue', 'random_state', 'real floating', 'rng', 'sample', 'samples', 'size', 'two-sided']

@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\pytest_benchmark\table.py
+# hypothesis_version: 6.148.8
+
+[1000, ' (1.0)', ' (>1000.0)', ' (inf)', '-', 'Computing stats ...', 'IQR', 'Iterations', 'Legend:', 'Max', 'Mean', 'Median', 'Min', 'OPS', 'Outliers', 'Rounds', 'StdDev', 'has_error', 'inf', 'iqr', 'iterations', 'max', 'mean', 'median', 'min', 'name', 'operations', 'ops', 'outliers', 'rounds', 'seconds', 'stddev', '{0:,.4f}', '{0:.4f}', '{0:>{1},.4f}{2:<{3}}', '{0:>{1}.4f}{2:<{3}}', '{0:>{1}}', '{line}: {value}']

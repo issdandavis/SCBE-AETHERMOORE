@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_api.py
+# hypothesis_version: 6.150.2
+
+[0.5, 260, '*', '-KILL', '-P', '-STOP', '/F', '/PID', '/T', '<', 'Error running: %s', 'ID', '__frame__:', 'add_line_breakpoint', 'ascii', 'breakpoint_id', 'cntThreads', 'cntUsage', 'django_breakpoints', 'dwFlags', 'dwSize', 'error_code', 'exec', 'group', 'inline', 'invalid func name ', 'jinja2_breakpoints', 'kill', 'original_line', 'pcPriClassBase', 'pgrep', 'pydevd: %s\n', 'python-line', 'szExeFile', 'taskkill', 'th32DefaultHeapID', 'th32ModuleID', 'th32ParentProcessID', 'th32ProcessID', 'translated_filename', 'translated_line']

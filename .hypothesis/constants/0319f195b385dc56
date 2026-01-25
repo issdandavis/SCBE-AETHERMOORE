@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\_lib\_util.py
+# hypothesis_version: 6.148.8
+
+[171, 1638083107694713882823079058616272161, '       inf', '       nan', '      -inf', '()', '.', '1.28.0', '1|2', '2.0', '2.0.0', '2.0.0.dev0', ': ', 'C', 'Extended Summary', 'FullArgSpec', 'GeneratorType', 'O', 'Parameters', '__len__', '_order_keys', 'annotations', 'args', 'col_ind', 'complex floating', 'con', 'converged', 'crossover_nit', 'data', 'defaults', 'eqlin', 'flag', 'float_kind', 'fun', 'function_calls', 'funl', 'ignore', 'ineqlin', 'int64', 'iterations', 'kwonlyargs', 'kwonlydefaults', 'lower', 'message', 'nit', 'omit', 'propagate', 'raise', 'real floating', 'rng', 'root', 'slack', 'status', 'success', 'upper', 'varargs', 'varkw', 'workers', 'x', 'xl', '{old_name}']

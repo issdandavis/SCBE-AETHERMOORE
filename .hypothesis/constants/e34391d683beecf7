@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_utils.py
+# hypothesis_version: 6.150.2
+
+[99999999, '   %s\n', '   self: ', ' % (', ' Thread %s', '%s', '%s\n', '%s: %.2fs', '(', ', ', ',)', '.', '/', 'Elapsed:', 'Threads running\n', '__class__', '__code__', '__loader__', '__main__', 'class variables', 'func_code', 'function variables', 'gevent.monkey', 'globals', 'interrupt_main', 'locals', 'main_thread', 'nt', 'posix', 'protected variables', 'scope', 'self', 'special variables', 'variable_reference', '{', '}']

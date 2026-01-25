@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\linalg\_decomp_lu.py
+# hypothesis_version: 6.148.8
+
+['1|2', 'All', 'C', 'C_CONTIGUOUS', 'WRITEABLE', 'a', 'b', 'd', 'f', 'fF', 'fdFD', 'getrf', 'getrs', 'lu', 'lu_factor', 'lu_solve', 'piv']

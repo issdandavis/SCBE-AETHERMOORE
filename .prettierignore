@@ -1,0 +1,10 @@
+node_modules
+dist
+build
+coverage
+*.min.js
+*.tgz
+package-lock.json
+.hypothesis
+__pycache__
+*.pyc

@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_trustregion_constr\minimize_trustregion_constr.py
+# hypothesis_version: 6.148.8
+
+[1e-08, 0.1, 1.0, 1000, 'niter', 'stop_cond', 'tr_interior_point']

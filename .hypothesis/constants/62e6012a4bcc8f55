@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/adapter/../../debugpy/launcher/../../debugpy/../debugpy/_vendored/force_pydevd.py
+# hypothesis_version: 6.150.2
+
+['%s;%s', '/debugpy.pydevd.log', ':\n {}', 'DEBUGPY_LOG_DIR', 'NO', 'PYDEVD_DEBUG', 'PYDEVD_DEBUG_FILE', 'True', '_pydev', '_pydev_bundle', '_pydev_runfiles', '_pydevd_bundle', '_pydevd_frame_eval', 'debugpy-dap', 'ignore', 'pydev', 'pydev_ipython', 'pydevd', 'pydevd_plugins']

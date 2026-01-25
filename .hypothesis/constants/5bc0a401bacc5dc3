@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\interpolate\_bary_rational.py
+# hypothesis_version: 6.148.8
+
+[-1.0, 1e-13, 0.75, 1.0, 100, 'AAA', '`x` must be 1-D.', '`x` must be finite.', '`y` must be 1-D.', 'ignore']

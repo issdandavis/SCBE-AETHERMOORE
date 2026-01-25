@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\sparse\linalg\_svdp.py
+# hypothesis_version: 6.148.8
+
+[0.002, 0.75, 1000, 'D', 'F', 'L', 'LM', 'S', 'SM', '_svdp', 'd', 'f', 'i', 'n', 'shifts must be >= 0!', 'y']

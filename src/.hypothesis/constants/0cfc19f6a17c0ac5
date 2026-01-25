@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\fft\_pocketfft\basic.py
+# hypothesis_version: 6.148.8
+
+['c', 'fft', 'fftn', 'hfft', 'hfftn', 'ifft', 'ifftn', 'ihfft', 'ihfftn', 'irfft', 'irfft_fftpack', 'irfftn', 'rfft', 'rfft_fftpack', 'rfftn']

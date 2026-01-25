@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\linalg\_decomp_cholesky.py
+# hypothesis_version: 6.148.8
+
+['1|2', 'a', 'ab', 'b', 'c', 'cb', 'cho_factor', 'cho_solve', 'cho_solve_banded', 'cholesky', 'cholesky_banded', 'pbtrf', 'pbtrs', 'potrf', 'potrs']

@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_cobyqa_py.py
+# hypothesis_version: 6.148.8
+
+[1e-08, 1e-06, 1.0, 500, 1000, 'disp', 'feasibility_tol', 'maxfev', 'maxiter', 'radius_final', 'radius_init', 'scale', 'target']

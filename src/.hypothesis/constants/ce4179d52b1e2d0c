@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\pytest_mock\plugin.py
+# hypothesis_version: 6.148.8
+
+['\nArgs:\n', '\nKwargs:\n', '--tb', 'AsyncMock', '_T', '__enter__', 'any_order', 'assert_any_await', 'assert_any_call', 'assert_awaited', 'assert_awaited_once', 'assert_awaited_with', 'assert_called', 'assert_called_once', 'assert_called_with', 'assert_has_awaits', 'assert_has_calls', 'assert_not_awaited', 'assert_not_called', 'auto', 'class', 'module', 'native', 'package', 'reset_mock', 'seal', 'session', 'spy_return_iter', 'spy_return_list']

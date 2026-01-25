@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\numpy\ma\extras.py
+# hypothesis_version: 6.148.8
+
+[2.0, 'Notes', 'O', '__iter__', '__name__', '__qualname__', '_mask', 'apply_along_axis', 'apply_over_axes', 'atleast_1d', 'atleast_2d', 'atleast_3d', 'average', 'axis', 'clump_masked', 'clump_unmasked', 'column_stack', 'compress_cols', 'compress_nd', 'compress_rowcols', 'compress_rows', 'corrcoef', 'count_masked', 'cov', 'diagflat', 'dot', 'dstack', 'ediff1d', 'f8', 'flatnotmasked_edges', 'hsplit', 'hstack', 'ignore', 'in1d', 'intersect1d', 'isin', 'keepdims', 'mask', 'mask_cols', 'mask_rowcols', 'mask_rows', 'masked_all', 'masked_all_like', 'median', 'mergesort', 'mr_', 'ndenumerate', 'notmasked_contiguous', 'notmasked_edges', 'polyfit', 'row_stack', 'safe', 'setdiff1d', 'setxor1d', 'stack', 'union1d', 'unique', 'unsafe', 'vander', 'vstack']

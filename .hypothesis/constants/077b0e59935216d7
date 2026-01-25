@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\linalg\_decomp_cossin.py
+# hypothesis_version: 6.148.8
+
+['_lwork', 'cossin', 'lrwork', 'lwork', 'orcsd', 'uncsd', 'x11', 'x12', 'x21', 'x22']

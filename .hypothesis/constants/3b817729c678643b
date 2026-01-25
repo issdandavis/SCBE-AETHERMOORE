@@ -1,0 +1,4 @@
+# file: /workspaces/scbe-aethermoore/src/ai_orchestration/security.py
+# hypothesis_version: 6.150.2
+
+[100, 300, 500, 1000, 100000, 500000, '%[0-9a-fA-F]{2}', '&#x?[0-9a-fA-F]+;', '...', ':', '<\\s*hidden\\s*>', '<prompt>', 'Agent is blocked', 'Instructions:', 'Rate limit exceeded', 'System:', 'Your task is', '[REDACTED]', '\\[\\s*INST\\s*\\]', '\\[\\s*SYSTEM\\s*\\]', '\\\\u[0-9a-fA-F]{4}', '\\\\x[0-9a-fA-F]{2}', 'agent', 'api_key', 'blocked', 'blocked_agents', 'blocked_events', 'context_manipulation', 'credit_card', 'data_exfiltration', 'delimiter_injection', 'email', 'encoding_attack', 'events_by_level', 'events_by_type', 'hex escape', 'html entity', 'jailbreak_attempt', 'level', 'phone', 'private_key', 'privilege_escalation', 'prompt_injection', 'recent_events', 'recursive_prompt', 'ssn', 'system_prompt', 'timestamp', 'total_events', 'type', 'unicode escape', 'unknown', 'url encoding']

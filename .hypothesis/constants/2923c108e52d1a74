@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\PIL\_typing.py
+# hypothesis_version: 6.148.8
+
+['Buffer', 'IntegralLike', 'StrOrBytesPath', 'SupportsRead', 'TypeGuard', '_T_co']

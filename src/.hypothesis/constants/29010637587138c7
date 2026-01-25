@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\_lib\array_api_compat\common\_helpers.py
+# hypothesis_version: 6.148.8
+
+[100, '.common._helpers', '.cupy', '.dask.array', '.numpy', '.torch', '2021.12', '2022.12', '2023.12', '2024.12', 'Array', 'DASK_DEVICE', 'SparseArray', 'Tensor', 'VoidDType', '_SizeT', '__array_namespace__', 'array_api_strict', 'array_namespace', 'cpu', 'cupy', 'dask.array', 'device', 'generic', 'get_namespace', 'inspect', 'is_array_api_obj', 'is_cupy_array', 'is_cupy_namespace', 'is_dask_array', 'is_dask_namespace', 'is_jax_array', 'is_jax_namespace', 'is_lazy_array', 'is_ndonnx_array', 'is_ndonnx_namespace', 'is_numpy_array', 'is_numpy_namespace', 'is_torch_array', 'is_torch_namespace', 'is_writeable_array', 'jax', 'jax.numpy', 'lru_cache', 'math', 'ndarray', 'ndonnx', 'npt.NDArray', 'numpy', 'numpy.dtypes', 'size', 'sparse', 'sys', 'to_device', 'torch', 'warnings']

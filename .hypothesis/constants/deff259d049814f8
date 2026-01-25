@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\integrate\_ode.py
+# hypothesis_version: 6.148.8
+
+[0.0, 1e-12, 1e-06, 0.2, 0.3, 0.9, 6.0, 10.0, 500, 'adams', 'bdf', 'complex_ode', 'dop853', 'dopri5', 'dvode', 'float', 'lband', 'lsoda', 'ml', 'mu', 'ode', 'uband', 'zvode']

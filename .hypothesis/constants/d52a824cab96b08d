@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\interpolate\interpolate.py
+# hypothesis_version: 6.148.8
+
+['BPoly', 'BSpline', 'NdPPoly', 'PPoly', 'RectBivariateSpline', '_interpolate', '_rgi', 'fitpack2', 'interp1d', 'interp2d', 'interpn', 'interpolate', 'lagrange', 'make_interp_spline']

@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\linalg\decomp_svd.py
+# hypothesis_version: 6.148.8
+
+['LinAlgError', '_decomp_svd', 'decomp_svd', 'diagsvd', 'get_lapack_funcs', 'linalg', 'null_space', 'orth', 'subspace_angles', 'svd', 'svdvals']

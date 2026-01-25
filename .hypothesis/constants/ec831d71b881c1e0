@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\matplotlib\backends\registry.py
+# hypothesis_version: 6.148.8
+
+['agg', 'cairo', 'gtk3', 'gtk3agg', 'gtk3cairo', 'gtk4', 'gtk4agg', 'gtk4cairo', 'headless', 'inline', 'ipympl', 'ipympl.backend_nbagg', 'macosx', 'matplotlib.backend', 'matplotlib_inline', 'module://', 'nbagg', 'notebook', 'pdf', 'pgf', 'ps', 'qt', 'qt5', 'qt5agg', 'qt5cairo', 'qt6', 'qtagg', 'qtcairo', 'svg', 'template', 'tk', 'tkagg', 'tkcairo', 'unknown', 'webagg', 'widget', 'wx', 'wxagg', 'wxcairo']

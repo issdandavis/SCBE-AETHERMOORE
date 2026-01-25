@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/_pydevd_bundle/pydevconsole_code.py
+# hypothesis_version: 6.150.2
+
+[512, '\nKeyboardInterrupt\n', '#', '%s\n', '-q', '... ', '<console>', '<input>', '>>> ', 'CO_COROUTINE', 'CommandCompiler', 'Compile', 'InteractiveConsole', '__console__', '__doc__', '__main__', '__name__', 'compile_command', 'eval', 'interact', 'now exiting %s...\n', 'pass', 'single', 'store_true']

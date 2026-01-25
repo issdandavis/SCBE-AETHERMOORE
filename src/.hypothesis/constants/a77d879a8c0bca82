@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\numpy\fft\_pocketfft.py
+# hypothesis_version: 6.148.8
+
+[1.0, 'backward', 'fft', 'fft2', 'fftn', 'forward', 'hfft', 'ifft', 'ifft2', 'ifftn', 'ihfft', 'irfft', 'irfft2', 'irfftn', 'numpy.fft', 'ortho', 'rfft', 'rfft2', 'rfftn', 'shape']

@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\PIL\ImageFile.py
+# hypothesis_version: 6.148.8
+
+[1024, 65536, 'Error closing: %s', 'P', 'Truncated File Read', '_exif_offset', '_fp', '_n_frames', 'bad configuration', 'cannot reuse parsers', 'decoding error', 'encoderconfig', 'flush', 'image was incomplete', 'load_read', 'load_seek', 'n_frames', 'out of memory error', 'raise_oserror', 'raw', 'rb', 'tile_prefix', 'unknown error']

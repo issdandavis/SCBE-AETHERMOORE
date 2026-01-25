@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\sparse\_construct.py
+# hypothesis_version: 6.148.8
+
+[0.01, 'A is not square', 'B is not square', 'F', 'block_array', 'block_diag', 'blocks must be 2-D', 'bmat', 'bsr', 'coo', 'csc', 'csr', 'd', 'diags', 'diags_array', 'eye', 'eye_array', 'hstack', 'identity', 'kron', 'kronsum', 'object', 'rand', 'random', 'random_array', 'random_state', 'restructuredtext en', 'spdiags', 'vstack']

@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_trustregion_constr\equality_constrained_sqp.py
+# hypothesis_version: 6.148.8
+
+[1e-16, 1e-08, 0.1, 0.3, 0.5, 0.8, 0.9, 2.0, 7.0, 'hits_boundary', 'niter', 'stop_cond']

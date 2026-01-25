@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\sparse\linalg\_eigen\_svds.py
+# hypothesis_version: 6.148.8
+
+['LM', 'SM', 'arpack', 'dtype', 'lobpcg', 'propack', 'random_state', 'svds', 'u', 'vh']

@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\PIL\JpegPresets.py
+# hypothesis_version: 6.148.8
+
+['high', 'low', 'maximum', 'medium', 'quantization', 'subsampling', 'web_high', 'web_low', 'web_maximum', 'web_medium', 'web_very_high']

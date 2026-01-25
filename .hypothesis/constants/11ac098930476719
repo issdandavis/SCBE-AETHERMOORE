@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/pydevd_plugins/django_debug.py
+# hypothesis_version: 6.150.2
+
+['<unknown source>', 'BaseContext', 'Django Template', 'IncludeNode', 'Node', 'NodeList', 'Source is None\n', 'Source name is %s\n', 'Template', 'TemplateDoesNotExist', 'TemplateSyntaxError', 'TextNode', 'Variable', 'VariableDoesNotExist', '__name__', '_render', '_resolve_lookup', 'call', 'context', 'django', 'django-line', 'django.template.base', 'django_breakpoints', 'django_stop', 'exception', 'find_template', 'get_template', 'ignore_failures', 'line', 'lineno', 'load_template', 'name', 'origin', 'r', 'render', 'replace', 'resolve', 'return', 'self', 'source', 'template', 'token', 'utf-8']

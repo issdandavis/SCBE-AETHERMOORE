@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\matplotlib\image.py
+# hypothesis_version: 6.148.8
+
+[-0.5, 0.0, 0.1, 0.5, 1.0, 4.0, 100000000.0, 100, 255, '1', '2**23 columns', '2**24 rows', '<u2', '=u2', '>u2', 'B', 'C', 'I;16', 'I;16B', 'L', 'L;2', 'L;4', 'LA', 'Method not supported', 'Must set data first', 'P', 'RGB', 'RGBA', 'RGBX', 'Software', 'Unknown image mode', 'Unknown type of bbox', '_imcache', 'antialiased', 'auto', 'bessel', 'bicubic', 'bilinear', 'blackman', 'catrom', 'constant', 'data', 'dpi', 'eps', 'f', 'f4', 'f8', 'figure.facecolor', 'format', 'gaussian', 'geturl', 'hamming', 'hanning', 'hermite', 'image.interpolation', 'image.origin', 'image.resample', 'jpeg', 'jpg', 'kaiser', 'lanczos', 'lower', 'mitchell', 'name', 'nearest', 'none', 'pdf', 'png', 'pnginfo', 'ps', 'quadric', 'raw', 'rgba', 'same_kind', 'savefig.facecolor', 'savefig.format', 'set_extent', 'sinc', 'spline16', 'spline36', 'svg', 'upper', 'x', 'y']

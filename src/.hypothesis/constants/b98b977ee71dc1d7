@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_linprog_util.py
+# hypothesis_version: 6.148.8
+
+[1e-09, 1.0, "'", '_LPProblem', '_sparse_presolve', 'csr', 'highs', 'highs-ds', 'highs-ipm', 'id', 'ignore', 'interior-point', 'pivot', 'revised simplex', 'simplex', 'sparse', 'svd']

@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_trace_dispatch_regular.py
+# hypothesis_version: 6.150.2
+
+[107, 109, 144, 160, '.', '/', '\\', '__bootstrap', '__bootstrap_inner', '__call__', '_bootstrap', '_bootstrap_inner', '_exec', 'call', 'exception', 'main', 'pydev_do_not_trace', 'pydev_monkey', 'pydevd', 'pydevd_tracing', 'return', 'run', 'self', 'threading']

@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\numpy\core\numerictypes.py
+# hypothesis_version: 6.148.8
+
+['?', 'All', 'AllFloat', 'AllInteger', 'BHILQP', 'Character', 'Complex', 'Datetime', 'FDG', 'Float', 'Integer', 'M', 'Mm', 'O', 'S', 'ScalarType', 'U', 'UnsignedInteger', 'V', 'b', 'bBhHiIlLqQpP', 'bhilqp', 'bool', 'busday_count', 'busday_offset', 'busdaycalendar', 'c', 'cast', 'complex128', 'complex160', 'complex192', 'complex256', 'complex32', 'complex512', 'complex64', 'datetime_as_string', 'datetime_data', 'efdg', 'efdgFDG', 'f', 'find_common_type', 'float128', 'float16', 'float256', 'float32', 'float64', 'float80', 'float96', 'generic', 'i', 'int128', 'int16', 'int32', 'int64', 'int8', 'is_busday', 'issctype', 'issubdtype', 'm', 'maximum_sctype', 'nbytes', 'numpy', 'obj2sctype', 'object', 'sctype2char', 'sctypeDict', 'sctypes', 'typecodes', 'u', 'uint128', 'uint16', 'uint32', 'uint64', 'uint8', 'unrecognized type']

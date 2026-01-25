@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\fftpack\_pseudo_diffs.py
+# hypothesis_version: 6.148.8
+
+[-1.0, 0.0, 1.0, 'cc_diff', 'cc_diff_cache', 'cs_diff', 'cs_diff_cache', 'diff', 'diff_cache', 'hilbert', 'hilbert_cache', 'ihilbert', 'ihilbert_cache', 'itilbert', 'itilbert_cache', 'sc_diff', 'sc_diff_cache', 'shift', 'shift_cache', 'ss_diff', 'ss_diff_cache', 'tilbert', 'tilbert_cache']

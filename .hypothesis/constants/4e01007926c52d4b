@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/_pydev_bundle/_pydev_saved_modules.py
+# hypothesis_version: 6.150.2
+
+['.', '.py', 'Empty', 'Full', 'LifoQueue', 'Lock', 'Marshaller', 'Queue', 'RLock', 'Server', 'ServerProxy', 'SimpleXMLRPCServer', 'Thread', '_thread', 'allocate_lock', 'code', 'compile_command', 'current_thread', 'deque', 'found_at', 'getaddrinfo', 'gethostname', 'http.server', 'import_name', 'mktime', 'queue', 'select', 'setprofile', 'settrace', 'sleep', 'socket', 'start_new', 'start_new_thread', 'threading', 'time', 'xmlrpc.server', 'xmlrpclib']

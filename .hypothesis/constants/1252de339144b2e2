@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\stats\_multivariate.py
+# hypothesis_version: 6.148.8
+
+[-5.0, -4.0, -3.0, -2.0, -1.0, -0.5, 0.0, 1e-13, 1e-09, 1e-08, 1e-07, 1e-05, 0.5, 1.0, 2.0, 1000.0, 1000000.0, 1000000000.0, 100, 1000, 1000000, '...,...i->...i', '...i,...j->...ij', '...j,...k->...jk', '_doc_callparams_note', '_doc_mean_params', '_doc_random_state', '_doc_row_col', '_doc_row_col_note', '_doc_x', 'boyett', 'brentq', 'cdf', 'cov', 'd', 'dirichlet', 'entropy', 'f', 'i,...i->...', 'ignore', 'ij,...j->...i', 'invwishart', 'jp,ipq,kq->ijk', 'logcdf', 'logpdf', 'logpmf', 'matrix_normal', 'mean', 'mode', 'multinomial', 'multivariate_normal', 'multivariate_t', 'normal_inverse_gamma', 'ortho_group', 'patefield', 'pdf', 'pmf', 'random_correlation', 'random_table', 'rvs', 'special_ortho_group', 'trmm', 'trsm', 'uniform_direction', 'unitary_group', 'var', 'vonmises_fisher', 'wishart', 'x must be an array.']

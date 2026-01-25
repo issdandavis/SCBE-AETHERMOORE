@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_net_command_factory_json.py
+# hypothesis_version: 6.150.2
+
+['\n\n%s\n', ' (Current frame)', '%s : %d', '%s in %s', '%s.%s', '.py', '<module>', '<unknown>', 'IS_PLUGIN_FRAME', '__name__', '__package__', '__version__', 'breakpoint', 'co_lines', 'co_lnotab', 'completions', 'console', 'entry', 'exception', 'exited', 'function breakpoint', 'goto', 'important', 'line', 'module', 'new', 'package', 'path', 'pause', 'processReplaced', 'sourceReference', 'stackTrace', 'started', 'stderr', 'stdout', 'step', 'subtle', 'threads']

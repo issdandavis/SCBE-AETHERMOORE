@@ -1,0 +1,4 @@
+# file: /home/codespace/.vscode-remote/extensions/ms-python.debugpy-2025.18.0/bundled/libs/debugpy/_vendored/pydevd/_pydevd_bundle/pydevd_comm.py
+# hypothesis_version: 6.150.2
+
+[b'\n', b'\n\n', b'\r', b'\r\n', b':', b'Content-Length:', 0.1, 0.5, 1024, 99999999, ' (Current frame)', '" ... \n', '%s\n', '%s (call %s)', '%s = (%s)', '%s: %s', '%s: %s\n', '*', '.', '.pyc', '.pyo', '/>_= \t', '</xml>', '<error>', '<line>%d</line>', '<unknown>', '<xml>', '???', 'Connecting to %s:%s', 'Connection accepted', 'Error executing: %s', 'Error reloading code', 'IS_PLUGIN_FRAME', 'Modified: %s', 'OrderedDict', 'ReaderThread: exit', 'WriterThread: exit', '__file__', '__main__', 'body', 'builtins', 'clipboard', 'decode', 'exceptionInfo', 'hover', 'indexedVariables', 'message', 'name', 'namedVariables', 'presentationHint', 'pydev_do_not_trace', 'pydevd.Reader', 'pydevd.Writer', 'python', 'repl', 'success', 'to_dict', 'type', 'utf-8', 'value', 'variablesReference', 'watch', '|']

@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\optimize\_qap.py
+# hypothesis_version: 6.148.8
+
+[0.001, 0.03, 1000, '2opt', '`A` must be square', '`B` must be square', 'barycenter', 'col_ind', 'faq', 'fun', 'nit', 'randomized', 'rng']

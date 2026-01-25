@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\numpy\f2py\f90mod_rules.py
+# hypothesis_version: 6.148.8
+
+['\t{NULL}\n};\n', ' allocate(d(%s))\n', '$Revision: 1.27 $', '*', ',', '-1', ':', 'F_FUNC', 'F_FUNC_US', 'See `f2py -v`', '\\begin{description}', '\\end{description}', '\\subsection{', '\\subsubsection{', '_', 'arrayobject.h', 'body', 'char *', 'char*', 'dims', 'doc', 'docs', 'docshort', 'end interface', 'externroutines', 'f90modhooks', 'includes', 'includes0', 'initf90modhooks', 'integer flag\n', 'interface', 'latexdoc', 'modulename', 'name', 'need', 'note', 'rank', 'routine_defs', 's(%s)', 'separatorsfor', 'vars', '}', '}\n']

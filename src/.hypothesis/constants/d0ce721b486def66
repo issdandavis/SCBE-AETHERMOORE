@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\linalg\_decomp_ldl.py
+# hypothesis_version: 6.148.8
+
+[0.0, 'A', 'hetrf', 'hetrf_lwork', 'ldl', 'sytrf', 'sytrf_lwork']

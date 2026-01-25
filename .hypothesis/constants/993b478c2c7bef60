@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\scipy\signal\windows\windows.py
+# hypothesis_version: 6.148.8
+
+['_windows', 'barthann', 'bartlett', 'blackman', 'blackmanharris', 'bohman', 'boxcar', 'chebwin', 'cosine', 'dpss', 'exponential', 'flattop', 'gaussian', 'general_cosine', 'general_gaussian', 'general_hamming', 'get_window', 'hamming', 'hann', 'kaiser', 'nuttall', 'parzen', 'signal.windows', 'taylor', 'triang', 'tukey', 'windows']

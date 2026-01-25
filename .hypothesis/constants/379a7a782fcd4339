@@ -1,0 +1,4 @@
+# file: C:\Users\issda\AppData\Roaming\Python\Python314\site-packages\matplotlib\_fontconfig_pattern.py
+# hypothesis_version: 6.148.8
+
+['(?=[%s])', ',', '-', ':', '=', '[a-z]+', '\\\\', '\\\\(?=[%s])', '\\\\=_:,', '\\\\\\-:,', 'black', 'bold', 'book', 'condensed', 'demibold', 'expanded', 'extra bold', 'extra-condensed', 'extra-expanded', 'extrabold', 'extracondensed', 'extraexpanded', 'extralight', 'families', 'family', 'file', 'heavy', 'italic', 'light', 'medium', 'normal', 'oblique', 'properties', 'properties*', 'regular', 'roman', 'semi-condensed', 'semibold', 'semicondensed', 'size', 'sizes', 'slant', 'stretch', 'style', 'thin', 'ultra-condensed', 'ultra-expanded', 'ultracondensed', 'ultraexpanded', 'ultralight', 'variant', 'weight', 'width']
