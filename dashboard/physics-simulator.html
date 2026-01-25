@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Physics Simulator API Console</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap");
+
+      :root {
+        --bg-0: #0b0f14;
+        --bg-1: #0f1724;
+        --bg-2: #101827;
+        --panel: rgba(15, 23, 36, 0.9);
+        --panel-border: rgba(255, 255, 255, 0.08);
+        --accent: #ffb454;
+        --accent-2: #64d2ff;
+        --accent-3: #b4ff9f;
+        --text: #e8edf2;
+        --muted: #a0a8b3;
+        --danger: #ff6b6b;
+        --ok: #4ade80;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Space Grotesk", "Segoe UI", sans-serif;
+        color: var(--text);
+        background: radial-gradient(1200px 600px at 10% 0%, #162035 0%, transparent 60%),
+          radial-gradient(900px 500px at 90% 10%, #1a1328 0%, transparent 55%),
+          linear-gradient(160deg, var(--bg-0), var(--bg-2));
+        min-height: 100vh;
+      }
+
+      .page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 28px 24px 48px;
+      }
+
+      .hero {
+        display: grid;
+        gap: 20px;
+        align-items: center;
+        grid-template-columns: 1.2fr 0.8fr;
+        margin-bottom: 28px;
+        animation: fadeUp 600ms ease both;
+      }
+
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .hero h1 {
+        margin: 0 0 8px;
+        font-size: clamp(28px, 3vw, 40px);
+        letter-spacing: 0.2px;
+      }
+
+      .hero p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--panel-border);
+        color: var(--accent-2);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--panel-border);
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+        backdrop-filter: blur(14px);
+      }
+
+      .grid {
+        display: grid;
+        gap: 20px;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .stack {
+        display: grid;
+        gap: 16px;
+      }
+
+      .label {
+        font-size: 12px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+      }
+
+      select,
+      textarea,
+      input {
+        width: 100%;
+        background: rgba(8, 12, 18, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 12px;
+        color: var(--text);
+        padding: 12px 14px;
+        font-size: 14px;
+        font-family: "JetBrains Mono", Consolas, monospace;
+      }
+
+      textarea {
+        min-height: 220px;
+        resize: vertical;
+        line-height: 1.5;
+      }
+
+      button {
+        border: none;
+        border-radius: 12px;
+        padding: 14px 18px;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--accent), #ff8a3d);
+        color: #1b1106;
+        cursor: pointer;
+        transition: transform 150ms ease, box-shadow 150ms ease;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 24px rgba(255, 138, 61, 0.25);
+      }
+
+      .status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--danger);
+        box-shadow: 0 0 12px rgba(255, 107, 107, 0.8);
+      }
+
+      .status.ok .dot {
+        background: var(--ok);
+        box-shadow: 0 0 12px rgba(74, 222, 128, 0.8);
+      }
+
+      .mono {
+        font-family: "JetBrains Mono", Consolas, monospace;
+      }
+
+      pre {
+        margin: 0;
+        padding: 16px;
+        background: rgba(6, 9, 13, 0.9);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        overflow: auto;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .meta span {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 6px 10px;
+        border-radius: 999px;
+      }
+
+      .footer {
+        margin-top: 28px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      @media (max-width: 900px) {
+        .hero {
+          grid-template-columns: 1fr;
+        }
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="hero panel">
+        <div>
+          <div class="chip">Physics Simulator API</div>
+          <h1>Live Simulation Console</h1>
+          <p>
+            Send structured simulation requests to the AWS Lambda gateway and inspect
+            responses instantly. This console uses your live endpoint by default.
+          </p>
+          <div class="meta" style="margin-top: 14px;">
+            <span>Endpoint: <span class="mono" id="api-url"></span></span>
+            <span>Method: POST</span>
+            <span>Format: JSON</span>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="status" id="connection-status">
+            <div class="dot"></div>
+            <span>Checking connection...</span>
+          </div>
+          <div class="panel" style="padding: 14px;">
+            <div class="label">Quick curl</div>
+            <pre id="curl-preview"></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="panel stack" style="animation: fadeUp 700ms ease both;">
+          <div>
+            <div class="label">Simulation Type</div>
+            <select id="simulation-type">
+              <option value="classical">classical</option>
+              <option value="quantum" selected>quantum</option>
+              <option value="electromagnetism">electromagnetism</option>
+              <option value="thermodynamics">thermodynamics</option>
+              <option value="relativity">relativity</option>
+            </select>
+          </div>
+
+          <div>
+            <div class="label">Parameters (JSON)</div>
+            <textarea id="parameters"></textarea>
+          </div>
+
+          <button id="send-request">Run Simulation</button>
+          <div class="label">Notes</div>
+          <div class="mono" style="color: var(--muted); font-size: 12px;">
+            If the browser blocks the request, enable CORS on API Gateway or
+            use a local proxy. The request format is the same.
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="panel" style="animation: fadeUp 800ms ease both;">
+            <div class="label">Response</div>
+            <pre id="response-output">Waiting for request...</pre>
+          </div>
+          <div class="panel" style="animation: fadeUp 900ms ease both;">
+            <div class="label">Request Preview</div>
+            <pre id="request-preview"></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        Built for the SCBE-AETHERMOORE physics simulator API. Update the endpoint
+        in the script if needed.
+      </div>
+    </div>
+
+    <script>
+      const API_URL = "https://ldrsy9yqs7.execute-api.us-west-2.amazonaws.com/";
+      const simulationType = document.getElementById("simulation-type");
+      const parameters = document.getElementById("parameters");
+      const responseOutput = document.getElementById("response-output");
+      const requestPreview = document.getElementById("request-preview");
+      const curlPreview = document.getElementById("curl-preview");
+      const connectionStatus = document.getElementById("connection-status");
+      const apiUrlLabel = document.getElementById("api-url");
+
+      const defaults = {
+        classical: { mass: 1, velocity: 5, time: 3 },
+        quantum: { principal_quantum_number: 2 },
+        electromagnetism: { charge: 1, distance: 0.5 },
+        thermodynamics: { pressure: 101325, volume: 1, moles: 1, temperature: 300 },
+        relativity: { velocity: 0.8 }
+      };
+
+      apiUrlLabel.textContent = API_URL;
+
+      function updateParams() {
+        const selected = simulationType.value;
+        parameters.value = JSON.stringify(defaults[selected], null, 2);
+        updatePreviews();
+      }
+
+      function updatePreviews() {
+        const body = buildPayload();
+        requestPreview.textContent = JSON.stringify(body, null, 2);
+        curlPreview.textContent = [
+          "curl -X POST \\\"" + API_URL + "\\\"",
+          "-H \\\"Content-Type: application/json\\\"",
+          "-d '" + JSON.stringify(body) + "'"
+        ].join(" \\\n+");
+      }
+
+      function buildPayload() {
+        let parsed = {};
+        try {
+          parsed = JSON.parse(parameters.value || "{}");
+        } catch (err) {
+          parsed = { error: "Invalid JSON in parameters" };
+        }
+        return {
+          simulation_type: simulationType.value,
+          parameters: parsed
+        };
+      }
+
+      async function checkConnection() {
+        try {
+          const res = await fetch(API_URL, { method: "GET" });
+          if (res.ok) {
+            connectionStatus.classList.add("ok");
+            connectionStatus.innerHTML = '<div class="dot"></div><span>API reachable</span>';
+            return;
+          }
+        } catch (err) {
+          // ignore
+        }
+        connectionStatus.classList.remove("ok");
+        connectionStatus.innerHTML = '<div class="dot"></div><span>Offline or CORS blocked</span>';
+      }
+
+      async function runSimulation() {
+        responseOutput.textContent = "Running simulation...";
+        const payload = buildPayload();
+        updatePreviews();
+
+        try {
+          const res = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          const text = await res.text();
+          let parsed;
+          try {
+            parsed = JSON.parse(text);
+          } catch (err) {
+            parsed = { raw: text };
+          }
+
+          responseOutput.textContent = JSON.stringify(
+            { status: res.status, response: parsed },
+            null,
+            2
+          );
+        } catch (err) {
+          responseOutput.textContent =
+            "Request failed. If you see a CORS error, enable CORS on API Gateway or use a proxy.";
+        }
+      }
+
+      simulationType.addEventListener("change", updateParams);
+      document.getElementById("send-request").addEventListener("click", runSimulation);
+
+      updateParams();
+      checkConnection();
+      setInterval(checkConnection, 15000);
+    </script>
+  </body>
+</html>

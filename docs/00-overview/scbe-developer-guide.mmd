@@ -1,0 +1,381 @@
+# SCBE-AETHERMOORE: Quantum-Resistant AI Security Framework
+
+**Complete Developer Guide (Mathpix Markdown / MMD)**
+
+**Version:** 3.0.0  
+**Last Updated:** 2026-01-25  
+**Repository:** https://github.com/issdandavis/scbe-aethermoore-demo
+
+---
+
+## PART 1: QUICK START (Non-Technical Summary)
+
+### What problem does this solve?
+You have AI agents making decisions. You need to trust them.
+
+Traditional security is a binary gate:
+
+- Key matches -> Access granted
+- Key does not match -> Access denied
+
+That fails when:
+- Keys are stolen
+- Agents are compromised
+- Prompt injection forces bad actions
+
+SCBE-AETHERMOORE uses **security through geometry**:
+the system checks **both** the credential **and** the agent's geometric position.
+
+Even if an attacker has the key, they cannot match the geometric identity.
+
+---
+
+### What you get (in this repo)
+
+- **14-layer SCBE reference implementation**  
+  `src/scbe_14layer_reference.py`
+
+- **Canonical pipeline (modular)**  
+  `src/symphonic_cipher/scbe_aethermoore/layers/fourteen_layer_pipeline.py`
+
+- **GeoSeal manifold implementation**  
+  `symphonic_cipher_geoseal_manifold.py`
+
+- **Spiralverse protocol implementation**  
+  `spiralverse_core.py` and `spiralverse_sdk.py`
+
+- **Demos**
+  - `examples/demo_integrated_system.py`
+  - `examples/demo_scbe_system.py`
+  - `demos/demo_product_showcase.py`
+  - `demos/demo_spiralverse_complete.py`
+
+- **Testing and audit**
+  - `TEST_AUDIT_REPORT.md`
+  - `coverage.json`
+
+---
+
+### 30-second install (Windows / Linux)
+
+```bash
+# Clone
+git clone https://github.com/issdandavis/scbe-aethermoore-demo.git
+cd scbe-aethermoore-demo
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run a demo
+python examples/demo_integrated_system.py
+```
+
+---
+
+## PART 2: CORE ARCHITECTURE
+
+### The 14-Layer SCBE Pipeline
+
+Reference: `LAYER_INDEX.md`
+
+| Layer | Name | Function | Purpose |
+|------:|------|----------|---------|
+| L1 | Complex Context State | `c(t)` | Map input to complex state |
+| L2 | Realification | `Phi_1` | Complex -> Real embedding |
+| L3 | Weighted Transform | `G^(1/2) x` | SPD weighting |
+| L4 | Poincare Embedding | `Psi_alpha` | Hyperbolic ball embedding |
+| L5 | Hyperbolic Distance | `d_H` | Invariant metric |
+| L6 | Breathing Transform | `T_breath` | Radial diffeomorphism |
+| L7 | Phase Transform | Mobius + rotation | Isometric transform |
+| L8 | Multi-Well Realms | `d*` | Distance to realm centers |
+| L9 | Spectral Coherence | `S_spec` | FFT stability |
+| L10 | Spin Coherence | `C_spin` | Phase alignment |
+| L11 | Triadic Distance | `d_tri` | Temporal consensus |
+| L12 | Harmonic Scaling | `H(d,R)=R^(d^2)` | Risk amplification |
+| L13 | Decision Gate | ALLOW/QUARANTINE/DENY | Risk gating |
+| L14 | Audio Axis | `S_audio` | Telemetry coherence |
+
+**Implementation note:** `src/scbe_14layer_reference.py` includes an optional **Layer 0**
+("intent modulation") before L1.
+
+---
+
+### Hyperbolic Geometry as Trust
+
+SCBE uses a Poincare ball model. Each authorized agent has a stable geometric
+position in hyperbolic space.
+
+Distance function:
+
+$$
+d(u,v) = \operatorname{arcosh}\left(1 + \frac{2 \lVert u-v \rVert^2}{(1-\lVert u \rVert^2)(1-\lVert v \rVert^2)}\right)
+$$
+
+If an attacker steals a key but is at a different position, the distance grows
+and the request is denied.
+
+---
+
+### The Harmonic Wall (Risk Amplification)
+
+Risk grows exponentially with distance:
+
+$$
+H(d) = \exp(d^2)
+$$
+
+Example from `integrated_system_demo_report.json`:
+
+- Legitimate request: small distance -> low amplification
+- Stolen credentials: distance ~2.87 -> amplification ~1.75e12 -> DENY
+
+---
+
+### Spiralverse Protocol (Six Sacred Tongues)
+
+Spiralverse adds multi-signature governance using six domain-separated "tongues."
+
+Implementation:
+- `spiralverse_core.py`
+- `spiralverse_sdk.py`
+- TypeScript version in `app/server.ts`
+
+---
+
+### GeoSeal (Geometric Trust Manifold)
+
+GeoSeal compares behavior (sphere) vs policy (hypercube):
+
+File: `symphonic_cipher_geoseal_manifold.py`
+
+Class: `GeoSealManifold`
+
+---
+
+## PART 3: IMPLEMENTATION GUIDE
+
+### 1) Run the full SCBE pipeline
+
+```python
+from src.scbe_14layer_reference import scbe_14layer_pipeline
+import numpy as np
+
+t = np.random.randn(12)  # 2D for complex state when D=6
+result = scbe_14layer_pipeline(t, D=6)
+
+print(result["decision"])
+print(result["risk_score"])
+```
+
+### 2) Use the canonical layered pipeline
+
+```python
+from symphonic_cipher.scbe_aethermoore.layers.fourteen_layer_pipeline import run_scbe_pipeline
+
+result = run_scbe_pipeline(input_vector, D=6)
+```
+
+### 3) GeoSeal manifold example
+
+```python
+from symphonic_cipher_geoseal_manifold import GeoSealManifold
+import numpy as np
+
+geoseal = GeoSealManifold(dimension=6)
+context = np.array([0.1, 0.2, -0.3, 0.4, -0.1, 0.2])
+policy = {
+    "trust_score": 0.9,
+    "uptime": 0.95,
+    "approval_rate": 0.88,
+    "coherence": 0.92,
+    "stability": 0.9,
+    "relationship_age": 0.85,
+}
+
+sphere = geoseal.project_to_sphere(context)
+cube = geoseal.project_to_hypercube(policy)
+distance = geoseal.geometric_distance(sphere, cube)
+path = geoseal.classify_path(distance)
+```
+
+### 4) Spiralverse envelope example (TypeScript)
+
+```ts
+import { SpiralverseProtocol, SacredTongue } from "./app/server";
+
+const protocol = new SpiralverseProtocol();
+const envelope = protocol.createEnvelope(
+  SacredTongue.KO,
+  [SacredTongue.KO, SacredTongue.RU],
+  { action: "deploy", params: { target: "prod" } }
+);
+
+const ok = protocol.verifyEnvelope(envelope, [SacredTongue.KO, SacredTongue.RU]);
+```
+
+---
+
+## PART 4: DEPLOYMENT
+
+### AWS Lambda
+
+Reference:
+`docs/08-reference/archive/AWS_LAMBDA_DEPLOYMENT.md`
+
+Example handler (adjust for your pipeline):
+
+```python
+from src.scbe_14layer_reference import scbe_14layer_pipeline
+import json
+
+def lambda_handler(event, context):
+    result = scbe_14layer_pipeline(event["position"], D=6)
+    status = 200 if result["decision"] == "ALLOW" else 403
+    return {"statusCode": status, "body": json.dumps(result)}
+```
+
+---
+
+## PART 5: TROUBLESHOOTING
+
+### ImportError: No module named "src"
+Run from the repo root:
+
+```bash
+python -c "import src"
+```
+
+### Position dimension mismatch
+Use 6D vectors by default:
+
+```python
+position = [0.1, 0.2, -0.3, 0.4, -0.1, 0.2]  # OK
+```
+
+---
+
+## PART 6: TESTS & BENCHMARKS (Accurate to Repo)
+
+**Test audit (2026-01-20):**
+See `TEST_AUDIT_REPORT.md`
+
+- Total tests: 638
+- Passed: 569
+- Failed: 1
+- Skipped/XFAIL: 68
+
+**Coverage:**
+See `coverage.json`
+
+- Overall coverage reported at ~17%
+
+**Benchmark results (reported in README):**
+See `README.md` "Benchmark Results"
+
+- Detection rate: 95.3% (benchmark comparison)
+- Linear threshold: 38.7%
+
+If you publish metrics externally, use the above sources and keep them updated.
+
+---
+
+## PART 7: PATENT & IP
+
+Reference files:
+- `PATENT_CLAIMS_COVERAGE.md`
+- `SCBE_PATENT_PORTFOLIO.md`
+- `docs/07-patent-ip/` (if populated)
+
+---
+
+## APPENDIX A: 7-DAY LAUNCH PLAN (GUMROAD)
+
+### Day 1-2: Content Packaging
+
+**Suggested bundle:**
+
+```
+SCBE-AETHERMOORE-Complete-v1.0.zip
+├── SCBE_Developer_Guide.pdf        # Export from this MMD file
+├── src/
+│   ├── scbe_14layer_reference.py
+│   └── symphonic_cipher/...
+├── examples/
+│   ├── demo_integrated_system.py
+│   └── demo_scbe_system.py
+├── demos/
+│   └── demo_product_showcase.py
+├── docs/
+│   ├── SCBE_SYSTEM_OVERVIEW.md
+│   ├── LAYER_INDEX.md
+│   └── AWS_LAMBDA_DEPLOYMENT.md
+├── requirements.txt
+├── README.md
+└── LICENSE
+```
+
+### Day 3: Visual Assets
+
+Cover image (1200x1600 PNG/JPG):
+- Title: "SCBE-AETHERMOORE"
+- Subtitle: "Quantum-Resistant AI Security"
+- Use existing images: `aethermoore_aqm.png` or `aethermoore_soliton.png`
+
+### Day 4: Gumroad Setup
+
+- Product: "SCBE-AETHERMOORE: Quantum-Resistant AI Security Framework"
+- Price: $29 launch / $49 standard
+- Tags: ai, security, cryptography, python, post-quantum
+
+### Day 5-7: Launch & Promotion
+
+- Post a launch thread on X
+- Pin it to your profile
+- Share with communities and early adopters
+
+---
+
+## APPENDIX B: GUMROAD COPY (UPDATED)
+
+**Short description:**
+
+```
+Hyperbolic-geometry AI security. 14-layer pipeline, working Python code,
+Spiralverse multi-sig governance, post-quantum ready. $29 launch price.
+```
+
+**Full description (accurate to repo):**
+
+```
+# SCBE-AETHERMOORE: Security Through Geometry
+
+Stop using passwords for AI agents. Use mathematics.
+
+## What You Get
+
+- 14-layer SCBE pipeline (Python reference implementation)
+- GeoSeal geometric trust manifold
+- Spiralverse protocol (six Sacred Tongues, multi-signature envelopes)
+- Post-quantum crypto modules (ML-KEM / ML-DSA interfaces)
+- Demos and examples
+
+## Architecture
+
+Layered defense-in-depth:
+L1-L14 with hyperbolic geometry, spectral coherence, and harmonic risk.
+
+## Repo Evidence
+
+- `src/scbe_14layer_reference.py`
+- `symphonic_cipher_geoseal_manifold.py`
+- `spiralverse_core.py`
+- `TEST_AUDIT_REPORT.md`
+
+## Benchmarks
+
+See `README.md` for benchmark comparisons and `TEST_AUDIT_REPORT.md` for test status.
+```
+
+---
+
+**End of Developer Guide**

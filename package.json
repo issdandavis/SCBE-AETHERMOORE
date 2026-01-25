@@ -54,6 +54,7 @@
     "lint:python": "flake8 src/ tests/ --max-line-length=120",
     "cli": "python scbe-cli.py",
     "demo": "start scbe-aethermoore/customer-demo.html",
+    "agentic:demo": "ts-node src/agentic/demo-runner.ts",
     "docker:build": "docker build -t scbe-aethermoore:latest .",
     "docker:run": "docker run -it scbe-aethermoore:latest",
     "docker:compose": "docker-compose up -d",
