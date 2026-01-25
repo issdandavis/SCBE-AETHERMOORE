@@ -1,0 +1,132 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: SCBE-AETHERMOORE API - Quantum-Resistant AI Agent Governance
+
+Parameters:
+  Environment:
+    Type: String
+    Default: production
+    AllowedValues:
+      - development
+      - staging
+      - production
+  SCBEApiKey:
+    Type: String
+    NoEcho: true
+    Description: API key for SCBE authentication
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: python3.11
+    Environment:
+      Variables:
+        SCBE_ENV: !Ref Environment
+        SCBE_LOG_LEVEL: INFO
+        PYTHONPATH: /var/task
+
+Resources:
+  # Lambda Function for SCBE API
+  SCBEApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub scbe-aethermoore-api-${Environment}
+      CodeUri: ../
+      Handler: aws.lambda_handler.handler
+      Description: SCBE-AETHERMOORE 14-Layer Security API
+      Environment:
+        Variables:
+          SCBE_API_KEY: !Ref SCBEApiKey
+      Events:
+        ApiGateway:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref SCBEHttpApi
+            Method: ANY
+            Path: /{proxy+}
+        RootApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref SCBEHttpApi
+            Method: ANY
+            Path: /
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SCBEDecisionsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SCBEAgentsTable
+
+  # HTTP API Gateway
+  SCBEHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: !Ref Environment
+      CorsConfiguration:
+        AllowOrigins:
+          - "*"
+        AllowHeaders:
+          - "*"
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+
+  # DynamoDB Tables for persistence
+  SCBEDecisionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub scbe-decisions-${Environment}
+      AttributeDefinitions:
+        - AttributeName: decision_id
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: S
+      KeySchema:
+        - AttributeName: decision_id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: timestamp-index
+          KeySchema:
+            - AttributeName: timestamp
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+  SCBEAgentsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub scbe-agents-${Environment}
+      AttributeDefinitions:
+        - AttributeName: agent_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: agent_id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  # CloudWatch Log Group
+  SCBEApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/scbe-aethermoore-api-${Environment}
+      RetentionInDays: 30
+
+Outputs:
+  SCBEApiUrl:
+    Description: SCBE API Gateway URL
+    Value: !Sub https://${SCBEHttpApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}
+    Export:
+      Name: !Sub ${AWS::StackName}-ApiUrl
+
+  SCBEFunctionArn:
+    Description: SCBE Lambda Function ARN
+    Value: !GetAtt SCBEApiFunction.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-FunctionArn
