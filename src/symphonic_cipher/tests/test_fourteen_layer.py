@@ -497,8 +497,6 @@ class TestFullPipeline:
         # For d = 3: H = φ^9 ≈ 76.0 (HIGH)
         # For d = 4: H = φ^16 ≈ 2207 (CRITICAL, >100)
 
-        from scbe_aethermoore.layers import layer_12_harmonic_scaling, R_BASE
-
         # Test the scaling behavior
         assert layer_12_harmonic_scaling(0, R_BASE) == 1.0
         assert layer_12_harmonic_scaling(1, R_BASE) < 3.0

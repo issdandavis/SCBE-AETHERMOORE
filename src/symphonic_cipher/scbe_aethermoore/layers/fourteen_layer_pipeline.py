@@ -26,7 +26,7 @@ Core Theorems:
 
 import numpy as np
 from dataclasses import dataclass
-from typing import Tuple, List, Optional, Dict, Any
+from typing import Tuple, List, Dict, Any
 from enum import Enum
 import hashlib
 
