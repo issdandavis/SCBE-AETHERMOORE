@@ -66,7 +66,7 @@ app.add_middleware(
 )
 
 # API Key authentication
-API_KEY_HEADER = APIKeyHeader(name="X-API-Key", auto_error=False)
+API_KEY_HEADER = APIKeyHeader(name="SCBE_api_key", auto_error=False)
 
 def _load_api_keys() -> dict:
     """
