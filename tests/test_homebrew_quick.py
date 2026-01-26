@@ -25,18 +25,21 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 # Try imports
 try:
     from src.scbe_14layer_reference import scbe_14layer_pipeline
+
     SCBE_AVAILABLE = True
 except ImportError:
     SCBE_AVAILABLE = False
 
 try:
     from src.crypto.rwp_v3 import RWPv3Protocol
+
     RWP_AVAILABLE = True
 except ImportError:
     RWP_AVAILABLE = False
 
 try:
     from src.crypto.sacred_tongues import SacredTongueTokenizer
+
     TONGUES_AVAILABLE = True
 except ImportError:
     TONGUES_AVAILABLE = False
@@ -45,6 +48,7 @@ except ImportError:
 # =============================================================================
 # SMOKE TESTS - Quick sanity checks
 # =============================================================================
+
 
 @pytest.mark.homebrew
 class TestSmokeTests:
@@ -81,6 +85,7 @@ class TestSmokeTests:
 # BASIC FUNCTIONALITY TESTS
 # =============================================================================
 
+
 @pytest.mark.homebrew
 class TestBasicFunctionality:
     """Basic functionality that must always work."""
@@ -94,9 +99,10 @@ class TestBasicFunctionality:
 
     def test_hyperbolic_distance_formula(self):
         """Verify hyperbolic distance can be calculated."""
+
         def hyperbolic_dist(u, v):
-            u_sq = np.sum(u ** 2)
-            v_sq = np.sum(v ** 2)
+            u_sq = np.sum(u**2)
+            v_sq = np.sum(v**2)
             diff_sq = np.sum((u - v) ** 2)
             arg = 1 + 2 * diff_sq / ((1 - u_sq) * (1 - v_sq))
             return np.arccosh(max(arg, 1.0))
@@ -113,12 +119,13 @@ class TestBasicFunctionality:
         R = 1.5
         d = 2
 
-        H = R ** (d ** 2)  # = 1.5^4 = 5.0625
+        H = R ** (d**2)  # = 1.5^4 = 5.0625
 
         assert np.isclose(H, 5.0625)
 
     def test_decision_logic(self):
         """Verify basic decision logic works."""
+
         def make_decision(risk, theta1=0.3, theta2=0.7):
             if risk < theta1:
                 return "ALLOW"
@@ -143,6 +150,7 @@ class TestBasicFunctionality:
 # =============================================================================
 # QUICK INTEGRATION TESTS
 # =============================================================================
+
 
 @pytest.mark.homebrew
 class TestQuickIntegration:
@@ -185,6 +193,7 @@ class TestQuickIntegration:
 # EDGE CASE TESTS
 # =============================================================================
 
+
 @pytest.mark.homebrew
 class TestEdgeCases:
     """Quick edge case tests."""
@@ -223,6 +232,7 @@ class TestEdgeCases:
 # =============================================================================
 # PERFORMANCE SMOKE TESTS
 # =============================================================================
+
 
 @pytest.mark.homebrew
 class TestPerformanceSmoke:
@@ -266,6 +276,7 @@ class TestPerformanceSmoke:
 # SACRED TONGUE QUICK TESTS
 # =============================================================================
 
+
 @pytest.mark.homebrew
 class TestSacredTonguesQuick:
     """Quick Sacred Tongue tests."""
@@ -278,12 +289,12 @@ class TestSacredTonguesQuick:
     def test_tongue_mapping(self):
         """Verify tongue to purpose mapping."""
         mapping = {
-            "KO": "nonce",      # Kor'aelin
-            "AV": "aad",        # Avali
-            "RU": "salt",       # Runethic
-            "CA": "ciphertext", # Cassisivadan
+            "KO": "nonce",  # Kor'aelin
+            "AV": "aad",  # Avali
+            "RU": "salt",  # Runethic
+            "CA": "ciphertext",  # Cassisivadan
             "UM": "redaction",  # Umbroth
-            "DR": "tag"         # Draumric
+            "DR": "tag",  # Draumric
         }
 
         assert len(mapping) == 6
@@ -294,6 +305,7 @@ class TestSacredTonguesQuick:
 # =============================================================================
 # GOVERNANCE TIER QUICK TESTS
 # =============================================================================
+
 
 @pytest.mark.homebrew
 class TestGovernanceTiersQuick:
@@ -308,12 +320,7 @@ class TestGovernanceTiersQuick:
 
     def test_tier_progression(self):
         """Verify XP thresholds for tier progression."""
-        thresholds = {
-            "COLLAPSED": 0,
-            "DEMI": 100,
-            "QUASI": 500,
-            "POLLY": 2000
-        }
+        thresholds = {"COLLAPSED": 0, "DEMI": 100, "QUASI": 500, "POLLY": 2000}
 
         # Thresholds should be increasing
         values = list(thresholds.values())
@@ -324,17 +331,21 @@ class TestGovernanceTiersQuick:
 # QUICK VALIDATION TESTS
 # =============================================================================
 
+
 @pytest.mark.homebrew
 class TestQuickValidation:
     """Quick validation helpers."""
 
     def test_position_validation(self):
         """Verify position validation logic."""
+
         def is_valid_position(pos):
             return (
-                isinstance(pos, (list, np.ndarray)) and
-                len(pos) == 6 and
-                all(isinstance(x, (int, float, np.integer, np.floating)) for x in pos)
+                isinstance(pos, (list, np.ndarray))
+                and len(pos) == 6
+                and all(
+                    isinstance(x, (int, float, np.integer, np.floating)) for x in pos
+                )
             )
 
         assert is_valid_position([1, 2, 3, 4, 5, 6])
@@ -363,6 +374,7 @@ class TestQuickValidation:
 # HELPFUL DEBUG TESTS
 # =============================================================================
 
+
 @pytest.mark.homebrew
 class TestDebugHelpers:
     """Debug helper tests - useful during development."""
@@ -375,11 +387,7 @@ class TestDebugHelpers:
 
     def test_can_format_results(self):
         """Verify results can be formatted."""
-        result = {
-            "decision": "ALLOW",
-            "risk": 0.15,
-            "H": 1.53
-        }
+        result = {"decision": "ALLOW", "risk": 0.15, "H": 1.53}
 
         formatted = f"Decision: {result['decision']}, Risk: {result['risk']:.2f}"
         assert "ALLOW" in formatted
@@ -402,10 +410,13 @@ class TestDebugHelpers:
 
 if __name__ == "__main__":
     # Run with verbose output and stop on first failure
-    pytest.main([
-        __file__,
-        "-v",
-        "-x",  # Stop on first failure
-        "-m", "homebrew",
-        "--tb=short"  # Short traceback
-    ])
+    pytest.main(
+        [
+            __file__,
+            "-v",
+            "-x",  # Stop on first failure
+            "-m",
+            "homebrew",
+            "--tb=short",  # Short traceback
+        ]
+    )

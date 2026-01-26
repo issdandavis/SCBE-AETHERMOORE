@@ -24,17 +24,18 @@ from typing import List, Tuple, Optional
 # Constants
 EPS = 1e-10
 HF_FRAC = 0.3  # High-frequency cutoff (top 30%)
-N_FFT = 256    # FFT window size
+N_FFT = 256  # FFT window size
 
 
 @dataclass
 class AudioFeatures:
     """Extracted audio features for Layer 14."""
-    energy: float        # Ea - log frame energy
-    centroid: float      # Ca - spectral centroid (Hz)
-    flux: float          # Fa - spectral flux
-    hf_ratio: float      # rHF,a - high-frequency ratio
-    stability: float     # Saudio = 1 - rHF,a
+
+    energy: float  # Ea - log frame energy
+    centroid: float  # Ca - spectral centroid (Hz)
+    flux: float  # Fa - spectral flux
+    hf_ratio: float  # rHF,a - high-frequency ratio
+    stability: float  # Saudio = 1 - rHF,a
 
     def to_vector(self) -> List[float]:
         return [self.energy, self.centroid, self.flux, self.hf_ratio]
@@ -56,7 +57,7 @@ def dft_magnitude(signal: List[float]) -> List[float]:
             angle = -2 * math.pi * k * n / N
             real += signal[n] * math.cos(angle)
             imag += signal[n] * math.sin(angle)
-        mag = math.sqrt(real ** 2 + imag ** 2)
+        mag = math.sqrt(real**2 + imag**2)
         magnitudes.append(mag)
 
     return magnitudes
@@ -64,7 +65,7 @@ def dft_magnitude(signal: List[float]) -> List[float]:
 
 def power_spectrum(magnitudes: List[float]) -> List[float]:
     """Pa[k] = |A[k]|²"""
-    return [m ** 2 for m in magnitudes]
+    return [m**2 for m in magnitudes]
 
 
 def extract_features(
@@ -96,15 +97,14 @@ def extract_features(
     spectrum = power_spectrum(mags)
 
     # Frame Energy: Ea = log(ε + Σn a[n]²)
-    frame_power = sum(s ** 2 for s in signal[:N])
+    frame_power = sum(s**2 for s in signal[:N])
     energy = math.log(EPS + frame_power)
 
     # Spectral Centroid: Ca = (Σk fk·Pa[k]) / (Σk Pa[k] + ε)
     freq_resolution = sample_rate / N_FFT
     total_power = sum(spectrum) + EPS
     weighted_freq = sum(
-        (k * freq_resolution) * spectrum[k]
-        for k in range(len(spectrum))
+        (k * freq_resolution) * spectrum[k] for k in range(len(spectrum))
     )
     centroid = weighted_freq / total_power
 
@@ -113,7 +113,11 @@ def extract_features(
         prev_spectrum = [0.0] * len(spectrum)
 
     flux = sum(
-        (math.sqrt(spectrum[k]) - math.sqrt(prev_spectrum[k] if k < len(prev_spectrum) else 0)) ** 2
+        (
+            math.sqrt(spectrum[k])
+            - math.sqrt(prev_spectrum[k] if k < len(prev_spectrum) else 0)
+        )
+        ** 2
         for k in range(len(spectrum))
     ) / (total_power + EPS)
 
@@ -224,6 +228,7 @@ class AudioAxis:
 # Verification Functions
 # =============================================================================
 
+
 def verify_stability_bounded() -> bool:
     """Verify: Saudio ∈ [0, 1] for all inputs."""
     axis = AudioAxis()
@@ -294,9 +299,15 @@ if __name__ == "__main__":
     print()
 
     print("MATHEMATICAL PROOFS:")
-    print(f"  Stability bounded (S ∈ [0,1]):  {'✓ PROVEN' if verify_stability_bounded() else '✗ FAILED'}")
-    print(f"  HF detection works:             {'✓ PROVEN' if verify_hf_detection() else '✗ FAILED'}")
-    print(f"  Flux detects changes:           {'✓ PROVEN' if verify_flux_sensitivity() else '✗ FAILED'}")
+    print(
+        f"  Stability bounded (S ∈ [0,1]):  {'✓ PROVEN' if verify_stability_bounded() else '✗ FAILED'}"
+    )
+    print(
+        f"  HF detection works:             {'✓ PROVEN' if verify_hf_detection() else '✗ FAILED'}"
+    )
+    print(
+        f"  Flux detects changes:           {'✓ PROVEN' if verify_flux_sensitivity() else '✗ FAILED'}"
+    )
     print()
 
     print("FEATURE DEFINITIONS:")
@@ -333,6 +344,7 @@ if __name__ == "__main__":
 
     # Signal 4: Noise (very unstable)
     import random
+
     random.seed(42)
     signal4 = [random.uniform(-1, 1) for _ in range(N_FFT)]
     f4 = axis.process_frame(signal4)

@@ -22,17 +22,25 @@ from __future__ import annotations
 import functools
 import numpy as np
 from typing import (
-    Callable, TypeVar, Any, Optional, Tuple, List, Dict,
-    Generic, Union, Protocol
+    Callable,
+    TypeVar,
+    Any,
+    Optional,
+    Tuple,
+    List,
+    Dict,
+    Generic,
+    Union,
+    Protocol,
 )
 from dataclasses import dataclass, field
 from enum import Enum
 import time as time_module
 
 # Type variables
-T = TypeVar('T')
-S = TypeVar('S')
-F = TypeVar('F', bound=Callable[..., Any])
+T = TypeVar("T")
+S = TypeVar("S")
+F = TypeVar("F", bound=Callable[..., Any])
 
 # Constants
 EPS = 1e-10
@@ -43,11 +51,13 @@ CARRIER_FREQ = 440.0  # Hz (concert A)
 
 class CompositionViolation(Exception):
     """Raised when layer composition rules are violated."""
+
     pass
 
 
 class LayerType(Enum):
     """Types of layers for composition compatibility."""
+
     COMPLEX_TO_REAL = "ℂᴰ → ℝ²ᴰ"
     REAL_TO_REAL = "ℝⁿ → ℝᵐ"
     REAL_TO_BALL = "ℝⁿ → 𝔹ⁿ"
@@ -61,6 +71,7 @@ class LayerType(Enum):
 @dataclass
 class CompositionCheckResult:
     """Result of a composition axiom check."""
+
     passed: bool
     source_layer: int
     target_layer: int
@@ -81,8 +92,7 @@ class CompositionCheckResult:
 
 
 def composition_check(
-    input_type: LayerType,
-    output_type: LayerType
+    input_type: LayerType, output_type: LayerType
 ) -> Callable[[F], F]:
     """
     Decorator that declares and verifies layer type signatures.
@@ -94,6 +104,7 @@ def composition_check(
     Returns:
         Decorated function with type metadata
     """
+
     def decorator(func: F) -> F:
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -101,12 +112,12 @@ def composition_check(
 
             check_result = CompositionCheckResult(
                 passed=True,
-                source_layer=getattr(func, 'layer_num', 0),
-                target_layer=getattr(func, 'layer_num', 0),
+                source_layer=getattr(func, "layer_num", 0),
+                target_layer=getattr(func, "layer_num", 0),
                 source_type=input_type,
                 target_type=output_type,
                 compatible=True,
-                message="Type signature declared"
+                message="Type signature declared",
             )
 
             wrapper.last_check = check_result
@@ -117,6 +128,7 @@ def composition_check(
         wrapper.input_type = input_type
         wrapper.output_type = output_type
         return wrapper
+
     return decorator
 
 
@@ -126,8 +138,8 @@ def composable(f: Callable, g: Callable) -> bool:
 
     Returns True if output type of g matches input type of f.
     """
-    g_output = getattr(g, 'output_type', None)
-    f_input = getattr(f, 'input_type', None)
+    g_output = getattr(g, "output_type", None)
+    f_input = getattr(f, "input_type", None)
 
     if g_output is None or f_input is None:
         return True  # Assume composable if types not declared
@@ -151,20 +163,22 @@ def composable(f: Callable, g: Callable) -> bool:
 # Layer 1: Complex Context State (Entry Point)
 # ============================================================================
 
+
 @dataclass
 class ContextInput:
     """Input context for Layer 1."""
-    identity: complex      # Agent/user identity encoded as phase
-    intent: complex        # Intent vector (complex amplitude)
-    trajectory: float      # Trajectory coherence [0, 1]
-    timing: float          # Timing factor
-    commitment: float      # Cryptographic commitment strength
-    signature: float       # Signature validity [0, 1]
+
+    identity: complex  # Agent/user identity encoded as phase
+    intent: complex  # Intent vector (complex amplitude)
+    trajectory: float  # Trajectory coherence [0, 1]
+    timing: float  # Timing factor
+    commitment: float  # Cryptographic commitment strength
+    signature: float  # Signature validity [0, 1]
 
 
 @composition_check(
     input_type=LayerType.REAL_TO_REAL,  # Multiple reals as input
-    output_type=LayerType.COMPLEX_TO_REAL  # Complex output (before realification)
+    output_type=LayerType.COMPLEX_TO_REAL,  # Complex output (before realification)
 )
 def layer_1_complex_context(ctx: ContextInput) -> np.ndarray:
     """
@@ -219,7 +233,7 @@ def layer_1_from_raw(
     trajectory: float,
     timing: float,
     commitment: float,
-    signature: float
+    signature: float,
 ) -> np.ndarray:
     """
     Convenience function to create Layer 1 output from raw values.
@@ -230,7 +244,7 @@ def layer_1_from_raw(
         trajectory=trajectory,
         timing=timing,
         commitment=commitment,
-        signature=signature
+        signature=signature,
     )
     return layer_1_complex_context(ctx)
 
@@ -239,20 +253,21 @@ def layer_1_from_raw(
 # Layer 14: Audio Axis (Signal Encoding - Exit Point)
 # ============================================================================
 
+
 @dataclass
 class AudioOutput:
     """Output from the audio axis layer."""
-    signal: np.ndarray     # Audio waveform
-    amplitude: float       # Signal amplitude
-    phase: float          # Signal phase
-    frequency: float      # Carrier frequency
-    duration: float       # Signal duration in seconds
-    sample_rate: int      # Samples per second
+
+    signal: np.ndarray  # Audio waveform
+    amplitude: float  # Signal amplitude
+    phase: float  # Signal phase
+    frequency: float  # Carrier frequency
+    duration: float  # Signal duration in seconds
+    sample_rate: int  # Samples per second
 
 
 @composition_check(
-    input_type=LayerType.MULTI_TO_DECISION,
-    output_type=LayerType.DECISION_TO_SIGNAL
+    input_type=LayerType.MULTI_TO_DECISION, output_type=LayerType.DECISION_TO_SIGNAL
 )
 def layer_14_audio_axis(
     risk_level: str,
@@ -260,7 +275,7 @@ def layer_14_audio_axis(
     intent_phase: float,
     duration: float = 1.0,
     sample_rate: int = SAMPLE_RATE,
-    carrier_freq: float = CARRIER_FREQ
+    carrier_freq: float = CARRIER_FREQ,
 ) -> AudioOutput:
     """
     Layer 14: Audio Axis (Signal Encoding)
@@ -294,12 +309,7 @@ def layer_14_audio_axis(
         AudioOutput with generated signal
     """
     # Map risk level to amplitude
-    amplitude_map = {
-        "LOW": 1.0,
-        "MEDIUM": 0.6,
-        "HIGH": 0.3,
-        "CRITICAL": 0.1
-    }
+    amplitude_map = {"LOW": 1.0, "MEDIUM": 0.6, "HIGH": 0.3, "CRITICAL": 0.1}
     amplitude = amplitude_map.get(risk_level, 0.5)
 
     # Generate time array
@@ -323,7 +333,7 @@ def layer_14_audio_axis(
         phase=intent_phase,
         frequency=carrier_freq,
         duration=duration,
-        sample_rate=sample_rate
+        sample_rate=sample_rate,
     )
 
 
@@ -345,20 +355,20 @@ def layer_14_to_wav_bytes(audio: AudioOutput) -> bytes:
     data_size = n_samples * 2
 
     header = struct.pack(
-        '<4sI4s4sIHHIIHH4sI',
-        b'RIFF',
+        "<4sI4s4sIHHIIHH4sI",
+        b"RIFF",
         36 + data_size,  # File size - 8
-        b'WAVE',
-        b'fmt ',
-        16,              # Subchunk size
-        1,               # PCM format
-        1,               # Mono
+        b"WAVE",
+        b"fmt ",
+        16,  # Subchunk size
+        1,  # PCM format
+        1,  # Mono
         audio.sample_rate,
         byte_rate,
-        2,               # Block align
-        16,              # Bits per sample
-        b'data',
-        data_size
+        2,  # Block align
+        16,  # Bits per sample
+        b"data",
+        data_size,
     )
 
     return header + samples.tobytes()
@@ -367,6 +377,7 @@ def layer_14_to_wav_bytes(audio: AudioOutput) -> bytes:
 # ============================================================================
 # Pipeline Composition Operators
 # ============================================================================
+
 
 class Pipeline:
     """
@@ -380,12 +391,12 @@ class Pipeline:
         self.layers: List[Tuple[int, Callable]] = []
         self.execution_log: List[Tuple[int, str, Any]] = []
 
-    def add_layer(self, layer_num: int, func: Callable) -> 'Pipeline':
+    def add_layer(self, layer_num: int, func: Callable) -> "Pipeline":
         """Add a layer to the pipeline."""
         self.layers.append((layer_num, func))
         return self
 
-    def compose(self, other: 'Pipeline') -> 'Pipeline':
+    def compose(self, other: "Pipeline") -> "Pipeline":
         """
         Compose two pipelines: self ∘ other.
 
@@ -426,10 +437,10 @@ class Pipeline:
                 passed=is_composable,
                 source_layer=prev_num,
                 target_layer=curr_num,
-                source_type=getattr(prev_func, 'output_type', LayerType.REAL_TO_REAL),
-                target_type=getattr(curr_func, 'input_type', LayerType.REAL_TO_REAL),
+                source_type=getattr(prev_func, "output_type", LayerType.REAL_TO_REAL),
+                target_type=getattr(curr_func, "input_type", LayerType.REAL_TO_REAL),
                 compatible=is_composable,
-                message="Composition valid" if is_composable else "Type mismatch"
+                message="Composition valid" if is_composable else "Type mismatch",
             )
             results.append(result)
 
@@ -442,6 +453,7 @@ def compose(*funcs: Callable) -> Callable:
 
     Functions are applied right-to-left (mathematical convention).
     """
+
     def composed(x):
         result = x
         for f in reversed(funcs):
@@ -458,6 +470,7 @@ def pipe(*funcs: Callable) -> Callable:
 
     Functions are applied left-to-right (programming convention).
     """
+
     def piped(x):
         result = x
         for f in funcs:
@@ -472,26 +485,28 @@ def pipe(*funcs: Callable) -> Callable:
 # Layer Dependency Graph
 # ============================================================================
 
+
 @dataclass
 class LayerDependency:
     """Represents a dependency between layers."""
-    source: int      # Source layer number
-    target: int      # Target layer number
+
+    source: int  # Source layer number
+    target: int  # Target layer number
     dependency_type: str  # "data", "axiom", or "optional"
 
 
 # The 14-layer pipeline dependency structure
 LAYER_DEPENDENCIES: List[LayerDependency] = [
-    LayerDependency(1, 2, "data"),    # L1 output feeds L2
+    LayerDependency(1, 2, "data"),  # L1 output feeds L2
     LayerDependency(2, 3, "data"),
     LayerDependency(3, 4, "data"),
     LayerDependency(4, 5, "data"),
-    LayerDependency(4, 6, "data"),    # L4 output used by both L5 and L6
+    LayerDependency(4, 6, "data"),  # L4 output used by both L5 and L6
     LayerDependency(6, 7, "data"),
     LayerDependency(7, 8, "data"),
-    LayerDependency(5, 11, "data"),   # L5 distance used in L11
-    LayerDependency(8, 11, "data"),   # L8 realm info used in L11
-    LayerDependency(9, 13, "data"),   # L9 coherence used in L13
+    LayerDependency(5, 11, "data"),  # L5 distance used in L11
+    LayerDependency(8, 11, "data"),  # L8 realm info used in L11
+    LayerDependency(9, 13, "data"),  # L9 coherence used in L13
     LayerDependency(10, 13, "data"),  # L10 coherence used in L13
     LayerDependency(11, 12, "data"),  # L11 distance used in L12
     LayerDependency(12, 13, "data"),  # L12 scaling used in L13
@@ -516,18 +531,18 @@ def get_parallel_groups() -> List[List[int]]:
     Layers in the same group have no inter-dependencies.
     """
     return [
-        [1],        # Entry point
-        [2],        # Realification
-        [3],        # Weighting
-        [4],        # Poincaré
-        [5, 6],     # Distance and Breathing (independent)
-        [7],        # Phase
-        [8],        # Multi-well
-        [9, 10],    # Spectral and Spin coherence (independent)
-        [11],       # Triadic distance
-        [12],       # Harmonic scaling
-        [13],       # Decision
-        [14],       # Audio output
+        [1],  # Entry point
+        [2],  # Realification
+        [3],  # Weighting
+        [4],  # Poincaré
+        [5, 6],  # Distance and Breathing (independent)
+        [7],  # Phase
+        [8],  # Multi-well
+        [9, 10],  # Spectral and Spin coherence (independent)
+        [11],  # Triadic distance
+        [12],  # Harmonic scaling
+        [13],  # Decision
+        [14],  # Audio output
     ]
 
 
@@ -535,9 +550,11 @@ def get_parallel_groups() -> List[List[int]]:
 # Full Pipeline Executor with Axiom Checking
 # ============================================================================
 
+
 @dataclass
 class PipelineState:
     """State at each pipeline stage."""
+
     layer_num: int
     layer_name: str
     output: Any
@@ -563,7 +580,7 @@ class AxiomAwarePipeline:
         ctx: ContextInput,
         t: float = 0.0,
         ref_state: Optional[Dict] = None,
-        check_axioms: bool = True
+        check_axioms: bool = True,
     ) -> Tuple[Any, List[PipelineState]]:
         """
         Execute the full 14-layer pipeline.
@@ -583,12 +600,7 @@ class AxiomAwarePipeline:
         self.axiom_violations.clear()
 
         if ref_state is None:
-            ref_state = {
-                'u': np.zeros(12),
-                'tau': 0.0,
-                'eta': 0.0,
-                'q': 1.0 + 0j
-            }
+            ref_state = {"u": np.zeros(12), "tau": 0.0, "eta": 0.0, "q": 1.0 + 0j}
 
         # L1: Complex Context
         c = layer_1_complex_context(ctx)
@@ -607,7 +619,7 @@ class AxiomAwarePipeline:
         self._record_state(4, "Poincaré Embedding", u, "unitarity")
 
         # L5: Hyperbolic Distance
-        d_H = symmetry_axiom.layer_5_hyperbolic_distance(u, ref_state['u'])
+        d_H = symmetry_axiom.layer_5_hyperbolic_distance(u, ref_state["u"])
         self._record_state(5, "Hyperbolic Distance", d_H, "symmetry")
 
         # L6: Breathing Transform
@@ -634,13 +646,13 @@ class AxiomAwarePipeline:
         # L11: Triadic Temporal Distance
         d_tri = causality_axiom.layer_11_triadic_distance(
             u=u_phased,
-            ref_u=ref_state['u'],
+            ref_u=ref_state["u"],
             tau=t,
-            ref_tau=ref_state['tau'],
+            ref_tau=ref_state["tau"],
             eta=ctx.trajectory,  # Use trajectory as entropy proxy
-            ref_eta=ref_state['eta'],
+            ref_eta=ref_state["eta"],
             q=ctx.intent,
-            ref_q=ref_state['q']
+            ref_q=ref_state["q"],
         )
         self._record_state(11, "Triadic Distance", d_tri, "causality")
 
@@ -654,7 +666,7 @@ class AxiomAwarePipeline:
             d_star=d_star,
             coherence=coherence,
             realm_index=realm_idx,
-            realm_weight=realm_info.weight
+            realm_weight=realm_info.weight,
         )
         self._record_state(13, "Decision", risk_assessment, "causality")
 
@@ -662,18 +674,14 @@ class AxiomAwarePipeline:
         audio_output = layer_14_audio_axis(
             risk_level=risk_assessment.level.value,
             coherence=coherence,
-            intent_phase=phase_angle
+            intent_phase=phase_angle,
         )
         self._record_state(14, "Audio Axis", audio_output, "composition")
 
         return audio_output, self.states
 
     def _record_state(
-        self,
-        layer_num: int,
-        layer_name: str,
-        output: Any,
-        axiom: str
+        self, layer_num: int, layer_name: str, output: Any, axiom: str
     ) -> None:
         """Record pipeline state."""
         state = PipelineState(
@@ -681,7 +689,7 @@ class AxiomAwarePipeline:
             layer_name=layer_name,
             output=output,
             axiom=axiom,
-            check_passed=True
+            check_passed=True,
         )
         self.states.append(state)
 
@@ -689,6 +697,7 @@ class AxiomAwarePipeline:
 # ============================================================================
 # Composition Verification Utilities
 # ============================================================================
+
 
 def verify_pipeline_composition(verbose: bool = False) -> Tuple[bool, List[str]]:
     """

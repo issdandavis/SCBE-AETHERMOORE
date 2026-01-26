@@ -29,6 +29,7 @@ import hashlib
 # TEST 1: CHAOS SENSITIVITY (Claim 4)
 # =============================================================================
 
+
 def logistic_map(r: float, x0: float, n_iterations: int) -> float:
     """Iterate logistic map: x_{n+1} = r * x_n * (1 - x_n)
 
@@ -98,7 +99,7 @@ def test_chaos_sensitivity() -> Dict[str, Any]:
         "divergence_x0": divergence_x0,
         "lyapunov_estimate": lyapunov_estimate,
         "claim_verified": "Δr = 10⁻⁴ → large divergence (fail-to-noise)",
-        "implication": "Attacker cannot achieve partial decryption"
+        "implication": "Attacker cannot achieve partial decryption",
     }
 
 
@@ -106,8 +107,10 @@ def test_chaos_sensitivity() -> Dict[str, Any]:
 # TEST 2: FRACTAL GATE (Claims 7-8)
 # =============================================================================
 
-def julia_iterate(z0: complex, c: complex, max_iter: int = 50,
-                  escape_radius: float = 2.0) -> Tuple[bool, int]:
+
+def julia_iterate(
+    z0: complex, c: complex, max_iter: int = 50, escape_radius: float = 2.0
+) -> Tuple[bool, int]:
     """
     Julia set iteration for fractal gate.
 
@@ -126,12 +129,12 @@ def julia_iterate(z0: complex, c: complex, max_iter: int = 50,
 
 # Vocabulary-to-basin mapping (Claim 18-19)
 VOCABULARY_BASINS = {
-    "sil'kor": complex(-0.4, 0.0),      # Foundation (stable)
-    "nav'een": complex(-1.0, 0.0),      # Journey (moderate chaos)
-    "thel'vori": complex(-0.125, 0.744), # Transformation (high chaos)
-    "keth'mar": complex(-0.5, 0.0),     # Boundary (cusp)
-    "aether'vel": complex(-0.2, 0.5),   # Connection (network)
-    "pol'yaneth": complex(-0.6, 0.0),   # Unity (synchronized)
+    "sil'kor": complex(-0.4, 0.0),  # Foundation (stable)
+    "nav'een": complex(-1.0, 0.0),  # Journey (moderate chaos)
+    "thel'vori": complex(-0.125, 0.744),  # Transformation (high chaos)
+    "keth'mar": complex(-0.5, 0.0),  # Boundary (cusp)
+    "aether'vel": complex(-0.2, 0.5),  # Connection (network)
+    "pol'yaneth": complex(-0.6, 0.0),  # Unity (synchronized)
 }
 
 
@@ -161,7 +164,7 @@ def test_fractal_gate() -> Dict[str, Any]:
             "c": c,
             "bounded": bounded,
             "escape_iter": escape_iter,
-            "valid": bounded
+            "valid": bounded,
         }
 
     # Test invalid basin (outside vocabulary)
@@ -171,7 +174,7 @@ def test_fractal_gate() -> Dict[str, Any]:
         "c": invalid_c,
         "bounded": bounded,
         "escape_iter": escape_iter,
-        "valid": bounded
+        "valid": bounded,
     }
 
     # Check that valid basins stay bounded, invalid escapes quickly
@@ -193,13 +196,14 @@ def test_fractal_gate() -> Dict[str, Any]:
         "invalid_escape_iter": results["invalid"]["escape_iter"],
         "claim_verified": "Valid intents bounded; invalid escapes quickly",
         "cost_asymmetry": f"Attacker: {max_iter}×N guesses; Defender: {max_iter} iterations once",
-        "implication": "Attacker scanning intent space faces exponential cost"
+        "implication": "Attacker scanning intent space faces exponential cost",
     }
 
 
 # =============================================================================
 # TEST 3: NEURAL ENERGY (Claim 10)
 # =============================================================================
+
 
 @dataclass
 class HopfieldNetwork:
@@ -208,6 +212,7 @@ class HopfieldNetwork:
 
     Claim 10: E(c) = -½(c')ᵀWc' + θᵀc'
     """
+
     dim: int
     W: np.ndarray = field(default=None)
     theta: np.ndarray = field(default=None)
@@ -322,7 +327,7 @@ def test_neural_energy() -> Dict[str, Any]:
         "confidence_trained": confidence_trained,
         "confidence_novel": confidence_novel,
         "claim_verified": "Trained patterns in valleys; attacks on hills",
-        "implication": "Clear separation at decision boundary"
+        "implication": "Clear separation at decision boundary",
     }
 
 
@@ -330,18 +335,21 @@ def test_neural_energy() -> Dict[str, Any]:
 # TEST 4: TRAJECTORY COHERENCE (Claim 25)
 # =============================================================================
 
+
 @dataclass
 class Intent:
     """Intent configuration (Claim 18)."""
+
     primary: str
     modifier: str
     harmonic: int  # 1-7
-    phase: float   # 0 to 2π
+    phase: float  # 0 to 2π
 
 
 @dataclass
 class Waypoint:
     """Trajectory waypoint (Claim 25)."""
+
     intent: Intent
     timestamp: float
 
@@ -362,8 +370,9 @@ def geodesic_distance(actual: Intent, expected: Intent) -> float:
     phase_diff = abs(actual.phase - expected.phase)
     delta_phi = min(phase_diff, 2 * np.pi - phase_diff) / np.pi
 
-    d_geo = np.sqrt(w_p * delta_p**2 + w_m * delta_m**2 +
-                    w_h * delta_h**2 + w_phi * delta_phi**2)
+    d_geo = np.sqrt(
+        w_p * delta_p**2 + w_m * delta_m**2 + w_h * delta_h**2 + w_phi * delta_phi**2
+    )
     return float(d_geo)
 
 
@@ -428,7 +437,7 @@ def test_trajectory_coherence() -> Dict[str, Any]:
         "actual": actual.primary,
         "expected": expected.primary,
         "d_geo": d_geo,
-        "accepted": d_geo <= epsilon_coherence
+        "accepted": d_geo <= epsilon_coherence,
     }
 
     # Test 2: t=30, wrong intent B
@@ -439,7 +448,7 @@ def test_trajectory_coherence() -> Dict[str, Any]:
         "actual": actual.primary,
         "expected": expected.primary,
         "d_geo": d_geo,
-        "accepted": d_geo <= epsilon_coherence
+        "accepted": d_geo <= epsilon_coherence,
     }
 
     # Test 3: t=90, expired intent A (should now expect B)
@@ -452,7 +461,7 @@ def test_trajectory_coherence() -> Dict[str, Any]:
         "actual": actual.primary,
         "expected": expected.primary,
         "d_geo": d_geo,
-        "accepted": d_geo <= epsilon_coherence
+        "accepted": d_geo <= epsilon_coherence,
     }
 
     # Test 4: t=90, correct intent B
@@ -463,14 +472,14 @@ def test_trajectory_coherence() -> Dict[str, Any]:
         "actual": actual.primary,
         "expected": expected.primary,
         "d_geo": d_geo,
-        "accepted": d_geo <= epsilon_coherence
+        "accepted": d_geo <= epsilon_coherence,
     }
 
     passed = (
-        results["t30_correct"]["accepted"] and
-        not results["t30_wrong"]["accepted"] and
-        not results["t90_expired"]["accepted"] and
-        results["t90_correct"]["accepted"]
+        results["t30_correct"]["accepted"]
+        and not results["t30_wrong"]["accepted"]
+        and not results["t90_expired"]["accepted"]
+        and results["t90_correct"]["accepted"]
     )
 
     return {
@@ -480,7 +489,7 @@ def test_trajectory_coherence() -> Dict[str, Any]:
         "trajectory_waypoints": len(trajectory),
         "results": results,
         "claim_verified": "Wrong intent/time auto-rejected; no ambiguity",
-        "implication": "Temporal binding prevents replay attacks"
+        "implication": "Temporal binding prevents replay attacks",
     }
 
 
@@ -488,9 +497,11 @@ def test_trajectory_coherence() -> Dict[str, Any]:
 # TEST 5: SWARM AUTO-EXCLUSION (Claim 34)
 # =============================================================================
 
+
 @dataclass
 class SwarmNode:
     """Node in behavioral swarm (Claim 34)."""
+
     node_id: int
     context: np.ndarray
     trust: float = 0.5
@@ -517,8 +528,9 @@ def swarm_health(nodes: List[SwarmNode]) -> float:
     return float(np.mean([n.trust for n in nodes]))
 
 
-def update_trust(node: SwarmNode, centroid: np.ndarray,
-                 alpha: float = 0.9, d_max: float = 2.0) -> float:
+def update_trust(
+    node: SwarmNode, centroid: np.ndarray, alpha: float = 0.9, d_max: float = 2.0
+) -> float:
     """
     Claim 34: τ_new = α·τ_old + (1-α)·validity_factor
 
@@ -537,10 +549,18 @@ def update_trust(node: SwarmNode, centroid: np.ndarray,
     # Asymmetric: Byzantine nodes lose trust faster (Claim 60)
     if node.is_byzantine:
         decay_rate = 0.15  # Higher penalty
-        new_trust = alpha * node.trust + (1 - alpha) * validity_factor - decay_rate * (1 - validity_factor)
+        new_trust = (
+            alpha * node.trust
+            + (1 - alpha) * validity_factor
+            - decay_rate * (1 - validity_factor)
+        )
     else:
-        gain_rate = 0.05   # Slower gain
-        new_trust = alpha * node.trust + (1 - alpha) * validity_factor + gain_rate * validity_factor
+        gain_rate = 0.05  # Slower gain
+        new_trust = (
+            alpha * node.trust
+            + (1 - alpha) * validity_factor
+            + gain_rate * validity_factor
+        )
 
     return float(max(0, min(1, new_trust)))
 
@@ -576,7 +596,9 @@ def test_swarm_auto_exclusion() -> Dict[str, Any]:
 
     # Create rogue node (very different context)
     rogue_context = np.array([-0.5, 0.9, -0.3, 0.1, -0.8, 0.7])
-    rogue_node = SwarmNode(node_id=n_normal, context=rogue_context, trust=0.5, is_byzantine=True)
+    rogue_node = SwarmNode(
+        node_id=n_normal, context=rogue_context, trust=0.5, is_byzantine=True
+    )
     nodes.append(rogue_node)
 
     # Track trust evolution
@@ -620,13 +642,14 @@ def test_swarm_auto_exclusion() -> Dict[str, Any]:
         "swarm_health_final": health_history[-1],
         "trust_history_rogue": trust_history[n_normal],
         "claim_verified": "Rogue self-excludes without explicit revocation",
-        "implication": "Byzantine nodes cannot remain hidden"
+        "implication": "Byzantine nodes cannot remain hidden",
     }
 
 
 # =============================================================================
 # FULL TEST SUITE
 # =============================================================================
+
 
 def run_patent_validation_tests(verbose: bool = True) -> Dict[str, Any]:
     """
@@ -676,13 +699,14 @@ def run_patent_validation_tests(verbose: bool = True) -> Dict[str, Any]:
         "all_passed": all_passed,
         "tests": results,
         "claim_count": "50 original + 12 test-derived = 62 amended claims",
-        "filing_ready": all_passed
+        "filing_ready": all_passed,
     }
 
 
 # =============================================================================
 # INTEGRATION WITH AETHERMOORE
 # =============================================================================
+
 
 def test_aethermoore_integration() -> Dict[str, Any]:
     """
@@ -700,12 +724,12 @@ def test_aethermoore_integration() -> Dict[str, Any]:
         results = {}
         for d in d_values:
             H, logH = harmonic_scaling(d, R)
-            expected_H = R ** (d ** 2)
+            expected_H = R ** (d**2)
             error = abs(H - expected_H) / (expected_H + 1e-8)
             results[f"d={d}"] = {
                 "H": H,
                 "expected": expected_H,
-                "relative_error": error
+                "relative_error": error,
             }
 
         # Test with resonance (audit #8492)
@@ -719,14 +743,14 @@ def test_aethermoore_integration() -> Dict[str, Any]:
             "harmonic_formula": "H(d,R) = R^(d²)",
             "results": results,
             "resonance_H": H_res,
-            "claim_verified": "Harmonic scaling law matches patent specification"
+            "claim_verified": "Harmonic scaling law matches patent specification",
         }
 
     except ImportError:
         return {
             "test_name": "AETHERMOORE Integration (Claim 56)",
             "passed": False,
-            "error": "Could not import production_v2_1 module"
+            "error": "Could not import production_v2_1 module",
         }
 
 

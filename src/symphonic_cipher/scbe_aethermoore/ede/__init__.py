@@ -44,10 +44,8 @@ from .spiral_ring import (
     RingConfig,
     RingState,
     SynchronizedRingPair,
-
     # Stream
     create_entropy_stream,
-
     # Constants
     RING_SIZE,
     EXPANSION_RATE,
@@ -60,7 +58,6 @@ from .spiral_ring import (
     MARS_DISTANCE_MAX,
     MARS_LIGHT_TIME_MIN,
     MARS_LIGHT_TIME_MAX,
-
     # Utilities
     calculate_light_delay,
     mars_light_delay,
@@ -76,18 +73,14 @@ from .ede_protocol import (
     PROTOCOL_VERSION,
     HEADER_SIZE,
     MAC_SIZE,
-
     # Mars Link
     MarsLink,
-
     # Error Detection
     add_error_detection,
     verify_error_detection,
-
     # Time Dilation
     lorentz_factor,
     apply_time_dilation,
-
     # Quick Functions
     quick_mars_encode,
     quick_mars_decode,
@@ -99,30 +92,24 @@ from .chemistry_agent import (
     ChemistryAgent,
     AgentState,
     ThreatType,
-
     # Energy Model
     squared_energy,
     reaction_rate,
-
     # Defense
     ray_refraction,
     harmonic_sink,
-
     # Healing
     self_heal,
     equilibrium_force,
-
     # Wave Simulation
     Unit,
     WaveSimulation,
-
     # Constants
     THREAT_LEVEL_MIN,
     THREAT_LEVEL_MAX,
     DEFAULT_THREAT_LEVEL,
     REFRACTION_BASE,
     ANTIBODY_EFFICIENCY_BASE,
-
     # Quick Functions
     quick_defense_check,
     run_threat_simulation,
@@ -149,7 +136,6 @@ __all__ = [
     "MARS_LIGHT_TIME_MAX",
     "calculate_light_delay",
     "mars_light_delay",
-
     # EDE Protocol
     "EDEHeader",
     "EDEMessage",
@@ -165,7 +151,6 @@ __all__ = [
     "apply_time_dilation",
     "quick_mars_encode",
     "quick_mars_decode",
-
     # Chemistry Agent
     "ChemistryAgent",
     "AgentState",
