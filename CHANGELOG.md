@@ -1,5 +1,47 @@
 # SCBE Production Pack Changelog
 
+## [2026-01-26] - Fleet & AI Safety Integration
+
+### Fleet Management
+- **`api/main.py`**: Added `POST /v1/fleet/run-scenario` endpoint for pilot demos
+  - Registers N agents with spectral identities
+  - Runs tasks through 14-layer SCBE pipeline
+  - Returns summary of allowed/quarantined/denied actions
+- **`examples/fleet-scenarios.json`**: Created 4 sample scenarios
+  - fraud-detection-fleet, autonomous-vehicle-fleet, mixed-trust-scenario, ten-agent-stress-test
+- **TypeScript Fleet Manager**: 20/20 tests passing
+  - Agent registration with spectral identity
+  - Trust management with auto-quarantine
+  - Task lifecycle (create, assign, complete, retry)
+  - Governance tiers (KO→AV→RU→CA→UM→DR)
+  - Roundtable consensus for critical operations
+
+### AI Safety & Governance
+- **`src/symphonic_cipher/ai_verifier.py`**: Added `AIVerifier` class
+  - `classify_intent()` - Pattern-based malicious vs legitimate intent classification
+  - `enforce_policy()` - Block/approve based on risk level (critical/high/medium/low)
+  - `validate_ai_output()` - Detect dangerous commands and credential leaks
+  - `constitutional_check()` - Anthropic-style response validation
+  - `get_audit_log()` - Audit trail with timestamps for compliance
+- **`tests/industry_standard/test_ai_safety_governance.py`**: Expanded test suite
+  - TestAISafetyGovernance (7 tests)
+  - TestNISTAIRMFCompliance (2 tests)
+  - TestEUAIActCompliance (2 tests)
+  - TestAdversarialRobustness (2 tests)
+  - 13/13 tests passing
+
+### Deployment
+- AWS Lambda deployment workflow (scbe-agent-swarm-core)
+- Replit deployment live (spiral-shield.replit.app)
+- Google Cloud Run deployment (studio-956103948282.us-central1.run.app)
+- Docker Compose for unified stack
+- Local run scripts for Windows (no Docker required)
+
+### Test Results
+- Fleet Manager (TypeScript): 20/20 passed
+- AI Safety Governance (Python): 13/13 passed
+- TypeScript Suite: 939/950 passed (11 known issues in RWP tests)
+
 ## [2026-01-25] - Repo Maintenance & Sync
 
 - Added devcontainer configuration for local Kubernetes tooling (non-runtime).
