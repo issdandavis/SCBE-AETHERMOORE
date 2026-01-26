@@ -87,12 +87,14 @@ from . import composition_axiom
 # Axiom Enumeration
 # ============================================================================
 
+
 class QuantumAxiom(Enum):
     """The five quantum axioms organizing the 14-layer pipeline."""
-    UNITARITY = "unitarity"      # Norm preservation
-    LOCALITY = "locality"        # Spatially-bounded
-    CAUSALITY = "causality"      # Time-ordered
-    SYMMETRY = "symmetry"        # Gauge invariance
+
+    UNITARITY = "unitarity"  # Norm preservation
+    LOCALITY = "locality"  # Spatially-bounded
+    CAUSALITY = "causality"  # Time-ordered
+    SYMMETRY = "symmetry"  # Gauge invariance
     COMPOSITION = "composition"  # Layer composition
 
 
@@ -102,19 +104,19 @@ class QuantumAxiom(Enum):
 
 LAYER_TO_AXIOM: Dict[int, QuantumAxiom] = {
     1: QuantumAxiom.COMPOSITION,  # Entry point
-    2: QuantumAxiom.UNITARITY,    # Realification (isometry)
-    3: QuantumAxiom.LOCALITY,     # Weighted Transform (diagonal)
-    4: QuantumAxiom.UNITARITY,    # Poincaré Embedding
-    5: QuantumAxiom.SYMMETRY,     # Hyperbolic Distance (THE INVARIANT)
-    6: QuantumAxiom.CAUSALITY,    # Breathing Transform (time-dep)
-    7: QuantumAxiom.UNITARITY,    # Phase Transform (Möbius)
-    8: QuantumAxiom.LOCALITY,     # Multi-Well Realms
-    9: QuantumAxiom.SYMMETRY,     # Spectral Coherence
-    10: QuantumAxiom.SYMMETRY,    # Spin Coherence
-    11: QuantumAxiom.CAUSALITY,   # Triadic Temporal Distance
-    12: QuantumAxiom.SYMMETRY,    # Harmonic Scaling
-    13: QuantumAxiom.CAUSALITY,   # Decision Pipeline
-    14: QuantumAxiom.COMPOSITION, # Exit point
+    2: QuantumAxiom.UNITARITY,  # Realification (isometry)
+    3: QuantumAxiom.LOCALITY,  # Weighted Transform (diagonal)
+    4: QuantumAxiom.UNITARITY,  # Poincaré Embedding
+    5: QuantumAxiom.SYMMETRY,  # Hyperbolic Distance (THE INVARIANT)
+    6: QuantumAxiom.CAUSALITY,  # Breathing Transform (time-dep)
+    7: QuantumAxiom.UNITARITY,  # Phase Transform (Möbius)
+    8: QuantumAxiom.LOCALITY,  # Multi-Well Realms
+    9: QuantumAxiom.SYMMETRY,  # Spectral Coherence
+    10: QuantumAxiom.SYMMETRY,  # Spin Coherence
+    11: QuantumAxiom.CAUSALITY,  # Triadic Temporal Distance
+    12: QuantumAxiom.SYMMETRY,  # Harmonic Scaling
+    13: QuantumAxiom.CAUSALITY,  # Decision Pipeline
+    14: QuantumAxiom.COMPOSITION,  # Exit point
 }
 
 # Reverse mapping: axiom -> layers
@@ -167,9 +169,11 @@ def get_axiom_layers(axiom: str) -> List[int]:
 # Layer Registry
 # ============================================================================
 
+
 @dataclass
 class LayerInfo:
     """Complete information about a layer."""
+
     number: int
     name: str
     axiom: QuantumAxiom
@@ -210,7 +214,7 @@ def get_layer_info(layer_num: int) -> LayerInfo:
         function=info["function"],
         inverse=info.get("inverse"),
         description=info["description"],
-        module=module
+        module=module,
     )
 
 
@@ -258,6 +262,7 @@ pipe = composition_axiom.pipe
 # ============================================================================
 # Verification Utilities
 # ============================================================================
+
 
 def verify_all_axioms(verbose: bool = False) -> Dict[str, bool]:
     """
@@ -329,11 +334,11 @@ def print_layer_mapping() -> None:
 
     for layer_num in range(1, 15):
         info = get_layer_info(layer_num)
-        print("{:<6} {:<25} {:<15}".format(
-            f"L{layer_num}",
-            info.name[:24],
-            info.axiom.value.upper()
-        ))
+        print(
+            "{:<6} {:<25} {:<15}".format(
+                f"L{layer_num}", info.name[:24], info.axiom.value.upper()
+            )
+        )
 
     print("-" * 60)
     print("\nAxiom Summary:")
@@ -349,35 +354,29 @@ def print_layer_mapping() -> None:
 __all__ = [
     # Enums
     "QuantumAxiom",
-
     # Mappings
     "LAYER_TO_AXIOM",
     "AXIOM_TO_LAYERS",
-
     # Query functions
     "get_layer_axiom",
     "get_axiom_layers",
     "get_layer_info",
     "get_all_layers",
-
     # Decorators
     "unitarity_check",
     "locality_check",
     "causality_check",
     "symmetry_check",
     "composition_check",
-
     # Pipeline
     "AxiomAwarePipeline",
     "ContextInput",
     "Pipeline",
     "compose",
     "pipe",
-
     # Verification
     "verify_all_axioms",
     "print_layer_mapping",
-
     # Submodules
     "unitarity_axiom",
     "locality_axiom",

@@ -24,6 +24,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 # Try imports
 try:
     from src.scbe_14layer_reference import scbe_14layer_pipeline
+
     SCBE_AVAILABLE = True
 except ImportError:
     SCBE_AVAILABLE = False
@@ -38,6 +39,7 @@ SQRT5 = np.sqrt(5)
 # GOLDEN RATIO TESTS
 # =============================================================================
 
+
 @pytest.mark.professional
 @pytest.mark.math
 class TestGoldenRatio:
@@ -50,7 +52,7 @@ class TestGoldenRatio:
 
     def test_golden_ratio_property_squared(self, golden_ratio):
         """Verify φ² = φ + 1 (fundamental property)."""
-        phi_squared = golden_ratio ** 2
+        phi_squared = golden_ratio**2
         phi_plus_one = golden_ratio + 1
         assert np.isclose(phi_squared, phi_plus_one, rtol=1e-10)
 
@@ -63,7 +65,7 @@ class TestGoldenRatio:
     def test_golden_ratio_powers_recurrence(self, golden_ratio):
         """Verify φⁿ = φⁿ⁻¹ + φⁿ⁻² (Fibonacci recurrence)."""
         for n in range(2, 10):
-            phi_n = golden_ratio ** n
+            phi_n = golden_ratio**n
             phi_n_minus_1 = golden_ratio ** (n - 1)
             phi_n_minus_2 = golden_ratio ** (n - 2)
             assert np.isclose(phi_n, phi_n_minus_1 + phi_n_minus_2, rtol=1e-9)
@@ -81,6 +83,7 @@ class TestGoldenRatio:
 # =============================================================================
 # HARMONIC SCALING LAW TESTS
 # =============================================================================
+
 
 @pytest.mark.professional
 @pytest.mark.math
@@ -105,9 +108,9 @@ class TestHarmonicScalingLaw:
         h_values = [harmonic_scaling(d, R) for d in range(7)]
 
         # h[2] = R^4, h[3] = R^9, etc.
-        assert np.isclose(h_values[2], R ** 4)
-        assert np.isclose(h_values[3], R ** 9)
-        assert np.isclose(h_values[4], R ** 16)
+        assert np.isclose(h_values[2], R**4)
+        assert np.isclose(h_values[3], R**9)
+        assert np.isclose(h_values[4], R**16)
 
     def test_harmonic_scaling_specific_values(self, harmonic_scaling):
         """Verify specific known values for R=1.5."""
@@ -138,6 +141,7 @@ class TestHarmonicScalingLaw:
 # =============================================================================
 # HYPERBOLIC GEOMETRY TESTS
 # =============================================================================
+
 
 @pytest.mark.professional
 @pytest.mark.math
@@ -206,6 +210,7 @@ class TestHyperbolicGeometry:
 # POINCARÉ BALL TESTS
 # =============================================================================
 
+
 @pytest.mark.professional
 @pytest.mark.math
 class TestPoincareBall:
@@ -213,10 +218,11 @@ class TestPoincareBall:
 
     def test_mobius_addition_identity(self):
         """Verify u ⊕ 0 = u (identity element)."""
+
         def mobius_add(u, v):
             """Möbius addition in Poincaré ball."""
-            u_sq = np.sum(u ** 2)
-            v_sq = np.sum(v ** 2)
+            u_sq = np.sum(u**2)
+            v_sq = np.sum(v**2)
             uv = np.dot(u, v)
 
             denom = 1 + 2 * uv + u_sq * v_sq
@@ -247,6 +253,7 @@ class TestPoincareBall:
 
     def test_exponential_map_from_origin(self):
         """Verify exponential map exp_0(v) = tanh(||v||/2) * v/||v||."""
+
         def exp_map_origin(v):
             """Exponential map from origin."""
             norm = np.linalg.norm(v)
@@ -267,6 +274,7 @@ class TestPoincareBall:
 # =============================================================================
 # 14-LAYER PIPELINE TESTS
 # =============================================================================
+
 
 @pytest.mark.professional
 @pytest.mark.math
@@ -297,8 +305,7 @@ class TestFourteenLayerPipeline:
         position = np.array([1.0, 2.0, 3.0, 5.0, 8.0, 13.0])
         # Weights must sum to 1.0
         result = scbe_14layer_pipeline(
-            t=position, D=6,
-            w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
+            t=position, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
         )
 
         # Verify H = R^(d*²) approximately (default R=10.0 for strong super-exponential growth)
@@ -324,18 +331,26 @@ class TestFourteenLayerPipeline:
         result_low = scbe_14layer_pipeline(
             t=np.array([1, 2, 3, 5, 8, 13]),
             D=6,
-            w_d=0.1, w_c=0.3, w_s=0.3, w_tau=0.2, w_a=0.1,
+            w_d=0.1,
+            w_c=0.3,
+            w_s=0.3,
+            w_tau=0.2,
+            w_a=0.1,
             theta1=0.5,
-            theta2=0.8
+            theta2=0.8,
         )
 
         # High risk should DENY (weights sum to 1.0)
         result_high = scbe_14layer_pipeline(
             t=np.array([99, 99, 99, 99, 99, 99]),
             D=6,
-            w_d=0.7, w_c=0.1, w_s=0.1, w_tau=0.05, w_a=0.05,
+            w_d=0.7,
+            w_c=0.1,
+            w_s=0.1,
+            w_tau=0.05,
+            w_a=0.05,
             theta1=0.1,
-            theta2=0.2
+            theta2=0.2,
         )
 
         # Verify threshold behavior
@@ -345,6 +360,7 @@ class TestFourteenLayerPipeline:
 # =============================================================================
 # QUASICRYSTAL LATTICE TESTS
 # =============================================================================
+
 
 @pytest.mark.professional
 @pytest.mark.math
@@ -365,7 +381,7 @@ class TestQuasicrystalLattice:
 
         # All vertices should be at same distance from origin
         distances = [np.linalg.norm(v) for v in vertices]
-        expected_distance = np.sqrt(1 + phi ** 2)
+        expected_distance = np.sqrt(1 + phi**2)
 
         for d in distances:
             assert np.isclose(d, expected_distance, rtol=1e-10)
@@ -373,14 +389,10 @@ class TestQuasicrystalLattice:
     def test_projection_matrix_orthogonality(self, golden_ratio):
         """Verify 6D→3D projection matrices are orthogonal."""
         phi = golden_ratio
-        norm = 1 / np.sqrt(1 + phi ** 2)
+        norm = 1 / np.sqrt(1 + phi**2)
 
         # Physical space basis vectors (simplified)
-        e_par = np.array([
-            [1, phi, 0],
-            [phi, 0, 1],
-            [0, 1, phi]
-        ]) * norm
+        e_par = np.array([[1, phi, 0], [phi, 0, 1], [0, 1, phi]]) * norm
 
         # Check orthogonality (simplified test)
         inner_products = e_par @ e_par.T
@@ -393,6 +405,7 @@ class TestQuasicrystalLattice:
 # =============================================================================
 # NUMERICAL STABILITY TESTS
 # =============================================================================
+
 
 @pytest.mark.professional
 @pytest.mark.math

@@ -71,15 +71,17 @@ class ModalityMask(Enum):
     Different modalities use different base harmonic patterns,
     providing semantic separation even before key derivation.
     """
-    STRICT = "strict"       # Odd harmonics only {1,3,5,7,...}
-    ADAPTIVE = "adaptive"   # Full range {1,2,3,4,5,...}
-    PROBE = "probe"         # Fundamental only {1}
-    ORCHESTRAL = "orch"     # Musical fifths {1,3,6,9,12}
+
+    STRICT = "strict"  # Odd harmonics only {1,3,5,7,...}
+    ADAPTIVE = "adaptive"  # Full range {1,2,3,4,5,...}
+    PROBE = "probe"  # Fundamental only {1}
+    ORCHESTRAL = "orch"  # Musical fifths {1,3,6,9,12}
 
 
 # =============================================================================
 # KEY-DERIVED HARMONIC MASK
 # =============================================================================
+
 
 @dataclass
 class HarmonicFingerprint:
@@ -93,6 +95,7 @@ class HarmonicFingerprint:
         phases: Phase offset for each harmonic
         key_commitment: HMAC commitment for verification
     """
+
     token_id: int
     harmonics: Set[int]
     amplitudes: np.ndarray
@@ -104,7 +107,7 @@ def derive_harmonic_mask(
     token_id: int,
     secret_key: bytes,
     modality: ModalityMask = ModalityMask.ADAPTIVE,
-    domain: str = "default"
+    domain: str = "default",
 ) -> HarmonicFingerprint:
     """
     Derive a unique harmonic fingerprint for a token using secret key.
@@ -126,17 +129,11 @@ def derive_harmonic_mask(
     context = f"flat_slope:v1:{domain}:{modality.value}:token:{token_id}"
 
     # HMAC-SHA256 for key derivation
-    derived = hmac.new(
-        secret_key,
-        context.encode('utf-8'),
-        hashlib.sha256
-    ).digest()
+    derived = hmac.new(secret_key, context.encode("utf-8"), hashlib.sha256).digest()
 
     # Commitment for later verification
     key_commitment = hmac.new(
-        secret_key,
-        f"commit:{token_id}".encode('utf-8'),
-        hashlib.sha256
+        secret_key, f"commit:{token_id}".encode("utf-8"), hashlib.sha256
     ).digest()[:16]
 
     # Determine base harmonic pool based on modality
@@ -207,7 +204,7 @@ def derive_harmonic_mask(
         harmonics=selected_harmonics,
         amplitudes=amplitudes,
         phases=phases,
-        key_commitment=key_commitment
+        key_commitment=key_commitment,
     )
 
 
@@ -215,10 +212,11 @@ def derive_harmonic_mask(
 # WAVEFORM SYNTHESIS
 # =============================================================================
 
+
 def synthesize_token(
     fingerprint: HarmonicFingerprint,
     duration_ms: float = 100.0,
-    sample_rate: int = SAMPLE_RATE
+    sample_rate: int = SAMPLE_RATE,
 ) -> np.ndarray:
     """
     Synthesize audio waveform for a token's harmonic fingerprint.
@@ -256,10 +254,7 @@ def synthesize_token(
 
 
 def _generate_envelope(
-    num_samples: int,
-    sample_rate: int,
-    attack_ms: float = 5.0,
-    release_ms: float = 10.0
+    num_samples: int, sample_rate: int, attack_ms: float = 5.0, release_ms: float = 10.0
 ) -> np.ndarray:
     """Generate smooth attack-sustain-release envelope."""
     attack_samples = int((attack_ms / 1000.0) * sample_rate)
@@ -283,6 +278,7 @@ def _generate_envelope(
 # MESSAGE ENCODING
 # =============================================================================
 
+
 @dataclass
 class EncodedMessage:
     """
@@ -294,6 +290,7 @@ class EncodedMessage:
         fingerprints: Individual token fingerprints (for verification)
         envelope_hmac: HMAC of entire message for integrity
     """
+
     token_ids: List[int]
     waveform: np.ndarray
     fingerprints: List[HarmonicFingerprint]
@@ -306,7 +303,7 @@ def encode_message(
     modality: ModalityMask = ModalityMask.ADAPTIVE,
     domain: str = "default",
     token_duration_ms: float = 100.0,
-    gap_duration_ms: float = 10.0
+    gap_duration_ms: float = 10.0,
 ) -> EncodedMessage:
     """
     Encode a sequence of tokens as flat-slope harmonic signal.
@@ -350,20 +347,14 @@ def encode_message(
         combined = np.array([], dtype=np.float64)
 
     # Compute envelope HMAC for integrity
-    message_bytes = b''.join(
-        fp.key_commitment for fp in fingerprints
-    )
-    envelope_hmac = hmac.new(
-        secret_key,
-        message_bytes,
-        hashlib.sha256
-    ).digest()
+    message_bytes = b"".join(fp.key_commitment for fp in fingerprints)
+    envelope_hmac = hmac.new(secret_key, message_bytes, hashlib.sha256).digest()
 
     return EncodedMessage(
         token_ids=token_ids,
         waveform=combined,
         fingerprints=fingerprints,
-        envelope_hmac=envelope_hmac
+        envelope_hmac=envelope_hmac,
     )
 
 
@@ -371,10 +362,11 @@ def encode_message(
 # VERIFICATION (DECODING)
 # =============================================================================
 
+
 def verify_token_fingerprint(
     waveform: np.ndarray,
     expected_fingerprint: HarmonicFingerprint,
-    tolerance: float = 0.1
+    tolerance: float = 0.1,
 ) -> Tuple[bool, float]:
     """
     Verify that a waveform matches expected harmonic fingerprint.
@@ -422,24 +414,15 @@ def verify_token_fingerprint(
     return match, confidence
 
 
-def verify_envelope_integrity(
-    message: EncodedMessage,
-    secret_key: bytes
-) -> bool:
+def verify_envelope_integrity(message: EncodedMessage, secret_key: bytes) -> bool:
     """
     Verify the envelope HMAC of an encoded message.
 
     Returns True if message integrity is intact.
     """
     # Recompute HMAC
-    message_bytes = b''.join(
-        fp.key_commitment for fp in message.fingerprints
-    )
-    expected_hmac = hmac.new(
-        secret_key,
-        message_bytes,
-        hashlib.sha256
-    ).digest()
+    message_bytes = b"".join(fp.key_commitment for fp in message.fingerprints)
+    expected_hmac = hmac.new(secret_key, message_bytes, hashlib.sha256).digest()
 
     return hmac.compare_digest(message.envelope_hmac, expected_hmac)
 
@@ -448,10 +431,9 @@ def verify_envelope_integrity(
 # SECURITY ANALYSIS
 # =============================================================================
 
+
 def analyze_frequency_attack_resistance(
-    token_ids: List[int],
-    secret_key: bytes,
-    num_samples: int = 100
+    token_ids: List[int], secret_key: bytes, num_samples: int = 100
 ) -> dict:
     """
     Analyze resistance to frequency analysis attacks.
@@ -529,14 +511,14 @@ def compare_steep_vs_flat(token_ids: List[int]) -> dict:
             "fundamentals": steep_fundamentals,
             "variance": float(np.var(steep_fundamentals)),
             "attackable": True,
-            "reason": "Frequency varies with token → frequency analysis reveals tokens"
+            "reason": "Frequency varies with token → frequency analysis reveals tokens",
         },
         "flat_slope": {
             "fundamentals": flat_fundamentals,
             "variance": 0.0,
             "attackable": False,
-            "reason": "All tokens have same fundamental → only harmonic content differs, key required"
-        }
+            "reason": "All tokens have same fundamental → only harmonic content differs, key required",
+        },
     }
 
 
@@ -544,9 +526,9 @@ def compare_steep_vs_flat(token_ids: List[int]) -> dict:
 # RESONANCE REFRACTORING
 # =============================================================================
 
+
 def resonance_refractor(
-    fingerprints: List[HarmonicFingerprint],
-    interference_depth: float = 0.3
+    fingerprints: List[HarmonicFingerprint], interference_depth: float = 0.3
 ) -> np.ndarray:
     """
     Apply resonance refractoring for multi-token encoding.
@@ -590,14 +572,14 @@ def resonance_refractor(
             prev_wave = token_waves[i - 1]
             overlap = int(num_samples * interference_depth)
             if overlap > 0:
-                combined[start:start + overlap] += prev_wave[-overlap:] * 0.3
+                combined[start : start + overlap] += prev_wave[-overlap:] * 0.3
 
         if i < len(token_waves) - 1:
             # Next token bleeds into current
             next_wave = token_waves[i + 1]
             overlap = int(num_samples * interference_depth)
             if overlap > 0:
-                combined[end - overlap:end] += next_wave[:overlap] * 0.3
+                combined[end - overlap : end] += next_wave[:overlap] * 0.3
 
     # Normalize to prevent clipping
     max_val = np.max(np.abs(combined))
@@ -611,18 +593,16 @@ def resonance_refractor(
 # UTILITY FUNCTIONS
 # =============================================================================
 
+
 def generate_key(length: int = 32) -> bytes:
     """Generate a cryptographically secure random key."""
     import secrets
+
     return secrets.token_bytes(length)
 
 
 def key_from_passphrase(passphrase: str, salt: bytes = b"flat_slope_v1") -> bytes:
     """Derive key from passphrase using PBKDF2."""
     return hashlib.pbkdf2_hmac(
-        'sha256',
-        passphrase.encode('utf-8'),
-        salt,
-        iterations=100000,
-        dklen=32
+        "sha256", passphrase.encode("utf-8"), salt, iterations=100000, dklen=32
     )

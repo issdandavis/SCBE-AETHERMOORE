@@ -19,10 +19,7 @@ import math
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple, Dict, Any, Union
 
-from .constants import (
-    R_FIFTH, PHI, DEFAULT_D_MAX, DEFAULT_R,
-    harmonic_scale, CONSTANTS
-)
+from .constants import R_FIFTH, PHI, DEFAULT_D_MAX, DEFAULT_R, harmonic_scale, CONSTANTS
 
 
 # =============================================================================
@@ -49,6 +46,7 @@ class HALConfig:
         normalize: Apply overflow prevention (default True)
         dropout: Attention dropout rate (default 0.0)
     """
+
     d_model: int = 512
     n_heads: int = 8
     R: float = R_FIFTH
@@ -58,28 +56,29 @@ class HALConfig:
 
     def __post_init__(self):
         if self.d_model % self.n_heads != 0:
-            raise ValueError(f"d_model ({self.d_model}) must be divisible by n_heads ({self.n_heads})")
+            raise ValueError(
+                f"d_model ({self.d_model}) must be divisible by n_heads ({self.n_heads})"
+            )
         self.d_k = self.d_model // self.n_heads
 
 
 @dataclass
 class AttentionOutput:
     """Result of HAL-Attention computation."""
-    output: Matrix              # [seq_len, d_model]
-    attention_weights: Matrix   # [seq_len, seq_len]
-    coupling_matrix: Matrix     # Λ matrix
-    dimension_depths: Vector    # d values used
+
+    output: Matrix  # [seq_len, d_model]
+    attention_weights: Matrix  # [seq_len, seq_len]
+    coupling_matrix: Matrix  # Λ matrix
+    dimension_depths: Vector  # d values used
 
 
 # =============================================================================
 # HARMONIC COUPLING MATRIX Λ
 # =============================================================================
 
+
 def harmonic_coupling_matrix(
-    d_Q: List[float],
-    d_K: List[float],
-    R: float = R_FIFTH,
-    normalize: bool = True
+    d_Q: List[float], d_K: List[float], R: float = R_FIFTH, normalize: bool = True
 ) -> Matrix:
     """
     Compute the harmonic coupling matrix Λ.
@@ -118,7 +117,7 @@ def harmonic_coupling_matrix(
         row = []
         for j in range(m):
             exponent = d_Q[i] * d_K[j]
-            val = R ** exponent
+            val = R**exponent
             row.append(val)
             if val > max_val:
                 max_val = val
@@ -154,11 +153,12 @@ def compute_coupling_trace(coupling: Matrix) -> float:
 # DIMENSION DEPTH ASSIGNMENT
 # =============================================================================
 
+
 def assign_dimension_depths(
     sequence_length: int,
-    method: str = 'positional',
+    method: str = "positional",
     d_max: int = DEFAULT_D_MAX,
-    **kwargs
+    **kwargs,
 ) -> List[float]:
     """
     Assign dimension depth values to each token position.
@@ -179,24 +179,26 @@ def assign_dimension_depths(
     Returns:
         List of dimension depths [seq_len]
     """
-    if method == 'positional':
+    if method == "positional":
         # Linear scaling: position 0 → 1, position N-1 → d_max
         if sequence_length == 1:
             return [1.0]
-        return [1 + (d_max - 1) * i / (sequence_length - 1)
-                for i in range(sequence_length)]
+        return [
+            1 + (d_max - 1) * i / (sequence_length - 1) for i in range(sequence_length)
+        ]
 
-    elif method == 'uniform':
+    elif method == "uniform":
         # Same depth for all positions
-        d = kwargs.get('depth', d_max / 2)
+        d = kwargs.get("depth", d_max / 2)
         return [d] * sequence_length
 
-    elif method == 'random':
+    elif method == "random":
         # Random depths (useful for training)
         import random
+
         return [random.uniform(1, d_max) for _ in range(sequence_length)]
 
-    elif method == 'golden':
+    elif method == "golden":
         # Golden ratio-based: more attention to early tokens
         depths = []
         for i in range(sequence_length):
@@ -206,19 +208,21 @@ def assign_dimension_depths(
             depths.append(d)
         return depths
 
-    elif method == 'semantic':
+    elif method == "semantic":
         # Requires embeddings or importance scores
-        importance = kwargs.get('importance', None)
+        importance = kwargs.get("importance", None)
         if importance is None:
             # Fallback to positional
-            return assign_dimension_depths(sequence_length, 'positional', d_max)
+            return assign_dimension_depths(sequence_length, "positional", d_max)
         # Scale importance to [1, d_max]
         min_imp = min(importance)
         max_imp = max(importance)
         if max_imp == min_imp:
             return [d_max / 2] * sequence_length
-        return [1 + (d_max - 1) * (imp - min_imp) / (max_imp - min_imp)
-                for imp in importance]
+        return [
+            1 + (d_max - 1) * (imp - min_imp) / (max_imp - min_imp)
+            for imp in importance
+        ]
 
     else:
         raise ValueError(f"Unknown method: {method}")
@@ -227,6 +231,7 @@ def assign_dimension_depths(
 # =============================================================================
 # SOFTMAX FUNCTION
 # =============================================================================
+
 
 def softmax(x: List[float]) -> List[float]:
     """
@@ -262,6 +267,7 @@ def softmax_2d(matrix: Matrix) -> Matrix:
 # MATRIX OPERATIONS
 # =============================================================================
 
+
 def matmul(A: Matrix, B: Matrix) -> Matrix:
     """Matrix multiplication A @ B."""
     n = len(A)
@@ -285,19 +291,18 @@ def transpose(A: Matrix) -> Matrix:
 
 def hadamard(A: Matrix, B: Matrix) -> Matrix:
     """Element-wise (Hadamard) product."""
-    return [[A[i][j] * B[i][j] for j in range(len(A[0]))]
-            for i in range(len(A))]
+    return [[A[i][j] * B[i][j] for j in range(len(A[0]))] for i in range(len(A))]
 
 
 def scale_matrix(A: Matrix, scalar: float) -> Matrix:
     """Scale matrix by scalar."""
-    return [[A[i][j] * scalar for j in range(len(A[0]))]
-            for i in range(len(A))]
+    return [[A[i][j] * scalar for j in range(len(A[0]))] for i in range(len(A))]
 
 
 # =============================================================================
 # HAL-ATTENTION CORE
 # =============================================================================
+
 
 def hal_attention(
     Q: Matrix,
@@ -305,7 +310,7 @@ def hal_attention(
     V: Matrix,
     d_Q: Optional[List[float]] = None,
     d_K: Optional[List[float]] = None,
-    config: Optional[HALConfig] = None
+    config: Optional[HALConfig] = None,
 ) -> AttentionOutput:
     """
     Compute HAL-Attention with harmonic weighting.
@@ -343,9 +348,9 @@ def hal_attention(
 
     # Assign dimension depths if not provided
     if d_Q is None:
-        d_Q = assign_dimension_depths(seq_len, 'positional', config.d_max)
+        d_Q = assign_dimension_depths(seq_len, "positional", config.d_max)
     if d_K is None:
-        d_K = assign_dimension_depths(len(K), 'positional', config.d_max)
+        d_K = assign_dimension_depths(len(K), "positional", config.d_max)
 
     # Step 1: Compute standard attention scores QKᵀ / √d_k
     K_T = transpose(K)
@@ -370,13 +375,14 @@ def hal_attention(
         output=output,
         attention_weights=attention_weights,
         coupling_matrix=coupling,
-        dimension_depths=d_Q
+        dimension_depths=d_Q,
     )
 
 
 # =============================================================================
 # MULTI-HEAD HAL-ATTENTION
 # =============================================================================
+
 
 def split_heads(x: Matrix, n_heads: int) -> List[Matrix]:
     """
@@ -436,7 +442,7 @@ def multi_head_hal_attention(
     V: Matrix,
     d_Q: Optional[List[float]] = None,
     d_K: Optional[List[float]] = None,
-    config: Optional[HALConfig] = None
+    config: Optional[HALConfig] = None,
 ) -> AttentionOutput:
     """
     Multi-head HAL-Attention.
@@ -463,9 +469,9 @@ def multi_head_hal_attention(
 
     # Assign depths if not provided
     if d_Q is None:
-        d_Q = assign_dimension_depths(seq_len, 'positional', config.d_max)
+        d_Q = assign_dimension_depths(seq_len, "positional", config.d_max)
     if d_K is None:
-        d_K = assign_dimension_depths(len(K), 'positional', config.d_max)
+        d_K = assign_dimension_depths(len(K), "positional", config.d_max)
 
     # Split into heads
     Q_heads = split_heads(Q, n_heads)
@@ -483,9 +489,11 @@ def multi_head_hal_attention(
             n_heads=1,
             R=config.R,
             d_max=config.d_max,
-            normalize=config.normalize
+            normalize=config.normalize,
         )
-        result = hal_attention(Q_heads[h], K_heads[h], V_heads[h], d_Q, d_K, head_config)
+        result = hal_attention(
+            Q_heads[h], K_heads[h], V_heads[h], d_Q, d_K, head_config
+        )
         head_outputs.append(result.output)
         all_weights.append(result.attention_weights)
         if coupling is None:
@@ -505,13 +513,14 @@ def multi_head_hal_attention(
         output=output,
         attention_weights=avg_weights,
         coupling_matrix=coupling or [],
-        dimension_depths=d_Q
+        dimension_depths=d_Q,
     )
 
 
 # =============================================================================
 # HAL ATTENTION LAYER CLASS
 # =============================================================================
+
 
 class HALAttentionLayer:
     """
@@ -532,7 +541,7 @@ class HALAttentionLayer:
         R: float = R_FIFTH,
         d_max: int = DEFAULT_D_MAX,
         normalize: bool = True,
-        depth_method: str = 'positional'
+        depth_method: str = "positional",
     ):
         """
         Initialize HAL Attention Layer.
@@ -546,11 +555,7 @@ class HALAttentionLayer:
             depth_method: How to assign dimension depths
         """
         self.config = HALConfig(
-            d_model=d_model,
-            n_heads=n_heads,
-            R=R,
-            d_max=d_max,
-            normalize=normalize
+            d_model=d_model, n_heads=n_heads, R=R, d_max=d_max, normalize=normalize
         )
         self.depth_method = depth_method
 
@@ -560,7 +565,7 @@ class HALAttentionLayer:
         key: Matrix,
         value: Matrix,
         d_Q: Optional[List[float]] = None,
-        d_K: Optional[List[float]] = None
+        d_K: Optional[List[float]] = None,
     ) -> AttentionOutput:
         """
         Apply HAL-Attention.
@@ -584,9 +589,7 @@ class HALAttentionLayer:
                 len(key), self.depth_method, self.config.d_max
             )
 
-        return multi_head_hal_attention(
-            query, key, value, d_Q, d_K, self.config
-        )
+        return multi_head_hal_attention(query, key, value, d_Q, d_K, self.config)
 
     def get_coupling_info(self, seq_len: int) -> Dict[str, Any]:
         """
@@ -599,23 +602,26 @@ class HALAttentionLayer:
             Dict with coupling statistics
         """
         depths = assign_dimension_depths(seq_len, self.depth_method, self.config.d_max)
-        coupling = harmonic_coupling_matrix(depths, depths, self.config.R, self.config.normalize)
+        coupling = harmonic_coupling_matrix(
+            depths, depths, self.config.R, self.config.normalize
+        )
 
         return {
-            'seq_len': seq_len,
-            'depths': depths,
-            'coupling_shape': (len(coupling), len(coupling[0]) if coupling else 0),
-            'trace': compute_coupling_trace(coupling),
-            'max_value': max(max(row) for row in coupling) if coupling else 0,
-            'min_value': min(min(row) for row in coupling) if coupling else 0,
-            'R': self.config.R,
-            'd_max': self.config.d_max,
+            "seq_len": seq_len,
+            "depths": depths,
+            "coupling_shape": (len(coupling), len(coupling[0]) if coupling else 0),
+            "trace": compute_coupling_trace(coupling),
+            "max_value": max(max(row) for row in coupling) if coupling else 0,
+            "min_value": min(min(row) for row in coupling) if coupling else 0,
+            "R": self.config.R,
+            "d_max": self.config.d_max,
         }
 
 
 # =============================================================================
 # UTILITIES
 # =============================================================================
+
 
 def visualize_coupling_matrix(coupling: Matrix, title: str = "Λ Matrix") -> str:
     """
@@ -666,10 +672,10 @@ def visualize_coupling_matrix(coupling: Matrix, title: str = "Λ Matrix") -> str
 def get_hal_stats() -> Dict[str, Any]:
     """Get HAL module statistics and constants."""
     return {
-        'R_default': R_FIFTH,
-        'd_max_default': DEFAULT_D_MAX,
-        'depth_methods': ['positional', 'uniform', 'random', 'golden', 'semantic'],
-        'harmonic_scale_d6': harmonic_scale(6, R_FIFTH),
-        'phi': PHI,
-        'constants': CONSTANTS,
+        "R_default": R_FIFTH,
+        "d_max_default": DEFAULT_D_MAX,
+        "depth_methods": ["positional", "uniform", "random", "golden", "semantic"],
+        "harmonic_scale_d6": harmonic_scale(6, R_FIFTH),
+        "phi": PHI,
+        "constants": CONSTANTS,
     }

@@ -25,39 +25,39 @@ import numpy as np
 from typing import Tuple, List, Optional
 from scipy.signal import hilbert
 
+
 # ============================================================
 # LAYER 0: Intent Modulation (Feistel-style scrambling)
 # ============================================================
 def layer_0_intent_modulation(t: np.ndarray, key: str = "default_key") -> np.ndarray:
     """
     Layer 0: Intent Modulation
-    
+
     Applies Feistel-style scrambling to the input vector using a key-derived
     rotation matrix. This ensures high entropy and creates avalanche effect.
-    
+
     Input: Context vector t ∈ ℝᴰ
     Output: Modulated vector t' ∈ ℝᴰ
-    
+
     Mathematical basis: Key → HMAC → Seed → Orthogonal rotation
     """
     D = len(t)
-    
+
     # Derive seed from key using HMAC-SHA256
     key_hash = hashlib.sha256(key.encode()).digest()
-    seed = int.from_bytes(key_hash[:4], 'big')
-    
+    seed = int.from_bytes(key_hash[:4], "big")
+
     # Generate deterministic rotation matrix using key as seed
     rng = np.random.default_rng(seed)
-    
+
     # Create orthogonal matrix via QR decomposition of random matrix
     random_matrix = rng.standard_normal((D, D))
     Q, _ = np.linalg.qr(random_matrix)
-    
+
     # Apply rotation (preserves vector norm, creates key-dependent scrambling)
     t_modulated = Q @ t
-    
-    return t_modulated
 
+    return t_modulated
 
 
 # =============================================================================
@@ -228,6 +228,7 @@ def layer_6_breathing_transform(
 #            Nickel & Kiela 2017, Ganea 2018 (ML papers)
 # These preserve hyperbolic distance exactly (true isometries)
 
+
 def mobius_add(u: np.ndarray, v: np.ndarray, eps: float = 1e-10) -> np.ndarray:
     """
     Möbius (gyrovector) addition in the Poincaré ball model.
@@ -259,7 +260,7 @@ def mobius_add(u: np.ndarray, v: np.ndarray, eps: float = 1e-10) -> np.ndarray:
     # Numerical safety: clamp if floating-point pushed it to boundary
     norm = np.linalg.norm(result)
     if norm >= 1.0 - 1e-8:
-        result *= (0.99999999 / norm)
+        result *= 0.99999999 / norm
 
     return result
 
@@ -301,7 +302,7 @@ def mobius_rotate(u: np.ndarray, Q: np.ndarray, eps: float = 1e-10) -> np.ndarra
     # Safety clamp
     norm = np.linalg.norm(result)
     if norm >= 1.0 - 1e-8:
-        result *= (0.99999999 / norm)
+        result *= 0.99999999 / norm
 
     return result
 
@@ -505,7 +506,7 @@ def layer_14_audio_axis(audio: Optional[np.ndarray], eps: float = 1e-5) -> float
 # =============================================================================
 def scbe_14layer_pipeline(
     t: np.ndarray,
-        modulation_key: str = "default_key",
+    modulation_key: str = "default_key",
     D: int = 6,
     G: Optional[np.ndarray] = None,
     realms: Optional[List[np.ndarray]] = None,
@@ -554,9 +555,8 @@ def scbe_14layer_pipeline(
     # =========================================================================
     # FORWARD PASS
     # =========================================================================
-        # L0: Intent Modulation (Feistel-style scrambling)
+    # L0: Intent Modulation (Feistel-style scrambling)
     t = layer_0_intent_modulation(t, modulation_key)
-
 
     # L1: Complex state
     c = layer_1_complex_state(t, D)

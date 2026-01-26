@@ -32,20 +32,30 @@ from enum import Enum
 
 # Import SCBE components
 from .living_metric import (
-    LivingMetricEngine, ShockAbsorberParams,
-    verify_antifragile, PressureState
+    LivingMetricEngine,
+    ShockAbsorberParams,
+    verify_antifragile,
+    PressureState,
 )
 from .fractional_flux import (
-    FractionalFluxEngine, FluxParams, detect_snap,
-    ParticipationState
+    FractionalFluxEngine,
+    FluxParams,
+    detect_snap,
+    ParticipationState,
 )
 from .layer_13 import (
-    RiskComponents, TimeMultiplier, IntentMultiplier,
-    compute_composite_risk, Decision, HarmonicParams
+    RiskComponents,
+    TimeMultiplier,
+    IntentMultiplier,
+    compute_composite_risk,
+    Decision,
+    HarmonicParams,
 )
 from .layers_9_12 import (
-    compute_spectral_coherence, compute_spin_coherence,
-    compute_triadic_distance, harmonic_scaling
+    compute_spectral_coherence,
+    compute_spin_coherence,
+    compute_triadic_distance,
+    harmonic_scaling,
 )
 
 
@@ -59,6 +69,7 @@ BALL_RADIUS = 0.999  # Poincaré ball boundary
 
 class AttackType(Enum):
     """Types of simulated attacks."""
+
     BOUNDARY_PROBE = "BOUNDARY_PROBE"
     GRADIENT_DESCENT = "GRADIENT_DESCENT"
     REPLAY = "REPLAY"
@@ -70,15 +81,17 @@ class AttackType(Enum):
 
 class AttackResult(Enum):
     """Attack outcomes."""
+
     BLOCKED = "BLOCKED"
     DETECTED = "DETECTED"
     QUARANTINED = "QUARANTINED"
-    SNAPPED = "SNAPPED"      # Fail-to-noise triggered
+    SNAPPED = "SNAPPED"  # Fail-to-noise triggered
 
 
 @dataclass
 class AttackReport:
     """Report from a single attack attempt."""
+
     attack_type: AttackType
     result: AttackResult
     steps_taken: int
@@ -93,6 +106,7 @@ class AttackReport:
 # =============================================================================
 # ATTACK SIMULATORS
 # =============================================================================
+
 
 class Attacker:
     """
@@ -135,7 +149,9 @@ class Attacker:
         self.history.append(self.position.copy())
         return self.position
 
-    def inject_noise(self, amplitude: float = 0.5, frequency: float = 10.0, t: float = 0.0) -> np.ndarray:
+    def inject_noise(
+        self, amplitude: float = 0.5, frequency: float = 10.0, t: float = 0.0
+    ) -> np.ndarray:
         """Inject high-frequency oscillations."""
         noise = amplitude * np.sin(frequency * t + np.random.randn(self.dim))
         self.position = self.position + noise
@@ -162,6 +178,7 @@ class Attacker:
 # =============================================================================
 # DEFENSE SYSTEM
 # =============================================================================
+
 
 class SCBEDefenseSystem:
     """
@@ -194,10 +211,7 @@ class SCBEDefenseSystem:
         return min(distances)
 
     def evaluate_state(
-        self,
-        position: np.ndarray,
-        velocity: np.ndarray,
-        t: float
+        self, position: np.ndarray, velocity: np.ndarray, t: float
     ) -> Tuple[Decision, float, Dict[str, Any]]:
         """
         Full evaluation through all SCBE layers.
@@ -239,7 +253,11 @@ class SCBEDefenseSystem:
         diagnostics["H"] = H
 
         # --- Update Pressure Based on Metrics ---
-        self.pressure = 0.3 * (1 - spectral.s_spec) + 0.3 * (1 - spin.c_spin) + 0.4 * triadic.d_tri_norm
+        self.pressure = (
+            0.3 * (1 - spectral.s_spec)
+            + 0.3 * (1 - spin.c_spin)
+            + 0.4 * triadic.d_tri_norm
+        )
         self.pressure = min(1.0, self.pressure)
         diagnostics["pressure"] = self.pressure
 
@@ -264,20 +282,25 @@ class SCBEDefenseSystem:
             return Decision.SNAP, 1.0, diagnostics
 
         # --- Layer 13: Risk Decision ---
-        behavioral_risk = (1 - spectral.s_spec) * 0.3 + (1 - spin.c_spin) * 0.3 + triadic.d_tri_norm * 0.4
+        behavioral_risk = (
+            (1 - spectral.s_spec) * 0.3
+            + (1 - spin.c_spin) * 0.3
+            + triadic.d_tri_norm * 0.4
+        )
 
         components = RiskComponents(
             behavioral_risk=behavioral_risk,
             d_star=d_star,
             time_multi=TimeMultiplier(d_temporal=np.linalg.norm(velocity)),
-            intent_multi=IntentMultiplier(intent_deviation=d_star)
+            intent_multi=IntentMultiplier(intent_deviation=d_star),
         )
 
         # Lower thresholds for stricter detection
         risk_result = compute_composite_risk(
-            components, self.harmonic_params,
+            components,
+            self.harmonic_params,
             theta_1=0.3,  # Stricter ALLOW threshold
-            theta_2=1.0   # Stricter DENY threshold
+            theta_2=1.0,  # Stricter DENY threshold
         )
         diagnostics["risk_prime"] = risk_result.risk_prime
 
@@ -295,10 +318,9 @@ class SCBEDefenseSystem:
 # ATTACK EXECUTION
 # =============================================================================
 
+
 def run_attack(
-    attack_type: AttackType,
-    max_steps: int = 100,
-    verbose: bool = True
+    attack_type: AttackType, max_steps: int = 100, verbose: bool = True
 ) -> AttackReport:
     """
     Execute a simulated attack and return results.
@@ -347,8 +369,10 @@ def run_attack(
         max_pressure = max(max_pressure, diag.get("pressure", 0))
 
         if verbose and step % 10 == 0:
-            print(f"  Step {step:3d}: d*={diag['d_star']:.3f}, P={diag['pressure']:.2f}, "
-                  f"risk={risk:.3f}, H={diag['H']:.2f}, decision={decision.value}")
+            print(
+                f"  Step {step:3d}: d*={diag['d_star']:.3f}, P={diag['pressure']:.2f}, "
+                f"risk={risk:.3f}, H={diag['H']:.2f}, decision={decision.value}"
+            )
 
         # Check for detection
         if decision in [Decision.DENY, Decision.SNAP]:
@@ -371,11 +395,13 @@ def run_attack(
             detection_layer = "Layer 13 (Warning)"
 
     # Compute final metrics
-    final_energy = defense.living_metric.compute_metric(np.ones(6) * 0.5, max_pressure).energy
+    final_energy = defense.living_metric.compute_metric(
+        np.ones(6) * 0.5, max_pressure
+    ).energy
     expansion = final_energy / start_energy
 
     distance_traveled = sum(
-        np.linalg.norm(attacker.history[i+1] - attacker.history[i])
+        np.linalg.norm(attacker.history[i + 1] - attacker.history[i])
         for i in range(len(attacker.history) - 1)
     )
 
@@ -398,13 +424,14 @@ def run_attack(
         final_risk=risk,
         pressure_reached=max_pressure,
         system_expansion=expansion,
-        details=diag
+        details=diag,
     )
 
 
 # =============================================================================
 # FULL SIMULATION
 # =============================================================================
+
 
 def run_full_simulation(verbose: bool = True) -> Dict[str, Any]:
     """
@@ -436,8 +463,14 @@ def run_full_simulation(verbose: bool = True) -> Dict[str, Any]:
     print("ATTACK SIMULATION SUMMARY")
     print("=" * 70)
 
-    blocked = sum(1 for r in results.values() if r.result in [AttackResult.BLOCKED, AttackResult.SNAPPED])
-    quarantined = sum(1 for r in results.values() if r.result == AttackResult.QUARANTINED)
+    blocked = sum(
+        1
+        for r in results.values()
+        if r.result in [AttackResult.BLOCKED, AttackResult.SNAPPED]
+    )
+    quarantined = sum(
+        1 for r in results.values() if r.result == AttackResult.QUARANTINED
+    )
 
     print(f"\n  Total Attacks: {len(results)}")
     print(f"  Blocked/Snapped: {blocked}")
@@ -446,7 +479,11 @@ def run_full_simulation(verbose: bool = True) -> Dict[str, Any]:
 
     print("\n  Per-Attack Results:")
     for name, report in results.items():
-        icon = "🛡️" if report.result in [AttackResult.BLOCKED, AttackResult.SNAPPED] else "⚠️"
+        icon = (
+            "🛡️"
+            if report.result in [AttackResult.BLOCKED, AttackResult.SNAPPED]
+            else "⚠️"
+        )
         print(f"    {icon} {name}: {report.result.value} @ {report.detection_layer}")
 
     # Anti-fragile demonstration

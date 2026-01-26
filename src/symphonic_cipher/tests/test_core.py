@@ -241,7 +241,7 @@ class TestHarmonicSynthesizer:
 
         # FFT to check harmonics
         spectrum = np.abs(np.fft.rfft(waveform))
-        freqs = np.fft.rfftfreq(len(waveform), 1/SAMPLE_RATE)
+        freqs = np.fft.rfftfreq(len(waveform), 1 / SAMPLE_RATE)
 
         # Find peaks
         threshold = 0.1 * np.max(spectrum)
@@ -250,7 +250,9 @@ class TestHarmonicSynthesizer:
         # Check that we have odd harmonics (440, 1320, 2200)
         for h in [1, 3, 5]:
             expected = BASE_FREQ * h
-            assert any(abs(p - expected) < 5 for p in peaks), f"Missing harmonic {h} at {expected} Hz"
+            assert any(
+                abs(p - expected) < 5 for p in peaks
+            ), f"Missing harmonic {h} at {expected} Hz"
 
     def test_frequency_mapping(self):
         """Test that token IDs map to correct frequencies."""
@@ -261,14 +263,16 @@ class TestHarmonicSynthesizer:
             waveform = synth.synthesize(ids, Modality.PROBE)  # Fundamental only
 
             spectrum = np.abs(np.fft.rfft(waveform))
-            freqs = np.fft.rfftfreq(len(waveform), 1/SAMPLE_RATE)
+            freqs = np.fft.rfftfreq(len(waveform), 1 / SAMPLE_RATE)
 
             # Find peak frequency
             peak_idx = np.argmax(spectrum[1:]) + 1  # Skip DC
             peak_freq = freqs[peak_idx]
 
             expected_freq = BASE_FREQ + token_id * FREQ_STEP
-            assert abs(peak_freq - expected_freq) < 2.0, f"Token {token_id}: expected {expected_freq}, got {peak_freq}"
+            assert (
+                abs(peak_freq - expected_freq) < 2.0
+            ), f"Token {token_id}: expected {expected_freq}, got {peak_freq}"
 
 
 class TestRWPEnvelope:
@@ -358,8 +362,7 @@ class TestRWPEnvelope:
         old_timestamp = int((time.time() - 120) * 1000)  # 2 minutes ago
 
         env = envelope_gen.create(
-            payload, "KO", Modality.ADAPTIVE,
-            timestamp=old_timestamp
+            payload, "KO", Modality.ADAPTIVE, timestamp=old_timestamp
         )
 
         success, message = envelope_gen.verify(env, audio_check=False)
@@ -376,9 +379,7 @@ class TestSymphonicCipher:
 
         phrase = "korah aelin dahru"
         envelope, components = cipher.encode(
-            phrase,
-            modality=Modality.ADAPTIVE,
-            return_components=True
+            phrase, modality=Modality.ADAPTIVE, return_components=True
         )
 
         assert envelope is not None
@@ -455,5 +456,6 @@ class TestEntropy:
         adaptive_entropy = spectral_entropy(adaptive_wave)
 
         # Adaptive should have higher entropy (more harmonics)
-        assert adaptive_entropy > strict_entropy, \
-            f"Expected adaptive entropy ({adaptive_entropy}) > strict ({strict_entropy})"
+        assert (
+            adaptive_entropy > strict_entropy
+        ), f"Expected adaptive entropy ({adaptive_entropy}) > strict ({strict_entropy})"
