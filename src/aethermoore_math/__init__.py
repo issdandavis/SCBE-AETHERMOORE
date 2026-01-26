@@ -38,6 +38,17 @@ from .swarm import (
     byzantine_rounds,
     tick_synchronization,
 )
+from .horadam import (
+    HoradamTranscript,
+    HoradamSequence,
+    DriftTelemetry,
+    DriftVector,
+    DriftLevel,
+    compute_triadic_invariant,
+    verify_triadic_bounds,
+    TONGUES,
+    PHI,
+)
 
 __all__ = [
     # Constants
@@ -62,4 +73,14 @@ __all__ = [
     "swarm_consensus_time",
     "byzantine_rounds",
     "tick_synchronization",
+    # Horadam
+    "HoradamTranscript",
+    "HoradamSequence",
+    "DriftTelemetry",
+    "DriftVector",
+    "DriftLevel",
+    "compute_triadic_invariant",
+    "verify_triadic_bounds",
+    "TONGUES",
+    "PHI",
 ]

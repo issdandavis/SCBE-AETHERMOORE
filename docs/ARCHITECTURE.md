@@ -856,6 +856,210 @@ print(f"Similarity: {similarity * 100:.1f}%")
 
 ---
 
+---
+
+## Mermaid Architecture Diagram
+
+```mermaid
+flowchart TD
+
+    %% Clients
+    Client[Client / Agent / Node<br/>AI swarm agent, service, user]
+
+    %% SCBE Core Box
+    subgraph SCBE[SCBE-AETHERMOORE Security Fabric]
+
+        %% Control / State Plane
+        subgraph ControlPlane[Control / State Plane]
+
+            subgraph L1_L2[L1-L2 Axioms and Context]
+                L1[Axioms and Context State]
+                L2[Contextual Encryption]
+            end
+
+            subgraph L3_L5[L3-L5 Langues, Breathing, Phase-Space]
+                L3[Langues Weighting 6D]
+                L4[Temporal Breathing]
+                L5[Phase-Space Metrics]
+            end
+
+            subgraph L6_L7[L6-L7 PHDM and Spectral]
+                L6[PHDM Polyhedral Hamiltonian]
+                L7[Spectral FFT Symphonic Cipher]
+            end
+
+            subgraph LanguesRhythm[Langues-Rhythm Telemetry<br/>Horadam Fibonacci]
+                HSeeds[Seed 6 recurrences<br/>from ML-KEM plus Langues]
+                HSeqs[H_n sequences<br/>per tongue]
+                HDrift[Drift vector delta_n]
+            end
+
+            subgraph L8_L10[L8-L10 Spin, Harmonics, Triads]
+                L8[Spin Phase Dimensionality]
+                L9[Harmonic Resonance]
+                L10[Triadic Consensus<br/>Delta_ijk invariants]
+            end
+
+            L11[Layer 11: Omega Decision<br/>ALLOW / QUARANTINE / DENY]
+            L13[Layer 13: Self-Healing and Routing<br/>Space Tor control]
+
+        end
+
+        %% Data / Crypto Plane
+        subgraph DataPlane[Data / Crypto Plane]
+
+            subgraph PQC[L12 PQC Core RWP v3 Hybrid]
+                KEM[ML-KEM-768<br/>Key Encapsulation]
+                DSA[ML-DSA-65<br/>Signatures]
+                HKDF[HKDF / Key Schedule]
+            end
+
+            Symph[Symphonic Cipher<br/>complex FFT]
+            L14[Layer 14: Audio / Topological CFI]
+
+        end
+
+    end
+
+    %% Network and Telemetry
+    SpaceTor[Space Tor Network Layer<br/>3D onion routing plus 6D trust]
+    Telemetry[Telemetry and Governance Logs<br/>delta_n, PHDM, Omega<br/>CloudWatch / DynamoDB]
+
+    %% Edges: Client to SCBE
+    Client -->|1. Intent, context, payload| L1_L2
+    L11 -->|Decision and policies| Client
+
+    %% ControlPlane wiring
+    L1_L2 --> L3_L5
+    L3_L5 --> L6_L7
+
+    %% Langues-Rhythm hookups
+    HKDF --> HSeeds
+    HSeeds --> HSeqs
+    HSeqs --> HDrift
+    HSeqs --> L3
+    HSeqs --> L10
+    HDrift --> L11
+    HDrift --> L13
+
+    L6_L7 --> L8_L10
+    L8_L10 --> L11
+    L11 --> L13
+
+    %% Crypto/Data plane wiring
+    L2 --> PQC
+    KEM --> HKDF
+    HKDF --> Symph
+    HKDF --> SpaceTor
+    Symph --> L7
+    Symph --> L14
+
+    %% Network and telemetry wiring
+    L13 -->|Routing decisions| SpaceTor
+    PQC -->|Encrypted envelopes| SpaceTor
+    SpaceTor -->|Telemetry| Telemetry
+    HDrift --> Telemetry
+    L6_L7 --> Telemetry
+    L11 --> Telemetry
+```
+
+---
+
+## Core Mathematical Specification (Replication Edition)
+
+### System Goal (Formal)
+
+Define a decision function:
+
+```
+D : C x T x P -> {ALLOW, QUARANTINE, DENY}
+```
+
+such that:
+- Small deviations are tolerated
+- Large deviations incur **super-exponential cost**
+- Decision difficulty scales with **risk, intent, and timing**, not identity alone
+
+### Context Space
+
+Complex Context Vector:
+```
+c(t) ∈ C^D    (D = 6 typical)
+```
+
+with energy preservation:
+```
+Σ |c_j(t)|^2 = E
+```
+
+### Weighted Importance Transform
+
+Let:
+```
+G = diag(φ^0, φ^1, ..., φ^(2D-1)),  φ = (1+√5)/2
+x_G(t) = G^(1/2) x(t)
+```
+
+This introduces **asymmetric feature cost**.
+
+### Hyperbolic Metric (Invariant Law)
+
+For any u, v ∈ B^n (Poincare ball):
+```
+d_H(u,v) = arcosh(1 + 2|u-v|^2 / ((1-|u|^2)(1-|v|^2)))
+```
+
+This metric **never changes**.
+
+### Harmonic Scaling (The Vertical Wall)
+
+Unbounded form:
+```
+H(d*, R) = R^((d*)^2),  R > 1
+```
+
+This is the **core asymmetric cost amplifier**.
+
+Bounded (implementation-safe) variant:
+```
+H_bounded = 1 + α tanh(β d*)
+```
+
+### Final Risk
+
+```
+Risk' = Risk_base × H(d*, R) × (1 + γ_time) × (1 + γ_intent)
+```
+
+Monotone increasing in **every deviation**.
+
+### Decision Rule
+
+Let thresholds 0 < θ₁ < θ₂:
+```
+D = ALLOW       if Risk' < θ₁
+D = QUARANTINE  if θ₁ ≤ Risk' < θ₂
+D = DENY        if Risk' ≥ θ₂
+```
+
+### Core Invariants (Replication Checklist)
+
+A reproducing system **must** satisfy:
+
+1. Hyperbolic metric invariant
+2. Radial cost scaling via non-linear map
+3. Isometric intent transforms
+4. Multi-center trust basins
+5. Super-exponential risk amplification
+6. Asymmetric difficulty scaling
+7. Decision collapse to finite outputs
+
+### One-Line Summary
+
+> **Encode context into hyperbolic space, measure deviation geometrically, amplify cost super-exponentially, and require consensus proportional to risk.**
+
+---
+
 ## See Also
 
 - [API.md](./API.md) - Complete API reference
