@@ -17,7 +17,7 @@ import {
   computeSpectralCoherence,
   generateTestSignal,
   verifySpectralCoherenceBounds,
-  type Complex
+  type Complex,
 } from '../../src/spectral/index.js';
 
 describe('L2-UNIT: Spectral Coherence', () => {
@@ -28,7 +28,7 @@ describe('L2-UNIT: Spectral Coherence', () => {
 
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBeGreaterThanOrEqual(signal.length);
-      result.forEach(c => {
+      result.forEach((c) => {
         expect(typeof c.re).toBe('number');
         expect(typeof c.im).toBe('number');
       });
@@ -116,13 +116,13 @@ describe('L2-UNIT: Spectral Coherence', () => {
 
     it('should generate silent signal for zero amplitude', () => {
       const signal = generateTestSignal(100, 0.1, [{ freq: 10, amplitude: 0 }]);
-      signal.forEach(s => expect(s).toBe(0));
+      signal.forEach((s) => expect(s).toBe(0));
     });
 
     it('should combine multiple components', () => {
       const signal = generateTestSignal(1000, 0.1, [
         { freq: 100, amplitude: 1 },
-        { freq: 200, amplitude: 0.5 }
+        { freq: 200, amplitude: 0.5 },
       ]);
       expect(signal.length).toBe(100);
       // Signal should have non-zero values

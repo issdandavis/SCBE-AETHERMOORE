@@ -63,6 +63,7 @@ from symphonic_cipher.scbe_aethermoore.ede.chemistry_agent import (
 # SPIRAL RING TESTS
 # =============================================================================
 
+
 class TestSpiralRing:
     """Test SpiralRing-64 deterministic expansion."""
 
@@ -171,9 +172,7 @@ class TestSynchronizedRingPair:
         """Test creating synchronized pairs."""
         seed = b"synchronized-pair-test-32bytes!"
 
-        pair_a, pair_b = SynchronizedRingPair.create_pair(
-            seed, "EARTH", "MARS"
-        )
+        pair_a, pair_b = SynchronizedRingPair.create_pair(seed, "EARTH", "MARS")
 
         assert pair_a.station_id == "EARTH"
         assert pair_a.partner_id == "MARS"
@@ -184,9 +183,7 @@ class TestSynchronizedRingPair:
         """Test message roundtrip between pairs."""
         seed = b"roundtrip-test-seed-32-bytes!!!"
 
-        pair_a, pair_b = SynchronizedRingPair.create_pair(
-            seed, "SENDER", "RECEIVER"
-        )
+        pair_a, pair_b = SynchronizedRingPair.create_pair(seed, "SENDER", "RECEIVER")
 
         message = b"Test message for synchronized pairs"
 
@@ -224,6 +221,7 @@ class TestLightDelay:
 # EDE PROTOCOL TESTS
 # =============================================================================
 
+
 class TestEDEHeader:
     """Test EDE protocol header."""
 
@@ -235,7 +233,7 @@ class TestEDEHeader:
             flags=0x0001,
             sequence=12345,
             timestamp=1000.5,
-            payload_len=256
+            payload_len=256,
         )
 
         serialized = header.to_bytes()
@@ -255,7 +253,7 @@ class TestEDEHeader:
                 flags=0,
                 sequence=1,
                 timestamp=0.0,
-                payload_len=0
+                payload_len=0,
             )
             serialized = header.to_bytes()
             assert len(serialized) == 32
@@ -424,6 +422,7 @@ class TestQuickFunctions:
 # =============================================================================
 # CHEMISTRY AGENT TESTS
 # =============================================================================
+
 
 class TestSquaredEnergy:
     """Test squared-input energy model."""

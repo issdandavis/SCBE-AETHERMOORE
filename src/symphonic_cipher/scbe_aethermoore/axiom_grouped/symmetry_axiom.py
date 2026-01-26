@@ -29,8 +29,8 @@ from dataclasses import dataclass
 from enum import Enum
 
 # Type variables for generic decorators
-T = TypeVar('T')
-F = TypeVar('F', bound=Callable[..., Any])
+T = TypeVar("T")
+F = TypeVar("F", bound=Callable[..., Any])
 
 # Constants
 EPS = 1e-10
@@ -39,21 +39,24 @@ PHI = (1 + np.sqrt(5)) / 2  # Golden ratio
 
 class SymmetryViolation(Exception):
     """Raised when an operation violates gauge invariance."""
+
     pass
 
 
 class SymmetryGroup(Enum):
     """Common symmetry groups for gauge invariance."""
-    ORTHOGONAL = "O(n)"      # Rotational symmetry
-    UNITARY = "U(1)"         # Phase symmetry
-    MOBIUS = "Möb(𝔹)"        # Hyperbolic isometry group
-    SCALE = "ℝ₊"             # Positive real scaling
-    TRANSLATION = "ℝⁿ"       # Translation symmetry
+
+    ORTHOGONAL = "O(n)"  # Rotational symmetry
+    UNITARY = "U(1)"  # Phase symmetry
+    MOBIUS = "Möb(𝔹)"  # Hyperbolic isometry group
+    SCALE = "ℝ₊"  # Positive real scaling
+    TRANSLATION = "ℝⁿ"  # Translation symmetry
 
 
 @dataclass
 class SymmetryCheckResult:
     """Result of a symmetry/gauge invariance check."""
+
     passed: bool
     symmetry_group: SymmetryGroup
     invariance_error: float
@@ -76,7 +79,7 @@ def symmetry_check(
     group: SymmetryGroup,
     tolerance: float = 1e-6,
     n_test_transforms: int = 10,
-    strict: bool = False
+    strict: bool = False,
 ) -> Callable[[F], F]:
     """
     Decorator that verifies a quantity is invariant under a symmetry group.
@@ -90,6 +93,7 @@ def symmetry_check(
     Returns:
         Decorated function with gauge invariance verification
     """
+
     def decorator(func: F) -> F:
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -102,7 +106,7 @@ def symmetry_check(
                 invariance_error=0.0,
                 n_transforms_tested=0,
                 layer_name=func.__name__,
-                tolerance=tolerance
+                tolerance=tolerance,
             )
 
             wrapper.last_check = check_result
@@ -114,12 +118,14 @@ def symmetry_check(
         wrapper.axiom = "symmetry"
         wrapper.symmetry_group = group
         return wrapper
+
     return decorator
 
 
 # ============================================================================
 # Symmetry Group Generators
 # ============================================================================
+
 
 def random_orthogonal(dim: int) -> np.ndarray:
     """Generate a random orthogonal matrix (rotation/reflection)."""
@@ -169,6 +175,7 @@ def mobius_addition(u: np.ndarray, v: np.ndarray) -> np.ndarray:
 # Layer 5: Hyperbolic Distance (THE INVARIANT)
 # ============================================================================
 
+
 @symmetry_check(group=SymmetryGroup.MOBIUS, tolerance=1e-8)
 def layer_5_hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
     """
@@ -204,7 +211,7 @@ def layer_5_hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
 
     denominator = (1 - u_sq) * (1 - v_sq)
     if denominator < EPS:
-        return float('inf')
+        return float("inf")
 
     arg = 1 + 2 * diff_sq / denominator
     arg = max(arg, 1.0)  # arcosh domain: [1, ∞)
@@ -213,10 +220,7 @@ def layer_5_hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
 
 
 def verify_mobius_invariance(
-    u: np.ndarray,
-    v: np.ndarray,
-    n_tests: int = 10,
-    tolerance: float = 1e-8
+    u: np.ndarray, v: np.ndarray, n_tests: int = 10, tolerance: float = 1e-8
 ) -> Tuple[bool, float]:
     """
     Verify that hyperbolic distance is invariant under Möbius transforms.
@@ -251,6 +255,7 @@ def verify_mobius_invariance(
 # ============================================================================
 # Layer 9: Spectral Coherence
 # ============================================================================
+
 
 @symmetry_check(group=SymmetryGroup.ORTHOGONAL, tolerance=1e-6)
 def layer_9_spectral_coherence(x: np.ndarray) -> float:
@@ -291,7 +296,7 @@ def layer_9_spectral_coherence(x: np.ndarray) -> float:
 
     # Sum energy in high frequency bins
     # FFT is symmetric, so consider both positive and negative frequencies
-    hf_energy = np.sum(power[hf_threshold:n - hf_threshold])
+    hf_energy = np.sum(power[hf_threshold : n - hf_threshold])
 
     r_HF = hf_energy / total_energy
     S_spec = 1.0 - r_HF
@@ -300,9 +305,7 @@ def layer_9_spectral_coherence(x: np.ndarray) -> float:
 
 
 def verify_rotation_invariance(
-    x: np.ndarray,
-    n_tests: int = 10,
-    tolerance: float = 0.1
+    x: np.ndarray, n_tests: int = 10, tolerance: float = 0.1
 ) -> Tuple[bool, float]:
     """
     Verify that spectral coherence is approximately rotation-invariant.
@@ -329,6 +332,7 @@ def verify_rotation_invariance(
 # ============================================================================
 # Layer 10: Spin Coherence
 # ============================================================================
+
 
 @symmetry_check(group=SymmetryGroup.UNITARY, tolerance=1e-10)
 def layer_10_spin_coherence(q: complex) -> float:
@@ -362,9 +366,7 @@ def layer_10_spin_coherence(q: complex) -> float:
 
 
 def verify_phase_invariance(
-    q: complex,
-    n_tests: int = 100,
-    tolerance: float = 1e-10
+    q: complex, n_tests: int = 100, tolerance: float = 1e-10
 ) -> Tuple[bool, float]:
     """
     Verify that spin coherence is exactly U(1) phase-invariant.
@@ -387,6 +389,7 @@ def verify_phase_invariance(
 # ============================================================================
 # Layer 12: Harmonic Scaling
 # ============================================================================
+
 
 @symmetry_check(group=SymmetryGroup.SCALE, tolerance=0.0)
 def layer_12_harmonic_scaling(d: float, R: float = PHI) -> float:
@@ -419,8 +422,8 @@ def layer_12_harmonic_scaling(d: float, R: float = PHI) -> float:
         Harmonically scaled value H(d)
     """
     # Clamp to prevent overflow
-    d_sq = min(d ** 2, 50.0)
-    return float(R ** d_sq)
+    d_sq = min(d**2, 50.0)
+    return float(R**d_sq)
 
 
 def layer_12_inverse(H: float, R: float = PHI) -> float:
@@ -461,9 +464,11 @@ def verify_monotonicity(n_tests: int = 1000, R: float = PHI) -> Tuple[bool, int]
 # Gauge Field Utilities
 # ============================================================================
 
+
 @dataclass
 class GaugeField:
     """Represents a gauge field configuration."""
+
     group: SymmetryGroup
     dimension: int
     field_values: np.ndarray  # Field values at lattice points
@@ -471,9 +476,7 @@ class GaugeField:
 
 
 def compute_gauge_covariant_derivative(
-    field: np.ndarray,
-    connection: np.ndarray,
-    direction: int
+    field: np.ndarray, connection: np.ndarray, direction: int
 ) -> np.ndarray:
     """
     Compute gauge-covariant derivative.
@@ -491,10 +494,7 @@ def compute_gauge_covariant_derivative(
     return covariant_derivative
 
 
-def wilson_loop(
-    connection: np.ndarray,
-    path: List[Tuple[int, int]]
-) -> complex:
+def wilson_loop(connection: np.ndarray, path: List[Tuple[int, int]]) -> complex:
     """
     Compute Wilson loop around a closed path.
 
@@ -514,11 +514,9 @@ def wilson_loop(
 # Symmetry Verification Utilities
 # ============================================================================
 
+
 def verify_layer_symmetry(
-    layer_func: Callable,
-    n_tests: int = 100,
-    dim: int = 12,
-    verbose: bool = False
+    layer_func: Callable, n_tests: int = 100, dim: int = 12, verbose: bool = False
 ) -> Tuple[bool, dict]:
     """
     Comprehensive symmetry verification for a layer.
@@ -532,7 +530,7 @@ def verify_layer_symmetry(
     Returns:
         Tuple of (all_passed, statistics)
     """
-    group = getattr(layer_func, 'symmetry_group', None)
+    group = getattr(layer_func, "symmetry_group", None)
     all_passed = True
     max_error = 0.0
     violations = 0
@@ -578,7 +576,7 @@ def verify_layer_symmetry(
         "group": group.value if group else "unknown",
         "max_error": max_error,
         "violations": violations,
-        "n_tests": n_tests
+        "n_tests": n_tests,
     }
 
 

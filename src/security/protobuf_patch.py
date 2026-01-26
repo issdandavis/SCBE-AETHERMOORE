@@ -59,7 +59,7 @@ def apply() -> bool:
 
         if self.recursion_depth > self.max_recursion_depth:
             raise json_format.ParseError(
-                'Message too deep. Max recursion depth is {0}'.format(
+                "Message too deep. Max recursion depth is {0}".format(
                     self.max_recursion_depth
                 )
             )
@@ -91,13 +91,13 @@ def verify_patch() -> dict:
         Dict with verification results.
     """
     results = {
-        'patch_applied': _PATCH_APPLIED,
-        'vulnerability_mitigated': False,
-        'error': None
+        "patch_applied": _PATCH_APPLIED,
+        "vulnerability_mitigated": False,
+        "error": None,
     }
 
     if not _PATCH_APPLIED:
-        results['error'] = 'Patch not applied. Call apply() first.'
+        results["error"] = "Patch not applied. Call apply() first."
         return results
 
     try:
@@ -109,12 +109,12 @@ def verify_patch() -> dict:
         def create_nested_any(depth: int) -> dict:
             if depth <= 0:
                 return {
-                    '@type': 'type.googleapis.com/google.protobuf.Value',
-                    'value': {'stringValue': 'test'}
+                    "@type": "type.googleapis.com/google.protobuf.Value",
+                    "value": {"stringValue": "test"},
                 }
             return {
-                '@type': 'type.googleapis.com/google.protobuf.Any',
-                'value': create_nested_any(depth - 1)
+                "@type": "type.googleapis.com/google.protobuf.Any",
+                "value": create_nested_any(depth - 1),
             }
 
         # Try to parse with depth exceeding limit
@@ -123,21 +123,22 @@ def verify_patch() -> dict:
 
         try:
             json_format.ParseDict(nested_json, any_msg, max_recursion_depth=100)
-            results['vulnerability_mitigated'] = False
-            results['error'] = 'Nested Any bypass still possible'
+            results["vulnerability_mitigated"] = False
+            results["error"] = "Nested Any bypass still possible"
         except json_format.ParseError as e:
-            if 'too deep' in str(e).lower():
-                results['vulnerability_mitigated'] = True
+            if "too deep" in str(e).lower():
+                results["vulnerability_mitigated"] = True
             else:
-                results['error'] = str(e)
+                results["error"] = str(e)
 
     except Exception as e:
-        results['error'] = f'Verification failed: {e}'
+        results["error"] = f"Verification failed: {e}"
 
     return results
 
 
 # Auto-apply on import if environment variable is set
 import os
-if os.environ.get('SCBE_AUTO_PATCH_PROTOBUF', '').lower() in ('1', 'true', 'yes'):
+
+if os.environ.get("SCBE_AUTO_PATCH_PROTOBUF", "").lower() in ("1", "true", "yes"):
     apply()

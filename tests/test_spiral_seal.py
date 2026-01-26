@@ -27,7 +27,6 @@ from symphonic_cipher.scbe_aethermoore.spiral_seal import (
     get_tokenizer,
     get_combined_alphabet,
     get_magical_signature,
-
     # SpiralSeal
     SpiralSeal,
     VeiledSeal,
@@ -39,7 +38,6 @@ from symphonic_cipher.scbe_aethermoore.spiral_seal import (
     quick_seal,
     quick_unseal,
     get_crypto_backend_info,
-
     # Constants
     SS1_VERSION,
     SALT_SIZE,
@@ -50,6 +48,7 @@ from symphonic_cipher.scbe_aethermoore.spiral_seal import (
 # =============================================================================
 # SACRED TONGUE TOKENIZER TESTS
 # =============================================================================
+
 
 class TestSacredTongue:
     """Test the SacredTongue enum and wordlists."""
@@ -85,7 +84,9 @@ class TestSacredTongue:
             for p in prefixes:
                 for s in suffixes:
                     token = f"{p}'{s}"
-                    assert token not in tokens, f"Duplicate token {token} in {tongue.name}"
+                    assert (
+                        token not in tokens
+                    ), f"Duplicate token {token} in {tongue.name}"
                     tokens.add(token)
             assert len(tokens) == 256
 
@@ -154,7 +155,9 @@ class TestSacredTongueTokenizer:
                 expected_suffix_idx = byte_val & 0x0F
                 token = tokenizer.encode_byte(byte_val)
                 # Token format is "prefix'suffix"
-                expected_token = f"{prefixes[expected_prefix_idx]}'{suffixes[expected_suffix_idx]}"
+                expected_token = (
+                    f"{prefixes[expected_prefix_idx]}'{suffixes[expected_suffix_idx]}"
+                )
                 assert token == expected_token
                 # Verify reverse mapping
                 decoded_byte = tokenizer.decode_token(token)
@@ -195,6 +198,7 @@ class TestSacredTongueTokenizer:
 # =============================================================================
 # SPIRAL SEAL ENCRYPTION TESTS
 # =============================================================================
+
 
 class TestSpiralSeal:
     """Test the SpiralSeal encryption class."""
@@ -404,11 +408,11 @@ class TestPQCSpiralSeal:
         # Try to get Dilithium3
         try:
             from symphonic_cipher.scbe_aethermoore.pqc import Dilithium3
+
             sig_keys = Dilithium3.generate_keypair()
 
             seal = PQCSpiralSeal(
-                master_key=os.urandom(32),
-                signing_secret_key=sig_keys.secret_key
+                master_key=os.urandom(32), signing_secret_key=sig_keys.secret_key
             )
 
             result, signature = seal.seal_signed(b"signed data")
@@ -418,11 +422,11 @@ class TestPQCSpiralSeal:
                 assert signature is not None
                 # Verify signature
                 sign_data = (
-                    result.key_id +
-                    result.salt +
-                    result.nonce +
-                    result.ciphertext +
-                    result.tag
+                    result.key_id
+                    + result.salt
+                    + result.nonce
+                    + result.ciphertext
+                    + result.tag
                 )
                 assert Dilithium3.verify(sig_keys.public_key, sign_data, signature)
 
@@ -456,10 +460,7 @@ class TestKDFAndAEADTypes:
 
     def test_scrypt_kdf(self):
         """Test with scrypt KDF."""
-        seal = SpiralSeal(
-            master_password=b"scrypt_test",
-            kdf_type=KDFType.SCRYPT
-        )
+        seal = SpiralSeal(master_password=b"scrypt_test", kdf_type=KDFType.SCRYPT)
         result = seal.seal(b"scrypt data")
         assert result.kdf_type == KDFType.SCRYPT
 
@@ -597,6 +598,7 @@ class TestTokenSpecificBehavior:
 # INTEGRATION WITH PQC MODULE TESTS
 # =============================================================================
 
+
 class TestPQCIntegration:
     """Test integration with PQC module."""
 
@@ -620,7 +622,7 @@ class TestPQCIntegration:
             # Alice creates seal for Bob
             seal = PQCSpiralSeal(
                 recipient_public_key=bob_kem.public_key,
-                signing_secret_key=alice_sig.secret_key
+                signing_secret_key=alice_sig.secret_key,
             )
 
             # Encrypt and sign
@@ -643,11 +645,11 @@ class TestPQCIntegration:
 
                 # Verify Alice's signature
                 sign_data = (
-                    result.key_id +
-                    result.salt +
-                    result.nonce +
-                    result.ciphertext +
-                    result.tag
+                    result.key_id
+                    + result.salt
+                    + result.nonce
+                    + result.ciphertext
+                    + result.tag
                 )
                 assert Dilithium3.verify(alice_sig.public_key, sign_data, signature)
 

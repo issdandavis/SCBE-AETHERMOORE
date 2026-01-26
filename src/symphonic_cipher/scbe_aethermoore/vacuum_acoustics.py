@@ -20,10 +20,16 @@ from dataclasses import dataclass, field
 from typing import List, Tuple, Optional, Dict, Any, NamedTuple
 
 from .constants import (
-    PI, R_FIFTH, PHI, C_LIGHT,
-    DEFAULT_L, DEFAULT_TOLERANCE, DEFAULT_R,
-    harmonic_scale, harmonic_distance,
-    CONSTANTS
+    PI,
+    R_FIFTH,
+    PHI,
+    C_LIGHT,
+    DEFAULT_L,
+    DEFAULT_TOLERANCE,
+    DEFAULT_R,
+    harmonic_scale,
+    harmonic_distance,
+    CONSTANTS,
 )
 
 
@@ -38,8 +44,9 @@ Vector6D = Tuple[float, float, float, float, float, float]
 
 class WaveSource(NamedTuple):
     """A point wave source."""
+
     position: Vector3D
-    phase: float        # In radians
+    phase: float  # In radians
     amplitude: float = 1.0
 
 
@@ -56,6 +63,7 @@ class VacuumAcousticsConfig:
         resolution: Grid resolution for field computations
         v_reference: Reference velocity for mode mapping
     """
+
     L: float = DEFAULT_L
     c: float = C_LIGHT
     gamma: float = 1.0
@@ -67,7 +75,8 @@ class VacuumAcousticsConfig:
 @dataclass
 class FluxResult:
     """Result of flux redistribution computation."""
-    canceled_energy: float              # Energy at cancellation point
+
+    canceled_energy: float  # Energy at cancellation point
     corner_energies: Tuple[float, float, float, float]  # 4 corners
     total_energy: float
     phase_offset: float
@@ -76,23 +85,20 @@ class FluxResult:
 @dataclass
 class BottleBeamResult:
     """Result of bottle beam computation."""
-    core_intensity: float       # Intensity at center
-    wall_intensity: float       # Maximum wall intensity
-    trapping_depth: float       # ΔI = wall - core
-    core_radius: float          # Calculated core radius
-    is_valid_trap: bool         # True if trapping condition satisfied
+
+    core_intensity: float  # Intensity at center
+    wall_intensity: float  # Maximum wall intensity
+    trapping_depth: float  # ΔI = wall - core
+    core_radius: float  # Calculated core radius
+    is_valid_trap: bool  # True if trapping condition satisfied
 
 
 # =============================================================================
 # NODAL SURFACE EQUATIONS
 # =============================================================================
 
-def nodal_surface(
-    x: Vector2D,
-    n: float,
-    m: float,
-    L: float = DEFAULT_L
-) -> float:
+
+def nodal_surface(x: Vector2D, n: float, m: float, L: float = DEFAULT_L) -> float:
     """
     Compute nodal surface value at position.
 
@@ -134,7 +140,7 @@ def is_on_nodal_line(
     n: float,
     m: float,
     L: float = DEFAULT_L,
-    tolerance: float = DEFAULT_TOLERANCE
+    tolerance: float = DEFAULT_TOLERANCE,
 ) -> bool:
     """
     Check if position is on a nodal line.
@@ -153,10 +159,7 @@ def is_on_nodal_line(
 
 
 def find_nodal_points(
-    n: float,
-    m: float,
-    L: float = DEFAULT_L,
-    resolution: int = 100
+    n: float, m: float, L: float = DEFAULT_L, resolution: int = 100
 ) -> List[Vector2D]:
     """
     Find all nodal intersection points in a grid.
@@ -184,10 +187,7 @@ def find_nodal_points(
 
 
 def compute_chladni_pattern(
-    n: float,
-    m: float,
-    L: float = DEFAULT_L,
-    resolution: int = 100
+    n: float, m: float, L: float = DEFAULT_L, resolution: int = 100
 ) -> List[List[float]]:
     """
     Compute full Chladni pattern (nodal surface values over grid).
@@ -216,9 +216,9 @@ def compute_chladni_pattern(
 # CYMATIC RESONANCE
 # =============================================================================
 
+
 def extract_mode_parameters(
-    agent_vector: Vector6D,
-    config: Optional[VacuumAcousticsConfig] = None
+    agent_vector: Vector6D, config: Optional[VacuumAcousticsConfig] = None
 ) -> Tuple[float, float]:
     """
     Extract Chladni mode parameters (n, m) from agent's 6D state vector.
@@ -253,7 +253,7 @@ def check_cymatic_resonance(
     agent_vector: Vector6D,
     target_position: Vector2D,
     tolerance: float = DEFAULT_TOLERANCE,
-    config: Optional[VacuumAcousticsConfig] = None
+    config: Optional[VacuumAcousticsConfig] = None,
 ) -> bool:
     """
     Determine if a 6D vector produces cymatic resonance at position.
@@ -288,7 +288,7 @@ def check_cymatic_resonance(
 def resonance_strength(
     agent_vector: Vector6D,
     target_position: Vector2D,
-    config: Optional[VacuumAcousticsConfig] = None
+    config: Optional[VacuumAcousticsConfig] = None,
 ) -> float:
     """
     Compute resonance strength (inverse of nodal distance).
@@ -318,11 +318,12 @@ def resonance_strength(
 # BOTTLE BEAM TRAPPING
 # =============================================================================
 
+
 def bottle_beam_intensity(
     position: Vector3D,
     sources: List[WaveSource],
     wavelength: float,
-    config: Optional[VacuumAcousticsConfig] = None
+    config: Optional[VacuumAcousticsConfig] = None,
 ) -> float:
     """
     Compute bottle beam field intensity at position.
@@ -353,7 +354,7 @@ def bottle_beam_intensity(
         dx = position[0] - source.position[0]
         dy = position[1] - source.position[1]
         dz = position[2] - source.position[2]
-        distance = math.sqrt(dx*dx + dy*dy + dz*dz)
+        distance = math.sqrt(dx * dx + dy * dy + dz * dz)
 
         # Avoid division by zero
         if distance < wavelength / 1000:
@@ -373,10 +374,7 @@ def bottle_beam_intensity(
 
 
 def create_bottle_beam_sources(
-    center: Vector3D,
-    radius: float,
-    n_sources: int = 8,
-    wavelength: float = 1.0
+    center: Vector3D, radius: float, n_sources: int = 8, wavelength: float = 1.0
 ) -> List[WaveSource]:
     """
     Create source array for bottle beam trap.
@@ -407,11 +405,7 @@ def create_bottle_beam_sources(
         # Alternate phase by π/2 between adjacent sources
         phase = (PI / 2) * i
 
-        sources.append(WaveSource(
-            position=(x, y, z),
-            phase=phase,
-            amplitude=1.0
-        ))
+        sources.append(WaveSource(position=(x, y, z), phase=phase, amplitude=1.0))
 
     return sources
 
@@ -421,7 +415,7 @@ def analyze_bottle_beam(
     wavelength: float,
     center: Vector3D,
     d: int = 3,
-    R: float = R_FIFTH
+    R: float = R_FIFTH,
 ) -> BottleBeamResult:
     """
     Analyze bottle beam trap properties.
@@ -443,7 +437,7 @@ def analyze_bottle_beam(
     """
     # Calculate expected core radius using harmonic scaling
     H = harmonic_scale(d, R)
-    core_radius = wavelength * (H ** (-1/3))
+    core_radius = wavelength * (H ** (-1 / 3))
 
     # Sample intensities
     core_intensity = bottle_beam_intensity(center, sources, wavelength)
@@ -463,7 +457,7 @@ def analyze_bottle_beam(
         wall_intensity=wall_intensity,
         trapping_depth=trapping_depth,
         core_radius=core_radius,
-        is_valid_trap=is_valid
+        is_valid_trap=is_valid,
     )
 
 
@@ -471,9 +465,9 @@ def analyze_bottle_beam(
 # FLUX REDISTRIBUTION
 # =============================================================================
 
+
 def flux_redistribution(
-    primary_amplitude: float,
-    phase_offset: float = PI
+    primary_amplitude: float, phase_offset: float = PI
 ) -> FluxResult:
     """
     Compute flux redistribution after wave cancellation.
@@ -505,8 +499,8 @@ def flux_redistribution(
     A = primary_amplitude
 
     # Energy in each wave
-    E_primary = A ** 2
-    E_inverse = A ** 2
+    E_primary = A**2
+    E_inverse = A**2
     E_total = E_primary + E_inverse
 
     # Superposition amplitude
@@ -516,7 +510,7 @@ def flux_redistribution(
     superposition_amplitude = A * interference_factor
 
     # Energy at cancellation point
-    canceled_energy = superposition_amplitude ** 2
+    canceled_energy = superposition_amplitude**2
 
     # Energy redistributed to corners
     redistributed = E_total - canceled_energy
@@ -526,7 +520,7 @@ def flux_redistribution(
         canceled_energy=canceled_energy,
         corner_energies=(E_corner, E_corner, E_corner, E_corner),
         total_energy=E_total,
-        phase_offset=phase_offset
+        phase_offset=phase_offset,
     )
 
 
@@ -536,7 +530,7 @@ def compute_interference_pattern(
     positions: List[Vector2D],
     wavelength: float,
     grid_size: int = 50,
-    grid_extent: float = 10.0
+    grid_extent: float = 10.0,
 ) -> List[List[float]]:
     """
     Compute 2D interference pattern from multiple point sources.
@@ -559,15 +553,15 @@ def compute_interference_pattern(
         row = []
         for j in range(grid_size):
             # Grid position
-            x = (i - grid_size/2) * grid_extent / grid_size
-            y = (j - grid_size/2) * grid_extent / grid_size
+            x = (i - grid_size / 2) * grid_extent / grid_size
+            y = (j - grid_size / 2) * grid_extent / grid_size
 
             # Sum contributions from all sources
             total = complex(0, 0)
             for pos, phase in zip(positions, phases):
                 dx = x - pos[0]
                 dy = y - pos[1]
-                r = math.sqrt(dx*dx + dy*dy)
+                r = math.sqrt(dx * dx + dy * dy)
                 if r < wavelength / 100:
                     r = wavelength / 100
                 total += (amplitude / r) * cmath.exp(1j * (k * r + phase))
@@ -582,11 +576,9 @@ def compute_interference_pattern(
 # HARMONIC PRESSURE FIELD
 # =============================================================================
 
+
 def harmonic_pressure_field(
-    position: Vector3D,
-    t: float,
-    d: int,
-    config: Optional[VacuumAcousticsConfig] = None
+    position: Vector3D, t: float, d: int, config: Optional[VacuumAcousticsConfig] = None
 ) -> float:
     """
     Compute harmonic pressure field value.
@@ -632,11 +624,9 @@ def harmonic_pressure_field(
 # UTILITIES
 # =============================================================================
 
+
 def visualize_chladni_pattern(
-    n: float,
-    m: float,
-    L: float = DEFAULT_L,
-    resolution: int = 40
+    n: float, m: float, L: float = DEFAULT_L, resolution: int = 40
 ) -> str:
     """
     Create ASCII visualization of Chladni pattern.
@@ -682,28 +672,27 @@ def visualize_chladni_pattern(
     return "\n".join(lines)
 
 
-def get_vacuum_acoustics_stats(config: Optional[VacuumAcousticsConfig] = None) -> Dict[str, Any]:
+def get_vacuum_acoustics_stats(
+    config: Optional[VacuumAcousticsConfig] = None,
+) -> Dict[str, Any]:
     """Get vacuum acoustics module statistics."""
     if config is None:
         config = VacuumAcousticsConfig()
 
     return {
-        'config': {
-            'L': config.L,
-            'c': config.c,
-            'gamma': config.gamma,
-            'R': config.R,
-            'resolution': config.resolution,
-            'v_reference': config.v_reference,
+        "config": {
+            "L": config.L,
+            "c": config.c,
+            "gamma": config.gamma,
+            "R": config.R,
+            "resolution": config.resolution,
+            "v_reference": config.v_reference,
         },
-        'harmonic_scales': {
-            f'd={d}': harmonic_scale(d, config.R)
-            for d in range(1, 7)
+        "harmonic_scales": {f"d={d}": harmonic_scale(d, config.R) for d in range(1, 7)},
+        "constants": {
+            "PI": PI,
+            "PHI": PHI,
+            "C_LIGHT": C_LIGHT,
+            "R_FIFTH": R_FIFTH,
         },
-        'constants': {
-            'PI': PI,
-            'PHI': PHI,
-            'C_LIGHT': C_LIGHT,
-            'R_FIFTH': R_FIFTH,
-        }
     }

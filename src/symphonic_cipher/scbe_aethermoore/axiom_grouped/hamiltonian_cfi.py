@@ -30,6 +30,7 @@ EPS = 1e-10
 @dataclass
 class CFGNode:
     """Control Flow Graph node representing a program state."""
+
     id: int
     name: str
     successors: List[int]  # Valid transitions
@@ -41,6 +42,7 @@ class CFGNode:
 @dataclass
 class ExecutionState:
     """Runtime execution state for CFI checking."""
+
     node_id: int
     embedding: List[float]  # High-dimensional embedding
     timestamp: float
@@ -219,7 +221,7 @@ class HamiltonianEmbedding:
             embedding[1] = node.degree() / max(1, n)
 
             # Feature 3-N: Successor features
-            for i, succ in enumerate(node.successors[:self.dimension - 2]):
+            for i, succ in enumerate(node.successors[: self.dimension - 2]):
                 embedding[2 + i] = succ / max(1, n)
 
             # Add some structure via trigonometric embedding
@@ -251,9 +253,9 @@ class HamiltonianEmbedding:
         Deviation > threshold indicates potential attack.
         """
         if not self.principal_curve:
-            return float('inf')
+            return float("inf")
 
-        min_dist = float('inf')
+        min_dist = float("inf")
 
         for curve_point in self.principal_curve:
             # Euclidean distance to curve point
@@ -308,10 +310,10 @@ class CFIMonitor:
         """
         # Check if transition exists in CFG
         if from_node not in self.cfg.nodes:
-            return False, float('inf'), f"Unknown source node {from_node}"
+            return False, float("inf"), f"Unknown source node {from_node}"
 
         if to_node not in self.cfg.nodes[from_node].successors:
-            return False, float('inf'), f"Invalid edge {from_node} → {to_node}"
+            return False, float("inf"), f"Invalid edge {from_node} → {to_node}"
 
         # Check deviation from principal curve
         if to_node in self.embedding.embeddings:
@@ -353,6 +355,7 @@ class CFIMonitor:
 # =============================================================================
 # Verification Functions
 # =============================================================================
+
 
 def verify_dirac_theorem() -> bool:
     """Verify Dirac condition detection works."""
@@ -414,9 +417,15 @@ if __name__ == "__main__":
     print()
 
     print("MATHEMATICAL PROOFS:")
-    print(f"  Dirac theorem check:     {'✓ PROVEN' if verify_dirac_theorem() else '✗ FAILED'}")
-    print(f"  Bipartite detection:     {'✓ PROVEN' if verify_bipartite_detection() else '✗ FAILED'}")
-    print(f"  Deviation detection:     {'✓ PROVEN' if verify_deviation_detection() else '✗ FAILED'}")
+    print(
+        f"  Dirac theorem check:     {'✓ PROVEN' if verify_dirac_theorem() else '✗ FAILED'}"
+    )
+    print(
+        f"  Bipartite detection:     {'✓ PROVEN' if verify_bipartite_detection() else '✗ FAILED'}"
+    )
+    print(
+        f"  Deviation detection:     {'✓ PROVEN' if verify_deviation_detection() else '✗ FAILED'}"
+    )
     print()
 
     print("CORE CONCEPT:")

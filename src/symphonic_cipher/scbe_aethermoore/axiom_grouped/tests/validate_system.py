@@ -75,9 +75,12 @@ class SCBEValidator:
         z = 3 + 4j
         x = [z.real, z.imag]
         norm_z = abs(z)
-        norm_x = math.sqrt(x[0]**2 + x[1]**2)
+        norm_x = math.sqrt(x[0] ** 2 + x[1] ** 2)
         passed = abs(norm_z - norm_x) < EPS
-        return passed, f"|c|={norm_z:.4f}, |x|={norm_x:.4f}, diff={abs(norm_z-norm_x):.2e}"
+        return (
+            passed,
+            f"|c|={norm_z:.4f}, |x|={norm_x:.4f}, diff={abs(norm_z-norm_x):.2e}",
+        )
 
     def _check_l3_positive(self) -> Tuple[bool, str]:
         """L3: G must be positive definite."""
@@ -89,6 +92,7 @@ class SCBEValidator:
 
     def _check_l4_ball(self) -> Tuple[bool, str]:
         """L4: Output must be strictly inside unit ball."""
+
         def poincare_embed(x_norm, alpha=0.99):
             return alpha * math.tanh(x_norm)
 
@@ -100,10 +104,11 @@ class SCBEValidator:
 
     def _check_l5_metric(self) -> Tuple[bool, str]:
         """L5: dℍ must satisfy metric axioms."""
+
         def d_H(u_norm, v_norm, diff_norm):
             denom = (1 - u_norm**2) * (1 - v_norm**2)
             if denom < EPS:
-                return float('inf')
+                return float("inf")
             arg = 1 + 2 * diff_norm**2 / denom
             return math.acosh(max(1.0, arg))
 
@@ -121,6 +126,7 @@ class SCBEValidator:
 
     def _check_l6_not_isometry(self) -> Tuple[bool, str]:
         """L6: Breathing is diffeomorphism but NOT isometry."""
+
         # This is the KEY check - breathing CHANGES distances
         def breathe(u_norm, b):
             if u_norm < EPS:
@@ -140,7 +146,10 @@ class SCBEValidator:
         contracts = u_contracted < u_norm
 
         passed = expands and contracts
-        return passed, f"b=1.5: {u_norm}→{u_expanded:.4f} (expands), b=0.7: {u_norm}→{u_contracted:.4f} (contracts)"
+        return (
+            passed,
+            f"b=1.5: {u_norm}→{u_expanded:.4f} (expands), b=0.7: {u_norm}→{u_contracted:.4f} (contracts)",
+        )
 
     def _check_l7_isometry(self) -> Tuple[bool, str]:
         """L7: Phase transform IS isometry (preserves dℍ)."""
@@ -150,7 +159,7 @@ class SCBEValidator:
 
         def rotate_2d(x, y, theta):
             c, s = math.cos(theta), math.sin(theta)
-            return c*x - s*y, s*x + c*y
+            return c * x - s * y, s * x + c * y
 
         x, y = 0.3, 0.4
         norm_before = math.sqrt(x**2 + y**2)
@@ -189,7 +198,7 @@ class SCBEValidator:
         # Aligned case
         C_aligned = 1.0  # All same direction
         # Random case
-        C_random = 0.2   # Typical for random
+        C_random = 0.2  # Typical for random
         passed = (0 <= C_aligned <= 1) and (0 <= C_random <= 1)
         return passed, f"C_spin ∈ [0,1]: aligned={C_aligned}, random≈{C_random}"
 
@@ -202,6 +211,7 @@ class SCBEValidator:
 
     def _check_l12_monotonic(self) -> Tuple[bool, str]:
         """L12: Harmonic scaling must be monotonically increasing."""
+
         def H_bounded(d, R=PHI, clamp=50):
             return R ** min(d**2, clamp)
 
@@ -213,14 +223,19 @@ class SCBEValidator:
         H_b_values = [H_bounded(d) for d in d_values]
         H_u_values = [H_unbounded(d) for d in d_values]
 
-        mono_b = all(H_b_values[i] <= H_b_values[i+1] for i in range(len(d_values)-1))
-        mono_u = all(H_u_values[i] <= H_u_values[i+1] for i in range(len(d_values)-1))
+        mono_b = all(
+            H_b_values[i] <= H_b_values[i + 1] for i in range(len(d_values) - 1)
+        )
+        mono_u = all(
+            H_u_values[i] <= H_u_values[i + 1] for i in range(len(d_values) - 1)
+        )
 
         passed = mono_b and mono_u
         return passed, f"Both modes monotonic: bounded={mono_b}, unbounded={mono_u}"
 
     def _check_l13_determinism(self) -> Tuple[bool, str]:
         """L13: Same inputs → same decision."""
+
         def decide(risk):
             if risk < 0.5:
                 return "ALLOW"
@@ -274,7 +289,8 @@ class SCBEValidator:
             f"Passed: {passed}",
             f"Issues: {len(self.issues)}",
             "",
-            "VERDICT: " + ("READY FOR REVIEW" if len(self.issues) <= 2 else "NEEDS WORK"),
+            "VERDICT: "
+            + ("READY FOR REVIEW" if len(self.issues) <= 2 else "NEEDS WORK"),
         ]
 
         if self.issues:

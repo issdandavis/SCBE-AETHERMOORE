@@ -28,19 +28,22 @@ EPSILON_COUPLING = 0.05  # Langues coupling constant
 
 class HarmonicMode(Enum):
     """Harmonic scaling mode selection."""
-    BOUNDED = "bounded"      # R^(d²) with clamp
+
+    BOUNDED = "bounded"  # R^(d²) with clamp
     UNBOUNDED = "unbounded"  # exp(d²) no clamp
 
 
 class AxiomMode(Enum):
     """Full axiom mode (affects multiple layers)."""
-    STABLE = "stable"        # Production-safe, bounded
-    PATENT = "patent"        # Patent-compliant, unbounded vertical wall
+
+    STABLE = "stable"  # Production-safe, bounded
+    PATENT = "patent"  # Patent-compliant, unbounded vertical wall
 
 
 @dataclass
 class DualModeConfig:
     """Configuration for dual-mode axiom execution."""
+
     harmonic_mode: HarmonicMode = HarmonicMode.BOUNDED
     R_base: float = PHI
     d_sq_clamp: float = 50.0  # Only used in BOUNDED mode
@@ -52,6 +55,7 @@ class DualModeConfig:
 # A12: DUAL-MODE HARMONIC SCALING
 # ============================================================================
 
+
 def harmonic_scaling_bounded(d: float, R: float = PHI, clamp: float = 50.0) -> float:
     """
     BOUNDED Harmonic Scaling: H(d) = R^(d²), d² ≤ clamp
@@ -62,8 +66,8 @@ def harmonic_scaling_bounded(d: float, R: float = PHI, clamp: float = 50.0) -> f
         - Bounded output for numerical stability
         - Max value: R^clamp ≈ 1.3e21 for φ, clamp=50
     """
-    d_sq = min(d ** 2, clamp)
-    return float(R ** d_sq)
+    d_sq = min(d**2, clamp)
+    return float(R**d_sq)
 
 
 def harmonic_scaling_unbounded(d: float) -> float:
@@ -78,14 +82,14 @@ def harmonic_scaling_unbounded(d: float) -> float:
 
     WARNING: Can overflow to inf for d > ~26.6
     """
-    return float(np.exp(d ** 2))
+    return float(np.exp(d**2))
 
 
 def harmonic_scaling_dual(
     d: float,
     mode: HarmonicMode = HarmonicMode.BOUNDED,
     R: float = PHI,
-    clamp: float = 50.0
+    clamp: float = 50.0,
 ) -> float:
     """
     Dual-mode harmonic scaling with phase-shift capability.
@@ -109,7 +113,10 @@ def harmonic_scaling_dual(
 # A3: ENHANCED LANGUES METRIC WITH COUPLING
 # ============================================================================
 
-def build_coupling_matrix(k: int, n: int = 6, epsilon: float = EPSILON_COUPLING) -> np.ndarray:
+
+def build_coupling_matrix(
+    k: int, n: int = 6, epsilon: float = EPSILON_COUPLING
+) -> np.ndarray:
     """
     Build coupling matrix A_k for langues operator.
 
@@ -158,9 +165,7 @@ def langues_operator(r: np.ndarray, epsilon: float = EPSILON_COUPLING) -> np.nda
 
 
 def build_langues_metric_tensor(
-    r: np.ndarray,
-    G_0: Optional[np.ndarray] = None,
-    epsilon: float = EPSILON_COUPLING
+    r: np.ndarray, G_0: Optional[np.ndarray] = None, epsilon: float = EPSILON_COUPLING
 ) -> np.ndarray:
     """
     Build the full Langues Metric Tensor G_L(r).
@@ -199,10 +204,7 @@ def build_langues_metric_tensor(
 
 
 def langues_distance(
-    x: np.ndarray,
-    mu: np.ndarray,
-    r: np.ndarray,
-    epsilon: float = EPSILON_COUPLING
+    x: np.ndarray, mu: np.ndarray, r: np.ndarray, epsilon: float = EPSILON_COUPLING
 ) -> float:
     """
     Compute distance using the Langues Metric.
@@ -223,10 +225,10 @@ def langues_distance(
 
     # Ensure correct dimensions
     if len(diff) > G_L.shape[0]:
-        diff = diff[:G_L.shape[0]]
+        diff = diff[: G_L.shape[0]]
     elif len(diff) < G_L.shape[0]:
         diff_padded = np.zeros(G_L.shape[0])
-        diff_padded[:len(diff)] = diff
+        diff_padded[: len(diff)] = diff
         diff = diff_padded
 
     d_sq = diff.T @ G_L @ diff
@@ -234,8 +236,7 @@ def langues_distance(
 
 
 def verify_langues_positive_definite(
-    r: np.ndarray,
-    epsilon: float = EPSILON_COUPLING
+    r: np.ndarray, epsilon: float = EPSILON_COUPLING
 ) -> Tuple[bool, float]:
     """
     Verify that G_L(r) is positive definite.
@@ -253,9 +254,11 @@ def verify_langues_positive_definite(
 # DUAL-MODE RISK CALCULATION (A12 + A13)
 # ============================================================================
 
+
 @dataclass
 class DualModeRiskResult:
     """Result from dual-mode risk calculation."""
+
     risk_bounded: float
     risk_unbounded: float
     base_risk: float
@@ -273,7 +276,7 @@ def calculate_risk_dual_mode(
     tau: float = 0.5,
     S_audio: float = 0.5,
     mode: HarmonicMode = HarmonicMode.BOUNDED,
-    config: Optional[DualModeConfig] = None
+    config: Optional[DualModeConfig] = None,
 ) -> DualModeRiskResult:
     """
     Calculate risk using dual-mode harmonic scaling.
@@ -297,11 +300,11 @@ def calculate_risk_dual_mode(
 
     # A12: Base Risk (weighted sum of coherence failures)
     R_base = (
-        0.2 * (1 - C_spin) +
-        0.2 * (1 - S_spec) +
-        0.2 * (1 - tau) +
-        0.2 * (1 - S_audio) +
-        0.2 * np.tanh(d_star)
+        0.2 * (1 - C_spin)
+        + 0.2 * (1 - S_spec)
+        + 0.2 * (1 - tau)
+        + 0.2 * (1 - S_audio)
+        + 0.2 * np.tanh(d_star)
     )
 
     # Calculate BOTH harmonic scalings
@@ -312,14 +315,14 @@ def calculate_risk_dual_mode(
         H_unbounded = harmonic_scaling_unbounded(d_star)
         if np.isinf(H_unbounded) or np.isnan(H_unbounded):
             overflow_detected = True
-            H_unbounded = float('inf')
+            H_unbounded = float("inf")
     except (OverflowError, FloatingPointError):
         overflow_detected = True
-        H_unbounded = float('inf')
+        H_unbounded = float("inf")
 
     # Final risks
     R_bounded = R_base * H_bounded
-    R_unbounded = R_base * H_unbounded if not np.isinf(H_unbounded) else float('inf')
+    R_unbounded = R_base * H_unbounded if not np.isinf(H_unbounded) else float("inf")
 
     # Select based on mode
     if mode == HarmonicMode.UNBOUNDED:
@@ -345,13 +348,14 @@ def calculate_risk_dual_mode(
         mode_used=mode,
         final_risk=final_risk,
         decision=decision,
-        overflow_detected=overflow_detected
+        overflow_detected=overflow_detected,
     )
 
 
 # ============================================================================
 # COMPREHENSIVE DUAL-MODE TESTS
 # ============================================================================
+
 
 def test_harmonic_modes() -> Dict[str, Any]:
     """
@@ -365,7 +369,7 @@ def test_harmonic_modes() -> Dict[str, Any]:
         "unbounded": [],
         "comparison": [],
         "overflow_points": [],
-        "all_passed": True
+        "all_passed": True,
     }
 
     test_distances = [0.0, 0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0, 20.0, 30.0]
@@ -377,26 +381,31 @@ def test_harmonic_modes() -> Dict[str, Any]:
             H_u = harmonic_scaling_unbounded(d)
             overflow = np.isinf(H_u) or np.isnan(H_u)
         except:
-            H_u = float('inf')
+            H_u = float("inf")
             overflow = True
 
         results["bounded"].append((d, H_b))
         results["unbounded"].append((d, H_u))
-        results["comparison"].append({
-            "d": d,
-            "H_bounded": H_b,
-            "H_unbounded": H_u,
-            "ratio": H_u / H_b if H_b > 0 and not np.isinf(H_u) else float('inf'),
-            "overflow": overflow
-        })
+        results["comparison"].append(
+            {
+                "d": d,
+                "H_bounded": H_b,
+                "H_unbounded": H_u,
+                "ratio": H_u / H_b if H_b > 0 and not np.isinf(H_u) else float("inf"),
+                "overflow": overflow,
+            }
+        )
 
         if overflow:
             results["overflow_points"].append(d)
 
     # Verify monotonicity (both should be strictly increasing)
-    for mode_name, mode_results in [("bounded", results["bounded"]), ("unbounded", results["unbounded"])]:
+    for mode_name, mode_results in [
+        ("bounded", results["bounded"]),
+        ("unbounded", results["unbounded"]),
+    ]:
         for i in range(1, len(mode_results)):
-            d_prev, H_prev = mode_results[i-1]
+            d_prev, H_prev = mode_results[i - 1]
             d_curr, H_curr = mode_results[i]
             if not np.isinf(H_curr) and H_curr <= H_prev:
                 results["all_passed"] = False
@@ -416,7 +425,7 @@ def test_langues_metric() -> Dict[str, Any]:
         "positive_definite_tests": [],
         "distance_comparisons": [],
         "coupling_effects": [],
-        "all_passed": True
+        "all_passed": True,
     }
 
     # Test positive definiteness
@@ -425,16 +434,14 @@ def test_langues_metric() -> Dict[str, Any]:
         np.ones(6) * 0.5,
         np.ones(6),
         np.array([0.1, 0.5, 0.8, 0.2, 0.6, 0.4]),
-        np.random.rand(6)
+        np.random.rand(6),
     ]
 
     for r in test_r_values:
         is_pd, min_eig = verify_langues_positive_definite(r)
-        results["positive_definite_tests"].append({
-            "r": r.tolist(),
-            "is_positive_definite": is_pd,
-            "min_eigenvalue": min_eig
-        })
+        results["positive_definite_tests"].append(
+            {"r": r.tolist(), "is_positive_definite": is_pd, "min_eigenvalue": min_eig}
+        )
         if not is_pd:
             results["all_passed"] = False
 
@@ -445,12 +452,14 @@ def test_langues_metric() -> Dict[str, Any]:
 
     for r in test_r_values:
         d_L = langues_distance(x, mu, r)
-        results["distance_comparisons"].append({
-            "r": r.tolist(),
-            "d_euclidean": euclidean_d,
-            "d_langues": d_L,
-            "ratio": d_L / euclidean_d
-        })
+        results["distance_comparisons"].append(
+            {
+                "r": r.tolist(),
+                "d_euclidean": euclidean_d,
+                "d_langues": d_L,
+                "ratio": d_L / euclidean_d,
+            }
+        )
 
     # Test coupling effects (r=0 should give baseline)
     r_zero = np.zeros(6)
@@ -460,11 +469,13 @@ def test_langues_metric() -> Dict[str, Any]:
     # With r=0 and ε→0, should approach G_0
     G_L_nocoupling = build_langues_metric_tensor(r_zero, epsilon=1e-10)
     coupling_diff = np.max(np.abs(G_L_nocoupling - G_0))
-    results["coupling_effects"].append({
-        "test": "r=0, ε→0 approaches G_0",
-        "max_diff": coupling_diff,
-        "passed": coupling_diff < 0.01
-    })
+    results["coupling_effects"].append(
+        {
+            "test": "r=0, ε→0 approaches G_0",
+            "max_diff": coupling_diff,
+            "passed": coupling_diff < 0.01,
+        }
+    )
 
     return results
 
@@ -480,7 +491,7 @@ def test_dual_mode_risk() -> Dict[str, Any]:
         "risk_calculations": [],
         "mode_comparisons": [],
         "decision_consistency": [],
-        "all_passed": True
+        "all_passed": True,
     }
 
     # Test scenarios
@@ -497,7 +508,7 @@ def test_dual_mode_risk() -> Dict[str, Any]:
             d_star=scenario["d_star"],
             C_spin=scenario["C_spin"],
             S_spec=scenario["S_spec"],
-            mode=HarmonicMode.BOUNDED
+            mode=HarmonicMode.BOUNDED,
         )
 
         # Test UNBOUNDED mode
@@ -505,26 +516,30 @@ def test_dual_mode_risk() -> Dict[str, Any]:
             d_star=scenario["d_star"],
             C_spin=scenario["C_spin"],
             S_spec=scenario["S_spec"],
-            mode=HarmonicMode.UNBOUNDED
+            mode=HarmonicMode.UNBOUNDED,
         )
 
-        results["risk_calculations"].append({
-            "scenario": scenario["name"],
-            "bounded_risk": result_bounded.final_risk,
-            "unbounded_risk": result_unbounded.final_risk,
-            "bounded_decision": result_bounded.decision,
-            "unbounded_decision": result_unbounded.decision,
-            "overflow": result_unbounded.overflow_detected
-        })
+        results["risk_calculations"].append(
+            {
+                "scenario": scenario["name"],
+                "bounded_risk": result_bounded.final_risk,
+                "unbounded_risk": result_unbounded.final_risk,
+                "bounded_decision": result_bounded.decision,
+                "unbounded_decision": result_unbounded.decision,
+                "overflow": result_unbounded.overflow_detected,
+            }
+        )
 
         # For extreme distances, unbounded should be stricter (DENY vs QUARANTINE)
         if scenario["d_star"] > 5.0:
             if result_unbounded.decision != "DENY":
                 results["all_passed"] = False
-                results["decision_consistency"].append({
-                    "scenario": scenario["name"],
-                    "issue": "Unbounded mode should DENY at extreme distance"
-                })
+                results["decision_consistency"].append(
+                    {
+                        "scenario": scenario["name"],
+                        "issue": "Unbounded mode should DENY at extreme distance",
+                    }
+                )
 
     return results
 
@@ -552,8 +567,14 @@ def run_all_tests() -> Dict[str, Any]:
     print("\n[2] Testing Langues Metric with Coupling...")
     langues_results = test_langues_metric()
     all_results["langues_metric"] = langues_results
-    pd_passed = sum(1 for t in langues_results["positive_definite_tests"] if t["is_positive_definite"])
-    print(f"    Positive definite tests: {pd_passed}/{len(langues_results['positive_definite_tests'])}")
+    pd_passed = sum(
+        1
+        for t in langues_results["positive_definite_tests"]
+        if t["is_positive_definite"]
+    )
+    print(
+        f"    Positive definite tests: {pd_passed}/{len(langues_results['positive_definite_tests'])}"
+    )
     print(f"    All passed: {langues_results['all_passed']}")
 
     # Test 3: Dual-Mode Risk
@@ -566,9 +587,9 @@ def run_all_tests() -> Dict[str, Any]:
     # Summary
     print("\n" + "=" * 60)
     overall_passed = (
-        harmonic_results["all_passed"] and
-        langues_results["all_passed"] and
-        risk_results["all_passed"]
+        harmonic_results["all_passed"]
+        and langues_results["all_passed"]
+        and risk_results["all_passed"]
     )
     all_results["overall_passed"] = overall_passed
     print(f"OVERALL: {'PASS ✓' if overall_passed else 'FAIL ✗'}")
@@ -585,7 +606,11 @@ def run_all_tests() -> Dict[str, Any]:
         H_u = comp["H_unbounded"]
         ratio = comp["ratio"]
         H_b_str = f"{H_b:.6f}" if H_b < 1e10 else f"{H_b:.2e}"
-        H_u_str = f"{H_u:.6f}" if H_u < 1e10 and not np.isinf(H_u) else "inf" if np.isinf(H_u) else f"{H_u:.2e}"
+        H_u_str = (
+            f"{H_u:.6f}"
+            if H_u < 1e10 and not np.isinf(H_u)
+            else "inf" if np.isinf(H_u) else f"{H_u:.2e}"
+        )
         ratio_str = f"{ratio:.4f}" if ratio < 1e6 and not np.isinf(ratio) else "inf"
         print(f"{d:>8.1f} {H_b_str:>15} {H_u_str:>15} {ratio_str:>10}")
     print("-" * 60)
@@ -602,6 +627,7 @@ def run_all_tests() -> Dict[str, Any]:
 # ============================================================================
 # PHASE-SHIFT INTERFACE
 # ============================================================================
+
 
 class DualModeAxiomCore:
     """
@@ -626,11 +652,17 @@ class DualModeAxiomCore:
 
     def harmonic_scale(self, d: float) -> float:
         """Apply harmonic scaling in current mode."""
-        return harmonic_scaling_dual(d, self.mode, self.config.R_base, self.config.d_sq_clamp)
+        return harmonic_scaling_dual(
+            d, self.mode, self.config.R_base, self.config.d_sq_clamp
+        )
 
-    def calculate_risk(self, d_star: float, C_spin: float, S_spec: float, **kwargs) -> DualModeRiskResult:
+    def calculate_risk(
+        self, d_star: float, C_spin: float, S_spec: float, **kwargs
+    ) -> DualModeRiskResult:
         """Calculate risk in current mode."""
-        return calculate_risk_dual_mode(d_star, C_spin, S_spec, mode=self.mode, config=self.config, **kwargs)
+        return calculate_risk_dual_mode(
+            d_star, C_spin, S_spec, mode=self.mode, config=self.config, **kwargs
+        )
 
     def langues_distance(self, x: np.ndarray, mu: np.ndarray, r: np.ndarray) -> float:
         """Calculate langues-weighted distance."""

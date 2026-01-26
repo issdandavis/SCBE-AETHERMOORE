@@ -52,7 +52,7 @@ describe('RWP v2.1 Extended Envelope Tests', () => {
         action: 'transfer',
         amount: 1000,
         recipient: 'alice@example.com',
-        metadata: { priority: 'high', tags: ['urgent', 'verified'] }
+        metadata: { priority: 'high', tags: ['urgent', 'verified'] },
       };
 
       const envelope = signRoundtable(payload, 'ko', 'transfer-ctx', testKeyring, ['ko', 'um']);
@@ -75,12 +75,12 @@ describe('RWP v2.1 Extended Envelope Tests', () => {
           level2: {
             level3: {
               data: 'deep-nested-value',
-              array: [1, 2, { inner: true }]
-            }
+              array: [1, 2, { inner: true }],
+            },
           },
-          siblings: ['a', 'b', 'c']
+          siblings: ['a', 'b', 'c'],
         },
-        root: 42
+        root: 42,
       };
 
       const envelope = signRoundtable(complexPayload, 'ko', 'ctx', testKeyring, ['ko']);
@@ -94,7 +94,7 @@ describe('RWP v2.1 Extended Envelope Tests', () => {
     it('should preserve all envelope fields through serialization', () => {
       const payload = { test: true };
       const envelope = signRoundtable(payload, 'ko', 'test-aad', testKeyring, ['ko', 'ru', 'um'], {
-        kid: 'key-v1-2024'
+        kid: 'key-v1-2024',
       });
 
       const roundtrip: RWPEnvelope = JSON.parse(JSON.stringify(envelope));
@@ -136,8 +136,8 @@ describe('RWP v2.1 Extended Envelope Tests', () => {
       // Create keyring with only ko rotated (ru and um unchanged)
       const partialRotateKeyring: Keyring = {
         ko: randomBytes(32), // New key
-        ru: testKeyring.ru,  // Same key
-        um: testKeyring.um,  // Same key
+        ru: testKeyring.ru, // Same key
+        um: testKeyring.um, // Same key
       };
 
       // Should still verify (ru and um signatures are valid)
@@ -171,7 +171,14 @@ describe('RWP v2.1 Extended Envelope Tests', () => {
       const payload = { action: 'multi-party' };
 
       // Full keyring for signing
-      const envelope = signRoundtable(payload, 'ko', 'ctx', testKeyring, ['ko', 'av', 'ru', 'ca', 'um', 'dr']);
+      const envelope = signRoundtable(payload, 'ko', 'ctx', testKeyring, [
+        'ko',
+        'av',
+        'ru',
+        'ca',
+        'um',
+        'dr',
+      ]);
 
       // Different verifiers with different key subsets
       // Each verifier needs fresh nonce cache since they're independent systems
@@ -303,7 +310,7 @@ describe('RWP v2.1 Extended Envelope Tests', () => {
       const payload = {
         isActive: true,
         isDeleted: false,
-        flags: [true, false, true]
+        flags: [true, false, true],
       };
 
       const envelope = signRoundtable(payload, 'ko', 'ctx', testKeyring, ['ko']);
@@ -318,7 +325,7 @@ describe('RWP v2.1 Extended Envelope Tests', () => {
       const payload = {
         value: null,
         nested: { inner: null },
-        array: [null, 1, null]
+        array: [null, 1, null],
       };
 
       const envelope = signRoundtable(payload, 'ko', 'ctx', testKeyring, ['ko']);
@@ -334,7 +341,7 @@ describe('RWP v2.1 Extended Envelope Tests', () => {
         tiny: Number.MIN_VALUE,
         negZero: 0, // -0 becomes 0 in JSON
         scientific: 1e10,
-        float: 0.1 + 0.2 // Famous floating point issue
+        float: 0.1 + 0.2, // Famous floating point issue
       };
 
       const envelope = signRoundtable(payload, 'ko', 'ctx', testKeyring, ['ko']);
@@ -347,7 +354,7 @@ describe('RWP v2.1 Extended Envelope Tests', () => {
       const payload = {
         emptyObj: {},
         emptyArray: [],
-        nestedEmpty: { inner: {} }
+        nestedEmpty: { inner: {} },
       };
 
       const envelope = signRoundtable(payload, 'ko', 'ctx', testKeyring, ['ko']);
@@ -382,13 +389,14 @@ describe('RWP v2.1 Extended Envelope Tests', () => {
       const payload = { action: 'critical-operation' };
 
       // Sign with all tongues
-      const envelope = signRoundtable(
-        payload,
+      const envelope = signRoundtable(payload, 'ko', 'ctx', testKeyring, [
         'ko',
-        'ctx',
-        testKeyring,
-        ['ko', 'av', 'ru', 'ca', 'um', 'dr']
-      );
+        'av',
+        'ru',
+        'ca',
+        'um',
+        'dr',
+      ]);
 
       // Test escalating policies (reset nonce cache between verifications)
       const result1 = verifyRoundtable(envelope, testKeyring, { policy: 'standard' });
@@ -478,7 +486,7 @@ describe('RWP v2.1 Extended Envelope Tests', () => {
       }
 
       // All nonces should be unique
-      const nonces = envelopes.map(e => e.nonce);
+      const nonces = envelopes.map((e) => e.nonce);
       const uniqueNonces = new Set(nonces);
       expect(uniqueNonces.size).toBe(batchSize);
 

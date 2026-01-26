@@ -113,55 +113,44 @@ from .full_system import (
 from .unified import (
     # Main system class
     SCBEAethermoore,
-
     # State representation
     State9D,
     GovernanceDecision,
     Polyhedron,
-
     # Core functions
     governance_9d,
     generate_context,
     compute_entropy,
-
     # Extended Entropy Math (negentropy support)
     compute_negentropy,
     compute_relative_entropy,
     compute_mutual_information,
     entropy_rate_estimate,
     fisher_information,
-
     # Time axis
     tau_dot,
     tau_curvature,
-
     # Entropy axis
     eta_dot,
     eta_curvature,
-
     # Quantum dimension
     quantum_evolution,
     quantum_fidelity,
     von_neumann_entropy,
-
     # Geometry
     ManifoldController,
     hyperbolic_distance,
     triadic_distance,
     harmonic_scaling,
     stable_hash,
-
     # PHDM
     hamiltonian_path_deviation,
-
     # Signal processing
     phase_modulated_intent,
     extract_phase,
-
     # HMAC chain
     hmac_chain_tag,
     verify_hmac_chain,
-
     # Constants
     PHI,
     EPSILON,
@@ -208,22 +197,18 @@ from .phdm_module import (
     POLYHEDRA as CANONICAL_POLYHEDRA,
     HAMILTONIAN_PATH,
     Polyhedron as PHDMPolyhedron,
-
     # Core classes
     GeodesicCurve,
     IntrusionDetector,
-
     # Key derivation
     hmac_key_chain as derive_phdm_key_chain,
     derive_session_key,
     create_golden_path,
     compute_phdm_subscore as phdm_subscore,
-
     # Integration helpers
     integrate_with_layer1,
     integrate_with_layer7_swarm,
     integrate_with_layer13_risk,
-
     # Self-test
     self_test as phdm_self_test,
 )
@@ -233,20 +218,16 @@ from .pqc_module import (
     # Interfaces
     KEMInterface,
     SignatureInterface,
-
     # Implementations
     SimulatedKEM,
     SimulatedSignature,
-
     # High-level API
     PQCKeyPair,
     PQCEnvelope,
     PQCManager,
-
     # Factory functions
     get_kem,
     get_signature,
-
     # Self-test
     self_test as pqc_self_test,
 )
@@ -255,21 +236,16 @@ from .pqc_module import (
 from .organic_hyperbolic import (
     # Pillar 1: Input
     InputEncoder,
-
     # Pillar 2: State
     State9D as OrganicState9D,
     StateGenerator,
-
     # Pillar 3: Hyperbolic
     HyperbolicEngine,
-
     # Pillar 4: Governance
     RealmConfig,
     GovernanceEngine,
-
     # Integrated System
     OrganicSCBE,
-
     # Self-test
     self_test as organic_self_test,
 )
@@ -280,29 +256,24 @@ from .layers_9_12 import (
     SpectralAnalysis,
     compute_spectral_coherence,
     spectral_stability,
-
     # Layer 10: Spin Coherence
     SpinAnalysis,
     compute_spin_coherence,
     compute_spin_from_signal,
-
     # Layer 11: Triadic Distance
     TriadicWeights,
     TriadicAnalysis,
     compute_triadic_distance,
     triadic_gradient,
-
     # Layer 12: Harmonic Scaling & Risk
     RiskWeights as L12RiskWeights,
     RiskAnalysis,
     harmonic_scaling as l12_harmonic_scaling,
     compute_risk,
     risk_gradient,
-
     # Integrated Pipeline
     AggregatedSignals,
     process_layers_9_12,
-
     # Self-test
     self_test as layers_9_12_self_test,
 )
@@ -311,28 +282,23 @@ from .layers_9_12 import (
 from .layer_13 import (
     # Decision enum
     Decision,
-
     # Harmonic scaling (Lemma 13.1)
     HarmonicParams,
     harmonic_H,
     harmonic_derivative,
     harmonic_vertical_wall,
-
     # Multipliers
     TimeMultiplier,
     IntentMultiplier,
-
     # Composite Risk
     RiskComponents,
     CompositeRisk,
     compute_composite_risk,
     verify_north_star,
-
     # Decision Response
     DecisionResponse,
     execute_decision,
     batch_evaluate,
-
     # Verification
     verify_lemma_13_1,
     self_test as layer_13_self_test,
@@ -342,27 +308,21 @@ from .layer_13 import (
 from .living_metric import (
     # States
     PressureState,
-
     # Shock Absorber
     ShockAbsorberParams,
     shock_absorber,
     shock_absorber_derivative,
-
     # Pressure
     PressureMetrics,
     compute_pressure,
-
     # Living Metric Engine
     MetricResult,
     LivingMetricEngine,
-
     # Anti-fragile
     AntifragileAnalysis,
     verify_antifragile,
-
     # Integration
     integrate_with_risk_engine,
-
     # Self-test
     self_test as living_metric_self_test,
 )
@@ -371,29 +331,22 @@ from .living_metric import (
 from .fractional_flux import (
     # States
     ParticipationState,
-
     # Parameters
     FluxParams,
     FluxState,
-
     # Engine
     FractionalFluxEngine,
-
     # Weighting
     compute_weighted_metric,
     compute_weighted_distance,
-
     # Snap detection
     SnapResult,
     detect_snap,
-
     # Integration
     integrate_with_living_metric,
-
     # Breathing patterns
     BreathingPattern,
     apply_breathing_pattern,
-
     # Self-test
     self_test as fractional_flux_self_test,
 )
@@ -402,7 +355,6 @@ from .fractional_flux import (
 from .production_v2_1 import (
     # Quasicrystal Lattice (L3.5)
     QuasicrystalLattice,
-
     # CPSE Physics Engine
     SolitonPacket,
     CPSEThrottler,
@@ -411,18 +363,15 @@ from .production_v2_1 import (
     soliton_evolve,
     spin_rotation_matrix,
     flux_jitter,
-
     # State & Governance
     State9D as ProductionState9D,
     Polyhedron as ProductionPolyhedron,
     GrokResult,
     GovernanceResult,
     governance_pipeline,
-
     # Byzantine Resistance
     SwarmAgent,
     simulate_byzantine_attack,
-
     # Testing
     self_test as production_self_test,
 )
@@ -450,7 +399,6 @@ __all__ = [
     "spin_mismatch",
     "flux_noise",
     "jittered_target",
-
     # Full System (recommended entry point)
     "SCBEFullSystem",
     "GovernanceMode",
@@ -458,56 +406,45 @@ __all__ = [
     "SystemState",
     "quick_evaluate",
     "verify_all_theorems",
-
     # Legacy system
     "SCBEAethermoore",
     "State9D",
     "GovernanceDecision",
     "Polyhedron",
-
     # Core functions
     "governance_9d",
     "generate_context",
     "compute_entropy",
-
     # Extended Entropy Math (negentropy support)
     "compute_negentropy",
     "compute_relative_entropy",
     "compute_mutual_information",
     "entropy_rate_estimate",
     "fisher_information",
-
     # Time
     "tau_dot",
     "tau_curvature",
-
     # Entropy
     "eta_dot",
     "eta_curvature",
-
     # Quantum
     "quantum_evolution",
     "quantum_fidelity",
     "von_neumann_entropy",
-
     # Geometry
     "ManifoldController",
     "hyperbolic_distance",
     "triadic_distance",
     "harmonic_scaling",
     "stable_hash",
-
     # PHDM
     "hamiltonian_path_deviation",
-
     # Signal
     "phase_modulated_intent",
     "extract_phase",
-
     # HMAC
     "hmac_chain_tag",
     "verify_hmac_chain",
-
     # Constants
     "PHI",
     "EPSILON",
@@ -525,7 +462,6 @@ __all__ = [
     "CONLANG",
     "REV_CONLANG",
     "MODALITY_MASKS",
-
     # SpiralSeal SS1 (Sacred Tongue Encryption)
     "SpiralSeal",
     "VeiledSeal",
@@ -553,10 +489,8 @@ __all__ = [
     "decision_from_risk",
     "RiskWeights",
     "qasi_self_test",
-
     # Production v2.1 - Quasicrystal (L3.5)
     "QuasicrystalLattice",
-
     # Production v2.1 - CPSE Physics Engine
     "SolitonPacket",
     "CPSEThrottler",
@@ -565,19 +499,16 @@ __all__ = [
     "soliton_evolve",
     "spin_rotation_matrix",
     "flux_jitter",
-
     # Production v2.1 - Governance
     "ProductionState9D",
     "ProductionPolyhedron",
     "GrokResult",
     "GovernanceResult",
     "governance_pipeline",
-
     # Production v2.1 - Byzantine
     "SwarmAgent",
     "simulate_byzantine_attack",
     "production_self_test",
-
     # PHDM - Polyhedral Hamiltonian Defense Manifold (Claims 63-80)
     "CANONICAL_POLYHEDRA",
     "HAMILTONIAN_PATH",
@@ -592,7 +523,6 @@ __all__ = [
     "integrate_with_layer7_swarm",
     "integrate_with_layer13_risk",
     "phdm_self_test",
-
     # PQC - Post-Quantum Cryptography (Claims 2-3)
     "KEMInterface",
     "SignatureInterface",
@@ -604,7 +534,6 @@ __all__ = [
     "get_kem",
     "get_signature",
     "pqc_self_test",
-
     # Organic Hyperbolic Embeddings
     "InputEncoder",
     "OrganicState9D",
@@ -615,7 +544,6 @@ __all__ = [
     "GovernanceEngine",
     "OrganicSCBE",
     "organic_self_test",
-
     # Layers 9-12: Signal Aggregation Pillar
     "SpectralAnalysis",
     "compute_spectral_coherence",
@@ -635,7 +563,6 @@ __all__ = [
     "AggregatedSignals",
     "process_layers_9_12",
     "layers_9_12_self_test",
-
     # Layer 13: Risk Decision Engine (Lemma 13.1)
     "Decision",
     "HarmonicParams",
@@ -653,7 +580,6 @@ __all__ = [
     "batch_evaluate",
     "verify_lemma_13_1",
     "layer_13_self_test",
-
     # Living Metric Engine: Tensor Heartbeat / Claim 61
     "PressureState",
     "ShockAbsorberParams",
@@ -667,7 +593,6 @@ __all__ = [
     "verify_antifragile",
     "integrate_with_risk_engine",
     "living_metric_self_test",
-
     # Fractional Dimension Flux: Claim 16
     "ParticipationState",
     "FluxParams",
@@ -709,21 +634,47 @@ except ImportError:
 # AETHERMOORE Core Constants
 from .constants import (
     # Mathematical Constants
-    PI, E, PHI as PHI_GOLDEN, SQRT2, SQRT5,
+    PI,
+    E,
+    PHI as PHI_GOLDEN,
+    SQRT2,
+    SQRT5,
     # Harmonic Ratios
-    R_FIFTH, R_FOURTH, R_THIRD, R_SIXTH, R_OCTAVE, R_PHI,
+    R_FIFTH,
+    R_FOURTH,
+    R_THIRD,
+    R_SIXTH,
+    R_OCTAVE,
+    R_PHI,
     # AETHERMOORE Constants
-    PHI_AETHER, LAMBDA_ISAAC, OMEGA_SPIRAL, ALPHA_ABH,
+    PHI_AETHER,
+    LAMBDA_ISAAC,
+    OMEGA_SPIRAL,
+    ALPHA_ABH,
     # Physical Constants
-    C_LIGHT, PLANCK_LENGTH, PLANCK_TIME, PLANCK_CONSTANT,
+    C_LIGHT,
+    PLANCK_LENGTH,
+    PLANCK_TIME,
+    PLANCK_CONSTANT,
     # Defaults
-    DEFAULT_R, DEFAULT_D_MAX, DEFAULT_L, DEFAULT_TOLERANCE, DEFAULT_BASE_BITS,
+    DEFAULT_R,
+    DEFAULT_D_MAX,
+    DEFAULT_L,
+    DEFAULT_TOLERANCE,
+    DEFAULT_BASE_BITS,
     # Core Functions
-    harmonic_scale, security_bits, security_level, harmonic_distance, octave_transpose,
+    harmonic_scale,
+    security_bits,
+    security_level,
+    harmonic_distance,
+    octave_transpose,
     # Data Types
-    AethermooreDimension, DIMENSIONS, CONSTANTS,
+    AethermooreDimension,
+    DIMENSIONS,
+    CONSTANTS,
     # Reference
-    get_harmonic_scale_table, HARMONIC_SCALE_TABLE,
+    get_harmonic_scale_table,
+    HARMONIC_SCALE_TABLE,
 )
 
 # HAL-Attention (Harmonic Associative Lattice)
@@ -764,25 +715,70 @@ from .cymatic_storage import (
 )
 
 # Extend __all__ with new AETHERMOORE modules
-__all__.extend([
-    # Constants
-    "PI", "E", "PHI_GOLDEN", "SQRT2", "SQRT5",
-    "R_FIFTH", "R_FOURTH", "R_THIRD", "R_SIXTH", "R_OCTAVE", "R_PHI",
-    "PHI_AETHER", "LAMBDA_ISAAC", "OMEGA_SPIRAL", "ALPHA_ABH",
-    "C_LIGHT", "PLANCK_LENGTH", "PLANCK_TIME", "PLANCK_CONSTANT",
-    "DEFAULT_R", "DEFAULT_D_MAX", "DEFAULT_L", "DEFAULT_TOLERANCE", "DEFAULT_BASE_BITS",
-    "harmonic_scale", "security_bits", "security_level", "harmonic_distance", "octave_transpose",
-    "AethermooreDimension", "DIMENSIONS", "CONSTANTS",
-    "get_harmonic_scale_table", "HARMONIC_SCALE_TABLE",
-    # HAL-Attention
-    "HALConfig", "AttentionOutput",
-    "harmonic_coupling_matrix", "assign_dimension_depths",
-    "hal_attention", "multi_head_hal_attention", "HALAttentionLayer",
-    # Vacuum-Acoustics
-    "VacuumAcousticsConfig", "WaveSource", "FluxResult", "BottleBeamResult",
-    "nodal_surface", "check_cymatic_resonance", "bottle_beam_intensity",
-    "flux_redistribution", "is_on_nodal_line", "find_nodal_points",
-    "compute_chladni_pattern", "resonance_strength", "create_bottle_beam_sources", "analyze_bottle_beam",
-    # Cymatic Storage
-    "StorageMode", "Voxel", "KDTree", "HolographicQRCube",
-])
+__all__.extend(
+    [
+        # Constants
+        "PI",
+        "E",
+        "PHI_GOLDEN",
+        "SQRT2",
+        "SQRT5",
+        "R_FIFTH",
+        "R_FOURTH",
+        "R_THIRD",
+        "R_SIXTH",
+        "R_OCTAVE",
+        "R_PHI",
+        "PHI_AETHER",
+        "LAMBDA_ISAAC",
+        "OMEGA_SPIRAL",
+        "ALPHA_ABH",
+        "C_LIGHT",
+        "PLANCK_LENGTH",
+        "PLANCK_TIME",
+        "PLANCK_CONSTANT",
+        "DEFAULT_R",
+        "DEFAULT_D_MAX",
+        "DEFAULT_L",
+        "DEFAULT_TOLERANCE",
+        "DEFAULT_BASE_BITS",
+        "harmonic_scale",
+        "security_bits",
+        "security_level",
+        "harmonic_distance",
+        "octave_transpose",
+        "AethermooreDimension",
+        "DIMENSIONS",
+        "CONSTANTS",
+        "get_harmonic_scale_table",
+        "HARMONIC_SCALE_TABLE",
+        # HAL-Attention
+        "HALConfig",
+        "AttentionOutput",
+        "harmonic_coupling_matrix",
+        "assign_dimension_depths",
+        "hal_attention",
+        "multi_head_hal_attention",
+        "HALAttentionLayer",
+        # Vacuum-Acoustics
+        "VacuumAcousticsConfig",
+        "WaveSource",
+        "FluxResult",
+        "BottleBeamResult",
+        "nodal_surface",
+        "check_cymatic_resonance",
+        "bottle_beam_intensity",
+        "flux_redistribution",
+        "is_on_nodal_line",
+        "find_nodal_points",
+        "compute_chladni_pattern",
+        "resonance_strength",
+        "create_bottle_beam_sources",
+        "analyze_bottle_beam",
+        # Cymatic Storage
+        "StorageMode",
+        "Voxel",
+        "KDTree",
+        "HolographicQRCube",
+    ]
+)
