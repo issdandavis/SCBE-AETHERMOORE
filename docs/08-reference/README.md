@@ -10,6 +10,7 @@ The `archive/` folder contains legacy documentation including:
 
 - Original technical specifications
 - SCBE Master Architecture Index (legacy draft)
+- Spiralverse 6-Language core theorems (condensed reference)
 - Development summaries
 - Historical test reports
 - Earlier versions of guides
