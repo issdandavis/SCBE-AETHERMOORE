@@ -19,34 +19,55 @@ import secrets
 # Import PQC module
 from symphonic_cipher.scbe_aethermoore.pqc import (
     # Core
-    Kyber768, KyberKeyPair, EncapsulationResult,
-    Dilithium3, DilithiumKeyPair, SignatureResult,
-    PQCBackend, get_backend, is_liboqs_available,
-    derive_hybrid_key, generate_pqc_session_keys, verify_pqc_session,
-
+    Kyber768,
+    KyberKeyPair,
+    EncapsulationResult,
+    Dilithium3,
+    DilithiumKeyPair,
+    SignatureResult,
+    PQCBackend,
+    get_backend,
+    is_liboqs_available,
+    derive_hybrid_key,
+    generate_pqc_session_keys,
+    verify_pqc_session,
     # Constants
-    KYBER768_PUBLIC_KEY_SIZE, KYBER768_SECRET_KEY_SIZE,
-    KYBER768_CIPHERTEXT_SIZE, KYBER768_SHARED_SECRET_SIZE,
-    DILITHIUM3_PUBLIC_KEY_SIZE, DILITHIUM3_SECRET_KEY_SIZE,
+    KYBER768_PUBLIC_KEY_SIZE,
+    KYBER768_SECRET_KEY_SIZE,
+    KYBER768_CIPHERTEXT_SIZE,
+    KYBER768_SHARED_SECRET_SIZE,
+    DILITHIUM3_PUBLIC_KEY_SIZE,
+    DILITHIUM3_SECRET_KEY_SIZE,
     DILITHIUM3_SIGNATURE_SIZE,
-
     # HMAC
-    KeyDerivationMode, PQCKeyMaterial, PQCHMACState,
-    pqc_derive_hmac_key, pqc_recover_hmac_key,
-    pqc_hmac_chain_tag, pqc_verify_hmac_chain,
-    PQCHMACChain, create_pqc_hmac_state, migrate_classical_chain,
-    NONCE_BYTES, KEY_LEN, AUDIT_CHAIN_IV,
-
+    KeyDerivationMode,
+    PQCKeyMaterial,
+    PQCHMACState,
+    pqc_derive_hmac_key,
+    pqc_recover_hmac_key,
+    pqc_hmac_chain_tag,
+    pqc_verify_hmac_chain,
+    PQCHMACChain,
+    create_pqc_hmac_state,
+    migrate_classical_chain,
+    NONCE_BYTES,
+    KEY_LEN,
+    AUDIT_CHAIN_IV,
     # Audit
-    AuditDecision, PQCAuditEntry, AuditChainVerification,
-    PQCAuditChain, create_audit_entry_signature,
-    verify_audit_entry_signature, PQCAuditIntegration,
+    AuditDecision,
+    PQCAuditEntry,
+    AuditChainVerification,
+    PQCAuditChain,
+    create_audit_entry_signature,
+    verify_audit_entry_signature,
+    PQCAuditIntegration,
 )
 
 
 # =============================================================================
 # Backend Detection Tests
 # =============================================================================
+
 
 class TestBackendDetection:
     """Tests for PQC backend detection."""
@@ -72,6 +93,7 @@ class TestBackendDetection:
 # =============================================================================
 # Kyber768 Tests
 # =============================================================================
+
 
 class TestKyber768:
     """Tests for Kyber768 key encapsulation."""
@@ -120,8 +142,7 @@ class TestKyber768:
         encap_result = Kyber768.encapsulate(keypair.public_key)
 
         shared_secret = Kyber768.decapsulate(
-            keypair.secret_key,
-            encap_result.ciphertext
+            keypair.secret_key, encap_result.ciphertext
         )
 
         assert shared_secret == encap_result.shared_secret
@@ -136,8 +157,7 @@ class TestKyber768:
 
         # Alice decapsulates with her secret key
         alice_secret = Kyber768.decapsulate(
-            alice_keypair.secret_key,
-            bob_result.ciphertext
+            alice_keypair.secret_key, bob_result.ciphertext
         )
 
         # Both should have same shared secret
@@ -149,14 +169,12 @@ class TestKyber768:
         recipient_keypair = Kyber768.generate_keypair()
 
         shared_secret, ciphertext, sender_pk = Kyber768.key_exchange(
-            sender_keypair,
-            recipient_keypair.public_key
+            sender_keypair, recipient_keypair.public_key
         )
 
         # Recipient decapsulates
         recipient_secret = Kyber768.decapsulate(
-            recipient_keypair.secret_key,
-            ciphertext
+            recipient_keypair.secret_key, ciphertext
         )
 
         assert shared_secret == recipient_secret
@@ -186,6 +204,7 @@ class TestKyber768:
 # =============================================================================
 # Dilithium3 Tests
 # =============================================================================
+
 
 class TestDilithium3:
     """Tests for Dilithium3 digital signatures."""
@@ -314,6 +333,7 @@ class TestDilithium3:
 # Hybrid Key Derivation Tests
 # =============================================================================
 
+
 class TestHybridKeyDerivation:
     """Tests for hybrid key derivation functions."""
 
@@ -386,9 +406,7 @@ class TestPQCSessionKeys:
         initiator_sig = Dilithium3.generate_keypair()
 
         session = generate_pqc_session_keys(
-            initiator_kem,
-            responder_kem.public_key,
-            initiator_sig
+            initiator_kem, responder_kem.public_key, initiator_sig
         )
 
         assert "session_id" in session
@@ -407,17 +425,11 @@ class TestPQCSessionKeys:
 
         # Initiator generates session
         session = generate_pqc_session_keys(
-            initiator_kem,
-            responder_kem.public_key,
-            initiator_sig
+            initiator_kem, responder_kem.public_key, initiator_sig
         )
 
         # Responder verifies
-        verified = verify_pqc_session(
-            session,
-            responder_kem,
-            initiator_sig.public_key
-        )
+        verified = verify_pqc_session(session, responder_kem, initiator_sig.public_key)
 
         assert verified is not None
         assert verified["encryption_key"] == session["encryption_key"]
@@ -431,16 +443,12 @@ class TestPQCSessionKeys:
         wrong_sig = Dilithium3.generate_keypair()
 
         session = generate_pqc_session_keys(
-            initiator_kem,
-            responder_kem.public_key,
-            initiator_sig
+            initiator_kem, responder_kem.public_key, initiator_sig
         )
 
         # Try to verify with wrong public key
         verified = verify_pqc_session(
-            session,
-            responder_kem,
-            wrong_sig.public_key  # Wrong key
+            session, responder_kem, wrong_sig.public_key  # Wrong key
         )
 
         assert verified is None
@@ -449,6 +457,7 @@ class TestPQCSessionKeys:
 # =============================================================================
 # PQC HMAC Chain Tests
 # =============================================================================
+
 
 class TestPQCKeyMaterial:
     """Tests for PQC key material."""
@@ -475,13 +484,15 @@ class TestPQCKeyMaterial:
     def test_recover_hmac_key(self):
         """Should recover same HMAC key."""
         keypair = Kyber768.generate_keypair()
-        material = pqc_derive_hmac_key(keypair.public_key, mode=KeyDerivationMode.PQC_ONLY)
+        material = pqc_derive_hmac_key(
+            keypair.public_key, mode=KeyDerivationMode.PQC_ONLY
+        )
 
         recovered_key = pqc_recover_hmac_key(
             keypair.secret_key,
             material.ciphertext,
             material.salt,
-            mode=KeyDerivationMode.PQC_ONLY
+            mode=KeyDerivationMode.PQC_ONLY,
         )
 
         assert recovered_key == material.hmac_key
@@ -623,7 +634,7 @@ class TestPQCHMACChain:
             Kyber768.generate_keypair(),
             chain1.key_material.ciphertext,
             chain1.key_material.salt,
-            mode=KeyDerivationMode.PQC_ONLY
+            mode=KeyDerivationMode.PQC_ONLY,
         )
 
         # Both should work independently
@@ -663,6 +674,7 @@ class TestMigrateClassicalChain:
 # PQC Audit Chain Tests
 # =============================================================================
 
+
 class TestPQCAuditEntry:
     """Tests for PQC audit entries."""
 
@@ -678,7 +690,7 @@ class TestPQCAuditEntry:
             hmac_tag=os.urandom(32),
             prev_tag=AUDIT_CHAIN_IV,
             signature=os.urandom(DILITHIUM3_SIGNATURE_SIZE),
-            signer_public_key=os.urandom(DILITHIUM3_PUBLIC_KEY_SIZE)
+            signer_public_key=os.urandom(DILITHIUM3_PUBLIC_KEY_SIZE),
         )
 
         data = entry.to_bytes()
@@ -698,7 +710,7 @@ class TestPQCAuditEntry:
             hmac_tag=os.urandom(32),
             prev_tag=AUDIT_CHAIN_IV,
             signature=os.urandom(DILITHIUM3_SIGNATURE_SIZE),
-            signer_public_key=os.urandom(DILITHIUM3_PUBLIC_KEY_SIZE)
+            signer_public_key=os.urandom(DILITHIUM3_PUBLIC_KEY_SIZE),
         )
 
         d = entry.to_dict()
@@ -718,7 +730,7 @@ class TestPQCAuditEntry:
             hmac_tag=os.urandom(32),
             prev_tag=AUDIT_CHAIN_IV,
             signature=os.urandom(DILITHIUM3_SIGNATURE_SIZE),
-            signer_public_key=os.urandom(DILITHIUM3_PUBLIC_KEY_SIZE)
+            signer_public_key=os.urandom(DILITHIUM3_PUBLIC_KEY_SIZE),
         )
 
         d = entry.to_dict()
@@ -745,9 +757,7 @@ class TestPQCAuditChain:
         chain = PQCAuditChain.create_new()
 
         entry = chain.add_entry(
-            identity="user1",
-            intent="read_data",
-            decision=AuditDecision.ALLOW
+            identity="user1", intent="read_data", decision=AuditDecision.ALLOW
         )
 
         assert chain.chain_length == 1
@@ -760,9 +770,7 @@ class TestPQCAuditChain:
 
         for i in range(5):
             chain.add_entry(
-                identity=f"user{i}",
-                intent=f"action{i}",
-                decision=AuditDecision.ALLOW
+                identity=f"user{i}", intent=f"action{i}", decision=AuditDecision.ALLOW
             )
 
         assert chain.chain_length == 5
@@ -772,9 +780,7 @@ class TestPQCAuditChain:
         chain = PQCAuditChain.create_new()
 
         entry = chain.add_entry(
-            identity="user1",
-            intent="read",
-            decision=AuditDecision.ALLOW
+            identity="user1", intent="read", decision=AuditDecision.ALLOW
         )
 
         assert entry.verify_signature() is True
@@ -787,7 +793,7 @@ class TestPQCAuditChain:
             chain.add_entry(
                 identity=f"user{i}",
                 intent=f"action{i}",
-                decision=AuditDecision.ALLOW if i % 2 == 0 else AuditDecision.DENY
+                decision=AuditDecision.ALLOW if i % 2 == 0 else AuditDecision.DENY,
             )
 
         result = chain.verify_chain()
@@ -890,8 +896,7 @@ class TestStandaloneAuditSignatures:
         chain_tag = os.urandom(32)
 
         sig = create_audit_entry_signature(
-            "user1", "read", "ALLOW", time.time(),
-            chain_tag, keypair
+            "user1", "read", "ALLOW", time.time(), chain_tag, keypair
         )
 
         assert isinstance(sig, bytes)
@@ -904,13 +909,11 @@ class TestStandaloneAuditSignatures:
         timestamp = time.time()
 
         sig = create_audit_entry_signature(
-            "user1", "read", "ALLOW", timestamp,
-            chain_tag, keypair
+            "user1", "read", "ALLOW", timestamp, chain_tag, keypair
         )
 
         is_valid = verify_audit_entry_signature(
-            "user1", "read", "ALLOW", timestamp,
-            chain_tag, sig, keypair.public_key
+            "user1", "read", "ALLOW", timestamp, chain_tag, sig, keypair.public_key
         )
 
         assert is_valid is True
@@ -921,10 +924,13 @@ class TestStandaloneAuditSignatures:
         chain_tag = os.urandom(32)
 
         is_valid = verify_audit_entry_signature(
-            "user1", "read", "ALLOW", time.time(),
+            "user1",
+            "read",
+            "ALLOW",
+            time.time(),
             chain_tag,
             os.urandom(DILITHIUM3_SIGNATURE_SIZE),  # Random signature
-            keypair.public_key
+            keypair.public_key,
         )
 
         assert is_valid is False
@@ -984,6 +990,7 @@ class TestPQCAuditIntegration:
 # State Management Tests
 # =============================================================================
 
+
 class TestCreatePQCHMACState:
     """Tests for PQC HMAC state creation."""
 
@@ -1006,6 +1013,7 @@ class TestCreatePQCHMACState:
 # Edge Cases and Error Handling
 # =============================================================================
 
+
 class TestEdgeCases:
     """Tests for edge cases and error handling."""
 
@@ -1026,7 +1034,7 @@ class TestEdgeCases:
                 hmac_key=b"too_short",
                 pqc_shared_secret=os.urandom(KYBER768_SHARED_SECRET_SIZE),
                 ciphertext=os.urandom(KYBER768_CIPHERTEXT_SIZE),
-                derivation_mode=KeyDerivationMode.HYBRID
+                derivation_mode=KeyDerivationMode.HYBRID,
             )
 
     def test_verify_chain_mismatched_lengths(self):
@@ -1038,7 +1046,7 @@ class TestEdgeCases:
             [b"msg1", b"msg2"],
             [os.urandom(NONCE_BYTES)],  # Only one nonce
             [os.urandom(32), os.urandom(32)],
-            material
+            material,
         )
 
         assert result is False
@@ -1047,9 +1055,7 @@ class TestEdgeCases:
         """Dilithium verify should handle exceptions gracefully."""
         # Invalid public key should not raise, just return False
         is_valid = Dilithium3.verify(
-            b"invalid",
-            b"message",
-            os.urandom(DILITHIUM3_SIGNATURE_SIZE)
+            b"invalid", b"message", os.urandom(DILITHIUM3_SIGNATURE_SIZE)
         )
         assert is_valid is False
 
@@ -1057,6 +1063,7 @@ class TestEdgeCases:
 # =============================================================================
 # Performance Tests (Optional)
 # =============================================================================
+
 
 class TestPerformance:
     """Basic performance sanity checks."""

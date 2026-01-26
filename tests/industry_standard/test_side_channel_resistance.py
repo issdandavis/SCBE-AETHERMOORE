@@ -195,9 +195,9 @@ class TestTimingAttackResistance:
         # Platform-aware threshold (Windows timer jitter is higher)
         threshold = 0.15 if sys.platform.startswith("win") else 0.10
 
-        assert variation < threshold, (
-            f"Distance timing variation {variation:.2%} exceeds {threshold:.0%} - potential leak"
-        )
+        assert (
+            variation < threshold
+        ), f"Distance timing variation {variation:.2%} exceeds {threshold:.0%} - potential leak"
 
 
 class TestPowerAnalysisResistance:

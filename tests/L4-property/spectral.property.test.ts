@@ -12,7 +12,7 @@ import * as fc from 'fast-check';
 import {
   computeSpectralCoherence,
   generateTestSignal,
-  verifySpectralCoherenceBounds
+  verifySpectralCoherenceBounds,
 } from '../../src/spectral/index.js';
 
 describe('L4-PROPERTY: Spectral Coherence Properties', () => {
@@ -20,8 +20,8 @@ describe('L4-PROPERTY: Spectral Coherence Properties', () => {
     it('S_spec is always in [0, 1] for any valid signal (property)', () => {
       fc.assert(
         fc.property(
-          fc.double({ min: 1, max: 400, noNaN: true }),  // frequency
-          fc.double({ min: 0.1, max: 5, noNaN: true }),  // amplitude
+          fc.double({ min: 1, max: 400, noNaN: true }), // frequency
+          fc.double({ min: 0.1, max: 5, noNaN: true }), // amplitude
           fc.double({ min: 10, max: 200, noNaN: true }), // cutoff
           (freq, amplitude, cutoff) => {
             const signal = generateTestSignal(1000, 0.5, [{ freq, amplitude }]);

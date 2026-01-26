@@ -25,39 +25,39 @@ import numpy as np
 from typing import Tuple, List, Optional
 from scipy.signal import hilbert
 
+
 # ============================================================
 # LAYER 0: Intent Modulation (Feistel-style scrambling)
 # ============================================================
 def layer_0_intent_modulation(t: np.ndarray, key: str = "default_key") -> np.ndarray:
     """
     Layer 0: Intent Modulation
-    
+
     Applies Feistel-style scrambling to the input vector using a key-derived
     rotation matrix. This ensures high entropy and creates avalanche effect.
-    
+
     Input: Context vector t ∈ ℝᴰ
     Output: Modulated vector t' ∈ ℝᴰ
-    
+
     Mathematical basis: Key → HMAC → Seed → Orthogonal rotation
     """
     D = len(t)
-    
+
     # Derive seed from key using HMAC-SHA256
     key_hash = hashlib.sha256(key.encode()).digest()
-    seed = int.from_bytes(key_hash[:4], 'big')
-    
+    seed = int.from_bytes(key_hash[:4], "big")
+
     # Generate deterministic rotation matrix using key as seed
     rng = np.random.default_rng(seed)
-    
+
     # Create orthogonal matrix via QR decomposition of random matrix
     random_matrix = rng.standard_normal((D, D))
     Q, _ = np.linalg.qr(random_matrix)
-    
+
     # Apply rotation (preserves vector norm, creates key-dependent scrambling)
     t_modulated = Q @ t
-    
-    return t_modulated
 
+    return t_modulated
 
 
 # =============================================================================
@@ -228,10 +228,14 @@ def layer_6_breathing_transform(
 #            Nickel & Kiela 2017, Ganea 2018 (ML papers)
 # These preserve hyperbolic distance exactly (true isometries)
 
+
 def mobius_add(u: np.ndarray, v: np.ndarray, eps: float = 1e-10) -> np.ndarray:
     """
     Möbius (gyrovector) addition in the Poincaré ball model.
     True hyperbolic isometry: d(u ⊕ v, w ⊕ v) = d(u, w)
+
+    Standard formula:
+        u ⊕ v = [(1 + 2<u,v> + ||v||²)u + (1 - ||u||²)v] / [1 + 2<u,v> + ||u||²||v||²]
 
     Args:
         u, v: vectors with ‖u‖ < 1, ‖v‖ < 1
@@ -239,20 +243,16 @@ def mobius_add(u: np.ndarray, v: np.ndarray, eps: float = 1e-10) -> np.ndarray:
 
     Returns:
         u ⊕ v (still inside the ball)
+
+    Reference: Ungar "Analytic Hyperbolic Geometry" (2008-2010)
     """
     u2 = np.dot(u, u)
     v2 = np.dot(v, v)
     uv = np.dot(u, v)
 
-    # Lorentz factor γ_u
-    gamma_u = 1.0 / np.sqrt(1.0 - u2 + eps)
-
-    # Coefficients
-    coeff_u = gamma_u * (1.0 + gamma_u * uv + v2)
-    coeff_v = 1.0 - gamma_u**2 * u2
-
-    numerator = coeff_u * u + coeff_v * v
-    denom = 1.0 + 2.0 * gamma_u * uv + gamma_u**2 * u2 * v2
+    # Standard Möbius addition formula
+    numerator = (1.0 + 2.0 * uv + v2) * u + (1.0 - u2) * v
+    denom = 1.0 + 2.0 * uv + u2 * v2
     denom = max(denom, eps)
 
     result = numerator / denom
@@ -260,7 +260,7 @@ def mobius_add(u: np.ndarray, v: np.ndarray, eps: float = 1e-10) -> np.ndarray:
     # Numerical safety: clamp if floating-point pushed it to boundary
     norm = np.linalg.norm(result)
     if norm >= 1.0 - 1e-8:
-        result *= (0.99999999 / norm)
+        result *= 0.99999999 / norm
 
     return result
 
@@ -302,7 +302,7 @@ def mobius_rotate(u: np.ndarray, Q: np.ndarray, eps: float = 1e-10) -> np.ndarra
     # Safety clamp
     norm = np.linalg.norm(result)
     if norm >= 1.0 - 1e-8:
-        result *= (0.99999999 / norm)
+        result *= 0.99999999 / norm
 
     return result
 
@@ -326,33 +326,10 @@ def layer_7_phase_transform(
     # Step 1: Apply rotation Q (rotation about origin preserves distance)
     u_rotated = mobius_rotate(u, Q, eps)
 
-    # Step 2: Translate by a using Möbius addition
+    # Step 2: Translate by a using Möbius addition (isometry in hyperbolic space)
     u_translated = mobius_add(a, u_rotated, eps)
 
-    # Möbius addition: a ⊕ u
-    a_norm_sq = np.linalg.norm(a) ** 2
-    u_norm_sq = np.linalg.norm(u) ** 2
-    au_dot = np.dot(a, u)
-
-    numerator = (1 + 2 * au_dot + u_norm_sq) * a + (1 - a_norm_sq) * u
-    raw_denominator = 1 + 2 * au_dot + a_norm_sq * u_norm_sq
-    # Only add eps when denominator is close to zero to avoid numerical issues
-    denominator = raw_denominator if abs(raw_denominator) > eps else eps
-    denominator = 1 + 2 * au_dot + a_norm_sq * u_norm_sq
-
-    # Only add eps if denominator is too small (avoid division by zero)
-    if abs(denominator) < eps:
-        denominator = eps if denominator >= 0 else -eps
-
-    shifted = numerator / denominator
-
-    # Ensure stays in ball
-    norm = np.linalg.norm(shifted)
-    if norm >= 1.0:
-        shifted = 0.99 * shifted / norm
-
-    # Apply rotation
-    return Q @ shifted
+    return u_translated
 
 
 # =============================================================================
@@ -529,7 +506,7 @@ def layer_14_audio_axis(audio: Optional[np.ndarray], eps: float = 1e-5) -> float
 # =============================================================================
 def scbe_14layer_pipeline(
     t: np.ndarray,
-        modulation_key: str = "default_key",
+    modulation_key: str = "default_key",
     D: int = 6,
     G: Optional[np.ndarray] = None,
     realms: Optional[List[np.ndarray]] = None,
@@ -578,9 +555,8 @@ def scbe_14layer_pipeline(
     # =========================================================================
     # FORWARD PASS
     # =========================================================================
-        # L0: Intent Modulation (Feistel-style scrambling)
+    # L0: Intent Modulation (Feistel-style scrambling)
     t = layer_0_intent_modulation(t, modulation_key)
-
 
     # L1: Complex state
     c = layer_1_complex_state(t, D)
@@ -614,7 +590,7 @@ def scbe_14layer_pipeline(
 
     # L11: Triadic temporal
     if d_star_history is None or len(d_star_history) < 3:
-        d_tri_norm = d_star  # Not enough history
+        d_tri_norm = min(1.0, d_star)  # Not enough history, clamp to [0,1]
         tau = 0.5  # Default trust
     else:
         d1 = np.mean(d_star_history[-3:])

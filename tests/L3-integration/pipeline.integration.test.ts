@@ -25,12 +25,13 @@ const isInBall = (p: number[]): boolean => norm(p) < 1;
 
 // Alias for API compatibility
 const poincareEmbed = projectToBall;
-const breathingTransform = (p: number[], b: number) => breathTransform(p, 0, { amplitude: 0.05 * b, omega: 1.0 });
+const breathingTransform = (p: number[], b: number) =>
+  breathTransform(p, 0, { amplitude: 0.05 * b, omega: 1.0 });
 import {
   signRoundtable,
   verifyRoundtable,
   clearNonceCache,
-  type Keyring
+  type Keyring,
 } from '../../src/spiralverse/index.js';
 
 describe('L3-INTEGRATION: System Pipeline Tests', () => {
@@ -50,13 +51,7 @@ describe('L3-INTEGRATION: System Pipeline Tests', () => {
 
     it('should create and verify envelope end-to-end', () => {
       const payload = { message: 'Hello, SCBE!', timestamp: Date.now() };
-      const envelope = signRoundtable(
-        payload,
-        'ko',
-        'test-aad',
-        testKeyring,
-        ['ko']
-      );
+      const envelope = signRoundtable(payload, 'ko', 'test-aad', testKeyring, ['ko']);
 
       expect(envelope).toBeDefined();
       expect(envelope.sigs.ko).toBeDefined();
@@ -68,18 +63,12 @@ describe('L3-INTEGRATION: System Pipeline Tests', () => {
 
     it('should detect payload tampering in pipeline', () => {
       const payload = { message: 'Secure Data', level: 'TOP_SECRET' };
-      const envelope = signRoundtable(
-        payload,
-        'ko',
-        'secure-aad',
-        testKeyring,
-        ['ko', 'um']
-      );
+      const envelope = signRoundtable(payload, 'ko', 'secure-aad', testKeyring, ['ko', 'um']);
 
       // Tamper with payload (signature won't match)
       const tamperedEnvelope = {
         ...envelope,
-        payload: { message: 'HACKED', level: 'COMPROMISED' }
+        payload: { message: 'HACKED', level: 'COMPROMISED' },
       };
 
       const verified = verifyRoundtable(tamperedEnvelope, testKeyring);
@@ -91,9 +80,9 @@ describe('L3-INTEGRATION: System Pipeline Tests', () => {
     it('should process signal through FFT and coherence computation', () => {
       // Generate multi-component signal
       const signal = generateTestSignal(1000, 1, [
-        { freq: 10, amplitude: 1 },    // Low frequency
-        { freq: 50, amplitude: 0.5 },  // Mid frequency
-        { freq: 200, amplitude: 0.3 }  // High frequency
+        { freq: 10, amplitude: 1 }, // Low frequency
+        { freq: 50, amplitude: 0.5 }, // Mid frequency
+        { freq: 200, amplitude: 0.3 }, // High frequency
       ]);
 
       // Run through FFT
@@ -165,10 +154,10 @@ describe('L3-INTEGRATION: System Pipeline Tests', () => {
       const distances = [1, 2, 3, 4, 5];
       const scaleFactor = Math.E;
 
-      const scaledRisks = distances.map(d => harmonicScale(d, scaleFactor));
+      const scaledRisks = distances.map((d) => harmonicScale(d, scaleFactor));
 
       // All scaled values should be finite and positive
-      scaledRisks.forEach(scaled => {
+      scaledRisks.forEach((scaled) => {
         expect(Number.isFinite(scaled)).toBe(true);
         expect(scaled).toBeGreaterThan(0);
       });
@@ -210,7 +199,7 @@ describe('L3-INTEGRATION: System Pipeline Tests', () => {
       // Layer 9: Spectral coherence (audio simulation)
       const signal = generateTestSignal(1000, 0.5, [
         { freq: 20, amplitude: 1 },
-        { freq: 100, amplitude: 0.3 }
+        { freq: 100, amplitude: 0.3 },
       ]);
       const spectral = computeSpectralCoherence(signal, 1000, 50);
 
@@ -256,12 +245,12 @@ describe('L3-INTEGRATION: System Pipeline Tests', () => {
         spectralMetrics: {
           S_spec: coherence.S_spec,
           E_low: coherence.E_low,
-          E_high: coherence.E_high
+          E_high: coherence.E_high,
         },
         geometryMetrics: {
           point: [0.2, 0.3, 0.1],
-          distance: 0.5
-        }
+          distance: 0.5,
+        },
       };
 
       const envelope = signRoundtable(
@@ -269,7 +258,7 @@ describe('L3-INTEGRATION: System Pipeline Tests', () => {
         'ko',
         'spectral-analysis',
         testKeyring,
-        ['ko', 'ca']  // Control + Compute
+        ['ko', 'ca'] // Control + Compute
       );
 
       // Verify envelope integrity

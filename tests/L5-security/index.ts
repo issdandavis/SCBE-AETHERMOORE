@@ -14,6 +14,4 @@
 export const tier = 'L5-SECURITY';
 export const level = 'Security Engineer';
 export const description = 'Security boundaries, compliance, cryptographic correctness';
-export const tests = [
-  'crypto-boundaries.security.test.ts'
-];
+export const tests = ['crypto-boundaries.security.test.ts'];

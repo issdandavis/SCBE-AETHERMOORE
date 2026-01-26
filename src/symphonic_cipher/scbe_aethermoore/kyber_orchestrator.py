@@ -22,6 +22,7 @@ from enum import Enum
 # Import real PQC if available
 try:
     from .pqc import Kyber768, Dilithium3, is_liboqs_available
+
     _PQC_AVAILABLE = True
 except ImportError:
     _PQC_AVAILABLE = False
@@ -29,6 +30,7 @@ except ImportError:
 # Import Quasicrystal if available
 try:
     from .qc_lattice import QuasicrystalLattice, quick_validate
+
     _QC_AVAILABLE = True
 except ImportError:
     _QC_AVAILABLE = False
@@ -73,6 +75,7 @@ def project_to_ball(v: np.ndarray, max_norm: float = 0.95) -> np.ndarray:
 # =============================================================================
 # KyberKEM - Post-Quantum Key Encapsulation
 # =============================================================================
+
 
 class KyberKEM:
     """
@@ -134,6 +137,7 @@ class KyberKEM:
 # HyperbolicAgent - Agent State in Poincaré Ball
 # =============================================================================
 
+
 class HyperbolicAgent:
     """
     Agent state embedded in hyperbolic space (Poincaré ball model).
@@ -151,14 +155,16 @@ class HyperbolicAgent:
         self.t = 0.0
 
         # 6D context vector
-        self.context = np.array([
-            stable_hash(f"id_{self.t}"),
-            np.random.uniform(0.1, 0.9),
-            0.95 + np.random.uniform(-0.05, 0.05),
-            self.t % (2 * np.pi),
-            stable_hash(f"commit_{self.t}"),
-            0.88 + np.random.uniform(-0.05, 0.05)
-        ])
+        self.context = np.array(
+            [
+                stable_hash(f"id_{self.t}"),
+                np.random.uniform(0.1, 0.9),
+                0.95 + np.random.uniform(-0.05, 0.05),
+                self.t % (2 * np.pi),
+                stable_hash(f"commit_{self.t}"),
+                0.88 + np.random.uniform(-0.05, 0.05),
+            ]
+        )
 
         self.tau = self.t
 
@@ -184,8 +190,7 @@ class HyperbolicAgent:
         """Update agent state by time step."""
         self.t += dt
         self.eta = np.clip(
-            self.eta + BETA * (ETA_TARGET - self.eta) * dt,
-            ETA_MIN, ETA_MAX
+            self.eta + BETA * (ETA_TARGET - self.eta) * dt, ETA_MIN, ETA_MAX
         )
         self.quantum *= np.exp(-1j * dt)
         self.trajectory.append(self.to_poincare())
@@ -213,6 +218,7 @@ class HyperbolicAgent:
 # 14-LAYER GOVERNANCE SYSTEM
 # =============================================================================
 
+
 class L1_AxiomVerifier:
     """Layer 1: Verify core axioms (A1-A4)."""
 
@@ -228,9 +234,9 @@ class L1_AxiomVerifier:
 
         return {
             "A1_entropy": ETA_MIN <= eta <= ETA_MAX,
-            "A2_breath": np.isclose(np.sin(tau), np.sin(tau + 2*np.pi), atol=1e-6),
+            "A2_breath": np.isclose(np.sin(tau), np.sin(tau + 2 * np.pi), atol=1e-6),
             "A3_poincare": float(np.linalg.norm(pos)) < 1.0,
-            "A4_coherence": 0 < coh <= 1.0
+            "A4_coherence": 0 < coh <= 1.0,
         }
 
 
@@ -255,7 +261,7 @@ class L3_HyperbolicDistance:
         traj = self.agent.get_trajectory()
         if len(traj) < 2:
             return True, 0.0
-        dists = [np.linalg.norm(traj[i+1] - traj[i]) for i in range(len(traj)-1)]
+        dists = [np.linalg.norm(traj[i + 1] - traj[i]) for i in range(len(traj) - 1)]
         return max(dists) < 3.0, max(dists)
 
 
@@ -298,7 +304,9 @@ class L6_SessionKey:
         return self.key
 
     def verify(self) -> Tuple[bool, int]:
-        return (self.key is not None and len(self.key) == 32), len(self.key) if self.key else 0
+        return (self.key is not None and len(self.key) == 32), (
+            len(self.key) if self.key else 0
+        )
 
 
 class L7_TrajectorySmooth:
@@ -311,8 +319,8 @@ class L7_TrajectorySmooth:
         traj = self.agent.get_trajectory()
         if len(traj) < 3:
             return True, 0.0
-        vels = [traj[i+1] - traj[i] for i in range(len(traj)-1)]
-        accels = [np.linalg.norm(vels[i+1] - vels[i]) for i in range(len(vels)-1)]
+        vels = [traj[i + 1] - traj[i] for i in range(len(traj) - 1)]
+        accels = [np.linalg.norm(vels[i + 1] - vels[i]) for i in range(len(vels) - 1)]
         return max(accels) < 0.5, max(accels) if accels else 0.0
 
 
@@ -352,7 +360,10 @@ class L10_TemporalConsistency:
     def verify(self) -> Tuple[bool, float]:
         if len(self.tau_hist) < 2:
             return True, 0.0
-        diffs = [self.tau_hist[i+1] - self.tau_hist[i] for i in range(len(self.tau_hist)-1)]
+        diffs = [
+            self.tau_hist[i + 1] - self.tau_hist[i]
+            for i in range(len(self.tau_hist) - 1)
+        ]
         ratio = sum(1 for d in diffs if d >= 0) / len(diffs)
         return ratio > 0.8, ratio
 
@@ -365,7 +376,7 @@ class L11_ManifoldCurvature:
 
     def verify(self) -> Tuple[bool, float]:
         r = np.linalg.norm(self.agent.to_poincare())
-        curv = 2 / (1 - r**2) if r < 0.999 else float('inf')
+        curv = 2 / (1 - r**2) if r < 0.999 else float("inf")
         return curv < 100, float(curv)
 
 
@@ -395,7 +406,7 @@ class L13_DecisionBoundary:
     def aggregate(self) -> Tuple[bool, float]:
         passed, total = 0, 0
         for layer in self.layers.values():
-            if hasattr(layer, 'verify'):
+            if hasattr(layer, "verify"):
                 r = layer.verify()
                 passed += 1 if (r[0] if isinstance(r, tuple) else r) else 0
                 total += 1
@@ -405,6 +416,7 @@ class L13_DecisionBoundary:
 
 class GovernanceDecision(Enum):
     """Final governance decision."""
+
     ALLOW = "ALLOW"
     DENY = "DENY"
     QUARANTINE = "QUARANTINE"
@@ -421,18 +433,21 @@ class L14_GovernanceDecision:
     def decide(self, context: str = "") -> str:
         passed, ratio = self.l13.aggregate()
         decision = "ALLOW" if passed else "DENY"
-        self.log.append({
-            "time": time.time(),
-            "decision": decision,
-            "ratio": ratio,
-            "context": context
-        })
+        self.log.append(
+            {
+                "time": time.time(),
+                "decision": decision,
+                "ratio": ratio,
+                "context": context,
+            }
+        )
         return decision
 
 
 # =============================================================================
 # MAIN ORCHESTRATOR
 # =============================================================================
+
 
 class SCBE_AETHERMOORE_Kyber:
     """
@@ -520,7 +535,7 @@ class SCBE_AETHERMOORE_Kyber:
             qc_result = self.qc.validate_gates(gates)
             results["QC"] = {
                 "valid": qc_result.status.value == "VALID",
-                "crystallinity": qc_result.crystallinity_score
+                "crystallinity": qc_result.crystallinity_score,
             }
 
         # L13: Aggregate
@@ -542,13 +557,14 @@ class SCBE_AETHERMOORE_Kyber:
             "trajectory_length": len(self.agent.trajectory),
             "using_real_pqc": self.kyber.using_real_pqc,
             "qc_available": self.qc is not None,
-            "session_key_generated": self.l6.key is not None
+            "session_key_generated": self.l6.key is not None,
         }
 
 
 # =============================================================================
 # SPRINT TEST
 # =============================================================================
+
 
 def run_governance_test(steps: int = 50, verbose: bool = True) -> Dict[str, Any]:
     """
@@ -573,7 +589,9 @@ def run_governance_test(steps: int = 50, verbose: bool = True) -> Dict[str, Any]
         print(f"\n✓ System initialized with agent: {system.agent.agent_id}")
         print(f"  Using real PQC: {system.kyber.using_real_pqc}")
         print(f"  Kyber public key: {system.kyber.pk[:8].hex()}...")
-        print(f"  Session key generated: {system.l6.key[:8].hex() if system.l6.key else 'None'}...")
+        print(
+            f"  Session key generated: {system.l6.key[:8].hex() if system.l6.key else 'None'}..."
+        )
 
     # Run time steps
     if verbose:
@@ -605,13 +623,15 @@ def run_governance_test(steps: int = 50, verbose: bool = True) -> Dict[str, Any]
             r = results[f"L{i}"]
             passed = r[0] if isinstance(r, tuple) else r
             val = r[1] if isinstance(r, tuple) else "N/A"
-            status = '✓ PASS' if passed else '✗ FAIL'
+            status = "✓ PASS" if passed else "✗ FAIL"
             print(f"     L{i:2d}: {status} (value={val})")
 
         # Quasicrystal
         if "QC" in results:
             qc = results["QC"]
-            print(f"\n[QC] Quasicrystal: {'✓ VALID' if qc['valid'] else '✗ INVALID'} (crystallinity={qc['crystallinity']:.2f})")
+            print(
+                f"\n[QC] Quasicrystal: {'✓ VALID' if qc['valid'] else '✗ INVALID'} (crystallinity={qc['crystallinity']:.2f})"
+            )
 
         # L13-L14
         print(f"\n[L13] Aggregate: {results['L13']}")

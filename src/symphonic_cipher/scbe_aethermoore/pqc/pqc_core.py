@@ -31,6 +31,7 @@ _oqs = None
 
 try:
     import oqs
+
     _oqs = oqs
     _LIBOQS_AVAILABLE = True
 except ImportError:
@@ -39,6 +40,7 @@ except ImportError:
 
 class PQCBackend(Enum):
     """Available PQC backends."""
+
     LIBOQS = "liboqs"
     MOCK = "mock"
 
@@ -56,6 +58,7 @@ def is_liboqs_available() -> bool:
 @dataclass
 class KyberKeyPair:
     """Kyber768 key pair for key encapsulation."""
+
     public_key: bytes
     secret_key: bytes
 
@@ -69,6 +72,7 @@ class KyberKeyPair:
 @dataclass
 class DilithiumKeyPair:
     """Dilithium3 key pair for digital signatures."""
+
     public_key: bytes
     secret_key: bytes
 
@@ -82,6 +86,7 @@ class DilithiumKeyPair:
 @dataclass
 class EncapsulationResult:
     """Result of key encapsulation."""
+
     ciphertext: bytes
     shared_secret: bytes
 
@@ -89,6 +94,7 @@ class EncapsulationResult:
 @dataclass
 class SignatureResult:
     """Result of signing operation."""
+
     signature: bytes
     message: bytes
 
@@ -96,6 +102,7 @@ class SignatureResult:
 # =============================================================================
 # Mock Implementation (Fallback when liboqs not available)
 # =============================================================================
+
 
 class _MockKyber:
     """Mock Kyber768 implementation using hashlib for testing/fallback.
@@ -112,9 +119,13 @@ class _MockKyber:
         """Generate a mock Kyber768 keypair."""
         seed = secrets.token_bytes(32)
         # Public key derived deterministically from seed
-        public_key = hashlib.shake_256(b"kyber_pk:" + seed).digest(KYBER768_PUBLIC_KEY_SIZE)
+        public_key = hashlib.shake_256(b"kyber_pk:" + seed).digest(
+            KYBER768_PUBLIC_KEY_SIZE
+        )
         # Secret key embeds the seed at the beginning for key recovery
-        sk_data = hashlib.shake_256(b"kyber_sk:" + seed).digest(KYBER768_SECRET_KEY_SIZE - 32)
+        sk_data = hashlib.shake_256(b"kyber_sk:" + seed).digest(
+            KYBER768_SECRET_KEY_SIZE - 32
+        )
         secret_key = seed + sk_data
         return KyberKeyPair(public_key=public_key, secret_key=secret_key)
 
@@ -128,9 +139,9 @@ class _MockKyber:
         random_data = secrets.token_bytes(32)
 
         # Derive ciphertext (embed random data at start for decapsulation)
-        ct_data = hashlib.shake_256(
-            b"kyber_ct:" + public_key + random_data
-        ).digest(KYBER768_CIPHERTEXT_SIZE - 32)
+        ct_data = hashlib.shake_256(b"kyber_ct:" + public_key + random_data).digest(
+            KYBER768_CIPHERTEXT_SIZE - 32
+        )
         ciphertext = random_data + ct_data
 
         # Derive shared secret from public key and random data
@@ -152,7 +163,9 @@ class _MockKyber:
         seed = secret_key[:32]
 
         # Recover public key from seed
-        public_key = hashlib.shake_256(b"kyber_pk:" + seed).digest(KYBER768_PUBLIC_KEY_SIZE)
+        public_key = hashlib.shake_256(b"kyber_pk:" + seed).digest(
+            KYBER768_PUBLIC_KEY_SIZE
+        )
 
         # Extract random data from ciphertext (first 32 bytes)
         random_data = ciphertext[:32]
@@ -181,10 +194,14 @@ class _MockDilithium:
         """Generate a mock Dilithium3 keypair."""
         seed = secrets.token_bytes(32)
         # Both keys embed the seed at the beginning for verification
-        sk_data = hashlib.shake_256(b"dilithium_sk:" + seed).digest(DILITHIUM3_SECRET_KEY_SIZE - 32)
+        sk_data = hashlib.shake_256(b"dilithium_sk:" + seed).digest(
+            DILITHIUM3_SECRET_KEY_SIZE - 32
+        )
         secret_key = seed + sk_data
 
-        pk_data = hashlib.shake_256(b"dilithium_pk:" + seed).digest(DILITHIUM3_PUBLIC_KEY_SIZE - 32)
+        pk_data = hashlib.shake_256(b"dilithium_pk:" + seed).digest(
+            DILITHIUM3_PUBLIC_KEY_SIZE - 32
+        )
         public_key = seed + pk_data
 
         return DilithiumKeyPair(public_key=public_key, secret_key=secret_key)
@@ -199,9 +216,9 @@ class _MockDilithium:
         seed = secret_key[:32]
 
         # Create deterministic signature from seed and message
-        signature = hashlib.shake_256(
-            b"dilithium_sig:" + seed + message
-        ).digest(DILITHIUM3_SIGNATURE_SIZE)
+        signature = hashlib.shake_256(b"dilithium_sig:" + seed + message).digest(
+            DILITHIUM3_SIGNATURE_SIZE
+        )
 
         return signature
 
@@ -217,9 +234,9 @@ class _MockDilithium:
         seed = public_key[:32]
 
         # Compute expected signature using same derivation as sign()
-        expected_sig = hashlib.shake_256(
-            b"dilithium_sig:" + seed + message
-        ).digest(DILITHIUM3_SIGNATURE_SIZE)
+        expected_sig = hashlib.shake_256(b"dilithium_sig:" + seed + message).digest(
+            DILITHIUM3_SIGNATURE_SIZE
+        )
 
         return secrets.compare_digest(signature, expected_sig)
 
@@ -227,6 +244,7 @@ class _MockDilithium:
 # =============================================================================
 # Liboqs Implementation
 # =============================================================================
+
 
 class _LiboqsKyber:
     """Kyber768 implementation using liboqs."""
@@ -244,7 +262,9 @@ class _LiboqsKyber:
         """Encapsulate using Kyber768 public key."""
         with _oqs.KeyEncapsulation("Kyber768") as kem:
             ciphertext, shared_secret = kem.encap_secret(public_key)
-            return EncapsulationResult(ciphertext=ciphertext, shared_secret=shared_secret)
+            return EncapsulationResult(
+                ciphertext=ciphertext, shared_secret=shared_secret
+            )
 
     @staticmethod
     def decapsulate(secret_key: bytes, ciphertext: bytes) -> bytes:
@@ -282,6 +302,7 @@ class _LiboqsDilithium:
 # =============================================================================
 # Public API - Unified Interface
 # =============================================================================
+
 
 class Kyber768:
     """
@@ -341,8 +362,9 @@ class Kyber768:
         return cls._impl.decapsulate(secret_key, ciphertext)
 
     @classmethod
-    def key_exchange(cls, sender_keypair: KyberKeyPair,
-                     recipient_public_key: bytes) -> Tuple[bytes, bytes, bytes]:
+    def key_exchange(
+        cls, sender_keypair: KyberKeyPair, recipient_public_key: bytes
+    ) -> Tuple[bytes, bytes, bytes]:
         """
         Perform full key exchange returning shared secret and ciphertext.
 
@@ -436,10 +458,13 @@ class Dilithium3:
 # Hybrid Schemes
 # =============================================================================
 
-def derive_hybrid_key(pqc_shared_secret: bytes,
-                      classical_shared_secret: Optional[bytes] = None,
-                      salt: Optional[bytes] = None,
-                      info: bytes = b"scbe-aethermoore-pqc-hybrid") -> bytes:
+
+def derive_hybrid_key(
+    pqc_shared_secret: bytes,
+    classical_shared_secret: Optional[bytes] = None,
+    salt: Optional[bytes] = None,
+    info: bytes = b"scbe-aethermoore-pqc-hybrid",
+) -> bytes:
     """
     Derive a hybrid key combining PQC and optional classical shared secrets.
 
@@ -455,7 +480,7 @@ def derive_hybrid_key(pqc_shared_secret: bytes,
         32-byte derived key
     """
     if salt is None:
-        salt = b'\x00' * 32
+        salt = b"\x00" * 32
 
     # Combine secrets
     if classical_shared_secret:
@@ -467,15 +492,17 @@ def derive_hybrid_key(pqc_shared_secret: bytes,
     prk = hashlib.sha3_256(salt + combined).digest()
 
     # HKDF-Expand
-    okm = hashlib.sha3_256(prk + info + b'\x01').digest()
+    okm = hashlib.sha3_256(prk + info + b"\x01").digest()
 
     return okm
 
 
-def generate_pqc_session_keys(initiator_kem_keypair: KyberKeyPair,
-                              responder_kem_public_key: bytes,
-                              initiator_sig_keypair: DilithiumKeyPair,
-                              session_id: Optional[bytes] = None) -> dict:
+def generate_pqc_session_keys(
+    initiator_kem_keypair: KyberKeyPair,
+    responder_kem_public_key: bytes,
+    initiator_sig_keypair: DilithiumKeyPair,
+    session_id: Optional[bytes] = None,
+) -> dict:
     """
     Generate authenticated session keys using PQC primitives.
 
@@ -502,14 +529,10 @@ def generate_pqc_session_keys(initiator_kem_keypair: KyberKeyPair,
 
     # Derive session keys
     encryption_key = derive_hybrid_key(
-        encap_result.shared_secret,
-        salt=session_id,
-        info=b"encryption"
+        encap_result.shared_secret, salt=session_id, info=b"encryption"
     )
     mac_key = derive_hybrid_key(
-        encap_result.shared_secret,
-        salt=session_id,
-        info=b"mac"
+        encap_result.shared_secret, salt=session_id, info=b"mac"
     )
 
     return {
@@ -520,13 +543,15 @@ def generate_pqc_session_keys(initiator_kem_keypair: KyberKeyPair,
         "signature": signature,
         "initiator_public_key": initiator_kem_keypair.public_key,
         "initiator_sig_public_key": initiator_sig_keypair.public_key,
-        "shared_secret": encap_result.shared_secret
+        "shared_secret": encap_result.shared_secret,
     }
 
 
-def verify_pqc_session(session_data: dict,
-                       responder_kem_keypair: KyberKeyPair,
-                       initiator_sig_public_key: bytes) -> Optional[dict]:
+def verify_pqc_session(
+    session_data: dict,
+    responder_kem_keypair: KyberKeyPair,
+    initiator_sig_public_key: bytes,
+) -> Optional[dict]:
     """
     Verify and complete PQC session key exchange on responder side.
 
@@ -539,34 +564,33 @@ def verify_pqc_session(session_data: dict,
         Dict with derived keys if verification succeeds, None otherwise
     """
     # Verify signature
-    sign_data = (session_data["ciphertext"] +
-                 session_data["session_id"] +
-                 session_data["initiator_public_key"])
+    sign_data = (
+        session_data["ciphertext"]
+        + session_data["session_id"]
+        + session_data["initiator_public_key"]
+    )
 
-    if not Dilithium3.verify(initiator_sig_public_key, sign_data, session_data["signature"]):
+    if not Dilithium3.verify(
+        initiator_sig_public_key, sign_data, session_data["signature"]
+    ):
         return None
 
     # Decapsulate shared secret
     shared_secret = Kyber768.decapsulate(
-        responder_kem_keypair.secret_key,
-        session_data["ciphertext"]
+        responder_kem_keypair.secret_key, session_data["ciphertext"]
     )
 
     # Derive same session keys
     encryption_key = derive_hybrid_key(
-        shared_secret,
-        salt=session_data["session_id"],
-        info=b"encryption"
+        shared_secret, salt=session_data["session_id"], info=b"encryption"
     )
     mac_key = derive_hybrid_key(
-        shared_secret,
-        salt=session_data["session_id"],
-        info=b"mac"
+        shared_secret, salt=session_data["session_id"], info=b"mac"
     )
 
     return {
         "session_id": session_data["session_id"],
         "encryption_key": encryption_key,
         "mac_key": mac_key,
-        "shared_secret": shared_secret
+        "shared_secret": shared_secret,
     }

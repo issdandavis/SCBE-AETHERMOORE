@@ -29,6 +29,7 @@ PHI = (1 + np.sqrt(5)) / 2
 
 class PolyhedronType(Enum):
     """Classification of polyhedron types."""
+
     PLATONIC = "platonic"
     ARCHIMEDEAN = "archimedean"
     KEPLER_POINSOT = "kepler_poinsot"
@@ -54,6 +55,7 @@ class Polyhedron:
         adjacency: Optional vertex adjacency list
         notes: Role in PHDM system
     """
+
     name: str
     poly_type: PolyhedronType
     vertices: int
@@ -80,12 +82,17 @@ class Polyhedron:
     def serialize(self) -> bytes:
         """Serialize polyhedron data for HMAC chaining."""
         data = (
-            self.name.encode() + b"|" +
-            self.poly_type.value.encode() + b"|" +
-            str(self.vertices).encode() + b"|" +
-            str(self.edges).encode() + b"|" +
-            str(self.faces).encode() + b"|" +
-            str(self.genus).encode()
+            self.name.encode()
+            + b"|"
+            + self.poly_type.value.encode()
+            + b"|"
+            + str(self.vertices).encode()
+            + b"|"
+            + str(self.edges).encode()
+            + b"|"
+            + str(self.faces).encode()
+            + b"|"
+            + str(self.genus).encode()
         )
         if self.vertex_coords is not None:
             data += b"|" + self.vertex_coords.tobytes()
@@ -102,18 +109,15 @@ class Polyhedron:
             "face_types": self.face_types,
             "genus": self.genus,
             "euler": self.euler_characteristic(),
-            "notes": self.notes
+            "notes": self.notes,
         }
 
 
 def create_tetrahedron_coords() -> np.ndarray:
     """Generate tetrahedron vertex coordinates."""
-    return np.array([
-        [1, 1, 1],
-        [1, -1, -1],
-        [-1, 1, -1],
-        [-1, -1, 1]
-    ], dtype=float) / np.sqrt(3)
+    return np.array(
+        [[1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1]], dtype=float
+    ) / np.sqrt(3)
 
 
 def create_cube_coords() -> np.ndarray:
@@ -128,11 +132,10 @@ def create_cube_coords() -> np.ndarray:
 
 def create_octahedron_coords() -> np.ndarray:
     """Generate octahedron vertex coordinates."""
-    return np.array([
-        [1, 0, 0], [-1, 0, 0],
-        [0, 1, 0], [0, -1, 0],
-        [0, 0, 1], [0, 0, -1]
-    ], dtype=float)
+    return np.array(
+        [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]],
+        dtype=float,
+    )
 
 
 def create_dodecahedron_coords() -> np.ndarray:
@@ -145,7 +148,7 @@ def create_dodecahedron_coords() -> np.ndarray:
                 coords.append([x, y, z])
 
     # Vertices on faces (using golden ratio)
-    for x in [-1/PHI, 1/PHI]:
+    for x in [-1 / PHI, 1 / PHI]:
         for y in [-PHI, PHI]:
             coords.append([0, x, y])
             coords.append([x, y, 0])
@@ -170,6 +173,7 @@ def create_icosahedron_coords() -> np.ndarray:
 # The 16 Canonical PHDM Polyhedra
 # =============================================================================
 
+
 def get_phdm_family() -> List[Polyhedron]:
     """
     Return the complete PHDM family of 16 canonical polyhedra.
@@ -183,141 +187,168 @@ def get_phdm_family() -> List[Polyhedron]:
         Polyhedron(
             name="Tetrahedron",
             poly_type=PolyhedronType.PLATONIC,
-            vertices=4, edges=6, faces=4,
+            vertices=4,
+            edges=6,
+            faces=4,
             face_types="4 triangles",
             vertex_coords=create_tetrahedron_coords(),
-            notes="Minimal convex - ideal for origin anchoring"
+            notes="Minimal convex - ideal for origin anchoring",
         ),
         Polyhedron(
             name="Cube",
             poly_type=PolyhedronType.PLATONIC,
-            vertices=8, edges=12, faces=6,
+            vertices=8,
+            edges=12,
+            faces=6,
             face_types="6 squares",
             vertex_coords=create_cube_coords(),
-            notes="Orthogonal structure for grid-like embeddings"
+            notes="Orthogonal structure for grid-like embeddings",
         ),
         Polyhedron(
             name="Octahedron",
             poly_type=PolyhedronType.PLATONIC,
-            vertices=6, edges=12, faces=8,
+            vertices=6,
+            edges=12,
+            faces=8,
             face_types="8 triangles",
             vertex_coords=create_octahedron_coords(),
-            notes="Dual to cube - high coordination"
+            notes="Dual to cube - high coordination",
         ),
         Polyhedron(
             name="Dodecahedron",
             poly_type=PolyhedronType.PLATONIC,
-            vertices=20, edges=30, faces=12,
+            vertices=20,
+            edges=30,
+            faces=12,
             face_types="12 pentagons",
             vertex_coords=create_dodecahedron_coords(),
-            notes="Golden ratio symmetry for harmonic scaling"
+            notes="Golden ratio symmetry for harmonic scaling",
         ),
         Polyhedron(
             name="Icosahedron",
             poly_type=PolyhedronType.PLATONIC,
-            vertices=12, edges=30, faces=20,
+            vertices=12,
+            edges=30,
+            faces=20,
             face_types="20 triangles",
             vertex_coords=create_icosahedron_coords(),
-            notes="Maximal vertices for Platonic - dense connectivity"
+            notes="Maximal vertices for Platonic - dense connectivity",
         ),
-
         # =====================================================================
         # ARCHIMEDEAN SOLIDS (3) - Mixed-face complexity for dynamic paths
         # =====================================================================
         Polyhedron(
             name="Truncated Tetrahedron",
             poly_type=PolyhedronType.ARCHIMEDEAN,
-            vertices=12, edges=18, faces=8,
+            vertices=12,
+            edges=18,
+            faces=8,
             face_types="4 triangles + 4 hexagons",
-            notes="Truncation introduces higher faces for deviation traps"
+            notes="Truncation introduces higher faces for deviation traps",
         ),
         Polyhedron(
             name="Cuboctahedron",
             poly_type=PolyhedronType.ARCHIMEDEAN,
-            vertices=12, edges=24, faces=14,
+            vertices=12,
+            edges=24,
+            faces=14,
             face_types="8 triangles + 6 squares",
-            notes="Archimedean 'bridge' between cube/octahedron"
+            notes="Archimedean 'bridge' between cube/octahedron",
         ),
         Polyhedron(
             name="Icosidodecahedron",
             poly_type=PolyhedronType.ARCHIMEDEAN,
-            vertices=30, edges=60, faces=32,
+            vertices=30,
+            edges=60,
+            faces=32,
             face_types="20 triangles + 12 pentagons",
-            notes="High-density for geodesic smoothing"
+            notes="High-density for geodesic smoothing",
         ),
-
         # =====================================================================
         # KEPLER-POINSOT (2) - Non-convex stars for attack surfaces
         # =====================================================================
         Polyhedron(
             name="Small Stellated Dodecahedron",
             poly_type=PolyhedronType.KEPLER_POINSOT,
-            vertices=12, edges=30, faces=12,
+            vertices=12,
+            edges=30,
+            faces=12,
             face_types="12 pentagrams",
-            notes="Star density for sharp curvature spikes"
+            notes="Star density for sharp curvature spikes",
         ),
         Polyhedron(
             name="Great Dodecahedron",
             poly_type=PolyhedronType.KEPLER_POINSOT,
-            vertices=12, edges=30, faces=12,
+            vertices=12,
+            edges=30,
+            faces=12,
             face_types="12 pentagons (intersecting)",
-            notes="Deeper non-convexity for intrusion boundaries"
+            notes="Deeper non-convexity for intrusion boundaries",
         ),
-
         # =====================================================================
         # TOROIDAL (2) - Genus > 0 for topological robustness
         # =====================================================================
         Polyhedron(
             name="Szilassi Polyhedron",
             poly_type=PolyhedronType.TOROIDAL,
-            vertices=14, edges=21, faces=7,
+            vertices=14,
+            edges=21,
+            faces=7,
             face_types="7 hexagons",
             genus=1,
-            notes="Genus 1 torus - every face touches every other; maximal adjacency"
+            notes="Genus 1 torus - every face touches every other; maximal adjacency",
         ),
         Polyhedron(
             name="Császár Polyhedron",
             poly_type=PolyhedronType.TOROIDAL,
-            vertices=7, edges=21, faces=14,
+            vertices=7,
+            edges=21,
+            faces=14,
             face_types="14 triangles",
             genus=1,
-            notes="Dual to Szilassi - minimal vertices with full triangulation"
+            notes="Dual to Szilassi - minimal vertices with full triangulation",
         ),
-
         # =====================================================================
         # JOHNSON SOLIDS (2) - Near-regular bridges to real CFGs
         # =====================================================================
         Polyhedron(
             name="Pentagonal Bipyramid",
             poly_type=PolyhedronType.JOHNSON,
-            vertices=7, edges=15, faces=10,
+            vertices=7,
+            edges=15,
+            faces=10,
             face_types="10 triangles",
-            notes="Dual-like extension for pyramidal deviations"
+            notes="Dual-like extension for pyramidal deviations",
         ),
         Polyhedron(
             name="Triangular Cupola",
             poly_type=PolyhedronType.JOHNSON,
-            vertices=9, edges=15, faces=8,
+            vertices=9,
+            edges=15,
+            faces=8,
             face_types="4 triangles + 3 squares + 1 hexagon",
-            notes="Cupola for layered manifold stacking"
+            notes="Cupola for layered manifold stacking",
         ),
-
         # =====================================================================
         # RHOMBIC VARIANTS (2) - Space-filling tessellation
         # =====================================================================
         Polyhedron(
             name="Rhombic Dodecahedron",
             poly_type=PolyhedronType.RHOMBIC,
-            vertices=14, edges=24, faces=12,
+            vertices=14,
+            edges=24,
+            faces=12,
             face_types="12 rhombi",
-            notes="Space-filling dual to cuboctahedron - dense packing"
+            notes="Space-filling dual to cuboctahedron - dense packing",
         ),
         Polyhedron(
             name="Bilinski Dodecahedron",
             poly_type=PolyhedronType.RHOMBIC,
-            vertices=14, edges=24, faces=12,
+            vertices=14,
+            edges=24,
+            faces=12,
             face_types="12 rhombi (golden ratio variant)",
-            notes="Alternative rhombic symmetry with golden proportions"
+            notes="Alternative rhombic symmetry with golden proportions",
         ),
     ]
 
@@ -326,9 +357,11 @@ def get_phdm_family() -> List[Polyhedron]:
 # Hamiltonian Path and HMAC Chaining
 # =============================================================================
 
+
 @dataclass
 class HamiltonianNode:
     """A node in the Hamiltonian path through the PHDM."""
+
     polyhedron: Polyhedron
     position: int
     hmac_tag: bytes
@@ -353,7 +386,7 @@ class PHDMHamiltonianPath:
         self.family = get_phdm_family()
         self.key = key or hashlib.sha256(b"phdm_default_key").digest()
         self._path: List[HamiltonianNode] = []
-        self._iv = b'\x00' * 32
+        self._iv = b"\x00" * 32
 
     def compute_path(self) -> List[HamiltonianNode]:
         """
@@ -371,10 +404,7 @@ class PHDMHamiltonianPath:
             tag = hmac.new(self.key, data, hashlib.sha256).digest()
 
             node = HamiltonianNode(
-                polyhedron=poly,
-                position=i,
-                hmac_tag=tag,
-                prev_tag=prev_tag
+                polyhedron=poly, position=i, hmac_tag=tag, prev_tag=prev_tag
             )
             self._path.append(node)
             prev_tag = tag
@@ -457,13 +487,14 @@ class PHDMHamiltonianPath:
             "path_length": len(self._path),
             "path_digest": self.get_path_digest().hex(),
             "polyhedra": [node.polyhedron.to_dict() for node in self._path],
-            "hmac_tags": [node.hmac_tag.hex() for node in self._path]
+            "hmac_tags": [node.hmac_tag.hex() for node in self._path],
         }
 
 
 # =============================================================================
 # Deviation Detection
 # =============================================================================
+
 
 class PHDMDeviationDetector:
     """
@@ -486,12 +517,10 @@ class PHDMDeviationDetector:
 
         # Build expected metrics
         self._expected_euler_sum = sum(
-            node.polyhedron.euler_characteristic()
-            for node in self.path._path
+            node.polyhedron.euler_characteristic() for node in self.path._path
         )
         self._expected_vertex_total = sum(
-            node.polyhedron.vertices
-            for node in self.path._path
+            node.polyhedron.vertices for node in self.path._path
         )
 
     def check_topological_integrity(self) -> Tuple[bool, List[str]]:
@@ -513,8 +542,9 @@ class PHDMDeviationDetector:
 
         return len(errors) == 0, errors
 
-    def detect_manifold_deviation(self, observed_vertices: int,
-                                  observed_euler: int) -> float:
+    def detect_manifold_deviation(
+        self, observed_vertices: int, observed_euler: int
+    ) -> float:
         """
         Detect deviation from expected manifold structure.
 
@@ -560,15 +590,15 @@ class PHDMDeviationDetector:
 
     def get_curvature_profile(self) -> np.ndarray:
         """Get curvature values along the entire path."""
-        return np.array([
-            self.compute_curvature_at_node(i)
-            for i in range(len(self.path._path))
-        ])
+        return np.array(
+            [self.compute_curvature_at_node(i) for i in range(len(self.path._path))]
+        )
 
 
 # =============================================================================
 # Utility Functions
 # =============================================================================
+
 
 def get_family_summary() -> Dict[str, Any]:
     """Get a summary of the PHDM family."""
@@ -591,7 +621,7 @@ def get_family_summary() -> Dict[str, Any]:
         "total_vertices": total_v,
         "total_edges": total_e,
         "total_faces": total_f,
-        "types": list(by_type.keys())
+        "types": list(by_type.keys()),
     }
 
 

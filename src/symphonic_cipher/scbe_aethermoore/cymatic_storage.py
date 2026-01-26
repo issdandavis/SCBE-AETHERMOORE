@@ -23,13 +23,21 @@ from typing import List, Optional, Tuple, Dict, Any, Union
 from enum import Enum
 
 from .constants import (
-    R_FIFTH, PHI, DEFAULT_L, DEFAULT_TOLERANCE, DEFAULT_R,
-    harmonic_distance, harmonic_scale, CONSTANTS
+    R_FIFTH,
+    PHI,
+    DEFAULT_L,
+    DEFAULT_TOLERANCE,
+    DEFAULT_R,
+    harmonic_distance,
+    harmonic_scale,
+    CONSTANTS,
 )
 from .vacuum_acoustics import (
-    check_cymatic_resonance, extract_mode_parameters,
-    nodal_surface, is_on_nodal_line,
-    VacuumAcousticsConfig
+    check_cymatic_resonance,
+    extract_mode_parameters,
+    nodal_surface,
+    is_on_nodal_line,
+    VacuumAcousticsConfig,
 )
 
 
@@ -43,9 +51,10 @@ Vector6D = Tuple[float, float, float, float, float, float]
 
 class StorageMode(Enum):
     """Voxel access control modes."""
-    PUBLIC = "public"           # No resonance check
-    RESONANCE = "resonance"     # Requires cymatic resonance
-    ENCRYPTED = "encrypted"     # Requires resonance + decryption key
+
+    PUBLIC = "public"  # No resonance check
+    RESONANCE = "resonance"  # Requires cymatic resonance
+    ENCRYPTED = "encrypted"  # Requires resonance + decryption key
 
 
 @dataclass
@@ -70,6 +79,7 @@ class Voxel:
         created: Unix timestamp
         storage_mode: Access control type
     """
+
     id: str
     position: Vector6D
     data: bytes
@@ -86,26 +96,26 @@ class Voxel:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
-            'id': self.id,
-            'position': list(self.position),
-            'data': self.data.hex(),
-            'modes': list(self.modes),
-            'checksum': self.checksum,
-            'created': self.created,
-            'storage_mode': self.storage_mode.value,
+            "id": self.id,
+            "position": list(self.position),
+            "data": self.data.hex(),
+            "modes": list(self.modes),
+            "checksum": self.checksum,
+            "created": self.created,
+            "storage_mode": self.storage_mode.value,
         }
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> 'Voxel':
+    def from_dict(cls, d: Dict[str, Any]) -> "Voxel":
         """Create Voxel from dictionary."""
         return cls(
-            id=d['id'],
-            position=tuple(d['position']),
-            data=bytes.fromhex(d['data']),
-            modes=tuple(d['modes']),
-            checksum=d['checksum'],
-            created=d.get('created', time.time()),
-            storage_mode=StorageMode(d.get('storage_mode', 'resonance')),
+            id=d["id"],
+            position=tuple(d["position"]),
+            data=bytes.fromhex(d["data"]),
+            modes=tuple(d["modes"]),
+            checksum=d["checksum"],
+            created=d.get("created", time.time()),
+            storage_mode=StorageMode(d.get("storage_mode", "resonance")),
         )
 
 
@@ -122,6 +132,7 @@ class CubeConfig:
         max_voxels: Maximum number of voxels (0 = unlimited)
         auto_verify: Automatically verify checksums on read
     """
+
     L: float = DEFAULT_L
     tolerance: float = DEFAULT_TOLERANCE
     R: float = R_FIFTH
@@ -133,6 +144,7 @@ class CubeConfig:
 @dataclass
 class CubeStats:
     """Statistics for a HolographicQRCube."""
+
     id: str
     voxel_count: int
     total_data_bytes: int
@@ -156,16 +168,18 @@ class KDNode:
             split_dim: 0..5  // Cycles through 6 dimensions
         }
     """
+
     point: Vector6D
     voxel: Voxel
-    left: Optional['KDNode'] = None
-    right: Optional['KDNode'] = None
+    left: Optional["KDNode"] = None
+    right: Optional["KDNode"] = None
     split_dim: int = 0
 
 
 # =============================================================================
 # KD-TREE IMPLEMENTATION
 # =============================================================================
+
 
 class KDTree:
     """
@@ -235,17 +249,13 @@ class KDTree:
         if self.root is None:
             return None
 
-        best = [None, float('inf')]  # [node, distance]
+        best = [None, float("inf")]  # [node, distance]
         self._nearest_recursive(self.root, point, 0, best)
 
         return best[0].voxel if best[0] else None
 
     def _nearest_recursive(
-        self,
-        node: KDNode,
-        target: Vector6D,
-        depth: int,
-        best: List
+        self, node: KDNode, target: Vector6D, depth: int, best: List
     ) -> None:
         """Recursive nearest neighbor search."""
         if node is None:
@@ -297,7 +307,7 @@ class KDTree:
         center: Vector6D,
         radius: float,
         depth: int,
-        results: List[Voxel]
+        results: List[Voxel],
     ) -> None:
         """Recursive range query helper."""
         if node is None:
@@ -335,6 +345,7 @@ class KDTree:
 # =============================================================================
 # HOLOGRAPHIC QR CUBE
 # =============================================================================
+
 
 class HolographicQRCube:
     """
@@ -378,9 +389,7 @@ class HolographicQRCube:
 
         # Vacuum acoustics config for resonance checks
         self._vac_config = VacuumAcousticsConfig(
-            L=self.config.L,
-            R=self.config.R,
-            v_reference=self.config.v_reference
+            L=self.config.L, R=self.config.R, v_reference=self.config.v_reference
         )
 
     @property
@@ -392,7 +401,7 @@ class HolographicQRCube:
         self,
         position: Vector6D,
         data: bytes,
-        storage_mode: StorageMode = StorageMode.RESONANCE
+        storage_mode: StorageMode = StorageMode.RESONANCE,
     ) -> Voxel:
         """
         Store data at a 6D position.
@@ -431,7 +440,7 @@ class HolographicQRCube:
             modes=modes,
             checksum=checksum,
             created=time.time(),
-            storage_mode=storage_mode
+            storage_mode=storage_mode,
         )
 
         # Store in both dict and tree
@@ -441,9 +450,7 @@ class HolographicQRCube:
         return voxel
 
     def scan(
-        self,
-        agent_vector: Vector6D,
-        tolerance: Optional[float] = None
+        self, agent_vector: Vector6D, tolerance: Optional[float] = None
     ) -> Optional[bytes]:
         """
         Retrieve data using agent's vector for access control.
@@ -475,14 +482,18 @@ class HolographicQRCube:
         elif nearest.storage_mode == StorageMode.RESONANCE:
             # Check cymatic resonance
             target_pos = (nearest.position[0], nearest.position[1])  # x, y plane
-            if check_cymatic_resonance(agent_vector, target_pos, tolerance, self._vac_config):
+            if check_cymatic_resonance(
+                agent_vector, target_pos, tolerance, self._vac_config
+            ):
                 data = nearest.data
             else:
                 return None
         else:
             # ENCRYPTED mode - resonance required, data still encrypted
             target_pos = (nearest.position[0], nearest.position[1])
-            if check_cymatic_resonance(agent_vector, target_pos, tolerance, self._vac_config):
+            if check_cymatic_resonance(
+                agent_vector, target_pos, tolerance, self._vac_config
+            ):
                 data = nearest.data  # Caller must decrypt
             else:
                 return None
@@ -495,9 +506,7 @@ class HolographicQRCube:
         return data
 
     def scan_all_resonant(
-        self,
-        agent_vector: Vector6D,
-        tolerance: Optional[float] = None
+        self, agent_vector: Vector6D, tolerance: Optional[float] = None
     ) -> List[Tuple[Voxel, bytes]]:
         """
         Find all voxels that resonate with the agent vector.
@@ -519,7 +528,9 @@ class HolographicQRCube:
                 results.append((voxel, voxel.data))
             else:
                 target_pos = (voxel.position[0], voxel.position[1])
-                if check_cymatic_resonance(agent_vector, target_pos, tolerance, self._vac_config):
+                if check_cymatic_resonance(
+                    agent_vector, target_pos, tolerance, self._vac_config
+                ):
                     if not self.config.auto_verify or voxel.verify_integrity():
                         results.append((voxel, voxel.data))
 
@@ -591,7 +602,7 @@ class HolographicQRCube:
                 avg_modes=(0.0, 0.0),
                 dimension_ranges={},
                 created=self._created,
-                config=self.config
+                config=self.config,
             )
 
         # Compute statistics
@@ -600,7 +611,7 @@ class HolographicQRCube:
         avg_n = sum(v.modes[0] for v in voxels) / len(voxels)
         avg_m = sum(v.modes[1] for v in voxels) / len(voxels)
 
-        dim_names = ['x', 'y', 'z', 'velocity', 'priority', 'security']
+        dim_names = ["x", "y", "z", "velocity", "priority", "security"]
         ranges = {}
         for i, name in enumerate(dim_names):
             values = [v.position[i] for v in voxels]
@@ -613,7 +624,7 @@ class HolographicQRCube:
             avg_modes=(avg_n, avg_m),
             dimension_ranges=ranges,
             created=self._created,
-            config=self.config
+            config=self.config,
         )
 
     def export(self) -> Dict[str, Any]:
@@ -624,21 +635,21 @@ class HolographicQRCube:
             Dictionary suitable for JSON serialization
         """
         return {
-            'id': self.id,
-            'config': {
-                'L': self.config.L,
-                'tolerance': self.config.tolerance,
-                'R': self.config.R,
-                'v_reference': self.config.v_reference,
-                'max_voxels': self.config.max_voxels,
-                'auto_verify': self.config.auto_verify,
+            "id": self.id,
+            "config": {
+                "L": self.config.L,
+                "tolerance": self.config.tolerance,
+                "R": self.config.R,
+                "v_reference": self.config.v_reference,
+                "max_voxels": self.config.max_voxels,
+                "auto_verify": self.config.auto_verify,
             },
-            'created': self._created,
-            'voxels': [v.to_dict() for v in self._voxels.values()],
+            "created": self._created,
+            "voxels": [v.to_dict() for v in self._voxels.values()],
         }
 
     @classmethod
-    def import_cube(cls, data: Dict[str, Any]) -> 'HolographicQRCube':
+    def import_cube(cls, data: Dict[str, Any]) -> "HolographicQRCube":
         """
         Import cube from serialized format.
 
@@ -649,18 +660,18 @@ class HolographicQRCube:
             Reconstructed HolographicQRCube
         """
         config = CubeConfig(
-            L=data['config']['L'],
-            tolerance=data['config']['tolerance'],
-            R=data['config']['R'],
-            v_reference=data['config']['v_reference'],
-            max_voxels=data['config']['max_voxels'],
-            auto_verify=data['config']['auto_verify'],
+            L=data["config"]["L"],
+            tolerance=data["config"]["tolerance"],
+            R=data["config"]["R"],
+            v_reference=data["config"]["v_reference"],
+            max_voxels=data["config"]["max_voxels"],
+            auto_verify=data["config"]["auto_verify"],
         )
 
-        cube = cls(data['id'], config)
-        cube._created = data['created']
+        cube = cls(data["id"], config)
+        cube._created = data["created"]
 
-        for voxel_data in data['voxels']:
+        for voxel_data in data["voxels"]:
             voxel = Voxel.from_dict(voxel_data)
             cube._voxels[voxel.id] = voxel
             cube._tree.insert(voxel)
@@ -672,10 +683,11 @@ class HolographicQRCube:
 # UTILITY FUNCTIONS
 # =============================================================================
 
+
 def create_voxel_grid(
     data_chunks: List[bytes],
     base_position: Vector6D = (0, 0, 0, 1.0, 0.5, 1.0),
-    spacing: float = 1.0
+    spacing: float = 1.0,
 ) -> List[Voxel]:
     """
     Create a grid of voxels from data chunks.
@@ -692,7 +704,7 @@ def create_voxel_grid(
     n = len(data_chunks)
 
     # Arrange in 3D grid
-    grid_size = int(n ** (1/3)) + 1
+    grid_size = int(n ** (1 / 3)) + 1
 
     for i, data in enumerate(data_chunks):
         ix = i % grid_size
@@ -713,7 +725,7 @@ def create_voxel_grid(
             position=position,
             data=data,
             modes=extract_mode_parameters(position, VacuumAcousticsConfig()),
-            checksum=hashlib.sha256(data).hexdigest()
+            checksum=hashlib.sha256(data).hexdigest(),
         )
         voxels.append(voxel)
 
@@ -723,7 +735,7 @@ def create_voxel_grid(
 def compute_access_vector(
     target_modes: Tuple[float, float],
     base_position: Vector6D = (0, 0, 0, 1.0, 0.5, 1.0),
-    v_reference: float = 1.0
+    v_reference: float = 1.0,
 ) -> Vector6D:
     """
     Compute an agent vector that will resonate with given modes.
@@ -748,30 +760,27 @@ def compute_access_vector(
         base_position[2],
         velocity,
         base_position[4],
-        security
+        security,
     )
 
 
 def get_cymatic_storage_stats() -> Dict[str, Any]:
     """Get module statistics and constants."""
     return {
-        'storage_modes': [mode.value for mode in StorageMode],
-        'default_config': {
-            'L': DEFAULT_L,
-            'tolerance': DEFAULT_TOLERANCE,
-            'R': R_FIFTH,
+        "storage_modes": [mode.value for mode in StorageMode],
+        "default_config": {
+            "L": DEFAULT_L,
+            "tolerance": DEFAULT_TOLERANCE,
+            "R": R_FIFTH,
         },
-        'harmonic_scales': {
-            f'd={d}': harmonic_scale(d, R_FIFTH)
-            for d in range(1, 7)
-        },
-        'vector_dimensions': [
-            'x (spatial)',
-            'y (spatial)',
-            'z (spatial)',
-            'velocity (mode n)',
-            'priority (scalar)',
-            'security (mode m)',
+        "harmonic_scales": {f"d={d}": harmonic_scale(d, R_FIFTH) for d in range(1, 7)},
+        "vector_dimensions": [
+            "x (spatial)",
+            "y (spatial)",
+            "z (spatial)",
+            "velocity (mode n)",
+            "priority (scalar)",
+            "security (mode m)",
         ],
-        'constants': CONSTANTS,
+        "constants": CONSTANTS,
     }
