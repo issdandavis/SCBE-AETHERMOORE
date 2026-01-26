@@ -187,7 +187,7 @@ class State9D:
         if len(self.trajectory) > 100:
             self.trajectory = self.trajectory[-100:]
 
-      def get_eta(self) -> float:
+    def get_eta(self) -> float:
         """Get current entropy coefficient."""
         return float(self.eta)
 

@@ -65,8 +65,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# API Key authentication
+# API Key authentication (accepts both new and legacy headers)
 API_KEY_HEADER = APIKeyHeader(name="SCBE_api_key", auto_error=False)
+API_KEY_HEADER_LEGACY = APIKeyHeader(name="X-API-Key", auto_error=False)  # Backward compat
 
 def _load_api_keys() -> dict:
     """
@@ -175,12 +176,17 @@ class HealthResponse(BaseModel):
 # Authentication
 # =============================================================================
 
-async def verify_api_key(api_key: str = Security(API_KEY_HEADER)) -> str:
-    if api_key is None:
+async def verify_api_key(
+    api_key: str = Security(API_KEY_HEADER),
+    api_key_legacy: str = Security(API_KEY_HEADER_LEGACY)
+) -> str:
+    # Accept either new (SCBE_api_key) or legacy (X-API-Key) header
+    key = api_key or api_key_legacy
+    if key is None:
         raise HTTPException(status_code=401, detail="Missing API key")
-    if api_key not in VALID_API_KEYS:
+    if key not in VALID_API_KEYS:
         raise HTTPException(status_code=403, detail="Invalid API key")
-    return VALID_API_KEYS[api_key]
+    return VALID_API_KEYS[key]
 
 
 # =============================================================================
