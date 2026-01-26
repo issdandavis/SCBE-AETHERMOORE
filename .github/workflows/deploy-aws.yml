@@ -1,14 +1,8 @@
 name: Deploy SCBE to AWS Lambda
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'api/**'
-      - 'aws/**'
-      - '.github/workflows/deploy-aws.yml'
-  workflow_dispatch:
-    inputs:
+ workflow_dispatch:
+     inputs:
       environment:
         description: 'Deployment environment'
         required: true
