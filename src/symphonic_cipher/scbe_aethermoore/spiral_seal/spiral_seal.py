@@ -56,6 +56,7 @@ try:
     import nacl.secret
     import nacl.pwhash
     import nacl.utils
+
     _NACL_AVAILABLE = True
 except (ImportError, Exception):
     pass
@@ -64,6 +65,7 @@ except (ImportError, Exception):
 try:
     import argon2
     from argon2.low_level import hash_secret_raw, Type
+
     _ARGON2_AVAILABLE = True
 except (ImportError, Exception):
     pass
@@ -75,6 +77,7 @@ Scrypt = None
 default_backend = None
 
 _CRYPTOGRAPHY_TRIED = False
+
 
 def _try_load_cryptography():
     """Attempt to load cryptography module lazily."""
@@ -88,6 +91,7 @@ def _try_load_cryptography():
         from cryptography.hazmat.primitives.ciphers.aead import AESGCM as _AESGCM
         from cryptography.hazmat.primitives.kdf.scrypt import Scrypt as _Scrypt
         from cryptography.hazmat.backends import default_backend as _default_backend
+
         AESGCM = _AESGCM
         Scrypt = _Scrypt
         default_backend = _default_backend
@@ -129,6 +133,7 @@ KEY_ID_SIZE = 8
 
 class KDFType(Enum):
     """Key derivation function type."""
+
     ARGON2ID = "argon2id"
     SCRYPT = "scrypt"
     HKDF_SHA256 = "hkdf"  # Emergency fallback
@@ -136,6 +141,7 @@ class KDFType(Enum):
 
 class AEADType(Enum):
     """AEAD cipher type."""
+
     XCHACHA20_POLY1305 = "xchacha"
     AES_256_GCM = "aesgcm"
     HMAC_CTR = "hmacctr"  # Emergency fallback
@@ -144,6 +150,7 @@ class AEADType(Enum):
 # =============================================================================
 # KDF IMPLEMENTATIONS
 # =============================================================================
+
 
 def derive_key_argon2id(password: bytes, salt: bytes) -> bytes:
     """Derive key using Argon2id (preferred)."""
@@ -155,7 +162,7 @@ def derive_key_argon2id(password: bytes, salt: bytes) -> bytes:
             memory_cost=ARGON2_MEMORY_COST,
             parallelism=ARGON2_PARALLELISM,
             hash_len=ARGON2_HASH_LEN,
-            type=Type.ID
+            type=Type.ID,
         )
     elif _NACL_AVAILABLE:
         # PyNaCl's argon2id
@@ -164,7 +171,7 @@ def derive_key_argon2id(password: bytes, salt: bytes) -> bytes:
             password=password,
             salt=salt[:16],  # PyNaCl wants 16-byte salt
             opslimit=nacl.pwhash.argon2id.OPSLIMIT_MODERATE,
-            memlimit=nacl.pwhash.argon2id.MEMLIMIT_MODERATE
+            memlimit=nacl.pwhash.argon2id.MEMLIMIT_MODERATE,
         )
     else:
         raise RuntimeError("Argon2id not available - install argon2-cffi or pynacl")
@@ -180,18 +187,13 @@ def derive_key_scrypt(password: bytes, salt: bytes) -> bytes:
             n=SCRYPT_N,
             r=SCRYPT_R,
             p=SCRYPT_P,
-            backend=default_backend()
+            backend=default_backend(),
         )
         return kdf.derive(password)
     else:
         # Use hashlib.scrypt (Python 3.6+)
         return hashlib.scrypt(
-            password,
-            salt=salt,
-            n=SCRYPT_N,
-            r=SCRYPT_R,
-            p=SCRYPT_P,
-            dklen=SCRYPT_DKLEN
+            password, salt=salt, n=SCRYPT_N, r=SCRYPT_R, p=SCRYPT_P, dklen=SCRYPT_DKLEN
         )
 
 
@@ -203,7 +205,9 @@ def derive_key_hkdf(password: bytes, salt: bytes) -> bytes:
     return hmac.new(prk, b"\x01", hashlib.sha256).digest()
 
 
-def derive_key(password: bytes, salt: bytes, kdf_type: KDFType = KDFType.ARGON2ID) -> bytes:
+def derive_key(
+    password: bytes, salt: bytes, kdf_type: KDFType = KDFType.ARGON2ID
+) -> bytes:
     """Derive encryption key from password and salt."""
     if kdf_type == KDFType.ARGON2ID:
         try:
@@ -229,7 +233,10 @@ def derive_key(password: bytes, salt: bytes, kdf_type: KDFType = KDFType.ARGON2I
 # AEAD IMPLEMENTATIONS
 # =============================================================================
 
-def encrypt_xchacha(key: bytes, nonce: bytes, plaintext: bytes, aad: bytes) -> Tuple[bytes, bytes]:
+
+def encrypt_xchacha(
+    key: bytes, nonce: bytes, plaintext: bytes, aad: bytes
+) -> Tuple[bytes, bytes]:
     """Encrypt using XChaCha20-Poly1305."""
     if not _NACL_AVAILABLE:
         raise RuntimeError("XChaCha20-Poly1305 not available - install pynacl")
@@ -237,13 +244,15 @@ def encrypt_xchacha(key: bytes, nonce: bytes, plaintext: bytes, aad: bytes) -> T
     box = nacl.secret.Aead(key)
     ct_blob = box.encrypt(plaintext, aad=aad, nonce=nonce)
     # PyNaCl returns nonce || ciphertext || tag; we keep nonce separately
-    ct_body = ct_blob[len(nonce):]
+    ct_body = ct_blob[len(nonce) :]
     ct = ct_body[:-TAG_SIZE]
     tag = ct_body[-TAG_SIZE:]
     return ct, tag
 
 
-def decrypt_xchacha(key: bytes, nonce: bytes, ciphertext: bytes, tag: bytes, aad: bytes) -> bytes:
+def decrypt_xchacha(
+    key: bytes, nonce: bytes, ciphertext: bytes, tag: bytes, aad: bytes
+) -> bytes:
     """Decrypt using XChaCha20-Poly1305."""
     if not _NACL_AVAILABLE:
         raise RuntimeError("XChaCha20-Poly1305 not available - install pynacl")
@@ -253,7 +262,9 @@ def decrypt_xchacha(key: bytes, nonce: bytes, ciphertext: bytes, tag: bytes, aad
     return box.decrypt(ct_with_tag, aad=aad, nonce=nonce)
 
 
-def encrypt_aesgcm(key: bytes, nonce: bytes, plaintext: bytes, aad: bytes) -> Tuple[bytes, bytes]:
+def encrypt_aesgcm(
+    key: bytes, nonce: bytes, plaintext: bytes, aad: bytes
+) -> Tuple[bytes, bytes]:
     """Encrypt using AES-256-GCM."""
     _try_load_cryptography()
     if not _CRYPTOGRAPHY_AVAILABLE or AESGCM is None:
@@ -266,7 +277,9 @@ def encrypt_aesgcm(key: bytes, nonce: bytes, plaintext: bytes, aad: bytes) -> Tu
     return ct, tag
 
 
-def decrypt_aesgcm(key: bytes, nonce: bytes, ciphertext: bytes, tag: bytes, aad: bytes) -> bytes:
+def decrypt_aesgcm(
+    key: bytes, nonce: bytes, ciphertext: bytes, tag: bytes, aad: bytes
+) -> bytes:
     """Decrypt using AES-256-GCM."""
     _try_load_cryptography()
     if not _CRYPTOGRAPHY_AVAILABLE or AESGCM is None:
@@ -277,7 +290,9 @@ def decrypt_aesgcm(key: bytes, nonce: bytes, ciphertext: bytes, tag: bytes, aad:
     return aesgcm.decrypt(nonce, ct_with_tag, aad)
 
 
-def encrypt_hmac_ctr(key: bytes, nonce: bytes, plaintext: bytes, aad: bytes) -> Tuple[bytes, bytes]:
+def encrypt_hmac_ctr(
+    key: bytes, nonce: bytes, plaintext: bytes, aad: bytes
+) -> Tuple[bytes, bytes]:
     """Emergency fallback: HMAC-based CTR mode (not recommended)."""
     # Split key
     enc_key = key[:16]
@@ -299,13 +314,17 @@ def encrypt_hmac_ctr(key: bytes, nonce: bytes, plaintext: bytes, aad: bytes) -> 
     return ciphertext, tag
 
 
-def decrypt_hmac_ctr(key: bytes, nonce: bytes, ciphertext: bytes, tag: bytes, aad: bytes) -> bytes:
+def decrypt_hmac_ctr(
+    key: bytes, nonce: bytes, ciphertext: bytes, tag: bytes, aad: bytes
+) -> bytes:
     """Emergency fallback decryption."""
     enc_key = key[:16]
     mac_key = key[16:]
 
     # Verify tag first
-    expected_tag = hmac.new(mac_key, aad + ciphertext, hashlib.sha256).digest()[:TAG_SIZE]
+    expected_tag = hmac.new(mac_key, aad + ciphertext, hashlib.sha256).digest()[
+        :TAG_SIZE
+    ]
     if not hmac.compare_digest(tag, expected_tag):
         raise ValueError("Authentication failed")
 
@@ -324,9 +343,11 @@ def decrypt_hmac_ctr(key: bytes, nonce: bytes, ciphertext: bytes, tag: bytes, aa
 # SS1 SEAL RESULT
 # =============================================================================
 
+
 @dataclass
 class SpiralSealResult:
     """Result of a SpiralSeal encryption operation."""
+
     # Raw cryptographic components
     key_id: bytes
     salt: bytes
@@ -378,13 +399,14 @@ class SpiralSealResult:
             "aad_tokens": self.aad_tokens,
             "kdf_type": self.kdf_type.value,
             "aead_type": self.aead_type.value,
-            "timestamp": self.timestamp
+            "timestamp": self.timestamp,
         }
 
 
 # =============================================================================
 # SPIRAL SEAL MAIN CLASS
 # =============================================================================
+
 
 class SpiralSeal:
     """
@@ -409,12 +431,14 @@ class SpiralSeal:
                                 result.tag, result.aad)
     """
 
-    def __init__(self,
-                 master_password: Optional[bytes] = None,
-                 master_key: Optional[bytes] = None,
-                 key_id: Optional[bytes] = None,
-                 kdf_type: KDFType = KDFType.ARGON2ID,
-                 aead_type: Optional[AEADType] = None):
+    def __init__(
+        self,
+        master_password: Optional[bytes] = None,
+        master_key: Optional[bytes] = None,
+        key_id: Optional[bytes] = None,
+        kdf_type: KDFType = KDFType.ARGON2ID,
+        aead_type: Optional[AEADType] = None,
+    ):
         """
         Initialize SpiralSeal.
 
@@ -464,7 +488,9 @@ class SpiralSeal:
         else:
             return derive_key(self._master_password, salt, self._kdf_type)
 
-    def _encrypt(self, key: bytes, nonce: bytes, plaintext: bytes, aad: bytes) -> Tuple[bytes, bytes]:
+    def _encrypt(
+        self, key: bytes, nonce: bytes, plaintext: bytes, aad: bytes
+    ) -> Tuple[bytes, bytes]:
         """Encrypt with current AEAD type."""
         if self._aead_type == AEADType.XCHACHA20_POLY1305:
             return encrypt_xchacha(key, nonce, plaintext, aad)
@@ -473,7 +499,9 @@ class SpiralSeal:
         else:
             return encrypt_hmac_ctr(key, nonce, plaintext, aad)
 
-    def _decrypt(self, key: bytes, nonce: bytes, ciphertext: bytes, tag: bytes, aad: bytes) -> bytes:
+    def _decrypt(
+        self, key: bytes, nonce: bytes, ciphertext: bytes, tag: bytes, aad: bytes
+    ) -> bytes:
         """Decrypt with current AEAD type."""
         if self._aead_type == AEADType.XCHACHA20_POLY1305:
             return decrypt_xchacha(key, nonce, ciphertext, tag, aad)
@@ -482,11 +510,13 @@ class SpiralSeal:
         else:
             return decrypt_hmac_ctr(key, nonce, ciphertext, tag, aad)
 
-    def seal(self,
-             plaintext: bytes,
-             aad: Optional[bytes] = None,
-             salt: Optional[bytes] = None,
-             nonce: Optional[bytes] = None) -> SpiralSealResult:
+    def seal(
+        self,
+        plaintext: bytes,
+        aad: Optional[bytes] = None,
+        salt: Optional[bytes] = None,
+        nonce: Optional[bytes] = None,
+    ) -> SpiralSealResult:
         """
         Seal (encrypt) plaintext with Sacred Tongue encoding.
 
@@ -515,11 +545,12 @@ class SpiralSeal:
 
         # Encode each component in its Sacred Tongue (with prefix for verification)
         from .sacred_tongues import encode_to_spelltext
-        salt_tokens = encode_to_spelltext(salt, 'salt')
-        nonce_tokens = encode_to_spelltext(nonce, 'nonce')
-        ct_tokens = encode_to_spelltext(ciphertext, 'ct')
-        tag_tokens = encode_to_spelltext(tag, 'tag')
-        aad_tokens = encode_to_spelltext(aad, 'aad') if aad else ""
+
+        salt_tokens = encode_to_spelltext(salt, "salt")
+        nonce_tokens = encode_to_spelltext(nonce, "nonce")
+        ct_tokens = encode_to_spelltext(ciphertext, "ct")
+        tag_tokens = encode_to_spelltext(tag, "tag")
+        aad_tokens = encode_to_spelltext(aad, "aad") if aad else ""
 
         return SpiralSealResult(
             key_id=self._key_id,
@@ -534,15 +565,12 @@ class SpiralSeal:
             tag_tokens=tag_tokens,
             aad_tokens=aad_tokens,
             kdf_type=self._kdf_type,
-            aead_type=self._aead_type
+            aead_type=self._aead_type,
         )
 
-    def unseal(self,
-               salt: bytes,
-               nonce: bytes,
-               ciphertext: bytes,
-               tag: bytes,
-               aad: bytes = b"") -> bytes:
+    def unseal(
+        self, salt: bytes, nonce: bytes, ciphertext: bytes, tag: bytes, aad: bytes = b""
+    ) -> bytes:
         """
         Unseal (decrypt) from raw components.
 
@@ -565,12 +593,14 @@ class SpiralSeal:
         except Exception as exc:
             raise ValueError("Authentication failed") from exc
 
-    def unseal_tokens(self,
-                      salt_tokens: str,
-                      nonce_tokens: str,
-                      ct_tokens: str,
-                      tag_tokens: str,
-                      aad_tokens: str = "") -> bytes:
+    def unseal_tokens(
+        self,
+        salt_tokens: str,
+        nonce_tokens: str,
+        ct_tokens: str,
+        tag_tokens: str,
+        aad_tokens: str = "",
+    ) -> bytes:
         """
         Unseal from Sacred Tongue token strings.
 
@@ -586,11 +616,12 @@ class SpiralSeal:
         """
         # Decode tokens back to bytes (handles tokens with or without prefix)
         from .sacred_tongues import decode_from_spelltext
-        salt = decode_from_spelltext(salt_tokens, 'salt')
-        nonce = decode_from_spelltext(nonce_tokens, 'nonce')
-        ciphertext = decode_from_spelltext(ct_tokens, 'ct')
-        tag = decode_from_spelltext(tag_tokens, 'tag')
-        aad = decode_from_spelltext(aad_tokens, 'aad') if aad_tokens else b""
+
+        salt = decode_from_spelltext(salt_tokens, "salt")
+        nonce = decode_from_spelltext(nonce_tokens, "nonce")
+        ciphertext = decode_from_spelltext(ct_tokens, "ct")
+        tag = decode_from_spelltext(tag_tokens, "tag")
+        aad = decode_from_spelltext(aad_tokens, "aad") if aad_tokens else b""
 
         return self.unseal(salt, nonce, ciphertext, tag, aad)
 
@@ -627,7 +658,9 @@ class SpiralSeal:
         tag_tokens = components.get("tag", "")
         aad_tokens = components.get("aad", "")
 
-        return self.unseal_tokens(salt_tokens, nonce_tokens, ct_tokens, tag_tokens, aad_tokens)
+        return self.unseal_tokens(
+            salt_tokens, nonce_tokens, ct_tokens, tag_tokens, aad_tokens
+        )
 
     @property
     def key_id(self) -> bytes:
@@ -649,9 +682,11 @@ class SpiralSeal:
 # VEILED SEAL (with Umbroth redaction wrapper)
 # =============================================================================
 
+
 @dataclass
 class VeiledSealResult:
     """Result with Umbroth veil wrapper for log redaction."""
+
     inner: SpiralSealResult
     veil_marker: str  # Umbroth-encoded boundary marker
     redacted_form: str  # What to show in logs
@@ -678,10 +713,12 @@ class VeiledSeal(SpiralSeal):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def seal_veiled(self,
-                    plaintext: bytes,
-                    aad: Optional[bytes] = None,
-                    veil_id: Optional[str] = None) -> VeiledSealResult:
+    def seal_veiled(
+        self,
+        plaintext: bytes,
+        aad: Optional[bytes] = None,
+        veil_id: Optional[str] = None,
+    ) -> VeiledSealResult:
         """
         Seal with Umbroth veil wrapper.
 
@@ -703,21 +740,21 @@ class VeiledSeal(SpiralSeal):
             veil_bytes = hashlib.sha256(veil_id.encode()).digest()[:4]
 
         from .sacred_tongues import encode_to_spelltext
-        veil_marker = encode_to_spelltext(veil_bytes, 'veil')
+
+        veil_marker = encode_to_spelltext(veil_bytes, "veil")
 
         # Redacted form for logs
         redacted_form = f"um:veil({veil_marker})"
 
         return VeiledSealResult(
-            inner=inner,
-            veil_marker=veil_marker,
-            redacted_form=redacted_form
+            inner=inner, veil_marker=veil_marker, redacted_form=redacted_form
         )
 
 
 # =============================================================================
 # PQC-ENHANCED SPIRAL SEAL
 # =============================================================================
+
 
 class PQCSpiralSeal(SpiralSeal):
     """
@@ -727,10 +764,12 @@ class PQCSpiralSeal(SpiralSeal):
     and Dilithium3 to sign the sealed envelope.
     """
 
-    def __init__(self,
-                 recipient_public_key: Optional[bytes] = None,
-                 signing_secret_key: Optional[bytes] = None,
-                 **kwargs):
+    def __init__(
+        self,
+        recipient_public_key: Optional[bytes] = None,
+        signing_secret_key: Optional[bytes] = None,
+        **kwargs,
+    ):
         """
         Initialize PQC-enhanced SpiralSeal.
 
@@ -745,6 +784,7 @@ class PQCSpiralSeal(SpiralSeal):
 
         try:
             from ..pqc import Kyber768, Dilithium3
+
             self._Kyber768 = Kyber768
             self._Dilithium3 = Dilithium3
             self._pqc_available = True
@@ -766,9 +806,9 @@ class PQCSpiralSeal(SpiralSeal):
 
         super().__init__(**kwargs)
 
-    def seal_signed(self,
-                    plaintext: bytes,
-                    aad: Optional[bytes] = None) -> Tuple[SpiralSealResult, Optional[bytes]]:
+    def seal_signed(
+        self, plaintext: bytes, aad: Optional[bytes] = None
+    ) -> Tuple[SpiralSealResult, Optional[bytes]]:
         """
         Seal and sign with Dilithium3.
 
@@ -780,11 +820,11 @@ class PQCSpiralSeal(SpiralSeal):
         signature = None
         if self._pqc_available and self._signing_sk:
             sign_data = (
-                result.key_id +
-                result.salt +
-                result.nonce +
-                result.ciphertext +
-                result.tag
+                result.key_id
+                + result.salt
+                + result.nonce
+                + result.ciphertext
+                + result.tag
             )
             signature = self._Dilithium3.sign(self._signing_sk, sign_data)
 
@@ -804,6 +844,7 @@ class PQCSpiralSeal(SpiralSeal):
 # =============================================================================
 # CONVENIENCE FUNCTIONS
 # =============================================================================
+
 
 def quick_seal(plaintext: bytes, password: bytes, aad: bytes = b"") -> str:
     """
@@ -844,18 +885,27 @@ def get_crypto_backend_info() -> Dict[str, bool]:
         "nacl_available": _NACL_AVAILABLE,
         "argon2_available": _ARGON2_AVAILABLE,
         "cryptography_available": _CRYPTOGRAPHY_AVAILABLE,
-        "recommended_kdf": KDFType.ARGON2ID.value if (_ARGON2_AVAILABLE or _NACL_AVAILABLE) else KDFType.SCRYPT.value,
+        "recommended_kdf": (
+            KDFType.ARGON2ID.value
+            if (_ARGON2_AVAILABLE or _NACL_AVAILABLE)
+            else KDFType.SCRYPT.value
+        ),
         "recommended_aead": (
-            AEADType.XCHACHA20_POLY1305.value if _NACL_AVAILABLE else
-            AEADType.AES_256_GCM.value if _CRYPTOGRAPHY_AVAILABLE else
-            AEADType.HMAC_CTR.value
-        )
+            AEADType.XCHACHA20_POLY1305.value
+            if _NACL_AVAILABLE
+            else (
+                AEADType.AES_256_GCM.value
+                if _CRYPTOGRAPHY_AVAILABLE
+                else AEADType.HMAC_CTR.value
+            )
+        ),
     }
 
 
 # =============================================================================
 # COMPATIBILITY CLASS - SpiralSealSS1
 # =============================================================================
+
 
 class SpiralSealSS1:
     """
@@ -873,6 +923,7 @@ class SpiralSealSS1:
         # Unseal
         plaintext = ss.unseal(blob, aad="service=api")
     """
+
     @staticmethod
     def _validate_master_secret(secret: bytes) -> bytes:
         if not isinstance(secret, (bytes, bytearray)):
@@ -884,7 +935,12 @@ class SpiralSealSS1:
             raise ValueError("master_secret must not be all zeros")
         return secret_bytes
 
-    def __init__(self, master_secret: Optional[bytes] = None, kid: Optional[str] = None, mode: str = "symmetric"):
+    def __init__(
+        self,
+        master_secret: Optional[bytes] = None,
+        kid: Optional[str] = None,
+        mode: str = "symmetric",
+    ):
         """Initialize SpiralSealSS1.
 
         Args:
@@ -899,7 +955,7 @@ class SpiralSealSS1:
             warnings.warn(
                 "No master_secret provided - generating random key. "
                 "This is NOT suitable for production! Inject via env/KMS.",
-                RuntimeWarning
+                RuntimeWarning,
             )
             master_secret = os.urandom(32)
         self._master_secret = self._validate_master_secret(master_secret)
@@ -915,6 +971,7 @@ class SpiralSealSS1:
         if mode == "hybrid":
             try:
                 from ..pqc import Kyber768, Dilithium3
+
                 enc_keys = Kyber768.generate_keypair()
                 sig_keys = Dilithium3.generate_keypair()
                 self._pk_enc, self._sk_enc = enc_keys.public_key, enc_keys.secret_key
@@ -939,8 +996,10 @@ class SpiralSealSS1:
         Returns:
             SS1 formatted string
         """
-        pt_bytes = plaintext.encode("utf-8") if isinstance(plaintext, str) else plaintext
-        result = self._seal.seal(pt_bytes, aad=aad.encode() if aad else None)  
+        pt_bytes = (
+            plaintext.encode("utf-8") if isinstance(plaintext, str) else plaintext
+        )
+        result = self._seal.seal(pt_bytes, aad=aad.encode() if aad else None)
 
         # Format using the compatibility blob format
         return self._format_blob(
@@ -949,7 +1008,7 @@ class SpiralSealSS1:
             salt=result.salt,
             nonce=result.nonce,
             ciphertext=result.ciphertext,
-            tag=result.tag
+            tag=result.tag,
         )
 
     def unseal(self, blob: str, aad: str = "") -> bytes:
@@ -969,21 +1028,30 @@ class SpiralSealSS1:
 
         # Enforce key identity binding
         if parsed.get("kid") != self._kid:
-            raise ValueError(f"KID mismatch: expected '{self._kid}', got '{parsed.get('kid')}'")
+            raise ValueError(
+                f"KID mismatch: expected '{self._kid}', got '{parsed.get('kid')}'"
+            )
 
         # Check AAD
         if parsed.get("aad", "") != aad:
-            raise ValueError(f"AAD mismatch: expected '{aad}', got '{parsed.get('aad', '')}'")
+            raise ValueError(
+                f"AAD mismatch: expected '{aad}', got '{parsed.get('aad', '')}'"
+            )
 
         return self._seal.unseal(
             salt=parsed["salt"],
             nonce=parsed["nonce"],
             ciphertext=parsed["ct"],
             tag=parsed["tag"],
-            aad=aad.encode() if aad else b""
+            aad=aad.encode() if aad else b"",
         )
 
-    def rotate_key(self, new_kid: str, new_secret: Optional[bytes] = None, new_master_secret: Optional[bytes] = None):
+    def rotate_key(
+        self,
+        new_kid: str,
+        new_secret: Optional[bytes] = None,
+        new_master_secret: Optional[bytes] = None,
+    ):
         """Rotate to a new key.
 
         Args:
@@ -1008,6 +1076,7 @@ class SpiralSealSS1:
         pqc_available = False
         try:
             from ..pqc import Kyber768, Dilithium3
+
             pqc_available = True
         except ImportError:
             pass
@@ -1016,16 +1085,24 @@ class SpiralSealSS1:
             "version": "SS1",
             "key_exchange": {
                 "backend": "kyber768" if pqc_available else "ecdh",
-                "pqc_available": pqc_available
+                "pqc_available": pqc_available,
             },
             "signatures": {
                 "backend": "dilithium3" if pqc_available else "ecdsa",
-                "pqc_available": pqc_available
+                "pqc_available": pqc_available,
             },
             "kdf": {
-                "backend": "argon2id" if _ARGON2_AVAILABLE else "scrypt" if _CRYPTOGRAPHY_AVAILABLE else "hkdf"
+                "backend": (
+                    "argon2id"
+                    if _ARGON2_AVAILABLE
+                    else "scrypt" if _CRYPTOGRAPHY_AVAILABLE else "hkdf"
+                )
             },
             "aead": {
-                "backend": "xchacha20-poly1305" if _NACL_AVAILABLE else "aes-256-gcm" if _CRYPTOGRAPHY_AVAILABLE else "hmac-ctr"
-            }
+                "backend": (
+                    "xchacha20-poly1305"
+                    if _NACL_AVAILABLE
+                    else "aes-256-gcm" if _CRYPTOGRAPHY_AVAILABLE else "hmac-ctr"
+                )
+            },
         }

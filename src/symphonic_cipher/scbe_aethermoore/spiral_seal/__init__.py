@@ -46,45 +46,45 @@ from .spiral_seal import (
 )
 
 # Constants
-SS1_VERSION = 'SS1'
+SS1_VERSION = "SS1"
 
 __all__ = [
     # Sacred Tongues
-    'SacredTongue',
-    'SacredTongueTokenizer',
-    'Token',
-    'TongueSpec',
-    'TONGUES',
-    'TONGUE_WORDLISTS',
-    'DOMAIN_TONGUE_MAP',
-    'SECTION_TONGUES',
-    'get_tongue_for_domain',
-    'get_tokenizer',
-    'get_combined_alphabet',
-    'get_magical_signature',
-    'get_tongue_signature',
-    'encode_to_spelltext',
-    'decode_from_spelltext',
-    'format_ss1_blob',
-    'parse_ss1_blob',
+    "SacredTongue",
+    "SacredTongueTokenizer",
+    "Token",
+    "TongueSpec",
+    "TONGUES",
+    "TONGUE_WORDLISTS",
+    "DOMAIN_TONGUE_MAP",
+    "SECTION_TONGUES",
+    "get_tongue_for_domain",
+    "get_tokenizer",
+    "get_combined_alphabet",
+    "get_magical_signature",
+    "get_tongue_signature",
+    "encode_to_spelltext",
+    "decode_from_spelltext",
+    "format_ss1_blob",
+    "parse_ss1_blob",
     # Seal classes
-    'SpiralSeal',
-    'SpiralSealSS1',
-    'VeiledSeal',
-    'PQCSpiralSeal',
-    'SpiralSealResult',
-    'VeiledSealResult',
+    "SpiralSeal",
+    "SpiralSealSS1",
+    "VeiledSeal",
+    "PQCSpiralSeal",
+    "SpiralSealResult",
+    "VeiledSealResult",
     # Enums
-    'KDFType',
-    'AEADType',
+    "KDFType",
+    "AEADType",
     # Constants
-    'SS1_VERSION',
-    'SALT_SIZE',
-    'TAG_SIZE',
+    "SS1_VERSION",
+    "SALT_SIZE",
+    "TAG_SIZE",
     # Functions
-    'quick_seal',
-    'quick_unseal',
-    'get_crypto_backend_info',
+    "quick_seal",
+    "quick_unseal",
+    "get_crypto_backend_info",
 ]
 
-__version__ = '0.1.0'
+__version__ = "0.1.0"

@@ -34,6 +34,7 @@ PERFORMANCE_ITERATIONS = 100
 # TEST RESULT TRACKING
 # =============================================================================
 
+
 @dataclass
 class TestResult:
     name: str
@@ -108,6 +109,7 @@ class TestRunner:
 # UNIT TESTS: MATHEMATICAL PRIMITIVES
 # =============================================================================
 
+
 def test_golden_ratio_constant():
     """Verify golden ratio is correctly defined."""
     PHI = (1 + np.sqrt(5)) / 2
@@ -116,7 +118,7 @@ def test_golden_ratio_constant():
     assert abs(PHI**2 - (PHI + 1)) < 1e-10, "Golden ratio identity failed"
 
     # Property: 1/PHI = PHI - 1
-    assert abs(1/PHI - (PHI - 1)) < 1e-10, "Golden ratio inverse failed"
+    assert abs(1 / PHI - (PHI - 1)) < 1e-10, "Golden ratio inverse failed"
 
     return True, f"PHI = {PHI:.10f}"
 
@@ -124,7 +126,7 @@ def test_golden_ratio_constant():
 def test_realification_isometry():
     """Verify complex-to-real mapping preserves norm."""
     # Create complex vector
-    c = np.array([1+2j, 3-4j, 0.5+0.5j])
+    c = np.array([1 + 2j, 3 - 4j, 0.5 + 0.5j])
 
     # Realify: [Re, Im]
     x = np.concatenate([c.real, c.imag])
@@ -170,6 +172,7 @@ def test_poincare_ball_containment():
 
 def test_hyperbolic_distance_properties():
     """Verify hyperbolic distance satisfies metric axioms."""
+
     def hyperbolic_distance(u, v):
         u_norm_sq = np.dot(u, u)
         v_norm_sq = np.dot(v, v)
@@ -222,14 +225,14 @@ def test_harmonic_scaling_monotonicity():
 
     def harmonic_scaling(d, R=PHI):
         exponent = min(d**2, 700 / np.log(R + 1e-10))
-        return R ** exponent
+        return R**exponent
 
     d_values = np.linspace(0, 3, 50)
     H_values = [harmonic_scaling(d) for d in d_values]
 
     # Check monotonicity
     for i in range(len(H_values) - 1):
-        if H_values[i+1] < H_values[i] - 1e-6:
+        if H_values[i + 1] < H_values[i] - 1e-6:
             return False, f"Not monotonic at d={d_values[i]}"
 
     return True, f"H(0)={H_values[0]:.2f}, H(3)={H_values[-1]:.2f}"
@@ -237,13 +240,14 @@ def test_harmonic_scaling_monotonicity():
 
 def test_mobius_addition_properties():
     """Verify Möbius addition preserves ball containment."""
+
     def mobius_add(u, v, eps=1e-5):
         u_norm_sq = np.dot(u, u)
         v_norm_sq = np.dot(v, v)
         uv_dot = np.dot(u, v)
 
-        num = (1 + 2*uv_dot + v_norm_sq) * u + (1 - u_norm_sq) * v
-        den = 1 + 2*uv_dot + u_norm_sq * v_norm_sq
+        num = (1 + 2 * uv_dot + v_norm_sq) * u + (1 - u_norm_sq) * v
+        den = 1 + 2 * uv_dot + u_norm_sq * v_norm_sq
 
         result = num / max(den, eps)
 
@@ -274,6 +278,7 @@ def test_mobius_addition_properties():
 # =============================================================================
 # UNIT TESTS: CRYPTOGRAPHIC COMPONENTS
 # =============================================================================
+
 
 def test_hmac_chain_integrity():
     """Verify HMAC chain produces deterministic, non-repeating tags."""
@@ -311,6 +316,7 @@ def test_hmac_chain_integrity():
 
 def test_chaos_sensitivity():
     """Verify logistic map chaos amplifies small differences."""
+
     def logistic_iterate(r, x0, n):
         x = x0
         for _ in range(n):
@@ -361,6 +367,7 @@ def test_sha256_determinism():
 # =============================================================================
 # UNIT TESTS: NEURAL/ENERGY COMPONENTS
 # =============================================================================
+
 
 def test_hopfield_energy_computation():
     """Verify Hopfield energy E(c) = -1/2 c'Wc + theta'c."""
@@ -413,7 +420,7 @@ def test_coherence_metrics_bounded():
                 return False, f"Spectral coherence out of bounds: {s_spec}"
 
         # Spin coherence |mean(e^{i*phi})|
-        phases = np.random.uniform(0, 2*np.pi, 10)
+        phases = np.random.uniform(0, 2 * np.pi, 10)
         phasors = np.exp(1j * phases)
         c_spin = np.abs(np.mean(phasors))
 
@@ -426,6 +433,7 @@ def test_coherence_metrics_bounded():
 # =============================================================================
 # UNIT TESTS: GOVERNANCE COMPONENTS
 # =============================================================================
+
 
 def test_risk_score_bounded():
     """Verify risk scores stay in valid range."""
@@ -464,6 +472,7 @@ def test_risk_score_bounded():
 
 def test_decision_thresholds():
     """Verify decision logic works correctly."""
+
     def decide(risk, allow_thresh=0.3, deny_thresh=0.7):
         if risk < allow_thresh:
             return "ALLOW"
@@ -486,6 +495,7 @@ def test_decision_thresholds():
 
 def test_trust_decay_mechanics():
     """Verify Byzantine trust decay works correctly."""
+
     def update_trust(tau, is_valid, alpha=0.9, decay=0.05, gain=0.02):
         if is_valid:
             return min(1.0, tau + gain)
@@ -515,18 +525,19 @@ def test_trust_decay_mechanics():
 # INTEGRATION TESTS
 # =============================================================================
 
+
 def test_full_embedding_pipeline():
     """Test complete context → embedding → distance pipeline."""
     PHI = (1 + np.sqrt(5)) / 2
 
     # Step 1: Create context vector (complex)
-    context = np.array([0.5+0.2j, 0.3-0.1j, 0.8+0.4j])
+    context = np.array([0.5 + 0.2j, 0.3 - 0.1j, 0.8 + 0.4j])
 
     # Step 2: Realify
     x = np.concatenate([context.real, context.imag])
 
     # Step 3: Weight with golden ratio
-    weights = np.array([PHI**(-k) for k in range(len(x))])
+    weights = np.array([PHI ** (-k) for k in range(len(x))])
     x_weighted = weights * x
 
     # Step 4: Poincaré embed
@@ -539,7 +550,7 @@ def test_full_embedding_pipeline():
     # Step 5: Compute distance to origin
     u_norm_sq = np.dot(u, u)
     if u_norm_sq < 0.999**2:
-        d_H = np.arccosh(1 + 2 * u_norm_sq / (1 - u_norm_sq)**2)
+        d_H = np.arccosh(1 + 2 * u_norm_sq / (1 - u_norm_sq) ** 2)
     else:
         d_H = 10.0
 
@@ -659,6 +670,7 @@ def test_phdm_geodesic_path():
 
 def test_pqc_key_exchange_simulation():
     """Test simulated post-quantum key exchange."""
+
     # Simulated ML-KEM-768
     def keygen():
         seed = hashlib.sha256(str(time.time()).encode()).digest()
@@ -701,8 +713,10 @@ def test_pqc_key_exchange_simulation():
 # PERFORMANCE TESTS
 # =============================================================================
 
+
 def test_embedding_performance():
     """Benchmark embedding speed."""
+
     def poincare_embed(x, alpha=1.0):
         r = np.linalg.norm(x)
         if r < 1e-10:
@@ -728,6 +742,7 @@ def test_embedding_performance():
 
 def test_distance_performance():
     """Benchmark hyperbolic distance speed."""
+
     def hyperbolic_distance(u, v):
         u_norm_sq = min(np.dot(u, u), 0.999**2)
         v_norm_sq = min(np.dot(v, v), 0.999**2)
@@ -739,8 +754,10 @@ def test_distance_performance():
         return float(np.arccosh(max(1.0, arg)))
 
     np.random.seed(606)
-    pairs = [(np.random.randn(6) * 0.3, np.random.randn(6) * 0.3)
-             for _ in range(PERFORMANCE_ITERATIONS)]
+    pairs = [
+        (np.random.randn(6) * 0.3, np.random.randn(6) * 0.3)
+        for _ in range(PERFORMANCE_ITERATIONS)
+    ]
 
     start = time.perf_counter()
     for u, v in pairs:
@@ -771,6 +788,7 @@ def test_hash_performance():
 # MAIN TEST RUNNER
 # =============================================================================
 
+
 def run_all_tests():
     """Run all tests and generate report."""
     runner = TestRunner()
@@ -785,9 +803,15 @@ def run_all_tests():
     runner.run_test("golden_ratio_constant", test_golden_ratio_constant, "unit")
     runner.run_test("realification_isometry", test_realification_isometry, "unit")
     runner.run_test("poincare_ball_containment", test_poincare_ball_containment, "unit")
-    runner.run_test("hyperbolic_distance_properties", test_hyperbolic_distance_properties, "unit")
-    runner.run_test("harmonic_scaling_monotonicity", test_harmonic_scaling_monotonicity, "unit")
-    runner.run_test("mobius_addition_properties", test_mobius_addition_properties, "unit")
+    runner.run_test(
+        "hyperbolic_distance_properties", test_hyperbolic_distance_properties, "unit"
+    )
+    runner.run_test(
+        "harmonic_scaling_monotonicity", test_harmonic_scaling_monotonicity, "unit"
+    )
+    runner.run_test(
+        "mobius_addition_properties", test_mobius_addition_properties, "unit"
+    )
 
     # Unit Tests: Cryptographic Components
     print("\n[UNIT] Cryptographic Components")
@@ -799,7 +823,9 @@ def run_all_tests():
     # Unit Tests: Neural/Energy Components
     print("\n[UNIT] Neural/Energy Components")
     print("-" * 40)
-    runner.run_test("hopfield_energy_computation", test_hopfield_energy_computation, "unit")
+    runner.run_test(
+        "hopfield_energy_computation", test_hopfield_energy_computation, "unit"
+    )
     runner.run_test("coherence_metrics_bounded", test_coherence_metrics_bounded, "unit")
 
     # Unit Tests: Governance Components
@@ -812,10 +838,14 @@ def run_all_tests():
     # Integration Tests
     print("\n[INTEGRATION] End-to-End Flows")
     print("-" * 40)
-    runner.run_test("full_embedding_pipeline", test_full_embedding_pipeline, "integration")
+    runner.run_test(
+        "full_embedding_pipeline", test_full_embedding_pipeline, "integration"
+    )
     runner.run_test("governance_end_to_end", test_governance_end_to_end, "integration")
     runner.run_test("phdm_geodesic_path", test_phdm_geodesic_path, "integration")
-    runner.run_test("pqc_key_exchange_simulation", test_pqc_key_exchange_simulation, "integration")
+    runner.run_test(
+        "pqc_key_exchange_simulation", test_pqc_key_exchange_simulation, "integration"
+    )
 
     # Performance Tests
     print("\n[PERFORMANCE] Benchmarks")
@@ -834,12 +864,20 @@ def run_all_tests():
     for category, stats in summary["by_category"].items():
         pct = 100 * stats["passed"] / stats["total"] if stats["total"] > 0 else 0
         status = "\033[92mPASS\033[0m" if pct == 100 else "\033[91mFAIL\033[0m"
-        print(f"  {category.upper():15} {stats['passed']}/{stats['total']} ({pct:.0f}%) [{status}]")
+        print(
+            f"  {category.upper():15} {stats['passed']}/{stats['total']} ({pct:.0f}%) [{status}]"
+        )
 
     print("-" * 70)
     all_pass = summary["passed"] == summary["total"]
-    status = "\033[92mALL TESTS PASSED\033[0m" if all_pass else "\033[91mSOME TESTS FAILED\033[0m"
-    print(f"  TOTAL: {summary['passed']}/{summary['total']} ({summary['success_rate']}) [{status}]")
+    status = (
+        "\033[92mALL TESTS PASSED\033[0m"
+        if all_pass
+        else "\033[91mSOME TESTS FAILED\033[0m"
+    )
+    print(
+        f"  TOTAL: {summary['passed']}/{summary['total']} ({summary['success_rate']}) [{status}]"
+    )
     print(f"  Time: {summary['total_time_ms']:.2f}ms")
     print("=" * 70)
 
@@ -852,56 +890,74 @@ def run_all_tests():
 
 # These can be run with: pytest test_scbe_system.py -v
 
+
 def test_pytest_golden_ratio():
     assert test_golden_ratio_constant()[0]
+
 
 def test_pytest_realification():
     assert test_realification_isometry()[0]
 
+
 def test_pytest_poincare_ball():
     assert test_poincare_ball_containment()[0]
+
 
 def test_pytest_hyperbolic_distance():
     assert test_hyperbolic_distance_properties()[0]
 
+
 def test_pytest_harmonic_scaling():
     assert test_harmonic_scaling_monotonicity()[0]
+
 
 def test_pytest_mobius():
     assert test_mobius_addition_properties()[0]
 
+
 def test_pytest_hmac():
     assert test_hmac_chain_integrity()[0]
+
 
 def test_pytest_chaos():
     assert test_chaos_sensitivity()[0]
 
+
 def test_pytest_sha256():
     assert test_sha256_determinism()[0]
+
 
 def test_pytest_hopfield():
     assert test_hopfield_energy_computation()[0]
 
+
 def test_pytest_coherence():
     assert test_coherence_metrics_bounded()[0]
+
 
 def test_pytest_risk():
     assert test_risk_score_bounded()[0]
 
+
 def test_pytest_decisions():
     assert test_decision_thresholds()[0]
+
 
 def test_pytest_trust():
     assert test_trust_decay_mechanics()[0]
 
+
 def test_pytest_pipeline():
     assert test_full_embedding_pipeline()[0]
+
 
 def test_pytest_governance():
     assert test_governance_end_to_end()[0]
 
+
 def test_pytest_phdm():
     assert test_phdm_geodesic_path()[0]
+
 
 def test_pytest_pqc():
     assert test_pqc_key_exchange_simulation()[0]

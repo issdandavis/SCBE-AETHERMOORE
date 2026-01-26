@@ -24,35 +24,40 @@ TAU = 2 * math.pi
 
 # Six Sacred Tongues (the Langues system)
 TONGUES = ["KO", "AV", "RU", "CA", "UM", "DR"]
-TONGUE_WEIGHTS = [PHI ** k for k in range(6)]  # φ^0 to φ^5
+TONGUE_WEIGHTS = [PHI**k for k in range(6)]  # φ^0 to φ^5
 TONGUE_PHASES = [TAU * k / 6 for k in range(6)]  # 0°, 60°, 120°, etc.
 
 
 @dataclass
 class AttackScenario:
     """Represents an adversarial attack scenario."""
+
     name: str
     description: str
     deviation_profile: List[float]  # How deviation evolves over time
-    coherence_mask: List[float]     # Attacker's coherence masking
-    is_attack: List[bool]           # Ground truth labels
+    coherence_mask: List[float]  # Attacker's coherence masking
+    is_attack: List[bool]  # Ground truth labels
 
 
 # =============================================================================
 # DEFENSE SYSTEMS
 # =============================================================================
 
+
 class LinearThresholdDefense:
     """
     Traditional linear threshold system.
     Similar to basic anomaly detection.
     """
+
     name = "Linear Threshold"
 
     def __init__(self, threshold: float = 0.5):
         self.threshold = threshold
 
-    def assess(self, deviation: float, coherence: float, trust: float) -> Tuple[float, str]:
+    def assess(
+        self, deviation: float, coherence: float, trust: float
+    ) -> Tuple[float, str]:
         risk = 0.4 * deviation + 0.3 * (1 - coherence) + 0.3 * (1 - trust)
         if risk < self.threshold:
             return risk, "ALLOW"
@@ -67,6 +72,7 @@ class PatternMatchingDefense:
     Pattern matching defense (like LLM Guard / Lakera style).
     Uses known attack signatures + anomaly scoring.
     """
+
     name = "Pattern Matching (LLM Guard style)"
 
     def __init__(self):
@@ -76,7 +82,9 @@ class PatternMatchingDefense:
             "trust_violation": 0.4,
         }
 
-    def assess(self, deviation: float, coherence: float, trust: float) -> Tuple[float, str]:
+    def assess(
+        self, deviation: float, coherence: float, trust: float
+    ) -> Tuple[float, str]:
         # Pattern matching scores
         pattern_score = 0
         if deviation > self.known_patterns["high_deviation"]:
@@ -89,7 +97,9 @@ class PatternMatchingDefense:
         # Anomaly score (standard deviation from baseline)
         baseline_deviation = 0.1
         baseline_coherence = 0.9
-        anomaly = abs(deviation - baseline_deviation) + abs(coherence - baseline_coherence)
+        anomaly = abs(deviation - baseline_deviation) + abs(
+            coherence - baseline_coherence
+        )
 
         risk = 0.6 * pattern_score + 0.4 * min(anomaly, 1.0)
 
@@ -106,6 +116,7 @@ class MLAnomalyDefense:
     ML-based anomaly detection (like production systems).
     Uses statistical deviation from learned baseline.
     """
+
     name = "ML Anomaly Detection"
 
     def __init__(self):
@@ -113,10 +124,18 @@ class MLAnomalyDefense:
         self.baseline_mean = {"deviation": 0.1, "coherence": 0.9, "trust": 0.8}
         self.baseline_std = {"deviation": 0.05, "coherence": 0.05, "trust": 0.1}
 
-    def assess(self, deviation: float, coherence: float, trust: float) -> Tuple[float, str]:
+    def assess(
+        self, deviation: float, coherence: float, trust: float
+    ) -> Tuple[float, str]:
         # Z-scores
-        z_dev = abs(deviation - self.baseline_mean["deviation"]) / self.baseline_std["deviation"]
-        z_coh = abs(coherence - self.baseline_mean["coherence"]) / self.baseline_std["coherence"]
+        z_dev = (
+            abs(deviation - self.baseline_mean["deviation"])
+            / self.baseline_std["deviation"]
+        )
+        z_coh = (
+            abs(coherence - self.baseline_mean["coherence"])
+            / self.baseline_std["coherence"]
+        )
         z_trust = abs(trust - self.baseline_mean["trust"]) / self.baseline_std["trust"]
 
         # Combined anomaly score (capped)
@@ -139,6 +158,7 @@ class SCBEHyperbolicDefense:
     2. 6D "Langues Metric" with Six Sacred Tongues (KO, AV, RU, CA, UM, DR)
        L(x,t) = Σ w_l exp(β_l · (d_l + sin(ω_l t + φ_l)))
     """
+
     name = "SCBE Hyperbolic (Harmonic Wall + Langues)"
 
     def __init__(self, mode: str = "unbounded"):
@@ -149,10 +169,10 @@ class SCBEHyperbolicDefense:
         """The Vertical Wall - exponential penalty."""
         if self.mode == "unbounded":
             # Patent claim: true exponential
-            return math.exp(d ** 2)
+            return math.exp(d**2)
         else:
             # Production mode: clamped for numerical stability
-            return PHI ** min(d ** 2, 50)
+            return PHI ** min(d**2, 50)
 
     def langues_metric(self, deviation: float, coherence: float, trust: float) -> float:
         """
@@ -163,12 +183,12 @@ class SCBEHyperbolicDefense:
         """
         # Map to 6D
         x = [
-            self.time % 1.0,     # time (normalized)
-            deviation,          # intent
-            coherence,          # policy
-            trust,              # trust
-            1 - trust,          # risk
-            deviation * 0.5,    # entropy
+            self.time % 1.0,  # time (normalized)
+            deviation,  # intent
+            coherence,  # policy
+            trust,  # trust
+            1 - trust,  # risk
+            deviation * 0.5,  # entropy
         ]
         # Ideal state
         mu = [0.0, 0.0, 0.9, 0.9, 0.1, 0.1]
@@ -191,26 +211,28 @@ class SCBEHyperbolicDefense:
     def hyperbolic_distance(self, u_norm: float, v_norm: float) -> float:
         """Poincaré ball distance amplifies near boundary."""
         if u_norm >= 1 or v_norm >= 1:
-            return float('inf')
+            return float("inf")
 
         diff_norm = abs(u_norm - v_norm)
         denom = (1 - u_norm**2) * (1 - v_norm**2)
         if denom < EPS:
-            return float('inf')
+            return float("inf")
 
         arg = 1 + 2 * diff_norm**2 / denom
         return math.acosh(max(1.0, arg))
 
-    def assess(self, deviation: float, coherence: float, trust: float) -> Tuple[float, str]:
+    def assess(
+        self, deviation: float, coherence: float, trust: float
+    ) -> Tuple[float, str]:
         self.time += 1  # Advance time for phase shifts
 
         # === LAYER 1: Base Risk (linear component) ===
         R_base = (
-            0.2 * deviation +
-            0.2 * (1 - coherence) +
-            0.2 * (1 - trust) +
-            0.2 * deviation +  # Double weight on deviation
-            0.2 * (1 - coherence * trust)
+            0.2 * deviation
+            + 0.2 * (1 - coherence)
+            + 0.2 * (1 - trust)
+            + 0.2 * deviation  # Double weight on deviation
+            + 0.2 * (1 - coherence * trust)
         )
 
         # === LAYER 2: HARMONIC WALL exp(d²) ===
@@ -241,6 +263,7 @@ class SCBEHyperbolicDefense:
 # ATTACK SCENARIOS (Based on 2025 Threat Landscape)
 # =============================================================================
 
+
 def create_attack_scenarios() -> List[AttackScenario]:
     """Create benchmark attack scenarios based on real threats."""
 
@@ -250,81 +273,113 @@ def create_attack_scenarios() -> List[AttackScenario]:
     # Adversary slowly increases deviation while maintaining high coherence
     # SCBE catches this because exp(0.6²)=1.43 while linear sees 0.6×0.4=0.24
     n = 20
-    scenarios.append(AttackScenario(
-        name="Gradual Drift Attack",
-        description="Adversary slowly drifts context over time (like prompt injection via context poisoning)",
-        deviation_profile=[0.1 + 0.08 * i for i in range(n)],  # 0.1 to 1.66
-        coherence_mask=[0.9 - 0.01 * i + random.uniform(-0.02, 0.02) for i in range(n)],
-        is_attack=[i > 3 for i in range(n)]  # Attack starts at step 4
-    ))
+    scenarios.append(
+        AttackScenario(
+            name="Gradual Drift Attack",
+            description="Adversary slowly drifts context over time (like prompt injection via context poisoning)",
+            deviation_profile=[0.1 + 0.08 * i for i in range(n)],  # 0.1 to 1.66
+            coherence_mask=[
+                0.9 - 0.01 * i + random.uniform(-0.02, 0.02) for i in range(n)
+            ],
+            is_attack=[i > 3 for i in range(n)],  # Attack starts at step 4
+        )
+    )
 
     # Scenario 2: Coherence Masking Attack
     # Adversary maintains artificially high coherence to mask deviation
     # SCBE catches this because exp(d²) grows regardless of coherence
     # At d=0.7: exp(0.49)=1.63, linear sees 0.7×0.25=0.175 (under threshold!)
-    scenarios.append(AttackScenario(
-        name="Coherence Masking Attack",
-        description="Adversary maintains fake coherence signals while deviating (like adversarial examples)",
-        deviation_profile=[0.1 if i < 5 else 0.5 + 0.1 * (i - 5) for i in range(n)],  # Ramps 0.5 to 2.0
-        coherence_mask=[0.95 if i < 5 else 0.92 for i in range(n)],  # Attacker maintains very high coherence
-        is_attack=[i >= 5 for i in range(n)]
-    ))
+    scenarios.append(
+        AttackScenario(
+            name="Coherence Masking Attack",
+            description="Adversary maintains fake coherence signals while deviating (like adversarial examples)",
+            deviation_profile=[
+                0.1 if i < 5 else 0.5 + 0.1 * (i - 5) for i in range(n)
+            ],  # Ramps 0.5 to 2.0
+            coherence_mask=[
+                0.95 if i < 5 else 0.92 for i in range(n)
+            ],  # Attacker maintains very high coherence
+            is_attack=[i >= 5 for i in range(n)],
+        )
+    )
 
     # Scenario 3: Rapid Spike Attack
     # Sudden deviation spike (like jailbreak attempt)
-    scenarios.append(AttackScenario(
-        name="Rapid Spike Attack",
-        description="Sudden high deviation (like jailbreak prompt injection)",
-        deviation_profile=[0.1 if i < 10 else 2.5 for i in range(n)],
-        coherence_mask=[0.9 if i < 10 else 0.3 for i in range(n)],
-        is_attack=[i >= 10 for i in range(n)]
-    ))
+    scenarios.append(
+        AttackScenario(
+            name="Rapid Spike Attack",
+            description="Sudden high deviation (like jailbreak prompt injection)",
+            deviation_profile=[0.1 if i < 10 else 2.5 for i in range(n)],
+            coherence_mask=[0.9 if i < 10 else 0.3 for i in range(n)],
+            is_attack=[i >= 10 for i in range(n)],
+        )
+    )
 
     # Scenario 4: Multi-Turn Jailbreak (90%+ success rate per research)
     # Gradually escalating prompts that stay under individual thresholds
     # KEY: Each step is under linear threshold (0.5) but exp accumulates!
-    scenarios.append(AttackScenario(
-        name="Multi-Turn Jailbreak",
-        description="Escalating attack over multiple turns (90%+ success vs linear systems per ICLR 2025)",
-        deviation_profile=[0.15 + 0.07 * i for i in range(n)],  # 0.15 to 1.48 - stays "moderate"
-        coherence_mask=[0.88 - 0.01 * i for i in range(n)],  # Slight coherence decay
-        is_attack=[i > 2 for i in range(n)]  # Attack from turn 3
-    ))
+    scenarios.append(
+        AttackScenario(
+            name="Multi-Turn Jailbreak",
+            description="Escalating attack over multiple turns (90%+ success vs linear systems per ICLR 2025)",
+            deviation_profile=[
+                0.15 + 0.07 * i for i in range(n)
+            ],  # 0.15 to 1.48 - stays "moderate"
+            coherence_mask=[
+                0.88 - 0.01 * i for i in range(n)
+            ],  # Slight coherence decay
+            is_attack=[i > 2 for i in range(n)],  # Attack from turn 3
+        )
+    )
 
     # Scenario 5: Sensor Spoofing (Robot Brain scenario)
     # Adversary corrupts sensor data gradually - safety critical!
     # Linear systems miss because deviation stays "acceptable" per threshold
     # SCBE catches because exp(0.8²)=1.9 amplifies the risk
-    scenarios.append(AttackScenario(
-        name="Robot Sensor Spoofing",
-        description="Gradual sensor data corruption in autonomous system",
-        deviation_profile=[0.1 + 0.06 * i for i in range(n)],  # 0.1 to 1.24
-        coherence_mask=[0.92 - 0.005 * i for i in range(n)],  # Sensors stay "consistent" with each other
-        is_attack=[i > 4 for i in range(n)]  # Attack starts earlier
-    ))
+    scenarios.append(
+        AttackScenario(
+            name="Robot Sensor Spoofing",
+            description="Gradual sensor data corruption in autonomous system",
+            deviation_profile=[0.1 + 0.06 * i for i in range(n)],  # 0.1 to 1.24
+            coherence_mask=[
+                0.92 - 0.005 * i for i in range(n)
+            ],  # Sensors stay "consistent" with each other
+            is_attack=[i > 4 for i in range(n)],  # Attack starts earlier
+        )
+    )
 
     # Scenario 6: Stealth Zone Attack (SCBE's sweet spot)
     # Adversary operates in the "stealth zone" where:
     # - Linear sees 0.7 × 0.25 = 0.175 (ALLOW)
     # - SCBE sees base × exp(0.7²) = base × 1.63 (QUARANTINE/DENY)
-    scenarios.append(AttackScenario(
-        name="Stealth Zone Attack",
-        description="Adversary stays in 0.6-0.9 deviation range - under linear threshold but exp catches",
-        deviation_profile=[0.1 if i < 3 else 0.65 + 0.02 * (i - 3) for i in range(n)],  # Hovers 0.65-0.99
-        coherence_mask=[0.93 for _ in range(n)],  # Perfect coherence masking
-        is_attack=[i >= 3 for i in range(n)]
-    ))
+    scenarios.append(
+        AttackScenario(
+            name="Stealth Zone Attack",
+            description="Adversary stays in 0.6-0.9 deviation range - under linear threshold but exp catches",
+            deviation_profile=[
+                0.1 if i < 3 else 0.65 + 0.02 * (i - 3) for i in range(n)
+            ],  # Hovers 0.65-0.99
+            coherence_mask=[0.93 for _ in range(n)],  # Perfect coherence masking
+            is_attack=[i >= 3 for i in range(n)],
+        )
+    )
 
     # Scenario 7: Adversarial Perturbation (ML-specific attack)
     # Targets ML systems that rely on learned distributions
     # SCBE's geometric approach is robust to distribution shift
-    scenarios.append(AttackScenario(
-        name="Adversarial Perturbation",
-        description="Attack crafted to fool ML anomaly detectors with carefully chosen deviations",
-        deviation_profile=[0.1 if i < 4 else 0.48 + random.uniform(-0.03, 0.03) for i in range(n)],  # Just under ML threshold
-        coherence_mask=[0.85 if i < 4 else 0.82 for i in range(n)],  # Looks "normal" to ML
-        is_attack=[i >= 4 for i in range(n)]
-    ))
+    scenarios.append(
+        AttackScenario(
+            name="Adversarial Perturbation",
+            description="Attack crafted to fool ML anomaly detectors with carefully chosen deviations",
+            deviation_profile=[
+                0.1 if i < 4 else 0.48 + random.uniform(-0.03, 0.03) for i in range(n)
+            ],  # Just under ML threshold
+            coherence_mask=[
+                0.85 if i < 4 else 0.82 for i in range(n)
+            ],  # Looks "normal" to ML
+            is_attack=[i >= 4 for i in range(n)],
+        )
+    )
 
     return scenarios
 
@@ -332,6 +387,7 @@ def create_attack_scenarios() -> List[AttackScenario]:
 # =============================================================================
 # BENCHMARK RUNNER
 # =============================================================================
+
 
 def run_benchmark():
     """Run all defenses against all attack scenarios."""
@@ -378,11 +434,13 @@ def run_benchmark():
             false_positives = 0
             true_negatives = 0
 
-            for i, (dev, coh, is_atk) in enumerate(zip(
-                scenario.deviation_profile,
-                scenario.coherence_mask,
-                scenario.is_attack
-            )):
+            for i, (dev, coh, is_atk) in enumerate(
+                zip(
+                    scenario.deviation_profile,
+                    scenario.coherence_mask,
+                    scenario.is_attack,
+                )
+            ):
                 trust = 0.8  # Fixed trust baseline
                 risk, decision = defense.assess(dev, coh, trust)
 
@@ -405,10 +463,12 @@ def run_benchmark():
                 "missed": missed,
                 "false_positives": false_positives,
                 "true_negatives": true_negatives,
-                "detection_rate": detection_rate
+                "detection_rate": detection_rate,
             }
 
-            print(f"  {defense.name:40} | Caught: {caught:2}/{total_attacks:2} ({detection_rate:5.1f}%) | FP: {false_positives}")
+            print(
+                f"  {defense.name:40} | Caught: {caught:2}/{total_attacks:2} ({detection_rate:5.1f}%) | FP: {false_positives}"
+            )
 
     # Summary
     print()
@@ -422,7 +482,9 @@ def run_benchmark():
 
     for defense in defenses:
         total_caught = sum(r["caught"] for r in results[defense.name].values())
-        total_attacks = sum(r["caught"] + r["missed"] for r in results[defense.name].values())
+        total_attacks = sum(
+            r["caught"] + r["missed"] for r in results[defense.name].values()
+        )
         total_fp = sum(r["false_positives"] for r in results[defense.name].values())
         total_tn = sum(r["true_negatives"] for r in results[defense.name].values())
 
@@ -438,16 +500,26 @@ def run_benchmark():
     print()
 
     # Calculate rates
-    scbe_detection = sum(r["caught"] for r in results["SCBE Hyperbolic (Harmonic Wall + Langues)"].values())
-    scbe_total = sum(r["caught"] + r["missed"] for r in results["SCBE Hyperbolic (Harmonic Wall + Langues)"].values())
+    scbe_detection = sum(
+        r["caught"]
+        for r in results["SCBE Hyperbolic (Harmonic Wall + Langues)"].values()
+    )
+    scbe_total = sum(
+        r["caught"] + r["missed"]
+        for r in results["SCBE Hyperbolic (Harmonic Wall + Langues)"].values()
+    )
     scbe_rate = scbe_detection / max(1, scbe_total) * 100
 
     ml_detection = sum(r["caught"] for r in results["ML Anomaly Detection"].values())
-    ml_total = sum(r["caught"] + r["missed"] for r in results["ML Anomaly Detection"].values())
+    ml_total = sum(
+        r["caught"] + r["missed"] for r in results["ML Anomaly Detection"].values()
+    )
     ml_rate = ml_detection / max(1, ml_total) * 100
 
     linear_detection = sum(r["caught"] for r in results["Linear Threshold"].values())
-    linear_total = sum(r["caught"] + r["missed"] for r in results["Linear Threshold"].values())
+    linear_total = sum(
+        r["caught"] + r["missed"] for r in results["Linear Threshold"].values()
+    )
     linear_rate = linear_detection / max(1, linear_total) * 100
 
     print(f"  DETECTION RATES:")
@@ -465,7 +537,7 @@ def run_benchmark():
     print()
     print("    2. MATHEMATICALLY PROVEN - 12 axioms with formal proofs")
     print("       For safety-critical systems (robots, AVs), you need guarantees")
-    print("       not just \"high accuracy on test set\".")
+    print('       not just "high accuracy on test set".')
     print()
     print("    3. POST-QUANTUM SAFE - Kyber/ML-DSA integrated")
     print("       Robot communication channels need quantum-resistant crypto.")
@@ -503,7 +575,13 @@ def print_comparison_table():
 
     features = [
         ("Risk Scaling", "Linear", "Linear", "Statistical", "Exponential exp(d²)"),
-        ("Drift Detection", "Threshold", "Pattern + Threshold", "Z-score", "Hyperbolic Distance"),
+        (
+            "Drift Detection",
+            "Threshold",
+            "Pattern + Threshold",
+            "Z-score",
+            "Hyperbolic Distance",
+        ),
         ("Multi-Turn Aware", "No", "Limited", "Yes (learned)", "Yes (causal axiom)"),
         ("Geometry", "Euclidean", "Euclidean", "Euclidean", "Hyperbolic Poincaré"),
         ("6D Langues Metric", "No", "No", "No", "Yes (6 Sacred Tongues)"),
@@ -513,11 +591,15 @@ def print_comparison_table():
         ("Open Source", "Varies", "Yes (LLM Guard)", "Varies", "Yes"),
     ]
 
-    print(f"{'Feature':<20} | {'Linear':<15} | {'Pattern Match':<15} | {'ML Anomaly':<15} | {'SCBE':<20}")
+    print(
+        f"{'Feature':<20} | {'Linear':<15} | {'Pattern Match':<15} | {'ML Anomaly':<15} | {'SCBE':<20}"
+    )
     print("-" * 95)
 
     for feature in features:
-        print(f"{feature[0]:<20} | {feature[1]:<15} | {feature[2]:<15} | {feature[3]:<15} | {feature[4]:<20}")
+        print(
+            f"{feature[0]:<20} | {feature[1]:<15} | {feature[2]:<15} | {feature[3]:<15} | {feature[4]:<20}"
+        )
 
     print()
     print("Sources:")
@@ -540,12 +622,12 @@ if __name__ == "__main__":
     print()
     print("ONE-LINER:")
     print('  "Hyperbolic geometry firewall for autonomous systems where')
-    print('   adversarial behavior costs exponentially more the further')
-    print('   it drifts from safe operation - with post-quantum crypto')
+    print("   adversarial behavior costs exponentially more the further")
+    print("   it drifts from safe operation - with post-quantum crypto")
     print('   and mathematical proofs, not just ML accuracy."')
     print()
     print("WHY ELON SHOULD CARE:")
-    print("  1. Tesla FSD needs safety guarantees, not just \"high accuracy\"")
+    print('  1. Tesla FSD needs safety guarantees, not just "high accuracy"')
     print("  2. xAI agents need adversarial-robust governance")
     print("  3. Optimus robots need quantum-safe brain firewalls")
     print("  4. Neuralink needs mathematically proven safety layers")

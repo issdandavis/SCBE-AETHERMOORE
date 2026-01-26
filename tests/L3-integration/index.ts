@@ -14,6 +14,4 @@
 export const tier = 'L3-INTEGRATION';
 export const level = 'Senior Developer';
 export const description = 'Integration tests for component interactions';
-export const tests = [
-  'pipeline.integration.test.ts'
-];
+export const tests = ['pipeline.integration.test.ts'];

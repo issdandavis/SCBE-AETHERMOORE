@@ -67,16 +67,16 @@ except ImportError:
 # SECTION 1: GLOBAL CONSTANTS
 # =============================================================================
 
-PHI = (1 + np.sqrt(5)) / 2                      # Golden ratio
-R = PHI                                          # Harmonic base
-EPSILON = 1.5                                    # Snap threshold
-TAU_COH = 0.9                                    # Coherence min
-ETA_TARGET = 4.0                                 # Entropy target
-BETA = 0.1                                       # Entropy decay
-KAPPA_MAX = 0.1                                  # Max curvature
-LAMBDA_BOUND = 0.001                             # Lyapunov max
-H_MAX = 10.0                                     # Max harmonic
-DOT_TAU_MIN = 0.0                                # Causality min
+PHI = (1 + np.sqrt(5)) / 2  # Golden ratio
+R = PHI  # Harmonic base
+EPSILON = 1.5  # Snap threshold
+TAU_COH = 0.9  # Coherence min
+ETA_TARGET = 4.0  # Entropy target
+BETA = 0.1  # Entropy decay
+KAPPA_MAX = 0.1  # Max curvature
+LAMBDA_BOUND = 0.001  # Lyapunov max
+H_MAX = 10.0  # Max harmonic
+DOT_TAU_MIN = 0.0  # Causality min
 ETA_MIN = 2.0
 ETA_MAX = 6.0
 DELTA_DRIFT_MAX = 0.5
@@ -87,7 +87,7 @@ SAMPLE_RATE = 44100
 DURATION = 0.5
 KEY_LEN = 32
 CHI_EXPECTED = 2
-D = 6                                            # Core context dimensions
+D = 6  # Core context dimensions
 
 # Grok Parameters
 GROK_WEIGHT = 0.35
@@ -96,10 +96,17 @@ GROK_THRESHOLD_HIGH = 0.7
 
 # Conlang Dictionary
 CONLANG = {
-    "shadow": -1, "gleam": -2, "flare": -3,
-    "korah": 0, "aelin": 1, "dahru": 2,
-    "melik": 3, "sorin": 4, "tivar": 5,
-    "ulmar": 6, "vexin": 7
+    "shadow": -1,
+    "gleam": -2,
+    "flare": -3,
+    "korah": 0,
+    "aelin": 1,
+    "dahru": 2,
+    "melik": 3,
+    "sorin": 4,
+    "tivar": 5,
+    "ulmar": 6,
+    "vexin": 7,
 }
 REV_CONLANG = {v: k for k, v in CONLANG.items()}
 
@@ -119,6 +126,7 @@ TONGUE_WEIGHTS = [PHI**k for k in range(D)]
 # │  Valid states lie within acceptance window in perpendicular space.      │
 # │  Phason strain enables atomic rekeying without state regeneration.      │
 # └─────────────────────────────────────────────────────────────────────────┘
+
 
 class QuasicrystalLattice:
     """
@@ -151,29 +159,41 @@ class QuasicrystalLattice:
 
         # 6 basis vectors in Physical Space (E_parallel)
         # Cyclic permutations of (1, PHI, 0)
-        e_par = np.array([
-            [1, PHI, 0],
-            [-1, PHI, 0],
-            [0, 1, PHI],
-            [0, -1, PHI],
-            [PHI, 0, 1],
-            [PHI, 0, -1]
-        ]).T * norm  # Shape (3, 6)
+        e_par = (
+            np.array(
+                [
+                    [1, PHI, 0],
+                    [-1, PHI, 0],
+                    [0, 1, PHI],
+                    [0, -1, PHI],
+                    [PHI, 0, 1],
+                    [PHI, 0, -1],
+                ]
+            ).T
+            * norm
+        )  # Shape (3, 6)
 
         # 6 basis vectors in Perpendicular Space (E_perp)
         # Related by Galois conjugation PHI → -1/PHI
-        e_perp = np.array([
-            [1, -1/PHI, 0],
-            [-1, -1/PHI, 0],
-            [0, 1, -1/PHI],
-            [0, -1, -1/PHI],
-            [-1/PHI, 0, 1],
-            [-1/PHI, 0, -1]
-        ]).T * norm  # Shape (3, 6)
+        e_perp = (
+            np.array(
+                [
+                    [1, -1 / PHI, 0],
+                    [-1, -1 / PHI, 0],
+                    [0, 1, -1 / PHI],
+                    [0, -1, -1 / PHI],
+                    [-1 / PHI, 0, 1],
+                    [-1 / PHI, 0, -1],
+                ]
+            ).T
+            * norm
+        )  # Shape (3, 6)
 
         return e_par, e_perp
 
-    def map_gates_to_lattice(self, gate_vector: List[float]) -> Tuple[np.ndarray, np.ndarray, bool]:
+    def map_gates_to_lattice(
+        self, gate_vector: List[float]
+    ) -> Tuple[np.ndarray, np.ndarray, bool]:
         """
         Map 6 inputs (SCBE Gates) to the Quasicrystal.
 
@@ -224,17 +244,20 @@ class QuasicrystalLattice:
         """
         h = hashlib.sha256(entropy_seed).digest()
         # Map hash to 3 float values [-1, 1]
-        v = np.array([
-            int.from_bytes(h[0:4], 'big') / (2**32) * 2 - 1,
-            int.from_bytes(h[4:8], 'big') / (2**32) * 2 - 1,
-            int.from_bytes(h[8:12], 'big') / (2**32) * 2 - 1
-        ])
+        v = np.array(
+            [
+                int.from_bytes(h[0:4], "big") / (2**32) * 2 - 1,
+                int.from_bytes(h[4:8], "big") / (2**32) * 2 - 1,
+                int.from_bytes(h[8:12], "big") / (2**32) * 2 - 1,
+            ]
+        )
         # Scale by acceptance radius to ensure significant shift
         self.phason_strain = v * self.acceptance_radius * 2.0
         return self.phason_strain
 
-    def detect_crystalline_defects(self, history_vectors: List[List[float]],
-                                   min_samples: int = 10) -> float:
+    def detect_crystalline_defects(
+        self, history_vectors: List[List[float]], min_samples: int = 10
+    ) -> float:
         """
         Detect if attacker is forcing periodicity (Crystalline Defect).
 
@@ -293,14 +316,15 @@ QUASICRYSTAL = QuasicrystalLattice()
 # └─────────────────────────────────────────────────────────────────────────┘
 
 # CPSE Constants
-RHO_CRITICAL = 100.0          # Max queries/second before event horizon
-SOLITON_ALPHA = 0.1           # Self-focusing nonlinearity coefficient
-SOLITON_BETA = 0.05           # Linear loss coefficient
-FLUX_SIGMA_BASE = 0.01        # Base jitter standard deviation
+RHO_CRITICAL = 100.0  # Max queries/second before event horizon
+SOLITON_ALPHA = 0.1  # Self-focusing nonlinearity coefficient
+SOLITON_BETA = 0.05  # Linear loss coefficient
+FLUX_SIGMA_BASE = 0.01  # Base jitter standard deviation
 
 
-def lorentz_factor(rho_E: float, rho_critical: float = RHO_CRITICAL,
-                   eps: float = 1e-12) -> float:
+def lorentz_factor(
+    rho_E: float, rho_critical: float = RHO_CRITICAL, eps: float = 1e-12
+) -> float:
     """
     Virtual Gravity: Lorentz factor for latency throttling (Claim 54).
 
@@ -316,12 +340,13 @@ def lorentz_factor(rho_E: float, rho_critical: float = RHO_CRITICAL,
         γ ∈ [1, ∞): Time dilation factor
     """
     ratio = min(abs(rho_E) / (rho_critical + eps), 0.9999)  # Clamp to avoid singularity
-    denominator = np.sqrt(max(eps, 1.0 - ratio ** 2))
+    denominator = np.sqrt(max(eps, 1.0 - ratio**2))
     return float(1.0 / denominator)
 
 
-def compute_latency_delay(t_base: float, rho_E: float,
-                          rho_critical: float = RHO_CRITICAL) -> float:
+def compute_latency_delay(
+    t_base: float, rho_E: float, rho_critical: float = RHO_CRITICAL
+) -> float:
     """
     Compute throttled latency using Lorentz factor.
 
@@ -341,13 +366,15 @@ def compute_latency_delay(t_base: float, rho_E: float,
 @dataclass
 class SolitonPacket:
     """Data packet with soliton amplitude dynamics."""
-    amplitude: float           # Signal integrity score A ∈ [0, 1]
-    phi_d: float              # Soliton key (gain offset from private key)
-    iterations: int = 0       # Evolution steps survived
+
+    amplitude: float  # Signal integrity score A ∈ [0, 1]
+    phi_d: float  # Soliton key (gain offset from private key)
+    iterations: int = 0  # Evolution steps survived
 
 
-def soliton_evolve(packet: SolitonPacket, alpha: float = SOLITON_ALPHA,
-                   beta: float = SOLITON_BETA) -> SolitonPacket:
+def soliton_evolve(
+    packet: SolitonPacket, alpha: float = SOLITON_ALPHA, beta: float = SOLITON_BETA
+) -> SolitonPacket:
     """
     Soliton Dynamics: NLSE-inspired packet integrity (Claim 52 & 55).
 
@@ -367,9 +394,9 @@ def soliton_evolve(packet: SolitonPacket, alpha: float = SOLITON_ALPHA,
     phi_d = packet.phi_d
 
     # NLSE discrete analog
-    nonlinear_gain = alpha * (A ** 2) * A  # Self-focusing
-    linear_loss = beta * A                  # Entropy decay
-    soliton_boost = phi_d                   # Key-derived gain
+    nonlinear_gain = alpha * (A**2) * A  # Self-focusing
+    linear_loss = beta * A  # Entropy decay
+    soliton_boost = phi_d  # Key-derived gain
 
     A_next = A + (nonlinear_gain - linear_loss) + soliton_boost
 
@@ -377,9 +404,7 @@ def soliton_evolve(packet: SolitonPacket, alpha: float = SOLITON_ALPHA,
     A_next = float(max(0.0, min(1.0, A_next)))
 
     return SolitonPacket(
-        amplitude=A_next,
-        phi_d=phi_d,
-        iterations=packet.iterations + 1
+        amplitude=A_next, phi_d=phi_d, iterations=packet.iterations + 1
     )
 
 
@@ -399,7 +424,7 @@ def soliton_key_from_secret(secret: bytes, target_beta: float = SOLITON_BETA) ->
     # Hash to get deterministic offset
     h = hashlib.sha256(secret).digest()
     # Map to small positive value that offsets beta
-    raw = int.from_bytes(h[:4], 'big') / (2**32)
+    raw = int.from_bytes(h[:4], "big") / (2**32)
     # Scale to offset beta with small variance
     phi_d = target_beta * (0.9 + 0.2 * raw)  # ≈ beta ± 10%
     return float(phi_d)
@@ -450,10 +475,12 @@ def context_to_spin_angles(context_hash: bytes) -> np.ndarray:
     Returns:
         Array of 5 rotation angles ∈ [0, 2π)
     """
-    angles = np.array([
-        (context_hash[i] / 255.0) * 2 * np.pi
-        for i in range(min(5, len(context_hash)))
-    ])
+    angles = np.array(
+        [
+            (context_hash[i] / 255.0) * 2 * np.pi
+            for i in range(min(5, len(context_hash)))
+        ]
+    )
     return angles
 
 
@@ -474,13 +501,14 @@ def apply_spin(v_input: np.ndarray, context: str) -> np.ndarray:
 
     # Pad input to 6D if needed
     v = np.zeros(6)
-    v[:len(v_input)] = v_input[:6]
+    v[: len(v_input)] = v_input[:6]
 
     return R @ v
 
 
-def flux_jitter(P_target: np.ndarray, network_load: float,
-                sigma_base: float = FLUX_SIGMA_BASE) -> np.ndarray:
+def flux_jitter(
+    P_target: np.ndarray, network_load: float, sigma_base: float = FLUX_SIGMA_BASE
+) -> np.ndarray:
     """
     Flux Jitter: Dynamic interference (Claim 61).
 
@@ -502,8 +530,9 @@ def flux_jitter(P_target: np.ndarray, network_load: float,
     return P_target + noise
 
 
-def flux_compensated_distance(P_actual: np.ndarray, P_target: np.ndarray,
-                              jitter_history: np.ndarray) -> float:
+def flux_compensated_distance(
+    P_actual: np.ndarray, P_target: np.ndarray, jitter_history: np.ndarray
+) -> float:
     """
     Compute distance accounting for known flux pattern.
 
@@ -535,8 +564,7 @@ class CPSEThrottler:
     Tracks query density per context and applies time dilation.
     """
 
-    def __init__(self, rho_critical: float = RHO_CRITICAL,
-                 window_seconds: float = 1.0):
+    def __init__(self, rho_critical: float = RHO_CRITICAL, window_seconds: float = 1.0):
         self.rho_critical = rho_critical
         self.window_seconds = window_seconds
         self.query_counts: Dict[str, List[float]] = {}
@@ -602,6 +630,7 @@ CPSE_THROTTLER = CPSEThrottler()
 # │    - A12: Harmonic scaling H(d,R) = R^(d²) is monotone in d             │
 # └─────────────────────────────────────────────────────────────────────────┘
 
+
 def _norm(x: np.ndarray) -> float:
     return float(np.linalg.norm(x))
 
@@ -633,7 +662,9 @@ def apply_spd_weights(x: np.ndarray, g_diag: np.ndarray) -> np.ndarray:
     return np.sqrt(np.abs(g_diag)) * x
 
 
-def poincare_embed(x: np.ndarray, alpha: float = 1.0, eps_ball: float = 1e-3) -> np.ndarray:
+def poincare_embed(
+    x: np.ndarray, alpha: float = 1.0, eps_ball: float = 1e-3
+) -> np.ndarray:
     """A4: Radial tanh embedding R^n → B^n."""
     r = _norm(x)
     if r == 0.0:
@@ -663,8 +694,9 @@ def mobius_add(a: np.ndarray, u: np.ndarray, eps: float = 1e-12) -> np.ndarray:
     return num / denom
 
 
-def phase_transform(u: np.ndarray, a: np.ndarray, Q: Optional[np.ndarray] = None,
-                    eps_ball: float = 1e-3) -> np.ndarray:
+def phase_transform(
+    u: np.ndarray, a: np.ndarray, Q: Optional[np.ndarray] = None, eps_ball: float = 1e-3
+) -> np.ndarray:
     """A7: Phase transform (isometry)."""
     u2 = mobius_add(a, u)
     if Q is not None:
@@ -687,7 +719,9 @@ def realm_distance(u: np.ndarray, centers: np.ndarray) -> float:
     """A9: d*(u) = min_k d_H(u, μ_k) — 1-Lipschitz."""
     if centers.ndim == 1:
         centers = centers.reshape(1, -1)
-    return float(min(hyperbolic_distance(u, centers[k]) for k in range(centers.shape[0])))
+    return float(
+        min(hyperbolic_distance(u, centers[k]) for k in range(centers.shape[0]))
+    )
 
 
 def spectral_stability(y: np.ndarray, eps: float = 1e-12) -> float:
@@ -700,7 +734,7 @@ def spectral_stability(y: np.ndarray, eps: float = 1e-12) -> float:
     if y.size < 2:
         return 1.0
     Y = np.fft.fft(y)
-    P = np.abs(Y[:len(Y)//2]) ** 2  # Only positive frequencies
+    P = np.abs(Y[: len(Y) // 2]) ** 2  # Only positive frequencies
     total = max(float(np.sum(P)), eps)
     # Normalized spectral entropy: low entropy = high concentration
     p_norm = P / total
@@ -719,7 +753,9 @@ def spin_coherence(phasors: np.ndarray, eps: float = 1e-12) -> float:
     return float(min(max(num / denom, 0.0), 1.0))
 
 
-def audio_envelope_coherence(wave: np.ndarray, window_size: int = 256, eps: float = 1e-12) -> float:
+def audio_envelope_coherence(
+    wave: np.ndarray, window_size: int = 256, eps: float = 1e-12
+) -> float:
     """Audio envelope stability S_audio ∈ [0,1].
 
     Measures consistency of audio envelope across windows.
@@ -735,7 +771,10 @@ def audio_envelope_coherence(wave: np.ndarray, window_size: int = 256, eps: floa
     n_windows = wave.size // window_size
     if n_windows < 2:
         return 1.0
-    window_means = [np.mean(envelope[i*window_size:(i+1)*window_size]) for i in range(n_windows)]
+    window_means = [
+        np.mean(envelope[i * window_size : (i + 1) * window_size])
+        for i in range(n_windows)
+    ]
     window_means = np.array(window_means)
     mean_envelope = np.mean(window_means)
     if mean_envelope < eps:
@@ -745,9 +784,13 @@ def audio_envelope_coherence(wave: np.ndarray, window_size: int = 256, eps: floa
     return float(max(0.0, min(1.0, 1.0 - cv)))
 
 
-def triadic_distance(d1: float, d2: float, dG: float,
-                     lambdas: Tuple[float, float, float] = (0.4, 0.3, 0.3),
-                     flux: Optional[float] = None) -> float:
+def triadic_distance(
+    d1: float,
+    d2: float,
+    dG: float,
+    lambdas: Tuple[float, float, float] = (0.4, 0.3, 0.3),
+    flux: Optional[float] = None,
+) -> float:
     """A11: Triadic temporal distance with optional flux multiplier.
 
     Per audit trace #8492: flux = sum(|a - a_prev|) / N accounts for
@@ -764,19 +807,23 @@ def triadic_distance(d1: float, d2: float, dG: float,
         Triadic distance, optionally flux-amplified
     """
     l1, l2, l3 = lambdas
-    s = l1 * (d1 ** 2) + l2 * (d2 ** 2) + l3 * (dG ** 2)
+    s = l1 * (d1**2) + l2 * (d2**2) + l3 * (dG**2)
     d_tri = float(np.sqrt(max(0.0, s)))
 
     # Apply flux multiplier if provided (audit recommendation)
     if flux is not None and flux > 0:
-        d_tri *= (1.0 + flux)
+        d_tri *= 1.0 + flux
 
     return d_tri
 
 
-def harmonic_scaling(d: float, R_base: float = PHI, max_log: float = 700.0,
-                     zeta: Optional[float] = None,
-                     omega_ratio: float = 1.0) -> Tuple[float, float]:
+def harmonic_scaling(
+    d: float,
+    R_base: float = PHI,
+    max_log: float = 700.0,
+    zeta: Optional[float] = None,
+    omega_ratio: float = 1.0,
+) -> Tuple[float, float]:
     """A12: H(d,R) = R^(d²) with optional resonance amplification.
 
     Per audit trace #8492: Add resonance damping factor ζ for
@@ -798,7 +845,7 @@ def harmonic_scaling(d: float, R_base: float = PHI, max_log: float = 700.0,
     """
     if R_base <= 1.0:
         R_base = PHI
-    logH = float(np.log(R_base) * (d ** 2))
+    logH = float(np.log(R_base) * (d**2))
     logH_c = min(logH, max_log)
     H = float(np.exp(logH_c))
 
@@ -806,7 +853,7 @@ def harmonic_scaling(d: float, R_base: float = PHI, max_log: float = 700.0,
     if zeta is not None and zeta > 0:
         # D = 1 / sqrt((1 - r²)² + (2ζr)²) where r = ω/ω_n
         r = omega_ratio
-        denom_sq = (1 - r**2)**2 + (2 * zeta * r)**2
+        denom_sq = (1 - r**2) ** 2 + (2 * zeta * r) ** 2
         D = 1.0 / np.sqrt(max(1e-12, denom_sq))
         H *= D
         logH_c += np.log(max(1e-12, D))
@@ -814,8 +861,14 @@ def harmonic_scaling(d: float, R_base: float = PHI, max_log: float = 700.0,
     return H, logH_c
 
 
-def risk_base(d_tri_norm: float, C_spin: float, S_spec: float,
-              trust_tau: float, S_audio: float, C_qc: float = 1.0) -> float:
+def risk_base(
+    d_tri_norm: float,
+    C_spin: float,
+    S_spec: float,
+    trust_tau: float,
+    S_audio: float,
+    C_qc: float = 1.0,
+) -> float:
     """A12: Base risk from coherence deficits.
 
     Args:
@@ -832,18 +885,22 @@ def risk_base(d_tri_norm: float, C_spin: float, S_spec: float,
     # Six coherence factors now (including quasicrystal)
     w = 1.0 / 6.0
     return float(
-        w * min(max(d_tri_norm, 0), 1) +
-        w * (1 - min(max(C_spin, 0), 1)) +
-        w * (1 - min(max(S_spec, 0), 1)) +
-        w * (1 - min(max(trust_tau, 0), 1)) +
-        w * (1 - min(max(S_audio, 0), 1)) +
-        w * (1 - min(max(C_qc, 0), 1))
+        w * min(max(d_tri_norm, 0), 1)
+        + w * (1 - min(max(C_spin, 0), 1))
+        + w * (1 - min(max(S_spec, 0), 1))
+        + w * (1 - min(max(trust_tau, 0), 1))
+        + w * (1 - min(max(S_audio, 0), 1))
+        + w * (1 - min(max(C_qc, 0), 1))
     )
 
 
-def risk_prime(d_star: float, risk_base_val: float, R_base: float = PHI,
-               zeta: Optional[float] = None,
-               omega_ratio: float = 1.0) -> Dict[str, float]:
+def risk_prime(
+    d_star: float,
+    risk_base_val: float,
+    R_base: float = PHI,
+    zeta: Optional[float] = None,
+    omega_ratio: float = 1.0,
+) -> Dict[str, float]:
     """A12: Risk' = Risk_base · H(d*, R) with optional resonance.
 
     Per audit trace #8492: Add resonance damping ζ for anomaly amplification.
@@ -865,7 +922,7 @@ def risk_prime(d_star: float, risk_base_val: float, R_base: float = PHI,
     D = 1.0
     if zeta is not None and zeta > 0:
         r = omega_ratio
-        denom_sq = (1 - r**2)**2 + (2 * zeta * r)**2
+        denom_sq = (1 - r**2) ** 2 + (2 * zeta * r) ** 2
         D = 1.0 / np.sqrt(max(1e-12, denom_sq))
 
     return {"risk_prime": float(rp), "H": float(H), "logH": float(logH), "D": float(D)}
@@ -874,6 +931,7 @@ def risk_prime(d_star: float, risk_base_val: float, R_base: float = PHI,
 # =============================================================================
 # SECTION 3: HARMONIC CIPHER (Conlang + Encoding)
 # =============================================================================
+
 
 def stable_hash(data: str) -> float:
     """Deterministic hash → [0, 2π)."""
@@ -892,14 +950,16 @@ def extract_phase(wave: np.ndarray) -> float:
     """Demodulate phase via FFT."""
     N = len(wave)
     yf = fft(wave)
-    peak_idx = np.argmax(np.abs(yf[:N//2]))
+    peak_idx = np.argmax(np.abs(yf[: N // 2]))
     phase = np.angle(yf[peak_idx])
     return float((phase % (2 * np.pi)) / (2 * np.pi))
 
 
 def derive_harmonic_mask(token_id: int, secret_key: bytes) -> List[int]:
     """Key-derived harmonics for flat-slope encoding."""
-    mask_seed = hmac.new(secret_key, f"mask:{token_id}".encode(), hashlib.sha256).digest()
+    mask_seed = hmac.new(
+        secret_key, f"mask:{token_id}".encode(), hashlib.sha256
+    ).digest()
     harmonics = [h for h in range(1, 17) if mask_seed[h % 32] > 128]
     if 1 not in harmonics:
         harmonics.append(1)
@@ -922,7 +982,9 @@ def resonance_refractor(token_ids: List[int], secret_key: bytes) -> np.ndarray:
     t = np.linspace(0, DURATION * len(token_ids), total_len)
     signal = np.zeros_like(t)
     for token_id in token_ids:
-        phase_seed = hmac.new(secret_key, f"phase:{token_id}".encode(), hashlib.sha256).digest()
+        phase_seed = hmac.new(
+            secret_key, f"phase:{token_id}".encode(), hashlib.sha256
+        ).digest()
         phase = (phase_seed[0] / 255) * 2 * np.pi
         harmonics = derive_harmonic_mask(token_id, secret_key)
         for h in harmonics:
@@ -943,33 +1005,38 @@ def hmac_chain(messages: List[str], master_key: bytes) -> str:
 # SECTION 4: 9D STATE MACHINE
 # =============================================================================
 
+
 @dataclass
 class State9D:
     """Full 9D state representation."""
-    context: np.ndarray           # 6D context (complex)
-    tau: float                    # Time flow
-    eta: float                    # Entropy
-    q: complex                    # Quantum state
-    t: float = 0.0                # Timestamp
+
+    context: np.ndarray  # 6D context (complex)
+    tau: float  # Time flow
+    eta: float  # Entropy
+    q: complex  # Quantum state
+    t: float = 0.0  # Timestamp
 
     def to_complex_context(self) -> np.ndarray:
         """Extract complex context for realification."""
-        return np.array([
-            complex(v) if not isinstance(v, complex) else v
-            for v in self.context
-        ], dtype=np.complex128)
+        return np.array(
+            [complex(v) if not isinstance(v, complex) else v for v in self.context],
+            dtype=np.complex128,
+        )
 
 
 def generate_context(t: float) -> np.ndarray:
     """Generate 6D context vector."""
-    return np.array([
-        stable_hash(f"identity_{t}"),           # Identity
-        np.exp(1j * 2 * np.pi * 0.75),          # Intent phase
-        0.95,                                    # Trajectory
-        t % (2 * np.pi),                         # Timing
-        stable_hash(f"commit_{t}"),              # Commitment
-        0.88                                     # Signature
-    ], dtype=object)
+    return np.array(
+        [
+            stable_hash(f"identity_{t}"),  # Identity
+            np.exp(1j * 2 * np.pi * 0.75),  # Intent phase
+            0.95,  # Trajectory
+            t % (2 * np.pi),  # Timing
+            stable_hash(f"commit_{t}"),  # Commitment
+            0.88,  # Signature
+        ],
+        dtype=object,
+    )
 
 
 def compute_entropy(window: list) -> float:
@@ -1011,7 +1078,7 @@ def generate_9d_state(t: float) -> State9D:
     context = generate_context(t)
     tau = t % 100
     eta = max(0.0, compute_entropy([context]) + 2.0)  # Shift to valid range
-    q = quantum_evolution(1+0j, t)
+    q = quantum_evolution(1 + 0j, t)
     return State9D(context=context, tau=tau, eta=eta, q=q, t=t)
 
 
@@ -1019,9 +1086,11 @@ def generate_9d_state(t: float) -> State9D:
 # SECTION 5: POLYHEDRAL TOPOLOGY (PHDM)
 # =============================================================================
 
+
 @dataclass
 class Polyhedron:
     """Polyhedral state for topology validation."""
+
     V: int  # Vertices
     E: int  # Edges
     F: int  # Faces
@@ -1040,9 +1109,11 @@ def phdm_validate(poly: Polyhedron) -> bool:
 # SECTION 6: GROK TRUTH-SEEKING ORACLE
 # =============================================================================
 
+
 @dataclass
 class GrokResult:
     """Grok oracle result."""
+
     truth_score: float
     reasoning: str
     confidence: float
@@ -1051,10 +1122,10 @@ class GrokResult:
 
 def call_grok(state_summary: Dict[str, Any]) -> GrokResult:
     """Grok truth-seeking oracle."""
-    coh = state_summary.get('coh', 0.95)
-    eta = state_summary.get('eta', ETA_TARGET)
-    f_q = state_summary.get('f_q', 0.95)
-    chi = state_summary.get('chi', CHI_EXPECTED)
+    coh = state_summary.get("coh", 0.95)
+    eta = state_summary.get("eta", ETA_TARGET)
+    f_q = state_summary.get("f_q", 0.95)
+    chi = state_summary.get("chi", CHI_EXPECTED)
 
     entropy_penalty = 1.0 - min(1.0, eta / ETA_TARGET)
     coherence_bonus = float(coh)
@@ -1062,10 +1133,10 @@ def call_grok(state_summary: Dict[str, Any]) -> GrokResult:
     topology_bonus = 1.0 if chi == CHI_EXPECTED else 0.5
 
     truth_score = (
-        0.30 * coherence_bonus +
-        0.25 * quantum_bonus +
-        0.20 * topology_bonus +
-        0.25 * entropy_penalty
+        0.30 * coherence_bonus
+        + 0.25 * quantum_bonus
+        + 0.20 * topology_bonus
+        + 0.25 * entropy_penalty
     )
     truth_score = max(0.0, min(1.0, truth_score))
 
@@ -1083,13 +1154,14 @@ def call_grok(state_summary: Dict[str, Any]) -> GrokResult:
         truth_score=truth_score,
         reasoning=reasoning,
         confidence=0.85 + 0.15 * truth_score,
-        invoked=True
+        invoked=True,
     )
 
 
 # =============================================================================
 # SECTION 7: UNIFIED GOVERNANCE ENGINE (L1-L14 + Grok)
 # =============================================================================
+
 
 @dataclass
 class GovernanceResult:
@@ -1098,6 +1170,7 @@ class GovernanceResult:
     Per audit trace #8492: Include d_origin and S_spec for forensic
     logging to enable trace reconstruction and anomaly debugging.
     """
+
     decision: str
     output: str
     risk_base: float
@@ -1107,19 +1180,23 @@ class GovernanceResult:
     hyperbolic_state: np.ndarray
     metrics: Dict[str, float]
     # Forensic trace fields (audit recommendation)
-    d_origin: float = 0.0          # Hyperbolic distance from origin
-    S_spec: float = 1.0            # Spectral stability
-    C_spin: float = 1.0            # Spin coherence
-    d_tri: float = 0.0             # Triadic distance (pre-normalization)
-    flux_applied: float = 0.0     # Flux multiplier used
-    zeta_applied: float = 0.0     # Resonance damping used
+    d_origin: float = 0.0  # Hyperbolic distance from origin
+    S_spec: float = 1.0  # Spectral stability
+    C_spin: float = 1.0  # Spin coherence
+    d_tri: float = 0.0  # Triadic distance (pre-normalization)
+    flux_applied: float = 0.0  # Flux multiplier used
+    zeta_applied: float = 0.0  # Resonance damping used
 
 
-def governance_pipeline(state: State9D, intent: float, poly: Polyhedron,
-                        realm_centers: Optional[np.ndarray] = None,
-                        flux: Optional[float] = None,
-                        zeta: Optional[float] = None,
-                        omega_ratio: float = 1.0) -> GovernanceResult:
+def governance_pipeline(
+    state: State9D,
+    intent: float,
+    poly: Polyhedron,
+    realm_centers: Optional[np.ndarray] = None,
+    flux: Optional[float] = None,
+    zeta: Optional[float] = None,
+    omega_ratio: float = 1.0,
+) -> GovernanceResult:
     """
     Full L1-L14 governance pipeline with Grok integration.
 
@@ -1152,14 +1229,18 @@ def governance_pipeline(state: State9D, intent: float, poly: Polyhedron,
     x = realify(c_complex)
 
     # L3: SPD weighting (golden ratio powers)
-    g_diag = np.array(TONGUE_WEIGHTS[:len(x)] + TONGUE_WEIGHTS[:len(x)])
-    g_diag = g_diag[:len(x)]
+    g_diag = np.array(TONGUE_WEIGHTS[: len(x)] + TONGUE_WEIGHTS[: len(x)])
+    g_diag = g_diag[: len(x)]
     x_G = apply_spd_weights(x, g_diag)
 
     # L3.5: Quasicrystal validation
     # Map 6D context to quasicrystal lattice for aperiodic validation
     gate_vector = [
-        float(v) if isinstance(v, (int, float)) else abs(v) if isinstance(v, complex) else 0.0
+        (
+            float(v)
+            if isinstance(v, (int, float))
+            else abs(v) if isinstance(v, complex) else 0.0
+        )
         for v in state.context[:6]
     ]
     r_phys, r_perp, qc_valid = QUASICRYSTAL.map_gates_to_lattice(gate_vector)
@@ -1189,10 +1270,19 @@ def governance_pipeline(state: State9D, intent: float, poly: Polyhedron,
     S_spec = spectral_stability(intent_wave)
 
     # L10: Spin coherence (from complex context phases)
-    phasors = np.exp(1j * np.array([
-        float(v) if isinstance(v, (int, float)) else np.angle(v) if isinstance(v, complex) else 0
-        for v in state.context
-    ]))
+    phasors = np.exp(
+        1j
+        * np.array(
+            [
+                (
+                    float(v)
+                    if isinstance(v, (int, float))
+                    else np.angle(v) if isinstance(v, complex) else 0
+                )
+                for v in state.context
+            ]
+        )
+    )
     C_spin = spin_coherence(phasors)
 
     # L11: Triadic distance (with optional flux multiplier per audit #8492)
@@ -1216,10 +1306,12 @@ def governance_pipeline(state: State9D, intent: float, poly: Polyhedron,
 
     # Topology check
     chi = poly.euler_characteristic()
-    f_q = min(1.0, abs(state.q)**2)
+    f_q = min(1.0, abs(state.q) ** 2)
 
     # Grok invocation check
-    grok_result = GrokResult(truth_score=1.0, reasoning="Not invoked", confidence=1.0, invoked=False)
+    grok_result = GrokResult(
+        truth_score=1.0, reasoning="Not invoked", confidence=1.0, invoked=False
+    )
 
     marginal_coherence = TAU_COH * 0.8 < C_spin < TAU_COH * 1.2
     marginal_risk = GROK_THRESHOLD_LOW < risk_amplified < GROK_THRESHOLD_HIGH
@@ -1227,10 +1319,10 @@ def governance_pipeline(state: State9D, intent: float, poly: Polyhedron,
 
     if marginal_coherence or marginal_risk or topology_issue:
         state_summary = {
-            'coh': C_spin,
-            'eta': state.eta,
-            'f_q': f_q,
-            'chi': chi,
+            "coh": C_spin,
+            "eta": state.eta,
+            "f_q": f_q,
+            "chi": chi,
         }
         grok_result = call_grok(state_summary)
 
@@ -1243,26 +1335,28 @@ def governance_pipeline(state: State9D, intent: float, poly: Polyhedron,
         output = "Access granted - state verified"
     elif risk_final < GROK_THRESHOLD_HIGH:
         decision = "QUARANTINE"
-        output = f"Marginal state (Grok score: {grok_result.truth_score:.2f}) - quarantined"
+        output = (
+            f"Marginal state (Grok score: {grok_result.truth_score:.2f}) - quarantined"
+        )
     else:
         decision = "DENY"
         output = "Access denied - state rejected"
 
     metrics = {
-        'd_star': d_star,
-        'd_origin': d_origin,   # Forensic: hyperbolic distance from origin
-        'd_tri': d_tri,
-        'd_tri_norm': d_tri_norm,
-        'C_spin': C_spin,
-        'S_spec': S_spec,
-        'S_audio': S_audio,
-        'C_qc': C_qc,           # Quasicrystal E_perp coherence
-        'qc_valid': qc_valid,   # Quasicrystal acceptance window
-        'trust_tau': trust_tau,
-        'f_q': f_q,
-        'chi': chi,
-        'H': rp_result['H'],
-        'D': rp_result.get('D', 1.0),  # Resonance amplification factor
+        "d_star": d_star,
+        "d_origin": d_origin,  # Forensic: hyperbolic distance from origin
+        "d_tri": d_tri,
+        "d_tri_norm": d_tri_norm,
+        "C_spin": C_spin,
+        "S_spec": S_spec,
+        "S_audio": S_audio,
+        "C_qc": C_qc,  # Quasicrystal E_perp coherence
+        "qc_valid": qc_valid,  # Quasicrystal acceptance window
+        "trust_tau": trust_tau,
+        "f_q": f_q,
+        "chi": chi,
+        "H": rp_result["H"],
+        "D": rp_result.get("D", 1.0),  # Resonance amplification factor
     }
 
     return GovernanceResult(
@@ -1280,7 +1374,7 @@ def governance_pipeline(state: State9D, intent: float, poly: Polyhedron,
         C_spin=C_spin,
         d_tri=d_tri,
         flux_applied=flux if flux is not None else 0.0,
-        zeta_applied=zeta if zeta is not None else 0.0
+        zeta_applied=zeta if zeta is not None else 0.0,
     )
 
 
@@ -1288,18 +1382,24 @@ def governance_pipeline(state: State9D, intent: float, poly: Polyhedron,
 # SECTION 8: BYZANTINE ATTACK SIMULATION
 # =============================================================================
 
+
 @dataclass
 class SwarmAgent:
     """Agent in Byzantine swarm."""
+
     agent_id: int
     is_byzantine: bool
     state: State9D
     vote: Optional[str] = None
 
 
-def simulate_byzantine_attack(n_agents: int = 100, byzantine_fraction: float = 0.33,
-                              verbose: bool = False, seed: Optional[int] = None,
-                              enable_phason_rekey: bool = True) -> Dict[str, Any]:
+def simulate_byzantine_attack(
+    n_agents: int = 100,
+    byzantine_fraction: float = 0.33,
+    verbose: bool = False,
+    seed: Optional[int] = None,
+    enable_phason_rekey: bool = True,
+) -> Dict[str, Any]:
     """
     Simulate Byzantine attack with n_agents.
 
@@ -1335,8 +1435,12 @@ def simulate_byzantine_attack(n_agents: int = 100, byzantine_fraction: float = 0
     # Define authorized realm centers (trusted state patterns)
     # States near these centers will have low d* and thus low risk
     n_realms = 5
-    realm_centers = np.random.randn(n_realms, 12) * 0.3  # Small values for Poincaré embedding
-    realm_centers = realm_centers / (1 + np.linalg.norm(realm_centers, axis=1, keepdims=True))  # In ball
+    realm_centers = (
+        np.random.randn(n_realms, 12) * 0.3
+    )  # Small values for Poincaré embedding
+    realm_centers = realm_centers / (
+        1 + np.linalg.norm(realm_centers, axis=1, keepdims=True)
+    )  # In ball
 
     # Create agents
     for i in range(n_agents):
@@ -1368,7 +1472,9 @@ def simulate_byzantine_attack(n_agents: int = 100, byzantine_fraction: float = 0
 
     for agent in agents:
         intent = 0.75 if not agent.is_byzantine else 0.5  # Byzantine uses wrong intent
-        result = governance_pipeline(agent.state, intent, poly, realm_centers=realm_centers)
+        result = governance_pipeline(
+            agent.state, intent, poly, realm_centers=realm_centers
+        )
         agent.vote = result.decision
 
         results[result.decision.lower()] += 1
@@ -1397,9 +1503,15 @@ def simulate_byzantine_attack(n_agents: int = 100, byzantine_fraction: float = 0
         print(f"BYZANTINE ATTACK SIMULATION")
         print(f"{'='*60}")
         print(f"  Agents: {n_agents} ({n_honest} honest, {n_byzantine} Byzantine)")
-        print(f"  Results: ALLOW={results['allow']}, QUARANTINE={results['quarantine']}, DENY={results['deny']}")
-        print(f"  Byzantine allowed: {byzantine_allowed}/{n_byzantine} ({attack_success_rate:.1%})")
-        print(f"  Honest success: {n_honest - honest_denied}/{n_honest} ({honest_success_rate:.1%})")
+        print(
+            f"  Results: ALLOW={results['allow']}, QUARANTINE={results['quarantine']}, DENY={results['deny']}"
+        )
+        print(
+            f"  Byzantine allowed: {byzantine_allowed}/{n_byzantine} ({attack_success_rate:.1%})"
+        )
+        print(
+            f"  Honest success: {n_honest - honest_denied}/{n_honest} ({honest_success_rate:.1%})"
+        )
         print(f"  Majority decision: {majority_decision}")
         print(f"  f < n/3 tolerance: {'✓' if tolerance_met else '✗'}")
         print(f"  Attack {'BLOCKED' if passed else 'SUCCEEDED'}")
@@ -1413,7 +1525,7 @@ def simulate_byzantine_attack(n_agents: int = 100, byzantine_fraction: float = 0
         "majority_decision": majority_decision,
         "tolerance_met": tolerance_met,
         "attack_blocked": passed,
-        "results": results
+        "results": results,
     }
 
 
@@ -1421,60 +1533,61 @@ def simulate_byzantine_attack(n_agents: int = 100, byzantine_fraction: float = 0
 # SECTION 9: SELF-TEST & DEMO
 # =============================================================================
 
+
 def self_test(verbose: bool = True) -> Dict[str, Any]:
     """Run comprehensive self-test."""
     results = {}
 
     # Test 1: QASI core axioms
-    c = np.array([1+2j, 3-4j], dtype=np.complex128)
+    c = np.array([1 + 2j, 3 - 4j], dtype=np.complex128)
     x = realify(c)
-    ok_realify = abs(np.linalg.norm(x) - np.sqrt(np.sum(np.abs(c)**2))) < 1e-10
-    results['realify_isometry'] = ok_realify
+    ok_realify = abs(np.linalg.norm(x) - np.sqrt(np.sum(np.abs(c) ** 2))) < 1e-10
+    results["realify_isometry"] = ok_realify
 
     # Test 2: Poincaré embedding
     u = poincare_embed(x, alpha=1.0)
     ok_ball = np.linalg.norm(u) < 1.0
-    results['poincare_ball'] = ok_ball
+    results["poincare_ball"] = ok_ball
 
     # Test 3: Hyperbolic distance symmetry
     v = clamp_ball(np.random.randn(len(u)) * 0.1)
     d_uv = hyperbolic_distance(u, v)
     d_vu = hyperbolic_distance(v, u)
     ok_sym = abs(d_uv - d_vu) < 1e-10
-    results['distance_symmetry'] = ok_sym
+    results["distance_symmetry"] = ok_sym
 
     # Test 4: Risk monotonicity
     rb = risk_base(0.2, 0.9, 0.9, 0.9, 0.9)
     rp1 = risk_prime(0.5, rb)["risk_prime"]
     rp2 = risk_prime(1.0, rb)["risk_prime"]
     ok_mono = rp2 >= rp1
-    results['risk_monotone'] = ok_mono
+    results["risk_monotone"] = ok_mono
 
     # Test 5: Governance pipeline
     state = generate_9d_state(1.0)
     poly = Polyhedron(V=6, E=9, F=5)
     gov = governance_pipeline(state, 0.75, poly)
     ok_gov = gov.decision in ["ALLOW", "QUARANTINE", "DENY"]
-    results['governance'] = ok_gov
+    results["governance"] = ok_gov
 
     # Test 6: Byzantine resistance (seed=42 for reproducibility)
     byz = simulate_byzantine_attack(50, 0.33, verbose=False, seed=42)
     ok_byz = byz["attack_blocked"]
-    results['byzantine_resistance'] = ok_byz
+    results["byzantine_resistance"] = ok_byz
 
     # Test 7: HMAC chain
     key = os.urandom(KEY_LEN)
     tag1 = hmac_chain(["a", "b"], key)
     tag2 = hmac_chain(["a", "b"], key)
     ok_hmac = tag1 == tag2
-    results['hmac_chain'] = ok_hmac
+    results["hmac_chain"] = ok_hmac
 
     # Test 8: Phase roundtrip
     intent = 0.75
     wave = phase_modulated_intent(intent)
     recovered = extract_phase(wave)
     ok_phase = abs(recovered - intent) < 0.05
-    results['phase_roundtrip'] = ok_phase
+    results["phase_roundtrip"] = ok_phase
 
     # Test 9: Spectral stability variance (pure tone vs noise)
     pure_tone = phase_modulated_intent(0.5)
@@ -1482,29 +1595,29 @@ def self_test(verbose: bool = True) -> Dict[str, Any]:
     s_pure = spectral_stability(pure_tone)
     s_noise = spectral_stability(noise)
     ok_spec = s_pure > 0.9 and s_noise < 0.2  # Pure concentrated, noise flat
-    results['spectral_variance'] = ok_spec
+    results["spectral_variance"] = ok_spec
 
     # Test 10: Audio envelope coherence
     s_audio = audio_envelope_coherence(pure_tone)
     ok_audio = 0.9 <= s_audio <= 1.0  # Pure tone has stable envelope
-    results['audio_coherence'] = ok_audio
+    results["audio_coherence"] = ok_audio
 
     # Test 11: Entropy non-negativity
     entropies = [compute_entropy([generate_context(float(t))]) for t in [0, 100, 1000]]
     ok_entropy = all(e >= 0 for e in entropies)
-    results['entropy_positive'] = ok_entropy
+    results["entropy_positive"] = ok_entropy
 
     # Test 12: Extreme coordinate handling
     extreme = np.array([1e10 + 1e10j, 1e-10 - 1e-10j])
     u_extreme = poincare_embed(realify(extreme))
     ok_extreme = np.linalg.norm(u_extreme) < 1.0 and not np.any(np.isnan(u_extreme))
-    results['extreme_coords'] = ok_extreme
+    results["extreme_coords"] = ok_extreme
 
     # Test 13: CPSE Lorentz factor (event horizon throttling)
-    gamma_low = lorentz_factor(10, 100)   # 10% of critical → γ ≈ 1
+    gamma_low = lorentz_factor(10, 100)  # 10% of critical → γ ≈ 1
     gamma_high = lorentz_factor(99, 100)  # 99% of critical → γ >> 1
     ok_lorentz = 1.0 <= gamma_low < 1.1 and gamma_high > 5.0
-    results['cpse_lorentz'] = ok_lorentz
+    results["cpse_lorentz"] = ok_lorentz
 
     # Test 14: CPSE Soliton dynamics (packet integrity)
     secret = b"authorized_key"
@@ -1513,13 +1626,13 @@ def self_test(verbose: bool = True) -> Dict[str, Any]:
     for _ in range(10):
         packet = soliton_evolve(packet)
     ok_soliton = 0.5 < packet.amplitude <= 1.0  # Maintains amplitude
-    results['cpse_soliton'] = ok_soliton
+    results["cpse_soliton"] = ok_soliton
 
     # Test 15: CPSE Spin rotation (context-dependent)
     v_in = np.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0])
     v_out = apply_spin(v_in, "time:1234|loc:NYC|role:admin")
     ok_spin = np.linalg.norm(v_out) > 0.99  # Rotation preserves norm
-    results['cpse_spin'] = ok_spin
+    results["cpse_spin"] = ok_spin
 
     if verbose:
         print("=" * 60)
@@ -1537,7 +1650,7 @@ def self_test(verbose: bool = True) -> Dict[str, Any]:
         "passed": sum(results.values()),
         "total": len(results),
         "all_passed": all(results.values()),
-        "results": results
+        "results": results,
     }
 
 

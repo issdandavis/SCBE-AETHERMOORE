@@ -577,7 +577,8 @@ def run_all_tests():
     print("\n" + "=" * 70)
     print(" ALL PHYSICS SIMULATION TESTS PASSED [OK]")
     print("=" * 70)
-    print("""
+    print(
+        """
 Modules Tested:
   • core.py         - Classical, quantum, EM, thermo, relativity
   • atmosphere.py   - ISA model, Mach, compressibility
@@ -590,7 +591,8 @@ Modules Tested:
   • simulator.py    - N-body, projectiles, energy conservation
 
 Total: 40+ validated physics calculations
-""")
+"""
+    )
 
 
 if __name__ == "__main__":

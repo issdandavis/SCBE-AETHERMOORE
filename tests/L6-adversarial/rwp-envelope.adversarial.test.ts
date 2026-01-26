@@ -13,7 +13,7 @@ import {
   signRoundtable,
   verifyRoundtable,
   clearNonceCache,
-  type Keyring
+  type Keyring,
 } from '../../src/spiralverse/index.js';
 
 describe('L6-ADVERSARIAL: RWP Envelope Attack Resistance', () => {
@@ -39,7 +39,7 @@ describe('L6-ADVERSARIAL: RWP Envelope Attack Resistance', () => {
       // Truncate the signature
       const truncatedEnvelope = {
         ...envelope,
-        sigs: { ...envelope.sigs, ko: envelope.sigs.ko.slice(0, 32) }
+        sigs: { ...envelope.sigs, ko: envelope.sigs.ko.slice(0, 32) },
       };
 
       const result = verifyRoundtable(truncatedEnvelope, testKeyring);
@@ -52,13 +52,12 @@ describe('L6-ADVERSARIAL: RWP Envelope Attack Resistance', () => {
 
       // Flip a single bit in the signature
       const sig = envelope.sigs.ko;
-      const flippedSig = sig.slice(0, 10) +
-        String.fromCharCode(sig.charCodeAt(10) ^ 0x01) +
-        sig.slice(11);
+      const flippedSig =
+        sig.slice(0, 10) + String.fromCharCode(sig.charCodeAt(10) ^ 0x01) + sig.slice(11);
 
       const tamperedEnvelope = {
         ...envelope,
-        sigs: { ...envelope.sigs, ko: flippedSig }
+        sigs: { ...envelope.sigs, ko: flippedSig },
       };
 
       const result = verifyRoundtable(tamperedEnvelope, testKeyring);
@@ -93,7 +92,7 @@ describe('L6-ADVERSARIAL: RWP Envelope Attack Resistance', () => {
 
       const tamperedEnvelope = {
         ...envelope,
-        nonce: ''
+        nonce: '',
       };
 
       const result = verifyRoundtable(tamperedEnvelope, testKeyring);
@@ -106,7 +105,7 @@ describe('L6-ADVERSARIAL: RWP Envelope Attack Resistance', () => {
 
       const tamperedEnvelope = {
         ...envelope,
-        nonce: envelope.nonce.slice(0, -4) + 'XXXX'
+        nonce: envelope.nonce.slice(0, -4) + 'XXXX',
       };
 
       const result = verifyRoundtable(tamperedEnvelope, testKeyring);
@@ -122,7 +121,7 @@ describe('L6-ADVERSARIAL: RWP Envelope Attack Resistance', () => {
       // Modify the payload
       const tamperedEnvelope = {
         ...envelope,
-        payload: { amount: 10000, recipient: 'attacker' }
+        payload: { amount: 10000, recipient: 'attacker' },
       };
 
       const result = verifyRoundtable(tamperedEnvelope, testKeyring);
@@ -136,7 +135,7 @@ describe('L6-ADVERSARIAL: RWP Envelope Attack Resistance', () => {
       // Inject additional fields
       const tamperedEnvelope = {
         ...envelope,
-        payload: { ...envelope.payload, admin: true, bypass: true }
+        payload: { ...envelope.payload, admin: true, bypass: true },
       };
 
       const result = verifyRoundtable(tamperedEnvelope, testKeyring);
@@ -171,10 +170,11 @@ describe('L6-ADVERSARIAL: RWP Envelope Attack Resistance', () => {
 
       // Tamper with one signature (bit flip)
       const sig = envelope.sigs.um;
-      const flippedSig = sig.slice(0, 5) + String.fromCharCode(sig.charCodeAt(5) ^ 0x01) + sig.slice(6);
+      const flippedSig =
+        sig.slice(0, 5) + String.fromCharCode(sig.charCodeAt(5) ^ 0x01) + sig.slice(6);
       const tamperedEnvelope = {
         ...envelope,
-        sigs: { ...envelope.sigs, um: flippedSig }
+        sigs: { ...envelope.sigs, um: flippedSig },
       };
 
       const tamperedResult = verifyRoundtable(tamperedEnvelope, testKeyring);
@@ -195,7 +195,7 @@ describe('L6-ADVERSARIAL: RWP Envelope Attack Resistance', () => {
       // The signature binds to the AAD, so tampering would invalidate
       const tamperedEnvelope = {
         ...envelope,
-        aad: 'attacker-context'
+        aad: 'attacker-context',
       };
 
       const result = verifyRoundtable(tamperedEnvelope, testKeyring);
@@ -208,7 +208,7 @@ describe('L6-ADVERSARIAL: RWP Envelope Attack Resistance', () => {
       // Large payload stress test
       const largePayload = {
         data: 'x'.repeat(10000),
-        nested: { deep: { value: 'y'.repeat(1000) } }
+        nested: { deep: { value: 'y'.repeat(1000) } },
       };
 
       const envelope = signRoundtable(largePayload, 'ko', 'aad', testKeyring, ['ko']);
@@ -221,7 +221,7 @@ describe('L6-ADVERSARIAL: RWP Envelope Attack Resistance', () => {
         unicode: '🔒🛡️🔐',
         escapes: '\n\r\t\0',
         quotes: '"\'`',
-        symbols: '<>&;|$'
+        symbols: '<>&;|$',
       };
 
       const envelope = signRoundtable(specialPayload, 'ko', 'aad', testKeyring, ['ko']);
@@ -235,7 +235,7 @@ describe('L6-ADVERSARIAL: RWP Envelope Attack Resistance', () => {
         min: Number.MIN_SAFE_INTEGER,
         float: 3.14159265358979,
         zero: 0,
-        negative: -1
+        negative: -1,
       };
 
       const envelope = signRoundtable(numericPayload, 'ko', 'aad', testKeyring, ['ko']);

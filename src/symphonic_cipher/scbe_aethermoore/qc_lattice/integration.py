@@ -23,24 +23,25 @@ from .quasicrystal import (
     PQCQuasicrystalLattice,
     ValidationResult,
     ValidationStatus,
-    LatticePoint
+    LatticePoint,
 )
 from .phdm import (
     PHDMHamiltonianPath,
     PHDMDeviationDetector,
     HamiltonianNode,
-    get_phdm_family
+    get_phdm_family,
 )
 
 
 # Constants matching Layer 0 (from unified.py)
 NONCE_BYTES = 12
 KEY_LEN = 32
-AUDIT_CHAIN_IV = b'\x00' * 32
+AUDIT_CHAIN_IV = b"\x00" * 32
 
 
 class IntegratedDecision(Enum):
     """Combined decision from all verification layers."""
+
     ALLOW = "ALLOW"
     DENY = "DENY"
     QUARANTINE = "QUARANTINE"
@@ -52,6 +53,7 @@ class IntegratedValidation:
     """
     Result of integrated quasicrystal + PHDM + HMAC validation.
     """
+
     # Overall decision
     decision: IntegratedDecision
     confidence: float  # 0.0 to 1.0
@@ -86,7 +88,7 @@ class IntegratedValidation:
             "hmac_tag": self.hmac_tag.hex(),
             "chain_position": self.chain_position,
             "timestamp": self.timestamp,
-            "phason_epoch": self.phason_epoch
+            "phason_epoch": self.phason_epoch,
         }
 
 
@@ -102,9 +104,7 @@ class QuasicrystalHMACChain:
     This is the Layer 0 integration for SCBE-AETHERMOORE.
     """
 
-    def __init__(self,
-                 hmac_key: Optional[bytes] = None,
-                 use_pqc: bool = True):
+    def __init__(self, hmac_key: Optional[bytes] = None, use_pqc: bool = True):
         """
         Initialize the integrated chain.
 
@@ -152,10 +152,9 @@ class QuasicrystalHMACChain:
             return self._chain[-1][2]
         return self._chain_iv
 
-    def validate_and_append(self,
-                            gate_vector: List[int],
-                            context_data: bytes,
-                            nonce: Optional[bytes] = None) -> IntegratedValidation:
+    def validate_and_append(
+        self, gate_vector: List[int], context_data: bytes, nonce: Optional[bytes] = None
+    ) -> IntegratedValidation:
         """
         Validate gates through quasicrystal and append to HMAC chain.
 
@@ -183,16 +182,18 @@ class QuasicrystalHMACChain:
         # 3. Check PHDM integrity
         phdm_valid, _ = self._phdm.verify_path()
         phdm_deviation = self._phdm_detector.detect_manifold_deviation(
-            observed_vertices=sum(gate_vector),
-            observed_euler=gate_sum % 10
+            observed_vertices=sum(gate_vector), observed_euler=gate_sum % 10
         )
 
         # 4. Combine data for HMAC
         combined_data = (
-            context_data +
-            b"|" + str(gate_vector).encode() +
-            b"|" + qc_result.status.value.encode() +
-            b"|" + str(phdm_index).encode()
+            context_data
+            + b"|"
+            + str(gate_vector).encode()
+            + b"|"
+            + qc_result.status.value.encode()
+            + b"|"
+            + str(phdm_index).encode()
         )
 
         # 5. Compute HMAC tag
@@ -220,16 +221,15 @@ class QuasicrystalHMACChain:
             phdm_node=phdm_node,
             hmac_tag=hmac_tag,
             chain_position=chain_position,
-            phason_epoch=self._qc.phason_epoch
+            phason_epoch=self._qc.phason_epoch,
         )
 
         self._validations.append(result)
         return result
 
-    def _compute_decision(self,
-                          qc_result: ValidationResult,
-                          phdm_valid: bool,
-                          phdm_deviation: float) -> Tuple[IntegratedDecision, float]:
+    def _compute_decision(
+        self, qc_result: ValidationResult, phdm_valid: bool, phdm_deviation: float
+    ) -> Tuple[IntegratedDecision, float]:
         """
         Compute integrated decision from all verification layers.
 
@@ -248,7 +248,7 @@ class QuasicrystalHMACChain:
 
         # Adjust for crystallinity (attack detection)
         if qc_result.crystallinity_score > 0.5:
-            confidence *= (1 - qc_result.crystallinity_score)
+            confidence *= 1 - qc_result.crystallinity_score
 
         # Check PHDM integrity
         if not phdm_valid:
@@ -256,7 +256,7 @@ class QuasicrystalHMACChain:
 
         # Adjust for PHDM deviation
         if phdm_deviation > 0.5:
-            confidence *= (1 - phdm_deviation * 0.5)
+            confidence *= 1 - phdm_deviation * 0.5
 
         # Make decision based on confidence
         if confidence >= 0.7:
@@ -304,10 +304,7 @@ class QuasicrystalHMACChain:
             if entropy is None:
                 entropy = os.urandom(32)
             self._qc.apply_phason_rekey(entropy)
-            return {
-                "phason_epoch": self._qc.phason_epoch,
-                "pqc_used": False
-            }
+            return {"phason_epoch": self._qc.phason_epoch, "pqc_used": False}
 
     def get_statistics(self) -> Dict[str, Any]:
         """Get chain statistics."""
@@ -325,7 +322,7 @@ class QuasicrystalHMACChain:
             "decisions": decisions,
             "phason_epoch": self._qc.phason_epoch,
             "phdm_path_valid": self._phdm.verify_path()[0],
-            "pqc_available": isinstance(self._qc, PQCQuasicrystalLattice)
+            "pqc_available": isinstance(self._qc, PQCQuasicrystalLattice),
         }
 
     def export_state(self) -> Dict[str, Any]:
@@ -335,7 +332,7 @@ class QuasicrystalHMACChain:
             "chain_iv": self._chain_iv.hex(),
             "qc_state": self._qc.export_state(),
             "phdm_state": self._phdm.export_state(),
-            "statistics": self.get_statistics()
+            "statistics": self.get_statistics(),
         }
 
 
@@ -364,6 +361,7 @@ class IntegratedAuditChain:
         # Try to import PQC for signatures
         try:
             from ..pqc import Dilithium3
+
             self._Dilithium3 = Dilithium3
             self._sig_keypair = Dilithium3.generate_keypair()
             self._pqc_available = True
@@ -373,10 +371,9 @@ class IntegratedAuditChain:
         # Signed validations
         self._signed_entries: List[Tuple[IntegratedValidation, Optional[bytes]]] = []
 
-    def add_entry(self,
-                  identity: str,
-                  intent: str,
-                  gate_vector: Optional[List[int]] = None) -> Tuple[IntegratedValidation, Optional[bytes]]:
+    def add_entry(
+        self, identity: str, intent: str, gate_vector: Optional[List[int]] = None
+    ) -> Tuple[IntegratedValidation, Optional[bytes]]:
         """
         Add a signed entry to the audit chain.
 
@@ -402,9 +399,11 @@ class IntegratedAuditChain:
         signature = None
         if self._pqc_available and self._sig_keypair:
             sign_data = (
-                validation.decision.value.encode() +
-                b"|" + validation.hmac_tag +
-                b"|" + str(validation.chain_position).encode()
+                validation.decision.value.encode()
+                + b"|"
+                + validation.hmac_tag
+                + b"|"
+                + str(validation.chain_position).encode()
             )
             signature = self._Dilithium3.sign(self._sig_keypair.secret_key, sign_data)
 
@@ -419,7 +418,7 @@ class IntegratedAuditChain:
         # Extract 6 values
         gates = []
         for i in range(6):
-            gates.append(int.from_bytes(h[i*4:(i+1)*4], 'big') % 100)
+            gates.append(int.from_bytes(h[i * 4 : (i + 1) * 4], "big") % 100)
 
         return gates
 
@@ -447,9 +446,11 @@ class IntegratedAuditChain:
             for i, (validation, signature) in enumerate(self._signed_entries):
                 if signature:
                     sign_data = (
-                        validation.decision.value.encode() +
-                        b"|" + validation.hmac_tag +
-                        b"|" + str(validation.chain_position).encode()
+                        validation.decision.value.encode()
+                        + b"|"
+                        + validation.hmac_tag
+                        + b"|"
+                        + str(validation.chain_position).encode()
                     )
                     if not self._Dilithium3.verify(
                         self._sig_keypair.public_key, sign_data, signature
@@ -464,7 +465,7 @@ class IntegratedAuditChain:
             "entry_count": len(self._signed_entries),
             "pqc_available": self._pqc_available,
             "chain_statistics": self._qc_chain.get_statistics(),
-            "all_valid": self.verify_all()[0]
+            "all_valid": self.verify_all()[0],
         }
 
     @property
@@ -478,6 +479,7 @@ class IntegratedAuditChain:
 # =============================================================================
 # Convenience Functions
 # =============================================================================
+
 
 def create_integrated_chain(use_pqc: bool = True) -> IntegratedAuditChain:
     """
@@ -507,7 +509,7 @@ def quick_validate(identity: str, intent: str) -> IntegratedValidation:
 
     # Derive gates
     h = hashlib.sha256((identity + "|" + intent).encode()).digest()
-    gates = [int.from_bytes(h[i*4:(i+1)*4], 'big') % 100 for i in range(6)]
+    gates = [int.from_bytes(h[i * 4 : (i + 1) * 4], "big") % 100 for i in range(6)]
 
     context = f"{identity}|{intent}".encode()
     return chain.validate_and_append(gates, context)

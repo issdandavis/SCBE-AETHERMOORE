@@ -27,6 +27,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 try:
     from fastapi.testclient import TestClient
     from src.api.main import app, RateLimiter, MetricsStore
+
     FASTAPI_AVAILABLE = True
 except ImportError:
     FASTAPI_AVAILABLE = False
@@ -35,6 +36,7 @@ except ImportError:
 # =============================================================================
 # API ENDPOINT TESTS
 # =============================================================================
+
 
 @pytest.mark.professional
 @pytest.mark.api
@@ -69,14 +71,10 @@ class TestAPIEndpoints:
             "plaintext": "Test secret data",
             "agent": "test_agent",
             "topic": "memory",
-            "position": [1, 2, 3, 5, 8, 13]
+            "position": [1, 2, 3, 5, 8, 13],
         }
 
-        response = client.post(
-            "/seal-memory",
-            json=payload,
-            headers=auth_headers
-        )
+        response = client.post("/seal-memory", json=payload, headers=auth_headers)
 
         assert response.status_code == 200
         data = response.json()
@@ -91,7 +89,7 @@ class TestAPIEndpoints:
             "plaintext": "Test",
             "agent": "test",
             "topic": "test",
-            "position": [1, 2, 3, 4, 5, 6]
+            "position": [1, 2, 3, 4, 5, 6],
         }
 
         response = client.post("/seal-memory", json=payload)
@@ -103,14 +101,10 @@ class TestAPIEndpoints:
             "plaintext": "Test",
             "agent": "test",
             "topic": "test",
-            "position": [1, 2, 3]  # Only 3 elements, need 6
+            "position": [1, 2, 3],  # Only 3 elements, need 6
         }
 
-        response = client.post(
-            "/seal-memory",
-            json=payload,
-            headers=auth_headers
-        )
+        response = client.post("/seal-memory", json=payload, headers=auth_headers)
 
         assert response.status_code == 422  # Validation error
 
@@ -122,13 +116,11 @@ class TestAPIEndpoints:
             payload = {
                 "position": [1, 2, 3, 5, 8, 13],
                 "agent": "test_agent",
-                "context": context
+                "context": context,
             }
 
             response = client.post(
-                "/retrieve-memory",
-                json=payload,
-                headers=auth_headers
+                "/retrieve-memory", json=payload, headers=auth_headers
             )
 
             assert response.status_code == 200
@@ -139,11 +131,7 @@ class TestAPIEndpoints:
         """Test governance-check is publicly accessible."""
         response = client.get(
             "/governance-check",
-            params={
-                "agent": "test_agent",
-                "topic": "memory",
-                "context": "internal"
-            }
+            params={"agent": "test_agent", "topic": "memory", "context": "internal"},
         )
 
         assert response.status_code == 200
@@ -156,7 +144,7 @@ class TestAPIEndpoints:
         payload = {
             "position": [99, 99, 99, 99, 99, 99],
             "agent": "malicious_bot",
-            "context": "untrusted"
+            "context": "untrusted",
         }
 
         response = client.post("/simulate-attack", json=payload)
@@ -182,6 +170,7 @@ class TestAPIEndpoints:
 # RATE LIMITING TESTS
 # =============================================================================
 
+
 @pytest.mark.professional
 @pytest.mark.api
 class TestRateLimiting:
@@ -189,7 +178,11 @@ class TestRateLimiting:
 
     def test_rate_limiter_allows_under_limit(self):
         """Test rate limiter allows requests under limit."""
-        limiter = RateLimiter(max_requests=10, window_seconds=60) if FASTAPI_AVAILABLE else Mock()
+        limiter = (
+            RateLimiter(max_requests=10, window_seconds=60)
+            if FASTAPI_AVAILABLE
+            else Mock()
+        )
 
         if not FASTAPI_AVAILABLE:
             limiter.is_allowed = Mock(return_value=True)
@@ -250,6 +243,7 @@ class TestRateLimiting:
 # AUTHENTICATION TESTS
 # =============================================================================
 
+
 @pytest.mark.professional
 @pytest.mark.api
 class TestAuthentication:
@@ -263,18 +257,12 @@ class TestAuthentication:
 
     def test_valid_api_key_accepted(self, client):
         """Test valid API keys are accepted."""
-        response = client.get(
-            "/metrics",
-            headers={"X-API-Key": "demo_key_12345"}
-        )
+        response = client.get("/metrics", headers={"X-API-Key": "demo_key_12345"})
         assert response.status_code == 200
 
     def test_invalid_api_key_rejected(self, client):
         """Test invalid API keys are rejected."""
-        response = client.get(
-            "/metrics",
-            headers={"X-API-Key": "invalid_key"}
-        )
+        response = client.get("/metrics", headers={"X-API-Key": "invalid_key"})
         assert response.status_code == 401
 
     def test_missing_api_key_rejected(self, client):
@@ -286,6 +274,7 @@ class TestAuthentication:
 # =============================================================================
 # METRICS TESTS
 # =============================================================================
+
 
 @pytest.mark.professional
 @pytest.mark.api
@@ -349,6 +338,7 @@ class TestMetrics:
 # REQUEST VALIDATION TESTS
 # =============================================================================
 
+
 @pytest.mark.professional
 @pytest.mark.api
 class TestRequestValidation:
@@ -370,14 +360,10 @@ class TestRequestValidation:
             "plaintext": "x" * 5000,  # Over 4096 limit
             "agent": "test",
             "topic": "test",
-            "position": [1, 2, 3, 4, 5, 6]
+            "position": [1, 2, 3, 4, 5, 6],
         }
 
-        response = client.post(
-            "/seal-memory",
-            json=payload,
-            headers=auth_headers
-        )
+        response = client.post("/seal-memory", json=payload, headers=auth_headers)
 
         assert response.status_code == 422
 
@@ -388,14 +374,10 @@ class TestRequestValidation:
                 "plaintext": "test",
                 "agent": "test",
                 "topic": "test",
-                "position": list(range(length))
+                "position": list(range(length)),
             }
 
-            response = client.post(
-                "/seal-memory",
-                json=payload,
-                headers=auth_headers
-            )
+            response = client.post("/seal-memory", json=payload, headers=auth_headers)
 
             assert response.status_code == 422
 
@@ -404,14 +386,10 @@ class TestRequestValidation:
         payload = {
             "position": [1, 2, 3, 4, 5, 6],
             "agent": "test",
-            "context": "invalid_context"
+            "context": "invalid_context",
         }
 
-        response = client.post(
-            "/retrieve-memory",
-            json=payload,
-            headers=auth_headers
-        )
+        response = client.post("/retrieve-memory", json=payload, headers=auth_headers)
 
         assert response.status_code == 422
 
@@ -421,14 +399,10 @@ class TestRequestValidation:
             "plaintext": "test",
             "agent": "",  # Empty
             "topic": "test",
-            "position": [1, 2, 3, 4, 5, 6]
+            "position": [1, 2, 3, 4, 5, 6],
         }
 
-        response = client.post(
-            "/seal-memory",
-            json=payload,
-            headers=auth_headers
-        )
+        response = client.post("/seal-memory", json=payload, headers=auth_headers)
 
         assert response.status_code == 422
 
@@ -436,6 +410,7 @@ class TestRequestValidation:
 # =============================================================================
 # ERROR HANDLING TESTS
 # =============================================================================
+
 
 @pytest.mark.professional
 @pytest.mark.api
@@ -471,6 +446,7 @@ class TestErrorHandling:
 # RESPONSE FORMAT TESTS
 # =============================================================================
 
+
 @pytest.mark.professional
 @pytest.mark.api
 class TestResponseFormats:
@@ -488,13 +464,11 @@ class TestResponseFormats:
             "plaintext": "test",
             "agent": "test_agent",
             "topic": "memory",
-            "position": [1, 2, 3, 5, 8, 13]
+            "position": [1, 2, 3, 5, 8, 13],
         }
 
         response = client.post(
-            "/seal-memory",
-            json=payload,
-            headers={"X-API-Key": valid_api_key}
+            "/seal-memory", json=payload, headers={"X-API-Key": valid_api_key}
         )
 
         data = response.json()
@@ -516,11 +490,7 @@ class TestResponseFormats:
         """Test governance-check response has correct structure."""
         response = client.get(
             "/governance-check",
-            params={
-                "agent": "test",
-                "topic": "test",
-                "context": "internal"
-            }
+            params={"agent": "test", "topic": "test", "context": "internal"},
         )
 
         data = response.json()

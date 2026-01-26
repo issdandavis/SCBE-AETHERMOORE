@@ -12,8 +12,10 @@ import numpy as np
 # Optional plotting - will skip if not available
 try:
     import matplotlib
-    matplotlib.use('Agg')
+
+    matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+
     HAS_MATPLOTLIB = True
 except ImportError:
     HAS_MATPLOTLIB = False
@@ -22,6 +24,7 @@ except ImportError:
 # =============================================================================
 # TEST 1: CHAOS SENSITIVITY
 # =============================================================================
+
 
 def logistic(r, x0, n):
     """Logistic map: x_{n+1} = r * x_n * (1 - x_n)"""
@@ -59,29 +62,31 @@ def test_chaos_sensitivity():
     print(f"\nDifference: {difference:.10f}")
 
     passed = difference > 0.1
-    print(f"{'✓ PASS' if passed else '✗ FAIL'}: Difference {'>' if passed else '<='} 0.1")
+    print(
+        f"{'✓ PASS' if passed else '✗ FAIL'}: Difference {'>' if passed else '<='} 0.1"
+    )
 
     # Visualize divergence (if matplotlib available)
     if HAS_MATPLOTLIB:
         plt.figure(figsize=(12, 5))
         plt.subplot(1, 2, 1)
-        plt.plot(traj1[:20], 'b-o', label=f'r={r1}', markersize=4)
-        plt.plot(traj2[:20], 'r--s', label=f'r={r2}', markersize=4)
-        plt.xlabel('Iteration')
-        plt.ylabel('x value')
-        plt.title('First 20 iterations (trajectories overlap then diverge)')
+        plt.plot(traj1[:20], "b-o", label=f"r={r1}", markersize=4)
+        plt.plot(traj2[:20], "r--s", label=f"r={r2}", markersize=4)
+        plt.xlabel("Iteration")
+        plt.ylabel("x value")
+        plt.title("First 20 iterations (trajectories overlap then diverge)")
         plt.legend()
         plt.grid(True, alpha=0.3)
 
         plt.subplot(1, 2, 2)
         diffs = [abs(traj1[i] - traj2[i]) for i in range(min(len(traj1), len(traj2)))]
-        plt.semilogy(diffs, 'g-', linewidth=2)
-        plt.xlabel('Iteration')
-        plt.ylabel('|x₁ - x₂| (log scale)')
-        plt.title('Exponential divergence over time')
+        plt.semilogy(diffs, "g-", linewidth=2)
+        plt.xlabel("Iteration")
+        plt.ylabel("|x₁ - x₂| (log scale)")
+        plt.title("Exponential divergence over time")
         plt.grid(True, alpha=0.3)
         plt.tight_layout()
-        plt.savefig('chaos_sensitivity.png', dpi=100, bbox_inches='tight')
+        plt.savefig("chaos_sensitivity.png", dpi=100, bbox_inches="tight")
         plt.close()
         print("\n[Chart saved: chaos_sensitivity.png]\n")
     else:
@@ -94,6 +99,7 @@ def test_chaos_sensitivity():
 # TEST 2: FRACTAL GATE DISCRIMINATION
 # =============================================================================
 
+
 def fractal_gate(z0, c, max_iter=50, escape=2.0):
     """
     Julia set iteration: z_{n+1} = z_n^2 + c
@@ -101,7 +107,7 @@ def fractal_gate(z0, c, max_iter=50, escape=2.0):
     """
     z = z0
     for i in range(max_iter):
-        z = z*z + c
+        z = z * z + c
         if abs(z) > escape:
             return False, i
     return True, max_iter
@@ -127,7 +133,9 @@ def test_fractal_gate():
     print(f"\nValid basin (sil'kor): c = {c_valid}")
     print(f"  Result: {'PASS' if passed_valid else 'FAIL'} (iterations: {iter_valid})")
     print(f"\nInvalid basin: c = {c_invalid}")
-    print(f"  Result: {'PASS' if passed_invalid else 'FAIL'} (escaped at iteration {iter_invalid})")
+    print(
+        f"  Result: {'PASS' if passed_invalid else 'FAIL'} (escaped at iteration {iter_invalid})"
+    )
 
     test_passed = passed_valid and not passed_invalid
     if test_passed:
@@ -148,17 +156,20 @@ def test_fractal_gate():
     print("Testing all vocabulary terms:")
     vocab_results = {}
     for name, c in vocab.items():
-        passed, iters = fractal_gate(0.1+0.1j, c)
+        passed, iters = fractal_gate(0.1 + 0.1j, c)
         status = "✓ PASS" if passed else "✗ FAIL"
         print(f"  {name:12} c={c:>15} → {status} (iterations: {iters})")
         vocab_results[name] = passed
 
-    assert test_passed, "Fractal gate failed to discriminate valid from invalid contexts"
+    assert (
+        test_passed
+    ), "Fractal gate failed to discriminate valid from invalid contexts"
 
 
 # =============================================================================
 # TEST 3: NEURAL ENERGY SEPARATION
 # =============================================================================
+
 
 def hopfield_energy(c, W, theta):
     """
@@ -210,7 +221,9 @@ def test_neural_energy():
     # Normalize
     mu = training_patterns.mean(axis=0)
     sigma = training_patterns.std(axis=0) + 1e-6
-    normalized_patterns = np.array([normalize_context(p, mu, sigma) for p in training_patterns])
+    normalized_patterns = np.array(
+        [normalize_context(p, mu, sigma) for p in training_patterns]
+    )
 
     # Train
     W, theta = train_hopfield(normalized_patterns)
@@ -240,7 +253,9 @@ def test_neural_energy():
     print(f"\nThreshold (μ + 3σ): {threshold:.4f}")
 
     if anomaly_energy > threshold:
-        print(f"✓ TEST PASSED: Anomaly rejected (energy {anomaly_energy:.4f} > {threshold:.4f})")
+        print(
+            f"✓ TEST PASSED: Anomaly rejected (energy {anomaly_energy:.4f} > {threshold:.4f})"
+        )
         test_passed = True
     else:
         # Check if at least clearly separated
@@ -272,12 +287,15 @@ def test_neural_energy():
         print(f"  {name:12} E={E:7.3f} ({sigma_away:+.1f}σ) {status}")
         anomaly_results[name] = rejected
 
-    assert test_passed, "Neural energy failed to separate anomalies from trained patterns"
+    assert (
+        test_passed
+    ), "Neural energy failed to separate anomalies from trained patterns"
 
 
 # =============================================================================
 # MAIN
 # =============================================================================
+
 
 def run_all_tests():
     """Run all CPSE physics validation tests."""
