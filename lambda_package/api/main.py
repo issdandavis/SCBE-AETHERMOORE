@@ -66,11 +66,10 @@ app.add_middleware(
 )
 
 # API Key authentication
-API_KEY_HEADER = APIKeyHeader(name="X-API-Key", auto_error=False)
+API_KEY_HEADER = APIKeyHeader(name="SCBE_api_key", auto_error=False)
 
 def _load_api_keys() -> dict:
     """
-    Load API keys from environment. No hardcoded defaults.
 
     Set SCBE_API_KEY environment variable before starting.
     For multiple keys: SCBE_API_KEY=key1,key2,key3
