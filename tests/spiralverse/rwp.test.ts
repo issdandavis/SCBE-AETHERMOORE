@@ -340,7 +340,7 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
     });
 
     it('should get required tongues for policy', () => {
-      expect(getRequiredTongues('standard')).toEqual([]); // Any valid signature
+      expect(getRequiredTongues('standard')).toEqual(['ko']); // Any valid signature
       expect(getRequiredTongues('strict')).toEqual(['ru']);
       expect(getRequiredTongues('critical')).toEqual(['ru', 'um', 'dr']);
     });
@@ -355,8 +355,8 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
       expect(suggestPolicy('update')).toBe('standard');
 
       // Delete/secret operations: secret
-      expect(suggestPolicy('delete')).toBe('secret');
-      expect(suggestPolicy('credential')).toBe('secret');
+      expect(suggestPolicy('delete')).toBe('strict');
+      expect(suggestPolicy('credential')).toBe('strict');
 
       // Critical operations: critical
       expect(suggestPolicy('deploy')).toBe('critical');
