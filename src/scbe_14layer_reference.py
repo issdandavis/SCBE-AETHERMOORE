@@ -233,26 +233,25 @@ def mobius_add(u: np.ndarray, v: np.ndarray, eps: float = 1e-10) -> np.ndarray:
     Möbius (gyrovector) addition in the Poincaré ball model.
     True hyperbolic isometry: d(u ⊕ v, w ⊕ v) = d(u, w)
 
+    Standard formula:
+        u ⊕ v = [(1 + 2<u,v> + ||v||²)u + (1 - ||u||²)v] / [1 + 2<u,v> + ||u||²||v||²]
+
     Args:
         u, v: vectors with ‖u‖ < 1, ‖v‖ < 1
         eps: numerical stability
 
     Returns:
         u ⊕ v (still inside the ball)
+
+    Reference: Ungar "Analytic Hyperbolic Geometry" (2008-2010)
     """
     u2 = np.dot(u, u)
     v2 = np.dot(v, v)
     uv = np.dot(u, v)
 
-    # Lorentz factor γ_u
-    gamma_u = 1.0 / np.sqrt(1.0 - u2 + eps)
-
-    # Coefficients
-    coeff_u = gamma_u * (1.0 + gamma_u * uv + v2)
-    coeff_v = 1.0 - gamma_u**2 * u2
-
-    numerator = coeff_u * u + coeff_v * v
-    denom = 1.0 + 2.0 * gamma_u * uv + gamma_u**2 * u2 * v2
+    # Standard Möbius addition formula
+    numerator = (1.0 + 2.0 * uv + v2) * u + (1.0 - u2) * v
+    denom = 1.0 + 2.0 * uv + u2 * v2
     denom = max(denom, eps)
 
     result = numerator / denom
@@ -326,33 +325,10 @@ def layer_7_phase_transform(
     # Step 1: Apply rotation Q (rotation about origin preserves distance)
     u_rotated = mobius_rotate(u, Q, eps)
 
-    # Step 2: Translate by a using Möbius addition
+    # Step 2: Translate by a using Möbius addition (isometry in hyperbolic space)
     u_translated = mobius_add(a, u_rotated, eps)
 
-    # Möbius addition: a ⊕ u
-    a_norm_sq = np.linalg.norm(a) ** 2
-    u_norm_sq = np.linalg.norm(u) ** 2
-    au_dot = np.dot(a, u)
-
-    numerator = (1 + 2 * au_dot + u_norm_sq) * a + (1 - a_norm_sq) * u
-    raw_denominator = 1 + 2 * au_dot + a_norm_sq * u_norm_sq
-    # Only add eps when denominator is close to zero to avoid numerical issues
-    denominator = raw_denominator if abs(raw_denominator) > eps else eps
-    denominator = 1 + 2 * au_dot + a_norm_sq * u_norm_sq
-
-    # Only add eps if denominator is too small (avoid division by zero)
-    if abs(denominator) < eps:
-        denominator = eps if denominator >= 0 else -eps
-
-    shifted = numerator / denominator
-
-    # Ensure stays in ball
-    norm = np.linalg.norm(shifted)
-    if norm >= 1.0:
-        shifted = 0.99 * shifted / norm
-
-    # Apply rotation
-    return Q @ shifted
+    return u_translated
 
 
 # =============================================================================
@@ -614,7 +590,7 @@ def scbe_14layer_pipeline(
 
     # L11: Triadic temporal
     if d_star_history is None or len(d_star_history) < 3:
-        d_tri_norm = d_star  # Not enough history
+        d_tri_norm = min(1.0, d_star)  # Not enough history, clamp to [0,1]
         tau = 0.5  # Default trust
     else:
         d1 = np.mean(d_star_history[-3:])
