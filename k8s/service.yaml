@@ -12,8 +12,8 @@ spec:
   type: LoadBalancer
   ports:
   - port: 80
-    targetPort: 3000
-    protocol: TCP
-    name: http
+      targetPort: 80
+      protocol: TCP
+      name: http
   selector:
     app: scbe-aethermoore
