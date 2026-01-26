@@ -299,7 +299,7 @@ jobs:
       - name: SCBE Evaluation
         run: |
           curl -X POST ${{ secrets.SCBE_API_URL }}/api/v1/evaluate \
-            -H "X-API-Key: ${{ secrets.SCBE_API_KEY }}" \
+            -H "SCBE_api_key: ${{ secrets.SCBE_API_KEY }}" \
             -d '{
               "agent_id": "github-actions",
               "action": "deploy",

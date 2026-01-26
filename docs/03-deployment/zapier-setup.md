@@ -50,7 +50,7 @@ Connect SCBE alerts to Slack, Email, Notion, and 5000+ other apps via Zapier.
    - **URL**: `https://your-scbe-api.com/v1/alerts?pending_only=true`
    - **Headers**:
      ```
-     X-API-Key: your-scbe-api-key
+     SCBE_api_key: your-scbe-api-key
      ```
 
 ### Step 3: Set Action (Slack Message)
@@ -191,7 +191,7 @@ After processing, acknowledge alerts so they don't repeat:
 Add a second action after your notification:
 1. "Webhooks by Zapier" → "POST"
 2. URL: `https://your-scbe-api.com/v1/alerts/{{alert_id}}/ack`
-3. Headers: `X-API-Key: your-key`
+3. Headers: `SCBE_api_key: your-key`
 
 ### Option 2: Let Them Auto-Expire
 
@@ -207,7 +207,7 @@ Copy these templates (replace URLs and keys):
 ```
 Trigger: Webhooks by Zapier (Poll)
   URL: https://api.example.com/v1/alerts?pending_only=true
-  Headers: X-API-Key: xxx
+  Headers: SCBE_api_key: xxx
 
 Filter: severity = high OR severity = critical
 
@@ -223,7 +223,7 @@ Trigger: Schedule by Zapier
 
 Action: Webhooks by Zapier (GET)
   URL: https://api.example.com/v1/metrics
-  Headers: X-API-Key: xxx
+  Headers: SCBE_api_key: xxx
 
 Action: Notion - Create Database Item
   Title: SCBE Daily Report - {{zap_meta_human_now}}
@@ -241,7 +241,7 @@ Action: Notion - Create Database Item
 1. Generate a test alert:
 ```bash
 curl -X POST https://your-api.com/v1/authorize \
-  -H "X-API-Key: your-key" \
+  -H "SCBE_api_key: your-key" \
   -H "Content-Type: application/json" \
   -d '{"agent_id":"test","action":"test","target":"test","context":{"sensitivity":0.9}}'
 ```

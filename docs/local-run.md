@@ -147,7 +147,7 @@ Run an authorization call:
 ```powershell
 curl -X POST http://localhost:8000/v1/authorize `
   -H "Content-Type: application/json" `
-  -H "X-API-Key: your-key" `
+  -H "SCBE_api_key: your-key" `
   -d '{"agent_id":"fraud-detector-001","action":"READ","target":"customer_transactions","context":{"department":"security","sensitivity":"high"}}'
 ```
 

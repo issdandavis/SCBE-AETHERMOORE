@@ -41,7 +41,7 @@ http://localhost:8000/docs
 
 ```bash
 curl -X POST "http://localhost:8000/seal-memory" \
-  -H "X-API-Key: demo_key_12345" \
+  -H "SCBE_api_key: demo_key_12345" \
   -H "Content-Type: application/json" \
   -d '{
     "plaintext": "secret financial data",
@@ -71,7 +71,7 @@ curl -X POST "http://localhost:8000/seal-memory" \
 
 ```bash
 curl -X POST "http://localhost:8000/retrieve-memory" \
-  -H "X-API-Key: demo_key_12345" \
+  -H "SCBE_api_key: demo_key_12345" \
   -H "Content-Type: application/json" \
   -d '{
     "position": [10, 20, 30, 40, 50, 60],
@@ -99,7 +99,7 @@ curl -X POST "http://localhost:8000/retrieve-memory" \
 
 ```bash
 curl -X POST "http://localhost:8000/retrieve-memory" \
-  -H "X-API-Key: demo_key_12345" \
+  -H "SCBE_api_key: demo_key_12345" \
   -H "Content-Type: application/json" \
   -d '{
     "position": [10, 20, 30, 40, 50, 60],
@@ -197,7 +197,7 @@ API_KEY = "demo_key_12345"
 # Seal memory
 response = requests.post(
     f"{API_URL}/seal-memory",
-    headers={"X-API-Key": API_KEY},
+    headers={"SCBE_api_key": API_KEY},
     json={
         "plaintext": "secret data",
         "agent": "agent_123",
@@ -210,7 +210,7 @@ print("Seal:", response.json())
 # Retrieve memory
 response = requests.post(
     f"{API_URL}/retrieve-memory",
-    headers={"X-API-Key": API_KEY},
+    headers={"SCBE_api_key": API_KEY},
     json={
         "position": [10, 20, 30, 40, 50, 60],
         "agent": "agent_123",
@@ -243,7 +243,7 @@ const API_KEY = 'demo_key_12345';
 const sealResponse = await fetch(`${API_URL}/seal-memory`, {
   method: 'POST',
   headers: {
-    'X-API-Key': API_KEY,
+    'SCBE_api_key': API_KEY,
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({

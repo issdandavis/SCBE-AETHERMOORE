@@ -110,7 +110,7 @@ Response:
 ```bash
 curl -X POST http://localhost:8080/api/v1/evaluate \
   -H "Content-Type: application/json" \
-  -H "X-API-Key: your-secure-key-here" \
+  -H "SCBE_api_key: your-secure-key-here" \
   -d '{
     "agent_id": "agent-001",
     "action": "read_customer_data",
@@ -193,7 +193,7 @@ npm test -- --timeout 10000
 # Ensure API key is set
 export SCBE_API_KEY="your-key"
 # Verify it's passed in header
-curl -H "X-API-Key: $SCBE_API_KEY" http://localhost:8080/health
+curl -H "SCBE_api_key: $SCBE_API_KEY" http://localhost:8080/health
 ```
 
 **Python import errors**
