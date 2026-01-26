@@ -14,6 +14,4 @@
 export const tier = 'L2-UNIT';
 export const level = 'Junior Developer';
 export const description = 'Standard unit tests for individual functions';
-export const tests = [
-  'spectral-coherence.unit.test.ts'
-];
+export const tests = ['spectral-coherence.unit.test.ts'];
