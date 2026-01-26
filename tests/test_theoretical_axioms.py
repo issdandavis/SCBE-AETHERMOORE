@@ -30,7 +30,7 @@ import statistics
 from typing import List, Tuple, Callable
 from scipy import stats
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 
 # Try to import SCBE modules
 try:
@@ -39,8 +39,9 @@ try:
         layer_5_hyperbolic_distance,
         layer_6_breathing_transform,
         layer_7_phase_transform,
-        layer_12_harmonic_scaling
+        layer_12_harmonic_scaling,
     )
+
     SCBE_AVAILABLE = True
 except ImportError:
     SCBE_AVAILABLE = False
@@ -114,22 +115,25 @@ class TestAxiom5_CInfinitySmoothness:
 
             # Check gradient consistency across scales
             for i in range(1, len(gradients)):
-                rel_diff = np.linalg.norm(gradients[i] - gradients[i-1]) / (np.linalg.norm(gradients[i]) + 1e-12)
+                rel_diff = np.linalg.norm(gradients[i] - gradients[i - 1]) / (
+                    np.linalg.norm(gradients[i]) + 1e-12
+                )
 
                 if rel_diff > 1e-5:
-                    failures.append({
-                        'trial': trial,
-                        'point': x,
-                        'eps_pair': (epsilons[i-1], epsilons[i]),
-                        'rel_diff': rel_diff
-                    })
+                    failures.append(
+                        {
+                            "trial": trial,
+                            "point": x,
+                            "eps_pair": (epsilons[i - 1], epsilons[i]),
+                            "rel_diff": rel_diff,
+                        }
+                    )
 
         if failures:
             msg = f"Poincaré embedding gradient not smooth in {len(failures)}/{n_points} trials:\n"
             for f in failures[:5]:
                 msg += f"  Trial {f['trial']}: eps {f['eps_pair']}, rel_diff={f['rel_diff']:.2e}\n"
             pytest.fail(msg)
-
 
     @pytest.mark.skipif(not SCBE_AVAILABLE, reason="SCBE modules not available")
     def test_breathing_transform_smoothness(self):
@@ -171,15 +175,16 @@ class TestAxiom5_CInfinitySmoothness:
 
             # Check consistency
             for i in range(1, len(gradients)):
-                rel_diff = np.linalg.norm(gradients[i] - gradients[i-1]) / (np.linalg.norm(gradients[i]) + 1e-12)
+                rel_diff = np.linalg.norm(gradients[i] - gradients[i - 1]) / (
+                    np.linalg.norm(gradients[i]) + 1e-12
+                )
 
                 if rel_diff > 1e-5:
-                    failures.append({
-                        'trial': trial,
-                        'rel_diff': rel_diff
-                    })
+                    failures.append({"trial": trial, "rel_diff": rel_diff})
 
-        assert len(failures) == 0, f"Breathing transform not smooth in {len(failures)}/{n_points} trials"
+        assert (
+            len(failures) == 0
+        ), f"Breathing transform not smooth in {len(failures)}/{n_points} trials"
 
     @pytest.mark.skipif(not SCBE_AVAILABLE, reason="SCBE modules not available")
     def test_hyperbolic_distance_smoothness(self):
@@ -222,15 +227,16 @@ class TestAxiom5_CInfinitySmoothness:
 
             # Check consistency
             for i in range(1, len(gradients)):
-                rel_diff = np.linalg.norm(gradients[i] - gradients[i-1]) / (np.linalg.norm(gradients[i]) + 1e-12)
+                rel_diff = np.linalg.norm(gradients[i] - gradients[i - 1]) / (
+                    np.linalg.norm(gradients[i]) + 1e-12
+                )
 
                 if rel_diff > 1e-5:
-                    failures.append({
-                        'trial': trial,
-                        'rel_diff': rel_diff
-                    })
+                    failures.append({"trial": trial, "rel_diff": rel_diff})
 
-        assert len(failures) == 0, f"Hyperbolic distance not smooth in {len(failures)}/{n_points} trials"
+        assert (
+            len(failures) == 0
+        ), f"Hyperbolic distance not smooth in {len(failures)}/{n_points} trials"
 
     @pytest.mark.skipif(not SCBE_AVAILABLE, reason="SCBE modules not available")
     def test_second_derivative_boundedness(self):
@@ -265,26 +271,30 @@ class TestAxiom5_CInfinitySmoothness:
                 f_mm = layer_4_poincare_embedding(x_mm)
 
                 # 2nd derivative (diagonal element)
-                h_ii = np.linalg.norm(f_pp - 2*f_x + f_mm) / (4 * eps**2)
+                h_ii = np.linalg.norm(f_pp - 2 * f_x + f_mm) / (4 * eps**2)
 
                 hessian_diag.append(h_ii)
 
             # Check all 2nd derivatives are finite and bounded
             for i, h in enumerate(hessian_diag):
                 if not np.isfinite(h):
-                    failures.append({
-                        'trial': trial,
-                        'component': i,
-                        'value': h,
-                        'reason': 'not finite'
-                    })
+                    failures.append(
+                        {
+                            "trial": trial,
+                            "component": i,
+                            "value": h,
+                            "reason": "not finite",
+                        }
+                    )
                 elif h > 1e6:
-                    failures.append({
-                        'trial': trial,
-                        'component': i,
-                        'value': h,
-                        'reason': 'too large'
-                    })
+                    failures.append(
+                        {
+                            "trial": trial,
+                            "component": i,
+                            "value": h,
+                            "reason": "too large",
+                        }
+                    )
 
         assert len(failures) == 0, f"2nd derivatives unbounded in {len(failures)} cases"
 
@@ -353,15 +363,18 @@ class TestAxiom6_LyapunovStability:
 
             # Should converge (final < 0.8 * initial) - relaxed threshold
             if final_dist > initial_dist * 0.8:
-                failures.append({
-                    'traj_id': traj_id,
-                    'initial': initial_dist,
-                    'final': final_dist,
-                    'ratio': final_dist / initial_dist
-                })
+                failures.append(
+                    {
+                        "traj_id": traj_id,
+                        "initial": initial_dist,
+                        "final": final_dist,
+                        "ratio": final_dist / initial_dist,
+                    }
+                )
 
-        assert len(failures) == 0, f"No convergence in {len(failures)}/{n_trajectories} trajectories"
-
+        assert (
+            len(failures) == 0
+        ), f"No convergence in {len(failures)}/{n_trajectories} trajectories"
 
     @pytest.mark.skipif(not SCBE_AVAILABLE, reason="SCBE modules not available")
     def test_lyapunov_stability_under_noise(self):
@@ -402,25 +415,31 @@ class TestAxiom6_LyapunovStability:
 
                 # Check no explosion
                 if new_dist > 10.0:
-                    failures.append({
-                        'traj_id': traj_id,
-                        'step': step,
-                        'distance': new_dist,
-                        'reason': 'explosion'
-                    })
+                    failures.append(
+                        {
+                            "traj_id": traj_id,
+                            "step": step,
+                            "distance": new_dist,
+                            "reason": "explosion",
+                        }
+                    )
                     break
 
             # Check eventual convergence (within 2x initial)
             if len(distances) == max_steps + 1:
                 if distances[-1] > distances[0] * 2.0:
-                    failures.append({
-                        'traj_id': traj_id,
-                        'initial': distances[0],
-                        'final': distances[-1],
-                        'reason': 'no convergence'
-                    })
+                    failures.append(
+                        {
+                            "traj_id": traj_id,
+                            "initial": distances[0],
+                            "final": distances[-1],
+                            "reason": "no convergence",
+                        }
+                    )
 
-        assert len(failures) == 0, f"Instability in {len(failures)}/{n_trajectories} trajectories"
+        assert (
+            len(failures) == 0
+        ), f"Instability in {len(failures)}/{n_trajectories} trajectories"
 
     @pytest.mark.skipif(not SCBE_AVAILABLE, reason="SCBE modules not available")
     def test_lyapunov_function_decrease(self):
@@ -445,7 +464,7 @@ class TestAxiom6_LyapunovStability:
 
             for step in range(max_steps):
                 dist = layer_5_hyperbolic_distance(u, safe_center)
-                V = dist ** 2
+                V = dist**2
                 V_values.append(V)
 
                 # Apply transform
@@ -461,18 +480,22 @@ class TestAxiom6_LyapunovStability:
             # Also check no sustained increase
             increases = 0
             for i in range(1, len(V_values)):
-                if V_values[i] > V_values[i-1] * 1.1:
+                if V_values[i] > V_values[i - 1] * 1.1:
                     increases += 1
 
             if final_V > initial_V * 0.8:
-                failures.append({
-                    'traj_id': traj_id,
-                    'initial_V': initial_V,
-                    'final_V': final_V,
-                    'increases': increases
-                })
+                failures.append(
+                    {
+                        "traj_id": traj_id,
+                        "initial_V": initial_V,
+                        "final_V": final_V,
+                        "increases": increases,
+                    }
+                )
 
-        assert len(failures) == 0, f"Lyapunov function not decreasing in {len(failures)}/{n_trajectories} cases"
+        assert (
+            len(failures) == 0
+        ), f"Lyapunov function not decreasing in {len(failures)}/{n_trajectories} cases"
 
 
 class TestAxiom11_FractionalDimensionFlux:
@@ -501,7 +524,9 @@ class TestAxiom11_FractionalDimensionFlux:
     - No sudden jumps or discontinuities
     """
 
-    def _box_counting_dimension(self, points: np.ndarray, scales: np.ndarray = None) -> float:
+    def _box_counting_dimension(
+        self, points: np.ndarray, scales: np.ndarray = None
+    ) -> float:
         """
         Compute box-counting fractal dimension.
 
@@ -566,7 +591,7 @@ class TestAxiom11_FractionalDimensionFlux:
         dimensions = []
 
         for i in range(len(trajectory) - window_size):
-            segment = trajectory[i:i+window_size]
+            segment = trajectory[i : i + window_size]
 
             # Project to 1D for simplicity (distance from start)
             proj = np.linalg.norm(segment - trajectory[i], axis=1)
@@ -579,13 +604,16 @@ class TestAxiom11_FractionalDimensionFlux:
         dim_diffs = np.diff(dimensions)
         std_diffs = np.std(dim_diffs)
 
-        assert std_diffs < 0.15, f"Dimension flux too jumpy (std={std_diffs:.3f} exceeds 0.15)"
+        assert (
+            std_diffs < 0.15
+        ), f"Dimension flux too jumpy (std={std_diffs:.3f} exceeds 0.15)"
 
         # Check correlation between consecutive dimensions (relaxed threshold)
         if len(dimensions) > 1:
             corr = np.corrcoef(dimensions[:-1], dimensions[1:])[0, 1]
-            assert corr > 0.85, f"Dimension changes not continuous (corr={corr:.3f} below 0.85)"
-
+            assert (
+                corr > 0.85
+            ), f"Dimension changes not continuous (corr={corr:.3f} below 0.85)"
 
     @pytest.mark.skipif(not SCBE_AVAILABLE, reason="SCBE modules not available")
     def test_dimension_estimation_stability(self):
@@ -663,12 +691,11 @@ class TestAxiom11_FractionalDimensionFlux:
 
             # Check valid range [1, 6] for 6D embedding
             if dim < 0.5 or dim > 6.5:
-                failures.append({
-                    'traj_id': traj_id,
-                    'dimension': dim
-                })
+                failures.append({"traj_id": traj_id, "dimension": dim})
 
-        assert len(failures) == 0, f"Invalid dimensions in {len(failures)}/{n_trajectories} trajectories"
+        assert (
+            len(failures) == 0
+        ), f"Invalid dimensions in {len(failures)}/{n_trajectories} trajectories"
 
     @pytest.mark.skipif(not SCBE_AVAILABLE, reason="SCBE modules not available")
     def test_dimension_flux_under_perturbation(self):
@@ -717,14 +744,18 @@ class TestAxiom11_FractionalDimensionFlux:
             dim_diff = abs(dim_base - dim_pert)
 
             if dim_diff > 0.3:
-                failures.append({
-                    'trial': trial,
-                    'dim_base': dim_base,
-                    'dim_pert': dim_pert,
-                    'diff': dim_diff
-                })
+                failures.append(
+                    {
+                        "trial": trial,
+                        "dim_base": dim_base,
+                        "dim_pert": dim_pert,
+                        "diff": dim_diff,
+                    }
+                )
 
-        assert len(failures) == 0, f"Dimension hypersensitive in {len(failures)}/{n_trials} trials"
+        assert (
+            len(failures) == 0
+        ), f"Dimension hypersensitive in {len(failures)}/{n_trials} trials"
 
 
 class TestAxiomIntegration:
@@ -764,7 +795,7 @@ class TestAxiomIntegration:
 
         # Check smoothness (consecutive points close)
         for i in range(1, len(trajectory)):
-            step_size = np.linalg.norm(trajectory[i] - trajectory[i-1])
+            step_size = np.linalg.norm(trajectory[i] - trajectory[i - 1])
             assert step_size < 0.5, f"Large jump at step {i}: {step_size:.3f}"
 
         # Check stability (converging)
@@ -798,7 +829,7 @@ class TestAxiomIntegration:
         dimensions = []
 
         for i in range(len(trajectory) - window_size):
-            segment = trajectory[i:i+window_size]
+            segment = trajectory[i : i + window_size]
             proj = np.linalg.norm(segment - trajectory[i], axis=1)
 
             # Simple dimension estimate

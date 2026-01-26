@@ -26,18 +26,21 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 # Try imports
 try:
     from src.scbe_14layer_reference import scbe_14layer_pipeline
+
     SCBE_AVAILABLE = True
 except ImportError:
     SCBE_AVAILABLE = False
 
 try:
     from src.crypto.rwp_v3 import RWPv3Protocol
+
     RWP_AVAILABLE = True
 except ImportError:
     RWP_AVAILABLE = False
 
 try:
     from src.crypto.sacred_tongues import SacredTongueTokenizer
+
     TONGUES_AVAILABLE = True
 except ImportError:
     TONGUES_AVAILABLE = False
@@ -46,6 +49,7 @@ except ImportError:
 # =============================================================================
 # FULL PIPELINE INTEGRATION TESTS
 # =============================================================================
+
 
 @pytest.mark.integration
 class TestFullPipelineIntegration:
@@ -66,7 +70,7 @@ class TestFullPipelineIntegration:
             w_tau=0.2,
             w_a=0.1,
             theta1=0.5,
-            theta2=0.8
+            theta2=0.8,
         )
 
         # Verify complete result structure
@@ -96,13 +100,15 @@ class TestFullPipelineIntegration:
             w_tau=0.05,
             w_a=0.05,
             theta1=0.1,
-            theta2=0.3
+            theta2=0.3,
         )
 
         # Should detect threat
         assert result["decision"] in ["QUARANTINE", "DENY"]
 
-    @pytest.mark.skipif(not (SCBE_AVAILABLE and RWP_AVAILABLE), reason="Modules not available")
+    @pytest.mark.skipif(
+        not (SCBE_AVAILABLE and RWP_AVAILABLE), reason="Modules not available"
+    )
     def test_seal_and_verify_flow(self, legitimate_request):
         """Test complete seal → verify → decision flow."""
         # Step 1: Prepare data
@@ -116,8 +122,7 @@ class TestFullPipelineIntegration:
         # Step 3: Run governance check (weights must sum to 1.0)
         position = np.array(legitimate_request.position, dtype=float)
         result = scbe_14layer_pipeline(
-            t=position, D=6,
-            w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
+            t=position, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
         )
 
         # Step 4: Based on decision, decrypt or return noise
@@ -134,6 +139,7 @@ class TestFullPipelineIntegration:
 # LAYER-BY-LAYER INTEGRATION TESTS
 # =============================================================================
 
+
 @pytest.mark.integration
 class TestLayerIntegration:
     """Test individual layers work correctly together."""
@@ -143,8 +149,7 @@ class TestLayerIntegration:
         """Test Layers 1-4: Complex state → Poincaré embedding."""
         position = np.array([1.0, 2.0, 3.0, 5.0, 8.0, 13.0])
         result = scbe_14layer_pipeline(
-            t=position, D=6,
-            w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
+            t=position, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
         )
 
         # Geometry output proves embedding happened
@@ -160,8 +165,7 @@ class TestLayerIntegration:
         """Test Layers 5-8: Distance + Breath + Phase + Potential."""
         position = np.array([1.0, 2.0, 3.0, 5.0, 8.0, 13.0])
         result = scbe_14layer_pipeline(
-            t=position, D=6,
-            w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
+            t=position, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
         )
 
         # d_star comes from distance calculation
@@ -173,8 +177,7 @@ class TestLayerIntegration:
         """Test Layers 9-11: Spectral + Spin + Triadic."""
         position = np.array([1.0, 2.0, 3.0, 5.0, 8.0, 13.0])
         result = scbe_14layer_pipeline(
-            t=position, D=6,
-            w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
+            t=position, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
         )
 
         # Coherence metrics from spectral/spin layers (check actual keys)
@@ -190,8 +193,7 @@ class TestLayerIntegration:
         """Test Layer 12: Harmonic scaling amplification."""
         position = np.array([1.0, 2.0, 3.0, 5.0, 8.0, 13.0])
         result = scbe_14layer_pipeline(
-            t=position, D=6,
-            w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
+            t=position, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
         )
 
         # H = R^(d_star²), default R=10.0 for strong super-exponential growth
@@ -210,18 +212,26 @@ class TestLayerIntegration:
         result_low = scbe_14layer_pipeline(
             t=np.array([1, 2, 3, 5, 8, 13]),
             D=6,
-            w_d=0.1, w_c=0.3, w_s=0.3, w_tau=0.2, w_a=0.1,
+            w_d=0.1,
+            w_c=0.3,
+            w_s=0.3,
+            w_tau=0.2,
+            w_a=0.1,
             theta1=0.5,
-            theta2=0.8
+            theta2=0.8,
         )
 
         # High risk → DENY (weights sum to 1.0)
         result_high = scbe_14layer_pipeline(
             t=np.array([99, 99, 99, 99, 99, 99]),
             D=6,
-            w_d=0.7, w_c=0.1, w_s=0.1, w_tau=0.05, w_a=0.05,
+            w_d=0.7,
+            w_c=0.1,
+            w_s=0.1,
+            w_tau=0.05,
+            w_a=0.05,
             theta1=0.1,
-            theta2=0.2
+            theta2=0.2,
         )
 
         assert result_low["risk_base"] < result_high["risk_base"]
@@ -230,6 +240,7 @@ class TestLayerIntegration:
 # =============================================================================
 # SACRED TONGUE INTEGRATION TESTS
 # =============================================================================
+
 
 @pytest.mark.integration
 class TestSacredTongueIntegration:
@@ -242,7 +253,7 @@ class TestSacredTongueIntegration:
 
         original = b"Test message for Sacred Tongue encoding"
         # SacredTongueTokenizer uses encode/decode, not tokenize/detokenize
-        if hasattr(tokenizer, 'encode'):
+        if hasattr(tokenizer, "encode"):
             encoded = tokenizer.encode(original)
             decoded = tokenizer.decode(encoded)
             assert decoded == original
@@ -253,12 +264,12 @@ class TestSacredTongueIntegration:
     def test_tongue_to_layer_mapping(self):
         """Test Sacred Tongue to security layer mapping."""
         tongue_layers = {
-            "KO": 1,   # Nonce → Complex state
-            "AV": 2,   # AAD → Realification
-            "RU": 3,   # Salt → Weighted transform
-            "CA": 4,   # Ciphertext → Poincaré embedding
+            "KO": 1,  # Nonce → Complex state
+            "AV": 2,  # AAD → Realification
+            "RU": 3,  # Salt → Weighted transform
+            "CA": 4,  # Ciphertext → Poincaré embedding
             "UM": 13,  # Redaction → Decision gate
-            "DR": 14   # Tag → Audio axis
+            "DR": 14,  # Tag → Audio axis
         }
 
         # Verify mapping exists and is complete
@@ -269,6 +280,7 @@ class TestSacredTongueIntegration:
 # =============================================================================
 # GOVERNANCE DECISION INTEGRATION TESTS
 # =============================================================================
+
 
 @pytest.mark.integration
 class TestGovernanceIntegration:
@@ -296,7 +308,10 @@ class TestGovernanceIntegration:
 
         # Risk should increase with context suspicion
         # Note: May not always hold due to other factors
-        assert all(r["risk_base"] >= 0 for r in [result_internal, result_external, result_untrusted])
+        assert all(
+            r["risk_base"] >= 0
+            for r in [result_internal, result_external, result_untrusted]
+        )
 
     @pytest.mark.skipif(not SCBE_AVAILABLE, reason="SCBE not available")
     def test_threshold_sensitivity(self):
@@ -305,14 +320,28 @@ class TestGovernanceIntegration:
 
         # Strict thresholds (weights sum to 1.0)
         result_strict = scbe_14layer_pipeline(
-            t=position, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2,
-            theta1=0.1, theta2=0.2
+            t=position,
+            D=6,
+            w_d=0.2,
+            w_c=0.2,
+            w_s=0.2,
+            w_tau=0.2,
+            w_a=0.2,
+            theta1=0.1,
+            theta2=0.2,
         )
 
         # Lenient thresholds (weights sum to 1.0)
         result_lenient = scbe_14layer_pipeline(
-            t=position, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2,
-            theta1=0.7, theta2=0.9
+            t=position,
+            D=6,
+            w_d=0.2,
+            w_c=0.2,
+            w_s=0.2,
+            w_tau=0.2,
+            w_a=0.2,
+            theta1=0.7,
+            theta2=0.9,
         )
 
         # Same input, different thresholds may produce different decisions
@@ -323,6 +352,7 @@ class TestGovernanceIntegration:
 # =============================================================================
 # FAIL-TO-NOISE INTEGRATION TESTS
 # =============================================================================
+
 
 @pytest.mark.integration
 class TestFailToNoiseIntegration:
@@ -363,6 +393,7 @@ class TestFailToNoiseIntegration:
 # TEMPORAL INTEGRATION TESTS
 # =============================================================================
 
+
 @pytest.mark.integration
 class TestTemporalIntegration:
     """Test temporal verification integration."""
@@ -378,7 +409,7 @@ class TestTemporalIntegration:
             "t_consensus": now + 0.010,
             "t_commit": now + 0.015,
             "t_audit": now + 0.020,
-            "t_expiry": now + 3600
+            "t_expiry": now + 3600,
         }
 
         assert len(vertices) == 7
@@ -409,6 +440,7 @@ class TestTemporalIntegration:
 # PERFORMANCE INTEGRATION TESTS
 # =============================================================================
 
+
 @pytest.mark.integration
 class TestPerformanceIntegration:
     """Test performance under realistic conditions."""
@@ -422,8 +454,7 @@ class TestPerformanceIntegration:
         for _ in range(20):
             start = time.perf_counter()
             scbe_14layer_pipeline(
-                t=position, D=6,
-                w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
+                t=position, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
             )
             latency = time.perf_counter() - start
             latencies.append(latency)
@@ -457,11 +488,14 @@ class TestPerformanceIntegration:
 # COMPLETE WORKFLOW TESTS
 # =============================================================================
 
+
 @pytest.mark.integration
 class TestCompleteWorkflows:
     """Test complete real-world workflows."""
 
-    @pytest.mark.skipif(not (SCBE_AVAILABLE and RWP_AVAILABLE), reason="Modules not available")
+    @pytest.mark.skipif(
+        not (SCBE_AVAILABLE and RWP_AVAILABLE), reason="Modules not available"
+    )
     def test_memory_seal_workflow(self):
         """Test complete memory sealing workflow."""
         # 1. Prepare request
@@ -479,7 +513,11 @@ class TestCompleteWorkflows:
         result = scbe_14layer_pipeline(
             t=np.array(position, dtype=float),
             D=6,
-            w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
+            w_d=0.2,
+            w_c=0.2,
+            w_s=0.2,
+            w_tau=0.2,
+            w_a=0.2,
         )
 
         # 4. Record result
@@ -490,12 +528,16 @@ class TestCompleteWorkflows:
             "position": position,
             "decision": result["decision"],
             "risk": result["risk_base"],
-            "sealed_length": len(sealed.ciphertext) if hasattr(sealed, 'ciphertext') else 0
+            "sealed_length": (
+                len(sealed.ciphertext) if hasattr(sealed, "ciphertext") else 0
+            ),
         }
 
         assert all(k in record for k in ["timestamp", "agent", "decision"])
 
-    @pytest.mark.skipif(not (SCBE_AVAILABLE and RWP_AVAILABLE), reason="Modules not available")
+    @pytest.mark.skipif(
+        not (SCBE_AVAILABLE and RWP_AVAILABLE), reason="Modules not available"
+    )
     def test_memory_retrieve_workflow(self):
         """Test complete memory retrieval workflow."""
         # 1. Seal first
@@ -510,7 +552,11 @@ class TestCompleteWorkflows:
         result = scbe_14layer_pipeline(
             t=np.array(position, dtype=float),
             D=6,
-            w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
+            w_d=0.2,
+            w_c=0.2,
+            w_s=0.2,
+            w_tau=0.2,
+            w_a=0.2,
         )
 
         # 3. Based on decision
@@ -519,7 +565,14 @@ class TestCompleteWorkflows:
             assert retrieved == plaintext
         elif result["decision"] == "QUARANTINE":
             # Flag for review (envelope is RWPEnvelope, not bytes)
-            flagged = {"sealed": sealed.ciphertext.hex() if hasattr(sealed, 'ciphertext') else str(sealed), "reason": "QUARANTINE"}
+            flagged = {
+                "sealed": (
+                    sealed.ciphertext.hex()
+                    if hasattr(sealed, "ciphertext")
+                    else str(sealed)
+                ),
+                "reason": "QUARANTINE",
+            }
             assert "reason" in flagged
         else:  # DENY
             # Return noise

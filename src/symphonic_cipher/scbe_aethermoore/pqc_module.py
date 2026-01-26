@@ -37,6 +37,7 @@ from abc import ABC, abstractmethod
 # SECTION 1: ABSTRACT INTERFACES
 # =============================================================================
 
+
 class KEMInterface(ABC):
     """Abstract interface for Key Encapsulation Mechanism."""
 
@@ -115,12 +116,14 @@ class SignatureInterface(ABC):
 # SECTION 2: LIBOQS IMPLEMENTATIONS (Real PQC)
 # =============================================================================
 
+
 class LiboqsKEM(KEMInterface):
     """ML-KEM-768 using liboqs Python bindings."""
 
     def __init__(self, algorithm: str = "ML-KEM-768"):
         try:
             import oqs
+
             self._kem = oqs.KeyEncapsulation(algorithm)
             self._algorithm = algorithm
             self._available = True
@@ -140,6 +143,7 @@ class LiboqsKEM(KEMInterface):
     def decaps(self, secret_key: bytes, ciphertext: bytes) -> bytes:
         # Need to recreate KEM object with the secret key
         import oqs
+
         kem = oqs.KeyEncapsulation(self._algorithm, secret_key)
         shared_secret = kem.decap_secret(ciphertext)
         return shared_secret
@@ -150,19 +154,19 @@ class LiboqsKEM(KEMInterface):
 
     @property
     def public_key_size(self) -> int:
-        return self._kem.details['length_public_key']
+        return self._kem.details["length_public_key"]
 
     @property
     def secret_key_size(self) -> int:
-        return self._kem.details['length_secret_key']
+        return self._kem.details["length_secret_key"]
 
     @property
     def ciphertext_size(self) -> int:
-        return self._kem.details['length_ciphertext']
+        return self._kem.details["length_ciphertext"]
 
     @property
     def shared_secret_size(self) -> int:
-        return self._kem.details['length_shared_secret']
+        return self._kem.details["length_shared_secret"]
 
 
 class LiboqsSignature(SignatureInterface):
@@ -171,6 +175,7 @@ class LiboqsSignature(SignatureInterface):
     def __init__(self, algorithm: str = "ML-DSA-65"):
         try:
             import oqs
+
             self._sig = oqs.Signature(algorithm)
             self._algorithm = algorithm
             self._available = True
@@ -185,12 +190,14 @@ class LiboqsSignature(SignatureInterface):
 
     def sign(self, secret_key: bytes, message: bytes) -> bytes:
         import oqs
+
         sig = oqs.Signature(self._algorithm, secret_key)
         signature = sig.sign(message)
         return signature
 
     def verify(self, public_key: bytes, message: bytes, signature: bytes) -> bool:
         import oqs
+
         sig = oqs.Signature(self._algorithm)
         return sig.verify(message, signature, public_key)
 
@@ -202,6 +209,7 @@ class LiboqsSignature(SignatureInterface):
 # =============================================================================
 # SECTION 3: SIMULATION IMPLEMENTATIONS (Fallback)
 # =============================================================================
+
 
 class SimulatedKEM(KEMInterface):
     """
@@ -241,13 +249,13 @@ class SimulatedKEM(KEMInterface):
         encrypted_rand = bytes(a ^ b for a, b in zip(randomness, pk_hash))
 
         # Build ciphertext: encrypted randomness + padding
-        ciphertext = encrypted_rand.ljust(1088, b'\x00')
+        ciphertext = encrypted_rand.ljust(1088, b"\x00")
 
         return shared_secret, ciphertext
 
     def decaps(self, secret_key: bytes, ciphertext: bytes) -> bytes:
         # Extract public key from secret key (stored after 32-byte seed)
-        public_key = secret_key[32:32+1184]
+        public_key = secret_key[32 : 32 + 1184]
 
         # Decrypt randomness using public key hash
         pk_hash = hashlib.sha256(public_key).digest()
@@ -309,7 +317,7 @@ class SimulatedSignature(SignatureInterface):
         if len(signature) < 64:
             return False
         # Check signature looks valid (non-zero)
-        return signature[:32] != b'\x00' * 32
+        return signature[:32] != b"\x00" * 32
 
     @property
     def name(self) -> str:
@@ -319,6 +327,7 @@ class SimulatedSignature(SignatureInterface):
 # =============================================================================
 # SECTION 4: FACTORY FUNCTIONS
 # =============================================================================
+
 
 def get_kem(prefer_real: bool = True) -> KEMInterface:
     """
@@ -360,9 +369,11 @@ def get_signature(prefer_real: bool = True) -> SignatureInterface:
 # SECTION 5: HIGH-LEVEL API
 # =============================================================================
 
+
 @dataclass
 class PQCKeyPair:
     """Post-quantum keypair for both KEM and signatures."""
+
     kem_public: bytes
     kem_secret: bytes
     sig_public: bytes
@@ -379,9 +390,10 @@ class PQCEnvelope:
     Claim 2: ML-KEM-768 for key encapsulation
     Claim 3: ML-DSA-65 for signatures
     """
-    kem_ciphertext: bytes      # Encapsulated key
-    signature: bytes           # ML-DSA signature over payload
-    payload: bytes             # Encrypted payload (spectral ciphertext)
+
+    kem_ciphertext: bytes  # Encapsulated key
+    signature: bytes  # ML-DSA signature over payload
+    payload: bytes  # Encrypted payload (spectral ciphertext)
     context_commitment: bytes  # SHA256 of context
     intent_fingerprint: bytes  # SHA256 of intent
 
@@ -415,16 +427,18 @@ class PQCManager:
             sig_public=sig_public,
             sig_secret=sig_secret,
             kem_algorithm=self.kem.name,
-            sig_algorithm=self.sig.name
+            sig_algorithm=self.sig.name,
         )
         return self._keypair
 
-    def create_envelope(self,
-                        recipient_kem_public: bytes,
-                        sender_sig_secret: bytes,
-                        payload: bytes,
-                        context_commitment: bytes,
-                        intent_fingerprint: bytes) -> Tuple[PQCEnvelope, bytes]:
+    def create_envelope(
+        self,
+        recipient_kem_public: bytes,
+        sender_sig_secret: bytes,
+        payload: bytes,
+        context_commitment: bytes,
+        intent_fingerprint: bytes,
+    ) -> Tuple[PQCEnvelope, bytes]:
         """
         Create a signed and encrypted envelope.
 
@@ -447,10 +461,7 @@ class PQCManager:
 
         # Sign the envelope contents (Claim 3)
         sign_data = (
-            kem_ciphertext +
-            context_commitment +
-            intent_fingerprint +
-            encrypted_payload
+            kem_ciphertext + context_commitment + intent_fingerprint + encrypted_payload
         )
         signature = self.sig.sign(sender_sig_secret, sign_data)
 
@@ -459,15 +470,17 @@ class PQCManager:
             signature=signature,
             payload=encrypted_payload,
             context_commitment=context_commitment,
-            intent_fingerprint=intent_fingerprint
+            intent_fingerprint=intent_fingerprint,
         )
 
         return envelope, shared_secret
 
-    def open_envelope(self,
-                      envelope: PQCEnvelope,
-                      recipient_kem_secret: bytes,
-                      sender_sig_public: bytes) -> Tuple[Optional[bytes], bytes]:
+    def open_envelope(
+        self,
+        envelope: PQCEnvelope,
+        recipient_kem_secret: bytes,
+        sender_sig_public: bytes,
+    ) -> Tuple[Optional[bytes], bytes]:
         """
         Verify and decrypt an envelope.
 
@@ -481,14 +494,14 @@ class PQCManager:
         """
         # Verify signature first (Claim 3)
         sign_data = (
-            envelope.kem_ciphertext +
-            envelope.context_commitment +
-            envelope.intent_fingerprint +
-            envelope.payload
+            envelope.kem_ciphertext
+            + envelope.context_commitment
+            + envelope.intent_fingerprint
+            + envelope.payload
         )
 
         if not self.sig.verify(sender_sig_public, sign_data, envelope.signature):
-            return None, b''
+            return None, b""
 
         # Decapsulate shared secret (Claim 2)
         shared_secret = self.kem.decaps(recipient_kem_secret, envelope.kem_ciphertext)
@@ -501,10 +514,10 @@ class PQCManager:
 
     def _expand_key(self, key: bytes, length: int) -> bytes:
         """Expand key to required length using HKDF-like construction."""
-        result = b''
+        result = b""
         counter = 0
         while len(result) < length:
-            block = hashlib.sha256(key + struct.pack('>I', counter)).digest()
+            block = hashlib.sha256(key + struct.pack(">I", counter)).digest()
             result += block
             counter += 1
         return result[:length]
@@ -515,13 +528,14 @@ class PQCManager:
         return {
             "kem": self.kem.name,
             "signature": self.sig.name,
-            "is_simulated": "SIMULATED" in self.kem.name
+            "is_simulated": "SIMULATED" in self.kem.name,
         }
 
 
 # =============================================================================
 # SECTION 6: SELF-TESTS
 # =============================================================================
+
 
 def self_test() -> Dict[str, Any]:
     """
@@ -602,17 +616,11 @@ def self_test() -> Dict[str, Any]:
         intent = hashlib.sha256(b"intent").digest()
 
         envelope, ss = manager.create_envelope(
-            keypair.kem_public,
-            keypair.sig_secret,
-            payload,
-            context,
-            intent
+            keypair.kem_public, keypair.sig_secret, payload, context, intent
         )
 
         decrypted, _ = manager.open_envelope(
-            envelope,
-            keypair.kem_secret,
-            keypair.sig_public
+            envelope, keypair.kem_secret, keypair.sig_public
         )
 
         if decrypted == payload:
@@ -630,7 +638,9 @@ def self_test() -> Dict[str, Any]:
         algos = manager.algorithms
         if "kem" in algos and "signature" in algos:
             passed += 1
-            results["algorithm_names"] = f"✓ PASS (KEM={algos['kem']}, Sig={algos['signature']})"
+            results["algorithm_names"] = (
+                f"✓ PASS (KEM={algos['kem']}, Sig={algos['signature']})"
+            )
         else:
             results["algorithm_names"] = "✗ FAIL (missing algorithm info)"
     except Exception as e:
@@ -640,7 +650,7 @@ def self_test() -> Dict[str, Any]:
         "passed": passed,
         "total": total,
         "results": results,
-        "success_rate": f"{passed}/{total} ({100*passed/total:.1f}%)"
+        "success_rate": f"{passed}/{total} ({100*passed/total:.1f}%)",
     }
 
 

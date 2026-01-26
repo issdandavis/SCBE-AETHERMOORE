@@ -15,6 +15,4 @@
 export const tier = 'L4-PROPERTY';
 export const level = 'Staff Engineer';
 export const description = 'Property-based testing with random inputs';
-export const tests = [
-  'mathematical-invariants.property.test.ts'
-];
+export const tests = ['mathematical-invariants.property.test.ts'];

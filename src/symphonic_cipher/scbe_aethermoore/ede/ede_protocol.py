@@ -31,14 +31,19 @@ from typing import Optional, Tuple, Dict, Any, List
 from enum import Enum
 
 from .spiral_ring import (
-    SpiralRing, RingConfig, SynchronizedRingPair,
-    mars_light_delay, MARS_LIGHT_TIME_MIN, MARS_LIGHT_TIME_MAX,
+    SpiralRing,
+    RingConfig,
+    SynchronizedRingPair,
+    mars_light_delay,
+    MARS_LIGHT_TIME_MIN,
+    MARS_LIGHT_TIME_MAX,
     LIGHT_SPEED,
 )
 
 # Import PQC for quantum resistance
 try:
     from ..pqc import Kyber768, Dilithium3
+
     PQC_AVAILABLE = True
 except ImportError:
     PQC_AVAILABLE = False
@@ -51,22 +56,24 @@ except ImportError:
 # Protocol version
 PROTOCOL_VERSION = 0x01
 
+
 # Message types
 class MessageType(Enum):
     """EDE message types."""
-    DATA = 0x01              # Regular data message
-    CONTROL = 0x02           # Control/command message
-    HEARTBEAT = 0x03         # Keep-alive
-    SYNC = 0x04              # Time synchronization
-    EMERGENCY = 0x05         # Emergency priority
-    ACK = 0x06               # Acknowledgment (delayed)
+
+    DATA = 0x01  # Regular data message
+    CONTROL = 0x02  # Control/command message
+    HEARTBEAT = 0x03  # Keep-alive
+    SYNC = 0x04  # Time synchronization
+    EMERGENCY = 0x05  # Emergency priority
+    ACK = 0x06  # Acknowledgment (delayed)
 
 
 # Header sizes
-HEADER_SIZE = 32             # Bytes
-TIMESTAMP_SIZE = 8           # 64-bit timestamp
-SEQUENCE_SIZE = 8            # 64-bit sequence number
-MAC_SIZE = 32                # HMAC-SHA256
+HEADER_SIZE = 32  # Bytes
+TIMESTAMP_SIZE = 8  # 64-bit timestamp
+SEQUENCE_SIZE = 8  # 64-bit sequence number
+MAC_SIZE = 32  # HMAC-SHA256
 
 # Cosmic ray protection
 ERROR_DETECTION_OVERHEAD = 4  # CRC32 per 64-byte block
@@ -75,6 +82,7 @@ ERROR_DETECTION_OVERHEAD = 4  # CRC32 per 64-byte block
 # =============================================================================
 # MESSAGE FORMAT
 # =============================================================================
+
 
 @dataclass
 class EDEHeader:
@@ -90,28 +98,29 @@ class EDEHeader:
         payload_len: 4 bytes  - Payload length
         reserved:    8 bytes  - Reserved for future use
     """
+
     version: int
     msg_type: MessageType
     flags: int
     sequence: int
     timestamp: float
     payload_len: int
-    reserved: bytes = b'\x00' * 8
+    reserved: bytes = b"\x00" * 8
 
     def to_bytes(self) -> bytes:
         """Serialize header to bytes."""
         return (
-            self.version.to_bytes(1, 'big') +
-            self.msg_type.value.to_bytes(1, 'big') +
-            self.flags.to_bytes(2, 'big') +
-            self.sequence.to_bytes(8, 'big') +
-            struct.pack('>d', self.timestamp) +
-            self.payload_len.to_bytes(4, 'big') +
-            self.reserved
+            self.version.to_bytes(1, "big")
+            + self.msg_type.value.to_bytes(1, "big")
+            + self.flags.to_bytes(2, "big")
+            + self.sequence.to_bytes(8, "big")
+            + struct.pack(">d", self.timestamp)
+            + self.payload_len.to_bytes(4, "big")
+            + self.reserved
         )
 
     @classmethod
-    def from_bytes(cls, data: bytes) -> 'EDEHeader':
+    def from_bytes(cls, data: bytes) -> "EDEHeader":
         """Deserialize header from bytes."""
         if len(data) < HEADER_SIZE:
             raise ValueError(f"Header must be {HEADER_SIZE} bytes")
@@ -119,11 +128,11 @@ class EDEHeader:
         return cls(
             version=data[0],
             msg_type=MessageType(data[1]),
-            flags=int.from_bytes(data[2:4], 'big'),
-            sequence=int.from_bytes(data[4:12], 'big'),
-            timestamp=struct.unpack('>d', data[12:20])[0],
-            payload_len=int.from_bytes(data[20:24], 'big'),
-            reserved=data[24:32]
+            flags=int.from_bytes(data[2:4], "big"),
+            sequence=int.from_bytes(data[4:12], "big"),
+            timestamp=struct.unpack(">d", data[12:20])[0],
+            payload_len=int.from_bytes(data[20:24], "big"),
+            reserved=data[24:32],
         )
 
 
@@ -137,6 +146,7 @@ class EDEMessage:
         payload:      variable (encrypted)
         mac:          32 bytes (HMAC-SHA256 of header + payload)
     """
+
     header: EDEHeader
     payload: bytes
     mac: bytes
@@ -146,7 +156,7 @@ class EDEMessage:
         return self.header.to_bytes() + self.payload + self.mac
 
     @classmethod
-    def from_bytes(cls, data: bytes) -> 'EDEMessage':
+    def from_bytes(cls, data: bytes) -> "EDEMessage":
         """Deserialize complete message."""
         if len(data) < HEADER_SIZE + MAC_SIZE:
             raise ValueError("Message too short")
@@ -155,19 +165,24 @@ class EDEMessage:
 
         expected_len = HEADER_SIZE + header.payload_len + MAC_SIZE
         if len(data) < expected_len:
-            raise ValueError(f"Message truncated: expected {expected_len}, got {len(data)}")
+            raise ValueError(
+                f"Message truncated: expected {expected_len}, got {len(data)}"
+            )
 
-        payload = data[HEADER_SIZE:HEADER_SIZE + header.payload_len]
-        mac = data[HEADER_SIZE + header.payload_len:HEADER_SIZE + header.payload_len + MAC_SIZE]
+        payload = data[HEADER_SIZE : HEADER_SIZE + header.payload_len]
+        mac = data[
+            HEADER_SIZE
+            + header.payload_len : HEADER_SIZE
+            + header.payload_len
+            + MAC_SIZE
+        ]
 
         return cls(header=header, payload=payload, mac=mac)
 
     def verify_mac(self, mac_key: bytes) -> bool:
         """Verify message MAC."""
         expected = hmac.new(
-            mac_key,
-            self.header.to_bytes() + self.payload,
-            hashlib.sha256
+            mac_key, self.header.to_bytes() + self.payload, hashlib.sha256
         ).digest()
         return hmac.compare_digest(self.mac, expected)
 
@@ -176,6 +191,7 @@ class EDEMessage:
 # EDE STATION
 # =============================================================================
 
+
 @dataclass
 class EDEStation:
     """
@@ -183,11 +199,12 @@ class EDEStation:
 
     Handles message encoding/decoding with zero-latency operation.
     """
+
     station_id: str
     ring: SpiralRing
     sequence_counter: int = 0
     epoch_time: float = 0.0
-    mac_key: bytes = field(default_factory=lambda: b'\x00' * 32)
+    mac_key: bytes = field(default_factory=lambda: b"\x00" * 32)
     received_sequences: Dict[str, int] = field(default_factory=dict)
 
     @classmethod
@@ -196,8 +213,8 @@ class EDEStation:
         station_id: str,
         shared_seed: bytes,
         mac_key: Optional[bytes] = None,
-        config: Optional[RingConfig] = None
-    ) -> 'EDEStation':
+        config: Optional[RingConfig] = None,
+    ) -> "EDEStation":
         """
         Create a new EDE station.
 
@@ -216,18 +233,14 @@ class EDEStation:
             # Derive MAC key from seed
             mac_key = hashlib.sha256(shared_seed + b"mac-key").digest()
 
-        return cls(
-            station_id=station_id,
-            ring=ring,
-            mac_key=mac_key
-        )
+        return cls(station_id=station_id, ring=ring, mac_key=mac_key)
 
     def send(
         self,
         payload: bytes,
         msg_type: MessageType = MessageType.DATA,
         flags: int = 0,
-        send_time: Optional[float] = None
+        send_time: Optional[float] = None,
     ) -> EDEMessage:
         """
         Create an EDE message for transmission.
@@ -257,28 +270,20 @@ class EDEStation:
             flags=flags,
             sequence=self.sequence_counter,
             timestamp=send_time,
-            payload_len=len(encrypted_payload)
+            payload_len=len(encrypted_payload),
         )
 
         self.sequence_counter += 1
 
         # Compute MAC
         mac = hmac.new(
-            self.mac_key,
-            header.to_bytes() + encrypted_payload,
-            hashlib.sha256
+            self.mac_key, header.to_bytes() + encrypted_payload, hashlib.sha256
         ).digest()
 
-        return EDEMessage(
-            header=header,
-            payload=encrypted_payload,
-            mac=mac
-        )
+        return EDEMessage(header=header, payload=encrypted_payload, mac=mac)
 
     def receive(
-        self,
-        message: EDEMessage,
-        sender_id: str = "unknown"
+        self, message: EDEMessage, sender_id: str = "unknown"
     ) -> Tuple[bytes, bool]:
         """
         Receive and decode an EDE message.
@@ -328,6 +333,7 @@ class EDEStation:
 # MARS COMMUNICATION LINK
 # =============================================================================
 
+
 @dataclass
 class MarsLink:
     """
@@ -338,16 +344,17 @@ class MarsLink:
     - Time dilation at relativistic speeds (future-proofing)
     - Cosmic ray error detection
     """
+
     earth_station: EDEStation
     mars_station: EDEStation
-    current_distance_m: float = (MARS_LIGHT_TIME_MIN + MARS_LIGHT_TIME_MAX) / 2 * LIGHT_SPEED
+    current_distance_m: float = (
+        (MARS_LIGHT_TIME_MIN + MARS_LIGHT_TIME_MAX) / 2 * LIGHT_SPEED
+    )
 
     @classmethod
     def establish(
-        cls,
-        shared_seed: bytes,
-        config: Optional[RingConfig] = None
-    ) -> 'MarsLink':
+        cls, shared_seed: bytes, config: Optional[RingConfig] = None
+    ) -> "MarsLink":
         """
         Establish a Mars communication link.
 
@@ -358,10 +365,7 @@ class MarsLink:
         earth = EDEStation.create("EARTH-STATION", shared_seed, config=config)
         mars = EDEStation.create("MARS-STATION", shared_seed, config=config)
 
-        return cls(
-            earth_station=earth,
-            mars_station=mars
-        )
+        return cls(earth_station=earth, mars_station=mars)
 
     def set_distance(self, distance_m: float) -> None:
         """Update current Earth-Mars distance."""
@@ -376,9 +380,7 @@ class MarsLink:
         return 2 * self.get_light_delay()
 
     def simulate_earth_to_mars(
-        self,
-        message: bytes,
-        msg_type: MessageType = MessageType.DATA
+        self, message: bytes, msg_type: MessageType = MessageType.DATA
     ) -> Tuple[EDEMessage, bytes, float]:
         """
         Simulate sending message from Earth to Mars.
@@ -397,9 +399,7 @@ class MarsLink:
         return wire_msg, decoded, self.get_light_delay()
 
     def simulate_mars_to_earth(
-        self,
-        message: bytes,
-        msg_type: MessageType = MessageType.DATA
+        self, message: bytes, msg_type: MessageType = MessageType.DATA
     ) -> Tuple[EDEMessage, bytes, float]:
         """
         Simulate sending message from Mars to Earth.
@@ -434,6 +434,7 @@ class MarsLink:
 # COSMIC RAY PROTECTION
 # =============================================================================
 
+
 def add_error_detection(data: bytes, block_size: int = 64) -> bytes:
     """
     Add CRC32 error detection for cosmic ray protection.
@@ -453,10 +454,10 @@ def add_error_detection(data: bytes, block_size: int = 64) -> bytes:
     protected = bytearray()
 
     for i in range(0, len(data), block_size):
-        block = data[i:i + block_size]
+        block = data[i : i + block_size]
         crc = zlib.crc32(block) & 0xFFFFFFFF
         protected.extend(block)
-        protected.extend(crc.to_bytes(4, 'big'))
+        protected.extend(crc.to_bytes(4, "big"))
 
     return bytes(protected)
 
@@ -479,12 +480,12 @@ def verify_error_detection(data: bytes, block_size: int = 64) -> Tuple[bytes, bo
     all_valid = True
 
     for i in range(0, len(data), chunk_size):
-        chunk = data[i:i + chunk_size]
+        chunk = data[i : i + chunk_size]
         if len(chunk) < 5:
             break
 
         block = chunk[:-4]
-        stored_crc = int.from_bytes(chunk[-4:], 'big')
+        stored_crc = int.from_bytes(chunk[-4:], "big")
         computed_crc = zlib.crc32(block) & 0xFFFFFFFF
 
         if stored_crc != computed_crc:
@@ -498,6 +499,7 @@ def verify_error_detection(data: bytes, block_size: int = 64) -> Tuple[bytes, bo
 # =============================================================================
 # TIME DILATION (FUTURE-PROOFING)
 # =============================================================================
+
 
 def lorentz_factor(velocity_fraction: float) -> float:
     """
@@ -518,13 +520,11 @@ def lorentz_factor(velocity_fraction: float) -> float:
         raise ValueError("Velocity must be less than c")
 
     import math
-    return 1.0 / math.sqrt(1 - velocity_fraction ** 2)
+
+    return 1.0 / math.sqrt(1 - velocity_fraction**2)
 
 
-def apply_time_dilation(
-    proper_time: float,
-    velocity_fraction: float
-) -> float:
+def apply_time_dilation(proper_time: float, velocity_fraction: float) -> float:
     """
     Apply time dilation to convert proper time to coordinate time.
 
@@ -545,11 +545,8 @@ def apply_time_dilation(
 # QUICK FUNCTIONS
 # =============================================================================
 
-def quick_mars_encode(
-    message: bytes,
-    seed: bytes,
-    timestamp: float = 0.0
-) -> bytes:
+
+def quick_mars_encode(message: bytes, seed: bytes, timestamp: float = 0.0) -> bytes:
     """
     Quick encoding for Mars transmission.
 
@@ -566,10 +563,7 @@ def quick_mars_encode(
     return ede_msg.to_bytes()
 
 
-def quick_mars_decode(
-    encoded: bytes,
-    seed: bytes
-) -> Tuple[bytes, bool]:
+def quick_mars_decode(encoded: bytes, seed: bytes) -> Tuple[bytes, bool]:
     """
     Quick decoding for Mars reception.
 

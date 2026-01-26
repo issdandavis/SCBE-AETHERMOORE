@@ -14,13 +14,30 @@ import pytest
 
 # Import from constants module
 from symphonic_cipher.scbe_aethermoore.constants import (
-    PI, E, PHI, SQRT2, SQRT5,
-    R_FIFTH, R_FOURTH, R_THIRD, R_SIXTH, R_OCTAVE, R_PHI,
-    PHI_AETHER, LAMBDA_ISAAC, OMEGA_SPIRAL, ALPHA_ABH,
-    DEFAULT_R, DEFAULT_D_MAX,
-    harmonic_scale, security_bits, security_level,
-    harmonic_distance, octave_transpose,
-    DIMENSIONS, get_harmonic_scale_table,
+    PI,
+    E,
+    PHI,
+    SQRT2,
+    SQRT5,
+    R_FIFTH,
+    R_FOURTH,
+    R_THIRD,
+    R_SIXTH,
+    R_OCTAVE,
+    R_PHI,
+    PHI_AETHER,
+    LAMBDA_ISAAC,
+    OMEGA_SPIRAL,
+    ALPHA_ABH,
+    DEFAULT_R,
+    DEFAULT_D_MAX,
+    harmonic_scale,
+    security_bits,
+    security_level,
+    harmonic_distance,
+    octave_transpose,
+    DIMENSIONS,
+    get_harmonic_scale_table,
 )
 
 # Import from HAL-Attention module
@@ -77,6 +94,7 @@ from symphonic_cipher.scbe_aethermoore.pqc import Kyber768, Dilithium3
 # CONSTANTS MODULE TESTS
 # =============================================================================
 
+
 class TestConstants:
     """Test AETHERMOORE mathematical constants."""
 
@@ -88,24 +106,24 @@ class TestConstants:
 
     def test_harmonic_ratios(self):
         """Test harmonic ratios are correct."""
-        assert R_FIFTH == 1.5       # 3:2
-        assert R_FOURTH == 4/3      # 4:3
-        assert R_THIRD == 1.25      # 5:4
-        assert R_SIXTH == 1.6       # 8:5
-        assert R_OCTAVE == 2.0      # 2:1
+        assert R_FIFTH == 1.5  # 3:2
+        assert R_FOURTH == 4 / 3  # 4:3
+        assert R_THIRD == 1.25  # 5:4
+        assert R_SIXTH == 1.6  # 8:5
+        assert R_OCTAVE == 2.0  # 2:1
 
     def test_aethermoore_constants(self):
         """Test AETHERMOORE-specific constants."""
         # PHI_AETHER = PHI^(2/3)
-        expected_phi_aether = PHI ** (2/3)
+        expected_phi_aether = PHI ** (2 / 3)
         assert abs(PHI_AETHER - expected_phi_aether) < 1e-10
 
         # LAMBDA_ISAAC = 1.5 * PHI^2
-        expected_lambda = R_FIFTH * (PHI ** 2)
+        expected_lambda = R_FIFTH * (PHI**2)
         assert abs(LAMBDA_ISAAC - expected_lambda) < 1e-10
 
         # OMEGA_SPIRAL = 2*PI / PHI^3
-        expected_omega = (2 * PI) / (PHI ** 3)
+        expected_omega = (2 * PI) / (PHI**3)
         assert abs(OMEGA_SPIRAL - expected_omega) < 1e-10
 
         # ALPHA_ABH = PHI + R_FIFTH
@@ -122,7 +140,7 @@ class TestHarmonicScaling:
         assert harmonic_scale(1, 1.5) == 1.5
 
         # H(2, 1.5) = 1.5^4 = 5.0625
-        assert harmonic_scale(2, 1.5) == 1.5 ** 4
+        assert harmonic_scale(2, 1.5) == 1.5**4
 
         # H(3, 1.5) = 1.5^9
         assert abs(harmonic_scale(3, 1.5) - 1.5**9) < 1e-6
@@ -174,7 +192,7 @@ class TestHarmonicDistance:
         # Distance in security direction only (weight R^3)
         u = (0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
         v = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
-        expected = math.sqrt(R_FIFTH ** 3)
+        expected = math.sqrt(R_FIFTH**3)
         assert abs(harmonic_distance(u, v) - expected) < 1e-10
 
 
@@ -197,6 +215,7 @@ class TestOctaveTranspose:
 # =============================================================================
 # HAL-ATTENTION MODULE TESTS
 # =============================================================================
+
 
 class TestHALAttention:
     """Test HAL-Attention mechanism."""
@@ -235,13 +254,19 @@ class TestHALAttention:
         """Test HAL-attention output has correct shape."""
         # d_model must be divisible by n_heads (default 8)
         # Use d_model=8 so it's compatible
-        Q = [[1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-             [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-             [0.5, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]]
-        K = [[1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-             [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]]
-        V = [[1.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-             [3.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]]
+        Q = [
+            [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.5, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        ]
+        K = [
+            [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        ]
+        V = [
+            [1.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [3.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        ]
 
         output = hal_attention(Q, K, V)
         assert len(output.output) == 3  # num queries
@@ -264,6 +289,7 @@ class TestHALAttention:
 # =============================================================================
 # VACUUM-ACOUSTICS MODULE TESTS
 # =============================================================================
+
 
 class TestVacuumAcoustics:
     """Test Vacuum-Acoustics kernel."""
@@ -290,9 +316,7 @@ class TestVacuumAcoustics:
         agent_vector = (0.0, 0.0, 0.0, 1.0, 1.0, 3.0)
         target_position = (0.0, 0.0)  # Origin is always nodal
 
-        result = check_cymatic_resonance(
-            agent_vector, target_position, tolerance=0.1
-        )
+        result = check_cymatic_resonance(agent_vector, target_position, tolerance=0.1)
         assert result is True
 
     def test_flux_redistribution_energy_conservation(self):
@@ -316,9 +340,7 @@ class TestVacuumAcoustics:
 
         # At origin, counter-propagating waves should interfere
         intensity = bottle_beam_intensity(
-            position=(0.0, 0.0, 0.0),
-            sources=sources,
-            wavelength=1.0
+            position=(0.0, 0.0, 0.0), sources=sources, wavelength=1.0
         )
         assert intensity >= 0  # Intensity is always non-negative
 
@@ -328,12 +350,7 @@ class TestChladniPattern:
 
     def test_compute_chladni_pattern(self):
         """Test computing Chladni pattern over a grid."""
-        pattern = compute_chladni_pattern(
-            n=2.0,
-            m=3.0,
-            L=1.0,
-            resolution=10
-        )
+        pattern = compute_chladni_pattern(n=2.0, m=3.0, L=1.0, resolution=10)
         # Returns a 2D list of nodal values
         assert isinstance(pattern, list)
         assert len(pattern) == 10
@@ -351,12 +368,14 @@ class TestChladniPattern:
 # CYMATIC STORAGE MODULE TESTS
 # =============================================================================
 
+
 class TestCymaticStorage:
     """Test HolographicQRCube storage."""
 
     def test_voxel_creation(self):
         """Test voxel dataclass."""
         import hashlib
+
         pos = (1.0, 2.0, 3.0, 4.0, 5.0, 6.0)
         data = b"test data"
         checksum = hashlib.sha256(data).hexdigest()
@@ -366,7 +385,7 @@ class TestCymaticStorage:
             data=data,
             modes=(2.0, 3.0),
             checksum=checksum,
-            storage_mode=StorageMode.RESONANCE
+            storage_mode=StorageMode.RESONANCE,
         )
         assert voxel.data == b"test data"
         assert voxel.storage_mode == StorageMode.RESONANCE
@@ -418,6 +437,7 @@ class TestKDTree:
     def test_kdtree_insert_search(self):
         """Test KD-Tree insert and nearest neighbor search."""
         import hashlib
+
         tree = KDTree()
 
         positions = [
@@ -434,7 +454,7 @@ class TestKDTree:
                 data=data,
                 modes=(1.0, 1.0),
                 checksum=checksum,
-                storage_mode=StorageMode.PUBLIC
+                storage_mode=StorageMode.PUBLIC,
             )
             tree.insert(voxel)
 
@@ -449,17 +469,13 @@ class TestKDTree:
 # PQC HARMONIC MODULE TESTS
 # =============================================================================
 
+
 class TestPQCHarmonic:
     """Test PQC Harmonic enhancement."""
 
     def test_fast_harmonic_key(self):
         """Test fast harmonic key derivation."""
-        key = fast_harmonic_key(
-            b"input key",
-            dimension=6,
-            R=1.5,
-            salt=b"test salt"
-        )
+        key = fast_harmonic_key(b"input key", dimension=6, R=1.5, salt=b"test salt")
         assert len(key) == 32
         assert isinstance(key, bytes)
 
@@ -543,7 +559,7 @@ class TestHarmonicPQCSession:
             responder_kem_public_key=bob_kem.public_key,
             initiator_sig_keypair=alice_sig,
             dimension=6,
-            R=1.5
+            R=1.5,
         )
 
         assert session.dimension == 6
@@ -563,14 +579,14 @@ class TestHarmonicPQCSession:
             initiator_kem_keypair=alice_kem,
             responder_kem_public_key=bob_kem.public_key,
             initiator_sig_keypair=alice_sig,
-            dimension=4
+            dimension=4,
         )
 
         # Verify session
         verified = verify_harmonic_pqc_session(
             session=session,
             responder_kem_keypair=bob_kem,
-            initiator_sig_public_key=alice_sig.public_key
+            initiator_sig_public_key=alice_sig.public_key,
         )
 
         assert verified is not None
@@ -591,7 +607,7 @@ class TestHarmonicPQCSession:
             responder_kem_public_key=bob_kem.public_key,
             initiator_sig_keypair=alice_sig,
             vector_key=vector_key,
-            dimension=3
+            dimension=3,
         )
 
         assert session.vector_key == vector_key
@@ -630,6 +646,7 @@ class TestHarmonicKyberOrchestrator:
 # INTEGRATION TESTS
 # =============================================================================
 
+
 class TestAethermoorIntegration:
     """Integration tests across AETHERMOORE modules."""
 
@@ -667,7 +684,9 @@ class TestAethermoorIntegration:
             float(session.encryption_key.base_key[0]),
             float(session.encryption_key.base_key[1]),
             float(session.encryption_key.base_key[2]),
-            1.0, 2.0, 3.0
+            1.0,
+            2.0,
+            3.0,
         )
 
         voxel = cube.add_voxel(position, b"PQC-protected data")

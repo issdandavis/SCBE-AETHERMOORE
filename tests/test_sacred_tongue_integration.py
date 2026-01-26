@@ -149,7 +149,9 @@ class TestRWPv3Protocol:
         try:
             decrypted = rwp_decrypt_message(password2, envelope, enable_pqc=False)
             # If no exception, verify decryption returned garbage (not original message)
-            assert decrypted != message, "Decryption with wrong password should not return original message"
+            assert (
+                decrypted != message
+            ), "Decryption with wrong password should not return original message"
         except (ValueError, UnicodeDecodeError):
             # Expected - authentication or decode failure
             pass
@@ -402,7 +404,9 @@ class TestProperties:
             try:
                 decrypted = rwp_decrypt_message(password2, envelope, enable_pqc=False)
                 # If no exception, verify decryption returned garbage
-                assert decrypted != message, "Decryption with wrong password should not return original message"
+                assert (
+                    decrypted != message
+                ), "Decryption with wrong password should not return original message"
             except (ValueError, UnicodeDecodeError):
                 # Expected - authentication or decode failure
                 pass

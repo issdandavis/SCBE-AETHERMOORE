@@ -34,6 +34,7 @@ import numpy as np
 # Utilities / guardrails
 # ----------------------------
 
+
 def _norm(x: np.ndarray) -> float:
     return float(np.linalg.norm(x))
 
@@ -59,6 +60,7 @@ def safe_arcosh(x: np.ndarray | float) -> np.ndarray | float:
 # ----------------------------
 # Layer group 1–3: Complex → Real → SPD weight
 # ----------------------------
+
 
 def realify(c: np.ndarray) -> np.ndarray:
     """
@@ -92,7 +94,10 @@ def apply_spd_weights(x: np.ndarray, g_diag: np.ndarray) -> np.ndarray:
 # Layer group 4–8: Poincaré ball + hyperbolic ops + realms
 # ----------------------------
 
-def poincare_embed(x: np.ndarray, alpha: float = 1.0, eps_ball: float = 1e-3) -> np.ndarray:
+
+def poincare_embed(
+    x: np.ndarray, alpha: float = 1.0, eps_ball: float = 1e-3
+) -> np.ndarray:
     """
     Radial tanh embedding Ψα: R^n → B^n:
       u = tanh(alpha*||x||) * x/||x||, u(0)=0
@@ -144,8 +149,9 @@ def mobius_add(a: np.ndarray, u: np.ndarray, eps: float = 1e-12) -> np.ndarray:
     return num / denom
 
 
-def phase_transform(u: np.ndarray, a: np.ndarray, Q: Optional[np.ndarray] = None,
-                    eps_ball: float = 1e-3) -> np.ndarray:
+def phase_transform(
+    u: np.ndarray, a: np.ndarray, Q: Optional[np.ndarray] = None, eps_ball: float = 1e-3
+) -> np.ndarray:
     """
     Phase transform: T_phase(u) = Q (a ⊕ u), where Q ∈ O(n).
     If Q is None, identity is used.
@@ -187,7 +193,10 @@ def realm_distance(u: np.ndarray, centers: np.ndarray) -> float:
 # Layer group 9–11: coherence + triadic temporal distance
 # ----------------------------
 
-def spectral_stability(y: np.ndarray, hf_frac: float = 0.5, eps: float = 1e-12) -> float:
+
+def spectral_stability(
+    y: np.ndarray, hf_frac: float = 0.5, eps: float = 1e-12
+) -> float:
     """
     Spectral stability S_spec = 1 - r_HF where r_HF is fraction of power in high bins.
     hf_frac=0.5 means top half of non-DC bins are "high".
@@ -226,15 +235,19 @@ def spin_coherence(phasors: np.ndarray, eps: float = 1e-12) -> float:
     return float(min(max(c, 0.0), 1.0))
 
 
-def triadic_distance(d1: float, d2: float, dG: float,
-                    lambdas: Tuple[float, float, float] = (0.4, 0.3, 0.3)) -> float:
+def triadic_distance(
+    d1: float,
+    d2: float,
+    dG: float,
+    lambdas: Tuple[float, float, float] = (0.4, 0.3, 0.3),
+) -> float:
     """
     d_tri = sqrt(λ1 d1^2 + λ2 d2^2 + λ3 dG^2), λi>0, sum=1.
     """
     l1, l2, l3 = lambdas
     if min(l1, l2, l3) <= 0:
         raise ValueError("All lambdas must be > 0")
-    s = l1 * (d1 ** 2) + l2 * (d2 ** 2) + l3 * (dG ** 2)
+    s = l1 * (d1**2) + l2 * (d2**2) + l3 * (dG**2)
     return float(np.sqrt(max(0.0, s)))
 
 
@@ -246,14 +259,17 @@ def clamp01(x: float) -> float:
 # Layer group 12–14: Harmonic scaling + risk + decision
 # ----------------------------
 
-def harmonic_scaling(d: float, R: float = 1.5, max_log: float = 700.0) -> Tuple[float, float]:
+
+def harmonic_scaling(
+    d: float, R: float = 1.5, max_log: float = 700.0
+) -> Tuple[float, float]:
     """
     H(d,R) = R^(d^2) computed safely via exp(log(R)*d^2).
     Returns (H, logH). logH is clamped to max_log to avoid overflow.
     """
     if R <= 1.0:
         raise ValueError("R must be > 1 for harmonic amplification")
-    logH = float(np.log(R) * (d ** 2))
+    logH = float(np.log(R) * (d**2))
     logH_c = min(logH, max_log)
     H = float(np.exp(logH_c))
     return H, logH_c
@@ -266,6 +282,7 @@ class RiskWeights:
     All must be >=0.
     Recommended: sum to 1, but not required.
     """
+
     w_dtri: float = 0.30
     w_spin: float = 0.20
     w_spec: float = 0.20
@@ -319,12 +336,17 @@ def risk_prime(
     rb = max(0.0, float(risk_base_value))
     H, logH = harmonic_scaling(float(d_star), R=R, max_log=max_log)
     rp = rb * H
-    return {"risk_prime": float(rp), "H": float(H), "logH": float(logH), "risk_base": float(rb)}
+    return {
+        "risk_prime": float(rp),
+        "H": float(H),
+        "logH": float(logH),
+        "risk_base": float(rb),
+    }
 
 
-def decision_from_risk(risk_prime_value: float,
-                       allow: float = 0.30,
-                       deny: float = 0.70) -> str:
+def decision_from_risk(
+    risk_prime_value: float, allow: float = 0.30, deny: float = 0.70
+) -> str:
     """
     Convert Risk' into a discrete decision.
     If you want strict 1/0 outputs, map ALLOW->1, others->0 externally.
@@ -340,6 +362,7 @@ def decision_from_risk(risk_prime_value: float,
 # ----------------------------
 # Self-test: numeric verification of axioms
 # ----------------------------
+
 
 def self_test(verbose: bool = True) -> Dict[str, Any]:
     rng = np.random.default_rng(7)
@@ -371,10 +394,10 @@ def self_test(verbose: bool = True) -> Dict[str, Any]:
     ok_phase_iso = abs(duv_before - duv_after) < 1e-8
 
     # A7: realm distance is 1-Lipschitz (numeric check)
-    centers = np.stack([
-        np.zeros_like(u),
-        clamp_ball(np.array([0.2, 0.0, 0.0, 0.0]), eps_ball=1e-3)
-    ], axis=0)
+    centers = np.stack(
+        [np.zeros_like(u), clamp_ball(np.array([0.2, 0.0, 0.0, 0.0]), eps_ball=1e-3)],
+        axis=0,
+    )
     dstar_u = realm_distance(u, centers)
     dstar_v = realm_distance(v, centers)
     ok_lip = abs(dstar_u - dstar_v) <= hyperbolic_distance(u, v) + 1e-7

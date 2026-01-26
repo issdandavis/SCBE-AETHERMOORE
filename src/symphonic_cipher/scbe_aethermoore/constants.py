@@ -19,23 +19,23 @@ from typing import Dict, Any
 # UNIVERSAL MATHEMATICAL CONSTANTS
 # =============================================================================
 
-PI = math.pi                          # 3.141592653589793
-E = math.e                            # 2.718281828459045
-PHI = (1 + math.sqrt(5)) / 2          # 1.618033988749895 (Golden Ratio)
-SQRT2 = math.sqrt(2)                  # 1.4142135623730951
-SQRT5 = math.sqrt(5)                  # 2.23606797749979
+PI = math.pi  # 3.141592653589793
+E = math.e  # 2.718281828459045
+PHI = (1 + math.sqrt(5)) / 2  # 1.618033988749895 (Golden Ratio)
+SQRT2 = math.sqrt(2)  # 1.4142135623730951
+SQRT5 = math.sqrt(5)  # 2.23606797749979
 
 
 # =============================================================================
 # HARMONIC RATIO CONSTANTS (Music Theory Derived)
 # =============================================================================
 
-R_FIFTH = 1.5                         # 3:2 - Perfect Fifth (Primary)
-R_FOURTH = 4 / 3                      # 4:3 - Perfect Fourth
-R_THIRD = 1.25                        # 5:4 - Major Third
-R_SIXTH = 1.6                         # 8:5 - Minor Sixth
-R_OCTAVE = 2.0                        # 2:1 - Octave
-R_PHI = PHI                           # φ:1 - Golden Ratio
+R_FIFTH = 1.5  # 3:2 - Perfect Fifth (Primary)
+R_FOURTH = 4 / 3  # 4:3 - Perfect Fourth
+R_THIRD = 1.25  # 5:4 - Major Third
+R_SIXTH = 1.6  # 8:5 - Minor Sixth
+R_OCTAVE = 2.0  # 2:1 - Octave
+R_PHI = PHI  # φ:1 - Golden Ratio
 
 
 # =============================================================================
@@ -43,42 +43,43 @@ R_PHI = PHI                           # φ:1 - Golden Ratio
 # =============================================================================
 
 # Aether Constant: φ^(1/R₅) = φ^(2/3)
-PHI_AETHER = PHI ** (1 / R_FIFTH)     # 1.3782407725...
+PHI_AETHER = PHI ** (1 / R_FIFTH)  # 1.3782407725...
 
 # Isaac Lambda: R₅ × φ²
-LAMBDA_ISAAC = R_FIFTH * (PHI ** 2)   # 3.9270509831...
+LAMBDA_ISAAC = R_FIFTH * (PHI**2)  # 3.9270509831...
 
 # Spiral Omega: 2π / φ³
-OMEGA_SPIRAL = (2 * PI) / (PHI ** 3)  # 1.4832588477...
+OMEGA_SPIRAL = (2 * PI) / (PHI**3)  # 1.4832588477...
 
 # ABH Alpha: φ + R₅
-ALPHA_ABH = PHI + R_FIFTH             # 3.1180339887...
+ALPHA_ABH = PHI + R_FIFTH  # 3.1180339887...
 
 
 # =============================================================================
 # PHYSICAL CONSTANTS (Reference)
 # =============================================================================
 
-C_LIGHT = 299792458                   # Speed of light (m/s)
-PLANCK_LENGTH = 1.616255e-35          # Planck length (m)
-PLANCK_TIME = 5.391247e-44            # Planck time (s)
-PLANCK_CONSTANT = 6.62607015e-34      # Planck constant (J·s)
+C_LIGHT = 299792458  # Speed of light (m/s)
+PLANCK_LENGTH = 1.616255e-35  # Planck length (m)
+PLANCK_TIME = 5.391247e-44  # Planck time (s)
+PLANCK_CONSTANT = 6.62607015e-34  # Planck constant (J·s)
 
 
 # =============================================================================
 # DEFAULT PARAMETERS
 # =============================================================================
 
-DEFAULT_R = R_FIFTH                   # Default harmonic ratio
-DEFAULT_D_MAX = 6                     # Maximum dimension count
-DEFAULT_L = 100.0                     # Default characteristic length
-DEFAULT_TOLERANCE = 0.01              # Default resonance tolerance
-DEFAULT_BASE_BITS = 128               # Default security bits (AES-128)
+DEFAULT_R = R_FIFTH  # Default harmonic ratio
+DEFAULT_D_MAX = 6  # Maximum dimension count
+DEFAULT_L = 100.0  # Default characteristic length
+DEFAULT_TOLERANCE = 0.01  # Default resonance tolerance
+DEFAULT_BASE_BITS = 128  # Default security bits (AES-128)
 
 
 # =============================================================================
 # HARMONIC SCALING FUNCTION H(d, R)
 # =============================================================================
+
 
 def harmonic_scale(d: int, R: float = DEFAULT_R) -> float:
     """
@@ -150,6 +151,7 @@ def security_level(base: float, d: int, R: float = DEFAULT_R) -> float:
 # HARMONIC DISTANCE IN V₆
 # =============================================================================
 
+
 def harmonic_distance(u: tuple, v: tuple, R: float = DEFAULT_R) -> float:
     """
     Compute harmonic distance in 6D harmonic vector space V₆.
@@ -171,7 +173,7 @@ def harmonic_distance(u: tuple, v: tuple, R: float = DEFAULT_R) -> float:
     # Metric weights: (1, 1, 1, R, R², R³)
     weights = [1, 1, 1, R, R**2, R**3]
 
-    dist_sq = sum(w * (ui - vi)**2 for w, ui, vi in zip(weights, u, v))
+    dist_sq = sum(w * (ui - vi) ** 2 for w, ui, vi in zip(weights, u, v))
     return math.sqrt(dist_sq)
 
 
@@ -186,7 +188,7 @@ def octave_transpose(freq: float, octaves: int) -> float:
     Returns:
         Transposed frequency
     """
-    return freq * (R_OCTAVE ** octaves)
+    return freq * (R_OCTAVE**octaves)
 
 
 # =============================================================================
@@ -195,47 +197,44 @@ def octave_transpose(freq: float, octaves: int) -> float:
 
 CONSTANTS: Dict[str, Any] = {
     # Mathematical
-    'PI': PI,
-    'E': E,
-    'PHI': PHI,
-    'SQRT2': SQRT2,
-    'SQRT5': SQRT5,
-
+    "PI": PI,
+    "E": E,
+    "PHI": PHI,
+    "SQRT2": SQRT2,
+    "SQRT5": SQRT5,
     # Harmonic Ratios
-    'R_FIFTH': R_FIFTH,
-    'R_FOURTH': R_FOURTH,
-    'R_THIRD': R_THIRD,
-    'R_SIXTH': R_SIXTH,
-    'R_OCTAVE': R_OCTAVE,
-    'R_PHI': R_PHI,
-
+    "R_FIFTH": R_FIFTH,
+    "R_FOURTH": R_FOURTH,
+    "R_THIRD": R_THIRD,
+    "R_SIXTH": R_SIXTH,
+    "R_OCTAVE": R_OCTAVE,
+    "R_PHI": R_PHI,
     # AETHERMOORE
-    'PHI_AETHER': PHI_AETHER,
-    'LAMBDA_ISAAC': LAMBDA_ISAAC,
-    'OMEGA_SPIRAL': OMEGA_SPIRAL,
-    'ALPHA_ABH': ALPHA_ABH,
-
+    "PHI_AETHER": PHI_AETHER,
+    "LAMBDA_ISAAC": LAMBDA_ISAAC,
+    "OMEGA_SPIRAL": OMEGA_SPIRAL,
+    "ALPHA_ABH": ALPHA_ABH,
     # Physical
-    'C_LIGHT': C_LIGHT,
-    'PLANCK_LENGTH': PLANCK_LENGTH,
-    'PLANCK_TIME': PLANCK_TIME,
-    'PLANCK_CONSTANT': PLANCK_CONSTANT,
-
+    "C_LIGHT": C_LIGHT,
+    "PLANCK_LENGTH": PLANCK_LENGTH,
+    "PLANCK_TIME": PLANCK_TIME,
+    "PLANCK_CONSTANT": PLANCK_CONSTANT,
     # Defaults
-    'DEFAULT_R': DEFAULT_R,
-    'DEFAULT_D_MAX': DEFAULT_D_MAX,
-    'DEFAULT_L': DEFAULT_L,
-    'DEFAULT_TOLERANCE': DEFAULT_TOLERANCE,
-    'DEFAULT_BASE_BITS': DEFAULT_BASE_BITS,
+    "DEFAULT_R": DEFAULT_R,
+    "DEFAULT_D_MAX": DEFAULT_D_MAX,
+    "DEFAULT_L": DEFAULT_L,
+    "DEFAULT_TOLERANCE": DEFAULT_TOLERANCE,
+    "DEFAULT_BASE_BITS": DEFAULT_BASE_BITS,
 }
 
 
 @dataclass(frozen=True)
 class AethermooreDimension:
     """A dimension in the 6D harmonic vector space."""
-    index: int          # 0-5
-    name: str           # e.g., "x", "velocity", "security"
-    unit: str           # e.g., "m", "m/s", "count"
+
+    index: int  # 0-5
+    name: str  # e.g., "x", "velocity", "security"
+    unit: str  # e.g., "m", "m/s", "count"
     metric_weight: float  # Weight in harmonic metric
 
 
@@ -254,6 +253,7 @@ DIMENSIONS = (
 # REFERENCE TABLE
 # =============================================================================
 
+
 def get_harmonic_scale_table(max_d: int = 6, R: float = DEFAULT_R) -> list:
     """
     Generate reference table for H(d, R) values.
@@ -271,13 +271,15 @@ def get_harmonic_scale_table(max_d: int = 6, R: float = DEFAULT_R) -> list:
         log2_h = math.log2(h)
         aes_equiv = 128 + int(log2_h)
 
-        table.append({
-            'd': d,
-            'd_squared': d * d,
-            'H': h,
-            'log2_H': log2_h,
-            'aes_equivalent': f"AES-{aes_equiv}"
-        })
+        table.append(
+            {
+                "d": d,
+                "d_squared": d * d,
+                "H": h,
+                "log2_H": log2_h,
+                "aes_equivalent": f"AES-{aes_equiv}",
+            }
+        )
 
     return table
 

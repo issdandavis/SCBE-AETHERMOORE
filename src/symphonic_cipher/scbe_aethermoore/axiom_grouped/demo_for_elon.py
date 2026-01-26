@@ -15,7 +15,7 @@ def hyperbolic_distance(u_norm, v_norm, diff_norm):
     """Poincaré ball distance."""
     denom = (1 - u_norm**2) * (1 - v_norm**2)
     if denom < EPS:
-        return float('inf')
+        return float("inf")
     arg = 1 + 2 * diff_norm**2 / denom
     return math.acosh(max(1.0, arg))
 
@@ -32,11 +32,11 @@ def scbe_risk(context_deviation, spin_coherence, spectral_coherence, trust):
     """
     # Base risk from coherence failures
     R_base = (
-        0.2 * context_deviation +
-        0.2 * (1 - spin_coherence) +
-        0.2 * (1 - spectral_coherence) +
-        0.2 * (1 - trust) +
-        0.2 * context_deviation  # doubled weight on deviation
+        0.2 * context_deviation
+        + 0.2 * (1 - spin_coherence)
+        + 0.2 * (1 - spectral_coherence)
+        + 0.2 * (1 - trust)
+        + 0.2 * context_deviation  # doubled weight on deviation
     )
 
     # Harmonic amplification (the key innovation)
@@ -60,10 +60,10 @@ def traditional_risk(context_deviation, spin_coherence, spectral_coherence, trus
     """
     # Simple weighted average
     risk = (
-        0.25 * context_deviation +
-        0.25 * (1 - spin_coherence) +
-        0.25 * (1 - spectral_coherence) +
-        0.25 * (1 - trust)
+        0.25 * context_deviation
+        + 0.25 * (1 - spin_coherence)
+        + 0.25 * (1 - spectral_coherence)
+        + 0.25 * (1 - trust)
     )
 
     if risk < 0.33:
@@ -89,7 +89,9 @@ def simulate_attack_scenario():
     print("high apparent coherence (mimicking normal behavior)")
     print()
     print("-" * 70)
-    print(f"{'Time':>6} {'Deviation':>10} {'Coherence':>10} | {'Trad Risk':>10} {'Trad':>10} | {'SCBE Risk':>12} {'SCBE':>10}")
+    print(
+        f"{'Time':>6} {'Deviation':>10} {'Coherence':>10} | {'Trad Risk':>10} {'Trad':>10} | {'SCBE Risk':>12} {'SCBE':>10}"
+    )
     print("-" * 70)
 
     # Simulate time steps
@@ -123,7 +125,9 @@ def simulate_attack_scenario():
         trust = 0.8  # Trust score (from behavioral model)
 
         # Calculate risks
-        trad_risk, trad_decision = traditional_risk(deviation, coherence, coherence, trust)
+        trad_risk, trad_decision = traditional_risk(
+            deviation, coherence, coherence, trust
+        )
         scbe_risk_val, scbe_decision = scbe_risk(deviation, coherence, coherence, trust)
 
         # Count catches
@@ -134,21 +138,31 @@ def simulate_attack_scenario():
                 scbe_catches += 1
 
         # Format output
-        scbe_risk_str = f"{scbe_risk_val:.2f}" if scbe_risk_val < 1e6 else f"{scbe_risk_val:.1e}"
+        scbe_risk_str = (
+            f"{scbe_risk_val:.2f}" if scbe_risk_val < 1e6 else f"{scbe_risk_val:.1e}"
+        )
         attack_marker = " *ATTACK*" if is_attack else ""
 
-        print(f"{t:>6} {deviation:>10.3f} {coherence:>10.3f} | {trad_risk:>10.4f} {trad_decision:>10} | {scbe_risk_str:>12} {scbe_decision:>10}{attack_marker}")
+        print(
+            f"{t:>6} {deviation:>10.3f} {coherence:>10.3f} | {trad_risk:>10.4f} {trad_decision:>10} | {scbe_risk_str:>12} {scbe_decision:>10}{attack_marker}"
+        )
 
     print("-" * 70)
     print()
     print("RESULTS:")
     print(f"  Total attack time steps: {attacks_happened}")
-    print(f"  Traditional system caught: {traditional_catches}/{attacks_happened} ({100*traditional_catches/max(1,attacks_happened):.0f}%)")
-    print(f"  SCBE system caught: {scbe_catches}/{attacks_happened} ({100*scbe_catches/max(1,attacks_happened):.0f}%)")
+    print(
+        f"  Traditional system caught: {traditional_catches}/{attacks_happened} ({100*traditional_catches/max(1,attacks_happened):.0f}%)"
+    )
+    print(
+        f"  SCBE system caught: {scbe_catches}/{attacks_happened} ({100*scbe_catches/max(1,attacks_happened):.0f}%)"
+    )
     print()
 
     if scbe_catches > traditional_catches:
-        improvement = (scbe_catches - traditional_catches) / max(1, attacks_happened) * 100
+        improvement = (
+            (scbe_catches - traditional_catches) / max(1, attacks_happened) * 100
+        )
         print(f"  SCBE ADVANTAGE: +{improvement:.0f}% detection rate")
         print()
         print("  KEY INSIGHT: The Harmonic Wall (H = exp(d²)) creates an")
@@ -166,9 +180,9 @@ def one_liner_for_elon():
     print("ONE-LINER FOR ELON:")
     print("=" * 70)
     print()
-    print("  \"14-layer hyperbolic geometry system where adversarial intent")
+    print('  "14-layer hyperbolic geometry system where adversarial intent')
     print("   costs exponentially more the further you drift from truth —")
-    print("   catches attacks that fool traditional linear risk models.\"")
+    print('   catches attacks that fool traditional linear risk models."')
     print()
     print("DEMO RESULT: SCBE detected 100% of attacks, traditional missed 67%")
     print()

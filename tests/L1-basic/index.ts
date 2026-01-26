@@ -14,6 +14,4 @@
 export const tier = 'L1-BASIC';
 export const level = 'High School Project';
 export const description = 'Smoke tests and basic functionality verification';
-export const tests = [
-  'smoke.test.ts'
-];
+export const tests = ['smoke.test.ts'];

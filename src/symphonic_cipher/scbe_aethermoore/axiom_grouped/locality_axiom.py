@@ -25,8 +25,8 @@ from dataclasses import dataclass
 from enum import Enum
 
 # Type variables for generic decorators
-T = TypeVar('T')
-F = TypeVar('F', bound=Callable[..., Any])
+T = TypeVar("T")
+F = TypeVar("F", bound=Callable[..., Any])
 
 # Constants
 PHI = (1 + np.sqrt(5)) / 2  # Golden ratio ≈ 1.618
@@ -36,12 +36,14 @@ N_REALMS = 5
 
 class LocalityViolation(Exception):
     """Raised when an operation violates the locality axiom."""
+
     pass
 
 
 @dataclass
 class LocalityCheckResult:
     """Result of a locality axiom check."""
+
     passed: bool
     effective_radius: float  # How far the operation spreads
     sparsity: float  # Fraction of zero entries in operator matrix
@@ -62,7 +64,7 @@ class LocalityCheckResult:
 def locality_check(
     max_radius: float = 1.0,
     require_sparse: bool = False,
-    max_bandwidth: Optional[int] = None
+    max_bandwidth: Optional[int] = None,
 ) -> Callable[[F], F]:
     """
     Decorator that verifies an operation satisfies locality constraints.
@@ -79,19 +81,24 @@ def locality_check(
     Returns:
         Decorated function with locality verification
     """
+
     def decorator(func: F) -> F:
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             result = func(*args, **kwargs)
 
             # Compute locality metrics if the function has an associated matrix
-            if hasattr(wrapper, '_operator_matrix'):
+            if hasattr(wrapper, "_operator_matrix"):
                 matrix = wrapper._operator_matrix
                 radius, sparsity, bandwidth = _analyze_locality(matrix)
             else:
                 # For general functions, use output bounds as proxy
                 output = result[0] if isinstance(result, tuple) else result
-                radius = float(np.max(np.abs(output))) if isinstance(output, np.ndarray) else 0
+                radius = (
+                    float(np.max(np.abs(output)))
+                    if isinstance(output, np.ndarray)
+                    else 0
+                )
                 sparsity = 0.0
                 bandwidth = None
 
@@ -105,7 +112,7 @@ def locality_check(
                 sparsity=sparsity,
                 bandwidth=bandwidth,
                 layer_name=func.__name__,
-                max_radius=max_radius
+                max_radius=max_radius,
             )
 
             wrapper.last_check = check_result
@@ -115,6 +122,7 @@ def locality_check(
         wrapper.axiom = "locality"
         wrapper._operator_matrix = None
         return wrapper
+
     return decorator
 
 
@@ -159,6 +167,7 @@ def _analyze_locality(matrix: np.ndarray) -> Tuple[float, float, Optional[int]]:
 # Layer 3: Weighted Transform (Langues Metric Tensor)
 # ============================================================================
 
+
 def build_langues_metric(dim: int, phi_decay: float = PHI) -> np.ndarray:
     """
     Build the Langues Metric Tensor G.
@@ -182,10 +191,7 @@ def build_langues_metric(dim: int, phi_decay: float = PHI) -> np.ndarray:
     """
     # Compute diagonal weights with phi-based decay from center
     center = dim / 2
-    weights = np.array([
-        phi_decay ** (-abs(i - center) / 2)
-        for i in range(dim)
-    ])
+    weights = np.array([phi_decay ** (-abs(i - center) / 2) for i in range(dim)])
 
     return np.diag(weights)
 
@@ -233,7 +239,9 @@ def layer_3_weighted(x: np.ndarray, G: Optional[np.ndarray] = None) -> np.ndarra
     return G_sqrt @ x
 
 
-def layer_3_inverse(x_weighted: np.ndarray, G: Optional[np.ndarray] = None) -> np.ndarray:
+def layer_3_inverse(
+    x_weighted: np.ndarray, G: Optional[np.ndarray] = None
+) -> np.ndarray:
     """
     Inverse of Layer 3: Remove weighting.
 
@@ -253,9 +261,11 @@ def layer_3_inverse(x_weighted: np.ndarray, G: Optional[np.ndarray] = None) -> n
 # Layer 8: Multi-Well Realms
 # ============================================================================
 
+
 @dataclass
 class RealmInfo:
     """Information about a governance realm."""
+
     index: int
     center: np.ndarray
     radius: float
@@ -299,13 +309,15 @@ def generate_realm_centers(dim: int, n_realms: int = N_REALMS) -> List[RealmInfo
         weights = [0.8, 1.0, 1.2, 1.4, 1.5]
         weight = weights[k] if k < len(weights) else 1.0
 
-        realms.append(RealmInfo(
-            index=k,
-            center=center,
-            radius=0.2,  # Realm influence radius
-            weight=weight,
-            name=realm_names[k] if k < len(realm_names) else f"REALM_{k}"
-        ))
+        realms.append(
+            RealmInfo(
+                index=k,
+                center=center,
+                radius=0.2,  # Realm influence radius
+                weight=weight,
+                name=realm_names[k] if k < len(realm_names) else f"REALM_{k}",
+            )
+        )
 
     return realms
 
@@ -327,7 +339,7 @@ def hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
 
     denominator = (1 - u_sq) * (1 - v_sq)
     if denominator < EPS:
-        return float('inf')
+        return float("inf")
 
     arg = 1 + 2 * diff_sq / denominator
     arg = max(arg, 1.0)  # arcosh domain: [1, ∞)
@@ -337,8 +349,7 @@ def hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
 
 @locality_check(max_radius=5.0)
 def layer_8_multi_well(
-    u: np.ndarray,
-    realms: Optional[List[RealmInfo]] = None
+    u: np.ndarray, realms: Optional[List[RealmInfo]] = None
 ) -> Tuple[float, int, RealmInfo]:
     """
     Layer 8: Multi-Well Realm Detection
@@ -364,7 +375,7 @@ def layer_8_multi_well(
     if realms is None:
         realms = generate_realm_centers(dim)
 
-    min_distance = float('inf')
+    min_distance = float("inf")
     nearest_realm_idx = 0
     nearest_realm = realms[0]
 
@@ -373,7 +384,9 @@ def layer_8_multi_well(
         center = realm.center
         if len(center) != dim:
             center = np.zeros(dim)
-            center[:min(len(realm.center), dim)] = realm.center[:min(len(realm.center), dim)]
+            center[: min(len(realm.center), dim)] = realm.center[
+                : min(len(realm.center), dim)
+            ]
 
         distance = hyperbolic_distance(u, center)
 
@@ -386,9 +399,7 @@ def layer_8_multi_well(
 
 
 def layer_8_potential(
-    u: np.ndarray,
-    realms: Optional[List[RealmInfo]] = None,
-    well_depth: float = 1.0
+    u: np.ndarray, realms: Optional[List[RealmInfo]] = None, well_depth: float = 1.0
 ) -> float:
     """
     Compute the multi-well potential at a point.
@@ -417,10 +428,12 @@ def layer_8_potential(
         center = realm.center
         if len(center) != dim:
             center = np.zeros(dim)
-            center[:min(len(realm.center), dim)] = realm.center[:min(len(realm.center), dim)]
+            center[: min(len(realm.center), dim)] = realm.center[
+                : min(len(realm.center), dim)
+            ]
 
         d = hyperbolic_distance(u, center)
-        potential -= well_depth * realm.weight * np.exp(-d**2 / (2 * sigma_sq))
+        potential -= well_depth * realm.weight * np.exp(-(d**2) / (2 * sigma_sq))
 
     return potential
 
@@ -429,9 +442,11 @@ def layer_8_potential(
 # Lattice Embedding for Locality
 # ============================================================================
 
+
 @dataclass
 class LatticePoint:
     """A point on the spatial lattice."""
+
     coords: Tuple[int, ...]
     value: complex
     neighbors: List[Tuple[int, ...]]
@@ -465,19 +480,12 @@ def create_lattice(shape: Tuple[int, ...]) -> dict:
                 if 0 <= neighbor[d] < shape[d]:
                     neighbors.append(tuple(neighbor))
 
-        lattice[coords] = LatticePoint(
-            coords=coords,
-            value=0j,
-            neighbors=neighbors
-        )
+        lattice[coords] = LatticePoint(coords=coords, value=0j, neighbors=neighbors)
 
     return lattice
 
 
-def lattice_embed(
-    x: np.ndarray,
-    lattice_shape: Tuple[int, ...] = (4, 3)
-) -> dict:
+def lattice_embed(x: np.ndarray, lattice_shape: Tuple[int, ...] = (4, 3)) -> dict:
     """
     Embed a vector onto a spatial lattice.
 
@@ -497,12 +505,13 @@ def lattice_embed(
     # Pad or truncate x to match lattice size
     if len(x) < total_sites:
         x_padded = np.zeros(total_sites, dtype=complex)
-        x_padded[:len(x)] = x
+        x_padded[: len(x)] = x
     else:
         x_padded = x[:total_sites]
 
     # Embed values onto lattice
     from itertools import product
+
     for i, coords in enumerate(product(*[range(s) for s in lattice_shape])):
         if i < len(x_padded):
             lattice[coords].value = x_padded[i]
@@ -514,11 +523,9 @@ def lattice_embed(
 # Locality Verification Utilities
 # ============================================================================
 
+
 def verify_layer_locality(
-    layer_func: Callable,
-    n_tests: int = 100,
-    dim: int = 12,
-    verbose: bool = False
+    layer_func: Callable, n_tests: int = 100, dim: int = 12, verbose: bool = False
 ) -> Tuple[bool, dict]:
     """
     Statistically verify that a layer satisfies locality.
@@ -548,7 +555,7 @@ def verify_layer_locality(
             _ = layer_func(x)
 
         # Check result
-        check = getattr(layer_func, 'last_check', None)
+        check = getattr(layer_func, "last_check", None)
         if check:
             max_radius = max(max_radius, check.effective_radius)
             avg_sparsity += check.sparsity
@@ -559,10 +566,7 @@ def verify_layer_locality(
 
     avg_sparsity /= n_tests
 
-    return all_passed, {
-        "max_radius": max_radius,
-        "avg_sparsity": avg_sparsity
-    }
+    return all_passed, {"max_radius": max_radius, "avg_sparsity": avg_sparsity}
 
 
 # ============================================================================

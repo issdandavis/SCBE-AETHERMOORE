@@ -22,20 +22,21 @@ from typing import Tuple, Optional
 from dataclasses import dataclass
 
 # Constants matching NIST specifications
-MLKEM768_PK_LEN = 1184    # ML-KEM-768 public key size
-MLKEM768_SK_LEN = 2400    # ML-KEM-768 secret key size
-MLKEM768_CT_LEN = 1088    # ML-KEM-768 ciphertext size
-MLKEM768_SS_LEN = 32      # Shared secret size
+MLKEM768_PK_LEN = 1184  # ML-KEM-768 public key size
+MLKEM768_SK_LEN = 2400  # ML-KEM-768 secret key size
+MLKEM768_CT_LEN = 1088  # ML-KEM-768 ciphertext size
+MLKEM768_SS_LEN = 32  # Shared secret size
 
-MLDSA65_PK_LEN = 1952     # ML-DSA-65 public key size
-MLDSA65_SK_LEN = 4032     # ML-DSA-65 secret key size
-MLDSA65_SIG_LEN = 3293    # ML-DSA-65 signature size
+MLDSA65_PK_LEN = 1952  # ML-DSA-65 public key size
+MLDSA65_SK_LEN = 4032  # ML-DSA-65 secret key size
+MLDSA65_SIG_LEN = 3293  # ML-DSA-65 signature size
 
 # Attempt to import liboqs
 try:
     import oqs
+
     LIBOQS_AVAILABLE = True
-    _LIBOQS_VERSION = getattr(oqs, '__version__', 'unknown')
+    _LIBOQS_VERSION = getattr(oqs, "__version__", "unknown")
 except ImportError:
     LIBOQS_AVAILABLE = False
     _LIBOQS_VERSION = None
@@ -56,6 +57,7 @@ def get_pqc_backend() -> str:
 @dataclass
 class MLKEMKeyPair:
     """ML-KEM-768 key pair container."""
+
     public_key: bytes
     secret_key: bytes
 
@@ -63,6 +65,7 @@ class MLKEMKeyPair:
 @dataclass
 class MLDSAKeyPair:
     """ML-DSA-65 key pair container."""
+
     public_key: bytes
     secret_key: bytes
 
@@ -70,6 +73,7 @@ class MLDSAKeyPair:
 # =============================================================================
 # ML-KEM-768 (Kyber) Implementation
 # =============================================================================
+
 
 class MLKEM768:
     """
@@ -158,7 +162,7 @@ class MLKEM768:
             return hashlib.sha256(ciphertext[:32] + self._secret_key[:32]).digest()
 
     @classmethod
-    def from_keypair(cls, keypair: MLKEMKeyPair) -> 'MLKEM768':
+    def from_keypair(cls, keypair: MLKEMKeyPair) -> "MLKEM768":
         """Create instance from existing key pair."""
         instance = cls.__new__(cls)
         instance._using_real = LIBOQS_AVAILABLE
@@ -177,6 +181,7 @@ class MLKEM768:
 # =============================================================================
 # ML-DSA-65 (Dilithium) Implementation
 # =============================================================================
+
 
 class MLDSA65:
     """
@@ -234,11 +239,7 @@ class MLDSA65:
             return self._sig.sign(message)
         else:
             # Fallback: HMAC-SHA512 signature simulation
-            sig_core = hmac.new(
-                self._secret_key[:32],
-                message,
-                hashlib.sha512
-            ).digest()
+            sig_core = hmac.new(self._secret_key[:32], message, hashlib.sha512).digest()
             # Pad to approximate real signature size
             return sig_core + os.urandom(MLDSA65_SIG_LEN - 64)
 
@@ -258,14 +259,12 @@ class MLDSA65:
         else:
             # Fallback: verify HMAC-SHA512 signature
             expected_core = hmac.new(
-                self._secret_key[:32],
-                message,
-                hashlib.sha512
+                self._secret_key[:32], message, hashlib.sha512
             ).digest()
             return hmac.compare_digest(expected_core, signature[:64])
 
     @classmethod
-    def from_keypair(cls, keypair: MLDSAKeyPair) -> 'MLDSA65':
+    def from_keypair(cls, keypair: MLDSAKeyPair) -> "MLDSA65":
         """Create instance from existing key pair."""
         instance = cls.__new__(cls)
         instance._using_real = LIBOQS_AVAILABLE
@@ -282,6 +281,7 @@ class MLDSA65:
 # =============================================================================
 # DUAL LATTICE CONSENSUS HELPERS
 # =============================================================================
+
 
 def create_dual_lattice_keys(seed: Optional[bytes] = None) -> Tuple[MLKEM768, MLDSA65]:
     """
@@ -306,9 +306,7 @@ def create_dual_lattice_keys(seed: Optional[bytes] = None) -> Tuple[MLKEM768, ML
 
 
 def compute_consensus_hash(
-    kem_shared_secret: bytes,
-    dsa_signature: bytes,
-    context: bytes = b""
+    kem_shared_secret: bytes, dsa_signature: bytes, context: bytes = b""
 ) -> bytes:
     """
     Compute dual lattice consensus hash.
@@ -335,6 +333,7 @@ def compute_consensus_hash(
 # =============================================================================
 # TESTING AND DIAGNOSTICS
 # =============================================================================
+
 
 def run_pqc_diagnostics():
     """Run diagnostics to verify PQC implementation."""

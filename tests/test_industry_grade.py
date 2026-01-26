@@ -948,7 +948,7 @@ class TestMilitaryGradeSecurity:
 
     @pytest.mark.skipif(
         sys.platform.startswith("win"),
-        reason="Large allocation causes segfault on Windows Python 3.14"
+        reason="Large allocation causes segfault on Windows Python 3.14",
     )
     def test_136_large_classified_document(self):
         """Large classified documents should encrypt correctly."""

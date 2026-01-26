@@ -23,8 +23,8 @@ from dataclasses import dataclass
 from enum import Enum
 
 # Type variables for generic decorators
-T = TypeVar('T')
-F = TypeVar('F', bound=Callable[..., Any])
+T = TypeVar("T")
+F = TypeVar("F", bound=Callable[..., Any])
 
 # Constants
 EPS = 1e-10
@@ -33,12 +33,14 @@ ALPHA_EMBED = 0.99  # Poincaré embedding scale
 
 class UnitarityViolation(Exception):
     """Raised when a transform violates the unitarity axiom."""
+
     pass
 
 
 @dataclass
 class UnitarityCheckResult:
     """Result of a unitarity axiom check."""
+
     passed: bool
     relative_error: float
     input_norm: float
@@ -57,9 +59,7 @@ class UnitarityCheckResult:
 
 
 def unitarity_check(
-    tolerance: float = 1e-6,
-    norm_type: str = "euclidean",
-    strict: bool = False
+    tolerance: float = 1e-6, norm_type: str = "euclidean", strict: bool = False
 ) -> Callable[[F], F]:
     """
     Decorator that verifies a transform preserves norms (unitarity axiom).
@@ -72,6 +72,7 @@ def unitarity_check(
     Returns:
         Decorated function that checks unitarity after each call
     """
+
     def decorator(func: F) -> F:
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -106,7 +107,7 @@ def unitarity_check(
                 input_norm=input_norm,
                 output_norm=output_norm,
                 layer_name=func.__name__,
-                tolerance=tolerance
+                tolerance=tolerance,
             )
 
             # Store check result on function for inspection
@@ -121,6 +122,7 @@ def unitarity_check(
         wrapper.axiom = "unitarity"
         wrapper.tolerance = tolerance
         return wrapper
+
     return decorator
 
 
@@ -132,7 +134,7 @@ def _compute_norm(vec: np.ndarray, norm_type: str) -> float:
         # For Poincaré ball, the hyperbolic norm is artanh(||x||)
         euclidean_norm = float(np.linalg.norm(vec))
         if euclidean_norm >= 1.0:
-            return float('inf')
+            return float("inf")
         return float(np.arctanh(euclidean_norm))
     elif norm_type == "complex":
         # For complex vectors, use standard complex norm
@@ -144,6 +146,7 @@ def _compute_norm(vec: np.ndarray, norm_type: str) -> float:
 # ============================================================================
 # Layer 2: Realification (Complex to Real Isometry)
 # ============================================================================
+
 
 @unitarity_check(tolerance=1e-10, norm_type="euclidean")
 def layer_2_realify(c: np.ndarray) -> np.ndarray:
@@ -199,6 +202,7 @@ def layer_2_inverse(x: np.ndarray) -> np.ndarray:
 # ============================================================================
 # Layer 4: Poincaré Embedding
 # ============================================================================
+
 
 @unitarity_check(tolerance=0.1, norm_type="euclidean", strict=False)
 def layer_4_poincare(x: np.ndarray, alpha: float = ALPHA_EMBED) -> np.ndarray:
@@ -269,6 +273,7 @@ def layer_4_inverse(u: np.ndarray, alpha: float = ALPHA_EMBED) -> np.ndarray:
 # Layer 7: Phase Transform (Möbius + Rotation)
 # ============================================================================
 
+
 def mobius_addition(u: np.ndarray, v: np.ndarray) -> np.ndarray:
     """
     Möbius addition in the Poincaré ball.
@@ -311,7 +316,9 @@ def rotation_matrix_2d(angle: float) -> np.ndarray:
     return np.array([[c, -s], [s, c]])
 
 
-def rotation_nd(v: np.ndarray, angle: float, plane: Tuple[int, int] = (0, 1)) -> np.ndarray:
+def rotation_nd(
+    v: np.ndarray, angle: float, plane: Tuple[int, int] = (0, 1)
+) -> np.ndarray:
     """
     Apply rotation in specified plane of n-dimensional space.
 
@@ -336,9 +343,7 @@ def rotation_nd(v: np.ndarray, angle: float, plane: Tuple[int, int] = (0, 1)) ->
 
 @unitarity_check(tolerance=1e-8, norm_type="euclidean")
 def layer_7_phase(
-    u: np.ndarray,
-    phase_angle: float,
-    translation: Optional[np.ndarray] = None
+    u: np.ndarray, phase_angle: float, translation: Optional[np.ndarray] = None
 ) -> np.ndarray:
     """
     Layer 7: Phase Transform (Möbius Translation + Rotation)
@@ -381,9 +386,7 @@ def layer_7_phase(
 
 
 def layer_7_inverse(
-    u: np.ndarray,
-    phase_angle: float,
-    translation: Optional[np.ndarray] = None
+    u: np.ndarray, phase_angle: float, translation: Optional[np.ndarray] = None
 ) -> np.ndarray:
     """
     Inverse of Layer 7: Reverse rotation then Möbius subtract.
@@ -415,11 +418,9 @@ def layer_7_inverse(
 # Unitarity Verification Utilities
 # ============================================================================
 
+
 def verify_layer_unitarity(
-    layer_func: Callable,
-    n_tests: int = 100,
-    dim: int = 12,
-    verbose: bool = False
+    layer_func: Callable, n_tests: int = 100, dim: int = 12, verbose: bool = False
 ) -> Tuple[bool, float]:
     """
     Statistically verify that a layer satisfies unitarity.
@@ -449,12 +450,12 @@ def verify_layer_unitarity(
 
         # Apply layer
         if layer_func.__name__ == "layer_7_phase":
-            result = layer_func(x, phase_angle=np.random.uniform(0, 2*np.pi))
+            result = layer_func(x, phase_angle=np.random.uniform(0, 2 * np.pi))
         else:
             result = layer_func(x)
 
         # Check the result
-        check = getattr(layer_func, 'last_check', None)
+        check = getattr(layer_func, "last_check", None)
         if check:
             max_error = max(max_error, check.relative_error)
             if not check.passed:

@@ -19,24 +19,26 @@ EPS = 1e-10
 # A12: DUAL-MODE HARMONIC SCALING (Pure Python)
 # ============================================================================
 
+
 def harmonic_bounded(d: float, R: float = PHI, clamp: float = 50.0) -> float:
     """
     BOUNDED: H(d) = R^(d²) with d² clamped at 50
     """
-    d_sq = min(d ** 2, clamp)
-    return R ** d_sq
+    d_sq = min(d**2, clamp)
+    return R**d_sq
 
 
 def harmonic_unbounded(d: float) -> float:
     """
     UNBOUNDED: H(d) = exp(d²) - NO clamping (Vertical Wall patent)
     """
-    return math.exp(d ** 2)
+    return math.exp(d**2)
 
 
 # ============================================================================
 # LANGUES METRIC (Pure Python - Simplified)
 # ============================================================================
+
 
 def langues_weights_simple(r: List[float]) -> List[float]:
     """
@@ -62,7 +64,7 @@ def langues_distance_simple(x: List[float], mu: List[float], r: List[float]) -> 
     d_sq = 0.0
     for i in range(min(len(x), len(mu), len(weights))):
         diff = x[i] - mu[i]
-        d_sq += weights[i] * (diff ** 2)
+        d_sq += weights[i] * (diff**2)
 
     return math.sqrt(d_sq)
 
@@ -71,17 +73,19 @@ def langues_distance_simple(x: List[float], mu: List[float], r: List[float]) -> 
 # RISK CALCULATION (Pure Python)
 # ============================================================================
 
-def calculate_base_risk(d_star: float, C_spin: float, S_spec: float,
-                        tau: float = 0.5, S_audio: float = 0.5) -> float:
+
+def calculate_base_risk(
+    d_star: float, C_spin: float, S_spec: float, tau: float = 0.5, S_audio: float = 0.5
+) -> float:
     """
     A12: Base Risk = weighted sum of coherence failures.
     """
     return (
-        0.2 * (1 - C_spin) +
-        0.2 * (1 - S_spec) +
-        0.2 * (1 - tau) +
-        0.2 * (1 - S_audio) +
-        0.2 * math.tanh(d_star)
+        0.2 * (1 - C_spin)
+        + 0.2 * (1 - S_spec)
+        + 0.2 * (1 - tau)
+        + 0.2 * (1 - S_audio)
+        + 0.2 * math.tanh(d_star)
     )
 
 
@@ -99,7 +103,7 @@ def risk_unbounded(d_star: float, C_spin: float, S_spec: float, **kwargs) -> flo
         H = harmonic_unbounded(d_star)
         return R_base * H
     except OverflowError:
-        return float('inf')
+        return float("inf")
 
 
 def decide(risk: float) -> str:
@@ -118,11 +122,14 @@ def decide(risk: float) -> str:
 # TESTS
 # ============================================================================
 
+
 def test_harmonic_modes():
     """Test both harmonic modes across various distances."""
     print("\n[Test 1: Harmonic Scaling Modes]")
     print("-" * 70)
-    print(f"{'d':>6} {'H_bounded':>18} {'H_unbounded':>18} {'Ratio':>12} {'Overflow':>10}")
+    print(
+        f"{'d':>6} {'H_bounded':>18} {'H_unbounded':>18} {'Ratio':>12} {'Overflow':>10}"
+    )
     print("-" * 70)
 
     test_distances = [0.0, 0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0, 20.0, 30.0]
@@ -139,7 +146,7 @@ def test_harmonic_modes():
             H_u = harmonic_unbounded(d)
             overflow = math.isinf(H_u)
         except OverflowError:
-            H_u = float('inf')
+            H_u = float("inf")
             overflow = True
 
         if overflow and overflow_point is None:
@@ -157,7 +164,9 @@ def test_harmonic_modes():
 
         # Format output
         H_b_str = f"{H_b:.6f}" if H_b < 1e10 else f"{H_b:.2e}"
-        H_u_str = "inf" if math.isinf(H_u) else f"{H_u:.6f}" if H_u < 1e10 else f"{H_u:.2e}"
+        H_u_str = (
+            "inf" if math.isinf(H_u) else f"{H_u:.6f}" if H_u < 1e10 else f"{H_u:.2e}"
+        )
 
         if not math.isinf(H_u) and H_b > 0:
             ratio = H_u / H_b
@@ -165,7 +174,9 @@ def test_harmonic_modes():
         else:
             ratio_str = "inf"
 
-        print(f"{d:>6.1f} {H_b_str:>18} {H_u_str:>18} {ratio_str:>12} {str(overflow):>10}")
+        print(
+            f"{d:>6.1f} {H_b_str:>18} {H_u_str:>18} {ratio_str:>12} {str(overflow):>10}"
+        )
 
     print("-" * 70)
     print(f"Overflow detected at d = {overflow_point}")
@@ -210,7 +221,7 @@ def test_langues_metric():
     mu = [0, 0, 0, 0, 0, 0]
 
     # Euclidean distance
-    d_euclid = math.sqrt(sum((xi - mi)**2 for xi, mi in zip(x, mu)))
+    d_euclid = math.sqrt(sum((xi - mi) ** 2 for xi, mi in zip(x, mu)))
     print(f"Euclidean distance: {d_euclid:.4f}")
 
     # Test various langues parameters
@@ -252,7 +263,9 @@ def test_dual_mode_risk():
         {"d_star": 10.0, "C_spin": 0.1, "S_spec": 0.1, "name": "extreme_risk"},
     ]
 
-    print(f"{'Scenario':>15} {'R_bounded':>15} {'R_unbounded':>15} {'Dec_B':>12} {'Dec_U':>12}")
+    print(
+        f"{'Scenario':>15} {'R_bounded':>15} {'R_unbounded':>15} {'Dec_B':>12} {'Dec_U':>12}"
+    )
     print("-" * 80)
 
     for s in scenarios:
@@ -263,7 +276,9 @@ def test_dual_mode_risk():
         dec_u = decide(R_u)
 
         R_b_str = f"{R_b:.6f}" if R_b < 1e10 else f"{R_b:.2e}"
-        R_u_str = "inf" if math.isinf(R_u) else f"{R_u:.6f}" if R_u < 1e10 else f"{R_u:.2e}"
+        R_u_str = (
+            "inf" if math.isinf(R_u) else f"{R_u:.6f}" if R_u < 1e10 else f"{R_u:.2e}"
+        )
 
         print(f"{s['name']:>15} {R_b_str:>15} {R_u_str:>15} {dec_b:>12} {dec_u:>12}")
 

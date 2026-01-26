@@ -54,13 +54,17 @@ from .layers.fourteen_layer_pipeline import (
     layer_11_triadic_distance,
     layer_12_harmonic_scaling,
     layer_13_decision,
-    PHI, R_BASE, ALPHA_EMBED, EPS,
+    PHI,
+    R_BASE,
+    ALPHA_EMBED,
+    EPS,
 )
 
 
 # =============================================================================
 # THEOREM 1.1: Polar Decomposition Uniqueness
 # =============================================================================
+
 
 def verify_theorem_1_1(n_tests: int = 100) -> Tuple[bool, Dict]:
     """
@@ -100,6 +104,7 @@ def verify_theorem_1_1(n_tests: int = 100) -> Tuple[bool, Dict]:
 # THEOREM 2.1: Isometric Realification
 # =============================================================================
 
+
 def verify_theorem_2_1(n_tests: int = 100) -> Tuple[bool, Dict]:
     """
     Theorem 2.1: The realification map Φ₁: ℂᴰ → ℝ²ᴰ is a real-linear
@@ -115,7 +120,7 @@ def verify_theorem_2_1(n_tests: int = 100) -> Tuple[bool, Dict]:
         c = np.random.randn(D) + 1j * np.random.randn(D)
 
         # Complex norm: ||c||_ℂ = sqrt(Σ|z_j|²)
-        norm_complex = np.sqrt(np.sum(np.abs(c)**2))
+        norm_complex = np.sqrt(np.sum(np.abs(c) ** 2))
 
         # Realify
         x = layer_2_realify(c)
@@ -138,6 +143,7 @@ def verify_theorem_2_1(n_tests: int = 100) -> Tuple[bool, Dict]:
 # =============================================================================
 # THEOREM 3.1: SPD Weighted Inner Product
 # =============================================================================
+
 
 def verify_theorem_3_1() -> Tuple[bool, Dict]:
     """
@@ -180,17 +186,22 @@ def verify_theorem_3_1() -> Tuple[bool, Dict]:
     norm_scaled = np.sqrt((alpha * x).T @ G @ (alpha * x))
     results["homogeneity"] = np.isclose(norm_scaled, np.abs(alpha) * norm_G)
 
-    results["valid_norm"] = (results["norm_nonnegative"] and
-                            results["zero_has_zero_norm"] and
-                            results["homogeneity"])
+    results["valid_norm"] = (
+        results["norm_nonnegative"]
+        and results["zero_has_zero_norm"]
+        and results["homogeneity"]
+    )
 
-    all_passed = results["symmetric"] and results["positive_definite"] and results["valid_norm"]
+    all_passed = (
+        results["symmetric"] and results["positive_definite"] and results["valid_norm"]
+    )
     return all_passed, results
 
 
 # =============================================================================
 # THEOREM 4.1: Radial Tanh Embedding Maps ℝⁿ into 𝔹ⁿ
 # =============================================================================
+
 
 def verify_theorem_4_1(n_tests: int = 100) -> Tuple[bool, Dict]:
     """
@@ -228,6 +239,7 @@ def verify_theorem_4_1(n_tests: int = 100) -> Tuple[bool, Dict]:
 # THEOREM 5.1: Hyperbolic Metric Axioms
 # =============================================================================
 
+
 def verify_theorem_5_1(n_tests: int = 50) -> Tuple[bool, Dict]:
     """
     Theorem 5.1: d_H is a true metric satisfying:
@@ -242,7 +254,7 @@ def verify_theorem_5_1(n_tests: int = 50) -> Tuple[bool, Dict]:
         "non_negativity": {"passed": 0, "failed": 0},
         "identity": {"passed": 0, "failed": 0},
         "symmetry": {"passed": 0, "failed": 0},
-        "triangle": {"passed": 0, "failed": 0}
+        "triangle": {"passed": 0, "failed": 0},
     }
 
     dim = 12
@@ -298,6 +310,7 @@ def verify_theorem_5_1(n_tests: int = 50) -> Tuple[bool, Dict]:
 # THEOREM 6.1: Breathing Preserves Ball Constraint
 # =============================================================================
 
+
 def verify_theorem_6_1(n_tests: int = 100) -> Tuple[bool, Dict]:
     """
     Theorem 6.1: T_breath(u; b) ∈ 𝔹ⁿ for all u ∈ 𝔹ⁿ, b > 0
@@ -335,6 +348,7 @@ def verify_theorem_6_1(n_tests: int = 100) -> Tuple[bool, Dict]:
 # THEOREM 7.1: Möbius Addition Ball Closure
 # =============================================================================
 
+
 def verify_theorem_7_1(n_tests: int = 100) -> Tuple[bool, Dict]:
     """
     Theorem 7.1: a ⊕ u ∈ 𝔹ⁿ for all a, u ∈ 𝔹ⁿ
@@ -371,6 +385,7 @@ def verify_theorem_7_1(n_tests: int = 100) -> Tuple[bool, Dict]:
 # =============================================================================
 # THEOREM 7.2: Phase Transform is Isometry
 # =============================================================================
+
 
 def verify_theorem_7_2(n_tests: int = 100) -> Tuple[bool, Dict]:
     """
@@ -421,6 +436,7 @@ def verify_theorem_7_2(n_tests: int = 100) -> Tuple[bool, Dict]:
 # THEOREM 8.1: Realm Distance is Lipschitz
 # =============================================================================
 
+
 def verify_theorem_8_1(n_tests: int = 50) -> Tuple[bool, Dict]:
     """
     Theorem 8.1: |d*(u) - d*(v)| ≤ d_H(u, v)  (1-Lipschitz)
@@ -467,13 +483,14 @@ def verify_theorem_8_1(n_tests: int = 50) -> Tuple[bool, Dict]:
 # THEOREM 9.1: Spectral Coherence is Bounded
 # =============================================================================
 
+
 def verify_theorem_9_1(n_tests: int = 50) -> Tuple[bool, Dict]:
     """
     Theorem 9.1: 0 ≤ S_spec ≤ 1
 
     Implementation: layer_9_spectral_coherence()
     """
-    results = {"passed": 0, "failed": 0, "min": float('inf'), "max": float('-inf')}
+    results = {"passed": 0, "failed": 0, "min": float("inf"), "max": float("-inf")}
 
     for _ in range(n_tests):
         # Random signal
@@ -497,6 +514,7 @@ def verify_theorem_9_1(n_tests: int = 50) -> Tuple[bool, Dict]:
 # THEOREM 10.1: Spin Coherence is Bounded
 # =============================================================================
 
+
 def verify_theorem_10_1(n_tests: int = 50) -> Tuple[bool, Dict]:
     """
     Theorem 10.1: 0 ≤ C_spin ≤ 1
@@ -505,7 +523,7 @@ def verify_theorem_10_1(n_tests: int = 50) -> Tuple[bool, Dict]:
 
     Implementation: layer_10_spin_coherence()
     """
-    results = {"passed": 0, "failed": 0, "min": float('inf'), "max": float('-inf')}
+    results = {"passed": 0, "failed": 0, "min": float("inf"), "max": float("-inf")}
 
     for _ in range(n_tests):
         # Random quantum state
@@ -530,6 +548,7 @@ def verify_theorem_10_1(n_tests: int = 50) -> Tuple[bool, Dict]:
 # =============================================================================
 # THEOREM 12.1: Harmonic Scaling Monotonicity
 # =============================================================================
+
 
 def verify_theorem_12_1(n_tests: int = 100) -> Tuple[bool, Dict]:
     """
@@ -562,6 +581,7 @@ def verify_theorem_12_1(n_tests: int = 100) -> Tuple[bool, Dict]:
 # =============================================================================
 # THEOREM 15.2: Metric Invariance Throughout Pipeline
 # =============================================================================
+
 
 def verify_theorem_15_2(n_tests: int = 50) -> Tuple[bool, Dict]:
     """
@@ -618,9 +638,11 @@ def verify_theorem_15_2(n_tests: int = 50) -> Tuple[bool, Dict]:
 # MASTER VERIFICATION
 # =============================================================================
 
+
 @dataclass
 class TheoremResult:
     """Result of a theorem verification."""
+
     theorem_id: str
     description: str
     passed: bool
@@ -658,9 +680,7 @@ def verify_all_theorems() -> Dict[str, TheoremResult]:
 
     # Theorem 5.1
     passed, details = verify_theorem_5_1()
-    theorems["5.1"] = TheoremResult(
-        "5.1", "Hyperbolic Metric Axioms", passed, details
-    )
+    theorems["5.1"] = TheoremResult("5.1", "Hyperbolic Metric Axioms", passed, details)
 
     # Theorem 6.1
     passed, details = verify_theorem_6_1()
@@ -735,7 +755,9 @@ def print_verification_report(theorems: Dict[str, TheoremResult]):
         if "max_norm" in result.details:
             print(f"  Max norm: {result.details['max_norm']:.6f}")
         if "passed" in result.details and "failed" in result.details:
-            print(f"  Tests: {result.details['passed']} passed, {result.details['failed']} failed")
+            print(
+                f"  Tests: {result.details['passed']} passed, {result.details['failed']} failed"
+            )
         print()
 
     print("=" * 80)

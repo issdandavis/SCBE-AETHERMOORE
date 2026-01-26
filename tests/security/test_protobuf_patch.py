@@ -14,6 +14,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 # Check if protobuf is available
 try:
     from google.protobuf import json_format, any_pb2
+
     PROTOBUF_AVAILABLE = True
 except ImportError:
     PROTOBUF_AVAILABLE = False
@@ -23,13 +24,10 @@ def create_nested_any(depth: int) -> dict:
     """Create a deeply nested Any message structure."""
     if depth <= 0:
         # Use Duration as base - it's a well-known type that's always available
-        return {
-            '@type': 'type.googleapis.com/google.protobuf.Duration',
-            'value': '0s'
-        }
+        return {"@type": "type.googleapis.com/google.protobuf.Duration", "value": "0s"}
     return {
-        '@type': 'type.googleapis.com/google.protobuf.Any',
-        'value': create_nested_any(depth - 1)
+        "@type": "type.googleapis.com/google.protobuf.Any",
+        "value": create_nested_any(depth - 1),
     }
 
 
@@ -48,6 +46,7 @@ class TestProtobufPatch:
     def test_patch_blocks_nested_any_bypass(self):
         """Nested Any messages should respect recursion depth limit."""
         from src.security import protobuf_patch
+
         protobuf_patch.apply()
 
         any_msg = any_pb2.Any()
@@ -58,10 +57,13 @@ class TestProtobufPatch:
 
         assert "too deep" in str(exc_info.value).lower()
 
-    @pytest.mark.skip(reason="Requires protobuf type registration - patch validation done in other tests")
+    @pytest.mark.skip(
+        reason="Requires protobuf type registration - patch validation done in other tests"
+    )
     def test_shallow_nesting_still_works(self):
         """Shallow nesting within limits should still work."""
         from src.security import protobuf_patch
+
         protobuf_patch.apply()
 
         any_msg = any_pb2.Any()
@@ -70,10 +72,13 @@ class TestProtobufPatch:
         # Should not raise - within depth limit
         json_format.ParseDict(nested, any_msg, max_recursion_depth=50)
 
-    @pytest.mark.skip(reason="Requires protobuf type registration - patch validation done in other tests")
+    @pytest.mark.skip(
+        reason="Requires protobuf type registration - patch validation done in other tests"
+    )
     def test_exact_depth_limit(self):
         """Test behavior at exact recursion limit."""
         from src.security import protobuf_patch
+
         protobuf_patch.apply()
 
         limit = 50
@@ -91,6 +96,7 @@ class TestProtobufPatch:
     def test_no_recursion_error(self):
         """Should raise ParseError, not RecursionError."""
         from src.security import protobuf_patch
+
         protobuf_patch.apply()
 
         any_msg = any_pb2.Any()
@@ -127,11 +133,12 @@ class TestProtobufPatchVerification:
     def test_verify_patch_reports_success(self):
         """verify_patch() should report successful mitigation."""
         from src.security import protobuf_patch
+
         protobuf_patch.apply()
 
         results = protobuf_patch.verify_patch()
 
-        assert results['patch_applied'] is True
+        assert results["patch_applied"] is True
         # Note: verification may fail due to missing message types,
         # but that's OK - the main patch test above confirms it works
 

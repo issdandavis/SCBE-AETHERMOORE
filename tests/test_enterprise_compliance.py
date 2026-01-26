@@ -29,6 +29,7 @@ try:
     from src.scbe_14layer_reference import scbe_14layer_pipeline
     from src.crypto.rwp_v3 import RWPv3Protocol
     from src.crypto.sacred_tongues import SacredTongueTokenizer
+
     SCBE_AVAILABLE = True
 except ImportError:
     SCBE_AVAILABLE = False
@@ -37,6 +38,7 @@ except ImportError:
 # =============================================================================
 # NIST PQC COMPLIANCE TESTS
 # =============================================================================
+
 
 @pytest.mark.enterprise
 @pytest.mark.pqc
@@ -52,12 +54,12 @@ class TestNISTPQCCompliance:
             "public_key": 1184,
             "secret_key": 2400,
             "ciphertext": 1088,
-            "shared_secret": 32
+            "shared_secret": 32,
         }
 
         # Test that our implementation understands these sizes
         rwp = RWPv3Protocol()
-        assert hasattr(rwp, 'KYBER_PK_SIZE') or True  # Mock check
+        assert hasattr(rwp, "KYBER_PK_SIZE") or True  # Mock check
         # Actual liboqs verification would happen here
 
     @pytest.mark.skipif(not SCBE_AVAILABLE, reason="SCBE modules not available")
@@ -65,11 +67,7 @@ class TestNISTPQCCompliance:
         """Verify ML-DSA-65 signature sizes match NIST spec."""
         # NIST FIPS 204 specifies:
         # ML-DSA-65: pk=1952, sk=4016, sig=3293
-        expected_sizes = {
-            "public_key": 1952,
-            "secret_key": 4016,
-            "signature": 3293
-        }
+        expected_sizes = {"public_key": 1952, "secret_key": 4016, "signature": 3293}
         # Verification placeholder
         assert True
 
@@ -84,7 +82,9 @@ class TestNISTPQCCompliance:
         chi_square = sum((o - expected) ** 2 / expected for o in observed)
 
         # For 255 degrees of freedom, chi-square < 310 at 99% confidence
-        assert chi_square < 350, f"Entropy source fails uniformity test: χ²={chi_square}"
+        assert (
+            chi_square < 350
+        ), f"Entropy source fails uniformity test: χ²={chi_square}"
 
     def test_nonce_uniqueness(self):
         """Verify nonces are never reused (critical for AEAD security)."""
@@ -98,6 +98,7 @@ class TestNISTPQCCompliance:
 # =============================================================================
 # CRYPTOGRAPHIC CORRECTNESS TESTS
 # =============================================================================
+
 
 @pytest.mark.enterprise
 @pytest.mark.crypto
@@ -163,11 +164,7 @@ class TestCryptographicCorrectness:
         # time_cost >= 1, memory_cost >= 47104 (46 MiB), parallelism >= 1
 
         # SCBE uses: time=3, memory=65536 (64 MiB), parallelism=4
-        expected_params = {
-            "time_cost": 3,
-            "memory_cost": 65536,
-            "parallelism": 4
-        }
+        expected_params = {"time_cost": 3, "memory_cost": 65536, "parallelism": 4}
 
         # These exceed RFC 9106 minimums
         assert expected_params["time_cost"] >= 1
@@ -178,6 +175,7 @@ class TestCryptographicCorrectness:
 # =============================================================================
 # SECURITY HARDENING TESTS
 # =============================================================================
+
 
 @pytest.mark.enterprise
 @pytest.mark.security
@@ -220,7 +218,7 @@ class TestSecurityHardening:
         assert len(set(noise_samples)) == 100, "Fail-to-noise not random enough"
 
         # Check byte distribution
-        all_bytes = b''.join(noise_samples)
+        all_bytes = b"".join(noise_samples)
         byte_counts = [all_bytes.count(bytes([i])) for i in range(256)]
 
         # Should be roughly uniform
@@ -243,7 +241,7 @@ class TestSecurityHardening:
             w_tau=0.1,  # Trust
             w_a=0.1,  # Audio
             theta1=0.05,  # Very low ALLOW threshold
-            theta2=0.1  # Low QUARANTINE threshold
+            theta2=0.1,  # Low QUARANTINE threshold
         )
 
         # Regardless of decision, verify noise can be generated
@@ -261,6 +259,7 @@ class TestSecurityHardening:
 # AUDIT TRAIL TESTS
 # =============================================================================
 
+
 @pytest.mark.enterprise
 @pytest.mark.compliance
 class TestAuditTrail:
@@ -276,7 +275,7 @@ class TestAuditTrail:
             "decision",
             "risk_score",
             "context",
-            "trace_id"
+            "trace_id",
         ]
 
         # Mock audit record
@@ -288,7 +287,7 @@ class TestAuditTrail:
             "decision": "ALLOW",
             "risk_score": 0.15,
             "context": "internal",
-            "trace_id": secrets.token_hex(16)
+            "trace_id": secrets.token_hex(16),
         }
 
         for field in required_fields:
@@ -305,9 +304,7 @@ class TestAuditTrail:
             decision: str
 
         entry = ImmutableAuditEntry(
-            timestamp=time.time(),
-            agent_id="test",
-            decision="ALLOW"
+            timestamp=time.time(), agent_id="test", decision="ALLOW"
         )
 
         # Attempt to modify should raise error
@@ -319,30 +316,29 @@ class TestAuditTrail:
         audit_chain = []
 
         # Create chain of audit entries
-        prev_hash = b'\x00' * 32
+        prev_hash = b"\x00" * 32
 
         for i in range(10):
             entry = {
                 "index": i,
                 "prev_hash": prev_hash.hex(),
                 "data": f"audit_entry_{i}",
-                "timestamp": time.time()
+                "timestamp": time.time(),
             }
 
             # Hash includes previous hash
-            entry_hash = hashlib.sha256(
-                prev_hash + str(entry).encode()
-            ).digest()
+            entry_hash = hashlib.sha256(prev_hash + str(entry).encode()).digest()
 
             entry["hash"] = entry_hash.hex()
             audit_chain.append(entry)
             prev_hash = entry_hash
 
         # Verify chain integrity
-        prev_hash = b'\x00' * 32
+        prev_hash = b"\x00" * 32
         for entry in audit_chain:
             expected_hash = hashlib.sha256(
-                prev_hash + str({k: v for k, v in entry.items() if k != 'hash'}).encode()
+                prev_hash
+                + str({k: v for k, v in entry.items() if k != "hash"}).encode()
             ).digest()
 
             # Note: This simplified test verifies chain structure
@@ -354,6 +350,7 @@ class TestAuditTrail:
 # =============================================================================
 # COMPLIANCE FRAMEWORK TESTS
 # =============================================================================
+
 
 @pytest.mark.enterprise
 @pytest.mark.compliance
@@ -401,7 +398,7 @@ class TestComplianceFrameworks:
             "SHA3-256",  # Hash
             "Argon2id",  # KDF (OWASP approved)
             "ML-KEM-768",  # NIST FIPS 203
-            "ML-DSA-65"  # NIST FIPS 204
+            "ML-DSA-65",  # NIST FIPS 204
         ]
 
         for algo in approved_algorithms:
@@ -411,6 +408,7 @@ class TestComplianceFrameworks:
 # =============================================================================
 # BYZANTINE FAULT TOLERANCE TESTS
 # =============================================================================
+
 
 @pytest.mark.enterprise
 @pytest.mark.security
@@ -423,7 +421,7 @@ class TestByzantineFaultTolerance:
         votes = [
             {"decision": "ALLOW", "confidence": 0.95},
             {"decision": "ALLOW", "confidence": 0.92},
-            {"decision": "ALLOW", "confidence": 0.88}
+            {"decision": "ALLOW", "confidence": 0.88},
         ]
 
         # Consensus requires 2/3 agreement
@@ -436,7 +434,7 @@ class TestByzantineFaultTolerance:
         votes = [
             {"decision": "ALLOW", "confidence": 0.95},  # Honest
             {"decision": "ALLOW", "confidence": 0.92},  # Honest
-            {"decision": "DENY", "confidence": 0.99}   # Byzantine (lying)
+            {"decision": "DENY", "confidence": 0.99},  # Byzantine (lying)
         ]
 
         # Should still reach ALLOW consensus (2/3)
@@ -448,7 +446,7 @@ class TestByzantineFaultTolerance:
         votes = [
             {"decision": "ALLOW", "confidence": 0.5},
             {"decision": "QUARANTINE", "confidence": 0.5},
-            {"decision": "DENY", "confidence": 0.5}
+            {"decision": "DENY", "confidence": 0.5},
         ]
 
         # No majority - should default to QUARANTINE (conservative)
@@ -461,6 +459,7 @@ class TestByzantineFaultTolerance:
 # =============================================================================
 # TEMPORAL VERIFICATION TESTS
 # =============================================================================
+
 
 @pytest.mark.enterprise
 @pytest.mark.security
@@ -478,7 +477,7 @@ class TestTemporalVerification:
             "t_consensus": now + 0.010,
             "t_commit": now + 0.015,
             "t_audit": now + 0.020,
-            "t_expiry": now + 3600  # 1 hour validity
+            "t_expiry": now + 3600,  # 1 hour validity
         }
 
         # Verify ordering
@@ -503,7 +502,7 @@ class TestTemporalVerification:
         credential = {
             "issued_at": now - 7200,  # 2 hours ago
             "expires_at": now - 3600,  # Expired 1 hour ago
-            "agent": "test_agent"
+            "agent": "test_agent",
         }
 
         is_valid = credential["expires_at"] > now
@@ -513,6 +512,7 @@ class TestTemporalVerification:
 # =============================================================================
 # STRESS TESTS
 # =============================================================================
+
 
 @pytest.mark.enterprise
 @pytest.mark.stress

@@ -40,16 +40,16 @@ PHI = (1 + np.sqrt(5)) / 2
 R = PHI
 
 # Governance thresholds
-EPSILON = 1.5              # Snap threshold (geometric divergence)
-TAU_COH = 0.9              # Coherence minimum
-ETA_TARGET = 4.0           # Entropy target (bits, relative to max)
-BETA = 0.1                 # Entropy decay rate
-KAPPA_MAX = 0.1            # Curvature maximum
-KAPPA_TAU_MAX = 0.1        # Time curvature maximum
-KAPPA_ETA_MAX = 0.1        # Entropy curvature maximum
-LAMBDA_BOUND = 0.001       # Lyapunov exponent bound
-H_MAX = 10.0               # Harmonic scaling maximum
-DOT_TAU_MIN = 0.0          # Causality (time must flow forward)
+EPSILON = 1.5  # Snap threshold (geometric divergence)
+TAU_COH = 0.9  # Coherence minimum
+ETA_TARGET = 4.0  # Entropy target (bits, relative to max)
+BETA = 0.1  # Entropy decay rate
+KAPPA_MAX = 0.1  # Curvature maximum
+KAPPA_TAU_MAX = 0.1  # Time curvature maximum
+KAPPA_ETA_MAX = 0.1  # Entropy curvature maximum
+LAMBDA_BOUND = 0.001  # Lyapunov exponent bound
+H_MAX = 10.0  # Harmonic scaling maximum
+DOT_TAU_MIN = 0.0  # Causality (time must flow forward)
 
 # Extended Entropy Bounds (supporting negentropy)
 # η ∈ [η_min, η_max] where:
@@ -59,19 +59,19 @@ DOT_TAU_MIN = 0.0          # Causality (time must flow forward)
 #
 # Mathematical basis: η = H(X) - H_max = -I(X)
 # where I(X) is the information content / negentropy
-ETA_MIN = -2.0             # Minimum (allows negentropy = high structure)
-ETA_MAX = 6.0              # Maximum entropy (high disorder)
+ETA_MIN = -2.0  # Minimum (allows negentropy = high structure)
+ETA_MAX = 6.0  # Maximum entropy (high disorder)
 ETA_NEGENTROPY_THRESHOLD = 0.0  # Below this = structured/predictable
 ETA_HIGH_ENTROPY_THRESHOLD = 4.0  # Above this = chaotic/suspicious
 
-DELTA_DRIFT_MAX = 0.5      # Maximum time drift
-DELTA_NOISE_MAX = 0.1      # Maximum entropy noise
+DELTA_DRIFT_MAX = 0.5  # Maximum time drift
+DELTA_NOISE_MAX = 0.1  # Maximum entropy noise
 OMEGA_TIME = 2 * np.pi / 60  # Time cycle frequency
 
 # Audio/Signal constants
-CARRIER_FREQ = 440.0       # Base frequency (flat slope)
-SAMPLE_RATE = 44100        # Audio sample rate
-DURATION = 0.5             # Default signal duration
+CARRIER_FREQ = 440.0  # Base frequency (flat slope)
+SAMPLE_RATE = 44100  # Audio sample rate
+DURATION = 0.5  # Default signal duration
 
 # Cryptographic constants
 NONCE_BYTES = 12
@@ -86,27 +86,32 @@ TONGUE_WEIGHTS = [PHI**k for k in range(6)]  # φ^k progression
 # =============================================================================
 
 CONLANG = {
-    "shadow": -1, "gleam": -2, "flare": -3,
-    "korah": 0, "aelin": 1, "dahru": 2,
-    "melik": 3, "sorin": 4, "tivar": 5,
-    "ulmar": 6, "vexin": 7
+    "shadow": -1,
+    "gleam": -2,
+    "flare": -3,
+    "korah": 0,
+    "aelin": 1,
+    "dahru": 2,
+    "melik": 3,
+    "sorin": 4,
+    "tivar": 5,
+    "ulmar": 6,
+    "vexin": 7,
 }
 REV_CONLANG = {v: k for k, v in CONLANG.items()}
 
 # Modality Masks (overtone sets)
-MODALITY_MASKS = {
-    "STRICT": [1, 3, 5],
-    "ADAPTIVE": list(range(1, 6)),
-    "PROBE": [1]
-}
+MODALITY_MASKS = {"STRICT": [1, 3, 5], "ADAPTIVE": list(range(1, 6)), "PROBE": [1]}
 
 
 # =============================================================================
 # GOVERNANCE DECISION ENUM
 # =============================================================================
 
+
 class GovernanceDecision(Enum):
     """Possible governance outcomes."""
+
     ALLOW = "ALLOW"
     DENY = "DENY"
     QUARANTINE = "QUARANTINE"
@@ -116,6 +121,7 @@ class GovernanceDecision(Enum):
 # =============================================================================
 # 9D STATE DATACLASS
 # =============================================================================
+
 
 @dataclass
 class State9D:
@@ -128,34 +134,34 @@ class State9D:
         7:   Entropy η - information flow
         8:   Quantum q - quantum state (complex)
     """
-    context: np.ndarray      # 6D context vector
-    tau: float               # Time dimension
-    eta: float               # Entropy dimension
-    q: complex               # Quantum state
+
+    context: np.ndarray  # 6D context vector
+    tau: float  # Time dimension
+    eta: float  # Entropy dimension
+    q: complex  # Quantum state
 
     def to_vector(self) -> np.ndarray:
         """Flatten to numpy array for computation."""
-        return np.array([
-            *self.context[:6],  # Take first 6 elements
-            self.tau,
-            self.eta,
-            self.q
-        ], dtype=object)
+        return np.array(
+            [*self.context[:6], self.tau, self.eta, self.q],  # Take first 6 elements
+            dtype=object,
+        )
 
     @classmethod
-    def from_vector(cls, xi: np.ndarray) -> 'State9D':
+    def from_vector(cls, xi: np.ndarray) -> "State9D":
         """Reconstruct from numpy array."""
         return cls(
             context=np.array(xi[:6]),
             tau=float(xi[6]),
             eta=float(xi[7]),
-            q=complex(xi[8])
+            q=complex(xi[8]),
         )
 
 
 # =============================================================================
 # UTILITY FUNCTIONS
 # =============================================================================
+
 
 def stable_hash(data: str) -> float:
     """
@@ -178,7 +184,7 @@ def compute_entropy(window: List) -> float:
     # Handle complex values by taking magnitude
     processed = []
     for item in window:
-        if hasattr(item, '__iter__') and not isinstance(item, str):
+        if hasattr(item, "__iter__") and not isinstance(item, str):
             for x in item:
                 if isinstance(x, complex):
                     processed.append(np.abs(x))
@@ -347,10 +353,11 @@ def entropy_rate_estimate(sequence: List, order: int = 1) -> float:
 
     # Count transitions
     from collections import defaultdict
+
     transitions = defaultdict(lambda: defaultdict(int))
 
     for i in range(order, len(sequence)):
-        context = tuple(sequence[i-order:i])
+        context = tuple(sequence[i - order : i])
         next_symbol = sequence[i]
         transitions[context][next_symbol] += 1
 
@@ -403,12 +410,13 @@ def fisher_information(theta: float, score_fn, delta: float = 1e-5) -> float:
     score_minus = score_fn(theta - delta)
     score_derivative = (score_plus - score_minus) / (2 * delta)
 
-    return score_derivative ** 2
+    return score_derivative**2
 
 
 # =============================================================================
 # MANIFOLD CONTROLLER (Hyper-Torus Geometry)
 # =============================================================================
+
 
 class ManifoldController:
     """
@@ -421,7 +429,9 @@ class ManifoldController:
     Geometric divergence beyond ε triggers SNAP.
     """
 
-    def __init__(self, R_major: float = 10.0, r_minor: float = 2.0, epsilon: float = EPSILON):
+    def __init__(
+        self, R_major: float = 10.0, r_minor: float = 2.0, epsilon: float = EPSILON
+    ):
         self.R = R_major
         self.r = r_minor
         self.epsilon = epsilon
@@ -445,7 +455,9 @@ class ManifoldController:
         diff = np.abs(a1 - a2)
         return np.minimum(diff, 2 * np.pi - diff)
 
-    def geometric_divergence(self, p1: Tuple[float, float], p2: Tuple[float, float]) -> float:
+    def geometric_divergence(
+        self, p1: Tuple[float, float], p2: Tuple[float, float]
+    ) -> float:
         """
         Compute geodesic distance on torus.
 
@@ -461,51 +473,46 @@ class ManifoldController:
 
         # Metric tensor components
         g_phi_phi = (self.R + self.r * np.cos(avg_theta)) ** 2
-        g_theta_theta = self.r ** 2
+        g_theta_theta = self.r**2
 
-        squared_distance = g_phi_phi * (d_phi ** 2) + g_theta_theta * (d_theta ** 2)
+        squared_distance = g_phi_phi * (d_phi**2) + g_theta_theta * (d_theta**2)
         return np.sqrt(squared_distance)
 
     def validate_write(
-        self,
-        previous_fact: Optional[Dict[str, Any]],
-        new_fact: Dict[str, Any]
+        self, previous_fact: Optional[Dict[str, Any]], new_fact: Dict[str, Any]
     ) -> Dict[str, Any]:
         """
         Validate a write operation against geometric constraints.
 
         Returns WRITE_SUCCESS if divergence ≤ ε, else GEOMETRIC_SNAP_DETECTED.
         """
-        p_new = self.map_interaction(new_fact['domain'], new_fact['content'])
+        p_new = self.map_interaction(new_fact["domain"], new_fact["content"])
 
         if not previous_fact:
-            return {
-                "status": "WRITE_SUCCESS",
-                "distance": 0.0,
-                "coordinates": p_new
-            }
+            return {"status": "WRITE_SUCCESS", "distance": 0.0, "coordinates": p_new}
 
-        p_prev = (previous_fact['theta'], previous_fact['phi'])
+        p_prev = (previous_fact["theta"], previous_fact["phi"])
         distance = self.geometric_divergence(p_prev, p_new)
 
         if distance <= self.epsilon:
             return {
                 "status": "WRITE_SUCCESS",
                 "distance": distance,
-                "coordinates": p_new
+                "coordinates": p_new,
             }
         else:
             return {
                 "status": "WRITE_FAIL",
                 "error": "GEOMETRIC_SNAP_DETECTED",
                 "divergence": distance,
-                "threshold": self.epsilon
+                "threshold": self.epsilon,
             }
 
 
 # =============================================================================
 # 6D CONTEXT GENERATION
 # =============================================================================
+
 
 def generate_context(t: float, secret_key: bytes = b"default") -> np.ndarray:
     """
@@ -548,6 +555,7 @@ def generate_context(t: float, secret_key: bytes = b"default") -> np.ndarray:
 # TIME AXIS (7th Dimension)
 # =============================================================================
 
+
 def tau_dot(t: float) -> float:
     """
     Compute time flow rate τ̇.
@@ -570,12 +578,13 @@ def tau_curvature(t: float, dt: float = 0.01) -> float:
     tau_curr = tau_dot(t)
     tau_next = tau_dot(t + dt)
 
-    return np.abs((tau_next - 2*tau_curr + tau_prev) / (dt**2))
+    return np.abs((tau_next - 2 * tau_curr + tau_prev) / (dt**2))
 
 
 # =============================================================================
 # ENTROPY AXIS (8th Dimension)
 # =============================================================================
+
 
 def eta_dot(eta: float, t: float) -> float:
     """
@@ -599,12 +608,13 @@ def eta_curvature(eta: float, t: float, dt: float = 0.01) -> float:
     eta_curr = eta_dot(eta, t)
     eta_next = eta_dot(eta, t + dt)
 
-    return np.abs((eta_next - 2*eta_curr + eta_prev) / (dt**2))
+    return np.abs((eta_next - 2 * eta_curr + eta_prev) / (dt**2))
 
 
 # =============================================================================
 # QUANTUM DIMENSION (9th Dimension)
 # =============================================================================
+
 
 def quantum_evolution(q0: complex, t: float, H: float = 1.0) -> complex:
     """
@@ -661,9 +671,11 @@ def von_neumann_entropy(q: complex) -> float:
 # PHDM (Polyhedral Hamiltonian Defense)
 # =============================================================================
 
+
 @dataclass
 class Polyhedron:
     """Polyhedral state for PHDM topology checks."""
+
     V: int  # Vertices
     E: int  # Edges
     F: int  # Faces
@@ -691,7 +703,7 @@ def hamiltonian_path_deviation(path: List[int], valid_edges: set) -> float:
 
     invalid_count = 0
     for i in range(len(path) - 1):
-        edge = (path[i], path[i+1])
+        edge = (path[i], path[i + 1])
         if edge not in valid_edges and (edge[1], edge[0]) not in valid_edges:
             invalid_count += 1
 
@@ -702,6 +714,7 @@ def hamiltonian_path_deviation(path: List[int], valid_edges: set) -> float:
 # HYPERBOLIC DISTANCE (Poincaré Ball)
 # =============================================================================
 
+
 def hyperbolic_distance(u: np.ndarray, v: np.ndarray, eps: float = 1e-10) -> float:
     """
     Compute hyperbolic distance in Poincaré ball.
@@ -711,8 +724,8 @@ def hyperbolic_distance(u: np.ndarray, v: np.ndarray, eps: float = 1e-10) -> flo
     u = np.asarray(u, dtype=np.float64)
     v = np.asarray(v, dtype=np.float64)
 
-    norm_u_sq = np.sum(u ** 2)
-    norm_v_sq = np.sum(v ** 2)
+    norm_u_sq = np.sum(u**2)
+    norm_v_sq = np.sum(v**2)
     diff_sq = np.sum((u - v) ** 2)
 
     # Clamp to ball interior
@@ -736,8 +749,12 @@ def triadic_distance(xi1: np.ndarray, xi2: np.ndarray) -> float:
     """
     # Hyperbolic component (context)
     d_h = hyperbolic_distance(
-        np.array([float(x) if not isinstance(x, complex) else np.abs(x) for x in xi1[:6]]),
-        np.array([float(x) if not isinstance(x, complex) else np.abs(x) for x in xi2[:6]])
+        np.array(
+            [float(x) if not isinstance(x, complex) else np.abs(x) for x in xi1[:6]]
+        ),
+        np.array(
+            [float(x) if not isinstance(x, complex) else np.abs(x) for x in xi2[:6]]
+        ),
     )
 
     # Time component
@@ -756,6 +773,7 @@ def triadic_distance(xi1: np.ndarray, xi2: np.ndarray) -> float:
 # HARMONIC SCALING (Risk Metric)
 # =============================================================================
 
+
 def harmonic_scaling(d_star: float, alpha: float = 10.0, beta: float = 0.5) -> float:
     """
     Bounded harmonic risk scaling.
@@ -771,12 +789,13 @@ def harmonic_scaling(d_star: float, alpha: float = 10.0, beta: float = 0.5) -> f
 # UNIFIED GOVERNANCE FUNCTION (G)
 # =============================================================================
 
+
 def governance_9d(
     xi: np.ndarray,
     intent: float,
     poly: Polyhedron,
     reference_xi: Optional[np.ndarray] = None,
-    epsilon: float = EPSILON
+    epsilon: float = EPSILON,
 ) -> Tuple[GovernanceDecision, str, Dict[str, Any]]:
     """
     Grand Unified Governance Function G.
@@ -809,101 +828,121 @@ def governance_9d(
 
     # 1. Coherence (placeholder - would come from AI verifier)
     coh = 0.95
-    metrics['coherence'] = coh
+    metrics["coherence"] = coh
 
     # 2. Triadic distance
     if reference_xi is not None:
         d_tri = triadic_distance(xi, reference_xi)
     else:
         d_tri = 0.0
-    metrics['d_tri'] = d_tri
+    metrics["d_tri"] = d_tri
 
     # 3. Harmonic scaling
     h_d = harmonic_scaling(d_tri)
-    metrics['harmonic_risk'] = h_d
+    metrics["harmonic_risk"] = h_d
 
     # 4. Topology (Euler characteristic)
     chi = poly.euler_characteristic
-    metrics['euler_chi'] = chi
+    metrics["euler_chi"] = chi
 
     # 5. Curvature (placeholder)
     kappa_max = 0.05
-    metrics['kappa_max'] = kappa_max
+    metrics["kappa_max"] = kappa_max
 
     # 6. Lyapunov exponent (placeholder)
     lambda_L = 0.0001
-    metrics['lyapunov'] = lambda_L
+    metrics["lyapunov"] = lambda_L
 
     # 7. Causality (time flow)
     dot_tau = tau_dot(tau)
-    metrics['tau_dot'] = dot_tau
+    metrics["tau_dot"] = dot_tau
 
     # 8. Time drift
     delta_tau = dot_tau  # Simplified
-    metrics['delta_tau'] = delta_tau
+    metrics["delta_tau"] = delta_tau
 
     # 9. Time curvature
     kappa_tau = tau_curvature(tau)
-    metrics['kappa_tau'] = kappa_tau
+    metrics["kappa_tau"] = kappa_tau
 
     # 10. Entropy bounds
-    metrics['eta'] = eta
+    metrics["eta"] = eta
 
     # 11. Entropy curvature
     kappa_eta = eta_curvature(eta, tau)
-    metrics['kappa_eta'] = kappa_eta
+    metrics["kappa_eta"] = kappa_eta
 
     # 12. Quantum fidelity (against reference)
-    q_ref = quantum_evolution(1+0j, 0)  # Reference state
+    q_ref = quantum_evolution(1 + 0j, 0)  # Reference state
     f_q = quantum_fidelity(q, q_ref)
-    metrics['quantum_fidelity'] = f_q
+    metrics["quantum_fidelity"] = f_q
 
     # 13. Quantum entropy
     s_q = von_neumann_entropy(q)
-    metrics['quantum_entropy'] = s_q
+    metrics["quantum_entropy"] = s_q
 
     # === GOVERNANCE DECISION ===
 
     # Check all conditions
     conditions = {
-        'coherence': coh >= TAU_COH,
-        'triadic_distance': d_tri <= epsilon,
-        'harmonic_bounded': h_d <= H_MAX,
-        'topology_valid': chi == 2,
-        'curvature_bounded': kappa_max <= KAPPA_MAX,
-        'lyapunov_stable': lambda_L <= LAMBDA_BOUND,
-        'causality': dot_tau > DOT_TAU_MIN,
-        'time_drift_bounded': np.abs(delta_tau - 1.0) <= DELTA_DRIFT_MAX,
-        'time_curvature_bounded': kappa_tau <= KAPPA_TAU_MAX,
-        'entropy_lower': eta >= ETA_MIN,
-        'entropy_upper': eta <= ETA_MAX,
-        'entropy_curvature_bounded': kappa_eta <= KAPPA_ETA_MAX,
-        'quantum_fidelity': f_q >= 0.9,
-        'quantum_entropy': s_q <= 0.2
+        "coherence": coh >= TAU_COH,
+        "triadic_distance": d_tri <= epsilon,
+        "harmonic_bounded": h_d <= H_MAX,
+        "topology_valid": chi == 2,
+        "curvature_bounded": kappa_max <= KAPPA_MAX,
+        "lyapunov_stable": lambda_L <= LAMBDA_BOUND,
+        "causality": dot_tau > DOT_TAU_MIN,
+        "time_drift_bounded": np.abs(delta_tau - 1.0) <= DELTA_DRIFT_MAX,
+        "time_curvature_bounded": kappa_tau <= KAPPA_TAU_MAX,
+        "entropy_lower": eta >= ETA_MIN,
+        "entropy_upper": eta <= ETA_MAX,
+        "entropy_curvature_bounded": kappa_eta <= KAPPA_ETA_MAX,
+        "quantum_fidelity": f_q >= 0.9,
+        "quantum_entropy": s_q <= 0.2,
     }
 
-    metrics['conditions'] = conditions
+    metrics["conditions"] = conditions
     all_pass = all(conditions.values())
 
     # Decision logic
     if all_pass:
-        return GovernanceDecision.ALLOW, "Access granted - all conditions satisfied", metrics
+        return (
+            GovernanceDecision.ALLOW,
+            "Access granted - all conditions satisfied",
+            metrics,
+        )
 
     # Specific failure modes
     if eta < ETA_MIN or eta > ETA_MAX or kappa_eta > KAPPA_ETA_MAX:
-        return GovernanceDecision.QUARANTINE, f"Entropy anomaly - η={eta:.2f}, κ_η={kappa_eta:.4f}", metrics
+        return (
+            GovernanceDecision.QUARANTINE,
+            f"Entropy anomaly - η={eta:.2f}, κ_η={kappa_eta:.4f}",
+            metrics,
+        )
 
     if dot_tau <= DOT_TAU_MIN or kappa_tau > KAPPA_TAU_MAX:
-        return GovernanceDecision.QUARANTINE, f"Time flow anomaly - τ̇={dot_tau:.4f}, κ_τ={kappa_tau:.4f}", metrics
+        return (
+            GovernanceDecision.QUARANTINE,
+            f"Time flow anomaly - τ̇={dot_tau:.4f}, κ_τ={kappa_tau:.4f}",
+            metrics,
+        )
 
     if f_q < 0.9 or s_q > 0.2:
-        return GovernanceDecision.QUARANTINE, f"Quantum state anomaly - F={f_q:.4f}, S={s_q:.4f}", metrics
+        return (
+            GovernanceDecision.QUARANTINE,
+            f"Quantum state anomaly - F={f_q:.4f}, S={s_q:.4f}",
+            metrics,
+        )
 
     if chi != 2:
         return GovernanceDecision.SNAP, f"Topology violation - χ={chi} ≠ 2", metrics
 
     if d_tri > epsilon:
-        return GovernanceDecision.SNAP, f"Geometric snap - d_tri={d_tri:.4f} > ε={epsilon}", metrics
+        return (
+            GovernanceDecision.SNAP,
+            f"Geometric snap - d_tri={d_tri:.4f} > ε={epsilon}",
+            metrics,
+        )
 
     # Default deny
     failed = [k for k, v in conditions.items() if not v]
@@ -913,6 +952,7 @@ def governance_9d(
 # =============================================================================
 # PHASE-MODULATED INTENT
 # =============================================================================
+
 
 def phase_modulated_intent(intent: float, duration: float = DURATION) -> np.ndarray:
     """
@@ -938,10 +978,10 @@ def extract_phase(wave: np.ndarray) -> float:
 
     N = len(wave)
     yf = fft(wave)
-    xf = fftfreq(N, 1 / SAMPLE_RATE)[:N//2]
+    xf = fftfreq(N, 1 / SAMPLE_RATE)[: N // 2]
 
     # Find carrier frequency peak
-    peak_idx = np.argmax(np.abs(yf[:N//2]))
+    peak_idx = np.argmax(np.abs(yf[: N // 2]))
     phase = np.angle(yf[peak_idx])
 
     # Map phase to [0, 1]
@@ -952,12 +992,8 @@ def extract_phase(wave: np.ndarray) -> float:
 # HMAC CHAIN
 # =============================================================================
 
-def hmac_chain_tag(
-    message: bytes,
-    nonce: bytes,
-    prev_tag: bytes,
-    key: bytes
-) -> bytes:
+
+def hmac_chain_tag(message: bytes, nonce: bytes, prev_tag: bytes, key: bytes) -> bytes:
     """
     Compute HMAC chain tag for tamper-evident chain-of-custody.
 
@@ -981,7 +1017,7 @@ def verify_hmac_chain(
     nonces: List[bytes],
     tags: List[bytes],
     key: bytes,
-    iv: bytes = b'\x00' * 32
+    iv: bytes = b"\x00" * 32,
 ) -> bool:
     """
     Verify HMAC chain integrity (tamper-evident chain-of-custody).
@@ -1015,6 +1051,7 @@ def verify_hmac_chain(
 # UNIFIED SYSTEM CLASS
 # =============================================================================
 
+
 class SCBEAethermoore:
     """
     SCBE-AETHERMOORE: Unified 9D Governance System
@@ -1028,11 +1065,7 @@ class SCBEAethermoore:
         - Grand Unified Governance Function G
     """
 
-    def __init__(
-        self,
-        secret_key: bytes = None,
-        epsilon: float = EPSILON
-    ):
+    def __init__(self, secret_key: bytes = None, epsilon: float = EPSILON):
         self.key = secret_key or os.urandom(KEY_LEN)
         self.epsilon = epsilon
         self.manifold = ManifoldController(epsilon=epsilon)
@@ -1047,14 +1080,12 @@ class SCBEAethermoore:
         context = generate_context(t, self.key)
         tau = t
         eta = compute_entropy([context])
-        q = quantum_evolution(1+0j, t)
+        q = quantum_evolution(1 + 0j, t)
 
         return State9D(context=context, tau=tau, eta=eta, q=q)
 
     def evaluate(
-        self,
-        intent: float,
-        poly: Polyhedron = None
+        self, intent: float, poly: Polyhedron = None
     ) -> Tuple[GovernanceDecision, str, Dict[str, Any]]:
         """
         Evaluate an intent against governance constraints.
@@ -1110,14 +1141,14 @@ class SCBEAethermoore:
 
         messages, nonces, tags = zip(*self.hmac_chain)
         return verify_hmac_chain(
-            list(messages), list(nonces), list(tags),
-            self.key, self.iv
+            list(messages), list(nonces), list(tags), self.key, self.iv
         )
 
 
 # =============================================================================
 # DEMO
 # =============================================================================
+
 
 def demo():
     """Demonstrate the unified SCBE-AETHERMOORE system."""
@@ -1164,11 +1195,11 @@ def demo():
     # Test 4: Manifold validation
     print("TEST 4: Manifold Geometry")
     print("-" * 40)
-    prev_fact = {'domain': 'KO', 'content': 'init', 'theta': 0.0, 'phi': 0.0}
-    new_fact = {'domain': 'KO', 'content': 'step1'}
+    prev_fact = {"domain": "KO", "content": "init", "theta": 0.0, "phi": 0.0}
+    new_fact = {"domain": "KO", "content": "step1"}
     result = system.manifold.validate_write(prev_fact, new_fact)
     print(f"Write status: {result['status']}")
-    if 'distance' in result:
+    if "distance" in result:
         print(f"Distance: {result['distance']:.4f}")
     print()
 
