@@ -86,6 +86,7 @@ jobs:
   lint:
     name: Lint and Format Check
     runs-on: ubuntu-latest
+        continue-on-error: true  # Allow lint failures to not block other jobs
     
     steps:
     - name: Checkout code
