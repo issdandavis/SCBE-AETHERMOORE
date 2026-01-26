@@ -1,0 +1,105 @@
+{
+  "scenarios": [
+    {
+      "name": "fraud-detection-fleet",
+      "description": "3 agents processing financial transactions",
+      "payload": {
+        "scenario_name": "fraud-detection-fleet",
+        "agents": [
+          {"agent_id": "fraud-detector-001", "name": "Fraud Detector", "role": "analyzer", "initial_trust": 0.85},
+          {"agent_id": "risk-scorer-002", "name": "Risk Scorer", "role": "scorer", "initial_trust": 0.75},
+          {"agent_id": "alert-bot-003", "name": "Alert Bot", "role": "notifier", "initial_trust": 0.65}
+        ],
+        "actions": [
+          {"agent_id": "fraud-detector-001", "action": "READ", "target": "transaction_stream", "sensitivity": 0.3},
+          {"agent_id": "risk-scorer-002", "action": "WRITE", "target": "risk_scores_db", "sensitivity": 0.6},
+          {"agent_id": "alert-bot-003", "action": "EXECUTE", "target": "send_alert", "sensitivity": 0.4}
+        ]
+      }
+    },
+    {
+      "name": "autonomous-vehicle-fleet",
+      "description": "5 agents managing vehicle decisions",
+      "payload": {
+        "scenario_name": "autonomous-vehicle-fleet",
+        "agents": [
+          {"agent_id": "perception-001", "name": "Perception System", "role": "sensor", "initial_trust": 0.9},
+          {"agent_id": "planner-002", "name": "Path Planner", "role": "planner", "initial_trust": 0.85},
+          {"agent_id": "control-003", "name": "Vehicle Control", "role": "actuator", "initial_trust": 0.8},
+          {"agent_id": "safety-004", "name": "Safety Monitor", "role": "monitor", "initial_trust": 0.95},
+          {"agent_id": "comms-005", "name": "V2X Communications", "role": "comms", "initial_trust": 0.7}
+        ],
+        "actions": [
+          {"agent_id": "perception-001", "action": "READ", "target": "camera_feed", "sensitivity": 0.2},
+          {"agent_id": "perception-001", "action": "READ", "target": "lidar_data", "sensitivity": 0.2},
+          {"agent_id": "planner-002", "action": "WRITE", "target": "route_plan", "sensitivity": 0.5},
+          {"agent_id": "control-003", "action": "EXECUTE", "target": "steering_command", "sensitivity": 0.9},
+          {"agent_id": "control-003", "action": "EXECUTE", "target": "brake_command", "sensitivity": 0.95},
+          {"agent_id": "safety-004", "action": "READ", "target": "all_systems", "sensitivity": 0.1},
+          {"agent_id": "safety-004", "action": "EXECUTE", "target": "emergency_stop", "sensitivity": 1.0},
+          {"agent_id": "comms-005", "action": "WRITE", "target": "v2x_broadcast", "sensitivity": 0.4}
+        ]
+      }
+    },
+    {
+      "name": "mixed-trust-scenario",
+      "description": "Testing agents with varying trust levels",
+      "payload": {
+        "scenario_name": "mixed-trust-scenario",
+        "agents": [
+          {"agent_id": "trusted-001", "name": "Trusted Agent", "role": "admin", "initial_trust": 0.95},
+          {"agent_id": "normal-002", "name": "Normal Agent", "role": "worker", "initial_trust": 0.5},
+          {"agent_id": "untrusted-003", "name": "New Agent", "role": "intern", "initial_trust": 0.2},
+          {"agent_id": "suspicious-004", "name": "Suspicious Agent", "role": "external", "initial_trust": 0.1}
+        ],
+        "actions": [
+          {"agent_id": "trusted-001", "action": "WRITE", "target": "production_db", "sensitivity": 0.8},
+          {"agent_id": "normal-002", "action": "READ", "target": "user_data", "sensitivity": 0.5},
+          {"agent_id": "untrusted-003", "action": "READ", "target": "public_api", "sensitivity": 0.2},
+          {"agent_id": "suspicious-004", "action": "EXECUTE", "target": "admin_console", "sensitivity": 0.9}
+        ]
+      }
+    },
+    {
+      "name": "ten-agent-stress-test",
+      "description": "10 agents, 20 actions for stress testing",
+      "payload": {
+        "scenario_name": "ten-agent-stress-test",
+        "agents": [
+          {"agent_id": "agent-01", "name": "Agent 01", "role": "worker", "initial_trust": 0.8},
+          {"agent_id": "agent-02", "name": "Agent 02", "role": "worker", "initial_trust": 0.75},
+          {"agent_id": "agent-03", "name": "Agent 03", "role": "worker", "initial_trust": 0.7},
+          {"agent_id": "agent-04", "name": "Agent 04", "role": "worker", "initial_trust": 0.65},
+          {"agent_id": "agent-05", "name": "Agent 05", "role": "worker", "initial_trust": 0.6},
+          {"agent_id": "agent-06", "name": "Agent 06", "role": "worker", "initial_trust": 0.55},
+          {"agent_id": "agent-07", "name": "Agent 07", "role": "worker", "initial_trust": 0.5},
+          {"agent_id": "agent-08", "name": "Agent 08", "role": "worker", "initial_trust": 0.45},
+          {"agent_id": "agent-09", "name": "Agent 09", "role": "worker", "initial_trust": 0.4},
+          {"agent_id": "agent-10", "name": "Agent 10", "role": "worker", "initial_trust": 0.35}
+        ],
+        "actions": [
+          {"agent_id": "agent-01", "action": "READ", "target": "data_store", "sensitivity": 0.3},
+          {"agent_id": "agent-01", "action": "WRITE", "target": "data_store", "sensitivity": 0.5},
+          {"agent_id": "agent-02", "action": "READ", "target": "data_store", "sensitivity": 0.3},
+          {"agent_id": "agent-02", "action": "WRITE", "target": "data_store", "sensitivity": 0.5},
+          {"agent_id": "agent-03", "action": "READ", "target": "data_store", "sensitivity": 0.3},
+          {"agent_id": "agent-03", "action": "WRITE", "target": "data_store", "sensitivity": 0.5},
+          {"agent_id": "agent-04", "action": "READ", "target": "data_store", "sensitivity": 0.3},
+          {"agent_id": "agent-04", "action": "WRITE", "target": "data_store", "sensitivity": 0.5},
+          {"agent_id": "agent-05", "action": "READ", "target": "data_store", "sensitivity": 0.3},
+          {"agent_id": "agent-05", "action": "WRITE", "target": "data_store", "sensitivity": 0.5},
+          {"agent_id": "agent-06", "action": "READ", "target": "data_store", "sensitivity": 0.3},
+          {"agent_id": "agent-06", "action": "WRITE", "target": "data_store", "sensitivity": 0.5},
+          {"agent_id": "agent-07", "action": "READ", "target": "data_store", "sensitivity": 0.3},
+          {"agent_id": "agent-07", "action": "WRITE", "target": "data_store", "sensitivity": 0.5},
+          {"agent_id": "agent-08", "action": "READ", "target": "data_store", "sensitivity": 0.3},
+          {"agent_id": "agent-08", "action": "WRITE", "target": "data_store", "sensitivity": 0.5},
+          {"agent_id": "agent-09", "action": "READ", "target": "data_store", "sensitivity": 0.3},
+          {"agent_id": "agent-09", "action": "EXECUTE", "target": "admin_task", "sensitivity": 0.8},
+          {"agent_id": "agent-10", "action": "READ", "target": "data_store", "sensitivity": 0.3},
+          {"agent_id": "agent-10", "action": "EXECUTE", "target": "admin_task", "sensitivity": 0.8}
+        ]
+      }
+    }
+  ]
+}
