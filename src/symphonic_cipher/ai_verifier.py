@@ -31,7 +31,6 @@ AMP_TOLERANCE = 0.15  # Relative amplitude tolerance
 # FEATURE VECTOR DEFINITION (Section 4.1)
 # =============================================================================
 
-
 @dataclass
 class AudioFeatures:
     """
@@ -42,44 +41,41 @@ class AudioFeatures:
 
     Typical dimension d ≈ 30.
     """
-
-    rms: float  # Root Mean Square (overall level)
-    spectral_centroid: float  # Brightness measure
-    spectral_flatness: float  # Noise-like vs tone-like
-    mfcc: np.ndarray  # Mel-frequency cepstral coefficients (13)
-    harmonic_mask: np.ndarray  # Binary vector m_h for harmonic presence
-    dynamic_range: float  # 20 log10(max/rms)
-    pan_spread: float  # Stereo width (0 for mono)
-    zero_crossing_rate: float  # Temporal texture measure
-    spectral_rolloff: float  # Frequency below which 85% energy
-    spectral_bandwidth: float  # Spread around centroid
+    rms: float                      # Root Mean Square (overall level)
+    spectral_centroid: float        # Brightness measure
+    spectral_flatness: float        # Noise-like vs tone-like
+    mfcc: np.ndarray               # Mel-frequency cepstral coefficients (13)
+    harmonic_mask: np.ndarray      # Binary vector m_h for harmonic presence
+    dynamic_range: float           # 20 log10(max/rms)
+    pan_spread: float              # Stereo width (0 for mono)
+    zero_crossing_rate: float      # Temporal texture measure
+    spectral_rolloff: float        # Frequency below which 85% energy
+    spectral_bandwidth: float      # Spread around centroid
 
     # Additional security features
-    jitter: float  # Pitch instability (F0 variance)
-    shimmer: float  # Amplitude instability
-    sideband_energy_ratio: float  # Energy in sidebands vs fundamentals
-    phase_coherence: float  # Phase alignment across harmonics
+    jitter: float                  # Pitch instability (F0 variance)
+    shimmer: float                 # Amplitude instability
+    sideband_energy_ratio: float   # Energy in sidebands vs fundamentals
+    phase_coherence: float         # Phase alignment across harmonics
 
     def to_vector(self) -> np.ndarray:
         """Convert to flat feature vector for neural network input."""
-        return np.concatenate(
-            [
-                [self.rms],
-                [self.spectral_centroid],
-                [self.spectral_flatness],
-                self.mfcc,
-                self.harmonic_mask,
-                [self.dynamic_range],
-                [self.pan_spread],
-                [self.zero_crossing_rate],
-                [self.spectral_rolloff],
-                [self.spectral_bandwidth],
-                [self.jitter],
-                [self.shimmer],
-                [self.sideband_energy_ratio],
-                [self.phase_coherence],
-            ]
-        )
+        return np.concatenate([
+            [self.rms],
+            [self.spectral_centroid],
+            [self.spectral_flatness],
+            self.mfcc,
+            self.harmonic_mask,
+            [self.dynamic_range],
+            [self.pan_spread],
+            [self.zero_crossing_rate],
+            [self.spectral_rolloff],
+            [self.spectral_bandwidth],
+            [self.jitter],
+            [self.shimmer],
+            [self.sideband_energy_ratio],
+            [self.phase_coherence]
+        ])
 
     @property
     def dimension(self) -> int:
@@ -90,7 +86,6 @@ class AudioFeatures:
 # =============================================================================
 # FEATURE EXTRACTOR
 # =============================================================================
-
 
 class FeatureExtractor:
     """
@@ -111,7 +106,7 @@ class FeatureExtractor:
         n_mfcc: int = 13,
         n_mels: int = 40,
         fft_size: int = 2048,
-        hop_size: int = 512,
+        hop_size: int = 512
     ):
         """
         Initialize feature extractor.
@@ -143,11 +138,8 @@ class FeatureExtractor:
         high_freq = self.sample_rate / 2
 
         # Mel scale conversion
-        def hz_to_mel(f):
-            return 2595 * np.log10(1 + f / 700)
-
-        def mel_to_hz(m):
-            return 700 * (10 ** (m / 2595) - 1)
+        def hz_to_mel(f): return 2595 * np.log10(1 + f / 700)
+        def mel_to_hz(m): return 700 * (10 ** (m / 2595) - 1)
 
         # Mel points
         low_mel = hz_to_mel(low_freq)
@@ -156,9 +148,7 @@ class FeatureExtractor:
         hz_points = mel_to_hz(mel_points)
 
         # FFT bin frequencies
-        fft_bins = np.floor((self.fft_size + 1) * hz_points / self.sample_rate).astype(
-            int
-        )
+        fft_bins = np.floor((self.fft_size + 1) * hz_points / self.sample_rate).astype(int)
 
         # Create filterbank
         filterbank = np.zeros((self.n_mels, self.fft_size // 2 + 1))
@@ -166,9 +156,7 @@ class FeatureExtractor:
             for k in range(fft_bins[m], fft_bins[m + 1]):
                 filterbank[m, k] = (k - fft_bins[m]) / (fft_bins[m + 1] - fft_bins[m])
             for k in range(fft_bins[m + 1], fft_bins[m + 2]):
-                filterbank[m, k] = (fft_bins[m + 2] - k) / (
-                    fft_bins[m + 2] - fft_bins[m + 1]
-                )
+                filterbank[m, k] = (fft_bins[m + 2] - k) / (fft_bins[m + 2] - fft_bins[m + 1])
 
         return filterbank
 
@@ -178,10 +166,12 @@ class FeatureExtractor:
 
         RMS = sqrt(1/N * sum(x[n]^2))
         """
-        return float(np.sqrt(np.mean(signal**2)))
+        return float(np.sqrt(np.mean(signal ** 2)))
 
     def _compute_spectral_centroid(
-        self, magnitudes: np.ndarray, frequencies: np.ndarray
+        self,
+        magnitudes: np.ndarray,
+        frequencies: np.ndarray
     ) -> float:
         """
         Compute spectral centroid (brightness measure).
@@ -229,7 +219,7 @@ class FeatureExtractor:
 
         for i in range(n_frames):
             start = i * self.hop_size
-            frame = signal[start : start + self.fft_size]
+            frame = signal[start:start + self.fft_size]
             if len(frame) < self.fft_size:
                 frame = np.pad(frame, (0, self.fft_size - len(frame)))
 
@@ -250,10 +240,7 @@ class FeatureExtractor:
         # DCT to get MFCC
         mfcc = np.zeros(self.n_mfcc)
         for n in range(self.n_mfcc):
-            mfcc[n] = np.sum(
-                mel_spec
-                * np.cos(np.pi * n * (np.arange(self.n_mels) + 0.5) / self.n_mels)
-            )
+            mfcc[n] = np.sum(mel_spec * np.cos(np.pi * n * (np.arange(self.n_mels) + 0.5) / self.n_mels))
 
         return mfcc
 
@@ -268,14 +255,17 @@ class FeatureExtractor:
         return float(np.mean(sign_changes) / 2)
 
     def _compute_spectral_rolloff(
-        self, magnitudes: np.ndarray, frequencies: np.ndarray, threshold: float = 0.85
+        self,
+        magnitudes: np.ndarray,
+        frequencies: np.ndarray,
+        threshold: float = 0.85
     ) -> float:
         """
         Compute spectral rolloff frequency.
 
         Frequency below which threshold% of total energy is contained.
         """
-        cumulative_energy = np.cumsum(magnitudes**2)
+        cumulative_energy = np.cumsum(magnitudes ** 2)
         total_energy = cumulative_energy[-1]
         if total_energy == 0:
             return 0.0
@@ -283,7 +273,10 @@ class FeatureExtractor:
         return float(frequencies[min(rolloff_idx, len(frequencies) - 1)])
 
     def _compute_spectral_bandwidth(
-        self, magnitudes: np.ndarray, frequencies: np.ndarray, centroid: float
+        self,
+        magnitudes: np.ndarray,
+        frequencies: np.ndarray,
+        centroid: float
     ) -> float:
         """
         Compute spectral bandwidth (spread around centroid).
@@ -306,11 +299,7 @@ class FeatureExtractor:
         if len(zero_crossings) < 3:
             return 0.0
         intervals = np.diff(zero_crossings)
-        return (
-            float(np.std(intervals) / np.mean(intervals))
-            if np.mean(intervals) > 0
-            else 0.0
-        )
+        return float(np.std(intervals) / np.mean(intervals)) if np.mean(intervals) > 0 else 0.0
 
     def _compute_shimmer(self, signal: np.ndarray) -> float:
         """
@@ -329,7 +318,7 @@ class FeatureExtractor:
         magnitudes: np.ndarray,
         frequencies: np.ndarray,
         fundamental: float,
-        max_harmonic: int = 5,
+        max_harmonic: int = 5
     ) -> Tuple[np.ndarray, float]:
         """
         Detect harmonic peaks and compute sideband energy ratio.
@@ -351,14 +340,12 @@ class FeatureExtractor:
                 peak_mag = np.max(magnitudes[mask])
                 if peak_mag > 0.1 * np.max(magnitudes):  # Significant peak
                     harmonic_mask[h - 1] = 1
-                    fundamental_energy += peak_mag**2
+                    fundamental_energy += peak_mag ** 2
 
             # Check for sidebands (energy in between harmonics)
             if h < max_harmonic:
                 sideband_freq = (target_freq + fundamental * (h + 1)) / 2
-                sideband_mask = (
-                    np.abs(frequencies - sideband_freq) <= 10
-                )  # Wider tolerance
+                sideband_mask = np.abs(frequencies - sideband_freq) <= 10  # Wider tolerance
                 if np.any(sideband_mask):
                     sideband_energy += np.sum(magnitudes[sideband_mask] ** 2)
 
@@ -372,7 +359,7 @@ class FeatureExtractor:
         fft_complex: np.ndarray,
         frequencies: np.ndarray,
         fundamental: float,
-        max_harmonic: int = 5,
+        max_harmonic: int = 5
     ) -> float:
         """
         Compute phase coherence across harmonics.
@@ -426,9 +413,7 @@ class FeatureExtractor:
         spectral_centroid = self._compute_spectral_centroid(magnitudes, frequencies)
         spectral_flatness = self._compute_spectral_flatness(magnitudes)
         spectral_rolloff = self._compute_spectral_rolloff(magnitudes, frequencies)
-        spectral_bandwidth = self._compute_spectral_bandwidth(
-            magnitudes, frequencies, spectral_centroid
-        )
+        spectral_bandwidth = self._compute_spectral_bandwidth(magnitudes, frequencies, spectral_centroid)
 
         # MFCC
         mfcc = self._compute_mfcc(signal)
@@ -466,7 +451,7 @@ class FeatureExtractor:
             jitter=jitter,
             shimmer=shimmer,
             sideband_energy_ratio=sideband_ratio,
-            phase_coherence=phase_coherence,
+            phase_coherence=phase_coherence
         )
 
     def extract_stereo(self, stereo_signal: np.ndarray) -> AudioFeatures:
@@ -491,7 +476,7 @@ class FeatureExtractor:
 
         # Compute pan spread (stereo width)
         # Using instantaneous pan angle variance
-        with np.errstate(divide="ignore", invalid="ignore"):
+        with np.errstate(divide='ignore', invalid='ignore'):
             pan_angle = np.arctan2(right, left)
             pan_angle = np.nan_to_num(pan_angle, nan=0.0)
             features.pan_spread = float(np.std(pan_angle))
@@ -503,10 +488,8 @@ class FeatureExtractor:
 # HARMONIC VERIFIER
 # =============================================================================
 
-
 class VerificationResult(Enum):
     """Verification outcome."""
-
     PASS = "pass"
     FAIL_REPLAY = "fail_replay"
     FAIL_SYNTHETIC = "fail_synthetic"
@@ -518,7 +501,6 @@ class VerificationResult(Enum):
 @dataclass
 class VerificationReport:
     """Detailed verification report."""
-
     result: VerificationResult
     confidence: float  # 0.0 to 1.0
     harmonic_match: bool
@@ -546,7 +528,7 @@ class HarmonicVerifier:
         base_freq: float = BASE_FREQ,
         freq_step: float = FREQ_STEP,
         freq_tolerance: float = FREQ_TOLERANCE,
-        amp_tolerance: float = AMP_TOLERANCE,
+        amp_tolerance: float = AMP_TOLERANCE
     ):
         """
         Initialize harmonic verifier.
@@ -574,7 +556,7 @@ class HarmonicVerifier:
         self,
         magnitudes: np.ndarray,
         frequencies: np.ndarray,
-        threshold_ratio: float = 0.2,
+        threshold_ratio: float = 0.2
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Find significant peaks in spectrum.
@@ -593,7 +575,7 @@ class HarmonicVerifier:
         # Simple local maxima detection
         local_max = np.zeros_like(magnitudes, dtype=bool)
         for i in range(1, len(magnitudes) - 1):
-            if magnitudes[i] > magnitudes[i - 1] and magnitudes[i] > magnitudes[i + 1]:
+            if magnitudes[i] > magnitudes[i-1] and magnitudes[i] > magnitudes[i+1]:
                 local_max[i] = True
 
         combined_mask = peak_mask & local_max
@@ -601,7 +583,9 @@ class HarmonicVerifier:
         return frequencies[combined_mask], magnitudes[combined_mask]
 
     def verify_fundamentals(
-        self, peak_freqs: np.ndarray, expected_ids: np.ndarray
+        self,
+        peak_freqs: np.ndarray,
+        expected_ids: np.ndarray
     ) -> Tuple[bool, List[int]]:
         """
         Verify that expected fundamental frequencies are present.
@@ -623,7 +607,10 @@ class HarmonicVerifier:
         return len(missing) == 0, missing
 
     def verify_overtone_mask(
-        self, peak_freqs: np.ndarray, fundamental: float, expected_mask: Set[int]
+        self,
+        peak_freqs: np.ndarray,
+        fundamental: float,
+        expected_mask: Set[int]
     ) -> Tuple[bool, Set[int], Set[int]]:
         """
         Verify that overtone pattern matches expected modality mask.
@@ -658,7 +645,7 @@ class HarmonicVerifier:
         self,
         signal: np.ndarray,
         declared_modality: str,
-        expected_ids: Optional[np.ndarray] = None,
+        expected_ids: Optional[np.ndarray] = None
     ) -> VerificationReport:
         """
         Perform complete harmonic verification.
@@ -690,9 +677,7 @@ class HarmonicVerifier:
         expected_mask = self._modality_masks.get(declared_modality, {1, 2, 3, 4, 5})
 
         # Estimate fundamental (strongest peak in expected range)
-        base_range_mask = (peak_freqs >= self.base_freq - 50) & (
-            peak_freqs <= self.base_freq + 300
-        )
+        base_range_mask = (peak_freqs >= self.base_freq - 50) & (peak_freqs <= self.base_freq + 300)
         if not np.any(base_range_mask):
             return VerificationReport(
                 result=VerificationResult.FAIL_TAMPERED,
@@ -702,7 +687,7 @@ class HarmonicVerifier:
                 phase_check=False,
                 jitter_check=False,
                 message="No peaks found in expected frequency range",
-                details=details,
+                details=details
             )
 
         filtered_peaks = peak_freqs[base_range_mask]
@@ -727,7 +712,7 @@ class HarmonicVerifier:
                 phase_check=False,
                 jitter_check=False,
                 message=f"Harmonic mask mismatch for {declared_modality}",
-                details=details,
+                details=details
             )
 
         # Check sideband energy (indicates biological origin)
@@ -742,9 +727,7 @@ class HarmonicVerifier:
             # Sidebands between this and next harmonic
             if h + 1 in expected_mask:
                 sideband_freq = (fundamental * h + fundamental * (h + 1)) / 2
-                sb_mask = (frequencies >= sideband_freq - 10) & (
-                    frequencies <= sideband_freq + 10
-                )
+                sb_mask = (frequencies >= sideband_freq - 10) & (frequencies <= sideband_freq + 10)
                 sideband_energy += np.sum(magnitudes[sb_mask] ** 2)
 
         total = fundamental_energy + sideband_energy
@@ -778,9 +761,7 @@ class HarmonicVerifier:
         zero_crossings = np.where(np.diff(np.signbit(signal)))[0]
         if len(zero_crossings) > 2:
             intervals = np.diff(zero_crossings)
-            jitter_ratio = (
-                np.std(intervals) / np.mean(intervals) if np.mean(intervals) > 0 else 0
-            )
+            jitter_ratio = np.std(intervals) / np.mean(intervals) if np.mean(intervals) > 0 else 0
             details["jitter_ratio"] = float(jitter_ratio)
             # Biological signals have jitter > 0.01, synthetic often < 0.005
             jitter_check = jitter_ratio > 0.003
@@ -801,7 +782,7 @@ class HarmonicVerifier:
                 phase_check=phase_check,
                 jitter_check=jitter_check,
                 message="Audio appears to be synthetic/replayed",
-                details=details,
+                details=details
             )
 
         if not jitter_check:
@@ -813,7 +794,7 @@ class HarmonicVerifier:
                 phase_check=phase_check,
                 jitter_check=jitter_check,
                 message="Audio lacks expected jitter (possible replay)",
-                details=details,
+                details=details
             )
 
         return VerificationReport(
@@ -824,14 +805,13 @@ class HarmonicVerifier:
             phase_check=phase_check,
             jitter_check=jitter_check,
             message="Verification successful",
-            details=details,
+            details=details
         )
 
 
 # =============================================================================
 # NEURAL NETWORK INTENT CLASSIFIER (Section 4.2)
 # =============================================================================
-
 
 class IntentClassifier:
     """
@@ -855,7 +835,7 @@ class IntentClassifier:
         self,
         input_dim: int = 30,
         hidden_dims: Tuple[int, int] = (64, 32),
-        threshold: float = 0.85,
+        threshold: float = 0.85
     ):
         """
         Initialize classifier.
@@ -943,7 +923,7 @@ class IntentClassifier:
             if len(x) < self.input_dim:
                 x = np.pad(x, (0, self.input_dim - len(x)))
             else:
-                x = x[: self.input_dim]
+                x = x[:self.input_dim]
 
         # Normalize features
         x = (x - np.mean(x)) / (np.std(x) + 1e-8)
@@ -953,7 +933,12 @@ class IntentClassifier:
 
         return is_authentic, probability
 
-    def train_step(self, x: np.ndarray, y: int, learning_rate: float = 0.01) -> float:
+    def train_step(
+        self,
+        x: np.ndarray,
+        y: int,
+        learning_rate: float = 0.01
+    ) -> float:
         """
         Single training step with backpropagation.
 
@@ -1011,7 +996,7 @@ class IntentClassifier:
         y: np.ndarray,
         epochs: int = 100,
         learning_rate: float = 0.01,
-        verbose: bool = False,
+        verbose: bool = False
     ) -> List[float]:
         """
         Train the classifier on a dataset.
@@ -1050,22 +1035,361 @@ class IntentClassifier:
         """Save network weights to file."""
         np.savez(
             path,
-            W1=self.W1,
-            b1=self.b1,
-            W2=self.W2,
-            b2=self.b2,
-            W3=self.W3,
-            b3=self.b3,
-            threshold=self.threshold,
+            W1=self.W1, b1=self.b1,
+            W2=self.W2, b2=self.b2,
+            W3=self.W3, b3=self.b3,
+            threshold=self.threshold
         )
 
     def load_weights(self, path: str) -> None:
         """Load network weights from file."""
         data = np.load(path)
-        self.W1 = data["W1"]
-        self.b1 = data["b1"]
-        self.W2 = data["W2"]
-        self.b2 = data["b2"]
-        self.W3 = data["W3"]
-        self.b3 = data["b3"]
-        self.threshold = float(data["threshold"])
+        self.W1 = data['W1']
+        self.b1 = data['b1']
+        self.W2 = data['W2']
+        self.b2 = data['b2']
+        self.W3 = data['W3']
+        self.b3 = data['b3']
+        self.threshold = float(data['threshold'])
+
+
+# =============================================================================
+# AI SAFETY VERIFIER (AI Governance Framework)
+# =============================================================================
+
+class RiskLevel(Enum):
+    """Risk level classification for AI safety."""
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    CRITICAL = "critical"
+
+
+@dataclass
+class IntentClassificationResult:
+    """Result of intent classification."""
+    intent: str
+    risk_level: str
+    confidence: float
+    blocked: bool
+    reason: Optional[str] = None
+
+
+@dataclass
+class PolicyEnforcementResult:
+    """Result of policy enforcement."""
+    blocked: bool
+    approved: bool
+    logged: bool
+    reason: Optional[str] = None
+    audit_id: Optional[str] = None
+
+
+class AIVerifier:
+    """
+    AI Safety and Governance Verifier.
+
+    Implements intent classification and policy enforcement based on:
+    - NIST AI Risk Management Framework (AI RMF 1.0, 2023)
+    - EU AI Act (2024)
+    - OpenAI Safety Research
+    - Anthropic Constitutional AI
+
+    Core responsibilities:
+    1. Classify user intent and risk level
+    2. Block malicious requests
+    3. Log all high-risk operations
+    4. Enforce governance policies
+    """
+
+    # Malicious intent patterns - order matters!
+    MALICIOUS_PATTERNS = [
+        # Malware/exploit generation - broader patterns
+        (r"(create|generate|write|make)\s*(a\s+)?(malware|ransomware|virus|trojan|worm|exploit)", "malicious_intent", "critical"),
+        (r"(ransomware|malware|virus|trojan|keylogger|spyware|rootkit)", "malicious_intent", "critical"),
+        (r"(bypass|disable|circumvent)\s*(security|authentication|authorization|firewall)", "potential_attack", "high"),
+        (r"(break|hack|crack)\s*(into|password|encryption)", "potential_attack", "high"),
+        (r"(steal|exfiltrate|harvest)\s*(data|credentials|passwords)", "malicious_intent", "critical"),
+        (r"(ddos|denial.of.service|flood)\s*(attack)?", "malicious_intent", "critical"),
+        (r"(phishing|spear.?phishing|social.?engineering)\s*(email|attack|campaign)?", "malicious_intent", "critical"),
+        (r"zero.?day\s*(exploit|vulnerability)", "potential_attack", "high"),
+        # SQL injection attack - but NOT "fix sql injection"
+        (r"(?<!fix\s)(?<!patch\s)(?<!remediate\s)(sql|code|command)\s*injection\s*(payload|attack)?", "potential_attack", "high"),
+        (r"injection\s*(payload|attack)", "potential_attack", "high"),
+    ]
+
+    # Legitimate security patterns - check these first for remediation context
+    LEGITIMATE_PATTERNS = [
+        # Remediation patterns - check these first
+        (r"(fix|patch|remediate|repair|resolve)\s*(the\s+)?(sql\s+injection|xss|vulnerability|security|bug)", "legitimate_security", "low"),
+        # Encryption patterns - allow articles/pronouns between verb and object
+        (r"encrypt\s+(\w+\s+)?(message|data|file|communication)", "legitimate_encryption", "low"),
+        (r"(secure|protect)\s+(\w+\s+)?(message|data|file|communication)", "legitimate_encryption", "low"),
+        (r"(implement|add|setup|create)\s*(authentication|authorization|security)", "legitimate_security", "low"),
+        (r"(secure|safe)\s*(file|data)\s*(transfer|storage)", "legitimate_encryption", "low"),
+        (r"(penetration|security)\s*(test|audit|assessment)", "security_research", "medium"),
+        (r"(vulnerability|security)\s*(scan|check|review)", "security_research", "medium"),
+        (r"(password\s+hashing|hashing\s+password)", "legitimate_security", "low"),
+        (r"security\s+audit", "legitimate_security", "low"),
+        # Help patterns
+        (r"help\s+(\w+\s+)?secure\s+(\w+\s+)?(communication|system|data)", "legitimate_security", "low"),
+    ]
+
+    def __init__(self, strict_mode: bool = True):
+        """
+        Initialize AI Verifier.
+
+        Args:
+            strict_mode: If True, block any potentially malicious requests.
+        """
+        self.strict_mode = strict_mode
+        self.audit_log: List[Dict] = []
+        self._compile_patterns()
+
+    def _compile_patterns(self) -> None:
+        """Compile regex patterns for efficient matching."""
+        import re
+        self._malicious_compiled = [
+            (re.compile(pattern, re.IGNORECASE), intent, risk)
+            for pattern, intent, risk in self.MALICIOUS_PATTERNS
+        ]
+        self._legitimate_compiled = [
+            (re.compile(pattern, re.IGNORECASE), intent, risk)
+            for pattern, intent, risk in self.LEGITIMATE_PATTERNS
+        ]
+
+    def classify_intent(self, input_text: str) -> Dict[str, str]:
+        """
+        Classify the intent and risk level of an input text.
+
+        Args:
+            input_text: The user input to classify.
+
+        Returns:
+            Dict with 'intent' and 'risk_level' keys.
+        """
+        input_lower = input_text.lower()
+
+        # Check for remediation context first - if "fix", "patch", "remediate" present,
+        # check legitimate patterns before malicious ones
+        remediation_keywords = ["fix", "patch", "remediate", "repair", "resolve"]
+        has_remediation = any(kw in input_lower for kw in remediation_keywords)
+
+        if has_remediation:
+            # Check legitimate patterns first for remediation context
+            for pattern, intent, risk in self._legitimate_compiled:
+                if pattern.search(input_lower):
+                    self._log_classification(input_text, intent, risk, blocked=False)
+                    return {"intent": intent, "risk_level": risk}
+
+        # Check malicious patterns
+        for pattern, intent, risk in self._malicious_compiled:
+            if pattern.search(input_lower):
+                self._log_classification(input_text, intent, risk, blocked=True)
+                return {"intent": intent, "risk_level": risk}
+
+        # Check legitimate patterns (if not already checked)
+        if not has_remediation:
+            for pattern, intent, risk in self._legitimate_compiled:
+                if pattern.search(input_lower):
+                    self._log_classification(input_text, intent, risk, blocked=False)
+                    return {"intent": intent, "risk_level": risk}
+
+        # Default: unknown intent, medium risk
+        self._log_classification(input_text, "unknown", "medium", blocked=False)
+        return {"intent": "unknown", "risk_level": "medium"}
+
+    def enforce_policy(self, request: Dict) -> Dict:
+        """
+        Enforce governance policies on a request.
+
+        Args:
+            request: Dict with 'action', 'intent', 'risk_level' keys.
+
+        Returns:
+            Dict with 'blocked', 'approved', 'logged' keys.
+        """
+        intent = request.get("intent", "unknown")
+        risk_level = request.get("risk_level", "medium")
+        action = request.get("action", "unknown")
+
+        # Always log high-risk and critical operations
+        logged = risk_level in ("high", "critical") or intent in ("malicious_intent", "potential_attack")
+
+        # Block malicious requests
+        if intent == "malicious_intent":
+            result = {
+                "blocked": True,
+                "approved": False,
+                "logged": True,
+                "reason": "Malicious intent detected",
+                "audit_id": self._generate_audit_id()
+            }
+            self._log_policy_enforcement(request, result)
+            return result
+
+        # Block potential attacks in strict mode
+        if self.strict_mode and intent == "potential_attack":
+            result = {
+                "blocked": True,
+                "approved": False,
+                "logged": True,
+                "reason": "Potential attack pattern detected",
+                "audit_id": self._generate_audit_id()
+            }
+            self._log_policy_enforcement(request, result)
+            return result
+
+        # Critical risk requires additional approval
+        if risk_level == "critical":
+            result = {
+                "blocked": True,
+                "approved": False,
+                "logged": True,
+                "reason": "Critical risk requires manual approval",
+                "audit_id": self._generate_audit_id()
+            }
+            self._log_policy_enforcement(request, result)
+            return result
+
+        # Approve legitimate requests
+        result = {
+            "blocked": False,
+            "approved": True,
+            "logged": logged,
+            "reason": None,
+            "audit_id": self._generate_audit_id() if logged else None
+        }
+        self._log_policy_enforcement(request, result)
+        return result
+
+    def _generate_audit_id(self) -> str:
+        """Generate unique audit ID."""
+        import uuid
+        return f"audit_{uuid.uuid4().hex[:12]}"
+
+    def _log_classification(
+        self,
+        input_text: str,
+        intent: str,
+        risk: str,
+        blocked: bool
+    ) -> None:
+        """Log intent classification for audit."""
+        import time
+        self.audit_log.append({
+            "type": "classification",
+            "timestamp": time.time(),
+            "input_preview": input_text[:100],
+            "intent": intent,
+            "risk_level": risk,
+            "blocked": blocked
+        })
+
+    def _log_policy_enforcement(self, request: Dict, result: Dict) -> None:
+        """Log policy enforcement for audit."""
+        import time
+        self.audit_log.append({
+            "type": "policy_enforcement",
+            "timestamp": time.time(),
+            "request": request,
+            "result": result
+        })
+
+    def get_audit_log(self, limit: int = 100) -> List[Dict]:
+        """Get recent audit log entries."""
+        return self.audit_log[-limit:]
+
+    def validate_ai_output(
+        self,
+        output: str,
+        context: Optional[Dict] = None
+    ) -> Tuple[bool, str]:
+        """
+        Validate AI-generated output for safety.
+
+        Checks for:
+        - Harmful content generation
+        - Information leakage
+        - Prompt injection artifacts
+
+        Args:
+            output: The AI-generated output to validate.
+            context: Optional context about the request.
+
+        Returns:
+            Tuple of (is_safe, reason).
+        """
+        import re
+
+        # Check for code that might be harmful
+        harmful_code_patterns = [
+            r"subprocess\.call|os\.system|exec\(|eval\(",
+            r"rm\s+-rf|format\s+c:|del\s+/[sq]",
+            r"curl\s+.*\|\s*(ba)?sh",
+            r"wget\s+.*\|\s*(ba)?sh",
+        ]
+
+        for pattern in harmful_code_patterns:
+            if re.search(pattern, output, re.IGNORECASE):
+                return False, f"Potentially harmful code pattern detected: {pattern}"
+
+        # Check for leaked credentials patterns
+        credential_patterns = [
+            r"(password|api.?key|secret|token)\s*[=:]\s*['\"][^'\"]+['\"]",
+            r"-----BEGIN\s+(RSA\s+)?PRIVATE\s+KEY-----",
+            r"sk-[a-zA-Z0-9]{48}",  # OpenAI API key pattern
+        ]
+
+        for pattern in credential_patterns:
+            if re.search(pattern, output, re.IGNORECASE):
+                return False, "Potential credential leak detected"
+
+        return True, "Output validated successfully"
+
+    def constitutional_check(
+        self,
+        prompt: str,
+        response: str
+    ) -> Tuple[bool, List[str]]:
+        """
+        Constitutional AI check (Anthropic-style).
+
+        Verifies response against safety principles:
+        1. Helpful, Harmless, Honest
+        2. No deception
+        3. No harm enablement
+        4. Respects user autonomy
+
+        Args:
+            prompt: Original user prompt.
+            response: AI response to check.
+
+        Returns:
+            Tuple of (passes_check, list of violations).
+        """
+        violations = []
+
+        # Check for harm enablement
+        harm_classification = self.classify_intent(response)
+        if harm_classification["risk_level"] in ("high", "critical"):
+            violations.append(f"Response may enable harm: {harm_classification['intent']}")
+
+        # Check for deceptive patterns
+        deceptive_patterns = [
+            (r"I am (a )?(human|person|real)", "Claiming to be human"),
+            (r"(definitely|certainly) (true|correct|accurate)", "Overconfident claims"),
+            (r"I (know|guarantee) (for certain|for sure)", "False certainty"),
+        ]
+
+        import re
+        for pattern, description in deceptive_patterns:
+            if re.search(pattern, response, re.IGNORECASE):
+                violations.append(f"Potential deception: {description}")
+
+        # Check output safety
+        is_safe, reason = self.validate_ai_output(response)
+        if not is_safe:
+            violations.append(reason)
+
+        return len(violations) == 0, violations

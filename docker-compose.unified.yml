@@ -1,0 +1,176 @@
+version: '3.8'
+
+# SCBE-AETHERMOORE Unified Stack
+# ==============================
+# Deploys all ecosystem services as a unified stack
+#
+# Usage:
+#   docker-compose -f docker-compose.unified.yml up -d
+#
+# Services:
+#   - scbe-core: Main SCBE authorization API (port 8000)
+#   - scbe-gateway: Unified gateway API (port 8080)
+#   - redis: State management and caching (port 6379)
+#   - prometheus: Metrics collection (port 9090)
+#   - grafana: Visualization dashboard (port 3000)
+
+services:
+  # ===========================================
+  # Core SCBE Authorization Service
+  # ===========================================
+  scbe-core:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: scbe-core
+    ports:
+      - "8000:8000"
+    environment:
+      - SCBE_MODE=production
+      - SCBE_API_KEY=${SCBE_API_KEY:-dev-key-change-me}
+      - REDIS_URL=redis://redis:6379
+      - LOG_LEVEL=INFO
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - scbe-network
+
+  # ===========================================
+  # Unified Gateway (TypeScript)
+  # ===========================================
+  scbe-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: scbe-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - SCBE_CORE_URL=http://scbe-core:8000
+      - REDIS_URL=redis://redis:6379
+      - PORT=8080
+    depends_on:
+      - scbe-core
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - scbe-network
+
+  # ===========================================
+  # Redis (State Management & Caching)
+  # ===========================================
+  redis:
+    image: redis:7-alpine
+    container_name: scbe-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - scbe-network
+
+  # ===========================================
+  # Prometheus (Metrics Collection)
+  # ===========================================
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: scbe-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    networks:
+      - scbe-network
+
+  # ===========================================
+  # Grafana (Visualization)
+  # ===========================================
+  grafana:
+    image: grafana/grafana:10.1.0
+    container_name: scbe-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - scbe-network
+
+  # ===========================================
+  # Unity Visualization WebSocket Bridge
+  # ===========================================
+  unity-bridge:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: scbe-unity-bridge
+    ports:
+      - "8081:8081"
+    environment:
+      - NODE_ENV=production
+      - SCBE_CORE_URL=http://scbe-core:8000
+      - REDIS_URL=redis://redis:6379
+      - WEBSOCKET_PORT=8081
+    depends_on:
+      - scbe-core
+      - redis
+    restart: unless-stopped
+    networks:
+      - scbe-network
+
+# ===========================================
+# Networks
+# ===========================================
+networks:
+  scbe-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+# ===========================================
+# Volumes
+# ===========================================
+volumes:
+  redis-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
