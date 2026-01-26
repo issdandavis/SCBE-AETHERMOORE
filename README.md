@@ -194,6 +194,53 @@ def lambda_handler(event, context):
 
 ---
 
+## Fleet API (Pilot Demo)
+
+Run a complete fleet scenario through the 14-layer SCBE pipeline:
+
+```bash
+# 1. Start the API server
+export SCBE_API_KEY=your-key-here
+cd api && python -m uvicorn main:app --host 0.0.0.0 --port 8000
+
+# 2. Run a fleet scenario (fraud detection example)
+curl -X POST http://localhost:8000/v1/fleet/run-scenario \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your-key-here" \
+  -d '{
+    "scenario_name": "fraud-detection-fleet",
+    "agents": [
+      {"agent_id": "fraud-detector-001", "name": "Fraud Detector", "initial_trust": 0.85},
+      {"agent_id": "risk-scorer-002", "name": "Risk Scorer", "initial_trust": 0.75},
+      {"agent_id": "alert-bot-003", "name": "Alert Bot", "initial_trust": 0.65}
+    ],
+    "actions": [
+      {"agent_id": "fraud-detector-001", "action": "READ", "target": "transaction_stream", "sensitivity": 0.3},
+      {"agent_id": "risk-scorer-002", "action": "WRITE", "target": "risk_scores_db", "sensitivity": 0.6},
+      {"agent_id": "alert-bot-003", "action": "EXECUTE", "target": "send_alert", "sensitivity": 0.4}
+    ]
+  }'
+```
+
+**Response:**
+```json
+{
+  "scenario_id": "scenario_a1b2c3d4e5f6",
+  "scenario_name": "fraud-detection-fleet",
+  "summary": {"total_actions": 3, "allowed": 2, "denied": 0, "quarantined": 1},
+  "decisions": [
+    {"agent_id": "fraud-detector-001", "action": "READ", "decision": "ALLOW", "score": 0.72},
+    {"agent_id": "risk-scorer-002", "action": "WRITE", "decision": "QUARANTINE", "score": 0.48},
+    {"agent_id": "alert-bot-003", "action": "EXECUTE", "decision": "ALLOW", "score": 0.61}
+  ],
+  "metrics": {"avg_score": 0.603, "allow_rate": 0.667, "elapsed_ms": 2.45}
+}
+```
+
+See `examples/fleet-scenarios.json` for more scenarios (autonomous vehicles, mixed trust, stress test).
+
+---
+
 ## Original System: Intent-Modulated Conlang + Harmonic Verification System
 
 A mathematically rigorous authentication protocol that combines:
