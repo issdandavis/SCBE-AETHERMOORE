@@ -20,9 +20,9 @@ spec:
     spec:
       containers:
       - name: scbe-aethermoore
-        image: gcr.io/studio-6928670609-fdd4c/scbe-aethermoore:latest
-        ports:
-        - containerPort: 3000
+          image: nginx:alpine  # Testing image
+          ports:
+            - containerPort: 80
         env:
         - name: NODE_ENV
           value: "production"
