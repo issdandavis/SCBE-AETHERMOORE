@@ -1,9 +1,9 @@
 /**
  * Spiralverse Protocol SDK - TypeScript Implementation
- * 
+ *
  * Implements RWP v2.1 with Roundtable multi-signature governance,
  * Six Sacred Tongues domain separation, and 6D vector navigation.
- * 
+ *
  * @version 2.1.0
  * @author Issac Davis
  * @license MIT
@@ -25,16 +25,16 @@ export enum SacredTongue {
 
 /** Message envelope with hybrid spelltext + payload structure */
 export interface SpiralverseEnvelope {
-  spelltext: string;           // Human-readable metadata
-  payload: string;             // Base64URL encoded action data
-  signatures: SignatureSet;    // Multi-domain signatures
-  ts: string;                  // ISO 8601 timestamp
-  nonce: string;               // Replay protection
+  spelltext: string; // Human-readable metadata
+  payload: string; // Base64URL encoded action data
+  signatures: SignatureSet; // Multi-domain signatures
+  ts: string; // ISO 8601 timestamp
+  nonce: string; // Replay protection
 }
 
 /** Signature set for Roundtable governance */
 export interface SignatureSet {
-  [key: string]: string;       // e.g., { "KO": "a7f2...", "RU": "d4e1..." }
+  [key: string]: string; // e.g., { "KO": "a7f2...", "RU": "d4e1..." }
 }
 
 /** Action payload (before Base64URL encoding) */
@@ -46,19 +46,19 @@ export interface ActionPayload {
 
 /** 6D Position vector */
 export interface Position6D {
-  axiom: number;   // X: forward/back
-  flow: number;    // Y: lateral
-  glyph: number;   // Z: altitude
-  oracle: number;  // V: velocity (0-100)
-  charm: number;   // H: harmony (-1 to +1)
-  ledger: number;  // S: security level (0-255)
+  axiom: number; // X: forward/back
+  flow: number; // Y: lateral
+  glyph: number; // Z: altitude
+  oracle: number; // V: velocity (0-100)
+  charm: number; // H: harmony (-1 to +1)
+  ledger: number; // S: security level (0-255)
 }
 
 // ========== CORE SDK CLASS ==========
 
 export class SpiralverseProtocol {
   private secrets: Map<SacredTongue, string> = new Map();
-  
+
   constructor(secrets: Record<SacredTongue, string>) {
     Object.entries(secrets).forEach(([tongue, secret]) => {
       this.secrets.set(tongue as SacredTongue, secret);
@@ -90,9 +90,9 @@ export class SpiralverseProtocol {
     const canonical = this.canonicalString(spelltext, payload, ts, nonce);
 
     // Generate signatures for origin + required tongues
-    const tongues = [origin, ...requiredTongues.filter(t => t !== origin)];
+    const tongues = [origin, ...requiredTongues.filter((t) => t !== origin)];
     const signatures: SignatureSet = {};
-    tongues.forEach(tongue => {
+    tongues.forEach((tongue) => {
       const secret = this.secrets.get(tongue);
       if (!secret) throw new Error(`Missing secret for tongue: ${tongue}`);
       signatures[tongue] = this.sign(canonical, secret, tongue);
@@ -106,10 +106,7 @@ export class SpiralverseProtocol {
    * @param envelope Message to verify
    * @param requiredTongues Tongues that must have signed
    */
-  public verifyEnvelope(
-    envelope: SpiralverseEnvelope,
-    requiredTongues: SacredTongue[]
-  ): boolean {
+  public verifyEnvelope(envelope: SpiralverseEnvelope, requiredTongues: SacredTongue[]): boolean {
     const canonical = this.canonicalString(
       envelope.spelltext,
       envelope.payload,
@@ -158,12 +155,7 @@ export class SpiralverseProtocol {
 
   // ========== INTERNAL HELPERS ==========
 
-  private canonicalString(
-    spelltext: string,
-    payload: string,
-    ts: string,
-    nonce: string
-  ): string {
+  private canonicalString(spelltext: string, payload: string, ts: string, nonce: string): string {
     return `${spelltext}\n${payload}\n${ts}\n${nonce}`;
   }
 
@@ -180,9 +172,9 @@ export class SpiralverseProtocol {
 // ========== GOVERNANCE POLICIES ==========
 
 export enum SecurityTier {
-  TIER1_LOW = 1,      // Single tongue (KO)
-  TIER2_MEDIUM = 2,   // Dual tongues (KO + RU)
-  TIER3_HIGH = 3,     // Triple tongues (KO + RU + UM)
+  TIER1_LOW = 1, // Single tongue (KO)
+  TIER2_MEDIUM = 2, // Dual tongues (KO + RU)
+  TIER3_HIGH = 3, // Triple tongues (KO + RU + UM)
   TIER4_CRITICAL = 4, // Quad+ tongues
 }
 

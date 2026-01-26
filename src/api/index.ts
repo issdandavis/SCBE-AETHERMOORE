@@ -64,9 +64,9 @@ export interface Context {
 
 /** Risk evaluation result */
 export interface RiskResult {
-  score: number;           // 0-1, higher = more risky
-  distance: number;        // Hyperbolic distance from safe center
-  scaledCost: number;      // Exponential cost to attack
+  score: number; // 0-1, higher = more risky
+  distance: number; // Hyperbolic distance from safe center
+  scaledCost: number; // Exponential cost to attack
   decision: 'ALLOW' | 'REVIEW' | 'DENY';
   reason: string;
 }
@@ -101,13 +101,21 @@ export interface PricingTier {
 }
 
 /** Action types for Roundtable consensus */
-export type ActionType = 'read' | 'query' | 'write' | 'update' | 'delete' | 'grant' | 'deploy' | 'rotate_keys';
+export type ActionType =
+  | 'read'
+  | 'query'
+  | 'write'
+  | 'update'
+  | 'delete'
+  | 'grant'
+  | 'deploy'
+  | 'rotate_keys';
 
 /** Security gate configuration */
 export interface SecurityGateConfig {
   minWaitMs?: number;
   maxWaitMs?: number;
-  alpha?: number;           // Risk multiplier
+  alpha?: number; // Risk multiplier
 }
 
 // Re-export spiralverse types for convenience
@@ -161,7 +169,7 @@ export class Agent {
     if (!Array.isArray(position) || position.length !== 6) {
       throw new Error('Position must be a 6-element array');
     }
-    if (!position.every(n => typeof n === 'number' && isFinite(n))) {
+    if (!position.every((n) => typeof n === 'number' && isFinite(n))) {
       throw new Error('Position elements must be finite numbers');
     }
 
@@ -264,7 +272,7 @@ export class SecurityGate {
     const dwellMs = Math.min(this.maxWaitMs, this.minWaitMs * Math.pow(this.alpha, risk));
 
     // Wait (non-blocking)
-    await new Promise(resolve => setTimeout(resolve, dwellMs));
+    await new Promise((resolve) => setTimeout(resolve, dwellMs));
 
     // Calculate composite score (0-1, higher = safer)
     const trustComponent = agent.trustScore * 0.4;
@@ -332,7 +340,7 @@ export const Roundtable = {
    * Check if we have all required signatures.
    */
   hasQuorum(signatures: TongueID[], required: TongueID[]): boolean {
-    return required.every(t => signatures.includes(t));
+    return required.every((t) => signatures.includes(t));
   },
 
   /**
@@ -454,13 +462,7 @@ export class SCBE {
    * @returns Signed envelope and tongues used
    */
   sign(payload: unknown, tongues: TongueID[] = ['ko']): SignResult {
-    const envelope = signRoundtable(
-      payload,
-      tongues[0],
-      'scbe-api',
-      this.keyring,
-      tongues
-    );
+    const envelope = signRoundtable(payload, tongues[0], 'scbe-api', this.keyring, tongues);
     return { envelope, tongues };
   }
 
@@ -478,7 +480,9 @@ export class SCBE {
       valid: result.valid,
       validTongues: result.validTongues,
       payload: result.payload,
-      reason: result.error ?? (result.valid ? 'Signature valid - all tongues verified' : 'Signature invalid or tampered'),
+      reason:
+        result.error ??
+        (result.valid ? 'Signature valid - all tongues verified' : 'Signature invalid or tampered'),
     };
   }
 
@@ -559,7 +563,7 @@ export class SCBE {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash;
     }
     // Pad to 24 hex chars (6 dimensions * 4 chars each)

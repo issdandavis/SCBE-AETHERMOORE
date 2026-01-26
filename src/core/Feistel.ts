@@ -16,7 +16,7 @@ export class Feistel {
     const hmac = crypto.createHmac('sha256', roundKey);
     hmac.update(right);
     const digest = hmac.digest();
-    
+
     if (digest.length >= right.length) {
       return digest.subarray(0, right.length);
     } else {
@@ -47,10 +47,11 @@ export class Feistel {
     const masterKeyBuf = crypto.createHash('sha256').update(key).digest();
 
     for (let i = 0; i < this.rounds; i++) {
-      const roundKey = crypto.createHmac('sha256', masterKeyBuf)
-                            .update(Buffer.from([i]))
-                            .digest();
-      
+      const roundKey = crypto
+        .createHmac('sha256', masterKeyBuf)
+        .update(Buffer.from([i]))
+        .digest();
+
       const nextLeft = right;
       const fOutput = this.roundFunction(right, roundKey);
       const nextRight = this.xorBuffers(left, fOutput);
@@ -66,14 +67,15 @@ export class Feistel {
     const halfLen = data.length / 2;
     let left = data.subarray(0, halfLen);
     let right = data.subarray(halfLen);
-    
+
     const masterKeyBuf = crypto.createHash('sha256').update(key).digest();
 
     for (let i = this.rounds - 1; i >= 0; i--) {
-      const roundKey = crypto.createHmac('sha256', masterKeyBuf)
-                            .update(Buffer.from([i]))
-                            .digest();
-      
+      const roundKey = crypto
+        .createHmac('sha256', masterKeyBuf)
+        .update(Buffer.from([i]))
+        .digest();
+
       const prevRight = left;
       const fOutput = this.roundFunction(left, roundKey);
       const prevLeft = this.xorBuffers(right, fOutput);

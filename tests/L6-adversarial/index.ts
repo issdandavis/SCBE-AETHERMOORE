@@ -14,6 +14,4 @@
 export const tier = 'L6-ADVERSARIAL';
 export const level = 'Cryptographer / Security Researcher';
 export const description = 'NSA-level adversarial scenarios, cryptanalysis, formal verification';
-export const tests = [
-  'failable-by-design.adversarial.test.ts'
-];
+export const tests = ['failable-by-design.adversarial.test.ts'];

@@ -229,7 +229,7 @@ describe('Agent', () => {
     const initialTrust = agent.trustScore;
 
     // Wait a bit
-    await new Promise(r => setTimeout(r, 100));
+    await new Promise((r) => setTimeout(r, 100));
 
     const decayedTrust = agent.decayTrust(1.0); // Fast decay for testing
     expect(decayedTrust).toBeLessThan(initialTrust);
