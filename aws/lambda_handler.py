@@ -74,7 +74,7 @@ else:
 
         # Get API key from headers
         headers = event.get('headers', {})
-        api_key = headers.get('x-api-key') or headers.get('X-API-Key')
+        api_key = headers.get('scbe_api_key') or headers.get('SCBE_api_key')
 
         # Validate API key
         valid_keys = os.getenv('SCBE_API_KEY', '').split(',')
@@ -291,7 +291,7 @@ if __name__ == "__main__":
     test_event = {
         'httpMethod': 'POST',
         'path': '/v1/authorize',
-        'headers': {'X-API-Key': 'test-key'},
+        'headers': {'SCBE_api_key': 'test-key'},
         'body': json.dumps({
             'agent_id': 'test-agent',
             'action': 'READ',
