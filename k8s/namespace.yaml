@@ -1,0 +1,10 @@
+# SCBE-AETHERMOORE Kubernetes Namespace
+# Config Sync managed resource
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: scbe-aethermoore
+  labels:
+    app: scbe-aethermoore
+    managed-by: config-sync
+    environment: production
