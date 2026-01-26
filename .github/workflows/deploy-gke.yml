@@ -1,0 +1,89 @@
+name: Deploy SCBE to GKE
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - production
+          - staging
+
+env:
+  PROJECT_ID: studio-6928670609-fdd4c
+  GKE_CLUSTER: test-scbecluser
+  GKE_ZONE: us-west1
+  DEPLOYMENT_NAME: scbe-aethermoore
+  IMAGE: gcr.io/studio-6928670609-fdd4c/scbe-aethermoore
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy to GKE
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Configure Docker for GCR
+        run: gcloud auth configure-docker gcr.io --quiet
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ env.IMAGE }}:${{ github.sha }} .
+          docker tag ${{ env.IMAGE }}:${{ github.sha }} ${{ env.IMAGE }}:latest
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ env.IMAGE }}:${{ github.sha }}
+          docker push ${{ env.IMAGE }}:latest
+
+      - name: Get GKE credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.GKE_CLUSTER }}
+          location: ${{ env.GKE_ZONE }}
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Deploy to GKE
+        run: |
+          kubectl apply -f k8s/
+          kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} \
+            ${{ env.DEPLOYMENT_NAME }}=${{ env.IMAGE }}:${{ github.sha }}
+          kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }}
+
+      - name: Verify deployment
+        run: |
+          kubectl get pods -l app=${{ env.DEPLOYMENT_NAME }}
+          kubectl get services -l app=${{ env.DEPLOYMENT_NAME }}
