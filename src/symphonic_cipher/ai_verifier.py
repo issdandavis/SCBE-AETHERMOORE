@@ -1051,3 +1051,345 @@ class IntentClassifier:
         self.W3 = data['W3']
         self.b3 = data['b3']
         self.threshold = float(data['threshold'])
+
+
+# =============================================================================
+# AI SAFETY VERIFIER (AI Governance Framework)
+# =============================================================================
+
+class RiskLevel(Enum):
+    """Risk level classification for AI safety."""
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    CRITICAL = "critical"
+
+
+@dataclass
+class IntentClassificationResult:
+    """Result of intent classification."""
+    intent: str
+    risk_level: str
+    confidence: float
+    blocked: bool
+    reason: Optional[str] = None
+
+
+@dataclass
+class PolicyEnforcementResult:
+    """Result of policy enforcement."""
+    blocked: bool
+    approved: bool
+    logged: bool
+    reason: Optional[str] = None
+    audit_id: Optional[str] = None
+
+
+class AIVerifier:
+    """
+    AI Safety and Governance Verifier.
+
+    Implements intent classification and policy enforcement based on:
+    - NIST AI Risk Management Framework (AI RMF 1.0, 2023)
+    - EU AI Act (2024)
+    - OpenAI Safety Research
+    - Anthropic Constitutional AI
+
+    Core responsibilities:
+    1. Classify user intent and risk level
+    2. Block malicious requests
+    3. Log all high-risk operations
+    4. Enforce governance policies
+    """
+
+    # Malicious intent patterns - order matters!
+    MALICIOUS_PATTERNS = [
+        # Malware/exploit generation - broader patterns
+        (r"(create|generate|write|make)\s*(a\s+)?(malware|ransomware|virus|trojan|worm|exploit)", "malicious_intent", "critical"),
+        (r"(ransomware|malware|virus|trojan|keylogger|spyware|rootkit)", "malicious_intent", "critical"),
+        (r"(bypass|disable|circumvent)\s*(security|authentication|authorization|firewall)", "potential_attack", "high"),
+        (r"(break|hack|crack)\s*(into|password|encryption)", "potential_attack", "high"),
+        (r"(steal|exfiltrate|harvest)\s*(data|credentials|passwords)", "malicious_intent", "critical"),
+        (r"(ddos|denial.of.service|flood)\s*(attack)?", "malicious_intent", "critical"),
+        (r"(phishing|spear.?phishing|social.?engineering)\s*(email|attack|campaign)?", "malicious_intent", "critical"),
+        (r"zero.?day\s*(exploit|vulnerability)", "potential_attack", "high"),
+        # SQL injection attack - but NOT "fix sql injection"
+        (r"(?<!fix\s)(?<!patch\s)(?<!remediate\s)(sql|code|command)\s*injection\s*(payload|attack)?", "potential_attack", "high"),
+        (r"injection\s*(payload|attack)", "potential_attack", "high"),
+    ]
+
+    # Legitimate security patterns - check these first for remediation context
+    LEGITIMATE_PATTERNS = [
+        # Remediation patterns - check these first
+        (r"(fix|patch|remediate|repair|resolve)\s*(the\s+)?(sql\s+injection|xss|vulnerability|security|bug)", "legitimate_security", "low"),
+        # Encryption patterns - allow articles/pronouns between verb and object
+        (r"encrypt\s+(\w+\s+)?(message|data|file|communication)", "legitimate_encryption", "low"),
+        (r"(secure|protect)\s+(\w+\s+)?(message|data|file|communication)", "legitimate_encryption", "low"),
+        (r"(implement|add|setup|create)\s*(authentication|authorization|security)", "legitimate_security", "low"),
+        (r"(secure|safe)\s*(file|data)\s*(transfer|storage)", "legitimate_encryption", "low"),
+        (r"(penetration|security)\s*(test|audit|assessment)", "security_research", "medium"),
+        (r"(vulnerability|security)\s*(scan|check|review)", "security_research", "medium"),
+        (r"(password\s+hashing|hashing\s+password)", "legitimate_security", "low"),
+        (r"security\s+audit", "legitimate_security", "low"),
+        # Help patterns
+        (r"help\s+(\w+\s+)?secure\s+(\w+\s+)?(communication|system|data)", "legitimate_security", "low"),
+    ]
+
+    def __init__(self, strict_mode: bool = True):
+        """
+        Initialize AI Verifier.
+
+        Args:
+            strict_mode: If True, block any potentially malicious requests.
+        """
+        self.strict_mode = strict_mode
+        self.audit_log: List[Dict] = []
+        self._compile_patterns()
+
+    def _compile_patterns(self) -> None:
+        """Compile regex patterns for efficient matching."""
+        import re
+        self._malicious_compiled = [
+            (re.compile(pattern, re.IGNORECASE), intent, risk)
+            for pattern, intent, risk in self.MALICIOUS_PATTERNS
+        ]
+        self._legitimate_compiled = [
+            (re.compile(pattern, re.IGNORECASE), intent, risk)
+            for pattern, intent, risk in self.LEGITIMATE_PATTERNS
+        ]
+
+    def classify_intent(self, input_text: str) -> Dict[str, str]:
+        """
+        Classify the intent and risk level of an input text.
+
+        Args:
+            input_text: The user input to classify.
+
+        Returns:
+            Dict with 'intent' and 'risk_level' keys.
+        """
+        input_lower = input_text.lower()
+
+        # Check for remediation context first - if "fix", "patch", "remediate" present,
+        # check legitimate patterns before malicious ones
+        remediation_keywords = ["fix", "patch", "remediate", "repair", "resolve"]
+        has_remediation = any(kw in input_lower for kw in remediation_keywords)
+
+        if has_remediation:
+            # Check legitimate patterns first for remediation context
+            for pattern, intent, risk in self._legitimate_compiled:
+                if pattern.search(input_lower):
+                    self._log_classification(input_text, intent, risk, blocked=False)
+                    return {"intent": intent, "risk_level": risk}
+
+        # Check malicious patterns
+        for pattern, intent, risk in self._malicious_compiled:
+            if pattern.search(input_lower):
+                self._log_classification(input_text, intent, risk, blocked=True)
+                return {"intent": intent, "risk_level": risk}
+
+        # Check legitimate patterns (if not already checked)
+        if not has_remediation:
+            for pattern, intent, risk in self._legitimate_compiled:
+                if pattern.search(input_lower):
+                    self._log_classification(input_text, intent, risk, blocked=False)
+                    return {"intent": intent, "risk_level": risk}
+
+        # Default: unknown intent, medium risk
+        self._log_classification(input_text, "unknown", "medium", blocked=False)
+        return {"intent": "unknown", "risk_level": "medium"}
+
+    def enforce_policy(self, request: Dict) -> Dict:
+        """
+        Enforce governance policies on a request.
+
+        Args:
+            request: Dict with 'action', 'intent', 'risk_level' keys.
+
+        Returns:
+            Dict with 'blocked', 'approved', 'logged' keys.
+        """
+        intent = request.get("intent", "unknown")
+        risk_level = request.get("risk_level", "medium")
+        action = request.get("action", "unknown")
+
+        # Always log high-risk and critical operations
+        logged = risk_level in ("high", "critical") or intent in ("malicious_intent", "potential_attack")
+
+        # Block malicious requests
+        if intent == "malicious_intent":
+            result = {
+                "blocked": True,
+                "approved": False,
+                "logged": True,
+                "reason": "Malicious intent detected",
+                "audit_id": self._generate_audit_id()
+            }
+            self._log_policy_enforcement(request, result)
+            return result
+
+        # Block potential attacks in strict mode
+        if self.strict_mode and intent == "potential_attack":
+            result = {
+                "blocked": True,
+                "approved": False,
+                "logged": True,
+                "reason": "Potential attack pattern detected",
+                "audit_id": self._generate_audit_id()
+            }
+            self._log_policy_enforcement(request, result)
+            return result
+
+        # Critical risk requires additional approval
+        if risk_level == "critical":
+            result = {
+                "blocked": True,
+                "approved": False,
+                "logged": True,
+                "reason": "Critical risk requires manual approval",
+                "audit_id": self._generate_audit_id()
+            }
+            self._log_policy_enforcement(request, result)
+            return result
+
+        # Approve legitimate requests
+        result = {
+            "blocked": False,
+            "approved": True,
+            "logged": logged,
+            "reason": None,
+            "audit_id": self._generate_audit_id() if logged else None
+        }
+        self._log_policy_enforcement(request, result)
+        return result
+
+    def _generate_audit_id(self) -> str:
+        """Generate unique audit ID."""
+        import uuid
+        return f"audit_{uuid.uuid4().hex[:12]}"
+
+    def _log_classification(
+        self,
+        input_text: str,
+        intent: str,
+        risk: str,
+        blocked: bool
+    ) -> None:
+        """Log intent classification for audit."""
+        import time
+        self.audit_log.append({
+            "type": "classification",
+            "timestamp": time.time(),
+            "input_preview": input_text[:100],
+            "intent": intent,
+            "risk_level": risk,
+            "blocked": blocked
+        })
+
+    def _log_policy_enforcement(self, request: Dict, result: Dict) -> None:
+        """Log policy enforcement for audit."""
+        import time
+        self.audit_log.append({
+            "type": "policy_enforcement",
+            "timestamp": time.time(),
+            "request": request,
+            "result": result
+        })
+
+    def get_audit_log(self, limit: int = 100) -> List[Dict]:
+        """Get recent audit log entries."""
+        return self.audit_log[-limit:]
+
+    def validate_ai_output(
+        self,
+        output: str,
+        context: Optional[Dict] = None
+    ) -> Tuple[bool, str]:
+        """
+        Validate AI-generated output for safety.
+
+        Checks for:
+        - Harmful content generation
+        - Information leakage
+        - Prompt injection artifacts
+
+        Args:
+            output: The AI-generated output to validate.
+            context: Optional context about the request.
+
+        Returns:
+            Tuple of (is_safe, reason).
+        """
+        import re
+
+        # Check for code that might be harmful
+        harmful_code_patterns = [
+            r"subprocess\.call|os\.system|exec\(|eval\(",
+            r"rm\s+-rf|format\s+c:|del\s+/[sq]",
+            r"curl\s+.*\|\s*(ba)?sh",
+            r"wget\s+.*\|\s*(ba)?sh",
+        ]
+
+        for pattern in harmful_code_patterns:
+            if re.search(pattern, output, re.IGNORECASE):
+                return False, f"Potentially harmful code pattern detected: {pattern}"
+
+        # Check for leaked credentials patterns
+        credential_patterns = [
+            r"(password|api.?key|secret|token)\s*[=:]\s*['\"][^'\"]+['\"]",
+            r"-----BEGIN\s+(RSA\s+)?PRIVATE\s+KEY-----",
+            r"sk-[a-zA-Z0-9]{48}",  # OpenAI API key pattern
+        ]
+
+        for pattern in credential_patterns:
+            if re.search(pattern, output, re.IGNORECASE):
+                return False, "Potential credential leak detected"
+
+        return True, "Output validated successfully"
+
+    def constitutional_check(
+        self,
+        prompt: str,
+        response: str
+    ) -> Tuple[bool, List[str]]:
+        """
+        Constitutional AI check (Anthropic-style).
+
+        Verifies response against safety principles:
+        1. Helpful, Harmless, Honest
+        2. No deception
+        3. No harm enablement
+        4. Respects user autonomy
+
+        Args:
+            prompt: Original user prompt.
+            response: AI response to check.
+
+        Returns:
+            Tuple of (passes_check, list of violations).
+        """
+        violations = []
+
+        # Check for harm enablement
+        harm_classification = self.classify_intent(response)
+        if harm_classification["risk_level"] in ("high", "critical"):
+            violations.append(f"Response may enable harm: {harm_classification['intent']}")
+
+        # Check for deceptive patterns
+        deceptive_patterns = [
+            (r"I am (a )?(human|person|real)", "Claiming to be human"),
+            (r"(definitely|certainly) (true|correct|accurate)", "Overconfident claims"),
+            (r"I (know|guarantee) (for certain|for sure)", "False certainty"),
+        ]
+
+        import re
+        for pattern, description in deceptive_patterns:
+            if re.search(pattern, response, re.IGNORECASE):
+                violations.append(f"Potential deception: {description}")
+
+        # Check output safety
+        is_safe, reason = self.validate_ai_output(response)
+        if not is_safe:
+            violations.append(reason)
+
+        return len(violations) == 0, violations
