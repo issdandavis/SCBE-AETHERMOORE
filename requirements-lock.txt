@@ -137,7 +137,7 @@ opentelemetry-instrumentation-starlette==0.54b1
 opentelemetry-instrumentation-system-metrics==0.54b1
 opentelemetry-instrumentation-threading==0.54b1
 opentelemetry-instrumentation-tornado==0.54b1
-opentelemetry-instrumentation-tortoiseorm==0.54b1
+opentelemetry-instrumentation-tortoiseorm==0.60b1
 opentelemetry-instrumentation-urllib==0.60b1
 opentelemetry-instrumentation-urllib3==0.54b1
 opentelemetry-instrumentation-wsgi==0.54b1
