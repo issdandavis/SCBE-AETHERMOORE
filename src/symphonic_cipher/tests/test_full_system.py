@@ -32,10 +32,7 @@ class TestSCBEFullSystem:
     def test_cold_start_allows_baseline(self):
         """First evaluation should ALLOW to establish baseline."""
         system = SCBEFullSystem()
-        result = system.evaluate_intent(
-            identity="test_user",
-            intent="test_action"
-        )
+        result = system.evaluate_intent(identity="test_user", intent="test_action")
         assert result.decision == GovernanceDecision.ALLOW
         assert "cold start" in result.explanation.lower()
         assert system.state.reference_state is not None
@@ -178,7 +175,7 @@ class TestContextHandling:
         result = system.evaluate_intent(
             identity="user",
             intent="read_file",
-            context={"file": "secret.txt", "access": "read"}
+            context={"file": "secret.txt", "access": "read"},
         )
 
         assert result.decision is not None
@@ -189,9 +186,7 @@ class TestContextHandling:
 
         for tongue in ["KO", "AV", "RU", "CA", "UM", "DR"]:
             result = system.evaluate_intent(
-                identity="user",
-                intent="action",
-                tongue=tongue
+                identity="user", intent="action", tongue=tongue
             )
             assert result.decision is not None
 
@@ -216,8 +211,7 @@ class TestEdgeCases:
         """Special characters in input should be handled."""
         system = SCBEFullSystem()
         result = system.evaluate_intent(
-            identity="user@domain.com",
-            intent="action with 日本語 and émojis 🚀"
+            identity="user@domain.com", intent="action with 日本語 and émojis 🚀"
         )
         assert result.decision is not None
 

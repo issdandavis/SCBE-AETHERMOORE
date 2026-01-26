@@ -64,6 +64,7 @@ def random_poincare_point(dim: int, max_norm: float = 0.9) -> np.ndarray:
 # Test Layer-to-Axiom Mapping
 # ============================================================================
 
+
 class TestLayerMapping:
     """Tests for the layer-to-axiom mapping."""
 
@@ -125,6 +126,7 @@ class TestLayerMapping:
 # ============================================================================
 # Test Unitarity Axiom
 # ============================================================================
+
 
 class TestUnitarityAxiom:
     """Tests for unitarity axiom layers."""
@@ -210,6 +212,7 @@ class TestUnitarityAxiom:
 # Test Locality Axiom
 # ============================================================================
 
+
 class TestLocalityAxiom:
     """Tests for locality axiom layers."""
 
@@ -271,6 +274,7 @@ class TestLocalityAxiom:
 # Test Causality Axiom
 # ============================================================================
 
+
 class TestCausalityAxiom:
     """Tests for causality axiom layers."""
 
@@ -278,7 +282,11 @@ class TestCausalityAxiom:
         """Breathing factor should be in valid range."""
         for t in np.linspace(0, 120, 100):
             b = causality_axiom.breathing_factor(t)
-            assert 1 - causality_axiom.B_BREATH_MAX <= b <= 1 + causality_axiom.B_BREATH_MAX
+            assert (
+                1 - causality_axiom.B_BREATH_MAX
+                <= b
+                <= 1 + causality_axiom.B_BREATH_MAX
+            )
 
     def test_layer_6_stays_in_ball(self):
         """Layer 6 output should remain in Poincaré ball."""
@@ -316,10 +324,14 @@ class TestCausalityAxiom:
         ref_u = random_poincare_point(DIM)
 
         d = causality_axiom.layer_11_triadic_distance(
-            u=u, ref_u=ref_u,
-            tau=1.0, ref_tau=0.0,
-            eta=0.5, ref_eta=0.3,
-            q=1+0j, ref_q=0.5+0.5j
+            u=u,
+            ref_u=ref_u,
+            tau=1.0,
+            ref_tau=0.0,
+            eta=0.5,
+            ref_eta=0.3,
+            q=1 + 0j,
+            ref_q=0.5 + 0.5j,
         )
         assert d >= 0
 
@@ -361,6 +373,7 @@ class TestCausalityAxiom:
 # ============================================================================
 # Test Symmetry Axiom
 # ============================================================================
+
 
 class TestSymmetryAxiom:
     """Tests for symmetry axiom layers."""
@@ -440,18 +453,19 @@ class TestSymmetryAxiom:
 # Test Composition Axiom
 # ============================================================================
 
+
 class TestCompositionAxiom:
     """Tests for composition axiom layers."""
 
     def test_layer_1_output_dimension(self):
         """Layer 1 should output 6D complex vector."""
         ctx = ContextInput(
-            identity=1+0j,
-            intent=0.5+0.5j,
+            identity=1 + 0j,
+            intent=0.5 + 0.5j,
             trajectory=0.8,
             timing=0.5,
             commitment=0.9,
-            signature=1.0
+            signature=1.0,
         )
         c = composition_axiom.layer_1_complex_context(ctx)
         assert c.shape == (6,)
@@ -460,10 +474,7 @@ class TestCompositionAxiom:
     def test_layer_14_audio_output(self):
         """Layer 14 should produce valid audio output."""
         audio = composition_axiom.layer_14_audio_axis(
-            risk_level="LOW",
-            coherence=0.8,
-            intent_phase=0.5,
-            duration=0.1
+            risk_level="LOW", coherence=0.8, intent_phase=0.5, duration=0.1
         )
 
         assert audio.signal is not None
@@ -481,6 +492,7 @@ class TestCompositionAxiom:
 
     def test_pipeline_composition(self):
         """Pipeline composition should work correctly."""
+
         def f(x):
             return x + 1
 
@@ -506,6 +518,7 @@ class TestCompositionAxiom:
 # Test Full Pipeline
 # ============================================================================
 
+
 class TestFullPipeline:
     """Tests for the full axiom-aware pipeline."""
 
@@ -514,12 +527,12 @@ class TestFullPipeline:
         pipeline = AxiomAwarePipeline()
 
         ctx = ContextInput(
-            identity=1+0j,
-            intent=0.5+0.5j,
+            identity=1 + 0j,
+            intent=0.5 + 0.5j,
             trajectory=0.8,
             timing=0.5,
             commitment=0.9,
-            signature=1.0
+            signature=1.0,
         )
 
         output, states = pipeline.execute(ctx, t=0.0)
@@ -532,12 +545,12 @@ class TestFullPipeline:
         pipeline = AxiomAwarePipeline()
 
         ctx = ContextInput(
-            identity=1+0j,
-            intent=0.5+0.5j,
+            identity=1 + 0j,
+            intent=0.5 + 0.5j,
             trajectory=0.8,
             timing=0.5,
             commitment=0.9,
-            signature=1.0
+            signature=1.0,
         )
 
         _, states = pipeline.execute(ctx, t=0.0)
@@ -562,6 +575,7 @@ class TestFullPipeline:
 # Test Axiom Decorators
 # ============================================================================
 
+
 class TestAxiomDecorators:
     """Tests for axiom-checking decorators."""
 
@@ -570,7 +584,7 @@ class TestAxiomDecorators:
         c = random_complex_vector(6)
         _ = unitarity_axiom.layer_2_realify(c)
 
-        assert hasattr(unitarity_axiom.layer_2_realify, 'last_check')
+        assert hasattr(unitarity_axiom.layer_2_realify, "last_check")
         assert unitarity_axiom.layer_2_realify.last_check is not None
 
     def test_locality_decorator_stores_check(self):
@@ -578,18 +592,18 @@ class TestAxiomDecorators:
         x = np.random.randn(DIM)
         _ = locality_axiom.layer_3_weighted(x)
 
-        assert hasattr(locality_axiom.layer_3_weighted, 'last_check')
+        assert hasattr(locality_axiom.layer_3_weighted, "last_check")
 
     def test_causality_decorator_stores_check(self):
         """Causality decorator should store check result."""
         # Reset time tracker
-        if hasattr(causality_axiom.layer_6_breathing, 'reset_time'):
+        if hasattr(causality_axiom.layer_6_breathing, "reset_time"):
             causality_axiom.layer_6_breathing.reset_time()
 
         u = random_poincare_point(DIM)
         _ = causality_axiom.layer_6_breathing(u, t=0.0)
 
-        assert hasattr(causality_axiom.layer_6_breathing, 'last_check')
+        assert hasattr(causality_axiom.layer_6_breathing, "last_check")
 
     def test_symmetry_decorator_stores_check(self):
         """Symmetry decorator should store check result."""
@@ -597,12 +611,13 @@ class TestAxiomDecorators:
         v = random_poincare_point(DIM)
         _ = symmetry_axiom.layer_5_hyperbolic_distance(u, v)
 
-        assert hasattr(symmetry_axiom.layer_5_hyperbolic_distance, 'last_check')
+        assert hasattr(symmetry_axiom.layer_5_hyperbolic_distance, "last_check")
 
 
 # ============================================================================
 # Test Edge Cases
 # ============================================================================
+
 
 class TestEdgeCases:
     """Tests for edge cases and boundary conditions."""

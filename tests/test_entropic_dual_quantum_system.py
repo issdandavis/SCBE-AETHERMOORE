@@ -60,12 +60,14 @@ VOYAGER_RTT_SECONDS = 24 * 60 * 60  # ~24 hours for deep space
 # DATA CLASSES
 # =============================================================================
 
+
 @dataclass
 class EntropicState:
     """State of the entropic keyspace at time t."""
+
     n0: float  # Initial keyspace size
-    k: float   # Expansion rate
-    t: float   # Current time
+    k: float  # Expansion rate
+    t: float  # Current time
 
     @property
     def keyspace_size(self) -> float:
@@ -81,6 +83,7 @@ class EntropicState:
 @dataclass
 class BreachProbability:
     """Breach probability for a security system."""
+
     system_name: str
     probability: float
     time_to_breach_years: Optional[float]
@@ -89,6 +92,7 @@ class BreachProbability:
 @dataclass
 class RatchetState:
     """Forward-secure ratchet state."""
+
     chain_key: bytes
     message_key: bytes
     counter: int
@@ -98,6 +102,7 @@ class RatchetState:
 # =============================================================================
 # CORE MATHEMATICAL FUNCTIONS
 # =============================================================================
+
 
 def entropic_escape_velocity(c_quantum: float, n0: float) -> float:
     """
@@ -128,7 +133,9 @@ def keyspace_at_time(n0: float, k: float, t: float) -> float:
         return math.inf
 
 
-def classical_breach_probability(keyspace: float, search_rate: float, time_seconds: float) -> float:
+def classical_breach_probability(
+    keyspace: float, search_rate: float, time_seconds: float
+) -> float:
     """
     Probability of classical brute-force breach.
 
@@ -138,7 +145,9 @@ def classical_breach_probability(keyspace: float, search_rate: float, time_secon
     return min(1.0, attempts / keyspace)
 
 
-def quantum_breach_probability(keyspace: float, quantum_rate: float, time_seconds: float) -> float:
+def quantum_breach_probability(
+    keyspace: float, quantum_rate: float, time_seconds: float
+) -> float:
     """
     Probability of quantum (Grover's) breach.
 
@@ -150,8 +159,13 @@ def quantum_breach_probability(keyspace: float, quantum_rate: float, time_second
     return min(1.0, attempts / effective_keyspace)
 
 
-def entropic_breach_probability(n0: float, k: float, search_rate: float,
-                                 time_seconds: float, is_quantum: bool = False) -> float:
+def entropic_breach_probability(
+    n0: float,
+    k: float,
+    search_rate: float,
+    time_seconds: float,
+    is_quantum: bool = False,
+) -> float:
     """
     Probability of breach against entropic system.
 
@@ -191,7 +205,10 @@ def entropic_breach_probability(n0: float, k: float, search_rate: float,
 # MARS 0-RTT FAST-FORWARD PROTOCOL
 # =============================================================================
 
-def derive_key(master_secret: bytes, label: str, context: bytes, length: int = 32) -> bytes:
+
+def derive_key(
+    master_secret: bytes, label: str, context: bytes, length: int = 32
+) -> bytes:
     """
     HKDF-style key derivation for 0-RTT.
     """
@@ -199,8 +216,9 @@ def derive_key(master_secret: bytes, label: str, context: bytes, length: int = 3
     return hashlib.sha256(master_secret + info).digest()[:length]
 
 
-def compute_fast_forward_key(master_secret: bytes, target_time: int,
-                             current_time: int = 0) -> Tuple[bytes, int]:
+def compute_fast_forward_key(
+    master_secret: bytes, target_time: int, current_time: int = 0
+) -> Tuple[bytes, int]:
     """
     Deterministically compute the key for a future time without round-trips.
 
@@ -216,7 +234,7 @@ def compute_fast_forward_key(master_secret: bytes, target_time: int,
     target_epoch = target_time // epoch_duration
 
     for epoch in range(current_epoch, target_epoch + 1):
-        epoch_context = epoch.to_bytes(8, 'big')
+        epoch_context = epoch.to_bytes(8, "big")
         current_key = derive_key(current_key, "epoch-ratchet", epoch_context)
 
     return current_key, target_epoch
@@ -247,6 +265,7 @@ def verify_anti_replay(nonce: bytes, seen_nonces: set, window_size: int = 1000) 
 # FORWARD-SECURE RATCHET
 # =============================================================================
 
+
 def initialize_ratchet(shared_secret: bytes) -> RatchetState:
     """
     Initialize a forward-secure ratchet (Signal Double Ratchet style).
@@ -255,10 +274,7 @@ def initialize_ratchet(shared_secret: bytes) -> RatchetState:
     message_key = derive_key(chain_key, "message", b"0")
 
     return RatchetState(
-        chain_key=chain_key,
-        message_key=message_key,
-        counter=0,
-        deleted_keys=[]
+        chain_key=chain_key, message_key=message_key, counter=0, deleted_keys=[]
     )
 
 
@@ -269,20 +285,25 @@ def ratchet_forward(state: RatchetState) -> RatchetState:
     old_chain_key = state.chain_key
 
     # Derive new chain key and message key
-    new_chain_key = derive_key(state.chain_key, "chain", state.counter.to_bytes(8, 'big'))
-    new_message_key = derive_key(new_chain_key, "message", (state.counter + 1).to_bytes(8, 'big'))
+    new_chain_key = derive_key(
+        state.chain_key, "chain", state.counter.to_bytes(8, "big")
+    )
+    new_message_key = derive_key(
+        new_chain_key, "message", (state.counter + 1).to_bytes(8, "big")
+    )
 
     return RatchetState(
         chain_key=new_chain_key,
         message_key=new_message_key,
         counter=state.counter + 1,
-        deleted_keys=state.deleted_keys + [old_chain_key]
+        deleted_keys=state.deleted_keys + [old_chain_key],
     )
 
 
 # =============================================================================
 # TEST CLASSES
 # =============================================================================
+
 
 class TestEntropicEscapeVelocity:
     """Tests for the Entropic Escape Velocity Theorem."""
@@ -303,7 +324,9 @@ class TestEntropicEscapeVelocity:
 
         # After 100 years
         time_100y = 100 * SECONDS_PER_YEAR
-        p_breach = entropic_breach_probability(DEFAULT_N0, k, C_QUANTUM, time_100y, is_quantum=True)
+        p_breach = entropic_breach_probability(
+            DEFAULT_N0, k, C_QUANTUM, time_100y, is_quantum=True
+        )
 
         assert p_breach < 1e-10  # Should be negligible
 
@@ -357,7 +380,9 @@ class TestKeyspaceExpansion:
         analytical_derivative = state.expansion_rate
 
         # Should match within numerical precision
-        relative_error = abs(numerical_derivative - analytical_derivative) / analytical_derivative
+        relative_error = (
+            abs(numerical_derivative - analytical_derivative) / analytical_derivative
+        )
         assert relative_error < 1e-4  # Relaxed tolerance for numerical differentiation
 
 
@@ -368,31 +393,31 @@ class TestThreeSystemBreachSimulation:
     def systems(self):
         """Define three security systems."""
         return {
-            'S1_Classical': {
-                'keyspace': 2**256,
-                'search_rate': 1e12,  # 1 trillion classical ops/sec
-                'quantum': False
+            "S1_Classical": {
+                "keyspace": 2**256,
+                "search_rate": 1e12,  # 1 trillion classical ops/sec
+                "quantum": False,
             },
-            'S2_Quantum_Grover': {
-                'keyspace': 2**256,
-                'search_rate': C_QUANTUM,
-                'quantum': True
+            "S2_Quantum_Grover": {
+                "keyspace": 2**256,
+                "search_rate": C_QUANTUM,
+                "quantum": True,
             },
-            'S3_Entropic': {
-                'keyspace': 2**256,
-                'k': 0.01,  # Modest expansion rate
-                'search_rate': C_QUANTUM,
-                'quantum': True
-            }
+            "S3_Entropic": {
+                "keyspace": 2**256,
+                "k": 0.01,  # Modest expansion rate
+                "search_rate": C_QUANTUM,
+                "quantum": True,
+            },
         }
 
     def test_classical_never_breached_256bit(self, systems):
         """256-bit classical system should never be breached in 100 years."""
-        s1 = systems['S1_Classical']
+        s1 = systems["S1_Classical"]
         time_100y = 100 * SECONDS_PER_YEAR
 
         p_breach = classical_breach_probability(
-            s1['keyspace'], s1['search_rate'], time_100y
+            s1["keyspace"], s1["search_rate"], time_100y
         )
 
         assert p_breach < 1e-50  # Astronomically unlikely
@@ -412,16 +437,16 @@ class TestThreeSystemBreachSimulation:
 
     def test_entropic_beats_quantum(self, systems):
         """Entropic system should have lower breach probability than static quantum."""
-        s2 = systems['S2_Quantum_Grover']
-        s3 = systems['S3_Entropic']
+        s2 = systems["S2_Quantum_Grover"]
+        s3 = systems["S3_Entropic"]
         time_100y = 100 * SECONDS_PER_YEAR
 
         p_quantum_static = quantum_breach_probability(
-            s2['keyspace'], s2['search_rate'], time_100y
+            s2["keyspace"], s2["search_rate"], time_100y
         )
 
         p_entropic = entropic_breach_probability(
-            s3['keyspace'], s3['k'], s3['search_rate'], time_100y, is_quantum=True
+            s3["keyspace"], s3["k"], s3["search_rate"], time_100y, is_quantum=True
         )
 
         # Entropic should be better (lower breach probability)
@@ -432,7 +457,7 @@ class TestThreeSystemBreachSimulation:
         iterations = 1000  # Reduced for faster tests
         time_horizon = 100 * SECONDS_PER_YEAR
 
-        results = {'S1': 0, 'S2': 0, 'S3': 0}
+        results = {"S1": 0, "S2": 0, "S3": 0}
 
         for _ in range(iterations):
             # Simulate random attack timing within the horizon
@@ -484,10 +509,14 @@ class TestMars0RTTProtocol:
         mars_receive_time = current_time + MARS_RTT_SECONDS
 
         # Earth sends message, Mars receives 14 minutes later
-        key_earth, _ = compute_fast_forward_key(shared_secret, mars_receive_time, current_time)
+        key_earth, _ = compute_fast_forward_key(
+            shared_secret, mars_receive_time, current_time
+        )
 
         # Mars computes same key upon receipt
-        key_mars, _ = compute_fast_forward_key(shared_secret, mars_receive_time, current_time)
+        key_mars, _ = compute_fast_forward_key(
+            shared_secret, mars_receive_time, current_time
+        )
 
         assert key_earth == key_mars
 
@@ -496,8 +525,12 @@ class TestMars0RTTProtocol:
         current_time = int(time.time())
         voyager_receive_time = current_time + VOYAGER_RTT_SECONDS
 
-        key_earth, _ = compute_fast_forward_key(shared_secret, voyager_receive_time, current_time)
-        key_voyager, _ = compute_fast_forward_key(shared_secret, voyager_receive_time, current_time)
+        key_earth, _ = compute_fast_forward_key(
+            shared_secret, voyager_receive_time, current_time
+        )
+        key_voyager, _ = compute_fast_forward_key(
+            shared_secret, voyager_receive_time, current_time
+        )
 
         assert key_earth == key_voyager
 
@@ -591,6 +624,7 @@ class TestForwardSecureRatchet:
 # =============================================================================
 # PERFORMANCE BENCHMARKS
 # =============================================================================
+
 
 class TestPerformanceBenchmarks:
     """Performance benchmarks for entropic operations."""

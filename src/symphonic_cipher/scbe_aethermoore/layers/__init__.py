@@ -30,7 +30,6 @@ from .fourteen_layer_pipeline import (
     PipelineState,
     RiskAssessment,
     RiskLevel,
-
     # Individual layer functions
     layer_1_complex_context,
     layer_2_realify,
@@ -46,20 +45,17 @@ from .fourteen_layer_pipeline import (
     layer_12_harmonic_scaling,
     layer_13_decision,
     layer_14_audio_axis,
-
     # Helper functions
     build_langues_metric,
     breathing_factor,
     mobius_addition,
     generate_realm_centers,
-
     # Theorem verification
     verify_theorem_A_metric_invariance,
     verify_theorem_B_continuity,
     verify_theorem_C_risk_monotonicity,
     verify_theorem_D_diffeomorphism,
     run_all_theorem_verification,
-
     # Constants
     PHI,
     R_BASE,
@@ -78,7 +74,6 @@ __all__ = [
     "PipelineState",
     "RiskAssessment",
     "RiskLevel",
-
     # Layers
     "layer_1_complex_context",
     "layer_2_realify",
@@ -94,20 +89,17 @@ __all__ = [
     "layer_12_harmonic_scaling",
     "layer_13_decision",
     "layer_14_audio_axis",
-
     # Helpers
     "build_langues_metric",
     "breathing_factor",
     "mobius_addition",
     "generate_realm_centers",
-
     # Theorems
     "verify_theorem_A_metric_invariance",
     "verify_theorem_B_continuity",
     "verify_theorem_C_risk_monotonicity",
     "verify_theorem_D_diffeomorphism",
     "run_all_theorem_verification",
-
     # Constants
     "PHI",
     "R_BASE",

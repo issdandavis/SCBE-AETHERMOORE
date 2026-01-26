@@ -34,12 +34,10 @@ from .quasicrystal import (
     # Core classes
     QuasicrystalLattice,
     PQCQuasicrystalLattice,
-
     # Result types
     ValidationResult,
     ValidationStatus,
     LatticePoint,
-
     # Constants
     PHI,
     TAU,
@@ -53,12 +51,10 @@ from .phdm import (
     PHDMHamiltonianPath,
     PHDMDeviationDetector,
     HamiltonianNode,
-
     # Family functions
     get_phdm_family,
     get_family_summary,
     validate_all_polyhedra,
-
     # Coordinate generators
     create_tetrahedron_coords,
     create_cube_coords,
@@ -72,15 +68,12 @@ from .integration import (
     # Main classes
     QuasicrystalHMACChain,
     IntegratedAuditChain,
-
     # Result types
     IntegratedDecision,
     IntegratedValidation,
-
     # Convenience functions
     create_integrated_chain,
     quick_validate,
-
     # Constants
     NONCE_BYTES,
     KEY_LEN,
@@ -96,7 +89,6 @@ __all__ = [
     "LatticePoint",
     "PHI",
     "TAU",
-
     # PHDM
     "Polyhedron",
     "PolyhedronType",
@@ -111,7 +103,6 @@ __all__ = [
     "create_octahedron_coords",
     "create_dodecahedron_coords",
     "create_icosahedron_coords",
-
     # Integration
     "QuasicrystalHMACChain",
     "IntegratedAuditChain",

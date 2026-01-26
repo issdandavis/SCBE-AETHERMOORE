@@ -53,15 +53,17 @@ DEFAULT_DIM = 6  # 6D Langues space
 
 class ParticipationState(Enum):
     """Dimensional participation states."""
-    POLLY = "POLLY"   # ν ≈ 1 (full)
-    QUASI = "QUASI"   # 0.5 ≤ ν < 1 (partial)
-    DEMI = "DEMI"     # 0 < ν < 0.5 (minimal)
-    ZERO = "ZERO"     # ν ≈ 0 (inactive)
+
+    POLLY = "POLLY"  # ν ≈ 1 (full)
+    QUASI = "QUASI"  # 0.5 ≤ ν < 1 (partial)
+    DEMI = "DEMI"  # 0 < ν < 0.5 (minimal)
+    ZERO = "ZERO"  # ν ≈ 0 (inactive)
 
 
 # =============================================================================
 # ODE PARAMETERS
 # =============================================================================
+
 
 @dataclass
 class FluxParams:
@@ -70,23 +72,32 @@ class FluxParams:
 
     ν̇_i = κ_i(ν̄_i - ν_i) + σ_i sin(Ω_i t)
     """
+
     dim: int = DEFAULT_DIM
 
     # Decay rates κ_i (attraction to equilibrium)
-    kappa: np.ndarray = field(default_factory=lambda: np.array([0.5, 0.4, 0.3, 0.3, 0.4, 0.5]))
+    kappa: np.ndarray = field(
+        default_factory=lambda: np.array([0.5, 0.4, 0.3, 0.3, 0.4, 0.5])
+    )
 
     # Equilibrium values ν̄_i
-    nu_bar: np.ndarray = field(default_factory=lambda: np.array([1.0, 0.9, 0.8, 0.8, 0.9, 1.0]))
+    nu_bar: np.ndarray = field(
+        default_factory=lambda: np.array([1.0, 0.9, 0.8, 0.8, 0.9, 1.0])
+    )
 
     # Oscillation amplitudes σ_i
-    sigma: np.ndarray = field(default_factory=lambda: np.array([0.1, 0.15, 0.2, 0.2, 0.15, 0.1]))
+    sigma: np.ndarray = field(
+        default_factory=lambda: np.array([0.1, 0.15, 0.2, 0.2, 0.15, 0.1])
+    )
 
     # Oscillation frequencies Ω_i
-    omega: np.ndarray = field(default_factory=lambda: np.array([0.5, 0.7, 1.0, 1.1, 0.8, 0.6]))
+    omega: np.ndarray = field(
+        default_factory=lambda: np.array([0.5, 0.7, 1.0, 1.1, 0.8, 0.6])
+    )
 
     # Bounds
     nu_min: float = 0.01  # Minimum participation (never fully zero)
-    nu_max: float = 1.0   # Maximum participation
+    nu_max: float = 1.0  # Maximum participation
 
     def __post_init__(self):
         """Ensure arrays are correct size."""
@@ -103,16 +114,18 @@ class FluxParams:
 @dataclass
 class FluxState:
     """Current state of fractional dimension system."""
-    nu: np.ndarray              # Current ν values
-    t: float                    # Current time
-    D_f: float                  # Effective dimension Σν_i
+
+    nu: np.ndarray  # Current ν values
+    t: float  # Current time
+    D_f: float  # Effective dimension Σν_i
     states: List[ParticipationState]  # State per dimension
-    epsilon_snap: float         # Current snap threshold
+    epsilon_snap: float  # Current snap threshold
 
 
 # =============================================================================
 # FRACTIONAL DIMENSION FLUX ENGINE
 # =============================================================================
+
 
 class FractionalFluxEngine:
     """
@@ -124,11 +137,7 @@ class FractionalFluxEngine:
     With bounded evolution ν_i ∈ [ν_min, ν_max].
     """
 
-    def __init__(
-        self,
-        params: Optional[FluxParams] = None,
-        epsilon_base: float = 0.05
-    ):
+    def __init__(self, params: Optional[FluxParams] = None, epsilon_base: float = 0.05):
         """
         Initialize fractional flux engine.
 
@@ -170,8 +179,8 @@ class FractionalFluxEngine:
             self._ode_rhs,
             t_span=(self._t, self._t + dt),
             y0=self._nu,
-            method='RK45',
-            dense_output=False
+            method="RK45",
+            dense_output=False,
         )
 
         # Update state
@@ -203,11 +212,7 @@ class FractionalFluxEngine:
         eps_snap = self.snap_threshold()
 
         return FluxState(
-            nu=self._nu.copy(),
-            t=self._t,
-            D_f=D_f,
-            states=states,
-            epsilon_snap=eps_snap
+            nu=self._nu.copy(), t=self._t, D_f=D_f, states=states, epsilon_snap=eps_snap
         )
 
     def effective_dimension(self) -> float:
@@ -260,17 +265,17 @@ class FractionalFluxEngine:
         # P=0: ν̄ = default, P=1: ν̄ = 0.5 (contracted)
         contraction = 1.0 - 0.5 * pressure
         self.params.nu_bar = self.params.nu_bar * contraction
-        self.params.nu_bar = np.clip(self.params.nu_bar, self.params.nu_min, self.params.nu_max)
+        self.params.nu_bar = np.clip(
+            self.params.nu_bar, self.params.nu_min, self.params.nu_max
+        )
 
 
 # =============================================================================
 # DIMENSIONAL WEIGHTING
 # =============================================================================
 
-def compute_weighted_metric(
-    G_base: np.ndarray,
-    nu: np.ndarray
-) -> np.ndarray:
+
+def compute_weighted_metric(G_base: np.ndarray, nu: np.ndarray) -> np.ndarray:
     """
     Apply fractional dimension weighting to metric tensor.
 
@@ -283,10 +288,7 @@ def compute_weighted_metric(
 
 
 def compute_weighted_distance(
-    u: np.ndarray,
-    v: np.ndarray,
-    G_base: np.ndarray,
-    nu: np.ndarray
+    u: np.ndarray, v: np.ndarray, G_base: np.ndarray, nu: np.ndarray
 ) -> float:
     """
     Compute distance with fractional dimension weighting.
@@ -303,20 +305,20 @@ def compute_weighted_distance(
 # SNAP DETECTION
 # =============================================================================
 
+
 @dataclass
 class SnapResult:
     """Result of snap detection."""
-    snapped: bool               # Whether snap occurred
-    deviation: float            # Deviation magnitude
-    threshold: float            # Current threshold
-    margin: float              # threshold - deviation (negative = snapped)
+
+    snapped: bool  # Whether snap occurred
+    deviation: float  # Deviation magnitude
+    threshold: float  # Current threshold
+    margin: float  # threshold - deviation (negative = snapped)
     dimension_contribution: np.ndarray  # Per-dimension contribution
 
 
 def detect_snap(
-    deviation_vector: np.ndarray,
-    flux_state: FluxState,
-    mode: str = "L2"
+    deviation_vector: np.ndarray, flux_state: FluxState, mode: str = "L2"
 ) -> SnapResult:
     """
     Detect snap using adaptive threshold.
@@ -354,7 +356,7 @@ def detect_snap(
         deviation=deviation,
         threshold=threshold,
         margin=margin,
-        dimension_contribution=np.abs(deviation_vector) * nu
+        dimension_contribution=np.abs(deviation_vector) * nu,
     )
 
 
@@ -362,10 +364,9 @@ def detect_snap(
 # INTEGRATION WITH LIVING METRIC
 # =============================================================================
 
+
 def integrate_with_living_metric(
-    flux_engine: FractionalFluxEngine,
-    G_living: np.ndarray,
-    pressure: float
+    flux_engine: FractionalFluxEngine, G_living: np.ndarray, pressure: float
 ) -> Tuple[np.ndarray, FluxState]:
     """
     Integrate fractional flux with living metric.
@@ -393,19 +394,19 @@ def integrate_with_living_metric(
 # BREATHING PATTERNS
 # =============================================================================
 
+
 class BreathingPattern(Enum):
     """Predefined breathing patterns."""
-    UNIFORM = "UNIFORM"         # All dimensions breathe together
-    ALTERNATING = "ALTERNATING" # Odd/even dimensions alternate
-    WAVE = "WAVE"               # Wave propagates through dimensions
-    RANDOM = "RANDOM"           # Stochastic breathing
-    STABLE = "STABLE"           # Minimal oscillation
+
+    UNIFORM = "UNIFORM"  # All dimensions breathe together
+    ALTERNATING = "ALTERNATING"  # Odd/even dimensions alternate
+    WAVE = "WAVE"  # Wave propagates through dimensions
+    RANDOM = "RANDOM"  # Stochastic breathing
+    STABLE = "STABLE"  # Minimal oscillation
 
 
 def apply_breathing_pattern(
-    params: FluxParams,
-    pattern: BreathingPattern,
-    intensity: float = 1.0
+    params: FluxParams, pattern: BreathingPattern, intensity: float = 1.0
 ) -> FluxParams:
     """
     Apply a predefined breathing pattern to flux parameters.
@@ -455,6 +456,7 @@ def apply_breathing_pattern(
 # SELF-TESTS
 # =============================================================================
 
+
 def self_test() -> Dict[str, Any]:
     """Run fractional flux self-tests."""
     results = {}
@@ -468,7 +470,8 @@ def self_test() -> Dict[str, Any]:
         trajectory = engine.evolve(t_final=10.0, n_steps=100)
 
         all_bounded = all(
-            np.all(s.nu >= engine.params.nu_min) and np.all(s.nu <= engine.params.nu_max)
+            np.all(s.nu >= engine.params.nu_min)
+            and np.all(s.nu <= engine.params.nu_max)
             for s in trajectory
         )
 
@@ -512,7 +515,9 @@ def self_test() -> Dict[str, Any]:
 
         if eps_low_D > eps_high_D:
             passed += 1
-            results["snap_threshold"] = f"✓ PASS (ε_snap: {eps_high_D:.3f} → {eps_low_D:.3f} as D_f ↓)"
+            results["snap_threshold"] = (
+                f"✓ PASS (ε_snap: {eps_high_D:.3f} → {eps_low_D:.3f} as D_f ↓)"
+            )
         else:
             results["snap_threshold"] = "✗ FAIL (threshold not inversely proportional)"
     except Exception as e:
@@ -528,10 +533,12 @@ def self_test() -> Dict[str, Any]:
         demi = engine._classify_participation(0.3)
         zero = engine._classify_participation(0.01)
 
-        if (polly == ParticipationState.POLLY and
-            quasi == ParticipationState.QUASI and
-            demi == ParticipationState.DEMI and
-            zero == ParticipationState.ZERO):
+        if (
+            polly == ParticipationState.POLLY
+            and quasi == ParticipationState.QUASI
+            and demi == ParticipationState.DEMI
+            and zero == ParticipationState.ZERO
+        ):
             passed += 1
             results["participation_states"] = "✓ PASS (POLLY/QUASI/DEMI/ZERO correct)"
         else:
@@ -555,7 +562,9 @@ def self_test() -> Dict[str, Any]:
 
         if trace_half < trace_full:
             passed += 1
-            results["weighted_metric"] = f"✓ PASS (trace: {trace_full:.1f} → {trace_half:.2f} with ν=0.5)"
+            results["weighted_metric"] = (
+                f"✓ PASS (trace: {trace_full:.1f} → {trace_half:.2f} with ν=0.5)"
+            )
         else:
             results["weighted_metric"] = "✗ FAIL (weighted metric not diminished)"
     except Exception as e:
@@ -577,7 +586,9 @@ def self_test() -> Dict[str, Any]:
 
         if not result_small.snapped and result_large.snapped:
             passed += 1
-            results["snap_detection"] = f"✓ PASS (small={result_small.deviation:.3f}, large={result_large.deviation:.3f})"
+            results["snap_detection"] = (
+                f"✓ PASS (small={result_small.deviation:.3f}, large={result_large.deviation:.3f})"
+            )
         else:
             results["snap_detection"] = "✗ FAIL (snap detection wrong)"
     except Exception as e:
@@ -657,7 +668,9 @@ def self_test() -> Dict[str, Any]:
 
         if abs(eps_6 - expected_6) < 0.001 and abs(eps_3 - expected_3) < 0.001:
             passed += 1
-            results["formula_verification"] = f"✓ PASS (ε(D=6)={eps_6:.3f}, ε(D=3)={eps_3:.3f})"
+            results["formula_verification"] = (
+                f"✓ PASS (ε(D=6)={eps_6:.3f}, ε(D=3)={eps_3:.3f})"
+            )
         else:
             results["formula_verification"] = f"✗ FAIL (formula mismatch)"
     except Exception as e:
@@ -667,7 +680,7 @@ def self_test() -> Dict[str, Any]:
         "passed": passed,
         "total": total,
         "success_rate": f"{passed}/{total} ({100*passed/total:.1f}%)",
-        "results": results
+        "results": results,
     }
 
 
@@ -707,7 +720,9 @@ if __name__ == "__main__":
         state = engine.get_state()
 
         state_chars = "".join([s.value[0] for s in state.states])
-        print(f"  {state.t:4.1f} | {state.D_f:6.3f} | {state.epsilon_snap:6.4f} | {state_chars}")
+        print(
+            f"  {state.t:4.1f} | {state.D_f:6.3f} | {state.epsilon_snap:6.4f} | {state_chars}"
+        )
 
     # Snap threshold demo
     print("\n" + "-" * 70)

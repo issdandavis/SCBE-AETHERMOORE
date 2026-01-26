@@ -27,8 +27,12 @@ from enum import Enum
 
 # Import AETHERMOORE constants
 from ..constants import (
-    PHI, R_FIFTH, PHI_AETHER, LAMBDA_ISAAC,
-    harmonic_scale, DEFAULT_R,
+    PHI,
+    R_FIFTH,
+    PHI_AETHER,
+    LAMBDA_ISAAC,
+    harmonic_scale,
+    DEFAULT_R,
 )
 
 
@@ -37,26 +41,27 @@ from ..constants import (
 # =============================================================================
 
 # Ring configuration
-RING_SIZE = 64                    # 64 positions in the ring
-EXPANSION_RATE = 1.0              # Bits per second of entropy growth
-TIME_QUANTUM = 1.0                # Time step resolution in seconds
-MAX_EXPANSION = 2**20             # Maximum expansion iterations
+RING_SIZE = 64  # 64 positions in the ring
+EXPANSION_RATE = 1.0  # Bits per second of entropy growth
+TIME_QUANTUM = 1.0  # Time step resolution in seconds
+MAX_EXPANSION = 2**20  # Maximum expansion iterations
 
 # Spiral constants (derived from AETHERMOORE)
-SPIRAL_PHI = PHI                  # Golden ratio for spiral growth
-SPIRAL_R = R_FIFTH                # Perfect fifth for harmonic expansion
+SPIRAL_PHI = PHI  # Golden ratio for spiral growth
+SPIRAL_R = R_FIFTH  # Perfect fifth for harmonic expansion
 SPIRAL_TWIST = 2 * math.pi / PHI  # Twist angle per step
 
 # Physical constants for Mars scenario
-LIGHT_SPEED = 299792458           # m/s
-MARS_DISTANCE_MIN = 54.6e9        # Minimum Earth-Mars distance (m)
-MARS_DISTANCE_MAX = 401e9         # Maximum Earth-Mars distance (m)
+LIGHT_SPEED = 299792458  # m/s
+MARS_DISTANCE_MIN = 54.6e9  # Minimum Earth-Mars distance (m)
+MARS_DISTANCE_MAX = 401e9  # Maximum Earth-Mars distance (m)
 MARS_LIGHT_TIME_MIN = MARS_DISTANCE_MIN / LIGHT_SPEED  # ~182 seconds
 MARS_LIGHT_TIME_MAX = MARS_DISTANCE_MAX / LIGHT_SPEED  # ~1338 seconds
 
 
 class RingState(Enum):
     """Ring evolution states."""
+
     INITIALIZED = "initialized"
     EXPANDING = "expanding"
     STABILIZED = "stabilized"
@@ -67,40 +72,43 @@ class RingState(Enum):
 # SPIRAL RING CORE
 # =============================================================================
 
+
 @dataclass
 class SpiralPosition:
     """A position on the spiral ring."""
-    index: int                    # 0-63 position on ring
-    value: int                    # 256-bit value at this position
-    phase: float                  # Phase angle (0 to 2π)
-    depth: int                    # Expansion depth
-    entropy: float                # Accumulated entropy bits
+
+    index: int  # 0-63 position on ring
+    value: int  # 256-bit value at this position
+    phase: float  # Phase angle (0 to 2π)
+    depth: int  # Expansion depth
+    entropy: float  # Accumulated entropy bits
 
     def to_bytes(self) -> bytes:
         """Serialize position to bytes."""
         return (
-            self.index.to_bytes(1, 'big') +
-            self.value.to_bytes(32, 'big') +
-            struct.pack('>d', self.phase) +
-            self.depth.to_bytes(4, 'big') +
-            struct.pack('>d', self.entropy)
+            self.index.to_bytes(1, "big")
+            + self.value.to_bytes(32, "big")
+            + struct.pack(">d", self.phase)
+            + self.depth.to_bytes(4, "big")
+            + struct.pack(">d", self.entropy)
         )
 
     @classmethod
-    def from_bytes(cls, data: bytes) -> 'SpiralPosition':
+    def from_bytes(cls, data: bytes) -> "SpiralPosition":
         """Deserialize position from bytes."""
         return cls(
             index=data[0],
-            value=int.from_bytes(data[1:33], 'big'),
-            phase=struct.unpack('>d', data[33:41])[0],
-            depth=int.from_bytes(data[41:45], 'big'),
-            entropy=struct.unpack('>d', data[45:53])[0]
+            value=int.from_bytes(data[1:33], "big"),
+            phase=struct.unpack(">d", data[33:41])[0],
+            depth=int.from_bytes(data[41:45], "big"),
+            entropy=struct.unpack(">d", data[45:53])[0],
         )
 
 
 @dataclass
 class RingConfig:
     """Configuration for SpiralRing."""
+
     ring_size: int = RING_SIZE
     expansion_rate: float = EXPANSION_RATE
     time_quantum: float = TIME_QUANTUM
@@ -132,6 +140,7 @@ class SpiralRing:
         ring.evolve_to(0)  # Fast-forward to sender's time!
         decoded = ring.decode(encoded)
     """
+
     seed: bytes
     positions: List[SpiralPosition] = field(default_factory=list)
     current_time: float = 0.0
@@ -152,28 +161,22 @@ class SpiralRing:
 
         for i in range(self.config.ring_size):
             # Each position gets 32 bytes (256 bits)
-            pos_seed = shake.digest(32 + i * 32)[i * 32:(i + 1) * 32]
-            value = int.from_bytes(pos_seed, 'big')
+            pos_seed = shake.digest(32 + i * 32)[i * 32 : (i + 1) * 32]
+            value = int.from_bytes(pos_seed, "big")
 
             # Phase is distributed around the ring
             phase = (2 * math.pi * i) / self.config.ring_size
 
-            self.positions.append(SpiralPosition(
-                index=i,
-                value=value,
-                phase=phase,
-                depth=0,
-                entropy=0.0
-            ))
+            self.positions.append(
+                SpiralPosition(index=i, value=value, phase=phase, depth=0, entropy=0.0)
+            )
 
         self.state = RingState.INITIALIZED
 
     @classmethod
     def from_seed(
-        cls,
-        seed: bytes,
-        config: Optional[RingConfig] = None
-    ) -> 'SpiralRing':
+        cls, seed: bytes, config: Optional[RingConfig] = None
+    ) -> "SpiralRing":
         """
         Create a new SpiralRing from a seed.
 
@@ -187,10 +190,7 @@ class SpiralRing:
         if len(seed) < 16:
             raise ValueError("Seed must be at least 16 bytes")
 
-        return cls(
-            seed=seed,
-            config=config or RingConfig()
-        )
+        return cls(seed=seed, config=config or RingConfig())
 
     def evolve_to(self, target_time: float) -> None:
         """
@@ -258,14 +258,18 @@ class SpiralRing:
             right = self.positions[(i + 1) % self.config.ring_size]
 
             # Mix values using XOR and rotation
-            mixed = pos.value ^ self._rotate_left(left.value, 7) ^ self._rotate_right(right.value, 13)
+            mixed = (
+                pos.value
+                ^ self._rotate_left(left.value, 7)
+                ^ self._rotate_right(right.value, 13)
+            )
 
             # Add step-dependent permutation
             step_mix = int.from_bytes(
                 hashlib.sha256(
-                    self.seed + step.to_bytes(8, 'big') + i.to_bytes(2, 'big')
+                    self.seed + step.to_bytes(8, "big") + i.to_bytes(2, "big")
                 ).digest(),
-                'big'
+                "big",
             )
             mixed ^= step_mix
 
@@ -273,15 +277,19 @@ class SpiralRing:
             new_phase = (pos.phase + SPIRAL_TWIST) % (2 * math.pi)
 
             # Calculate entropy accumulation
-            new_entropy = pos.entropy + self.config.expansion_rate * self.config.time_quantum
+            new_entropy = (
+                pos.entropy + self.config.expansion_rate * self.config.time_quantum
+            )
 
-            new_positions.append(SpiralPosition(
-                index=i,
-                value=mixed % (2**256),
-                phase=new_phase,
-                depth=pos.depth + depth_factor,
-                entropy=new_entropy
-            ))
+            new_positions.append(
+                SpiralPosition(
+                    index=i,
+                    value=mixed % (2**256),
+                    phase=new_phase,
+                    depth=pos.depth + depth_factor,
+                    entropy=new_entropy,
+                )
+            )
 
         self.positions = new_positions
 
@@ -307,14 +315,14 @@ class SpiralRing:
         """
         state_bytes = b""
         for pos in self.positions:
-            state_bytes += pos.value.to_bytes(32, 'big')
+            state_bytes += pos.value.to_bytes(32, "big")
         return state_bytes
 
     def get_position_key(self, index: int) -> bytes:
         """Get the key material at a specific ring position."""
         if index < 0 or index >= self.config.ring_size:
             raise ValueError(f"Index must be 0-{self.config.ring_size - 1}")
-        return self.positions[index].value.to_bytes(32, 'big')
+        return self.positions[index].value.to_bytes(32, "big")
 
     def encode(self, data: bytes) -> bytes:
         """
@@ -371,6 +379,7 @@ class SpiralRing:
 # SYNCHRONIZED RING PAIR
 # =============================================================================
 
+
 @dataclass
 class SynchronizedRingPair:
     """
@@ -379,6 +388,7 @@ class SynchronizedRingPair:
     Each party maintains their own ring, but both are derived from
     the same shared seed and can evolve to any timestamp.
     """
+
     local_ring: SpiralRing
     station_id: str
     partner_id: str
@@ -390,8 +400,8 @@ class SynchronizedRingPair:
         shared_seed: bytes,
         station_a_id: str,
         station_b_id: str,
-        config: Optional[RingConfig] = None
-    ) -> Tuple['SynchronizedRingPair', 'SynchronizedRingPair']:
+        config: Optional[RingConfig] = None,
+    ) -> Tuple["SynchronizedRingPair", "SynchronizedRingPair"]:
         """
         Create a synchronized pair of rings.
 
@@ -402,23 +412,17 @@ class SynchronizedRingPair:
         ring_b = SpiralRing.from_seed(shared_seed, config)
 
         pair_a = cls(
-            local_ring=ring_a,
-            station_id=station_a_id,
-            partner_id=station_b_id
+            local_ring=ring_a, station_id=station_a_id, partner_id=station_b_id
         )
 
         pair_b = cls(
-            local_ring=ring_b,
-            station_id=station_b_id,
-            partner_id=station_a_id
+            local_ring=ring_b, station_id=station_b_id, partner_id=station_a_id
         )
 
         return pair_a, pair_b
 
     def encode_message(
-        self,
-        message: bytes,
-        send_time: Optional[float] = None
+        self, message: bytes, send_time: Optional[float] = None
     ) -> Tuple[bytes, float]:
         """
         Encode a message with timestamp.
@@ -438,11 +442,7 @@ class SynchronizedRingPair:
 
         return encoded, send_time
 
-    def decode_message(
-        self,
-        encoded: bytes,
-        send_time: float
-    ) -> bytes:
+    def decode_message(self, encoded: bytes, send_time: float) -> bytes:
         """
         Decode a message using sender's timestamp.
 
@@ -465,10 +465,9 @@ class SynchronizedRingPair:
 # ENTROPY STREAM
 # =============================================================================
 
+
 def create_entropy_stream(
-    seed: bytes,
-    start_time: float = 0.0,
-    chunk_size: int = 32
+    seed: bytes, start_time: float = 0.0, chunk_size: int = 32
 ) -> Iterator[bytes]:
     """
     Create an infinite stream of entropy from a SpiralRing.
@@ -492,7 +491,7 @@ def create_entropy_stream(
 
         # Yield chunks from ring state
         for i in range(0, len(state), chunk_size):
-            yield state[i:i + chunk_size]
+            yield state[i : i + chunk_size]
 
         current_time += ring.config.time_quantum
 
@@ -502,9 +501,7 @@ def calculate_light_delay(distance_m: float) -> float:
     return distance_m / LIGHT_SPEED
 
 
-def mars_light_delay(
-    earth_mars_distance: Optional[float] = None
-) -> float:
+def mars_light_delay(earth_mars_distance: Optional[float] = None) -> float:
     """
     Get Earth-Mars light delay.
 

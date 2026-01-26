@@ -28,9 +28,11 @@ R_FIFTH = 1.5  # Perfect fifth harmonic ratio
 # TEST DATA FACTORIES
 # =============================================================================
 
+
 @dataclass
 class TestVector:
     """Standard test vector for SCBE operations."""
+
     position: List[int]
     agent: str
     topic: str
@@ -60,7 +62,7 @@ def legitimate_request():
         topic="memory",
         context="internal",
         expected_decision="ALLOW",
-        description="Trusted internal agent with harmonic position"
+        description="Trusted internal agent with harmonic position",
     )
 
 
@@ -73,7 +75,7 @@ def suspicious_request():
         topic="secrets",
         context="external",
         expected_decision="QUARANTINE",
-        description="External agent at edge position"
+        description="External agent at edge position",
     )
 
 
@@ -86,7 +88,7 @@ def malicious_request():
         topic="admin",
         context="untrusted",
         expected_decision="DENY",
-        description="Untrusted bot targeting admin"
+        description="Untrusted bot targeting admin",
     )
 
 
@@ -106,6 +108,7 @@ def invalid_api_key():
 # MOCK OBJECTS
 # =============================================================================
 
+
 @pytest.fixture
 def mock_scbe_result():
     """Mock SCBE pipeline result."""
@@ -115,15 +118,8 @@ def mock_scbe_result():
         "risk_prime": 0.23,
         "H": 1.53,
         "d_star": 0.42,
-        "coherence": {
-            "spectral": 0.92,
-            "spin": 0.88,
-            "temporal": 0.95
-        },
-        "geometry": {
-            "hyperbolic_dist": 0.42,
-            "poincare_norm": 0.38
-        }
+        "coherence": {"spectral": 0.92, "spin": 0.88, "temporal": 0.95},
+        "geometry": {"hyperbolic_dist": 0.42, "poincare_norm": 0.38},
     }
 
 
@@ -136,7 +132,7 @@ def sacred_tongue_tokens():
         "RU": "run_salt_token",
         "CA": "cas_cipher_token",
         "UM": "umb_redact_token",
-        "DR": "dra_tag_token"
+        "DR": "dra_tag_token",
     }
 
 
@@ -144,13 +140,15 @@ def sacred_tongue_tokens():
 # MATHEMATICAL HELPERS
 # =============================================================================
 
+
 @pytest.fixture
 def hyperbolic_distance():
     """Hyperbolic distance function."""
+
     def _hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
         """Calculate hyperbolic distance in Poincaré ball."""
-        u_norm_sq = np.sum(u ** 2)
-        v_norm_sq = np.sum(v ** 2)
+        u_norm_sq = np.sum(u**2)
+        v_norm_sq = np.sum(v**2)
         diff_norm_sq = np.sum((u - v) ** 2)
 
         # Clamp to avoid numerical issues
@@ -161,7 +159,7 @@ def hyperbolic_distance():
         denominator = (1 - u_norm_sq) * (1 - v_norm_sq)
 
         if denominator <= 0:
-            return float('inf')
+            return float("inf")
 
         arg = 1 + numerator / denominator
         return np.arccosh(max(arg, 1.0))
@@ -172,8 +170,9 @@ def hyperbolic_distance():
 @pytest.fixture
 def harmonic_scaling():
     """Harmonic scaling function H(d, R) = R^(d²)."""
+
     def _harmonic_scaling(d: float, R: float = R_FIFTH) -> float:
-        return R ** (d ** 2)
+        return R ** (d**2)
 
     return _harmonic_scaling
 
@@ -181,6 +180,7 @@ def harmonic_scaling():
 # =============================================================================
 # PERFORMANCE HELPERS
 # =============================================================================
+
 
 @pytest.fixture
 def performance_timer():
@@ -205,10 +205,15 @@ def performance_timer():
 # TEST MARKERS
 # =============================================================================
 
+
 def pytest_configure(config):
     """Register custom markers."""
-    config.addinivalue_line("markers", "enterprise: Enterprise-grade tests (compliance, security)")
-    config.addinivalue_line("markers", "professional: Professional/industry standard tests")
+    config.addinivalue_line(
+        "markers", "enterprise: Enterprise-grade tests (compliance, security)"
+    )
+    config.addinivalue_line(
+        "markers", "professional: Professional/industry standard tests"
+    )
     config.addinivalue_line("markers", "homebrew: Quick developer feedback tests")
     config.addinivalue_line("markers", "api: API endpoint tests")
     config.addinivalue_line("markers", "crypto: Cryptographic tests")

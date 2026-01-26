@@ -21,6 +21,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 # Try hypothesis import
 try:
     from hypothesis import given, strategies as st, settings, assume
+
     HYPOTHESIS_AVAILABLE = True
 except ImportError:
     HYPOTHESIS_AVAILABLE = False
@@ -28,12 +29,14 @@ except ImportError:
 # Try SCBE imports
 try:
     from src.scbe_14layer_reference import scbe_14layer_pipeline
+
     SCBE_AVAILABLE = True
 except ImportError:
     SCBE_AVAILABLE = False
 
 try:
     from src.crypto.rwp_v3 import RWPv3Protocol
+
     RWP_AVAILABLE = True
 except ImportError:
     RWP_AVAILABLE = False
@@ -52,23 +55,33 @@ if not HYPOTHESIS_AVAILABLE:
 position_6d = st.lists(
     st.floats(min_value=-1000, max_value=1000, allow_nan=False, allow_infinity=False),
     min_size=6,
-    max_size=6
+    max_size=6,
 )
 
 # Point inside Poincaré ball (||x|| < 1)
 poincare_point = st.lists(
-    st.floats(min_value=-0.49, max_value=0.49),
-    min_size=6,
-    max_size=6
+    st.floats(min_value=-0.49, max_value=0.49), min_size=6, max_size=6
 )
 
 # Valid API request
-api_request = st.fixed_dictionaries({
-    "plaintext": st.text(min_size=1, max_size=100),
-    "agent": st.text(min_size=1, max_size=50, alphabet=st.characters(whitelist_categories=("L", "N"))),
-    "topic": st.text(min_size=1, max_size=50, alphabet=st.characters(whitelist_categories=("L", "N"))),
-    "position": st.lists(st.integers(min_value=0, max_value=100), min_size=6, max_size=6)
-})
+api_request = st.fixed_dictionaries(
+    {
+        "plaintext": st.text(min_size=1, max_size=100),
+        "agent": st.text(
+            min_size=1,
+            max_size=50,
+            alphabet=st.characters(whitelist_categories=("L", "N")),
+        ),
+        "topic": st.text(
+            min_size=1,
+            max_size=50,
+            alphabet=st.characters(whitelist_categories=("L", "N")),
+        ),
+        "position": st.lists(
+            st.integers(min_value=0, max_value=100), min_size=6, max_size=6
+        ),
+    }
+)
 
 # Risk score (0 to 1)
 risk_score = st.floats(min_value=0.0, max_value=1.0)
@@ -84,6 +97,7 @@ distance = st.floats(min_value=0.0, max_value=10.0)
 # MATHEMATICAL INVARIANT TESTS
 # =============================================================================
 
+
 @pytest.mark.property
 @pytest.mark.math
 class TestMathematicalInvariants:
@@ -93,7 +107,7 @@ class TestMathematicalInvariants:
     @settings(max_examples=200)
     def test_harmonic_scaling_positive(self, d, R):
         """H(d, R) > 0 for all valid inputs."""
-        H = R ** (d ** 2)
+        H = R ** (d**2)
         assert H > 0
 
     @given(d=distance, R=harmonic_ratio)
@@ -101,7 +115,7 @@ class TestMathematicalInvariants:
     def test_harmonic_scaling_monotonic(self, d, R):
         """H(d+ε, R) > H(d, R) for ε > 0 and R > 1."""
         epsilon = 0.1
-        H_d = R ** (d ** 2)
+        H_d = R ** (d**2)
         H_d_plus = R ** ((d + epsilon) ** 2)
         assert H_d_plus >= H_d
 
@@ -109,7 +123,7 @@ class TestMathematicalInvariants:
     @settings(max_examples=100)
     def test_harmonic_scaling_identity_at_zero(self, R):
         """H(0, R) = 1 for all R."""
-        H = R ** (0 ** 2)
+        H = R ** (0**2)
         assert np.isclose(H, 1.0)
 
     @given(u=poincare_point, v=poincare_point)
@@ -120,13 +134,13 @@ class TestMathematicalInvariants:
         v_arr = np.array(v)
 
         def hyperbolic_dist(a, b):
-            a_sq = np.sum(a ** 2)
-            b_sq = np.sum(b ** 2)
+            a_sq = np.sum(a**2)
+            b_sq = np.sum(b**2)
             diff_sq = np.sum((a - b) ** 2)
 
             denom = (1 - a_sq) * (1 - b_sq)
             if denom <= 0:
-                return float('inf')
+                return float("inf")
 
             arg = 1 + 2 * diff_sq / denom
             return np.arccosh(max(arg, 1.0))
@@ -144,13 +158,13 @@ class TestMathematicalInvariants:
         u_arr = np.array(u)
 
         def hyperbolic_dist(a, b):
-            a_sq = np.sum(a ** 2)
-            b_sq = np.sum(b ** 2)
+            a_sq = np.sum(a**2)
+            b_sq = np.sum(b**2)
             diff_sq = np.sum((a - b) ** 2)
 
             denom = (1 - a_sq) * (1 - b_sq)
             if denom <= 0:
-                return float('inf')
+                return float("inf")
 
             arg = 1 + 2 * diff_sq / denom
             return np.arccosh(max(arg, 1.0))
@@ -166,13 +180,13 @@ class TestMathematicalInvariants:
         origin = np.zeros(6)
 
         def hyperbolic_dist(a, b):
-            a_sq = np.sum(a ** 2)
-            b_sq = np.sum(b ** 2)
+            a_sq = np.sum(a**2)
+            b_sq = np.sum(b**2)
             diff_sq = np.sum((a - b) ** 2)
 
             denom = (1 - a_sq) * (1 - b_sq)
             if denom <= 0:
-                return float('inf')
+                return float("inf")
 
             arg = 1 + 2 * diff_sq / denom
             return np.arccosh(max(arg, 1.0))
@@ -185,6 +199,7 @@ class TestMathematicalInvariants:
 # GOLDEN RATIO PROPERTY TESTS
 # =============================================================================
 
+
 @pytest.mark.property
 @pytest.mark.math
 class TestGoldenRatioProperties:
@@ -196,7 +211,7 @@ class TestGoldenRatioProperties:
         """φⁿ = φⁿ⁻¹ + φⁿ⁻² (Fibonacci recurrence)."""
         phi = (1 + np.sqrt(5)) / 2
 
-        phi_n = phi ** n
+        phi_n = phi**n
         phi_n_1 = phi ** (n - 1)
         phi_n_2 = phi ** (n - 2)
 
@@ -207,12 +222,13 @@ class TestGoldenRatioProperties:
     def test_golden_ratio_powers_positive(self, n):
         """φⁿ > 0 for all n ≥ 1."""
         phi = (1 + np.sqrt(5)) / 2
-        assert phi ** n > 0
+        assert phi**n > 0
 
 
 # =============================================================================
 # PIPELINE PROPERTY TESTS
 # =============================================================================
+
 
 @pytest.mark.property
 @pytest.mark.skipif(not SCBE_AVAILABLE, reason="SCBE not available")
@@ -226,8 +242,7 @@ class TestPipelineProperties:
         pos_array = np.array(position)
         # Weights must sum to 1.0
         result = scbe_14layer_pipeline(
-            t=pos_array, D=6,
-            w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
+            t=pos_array, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
         )
 
         assert result["decision"] in ["ALLOW", "QUARANTINE", "DENY"]
@@ -239,8 +254,7 @@ class TestPipelineProperties:
         pos_array = np.array(position)
         # Weights must sum to 1.0
         result = scbe_14layer_pipeline(
-            t=pos_array, D=6,
-            w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
+            t=pos_array, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
         )
 
         # risk_base is non-negative (may exceed 1 in extreme cases)
@@ -253,8 +267,7 @@ class TestPipelineProperties:
         pos_array = np.array(position)
         # Weights must sum to 1.0
         result = scbe_14layer_pipeline(
-            t=pos_array, D=6,
-            w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
+            t=pos_array, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
         )
 
         assert result["H"] > 0
@@ -266,17 +279,13 @@ class TestPipelineProperties:
         pos_array = np.array(position)
         # Weights must sum to 1.0
         result = scbe_14layer_pipeline(
-            t=pos_array, D=6,
-            w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
+            t=pos_array, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
         )
 
         for key, value in result["coherence"].items():
             assert 0 <= value <= 1, f"Coherence {key} out of bounds: {value}"
 
-    @given(
-        position=position_6d,
-        w_d=st.floats(min_value=0.1, max_value=0.5)
-    )
+    @given(position=position_6d, w_d=st.floats(min_value=0.1, max_value=0.5))
     @settings(max_examples=100)
     def test_pipeline_higher_weight_higher_risk(self, position, w_d):
         """Higher distance weight should not decrease risk."""
@@ -284,12 +293,10 @@ class TestPipelineProperties:
 
         # Both runs need weights summing to 1.0
         result_low = scbe_14layer_pipeline(
-            t=pos_array, D=6,
-            w_d=0.1, w_c=0.3, w_s=0.3, w_tau=0.2, w_a=0.1
+            t=pos_array, D=6, w_d=0.1, w_c=0.3, w_s=0.3, w_tau=0.2, w_a=0.1
         )
         result_high = scbe_14layer_pipeline(
-            t=pos_array, D=6,
-            w_d=0.5, w_c=0.2, w_s=0.15, w_tau=0.1, w_a=0.05
+            t=pos_array, D=6, w_d=0.5, w_c=0.2, w_s=0.15, w_tau=0.1, w_a=0.05
         )
 
         # Higher weight should generally result in same or higher risk
@@ -302,6 +309,7 @@ class TestPipelineProperties:
 # CRYPTOGRAPHIC PROPERTY TESTS
 # =============================================================================
 
+
 @pytest.mark.property
 @pytest.mark.crypto
 @pytest.mark.skipif(not RWP_AVAILABLE, reason="RWP not available")
@@ -310,7 +318,7 @@ class TestCryptographicProperties:
 
     @given(
         plaintext=st.binary(min_size=1, max_size=1000),
-        password=st.binary(min_size=8, max_size=64)
+        password=st.binary(min_size=8, max_size=64),
     )
     @settings(max_examples=50)
     def test_encryption_roundtrip(self, plaintext, password):
@@ -325,7 +333,7 @@ class TestCryptographicProperties:
 
     @given(
         plaintext=st.binary(min_size=1, max_size=100),
-        password=st.binary(min_size=8, max_size=32)
+        password=st.binary(min_size=8, max_size=32),
     )
     @settings(max_examples=50)
     def test_ciphertext_different_each_time(self, plaintext, password):
@@ -361,6 +369,7 @@ class TestCryptographicProperties:
 # DECISION BOUNDARY TESTS
 # =============================================================================
 
+
 @pytest.mark.property
 class TestDecisionBoundaries:
     """Property-based tests for decision boundaries."""
@@ -368,7 +377,7 @@ class TestDecisionBoundaries:
     @given(
         risk=risk_score,
         theta1=st.floats(min_value=0.1, max_value=0.4),
-        theta2=st.floats(min_value=0.5, max_value=0.9)
+        theta2=st.floats(min_value=0.5, max_value=0.9),
     )
     @settings(max_examples=200)
     def test_decision_partitions_risk_space(self, risk, theta1, theta2):
@@ -387,7 +396,7 @@ class TestDecisionBoundaries:
 
     @given(
         theta1=st.floats(min_value=0.0, max_value=0.5),
-        theta2=st.floats(min_value=0.5, max_value=1.0)
+        theta2=st.floats(min_value=0.5, max_value=1.0),
     )
     @settings(max_examples=100)
     def test_threshold_ordering(self, theta1, theta2):
@@ -401,6 +410,7 @@ class TestDecisionBoundaries:
 # =============================================================================
 # INPUT VALIDATION TESTS
 # =============================================================================
+
 
 @pytest.mark.property
 class TestInputValidation:
@@ -426,13 +436,12 @@ class TestInputValidation:
 # STRESS AND EDGE CASE TESTS
 # =============================================================================
 
+
 @pytest.mark.property
 class TestEdgeCases:
     """Property-based edge case discovery."""
 
-    @given(
-        x=st.floats(allow_nan=False, allow_infinity=False)
-    )
+    @given(x=st.floats(allow_nan=False, allow_infinity=False))
     @settings(max_examples=200)
     def test_finite_inputs_produce_finite_outputs(self, x):
         """Finite inputs should produce finite outputs in calculations."""
@@ -440,10 +449,16 @@ class TestEdgeCases:
         x = max(min(x, 1e6), -1e6)
 
         # Basic calculations should be finite
-        result = x ** 2
+        result = x**2
         assert np.isfinite(result) or abs(x) > 1e3
 
-    @given(values=st.lists(st.floats(min_value=-100, max_value=100, allow_nan=False), min_size=6, max_size=6))
+    @given(
+        values=st.lists(
+            st.floats(min_value=-100, max_value=100, allow_nan=False),
+            min_size=6,
+            max_size=6,
+        )
+    )
     @settings(max_examples=100)
     def test_norm_always_non_negative(self, values):
         """Vector norm is always non-negative."""
