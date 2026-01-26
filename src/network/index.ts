@@ -21,3 +21,12 @@ export {
   type AcknowledgmentConfig,
   type CombatNetworkConfig,
 } from './combat-network.js';
+
+export {
+  ContactGraph,
+  computeContactGraph,
+  type ContactEdge,
+  type ContactNode,
+  type ContactPath,
+  type GraphStats,
+} from './contact-graph.js';

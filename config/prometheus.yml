@@ -1,0 +1,51 @@
+# Prometheus Configuration for SCBE-AETHERMOORE
+# ==============================================
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'scbe-aethermoore'
+
+# Alerting configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+# Rule files
+rule_files: []
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # SCBE Core API
+  - job_name: 'scbe-core'
+    static_configs:
+      - targets: ['scbe-core:8000']
+    metrics_path: '/v1/metrics'
+    scrape_interval: 10s
+
+  # SCBE Gateway
+  - job_name: 'scbe-gateway'
+    static_configs:
+      - targets: ['scbe-gateway:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # Unity Bridge WebSocket
+  - job_name: 'unity-bridge'
+    static_configs:
+      - targets: ['unity-bridge:8081']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Redis exporter (if added)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+    scrape_interval: 30s
