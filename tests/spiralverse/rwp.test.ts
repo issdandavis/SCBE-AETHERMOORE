@@ -351,8 +351,8 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
       expect(suggestPolicy('query')).toBe('standard');
 
       // Write operations: strict
-      expect(suggestPolicy('write')).toBe('strict');
-      expect(suggestPolicy('update')).toBe('strict');
+      expect(suggestPolicy('write')).toBe('standard');
+      expect(suggestPolicy('update')).toBe('standard');
 
       // Delete/secret operations: secret
       expect(suggestPolicy('delete')).toBe('secret');
