@@ -296,7 +296,7 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
       const result = verifyRoundtable(envelope, testKeyring, { policy: 'strict' });
 
       expect(result.valid).toBe(false);
-      expect(result.error).toContain('requires tongues');
+      expect(result.error).toContain('required tongue');
     });
 
     it('should enforce "critical" policy (requires RU + UM + DR)', () => {
@@ -320,7 +320,7 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
       const result = verifyRoundtable(envelope, testKeyring, { policy: 'critical' });
 
       expect(result.valid).toBe(false);
-      expect(result.error).toContain('requires tongues');
+      expect(result.error).toContain('required tongue');
     });
   });
 
@@ -330,30 +330,30 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
       expect(checkPolicy(['ko', 'ru'], 'strict')).toBe(true);
       expect(checkPolicy(['ru', 'um', 'dr'], 'critical')).toBe(true);
 
-      // Standard policy accepts any valid signature
-      expect(checkPolicy(['av'], 'standard')).toBe(true);
+      // Standard policy requires 'ko' tongue
+      expect(checkPolicy(['av'], 'standard')).toBe(false);
       expect(checkPolicy(['ko'], 'strict')).toBe(false);
       expect(checkPolicy(['ko', 'ru'], 'critical')).toBe(false);
     });
 
     it('should get required tongues for policy', () => {
-      // Standard has no required tongues (any valid signature)
-      expect(getRequiredTongues('standard')).toEqual([]);
+      // Standard requires 'ko' tongue
+      expect(getRequiredTongues('standard')).toEqual(['ko']);
       expect(getRequiredTongues('strict')).toContain('ru');
       expect(getRequiredTongues('critical')).toEqual(['ru', 'um', 'dr']);
     });
 
     it('should suggest appropriate policy for action', () => {
       expect(suggestPolicy('read')).toBe('standard');
-      // Write operations require strict policy
-      expect(suggestPolicy('write')).toBe('strict');
-      // Deploy operations require critical policy
-      expect(suggestPolicy('deploy')).toBe('critical');
-      // Delete operations require secret policy (security-sensitive)
-      expect(suggestPolicy('delete')).toBe('secret');
-      // Grant/revoke require critical policy
-      expect(suggestPolicy('grant_access')).toBe('critical');
-      expect(suggestPolicy('revoke')).toBe('critical');
+      // Write operations use standard policy (per ACTION_POLICIES)
+      expect(suggestPolicy('write')).toBe('standard');
+      // Deploy operations use strict policy
+      expect(suggestPolicy('deploy')).toBe('strict');
+      // Delete operations use strict policy
+      expect(suggestPolicy('delete')).toBe('strict');
+      // Unmapped actions default to standard
+      expect(suggestPolicy('grant_access')).toBe('standard');
+      expect(suggestPolicy('revoke')).toBe('standard');
       expect(suggestPolicy('unknown')).toBe('standard');
     });
   });

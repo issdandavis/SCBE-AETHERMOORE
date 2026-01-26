@@ -72,9 +72,12 @@ else:
             except json.JSONDecodeError:
                 body = {}
 
-        # Get API key from headers
+        # Get API key from headers (new or legacy)
         headers = event.get('headers', {})
-        api_key = headers.get('scbe_api_key') or headers.get('SCBE_api_key')
+        api_key = (
+            headers.get('scbe_api_key') or headers.get('SCBE_api_key') or
+            headers.get('x-api-key') or headers.get('X-API-Key')  # Legacy support
+        )
 
         # Validate API key
         valid_keys = os.getenv('SCBE_API_KEY', '').split(',')
