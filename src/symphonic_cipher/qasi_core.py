@@ -56,7 +56,9 @@ def apply_spd_weights(x: np.ndarray, g_diag: np.ndarray) -> np.ndarray:
     return np.sqrt(g_diag) * x
 
 
-def poincare_embed(x: np.ndarray, alpha: float = 1.0, eps_ball: float = 1e-3) -> np.ndarray:
+def poincare_embed(
+    x: np.ndarray, alpha: float = 1.0, eps_ball: float = 1e-3
+) -> np.ndarray:
     """Radial tanh embedding to Poincare ball."""
     x = np.asarray(x, dtype=np.float64)
     r = _norm(x)
@@ -91,8 +93,9 @@ def mobius_add(a: np.ndarray, u: np.ndarray, eps: float = 1e-12) -> np.ndarray:
     return num / denom
 
 
-def phase_transform(u: np.ndarray, a: np.ndarray, Q: Optional[np.ndarray] = None,
-                    eps_ball: float = 1e-3) -> np.ndarray:
+def phase_transform(
+    u: np.ndarray, a: np.ndarray, Q: Optional[np.ndarray] = None, eps_ball: float = 1e-3
+) -> np.ndarray:
     """Phase transform: T_phase(u) = Q (a + u)."""
     u2 = mobius_add(a, u)
     if Q is not None:
@@ -120,7 +123,9 @@ def realm_distance(u: np.ndarray, centers: np.ndarray) -> float:
     return float(min(dmins))
 
 
-def spectral_stability(y: np.ndarray, hf_frac: float = 0.5, eps: float = 1e-12) -> float:
+def spectral_stability(
+    y: np.ndarray, hf_frac: float = 0.5, eps: float = 1e-12
+) -> float:
     """S_spec = 1 - r_HF in [0,1]."""
     y = np.asarray(y, dtype=np.float64)
     if y.size < 2:
@@ -145,17 +150,23 @@ def spin_coherence(phasors: np.ndarray, eps: float = 1e-12) -> float:
     return float(min(max(num / denom, 0.0), 1.0))
 
 
-def triadic_distance(d1: float, d2: float, dG: float,
-                    lambdas: Tuple[float, float, float] = (0.4, 0.3, 0.3)) -> float:
+def triadic_distance(
+    d1: float,
+    d2: float,
+    dG: float,
+    lambdas: Tuple[float, float, float] = (0.4, 0.3, 0.3),
+) -> float:
     """d_tri = sqrt(l1*d1^2 + l2*d2^2 + l3*dG^2)."""
     l1, l2, l3 = lambdas
-    s = l1 * (d1 ** 2) + l2 * (d2 ** 2) + l3 * (dG ** 2)
+    s = l1 * (d1**2) + l2 * (d2**2) + l3 * (dG**2)
     return float(np.sqrt(max(0.0, s)))
 
 
-def harmonic_scaling(d: float, R: float = 1.5, max_log: float = 700.0) -> Tuple[float, float]:
+def harmonic_scaling(
+    d: float, R: float = 1.5, max_log: float = 700.0
+) -> Tuple[float, float]:
     """H(d,R) = R^(d^2)."""
-    logH = float(np.log(R) * (d ** 2))
+    logH = float(np.log(R) * (d**2))
     logH_c = min(logH, max_log)
     H = float(np.exp(logH_c))
     return H, logH_c
@@ -174,8 +185,14 @@ def clamp01(x: float) -> float:
     return float(min(max(x, 0.0), 1.0))
 
 
-def risk_base(d_tri_norm: float, C_spin: float, S_spec: float,
-              trust_tau: float, S_audio: float, w: RiskWeights = RiskWeights()) -> float:
+def risk_base(
+    d_tri_norm: float,
+    C_spin: float,
+    S_spec: float,
+    trust_tau: float,
+    S_audio: float,
+    w: RiskWeights = RiskWeights(),
+) -> float:
     """Base risk from bounded features."""
     terms = [
         w.w_dtri * clamp01(d_tri_norm),
@@ -187,14 +204,18 @@ def risk_base(d_tri_norm: float, C_spin: float, S_spec: float,
     return float(sum(terms))
 
 
-def risk_prime(d_star: float, risk_base_value: float, R: float = 1.5) -> Dict[str, float]:
+def risk_prime(
+    d_star: float, risk_base_value: float, R: float = 1.5
+) -> Dict[str, float]:
     """Risk' = Risk_base * H(d*, R)."""
     rb = max(0.0, float(risk_base_value))
     H, logH = harmonic_scaling(float(d_star), R=R)
     return {"risk_prime": rb * H, "H": H, "logH": logH, "risk_base": rb}
 
 
-def decision_from_risk(risk_prime_value: float, allow: float = 0.30, deny: float = 0.70) -> str:
+def decision_from_risk(
+    risk_prime_value: float, allow: float = 0.30, deny: float = 0.70
+) -> str:
     """Convert Risk' to ALLOW/QUARANTINE/DENY."""
     r = float(risk_prime_value)
     if r < allow:
@@ -207,24 +228,24 @@ def decision_from_risk(risk_prime_value: float, allow: float = 0.30, deny: float
 def self_test(verbose: bool = True) -> Dict[str, Any]:
     """Numeric axiom verification."""
     rng = np.random.default_rng(7)
-    
+
     # A1: Realification isometry
     c = np.array([1 + 2j, 3 - 4j], dtype=np.complex128)
     x = realify(c)
     ok_iso = abs(complex_norm(c) - _norm(x)) < 1e-10
-    
+
     # Build state
     g = np.array([1.0, 4.0, 2.0, 5.0])
     xG = apply_spd_weights(x, g)
     u = poincare_embed(xG, alpha=1.0)
-    
+
     # A4: metric checks
     d_uu = hyperbolic_distance(u, u)
     v = clamp_ball(rng.normal(size=u.shape) * 0.1)
     d_uv = hyperbolic_distance(u, v)
     d_vu = hyperbolic_distance(v, u)
     ok_metric = (abs(d_uu) < 1e-12) and (abs(d_uv - d_vu) < 1e-10)
-    
+
     # A5: phase isometry
     a = clamp_ball(rng.normal(size=u.shape) * 0.05)
     Q = np.eye(u.shape[0])
@@ -233,19 +254,21 @@ def self_test(verbose: bool = True) -> Dict[str, Any]:
     v2 = phase_transform(v, a, Q=Q)
     duv_after = hyperbolic_distance(u2, v2)
     ok_phase = abs(duv_before - duv_after) < 1e-8
-    
+
     # A7: realm Lipschitz
-    centers = np.stack([np.zeros_like(u), clamp_ball(np.array([0.2, 0.0, 0.0, 0.0]))], axis=0)
+    centers = np.stack(
+        [np.zeros_like(u), clamp_ball(np.array([0.2, 0.0, 0.0, 0.0]))], axis=0
+    )
     dstar_u = realm_distance(u, centers)
     dstar_v = realm_distance(v, centers)
     ok_lip = abs(dstar_u - dstar_v) <= hyperbolic_distance(u, v) + 1e-7
-    
+
     # A11: monotonicity
     rb = risk_base(0.2, 0.9, 0.9, 0.9, 0.9)
     rp1 = risk_prime(0.5, rb)["risk_prime"]
     rp2 = risk_prime(1.0, rb)["risk_prime"]
     ok_mono = rp2 >= rp1
-    
+
     results = {
         "A1_realification_isometry": ok_iso,
         "A4_metric_checks": ok_metric,
@@ -253,7 +276,7 @@ def self_test(verbose: bool = True) -> Dict[str, Any]:
         "A7_realm_lipschitz": ok_lip,
         "A11_monotonicity": ok_mono,
     }
-    
+
     if verbose:
         print("=" * 60)
         print("QASI CORE SELF-TEST")
@@ -261,7 +284,7 @@ def self_test(verbose: bool = True) -> Dict[str, Any]:
         for k, v in results.items():
             print(f"{k:30s}: {'PASS' if v else 'FAIL'}")
         print("=" * 60)
-    
+
     return results
 
 

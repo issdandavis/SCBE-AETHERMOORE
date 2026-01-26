@@ -23,13 +23,14 @@ import time
 # =============================================================================
 
 PHI = (1 + np.sqrt(5)) / 2  # Golden ratio
-R_DEFAULT = 1.5             # Default scaling constant
-EPS = 1e-10                 # Numerical stability
+R_DEFAULT = 1.5  # Default scaling constant
+EPS = 1e-10  # Numerical stability
 
 
 # =============================================================================
 # 1. WEIGHTED METRIC TENSOR (Claim 51 & 60)
 # =============================================================================
+
 
 def build_metric_tensor(R: float = R_DEFAULT) -> np.ndarray:
     """
@@ -92,6 +93,7 @@ def behavioral_cost(displacement: np.ndarray, R: float = R_DEFAULT) -> float:
 # 2. HARMONIC SCALING LAW (Claim 51)
 # =============================================================================
 
+
 def harmonic_cost(d: float, R: float = R_DEFAULT, C_base: float = 1.0) -> float:
     """
     Harmonic Cost Function H(d, R).
@@ -109,12 +111,14 @@ def harmonic_cost(d: float, R: float = R_DEFAULT, C_base: float = 1.0) -> float:
     The cost curve is asymptotic relative to linear attacker resources.
     """
     # Clamp to prevent overflow
-    d_squared = min(d ** 2, 50.0)
+    d_squared = min(d**2, 50.0)
 
-    return C_base * (R ** d_squared)
+    return C_base * (R**d_squared)
 
 
-def security_level_cost(level: int, R: float = R_DEFAULT, C_base: float = 10.0) -> float:
+def security_level_cost(
+    level: int, R: float = R_DEFAULT, C_base: float = 10.0
+) -> float:
     """
     Compute computational cost for accessing a security level.
 
@@ -133,9 +137,11 @@ def security_level_cost(level: int, R: float = R_DEFAULT, C_base: float = 10.0) 
 # 3. VIRTUAL GRAVITY - LORENTZ FACTOR (Claim 54)
 # =============================================================================
 
+
 @dataclass
 class VirtualGravityState:
     """State for the virtual gravity / latency throttling system."""
+
     query_history: deque  # Timestamps of recent queries
     window_seconds: float = 1.0  # Time window for rate calculation
     rho_critical: float = 100.0  # "Speed of light" - max queries/second
@@ -161,7 +167,7 @@ def lorentz_factor(rho_E: float, rho_critical: float) -> float:
         return 1.0
 
     if rho_E >= rho_critical:
-        return float('inf')
+        return float("inf")
 
     ratio_squared = (rho_E / rho_critical) ** 2
 
@@ -169,9 +175,7 @@ def lorentz_factor(rho_E: float, rho_critical: float) -> float:
 
 
 def compute_latency_delay(
-    rho_E: float,
-    rho_critical: float = 100.0,
-    t_base: float = 0.01
+    rho_E: float, rho_critical: float = 100.0, t_base: float = 0.01
 ) -> float:
     """
     Compute latency delay using virtual gravity.
@@ -193,8 +197,8 @@ def compute_latency_delay(
     """
     gamma = lorentz_factor(rho_E, rho_critical)
 
-    if gamma == float('inf'):
-        return float('inf')
+    if gamma == float("inf"):
+        return float("inf")
 
     return t_base * gamma
 
@@ -211,7 +215,7 @@ class VirtualGravityThrottler:
         self,
         rho_critical: float = 100.0,
         t_base: float = 0.01,
-        window_seconds: float = 1.0
+        window_seconds: float = 1.0,
     ):
         self.rho_critical = rho_critical
         self.t_base = t_base
@@ -271,12 +275,13 @@ class VirtualGravityThrottler:
 # 4. SOLITON INTEGRITY (Claim 52 & 55)
 # =============================================================================
 
+
 def soliton_evolution(
     A: float,
     alpha: float = 0.1,
     beta: float = 0.05,
     phi_d: float = 0.0,
-    dt: float = 1.0
+    dt: float = 1.0,
 ) -> float:
     """
     Discrete Non-Linear Schrödinger Equation (NLSE) for packet integrity.
@@ -313,7 +318,7 @@ def soliton_stability(
     phi_d: float,
     alpha: float = 0.1,
     beta: float = 0.05,
-    n_steps: int = 10
+    n_steps: int = 10,
 ) -> Tuple[float, bool]:
     """
     Check if a packet maintains soliton stability with given key.
@@ -333,7 +338,7 @@ def soliton_stability(
         if abs(A) < EPS:
             return 0.0, False  # Decayed
         if abs(A) > 1e6:
-            return float('inf'), False  # Exploded
+            return float("inf"), False  # Exploded
 
     # Stable if amplitude remains in reasonable range
     is_stable = 0.1 <= abs(A) <= 10.0
@@ -345,7 +350,7 @@ def compute_soliton_key(
     private_key: bytes,
     beta: float = 0.05,
     alpha: float = 0.1,
-    target_amplitude: float = 1.0
+    target_amplitude: float = 1.0,
 ) -> float:
     """
     Derive the soliton key Φᵈ from a private key.
@@ -357,6 +362,7 @@ def compute_soliton_key(
     """
     # Hash the key to get a stable seed
     import hashlib
+
     seed = int(hashlib.sha256(private_key).hexdigest(), 16) % (2**32)
     np.random.seed(seed)
 
@@ -373,6 +379,7 @@ def compute_soliton_key(
 # =============================================================================
 # 5. SPIN ROTATION (Claim 60)
 # =============================================================================
+
 
 def rotation_matrix_2d(theta: float) -> np.ndarray:
     """
@@ -428,9 +435,7 @@ def context_spin_angles(context: Dict[str, Any]) -> np.ndarray:
 
 
 def spin_transform(
-    v_input: np.ndarray,
-    context: Dict[str, Any],
-    offset: np.ndarray = None
+    v_input: np.ndarray, context: Dict[str, Any], offset: np.ndarray = None
 ) -> np.ndarray:
     """
     Apply context-dependent spin transformation.
@@ -461,7 +466,7 @@ def spin_transform(
     # Build composite rotation: R = R_{5,6} × R_{4,5} × R_{3,4} × R_{2,3} × R_{1,2}
     R_total = np.eye(dim)
     for i in range(5):
-        R_i = rotation_matrix_nd(dim, i, i+1, angles[i])
+        R_i = rotation_matrix_nd(dim, i, i + 1, angles[i])
         R_total = R_i @ R_total
 
     # Apply rotation
@@ -496,6 +501,7 @@ def spin_mismatch(theta_actual: np.ndarray, theta_expected: np.ndarray) -> float
 # 6. FLUX INTERFERENCE (Claim 61)
 # =============================================================================
 
+
 def flux_noise(sigma: float) -> np.ndarray:
     """
     Generate Gaussian flux noise.
@@ -508,9 +514,7 @@ def flux_noise(sigma: float) -> np.ndarray:
 
 
 def jittered_target(
-    P_target: np.ndarray,
-    network_load: float = 0.0,
-    sigma_base: float = 0.01
+    P_target: np.ndarray, network_load: float = 0.0, sigma_base: float = 0.01
 ) -> np.ndarray:
     """
     Compute jittered target position.
@@ -571,9 +575,11 @@ class FluxGenerator:
 # INTEGRATED CPSE ENGINE
 # =============================================================================
 
+
 @dataclass
 class CPSEState:
     """Complete state of the CPSE simulation."""
+
     # Metric tensor
     metric_tensor: np.ndarray
 
@@ -610,7 +616,7 @@ class CPSEEngine:
         t_base: float = 0.01,
         sigma_flux: float = 0.01,
         alpha_soliton: float = 0.1,
-        beta_soliton: float = 0.05
+        beta_soliton: float = 0.05,
     ):
         self.R = R
         self.metric = build_metric_tensor(R)
@@ -639,7 +645,7 @@ class CPSEEngine:
         position: np.ndarray,
         private_key: bytes = None,
         network_load: float = 0.0,
-        timestamp: float = None
+        timestamp: float = None,
     ) -> CPSEState:
         """
         Run complete CPSE simulation for a query.
@@ -683,14 +689,14 @@ class CPSEEngine:
         return CPSEState(
             metric_tensor=self.metric,
             gravity_delay=delay,
-            gamma_factor=gamma if gamma != float('inf') else 1e10,
+            gamma_factor=gamma if gamma != float("inf") else 1e10,
             query_rate=rate,
             soliton_amplitude=amplitude,
             soliton_stable=stable,
             spin_mismatch=mismatch,
             spin_angles=actual_angles,
             flux_variance=flux_var,
-            current_jitter=jitter
+            current_jitter=jitter,
         )
 
     def map_to_scbe(self, state: CPSEState) -> Dict[str, float]:
@@ -733,13 +739,14 @@ class CPSEEngine:
             "tau_adjustment": tau_adj,
             "d_star_adjustment": d_star_adj,
             "spin_coherence_penalty": min(spin_adj, 1.0),
-            "spectral_noise_increase": r_hf_adj
+            "spectral_noise_increase": r_hf_adj,
         }
 
 
 # =============================================================================
 # DEMO
 # =============================================================================
+
 
 def demo():
     """Demonstrate the CPSE engine."""
@@ -758,7 +765,9 @@ def demo():
     print("1. WEIGHTED METRIC TENSOR")
     print("-" * 70)
     print(f"   g = diag(1, 1, 1, R, R², R³) where R = {engine.R}")
-    print(f"   Behavioral dimension costs: {engine.R}, {engine.R**2:.2f}, {engine.R**3:.2f}")
+    print(
+        f"   Behavioral dimension costs: {engine.R}, {engine.R**2:.2f}, {engine.R**3:.2f}"
+    )
     print()
 
     print("2. HARMONIC SCALING LAW")
@@ -821,7 +830,7 @@ def demo():
         context=expected,  # Correct context
         position=np.array([0.5, 0.5, 0.5, 0.1, 0.1, 0.1]),
         private_key=b"alice_key",
-        network_load=0.2
+        network_load=0.2,
     )
 
     print(f"\nAuthorized query:")

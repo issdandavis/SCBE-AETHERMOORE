@@ -36,32 +36,35 @@ def clip(x: float, lo: float = 0.0, hi: float = 1.0) -> float:
 @dataclass
 class CPSEDeviations:
     """Bounded CPSE deviation values, all in [0,1] per Axiom C1."""
-    delay_dev: float   # Latency deviation
-    cost_dev: float    # Harmonic cost deviation
-    spin_dev: float    # Spin mismatch deviation
-    sol_dev: float     # Soliton decay deviation
-    flux_dev: float    # Flux interference deviation
+
+    delay_dev: float  # Latency deviation
+    cost_dev: float  # Harmonic cost deviation
+    spin_dev: float  # Spin mismatch deviation
+    sol_dev: float  # Soliton decay deviation
+    flux_dev: float  # Flux interference deviation
 
 
 @dataclass
 class SCBEEffectiveState:
     """SCBE state after CPSE coupling, all in valid domains per Axiom C3."""
-    tau_eff: float      # Trust in [0,1]
-    d_star_eff: float   # Realm distance in [0, d_max]
-    C_spin_eff: float   # Spin coherence in [0,1]
-    S_spec_eff: float   # Spectral stability in [0,1]
+
+    tau_eff: float  # Trust in [0,1]
+    d_star_eff: float  # Realm distance in [0, d_max]
+    C_spin_eff: float  # Spin coherence in [0,1]
+    S_spec_eff: float  # Spectral stability in [0,1]
     S_audio_eff: float  # Audio stability in [0,1]
 
 
 @dataclass
 class RiskOutput:
     """Complete risk calculation output."""
+
     deviations: CPSEDeviations
     state: SCBEEffectiveState
-    risk_base: float      # Base risk in [0,1]
-    H: float              # Harmonic scaling H(d*,R) = R^(d*²)
-    risk_prime: float     # Amplified risk = risk_base × H
-    log10_risk: float     # log₁₀(Risk') for display
+    risk_base: float  # Base risk in [0,1]
+    H: float  # Harmonic scaling H(d*,R) = R^(d*²)
+    risk_prime: float  # Amplified risk = risk_base × H
+    log10_risk: float  # log₁₀(Risk') for display
 
 
 class CPSESCBEIntegrator:
@@ -79,8 +82,8 @@ class CPSESCBEIntegrator:
 
     def __init__(
         self,
-        R: float = 1.618,       # Golden ratio (base for harmonic scaling)
-        d_max: float = 12.0,    # Maximum realm distance (preserves E.3)
+        R: float = 1.618,  # Golden ratio (base for harmonic scaling)
+        d_max: float = 12.0,  # Maximum realm distance (preserves E.3)
         # SCBE baseline features (in their theorem domains)
         tau_baseline: float = 1.0,
         d_star_baseline: float = 0.5,
@@ -99,24 +102,24 @@ class CPSESCBEIntegrator:
         self.S_audio_0 = clip(S_audio_baseline)
 
         # Risk weights (must sum to 1)
-        self.w_d = 0.3    # d_tri weight
-        self.w_c = 0.2    # coherence weight
-        self.w_s = 0.2    # spectral weight
-        self.w_t = 0.2    # trust weight
-        self.w_a = 0.1    # audio weight
+        self.w_d = 0.3  # d_tri weight
+        self.w_c = 0.2  # coherence weight
+        self.w_s = 0.2  # spectral weight
+        self.w_t = 0.2  # trust weight
+        self.w_a = 0.1  # audio weight
 
         # Coupling constants (policy knobs / Choice Script Θ)
-        self.kappa_delay = 0.6    # Delay → τ degradation
-        self.kappa_cost = 1.0     # Cost → d* inflation
-        self.kappa_spin = 0.8     # Spin mismatch → C_spin degradation
-        self.kappa_sol = 0.6      # Soliton decay → C_spin degradation
-        self.kappa_flux = 0.6     # Flux → S_spec degradation
+        self.kappa_delay = 0.6  # Delay → τ degradation
+        self.kappa_cost = 1.0  # Cost → d* inflation
+        self.kappa_spin = 0.8  # Spin mismatch → C_spin degradation
+        self.kappa_sol = 0.6  # Soliton decay → C_spin degradation
+        self.kappa_flux = 0.6  # Flux → S_spec degradation
 
         # CPSE deviation scaling parameters
-        self.delay_scale = 0.25   # seconds (tanh saturation point)
-        self.cost_0 = 1000.0      # baseline cost for log scaling
-        self.cost_scale = 2.0     # tanh scaling for cost_dev
-        self.flux_scale = 0.25    # variance (tanh saturation point)
+        self.delay_scale = 0.25  # seconds (tanh saturation point)
+        self.cost_0 = 1000.0  # baseline cost for log scaling
+        self.cost_scale = 2.0  # tanh scaling for cost_dev
+        self.flux_scale = 0.25  # variance (tanh saturation point)
 
     # =========================================================================
     # CPSE DEVIATION MAPPINGS (Axiom C1: bounded, monotone)
@@ -246,8 +249,7 @@ class CPSESCBEIntegrator:
 
         # d*_eff = min(d_max, d*₀ × (1 + κ_cost × cost_dev))
         d_star_eff = min(
-            self.d_max,
-            self.d_star_0 * (1.0 + self.kappa_cost * devs.cost_dev)
+            self.d_max, self.d_star_0 * (1.0 + self.kappa_cost * devs.cost_dev)
         )
 
         # S_audio unchanged (no CPSE coupling yet)
@@ -265,11 +267,11 @@ class CPSESCBEIntegrator:
         # Step 4: Compute base risk (bounded in [0,1])
         d_tri = clip(d_tri_normalized)
         risk_base = (
-            self.w_d * d_tri +
-            self.w_c * (1.0 - state.C_spin_eff) +
-            self.w_s * (1.0 - state.S_spec_eff) +
-            self.w_t * (1.0 - state.tau_eff) +
-            self.w_a * (1.0 - state.S_audio_eff)
+            self.w_d * d_tri
+            + self.w_c * (1.0 - state.C_spin_eff)
+            + self.w_s * (1.0 - state.S_spec_eff)
+            + self.w_t * (1.0 - state.tau_eff)
+            + self.w_a * (1.0 - state.S_audio_eff)
         )
 
         # Step 5: Amplify risk via harmonic scaling
@@ -290,7 +292,10 @@ class CPSESCBEIntegrator:
 # VERIFICATION
 # =============================================================================
 
-def verify_axioms(integrator: CPSESCBEIntegrator, n_tests: int = 100) -> Dict[str, bool]:
+
+def verify_axioms(
+    integrator: CPSESCBEIntegrator, n_tests: int = 100
+) -> Dict[str, bool]:
     """
     Verify C1-C3 axioms hold under random inputs.
 
@@ -368,6 +373,7 @@ def verify_axioms(integrator: CPSESCBEIntegrator, n_tests: int = 100) -> Dict[st
 # DEMO
 # =============================================================================
 
+
 def demo():
     """Demonstrate the math-safe integrator."""
     print("=" * 70)
@@ -438,8 +444,12 @@ def demo():
     print("COMPARISON: Clean vs Attack")
     print("-" * 70)
     clean = integrator.integrate(0.01, 10, 0.99, 1, 0.01, 0.1)
-    print(f"Clean scenario:  Risk' = {clean.risk_prime:.2e} (log₁₀ = {clean.log10_risk:.2f})")
-    print(f"Attack scenario: Risk' = {out.risk_prime:.2e} (log₁₀ = {out.log10_risk:.2f})")
+    print(
+        f"Clean scenario:  Risk' = {clean.risk_prime:.2e} (log₁₀ = {clean.log10_risk:.2f})"
+    )
+    print(
+        f"Attack scenario: Risk' = {out.risk_prime:.2e} (log₁₀ = {out.log10_risk:.2f})"
+    )
     print(f"Amplification:   {out.risk_prime / max(clean.risk_prime, 1e-300):.1f}x")
     print()
 
