@@ -53,7 +53,7 @@ class TestAPIEndpoints:
     @pytest.fixture
     def auth_headers(self, valid_api_key):
         """Headers with valid API key."""
-        return {"X-API-Key": valid_api_key}
+        return {"SCBE_api_key": valid_api_key}
 
     def test_health_endpoint(self, client):
         """Test /health returns correct status."""
@@ -257,12 +257,12 @@ class TestAuthentication:
 
     def test_valid_api_key_accepted(self, client):
         """Test valid API keys are accepted."""
-        response = client.get("/metrics", headers={"X-API-Key": "demo_key_12345"})
+        response = client.get("/metrics", headers={"SCBE_api_key": "demo_key_12345"})
         assert response.status_code == 200
 
     def test_invalid_api_key_rejected(self, client):
         """Test invalid API keys are rejected."""
-        response = client.get("/metrics", headers={"X-API-Key": "invalid_key"})
+        response = client.get("/metrics", headers={"SCBE_api_key": "invalid_key"})
         assert response.status_code == 401
 
     def test_missing_api_key_rejected(self, client):
@@ -352,7 +352,7 @@ class TestRequestValidation:
 
     @pytest.fixture
     def auth_headers(self, valid_api_key):
-        return {"X-API-Key": valid_api_key}
+        return {"SCBE_api_key": valid_api_key}
 
     def test_plaintext_max_length(self, client, auth_headers):
         """Test plaintext maximum length is enforced."""
@@ -468,7 +468,7 @@ class TestResponseFormats:
         }
 
         response = client.post(
-            "/seal-memory", json=payload, headers={"X-API-Key": valid_api_key}
+            "/seal-memory", json=payload, headers={"SCBE_api_key": valid_api_key}
         )
 
         data = response.json()

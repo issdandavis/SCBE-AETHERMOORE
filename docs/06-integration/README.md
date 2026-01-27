@@ -218,7 +218,7 @@ class SCBEClient:
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 f"{self.base_url}/api/v1/evaluate",
-                headers={"X-API-Key": self.api_key},
+                headers={"SCBE_api_key": self.api_key},
                 json={
                     "agent_id": agent_id,
                     "action": action,
@@ -285,7 +285,7 @@ class SCBEClient {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-API-Key': this.apiKey,
+        'SCBE_api_key': this.apiKey,
       },
       body: JSON.stringify({
         agent_id: agentId,

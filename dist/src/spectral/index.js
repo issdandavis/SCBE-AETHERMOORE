@@ -24,7 +24,7 @@ function fft(signal) {
     for (let i = 0; i < N; i++) {
         padded[i] = signal[i];
     }
-    return fftRecursive(padded.map(x => ({ re: x, im: 0 })));
+    return fftRecursive(padded.map((x) => ({ re: x, im: 0 })));
 }
 exports.fft = fft;
 /**
@@ -49,23 +49,23 @@ function fftRecursive(x) {
     // Combine
     const result = new Array(N);
     for (let k = 0; k < N / 2; k++) {
-        const angle = -2 * Math.PI * k / N;
+        const angle = (-2 * Math.PI * k) / N;
         const twiddle = {
             re: Math.cos(angle),
-            im: Math.sin(angle)
+            im: Math.sin(angle),
         };
         // Complex multiplication: twiddle * fftOdd[k]
         const t = {
             re: twiddle.re * fftOdd[k].re - twiddle.im * fftOdd[k].im,
-            im: twiddle.re * fftOdd[k].im + twiddle.im * fftOdd[k].re
+            im: twiddle.re * fftOdd[k].im + twiddle.im * fftOdd[k].re,
         };
         result[k] = {
             re: fftEven[k].re + t.re,
-            im: fftEven[k].im + t.im
+            im: fftEven[k].im + t.im,
         };
         result[k + N / 2] = {
             re: fftEven[k].re - t.re,
-            im: fftEven[k].im - t.im
+            im: fftEven[k].im - t.im,
         };
     }
     return result;
@@ -84,10 +84,10 @@ function fftFrequencies(N, sampleRate) {
     const freqs = [];
     for (let i = 0; i < N; i++) {
         if (i < N / 2) {
-            freqs.push(i * sampleRate / N);
+            freqs.push((i * sampleRate) / N);
         }
         else {
-            freqs.push((i - N) * sampleRate / N);
+            freqs.push(((i - N) * sampleRate) / N);
         }
     }
     return freqs;
@@ -114,7 +114,7 @@ function computeSpectralCoherence(signal, sampleRate, cutoffFreq, epsilon = 1e-1
     const frequencies = [];
     for (let i = 0; i < halfN; i++) {
         powerSpectrum.push(magnitudeSquared(X[i]));
-        frequencies.push(i * sampleRate / paddedN);
+        frequencies.push((i * sampleRate) / paddedN);
     }
     // Partition energy by frequency
     let E_low = 0;
@@ -135,7 +135,7 @@ function computeSpectralCoherence(signal, sampleRate, cutoffFreq, epsilon = 1e-1
         E_total,
         S_spec,
         powerSpectrum,
-        frequencies
+        frequencies,
     };
 }
 exports.computeSpectralCoherence = computeSpectralCoherence;
@@ -197,7 +197,7 @@ function stft(signal, sampleRate, windowSize, hopSize, cutoffFreq) {
         // Extract window
         const window = signal.slice(start, start + windowSize);
         // Apply Hann window
-        const windowed = window.map((x, i) => x * 0.5 * (1 - Math.cos(2 * Math.PI * i / (windowSize - 1))));
+        const windowed = window.map((x, i) => x * 0.5 * (1 - Math.cos((2 * Math.PI * i) / (windowSize - 1))));
         // FFT
         const X = fft(windowed);
         const halfN = Math.floor(X.length / 2);
@@ -205,7 +205,7 @@ function stft(signal, sampleRate, windowSize, hopSize, cutoffFreq) {
         let E_low = 0;
         let E_high = 0;
         for (let i = 0; i < halfN; i++) {
-            const freq = i * sampleRate / X.length;
+            const freq = (i * sampleRate) / X.length;
             const power = magnitudeSquared(X[i]);
             if (freq < cutoffFreq) {
                 E_low += power;
@@ -220,7 +220,7 @@ function stft(signal, sampleRate, windowSize, hopSize, cutoffFreq) {
         frames.push({
             time: (start + windowSize / 2) / sampleRate,
             S_audio,
-            r_HF
+            r_HF,
         });
     }
     return frames;
@@ -243,7 +243,7 @@ function generateChirp(sampleRate, duration, startFreq, endFreq) {
         const t = i / sampleRate;
         // Instantaneous frequency: f(t) = startFreq + k*t
         // Phase: integral of 2*pi*f(t) = 2*pi*(startFreq*t + k*t^2/2)
-        const phase = 2 * Math.PI * (startFreq * t + k * t * t / 2);
+        const phase = 2 * Math.PI * (startFreq * t + (k * t * t) / 2);
         signal[i] = Math.sin(phase);
     }
     return signal;
@@ -273,16 +273,16 @@ function checkPhaseInvariance(sampleRate, duration, components, cutoffFreq, tole
     const signal1 = generateTestSignal(sampleRate, duration, components);
     const result1 = computeSpectralCoherence(signal1, sampleRate, cutoffFreq);
     // Phase-shifted signal
-    const shiftedComponents = components.map(c => ({
+    const shiftedComponents = components.map((c) => ({
         ...c,
-        phase: Math.PI / 3 // Arbitrary phase shift
+        phase: Math.PI / 3, // Arbitrary phase shift
     }));
     const signal2 = generateTestSignal(sampleRate, duration, shiftedComponents);
     const result2 = computeSpectralCoherence(signal2, sampleRate, cutoffFreq);
     const difference = Math.abs(result1.S_spec - result2.S_spec);
     return {
         invariant: difference < tolerance,
-        maxDifference: difference
+        maxDifference: difference,
     };
 }
 exports.checkPhaseInvariance = checkPhaseInvariance;

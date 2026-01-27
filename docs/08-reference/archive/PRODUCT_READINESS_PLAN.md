@@ -56,7 +56,7 @@
 
 | Method | Use Case | Implementation |
 |--------|----------|----------------|
-| API Key | Simple integration | Header: `X-API-Key` |
+| API Key | Simple integration | Header: `SCBE_api_key` |
 | mTLS | High security | Client certificates |
 | OAuth2 | Enterprise SSO | JWT tokens |
 
