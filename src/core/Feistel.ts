@@ -52,9 +52,9 @@ export class Feistel {
         .update(Buffer.from([i]))
         .digest();
 
-      const nextLeft = right;
+      const nextLeft: Buffer = Buffer.from(right);
       const fOutput = this.roundFunction(right, roundKey);
-      const nextRight = this.xorBuffers(left, fOutput);
+      const nextRight: Buffer = this.xorBuffers(left, fOutput);
 
       left = nextLeft;
       right = nextRight;

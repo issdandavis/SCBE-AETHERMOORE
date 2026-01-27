@@ -279,7 +279,7 @@ async function hkdfDerive(
   }
 
   // Import master secret as HKDF key
-  const keyMaterial = await crypto.subtle.importKey('raw', masterSecret, 'HKDF', false, [
+  const keyMaterial = await crypto.subtle.importKey('raw', masterSecret as BufferSource, { name: 'HKDF' }, false, [
     'deriveBits',
   ]);
 
@@ -288,8 +288,8 @@ async function hkdfDerive(
     {
       name: 'HKDF',
       hash: 'SHA-256',
-      salt: salt,
-      info: info,
+      salt: salt as BufferSource,
+      info: info as BufferSource,
     },
     keyMaterial,
     length * 8
@@ -311,17 +311,17 @@ async function aesGcmEncrypt(
     throw new Error('Web Crypto API not available');
   }
 
-  const cryptoKey = await crypto.subtle.importKey('raw', key, 'AES-GCM', false, ['encrypt']);
+  const cryptoKey = await crypto.subtle.importKey('raw', key as BufferSource, { name: 'AES-GCM' }, false, ['encrypt']);
 
   const result = await crypto.subtle.encrypt(
     {
       name: 'AES-GCM',
-      iv: nonce,
-      additionalData: aad,
+      iv: nonce as BufferSource,
+      additionalData: aad as BufferSource,
       tagLength: 128,
     },
     cryptoKey,
-    plaintext
+    plaintext as BufferSource
   );
 
   // Result includes ciphertext + tag (last 16 bytes)
@@ -346,7 +346,7 @@ async function aesGcmDecrypt(
     throw new Error('Web Crypto API not available');
   }
 
-  const cryptoKey = await crypto.subtle.importKey('raw', key, 'AES-GCM', false, ['decrypt']);
+  const cryptoKey = await crypto.subtle.importKey('raw', key as BufferSource, { name: 'AES-GCM' }, false, ['decrypt']);
 
   // Combine ciphertext + tag for Web Crypto
   const combined = new Uint8Array(ciphertext.length + tag.length);
@@ -356,12 +356,12 @@ async function aesGcmDecrypt(
   const result = await crypto.subtle.decrypt(
     {
       name: 'AES-GCM',
-      iv: nonce,
-      additionalData: aad,
+      iv: nonce as BufferSource,
+      additionalData: aad as BufferSource,
       tagLength: 128,
     },
     cryptoKey,
-    combined
+    combined as BufferSource
   );
 
   return new Uint8Array(result);
