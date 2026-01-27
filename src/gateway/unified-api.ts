@@ -650,7 +650,7 @@ export class UnifiedSCBEGateway {
     return matrix;
   }
 
-  private buildLayerExplanation(factors: Omit<RiskFactors, 'compositeRisk' | 'harmonicMagnification'>): Record<string, LayerResult> {
+  private buildLayerExplanation(factors: Omit<RiskFactors, 'compositeRisk'>): Record<string, LayerResult> {
     return {
       hyperbolicDistance: {
         name: 'Hyperbolic Distance (L5)',

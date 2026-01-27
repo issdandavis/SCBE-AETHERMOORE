@@ -290,7 +290,7 @@ export class ContactGraph {
       totalLatency: targetResult.distance,
       totalCapacity,
       reliability,
-      score: this.scorePath({ nodes, edges, totalLatency: targetResult.distance, totalCapacity, reliability, score: 0 }),
+      score: this.scorePath({ nodes, edges, totalLatency: targetResult.distance, totalCapacity, reliability }),
     };
   }
 
@@ -443,7 +443,7 @@ export class ContactGraph {
       totalLatency: targetResult.distance,
       totalCapacity,
       reliability,
-      score: this.scorePath({ nodes, edges, totalLatency: targetResult.distance, totalCapacity, reliability, score: 0 }),
+      score: this.scorePath({ nodes, edges, totalLatency: targetResult.distance, totalCapacity, reliability }),
     };
   }
 
