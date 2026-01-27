@@ -68,6 +68,8 @@ app.add_middleware(
 # API Key authentication (accepts both new and legacy headers)
 API_KEY_HEADER = APIKeyHeader(name="SCBE_api_key", auto_error=False)
 API_KEY_HEADER_LEGACY = APIKeyHeader(name="X-API-Key", auto_error=False)  # Backward compat
+# API Key authentication
+API_KEY_HEADER = APIKeyHeader(name="SCBE_api_key", auto_error=False)
 
 def _load_api_keys() -> dict:
     """

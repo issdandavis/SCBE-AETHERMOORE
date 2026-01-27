@@ -1051,6 +1051,13 @@ class IntentClassifier:
         self.W3 = data['W3']
         self.b3 = data['b3']
         self.threshold = float(data['threshold'])
+        self.W1 = data["W1"]
+        self.b1 = data["b1"]
+        self.W2 = data["W2"]
+        self.b2 = data["b2"]
+        self.W3 = data["W3"]
+        self.b3 = data["b3"]
+        self.threshold = float(data["threshold"])
 
 
 # =============================================================================
@@ -1059,6 +1066,10 @@ class IntentClassifier:
 
 class RiskLevel(Enum):
     """Risk level classification for AI safety."""
+
+class RiskLevel(Enum):
+    """Risk level classification for AI safety."""
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -1068,6 +1079,7 @@ class RiskLevel(Enum):
 @dataclass
 class IntentClassificationResult:
     """Result of intent classification."""
+
     intent: str
     risk_level: str
     confidence: float
@@ -1078,6 +1090,7 @@ class IntentClassificationResult:
 @dataclass
 class PolicyEnforcementResult:
     """Result of policy enforcement."""
+
     blocked: bool
     approved: bool
     logged: bool
@@ -1149,6 +1162,7 @@ class AIVerifier:
     def _compile_patterns(self) -> None:
         """Compile regex patterns for efficient matching."""
         import re
+
         self._malicious_compiled = [
             (re.compile(pattern, re.IGNORECASE), intent, risk)
             for pattern, intent, risk in self.MALICIOUS_PATTERNS
@@ -1216,6 +1230,12 @@ class AIVerifier:
         # Always log high-risk and critical operations
         logged = risk_level in ("high", "critical") or intent in ("malicious_intent", "potential_attack")
 
+        # Always log high-risk and critical operations
+        logged = risk_level in ("high", "critical") or intent in (
+            "malicious_intent",
+            "potential_attack",
+        )
+
         # Block malicious requests
         if intent == "malicious_intent":
             result = {
@@ -1224,6 +1244,7 @@ class AIVerifier:
                 "logged": True,
                 "reason": "Malicious intent detected",
                 "audit_id": self._generate_audit_id()
+                "audit_id": self._generate_audit_id(),
             }
             self._log_policy_enforcement(request, result)
             return result
@@ -1236,6 +1257,7 @@ class AIVerifier:
                 "logged": True,
                 "reason": "Potential attack pattern detected",
                 "audit_id": self._generate_audit_id()
+                "audit_id": self._generate_audit_id(),
             }
             self._log_policy_enforcement(request, result)
             return result
@@ -1248,6 +1270,7 @@ class AIVerifier:
                 "logged": True,
                 "reason": "Critical risk requires manual approval",
                 "audit_id": self._generate_audit_id()
+                "audit_id": self._generate_audit_id(),
             }
             self._log_policy_enforcement(request, result)
             return result
@@ -1259,6 +1282,7 @@ class AIVerifier:
             "logged": logged,
             "reason": None,
             "audit_id": self._generate_audit_id() if logged else None
+            "audit_id": self._generate_audit_id() if logged else None,
         }
         self._log_policy_enforcement(request, result)
         return result
@@ -1286,6 +1310,25 @@ class AIVerifier:
             "blocked": blocked
         })
 
+        return f"audit_{uuid.uuid4().hex[:12]}"
+
+    def _log_classification(
+        self, input_text: str, intent: str, risk: str, blocked: bool
+    ) -> None:
+        """Log intent classification for audit."""
+        import time
+
+        self.audit_log.append(
+            {
+                "type": "classification",
+                "timestamp": time.time(),
+                "input_preview": input_text[:100],
+                "intent": intent,
+                "risk_level": risk,
+                "blocked": blocked,
+            }
+        )
+
     def _log_policy_enforcement(self, request: Dict, result: Dict) -> None:
         """Log policy enforcement for audit."""
         import time
@@ -1296,6 +1339,15 @@ class AIVerifier:
             "result": result
         })
 
+        self.audit_log.append(
+            {
+                "type": "policy_enforcement",
+                "timestamp": time.time(),
+                "request": request,
+                "result": result,
+            }
+        )
+
     def get_audit_log(self, limit: int = 100) -> List[Dict]:
         """Get recent audit log entries."""
         return self.audit_log[-limit:]
@@ -1304,6 +1356,7 @@ class AIVerifier:
         self,
         output: str,
         context: Optional[Dict] = None
+        self, output: str, context: Optional[Dict] = None
     ) -> Tuple[bool, str]:
         """
         Validate AI-generated output for safety.
@@ -1352,6 +1405,7 @@ class AIVerifier:
         prompt: str,
         response: str
     ) -> Tuple[bool, List[str]]:
+    def constitutional_check(self, prompt: str, response: str) -> Tuple[bool, List[str]]:
         """
         Constitutional AI check (Anthropic-style).
 
@@ -1374,6 +1428,9 @@ class AIVerifier:
         harm_classification = self.classify_intent(response)
         if harm_classification["risk_level"] in ("high", "critical"):
             violations.append(f"Response may enable harm: {harm_classification['intent']}")
+            violations.append(
+                f"Response may enable harm: {harm_classification['intent']}"
+            )
 
         # Check for deceptive patterns
         deceptive_patterns = [
@@ -1383,6 +1440,7 @@ class AIVerifier:
         ]
 
         import re
+
         for pattern, description in deceptive_patterns:
             if re.search(pattern, response, re.IGNORECASE):
                 violations.append(f"Potential deception: {description}")

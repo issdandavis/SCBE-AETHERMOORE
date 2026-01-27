@@ -1,0 +1,19 @@
+# SCBE-AETHERMOORE Kubernetes Service
+# Config Sync managed resource
+apiVersion: v1
+kind: Service
+metadata:
+  name: scbe-aethermoore
+  namespace: scbe-aethermoore
+  labels:
+    app: scbe-aethermoore
+    managed-by: config-sync
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+  selector:
+    app: scbe-aethermoore

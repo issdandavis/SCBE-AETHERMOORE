@@ -1,0 +1,32 @@
+# SCBE-AETHERMOORE Kubernetes Deployment
+# Config Sync managed resource
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scbe-aethermoore
+  namespace: scbe-aethermoore
+  labels:
+    app: scbe-aethermoore
+    managed-by: config-sync
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scbe-aethermoore
+  template:
+    metadata:
+      labels:
+        app: scbe-aethermoore
+    spec:
+      containers:
+      - name: scbe-aethermoore
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
