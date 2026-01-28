@@ -13,8 +13,6 @@
  *
  * @module spiralverse
  */
-/// <reference types="node" />
-/// <reference types="node" />
 /** Sacred Tongue identifier */
 export type TongueID = 'ko' | 'av' | 'ru' | 'ca' | 'um' | 'dr';
 /** Policy enforcement level */
