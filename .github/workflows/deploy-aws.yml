@@ -16,6 +16,7 @@ env:
   AWS_REGION: us-west-2
   PYTHON_VERSION: '3.11'
   FUNCTION_NAME: spiralverse-protocol-test
+  S3_BUCKET: ai-workflow-architect-artifacts-861870144562
 
 jobs:
   test:
@@ -38,8 +39,8 @@ jobs:
         run: |
           python -c "from api.main import app; print('API module loads successfully')"
 
-  build:
-    name: Build Lambda Package
+  build-and-deploy:
+    name: Build and Deploy
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -49,6 +50,13 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
       
       - name: Install dependencies to package directory
         run: |
@@ -67,35 +75,22 @@ jobs:
           cd ..
           echo "Package size: $(du -h scbe-lambda-package.zip | cut -f1)"
       
-      - name: Upload Lambda package
-        uses: actions/upload-artifact@v4
-        with:
-          name: scbe-lambda-package
-          path: scbe-lambda-package.zip
-          retention-days: 7
-
-  deploy:
-    name: Deploy to AWS Lambda
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download Lambda package
-        uses: actions/download-artifact@v4
-        with:
-          name: scbe-lambda-package
+      - name: Upload to S3
+        run: |
+          aws s3 cp scbe-lambda-package.zip s3://${{ env.S3_BUCKET }}/lambda/scbe-lambda-package.zip
+          echo "Uploaded to S3"
       
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-      
-      - name: Deploy to Lambda
+      - name: Deploy Lambda from S3
         run: |
           aws lambda update-function-code \
             --function-name ${{ env.FUNCTION_NAME }} \
-            --zip-file fileb://scbe-lambda-package.zip
+            --s3-bucket ${{ env.S3_BUCKET }} \
+            --s3-key lambda/scbe-lambda-package.zip
+      
+      - name: Wait for Lambda update
+        run: |
+          aws lambda wait function-updated \
+            --function-name ${{ env.FUNCTION_NAME }}
       
       - name: Update Lambda configuration
         run: |
