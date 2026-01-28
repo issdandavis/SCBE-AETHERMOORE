@@ -209,7 +209,7 @@ export async function verifyEnvelope(p: VerifyParams): Promise<{ body: EnvelopeB
   // 4) Key derivation (must bind env/provider/intent/session)
   // Session binding via key derivation (HIGH-001 fix: replaces nonce prefix binding)
   const ikm = await getMasterKey(envelope.kid);
-  const salt = fromB64u(envelope.salt); // use the salt from the envelope (stored during creation)
+  const salt = envelope.salt ? fromB64u(envelope.salt) : Buffer.alloc(32, 0);
   const infoBase = Buffer.from(
     `scbe:derivation:v1|env=${envelope.aad.env}|provider=${envelope.aad.provider_id}|intent=${envelope.aad.intent_id}|session=${p.session_id}`
   );
