@@ -15,6 +15,7 @@ on:
 env:
   AWS_REGION: us-west-2
   PYTHON_VERSION: '3.11'
+  FUNCTION_NAME: spiralverse-protocol-test
 
 jobs:
   test:
@@ -41,8 +42,6 @@ jobs:
     name: Build Lambda Package
     needs: test
     runs-on: ubuntu-latest
-    outputs:
-      artifact-name: ${{ steps.package.outputs.artifact-name }}
     steps:
       - uses: actions/checkout@v4
       
@@ -62,13 +61,11 @@ jobs:
           cp aws/lambda_handler.py lambda_package/
       
       - name: Create deployment package
-        id: package
         run: |
           cd lambda_package
           zip -r ../scbe-lambda-package.zip . -x "*.pyc" -x "__pycache__/*" -x "*.dist-info/*"
           cd ..
           echo "Package size: $(du -h scbe-lambda-package.zip | cut -f1)"
-          echo "artifact-name=scbe-lambda-package" >> $GITHUB_OUTPUT
       
       - name: Upload Lambda package
         uses: actions/upload-artifact@v4
@@ -77,15 +74,11 @@ jobs:
           path: scbe-lambda-package.zip
           retention-days: 7
 
-  deploy-staging:
-    name: Deploy to Staging
+  deploy:
+    name: Deploy to AWS Lambda
     needs: build
-    if: github.event.inputs.environment == 'staging'
     runs-on: ubuntu-latest
-    environment: staging
     steps:
-      - uses: actions/checkout@v4
-      
       - name: Download Lambda package
         uses: actions/download-artifact@v4
         with:
@@ -98,73 +91,25 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
       
-      - name: Deploy to Lambda (Staging)
+      - name: Deploy to Lambda
         run: |
           aws lambda update-function-code \
-            --function-name scbe-aethermoore-api-staging \
+            --function-name ${{ env.FUNCTION_NAME }} \
             --zip-file fileb://scbe-lambda-package.zip
       
       - name: Update Lambda configuration
         run: |
           aws lambda update-function-configuration \
-            --function-name scbe-aethermoore-api-staging \
-            --handler lambda_handler.lambda_handler \
-            --runtime python3.11 \
-            --memory-size 512 \
-            --timeout 30
-
-  deploy-production:
-    name: Deploy to Production
-    needs: build
-    if: github.event.inputs.environment == 'production'
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Download Lambda package
-        uses: actions/download-artifact@v4
-        with:
-          name: scbe-lambda-package
-      
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-      
-      - name: Check if Lambda function exists
-        id: check-function
-        run: |
-          if aws lambda get-function --function-name scbe-aethermoore-api-production 2>/dev/null; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-      
-      - name: Deploy to Lambda (Production)
-        if: steps.check-function.outputs.exists == 'true'
-        run: |
-          aws lambda update-function-code \
-            --function-name scbe-aethermoore-api-production \
-            --zip-file fileb://scbe-lambda-package.zip
-      
-      - name: Update Lambda configuration
-        if: steps.check-function.outputs.exists == 'true'
-        run: |
-          aws lambda update-function-configuration \
-            --function-name scbe-aethermoore-api-production \
+            --function-name ${{ env.FUNCTION_NAME }} \
             --handler lambda_handler.lambda_handler \
             --runtime python3.11 \
             --memory-size 512 \
             --timeout 30
       
       - name: Verify deployment
-        if: steps.check-function.outputs.exists == 'true'
         run: |
           echo "Deployment complete!"
           aws lambda get-function \
-            --function-name scbe-aethermoore-api-production \
+            --function-name ${{ env.FUNCTION_NAME }} \
             --query 'Configuration.{FunctionName:FunctionName,Runtime:Runtime,MemorySize:MemorySize,LastModified:LastModified}' \
             --output table
