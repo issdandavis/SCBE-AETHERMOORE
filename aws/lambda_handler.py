@@ -65,6 +65,7 @@ def lambda_handler(event, context):
             "headers": {"Content-Type": "application/json"},
             "body": '{"error": "Internal server error"}'
         }
+"""
 SCBE-AETHERMOORE Lambda Handler
 
 AWS Lambda entry point for the SCBE FastAPI application.
