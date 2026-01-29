@@ -15,6 +15,31 @@
 
 import { PollyPad, PollyPadManager } from './polly-pad';
 import { DimensionalState, GovernanceTier, getDimensionalState } from './types';
+import {
+  FormationType,
+  FormationConfig,
+  FormationState,
+  FormationManager,
+  Position3D,
+  ScatterConfig,
+  getFormationManager,
+} from './formations';
+import {
+  ByzantineDetector,
+  ByzantineDetectionResult,
+  RogueDetectionResult,
+  QuarantineState,
+  getByzantineDetector,
+} from './byzantine';
+import {
+  VizData,
+  generateVizData,
+  generateSVG,
+  generateASCII,
+  generateJSON,
+  SVGOptions,
+  DEFAULT_SVG_OPTIONS,
+} from './swarm-viz';
 
 /**
  * Swarm configuration
@@ -92,10 +117,14 @@ export class SwarmCoordinator {
   private padManager: PollyPadManager;
   private fluxParams: FluxODEParams;
   private syncIntervals: Map<string, NodeJS.Timeout> = new Map();
+  private formationManager: FormationManager;
+  private byzantineDetector: ByzantineDetector;
 
   constructor(padManager: PollyPadManager, fluxParams: FluxODEParams = DEFAULT_FLUX_ODE) {
     this.padManager = padManager;
     this.fluxParams = fluxParams;
+    this.formationManager = getFormationManager();
+    this.byzantineDetector = getByzantineDetector();
   }
 
   /**
@@ -442,11 +471,205 @@ export class SwarmCoordinator {
     };
   }
 
+  // ==========================================================================
+  // FORMATION MANAGEMENT
+  // ==========================================================================
+
+  /**
+   * Initialize formation for a swarm
+   *
+   * @param swarmId - Swarm identifier
+   * @param type - Formation type (hexagonal, tetrahedral, concentric, scatter)
+   * @param config - Optional formation configuration
+   * @returns Formation state
+   */
+  public initFormation(
+    swarmId: string,
+    type: FormationType = 'hexagonal',
+    config?: Partial<FormationConfig>
+  ): FormationState | undefined {
+    const padIds = this.swarmPads.get(swarmId);
+    if (!padIds || padIds.size === 0) return undefined;
+
+    const agentIds = Array.from(padIds);
+    const formationConfig: FormationConfig = {
+      type,
+      radius: config?.radius ?? 0.3,
+      innerRadius: config?.innerRadius ?? 0.2,
+      outerRadius: config?.outerRadius ?? 0.5,
+      zSpread: config?.zSpread ?? 1.633,
+    };
+
+    return this.formationManager.createFormation(swarmId, agentIds, formationConfig);
+  }
+
+  /**
+   * Get current formation state
+   */
+  public getFormation(swarmId: string): FormationState | undefined {
+    return this.formationManager.getFormation(swarmId);
+  }
+
+  /**
+   * Switch to a different formation type
+   */
+  public switchFormation(
+    swarmId: string,
+    newType: FormationType,
+    config?: Partial<FormationConfig>
+  ): FormationState | undefined {
+    return this.formationManager.switchFormation(swarmId, newType, config);
+  }
+
+  /**
+   * Step scatter dynamics (for scatter formations)
+   */
+  public stepScatter(swarmId: string, config?: Partial<ScatterConfig>): FormationState | undefined {
+    return this.formationManager.stepScatter(swarmId, config);
+  }
+
+  /**
+   * Get agent position in formation
+   */
+  public getAgentPosition(swarmId: string, agentId: string): Position3D | undefined {
+    const pos = this.formationManager.getAgentPosition(swarmId, agentId);
+    return pos?.position;
+  }
+
+  /**
+   * Get distance matrix for swarm
+   */
+  public getDistanceMatrix(
+    swarmId: string,
+    metric: 'euclidean' | 'hyperbolic' = 'euclidean'
+  ): number[][] | undefined {
+    return this.formationManager.getDistanceMatrix(swarmId, metric);
+  }
+
+  // ==========================================================================
+  // BYZANTINE DETECTION
+  // ==========================================================================
+
+  /**
+   * Run Byzantine fault detection on swarm
+   */
+  public detectByzantine(): ByzantineDetectionResult {
+    return this.byzantineDetector.detectByzantine();
+  }
+
+  /**
+   * Check if specific agent is rogue
+   */
+  public detectRogue(
+    agentId: string,
+    position: Position3D,
+    phase: number | null | undefined,
+    coherenceScore: number
+  ): RogueDetectionResult | null {
+    return this.byzantineDetector.detectRogue(agentId, position, phase, coherenceScore);
+  }
+
+  /**
+   * Quarantine a rogue agent
+   */
+  public quarantineAgent(
+    agentId: string,
+    reason: 'phase_null' | 'position_inconsistent' | 'replay_attack' | 'sybil' | 'coherence_drop' | 'boundary_violation'
+  ): QuarantineState {
+    // Collapse the pad
+    this.collapsePad(agentId);
+
+    // Add to Byzantine detector quarantine
+    return this.byzantineDetector.quarantine(agentId, reason);
+  }
+
+  /**
+   * Check if agent is quarantined
+   */
+  public isQuarantined(agentId: string): boolean {
+    return this.byzantineDetector.isQuarantined(agentId);
+  }
+
+  /**
+   * Get all quarantined agents
+   */
+  public getQuarantinedAgents(): QuarantineState[] {
+    return this.byzantineDetector.getQuarantinedAgents();
+  }
+
+  /**
+   * Release agent from quarantine
+   */
+  public releaseFromQuarantine(agentId: string, reviveNu: number = 0.5): boolean {
+    const released = this.byzantineDetector.release(agentId);
+    if (released) {
+      this.revivePad(agentId, reviveNu);
+    }
+    return released;
+  }
+
+  /**
+   * Check for replay attack
+   */
+  public checkReplayAttack(
+    nonce: string,
+    timestamp: number,
+    replayWindowMs?: number
+  ): { isReplay: boolean; reason?: string } {
+    return this.byzantineDetector.checkReplayAttack(nonce, timestamp, replayWindowMs);
+  }
+
+  // ==========================================================================
+  // VISUALIZATION
+  // ==========================================================================
+
+  /**
+   * Generate visualization data for swarm
+   */
+  public getVizData(swarmId: string, edgeThreshold: number = 0.5): VizData | undefined {
+    const formation = this.formationManager.getFormation(swarmId);
+    if (!formation) return undefined;
+
+    const quarantined = this.byzantineDetector.getQuarantinedAgents();
+    return generateVizData(formation, quarantined, edgeThreshold);
+  }
+
+  /**
+   * Generate SVG visualization
+   */
+  public generateSVG(swarmId: string, options?: Partial<SVGOptions>): string | undefined {
+    const vizData = this.getVizData(swarmId);
+    if (!vizData) return undefined;
+
+    return generateSVG(vizData, { ...DEFAULT_SVG_OPTIONS, ...options });
+  }
+
+  /**
+   * Generate ASCII visualization for terminal
+   */
+  public generateASCII(swarmId: string, width: number = 60, height: number = 30): string | undefined {
+    const vizData = this.getVizData(swarmId);
+    if (!vizData) return undefined;
+
+    return generateASCII(vizData, width, height);
+  }
+
+  /**
+   * Generate JSON visualization data
+   */
+  public generateVizJSON(swarmId: string): string | undefined {
+    const vizData = this.getVizData(swarmId);
+    if (!vizData) return undefined;
+
+    return generateJSON(vizData);
+  }
+
   /**
    * Shutdown coordinator
    */
   public shutdown(): void {
-    for (const swarmId of this.syncIntervals.keys()) {
+    const swarmIds = Array.from(this.syncIntervals.keys());
+    for (const swarmId of swarmIds) {
       this.stopAutoSync(swarmId);
     }
   }

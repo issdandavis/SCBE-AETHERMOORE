@@ -12,6 +12,9 @@
  * - Roundtable consensus for critical operations
  * - Polly Pads: Personal agent workspaces with dimensional flux
  * - Swarm coordination with flux ODE dynamics
+ * - Formation management (hexagonal, tetrahedral, concentric, scatter)
+ * - Byzantine fault detection and rogue agent handling
+ * - Visualization utilities (SVG, ASCII, JSON, Matplotlib)
  *
  * @module fleet
  */
@@ -42,3 +45,12 @@ export {
   getNextTier,
   getXPForNextTier,
 } from './polly-pad';
+
+// Formation management
+export * from './formations';
+
+// Byzantine fault detection
+export * from './byzantine';
+
+// Swarm visualization
+export * from './swarm-viz';
