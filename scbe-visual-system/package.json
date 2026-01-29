@@ -14,7 +14,9 @@
     "electron:pack": "npm run build && electron-builder --dir",
     "start:system": "node scripts/start-system.js",
     "test": "vitest",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "deploy": "npm run build && firebase deploy",
+    "deploy:preview": "npm run build && firebase hosting:channel:deploy preview"
   },
   "dependencies": {
     "@google/genai": "^1.27.0",
