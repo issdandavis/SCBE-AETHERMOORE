@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCBE-AETHERMOORE Swarm Visualizer</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0a0a1a;
+      color: #fff;
+      font-family: 'Courier New', monospace;
+      overflow: hidden;
+    }
+
+    #app {
+      display: flex;
+      height: 100vh;
+    }
+
+    #canvas-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    #swarm-canvas {
+      background: #0d0d20;
+      border-radius: 8px;
+      box-shadow: 0 0 40px rgba(100, 100, 255, 0.1);
+    }
+
+    #sidebar {
+      width: 280px;
+      background: #111125;
+      padding: 20px;
+      border-left: 1px solid #222;
+      overflow-y: auto;
+    }
+
+    h1 {
+      font-size: 16px;
+      color: #8888ff;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    h2 {
+      font-size: 12px;
+      color: #666;
+      margin: 20px 0 10px 0;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .metric {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #222;
+    }
+
+    .metric-label {
+      color: #888;
+    }
+
+    .metric-value {
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .metric-value.good { color: #51CF66; }
+    .metric-value.warning { color: #FFA94D; }
+    .metric-value.danger { color: #FF6B6B; }
+
+    .controls {
+      margin-top: 20px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+      background: #222240;
+      border: 1px solid #333;
+      color: #fff;
+      cursor: pointer;
+      border-radius: 4px;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background: #333355;
+      border-color: #555;
+    }
+
+    button.active {
+      background: #4444aa;
+      border-color: #6666cc;
+    }
+
+    .agent-list {
+      margin-top: 10px;
+    }
+
+    .agent-item {
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      margin: 4px 0;
+      background: #1a1a30;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .agent-item:hover {
+      background: #252545;
+    }
+
+    .agent-item.quarantined {
+      opacity: 0.5;
+      border: 1px solid #ff4444;
+    }
+
+    .agent-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+
+    .agent-name {
+      flex: 1;
+    }
+
+    .agent-status {
+      font-size: 10px;
+      color: #666;
+    }
+
+    .connection-status {
+      padding: 10px;
+      text-align: center;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-size: 12px;
+    }
+
+    .connection-status.connected {
+      background: rgba(81, 207, 102, 0.2);
+      color: #51CF66;
+    }
+
+    .connection-status.disconnected {
+      background: rgba(255, 107, 107, 0.2);
+      color: #FF6B6B;
+    }
+
+    .connection-status.demo {
+      background: rgba(255, 169, 77, 0.2);
+      color: #FFA94D;
+    }
+
+    #tooltip {
+      position: absolute;
+      background: #1a1a30;
+      border: 1px solid #333;
+      padding: 10px;
+      border-radius: 4px;
+      pointer-events: none;
+      display: none;
+      font-size: 12px;
+      z-index: 100;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      font-size: 11px;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="canvas-container">
+      <canvas id="swarm-canvas"></canvas>
+      <div id="tooltip"></div>
+    </div>
+    <div id="sidebar">
+      <h1>SCBE Swarm</h1>
+
+      <div id="connection-status" class="connection-status demo">
+        Demo Mode
+      </div>
+
+      <h2>Metrics</h2>
+      <div class="metric">
+        <span class="metric-label">Coherence</span>
+        <span id="metric-coherence" class="metric-value">0.00</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Health</span>
+        <span id="metric-health" class="metric-value">0.00</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Agents</span>
+        <span id="metric-agents" class="metric-value">0</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Quarantined</span>
+        <span id="metric-quarantined" class="metric-value">0</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Formation</span>
+        <span id="metric-formation" class="metric-value">-</span>
+      </div>
+
+      <h2>Formation</h2>
+      <div class="controls">
+        <button id="btn-hexagonal" class="active">Hexagonal</button>
+        <button id="btn-tetrahedral">Tetrahedral</button>
+        <button id="btn-concentric">Concentric</button>
+        <button id="btn-scatter">Scatter</button>
+      </div>
+
+      <h2>Actions</h2>
+      <div class="controls">
+        <button id="btn-add-rogue">Inject Rogue Agent</button>
+        <button id="btn-step">Step Simulation</button>
+        <button id="btn-reset">Reset</button>
+      </div>
+
+      <h2>Sacred Tongues</h2>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#FF6B6B"></div>KO</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#FFA94D"></div>AV</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#FFE066"></div>RU</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#51CF66"></div>CA</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#339AF0"></div>UM</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#CC5DE8"></div>DR</div>
+      </div>
+
+      <h2>Agents</h2>
+      <div id="agent-list" class="agent-list"></div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // CONFIGURATION
+    // =========================================================================
+    const CONFIG = {
+      wsUrl: 'ws://localhost:8080',  // WebSocket server URL
+      canvasSize: 600,
+      nodeRadius: 18,
+      boundaryRadius: 0.95,
+      quarantineRadius: 0.87,
+      edgeThreshold: 0.5,
+      animationSpeed: 0.05,
+      demoMode: true,  // Set to false when connecting to real backend
+    };
+
+    const TONGUE_COLORS = {
+      ko: '#FF6B6B',
+      av: '#FFA94D',
+      ru: '#FFE066',
+      ca: '#51CF66',
+      um: '#339AF0',
+      dr: '#CC5DE8',
+    };
+
+    const TONGUE_NAMES = {
+      ko: "Kor'aelin",
+      av: 'Avali',
+      ru: 'Runethic',
+      ca: 'Cassisivadan',
+      um: 'Umbroth',
+      dr: 'Draumric',
+    };
+
+    // =========================================================================
+    // STATE
+    // =========================================================================
+    let state = {
+      formation: 'hexagonal',
+      agents: [],
+      edges: [],
+      metrics: {
+        coherence: 0.95,
+        health: 0.92,
+        agentCount: 6,
+        quarantinedCount: 0,
+      },
+      selectedAgent: null,
+      ws: null,
+      connected: false,
+      animationTargets: new Map(),
+    };
+
+    // =========================================================================
+    // FORMATION GENERATORS
+    // =========================================================================
+    function generateHexagonal(radius = 0.3) {
+      const agents = [];
+      const tongues = ['ko', 'av', 'ru', 'ca', 'um', 'dr'];
+
+      for (let i = 0; i < 6; i++) {
+        const angle = i * (Math.PI / 3);
+        agents.push({
+          id: `agent-${i}`,
+          tongue: tongues[i],
+          x: radius * Math.cos(angle),
+          y: radius * Math.sin(angle),
+          targetX: radius * Math.cos(angle),
+          targetY: radius * Math.sin(angle),
+          quarantined: false,
+          coherence: 0.9 + Math.random() * 0.1,
+        });
+      }
+      return agents;
+    }
+
+    function generateTetrahedral(radius = 0.3) {
+      const agents = [];
+      const tongues = ['ko', 'av', 'ru', 'ca', 'um', 'dr'];
+      const positions = [
+        [radius, 0],
+        [-radius/2, radius * 0.866],
+        [-radius/2, -radius * 0.866],
+        [0, radius * 0.4],
+        [radius * 0.3, -radius * 0.3],
+        [-radius * 0.3, -radius * 0.3],
+      ];
+
+      for (let i = 0; i < 6; i++) {
+        agents.push({
+          id: `agent-${i}`,
+          tongue: tongues[i],
+          x: positions[i][0],
+          y: positions[i][1],
+          targetX: positions[i][0],
+          targetY: positions[i][1],
+          quarantined: false,
+          coherence: 0.9 + Math.random() * 0.1,
+        });
+      }
+      return agents;
+    }
+
+    function generateConcentric(innerRadius = 0.2, outerRadius = 0.5) {
+      const agents = [];
+      const tongues = ['ko', 'av', 'ru', 'ca', 'um', 'dr'];
+
+      // Inner ring
+      for (let i = 0; i < 3; i++) {
+        const angle = i * (2 * Math.PI / 3);
+        agents.push({
+          id: `agent-${i}`,
+          tongue: tongues[i],
+          x: innerRadius * Math.cos(angle),
+          y: innerRadius * Math.sin(angle),
+          targetX: innerRadius * Math.cos(angle),
+          targetY: innerRadius * Math.sin(angle),
+          quarantined: false,
+          coherence: 0.9 + Math.random() * 0.1,
+        });
+      }
+
+      // Outer ring
+      for (let i = 3; i < 6; i++) {
+        const angle = (i - 3) * (2 * Math.PI / 3) + Math.PI / 3;
+        agents.push({
+          id: `agent-${i}`,
+          tongue: tongues[i],
+          x: outerRadius * Math.cos(angle),
+          y: outerRadius * Math.sin(angle),
+          targetX: outerRadius * Math.cos(angle),
+          targetY: outerRadius * Math.sin(angle),
+          quarantined: false,
+          coherence: 0.9 + Math.random() * 0.1,
+        });
+      }
+      return agents;
+    }
+
+    function generateScatter(maxRadius = 0.4) {
+      const agents = [];
+      const tongues = ['ko', 'av', 'ru', 'ca', 'um', 'dr'];
+
+      for (let i = 0; i < 6; i++) {
+        const r = Math.random() * maxRadius;
+        const angle = Math.random() * 2 * Math.PI;
+        const x = r * Math.cos(angle);
+        const y = r * Math.sin(angle);
+
+        agents.push({
+          id: `agent-${i}`,
+          tongue: tongues[i],
+          x: x,
+          y: y,
+          targetX: x,
+          targetY: y,
+          quarantined: false,
+          coherence: 0.9 + Math.random() * 0.1,
+        });
+      }
+      return agents;
+    }
+
+    function stepScatter() {
+      const center = { x: 0, y: 0 };
+
+      state.agents.forEach(agent => {
+        if (agent.quarantined) return;
+
+        let fx = 0, fy = 0;
+
+        // Repulsion from other agents
+        state.agents.forEach(other => {
+          if (other.id === agent.id) return;
+          const dx = agent.x - other.x;
+          const dy = agent.y - other.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < 0.2 && dist > 0) {
+            fx += (dx / dist) * 0.02;
+            fy += (dy / dist) * 0.02;
+          }
+        });
+
+        // Attraction to center
+        fx += (center.x - agent.x) * 0.01;
+        fy += (center.y - agent.y) * 0.01;
+
+        // Random drift
+        fx += (Math.random() - 0.5) * 0.02;
+        fy += (Math.random() - 0.5) * 0.02;
+
+        // Update target
+        agent.targetX = Math.max(-0.9, Math.min(0.9, agent.x + fx));
+        agent.targetY = Math.max(-0.9, Math.min(0.9, agent.y + fy));
+      });
+    }
+
+    function generateEdges() {
+      const edges = [];
+      for (let i = 0; i < state.agents.length; i++) {
+        for (let j = i + 1; j < state.agents.length; j++) {
+          const a = state.agents[i];
+          const b = state.agents[j];
+          const dx = a.x - b.x;
+          const dy = a.y - b.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < CONFIG.edgeThreshold) {
+            edges.push({
+              source: a.id,
+              target: b.id,
+              distance: dist,
+              weight: 1 - dist / CONFIG.edgeThreshold,
+            });
+          }
+        }
+      }
+      return edges;
+    }
+
+    // =========================================================================
+    // CANVAS RENDERING
+    // =========================================================================
+    const canvas = document.getElementById('swarm-canvas');
+    const ctx = canvas.getContext('2d');
+    const tooltip = document.getElementById('tooltip');
+
+    function initCanvas() {
+      const size = Math.min(window.innerWidth - 320, window.innerHeight - 40, CONFIG.canvasSize);
+      canvas.width = size;
+      canvas.height = size;
+    }
+
+    function toCanvas(x, y) {
+      const size = canvas.width;
+      const scale = (size - 60) / 2;
+      return {
+        x: size / 2 + x * scale,
+        y: size / 2 - y * scale,
+      };
+    }
+
+    function fromCanvas(cx, cy) {
+      const size = canvas.width;
+      const scale = (size - 60) / 2;
+      return {
+        x: (cx - size / 2) / scale,
+        y: -(cy - size / 2) / scale,
+      };
+    }
+
+    function render() {
+      const size = canvas.width;
+      ctx.clearRect(0, 0, size, size);
+
+      // Background gradient
+      const gradient = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+      gradient.addColorStop(0, '#151530');
+      gradient.addColorStop(1, '#0a0a1a');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, size, size);
+
+      // Poincare ball boundary
+      const center = toCanvas(0, 0);
+      const boundaryR = (size - 60) / 2 * CONFIG.boundaryRadius;
+      const quarantineR = (size - 60) / 2 * CONFIG.quarantineRadius;
+
+      // Quarantine zone
+      ctx.beginPath();
+      ctx.arc(center.x, center.y, boundaryR, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255, 100, 100, 0.2)';
+      ctx.lineWidth = boundaryR - quarantineR;
+      ctx.stroke();
+
+      // Boundary circle
+      ctx.beginPath();
+      ctx.arc(center.x, center.y, boundaryR, 0, Math.PI * 2);
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 5]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Quarantine threshold
+      ctx.beginPath();
+      ctx.arc(center.x, center.y, quarantineR, 0, Math.PI * 2);
+      ctx.strokeStyle = '#442222';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Center cross
+      ctx.beginPath();
+      ctx.moveTo(center.x - 10, center.y);
+      ctx.lineTo(center.x + 10, center.y);
+      ctx.moveTo(center.x, center.y - 10);
+      ctx.lineTo(center.x, center.y + 10);
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Animate positions
+      state.agents.forEach(agent => {
+        agent.x += (agent.targetX - agent.x) * CONFIG.animationSpeed;
+        agent.y += (agent.targetY - agent.y) * CONFIG.animationSpeed;
+      });
+
+      // Edges
+      state.edges = generateEdges();
+      state.edges.forEach(edge => {
+        const source = state.agents.find(a => a.id === edge.source);
+        const target = state.agents.find(a => a.id === edge.target);
+        if (!source || !target) return;
+
+        const p1 = toCanvas(source.x, source.y);
+        const p2 = toCanvas(target.x, target.y);
+
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.strokeStyle = `rgba(100, 100, 150, ${edge.weight * 0.5})`;
+        ctx.lineWidth = edge.weight * 2;
+        ctx.stroke();
+      });
+
+      // Agents
+      state.agents.forEach(agent => {
+        const pos = toCanvas(agent.x, agent.y);
+        const color = TONGUE_COLORS[agent.tongue];
+        const radius = CONFIG.nodeRadius;
+
+        // Glow
+        const glowGradient = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, radius * 2);
+        glowGradient.addColorStop(0, color + '40');
+        glowGradient.addColorStop(1, 'transparent');
+        ctx.fillStyle = glowGradient;
+        ctx.fillRect(pos.x - radius * 2, pos.y - radius * 2, radius * 4, radius * 4);
+
+        // Node
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = agent.quarantined ? '#442222' : color;
+        ctx.globalAlpha = agent.quarantined ? 0.5 : 1;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
+        // Border
+        ctx.strokeStyle = agent.quarantined ? '#ff4444' : '#fff';
+        ctx.lineWidth = agent.quarantined ? 3 : 1;
+        ctx.stroke();
+
+        // Label
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 12px Courier New';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(agent.tongue.toUpperCase(), pos.x, pos.y);
+
+        // Selection ring
+        if (state.selectedAgent === agent.id) {
+          ctx.beginPath();
+          ctx.arc(pos.x, pos.y, radius + 5, 0, Math.PI * 2);
+          ctx.strokeStyle = '#fff';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+      });
+
+      // Update metrics
+      updateMetrics();
+
+      requestAnimationFrame(render);
+    }
+
+    // =========================================================================
+    // UI UPDATES
+    // =========================================================================
+    function updateMetrics() {
+      const coherence = state.agents.reduce((sum, a) => sum + a.coherence, 0) / state.agents.length;
+      const quarantined = state.agents.filter(a => a.quarantined).length;
+      const health = coherence * (1 - quarantined / state.agents.length);
+
+      document.getElementById('metric-coherence').textContent = coherence.toFixed(2);
+      document.getElementById('metric-coherence').className =
+        'metric-value ' + (coherence > 0.8 ? 'good' : coherence > 0.6 ? 'warning' : 'danger');
+
+      document.getElementById('metric-health').textContent = health.toFixed(2);
+      document.getElementById('metric-health').className =
+        'metric-value ' + (health > 0.8 ? 'good' : health > 0.6 ? 'warning' : 'danger');
+
+      document.getElementById('metric-agents').textContent = state.agents.length;
+      document.getElementById('metric-quarantined').textContent = quarantined;
+      document.getElementById('metric-quarantined').className =
+        'metric-value ' + (quarantined === 0 ? 'good' : 'danger');
+
+      document.getElementById('metric-formation').textContent = state.formation;
+    }
+
+    function updateAgentList() {
+      const list = document.getElementById('agent-list');
+      list.innerHTML = state.agents.map(agent => `
+        <div class="agent-item ${agent.quarantined ? 'quarantined' : ''}" data-id="${agent.id}">
+          <div class="agent-dot" style="background:${TONGUE_COLORS[agent.tongue]}"></div>
+          <div class="agent-name">${TONGUE_NAMES[agent.tongue]}</div>
+          <div class="agent-status">${agent.quarantined ? 'Q' : (agent.coherence * 100).toFixed(0) + '%'}</div>
+        </div>
+      `).join('');
+
+      list.querySelectorAll('.agent-item').forEach(item => {
+        item.addEventListener('click', () => {
+          state.selectedAgent = state.selectedAgent === item.dataset.id ? null : item.dataset.id;
+        });
+      });
+    }
+
+    function setFormation(type) {
+      state.formation = type;
+
+      let newAgents;
+      switch (type) {
+        case 'hexagonal': newAgents = generateHexagonal(); break;
+        case 'tetrahedral': newAgents = generateTetrahedral(); break;
+        case 'concentric': newAgents = generateConcentric(); break;
+        case 'scatter': newAgents = generateScatter(); break;
+      }
+
+      // Preserve quarantine state
+      newAgents.forEach((agent, i) => {
+        if (state.agents[i]) {
+          agent.quarantined = state.agents[i].quarantined;
+          agent.x = state.agents[i].x;
+          agent.y = state.agents[i].y;
+        }
+      });
+
+      state.agents = newAgents;
+      updateAgentList();
+
+      // Update button states
+      document.querySelectorAll('.controls button').forEach(btn => {
+        btn.classList.toggle('active', btn.id === `btn-${type}`);
+      });
+    }
+
+    function injectRogue() {
+      // Pick a random non-quarantined agent
+      const available = state.agents.filter(a => !a.quarantined);
+      if (available.length === 0) return;
+
+      const rogue = available[Math.floor(Math.random() * available.length)];
+      rogue.quarantined = true;
+      rogue.coherence = 0.2;
+
+      // Push to boundary
+      const angle = Math.atan2(rogue.y, rogue.x);
+      rogue.targetX = CONFIG.boundaryRadius * Math.cos(angle);
+      rogue.targetY = CONFIG.boundaryRadius * Math.sin(angle);
+
+      updateAgentList();
+    }
+
+    function reset() {
+      setFormation(state.formation);
+    }
+
+    // =========================================================================
+    // WEBSOCKET
+    // =========================================================================
+    function connectWebSocket() {
+      if (CONFIG.demoMode) {
+        document.getElementById('connection-status').textContent = 'Demo Mode';
+        document.getElementById('connection-status').className = 'connection-status demo';
+        return;
+      }
+
+      try {
+        state.ws = new WebSocket(CONFIG.wsUrl);
+
+        state.ws.onopen = () => {
+          state.connected = true;
+          document.getElementById('connection-status').textContent = 'Connected';
+          document.getElementById('connection-status').className = 'connection-status connected';
+        };
+
+        state.ws.onclose = () => {
+          state.connected = false;
+          document.getElementById('connection-status').textContent = 'Disconnected';
+          document.getElementById('connection-status').className = 'connection-status disconnected';
+          setTimeout(connectWebSocket, 3000);
+        };
+
+        state.ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            handleServerUpdate(data);
+          } catch (e) {
+            console.error('Failed to parse message:', e);
+          }
+        };
+
+        state.ws.onerror = (error) => {
+          console.error('WebSocket error:', error);
+        };
+      } catch (e) {
+        console.error('WebSocket connection failed:', e);
+      }
+    }
+
+    function handleServerUpdate(data) {
+      if (data.nodes) {
+        state.agents = data.nodes.map(node => ({
+          id: node.id,
+          tongue: node.tongue,
+          x: node.position2D.x,
+          y: node.position2D.y,
+          targetX: node.position2D.x,
+          targetY: node.position2D.y,
+          quarantined: node.quarantined,
+          coherence: node.opacity,
+        }));
+        updateAgentList();
+      }
+
+      if (data.metrics) {
+        state.metrics = data.metrics;
+      }
+    }
+
+    // =========================================================================
+    // EVENT HANDLERS
+    // =========================================================================
+    function setupEventHandlers() {
+      document.getElementById('btn-hexagonal').addEventListener('click', () => setFormation('hexagonal'));
+      document.getElementById('btn-tetrahedral').addEventListener('click', () => setFormation('tetrahedral'));
+      document.getElementById('btn-concentric').addEventListener('click', () => setFormation('concentric'));
+      document.getElementById('btn-scatter').addEventListener('click', () => setFormation('scatter'));
+      document.getElementById('btn-add-rogue').addEventListener('click', injectRogue);
+      document.getElementById('btn-step').addEventListener('click', () => {
+        if (state.formation === 'scatter') stepScatter();
+      });
+      document.getElementById('btn-reset').addEventListener('click', reset);
+
+      // Canvas hover
+      canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const cx = e.clientX - rect.left;
+        const cy = e.clientY - rect.top;
+
+        let hoveredAgent = null;
+        state.agents.forEach(agent => {
+          const pos = toCanvas(agent.x, agent.y);
+          const dist = Math.sqrt((cx - pos.x) ** 2 + (cy - pos.y) ** 2);
+          if (dist < CONFIG.nodeRadius) {
+            hoveredAgent = agent;
+          }
+        });
+
+        if (hoveredAgent) {
+          tooltip.style.display = 'block';
+          tooltip.style.left = (e.clientX + 10) + 'px';
+          tooltip.style.top = (e.clientY + 10) + 'px';
+          tooltip.innerHTML = `
+            <strong>${TONGUE_NAMES[hoveredAgent.tongue]}</strong><br>
+            ID: ${hoveredAgent.id}<br>
+            Coherence: ${(hoveredAgent.coherence * 100).toFixed(0)}%<br>
+            Status: ${hoveredAgent.quarantined ? 'QUARANTINED' : 'Active'}
+          `;
+        } else {
+          tooltip.style.display = 'none';
+        }
+      });
+
+      canvas.addEventListener('mouseleave', () => {
+        tooltip.style.display = 'none';
+      });
+
+      canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const cx = e.clientX - rect.left;
+        const cy = e.clientY - rect.top;
+
+        state.agents.forEach(agent => {
+          const pos = toCanvas(agent.x, agent.y);
+          const dist = Math.sqrt((cx - pos.x) ** 2 + (cy - pos.y) ** 2);
+          if (dist < CONFIG.nodeRadius) {
+            state.selectedAgent = state.selectedAgent === agent.id ? null : agent.id;
+          }
+        });
+      });
+
+      window.addEventListener('resize', initCanvas);
+    }
+
+    // =========================================================================
+    // INIT
+    // =========================================================================
+    function init() {
+      initCanvas();
+      setupEventHandlers();
+      setFormation('hexagonal');
+      connectWebSocket();
+      render();
+    }
+
+    init();
+  </script>
+</body>
+</html>
