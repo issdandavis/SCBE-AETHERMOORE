@@ -1,6 +1,6 @@
 {
   "name": "scbe-aethermoore",
-  "version": "3.1.1",
+  "version": "3.0.0",
   "description": "SCBE-AETHERMOORE: Hyperbolic Geometry-Based Security with 14-Layer Architecture",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "license": "MIT",
@@ -33,15 +33,10 @@
       "import": "./dist/src/spiralverse/index.js",
       "require": "./dist/src/spiralverse/index.js"
     },
-    "./tokenizer": {
-      "types": "./dist/src/tokenizer/index.d.ts",
-      "import": "./dist/src/tokenizer/index.js",
-      "require": "./dist/src/tokenizer/index.js"
-    },
-    "./phdm": {
-      "types": "./dist/src/harmonic/phdm.d.ts",
-      "import": "./dist/src/harmonic/phdm.js",
-      "require": "./dist/src/harmonic/phdm.js"
+    "./vector": {
+      "types": "./dist/src/vector/index.d.ts",
+      "import": "./dist/src/vector/index.js",
+      "require": "./dist/src/vector/index.js"
     }
   },
   "files": [
@@ -55,12 +50,9 @@
     "build:src": "tsc -p tsconfig.json",
     "build:watch": "tsc -p tsconfig.json --watch",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
     "test:python": "pytest tests/ -v",
     "test:all": "npm test && npm run test:python",
     "typecheck": "tsc --noEmit",
-    "check:circular": "madge --circular --extensions ts src/",
-    "check:deps": "madge --extensions ts src/ --image dependency-graph.svg",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
     "format:python": "black src/ tests/",
     "lint": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
@@ -84,34 +76,34 @@
     "quantum-resistant",
     "14-layer-architecture",
     "harmonic-scaling",
-    "patent-pending"
+    "patent-pending",
+    "embeddings",
+    "vector-search",
+    "model-caching",
+    "faiss"
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/issdandavis/SCBE-AETHERMOORE.git"
+    "url": "git+https://github.com/issdandavis/scbe-aethermoore-demo.git"
   },
   "bugs": {
-    "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
+    "url": "https://github.com/issdandavis/scbe-aethermoore-demo/issues"
   },
-  "homepage": "https://github.com/issdandavis/SCBE-AETHERMOORE#readme",
+  "homepage": "https://github.com/issdandavis/scbe-aethermoore-demo#readme",
   "engines": {
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "express": "^4.19.2"
+    "@types/node": "^25.0.10"
   },
   "devDependencies": {
-    "@types/express": "^4.17.21",
     "@types/jest": "^30.0.0",
-    "@types/node": "^22.0.0",
-    "@vitest/coverage-v8": "^4.0.17",
     "fast-check": "^4.5.3",
-    "madge": "^8.0.0",
     "prettier": "^3.2.0",
     "rimraf": "^5.0.10",
     "ts-node": "^10.9.2",
     "typedoc": "^0.25.0",
-    "typescript": "^5.4.5",
+    "typescript": "^5.9.0",
     "vitest": "^4.0.17"
   },
   "overrides": {

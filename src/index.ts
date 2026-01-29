@@ -8,11 +8,12 @@
  * @packageDocumentation
  */
 
-// Namespace exports for convenient access (scbe.symphonic, scbe.crypto, scbe.spiralverse)
+// Namespace exports for convenient access (scbe.symphonic, scbe.crypto, scbe.spiralverse, scbe.vector)
 import * as symphonic from './symphonic/index.js';
 import * as crypto from './crypto/index.js';
 import * as spiralverse from './spiralverse/index.js';
-export { symphonic, crypto, spiralverse };
+import * as vector from './vector/index.js';
+export { symphonic, crypto, spiralverse, vector };
 
 // Core Crypto Exports (also available at top level)
 export * from './crypto/envelope.js';
@@ -34,6 +35,9 @@ export * from './rollout/circuitBreaker.js';
 export * from './selfHealing/coordinator.js';
 export * from './selfHealing/deepHealing.js';
 export * from './selfHealing/quickFixBot.js';
+
+// Vector Module Exports
+export * from './vector/index.js';
 
 // Version and Metadata
 export const VERSION = '3.0.0';
