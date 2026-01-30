@@ -41,8 +41,8 @@ export class Feistel {
     }
 
     const halfLen = workingBuffer.length / 2;
-    let left = workingBuffer.subarray(0, halfLen);
-    let right = workingBuffer.subarray(halfLen);
+    let left: Buffer = Buffer.from(workingBuffer.subarray(0, halfLen));
+    let right: Buffer = Buffer.from(workingBuffer.subarray(halfLen));
 
     const masterKeyBuf = crypto.createHash('sha256').update(key).digest();
 
@@ -65,8 +65,8 @@ export class Feistel {
 
   decrypt(data: Buffer, key: string): Buffer {
     const halfLen = data.length / 2;
-    let left = data.subarray(0, halfLen);
-    let right = data.subarray(halfLen);
+    let left: Buffer = Buffer.from(data.subarray(0, halfLen));
+    let right: Buffer = Buffer.from(data.subarray(halfLen));
 
     const masterKeyBuf = crypto.createHash('sha256').update(key).digest();
 
