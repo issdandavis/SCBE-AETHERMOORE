@@ -265,6 +265,16 @@ export function randomBytes(length: number): Uint8Array {
 }
 
 /**
+ * Helper to convert Uint8Array to BufferSource compatible with strict TypeScript
+ * Creates a copy with a guaranteed ArrayBuffer (not SharedArrayBuffer)
+ */
+function toBufferSource(arr: Uint8Array): ArrayBuffer {
+  const copy = new Uint8Array(arr.length);
+  copy.set(arr);
+  return copy.buffer;
+}
+
+/**
  * HKDF key derivation (simplified - uses SHA-256)
  */
 async function hkdfDerive(
@@ -279,7 +289,7 @@ async function hkdfDerive(
   }
 
   // Import master secret as HKDF key
-  const keyMaterial = await crypto.subtle.importKey('raw', masterSecret, 'HKDF', false, [
+  const keyMaterial = await crypto.subtle.importKey('raw', toBufferSource(masterSecret), 'HKDF', false, [
     'deriveBits',
   ]);
 
@@ -288,24 +298,14 @@ async function hkdfDerive(
     {
       name: 'HKDF',
       hash: 'SHA-256',
-      salt: salt,
-      info: info,
+      salt: toBufferSource(salt),
+      info: toBufferSource(info),
     },
     keyMaterial,
     length * 8
   );
 
   return new Uint8Array(derivedBits);
-}
-
-/**
- * Helper to convert Uint8Array to BufferSource compatible with strict TypeScript
- * Creates a copy with a guaranteed ArrayBuffer (not SharedArrayBuffer)
- */
-function toBufferSource(arr: Uint8Array): ArrayBuffer {
-  const copy = new Uint8Array(arr.length);
-  copy.set(arr);
-  return copy.buffer;
 }
 
 /**
