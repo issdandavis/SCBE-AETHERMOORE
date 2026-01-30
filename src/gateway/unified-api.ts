@@ -216,7 +216,6 @@ export class UnifiedSCBEGateway {
           spinCoherence,
           triadicDistance,
           audioStability,
-          harmonicMagnification,
         }),
         dominantFactor: this.findDominantFactor({
           hyperbolicDistance,
