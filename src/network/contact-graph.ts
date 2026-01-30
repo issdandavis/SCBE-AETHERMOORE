@@ -7,7 +7,16 @@
  * @module network/contact-graph
  */
 
-import { v4 as uuidv4 } from 'uuid';
+/**
+ * Generate a UUID v4 without external dependency
+ */
+function uuidv4(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
 
 /**
  * Represents a contact window between two nodes
@@ -290,7 +299,7 @@ export class ContactGraph {
       totalLatency: targetResult.distance,
       totalCapacity,
       reliability,
-      score: this.scorePath({ nodes, edges, totalLatency: targetResult.distance, totalCapacity, reliability, score: 0 }),
+      score: this.scorePath({ nodes, edges, totalLatency: targetResult.distance, totalCapacity, reliability }),
     };
   }
 
@@ -443,7 +452,7 @@ export class ContactGraph {
       totalLatency: targetResult.distance,
       totalCapacity,
       reliability,
-      score: this.scorePath({ nodes, edges, totalLatency: targetResult.distance, totalCapacity, reliability, score: 0 }),
+      score: this.scorePath({ nodes, edges, totalLatency: targetResult.distance, totalCapacity, reliability }),
     };
   }
 
