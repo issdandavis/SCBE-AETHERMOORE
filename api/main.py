@@ -38,17 +38,6 @@ try:
 except ImportError:
     from persistence import get_persistence, SCBEPersistence
 
-# Import billing and key management routes
-try:
-    from api.billing.routes import router as billing_router
-    from api.billing.database import init_db
-    from api.keys.routes import router as keys_router
-    BILLING_AVAILABLE = True
-except ImportError:
-    BILLING_AVAILABLE = False
-    billing_router = None
-    keys_router = None
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -75,13 +64,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Initialize billing database and register routes
-if BILLING_AVAILABLE:
-    init_db()
-    app.include_router(billing_router)
-    app.include_router(keys_router)
-    logger.info("Billing and API key management routes registered")
 
 # API Key authentication
 API_KEY_HEADER = APIKeyHeader(name="SCBE_api_key", auto_error=False)
@@ -117,10 +99,9 @@ CONSENSUS_STORE: Dict[str, dict] = {}
 # =============================================================================
 
 class Decision(str, Enum):
-    ALLOW = "ALLOW"         # Action permitted immediately
-    DENY = "DENY"           # Action blocked immediately
-    QUARANTINE = "QUARANTINE"  # Temporary hold - isolate and monitor
-    ESCALATE = "ESCALATE"   # Escalate to higher AI, then human if AIs disagree
+    ALLOW = "ALLOW"
+    DENY = "DENY"
+    QUARANTINE = "QUARANTINE"
 
 
 class AuthorizeRequest(BaseModel):
@@ -285,15 +266,13 @@ def scbe_14_layer_pipeline(
     # Layer 14: Telemetry
     explanation["layers"]["L14"] = f"Logged at {time.time():.0f}"
 
-    # Decision thresholds (4-tier system)
-    if final_score > 0.7:
-        decision = Decision.ALLOW       # High trust - proceed
-    elif final_score > 0.5:
-        decision = Decision.QUARANTINE  # Medium trust - isolate & monitor
+    # Decision thresholds
+    if final_score > 0.6:
+        decision = Decision.ALLOW
     elif final_score > 0.3:
-        decision = Decision.ESCALATE    # Low trust - needs higher AI review
+        decision = Decision.QUARANTINE
     else:
-        decision = Decision.DENY        # Very low trust - block
+        decision = Decision.DENY
 
     explanation["trust_score"] = trust_score
     explanation["distance"] = round(distance, 3)
@@ -326,12 +305,8 @@ async def authorize(
     """
     Main governance decision endpoint.
 
-    Evaluates an agent's request through the 14-layer SCBE pipeline.
-    Returns one of four decisions:
-    - ALLOW: Action permitted immediately
-    - QUARANTINE: Temporary hold - isolate and monitor
-    - ESCALATE: Swarm escalation to higher AI, then human
-    - DENY: Action blocked immediately
+    Evaluates an agent's request through the 14-layer SCBE pipeline
+    and returns ALLOW, DENY, or QUARANTINE.
     """
     start_time = time.time()
 
@@ -510,8 +485,8 @@ async def request_consensus(
             sensitivity=0.5
         )
 
-        # ALLOW counts as approval, ESCALATE triggers swarm review
-        is_approve = decision in (Decision.ALLOW, Decision.ESCALATE)
+        # ALLOW and QUARANTINE count as approval
+        is_approve = decision in (Decision.ALLOW, Decision.QUARANTINE)
 
         if is_approve:
             approvals += 1
@@ -597,11 +572,9 @@ class MetricsResponse(BaseModel):
     total_decisions: int
     allow_count: int
     quarantine_count: int
-    escalate_count: int
     deny_count: int
     allow_rate: float
     quarantine_rate: float
-    escalate_rate: float
     deny_rate: float
     avg_trust_score: float
     firebase_connected: bool
@@ -622,7 +595,7 @@ async def get_metrics(tenant: str = Depends(verify_api_key)):
 
 class WebhookConfig(BaseModel):
     webhook_url: str
-    events: List[str] = ["decision_deny", "decision_quarantine", "decision_escalate", "trust_decline"]
+    events: List[str] = ["decision_deny", "decision_quarantine", "trust_decline"]
     min_severity: str = "medium"
 
 
@@ -711,7 +684,7 @@ async def get_alerts(
         alerts = []
         logs = persistence.get_audit_logs(limit=limit)
         for log in logs:
-            if log["decision"] in ["DENY", "QUARANTINE", "ESCALATE"]:
+            if log["decision"] in ["DENY", "QUARANTINE"]:
                 alerts.append({
                     "alert_id": f"alert-{log['audit_id']}",
                     "timestamp": log["timestamp"],
@@ -880,9 +853,8 @@ async def run_fleet_scenario(
     # Process all actions
     decisions = []
     allow_count = 0
-    quarantine_count = 0
-    escalate_count = 0
     deny_count = 0
+    quarantine_count = 0
     total_score = 0.0
 
     for action in scenario.actions:
@@ -904,12 +876,10 @@ async def run_fleet_scenario(
         # Track metrics
         if decision == Decision.ALLOW:
             allow_count += 1
-        elif decision == Decision.QUARANTINE:
-            quarantine_count += 1
-        elif decision == Decision.ESCALATE:
-            escalate_count += 1
-        else:
+        elif decision == Decision.DENY:
             deny_count += 1
+        else:
+            quarantine_count += 1
 
         total_score += score
 
@@ -936,9 +906,8 @@ async def run_fleet_scenario(
         "agents": len(scenario.agents),
         "actions": len(scenario.actions),
         "allow": allow_count,
-        "quarantine": quarantine_count,
-        "escalate": escalate_count,
         "deny": deny_count,
+        "quarantine": quarantine_count,
         "elapsed_ms": round(elapsed_ms, 2)
     }))
 
@@ -949,9 +918,8 @@ async def run_fleet_scenario(
         summary={
             "total_actions": len(scenario.actions),
             "allowed": allow_count,
-            "quarantined": quarantine_count,
-            "escalated": escalate_count,
-            "denied": deny_count
+            "denied": deny_count,
+            "quarantined": quarantine_count
         },
         decisions=decisions,
         metrics={
@@ -963,195 +931,377 @@ async def run_fleet_scenario(
 
 
 # =============================================================================
-# Roundtable Multi-Signature Governance (Six Sacred Tongues)
+# Demo Endpoints (For Promotion & Sales)
 # =============================================================================
 
-# Security tier configuration based on Sacred Tongues
-ROUNDTABLE_TIERS = {
-    1: {"tongues": ["KO"], "signatures": 1, "multiplier": 1.5, "name": "Single"},
-    2: {"tongues": ["KO", "RU"], "signatures": 2, "multiplier": 5.06, "name": "Dual"},
-    3: {"tongues": ["KO", "RU", "UM"], "signatures": 3, "multiplier": 38.4, "name": "Triple"},
-    4: {"tongues": ["KO", "RU", "UM", "CA"], "signatures": 4, "multiplier": 656, "name": "Quad"},
-    5: {"tongues": ["KO", "RU", "UM", "CA", "AV"], "signatures": 5, "multiplier": 14348, "name": "Quint"},
-    6: {"tongues": ["KO", "AV", "RU", "CA", "UM", "DR"], "signatures": 6, "multiplier": 518400, "name": "Full Roundtable"},
-}
+class RogueDetectionResponse(BaseModel):
+    simulation_id: str
+    steps: int
+    result: str
+    rogue_detected: bool
+    detection_step: int
+    consensus_votes: int
+    false_positives: int
+    final_positions: List[Dict[str, Any]]
+    metrics: Dict[str, float]
 
 
-class RoundtableRequest(BaseModel):
-    action: str = Field(..., description="Action requiring multi-sig approval")
-    target: str = Field(..., description="Target resource")
-    tier: int = Field(..., ge=1, le=6, description="Security tier (1-6)")
-    signers: List[str] = Field(..., description="List of signer agent IDs")
-    context: Optional[Dict[str, Any]] = {}
+class SwarmCoordinationResponse(BaseModel):
+    simulation_id: str
+    agents: int
+    initial_avg_distance: float
+    final_avg_distance: float
+    collisions: int
+    boundary_breaches: int
+    coordination_score: float
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "action": "DEPLOY",
-                "target": "production-cluster",
-                "tier": 4,
-                "signers": ["admin-001", "security-002", "ops-003", "lead-004"],
-                "context": {"environment": "production"}
-            }
+
+@app.get("/v1/demo/rogue-detection", response_model=RogueDetectionResponse, tags=["Demo"])
+async def demo_rogue_detection(steps: int = 25):
+    """
+    **LIVE DEMO: Rogue Agent Detection**
+
+    Watch the SCBE swarm detect and quarantine a phase-null intruder
+    using only hyperbolic geometry - no explicit messaging required.
+
+    The swarm "smells" the intruder through mathematical anomaly detection.
+    """
+    import numpy as np
+    np.random.seed(int(time.time()) % 10000)
+
+    TONGUES = {'KO': 0, 'AV': np.pi/3, 'RU': 2*np.pi/3,
+               'CA': np.pi, 'UM': 4*np.pi/3, 'DR': 5*np.pi/3}
+
+    class Agent:
+        def __init__(self, id, tongue, pos, is_rogue=False):
+            self.id = id
+            self.tongue = tongue
+            self.phase = None if is_rogue else TONGUES.get(tongue)
+            self.position = np.array(pos)
+            self.is_rogue = is_rogue
+            self.flagged_by = set()
+
+        @property
+        def norm(self):
+            return float(np.linalg.norm(self.position))
+
+        @property
+        def is_quarantined(self):
+            return len(self.flagged_by) >= 4
+
+    def hyperbolic_dist(u, v):
+        nu, nv = np.linalg.norm(u), np.linalg.norm(v)
+        diff_sq = np.linalg.norm(u - v) ** 2
+        denom = (1 - nu**2) * (1 - nv**2)
+        if denom <= 1e-10:
+            return float('inf')
+        return float(np.arccosh(max(1 + 2 * diff_sq / denom, 1.0)))
+
+    def project(pos, max_n=0.95):
+        n = np.linalg.norm(pos)
+        return pos * (max_n / n) if n > max_n else pos
+
+    # Create agents
+    agents = []
+    for i, t in enumerate(['KO', 'AV', 'RU', 'CA', 'UM', 'DR']):
+        pos = np.array([0.02 + i*0.01] * 3)
+        agents.append(Agent(i, t, pos))
+
+    # Add rogue
+    rogue = Agent(6, None, np.array([0.04, 0.04, 0.04]), is_rogue=True)
+    agents.append(rogue)
+
+    detection_step = -1
+
+    # Simulation loop
+    for step in range(steps):
+        # Detection phase
+        for ai in agents:
+            for aj in agents:
+                if ai.id == aj.id:
+                    continue
+                d = hyperbolic_dist(ai.position, aj.position)
+                if d < 1.5 and aj.phase is None and ai.phase is not None:
+                    aj.flagged_by.add(ai.id)
+
+        if rogue.is_quarantined and detection_step < 0:
+            detection_step = step
+
+        # Movement phase
+        forces = {a.id: np.zeros(3) for a in agents}
+        for i, ai in enumerate(agents):
+            for j, aj in enumerate(agents):
+                if i >= j:
+                    continue
+                d = hyperbolic_dist(ai.position, aj.position)
+                if d < 0.01 or d > 2.0:
+                    continue
+
+                direction = ai.position - aj.position
+                direction = direction / (np.linalg.norm(direction) + 1e-10)
+
+                repel = max(0, 0.4 - d) * 0.5
+                if aj.is_quarantined or len(aj.flagged_by) >= 2:
+                    repel *= 3.0
+
+                forces[ai.id] += repel * direction
+                forces[aj.id] -= repel * direction
+
+        for agent in agents:
+            agent.position = agent.position + forces[agent.id]
+            drift_std = 0.05 if agent.is_rogue else 0.03
+            agent.position = agent.position + np.random.normal(0, drift_std, 3)
+            agent.position = project(agent.position)
+
+    # Calculate final metrics
+    rogue_distances = [hyperbolic_dist(a.position, rogue.position)
+                       for a in agents if not a.is_rogue]
+    avg_rogue_dist = float(np.mean(rogue_distances))
+
+    false_positives = sum(1 for a in agents if not a.is_rogue and len(a.flagged_by) > 0)
+
+    final_positions = []
+    for a in agents:
+        final_positions.append({
+            "id": a.id,
+            "tongue": a.tongue or "NULL",
+            "position": [round(float(x), 4) for x in a.position],
+            "norm": round(a.norm, 4),
+            "is_rogue": a.is_rogue,
+            "flagged_by": len(a.flagged_by),
+            "quarantined": a.is_quarantined
+        })
+
+    return RogueDetectionResponse(
+        simulation_id=f"demo_{uuid.uuid4().hex[:8]}",
+        steps=steps,
+        result="QUARANTINED" if rogue.is_quarantined else "DETECTED" if len(rogue.flagged_by) > 0 else "EVADED",
+        rogue_detected=rogue.is_quarantined,
+        detection_step=detection_step if detection_step >= 0 else steps,
+        consensus_votes=len(rogue.flagged_by),
+        false_positives=false_positives,
+        final_positions=final_positions,
+        metrics={
+            "avg_isolation_distance": round(avg_rogue_dist, 3),
+            "rogue_final_norm": round(rogue.norm, 3),
+            "detection_rate": 1.0 if rogue.is_quarantined else len(rogue.flagged_by) / 6
         }
-
-
-class RoundtableVote(BaseModel):
-    signer_id: str
-    tongue: str
-    decision: str
-    score: float
-    signature: str
-
-
-class RoundtableResponse(BaseModel):
-    roundtable_id: str
-    tier: int
-    tier_name: str
-    required_signatures: int
-    collected_signatures: int
-    security_multiplier: float
-    status: str  # APPROVED, REJECTED, PENDING, ESCALATE_TO_HUMAN
-    tongues_used: List[str]
-    votes: List[RoundtableVote]
-    final_decision: str
-    timestamp: str
-
-
-@app.post("/v1/roundtable", response_model=RoundtableResponse, tags=["Governance"])
-async def roundtable_governance(
-    request: RoundtableRequest,
-    tenant: str = Depends(verify_api_key)
-):
-    """
-    Multi-signature governance using the Six Sacred Tongues protocol.
-
-    Security Tiers:
-    - Tier 1: Single (KO) - 1.5× - Basic coordination
-    - Tier 2: Dual (KO+RU) - 5.06× - Config changes
-    - Tier 3: Triple (KO+RU+UM) - 38.4× - Security ops
-    - Tier 4: Quad (KO+RU+UM+CA) - 656× - Deploy/delete
-    - Tier 5: Quint (5 tongues) - 14,348× - Infrastructure
-    - Tier 6: Full Roundtable (all 6) - 518,400× - Genesis ops
-    """
-    tier_config = ROUNDTABLE_TIERS[request.tier]
-    required_sigs = tier_config["signatures"]
-    tongues = tier_config["tongues"]
-
-    if len(request.signers) < required_sigs:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Tier {request.tier} requires {required_sigs} signers, got {len(request.signers)}"
-        )
-
-    roundtable_id = f"rt_{uuid.uuid4().hex[:12]}"
-    votes = []
-    approvals = 0
-    denials = 0
-    escalations = 0
-
-    # Collect votes from each signer using assigned tongue
-    for i, signer_id in enumerate(request.signers[:required_sigs]):
-        tongue = tongues[i % len(tongues)]
-
-        # Get signer's trust or default
-        if signer_id in AGENTS_STORE:
-            trust = AGENTS_STORE[signer_id]["trust_score"]
-        else:
-            trust = 0.5
-
-        # Run through 14-layer pipeline
-        # Lower tiers are more permissive, higher tiers are stricter
-        base_sensitivity = 0.1 + (request.tier * 0.05)  # Tier 1=0.15, Tier 6=0.4
-        decision, score, _ = scbe_14_layer_pipeline(
-            agent_id=signer_id,
-            action=request.action,
-            target=request.target,
-            trust_score=trust,
-            sensitivity=base_sensitivity
-        )
-
-        # Generate tongue-specific signature
-        sig_data = f"{roundtable_id}:{signer_id}:{tongue}:{decision.value}"
-        signature = hashlib.sha256(sig_data.encode()).hexdigest()[:16]
-
-        if decision == Decision.ALLOW:
-            approvals += 1
-        elif decision == Decision.DENY:
-            denials += 1
-        else:  # QUARANTINE or ESCALATE
-            escalations += 1
-
-        votes.append(RoundtableVote(
-            signer_id=signer_id,
-            tongue=tongue,
-            decision=decision.value,
-            score=round(score, 3),
-            signature=f"{tongue.lower()}:{signature}"
-        ))
-
-    # Determine final status
-    if approvals >= required_sigs:
-        status = "APPROVED"
-        final_decision = "ALLOW"
-    elif denials >= (required_sigs // 2) + 1:
-        status = "REJECTED"
-        final_decision = "DENY"
-    elif escalations > 0:
-        status = "ESCALATE_TO_HUMAN"
-        final_decision = "ESCALATE"
-    else:
-        status = "PENDING"
-        final_decision = "QUARANTINE"
-
-    logger.info(json.dumps({
-        "event": "roundtable_decision",
-        "roundtable_id": roundtable_id,
-        "tier": request.tier,
-        "status": status,
-        "approvals": approvals,
-        "denials": denials,
-        "escalations": escalations,
-        "multiplier": tier_config["multiplier"]
-    }))
-
-    return RoundtableResponse(
-        roundtable_id=roundtable_id,
-        tier=request.tier,
-        tier_name=tier_config["name"],
-        required_signatures=required_sigs,
-        collected_signatures=len(votes),
-        security_multiplier=tier_config["multiplier"],
-        status=status,
-        tongues_used=tongues[:len(votes)],
-        votes=votes,
-        final_decision=final_decision,
-        timestamp=datetime.utcnow().isoformat() + "Z"
     )
 
 
-@app.get("/v1/roundtable/tiers", tags=["Governance"])
-async def get_roundtable_tiers():
-    """Get available Roundtable security tiers and their requirements."""
-    tiers = []
-    use_cases = {
-        1: "Basic coordination, status updates",
-        2: "State modifications, config changes",
-        3: "Security operations, key rotation",
-        4: "Irreversible ops (deploy, delete)",
-        5: "Critical infrastructure changes",
-        6: "Genesis-level operations, system reboot"
+@app.get("/v1/demo/swarm-coordination", response_model=SwarmCoordinationResponse, tags=["Demo"])
+async def demo_swarm_coordination(agents: int = 12, steps: int = 30):
+    """
+    **LIVE DEMO: Swarm Coordination**
+
+    Watch agents self-organize in hyperbolic space using only local
+    repulsion rules - no central coordinator required.
+
+    Demonstrates jam-resistant, decentralized coordination.
+    """
+    import numpy as np
+    np.random.seed(int(time.time()) % 10000)
+
+    # Initialize agents in tight cluster
+    positions = []
+    for i in range(agents):
+        pos = np.random.normal(0, 0.05, 3)
+        pos = pos / (np.linalg.norm(pos) + 0.1) * 0.1
+        positions.append(pos)
+
+    def hyperbolic_dist(u, v):
+        nu, nv = np.linalg.norm(u), np.linalg.norm(v)
+        diff_sq = np.linalg.norm(u - v) ** 2
+        denom = (1 - nu**2) * (1 - nv**2)
+        if denom <= 1e-10:
+            return float('inf')
+        return float(np.arccosh(max(1 + 2 * diff_sq / denom, 1.0)))
+
+    def project(pos, max_n=0.95):
+        n = np.linalg.norm(pos)
+        return pos * (max_n / n) if n > max_n else pos
+
+    # Calculate initial distances
+    initial_distances = []
+    for i in range(agents):
+        for j in range(i+1, agents):
+            initial_distances.append(hyperbolic_dist(positions[i], positions[j]))
+    initial_avg = float(np.mean(initial_distances))
+
+    collisions = 0
+    boundary_breaches = 0
+
+    # Simulation
+    for step in range(steps):
+        forces = [np.zeros(3) for _ in range(agents)]
+
+        for i in range(agents):
+            for j in range(i+1, agents):
+                d = hyperbolic_dist(positions[i], positions[j])
+
+                if d < 0.1:
+                    collisions += 1
+
+                if d < 0.5 and d > 0.01:
+                    direction = positions[i] - positions[j]
+                    direction = direction / (np.linalg.norm(direction) + 1e-10)
+                    force = (0.5 - d) * 0.3
+                    forces[i] += force * direction
+                    forces[j] -= force * direction
+
+        for i in range(agents):
+            positions[i] = positions[i] + forces[i]
+            positions[i] = positions[i] + np.random.normal(0, 0.02, 3)
+            old_norm = np.linalg.norm(positions[i])
+            positions[i] = project(positions[i])
+            if old_norm > 0.95:
+                boundary_breaches += 1
+
+    # Calculate final distances
+    final_distances = []
+    for i in range(agents):
+        for j in range(i+1, agents):
+            final_distances.append(hyperbolic_dist(positions[i], positions[j]))
+    final_avg = float(np.mean(final_distances))
+
+    # Coordination score: how well did they spread without collisions
+    coord_score = min(1.0, (final_avg / max(initial_avg, 0.01)) * 0.5) * (1 - collisions / (agents * steps))
+
+    return SwarmCoordinationResponse(
+        simulation_id=f"swarm_{uuid.uuid4().hex[:8]}",
+        agents=agents,
+        initial_avg_distance=round(initial_avg, 4),
+        final_avg_distance=round(final_avg, 4),
+        collisions=collisions,
+        boundary_breaches=boundary_breaches,
+        coordination_score=round(max(0, coord_score), 3)
+    )
+
+
+@app.get("/v1/demo/pipeline-layers", tags=["Demo"])
+async def demo_pipeline_layers(
+    action: str = "READ",
+    trust: float = 0.7,
+    sensitivity: float = 0.5
+):
+    """
+    **LIVE DEMO: 14-Layer Pipeline Visualization**
+
+    See exactly how each layer of the SCBE pipeline processes a request.
+    Understand the math behind AI governance decisions.
+    """
+    agent_id = f"demo-agent-{uuid.uuid4().hex[:6]}"
+    target = "demo_resource"
+
+    # Detailed pipeline execution
+    layers = {}
+
+    # Layer 1: Complex Context Embedding
+    seed = hashlib.sha256(f"{agent_id}:{action}:{target}".encode()).digest()
+    complex_coords = [(seed[i] - 128) / 128.0 for i in range(6)]
+    layers["L1_complex_context"] = {
+        "description": "Embed request as complex numbers",
+        "output": [round(c, 4) for c in complex_coords]
     }
-    for tier_num, config in ROUNDTABLE_TIERS.items():
-        tiers.append({
-            "tier": tier_num,
-            "name": config["name"],
-            "tongues_required": config["tongues"],
-            "signatures_required": config["signatures"],
-            "security_multiplier": config["multiplier"],
-            "use_cases": use_cases[tier_num]
-        })
-    return {"tiers": tiers}
+
+    # Layer 2-4: Realification & Weighting
+    radius = (1 - trust) * 0.8 + 0.1
+    position = tuple(c * radius for c in complex_coords)
+    layers["L2-4_realification"] = {
+        "description": "Map to real manifold with trust weighting",
+        "trust_radius": round(radius, 4),
+        "position": [round(p, 4) for p in position]
+    }
+
+    # Layer 5-7: Hyperbolic Geometry
+    safe_center = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+    norm1_sq = sum(x**2 for x in position)
+    diff_sq = sum((a - b)**2 for a, b in zip(position, safe_center))
+    denom = (1 - min(norm1_sq, 0.9999)) * 1.0
+    delta = 2 * diff_sq / denom if denom > 0 else 0
+    distance = math.acosh(1 + delta) if delta >= 0 else 0.0
+
+    layers["L5-7_hyperbolic"] = {
+        "description": "Calculate Poincaré ball distance from safe center",
+        "position_norm": round(math.sqrt(norm1_sq), 4),
+        "hyperbolic_distance": round(distance, 4),
+        "interpretation": "closer to 0 = safer, higher = riskier"
+    }
+
+    # Layer 8: Realm Trust
+    realm_trust = trust * (1 - sensitivity * 0.5)
+    layers["L8_realm_trust"] = {
+        "description": "Compute realm-adjusted trust",
+        "base_trust": trust,
+        "sensitivity_penalty": round(sensitivity * 0.5, 4),
+        "realm_trust": round(realm_trust, 4)
+    }
+
+    # Layer 9-10: Spectral/Spin Coherence
+    coherence = 1.0 - abs(math.sin(distance * math.pi))
+    layers["L9-10_coherence"] = {
+        "description": "Spectral and spin coherence analysis",
+        "coherence_score": round(coherence, 4),
+        "interpretation": "measures stability of request pattern"
+    }
+
+    # Layer 11: Temporal Pattern
+    temporal_score = trust * 0.9 + 0.1
+    layers["L11_temporal"] = {
+        "description": "Temporal pattern analysis",
+        "temporal_score": round(temporal_score, 4)
+    }
+
+    # Layer 12: Harmonic Scaling
+    R = 2
+    d = int(sensitivity * 3) + 1
+    H = R ** d
+    risk_factor = (1 - realm_trust) * sensitivity * 0.5
+    layers["L12_harmonic"] = {
+        "description": "Harmonic scaling and risk computation",
+        "dimension": d,
+        "harmonic_value": H,
+        "risk_factor": round(risk_factor, 4)
+    }
+
+    # Layer 13: Final Score
+    final_score = (realm_trust * 0.6 + coherence * 0.2 + temporal_score * 0.2) - risk_factor
+    if final_score > 0.6:
+        decision = "ALLOW"
+    elif final_score > 0.3:
+        decision = "QUARANTINE"
+    else:
+        decision = "DENY"
+
+    layers["L13_decision"] = {
+        "description": "Aggregate scores and make decision",
+        "weights": {"realm_trust": 0.6, "coherence": 0.2, "temporal": 0.2},
+        "risk_penalty": round(risk_factor, 4),
+        "final_score": round(final_score, 4),
+        "decision": decision,
+        "thresholds": {"ALLOW": "> 0.6", "QUARANTINE": "0.3 - 0.6", "DENY": "< 0.3"}
+    }
+
+    # Layer 14: Telemetry
+    layers["L14_telemetry"] = {
+        "description": "Audit logging and telemetry",
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "logged": True
+    }
+
+    return {
+        "demo_id": f"pipeline_{uuid.uuid4().hex[:8]}",
+        "input": {
+            "agent_id": agent_id,
+            "action": action,
+            "target": target,
+            "trust": trust,
+            "sensitivity": sensitivity
+        },
+        "layers": layers,
+        "final_decision": decision,
+        "final_score": round(final_score, 4)
+    }
 
 
 # =============================================================================
