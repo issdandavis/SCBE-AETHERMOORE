@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCBE Swarm Battle Trainer</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            font-family: 'Courier New', monospace;
+            color: #00ff88;
+            overflow: hidden;
+        }
+        #ui-container {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 100;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border: 1px solid #00ff88;
+            border-radius: 8px;
+            max-width: 280px;
+        }
+        h1 { font-size: 14px; margin-bottom: 10px; color: #00ffcc; }
+        .stat { font-size: 11px; margin: 4px 0; }
+        .stat-value { color: #ffcc00; }
+        button {
+            background: #1a1a2e;
+            color: #00ff88;
+            border: 1px solid #00ff88;
+            padding: 8px 12px;
+            margin: 4px 2px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 11px;
+            border-radius: 4px;
+        }
+        button:hover { background: #00ff88; color: #0a0a0f; }
+        button.active { background: #00ff88; color: #0a0a0f; }
+        #controls { margin-top: 10px; }
+        #generation-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border: 1px solid #ff6600;
+            border-radius: 8px;
+            z-index: 100;
+        }
+        #neural-viz {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border: 1px solid #6600ff;
+            border-radius: 8px;
+            z-index: 100;
+            width: 300px;
+        }
+        .brain-canvas {
+            width: 100%;
+            height: 80px;
+            background: #0a0a1a;
+            border: 1px solid #333;
+            margin-top: 8px;
+        }
+        #log {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            z-index: 100;
+            width: 250px;
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 10px;
+        }
+        .log-entry { margin: 2px 0; opacity: 0.8; }
+        .log-good { color: #00ff88; }
+        .log-bad { color: #ff4444; }
+        .log-info { color: #88ccff; }
+    </style>
+</head>
+<body>
+    <div id="ui-container">
+        <h1>SCBE SWARM BATTLE TRAINER</h1>
+        <div class="stat">Generation: <span class="stat-value" id="gen">1</span></div>
+        <div class="stat">Best Fitness: <span class="stat-value" id="best-fitness">0</span></div>
+        <div class="stat">Avg Fitness: <span class="stat-value" id="avg-fitness">0</span></div>
+        <div class="stat">Battles: <span class="stat-value" id="battles">0</span></div>
+        <div class="stat">Win Rate: <span class="stat-value" id="winrate">0%</span></div>
+        <div id="controls">
+            <button id="btn-start">START TRAINING</button>
+            <button id="btn-pause">PAUSE</button>
+            <button id="btn-fast">FAST MODE</button>
+            <br>
+            <button id="btn-hex">HEX</button>
+            <button id="btn-tetra">TETRA</button>
+            <button id="btn-scatter">SCATTER</button>
+        </div>
+    </div>
+
+    <div id="generation-info">
+        <h1 style="color: #ff6600;">SACRED TONGUE SQUAD</h1>
+        <div class="stat">KO (Flow): <span class="stat-value" id="ko-stat">100%</span></div>
+        <div class="stat">AV (Diplo): <span class="stat-value" id="av-stat">100%</span></div>
+        <div class="stat">RU (Tank): <span class="stat-value" id="ru-stat">100%</span></div>
+        <div class="stat">CA (DPS): <span class="stat-value" id="ca-stat">100%</span></div>
+        <div class="stat">UM (Stealth): <span class="stat-value" id="um-stat">100%</span></div>
+        <div class="stat">DR (Architect): <span class="stat-value" id="dr-stat">100%</span></div>
+    </div>
+
+    <div id="neural-viz">
+        <h1 style="color: #6600ff;">NEURAL WEIGHTS</h1>
+        <canvas class="brain-canvas" id="brain-canvas"></canvas>
+        <div class="stat" style="margin-top: 8px;">Mutation Rate: <span class="stat-value" id="mutation">5%</span></div>
+    </div>
+
+    <div id="log">
+        <div class="log-entry log-info">System initialized...</div>
+    </div>
+
+    <div id="game-container"></div>
+
+    <script>
+// ============================================
+// SCBE SWARM BATTLE TRAINER
+// Military-style AI training with genetic algorithms
+// ============================================
+
+const SACRED_TONGUES = [
+    { id: 'KO', name: 'Koraelin', color: 0x00ffcc, role: 'Flow', speed: 1.5, damage: 0.8, hp: 80 },
+    { id: 'AV', name: 'Avali', color: 0xffcc00, role: 'Diplomat', speed: 1.0, damage: 0.6, hp: 100 },
+    { id: 'RU', name: 'Runethic', color: 0x8b4513, role: 'Tank', speed: 0.7, damage: 1.0, hp: 150 },
+    { id: 'CA', name: 'Cassisivadan', color: 0xff0066, role: 'DPS', speed: 1.2, damage: 1.5, hp: 60 },
+    { id: 'UM', name: 'Umbroth', color: 0x6600cc, role: 'Stealth', speed: 1.3, damage: 1.2, hp: 70 },
+    { id: 'DR', name: 'Draumric', color: 0x4444ff, role: 'Architect', speed: 0.8, damage: 0.9, hp: 120 }
+];
+
+// Neural network for each agent (simple perceptron)
+class NeuralBrain {
+    constructor(inputSize = 8, hiddenSize = 6, outputSize = 4) {
+        // Inputs: [nearestEnemyDist, nearestEnemyAngle, health, nearestAllyDist, formationBonus, enemyCount, allyCount, random]
+        // Outputs: [moveX, moveY, attack, retreat]
+        this.weightsIH = this.randomMatrix(inputSize, hiddenSize);
+        this.weightsHO = this.randomMatrix(hiddenSize, outputSize);
+        this.fitness = 0;
+    }
+
+    randomMatrix(rows, cols) {
+        const m = [];
+        for (let i = 0; i < rows; i++) {
+            m[i] = [];
+            for (let j = 0; j < cols; j++) {
+                m[i][j] = (Math.random() * 2 - 1);
+            }
+        }
+        return m;
+    }
+
+    forward(inputs) {
+        // Hidden layer
+        const hidden = [];
+        for (let j = 0; j < this.weightsIH[0].length; j++) {
+            let sum = 0;
+            for (let i = 0; i < inputs.length; i++) {
+                sum += inputs[i] * this.weightsIH[i][j];
+            }
+            hidden[j] = Math.tanh(sum);
+        }
+        // Output layer
+        const outputs = [];
+        for (let j = 0; j < this.weightsHO[0].length; j++) {
+            let sum = 0;
+            for (let i = 0; i < hidden.length; i++) {
+                sum += hidden[i] * this.weightsHO[i][j];
+            }
+            outputs[j] = Math.tanh(sum);
+        }
+        return outputs;
+    }
+
+    mutate(rate = 0.05) {
+        for (let i = 0; i < this.weightsIH.length; i++) {
+            for (let j = 0; j < this.weightsIH[i].length; j++) {
+                if (Math.random() < rate) {
+                    this.weightsIH[i][j] += (Math.random() * 0.4 - 0.2);
+                }
+            }
+        }
+        for (let i = 0; i < this.weightsHO.length; i++) {
+            for (let j = 0; j < this.weightsHO[i].length; j++) {
+                if (Math.random() < rate) {
+                    this.weightsHO[i][j] += (Math.random() * 0.4 - 0.2);
+                }
+            }
+        }
+    }
+
+    clone() {
+        const baby = new NeuralBrain();
+        baby.weightsIH = JSON.parse(JSON.stringify(this.weightsIH));
+        baby.weightsHO = JSON.parse(JSON.stringify(this.weightsHO));
+        return baby;
+    }
+
+    crossover(partner) {
+        const child = new NeuralBrain();
+        for (let i = 0; i < this.weightsIH.length; i++) {
+            for (let j = 0; j < this.weightsIH[i].length; j++) {
+                child.weightsIH[i][j] = Math.random() < 0.5 ? this.weightsIH[i][j] : partner.weightsIH[i][j];
+            }
+        }
+        for (let i = 0; i < this.weightsHO.length; i++) {
+            for (let j = 0; j < this.weightsHO[i].length; j++) {
+                child.weightsHO[i][j] = Math.random() < 0.5 ? this.weightsHO[i][j] : partner.weightsHO[i][j];
+            }
+        }
+        return child;
+    }
+}
+
+// Genetic Algorithm Manager
+class GeneticTrainer {
+    constructor(populationSize = 6) {
+        this.populationSize = populationSize;
+        this.generation = 1;
+        this.population = [];
+        this.bestFitness = 0;
+        this.bestBrain = null;
+        this.battles = 0;
+        this.wins = 0;
+        this.mutationRate = 0.05;
+
+        // Initialize population
+        for (let i = 0; i < populationSize; i++) {
+            this.population.push(new NeuralBrain());
+        }
+    }
+
+    evolve() {
+        // Sort by fitness
+        this.population.sort((a, b) => b.fitness - a.fitness);
+
+        // Track best
+        if (this.population[0].fitness > this.bestFitness) {
+            this.bestFitness = this.population[0].fitness;
+            this.bestBrain = this.population[0].clone();
+        }
+
+        // Create next generation
+        const newPop = [];
+
+        // Elitism: keep top 2
+        newPop.push(this.population[0].clone());
+        newPop.push(this.population[1].clone());
+
+        // Crossover and mutate for the rest
+        while (newPop.length < this.populationSize) {
+            const parent1 = this.select();
+            const parent2 = this.select();
+            const child = parent1.crossover(parent2);
+            child.mutate(this.mutationRate);
+            newPop.push(child);
+        }
+
+        this.population = newPop;
+        this.generation++;
+
+        // Reset fitness for new generation
+        this.population.forEach(b => b.fitness = 0);
+    }
+
+    select() {
+        // Tournament selection
+        const tournament = [];
+        for (let i = 0; i < 3; i++) {
+            tournament.push(this.population[Math.floor(Math.random() * this.population.length)]);
+        }
+        tournament.sort((a, b) => b.fitness - a.fitness);
+        return tournament[0];
+    }
+
+    recordBattle(won, scores) {
+        this.battles++;
+        if (won) this.wins++;
+
+        // Update individual fitness
+        scores.forEach((score, i) => {
+            if (this.population[i]) {
+                this.population[i].fitness += score;
+            }
+        });
+    }
+}
+
+// Game Configuration
+const config = {
+    type: Phaser.AUTO,
+    width: window.innerWidth,
+    height: window.innerHeight,
+    parent: 'game-container',
+    backgroundColor: '#0a0a0f',
+    physics: {
+        default: 'arcade',
+        arcade: { debug: false }
+    },
+    scene: {
+        preload: preload,
+        create: create,
+        update: update
+    }
+};
+
+let game;
+let trainer;
+let allies = [];
+let enemies = [];
+let projectiles = [];
+let battleActive = false;
+let paused = false;
+let fastMode = false;
+let currentFormation = 'hex';
+let arenaRadius;
+let centerX, centerY;
+let battleTimer = 0;
+const BATTLE_DURATION = 30000; // 30 seconds per battle
+
+function preload() {
+    // Generate textures programmatically
+}
+
+function create() {
+    const scene = this;
+    centerX = config.width / 2;
+    centerY = config.height / 2;
+    arenaRadius = Math.min(centerX, centerY) - 100;
+
+    trainer = new GeneticTrainer(6);
+
+    // Draw Poincare ball arena
+    drawArena(scene);
+
+    // Setup controls
+    setupControls(scene);
+
+    // Start first battle
+    startBattle(scene);
+}
+
+function drawArena(scene) {
+    const graphics = scene.add.graphics();
+
+    // Poincare ball boundary
+    graphics.lineStyle(2, 0x00ff88, 0.5);
+    graphics.strokeCircle(centerX, centerY, arenaRadius);
+
+    // Inner rings (trust zones)
+    graphics.lineStyle(1, 0x00ff88, 0.2);
+    graphics.strokeCircle(centerX, centerY, arenaRadius * 0.3); // Core
+    graphics.strokeCircle(centerX, centerY, arenaRadius * 0.6); // Inner
+    graphics.strokeCircle(centerX, centerY, arenaRadius * 0.85); // Outer
+
+    // Grid lines
+    graphics.lineStyle(1, 0x00ff88, 0.1);
+    for (let i = 0; i < 12; i++) {
+        const angle = (i / 12) * Math.PI * 2;
+        graphics.lineBetween(
+            centerX, centerY,
+            centerX + Math.cos(angle) * arenaRadius,
+            centerY + Math.sin(angle) * arenaRadius
+        );
+    }
+
+    // Labels
+    scene.add.text(centerX, centerY - arenaRadius - 20, 'POINCARE BATTLE ARENA', {
+        fontSize: '16px', fill: '#00ff88', fontFamily: 'Courier New'
+    }).setOrigin(0.5);
+
+    scene.add.text(centerX, centerY, 'CORE', {
+        fontSize: '10px', fill: '#00ff88', fontFamily: 'Courier New', alpha: 0.3
+    }).setOrigin(0.5);
+}
+
+function createAgent(scene, tongueIndex, x, y, isEnemy = false) {
+    const tongue = SACRED_TONGUES[tongueIndex];
+    const color = isEnemy ? 0xff4444 : tongue.color;
+
+    const agent = scene.add.circle(x, y, isEnemy ? 12 : 15, color);
+    scene.physics.add.existing(agent);
+
+    agent.tongue = tongue;
+    agent.tongueIndex = tongueIndex;
+    agent.isEnemy = isEnemy;
+    agent.hp = tongue.hp;
+    agent.maxHp = tongue.hp;
+    agent.speed = tongue.speed * 100;
+    agent.damage = tongue.damage * 10;
+    agent.attackCooldown = 0;
+    agent.score = 0;
+
+    // Health bar
+    agent.hpBar = scene.add.rectangle(x, y - 20, 24, 4, 0x00ff00);
+    agent.hpBarBg = scene.add.rectangle(x, y - 20, 24, 4, 0x333333);
+    agent.hpBarBg.setDepth(0);
+    agent.hpBar.setDepth(1);
+
+    // Label
+    agent.label = scene.add.text(x, y + 20, isEnemy ? 'E' : tongue.id, {
+        fontSize: '10px', fill: isEnemy ? '#ff4444' : '#ffffff', fontFamily: 'Courier New'
+    }).setOrigin(0.5);
+
+    return agent;
+}
+
+function startBattle(scene) {
+    // Clear previous
+    allies.forEach(a => { a.destroy(); a.hpBar.destroy(); a.hpBarBg.destroy(); a.label.destroy(); });
+    enemies.forEach(e => { e.destroy(); e.hpBar.destroy(); e.hpBarBg.destroy(); e.label.destroy(); });
+    projectiles.forEach(p => p.destroy());
+    allies = [];
+    enemies = [];
+    projectiles = [];
+
+    // Spawn allies in formation
+    const allyPositions = getFormationPositions(currentFormation, 6, arenaRadius * 0.3);
+    for (let i = 0; i < 6; i++) {
+        const pos = allyPositions[i];
+        const agent = createAgent(scene, i, centerX + pos.x, centerY + pos.y, false);
+        agent.brain = trainer.population[i];
+        allies.push(agent);
+    }
+
+    // Spawn enemies in random positions (outer ring)
+    const enemyCount = 4 + Math.floor(trainer.generation / 5); // More enemies as generations progress
+    for (let i = 0; i < Math.min(enemyCount, 10); i++) {
+        const angle = (i / enemyCount) * Math.PI * 2 + Math.random() * 0.5;
+        const dist = arenaRadius * (0.6 + Math.random() * 0.3);
+        const agent = createAgent(scene, i % 6, centerX + Math.cos(angle) * dist, centerY + Math.sin(angle) * dist, true);
+        enemies.push(agent);
+    }
+
+    battleActive = true;
+    battleTimer = 0;
+    addLog('Battle started! Gen ' + trainer.generation, 'info');
+}
+
+function getFormationPositions(type, count, radius) {
+    const positions = [];
+
+    if (type === 'hex') {
+        for (let i = 0; i < count; i++) {
+            const angle = (i / 6) * Math.PI * 2 - Math.PI / 2;
+            positions.push({
+                x: Math.cos(angle) * radius,
+                y: Math.sin(angle) * radius
+            });
+        }
+    } else if (type === 'tetra') {
+        // Tetrahedral projection
+        const layers = [[0], [1, 2, 3], [4, 5]];
+        let idx = 0;
+        layers.forEach((layer, li) => {
+            const r = radius * (0.3 + li * 0.35);
+            layer.forEach((_, i) => {
+                const angle = (i / layer.length) * Math.PI * 2 + li * 0.5;
+                if (idx < count) {
+                    positions.push({ x: Math.cos(angle) * r, y: Math.sin(angle) * r });
+                    idx++;
+                }
+            });
+        });
+    } else if (type === 'scatter') {
+        for (let i = 0; i < count; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const dist = Math.random() * radius;
+            positions.push({ x: Math.cos(angle) * dist, y: Math.sin(angle) * dist });
+        }
+    }
+
+    while (positions.length < count) {
+        positions.push({ x: 0, y: 0 });
+    }
+    return positions;
+}
+
+function update(time, delta) {
+    if (paused || !battleActive) return;
+
+    const dt = fastMode ? delta * 3 : delta;
+    battleTimer += dt;
+
+    const scene = this;
+
+    // Update allies (AI controlled)
+    allies.forEach((ally, idx) => {
+        if (ally.hp <= 0) return;
+
+        // Calculate inputs for neural network
+        const inputs = calculateInputs(ally, allies, enemies);
+        const outputs = ally.brain.forward(inputs);
+
+        // Apply outputs
+        const moveX = outputs[0] * ally.speed * (dt / 1000);
+        const moveY = outputs[1] * ally.speed * (dt / 1000);
+        const shouldAttack = outputs[2] > 0.3;
+        const shouldRetreat = outputs[3] > 0.5;
+
+        // Movement
+        let newX = ally.x + moveX;
+        let newY = ally.y + moveY;
+
+        // Retreat behavior
+        if (shouldRetreat && ally.hp < ally.maxHp * 0.3) {
+            const toCenterX = centerX - ally.x;
+            const toCenterY = centerY - ally.y;
+            const dist = Math.sqrt(toCenterX * toCenterX + toCenterY * toCenterY);
+            if (dist > 0) {
+                newX = ally.x + (toCenterX / dist) * ally.speed * (dt / 1000);
+                newY = ally.y + (toCenterY / dist) * ally.speed * (dt / 1000);
+            }
+        }
+
+        // Keep in arena
+        const distFromCenter = Math.sqrt((newX - centerX) ** 2 + (newY - centerY) ** 2);
+        if (distFromCenter < arenaRadius - 20) {
+            ally.x = newX;
+            ally.y = newY;
+        }
+
+        // Attack
+        ally.attackCooldown -= dt;
+        if (shouldAttack && ally.attackCooldown <= 0) {
+            const target = findNearestEnemy(ally, enemies);
+            if (target && target.hp > 0) {
+                const dist = Phaser.Math.Distance.Between(ally.x, ally.y, target.x, target.y);
+                if (dist < 150) {
+                    attack(scene, ally, target);
+                    ally.attackCooldown = 500;
+                }
+            }
+        }
+
+        // Update visuals
+        updateAgentVisuals(ally);
+
+        // Fitness rewards
+        ally.score += dt * 0.001; // Survival bonus
+        if (ally.hp > ally.maxHp * 0.5) ally.score += dt * 0.0005; // Health bonus
+    });
+
+    // Update enemies (simple AI)
+    enemies.forEach(enemy => {
+        if (enemy.hp <= 0) return;
+
+        // Find nearest ally and move toward
+        const target = findNearestEnemy(enemy, allies);
+        if (target && target.hp > 0) {
+            const angle = Phaser.Math.Angle.Between(enemy.x, enemy.y, target.x, target.y);
+            enemy.x += Math.cos(angle) * enemy.speed * 0.5 * (dt / 1000);
+            enemy.y += Math.sin(angle) * enemy.speed * 0.5 * (dt / 1000);
+
+            // Attack
+            enemy.attackCooldown -= dt;
+            const dist = Phaser.Math.Distance.Between(enemy.x, enemy.y, target.x, target.y);
+            if (dist < 100 && enemy.attackCooldown <= 0) {
+                attack(scene, enemy, target);
+                enemy.attackCooldown = 700;
+            }
+        }
+
+        updateAgentVisuals(enemy);
+    });
+
+    // Update projectiles
+    projectiles = projectiles.filter(p => {
+        if (!p.active) return false;
+        p.life -= dt;
+        if (p.life <= 0) {
+            p.destroy();
+            return false;
+        }
+        return true;
+    });
+
+    // Check battle end
+    const aliveAllies = allies.filter(a => a.hp > 0).length;
+    const aliveEnemies = enemies.filter(e => e.hp > 0).length;
+
+    if (aliveAllies === 0 || aliveEnemies === 0 || battleTimer > BATTLE_DURATION) {
+        endBattle(scene, aliveAllies > 0 && aliveEnemies === 0);
+    }
+
+    // Update UI
+    updateUI();
+}
+
+function calculateInputs(agent, allies, enemies) {
+    // Find nearest enemy
+    let nearestEnemy = null;
+    let nearestEnemyDist = 9999;
+    enemies.forEach(e => {
+        if (e.hp <= 0) return;
+        const d = Phaser.Math.Distance.Between(agent.x, agent.y, e.x, e.y);
+        if (d < nearestEnemyDist) {
+            nearestEnemyDist = d;
+            nearestEnemy = e;
+        }
+    });
+
+    // Find nearest ally
+    let nearestAllyDist = 9999;
+    allies.forEach(a => {
+        if (a === agent || a.hp <= 0) return;
+        const d = Phaser.Math.Distance.Between(agent.x, agent.y, a.x, a.y);
+        if (d < nearestAllyDist) nearestAllyDist = d;
+    });
+
+    // Calculate formation bonus (how close to ideal position)
+    const distFromCenter = Phaser.Math.Distance.Between(agent.x, agent.y, centerX, centerY);
+    const formationBonus = 1 - (distFromCenter / arenaRadius);
+
+    // Count nearby
+    const enemyCount = enemies.filter(e => e.hp > 0).length / 10;
+    const allyCount = allies.filter(a => a.hp > 0).length / 6;
+
+    // Angle to nearest enemy
+    let enemyAngle = 0;
+    if (nearestEnemy) {
+        enemyAngle = Phaser.Math.Angle.Between(agent.x, agent.y, nearestEnemy.x, nearestEnemy.y) / Math.PI;
+    }
+
+    return [
+        nearestEnemyDist / arenaRadius,
+        enemyAngle,
+        agent.hp / agent.maxHp,
+        nearestAllyDist / arenaRadius,
+        formationBonus,
+        enemyCount,
+        allyCount,
+        Math.random() * 0.1
+    ];
+}
+
+function findNearestEnemy(agent, targets) {
+    let nearest = null;
+    let nearestDist = 9999;
+    targets.forEach(t => {
+        if (t.hp <= 0) return;
+        const d = Phaser.Math.Distance.Between(agent.x, agent.y, t.x, t.y);
+        if (d < nearestDist) {
+            nearestDist = d;
+            nearest = t;
+        }
+    });
+    return nearest;
+}
+
+function attack(scene, attacker, target) {
+    // Visual projectile
+    const proj = scene.add.circle(attacker.x, attacker.y, 4, attacker.isEnemy ? 0xff4444 : 0x00ffcc);
+    proj.life = 200;
+    projectiles.push(proj);
+
+    // Animate to target
+    scene.tweens.add({
+        targets: proj,
+        x: target.x,
+        y: target.y,
+        duration: 150,
+        onComplete: () => {
+            target.hp -= attacker.damage;
+            if (!attacker.isEnemy) {
+                attacker.score += 5; // Damage reward
+                if (target.hp <= 0) {
+                    attacker.score += 50; // Kill reward
+                    addLog(attacker.tongue.id + ' eliminated enemy!', 'good');
+                }
+            } else if (target.hp <= 0) {
+                addLog(target.tongue.id + ' was eliminated!', 'bad');
+            }
+        }
+    });
+}
+
+function updateAgentVisuals(agent) {
+    agent.hpBar.x = agent.x;
+    agent.hpBar.y = agent.y - 20;
+    agent.hpBarBg.x = agent.x;
+    agent.hpBarBg.y = agent.y - 20;
+    agent.label.x = agent.x;
+    agent.label.y = agent.y + 20;
+
+    const hpPercent = Math.max(0, agent.hp / agent.maxHp);
+    agent.hpBar.width = 24 * hpPercent;
+    agent.hpBar.fillColor = hpPercent > 0.5 ? 0x00ff00 : hpPercent > 0.25 ? 0xffff00 : 0xff0000;
+
+    if (agent.hp <= 0) {
+        agent.alpha = 0.3;
+        agent.hpBar.visible = false;
+    }
+}
+
+function endBattle(scene, won) {
+    battleActive = false;
+
+    // Calculate final scores
+    const scores = allies.map(a => a.score + (a.hp > 0 ? 20 : 0));
+    trainer.recordBattle(won, scores);
+
+    addLog(won ? 'VICTORY! Evolving...' : 'Defeat. Evolving...', won ? 'good' : 'bad');
+
+    // Evolve after every battle
+    trainer.evolve();
+
+    // Start next battle after delay
+    scene.time.delayedCall(fastMode ? 500 : 1500, () => {
+        startBattle(scene);
+    });
+}
+
+function updateUI() {
+    document.getElementById('gen').textContent = trainer.generation;
+    document.getElementById('best-fitness').textContent = trainer.bestFitness.toFixed(1);
+    document.getElementById('avg-fitness').textContent = (trainer.population.reduce((s, p) => s + p.fitness, 0) / 6).toFixed(1);
+    document.getElementById('battles').textContent = trainer.battles;
+    document.getElementById('winrate').textContent = trainer.battles > 0 ? ((trainer.wins / trainer.battles) * 100).toFixed(1) + '%' : '0%';
+    document.getElementById('mutation').textContent = (trainer.mutationRate * 100).toFixed(1) + '%';
+
+    // Update tongue stats
+    allies.forEach((a, i) => {
+        const id = SACRED_TONGUES[i].id.toLowerCase();
+        const elem = document.getElementById(id + '-stat');
+        if (elem) {
+            elem.textContent = a.hp > 0 ? Math.round((a.hp / a.maxHp) * 100) + '%' : 'DEAD';
+            elem.style.color = a.hp > 0 ? '#00ff88' : '#ff4444';
+        }
+    });
+
+    // Draw neural weights visualization
+    drawBrainViz();
+}
+
+function drawBrainViz() {
+    const canvas = document.getElementById('brain-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+
+    ctx.fillStyle = '#0a0a1a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    if (!trainer.bestBrain) return;
+
+    const weights = trainer.bestBrain.weightsIH.flat();
+    const barWidth = canvas.width / weights.length;
+
+    weights.forEach((w, i) => {
+        const h = Math.abs(w) * 30;
+        const color = w > 0 ? '#00ff88' : '#ff4444';
+        ctx.fillStyle = color;
+        ctx.fillRect(i * barWidth, canvas.height / 2 - h / 2, barWidth - 1, h);
+    });
+}
+
+function addLog(msg, type = 'info') {
+    const log = document.getElementById('log');
+    const entry = document.createElement('div');
+    entry.className = 'log-entry log-' + type;
+    entry.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+    log.insertBefore(entry, log.firstChild);
+    if (log.children.length > 20) {
+        log.removeChild(log.lastChild);
+    }
+}
+
+function setupControls(scene) {
+    document.getElementById('btn-start').onclick = () => {
+        if (!battleActive) startBattle(scene);
+    };
+
+    document.getElementById('btn-pause').onclick = () => {
+        paused = !paused;
+        document.getElementById('btn-pause').textContent = paused ? 'RESUME' : 'PAUSE';
+        addLog(paused ? 'Training paused' : 'Training resumed', 'info');
+    };
+
+    document.getElementById('btn-fast').onclick = () => {
+        fastMode = !fastMode;
+        document.getElementById('btn-fast').classList.toggle('active', fastMode);
+        addLog('Fast mode: ' + (fastMode ? 'ON' : 'OFF'), 'info');
+    };
+
+    document.getElementById('btn-hex').onclick = () => { currentFormation = 'hex'; addLog('Formation: Hexagonal', 'info'); };
+    document.getElementById('btn-tetra').onclick = () => { currentFormation = 'tetra'; addLog('Formation: Tetrahedral', 'info'); };
+    document.getElementById('btn-scatter').onclick = () => { currentFormation = 'scatter'; addLog('Formation: Scatter', 'info'); };
+}
+
+// Initialize game
+game = new Phaser.Game(config);
+    </script>
+</body>
+</html>
