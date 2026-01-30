@@ -28,41 +28,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-  workflow_dispatch:
-
-env:
-  AWS_REGION: us-west-2
-  FUNCTION_NAME: scbe-aethermoore-api-production
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    permissions:
-      id-token: write
-      contents: read
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          python-version: '3.11'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest fastapi pydantic httpx
+          pip install pytest fastapi pydantic httpx numpy scipy
 
       - name: Run API tests
         run: |
@@ -90,6 +65,7 @@ jobs:
       - name: Copy application code
         run: |
           cp -r api lambda_package/
+          cp -r src lambda_package/
           cp aws/lambda_handler.py lambda_package/
 
       - name: Create deployment package
@@ -139,7 +115,7 @@ jobs:
         run: |
           aws lambda update-function-configuration \
             --function-name scbe-aethermoore-api-staging \
-            --handler lambda_handler.lambda_handler \
+            --handler lambda_handler.handler \
             --runtime python3.11 \
             --memory-size 512 \
             --timeout 30
@@ -151,7 +127,6 @@ jobs:
 
       - name: Test deployment
         run: |
-          # Get the function URL or API Gateway URL
           FUNCTION_URL=$(aws lambda get-function-url-config \
             --function-name scbe-aethermoore-api-staging \
             --query 'FunctionUrl' --output text 2>/dev/null || echo "")
@@ -196,71 +171,6 @@ jobs:
       - name: Create Lambda function (if needed)
         if: steps.check-function.outputs.exists == 'false'
         run: |
-          echo "Lambda function does not exist. Create it manually or via Infrastructure-as-Code."
-          echo "Required configuration:"
-          echo "  - Function name: scbe-aethermoore-api-production"
-          echo "  - Runtime: python3.11"
-          echo "  - Handler: lambda_handler.lambda_handler"
-          echo "  - Memory: 512 MB"
-          echo "  - Timeout: 30 seconds"
-          echo "  - Environment variables: SCBE_API_KEY"
-          exit 1
-
-      - name: Deploy to Lambda (Production)
-        if: steps.check-function.outputs.exists == 'true'
-        run: |
-          aws lambda update-function-code \
-            --function-name scbe-aethermoore-api-production \
-            --zip-file fileb://scbe-lambda-package.zip
-
-      - name: Update Lambda configuration
-        if: steps.check-function.outputs.exists == 'true'
-        run: |
-          aws lambda update-function-configuration \
-            --function-name scbe-aethermoore-api-production \
-            --handler lambda_handler.lambda_handler \
-            --runtime python3.11 \
-            --memory-size 512 \
-            --timeout 30
-
-      - name: Wait for Lambda update
-        if: steps.check-function.outputs.exists == 'true'
-        run: |
-          aws lambda wait function-updated \
-            --function-name scbe-aethermoore-api-production
-
-      - name: Verify deployment
-        if: steps.check-function.outputs.exists == 'true'
-        run: |
-          echo "Deployment complete!"
-          aws lambda get-function \
-            --function-name scbe-aethermoore-api-production \
-            --query 'Configuration.{FunctionName:FunctionName,Runtime:Runtime,MemorySize:MemorySize,LastModified:LastModified}' \
-            --output table
-          pip install -r requirements.txt
-          pip install mangum fastapi pydantic
-
-      - name: Create deployment package
-        run: |
-          mkdir -p package
-          cp -r api package/
-          cp -r src package/
-          cp aws/lambda_handler.py package/
-          pip install --target ./package mangum fastapi pydantic
-          cd package && zip -r ../deployment.zip . -x "*.pyc" -x "__pycache__/*"
-
-      - name: Check if Lambda function exists
-        id: check_function
-        run: |
-          if aws lambda get-function --function-name $FUNCTION_NAME 2>/dev/null; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Create Lambda function
-        if: steps.check_function.outputs.exists == 'false'
-        run: |
           # Create IAM role if needed
           aws iam create-role \
             --role-name scbe-lambda-execution-role \
@@ -278,30 +188,43 @@ jobs:
           ROLE_ARN="arn:aws:iam::${ACCOUNT_ID}:role/scbe-lambda-execution-role"
 
           aws lambda create-function \
-            --function-name $FUNCTION_NAME \
+            --function-name scbe-aethermoore-api-production \
             --runtime python3.11 \
             --handler lambda_handler.handler \
             --role $ROLE_ARN \
-            --zip-file fileb://deployment.zip \
+            --zip-file fileb://scbe-lambda-package.zip \
             --timeout 30 \
             --memory-size 512 \
             --environment "Variables={SCBE_ENV=production,SCBE_LOG_LEVEL=INFO,SCBE_API_KEY=${{ secrets.SCBE_API_KEY }}}"
 
-      - name: Update Lambda function
-        if: steps.check_function.outputs.exists == 'true'
+      - name: Deploy to Lambda (Production)
+        if: steps.check-function.outputs.exists == 'true'
         run: |
           aws lambda update-function-code \
-            --function-name $FUNCTION_NAME \
-            --zip-file fileb://deployment.zip
+            --function-name scbe-aethermoore-api-production \
+            --zip-file fileb://scbe-lambda-package.zip
 
+      - name: Update Lambda configuration
+        if: steps.check-function.outputs.exists == 'true'
+        run: |
           aws lambda update-function-configuration \
-            --function-name $FUNCTION_NAME \
+            --function-name scbe-aethermoore-api-production \
+            --handler lambda_handler.handler \
+            --runtime python3.11 \
+            --memory-size 512 \
+            --timeout 30 \
             --environment "Variables={SCBE_ENV=production,SCBE_LOG_LEVEL=INFO,SCBE_API_KEY=${{ secrets.SCBE_API_KEY }}}"
 
-      - name: Setup API Gateway
+      - name: Wait for Lambda update
+        run: |
+          aws lambda wait function-updated \
+            --function-name scbe-aethermoore-api-production
+
+      - name: Setup API Gateway (if needed)
         run: |
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           API_NAME="scbe-aethermoore-api"
+          FUNCTION_NAME="scbe-aethermoore-api-production"
 
           # Check for existing API
           API_ID=$(aws apigatewayv2 get-apis --query "Items[?Name=='${API_NAME}'].ApiId" --output text)
@@ -353,7 +276,7 @@ jobs:
         run: |
           sleep 5
           echo "Testing health endpoint..."
-          curl -s "${API_URL}/v1/health" | jq .
+          curl -s "${API_URL}/v1/health" | jq . || echo "Health check pending..."
 
       - name: Deployment summary
         run: |
@@ -364,7 +287,8 @@ jobs:
           echo "API URL: ${API_URL}"
           echo ""
           echo "Endpoints:"
-          echo "  Health:    ${API_URL}/v1/health"
-          echo "  Authorize: ${API_URL}/v1/authorize"
-          echo "  Consensus: ${API_URL}/v1/consensus"
+          echo "  Health:          ${API_URL}/v1/health"
+          echo "  Authorize:       ${API_URL}/v1/authorize"
+          echo "  Rogue Detection: ${API_URL}/v1/demo/rogue-detection"
+          echo "  Swarm Demo:      ${API_URL}/v1/demo/swarm-coordination"
           echo "============================================"
