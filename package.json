@@ -45,6 +45,7 @@
     "build:src": "tsc -p tsconfig.json",
     "build:watch": "tsc -p tsconfig.json --watch",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:python": "pytest tests/ -v",
     "test:all": "npm test && npm run test:python",
     "typecheck": "tsc --noEmit",
@@ -84,11 +85,11 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "dependencies": {
-    "@types/node": "^25.0.10"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/jest": "^30.0.0",
+    "@types/node": "^22.0.0",
+    "@vitest/coverage-v8": "^4.0.17",
     "fast-check": "^4.5.3",
     "prettier": "^3.2.0",
     "rimraf": "^5.0.10",

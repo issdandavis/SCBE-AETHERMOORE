@@ -17,6 +17,9 @@
 
 import { HybridSpaceCrypto } from './hybrid-crypto.js';
 import { RelayNode, SpaceTorRouter } from './space-tor-router.js';
+import { logger } from '../utils/logger.js';
+
+const networkLogger = logger.child({ module: 'combat-network' });
 
 // ============================================================================
 // Types
@@ -207,7 +210,11 @@ export class CombatNetwork {
 
       for (let i = 0; i < paths.length; i++) {
         const pathId = i === 0 ? 'PRIMARY' : `BACKUP-${i}`;
-        console.log(`[COMBAT] Routing via ${pathId}: ${paths[i].map((n) => n.id).join(' -> ')}`);
+        networkLogger.info(`Routing via ${pathId}`, {
+          mode: 'COMBAT',
+          pathId,
+          route: paths[i].map((n) => n.id).join(' -> '),
+        });
       }
 
       // Encrypt & Send in Parallel
@@ -224,7 +231,10 @@ export class CombatNetwork {
     } else {
       // Standard Routing
       const path = this.router.calculatePath(origin, dest, 50);
-      console.log(`[STANDARD] Routing via: ${path.map((n) => n.id).join(' -> ')}`);
+      networkLogger.info('Routing via standard path', {
+        mode: 'STANDARD',
+        route: path.map((n) => n.id).join(' -> '),
+      });
 
       const onion = await this.crypto.buildOnion(payload, path);
       const result = await this.transmitWithAck(path, onion, 'STANDARD');
@@ -262,7 +272,10 @@ export class CombatNetwork {
         // Verify path health before using
         const nodeIds = path.map((n) => n.id);
         if (!this.healthMonitor.isHealthy(nodeIds)) {
-          console.warn(`[COMBAT] Path ${i + 1} has poor health, attempting alternative`);
+          networkLogger.warn(`Path ${i + 1} has poor health, attempting alternative`, {
+            mode: 'COMBAT',
+            pathIndex: i + 1,
+          });
           // Try to find healthier alternative
           const altPath = this.findHealthyAlternative(origin, dest, minTrust, usedNodes);
           if (altPath) {
@@ -281,14 +294,22 @@ export class CombatNetwork {
           // Must have at least one path
           throw new Error(`Failed to establish primary path: ${error}`);
         }
-        console.warn(`[COMBAT] Could not generate disjoint path ${i + 1}: ${error}`);
+        networkLogger.warn(`Could not generate disjoint path ${i + 1}`, {
+          mode: 'COMBAT',
+          pathIndex: i + 1,
+          error: String(error),
+        });
         // Continue with fewer paths
         break;
       }
     }
 
     if (paths.length < numPaths) {
-      console.warn(`[COMBAT] Only ${paths.length}/${numPaths} disjoint paths available`);
+      networkLogger.warn(`Only ${paths.length}/${numPaths} disjoint paths available`, {
+        mode: 'COMBAT',
+        available: paths.length,
+        requested: numPaths,
+      });
     }
 
     return paths;
@@ -368,7 +389,11 @@ export class CombatNetwork {
       retries++;
 
       if (retries <= this.config.acknowledgment.maxRetries) {
-        console.log(`[${pathId}] Retry ${retries}/${this.config.acknowledgment.maxRetries}`);
+        networkLogger.info(`Retry attempt`, {
+          pathId,
+          retry: retries,
+          maxRetries: this.config.acknowledgment.maxRetries,
+        });
         // Exponential backoff
         await this.sleep(Math.min(1000 * Math.pow(2, retries), 10000));
       }
@@ -398,7 +423,11 @@ export class CombatNetwork {
     const startTime = Date.now();
 
     try {
-      console.log(`[${pathId}] Transmitting ${packet.length} bytes to Entry Node: ${entryNode.id}`);
+      networkLogger.debug(`Transmitting packet`, {
+        pathId,
+        bytes: packet.length,
+        entryNode: entryNode.id,
+      });
 
       // Simulate transmission delay based on distance
       const latencyMs = this.calculateTransmissionLatency(entryNode);
