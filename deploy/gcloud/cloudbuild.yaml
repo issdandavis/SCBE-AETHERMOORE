@@ -1,0 +1,67 @@
+# Google Cloud Build configuration for SCBE-AETHERMOORE
+# Deploys to Cloud Run with automatic scaling
+
+steps:
+  # Step 1: Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/scbe-aethermoore:$COMMIT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/scbe-aethermoore:latest'
+      - '-f'
+      - 'deploy/gcloud/Dockerfile.cloudrun'
+      - '.'
+    timeout: '1200s'
+
+  # Step 2: Push to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/scbe-aethermoore:$COMMIT_SHA'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/scbe-aethermoore:latest'
+
+  # Step 3: Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'scbe-aethermoore'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/scbe-aethermoore:$COMMIT_SHA'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--memory'
+      - '1Gi'
+      - '--cpu'
+      - '1'
+      - '--min-instances'
+      - '0'
+      - '--max-instances'
+      - '10'
+      - '--set-env-vars'
+      - 'SCBE_ENV=production,SCBE_LOG_LEVEL=INFO'
+      - '--set-secrets'
+      - 'SCBE_API_KEY=scbe-api-key:latest'
+
+# Store images in Container Registry
+images:
+  - 'gcr.io/$PROJECT_ID/scbe-aethermoore:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/scbe-aethermoore:latest'
+
+# Build timeout
+timeout: '1800s'
+
+# Build options
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_HIGHCPU_8'
