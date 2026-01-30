@@ -299,6 +299,16 @@ async function hkdfDerive(
 }
 
 /**
+ * Helper to convert Uint8Array to BufferSource compatible with strict TypeScript
+ * Creates a copy with a guaranteed ArrayBuffer (not SharedArrayBuffer)
+ */
+function toBufferSource(arr: Uint8Array): ArrayBuffer {
+  const copy = new Uint8Array(arr.length);
+  copy.set(arr);
+  return copy.buffer;
+}
+
+/**
  * AES-GCM encryption
  */
 async function aesGcmEncrypt(
@@ -311,17 +321,17 @@ async function aesGcmEncrypt(
     throw new Error('Web Crypto API not available');
   }
 
-  const cryptoKey = await crypto.subtle.importKey('raw', key, 'AES-GCM', false, ['encrypt']);
+  const cryptoKey = await crypto.subtle.importKey('raw', toBufferSource(key), 'AES-GCM', false, ['encrypt']);
 
   const result = await crypto.subtle.encrypt(
     {
       name: 'AES-GCM',
-      iv: new Uint8Array(nonce.buffer, nonce.byteOffset, nonce.byteLength),
-      additionalData: new Uint8Array(aad.buffer, aad.byteOffset, aad.byteLength),
+      iv: toBufferSource(nonce),
+      additionalData: toBufferSource(aad),
       tagLength: 128,
     },
     cryptoKey,
-    plaintext
+    toBufferSource(plaintext)
   );
 
   // Result includes ciphertext + tag (last 16 bytes)
@@ -346,7 +356,7 @@ async function aesGcmDecrypt(
     throw new Error('Web Crypto API not available');
   }
 
-  const cryptoKey = await crypto.subtle.importKey('raw', key, 'AES-GCM', false, ['decrypt']);
+  const cryptoKey = await crypto.subtle.importKey('raw', toBufferSource(key), 'AES-GCM', false, ['decrypt']);
 
   // Combine ciphertext + tag for Web Crypto
   const combined = new Uint8Array(ciphertext.length + tag.length);
@@ -356,12 +366,12 @@ async function aesGcmDecrypt(
   const result = await crypto.subtle.decrypt(
     {
       name: 'AES-GCM',
-      iv: new Uint8Array(nonce.buffer, nonce.byteOffset, nonce.byteLength),
-      additionalData: new Uint8Array(aad.buffer, aad.byteOffset, aad.byteLength),
+      iv: toBufferSource(nonce),
+      additionalData: toBufferSource(aad),
       tagLength: 128,
     },
     cryptoKey,
-    combined
+    toBufferSource(combined)
   );
 
   return new Uint8Array(result);
