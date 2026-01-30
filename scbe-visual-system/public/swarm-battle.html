@@ -124,6 +124,22 @@
         <div class="stat" style="margin-top: 8px;">Mutation Rate: <span class="stat-value" id="mutation">5%</span></div>
     </div>
 
+    <div id="phdm-panel" style="position: fixed; top: 180px; right: 10px; background: rgba(0,0,0,0.8); padding: 15px; border: 1px solid #ff00ff; border-radius: 8px; z-index: 100; width: 200px;">
+        <h1 style="color: #ff00ff; font-size: 14px;">PHDM SKULL STATE</h1>
+        <div class="stat">Active Lobe: <span class="stat-value" id="active-lobe">CUBE</span></div>
+        <div class="stat">Flux (ν): <span class="stat-value" id="flux-value">1.618</span></div>
+        <div class="stat">Breathing: <span class="stat-value" id="breath-state">POLLY</span></div>
+        <div class="stat">Hamiltonian: <span class="stat-value" id="hamilton-valid">✓ VALID</span></div>
+        <canvas id="skull-canvas" style="width: 100%; height: 60px; background: #0a0a1a; border: 1px solid #333; margin-top: 8px;"></canvas>
+    </div>
+
+    <div id="gravity-panel" style="position: fixed; top: 380px; right: 10px; background: rgba(0,0,0,0.8); padding: 15px; border: 1px solid #00ffff; border-radius: 8px; z-index: 100; width: 200px;">
+        <h1 style="color: #00ffff; font-size: 14px;">GRAVITATIONAL BRAKE</h1>
+        <div class="stat">Frozen Agents: <span class="stat-value" id="frozen-count">0</span></div>
+        <div class="stat">Avg Dilation: <span class="stat-value" id="avg-dilation">100%</span></div>
+        <div class="stat">Event Horizons: <span class="stat-value" id="event-horizons">0</span></div>
+    </div>
+
     <div id="log">
         <div class="log-entry log-info">System initialized...</div>
     </div>
@@ -134,25 +150,263 @@
 // ============================================
 // SCBE SWARM BATTLE TRAINER
 // Military-style AI training with genetic algorithms
+// Integrated with AetherBrain PHDM + Gravitational Braking
 // ============================================
 
+// ============================================
+// PHDM - POLYHEDRAL HAMILTONIAN DYNAMIC MESH
+// The "Crystal Skull" cognitive architecture
+// ============================================
+
+const POLYHEDRA = {
+    // Core Ring (r < 0.3) - Platonic Solids - Super-Ego/Safety
+    TETRAHEDRON: { id: 'TETRA', ring: 'CORE', faces: 4, weight: 1.0, role: 'axiom' },
+    CUBE: { id: 'CUBE', ring: 'CORE', faces: 6, weight: 1.2, role: 'structure' },
+    OCTAHEDRON: { id: 'OCTA', ring: 'CORE', faces: 8, weight: 1.5, role: 'balance' },
+    DODECAHEDRON: { id: 'DODECA', ring: 'CORE', faces: 12, weight: 2.0, role: 'harmony' },
+    ICOSAHEDRON: { id: 'ICOSA', ring: 'CORE', faces: 20, weight: 2.5, role: 'flow' },
+
+    // Inner Ring - Archimedean Solids - Cortex/Logic
+    TRUNCATED_TETRA: { id: 'TTETRA', ring: 'INNER', faces: 8, weight: 3.0, role: 'reason' },
+    CUBOCTAHEDRON: { id: 'CUBOCTA', ring: 'INNER', faces: 14, weight: 3.5, role: 'synthesis' },
+    TRUNCATED_CUBE: { id: 'TCUBE', ring: 'INNER', faces: 14, weight: 4.0, role: 'planning' },
+
+    // Middle Ring - Toroidal - Cerebellum/Loop
+    SZILASSI: { id: 'SZIL', ring: 'MIDDLE', faces: 7, weight: 5.0, role: 'recursion', holes: 1 },
+    CSASZAR: { id: 'CSASZAR', ring: 'MIDDLE', faces: 7, weight: 5.5, role: 'diagnostics', holes: 1 },
+
+    // Edge Ring - Kepler-Poinsot - Id/Risk (DANGER ZONE)
+    SMALL_STELLATED: { id: 'SSTELL', ring: 'EDGE', faces: 12, weight: 8.0, role: 'creativity', spiky: true },
+    GREAT_STELLATED: { id: 'GSTELL', ring: 'EDGE', faces: 12, weight: 10.0, role: 'hallucination', spiky: true }
+};
+
+// Hamiltonian adjacency - valid paths through the skull
+const HAMILTONIAN_EDGES = {
+    'TETRA': ['CUBE', 'OCTA'],
+    'CUBE': ['TETRA', 'OCTA', 'TTETRA'],
+    'OCTA': ['CUBE', 'DODECA', 'CUBOCTA'],
+    'DODECA': ['OCTA', 'ICOSA', 'TCUBE'],
+    'ICOSA': ['DODECA', 'TTETRA'],
+    'TTETRA': ['CUBE', 'ICOSA', 'SZIL'],
+    'CUBOCTA': ['OCTA', 'TCUBE', 'CSASZAR'],
+    'TCUBE': ['DODECA', 'CUBOCTA', 'SZIL'],
+    'SZIL': ['TTETRA', 'TCUBE', 'SSTELL'],
+    'CSASZAR': ['CUBOCTA', 'SSTELL'],
+    'SSTELL': ['SZIL', 'CSASZAR', 'GSTELL'],
+    'GSTELL': ['SSTELL'] // Dead end - hallucination trap
+};
+
+// Dimensional breathing states
+const BREATH_STATES = {
+    POLLY: { nu: 1.618, radius: 1.0, name: 'Normal' },
+    QUASI: { nu: 2.414, radius: 0.8, name: 'Cautious' },
+    DEMI: { nu: 0.618, radius: 1.2, name: 'Alert' }
+};
+
+// PHDM Brain for strategic decisions
+class PHDMBrain {
+    constructor() {
+        this.currentLobe = POLYHEDRA.CUBE;
+        this.thoughtPath = ['CUBE'];
+        this.flux = BREATH_STATES.POLLY.nu;
+        this.breathState = 'POLLY';
+        this.pathValid = true;
+    }
+
+    // Transition to a new cognitive lobe
+    transitionTo(lobeId) {
+        const current = this.currentLobe.id;
+        const validNexts = HAMILTONIAN_EDGES[current] || [];
+
+        if (validNexts.includes(lobeId)) {
+            // Valid Hamiltonian step
+            this.currentLobe = Object.values(POLYHEDRA).find(p => p.id === lobeId);
+            this.thoughtPath.push(lobeId);
+            this.pathValid = true;
+
+            // Detect loops (max path length)
+            if (this.thoughtPath.length > 12) {
+                this.thoughtPath = this.thoughtPath.slice(-6);
+            }
+            return true;
+        } else {
+            // Invalid path - phason shift!
+            this.pathValid = false;
+            return false;
+        }
+    }
+
+    // Get lobe for a given intent
+    selectLobeForIntent(intent) {
+        switch (intent) {
+            case 'attack': return 'ICOSA'; // Flow for aggression
+            case 'defend': return 'CUBE';  // Structure for defense
+            case 'retreat': return 'TETRA'; // Axiom - survival first
+            case 'flank': return 'TTETRA'; // Reason for tactics
+            case 'diagnose': return 'CSASZAR'; // Self-check
+            case 'creative': return 'SSTELL'; // Risk for creativity
+            default: return 'OCTA'; // Balance
+        }
+    }
+
+    // Compute energy cost (Harmonic Wall)
+    computeEnergyCost(divergence) {
+        const R = 2.62; // Runethic weight
+        // H(d) = R^(d²) - super-exponential
+        return Math.pow(R, divergence * divergence);
+    }
+
+    // Update breathing based on threat level
+    updateBreathing(threatLevel) {
+        if (threatLevel > 0.7) {
+            this.breathState = 'QUASI';
+            this.flux = BREATH_STATES.QUASI.nu;
+        } else if (threatLevel > 0.4) {
+            this.breathState = 'DEMI';
+            this.flux = BREATH_STATES.DEMI.nu;
+        } else {
+            this.breathState = 'POLLY';
+            this.flux = BREATH_STATES.POLLY.nu;
+        }
+    }
+
+    // Get cognitive modifier for neural outputs
+    getCognitiveModifier() {
+        // Spiky thoughts (Kepler-Poinsot) add variance
+        if (this.currentLobe.spiky) {
+            return {
+                variance: 0.3,
+                aggression: 1.5,
+                risk: true
+            };
+        }
+        // Core thoughts are stable
+        if (this.currentLobe.ring === 'CORE') {
+            return {
+                variance: 0.05,
+                aggression: 0.8,
+                risk: false
+            };
+        }
+        // Default
+        return {
+            variance: 0.1,
+            aggression: 1.0,
+            risk: false
+        };
+    }
+}
+
+// ============================================
+// GRAVITATIONAL BRAKING SYSTEM
+// Time dilation for rogue agents
+// t_G = t * sqrt(1 - (k*d)/(r+ε))
+// ============================================
+
+class GravitationalBrake {
+    constructor() {
+        this.couplingConstant = 1.0; // k
+        this.trustRadius = 0.3;       // r (core ring)
+        this.epsilon = 0.001;         // ε
+        this.maxDivergence = 1.0;
+        this.minDilation = 0.01;
+        this.frozenAgents = new Map();
+    }
+
+    // Compute time dilation factor (0 = frozen, 1 = normal)
+    computeDilationFactor(divergence) {
+        const k = this.couplingConstant;
+        const r = this.trustRadius;
+        const eps = this.epsilon;
+
+        // Clamp divergence
+        const d = Math.max(0, Math.min(divergence, this.maxDivergence));
+
+        // t_G = t * sqrt(1 - (k*d)/(r+ε))
+        const term = 1 - (k * d) / (r + eps);
+
+        if (term <= 0) {
+            return 0; // Event horizon - completely frozen
+        }
+
+        return Math.sqrt(term);
+    }
+
+    // Apply braking to an agent
+    applyBraking(agentId, normalizedDistance) {
+        const dilation = this.computeDilationFactor(normalizedDistance);
+        const inEventHorizon = dilation < this.minDilation;
+
+        if (inEventHorizon) {
+            this.frozenAgents.set(agentId, true);
+        } else {
+            this.frozenAgents.delete(agentId);
+        }
+
+        let action, severity;
+        if (inEventHorizon) {
+            action = 'QUARANTINE';
+            severity = 1.0;
+        } else if (dilation < 0.1) {
+            action = 'FREEZE';
+            severity = 0.9;
+        } else if (dilation < 0.3) {
+            action = 'BRAKE';
+            severity = 0.7;
+        } else if (dilation < 0.6) {
+            action = 'SLOW';
+            severity = 0.4;
+        } else {
+            action = 'CONTINUE';
+            severity = 0.0;
+        }
+
+        return { dilation, inEventHorizon, action, severity };
+    }
+
+    // Dilate velocity (agents near event horizon move slower)
+    dilateVelocity(vx, vy, dilation) {
+        return { x: vx * dilation, y: vy * dilation };
+    }
+
+    // Get frozen agent count
+    getFrozenCount() {
+        return this.frozenAgents.size;
+    }
+}
+
+// Global PHDM and brake instances
+let globalPHDM = new PHDMBrain();
+let globalBrake = new GravitationalBrake();
+
+// Sacred Tongues with synaptic weights and phase angles
+// These define the "wiring" between cognitive lobes
 const SACRED_TONGUES = [
-    { id: 'KO', name: 'Koraelin', color: 0x00ffcc, role: 'Flow', speed: 1.5, damage: 0.8, hp: 80 },
-    { id: 'AV', name: 'Avali', color: 0xffcc00, role: 'Diplomat', speed: 1.0, damage: 0.6, hp: 100 },
-    { id: 'RU', name: 'Runethic', color: 0x8b4513, role: 'Tank', speed: 0.7, damage: 1.0, hp: 150 },
-    { id: 'CA', name: 'Cassisivadan', color: 0xff0066, role: 'DPS', speed: 1.2, damage: 1.5, hp: 60 },
-    { id: 'UM', name: 'Umbroth', color: 0x6600cc, role: 'Stealth', speed: 1.3, damage: 1.2, hp: 70 },
-    { id: 'DR', name: 'Draumric', color: 0x4444ff, role: 'Architect', speed: 0.8, damage: 0.9, hp: 120 }
+    { id: 'KO', name: 'Koraelin', color: 0x00ffcc, role: 'Flow', speed: 1.5, damage: 0.8, hp: 80,
+      phase: 0, weight: 1.00, neurotransmitter: 'dopamine', friction: 0.1 },
+    { id: 'AV', name: 'Avali', color: 0xffcc00, role: 'Diplomat', speed: 1.0, damage: 0.6, hp: 100,
+      phase: 60, weight: 1.90, neurotransmitter: 'context', friction: 0.3 },
+    { id: 'RU', name: 'Runethic', color: 0x8b4513, role: 'Tank', speed: 0.7, damage: 1.0, hp: 150,
+      phase: 120, weight: 2.62, neurotransmitter: 'serotonin', friction: 0.7 },
+    { id: 'CA', name: 'Cassisivadan', color: 0xff0066, role: 'DPS', speed: 1.2, damage: 1.5, hp: 60,
+      phase: 180, weight: 4.24, neurotransmitter: 'adrenaline', friction: 0.2 },
+    { id: 'UM', name: 'Umbroth', color: 0x6600cc, role: 'Stealth', speed: 1.3, damage: 1.2, hp: 70,
+      phase: 240, weight: 6.85, neurotransmitter: 'gaba', friction: 0.5 },
+    { id: 'DR', name: 'Draumric', color: 0x4444ff, role: 'Architect', speed: 0.8, damage: 0.9, hp: 120,
+      phase: 300, weight: 11.09, neurotransmitter: 'cortisol', friction: 0.9 }
 ];
 
-// Neural network for each agent (simple perceptron)
+// Neural network for each agent with Sacred Tongue synaptic integration
 class NeuralBrain {
-    constructor(inputSize = 8, hiddenSize = 6, outputSize = 4) {
-        // Inputs: [nearestEnemyDist, nearestEnemyAngle, health, nearestAllyDist, formationBonus, enemyCount, allyCount, random]
+    constructor(inputSize = 10, hiddenSize = 6, outputSize = 4) {
+        // Extended inputs: [nearestEnemyDist, nearestEnemyAngle, health, nearestAllyDist,
+        //                   formationBonus, enemyCount, allyCount, random, phdmModifier, gravityDilation]
         // Outputs: [moveX, moveY, attack, retreat]
         this.weightsIH = this.randomMatrix(inputSize, hiddenSize);
         this.weightsHO = this.randomMatrix(hiddenSize, outputSize);
         this.fitness = 0;
+        this.tongueIndex = 0; // Will be set when assigned to agent
+        this.phdm = new PHDMBrain(); // Each agent has its own cognitive state
     }
 
     randomMatrix(rows, cols) {
@@ -166,9 +420,26 @@ class NeuralBrain {
         return m;
     }
 
-    forward(inputs) {
+    // Apply Sacred Tongue synaptic weights to hidden layer
+    applySynapticWeights(hidden) {
+        const tongue = SACRED_TONGUES[this.tongueIndex] || SACRED_TONGUES[0];
+        const modulated = [];
+
+        for (let j = 0; j < hidden.length; j++) {
+            // Each hidden neuron is influenced by the tongue's weight
+            // Normalized by max weight (11.09 = DR)
+            const synapticGain = tongue.weight / 11.09;
+            // Friction reduces signal (heavier tongues = more damping)
+            const dampening = 1 - (tongue.friction * 0.3);
+            modulated[j] = hidden[j] * synapticGain * dampening;
+        }
+
+        return modulated;
+    }
+
+    forward(inputs, cognitiveModifier = null) {
         // Hidden layer
-        const hidden = [];
+        let hidden = [];
         for (let j = 0; j < this.weightsIH[0].length; j++) {
             let sum = 0;
             for (let i = 0; i < inputs.length; i++) {
@@ -176,6 +447,18 @@ class NeuralBrain {
             }
             hidden[j] = Math.tanh(sum);
         }
+
+        // Apply Sacred Tongue synaptic modulation
+        hidden = this.applySynapticWeights(hidden);
+
+        // Apply PHDM cognitive modifier if provided
+        if (cognitiveModifier) {
+            hidden = hidden.map(h => {
+                const variance = (Math.random() - 0.5) * 2 * cognitiveModifier.variance;
+                return h + variance;
+            });
+        }
+
         // Output layer
         const outputs = [];
         for (let j = 0; j < this.weightsHO[0].length; j++) {
@@ -185,6 +468,12 @@ class NeuralBrain {
             }
             outputs[j] = Math.tanh(sum);
         }
+
+        // Modify outputs based on cognitive state
+        if (cognitiveModifier && cognitiveModifier.aggression !== 1.0) {
+            outputs[2] *= cognitiveModifier.aggression; // Attack modifier
+        }
+
         return outputs;
     }
 
@@ -209,6 +498,7 @@ class NeuralBrain {
         const baby = new NeuralBrain();
         baby.weightsIH = JSON.parse(JSON.stringify(this.weightsIH));
         baby.weightsHO = JSON.parse(JSON.stringify(this.weightsHO));
+        baby.tongueIndex = this.tongueIndex;
         return baby;
     }
 
@@ -225,6 +515,21 @@ class NeuralBrain {
             }
         }
         return child;
+    }
+
+    // Get the current intent based on outputs
+    getIntent(outputs) {
+        const [moveX, moveY, attack, retreat] = outputs;
+        if (retreat > 0.5) return 'retreat';
+        if (attack > 0.5) return 'attack';
+        if (Math.abs(moveX) > 0.5 || Math.abs(moveY) > 0.5) return 'flank';
+        return 'defend';
+    }
+
+    // Update PHDM state based on decision
+    updateCognitiveState(intent) {
+        const targetLobe = this.phdm.selectLobeForIntent(intent);
+        return this.phdm.transitionTo(targetLobe);
     }
 }
 
@@ -390,6 +695,8 @@ function drawArena(scene) {
     }).setOrigin(0.5);
 }
 
+let agentIdCounter = 0;
+
 function createAgent(scene, tongueIndex, x, y, isEnemy = false) {
     const tongue = SACRED_TONGUES[tongueIndex];
     const color = isEnemy ? 0xff4444 : tongue.color;
@@ -397,6 +704,7 @@ function createAgent(scene, tongueIndex, x, y, isEnemy = false) {
     const agent = scene.add.circle(x, y, isEnemy ? 12 : 15, color);
     scene.physics.add.existing(agent);
 
+    agent.id = 'agent_' + (++agentIdCounter); // Unique ID for gravitational tracking
     agent.tongue = tongue;
     agent.tongueIndex = tongueIndex;
     agent.isEnemy = isEnemy;
@@ -406,6 +714,7 @@ function createAgent(scene, tongueIndex, x, y, isEnemy = false) {
     agent.damage = tongue.damage * 10;
     agent.attackCooldown = 0;
     agent.score = 0;
+    agent.dilationFactor = 1.0; // Gravitational time dilation
 
     // Health bar
     agent.hpBar = scene.add.rectangle(x, y - 20, 24, 4, 0x00ff00);
@@ -430,14 +739,18 @@ function startBattle(scene) {
     enemies = [];
     projectiles = [];
 
-    // Spawn allies in formation
+    // Spawn allies in formation with PHDM-enabled brains
     const allyPositions = getFormationPositions(currentFormation, 6, arenaRadius * 0.3);
     for (let i = 0; i < 6; i++) {
         const pos = allyPositions[i];
         const agent = createAgent(scene, i, centerX + pos.x, centerY + pos.y, false);
         agent.brain = trainer.population[i];
+        agent.brain.tongueIndex = i; // Assign Sacred Tongue identity
         allies.push(agent);
     }
+
+    // Reset gravitational brake state
+    globalBrake.frozenAgents.clear();
 
     // Spawn enemies in random positions (outer ring)
     const enemyCount = 4 + Math.floor(trainer.generation / 5); // More enemies as generations progress
@@ -500,17 +813,35 @@ function update(time, delta) {
 
     const scene = this;
 
-    // Update allies (AI controlled)
+    // Calculate global threat level for PHDM breathing
+    const aliveEnemiesCount = enemies.filter(e => e.hp > 0).length;
+    const aliveAlliesCount = allies.filter(a => a.hp > 0).length;
+    const threatLevel = aliveEnemiesCount / Math.max(1, aliveAlliesCount + aliveEnemiesCount);
+    globalPHDM.updateBreathing(threatLevel);
+
+    // Update allies (AI controlled with PHDM integration)
     allies.forEach((ally, idx) => {
         if (ally.hp <= 0) return;
 
-        // Calculate inputs for neural network
+        // Calculate inputs for neural network (extended with PHDM + gravity)
         const inputs = calculateInputs(ally, allies, enemies);
-        const outputs = ally.brain.forward(inputs);
 
-        // Apply outputs
-        const moveX = outputs[0] * ally.speed * (dt / 1000);
-        const moveY = outputs[1] * ally.speed * (dt / 1000);
+        // Get cognitive modifier from PHDM
+        const cognitiveModifier = ally.brain.phdm.getCognitiveModifier();
+
+        // Forward pass with cognitive modulation
+        const outputs = ally.brain.forward(inputs, cognitiveModifier);
+
+        // Determine intent and update Hamiltonian path
+        const intent = ally.brain.getIntent(outputs);
+        const validPath = ally.brain.updateCognitiveState(intent);
+
+        // If path invalid (phason shift), reduce effectiveness
+        const pathPenalty = validPath ? 1.0 : 0.5;
+
+        // Apply outputs with path penalty
+        const moveX = outputs[0] * ally.speed * (dt / 1000) * pathPenalty;
+        const moveY = outputs[1] * ally.speed * (dt / 1000) * pathPenalty;
         const shouldAttack = outputs[2] > 0.3;
         const shouldRetreat = outputs[3] > 0.5;
 
@@ -536,7 +867,7 @@ function update(time, delta) {
             ally.y = newY;
         }
 
-        // Attack
+        // Attack (cooldown dilated by PHDM flux)
         ally.attackCooldown -= dt;
         if (shouldAttack && ally.attackCooldown <= 0) {
             const target = findNearestEnemy(ally, enemies);
@@ -544,7 +875,8 @@ function update(time, delta) {
                 const dist = Phaser.Math.Distance.Between(ally.x, ally.y, target.x, target.y);
                 if (dist < 150) {
                     attack(scene, ally, target);
-                    ally.attackCooldown = 500;
+                    // Cooldown modified by PHDM flux (golden ratio timing)
+                    ally.attackCooldown = 500 / ally.brain.phdm.flux;
                 }
             }
         }
@@ -555,30 +887,67 @@ function update(time, delta) {
         // Fitness rewards
         ally.score += dt * 0.001; // Survival bonus
         if (ally.hp > ally.maxHp * 0.5) ally.score += dt * 0.0005; // Health bonus
+        if (validPath) ally.score += dt * 0.0002; // Hamiltonian path bonus
     });
 
-    // Update enemies (simple AI)
+    // Track gravity metrics
+    let totalDilation = 0;
+    let eventHorizonCount = 0;
+
+    // Update enemies (with GRAVITATIONAL BRAKING)
     enemies.forEach(enemy => {
         if (enemy.hp <= 0) return;
 
-        // Find nearest ally and move toward
+        // Calculate normalized distance from center (divergence)
+        const distFromCenter = Math.sqrt((enemy.x - centerX) ** 2 + (enemy.y - centerY) ** 2);
+        const normalizedDist = distFromCenter / arenaRadius;
+
+        // Apply gravitational braking!
+        // Enemies approaching the core get time-dilated
+        // Invert the divergence - closer to center = more braking for ENEMIES
+        const invertedDivergence = 1 - normalizedDist;
+        const brakeResult = globalBrake.applyBraking(enemy.id, invertedDivergence * 0.5);
+
+        // Store dilation on enemy for visualization
+        enemy.dilationFactor = brakeResult.dilation;
+        totalDilation += brakeResult.dilation;
+
+        if (brakeResult.inEventHorizon) {
+            eventHorizonCount++;
+            // Frozen enemy - can't act!
+            enemy.alpha = 0.3;
+            updateAgentVisuals(enemy);
+            return;
+        }
+
+        // Find nearest ally and move toward (speed dilated!)
         const target = findNearestEnemy(enemy, allies);
         if (target && target.hp > 0) {
             const angle = Phaser.Math.Angle.Between(enemy.x, enemy.y, target.x, target.y);
-            enemy.x += Math.cos(angle) * enemy.speed * 0.5 * (dt / 1000);
-            enemy.y += Math.sin(angle) * enemy.speed * 0.5 * (dt / 1000);
+            const dilatedSpeed = enemy.speed * 0.5 * brakeResult.dilation;
+            enemy.x += Math.cos(angle) * dilatedSpeed * (dt / 1000);
+            enemy.y += Math.sin(angle) * dilatedSpeed * (dt / 1000);
 
-            // Attack
-            enemy.attackCooldown -= dt;
+            // Attack (cooldown dilated!)
+            enemy.attackCooldown -= dt * brakeResult.dilation;
             const dist = Phaser.Math.Distance.Between(enemy.x, enemy.y, target.x, target.y);
             if (dist < 100 && enemy.attackCooldown <= 0) {
                 attack(scene, enemy, target);
-                enemy.attackCooldown = 700;
+                enemy.attackCooldown = 700 / brakeResult.dilation; // Longer cooldown when slowed
             }
         }
 
+        // Visual feedback - alpha based on dilation
+        enemy.alpha = 0.5 + (brakeResult.dilation * 0.5);
         updateAgentVisuals(enemy);
     });
+
+    // Update gravity panel
+    const aliveEnemies = enemies.filter(e => e.hp > 0);
+    document.getElementById('frozen-count').textContent = globalBrake.getFrozenCount();
+    document.getElementById('avg-dilation').textContent =
+        aliveEnemies.length > 0 ? ((totalDilation / aliveEnemies.length) * 100).toFixed(1) + '%' : 'N/A';
+    document.getElementById('event-horizons').textContent = eventHorizonCount;
 
     // Update projectiles
     projectiles = projectiles.filter(p => {
@@ -638,6 +1007,16 @@ function calculateInputs(agent, allies, enemies) {
         enemyAngle = Phaser.Math.Angle.Between(agent.x, agent.y, nearestEnemy.x, nearestEnemy.y) / Math.PI;
     }
 
+    // PHDM cognitive state input (current lobe weight normalized)
+    const phdmWeight = agent.brain ? (agent.brain.phdm.currentLobe.weight / 10.0) : 0.5;
+
+    // Gravitational context (how dilated are nearby enemies?)
+    let avgEnemyDilation = 1.0;
+    const nearbyEnemies = enemies.filter(e => e.hp > 0 && e.dilationFactor !== undefined);
+    if (nearbyEnemies.length > 0) {
+        avgEnemyDilation = nearbyEnemies.reduce((sum, e) => sum + e.dilationFactor, 0) / nearbyEnemies.length;
+    }
+
     return [
         nearestEnemyDist / arenaRadius,
         enemyAngle,
@@ -646,7 +1025,9 @@ function calculateInputs(agent, allies, enemies) {
         formationBonus,
         enemyCount,
         allyCount,
-        Math.random() * 0.1
+        Math.random() * 0.1,
+        phdmWeight,          // PHDM cognitive state
+        avgEnemyDilation     // Gravity awareness
     ];
 }
 
@@ -745,8 +1126,93 @@ function updateUI() {
         }
     });
 
+    // Update PHDM panel
+    if (allies.length > 0 && allies[0].brain) {
+        const leadBrain = allies[0].brain;
+        document.getElementById('active-lobe').textContent = leadBrain.phdm.currentLobe.id;
+        document.getElementById('flux-value').textContent = leadBrain.phdm.flux.toFixed(3);
+        document.getElementById('breath-state').textContent = leadBrain.phdm.breathState;
+        document.getElementById('hamilton-valid').textContent = leadBrain.phdm.pathValid ? '✓ VALID' : '✗ PHASON';
+        document.getElementById('hamilton-valid').style.color = leadBrain.phdm.pathValid ? '#00ff88' : '#ff4444';
+    }
+
     // Draw neural weights visualization
     drawBrainViz();
+
+    // Draw skull visualization
+    drawSkullViz();
+}
+
+function drawSkullViz() {
+    const canvas = document.getElementById('skull-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+
+    ctx.fillStyle = '#0a0a1a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw the 16 polyhedra as nodes
+    const polyList = Object.values(POLYHEDRA);
+    const nodeRadius = 4;
+    const padding = 10;
+    const usableWidth = canvas.width - padding * 2;
+    const spacing = usableWidth / (polyList.length + 1);
+
+    // Ring colors
+    const ringColors = {
+        'CORE': '#00ff88',
+        'INNER': '#ffcc00',
+        'MIDDLE': '#ff6600',
+        'EDGE': '#ff0066'
+    };
+
+    // Draw nodes
+    polyList.forEach((poly, i) => {
+        const x = padding + spacing * (i + 1);
+        const y = canvas.height / 2;
+
+        // Highlight current lobe
+        const isActive = allies.length > 0 && allies[0].brain &&
+                         allies[0].brain.phdm.currentLobe.id === poly.id;
+
+        ctx.beginPath();
+        ctx.arc(x, y, isActive ? nodeRadius * 2 : nodeRadius, 0, Math.PI * 2);
+        ctx.fillStyle = isActive ? '#ffffff' : ringColors[poly.ring];
+        ctx.fill();
+
+        // Spiky indicator for Kepler-Poinsot
+        if (poly.spiky) {
+            ctx.strokeStyle = '#ff0066';
+            ctx.lineWidth = 1;
+            for (let j = 0; j < 4; j++) {
+                const angle = (j / 4) * Math.PI * 2;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + Math.cos(angle) * 8, y + Math.sin(angle) * 8);
+                ctx.stroke();
+            }
+        }
+    });
+
+    // Draw Hamiltonian edges (simplified visualization)
+    ctx.strokeStyle = 'rgba(255,0,255,0.2)';
+    ctx.lineWidth = 1;
+    polyList.forEach((poly, i) => {
+        const x1 = padding + spacing * (i + 1);
+        const edges = HAMILTONIAN_EDGES[poly.id] || [];
+        edges.forEach(targetId => {
+            const targetIdx = polyList.findIndex(p => p.id === targetId);
+            if (targetIdx > i) {
+                const x2 = padding + spacing * (targetIdx + 1);
+                ctx.beginPath();
+                ctx.moveTo(x1, canvas.height / 2);
+                ctx.lineTo(x2, canvas.height / 2);
+                ctx.stroke();
+            }
+        });
+    });
 }
 
 function drawBrainViz() {
