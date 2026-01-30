@@ -194,6 +194,22 @@ def lambda_handler(event, context):
 
 ---
 
+## Memory Sealing API (MVP)
+
+The MVP memory API in `src/api/main.py` persists sealed blobs so they can be retrieved and unsealed later. Configure the storage backend before running the API server:
+
+```bash
+# Required: where sealed blobs are stored on disk
+export SCBE_STORAGE_PATH="./sealed_blobs"
+
+# Optional: storage backend selection (default: filesystem)
+export SCBE_STORAGE_BACKEND="filesystem"
+```
+
+The API will write one JSON file per 6D position in the configured directory. Ensure the process has read/write access to this path when using `/seal-memory` and `/retrieve-memory`.
+
+---
+
 ## Fleet API (Pilot Demo)
 
 Run a complete fleet scenario through the 14-layer SCBE pipeline:
