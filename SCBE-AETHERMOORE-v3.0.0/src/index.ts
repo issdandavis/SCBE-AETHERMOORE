@@ -30,7 +30,7 @@ export * from './selfHealing/deepHealing.js';
 export * from './selfHealing/quickFixBot.js';
 
 // Version and Metadata
-export const VERSION = '3.0.0';
+export const VERSION = '3.1.0';
 export const PATENT_NUMBER = 'USPTO #63/961,403';
 export const ARCHITECTURE_LAYERS = 14;
 
