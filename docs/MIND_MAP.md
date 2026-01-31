@@ -98,10 +98,13 @@ With phase shifts = directed hypercubes, not regular cubes.
 | Hyperbolic Distance | `scbe/core.py` | ✅ |
 | Harmonic Wall | `scbe/core.py` | ✅ |
 | Six Sacred Tongues | `scbe/core.py` | ✅ |
-| PHDM 16 Polyhedra | `prototype/toy_phdm.py` | Partial |
+| PHDM 16 Polyhedra | `prototype/phdm_54face.py` | ✅ |
 | Fluxing Dimensions | `prototype/math_skeleton.py` | ✅ |
+| 54-Face Model | `prototype/phdm_54face.py` | ✅ |
+| GeoSeal Kernel | `prototype/geoseal.py` | ✅ |
+| Attack Pattern Detection | `prototype/geoseal.py` | ✅ |
+| RAG Filtering | `prototype/geoseal.py` | ✅ |
 | FFT Verification | TODO | ❌ |
-| 54-Face Model | TODO | ❌ |
 
 ---
 
