@@ -1,0 +1,29 @@
+# SCBE-AETHERMOORE Optional Integrations
+# ========================================
+# Install with: pip install -r requirements-integrations.txt
+
+# Hyperbolic Geometry (GPU-accelerated)
+geoopt>=0.5.0
+torch>=2.0.0
+
+# Post-Quantum Cryptography
+liboqs-python>=0.10.0
+
+# Agent-Based Modeling
+mesa>=3.0.0
+
+# Multi-Agent Reinforcement Learning
+pettingzoo>=1.24.0
+
+# Particle Swarm Optimization
+pyswarms>=1.3.0
+
+# Visualization (already in main requirements)
+plotly>=5.18.0
+
+# AI Safety / Governance
+# oso>=0.27.0  # Policy-as-code (optional)
+
+# Development
+pytest>=7.0.0
+hypothesis>=6.0.0  # Property-based testing

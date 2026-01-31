@@ -1,6 +1,6 @@
 {
-  "name": "@scbe/aethermoore",
-  "version": "3.0.0",
+  "name": "scbe-aethermoore",
+  "version": "3.1.0",
   "description": "SCBE-AETHERMOORE: Hyperbolic Geometry-Based Security with 14-Layer Architecture",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "license": "MIT",
@@ -15,12 +15,19 @@
     "./crypto": {
       "import": "./dist/src/crypto/index.js",
       "types": "./dist/src/crypto/index.d.ts"
+    },
+    "./tokenizer": {
+      "import": "./dist/src/tokenizer/index.js",
+      "types": "./dist/src/tokenizer/index.d.ts"
     }
   },
   "files": [
     "dist/src",
+    "prototype",
+    "docs",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "clean": "rimraf dist",
@@ -53,7 +60,12 @@
     "quantum-resistant",
     "14-layer-architecture",
     "harmonic-scaling",
-    "patent-pending"
+    "patent-pending",
+    "geoseal",
+    "nodal-context",
+    "mirror-symmetry",
+    "fail-to-noise",
+    "sacred-tongues"
   ],
   "repository": {
     "type": "git",

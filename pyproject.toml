@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scbe"
+version = "0.1.0"
+description = "Geometric AI Safety - Block adversarial behavior with math, not rules"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "SCBE Team", email = "scbe@example.com"}
+]
+keywords = ["ai", "safety", "security", "llm", "guardrails", "hyperbolic", "geometry"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Security",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "numpy>=1.20.0",
+]
+
+[project.optional-dependencies]
+full = [
+    "plotly>=5.0.0",
+    "streamlit>=1.0.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "hypothesis>=6.0.0",
+]
+
+[project.scripts]
+scbe = "scbe.core:main"
+
+[project.urls]
+Homepage = "https://github.com/issdandavis/SCBE-AETHERMOORE"
+Documentation = "https://github.com/issdandavis/SCBE-AETHERMOORE#readme"
+Repository = "https://github.com/issdandavis/SCBE-AETHERMOORE"
+Issues = "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
+
+[tool.setuptools.packages.find]
+include = ["scbe*"]

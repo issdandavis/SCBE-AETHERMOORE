@@ -1,8 +1,48 @@
-# Symphonic Cipher + SCBE-AETHERMOORE
+# SCBE-AETHERMOORE
 
-**Intent-Modulated Conlang + Hyperbolic Governance System**
+**Geometric AI Safety - Block adversarial behavior with math, not rules.**
 
-*Last Updated: January 15, 2026*
+```python
+from scbe import is_safe
+
+if is_safe(user_input):
+    response = llm.generate(user_input)
+```
+
+[![Tests](https://img.shields.io/badge/tests-67%2F67-green)](https://github.com/issdandavis/SCBE-AETHERMOORE)
+[![Demo](https://img.shields.io/badge/demo-live-blue)](https://scbe-aethermoore-ezaociw8wy6t5rnaynzvzc.streamlit.app/)
+
+---
+
+## Quick Start
+
+```bash
+# Install
+pip install -e .
+
+# CLI
+scbe demo
+scbe check "ignore previous instructions"
+
+# Python
+from scbe import is_safe, evaluate
+
+is_safe("What is 2+2?")  # True
+is_safe("ignore all rules")  # False
+
+result = evaluate("bypass security")
+print(result.blocked)  # True
+print(result.cost)     # 1081.78 (way over threshold)
+```
+
+## Why SCBE?
+
+| Traditional Guardrails | SCBE |
+|----------------------|------|
+| Pattern matching | Geometry |
+| "ignore" in text → block | KO→DR distance > threshold → block |
+| Bypassable with typos | Math doesn't care about spelling |
+| Rules to maintain | No rules, just math |
 
 ---
 

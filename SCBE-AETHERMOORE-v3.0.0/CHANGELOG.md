@@ -5,6 +5,82 @@ All notable changes to SCBE-AETHERMOORE will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2026-01-31
+
+### 🚀 Feature Release - GeoSeal & Agentic Context
+
+#### Added
+- **GeoSeal Kernel** (`prototype/geoseal.py`)
+  - Geometric access control using Poincaré ball embedding
+  - Attack pattern detection (injection, DoS, credential stuffing, exfiltration)
+  - Intent positioning with hyperbolic distance cost calculation
+  - Harmonic Wall barrier: H(d) = exp(d²) for superexponential protection
+  - Integration with 6 Sacred Tongues phase system
+
+- **Nodal Context Storage** (`prototype/nodal_context.py`)
+  - 6D KD-tree for O(log n) nearest-neighbor context retrieval
+  - Phase-aligned access control (agents see only matching tongue context)
+  - NodalBunch clustering for related context grouping
+  - GeoSealContextBridge for unified agent memory + geometric access
+  - Harmonic distance weighting: [1, 1, 1, R, R², R³]
+
+- **Mirror Symmetry Key Swapping (MSKS)** (`docs/MIRROR_SYMMETRY_KEY_SWAPPING.md`)
+  - Novel cryptographic concept using Calabi-Yau manifold duality
+  - 5 draft patent claims for USPTO filing
+  - Context-bound mirror maps (wrong context → wrong key → Fail-to-Noise)
+  - Instant key rotation without regeneration
+  - Integration as Layer 6 in SCBE stack
+
+- **Rogue Agent Detection** (`prototype/rogue_detection.py`)
+  - Swarm-based immune mechanics for adversarial agent detection
+  - Phase-based anomaly detection (null-phase = max suspicion)
+  - Suspicion counters with temporal integration
+  - Cooperative quarantine (agents vote to exclude)
+  - RAG integration hooks for chunk weighting
+
+- **Documentation**
+  - `docs/SPINE.md` - Complete specification of all 15 layers
+  - `docs/STATE_OF_CODE.md` - Comprehensive project status report
+  - `docs/MIRROR_SYMMETRY_KEY_SWAPPING.md` - Patent concept documentation
+
+#### Changed
+- **Fail-to-Noise Layer 6.5** - Upgraded to crypto-random bytes
+  - Now uses `secrets.token_bytes()` for indistinguishable output
+  - Satisfies Patent Claim 50 requirements
+  - Returns exact same length as valid ciphertext
+
+- **Keywords** - Added new keywords for discoverability
+  - geoseal, nodal-context, mirror-symmetry, fail-to-noise
+
+#### Fixed
+- Harmonic Wall now uses proper exponential scaling exp(d²)
+- Phase calculation edge cases in Sacred Tongue mapping
+- KD-tree balance for 6D vectors
+
+### Technical Details
+
+#### GeoSeal Decision Flow
+```
+Intent → SHA256 → Position in 𝔹ⁿ
+    ↓
+Attack Detection → Edge placement (r=0.95) + null phase
+    ↓
+Hyperbolic Distance d_H(intent, realm_center)
+    ↓
+Harmonic Wall: H(d) = exp(d²)
+    ↓
+Cost vs Threshold → ALLOW / RESTRICT / DENY
+    ↓
+DENY → Fail-to-Noise (crypto-random output)
+```
+
+#### Patent Information
+- **New Concept**: Mirror Symmetry Key Swapping (MSKS)
+- **Status**: Draft claims ready for provisional filing
+- **90-day window**: File by April 30, 2026
+
+---
+
 ## [3.0.0] - 2026-01-18
 
 ### 🎉 Major Release - Complete Customer-Ready Package

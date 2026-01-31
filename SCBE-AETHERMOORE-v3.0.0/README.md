@@ -1,4 +1,4 @@
-# SCBE-AETHERMOORE v3.0
+# SCBE-AETHERMOORE v3.1
 
 > **Hyperbolic Geometry-Based Security with 14-Layer Architecture**
 
@@ -6,6 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue)](https://www.typescriptlang.org/)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18.0.0-green)](https://nodejs.org/)
+[![npm](https://img.shields.io/npm/v/scbe-aethermoore)](https://www.npmjs.com/package/scbe-aethermoore)
 
 ## 🌌 Overview
 
@@ -33,22 +34,115 @@ dℍ(u,v) = arcosh(1 + 2‖u-v‖² / ((1-‖u‖²)(1-‖v‖²)))
 ## 📦 Installation
 
 ```bash
-npm install @scbe/aethermoore
+npm install scbe-aethermoore
 ```
 
 ## 🚀 Quick Start
 
 ```typescript
-import { DEFAULT_CONFIG, VERSION } from '@scbe/aethermoore';
-import { encrypt, decrypt } from '@scbe/aethermoore/crypto';
+import {
+  DEFAULT_CONFIG,
+  VERSION,
+  createEnvelope,
+  verifyEnvelope
+} from 'scbe-aethermoore';
 
 console.log(`SCBE-AETHERMOORE ${VERSION}`);
 
-// Use default 14-layer configuration
-const config = DEFAULT_CONFIG;
+// Create encrypted envelope with full AAD binding
+const envelope = await createEnvelope({
+  kid: 'my-key-id',
+  env: 'production',
+  provider_id: 'provider-123',
+  model_id: 'model-456',
+  intent_id: 'intent-789',
+  phase: 'request',
+  ttlMs: 300000,
+  content_type: 'application/json',
+  schema_hash: 'sha256-of-schema',
+  request_id: 'req-unique-id',
+  session_id: 'session-abc',
+  body: { message: 'Hello, secure world!' }
+});
 
-// Your security operations here
+// Verify and decrypt
+const { body } = await verifyEnvelope({
+  envelope,
+  session_id: 'session-abc'
+});
 ```
+
+## 🐍 Python Prototypes
+
+The package includes Python reference implementations in `prototype/`:
+
+```python
+# GeoSeal - Geometric Access Control
+from prototype.geoseal import GeoSealKernel, evaluate_intent
+
+kernel = GeoSealKernel()
+result = kernel.evaluate("user query here")
+# Returns: ALLOW, RESTRICT, or DENY with Fail-to-Noise
+
+# Nodal Context - 6D Agent Memory
+from prototype.nodal_context import NodalContextStore
+
+store = NodalContextStore()
+store.add_context("important info", context_type=ContextType.KNOWLEDGE)
+results = store.query_context("search query", k=5)
+
+# Rogue Detection - Swarm Immune System
+from prototype.rogue_detection import ImmuneSwarm
+
+swarm = ImmuneSwarm(dim=3)
+swarm.add_sacred_tongues()
+swarm.inject_rogue()  # Test detection
+for _ in range(20):
+    metrics = swarm.step()  # Quarantine emerges
+```
+
+## 🗣️ Sacred Tongues (SS1 Tokenizer)
+
+Bijective encoding that maps bytes to phonetically-engineered "Spell-Text":
+
+```typescript
+import { SS1Tokenizer, TONGUES } from 'scbe-aethermoore';
+
+// Create tokenizer with default tongue
+const tokenizer = new SS1Tokenizer('KO');
+
+// Encode secret data to spell-text
+const secret = Buffer.from('Hello');
+const spellText = tokenizer.encode(secret);
+// Output: "ko:kor'il ko:fae'en ko:dor'al ko:dor'al ko:dor'or"
+
+// Decode back to bytes
+const decoded = tokenizer.decode(spellText);
+// decoded.equals(secret) === true
+
+// Cross-translate between tongues
+const { translated, attestation } = tokenizer.xlate(
+  spellText, 'KO', 'CA'  // Control → Compute
+);
+// translated: "ca:hex'il ca:link'en ca:kilo'al ..."
+
+// Stripe-blend multiple tongues for semantic segmentation
+const blended = tokenizer.blend(secret, [
+  { tongue: 'RU', count: 2 },  // Salt
+  { tongue: 'CA', count: 3 },  // Ciphertext
+]);
+```
+
+**The Six Sacred Tongues:**
+
+| Code | Name | Domain | Phase |
+|------|------|--------|-------|
+| KO | Kor'aelin | Nonce / Flow / Control | 0° |
+| AV | Avali | AAD / Context / I/O | 60° |
+| RU | Runethic | Salt / Binding / Policy | 120° |
+| CA | Cassisivadan | Ciphertext / Compute | 180° |
+| UM | Umbroth | Redaction / Security | 240° |
+| DR | Draumric | Auth Tags / Schema | 300° |
 
 ## 🏗️ 14-Layer Architecture
 
