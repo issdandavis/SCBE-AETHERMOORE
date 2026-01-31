@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import { hkdfSha256 } from './hkdf.js';
-import { canonicalize } from './jcs.js';
+import { canonicalize, JsonValue } from './jcs.js';
 import { deriveNoncePrefix, nextNonce } from './nonceManager.js';
 import { getMasterKey } from './kms.js';
 import { ReplayGuard } from './replayGuard.js';
@@ -40,6 +40,9 @@ export interface Envelope {
   salt: string; // base64url (256-bit) - for key derivation
 }
 
+/** Body type for envelope payloads - JSON-compatible value or string */
+export type EnvelopeBody = JsonValue | string;
+
 export type CreateParams = {
   kid: string;
   env: string;
@@ -52,7 +55,7 @@ export type CreateParams = {
   schema_hash: string;
   request_id: string;
   session_id: string; // for nonce prefix derivation
-  body: any; // object/string
+  body: EnvelopeBody;
 };
 
 const replay = new ReplayGuard({
@@ -142,7 +145,7 @@ export type VerifyParams = {
   allowSkewMs?: number; // default 120000
 };
 
-export async function verifyEnvelope(p: VerifyParams): Promise<{ body: any }> {
+export async function verifyEnvelope(p: VerifyParams): Promise<{ body: EnvelopeBody }> {
   const t0 = metrics.now();
   const { envelope } = p;
   const allowSkew = p.allowSkewMs ?? 120_000;
