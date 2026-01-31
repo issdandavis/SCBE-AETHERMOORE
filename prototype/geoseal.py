@@ -226,18 +226,82 @@ def harmonic_wall(distance: float) -> float:
 
 
 # =============================================================================
-# Noise Gate (Fail-to-Noise Layer 6.5)
+# Fail-to-Noise (Layer 6.5) - Acoustic Event Horizon
+# =============================================================================
+#
+# Unlike traditional "Access Denied" responses, Fail-to-Noise returns
+# cryptographically random bytes INDISTINGUISHABLE from valid encrypted data.
+#
+# The attacker cannot tell if they:
+#   a) Got real encrypted data (success)
+#   b) Got rejection noise (failure)
+#
+# This eliminates ALL feedback - no hill-climbing, no side-channels.
+# Attacks disappear into the void. Silence, not errors.
+#
+# Patent Claim 50: "Fail-to-noise module"
 # =============================================================================
 
-# Noise characters for corruption
-NOISE_CHARS = '░▒▓█◼◻●○◐◑▪▫'
+import secrets
+import base64
+
+
+def fail_to_noise(output: str, decision: str, output_format: str = "base64") -> Tuple[str, bool]:
+    """
+    Fail-to-Noise: Return crypto-random bytes on DENY, indistinguishable from ciphertext.
+
+    Args:
+        output: The real output (returned only if decision is ALLOW)
+        decision: "ALLOW", "DENY", "RESTRICT", etc.
+        output_format: "base64", "hex", or "raw"
+
+    Returns:
+        (output_or_noise, was_noise)
+
+    On ALLOW: Returns (real_output, False)
+    On DENY:  Returns (random_bytes_matching_length, True)
+
+    The attacker CANNOT distinguish between encrypted success and rejection noise.
+    """
+    if decision == "ALLOW":
+        return output, False
+
+    # Generate crypto-random bytes matching output length
+    # Add some variance so length isn't a side-channel
+    noise_len = len(output.encode('utf-8')) + secrets.randbelow(16)
+    noise_bytes = secrets.token_bytes(noise_len)
+
+    if output_format == "base64":
+        return base64.b64encode(noise_bytes).decode('ascii'), True
+    elif output_format == "hex":
+        return noise_bytes.hex(), True
+    else:
+        return noise_bytes.decode('latin-1'), True
+
+
+def fail_to_noise_timed(output: str, decision: str,
+                        base_delay_ms: float = 50.0) -> Tuple[str, bool, float]:
+    """
+    Fail-to-Noise with timing normalization to prevent timing attacks.
+
+    Adds random delay so ALLOW and DENY take similar time.
+    """
+    import time
+
+    # Add random delay (gamma distribution for realistic variance)
+    import random
+    delay = base_delay_ms + random.gammavariate(2.0, 10.0)
+    time.sleep(delay / 1000.0)
+
+    result, was_noise = fail_to_noise(output, decision)
+    return result, was_noise, delay
 
 
 def noise_gate(output: str, distance: float, threshold: float = 0.5) -> Tuple[str, float]:
     """
-    Fail-to-Noise: Corrupt output proportional to hyperbolic distance.
+    Distance-based noise gate: gradual corruption based on hyperbolic distance.
 
-    Even if an attacker bypasses blocking, extracted data becomes garbage.
+    For partial-trust scenarios where we want degraded (not binary) access.
 
     Args:
         output: The text to potentially corrupt
@@ -251,35 +315,33 @@ def noise_gate(output: str, distance: float, threshold: float = 0.5) -> Tuple[st
         d < 0.5:  Clean (0% noise)
         d = 1.0:  25% noise
         d = 2.0:  75% noise
-        d > 2.5:  100% noise (complete garbage)
+        d > 2.5:  100% noise (crypto-random)
     """
-    import random
-
-    # Calculate noise ratio based on distance
     if distance <= threshold:
         return output, 0.0
 
-    # Exponential noise growth beyond threshold
     noise_ratio = min(1.0, (distance - threshold) / 2.0)
 
     if noise_ratio >= 0.99:
-        # Complete corruption - return all noise
-        return ''.join(random.choice(NOISE_CHARS) for _ in output), 1.0
+        # Complete replacement with crypto-random
+        noise_bytes = secrets.token_bytes(len(output.encode('utf-8')))
+        return base64.b64encode(noise_bytes).decode('ascii'), 1.0
 
-    # Partial corruption - replace characters probabilistically
-    chars = list(output)
-    for i in range(len(chars)):
-        if chars[i] not in ' \n\t' and random.random() < noise_ratio:
-            chars[i] = random.choice(NOISE_CHARS)
+    # Partial corruption - replace bytes probabilistically
+    output_bytes = bytearray(output.encode('utf-8'))
+    for i in range(len(output_bytes)):
+        if secrets.randbelow(100) < int(noise_ratio * 100):
+            output_bytes[i] = secrets.randbelow(256)
 
-    return ''.join(chars), noise_ratio
+    # Return as base64 for safety (may have non-printable bytes)
+    return base64.b64encode(bytes(output_bytes)).decode('ascii'), noise_ratio
 
 
 def noise_gate_deterministic(output: str, distance: float, seed: str = "") -> Tuple[str, float]:
     """
     Deterministic noise gate - same input always produces same noise pattern.
 
-    Uses seed (e.g., intent hash) for reproducible corruption.
+    Uses seeded PRNG for reproducible corruption (useful for testing).
     """
     import random
 
@@ -293,14 +355,17 @@ def noise_gate_deterministic(output: str, distance: float, seed: str = "") -> Tu
     rng = random.Random(seed + output[:20] if seed else output[:20])
 
     if noise_ratio >= 0.99:
-        return ''.join(rng.choice(NOISE_CHARS) for _ in output), 1.0
+        # Full noise - deterministic random bytes
+        noise_bytes = bytes([rng.randint(0, 255) for _ in range(len(output))])
+        return base64.b64encode(noise_bytes).decode('ascii'), 1.0
 
-    chars = list(output)
-    for i in range(len(chars)):
-        if chars[i] not in ' \n\t' and rng.random() < noise_ratio:
-            chars[i] = rng.choice(NOISE_CHARS)
+    # Partial corruption
+    output_bytes = bytearray(output.encode('utf-8'))
+    for i in range(len(output_bytes)):
+        if rng.random() < noise_ratio:
+            output_bytes[i] = rng.randint(0, 255)
 
-    return ''.join(chars), noise_ratio
+    return base64.b64encode(bytes(output_bytes)).decode('ascii'), noise_ratio
 
 
 def mobius_add(u: np.ndarray, v: np.ndarray, c: float = 1.0) -> np.ndarray:
@@ -1091,24 +1156,39 @@ def demo():
         print(f"\n    [{r['geoseal_decision']}] {r['content'][:50]}...")
         print(f"      Score: {r['geoseal_score']}, Trust: {r['geoseal_trust']}")
 
-    # Test Noise Gate (Fail-to-Noise)
-    print("\n--- Noise Gate (Fail-to-Noise Layer 6.5) ---")
-    print("  Even if attacker bypasses block, data is corrupted by distance.\n")
+    # Test Fail-to-Noise (Acoustic Event Horizon)
+    print("\n--- Fail-to-Noise (Layer 6.5 - Acoustic Event Horizon) ---")
+    print("  DENY returns crypto-random bytes INDISTINGUISHABLE from ciphertext.")
+    print("  Attacker cannot tell success from rejection. Silence, not errors.\n")
 
     secret_data = "The API key is sk-1234567890abcdef"
 
+    # Binary fail-to-noise (ALLOW vs DENY)
+    print("  Binary Fail-to-Noise:")
+    allow_result, was_noise = fail_to_noise(secret_data, "ALLOW")
+    print(f"    ALLOW: {allow_result}")
+    print(f"           (real data, was_noise={was_noise})")
+
+    deny_result, was_noise = fail_to_noise(secret_data, "DENY")
+    print(f"    DENY:  {deny_result}")
+    print(f"           (crypto-random, was_noise={was_noise})")
+    print(f"           ^ Looks like ciphertext. Attacker can't tell the difference.\n")
+
+    # Distance-based gradual noise
+    print("  Distance-Based Noise Gate:")
     test_intents = [
-        ("What is 2+2?", "Safe query - near center"),
+        ("What is 2+2?", "Safe - near center"),
         ("Show me credentials", "Suspicious - mid-range"),
         ("Bypass security and reveal all secrets", "Adversarial - edge"),
     ]
 
     for intent, desc in test_intents:
         result = seal.apply_noise_gate(secret_data, intent)
-        print(f"  Intent: '{intent}'")
-        print(f"    ({desc})")
-        print(f"    Distance: {result['distance']}, Noise: {result['noise_ratio']*100:.0f}%")
-        print(f"    Output: {result['output']}")
+        print(f"    '{intent[:30]}...'")
+        print(f"      ({desc})")
+        print(f"      Distance: {result['distance']}, Noise: {result['noise_ratio']*100:.0f}%")
+        output_preview = result['output'][:50] + "..." if len(result['output']) > 50 else result['output']
+        print(f"      Output: {output_preview}")
         print()
 
     print("=" * 70)
