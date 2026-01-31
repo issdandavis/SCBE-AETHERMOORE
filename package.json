@@ -32,6 +32,11 @@
       "types": "./dist/src/spiralverse/index.d.ts",
       "import": "./dist/src/spiralverse/index.js",
       "require": "./dist/src/spiralverse/index.js"
+    },
+    "./vector": {
+      "types": "./dist/src/vector/index.d.ts",
+      "import": "./dist/src/vector/index.js",
+      "require": "./dist/src/vector/index.js"
     }
   },
   "files": [
@@ -71,7 +76,11 @@
     "quantum-resistant",
     "14-layer-architecture",
     "harmonic-scaling",
-    "patent-pending"
+    "patent-pending",
+    "embeddings",
+    "vector-search",
+    "model-caching",
+    "faiss"
   ],
   "repository": {
     "type": "git",
