@@ -307,8 +307,6 @@ describe('Enterprise Compliance - Property Tests', () => {
           expect(Number.isFinite(overallScore)).toBe(true);
           expect(overallScore).toBeGreaterThan(config.complianceScoreTarget);
 
-          return overallScore > config.complianceScoreTarget;
-
           return Number.isFinite(overallScore) && overallScore > config.complianceScoreTarget;
         }
       ),

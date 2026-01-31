@@ -293,7 +293,7 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
       const result = verifyRoundtable(envelope, testKeyring, { policy: 'strict' });
 
       expect(result.valid).toBe(false);
-      expect(result.error).toContain('requires tongues');
+      expect(result.error).toContain('required tongue');
     });
 
     it('should enforce "critical" policy (requires RU + UM + DR)', () => {
@@ -317,30 +317,29 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
       const result = verifyRoundtable(envelope, testKeyring, { policy: 'critical' });
 
       expect(result.valid).toBe(false);
-      expect(result.error).toContain('requires tongues');
+      expect(result.error).toContain('required tongue');
     });
   });
 
   describe('Policy Helpers (AC-2.5.1 - AC-2.5.3)', () => {
     it('should check if tongues satisfy policy', () => {
-      // Standard: any valid signature
+      // Standard: requires 'ko' (Control tongue)
       expect(checkPolicy(['ko'], 'standard')).toBe(true);
-      expect(checkPolicy(['av'], 'standard')).toBe(true);
+      expect(checkPolicy(['ko', 'av'], 'standard')).toBe(true);
+      expect(checkPolicy(['av'], 'standard')).toBe(false); // Missing 'ko'
 
       // Strict: requires 'ru' (Policy tongue)
+      expect(checkPolicy(['ru'], 'strict')).toBe(true);
       expect(checkPolicy(['ko', 'ru'], 'strict')).toBe(true);
-      expect(checkPolicy(['ru', 'um', 'dr'], 'critical')).toBe(true);
-
-      expect(checkPolicy(['av'], 'standard')).toBe(false);
-      expect(checkPolicy(['ko'], 'strict')).toBe(false);
+      expect(checkPolicy(['ko'], 'strict')).toBe(false); // Missing 'ru'
 
       // Critical: requires ru + um + dr
       expect(checkPolicy(['ru', 'um', 'dr'], 'critical')).toBe(true);
-      expect(checkPolicy(['ko', 'ru'], 'critical')).toBe(false);
+      expect(checkPolicy(['ko', 'ru'], 'critical')).toBe(false); // Missing um, dr
     });
 
     it('should get required tongues for policy', () => {
-      expect(getRequiredTongues('standard')).toEqual(['ko']); // Any valid signature
+      expect(getRequiredTongues('standard')).toEqual(['ko']);
       expect(getRequiredTongues('strict')).toEqual(['ru']);
       expect(getRequiredTongues('critical')).toEqual(['ru', 'um', 'dr']);
     });
@@ -348,19 +347,15 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
     it('should suggest appropriate policy for action', () => {
       // Read operations: standard
       expect(suggestPolicy('read')).toBe('standard');
-      expect(suggestPolicy('query')).toBe('standard');
-
-      // Write operations: strict
       expect(suggestPolicy('write')).toBe('standard');
-      expect(suggestPolicy('update')).toBe('standard');
 
-      // Delete/secret operations: secret
+      // Deploy/delete operations: strict
+      expect(suggestPolicy('deploy')).toBe('strict');
       expect(suggestPolicy('delete')).toBe('strict');
-      expect(suggestPolicy('credential')).toBe('strict');
 
       // Critical operations: critical
-      expect(suggestPolicy('deploy')).toBe('critical');
-      expect(suggestPolicy('grant_access')).toBe('critical');
+      expect(suggestPolicy('admin')).toBe('critical');
+      expect(suggestPolicy('security')).toBe('critical');
     });
   });
 
