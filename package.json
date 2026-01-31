@@ -85,9 +85,11 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@types/node": "^25.0.10"
+    "@types/node": "^25.0.10",
+    "express": "^5.2.1"
   },
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
     "fast-check": "^4.5.3",
     "prettier": "^3.2.0",
