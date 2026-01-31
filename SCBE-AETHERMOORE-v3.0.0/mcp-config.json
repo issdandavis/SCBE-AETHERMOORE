@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "scbe-aethermoore": {
+      "command": "python",
+      "args": ["mcp-server.py"],
+      "cwd": "${workspaceFolder}/node_modules/scbe-aethermoore"
+    }
+  }
+}

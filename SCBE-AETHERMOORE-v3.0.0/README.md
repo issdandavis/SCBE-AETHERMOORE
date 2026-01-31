@@ -144,6 +144,62 @@ const blended = tokenizer.blend(secret, [
 | UM | Umbroth | Redaction / Security | 240° |
 | DR | Draumric | Auth Tags / Schema | 300° |
 
+## 🔌 MCP Server (Model Context Protocol)
+
+The package includes an MCP server for integration with Claude Code and other MCP clients:
+
+```bash
+# Run the MCP server
+python mcp-server.py
+```
+
+**Configure in Claude Code** (`~/.claude/settings.json`):
+
+```json
+{
+  "mcpServers": {
+    "scbe-aethermoore": {
+      "command": "python",
+      "args": ["node_modules/scbe-aethermoore/mcp-server.py"]
+    }
+  }
+}
+```
+
+**Available MCP Tools:**
+
+| Tool | Description |
+|------|-------------|
+| `tongue_encode` | Encode data to Sacred Tongue spell-text |
+| `tongue_decode` | Decode spell-text back to data |
+| `tongue_xlate` | Cross-translate between tongues with attestation |
+| `tongue_blend` | Stripe-blend data across multiple tongues |
+| `tongue_info` | Get tongue metadata (names, phases, weights) |
+| `geoseal_evaluate` | Evaluate intent through geometric access control |
+
+**Example MCP Usage:**
+
+```
+> Use tongue_encode to encode "Hello World" in Cassisivadan
+
+{
+  "tongue": "CA",
+  "tongue_name": "Cassisivadan",
+  "spell_text": "ca:caki'la ca:caku'ne ca:casi'la ...",
+  "byte_count": 11
+}
+
+> Use geoseal_evaluate with intent "access sensitive data"
+
+{
+  "intent": "access sensitive data",
+  "ring": "outer",
+  "action": "RESTRICT",
+  "harmonic_cost": 2.7834,
+  "latency_ms": 500
+}
+```
+
 ## 🏗️ 14-Layer Architecture
 
 | Layer | Name | Function |
