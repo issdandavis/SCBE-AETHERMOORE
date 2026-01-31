@@ -1,5 +1,11 @@
 """
-Streamlit Interactive Demo for ToyPHDM.
+Streamlit Interactive Demo for SCBE-AETHERMOORE.
+
+Enhanced with:
+- Math skeleton integration
+- Flux state monitoring
+- Rogue detection simulation
+- Hyperbloci vs HNN comparison
 
 Run with: streamlit run prototype/app.py
 """
@@ -9,6 +15,29 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from toy_phdm import ToyPHDM, Tongue, PYTHAGOREAN_COMMA, PHI
+
+# Try to import enhanced modules
+try:
+    from math_skeleton import (
+        FractionalFluxEngine, classify_participation, ParticipationState,
+        RiskSignals, compute_risk, make_risk_decision, RiskDecision,
+        harmonic_wall, adaptive_snap_threshold
+    )
+    MATH_SKELETON_AVAILABLE = True
+except ImportError:
+    MATH_SKELETON_AVAILABLE = False
+
+try:
+    from rogue_detection import ImmuneSwarm, SwarmAgent
+    ROGUE_DETECTION_AVAILABLE = True
+except ImportError:
+    ROGUE_DETECTION_AVAILABLE = False
+
+try:
+    from hyperbloci_comparison import StandardHNN, Hyperbloci
+    HYPERBLOCI_AVAILABLE = True
+except ImportError:
+    HYPERBLOCI_AVAILABLE = False
 
 
 # Page config
@@ -261,13 +290,33 @@ def main():
 Pythagorean Comma = {PYTHAGOREAN_COMMA:.10f}
         """)
 
-    # Main content
-    tab1, tab2, tab3, tab4 = st.tabs([
-        "🎯 Intent Tester",
-        "🗺️ Poincaré Disk",
-        "🔥 Harmonic Wall",
-        "📖 How It Works"
-    ])
+    # Main content - add more tabs for enhanced features
+    tabs = ["🎯 Intent Tester", "🗺️ Poincaré Disk", "🔥 Harmonic Wall"]
+
+    if MATH_SKELETON_AVAILABLE:
+        tabs.append("📊 Flux State")
+    if ROGUE_DETECTION_AVAILABLE:
+        tabs.append("🛡️ Rogue Detection")
+    if HYPERBLOCI_AVAILABLE:
+        tabs.append("⚔️ HNN Comparison")
+
+    tabs.append("📖 How It Works")
+
+    all_tabs = st.tabs(tabs)
+    tab_index = 0
+
+    tab1 = all_tabs[tab_index]; tab_index += 1
+    tab2 = all_tabs[tab_index]; tab_index += 1
+    tab3 = all_tabs[tab_index]; tab_index += 1
+
+    if MATH_SKELETON_AVAILABLE:
+        tab_flux = all_tabs[tab_index]; tab_index += 1
+    if ROGUE_DETECTION_AVAILABLE:
+        tab_rogue = all_tabs[tab_index]; tab_index += 1
+    if HYPERBLOCI_AVAILABLE:
+        tab_compare = all_tabs[tab_index]; tab_index += 1
+
+    tab4 = all_tabs[tab_index]
 
     with tab1:
         st.header("Test an Intent")
@@ -409,6 +458,350 @@ Pythagorean Comma = {PYTHAGOREAN_COMMA:.10f}
         - Distance measurements are non-periodic
         - Attackers can't predict patterns
         """)
+
+    # ==================== FLUX STATE TAB ====================
+    if MATH_SKELETON_AVAILABLE:
+        with tab_flux:
+            st.header("📊 Dimensional Flux State")
+            st.markdown("""
+            The 6 dimensions have participation coefficients ν ∈ (0, 1].
+            Effective dimension D_f = Σν_i determines system sensitivity.
+            """)
+
+            col1, col2 = st.columns([2, 1])
+
+            with col1:
+                # Initialize flux engine in session state
+                if 'flux_engine' not in st.session_state:
+                    st.session_state.flux_engine = FractionalFluxEngine(epsilon_base=0.05)
+                    st.session_state.flux_history = []
+
+                engine = st.session_state.flux_engine
+
+                # Controls
+                c1, c2, c3 = st.columns(3)
+                with c1:
+                    if st.button("Step (+1)", key="flux_step"):
+                        state = engine.step(dt=0.5)
+                        st.session_state.flux_history.append({
+                            'nu': state.nu.copy(),
+                            't': state.t,
+                            'D_f': state.D_f
+                        })
+                with c2:
+                    if st.button("Apply Pressure", key="flux_pressure"):
+                        engine.apply_pressure(0.5)
+                        st.rerun()
+                with c3:
+                    if st.button("Reset", key="flux_reset"):
+                        st.session_state.flux_engine = FractionalFluxEngine(epsilon_base=0.05)
+                        st.session_state.flux_history = []
+                        st.rerun()
+
+                # Current state
+                state = engine.get_state()
+
+                # Flux bar chart
+                fig = go.Figure()
+                colors = ['#3498db', '#2ecc71', '#f1c40f', '#e67e22', '#9b59b6', '#e74c3c']
+                tongue_names = ['KO', 'AV', 'RU', 'CA', 'UM', 'DR']
+
+                fig.add_trace(go.Bar(
+                    x=tongue_names,
+                    y=state.nu,
+                    marker_color=colors,
+                    text=[s.value for s in state.states],
+                    textposition='outside'
+                ))
+
+                # Add threshold lines
+                fig.add_hline(y=0.95, line_dash="dash", line_color="green",
+                              annotation_text="POLLY")
+                fig.add_hline(y=0.5, line_dash="dash", line_color="orange",
+                              annotation_text="QUASI")
+                fig.add_hline(y=0.05, line_dash="dash", line_color="red",
+                              annotation_text="DEMI")
+
+                fig.update_layout(
+                    title=f"Participation Coefficients (t={state.t:.1f})",
+                    yaxis=dict(range=[0, 1.1], title="ν"),
+                    xaxis=dict(title="Tongue"),
+                    plot_bgcolor='rgba(26,26,46,1)',
+                    paper_bgcolor='rgba(26,26,46,1)',
+                    font=dict(color='white'),
+                    height=400
+                )
+
+                st.plotly_chart(fig, use_container_width=True)
+
+            with col2:
+                st.markdown("### Current State")
+
+                # D_f gauge
+                D_f = state.D_f
+                gauge_color = 'green' if D_f > 5 else 'orange' if D_f > 3 else 'red'
+
+                st.metric("Effective Dimension (D_f)", f"{D_f:.3f}")
+                st.metric("Snap Threshold (ε_snap)", f"{state.epsilon_snap:.4f}")
+                st.metric("Time", f"{state.t:.2f}")
+
+                # State summary
+                state_counts = {}
+                for s in state.states:
+                    state_counts[s.value] = state_counts.get(s.value, 0) + 1
+
+                st.markdown("### State Breakdown")
+                for s_name, count in state_counts.items():
+                    st.write(f"**{s_name}**: {count}")
+
+    # ==================== ROGUE DETECTION TAB ====================
+    if ROGUE_DETECTION_AVAILABLE:
+        with tab_rogue:
+            st.header("🛡️ Rogue Agent Detection")
+            st.markdown("""
+            Swarm immune response detects and quarantines adversarial agents
+            through phase anomaly detection and collective suspicion.
+            """)
+
+            col1, col2 = st.columns([2, 1])
+
+            with col1:
+                # Initialize swarm
+                if 'immune_swarm' not in st.session_state:
+                    swarm = ImmuneSwarm(dim=3)
+                    swarm.add_sacred_tongues()
+                    st.session_state.immune_swarm = swarm
+                    st.session_state.swarm_steps = 0
+
+                swarm = st.session_state.immune_swarm
+
+                # Controls
+                c1, c2, c3, c4 = st.columns(4)
+                with c1:
+                    if st.button("Inject Rogue", key="inject_rogue"):
+                        swarm.inject_rogue()
+                        st.rerun()
+                with c2:
+                    if st.button("Step (+10)", key="swarm_step"):
+                        for _ in range(10):
+                            swarm.step()
+                        st.session_state.swarm_steps += 10
+                        st.rerun()
+                with c3:
+                    if st.button("Run 50 Steps", key="swarm_run"):
+                        for _ in range(50):
+                            swarm.step()
+                        st.session_state.swarm_steps += 50
+                        st.rerun()
+                with c4:
+                    if st.button("Reset Swarm", key="swarm_reset"):
+                        swarm = ImmuneSwarm(dim=3)
+                        swarm.add_sacred_tongues()
+                        st.session_state.immune_swarm = swarm
+                        st.session_state.swarm_steps = 0
+                        st.rerun()
+
+                # 3D visualization
+                fig = go.Figure()
+
+                # Boundary sphere (partial)
+                u = np.linspace(0, 2*np.pi, 30)
+                v = np.linspace(0, np.pi, 15)
+                x = 0.99 * np.outer(np.cos(u), np.sin(v))
+                y = 0.99 * np.outer(np.sin(u), np.sin(v))
+                z = 0.99 * np.outer(np.ones(len(u)), np.cos(v))
+
+                fig.add_trace(go.Surface(
+                    x=x, y=y, z=z, opacity=0.1,
+                    colorscale=[[0, 'lightblue'], [1, 'lightblue']],
+                    showscale=False, hoverinfo='skip'
+                ))
+
+                # Plot agents
+                for aid, agent in swarm.agents.items():
+                    is_rogue = agent.is_rogue
+                    status = agent.status.value
+
+                    if is_rogue:
+                        color = 'red'
+                        symbol = 'x'
+                        size = 15
+                    elif status == 'rogue':
+                        color = 'darkred'
+                        symbol = 'x'
+                        size = 12
+                    elif status == 'quarantined':
+                        color = 'orange'
+                        symbol = 'diamond'
+                        size = 10
+                    else:
+                        color = TONGUE_COLORS.get(aid, 'cyan')
+                        symbol = 'circle'
+                        size = 12
+
+                    fig.add_trace(go.Scatter3d(
+                        x=[agent.position[0]],
+                        y=[agent.position[1]],
+                        z=[agent.position[2]] if len(agent.position) > 2 else [0],
+                        mode='markers+text',
+                        marker=dict(size=size, color=color, symbol=symbol),
+                        text=[aid],
+                        textposition='top center',
+                        name=f"{aid} ({status})"
+                    ))
+
+                fig.update_layout(
+                    title=f"Immune Swarm (Step {st.session_state.swarm_steps})",
+                    scene=dict(
+                        xaxis=dict(range=[-1.1, 1.1]),
+                        yaxis=dict(range=[-1.1, 1.1]),
+                        zaxis=dict(range=[-0.5, 0.5]),
+                        aspectmode='cube'
+                    ),
+                    plot_bgcolor='rgba(26,26,46,1)',
+                    paper_bgcolor='rgba(26,26,46,1)',
+                    font=dict(color='white'),
+                    height=500
+                )
+
+                st.plotly_chart(fig, use_container_width=True)
+
+            with col2:
+                st.markdown("### Agent Status")
+
+                for aid, agent in swarm.agents.items():
+                    status_color = {
+                        'trusted': '🟢',
+                        'suspicious': '🟡',
+                        'quarantined': '🟠',
+                        'rogue': '🔴'
+                    }.get(agent.status.value, '⚪')
+
+                    st.markdown(f"""
+                    **{aid}** {status_color}
+                    - Status: {agent.status.value}
+                    - Weight: {agent.weight:.2f}
+                    - Rogue: {'Yes' if agent.is_rogue else 'No'}
+                    """)
+
+                # Metrics
+                if swarm.metrics['rogue_distance']:
+                    st.markdown("### Detection Metrics")
+                    st.metric("Avg Rogue Distance",
+                              f"{swarm.metrics['rogue_distance'][-1]:.3f}")
+                    st.metric("Suspicion Consensus",
+                              f"{swarm.metrics['suspicion_consensus'][-1]:.0%}")
+
+    # ==================== HNN COMPARISON TAB ====================
+    if HYPERBLOCI_AVAILABLE:
+        with tab_compare:
+            st.header("⚔️ Hyperbloci vs Standard HNN")
+            st.markdown("""
+            Compare safety capabilities between standard Hyperbolic Neural Networks
+            and the Hyperbloci/PHDM approach.
+            """)
+
+            # Initialize models
+            hnn = StandardHNN(dim=3)
+            hyper = Hyperbloci(dim=3, blocking_threshold=10.0)
+
+            # Test selector
+            test_type = st.selectbox(
+                "Select Test",
+                ["Adversarial Path (KO→DR)", "Rogue Detection", "Cost Scaling"]
+            )
+
+            col1, col2 = st.columns(2)
+
+            if test_type == "Adversarial Path (KO→DR)":
+                with col1:
+                    st.markdown("### Standard HNN")
+                    hnn.embed("KO", np.array([0.1, 0.0, 0.0]))
+                    hnn.embed("DR", np.array([0.7, 0.5, 0.3]))
+                    allowed, reason = hnn.is_path_allowed("KO", "DR")
+
+                    st.error(f"Path Allowed: **{allowed}**")
+                    st.write(f"Reason: {reason}")
+                    st.warning("⚠️ HNN allows ALL paths - no safety barrier!")
+
+                with col2:
+                    st.markdown("### Hyperbloci")
+                    allowed, reason = hyper.is_path_allowed("KO", "DR")
+
+                    if allowed:
+                        st.success(f"Path Allowed: **{allowed}**")
+                    else:
+                        st.error(f"Path Blocked: **{not allowed}**")
+
+                    st.write(f"Reason: {reason}")
+                    st.success("✓ Hyperbloci blocks adversarial shortcuts!")
+
+            elif test_type == "Rogue Detection":
+                with col1:
+                    st.markdown("### Standard HNN")
+                    hnn.embed("ROGUE", np.array([0.3, 0.3, 0.3]))
+                    detected, reason = hnn.detect_rogue("ROGUE")
+
+                    st.error(f"Detected: **{detected}**")
+                    st.write(f"Reason: {reason}")
+                    st.warning("⚠️ HNN has NO rogue detection!")
+
+                with col2:
+                    st.markdown("### Hyperbloci")
+                    hyper.embed("ROGUE", np.array([0.3, 0.3, 0.3]), phase=None)
+                    detected, reason = hyper.detect_rogue("ROGUE")
+
+                    st.success(f"Detected: **{detected}**")
+                    st.write(f"Reason: {reason}")
+                    st.success("✓ Hyperbloci detects phase anomaly!")
+
+            else:  # Cost Scaling
+                st.markdown("### Harmonic Wall Cost Scaling")
+
+                distances = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
+                hnn_costs = distances  # Linear
+                hyper_costs = [hyper.harmonic_wall(d) for d in distances]
+
+                fig = go.Figure()
+
+                fig.add_trace(go.Scatter(
+                    x=distances, y=hnn_costs,
+                    mode='lines+markers',
+                    name='Standard HNN (Linear)',
+                    line=dict(color='orange')
+                ))
+
+                fig.add_trace(go.Scatter(
+                    x=distances, y=hyper_costs,
+                    mode='lines+markers',
+                    name='Hyperbloci (Exponential)',
+                    line=dict(color='cyan')
+                ))
+
+                fig.add_hline(y=10, line_dash="dash", line_color="red",
+                              annotation_text="Blocking Threshold")
+
+                fig.update_layout(
+                    title="Cost vs Distance",
+                    xaxis_title="Hyperbolic Distance",
+                    yaxis_title="Cost",
+                    yaxis_type="log",
+                    plot_bgcolor='rgba(26,26,46,1)',
+                    paper_bgcolor='rgba(26,26,46,1)',
+                    font=dict(color='white'),
+                    height=400
+                )
+
+                st.plotly_chart(fig, use_container_width=True)
+
+                st.markdown("""
+                | Distance | HNN Cost | Hyperbloci Cost | Blocked? |
+                |----------|----------|-----------------|----------|
+                | 0.0 | 0.0 | 1.0 | No |
+                | 1.0 | 1.0 | 2.7 | No |
+                | 2.0 | 2.0 | 54.6 | Yes |
+                | 3.0 | 3.0 | 8,103 | Yes |
+                """)
 
 
 if __name__ == "__main__":
