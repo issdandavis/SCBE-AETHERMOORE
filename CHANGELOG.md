@@ -1,5 +1,26 @@
 # SCBE Production Pack Changelog
 
+## [3.1.0] - 2026-01-31
+
+### Added
+- **SS1 Tokenizer Export**: Now available via `import { SS1Tokenizer } from 'scbe-aethermoore/tokenizer'`
+  - Phonetically-engineered Spell-Text encoding with Six Sacred Tongues
+  - Bijective byte-to-token mapping (O(1) encode/decode)
+  - Cross-tongue translation with attestation (`xlate()`)
+  - Stripe-mode blending for multi-domain data (`blend()`)
+- **PHDM Export**: Now available via `import { PHDM } from 'scbe-aethermoore/phdm'`
+  - 16 polyhedral cognitive nodes
+  - Hamiltonian path constraints with HMAC chaining
+  - Euler characteristic validation
+- **Quantum Lattice Integration**: SS1 tokens bound to ML-KEM-768 lattice points
+  - Dual-layer security (semantic + computational)
+  - Tongue-bound signatures for domain separation
+
+### Fixed
+- Package exports now include all submodules
+
+---
+
 ## [2026-01-26] - Fleet & AI Safety Integration
 
 ### Fleet Management
