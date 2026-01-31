@@ -101,6 +101,49 @@ for _ in range(20):
     metrics = swarm.step()  # Quarantine emerges
 ```
 
+## 🗣️ Sacred Tongues (SS1 Tokenizer)
+
+Bijective encoding that maps bytes to phonetically-engineered "Spell-Text":
+
+```typescript
+import { SS1Tokenizer, TONGUES } from 'scbe-aethermoore';
+
+// Create tokenizer with default tongue
+const tokenizer = new SS1Tokenizer('KO');
+
+// Encode secret data to spell-text
+const secret = Buffer.from('Hello');
+const spellText = tokenizer.encode(secret);
+// Output: "ko:kor'il ko:fae'en ko:dor'al ko:dor'al ko:dor'or"
+
+// Decode back to bytes
+const decoded = tokenizer.decode(spellText);
+// decoded.equals(secret) === true
+
+// Cross-translate between tongues
+const { translated, attestation } = tokenizer.xlate(
+  spellText, 'KO', 'CA'  // Control → Compute
+);
+// translated: "ca:hex'il ca:link'en ca:kilo'al ..."
+
+// Stripe-blend multiple tongues for semantic segmentation
+const blended = tokenizer.blend(secret, [
+  { tongue: 'RU', count: 2 },  // Salt
+  { tongue: 'CA', count: 3 },  // Ciphertext
+]);
+```
+
+**The Six Sacred Tongues:**
+
+| Code | Name | Domain | Phase |
+|------|------|--------|-------|
+| KO | Kor'aelin | Nonce / Flow / Control | 0° |
+| AV | Avali | AAD / Context / I/O | 60° |
+| RU | Runethic | Salt / Binding / Policy | 120° |
+| CA | Cassisivadan | Ciphertext / Compute | 180° |
+| UM | Umbroth | Redaction / Security | 240° |
+| DR | Draumric | Auth Tags / Schema | 300° |
+
 ## 🏗️ 14-Layer Architecture
 
 | Layer | Name | Function |

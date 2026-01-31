@@ -1,10 +1,10 @@
 /**
- * SCBE-AETHERMOORE v3.0
+ * SCBE-AETHERMOORE v3.1
  * Hyperbolic Geometry-Based Security with 14-Layer Architecture
- * 
+ *
  * Patent Pending: USPTO #63/961,403
  * Author: Issac Daniel Davis
- * 
+ *
  * @packageDocumentation
  */
 
@@ -16,6 +16,9 @@ export * from './crypto/kms.js';
 export * from './crypto/nonceManager.js';
 export * from './crypto/replayGuard.js';
 export * from './crypto/bloom.js';
+
+// Tokenizer Exports (Sacred Tongues SS1)
+export * from './tokenizer/index.js';
 
 // Metrics Exports
 export * from './metrics/telemetry.js';
