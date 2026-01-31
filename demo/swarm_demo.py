@@ -19,6 +19,16 @@ import time
 PYTHAGOREAN_COMMA = 1.0136432648  # 531441:524288
 GOLDEN_RATIO = 1.618033988749895
 
+# Six Sacred Tongues with weights
+TONGUES = {
+    "KO": {"name": "Kor'aelin", "weight": 1.00},
+    "AV": {"name": "Avali", "weight": 1.62},
+    "RU": {"name": "Runethic", "weight": 2.62},
+    "CA": {"name": "Cassisivadan", "weight": 4.24},
+    "UM": {"name": "Umbroth", "weight": 6.85},
+    "DR": {"name": "Draumric", "weight": 11.09},
+}
+
 AGENTS = {
     "KO": {"name": "Orchestrator", "phase": 0, "color": "#FF6B6B", "role": "Control flow"},
     "AV": {"name": "Transport", "phase": 60, "color": "#4ECDC4", "role": "I/O operations"},
@@ -469,6 +479,81 @@ def main():
                 st.write(f"**Rationale:** {result.get('rationale', 'N/A')}")
                 st.write(f"**Risk Score:** {result.get('risk_score', 'N/A')}")
                 st.write(f"**Harmonic Cost:** {result.get('harmonic_cost', 'N/A')}")
+
+    # Swarm Coding Panel
+    st.markdown("---")
+    st.subheader("🤖 Swarm Coding Simulation")
+
+    col5, col6 = st.columns([2, 1])
+
+    with col5:
+        # Code editor simulation
+        sample_code = st.text_area(
+            "Code being written by swarm",
+            value='''def process_request(user_id, action, value):
+    """
+    Governance-protected function.
+    Each line is validated by a Sacred Tongue agent.
+    """
+    # KO: Validates intent structure
+    if not user_id or not action:
+        return {"error": "Invalid request"}
+
+    # RU: Policy check - value limits
+    if value > 10000 and action == "auto_approve":
+        return {"decision": "ESCALATE"}
+
+    # UM: Security scan - redact sensitive data
+    sanitized = redact_pii(user_id)
+
+    # CA: Execute core computation
+    result = execute_action(sanitized, action, value)
+
+    # DR: Lock decision with attestation
+    return seal_response(result)
+''',
+            height=350
+        )
+
+        if st.button("🔄 Simulate Swarm Review"):
+            st.markdown("**Agent Reviews:**")
+
+            # Simulate each agent reviewing a line
+            reviews = [
+                ("KO", "✅ Intent structure valid", "green"),
+                ("RU", "⚠️ Policy trigger: value > 10000", "orange"),
+                ("UM", "✅ No PII detected in sample", "green"),
+                ("CA", "✅ Computation path verified", "green"),
+                ("DR", "✅ Attestation ready", "green"),
+                ("AV", "✅ I/O boundaries clean", "green"),
+            ]
+
+            for agent, message, color in reviews:
+                tongue_weight = TONGUES[agent]["weight"]
+                st.markdown(f":{color}[**{agent}** (φ^{int(np.log(tongue_weight)/np.log(GOLDEN_RATIO))})]: {message}")
+
+            # BFT vote
+            st.markdown("---")
+            votes = sum(1 for _, msg, _ in reviews if "✅" in msg)
+            if votes >= 4:
+                st.success(f"✅ **CONSENSUS REACHED** ({votes}/6 approve) - Code safe to merge")
+            else:
+                st.warning(f"⚠️ **REVIEW REQUIRED** ({votes}/6 approve) - Escalating to human")
+
+    with col6:
+        st.markdown("**Swarm Agent Roles:**")
+        for code, info in AGENTS.items():
+            st.markdown(f"**{code}**: {info['role']}")
+
+        st.markdown("---")
+        st.markdown("**How It Works:**")
+        st.markdown("""
+        1. Code split into logical chunks
+        2. Each chunk assigned to specialist agent
+        3. Agents validate in parallel
+        4. BFT consensus (4/6) required
+        5. Blocked code → human review
+        """)
 
     # Footer
     st.markdown("---")
