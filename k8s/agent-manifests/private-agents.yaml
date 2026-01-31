@@ -1,0 +1,314 @@
+---
+# Private IP Tier: AV, RU, CA (Transport, Policy, Compute)
+# Internal service mesh for agent coordination
+
+# AV Agent - Avali (Transport/Init)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scbe-agent-av
+  namespace: scbe-agents
+  labels:
+    app: scbe-agent
+    tongue: av
+    ip-tier: private
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: scbe-agent
+      tongue: av
+  template:
+    metadata:
+      labels:
+        app: scbe-agent
+        tongue: av
+        ip-tier: private
+        role: agent
+      annotations:
+        sidecar.istio.io/inject: "true"
+    spec:
+      serviceAccountName: scbe-agent
+      containers:
+      - name: agent
+        image: scbe/agent:latest
+        ports:
+        - containerPort: 8080
+          name: http
+        - containerPort: 9090
+          name: metrics
+        env:
+        - name: AGENT_TONGUE
+          value: "AV"
+        - name: IP_TIER
+          value: "private"
+        - name: KAFKA_BROKERS
+          value: "kafka-internal.scbe-agents.svc.cluster.local:9093"
+        - name: PHASE_OFFSET
+          value: "60"
+        - name: WEIGHT_MULTIPLIER
+          value: "1.618"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        securityContext:
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+---
+# RU Agent - Runethic (Policy/Rules)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scbe-agent-ru
+  namespace: scbe-agents
+  labels:
+    app: scbe-agent
+    tongue: ru
+    ip-tier: private
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: scbe-agent
+      tongue: ru
+  template:
+    metadata:
+      labels:
+        app: scbe-agent
+        tongue: ru
+        ip-tier: private
+        role: agent
+      annotations:
+        sidecar.istio.io/inject: "true"
+    spec:
+      serviceAccountName: scbe-agent
+      containers:
+      - name: agent
+        image: scbe/agent:latest
+        ports:
+        - containerPort: 8080
+          name: http
+        - containerPort: 9090
+          name: metrics
+        env:
+        - name: AGENT_TONGUE
+          value: "RU"
+        - name: IP_TIER
+          value: "private"
+        - name: KAFKA_BROKERS
+          value: "kafka-internal.scbe-agents.svc.cluster.local:9093"
+        - name: TEMPORAL_HOST
+          value: "temporal-worker.scbe-agents.svc.cluster.local:7233"
+        - name: PHASE_OFFSET
+          value: "120"
+        - name: WEIGHT_MULTIPLIER
+          value: "2.618"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        securityContext:
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+---
+# CA Agent - Cassisivadan (Compute/Encryption)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scbe-agent-ca
+  namespace: scbe-agents
+  labels:
+    app: scbe-agent
+    tongue: ca
+    ip-tier: private
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: scbe-agent
+      tongue: ca
+  template:
+    metadata:
+      labels:
+        app: scbe-agent
+        tongue: ca
+        ip-tier: private
+        role: agent
+      annotations:
+        sidecar.istio.io/inject: "true"
+    spec:
+      serviceAccountName: scbe-agent
+      containers:
+      - name: agent
+        image: scbe/agent:latest
+        ports:
+        - containerPort: 8080
+          name: http
+        - containerPort: 9090
+          name: metrics
+        env:
+        - name: AGENT_TONGUE
+          value: "CA"
+        - name: IP_TIER
+          value: "private"
+        - name: KAFKA_BROKERS
+          value: "kafka-internal.scbe-agents.svc.cluster.local:9093"
+        - name: PHASE_OFFSET
+          value: "180"
+        - name: WEIGHT_MULTIPLIER
+          value: "4.236"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        securityContext:
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+---
+# Internal ClusterIP Services
+apiVersion: v1
+kind: Service
+metadata:
+  name: scbe-agent-av
+  namespace: scbe-agents
+spec:
+  type: ClusterIP
+  selector:
+    app: scbe-agent
+    tongue: av
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scbe-agent-ru
+  namespace: scbe-agents
+spec:
+  type: ClusterIP
+  selector:
+    app: scbe-agent
+    tongue: ru
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scbe-agent-ca
+  namespace: scbe-agents
+spec:
+  type: ClusterIP
+  selector:
+    app: scbe-agent
+    tongue: ca
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+---
+# Network Policy: Private tier agents
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: private-agents-policy
+  namespace: scbe-agents
+spec:
+  podSelector:
+    matchLabels:
+      ip-tier: private
+      role: agent
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow from other agents
+  - from:
+    - podSelector:
+        matchLabels:
+          role: agent
+    ports:
+    - protocol: TCP
+      port: 8080
+  # Allow from public gateway
+  - from:
+    - podSelector:
+        matchLabels:
+          ip-tier: public
+    ports:
+    - protocol: TCP
+      port: 8080
+  egress:
+  # Allow to Kafka
+  - to:
+    - podSelector:
+        matchLabels:
+          app: kafka
+    ports:
+    - protocol: TCP
+      port: 9093
+  # Allow to Temporal
+  - to:
+    - podSelector:
+        matchLabels:
+          app: temporal
+    ports:
+    - protocol: TCP
+      port: 7233
+  # Allow to Postgres
+  - to:
+    - podSelector:
+        matchLabels:
+          app: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+  # Allow to Vault proxy
+  - to:
+    - podSelector:
+        matchLabels:
+          app: vault-proxy
+    ports:
+    - protocol: TCP
+      port: 8200
+  # Allow DNS
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: UDP
+      port: 53
