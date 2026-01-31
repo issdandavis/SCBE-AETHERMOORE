@@ -235,12 +235,111 @@ def create_security_heatmap(security_level: float) -> go.Figure:
     return fig
 
 # ============================================================================
-# Governance API Integration
+# Governance Engine (Embedded for Streamlit Cloud)
 # ============================================================================
+
+POLICIES = [
+    {"id": "POL-001", "name": "High Value Transaction", "threshold": 10000},
+    {"id": "POL-002", "name": "Confidential Data Access", "ai_restricted": True},
+    {"id": "POL-003", "name": "Auto-Approval Limits", "ai_limit": 5000},
+    {"id": "POL-004", "name": "Destructive Operations", "blocked_intents": ["delete", "destroy", "purge"]},
+    {"id": "POL-005", "name": "Low Trust Actor", "trust_threshold": 0.3},
+]
+
+def simulate_governance(actor_id: str, actor_type: str, resource_type: str,
+                        intent: str, trust_score: float = 0.5, value_usd: float = 0,
+                        classification: str = "internal"):
+    """Simulate governance decision using embedded engine."""
+    import hashlib
+
+    # Calculate risk using hyperbolic distance
+    actor_hash = hashlib.sha256(f"{actor_id}{actor_type}".encode()).digest()
+    resource_hash = hashlib.sha256(f"{resource_type}{intent}".encode()).digest()
+
+    # Map to Poincaré ball positions
+    ax, ay, az = (actor_hash[0]/255 - 0.5) * 0.7, (actor_hash[1]/255 - 0.5) * 0.7, (actor_hash[2]/255 - 0.5) * 0.7
+    rx, ry, rz = (resource_hash[0]/255 - 0.5) * 0.7, (resource_hash[1]/255 - 0.5) * 0.7, (resource_hash[2]/255 - 0.5) * 0.7
+
+    distance = hyperbolic_distance((ax, ay, az), (rx, ry, rz))
+    base_risk = min(1, distance / 3)
+
+    # Apply policy modifiers
+    policy_ids = []
+    rationales = []
+    decision = "ALLOW"
+    risk_modifier = 0
+
+    # POL-001: High value
+    if value_usd > 50000:
+        decision = "ESCALATE"
+        policy_ids.append("POL-001")
+        rationales.append(f"Transaction ${value_usd} exceeds $50,000")
+        risk_modifier += 0.3
+    elif value_usd > 10000:
+        policy_ids.append("POL-001")
+        rationales.append(f"Transaction ${value_usd} requires scrutiny")
+        risk_modifier += 0.15
+
+    # POL-002: AI + restricted
+    if classification == "restricted" and actor_type == "ai":
+        decision = "DENY"
+        policy_ids.append("POL-002")
+        rationales.append("AI cannot access restricted resources")
+        risk_modifier += 0.5
+
+    # POL-003: AI auto-approve limits
+    if intent == "auto_approve" and actor_type == "ai" and value_usd > 5000:
+        decision = "ESCALATE"
+        policy_ids.append("POL-003")
+        rationales.append(f"AI cannot auto-approve >${value_usd}")
+        risk_modifier += 0.25
+
+    # POL-004: Destructive operations
+    if intent in ["delete", "destroy", "purge", "remove"]:
+        if actor_type == "ai":
+            decision = "DENY"
+            policy_ids.append("POL-004")
+            rationales.append("AI cannot perform destructive operations")
+            risk_modifier += 0.6
+        else:
+            decision = "ESCALATE"
+            policy_ids.append("POL-004")
+            rationales.append("Destructive operation requires confirmation")
+            risk_modifier += 0.35
+
+    # POL-005: Low trust
+    if trust_score < 0.3:
+        decision = "QUARANTINE"
+        policy_ids.append("POL-005")
+        rationales.append(f"Trust score {trust_score:.2f} below threshold")
+        risk_modifier += 0.5
+
+    # Final risk calculation
+    risk_score = min(1, base_risk * (1.5 - trust_score) + risk_modifier)
+    harmonic_cost = harmonic_wall_cost(risk_score * 3)
+
+    # Override decision based on risk if no policy triggered
+    if not policy_ids:
+        if risk_score > 0.8:
+            decision = "DENY"
+            rationales.append(f"Risk {risk_score:.3f} exceeds threshold")
+        elif risk_score > 0.6:
+            decision = "ESCALATE"
+            rationales.append(f"Risk {risk_score:.3f} requires review")
+        else:
+            rationales.append(f"Risk {risk_score:.3f} acceptable")
+
+    return {
+        "decision": decision,
+        "risk_score": risk_score,
+        "harmonic_cost": harmonic_cost,
+        "rationale": "; ".join(rationales) if rationales else "Low risk operation",
+        "policy_ids": policy_ids
+    }
 
 def call_governance_api(actor_id: str, actor_type: str, resource_type: str,
                         intent: str, trust_score: float = 0.5, value_usd: float = 0):
-    """Call the local governance API."""
+    """Try local API first, fall back to embedded simulation."""
     try:
         response = requests.post(
             "http://localhost:8080/v1/govern",
@@ -250,11 +349,12 @@ def call_governance_api(actor_id: str, actor_type: str, resource_type: str,
                 "intent": intent,
                 "nonce": str(time.time_ns())
             },
-            timeout=5
+            timeout=2
         )
         return response.json()
     except:
-        return {"decision": "API_OFFLINE", "rationale": "Governance API not running"}
+        # Fall back to embedded simulation for Streamlit Cloud
+        return simulate_governance(actor_id, actor_type, resource_type, intent, trust_score, value_usd)
 
 # ============================================================================
 # Main App
