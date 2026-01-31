@@ -1,0 +1,42 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: scbe-agents
+
+resources:
+  - namespace.yaml
+  - rbac.yaml
+  - kafka.yaml
+  - public-gateway.yaml
+  - private-agents.yaml
+  - hidden-agents.yaml
+
+configMapGenerator:
+  - name: agent-config
+    literals:
+      - LOG_LEVEL=info
+      - HEARTBEAT_INTERVAL_MS=5000
+      - AGENT_TIMEOUT_MS=15000
+      - COHERENCE_DECAY_RATE=0.001
+      - BFT_TIMEOUT_MS=5000
+      - POINCARE_BALL_RADIUS=0.99
+
+  - name: vault-proxy-config
+    files:
+      - agent.hcl=configs/vault-agent.hcl
+
+  - name: hidden-agent-config
+    literals:
+      - SOCKET_ONLY=true
+      - AUDIT_LOG_ENABLED=true
+      - HSM_INTEGRATION=true
+
+commonLabels:
+  app.kubernetes.io/name: scbe-aethermoore
+  app.kubernetes.io/version: "3.0.0"
+  app.kubernetes.io/component: agent-system
+
+images:
+  - name: scbe/agent
+    newTag: latest
