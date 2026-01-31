@@ -20,7 +20,7 @@ class SpaceTorRouter {
     nodes;
     trustManager;
     constructor(nodes, trustManager) {
-        this.nodes = new Map(nodes.map(n => [n.id, n]));
+        this.nodes = new Map(nodes.map((n) => [n.id, n]));
         this.trustManager = trustManager || new trust_manager_js_1.TrustManager();
         // Initialize trust manager with node trust vectors
         for (const node of nodes) {
@@ -42,7 +42,7 @@ class SpaceTorRouter {
      */
     calculatePath(origin, dest, minTrust = 60) {
         // 1. Filter usable nodes with Layer 3 trust scoring
-        const candidates = Array.from(this.nodes.values()).filter(n => {
+        const candidates = Array.from(this.nodes.values()).filter((n) => {
             const trust = this.getNodeTrustScore(n);
             return trust >= minTrust && n.load < 0.9;
         });
@@ -50,7 +50,7 @@ class SpaceTorRouter {
             throw new Error(`Insufficient relay nodes (need 3, have ${candidates.length})`);
         }
         // 2. Entry Node: Prioritize trust (Guard Node) close to origin
-        const entryCandidates = candidates.filter(n => {
+        const entryCandidates = candidates.filter((n) => {
             const trust = this.getNodeTrustScore(n);
             return trust > 80;
         });
@@ -62,7 +62,7 @@ class SpaceTorRouter {
         const exit = this.selectWeightedNode(candidates, dest, 0.8);
         // 4. Middle Node: Maximum entropy (randomness) to break correlation
         // Must not be Entry or Exit
-        const middleCandidates = candidates.filter(n => n.id !== entry.id && n.id !== exit.id);
+        const middleCandidates = candidates.filter((n) => n.id !== entry.id && n.id !== exit.id);
         if (middleCandidates.length === 0) {
             throw new Error('No middle node candidates available');
         }
@@ -106,10 +106,10 @@ class SpaceTorRouter {
             const dist = this.distance3D(current.coords, target);
             const trust = this.getNodeTrustScore(current);
             // Cost = (Distance * Weight) - (Trust * InverseWeight)
-            const cost = (dist * distWeight) - (trust * (1 - distWeight));
+            const cost = dist * distWeight - trust * (1 - distWeight);
             const bestDist = this.distance3D(best.coords, target);
             const bestTrust = this.getNodeTrustScore(best);
-            const bestCost = (bestDist * distWeight) - (bestTrust * (1 - distWeight));
+            const bestCost = bestDist * distWeight - bestTrust * (1 - distWeight);
             return cost < bestCost ? current : best;
         });
     }
@@ -121,9 +121,7 @@ class SpaceTorRouter {
      * @returns Distance in AU
      */
     distance3D(p1, p2) {
-        return Math.sqrt(Math.pow(p2.x - p1.x, 2) +
-            Math.pow(p2.y - p1.y, 2) +
-            Math.pow(p2.z - p1.z, 2));
+        return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2) + Math.pow(p2.z - p1.z, 2));
     }
     /**
      * Get all nodes

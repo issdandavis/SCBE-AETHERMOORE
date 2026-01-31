@@ -1,6 +1,6 @@
 {
   "name": "scbe-aethermoore",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "SCBE-AETHERMOORE: Hyperbolic Geometry-Based Security with 14-Layer Architecture",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "license": "MIT",
@@ -32,6 +32,16 @@
       "types": "./dist/src/spiralverse/index.d.ts",
       "import": "./dist/src/spiralverse/index.js",
       "require": "./dist/src/spiralverse/index.js"
+    },
+    "./tokenizer": {
+      "types": "./dist/src/tokenizer/index.d.ts",
+      "import": "./dist/src/tokenizer/index.js",
+      "require": "./dist/src/tokenizer/index.js"
+    },
+    "./phdm": {
+      "types": "./dist/src/harmonic/phdm.d.ts",
+      "import": "./dist/src/harmonic/phdm.js",
+      "require": "./dist/src/harmonic/phdm.js"
     }
   },
   "files": [
