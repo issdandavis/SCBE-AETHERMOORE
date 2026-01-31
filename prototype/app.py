@@ -39,6 +39,13 @@ try:
 except ImportError:
     HYPERBLOCI_AVAILABLE = False
 
+# Try to import code editor (streamlit-ace)
+try:
+    from streamlit_ace import st_ace
+    ACE_AVAILABLE = True
+except ImportError:
+    ACE_AVAILABLE = False
+
 
 # Page config
 st.set_page_config(
@@ -300,6 +307,11 @@ Pythagorean Comma = {PYTHAGOREAN_COMMA:.10f}
     if HYPERBLOCI_AVAILABLE:
         tabs.append("⚔️ HNN Comparison")
 
+    # Always add Swarm Coder tab
+    tabs.append("🤖 Swarm Coder")
+    # Always add Multi-Agent Risk tab
+    tabs.append("🎨 Agent Risk Map")
+
     tabs.append("📖 How It Works")
 
     all_tabs = st.tabs(tabs)
@@ -316,6 +328,8 @@ Pythagorean Comma = {PYTHAGOREAN_COMMA:.10f}
     if HYPERBLOCI_AVAILABLE:
         tab_compare = all_tabs[tab_index]; tab_index += 1
 
+    tab_swarm_coder = all_tabs[tab_index]; tab_index += 1
+    tab_risk_map = all_tabs[tab_index]; tab_index += 1
     tab4 = all_tabs[tab_index]
 
     with tab1:
@@ -802,6 +816,368 @@ Pythagorean Comma = {PYTHAGOREAN_COMMA:.10f}
                 | 2.0 | 2.0 | 54.6 | Yes |
                 | 3.0 | 3.0 | 8,103 | Yes |
                 """)
+
+    # ==================== SWARM CODER TAB ====================
+    with tab_swarm_coder:
+        st.header("🤖 Swarm Coder")
+        st.markdown("""
+        **Swarm Coding** lets you write code that executes through the Sacred Tongue governance system.
+        Each function call gets routed through the 6D Poincaré space, with costs evaluated by the Harmonic Wall.
+        """)
+
+        col1, col2 = st.columns([3, 2])
+
+        with col1:
+            st.markdown("### Code Editor")
+
+            # Default swarm code example
+            default_code = '''# Swarm Coder Example
+# Functions map to Sacred Tongues:
+# - control() → KO (Control)
+# - transport() → AV (Transport)
+# - policy() → RU (Policy)
+# - compute() → CA (Compute)
+# - security() → UM (Security)
+# - schema() → DR (Schema)
+
+def swarm_task():
+    """Safe computation: KO → AV → CA → AV → KO"""
+    result = control("start")
+    data = transport(result, "fetch_data")
+    computed = compute(data, operation="sum")
+    return transport(computed, "return")
+
+def risky_task():
+    """Risky path: KO → DR (blocked!)"""
+    return schema("direct_access")
+
+# Run the safe task
+output = swarm_task()
+print(f"Result: {output}")
+'''
+
+            # Use ACE editor if available, otherwise use text_area
+            if ACE_AVAILABLE:
+                code = st_ace(
+                    value=st.session_state.get('swarm_code', default_code),
+                    language='python',
+                    theme='monokai',
+                    height=400,
+                    font_size=14,
+                    tab_size=4,
+                    key='code_editor'
+                )
+                st.session_state.swarm_code = code
+            else:
+                code = st.text_area(
+                    "Code",
+                    value=st.session_state.get('swarm_code', default_code),
+                    height=400,
+                    key='swarm_code_area'
+                )
+                st.session_state.swarm_code = code
+
+            # Execute button
+            if st.button("🚀 Analyze Swarm Code", key="analyze_code"):
+                st.session_state.code_analysis = analyze_swarm_code(code, phdm)
+
+        with col2:
+            st.markdown("### Execution Analysis")
+
+            if 'code_analysis' in st.session_state:
+                analysis = st.session_state.code_analysis
+
+                for call in analysis['calls']:
+                    status_icon = "✅" if not call['blocked'] else "🚫"
+                    status_color = "allowed" if not call['blocked'] else "blocked"
+
+                    st.markdown(f"""
+                    <div class="metric-card" style="margin-bottom: 10px;">
+                        <h4>{status_icon} {call['name']}</h4>
+                        <p style="color: #888; margin: 0;">
+                            Path: {' → '.join(call['path'])}<br>
+                            Cost: {call['cost']:.2f}<br>
+                            Status: <span class="{status_color}">{call['status']}</span>
+                        </p>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                # Summary metrics
+                st.markdown("### Summary")
+                total = len(analysis['calls'])
+                blocked = sum(1 for c in analysis['calls'] if c['blocked'])
+                allowed = total - blocked
+
+                c1, c2, c3 = st.columns(3)
+                with c1:
+                    st.metric("Total Calls", total)
+                with c2:
+                    st.metric("Allowed", allowed)
+                with c3:
+                    st.metric("Blocked", blocked)
+
+                # Show total cost
+                total_cost = sum(c['cost'] for c in analysis['calls'] if not c['blocked'])
+                st.metric("Total Path Cost", f"{total_cost:.2f}")
+            else:
+                st.info("Click 'Analyze Swarm Code' to see execution analysis")
+
+    # ==================== AGENT RISK MAP TAB ====================
+    with tab_risk_map:
+        st.header("🎨 Multi-Agent Risk Map")
+        st.markdown("""
+        Visualize multiple agents in the Poincaré disk, colored by their **risk score**.
+        Risk is computed from hyperbolic distance to sensitive tongues (UM, DR).
+        """)
+
+        col1, col2 = st.columns([3, 1])
+
+        with col1:
+            # Initialize agents in session state
+            if 'risk_agents' not in st.session_state:
+                st.session_state.risk_agents = generate_random_agents(10)
+
+            # Controls
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                n_agents = st.slider("Number of Agents", 5, 50, 10)
+            with c2:
+                if st.button("🔄 Regenerate Agents", key="regen_agents"):
+                    st.session_state.risk_agents = generate_random_agents(n_agents)
+                    st.rerun()
+            with c3:
+                risk_threshold = st.slider("Risk Threshold", 0.0, 1.0, 0.5)
+
+            # Create visualization
+            agents = st.session_state.risk_agents
+            fig = create_risk_map_figure(phdm, agents, risk_threshold)
+            st.plotly_chart(fig, use_container_width=True)
+
+        with col2:
+            st.markdown("### Risk Legend")
+            st.markdown("""
+            <div style="margin-bottom: 10px;">
+                <span style="color: #4ade80;">●</span> Low Risk (0-0.3)
+            </div>
+            <div style="margin-bottom: 10px;">
+                <span style="color: #f59e0b;">●</span> Medium Risk (0.3-0.6)
+            </div>
+            <div style="margin-bottom: 10px;">
+                <span style="color: #ef4444;">●</span> High Risk (0.6-1.0)
+            </div>
+            """, unsafe_allow_html=True)
+
+            st.markdown("### Agent Statistics")
+            if agents:
+                risks = [a['risk'] for a in agents]
+                high_risk = sum(1 for r in risks if r > 0.6)
+                medium_risk = sum(1 for r in risks if 0.3 <= r <= 0.6)
+                low_risk = sum(1 for r in risks if r < 0.3)
+
+                st.metric("High Risk Agents", high_risk)
+                st.metric("Medium Risk Agents", medium_risk)
+                st.metric("Low Risk Agents", low_risk)
+                st.metric("Avg Risk Score", f"{np.mean(risks):.3f}")
+
+            st.markdown("### Risk Formula")
+            st.latex(r"R = \frac{d_H(a, UM) + d_H(a, DR)}{d_H(a, UM) + d_H(a, DR) + d_H(a, KO)}")
+
+
+def analyze_swarm_code(code: str, phdm: ToyPHDM) -> dict:
+    """Analyze swarm code and compute path costs."""
+    import re
+
+    # Map function names to tongues
+    func_to_tongue = {
+        'control': 'KO',
+        'transport': 'AV',
+        'policy': 'RU',
+        'compute': 'CA',
+        'security': 'UM',
+        'schema': 'DR',
+    }
+
+    calls = []
+
+    # Find function calls in the code
+    for func_name, tongue in func_to_tongue.items():
+        pattern = rf'{func_name}\s*\('
+        matches = list(re.finditer(pattern, code))
+
+        for match in matches:
+            # Simulate a path from KO to this tongue
+            if tongue == 'KO':
+                path = ['KO']
+                cost = 0.0
+                blocked = False
+            else:
+                # Find shortest path through adjacency
+                result = phdm.evaluate_intent(f"access {tongue}")
+                path = result.path if hasattr(result, 'path') else ['KO', tongue]
+                cost = result.total_cost if hasattr(result, 'total_cost') else 0.0
+                blocked = result.blocked if hasattr(result, 'blocked') else False
+
+            calls.append({
+                'name': f"{func_name}()",
+                'tongue': tongue,
+                'path': path,
+                'cost': cost,
+                'blocked': blocked,
+                'status': 'BLOCKED' if blocked else 'ALLOWED'
+            })
+
+    return {'calls': calls}
+
+
+def generate_random_agents(n: int) -> list:
+    """Generate random agents with risk scores."""
+    agents = []
+
+    for i in range(n):
+        # Random position in Poincare disk
+        r = np.random.uniform(0.1, 0.9)
+        theta = np.random.uniform(0, 2 * np.pi)
+        pos = np.array([r * np.cos(theta), r * np.sin(theta)])
+
+        # Compute risk based on proximity to sensitive tongues
+        # Higher risk if close to UM or DR
+        um_pos = np.array([0.6 * np.cos(4 * np.pi / 3), 0.6 * np.sin(4 * np.pi / 3)])
+        dr_pos = np.array([0.8 * np.cos(5 * np.pi / 3), 0.8 * np.sin(5 * np.pi / 3)])
+        ko_pos = np.array([0.0, 0.0])
+
+        d_um = np.linalg.norm(pos - um_pos)
+        d_dr = np.linalg.norm(pos - dr_pos)
+        d_ko = np.linalg.norm(pos - ko_pos)
+
+        # Risk formula: closer to UM/DR = higher risk
+        risk = 1.0 - (d_um + d_dr) / (d_um + d_dr + d_ko + 0.5)
+        risk = np.clip(risk, 0, 1)
+
+        agents.append({
+            'id': f"A{i:02d}",
+            'position': pos,
+            'risk': risk
+        })
+
+    return agents
+
+
+def create_risk_map_figure(phdm: ToyPHDM, agents: list, threshold: float = 0.5):
+    """Create Poincare disk with agents colored by risk."""
+    fig = go.Figure()
+
+    # Draw disk boundary
+    theta = np.linspace(0, 2 * np.pi, 100)
+    fig.add_trace(go.Scatter(
+        x=np.cos(theta),
+        y=np.sin(theta),
+        mode='lines',
+        line=dict(color='white', width=2, dash='dash'),
+        name='Disk Boundary',
+        hoverinfo='skip'
+    ))
+
+    # Draw Sacred Tongues (faded)
+    for name, agent in phdm.agents.items():
+        pos = agent.position
+        color = TONGUE_COLORS[name]
+        fig.add_trace(go.Scatter(
+            x=[pos[0]],
+            y=[pos[1]],
+            mode='markers+text',
+            marker=dict(size=20, color=color, opacity=0.4, line=dict(color='white', width=1)),
+            text=[name],
+            textposition='top center',
+            textfont=dict(color=color, size=10),
+            name=name,
+            hovertemplate=f"<b>{name}</b> (Sacred Tongue)<extra></extra>"
+        ))
+
+    # Draw agents with risk coloring
+    for agent in agents:
+        pos = agent['position']
+        risk = agent['risk']
+
+        # Color gradient: green (low) → yellow (mid) → red (high)
+        if risk < 0.3:
+            color = '#4ade80'  # green
+        elif risk < 0.6:
+            color = '#f59e0b'  # orange
+        else:
+            color = '#ef4444'  # red
+
+        # Size based on risk
+        size = 10 + risk * 15
+
+        # Symbol: circle for safe, diamond for threshold, x for high risk
+        if risk > threshold:
+            symbol = 'x'
+        elif risk > 0.3:
+            symbol = 'diamond'
+        else:
+            symbol = 'circle'
+
+        fig.add_trace(go.Scatter(
+            x=[pos[0]],
+            y=[pos[1]],
+            mode='markers',
+            marker=dict(size=size, color=color, symbol=symbol, line=dict(color='white', width=1)),
+            name=agent['id'],
+            hovertemplate=(
+                f"<b>{agent['id']}</b><br>"
+                f"Risk: {risk:.3f}<br>"
+                f"Position: ({pos[0]:.2f}, {pos[1]:.2f})<br>"
+                f"Status: {'HIGH RISK' if risk > threshold else 'OK'}"
+                f"<extra></extra>"
+            ),
+            showlegend=False
+        ))
+
+    # Add risk threshold circle (visual guide)
+    r_threshold = 0.3 + threshold * 0.5
+    fig.add_trace(go.Scatter(
+        x=r_threshold * np.cos(theta),
+        y=r_threshold * np.sin(theta),
+        mode='lines',
+        line=dict(color='red', width=1, dash='dot'),
+        name='Risk Zone',
+        hoverinfo='skip'
+    ))
+
+    fig.update_layout(
+        showlegend=True,
+        legend=dict(
+            yanchor="top", y=0.99,
+            xanchor="left", x=0.01,
+            bgcolor="rgba(0,0,0,0.5)",
+            font=dict(color="white")
+        ),
+        xaxis=dict(
+            range=[-1.3, 1.3],
+            showgrid=False,
+            zeroline=False,
+            showticklabels=False
+        ),
+        yaxis=dict(
+            range=[-1.3, 1.3],
+            showgrid=False,
+            zeroline=False,
+            showticklabels=False,
+            scaleanchor="x",
+            scaleratio=1
+        ),
+        plot_bgcolor='rgba(26,26,46,1)',
+        paper_bgcolor='rgba(26,26,46,1)',
+        height=600,
+        title=dict(
+            text="Agent Risk Map (Poincaré Disk)",
+            font=dict(color='white'),
+            x=0.5
+        ),
+        margin=dict(l=20, r=20, t=60, b=20)
+    )
+
+    return fig
 
 
 if __name__ == "__main__":
