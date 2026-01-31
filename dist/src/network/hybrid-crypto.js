@@ -85,7 +85,7 @@ class HybridSpaceCrypto {
     generateKeyPair() {
         return {
             publicKey: (0, crypto_1.randomBytes)(32),
-            privateKey: (0, crypto_1.randomBytes)(32)
+            privateKey: (0, crypto_1.randomBytes)(32),
         };
     }
     /**
