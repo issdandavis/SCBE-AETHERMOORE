@@ -15,20 +15,25 @@ export default defineConfig({
     testTimeout: 30000,
     // Enterprise test suite configuration
     coverage: {
-      provider: 'c8',
-      reporter: ['text', 'json', 'html'],
+      provider: 'v8',
+      reporter: ['text', 'text-summary', 'json', 'html', 'lcov'],
+      reportsDirectory: './coverage',
       exclude: [
         '**/node_modules/**',
         '**/dist/**',
         '**/tests/**',
         '**/*.test.ts',
         '**/*.config.ts',
+        '**/demo-runner.ts',
       ],
       all: true,
-      lines: 80,
-      functions: 80,
-      branches: 70,
-      statements: 80,
+      // Coverage thresholds - fail if below these values
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 70,
+        statements: 80,
+      },
     },
     // Property-based testing configuration
     // Each property test should run minimum 100 iterations
