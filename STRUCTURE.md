@@ -128,14 +128,48 @@ All source files should include a header block:
 
 ---
 
+## Canonical Implementations
+
+The project maintains implementations in both TypeScript and Python. This table documents which version is **canonical** (source of truth) vs **reference** (derived/validation).
+
+| Module | Canonical | Reference | Notes |
+|--------|-----------|-----------|-------|
+| **14-Layer Pipeline** | TypeScript (`src/harmonic/`) | Python (`src/scbe_14layer_reference.py`) | TS is production; Python for research validation |
+| **Symphonic Cipher** | TypeScript (`src/symphonic/`) | Python (`src/symphonic_cipher/`) | TS is production; Python for prototyping |
+| **Hyperbolic Geometry** | TypeScript (`src/harmonic/hyperbolic.ts`) | Python (`src/harmonic_py/`) | TS is production |
+| **Cryptographic Envelope** | TypeScript (`src/crypto/`) | N/A | TypeScript only |
+| **REST API** | Python (`src/api/main.py`) | N/A | FastAPI server |
+| **Fleet Orchestration** | TypeScript (`src/fleet/`) | N/A | TypeScript only |
+
+### Guidelines for Dual Implementations
+
+1. **Changes**: Always update the canonical version first
+2. **Testing**: Cross-language tests in `tests/cross-language/` validate parity
+3. **Versioning**: Both versions must declare the same `@version` tag
+4. **Divergence**: Document any intentional differences in code comments
+
+---
+
 ## Quick Commands
 
 ```bash
 # Run all tests
 npm test
 
+# Run tests with coverage
+npm run test:coverage
+
 # Run specific layer tests
 npm test -- tests/harmonic/hyperbolic.test.ts
+
+# Type checking
+npm run typecheck
+
+# Check for circular dependencies
+npm run check:circular
+
+# Generate dependency graph (requires graphviz)
+npm run check:deps
 
 # Run Python demo
 python demo_memory_shard.py
