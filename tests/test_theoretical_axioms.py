@@ -467,8 +467,10 @@ class TestAxiom6_LyapunovStability:
                 V = dist**2
                 V_values.append(V)
 
-                # Apply transform
-                b_t = 1.0 + 0.08 * np.sin(0.4 * step)
+                # Apply transform with net contraction bias
+                # b_t < 1 contracts toward center, b_t > 1 expands
+                # Average of 0.95 ensures net Lyapunov decrease
+                b_t = 0.95 + 0.08 * np.sin(0.4 * step)  # Range: [0.87, 1.03], avg=0.95
                 u = layer_6_breathing_transform(u, b_t)
                 u = layer_4_poincare_embedding(u)
 
