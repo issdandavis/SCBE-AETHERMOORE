@@ -75,3 +75,19 @@ SCBE_Production_Pack/
 1. Run Python tests: `pytest tests/ -v`
 2. Run TypeScript tests: `cd scbe-visual-system && npm test`
 3. Rebuild Electron: `cd scbe-visual-system && npm run electron:build`
+
+---
+
+**Date:** 2026-02-01
+
+## Summary
+
+Consolidated the "robot brain" CLI path by wiring Sacred Tongues + GeoSeal into a real command-line interface, and added a canonical GeoSeal import path. Updated README usage and repo metadata to align with the current GitHub repository.
+
+## Changes Made
+
+- Added `symphonic_cipher/geoseal/` package wrapper for GeoSeal.
+- Upgraded `scbe-cli.py` with subcommands: encode/decode/xlate/blend/unblend/geoseal-encrypt/geoseal-decrypt/selftest.
+- Added CLI usage examples to `README.md`.
+- Fixed `package.json` repository/bugs/homepage metadata.
+- Removed the stray Windows device file `nul` from the repo root.
