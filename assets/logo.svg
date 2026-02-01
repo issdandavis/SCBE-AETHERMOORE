@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#06B6D4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4F46E5;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Hyperbolic disc symbol -->
+  <circle cx="60" cy="60" r="45" fill="none" stroke="url(#grad1)" stroke-width="3"/>
+  <circle cx="60" cy="60" r="30" fill="none" stroke="url(#grad1)" stroke-width="2" opacity="0.7"/>
+  <circle cx="60" cy="60" r="15" fill="none" stroke="url(#grad1)" stroke-width="1.5" opacity="0.5"/>
+  <circle cx="60" cy="60" r="5" fill="url(#grad1)"/>
+
+  <!-- Radial lines suggesting Poincaré geodesics -->
+  <line x1="60" y1="15" x2="60" y2="105" stroke="url(#grad2)" stroke-width="1" opacity="0.3"/>
+  <line x1="15" y1="60" x2="105" y2="60" stroke="url(#grad2)" stroke-width="1" opacity="0.3"/>
+  <line x1="28" y1="28" x2="92" y2="92" stroke="url(#grad2)" stroke-width="1" opacity="0.3"/>
+  <line x1="92" y1="28" x2="28" y2="92" stroke="url(#grad2)" stroke-width="1" opacity="0.3"/>
+
+  <!-- Text -->
+  <text x="130" y="55" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#1F2937">SCBE</text>
+  <text x="130" y="85" font-family="Arial, sans-serif" font-size="18" fill="#6B7280">AETHERMOORE</text>
+
+  <!-- Tagline -->
+  <text x="130" y="108" font-family="Arial, sans-serif" font-size="11" fill="#9CA3AF">Hyperbolic AI Safety</text>
+</svg>
