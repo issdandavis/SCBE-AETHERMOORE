@@ -122,6 +122,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Upload to Dropbox
+        env:
+          DROPBOX_TOKEN: ${{ secrets.DROPBOX_TOKEN }}
+        run: |
+          curl -X POST https://content.dropboxapi.com/2/files/upload \
+            --header "Authorization: Bearer $DROPBOX_TOKEN" \
+            --header "Dropbox-API-Arg: {\"path\": \"/AetherVideo/products/cli/sixtongues-cli-${GITHUB_REF#refs/tags/}.zip\", \"mode\": \"overwrite\"}" \
+            --header "Content-Type: application/octet-stream" \
+            --data-binary @sixtongues-cli-${GITHUB_REF#refs/tags/}.zip
+
   docker:
     name: Build and Push Docker Image
     needs: build
