@@ -38,6 +38,17 @@ try:
 except ImportError:
     from persistence import get_persistence, SCBEPersistence
 
+# Import billing and key management routes
+try:
+    from api.billing.routes import router as billing_router
+    from api.billing.database import init_db
+    from api.keys.routes import router as keys_router
+    BILLING_AVAILABLE = True
+except ImportError:
+    BILLING_AVAILABLE = False
+    billing_router = None
+    keys_router = None
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -64,6 +75,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Initialize billing database and register routes
+if BILLING_AVAILABLE:
+    init_db()
+    app.include_router(billing_router)
+    app.include_router(keys_router)
+    logger.info("Billing and API key management routes registered")
 
 # API Key authentication
 API_KEY_HEADER = APIKeyHeader(name="SCBE_api_key", auto_error=False)
