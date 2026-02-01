@@ -207,6 +207,40 @@ The **Rotating Waveform Protocol (RWP)** provides envelope encryption with:
 - Tamper-evident signatures
 - Post-quantum key encapsulation
 
+## Hyperbolic Video Generation
+
+The framework extends to procedural video synthesis using hyperbolic geometry:
+
+### Core Components
+- **Poincaré Embeddings**: Context vectors mapped to curved space for bounded, non-Euclidean visual evolution
+- **Fractal Chaos Layers**: Julia/Mandelbrot sets driven by lattice parameters
+- **Lattice Watermarking**: Ring-LWE quantum-resistant signatures in frame LSBs
+- **Harmonic Audio**: Golden-ratio weighted overtones synced to visual geometry
+
+### Sacred Tongue Intent Mapping
+
+| Tongue | Intent | Julia c Parameter | Visual Character |
+|--------|--------|-------------------|------------------|
+| **Kor'aelin** | Flow/Stability | -0.4 + 0.6i | Connected, dendrite-like |
+| **Avali** | Context/Boundary | -0.8 + 0.156i | Siegel disk (bounded) |
+| **Runethic** | Binding/Chaos | -0.12 + 0.74i | Douady rabbit (fractal) |
+| **Cassisivadan** | Bitcraft/Shatter | 0.285 + 0.01i | Scattered dust |
+| **Umbroth** | Veil/Mystery | -1.0 + 0i | Cauliflower (hidden) |
+| **Draumric** | Structure/Order | -0.75 + 0.11i | San Marco dragon |
+
+### Video Generation Pipeline
+1. Generate hyperbolic trajectory from context vectors
+2. Render Mandelbrot frames with intent-modulated c parameter
+3. Embed Ring-LWE watermarks in frame LSBs
+4. Synthesize golden-ratio harmonic audio
+5. Composite with moviepy/ffmpeg
+
+### Dependencies
+```bash
+pip install numpy matplotlib moviepy
+# Optional for 4K: pip install cupy  # GPU acceleration
+```
+
 ## Debugging Tips
 
 ```bash
