@@ -59,7 +59,10 @@ function measureLatency(load: number): LatencyResult {
   };
 }
 
-function simulateConcurrentAttacks(test: ConcurrentAttackTest): { handled: number; blocked: number } {
+function simulateConcurrentAttacks(test: ConcurrentAttackTest): {
+  handled: number;
+  blocked: number;
+} {
   // Simulate defense against concurrent attacks
   const total = test.attackVectors.length * test.intensity;
   const blocked = Math.floor(total * 0.999); // 99.9% block rate

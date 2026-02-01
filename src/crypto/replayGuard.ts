@@ -20,30 +20,36 @@ export class ReplayGuard {
   private store: ReplayStore;
   private ttlMs: number;
 
-  constructor(options: {
-    ttlSeconds?: number;
-    sizeBits?: number;
-    hashes?: number;
-    store?: ReplayStore;
-  } = {}) {
+  constructor(
+    options: {
+      ttlSeconds?: number;
+      sizeBits?: number;
+      hashes?: number;
+      store?: ReplayStore;
+    } = {}
+  ) {
     const { ttlSeconds = 600, sizeBits = 2048, hashes = 4, store } = options;
     this.ttlMs = ttlSeconds * 1000;
-    this.store = store ?? new MemoryReplayStore({
-      bloomSizeBits: sizeBits,
-      bloomHashes: hashes,
-    });
+    this.store =
+      store ??
+      new MemoryReplayStore({
+        bloomSizeBits: sizeBits,
+        bloomHashes: hashes,
+      });
   }
 
   /**
    * Factory method to create ReplayGuard with Redis support via URL.
    * Requires ioredis to be installed for Redis support.
    */
-  static create(options: {
-    ttlSeconds?: number;
-    sizeBits?: number;
-    hashes?: number;
-    redisClient?: RedisClient;
-  } = {}): ReplayGuard {
+  static create(
+    options: {
+      ttlSeconds?: number;
+      sizeBits?: number;
+      hashes?: number;
+      redisClient?: RedisClient;
+    } = {}
+  ): ReplayGuard {
     const store = createReplayStore({
       redisClient: options.redisClient,
       bloomSizeBits: options.sizeBits,
@@ -73,7 +79,7 @@ export class ReplayGuard {
     // Log warning and fail closed (reject as replay) for safety
     console.warn(
       'ReplayGuard: Sync checkAndSet called with async store. ' +
-      'Use checkAndSetAsync for distributed deployments.'
+        'Use checkAndSetAsync for distributed deployments.'
     );
     return false; // Fail closed for safety
   }
@@ -82,7 +88,11 @@ export class ReplayGuard {
    * Async version for distributed stores (MEDIUM-001 fix).
    * Use this method when using Redis or other async stores.
    */
-  public async checkAndSetAsync(providerId: string, requestId: string, now = Date.now()): Promise<boolean> {
+  public async checkAndSetAsync(
+    providerId: string,
+    requestId: string,
+    now = Date.now()
+  ): Promise<boolean> {
     const k = this.key(providerId, requestId);
     return this.store.checkAndSet(k, this.ttlMs, now);
   }
@@ -98,5 +108,10 @@ export class ReplayGuard {
 }
 
 // Re-export store types for convenience
-export { ReplayStore, MemoryReplayStore, RedisReplayStore, createReplayStore } from './replayStore.js';
+export {
+  ReplayStore,
+  MemoryReplayStore,
+  RedisReplayStore,
+  createReplayStore,
+} from './replayStore.js';
 export type { RedisClient } from './replayStore.js';
