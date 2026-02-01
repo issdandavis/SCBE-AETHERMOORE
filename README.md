@@ -489,3 +489,20 @@ is_valid = Dilithium3.verify(sig_keys.public_key, b"message", signature)
 ---
 
 *SCBE-AETHERMOORE © 2026 Isaac Thorne / SpiralVerse OS*
+
+
+---
+
+## Licensing
+
+SCBE-AETHERMOORE is licensed under the **GNU Affero General Public License v3.0 (AGPLv3)**.
+
+- Free for open-source projects, personal, educational, research, and non-commercial use
+- Free for any deployment that fully complies with AGPLv3 (including sharing modifications when provided over a network)
+
+For **commercial or enterprise use** without AGPLv3 obligations, paid commercial licenses are available.
+
+-> See [COMMERCIAL.md](COMMERCIAL.md) for details  
+-> Contact: [aethermoregames@pm.me](mailto:aethermoregames@pm.me)
+
+"Patent Pending" - Commercial licenses include granted rights under pending patent claims.
