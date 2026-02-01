@@ -71,10 +71,9 @@ const poincarePositionArb = fc
 const tongueCodeArb = fc.constantFrom(...TONGUE_CODES);
 
 /** Generate a hex string */
-const hexStringArb = fc.array(
-  fc.constantFrom(...'0123456789abcdef'.split('')),
-  { minLength: 64, maxLength: 64 }
-).map(chars => chars.join(''));
+const hexStringArb = fc
+  .array(fc.constantFrom(...'0123456789abcdef'.split('')), { minLength: 64, maxLength: 64 })
+  .map((chars) => chars.join(''));
 
 /** Generate a BFT vote */
 const bftVoteArb = fc.record({
@@ -165,15 +164,11 @@ describe('Poincaré Ball Properties', () => {
 
   it('Property 7: Möbius scaling preserves ball', () => {
     fc.assert(
-      fc.property(
-        fc.double({ min: -2, max: 2, noNaN: true }),
-        poincarePositionArb,
-        (t, v) => {
-          const result = mobiusScale(t, v);
-          expect(poincareNorm(result)).toBeLessThan(1 + 1e-10);
-          return true;
-        }
-      ),
+      fc.property(fc.double({ min: -2, max: 2, noNaN: true }), poincarePositionArb, (t, v) => {
+        const result = mobiusScale(t, v);
+        expect(poincareNorm(result)).toBeLessThan(1 + 1e-10);
+        return true;
+      }),
       { numRuns: 100 }
     );
   });
@@ -235,8 +230,7 @@ describe('Harmonic Wall Properties', () => {
         const h = harmonicWallCost;
 
         // Second derivative approximation: (h(d+e) - 2*h(d) + h(d-e)) / e^2
-        const secondDerivative =
-          (h(d + epsilon) - 2 * h(d) + h(d - epsilon)) / (epsilon * epsilon);
+        const secondDerivative = (h(d + epsilon) - 2 * h(d) + h(d - epsilon)) / (epsilon * epsilon);
 
         expect(secondDerivative).toBeGreaterThan(0);
         return true;
