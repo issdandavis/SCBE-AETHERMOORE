@@ -334,10 +334,7 @@ export class SwarmCoordinator {
 /**
  * Collect votes for BFT consensus
  */
-export function collectVotes(
-  votes: BFTVote[],
-  config: BFTConfig
-): BFTConsensusResult {
+export function collectVotes(votes: BFTVote[], config: BFTConfig): BFTConsensusResult {
   const now = Date.now();
 
   // Filter valid votes (within timeout)
@@ -385,10 +382,7 @@ export function weightedVoteCount(votes: BFTVote[]): number {
 /**
  * Run BFT consensus with weighted votes
  */
-export function runWeightedConsensus(
-  votes: BFTVote[],
-  config: BFTConfig
-): BFTConsensusResult {
+export function runWeightedConsensus(votes: BFTVote[], config: BFTConfig): BFTConsensusResult {
   const now = Date.now();
   const validVotes = votes.filter((v) => now - v.timestamp < config.timeoutMs);
 

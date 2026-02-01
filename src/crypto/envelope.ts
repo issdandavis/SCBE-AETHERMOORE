@@ -154,7 +154,7 @@ export async function createEnvelope(p: CreateParams): Promise<Envelope> {
       nonce: b64u(nonce),
       tag: b64u(tag),
       ciphertext: b64u(ct),
-            salt: b64u(salt),
+      salt: b64u(salt),
     };
 
     metrics.timing('envelope_create_ms', metrics.now() - t0, {
