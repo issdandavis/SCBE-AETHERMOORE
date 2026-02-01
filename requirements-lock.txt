@@ -21,7 +21,7 @@ black==25.12.0
 blinker==1.9.0
 boto3==1.42.34
 botocore==1.42.16
-cachetools==6.2.4
+cachetools==6.2.6
 cattrs==25.3.0
 certifi==2025.11.12
 cffi==2.0.0
