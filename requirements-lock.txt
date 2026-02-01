@@ -164,7 +164,7 @@ prance==25.4.8.0
 pre_commit==4.5.1
 prompt_toolkit==3.0.52
 propcache==0.4.1
-protobuf==5.29.5
+protobuf==6.33.5
 psutil==7.2.1
 publication==0.0.3
 py-openapi-schema-to-json-schema==0.0.3
