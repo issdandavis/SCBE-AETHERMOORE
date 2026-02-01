@@ -3,8 +3,11 @@ import { hkdfSha256 } from './hkdf.js';
 import { canonicalize, JsonValue } from './jcs.js';
 import { nextNonce } from './nonceManager.js';
 import { getMasterKey } from './kms.js';
-import { ReplayGuard } from './replayGuard.js';
+import { ReplayGuard, RedisReplayStore, type RedisClient } from './replayGuard.js';
 import { metrics } from '../metrics/telemetry.js';
+
+// Redis client for distributed replay protection (MEDIUM-001 fix)
+let redisClient: RedisClient | undefined;
 
 function b64u(buf: Buffer) {
   return buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
@@ -58,11 +61,40 @@ export type CreateParams = {
   body: EnvelopeBody;
 };
 
-const replay = new ReplayGuard({
+// Replay guard - supports both in-memory and Redis (MEDIUM-001 fix)
+let replay = new ReplayGuard({
   ttlSeconds: Number(process.env.SCBE_REPLAY_TTL_SECONDS || '600'),
   sizeBits: Number(process.env.SCBE_REPLAY_BLOOM_BITS || '2048'),
   hashes: Number(process.env.SCBE_REPLAY_BLOOM_HASHES || '4'),
 });
+
+/**
+ * Configure distributed replay protection with Redis.
+ * Call this at startup when deploying multiple instances.
+ *
+ * @example
+ * import Redis from 'ioredis';
+ * import { configureReplayGuard } from './crypto/envelope.js';
+ *
+ * const redis = new Redis(process.env.REDIS_URL);
+ * await configureReplayGuard(redis);
+ */
+export async function configureReplayGuard(client: RedisClient): Promise<void> {
+  redisClient = client;
+  replay = new ReplayGuard({
+    ttlSeconds: Number(process.env.SCBE_REPLAY_TTL_SECONDS || '600'),
+    store: new RedisReplayStore(client, {
+      prefix: process.env.SCBE_REPLAY_REDIS_PREFIX || 'scbe:replay:',
+    }),
+  });
+}
+
+/**
+ * Check if Redis replay protection is configured.
+ */
+export function isDistributedReplayEnabled(): boolean {
+  return redisClient !== undefined;
+}
 
 function sha256Hex(buf: Buffer) {
   return crypto.createHash('sha256').update(buf).digest('hex');
@@ -165,7 +197,10 @@ export async function verifyEnvelope(p: VerifyParams): Promise<{ body: EnvelopeB
   }
 
   // 3) Replay guard (provider_id, request_id)
-  const ok = replay.checkAndSet(envelope.aad.provider_id, envelope.aad.request_id, now);
+  // MEDIUM-001 fix: Use async API when Redis is configured for distributed deployments
+  const ok = redisClient
+    ? await replay.checkAndSetAsync(envelope.aad.provider_id, envelope.aad.request_id, now)
+    : replay.checkAndSet(envelope.aad.provider_id, envelope.aad.request_id, now);
   if (!ok) {
     metrics.incr('replay_rejects', 1, { reason: 'duplicate' });
     throw new Error('replay');
