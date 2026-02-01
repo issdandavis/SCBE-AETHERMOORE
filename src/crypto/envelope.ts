@@ -1,10 +1,13 @@
 import crypto from 'node:crypto';
 import { hkdfSha256 } from './hkdf.js';
 import { canonicalize, JsonValue } from './jcs.js';
-import { deriveNoncePrefix, nextNonce } from './nonceManager.js';
+import { nextNonce } from './nonceManager.js';
 import { getMasterKey } from './kms.js';
-import { ReplayGuard } from './replayGuard.js';
+import { ReplayGuard, RedisReplayStore, type RedisClient } from './replayGuard.js';
 import { metrics } from '../metrics/telemetry.js';
+
+// Redis client for distributed replay protection (MEDIUM-001 fix)
+let redisClient: RedisClient | undefined;
 
 function b64u(buf: Buffer) {
   return buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
@@ -58,11 +61,40 @@ export type CreateParams = {
   body: EnvelopeBody;
 };
 
-const replay = new ReplayGuard({
+// Replay guard - supports both in-memory and Redis (MEDIUM-001 fix)
+let replay = new ReplayGuard({
   ttlSeconds: Number(process.env.SCBE_REPLAY_TTL_SECONDS || '600'),
   sizeBits: Number(process.env.SCBE_REPLAY_BLOOM_BITS || '2048'),
   hashes: Number(process.env.SCBE_REPLAY_BLOOM_HASHES || '4'),
 });
+
+/**
+ * Configure distributed replay protection with Redis.
+ * Call this at startup when deploying multiple instances.
+ *
+ * @example
+ * import Redis from 'ioredis';
+ * import { configureReplayGuard } from './crypto/envelope.js';
+ *
+ * const redis = new Redis(process.env.REDIS_URL);
+ * await configureReplayGuard(redis);
+ */
+export async function configureReplayGuard(client: RedisClient): Promise<void> {
+  redisClient = client;
+  replay = new ReplayGuard({
+    ttlSeconds: Number(process.env.SCBE_REPLAY_TTL_SECONDS || '600'),
+    store: new RedisReplayStore(client, {
+      prefix: process.env.SCBE_REPLAY_REDIS_PREFIX || 'scbe:replay:',
+    }),
+  });
+}
+
+/**
+ * Check if Redis replay protection is configured.
+ */
+export function isDistributedReplayEnabled(): boolean {
+  return redisClient !== undefined;
+}
 
 function sha256Hex(buf: Buffer) {
   return crypto.createHash('sha256').update(buf).digest('hex');
@@ -91,20 +123,19 @@ export async function createEnvelope(p: CreateParams): Promise<Envelope> {
     replay_nonce: crypto.randomBytes(16).toString('hex'),
   };
 
-  // 2) Derive subkeys via HKDF: k_enc, k_nonce, k_log
+  // 2) Derive subkeys via HKDF: k_enc, k_log
+  // Session binding moved to key derivation (HIGH-001 fix: replaces nonce prefix binding)
   const ikm = await getMasterKey(p.kid);
   const salt = crypto.randomBytes(32); // per-process salt; in prod you may pin/rotate by policy
   const infoBase = Buffer.from(
-    `scbe:derivation:v1|env=${p.env}|provider=${p.provider_id}|intent=${p.intent_id}`
+    `scbe:derivation:v1|env=${p.env}|provider=${p.provider_id}|intent=${p.intent_id}|session=${p.session_id}`
   );
   const k_enc = hkdfSha256(ikm, salt, Buffer.concat([infoBase, Buffer.from('|k=enc')]), 32);
-  const k_nonce = hkdfSha256(ikm, salt, Buffer.concat([infoBase, Buffer.from('|k=nonce')]), 32);
   const k_log = hkdfSha256(ikm, salt, Buffer.concat([infoBase, Buffer.from('|k=log')]), 32);
   // k_log reserved for future audit record MACs
 
-  // 3) Nonce discipline
-  const prefix = deriveNoncePrefix(k_nonce, p.session_id); // 64-bit
-  const { nonce } = nextNonce(prefix, p.session_id); // 64b || 32b counter => 96-bit
+  // 3) Nonce discipline (HIGH-001 fix: random 96-bit nonce)
+  const { nonce } = nextNonce(); // Cryptographically random 96-bit nonce
 
   // 4) AAD canonicalization (hashes only logged in prod)
   const aadStr = canonicalize(aad);
@@ -157,33 +188,39 @@ export async function verifyEnvelope(p: VerifyParams): Promise<{ body: EnvelopeB
     metrics.incr('replay_rejects', 1, { reason: 'skew', skew_ms: skew });
     throw new Error('skew/replay');
   }
-  // 2) Replay guard (provider_id, request_id)
-  const ok = replay.checkAndSet(envelope.aad.provider_id, envelope.aad.request_id, now);
+
+  // 2) TTL enforcement (HIGH-002 fix: envelope expiration)
+  const expiry = envelope.aad.ts + envelope.aad.ttl;
+  if (now > expiry) {
+    metrics.incr('replay_rejects', 1, { reason: 'expired', age_ms: now - envelope.aad.ts });
+    throw new Error('expired');
+  }
+
+  // 3) Replay guard (provider_id, request_id)
+  // MEDIUM-001 fix: Use async API when Redis is configured for distributed deployments
+  const ok = redisClient
+    ? await replay.checkAndSetAsync(envelope.aad.provider_id, envelope.aad.request_id, now)
+    : replay.checkAndSet(envelope.aad.provider_id, envelope.aad.request_id, now);
   if (!ok) {
     metrics.incr('replay_rejects', 1, { reason: 'duplicate' });
     throw new Error('replay');
   }
 
-  // 3) Key derivation (must bind env/provider/intent)
+  // 4) Key derivation (must bind env/provider/intent/session)
+  // Session binding via key derivation (HIGH-001 fix: replaces nonce prefix binding)
   const ikm = await getMasterKey(envelope.kid);
   const salt = fromB64u(envelope.salt); // use the salt from the envelope (stored during creation)
   const infoBase = Buffer.from(
-    `scbe:derivation:v1|env=${envelope.aad.env}|provider=${envelope.aad.provider_id}|intent=${envelope.aad.intent_id}`
+    `scbe:derivation:v1|env=${envelope.aad.env}|provider=${envelope.aad.provider_id}|intent=${envelope.aad.intent_id}|session=${p.session_id}`
   );
   const k_enc = hkdfSha256(ikm, salt, Buffer.concat([infoBase, Buffer.from('|k=enc')]), 32);
-  const k_nonce = hkdfSha256(ikm, salt, Buffer.concat([infoBase, Buffer.from('|k=nonce')]), 32);
 
-  // 4) Nonce re-derive prefix to sanity-check session context (optional)
-  const prefix = deriveNoncePrefix(k_nonce, p.session_id);
+  // 5) Validate nonce format (HIGH-001 fix: prefix check removed, random nonces used)
+  // Session binding is enforced via AAD (env, provider_id, intent_id) in key derivation
   const nonce = fromB64u(envelope.nonce);
   if (nonce.length !== 12) throw new Error('bad nonce size');
-  if (!nonce.subarray(0, 8).equals(prefix)) {
-    metrics.incr('nonce_prefix_mismatch', 1);
-    // Not fatal if topologies differ; choose to fail closed:
-    throw new Error('nonce/prefix');
-  }
 
-  // 5) Verify AAD and decrypt
+  // 6) Verify AAD and decrypt
   const aadStr = canonicalize(envelope.aad);
   const aadBuf = Buffer.from(aadStr, 'utf8');
   const tag = fromB64u(envelope.tag);

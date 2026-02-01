@@ -1,0 +1,65 @@
+{
+  "version": "1.0.0",
+  "tongues": [
+    {
+      "code": "um",
+      "name": "Umbroth",
+      "domain": "redaction/veil",
+      "description": "The shadow tongue spoken in the spaces between words. Masters of Umbroth can veil meaning itself.",
+      "harmonicFrequency": 396.0,
+      "prefixes": [
+        "neth", "void", "shad", "murk", "dusk", "grim", "null", "bane",
+        "wraith", "gloom", "haze", "mist", "pall", "shroud", "vex", "wane"
+      ],
+      "suffixes": [
+        "mar", "nal", "thos", "void", "bane", "fell", "grim", "hex",
+        "mor", "nox", "rix", "syx", "tyx", "vyx", "wyx", "zyx"
+      ]
+    },
+    {
+      "code": "dr",
+      "name": "Draumric",
+      "domain": "tag/structure",
+      "description": "The forge-tongue of makers. Its words are hammered like steel, each syllable a rivet in reality.",
+      "harmonicFrequency": 639.0,
+      "prefixes": [
+        "forge", "steel", "iron", "brass", "copper", "chrome", "alloy", "temper",
+        "anvil", "bolt", "chain", "drum", "edge", "flux", "gear", "hinge"
+      ],
+      "suffixes": [
+        "werk", "smith", "craft", "make", "weld", "bind", "lock", "mesh",
+        "rig", "set", "form", "cast", "mold", "press", "stamp", "turn"
+      ]
+    },
+    {
+      "code": "ca",
+      "name": "Cassisivadan",
+      "domain": "ciphertext/bitcraft",
+      "description": "The mathematical tongue of the divine calculators. Each token is a digit in the cosmic equation.",
+      "harmonicFrequency": 741.0,
+      "prefixes": [
+        "bit", "byte", "flux", "node", "pulse", "quant", "ray", "sync",
+        "trig", "unit", "vect", "wave", "xor", "yield", "zero", "arc"
+      ],
+      "suffixes": [
+        "al", "ic", "um", "on", "ix", "ex", "ax", "ox",
+        "ux", "yn", "em", "im", "om", "am", "en", "in"
+      ]
+    },
+    {
+      "code": "ru",
+      "name": "Runethic",
+      "domain": "salt/binding",
+      "description": "The ancient tongue of oaths and bindings. Words spoken in Runethic cannot be unspoken.",
+      "harmonicFrequency": 852.0,
+      "prefixes": [
+        "rune", "glyph", "mark", "sigil", "ward", "seal", "bind", "oath",
+        "pact", "vow", "bond", "link", "knot", "chain", "lock", "key"
+      ],
+      "suffixes": [
+        "stone", "iron", "oak", "bone", "blood", "fire", "ice", "storm",
+        "earth", "wind", "void", "light", "dark", "time", "fate", "soul"
+      ]
+    }
+  ]
+}
