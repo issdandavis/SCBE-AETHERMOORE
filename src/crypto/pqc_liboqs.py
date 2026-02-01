@@ -37,9 +37,11 @@ try:
 
     LIBOQS_AVAILABLE = True
     _LIBOQS_VERSION = getattr(oqs, "__version__", "unknown")
-except ImportError:
+except Exception as exc:
+    # oqs may be installed without shared libs; treat as unavailable and fall back.
     LIBOQS_AVAILABLE = False
     _LIBOQS_VERSION = None
+    _LIBOQS_IMPORT_ERROR = exc
 
 
 def is_liboqs_available() -> bool:
