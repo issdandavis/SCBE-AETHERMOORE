@@ -35,7 +35,15 @@ interface ProofResult {
 }
 
 // Valid state machine states
-const VALID_STATES = ['INIT', 'PENDING', 'AUTHORIZED', 'EXECUTING', 'COMPLETED', 'FAILED', 'QUARANTINE'] as const;
+const VALID_STATES = [
+  'INIT',
+  'PENDING',
+  'AUTHORIZED',
+  'EXECUTING',
+  'COMPLETED',
+  'FAILED',
+  'QUARANTINE',
+] as const;
 type ValidState = (typeof VALID_STATES)[number];
 
 // Valid state transitions
@@ -64,7 +72,8 @@ function verifyStateTransition(transition: StateTransition): boolean {
 function checkInvariant(invariant: string, state: Record<string, unknown>): InvariantCheck {
   const invariants: Record<string, (s: Record<string, unknown>) => boolean> = {
     // Security Level Monotonicity: security level never decreases during a session
-    security_level_monotonic: (s) => (s.securityLevel as number) >= (s.previousSecurityLevel as number),
+    security_level_monotonic: (s) =>
+      (s.securityLevel as number) >= (s.previousSecurityLevel as number),
 
     // Hyperbolic Bounds: all points remain within the Poincaré ball
     hyperbolic_bounds: (s) => {
