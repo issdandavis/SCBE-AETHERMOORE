@@ -1,0 +1,35 @@
+{
+  "version": "1.0.0",
+  "tongues": [
+    {
+      "code": "ko",
+      "name": "Kor'aelin",
+      "domain": "nonce/flow/intent",
+      "description": "The tongue of command authority and flowing intent. Spoken by archons who shape the currents of will.",
+      "harmonicFrequency": 432.0,
+      "prefixes": [
+        "vel", "ashi", "thar", "nyx", "zeph", "kor", "syl", "vex",
+        "aur", "cael", "drin", "eth", "fyn", "gael", "hira", "jyn"
+      ],
+      "suffixes": [
+        "oni", "eth", "ara", "ine", "oth", "ael", "yx", "ena",
+        "ira", "ume", "ova", "iel", "ana", "esh", "ori", "ula"
+      ]
+    },
+    {
+      "code": "av",
+      "name": "Avali",
+      "domain": "aad/header/metadata",
+      "description": "The diplomatic tongue of emotional resonance. Each syllable carries the weight of intention.",
+      "harmonicFrequency": 528.0,
+      "prefixes": [
+        "sera", "luna", "vela", "mira", "aria", "nova", "lyra", "sola",
+        "cara", "dara", "fira", "gala", "hera", "isla", "jara", "kira"
+      ],
+      "suffixes": [
+        "lis", "nis", "ris", "tis", "vis", "wis", "xis", "yis",
+        "la", "na", "ra", "ta", "va", "wa", "xa", "ya"
+      ]
+    }
+  ]
+}

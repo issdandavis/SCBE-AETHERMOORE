@@ -138,7 +138,6 @@ Classified system access control with post-quantum cryptography.
 ```bash
 # Start the API server
 scbe-api --port 8000
-
 # Validate an action
 curl -X POST http://localhost:8000/v1/validate \
   -H "Content-Type: application/json" \

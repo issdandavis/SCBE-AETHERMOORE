@@ -100,7 +100,8 @@ All governance decisions include:
 
 For security-related inquiries:
 - GitHub Security Advisories: [Configure in repo settings]
-- Email: [To be configured]
+- Email: Aethermore Founder Issac Davis
+aethermoregames@pm.me
 
 ## Acknowledgments
 
