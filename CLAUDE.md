@@ -51,16 +51,42 @@ src/
 │   ├── harmonicScaling.ts  # Harmonic wall (L12)
 │   └── sacredTongues.ts    # 6×256 tokenizer
 ├── crypto/             # Cryptographic primitives (TypeScript)
+├── spiralverse/        # RWP protocol & envelope encryption
+├── symphonic/          # Symphonic cipher (audio-based crypto)
 ├── symphonic_cipher/   # Python reference implementations
 ├── api/                # FastAPI REST server
 ├── fleet/              # Multi-agent orchestration
-└── spectral/           # FFT coherence analysis
+│   └── polly-pads/     # Distributed consensus pads
+├── spectral/           # FFT coherence analysis
+├── agent/              # Single agent abstractions
+├── agentic/            # Multi-agent AI platform
+├── ai_orchestration/   # AI orchestration layer
+├── gateway/            # API gateway & routing
+├── network/            # Network topology & combat mesh
+├── spaceTor/           # Trust-based overlay network
+├── selfHealing/        # Self-healing infrastructure
+├── tokenizer/          # Token processing utilities
+├── pqc/                # Post-quantum crypto wrappers
+├── physics_sim/        # Physics simulation models
+├── lambda/             # Serverless function handlers
+└── core/               # Core types & utilities
 
 tests/
+├── L1-basic/           # Smoke tests
+├── L2-unit/            # Unit tests
+├── L3-integration/     # Integration tests
+├── L4-property/        # Property-based tests
+├── L5-security/        # Security boundary tests
+├── L6-adversarial/     # Adversarial attack tests
 ├── harmonic/           # Layer & pipeline tests
 ├── enterprise/         # Compliance tests (FIPS, SOC2)
-├── L1-basic/ to L6-adversarial/  # Tiered tests
-└── cross-industry/     # Fleet scenarios
+├── cross-industry/     # Fleet scenarios (bank, healthcare, manufacturing)
+├── cross-language/     # TypeScript/Python parity tests
+├── industry_standard/  # NIST, Byzantine, side-channel tests
+├── spiralverse/        # RWP envelope tests
+├── fleet/              # Fleet manager tests
+├── spectral/           # Spectral coherence tests
+└── symphonic/          # Audio gate tests
 ```
 
 ## 14-Layer Architecture
@@ -159,6 +185,27 @@ Risk amplification formula: `H(d,R) = φᵈ / (1 + e⁻ᴿ)`
 3. **Causality** (L6, 11, 13): Time-ordering
 4. **Symmetry** (L5, 9, 10, 12): Gauge invariance
 5. **Composition** (L1, 14): Pipeline integrity
+
+## Test Tiers (L1-L6)
+
+Tests are organized into tiers by complexity and purpose:
+
+| Tier | Purpose | Run Command |
+|------|---------|-------------|
+| **L1-basic** | Smoke tests, quick sanity checks | `npm test -- tests/L1-basic` |
+| **L2-unit** | Unit tests for individual functions | `npm test -- tests/L2-unit` |
+| **L3-integration** | Integration tests across modules | `npm test -- tests/L3-integration` |
+| **L4-property** | Property-based tests (fast-check) | `npm test -- tests/L4-property` |
+| **L5-security** | Security boundary tests | `npm test -- tests/L5-security` |
+| **L6-adversarial** | Adversarial attack simulations | `npm test -- tests/L6-adversarial` |
+
+## RWP Protocol (Spiralverse)
+
+The **Rotating Waveform Protocol (RWP)** provides envelope encryption with:
+- Nonce rotation and uniqueness enforcement
+- TTL-based message expiration
+- Tamper-evident signatures
+- Post-quantum key encapsulation
 
 ## Debugging Tips
 
