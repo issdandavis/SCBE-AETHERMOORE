@@ -72,6 +72,28 @@ print(result.risk_score)  # 0.0 to 1.0
 print(result.explanation)  # Human-readable reason
 ```
 
+## CLI Quick Start (Six Tongues + GeoSeal)
+
+```bash
+# Encode/Decode (Sacred Tongues)
+python scbe-cli.py encode --tongue KO --text "hello" > spell.txt
+python scbe-cli.py decode --tongue KO --as-text --in spell.txt
+
+# Cross-translate KO → AV
+python scbe-cli.py xlate --src KO --dst AV --prefix --in spell.txt
+
+# Blend/Unblend pattern (KO:2,AV:1,DR:1)
+echo -n "secret" | python scbe-cli.py blend --pattern KO:2,AV:1,DR:1 > blend.txt
+python scbe-cli.py unblend --as-text --in blend.txt
+
+# GeoSeal envelope (context-aware sealing)
+echo -n "payload" | python scbe-cli.py geoseal-encrypt --ss1 > envelope.json
+python scbe-cli.py geoseal-decrypt --as-text --in envelope.json
+
+# Self-test
+python scbe-cli.py selftest
+```
+
 ## Why SCBE?
 
 ### 1. Mathematically Proven Security
