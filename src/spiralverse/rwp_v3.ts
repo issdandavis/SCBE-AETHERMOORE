@@ -19,7 +19,12 @@
  */
 
 import { createCipheriv, createDecipheriv, randomBytes, createHash, pbkdf2Sync } from 'crypto';
-import { TONGUES, SECTION_TONGUES, type TongueCode, type TongueSpec } from '../harmonic/sacredTongues.js';
+import {
+  TONGUES,
+  SECTION_TONGUES,
+  type TongueCode,
+  type TongueSpec,
+} from '../harmonic/sacredTongues.js';
 
 // ============================================================
 // ARGON2 PARAMETERS (RFC 9106)

@@ -289,10 +289,7 @@ function consumeNonce(nonce: string): boolean {
  * Uses hash of identifiers to create deterministic position
  */
 function actorToPosition(actor: Actor): { x: number; y: number; z: number } {
-  const hash = createHash('sha256')
-    .update(actor.id)
-    .update(actor.type)
-    .digest();
+  const hash = createHash('sha256').update(actor.id).update(actor.type).digest();
 
   // Map hash bytes to position in ball (radius < 0.9)
   const x = ((hash[0] / 255) * 2 - 1) * 0.7;
@@ -303,10 +300,7 @@ function actorToPosition(actor: Actor): { x: number; y: number; z: number } {
 }
 
 function resourceToPosition(resource: Resource): { x: number; y: number; z: number } {
-  const hash = createHash('sha256')
-    .update(resource.type)
-    .update(resource.id)
-    .digest();
+  const hash = createHash('sha256').update(resource.type).update(resource.id).digest();
 
   // Resources closer to boundary = higher risk
   const classification = resource.classification ?? 'internal';

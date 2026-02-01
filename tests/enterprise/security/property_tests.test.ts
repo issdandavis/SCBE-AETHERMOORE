@@ -184,7 +184,13 @@ describe('Security Testing - Property Tests', () => {
   it('Property 33: Fault Injection - Graceful Recovery', () => {
     fc.assert(
       fc.property(
-        fc.constantFrom('memory_corruption', 'network_failure', 'disk_failure', 'key_rotation', 'clock_skew'),
+        fc.constantFrom(
+          'memory_corruption',
+          'network_failure',
+          'disk_failure',
+          'key_rotation',
+          'clock_skew'
+        ),
         (faultType) => {
           const result = injectFault(faultType);
 
@@ -232,7 +238,12 @@ describe('Security Testing - Property Tests', () => {
   it('Property 35: Side-Channel Attack Resistance', () => {
     fc.assert(
       fc.property(
-        fc.constantFrom('constant-time-compare', 'timing-safe-equal', 'blinded-operations', 'power-balanced'),
+        fc.constantFrom(
+          'constant-time-compare',
+          'timing-safe-equal',
+          'blinded-operations',
+          'power-balanced'
+        ),
         (algorithm) => {
           const result = testSideChannelResistance(algorithm);
 

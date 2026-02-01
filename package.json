@@ -88,17 +88,20 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/issdandavis/scbe-aethermoore-demo.git"
+    "url": "git+https://github.com/issdandavis/SCBE-AETHERMOORE.git"
   },
   "bugs": {
-    "url": "https://github.com/issdandavis/scbe-aethermoore-demo/issues"
+    "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
   },
-  "homepage": "https://github.com/issdandavis/scbe-aethermoore-demo#readme",
+  "homepage": "https://github.com/issdandavis/SCBE-AETHERMOORE#readme",
   "engines": {
     "node": ">=18.0.0"
   },
-  "dependencies": {},
+  "dependencies": {
+    "express": "^4.19.2"
+  },
   "devDependencies": {
+    "@types/express": "^4.17.21",
     "@types/jest": "^30.0.0",
     "@types/node": "^22.0.0",
     "@vitest/coverage-v8": "^4.0.17",
@@ -108,7 +111,7 @@
     "rimraf": "^5.0.10",
     "ts-node": "^10.9.2",
     "typedoc": "^0.25.0",
-    "typescript": "^5.9.0",
+    "typescript": "^5.4.5",
     "vitest": "^4.0.17"
   },
   "overrides": {

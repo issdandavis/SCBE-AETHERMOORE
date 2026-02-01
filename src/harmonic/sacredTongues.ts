@@ -395,10 +395,14 @@ export function validateLexicon(lexicon: LexiconDefinition): void {
     throw new Error('Lexicon must have a string name');
   }
   if (!Array.isArray(lexicon.prefixes) || lexicon.prefixes.length !== 16) {
-    throw new Error(`Lexicon ${lexicon.code} must have exactly 16 prefixes, got ${lexicon.prefixes?.length}`);
+    throw new Error(
+      `Lexicon ${lexicon.code} must have exactly 16 prefixes, got ${lexicon.prefixes?.length}`
+    );
   }
   if (!Array.isArray(lexicon.suffixes) || lexicon.suffixes.length !== 16) {
-    throw new Error(`Lexicon ${lexicon.code} must have exactly 16 suffixes, got ${lexicon.suffixes?.length}`);
+    throw new Error(
+      `Lexicon ${lexicon.code} must have exactly 16 suffixes, got ${lexicon.suffixes?.length}`
+    );
   }
 
   // Check for unique prefixes and suffixes
