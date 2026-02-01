@@ -1,14 +1,12 @@
 <p align="center">
+  <img src="assets/banner.svg" alt="SCBE-AETHERMOORE Banner" width="800"/>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/AI%20Safety-Enterprise%20Grade-blue?style=for-the-badge" alt="AI Safety"/>
   <img src="https://img.shields.io/badge/Post--Quantum-Secure-green?style=for-the-badge" alt="Post-Quantum"/>
   <img src="https://img.shields.io/badge/Patent-Pending-orange?style=for-the-badge" alt="Patent Pending"/>
-</p>
-
-<h1 align="center">SCBE-AETHERMOORE</h1>
-
-<p align="center">
-  <strong>Stop AI agents before they go rogue.</strong><br/>
-  A hyperbolic geometry firewall where adversarial behavior costs exponentially more.
+  <a href="https://github.com/sponsors/issdandavis"><img src="https://img.shields.io/badge/Sponsor-GitHub-ea4aaa?style=for-the-badge&logo=github" alt="Sponsor"/></a>
 </p>
 
 <p align="center">

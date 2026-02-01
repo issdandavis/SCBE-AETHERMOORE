@@ -249,7 +249,7 @@ print(f"Distance: {result['d_star']:.4f}")
 
 ---
 
-**Implementation Team**: Isaac Thorne / SpiralVerse OS
+**Implementation Team**: Issac Daniel Davis / SpiralVerse OS
 **Mathematical Proofs**: See [docs/scbe_proofs_complete.tex](../docs/scbe_proofs_complete.tex)
 **Patent Reference**: USPTO #63/961,403
 **Version**: 1.0 (2026-01-17)

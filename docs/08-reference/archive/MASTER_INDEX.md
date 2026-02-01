@@ -3,7 +3,7 @@
 **Complete System Documentation Navigator**
 **Version**: 1.0
 **Date**: January 17, 2026
-**Author**: Isaac Thorne / SpiralVerse OS
+**Author**: Issac Daniel Davis / SpiralVerse OS
 **Patent**: USPTO #63/961,403
 
 ---
@@ -560,7 +560,7 @@ grad = langues_gradient(x, mu, w, beta, omega, phi, t=1.0)
 ---
 
 **Last Updated**: January 17, 2026
-**Maintained By**: Isaac Thorne / SpiralVerse OS
+**Maintained By**: Issac Daniel Davis / SpiralVerse OS
 **License**: See LICENSE file
 **Patent**: USPTO #63/961,403
 
