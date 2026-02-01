@@ -150,7 +150,10 @@ export function latticeEncapsulate(
   // Simulate encapsulation (in production, use liboqs)
   const sharedSecret = createHash('sha256').update(publicKey).update(randomBytes(32)).digest();
 
-  const ciphertext = Buffer.concat([randomBytes(securityBits * 2), createHash('sha256').update(sharedSecret).digest()]);
+  const ciphertext = Buffer.concat([
+    randomBytes(securityBits * 2),
+    createHash('sha256').update(sharedSecret).digest(),
+  ]);
 
   return { sharedSecret, ciphertext };
 }
@@ -234,7 +237,11 @@ export function createDualLatticeEnvelope(params: {
     encryptedData[i] = params.data[i] ^ sharedSecret[i % sharedSecret.length];
   }
 
-  const tag = createHash('sha256').update(encryptedData).update(sharedSecret).digest().subarray(0, 16);
+  const tag = createHash('sha256')
+    .update(encryptedData)
+    .update(sharedSecret)
+    .digest()
+    .subarray(0, 16);
 
   // Step 3: Create SS1 envelope
   const ss1Envelope = createSS1Envelope({
@@ -275,7 +282,10 @@ export function createDualLatticeEnvelope(params: {
  *
  * Ensures the SS1 layer and lattice layer haven't been tampered with independently
  */
-export function verifyDualLatticeBinding(envelope: DualLatticeEnvelope, secretKey?: Buffer): boolean {
+export function verifyDualLatticeBinding(
+  envelope: DualLatticeEnvelope,
+  secretKey?: Buffer
+): boolean {
   // Verify tongue hash matches SS1 content
   const computedTongueHash = hashTongueSequence(envelope.ss1.ct);
   if (computedTongueHash !== envelope.binding.tongueHash) {
@@ -314,7 +324,11 @@ export function decryptDualLatticeEnvelope(
 
   // Step 2: Lattice decapsulation
   const latticeCiphertext = Buffer.from(envelope.lattice.ciphertext, 'hex');
-  const sharedSecret = latticeDecapsulate(recipientSecretKey, latticeCiphertext, envelope.lattice.params);
+  const sharedSecret = latticeDecapsulate(
+    recipientSecretKey,
+    latticeCiphertext,
+    envelope.lattice.params
+  );
 
   // Step 3: Decrypt SS1 ciphertext
   const encryptedData = ss1Decode(envelope.ss1.ct, 'CA');

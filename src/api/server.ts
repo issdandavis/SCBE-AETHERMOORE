@@ -113,11 +113,11 @@ export function createApp(): express.Application {
   app.use(rateLimit);
 
   // Health check (no auth required)
-  app.get('/health', (_req, res) => {
+  app.get('/health', (_req: Request, res: Response) => {
     res.json({ status: 'healthy', timestamp: new Date().toISOString() });
   });
 
-  app.get('/ready', (_req, res) => {
+  app.get('/ready', (_req: Request, res: Response) => {
     res.json({ status: 'ready', timestamp: new Date().toISOString() });
   });
 

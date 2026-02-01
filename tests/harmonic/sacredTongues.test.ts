@@ -64,7 +64,7 @@ describe('Sacred Tongues', () => {
       }
     });
 
-    it('Kor\'aelin is assigned to nonce section', () => {
+    it("Kor'aelin is assigned to nonce section", () => {
       expect(SECTION_TONGUES.nonce).toBe('ko');
       expect(getTongueForSection('nonce')).toBe(KOR_AELIN);
     });
@@ -155,7 +155,24 @@ describe('Sacred Tongues', () => {
     });
 
     it('rejects lexicon with duplicate prefixes', () => {
-      const prefixes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'a'];
+      const prefixes = [
+        'a',
+        'b',
+        'c',
+        'd',
+        'e',
+        'f',
+        'g',
+        'h',
+        'i',
+        'j',
+        'k',
+        'l',
+        'm',
+        'n',
+        'o',
+        'a',
+      ];
       const invalid: LexiconDefinition = {
         code: 'te',
         name: 'Test',
@@ -168,7 +185,24 @@ describe('Sacred Tongues', () => {
     });
 
     it('rejects lexicon with duplicate suffixes', () => {
-      const suffixes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'a'];
+      const suffixes = [
+        'a',
+        'b',
+        'c',
+        'd',
+        'e',
+        'f',
+        'g',
+        'h',
+        'i',
+        'j',
+        'k',
+        'l',
+        'm',
+        'n',
+        'o',
+        'a',
+      ];
       const invalid: LexiconDefinition = {
         code: 'te',
         name: 'Test',
@@ -221,7 +255,7 @@ describe('Sacred Tongues', () => {
 
       const replacement: LexiconDefinition = {
         code: 'ko',
-        name: 'Replaced Kor\'aelin',
+        name: "Replaced Kor'aelin",
         prefixes: Array.from({ length: 16 }, (_, i) => `new${i}`),
         suffixes: Array.from({ length: 16 }, (_, i) => `suf${i}`),
         domain: 'replaced',
@@ -229,7 +263,7 @@ describe('Sacred Tongues', () => {
 
       registerTongue(replacement);
 
-      expect(TONGUES.ko.name).toBe('Replaced Kor\'aelin');
+      expect(TONGUES.ko.name).toBe("Replaced Kor'aelin");
       expect(TONGUES.ko.name).not.toBe(originalName);
     });
 
@@ -423,7 +457,7 @@ describe('Sacred Tongues', () => {
   });
 
   describe('Token Generation', () => {
-    it('generates tokens in prefix\'suffix format', () => {
+    it("generates tokens in prefix'suffix format", () => {
       const tongue = TONGUES.ko;
       const token = `${tongue.prefixes[0]}'${tongue.suffixes[0]}`;
       expect(token).toMatch(/^[a-z]+\'[a-z]+$/);
