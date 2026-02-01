@@ -97,7 +97,6 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "dependencies": {},
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "@types/node": "^22.0.0",
@@ -108,7 +107,7 @@
     "rimraf": "^5.0.10",
     "ts-node": "^10.9.2",
     "typedoc": "^0.25.0",
-    "typescript": "^5.9.0",
+    "typescript": "^5.4.5",
     "vitest": "^4.0.17"
   },
   "overrides": {
