@@ -3,7 +3,7 @@
 
 **Version**: 1.0
 **Date**: January 17, 2026
-**Author**: Isaac Thorne / SpiralVerse OS
+**Author**: Issac Daniel Davis / SpiralVerse OS
 **Patent Reference**: USPTO #63/961,403
 
 ---
