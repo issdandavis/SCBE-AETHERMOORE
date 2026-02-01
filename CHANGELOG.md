@@ -1,5 +1,35 @@
 # SCBE Production Pack Changelog
 
+## [3.1.1] - 2026-02-01
+
+### Added
+- **Video-Security Integration Layer** (`src/video/security-integration.ts`)
+  - **Fractal Fingerprinting**: Generate unique visual identities from envelope AAD
+    - `generateFractalFingerprint(aad)` - Creates deterministic fractal signature
+    - `verifyFractalFingerprint(fp, aad)` - Validates fingerprint authenticity
+  - **Agent Trajectory Embedding**: Poincaré state tracking in FleetJob context
+    - `embedTrajectoryState(job, role, timestamp)` - Adds 6D hyperbolic state
+    - `extractJobTrajectory(jobs)` - Extracts trajectory from job history
+  - **Audit Reel Generation**: Lattice-watermarked video from envelope history
+    - `generateAuditReel(envelopes, config)` - Full video with chain of custody hash
+    - `streamAuditReelFrames(envelopes, config)` - Memory-efficient streaming
+  - **Visual Proof Verification**: Trajectory replay for governance verification
+    - `createVisualProof(jobs)` - Generate verifiable proof from job trajectory
+    - `verifyVisualProof(proof)` - Validate proof integrity (ball containment + hash)
+    - `renderVisualProof(proof, config)` - Render proof to video
+
+### Integration Points
+- Envelope AAD → Fractal fingerprint (session-unique visual identity)
+- FleetOrchestrator JobData → Poincaré trajectory state
+- Envelope history → Audit reel (governance visualization)
+- Sacred Tongue masks → Agent role mapping (captain→ko, security→dr, etc.)
+
+### Tests
+- 27 new tests in `tests/video/security-integration.test.ts`
+- Total test count: 1401 passing, 6 skipped
+
+---
+
 ## [3.1.0] - 2026-01-31
 
 ### Added
