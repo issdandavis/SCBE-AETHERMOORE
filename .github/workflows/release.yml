@@ -78,6 +78,11 @@ jobs:
         with:
           name: npm-package
 
+      - name: Create Six Tongues CLI package
+        run: |
+          zip -r sixtongues-cli-${GITHUB_REF#refs/tags/}.zip packages/sixtongues/ \
+              -x "*.pyc" -x "__pycache__/*"
+
       - name: Extract version from tag
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
@@ -98,8 +103,8 @@ jobs:
             - 14-Layer Security Architecture
             - Hyperbolic Geometry-Based Encryption
             - Quantum-Resistant Cryptography
+            - Six Tongues Secure Tokenizer CLI (`sixtongues-cli-*.zip`)
             - Interactive Demo UI
-            - Python CLI Tool
 
             ### Performance
             - Latency: <50ms
@@ -109,6 +114,7 @@ jobs:
             See [CHANGELOG.md](CHANGELOG.md) for full details.
           files: |
             *.tgz
+            sixtongues-cli-*.zip
             README.md
             LICENSE
           draft: false
