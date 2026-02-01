@@ -171,7 +171,7 @@ py-openapi-schema-to-json-schema==0.0.3
 pyasn1==0.6.2
 pyasn1_modules==0.4.2
 pycodestyle==2.14.0
-pycparser==2.23
+pycparser==3.0
 pycryptodome==3.23.0
 pydantic==2.12.5
 pydantic-settings==2.12.0
