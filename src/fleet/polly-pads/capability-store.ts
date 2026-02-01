@@ -16,12 +16,12 @@ import { Capability, SacredTongue, DroneClass } from './drone-core.js';
 
 /** Capability category */
 export type CapabilityCategory =
-  | 'browser'      // Web automation
-  | 'coding'       // Code generation/editing
-  | 'deploy'       // Infrastructure/deployment
-  | 'research'     // Information gathering
-  | 'security'     // Security/auditing
-  | 'utility';     // General utilities
+  | 'browser' // Web automation
+  | 'coding' // Code generation/editing
+  | 'deploy' // Infrastructure/deployment
+  | 'research' // Information gathering
+  | 'security' // Security/auditing
+  | 'utility'; // General utilities
 
 /** Capability manifest in the store */
 export interface CapabilityManifest {
@@ -40,7 +40,7 @@ export interface CapabilityManifest {
   // Resources
   entryPoint: string;
   wasmBundle?: string;
-  size: number;  // bytes
+  size: number; // bytes
 
   // Security
   author: string;
@@ -155,7 +155,7 @@ const BUILTIN_CAPABILITIES: CapabilityManifest[] = [
     description: 'Infrastructure as Code bridge for Terraform',
     category: 'deploy',
     minTrust: 0.9,
-    requiredTongue: 'RU',  // Binding operations
+    requiredTongue: 'RU', // Binding operations
     requiredClass: ['DEPLOY'],
     dependencies: [],
     entryPoint: 'terraform-bridge/index.js',
@@ -217,7 +217,7 @@ const BUILTIN_CAPABILITIES: CapabilityManifest[] = [
     description: 'Validate actions against SCBE security policy',
     category: 'security',
     minTrust: 0.95,
-    requiredTongue: 'DR',  // Structure/Auth
+    requiredTongue: 'DR', // Structure/Auth
     requiredClass: ['GUARD'],
     dependencies: [],
     entryPoint: 'scbe-validator/index.js',
@@ -316,29 +316,28 @@ export class CapabilityStore {
     let results = Array.from(this.capabilities.values());
 
     if (query.category) {
-      results = results.filter(c => c.category === query.category);
+      results = results.filter((c) => c.category === query.category);
     }
 
     if (query.tongue) {
-      results = results.filter(c => !c.requiredTongue || c.requiredTongue === query.tongue);
+      results = results.filter((c) => !c.requiredTongue || c.requiredTongue === query.tongue);
     }
 
     if (query.class) {
-      results = results.filter(c =>
-        !c.requiredClass || c.requiredClass.includes(query.class!)
-      );
+      results = results.filter((c) => !c.requiredClass || c.requiredClass.includes(query.class!));
     }
 
     if (query.maxTrust !== undefined) {
-      results = results.filter(c => c.minTrust <= query.maxTrust!);
+      results = results.filter((c) => c.minTrust <= query.maxTrust!);
     }
 
     if (query.search) {
       const searchLower = query.search.toLowerCase();
-      results = results.filter(c =>
-        c.name.toLowerCase().includes(searchLower) ||
-        c.description.toLowerCase().includes(searchLower) ||
-        c.tags.some(t => t.includes(searchLower))
+      results = results.filter(
+        (c) =>
+          c.name.toLowerCase().includes(searchLower) ||
+          c.description.toLowerCase().includes(searchLower) ||
+          c.tags.some((t) => t.includes(searchLower))
       );
     }
 
@@ -356,7 +355,7 @@ export class CapabilityStore {
     droneClass: DroneClass,
     trustRadius: number
   ): CapabilityManifest[] {
-    const maxTrust = 1 - trustRadius;  // Convert radius to trust level
+    const maxTrust = 1 - trustRadius; // Convert radius to trust level
 
     return this.searchCapabilities({
       tongue,
@@ -397,9 +396,7 @@ export class CapabilityStore {
       author: manifest.author,
     });
 
-    return createHmac('sha256', this.signatureKey)
-      .update(data)
-      .digest('hex');
+    return createHmac('sha256', this.signatureKey).update(data).digest('hex');
   }
 
   /**

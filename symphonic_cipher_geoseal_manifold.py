@@ -2,10 +2,8 @@
 GeoSeal Geometric Trust Manifold
 Extracted from SCBE Production Pack demo_integrated_system.py
 
-To use in GitHub repo:
-1. Copy to: SCBE-AETHERMOORE/symphonic_cipher/geoseal/manifold.py
-2. Create: SCBE-AETHERMOORE/symphonic_cipher/geoseal/__init__.py
-3. Import: from symphonic_cipher.geoseal import GeoSealManifold
+Canonical import path:
+  from symphonic_cipher.geoseal import GeoSealManifold
 """
 
 import numpy as np

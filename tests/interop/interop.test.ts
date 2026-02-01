@@ -36,14 +36,11 @@ describe('Python ↔ TypeScript Interoperability', () => {
       expect(encodeVectors.length).toBeGreaterThan(0);
     });
 
-    it.each(encodeVectors.map((v, i) => [v.description, v, i]))(
-      '%s',
-      (_, vector) => {
-        const input = Buffer.from(vector.input_hex, 'hex');
-        const tokens = TOKENIZER.encodeBytes(vector.tongue, input);
-        expect(tokens).toEqual(vector.expected_tokens);
-      }
-    );
+    it.each(encodeVectors.map((v, i) => [v.description, v, i]))('%s', (_, vector) => {
+      const input = Buffer.from(vector.input_hex, 'hex');
+      const tokens = TOKENIZER.encodeBytes(vector.tongue, input);
+      expect(tokens).toEqual(vector.expected_tokens);
+    });
   });
 
   describe('Section → Tongue Mapping', () => {
@@ -60,19 +57,16 @@ describe('Python ↔ TypeScript Interoperability', () => {
       expect(sectionVectors.length).toBeGreaterThan(0);
     });
 
-    it.each(sectionVectors.map((v) => [v.description, v]))(
-      '%s',
-      (_, vector) => {
-        // Check tongue mapping
-        const actualTongue = SECTION_TONGUES[vector.section as keyof typeof SECTION_TONGUES];
-        expect(actualTongue).toBe(vector.expected_tongue);
+    it.each(sectionVectors.map((v) => [v.description, v]))('%s', (_, vector) => {
+      // Check tongue mapping
+      const actualTongue = SECTION_TONGUES[vector.section as keyof typeof SECTION_TONGUES];
+      expect(actualTongue).toBe(vector.expected_tongue);
 
-        // Check token encoding
-        const input = Buffer.from(vector.input_hex, 'hex');
-        const tokens = TOKENIZER.encodeSection(vector.section, input);
-        expect(tokens).toEqual(vector.expected_tokens);
-      }
-    );
+      // Check token encoding
+      const input = Buffer.from(vector.input_hex, 'hex');
+      const tokens = TOKENIZER.encodeSection(vector.section, input);
+      expect(tokens).toEqual(vector.expected_tokens);
+    });
   });
 
   describe('Bijectivity (Roundtrip)', () => {
@@ -126,26 +120,23 @@ describe('Python ↔ TypeScript Interoperability', () => {
       expect(specVectors.length).toBe(6); // 6 tongues
     });
 
-    it.each(specVectors.map((v) => [v.tongue, v]))(
-      'tongue %s matches Python spec',
-      (_, vector) => {
-        const spec = TONGUES[vector.tongue];
-        expect(spec).toBeDefined();
-        expect(spec.name).toBe(vector.name);
-        expect(spec.prefixes.length).toBe(vector.prefix_count);
-        expect(spec.suffixes.length).toBe(vector.suffix_count);
-        expect(spec.prefixes[0]).toBe(vector.first_prefix);
-        expect(spec.prefixes[15]).toBe(vector.last_prefix);
-        expect(spec.suffixes[0]).toBe(vector.first_suffix);
-        expect(spec.suffixes[15]).toBe(vector.last_suffix);
+    it.each(specVectors.map((v) => [v.tongue, v]))('tongue %s matches Python spec', (_, vector) => {
+      const spec = TONGUES[vector.tongue];
+      expect(spec).toBeDefined();
+      expect(spec.name).toBe(vector.name);
+      expect(spec.prefixes.length).toBe(vector.prefix_count);
+      expect(spec.suffixes.length).toBe(vector.suffix_count);
+      expect(spec.prefixes[0]).toBe(vector.first_prefix);
+      expect(spec.prefixes[15]).toBe(vector.last_prefix);
+      expect(spec.suffixes[0]).toBe(vector.first_suffix);
+      expect(spec.suffixes[15]).toBe(vector.last_suffix);
 
-        // Verify sample tokens
-        const token00 = TOKENIZER.encodeBytes(vector.tongue, Buffer.from([0x00]))[0];
-        const tokenFF = TOKENIZER.encodeBytes(vector.tongue, Buffer.from([0xff]))[0];
-        expect(token00).toBe(vector.sample_token_0x00);
-        expect(tokenFF).toBe(vector.sample_token_0xFF);
-      }
-    );
+      // Verify sample tokens
+      const token00 = TOKENIZER.encodeBytes(vector.tongue, Buffer.from([0x00]))[0];
+      const tokenFF = TOKENIZER.encodeBytes(vector.tongue, Buffer.from([0xff]))[0];
+      expect(token00).toBe(vector.sample_token_0x00);
+      expect(tokenFF).toBe(vector.sample_token_0xFF);
+    });
   });
 
   describe('PBKDF2 Key Derivation', () => {
@@ -163,23 +154,14 @@ describe('Python ↔ TypeScript Interoperability', () => {
       expect(pbkdf2Vectors.length).toBeGreaterThan(0);
     });
 
-    it.each(pbkdf2Vectors.map((v) => [v.description, v]))(
-      '%s',
-      (_, vector) => {
-        const password = Buffer.from(vector.password_hex, 'hex');
-        const salt = Buffer.from(vector.salt_hex, 'hex');
+    it.each(pbkdf2Vectors.map((v) => [v.description, v]))('%s', (_, vector) => {
+      const password = Buffer.from(vector.password_hex, 'hex');
+      const salt = Buffer.from(vector.salt_hex, 'hex');
 
-        const key = pbkdf2Sync(
-          password,
-          salt,
-          vector.iterations,
-          vector.key_length,
-          'sha256'
-        );
+      const key = pbkdf2Sync(password, salt, vector.iterations, vector.key_length, 'sha256');
 
-        expect(key.toString('hex')).toBe(vector.expected_key_hex);
-      }
-    );
+      expect(key.toString('hex')).toBe(vector.expected_key_hex);
+    });
   });
 
   describe('Summary', () => {

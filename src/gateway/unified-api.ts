@@ -265,7 +265,9 @@ export class UnifiedSCBEGateway {
   /**
    * Verify and decode RWP envelope
    */
-  async decodeRWP(envelope: RWPEnvelope): Promise<{ valid: boolean; payload?: unknown; error?: string }> {
+  async decodeRWP(
+    envelope: RWPEnvelope
+  ): Promise<{ valid: boolean; payload?: unknown; error?: string }> {
     // Verify all signatures
     for (const [tongue, signature] of Object.entries(envelope.signatures)) {
       const valid = await this.verifyTongueSignature(
@@ -431,8 +433,8 @@ export class UnifiedSCBEGateway {
       (actionHash % 1000) / 1000,
       (targetHash % 1000) / 1000,
       (agentHash % 1000) / 1000,
-      request.context?.sensitivity as number ?? 0.5,
-      request.context?.urgency as number ?? 0.5,
+      (request.context?.sensitivity as number) ?? 0.5,
+      (request.context?.urgency as number) ?? 0.5,
       request.tongues?.length ?? 3 / 6,
     ];
   }
@@ -473,11 +475,7 @@ export class UnifiedSCBEGateway {
     const sin = Math.sin(theta);
 
     // Rotate first two dimensions
-    return [
-      point[0] * cos - point[1] * sin,
-      point[0] * sin + point[1] * cos,
-      ...point.slice(2),
-    ];
+    return [point[0] * cos - point[1] * sin, point[0] * sin + point[1] * cos, ...point.slice(2)];
   }
 
   private computeRealmDistance(point: number[]): number {
@@ -491,9 +489,7 @@ export class UnifiedSCBEGateway {
 
     let minDist = Infinity;
     for (const center of realmCenters) {
-      const dist = Math.sqrt(
-        point.reduce((sum, v, i) => sum + (v - center[i]) ** 2, 0)
-      );
+      const dist = Math.sqrt(point.reduce((sum, v, i) => sum + (v - center[i]) ** 2, 0));
       minDist = Math.min(minDist, dist);
     }
 
@@ -636,10 +632,7 @@ export class UnifiedSCBEGateway {
         } else {
           // Trust based on distance and trust scores
           const dist = Math.sqrt(
-            agents[i].position6D.reduce(
-              (sum, v, k) => sum + (v - agents[j].position6D[k]) ** 2,
-              0
-            )
+            agents[i].position6D.reduce((sum, v, k) => sum + (v - agents[j].position6D[k]) ** 2, 0)
           );
           matrix[i][j] = (agents[i].trustScore * agents[j].trustScore) / (1 + dist);
         }
@@ -649,42 +642,59 @@ export class UnifiedSCBEGateway {
     return matrix;
   }
 
-  private buildLayerExplanation(factors: Omit<RiskFactors, 'compositeRisk' | 'harmonicMagnification'>): Record<string, LayerResult> {
+  private buildLayerExplanation(
+    factors: Omit<RiskFactors, 'compositeRisk' | 'harmonicMagnification'>
+  ): Record<string, LayerResult> {
     return {
       hyperbolicDistance: {
         name: 'Hyperbolic Distance (L5)',
         value: factors.hyperbolicDistance,
         contribution: factors.hyperbolicDistance / 3,
-        status: factors.hyperbolicDistance < 1 ? 'pass' : factors.hyperbolicDistance < 2 ? 'warn' : 'fail',
+        status:
+          factors.hyperbolicDistance < 1
+            ? 'pass'
+            : factors.hyperbolicDistance < 2
+              ? 'warn'
+              : 'fail',
       },
       spectralCoherence: {
         name: 'Spectral Coherence (L9)',
         value: factors.spectralCoherence,
         contribution: 1 - factors.spectralCoherence,
-        status: factors.spectralCoherence > 0.8 ? 'pass' : factors.spectralCoherence > 0.6 ? 'warn' : 'fail',
+        status:
+          factors.spectralCoherence > 0.8
+            ? 'pass'
+            : factors.spectralCoherence > 0.6
+              ? 'warn'
+              : 'fail',
       },
       spinCoherence: {
         name: 'Spin Coherence (L10)',
         value: factors.spinCoherence,
         contribution: 1 - factors.spinCoherence,
-        status: factors.spinCoherence > 0.7 ? 'pass' : factors.spinCoherence > 0.5 ? 'warn' : 'fail',
+        status:
+          factors.spinCoherence > 0.7 ? 'pass' : factors.spinCoherence > 0.5 ? 'warn' : 'fail',
       },
       triadicDistance: {
         name: 'Triadic Temporal (L11)',
         value: factors.triadicDistance,
         contribution: factors.triadicDistance / 2,
-        status: factors.triadicDistance < 0.5 ? 'pass' : factors.triadicDistance < 1 ? 'warn' : 'fail',
+        status:
+          factors.triadicDistance < 0.5 ? 'pass' : factors.triadicDistance < 1 ? 'warn' : 'fail',
       },
       audioStability: {
         name: 'Audio Stability (L14)',
         value: factors.audioStability,
         contribution: 1 - factors.audioStability,
-        status: factors.audioStability > 0.9 ? 'pass' : factors.audioStability > 0.7 ? 'warn' : 'fail',
+        status:
+          factors.audioStability > 0.9 ? 'pass' : factors.audioStability > 0.7 ? 'warn' : 'fail',
       },
     };
   }
 
-  private findDominantFactor(factors: Omit<RiskFactors, 'compositeRisk' | 'harmonicMagnification'>): string {
+  private findDominantFactor(
+    factors: Omit<RiskFactors, 'compositeRisk' | 'harmonicMagnification'>
+  ): string {
     const contributions = [
       { name: 'hyperbolicDistance', value: factors.hyperbolicDistance / 3 },
       { name: 'spectralCoherence', value: 1 - factors.spectralCoherence },

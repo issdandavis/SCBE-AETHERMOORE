@@ -104,9 +104,7 @@ describeRedis('Redis Replay Guard Integration', () => {
 
     // Fire 10 concurrent requests with same ID
     const results = await Promise.all(
-      Array.from({ length: 10 }, () =>
-        guard.checkAndSetAsync('provider1', requestId)
-      )
+      Array.from({ length: 10 }, () => guard.checkAndSetAsync('provider1', requestId))
     );
 
     // Exactly one should succeed (atomic SET NX)
@@ -129,7 +127,9 @@ describeRedis('Redis Replay Guard Integration', () => {
 /**
  * Test helper: Create a mock Redis for unit tests
  */
-export function createMockRedis(): RedisClient & { storage: Map<string, { value: string; expireAt: number }> } {
+export function createMockRedis(): RedisClient & {
+  storage: Map<string, { value: string; expireAt: number }>;
+} {
   const storage = new Map<string, { value: string; expireAt: number }>();
 
   return {
