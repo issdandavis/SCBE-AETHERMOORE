@@ -28,9 +28,9 @@ export type TrustDecision = 'ALLOW' | 'QUARANTINE' | 'DENY';
 /** Spectral identity in the Poincaré ball */
 export interface SpectralIdentity {
   tongue: SacredTongue;
-  phase: number;        // 0-360 degrees
-  trustRadius: number;  // 0-1 in Poincaré ball (0 = center/trusted)
-  vector6D: number[];   // Full 6D position
+  phase: number; // 0-360 degrees
+  trustRadius: number; // 0-1 in Poincaré ball (0 = center/trusted)
+  vector6D: number[]; // Full 6D position
 }
 
 /** Capability that can be loaded into a drone */
@@ -65,20 +65,23 @@ const R_PERFECT_FIFTH = 1.5;
 
 /** Tongue phase offsets (60° intervals) */
 const TONGUE_PHASES: Record<SacredTongue, number> = {
-  KO: 0,    // Kor'aelin - Intent/Nonce
-  AV: 60,   // Avali - Context
-  RU: 120,  // Runethic - Binding
-  CA: 180,  // Cassisivadan - Ciphertext
-  UM: 240,  // Umbroth - Redaction
-  DR: 300,  // Draumric - Structure
+  KO: 0, // Kor'aelin - Intent/Nonce
+  AV: 60, // Avali - Context
+  RU: 120, // Runethic - Binding
+  CA: 180, // Cassisivadan - Ciphertext
+  UM: 240, // Umbroth - Redaction
+  DR: 300, // Draumric - Structure
 };
 
 /** Class configurations */
-const CLASS_CONFIG: Record<DroneClass, {
-  maxLoadout: number;
-  defaultTongue: SacredTongue;
-  designation: string;
-}> = {
+const CLASS_CONFIG: Record<
+  DroneClass,
+  {
+    maxLoadout: number;
+    defaultTongue: SacredTongue;
+    designation: string;
+  }
+> = {
   RECON: { maxLoadout: 4, defaultTongue: 'KO', designation: 'CT-7567' },
   CODER: { maxLoadout: 6, defaultTongue: 'AV', designation: 'CT-5555' },
   DEPLOY: { maxLoadout: 5, defaultTongue: 'RU', designation: 'CT-21-0408' },
@@ -157,10 +160,12 @@ export class DroneCore {
     const trustRadius = 0.1;
 
     // 6D vector based on tongue
-    const vector6D = Array(6).fill(0).map((_, i) => {
-      if (i === tongueIndex) return trustRadius;
-      return 0;
-    });
+    const vector6D = Array(6)
+      .fill(0)
+      .map((_, i) => {
+        if (i === tongueIndex) return trustRadius;
+        return 0;
+      });
 
     return { tongue, phase, trustRadius, vector6D };
   }
@@ -227,7 +232,7 @@ export class DroneCore {
     }
 
     // Check trust requirement
-    if (this._spectralIdentity.trustRadius > (1 - capability.minTrust)) {
+    if (this._spectralIdentity.trustRadius > 1 - capability.minTrust) {
       return {
         allowed: false,
         reason: `Insufficient trust: ${this._spectralIdentity.trustRadius.toFixed(2)} > ${(1 - capability.minTrust).toFixed(2)} max`,
@@ -308,8 +313,8 @@ export class DroneCore {
    * Data readable ONLY at nodal lines (zero points)
    */
   canAccessVoxel(x: number, y: number): boolean {
-    const n = this._spectralIdentity.phase / 60;  // velocity mode
-    const m = this._spectralIdentity.trustRadius * 6;  // security mode
+    const n = this._spectralIdentity.phase / 60; // velocity mode
+    const m = this._spectralIdentity.trustRadius * 6; // security mode
 
     const chladni =
       Math.cos(n * Math.PI * x) * Math.cos(m * Math.PI * y) -

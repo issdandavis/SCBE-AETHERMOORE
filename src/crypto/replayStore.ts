@@ -217,13 +217,15 @@ export interface RedisClient {
 /**
  * Factory function to create appropriate replay store based on environment.
  */
-export function createReplayStore(options: {
-  redisClient?: RedisClient;
-  redisPrefix?: string;
-  bloomSizeBits?: number;
-  bloomHashes?: number;
-  maxSize?: number;
-} = {}): ReplayStore {
+export function createReplayStore(
+  options: {
+    redisClient?: RedisClient;
+    redisPrefix?: string;
+    bloomSizeBits?: number;
+    bloomHashes?: number;
+    maxSize?: number;
+  } = {}
+): ReplayStore {
   if (options.redisClient) {
     return new RedisReplayStore(options.redisClient, { prefix: options.redisPrefix });
   }
