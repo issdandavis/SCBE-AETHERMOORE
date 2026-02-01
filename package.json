@@ -100,7 +100,7 @@
   "dependencies": {},
   "devDependencies": {
     "@types/jest": "^30.0.0",
-    "@types/node": "^22.0.0",
+    "@types/node": "^25.1.0",
     "@vitest/coverage-v8": "^4.0.17",
     "fast-check": "^4.5.3",
     "madge": "^8.0.0",
