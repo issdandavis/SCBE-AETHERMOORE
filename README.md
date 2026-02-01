@@ -170,9 +170,9 @@ Layer 14:    Audit telemetry
 ## Documentation
 
 - [Getting Started Guide](docs/GETTING_STARTED.md)
+- [Technical Reference](docs/TECHNICAL_REFERENCE.md)
 - [API Reference](docs/API_REFERENCE.md)
 - [Architecture Deep Dive](docs/ARCHITECTURE.md)
-- [Security Whitepaper](docs/SECURITY.md)
 
 ## Contributing
 
@@ -203,3 +203,7 @@ npm test && pytest
   <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/issues">Report Issue</a> •
   <a href="mailto:isaac@spiralverse.dev">Contact</a>
 </p>
+
+---
+
+*Copyright 2026 Issac Daniel Davis / SpiralVerse OS*
