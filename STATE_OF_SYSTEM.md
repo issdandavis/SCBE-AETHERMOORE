@@ -1,7 +1,7 @@
 # SCBE-AETHERMOORE: State of the System
 
-**Last Updated:** January 20, 2026
-**Status:** Functional Core, Pre-Commercial
+**Last Updated:** February 2, 2026
+**Status:** Operational (Core + CLI + API)
 
 ---
 
@@ -9,7 +9,7 @@
 
 | Metric | Value |
 |--------|-------|
-| **Tests Passing** | 709 / 710 (99.9%) |
+| **Tests Passing** | ✅ See latest local run (TS + Python) |
 | **Core Functionality** | ✅ Complete |
 | **Bank-Ready** | ❌ Not Yet |
 | **Pilot-Ready** | ✅ Yes |
@@ -28,12 +28,15 @@
 - **Sacred Tongues** - 6 linguistic encodings (ko, av, ru, ca, um, dr)
 - **Self-Healing** - Lyapunov stability (mathematically proven)
 
-### Test Coverage
+### Test Coverage (Latest Local Run: Feb 2, 2026)
 ```
-TypeScript Tests:  709 passing, 1 skipped
-Test Tiers:        L1-L6 (smoke to adversarial)
-Test Files:        48 files
+TypeScript (Vitest): 1303 passed, 6 skipped
+Python (pytest):     1131 passed, 59 skipped, 38 xfailed, 3 xpassed
 ```
+
+Notes:
+- Cross-language parity tests in Vitest were skipped when Python was not on PATH.
+- PQC-related tests may skip when optional backends are unavailable.
 
 ### Documentation (106 files)
 - Mathematical proofs
@@ -133,14 +136,15 @@ Total:          $0.0003/agent/month
 ## File Structure
 
 ```
-scbe-aethermoore-demo/
-├── src/                    # Source code
+SCBE-AETHERMOORE/
+├── api/                    # FastAPI gateway
+├── src/                    # TypeScript core
 │   ├── harmonic/          # Hyperbolic geometry, scaling
 │   ├── spiralverse/       # RWP envelopes
 │   ├── spectral/          # FFT, coherence
 │   ├── symphonic/         # Symphonic cipher
 │   ├── crypto/            # Cryptographic primitives
-│   └── spaceTor/          # Trust manager, combat network
+│   └── network/           # Trust manager, combat network
 ├── tests/                  # Test suites
 │   ├── L1-basic/          # Smoke tests
 │   ├── L2-unit/           # Unit tests
