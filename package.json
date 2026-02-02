@@ -1,6 +1,6 @@
 {
   "name": "scbe-aethermoore",
-  "version": "3.0.0",
+  "version": "3.2.4",
   "description": "SCBE-AETHERMOORE: Hyperbolic Geometry-Based Security with 14-Layer Architecture",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "license": "MIT",
@@ -32,12 +32,27 @@
       "types": "./dist/src/spiralverse/index.d.ts",
       "import": "./dist/src/spiralverse/index.js",
       "require": "./dist/src/spiralverse/index.js"
+    },
+    "./tokenizer": {
+      "types": "./dist/src/tokenizer/index.d.ts",
+      "import": "./dist/src/tokenizer/index.js",
+      "require": "./dist/src/tokenizer/index.js"
+    },
+    "./phdm": {
+      "types": "./dist/src/harmonic/phdm.d.ts",
+      "import": "./dist/src/harmonic/phdm.js",
+      "require": "./dist/src/harmonic/phdm.js"
     }
   },
   "files": [
     "dist/src",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "sixtongues-cli-v1.0.0.zip",
+    "packages/sixtongues",
+    "scbe-cli.py",
+    "scbe.js",
+    "sixtongues-cli-v1.1.0.zip"
   ],
   "scripts": {
     "clean": "rimraf dist",
@@ -87,12 +102,8 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "dependencies": {
-    "@types/node": "^25.0.10",
-    "express": "^5.2.1"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
     "@types/node": "^22.0.0",
     "@vitest/coverage-v8": "^4.0.17",
@@ -110,6 +121,6 @@
     "esbuild": ">=0.25.0"
   },
   "bin": {
-    "scbe": "./scbe-cli.py"
+    "scbe": "scbe.js"
   }
 }

@@ -15,7 +15,7 @@
  * @module spiralverse
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.suggestPolicy = exports.getRequiredTongues = exports.checkPolicy = exports.verifyRoundtable = exports.signRoundtable = exports.clearNonceCache = void 0;
+exports.envelopeFromDict = exports.envelopeToDict = exports.rwpDecryptMessage = exports.rwpEncryptMessage = exports.TOKENIZER = exports.SacredTongueTokenizer = exports.RWPv3Protocol = exports.suggestPolicy = exports.getRequiredTongues = exports.checkPolicy = exports.verifyRoundtable = exports.signRoundtable = exports.clearNonceCache = void 0;
 const crypto_1 = require("crypto");
 // ============================================================================
 // Constants
@@ -242,9 +242,9 @@ function verifyRoundtable(envelope, keyring, options = {}) {
     // Check policy if specified
     if (options.policy) {
         const required = POLICY_REQUIREMENTS[options.policy];
-        const hasAllRequired = required.every(t => validTongues.includes(t));
+        const hasAllRequired = required.every((t) => validTongues.includes(t));
         if (!hasAllRequired) {
-            const missing = required.filter(t => !validTongues.includes(t));
+            const missing = required.filter((t) => !validTongues.includes(t));
             return {
                 valid: false,
                 validTongues,
@@ -284,7 +284,7 @@ exports.verifyRoundtable = verifyRoundtable;
  */
 function checkPolicy(tongues, policy) {
     const required = POLICY_REQUIREMENTS[policy];
-    return required.every(t => tongues.includes(t));
+    return required.every((t) => tongues.includes(t));
 }
 exports.checkPolicy = checkPolicy;
 /**
@@ -308,4 +308,15 @@ function suggestPolicy(action) {
     return ACTION_POLICIES[normalizedAction] ?? 'standard';
 }
 exports.suggestPolicy = suggestPolicy;
+// ============================================================================
+// RWP v3.0 Re-exports
+// ============================================================================
+var rwp_v3_js_1 = require("./rwp_v3.js");
+Object.defineProperty(exports, "RWPv3Protocol", { enumerable: true, get: function () { return rwp_v3_js_1.RWPv3Protocol; } });
+Object.defineProperty(exports, "SacredTongueTokenizer", { enumerable: true, get: function () { return rwp_v3_js_1.SacredTongueTokenizer; } });
+Object.defineProperty(exports, "TOKENIZER", { enumerable: true, get: function () { return rwp_v3_js_1.TOKENIZER; } });
+Object.defineProperty(exports, "rwpEncryptMessage", { enumerable: true, get: function () { return rwp_v3_js_1.rwpEncryptMessage; } });
+Object.defineProperty(exports, "rwpDecryptMessage", { enumerable: true, get: function () { return rwp_v3_js_1.rwpDecryptMessage; } });
+Object.defineProperty(exports, "envelopeToDict", { enumerable: true, get: function () { return rwp_v3_js_1.envelopeToDict; } });
+Object.defineProperty(exports, "envelopeFromDict", { enumerable: true, get: function () { return rwp_v3_js_1.envelopeFromDict; } });
 //# sourceMappingURL=index.js.map

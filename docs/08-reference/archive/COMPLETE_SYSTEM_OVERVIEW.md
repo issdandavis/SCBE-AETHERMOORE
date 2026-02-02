@@ -2,7 +2,7 @@
 
 **Version**: 1.0
 **Date**: January 17, 2026
-**Author**: Isaac Thorne / SpiralVerse OS
+**Author**: Issac Daniel Davis / SpiralVerse OS
 **Patent**: USPTO #63/961,403
 
 ---
@@ -559,6 +559,6 @@ The SCBE-AETHERMOORE system represents a **complete, production-ready framework*
 - v0.9 (2026-01-13): Mathematical proofs completed
 - v0.5 (2026-01-09): Core implementation
 
-**Authors**: Isaac Thorne / SpiralVerse OS
+**Authors**: Issac Daniel Davis / SpiralVerse OS
 **License**: See LICENSE file
 **Patent**: USPTO #63/961,403

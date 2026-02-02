@@ -11,11 +11,14 @@
  * - CombatNetwork: Multipath routing with path health monitoring
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CombatNetwork = exports.HybridSpaceCrypto = exports.SpaceTorRouter = void 0;
+exports.computeContactGraph = exports.ContactGraph = exports.CombatNetwork = exports.HybridSpaceCrypto = exports.SpaceTorRouter = void 0;
 var space_tor_router_js_1 = require("./space-tor-router.js");
 Object.defineProperty(exports, "SpaceTorRouter", { enumerable: true, get: function () { return space_tor_router_js_1.SpaceTorRouter; } });
 var hybrid_crypto_js_1 = require("./hybrid-crypto.js");
 Object.defineProperty(exports, "HybridSpaceCrypto", { enumerable: true, get: function () { return hybrid_crypto_js_1.HybridSpaceCrypto; } });
 var combat_network_js_1 = require("./combat-network.js");
 Object.defineProperty(exports, "CombatNetwork", { enumerable: true, get: function () { return combat_network_js_1.CombatNetwork; } });
+var contact_graph_js_1 = require("./contact-graph.js");
+Object.defineProperty(exports, "ContactGraph", { enumerable: true, get: function () { return contact_graph_js_1.ContactGraph; } });
+Object.defineProperty(exports, "computeContactGraph", { enumerable: true, get: function () { return contact_graph_js_1.computeContactGraph; } });
 //# sourceMappingURL=index.js.map

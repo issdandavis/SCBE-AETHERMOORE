@@ -1,5 +1,56 @@
 # SCBE Production Pack Changelog
 
+## [3.1.1] - 2026-02-01
+
+### Added
+- **Video-Security Integration Layer** (`src/video/security-integration.ts`)
+  - **Fractal Fingerprinting**: Generate unique visual identities from envelope AAD
+    - `generateFractalFingerprint(aad)` - Creates deterministic fractal signature
+    - `verifyFractalFingerprint(fp, aad)` - Validates fingerprint authenticity
+  - **Agent Trajectory Embedding**: Poincaré state tracking in FleetJob context
+    - `embedTrajectoryState(job, role, timestamp)` - Adds 6D hyperbolic state
+    - `extractJobTrajectory(jobs)` - Extracts trajectory from job history
+  - **Audit Reel Generation**: Lattice-watermarked video from envelope history
+    - `generateAuditReel(envelopes, config)` - Full video with chain of custody hash
+    - `streamAuditReelFrames(envelopes, config)` - Memory-efficient streaming
+  - **Visual Proof Verification**: Trajectory replay for governance verification
+    - `createVisualProof(jobs)` - Generate verifiable proof from job trajectory
+    - `verifyVisualProof(proof)` - Validate proof integrity (ball containment + hash)
+    - `renderVisualProof(proof, config)` - Render proof to video
+
+### Integration Points
+- Envelope AAD → Fractal fingerprint (session-unique visual identity)
+- FleetOrchestrator JobData → Poincaré trajectory state
+- Envelope history → Audit reel (governance visualization)
+- Sacred Tongue masks → Agent role mapping (captain→ko, security→dr, etc.)
+
+### Tests
+- 27 new tests in `tests/video/security-integration.test.ts`
+- Total test count: 1401 passing, 6 skipped
+
+---
+
+## [3.1.0] - 2026-01-31
+
+### Added
+- **SS1 Tokenizer Export**: Now available via `import { SS1Tokenizer } from 'scbe-aethermoore/tokenizer'`
+  - Phonetically-engineered Spell-Text encoding with Six Sacred Tongues
+  - Bijective byte-to-token mapping (O(1) encode/decode)
+  - Cross-tongue translation with attestation (`xlate()`)
+  - Stripe-mode blending for multi-domain data (`blend()`)
+- **PHDM Export**: Now available via `import { PHDM } from 'scbe-aethermoore/phdm'`
+  - 16 polyhedral cognitive nodes
+  - Hamiltonian path constraints with HMAC chaining
+  - Euler characteristic validation
+- **Quantum Lattice Integration**: SS1 tokens bound to ML-KEM-768 lattice points
+  - Dual-layer security (semantic + computational)
+  - Tongue-bound signatures for domain separation
+
+### Fixed
+- Package exports now include all submodules
+
+---
+
 ## [2026-01-26] - Fleet & AI Safety Integration
 
 ### Fleet Management

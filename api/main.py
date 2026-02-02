@@ -38,6 +38,17 @@ try:
 except ImportError:
     from persistence import get_persistence, SCBEPersistence
 
+# Import billing and key management routes
+try:
+    from api.billing.routes import router as billing_router
+    from api.billing.database import init_db
+    from api.keys.routes import router as keys_router
+    BILLING_AVAILABLE = True
+except ImportError:
+    BILLING_AVAILABLE = False
+    billing_router = None
+    keys_router = None
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -64,6 +75,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Initialize billing database and register routes
+if BILLING_AVAILABLE:
+    init_db()
+    app.include_router(billing_router)
+    app.include_router(keys_router)
+    logger.info("Billing and API key management routes registered")
 
 # API Key authentication
 API_KEY_HEADER = APIKeyHeader(name="SCBE_api_key", auto_error=False)
@@ -99,9 +117,10 @@ CONSENSUS_STORE: Dict[str, dict] = {}
 # =============================================================================
 
 class Decision(str, Enum):
-    ALLOW = "ALLOW"
-    DENY = "DENY"
-    QUARANTINE = "QUARANTINE"
+    ALLOW = "ALLOW"         # Action permitted immediately
+    DENY = "DENY"           # Action blocked immediately
+    QUARANTINE = "QUARANTINE"  # Temporary hold - isolate and monitor
+    ESCALATE = "ESCALATE"   # Escalate to higher AI, then human if AIs disagree
 
 
 class AuthorizeRequest(BaseModel):
@@ -266,13 +285,15 @@ def scbe_14_layer_pipeline(
     # Layer 14: Telemetry
     explanation["layers"]["L14"] = f"Logged at {time.time():.0f}"
 
-    # Decision thresholds
-    if final_score > 0.6:
-        decision = Decision.ALLOW
+    # Decision thresholds (4-tier system)
+    if final_score > 0.7:
+        decision = Decision.ALLOW       # High trust - proceed
+    elif final_score > 0.5:
+        decision = Decision.QUARANTINE  # Medium trust - isolate & monitor
     elif final_score > 0.3:
-        decision = Decision.QUARANTINE
+        decision = Decision.ESCALATE    # Low trust - needs higher AI review
     else:
-        decision = Decision.DENY
+        decision = Decision.DENY        # Very low trust - block
 
     explanation["trust_score"] = trust_score
     explanation["distance"] = round(distance, 3)
@@ -305,8 +326,12 @@ async def authorize(
     """
     Main governance decision endpoint.
 
-    Evaluates an agent's request through the 14-layer SCBE pipeline
-    and returns ALLOW, DENY, or QUARANTINE.
+    Evaluates an agent's request through the 14-layer SCBE pipeline.
+    Returns one of four decisions:
+    - ALLOW: Action permitted immediately
+    - QUARANTINE: Temporary hold - isolate and monitor
+    - ESCALATE: Swarm escalation to higher AI, then human
+    - DENY: Action blocked immediately
     """
     start_time = time.time()
 
@@ -485,8 +510,8 @@ async def request_consensus(
             sensitivity=0.5
         )
 
-        # ALLOW and QUARANTINE count as approval
-        is_approve = decision in (Decision.ALLOW, Decision.QUARANTINE)
+        # ALLOW counts as approval, ESCALATE triggers swarm review
+        is_approve = decision in (Decision.ALLOW, Decision.ESCALATE)
 
         if is_approve:
             approvals += 1
@@ -572,9 +597,11 @@ class MetricsResponse(BaseModel):
     total_decisions: int
     allow_count: int
     quarantine_count: int
+    escalate_count: int
     deny_count: int
     allow_rate: float
     quarantine_rate: float
+    escalate_rate: float
     deny_rate: float
     avg_trust_score: float
     firebase_connected: bool
@@ -595,7 +622,7 @@ async def get_metrics(tenant: str = Depends(verify_api_key)):
 
 class WebhookConfig(BaseModel):
     webhook_url: str
-    events: List[str] = ["decision_deny", "decision_quarantine", "trust_decline"]
+    events: List[str] = ["decision_deny", "decision_quarantine", "decision_escalate", "trust_decline"]
     min_severity: str = "medium"
 
 
@@ -684,7 +711,7 @@ async def get_alerts(
         alerts = []
         logs = persistence.get_audit_logs(limit=limit)
         for log in logs:
-            if log["decision"] in ["DENY", "QUARANTINE"]:
+            if log["decision"] in ["DENY", "QUARANTINE", "ESCALATE"]:
                 alerts.append({
                     "alert_id": f"alert-{log['audit_id']}",
                     "timestamp": log["timestamp"],
@@ -853,8 +880,9 @@ async def run_fleet_scenario(
     # Process all actions
     decisions = []
     allow_count = 0
-    deny_count = 0
     quarantine_count = 0
+    escalate_count = 0
+    deny_count = 0
     total_score = 0.0
 
     for action in scenario.actions:
@@ -876,10 +904,12 @@ async def run_fleet_scenario(
         # Track metrics
         if decision == Decision.ALLOW:
             allow_count += 1
-        elif decision == Decision.DENY:
-            deny_count += 1
-        else:
+        elif decision == Decision.QUARANTINE:
             quarantine_count += 1
+        elif decision == Decision.ESCALATE:
+            escalate_count += 1
+        else:
+            deny_count += 1
 
         total_score += score
 
@@ -906,8 +936,9 @@ async def run_fleet_scenario(
         "agents": len(scenario.agents),
         "actions": len(scenario.actions),
         "allow": allow_count,
-        "deny": deny_count,
         "quarantine": quarantine_count,
+        "escalate": escalate_count,
+        "deny": deny_count,
         "elapsed_ms": round(elapsed_ms, 2)
     }))
 
@@ -918,8 +949,9 @@ async def run_fleet_scenario(
         summary={
             "total_actions": len(scenario.actions),
             "allowed": allow_count,
-            "denied": deny_count,
-            "quarantined": quarantine_count
+            "quarantined": quarantine_count,
+            "escalated": escalate_count,
+            "denied": deny_count
         },
         decisions=decisions,
         metrics={
@@ -928,6 +960,198 @@ async def run_fleet_scenario(
             "elapsed_ms": round(elapsed_ms, 2)
         }
     )
+
+
+# =============================================================================
+# Roundtable Multi-Signature Governance (Six Sacred Tongues)
+# =============================================================================
+
+# Security tier configuration based on Sacred Tongues
+ROUNDTABLE_TIERS = {
+    1: {"tongues": ["KO"], "signatures": 1, "multiplier": 1.5, "name": "Single"},
+    2: {"tongues": ["KO", "RU"], "signatures": 2, "multiplier": 5.06, "name": "Dual"},
+    3: {"tongues": ["KO", "RU", "UM"], "signatures": 3, "multiplier": 38.4, "name": "Triple"},
+    4: {"tongues": ["KO", "RU", "UM", "CA"], "signatures": 4, "multiplier": 656, "name": "Quad"},
+    5: {"tongues": ["KO", "RU", "UM", "CA", "AV"], "signatures": 5, "multiplier": 14348, "name": "Quint"},
+    6: {"tongues": ["KO", "AV", "RU", "CA", "UM", "DR"], "signatures": 6, "multiplier": 518400, "name": "Full Roundtable"},
+}
+
+
+class RoundtableRequest(BaseModel):
+    action: str = Field(..., description="Action requiring multi-sig approval")
+    target: str = Field(..., description="Target resource")
+    tier: int = Field(..., ge=1, le=6, description="Security tier (1-6)")
+    signers: List[str] = Field(..., description="List of signer agent IDs")
+    context: Optional[Dict[str, Any]] = {}
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "action": "DEPLOY",
+                "target": "production-cluster",
+                "tier": 4,
+                "signers": ["admin-001", "security-002", "ops-003", "lead-004"],
+                "context": {"environment": "production"}
+            }
+        }
+
+
+class RoundtableVote(BaseModel):
+    signer_id: str
+    tongue: str
+    decision: str
+    score: float
+    signature: str
+
+
+class RoundtableResponse(BaseModel):
+    roundtable_id: str
+    tier: int
+    tier_name: str
+    required_signatures: int
+    collected_signatures: int
+    security_multiplier: float
+    status: str  # APPROVED, REJECTED, PENDING, ESCALATE_TO_HUMAN
+    tongues_used: List[str]
+    votes: List[RoundtableVote]
+    final_decision: str
+    timestamp: str
+
+
+@app.post("/v1/roundtable", response_model=RoundtableResponse, tags=["Governance"])
+async def roundtable_governance(
+    request: RoundtableRequest,
+    tenant: str = Depends(verify_api_key)
+):
+    """
+    Multi-signature governance using the Six Sacred Tongues protocol.
+
+    Security Tiers:
+    - Tier 1: Single (KO) - 1.5× - Basic coordination
+    - Tier 2: Dual (KO+RU) - 5.06× - Config changes
+    - Tier 3: Triple (KO+RU+UM) - 38.4× - Security ops
+    - Tier 4: Quad (KO+RU+UM+CA) - 656× - Deploy/delete
+    - Tier 5: Quint (5 tongues) - 14,348× - Infrastructure
+    - Tier 6: Full Roundtable (all 6) - 518,400× - Genesis ops
+    """
+    tier_config = ROUNDTABLE_TIERS[request.tier]
+    required_sigs = tier_config["signatures"]
+    tongues = tier_config["tongues"]
+
+    if len(request.signers) < required_sigs:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Tier {request.tier} requires {required_sigs} signers, got {len(request.signers)}"
+        )
+
+    roundtable_id = f"rt_{uuid.uuid4().hex[:12]}"
+    votes = []
+    approvals = 0
+    denials = 0
+    escalations = 0
+
+    # Collect votes from each signer using assigned tongue
+    for i, signer_id in enumerate(request.signers[:required_sigs]):
+        tongue = tongues[i % len(tongues)]
+
+        # Get signer's trust or default
+        if signer_id in AGENTS_STORE:
+            trust = AGENTS_STORE[signer_id]["trust_score"]
+        else:
+            trust = 0.5
+
+        # Run through 14-layer pipeline
+        # Lower tiers are more permissive, higher tiers are stricter
+        base_sensitivity = 0.1 + (request.tier * 0.05)  # Tier 1=0.15, Tier 6=0.4
+        decision, score, _ = scbe_14_layer_pipeline(
+            agent_id=signer_id,
+            action=request.action,
+            target=request.target,
+            trust_score=trust,
+            sensitivity=base_sensitivity
+        )
+
+        # Generate tongue-specific signature
+        sig_data = f"{roundtable_id}:{signer_id}:{tongue}:{decision.value}"
+        signature = hashlib.sha256(sig_data.encode()).hexdigest()[:16]
+
+        if decision == Decision.ALLOW:
+            approvals += 1
+        elif decision == Decision.DENY:
+            denials += 1
+        else:  # QUARANTINE or ESCALATE
+            escalations += 1
+
+        votes.append(RoundtableVote(
+            signer_id=signer_id,
+            tongue=tongue,
+            decision=decision.value,
+            score=round(score, 3),
+            signature=f"{tongue.lower()}:{signature}"
+        ))
+
+    # Determine final status
+    if approvals >= required_sigs:
+        status = "APPROVED"
+        final_decision = "ALLOW"
+    elif denials >= (required_sigs // 2) + 1:
+        status = "REJECTED"
+        final_decision = "DENY"
+    elif escalations > 0:
+        status = "ESCALATE_TO_HUMAN"
+        final_decision = "ESCALATE"
+    else:
+        status = "PENDING"
+        final_decision = "QUARANTINE"
+
+    logger.info(json.dumps({
+        "event": "roundtable_decision",
+        "roundtable_id": roundtable_id,
+        "tier": request.tier,
+        "status": status,
+        "approvals": approvals,
+        "denials": denials,
+        "escalations": escalations,
+        "multiplier": tier_config["multiplier"]
+    }))
+
+    return RoundtableResponse(
+        roundtable_id=roundtable_id,
+        tier=request.tier,
+        tier_name=tier_config["name"],
+        required_signatures=required_sigs,
+        collected_signatures=len(votes),
+        security_multiplier=tier_config["multiplier"],
+        status=status,
+        tongues_used=tongues[:len(votes)],
+        votes=votes,
+        final_decision=final_decision,
+        timestamp=datetime.utcnow().isoformat() + "Z"
+    )
+
+
+@app.get("/v1/roundtable/tiers", tags=["Governance"])
+async def get_roundtable_tiers():
+    """Get available Roundtable security tiers and their requirements."""
+    tiers = []
+    use_cases = {
+        1: "Basic coordination, status updates",
+        2: "State modifications, config changes",
+        3: "Security operations, key rotation",
+        4: "Irreversible ops (deploy, delete)",
+        5: "Critical infrastructure changes",
+        6: "Genesis-level operations, system reboot"
+    }
+    for tier_num, config in ROUNDTABLE_TIERS.items():
+        tiers.append({
+            "tier": tier_num,
+            "name": config["name"],
+            "tongues_required": config["tongues"],
+            "signatures_required": config["signatures"],
+            "security_multiplier": config["multiplier"],
+            "use_cases": use_cases[tier_num]
+        })
+    return {"tiers": tiers}
 
 
 # =============================================================================
