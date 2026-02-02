@@ -104,6 +104,16 @@ Layer 14:    Audio Axis (FFT telemetry)
 
 ```
 L(x,t) = Σ w_l exp(β_l · (d_l + sin(ω_l t + φ_l)))
+### Install (Node / TypeScript)
+
+```bash
+npm i scbe-aethermoore
+```
+
+### Install (Python)
+
+```bash
+pip install scbe-aethermoore
 ```
 
 **Six Sacred Tongues:**
@@ -169,6 +179,14 @@ print(f"L_f={L_f:.2f}, effective_dim={D_f:.2f}")
 ```bash
 python symphonic_cipher/scbe_aethermoore/axiom_grouped/benchmark_comparison.py
 ```
+# From npm (requires Python 3.x on PATH)
+npx scbe encode --tongue KO --text "hello" > spell.txt
+npx scbe decode --tongue KO --as-text --in spell.txt
+
+# Or run directly with Python
+# Encode/Decode (Sacred Tongues)
+python scbe-cli.py encode --tongue KO --text "hello" > spell.txt
+python scbe-cli.py decode --tongue KO --as-text --in spell.txt
 
 ### Running All Proofs
 
@@ -203,6 +221,18 @@ print(f'Decision: {result.decision.value}')
 print(f'Confidence: {result.confidence:.0%}')
 "
 ```
+## Capabilities
+
+- **14-layer hyperbolic pipeline** with risk-gated decisions (ALLOW / QUARANTINE / DENY)
+- **Sacred Tongues** tokenizer with 6x256 bijective encodings
+- **GeoSeal envelopes** and RWP protocol for tamper-evident sealing
+- **Fleet governance** with weighted consensus and rogue detection
+- **Post-quantum hooks** (ML-KEM / ML-DSA integration points)
+- **Observability** via structured telemetry and benchmarks
+
+Full list in `docs/CAPABILITIES.md`.
+
+## Why SCBE?
 
 ---
 
@@ -245,6 +275,10 @@ cd api && python -m uvicorn main:app --host 0.0.0.0 --port 8000
 
 # 2. Run a fleet scenario (fraud detection example)
 curl -X POST http://localhost:8000/v1/fleet/run-scenario \
+# Start the API server
+SCBE_API_KEY=demo-key python -m uvicorn api.main:app --port 8000
+# Validate an action
+curl -X POST http://localhost:8000/v1/validate \
   -H "Content-Type: application/json" \
   -H "X-API-Key: your-key-here" \
   -d '{
@@ -360,6 +394,11 @@ Where:
 - **Compressor**: Piecewise-linear gain reduction with attack/release
 - **Convolution Reverb**: z[n] = (x * h)[n]
 - **Stereo Panning**: Constant-power law L/R distribution
+- [Getting Started Guide](docs/GETTING_STARTED.md)
+- [Technical Reference](docs/TECHNICAL_REFERENCE.md)
+- [API Reference](docs/API_REFERENCE.md)
+- [Architecture Deep Dive](docs/ARCHITECTURE.md)
+- [Capabilities](docs/CAPABILITIES.md)
 
 #### 7. RWP v3 Envelope (Section 7)
 
@@ -525,6 +564,29 @@ is_valid = Dilithium3.verify(sig_keys.public_key, b"message", signature)
 - Icosahedral Quasicrystals: Shechtman et al., 1984
 - Poincaré Ball Model: Hyperbolic Geometry
 - Möbius Addition: Gyrogroup Theory
+## Feedback, Support, and Links
+
+| Resource | Link |
+|----------|------|
+| **npm** | https://www.npmjs.com/package/scbe-aethermoore |
+| **Source** | https://github.com/issdandavis/SCBE-AETHERMOORE |
+| **Pitch Deck** | https://scbe-aethermoore-x8vu3ly.gamma.site/ |
+| **Demo** | https://scbe-aethermoore-issdandavis.streamlit.app |
+| **Issues** | https://github.com/issdandavis/SCBE-AETHERMOORE/issues |
+| **Email** | issdandavis@gmail.com |
+| **Sponsor** | https://github.com/sponsors/issdandavis |
+| **CLI Tool** | https://aethermoorgames.gumroad.com/l/dqncbs |
+| **Subscribe** | https://aethermoorgames.gumroad.com/subscribe |
+
+---
+
+<p align="center">
+  <strong>SCBE-AETHERMOORE</strong><br/>
+  Built for the age of autonomous AI.<br/><br/>
+  <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/stargazers">Star this repo</a> •
+  <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/issues">Report Issue</a> •
+  <a href="mailto:issdandavis@gmail.com">Contact</a>
+</p>
 
 ---
 
