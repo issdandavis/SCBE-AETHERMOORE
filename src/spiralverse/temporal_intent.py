@@ -4,7 +4,7 @@ Temporal-Intent Harmonic Scaling - H_eff(d,R,x) Extended Harmonic Wall
 
 Extends the Harmonic Scaling Law with temporal intent accumulation:
 
-    H_eff(d, R, x) = R^(d^2 * x)
+    H_eff(d, R, x) = R^(d^2 · x)
 
 Where:
     d = distance from safe operation (Poincare ball, Layer 5)
