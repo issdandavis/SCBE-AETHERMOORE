@@ -217,12 +217,26 @@ npm test && pytest
 
 ---
 
+## Feedback, Support, and Links
+
+| Resource | Link |
+|----------|------|
+| **npm** | https://www.npmjs.com/package/scbe-aethermoore |
+| **Source** | https://github.com/issdandavis/SCBE-AETHERMOORE |
+| **Pitch Deck** | https://gamma.app/docs/zadn2hz06fddofa |
+| **Demo** | https://scbe-aethermoore-issdandavis.streamlit.app |
+| **Issues** | https://github.com/issdandavis/SCBE-AETHERMOORE/issues |
+| **Email** | issdandavis@gmail.com |
+| **Sponsor** | https://github.com/sponsors/issdandavis |
+
+---
+
 <p align="center">
   <strong>SCBE-AETHERMOORE</strong><br/>
   Built for the age of autonomous AI.<br/><br/>
   <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/stargazers">Star this repo</a> •
   <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/issues">Report Issue</a> •
-  <a href="mailto:isaac@spiralverse.dev">Contact</a>
+  <a href="mailto:issdandavis@gmail.com">Contact</a>
 </p>
 
 ---
