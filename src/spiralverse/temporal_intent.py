@@ -1,29 +1,41 @@
 """
-Temporal Intent Scaling - H(d,R)^x Extended Harmonic Wall
-==========================================================
+Temporal-Intent Harmonic Scaling - H_eff(d,R,x) Extended Harmonic Wall
+======================================================================
 
 Extends the Harmonic Scaling Law with temporal intent accumulation:
 
-    H(d, R, x) = R^(d² · x)
+    H_eff(d, R, x) = R^(d^2 * x)
 
 Where:
-    d = distance from safe operation (Poincaré ball)
+    d = distance from safe operation (Poincare ball, Layer 5)
     R = harmonic ratio (1.5 = perfect fifth)
-    x = intent persistence factor (accumulated adversarial intent over time)
+    x = temporal intent factor derived from existing Layer 11 + CPSE channels
+
+The 'x' factor is NOT a new concept - it aggregates existing metrics:
+
+    x(t) = f(d_tri(t), chaosdev(t), fractaldev(t), energydev(t))
+
+Where:
+    d_tri(t)      = Triadic temporal distance (L11: immediate/medium/long-term)
+    chaosdev(t)   = Lyapunov-based chaos deviation (CPSE z-vector)
+    fractaldev(t) = Fractal dimension deviation
+    energydev(t)  = Energy channel deviation
 
 This makes security cost compound based on SUSTAINED adversarial behavior,
 not just instantaneous distance. Brief deviations are forgiven; persistent
-drift toward the boundary costs exponentially more over time.
+drift toward the boundary costs super-exponentially more over time.
 
 Integration with existing layers:
     - L5:  Hyperbolic distance provides 'd'
-    - L11: Triadic Temporal Distance tracks time
-    - L12: Harmonic Wall now uses H(d,R)^x instead of H(d,R)
+    - L11: Triadic Temporal Distance provides d_tri(t)
+    - L12: Harmonic Wall now uses H_eff(d,R,x) instead of H(d,R)
+    - CPSE: Chaos/fractal/energy deviation channels provide z_t
 
 From requirements.md AC-2.3.3:
-    Ω = pqc_valid × harm_score × (1 - drift_norm/drift_max) × triadic_stable × spectral_score
+    Omega = pqc_valid * harm_score * (1 - drift_norm/drift_max) * triadic_stable * spectral_score
 
-The 'x' factor integrates drift_norm accumulation over time windows.
+The 'x' factor integrates drift_norm accumulation over time windows, keeping
+everything axiom-safe with Layer 11 (Triadic Temporal) and CPSE z-vector tests.
 
 "Security IS growth. Intent over time reveals truth."
 """
@@ -73,19 +85,37 @@ class IntentState(Enum):
 
 @dataclass
 class IntentSample:
-    """Single sample of distance/intent at a point in time."""
+    """
+    Single sample of distance/intent at a point in time.
+
+    Integrates L5 (hyperbolic distance), L11 (triadic temporal), and CPSE z-vector.
+    """
     timestamp: float
-    distance: float  # d in Poincaré ball (0 to ~1)
-    velocity: float  # rate of change of distance
-    harmony: float   # CHARM value (-1 to 1)
+    distance: float        # d in Poincare ball (0 to ~1) from L5
+    velocity: float        # rate of change of distance
+    harmony: float         # CHARM value (-1 to 1)
+
+    # CPSE z-vector deviation channels
+    chaosdev: float = 0.0    # Lyapunov-based chaos deviation
+    fractaldev: float = 0.0  # Fractal dimension deviation
+    energydev: float = 0.0   # Energy channel deviation
+
+    # Triadic temporal components (L11)
+    d_tri_immediate: float = 0.0   # Immediate behavior
+    d_tri_medium: float = 0.0      # Medium-term pattern
+    d_tri_long: float = 0.0        # Long-term trajectory
+
+    @property
+    def d_tri(self) -> float:
+        """Triadic temporal distance (L11) - geometric mean of time scales."""
+        return (abs(self.d_tri_immediate) * abs(self.d_tri_medium) * abs(self.d_tri_long)) ** (1/3)
 
     @property
     def raw_intent(self) -> float:
         """
-        Calculate raw intent from this sample.
+        Calculate raw intent from this sample using existing L11 + CPSE metrics.
 
-        Positive velocity (moving toward boundary) + low harmony = high intent
-        Negative velocity (moving toward center) + high harmony = low intent
+        x(t) = f(d_tri(t), chaosdev(t), fractaldev(t), energydev(t))
         """
         # Velocity contribution (moving toward boundary is adversarial)
         velocity_factor = max(0, self.velocity) * 2.0
@@ -96,7 +126,16 @@ class IntentSample:
         # Harmony dampening (high harmony reduces intent score)
         harmony_dampening = (1 - self.harmony) / 2  # 0 to 1
 
-        return (velocity_factor + distance_factor) * (0.5 + harmony_dampening)
+        # CPSE deviation channels contribution
+        cpse_factor = (abs(self.chaosdev) + abs(self.fractaldev) + abs(self.energydev)) / 3
+
+        # Triadic temporal contribution (L11)
+        triadic_factor = self.d_tri
+
+        base_intent = (velocity_factor + distance_factor) * (0.5 + harmony_dampening)
+
+        # Amplify by CPSE deviations and triadic distance
+        return base_intent * (1.0 + cpse_factor + triadic_factor)
 
 
 @dataclass
