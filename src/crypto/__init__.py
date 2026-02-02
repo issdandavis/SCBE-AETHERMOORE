@@ -69,8 +69,9 @@ from .signed_lattice_bridge import (
     SignedLatticeBridge,
 )
 
-# Hyperbolic Octree (Sparse Voxel Storage)
+# Hyperbolic Octree (Sparse Voxel Storage + Spectral Clustering)
 from .octree import (
+    SpectralVoxel,
     OctreeNode,
     HyperbolicOctree,
 )
@@ -143,6 +144,7 @@ __all__ = [
     "SignedGovernanceResult",
     "SignedLatticeBridge",
     # === Hyperbolic Octree ===
+    "SpectralVoxel",
     "OctreeNode",
     "HyperbolicOctree",
     # === Hyperpath Finder ===
