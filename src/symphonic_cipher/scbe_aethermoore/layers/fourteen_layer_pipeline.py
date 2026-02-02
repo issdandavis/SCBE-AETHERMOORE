@@ -26,9 +26,26 @@ Core Theorems:
 
 import numpy as np
 from dataclasses import dataclass
-from typing import Tuple, List, Dict, Any
+from typing import Tuple, List, Dict, Any, Optional
 from enum import Enum
 import hashlib
+import sys
+import os
+
+# Add harmonic module path for temporal integration
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+
+try:
+    from harmonic.temporal_bridge import TemporalPipelineBridge, get_bridge
+    from harmonic.temporal_intent_scaling import (
+        harmonic_scale_effective,
+        assess_risk_temporal,
+        TemporalIntentState,
+        DeviationChannels,
+    )
+    TEMPORAL_AVAILABLE = True
+except ImportError:
+    TEMPORAL_AVAILABLE = False
 
 
 # =============================================================================
@@ -845,6 +862,112 @@ class FourteenLayerPipeline:
             PipelineState(layer=layer, name=name, value=value, metrics=metrics)
         )
 
+    def process_with_temporal(
+        self,
+        agent_id: str,
+        # Layer 1 inputs (context)
+        identity: float,
+        intent: complex,
+        trajectory: float,
+        timing: float,
+        commitment: float,
+        signature: float,
+        # Temporal inputs
+        t: float,
+        tau: float,
+        eta: float,
+        q: complex,
+        # Reference state for comparison
+        ref_u: np.ndarray = None,
+        ref_tau: float = 0.0,
+        ref_eta: float = 4.0,
+        ref_q: complex = 1 + 0j,
+        # Phase transform parameters
+        phase_angle: float = 0.0,
+        translation: np.ndarray = None,
+        # Optional deviation channels
+        deviation_channels: "DeviationChannels" = None,
+    ) -> Tuple[RiskAssessment, List[PipelineState], Dict[str, Any]]:
+        """
+        Run the 14-layer pipeline with temporal intent awareness.
+
+        This enhanced version uses the temporal bridge to:
+        - Track agent behavior across requests
+        - Apply forgiveness for brief spikes (x < 1)
+        - Apply compounding for sustained adversarial behavior (x > 1)
+        - Adjust thresholds based on reputation
+
+        Requires harmonic.temporal_bridge module.
+
+        Returns: (risk_assessment, layer_states, temporal_info)
+        """
+        if not TEMPORAL_AVAILABLE:
+            # Fall back to standard processing
+            risk, states = self.process(
+                identity=identity, intent=intent, trajectory=trajectory,
+                timing=timing, commitment=commitment, signature=signature,
+                t=t, tau=tau, eta=eta, q=q,
+                ref_u=ref_u, ref_tau=ref_tau, ref_eta=ref_eta, ref_q=ref_q,
+                phase_angle=phase_angle, translation=translation,
+            )
+            return risk, states, {"temporal_available": False}
+
+        # Get or create bridge for this agent
+        bridge = get_bridge(agent_id, R=self.R)
+
+        # Run standard pipeline to get d_star
+        risk, states = self.process(
+            identity=identity, intent=intent, trajectory=trajectory,
+            timing=timing, commitment=commitment, signature=signature,
+            t=t, tau=tau, eta=eta, q=q,
+            ref_u=ref_u, ref_tau=ref_tau, ref_eta=ref_eta, ref_q=ref_q,
+            phase_angle=phase_angle, translation=translation,
+        )
+
+        # Extract d_star from Layer 8
+        d_star = None
+        for state in states:
+            if state.layer == 8:
+                d_star = state.metrics.get("d_star", state.value)
+                break
+
+        if d_star is None:
+            d_star = 0.5  # Default
+
+        # Update temporal state
+        is_adversarial = risk.level in [RiskLevel.HIGH, RiskLevel.CRITICAL]
+        bridge.update_state(d_star, deviation_channels, is_adversarial)
+
+        # Get temporal-enhanced Layer 12 and 13
+        H_eff, x = bridge.process_layer12(d_star)
+        temporal_assessment = bridge.process_layer13(d_star)
+
+        # Create temporal info dict
+        temporal_info = {
+            "temporal_available": True,
+            "agent_id": agent_id,
+            "H_basic": risk.raw_risk,
+            "H_effective": H_eff,
+            "x_factor": x,
+            "temporal_decision": temporal_assessment.risk_level,
+            "temporal_reasoning": temporal_assessment.reasoning,
+            "forgiveness_applied": temporal_assessment.forgiveness_applied,
+            "compounding_applied": temporal_assessment.compounding_applied,
+            "reputation": bridge.get_reputation(),
+            "total_requests": bridge.profile.total_requests,
+        }
+
+        # Update Layer 12 and 13 states with temporal info
+        for state in states:
+            if state.layer == 12:
+                state.metrics["H_effective"] = H_eff
+                state.metrics["x_factor"] = x
+            elif state.layer == 13:
+                state.metrics["temporal_decision"] = temporal_assessment.risk_level
+                state.metrics["reputation"] = bridge.get_reputation()
+
+        return risk, states, temporal_info
+
 
 # =============================================================================
 # THEOREM VERIFICATION
@@ -1084,6 +1207,23 @@ def demo():
         q=0.99 + 0.1j,
     )
 
+    # Also demonstrate temporal processing if available
+    temporal_info = None
+    if TEMPORAL_AVAILABLE:
+        _, _, temporal_info = pipeline.process_with_temporal(
+            agent_id="demo-agent",
+            identity=1.5,
+            intent=0.7 + 0.3j,
+            trajectory=0.95,
+            timing=1000.0,
+            commitment=0.88,
+            signature=0.92,
+            t=10.0,
+            tau=1.0,
+            eta=4.0,
+            q=0.99 + 0.1j,
+        )
+
     print("Layer-by-Layer Processing:")
     print("-" * 70)
     for state in states:
@@ -1103,6 +1243,21 @@ def demo():
     print(f"  Coherence:    {risk.coherence:.4f}")
     print(f"  Decision:     {risk.decision}")
     print()
+
+    # Show temporal info if available
+    if temporal_info and temporal_info.get("temporal_available"):
+        print("Temporal Intent Analysis:")
+        print("-" * 70)
+        print(f"  Agent ID:         {temporal_info['agent_id']}")
+        print(f"  H_basic:          {temporal_info['H_basic']:.6f}")
+        print(f"  H_effective:      {temporal_info['H_effective']:.6f}")
+        print(f"  Temporal Factor:  x = {temporal_info['x_factor']:.4f}")
+        print(f"  Temporal Decision: {temporal_info['temporal_decision']}")
+        print(f"  Reasoning:        {temporal_info['temporal_reasoning']}")
+        print(f"  Forgiveness:      {temporal_info['forgiveness_applied']}")
+        print(f"  Compounding:      {temporal_info['compounding_applied']}")
+        print(f"  Reputation:       {temporal_info['reputation']:.4f}")
+        print()
 
     # Run theorem verification
     print("=" * 70)
