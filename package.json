@@ -102,8 +102,11 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "dependencies": {},
+  "dependencies": {
+    "express": "^4.21.0"
+  },
   "devDependencies": {
+    "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^22.0.0",
     "@vitest/coverage-v8": "^4.0.17",
