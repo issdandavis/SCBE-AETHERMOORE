@@ -1,6 +1,6 @@
 {
   "name": "scbe-aethermoore",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "description": "SCBE-AETHERMOORE: Hyperbolic Geometry-Based Security with 14-Layer Architecture",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "license": "MIT",
@@ -120,6 +120,6 @@
     "esbuild": ">=0.25.0"
   },
   "bin": {
-    "scbe": "./bin/scbe.js"
+    "scbe": "./bin/scbe"
   }
 }
