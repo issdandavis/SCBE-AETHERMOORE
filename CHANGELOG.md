@@ -1,5 +1,11 @@
 # SCBE Production Pack Changelog
 
+## [Unreleased]
+
+### Documentation
+- Clarified **Temporal-Intent Harmonic Scaling** notation to `H_eff(d, R, x) = R^(d^2) * x` and linked it to L11 triadic temporal distance + CPSE deviation channels.
+- Updated legacy master reference to align the core 14-layer stack and source index with in-repo canonical docs.
+
 ## [3.2.0] - 2026-02-02
 
 ### Added
