@@ -53,6 +53,14 @@ Safe Center (low cost) ───────► Boundary (infinite cost)
 
 ## Quick Start
 
+### Install (Node / TypeScript)
+
+```bash
+npm i scbe-aethermoore
+```
+
+### Install (Python)
+
 ```bash
 pip install scbe-aethermoore
 ```
@@ -75,6 +83,11 @@ print(result.explanation)  # Human-readable reason
 ## CLI Quick Start (Six Tongues + GeoSeal)
 
 ```bash
+# From npm (requires Python 3.x on PATH)
+npx scbe encode --tongue KO --text "hello" > spell.txt
+npx scbe decode --tongue KO --as-text --in spell.txt
+
+# Or run directly with Python
 # Encode/Decode (Sacred Tongues)
 python scbe-cli.py encode --tongue KO --text "hello" > spell.txt
 python scbe-cli.py decode --tongue KO --as-text --in spell.txt
@@ -93,6 +106,17 @@ python scbe-cli.py geoseal-decrypt --as-text --in envelope.json
 # Self-test
 python scbe-cli.py selftest
 ```
+
+## Capabilities
+
+- **14-layer hyperbolic pipeline** with risk-gated decisions (ALLOW / QUARANTINE / DENY)
+- **Sacred Tongues** tokenizer with 6x256 bijective encodings
+- **GeoSeal envelopes** and RWP protocol for tamper-evident sealing
+- **Fleet governance** with weighted consensus and rogue detection
+- **Post-quantum hooks** (ML-KEM / ML-DSA integration points)
+- **Observability** via structured telemetry and benchmarks
+
+Full list in `docs/CAPABILITIES.md`.
 
 ## Why SCBE?
 
@@ -137,7 +161,7 @@ Classified system access control with post-quantum cryptography.
 
 ```bash
 # Start the API server
-scbe-api --port 8000
+SCBE_API_KEY=demo-key python -m uvicorn api.main:app --port 8000
 # Validate an action
 curl -X POST http://localhost:8000/v1/validate \
   -H "Content-Type: application/json" \
@@ -194,6 +218,7 @@ Layer 14:    Audit telemetry
 - [Technical Reference](docs/TECHNICAL_REFERENCE.md)
 - [API Reference](docs/API_REFERENCE.md)
 - [Architecture Deep Dive](docs/ARCHITECTURE.md)
+- [Capabilities](docs/CAPABILITIES.md)
 
 ## Contributing
 
