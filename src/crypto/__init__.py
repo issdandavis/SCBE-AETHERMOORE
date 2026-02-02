@@ -1,42 +1,53 @@
 """
-SCBE-AETHERMOORE Cryptographic Module
-=====================================
-Post-quantum cryptography with NIST FIPS 203/204 compliance.
+SCBE Cryptographic Primitives
+=============================
 
-Exports:
-- MLKEM768: ML-KEM-768 key encapsulation (FIPS 203)
-- MLDSA65: ML-DSA-65 digital signatures (FIPS 204)
-- RWPv3Protocol: Real World Protocol v3.0 encryption
-- SacredTongueTokenizer: Six Sacred Tongues encoding
+Post-quantum cryptography integrated with Sacred Tongues.
+
+Modules:
+- dual_lattice: Kyber/Dilithium cross-stitch with 10D tongue lattice
 """
 
-from .pqc_liboqs import (
-    MLKEM768,
-    MLDSA65,
-    MLKEMKeyPair,
-    MLDSAKeyPair,
-    is_liboqs_available,
-    get_pqc_backend,
-    create_dual_lattice_keys,
-    compute_consensus_hash,
-)
-
-from .sacred_tongues import (
-    SACRED_TONGUE_TOKENIZER,
-    SECTION_TONGUES,
+from .dual_lattice import (
+    # Core types
+    SacredTongue,
+    FluxState,
+    LatticeVector,
+    TongueContext,
+    # Pattern generators
+    CrossStitchPattern,
+    # Cryptographic layers
+    KyberTongueEncryptor,
+    DilithiumTongueSigner,
+    # Complete system
+    DualLatticeCrossStitch,
+    # Governance integration
+    TongueLatticeGovernor,
+    # Constants
+    TONGUE_PHASES,
+    TONGUE_WEIGHTS,
+    PHI,
 )
 
 __all__ = [
-    # PQC primitives
-    "MLKEM768",
-    "MLDSA65",
-    "MLKEMKeyPair",
-    "MLDSAKeyPair",
-    "is_liboqs_available",
-    "get_pqc_backend",
-    "create_dual_lattice_keys",
-    "compute_consensus_hash",
-    # Sacred Tongues
-    "SACRED_TONGUE_TOKENIZER",
-    "SECTION_TONGUES",
+    # Core types
+    "SacredTongue",
+    "FluxState",
+    "LatticeVector",
+    "TongueContext",
+    # Pattern generators
+    "CrossStitchPattern",
+    # Cryptographic layers
+    "KyberTongueEncryptor",
+    "DilithiumTongueSigner",
+    # Complete system
+    "DualLatticeCrossStitch",
+    # Governance integration
+    "TongueLatticeGovernor",
+    # Constants
+    "TONGUE_PHASES",
+    "TONGUE_WEIGHTS",
+    "PHI",
 ]
+
+__version__ = "1.0.0"
