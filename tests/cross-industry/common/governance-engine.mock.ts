@@ -163,7 +163,10 @@ export class GovernanceEngine {
     });
 
     // Layer 8: Realm Distance - Check proximity to trusted realms
-    const { minDistance, closestRealm, isAllowed } = this.layer8RealmDistance(poincare, action);
+    const { minDistance, closestRealm, isAllowed } = this.layer8RealmDistance(
+      poincare,
+      action
+    );
     layerResults.push({
       layer: 8,
       name: LAYER_NAMES[7],
@@ -184,12 +187,7 @@ export class GovernanceEngine {
     });
 
     if (spectralAnomaly && envelope.ciphertext !== envelope.tag) {
-      return this.buildResult(
-        'DENY',
-        'Data tampering: Spectral anomaly detected',
-        0.92,
-        layerResults
-      );
+      return this.buildResult('DENY', 'Data tampering: Spectral anomaly detected', 0.92, layerResults);
     }
 
     // Layer 10: Spin Coherence - Phase alignment
@@ -217,7 +215,11 @@ export class GovernanceEngine {
     }
 
     // Layer 12: Harmonic Scaling - Risk amplification
-    const riskScore = this.layer12HarmonicScaling(hypDist, minDistance, context.entropyDelta);
+    const riskScore = this.layer12HarmonicScaling(
+      hypDist,
+      minDistance,
+      context.entropyDelta
+    );
     layerResults.push({
       layer: 12,
       name: LAYER_NAMES[11],
@@ -226,7 +228,12 @@ export class GovernanceEngine {
     });
 
     // Layer 13: Risk Decision
-    const { decision, reason } = this.layer13RiskDecision(riskScore, closestRealm, context, action);
+    const { decision, reason } = this.layer13RiskDecision(
+      riskScore,
+      closestRealm,
+      context,
+      action
+    );
     layerResults.push({
       layer: 13,
       name: LAYER_NAMES[12],
@@ -260,10 +267,7 @@ export class GovernanceEngine {
   }
 
   private layer2Realification(complex: { magnitude: number; phase: number }): number[] {
-    return [
-      complex.magnitude * Math.cos(complex.phase),
-      complex.magnitude * Math.sin(complex.phase),
-    ];
+    return [complex.magnitude * Math.cos(complex.phase), complex.magnitude * Math.sin(complex.phase)];
   }
 
   private layer3WeightedTransform(vector: number[]): { vector: number[]; weight: number } {
@@ -296,7 +300,10 @@ export class GovernanceEngine {
     return Math.acosh(1 + delta);
   }
 
-  private layer6BreathingTransform(context: Context9D, envelope: Partial<SealedEnvelope>): number {
+  private layer6BreathingTransform(
+    context: Context9D,
+    envelope: Partial<SealedEnvelope>
+  ): number {
     // Check temporal consistency
     const now = Date.now();
     const age = now - context.timestamp;
@@ -361,7 +368,10 @@ export class GovernanceEngine {
     return { minDistance, closestRealm, isAllowed };
   }
 
-  private layer9SpectralCoherence(context: Context9D, envelope: Partial<SealedEnvelope>): number {
+  private layer9SpectralCoherence(
+    context: Context9D,
+    envelope: Partial<SealedEnvelope>
+  ): number {
     // Simplified spectral coherence check
     // Real implementation uses FFT on trajectory data
 
@@ -418,7 +428,7 @@ export class GovernanceEngine {
     const baseRisk = phiPowD * sigmoidR;
     const entropyBoost = 1 + Math.abs(entropyDelta);
 
-    return Math.min(1, (baseRisk * entropyBoost) / 10);
+    return Math.min(1, baseRisk * entropyBoost / 10);
   }
 
   private layer13RiskDecision(
@@ -446,10 +456,7 @@ export class GovernanceEngine {
         reason: `Elevated risk (${(riskScore * 100).toFixed(1)}%) - requires review`,
       };
     } else {
-      return {
-        decision: 'DENY',
-        reason: `High risk (${(riskScore * 100).toFixed(1)}%) exceeds threshold`,
-      };
+      return { decision: 'DENY', reason: `High risk (${(riskScore * 100).toFixed(1)}%) exceeds threshold` };
     }
   }
 

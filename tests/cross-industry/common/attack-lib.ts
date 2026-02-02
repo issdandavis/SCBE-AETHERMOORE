@@ -153,11 +153,17 @@ export function createTimeAttack(
 /**
  * Create an entropy injection attack
  */
-export function createEntropyAttack(originalContext: Context9D, entropyLevel: number): Context9D {
+export function createEntropyAttack(
+  originalContext: Context9D,
+  entropyLevel: number
+): Context9D {
   return {
     ...originalContext,
     entropyDelta: entropyLevel,
-    quantumState: [Math.cos(entropyLevel * Math.PI), Math.sin(entropyLevel * Math.PI)],
+    quantumState: [
+      Math.cos(entropyLevel * Math.PI),
+      Math.sin(entropyLevel * Math.PI),
+    ],
   };
 }
 

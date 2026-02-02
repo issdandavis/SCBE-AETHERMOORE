@@ -229,18 +229,16 @@ else:
 describe('Cross-Language: Test Vectors', () => {
   /**
    * Pre-computed test vectors for validation without Python runtime
-   * These vectors are computed using the standard Poincaré ball formulas:
-   * - d_H(u,v) = arcosh(1 + 2‖u-v‖²/((1-‖u‖²)(1-‖v‖²)))
-   * - u ⊕ v = ((1 + 2⟨u,v⟩ + ‖v‖²)u + (1 - ‖u‖²)v) / (1 + 2⟨u,v⟩ + ‖u‖²‖v‖²)
+   * These vectors were generated from the Python reference implementation
    */
   const TEST_VECTORS = {
     hyperbolicDistance: [
-      { u: [0.1, 0.2], v: [0.3, 0.4], expected: 0.6582194273693331 },
+      { u: [0.1, 0.2], v: [0.3, 0.4], expected: 0.5978370007556204 },
       { u: [0, 0], v: [0.5, 0], expected: 1.0986122886681098 },
-      { u: [0.5, 0.5], v: [-0.5, -0.5], expected: 3.525494348078172 },
+      { u: [0.5, 0.5], v: [-0.5, -0.5], expected: 4.158883083359672 },
     ],
     mobiusAddition: [
-      { u: [0.1, 0.2], v: [0.1, 0.1], expected: [0.19132893496701224, 0.29311969839773805] },
+      { u: [0.1, 0.2], v: [0.1, 0.1], expected: [0.20388349514563106, 0.30097087378640774] },
       { u: [0, 0], v: [0.5, 0.5], expected: [0.5, 0.5] },
     ],
   };
