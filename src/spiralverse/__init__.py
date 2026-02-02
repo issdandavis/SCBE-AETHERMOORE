@@ -102,6 +102,20 @@ from .rwp2_envelope import (
     EnvelopeFactory,
 )
 
+# === Temporal Intent Scaling ===
+from .temporal_intent import (
+    IntentState,
+    IntentSample,
+    IntentHistory,
+    TemporalSecurityGate,
+    harmonic_wall_basic,
+    harmonic_wall_temporal,
+    compare_scaling,
+    R_HARMONIC,
+    INTENT_DECAY_RATE,
+    MAX_INTENT_ACCUMULATION,
+)
+
 # === Aethercode Interpreter ===
 from .aethercode import (
     AetherVerse,
@@ -191,6 +205,18 @@ __all__ = [
     "SignatureEngine",
     "ReplayProtector",
     "EnvelopeFactory",
+
+    # === Temporal Intent Scaling ===
+    "IntentState",
+    "IntentSample",
+    "IntentHistory",
+    "TemporalSecurityGate",
+    "harmonic_wall_basic",
+    "harmonic_wall_temporal",
+    "compare_scaling",
+    "R_HARMONIC",
+    "INTENT_DECAY_RATE",
+    "MAX_INTENT_ACCUMULATION",
 
     # === Aethercode Interpreter ===
     "AetherVerse",

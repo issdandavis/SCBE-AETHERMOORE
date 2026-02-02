@@ -20,6 +20,7 @@ demos = [
     ("RWP2 Envelope", "src.spiralverse.rwp2_envelope"),
     ("Hive Memory", "src.spiralverse.hive_memory"),
     ("Aethercode Interpreter", "src.spiralverse.aethercode"),
+    ("Temporal Intent H(d,R)^x", "src.spiralverse.temporal_intent"),
 ]
 
 for name, module in demos:
