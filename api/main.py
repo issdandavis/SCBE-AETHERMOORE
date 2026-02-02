@@ -119,7 +119,7 @@ CONSENSUS_STORE: Dict[str, dict] = {}
 class Decision(str, Enum):
     ALLOW = "ALLOW"
     DENY = "DENY"
-    QUARANTINE = "QUARANTINE"
+    ESCALATE = "ESCALATE"  # Escalate to higher AI, then human if AIs disagree
 
 
 class AuthorizeRequest(BaseModel):
@@ -288,7 +288,7 @@ def scbe_14_layer_pipeline(
     if final_score > 0.6:
         decision = Decision.ALLOW
     elif final_score > 0.3:
-        decision = Decision.QUARANTINE
+        decision = Decision.ESCALATE  # Needs higher AI review
     else:
         decision = Decision.DENY
 
@@ -324,7 +324,7 @@ async def authorize(
     Main governance decision endpoint.
 
     Evaluates an agent's request through the 14-layer SCBE pipeline
-    and returns ALLOW, DENY, or QUARANTINE.
+    and returns ALLOW, DENY, or ESCALATE (swarm escalation).
     """
     start_time = time.time()
 
@@ -503,8 +503,8 @@ async def request_consensus(
             sensitivity=0.5
         )
 
-        # ALLOW and QUARANTINE count as approval
-        is_approve = decision in (Decision.ALLOW, Decision.QUARANTINE)
+        # ALLOW counts as approval, ESCALATE triggers swarm review
+        is_approve = decision in (Decision.ALLOW, Decision.ESCALATE)
 
         if is_approve:
             approvals += 1
@@ -589,10 +589,10 @@ async def health_check():
 class MetricsResponse(BaseModel):
     total_decisions: int
     allow_count: int
-    quarantine_count: int
+    escalate_count: int
     deny_count: int
     allow_rate: float
-    quarantine_rate: float
+    escalate_rate: float
     deny_rate: float
     avg_trust_score: float
     firebase_connected: bool
@@ -613,7 +613,7 @@ async def get_metrics(tenant: str = Depends(verify_api_key)):
 
 class WebhookConfig(BaseModel):
     webhook_url: str
-    events: List[str] = ["decision_deny", "decision_quarantine", "trust_decline"]
+    events: List[str] = ["decision_deny", "decision_escalate", "trust_decline"]
     min_severity: str = "medium"
 
 
@@ -702,7 +702,7 @@ async def get_alerts(
         alerts = []
         logs = persistence.get_audit_logs(limit=limit)
         for log in logs:
-            if log["decision"] in ["DENY", "QUARANTINE"]:
+            if log["decision"] in ["DENY", "ESCALATE"]:
                 alerts.append({
                     "alert_id": f"alert-{log['audit_id']}",
                     "timestamp": log["timestamp"],
@@ -872,7 +872,7 @@ async def run_fleet_scenario(
     decisions = []
     allow_count = 0
     deny_count = 0
-    quarantine_count = 0
+    escalate_count = 0
     total_score = 0.0
 
     for action in scenario.actions:
@@ -897,7 +897,7 @@ async def run_fleet_scenario(
         elif decision == Decision.DENY:
             deny_count += 1
         else:
-            quarantine_count += 1
+            escalate_count += 1
 
         total_score += score
 
@@ -925,7 +925,7 @@ async def run_fleet_scenario(
         "actions": len(scenario.actions),
         "allow": allow_count,
         "deny": deny_count,
-        "quarantine": quarantine_count,
+        "escalate": escalate_count,
         "elapsed_ms": round(elapsed_ms, 2)
     }))
 
@@ -937,7 +937,7 @@ async def run_fleet_scenario(
             "total_actions": len(scenario.actions),
             "allowed": allow_count,
             "denied": deny_count,
-            "quarantined": quarantine_count
+            "escalated": escalate_count
         },
         decisions=decisions,
         metrics={
