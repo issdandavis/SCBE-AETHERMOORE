@@ -75,7 +75,7 @@ Every module maps to specific layers - tag files with `@layer` comments:
 - **L9-10**: Spectral + spin coherence
 - **L11**: Triadic temporal distance
 - **L12**: Harmonic wall (risk amplification)
-- **L13**: Risk decision → ALLOW/QUARANTINE/DENY
+- **L13**: Risk decision → ALLOW/QUARANTINE/ESCALATE/DENY (4-tier swarm governance)
 - **L14**: Audio axis (FFT telemetry)
 
 ## Code Style
