@@ -6,6 +6,8 @@ Post-quantum cryptography integrated with Sacred Tongues.
 
 Modules:
 - dual_lattice: Kyber/Dilithium cross-stitch with 10D tongue lattice
+- octree: Hyperbolic octree voxel storage in Poincare ball
+- hyperpath_finder: A* and Bidirectional A* pathfinding in hyperbolic space
 """
 
 from .dual_lattice import (
@@ -29,6 +31,33 @@ from .dual_lattice import (
     PHI,
 )
 
+from .octree import (
+    # Core octree components
+    HyperbolicOctree,
+    OctreeNode,
+    Voxel,
+    # Hyperbolic math functions
+    poincare_distance,
+    weighted_poincare_distance,
+    mobius_addition,
+    geodesic_midpoint,
+    # Constants
+    POINCARE_RADIUS,
+    OCTANT_TONGUES,
+)
+
+from .hyperpath_finder import (
+    # Pathfinding
+    HyperpathFinder,
+    HyperpathResult,
+    PathNode,
+    # Cost functions
+    standard_cost,
+    trust_weighted_cost,
+    tongue_affinity_cost,
+    harmonic_wall_cost,
+)
+
 __all__ = [
     # Core types
     "SacredTongue",
@@ -48,6 +77,24 @@ __all__ = [
     "TONGUE_PHASES",
     "TONGUE_WEIGHTS",
     "PHI",
+    # Octree / Voxel Storage
+    "HyperbolicOctree",
+    "OctreeNode",
+    "Voxel",
+    "poincare_distance",
+    "weighted_poincare_distance",
+    "mobius_addition",
+    "geodesic_midpoint",
+    "POINCARE_RADIUS",
+    "OCTANT_TONGUES",
+    # Pathfinding
+    "HyperpathFinder",
+    "HyperpathResult",
+    "PathNode",
+    "standard_cost",
+    "trust_weighted_cost",
+    "tongue_affinity_cost",
+    "harmonic_wall_cost",
 ]
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
