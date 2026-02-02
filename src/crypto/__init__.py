@@ -90,6 +90,19 @@ from .hyperbolic_viz import (
     visualize_3d_voxels,
 )
 
+# Symphonic Waveform Export (Audio Synthesis)
+from .symphonic_waveform import (
+    SymphonicIntent,
+    HarmonicFingerprint,
+    position_to_intent,
+    hyperpath_to_intents,
+    hyperpath_to_waveform,
+    geodesic_to_waveform,
+    export_wav,
+    compute_harmonic_fingerprint,
+    RealTimeRenderer,
+)
+
 __all__ = [
     # === Dual Lattice ===
     "SacredTongue",
