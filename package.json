@@ -49,7 +49,9 @@
     "README.md",
     "LICENSE",
     "sixtongues-cli-v1.0.0.zip",
-    "packages/sixtongues"
+    "packages/sixtongues",
+    "bin",
+    "scbe-cli.py"
   ],
   "scripts": {
     "clean": "rimraf dist",
@@ -118,6 +120,6 @@
     "esbuild": ">=0.25.0"
   },
   "bin": {
-    "scbe": "./scbe-cli.py"
+    "scbe": "./bin/scbe.js"
   }
 }
