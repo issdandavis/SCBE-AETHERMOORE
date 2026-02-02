@@ -8,6 +8,7 @@ Modules:
 - dual_lattice: Kyber/Dilithium cross-stitch with 10D tongue lattice
 - octree: Hyperbolic octree voxel storage in Poincare ball
 - hyperpath_finder: A* and Bidirectional A* pathfinding in hyperbolic space
+- six_d_navigator: 6D vector navigation (Physical XYZ + Operational VHS)
 """
 
 from .dual_lattice import (
@@ -58,6 +59,28 @@ from .hyperpath_finder import (
     harmonic_wall_cost,
 )
 
+from .six_d_navigator import (
+    # 6D Types
+    Position6D,
+    PhysicalAxis,
+    OperationalAxis,
+    SacredTongue6D,
+    MessageComplexity,
+    PathResult6D,
+    DockingLock,
+    # Navigation
+    SixDNavigator,
+    CryptographicDocking,
+    # Functions
+    calculate_message_complexity,
+    encode_6d_message,
+    decode_6d_message,
+    calculate_bandwidth_savings,
+    get_tongue_from_6d,
+    # Constants
+    TONGUE_WEIGHTS_6D,
+)
+
 __all__ = [
     # Core types
     "SacredTongue",
@@ -87,7 +110,7 @@ __all__ = [
     "geodesic_midpoint",
     "POINCARE_RADIUS",
     "OCTANT_TONGUES",
-    # Pathfinding
+    # Pathfinding (3D)
     "HyperpathFinder",
     "HyperpathResult",
     "PathNode",
@@ -95,6 +118,22 @@ __all__ = [
     "trust_weighted_cost",
     "tongue_affinity_cost",
     "harmonic_wall_cost",
+    # 6D Navigation (Spiralverse)
+    "Position6D",
+    "PhysicalAxis",
+    "OperationalAxis",
+    "SacredTongue6D",
+    "MessageComplexity",
+    "PathResult6D",
+    "DockingLock",
+    "SixDNavigator",
+    "CryptographicDocking",
+    "calculate_message_complexity",
+    "encode_6d_message",
+    "decode_6d_message",
+    "calculate_bandwidth_savings",
+    "get_tongue_from_6d",
+    "TONGUE_WEIGHTS_6D",
 ]
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
