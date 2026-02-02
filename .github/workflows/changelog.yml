@@ -1,0 +1,69 @@
+name: Auto Changelog
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'CHANGELOG.md'
+      - '.github/workflows/changelog.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  changelog:
+    name: Generate Changelog
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install conventional-changelog
+        run: npm install -g conventional-changelog-cli
+
+      - name: Generate changelog
+        run: |
+          # Generate changelog from conventional commits
+          conventional-changelog -p conventionalcommits -i CHANGELOG.md -s -r 0
+
+          # Add header if file is new
+          if ! grep -q "# Changelog" CHANGELOG.md; then
+            cat > CHANGELOG.tmp.md << 'EOF'
+          # Changelog
+
+          All notable changes to SCBE-AETHERMOORE will be documented in this file.
+
+          The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+          and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+          EOF
+            cat CHANGELOG.md >> CHANGELOG.tmp.md
+            mv CHANGELOG.tmp.md CHANGELOG.md
+          fi
+
+      - name: Check for changes
+        id: check
+        run: |
+          if git diff --quiet CHANGELOG.md; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit changelog
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add CHANGELOG.md
+          git commit -m "docs(changelog): auto-update from conventional commits [skip ci]"
+          git push

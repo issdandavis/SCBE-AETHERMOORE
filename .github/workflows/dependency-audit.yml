@@ -1,0 +1,192 @@
+name: Weekly Dependency Audit
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'  # Every Monday at 9 AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  npm-audit:
+    name: npm Security Audit
+    runs-on: ubuntu-latest
+    outputs:
+      has_critical: ${{ steps.audit.outputs.has_critical }}
+      audit_report: ${{ steps.audit.outputs.report }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        id: audit
+        run: |
+          set +e
+          AUDIT_OUTPUT=$(npm audit --json 2>&1)
+          AUDIT_EXIT=$?
+          set -e
+
+          echo "$AUDIT_OUTPUT" > npm-audit.json
+
+          CRITICAL=$(echo "$AUDIT_OUTPUT" | jq '.metadata.vulnerabilities.critical // 0')
+          HIGH=$(echo "$AUDIT_OUTPUT" | jq '.metadata.vulnerabilities.high // 0')
+
+          echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+          echo "high=$HIGH" >> $GITHUB_OUTPUT
+
+          if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
+            echo "has_critical=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_critical=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Create summary
+          echo "## npm Audit Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Severity | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Critical | $CRITICAL |" >> $GITHUB_STEP_SUMMARY
+          echo "| High | $HIGH |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: npm-audit.json
+
+  pip-audit:
+    name: Python Security Audit
+    runs-on: ubuntu-latest
+    outputs:
+      has_critical: ${{ steps.audit.outputs.has_critical }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Install dependencies
+        run: |
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+
+      - name: Run pip-audit
+        id: audit
+        run: |
+          set +e
+          pip-audit --format json --output pip-audit.json 2>&1
+          AUDIT_EXIT=$?
+          set -e
+
+          if [ -f pip-audit.json ]; then
+            VULN_COUNT=$(jq 'length' pip-audit.json)
+          else
+            VULN_COUNT=0
+          fi
+
+          if [ "$VULN_COUNT" -gt 0 ]; then
+            echo "has_critical=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_critical=false" >> $GITHUB_OUTPUT
+          fi
+
+          echo "## pip-audit Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Vulnerabilities found: $VULN_COUNT" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pip-audit-report
+          path: pip-audit.json
+
+  create-issue:
+    name: Create Issue for Vulnerabilities
+    runs-on: ubuntu-latest
+    needs: [npm-audit, pip-audit]
+    if: needs.npm-audit.outputs.has_critical == 'true' || needs.pip-audit.outputs.has_critical == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download npm audit report
+        uses: actions/download-artifact@v4
+        with:
+          name: npm-audit-report
+          path: reports/
+
+      - name: Download pip audit report
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: pip-audit-report
+          path: reports/
+
+      - name: Create security issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            let npmReport = '';
+            let pipReport = '';
+
+            try {
+              const npmData = JSON.parse(fs.readFileSync('reports/npm-audit.json', 'utf8'));
+              const vulns = npmData.metadata?.vulnerabilities || {};
+              npmReport = `### npm Vulnerabilities\n- Critical: ${vulns.critical || 0}\n- High: ${vulns.high || 0}\n- Moderate: ${vulns.moderate || 0}\n- Low: ${vulns.low || 0}`;
+            } catch (e) {
+              npmReport = '### npm Vulnerabilities\nNo report available';
+            }
+
+            try {
+              const pipData = JSON.parse(fs.readFileSync('reports/pip-audit.json', 'utf8'));
+              pipReport = `### Python Vulnerabilities\nFound ${pipData.length} vulnerabilities`;
+            } catch (e) {
+              pipReport = '### Python Vulnerabilities\nNo vulnerabilities found';
+            }
+
+            const issueBody = `## Weekly Security Audit - ${new Date().toISOString().split('T')[0]}
+
+            This is an automated security audit report.
+
+            ${npmReport}
+
+            ${pipReport}
+
+            ### Action Required
+
+            1. Review the vulnerabilities above
+            2. Run \`npm audit fix\` for auto-fixable issues
+            3. Update dependencies manually for breaking changes
+            4. Run tests after updates: \`npm test\`
+
+            ### References
+            - [Workflow Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            `;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🔒 Security Audit: Vulnerabilities Found - ${new Date().toISOString().split('T')[0]}`,
+              body: issueBody,
+              labels: ['security', 'dependencies', 'automated']
+            });
