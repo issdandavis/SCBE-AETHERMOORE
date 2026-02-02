@@ -102,6 +102,22 @@ from .rwp2_envelope import (
     EnvelopeFactory,
 )
 
+# === Aethercode Interpreter ===
+from .aethercode import (
+    AetherVerse,
+    AetherProgram,
+    AetherContext,
+    AethercodeInterpreter,
+    ChantSynthesizer,
+    parse_verse,
+    parse_program,
+    TONGUE_FREQUENCIES,
+    TONGUE_DOMAINS,
+    HELLO_WORLD,
+    FIBONACCI,
+    FULL_DEMO,
+)
+
 __all__ = [
     # Version
     "__version__",
@@ -175,4 +191,18 @@ __all__ = [
     "SignatureEngine",
     "ReplayProtector",
     "EnvelopeFactory",
+
+    # === Aethercode Interpreter ===
+    "AetherVerse",
+    "AetherProgram",
+    "AetherContext",
+    "AethercodeInterpreter",
+    "ChantSynthesizer",
+    "parse_verse",
+    "parse_program",
+    "TONGUE_FREQUENCIES",
+    "TONGUE_DOMAINS",
+    "HELLO_WORLD",
+    "FIBONACCI",
+    "FULL_DEMO",
 ]
