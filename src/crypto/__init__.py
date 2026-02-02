@@ -69,6 +69,27 @@ from .signed_lattice_bridge import (
     SignedLatticeBridge,
 )
 
+# Hyperbolic Octree (Sparse Voxel Storage)
+from .octree import (
+    OctreeNode,
+    HyperbolicOctree,
+)
+
+# Hyperpath Finder (A* and Bidirectional A*)
+from .hyperpath_finder import (
+    HyperpathFinder,
+    PathResult,
+    hyperbolic_distance_safe,
+)
+
+# Visualization (Poincare Disk + 3D Voxels)
+from .hyperbolic_viz import (
+    classical_mds,
+    poincare_geodesic,
+    visualize_poincare_disk,
+    visualize_3d_voxels,
+)
+
 __all__ = [
     # === Dual Lattice ===
     "SacredTongue",
@@ -108,7 +129,19 @@ __all__ = [
     # === Signed Lattice Bridge ===
     "SignedGovernanceResult",
     "SignedLatticeBridge",
+    # === Hyperbolic Octree ===
+    "OctreeNode",
+    "HyperbolicOctree",
+    # === Hyperpath Finder ===
+    "HyperpathFinder",
+    "PathResult",
+    "hyperbolic_distance_safe",
+    # === Visualization ===
+    "classical_mds",
+    "poincare_geodesic",
+    "visualize_poincare_disk",
+    "visualize_3d_voxels",
 ]
 
-__version__ = "2.0.0"
+__version__ = "3.0.0"
 
