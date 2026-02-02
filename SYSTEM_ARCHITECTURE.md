@@ -84,7 +84,7 @@ H(d, R) = R^(d^2)   where R = 1.5 (Perfect Fifth)
 ### 3.3 Temporal-Intent Harmonic Scaling (Extended)
 
 ```
-H_eff(d, R, x) = R^(d^2) * x
+H_eff(d, R, x) = R^(d^2 * x)
 ```
 
 Where `x` is a **temporal intent factor** derived from:
@@ -106,7 +106,7 @@ x(t) = f(d_tri(t), chaosdev(t), fractaldev(t), energydev(t))
 
 This keeps everything axiom-safe with Layer 11 (Triadic Temporal) and CPSE z-vector tests.
 
-### 3.3 Hyperbolic Distance (Poincare Ball)
+### 3.4 Hyperbolic Distance (Poincare Ball)
 ```
 d_H(u,v) = arcosh(1 + 2||u-v||^2 / ((1-||u||^2)(1-||v||^2)))
 ```
