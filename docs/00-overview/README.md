@@ -12,6 +12,7 @@ Welcome to the official documentation for SCBE-AETHERMOORE, a quantum-resistant 
 |---------|-------------|
 | [Executive Summary](executive-summary.md) | High-level overview for decision makers |
 | [Getting Started](getting-started.md) | Installation and first steps |
+| [Research Validation](../RESEARCH_VALIDATION_2026.md) | 2025-2026 academic validation |
 | [Developer Guide (MMD)](scbe-developer-guide.mmd) | Full technical guide for export |
 | [Architecture](../01-architecture/README.md) | System design and components |
 | [Technical Reference](../02-technical/README.md) | Mathematical foundations and APIs |
@@ -106,6 +107,7 @@ python -m uvicorn api.main:app --host 0.0.0.0 --port 8080
 | Security Model | Complete | 2026-01 |
 | Industry Guides | Complete | 2026-01 |
 | Integration Templates | Complete | 2026-01 |
+| Research Validation | Complete | 2026-02 |
 
 ---
 

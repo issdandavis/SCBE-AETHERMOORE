@@ -514,17 +514,34 @@ is_valid = Dilithium3.verify(sig_keys.public_key, b"message", signature)
 
 ---
 
+## Research Validation (2025-2026)
+
+Recent academic research validates SCBE-AETHERMOORE's core architecture:
+
+| Component | Validation | Source |
+|-----------|------------|--------|
+| GeoSeal / Poincaré | SentinelAgent: 87-92% detection | arXiv 2505.24201 |
+| Harmonic Wall | Spectral regularization: +22pp F1 | arXiv 2405.17181 |
+| Sacred Tongues | NIST ML-KEM/ML-DSA standard | FIPS 203/204 |
+| Rogue Detection | Byzantine: 95% @ 30% compromised | arXiv 2601.17303 |
+
+See [docs/RESEARCH_VALIDATION_2026.md](docs/RESEARCH_VALIDATION_2026.md) for full analysis.
+
+---
+
 ## References
 
 - HMAC-SHA256: RFC 2104
 - Feistel Networks: Luby-Rackoff, 1988
 - Biquad Filters: Audio EQ Cookbook
 - MFCC: Davis & Mermelstein, 1980
-- Kyber: NIST PQC Round 3 Winner
-- Dilithium: NIST PQC Round 3 Winner
+- Kyber: NIST PQC Round 3 Winner (FIPS 203)
+- Dilithium: NIST PQC Round 3 Winner (FIPS 204)
 - Icosahedral Quasicrystals: Shechtman et al., 1984
 - Poincaré Ball Model: Hyperbolic Geometry
 - Möbius Addition: Gyrogroup Theory
+- SentinelAgent: arXiv 2505.24201 (2025)
+- Graph Layer Security: PMC9144707 (2022)
 
 ---
 
