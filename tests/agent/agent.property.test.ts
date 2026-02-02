@@ -140,6 +140,9 @@ describe('Poincaré Ball Properties', () => {
   });
 
   it('Property 5: Triangle inequality holds', () => {
+    // Use larger epsilon for triangle inequality due to accumulated floating-point
+    // errors from three hyperbolic distance calculations near the Poincaré boundary.
+    const TRIANGLE_EPS = 1e-7;
     fc.assert(
       fc.property(poincarePositionArb, poincarePositionArb, poincarePositionArb, (a, b, c) => {
         const ab = hyperbolicDistance(a, b);
@@ -147,7 +150,7 @@ describe('Poincaré Ball Properties', () => {
         const ac = hyperbolicDistance(a, c);
         // Triangle inequality: d(a,c) <= d(a,b) + d(b,c)
         // Allow a small epsilon for floating-point noise near the boundary.
-        expect(ac).toBeLessThanOrEqual(ab + bc + DIST_EPS);
+        expect(ac).toBeLessThanOrEqual(ab + bc + TRIANGLE_EPS);
         return true;
       }),
       { numRuns: 100 }
