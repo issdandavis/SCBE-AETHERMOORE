@@ -636,27 +636,99 @@ import {
 
 ## 12. Mathematical Foundations
 
-### 12.1 Poincaré Distance
+### 12.1 Poincaré Distance (Layer 5)
 
 $$d_H(x, y) = \text{arcosh}\left(1 + \frac{2\|x - y\|^2}{(1 - \|x\|^2)(1 - \|y\|^2)}\right)$$
 
-### 12.2 Harmonic Wall
+This feeds into: Layer 11 (Triadic Temporal), Layer 12 (Harmonic Wall)
 
-$$H(d) = \varphi^d = \left(\frac{1 + \sqrt{5}}{2}\right)^d$$
+### 12.2 Triadic Temporal Distance (Layer 11)
 
-### 12.3 6D Weighted Distance
+$$d_{tri}(t) = \sqrt{\lambda_1 d_1^2 + \lambda_2 d_2^2 + \lambda_3 d_3^2}$$
+
+Where:
+- $d_1$ = immediate behavior distance
+- $d_2$ = medium-term session behavior
+- $d_3$ = long-term historical pattern
+- $\lambda_1, \lambda_2, \lambda_3$ = weights (default: 0.4, 0.3, 0.3)
+
+This feeds into: Temporal Intent Factor $x(t)$
+
+### 12.3 CPSE Deviation Channels (z-vector)
+
+$$z(t) = (z_{chaos}, z_{fractal}, z_{energy})$$
+
+Where:
+- $z_{chaos}$ = Lyapunov-based chaos metric ∈ [0, 1]
+- $z_{fractal}$ = fractal dimension deviation ∈ [0, 1]
+- $z_{energy}$ = energy distribution deviation ∈ [0, 1]
+
+This feeds into: Temporal Intent Factor $x(t)$
+
+### 12.4 Temporal Intent Factor
+
+$$x(t) = f\big(d_{tri}(t), z_{chaos}(t), z_{fractal}(t), z_{energy}(t)\big)$$
+
+Properties:
+- $x < 1$: Brief spikes forgiven (reduced security cost)
+- $x = 1$: Instantaneous assessment (baseline)
+- $x > 1$: Sustained adversarial behavior compounds super-exponentially
+
+This feeds into: Effective Harmonic Scaling $H_{eff}$
+
+### 12.5 Temporal–Intent Harmonic Scaling (Layer 12) ⭐
+
+**Canonical Formula:**
+
+$$\boxed{H_{eff}(d, R, x) = R^{d^2} \cdot x}$$
+
+Where:
+- $d$ = deviation distance from safe operation (from Poincaré geometry)
+- $R$ = harmonic base (1.5 "Perfect Fifth" default)
+- $x$ = temporal intent factor (from 12.4)
+
+**Properties:**
+- Sustained adversarial behavior → $x > 1$ → super-exponential cost growth
+- Brief spikes with recovery → $x < 1$ → forgiveness applied
+- Axiom-safe with Layer 11 (Triadic Temporal) and CPSE z-vector tests
+
+**Implementation:** `src/harmonic/temporal_intent_scaling.py`
+
+### 12.6 Basic Harmonic Wall (Layer 12 Original)
+
+$$H(d, R) = R^{d^2}$$
+
+For $R = 1.5$, $d = 6$: $H = 1.5^{36} \approx 2.18 \times 10^6$
+
+This is the special case of $H_{eff}$ when $x = 1$.
+
+### 12.7 6D Weighted Distance (Spiralverse Navigation)
 
 $$D_6(p_1, p_2) = \sqrt{d_H^2(x_1, x_2) + \|\vec{o}_1 - \vec{o}_2\|^2}$$
 
 Where:
-- $d_H$ is Poincaré distance for physical axes
-- $\vec{o}$ is operational vector (oracle, charm, ledger)
+- $d_H$ is Poincaré distance for physical axes (AXIOM, FLOW, GLYPH)
+- $\vec{o}$ is operational vector (ORACLE, CHARM, LEDGER)
 
-### 12.4 Bandwidth Savings
+This feeds into: Message complexity calculation, pathfinding costs
+
+### 12.8 Bandwidth Savings
 
 $$\text{Savings} = 1 - \frac{C(d)}{6}$$
 
-Where $C(d) \in \{1, 2, 3, 4, 5, 6\}$ is message complexity.
+Where $C(d) \in \{1, 2, 3, 4, 5, 6\}$ is message complexity based on 6D distance.
+
+### 12.9 Mathematical Dependency Graph
+
+```
+Poincaré Distance d_H ──┬──▶ Triadic Temporal d_tri ──┬──▶ Intent Factor x ──▶ H_eff
+                        │                              │
+                        │   CPSE z-vector ─────────────┘
+                        │
+                        └──▶ 6D Distance D_6 ──▶ Message Complexity C(d) ──▶ Bandwidth
+```
+
+All changes to upstream metrics propagate through to $H_{eff}(d, R, x)$.
 
 ---
 
