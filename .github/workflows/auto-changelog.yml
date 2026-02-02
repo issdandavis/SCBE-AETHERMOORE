@@ -65,8 +65,13 @@ jobs:
 
       - name: Update CHANGELOG
         run: |
-          ENTRY="${{ steps.categorize.outputs.emoji }} ${{ steps.commit_info.outputs.msg }} (\`${{ steps.commit_info.outputs.sha }}\`)"
           DATE="${{ steps.commit_info.outputs.date }}"
+
+          # Build entry safely - avoid sed interpolation issues with special chars
+          EMOJI="${{ steps.categorize.outputs.emoji }}"
+          MSG="${{ steps.commit_info.outputs.msg }}"
+          SHA="${{ steps.commit_info.outputs.sha }}"
+          ENTRY="$EMOJI $MSG (\`$SHA\`)"
 
           if [ ! -f CHANGELOG.md ]; then
             echo "# Changelog" > CHANGELOG.md
@@ -75,13 +80,19 @@ jobs:
             echo "" >> CHANGELOG.md
           fi
 
-          # Add entry under today's date
+          # Use awk for safe text insertion (handles special characters properly)
           if grep -q "## \[$DATE\]" CHANGELOG.md; then
-            # Date exists, add under appropriate category
-            sed -i "/## \[$DATE\]/a\\- $ENTRY" CHANGELOG.md
+            # Date section exists - insert entry after the date header
+            awk -v date="## [$DATE]" -v entry="- $ENTRY" '
+              $0 == date { print; print entry; next }
+              { print }
+            ' CHANGELOG.md > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
           else
-            # New date section
-            sed -i "/# Changelog/a\\\n## [$DATE]\n\n- $ENTRY\n" CHANGELOG.md
+            # Create new date section after "# Changelog" header
+            awk -v date="## [$DATE]" -v entry="- $ENTRY" '
+              /^# Changelog/ { print; print ""; print date; print ""; print entry; print ""; next }
+              { print }
+            ' CHANGELOG.md > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
           fi
 
       - name: Commit changelog
