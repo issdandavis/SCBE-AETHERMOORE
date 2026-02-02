@@ -173,6 +173,18 @@ Layer 14:    Audit telemetry
 - [Technical Reference](docs/TECHNICAL_REFERENCE.md)
 - [API Reference](docs/API_REFERENCE.md)
 - [Architecture Deep Dive](docs/ARCHITECTURE.md)
+- [Interactive Demo](https://scbe-aethermoore-x8vu3ly.gamma.site/)
+
+## Feedback & Support
+
+Using SCBE-AETHERMOORE? I'd love to hear how it's working for you!
+
+- **Report bugs or request features**: [GitHub Issues](https://github.com/issdandavis/SCBE-AETHERMOORE/issues)
+- **Questions & discussions**: [GitHub Discussions](https://github.com/issdandavis/SCBE-AETHERMOORE/discussions)
+- **Direct contact**: issdandavis@gmail.com
+- **Commercial licensing**: [Enterprise inquiry](mailto:isaac@spiralverse.dev?subject=SCBE%20Enterprise%20Inquiry)
+
+Your feedback shapes the roadmap - whether it's a bug report, feature request, or just telling me how you're using it in your project.
 
 ## Contributing
 
