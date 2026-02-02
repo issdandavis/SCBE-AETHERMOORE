@@ -29,6 +29,14 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from .ledger import Ledger, LedgerEntry, EntryType
 
+# Try to import dual lattice governor (optional but recommended)
+try:
+    from src.crypto.dual_lattice import TongueLatticeGovernor, SacredTongue
+    DUAL_LATTICE_AVAILABLE = True
+except ImportError:
+    DUAL_LATTICE_AVAILABLE = False
+    TongueLatticeGovernor = None
+
 
 class WorkflowPhase(str, Enum):
     """Phases in a multi-phase workflow."""
@@ -82,7 +90,8 @@ class HydraSpine:
     def __init__(
         self,
         ledger: Ledger = None,
-        scbe_url: str = "http://127.0.0.1:8080"
+        scbe_url: str = "http://127.0.0.1:8080",
+        use_dual_lattice: bool = True
     ):
         self.ledger = ledger or Ledger()
         self.scbe_url = scbe_url
@@ -102,6 +111,12 @@ class HydraSpine:
 
         # Terminal mode flag
         self._terminal_mode = False
+
+        # Dual Lattice Governance (Kyber/Dilithium + Sacred Tongues)
+        self.lattice_governor = None
+        if use_dual_lattice and DUAL_LATTICE_AVAILABLE:
+            self.lattice_governor = TongueLatticeGovernor(scbe_url)
+            print("[SPINE] Dual Lattice Cross-Stitch governance enabled")
 
     async def start(self, terminal_mode: bool = False) -> None:
         """Start the Hydra Spine."""
@@ -207,7 +222,8 @@ class HydraSpine:
             "target": "...",
             "params": {...},
             "head_id": "optional - which AI head",
-            "limb_id": "optional - which execution limb"
+            "limb_id": "optional - which execution limb",
+            "sensitivity": "optional - action sensitivity 0-1"
         }
         """
         action = command.get("action", "unknown")
@@ -215,9 +231,59 @@ class HydraSpine:
         params = command.get("params", {})
         head_id = command.get("head_id")
         limb_id = command.get("limb_id")
+        sensitivity = command.get("sensitivity", self._infer_sensitivity(action, target))
 
         # Generate action ID
         action_id = f"action-{uuid.uuid4().hex[:8]}"
+
+        # =====================================================================
+        # DUAL LATTICE GOVERNANCE CHECK
+        # Route action through Kyber/Dilithium + Sacred Tongues lattice
+        # =====================================================================
+        if self.lattice_governor:
+            lattice_result = self.lattice_governor.authorize(action, target, sensitivity)
+            decision = lattice_result.get("decision", "ALLOW")
+
+            # Log the lattice decision
+            self._log_entry(
+                EntryType.DECISION,
+                f"lattice_{action}",
+                target,
+                {
+                    "trust_score": lattice_result.get("trust_score"),
+                    "vector_norm": lattice_result.get("vector_norm"),
+                    "tongues_active": lattice_result.get("tongues_active"),
+                    "kyber_level": lattice_result.get("lattice_proof", {}).get("security", {}).get("kyber_level"),
+                },
+                head_id=head_id,
+                decision=decision,
+                score=lattice_result.get("trust_score", 0)
+            )
+
+            # Handle non-ALLOW decisions
+            if decision == "DENY":
+                return {
+                    "success": False,
+                    "decision": "DENY",
+                    "reason": "Dual lattice governance denied action",
+                    "trust_score": lattice_result.get("trust_score"),
+                    "tongues_active": lattice_result.get("tongues_active"),
+                    "action_id": action_id
+                }
+            elif decision == "ESCALATE":
+                # Mark for human review but allow to proceed with logging
+                print(f"[LATTICE] Action ESCALATED for review: {action} → {target[:30]}")
+                self._log_entry(
+                    EntryType.CHECKPOINT,
+                    "escalated_action",
+                    target,
+                    {"action": action, "trust_score": lattice_result.get("trust_score")},
+                    head_id=head_id
+                )
+            elif decision == "QUARANTINE":
+                # Execute in isolated context
+                print(f"[LATTICE] Action QUARANTINED: {action} → {target[:30]}")
+                params["quarantine"] = True
 
         # Log the action request
         self._log_entry(
@@ -598,6 +664,52 @@ class HydraSpine:
     # =========================================================================
     # Helpers
     # =========================================================================
+
+    def _infer_sensitivity(self, action: str, target: str) -> float:
+        """
+        Infer action sensitivity based on action type and target.
+
+        Returns sensitivity 0-1 where higher = more dangerous.
+        """
+        base_sensitivity = {
+            "navigate": 0.2,
+            "click": 0.3,
+            "type": 0.4,
+            "read": 0.1,
+            "run": 0.6,
+            "execute": 0.8,
+            "api": 0.5,
+            "remember": 0.2,
+            "recall": 0.1,
+            "message": 0.3,
+            "workflow": 0.5,
+        }.get(action.lower(), 0.5)
+
+        # Adjust based on target patterns
+        target_lower = target.lower()
+
+        # High sensitivity targets
+        high_risk_patterns = [
+            "password", "secret", "token", "key", "admin",
+            "delete", "rm ", "sudo", "chmod", "chown",
+            "bank", "payment", "credit", "financial"
+        ]
+        for pattern in high_risk_patterns:
+            if pattern in target_lower:
+                base_sensitivity = min(1.0, base_sensitivity + 0.3)
+                break
+
+        # Medium sensitivity targets
+        medium_risk_patterns = [
+            "login", "auth", "account", "profile", "settings",
+            "config", "env", ".env", "credentials"
+        ]
+        for pattern in medium_risk_patterns:
+            if pattern in target_lower:
+                base_sensitivity = min(1.0, base_sensitivity + 0.15)
+                break
+
+        return min(1.0, base_sensitivity)
 
     def _log_entry(
         self,
