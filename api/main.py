@@ -963,6 +963,198 @@ async def run_fleet_scenario(
 
 
 # =============================================================================
+# Roundtable Multi-Signature Governance (Six Sacred Tongues)
+# =============================================================================
+
+# Security tier configuration based on Sacred Tongues
+ROUNDTABLE_TIERS = {
+    1: {"tongues": ["KO"], "signatures": 1, "multiplier": 1.5, "name": "Single"},
+    2: {"tongues": ["KO", "RU"], "signatures": 2, "multiplier": 5.06, "name": "Dual"},
+    3: {"tongues": ["KO", "RU", "UM"], "signatures": 3, "multiplier": 38.4, "name": "Triple"},
+    4: {"tongues": ["KO", "RU", "UM", "CA"], "signatures": 4, "multiplier": 656, "name": "Quad"},
+    5: {"tongues": ["KO", "RU", "UM", "CA", "AV"], "signatures": 5, "multiplier": 14348, "name": "Quint"},
+    6: {"tongues": ["KO", "AV", "RU", "CA", "UM", "DR"], "signatures": 6, "multiplier": 518400, "name": "Full Roundtable"},
+}
+
+
+class RoundtableRequest(BaseModel):
+    action: str = Field(..., description="Action requiring multi-sig approval")
+    target: str = Field(..., description="Target resource")
+    tier: int = Field(..., ge=1, le=6, description="Security tier (1-6)")
+    signers: List[str] = Field(..., description="List of signer agent IDs")
+    context: Optional[Dict[str, Any]] = {}
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "action": "DEPLOY",
+                "target": "production-cluster",
+                "tier": 4,
+                "signers": ["admin-001", "security-002", "ops-003", "lead-004"],
+                "context": {"environment": "production"}
+            }
+        }
+
+
+class RoundtableVote(BaseModel):
+    signer_id: str
+    tongue: str
+    decision: str
+    score: float
+    signature: str
+
+
+class RoundtableResponse(BaseModel):
+    roundtable_id: str
+    tier: int
+    tier_name: str
+    required_signatures: int
+    collected_signatures: int
+    security_multiplier: float
+    status: str  # APPROVED, REJECTED, PENDING, ESCALATE_TO_HUMAN
+    tongues_used: List[str]
+    votes: List[RoundtableVote]
+    final_decision: str
+    timestamp: str
+
+
+@app.post("/v1/roundtable", response_model=RoundtableResponse, tags=["Governance"])
+async def roundtable_governance(
+    request: RoundtableRequest,
+    tenant: str = Depends(verify_api_key)
+):
+    """
+    Multi-signature governance using the Six Sacred Tongues protocol.
+
+    Security Tiers:
+    - Tier 1: Single (KO) - 1.5× - Basic coordination
+    - Tier 2: Dual (KO+RU) - 5.06× - Config changes
+    - Tier 3: Triple (KO+RU+UM) - 38.4× - Security ops
+    - Tier 4: Quad (KO+RU+UM+CA) - 656× - Deploy/delete
+    - Tier 5: Quint (5 tongues) - 14,348× - Infrastructure
+    - Tier 6: Full Roundtable (all 6) - 518,400× - Genesis ops
+    """
+    tier_config = ROUNDTABLE_TIERS[request.tier]
+    required_sigs = tier_config["signatures"]
+    tongues = tier_config["tongues"]
+
+    if len(request.signers) < required_sigs:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Tier {request.tier} requires {required_sigs} signers, got {len(request.signers)}"
+        )
+
+    roundtable_id = f"rt_{uuid.uuid4().hex[:12]}"
+    votes = []
+    approvals = 0
+    denials = 0
+    escalations = 0
+
+    # Collect votes from each signer using assigned tongue
+    for i, signer_id in enumerate(request.signers[:required_sigs]):
+        tongue = tongues[i % len(tongues)]
+
+        # Get signer's trust or default
+        if signer_id in AGENTS_STORE:
+            trust = AGENTS_STORE[signer_id]["trust_score"]
+        else:
+            trust = 0.5
+
+        # Run through 14-layer pipeline
+        # Lower tiers are more permissive, higher tiers are stricter
+        base_sensitivity = 0.1 + (request.tier * 0.05)  # Tier 1=0.15, Tier 6=0.4
+        decision, score, _ = scbe_14_layer_pipeline(
+            agent_id=signer_id,
+            action=request.action,
+            target=request.target,
+            trust_score=trust,
+            sensitivity=base_sensitivity
+        )
+
+        # Generate tongue-specific signature
+        sig_data = f"{roundtable_id}:{signer_id}:{tongue}:{decision.value}"
+        signature = hashlib.sha256(sig_data.encode()).hexdigest()[:16]
+
+        if decision == Decision.ALLOW:
+            approvals += 1
+        elif decision == Decision.DENY:
+            denials += 1
+        else:  # QUARANTINE or ESCALATE
+            escalations += 1
+
+        votes.append(RoundtableVote(
+            signer_id=signer_id,
+            tongue=tongue,
+            decision=decision.value,
+            score=round(score, 3),
+            signature=f"{tongue.lower()}:{signature}"
+        ))
+
+    # Determine final status
+    if approvals >= required_sigs:
+        status = "APPROVED"
+        final_decision = "ALLOW"
+    elif denials >= (required_sigs // 2) + 1:
+        status = "REJECTED"
+        final_decision = "DENY"
+    elif escalations > 0:
+        status = "ESCALATE_TO_HUMAN"
+        final_decision = "ESCALATE"
+    else:
+        status = "PENDING"
+        final_decision = "QUARANTINE"
+
+    logger.info(json.dumps({
+        "event": "roundtable_decision",
+        "roundtable_id": roundtable_id,
+        "tier": request.tier,
+        "status": status,
+        "approvals": approvals,
+        "denials": denials,
+        "escalations": escalations,
+        "multiplier": tier_config["multiplier"]
+    }))
+
+    return RoundtableResponse(
+        roundtable_id=roundtable_id,
+        tier=request.tier,
+        tier_name=tier_config["name"],
+        required_signatures=required_sigs,
+        collected_signatures=len(votes),
+        security_multiplier=tier_config["multiplier"],
+        status=status,
+        tongues_used=tongues[:len(votes)],
+        votes=votes,
+        final_decision=final_decision,
+        timestamp=datetime.utcnow().isoformat() + "Z"
+    )
+
+
+@app.get("/v1/roundtable/tiers", tags=["Governance"])
+async def get_roundtable_tiers():
+    """Get available Roundtable security tiers and their requirements."""
+    tiers = []
+    use_cases = {
+        1: "Basic coordination, status updates",
+        2: "State modifications, config changes",
+        3: "Security operations, key rotation",
+        4: "Irreversible ops (deploy, delete)",
+        5: "Critical infrastructure changes",
+        6: "Genesis-level operations, system reboot"
+    }
+    for tier_num, config in ROUNDTABLE_TIERS.items():
+        tiers.append({
+            "tier": tier_num,
+            "name": config["name"],
+            "tongues_required": config["tongues"],
+            "signatures_required": config["signatures"],
+            "security_multiplier": config["multiplier"],
+            "use_cases": use_cases[tier_num]
+        })
+    return {"tiers": tiers}
+
+
+# =============================================================================
 # Startup
 # =============================================================================
 
