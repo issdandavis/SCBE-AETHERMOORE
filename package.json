@@ -51,7 +51,8 @@
     "sixtongues-cli-v1.0.0.zip",
     "packages/sixtongues",
     "scbe-cli.py",
-    "scbe.js"
+    "scbe.js",
+    "sixtongues-cli-v1.1.0.zip"
   ],
   "scripts": {
     "clean": "rimraf dist",
