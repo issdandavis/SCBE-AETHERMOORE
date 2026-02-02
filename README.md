@@ -223,11 +223,13 @@ npm test && pytest
 |----------|------|
 | **npm** | https://www.npmjs.com/package/scbe-aethermoore |
 | **Source** | https://github.com/issdandavis/SCBE-AETHERMOORE |
-| **Pitch Deck** | https://gamma.app/docs/zadn2hz06fddofa |
+| **Pitch Deck** | https://scbe-aethermoore-x8vu3ly.gamma.site/ |
 | **Demo** | https://scbe-aethermoore-issdandavis.streamlit.app |
 | **Issues** | https://github.com/issdandavis/SCBE-AETHERMOORE/issues |
 | **Email** | issdandavis@gmail.com |
 | **Sponsor** | https://github.com/sponsors/issdandavis |
+| **CLI Tool** | https://aethermoorgames.gumroad.com/l/dqncbs |
+| **Subscribe** | https://aethermoorgames.gumroad.com/subscribe |
 
 ---
 
