@@ -4,6 +4,8 @@
  * Quantum-resistant cryptography for space communications.
  * Implements onion routing encryption with hybrid classical/post-quantum schemes.
  */
+/// <reference types="node" />
+/// <reference types="node" />
 import { RelayNode } from './space-tor-router.js';
 export interface OnionLayer {
     nodeId: string;
