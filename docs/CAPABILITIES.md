@@ -4,7 +4,11 @@ This document summarizes what the product can do today, how to access key featur
 
 ## Core Security Engine
 
-- **14-layer hyperbolic pipeline** for risk scoring and decision gating (ALLOW / QUARANTINE / DENY).
+- **14-layer hyperbolic pipeline** for risk scoring and 4-tier decision gating:
+  - **ALLOW** (score >0.7): Action permitted immediately
+  - **QUARANTINE** (score 0.5-0.7): Temporary hold - isolate and monitor
+  - **ESCALATE** (score 0.3-0.5): Swarm escalation to higher AI, then human if AIs disagree
+  - **DENY** (score <0.3): Action blocked immediately
 - **Poincaré ball geometry** with Möbius transforms and bounded risk amplification.
 - **Harmonic wall** and spectral coherence checks to resist incremental adversarial drift.
 - **Decision telemetry** for auditability and forensic analysis.
