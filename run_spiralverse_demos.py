@@ -19,6 +19,7 @@ demos = [
     ("Proximity Optimizer", "src.spiralverse.proximity_optimizer"),
     ("RWP2 Envelope", "src.spiralverse.rwp2_envelope"),
     ("Hive Memory", "src.spiralverse.hive_memory"),
+    ("Aethercode Interpreter", "src.spiralverse.aethercode"),
 ]
 
 for name, module in demos:
