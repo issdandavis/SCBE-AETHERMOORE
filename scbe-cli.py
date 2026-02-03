@@ -1307,6 +1307,53 @@ the encryption because SCBE uses post-quantum primitives!
         except KeyError as e:
             print(f"\n❌ Unblend failed: Invalid token {e}")
 
+    def cmd_providers(self):
+        """Check AI provider configuration"""
+        import os
+
+        print("\n🤖 AI PROVIDER STATUS")
+        print("=" * 60)
+        print("Configure in .env file (copy from .env.example)")
+        print()
+
+        # Check priority setting
+        priority = os.environ.get("SCBE_PROVIDER_PRIORITY", "anthropic,openai,google")
+        print(f"Priority Order: {priority}")
+        print()
+
+        providers = [
+            ("Anthropic (Claude)", "ANTHROPIC_API_KEY", "ANTHROPIC_MODEL", "claude-sonnet-4-20250514"),
+            ("OpenAI (GPT)", "OPENAI_API_KEY", "OPENAI_MODEL", "gpt-4o"),
+            ("Google (Gemini)", "GOOGLE_API_KEY", "GOOGLE_MODEL", "gemini-2.0-flash"),
+            ("Mistral", "MISTRAL_API_KEY", "MISTRAL_MODEL", "mistral-large-latest"),
+            ("Cohere", "COHERE_API_KEY", "COHERE_MODEL", "command-r-plus"),
+        ]
+
+        print(f"{'Provider':<20} {'Status':<12} {'Model'}")
+        print("-" * 60)
+
+        for name, key_var, model_var, default_model in providers:
+            api_key = os.environ.get(key_var, "")
+            model = os.environ.get(model_var, default_model)
+
+            if api_key and "..." not in api_key and len(api_key) > 10:
+                status = "✓ Ready"
+                # Mask the key for display
+                masked = api_key[:8] + "..." + api_key[-4:] if len(api_key) > 12 else "***"
+            else:
+                status = "○ Not set"
+                masked = ""
+
+            print(f"{name:<20} {status:<12} {model}")
+
+        print()
+        print("To configure:")
+        print("  1. Copy .env.example to .env")
+        print("  2. Add your API keys")
+        print("  3. Set SCBE_PROVIDER_PRIORITY for your preferred order")
+        print()
+        print("Your keys are tried first; others are fallbacks.")
+
     def cmd_help(self):
         """Display help"""
         print("\n📖 AVAILABLE COMMANDS")
@@ -1322,6 +1369,9 @@ the encryption because SCBE uses post-quantum primitives!
         print("  xlate      - Cross-translate between tongues")
         print("  blend      - Multi-tongue stripe encoding")
         print("  unblend    - Decode blended spell-text")
+
+        print("\n🤖 AI Providers:")
+        print("  providers  - Check AI provider configuration")
 
         print("\n📊 System:")
         print("  tutorial   - Interactive tutorial")
@@ -1349,6 +1399,8 @@ the encryption because SCBE uses post-quantum primitives!
             "xlate": self.cmd_xlate,
             "blend": self.cmd_blend,
             "unblend": self.cmd_unblend,
+            # AI Providers
+            "providers": self.cmd_providers,
             # System
             "tutorial": self.cmd_tutorial,
             "attack": self.cmd_attack_sim,
