@@ -182,7 +182,8 @@ def compute_semantic_phases(
         base_phases = TONGUE_PHASES
 
     # Compute text hash for phase modulation (deterministic)
-    text_bytes = text.encode('utf-8')
+    # Add domain-specific salt to prevent hash manipulation
+    text_bytes = b'polyglot_phase_v1:' + text.encode('utf-8')
     # Use 16 hex chars (64 bits) for better distribution and lower collision probability
     text_hash = int(hashlib.sha256(text_bytes).hexdigest()[:16], 16)
     hash_factor = (text_hash / (2 ** 64)) * math.pi / 6  # ±30° variation
