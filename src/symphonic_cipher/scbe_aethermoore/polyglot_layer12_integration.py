@@ -21,6 +21,7 @@ Date: February 2026
 
 from __future__ import annotations
 
+import hashlib
 import math
 import numpy as np
 from dataclasses import dataclass
@@ -180,8 +181,9 @@ def compute_semantic_phases(
     if base_phases is None:
         base_phases = TONGUE_PHASES
 
-    # Compute text hash for phase modulation
-    text_hash = hash(text) % (2 ** 32)
+    # Compute text hash for phase modulation (deterministic)
+    text_bytes = text.encode('utf-8')
+    text_hash = int(hashlib.sha256(text_bytes).hexdigest()[:8], 16)
     hash_factor = (text_hash / (2 ** 32)) * math.pi / 6  # ±30° variation
 
     phases = {}
