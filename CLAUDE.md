@@ -129,7 +129,7 @@ L6-7:   Breathing transform + Möbius phase
 L8:     Multi-well realms
 L9-10:  Spectral + spin coherence
 L11:    Triadic temporal distance
-L12:    Harmonic wall H(d,R) = φᵈ / (1 + e⁻ᴿ) [RISK AMPLIFICATION]
+L12:    Harmonic wall H(d,R) = R^(d²) where R=1.5 [RISK AMPLIFICATION]
 L13:    Risk decision gate
 L14:    Audio axis (FFT telemetry)
 ```
@@ -272,14 +272,15 @@ python -m uvicorn api.main:app --reload --port 8000
 6 dimensions weighted by powers of golden ratio φ:
 - KO (w=1), AV (w=φ), RU (w=φ²), CA (w=φ³), UM (w=φ⁴), DR (w=φ⁵)
 
-### Harmonic Wall
+### Harmonic Wall (Layer 12)
 ```
-H(d,R) = φᵈ / (1 + e⁻ᴿ)
+H(d,R) = R^(d²)    where R = 1.5 (default)
 ```
 - d = hyperbolic distance from safe center
-- R = accumulated risk score
-- At Poincaré boundary (d→∞): cost → ∞
-- At center (d≈0): cost → 0
+- R = risk amplification base (typically 1.5)
+- **Super-exponential growth**: At d=6, H ≈ 2.18×10⁶
+- At center (d≈0): cost ≈ 1
+- At boundary (d→∞): cost → ∞ (attacks become infeasible)
 
 ### Poincaré Ball
 All operations happen in the unit ball ‖u‖ < 1. Points near the boundary have exponentially higher costs. This is the core security property.
