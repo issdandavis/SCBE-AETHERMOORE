@@ -7,20 +7,18 @@
 ## Directory Layout
 
 ```
-scbe-aethermoore-demo/
-├── src/                          # Source code
-│   ├── api/                      # REST API (FastAPI)
+SCBE-AETHERMOORE/
+├── api/                          # REST API (FastAPI)
+├── src/                          # TypeScript core
 │   ├── crypto/                   # Cryptographic primitives
-│   ├── fleet/                    # Fleet orchestration (Redis/BullMQ)
+│   ├── fleet/                    # Fleet orchestration
 │   ├── harmonic/                 # 14-Layer Pipeline (CORE)
 │   ├── network/                  # Network security (SpaceTor, Combat routing)
-│   ├── physics_sim/              # Physics simulation
 │   ├── spectral/                 # Spectral coherence
 │   ├── spiralverse/              # Spiralverse protocol
-│   ├── symphonic/                # Symphonic cipher (TypeScript)
-│   └── symphonic_cipher/         # Symphonic cipher (Python)
+│   └── symphonic/                # Symphonic cipher (TypeScript)
 │
-├── tests/                        # Test suites (728+ tests)
+├── tests/                        # Test suites (1k+ tests)
 │   ├── harmonic/                 # Layer tests
 │   ├── enterprise/               # Compliance tests
 │   ├── network/                  # Network tests
@@ -83,7 +81,7 @@ scbe-aethermoore-demo/
 - `redis-orchestrator.ts` - Multi-agent coordination
 - `index.ts` - Fleet exports
 
-### API (`src/api/`)
+### API (`api/`)
 - `main.py` - FastAPI server (6 endpoints)
 - WebSocket `/ws/dashboard` for real-time streaming
 
@@ -138,7 +136,7 @@ The project maintains implementations in both TypeScript and Python. This table 
 | **Symphonic Cipher** | TypeScript (`src/symphonic/`) | Python (`src/symphonic_cipher/`) | TS is production; Python for prototyping |
 | **Hyperbolic Geometry** | TypeScript (`src/harmonic/hyperbolic.ts`) | Python (`src/harmonic_py/`) | TS is production |
 | **Cryptographic Envelope** | TypeScript (`src/crypto/`) | N/A | TypeScript only |
-| **REST API** | Python (`src/api/main.py`) | N/A | FastAPI server |
+| **REST API** | Python (`api/main.py`) | N/A | FastAPI server |
 | **Fleet Orchestration** | TypeScript (`src/fleet/`) | N/A | TypeScript only |
 
 ### Guidelines for Dual Implementations
@@ -175,7 +173,7 @@ npm run check:deps
 python demo_memory_shard.py
 
 # Start API server
-python -m uvicorn src.api.main:app --reload
+python -m uvicorn api.main:app --reload
 
 # Build TypeScript
 npm run build
@@ -186,4 +184,4 @@ npm run build
 
 ---
 
-_Last updated: January 2026_
+_Last updated: February 2026_
