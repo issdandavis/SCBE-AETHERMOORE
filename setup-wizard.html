@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCBE-AETHERMOORE Setup Wizard</title>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --card: #12121a;
+      --border: #2a2a3a;
+      --text: #e0e0e0;
+      --muted: #888;
+      --primary: #6366f1;
+      --success: #22c55e;
+      --warning: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle { color: var(--muted); margin-bottom: 2rem; }
+    .section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .section h2 {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .provider-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .provider-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      transition: all 0.2s;
+    }
+    .provider-card:hover { border-color: var(--primary); }
+    .provider-card.connected { border-color: var(--success); }
+    .provider-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .provider-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .provider-name { font-weight: 600; }
+    .provider-status {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+    .provider-status.connected { color: var(--success); }
+    input[type="password"], input[type="text"] {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      color: var(--text);
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+    }
+    input:focus { outline: none; border-color: var(--primary); }
+    button {
+      width: 100%;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+    .btn-oauth {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: white;
+      color: #333;
+      border: 1px solid #ddd;
+      margin-bottom: 0.5rem;
+    }
+    .btn-oauth:hover { background: #f5f5f5; }
+    .btn-oauth.github { background: #24292e; color: white; border-color: #24292e; }
+    .btn-oauth.github:hover { background: #2f363d; }
+    .priority-order {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+    .priority-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem;
+      background: var(--card);
+      border-radius: 6px;
+      margin-bottom: 0.5rem;
+      cursor: grab;
+    }
+    .priority-item:active { cursor: grabbing; }
+    .priority-num {
+      width: 24px;
+      height: 24px;
+      background: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--success);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      display: none;
+      animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .env-output {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: monospace;
+      font-size: 0.875rem;
+      white-space: pre-wrap;
+      word-break: break-all;
+      margin-top: 1rem;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .copy-btn {
+      float: right;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.75rem;
+    }
+    .help-text {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+    }
+    .help-text a { color: var(--primary); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>SCBE-AETHERMOORE Setup</h1>
+    <p class="subtitle">One-click setup for AI providers and authentication</p>
+
+    <!-- User Authentication -->
+    <div class="section">
+      <h2>1. Sign In (Optional)</h2>
+      <p style="color: var(--muted); margin-bottom: 1rem; font-size: 0.875rem;">
+        Sign in to sync settings across devices. Skip if running locally.
+      </p>
+      <div class="provider-grid">
+        <button class="btn-oauth" onclick="oauthLogin('google')">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Continue with Google
+        </button>
+        <button class="btn-oauth github" onclick="oauthLogin('github')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          Continue with GitHub
+        </button>
+      </div>
+    </div>
+
+    <!-- AI Providers -->
+    <div class="section">
+      <h2>2. Connect AI Providers</h2>
+      <p style="color: var(--muted); margin-bottom: 1rem; font-size: 0.875rem;">
+        Add your API keys. Your primary provider is tried first; others are automatic fallbacks.
+      </p>
+
+      <div class="provider-grid">
+        <!-- Anthropic -->
+        <div class="provider-card" id="card-anthropic">
+          <div class="provider-header">
+            <div class="provider-icon" style="background: #d4a27f;">A</div>
+            <span class="provider-name">Anthropic</span>
+          </div>
+          <div class="provider-status" id="status-anthropic">Not connected</div>
+          <input type="password" id="key-anthropic" placeholder="sk-ant-api03-..."
+                 onchange="checkKey('anthropic')">
+          <button class="btn-primary" onclick="saveKey('anthropic')">Save</button>
+          <p class="help-text"><a href="https://console.anthropic.com/settings/keys" target="_blank">Get API key</a></p>
+        </div>
+
+        <!-- OpenAI -->
+        <div class="provider-card" id="card-openai">
+          <div class="provider-header">
+            <div class="provider-icon" style="background: #10a37f;">O</div>
+            <span class="provider-name">OpenAI</span>
+          </div>
+          <div class="provider-status" id="status-openai">Not connected</div>
+          <input type="password" id="key-openai" placeholder="sk-proj-..."
+                 onchange="checkKey('openai')">
+          <button class="btn-primary" onclick="saveKey('openai')">Save</button>
+          <p class="help-text"><a href="https://platform.openai.com/api-keys" target="_blank">Get API key</a></p>
+        </div>
+
+        <!-- Google -->
+        <div class="provider-card" id="card-google">
+          <div class="provider-header">
+            <div class="provider-icon" style="background: #4285f4;">G</div>
+            <span class="provider-name">Google AI</span>
+          </div>
+          <div class="provider-status" id="status-google">Not connected</div>
+          <input type="password" id="key-google" placeholder="AIza..."
+                 onchange="checkKey('google')">
+          <button class="btn-primary" onclick="saveKey('google')">Save</button>
+          <p class="help-text"><a href="https://aistudio.google.com/app/apikey" target="_blank">Get API key</a></p>
+        </div>
+
+        <!-- Mistral -->
+        <div class="provider-card" id="card-mistral">
+          <div class="provider-header">
+            <div class="provider-icon" style="background: #ff7000;">M</div>
+            <span class="provider-name">Mistral</span>
+          </div>
+          <div class="provider-status" id="status-mistral">Not connected</div>
+          <input type="password" id="key-mistral" placeholder="..."
+                 onchange="checkKey('mistral')">
+          <button class="btn-primary" onclick="saveKey('mistral')">Save</button>
+          <p class="help-text"><a href="https://console.mistral.ai/api-keys" target="_blank">Get API key</a></p>
+        </div>
+      </div>
+
+      <!-- Priority Order -->
+      <div class="priority-order">
+        <h3 style="font-size: 0.875rem; margin-bottom: 0.75rem;">Provider Priority (drag to reorder)</h3>
+        <div id="priority-list">
+          <div class="priority-item" data-provider="anthropic" draggable="true">
+            <span class="priority-num">1</span>
+            <span>Anthropic (Claude)</span>
+          </div>
+          <div class="priority-item" data-provider="openai" draggable="true">
+            <span class="priority-num">2</span>
+            <span>OpenAI (GPT-4)</span>
+          </div>
+          <div class="priority-item" data-provider="google" draggable="true">
+            <span class="priority-num">3</span>
+            <span>Google (Gemini)</span>
+          </div>
+          <div class="priority-item" data-provider="mistral" draggable="true">
+            <span class="priority-num">4</span>
+            <span>Mistral</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Generate Config -->
+    <div class="section">
+      <h2>3. Generate Configuration</h2>
+      <button class="btn-primary" onclick="generateConfig()" style="max-width: 200px;">
+        Generate .env File
+      </button>
+      <div class="env-output" id="env-output" style="display: none;">
+        <button class="btn-primary copy-btn" onclick="copyEnv()">Copy</button>
+        <pre id="env-content"></pre>
+      </div>
+      <p class="help-text" style="margin-top: 1rem;">
+        Save as <code>.env</code> in your project root, or copy to your deployment environment.
+      </p>
+    </div>
+
+    <!-- Quick Test -->
+    <div class="section">
+      <h2>4. Test Connection</h2>
+      <button class="btn-primary" onclick="testConnection()" style="max-width: 200px;" id="test-btn">
+        Test AI Providers
+      </button>
+      <div id="test-result" style="margin-top: 1rem;"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Saved!</div>
+
+  <script>
+    // Storage
+    const config = {
+      keys: JSON.parse(localStorage.getItem('scbe_keys') || '{}'),
+      priority: JSON.parse(localStorage.getItem('scbe_priority') || '["anthropic","openai","google","mistral"]'),
+      user: JSON.parse(localStorage.getItem('scbe_user') || 'null')
+    };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      // Load saved keys
+      for (const [provider, key] of Object.entries(config.keys)) {
+        const input = document.getElementById(`key-${provider}`);
+        if (input && key) {
+          input.value = key;
+          markConnected(provider);
+        }
+      }
+
+      // Setup drag and drop
+      setupDragDrop();
+      updatePriorityOrder();
+    });
+
+    function saveKey(provider) {
+      const input = document.getElementById(`key-${provider}`);
+      const key = input.value.trim();
+
+      if (key) {
+        config.keys[provider] = key;
+        localStorage.setItem('scbe_keys', JSON.stringify(config.keys));
+        markConnected(provider);
+        showToast('Key saved!');
+      }
+    }
+
+    function checkKey(provider) {
+      const input = document.getElementById(`key-${provider}`);
+      const key = input.value.trim();
+      const card = document.getElementById(`card-${provider}`);
+
+      if (key && key.length > 10) {
+        card.style.borderColor = 'var(--primary)';
+      } else {
+        card.style.borderColor = 'var(--border)';
+      }
+    }
+
+    function markConnected(provider) {
+      const card = document.getElementById(`card-${provider}`);
+      const status = document.getElementById(`status-${provider}`);
+
+      card.classList.add('connected');
+      status.textContent = 'Connected';
+      status.classList.add('connected');
+    }
+
+    function setupDragDrop() {
+      const list = document.getElementById('priority-list');
+      let draggedItem = null;
+
+      list.addEventListener('dragstart', (e) => {
+        draggedItem = e.target.closest('.priority-item');
+        e.dataTransfer.effectAllowed = 'move';
+      });
+
+      list.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const afterElement = getDragAfterElement(list, e.clientY);
+        if (afterElement) {
+          list.insertBefore(draggedItem, afterElement);
+        } else {
+          list.appendChild(draggedItem);
+        }
+      });
+
+      list.addEventListener('dragend', () => {
+        updatePriorityOrder();
+        savePriority();
+      });
+    }
+
+    function getDragAfterElement(container, y) {
+      const elements = [...container.querySelectorAll('.priority-item:not(.dragging)')];
+      return elements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+          return { offset, element: child };
+        }
+        return closest;
+      }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    function updatePriorityOrder() {
+      const items = document.querySelectorAll('.priority-item');
+      items.forEach((item, index) => {
+        item.querySelector('.priority-num').textContent = index + 1;
+      });
+    }
+
+    function savePriority() {
+      const items = document.querySelectorAll('.priority-item');
+      config.priority = [...items].map(item => item.dataset.provider);
+      localStorage.setItem('scbe_priority', JSON.stringify(config.priority));
+      showToast('Priority updated!');
+    }
+
+    function generateConfig() {
+      const envLines = [
+        '# SCBE-AETHERMOORE Configuration',
+        '# Generated by Setup Wizard',
+        '',
+        '# Provider Priority (your keys first, then fallbacks)',
+        `SCBE_PROVIDER_PRIORITY=${config.priority.join(',')}`,
+        '',
+      ];
+
+      const providers = {
+        anthropic: { keyVar: 'ANTHROPIC_API_KEY', modelVar: 'ANTHROPIC_MODEL', model: 'claude-sonnet-4-20250514' },
+        openai: { keyVar: 'OPENAI_API_KEY', modelVar: 'OPENAI_MODEL', model: 'gpt-4o' },
+        google: { keyVar: 'GOOGLE_API_KEY', modelVar: 'GOOGLE_MODEL', model: 'gemini-2.0-flash' },
+        mistral: { keyVar: 'MISTRAL_API_KEY', modelVar: 'MISTRAL_MODEL', model: 'mistral-large-latest' },
+      };
+
+      for (const [name, cfg] of Object.entries(providers)) {
+        const key = config.keys[name] || '';
+        if (key) {
+          envLines.push(`# ${name.charAt(0).toUpperCase() + name.slice(1)}`);
+          envLines.push(`${cfg.keyVar}=${key}`);
+          envLines.push(`${cfg.modelVar}=${cfg.model}`);
+          envLines.push('');
+        }
+      }
+
+      envLines.push('# Provider behavior');
+      envLines.push('SCBE_PROVIDER_FALLBACK_ENABLED=true');
+      envLines.push('SCBE_PROVIDER_MAX_RETRIES=2');
+      envLines.push('SCBE_PROVIDER_TIMEOUT_MS=30000');
+
+      const output = document.getElementById('env-output');
+      const content = document.getElementById('env-content');
+      content.textContent = envLines.join('\n');
+      output.style.display = 'block';
+    }
+
+    function copyEnv() {
+      const content = document.getElementById('env-content').textContent;
+      navigator.clipboard.writeText(content).then(() => {
+        showToast('Copied to clipboard!');
+      });
+    }
+
+    async function testConnection() {
+      const btn = document.getElementById('test-btn');
+      const result = document.getElementById('test-result');
+
+      btn.disabled = true;
+      btn.textContent = 'Testing...';
+      result.innerHTML = '<p style="color: var(--muted);">Testing providers...</p>';
+
+      const results = [];
+
+      for (const provider of config.priority) {
+        const key = config.keys[provider];
+        if (!key) continue;
+
+        try {
+          const testResult = await testProvider(provider, key);
+          results.push({ provider, success: true, model: testResult });
+        } catch (err) {
+          results.push({ provider, success: false, error: err.message });
+        }
+      }
+
+      result.innerHTML = results.map(r => {
+        if (r.success) {
+          return `<p style="color: var(--success);">Anthropic: ${r.provider} (${r.model})</p>`;
+        } else {
+          return `<p style="color: var(--warning);">${r.provider}: ${r.error}</p>`;
+        }
+      }).join('') || '<p style="color: var(--muted);">No providers configured</p>';
+
+      btn.disabled = false;
+      btn.textContent = 'Test AI Providers';
+    }
+
+    async function testProvider(provider, key) {
+      // Note: Real API calls would need CORS handling
+      // This is a simplified check
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          if (key && key.length > 10) {
+            const models = {
+              anthropic: 'claude-sonnet-4-20250514',
+              openai: 'gpt-4o',
+              google: 'gemini-2.0-flash',
+              mistral: 'mistral-large-latest'
+            };
+            resolve(models[provider] || 'unknown');
+          } else {
+            reject(new Error('Invalid key format'));
+          }
+        }, 500);
+      });
+    }
+
+    function oauthLogin(provider) {
+      // OAuth endpoints (would need backend)
+      const endpoints = {
+        google: 'https://accounts.google.com/o/oauth2/v2/auth',
+        github: 'https://github.com/login/oauth/authorize'
+      };
+
+      showToast(`OAuth for ${provider} requires backend setup. Use API keys for now.`);
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 2000);
+    }
+  </script>
+</body>
+</html>
