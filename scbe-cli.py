@@ -11,26 +11,11 @@ Includes Six Sacred Tongues tokenizer for spell-text encoding:
 - tongues: list all 6 tongues with metadata
 """
 
+# Standard library imports (must come first)
 import argparse
 import base64
 import hashlib
 import hmac
-from typing import Optional, List, Dict, Tuple
-
-# Import Sacred Tongues tokenizer
-sys.path.insert(0, "src/crypto")
-try:
-    from sacred_tongues import (
-        SACRED_TONGUE_TOKENIZER,
-        TONGUES,
-        SECTION_TONGUES,
-        TongueSpec,
-    )
-    TONGUES_AVAILABLE = True
-except ImportError:
-    TONGUES_AVAILABLE = False
-
-VERSION = "3.1.0"
 import json
 import os
 import sys
@@ -38,23 +23,31 @@ import time
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+VERSION = "3.1.0"
+
 # Golden ratio for harmonic weighting
 PHI = 1.618033988749895
 
+# Setup import paths
 REPO_ROOT = Path(__file__).resolve().parent
 SRC_PATH = REPO_ROOT / "src"
 if SRC_PATH.exists() and str(SRC_PATH) not in sys.path:
-    sys.path.insert(1, str(SRC_PATH))
+    sys.path.insert(0, str(SRC_PATH))
 
+# Import Sacred Tongues tokenizer
 try:
     from crypto.sacred_tongues import SacredTongueTokenizer, SECTION_TONGUES, TONGUES
+    TONGUES_AVAILABLE = True
+    _SACRED_IMPORT_ERROR = None
 except Exception as exc:
     SacredTongueTokenizer = None
     SECTION_TONGUES = {}
     TONGUES = {}
+    TONGUES_AVAILABLE = False
     _SACRED_IMPORT_ERROR = exc
-else:
-    _SACRED_IMPORT_ERROR = None
+
+# Legacy import compatibility
+SACRED_TONGUE_TOKENIZER = None
 
 
 DEFAULT_CONTEXT = [0.1, 0.2, 0.15, 0.1, 0.12, 0.18]
@@ -222,19 +215,53 @@ def _xor_bytes(a: bytes, b: bytes) -> bytes:
     return bytes(x ^ y for x, y in zip(a, b))
 
 
-def _compute_geoseal_telemetry(context: List[float], features: Dict[str, float]) -> Dict:
+def _compute_geoseal_telemetry(context: List[float], features: Dict[str, float]) -> Optional[Dict]:
+    """Compute GeoSeal telemetry if available, otherwise return basic metrics."""
     try:
-        from symphonic_cipher.geoseal import GeoSealManifold
         import numpy as np
-    except Exception as exc:
-        raise RuntimeError(
-            "GeoSeal module not available. Ensure symphonic_cipher/geoseal is present."
-        ) from exc
+        # Try multiple import paths
+        GeoSealManifold = None
+        try:
+            from symphonic_cipher.geoseal import GeoSealManifold
+        except ImportError:
+            pass
+        if GeoSealManifold is None:
+            try:
+                # Try root-level import
+                import importlib.util
+                spec = importlib.util.spec_from_file_location(
+                    "geoseal", REPO_ROOT / "symphonic_cipher_geoseal_manifold.py"
+                )
+                if spec and spec.loader:
+                    module = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(module)
+                    GeoSealManifold = module.GeoSealManifold
+            except Exception:
+                pass
 
-    manifold = GeoSealManifold(dimension=len(context))
-    sphere = manifold.project_to_sphere(np.array(context))
-    cube = manifold.project_to_hypercube(features)
-    return manifold.get_telemetry(sphere, cube)
+        if GeoSealManifold is None:
+            # Return basic telemetry without full manifold
+            return {
+                "context_norm": float(np.linalg.norm(context)),
+                "trust_score": features.get("trust_score", 0.0),
+                "path_type": "basic",
+                "geoseal_available": False,
+            }
+
+        manifold = GeoSealManifold(dimension=len(context))
+        sphere = manifold.project_to_sphere(np.array(context))
+        cube = manifold.project_to_hypercube(features)
+        telemetry = manifold.get_telemetry(sphere, cube)
+        telemetry["geoseal_available"] = True
+        return telemetry
+
+    except Exception as e:
+        # Fallback to minimal telemetry
+        return {
+            "error": str(e),
+            "context_len": len(context),
+            "geoseal_available": False,
+        }
 
 
 def _format_ss1_blob(
