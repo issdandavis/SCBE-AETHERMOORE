@@ -18,7 +18,17 @@ import numpy as np
 from typing import Tuple, Optional, Callable, Dict, Any
 from dataclasses import dataclass
 from enum import Enum
-import scipy.linalg
+
+# Use scipy-compatible imports with fallback
+try:
+    import scipy.linalg
+    _expm = scipy.linalg.expm
+except ImportError:
+    from .._scipy_compat import expm as _expm
+    # Create mock scipy.linalg module for compatibility
+    class _ScipyLinalgCompat:
+        expm = staticmethod(_expm)
+    scipy_linalg = _ScipyLinalgCompat()
 
 # Constants
 PHI = (1 + np.sqrt(5)) / 2  # Golden ratio ≈ 1.618
@@ -161,7 +171,7 @@ def langues_operator(r: np.ndarray, epsilon: float = EPSILON_COUPLING) -> np.nda
         A_k = build_coupling_matrix(k, n, epsilon)
         sum_A += r[k] * A_k
 
-    return scipy.linalg.expm(sum_A)
+    return _expm(sum_A)
 
 
 def build_langues_metric_tensor(
