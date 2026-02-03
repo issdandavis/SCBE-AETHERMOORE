@@ -11,9 +11,7 @@ Includes Six Sacred Tongues tokenizer for spell-text encoding:
 - tongues: list all 6 tongues with metadata
 """
 
-import sys
-import time
-import json
+import argparse
 import base64
 import hashlib
 import hmac
@@ -33,9 +31,454 @@ except ImportError:
     TONGUES_AVAILABLE = False
 
 VERSION = "3.1.0"
+import json
+import os
+import sys
+import time
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
 
 # Golden ratio for harmonic weighting
 PHI = 1.618033988749895
+
+REPO_ROOT = Path(__file__).resolve().parent
+SRC_PATH = REPO_ROOT / "src"
+if SRC_PATH.exists() and str(SRC_PATH) not in sys.path:
+    sys.path.insert(1, str(SRC_PATH))
+
+try:
+    from crypto.sacred_tongues import SacredTongueTokenizer, SECTION_TONGUES, TONGUES
+except Exception as exc:
+    SacredTongueTokenizer = None
+    SECTION_TONGUES = {}
+    TONGUES = {}
+    _SACRED_IMPORT_ERROR = exc
+else:
+    _SACRED_IMPORT_ERROR = None
+
+
+DEFAULT_CONTEXT = [0.1, 0.2, 0.15, 0.1, 0.12, 0.18]
+DEFAULT_FEATURES = {
+    "trust_score": 0.9,
+    "uptime": 0.95,
+    "approval_rate": 0.88,
+    "coherence": 0.92,
+    "stability": 0.9,
+    "relationship_age": 0.85,
+}
+
+
+def _require_sacred() -> None:
+    if _SACRED_IMPORT_ERROR is not None:
+        raise RuntimeError(
+            "Sacred Tongue tokenizer import failed. Ensure repo root and src/ are available."
+        ) from _SACRED_IMPORT_ERROR
+
+
+def _normalize_tongue(code: str) -> str:
+    _require_sacred()
+    if not code:
+        raise ValueError("Tongue code is required.")
+    normalized = code.strip().lower()
+    if normalized not in TONGUES:
+        raise ValueError(f"Unknown tongue: {code}")
+    return normalized
+
+
+_TOKENIZER: Optional[SacredTongueTokenizer] = None
+
+
+def _get_tokenizer() -> SacredTongueTokenizer:
+    _require_sacred()
+    global _TOKENIZER
+    if _TOKENIZER is None:
+        _TOKENIZER = SacredTongueTokenizer()
+    return _TOKENIZER
+
+
+def _read_input_bytes(args) -> bytes:
+    if getattr(args, "in_path", None):
+        return Path(args.in_path).read_bytes()
+    if getattr(args, "text", None) is not None:
+        return args.text.encode("utf-8")
+    return sys.stdin.buffer.read()
+
+
+def _read_input_text(args) -> str:
+    if getattr(args, "in_path", None):
+        return Path(args.in_path).read_text(encoding="utf-8")
+    if getattr(args, "text", None) is not None:
+        return args.text
+    return sys.stdin.read()
+
+
+def _split_prefixed_token(token: str) -> Tuple[Optional[str], str]:
+    if ":" in token:
+        prefix, rest = token.split(":", 1)
+        return prefix.lower(), rest
+    return None, token
+
+
+def _parse_blend_pattern(pattern_str: str) -> List[Tuple[str, int]]:
+    if not pattern_str:
+        raise ValueError("Blend pattern is required (e.g., KO:2,AV:1,DR:1)")
+    pattern: List[Tuple[str, int]] = []
+    for seg in pattern_str.split(","):
+        seg = seg.strip()
+        if not seg:
+            continue
+        if ":" not in seg:
+            raise ValueError(f"Invalid pattern segment: {seg}")
+        tongue_raw, count_raw = seg.split(":", 1)
+        tongue = _normalize_tongue(tongue_raw)
+        count = int(count_raw)
+        if count <= 0:
+            raise ValueError("Pattern counts must be positive.")
+        pattern.append((tongue, count))
+    if not pattern:
+        raise ValueError("Blend pattern is empty.")
+    return pattern
+
+
+def _blend_bytes(data: bytes, pattern: List[Tuple[str, int]]) -> str:
+    _require_sacred()
+    tokenizer = _get_tokenizer()
+    tokens: List[str] = []
+    data_index = 0
+    pattern_index = 0
+    count_in_pattern = 0
+
+    while data_index < len(data):
+        tongue, count = pattern[pattern_index]
+        token = tokenizer.encode_bytes(tongue, bytes([data[data_index]]))[0]
+        tokens.append(f"{tongue}:{token}")
+        data_index += 1
+        count_in_pattern += 1
+
+        if count_in_pattern >= count:
+            count_in_pattern = 0
+            pattern_index = (pattern_index + 1) % len(pattern)
+
+    return " ".join(tokens)
+
+
+def _unblend_spelltext(spelltext: str) -> bytes:
+    _require_sacred()
+    tokens = [t for t in spelltext.split() if t]
+    if not tokens:
+        return b""
+
+    tokenizer = _get_tokenizer()
+    out = bytearray()
+    for token in tokens:
+        prefix, raw = _split_prefixed_token(token)
+        if not prefix:
+            raise ValueError("Blend/unblend requires tongue prefixes (e.g., ko:vel'an)")
+        tongue = _normalize_tongue(prefix)
+        out.extend(tokenizer.decode_tokens(tongue, [raw]))
+    return bytes(out)
+
+
+def _parse_context(arg: Optional[str]) -> List[float]:
+    if not arg:
+        return list(DEFAULT_CONTEXT)
+    return [float(x.strip()) for x in arg.split(",") if x.strip()]
+
+
+def _parse_features(arg: Optional[str]) -> Dict[str, float]:
+    if not arg:
+        return dict(DEFAULT_FEATURES)
+    raw = json.loads(arg)
+    features = dict(DEFAULT_FEATURES)
+    for key, value in raw.items():
+        features[key] = float(value)
+    return features
+
+
+def _derive_key(
+    key: Optional[str], salt: bytes, context: List[float], features: Dict[str, float]
+) -> bytes:
+    if key:
+        seed = key.encode("utf-8")
+    else:
+        seed = json.dumps(
+            {"context": context, "features": features}, sort_keys=True
+        ).encode("utf-8")
+    return hmac.new(seed, salt, hashlib.sha256).digest()
+
+
+def _keystream(key: bytes, nonce: bytes, length: int) -> bytes:
+    out = bytearray()
+    counter = 0
+    while len(out) < length:
+        counter_bytes = counter.to_bytes(4, "big")
+        block = hashlib.sha256(key + nonce + counter_bytes).digest()
+        out.extend(block)
+        counter += 1
+    return bytes(out[:length])
+
+
+def _xor_bytes(a: bytes, b: bytes) -> bytes:
+    return bytes(x ^ y for x, y in zip(a, b))
+
+
+def _compute_geoseal_telemetry(context: List[float], features: Dict[str, float]) -> Dict:
+    try:
+        from symphonic_cipher.geoseal import GeoSealManifold
+        import numpy as np
+    except Exception as exc:
+        raise RuntimeError(
+            "GeoSeal module not available. Ensure symphonic_cipher/geoseal is present."
+        ) from exc
+
+    manifold = GeoSealManifold(dimension=len(context))
+    sphere = manifold.project_to_sphere(np.array(context))
+    cube = manifold.project_to_hypercube(features)
+    return manifold.get_telemetry(sphere, cube)
+
+
+def _format_ss1_blob(
+    tokenizer: SacredTongueTokenizer,
+    kid: str,
+    salt: bytes,
+    nonce: bytes,
+    ciphertext: bytes,
+    tag: bytes,
+    aad: Optional[bytes] = None,
+) -> str:
+    def encode_section(section: str, data: bytes) -> str:
+        return " ".join(tokenizer.encode_section(section, data))
+
+    parts = [
+        "SS1",
+        f"kid={kid}",
+        f"salt={encode_section('salt', salt)}",
+        f"nonce={encode_section('nonce', nonce)}",
+        f"ct={encode_section('ct', ciphertext)}",
+        f"tag={encode_section('tag', tag)}",
+    ]
+    if aad:
+        parts.append(f"aad={encode_section('aad', aad)}")
+    return "|".join(parts)
+
+
+def _geoseal_encrypt(
+    plaintext: bytes,
+    key: Optional[str],
+    context: List[float],
+    features: Dict[str, float],
+    embed_context: bool,
+    ss1: bool,
+) -> Dict:
+    salt = os.urandom(16)
+    nonce = os.urandom(12)
+    derived = _derive_key(key, salt, context, features)
+    stream = _keystream(derived, nonce, len(plaintext))
+    ciphertext = _xor_bytes(plaintext, stream)
+    tag = hmac.new(derived, nonce + ciphertext, hashlib.sha256).digest()
+    telemetry = _compute_geoseal_telemetry(context, features)
+
+    env = {
+        "version": "geoseal-v1",
+        "nonce": base64.urlsafe_b64encode(nonce).decode("ascii"),
+        "salt": base64.urlsafe_b64encode(salt).decode("ascii"),
+        "ct": base64.urlsafe_b64encode(ciphertext).decode("ascii"),
+        "tag": base64.urlsafe_b64encode(tag).decode("ascii"),
+        "telemetry": telemetry,
+    }
+
+    if embed_context:
+        env["context"] = context
+        env["features"] = features
+
+    if ss1:
+        tokenizer = _get_tokenizer()
+        env["ss1"] = _format_ss1_blob(
+            tokenizer=tokenizer,
+            kid="geoseal",
+            salt=salt,
+            nonce=nonce,
+            ciphertext=ciphertext,
+            tag=tag,
+            aad=b"geoseal",
+        )
+
+    return env
+
+
+def _geoseal_decrypt(
+    env: Dict,
+    key: Optional[str],
+    context: Optional[List[float]],
+    features: Optional[Dict[str, float]],
+) -> bytes:
+    salt = base64.urlsafe_b64decode(env["salt"])
+    nonce = base64.urlsafe_b64decode(env["nonce"])
+    ciphertext = base64.urlsafe_b64decode(env["ct"])
+    tag = base64.urlsafe_b64decode(env["tag"])
+
+    if not key:
+        if context is None or features is None:
+            if "context" in env and "features" in env:
+                context = env["context"]
+                features = env["features"]
+            else:
+                raise ValueError("Context/features required when no key is provided.")
+
+    context = context or list(DEFAULT_CONTEXT)
+    features = features or dict(DEFAULT_FEATURES)
+
+    derived = _derive_key(key, salt, context, features)
+    expected = hmac.new(derived, nonce + ciphertext, hashlib.sha256).digest()
+    if not hmac.compare_digest(expected, tag):
+        raise ValueError("GeoSeal tag mismatch (integrity check failed).")
+
+    stream = _keystream(derived, nonce, len(ciphertext))
+    return _xor_bytes(ciphertext, stream)
+
+
+def cmd_encode(args) -> None:
+    data = _read_input_bytes(args)
+    tongue = _normalize_tongue(args.tongue)
+    tokenizer = _get_tokenizer()
+    tokens = tokenizer.encode_bytes(tongue, data)
+    if args.prefix:
+        out = " ".join(f"{tongue}:{t}" for t in tokens)
+    else:
+        out = " ".join(tokens)
+    print(out)
+
+
+def cmd_decode(args) -> None:
+    spelltext = _read_input_text(args).strip()
+    if not spelltext:
+        return
+    tokens = [t for t in spelltext.split() if t]
+    tongue_arg = args.tongue.lower() if args.tongue else None
+    tokenizer = _get_tokenizer()
+    out = bytearray()
+    for token in tokens:
+        prefix, raw = _split_prefixed_token(token)
+        tongue = prefix or tongue_arg
+        if not tongue:
+            raise ValueError("Tongue must be specified or prefixed.")
+        tongue = _normalize_tongue(tongue)
+        out.extend(tokenizer.decode_tokens(tongue, [raw]))
+
+    if args.as_text:
+        sys.stdout.write(out.decode("utf-8", errors="replace"))
+    else:
+        sys.stdout.buffer.write(out)
+
+
+def cmd_xlate(args) -> None:
+    spelltext = _read_input_text(args).strip()
+    if not spelltext:
+        return
+    src = _normalize_tongue(args.src)
+    dst = _normalize_tongue(args.dst)
+    tokens = [t for t in spelltext.split() if t]
+    stripped: List[str] = []
+    for token in tokens:
+        prefix, raw = _split_prefixed_token(token)
+        if prefix and _normalize_tongue(prefix) != src:
+            raise ValueError("Spelltext tongue prefix does not match --src.")
+        stripped.append(raw)
+
+    tokenizer = _get_tokenizer()
+    data = tokenizer.decode_tokens(src, stripped)
+    out_tokens = tokenizer.encode_bytes(dst, data)
+    if args.prefix:
+        print(" ".join(f"{dst}:{t}" for t in out_tokens))
+    else:
+        print(" ".join(out_tokens))
+
+
+def cmd_blend(args) -> None:
+    data = _read_input_bytes(args)
+    pattern = _parse_blend_pattern(args.pattern)
+    print(_blend_bytes(data, pattern))
+
+
+def cmd_unblend(args) -> None:
+    spelltext = _read_input_text(args).strip()
+    if not spelltext:
+        return
+    data = _unblend_spelltext(spelltext)
+    if args.as_text:
+        sys.stdout.write(data.decode("utf-8", errors="replace"))
+    else:
+        sys.stdout.buffer.write(data)
+
+
+def cmd_geoseal_encrypt(args) -> None:
+    plaintext = _read_input_bytes(args)
+    context = _parse_context(args.context)
+    features = _parse_features(args.features)
+    env = _geoseal_encrypt(
+        plaintext=plaintext,
+        key=args.key,
+        context=context,
+        features=features,
+        embed_context=args.embed_context,
+        ss1=args.ss1,
+    )
+    print(json.dumps(env, indent=2, sort_keys=True))
+
+
+def cmd_geoseal_decrypt(args) -> None:
+    raw = _read_input_text(args).strip()
+    if not raw:
+        return
+    env = json.loads(raw)
+    context = _parse_context(args.context) if args.context else None
+    features = _parse_features(args.features) if args.features else None
+    plaintext = _geoseal_decrypt(env, args.key, context, features)
+    if args.json:
+        payload = {
+            "plaintext_b64": base64.urlsafe_b64encode(plaintext).decode("ascii"),
+            "telemetry": env.get("telemetry"),
+        }
+        print(json.dumps(payload, indent=2, sort_keys=True))
+    elif args.as_text:
+        sys.stdout.write(plaintext.decode("utf-8", errors="replace"))
+    else:
+        sys.stdout.buffer.write(plaintext)
+
+
+def cmd_selftest(args) -> None:
+    sample = b"hello world"
+    tokenizer = _get_tokenizer()
+    for tongue in ["ko", "av", "ru", "ca", "um", "dr"]:
+        enc = tokenizer.encode_bytes(tongue, sample)
+        dec = tokenizer.decode_tokens(tongue, enc)
+        if dec != sample:
+            raise RuntimeError(f"Round-trip failed for {tongue}")
+
+    ko_spell = tokenizer.encode_bytes("ko", sample)
+    av_spell = tokenizer.encode_bytes("av", tokenizer.decode_tokens("ko", ko_spell))
+    if tokenizer.decode_tokens("av", av_spell) != sample:
+        raise RuntimeError("Xlate failed")
+
+    pattern = _parse_blend_pattern("KO:2,AV:1,DR:1")
+    blended = _blend_bytes(sample, pattern)
+    unblended = _unblend_spelltext(blended)
+    if unblended != sample:
+        raise RuntimeError("Blend/unblend failed")
+
+    env = _geoseal_encrypt(
+        plaintext=sample,
+        key="selftest-key",
+        context=list(DEFAULT_CONTEXT),
+        features=dict(DEFAULT_FEATURES),
+        embed_context=False,
+        ss1=False,
+    )
+    decrypted = _geoseal_decrypt(env, "selftest-key", None, None)
+    if decrypted != sample:
+        raise RuntimeError("GeoSeal encrypt/decrypt failed")
+
+    print("selftest ok")
 
 
 class SCBECLI:
@@ -937,10 +1380,109 @@ the encryption because SCBE uses post-quantum primitives!
                 print(f"\n❌ Error: {str(e)}")
 
 
+def _add_io_args(parser, text_help: str) -> None:
+    parser.add_argument("--text", help=text_help)
+    parser.add_argument("--in", dest="in_path", help="Read input from file path")
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="scbe-cli",
+        description="SCBE-AETHERMOORE CLI (Six Tongues + GeoSeal + demos)",
+    )
+    sub = parser.add_subparsers(dest="command")
+
+    encode = sub.add_parser("encode", help="Encode bytes into Sacred Tongue tokens")
+    encode.add_argument("--tongue", default="KO", help="Tongue code (KO/AV/RU/CA/UM/DR)")
+    encode.add_argument("--prefix", action="store_true", help="Include tongue prefix")
+    _add_io_args(encode, "Text to encode (default: stdin bytes)")
+    encode.set_defaults(func=cmd_encode)
+
+    decode = sub.add_parser("decode", help="Decode Sacred Tongue tokens into bytes")
+    decode.add_argument("--tongue", help="Tongue code if no prefix in spelltext")
+    decode.add_argument("--as-text", action="store_true", help="Decode as UTF-8 text")
+    _add_io_args(decode, "Spelltext to decode (default: stdin)")
+    decode.set_defaults(func=cmd_decode)
+
+    xlate = sub.add_parser("xlate", help="Translate spelltext between tongues")
+    xlate.add_argument("--src", required=True, help="Source tongue code")
+    xlate.add_argument("--dst", required=True, help="Destination tongue code")
+    xlate.add_argument("--prefix", action="store_true", help="Include tongue prefix")
+    _add_io_args(xlate, "Spelltext to translate (default: stdin)")
+    xlate.set_defaults(func=cmd_xlate)
+
+    blend = sub.add_parser("blend", help="Blend bytes across tongues with a pattern")
+    blend.add_argument("--pattern", required=True, help="Pattern like KO:2,AV:1,DR:1")
+    _add_io_args(blend, "Text to blend (default: stdin bytes)")
+    blend.set_defaults(func=cmd_blend)
+
+    unblend = sub.add_parser("unblend", help="Decode blended spelltext")
+    unblend.add_argument("--as-text", action="store_true", help="Decode as UTF-8 text")
+    _add_io_args(unblend, "Blended spelltext (default: stdin)")
+    unblend.set_defaults(func=cmd_unblend)
+
+    ge = sub.add_parser("geoseal-encrypt", help="GeoSeal envelope encrypt")
+    ge.add_argument("--key", help="Optional key (else derived from context/features)")
+    ge.add_argument(
+        "--context",
+        help="Comma-separated context vector (default: built-in safe)",
+    )
+    ge.add_argument(
+        "--features",
+        help="JSON features map (default: built-in safe)",
+    )
+    ge.add_argument(
+        "--embed-context",
+        action="store_true",
+        help="Embed context/features in envelope",
+    )
+    ge.add_argument(
+        "--ss1",
+        action="store_true",
+        help="Include SS1 spelltext blob",
+    )
+    _add_io_args(ge, "Plaintext to seal (default: stdin bytes)")
+    ge.set_defaults(func=cmd_geoseal_encrypt)
+
+    gd = sub.add_parser("geoseal-decrypt", help="GeoSeal envelope decrypt")
+    gd.add_argument("--key", help="Optional key (else derived from context/features)")
+    gd.add_argument(
+        "--context",
+        help="Comma-separated context vector (if not embedded)",
+    )
+    gd.add_argument(
+        "--features",
+        help="JSON features map (if not embedded)",
+    )
+    gd.add_argument("--as-text", action="store_true", help="Decode as UTF-8 text")
+    gd.add_argument(
+        "--json",
+        action="store_true",
+        help="Output JSON with plaintext base64",
+    )
+    _add_io_args(gd, "Envelope JSON (default: stdin)")
+    gd.set_defaults(func=cmd_geoseal_decrypt)
+
+    st = sub.add_parser("selftest", help="Run self-test suite")
+    st.set_defaults(func=cmd_selftest)
+
+    inter = sub.add_parser("interactive", help="Run interactive demo CLI")
+    inter.set_defaults(func=lambda args: SCBECLI().run())
+
+    return parser
+
+
 def main():
     """Entry point"""
-    cli = SCBECLI()
-    cli.run()
+    parser = build_parser()
+    args = parser.parse_args()
+    if not args.command:
+        SCBECLI().run()
+        return
+    if hasattr(args, "func"):
+        args.func(args)
+    else:
+        parser.print_help()
 
 
 if __name__ == "__main__":

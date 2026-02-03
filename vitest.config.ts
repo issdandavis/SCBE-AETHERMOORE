@@ -1,6 +1,17 @@
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  resolve: {
+    // Map .js imports to .ts source files for proper test resolution
+    extensions: ['.ts', '.js', '.json'],
+    alias: {
+      // Resolve src/*.js imports to src/*.ts for testing
+    },
+  },
+  esbuild: {
+    // Ensure proper ESM/CJS handling
+    format: 'esm',
+  },
   test: {
     globals: true,
     environment: 'node',

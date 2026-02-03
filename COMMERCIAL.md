@@ -1,31 +1,61 @@
 # Commercial Licensing for SCBE-AETHERMOORE
 
-SCBE-AETHERMOORE is open source under the AGPLv3 license, which is free for:
+## Open Source License
 
+SCBE-AETHERMOORE is available under the **GNU Affero General Public License v3.0 (AGPLv3)**.
+
+This means it's **free** for:
 - Open-source projects
-- Personal/educational/research use
-- Non-commercial deployments
-- Any use where you comply with AGPLv3 (including sharing source modifications when used over a network)
+- Personal and educational use
+- Research and academic work
+- Any use where you comply with AGPLv3 requirements
 
-For **commercial/enterprise use** without the AGPLv3 obligations (e.g., closed-source integrations, SaaS offerings, internal enterprise deployments), we offer flexible commercial licenses.
+AGPLv3 requires that if you modify the software and provide it as a network service, you must make your modifications available under the same license.
 
-**Benefits of a commercial license:**
-- Proprietary use without source disclosure requirements
+## Commercial License
+
+For **commercial or enterprise use** without AGPLv3 obligations, paid commercial licenses are available.
+
+### When You Need a Commercial License
+
+- Closed-source integrations or modifications
+- SaaS offerings using SCBE-AETHERMOORE
+- Internal enterprise deployments without source disclosure
+- Compliance with corporate open-source policies that prohibit AGPLv3
+
+### Commercial License Benefits
+
+- Use in proprietary products without source disclosure
 - Priority support and consulting
-- Custom feature development or integrations
-- Legal indemnity
-- Compliance-friendly for enterprise open-source policies
+- Custom integrations and features
+- Legal indemnification
+- Patent rights included (USPTO provisional filed)
 
-**Pricing:** 
-- Startup/Indie tier: Starting at $499/month
-- Enterprise: Custom (based on scale, agents, or usage)
-- One-time licenses available for specific use cases
+### Pricing
 
-Contact: **aethermoregames@pm.me**  
-Subject line suggestion: "SCBE-AETHERMOORE Commercial License Inquiry"
+| Tier | Price | For |
+|------|-------|-----|
+| Startup | $499/month | Teams under 10, revenue under $1M |
+| Business | $1,499/month | Teams under 50 |
+| Enterprise | Custom | Larger teams, custom needs |
 
-Or open a GitHub issue marked "Commercial Inquiry" for a response within 48 hours.
+All tiers include patent rights and basic support.
 
-Patent pending (USPTO provisional) - commercial licenses include rights to practice the patented methods.
+### Contact
+
+For commercial licensing inquiries:
+
+- **Email**: aethermoregames@pm.me
+- **GitHub**: Open an issue labeled "Commercial Inquiry"
 
 All inquiries handled via secure, end-to-end encrypted Proton Mail.
+
+## Patent Notice
+
+SCBE-AETHERMOORE includes patent-pending technology (USPTO provisional application filed).
+
+Commercial licenses include rights to practice the patented methods. Open-source use under AGPLv3 is permitted for non-commercial purposes.
+
+---
+
+Copyright 2026 Issac Daniel Davis. All rights reserved.
