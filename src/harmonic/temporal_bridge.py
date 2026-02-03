@@ -28,6 +28,19 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional, Tuple
 import time
 import math
+import json
+
+# Try to import HiveMemory for persistent storage
+try:
+    import sys
+    import os
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+    from fleet.hive_memory import HiveMemory, SacredTongueHive, MemoryTier
+    HIVE_AVAILABLE = True
+except ImportError:
+    HIVE_AVAILABLE = False
+    HiveMemory = None
+    SacredTongueHive = None
 
 from .temporal_intent_scaling import (
     TemporalIntentState,
@@ -140,6 +153,8 @@ class TemporalPipelineBridge:
         allow_threshold: float = 0.3,
         quarantine_threshold: float = 0.5,
         escalate_threshold: float = 0.7,
+        hive: Optional["HiveMemory"] = None,
+        load_from_hive: bool = True,
     ):
         """
         Initialize bridge for an agent.
@@ -150,6 +165,8 @@ class TemporalPipelineBridge:
             allow_threshold: H_eff normalized threshold for ALLOW
             quarantine_threshold: H_eff normalized threshold for QUARANTINE
             escalate_threshold: H_eff normalized threshold for ESCALATE
+            hive: Optional HiveMemory instance for persistent storage
+            load_from_hive: Whether to load existing profile from hive
         """
         self.agent_id = agent_id
         self.R = R
@@ -157,16 +174,88 @@ class TemporalPipelineBridge:
         self.quarantine_threshold = quarantine_threshold
         self.escalate_threshold = escalate_threshold
 
+        # Hive memory integration
+        self._hive = hive
+        self._hive_key_prefix = f"temporal:agent:{agent_id}"
+
         # Temporal state
         self.state = TemporalIntentState()
         self.drift_monitor = DriftMonitor()
 
-        # Agent profile
+        # Agent profile - try to load from hive first
         self.profile = AgentProfile(agent_id=agent_id)
+        if load_from_hive and self._hive is not None:
+            self._load_from_hive()
 
         # Timestamps
         self.created_at = time.time()
         self.last_update = self.created_at
+
+    def _load_from_hive(self) -> bool:
+        """Load agent profile from Hive Memory."""
+        if self._hive is None:
+            return False
+
+        profile_data = self._hive.load(f"{self._hive_key_prefix}:profile", self.agent_id)
+        if profile_data:
+            self.profile.total_requests = profile_data.get("total_requests", 0)
+            self.profile.allow_count = profile_data.get("allow_count", 0)
+            self.profile.quarantine_count = profile_data.get("quarantine_count", 0)
+            self.profile.escalate_count = profile_data.get("escalate_count", 0)
+            self.profile.deny_count = profile_data.get("deny_count", 0)
+            self.profile.reputation_score = profile_data.get("reputation_score", 0.5)
+            self.profile.created_at = profile_data.get("created_at", time.time())
+            return True
+        return False
+
+    def _save_to_hive(self) -> bool:
+        """Save agent profile to Hive Memory."""
+        if self._hive is None or not HIVE_AVAILABLE:
+            return False
+
+        profile_data = {
+            "agent_id": self.agent_id,
+            "total_requests": self.profile.total_requests,
+            "allow_count": self.profile.allow_count,
+            "quarantine_count": self.profile.quarantine_count,
+            "escalate_count": self.profile.escalate_count,
+            "deny_count": self.profile.deny_count,
+            "reputation_score": self.profile.reputation_score,
+            "created_at": self.profile.created_at,
+            "last_update": time.time(),
+        }
+
+        self._hive.save(
+            f"{self._hive_key_prefix}:profile",
+            profile_data,
+            tongue=SacredTongueHive.DR,  # Audit - never evicted
+            owner_agent=self.agent_id,
+        )
+        return True
+
+    def _save_decision_to_hive(self, record: AgentDecisionRecord) -> bool:
+        """Save a decision record to Hive Memory audit trail."""
+        if self._hive is None or not HIVE_AVAILABLE:
+            return False
+
+        decision_key = f"{self._hive_key_prefix}:decision:{int(record.timestamp * 1000)}"
+        decision_data = {
+            "timestamp": record.timestamp,
+            "d_star": record.d_star,
+            "H_basic": record.H_basic,
+            "H_effective": record.H_effective,
+            "x_factor": record.x_factor,
+            "decision": record.decision,
+            "reasoning": record.reasoning,
+        }
+
+        self._hive.save(
+            decision_key,
+            decision_data,
+            tongue=SacredTongueHive.DR,  # Audit trail
+            owner_agent=self.agent_id,
+        )
+        return True
 
     def update_state(
         self,
@@ -330,6 +419,10 @@ class TemporalPipelineBridge:
         # Update reputation
         self.profile.update_reputation()
 
+        # Persist to Hive Memory (if available)
+        self._save_decision_to_hive(record)
+        self._save_to_hive()
+
         return assessment
 
     def get_reputation(self) -> float:
@@ -385,6 +478,18 @@ class TemporalPipelineBridge:
 # ============================================================================
 
 _bridge_registry: Dict[str, TemporalPipelineBridge] = {}
+_global_hive: Optional["HiveMemory"] = None
+
+
+def set_global_hive(hive: "HiveMemory") -> None:
+    """Set the global HiveMemory instance for all bridges."""
+    global _global_hive
+    _global_hive = hive
+
+
+def get_global_hive() -> Optional["HiveMemory"]:
+    """Get the global HiveMemory instance."""
+    return _global_hive
 
 
 def get_bridge(agent_id: str, **kwargs) -> TemporalPipelineBridge:
@@ -399,6 +504,9 @@ def get_bridge(agent_id: str, **kwargs) -> TemporalPipelineBridge:
         TemporalPipelineBridge for the agent
     """
     if agent_id not in _bridge_registry:
+        # Use global hive if no hive provided
+        if "hive" not in kwargs and _global_hive is not None:
+            kwargs["hive"] = _global_hive
         _bridge_registry[agent_id] = TemporalPipelineBridge(agent_id, **kwargs)
     return _bridge_registry[agent_id]
 

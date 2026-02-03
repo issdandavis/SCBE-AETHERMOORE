@@ -35,8 +35,33 @@ Patent Claim: 61 (The Flux - Dynamic Geometry)
 from __future__ import annotations
 
 import numpy as np
-from scipy.linalg import expm, sqrtm
 from dataclasses import dataclass, field
+
+# Try to import scipy, provide fallback if unavailable
+try:
+    from scipy.linalg import expm, sqrtm
+    SCIPY_AVAILABLE = True
+except ImportError:
+    SCIPY_AVAILABLE = False
+
+    def expm(A: np.ndarray) -> np.ndarray:
+        """Matrix exponential fallback using Taylor series."""
+        result = np.eye(A.shape[0])
+        term = np.eye(A.shape[0])
+        for k in range(1, 30):
+            term = term @ A / k
+            result = result + term
+            if np.linalg.norm(term) < 1e-15:
+                break
+        return result
+
+    def sqrtm(A: np.ndarray) -> np.ndarray:
+        """Matrix square root fallback using eigendecomposition."""
+        eigenvalues, eigenvectors = np.linalg.eigh(A)
+        eigenvalues = np.maximum(eigenvalues, 0)
+        sqrt_eigenvalues = np.sqrt(eigenvalues)
+        return eigenvectors @ np.diag(sqrt_eigenvalues) @ eigenvectors.T
+
 from typing import Tuple, Dict, Any, Optional, List
 from enum import Enum
 

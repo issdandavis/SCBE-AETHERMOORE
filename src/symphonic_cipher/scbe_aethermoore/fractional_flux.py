@@ -37,8 +37,46 @@ Patent Claim: 16 (Fractional Dimension Flux)
 from __future__ import annotations
 
 import numpy as np
-from scipy.integrate import solve_ivp
 from dataclasses import dataclass, field
+
+# Try to import scipy, provide fallback if unavailable
+try:
+    from scipy.integrate import solve_ivp
+    SCIPY_AVAILABLE = True
+except ImportError:
+    SCIPY_AVAILABLE = False
+
+    def solve_ivp(fun, t_span, y0, method='RK45', t_eval=None, **kwargs):
+        """Simple Euler method fallback for solve_ivp."""
+        t0, tf = t_span
+        y = np.array(y0, dtype=float)
+        dt = (tf - t0) / 1000  # Fixed step size
+
+        if t_eval is None:
+            t_eval = np.linspace(t0, tf, 100)
+
+        # Solve using Euler method
+        t_current = t0
+        results_t = [t0]
+        results_y = [y.copy()]
+
+        for t_target in t_eval[1:]:
+            while t_current < t_target:
+                step = min(dt, t_target - t_current)
+                y = y + step * np.array(fun(t_current, y))
+                t_current += step
+            results_t.append(t_target)
+            results_y.append(y.copy())
+
+        # Return object mimicking scipy's solution
+        class Solution:
+            def __init__(self, t, y):
+                self.t = np.array(t)
+                self.y = np.array(y).T
+                self.success = True
+
+        return Solution(results_t, results_y)
+
 from typing import Tuple, Dict, Any, Optional, List, Callable
 from enum import Enum
 

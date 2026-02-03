@@ -59,6 +59,10 @@ from .temporal_bridge import (
     clear_bridges,
     list_agents,
     get_all_summaries,
+    # Global hive
+    set_global_hive,
+    get_global_hive,
+    HIVE_AVAILABLE,
     # Helper
     process_with_temporal,
 )
@@ -104,6 +108,10 @@ __all__ = [
     "clear_bridges",
     "list_agents",
     "get_all_summaries",
+    # Global hive
+    "set_global_hive",
+    "get_global_hive",
+    "HIVE_AVAILABLE",
     # Helper
     "process_with_temporal",
 ]
