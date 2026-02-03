@@ -183,8 +183,9 @@ def compute_semantic_phases(
 
     # Compute text hash for phase modulation (deterministic)
     text_bytes = text.encode('utf-8')
-    text_hash = int(hashlib.sha256(text_bytes).hexdigest()[:8], 16)
-    hash_factor = (text_hash / (2 ** 32)) * math.pi / 6  # ±30° variation
+    # Use 16 hex chars (64 bits) for better distribution and lower collision probability
+    text_hash = int(hashlib.sha256(text_bytes).hexdigest()[:16], 16)
+    hash_factor = (text_hash / (2 ** 64)) * math.pi / 6  # ±30° variation
 
     phases = {}
     for tongue in TongueID:

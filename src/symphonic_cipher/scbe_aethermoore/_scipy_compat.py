@@ -208,9 +208,9 @@ except ImportError:
         t = t0
         y = y0.copy()
 
-        # Check if t_eval starts at t0
+        # Check if t_eval starts at t0 (using tight tolerance for numerical stability)
         t_eval_array = np.asarray(t_eval)
-        if np.isclose(t_eval_array[0], t0):
+        if np.isclose(t_eval_array[0], t0, atol=1e-9, rtol=1e-9):
             # t_eval includes t0, so we can include it in results
             t_values = [t0]
             y_values = [y0.copy()]
