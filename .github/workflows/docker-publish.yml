@@ -51,6 +51,7 @@ jobs:
             ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+                    network: host
 
       - name: Summary
         run: |
