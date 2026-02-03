@@ -24,6 +24,11 @@ import warnings
 # Track which backend is being used
 SCIPY_AVAILABLE = False
 
+# Tolerance for comparing t_eval values to t0 in solve_ivp
+# This tight tolerance ensures numerical stability while allowing for
+# floating-point representation differences
+_T_EVAL_TOLERANCE = 1e-9
+
 # =============================================================================
 # FFT Functions
 # =============================================================================
@@ -210,7 +215,7 @@ except ImportError:
 
         # Check if t_eval starts at t0 (using tight tolerance for numerical stability)
         t_eval_array = np.asarray(t_eval)
-        if np.isclose(t_eval_array[0], t0, atol=1e-9, rtol=1e-9):
+        if np.isclose(t_eval_array[0], t0, atol=_T_EVAL_TOLERANCE, rtol=_T_EVAL_TOLERANCE):
             # t_eval includes t0, so we can include it in results
             t_values = [t0]
             y_values = [y0.copy()]
