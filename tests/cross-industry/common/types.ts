@@ -37,21 +37,21 @@ export type AttackType =
  * 6D context state vector
  */
 export interface Context6D {
-  identity: number[];      // Identity embedding
-  intentPhase: number;     // Intent phase angle
-  trajectory: number[];    // Trajectory coherence vector
-  timestamp: number;       // Unix timestamp
-  commitment: number;      // Commitment strength [0,1]
-  signatureFlag: boolean;  // Has valid signature
+  identity: number[]; // Identity embedding
+  intentPhase: number; // Intent phase angle
+  trajectory: number[]; // Trajectory coherence vector
+  timestamp: number; // Unix timestamp
+  commitment: number; // Commitment strength [0,1]
+  signatureFlag: boolean; // Has valid signature
 }
 
 /**
  * Extended 9D state vector
  */
 export interface Context9D extends Context6D {
-  timeFlow: number;        // Time flow rate deviation
-  entropyDelta: number;    // Entropy change rate
-  quantumState: number[];  // Quantum coherence vector
+  timeFlow: number; // Time flow rate deviation
+  entropyDelta: number; // Entropy change rate
+  quantumState: number[]; // Quantum coherence vector
 }
 
 /**
@@ -59,8 +59,8 @@ export interface Context9D extends Context6D {
  */
 export interface PolicyRealm {
   id: string;
-  center: number[];        // Hyperbolic center point
-  radius: number;          // Trust radius in hyperbolic space
+  center: number[]; // Hyperbolic center point
+  radius: number; // Trust radius in hyperbolic space
   allowedActions: string[];
   riskThreshold: number;
   requiresMultiSig: boolean;

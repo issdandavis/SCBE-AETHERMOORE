@@ -53,6 +53,14 @@ Safe Center (low cost) ───────► Boundary (infinite cost)
 
 ## Quick Start
 
+### Install (Node / TypeScript)
+
+```bash
+npm i scbe-aethermoore
+```
+
+### Install (Python)
+
 ```bash
 pip install scbe-aethermoore
 ```
@@ -71,6 +79,44 @@ print(result.decision)  # ALLOW, QUARANTINE, or DENY
 print(result.risk_score)  # 0.0 to 1.0
 print(result.explanation)  # Human-readable reason
 ```
+
+## CLI Quick Start (Six Tongues + GeoSeal)
+
+```bash
+# From npm (requires Python 3.x on PATH)
+npx scbe encode --tongue KO --text "hello" > spell.txt
+npx scbe decode --tongue KO --as-text --in spell.txt
+
+# Or run directly with Python
+# Encode/Decode (Sacred Tongues)
+python scbe-cli.py encode --tongue KO --text "hello" > spell.txt
+python scbe-cli.py decode --tongue KO --as-text --in spell.txt
+
+# Cross-translate KO → AV
+python scbe-cli.py xlate --src KO --dst AV --prefix --in spell.txt
+
+# Blend/Unblend pattern (KO:2,AV:1,DR:1)
+echo -n "secret" | python scbe-cli.py blend --pattern KO:2,AV:1,DR:1 > blend.txt
+python scbe-cli.py unblend --as-text --in blend.txt
+
+# GeoSeal envelope (context-aware sealing)
+echo -n "payload" | python scbe-cli.py geoseal-encrypt --ss1 > envelope.json
+python scbe-cli.py geoseal-decrypt --as-text --in envelope.json
+
+# Self-test
+python scbe-cli.py selftest
+```
+
+## Capabilities
+
+- **14-layer hyperbolic pipeline** with risk-gated decisions (ALLOW / QUARANTINE / DENY)
+- **Sacred Tongues** tokenizer with 6x256 bijective encodings
+- **GeoSeal envelopes** and RWP protocol for tamper-evident sealing
+- **Fleet governance** with weighted consensus and rogue detection
+- **Post-quantum hooks** (ML-KEM / ML-DSA integration points)
+- **Observability** via structured telemetry and benchmarks
+
+Full list in `docs/CAPABILITIES.md`.
 
 ## Why SCBE?
 
@@ -115,8 +161,7 @@ Classified system access control with post-quantum cryptography.
 
 ```bash
 # Start the API server
-scbe-api --port 8000
-
+SCBE_API_KEY=demo-key python -m uvicorn api.main:app --port 8000
 # Validate an action
 curl -X POST http://localhost:8000/v1/validate \
   -H "Content-Type: application/json" \
@@ -173,6 +218,7 @@ Layer 14:    Audit telemetry
 - [Technical Reference](docs/TECHNICAL_REFERENCE.md)
 - [API Reference](docs/API_REFERENCE.md)
 - [Architecture Deep Dive](docs/ARCHITECTURE.md)
+- [Capabilities](docs/CAPABILITIES.md)
 
 ## Contributing
 
@@ -196,12 +242,28 @@ npm test && pytest
 
 ---
 
+## Feedback, Support, and Links
+
+| Resource | Link |
+|----------|------|
+| **npm** | https://www.npmjs.com/package/scbe-aethermoore |
+| **Source** | https://github.com/issdandavis/SCBE-AETHERMOORE |
+| **Pitch Deck** | https://scbe-aethermoore-x8vu3ly.gamma.site/ |
+| **Demo** | https://scbe-aethermoore-issdandavis.streamlit.app |
+| **Issues** | https://github.com/issdandavis/SCBE-AETHERMOORE/issues |
+| **Email** | issdandavis@gmail.com |
+| **Sponsor** | https://github.com/sponsors/issdandavis |
+| **CLI Tool** | https://aethermoorgames.gumroad.com/l/dqncbs |
+| **Subscribe** | https://aethermoorgames.gumroad.com/subscribe |
+
+---
+
 <p align="center">
   <strong>SCBE-AETHERMOORE</strong><br/>
   Built for the age of autonomous AI.<br/><br/>
   <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/stargazers">Star this repo</a> •
   <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/issues">Report Issue</a> •
-  <a href="mailto:isaac@spiralverse.dev">Contact</a>
+  <a href="mailto:issdandavis@gmail.com">Contact</a>
 </p>
 
 ---

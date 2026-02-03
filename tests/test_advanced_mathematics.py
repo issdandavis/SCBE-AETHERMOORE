@@ -288,9 +288,15 @@ class TestIsometryPreservation:
         max_distance_change = 0.0
 
         for i in range(iterations):
-            # Random points
-            u = np.random.rand(12) * 0.6
-            v = np.random.rand(12) * 0.6
+            # Random points INSIDE the Poincaré ball (||u|| < 1)
+            # Generate random direction and scale to random radius < 0.9
+            direction_u = np.random.randn(12)
+            direction_u = direction_u / np.linalg.norm(direction_u)
+            u = direction_u * np.random.uniform(0.1, 0.9)
+
+            direction_v = np.random.randn(12)
+            direction_v = direction_v / np.linalg.norm(direction_v)
+            v = direction_v * np.random.uniform(0.1, 0.9)
 
             # Random rotation (orthogonal matrix)
             Q, _ = np.linalg.qr(np.random.randn(12, 12))
