@@ -205,13 +205,23 @@ except ImportError:
             t_eval = np.linspace(t0, tf, n_steps + 1)
 
         # Initialize
-        t_values = [t0]
-        y_values = [y0.copy()]
-
         t = t0
         y = y0.copy()
 
-        for t_next in t_eval[1:]:
+        # Check if t_eval starts at t0
+        t_eval_array = np.asarray(t_eval)
+        if np.isclose(t_eval_array[0], t0):
+            # t_eval includes t0, so we can include it in results
+            t_values = [t0]
+            y_values = [y0.copy()]
+            eval_points = t_eval_array[1:]
+        else:
+            # t_eval doesn't start at t0, compute all points
+            t_values = []
+            y_values = []
+            eval_points = t_eval_array
+
+        for t_next in eval_points:
             # RK4 steps to reach t_next
             while t < t_next:
                 h = min(max_step, t_next - t)
