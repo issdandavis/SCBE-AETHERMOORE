@@ -1,31 +1,33 @@
-import { hkdfSha256 } from './hkdf.js';
 import crypto from 'node:crypto';
 
-type SessionKey = string;
-const counters = new Map<SessionKey, number>();
-
-export function deriveNoncePrefix(kNonce: Buffer, sessionId: string): Buffer {
-  // 64-bit prefix: HKDF(k_nonce, session_id)
-  const info = Buffer.from(`scbe:nonce:prefix:v1`);
-  const salt = crypto.createHash('sha256').update(sessionId).digest();
-  return hkdfSha256(kNonce, salt, info, 8);
+/**
+ * Generate a cryptographically secure random 96-bit (12-byte) nonce.
+ *
+ * FIX for HIGH-001: Previously used an in-memory counter that reset on process
+ * restart, risking nonce reuse with the same session_id. Random nonces eliminate
+ * this vulnerability entirely.
+ *
+ * Birthday bound: ~2^48 messages before 50% collision probability, which is
+ * acceptable for typical authorization workloads.
+ */
+export function nextNonce(): { nonce: Buffer } {
+  return { nonce: crypto.randomBytes(12) };
 }
 
-export function nextNonce(prefix: Buffer, sessionId: string): { nonce: Buffer; counter: number } {
-  const key = sessionId;
-  const cur = counters.get(key) ?? -1;
-  const next = (cur + 1) >>> 0; // 32-bit counter
-  counters.set(key, next);
-
-  // Rotate before wrap
-  if (next === 0xffffffff) {
-    throw new Error('nonce counter exhausted; rotate key/session');
-  }
-  const counterBuf = Buffer.alloc(4);
-  counterBuf.writeUInt32BE(next, 0);
-  return { nonce: Buffer.concat([prefix, counterBuf]), counter: next };
+/**
+ * @deprecated No longer used for nonce generation. Session binding is enforced
+ * via AAD (env, provider_id, intent_id) rather than nonce prefix.
+ * Kept for backward compatibility with any external callers.
+ */
+export function deriveNoncePrefix(_kNonce: Buffer, _sessionId: string): Buffer {
+  // Return 8 zero bytes - prefix matching is disabled in verifyEnvelope
+  return Buffer.alloc(8);
 }
 
-export function resetSessionCounter(sessionId: string) {
-  counters.delete(sessionId);
+/**
+ * @deprecated Counter-based nonce tracking removed (HIGH-001 fix).
+ * This function is now a no-op kept for API compatibility.
+ */
+export function resetSessionCounter(_sessionId: string): void {
+  // No-op: random nonces don't require session tracking
 }

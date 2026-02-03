@@ -170,6 +170,69 @@ export function logMap0(p: number[]): number[] {
   return scale(p, factor);
 }
 
+/**
+ * General exponential map at any base point p
+ *
+ * exp_p(v) = p ⊕ (tanh(λ_p‖v‖/2) · v/‖v‖)
+ * where λ_p = 2/(1-‖p‖²) and ⊕ is Möbius addition
+ *
+ * @param p - Base point in Poincaré ball
+ * @param v - Tangent vector at p
+ * @returns Point in Poincaré ball
+ */
+export function exponentialMap(p: number[], v: number[]): number[] {
+  const vNorm = norm(v);
+  if (vNorm < EPSILON) return [...p];
+
+  const pNormSq = normSq(p);
+  const lambda_p = 2 / (1 - pNormSq + EPSILON);
+
+  // Direction of v
+  const direction = scale(v, 1 / vNorm);
+
+  // tanh(λ_p * ‖v‖ / 2) * direction
+  const tanhTerm = Math.tanh((lambda_p * vNorm) / 2);
+  const expV = scale(direction, tanhTerm);
+
+  // Möbius addition p ⊕ expV
+  const result = mobiusAdd(p, expV);
+
+  // Ensure result stays in ball
+  return projectToBall(result);
+}
+
+/**
+ * General logarithmic map from q to tangent space at p
+ *
+ * log_p(q) = (2/λ_p) · arctanh(‖-p ⊕ q‖) · (-p ⊕ q)/‖-p ⊕ q‖
+ * where λ_p = 2/(1-‖p‖²) and ⊕ is Möbius addition
+ *
+ * @param p - Base point in Poincaré ball
+ * @param q - Target point in Poincaré ball
+ * @returns Tangent vector at p
+ */
+export function logarithmicMap(p: number[], q: number[]): number[] {
+  const pNormSq = normSq(p);
+  const lambda_p = 2 / (1 - pNormSq + EPSILON);
+
+  // -p ⊕ q (Möbius addition of -p and q)
+  const negP = scale(p, -1);
+  const diff = mobiusAdd(negP, q);
+
+  const diffNorm = norm(diff);
+  if (diffNorm < EPSILON) return p.map(() => 0);
+
+  // arctanh(‖diff‖)
+  const atanh = 0.5 * Math.log((1 + diffNorm) / (1 - diffNorm + EPSILON));
+
+  // (2/λ_p) * arctanh * direction
+  const factor = ((2 / lambda_p) * atanh) / diffNorm;
+  return scale(diff, factor);
+}
+
+// Aliases for backward compatibility and naming clarity
+export { mobiusAdd as mobiusAddition };
+
 // ═══════════════════════════════════════════════════════════════
 // Layer 6: Breath Transform
 // ═══════════════════════════════════════════════════════════════

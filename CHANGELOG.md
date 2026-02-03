@@ -1,5 +1,104 @@
 # SCBE Production Pack Changelog
 
+## [Unreleased]
+
+### Documentation
+- Corrected **Temporal-Intent Harmonic Scaling** formula to `H_eff(d, R, x) = R^(d^2 * x)` with x in exponent for super-exponential growth. Linked to L11 triadic temporal distance + CPSE deviation channels.
+- Updated legacy master reference to align the core 14-layer stack and source index with in-repo canonical docs.
+
+## [3.2.0] - 2026-02-02
+
+### Added
+- **Spiralverse 6-Language Codex System v2.0** (`src/spiralverse/`)
+  - **Hive Memory** (`hive_memory.py`, ~570 lines): AET Protocol with 3-tier memory management
+    - Hot/Warm/Cold memory tiers with CHARM-based eviction priority
+    - Adaptive sync scheduling based on distance (15s at <10km, 1hr at >2000km)
+  - **Polyglot Alphabet** (`polyglot_alphabet.py`, ~430 lines): 6 cipher alphabets
+    - 48 symbols across 6 tongues with SHA-256 signatures
+    - XOR-based layered cipher with 2^18 max keyspace
+  - **6D Vector Navigation** (`vector_6d.py`, ~520 lines): Swarm coordination
+    - Position6D with spatial (AXIOM/FLOW/GLYPH) + operational (ORACLE/CHARM/LEDGER)
+    - Auto-locking cryptographic docking when velocity Δ < 0.5 m/s
+  - **Proximity Optimizer** (`proximity_optimizer.py`, ~470 lines): Bandwidth optimization
+    - Distance-based tongue count (1-6 tongues based on proximity)
+    - 45-70% bandwidth savings during swarm convergence
+  - **RWP2 Envelope** (`rwp2_envelope.py`, ~530 lines): Secure multi-tongue messaging
+    - Spelltext + Base64 payload + per-tongue HMAC-SHA256 signatures
+    - Replay protection with nonce/timestamp validation
+    - Operation tiers: Tier 1 (1.5x) to Tier 4 (656x) security multipliers
+  - **Aethercode Interpreter** (`aethercode.py`, ~1010 lines): Esoteric programming language
+    - 6 domain handlers: execution, control, structure, temporal, harmony, record
+    - Polyphonic chant synthesis with frequency bands per tongue (220-587 Hz)
+    - .wav audio export as audible proof of execution
+    - RWP2-signed execution proofs
+
+- **Temporal-Intent Harmonic Scaling** (`temporal_intent.py`, ~480 lines)
+  - Extended Harmonic Wall: `H_eff(d, R, x) = R^(d² · x)`
+  - `x` factor derived from existing L11 triadic temporal + CPSE z-vector channels:
+    - `x(t) = f(d_tri(t), chaosdev(t), fractaldev(t), energydev(t))`
+  - Brief deviations (x<1) forgiven; sustained drift (x>1) compounds super-exponentially
+  - IntentState classification: BENIGN/NEUTRAL/DRIFTING/ADVERSARIAL/EXILED
+  - Trust decay with exile after 10 low-trust rounds (AC-2.3.2)
+
+- **SYSTEM_ARCHITECTURE.md v2.0**: Comprehensive documentation
+  - Updated to 14-layer architecture
+  - All Spiralverse modules documented
+  - H_eff(d,R,x) canonical formula with CPSE integration
+  - Source index and verification checklist
+
+- **Demo Runners**
+  - `run_spiralverse_demos.py`: 7-module demo suite (all passing)
+  - `run_dual_lattice_demo.py`: UTF-8 wrapper for Windows compatibility
+
+### Demo Results
+- Polyglot Alphabet: 48 chars, 6 tongues, 2^18 keyspace
+- 6D Vector Navigation: Swarm docking, hyperbolic distances
+- Proximity Optimizer: 45.7% bandwidth savings
+- RWP2 Envelope: Multi-tongue signatures, replay protection
+- Hive Memory: 3-tier AET protocol, adaptive sync
+- Aethercode: 16 verses executed, .wav export, RWP2 proof
+- Temporal Intent: L11 triadic + CPSE channels wired to H_eff
+
+### Integration
+- Spiralverse modules integrate with existing crypto layer:
+  - `dual_lattice.py`: 10×10 coupling matrix, action authorization
+  - `octree.py`: Spectral clustering, 0.03% occupancy
+  - `geo_seal.py`: Negative curvature verified, trust decay
+  - `symphonic_waveform.py`: Geodesic traversals, harmonic fingerprints
+  - `signed_lattice_bridge.py`: Full stack integration (ALLOW/QUARANTINE/DENY/ESCALATE)
+
+---
+
+## [3.1.1] - 2026-02-01
+
+### Added
+- **Video-Security Integration Layer** (`src/video/security-integration.ts`)
+  - **Fractal Fingerprinting**: Generate unique visual identities from envelope AAD
+    - `generateFractalFingerprint(aad)` - Creates deterministic fractal signature
+    - `verifyFractalFingerprint(fp, aad)` - Validates fingerprint authenticity
+  - **Agent Trajectory Embedding**: Poincaré state tracking in FleetJob context
+    - `embedTrajectoryState(job, role, timestamp)` - Adds 6D hyperbolic state
+    - `extractJobTrajectory(jobs)` - Extracts trajectory from job history
+  - **Audit Reel Generation**: Lattice-watermarked video from envelope history
+    - `generateAuditReel(envelopes, config)` - Full video with chain of custody hash
+    - `streamAuditReelFrames(envelopes, config)` - Memory-efficient streaming
+  - **Visual Proof Verification**: Trajectory replay for governance verification
+    - `createVisualProof(jobs)` - Generate verifiable proof from job trajectory
+    - `verifyVisualProof(proof)` - Validate proof integrity (ball containment + hash)
+    - `renderVisualProof(proof, config)` - Render proof to video
+
+### Integration Points
+- Envelope AAD → Fractal fingerprint (session-unique visual identity)
+- FleetOrchestrator JobData → Poincaré trajectory state
+- Envelope history → Audit reel (governance visualization)
+- Sacred Tongue masks → Agent role mapping (captain→ko, security→dr, etc.)
+
+### Tests
+- 27 new tests in `tests/video/security-integration.test.ts`
+- Total test count: 1401 passing, 6 skipped
+
+---
+
 ## [3.1.0] - 2026-01-31
 
 ### Added

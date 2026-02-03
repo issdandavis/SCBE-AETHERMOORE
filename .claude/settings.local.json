@@ -15,7 +15,16 @@
       "Bash(ls:*)",
       "Bash(npm install:*)",
       "Bash(npm.cmd install:*)",
-      "Bash(npm.cmd test:*)"
+      "Bash(npm.cmd test:*)",
+      "Bash(gh --version:*)",
+      "Bash(git reset:*)",
+      "Bash(git commit:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr edit:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh run view:*)",
+      "Bash(findstr:*)"
     ]
   }
 }
