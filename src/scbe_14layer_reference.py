@@ -23,7 +23,12 @@ if sys.platform == "win32":
 import hashlib
 import numpy as np
 from typing import Tuple, List, Optional
-from scipy.signal import hilbert
+
+# Use scipy-compatible imports with fallback
+try:
+    from scipy.signal import hilbert
+except ImportError:
+    from symphonic_cipher.scbe_aethermoore._scipy_compat import hilbert
 
 
 # ============================================================
