@@ -24,6 +24,11 @@ import warnings
 # Track which backend is being used
 SCIPY_AVAILABLE = False
 
+# Tolerance for comparing t_eval values to t0 in solve_ivp
+# This tight tolerance ensures numerical stability while allowing for
+# floating-point representation differences
+_T_EVAL_TOLERANCE = 1e-9
+
 # =============================================================================
 # FFT Functions
 # =============================================================================
@@ -205,13 +210,23 @@ except ImportError:
             t_eval = np.linspace(t0, tf, n_steps + 1)
 
         # Initialize
-        t_values = [t0]
-        y_values = [y0.copy()]
-
         t = t0
         y = y0.copy()
 
-        for t_next in t_eval[1:]:
+        # Check if t_eval starts at t0 (using tight tolerance for numerical stability)
+        t_eval_array = np.asarray(t_eval)
+        if np.isclose(t_eval_array[0], t0, atol=_T_EVAL_TOLERANCE, rtol=_T_EVAL_TOLERANCE):
+            # t_eval includes t0, so we can include it in results
+            t_values = [t0]
+            y_values = [y0.copy()]
+            eval_points = t_eval_array[1:]
+        else:
+            # t_eval doesn't start at t0, compute all points
+            t_values = []
+            y_values = []
+            eval_points = t_eval_array
+
+        for t_next in eval_points:
             # RK4 steps to reach t_next
             while t < t_next:
                 h = min(max_step, t_next - t)
