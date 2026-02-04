@@ -215,7 +215,8 @@ def _liboqs_available() -> bool:
     try:
         import oqs
         return True
-    except ImportError:
+    except (ImportError, RuntimeError):
+        # liboqs-python not installed or shared libraries not found
         return False
 
 LIBOQS_AVAILABLE = _liboqs_available()
