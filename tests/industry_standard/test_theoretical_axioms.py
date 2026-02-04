@@ -28,7 +28,12 @@ import numpy as np
 import time
 import statistics
 from typing import List, Tuple, Callable
-from scipy import stats
+
+# Use scipy-compatible imports with fallback (stats currently unused but kept for future)
+try:
+    from scipy import stats
+except ImportError:
+    stats = None
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 
