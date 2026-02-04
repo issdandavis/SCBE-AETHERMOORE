@@ -34,3 +34,7 @@
 [submodule "external_repos/spiralverse-protocol"]
 	path = external_repos/spiralverse-protocol
 	url = git@github.com:issdandavis/spiralverse-protocol.git
+
+[submodule "packages/six-tongues-geoseal"]
+	path = packages/six-tongues-geoseal
+	url = https://github.com/issdandavis/six-tongues-geoseal.git

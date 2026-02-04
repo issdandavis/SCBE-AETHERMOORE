@@ -27,8 +27,8 @@ jobs:
           ls -la sixtongues-cli-*.zip
 
       - name: Upload to Dropbox
-        if: ${{ secrets.DROPBOX_TOKEN != '' }}
-        env:
+      if: ${{ secrets.DROPBOX_TOKEN }} 
+            env:
           DROPBOX_TOKEN: ${{ secrets.DROPBOX_TOKEN }}
         run: |
           ZIP_FILE="sixtongues-cli-${{ steps.version.outputs.VERSION }}.zip"

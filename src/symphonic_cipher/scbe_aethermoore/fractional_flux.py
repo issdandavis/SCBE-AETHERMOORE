@@ -37,8 +37,13 @@ Patent Claim: 16 (Fractional Dimension Flux)
 from __future__ import annotations
 
 import numpy as np
-from scipy.integrate import solve_ivp
 from dataclasses import dataclass, field
+
+# Use scipy-compatible imports with fallback
+try:
+    from scipy.integrate import solve_ivp
+except ImportError:
+    from ._scipy_compat import solve_ivp
 from typing import Tuple, Dict, Any, Optional, List, Callable
 from enum import Enum
 

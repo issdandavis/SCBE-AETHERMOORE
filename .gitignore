@@ -51,3 +51,17 @@ Thumbs.db
 *.egg-info/
 .pytest_cache/
 .mypy_cache/
+
+### codex cleanup
+node_modules/
+dist/
+build/
+coverage/
+*.log
+*.tmp
+*.swp
+*.swo
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/

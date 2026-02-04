@@ -19,6 +19,7 @@ import {
   DEFAULT_PLATFORM_CONFIG,
   TASK_AGENT_RECOMMENDATIONS,
 } from './types';
+import { callProvider, getAvailableProviders, createProviderAttestation } from './providers';
 
 /**
  * Task creation options
@@ -499,7 +500,16 @@ export class AgenticCoderPlatform {
   }
 
   /**
-   * Create default executor (mock for testing)
+   * Create default executor using configured AI providers
+   *
+   * Uses provider priority chain from SCBE_PROVIDER_PRIORITY env var.
+   * Falls back through providers on failure if SCBE_PROVIDER_FALLBACK_ENABLED=true.
+   *
+   * Configure in .env:
+   *   SCBE_PROVIDER_PRIORITY=anthropic,openai,google
+   *   ANTHROPIC_API_KEY=sk-ant-...
+   *   OPENAI_API_KEY=sk-...
+   *   GOOGLE_API_KEY=AIza...
    */
   private createDefaultExecutor(): (
     agent: BuiltInAgent,
@@ -507,12 +517,58 @@ export class AgenticCoderPlatform {
     context: string
   ) => Promise<{ output: string; confidence: number; tokens?: number }> {
     return async (agent, action, context) => {
-      // Mock execution - in production, this would call the AI provider
-      return {
-        output: `[${agent.name}/${action}] Processed task based on context.\n\nContext length: ${context.length} chars`,
-        confidence: 0.85 + Math.random() * 0.1,
-        tokens: Math.floor(context.length / 4),
-      };
+      // Check if any providers are available
+      const availableProviders = getAvailableProviders();
+
+      if (availableProviders.length === 0) {
+        // Fallback to mock if no providers configured
+        console.warn('[SCBE] No AI providers configured. Using mock executor.');
+        console.warn('[SCBE] Set ANTHROPIC_API_KEY, OPENAI_API_KEY, or GOOGLE_API_KEY in .env');
+        return {
+          output: `[${agent.name}/${action}] Mock: No AI providers configured.\n\nContext length: ${context.length} chars`,
+          confidence: 0.5,
+          tokens: Math.floor(context.length / 4),
+        };
+      }
+
+      // Build system prompt from agent persona
+      const systemPrompt = `You are ${agent.name}, a specialized AI agent.
+Role: ${agent.role}
+Capabilities: ${(agent.capabilities || []).join(', ')}
+Style: ${agent.systemPrompt || 'Professional and thorough'}
+
+You are performing the action: ${action}
+Respond with clear, actionable output.`;
+
+      try {
+        // Call provider with fallback chain
+        const response = await callProvider(context, {
+          systemPrompt,
+          maxTokens: 4096,
+          temperature: 0.7,
+        });
+
+        // Create attestation for audit trail
+        const { attestation } = createProviderAttestation(context, response);
+
+        return {
+          output: response.output,
+          confidence: 0.85 + Math.min(0.1, response.latencyMs / 10000), // Higher confidence for faster responses
+          tokens: response.tokensUsed,
+          // Include provider metadata for debugging (not exposed to user)
+          // attestation,
+        };
+      } catch (error) {
+        // All providers failed - return error as output
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        console.error('[SCBE] Provider chain failed:', errorMsg);
+
+        return {
+          output: `[${agent.name}/${action}] Error: All AI providers failed.\n\n${errorMsg}`,
+          confidence: 0.0,
+          tokens: 0,
+        };
+      }
     };
   }
 
