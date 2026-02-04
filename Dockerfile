@@ -116,14 +116,12 @@ ENV SCBE_ENV=production
 ENV SCBE_PQC_BACKEND=liboqs
 
 # Expose ports
-EXPOSE 3000 8000
-
+EXPOSE 8080
 # Health check - verify API is responding
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD curl -f http://localhost:8000/health || exit 1
-
+    CMD curl -f http://localhost:8080/health || exit 1
 # Verify PQC on startup
 RUN python -c "from src.crypto.pqc_liboqs import get_pqc_backend; print(f'PQC Backend: {get_pqc_backend()}')"
 
 # Default command
-CMD ["python", "scbe-cli.py"]
+CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8080"]
