@@ -534,7 +534,7 @@ export class AgenticCoderPlatform {
       // Build system prompt from agent persona
       const systemPrompt = `You are ${agent.name}, a specialized AI agent.
 Role: ${agent.role}
-Capabilities: ${agent.capabilities.join(', ')}
+Capabilities: ${(agent.capabilities || []).join(', ')}
 Style: ${agent.systemPrompt || 'Professional and thorough'}
 
 You are performing the action: ${action}
