@@ -35,7 +35,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Clone and build liboqs (NIST FIPS 203/204 compliant)
-RUN wget -q https://github.com/open-quantum-safe/liboqs/archive/refs/tags/0.10.1.tar.gz -O liboqs.tar.gz && tar xzf liboqs.tar.gz && mv liboqs-0.10.1 liboqs &&
+RUN wget -q https://github.com/open-quantum-safe/liboqs/archive/refs/tags/0.10.1.tar.gz -O liboqs.tar.gz && tar xzf liboqs.tar.gz && mv liboqs-0.10.1 liboqs && \
     cd liboqs && \
     mkdir build && cd build && \
     cmake -GNinja \
