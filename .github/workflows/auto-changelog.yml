@@ -1,0 +1,104 @@
+name: Auto Changelog
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'CHANGELOG.md'
+      - '.github/**'
+
+jobs:
+  update-changelog:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get commit info
+        id: commit_info
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          COMMIT_SHA=$(git log -1 --pretty=%h)
+          COMMIT_DATE=$(git log -1 --pretty=%cs)
+          COMMIT_AUTHOR=$(git log -1 --pretty=%an)
+
+          echo "msg<<EOF" >> $GITHUB_OUTPUT
+          echo "$COMMIT_MSG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
+          echo "date=$COMMIT_DATE" >> $GITHUB_OUTPUT
+          echo "author=$COMMIT_AUTHOR" >> $GITHUB_OUTPUT
+
+      - name: Categorize commit
+        id: categorize
+        run: |
+          MSG="${{ steps.commit_info.outputs.msg }}"
+
+          if [[ "$MSG" =~ ^feat ]]; then
+            echo "category=### Added" >> $GITHUB_OUTPUT
+            echo "emoji=✨" >> $GITHUB_OUTPUT
+          elif [[ "$MSG" =~ ^fix ]]; then
+            echo "category=### Fixed" >> $GITHUB_OUTPUT
+            echo "emoji=🐛" >> $GITHUB_OUTPUT
+          elif [[ "$MSG" =~ ^docs ]]; then
+            echo "category=### Documentation" >> $GITHUB_OUTPUT
+            echo "emoji=📚" >> $GITHUB_OUTPUT
+          elif [[ "$MSG" =~ ^refactor ]]; then
+            echo "category=### Changed" >> $GITHUB_OUTPUT
+            echo "emoji=♻️" >> $GITHUB_OUTPUT
+          elif [[ "$MSG" =~ ^test ]]; then
+            echo "category=### Testing" >> $GITHUB_OUTPUT
+            echo "emoji=🧪" >> $GITHUB_OUTPUT
+          elif [[ "$MSG" =~ ^security ]] || [[ "$MSG" =~ ^sec ]]; then
+            echo "category=### Security" >> $GITHUB_OUTPUT
+            echo "emoji=🔒" >> $GITHUB_OUTPUT
+          else
+            echo "category=### Other" >> $GITHUB_OUTPUT
+            echo "emoji=📝" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update CHANGELOG
+        run: |
+          DATE="${{ steps.commit_info.outputs.date }}"
+
+          # Build entry safely - avoid sed interpolation issues with special chars
+          EMOJI="${{ steps.categorize.outputs.emoji }}"
+          MSG="${{ steps.commit_info.outputs.msg }}"
+          SHA="${{ steps.commit_info.outputs.sha }}"
+          ENTRY="$EMOJI $MSG (\`$SHA\`)"
+
+          if [ ! -f CHANGELOG.md ]; then
+            echo "# Changelog" > CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            echo "All notable changes to SCBE-AETHERMOORE." >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+          fi
+
+          # Use awk for safe text insertion (handles special characters properly)
+          if grep -q "## \[$DATE\]" CHANGELOG.md; then
+            # Date section exists - insert entry after the date header
+            awk -v date="## [$DATE]" -v entry="- $ENTRY" '
+              $0 == date { print; print entry; next }
+              { print }
+            ' CHANGELOG.md > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
+          else
+            # Create new date section after "# Changelog" header
+            awk -v date="## [$DATE]" -v entry="- $ENTRY" '
+              /^# Changelog/ { print; print ""; print date; print ""; print entry; print ""; next }
+              { print }
+            ' CHANGELOG.md > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
+          fi
+
+      - name: Commit changelog
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add CHANGELOG.md
+          git diff --staged --quiet || git commit -m "docs: auto-update CHANGELOG [skip ci]"
+          git push

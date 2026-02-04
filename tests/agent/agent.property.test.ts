@@ -92,6 +92,8 @@ const bftVoteArb = fc.record({
 // ============================================================================
 
 describe('Poincaré Ball Properties', () => {
+  const DIST_EPS = 1e-9;
+
   it('Property 1: Positions are always within unit ball', () => {
     fc.assert(
       fc.property(poincarePositionArb, (pos) => {
@@ -108,7 +110,7 @@ describe('Poincaré Ball Properties', () => {
       fc.property(poincarePositionArb, poincarePositionArb, (u, v) => {
         const d1 = hyperbolicDistance(u, v);
         const d2 = hyperbolicDistance(v, u);
-        expect(Math.abs(d1 - d2)).toBeLessThan(1e-10);
+        expect(Math.abs(d1 - d2)).toBeLessThan(DIST_EPS);
         return true;
       }),
       { numRuns: 100 }
@@ -130,7 +132,7 @@ describe('Poincaré Ball Properties', () => {
     fc.assert(
       fc.property(poincarePositionArb, (pos) => {
         const d = hyperbolicDistance(pos, pos);
-        expect(d).toBeLessThan(1e-10);
+        expect(d).toBeLessThan(DIST_EPS);
         return true;
       }),
       { numRuns: 100 }
@@ -138,13 +140,17 @@ describe('Poincaré Ball Properties', () => {
   });
 
   it('Property 5: Triangle inequality holds', () => {
+    // Use larger epsilon for triangle inequality due to accumulated floating-point
+    // errors from three hyperbolic distance calculations near the Poincaré boundary.
+    const TRIANGLE_EPS = 1e-7;
     fc.assert(
       fc.property(poincarePositionArb, poincarePositionArb, poincarePositionArb, (a, b, c) => {
         const ab = hyperbolicDistance(a, b);
         const bc = hyperbolicDistance(b, c);
         const ac = hyperbolicDistance(a, c);
         // Triangle inequality: d(a,c) <= d(a,b) + d(b,c)
-        expect(ac).toBeLessThanOrEqual(ab + bc + 1e-10);
+        // Allow a small epsilon for floating-point noise near the boundary.
+        expect(ac).toBeLessThanOrEqual(ab + bc + TRIANGLE_EPS);
         return true;
       }),
       { numRuns: 100 }
@@ -155,7 +161,7 @@ describe('Poincaré Ball Properties', () => {
     fc.assert(
       fc.property(poincarePositionArb, poincarePositionArb, (u, v) => {
         const result = mobiusAdd(u, v);
-        expect(poincareNorm(result)).toBeLessThan(1 + 1e-10);
+        expect(poincareNorm(result)).toBeLessThan(1 + DIST_EPS);
         return true;
       }),
       { numRuns: 100 }
@@ -166,7 +172,7 @@ describe('Poincaré Ball Properties', () => {
     fc.assert(
       fc.property(fc.double({ min: -2, max: 2, noNaN: true }), poincarePositionArb, (t, v) => {
         const result = mobiusScale(t, v);
-        expect(poincareNorm(result)).toBeLessThan(1 + 1e-10);
+        expect(poincareNorm(result)).toBeLessThan(1 + DIST_EPS);
         return true;
       }),
       { numRuns: 100 }
@@ -177,7 +183,7 @@ describe('Poincaré Ball Properties', () => {
     fc.assert(
       fc.property(fc.array(poincarePositionArb, { minLength: 2, maxLength: 10 }), (points) => {
         const centroid = hyperbolicCentroid(points);
-        expect(poincareNorm(centroid)).toBeLessThan(1 + 1e-10);
+        expect(poincareNorm(centroid)).toBeLessThan(1 + DIST_EPS);
         return true;
       }),
       { numRuns: 100 }

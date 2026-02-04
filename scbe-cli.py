@@ -2,8 +2,16 @@
 """
 SCBE-AETHERMOORE Command Line Interface
 Interactive CLI for encryption, decryption, and security testing
+
+Includes Six Sacred Tongues tokenizer for spell-text encoding:
+- encode: bytes → spell-text
+- decode: spell-text → bytes
+- xlate: cross-translate between tongues
+- blend: multi-tongue stripe pattern encoding
+- tongues: list all 6 tongues with metadata
 """
 
+# Standard library imports (must come first)
 import argparse
 import base64
 import hashlib
@@ -15,22 +23,31 @@ import time
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-VERSION = "3.0.0"
+VERSION = "3.1.0"
 
+# Golden ratio for harmonic weighting
+PHI = 1.618033988749895
+
+# Setup import paths
 REPO_ROOT = Path(__file__).resolve().parent
 SRC_PATH = REPO_ROOT / "src"
 if SRC_PATH.exists() and str(SRC_PATH) not in sys.path:
-    sys.path.insert(1, str(SRC_PATH))
+    sys.path.insert(0, str(SRC_PATH))
 
+# Import Sacred Tongues tokenizer
 try:
     from crypto.sacred_tongues import SacredTongueTokenizer, SECTION_TONGUES, TONGUES
+    TONGUES_AVAILABLE = True
+    _SACRED_IMPORT_ERROR = None
 except Exception as exc:
     SacredTongueTokenizer = None
     SECTION_TONGUES = {}
     TONGUES = {}
+    TONGUES_AVAILABLE = False
     _SACRED_IMPORT_ERROR = exc
-else:
-    _SACRED_IMPORT_ERROR = None
+
+# Legacy import compatibility
+SACRED_TONGUE_TOKENIZER = None
 
 
 DEFAULT_CONTEXT = [0.1, 0.2, 0.15, 0.1, 0.12, 0.18]
@@ -198,19 +215,53 @@ def _xor_bytes(a: bytes, b: bytes) -> bytes:
     return bytes(x ^ y for x, y in zip(a, b))
 
 
-def _compute_geoseal_telemetry(context: List[float], features: Dict[str, float]) -> Dict:
+def _compute_geoseal_telemetry(context: List[float], features: Dict[str, float]) -> Optional[Dict]:
+    """Compute GeoSeal telemetry if available, otherwise return basic metrics."""
     try:
-        from symphonic_cipher.geoseal import GeoSealManifold
         import numpy as np
-    except Exception as exc:
-        raise RuntimeError(
-            "GeoSeal module not available. Ensure symphonic_cipher/geoseal is present."
-        ) from exc
+        # Try multiple import paths
+        GeoSealManifold = None
+        try:
+            from symphonic_cipher.geoseal import GeoSealManifold
+        except ImportError:
+            pass
+        if GeoSealManifold is None:
+            try:
+                # Try root-level import
+                import importlib.util
+                spec = importlib.util.spec_from_file_location(
+                    "geoseal", REPO_ROOT / "symphonic_cipher_geoseal_manifold.py"
+                )
+                if spec and spec.loader:
+                    module = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(module)
+                    GeoSealManifold = module.GeoSealManifold
+            except Exception:
+                pass
 
-    manifold = GeoSealManifold(dimension=len(context))
-    sphere = manifold.project_to_sphere(np.array(context))
-    cube = manifold.project_to_hypercube(features)
-    return manifold.get_telemetry(sphere, cube)
+        if GeoSealManifold is None:
+            # Return basic telemetry without full manifold
+            return {
+                "context_norm": float(np.linalg.norm(context)),
+                "trust_score": features.get("trust_score", 0.0),
+                "path_type": "basic",
+                "geoseal_available": False,
+            }
+
+        manifold = GeoSealManifold(dimension=len(context))
+        sphere = manifold.project_to_sphere(np.array(context))
+        cube = manifold.project_to_hypercube(features)
+        telemetry = manifold.get_telemetry(sphere, cube)
+        telemetry["geoseal_available"] = True
+        return telemetry
+
+    except Exception as e:
+        # Fallback to minimal telemetry
+        return {
+            "error": str(e),
+            "context_len": len(context),
+            "geoseal_available": False,
+        }
 
 
 def _format_ss1_blob(
@@ -473,10 +524,12 @@ class SCBECLI:
 
     def banner(self):
         """Display welcome banner"""
+        tongues_status = "✓ Six Tongues" if TONGUES_AVAILABLE else "○ Six Tongues (unavailable)"
         print(f"""
 ╔═══════════════════════════════════════════════════════════╗
-║           SCBE-AETHERMOORE v{VERSION}                    ║
+║           SCBE-AETHERMOORE v{VERSION}                   ║
 ║     Hyperbolic Geometry-Based Security Framework          ║
+║     {tongues_status:<51} ║
 ╚═══════════════════════════════════════════════════════════╝
         """)
 
@@ -974,13 +1027,381 @@ the encryption because SCBE uses post-quantum primitives!
         print(content)
         self.safe_input("\nPress Enter to continue...")
 
+    # ==================== Six Tongues Commands ====================
+
+    def cmd_tongues(self):
+        """List all Six Sacred Tongues with metadata"""
+        if not TONGUES_AVAILABLE:
+            print("\n❌ Sacred Tongues module not available")
+            print("   Run from project root: python scbe-cli.py")
+            return
+
+        print("\n🗣️  SIX SACRED TONGUES")
+        print("=" * 70)
+        print(f"{'Code':<6} {'Name':<14} {'Domain':<22} {'Freq (Hz)':<10} {'Weight'}")
+        print("-" * 70)
+
+        for i, (code, spec) in enumerate(TONGUES.items()):
+            weight = PHI ** i
+            print(
+                f"{code.upper():<6} {spec.name:<14} {spec.domain:<22} "
+                f"{spec.harmonic_frequency:<10.2f} φ^{i} = {weight:.4f}"
+            )
+
+        print("\n📦 Section Mappings (RWP v3.0):")
+        for section, tongue in SECTION_TONGUES.items():
+            spec = TONGUES[tongue]
+            print(f"  {section:<8} → {tongue.upper()} ({spec.name})")
+
+    def cmd_encode(self):
+        """Encode text/hex to Sacred Tongue spell-text"""
+        if not TONGUES_AVAILABLE:
+            print("\n❌ Sacred Tongues module not available")
+            return
+
+        print("\n✨ ENCODE TO SPELL-TEXT")
+        print("=" * 60)
+        print("Available tongues: KO, AV, RU, CA, UM, DR")
+
+        tongue = self.safe_input("Select tongue [KO]: ").strip().lower() or "ko"
+        if tongue not in TONGUES:
+            print(f"❌ Unknown tongue: {tongue}")
+            return
+
+        print("\nInput format:")
+        print("  1. Text string (UTF-8)")
+        print("  2. Hex bytes (e.g., deadbeef)")
+        fmt = self.safe_input("Select format [1]: ").strip() or "1"
+
+        if fmt == "1":
+            text = self.safe_input("Enter text: ")
+            if not text:
+                return
+            data = text.encode("utf-8")
+        elif fmt == "2":
+            hex_str = self.safe_input("Enter hex: ").strip().replace(" ", "")
+            try:
+                data = bytes.fromhex(hex_str)
+            except ValueError:
+                print("❌ Invalid hex string")
+                return
+        else:
+            print("❌ Invalid format")
+            return
+
+        start = time.time()
+        tokens = SACRED_TONGUE_TOKENIZER.encode_bytes(tongue, data)
+        elapsed = (time.time() - start) * 1000
+
+        spell_text = " ".join(tokens)
+        print(f"\n✓ Encoded {len(data)} bytes → {len(tokens)} tokens in {elapsed:.2f}ms")
+        print(f"\nTongue: {TONGUES[tongue].name} ({tongue.upper()})")
+        print(f"Spell-text:\n{spell_text}")
+
+        # Show with tongue prefix
+        prefixed = " ".join(f"{tongue}:{t}" for t in tokens)
+        print(f"\nWith prefix:\n{prefixed}")
+
+    def cmd_decode(self):
+        """Decode Sacred Tongue spell-text back to bytes"""
+        if not TONGUES_AVAILABLE:
+            print("\n❌ Sacred Tongues module not available")
+            return
+
+        print("\n🔮 DECODE FROM SPELL-TEXT")
+        print("=" * 60)
+        print("Available tongues: KO, AV, RU, CA, UM, DR")
+
+        tongue = self.safe_input("Select tongue [KO]: ").strip().lower() or "ko"
+        if tongue not in TONGUES:
+            print(f"❌ Unknown tongue: {tongue}")
+            return
+
+        spell_text = self.safe_input("Enter spell-text (space-separated tokens): ")
+        if not spell_text:
+            return
+
+        # Strip tongue prefixes if present
+        tokens = []
+        for t in spell_text.strip().split():
+            if ":" in t:
+                t = t.split(":", 1)[1]
+            tokens.append(t)
+
+        try:
+            start = time.time()
+            data = SACRED_TONGUE_TOKENIZER.decode_tokens(tongue, tokens)
+            elapsed = (time.time() - start) * 1000
+
+            print(f"\n✓ Decoded {len(tokens)} tokens → {len(data)} bytes in {elapsed:.2f}ms")
+            print(f"\nHex: {data.hex()}")
+
+            # Try to decode as UTF-8
+            try:
+                text = data.decode("utf-8")
+                print(f"Text: {text}")
+            except UnicodeDecodeError:
+                print("(Not valid UTF-8)")
+
+        except ValueError as e:
+            print(f"\n❌ Decode failed: {e}")
+
+    def cmd_xlate(self):
+        """Cross-translate spell-text between tongues"""
+        if not TONGUES_AVAILABLE:
+            print("\n❌ Sacred Tongues module not available")
+            return
+
+        print("\n🔄 CROSS-TRANSLATE (XLATE)")
+        print("=" * 60)
+        print("Translate spell-text from one tongue to another.")
+        print("The binary payload is preserved; only the encoding changes.")
+
+        from_tongue = self.safe_input("From tongue [KO]: ").strip().lower() or "ko"
+        if from_tongue not in TONGUES:
+            print(f"❌ Unknown tongue: {from_tongue}")
+            return
+
+        to_tongue = self.safe_input("To tongue [AV]: ").strip().lower() or "av"
+        if to_tongue not in TONGUES:
+            print(f"❌ Unknown tongue: {to_tongue}")
+            return
+
+        spell_text = self.safe_input("Enter spell-text: ")
+        if not spell_text:
+            return
+
+        # Strip prefixes
+        tokens = []
+        for t in spell_text.strip().split():
+            if ":" in t:
+                t = t.split(":", 1)[1]
+            tokens.append(t)
+
+        try:
+            start = time.time()
+
+            # Decode from source tongue
+            data = SACRED_TONGUE_TOKENIZER.decode_tokens(from_tongue, tokens)
+
+            # Encode to target tongue
+            new_tokens = SACRED_TONGUE_TOKENIZER.encode_bytes(to_tongue, data)
+            elapsed = (time.time() - start) * 1000
+
+            # Calculate phase delta and weight ratio
+            from_spec = TONGUES[from_tongue]
+            to_spec = TONGUES[to_tongue]
+
+            tongue_order = list(TONGUES.keys())
+            from_idx = tongue_order.index(from_tongue)
+            to_idx = tongue_order.index(to_tongue)
+
+            phase_delta = ((to_idx - from_idx) * 60 + 360) % 360
+            weight_ratio = (PHI ** to_idx) / (PHI ** from_idx)
+
+            # Create attestation
+            timestamp = int(time.time() * 1000)
+            attest_data = f"{from_tongue}:{to_tongue}:{phase_delta}:{weight_ratio:.6f}:{timestamp}"
+            signature = hashlib.sha256(attest_data.encode()).hexdigest()[:16]
+
+            print(f"\n✓ Translated in {elapsed:.2f}ms")
+            print(f"\nFrom: {from_spec.name} ({from_tongue.upper()})")
+            print(f"To:   {to_spec.name} ({to_tongue.upper()})")
+            print(f"\nSpell-text:\n{' '.join(new_tokens)}")
+
+            print(f"\n📜 Attestation:")
+            print(f"  Phase Delta:  {phase_delta}°")
+            print(f"  Weight Ratio: {weight_ratio:.6f}")
+            print(f"  Timestamp:    {timestamp}")
+            print(f"  Signature:    {signature}")
+
+        except ValueError as e:
+            print(f"\n❌ Translation failed: {e}")
+
+    def cmd_blend(self):
+        """Encode with multi-tongue stripe pattern"""
+        if not TONGUES_AVAILABLE:
+            print("\n❌ Sacred Tongues module not available")
+            return
+
+        print("\n🌈 BLEND (MULTI-TONGUE STRIPE)")
+        print("=" * 60)
+        print("Encode using a rotating pattern of tongues.")
+        print("Example pattern: KO:2,AV:1,DR:1 = [KO,KO,AV,DR,KO,KO,AV,DR,...]")
+
+        pattern_str = self.safe_input("Enter pattern [KO:2,AV:1,RU:1]: ").strip()
+        if not pattern_str:
+            pattern_str = "KO:2,AV:1,RU:1"
+
+        # Parse pattern
+        pattern: List[Tuple[str, int]] = []
+        try:
+            for item in pattern_str.split(","):
+                parts = item.strip().split(":")
+                tongue = parts[0].lower()
+                count = int(parts[1]) if len(parts) > 1 else 1
+                if tongue not in TONGUES:
+                    print(f"❌ Unknown tongue in pattern: {tongue}")
+                    return
+                pattern.append((tongue, count))
+        except (ValueError, IndexError):
+            print("❌ Invalid pattern format. Use: TONGUE:COUNT,TONGUE:COUNT,...")
+            return
+
+        print("\nInput format:")
+        print("  1. Text string (UTF-8)")
+        print("  2. Hex bytes")
+        fmt = self.safe_input("Select format [1]: ").strip() or "1"
+
+        if fmt == "1":
+            text = self.safe_input("Enter text: ")
+            if not text:
+                return
+            data = text.encode("utf-8")
+        elif fmt == "2":
+            hex_str = self.safe_input("Enter hex: ").strip().replace(" ", "")
+            try:
+                data = bytes.fromhex(hex_str)
+            except ValueError:
+                print("❌ Invalid hex string")
+                return
+        else:
+            print("❌ Invalid format")
+            return
+
+        start = time.time()
+
+        # Expand pattern
+        expanded_pattern = []
+        for tongue, count in pattern:
+            expanded_pattern.extend([tongue] * count)
+
+        # Encode with blend
+        tokens = []
+        for i, byte in enumerate(data):
+            tongue = expanded_pattern[i % len(expanded_pattern)]
+            token = SACRED_TONGUE_TOKENIZER.byte_to_token[tongue][byte]
+            tokens.append(f"{tongue}:{token}")
+
+        elapsed = (time.time() - start) * 1000
+
+        print(f"\n✓ Blended {len(data)} bytes in {elapsed:.2f}ms")
+        print(f"Pattern: {pattern_str}")
+        print(f"\nSpell-text:\n{' '.join(tokens)}")
+
+    def cmd_unblend(self):
+        """Decode blended spell-text (must have tongue prefixes)"""
+        if not TONGUES_AVAILABLE:
+            print("\n❌ Sacred Tongues module not available")
+            return
+
+        print("\n🔓 UNBLEND (DECODE MULTI-TONGUE)")
+        print("=" * 60)
+        print("Decode spell-text with tongue prefixes (e.g., ko:sil'a av:saina'e)")
+
+        spell_text = self.safe_input("Enter blended spell-text: ")
+        if not spell_text:
+            return
+
+        try:
+            start = time.time()
+            result = bytearray()
+
+            for token in spell_text.strip().split():
+                if ":" not in token:
+                    print(f"❌ Token missing tongue prefix: {token}")
+                    return
+                tongue, tok = token.split(":", 1)
+                tongue = tongue.lower()
+                if tongue not in TONGUES:
+                    print(f"❌ Unknown tongue: {tongue}")
+                    return
+                byte_val = SACRED_TONGUE_TOKENIZER.token_to_byte[tongue][tok]
+                result.append(byte_val)
+
+            data = bytes(result)
+            elapsed = (time.time() - start) * 1000
+
+            print(f"\n✓ Unblended {len(spell_text.split())} tokens → {len(data)} bytes in {elapsed:.2f}ms")
+            print(f"\nHex: {data.hex()}")
+
+            try:
+                text = data.decode("utf-8")
+                print(f"Text: {text}")
+            except UnicodeDecodeError:
+                print("(Not valid UTF-8)")
+
+        except KeyError as e:
+            print(f"\n❌ Unblend failed: Invalid token {e}")
+
+    def cmd_providers(self):
+        """Check AI provider configuration"""
+        import os
+
+        print("\n🤖 AI PROVIDER STATUS")
+        print("=" * 60)
+        print("Configure in .env file (copy from .env.example)")
+        print()
+
+        # Check priority setting
+        priority = os.environ.get("SCBE_PROVIDER_PRIORITY", "anthropic,openai,google")
+        print(f"Priority Order: {priority}")
+        print()
+
+        providers = [
+            ("Anthropic (Claude)", "ANTHROPIC_API_KEY", "ANTHROPIC_MODEL", "claude-sonnet-4-20250514"),
+            ("OpenAI (GPT)", "OPENAI_API_KEY", "OPENAI_MODEL", "gpt-4o"),
+            ("Google (Gemini)", "GOOGLE_API_KEY", "GOOGLE_MODEL", "gemini-2.0-flash"),
+            ("Mistral", "MISTRAL_API_KEY", "MISTRAL_MODEL", "mistral-large-latest"),
+            ("Cohere", "COHERE_API_KEY", "COHERE_MODEL", "command-r-plus"),
+        ]
+
+        print(f"{'Provider':<20} {'Status':<12} {'Model'}")
+        print("-" * 60)
+
+        for name, key_var, model_var, default_model in providers:
+            api_key = os.environ.get(key_var, "")
+            model = os.environ.get(model_var, default_model)
+
+            if api_key and "..." not in api_key and len(api_key) > 10:
+                status = "✓ Ready"
+                # Mask the key for display
+                masked = api_key[:8] + "..." + api_key[-4:] if len(api_key) > 12 else "***"
+            else:
+                status = "○ Not set"
+                masked = ""
+
+            print(f"{name:<20} {status:<12} {model}")
+
+        print()
+        print("To configure:")
+        print("  1. Copy .env.example to .env")
+        print("  2. Add your API keys")
+        print("  3. Set SCBE_PROVIDER_PRIORITY for your preferred order")
+        print()
+        print("Your keys are tried first; others are fallbacks.")
+
     def cmd_help(self):
         """Display help"""
         print("\n📖 AVAILABLE COMMANDS")
         print("=" * 60)
-        print("  tutorial   - Interactive tutorial (START HERE!)")
+        print("\n🔐 Encryption:")
         print("  encrypt    - Encrypt a message")
         print("  decrypt    - Decrypt a message")
+
+        print("\n🗣️  Six Tongues (Spell-Text):")
+        print("  tongues    - List all 6 Sacred Tongues")
+        print("  encode     - Encode bytes → spell-text")
+        print("  decode     - Decode spell-text → bytes")
+        print("  xlate      - Cross-translate between tongues")
+        print("  blend      - Multi-tongue stripe encoding")
+        print("  unblend    - Decode blended spell-text")
+
+        print("\n🤖 AI Providers:")
+        print("  providers  - Check AI provider configuration")
+
+        print("\n📊 System:")
+        print("  tutorial   - Interactive tutorial")
         print("  attack     - Run attack simulation")
         print("  metrics    - Display system metrics")
         print("  help       - Show this help")
@@ -989,12 +1410,26 @@ the encryption because SCBE uses post-quantum primitives!
     def run(self):
         """Main CLI loop"""
         self.banner()
-        print("Type 'tutorial' to get started, or 'help' for commands\n")
+        print("Type 'tutorial' to get started, or 'help' for commands")
+        if TONGUES_AVAILABLE:
+            print("Six Sacred Tongues: tongues, encode, decode, xlate, blend, unblend")
+        print()
 
         commands = {
-            "tutorial": self.cmd_tutorial,
+            # Encryption
             "encrypt": self.cmd_encrypt,
             "decrypt": self.cmd_decrypt,
+            # Six Tongues
+            "tongues": self.cmd_tongues,
+            "encode": self.cmd_encode,
+            "decode": self.cmd_decode,
+            "xlate": self.cmd_xlate,
+            "blend": self.cmd_blend,
+            "unblend": self.cmd_unblend,
+            # AI Providers
+            "providers": self.cmd_providers,
+            # System
+            "tutorial": self.cmd_tutorial,
             "attack": self.cmd_attack_sim,
             "metrics": self.cmd_metrics,
             "help": self.cmd_help,
