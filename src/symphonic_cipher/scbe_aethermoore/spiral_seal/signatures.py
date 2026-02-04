@@ -22,7 +22,8 @@ try:
 
     PQC_SIG_AVAILABLE = True
     PQC_SIG_BACKEND = "liboqs"
-except ImportError:
+except (ImportError, RuntimeError):
+    # liboqs-python not installed or shared libraries not found
     try:
         import pqcrypto.sign.dilithium3 as dilithium
 
