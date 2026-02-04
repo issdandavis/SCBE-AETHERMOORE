@@ -189,7 +189,14 @@ describe('Video-Security Integration', () => {
     });
 
     it('should map agent roles to tongues', () => {
-      const roles: AgentRole[] = ['captain', 'architect', 'researcher', 'developer', 'qa', 'security'];
+      const roles: AgentRole[] = [
+        'captain',
+        'architect',
+        'researcher',
+        'developer',
+        'qa',
+        'security',
+      ];
       const tongues = new Set<string>();
 
       for (const role of roles) {
@@ -231,11 +238,9 @@ describe('Video-Security Integration', () => {
       const jobs: TrajectoryJobData[] = [];
 
       for (let i = 0; i < 3; i++) {
-        jobs.push(embedTrajectoryState(
-          { task: `task-${i}`, context: {} },
-          'developer',
-          1000000 + i * 1000
-        ));
+        jobs.push(
+          embedTrajectoryState({ task: `task-${i}`, context: {} }, 'developer', 1000000 + i * 1000)
+        );
       }
 
       const proof = createVisualProof(jobs, 'av');
@@ -251,11 +256,9 @@ describe('Video-Security Integration', () => {
       const jobs: TrajectoryJobData[] = [];
 
       for (let i = 0; i < 3; i++) {
-        jobs.push(embedTrajectoryState(
-          { task: `task-${i}`, context: {} },
-          'developer',
-          1000000 + i * 1000
-        ));
+        jobs.push(
+          embedTrajectoryState({ task: `task-${i}`, context: {} }, 'developer', 1000000 + i * 1000)
+        );
       }
 
       const proof = createVisualProof(jobs, 'av');
@@ -266,11 +269,9 @@ describe('Video-Security Integration', () => {
       const jobs: TrajectoryJobData[] = [];
 
       for (let i = 0; i < 3; i++) {
-        jobs.push(embedTrajectoryState(
-          { task: `task-${i}`, context: {} },
-          'developer',
-          1000000 + i * 1000
-        ));
+        jobs.push(
+          embedTrajectoryState({ task: `task-${i}`, context: {} }, 'developer', 1000000 + i * 1000)
+        );
       }
 
       const proof = createVisualProof(jobs, 'av');
@@ -285,11 +286,9 @@ describe('Video-Security Integration', () => {
       const jobs: TrajectoryJobData[] = [];
 
       for (let i = 0; i < 3; i++) {
-        jobs.push(embedTrajectoryState(
-          { task: `task-${i}`, context: {} },
-          'developer',
-          1000000 + i * 1000
-        ));
+        jobs.push(
+          embedTrajectoryState({ task: `task-${i}`, context: {} }, 'developer', 1000000 + i * 1000)
+        );
       }
 
       const proof = createVisualProof(jobs, 'av');
@@ -304,11 +303,13 @@ describe('Video-Security Integration', () => {
       const jobs: TrajectoryJobData[] = [];
 
       for (let i = 0; i < 3; i++) {
-        jobs.push(embedTrajectoryState(
-          { task: `task-${i}`, context: {} },
-          'security', // Maps to 'dr'
-          1000000 + i * 1000
-        ));
+        jobs.push(
+          embedTrajectoryState(
+            { task: `task-${i}`, context: {} },
+            'security', // Maps to 'dr'
+            1000000 + i * 1000
+          )
+        );
       }
 
       const proof = createVisualProof(jobs); // No tongue specified
@@ -317,7 +318,9 @@ describe('Video-Security Integration', () => {
     });
 
     it('should throw on empty trajectory', () => {
-      expect(() => createVisualProof([])).toThrow('Cannot create visual proof from empty trajectory');
+      expect(() => createVisualProof([])).toThrow(
+        'Cannot create visual proof from empty trajectory'
+      );
     });
   });
 
@@ -345,7 +348,9 @@ describe('Video-Security Integration', () => {
     });
 
     it('should throw on empty envelope list', async () => {
-      await expect(generateAuditReel([])).rejects.toThrow('Cannot generate audit reel from empty envelope history');
+      await expect(generateAuditReel([])).rejects.toThrow(
+        'Cannot generate audit reel from empty envelope history'
+      );
     });
 
     it('should auto-calculate duration from envelope count', async () => {
@@ -370,10 +375,12 @@ describe('Video-Security Integration', () => {
       // Create envelopes with provider IDs that hash to specific tongues
       const envelopes = [];
       for (let i = 0; i < 5; i++) {
-        envelopes.push(createMockEnvelope({
-          ts: 1000000 + i * 1000,
-          provider_id: `same-provider-${i % 2}`,
-        }));
+        envelopes.push(
+          createMockEnvelope({
+            ts: 1000000 + i * 1000,
+            provider_id: `same-provider-${i % 2}`,
+          })
+        );
       }
 
       const result = await generateAuditReel(envelopes, {
@@ -452,7 +459,8 @@ describe('Video-Security Integration', () => {
         ttl: 300000,
         content_type: 'application/json',
         schema_hash: crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, ''),
-        canonical_body_hash: crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, ''),
+        canonical_body_hash:
+          crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, ''),
         request_id: crypto.randomUUID().replace(/-/g, ''),
         replay_nonce: crypto.randomUUID().replace(/-/g, ''),
       };

@@ -1,6 +1,6 @@
 /**
  * Six Tongues GeoSeal Integration
- * 
+ *
  * Provides TypeScript wrapper for the Python six-tongues-geoseal CLI
  * Handles process spawning, error handling, and data streaming
  */
@@ -45,7 +45,8 @@ export class SixTonguesIntegration {
   constructor(config: SixTonguesConfig = {}) {
     this.config = {
       pythonPath: config.pythonPath || 'python3',
-      cliPath: config.cliPath || path.join(__dirname, '../../packages/six-tongues-geoseal/aethermoore.py'),
+      cliPath:
+        config.cliPath || path.join(__dirname, '../../packages/six-tongues-geoseal/aethermoore.py'),
       timeout: config.timeout || 30000,
     };
   }
@@ -89,15 +90,15 @@ export class SixTonguesIntegration {
    */
   async initialize(): Promise<boolean> {
     const checks = await this.checkEnvironment();
-    
+
     if (!checks.python) {
       throw new Error('Python 3 is not available. Please install Python 3.x');
     }
-    
+
     if (!checks.numpy) {
       throw new Error('numpy is not installed. Run: pip install numpy');
     }
-    
+
     if (!checks.cli) {
       throw new Error(`Six Tongues CLI not found at: ${this.config.cliPath}`);
     }
@@ -146,12 +147,12 @@ export class SixTonguesIntegration {
     }
 
     const args = ['geoseal', '--data', options.data];
-    
+
     if (options.location) {
       args.push('--lat', options.location.lat.toString());
       args.push('--lon', options.location.lon.toString());
     }
-    
+
     if (options.timestamp) {
       args.push('--timestamp', options.timestamp.toString());
     }
@@ -206,7 +207,7 @@ export class SixTonguesIntegration {
 
       proc.on('close', (code) => {
         clearTimeout(timeout);
-        
+
         if (code === 0) {
           try {
             const data = JSON.parse(stdout);
@@ -255,6 +256,10 @@ export async function decode(encodedText: string, context?: string): Promise<Six
   return getSixTongues().decode({ encodedText, context });
 }
 
-export async function geoseal(data: string, location?: { lat: number; lon: number }, timestamp?: number): Promise<SixTonguesResult> {
+export async function geoseal(
+  data: string,
+  location?: { lat: number; lon: number },
+  timestamp?: number
+): Promise<SixTonguesResult> {
   return getSixTongues().geoseal({ data, location, timestamp });
 }

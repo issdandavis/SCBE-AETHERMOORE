@@ -173,7 +173,7 @@ export interface BuiltInAgent {
 
   /** Specializations */
   specializations: string[];
-    /** Agent capabilities */
+  /** Agent capabilities */
   capabilities?: string[];
 
   /** Trust vector (6D Sacred Tongue) */
