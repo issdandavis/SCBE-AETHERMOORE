@@ -275,7 +275,7 @@ export class BrowserSession {
     }
 
     if (options?.since) {
-      filtered = filtered.filter((h) => h.timestamp >= options.since);
+      filtered = filtered.filter((h) => h.timestamp >= options.since!);
     }
 
     // Sort by timestamp descending (newest first)
