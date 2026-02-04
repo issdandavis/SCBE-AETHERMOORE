@@ -48,7 +48,11 @@ describe('socialContent', () => {
 
       expect(hashtags.length).toBeGreaterThan(0);
       // Should extract words longer than 4 chars
-      expect(hashtags.some((h) => h.includes('Revolutionary') || h.includes('Security') || h.includes('Technology'))).toBe(true);
+      expect(
+        hashtags.some(
+          (h) => h.includes('Revolutionary') || h.includes('Security') || h.includes('Technology')
+        )
+      ).toBe(true);
     });
 
     it('should remove special characters from hashtags', () => {

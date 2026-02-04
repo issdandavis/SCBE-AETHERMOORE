@@ -59,7 +59,7 @@ export interface GeneratedTweet {
 const POWER_WORDS: Record<string, string[]> = {
   casual: ['check out', 'loving', 'game-changer', 'finally', 'so good'],
   professional: ['introducing', 'discover', 'transform', 'elevate', 'unlock'],
-  urgent: ['limited time', 'don\'t miss', 'act now', 'last chance', 'ending soon'],
+  urgent: ['limited time', "don't miss", 'act now', 'last chance', 'ending soon'],
   playful: ['guess what', 'plot twist', 'spoiler alert', 'hot take', 'big mood'],
 };
 
@@ -133,9 +133,7 @@ function createHeadlineTweet(
 ): GeneratedTweet | null {
   if (!content.headline) return null;
 
-  const hashtags = options.includeHashtags
-    ? generateHashtags(content, options.maxHashtags)
-    : [];
+  const hashtags = options.includeHashtags ? generateHashtags(content, options.maxHashtags) : [];
   const hashtagStr = hashtags.join(' ');
 
   let tweet = content.headline;
@@ -177,9 +175,7 @@ function createSellingPointTweet(
 ): GeneratedTweet | null {
   if (!content.sellingPoints || content.sellingPoints.length === 0) return null;
 
-  const hashtags = options.includeHashtags
-    ? generateHashtags(content, options.maxHashtags)
-    : [];
+  const hashtags = options.includeHashtags ? generateHashtags(content, options.maxHashtags) : [];
   const hashtagStr = hashtags.join(' ');
   const tone = options.tone || 'professional';
 
@@ -213,15 +209,10 @@ function createSellingPointTweet(
 /**
  * Creates a tweet focused on a promotion/offer
  */
-function createPromoTweet(
-  content: MarketingContent,
-  options: TweetOptions
-): GeneratedTweet | null {
+function createPromoTweet(content: MarketingContent, options: TweetOptions): GeneratedTweet | null {
   if (!content.promotions || content.promotions.length === 0) return null;
 
-  const hashtags = options.includeHashtags
-    ? generateHashtags(content, options.maxHashtags)
-    : [];
+  const hashtags = options.includeHashtags ? generateHashtags(content, options.maxHashtags) : [];
   const hashtagStr = hashtags.join(' ');
 
   let tweet = content.promotions[0];
@@ -259,9 +250,7 @@ function createSloganTweet(
 ): GeneratedTweet | null {
   if (!content.slogans || content.slogans.length === 0) return null;
 
-  const hashtags = options.includeHashtags
-    ? generateHashtags(content, options.maxHashtags)
-    : [];
+  const hashtags = options.includeHashtags ? generateHashtags(content, options.maxHashtags) : [];
   const hashtagStr = hashtags.join(' ');
 
   let tweet = content.slogans[0];

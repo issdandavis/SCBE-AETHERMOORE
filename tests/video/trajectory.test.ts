@@ -358,7 +358,7 @@ describe('Trajectory Generator', () => {
       trajectory.points = trajectory.points.slice(0, 10);
 
       const errors = validateTrajectory(trajectory);
-      expect(errors.some(e => e.includes('mismatch'))).toBe(true);
+      expect(errors.some((e) => e.includes('mismatch'))).toBe(true);
     });
 
     it('should detect points outside ball', () => {
@@ -367,7 +367,7 @@ describe('Trajectory Generator', () => {
       trajectory.points[0] = [2, 2, 2, 2, 2, 2];
 
       const errors = validateTrajectory(trajectory);
-      expect(errors.some(e => e.includes('outside'))).toBe(true);
+      expect(errors.some((e) => e.includes('outside'))).toBe(true);
     });
   });
 });
