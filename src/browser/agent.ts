@@ -70,7 +70,11 @@ export interface BrowserBackend {
   click(selector: string, options?: { position?: { x: number; y: number } }): Promise<void>;
 
   /** Type text */
-  type(selector: string, text: string, options?: { delay?: number; clear?: boolean }): Promise<void>;
+  type(
+    selector: string,
+    text: string,
+    options?: { delay?: number; clear?: boolean }
+  ): Promise<void>;
 
   /** Scroll */
   scroll(options: { selector?: string; delta?: { x: number; y: number } }): Promise<void>;
@@ -129,7 +133,11 @@ export interface BrowserAgentConfig {
   /** Maximum actions per session */
   maxActions?: number;
   /** Callback for action completion */
-  onActionComplete?: (action: BrowserAction, result: ActionResult, governance: GovernanceResult) => void;
+  onActionComplete?: (
+    action: BrowserAction,
+    result: ActionResult,
+    governance: GovernanceResult
+  ) => void;
   /** Callback for session events */
   onSessionEvent?: (event: unknown) => void;
 }
@@ -291,7 +299,10 @@ export class BrowserAgent {
   /**
    * Navigate to URL.
    */
-  async navigate(url: string, options?: { waitUntil?: 'load' | 'domcontentloaded' | 'networkidle' }): Promise<ActionResult> {
+  async navigate(
+    url: string,
+    options?: { waitUntil?: 'load' | 'domcontentloaded' | 'networkidle' }
+  ): Promise<ActionResult> {
     const action: NavigateAction = {
       type: 'navigate',
       url,
@@ -303,7 +314,10 @@ export class BrowserAgent {
   /**
    * Click element.
    */
-  async click(selector: string, options?: { position?: { x: number; y: number } }): Promise<ActionResult> {
+  async click(
+    selector: string,
+    options?: { position?: { x: number; y: number } }
+  ): Promise<ActionResult> {
     const action: ClickAction = {
       type: 'click',
       selector,
@@ -344,7 +358,17 @@ export class BrowserAgent {
   /**
    * Take screenshot without action evaluation.
    */
-  async takeScreenshot(): Promise<{ data: string; format: 'png'; width: number; height: number; fullPage: boolean; timestamp: number } | undefined> {
+  async takeScreenshot(): Promise<
+    | {
+        data: string;
+        format: 'png';
+        width: number;
+        height: number;
+        fullPage: boolean;
+        timestamp: number;
+      }
+    | undefined
+  > {
     if (!this.backend.isConnected()) return undefined;
 
     try {
@@ -396,7 +420,10 @@ export class BrowserAgent {
   /**
    * Get session history.
    */
-  getHistory(options?: { limit?: number; decision?: 'ALLOW' | 'QUARANTINE' | 'ESCALATE' | 'DENY' }) {
+  getHistory(options?: {
+    limit?: number;
+    decision?: 'ALLOW' | 'QUARANTINE' | 'ESCALATE' | 'DENY';
+  }) {
     return this.session?.getHistory(options) ?? [];
   }
 
@@ -454,7 +481,9 @@ export class BrowserAgent {
   // PRIVATE METHODS
   // ===========================================================================
 
-  private async executeAction(action: BrowserAction): Promise<{ success: boolean; error?: string; value?: unknown }> {
+  private async executeAction(
+    action: BrowserAction
+  ): Promise<{ success: boolean; error?: string; value?: unknown }> {
     try {
       switch (action.type) {
         case 'navigate':
@@ -511,7 +540,9 @@ export class BrowserAgent {
     }
   }
 
-  private async handleEscalation(request: EscalationRequest): Promise<{ canProceed: boolean; action: BrowserAction }> {
+  private async handleEscalation(
+    request: EscalationRequest
+  ): Promise<{ canProceed: boolean; action: BrowserAction }> {
     if (!this.escalationHandler || !this.session) {
       // No handler - deny by default
       return { canProceed: false, action: request.action };
@@ -521,7 +552,10 @@ export class BrowserAgent {
     await this.escalationHandler.submit(request);
 
     // Wait for response
-    const response = await this.escalationHandler.waitForResponse(request.requestId, request.deadline - Date.now());
+    const response = await this.escalationHandler.waitForResponse(
+      request.requestId,
+      request.deadline - Date.now()
+    );
 
     // Handle response
     return this.session.handleEscalationResponse(response);

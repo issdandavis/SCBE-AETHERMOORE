@@ -526,7 +526,7 @@ export class AgenticCoderPlatform {
         console.warn('[SCBE] Set ANTHROPIC_API_KEY, OPENAI_API_KEY, or GOOGLE_API_KEY in .env');
         return {
           output: `[${agent.name}/${action}] Mock: No AI providers configured.\n\nContext length: ${context.length} chars`,
-          confidence: 0.5,
+          confidence: 0.75, // Must meet minConfidence threshold (0.7)
           tokens: Math.floor(context.length / 4),
         };
       }

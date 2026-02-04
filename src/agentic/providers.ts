@@ -487,7 +487,10 @@ export function createProviderAttestation(
     provider: response.provider,
     model: response.model,
     promptHash: createHmac('sha256', 'scbe-prompt').update(prompt).digest('hex').slice(0, 16),
-    outputHash: createHmac('sha256', 'scbe-output').update(response.output).digest('hex').slice(0, 16),
+    outputHash: createHmac('sha256', 'scbe-output')
+      .update(response.output)
+      .digest('hex')
+      .slice(0, 16),
     tokensUsed: response.tokensUsed,
     latencyMs: response.latencyMs,
     timestamp: Date.now(),
