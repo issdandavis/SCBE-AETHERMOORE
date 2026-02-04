@@ -111,11 +111,7 @@ export {
 export type { EvaluatorOptions } from './evaluator.js';
 
 // Session
-export {
-  BrowserSession,
-  createBrowserSession,
-  defaultSessionConfig,
-} from './session.js';
+export { BrowserSession, createBrowserSession, defaultSessionConfig } from './session.js';
 export type {
   SessionStatistics,
   PredictedOutcome,
@@ -126,13 +122,5 @@ export type {
 } from './session.js';
 
 // Agent
-export {
-  BrowserAgent,
-  createBrowserAgent,
-  MockBrowserBackend,
-} from './agent.js';
-export type {
-  BrowserBackend,
-  EscalationHandler,
-  BrowserAgentConfig,
-} from './agent.js';
+export { BrowserAgent, createBrowserAgent, MockBrowserBackend } from './agent.js';
+export type { BrowserBackend, EscalationHandler, BrowserAgentConfig } from './agent.js';

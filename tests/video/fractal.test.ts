@@ -246,7 +246,8 @@ describe('Fractal Renderer', () => {
       const first = [rgba[0], rgba[1], rgba[2]];
       const last = [rgba[16], rgba[17], rgba[18]];
 
-      const diff = Math.abs(first[0] - last[0]) + Math.abs(first[1] - last[1]) + Math.abs(first[2] - last[2]);
+      const diff =
+        Math.abs(first[0] - last[0]) + Math.abs(first[1] - last[1]) + Math.abs(first[2] - last[2]);
       expect(diff).toBeGreaterThan(0);
     });
 

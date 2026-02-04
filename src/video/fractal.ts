@@ -62,11 +62,7 @@ function complexMagSq(c: Complex): number {
  * Mandelbrot iteration: z_{n+1} = z_n^2 + c
  * Returns normalized iteration count for smooth coloring
  */
-export function mandelbrotIteration(
-  c: Complex,
-  maxIter: number,
-  bailout: number
-): number {
+export function mandelbrotIteration(c: Complex, maxIter: number, bailout: number): number {
   // Validate inputs
   maxIter = Math.min(Math.max(1, Math.floor(maxIter)), MAX_ITERATIONS_LIMIT);
   bailout = Math.min(Math.max(MIN_BAILOUT, bailout), MAX_BAILOUT);
@@ -104,12 +100,7 @@ export function mandelbrotIteration(
 /**
  * Julia iteration: z_{n+1} = z_n^2 + c (c is fixed, z_0 varies)
  */
-export function juliaIteration(
-  z0: Complex,
-  c: Complex,
-  maxIter: number,
-  bailout: number
-): number {
+export function juliaIteration(z0: Complex, c: Complex, maxIter: number, bailout: number): number {
   maxIter = Math.min(Math.max(1, Math.floor(maxIter)), MAX_ITERATIONS_LIMIT);
   bailout = Math.min(Math.max(MIN_BAILOUT, bailout), MAX_BAILOUT);
   const bailoutSq = bailout * bailout;
@@ -137,11 +128,7 @@ export function juliaIteration(
  * Burning Ship iteration: z_{n+1} = (|Re(z_n)| + i|Im(z_n)|)^2 + c
  * Creates ship-like fractal patterns
  */
-export function burningShipIteration(
-  c: Complex,
-  maxIter: number,
-  bailout: number
-): number {
+export function burningShipIteration(c: Complex, maxIter: number, bailout: number): number {
   maxIter = Math.min(Math.max(1, Math.floor(maxIter)), MAX_ITERATIONS_LIMIT);
   bailout = Math.min(Math.max(MIN_BAILOUT, bailout), MAX_BAILOUT);
   const bailoutSq = bailout * bailout;
