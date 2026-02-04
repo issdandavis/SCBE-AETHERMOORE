@@ -17,6 +17,7 @@
 
 export * from './agents';
 export * from './collaboration';
+export * from './llm-executor';
 export * from './platform';
 export * from './task-group';
 export * from './types';

@@ -227,6 +227,13 @@ export interface PlatformConfig {
 
   /** Minimum confidence threshold */
   minConfidence: number;
+
+  /** Custom executor function (optional - uses LLM if provided) */
+  executor?: (
+    agent: BuiltInAgent,
+    action: string,
+    context: string
+  ) => Promise<{ output: string; confidence: number; tokens?: number }>;
 }
 
 /**

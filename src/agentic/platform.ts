@@ -500,14 +500,20 @@ export class AgenticCoderPlatform {
 
   /**
    * Create default executor (mock for testing)
+   * Use config.executor for real LLM calls - see llm-executor.ts
    */
   private createDefaultExecutor(): (
     agent: BuiltInAgent,
     action: string,
     context: string
   ) => Promise<{ output: string; confidence: number; tokens?: number }> {
+    // Use custom executor if provided in config
+    if (this.config.executor) {
+      return this.config.executor;
+    }
+
+    // Mock execution for testing
     return async (agent, action, context) => {
-      // Mock execution - in production, this would call the AI provider
       return {
         output: `[${agent.name}/${action}] Processed task based on context.\n\nContext length: ${context.length} chars`,
         confidence: 0.85 + Math.random() * 0.1,
