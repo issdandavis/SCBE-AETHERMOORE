@@ -136,11 +136,7 @@ function generateFrame(
   let watermarkHash: string | undefined;
   if (config.enableWatermark && watermarkKeys) {
     watermarkHash = hashFrameContent(data, index, timestamp);
-    data = embedWatermark(
-      data,
-      watermarkHash,
-      watermarkKeys.publicKey
-    ) as Uint8ClampedArray;
+    data = embedWatermark(data, watermarkHash, watermarkKeys.publicKey) as Uint8ClampedArray;
   }
 
   // Convert to raw format if requested
@@ -217,7 +213,7 @@ export async function generateVideo(
   // Validate trajectory
   const trajectoryErrors = validateTrajectory(trajectory);
   if (trajectoryErrors.length > 0) {
-    errors.push(...trajectoryErrors.map(e => `Trajectory: ${e}`));
+    errors.push(...trajectoryErrors.map((e) => `Trajectory: ${e}`));
   }
 
   onProgress?.({
@@ -281,7 +277,7 @@ export async function generateVideo(
 
     // Yield to event loop periodically for responsiveness
     if (i % 10 === 0) {
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     }
   }
 
@@ -301,7 +297,7 @@ export async function generateVideo(
       // Validate audio
       const audioErrors = validateAudio(audioSamples);
       if (audioErrors.length > 0) {
-        errors.push(...audioErrors.map(e => `Audio: ${e}`));
+        errors.push(...audioErrors.map((e) => `Audio: ${e}`));
       }
 
       // Track audio memory
@@ -414,7 +410,7 @@ export async function* streamVideoFrames(
     yield frame;
 
     // Yield to event loop
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
   }
 }
 
@@ -432,14 +428,18 @@ export function validateVideo(result: VideoGenerationResult): string[] {
 
   // Check trajectory
   if (result.trajectory.points.length !== result.frameCount) {
-    errors.push(`Trajectory length mismatch: ${result.trajectory.points.length} vs ${result.frameCount}`);
+    errors.push(
+      `Trajectory length mismatch: ${result.trajectory.points.length} vs ${result.frameCount}`
+    );
   }
 
   // Check frames if present
   if (result.frames) {
     // Check frames array length matches frameCount
     if (result.frames.length !== result.frameCount) {
-      errors.push(`Frames array length mismatch: expected ${result.frameCount}, got ${result.frames.length}`);
+      errors.push(
+        `Frames array length mismatch: expected ${result.frameCount}, got ${result.frames.length}`
+      );
     }
 
     for (let i = 0; i < result.frames.length; i++) {
@@ -453,7 +453,9 @@ export function validateVideo(result: VideoGenerationResult): string[] {
       // Check data size
       const expectedSize = frame.width * frame.height * 4; // RGBA
       if (frame.data.length !== expectedSize) {
-        errors.push(`Frame ${i} data size mismatch: expected ${expectedSize}, got ${frame.data.length}`);
+        errors.push(
+          `Frame ${i} data size mismatch: expected ${expectedSize}, got ${frame.data.length}`
+        );
       }
 
       // Check Poincaré state is in ball
@@ -472,7 +474,9 @@ export function validateVideo(result: VideoGenerationResult): string[] {
     const expectedSamples = Math.ceil(result.config.duration * DEFAULT_AUDIO_CONFIG.sampleRate);
     const tolerance = DEFAULT_AUDIO_CONFIG.sampleRate; // 1 second tolerance
     if (Math.abs(result.audioSamples.length - expectedSamples) > tolerance) {
-      errors.push(`Audio sample count mismatch: expected ~${expectedSamples}, got ${result.audioSamples.length}`);
+      errors.push(
+        `Audio sample count mismatch: expected ~${expectedSamples}, got ${result.audioSamples.length}`
+      );
     }
   }
 
@@ -489,7 +493,7 @@ export function exportToJson(result: VideoGenerationResult): string {
     config: result.config,
     trajectory: {
       ...result.trajectory,
-      points: result.trajectory.points.map(p => Array.from(p)),
+      points: result.trajectory.points.map((p) => Array.from(p)),
     },
     frameCount: result.frameCount,
     metrics: result.metrics,
@@ -497,7 +501,7 @@ export function exportToJson(result: VideoGenerationResult): string {
     // Omit frames and audio for JSON (too large)
     watermarkKeys: result.watermarkKeys
       ? {
-          publicKey: result.watermarkKeys.publicKey.map(arr => Array.from(arr)),
+          publicKey: result.watermarkKeys.publicKey.map((arr) => Array.from(arr)),
           secretKey: Array.from(result.watermarkKeys.secretKey),
         }
       : undefined,

@@ -91,10 +91,10 @@ export { mobiusAdd as mobiusAddition };
  * Breath Transform configuration
  */
 export interface BreathConfig {
-    /** Amplitude bound A ∈ [0, 0.1] */
-    amplitude: number;
-    /** Breathing frequency ω */
-    omega: number;
+  /** Amplitude bound A ∈ [0, 0.1] */
+  amplitude: number;
+  /** Breathing frequency ω */
+  omega: number;
 }
 /**
  * Breath Transform (Layer 6)
@@ -118,7 +118,11 @@ export declare function breathTransform(p: number[], t: number, config?: BreathC
  * @param config - Breath configuration
  * @returns Approximate original point
  */
-export declare function inverseBreathTransform(bp: number[], t: number, config?: BreathConfig): number[];
+export declare function inverseBreathTransform(
+  bp: number[],
+  t: number,
+  config?: BreathConfig
+): number[];
 /**
  * Phase Modulation / Rotation (Layer 7)
  *
@@ -132,7 +136,11 @@ export declare function inverseBreathTransform(bp: number[], t: number, config?:
  * @param plane - Pair of dimension indices to rotate in (default [0,1])
  * @returns Rotated point
  */
-export declare function phaseModulation(p: number[], theta: number, plane?: [number, number]): number[];
+export declare function phaseModulation(
+  p: number[],
+  theta: number,
+  plane?: [number, number]
+): number[];
 /**
  * Multi-plane phase modulation
  *
@@ -142,20 +150,23 @@ export declare function phaseModulation(p: number[], theta: number, plane?: [num
  * @param rotations - Array of [theta, plane] pairs
  * @returns Transformed point
  */
-export declare function multiPhaseModulation(p: number[], rotations: Array<{
+export declare function multiPhaseModulation(
+  p: number[],
+  rotations: Array<{
     theta: number;
     plane: [number, number];
-}>): number[];
+  }>
+): number[];
 /**
  * Well configuration for multi-well potential
  */
 export interface Well {
-    /** Well center position */
-    center: number[];
-    /** Well weight */
-    weight: number;
-    /** Well width (σ) */
-    sigma: number;
+  /** Well center position */
+  center: number[];
+  /** Well weight */
+  weight: number;
+  /** Well width (σ) */
+  sigma: number;
 }
 /**
  * Multi-Well Potential (Layer 8)
@@ -189,9 +200,15 @@ export declare function multiWellGradient(p: number[], wells: Well[]): number[];
  * @param wells - Multi-well potential config (optional)
  * @returns Transformed point and potential value
  */
-export declare function applyHyperbolicPipeline(p: number[], t: number, theta: number, breathConfig?: BreathConfig, wells?: Well[]): {
-    point: number[];
-    potential: number;
-    distance: number;
+export declare function applyHyperbolicPipeline(
+  p: number[],
+  t: number,
+  theta: number,
+  breathConfig?: BreathConfig,
+  wells?: Well[]
+): {
+  point: number[];
+  potential: number;
+  distance: number;
 };
 //# sourceMappingURL=hyperbolic.d.ts.map

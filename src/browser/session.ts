@@ -683,7 +683,10 @@ export function createBrowserSession(config: BrowserSessionConfig): BrowserSessi
 /**
  * Create default session config.
  */
-export function defaultSessionConfig(agentId: string, tongue: TongueCode = 'KO'): BrowserSessionConfig {
+export function defaultSessionConfig(
+  agentId: string,
+  tongue: TongueCode = 'KO'
+): BrowserSessionConfig {
   return {
     sessionId: randomUUID(),
     agentId,
