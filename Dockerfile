@@ -124,4 +124,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
 RUN python -c "from src.crypto.pqc_liboqs import get_pqc_backend; print(f'PQC Backend: {get_pqc_backend()}')"
 
 # Default command
-CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD uvicorn src.api.main:app --host 0.0.0.0 --port ${PORT:-8080}
