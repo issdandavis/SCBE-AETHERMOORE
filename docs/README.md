@@ -72,6 +72,7 @@ docs/
 ### For Decision Makers
 - [Executive Summary](00-overview/executive-summary.md) - 5-minute overview
 - [Industry Guides](05-industry-guides/README.md) - Sector-specific value
+ - [Capabilities](CAPABILITIES.md) - What the platform ships today
 
 ### For Security Teams
 - [Security Model](04-security/README.md) - Security architecture
@@ -82,6 +83,7 @@ docs/
 - [Getting Started](00-overview/getting-started.md) - Quick start
 - [API Reference](02-technical/api-reference.md) - API documentation
 - [Deployment Guide](03-deployment/README.md) - Production deployment
+ - [CLI Guide](../README.md#cli-quick-start-six-tongues--geoseal) - Sacred Tongues + GeoSeal
 
 ### For Architects
 - [Architecture Overview](01-architecture/README.md) - System design
@@ -135,13 +137,15 @@ AI Agent Request
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/issdandavis/scbe-aethermoore-demo.git
+git clone https://github.com/issdandavis/SCBE-AETHERMOORE.git
 
 # 2. Install dependencies
 npm install
+pip install -r requirements.txt
 
 # 3. Run tests
 npm test
+pytest tests/ -v
 
 # 4. Start API server
 export SCBE_API_KEY="your-key"
