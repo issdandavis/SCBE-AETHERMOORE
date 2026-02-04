@@ -70,10 +70,7 @@ export interface FractalFingerprint {
  * @param size - Image size (square, default 64)
  * @returns Fractal fingerprint with hash and image data
  */
-export function generateFractalFingerprint(
-  aad: AAD,
-  size: number = 64
-): FractalFingerprint {
+export function generateFractalFingerprint(aad: AAD, size: number = 64): FractalFingerprint {
   // Clamp size
   const clampedSize = Math.max(16, Math.min(512, Math.floor(size)));
 
@@ -84,7 +81,7 @@ export function generateFractalFingerprint(
     threatLevel: 0, // Fingerprints are neutral
     userId: parseInt(aad.request_id.slice(0, 8), 16),
     behavioralStability: 0.9, // High stability for consistent fingerprints
-    audioPhase: parseInt(aad.schema_hash.slice(0, 4), 16) / 0xffff * Math.PI * 2,
+    audioPhase: (parseInt(aad.schema_hash.slice(0, 4), 16) / 0xffff) * Math.PI * 2,
   });
 
   // Determine tongue from provider_id hash
@@ -106,12 +103,7 @@ export function generateFractalFingerprint(
   );
 
   // Apply colormap
-  const imageData = applyColormap(
-    normalized,
-    fractalConfig.colormap,
-    clampedSize,
-    clampedSize
-  );
+  const imageData = applyColormap(normalized, fractalConfig.colormap, clampedSize, clampedSize);
 
   // Generate hash from image data
   const hash = hashFrameContent(imageData, 0, aad.ts);
@@ -134,10 +126,7 @@ export function generateFractalFingerprint(
  * @param aad - The envelope AAD
  * @returns True if fingerprint matches the AAD
  */
-export function verifyFractalFingerprint(
-  fingerprint: FractalFingerprint,
-  aad: AAD
-): boolean {
+export function verifyFractalFingerprint(fingerprint: FractalFingerprint, aad: AAD): boolean {
   const regenerated = generateFractalFingerprint(aad, fingerprint.width);
 
   // Compare hashes
@@ -202,9 +191,7 @@ export function embedTrajectoryState(
   const tongue = roleTongueMap[agentRole] || 'av';
 
   // Create context vector from job
-  const entropy = job.metadata
-    ? Object.keys(job.metadata).length / 10
-    : 0.5;
+  const entropy = job.metadata ? Object.keys(job.metadata).length / 10 : 0.5;
 
   const threatLevel = job.requiredCapabilities?.includes('security') ? 0.7 : 0.2;
 
@@ -257,7 +244,7 @@ export function extractJobTrajectory(jobs: TrajectoryJobData[]): PoincarePoint[]
     if (job.trajectoryHistory) {
       // Add any states not already in trajectory
       for (const state of job.trajectoryHistory) {
-        if (!trajectory.some(t => arraysEqual(t, state))) {
+        if (!trajectory.some((t) => arraysEqual(t, state))) {
           trajectory.push(state);
         }
       }
@@ -391,7 +378,12 @@ export async function generateAuditReel(
 
   // Create chain of custody hash
   const chainOfCustodyHash = hashFrameContent(
-    new Uint8ClampedArray(envelopeHashes.join('').split('').map(c => c.charCodeAt(0))),
+    new Uint8ClampedArray(
+      envelopeHashes
+        .join('')
+        .split('')
+        .map((c) => c.charCodeAt(0))
+    ),
     envelopes.length,
     Date.now()
   );
@@ -414,12 +406,16 @@ export async function generateAuditReel(
 export async function* streamAuditReelFrames(
   envelopes: Envelope[],
   config: AuditReelConfig = {}
-): AsyncGenerator<{
-  frame: Uint8ClampedArray;
-  index: number;
-  timestamp: number;
-  poincareState: PoincarePoint;
-}, void, unknown> {
+): AsyncGenerator<
+  {
+    frame: Uint8ClampedArray;
+    index: number;
+    timestamp: number;
+    poincareState: PoincarePoint;
+  },
+  void,
+  unknown
+> {
   if (envelopes.length === 0) {
     return;
   }
@@ -430,7 +426,7 @@ export async function* streamAuditReelFrames(
   const duration = config.duration || Math.max(2, envelopes.length * 0.5);
 
   // Generate fingerprints and determine tongue
-  const fingerprints = envelopes.map(e => generateFractalFingerprint(e.aad, 64));
+  const fingerprints = envelopes.map((e) => generateFractalFingerprint(e.aad, 64));
   const tongueCount = new Map<Tongue, number>();
   for (const fp of fingerprints) {
     tongueCount.set(fp.tongue, (tongueCount.get(fp.tongue) || 0) + 1);
@@ -445,21 +441,25 @@ export async function* streamAuditReelFrames(
   }
 
   // Create seed
-  const seedStr = envelopes.map(e => e.aad.canonical_body_hash).join(':');
+  const seedStr = envelopes.map((e) => e.aad.canonical_body_hash).join(':');
   const seed = hashStringToNumber(seedStr);
 
   // Stream frames
-  for await (const frame of streamVideoFrames({
-    width,
-    height,
-    fps,
-    duration,
-    tongue: dominantTongue,
-    fractalMode: 'hybrid',
-    chaosStrength: config.chaosStrength ?? 0.4,
-    breathingAmplitude: config.breathingAmplitude ?? 0.03,
-    enableWatermark: config.enableWatermark ?? true,
-  }, {}, seed)) {
+  for await (const frame of streamVideoFrames(
+    {
+      width,
+      height,
+      fps,
+      duration,
+      tongue: dominantTongue,
+      fractalMode: 'hybrid',
+      chaosStrength: config.chaosStrength ?? 0.4,
+      breathingAmplitude: config.breathingAmplitude ?? 0.03,
+      enableWatermark: config.enableWatermark ?? true,
+    },
+    {},
+    seed
+  )) {
     yield {
       frame: frame.data as Uint8ClampedArray,
       index: frame.index,
@@ -496,10 +496,7 @@ export interface VisualProof {
  * @param tongue - Tongue to use (default auto-detected)
  * @returns Visual proof for verification
  */
-export function createVisualProof(
-  jobs: TrajectoryJobData[],
-  tongue?: Tongue
-): VisualProof {
+export function createVisualProof(jobs: TrajectoryJobData[], tongue?: Tongue): VisualProof {
   const trajectory = extractJobTrajectory(jobs);
 
   if (trajectory.length === 0) {
@@ -519,16 +516,19 @@ export function createVisualProof(
 
   // Get time bounds
   const times = jobs
-    .filter(j => j.metadata?.trajectoryEmbeddedAt)
-    .map(j => j.metadata!.trajectoryEmbeddedAt as number);
+    .filter((j) => j.metadata?.trajectoryEmbeddedAt)
+    .map((j) => j.metadata!.trajectoryEmbeddedAt as number);
 
   const startTime = times.length > 0 ? Math.min(...times) : Date.now();
   const endTime = times.length > 0 ? Math.max(...times) : Date.now();
 
   // Create proof hash
-  const proofData = trajectory.flat().map(v => v.toString()).join(':');
+  const proofData = trajectory
+    .flat()
+    .map((v) => v.toString())
+    .join(':');
   const proofHash = hashFrameContent(
-    new Uint8ClampedArray(proofData.split('').map(c => c.charCodeAt(0))),
+    new Uint8ClampedArray(proofData.split('').map((c) => c.charCodeAt(0))),
     trajectory.length,
     startTime
   );
@@ -549,10 +549,7 @@ export function createVisualProof(
  * @param tolerance - Maximum allowed deviation (default 1e-6)
  * @returns True if proof is valid
  */
-export function verifyVisualProof(
-  proof: VisualProof,
-  tolerance: number = 1e-6
-): boolean {
+export function verifyVisualProof(proof: VisualProof, tolerance: number = 1e-6): boolean {
   // Verify all points are inside Poincaré ball
   for (const point of proof.trajectory) {
     if (point.length !== 6) return false;
@@ -566,9 +563,12 @@ export function verifyVisualProof(
   }
 
   // Verify proof hash
-  const proofData = proof.trajectory.flat().map(v => v.toString()).join(':');
+  const proofData = proof.trajectory
+    .flat()
+    .map((v) => v.toString())
+    .join(':');
   const expectedHash = hashFrameContent(
-    new Uint8ClampedArray(proofData.split('').map(c => c.charCodeAt(0))),
+    new Uint8ClampedArray(proofData.split('').map((c) => c.charCodeAt(0))),
     proof.trajectory.length,
     proof.startTime
   );
@@ -625,7 +625,7 @@ function hashStringToNumber(str: string): number {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32-bit integer
   }
   return Math.abs(hash);

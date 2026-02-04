@@ -21,8 +21,4 @@ export {
   smartTruncate,
 } from './socialContent';
 
-export type {
-  MarketingContent,
-  TweetOptions,
-  GeneratedTweet,
-} from './socialContent';
+export type { MarketingContent, TweetOptions, GeneratedTweet } from './socialContent';

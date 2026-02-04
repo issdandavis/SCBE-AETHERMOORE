@@ -13,7 +13,11 @@ import {
   exportToJson,
 } from '../../src/video/generator.js';
 import { generateAudioTrack, validateAudio, audioToWav } from '../../src/video/audio.js';
-import { generateWatermarkKeys, hashFrameContent, createWatermarkChain } from '../../src/video/watermark.js';
+import {
+  generateWatermarkKeys,
+  hashFrameContent,
+  createWatermarkChain,
+} from '../../src/video/watermark.js';
 import { generateTrajectory } from '../../src/video/trajectory.js';
 import { TONGUE_FRACTAL_CONFIGS } from '../../src/video/types.js';
 import type { VideoConfig } from '../../src/video/types.js';
@@ -282,11 +286,7 @@ describe('Video Generator', () => {
     });
 
     it('should create watermark chain', () => {
-      const hashes = [
-        'a'.repeat(64),
-        'b'.repeat(64),
-        'c'.repeat(64),
-      ];
+      const hashes = ['a'.repeat(64), 'b'.repeat(64), 'c'.repeat(64)];
 
       const { chainHash, merkleRoot } = createWatermarkChain(hashes);
 
@@ -369,7 +369,9 @@ describe('Video Generator', () => {
 
       const errors = validateVideo(result);
       // The validator checks if frames.length matches frameCount
-      expect(errors.some(e => e.includes('mismatch') || e.includes('Trajectory length'))).toBe(true);
+      expect(errors.some((e) => e.includes('mismatch') || e.includes('Trajectory length'))).toBe(
+        true
+      );
     });
   });
 
@@ -433,7 +435,7 @@ describe('Video Generator', () => {
       );
 
       // Should have progress for all phases
-      const phases = new Set(progressCalls.map(p => p.phase));
+      const phases = new Set(progressCalls.map((p) => p.phase));
       expect(phases.has('trajectory')).toBe(true);
       expect(phases.has('frames')).toBe(true);
       expect(phases.has('audio')).toBe(true);
