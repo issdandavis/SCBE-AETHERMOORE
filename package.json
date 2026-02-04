@@ -102,17 +102,18 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "dependencies": {},
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "@types/node": "^22.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.54.0",
+    "@typescript-eslint/parser": "^8.54.0",
     "@vitest/coverage-v8": "^4.0.17",
     "fast-check": "^4.5.3",
     "madge": "^8.0.0",
     "prettier": "^3.2.0",
     "rimraf": "^5.0.10",
     "ts-node": "^10.9.2",
-    "typedoc": "^0.25.0",
+    "typedoc": "^0.28.16",
     "typescript": "^5.9.0",
     "vitest": "^4.0.17"
   },
