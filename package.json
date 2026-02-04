@@ -93,13 +93,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/issdandavis/scbe-aethermoore-demo.git"
-  },
+    "url": "git+https://github.com/issdandavis/SCBE-AETHERMOORE.git"  },
   "bugs": {
-    "url": "https://github.com/issdandavis/scbe-aethermoore-demo/issues"
-  },
-  "homepage": "https://github.com/issdandavis/scbe-aethermoore-demo#readme",
-  "engines": {
+    "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"  },
+  "homepage": "https://github.com/issdandavis/SCBE-AETHERMOORE#readme",  "engines": {
     "node": ">=18.0.0"
   },
   "dependencies": {
