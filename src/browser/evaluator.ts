@@ -294,7 +294,8 @@ function computeRiskScore(
   const historicalRisk = sessionState.sessionRisk;
 
   // Combined risk with L12 harmonic amplification
-  const baseRisk = actionRisk * 0.35 + domainRisk * 0.25 + temporalRisk * 0.2 + historicalRisk * 0.2;
+  const baseRisk =
+    actionRisk * 0.35 + domainRisk * 0.25 + temporalRisk * 0.2 + historicalRisk * 0.2;
 
   // Apply harmonic scaling (makes risk grow super-exponentially near boundary)
   const amplifiedRisk = Math.min(baseRisk * harmonicFactor, 1.0);
@@ -326,7 +327,10 @@ function computeRiskScore(
 /**
  * Make governance decision based on risk score.
  */
-function makeDecision(riskScore: number, action: BrowserAction): {
+function makeDecision(
+  riskScore: number,
+  action: BrowserAction
+): {
   decision: BrowserDecision;
   confidence: number;
   requiresRoundtable: boolean;
@@ -347,7 +351,8 @@ function makeDecision(riskScore: number, action: BrowserAction): {
     confidence = (riskScore - THRESHOLDS.allow) / (THRESHOLDS.quarantine - THRESHOLDS.allow);
   } else if (riskScore < THRESHOLDS.escalate) {
     decision = 'ESCALATE';
-    confidence = (riskScore - THRESHOLDS.quarantine) / (THRESHOLDS.escalate - THRESHOLDS.quarantine);
+    confidence =
+      (riskScore - THRESHOLDS.quarantine) / (THRESHOLDS.escalate - THRESHOLDS.quarantine);
   } else {
     decision = 'DENY';
     confidence = Math.min((riskScore - THRESHOLDS.deny) / (1 - THRESHOLDS.deny), 1);
@@ -441,11 +446,11 @@ export class BrowserActionEvaluator {
     const decisionId = randomUUID();
 
     // Compute risk through pipeline
-    const { score: riskScore, factors: riskFactors, pipelineOutputs } = computeRiskScore(
-      action,
-      observation,
-      sessionState
-    );
+    const {
+      score: riskScore,
+      factors: riskFactors,
+      pipelineOutputs,
+    } = computeRiskScore(action, observation, sessionState);
 
     // Make decision
     const { decision, confidence, requiresRoundtable } = makeDecision(riskScore, action);
