@@ -97,6 +97,7 @@ RUN ldconfig
 
 # Copy Python dependencies (including liboqs-python)
 COPY --from=py-builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=py-builder /usr/local/bin /usr/local/bin
 COPY --from=py-builder /app/src ./src
 COPY --from=py-builder /app/scbe-cli.py ./
 
