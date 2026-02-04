@@ -30,6 +30,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     g++ \
     libssl-dev \
+        pkg-config \
     wget \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
