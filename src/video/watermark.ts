@@ -111,7 +111,7 @@ function polyAdd(a: number[], b: number[], q: number): number[] {
  * Scalar multiplication of polynomial
  */
 function polyScale(a: number[], s: number, q: number): number[] {
-  return a.map(coeff => ((coeff * s) % q + q) % q);
+  return a.map((coeff) => (((coeff * s) % q) + q) % q);
 }
 
 /**
@@ -120,9 +120,10 @@ function polyScale(a: number[], s: number, q: number): number[] {
  * Public key: (a, b) where b = a·s + e
  * Secret key: s
  */
-export function generateWatermarkKeys(
-  config: WatermarkConfig = DEFAULT_WATERMARK_CONFIG
-): { publicKey: number[][]; secretKey: number[] } {
+export function generateWatermarkKeys(config: WatermarkConfig = DEFAULT_WATERMARK_CONFIG): {
+  publicKey: number[][];
+  secretKey: number[];
+} {
   config = validateConfig(config);
   const { dimension: n, modulus: q, errorBound } = config;
 
@@ -197,9 +198,10 @@ export function embedWatermark(
   const c2 = polyAdd(polyAdd(br, e2, q), scaledM, q);
 
   // Embed ciphertext coefficients into frame LSBs
-  const result = frameData instanceof Float32Array
-    ? new Float32Array(frameData)
-    : new Uint8ClampedArray(frameData);
+  const result =
+    frameData instanceof Float32Array
+      ? new Float32Array(frameData)
+      : new Uint8ClampedArray(frameData);
 
   // Embed c1 and c2 interleaved
   const embedLen = Math.min(2 * n, result.length);
@@ -261,7 +263,7 @@ export function verifyWatermark(
   const decrypted: number[] = new Array(n);
 
   for (let i = 0; i < n; i++) {
-    decrypted[i] = ((c2[i] - c1s[i]) % q + q) % q;
+    decrypted[i] = (((c2[i] - c1s[i]) % q) + q) % q;
   }
 
   // Decode polynomial to hash
@@ -275,7 +277,7 @@ export function verifyWatermark(
 
   // Convert bits to hash string (simplified)
   const extractedHash = extractedBytes
-    .map(b => b.toString())
+    .map((b) => b.toString())
     .join('')
     .substring(0, 64);
 
@@ -314,21 +316,25 @@ export function hashFrameContent(
   const hash = crypto.createHash('sha256');
 
   // Hash frame metadata
-  hash.update(Buffer.from([
-    (frameIndex >> 24) & 0xff,
-    (frameIndex >> 16) & 0xff,
-    (frameIndex >> 8) & 0xff,
-    frameIndex & 0xff,
-  ]));
+  hash.update(
+    Buffer.from([
+      (frameIndex >> 24) & 0xff,
+      (frameIndex >> 16) & 0xff,
+      (frameIndex >> 8) & 0xff,
+      frameIndex & 0xff,
+    ])
+  );
 
   // Hash timestamp
   const timestampInt = Math.floor(timestamp * 1000);
-  hash.update(Buffer.from([
-    (timestampInt >> 24) & 0xff,
-    (timestampInt >> 16) & 0xff,
-    (timestampInt >> 8) & 0xff,
-    timestampInt & 0xff,
-  ]));
+  hash.update(
+    Buffer.from([
+      (timestampInt >> 24) & 0xff,
+      (timestampInt >> 16) & 0xff,
+      (timestampInt >> 8) & 0xff,
+      timestampInt & 0xff,
+    ])
+  );
 
   // Sample frame data for efficiency (every 100th element)
   const sampleSize = Math.min(1000, Math.ceil(frameData.length / 100));
@@ -351,9 +357,10 @@ export function hashFrameContent(
  * Create a watermark chain for video integrity
  * Each frame's hash includes the previous frame's hash
  */
-export function createWatermarkChain(
-  frameHashes: string[]
-): { chainHash: string; merkleRoot: string } {
+export function createWatermarkChain(frameHashes: string[]): {
+  chainHash: string;
+  merkleRoot: string;
+} {
   if (frameHashes.length === 0) {
     return {
       chainHash: crypto.createHash('sha256').update('empty').digest('hex'),
@@ -364,7 +371,8 @@ export function createWatermarkChain(
   // Linear chain hash
   let chainHash = frameHashes[0];
   for (let i = 1; i < frameHashes.length; i++) {
-    chainHash = crypto.createHash('sha256')
+    chainHash = crypto
+      .createHash('sha256')
       .update(chainHash + frameHashes[i])
       .digest('hex');
   }
@@ -376,7 +384,8 @@ export function createWatermarkChain(
     for (let i = 0; i < layer.length; i += 2) {
       const left = layer[i];
       const right = layer[i + 1] || left; // Duplicate last if odd
-      const combined = crypto.createHash('sha256')
+      const combined = crypto
+        .createHash('sha256')
         .update(left + right)
         .digest('hex');
       nextLayer.push(combined);

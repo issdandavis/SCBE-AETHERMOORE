@@ -181,11 +181,7 @@ export function logMap0_6D(p: PoincarePoint): PoincarePoint {
  * Geodesic interpolation between two points in Poincaré ball
  * Uses the geodesic formula: γ(t) = u ⊕ (t · (-u ⊕ v))
  */
-export function geodesicInterpolate(
-  u: PoincarePoint,
-  v: PoincarePoint,
-  t: number
-): PoincarePoint {
+export function geodesicInterpolate(u: PoincarePoint, v: PoincarePoint, t: number): PoincarePoint {
   t = clamp(t, 0, 1);
 
   // Compute -u
@@ -269,11 +265,7 @@ function phaseModulation(
  * Generate waypoints for trajectory based on Sacred Tongue
  * Each tongue has characteristic movement patterns
  */
-function generateWaypoints(
-  tongue: TongueID,
-  duration: number,
-  seed: number
-): PoincarePoint[] {
+function generateWaypoints(tongue: TongueID, duration: number, seed: number): PoincarePoint[] {
   const waypoints: PoincarePoint[] = [];
 
   // Tongue-specific seed offset to ensure different tongues produce different patterns
@@ -350,7 +342,7 @@ function generateWaypoints(
         0.2 + 0.2 * random(),
         0.2 * (random() - 0.5),
         0.4 + 0.4 * random(),
-        random() * Math.PI / 2,
+        (random() * Math.PI) / 2,
       ]);
     },
     dr: () => {

@@ -85,11 +85,7 @@ function generateHarmonicWeights(
  * Map Poincaré state to frequency
  * Closer to boundary = higher pitch (tension)
  */
-function stateToFrequency(
-  point: PoincarePoint,
-  baseFreq: number,
-  maxFreq: number
-): number {
+function stateToFrequency(point: PoincarePoint, baseFreq: number, maxFreq: number): number {
   const distance = poincareDistanceFromOrigin(point);
 
   // Map hyperbolic distance to frequency
@@ -138,7 +134,8 @@ function generateSample(
 
   // Soft clipping to prevent harsh distortion
   if (Math.abs(sample) > MAX_AMPLITUDE) {
-    sample = Math.sign(sample) * (MAX_AMPLITUDE + Math.tanh(Math.abs(sample) - MAX_AMPLITUDE) * 0.05);
+    sample =
+      Math.sign(sample) * (MAX_AMPLITUDE + Math.tanh(Math.abs(sample) - MAX_AMPLITUDE) * 0.05);
   }
 
   return sample;
@@ -158,7 +155,10 @@ function applyEnvelope(
   const attackSamples = Math.floor(attackTime * sampleRate);
   const decaySamples = Math.floor(decayTime * sampleRate);
   const releaseSamples = Math.floor(releaseTime * sampleRate);
-  const sustainSamples = Math.max(0, samples.length - attackSamples - decaySamples - releaseSamples);
+  const sustainSamples = Math.max(
+    0,
+    samples.length - attackSamples - decaySamples - releaseSamples
+  );
 
   let idx = 0;
 
@@ -254,13 +254,7 @@ export function generateAudioTrack(
     const endTime = (frame + 1) / trajectory.fps;
     const poincareState = trajectory.points[frame];
 
-    const audioFrame = generateAudioFrame(
-      startTime,
-      endTime,
-      poincareState,
-      fractalConfig,
-      config
-    );
+    const audioFrame = generateAudioFrame(startTime, endTime, poincareState, fractalConfig, config);
 
     // Copy frame samples to output buffer
     const startSample = Math.floor(startTime * config.sampleRate);
@@ -269,7 +263,8 @@ export function generateAudioTrack(
       if (targetIdx < totalSamples) {
         // Crossfade with existing samples for smooth transitions
         const existingWeight = audio[targetIdx] !== 0 ? 0.5 : 0;
-        audio[targetIdx] = audio[targetIdx] * existingWeight + audioFrame.samples[i] * (1 - existingWeight);
+        audio[targetIdx] =
+          audio[targetIdx] * existingWeight + audioFrame.samples[i] * (1 - existingWeight);
       }
     }
   }
