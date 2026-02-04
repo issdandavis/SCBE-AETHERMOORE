@@ -49,6 +49,14 @@ RUN wget -q https://github.com/open-quantum-safe/liboqs/archive/refs/tags/0.10.1
 # Stage 3: Python environment with PQC
 FROM python:3.11-slim AS py-builder
 
+# Install build dependencies for liboqs-python
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    libssl-dev \
+    cmake \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Copy liboqs from builder
