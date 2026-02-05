@@ -39,7 +39,8 @@ WORKDIR /app
 # Copy installed packages from builder
 COPY --from=builder /install /usr/local/lib/python3.11/site-packages/
 
-# Copy application code (src/ contains the API at src/api/main.py)
+# Copy application code
+COPY --chown=scbe:scbe api/ ./api/
 COPY --chown=scbe:scbe src/ ./src/
 
 # Set environment variables
@@ -61,4 +62,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:${PORT:-8080}/health')" || exit 1
 
 # Run the API - use shell form to expand PORT at runtime (Cloud Run compatibility)
-CMD uvicorn src.api.main:app --host 0.0.0.0 --port ${PORT:-8080}
+CMD uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-8080}
