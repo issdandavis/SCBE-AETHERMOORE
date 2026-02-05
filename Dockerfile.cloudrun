@@ -47,6 +47,7 @@ WORKDIR /app
 COPY --from=builder /install /usr/local/lib/python3.11/site-packages/
 
 # Copy application code
+COPY --chown=scbe:scbe api/ ./api/
 COPY --chown=scbe:scbe src/ ./src/
 
 # Set environment variables
@@ -68,4 +69,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 # Cloud Run requires listening on PORT env var (defaults to 8080)
 # Use shell form to expand $PORT at runtime
-CMD uvicorn src.api.main:app --host 0.0.0.0 --port ${PORT:-8080}
+CMD uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-8080}
