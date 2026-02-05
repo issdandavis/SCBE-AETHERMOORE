@@ -66,6 +66,14 @@ from .consensus import (
     ConsensusResult,
     VoteDecision
 )
+from .websocket_manager import (
+    WebSocketManager,
+    WebSocketClient,
+    SubscriptionChannel,
+    ClientState,
+    create_websocket_manager,
+    run_websocket_server
+)
 
 __all__ = [
     # Core
@@ -98,6 +106,13 @@ __all__ = [
     "Proposal",
     "ConsensusResult",
     "VoteDecision",
+    # WebSocket (Phase 1 Q2 2026)
+    "WebSocketManager",
+    "WebSocketClient",
+    "SubscriptionChannel",
+    "ClientState",
+    "create_websocket_manager",
+    "run_websocket_server",
 ]
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
