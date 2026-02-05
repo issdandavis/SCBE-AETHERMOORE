@@ -310,18 +310,20 @@ async def authorize(
     """
     start_time = time.time()
 
-    # Get or create agent
-    if request.agent_id not in AGENTS_STORE:
-        AGENTS_STORE[request.agent_id] = {
+    # Get or create agent (tenant-scoped)
+    store_key = f"{tenant}:{request.agent_id}"
+    if store_key not in AGENTS_STORE:
+        AGENTS_STORE[store_key] = {
             "agent_id": request.agent_id,
             "name": request.agent_id,
             "role": "unknown",
             "trust_score": 0.5,
             "created_at": datetime.utcnow().isoformat(),
-            "decision_count": 0
+            "decision_count": 0,
+            "tenant": tenant
         }
 
-    agent = AGENTS_STORE[request.agent_id]
+    agent = AGENTS_STORE[store_key]
     trust_score = agent["trust_score"]
     sensitivity = request.context.get("sensitivity", 0.5) if request.context else 0.5
 
@@ -415,7 +417,9 @@ async def register_agent(
     tenant: str = Depends(verify_api_key)
 ):
     """Register a new agent with initial trust score."""
-    if request.agent_id in AGENTS_STORE:
+    # Use composite key for tenant isolation
+    store_key = f"{tenant}:{request.agent_id}"
+    if store_key in AGENTS_STORE:
         raise HTTPException(status_code=409, detail="Agent already exists")
 
     agent = {
@@ -426,13 +430,15 @@ async def register_agent(
         "created_at": datetime.utcnow().isoformat(),
         "last_activity": None,
         "decision_count": 0,
-        "metadata": request.metadata
+        "metadata": request.metadata,
+        "tenant": tenant  # Store tenant for ownership verification
     }
-    AGENTS_STORE[request.agent_id] = agent
+    AGENTS_STORE[store_key] = agent
 
     logger.info(json.dumps({
         "event": "agent_registered",
         "agent_id": request.agent_id,
+        "tenant": tenant,
         "role": request.role,
         "initial_trust": request.initial_trust
     }))
@@ -446,10 +452,12 @@ async def get_agent(
     tenant: str = Depends(verify_api_key)
 ):
     """Get agent information and current trust score."""
-    if agent_id not in AGENTS_STORE:
+    # Use composite key for tenant-scoped lookup
+    store_key = f"{tenant}:{agent_id}"
+    if store_key not in AGENTS_STORE:
         raise HTTPException(status_code=404, detail="Agent not found")
 
-    return AgentResponse(**AGENTS_STORE[agent_id])
+    return AgentResponse(**AGENTS_STORE[store_key])
 
 
 @app.post("/v1/consensus", response_model=ConsensusResponse, tags=["Governance"])
@@ -470,9 +478,10 @@ async def request_consensus(
     rejections = 0
 
     for validator_id in request.validator_ids:
-        # Get validator trust score
-        if validator_id in AGENTS_STORE:
-            trust = AGENTS_STORE[validator_id]["trust_score"]
+        # Get validator trust score (tenant-scoped lookup)
+        validator_key = f"{tenant}:{validator_id}"
+        if validator_key in AGENTS_STORE:
+            trust = AGENTS_STORE[validator_key]["trust_score"]
         else:
             trust = 0.5  # Default for unknown validators
 
@@ -837,17 +846,19 @@ async def run_fleet_scenario(
     scenario_id = f"scenario_{uuid.uuid4().hex[:12]}"
     start_time = time.time()
 
-    # Register all agents
+    # Register all agents (tenant-scoped)
     for agent in scenario.agents:
-        if agent.agent_id not in AGENTS_STORE:
-            AGENTS_STORE[agent.agent_id] = {
+        agent_key = f"{tenant}:{agent.agent_id}"
+        if agent_key not in AGENTS_STORE:
+            AGENTS_STORE[agent_key] = {
                 "agent_id": agent.agent_id,
                 "name": agent.name,
                 "role": agent.role,
                 "trust_score": agent.initial_trust,
                 "created_at": datetime.utcnow().isoformat(),
                 "last_activity": None,
-                "decision_count": 0
+                "decision_count": 0,
+                "tenant": tenant
             }
 
     # Process all actions
@@ -858,7 +869,8 @@ async def run_fleet_scenario(
     total_score = 0.0
 
     for action in scenario.actions:
-        agent = AGENTS_STORE.get(action.agent_id)
+        agent_key = f"{tenant}:{action.agent_id}"
+        agent = AGENTS_STORE.get(agent_key)
         if not agent:
             continue
 
