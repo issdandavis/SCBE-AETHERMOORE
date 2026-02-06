@@ -1,0 +1,146 @@
+# Labeler configuration for automatic PR labeling
+# See: https://github.com/actions/labeler
+
+# Component labels
+harmonic:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/harmonic/**/*'
+          - 'tests/harmonic/**/*'
+
+crypto:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/crypto/**/*'
+          - 'tests/crypto/**/*'
+
+api:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/api/**/*'
+          - 'api/**/*'
+          - 'tests/api/**/*'
+
+fleet:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/fleet/**/*'
+          - 'tests/fleet/**/*'
+
+spectral:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/spectral/**/*'
+          - 'tests/spectral/**/*'
+
+symphonic:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/symphonic/**/*'
+          - 'symphonic_cipher/**/*'
+          - 'tests/symphonic/**/*'
+
+spiralverse:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/spiralverse/**/*'
+          - 'spiralverse-protocol/**/*'
+          - 'tests/spiralverse/**/*'
+
+agentic:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/agentic/**/*'
+          - 'src/agent/**/*'
+          - 'agents/**/*'
+          - 'tests/agentic/**/*'
+          - 'tests/agent/**/*'
+
+network:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/network/**/*'
+          - 'tests/network/**/*'
+
+security:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/security/**/*'
+          - 'src/pqc/**/*'
+          - 'tests/security/**/*'
+          - 'tests/L5-security/**/*'
+
+# Type labels
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.md'
+          - 'docs/**/*'
+
+tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'tests/**/*'
+          - '**/*.test.ts'
+          - '**/*.spec.ts'
+          - '**/test_*.py'
+
+typescript:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.ts'
+          - '**/*.tsx'
+          - 'tsconfig*.json'
+
+python:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.py'
+          - 'requirements*.txt'
+          - 'pyproject.toml'
+          - 'pytest.ini'
+
+# Infrastructure labels
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**/*'
+
+docker:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'Dockerfile*'
+          - 'docker-compose*.yml'
+          - '.dockerignore'
+
+kubernetes:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'k8s/**/*'
+          - '**/*.yaml'
+          - '**/*.yml'
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'package.json'
+          - 'package-lock.json'
+          - 'requirements.txt'
+          - 'requirements-lock.txt'
+
+# Enterprise/compliance labels
+enterprise:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'tests/enterprise/**/*'
+          - '**/compliance*'
+
+# Demo and examples
+examples:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'examples/**/*'
+          - 'demos/**/*'
+          - 'demo/**/*'
+          - 'demo*.py'
+          - 'demo*.html'
