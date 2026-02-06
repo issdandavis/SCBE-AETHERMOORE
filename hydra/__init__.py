@@ -66,6 +66,25 @@ from .consensus import (
     ConsensusResult,
     VoteDecision
 )
+from .websocket_manager import (
+    WebSocketManager,
+    WebSocketClient,
+    SubscriptionChannel,
+    ClientState,
+    create_websocket_manager,
+    run_websocket_server
+)
+from .swarm_governance import (
+    SwarmGovernance,
+    SwarmAgent,
+    AgentRole,
+    AgentState,
+    GovernanceConfig,
+    AutonomousCodeAgent,
+    create_swarm_governance,
+    create_autonomous_coder,
+    simulate_swarm_attack
+)
 
 __all__ = [
     # Core
@@ -98,6 +117,23 @@ __all__ = [
     "Proposal",
     "ConsensusResult",
     "VoteDecision",
+    # WebSocket (Phase 1 Q2 2026)
+    "WebSocketManager",
+    "WebSocketClient",
+    "SubscriptionChannel",
+    "ClientState",
+    "create_websocket_manager",
+    "run_websocket_server",
+    # Swarm Governance (Phase 1 Q2 2026)
+    "SwarmGovernance",
+    "SwarmAgent",
+    "AgentRole",
+    "AgentState",
+    "GovernanceConfig",
+    "AutonomousCodeAgent",
+    "create_swarm_governance",
+    "create_autonomous_coder",
+    "simulate_swarm_attack",
 ]
 
-__version__ = "1.1.0"
+__version__ = "1.3.0"

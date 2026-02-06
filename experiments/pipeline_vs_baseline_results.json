@@ -1,0 +1,112 @@
+{
+  "config": {
+    "num_agents": 30,
+    "num_malicious": 8,
+    "num_steps": 50,
+    "dim": 6,
+    "num_runs": 100,
+    "attack_levels": [
+      "random",
+      "subtle",
+      "adaptive"
+    ]
+  },
+  "results": {
+    "random": {
+      "baseline_2layer": {
+        "auc_mean": 0.9986931818181819,
+        "auc_std": 0.0028809675759289147,
+        "auc_min": 0.9801136363636364,
+        "auc_max": 1.0
+      },
+      "simple_3layer": {
+        "auc_mean": 0.9986931818181819,
+        "auc_std": 0.0028809675759289147,
+        "auc_min": 0.9801136363636364,
+        "auc_max": 1.0
+      },
+      "medium_6layer": {
+        "auc_mean": 0.7945170454545454,
+        "auc_std": 0.2020479850637882,
+        "auc_min": 0.5625,
+        "auc_max": 0.9801136363636364
+      },
+      "full_14layer": {
+        "auc_mean": 0.9779829545454548,
+        "auc_std": 0.007280435811783808,
+        "auc_min": 0.9517045454545454,
+        "auc_max": 0.9971590909090909
+      }
+    },
+    "subtle": {
+      "baseline_2layer": {
+        "auc_mean": 0.9836647727272728,
+        "auc_std": 0.008099082551220702,
+        "auc_min": 0.9403409090909091,
+        "auc_max": 1.0
+      },
+      "simple_3layer": {
+        "auc_mean": 0.9836647727272728,
+        "auc_std": 0.008099082551220702,
+        "auc_min": 0.9403409090909091,
+        "auc_max": 1.0
+      },
+      "medium_6layer": {
+        "auc_mean": 0.924659090909091,
+        "auc_std": 0.1233226038395581,
+        "auc_min": 0.5625,
+        "auc_max": 0.9801136363636365
+      },
+      "full_14layer": {
+        "auc_mean": 0.053636363636363614,
+        "auc_std": 0.05809541702525977,
+        "auc_min": 0.0,
+        "auc_max": 0.29829545454545453
+      }
+    },
+    "adaptive": {
+      "baseline_2layer": {
+        "auc_mean": 0.8863636363636362,
+        "auc_std": 0.08212143925385117,
+        "auc_min": 0.5511363636363636,
+        "auc_max": 0.9943181818181818
+      },
+      "simple_3layer": {
+        "auc_mean": 0.8863636363636362,
+        "auc_std": 0.08212143925385117,
+        "auc_min": 0.5511363636363636,
+        "auc_max": 0.9943181818181818
+      },
+      "medium_6layer": {
+        "auc_mean": 0.8220454545454546,
+        "auc_std": 0.09569649396196064,
+        "auc_min": 0.5340909090909091,
+        "auc_max": 0.9829545454545455
+      },
+      "full_14layer": {
+        "auc_mean": 0.6905113636363636,
+        "auc_std": 0.1087447306835889,
+        "auc_min": 0.3607954545454546,
+        "auc_max": 0.9232954545454546
+      }
+    }
+  },
+  "timing": {
+    "baseline_2layer": {
+      "ms_per_agent_mean": 0.0015346805555383172,
+      "ms_per_agent_std": 0.0002300710653488971
+    },
+    "simple_3layer": {
+      "ms_per_agent_mean": 0.00946924288889603,
+      "ms_per_agent_std": 0.0011799164004131755
+    },
+    "medium_6layer": {
+      "ms_per_agent_mean": 0.021678627000028428,
+      "ms_per_agent_std": 0.0026951254232154107
+    },
+    "full_14layer": {
+      "ms_per_agent_mean": 0.32848746377773824,
+      "ms_per_agent_std": 0.22210952310281645
+    }
+  }
+}
