@@ -299,3 +299,31 @@ export {
   type SpectralBand,
   type SpectralIdentity,
 } from './spectral-identity.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Three-Mechanism Adversarial Detection
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Core detector
+  TriMechanismDetector,
+  // Mechanism functions
+  computeDriftSignature,
+  driftAuthScore,
+  driftDistanceToBaseline,
+  hyperbolicDistance,
+  phaseDeviation,
+  phaseDistanceScore,
+  tonicCoherence,
+  // Constants
+  DEFAULT_CONFIG,
+  TONGUE_INDEX,
+  TONGUE_PHASES,
+  // Types
+  type DetectionDecision,
+  type PipelineMetrics,
+  type PositionSample,
+  type TriDetectionResult,
+  type TriDetectorConfig,
+} from './triMechanismDetector.js';
+
