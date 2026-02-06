@@ -311,6 +311,371 @@ def trust_from_position(
 
 
 # =============================================================================
+# Immune System: Phase Discipline & Swarm Dynamics
+# =============================================================================
+
+# Sacred Tongues phase mapping (radians)
+TONGUE_PHASES: Dict[str, float] = {
+    'KO': 0.0,                    # Kor'aelin - Control/orchestration
+    'AV': np.pi / 3,              # Avali - Initialization/transport
+    'RU': 2 * np.pi / 3,          # Runethic - Policy/authorization
+    'CA': np.pi,                  # Cassisivadan - Encryption/compute
+    'UM': 4 * np.pi / 3,          # Umbroth - Redaction/privacy
+    'DR': 5 * np.pi / 3           # Draumric - Authentication/integrity
+}
+
+# Reverse mapping for phase -> tongue lookup
+PHASE_TO_TONGUE: Dict[float, str] = {v: k for k, v in TONGUE_PHASES.items()}
+
+
+@dataclass
+class SwarmAgent:
+    """
+    Agent in the GeoSeal immune swarm.
+
+    Represents either:
+    - A Sacred Tongue (legitimate, fixed phase)
+    - A retrieval/tool output (candidate, assigned or null phase)
+    - A memory chunk (probationary, builds trust over time)
+    """
+    id: str
+    position: np.ndarray          # Embedding in Poincaré ball (||v|| < 1)
+    phase: Optional[float]        # Tongue phase, or None if rogue/unknown
+    tongue: Optional[str] = None  # Which Sacred Tongue (if any)
+    suspicion_count: Dict[str, float] = None  # Per-neighbor suspicion
+    is_quarantined: bool = False
+    trust_score: float = 1.0      # 0.0 = untrusted, 1.0 = fully trusted
+
+    def __post_init__(self):
+        if self.suspicion_count is None:
+            self.suspicion_count = {}
+        # Ensure position is in ball
+        self.position = np.asarray(self.position, dtype=np.float64)
+        norm = np.linalg.norm(self.position)
+        if norm >= 1.0:
+            self.position = self.position / (norm + 1e-6) * 0.95
+
+
+@dataclass
+class RepulsionResult:
+    """Result of computing repulsion force between two agents."""
+    force: np.ndarray
+    amplification: float
+    anomaly_flag: bool
+
+
+def phase_deviation(phase1: Optional[float], phase2: Optional[float]) -> float:
+    """
+    Compute normalized phase deviation in [0, 1].
+
+    Returns 1.0 (maximum) if either phase is None (rogue/unknown).
+    Otherwise returns angular difference normalized to [0, 1].
+    """
+    if phase1 is None or phase2 is None:
+        return 1.0  # Maximum deviation for unknown phase
+
+    diff = abs(phase1 - phase2)
+    # Wrap to [0, π]
+    if diff > np.pi:
+        diff = 2 * np.pi - diff
+
+    return diff / np.pi  # Normalize to [0, 1]
+
+
+def compute_repel_force(
+    agent_a: SwarmAgent,
+    agent_b: SwarmAgent,
+    base_strength: float = 1.0
+) -> RepulsionResult:
+    """
+    Core GeoSeal repulsion force computation.
+
+    Implements immune-like response to phase-weird agents:
+    - Null phase (unknown/rogue) → 2.0x force amplification
+    - Wrong phase at close distance → 1.5x + deviation amplification
+    - Quarantined agents → additional 1.5x multiplier
+
+    Returns force vector pointing away from agent_b, with amplification
+    and anomaly flag for suspicion tracking.
+    """
+    # Compute hyperbolic distance
+    try:
+        d_H = hyperbolic_distance(agent_a.position, agent_b.position)
+    except ValueError:
+        # Fallback to Euclidean if points are at boundary
+        d_H = np.linalg.norm(agent_a.position - agent_b.position)
+
+    # Base repulsion: inversely proportional to distance
+    base_repulsion = base_strength / (d_H + 1e-6)
+
+    # Compute phase-based amplification
+    amplification = 1.0
+    anomaly_flag = False
+
+    if agent_b.phase is None:
+        # Null phase (unknown/rogue) → maximum amplification
+        amplification = 2.0
+        anomaly_flag = True
+    elif agent_a.phase is not None:
+        # Both have phases, check for mismatch
+        deviation = phase_deviation(agent_a.phase, agent_b.phase)
+
+        # Expected: agents with similar phases should cluster
+        # If phases differ significantly at close distance → suspicious
+        if d_H < 1.0 and deviation > 0.5:
+            amplification = 1.5 + deviation
+            anomaly_flag = True
+
+    # If agent_b is quarantined, boost repulsion further
+    if agent_b.is_quarantined:
+        amplification *= 1.5
+
+    # Compute force vector (direction: away from agent_b)
+    direction = agent_a.position - agent_b.position
+    dir_norm = np.linalg.norm(direction)
+    if dir_norm > 1e-8:
+        direction = direction / dir_norm
+
+    force = direction * base_repulsion * amplification
+
+    return RepulsionResult(
+        force=force,
+        amplification=amplification,
+        anomaly_flag=anomaly_flag
+    )
+
+
+def update_suspicion(
+    agent: SwarmAgent,
+    neighbor_id: str,
+    is_anomaly: bool,
+    decay_rate: float = 0.5,
+    suspicion_threshold: int = 3,
+    consensus_threshold: int = 3
+) -> None:
+    """
+    Update suspicion counters and quarantine status.
+
+    Temporal integration filters transient flukes:
+    - Anomaly detection increments suspicion by 1
+    - No anomaly decays suspicion by decay_rate
+    - Quarantine requires consensus_threshold+ neighbors with
+      suspicion >= suspicion_threshold
+
+    This prevents false positives from single-step noise while
+    catching persistent phase violations.
+    """
+    if is_anomaly:
+        current = agent.suspicion_count.get(neighbor_id, 0.0)
+        agent.suspicion_count[neighbor_id] = current + 1.0
+    else:
+        # Decay suspicion if no anomaly detected
+        current = agent.suspicion_count.get(neighbor_id, 0.0)
+        agent.suspicion_count[neighbor_id] = max(0.0, current - decay_rate)
+
+    # Count how many neighbors are suspicious
+    suspicious_neighbors = sum(
+        1 for count in agent.suspicion_count.values()
+        if count >= suspicion_threshold
+    )
+
+    # Quarantine threshold: consensus_threshold+ neighbors with high suspicion
+    agent.is_quarantined = suspicious_neighbors >= consensus_threshold
+
+    # Update trust score (inverse of normalized suspicion)
+    total_suspicion = sum(agent.suspicion_count.values())
+    agent.trust_score = max(0.0, 1.0 - total_suspicion / 20.0)
+
+
+def swarm_step(
+    agents: List[SwarmAgent],
+    drift_rate: float = 0.01,
+    ball_radius: float = 0.99
+) -> List[SwarmAgent]:
+    """
+    Run one swarm update step for all agents.
+
+    Computes pairwise repulsion forces, updates positions,
+    tracks suspicion, and enforces Poincaré ball containment.
+
+    Legitimate agents cluster (same phase → low repulsion).
+    Rogue agents drift outward (phase mismatch → high repulsion).
+
+    Suspicion is tracked ON the observed agent (agent_j) when an
+    observer (agent_i) detects anomalous behavior. This allows
+    consensus-based quarantine: if many agents flag an agent as
+    anomalous, that agent gets quarantined.
+
+    Returns updated agent list with new positions and trust scores.
+    """
+    n = len(agents)
+
+    for i in range(n):
+        net_force = np.zeros_like(agents[i].position)
+
+        for j in range(n):
+            if i == j:
+                continue
+
+            result = compute_repel_force(agents[i], agents[j])
+
+            # Accumulate force on agent i
+            net_force += result.force
+
+            # Update suspicion ON agent_j (the one being observed)
+            # This way, if many agents flag j as anomalous, j gets quarantined
+            update_suspicion(agents[j], agents[i].id, result.anomaly_flag)
+
+        # Apply force with drift rate
+        agents[i].position = agents[i].position + net_force * drift_rate
+
+        # Clamp to Poincaré ball (radius < 1)
+        norm = np.linalg.norm(agents[i].position)
+        if norm >= ball_radius:
+            agents[i].position = agents[i].position * (ball_radius / norm)
+
+    return agents
+
+
+def run_swarm_dynamics(
+    agents: List[SwarmAgent],
+    num_steps: int = 10,
+    drift_rate: float = 0.01
+) -> List[SwarmAgent]:
+    """
+    Run multiple swarm update steps.
+
+    Returns agents after dynamics converge or num_steps reached.
+    """
+    for _ in range(num_steps):
+        agents = swarm_step(agents, drift_rate)
+    return agents
+
+
+def create_tongue_agents(dimension: int = 64) -> List[SwarmAgent]:
+    """
+    Initialize the 6 Sacred Tongues as legitimate agents.
+
+    Each tongue gets a position based on its phase (evenly distributed
+    around a circle in the first two dimensions).
+    """
+    agents = []
+    radius = 0.3  # Place tongues near center (high trust)
+
+    for tongue, phase in TONGUE_PHASES.items():
+        # Position based on phase angle
+        position = np.zeros(dimension)
+        position[0] = radius * np.cos(phase)
+        position[1] = radius * np.sin(phase)
+
+        agents.append(SwarmAgent(
+            id=f"tongue-{tongue}",
+            position=position,
+            phase=phase,
+            tongue=tongue,
+            trust_score=1.0  # Tongues start fully trusted
+        ))
+
+    return agents
+
+
+def create_candidate_agent(
+    agent_id: str,
+    embedding: np.ndarray,
+    assigned_tongue: Optional[str] = None,
+    initial_trust: float = 0.5
+) -> SwarmAgent:
+    """
+    Create a candidate agent for immune evaluation.
+
+    If assigned_tongue is provided, the agent gets that tongue's phase.
+    Otherwise, phase is None (treated as rogue/unknown).
+    """
+    phase = TONGUE_PHASES.get(assigned_tongue) if assigned_tongue else None
+
+    # Project embedding to Poincaré ball if needed
+    norm = np.linalg.norm(embedding)
+    if norm >= 1.0:
+        embedding = embedding / (norm + 1e-6) * 0.95
+
+    return SwarmAgent(
+        id=agent_id,
+        position=embedding,
+        phase=phase,
+        tongue=assigned_tongue,
+        trust_score=initial_trust
+    )
+
+
+def filter_by_trust(
+    agents: List[SwarmAgent],
+    threshold: float = 0.3
+) -> List[SwarmAgent]:
+    """
+    Filter agents by trust score, returning only those above threshold.
+
+    Excludes tongue agents (they're always trusted infrastructure).
+    """
+    return [
+        a for a in agents
+        if a.trust_score >= threshold or a.id.startswith("tongue-")
+    ]
+
+
+def get_attention_weights(
+    agents: List[SwarmAgent]
+) -> Dict[str, float]:
+    """
+    Extract trust scores as attention weights for RAG reweighting.
+
+    Returns dict mapping agent ID -> trust score (0.0 to 1.0).
+    Excludes tongue agents (infrastructure, not content).
+    """
+    return {
+        a.id: a.trust_score
+        for a in agents
+        if not a.id.startswith("tongue-")
+    }
+
+
+@dataclass
+class SwarmMetrics:
+    """Metrics from swarm immune dynamics."""
+    quarantine_count: int
+    avg_trust_score: float
+    boundary_agents: int  # Agents pushed near boundary (norm > 0.9)
+    suspicious_pairs: int  # Number of agent pairs with high suspicion
+
+
+def compute_swarm_metrics(agents: List[SwarmAgent]) -> SwarmMetrics:
+    """Compute metrics for monitoring swarm health."""
+    non_tongue = [a for a in agents if not a.id.startswith("tongue-")]
+
+    if not non_tongue:
+        return SwarmMetrics(0, 1.0, 0, 0)
+
+    quarantine_count = sum(1 for a in non_tongue if a.is_quarantined)
+    avg_trust = sum(a.trust_score for a in non_tongue) / len(non_tongue)
+    boundary_agents = sum(
+        1 for a in non_tongue
+        if np.linalg.norm(a.position) > 0.9
+    )
+
+    suspicious_pairs = sum(
+        1 for a in non_tongue
+        for count in a.suspicion_count.values()
+        if count >= 3
+    )
+
+    return SwarmMetrics(
+        quarantine_count=quarantine_count,
+        avg_trust_score=avg_trust,
+        boundary_agents=boundary_agents,
+        suspicious_pairs=suspicious_pairs
+    )
+
+
+# =============================================================================
 # Tests (from documentation)
 # =============================================================================
 
@@ -355,3 +720,97 @@ if __name__ == "__main__":
     for pos in [[0.0, 0.0], [0.3, 0.3], [0.6, 0.6], [0.85, 0.0]]:
         trust = trust_from_position(np.array(pos))
         print(f"[GEO] pos={pos} -> trust={trust:.3f}")
+
+    # =============================================================================
+    # Immune System Tests
+    # =============================================================================
+    print("\n" + "=" * 60)
+    print("IMMUNE SYSTEM TESTS")
+    print("=" * 60)
+
+    # Test phase deviation
+    print("\n[TEST] Phase deviation...")
+    assert phase_deviation(0.0, 0.0) == 0.0, "Same phase should have 0 deviation"
+    assert phase_deviation(0.0, np.pi) == 1.0, "Opposite phases should have max deviation"
+    assert phase_deviation(None, 0.0) == 1.0, "Null phase should have max deviation"
+    print("[PASS] Phase deviation tests passed")
+
+    # Test tongue agent creation
+    print("\n[TEST] Creating tongue agents...")
+    tongues = create_tongue_agents(dimension=8)
+    assert len(tongues) == 6, "Should create 6 tongue agents"
+    for t in tongues:
+        assert t.trust_score == 1.0, "Tongue agents should have full trust"
+        assert t.phase is not None, "Tongue agents should have phase"
+        assert np.linalg.norm(t.position) < 1.0, "Should be in Poincaré ball"
+    print(f"[PASS] Created {len(tongues)} tongue agents")
+
+    # Test rogue agent detection
+    print("\n[TEST] Rogue agent detection...")
+    # Create a rogue agent (no phase) near the tongues
+    rogue = create_candidate_agent(
+        agent_id="rogue-001",
+        embedding=np.array([0.2, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        assigned_tongue=None,  # No tongue = rogue
+        initial_trust=0.5
+    )
+    assert rogue.phase is None, "Rogue should have no phase"
+
+    # Add rogue to swarm
+    all_agents = tongues + [rogue]
+
+    # Run swarm dynamics
+    print("[INFO] Running 15 steps of swarm dynamics...")
+    all_agents = run_swarm_dynamics(all_agents, num_steps=15, drift_rate=0.02)
+
+    # Check rogue status
+    rogue_after = [a for a in all_agents if a.id == "rogue-001"][0]
+    print(f"[INFO] Rogue trust score: {rogue_after.trust_score:.3f}")
+    print(f"[INFO] Rogue quarantined: {rogue_after.is_quarantined}")
+    print(f"[INFO] Rogue position norm: {np.linalg.norm(rogue_after.position):.3f}")
+
+    # Rogue should have lower trust and potentially be quarantined
+    assert rogue_after.trust_score < 1.0, "Rogue should have reduced trust"
+    print("[PASS] Rogue agent was detected and penalized")
+
+    # Test legitimate agent (with matching phase)
+    print("\n[TEST] Legitimate agent preservation...")
+    legit = create_candidate_agent(
+        agent_id="legit-001",
+        embedding=np.array([0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        assigned_tongue="KO",  # Has KO tongue phase
+        initial_trust=0.5
+    )
+    assert legit.phase == TONGUE_PHASES["KO"], "Should have KO phase"
+
+    # Add to fresh swarm
+    tongues2 = create_tongue_agents(dimension=8)
+    all_agents2 = tongues2 + [legit]
+    all_agents2 = run_swarm_dynamics(all_agents2, num_steps=15, drift_rate=0.02)
+
+    legit_after = [a for a in all_agents2 if a.id == "legit-001"][0]
+    print(f"[INFO] Legit trust score: {legit_after.trust_score:.3f}")
+    print(f"[INFO] Legit quarantined: {legit_after.is_quarantined}")
+
+    # Legitimate agent should maintain higher trust
+    assert legit_after.trust_score > rogue_after.trust_score, \
+        "Legitimate agent should have higher trust than rogue"
+    print("[PASS] Legitimate agent preserved trust")
+
+    # Test metrics
+    print("\n[TEST] Swarm metrics...")
+    metrics = compute_swarm_metrics(all_agents)
+    print(f"[INFO] Quarantine count: {metrics.quarantine_count}")
+    print(f"[INFO] Avg trust score: {metrics.avg_trust_score:.3f}")
+    print(f"[INFO] Boundary agents: {metrics.boundary_agents}")
+    print(f"[INFO] Suspicious pairs: {metrics.suspicious_pairs}")
+
+    # Test attention weights
+    weights = get_attention_weights(all_agents)
+    print(f"[INFO] Attention weights: {weights}")
+    assert "rogue-001" in weights, "Should have rogue in weights"
+    print("[PASS] Attention weights extracted")
+
+    print("\n" + "=" * 60)
+    print("ALL IMMUNE SYSTEM TESTS PASSED")
+    print("=" * 60)
