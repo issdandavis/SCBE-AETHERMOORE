@@ -1,0 +1,95 @@
+{
+  "config": {
+    "num_agents": 20,
+    "num_malicious": 5,
+    "num_steps": 100,
+    "dim": 6,
+    "num_runs": 100,
+    "honest_drift": 0.002,
+    "malicious_drift": 0.015,
+    "noise_std": 0.01,
+    "curvature": -1.0
+  },
+  "summary": {
+    "euclidean_length": {
+      "auc": {
+        "mean": 0.7774666666666669,
+        "std": 0.13490006177413955,
+        "min": 0.38,
+        "max": 1.0
+      },
+      "optimal_tpr": {
+        "mean": 0.8140000000000001,
+        "std": 0.223168098078556
+      },
+      "optimal_fpr": {
+        "mean": 0.21933333333333332,
+        "std": 0.16714464793505454
+      },
+      "tpr_at_5pct_fpr": {
+        "mean": 0.38799999999999996,
+        "std": 0.29369371801249006
+      }
+    },
+    "hyperbolic_length": {
+      "auc": {
+        "mean": 0.6962666666666664,
+        "std": 0.16246523046827935,
+        "min": 0.6,
+        "max": 0.9733333333333334
+      },
+      "optimal_tpr": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "optimal_fpr": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "tpr_at_5pct_fpr": {
+        "mean": 1.0,
+        "std": 0.0
+      }
+    },
+    "hyperbolic_curvature": {
+      "auc": {
+        "mean": 0.6,
+        "std": 0.0,
+        "min": 0.6,
+        "max": 0.6
+      },
+      "optimal_tpr": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "optimal_fpr": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "tpr_at_5pct_fpr": {
+        "mean": 1.0,
+        "std": 0.0
+      }
+    },
+    "boundary_integral": {
+      "auc": {
+        "mean": 0.6,
+        "std": 0.0,
+        "min": 0.6,
+        "max": 0.6
+      },
+      "optimal_tpr": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "optimal_fpr": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "tpr_at_5pct_fpr": {
+        "mean": 1.0,
+        "std": 0.0
+      }
+    }
+  }
+}
