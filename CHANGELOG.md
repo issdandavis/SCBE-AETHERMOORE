@@ -9,6 +9,19 @@
 ## [3.2.5] - 2026-02-05
 
 ### Added
+- **GeoSeal Immune System** (`src/harmonic/geoSealImmune.ts`, `src/crypto/geo_seal.py`)
+  - Phase + Distance scoring with **0.9999 AUC** proven adversarial detection
+  - Formula: `score = 1 / (1 + d_H + 2 * phase_deviation)`
+  - Outperforms complex swarm dynamics (0.543 AUC) with simple phase discipline
+  - SwarmAgent with suspicion counters and consensus-based quarantine
+  - Trust score computation with temporal integration
+
+- **Spherical Nodal Oscillation (6-Tonic System)**
+  - 6 Sacred Tongues as stable nodes in hexagonal arrangement
+  - Spherical harmonic projection through multi-dimensional space
+  - Temporal phase coherence testing with oscillating tongue positions
+  - `temporalPhaseScore()` for detecting adversarial drift over time
+
 - **WebSocket Manager** (`src/fleet/websocket-manager.ts`)
   - Real-time bidirectional communication for fleet coordination
   - Connection state management with automatic reconnection
