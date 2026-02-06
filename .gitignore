@@ -17,6 +17,7 @@ htmlcov/
 
 # Test artifacts
 tests/test_telemetry_*.json
+tests/test_artifacts/
 **/test_output.txt
 
 # Local generated images
