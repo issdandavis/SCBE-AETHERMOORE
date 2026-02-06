@@ -6,6 +6,31 @@
 - Corrected **Temporal-Intent Harmonic Scaling** formula to `H_eff(d, R, x) = R^(d^2 * x)` with x in exponent for super-exponential growth. Linked to L11 triadic temporal distance + CPSE deviation channels.
 - Updated legacy master reference to align the core 14-layer stack and source index with in-repo canonical docs.
 
+## [3.2.5] - 2026-02-05
+
+### Added
+- **WebSocket Manager** (`src/fleet/websocket-manager.ts`)
+  - Real-time bidirectional communication for fleet coordination
+  - Connection state management with automatic reconnection
+  - Message queuing and delivery guarantees
+  - Heartbeat monitoring for connection health
+
+- **Browser Agent with PHDM Integration** (`src/fleet/browser-agent.ts`)
+  - Browser-based agent implementation with Polyhedral Hamiltonian Decision Module
+  - Client-side PHDM validation for distributed decision-making
+  - Seamless integration with WebSocket Manager for real-time updates
+  - Supports all 16 polyhedral cognitive nodes in browser context
+
+### Fixed
+- **Tenant Scoping** - Resolved issue where fleet operations could leak across tenant boundaries
+  - Added tenant ID validation at all fleet entry points
+  - Implemented strict tenant isolation in WebSocket channels
+  - Fixed potential cross-tenant data exposure in job queues
+
+### Tests
+- npm: 1333 passed, 6 skipped
+- pytest: 31 smoke tests passed (full suite available)
+
 ## [3.2.0] - 2026-02-02
 
 ### Added

@@ -29,6 +29,11 @@ class EntryType(str, Enum):
     MEMORY = "memory"           # Stored fact/context
     ERROR = "error"             # Error record
     CHECKPOINT = "checkpoint"   # Session checkpoint
+    # WebSocket events (Phase 1 Q2 2026)
+    WS_CONNECT = "ws_connect"           # WebSocket client connected
+    WS_DISCONNECT = "ws_disconnect"     # WebSocket client disconnected
+    WS_MESSAGE = "ws_message"           # WebSocket message received
+    WS_BROADCAST = "ws_broadcast"       # Broadcast sent to clients
 
 
 @dataclass
