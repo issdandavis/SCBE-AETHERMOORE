@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: [ main, develop ]
 
-
 permissions:
   contents: read
 
@@ -38,7 +37,7 @@ jobs:
       - name: Install Python dependencies for cross-language tests
         run: |
           python -m pip install --upgrade pip
-          pip install numpy scipy
+          pip install numpy scipy matplotlib
         continue-on-error: true
 
       - name: Install dependencies
@@ -101,6 +100,7 @@ jobs:
     name: Lint and Format Check
     runs-on: ubuntu-latest
     continue-on-error: true
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -138,7 +138,6 @@ jobs:
   security:
     name: Security Audit
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
