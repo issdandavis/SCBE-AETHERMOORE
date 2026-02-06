@@ -104,6 +104,44 @@ from .symphonic_waveform import (
     RealTimeRenderer,
 )
 
+# Dual Lattice 14-Layer Integration
+from .dual_lattice_integration import (
+    # Layer 1: PQC Gating
+    authorize_pqc_level,
+    build_lattice_point_gated,
+    # Layer 2-4: Projection
+    GeoContext,
+    RealmType,
+    realify_with_sign,
+    project_to_poincare_with_realm,
+    layers_2_4_process,
+    # Layer 5: Governance Distance
+    governance_aware_distance,
+    layer_5_evaluate,
+    # Layer 6-7: Breathing
+    breathing_transform,
+    apply_realm_breathing,
+    # Layer 8: Clustering
+    hierarchical_realm_clustering,
+    layer_8_cluster,
+    # Layer 9-11: Path Validation
+    spectral_coherence,
+    triadic_temporal_distance,
+    validate_hyperpath,
+    # Layer 12-13: Harmonic Scaling
+    harmonic_scaling,
+    compute_path_cost,
+    layer_12_13_evaluate,
+    # Layer 14: Sonification
+    coord_to_frequency,
+    hyperpath_to_audio,
+    layer_14_sonify,
+    # Complete Integrator
+    DualLatticeIntegrator,
+    IntegratedResult,
+    LayerDecision,
+)
+
 __all__ = [
     # === Dual Lattice ===
     "SacredTongue",
@@ -156,7 +194,33 @@ __all__ = [
     "poincare_geodesic",
     "visualize_poincare_disk",
     "visualize_3d_voxels",
+    # === 14-Layer Integration ===
+    "authorize_pqc_level",
+    "build_lattice_point_gated",
+    "GeoContext",
+    "RealmType",
+    "realify_with_sign",
+    "project_to_poincare_with_realm",
+    "layers_2_4_process",
+    "governance_aware_distance",
+    "layer_5_evaluate",
+    "breathing_transform",
+    "apply_realm_breathing",
+    "hierarchical_realm_clustering",
+    "layer_8_cluster",
+    "spectral_coherence",
+    "triadic_temporal_distance",
+    "validate_hyperpath",
+    "harmonic_scaling",
+    "compute_path_cost",
+    "layer_12_13_evaluate",
+    "coord_to_frequency",
+    "hyperpath_to_audio",
+    "layer_14_sonify",
+    "DualLatticeIntegrator",
+    "IntegratedResult",
+    "LayerDecision",
 ]
 
-__version__ = "3.0.0"
+__version__ = "3.1.0"  # Bumped for 14-layer integration
 
