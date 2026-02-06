@@ -74,6 +74,17 @@ from .websocket_manager import (
     create_websocket_manager,
     run_websocket_server
 )
+from .swarm_governance import (
+    SwarmGovernance,
+    SwarmAgent,
+    AgentRole,
+    AgentState,
+    GovernanceConfig,
+    AutonomousCodeAgent,
+    create_swarm_governance,
+    create_autonomous_coder,
+    simulate_swarm_attack
+)
 
 __all__ = [
     # Core
@@ -113,6 +124,16 @@ __all__ = [
     "ClientState",
     "create_websocket_manager",
     "run_websocket_server",
+    # Swarm Governance (Phase 1 Q2 2026)
+    "SwarmGovernance",
+    "SwarmAgent",
+    "AgentRole",
+    "AgentState",
+    "GovernanceConfig",
+    "AutonomousCodeAgent",
+    "create_swarm_governance",
+    "create_autonomous_coder",
+    "simulate_swarm_attack",
 ]
 
-__version__ = "1.2.0"
+__version__ = "1.3.0"
