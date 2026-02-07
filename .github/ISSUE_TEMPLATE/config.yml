@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/issdandavis/SCBE-AETHERMOORE/wiki
+    about: Check our documentation for answers to common questions
+  - name: Discussions
+    url: https://github.com/issdandavis/SCBE-AETHERMOORE/discussions
+    about: Ask questions and discuss with the community
+  - name: Security Issue
+    url: https://github.com/issdandavis/SCBE-AETHERMOORE/security/advisories/new
+    about: Report security vulnerabilities privately
