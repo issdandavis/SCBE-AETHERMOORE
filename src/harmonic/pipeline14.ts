@@ -449,18 +449,16 @@ export function layer11TriadicTemporal(
 // =============================================================================
 
 /**
- * Layer 12: Harmonic Amplification
+ * Layer 12: Harmonic Scaling (Bounded)
  *
- * Input: Distance d, base R > 1
- * Output: H(d, R) = R^{d²}
+ * Input: Distance d_H, phase deviation
+ * Output: score = 1 / (1 + d_H + 2 * phaseDeviation)
  *
- * A12: Exponential penalty for geometric distance.
+ * A12: Bounded risk scoring. Returns safety score in (0, 1].
+ * Replaces R^(d²) which caused numerical collapse on subtle attacks.
  */
-export function layer12HarmonicScaling(d: number, R: number = Math.E): number {
-  if (R <= 1) {
-    throw new Error('R must be > 1');
-  }
-  return Math.pow(R, d * d);
+export function layer12HarmonicScaling(d: number, phaseDeviation: number = 0): number {
+  return 1 / (1 + d + 2 * phaseDeviation);
 }
 
 // =============================================================================
@@ -472,10 +470,11 @@ export type Decision = 'ALLOW' | 'QUARANTINE' | 'DENY';
 /**
  * Layer 13: Three-Way Risk Decision
  *
- * Input: Base risk, harmonic amplification H
+ * Input: Base risk, harmonic score H ∈ (0, 1]
  * Output: Decision ∈ {ALLOW, QUARANTINE, DENY}
  *
- * A13: Risk' = Risk_base · H with thresholding.
+ * A13: Risk' = Risk_base / H (amplified by inverse of safety score).
+ * H close to 1 = safe (minimal amplification), H close to 0 = dangerous.
  */
 export function layer13RiskDecision(
   riskBase: number,
@@ -483,7 +482,7 @@ export function layer13RiskDecision(
   theta1: number = 0.33,
   theta2: number = 0.67
 ): { decision: Decision; riskPrime: number } {
-  const riskPrime = riskBase * H;
+  const riskPrime = riskBase / Math.max(H, 1e-10);
 
   let decision: Decision;
   if (riskPrime < theta1) {
@@ -670,7 +669,7 @@ export function scbe14LayerPipeline(t: number[], config: Pipeline14Config = {}):
   const l11_triadic = layer11TriadicTemporal(l8_realmDist, l8_realmDist, l8_realmDist);
 
   // === LAYER 12: Harmonic Scaling ===
-  const l12_harmonic = layer12HarmonicScaling(l8_realmDist, R);
+  const l12_harmonic = layer12HarmonicScaling(l8_realmDist);
 
   // === Compute Base Risk ===
   const riskBase =

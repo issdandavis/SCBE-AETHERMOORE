@@ -250,12 +250,11 @@ else:
             temporal_score = trust_score * 0.9 + 0.1
             explanation["layers"]["L11"] = f"Temporal: {temporal_score:.2f}"
 
-            # Layer 12: Harmonic Scaling H(d,R) = R^(d²)
-            R = 1.5  # Perfect Fifth
+            # Layer 12: Harmonic Scaling score = 1 / (1 + d_H + 2 * pd)
             d = int(sensitivity * 3) + 1
-            H = R ** (d * d)  # H(d,R) = R^(d²)
+            H = 1.0 / (1.0 + d)  # score = 1 / (1 + d_H)
             risk_factor = (1 - realm_trust) * sensitivity * 0.5
-            explanation["layers"]["L12"] = f"H(d={d},R={R})={H:.2f}, risk: {risk_factor:.2f}"
+            explanation["layers"]["L12"] = f"H(d={d})={H:.4f}, risk: {risk_factor:.2f}"
 
             # Layer 13: Final Decision
             final_score = (realm_trust * 0.6 + coherence * 0.2 + temporal_score * 0.2) - risk_factor
