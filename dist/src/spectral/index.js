@@ -11,7 +11,16 @@
  * - Bounded to [0, 1]
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkPhaseInvariance = exports.verifySpectralCoherenceBounds = exports.generateChirp = exports.stft = exports.generateTestSignal = exports.verifyParseval = exports.computeSpectralCoherence = exports.fftFrequencies = exports.magnitudeSquared = exports.fft = void 0;
+exports.fft = fft;
+exports.magnitudeSquared = magnitudeSquared;
+exports.fftFrequencies = fftFrequencies;
+exports.computeSpectralCoherence = computeSpectralCoherence;
+exports.verifyParseval = verifyParseval;
+exports.generateTestSignal = generateTestSignal;
+exports.stft = stft;
+exports.generateChirp = generateChirp;
+exports.verifySpectralCoherenceBounds = verifySpectralCoherenceBounds;
+exports.checkPhaseInvariance = checkPhaseInvariance;
 /**
  * Compute the Discrete Fourier Transform of a real signal
  * Uses Cooley-Tukey FFT algorithm for efficiency
@@ -26,7 +35,6 @@ function fft(signal) {
     }
     return fftRecursive(padded.map((x) => ({ re: x, im: 0 })));
 }
-exports.fft = fft;
 /**
  * Recursive FFT implementation (Cooley-Tukey)
  */
@@ -76,7 +84,6 @@ function fftRecursive(x) {
 function magnitudeSquared(c) {
     return c.re * c.re + c.im * c.im;
 }
-exports.magnitudeSquared = magnitudeSquared;
 /**
  * Compute frequency bins for FFT result
  */
@@ -92,7 +99,6 @@ function fftFrequencies(N, sampleRate) {
     }
     return freqs;
 }
-exports.fftFrequencies = fftFrequencies;
 /**
  * Compute spectral coherence for a signal
  *
@@ -138,7 +144,6 @@ function computeSpectralCoherence(signal, sampleRate, cutoffFreq, epsilon = 1e-1
         frequencies,
     };
 }
-exports.computeSpectralCoherence = computeSpectralCoherence;
 /**
  * Verify Parseval's theorem: time-domain energy equals frequency-domain energy
  *
@@ -157,7 +162,6 @@ function verifyParseval(signal, X) {
     const relativeError = Math.abs(timeEnergy - freqEnergy) / (timeEnergy + 1e-10);
     return { timeEnergy, freqEnergy, relativeError };
 }
-exports.verifyParseval = verifyParseval;
 /**
  * Generate a test signal: sum of sinusoids
  *
@@ -179,7 +183,6 @@ function generateTestSignal(sampleRate, duration, components) {
     }
     return signal;
 }
-exports.generateTestSignal = generateTestSignal;
 /**
  * Simple Short-Time Fourier Transform
  *
@@ -225,7 +228,6 @@ function stft(signal, sampleRate, windowSize, hopSize, cutoffFreq) {
     }
     return frames;
 }
-exports.stft = stft;
 /**
  * Generate a linear chirp signal (frequency increases linearly over time)
  *
@@ -248,7 +250,6 @@ function generateChirp(sampleRate, duration, startFreq, endFreq) {
     }
     return signal;
 }
-exports.generateChirp = generateChirp;
 /**
  * Layer 9 Spectral Coherence bounds check
  *
@@ -257,7 +258,6 @@ exports.generateChirp = generateChirp;
 function verifySpectralCoherenceBounds(S_spec) {
     return S_spec >= 0 && S_spec <= 1;
 }
-exports.verifySpectralCoherenceBounds = verifySpectralCoherenceBounds;
 /**
  * Check phase invariance: S_spec should not depend on signal phase
  *
@@ -285,5 +285,4 @@ function checkPhaseInvariance(sampleRate, duration, components, cutoffFreq, tole
         maxDifference: difference,
     };
 }
-exports.checkPhaseInvariance = checkPhaseInvariance;
 //# sourceMappingURL=index.js.map
