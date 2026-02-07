@@ -328,23 +328,24 @@ class TestLayers12to13HarmonicScaling:
     """Test Layers 12-13: Harmonic scaling and decision."""
 
     def test_harmonic_scaling_zero_distance(self):
-        """H(0, R) = R^0 = 1."""
-        h = harmonic_scaling(0.0, HARMONIC_BASE_R)
+        """H(0) = 1/(1+0) = 1.0."""
+        h = harmonic_scaling(0.0)
         assert abs(h - 1.0) < 1e-6
 
-    def test_harmonic_scaling_increases_with_distance(self):
-        """Larger distance = larger scaling."""
-        h1 = harmonic_scaling(0.5, HARMONIC_BASE_R)
-        h2 = harmonic_scaling(1.0, HARMONIC_BASE_R)
-        assert h2 > h1
+    def test_harmonic_scaling_decreases_with_distance(self):
+        """Larger distance = lower safety score."""
+        h1 = harmonic_scaling(0.5)
+        h2 = harmonic_scaling(1.0)
+        assert h2 < h1
 
-    def test_harmonic_scaling_exponential(self):
-        """H(d, R) = R^(d^2)."""
+    def test_harmonic_scaling_bounded(self):
+        """H(d) = 1/(1+d+2*pd) is bounded in (0, 1]."""
         d = 0.5
-        R = 2.0
-        expected = R ** (d * d)
-        actual = harmonic_scaling(d, R)
+        pd = 0.1
+        expected = 1.0 / (1.0 + d + 2.0 * pd)
+        actual = harmonic_scaling(d, pd)
         assert abs(actual - expected) < 1e-6
+        assert 0 < actual <= 1.0
 
     def test_path_cost_short_path(self):
         """Short path has low cost."""

@@ -1,24 +1,5 @@
 """
 Layer 13: PQ Envelope Sealing + Cymatic Voxel Storage (Chladni Nodal Concealment)
-==================================================================================
-Tests for Layer 13 cymatic voxel storage with post-quantum cryptography integration.
-
-Validates:
-- Determinism of Chladni field generation (same n,m,res -> same field)
-- Nodal validity (returned nodes correspond to near-zero displacement)
-- Regression guardrails on nodal density (broad bounds, not brittle)
-- Resonance-keyed secrecy (wrong mode/vector yields noise or denial, never plaintext)
-- PQC KEM integration contract (Kyber768 encapsulate/decapsulate round-trip)
-- HolographicQRCube resonance-based access control
-- Auditability (mode parameters n,m appear in voxel metadata and exports)
-
-@layer Layer 13
-@component CymaticVoxelStorage, HolographicQRCube, PQC Envelope
-"""
-
-import hashlib
-import importlib
-import math
 
 import numpy as np
 import pytest
