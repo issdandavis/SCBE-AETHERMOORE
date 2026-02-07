@@ -1,17 +1,21 @@
 /**
- * Polly Pads - Fleet Mini-IDE System
+ * Polly Pads - Fleet Mini-IDE System + Mode Switching Workspaces
  *
  * "Clone Trooper Field Upgrade Stations for AI Agents"
  *
  * Hot-swappable mini-IDEs that run on each AI agent in the fleet,
  * enabling real-time capability upgrades with SCBE security.
  *
+ * Mode Switching: 6 specialist modes (Engineering, Navigation, Systems,
+ * Science, Communications, Mission Planning) for autonomous operations
+ * in Mars missions, disaster response, submarine ops, and autonomous fleets.
+ *
  * @module fleet/polly-pads
- * @version 1.0.0
+ * @version 1.1.0
  * @author Issac Davis
  */
 
-// Drone Core
+// Drone Core (original)
 export {
   DroneCore,
   createReconDrone,
@@ -20,7 +24,7 @@ export {
   createResearchDrone,
   createGuardDrone,
   type DroneCoreConfig,
-  type SacredTongue,
+  type SacredTongue as DroneSacredTongue,
   type DroneClass,
   type FluxState,
   type TrustDecision,
@@ -37,41 +41,59 @@ export {
   type StoreQuery,
 } from './capability-store.js';
 
-// ============================================================================
-// Quick Start Example
-// ============================================================================
+// Mode Switching System
+export {
+  ModePad,
+  type SacredTongue,
+  type ModePadConfig,
+  type MemoryEntry,
+} from './mode-pad.js';
 
-/**
- * @example
- * ```typescript
- * import {
- *   createReconDrone,
- *   defaultStore
- * } from 'scbe-aethermoore/fleet/polly-pads';
- *
- * // Create a RECON drone named "REX"
- * const rex = createReconDrone('REX');
- *
- * // Find compatible capabilities
- * const available = defaultStore.getCompatibleCapabilities(
- *   rex.spectralIdentity.tongue,
- *   rex.class,
- *   rex.trustRadius
- * );
- *
- * // Load browser-use capability
- * const browserUse = defaultStore.getCapability('browser-use');
- * if (browserUse) {
- *   const cap = defaultStore.toCapability(browserUse);
- *   rex.loadCapability(cap);
- * }
- *
- * // Check loadout
- * console.log(rex.loadout);
- * // => [{ id: 'browser-use', name: 'Browser Use', active: true, ... }]
- *
- * // Check Cymatic voxel access (your IP!)
- * const canAccess = rex.canAccessVoxel(0.5, 0.5);
- * console.log('Can access voxel:', canAccess);
- * ```
- */
+// Specialist Modes
+export {
+  BaseMode,
+  EngineeringMode,
+  NavigationMode,
+  SystemsMode,
+  ScienceMode,
+  CommunicationsMode,
+  MissionPlanningMode,
+  createMode,
+  createAllModes,
+  type SpecialistMode,
+  type ModeTool,
+  type ModeActionResult,
+  type ModeState,
+  type ModeSwitchEvent,
+  type SquadVote,
+  type CrisisType,
+  type ModeAssignment,
+  type ModeConfig,
+  MODE_CONFIGS,
+} from './modes/index.js';
+
+// Closed Network
+export {
+  ClosedNetwork,
+  DEFAULT_CLOSED_CONFIG,
+  BLOCKED_NETWORKS,
+  type NetworkChannel,
+  type BlockedCategory,
+  type NetworkMessage,
+  type ClosedNetworkConfig,
+} from './closed-network.js';
+
+// Squad Coordination (Byzantine Consensus)
+export {
+  Squad,
+  type ConsensusDecision,
+  type SquadProposal,
+  type SquadConfig,
+} from './squad.js';
+
+// Mission Coordinator
+export {
+  MissionCoordinator,
+  type MissionPhase,
+  type CrisisAssessment,
+} from './mission-coordinator.js';
