@@ -27,10 +27,14 @@ jobs:
           ls -la sixtongues-cli-*.zip
 
       - name: Upload to Dropbox
-        if: ${{ secrets.DROPBOX_TOKEN }}
+        continue-on-error: true
         env:
           DROPBOX_TOKEN: ${{ secrets.DROPBOX_TOKEN }}
         run: |
+          if [ -z "$DROPBOX_TOKEN" ]; then
+            echo "DROPBOX_TOKEN not configured, skipping upload"
+            exit 0
+          fi
           ZIP_FILE="sixtongues-cli-${{ steps.version.outputs.VERSION }}.zip"
           DROPBOX_PATH="/AetherVideo/products/cli/${ZIP_FILE}"
 
