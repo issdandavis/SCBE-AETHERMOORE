@@ -91,8 +91,8 @@ class SCBEGovernanceEngine {
     const l11 = this.layer11TriadicTemporal(l8, l9, l10);
     layers.push({ layer: 11, name: 'Triadic Temporal', score: l11, passed: l11 < 1 });
 
-    // Layer 12: Harmonic Scaling - H(d,R) = R^(d²)
-    const l12 = this.layer12HarmonicScaling(l11, this.PHI);
+    // Layer 12: Harmonic Scaling - H(d) = 1/(1+d+2*pd)
+    const l12 = this.layer12HarmonicScaling(l11);
     layers.push({ layer: 12, name: 'Harmonic Scaling', score: l12, passed: true });
 
     // Layer 13: Risk Decision
@@ -184,9 +184,9 @@ class SCBEGovernanceEngine {
     return Math.sqrt(lambda[0] * d1 * d1 + lambda[1] * d2 * d2 + lambda[2] * d3 * d3);
   }
 
-  private layer12HarmonicScaling(d: number, R: number): number {
-    // H(d, R) = R^(d²)
-    return Math.pow(R, d * d);
+  private layer12HarmonicScaling(d: number, phaseDeviation: number = 0): number {
+    // score = 1 / (1 + d_H + 2 * phaseDeviation)
+    return 1 / (1 + d + 2 * phaseDeviation);
   }
 
   private layer13RiskDecision(harmonic: number, tier: number): number {

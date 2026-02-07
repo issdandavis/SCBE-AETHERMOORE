@@ -212,39 +212,47 @@ describe('SCBE 14-Layer Pipeline', () => {
   });
 
   describe('Layer 12: Harmonic Scaling (A12)', () => {
-    it('should compute H(d, R) = R^(d²)', () => {
+    it('should compute score = 1 / (1 + d + 2*pd)', () => {
       const d = 2;
-      const R = Math.E;
+      const pd = 0;
 
-      const result = layer12HarmonicScaling(d, R);
-      const expected = Math.pow(R, d * d); // e^4
+      const result = layer12HarmonicScaling(d, pd);
+      const expected = 1 / (1 + d); // 0.333...
 
       expect(result).toBeCloseTo(expected, 5);
     });
 
-    it('should throw if R <= 1', () => {
-      expect(() => layer12HarmonicScaling(1, 0.5)).toThrow('R must be > 1');
+    it('should return 1 at origin (d=0)', () => {
+      expect(layer12HarmonicScaling(0)).toBe(1);
+    });
+
+    it('should decrease with distance', () => {
+      expect(layer12HarmonicScaling(1)).toBeGreaterThan(layer12HarmonicScaling(2));
     });
   });
 
   describe('Layer 13: Risk Decision (A13)', () => {
-    it('should return ALLOW for low risk', () => {
+    it('should return ALLOW for low risk (H=1 means safe)', () => {
+      // riskPrime = 0.1 / 1.0 = 0.1 < 0.33 → ALLOW
       const { decision } = layer13RiskDecision(0.1, 1.0);
       expect(decision).toBe('ALLOW');
     });
 
     it('should return QUARANTINE for medium risk', () => {
-      const { decision } = layer13RiskDecision(0.4, 1.0);
+      // riskPrime = 0.2 / 0.5 = 0.4, 0.33 < 0.4 < 0.67 → QUARANTINE
+      const { decision } = layer13RiskDecision(0.2, 0.5);
       expect(decision).toBe('QUARANTINE');
     });
 
-    it('should return DENY for high risk', () => {
-      const { decision } = layer13RiskDecision(0.8, 1.0);
+    it('should return DENY for high risk (low safety score)', () => {
+      // riskPrime = 0.2 / 0.1 = 2.0, >= 0.67 → DENY
+      const { decision } = layer13RiskDecision(0.2, 0.1);
       expect(decision).toBe('DENY');
     });
 
-    it('should amplify risk with H', () => {
-      const { riskPrime } = layer13RiskDecision(0.1, 10.0);
+    it('should amplify risk inversely with H', () => {
+      // riskPrime = 0.1 / 0.1 = 1.0
+      const { riskPrime } = layer13RiskDecision(0.1, 0.1);
       expect(riskPrime).toBeCloseTo(1.0, 5);
     });
   });

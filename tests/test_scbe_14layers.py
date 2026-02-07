@@ -330,18 +330,18 @@ class TestSCBE14Layers:
         H_zero = layer_12_harmonic_scaling(0)
         self.assert_test(np.isclose(H_zero, 1.0), "H(0, R) = 1")
 
-        # Test 2: Monotonically increasing
+        # Test 2: Monotonically decreasing (higher distance = lower safety)
         H_small = layer_12_harmonic_scaling(0.1)
         H_large = layer_12_harmonic_scaling(0.5)
-        self.assert_test(H_large > H_small, "H(d) increases with d")
+        self.assert_test(H_large < H_small, "H(d) decreases with d")
 
-        # Test 3: Exponential growth
-        H_1 = layer_12_harmonic_scaling(1.0, R=np.e)
-        self.assert_test(np.isclose(H_1, np.e), "H(1, e) = e")
+        # Test 3: Known values
+        H_1 = layer_12_harmonic_scaling(1.0)
+        self.assert_test(np.isclose(H_1, 0.5), "H(1) = 0.5")
 
-        # Test 4: Different base
-        H_2 = layer_12_harmonic_scaling(2.0, R=2.0)
-        self.assert_test(np.isclose(H_2, 2.0**4), "H(2, 2) = 2^4 = 16")
+        # Test 4: Bounded in (0, 1]
+        H_2 = layer_12_harmonic_scaling(2.0)
+        self.assert_test(0 < H_2 <= 1.0, "H(2) bounded in (0, 1]")
 
     def test_layer_13_risk_decision(self):
         """Test Layer 13: Risk decision."""

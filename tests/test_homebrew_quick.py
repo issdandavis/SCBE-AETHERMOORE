@@ -115,13 +115,13 @@ class TestBasicFunctionality:
         assert np.isfinite(d)
 
     def test_harmonic_scaling(self):
-        """Verify harmonic scaling formula H = R^(d²)."""
-        R = 1.5
+        """Verify harmonic scaling formula score = 1/(1+d+2*pd)."""
         d = 2
+        pd = 0
 
-        H = R ** (d**2)  # = 1.5^4 = 5.0625
+        H = 1.0 / (1.0 + d + 2.0 * pd)  # = 1/3 ≈ 0.333
 
-        assert np.isclose(H, 5.0625)
+        assert np.isclose(H, 1.0 / 3.0)
 
     def test_decision_logic(self):
         """Verify basic decision logic works."""
