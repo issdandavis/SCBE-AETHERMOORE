@@ -4,6 +4,7 @@
  * @layer Layer 4, Layer 5, Layer 9
  * @component Quasicrystal Icosahedral Projection
  * @version 1.1.0
+ * @since 2026-02-07
  *
  * Implements quasicrystal-based projections for the unified brain manifold.
  * Uses 6D icosahedral symmetry (referencing Shechtman's Nobel-prize-winning
