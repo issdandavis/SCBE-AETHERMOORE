@@ -389,57 +389,53 @@ def verify_phase_invariance(
 # ============================================================================
 
 @symmetry_check(group=SymmetryGroup.SCALE, tolerance=0.0)
-def layer_12_harmonic_scaling(d: float, R: float = PHI) -> float:
+def layer_12_harmonic_scaling(d: float, phase_deviation: float = 0.0) -> float:
     """
-    Layer 12: Harmonic Scaling (Superexponential)
+    Layer 12: Bounded Harmonic Scaling
 
-    H(d, R) = R^(d²)
+    H(d) = 1/(1 + d + 2*phase_deviation)
 
-    Risk amplification with "vertical wall" effect.
+    Safety score bounded in (0, 1].
 
     Symmetry Property:
-        H is strictly monotonically increasing, which means it
+        H is strictly monotonically decreasing, which means it
         PRESERVES ORDER (a symmetry of the real line):
-            d₁ < d₂ ⟹ H(d₁) < H(d₂)
+            d₁ < d₂ ⟹ H(d₁) > H(d₂)
 
         This is the symmetry of "order preservation" which ensures
         that risk ranking is invariant under the scaling.
 
     Properties:
         - H(0) = 1 (identity at origin)
-        - H'(d) = 2d · R^(d²) · ln(R) > 0 (strictly increasing)
-        - H''(d) > 0 for d > 0 (convex)
-        - Creates sharp transition ("vertical wall") at large d
+        - H'(d) < 0 (strictly decreasing)
+        - H ∈ (0, 1] (bounded)
 
     Args:
         d: Distance value
-        R: Base of exponential (default: golden ratio φ)
+        phase_deviation: Phase deviation (default: 0)
 
     Returns:
-        Harmonically scaled value H(d)
+        Safety score H(d) ∈ (0, 1]
     """
-    # Clamp to prevent overflow
-    d_sq = min(d ** 2, 50.0)
-    return float(R ** d_sq)
+    return float(1.0 / (1.0 + d + 2.0 * phase_deviation))
 
 
-def layer_12_inverse(H: float, R: float = PHI) -> float:
+def layer_12_inverse(score: float) -> float:
     """
     Inverse of harmonic scaling.
 
-    d = √(log_R(H))
+    d = 1/score - 1  (when phase_deviation=0)
     """
-    if H <= 0:
+    if score <= 0:
+        return float('inf')
+    if score > 1.0:
         return 0.0
-    log_H = np.log(H) / np.log(R)
-    if log_H < 0:
-        return 0.0
-    return float(np.sqrt(log_H))
+    return float(1.0 / score - 1.0)
 
 
-def verify_monotonicity(n_tests: int = 1000, R: float = PHI) -> Tuple[bool, int]:
+def verify_monotonicity(n_tests: int = 1000) -> Tuple[bool, int]:
     """
-    Verify that harmonic scaling is strictly monotonically increasing.
+    Verify that harmonic scaling is strictly monotonically decreasing.
     """
     violations = 0
 
@@ -447,10 +443,10 @@ def verify_monotonicity(n_tests: int = 1000, R: float = PHI) -> Tuple[bool, int]
     distances = np.sort(np.random.uniform(0, 5, n_tests))
 
     for i in range(1, len(distances)):
-        H_prev = layer_12_harmonic_scaling(distances[i - 1], R)
-        H_curr = layer_12_harmonic_scaling(distances[i], R)
+        H_prev = layer_12_harmonic_scaling(distances[i - 1])
+        H_curr = layer_12_harmonic_scaling(distances[i])
 
-        if H_curr <= H_prev:
+        if H_curr >= H_prev:
             violations += 1
 
     passed = violations == 0

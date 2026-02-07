@@ -77,74 +77,81 @@ DEFAULT_BASE_BITS = 128  # Default security bits (AES-128)
 
 
 # =============================================================================
-# HARMONIC SCALING FUNCTION H(d, R)
+# HARMONIC SCALING FUNCTION
+# score = 1 / (1 + d_H + 2 * phase_deviation)
 # =============================================================================
 
 
-def harmonic_scale(d: int, R: float = DEFAULT_R) -> float:
+def harmonic_scale(d: float, phase_deviation: float = 0.0) -> float:
     """
-    Compute the Harmonic Scaling value H(d, R) = R^(d²).
+    Compute the Harmonic Scaling score.
 
-    This is the core AETHERMOORE formula providing super-exponential growth.
+    score = 1 / (1 + d + 2 * phase_deviation)
+
+    Returns a safety score in (0, 1]:
+        - d=0, pd=0 -> 1.0 (at safe center)
+        - d=1, pd=0 -> 0.5
+        - d=2, pd=0 -> 0.333
+
+    The previous R^(d²) formula caused numerical collapse: small distances
+    all mapped to ~1.0, destroying ranking (AUC 0.054 on subtle attacks).
 
     Args:
-        d: Dimension count (positive integer, typically 1-6)
-        R: Harmonic ratio (positive real, default 1.5)
+        d: Distance / dimension parameter (>= 0)
+        phase_deviation: Phase deviation from expected coherence (>= 0, default 0)
 
     Returns:
-        The harmonic scaling multiplier
+        Safety score in (0, 1]
 
     Raises:
-        ValueError: If d < 1 or R <= 0
+        ValueError: If d < 0 or phase_deviation < 0
 
     Examples:
-        >>> harmonic_scale(6, 1.5)
-        2184164.40625
-        >>> harmonic_scale(3)
-        38.443359375
+        >>> harmonic_scale(0)
+        1.0
+        >>> harmonic_scale(1)
+        0.5
+        >>> harmonic_scale(2)
+        0.3333333333333333
     """
-    if d < 1:
-        raise ValueError(f"Dimension d must be >= 1, got {d}")
-    if R <= 0:
-        raise ValueError(f"Harmonic ratio R must be > 0, got {R}")
+    if d < 0:
+        raise ValueError(f"Distance d must be >= 0, got {d}")
+    if phase_deviation < 0:
+        raise ValueError(f"Phase deviation must be >= 0, got {phase_deviation}")
 
-    return R ** (d * d)
+    return 1.0 / (1.0 + d + 2.0 * phase_deviation)
 
 
-def security_bits(base_bits: int, d: int, R: float = DEFAULT_R) -> float:
+def security_bits(base_bits: int, d: float, phase_deviation: float = 0.0) -> float:
     """
     Compute effective security bits after harmonic scaling.
 
-    S_bits(d, R, B_bits) = B_bits + d² × log₂(R)
+    S_bits = base_bits + log2(1 + d + 2 * phase_deviation)
 
     Args:
         base_bits: Base security level in bits (e.g., 128 for AES-128)
-        d: Dimension count
-        R: Harmonic ratio (default 1.5)
+        d: Distance parameter (>= 0)
+        phase_deviation: Phase deviation (>= 0, default 0)
 
     Returns:
-        Effective security bits
-
-    Examples:
-        >>> security_bits(128, 6, 1.5)
-        149.058...  # AES-128 → ~AES-149 effective
+        Effective security bits (grows with distance)
     """
-    return base_bits + (d * d) * math.log2(R)
+    return base_bits + math.log2(1.0 + d + 2.0 * phase_deviation)
 
 
-def security_level(base: float, d: int, R: float = DEFAULT_R) -> float:
+def security_level(base: float, d: float, phase_deviation: float = 0.0) -> float:
     """
-    Compute full security level S = B × R^(d²).
+    Compute full security level S = base * (1 + d + 2 * phase_deviation).
 
     Args:
         base: Base security constant (e.g., 2^128)
-        d: Dimension count
-        R: Harmonic ratio (default 1.5)
+        d: Distance parameter (>= 0)
+        phase_deviation: Phase deviation (>= 0, default 0)
 
     Returns:
-        Enhanced security level
+        Enhanced security level (grows linearly with distance)
     """
-    return base * harmonic_scale(d, R)
+    return base * (1.0 + d + 2.0 * phase_deviation)
 
 
 # =============================================================================
