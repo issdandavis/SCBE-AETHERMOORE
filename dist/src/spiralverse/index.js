@@ -15,7 +15,13 @@
  * @module spiralverse
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.envelopeFromDict = exports.envelopeToDict = exports.rwpDecryptMessage = exports.rwpEncryptMessage = exports.TOKENIZER = exports.SacredTongueTokenizer = exports.RWPv3Protocol = exports.suggestPolicy = exports.getRequiredTongues = exports.checkPolicy = exports.verifyRoundtable = exports.signRoundtable = exports.clearNonceCache = void 0;
+exports.envelopeFromDict = exports.envelopeToDict = exports.rwpDecryptMessage = exports.rwpEncryptMessage = exports.TOKENIZER = exports.SacredTongueTokenizer = exports.RWPv3Protocol = void 0;
+exports.clearNonceCache = clearNonceCache;
+exports.signRoundtable = signRoundtable;
+exports.verifyRoundtable = verifyRoundtable;
+exports.checkPolicy = checkPolicy;
+exports.getRequiredTongues = getRequiredTongues;
+exports.suggestPolicy = suggestPolicy;
 const crypto_1 = require("crypto");
 // ============================================================================
 // Constants
@@ -50,7 +56,6 @@ function clearNonceCache() {
     nonceCache.clear();
     nonceCacheTimestamps.clear();
 }
-exports.clearNonceCache = clearNonceCache;
 /**
  * Check if nonce has been used and add to cache
  */
@@ -172,7 +177,6 @@ function signRoundtable(payload, primaryTongue, aad, keyring, signingTongues, op
     }
     return envelope;
 }
-exports.signRoundtable = signRoundtable;
 /**
  * Verify an RWP envelope
  *
@@ -271,7 +275,6 @@ function verifyRoundtable(envelope, keyring, options = {}) {
         payload,
     };
 }
-exports.verifyRoundtable = verifyRoundtable;
 // ============================================================================
 // Policy Helpers
 // ============================================================================
@@ -286,7 +289,6 @@ function checkPolicy(tongues, policy) {
     const required = POLICY_REQUIREMENTS[policy];
     return required.every((t) => tongues.includes(t));
 }
-exports.checkPolicy = checkPolicy;
 /**
  * Get the required tongues for a policy level
  *
@@ -296,7 +298,6 @@ exports.checkPolicy = checkPolicy;
 function getRequiredTongues(policy) {
     return [...POLICY_REQUIREMENTS[policy]];
 }
-exports.getRequiredTongues = getRequiredTongues;
 /**
  * Suggest an appropriate policy level for an action
  *
@@ -307,7 +308,6 @@ function suggestPolicy(action) {
     const normalizedAction = action.toLowerCase();
     return ACTION_POLICIES[normalizedAction] ?? 'standard';
 }
-exports.suggestPolicy = suggestPolicy;
 // ============================================================================
 // RWP v3.0 Re-exports
 // ============================================================================
