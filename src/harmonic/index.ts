@@ -299,3 +299,56 @@ export {
   type SpectralBand,
   type SpectralIdentity,
 } from './spectral-identity.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Sacred Eggs — Ritual-Based Conditional Secret Distribution
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Egg operations
+  sealEgg,
+  unsealEgg,
+  checkGeometryProximity,
+  // Key derivation
+  deriveEggKey,
+  // Quorum
+  generateQuorum,
+  combineShares,
+  // Path
+  pathHash,
+  // Constants
+  EGG_TONGUE_PHASES,
+  // Types
+  type SacredEgg,
+  type SacredEggConfig,
+  type UnsealResult,
+  type QuorumShare,
+} from './sacredEggs.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Three-Mechanism Adversarial Detection
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Core detector
+  TriMechanismDetector,
+  // Mechanism functions
+  computeDriftSignature,
+  driftAuthScore,
+  driftDistanceToBaseline,
+  hyperbolicDistance as triHyperbolicDistance,
+  phaseDeviation,
+  phaseDistanceScore,
+  tonicCoherence,
+  // Constants
+  DEFAULT_CONFIG,
+  TONGUE_INDEX,
+  TONGUE_PHASES,
+  // Types
+  type DetectionDecision,
+  type PipelineMetrics,
+  type PositionSample,
+  type TriDetectionResult,
+  type TriDetectorConfig,
+} from './triMechanismDetector.js';
+
