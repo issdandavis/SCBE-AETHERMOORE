@@ -165,7 +165,13 @@ else:
     lambda_p = 2 / (1 - np.dot(p, p))
     direction = v / norm_v
     tanh_term = np.tanh(lambda_p * norm_v / 2)
-    result = (p + tanh_term * direction).tolist()
+            expV = tanh_term * direction
+        uv = np.dot(p, expV)
+        norm_p_sq = np.dot(p, p)
+        norm_expV_sq = np.dot(expV, expV)
+        denom = 1 + 2*uv + norm_p_sq * norm_expV_sq
+        num = (1 + 2*uv + norm_expV_sq) * p + (1 - norm_p_sq) * expV
+        result = (num / denom).tolist()
     # Normalize to stay in ball
     norm_result = np.linalg.norm(result)
     if norm_result >= 1:
