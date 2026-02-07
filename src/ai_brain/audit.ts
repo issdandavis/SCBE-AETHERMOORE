@@ -4,6 +4,7 @@
  * @layer Layer 13, Layer 14
  * @component Unified Audit Logger
  * @version 1.1.0
+ * @since 2026-02-07
  *
  * Provides cryptographically auditable event logging for the unified brain manifold.
  * Every state transition, detection alert, boundary violation, and governance decision

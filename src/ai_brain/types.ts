@@ -4,6 +4,7 @@
  * @layer Layer 1-14 (Unified)
  * @component AI Brain Mapping Type Definitions
  * @version 1.1.0
+ * @since 2026-02-07
  *
  * Core type definitions for the Multi-Vectored Quasi-Space Architecture.
  * Defines the 21D unified brain state manifold and supporting types.

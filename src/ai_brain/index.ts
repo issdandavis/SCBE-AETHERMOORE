@@ -1,5 +1,10 @@
 /**
- * AI Brain Mapping Module
+ * @file index.ts
+ * @module ai_brain
+ * @layer Layer 1-14 (Unified)
+ * @component AI Brain Mapping Module
+ * @version 1.1.0
+ * @since 2026-02-07
  *
  * Multi-Vectored Quasi-Space Architecture with Lattice Mesh Integration.
  * Unifies all SCBE-AETHERMOORE components into a single coherent "AI brain"
@@ -11,9 +16,6 @@
  * - BFT Consensus (corrected: 3f+1 formula)
  * - Quasicrystal Icosahedral Projection
  * - Cryptographic Audit Logger
- *
- * @module ai_brain
- * @version 1.1.0
  */
 
 // ═══════════════════════════════════════════════════════════════
