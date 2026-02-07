@@ -11,7 +11,7 @@ hypothesis>=6.100.0
 httpx>=0.27.0
 
 # Post-Quantum Cryptography
-liboqs-python>=0.9.0
+liboqs-python==0.12.0
 pycryptodome>=3.20.0
 argon2-cffi>=23.1.0
 
