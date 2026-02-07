@@ -66,57 +66,47 @@ class DualModeConfig:
 # ============================================================================
 
 
-def harmonic_scaling_bounded(d: float, R: float = PHI, clamp: float = 50.0) -> float:
+def harmonic_scaling_bounded(d: float, phase_deviation: float = 0.0) -> float:
     """
-    BOUNDED Harmonic Scaling: H(d) = R^(d²), d² ≤ clamp
+    BOUNDED Harmonic Scaling: score = 1 / (1 + d + 2 * phase_deviation)
 
     Properties:
         - H(0) = 1
-        - Strictly monotonic increasing
-        - Bounded output for numerical stability
-        - Max value: R^clamp ≈ 1.3e21 for φ, clamp=50
+        - Strictly decreasing in d (preserves ranking)
+        - Bounded in (0, 1] (no numerical collapse)
     """
-    d_sq = min(d**2, clamp)
-    return float(R**d_sq)
+    return float(1.0 / (1.0 + d + 2.0 * phase_deviation))
 
 
-def harmonic_scaling_unbounded(d: float) -> float:
+def harmonic_scaling_unbounded(d: float, phase_deviation: float = 0.0) -> float:
     """
-    UNBOUNDED Harmonic Scaling: H(d) = exp(d²)
+    UNBOUNDED Harmonic Scaling (now also uses bounded formula).
 
-    Properties:
-        - H(0) = 1
-        - Strictly monotonic increasing
-        - UNBOUNDED output (Vertical Wall patent claim)
-        - Creates true rejection barrier at large d
+    score = 1 / (1 + d + 2 * phase_deviation)
 
-    WARNING: Can overflow to inf for d > ~26.6
+    Both modes now use the same bounded formula to prevent
+    numerical collapse on subtle attacks.
     """
-    return float(np.exp(d**2))
+    return float(1.0 / (1.0 + d + 2.0 * phase_deviation))
 
 
 def harmonic_scaling_dual(
     d: float,
     mode: HarmonicMode = HarmonicMode.BOUNDED,
-    R: float = PHI,
-    clamp: float = 50.0,
+    phase_deviation: float = 0.0,
 ) -> float:
     """
-    Dual-mode harmonic scaling with phase-shift capability.
+    Dual-mode harmonic scaling (both modes now use bounded formula).
 
     Args:
-        d: Distance value
-        mode: BOUNDED or UNBOUNDED
-        R: Base for bounded mode
-        clamp: Clamp value for bounded mode
+        d: Distance value (>= 0)
+        mode: BOUNDED or UNBOUNDED (both use same formula now)
+        phase_deviation: Phase deviation (>= 0, default 0)
 
     Returns:
-        Harmonically scaled value H(d)
+        Safety score in (0, 1]
     """
-    if mode == HarmonicMode.UNBOUNDED:
-        return harmonic_scaling_unbounded(d)
-    else:
-        return harmonic_scaling_bounded(d, R, clamp)
+    return float(1.0 / (1.0 + d + 2.0 * phase_deviation))
 
 
 # ============================================================================
