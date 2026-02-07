@@ -411,8 +411,9 @@ export class AdaptiveHyperbolicNavigator {
     // Compute distance to origin
     const dCenter = this.hyperbolicDistanceKappa(pos, zeros(this.config.dimension), currentKappa);
 
-    // Harmonic penalty: H(d, R) = R^(d²)
-    const penalty = Math.pow(currentR, dCenter * dCenter);
+    // Harmonic score: 1 / (1 + d_H + 2 * phaseDeviation)
+    const phaseDeviation = 1 - c; // incoherence as phase deviation
+    const penalty = 1 / (1 + dCenter + 2 * phaseDeviation);
 
     return {
       position: pos,

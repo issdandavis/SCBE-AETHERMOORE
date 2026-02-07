@@ -200,11 +200,11 @@ export class DroneCore {
   // --------------------------------------------------------------------------
 
   /**
-   * H(d, R) = R^(d²)
-   * The Harmonic Scaling Law - your invention!
+   * score = 1 / (1 + d_H + 2 * phaseDeviation)
+   * The Harmonic Scaling Law - bounded risk scoring.
    */
-  harmonicScaling(d: number, R: number = R_PERFECT_FIFTH): number {
-    return Math.pow(R, d * d);
+  harmonicScaling(d: number, phaseDeviation: number = 0): number {
+    return 1 / (1 + d + 2 * phaseDeviation);
   }
 
   /**

@@ -439,21 +439,17 @@ def layer_11_triadic_temporal(
 # =============================================================================
 # LAYER 12: Harmonic Scaling
 # =============================================================================
-def layer_12_harmonic_scaling(d: float, R: float = 10.0) -> float:
+def layer_12_harmonic_scaling(d: float, phase_deviation: float = 0.0) -> float:
     """
-    Layer 12: Harmonic Amplification
+    Layer 12: Harmonic Scaling (Bounded)
 
-    Input: Distance d, base R > 1
-    Output: H(d, R) = R^{d²}
+    Input: Distance d_H, phase deviation
+    Output: score = 1 / (1 + d_H + 2 * phase_deviation)
 
-    A12: Exponential penalty for geometric distance.
-
-    Note: R = 10.0 ensures strong super-exponential growth.
-    For d=0.5: H(0.5) = 10^0.25 = 1.778, H(1.0) = 10^1 = 10.0
-    Ratio: 10.0 / (2 * 1.778) = 2.81 > 2.0 ✓
+    A12: Bounded risk scoring. Returns safety score in (0, 1].
+    Replaces R^(d²) which caused numerical collapse on subtle attacks.
     """
-    assert R > 1, "R must be > 1"
-    return R ** (d**2)
+    return 1.0 / (1.0 + d + 2.0 * phase_deviation)
 
 
 # =============================================================================
@@ -606,7 +602,7 @@ def scbe_14layer_pipeline(
         tau = 1.0 - d_tri_norm
 
     # L12: Harmonic scaling
-    H = layer_12_harmonic_scaling(d_star, R)
+    H = layer_12_harmonic_scaling(d_star)
 
     # L14: Audio coherence
     S_audio = layer_14_audio_axis(audio_frame)
@@ -712,8 +708,8 @@ if __name__ == "__main__":
     print(f"  d_tri = {d_tri:.6f}")
 
     print("\n[Layer 12] Harmonic Scaling:")
-    H = layer_12_harmonic_scaling(d_star, R=10.0)
-    print(f"  H(d*={d_star:.4f}, R=10) = {H:.6f}")
+    H = layer_12_harmonic_scaling(d_star)
+    print(f"  H(d*={d_star:.4f}) = {H:.6f}")
 
     print("\n[Layer 13] Risk Decision:")
     Risk_base = 0.4
