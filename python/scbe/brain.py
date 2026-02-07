@@ -343,7 +343,7 @@ class AetherBrain:
 
         # 5. Calculate Energy Cost (Harmonic Wall)
         d = self.lobes.get_dimension_depth()
-        energy_cost = dist ** (d ** 2)
+        energy_cost = 1.0 / (1.0 + dist + 2.0 * d)
 
         if energy_cost > (self.energy_budget - self.energy_consumed):
             return self._fail_to_noise("Energy Limit Exceeded", ring, start_time)

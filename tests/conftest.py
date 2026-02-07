@@ -169,10 +169,10 @@ def hyperbolic_distance():
 
 @pytest.fixture
 def harmonic_scaling():
-    """Harmonic scaling function H(d, R) = R^(d²)."""
+    """Harmonic scaling: score = 1 / (1 + d + 2 * phase_deviation)."""
 
-    def _harmonic_scaling(d: float, R: float = R_FIFTH) -> float:
-        return R ** (d**2)
+    def _harmonic_scaling(d: float, phase_deviation: float = 0.0) -> float:
+        return 1.0 / (1.0 + d + 2.0 * phase_deviation)
 
     return _harmonic_scaling
 

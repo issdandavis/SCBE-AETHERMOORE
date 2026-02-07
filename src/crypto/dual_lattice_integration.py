@@ -569,13 +569,13 @@ def validate_hyperpath(
 # Layer 12-13: Amplified Path Costs (Harmonic Scaling)
 # =============================================================================
 
-def harmonic_scaling(d: float, R: float = HARMONIC_BASE_R) -> float:
+def harmonic_scaling(d: float, phase_deviation: float = 0.0) -> float:
     """
-    Layer 12: Harmonic wall scaling.
+    Layer 12: Harmonic wall scoring (bounded).
 
-    H(d, R) = R^(d²) - exponential cost for deviation.
+    score = 1 / (1 + d_H + 2 * phase_deviation)
     """
-    return float(np.power(R, d * d))
+    return float(1.0 / (1.0 + d + 2.0 * phase_deviation))
 
 
 def compute_path_cost(
