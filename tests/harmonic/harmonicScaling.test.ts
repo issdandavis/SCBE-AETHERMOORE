@@ -1,12 +1,12 @@
 /**
  * SCBE Harmonic Scaling Tests (Layer 12)
  *
- * Tests for H(d, R) = R^(d²) with:
+ * Tests for score = 1 / (1 + d + 2 * phaseDeviation) with:
  * - Mathematical invariant verification
  * - Boundary conditions
  * - Numerical stability
  * - Property-based testing
- * - Golden test vectors from specification
+ * - Golden test vectors
  */
 
 import { describe, it, expect, test } from 'vitest';
@@ -19,24 +19,26 @@ import {
 } from '../../src/harmonic/harmonicScaling.js';
 import { CONSTANTS, Vector6D } from '../../src/harmonic/constants.js';
 
-describe('harmonicScale - H(d, R) = R^(d²)', () => {
+describe('harmonicScale - score = 1 / (1 + d + 2 * phaseDeviation)', () => {
   // ═══════════════════════════════════════════════════════════════
-  // Golden Test Vectors (from AETHERMOORE Specification)
+  // Golden Test Vectors
   // ═══════════════════════════════════════════════════════════════
   describe('Golden test vectors', () => {
     const goldenVectors = [
-      { d: 1, R: 1.5, expected: 1.5, tolerance: 1e-10 },
-      { d: 2, R: 1.5, expected: 5.0625, tolerance: 1e-10 },
-      { d: 3, R: 1.5, expected: 38.443359375, tolerance: 1e-10 },
-      { d: 4, R: 1.5, expected: 656.840896606445, tolerance: 1e-3 },
-      { d: 5, R: 1.5, expected: 25251.16839599609, tolerance: 1e-3 },
-      { d: 6, R: 1.5, expected: 2184164.40625, tolerance: 1e-1 },
+      { d: 0, pd: 0, expected: 1.0 },
+      { d: 1, pd: 0, expected: 0.5 },
+      { d: 2, pd: 0, expected: 1 / 3 },
+      { d: 3, pd: 0, expected: 0.25 },
+      { d: 4, pd: 0, expected: 0.2 },
+      { d: 9, pd: 0, expected: 0.1 },
+      { d: 0, pd: 0.5, expected: 0.5 },
+      { d: 1, pd: 1, expected: 0.25 },
+      { d: 2, pd: 0.5, expected: 0.25 },
     ];
 
-    goldenVectors.forEach(({ d, R, expected, tolerance }) => {
-      it(`H(${d}, ${R}) ≈ ${expected}`, () => {
-        const result = harmonicScale(d, R);
-        expect(Math.abs(result - expected)).toBeLessThan(tolerance);
+    goldenVectors.forEach(({ d, pd, expected }) => {
+      it(`H(${d}, ${pd}) = ${expected}`, () => {
+        expect(harmonicScale(d, pd)).toBeCloseTo(expected, 10);
       });
     });
   });
@@ -45,53 +47,45 @@ describe('harmonicScale - H(d, R) = R^(d²)', () => {
   // Mathematical Properties
   // ═══════════════════════════════════════════════════════════════
   describe('Mathematical invariants', () => {
-    it('H(d, 1) = 1 for any d (identity)', () => {
-      for (let d = 1; d <= 10; d++) {
-        expect(harmonicScale(d, 1)).toBe(1);
+    it('H(0, 0) = 1 (identity at origin)', () => {
+      expect(harmonicScale(0, 0)).toBe(1);
+    });
+
+    it('H(d, 0) = 1 / (1 + d) for any d', () => {
+      for (let d = 0; d <= 10; d++) {
+        expect(harmonicScale(d)).toBeCloseTo(1 / (1 + d), 10);
       }
     });
 
-    it('H(1, R) = R (linear case)', () => {
-      const testRatios = [1.25, 1.333, 1.5, 1.6, 2.0];
-      for (const R of testRatios) {
-        expect(harmonicScale(1, R)).toBeCloseTo(R, 10);
-      }
-    });
-
-    it('Super-exponential growth: H(d+1, R) / H(d, R) = R^(2d+1)', () => {
-      const R = 1.5;
-      for (let d = 1; d <= 5; d++) {
-        const ratio = harmonicScale(d + 1, R) / harmonicScale(d, R);
-        const expected = Math.pow(R, 2 * d + 1);
-        expect(ratio).toBeCloseTo(expected, 6);
-      }
-    });
-
-    it('Inverse duality: H(d, R) × H(d, 1/R) = 1', () => {
-      for (let d = 1; d <= 6; d++) {
-        const R = 1.5;
-        const product = harmonicScale(d, R) * harmonicScale(d, 1 / R);
-        expect(product).toBeCloseTo(1, 10);
-      }
-    });
-
-    it('Monotonicity: H(d, R) increases with d for R > 1', () => {
-      const R = 1.5;
-      let prev = 0;
-      for (let d = 1; d <= 6; d++) {
-        const current = harmonicScale(d, R);
-        expect(current).toBeGreaterThan(prev);
-        prev = current;
-      }
-    });
-
-    it('Monotonicity: H(d, R) decreases with d for 0 < R < 1', () => {
-      const R = 0.8;
-      let prev = Infinity;
-      for (let d = 1; d <= 6; d++) {
-        const current = harmonicScale(d, R);
+    it('Monotonicity: H(d1) > H(d2) when d1 < d2 (safety decreases with distance)', () => {
+      let prev = 2; // larger than max
+      for (let d = 0; d <= 10; d++) {
+        const current = harmonicScale(d);
         expect(current).toBeLessThan(prev);
         prev = current;
+      }
+    });
+
+    it('Bounded: 0 < H(d) <= 1 for all valid inputs', () => {
+      for (let d = 0; d <= 100; d++) {
+        const h = harmonicScale(d);
+        expect(h).toBeGreaterThan(0);
+        expect(h).toBeLessThanOrEqual(1);
+      }
+    });
+
+    it('Phase deviation increases risk: H(d, pd1) > H(d, pd2) when pd1 < pd2', () => {
+      const d = 2;
+      expect(harmonicScale(d, 0)).toBeGreaterThan(harmonicScale(d, 0.5));
+      expect(harmonicScale(d, 0.5)).toBeGreaterThan(harmonicScale(d, 1.0));
+    });
+
+    it('Reciprocal relationship: 1 / H(d) = 1 + d + 2*pd', () => {
+      for (let d = 0; d <= 5; d++) {
+        for (const pd of [0, 0.5, 1.0]) {
+          const h = harmonicScale(d, pd);
+          expect(1 / h).toBeCloseTo(1 + d + 2 * pd, 10);
+        }
       }
     });
   });
@@ -100,30 +94,23 @@ describe('harmonicScale - H(d, R) = R^(d²)', () => {
   // Boundary Conditions
   // ═══════════════════════════════════════════════════════════════
   describe('Boundary conditions', () => {
-    it('throws for d < 1', () => {
-      expect(() => harmonicScale(0)).toThrow(RangeError);
+    it('throws for d < 0', () => {
       expect(() => harmonicScale(-1)).toThrow(RangeError);
+      expect(() => harmonicScale(-0.001)).toThrow(RangeError);
     });
 
-    it('throws for non-integer d', () => {
-      expect(() => harmonicScale(1.5)).toThrow(RangeError);
-      expect(() => harmonicScale(2.7)).toThrow(RangeError);
-    });
-
-    it('throws for R <= 0', () => {
-      expect(() => harmonicScale(1, 0)).toThrow(RangeError);
+    it('throws for phaseDeviation < 0', () => {
       expect(() => harmonicScale(1, -1)).toThrow(RangeError);
     });
 
-    it('handles very small R correctly', () => {
-      expect(harmonicScale(1, 0.001)).toBeCloseTo(0.001, 10);
-      expect(harmonicScale(2, 0.1)).toBeCloseTo(0.0001, 10);
+    it('d=0 returns 1', () => {
+      expect(harmonicScale(0)).toBe(1);
     });
 
-    it('handles R close to 1 correctly', () => {
-      const R = 1.0001;
-      expect(harmonicScale(1, R)).toBeCloseTo(R, 10);
-      expect(harmonicScale(6, R)).toBeCloseTo(Math.pow(R, 36), 10);
+    it('very large d returns near-zero', () => {
+      const result = harmonicScale(1e6);
+      expect(result).toBeGreaterThan(0);
+      expect(result).toBeLessThan(1e-5);
     });
   });
 
@@ -131,23 +118,32 @@ describe('harmonicScale - H(d, R) = R^(d²)', () => {
   // Numerical Stability
   // ═══════════════════════════════════════════════════════════════
   describe('Numerical stability', () => {
-    it('returns finite values for d <= 6, R = 1.5', () => {
-      for (let d = 1; d <= 6; d++) {
-        const result = harmonicScale(d, 1.5);
+    it('returns finite values for all d in [0, 1000]', () => {
+      for (let d = 0; d <= 1000; d += 50) {
+        const result = harmonicScale(d);
         expect(Number.isFinite(result)).toBe(true);
       }
     });
 
-    it('detects overflow for large d', () => {
-      // d=20, R=1.5 → 1.5^400 ≈ 10^70 (still finite)
-      // d=50, R=2.0 → 2^2500 → overflow (Infinity)
-      expect(() => harmonicScale(50, 2.0)).toThrow(/overflow/i);
+    it('no overflow for any input (bounded formula)', () => {
+      // Unlike R^(d²), this formula can never overflow
+      expect(Number.isFinite(harmonicScale(1e10))).toBe(true);
+      expect(Number.isFinite(harmonicScale(1e15))).toBe(true);
     });
 
-    it('handles IEEE 754 edge cases', () => {
-      // Very precise calculation near machine epsilon
-      const result = harmonicScale(1, 1 + Number.EPSILON);
-      expect(Number.isFinite(result)).toBe(true);
+    it('differentiates small distances (the key fix)', () => {
+      // The old R^(d²) mapped d=0.01 and d=0.1 to ~1.0
+      // The new formula preserves ranking:
+      const h1 = harmonicScale(0.01);
+      const h2 = harmonicScale(0.1);
+      const h3 = harmonicScale(0.5);
+
+      expect(h1).toBeGreaterThan(h2);
+      expect(h2).toBeGreaterThan(h3);
+
+      // And the differences are meaningful, not ~0
+      expect(h1 - h2).toBeGreaterThan(0.05);
+      expect(h2 - h3).toBeGreaterThan(0.1);
     });
   });
 
@@ -155,35 +151,32 @@ describe('harmonicScale - H(d, R) = R^(d²)', () => {
   // Property-Based Testing (Fuzzing)
   // ═══════════════════════════════════════════════════════════════
   describe('Property-based tests', () => {
-    const randomInt = (min: number, max: number) =>
-      Math.floor(Math.random() * (max - min + 1)) + min;
     const randomFloat = (min: number, max: number) => Math.random() * (max - min) + min;
 
-    it('H(d, R) > 0 for all valid inputs (100 trials)', () => {
+    it('0 < H(d, pd) <= 1 for all valid inputs (100 trials)', () => {
       for (let i = 0; i < 100; i++) {
-        const d = randomInt(1, 6);
-        const R = randomFloat(0.1, 3.0);
-        expect(harmonicScale(d, R)).toBeGreaterThan(0);
+        const d = randomFloat(0, 100);
+        const pd = randomFloat(0, 10);
+        const h = harmonicScale(d, pd);
+        expect(h).toBeGreaterThan(0);
+        expect(h).toBeLessThanOrEqual(1);
       }
     });
 
-    it('H(d, R) is deterministic (50 trials)', () => {
+    it('H(d, pd) is deterministic (50 trials)', () => {
       for (let i = 0; i < 50; i++) {
-        const d = randomInt(1, 6);
-        const R = randomFloat(0.5, 2.0);
-        const result1 = harmonicScale(d, R);
-        const result2 = harmonicScale(d, R);
-        expect(result1).toBe(result2);
+        const d = randomFloat(0, 50);
+        const pd = randomFloat(0, 5);
+        expect(harmonicScale(d, pd)).toBe(harmonicScale(d, pd));
       }
     });
 
-    it('log(H(d, R)) = d² × log(R) (50 trials)', () => {
+    it('1/H(d,pd) = 1 + d + 2*pd (50 trials)', () => {
       for (let i = 0; i < 50; i++) {
-        const d = randomInt(1, 5);
-        const R = randomFloat(1.1, 2.0);
-        const logH = Math.log(harmonicScale(d, R));
-        const expected = d * d * Math.log(R);
-        expect(logH).toBeCloseTo(expected, 10);
+        const d = randomFloat(0, 50);
+        const pd = randomFloat(0, 5);
+        const invH = 1 / harmonicScale(d, pd);
+        expect(invH).toBeCloseTo(1 + d + 2 * pd, 10);
       }
     });
   });
@@ -191,32 +184,37 @@ describe('harmonicScale - H(d, R) = R^(d²)', () => {
 
 describe('securityBits', () => {
   it('computes effective bits correctly', () => {
-    // S_bits(d, R, B) = B + d² × log₂(R)
+    // S_bits(d, pd) = baseBits + log₂(1 + d + 2*pd)
     const baseBits = 128;
     const d = 6;
-    const R = 1.5;
-    const expected = 128 + 36 * Math.log2(1.5); // ≈ 128 + 21.06 ≈ 149
-    expect(securityBits(baseBits, d, R)).toBeCloseTo(expected, 6);
+    const pd = 0;
+    const expected = 128 + Math.log2(1 + 6); // ≈ 128 + 2.807
+    expect(securityBits(baseBits, d, pd)).toBeCloseTo(expected, 6);
   });
 
-  it('returns baseBits when R = 1', () => {
-    expect(securityBits(128, 6, 1)).toBe(128);
-    expect(securityBits(256, 3, 1)).toBe(256);
+  it('returns baseBits when d = 0 and pd = 0', () => {
+    expect(securityBits(128, 0, 0)).toBe(128);
+    expect(securityBits(256, 0, 0)).toBe(256);
   });
 
-  it('adds ~21 bits at d=6, R=1.5', () => {
-    const added = securityBits(0, 6, 1.5);
-    expect(added).toBeCloseTo(21.059, 2);
+  it('grows with distance', () => {
+    const base = 128;
+    expect(securityBits(base, 1)).toBeGreaterThan(securityBits(base, 0));
+    expect(securityBits(base, 10)).toBeGreaterThan(securityBits(base, 1));
   });
 });
 
 describe('securityLevel', () => {
-  it('computes S = B × H(d, R) correctly', () => {
+  it('computes S = base * (1 + d + 2*pd) correctly', () => {
     const base = 1000;
     const d = 3;
-    const R = 1.5;
-    const expected = base * harmonicScale(d, R);
-    expect(securityLevel(base, d, R)).toBeCloseTo(expected, 6);
+    const pd = 0;
+    const expected = base * (1 + 3);
+    expect(securityLevel(base, d, pd)).toBeCloseTo(expected, 6);
+  });
+
+  it('returns base when d=0 and pd=0', () => {
+    expect(securityLevel(1000, 0, 0)).toBe(1000);
   });
 });
 
@@ -243,10 +241,9 @@ describe('harmonicDistance', () => {
   });
 
   it('weights higher dimensions more (R^(1/5) progression)', () => {
-    // Distance in dimension 6 should contribute more than dimension 1
     const u: Vector6D = [0, 0, 0, 0, 0, 0];
-    const v1: Vector6D = [1, 0, 0, 0, 0, 0]; // Δ in dim 1
-    const v6: Vector6D = [0, 0, 0, 0, 0, 1]; // Δ in dim 6
+    const v1: Vector6D = [1, 0, 0, 0, 0, 0];
+    const v6: Vector6D = [0, 0, 0, 0, 0, 1];
     expect(harmonicDistance(u, v6)).toBeGreaterThan(harmonicDistance(u, v1));
   });
 });
@@ -277,7 +274,6 @@ describe('octaveTranspose', () => {
   });
 
   it('handles fractional octaves', () => {
-    // +0.5 octaves should be ×√2
     expect(octaveTranspose(100, 0.5)).toBeCloseTo(100 * Math.SQRT2, 10);
   });
 });

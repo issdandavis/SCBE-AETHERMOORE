@@ -411,14 +411,10 @@ export class GovernanceEngine {
     realmDist: number,
     entropyDelta: number
   ): number {
-    // H(d, R) = phi^d / (1 + e^-R)
-    const phiPowD = Math.pow(PHI, hyperbolicDist);
-    const sigmoidR = 1 / (1 + Math.exp(-realmDist));
-
-    const baseRisk = phiPowD * sigmoidR;
-    const entropyBoost = 1 + Math.abs(entropyDelta);
-
-    return Math.min(1, (baseRisk * entropyBoost) / 10);
+    // H(d) = 1/(1 + d + 2*pd)  -- bounded harmonic scaling
+    const combinedDist = hyperbolicDist + realmDist;
+    const phaseDeviation = Math.abs(entropyDelta);
+    return 1 / (1 + combinedDist + 2 * phaseDeviation);
   }
 
   private layer13RiskDecision(
