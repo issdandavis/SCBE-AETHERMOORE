@@ -1,0 +1,57 @@
+{
+  "experiment": "three_mechanism_combined",
+  "date": "2026-02-06",
+  "pipeline": "REAL scbe_14layer_reference.py",
+  "num_trials_per_attack": 50,
+  "results": {
+    "A_wrong_tongue": {
+      "phase_auc": 0.6422,
+      "tonic_auc": 0.9999999999999999,
+      "drift_auc": 0.4676,
+      "combined_auc": 0.9992,
+      "n_samples": 100
+    },
+    "B_replay": {
+      "phase_auc": 0.5254,
+      "tonic_auc": 0.9967999999999999,
+      "drift_auc": 0.569,
+      "combined_auc": 0.9924,
+      "n_samples": 100
+    },
+    "C_synthetic": {
+      "phase_auc": 0.5668,
+      "tonic_auc": 0.9928,
+      "drift_auc": 1.0,
+      "combined_auc": 0.9998,
+      "n_samples": 100
+    },
+    "D_wrong_freq": {
+      "phase_auc": 0.4646,
+      "tonic_auc": 1.0,
+      "drift_auc": 0.5082,
+      "combined_auc": 0.9992000000000001,
+      "n_samples": 100
+    },
+    "E_scale_anomaly": {
+      "phase_auc": 0.9916,
+      "tonic_auc": 0.9258000000000001,
+      "drift_auc": 1.0,
+      "combined_auc": 0.9902,
+      "n_samples": 100
+    },
+    "F_adaptive": {
+      "phase_auc": 0.497,
+      "tonic_auc": 0.5018,
+      "drift_auc": 1.0,
+      "combined_auc": 0.9842,
+      "n_samples": 100
+    }
+  },
+  "averages": {
+    "phase": 0.6145999999999999,
+    "tonic": 0.9028666666666667,
+    "drift": 0.7574666666666667,
+    "combined": 0.9941666666666666
+  },
+  "coverage_gaps": false
+}
