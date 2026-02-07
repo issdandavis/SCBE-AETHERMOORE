@@ -142,6 +142,21 @@ from .dual_lattice_integration import (
     LayerDecision,
 )
 
+# Sacred Eggs (Cryptographic Secret Containers)
+from .sacred_eggs import (
+    SacredEgg,
+    EggCarton,
+    EggRing,
+    SacredRituals,
+    IncubationResult,
+    TriadicBindingResult,
+    RingDescentResult,
+    FailToNoiseResult,
+    flux_state_to_ring,
+    create_session_egg,
+    ring_allows,
+)
+
 __all__ = [
     # === Dual Lattice ===
     "SacredTongue",
@@ -220,6 +235,18 @@ __all__ = [
     "DualLatticeIntegrator",
     "IntegratedResult",
     "LayerDecision",
+    # === Sacred Eggs ===
+    "SacredEgg",
+    "EggCarton",
+    "EggRing",
+    "SacredRituals",
+    "IncubationResult",
+    "TriadicBindingResult",
+    "RingDescentResult",
+    "FailToNoiseResult",
+    "flux_state_to_ring",
+    "create_session_egg",
+    "ring_allows",
 ]
 
 __version__ = "3.1.0"  # Bumped for 14-layer integration
