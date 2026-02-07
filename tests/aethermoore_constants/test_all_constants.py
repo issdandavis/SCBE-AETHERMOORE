@@ -13,63 +13,54 @@ from hypothesis import given, strategies as st
 
 
 class TestConstant1HarmonicScaling:
-    """Constant 1: H(d, R) = R^(d²) - Harmonic Scaling Law"""
+    """Constant 1: H(d) = 1/(1 + d + 2*pd) - Bounded Harmonic Scaling Law"""
 
-    def harmonic_scaling_law(self, d: int, R: float = 1.5) -> float:
-        """H(d, R) = R^(d²)"""
-        return R ** (d**2)
+    def harmonic_scaling_law(self, d: float, phase_deviation: float = 0.0) -> float:
+        """H(d) = 1/(1 + d + 2*phase_deviation)"""
+        return 1.0 / (1.0 + d + 2.0 * phase_deviation)
 
     def test_growth_table_verification(self):
-        """Verify growth table matches theoretical values"""
+        """Verify harmonic scaling matches theoretical values"""
         expected = {
-            1: 1.5,
-            2: 5.0625,
-            3: 38.443359375,
-            4: 656.8408203125,
-            5: 25251.1726379395,
-            6: 2184164.41064453,
+            0: 1.0,        # 1/(1+0) = 1.0
+            1: 0.5,        # 1/(1+1) = 0.5
+            2: 1.0/3.0,    # 1/(1+2) ≈ 0.333
+            3: 0.25,       # 1/(1+3) = 0.25
+            4: 0.2,        # 1/(1+4) = 0.2
+            5: 1.0/6.0,    # 1/(1+5) ≈ 0.167
         }
 
         for d, expected_value in expected.items():
             actual = self.harmonic_scaling_law(d)
             assert (
-                abs(actual - expected_value) < 0.01
+                abs(actual - expected_value) < 0.001
             ), f"d={d}: expected {expected_value}, got {actual}"
 
-    def test_super_exponential_growth(self):
-        """Verify super-exponential growth pattern"""
-        values = [self.harmonic_scaling_law(d) for d in range(1, 7)]
+    def test_monotone_decreasing(self):
+        """Verify monotone decreasing pattern (more distance = lower safety)"""
+        values = [self.harmonic_scaling_law(d) for d in range(0, 7)]
 
-        # Each step should multiply by more than previous step
-        growth_factors = [values[i + 1] / values[i] for i in range(len(values) - 1)]
-
-        for i in range(len(growth_factors) - 1):
+        for i in range(len(values) - 1):
             assert (
-                growth_factors[i + 1] > growth_factors[i]
-            ), f"Growth not super-exponential at d={i+2}"
+                values[i] > values[i + 1]
+            ), f"Not monotone decreasing at d={i}"
 
-    @given(d=st.integers(min_value=1, max_value=10))
-    def test_property_positive_growth(self, d):
-        """Property: H(d, R) always increases with d for R > 1"""
-        R = 1.5
-        H_d = self.harmonic_scaling_law(d, R)
-        H_d_plus_1 = self.harmonic_scaling_law(d + 1, R)
+    @given(d=st.integers(min_value=0, max_value=100))
+    def test_property_bounded_positive(self, d):
+        """Property: H(d) is always in (0, 1] for all d >= 0"""
+        H_d = self.harmonic_scaling_law(d)
 
-        assert H_d_plus_1 > H_d, f"Not monotonic at d={d}"
+        assert H_d > 0, f"Not positive at d={d}"
+        assert H_d <= 1.0, f"Exceeds 1.0 at d={d}"
 
-    def test_dimension_independence(self):
-        """Verify dimensions are independent (multiplicative)"""
-        # H(d1+d2, R) should relate to H(d1, R) * H(d2, R) via exponent rules
-        d1, d2 = 2, 3
-        R = 1.5
+    def test_phase_deviation_effect(self):
+        """Verify phase deviation further decreases the safety score"""
+        d = 2.0
+        H_no_pd = self.harmonic_scaling_law(d, phase_deviation=0.0)
+        H_with_pd = self.harmonic_scaling_law(d, phase_deviation=0.5)
 
-        # R^((d1+d2)²) vs R^(d1²) * R^(d2²)
-        # Note: (d1+d2)² ≠ d1² + d2², so this tests the d² exponent
-        H_combined = self.harmonic_scaling_law(d1 + d2, R)
-        H_separate = R ** ((d1**2) + (d2**2))
-
-        # They should differ (proving d² is correct, not d)
-        assert abs(H_combined - H_separate) > 1.0
+        # Phase deviation should lower the score
+        assert H_with_pd < H_no_pd
 
 
 class TestConstant2CymaticVoxel:
@@ -145,69 +136,61 @@ class TestConstant2CymaticVoxel:
 class TestConstant3FluxInteraction:
     """Constant 3: Flux Interaction Framework - Harmonic Duality"""
 
-    def flux_interaction(self, d: int, R: float, Base: float) -> tuple:
+    def flux_interaction(self, d: float, Base: float) -> tuple:
         """
-        f(x) = R^(d²) × Base
-        f⁻¹(x) = (1/R)^(d²) × (1/Base)
-        f(x) × f⁻¹(x) = 1
+        f(d) = (1/(1+d)) × Base    (forward harmonic scaling)
+        f⁻¹(d) = (1+d) × (1/Base)  (inverse)
+        f(d) × f⁻¹(d) = 1          (energy conservation)
         """
-        f = (R ** (d**2)) * Base
-        f_inv = ((1 / R) ** (d**2)) * (1 / Base)
+        f = (1.0 / (1.0 + d)) * Base
+        f_inv = (1.0 + d) * (1.0 / Base)
         product = f * f_inv
         return f, f_inv, product
 
     def test_duality_unity(self):
         """Verify f(x) × f⁻¹(x) = 1 (energy conservation)"""
         test_cases = [
-            (1, 1.5, 100),
-            (2, 1.5, 100),
-            (3, 1.5, 100),
-            (4, 1.5, 50),
-            (5, 1.5, 10),
+            (1, 100),
+            (2, 100),
+            (3, 100),
+            (4, 50),
+            (5, 10),
         ]
 
-        for d, R, Base in test_cases:
-            f, f_inv, product = self.flux_interaction(d, R, Base)
+        for d, Base in test_cases:
+            f, f_inv, product = self.flux_interaction(d, Base)
 
             assert (
                 abs(product - 1.0) < 1e-10
-            ), f"Duality violated for d={d}, R={R}, Base={Base}: product={product}"
+            ), f"Duality violated for d={d}, Base={Base}: product={product}"
 
     def test_phase_cancellation(self):
-        """Verify R × (1/R) = 1 at all dimensions"""
-        R = 1.5
-
-        for d in range(1, 7):
-            forward = R ** (d**2)
-            inverse = (1 / R) ** (d**2)
+        """Verify H(d) × H_inv(d) = 1 at all dimensions"""
+        for d in range(0, 7):
+            forward = 1.0 / (1.0 + d)
+            inverse = 1.0 + d
             product = forward * inverse
 
             assert abs(product - 1.0) < 1e-10, f"Phase cancellation failed at d={d}"
 
     @given(
-        d=st.integers(min_value=1, max_value=6),
-        R=st.floats(min_value=1.1, max_value=2.0),
+        d=st.integers(min_value=0, max_value=100),
         Base=st.floats(min_value=1.0, max_value=1000.0),
     )
-    def test_property_duality_holds(self, d, R, Base):
+    def test_property_duality_holds(self, d, Base):
         """Property: Duality holds for all valid inputs"""
-        f, f_inv, product = self.flux_interaction(d, R, Base)
+        f, f_inv, product = self.flux_interaction(d, Base)
 
-        assert abs(product - 1.0) < 1e-8, f"Duality violated: d={d}, R={R}, Base={Base}"
+        assert abs(product - 1.0) < 1e-8, f"Duality violated: d={d}, Base={Base}"
 
     def test_energy_redistribution(self):
-        """Verify energy redistributes to 4x zones"""
-        # This is a conceptual test - in practice would need wave simulation
-        d, R, Base = 3, 1.5, 100
-        f, f_inv, product = self.flux_interaction(d, R, Base)
+        """Verify energy redistribution ratio"""
+        d, Base = 3, 100
+        f, f_inv, product = self.flux_interaction(d, Base)
 
-        # Constructive zone should be ~4x destructive zone
-        constructive_amplitude = f + f_inv
-        destructive_amplitude = abs(f - f_inv)
-
-        # Ratio should be significant
-        ratio = constructive_amplitude / destructive_amplitude
-        assert ratio > 1.0, "Energy redistribution not detected"
+        # Forward is attenuated (safety score * base), product = 1
+        assert f < Base, "Forward should be attenuated"
+        assert abs(product - 1.0) < 1e-10, "Product should equal 1 (duality)"
 
 
 class TestConstant4StellarOctave:
@@ -289,17 +272,18 @@ class TestIntegration:
 
     def test_all_constants_verified(self):
         """Verify all four constants are mathematically consistent"""
-        # Constant 1
-        H = 1.5 ** (3**2)
-        assert H > 38.0
+        # Constant 1: Harmonic scaling at d=3
+        H = 1.0 / (1.0 + 3)
+        assert H == 0.25
 
         # Constant 2
         Z = np.cos(3 * np.pi * 0.5) * np.cos(5 * np.pi * 0.5)
         assert abs(Z) <= 1.0
 
-        # Constant 3
-        f = (1.5**9) * 100
-        f_inv = ((1 / 1.5) ** 9) * (1 / 100)
+        # Constant 3: Flux duality
+        d = 3
+        f = (1.0 / (1.0 + d)) * 100
+        f_inv = (1.0 + d) * (1.0 / 100)
         assert abs(f * f_inv - 1.0) < 1e-10
 
         # Constant 4
@@ -308,16 +292,19 @@ class TestIntegration:
 
     def test_scbe_layer_integration(self):
         """Verify integration with SCBE-AETHERMOORE layers"""
-        # Layer 12: Harmonic Scaling
-        H_layer12 = 1.5 ** (6**2)
-        assert H_layer12 > 2_000_000
+        # Layer 12: Harmonic Scaling - bounded (0, 1]
+        H_layer12 = 1.0 / (1.0 + 6)
+        assert 0 < H_layer12 <= 1.0
+        assert abs(H_layer12 - 1.0 / 7.0) < 1e-10
 
         # Layer 1-2: Cymatic Voxel (context commitment)
         # Would need full SCBE context here
 
-        # Layer 9: Flux Interaction (multi-well realms)
-        f, f_inv, product = (1.5**9) * 100, ((1 / 1.5) ** 9) * (1 / 100), 1.0
-        assert abs(product - 1.0) < 1e-10
+        # Layer 9: Flux Interaction duality
+        d = 3
+        f = (1.0 / (1.0 + d)) * 100
+        f_inv = (1.0 + d) * (1.0 / 100)
+        assert abs(f * f_inv - 1.0) < 1e-10
 
 
 if __name__ == "__main__":

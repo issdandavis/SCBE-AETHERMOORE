@@ -184,29 +184,30 @@ describe('AdaptiveHyperbolicNavigator', () => {
   // ═══════════════════════════════════════════════════════════════
 
   describe('Harmonic Penalty', () => {
-    it('should compute penalty as R^(d²)', () => {
+    it('should compute penalty as 1/(1+d+2*pd)', () => {
       nav.reset([0.3, 0, 0, 0, 0, 0]);
 
       const result = nav.update(['KO'], 0.5);
-      const R = result.currentR;
       const kappa = result.currentKappa;
+      const c = result.coherence;
 
       // Distance from current position to origin
       const d = nav.hyperbolicDistanceKappa(result.position, [0, 0, 0, 0, 0, 0], kappa);
+      const phaseDeviation = 1 - c;
 
-      const expectedPenalty = Math.pow(R, d * d);
+      const expectedPenalty = 1 / (1 + d + 2 * phaseDeviation);
       expect(result.penalty).toBeCloseTo(expectedPenalty, 3);
     });
 
-    it('should have higher penalty for low coherence', () => {
+    it('should have lower penalty (higher safety) for high coherence', () => {
       nav.reset([0.4, 0.2, 0, 0, 0, 0]);
 
       const highCoherenceResult = nav.update(['KO'], 0.95);
       nav.reset([0.4, 0.2, 0, 0, 0, 0]);
       const lowCoherenceResult = nav.update(['KO'], 0.2);
 
-      // Low coherence → higher R → higher penalty
-      expect(lowCoherenceResult.penalty).toBeGreaterThan(highCoherenceResult.penalty);
+      // High coherence → lower phase deviation → higher safety score
+      expect(highCoherenceResult.penalty).toBeGreaterThan(lowCoherenceResult.penalty);
     });
 
     it('should have penalty ≈ 1 at origin with full coherence', () => {

@@ -419,27 +419,25 @@ class RiskAssessment:
         )
 
 
-def harmonic_scaling(d: float, R: float = PHI) -> float:
+def harmonic_scaling(d: float, phase_deviation: float = 0.0) -> float:
     """
-    Harmonic scaling function with superexponential growth.
+    Harmonic scaling function (bounded).
 
-    H(d, R) = R^(d²)
+    score = 1 / (1 + d_H + 2 * phase_deviation)
 
     Properties:
         - H(0) = 1
-        - H'(d) = 2d · R^(d²) · ln(R) > 0 (strictly increasing)
-        - Creates "vertical wall" effect at large d
+        - Strictly decreasing in d (preserves ranking)
+        - Bounded in (0, 1] (no numerical collapse)
 
     Args:
-        d: Distance value
-        R: Base (default: golden ratio φ)
+        d: Distance value (>= 0)
+        phase_deviation: Phase deviation (>= 0, default 0)
 
     Returns:
-        Harmonically scaled value
+        Safety score in (0, 1]
     """
-    # Clamp to prevent overflow
-    d_sq = min(d**2, 50.0)
-    return R**d_sq
+    return 1.0 / (1.0 + d + 2.0 * phase_deviation)
 
 
 @causality_check(require_time_param=False)
