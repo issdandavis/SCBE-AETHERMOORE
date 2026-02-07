@@ -101,6 +101,7 @@ src/
 │   ├── dsp.py             # Digital signal processing
 │   ├── harmonic_scaling_law.py  # Scaling laws (largest Python file)
 │   └── scbe_aethermoore/  # Full Python implementation
+│       ├── ai_brain/      # Python reference: 21D brain mapping
 │       └── axiom_grouped/ # 5 Quantum Axiom implementations
 │           ├── unitarity_axiom.py   # L2, L4, L7
 │           ├── locality_axiom.py    # L3, L8
@@ -120,6 +121,14 @@ src/
 │   ├── polly-pad.ts       # Personal agent workspaces
 │   ├── redis-orchestrator.ts # Redis integration
 │   └── governance.ts      # Fleet governance
+├── ai_brain/              # 21D AI Brain Mapping (L1-14 unified)
+│   ├── types.ts           # 21D state types and constants
+│   ├── unified-state.ts   # UnifiedBrainState class, Poincare embedding
+│   ├── detection.ts       # 5 orthogonal detection mechanisms
+│   ├── bft-consensus.ts   # BFT consensus (corrected 3f+1)
+│   ├── quasi-space.ts     # Quasicrystal icosahedral projection
+│   ├── audit.ts           # SHA-256 hash-chained audit logger
+│   └── index.ts           # Module exports
 ├── spectral/              # FFT coherence analysis (L9-10)
 ├── gateway/               # Unified SCBE API Gateway
 ├── selfHealing/           # Failure recovery and diagnosis
@@ -157,6 +166,7 @@ tests/
 ├── L6-adversarial/        # Adversarial attack simulations
 ├── harmonic/              # 14-layer pipeline tests (12 files)
 ├── crypto/                # Cryptographic tests (7 files)
+├── ai_brain/              # AI Brain Mapping tests (unit + integration)
 ├── spectral/              # Spectral coherence tests
 ├── enterprise/            # Enterprise-grade compliance tests
 │   ├── formal/            # Formal verification
@@ -205,6 +215,7 @@ scbe-aethermoore/crypto    # Cryptographic primitives
 scbe-aethermoore/spiralverse # Spiralverse protocol
 scbe-aethermoore/tokenizer # Sacred Tongues tokenizer
 scbe-aethermoore/phdm      # Poincare Half-plane Drift Monitor
+scbe-aethermoore/ai_brain  # 21D AI Brain Mapping (unified manifold + detection)
 ```
 
 ## 14-Layer Architecture
