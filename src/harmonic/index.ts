@@ -301,6 +301,31 @@ export {
 } from './spectral-identity.js';
 
 // ═══════════════════════════════════════════════════════════════
+// Sacred Eggs — Ritual-Based Conditional Secret Distribution
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Egg operations
+  sealEgg,
+  unsealEgg,
+  checkGeometryProximity,
+  // Key derivation
+  deriveEggKey,
+  // Quorum
+  generateQuorum,
+  combineShares,
+  // Path
+  pathHash,
+  // Constants
+  EGG_TONGUE_PHASES,
+  // Types
+  type SacredEgg,
+  type SacredEggConfig,
+  type UnsealResult,
+  type QuorumShare,
+} from './sacredEggs.js';
+
+// ═══════════════════════════════════════════════════════════════
 // Three-Mechanism Adversarial Detection
 // ═══════════════════════════════════════════════════════════════
 
@@ -311,7 +336,7 @@ export {
   computeDriftSignature,
   driftAuthScore,
   driftDistanceToBaseline,
-  hyperbolicDistance,
+  hyperbolicDistance as triHyperbolicDistance,
   phaseDeviation,
   phaseDistanceScore,
   tonicCoherence,
