@@ -4,6 +4,7 @@
  * @layer Layer 1-14 (Unified Manifold)
  * @component Unified Brain State
  * @version 1.1.0
+ * @since 2026-02-07
  *
  * Implements the 21D unified brain state vector that integrates all SCBE-AETHERMOORE
  * components into a single coherent manifold. Each component contributes specific

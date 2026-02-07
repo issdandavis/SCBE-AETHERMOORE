@@ -4,6 +4,7 @@
  * @layer Layer 10, Layer 13
  * @component Byzantine Fault-Tolerant Consensus
  * @version 1.1.0
+ * @since 2026-02-07
  *
  * Corrected BFT consensus implementation for swarm governance.
  *

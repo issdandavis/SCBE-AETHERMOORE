@@ -4,6 +4,7 @@
  * @layer Layer 5, Layer 9, Layer 12, Layer 13
  * @component Multi-Vectored Detection Mechanisms
  * @version 1.1.0
+ * @since 2026-02-07
  *
  * Implements the 5 orthogonal detection mechanisms validated at 1.000 AUC:
  *
@@ -27,6 +28,22 @@ import {
   type BrainConfig,
   DEFAULT_BRAIN_CONFIG,
 } from './types.js';
+
+// ═══════════════════════════════════════════════════════════════
+// 21D State Dimension Indices
+// ═══════════════════════════════════════════════════════════════
+
+/** Maps named dimensions to their index in the 21D state vector */
+const STATE_DIM = {
+  /** SCBE Context: behavior score (dim 3 of 6) */
+  BEHAVIOR_SCORE: 3,
+  /** SCBE Context: intent alignment (dim 5 of 6) */
+  INTENT_ALIGNMENT: 5,
+  /** Sacred Tongues: phase angle (dim 1 of 3, offset 15+1=16) */
+  PHASE_ANGLE: 16,
+  /** Sacred Tongues: tongue weight (dim 2 of 3, offset 15+2=17) */
+  TONGUE_WEIGHT: 17,
+} as const;
 
 // ═══════════════════════════════════════════════════════════════
 // Internal Utilities
@@ -95,8 +112,8 @@ export function detectPhaseDistance(
   let totalDistanceScore = 0;
 
   for (const point of trajectory) {
-    // Extract semantic phase from 21D state (dimension 16 = phaseAngle)
-    const actualPhase = point.state[16] ?? 0;
+    // Extract semantic phase from 21D state
+    const actualPhase = point.state[STATE_DIM.PHASE_ANGLE] ?? 0;
 
     // Phase error: circular distance between expected and actual
     const phaseDiff = Math.abs(actualPhase - expectedPhase);
@@ -270,10 +287,10 @@ export function detectThreatLissajous(
     };
   }
 
-  // Project onto threat plane: intent alignment (dim 5) vs behavior score (dim 3)
+  // Project onto threat plane: intent alignment vs behavior score
   const projectedPoints = trajectory.map((p) => ({
-    x: p.state[5] ?? 0, // intent alignment
-    y: p.state[3] ?? 0, // behavior score
+    x: p.state[STATE_DIM.INTENT_ALIGNMENT] ?? 0,
+    y: p.state[STATE_DIM.BEHAVIOR_SCORE] ?? 0,
   }));
 
   // Count self-intersections (knots)
@@ -484,8 +501,8 @@ export function detectSixTonic(
   const freqs = tonicFrequencies(baseFreq);
   const expectedFreq = freqs[expectedTongueIndex % 6];
 
-  // Extract tongue weight oscillation from trajectory (dim 17 = tongueWeight)
-  const weights = trajectory.map((p) => p.state[17] ?? 0);
+  // Extract tongue weight oscillation from trajectory
+  const weights = trajectory.map((p) => p.state[STATE_DIM.TONGUE_WEIGHT] ?? 0);
 
   // Check for static signal (no variation)
   const weightMean = weights.reduce((s, w) => s + w, 0) / weights.length;
