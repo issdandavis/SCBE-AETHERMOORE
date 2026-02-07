@@ -10,7 +10,8 @@
 import * as symphonic from './symphonic/index.js';
 import * as crypto from './crypto/index.js';
 import * as spiralverse from './spiralverse/index.js';
-export { symphonic, crypto, spiralverse };
+import * as ai_brain from './ai_brain/index.js';
+export { symphonic, crypto, spiralverse, ai_brain };
 export * from './crypto/envelope.js';
 export * from './crypto/hkdf.js';
 export * from './crypto/jcs.js';

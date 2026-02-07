@@ -42,6 +42,11 @@
       "types": "./dist/src/harmonic/phdm.d.ts",
       "import": "./dist/src/harmonic/phdm.js",
       "require": "./dist/src/harmonic/phdm.js"
+    },
+    "./ai_brain": {
+      "types": "./dist/src/ai_brain/index.d.ts",
+      "import": "./dist/src/ai_brain/index.js",
+      "require": "./dist/src/ai_brain/index.js"
     }
   },
   "files": [
