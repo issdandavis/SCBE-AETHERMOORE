@@ -345,7 +345,7 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
     });
 
     it('should suggest appropriate policy for action', () => {
-      // Read operations: standard
+      // Read/write operations: standard
       expect(suggestPolicy('read')).toBe('standard');
       expect(suggestPolicy('write')).toBe('standard');
 
@@ -356,6 +356,9 @@ describe('RWP v2.1 Multi-Signature Envelopes', () => {
       // Critical operations: critical
       expect(suggestPolicy('admin')).toBe('critical');
       expect(suggestPolicy('security')).toBe('critical');
+
+      // Unknown operations: standard
+      expect(suggestPolicy('unknown')).toBe('standard');
     });
   });
 
