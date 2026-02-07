@@ -300,9 +300,10 @@ export function hyperbolicDistance(u: PoincarePosition, v: PoincarePosition): nu
 
 /**
  * Calculate Harmonic Wall cost
+ * score = 1 / (1 + d_H + 2 * phaseDeviation)
  */
-export function harmonicWallCost(distance: number, R = Math.E): number {
-  return Math.pow(R, distance * distance);
+export function harmonicWallCost(distance: number, phaseDeviation = 0): number {
+  return 1 / (1 + distance + 2 * phaseDeviation);
 }
 
 /**

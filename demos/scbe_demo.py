@@ -37,9 +37,9 @@ def hyperbolic_distance(u: np.ndarray, v: np.ndarray, eps: float = 1e-6) -> floa
     return float(np.arccosh(max(1.0, 1 + 2 * diff_norm_sq / denom)))
 
 
-def harmonic_scaling(d_star: float) -> float:
-    """H(d*) = exp(d*^2) - The Vertical Wall."""
-    return float(np.exp(d_star**2))
+def harmonic_scaling(d_star: float, phase_deviation: float = 0.0) -> float:
+    """score = 1 / (1 + d_H + 2 * phase_deviation) - Bounded scaling."""
+    return float(1.0 / (1.0 + d_star + 2.0 * phase_deviation))
 
 
 def anti_fragile_stiffness(

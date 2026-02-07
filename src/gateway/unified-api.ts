@@ -517,9 +517,8 @@ export class UnifiedSCBEGateway {
   }
 
   private computeHarmonicScaling(distance: number): number {
-    // H(d, R) = R^(d²) where R = e
-    const R = Math.E;
-    return Math.pow(R, distance * distance);
+    // score = 1 / (1 + d_H + 2 * phaseDeviation)
+    return 1 / (1 + distance);
   }
 
   private computeCompositeRisk(factors: Omit<RiskFactors, 'compositeRisk'>): number {
