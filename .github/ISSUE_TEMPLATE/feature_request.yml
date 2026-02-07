@@ -1,0 +1,94 @@
+name: Feature Request
+description: Suggest a new feature or enhancement for SCBE-AETHERMOORE
+title: "[Feature]: "
+labels: ["enhancement"]
+assignees:
+  - issdandavis
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to suggest a feature!
+        Please provide as much detail as possible.
+
+  - type: textarea
+    id: feature-summary
+    attributes:
+      label: Feature Summary
+      description: A brief description of the feature you're proposing
+      placeholder: Describe the feature in 1-2 sentences
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve?
+      placeholder: Describe the problem or limitation you're experiencing
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How would you like this to work?
+      placeholder: Describe your ideal solution
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Any alternative solutions you've considered
+      placeholder: What workarounds or alternatives have you tried?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which component does this feature relate to?
+      options:
+        - Core Engine
+        - API/SDK
+        - Documentation
+        - Testing Framework
+        - CI/CD Pipeline
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority Level
+      description: How important is this feature to you?
+      options:
+        - Critical - Blocking my work
+        - High - Important for my use case
+        - Medium - Nice to have
+        - Low - Future consideration
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any other context, screenshots, or references
+      placeholder: Add any other information here
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Would you be willing to contribute to this feature?
+      options:
+        - label: I would be willing to submit a PR for this feature
+          required: false
