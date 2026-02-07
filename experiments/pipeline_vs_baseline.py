@@ -175,9 +175,9 @@ def layer_11_triadic_distance(d_immediate: float, d_memory: float, d_governance:
     return np.sqrt(sum(w * d**2 for w, d in zip(weights, [d_immediate, d_memory, d_governance])))
 
 
-def layer_12_harmonic_scaling(distance: float, R: float = 1.5) -> float:
-    """Layer 12: Superexponential amplification H(d,R) = R^(d^2)"""
-    return R ** (distance ** 2)
+def layer_12_harmonic_scaling(distance: float, phase_deviation: float = 0.0) -> float:
+    """Layer 12: Bounded harmonic scaling H(d) = 1/(1 + d + 2*pd)"""
+    return 1.0 / (1.0 + distance + 2.0 * phase_deviation)
 
 
 def layer_13_risk_decision(risk_score: float) -> str:
@@ -239,7 +239,7 @@ def medium_6layer(trajectory: np.ndarray) -> float:
     distance = layer_5_hyperbolic_distance(embedded, origin)
 
     # Layer 12 (harmonic scaling)
-    return layer_12_harmonic_scaling(distance, R=1.5)
+    return layer_12_harmonic_scaling(distance)
 
 
 def full_14layer(trajectory: np.ndarray) -> float:
@@ -281,7 +281,7 @@ def full_14layer(trajectory: np.ndarray) -> float:
     triadic = layer_11_triadic_distance(base_distance, memory_dist, governance_dist)
 
     # Layer 12: Harmonic scaling
-    harmonic = layer_12_harmonic_scaling(triadic, R=1.5)
+    harmonic = layer_12_harmonic_scaling(triadic)
 
     # Layer 14: Audio features (adds variance penalty)
     audio = layer_14_audio_features(trajectory)
