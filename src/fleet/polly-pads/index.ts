@@ -48,15 +48,12 @@ export {
   type ModePadConfig,
   type MemoryEntry,
 } from './mode-pad.js';
+
 // Specialist Modes (Dynamic Mode Switching)
 export {
   ModeRegistry,
   ALL_MODE_IDS,
   type SpecialistModeId,
-  type SpecialistMode,
-  type ModeTool,
-  type ModeState,
-  type ModeSwitchEvent,
 } from './specialist-modes.js';
 
 // Closed Network (Air-Gapped Communications)
@@ -69,24 +66,6 @@ export {
   type ChannelConfig,
   type NetworkStatus,
 } from './closed-network.js';
-
-// Mission Coordinator & Squad (Byzantine Consensus)
-export {
-  MissionCoordinator,
-  Squad,
-  BFT,
-  type CrisisType,
-  type VoteDecision,
-  type Vote,
-  type VotingSession,
-  type SquadMember,
-  type ModeAssignment,
-  type ConsensusResult,
-} from './mission-coordinator.js';
-
-// ============================================================================
-// Quick Start Example
-// ============================================================================
 
 // Specialist Modes
 export {
@@ -110,17 +89,6 @@ export {
   type ModeConfig,
   MODE_CONFIGS,
 } from './modes/index.js';
-
-// Closed Network
-export {
-  ClosedNetwork,
-  DEFAULT_CLOSED_CONFIG,
-  BLOCKED_NETWORKS,
-  type NetworkChannel,
-  type BlockedCategory,
-  type NetworkMessage,
-  type ClosedNetworkConfig,
-} from './closed-network.js';
 
 // Squad Coordination (Byzantine Consensus)
 export {
