@@ -257,6 +257,35 @@ export {
 } from './dual-ternary.js';
 
 // ═══════════════════════════════════════════════════════════════
+// Hamiltonian Braid (Ternary Spiral Governance)
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  AetherBraid,
+  BRAID_GOVERNANCE_TABLE,
+  DEFAULT_BRAID_CONFIG,
+  buildGovernance,
+  braidSecurityAction,
+  braidTrustLevel,
+  classifyBraidState,
+  estimateBraidFractalDimension,
+  harmonicTubeCost,
+  isInsideTube,
+  mirrorShift,
+  mirrorSwap,
+  quantize as braidQuantize,
+  quantizeVector as braidQuantizeVector,
+  refactorAlign,
+  zeroGravityDistance,
+  type BraidConfig,
+  type BraidCycleResult,
+  type BraidGovernance,
+  type BraidState,
+  type SecurityAction,
+  type TrustLevel,
+} from './hamiltonian-braid.js';
+
+// ═══════════════════════════════════════════════════════════════
 // Unified Kernel (Pipeline Runner / Integration Spine)
 // ═══════════════════════════════════════════════════════════════
 
