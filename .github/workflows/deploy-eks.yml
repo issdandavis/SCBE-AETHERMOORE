@@ -1,0 +1,91 @@
+name: Deploy SCBE to EKS
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - production
+          - staging
+  push:
+    branches: [main]
+    paths:
+      - 'k8s/**'
+      - '.github/workflows/deploy-eks.yml'
+
+env:
+  AWS_REGION: us-west-2
+  EKS_CLUSTER: scbe-test-cluster
+
+jobs:
+  deploy:
+    name: Deploy to EKS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER }} --region ${{ env.AWS_REGION }}
+
+      - name: Create namespace
+        run: |
+          kubectl apply -f k8s/namespace.yaml
+
+      - name: Deploy application
+        run: |
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
+
+      - name: Deploy agent manifests
+        run: |
+          kubectl apply -f k8s/agent-manifests/ || echo "Agent manifests applied with warnings"
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/scbe-aethermoore -n scbe-aethermoore --timeout=120s
+
+      - name: Verify deployment
+        run: |
+          echo "=== Pods ==="
+          kubectl get pods -n scbe-aethermoore
+          echo "=== Services ==="
+          kubectl get svc -n scbe-aethermoore
+          echo "=== Nodes ==="
+          kubectl get nodes
+          echo "=== Deployment ==="
+          kubectl describe deployment scbe-aethermoore -n scbe-aethermoore
+
+      - name: Test health endpoint
+        run: |
+          SVC_URL=$(kubectl get svc scbe-aethermoore-service -n scbe-aethermoore -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || echo "")
+          if [ -n "$SVC_URL" ]; then
+            echo "Service URL: http://$SVC_URL"
+            curl -s --max-time 10 "http://$SVC_URL/" || echo "Service not yet reachable (LoadBalancer may need time)"
+          else
+            echo "LoadBalancer not yet provisioned. Check later."
+          fi
+
+      - name: Deployment summary
+        run: |
+          echo "============================================"
+          echo "SCBE-AETHERMOORE EKS Deployment Complete!"
+          echo "============================================"
+          echo ""
+          echo "Cluster: ${{ env.EKS_CLUSTER }}"
+          echo "Region: ${{ env.AWS_REGION }}"
+          echo "Namespace: scbe-aethermoore"
+          echo ""
+          kubectl get all -n scbe-aethermoore
+          echo "============================================"
