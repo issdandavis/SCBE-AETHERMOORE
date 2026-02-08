@@ -3,10 +3,12 @@
  * @module ai_brain
  * @layer Layer 1-14 (Unified)
  * @component AI Brain Mapping Module
- * @version 1.1.0
+ * @version 1.2.0
  * @since 2026-02-07
  *
- * Multi-Vectored Quasi-Space Architecture with Lattice Mesh Integration.
+ * Complete AI Brain Mapping - Multi-Vectored Quasi-Space Architecture
+ * with Lattice Mesh Integration.
+ *
  * Unifies all SCBE-AETHERMOORE components into a single coherent "AI brain"
  * architecture operating across a 21D manifold.
  *
@@ -16,6 +18,11 @@
  * - BFT Consensus (corrected: 3f+1 formula)
  * - Quasicrystal Icosahedral Projection
  * - Cryptographic Audit Logger
+ * - Trajectory Simulator (multi-profile agent behavior)
+ * - Immune Response System (GeoSeal suspicion/quarantine)
+ * - Flux State Management (POLLY/QUASI/DEMI/COLLAPSED tiered access)
+ * - Swarm Formation Coordination (geometric governance formations)
+ * - Brain Integration Pipeline (end-to-end unified pipeline)
  */
 
 // ═══════════════════════════════════════════════════════════════
@@ -98,3 +105,70 @@ export {
 // ═══════════════════════════════════════════════════════════════
 
 export { BrainAuditLogger } from './audit.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Trajectory Simulator
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  AGENT_PROFILES,
+  SeededRNG,
+  generateMixedBatch,
+  generateTrajectory,
+  type AgentProfile,
+  type SimulationConfig,
+} from './trajectory-simulator.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Immune Response System
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  DEFAULT_IMMUNE_CONFIG,
+  ImmuneResponseSystem,
+  type AgentImmuneStatus,
+  type ImmuneConfig,
+  type ImmuneEvent,
+  type ImmuneState,
+} from './immune-response.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Flux State Management
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  DEFAULT_FLUX_CONFIG,
+  FluxStateManager,
+  POLYHEDRA,
+  type AgentFluxRecord,
+  type FluxConfig,
+  type FluxState,
+  type PolyhedronAccess,
+  type PolyhedronCategory,
+} from './flux-states.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Swarm Formation Coordination
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  DEFAULT_SWARM_CONFIG,
+  SwarmFormationManager,
+  type FormationPosition,
+  type FormationType,
+  type SwarmConfig,
+  type SwarmFormation,
+} from './swarm-formation.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Brain Integration Pipeline
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  BrainIntegrationPipeline,
+  DEFAULT_INTEGRATION_CONFIG,
+  type AgentAssessment,
+  type EndToEndResult,
+  type IntegrationConfig,
+  type TrialResult,
+} from './brain-integration.js';
