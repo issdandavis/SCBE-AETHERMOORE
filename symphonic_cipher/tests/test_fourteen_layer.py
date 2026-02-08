@@ -370,12 +370,12 @@ class TestLayer12HarmonicScaling:
         assert H1 > H2 > H3
 
     def test_monotonicity(self):
-        """H(d1) < H(d2) for d1 < d2."""
+        """H(d1) > H(d2) for d1 < d2."""
         d_values = np.linspace(0, 3, 20)
         H_values = [layer_12_harmonic_scaling(d) for d in d_values]
 
         for i in range(len(H_values) - 1):
-            assert H_values[i] < H_values[i+1]
+            assert H_values[i] > H_values[i+1]
 
 
 class TestLayer13Decision:
