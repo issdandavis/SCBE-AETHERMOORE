@@ -16,7 +16,6 @@
  * All external access goes through SCBE governance.
  */
 
-import { createHmac, randomBytes } from 'crypto';
 
 // ═══════════════════════════════════════════════════════════════
 // Types
