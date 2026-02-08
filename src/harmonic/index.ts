@@ -299,3 +299,62 @@ export {
   type SpectralBand,
   type SpectralIdentity,
 } from './spectral-identity.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Sacred Eggs — Ritual-Based Conditional Secret Distribution
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Egg creation and hatching
+  createEgg,
+  hatch,
+  // Predicates
+  predicateTongue,
+  predicateGeo,
+  predicatePath,
+  predicateQuorum,
+  predicateCrypto,
+  // Key derivation
+  deriveKey,
+  // Utilities
+  getRingLevel,
+  // Constants
+  ALL_TONGUES,
+  RING_BOUNDARIES,
+  DEFAULT_TONGUE_WEIGHTS,
+  // Types
+  type SacredEgg,
+  type EggPolicy,
+  type VerifierState,
+  type Approval,
+  type HatchResult,
+  type RingLevel,
+} from './sacredEggs.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Three-Mechanism Adversarial Detection
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Core detector
+  TriMechanismDetector,
+  // Mechanism functions
+  computeDriftSignature,
+  driftAuthScore,
+  driftDistanceToBaseline,
+  hyperbolicDistance as triHyperbolicDistance,
+  phaseDeviation,
+  phaseDistanceScore,
+  tonicCoherence,
+  // Constants
+  DEFAULT_CONFIG,
+  TONGUE_INDEX,
+  TONGUE_PHASES,
+  // Types
+  type DetectionDecision,
+  type PipelineMetrics,
+  type PositionSample,
+  type TriDetectionResult,
+  type TriDetectorConfig,
+} from './triMechanismDetector.js';
+
