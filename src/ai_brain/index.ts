@@ -23,6 +23,7 @@
  * - Flux State Management (POLLY/QUASI/DEMI/COLLAPSED tiered access)
  * - Swarm Formation Coordination (geometric governance formations)
  * - Brain Integration Pipeline (end-to-end unified pipeline)
+ * - PHDM Core (Hamiltonian path + Kyber K₀ + geodesic monitoring + Langues metric)
  */
 
 // ═══════════════════════════════════════════════════════════════
@@ -172,3 +173,38 @@ export {
   type IntegrationConfig,
   type TrialResult,
 } from './brain-integration.js';
+
+// ═══════════════════════════════════════════════════════════════
+// PHDM Core (Polyhedral Hamiltonian Defense Manifold Integration)
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  DEFAULT_PHDM_CORE_CONFIG,
+  INTENT_TONGUES,
+  PHDMCore,
+  TEMPORAL_TONGUES,
+  TONGUE_LABELS,
+  brainStateToLangues,
+  decomposeLangues,
+  deriveK0,
+  type K0DerivationParams,
+  type LanguesDecomposition,
+  type PHDMCoreConfig,
+  type PHDMMonitorResult,
+} from './phdm-core.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Bee-Colony Tiered Immune System
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  CASTE_PROFILES,
+  DEFAULT_HIVE_CONFIG,
+  HiveImmuneSystem,
+  type AgentCaste,
+  type CasteProfile,
+  type ColonyPheromoneState,
+  type HiveImmuneConfig,
+  type TieredImmuneResult,
+  type WaggleDance,
+} from './bee-immune-tiers.js';
