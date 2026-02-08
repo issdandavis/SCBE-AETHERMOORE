@@ -305,24 +305,30 @@ export {
 // ═══════════════════════════════════════════════════════════════
 
 export {
-  // Egg operations
-  sealEgg,
-  unsealEgg,
-  checkGeometryProximity,
+  // Egg creation and hatching
+  createEgg,
+  hatch,
+  // Predicates
+  predicateTongue,
+  predicateGeo,
+  predicatePath,
+  predicateQuorum,
+  predicateCrypto,
   // Key derivation
-  deriveEggKey,
-  // Quorum
-  generateQuorum,
-  combineShares,
-  // Path
-  pathHash,
+  deriveKey,
+  // Utilities
+  getRingLevel,
   // Constants
-  EGG_TONGUE_PHASES,
+  ALL_TONGUES,
+  RING_BOUNDARIES,
+  DEFAULT_TONGUE_WEIGHTS,
   // Types
   type SacredEgg,
-  type SacredEggConfig,
-  type UnsealResult,
-  type QuorumShare,
+  type EggPolicy,
+  type VerifierState,
+  type Approval,
+  type HatchResult,
+  type RingLevel,
 } from './sacredEggs.js';
 
 // ═══════════════════════════════════════════════════════════════
