@@ -1,0 +1,354 @@
+openapi: 3.1.0
+info:
+  title: SCBE-AETHERMOORE Governance API
+  version: 1.0.0
+  description: |
+    AI Governance Decision Engine API.
+    All AI actions, automations, and high-risk operations must pass through
+    this endpoint before execution.
+
+servers:
+  - url: https://api.aethermoore.com/v1
+    description: Production
+  - url: http://localhost:8080/v1
+    description: Local development
+
+paths:
+  /govern:
+    post:
+      operationId: requestGovernanceDecision
+      summary: Request governance decision for an action
+      description: |
+        Submit an action request for governance evaluation.
+        The system applies policies, evaluates risk via Harmonic Wall,
+        and returns ALLOW/DENY/ESCALATE with rationale.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GovernanceRequest'
+            examples:
+              contract_approval:
+                summary: AI auto-approving a contract
+                value:
+                  actor:
+                    id: "ai-agent-sales-001"
+                    type: "ai"
+                    tongue: "CA"
+                  resource:
+                    type: "contract"
+                    id: "contract-2024-0542"
+                    value_usd: 25000
+                  intent: "auto_approve"
+                  context:
+                    client_id: "acme-corp"
+                    urgency: "normal"
+                    previous_contracts: 3
+                  nonce: "a1b2c3d4e5f6"
+              data_access:
+                summary: Model requesting training data
+                value:
+                  actor:
+                    id: "model-gpt-finetune"
+                    type: "ai"
+                    tongue: "RU"
+                  resource:
+                    type: "dataset"
+                    id: "customer-pii-dataset"
+                    classification: "confidential"
+                  intent: "read"
+                  context:
+                    purpose: "fine_tuning"
+                    data_retention_days: 30
+                  nonce: "x9y8z7w6v5u4"
+      responses:
+        '200':
+          description: Governance decision returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GovernanceResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized - missing or invalid API key
+        '429':
+          description: Rate limited
+        '500':
+          description: Governance engine error
+
+  /govern/batch:
+    post:
+      operationId: requestBatchGovernance
+      summary: Request governance for multiple actions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                requests:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/GovernanceRequest'
+                  maxItems: 100
+      responses:
+        '200':
+          description: Batch decisions returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  decisions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GovernanceResponse'
+
+  /policies:
+    get:
+      operationId: listPolicies
+      summary: List active governance policies
+      responses:
+        '200':
+          description: Policy list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Policy'
+
+  /audit:
+    get:
+      operationId: getAuditLog
+      summary: Get governance decision audit log
+      parameters:
+        - name: since
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: actor_id
+          in: query
+          schema:
+            type: string
+        - name: decision
+          in: query
+          schema:
+            type: string
+            enum: [ALLOW, DENY, ESCALATE, QUARANTINE]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+            maximum: 1000
+      responses:
+        '200':
+          description: Audit entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditEntry'
+
+components:
+  schemas:
+    GovernanceRequest:
+      type: object
+      required:
+        - actor
+        - resource
+        - intent
+        - nonce
+      properties:
+        actor:
+          type: object
+          required:
+            - id
+            - type
+          properties:
+            id:
+              type: string
+              description: Unique identifier for the actor (user, AI agent, system)
+            type:
+              type: string
+              enum: [human, ai, system, external]
+            tongue:
+              type: string
+              enum: [KO, AV, RU, CA, UM, DR]
+              description: Sacred Tongue assignment (determines trust weight)
+            trust_score:
+              type: number
+              minimum: 0
+              maximum: 1
+        resource:
+          type: object
+          required:
+            - type
+            - id
+          properties:
+            type:
+              type: string
+              description: Resource type (contract, dataset, api_call, model, etc.)
+            id:
+              type: string
+            classification:
+              type: string
+              enum: [public, internal, confidential, restricted]
+              default: internal
+            value_usd:
+              type: number
+              description: Monetary value if applicable
+            owner:
+              type: string
+        intent:
+          type: string
+          description: What the actor wants to do (read, write, approve, execute, delete)
+        context:
+          type: object
+          additionalProperties: true
+          description: Additional context for policy evaluation
+        nonce:
+          type: string
+          description: Unique request identifier (replay protection)
+        urgency:
+          type: string
+          enum: [low, normal, high, critical]
+          default: normal
+
+    GovernanceResponse:
+      type: object
+      required:
+        - decision
+        - request_id
+        - timestamp
+      properties:
+        decision:
+          type: string
+          enum: [ALLOW, DENY, ESCALATE, QUARANTINE]
+        request_id:
+          type: string
+          format: uuid
+        timestamp:
+          type: string
+          format: date-time
+        rationale:
+          type: string
+          description: Human-readable explanation of the decision
+        policy_ids:
+          type: array
+          items:
+            type: string
+          description: Policies that influenced this decision
+        risk_score:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Computed risk (0 = safe, 1 = maximum risk)
+        harmonic_cost:
+          type: number
+          description: Harmonic Wall cost H(d) = exp(d²)
+        conditions:
+          type: array
+          items:
+            type: string
+          description: Conditions that must be met (for ALLOW with constraints)
+        escalation:
+          type: object
+          properties:
+            required_approvers:
+              type: array
+              items:
+                type: string
+            timeout_seconds:
+              type: integer
+            fallback_decision:
+              type: string
+              enum: [ALLOW, DENY]
+        audit_id:
+          type: string
+          format: uuid
+
+    Policy:
+      type: object
+      required:
+        - id
+        - name
+        - rules
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        enabled:
+          type: boolean
+          default: true
+        priority:
+          type: integer
+          description: Higher = evaluated first
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyRule'
+        tongue:
+          type: string
+          enum: [KO, AV, RU, CA, UM, DR]
+          description: Which tongue enforces this policy
+
+    PolicyRule:
+      type: object
+      required:
+        - condition
+        - action
+      properties:
+        condition:
+          type: object
+          description: JSONPath or CEL expression
+        action:
+          type: string
+          enum: [ALLOW, DENY, ESCALATE, QUARANTINE]
+        risk_modifier:
+          type: number
+          description: Additive risk adjustment
+
+    AuditEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        timestamp:
+          type: string
+          format: date-time
+        request:
+          $ref: '#/components/schemas/GovernanceRequest'
+        response:
+          $ref: '#/components/schemas/GovernanceResponse'
+        processing_time_ms:
+          type: integer
+        tongue_signatures:
+          type: object
+          additionalProperties:
+            type: string
+          description: Cryptographic signatures from participating tongues
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-SCBE-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []

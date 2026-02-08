@@ -69,9 +69,11 @@ function validateISO27001Controls(controls: ISO27001Control[]): ComplianceScore 
 
 function validateFIPS140(tests: FIPS140Test[]): { compliant: boolean; level: number } {
   const allPassed = tests.every((t) => t.passed);
-  const maxLevel = Math.max(...tests.map((t) => t.level));
+  const minLevel = Math.min(...tests.map((t) => t.level));
 
-  return { compliant: allPassed, level: allPassed ? maxLevel : 0 };
+  // FIPS 140-3 compliance requires all tests to pass AND minimum level 3
+  const compliant = allPassed && minLevel >= 3;
+  return { compliant, level: allPassed ? minLevel : 0 };
 }
 
 function validateCommonCriteria(eal: number): { certified: boolean; level: string } {
@@ -306,8 +308,6 @@ describe('Enterprise Compliance - Property Tests', () => {
           // Overall compliance score should exceed 98%
           expect(Number.isFinite(overallScore)).toBe(true);
           expect(overallScore).toBeGreaterThan(config.complianceScoreTarget);
-
-          return overallScore > config.complianceScoreTarget;
 
           return Number.isFinite(overallScore) && overallScore > config.complianceScoreTarget;
         }

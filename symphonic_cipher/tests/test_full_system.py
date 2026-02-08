@@ -136,7 +136,7 @@ class TestSCBEFullSystem:
         assert "total_evaluations" in status
         assert status["total_evaluations"] == 1
         assert "audit_chain_valid" in status
-        assert status["audit_chain_valid"] is True
+        assert status["audit_chain_valid"] == True
 
 
 class TestQuickEvaluate:
@@ -162,10 +162,10 @@ class TestTheoremVerification:
         """All mathematical theorems should pass."""
         results = verify_all_theorems()
 
-        assert results["A_metric_invariance"] is True
-        assert results["B_continuity"] is True
-        assert results["C_risk_monotonicity"] is True
-        assert results["D_diffeomorphism"] is True
+        assert results["A_metric_invariance"] == True
+        assert results["B_continuity"] == True
+        assert results["C_risk_monotonicity"] == True
+        assert results["D_diffeomorphism"] == True
 
 
 class TestContextHandling:
@@ -250,7 +250,7 @@ class TestIntegration:
         # 4. Check status
         status = system.get_system_status()
         assert status["total_evaluations"] == 3
-        assert status["has_reference_state"] is True
+        assert status["has_reference_state"] == True
 
         # 5. Verify theorems still hold
         theorems = verify_all_theorems()

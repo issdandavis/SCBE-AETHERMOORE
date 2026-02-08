@@ -199,6 +199,17 @@
 └─────────────────────────────────────────────────────────────────┘
 ```
 
+### Roundtable Multi-Signature Governance (Exponential Security Scaling)
+
+| Tier | Tongues Required | Signatures | Security Multiplier | Use Cases |
+|---:|---|---|---:|---|
+| 1 | 1 (KO) | Single | 1.5× | Basic coordination, status updates |
+| 2 | 2 (KO+RU) | Dual | 5.06× | State modifications, config changes |
+| 3 | 3 (KO+RU+UM) | Triple | 38.4× | Security operations, key rotation |
+| 4 | 4 (KO+RU+UM+CA) | Quad | 656× | Irreversible ops (deploy, delete) |
+| 5 | 5 (All except one) | Quint | 14,348× | Critical infrastructure changes |
+| 6 | 6 (All tongues) | Full Roundtable | 518,400× | Genesis-level operations, system reboot |
+
 ### PHDM (Intrusion Detection)
 
 ```

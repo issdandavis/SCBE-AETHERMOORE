@@ -15,7 +15,14 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from scipy.fftpack import fft, fftfreq
+
+# Use scipy-compatible imports with numpy fallback
+try:
+    from scipy.fftpack import fft, fftfreq
+except ImportError:
+    # Fallback to numpy FFT
+    fft = np.fft.fft
+    fftfreq = np.fft.fftfreq
 
 # ----------------------------------------------------------------------
 # 0. GLOBAL SETTINGS
