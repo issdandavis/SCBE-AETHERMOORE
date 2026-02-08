@@ -38,6 +38,17 @@ from .mirror_shift import (
     MirrorShiftResult,
     AlignmentResult,
 )
+from .governance_adapter import (
+    MicroStateType,
+    MicroStateCensus,
+    census_from_ternary,
+    check_valence,
+    AsymmetryTracker,
+    flux_contract,
+    GovernanceVerdict,
+    evaluate_governance,
+    evaluate_trajectory_governance,
+)
 
 __all__ = [
     "UnifiedBrainState",
@@ -68,4 +79,14 @@ __all__ = [
     "MirrorAnalysis",
     "MirrorShiftResult",
     "AlignmentResult",
+    # Governance Adapter (6-state dual propagation)
+    "MicroStateType",
+    "MicroStateCensus",
+    "census_from_ternary",
+    "check_valence",
+    "AsymmetryTracker",
+    "flux_contract",
+    "GovernanceVerdict",
+    "evaluate_governance",
+    "evaluate_trajectory_governance",
 ]
