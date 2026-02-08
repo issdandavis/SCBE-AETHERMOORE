@@ -17,6 +17,7 @@ import {
   ModeAssignment,
   SpecialistMode,
 } from './modes/types';
+import type { SpecialistModeId } from './specialist-modes.js';
 
 /**
  * Mission phase for mode assignment defaults.
@@ -293,23 +294,10 @@ export class MissionCoordinator {
    */
   getPhaseHistory(): Array<{ phase: MissionPhase; timestamp: number }> {
     return [...this.phaseHistory];
- * @layer Layer 13
- * @component Polly Pads — Mission Coordinator & Squad System
- * @version 1.0.0
- *
- * Dynamic mode assignment and Byzantine fault-tolerant squad coordination.
- * Manages 6-pad squads with 4/6 quorum for critical decisions.
- *
- * Formula: n ≥ 3f + 1 where f = max faulty agents
- * With n=6, f_max=1 (tolerates 1 malicious/broken pad)
- * Quorum = 4 (need 4/6 votes for critical, 3/6 for routine)
- */
-
-import type { SpecialistModeId } from './specialist-modes.js';
+      }
 
 // ═══════════════════════════════════════════════════════════════
 // Types
-// ═══════════════════════════════════════════════════════════════
 
 /** Crisis types that trigger mode reassignment */
 export type CrisisType =
