@@ -58,7 +58,7 @@
  * φ-dimensional attractors (fractal dimension ≈ 1.618 ± 0.01).
  */
 
-import { PHI, BRAIN_EPSILON } from './types.js';
+import { PHI, BRAIN_EPSILON, POINCARE_MAX_NORM } from './types.js';
 import type { TernaryValue, DualTernaryState } from './dual-ternary.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -148,6 +148,8 @@ export interface BraidConfig {
   readonly shiftScale: number;
   /** Refactor trigger (distance multiple of tubeRadius for realignment) */
   readonly refactorTrigger: number;
+  /** Phase deviation weight λ in d_braid formula */
+  readonly lambda: number;
 }
 
 export const DEFAULT_BRAID_CONFIG: BraidConfig = {
@@ -157,6 +159,7 @@ export const DEFAULT_BRAID_CONFIG: BraidConfig = {
   convergenceThreshold: 0.01,
   shiftScale: 0.1,
   refactorTrigger: 3.0,
+  lambda: 0.5,
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -386,6 +389,241 @@ export function isInsideTube(
 }
 
 // ═══════════════════════════════════════════════════════════════
+// Hyperbolic Distance (2D Poincaré Disk)
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Hyperbolic distance in the 2D Poincaré disk.
+ *
+ * d_H(u,v) = acosh(1 + 2|u-v|² / ((1-|u|²)(1-|v|²)))
+ *
+ * Safe version: clamps denominators to avoid division by zero at the boundary.
+ */
+export function hyperbolicDistance2D(
+  u: readonly [number, number],
+  v: readonly [number, number]
+): number {
+  const dx = u[0] - v[0];
+  const dy = u[1] - v[1];
+  const diffSq = dx * dx + dy * dy;
+  const uSq = u[0] * u[0] + u[1] * u[1];
+  const vSq = v[0] * v[0] + v[1] * v[1];
+  const uFactor = Math.max(BRAIN_EPSILON, 1 - uSq);
+  const vFactor = Math.max(BRAIN_EPSILON, 1 - vSq);
+  const arg = 1 + (2 * diffSq) / (uFactor * vFactor);
+  return Math.acosh(Math.max(1, arg));
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Phase Deviation
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Compute the center of a ternary quantization zone.
+ *
+ * +1 zone: [threshold, 1.0] → center at (1 + threshold) / 2
+ *  0 zone: [-threshold, threshold] → center at 0
+ * -1 zone: [-1.0, -threshold] → center at -(1 + threshold) / 2
+ */
+export function ternaryCenter(t: TernaryValue, threshold: number = 0.33): number {
+  if (t === 1) return (1 + threshold) / 2;
+  if (t === -1) return -(1 + threshold) / 2;
+  return 0;
+}
+
+/**
+ * Phase deviation: Euclidean distance from the quantized state center.
+ *
+ * Measures how far a continuous vector is from the center of its
+ * discrete governance region. Small deviation = stable governance;
+ * large deviation = near a phase boundary (transition risk).
+ */
+export function phaseDeviation(
+  v: readonly [number, number],
+  threshold: number = 0.33
+): number {
+  const qp = quantize(v[0], threshold);
+  const qm = quantize(v[1], threshold);
+  const cp = ternaryCenter(qp, threshold);
+  const cm = ternaryCenter(qm, threshold);
+  const dp = v[0] - cp;
+  const dm = v[1] - cm;
+  return Math.sqrt(dp * dp + dm * dm);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Phase-Aware Projection (Refined Π)
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Compute the constraint range for a ternary value.
+ * Returns [min, max] for the continuous region consistent with the phase.
+ */
+function phaseRange(
+  t: TernaryValue,
+  threshold: number
+): [number, number] {
+  if (t === 1) return [threshold, 1.0];
+  if (t === -1) return [-1.0, -threshold];
+  return [-threshold, threshold];
+}
+
+/**
+ * Phase-aware projection Π: ℝ² × {-1,0,+1}² → M_constraint
+ *
+ * Projects a vector onto the constraint manifold for a given phase state.
+ * Ensures:
+ *   1. The continuous position is consistent with the discrete phase
+ *   2. The result stays inside the Poincaré disk (||v|| < 1)
+ *   3. The Hamiltonian structure is maintained (valid governance region)
+ *
+ * If no phase is provided, uses the vector's own quantized phase.
+ */
+export function phaseAwareProject(
+  v: readonly [number, number],
+  phase?: DualTernaryState,
+  threshold: number = 0.33
+): [number, number] {
+  const q = phase ?? quantizeVector(v, threshold);
+  const [xMin, xMax] = phaseRange(q.primary, threshold);
+  const [yMin, yMax] = phaseRange(q.mirror, threshold);
+
+  // Clamp to constraint region
+  let x = Math.max(xMin, Math.min(xMax, v[0]));
+  let y = Math.max(yMin, Math.min(yMax, v[1]));
+
+  // Ensure inside Poincaré disk
+  const norm = Math.sqrt(x * x + y * y);
+  if (norm >= POINCARE_MAX_NORM) {
+    const scale = (POINCARE_MAX_NORM - BRAIN_EPSILON) / norm;
+    x *= scale;
+    y *= scale;
+  }
+
+  return [x, y];
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Braid Rail Reference Points
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Compute the 9 rail center points (one per braid state) in continuous space.
+ *
+ * Each center is the midpoint of the constraint region for that state,
+ * ensuring all centers are safely inside the Poincaré disk.
+ */
+export function computeRailCenters(
+  threshold: number = 0.33
+): ReadonlyArray<readonly [number, number]> {
+  const ternaries: TernaryValue[] = [1, 0, -1];
+  const centers: Array<[number, number]> = [];
+  for (const p of ternaries) {
+    for (const m of ternaries) {
+      centers.push([ternaryCenter(p, threshold), ternaryCenter(m, threshold)]);
+    }
+  }
+  return centers;
+}
+
+/**
+ * Default rail centers at threshold 0.33.
+ * Centers: ±0.665, 0 → corner norms ≈ 0.94 (safely inside Poincaré disk).
+ */
+export const BRAID_RAIL_CENTERS: ReadonlyArray<readonly [number, number]> =
+  computeRailCenters(0.33);
+
+// ═══════════════════════════════════════════════════════════════
+// d_braid Distance (Hyperbolic Tube Distance)
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * d_braid(x, rail) = min_{r∈Rail} d_H(Π(x), r) + λ·|phase_deviation|
+ *
+ * The refined tube distance that combines:
+ *   1. Hyperbolic distance from the phase-aware projection to the nearest rail point
+ *   2. Phase deviation penalty (how far from the governance center)
+ *
+ * Properties:
+ *   - d_braid = 0 only at exact rail centers (perfect governance alignment)
+ *   - d_braid grows exponentially near the Poincaré boundary (hyperbolic distance)
+ *   - λ penalizes phase-boundary straddling (governance instability)
+ *
+ * @param v - Input 2D vector
+ * @param lambda - Phase deviation weight (default 0.5)
+ * @param threshold - Quantization threshold (default 0.33)
+ * @param rail - Rail reference points (default: 9 state centers)
+ * @returns The d_braid distance
+ */
+export function dBraid(
+  v: readonly [number, number],
+  lambda: number = 0.5,
+  threshold: number = 0.33,
+  rail: ReadonlyArray<readonly [number, number]> = BRAID_RAIL_CENTERS
+): number {
+  // Phase-aware projection
+  const projected = phaseAwareProject(v, undefined, threshold);
+
+  // Phase deviation
+  const phaseDev = phaseDeviation(v, threshold);
+
+  // Find minimum hyperbolic distance to any rail point
+  let minDist = Infinity;
+  for (const r of rail) {
+    // Ensure rail point is inside Poincaré disk
+    const rNorm = Math.sqrt(r[0] * r[0] + r[1] * r[1]);
+    let rSafe: readonly [number, number];
+    if (rNorm >= POINCARE_MAX_NORM) {
+      const s = (POINCARE_MAX_NORM - BRAIN_EPSILON) / rNorm;
+      rSafe = [r[0] * s, r[1] * s];
+    } else {
+      rSafe = r;
+    }
+
+    const d = hyperbolicDistance2D(projected, rSafe);
+    if (d < minDist) minDist = d;
+  }
+
+  return minDist + lambda * phaseDev;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Braid Transition Validation
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Check whether a transition between two braid states is topologically valid.
+ *
+ * Valid transitions have Chebyshev distance ≤ 1 in the (primary, mirror) grid.
+ * This ensures no "impossible" governance jumps (e.g., RESONANT_LOCK → COLLAPSE_ATTRACTOR).
+ *
+ * Adjacent transitions include horizontal, vertical, and diagonal moves.
+ */
+export function isValidBraidTransition(
+  from: DualTernaryState,
+  to: DualTernaryState
+): boolean {
+  return (
+    Math.abs(from.primary - to.primary) <= 1 &&
+    Math.abs(from.mirror - to.mirror) <= 1
+  );
+}
+
+/**
+ * Compute the governance distance between two braid states.
+ * Returns Chebyshev distance in the 3×3 ternary grid (0, 1, or 2).
+ */
+export function braidStateDistance(
+  from: DualTernaryState,
+  to: DualTernaryState
+): number {
+  return Math.max(
+    Math.abs(from.primary - to.primary),
+    Math.abs(from.mirror - to.mirror)
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
 // The AetherBraid System
 // ═══════════════════════════════════════════════════════════════
 
@@ -516,6 +754,44 @@ export class AetherBraid {
    */
   computeTubeCost(v: readonly [number, number]): number {
     return harmonicTubeCost(zeroGravityDistance(v), this.config.tubeRadius);
+  }
+
+  /**
+   * Compute the refined d_braid distance.
+   *
+   * d_braid(x, rail) = min_{r∈Rail} d_H(Π(x), r) + λ·|phase_deviation|
+   *
+   * Uses the instance's lambda and quantizeThreshold configuration.
+   */
+  computeDBraid(
+    v: readonly [number, number],
+    rail?: ReadonlyArray<readonly [number, number]>
+  ): number {
+    const r = rail ?? computeRailCenters(this.config.quantizeThreshold);
+    return dBraid(v, this.config.lambda, this.config.quantizeThreshold, r);
+  }
+
+  /**
+   * Phase-aware projection using the instance's threshold.
+   * Projects v onto the constraint manifold for the given (or auto-detected) phase.
+   */
+  project(
+    v: readonly [number, number],
+    phase?: DualTernaryState
+  ): [number, number] {
+    return phaseAwareProject(v, phase, this.config.quantizeThreshold);
+  }
+
+  /**
+   * Check if a governance transition is topologically valid.
+   */
+  isValidTransition(
+    from: readonly [number, number],
+    to: readonly [number, number]
+  ): boolean {
+    const qFrom = quantizeVector(from, this.config.quantizeThreshold);
+    const qTo = quantizeVector(to, this.config.quantizeThreshold);
+    return isValidBraidTransition(qFrom, qTo);
   }
 
   /**

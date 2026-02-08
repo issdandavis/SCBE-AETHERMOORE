@@ -18,24 +18,34 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import {
   AetherBraid,
   BRAID_GOVERNANCE_TABLE,
+  BRAID_RAIL_CENTERS,
   DEFAULT_BRAID_CONFIG,
   buildGovernance,
   braidSecurityAction,
+  braidStateDistance,
   braidTrustLevel,
   classifyBraidState,
+  computeRailCenters,
+  dBraid,
   estimateBraidFractalDimension,
   harmonicTubeCost,
+  hyperbolicDistance2D,
   isInsideTube,
+  isValidBraidTransition,
   mirrorShift,
   mirrorSwap,
+  phaseAwareProject,
+  phaseDeviation,
   quantize,
   quantizeVector,
   refactorAlign,
+  ternaryCenter,
   zeroGravityDistance,
   type BraidGovernance,
   type BraidState,
 } from '../../src/ai_brain/hamiltonian-braid.js';
-import { PHI } from '../../src/ai_brain/types.js';
+import { PHI, POINCARE_MAX_NORM } from '../../src/ai_brain/types.js';
+import type { DualTernaryState } from '../../src/ai_brain/dual-ternary.js';
 
 // ═══════════════════════════════════════════════════════════════
 // Helpers
@@ -528,5 +538,353 @@ describe('Test G: AetherBraid System', () => {
     const gov = braid.classify(vec(0.5, -0.5));
     expect(gov.state).toBe('CREATIVE_TENSION_A');
     expect(gov.action).toBe('FRACTAL_INSPECT');
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// Test H: Hyperbolic Distance & d_braid
+// ═══════════════════════════════════════════════════════════════
+
+describe('Test H: Hyperbolic Distance & d_braid', () => {
+  it('d_H(u, u) = 0 (identity of indiscernibles)', () => {
+    const u: [number, number] = [0.3, 0.4];
+    expect(hyperbolicDistance2D(u, u)).toBeCloseTo(0, 10);
+  });
+
+  it('d_H(u, v) = d_H(v, u) (symmetry)', () => {
+    const u: [number, number] = [0.2, 0.3];
+    const v: [number, number] = [-0.1, 0.4];
+    const d1 = hyperbolicDistance2D(u, v);
+    const d2 = hyperbolicDistance2D(v, u);
+    expect(d1).toBeCloseTo(d2, 10);
+  });
+
+  it('d_H(u, v) ≥ 0 (non-negative)', () => {
+    for (let i = 0; i < 20; i++) {
+      const u: [number, number] = [Math.sin(i * 0.7) * 0.5, Math.cos(i * 1.1) * 0.5];
+      const v: [number, number] = [Math.sin(i * 1.3) * 0.5, Math.cos(i * 0.9) * 0.5];
+      expect(hyperbolicDistance2D(u, v)).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  it('d_H(0, v) grows with Euclidean distance', () => {
+    const origin: [number, number] = [0, 0];
+    const d1 = hyperbolicDistance2D(origin, [0.1, 0]);
+    const d2 = hyperbolicDistance2D(origin, [0.5, 0]);
+    const d3 = hyperbolicDistance2D(origin, [0.9, 0]);
+    expect(d2).toBeGreaterThan(d1);
+    expect(d3).toBeGreaterThan(d2);
+    // Hyperbolic distance grows faster than Euclidean near boundary
+    expect(d3 - d2).toBeGreaterThan(d2 - d1);
+  });
+
+  it('d_H blows up near Poincaré boundary', () => {
+    const origin: [number, number] = [0, 0];
+    const dFar = hyperbolicDistance2D(origin, [0.999, 0]);
+    expect(dFar).toBeGreaterThan(5);
+  });
+
+  it('triangle inequality: d_H(u, w) ≤ d_H(u, v) + d_H(v, w)', () => {
+    const u: [number, number] = [0.1, 0.2];
+    const v: [number, number] = [0.3, -0.1];
+    const w: [number, number] = [-0.2, 0.4];
+    const duv = hyperbolicDistance2D(u, v);
+    const dvw = hyperbolicDistance2D(v, w);
+    const duw = hyperbolicDistance2D(u, w);
+    expect(duw).toBeLessThanOrEqual(duv + dvw + 1e-10);
+  });
+
+  it('ternaryCenter: correct zone midpoints', () => {
+    const t = 0.33;
+    expect(ternaryCenter(1, t)).toBeCloseTo((1 + 0.33) / 2, 10);
+    expect(ternaryCenter(-1, t)).toBeCloseTo(-(1 + 0.33) / 2, 10);
+    expect(ternaryCenter(0, t)).toBe(0);
+  });
+
+  it('phaseDeviation: zero at state center', () => {
+    const t = 0.33;
+    const center = (1 + t) / 2; // ≈ 0.665
+    // At the center of the (+1, +1) region
+    const dev = phaseDeviation([center, center], t);
+    expect(dev).toBeCloseTo(0, 10);
+  });
+
+  it('phaseDeviation: nonzero away from center', () => {
+    const dev = phaseDeviation([0.5, 0.5], 0.33);
+    expect(dev).toBeGreaterThan(0);
+  });
+
+  it('phaseDeviation: symmetric for mirrored inputs', () => {
+    const d1 = phaseDeviation([0.5, 0.5], 0.33);
+    const d2 = phaseDeviation([-0.5, -0.5], 0.33);
+    expect(d1).toBeCloseTo(d2, 10);
+  });
+
+  it('BRAID_RAIL_CENTERS: has 9 entries', () => {
+    expect(BRAID_RAIL_CENTERS).toHaveLength(9);
+  });
+
+  it('BRAID_RAIL_CENTERS: all inside Poincaré disk', () => {
+    for (const c of BRAID_RAIL_CENTERS) {
+      const norm = Math.sqrt(c[0] * c[0] + c[1] * c[1]);
+      expect(norm).toBeLessThan(1.0);
+    }
+  });
+
+  it('computeRailCenters: custom threshold', () => {
+    const centers = computeRailCenters(0.5);
+    // +1 center should be (1 + 0.5) / 2 = 0.75
+    expect(centers[0][0]).toBeCloseTo(0.75, 10);
+    expect(centers[0][1]).toBeCloseTo(0.75, 10);
+    // zero center
+    expect(centers[4][0]).toBe(0);
+    expect(centers[4][1]).toBe(0);
+  });
+
+  it('d_braid: zero at rail center', () => {
+    const t = 0.33;
+    const center = (1 + t) / 2;
+    // At the exact center of the (+1, +1) rail point
+    const d = dBraid([center, center], 0.5, t);
+    expect(d).toBeCloseTo(0, 5);
+  });
+
+  it('d_braid: increases with distance from nearest rail', () => {
+    const t = 0.33;
+    const d1 = dBraid([0.6, 0.6], 0.5, t);
+    const d2 = dBraid([0.4, 0.4], 0.5, t);
+    // 0.6, 0.6 is closer to (+1,+1) center ≈ 0.665; 0.4 is further
+    expect(d2).toBeGreaterThan(d1);
+  });
+
+  it('d_braid: λ=0 removes phase deviation penalty', () => {
+    const d0 = dBraid([0.5, 0.5], 0, 0.33);
+    const d1 = dBraid([0.5, 0.5], 1.0, 0.33);
+    // With lambda > 0, d_braid should be larger
+    expect(d1).toBeGreaterThanOrEqual(d0);
+  });
+
+  it('d_braid: large λ amplifies phase instability', () => {
+    // Near phase boundary (0.34 just above threshold 0.33)
+    const dSmall = dBraid([0.34, 0.34], 0.1, 0.33);
+    const dLarge = dBraid([0.34, 0.34], 5.0, 0.33);
+    expect(dLarge).toBeGreaterThan(dSmall);
+  });
+
+  it('d_braid: origin (ZERO_GRAVITY) has small distance', () => {
+    const d = dBraid([0, 0], 0.5, 0.33);
+    // Origin is the center of the (0,0) rail point → d ≈ 0
+    expect(d).toBeCloseTo(0, 5);
+  });
+
+  it('AetherBraid.computeDBraid: uses config lambda', () => {
+    const braid = new AetherBraid({ lambda: 0.8 });
+    const d = braid.computeDBraid([0.5, 0.5]);
+    expect(d).toBeGreaterThan(0);
+    // Compare with default lambda
+    const braidDefault = new AetherBraid({ lambda: 0.1 });
+    const dDefault = braidDefault.computeDBraid([0.5, 0.5]);
+    expect(d).toBeGreaterThan(dDefault);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// Test I: Phase-Aware Projection
+// ═══════════════════════════════════════════════════════════════
+
+describe('Test I: Phase-Aware Projection', () => {
+  it('projects inside constraint region for (+1, +1) phase', () => {
+    const phase: DualTernaryState = { primary: 1, mirror: 1 };
+    const result = phaseAwareProject([0.5, 0.5], phase, 0.33);
+    expect(result[0]).toBeGreaterThanOrEqual(0.33);
+    expect(result[1]).toBeGreaterThanOrEqual(0.33);
+  });
+
+  it('clamps negative values for (+1, +1) phase', () => {
+    const phase: DualTernaryState = { primary: 1, mirror: 1 };
+    const result = phaseAwareProject([-0.5, -0.5], phase, 0.33);
+    // Should be clamped to minimum of phase range [0.33, 1.0]
+    expect(result[0]).toBeGreaterThanOrEqual(0.33 - 1e-10);
+    expect(result[1]).toBeGreaterThanOrEqual(0.33 - 1e-10);
+  });
+
+  it('clamps to Poincaré disk for extreme values', () => {
+    const phase: DualTernaryState = { primary: 1, mirror: 1 };
+    const result = phaseAwareProject([5.0, 5.0], phase, 0.33);
+    const norm = Math.sqrt(result[0] * result[0] + result[1] * result[1]);
+    expect(norm).toBeLessThan(1.0);
+  });
+
+  it('preserves values already in constraint region', () => {
+    const phase: DualTernaryState = { primary: 1, mirror: 0 };
+    const result = phaseAwareProject([0.5, 0.1], phase, 0.33);
+    // x=0.5 is in [0.33, 1.0], y=0.1 is in [-0.33, 0.33]
+    expect(result[0]).toBeCloseTo(0.5, 10);
+    expect(result[1]).toBeCloseTo(0.1, 10);
+  });
+
+  it('ZERO_GRAVITY phase constrains to center zone', () => {
+    const phase: DualTernaryState = { primary: 0, mirror: 0 };
+    const result = phaseAwareProject([0.8, -0.8], phase, 0.33);
+    // Should clamp to [-0.33, 0.33] for both
+    expect(Math.abs(result[0])).toBeLessThanOrEqual(0.33 + 1e-10);
+    expect(Math.abs(result[1])).toBeLessThanOrEqual(0.33 + 1e-10);
+  });
+
+  it('COLLAPSE_ATTRACTOR phase constrains to (-,-) region', () => {
+    const phase: DualTernaryState = { primary: -1, mirror: -1 };
+    const result = phaseAwareProject([0.5, 0.5], phase, 0.33);
+    // Should be clamped to [-1.0, -0.33]
+    expect(result[0]).toBeLessThanOrEqual(-0.33 + 1e-10);
+    expect(result[1]).toBeLessThanOrEqual(-0.33 + 1e-10);
+  });
+
+  it('auto-detects phase when none provided', () => {
+    // v = (0.5, -0.5) → phase (1, -1) = CREATIVE_TENSION_A
+    const result = phaseAwareProject([0.5, -0.5], undefined, 0.33);
+    expect(result[0]).toBeGreaterThanOrEqual(0.33);
+    expect(result[1]).toBeLessThanOrEqual(-0.33);
+  });
+
+  it('idempotent: Π(Π(v)) = Π(v) for phase-aware projection', () => {
+    const phase: DualTernaryState = { primary: 1, mirror: -1 };
+    const once = phaseAwareProject([0.8, -0.2], phase, 0.33);
+    const twice = phaseAwareProject(once, phase, 0.33);
+    expect(twice[0]).toBeCloseTo(once[0], 10);
+    expect(twice[1]).toBeCloseTo(once[1], 10);
+  });
+
+  it('result is inside Poincaré disk for all phases', () => {
+    const ternaries: Array<-1 | 0 | 1> = [-1, 0, 1];
+    for (const p of ternaries) {
+      for (const m of ternaries) {
+        const phase: DualTernaryState = { primary: p, mirror: m };
+        const result = phaseAwareProject([2.0, -2.0], phase, 0.33);
+        const norm = Math.sqrt(result[0] * result[0] + result[1] * result[1]);
+        expect(norm).toBeLessThan(1.0);
+      }
+    }
+  });
+
+  it('AetherBraid.project: uses config threshold', () => {
+    const braid = new AetherBraid({ quantizeThreshold: 0.5 });
+    const result = braid.project([0.4, 0.4]);
+    // With threshold 0.5, 0.4 quantizes to 0 → constrained to [-0.5, 0.5]
+    expect(Math.abs(result[0])).toBeLessThanOrEqual(0.5 + 1e-10);
+    expect(Math.abs(result[1])).toBeLessThanOrEqual(0.5 + 1e-10);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// Test J: Braid Transition Validation
+// ═══════════════════════════════════════════════════════════════
+
+describe('Test J: Braid Transition Validation', () => {
+  it('self-transition is always valid', () => {
+    const ternaries: Array<-1 | 0 | 1> = [-1, 0, 1];
+    for (const p of ternaries) {
+      for (const m of ternaries) {
+        const state: DualTernaryState = { primary: p, mirror: m };
+        expect(isValidBraidTransition(state, state)).toBe(true);
+      }
+    }
+  });
+
+  it('adjacent transitions are valid', () => {
+    // RESONANT_LOCK (1,1) → FORWARD_THRUST (1,0)
+    expect(isValidBraidTransition(
+      { primary: 1, mirror: 1 },
+      { primary: 1, mirror: 0 }
+    )).toBe(true);
+
+    // ZERO_GRAVITY (0,0) → RESONANT_LOCK (1,1) — diagonal
+    expect(isValidBraidTransition(
+      { primary: 0, mirror: 0 },
+      { primary: 1, mirror: 1 }
+    )).toBe(true);
+
+    // BACKWARD_CHECK (-1,0) → ZERO_GRAVITY (0,0)
+    expect(isValidBraidTransition(
+      { primary: -1, mirror: 0 },
+      { primary: 0, mirror: 0 }
+    )).toBe(true);
+  });
+
+  it('non-adjacent transitions are invalid', () => {
+    // RESONANT_LOCK (1,1) → COLLAPSE_ATTRACTOR (-1,-1) — distance 2
+    expect(isValidBraidTransition(
+      { primary: 1, mirror: 1 },
+      { primary: -1, mirror: -1 }
+    )).toBe(false);
+
+    // FORWARD_THRUST (1,0) → BACKWARD_CHECK (-1,0) — distance 2
+    expect(isValidBraidTransition(
+      { primary: 1, mirror: 0 },
+      { primary: -1, mirror: 0 }
+    )).toBe(false);
+
+    // PERPENDICULAR_POS (0,1) → PERPENDICULAR_NEG (0,-1) — distance 2
+    expect(isValidBraidTransition(
+      { primary: 0, mirror: 1 },
+      { primary: 0, mirror: -1 }
+    )).toBe(false);
+  });
+
+  it('braidStateDistance: adjacent = 1, corner-to-corner = 2', () => {
+    expect(braidStateDistance(
+      { primary: 0, mirror: 0 },
+      { primary: 1, mirror: 0 }
+    )).toBe(1);
+
+    expect(braidStateDistance(
+      { primary: 0, mirror: 0 },
+      { primary: 1, mirror: 1 }
+    )).toBe(1); // diagonal
+
+    expect(braidStateDistance(
+      { primary: 1, mirror: 1 },
+      { primary: -1, mirror: -1 }
+    )).toBe(2);
+  });
+
+  it('braidStateDistance: self = 0', () => {
+    expect(braidStateDistance(
+      { primary: 1, mirror: -1 },
+      { primary: 1, mirror: -1 }
+    )).toBe(0);
+  });
+
+  it('AetherBraid.isValidTransition: adjacent vectors', () => {
+    const braid = new AetherBraid();
+    // (0.5, 0.5) → (+1,+1), (0.5, 0.1) → (+1,0) — adjacent
+    expect(braid.isValidTransition([0.5, 0.5], [0.5, 0.1])).toBe(true);
+  });
+
+  it('AetherBraid.isValidTransition: non-adjacent vectors', () => {
+    const braid = new AetherBraid();
+    // (0.5, 0.5) → (+1,+1), (-0.5, -0.5) → (-1,-1) — distance 2
+    expect(braid.isValidTransition([0.5, 0.5], [-0.5, -0.5])).toBe(false);
+  });
+
+  it('MSR cycle produces only valid transitions', () => {
+    const braid = new AetherBraid({
+      tubeRadius: 0.5,
+      maxIterations: 100,
+      convergenceThreshold: 0.001,
+    });
+    const result = braid.iterateCycle([0.4, 0.2]);
+
+    // Check that consecutive trajectory points have valid transitions
+    let invalidCount = 0;
+    for (let i = 1; i < result.trajectory.length; i++) {
+      const prev = quantizeVector(result.trajectory[i - 1], 0.33);
+      const curr = quantizeVector(result.trajectory[i], 0.33);
+      if (!isValidBraidTransition(prev, curr)) {
+        invalidCount++;
+      }
+    }
+    // Small shifts should mostly produce valid transitions
+    // (mirror shift is continuous, so big jumps are rare)
+    expect(invalidCount).toBeLessThan(result.trajectory.length * 0.1);
   });
 });

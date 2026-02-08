@@ -98,6 +98,7 @@ class BraidConfig:
     convergence_threshold: float = 0.01
     shift_scale: float = 0.1
     refactor_trigger: float = 3.0
+    lambda_: float = 0.5  # Phase deviation weight in d_braid
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -242,6 +243,157 @@ def is_inside_tube(v: Tuple[float, float], tube_radius: float) -> bool:
     return zero_gravity_distance(v) <= tube_radius
 
 
+BRAIN_EPSILON = 1e-10
+POINCARE_MAX_NORM = 1 - 1e-8
+
+
+# ═══════════════════════════════════════════════════════════════
+# Hyperbolic Distance (2D Poincaré Disk)
+# ═══════════════════════════════════════════════════════════════
+
+
+def hyperbolic_distance_2d(
+    u: Tuple[float, float], v: Tuple[float, float]
+) -> float:
+    """Hyperbolic distance in the 2D Poincaré disk."""
+    dx, dy = u[0] - v[0], u[1] - v[1]
+    diff_sq = dx * dx + dy * dy
+    u_sq = u[0] * u[0] + u[1] * u[1]
+    v_sq = v[0] * v[0] + v[1] * v[1]
+    u_factor = max(BRAIN_EPSILON, 1 - u_sq)
+    v_factor = max(BRAIN_EPSILON, 1 - v_sq)
+    arg = 1 + (2 * diff_sq) / (u_factor * v_factor)
+    return math.acosh(max(1.0, arg))
+
+
+# ═══════════════════════════════════════════════════════════════
+# Phase Deviation
+# ═══════════════════════════════════════════════════════════════
+
+
+def ternary_center(t: int, threshold: float = 0.33) -> float:
+    """Compute the center of a ternary quantization zone."""
+    if t == 1:
+        return (1 + threshold) / 2
+    if t == -1:
+        return -(1 + threshold) / 2
+    return 0.0
+
+
+def phase_deviation(
+    v: Tuple[float, float], threshold: float = 0.33
+) -> float:
+    """Phase deviation: distance from quantized state center."""
+    qp = quantize(v[0], threshold)
+    qm = quantize(v[1], threshold)
+    cp = ternary_center(qp, threshold)
+    cm = ternary_center(qm, threshold)
+    dp, dm = v[0] - cp, v[1] - cm
+    return math.sqrt(dp * dp + dm * dm)
+
+
+# ═══════════════════════════════════════════════════════════════
+# Phase-Aware Projection
+# ═══════════════════════════════════════════════════════════════
+
+
+def _phase_range(t: int, threshold: float) -> Tuple[float, float]:
+    """Constraint range for a ternary value."""
+    if t == 1:
+        return (threshold, 1.0)
+    if t == -1:
+        return (-1.0, -threshold)
+    return (-threshold, threshold)
+
+
+def phase_aware_project(
+    v: Tuple[float, float],
+    phase: Optional[Tuple[int, int]] = None,
+    threshold: float = 0.33,
+) -> Tuple[float, float]:
+    """Phase-aware projection Π: ℝ² × {-1,0,+1}² → M_constraint."""
+    if phase is None:
+        phase = quantize_vector(v, threshold)
+    x_min, x_max = _phase_range(phase[0], threshold)
+    y_min, y_max = _phase_range(phase[1], threshold)
+    x = max(x_min, min(x_max, v[0]))
+    y = max(y_min, min(y_max, v[1]))
+    norm = math.sqrt(x * x + y * y)
+    if norm >= POINCARE_MAX_NORM:
+        scale = (POINCARE_MAX_NORM - BRAIN_EPSILON) / norm
+        x *= scale
+        y *= scale
+    return (x, y)
+
+
+# ═══════════════════════════════════════════════════════════════
+# Braid Rail Reference Points
+# ═══════════════════════════════════════════════════════════════
+
+
+def compute_rail_centers(
+    threshold: float = 0.33,
+) -> List[Tuple[float, float]]:
+    """Compute the 9 rail center points in continuous space."""
+    centers = []
+    for p in [1, 0, -1]:
+        for m in [1, 0, -1]:
+            centers.append((ternary_center(p, threshold), ternary_center(m, threshold)))
+    return centers
+
+
+BRAID_RAIL_CENTERS = compute_rail_centers(0.33)
+
+
+# ═══════════════════════════════════════════════════════════════
+# d_braid Distance
+# ═══════════════════════════════════════════════════════════════
+
+
+def d_braid(
+    v: Tuple[float, float],
+    lambda_: float = 0.5,
+    threshold: float = 0.33,
+    rail: Optional[List[Tuple[float, float]]] = None,
+) -> float:
+    """d_braid(x, rail) = min_{r∈Rail} d_H(Π(x), r) + λ·|phase_deviation|."""
+    if rail is None:
+        rail = BRAID_RAIL_CENTERS
+    projected = phase_aware_project(v, None, threshold)
+    phase_dev = phase_deviation(v, threshold)
+    min_dist = float("inf")
+    for r in rail:
+        r_norm = math.sqrt(r[0] * r[0] + r[1] * r[1])
+        if r_norm >= POINCARE_MAX_NORM:
+            s = (POINCARE_MAX_NORM - BRAIN_EPSILON) / r_norm
+            r_safe = (r[0] * s, r[1] * s)
+        else:
+            r_safe = r
+        d = hyperbolic_distance_2d(projected, r_safe)
+        if d < min_dist:
+            min_dist = d
+    return min_dist + lambda_ * phase_dev
+
+
+# ═══════════════════════════════════════════════════════════════
+# Braid Transition Validation
+# ═══════════════════════════════════════════════════════════════
+
+
+def is_valid_braid_transition(
+    from_state: Tuple[int, int], to_state: Tuple[int, int]
+) -> bool:
+    """Check whether a transition is topologically valid (Chebyshev ≤ 1)."""
+    return abs(from_state[0] - to_state[0]) <= 1 and abs(from_state[1] - to_state[1]) <= 1
+
+
+def braid_state_distance(
+    from_state: Tuple[int, int], to_state: Tuple[int, int]
+) -> int:
+    """Chebyshev distance in the 3×3 ternary grid."""
+    return max(abs(from_state[0] - to_state[0]), abs(from_state[1] - to_state[1]))
+
+
 # ═══════════════════════════════════════════════════════════════
 # Fractal Dimension
 # ═══════════════════════════════════════════════════════════════
@@ -374,6 +526,33 @@ class AetherBraid:
     def compute_tube_cost(self, v: Tuple[float, float]) -> float:
         """Compute the Harmonic Wall energy for a given vector."""
         return harmonic_tube_cost(zero_gravity_distance(v), self.config.tube_radius)
+
+    def compute_d_braid(
+        self,
+        v: Tuple[float, float],
+        rail: Optional[List[Tuple[float, float]]] = None,
+    ) -> float:
+        """Compute the refined d_braid distance using instance config."""
+        r = rail if rail is not None else compute_rail_centers(self.config.quantize_threshold)
+        return d_braid(v, self.config.lambda_, self.config.quantize_threshold, r)
+
+    def project(
+        self,
+        v: Tuple[float, float],
+        phase: Optional[Tuple[int, int]] = None,
+    ) -> Tuple[float, float]:
+        """Phase-aware projection using instance threshold."""
+        return phase_aware_project(v, phase, self.config.quantize_threshold)
+
+    def is_valid_transition(
+        self,
+        from_v: Tuple[float, float],
+        to_v: Tuple[float, float],
+    ) -> bool:
+        """Check if a governance transition is topologically valid."""
+        q_from = quantize_vector(from_v, self.config.quantize_threshold)
+        q_to = quantize_vector(to_v, self.config.quantize_threshold)
+        return is_valid_braid_transition(q_from, q_to)
 
 
 # ═══════════════════════════════════════════════════════════════
