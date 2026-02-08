@@ -49,6 +49,19 @@ from .governance_adapter import (
     evaluate_governance,
     evaluate_trajectory_governance,
 )
+from .fsgs import (
+    GovernanceSymbol,
+    GovernanceMode,
+    HybridState,
+    symbol_from_bits,
+    mode_transition,
+    hybrid_step,
+    verdict_to_symbol,
+    analyze_control_sequence,
+    simulate_trajectory,
+    ControlSequenceStats,
+    TrajectorySimulation,
+)
 
 __all__ = [
     "UnifiedBrainState",
@@ -89,4 +102,16 @@ __all__ = [
     "GovernanceVerdict",
     "evaluate_governance",
     "evaluate_trajectory_governance",
+    # FSGS Hybrid Dynamical System (4-symbol control alphabet)
+    "GovernanceSymbol",
+    "GovernanceMode",
+    "HybridState",
+    "symbol_from_bits",
+    "mode_transition",
+    "hybrid_step",
+    "verdict_to_symbol",
+    "analyze_control_sequence",
+    "simulate_trajectory",
+    "ControlSequenceStats",
+    "TrajectorySimulation",
 ]
