@@ -255,3 +255,24 @@ export {
   type StateEnergy,
   type TernaryValue,
 } from './dual-ternary.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Unified Kernel (Pipeline Runner / Integration Spine)
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  DEFAULT_KERNEL_CONFIG,
+  UnifiedKernel,
+  computeMetrics,
+  torusWriteGate,
+  type CanonicalState,
+  type KernelConfig,
+  type KernelDecision,
+  type MemoryEvent,
+  type MemoryWriteResult,
+  type MetricBundle,
+  type PenaltyState,
+  type PipelineStepResult,
+  type ProposedAction,
+  type TorusCoordinates,
+} from './unified-kernel.js';
