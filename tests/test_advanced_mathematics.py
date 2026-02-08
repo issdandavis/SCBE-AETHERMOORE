@@ -288,9 +288,15 @@ class TestIsometryPreservation:
         max_distance_change = 0.0
 
         for i in range(iterations):
-            # Random points
-            u = np.random.rand(12) * 0.6
-            v = np.random.rand(12) * 0.6
+            # Random points INSIDE the Poincaré ball (||u|| < 1)
+            # Generate random direction and scale to random radius < 0.9
+            direction_u = np.random.randn(12)
+            direction_u = direction_u / np.linalg.norm(direction_u)
+            u = direction_u * np.random.uniform(0.1, 0.9)
+
+            direction_v = np.random.randn(12)
+            direction_v = direction_v / np.linalg.norm(direction_v)
+            v = direction_v * np.random.uniform(0.1, 0.9)
 
             # Random rotation (orthogonal matrix)
             Q, _ = np.linalg.qr(np.random.randn(12, 12))
@@ -385,56 +391,46 @@ class TestHarmonicScaling:
         assert passed, f"Monotonicity violated {violations} times"
 
     def test_harmonic_scaling_identity(self):
-        """Property: H(0, R) = 1 for all R > 1"""
+        """Property: H(0) = 1 (zero distance = perfectly safe)"""
         telem = TELEMETRY.start_test("Harmonic Scaling Identity", "Harmonic Scaling")
 
         from scbe_14layer_reference import layer_12_harmonic_scaling
 
-        R_values = [1.5, 2.0, np.e, 3.0, 5.0]
-        max_error = 0.0
+        # Test with various phase deviations - at d=0, H = 1/(1+2*pd)
+        H_zero = layer_12_harmonic_scaling(0.0)
+        error = abs(H_zero - 1.0)
 
-        for R in R_values:
-            H_zero = layer_12_harmonic_scaling(0.0, R)
-            error = abs(H_zero - 1.0)
-            max_error = max(max_error, error)
+        telem.iterations = 1
+        telem.metrics = {"identity_error": float(error)}
 
-        telem.iterations = len(R_values)
-        telem.metrics = {"max_identity_error": float(max_error)}
-
-        passed = max_error < 1e-10
+        passed = error < 1e-10
         telem.complete(passed)
 
-        assert passed, f"Identity H(0)=1 violated: max error={max_error}"
+        assert passed, f"Identity H(0)=1 violated: error={error}"
 
-    def test_harmonic_scaling_superexponential(self):
-        """Property: H(2d) >> 2·H(d) (super-exponential growth)"""
+    def test_harmonic_scaling_monotone_decreasing(self):
+        """Property: H(d1) > H(d2) when d1 < d2 (decreasing safety)"""
         telem = TELEMETRY.start_test(
-            "Harmonic Scaling Super-Exponential", "Harmonic Scaling"
+            "Harmonic Scaling Monotone Decreasing", "Harmonic Scaling"
         )
 
         from scbe_14layer_reference import layer_12_harmonic_scaling
 
-        # Test at small d (relaxed threshold - mathematically correct behavior)
-        test_points_small = [0.5, 1.0]
-        min_ratio_small = float("inf")
+        # Test that safety score decreases with distance
+        test_points = [0.5, 1.0, 2.0, 5.0, 10.0]
+        all_decreasing = True
 
-        for d in test_points_small:
-            H_d = layer_12_harmonic_scaling(d)
-            H_2d = layer_12_harmonic_scaling(2 * d)
-            ratio = H_2d / (2 * H_d)
-            min_ratio_small = min(min_ratio_small, ratio)
+        for i in range(len(test_points) - 1):
+            H_d1 = layer_12_harmonic_scaling(test_points[i])
+            H_d2 = layer_12_harmonic_scaling(test_points[i + 1])
+            if H_d1 <= H_d2:
+                all_decreasing = False
 
-        # At small d, super-exponential is present but subtle (R^(d²) with R=10)
-        # For d=0.5: H(0.5)=10^0.25≈1.778, H(1.0)=10^1=10.0, ratio≈2.81
-        assert min_ratio_small > 2.0, f"Small-d ratio too weak: {min_ratio_small:.4f}"
+        assert all_decreasing, "Harmonic scaling not monotone decreasing"
 
-        # Test at larger d (strong super-exponential behavior)
-        d_large = 2.0
-        H_large = layer_12_harmonic_scaling(d_large)
-        # For d=2.0 with R=10: H(2.0) = 10^4 = 10000
-        assert (
-            H_large > 1000
-        ), f"Large-d growth not super-exponential: H({d_large})={H_large:.1f}"
+        # Verify bounded in (0, 1]
+        H_large = layer_12_harmonic_scaling(100.0)
+        assert 0 < H_large <= 1.0, f"H(100) not bounded: {H_large}"
 
         telem.iterations = len(test_points_small) + 1
         telem.metrics = {

@@ -1,0 +1,158 @@
+---
+# Kafka for Agent Event Bus (Private Tier)
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka
+  namespace: scbe-agents
+  labels:
+    app: kafka
+    ip-tier: private
+spec:
+  serviceName: kafka-headless
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+        ip-tier: private
+    spec:
+      containers:
+      - name: kafka
+        image: bitnami/kafka:3.6
+        ports:
+        - containerPort: 9093
+          name: kafka
+        - containerPort: 9094
+          name: kafka-internal
+        env:
+        - name: KAFKA_CFG_NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: KAFKA_CFG_PROCESS_ROLES
+          value: "broker,controller"
+        - name: KAFKA_CFG_CONTROLLER_QUORUM_VOTERS
+          value: "kafka-0:9094,kafka-1:9094,kafka-2:9094"
+        - name: KAFKA_CFG_LISTENERS
+          value: "PLAINTEXT://:9093,CONTROLLER://:9094"
+        - name: KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP
+          value: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
+        - name: KAFKA_CFG_INTER_BROKER_LISTENER_NAME
+          value: "PLAINTEXT"
+        - name: KAFKA_CFG_CONTROLLER_LISTENER_NAMES
+          value: "CONTROLLER"
+        - name: KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE
+          value: "true"
+        - name: KAFKA_CFG_NUM_PARTITIONS
+          value: "6"  # One per tongue
+        - name: KAFKA_CFG_DEFAULT_REPLICATION_FACTOR
+          value: "3"
+        volumeMounts:
+        - name: kafka-data
+          mountPath: /bitnami/kafka
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+  volumeClaimTemplates:
+  - metadata:
+      name: kafka-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: gp3
+      resources:
+        requests:
+          storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-headless
+  namespace: scbe-agents
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: kafka
+  ports:
+  - name: kafka
+    port: 9093
+    targetPort: 9093
+  - name: controller
+    port: 9094
+    targetPort: 9094
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-internal
+  namespace: scbe-agents
+  labels:
+    app: kafka
+    ip-tier: private
+spec:
+  type: ClusterIP
+  clusterIP: 10.0.2.15  # Fixed internal IP
+  selector:
+    app: kafka
+  ports:
+  - name: kafka
+    port: 9093
+    targetPort: 9093
+---
+# Kafka Network Policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: kafka-private-policy
+  namespace: scbe-agents
+spec:
+  podSelector:
+    matchLabels:
+      app: kafka
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Only agents can connect
+  - from:
+    - podSelector:
+        matchLabels:
+          role: agent
+    ports:
+    - protocol: TCP
+      port: 9093
+  # Allow inter-broker communication
+  - from:
+    - podSelector:
+        matchLabels:
+          app: kafka
+    ports:
+    - protocol: TCP
+      port: 9093
+    - protocol: TCP
+      port: 9094
+  egress:
+  # Allow inter-broker
+  - to:
+    - podSelector:
+        matchLabels:
+          app: kafka
+    ports:
+    - protocol: TCP
+      port: 9093
+    - protocol: TCP
+      port: 9094
+  # Allow DNS
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: UDP
+      port: 53

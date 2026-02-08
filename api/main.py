@@ -310,18 +310,20 @@ async def authorize(
     """
     start_time = time.time()
 
-    # Get or create agent
-    if request.agent_id not in AGENTS_STORE:
-        AGENTS_STORE[request.agent_id] = {
+    # Get or create agent (tenant-scoped)
+    store_key = f"{tenant}:{request.agent_id}"
+    if store_key not in AGENTS_STORE:
+        AGENTS_STORE[store_key] = {
             "agent_id": request.agent_id,
             "name": request.agent_id,
             "role": "unknown",
             "trust_score": 0.5,
             "created_at": datetime.utcnow().isoformat(),
-            "decision_count": 0
+            "decision_count": 0,
+            "tenant": tenant
         }
 
-    agent = AGENTS_STORE[request.agent_id]
+    agent = AGENTS_STORE[store_key]
     trust_score = agent["trust_score"]
     sensitivity = request.context.get("sensitivity", 0.5) if request.context else 0.5
 
@@ -415,7 +417,9 @@ async def register_agent(
     tenant: str = Depends(verify_api_key)
 ):
     """Register a new agent with initial trust score."""
-    if request.agent_id in AGENTS_STORE:
+    # Use composite key for tenant isolation
+    store_key = f"{tenant}:{request.agent_id}"
+    if store_key in AGENTS_STORE:
         raise HTTPException(status_code=409, detail="Agent already exists")
 
     agent = {
@@ -426,13 +430,15 @@ async def register_agent(
         "created_at": datetime.utcnow().isoformat(),
         "last_activity": None,
         "decision_count": 0,
-        "metadata": request.metadata
+        "metadata": request.metadata,
+        "tenant": tenant  # Store tenant for ownership verification
     }
-    AGENTS_STORE[request.agent_id] = agent
+    AGENTS_STORE[store_key] = agent
 
     logger.info(json.dumps({
         "event": "agent_registered",
         "agent_id": request.agent_id,
+        "tenant": tenant,
         "role": request.role,
         "initial_trust": request.initial_trust
     }))
@@ -446,10 +452,12 @@ async def get_agent(
     tenant: str = Depends(verify_api_key)
 ):
     """Get agent information and current trust score."""
-    if agent_id not in AGENTS_STORE:
+    # Use composite key for tenant-scoped lookup
+    store_key = f"{tenant}:{agent_id}"
+    if store_key not in AGENTS_STORE:
         raise HTTPException(status_code=404, detail="Agent not found")
 
-    return AgentResponse(**AGENTS_STORE[agent_id])
+    return AgentResponse(**AGENTS_STORE[store_key])
 
 
 @app.post("/v1/consensus", response_model=ConsensusResponse, tags=["Governance"])
@@ -470,9 +478,10 @@ async def request_consensus(
     rejections = 0
 
     for validator_id in request.validator_ids:
-        # Get validator trust score
-        if validator_id in AGENTS_STORE:
-            trust = AGENTS_STORE[validator_id]["trust_score"]
+        # Get validator trust score (tenant-scoped lookup)
+        validator_key = f"{tenant}:{validator_id}"
+        if validator_key in AGENTS_STORE:
+            trust = AGENTS_STORE[validator_key]["trust_score"]
         else:
             trust = 0.5  # Default for unknown validators
 
@@ -837,17 +846,19 @@ async def run_fleet_scenario(
     scenario_id = f"scenario_{uuid.uuid4().hex[:12]}"
     start_time = time.time()
 
-    # Register all agents
+    # Register all agents (tenant-scoped)
     for agent in scenario.agents:
-        if agent.agent_id not in AGENTS_STORE:
-            AGENTS_STORE[agent.agent_id] = {
+        agent_key = f"{tenant}:{agent.agent_id}"
+        if agent_key not in AGENTS_STORE:
+            AGENTS_STORE[agent_key] = {
                 "agent_id": agent.agent_id,
                 "name": agent.name,
                 "role": agent.role,
                 "trust_score": agent.initial_trust,
                 "created_at": datetime.utcnow().isoformat(),
                 "last_activity": None,
-                "decision_count": 0
+                "decision_count": 0,
+                "tenant": tenant
             }
 
     # Process all actions
@@ -858,7 +869,8 @@ async def run_fleet_scenario(
     total_score = 0.0
 
     for action in scenario.actions:
-        agent = AGENTS_STORE.get(action.agent_id)
+        agent_key = f"{tenant}:{action.agent_id}"
+        agent = AGENTS_STORE.get(agent_key)
         if not agent:
             continue
 
@@ -928,6 +940,380 @@ async def run_fleet_scenario(
             "elapsed_ms": round(elapsed_ms, 2)
         }
     )
+
+
+# =============================================================================
+# Demo Endpoints (For Promotion & Sales)
+# =============================================================================
+
+class RogueDetectionResponse(BaseModel):
+    simulation_id: str
+    steps: int
+    result: str
+    rogue_detected: bool
+    detection_step: int
+    consensus_votes: int
+    false_positives: int
+    final_positions: List[Dict[str, Any]]
+    metrics: Dict[str, float]
+
+
+class SwarmCoordinationResponse(BaseModel):
+    simulation_id: str
+    agents: int
+    initial_avg_distance: float
+    final_avg_distance: float
+    collisions: int
+    boundary_breaches: int
+    coordination_score: float
+
+
+@app.get("/v1/demo/rogue-detection", response_model=RogueDetectionResponse, tags=["Demo"])
+async def demo_rogue_detection(steps: int = 25):
+    """
+    **LIVE DEMO: Rogue Agent Detection**
+
+    Watch the SCBE swarm detect and quarantine a phase-null intruder
+    using only hyperbolic geometry - no explicit messaging required.
+
+    The swarm "smells" the intruder through mathematical anomaly detection.
+    """
+    import numpy as np
+    np.random.seed(int(time.time()) % 10000)
+
+    TONGUES = {'KO': 0, 'AV': np.pi/3, 'RU': 2*np.pi/3,
+               'CA': np.pi, 'UM': 4*np.pi/3, 'DR': 5*np.pi/3}
+
+    class Agent:
+        def __init__(self, id, tongue, pos, is_rogue=False):
+            self.id = id
+            self.tongue = tongue
+            self.phase = None if is_rogue else TONGUES.get(tongue)
+            self.position = np.array(pos)
+            self.is_rogue = is_rogue
+            self.flagged_by = set()
+
+        @property
+        def norm(self):
+            return float(np.linalg.norm(self.position))
+
+        @property
+        def is_quarantined(self):
+            return len(self.flagged_by) >= 4
+
+    def hyperbolic_dist(u, v):
+        nu, nv = np.linalg.norm(u), np.linalg.norm(v)
+        diff_sq = np.linalg.norm(u - v) ** 2
+        denom = (1 - nu**2) * (1 - nv**2)
+        if denom <= 1e-10:
+            return float('inf')
+        return float(np.arccosh(max(1 + 2 * diff_sq / denom, 1.0)))
+
+    def project(pos, max_n=0.95):
+        n = np.linalg.norm(pos)
+        return pos * (max_n / n) if n > max_n else pos
+
+    # Create agents
+    agents = []
+    for i, t in enumerate(['KO', 'AV', 'RU', 'CA', 'UM', 'DR']):
+        pos = np.array([0.02 + i*0.01] * 3)
+        agents.append(Agent(i, t, pos))
+
+    # Add rogue
+    rogue = Agent(6, None, np.array([0.04, 0.04, 0.04]), is_rogue=True)
+    agents.append(rogue)
+
+    detection_step = -1
+
+    # Simulation loop
+    for step in range(steps):
+        # Detection phase
+        for ai in agents:
+            for aj in agents:
+                if ai.id == aj.id:
+                    continue
+                d = hyperbolic_dist(ai.position, aj.position)
+                if d < 1.5 and aj.phase is None and ai.phase is not None:
+                    aj.flagged_by.add(ai.id)
+
+        if rogue.is_quarantined and detection_step < 0:
+            detection_step = step
+
+        # Movement phase
+        forces = {a.id: np.zeros(3) for a in agents}
+        for i, ai in enumerate(agents):
+            for j, aj in enumerate(agents):
+                if i >= j:
+                    continue
+                d = hyperbolic_dist(ai.position, aj.position)
+                if d < 0.01 or d > 2.0:
+                    continue
+
+                direction = ai.position - aj.position
+                direction = direction / (np.linalg.norm(direction) + 1e-10)
+
+                repel = max(0, 0.4 - d) * 0.5
+                if aj.is_quarantined or len(aj.flagged_by) >= 2:
+                    repel *= 3.0
+
+                forces[ai.id] += repel * direction
+                forces[aj.id] -= repel * direction
+
+        for agent in agents:
+            agent.position = agent.position + forces[agent.id]
+            drift_std = 0.05 if agent.is_rogue else 0.03
+            agent.position = agent.position + np.random.normal(0, drift_std, 3)
+            agent.position = project(agent.position)
+
+    # Calculate final metrics
+    rogue_distances = [hyperbolic_dist(a.position, rogue.position)
+                       for a in agents if not a.is_rogue]
+    avg_rogue_dist = float(np.mean(rogue_distances))
+
+    false_positives = sum(1 for a in agents if not a.is_rogue and len(a.flagged_by) > 0)
+
+    final_positions = []
+    for a in agents:
+        final_positions.append({
+            "id": a.id,
+            "tongue": a.tongue or "NULL",
+            "position": [round(float(x), 4) for x in a.position],
+            "norm": round(a.norm, 4),
+            "is_rogue": a.is_rogue,
+            "flagged_by": len(a.flagged_by),
+            "quarantined": a.is_quarantined
+        })
+
+    return RogueDetectionResponse(
+        simulation_id=f"demo_{uuid.uuid4().hex[:8]}",
+        steps=steps,
+        result="QUARANTINED" if rogue.is_quarantined else "DETECTED" if len(rogue.flagged_by) > 0 else "EVADED",
+        rogue_detected=rogue.is_quarantined,
+        detection_step=detection_step if detection_step >= 0 else steps,
+        consensus_votes=len(rogue.flagged_by),
+        false_positives=false_positives,
+        final_positions=final_positions,
+        metrics={
+            "avg_isolation_distance": round(avg_rogue_dist, 3),
+            "rogue_final_norm": round(rogue.norm, 3),
+            "detection_rate": 1.0 if rogue.is_quarantined else len(rogue.flagged_by) / 6
+        }
+    )
+
+
+@app.get("/v1/demo/swarm-coordination", response_model=SwarmCoordinationResponse, tags=["Demo"])
+async def demo_swarm_coordination(agents: int = 12, steps: int = 30):
+    """
+    **LIVE DEMO: Swarm Coordination**
+
+    Watch agents self-organize in hyperbolic space using only local
+    repulsion rules - no central coordinator required.
+
+    Demonstrates jam-resistant, decentralized coordination.
+    """
+    import numpy as np
+    np.random.seed(int(time.time()) % 10000)
+
+    # Initialize agents in tight cluster
+    positions = []
+    for i in range(agents):
+        pos = np.random.normal(0, 0.05, 3)
+        pos = pos / (np.linalg.norm(pos) + 0.1) * 0.1
+        positions.append(pos)
+
+    def hyperbolic_dist(u, v):
+        nu, nv = np.linalg.norm(u), np.linalg.norm(v)
+        diff_sq = np.linalg.norm(u - v) ** 2
+        denom = (1 - nu**2) * (1 - nv**2)
+        if denom <= 1e-10:
+            return float('inf')
+        return float(np.arccosh(max(1 + 2 * diff_sq / denom, 1.0)))
+
+    def project(pos, max_n=0.95):
+        n = np.linalg.norm(pos)
+        return pos * (max_n / n) if n > max_n else pos
+
+    # Calculate initial distances
+    initial_distances = []
+    for i in range(agents):
+        for j in range(i+1, agents):
+            initial_distances.append(hyperbolic_dist(positions[i], positions[j]))
+    initial_avg = float(np.mean(initial_distances))
+
+    collisions = 0
+    boundary_breaches = 0
+
+    # Simulation
+    for step in range(steps):
+        forces = [np.zeros(3) for _ in range(agents)]
+
+        for i in range(agents):
+            for j in range(i+1, agents):
+                d = hyperbolic_dist(positions[i], positions[j])
+
+                if d < 0.1:
+                    collisions += 1
+
+                if d < 0.5 and d > 0.01:
+                    direction = positions[i] - positions[j]
+                    direction = direction / (np.linalg.norm(direction) + 1e-10)
+                    force = (0.5 - d) * 0.3
+                    forces[i] += force * direction
+                    forces[j] -= force * direction
+
+        for i in range(agents):
+            positions[i] = positions[i] + forces[i]
+            positions[i] = positions[i] + np.random.normal(0, 0.02, 3)
+            old_norm = np.linalg.norm(positions[i])
+            positions[i] = project(positions[i])
+            if old_norm > 0.95:
+                boundary_breaches += 1
+
+    # Calculate final distances
+    final_distances = []
+    for i in range(agents):
+        for j in range(i+1, agents):
+            final_distances.append(hyperbolic_dist(positions[i], positions[j]))
+    final_avg = float(np.mean(final_distances))
+
+    # Coordination score: how well did they spread without collisions
+    coord_score = min(1.0, (final_avg / max(initial_avg, 0.01)) * 0.5) * (1 - collisions / (agents * steps))
+
+    return SwarmCoordinationResponse(
+        simulation_id=f"swarm_{uuid.uuid4().hex[:8]}",
+        agents=agents,
+        initial_avg_distance=round(initial_avg, 4),
+        final_avg_distance=round(final_avg, 4),
+        collisions=collisions,
+        boundary_breaches=boundary_breaches,
+        coordination_score=round(max(0, coord_score), 3)
+    )
+
+
+@app.get("/v1/demo/pipeline-layers", tags=["Demo"])
+async def demo_pipeline_layers(
+    action: str = "READ",
+    trust: float = 0.7,
+    sensitivity: float = 0.5
+):
+    """
+    **LIVE DEMO: 14-Layer Pipeline Visualization**
+
+    See exactly how each layer of the SCBE pipeline processes a request.
+    Understand the math behind AI governance decisions.
+    """
+    agent_id = f"demo-agent-{uuid.uuid4().hex[:6]}"
+    target = "demo_resource"
+
+    # Detailed pipeline execution
+    layers = {}
+
+    # Layer 1: Complex Context Embedding
+    seed = hashlib.sha256(f"{agent_id}:{action}:{target}".encode()).digest()
+    complex_coords = [(seed[i] - 128) / 128.0 for i in range(6)]
+    layers["L1_complex_context"] = {
+        "description": "Embed request as complex numbers",
+        "output": [round(c, 4) for c in complex_coords]
+    }
+
+    # Layer 2-4: Realification & Weighting
+    radius = (1 - trust) * 0.8 + 0.1
+    position = tuple(c * radius for c in complex_coords)
+    layers["L2-4_realification"] = {
+        "description": "Map to real manifold with trust weighting",
+        "trust_radius": round(radius, 4),
+        "position": [round(p, 4) for p in position]
+    }
+
+    # Layer 5-7: Hyperbolic Geometry
+    safe_center = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+    norm1_sq = sum(x**2 for x in position)
+    diff_sq = sum((a - b)**2 for a, b in zip(position, safe_center))
+    denom = (1 - min(norm1_sq, 0.9999)) * 1.0
+    delta = 2 * diff_sq / denom if denom > 0 else 0
+    distance = math.acosh(1 + delta) if delta >= 0 else 0.0
+
+    layers["L5-7_hyperbolic"] = {
+        "description": "Calculate Poincaré ball distance from safe center",
+        "position_norm": round(math.sqrt(norm1_sq), 4),
+        "hyperbolic_distance": round(distance, 4),
+        "interpretation": "closer to 0 = safer, higher = riskier"
+    }
+
+    # Layer 8: Realm Trust
+    realm_trust = trust * (1 - sensitivity * 0.5)
+    layers["L8_realm_trust"] = {
+        "description": "Compute realm-adjusted trust",
+        "base_trust": trust,
+        "sensitivity_penalty": round(sensitivity * 0.5, 4),
+        "realm_trust": round(realm_trust, 4)
+    }
+
+    # Layer 9-10: Spectral/Spin Coherence
+    coherence = 1.0 - abs(math.sin(distance * math.pi))
+    layers["L9-10_coherence"] = {
+        "description": "Spectral and spin coherence analysis",
+        "coherence_score": round(coherence, 4),
+        "interpretation": "measures stability of request pattern"
+    }
+
+    # Layer 11: Temporal Pattern
+    temporal_score = trust * 0.9 + 0.1
+    layers["L11_temporal"] = {
+        "description": "Temporal pattern analysis",
+        "temporal_score": round(temporal_score, 4)
+    }
+
+    # Layer 12: Harmonic Scaling
+    R = 2
+    d = int(sensitivity * 3) + 1
+    H = R ** d
+    risk_factor = (1 - realm_trust) * sensitivity * 0.5
+    layers["L12_harmonic"] = {
+        "description": "Harmonic scaling and risk computation",
+        "dimension": d,
+        "harmonic_value": H,
+        "risk_factor": round(risk_factor, 4)
+    }
+
+    # Layer 13: Final Score
+    final_score = (realm_trust * 0.6 + coherence * 0.2 + temporal_score * 0.2) - risk_factor
+    if final_score > 0.6:
+        decision = "ALLOW"
+    elif final_score > 0.3:
+        decision = "QUARANTINE"
+    else:
+        decision = "DENY"
+
+    layers["L13_decision"] = {
+        "description": "Aggregate scores and make decision",
+        "weights": {"realm_trust": 0.6, "coherence": 0.2, "temporal": 0.2},
+        "risk_penalty": round(risk_factor, 4),
+        "final_score": round(final_score, 4),
+        "decision": decision,
+        "thresholds": {"ALLOW": "> 0.6", "QUARANTINE": "0.3 - 0.6", "DENY": "< 0.3"}
+    }
+
+    # Layer 14: Telemetry
+    layers["L14_telemetry"] = {
+        "description": "Audit logging and telemetry",
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "logged": True
+    }
+
+    return {
+        "demo_id": f"pipeline_{uuid.uuid4().hex[:8]}",
+        "input": {
+            "agent_id": agent_id,
+            "action": action,
+            "target": target,
+            "trust": trust,
+            "sensitivity": sensitivity
+        },
+        "layers": layers,
+        "final_decision": decision,
+        "final_score": round(final_score, 4)
+    }
 
 
 # =============================================================================

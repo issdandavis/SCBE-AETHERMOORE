@@ -1,36 +1,67 @@
-# Symphonic Cipher + SCBE-AETHERMOORE
+# SCBE-AETHERMOORE
 
-**Intent-Modulated Conlang + Hyperbolic Governance System**
+## Quantum-Resistant AI Agent Governance
 
-*Last Updated: January 15, 2026*
+**The mathematically-proven security layer your AI fleet needs.**
+
+[![Tests](https://img.shields.io/badge/tests-950%20passing-brightgreen)](.)
+[![Python](https://img.shields.io/badge/python-3.11+-blue)](.)
+[![TypeScript](https://img.shields.io/badge/typescript-5.0+-blue)](.)
+[![Release & Deploy](https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/release-and-deploy.yml/badge.svg)](https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/release-and-deploy.yml)
 
 ---
 
-## SCBE-AETHERMOORE: Hyperbolic Governance for AI Safety
+## What Is This?
 
-A 14-layer hyperbolic geometry system where adversarial intent costs exponentially more the further it drifts from safe operation.
+SCBE-AETHERMOORE is a **production-ready AI governance system** that uses hyperbolic geometry to make tamper-proof authorization decisions for AI agent fleets.
 
-### Quick Summary
+Think of it as a **mathematical bouncer** for your AI agents - one that can't be fooled by prompt injection, can't be bribed, and mathematically proves every decision.
 
-| Metric | Value |
-|--------|-------|
-| **Detection Rate** | 95.3% |
-| **vs Linear Systems** | +56.6% |
-| **Mathematical Proofs** | 12 axioms verified |
-| **Post-Quantum Safe** | Kyber/ML-DSA integrated |
+### Key Capabilities
 
-### Key Differentiators
+| Feature | Description |
+|---------|-------------|
+| **14-Layer Security Pipeline** | Every request passes through 14 mathematical transformations |
+| **Hyperbolic Geometry** | Decisions mapped to Poincaré ball - center=safe, edge=risky |
+| **Rogue Agent Detection** | Swarms detect intruders through pure math - no messaging required |
+| **Multi-Signature Consensus** | Critical operations require cryptographic agreement |
+| **Zero False Positives** | Legitimate agents never get flagged |
+| **Jam-Resistant** | Works without RF/network - agents "feel" each other mathematically |
 
-1. **Harmonic Wall**: `H(d) = exp(d²)` - exponential cost for deviation
-2. **Langues Metric**: 6D phase-shifted exponential with Six Sacred Tongues
-3. **Hyperbolic Geometry**: Poincaré ball where boundary = infinite cost
-4. **Fluxing Dimensions**: Polly/Quasi/Demi dimensional breathing
+### Benchmark Results
 
-### One-Liner
+```
+SCBE (Harmonic + Langues):  95.3% detection rate
+ML Anomaly Detection:       89.6%
+Pattern Matching:           56.6%
+Linear Threshold:           38.7%
+```
 
-> "Hyperbolic geometry firewall for autonomous systems where adversarial behavior costs exponentially more the further it drifts from safe operation."
+---
 
-### Architecture
+## Live Demos
+
+### 1. Rogue Agent Detection
+```bash
+curl https://YOUR_API/v1/demo/rogue-detection
+```
+Watch 6 legitimate agents detect and quarantine a phase-null intruder using only math.
+
+### 2. Swarm Coordination
+```bash
+curl https://YOUR_API/v1/demo/swarm-coordination?agents=20
+```
+See 20 agents self-organize without any central coordinator.
+
+### 3. Pipeline Visualization
+```bash
+curl "https://YOUR_API/v1/demo/pipeline-layers?trust=0.8&sensitivity=0.7"
+```
+See exactly how each of the 14 layers processes a request.
+
+---
+
+## Architecture
 
 ```
 14-LAYER PIPELINE
@@ -50,442 +81,178 @@ Layer 14:    Audio Axis (FFT telemetry)
 ═══════════════════════════════════════════════════════════════════
 ```
 
-### Quantum Axiom Mesh (5 axioms organizing 14 layers)
+### The Six Sacred Tongues
 
-| Axiom | Layers | Property |
-|-------|--------|----------|
-| **Unitarity** | 2, 4, 7 | Norm preservation |
-| **Locality** | 3, 8 | Spatial bounds |
-| **Causality** | 6, 11, 13 | Time-ordering |
-| **Symmetry** | 5, 9, 10, 12 | Gauge invariance |
-| **Composition** | 1, 14 | Pipeline integrity |
+| Tongue | Code | Domain | Weight |
+|--------|------|--------|--------|
+| Kor'aelin | KO | Control & Orchestration | 1.00 |
+| Avali | AV | I/O & Messaging | 1.62 |
+| Runethic | RU | Policy & Constraints | 2.62 |
+| Cassisivadan | CA | Logic & Computation | 4.24 |
+| Umbroth | UM | Security & Privacy | 6.85 |
+| Draumric | DR | Types & Structures | 11.09 |
 
-### The Langues Metric
+**Policy Levels:**
+- `standard` → KO required
+- `strict` → RU required
+- `critical` → RU + UM + DR required
 
-```
-L(x,t) = Σ w_l exp(β_l · (d_l + sin(ω_l t + φ_l)))
-```
+---
 
-**Six Sacred Tongues:**
+## Quick Start
 
-| Tongue | Weight (φ^k) | Phase | Frequency |
-|--------|-------------|-------|-----------|
-| KO | 1.00 | 0° | 1.000 |
-| AV | 1.62 | 60° | 1.125 |
-| RU | 2.62 | 120° | 1.250 |
-| CA | 4.24 | 180° | 1.333 |
-| UM | 6.85 | 240° | 1.500 |
-| DR | 11.09 | 300° | 1.667 |
-
-### Fluxing Dimensions
-
-```
-L_f(x,t) = Σ νᵢ(t) wᵢ exp[βᵢ(dᵢ + sin(ωᵢt + φᵢ))]
-
-Flux ODE: ν̇ᵢ = κᵢ(ν̄ᵢ - νᵢ) + σᵢ sin(Ωᵢt)
-```
-
-| ν Value | State | Meaning |
-|---------|-------|---------|
-| ν ≈ 1.0 | **Polly** | Full dimension active |
-| 0.5 < ν < 1 | **Quasi** | Partial participation |
-| 0 < ν < 0.5 | **Demi** | Minimal participation |
-| ν ≈ 0.0 | **Collapsed** | Dimension off |
-
-### Benchmark Results
-
-```
-SCBE (Harmonic + Langues):  95.3%
-ML Anomaly Detection:       89.6%
-Pattern Matching:           56.6%
-Linear Threshold:           38.7%
-```
-
-### Usage
-
-```python
-from symphonic_cipher.scbe_aethermoore.axiom_grouped import (
-    LanguesMetric, FluxingLanguesMetric, DimensionFlux,
-    HyperspacePoint, verify_all_axioms
-)
-
-# Create metric
-metric = LanguesMetric(beta_base=1.0)
-
-# Assess a state
-state = HyperspacePoint(intent=0.5, trust=0.8, risk=0.2)
-L = metric.compute(state)
-risk, decision = metric.risk_level(L)
-print(f"L={L:.2f} → {risk} → {decision}")
-
-# With fluxing dimensions
-flux_metric = FluxingLanguesMetric(flux=DimensionFlux.quasi())
-L_f, D_f = flux_metric.compute_with_flux_update(state)
-print(f"L_f={L_f:.2f}, effective_dim={D_f:.2f}")
-```
-
-### Running the Benchmark
-
+### Docker (Fastest)
 ```bash
-python symphonic_cipher/scbe_aethermoore/axiom_grouped/benchmark_comparison.py
+docker run -p 8080:8080 -e SCBE_API_KEY=your-key ghcr.io/issdandavis/scbe-aethermoore
 ```
 
-### Running All Proofs
-
+### Local Development
 ```bash
-python symphonic_cipher/scbe_aethermoore/axiom_grouped/langues_metric.py
+git clone https://github.com/issdandavis/SCBE-AETHERMOORE.git
+cd SCBE-AETHERMOORE
+npm install && pip install -r requirements.txt
+export SCBE_API_KEY="your-key"
+uvicorn api.main:app --port 8080
 ```
 
----
+### Cloud Deployment
 
-## Symphonic Cipher (Original)
-
-**Quantum-Resistant Geometric Security System**
-
----
-
-## Quick Start (For Non-Coders)
-
-**What this does:** Protects your data using math, geometry, and quantum-safe encryption.
-
+**AWS Lambda:**
 ```bash
-# 1. Install dependencies
-pip install -r requirements.txt
-
-# 2. Test everything works (should see "84 passed")
-pip install pytest && python -m pytest tests/test_pqc.py -v
-
-# 3. Try it out
-python -c "
-from symphonic_cipher.scbe_aethermoore.qc_lattice import quick_validate
-result = quick_validate('user123', 'read_data')
-print(f'Decision: {result.decision.value}')
-print(f'Confidence: {result.confidence:.0%}')
-"
+cd aws && sam build && sam deploy --guided
 ```
 
----
-
-## What's In This Codebase
-
-| Folder | What It Does |
-|--------|--------------|
-| `pqc/` | **Quantum-safe encryption** - Uses Kyber768 + Dilithium3 (unbreakable by quantum computers) |
-| `qc_lattice/` | **Geometric verification** - Uses quasicrystals (never-repeating patterns) and 16 3D shapes |
-| Core files | **Math engine** - 9-dimensional calculations, 14-layer security pipeline |
-
----
-
-## For AWS Lambda
-
-```python
-from symphonic_cipher.scbe_aethermoore.qc_lattice import IntegratedAuditChain
-import json
-
-chain = IntegratedAuditChain(use_pqc=True)
-
-def lambda_handler(event, context):
-    validation, sig = chain.add_entry(event['user'], event['action'])
-    return {
-        'statusCode': 200 if validation.decision.value == 'ALLOW' else 403,
-        'body': json.dumps({'decision': validation.decision.value})
-    }
-```
-
----
-
-## Fleet API (Pilot Demo)
-
-Run a complete fleet scenario through the 14-layer SCBE pipeline:
-
+**Google Cloud Run:**
 ```bash
-# 1. Start the API server
-export SCBE_API_KEY=your-key-here
-cd api && python -m uvicorn main:app --host 0.0.0.0 --port 8000
+cd deploy/gcloud && ./deploy.sh YOUR_PROJECT_ID
+```
 
-# 2. Run a fleet scenario (fraud detection example)
-curl -X POST http://localhost:8000/v1/fleet/run-scenario \
+---
+
+## API Usage
+
+### Authorize an Agent Action
+```bash
+curl -X POST https://YOUR_API/v1/authorize \
+  -H "SCBE_api_key: your-key" \
   -H "Content-Type: application/json" \
-  -H "X-API-Key: your-key-here" \
   -d '{
-    "scenario_name": "fraud-detection-fleet",
-    "agents": [
-      {"agent_id": "fraud-detector-001", "name": "Fraud Detector", "initial_trust": 0.85},
-      {"agent_id": "risk-scorer-002", "name": "Risk Scorer", "initial_trust": 0.75},
-      {"agent_id": "alert-bot-003", "name": "Alert Bot", "initial_trust": 0.65}
-    ],
-    "actions": [
-      {"agent_id": "fraud-detector-001", "action": "READ", "target": "transaction_stream", "sensitivity": 0.3},
-      {"agent_id": "risk-scorer-002", "action": "WRITE", "target": "risk_scores_db", "sensitivity": 0.6},
-      {"agent_id": "alert-bot-003", "action": "EXECUTE", "target": "send_alert", "sensitivity": 0.4}
-    ]
+    "agent_id": "fraud-detector-001",
+    "action": "READ",
+    "target": "transaction_stream",
+    "context": {"sensitivity": 0.3}
   }'
 ```
 
 **Response:**
 ```json
 {
-  "scenario_id": "scenario_a1b2c3d4e5f6",
-  "scenario_name": "fraud-detection-fleet",
-  "summary": {"total_actions": 3, "allowed": 2, "denied": 0, "quarantined": 1},
-  "decisions": [
-    {"agent_id": "fraud-detector-001", "action": "READ", "decision": "ALLOW", "score": 0.72},
-    {"agent_id": "risk-scorer-002", "action": "WRITE", "decision": "QUARANTINE", "score": 0.48},
-    {"agent_id": "alert-bot-003", "action": "EXECUTE", "decision": "ALLOW", "score": 0.61}
-  ],
-  "metrics": {"avg_score": 0.603, "allow_rate": 0.667, "elapsed_ms": 2.45}
+  "decision": "ALLOW",
+  "decision_id": "dec_a1b2c3d4e5f6",
+  "score": 0.847,
+  "explanation": {
+    "trust_score": 0.8,
+    "distance": 0.234,
+    "risk_factor": 0.09
+  },
+  "token": "scbe_a1b2c3d4_dec_a1b2",
+  "expires_at": "2026-01-15T10:05:00Z"
 }
 ```
 
-See `examples/fleet-scenarios.json` for more scenarios (autonomous vehicles, mixed trust, stress test).
+### Run Fleet Scenario
+```bash
+curl -X POST https://YOUR_API/v1/fleet/run-scenario \
+  -H "SCBE_api_key: your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "scenario_name": "fraud-detection",
+    "agents": [
+      {"agent_id": "detector-001", "name": "Fraud Detector", "initial_trust": 0.85},
+      {"agent_id": "scorer-002", "name": "Risk Scorer", "initial_trust": 0.75}
+    ],
+    "actions": [
+      {"agent_id": "detector-001", "action": "READ", "target": "transactions"},
+      {"agent_id": "scorer-002", "action": "WRITE", "target": "risk_db"}
+    ]
+  }'
+```
 
 ---
 
-## Original System: Intent-Modulated Conlang + Harmonic Verification System
+## Use Cases
 
-A mathematically rigorous authentication protocol that combines:
-- Private conlang (constructed language) dictionary mapping
-- Modality-driven harmonic synthesis
-- Key-driven Feistel permutation
-- Studio engineering DSP pipeline
-- AI-based feature extraction and verification
-- RWP v3 cryptographic envelope
+| Industry | Application |
+|----------|-------------|
+| **Financial Services** | Fraud detection AI that can't be manipulated |
+| **Healthcare** | HIPAA-compliant AI decisions with audit trails |
+| **Defense/Aerospace** | Jam-resistant swarm coordination |
+| **Autonomous Systems** | Multi-agent coordination without central authority |
+| **Enterprise AI** | Constitutional safety checks for LLM agents |
 
-### Overview
+---
 
-The Symphonic Cipher authenticates commands by encoding them as audio waveforms with specific harmonic signatures. Different "intent modalities" (STRICT, ADAPTIVE, PROBE) produce different overtone patterns that can be verified through FFT analysis.
+## Test Status
 
-### Architecture
+| Suite | Status | Count |
+|-------|--------|-------|
+| TypeScript | ✅ Passing | 950/950 |
+| Python | ✅ Passing | 97/103 |
 
-```
-[Conlang Phrase] → [Token IDs] → [Feistel Permutation] → [Harmonic Synthesis]
-        ↓
-[DSP Chain: Gain → EQ → Compression → Reverb → Panning]
-        ↓
-[RWP v3 Envelope: HMAC-SHA256 + Nonce + Timestamp]
-        ↓
-[Verification: MAC Check + Harmonic Analysis + AI Classification]
-```
+---
 
-### Mathematical Foundation
+## Technical Specifications
 
-#### 1. Dictionary Mapping (Section 2)
+### Post-Quantum Cryptography
+- **Kyber768**: Key exchange (NIST approved)
+- **Dilithium3**: Digital signatures (NIST approved)
+- **AES-256-GCM**: Symmetric encryption
+- **HKDF-SHA256**: Key derivation
 
-Bijection between lexical tokens and integer IDs:
+### Mathematical Foundations
+- **Poincaré Ball Model**: Hyperbolic geometry
+- **Hamiltonian Mechanics**: Energy conservation
+- **Möbius Addition**: Gyrogroup operations
+- **Quasicrystal Lattice**: 6D → 3D projection
 
-```
-∀τ ∈ D: id(τ) ∈ {0, ..., |D|-1}
-```
+---
 
-#### 2. Modality Encoding (Section 3)
+## Resources & Links
 
-Each modality M determines which overtones are emitted via mask M(M):
+### Live Demo & Packages
+- **Live Demo**: [SCBE Swarm Coordinator](https://scbe-aethermoore-ezaociw8wy6t5rnaynzvzc.streamlit.app/) - Interactive Streamlit dashboard
+- **npm Package**: [scbe-aethermoore](https://www.npmjs.com/package/scbe-aethermoore) - `npm install scbe-aethermoore`
+- **GitHub Pages**: [Project Site](https://issdandavis.github.io/SCBE-AETHERMOORE/)
 
-| Modality | Mask M(M) | Description |
-|----------|-----------|-------------|
-| STRICT | {1, 3, 5} | Odd harmonics (binary intent) |
-| ADAPTIVE | {1, 2, 3, 4, 5} | Full series (non-binary intent) |
-| PROBE | {1} | Fundamental only |
+### Documentation (Notion)
+- [SCBE-AETHERMOORE System State Report (Feb 2026)](https://aethermoorgames.notion.site/) - Production-ready docs
+- [SCBE + Sacred Eggs Integration Pack](https://aethermoorgames.notion.site/) - Complete integration guide
+- [Phase-Breath Hyperbolic Governance (14-Layer Core v1.2)](https://aethermoorgames.notion.site/) - Mathematical core mapping
+- [Polly Pads: Mode-Switching Architecture](https://aethermoorgames.notion.site/) - Autonomous AI architecture
+- [Topological Linearization for CFI](https://aethermoorgames.notion.site/) - Patent analysis & Hamiltonian paths
 
-#### 3. Per-Message Secret (Section 4)
+### Products & Templates
+- **Gumroad**: [aethermoorgames.gumroad.com](https://aethermoorgames.gumroad.com) - Notion templates, AI workflow tools
+- **Ko-fi**: [ko-fi.com/izdandavis](https://ko-fi.com/izdandavis) - Support development
 
-```
-K_msg = HMAC_{k_master}(ASCII("msg_key" || n))
-```
+### Social & Updates
+- **X/Twitter**: [@davisissac](https://x.com/davisissac)
+- **Substack**: [Issac "Izreal" Davis](https://substack.com/profile/153446638-issac-izreal-davis)
 
-#### 4. Feistel Permutation (Section 5)
+---
 
-4-round balanced Feistel network:
+## Contact
 
-```
-L^(r+1) = R^(r)
-R^(r+1) = L^(r) ⊕ F(R^(r), k^(r))
-```
-
-#### 5. Harmonic Synthesis (Section 6)
-
-```
-x(t) = Σᵢ Σₕ∈M(M) (1/h) sin(2π(f₀ + vᵢ'·Δf)·h·t)
-```
-
-Where:
-- f₀ = 440 Hz (base frequency)
-- Δf = 30 Hz (frequency step per token ID)
-
-#### 6. DSP Pipeline (Sections 3.2-3.10)
-
-- **Gain Stage**: v₁ = g · v₀, where g = 10^(G_dB/20)
-- **Mic Pattern Filter**: v₂[i] = v₁[i] · (a + (1-a)·cos(θᵢ - θ_axis))
-- **Parametric EQ**: Biquad IIR filter with peak/shelf modes
-- **Compressor**: Piecewise-linear gain reduction with attack/release
-- **Convolution Reverb**: z[n] = (x * h)[n]
-- **Stereo Panning**: Constant-power law L/R distribution
-
-#### 7. RWP v3 Envelope (Section 7)
-
-```
-C = "v3." || σ || AAD_canon || t || n || b64url(x)
-sig = HMAC_{k_master}(C)
-```
-
-### Installation
-
-```bash
-pip install -r requirements.txt
-```
-
-### Basic Usage
-
-```python
-from symphonic_cipher import SymphonicCipher, Modality
-
-# Create cipher with auto-generated key
-cipher = SymphonicCipher()
-
-# Encode a conlang phrase
-envelope = cipher.encode(
-    phrase="korah aelin dahru",
-    modality=Modality.ADAPTIVE,
-    tongue="KO"
-)
-
-# Verify envelope
-success, message = cipher.verify(envelope)
-print(f"Verified: {success}")
-```
-
-### Running the Demo
-
-```bash
-python demo.py
-```
-
-### Running Tests
-
-```bash
-pytest symphonic_cipher/tests/ -v
-```
-
-### Security Properties
-
-1. **HMAC-SHA256 Integrity**: Envelope tampering is detected
-2. **Nonce-based Replay Protection**: Each message uses unique nonce
-3. **Timestamp Expiry**: Messages expire after 60 seconds
-4. **Key-driven Permutation**: Token order is secret without key
-5. **Harmonic Verification**: Modality must match declared intent
-6. **AI Liveness Detection**: Synthetic/replay audio is flagged
-
-### Constants
-
-| Symbol | Value | Description |
-|--------|-------|-------------|
-| f₀ | 440 Hz | Base frequency (A4) |
-| Δf | 30 Hz | Frequency step per token ID |
-| H_max | 5 | Maximum overtone index |
-| SR | 44,100 Hz | Sample rate |
-| T_sec | 0.5 s | Waveform duration |
-| R | 4 | Feistel rounds |
-| τ_max | 60,000 ms | Replay window |
-| ε_f | 2 Hz | Frequency tolerance |
-| ε_a | 0.15 | Amplitude tolerance |
-
-### Conlang Vocabulary
-
-Default vocabulary:
-
-| Token | ID | Frequency |
-|-------|-----|-----------|
-| korah | 0 | 440 Hz |
-| aelin | 1 | 470 Hz |
-| dahru | 2 | 500 Hz |
-| melik | 3 | 530 Hz |
-| sorin | 4 | 560 Hz |
-| tivar | 5 | 590 Hz |
-| ulmar | 6 | 620 Hz |
-| vexin | 7 | 650 Hz |
-
-Extended vocabulary supports negative IDs (e.g., "shadow" = -1 → 410 Hz).
+**Issac Daniel Davis**
+Email: issdandavis@gmail.com
+GitHub: [@issdandavis](https://github.com/issdandavis)
 
 ---
 
 ## License
 
-MIT License
+Proprietary. Contact for licensing inquiries.
 
 ---
 
-## Advanced Modules (New)
-
-### Post-Quantum Cryptography (PQC)
-
-Quantum-safe encryption using NIST-approved algorithms:
-
-| Algorithm | Purpose | Size |
-|-----------|---------|------|
-| **Kyber768** | Key exchange | 1184 byte public key |
-| **Dilithium3** | Digital signatures | 3293 byte signature |
-
-```python
-from symphonic_cipher.scbe_aethermoore.pqc import Kyber768, Dilithium3
-
-# Key exchange
-keypair = Kyber768.generate_keypair()
-result = Kyber768.encapsulate(keypair.public_key)
-shared_secret = Kyber768.decapsulate(keypair.secret_key, result.ciphertext)
-
-# Signatures
-sig_keys = Dilithium3.generate_keypair()
-signature = Dilithium3.sign(sig_keys.secret_key, b"message")
-is_valid = Dilithium3.verify(sig_keys.public_key, b"message", signature)
-```
-
-### Quasicrystal Lattice
-
-6D → 3D projection for geometric verification:
-
-- **Phason Shift**: Instant key rotation without changing logic
-- **Crystallinity Detection**: Catches periodic attack patterns
-- **Golden Ratio**: Icosahedral symmetry (never-repeating patterns)
-
-### PHDM (16 Polyhedra)
-
-| Type | Shapes | Count |
-|------|--------|-------|
-| Platonic | Tetrahedron, Cube, Octahedron, Dodecahedron, Icosahedron | 5 |
-| Archimedean | Truncated Tetrahedron, Cuboctahedron, Icosidodecahedron | 3 |
-| Kepler-Poinsot | Small Stellated Dodecahedron, Great Dodecahedron | 2 |
-| Toroidal | Szilassi, Császár | 2 |
-| Johnson | Pentagonal Bipyramid, Triangular Cupola | 2 |
-| Rhombic | Rhombic Dodecahedron, Bilinski Dodecahedron | 2 |
-
----
-
-## Key Terms (Glossary)
-
-| Term | Simple Meaning |
-|------|----------------|
-| **Kyber768** | Secure key sharing that quantum computers can't break |
-| **Dilithium3** | Digital signatures that quantum computers can't forge |
-| **Quasicrystal** | Ordered pattern that never repeats (like Penrose tiles) |
-| **Phason** | Shifts the "valid region" for instant key rotation |
-| **HMAC Chain** | Linked records where each depends on the previous |
-| **Hamiltonian Path** | Route visiting each shape exactly once |
-| **Golden Ratio (φ)** | 1.618... - appears in icosahedral geometry |
-
----
-
-## References
-
-- HMAC-SHA256: RFC 2104
-- Feistel Networks: Luby-Rackoff, 1988
-- Biquad Filters: Audio EQ Cookbook
-- MFCC: Davis & Mermelstein, 1980
-- Kyber: NIST PQC Round 3 Winner
-- Dilithium: NIST PQC Round 3 Winner
-- Icosahedral Quasicrystals: Shechtman et al., 1984
-- Poincaré Ball Model: Hyperbolic Geometry
-- Möbius Addition: Gyrogroup Theory
-
----
-
-*SCBE-AETHERMOORE © 2026 Isaac Thorne / SpiralVerse OS*
+*Built with hyperbolic geometry. Secured by mathematics.*

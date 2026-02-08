@@ -1,21 +1,82 @@
-MIT License
+SCBE-AETHERMOORE Dual License
 
-Copyright (c) 2026 Issac Daniel Davis
+Copyright (c) 2026 Issac Daniel Davis / SpiralVerse OS
+Patent Pending - USPTO Application #63/961,403
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+================================================================================
+                        NON-COMMERCIAL LICENSE
+================================================================================
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+Permission is hereby granted, free of charge, to any person or organization
+obtaining a copy of this software and associated documentation files (the
+"Software"), to use, copy, modify, and distribute the Software for:
+
+  - Personal use
+  - Academic research
+  - Educational purposes
+  - Non-profit organizations (for non-commercial activities)
+  - Evaluation and testing
+
+Subject to the following conditions:
+
+1. The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
+
+2. The Software may NOT be used for commercial purposes without a separate
+   commercial license (see below).
+
+3. "Commercial purposes" means any use intended for or directed toward
+   commercial advantage or monetary compensation, including but not limited to:
+   - Selling or licensing the Software or derivatives
+   - Using the Software in a product or service that generates revenue
+   - Using the Software to provide paid consulting or services
+   - Using the Software in a for-profit company's production environment
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
+================================================================================
+                         COMMERCIAL LICENSE
+================================================================================
+
+For commercial use of SCBE-AETHERMOORE, you must obtain a commercial license.
+
+Commercial licenses are available in the following tiers:
+
+  Starter    - $99/month   - Up to 100,000 API requests/month
+  Pro        - $499/month  - Up to 1,000,000 API requests/month
+  Enterprise - Contact us  - Unlimited requests, dedicated support
+
+Commercial licenses include:
+  - Full rights to use in production commercial applications
+  - Priority support
+  - Access to private updates and security patches
+  - Indemnification (Enterprise tier)
+
+To obtain a commercial license, contact:
+
+  Email: isaac@spiralverse.dev
+  Subject: SCBE Commercial License Inquiry
+
+================================================================================
+                              PATENT NOTICE
+================================================================================
+
+SCBE-AETHERMOORE is protected by pending patent application USPTO #63/961,403.
+
+Use of the patented methods and systems described in this Software requires
+either:
+  (a) A valid non-commercial license as described above, OR
+  (b) A valid commercial license obtained from the copyright holder.
+
+Unauthorized commercial use may constitute patent infringement.
+
+================================================================================
+                            CONTRIBUTOR AGREEMENT
+================================================================================
+
+By contributing to this project, you agree that your contributions will be
+licensed under the same dual-license terms as the original Software.
+
+================================================================================

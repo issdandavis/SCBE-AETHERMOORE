@@ -1,17 +1,31 @@
 # SCBE-AETHERMOORE API Dockerfile
 # Build: docker build -f Dockerfile.api -t scbe-api:latest .
-# Run:   docker run -p 8080:8080 -e SCBE_API_KEY=your_key scbe-api:latest
+# Run:   docker run -p 8080:8080 -e PORT=8080 scbe-api:latest
 #
 # SECURITY: Container runs as non-root user (UID 1000)
 # SECURITY: No hardcoded secrets - SCBE_API_KEY must be set at runtime
 
 FROM python:3.11-slim AS builder
 
-# Install build dependencies
+# Install build dependencies for compiled packages (argon2-cffi needs gcc)
 WORKDIR /build
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libffi-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt .
-RUN pip install --no-cache-dir --target=/install -r requirements.txt && \
-    pip install --no-cache-dir --target=/install fastapi uvicorn[standard] pydantic
+
+# Install core dependencies (skip liboqs-python - requires complex native build)
+RUN pip install --no-cache-dir --target=/install \
+    numpy>=2.0.0 \
+    scipy>=1.14.0 \
+    fastapi>=0.109.0 \
+    "uvicorn[standard]>=0.27.0" \
+    pydantic>=2.0.0 \
+    pycryptodome>=3.20.0 \
+    argon2-cffi>=23.1.0 \
+    python-multipart>=0.0.9
 
 # Production image
 FROM python:3.11-slim
@@ -32,6 +46,7 @@ COPY --chown=scbe:scbe src/ ./src/
 # Set environment variables
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
 ENV SCBE_LOG_LEVEL=INFO
 # SECURITY: No default API key - must be provided at runtime
 # ENV SCBE_API_KEY is intentionally NOT set
@@ -44,7 +59,7 @@ EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8080/v1/health')" || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:${PORT:-8080}/health')" || exit 1
 
-# Run the API
-CMD ["python", "-m", "uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Run the API - use shell form to expand PORT at runtime (Cloud Run compatibility)
+CMD uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-8080}

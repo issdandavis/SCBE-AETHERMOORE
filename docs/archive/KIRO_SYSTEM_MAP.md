@@ -508,6 +508,6 @@ aws lambda create-function \
 
 ---
 
-**Maintained by:** Isaac Thorne / SpiralVerse OS
+**Maintained by:** Issac Daniel Davis / SpiralVerse OS
 **Last Updated:** 2026-01-17
 **Status:** ✅ PRODUCTION READY

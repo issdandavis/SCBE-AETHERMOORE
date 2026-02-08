@@ -22,7 +22,8 @@ try:
 
     PQC_AVAILABLE = True
     PQC_BACKEND = "liboqs"
-except ImportError:
+except (ImportError, RuntimeError):
+    # liboqs-python not installed or shared libraries not found
     try:
         import pqcrypto.kem.kyber768 as kyber
 

@@ -139,9 +139,9 @@ class SCBEGovernanceEngine {
         const lambda = [0.5, 0.3, 0.2];
         return Math.sqrt(lambda[0] * d1 * d1 + lambda[1] * d2 * d2 + lambda[2] * d3 * d3);
     }
-    layer12HarmonicScaling(d, R) {
-        // H(d, R) = R^(d²)
-        return Math.pow(R, d * d);
+    layer12HarmonicScaling(d, phaseDeviation = 0) {
+        // score = 1 / (1 + d_H + 2 * phaseDeviation)
+        return 1 / (1 + d + 2 * phaseDeviation);
     }
     layer13RiskDecision(harmonic, tier) {
         // Normalize to [0, 1]
