@@ -18,6 +18,26 @@ from .detection import (
     run_combined_detection,
 )
 from .bft_consensus import BFTConsensus
+from .multiscale_spectrum import (
+    analyze_trajectory,
+    analyze_subsystem,
+    multiscale_spectrum_features,
+    sliding_window_analysis,
+    MultiscaleReport,
+    ScaleFeatures,
+)
+from .mirror_shift import (
+    analyze_transition,
+    compute_dual_ternary,
+    dual_ternary_trajectory,
+    mirror_shift,
+    mirror_asymmetry_score,
+    quantize_ternary,
+    refactor_align,
+    MirrorAnalysis,
+    MirrorShiftResult,
+    AlignmentResult,
+)
 
 __all__ = [
     "UnifiedBrainState",
@@ -30,4 +50,22 @@ __all__ = [
     "detect_six_tonic",
     "run_combined_detection",
     "BFTConsensus",
+    # Multiscale Spectrum Analysis
+    "analyze_trajectory",
+    "analyze_subsystem",
+    "multiscale_spectrum_features",
+    "sliding_window_analysis",
+    "MultiscaleReport",
+    "ScaleFeatures",
+    # Mirror Shift + Refactor Align
+    "analyze_transition",
+    "compute_dual_ternary",
+    "dual_ternary_trajectory",
+    "mirror_shift",
+    "mirror_asymmetry_score",
+    "quantize_ternary",
+    "refactor_align",
+    "MirrorAnalysis",
+    "MirrorShiftResult",
+    "AlignmentResult",
 ]
