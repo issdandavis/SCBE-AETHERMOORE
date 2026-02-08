@@ -48,47 +48,45 @@ export {
   type ModePadConfig,
   type MemoryEntry,
 } from './mode-pad.js';
-// Specialist Modes (Dynamic Mode Switching)
+
+// Specialist Modes (Dynamic Mode Switching) — legacy registry
 export {
   ModeRegistry,
   ALL_MODE_IDS,
   type SpecialistModeId,
-  type SpecialistMode,
-  type ModeTool,
-  type ModeState,
-  type ModeSwitchEvent,
+  type SpecialistMode as LegacySpecialistMode,
+  type ModeTool as LegacyModeTool,
+  type ModeState as LegacyModeState,
+  type ModeSwitchEvent as LegacyModeSwitchEvent,
 } from './specialist-modes.js';
 
 // Closed Network (Air-Gapped Communications)
 export {
   ClosedNetwork,
-  DEFAULT_CHANNELS,
+  DEFAULT_CLOSED_CONFIG,
+  BLOCKED_NETWORKS,
   type NetworkChannel,
-  type BlockedChannel,
+  type BlockedCategory,
   type NetworkMessage,
-  type ChannelConfig,
-  type NetworkStatus,
+  type ClosedNetworkConfig,
 } from './closed-network.js';
 
-// Mission Coordinator & Squad (Byzantine Consensus)
+// Mission Coordinator (Smart Mode Assignment)
 export {
   MissionCoordinator,
-  Squad,
-  BFT,
-  type CrisisType,
-  type VoteDecision,
-  type Vote,
-  type VotingSession,
-  type SquadMember,
-  type ModeAssignment,
-  type ConsensusResult,
+  type MissionPhase,
+  type CrisisAssessment,
 } from './mission-coordinator.js';
 
-// ============================================================================
-// Quick Start Example
-// ============================================================================
+// Squad Coordination (Byzantine Consensus)
+export {
+  Squad,
+  type ConsensusDecision,
+  type SquadProposal,
+  type SquadConfig,
+} from './squad.js';
 
-// Specialist Modes
+// Specialist Modes (Class-based implementations)
 export {
   BaseMode,
   EngineeringMode,
@@ -110,29 +108,3 @@ export {
   type ModeConfig,
   MODE_CONFIGS,
 } from './modes/index.js';
-
-// Closed Network
-export {
-  ClosedNetwork,
-  DEFAULT_CLOSED_CONFIG,
-  BLOCKED_NETWORKS,
-  type NetworkChannel,
-  type BlockedCategory,
-  type NetworkMessage,
-  type ClosedNetworkConfig,
-} from './closed-network.js';
-
-// Squad Coordination (Byzantine Consensus)
-export {
-  Squad,
-  type ConsensusDecision,
-  type SquadProposal,
-  type SquadConfig,
-} from './squad.js';
-
-// Mission Coordinator
-export {
-  MissionCoordinator,
-  type MissionPhase,
-  type CrisisAssessment,
-} from './mission-coordinator.js';
