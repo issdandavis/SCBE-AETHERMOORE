@@ -38,6 +38,7 @@ import { BrainAuditLogger } from './audit.js';
 import { ImmuneResponseSystem, type ImmuneState, type AgentImmuneStatus } from './immune-response.js';
 import { FluxStateManager, type FluxState, type AgentFluxRecord } from './flux-states.js';
 import { icosahedralProjection, classifyVoxelRealm, type VoxelRealm } from './quasi-space.js';
+import { PHDMCore, type PHDMMonitorResult, type K0DerivationParams } from './phdm-core.js';
 
 // ═══════════════════════════════════════════════════════════════
 // Integration Pipeline Types
@@ -67,6 +68,8 @@ export interface AgentAssessment {
   avgDistance: number;
   /** Icosahedral projection of final state */
   icosahedralProjection: number[];
+  /** PHDM monitoring result (if enabled) */
+  phdmResult?: PHDMMonitorResult;
 }
 
 /**
@@ -131,6 +134,10 @@ export interface IntegrationConfig {
   enableFlux: boolean;
   /** Whether to enable swarm formations */
   enableSwarm: boolean;
+  /** Whether to enable PHDM Core geodesic monitoring */
+  enablePHDM: boolean;
+  /** Kyber KEM parameters for PHDM K₀ derivation (if enablePHDM) */
+  phdmKyberParams?: K0DerivationParams;
 }
 
 /**
@@ -156,6 +163,7 @@ export const DEFAULT_INTEGRATION_CONFIG: IntegrationConfig = {
   enableImmune: true,
   enableFlux: true,
   enableSwarm: true,
+  enablePHDM: false,
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -177,6 +185,7 @@ export class BrainIntegrationPipeline {
   readonly immuneSystem: ImmuneResponseSystem;
   readonly fluxManager: FluxStateManager;
   readonly consensus: BFTConsensus;
+  readonly phdmCore: PHDMCore | null;
   private readonly config: IntegrationConfig;
 
   constructor(config: Partial<IntegrationConfig> = {}) {
@@ -185,6 +194,21 @@ export class BrainIntegrationPipeline {
     this.immuneSystem = new ImmuneResponseSystem();
     this.fluxManager = new FluxStateManager();
     this.consensus = new BFTConsensus(this.config.maxByzantineFaults);
+
+    // Initialize PHDM Core if enabled
+    if (this.config.enablePHDM) {
+      this.phdmCore = new PHDMCore();
+      if (this.config.phdmKyberParams) {
+        this.phdmCore.initializeFromKyber(this.config.phdmKyberParams);
+      } else {
+        // Fallback: derive a deterministic key for testing
+        this.phdmCore.initializeWithKey(
+          Buffer.from('scbe-phdm-default-key-32-bytes!!')
+        );
+      }
+    } else {
+      this.phdmCore = null;
+    }
   }
 
   /**
@@ -253,13 +277,50 @@ export class BrainIntegrationPipeline {
       };
     }
 
+    // Stage 3b: PHDM geodesic monitoring (if enabled)
+    let phdmResult: PHDMMonitorResult | undefined;
+    if (this.phdmCore && trajectory.points.length > 0) {
+      // Monitor the midpoint state through PHDM geodesic
+      const midIdx = Math.floor(trajectory.points.length / 2);
+      const midState = trajectory.points[midIdx].state;
+      const t = midIdx / Math.max(trajectory.points.length - 1, 1);
+      phdmResult = this.phdmCore.monitor(midState, t);
+
+      // Apply PHDM results to flux evolution
+      if (this.config.enableFlux) {
+        this.phdmCore.applyToFlux(
+          this.fluxManager,
+          trajectory.agentId,
+          phdmResult,
+          immuneStatus.state
+        );
+        // Re-read the updated flux record
+        const updatedFlux = this.fluxManager.getAgentFlux(trajectory.agentId);
+        if (updatedFlux) {
+          fluxRecord = updatedFlux;
+        }
+      }
+
+      // PHDM escalation overrides detection decision
+      if (phdmResult.phdmEscalation) {
+        this.auditLogger.logRiskDecision(
+          'DENY',
+          trajectory.agentId,
+          `PHDM escalation: ${phdmResult.intrusionCount} intrusions, ` +
+          `rhythm: ${phdmResult.rhythmPattern}`
+        );
+      }
+    }
+
     // Stage 4: Voxel realm classification
     const lastPoint = trajectory.points[trajectory.points.length - 1];
     const embedded = lastPoint?.embedded ?? new Array(BRAIN_DIMENSIONS).fill(0);
     const realm = classifyVoxelRealm(embedded);
 
-    // Stage 5: Final risk decision (with immune amplification)
-    const finalDecision = this.computeFinalDecision(detection, immuneStatus, fluxRecord, realm);
+    // Stage 5: Final risk decision (with immune amplification + PHDM)
+    const finalDecision = this.computeFinalDecision(
+      detection, immuneStatus, fluxRecord, realm, phdmResult
+    );
 
     // Stage 6: Audit logging
     this.auditLogger.logDetectionAlert(detection, trajectory.agentId);
@@ -297,6 +358,7 @@ export class BrainIntegrationPipeline {
       correctlyClassified,
       avgDistance,
       icosahedralProjection: icoProjection,
+      phdmResult,
     };
   }
 
@@ -410,9 +472,15 @@ export class BrainIntegrationPipeline {
     detection: CombinedAssessment,
     immuneStatus: AgentImmuneStatus,
     fluxRecord: AgentFluxRecord,
-    realm: VoxelRealm
+    realm: VoxelRealm,
+    phdmResult?: PHDMMonitorResult
   ): RiskDecision {
     let decision = detection.decision;
+
+    // PHDM escalation overrides everything
+    if (phdmResult?.phdmEscalation) {
+      return 'DENY';
+    }
 
     // Immune amplification
     if (immuneStatus.state === 'expelled') {
@@ -428,6 +496,11 @@ export class BrainIntegrationPipeline {
     // Flux state modifier
     if (fluxRecord.state === 'COLLAPSED') {
       return 'DENY';
+    }
+
+    // PHDM intrusion modifier (single intrusion → at least QUARANTINE)
+    if (phdmResult?.intrusion.isIntrusion && decision === 'ALLOW') {
+      decision = 'QUARANTINE';
     }
 
     // Realm modifier
