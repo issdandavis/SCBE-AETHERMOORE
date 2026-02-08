@@ -11,7 +11,7 @@
  * in Mars missions, disaster response, submarine ops, and autonomous fleets.
  *
  * @module fleet/polly-pads
- * @version 1.1.0
+ * @version 1.2.0
  * @author Issac Davis
  */
 
@@ -48,47 +48,15 @@ export {
   type ModePadConfig,
   type MemoryEntry,
 } from './mode-pad.js';
-// Specialist Modes (Dynamic Mode Switching)
+
+// Specialist Modes (Original Mode Registry)
 export {
   ModeRegistry,
   ALL_MODE_IDS,
   type SpecialistModeId,
-  type SpecialistMode,
-  type ModeTool,
-  type ModeState,
-  type ModeSwitchEvent,
 } from './specialist-modes.js';
 
-// Closed Network (Air-Gapped Communications)
-export {
-  ClosedNetwork,
-  DEFAULT_CHANNELS,
-  type NetworkChannel,
-  type BlockedChannel,
-  type NetworkMessage,
-  type ChannelConfig,
-  type NetworkStatus,
-} from './closed-network.js';
-
-// Mission Coordinator & Squad (Byzantine Consensus)
-export {
-  MissionCoordinator,
-  Squad,
-  BFT,
-  type CrisisType,
-  type VoteDecision,
-  type Vote,
-  type VotingSession,
-  type SquadMember,
-  type ModeAssignment,
-  type ConsensusResult,
-} from './mission-coordinator.js';
-
-// ============================================================================
-// Quick Start Example
-// ============================================================================
-
-// Specialist Modes
+// Specialist Modes (Refactored Mode Classes & Types)
 export {
   BaseMode,
   EngineeringMode,
@@ -111,7 +79,7 @@ export {
   MODE_CONFIGS,
 } from './modes/index.js';
 
-// Closed Network
+// Closed Network (Air-Gapped Communications)
 export {
   ClosedNetwork,
   DEFAULT_CLOSED_CONFIG,
