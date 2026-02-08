@@ -208,3 +208,50 @@ export {
   type TieredImmuneResult,
   type WaggleDance,
 } from './bee-immune-tiers.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Dual Lattice Architecture (6D↔3D bidirectional projection)
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  DEFAULT_DUAL_LATTICE_CONFIG,
+  DualLatticeSystem,
+  dynamicTransform,
+  estimateFractalDimension as estimateLatticeFractalDimension,
+  generateAperiodicMesh,
+  latticeDistance3D,
+  latticeNorm6D,
+  staticProjection,
+  applyPhasonShift,
+  type DualLatticeConfig,
+  type DualLatticeResult,
+  type DynamicTransformResult,
+  type Lattice3D,
+  type Lattice6D,
+  type PhasonShift,
+  type StaticProjectionResult,
+} from './dual-lattice.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Dual Ternary Encoding (Full Negative State Flux)
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  DEFAULT_DUAL_TERNARY_CONFIG,
+  DualTernarySystem,
+  FULL_STATE_SPACE,
+  computeSpectrum as computeDualTernarySpectrum,
+  computeStateEnergy,
+  encodeToDualTernary,
+  encodeSequence as encodeDualTernarySequence,
+  estimateFractalDimension as estimateTernaryFractalDimension,
+  stateFromIndex,
+  stateIndex,
+  transition as dualTernaryTransition,
+  type DualTernaryConfig,
+  type DualTernarySpectrum,
+  type DualTernaryState,
+  type FractalDimensionResult,
+  type StateEnergy,
+  type TernaryValue,
+} from './dual-ternary.js';
