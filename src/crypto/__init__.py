@@ -11,6 +11,7 @@ Modules:
 - symphonic_cipher: Signed frequency mapping (negative IDs = shadow tokens)
 - geo_seal: Hyperbolic geometry with signed context vectors
 - signed_lattice_bridge: Integration layer connecting all three
+- h_lwe: Hyperbolic LWE vector encryption (Poincaré ball containment)
 """
 
 # Dual Lattice (Kyber/Dilithium + Sacred Tongues)
@@ -102,6 +103,22 @@ from .symphonic_waveform import (
     export_wav,
     compute_harmonic_fingerprint,
     RealTimeRenderer,
+)
+
+# H-LWE (Hyperbolic LWE Vector Encryption)
+from .h_lwe import (
+    HLWESymmetric,
+    HLWECiphertext,
+    ContainmentBreach,
+    InvalidVector,
+    AuthenticationError,
+    HLWEError,
+    exp_map_zero,
+    log_map_zero,
+    mobius_add,
+    mobius_neg,
+    project_to_ball as hlwe_project_to_ball,
+    key_vector_from_secret,
 )
 
 # Dual Lattice 14-Layer Integration
@@ -220,7 +237,20 @@ __all__ = [
     "DualLatticeIntegrator",
     "IntegratedResult",
     "LayerDecision",
+    # === H-LWE ===
+    "HLWESymmetric",
+    "HLWECiphertext",
+    "ContainmentBreach",
+    "InvalidVector",
+    "AuthenticationError",
+    "HLWEError",
+    "exp_map_zero",
+    "log_map_zero",
+    "mobius_add",
+    "mobius_neg",
+    "hlwe_project_to_ball",
+    "key_vector_from_secret",
 ]
 
-__version__ = "3.1.0"  # Bumped for 14-layer integration
+__version__ = "3.2.5"  # Bumped for H-LWE vector encryption
 
