@@ -1,13 +1,18 @@
 /**
- * SCBE Hyperbolic Geometry (Layers 5-7)
+ * @file hyperbolic.ts
+ * @module harmonic/hyperbolic
+ * @layer Layer 5, Layer 6, Layer 7
+ * @component Poincaré Ball Operations
+ * @version 3.0.0
+ * @since 2026-01-20
  *
- * Poincaré ball operations for the SCBE 14-layer pipeline.
- * The invariant hyperbolic metric NEVER changes - all dynamics
- * come from transforming points within the ball.
+ * SCBE Hyperbolic Geometry - Core mathematical operations for the 14-layer pipeline.
+ * The invariant hyperbolic metric NEVER changes - all dynamics come from
+ * transforming points within the Poincaré ball.
  *
- * L5: Invariant Metric dℍ(u,v) = arcosh(1 + 2‖u-v‖²/((1-‖u‖²)(1-‖v‖²)))
- * L6: Breath Transform B(p,t) = tanh(‖p‖ + A·sin(ωt))·p/‖p‖
- * L7: Phase Modulation Φ(p,θ) = R_θ·p rotation in tangent space
+ * Layer 5: Invariant Metric d_ℍ(u,v) = arcosh(1 + 2‖u-v‖²/((1-‖u‖²)(1-‖v‖²)))
+ * Layer 6: Breathing Transform B(p,t) = tanh(‖p‖ + A·sin(ωt))·p/‖p‖
+ * Layer 7: Phase Modulation Φ(p,θ) = Möbius rotation in tangent space
  */
 /**
  * Hyperbolic distance in the Poincaré ball model (Layer 5)
@@ -59,6 +64,29 @@ export declare function expMap0(v: number[]): number[];
  * @returns Tangent vector at origin
  */
 export declare function logMap0(p: number[]): number[];
+/**
+ * General exponential map at any base point p
+ *
+ * exp_p(v) = p ⊕ (tanh(λ_p‖v‖/2) · v/‖v‖)
+ * where λ_p = 2/(1-‖p‖²) and ⊕ is Möbius addition
+ *
+ * @param p - Base point in Poincaré ball
+ * @param v - Tangent vector at p
+ * @returns Point in Poincaré ball
+ */
+export declare function exponentialMap(p: number[], v: number[]): number[];
+/**
+ * General logarithmic map from q to tangent space at p
+ *
+ * log_p(q) = (2/λ_p) · arctanh(‖-p ⊕ q‖) · (-p ⊕ q)/‖-p ⊕ q‖
+ * where λ_p = 2/(1-‖p‖²) and ⊕ is Möbius addition
+ *
+ * @param p - Base point in Poincaré ball
+ * @param q - Target point in Poincaré ball
+ * @returns Tangent vector at p
+ */
+export declare function logarithmicMap(p: number[], q: number[]): number[];
+export { mobiusAdd as mobiusAddition };
 /**
  * Breath Transform configuration
  */

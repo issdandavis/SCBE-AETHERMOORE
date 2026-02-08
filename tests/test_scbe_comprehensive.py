@@ -79,9 +79,9 @@ EPSILON = 1e-9  # Numerical stability floor
 # =============================================================================
 # HELPER FUNCTIONS
 # =============================================================================
-def harmonic_scaling(d: int, R: float = R_HARMONIC) -> float:
-    """H(d,R) = R^(1+d²) - super-exponential scaling."""
-    return R ** (1 + d**2)
+def harmonic_scaling(d: float, phase_deviation: float = 0.0) -> float:
+    """H(d) = 1/(1 + d + 2*phase_deviation) - bounded harmonic scaling."""
+    return 1.0 / (1.0 + d + 2.0 * phase_deviation)
 
 
 def metric_tensor_6d(R: float = R_HARMONIC) -> np.ndarray:
@@ -814,28 +814,28 @@ class TestHarmonicScalingAxioms:
     """Tests for harmonic scaling H(d,R) and axiom compliance."""
 
     def test_75_harmonic_scaling_d0(self):
-        """H(0, R) = R^1 = R."""
-        assert harmonic_scaling(0, 1.5) == pytest.approx(1.5)
+        """H(0) = 1/(1+0) = 1.0 (perfectly safe)."""
+        assert harmonic_scaling(0) == pytest.approx(1.0)
 
     def test_76_harmonic_scaling_d1(self):
-        """H(1, R) = R^2."""
-        assert harmonic_scaling(1, 1.5) == pytest.approx(1.5**2)
+        """H(1) = 1/(1+1) = 0.5."""
+        assert harmonic_scaling(1) == pytest.approx(0.5)
 
     def test_77_harmonic_scaling_d2(self):
-        """H(2, R) = R^5."""
-        assert harmonic_scaling(2, 1.5) == pytest.approx(1.5**5)
+        """H(2) = 1/(1+2) = 1/3."""
+        assert harmonic_scaling(2) == pytest.approx(1.0 / 3.0)
 
     def test_78_harmonic_scaling_d3(self):
-        """H(3, R) = R^10."""
-        assert harmonic_scaling(3, 1.5) == pytest.approx(1.5**10)
+        """H(3) = 1/(1+3) = 0.25."""
+        assert harmonic_scaling(3) == pytest.approx(0.25)
 
-    def test_79_harmonic_scaling_super_exponential(self):
-        """Harmonic scaling should grow super-exponentially."""
+    def test_79_harmonic_scaling_monotone_decreasing(self):
+        """Harmonic scaling should decrease with distance (higher distance = lower safety)."""
         h1 = harmonic_scaling(1)
         h2 = harmonic_scaling(2)
         h3 = harmonic_scaling(3)
-        # Growth rate should increase
-        assert (h3 / h2) > (h2 / h1)
+        # Safety score decreases with distance
+        assert h1 > h2 > h3
 
     def test_80_golden_ratio_approximation(self):
         """Golden ratio should be approximately 1.618."""

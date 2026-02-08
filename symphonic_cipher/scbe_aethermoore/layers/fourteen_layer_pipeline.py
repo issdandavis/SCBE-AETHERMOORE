@@ -493,22 +493,18 @@ def layer_11_triadic_distance(
 # LAYER 12: HARMONIC SCALING (SUPEREXPONENTIAL)
 # =============================================================================
 
-def layer_12_harmonic_scaling(d: float, R: float = R_BASE) -> float:
+def layer_12_harmonic_scaling(d: float, phase_deviation: float = 0.0) -> float:
     """
-    Layer 12: Harmonic Scaling H(d, R) = R^(d²)
+    Layer 12: Bounded Harmonic Scaling H(d) = 1/(1 + d + 2*pd)
 
-    This is the SUPEREXPONENTIAL risk amplification:
-        - Small d → H ≈ 1 (safe)
-        - Large d → H grows very fast
+    Safety score bounded in (0, 1]:
+        - d = 0 → H = 1 (safe)
+        - d → ∞ → H → 0 (dangerous)
 
     Theorem C (Risk Monotonicity):
-        d₁ < d₂ ⟹ H(d₁, R) < H(d₂, R) for R > 1
-
-    Proof: ∂H/∂d = 2d · R^(d²) · ln(R) > 0 for d > 0, R > 1
+        d₁ < d₂ ⟹ H(d₁) > H(d₂) (lower score = higher risk)
     """
-    # Clamp to prevent overflow
-    d_sq = min(d ** 2, 50.0)  # R^50 is already huge
-    return R ** d_sq
+    return 1.0 / (1.0 + d + 2.0 * phase_deviation)
 
 
 # =============================================================================
@@ -768,8 +764,8 @@ class FourteenLayerPipeline:
         self._record(11, "Triadic Distance", d_tri, {"d_tri": d_tri})
 
         # Layer 12: Harmonic Scaling
-        H_d = layer_12_harmonic_scaling(d_tri, self.R)
-        self._record(12, "Harmonic Scaling", H_d, {"H_d": H_d, "d²": d_tri**2})
+        H_d = layer_12_harmonic_scaling(d_tri)
+        self._record(12, "Harmonic Scaling", H_d, {"H_d": H_d})
 
         # Layer 13: Decision & Risk
         risk = layer_13_decision(d_star, H_d, coherence, realm_idx, self.theta_1, self.theta_2)
@@ -911,10 +907,10 @@ def verify_theorem_C_risk_monotonicity(n_tests: int = 100) -> Tuple[bool, Dict[s
         d1 = np.random.rand() * 3
         d2 = d1 + np.random.rand() * 2 + 0.01  # Ensure d2 > d1
 
-        H1 = layer_12_harmonic_scaling(d1, R)
-        H2 = layer_12_harmonic_scaling(d2, R)
+        H1 = layer_12_harmonic_scaling(d1)
+        H2 = layer_12_harmonic_scaling(d2)
 
-        if H1 < H2:
+        if H1 > H2:
             results["passed"] += 1
         else:
             results["failed"] += 1

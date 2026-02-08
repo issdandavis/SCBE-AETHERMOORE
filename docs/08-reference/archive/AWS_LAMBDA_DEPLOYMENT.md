@@ -377,4 +377,4 @@ Lambda function code and environment variables are encrypted using AWS KMS.
 
 **Deployment Status:** Ready for production
 **Last Updated:** 2026-01-17
-**Maintainer:** Isaac Thorne / SpiralVerse OS
+**Maintainer:** Issac Daniel Davis / SpiralVerse OS

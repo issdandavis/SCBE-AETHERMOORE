@@ -1,0 +1,155 @@
+{
+  "experiment": "sacred_eggs",
+  "date": "2026-02-07",
+  "SE1": {
+    "experiment": "SE-1",
+    "num_trials": 50,
+    "all_correct": true,
+    "results": {
+      "(False, False, False, False)": {
+        "success": 0,
+        "fail": 50
+      },
+      "(False, False, False, True)": {
+        "success": 0,
+        "fail": 50
+      },
+      "(False, False, True, False)": {
+        "success": 0,
+        "fail": 50
+      },
+      "(False, False, True, True)": {
+        "success": 0,
+        "fail": 50
+      },
+      "(False, True, False, False)": {
+        "success": 0,
+        "fail": 50
+      },
+      "(False, True, False, True)": {
+        "success": 0,
+        "fail": 50
+      },
+      "(False, True, True, False)": {
+        "success": 0,
+        "fail": 50
+      },
+      "(False, True, True, True)": {
+        "success": 0,
+        "fail": 50
+      },
+      "(True, False, False, False)": {
+        "success": 0,
+        "fail": 50
+      },
+      "(True, False, False, True)": {
+        "success": 0,
+        "fail": 50
+      },
+      "(True, False, True, False)": {
+        "success": 0,
+        "fail": 50
+      },
+      "(True, False, True, True)": {
+        "success": 0,
+        "fail": 50
+      },
+      "(True, True, False, False)": {
+        "success": 0,
+        "fail": 50
+      },
+      "(True, True, False, True)": {
+        "success": 0,
+        "fail": 50
+      },
+      "(True, True, True, False)": {
+        "success": 0,
+        "fail": 50
+      },
+      "(True, True, True, True)": {
+        "success": 50,
+        "fail": 0
+      }
+    }
+  },
+  "SE2": {
+    "experiment": "SE-2",
+    "num_trials": 200,
+    "all_failures_return_none": true,
+    "ciphertext_uniform": true,
+    "chi_squared": 227.84000000000003,
+    "outputs_indistinguishable": true,
+    "passed": true
+  },
+  "SE3": {
+    "experiment": "SE-3",
+    "num_trials": 200,
+    "exact_match_succeeds": true,
+    "meaningful_perturbations_fail": true,
+    "results": {
+      "0.0": {
+        "successes": 200,
+        "total": 200,
+        "failure_rate": 0.0,
+        "mean_hyperbolic_distance": 0.0
+      },
+      "1e-15": {
+        "successes": 0,
+        "total": 200,
+        "failure_rate": 1.0,
+        "mean_hyperbolic_distance": 0.0
+      },
+      "1e-10": {
+        "successes": 0,
+        "total": 200,
+        "failure_rate": 1.0,
+        "mean_hyperbolic_distance": 0.0
+      },
+      "1e-06": {
+        "successes": 0,
+        "total": 200,
+        "failure_rate": 1.0,
+        "mean_hyperbolic_distance": 5.3002110943698666e-06
+      },
+      "0.001": {
+        "successes": 0,
+        "total": 200,
+        "failure_rate": 1.0,
+        "mean_hyperbolic_distance": 0.005244059501424219
+      },
+      "0.01": {
+        "successes": 0,
+        "total": 200,
+        "failure_rate": 1.0,
+        "mean_hyperbolic_distance": 0.05276548595535994
+      },
+      "0.1": {
+        "successes": 0,
+        "total": 200,
+        "failure_rate": 1.0,
+        "mean_hyperbolic_distance": 0.5407352626319201
+      },
+      "0.5": {
+        "successes": 0,
+        "total": 200,
+        "failure_rate": 1.0,
+        "mean_hyperbolic_distance": 17.30317451529993
+      },
+      "1.0": {
+        "successes": 0,
+        "total": 200,
+        "failure_rate": 1.0,
+        "mean_hyperbolic_distance": 23.49872155586977
+      },
+      "2.0": {
+        "successes": 0,
+        "total": 200,
+        "failure_rate": 1.0,
+        "mean_hyperbolic_distance": 23.875247001468068
+      }
+    },
+    "passed": true
+  },
+  "all_passed": true,
+  "elapsed_seconds": 1.0042204856872559
+}
