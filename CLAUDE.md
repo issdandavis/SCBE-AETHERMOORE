@@ -339,11 +339,11 @@ chore: bump dependencies
 6 dimensions with golden ratio weights: **KO, AV, RU, CA, UM, DR**
 Each dimension has a 16x16 token grid (256 tokens per language).
 
-### Harmonic Wall
-Risk amplification formula: `H(d,R) = phi^d / (1 + e^-R)`
-- Exponential cost for deviation from safe operation
-- Poincare boundary = infinite cost
-- Trustworthy center = near-zero cost
+### Harmonic Scaling (L12)
+Bounded safety score: `H(d, phaseDeviation) = 1 / (1 + d_H + 2 * phaseDeviation)`
+- H ∈ (0, 1], with H=1 at the safe center (d_H=0, phaseDeviation=0)
+- H decreases with distance and phase deviation (lower H => higher risk)
+- Layer 13 amplifies risk via `riskPrime = riskBase / max(H, 1e-10)`
 
 ### Quantum Axiom Mesh (5 axioms across 14 layers)
 1. **Unitarity** (L2, 4, 7): Norm preservation
