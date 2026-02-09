@@ -31,7 +31,7 @@ spec:
       serviceAccountName: scbe-agent
       containers:
       - name: agent
-        image: scbe/agent:latest
+        image: nginx:alpine
         ports:
         - containerPort: 8080
           name: http
@@ -95,7 +95,7 @@ spec:
       serviceAccountName: scbe-agent
       containers:
       - name: agent
-        image: scbe/agent:latest
+        image: nginx:alpine
         ports:
         - containerPort: 8080
           name: http
@@ -161,7 +161,7 @@ spec:
       serviceAccountName: scbe-agent
       containers:
       - name: agent
-        image: scbe/agent:latest
+        image: nginx:alpine
         ports:
         - containerPort: 8080
           name: http
