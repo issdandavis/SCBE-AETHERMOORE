@@ -1,0 +1,142 @@
+---
+# Public IP Tier: KO (Kor'aelin) - Control/Orchestration
+# Internet-facing gateway for SCBE decisions
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scbe-gateway-ko
+  namespace: scbe-agents
+  labels:
+    app: scbe-gateway
+    tongue: ko
+    ip-tier: public
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: scbe-gateway
+      tongue: ko
+  template:
+    metadata:
+      labels:
+        app: scbe-gateway
+        tongue: ko
+        ip-tier: public
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+      serviceAccountName: scbe-agent
+      containers:
+      - name: agent
+        image: scbe/agent:latest
+        ports:
+        - containerPort: 8080
+          name: http
+        - containerPort: 9090
+          name: metrics
+        env:
+        - name: AGENT_TONGUE
+          value: "KO"
+        - name: IP_TIER
+          value: "public"
+        - name: KAFKA_BROKERS
+          value: "kafka-internal.scbe-agents.svc.cluster.local:9093"
+        - name: LOG_LEVEL
+          value: "info"
+        - name: PHASE_OFFSET
+          value: "0"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        securityContext:
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: scbe-gateway
+              topologyKey: kubernetes.io/hostname
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scbe-gateway-public
+  namespace: scbe-agents
+  labels:
+    app: scbe-gateway
+    ip-tier: public
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+spec:
+  type: LoadBalancer
+  selector:
+    app: scbe-gateway
+    tongue: ko
+  ports:
+  - name: https
+    port: 443
+    targetPort: 8080
+    protocol: TCP
+  - name: metrics
+    port: 9090
+    targetPort: 9090
+    protocol: TCP
+---
+# Network Policy: Allow only ingress from load balancer
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: public-gateway-policy
+  namespace: scbe-agents
+spec:
+  podSelector:
+    matchLabels:
+      ip-tier: public
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow from anywhere (public)
+  - ports:
+    - protocol: TCP
+      port: 8080
+    - protocol: TCP
+      port: 9090
+  egress:
+  # Allow to Kafka (private tier)
+  - to:
+    - podSelector:
+        matchLabels:
+          app: kafka
+    ports:
+    - protocol: TCP
+      port: 9093
+  # Allow DNS
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: UDP
+      port: 53

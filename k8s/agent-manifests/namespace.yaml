@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: scbe-agents
+  labels:
+    app.kubernetes.io/name: scbe-aethermoore
+    app.kubernetes.io/component: agent-system
+    ip-tier: mixed
+  annotations:
+    description: "SCBE-AETHERMOORE Agent Infrastructure"

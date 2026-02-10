@@ -1,6 +1,6 @@
 # Complete Mathematical Proofs: 14-Layer SCBE System
 
-**Author:** Isaac Thorne / SpiralVerse OS  
+**Author:** Issac Daniel Davis / SpiralVerse OS  
 **Date:** January 13, 2026  
 **Status:** Peer-Reviewed Mathematical Foundations
 
@@ -212,5 +212,5 @@ The system enforces a single immutable law—the Poincaré ball hyperbolic metri
 ---
 
 **Patent Pending:** USPTO Application #63/961,403  
-**Author:** Isaac Thorne / SpiralVerse OS  
+**Author:** Issac Daniel Davis / SpiralVerse OS  
 **Date:** January 13, 2026
