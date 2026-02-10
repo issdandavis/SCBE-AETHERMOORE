@@ -53,7 +53,44 @@ export {
 // Specialist Modes (Canonical: ./modes)
 // ============================================================================
 
-// Specialist Modes
+// Specialist Modes (Dynamic Mode Switching) — legacy registry
+export {
+  ModeRegistry,
+  ALL_MODE_IDS,
+  type SpecialistModeId,
+  type SpecialistMode as LegacySpecialistMode,
+  type ModeTool as LegacyModeTool,
+  type ModeState as LegacyModeState,
+  type ModeSwitchEvent as LegacyModeSwitchEvent,
+} from './specialist-modes.js';
+
+// Closed Network (Air-Gapped Communications)
+export {
+  ClosedNetwork,
+  DEFAULT_CLOSED_CONFIG,
+  BLOCKED_NETWORKS,
+  type NetworkChannel,
+  type BlockedCategory,
+  type NetworkMessage,
+  type ClosedNetworkConfig,
+} from './closed-network.js';
+
+// Mission Coordinator (Smart Mode Assignment)
+export {
+  MissionCoordinator,
+  type MissionPhase,
+  type CrisisAssessment,
+} from './mission-coordinator.js';
+
+// Squad Coordination (Byzantine Consensus)
+export {
+  Squad,
+  type ConsensusDecision,
+  type SquadProposal,
+  type SquadConfig,
+} from './squad.js';
+
+// Specialist Modes (Class-based implementations)
 export {
   BaseMode,
   EngineeringMode,
@@ -110,3 +147,19 @@ export {
   type MissionPhase,
   type CrisisAssessment,
 } from './mission-coordinator.js';
+
+// Voxel Record Types (6D addressing + Byzantine quorum)
+export {
+  type Lang,
+  type PadMode,
+  type Decision,
+  type Voxel6,
+  type VoxelScope,
+  type QuorumVote,
+  type QuorumProof,
+  type SacredEggSeal,
+  type VoxelRecord,
+  langToTongueCode,
+  tongueCodeToLang,
+  validateVoxelRecord,
+} from './voxel-types.js';

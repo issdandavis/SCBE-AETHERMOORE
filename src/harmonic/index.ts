@@ -358,3 +358,52 @@ export {
   type TriDetectorConfig,
 } from './triMechanismDetector.js';
 
+// ═══════════════════════════════════════════════════════════════
+// HyperbolicRAG — Poincaré Ball Retrieval-Augmented Generation
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Engine
+  HyperbolicRAGEngine,
+  createHyperbolicRAG,
+  // Access cost
+  accessCost,
+  trustFromPosition,
+  // Types
+  type HyperbolicRAGConfig,
+  type RAGDocument,
+  type RetrievalResult,
+  type RetrievalSummary,
+} from './hyperbolicRAG.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Entropic Layer — Escape Detection, Adaptive-k, Expansion Tracking
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Monitor
+  EntropicMonitor,
+  createEntropicMonitor,
+  // Escape detection
+  detectEscape,
+  // Adaptive k
+  computeAdaptiveK,
+  computeLocalEntropy,
+  computeTrustDensity,
+  // Expansion tracking
+  computeExpansionRate,
+  estimateReachableVolume,
+  trackExpansion,
+  // Utilities
+  defaultBasins,
+  verifyEntropicInvariants,
+  // Types
+  type AdaptiveKResult,
+  type EntropicConfig,
+  type EntropicSample,
+  type EntropicState,
+  type EscapeResult,
+  type ExpansionResult,
+  type TrustBasin,
+} from './entropic.js';
+
