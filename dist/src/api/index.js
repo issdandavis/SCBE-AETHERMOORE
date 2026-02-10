@@ -267,8 +267,8 @@ exports.Roundtable = {
  * @param depth - Task nesting depth (1-based)
  * @param ratio - Harmonic ratio (default 1.5 = perfect fifth)
  */
-function harmonicComplexity(depth, ratio = 1.5) {
-    const result = Math.pow(ratio, depth * depth);
+function harmonicComplexity(depth, phaseDeviation = 0) {
+    const result = 1 / (1 + depth + 2 * phaseDeviation);
     return Math.min(result, MAX_COMPLEXITY);
 }
 /**
