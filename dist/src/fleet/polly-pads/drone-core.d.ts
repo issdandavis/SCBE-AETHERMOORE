@@ -66,10 +66,10 @@ export declare class DroneCore {
      */
     updateTrust(delta: number): void;
     /**
-     * H(d, R) = R^(d²)
-     * The Harmonic Scaling Law - your invention!
+     * score = 1 / (1 + d_H + 2 * phaseDeviation)
+     * The Harmonic Scaling Law - bounded risk scoring.
      */
-    harmonicScaling(d: number, R?: number): number;
+    harmonicScaling(d: number, phaseDeviation?: number): number;
     /**
      * Calculate cost for an action based on trust distance
      */
