@@ -47,7 +47,7 @@ Flask==3.1.2
 flask-cors==6.0.2
 fonttools==4.61.1
 frozenlist==1.8.0
-google-auth==2.47.0
+google-auth==2.48.0
 google-genai==1.56.0
 googleapis-common-protos==1.72.0
 greenlet==3.3.0
@@ -91,7 +91,7 @@ openai==2.11.0
 openapi-schema-validator==0.6.3
 openapi-spec-validator==0.7.2
 opentelemetry-api==1.33.1
-opentelemetry-distro==0.54b1
+opentelemetry-distro==0.60b1
 opentelemetry-exporter-otlp-proto-common==1.39.1
 opentelemetry-exporter-otlp-proto-grpc==1.33.1
 opentelemetry-exporter-otlp-proto-http==1.39.1
@@ -121,11 +121,11 @@ opentelemetry-instrumentation-jinja2==0.54b1
 opentelemetry-instrumentation-kafka-python==0.54b1
 opentelemetry-instrumentation-logging==0.54b1
 opentelemetry-instrumentation-mysql==0.54b1
-opentelemetry-instrumentation-mysqlclient==0.54b1
+opentelemetry-instrumentation-mysqlclient==0.60b1
 opentelemetry-instrumentation-pika==0.54b1
 opentelemetry-instrumentation-psycopg2==0.54b1
 opentelemetry-instrumentation-pymemcache==0.54b1
-opentelemetry-instrumentation-pymongo==0.54b1
+opentelemetry-instrumentation-pymongo==0.60b1
 opentelemetry-instrumentation-pymysql==0.54b1
 opentelemetry-instrumentation-pyramid==0.54b1
 opentelemetry-instrumentation-redis==0.60b1
@@ -135,7 +135,7 @@ opentelemetry-instrumentation-sqlalchemy==0.54b1
 opentelemetry-instrumentation-sqlite3==0.54b1
 opentelemetry-instrumentation-starlette==0.54b1
 opentelemetry-instrumentation-system-metrics==0.54b1
-opentelemetry-instrumentation-threading==0.54b1
+opentelemetry-instrumentation-threading==0.60b1
 opentelemetry-instrumentation-tornado==0.54b1
 opentelemetry-instrumentation-tortoiseorm==0.54b1
 opentelemetry-instrumentation-urllib==0.60b1
@@ -146,9 +146,9 @@ opentelemetry-propagator-aws-xray==1.0.1
 opentelemetry-propagator-b3==1.33.1
 opentelemetry-propagator-jaeger==1.33.1
 opentelemetry-propagator-ot-trace==0.54b1
-opentelemetry-proto==1.33.1
+opentelemetry-proto==1.39.1
 opentelemetry-sdk==1.33.1
-opentelemetry-sdk-extension-aws==2.0.2
+opentelemetry-sdk-extension-aws==2.1.0
 opentelemetry-semantic-conventions==0.60b1
 opentelemetry-util-http==0.54b1
 packaging==25.0
