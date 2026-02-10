@@ -11,7 +11,7 @@
  * in Mars missions, disaster response, submarine ops, and autonomous fleets.
  *
  * @module fleet/polly-pads
- * @version 1.1.0
+ * @version 1.2.0
  * @author Issac Davis
  */
 
@@ -49,6 +49,7 @@ export {
   type MemoryEntry,
 } from './mode-pad.js';
 
+// Specialist Modes (Original Mode Registry)
 // ============================================================================
 // Specialist Modes (Canonical: ./modes)
 // ============================================================================
@@ -58,6 +59,9 @@ export {
   ModeRegistry,
   ALL_MODE_IDS,
   type SpecialistModeId,
+} from './specialist-modes.js';
+
+// Specialist Modes (Refactored Mode Classes & Types)
   type SpecialistMode as LegacySpecialistMode,
   type ModeTool as LegacyModeTool,
   type ModeState as LegacyModeState,
@@ -113,6 +117,7 @@ export {
   MODE_CONFIGS,
 } from './modes/index.js';
 
+// Closed Network (Air-Gapped Communications)
 // Specialist Mode Registry (legacy/alternate implementation)
 // Note: its internal type names conflict with ./modes/types, so we only export
 // the registry wrapper + id type here.
