@@ -4,17 +4,22 @@
  * @module harmonic/harmonicScaling
  * @layer Layer 12
  * @component Risk Amplification Engine
- * @version 3.0.0
+ * @version 3.3.0
  * @since 2026-01-20
  *
- * SCBE Harmonic Scaling - Creates exponential "hard walls" for risk amplification.
+ * SCBE Harmonic Scaling - Bounded risk scoring for the 14-layer pipeline.
  *
- * Layer 12: H(d, R) = R^(d²) - Super-exponential risk amplification
+ * Layer 12: score = 1 / (1 + d_H + 2 * phaseDeviation)
+ *
+ * The previous super-exponential formula R^(d²) caused numerical collapse:
+ * small distances all mapped to ~1.0, destroying ranking (AUC 0.054 on
+ * subtle attacks vs baseline 0.984). This bounded formula preserves
+ * differentiation at all distance scales.
  *
  * Key functions:
- * - harmonicScale(d, R) - Core risk amplifier
- * - securityBits(H) - Convert to security bit equivalent
- * - harmonicDistance6D(a, b) - 6D space distance
+ * - harmonicScale(d, phaseDeviation) - Core risk scorer (bounded 0-1)
+ * - securityBits(baseBits, d, phaseDeviation) - Security bit equivalent
+ * - harmonicDistance(u, v) - 6D space distance
  * - octaveTranspose(f, n) - Frequency transposition
  */
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -26,47 +31,56 @@ exports.octaveTranspose = octaveTranspose;
 const constants_js_1 = require("./constants.js");
 const assertions_js_1 = require("./assertions.js");
 /**
- * Harmonic scale function H(d, R) = exp(d² * ln(R)) = R^(d²)
+ * Harmonic scale function: score = 1 / (1 + d + 2 * phaseDeviation)
  *
- * For R=1.5, d=6: H = 1.5^36 ≈ 2.18 × 10⁶
+ * Returns a safety score in (0, 1]:
+ *   - d=0, pd=0 → 1.0 (at safe center)
+ *   - d=1, pd=0 → 0.5
+ *   - d=2, pd=0 → 0.333
+ *   - d→∞       → 0.0
  *
- * @param d - Dimension/deviation parameter (integer >= 1)
- * @param R - Base ratio (default: 1.5)
- * @returns Scaled value
+ * @param d - Hyperbolic distance / dimension parameter (>= 0)
+ * @param phaseDeviation - Phase deviation from expected coherence (>= 0, default: 0)
+ * @returns Safety score in (0, 1]
  */
-function harmonicScale(d, R = constants_js_1.CONSTANTS.DEFAULT_R) {
-    (0, assertions_js_1.assertIntGE)('d', d, 1);
-    if (!(R > 0))
-        throw new RangeError('R must be > 0');
-    const e = d * d * Math.log(R);
-    const y = Math.exp(e);
-    (0, assertions_js_1.assertFinite)(y, 'harmonicScale overflow');
+function harmonicScale(d, phaseDeviation = 0) {
+    if (d < 0)
+        throw new RangeError('d must be >= 0');
+    if (phaseDeviation < 0)
+        throw new RangeError('phaseDeviation must be >= 0');
+    const y = 1 / (1 + d + 2 * phaseDeviation);
+    (0, assertions_js_1.assertFinite)(y, 'harmonicScale');
     return y;
 }
 /**
- * Calculate security bits with harmonic amplification
+ * Calculate security bits with harmonic scaling
+ *
+ * S_bits = baseBits + log₂(1 + d + 2 * phaseDeviation)
  *
  * @param baseBits - Base security level in bits
- * @param d - Dimension parameter
- * @param R - Base ratio
- * @returns Amplified security bits
+ * @param d - Distance parameter (>= 0)
+ * @param phaseDeviation - Phase deviation (>= 0, default: 0)
+ * @returns Effective security bits (grows with distance)
  */
-function securityBits(baseBits, d, R = constants_js_1.CONSTANTS.DEFAULT_R) {
-    (0, assertions_js_1.assertIntGE)('d', d, 1);
-    if (!(R > 0))
-        throw new RangeError('R must be > 0');
-    return baseBits + d * d * (0, assertions_js_1.log2)(R);
+function securityBits(baseBits, d, phaseDeviation = 0) {
+    if (d < 0)
+        throw new RangeError('d must be >= 0');
+    if (phaseDeviation < 0)
+        throw new RangeError('phaseDeviation must be >= 0');
+    return baseBits + (0, assertions_js_1.log2)(1 + d + 2 * phaseDeviation);
 }
 /**
  * Calculate security level with harmonic scaling
  *
+ * S = base * (1 + d + 2 * phaseDeviation)
+ *
  * @param base - Base security level
- * @param d - Dimension parameter
- * @param R - Base ratio
- * @returns Scaled security level
+ * @param d - Distance parameter (>= 0)
+ * @param phaseDeviation - Phase deviation (>= 0, default: 0)
+ * @returns Scaled security level (grows linearly with distance)
  */
-function securityLevel(base, d, R = constants_js_1.CONSTANTS.DEFAULT_R) {
-    return base * harmonicScale(d, R);
+function securityLevel(base, d, phaseDeviation = 0) {
+    return base * (1 + d + 2 * phaseDeviation);
 }
 /**
  * Harmonic distance in 6D phase space with weighted dimensions
