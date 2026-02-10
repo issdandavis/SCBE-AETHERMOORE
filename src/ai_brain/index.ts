@@ -314,3 +314,25 @@ export {
   type ProposedAction,
   type TorusCoordinates,
 } from './unified-kernel.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Tri-Manifold Lattice (Temporal Harmonic Governance)
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  DEFAULT_TRIADIC_WEIGHTS,
+  DEFAULT_WINDOW_SIZES,
+  HARMONIC_R,
+  MAX_LATTICE_DEPTH,
+  TemporalWindow,
+  TriManifoldLattice,
+  harmonicScale,
+  harmonicScaleInverse,
+  harmonicScaleTable,
+  triadicDistance,
+  triadicPartial,
+  type LatticeNode,
+  type LatticeSnapshot,
+  type TriManifoldConfig,
+  type TriadicWeights,
+} from './tri-manifold-lattice.js';
