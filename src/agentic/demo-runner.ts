@@ -6,6 +6,9 @@
 
 import { AgenticCoderPlatform } from './platform';
 import { CodingTaskType } from './types';
+import { logger } from '../utils/logger.js';
+
+const demoLogger = logger.child({ module: 'agentic-demo' });
 
 async function main(): Promise<void> {
   const platform = new AgenticCoderPlatform({
@@ -15,7 +18,7 @@ async function main(): Promise<void> {
 
   platform.onEvent((event) => {
     const timestamp = new Date(event.timestamp).toISOString();
-    console.log(`[${timestamp}] ${event.type}`, event.data);
+    demoLogger.info(`[${timestamp}] ${event.type}`, { data: event.data });
   });
 
   const task = platform.createTask({
@@ -31,15 +34,17 @@ async function main(): Promise<void> {
 
   const result = await platform.executeTask(task.id);
 
-  console.log('\n=== FINAL OUTPUT ===\n');
-  console.log(result.output);
-  console.log('\n=== CONTRIBUTIONS ===\n');
+  demoLogger.info('=== FINAL OUTPUT ===');
+  demoLogger.info(result.output);
+  demoLogger.info('=== CONTRIBUTIONS ===');
   for (const contrib of result.contributions) {
-    console.log(`${contrib.role} (${contrib.action}): confidence=${contrib.confidence.toFixed(2)}`);
+    demoLogger.info(`${contrib.role} (${contrib.action})`, { confidence: contrib.confidence });
   }
 }
 
 main().catch((error) => {
-  console.error('Agentic demo failed:', error instanceof Error ? error.message : error);
+  demoLogger.error('Agentic demo failed', {
+    error: error instanceof Error ? error.message : String(error),
+  });
   process.exit(1);
 });

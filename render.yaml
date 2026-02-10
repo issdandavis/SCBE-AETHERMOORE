@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: scbe-aethermoore-api
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: SCBE_API_KEY
+        generateValue: true
+      - key: SCBE_ENV
+        value: production
+    healthCheckPath: /v1/health

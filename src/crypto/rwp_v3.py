@@ -47,11 +47,9 @@ try:
     import oqs  # liboqs-python for ML-KEM/ML-DSA
 
     OQS_AVAILABLE = True
-except ImportError:
+except (ImportError, RuntimeError):
+    # liboqs-python not installed or shared libraries not found
     OQS_AVAILABLE = False
-    print(
-        "Warning: liboqs-python not installed. Install with: pip install liboqs-python"
-    )
 
 from .sacred_tongues import SACRED_TONGUE_TOKENIZER, SECTION_TONGUES
 
