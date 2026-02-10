@@ -336,3 +336,26 @@ export {
   type TriManifoldConfig,
   type TriadicWeights,
 } from './tri-manifold-lattice.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Cymatic Voxel Neural Network (6D Chladni Nodal Auto-Propagation)
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  CymaticVoxelNet,
+  NODAL_THRESHOLD,
+  REALM_CENTERS,
+  SACRED_TONGUES,
+  TONGUE_DIMENSION_MAP,
+  VOXEL_DIMS,
+  chladni6D,
+  classifyZone,
+  dominantTongue,
+  estimateNodalDensity,
+  type CymaticNetConfig,
+  type CymaticVoxel,
+  type NetSnapshot,
+  type SacredTongue,
+  type VoxelActivation,
+  type VoxelZone,
+} from './cymatic-voxel-net.js';
