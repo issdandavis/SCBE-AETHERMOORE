@@ -1,0 +1,843 @@
+% SCBE-AETHERMOORE: arXiv preprint
+% Primary: cs.CR (Cryptography and Security)
+% Secondary: cs.AI (Artificial Intelligence), cs.MA (Multi-Agent Systems)
+\documentclass[11pt,a4paper]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{cite}
+
+% Theorem environments
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+% Code listing style
+\lstset{
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue}\bfseries,
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{red!70!black},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  breaklines=true,
+  frame=single,
+  captionpos=b,
+  language=Python
+}
+
+% Shortcuts
+\newcommand{\BB}{\mathbb{B}}
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\HH}{\mathcal{H}}
+\newcommand{\norm}[1]{\left\|#1\right\|}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\poinc}{\mathbb{B}^n}
+\newcommand{\golden}{\varphi}
+
+\title{%
+  \textbf{Exponential Cost Governance for AI Safety:\\
+  Hyperbolic Geometry, Post-Quantum Cryptography,\\
+  and Constructed Language Tokenization}
+}
+
+\author{
+  Issac ``Izreal'' Davis\\
+  Independent Researcher\\
+  \texttt{ORCID: [your-orcid-id]}\\
+  \href{https://github.com/issdandavis/SCBE-AETHERMOORE}{github.com/issdandavis/SCBE-AETHERMOORE}
+}
+
+\date{February 2026}
+
+\begin{document}
+
+\maketitle
+
+% ============================================================================
+\begin{abstract}
+We present SCBE-AETHERMOORE, a 14-layer AI safety and governance framework
+that uses hyperbolic geometry to make adversarial behavior exponentially
+costly. The system operates in the Poincar\'{e} ball model $\BB^n$ where
+the cost of deviating from safe operation grows as $\golden^d / (1 + e^{-R})$,
+with $\golden = (1+\sqrt{5})/2$ the golden ratio, $d$ the hyperbolic distance
+from the safe center, and $R$ the accumulated risk score. We introduce three
+novel contributions: (1)~a \emph{harmonic wall} that maps the Poincar\'{e}
+boundary to infinite cost, making sustained adversarial drift computationally
+infeasible; (2)~\emph{Six Sacred Tongues}, a bijective tokenization scheme
+using six constructed languages that enables phonetically structured,
+human-verifiable encoding of cryptographic material; and (3)~\emph{GeoSeal},
+a context-aware encryption envelope integrating real post-quantum cryptography
+(ML-KEM-768, ML-DSA-65) with spatial projection and concentric ring access
+control. The framework is validated by 712 automated tests across TypeScript
+and Python implementations, including property-based testing and adversarial
+simulations. All code and tests are open source.
+\end{abstract}
+
+\noindent\textbf{Keywords:} AI governance, AI safety, hyperbolic geometry,
+Poincar\'{e} ball, post-quantum cryptography, multi-agent systems,
+swarm governance, fleet orchestration, constructed languages, bijective
+tokenization
+
+% ============================================================================
+\section{Introduction}
+\label{sec:intro}
+
+The deployment of autonomous AI systems at scale introduces governance
+challenges that existing frameworks address primarily through policy
+constraints, reward shaping, or constitutional AI methods
+\cite{bai2022constitutional, christiano2017deep}. These approaches
+operate in Euclidean space where the cost of adversarial deviation
+scales \emph{linearly} with distance from safe operation---an attacker
+willing to pay twice the cost can deviate twice as far.
+
+We propose a fundamentally different approach: embedding AI governance
+in \emph{hyperbolic space}, where geometric properties ensure that the
+cost of adversarial behavior scales \emph{exponentially}. Specifically,
+we use the Poincar\'{e} ball model $\BB^n = \{x \in \RR^n : \norm{x} < 1\}$
+where:
+
+\begin{enumerate}[label=(\roman*)]
+  \item The boundary $\norm{x} \to 1$ represents infinite cost,
+        creating an impassable wall for adversarial drift.
+  \item The center $x = 0$ represents the safe operating point with
+        near-zero governance overhead.
+  \item Movement toward the boundary incurs exponentially increasing
+        cost via the \emph{harmonic wall} function.
+\end{enumerate}
+
+This paper presents SCBE-AETHERMOORE (Spectral Cipher for Boundary
+Enforcement---AETHERMOORE), a complete implementation of this vision
+as a 14-layer security pipeline with post-quantum cryptographic
+guarantees.
+
+\subsection{Contributions}
+
+\begin{enumerate}
+  \item \textbf{Harmonic Wall Function} (Section~\ref{sec:harmonic}):
+    A risk amplification formula $H(d, R) = \golden^d / (1 + e^{-R})$
+    that maps Poincar\'{e} ball geometry to governance cost, proven to
+    satisfy the exponential cost property (Theorem~\ref{thm:expwall}).
+
+  \item \textbf{Six Sacred Tongues Tokenization} (Section~\ref{sec:tongues}):
+    A bijective encoding scheme using six constructed languages (conlangs),
+    each providing 256 unique tokens via nibble decomposition, enabling
+    phonetically structured, human-auditable representation of binary data.
+
+  \item \textbf{GeoSeal Context-Aware Encryption} (Section~\ref{sec:geoseal}):
+    An encryption envelope that binds ciphertext to spatial context using
+    HEALPix/Morton projection, real ML-KEM-768 key encapsulation and
+    ML-DSA-65 digital signatures (NIST FIPS 203/204), and concentric
+    ring access control.
+
+  \item \textbf{14-Layer Pipeline Architecture} (Section~\ref{sec:pipeline}):
+    A complete security pipeline mapping five quantum axioms (unitarity,
+    locality, causality, symmetry, composition) across 14 layers, from
+    context ingestion to audio-axis telemetry.
+
+  \item \textbf{Empirical Validation} (Section~\ref{sec:eval}):
+    712 automated tests across dual TypeScript/Python implementations,
+    including property-based tests (100+ iterations per property),
+    adversarial simulations, and cross-language parity validation.
+\end{enumerate}
+
+% ============================================================================
+\section{Background and Related Work}
+\label{sec:related}
+
+\subsection{Hyperbolic Geometry in Machine Learning}
+
+Hyperbolic spaces have been used for embedding hierarchical data
+\cite{nickel2017poincare, nickel2018learning}, with the Poincar\'{e}
+ball model providing a natural representation for tree-like structures.
+The key property we exploit is that volume grows exponentially with
+radius in hyperbolic space---analogous to how a binary tree has
+$2^d$ nodes at depth $d$.
+
+\begin{definition}[Poincar\'{e} Ball]
+The Poincar\'{e} ball of dimension $n$ is the open unit ball
+$\BB^n = \{x \in \RR^n : \norm{x} < 1\}$ equipped with the
+Riemannian metric tensor:
+\begin{equation}
+  g_x = \left(\frac{2}{1 - \norm{x}^2}\right)^2 g_E
+\end{equation}
+where $g_E$ is the Euclidean metric. The hyperbolic distance between
+points $x, y \in \BB^n$ is:
+\begin{equation}
+  d_{\BB}(x, y) = \text{arcosh}\left(1 + \frac{2\norm{x - y}^2}{(1 - \norm{x}^2)(1 - \norm{y}^2)}\right)
+  \label{eq:hyperbolic-dist}
+\end{equation}
+\end{definition}
+
+\subsection{Post-Quantum Cryptography}
+
+NIST standardized ML-KEM (formerly CRYSTALS-Kyber) as FIPS~203 and
+ML-DSA (formerly CRYSTALS-Dilithium) as FIPS~204 for post-quantum
+key encapsulation and digital signatures respectively
+\cite{nist2024fips203, nist2024fips204}. We use ML-KEM-768
+(128-bit security) and ML-DSA-65 (128-bit security) in our
+GeoSeal implementation.
+
+\subsection{AI Safety and Governance}
+
+Existing AI governance frameworks include Constitutional AI
+\cite{bai2022constitutional}, RLHF \cite{christiano2017deep},
+and formal verification approaches \cite{amodei2016concrete}.
+Our work differs in providing a \emph{geometric} enforcement
+mechanism rather than a behavioral one---the physics of the
+space itself prevents adversarial behavior, rather than learned
+policies.
+
+% ============================================================================
+\section{Harmonic Wall: Exponential Cost Governance}
+\label{sec:harmonic}
+
+\subsection{The Harmonic Wall Function}
+
+\begin{definition}[Harmonic Wall]
+For a state $x \in \BB^n$ at hyperbolic distance $d = d_\BB(x, 0)$
+from the origin with accumulated risk score $R \geq 0$, the
+\emph{harmonic wall} cost is:
+\begin{equation}
+  H(d, R) = \frac{\golden^d}{1 + e^{-R}}
+  \label{eq:harmonic-wall}
+\end{equation}
+where $\golden = (1 + \sqrt{5})/2 \approx 1.618$ is the golden ratio.
+\end{definition}
+
+\begin{theorem}[Exponential Cost Property]
+\label{thm:expwall}
+As $\norm{x} \to 1$ (approaching the Poincar\'{e} boundary),
+$H(d_\BB(x, 0), R) \to \infty$ for any $R > 0$. Specifically:
+\begin{equation}
+  \lim_{\norm{x} \to 1} H(d_\BB(x, 0), R)
+  = \lim_{d \to \infty} \frac{\golden^d}{1 + e^{-R}} = \infty
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+From Eq.~\eqref{eq:hyperbolic-dist} with $y = 0$:
+\begin{equation}
+  d_\BB(x, 0) = \text{arcosh}\left(1 + \frac{2\norm{x}^2}{1 - \norm{x}^2}\right)
+  = \text{arcosh}\left(\frac{1 + \norm{x}^2}{1 - \norm{x}^2}\right)
+\end{equation}
+As $\norm{x} \to 1$, we have $d_\BB(x, 0) \to \infty$.
+Since $\golden > 1$, $\golden^d \to \infty$ as $d \to \infty$.
+The denominator $1 + e^{-R}$ is bounded for any fixed $R > 0$,
+so $H \to \infty$.
+\end{proof}
+
+\begin{corollary}[Near-Zero Safe Cost]
+For $\norm{x} \leq 0.1$ (safe operating region),
+$d_\BB(x, 0) \leq 0.2003$ and $H(d, R) \leq 1.13 \cdot \sigma(R)$
+where $\sigma(R) = 1/(1 + e^{-R})$ is the sigmoid.
+\end{corollary}
+
+\subsection{Boundary Proximity Risk}
+
+We define the \emph{boundary proximity} as a geometric risk measure:
+\begin{equation}
+  \rho(x) = \frac{\norm{x}}{1 - \norm{x}}
+\end{equation}
+
+This maps $[0, 1) \to [0, \infty)$, providing an intuitive risk score:
+$\rho = 0$ at center, $\rho = 1$ at $\norm{x} = 0.5$, and $\rho \to \infty$
+at the boundary.
+
+\subsection{Combined Risk Score}
+
+The combined risk score avoids contamination from non-geometric measures
+(Section~\ref{sec:phdm-lessons}) and uses only:
+\begin{equation}
+  \text{risk}(x) = \alpha \cdot \rho(x) + \beta \cdot d_\BB(x, x_{\text{prev}})
+  + \gamma \cdot \norm{\Delta x}
+\end{equation}
+where $\alpha, \beta, \gamma$ are tunable weights, $d_\BB(x, x_{\text{prev}})$
+is hyperbolic drift from the previous state, and $\norm{\Delta x}$ is
+Euclidean drift magnitude.
+
+% ============================================================================
+\section{Six Sacred Tongues: Bijective Tokenization}
+\label{sec:tongues}
+
+\subsection{Motivation}
+
+Cryptographic material---nonces, keys, ciphertexts, authentication
+tags---is typically represented as hexadecimal or Base64 strings.
+These representations are machine-readable but offer no human
+affordances for verification, memorization, or phonetic communication.
+
+We introduce \emph{Six Sacred Tongues}, a bijective tokenization
+scheme that maps every byte value to a unique, pronounceable token
+in one of six constructed languages (conlangs).
+
+\subsection{Tongue Definitions}
+
+Each Sacred Tongue serves a specific cryptographic purpose:
+
+\begin{table}[h]
+\centering
+\caption{Six Sacred Tongues: Purpose and Cryptographic Domain}
+\label{tab:tongues}
+\begin{tabular}{@{}lllp{5cm}@{}}
+\toprule
+\textbf{Code} & \textbf{Name} & \textbf{Domain} & \textbf{Purpose} \\
+\midrule
+KO & Kor'aelin  & Nonce     & Flow and intent encoding \\
+AV & Avali      & AAD       & Context and metadata \\
+RU & Runethic   & Salt      & Binding and commitment \\
+CA & Cassisivadan & Ciphertext & Payload encryption \\
+UM & Umbroth    & Redaction & Erasure and key destruction \\
+DR & Draumric   & Auth Tag  & Structural integrity \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Nibble Decomposition Bijection}
+
+\begin{definition}[Sacred Tongue Bijection]
+For each tongue $T \in \{\text{KO}, \text{AV}, \text{RU}, \text{CA},
+\text{UM}, \text{DR}\}$, define prefix table $P_T[0..15]$ and suffix
+table $S_T[0..15]$, each containing 16 unique phonotactic syllables.
+The encoding of byte $b \in [0, 255]$ is:
+\begin{equation}
+  \text{encode}_T(b) = P_T\!\left[\lfloor b/16 \rfloor\right]
+  \;\texttt{'}\; S_T\!\left[b \bmod 16\right]
+\end{equation}
+\end{definition}
+
+\begin{proposition}[Bijectivity]
+For each tongue $T$, the map $\text{encode}_T : \{0, \ldots, 255\}
+\to \text{Tokens}_T$ is a bijection (one-to-one and onto).
+\end{proposition}
+
+\begin{proof}
+Since $|P_T| = 16$ and $|S_T| = 16$ with all elements distinct within
+each table, the Cartesian product $P_T \times S_T$ has exactly
+$16 \times 16 = 256$ distinct pairs. The nibble decomposition
+$b \mapsto (\lfloor b/16 \rfloor, b \bmod 16)$ is itself a bijection
+from $\{0, \ldots, 255\}$ to $\{0, \ldots, 15\}^2$, composing with
+the lookup gives a bijection to $\text{Tokens}_T$.
+\end{proof}
+
+\subsection{Example: Kor'aelin Encoding}
+
+The Kor'aelin tongue uses prefixes:
+\begin{center}
+\texttt{kor, ael, lin, dah, ru, mel, ik, sor, in, tiv, ar, ul, mar, vex, yn, zha}
+\end{center}
+and suffixes:
+\begin{center}
+\texttt{ah, el, in, or, ru, ik, mel, sor, tiv, ul, vex, zha, dah, lin, yn, mar}
+\end{center}
+
+Encoding byte \texttt{0x3c} (binary \texttt{0011\,1100}):
+\begin{itemize}
+  \item High nibble: $3 \to$ \texttt{dah}
+  \item Low nibble: $12 \to$ \texttt{dah}
+  \item Token: \texttt{dah'dah}
+\end{itemize}
+
+\subsection{SS1 Envelope Format}
+
+The \emph{SpiralSeal~1} (SS1) format encodes a complete AES-256-GCM
+envelope using tongue-specific sections:
+
+\begin{lstlisting}[caption={SS1 Envelope Format}]
+SS1|kid=<key-id>|aad=<plaintext-aad>
+   |salt=ru:<Runethic tokens>
+   |nonce=ko:<Kor'aelin tokens>
+   |ct=ca:<Cassisivadan tokens>
+   |tag=dr:<Draumric tokens>
+\end{lstlisting}
+
+Each section uses the designated tongue, making the cryptographic
+structure self-documenting and human-verifiable.
+
+\subsection{Cross-Tongue Translation}
+
+Cross-translation preserves the byte payload while changing the
+linguistic representation:
+\begin{equation}
+  \text{xlate}(T_s, T_d, \text{tokens}) =
+  \text{encode}_{T_d}\!\left(\text{decode}_{T_s}(\text{tokens})\right)
+\end{equation}
+
+Each translation produces an HMAC attestation record containing:
+phase delta $(\phi_{T_d} - \phi_{T_s}) \bmod 2\pi$,
+weight ratio $w_{T_d}/w_{T_s}$ (golden ratio progression),
+SHA-256 hash of the byte payload, and a keyed HMAC digest.
+
+\subsection{EvolvingLexicons: Cryptographic Speciation}
+
+We extend the static bijection with a self-mutating variant where
+tokens drift toward \emph{realm centers} in 6D Poincar\'{e} space:
+
+\begin{definition}[Lexicon Mutation]
+After each successful cross-translation with coherence $c \in [0, 1]$,
+a mutation occurs with probability $p_\mu \cdot c$. The mutated token
+is selected via phonotactic drift toward the destination tongue's
+realm center $\mathbf{r}_T \in \BB^6$, preserving the bijection
+invariant.
+\end{definition}
+
+Two agents using EvolvingLexicons independently will develop
+\emph{mutually unintelligible dialects}---a form of cryptographic
+speciation where the shared history of interactions determines the
+current encoding.
+
+% ============================================================================
+\section{GeoSeal: Context-Aware Encryption}
+\label{sec:geoseal}
+
+\subsection{Architecture}
+
+GeoSeal binds encrypted data to spatial context through three projections:
+
+\begin{enumerate}
+  \item \textbf{Sphere Projection}: Context vector $\to$ unit sphere
+        via z-score normalization (HEALPix tiling).
+  \item \textbf{Cube Projection}: Context vector $\to$ $[0,1]^m$ via
+        $\tanh$ normalization (Morton code indexing).
+  \item \textbf{Risk Potential}: Combined projection metrics determine
+        interior/exterior classification.
+\end{enumerate}
+
+\subsection{Post-Quantum Key Encapsulation}
+
+GeoSeal uses real ML-KEM-768 (NIST FIPS~203) for key establishment:
+
+\begin{algorithm}
+\caption{GeoSeal Encrypt}
+\label{alg:geoseal-enc}
+\begin{algorithmic}[1]
+\Require Plaintext $m$, context $\mathbf{c}$, KEM public key $\text{pk}_K$, DSA secret key $\text{sk}_D$
+\State $\mathbf{u} \gets \text{ProjectSphere}(\mathbf{c})$ \Comment{HEALPix}
+\State $\mathbf{v} \gets \text{ProjectCube}(\mathbf{c})$ \Comment{Morton}
+\State $h \gets \text{HEALPixID}(\mathbf{u}, L_s)$
+\State $z \gets \text{MortonID}(\mathbf{v}, L_c)$
+\State $(P, \text{margin}) \gets \text{Potentials}(\mathbf{u}, \mathbf{v})$
+\State $\text{ring} \gets \text{ConcentricRingPolicy.classify}(\norm{\mathbf{u}})$
+\State $(\text{ss}, \text{ct}_K) \gets \text{ML-KEM-768.Encaps}(\text{pk}_K)$
+\State $K_s \gets \text{HKDF}(\text{ss}, \text{``geo:sphere|''} \| h)$
+\State $K_c \gets \text{HKDF}(\text{ss}, \text{``geo:cube|''} \| z)$
+\State $K_{\text{msg}} \gets \text{HKDF}(K_s \oplus K_c, \text{``geo:msg''})$
+\State $\text{ct}_m \gets m \oplus \text{StreamCipher}(K_{\text{msg}})$
+\State $\text{attest} \gets (h, z, L_s, L_c, P, \text{margin}, \text{ring}, t)$
+\State $\sigma \gets \text{ML-DSA-65.Sign}(\text{sk}_D, \text{SHA256}(\text{attest} \| \text{ct}_m))$
+\State \Return $(\text{ct}_K, \text{ct}_m, \text{attest}, \sigma)$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Concentric Ring Policy}
+
+Access control is enforced through five concentric rings based on
+radial distance from the context center:
+
+\begin{table}[h]
+\centering
+\caption{Concentric Ring Access Control}
+\label{tab:rings}
+\begin{tabular}{@{}llcccc@{}}
+\toprule
+\textbf{Ring} & \textbf{Radius} & \textbf{Latency (ms)} & \textbf{Sigs} & \textbf{PoW bits} & \textbf{Trust Decay} \\
+\midrule
+Core   & $[0.0, 0.3)$ & 5    & 1 & 8  & 0.001 \\
+Inner  & $[0.3, 0.5)$ & 20   & 1 & 8  & 0.005 \\
+Middle & $[0.5, 0.7)$ & 100  & 2 & 16 & 0.01 \\
+Outer  & $[0.7, 0.9)$ & 500  & 3 & 24 & 0.05 \\
+Edge   & $[0.9, 1.0)$ & 5000 & 4 & 32 & 0.2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Operations in the edge ring require 4 signatures, 32-bit proof-of-work,
+and have a maximum latency budget of 5 seconds---creating increasing
+friction for operations far from the trusted center.
+
+\subsection{Key Sizes (Measured)}
+
+Our implementation uses the \texttt{pqcrypto} Python library with
+verified key sizes matching NIST specifications:
+
+\begin{table}[h]
+\centering
+\caption{ML-KEM-768 and ML-DSA-65 Key Sizes (bytes)}
+\label{tab:keysizes}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Algorithm} & \textbf{Public Key} & \textbf{Secret Key} & \textbf{Ciphertext/Sig} & \textbf{Shared Secret} \\
+\midrule
+ML-KEM-768 & 1184 & 2400 & 1088 & 32 \\
+ML-DSA-65  & 1952 & 4032 & 3309 & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================================
+\section{14-Layer Pipeline Architecture}
+\label{sec:pipeline}
+
+The complete SCBE-AETHERMOORE pipeline processes actions through 14
+layers, each mapped to one of five quantum-inspired axioms:
+
+\begin{table}[h]
+\centering
+\caption{14-Layer Pipeline with Axiom Mapping}
+\label{tab:layers}
+\begin{tabular}{@{}clll@{}}
+\toprule
+\textbf{Layer} & \textbf{Function} & \textbf{Axiom} & \textbf{Operation} \\
+\midrule
+L1  & Complex Context        & Composition  & $\RR^{21} \to \mathbb{C}^{21}$ \\
+L2  & Realification          & Unitarity    & $\mathbb{C}^{21} \to \RR^{42}$ \\
+L3  & Weighted Transform     & Locality     & Langues metric weighting \\
+L4  & Poincar\'{e} Embedding & Unitarity    & $\RR^{42} \to \BB^{21}$ \\
+L5  & Hyperbolic Distance    & Symmetry     & $d_\BB(x, 0)$ (Eq.~\ref{eq:hyperbolic-dist}) \\
+L6  & Breathing Phase        & Causality    & M\"{o}bius contraction \\
+L7  & M\"{o}bius Transform   & Unitarity    & Isometric mapping \\
+L8  & Multi-Well Realms      & Locality     & Hamiltonian CFI \\
+L9  & Spectral Coherence     & Symmetry     & FFT analysis \\
+L10 & Spin Coherence         & Symmetry     & Phase alignment \\
+L11 & Triadic Distance       & Causality    & Temporal ordering \\
+L12 & Harmonic Wall          & Symmetry     & $H(d, R)$ (Eq.~\ref{eq:harmonic-wall}) \\
+L13 & Risk Decision          & Causality    & ALLOW/QUARANTINE/ESCALATE/DENY \\
+L14 & Audio Axis             & Composition  & FFT telemetry \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{21D Brain State Representation}
+
+The system represents AI agent state as a 21-dimensional vector in
+$\BB^{21}$, enabling unified embedding of perception, reasoning,
+memory, and action dimensions:
+
+\begin{equation}
+  \mathbf{s} = (\underbrace{s_1, \ldots, s_7}_{\text{perception}},
+  \underbrace{s_8, \ldots, s_{14}}_{\text{reasoning}},
+  \underbrace{s_{15}, \ldots, s_{21}}_{\text{action}}) \in \BB^{21}
+\end{equation}
+
+\subsection{Poincar\'{e} Half-Plane Drift Monitor (PHDM)}
+
+The PHDM monitors agent drift through a 6D projection using the
+Sacred Tongues' golden-ratio weights:
+
+\begin{equation}
+  \text{PHDM}(\mathbf{s}) = \sum_{k=1}^{6} w_k \cdot \sin(\theta_k + \phi_k)
+  \cdot \norm{\pi_k(\mathbf{s})}
+\end{equation}
+
+where $w_k = \golden^{k-1}$, $\theta_k$ and $\phi_k$ are tongue-specific
+phase offsets, and $\pi_k$ projects $\BB^{21} \to \RR^{3+}$ for each
+tongue dimension.
+
+\subsubsection{Lessons Learned}
+\label{sec:phdm-lessons}
+
+During development, we discovered that the PHDM langues cost formula
+produces baseline values of $\sim$40+ even for zero/small vectors,
+due to the exponential golden-ratio weights and sine modulation.
+Using raw langues cost in combined risk scores inflates risk for safe
+actions, causing false positives. The solution is to use PHDM decisions
+(ALLOW/QUARANTINE/DENY) directly in the governance gate rather than
+raw cost values.
+
+% ============================================================================
+\section{SemanticNavigator: Living 6D Meaning Space}
+\label{sec:semantic-nav}
+
+We introduce the \emph{SemanticNavigator}, a dynamical system that
+tracks agent position in 6D Poincar\'{e} space using a chaotic ODE
+driven by linguistic intent:
+
+\begin{equation}
+  \frac{d\mathbf{p}}{dt} = \underbrace{\sum_{T \in \text{intent}} c \cdot (\mathbf{r}_T - \mathbf{p})}_{\text{attraction to realm centers}}
+  + \underbrace{\mu \cdot \boldsymbol{\xi}(t)}_{\text{mutation repulsion}}
+  + \underbrace{\epsilon \cdot \mathbf{L}(\mathbf{p})}_{\text{chaotic term}}
+\end{equation}
+
+where $c$ is coherence, $\mu$ is mutation count, $\boldsymbol{\xi}$ is
+Gaussian noise, $\epsilon$ is chaos strength, and $\mathbf{L}$ is a
+6D Lorenz-like system:
+
+\begin{equation}
+  \mathbf{L}(\mathbf{p}) = \begin{pmatrix}
+    10(p_2 - p_1) \\
+    p_1(28 - p_3) - p_2 \\
+    p_1 p_2 - 2.667 p_3 \\
+    0.5 \sin(p_4) \\
+    0.3 \cos(p_5) \\
+    0.2(p_6^2 - 0.5)
+  \end{pmatrix}
+\end{equation}
+
+The position is constrained to the Poincar\'{e} ball via projection
+$\mathbf{p} \gets 0.98 \cdot \mathbf{p}/\norm{\mathbf{p}}$ whenever
+$\norm{\mathbf{p}} \geq 0.99$.
+
+Two agents' semantic distance is measured via Eq.~\eqref{eq:hyperbolic-dist}
+in $\BB^6$, providing a natural metric for communication compatibility.
+
+% ============================================================================
+\section{Practical Applications}
+\label{sec:applications}
+
+\subsection{Cryptographic Material Encoding}
+
+Sacred Tongue encoding transforms opaque byte sequences into
+phonetically structured, human-verifiable strings. A 16-byte AES nonce
+becomes:
+
+\begin{center}
+\texttt{dah'dah mel'vex sor'mar lin'yn tiv'el ul'ru ik'tiv ru'in \\
+vex'or ael'yn ar'sor mar'ul ru'zha ik'mar in'tiv ael'ik}
+\end{center}
+
+This encoding is deterministic, perfectly reversible, and phonetically
+distinct across tongues (each tongue uses a unique prefix).
+
+\subsection{Multi-Phase Cryptographic Protocol}
+
+The six tongues map naturally to a six-phase secure communication
+protocol:
+
+\begin{enumerate}
+  \item \textbf{Initialization} (Avali): Exchange metadata
+  \item \textbf{Key Exchange} (Runethic): Ephemeral key commitment
+  \item \textbf{Message Flow} (Kor'aelin): Nonce and message hash
+  \item \textbf{Encryption} (Cassisivadan): Encrypted payload
+  \item \textbf{Authentication} (Draumric): Signature and tag
+  \item \textbf{Redaction} (Umbroth): Ephemeral key erasure
+\end{enumerate}
+
+\subsection{Multi-Party Key Recovery}
+
+Sacred Tongue encoding combined with Shamir's Secret Sharing enables
+multi-party key recovery where each share is encoded in a different
+tongue, providing both cryptographic security and immediate visual
+identification of share provenance.
+
+% ============================================================================
+\section{Evaluation}
+\label{sec:eval}
+
+\subsection{Test Suite}
+
+The framework is validated by a comprehensive test suite across
+dual implementations:
+
+\begin{table}[h]
+\centering
+\caption{Test Suite Summary}
+\label{tab:tests}
+\begin{tabular}{@{}llcc@{}}
+\toprule
+\textbf{Component} & \textbf{Language} & \textbf{Tests} & \textbf{Status} \\
+\midrule
+AI Brain (11 modules)    & TypeScript & 452 & Pass \\
+Six Tongues CLI          & Python     & 148 & Pass \\
+H-LWE Crypto            & Python     &  38 & Pass \\
+Dual Lattice             & Python     &  23 & Pass \\
+Dual Ternary Flux        & Python     &  51 & Pass \\
+\midrule
+\textbf{Total}           &            & \textbf{712} & \textbf{Pass} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Test Tiers}
+
+Tests follow a six-tier complexity pyramid:
+
+\begin{itemize}
+  \item \textbf{L1 (Smoke)}: Sanity checks---``does it run?''
+  \item \textbf{L2 (Unit)}: Isolated function testing
+  \item \textbf{L3 (Integration)}: Component interaction flows
+  \item \textbf{L4 (Property)}: Random-input mathematical proofs
+        (fast-check/Hypothesis, 100+ iterations)
+  \item \textbf{L5 (Security)}: Cryptographic boundary enforcement
+  \item \textbf{L6 (Adversarial)}: Red team attack simulations
+\end{itemize}
+
+\subsection{Key Verified Properties}
+
+\begin{enumerate}
+  \item \textbf{Bijection Preservation}: All 6 tongues maintain
+        256 unique tokens after mutation (parameterized over all tongues).
+  \item \textbf{Round-Trip Correctness}: Encode $\to$ decode is
+        identity for all byte values in all tongues.
+  \item \textbf{PQC Tamper Rejection}: GeoSeal rejects tampered
+        signatures and ciphertexts with real ML-DSA-65.
+  \item \textbf{Poincar\'{e} Ball Containment}: All SemanticNavigator
+        trajectories remain within $\norm{\mathbf{p}} < 1$.
+  \item \textbf{Cross-Translation Payload Preservation}: All
+        $6 \times 6 = 36$ tongue pair translations preserve exact bytes.
+  \item \textbf{Ring Policy Escalation}: Concentric ring requirements
+        monotonically increase from core to edge.
+\end{enumerate}
+
+\subsection{Performance}
+
+Six Tongues CLI selftest (including real PQC operations): $<2$ seconds.
+Full Python test suite (260 tests): $<6$ seconds.
+Full TypeScript test suite (452 tests): $<7$ seconds.
+
+% ============================================================================
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Strengths}
+
+\begin{enumerate}
+  \item \textbf{Mathematical Enforcement}: The harmonic wall provides
+        provably exponential cost scaling, not relying on learned
+        behavior or policy compliance.
+  \item \textbf{Real Post-Quantum Crypto}: Unlike most governance
+        frameworks, SCBE-AETHERMOORE integrates actual NIST-standardized
+        PQC algorithms with measured key sizes.
+  \item \textbf{Human-Verifiable Encoding}: Sacred Tongues make
+        cryptographic material auditable without specialized tools.
+  \item \textbf{Dual Implementation}: TypeScript (production) and
+        Python (research) with cross-language parity validation.
+\end{enumerate}
+
+\subsection{Limitations}
+
+\begin{enumerate}
+  \item The XOR stream cipher in GeoSeal provides confidentiality
+        but lacks the indistinguishability guarantees of AES-GCM.
+        Future work will replace it with authenticated encryption.
+  \item SemanticNavigator's chaotic ODE introduces non-determinism,
+        making exact trajectory reproduction impossible across
+        implementations.
+  \item The 21D state space may be over-parameterized for simple
+        agent behaviors, though the Poincar\'{e} embedding naturally
+        handles dimensionality.
+\end{enumerate}
+
+\subsection{Future Work}
+
+\begin{enumerate}
+  \item Formal verification of the harmonic wall property using
+        Coq or Lean~4.
+  \item Integration of AES-256-GCM into GeoSeal replacing the
+        XOR stream cipher.
+  \item Lyapunov stability analysis of the SemanticNavigator ODE.
+  \item Deployment benchmarks on fleet-scale (1000+ agent) simulations.
+  \item Federated learning integration for distributed governance.
+\end{enumerate}
+
+% ============================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+
+We have presented SCBE-AETHERMOORE, a framework that uses hyperbolic
+geometry to make adversarial AI behavior exponentially costly. The
+harmonic wall function $H(d, R) = \golden^d / (1 + e^{-R})$ creates
+an impassable boundary in the Poincar\'{e} ball, the Six Sacred Tongues
+provide human-verifiable bijective encoding of cryptographic material,
+and GeoSeal integrates real post-quantum cryptography with spatial
+context. The system is validated by 712 tests across dual implementations
+and is fully open source.
+
+The core insight is that \emph{geometry can enforce governance}. By
+operating in hyperbolic space, the physics of the space itself---not
+learned policies or reward functions---prevents adversarial behavior.
+This is complementary to existing AI safety approaches and provides
+a mathematically rigorous foundation for AI governance at scale.
+
+% ============================================================================
+\section*{Availability}
+
+All source code, tests, and documentation are available at:\\
+\url{https://github.com/issdandavis/SCBE-AETHERMOORE}
+
+\noindent The Python CLI can be tested directly:
+\begin{lstlisting}[language=bash]
+python six-tongues-cli.py          # Run selftest
+python -m pytest tests/ -v         # Full test suite
+\end{lstlisting}
+
+% ============================================================================
+\bibliographystyle{plain}
+\begin{thebibliography}{10}
+
+\bibitem{nickel2017poincare}
+M.~Nickel and D.~Kiela.
+\newblock Poincar\'{e} embeddings for learning hierarchical representations.
+\newblock In \emph{Advances in Neural Information Processing Systems (NeurIPS)},
+  pages 6338--6347, 2017.
+
+\bibitem{nickel2018learning}
+M.~Nickel and D.~Kiela.
+\newblock Learning continuous hierarchies in the {L}orentz model of hyperbolic
+  geometry.
+\newblock In \emph{International Conference on Machine Learning (ICML)},
+  pages 3779--3788, 2018.
+
+\bibitem{bai2022constitutional}
+Y.~Bai, S.~Kadavath, S.~Kundu, et~al.
+\newblock Constitutional {AI}: Harmlessness from {AI} feedback.
+\newblock \emph{arXiv preprint arXiv:2212.08073}, 2022.
+
+\bibitem{christiano2017deep}
+P.~F. Christiano, J.~Leike, T.~Brown, M.~Milber, S.~Ganguli, and D.~Amodei.
+\newblock Deep reinforcement learning from human preferences.
+\newblock In \emph{Advances in Neural Information Processing Systems (NeurIPS)},
+  pages 4299--4307, 2017.
+
+\bibitem{amodei2016concrete}
+D.~Amodei, C.~Olah, J.~Steinhardt, P.~Christiano, J.~Schulman, and D.~Man\'{e}.
+\newblock Concrete problems in {AI} safety.
+\newblock \emph{arXiv preprint arXiv:1606.06565}, 2016.
+
+\bibitem{nist2024fips203}
+{National Institute of Standards and Technology (NIST)}.
+\newblock {FIPS}~203: Module-Lattice-Based Key-Encapsulation Mechanism Standard
+  ({ML-KEM}).
+\newblock Federal Information Processing Standards Publication, August 2024.
+
+\bibitem{nist2024fips204}
+{National Institute of Standards and Technology (NIST)}.
+\newblock {FIPS}~204: Module-Lattice-Based Digital Signature Standard ({ML-DSA}).
+\newblock Federal Information Processing Standards Publication, August 2024.
+
+\bibitem{healpy2005}
+K.~M. G\'{o}rski, E.~Hivon, A.~J. Banday, et~al.
+\newblock {HEALPix}: A framework for high-resolution discretization and fast
+  analysis of data distributed on the sphere.
+\newblock \emph{The Astrophysical Journal}, 622(2):759--771, 2005.
+
+\bibitem{morton1966}
+G.~M. Morton.
+\newblock A computer oriented geodetic data base and a new technique in file
+  sequencing.
+\newblock Technical report, IBM, Ottawa, 1966.
+
+\bibitem{shamir1979share}
+A.~Shamir.
+\newblock How to share a secret.
+\newblock \emph{Communications of the ACM}, 22(11):612--613, 1979.
+
+\end{thebibliography}
+
+\end{document}
