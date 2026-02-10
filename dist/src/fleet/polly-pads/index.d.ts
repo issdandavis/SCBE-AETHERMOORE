@@ -24,4 +24,5 @@ export { BaseMode, EngineeringMode, NavigationMode, SystemsMode, ScienceMode, Co
 export { ClosedNetwork, DEFAULT_CLOSED_CONFIG, BLOCKED_NETWORKS, type NetworkChannel, type BlockedCategory, type NetworkMessage, type ClosedNetworkConfig, } from './closed-network.js';
 export { Squad, type ConsensusDecision, type SquadProposal, type SquadConfig, } from './squad.js';
 export { MissionCoordinator, type MissionPhase, type CrisisAssessment, } from './mission-coordinator.js';
+export { type Lang, type PadMode, type Decision, type Voxel6, type VoxelScope, type QuorumVote, type QuorumProof, type SacredEggSeal, type VoxelRecord, langToTongueCode, tongueCodeToLang, validateVoxelRecord, } from './voxel-types.js';
 //# sourceMappingURL=index.d.ts.map
