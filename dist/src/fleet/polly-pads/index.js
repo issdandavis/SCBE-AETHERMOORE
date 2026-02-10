@@ -16,7 +16,7 @@
  * @author Issac Davis
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BLOCKED_NETWORKS = exports.DEFAULT_CLOSED_CONFIG = exports.MODE_CONFIGS = exports.createAllModes = exports.createMode = exports.MissionPlanningMode = exports.CommunicationsMode = exports.ScienceMode = exports.SystemsMode = exports.NavigationMode = exports.EngineeringMode = exports.BaseMode = exports.BFT = exports.Squad = exports.MissionCoordinator = exports.DEFAULT_CHANNELS = exports.ClosedNetwork = exports.ALL_MODE_IDS = exports.ModeRegistry = exports.ModePad = exports.defaultStore = exports.CapabilityStore = exports.createGuardDrone = exports.createResearchDrone = exports.createDeployDrone = exports.createCoderDrone = exports.createReconDrone = exports.DroneCore = void 0;
+exports.validateVoxelRecord = exports.tongueCodeToLang = exports.langToTongueCode = exports.BLOCKED_NETWORKS = exports.DEFAULT_CLOSED_CONFIG = exports.MODE_CONFIGS = exports.createAllModes = exports.createMode = exports.MissionPlanningMode = exports.CommunicationsMode = exports.ScienceMode = exports.SystemsMode = exports.NavigationMode = exports.EngineeringMode = exports.BaseMode = exports.BFT = exports.Squad = exports.MissionCoordinator = exports.DEFAULT_CHANNELS = exports.ClosedNetwork = exports.ALL_MODE_IDS = exports.ModeRegistry = exports.ModePad = exports.defaultStore = exports.CapabilityStore = exports.createGuardDrone = exports.createResearchDrone = exports.createDeployDrone = exports.createCoderDrone = exports.createReconDrone = exports.DroneCore = void 0;
 // Drone Core (original)
 var drone_core_js_1 = require("./drone-core.js");
 Object.defineProperty(exports, "DroneCore", { enumerable: true, get: function () { return drone_core_js_1.DroneCore; } });
@@ -71,4 +71,9 @@ Object.defineProperty(exports, "Squad", { enumerable: true, get: function () { r
 // Mission Coordinator
 var mission_coordinator_js_2 = require("./mission-coordinator.js");
 Object.defineProperty(exports, "MissionCoordinator", { enumerable: true, get: function () { return mission_coordinator_js_2.MissionCoordinator; } });
+// Voxel Record Types (6D addressing + Byzantine quorum)
+var voxel_types_js_1 = require("./voxel-types.js");
+Object.defineProperty(exports, "langToTongueCode", { enumerable: true, get: function () { return voxel_types_js_1.langToTongueCode; } });
+Object.defineProperty(exports, "tongueCodeToLang", { enumerable: true, get: function () { return voxel_types_js_1.tongueCodeToLang; } });
+Object.defineProperty(exports, "validateVoxelRecord", { enumerable: true, get: function () { return voxel_types_js_1.validateVoxelRecord; } });
 //# sourceMappingURL=index.js.map
