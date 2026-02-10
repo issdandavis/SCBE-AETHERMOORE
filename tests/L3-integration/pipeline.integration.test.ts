@@ -150,29 +150,29 @@ describe('L3-INTEGRATION: System Pipeline Tests', () => {
 
   describe('Harmonic Scaling Pipeline', () => {
     it('should scale risk through harmonic function with integer distances', () => {
-      // harmonicScale requires d >= 1 integer
+      // harmonicScale returns safety score H ∈ (0,1]. Risk amplification is 1/H.
       const distances = [1, 2, 3, 4, 5];
-      const scaleFactor = Math.E;
+      const phaseDeviation = 0;
 
-      const scaledRisks = distances.map((d) => harmonicScale(d, scaleFactor));
+      const riskAmplifiers = distances.map((d) => 1 / harmonicScale(d, phaseDeviation));
 
       // All scaled values should be finite and positive
-      scaledRisks.forEach((scaled) => {
+      riskAmplifiers.forEach((scaled) => {
         expect(Number.isFinite(scaled)).toBe(true);
-        expect(scaled).toBeGreaterThan(0);
+        expect(scaled).toBeGreaterThanOrEqual(1);
       });
 
-      // Monotonically increasing with distance
-      for (let i = 1; i < scaledRisks.length; i++) {
-        expect(scaledRisks[i]).toBeGreaterThan(scaledRisks[i - 1]);
+      // Risk amplification monotonically increases with distance
+      for (let i = 1; i < riskAmplifiers.length; i++) {
+        expect(riskAmplifiers[i]).toBeGreaterThan(riskAmplifiers[i - 1]);
       }
     });
 
     it('should amplify risk with different scale factors', () => {
       const distance = 2;
 
-      const scale1 = harmonicScale(distance, 2);
-      const scale2 = harmonicScale(distance, 3);
+      const scale1 = 1 / harmonicScale(distance, 2);
+      const scale2 = 1 / harmonicScale(distance, 3);
 
       // Higher scale factor -> higher result
       expect(scale2).toBeGreaterThan(scale1);
@@ -203,8 +203,9 @@ describe('L3-INTEGRATION: System Pipeline Tests', () => {
       ]);
       const spectral = computeSpectralCoherence(signal, 1000, 50);
 
-      // Layer 12: Harmonic scaling (requires integer d >= 1)
-      const riskScale = harmonicScale(Math.max(1, Math.round(distFromOrigin)), Math.E);
+      // Layer 12: Harmonic scaling (H safety score). Risk amplification is 1/H.
+      const dInt = Math.max(1, Math.round(distFromOrigin));
+      const riskScale = 1 / harmonicScale(dInt, 0);
 
       // Layer 13: Risk decision (simulated)
       const finalRisk = spectral.S_spec * riskScale;

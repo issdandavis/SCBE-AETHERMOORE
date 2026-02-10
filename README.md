@@ -74,7 +74,7 @@ Layer 6-7:   Breathing Transform + Phase (Möbius addition)
 Layer 8:     Multi-Well Realms
 Layer 9-10:  Spectral + Spin Coherence
 Layer 11:    Triadic Temporal Distance
-Layer 12:    H(d,R) = R^(d²)  [HARMONIC WALL]
+Layer 12:    score = 1 / (1 + d_H + 2 * phaseDeviation)  [HARMONIC SCALING]
 Layer 13:    Risk' → ALLOW / QUARANTINE / DENY
 Layer 14:    Audio Axis (FFT telemetry)
 
