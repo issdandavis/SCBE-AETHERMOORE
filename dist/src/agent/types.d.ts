@@ -189,8 +189,9 @@ export declare function isValidPoincarePosition(pos: PoincarePosition): boolean;
 export declare function hyperbolicDistance(u: PoincarePosition, v: PoincarePosition): number;
 /**
  * Calculate Harmonic Wall cost
+ * score = 1 / (1 + d_H + 2 * phaseDeviation)
  */
-export declare function harmonicWallCost(distance: number, R?: number): number;
+export declare function harmonicWallCost(distance: number, phaseDeviation?: number): number;
 /**
  * Generate initial position for tongue in Poincaré ball
  */

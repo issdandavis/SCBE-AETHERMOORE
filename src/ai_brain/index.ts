@@ -108,6 +108,30 @@ export {
 export { BrainAuditLogger } from './audit.js';
 
 // ═══════════════════════════════════════════════════════════════
+// HyperbolicRAG (Layer 12 cost-gated retrieval)
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  HyperbolicRAG,
+  type HyperbolicRAGConfig,
+  type RAGCandidate,
+  type RAGResult,
+} from './hyperbolic-rag.js';
+
+// ═══════════════════════════════════════════════════════════════
+// EntropicLayer (Layer 12-13 escape detection + adaptive-k)
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  EntropicLayer,
+  DEFAULT_MAX_VOLUME,
+  MIN_K,
+  MAX_K,
+  DEFAULT_ENTROPIC_CONFIG,
+  type EntropicState,
+  type EntropicConfig,
+  type EscapeAssessment,
+} from './entropic-layer.js';
 // Trajectory Simulator
 // ═══════════════════════════════════════════════════════════════
 
