@@ -136,3 +136,19 @@ export {
   type MissionPhase,
   type CrisisAssessment,
 } from './mission-coordinator.js';
+
+// Voxel Record Types (6D addressing + Byzantine quorum)
+export {
+  type Lang,
+  type PadMode,
+  type Decision,
+  type Voxel6,
+  type VoxelScope,
+  type QuorumVote,
+  type QuorumProof,
+  type SacredEggSeal,
+  type VoxelRecord,
+  langToTongueCode,
+  tongueCodeToLang,
+  validateVoxelRecord,
+} from './voxel-types.js';
