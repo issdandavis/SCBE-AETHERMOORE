@@ -108,3 +108,45 @@ export {
   type ModeConfig,
   MODE_CONFIGS,
 } from './modes/index.js';
+
+// Closed Network
+export {
+  ClosedNetwork,
+  DEFAULT_CLOSED_CONFIG,
+  BLOCKED_NETWORKS,
+  type NetworkChannel,
+  type BlockedCategory,
+  type NetworkMessage,
+  type ClosedNetworkConfig,
+} from './closed-network.js';
+
+// Squad Coordination (Byzantine Consensus)
+export {
+  Squad,
+  type ConsensusDecision,
+  type SquadProposal,
+  type SquadConfig,
+} from './squad.js';
+
+// Mission Coordinator
+export {
+  MissionCoordinator,
+  type MissionPhase,
+  type CrisisAssessment,
+} from './mission-coordinator.js';
+
+// Voxel Record Types (6D addressing + Byzantine quorum)
+export {
+  type Lang,
+  type PadMode,
+  type Decision,
+  type Voxel6,
+  type VoxelScope,
+  type QuorumVote,
+  type QuorumProof,
+  type SacredEggSeal,
+  type VoxelRecord,
+  langToTongueCode,
+  tongueCodeToLang,
+  validateVoxelRecord,
+} from './voxel-types.js';
