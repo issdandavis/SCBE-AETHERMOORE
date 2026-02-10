@@ -19,6 +19,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpiralSealSS1 = exports.SacredTongueTokenizer = exports.getTongueForSection = exports.UMBROTH = exports.SECTION_TONGUES = exports.SACRED_TONGUES = exports.RUNETHIC = exports.KOR_AELIN = exports.DRAUMRIC = exports.CASSISIVADAN = exports.AVALI = exports.projectToBall = exports.phaseModulation = exports.multiWellPotential = exports.multiWellGradient = exports.multiPhaseModulation = exports.mobiusAdd = exports.logMap0 = exports.inverseBreathTransform = exports.hyperbolicDistance = exports.expMap0 = exports.breathTransform = exports.applyHyperbolicPipeline = exports.createVertex = exports.HamiltonianCFI = exports.ControlFlowGraph = exports.generateTestSignal = exports.generateNoise = exports.AudioAxisProcessor = exports.getFluxState = exports.TONGUES = exports.LanguesMetric = exports.FluxingLanguesMetric = exports.standingWaveAmplitude = exports.nodalSurface = exports.fluxRedistribution = exports.checkCymaticResonance = exports.cavityResonance = exports.bottleBeamIntensity = exports.harmonicCouplingMatrix = exports.halAttention = exports.securityLevel = exports.securityBits = exports.octaveTranspose = exports.harmonicScale = exports.harmonicDistance = exports.log2 = exports.assertIntGE = exports.assertFinite = exports.CONSTANTS = void 0;
 exports.PHDMDeviationDetector = exports.CubicSpline6D = exports.CANONICAL_POLYHEDRA = exports.scbeToQuasicrystal = exports.quasicrystalPotential = exports.quasicrystalHash = exports.quasicrystal5to2 = exports.quasicrystal4to2 = exports.penroseToLattice = exports.penroseTiling = exports.penroseRhombus = exports.penroseInitial = exports.penroseDeflate = exports.nearestQCVertex = exports.fibonacciWord = exports.fibonacciSequence = exports.fibonacci2D = exports.fibonacci1D = exports.diffractionPattern = exports.defaultQCLattice = exports.cutAndProject2D = exports.checkRotationalSymmetry = exports.ammannBeenkerSquare = exports.ammannBeenkerRhombus = exports.SILVER_RATIO = exports.QCLatticeProvider = exports.PHI_INV = exports.PHI = exports.shake256 = exports.shake128 = exports.secureRandomBytes = exports.ntt = exports.mlkemKeyGen = exports.mlkemEncapsulate = exports.mlkemDecapsulate = exports.mldsaVerify = exports.mldsaSign = exports.mldsaKeyGen = exports.invNtt = exports.defaultPQCProvider = exports.PQCProvider = exports.unseal = exports.seal = exports.randomBytes = exports.parseSS1Blob = exports.formatSS1Blob = exports.encodeToSpelltext = exports.decodeFromSpelltext = exports.computeLWSWeights = exports.computeLWSScore = void 0;
+exports.verifyEntropicInvariants = exports.defaultBasins = exports.trackExpansion = exports.estimateReachableVolume = exports.computeExpansionRate = exports.computeTrustDensity = exports.computeLocalEntropy = exports.computeAdaptiveK = exports.detectEscape = exports.createEntropicMonitor = exports.EntropicMonitor = exports.trustFromPosition = exports.accessCost = exports.createHyperbolicRAG = exports.HyperbolicRAGEngine = exports.TONGUE_PHASES = exports.TONGUE_INDEX = exports.DEFAULT_CONFIG = exports.tonicCoherence = exports.phaseDistanceScore = exports.phaseDeviation = exports.triHyperbolicDistance = exports.driftDistanceToBaseline = exports.driftAuthScore = exports.computeDriftSignature = exports.TriMechanismDetector = exports.DEFAULT_TONGUE_WEIGHTS = exports.RING_BOUNDARIES = exports.ALL_TONGUES = exports.getRingLevel = exports.deriveKey = exports.predicateCrypto = exports.predicateQuorum = exports.predicatePath = exports.predicateGeo = exports.predicateTongue = exports.hatch = exports.createEgg = exports.spectralGenerator = exports.TONGUE_COLORS = exports.SpectralIdentityGenerator = exports.SPECTRAL_BANDS = exports.topologicalHash = exports.serializePolyhedron = exports.isValidTopology = exports.eulerCharacteristic = exports.distance6D = exports.computeCentroid = exports.PolyhedralHamiltonianDefenseManifold = exports.PHDMHamiltonianPath = void 0;
 exports.TONGUE_PHASES = exports.TONGUE_INDEX = exports.DEFAULT_CONFIG = exports.tonicCoherence = exports.phaseDistanceScore = exports.phaseDeviation = exports.triHyperbolicDistance = exports.driftDistanceToBaseline = exports.driftAuthScore = exports.computeDriftSignature = exports.TriMechanismDetector = exports.DEFAULT_TONGUE_WEIGHTS = exports.RING_BOUNDARIES = exports.ALL_TONGUES = exports.getRingLevel = exports.deriveKey = exports.predicateCrypto = exports.predicateQuorum = exports.predicatePath = exports.predicateGeo = exports.predicateTongue = exports.hatch = exports.createEgg = exports.spectralGenerator = exports.TONGUE_COLORS = exports.SpectralIdentityGenerator = exports.SPECTRAL_BANDS = exports.topologicalHash = exports.serializePolyhedron = exports.isValidTopology = exports.eulerCharacteristic = exports.distance6D = exports.computeCentroid = exports.PolyhedralHamiltonianDefenseManifold = exports.PHDMHamiltonianPath = void 0;
 // ═══════════════════════════════════════════════════════════════
 // Constants and Types
@@ -254,4 +255,34 @@ Object.defineProperty(exports, "tonicCoherence", { enumerable: true, get: functi
 Object.defineProperty(exports, "DEFAULT_CONFIG", { enumerable: true, get: function () { return triMechanismDetector_js_1.DEFAULT_CONFIG; } });
 Object.defineProperty(exports, "TONGUE_INDEX", { enumerable: true, get: function () { return triMechanismDetector_js_1.TONGUE_INDEX; } });
 Object.defineProperty(exports, "TONGUE_PHASES", { enumerable: true, get: function () { return triMechanismDetector_js_1.TONGUE_PHASES; } });
+// ═══════════════════════════════════════════════════════════════
+// HyperbolicRAG — Poincaré Ball Retrieval-Augmented Generation
+// ═══════════════════════════════════════════════════════════════
+var hyperbolicRAG_js_1 = require("./hyperbolicRAG.js");
+// Engine
+Object.defineProperty(exports, "HyperbolicRAGEngine", { enumerable: true, get: function () { return hyperbolicRAG_js_1.HyperbolicRAGEngine; } });
+Object.defineProperty(exports, "createHyperbolicRAG", { enumerable: true, get: function () { return hyperbolicRAG_js_1.createHyperbolicRAG; } });
+// Access cost
+Object.defineProperty(exports, "accessCost", { enumerable: true, get: function () { return hyperbolicRAG_js_1.accessCost; } });
+Object.defineProperty(exports, "trustFromPosition", { enumerable: true, get: function () { return hyperbolicRAG_js_1.trustFromPosition; } });
+// ═══════════════════════════════════════════════════════════════
+// Entropic Layer — Escape Detection, Adaptive-k, Expansion Tracking
+// ═══════════════════════════════════════════════════════════════
+var entropic_js_1 = require("./entropic.js");
+// Monitor
+Object.defineProperty(exports, "EntropicMonitor", { enumerable: true, get: function () { return entropic_js_1.EntropicMonitor; } });
+Object.defineProperty(exports, "createEntropicMonitor", { enumerable: true, get: function () { return entropic_js_1.createEntropicMonitor; } });
+// Escape detection
+Object.defineProperty(exports, "detectEscape", { enumerable: true, get: function () { return entropic_js_1.detectEscape; } });
+// Adaptive k
+Object.defineProperty(exports, "computeAdaptiveK", { enumerable: true, get: function () { return entropic_js_1.computeAdaptiveK; } });
+Object.defineProperty(exports, "computeLocalEntropy", { enumerable: true, get: function () { return entropic_js_1.computeLocalEntropy; } });
+Object.defineProperty(exports, "computeTrustDensity", { enumerable: true, get: function () { return entropic_js_1.computeTrustDensity; } });
+// Expansion tracking
+Object.defineProperty(exports, "computeExpansionRate", { enumerable: true, get: function () { return entropic_js_1.computeExpansionRate; } });
+Object.defineProperty(exports, "estimateReachableVolume", { enumerable: true, get: function () { return entropic_js_1.estimateReachableVolume; } });
+Object.defineProperty(exports, "trackExpansion", { enumerable: true, get: function () { return entropic_js_1.trackExpansion; } });
+// Utilities
+Object.defineProperty(exports, "defaultBasins", { enumerable: true, get: function () { return entropic_js_1.defaultBasins; } });
+Object.defineProperty(exports, "verifyEntropicInvariants", { enumerable: true, get: function () { return entropic_js_1.verifyEntropicInvariants; } });
 //# sourceMappingURL=index.js.map
