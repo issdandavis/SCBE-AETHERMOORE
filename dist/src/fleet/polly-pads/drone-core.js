@@ -130,11 +130,11 @@ class DroneCore {
     // Harmonic Scaling (Your IP!)
     // --------------------------------------------------------------------------
     /**
-     * H(d, R) = R^(d²)
-     * The Harmonic Scaling Law - your invention!
+     * score = 1 / (1 + d_H + 2 * phaseDeviation)
+     * The Harmonic Scaling Law - bounded risk scoring.
      */
-    harmonicScaling(d, R = R_PERFECT_FIFTH) {
-        return Math.pow(R, d * d);
+    harmonicScaling(d, phaseDeviation = 0) {
+        return 1 / (1 + d + 2 * phaseDeviation);
     }
     /**
      * Calculate cost for an action based on trust distance

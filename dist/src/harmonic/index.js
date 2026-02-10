@@ -19,7 +19,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpiralSealSS1 = exports.SacredTongueTokenizer = exports.getTongueForSection = exports.UMBROTH = exports.SECTION_TONGUES = exports.SACRED_TONGUES = exports.RUNETHIC = exports.KOR_AELIN = exports.DRAUMRIC = exports.CASSISIVADAN = exports.AVALI = exports.projectToBall = exports.phaseModulation = exports.multiWellPotential = exports.multiWellGradient = exports.multiPhaseModulation = exports.mobiusAdd = exports.logMap0 = exports.inverseBreathTransform = exports.hyperbolicDistance = exports.expMap0 = exports.breathTransform = exports.applyHyperbolicPipeline = exports.createVertex = exports.HamiltonianCFI = exports.ControlFlowGraph = exports.generateTestSignal = exports.generateNoise = exports.AudioAxisProcessor = exports.getFluxState = exports.TONGUES = exports.LanguesMetric = exports.FluxingLanguesMetric = exports.standingWaveAmplitude = exports.nodalSurface = exports.fluxRedistribution = exports.checkCymaticResonance = exports.cavityResonance = exports.bottleBeamIntensity = exports.harmonicCouplingMatrix = exports.halAttention = exports.securityLevel = exports.securityBits = exports.octaveTranspose = exports.harmonicScale = exports.harmonicDistance = exports.log2 = exports.assertIntGE = exports.assertFinite = exports.CONSTANTS = void 0;
 exports.PHDMDeviationDetector = exports.CubicSpline6D = exports.CANONICAL_POLYHEDRA = exports.scbeToQuasicrystal = exports.quasicrystalPotential = exports.quasicrystalHash = exports.quasicrystal5to2 = exports.quasicrystal4to2 = exports.penroseToLattice = exports.penroseTiling = exports.penroseRhombus = exports.penroseInitial = exports.penroseDeflate = exports.nearestQCVertex = exports.fibonacciWord = exports.fibonacciSequence = exports.fibonacci2D = exports.fibonacci1D = exports.diffractionPattern = exports.defaultQCLattice = exports.cutAndProject2D = exports.checkRotationalSymmetry = exports.ammannBeenkerSquare = exports.ammannBeenkerRhombus = exports.SILVER_RATIO = exports.QCLatticeProvider = exports.PHI_INV = exports.PHI = exports.shake256 = exports.shake128 = exports.secureRandomBytes = exports.ntt = exports.mlkemKeyGen = exports.mlkemEncapsulate = exports.mlkemDecapsulate = exports.mldsaVerify = exports.mldsaSign = exports.mldsaKeyGen = exports.invNtt = exports.defaultPQCProvider = exports.PQCProvider = exports.unseal = exports.seal = exports.randomBytes = exports.parseSS1Blob = exports.formatSS1Blob = exports.encodeToSpelltext = exports.decodeFromSpelltext = exports.computeLWSWeights = exports.computeLWSScore = void 0;
-exports.spectralGenerator = exports.TONGUE_COLORS = exports.SpectralIdentityGenerator = exports.SPECTRAL_BANDS = exports.topologicalHash = exports.serializePolyhedron = exports.isValidTopology = exports.eulerCharacteristic = exports.distance6D = exports.computeCentroid = exports.PolyhedralHamiltonianDefenseManifold = exports.PHDMHamiltonianPath = void 0;
+exports.TONGUE_PHASES = exports.TONGUE_INDEX = exports.DEFAULT_CONFIG = exports.tonicCoherence = exports.phaseDistanceScore = exports.phaseDeviation = exports.triHyperbolicDistance = exports.driftDistanceToBaseline = exports.driftAuthScore = exports.computeDriftSignature = exports.TriMechanismDetector = exports.DEFAULT_TONGUE_WEIGHTS = exports.RING_BOUNDARIES = exports.ALL_TONGUES = exports.getRingLevel = exports.deriveKey = exports.predicateCrypto = exports.predicateQuorum = exports.predicatePath = exports.predicateGeo = exports.predicateTongue = exports.hatch = exports.createEgg = exports.spectralGenerator = exports.TONGUE_COLORS = exports.SpectralIdentityGenerator = exports.SPECTRAL_BANDS = exports.topologicalHash = exports.serializePolyhedron = exports.isValidTopology = exports.eulerCharacteristic = exports.distance6D = exports.computeCentroid = exports.PolyhedralHamiltonianDefenseManifold = exports.PHDMHamiltonianPath = void 0;
 // ═══════════════════════════════════════════════════════════════
 // Constants and Types
 // ═══════════════════════════════════════════════════════════════
@@ -215,4 +215,43 @@ Object.defineProperty(exports, "SPECTRAL_BANDS", { enumerable: true, get: functi
 Object.defineProperty(exports, "SpectralIdentityGenerator", { enumerable: true, get: function () { return spectral_identity_js_1.SpectralIdentityGenerator; } });
 Object.defineProperty(exports, "TONGUE_COLORS", { enumerable: true, get: function () { return spectral_identity_js_1.TONGUE_COLORS; } });
 Object.defineProperty(exports, "spectralGenerator", { enumerable: true, get: function () { return spectral_identity_js_1.spectralGenerator; } });
+// ═══════════════════════════════════════════════════════════════
+// Sacred Eggs — Ritual-Based Conditional Secret Distribution
+// ═══════════════════════════════════════════════════════════════
+var sacredEggs_js_1 = require("./sacredEggs.js");
+// Egg creation and hatching
+Object.defineProperty(exports, "createEgg", { enumerable: true, get: function () { return sacredEggs_js_1.createEgg; } });
+Object.defineProperty(exports, "hatch", { enumerable: true, get: function () { return sacredEggs_js_1.hatch; } });
+// Predicates
+Object.defineProperty(exports, "predicateTongue", { enumerable: true, get: function () { return sacredEggs_js_1.predicateTongue; } });
+Object.defineProperty(exports, "predicateGeo", { enumerable: true, get: function () { return sacredEggs_js_1.predicateGeo; } });
+Object.defineProperty(exports, "predicatePath", { enumerable: true, get: function () { return sacredEggs_js_1.predicatePath; } });
+Object.defineProperty(exports, "predicateQuorum", { enumerable: true, get: function () { return sacredEggs_js_1.predicateQuorum; } });
+Object.defineProperty(exports, "predicateCrypto", { enumerable: true, get: function () { return sacredEggs_js_1.predicateCrypto; } });
+// Key derivation
+Object.defineProperty(exports, "deriveKey", { enumerable: true, get: function () { return sacredEggs_js_1.deriveKey; } });
+// Utilities
+Object.defineProperty(exports, "getRingLevel", { enumerable: true, get: function () { return sacredEggs_js_1.getRingLevel; } });
+// Constants
+Object.defineProperty(exports, "ALL_TONGUES", { enumerable: true, get: function () { return sacredEggs_js_1.ALL_TONGUES; } });
+Object.defineProperty(exports, "RING_BOUNDARIES", { enumerable: true, get: function () { return sacredEggs_js_1.RING_BOUNDARIES; } });
+Object.defineProperty(exports, "DEFAULT_TONGUE_WEIGHTS", { enumerable: true, get: function () { return sacredEggs_js_1.DEFAULT_TONGUE_WEIGHTS; } });
+// ═══════════════════════════════════════════════════════════════
+// Three-Mechanism Adversarial Detection
+// ═══════════════════════════════════════════════════════════════
+var triMechanismDetector_js_1 = require("./triMechanismDetector.js");
+// Core detector
+Object.defineProperty(exports, "TriMechanismDetector", { enumerable: true, get: function () { return triMechanismDetector_js_1.TriMechanismDetector; } });
+// Mechanism functions
+Object.defineProperty(exports, "computeDriftSignature", { enumerable: true, get: function () { return triMechanismDetector_js_1.computeDriftSignature; } });
+Object.defineProperty(exports, "driftAuthScore", { enumerable: true, get: function () { return triMechanismDetector_js_1.driftAuthScore; } });
+Object.defineProperty(exports, "driftDistanceToBaseline", { enumerable: true, get: function () { return triMechanismDetector_js_1.driftDistanceToBaseline; } });
+Object.defineProperty(exports, "triHyperbolicDistance", { enumerable: true, get: function () { return triMechanismDetector_js_1.hyperbolicDistance; } });
+Object.defineProperty(exports, "phaseDeviation", { enumerable: true, get: function () { return triMechanismDetector_js_1.phaseDeviation; } });
+Object.defineProperty(exports, "phaseDistanceScore", { enumerable: true, get: function () { return triMechanismDetector_js_1.phaseDistanceScore; } });
+Object.defineProperty(exports, "tonicCoherence", { enumerable: true, get: function () { return triMechanismDetector_js_1.tonicCoherence; } });
+// Constants
+Object.defineProperty(exports, "DEFAULT_CONFIG", { enumerable: true, get: function () { return triMechanismDetector_js_1.DEFAULT_CONFIG; } });
+Object.defineProperty(exports, "TONGUE_INDEX", { enumerable: true, get: function () { return triMechanismDetector_js_1.TONGUE_INDEX; } });
+Object.defineProperty(exports, "TONGUE_PHASES", { enumerable: true, get: function () { return triMechanismDetector_js_1.TONGUE_PHASES; } });
 //# sourceMappingURL=index.js.map
