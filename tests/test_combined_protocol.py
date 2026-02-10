@@ -23,7 +23,13 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from scipy.fftpack import fft, fftfreq
+
+# Use scipy-compatible imports with fallback
+try:
+    from scipy.fftpack import fft, fftfreq
+except ImportError:
+    fft = np.fft.fft
+    fftfreq = np.fft.fftfreq
 
 # ==============================================================================
 # CONSTANTS

@@ -392,52 +392,48 @@ def verify_phase_invariance(
 
 
 @symmetry_check(group=SymmetryGroup.SCALE, tolerance=0.0)
-def layer_12_harmonic_scaling(d: float, R: float = PHI) -> float:
+def layer_12_harmonic_scaling(d: float, phase_deviation: float = 0.0) -> float:
     """
-    Layer 12: Harmonic Scaling (Superexponential)
+    Layer 12: Harmonic Scaling (Bounded)
 
-    H(d, R) = R^(d²)
+    score = 1 / (1 + d_H + 2 * phase_deviation)
 
-    Risk amplification with "vertical wall" effect.
+    Returns a safety score in (0, 1].
 
     Symmetry Property:
-        H is strictly monotonically increasing, which means it
+        H is strictly monotonically decreasing in d, which means it
         PRESERVES ORDER (a symmetry of the real line):
-            d₁ < d₂ ⟹ H(d₁) < H(d₂)
+            d₁ < d₂ ⟹ H(d₁) > H(d₂)
 
         This is the symmetry of "order preservation" which ensures
         that risk ranking is invariant under the scaling.
 
     Properties:
         - H(0) = 1 (identity at origin)
-        - H'(d) = 2d · R^(d²) · ln(R) > 0 (strictly increasing)
-        - H''(d) > 0 for d > 0 (convex)
-        - Creates sharp transition ("vertical wall") at large d
+        - H is strictly decreasing (preserves ranking)
+        - Bounded in (0, 1] (no numerical collapse)
 
     Args:
-        d: Distance value
-        R: Base of exponential (default: golden ratio φ)
+        d: Distance value (>= 0)
+        phase_deviation: Phase deviation (>= 0, default 0)
 
     Returns:
-        Harmonically scaled value H(d)
+        Safety score in (0, 1]
     """
-    # Clamp to prevent overflow
-    d_sq = min(d**2, 50.0)
-    return float(R**d_sq)
+    return float(1.0 / (1.0 + d + 2.0 * phase_deviation))
 
 
-def layer_12_inverse(H: float, R: float = PHI) -> float:
+def layer_12_inverse(score: float) -> float:
     """
-    Inverse of harmonic scaling.
+    Inverse of harmonic scaling (with phase_deviation=0).
 
-    d = √(log_R(H))
+    d = (1 / score) - 1
     """
-    if H <= 0:
+    if score <= 0:
+        return float('inf')
+    if score > 1:
         return 0.0
-    log_H = np.log(H) / np.log(R)
-    if log_H < 0:
-        return 0.0
-    return float(np.sqrt(log_H))
+    return float(1.0 / score - 1.0)
 
 
 def verify_monotonicity(n_tests: int = 1000, R: float = PHI) -> Tuple[bool, int]:

@@ -103,27 +103,25 @@ distance = st.floats(min_value=0.0, max_value=10.0)
 class TestMathematicalInvariants:
     """Property-based tests for mathematical invariants."""
 
-    @given(d=distance, R=harmonic_ratio)
+    @given(d=distance)
     @settings(max_examples=200)
-    def test_harmonic_scaling_positive(self, d, R):
-        """H(d, R) > 0 for all valid inputs."""
-        H = R ** (d**2)
+    def test_harmonic_scaling_positive(self, d):
+        """H(d) = 1/(1+d) > 0 for all valid inputs."""
+        H = 1.0 / (1.0 + d)
         assert H > 0
 
-    @given(d=distance, R=harmonic_ratio)
+    @given(d=distance)
     @settings(max_examples=200)
-    def test_harmonic_scaling_monotonic(self, d, R):
-        """H(d+ε, R) > H(d, R) for ε > 0 and R > 1."""
+    def test_harmonic_scaling_monotonic(self, d):
+        """H(d+ε) < H(d) for ε > 0 (closer to danger = lower score)."""
         epsilon = 0.1
-        H_d = R ** (d**2)
-        H_d_plus = R ** ((d + epsilon) ** 2)
-        assert H_d_plus >= H_d
+        H_d = 1.0 / (1.0 + d)
+        H_d_plus = 1.0 / (1.0 + d + epsilon)
+        assert H_d_plus <= H_d
 
-    @given(R=harmonic_ratio)
-    @settings(max_examples=100)
-    def test_harmonic_scaling_identity_at_zero(self, R):
-        """H(0, R) = 1 for all R."""
-        H = R ** (0**2)
+    def test_harmonic_scaling_identity_at_zero(self):
+        """H(0) = 1 (zero distance = perfectly safe)."""
+        H = 1.0 / (1.0 + 0)
         assert np.isclose(H, 1.0)
 
     @given(u=poincare_point, v=poincare_point)

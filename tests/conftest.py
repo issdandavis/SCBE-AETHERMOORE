@@ -169,10 +169,10 @@ def hyperbolic_distance():
 
 @pytest.fixture
 def harmonic_scaling():
-    """Harmonic scaling function H(d, R) = R^(d²)."""
+    """Harmonic scaling: score = 1 / (1 + d + 2 * phase_deviation)."""
 
-    def _harmonic_scaling(d: float, R: float = R_FIFTH) -> float:
-        return R ** (d**2)
+    def _harmonic_scaling(d: float, phase_deviation: float = 0.0) -> float:
+        return 1.0 / (1.0 + d + 2.0 * phase_deviation)
 
     return _harmonic_scaling
 
@@ -206,6 +206,28 @@ def performance_timer():
 # =============================================================================
 
 
+# =============================================================================
+# LIBOQS AVAILABILITY CHECK
+# =============================================================================
+
+def _liboqs_available() -> bool:
+    """Check if liboqs-python is available."""
+    try:
+        import oqs
+        return True
+    except (ImportError, RuntimeError):
+        # liboqs-python not installed or shared libraries not found
+        return False
+
+LIBOQS_AVAILABLE = _liboqs_available()
+
+# Skip decorator for tests requiring liboqs
+requires_liboqs = pytest.mark.skipif(
+    not LIBOQS_AVAILABLE,
+    reason="liboqs-python not installed (optional dependency)"
+)
+
+
 def pytest_configure(config):
     """Register custom markers."""
     config.addinivalue_line(
@@ -220,3 +242,14 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "math: Mathematical verification tests")
     config.addinivalue_line("markers", "governance: Governance decision tests")
     config.addinivalue_line("markers", "pqc: Post-quantum cryptography tests")
+    config.addinivalue_line("markers", "requires_liboqs: Tests requiring liboqs-python")
+
+
+def pytest_collection_modifyitems(config, items):
+    """Auto-skip tests that require liboqs when it's not available."""
+    if LIBOQS_AVAILABLE:
+        return
+    skip_liboqs = pytest.mark.skip(reason="liboqs-python not installed (optional dependency)")
+    for item in items:
+        if "requires_liboqs" in item.keywords or "pqc" in item.keywords:
+            item.add_marker(skip_liboqs)

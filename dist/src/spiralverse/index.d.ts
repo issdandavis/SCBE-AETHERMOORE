@@ -13,8 +13,6 @@
  *
  * @module spiralverse
  */
-/// <reference types="node" />
-/// <reference types="node" />
 /** Sacred Tongue identifier */
 export type TongueID = 'ko' | 'av' | 'ru' | 'ca' | 'um' | 'dr';
 /** Policy enforcement level */
@@ -104,4 +102,5 @@ export declare function getRequiredTongues(policy: PolicyLevel): TongueID[];
  * @returns Suggested policy level
  */
 export declare function suggestPolicy(action: string): PolicyLevel;
+export { RWPv3Protocol, SacredTongueTokenizer, TOKENIZER, rwpEncryptMessage, rwpDecryptMessage, envelopeToDict, envelopeFromDict, type RWPv3Envelope, } from './rwp_v3.js';
 //# sourceMappingURL=index.d.ts.map

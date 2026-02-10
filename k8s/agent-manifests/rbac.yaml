@@ -1,0 +1,116 @@
+---
+# Service Accounts
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: scbe-agent
+  namespace: scbe-agents
+  labels:
+    app.kubernetes.io/name: scbe-aethermoore
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: scbe-hidden-agent
+  namespace: scbe-agents
+  labels:
+    app.kubernetes.io/name: scbe-aethermoore
+    ip-tier: hidden
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vault-proxy
+  namespace: scbe-agents
+  labels:
+    app.kubernetes.io/name: scbe-aethermoore
+---
+# Role for standard agents
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: scbe-agent-role
+  namespace: scbe-agents
+rules:
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  resourceNames: ["agent-tls", "kafka-credentials"]
+  verbs: ["get"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+---
+# Role for hidden agents (more restricted)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: scbe-hidden-agent-role
+  namespace: scbe-agents
+rules:
+- apiGroups: [""]
+  resources: ["configmaps"]
+  resourceNames: ["hidden-agent-config"]
+  verbs: ["get"]
+# No access to secrets - use Vault only
+---
+# Role for vault proxy
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: vault-proxy-role
+  namespace: scbe-agents
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  resourceNames: ["vault-ca-cert", "vault-approle"]
+  verbs: ["get"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  resourceNames: ["vault-proxy-config"]
+  verbs: ["get"]
+---
+# RoleBindings
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: scbe-agent-binding
+  namespace: scbe-agents
+subjects:
+- kind: ServiceAccount
+  name: scbe-agent
+  namespace: scbe-agents
+roleRef:
+  kind: Role
+  name: scbe-agent-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: scbe-hidden-agent-binding
+  namespace: scbe-agents
+subjects:
+- kind: ServiceAccount
+  name: scbe-hidden-agent
+  namespace: scbe-agents
+roleRef:
+  kind: Role
+  name: scbe-hidden-agent-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: vault-proxy-binding
+  namespace: scbe-agents
+subjects:
+- kind: ServiceAccount
+  name: vault-proxy
+  namespace: scbe-agents
+roleRef:
+  kind: Role
+  name: vault-proxy-role
+  apiGroup: rbac.authorization.k8s.io

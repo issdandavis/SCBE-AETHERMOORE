@@ -432,3 +432,18 @@ export function suggestPolicy(action: string): PolicyLevel {
   const normalizedAction = action.toLowerCase();
   return ACTION_POLICIES[normalizedAction] ?? 'standard';
 }
+
+// ============================================================================
+// RWP v3.0 Re-exports
+// ============================================================================
+
+export {
+  RWPv3Protocol,
+  SacredTongueTokenizer,
+  TOKENIZER,
+  rwpEncryptMessage,
+  rwpDecryptMessage,
+  envelopeToDict,
+  envelopeFromDict,
+  type RWPv3Envelope,
+} from './rwp_v3.js';

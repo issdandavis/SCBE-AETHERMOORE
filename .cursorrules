@@ -1,0 +1,39 @@
+# SCBE-AETHERMOORE - Cursor Rules
+
+## Project: Hyperbolic Geometry AI Safety Framework (Patent Pending)
+
+## Architecture (14 Layers)
+- L1-4: Complex Context → Realification → Weighted Transform → Poincaré Embedding
+- L5: Hyperbolic metric `dℍ = arcosh(1 + 2‖u-v‖²/((1-‖u‖²)(1-‖v‖²)))`
+- L6-7: Breathing Transform + Phase (Möbius addition)
+- L8: Multi-Well Realms
+- L9-10: Spectral + Spin Coherence
+- L11: Triadic Temporal Distance
+- L12: Harmonic Wall `H(d,R) = R^(d²)`
+- L13: Decision Gate → ALLOW/QUARANTINE/DENY
+- L14: Audio Axis (FFT telemetry)
+
+## Code Patterns
+- TypeScript: ES modules with `.js` extensions
+- Python: Type hints, dataclasses
+- Add axiom compliance comments (e.g., `// A4: Clamping`)
+- Use `Buffer` for crypto operations
+
+## Key Files
+- `src/harmonic/languesMetric.ts` - Langues Metric implementation
+- `src/crypto/envelope.ts` - Cryptographic envelope
+- `symphonic_cipher/` - Python implementation
+
+## Sacred Tongues (Langues)
+KO, AV, RU, CA, UM, DR - 6D phase-shifted exponentials
+
+## Testing
+```bash
+npm test                    # TypeScript tests
+python -m pytest tests/     # Python tests
+```
+
+## Security
+- Post-Quantum: Kyber768 + Dilithium3
+- Never commit secrets or API keys
+- All crypto ops must be constant-time

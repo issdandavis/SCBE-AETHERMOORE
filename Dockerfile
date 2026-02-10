@@ -10,7 +10,7 @@ WORKDIR /app
 COPY package*.json tsconfig*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm install --legacy-peer-deps
 
 # Copy source code
 COPY src/ ./src/
@@ -30,12 +30,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     g++ \
     libssl-dev \
-    git \
+        pkg-config \
+    wget \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Clone and build liboqs (NIST FIPS 203/204 compliant)
-RUN git clone --depth 1 --branch 0.10.1 https://github.com/open-quantum-safe/liboqs.git && \
+RUN wget -q https://github.com/open-quantum-safe/liboqs/archive/refs/tags/0.14.0.tar.gz -O liboqs.tar.gz && tar xzf liboqs.tar.gz && mv liboqs-0.14.0 liboqs && \
     cd liboqs && \
     mkdir build && cd build && \
     cmake -GNinja \
@@ -49,6 +50,14 @@ RUN git clone --depth 1 --branch 0.10.1 https://github.com/open-quantum-safe/lib
 # Stage 3: Python environment with PQC
 FROM python:3.11-slim AS py-builder
 
+# Install build dependencies for liboqs-python
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    libssl-dev \
+    cmake \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Copy liboqs from builder
@@ -61,7 +70,7 @@ RUN ldconfig
 # Install Python dependencies including liboqs-python
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir liboqs-python>=0.10.0
+        pip install --no-cache-dir liboqs-python==0.14.1
 
 # Copy Python source
 COPY src/ ./src/
@@ -88,6 +97,7 @@ RUN ldconfig
 
 # Copy Python dependencies (including liboqs-python)
 COPY --from=py-builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=py-builder /usr/local/bin /usr/local/bin
 COPY --from=py-builder /app/src ./src
 COPY --from=py-builder /app/scbe-cli.py ./
 
@@ -107,14 +117,12 @@ ENV SCBE_ENV=production
 ENV SCBE_PQC_BACKEND=liboqs
 
 # Expose ports
-EXPOSE 3000 8000
-
+EXPOSE 8080
 # Health check - verify API is responding
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD curl -f http://localhost:8000/health || exit 1
-
+    CMD curl -f http://localhost:8080/health || exit 1
 # Verify PQC on startup
 RUN python -c "from src.crypto.pqc_liboqs import get_pqc_backend; print(f'PQC Backend: {get_pqc_backend()}')"
 
 # Default command
-CMD ["python", "scbe-cli.py"]
+CMD uvicorn src.api.main:app --host 0.0.0.0 --port ${PORT:-8080}

@@ -337,7 +337,7 @@
         }
 
         function harmonicH(d) {
-            return Math.exp(d * d);
+            return 1 / (1 + d);
         }
 
         function updateMetrics() {
@@ -454,7 +454,7 @@
             ];
 
             data.forEach(({ d, label }) => {
-                const H = Math.exp(d * d);
+                const H = 1 / (1 + d);
                 const barWidth = Math.min(100, Math.log10(H + 1) * 25);
                 const color = d < 1 ? 'bg-green-500' : d < 2 ? 'bg-yellow-500' : 'bg-red-500';
 

@@ -1,0 +1,298 @@
+---
+# Hidden IP Tier: UM, DR (Security/Auth)
+# Air-gapped, proxy-only access, maximum security
+
+# UM Agent - Umbroth (Security/Redaction)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scbe-agent-um
+  namespace: scbe-agents
+  labels:
+    app: scbe-agent
+    tongue: um
+    ip-tier: hidden
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scbe-agent
+      tongue: um
+  template:
+    metadata:
+      labels:
+        app: scbe-agent
+        tongue: um
+        ip-tier: hidden
+        role: hidden-agent
+      annotations:
+        sidecar.istio.io/inject: "false"  # No service mesh
+    spec:
+      serviceAccountName: scbe-hidden-agent
+      hostNetwork: false  # Isolated network namespace
+      containers:
+      - name: agent
+        image: scbe/agent:latest
+        # No exposed ports! Unix socket only
+        env:
+        - name: AGENT_TONGUE
+          value: "UM"
+        - name: IP_TIER
+          value: "hidden"
+        - name: SOCKET_PATH
+          value: "/var/run/scbe/agent.sock"
+        - name: PHASE_OFFSET
+          value: "240"
+        - name: WEIGHT_MULTIPLIER
+          value: "6.854"
+        - name: VAULT_ADDR
+          value: "unix:///vault/sock/vault.sock"
+        volumeMounts:
+        - name: agent-socket
+          mountPath: /var/run/scbe
+        - name: vault-socket
+          mountPath: /vault/sock
+          readOnly: true
+        - name: vault-tls
+          mountPath: /vault/tls
+          readOnly: true
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        securityContext:
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: agent-socket
+        emptyDir: {}
+      - name: vault-socket
+        emptyDir: {}
+      - name: vault-tls
+        secret:
+          secretName: vault-ca-cert
+---
+# DR Agent - Draumric (Schema/Auth - SCBE L14 Decision Engine)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scbe-agent-dr
+  namespace: scbe-agents
+  labels:
+    app: scbe-agent
+    tongue: dr
+    ip-tier: hidden
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scbe-agent
+      tongue: dr
+  template:
+    metadata:
+      labels:
+        app: scbe-agent
+        tongue: dr
+        ip-tier: hidden
+        role: hidden-agent
+        component: l14-engine
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      serviceAccountName: scbe-hidden-agent
+      hostNetwork: false
+      containers:
+      - name: agent
+        image: scbe/agent:latest
+        # No exposed ports!
+        env:
+        - name: AGENT_TONGUE
+          value: "DR"
+        - name: IP_TIER
+          value: "hidden"
+        - name: SOCKET_PATH
+          value: "/var/run/scbe/agent.sock"
+        - name: PHASE_OFFSET
+          value: "300"
+        - name: WEIGHT_MULTIPLIER
+          value: "11.09"
+        - name: VAULT_ADDR
+          value: "unix:///vault/sock/vault.sock"
+        - name: SCBE_L14_MODE
+          value: "true"
+        - name: OMEGA_GATE_ENABLED
+          value: "true"
+        volumeMounts:
+        - name: agent-socket
+          mountPath: /var/run/scbe
+        - name: vault-socket
+          mountPath: /vault/sock
+          readOnly: true
+        - name: vault-tls
+          mountPath: /vault/tls
+          readOnly: true
+        - name: sacred-keys
+          mountPath: /secrets/sacred
+          readOnly: true
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        securityContext:
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: agent-socket
+        emptyDir: {}
+      - name: vault-socket
+        emptyDir: {}
+      - name: vault-tls
+        secret:
+          secretName: vault-ca-cert
+      - name: sacred-keys
+        secret:
+          secretName: sacred-egg-keys
+          optional: true
+---
+# Vault Proxy (for hidden agent access)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vault-proxy
+  namespace: scbe-agents
+  labels:
+    app: vault-proxy
+    ip-tier: private
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: vault-proxy
+  template:
+    metadata:
+      labels:
+        app: vault-proxy
+        ip-tier: private
+    spec:
+      serviceAccountName: vault-proxy
+      containers:
+      - name: proxy
+        image: vault:1.15.0
+        args:
+        - "agent"
+        - "-config=/vault/config/agent.hcl"
+        ports:
+        - containerPort: 8200
+          name: http
+        env:
+        - name: VAULT_ADDR
+          value: "unix:///vault/sock/vault.sock"
+        volumeMounts:
+        - name: vault-config
+          mountPath: /vault/config
+        - name: vault-socket
+          mountPath: /vault/sock
+        - name: vault-tls
+          mountPath: /vault/tls
+          readOnly: true
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        securityContext:
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 100
+      volumes:
+      - name: vault-config
+        configMap:
+          name: vault-proxy-config
+      - name: vault-socket
+        emptyDir: {}
+      - name: vault-tls
+        secret:
+          secretName: vault-ca-cert
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault-proxy
+  namespace: scbe-agents
+spec:
+  type: ClusterIP
+  selector:
+    app: vault-proxy
+  ports:
+  - port: 8200
+    targetPort: 8200
+    protocol: TCP
+---
+# Network Policy: Deny all ingress to hidden agents
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: hidden-agents-deny-all
+  namespace: scbe-agents
+spec:
+  podSelector:
+    matchLabels:
+      ip-tier: hidden
+  policyTypes:
+  - Ingress
+  - Egress
+  # No ingress rules = deny all ingress
+  egress:
+  # Only allow to Vault (via Unix socket, so this is for DNS only)
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: UDP
+      port: 53
+---
+# Network Policy: Vault proxy access
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: vault-proxy-policy
+  namespace: scbe-agents
+spec:
+  podSelector:
+    matchLabels:
+      app: vault-proxy
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow from private tier agents only
+  - from:
+    - podSelector:
+        matchLabels:
+          role: agent
+          ip-tier: private
+    ports:
+    - protocol: TCP
+      port: 8200
+  egress:
+  # Allow DNS
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: UDP
+      port: 53

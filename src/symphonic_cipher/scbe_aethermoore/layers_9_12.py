@@ -402,28 +402,22 @@ class RiskAnalysis:
 
 
 def harmonic_scaling(
-    d_star: float, R: float = PHI, max_exp: float = 50.0, use_vertical_wall: bool = True
+    d_star: float, phase_deviation: float = 0.0, **_kwargs
 ) -> float:
     """
-    Compute harmonic scaling factor.
+    Compute harmonic scaling score (bounded).
 
-    Two modes (A12):
-        - Vertical Wall: H = exp(d*²) [UNBOUNDED - Patent Claim]
-        - Soft Wall:     H = R^{d*²}  [Bounded growth]
+    score = 1 / (1 + d_H + 2 * phase_deviation)
 
-    Properties (Theorem 4):
-        - H ≥ 1 for d* ≥ 0
-        - H monotonically increasing in d*
-        - Vertical Wall: ∂H/∂d* = 2d* × H (exponential growth)
+    Replaces the previous R^(d²) / exp(d²) formulas which caused
+    numerical collapse on subtle attacks (AUC 0.054 vs baseline 0.984).
+
+    Properties:
+        - H(0) = 1 (safe center)
+        - H strictly decreasing in d* (preserves ranking)
+        - Bounded in (0, 1] (no overflow)
     """
-    exponent = min(d_star**2, max_exp)  # Prevent overflow
-
-    if use_vertical_wall:
-        # A12 Vertical Wall: H = exp(d*²) - UNBOUNDED
-        return float(np.exp(exponent))
-    else:
-        # Soft wall: H = R^{d*²}
-        return float(R**exponent)
+    return float(1.0 / (1.0 + d_star + 2.0 * phase_deviation))
 
 
 def compute_risk(
