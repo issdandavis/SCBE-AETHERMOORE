@@ -352,3 +352,143 @@ export function getTongueForSection(section: SS1Section): TongueSpec {
   const code = SECTION_TONGUES[section];
   return TONGUES[code];
 }
+
+// ═══════════════════════════════════════════════════════════════
+// CUSTOM LEXICON SUPPORT
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Custom lexicon definition for loading from JSON
+ */
+export interface LexiconDefinition {
+  code: string;
+  name: string;
+  prefixes: string[];
+  suffixes: string[];
+  domain: string;
+  /** Optional harmonic frequency for spectral validation */
+  harmonicFrequency?: number;
+  /** Optional description/lore */
+  description?: string;
+}
+
+/**
+ * Lexicon file format
+ */
+export interface LexiconFile {
+  version: string;
+  tongues: LexiconDefinition[];
+}
+
+/**
+ * Validate a lexicon definition
+ * @throws Error if invalid
+ */
+export function validateLexicon(lexicon: LexiconDefinition): void {
+  if (!lexicon.code || typeof lexicon.code !== 'string') {
+    throw new Error('Lexicon must have a string code');
+  }
+  if (lexicon.code.length !== 2) {
+    throw new Error(`Lexicon code must be 2 characters, got: ${lexicon.code}`);
+  }
+  if (!lexicon.name || typeof lexicon.name !== 'string') {
+    throw new Error('Lexicon must have a string name');
+  }
+  if (!Array.isArray(lexicon.prefixes) || lexicon.prefixes.length !== 16) {
+    throw new Error(
+      `Lexicon ${lexicon.code} must have exactly 16 prefixes, got ${lexicon.prefixes?.length}`
+    );
+  }
+  if (!Array.isArray(lexicon.suffixes) || lexicon.suffixes.length !== 16) {
+    throw new Error(
+      `Lexicon ${lexicon.code} must have exactly 16 suffixes, got ${lexicon.suffixes?.length}`
+    );
+  }
+
+  // Check for unique prefixes and suffixes
+  const uniquePrefixes = new Set(lexicon.prefixes);
+  if (uniquePrefixes.size !== 16) {
+    throw new Error(`Lexicon ${lexicon.code} has duplicate prefixes`);
+  }
+  const uniqueSuffixes = new Set(lexicon.suffixes);
+  if (uniqueSuffixes.size !== 16) {
+    throw new Error(`Lexicon ${lexicon.code} has duplicate suffixes`);
+  }
+}
+
+/**
+ * Register a custom tongue lexicon.
+ * Overwrites existing tongue if code matches.
+ *
+ * @example
+ * registerTongue({
+ *   code: 'ko',
+ *   name: "Kor'aelin",
+ *   prefixes: ['vel', 'ashi', 'thar', ...], // 16 total
+ *   suffixes: ['oni', 'eth', 'ara', ...],   // 16 total
+ *   domain: 'nonce/flow/intent'
+ * });
+ */
+export function registerTongue(lexicon: LexiconDefinition): void {
+  validateLexicon(lexicon);
+
+  const spec: TongueSpec = {
+    code: lexicon.code,
+    name: lexicon.name,
+    prefixes: Object.freeze([...lexicon.prefixes]) as readonly string[],
+    suffixes: Object.freeze([...lexicon.suffixes]) as readonly string[],
+    domain: lexicon.domain,
+  };
+
+  TONGUES[lexicon.code] = spec;
+}
+
+/**
+ * Load multiple tongues from a lexicon file object.
+ *
+ * @example
+ * const lexiconData = JSON.parse(fs.readFileSync('custom-lexicons.json', 'utf-8'));
+ * loadLexicons(lexiconData);
+ */
+export function loadLexicons(file: LexiconFile): { loaded: string[]; errors: string[] } {
+  const loaded: string[] = [];
+  const errors: string[] = [];
+
+  for (const lexicon of file.tongues) {
+    try {
+      registerTongue(lexicon);
+      loaded.push(lexicon.code);
+    } catch (e) {
+      errors.push(`${lexicon.code}: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+
+  return { loaded, errors };
+}
+
+/**
+ * Reset tongues to built-in defaults.
+ * Useful for testing or resetting after loading custom lexicons.
+ */
+export function resetToDefaultTongues(): void {
+  TONGUES.ko = KOR_AELIN;
+  TONGUES.av = AVALI;
+  TONGUES.ru = RUNETHIC;
+  TONGUES.ca = CASSISIVADAN;
+  TONGUES.um = UMBROTH;
+  TONGUES.dr = DRAUMRIC;
+}
+
+/**
+ * Get all registered tongue codes
+ */
+export function getRegisteredTongues(): string[] {
+  return Object.keys(TONGUES);
+}
+
+/**
+ * Check if a tongue code is registered
+ */
+export function hasTongue(code: string): boolean {
+  return code in TONGUES;
+}

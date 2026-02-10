@@ -67,9 +67,9 @@ export interface LanguesMetricConfig {
  * Langues Metric - 6D governance cost function
  */
 export class LanguesMetric {
-  private betaBase: number;
-  private omegaBase: number;
-  private riskThresholds: [number, number];
+  protected betaBase: number;
+  protected omegaBase: number;
+  protected riskThresholds: [number, number];
 
   /** Golden ratio weights wₗ = φˡ */
   readonly weights: number[];
@@ -201,7 +201,7 @@ export class FluxingLanguesMetric extends LanguesMetric {
     for (let i = 0; i < 6; i++) {
       const nu = this.fluxes[i].nu;
       const d = point[i];
-      const omega = (this as any).omegaBase * (i + 1);
+      const omega = this.omegaBase * (i + 1);
       const phase = this.phases[i];
       const sinTerm = Math.sin(omega * t + phase);
       const exponent = this.betas[i] * (d + sinTerm);

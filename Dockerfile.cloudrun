@@ -1,0 +1,72 @@
+# SCBE-AETHERMOORE Cloud Run Dockerfile
+# Optimized for Google Cloud Run deployment
+#
+# Build: docker build -f Dockerfile.cloudrun -t scbe-api .
+# Run locally: docker run -p 8080:8080 -e PORT=8080 scbe-api
+# Deploy: gcloud run deploy scbe-api --source .
+#
+# Required env vars at runtime:
+#   PORT (set automatically by Cloud Run)
+#   SCBE_API_KEY (optional, for custom keys)
+
+FROM python:3.11-slim AS builder
+
+WORKDIR /build
+
+# Install build dependencies for compiled packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libffi-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements first for layer caching
+COPY requirements.txt .
+
+# Install Python dependencies
+# Note: We skip liboqs-python as it requires complex native build
+# The code gracefully falls back when liboqs is unavailable
+RUN pip install --no-cache-dir --target=/install \
+    numpy>=2.0.0 \
+    scipy>=1.14.0 \
+    fastapi>=0.109.0 \
+    "uvicorn[standard]>=0.27.0" \
+    pydantic>=2.0.0 \
+    pycryptodome>=3.20.0 \
+    argon2-cffi>=23.1.0 \
+    python-multipart>=0.0.9
+
+# Production image
+FROM python:3.11-slim
+
+# Security: Create non-root user
+RUN groupadd -r scbe && useradd -r -g scbe -u 1000 scbe
+
+WORKDIR /app
+
+# Copy installed packages from builder
+COPY --from=builder /install /usr/local/lib/python3.11/site-packages/
+
+# Copy application code
+COPY --chown=scbe:scbe api/ ./api/
+COPY --chown=scbe:scbe src/ ./src/
+
+# Set environment variables
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV SCBE_ENV=production
+ENV SCBE_LOG_LEVEL=INFO
+
+# Security: Switch to non-root user
+USER scbe
+
+# Expose port (Cloud Run uses PORT env var)
+EXPOSE 8080
+
+# Health check for local testing (Cloud Run has its own health checks)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:${PORT:-8080}/health')" || exit 1
+
+# Cloud Run requires listening on PORT env var (defaults to 8080)
+# Use shell form to expand $PORT at runtime
+CMD uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-8080}

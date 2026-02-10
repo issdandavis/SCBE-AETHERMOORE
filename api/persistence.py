@@ -92,7 +92,7 @@ class AuditLog:
     timestamp: str
     agent_id: str
     action: str
-    decision: Literal["ALLOW", "QUARANTINE", "DENY"]
+    decision: Literal["ALLOW", "QUARANTINE", "ESCALATE", "DENY"]
     trust_score: float
     risk_level: str
     context: dict
@@ -230,8 +230,8 @@ class SCBEPersistence:
         else:
             self._local_cache["audit"].append(audit_log.to_dict())
 
-        # Create alert for DENY or QUARANTINE decisions
-        if decision in ["DENY", "QUARANTINE"]:
+        # Create alert for non-ALLOW decisions
+        if decision in ["DENY", "QUARANTINE", "ESCALATE"]:
             severity = "high" if decision == "DENY" else "medium"
             self.create_alert(
                 severity=severity,
@@ -546,9 +546,11 @@ class SCBEPersistence:
                 "total_decisions": 0,
                 "allow_count": 0,
                 "quarantine_count": 0,
+                "escalate_count": 0,
                 "deny_count": 0,
                 "allow_rate": 0.0,
                 "quarantine_rate": 0.0,
+                "escalate_rate": 0.0,
                 "deny_rate": 0.0,
                 "avg_trust_score": 0.0
             }
@@ -556,6 +558,7 @@ class SCBEPersistence:
         total = len(logs)
         allow_count = sum(1 for l in logs if l["decision"] == "ALLOW")
         quarantine_count = sum(1 for l in logs if l["decision"] == "QUARANTINE")
+        escalate_count = sum(1 for l in logs if l["decision"] == "ESCALATE")
         deny_count = sum(1 for l in logs if l["decision"] == "DENY")
         avg_trust = sum(l["trust_score"] for l in logs) / total if total > 0 else 0
 
@@ -563,9 +566,11 @@ class SCBEPersistence:
             "total_decisions": total,
             "allow_count": allow_count,
             "quarantine_count": quarantine_count,
+            "escalate_count": escalate_count,
             "deny_count": deny_count,
             "allow_rate": allow_count / total if total > 0 else 0,
             "quarantine_rate": quarantine_count / total if total > 0 else 0,
+            "escalate_rate": escalate_count / total if total > 0 else 0,
             "deny_rate": deny_count / total if total > 0 else 0,
             "avg_trust_score": avg_trust
         }

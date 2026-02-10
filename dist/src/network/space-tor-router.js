@@ -76,10 +76,10 @@ class SpaceTorRouter {
         // Select Entry Node (closest to origin with good trust)
         const entryNode = this.selectNode(eligibleNodes, origin, 'entry', constraints?.excludeNodes);
         // Select Exit Node (closest to destination)
-        const remainingForExit = eligibleNodes.filter(n => n.id !== entryNode.id);
+        const remainingForExit = eligibleNodes.filter((n) => n.id !== entryNode.id);
         const exitNode = this.selectNode(remainingForExit, dest, 'exit', constraints?.excludeNodes);
         // Select Middle Node (balanced between entry and exit, highest trust)
-        const remainingForMiddle = remainingForExit.filter(n => n.id !== exitNode.id);
+        const remainingForMiddle = remainingForExit.filter((n) => n.id !== exitNode.id);
         const middleNode = this.selectMiddleNode(remainingForMiddle, entryNode, exitNode, constraints?.excludeNodes);
         return [entryNode, middleNode, exitNode];
     }
@@ -93,7 +93,7 @@ class SpaceTorRouter {
      * Get nodes that meet minimum trust and other constraints
      */
     getEligibleNodes(minTrust, constraints) {
-        return Array.from(this.nodes.values()).filter(node => {
+        return Array.from(this.nodes.values()).filter((node) => {
             if (node.trustScore < minTrust)
                 return false;
             if (constraints?.maxLoad !== undefined && node.load > constraints.maxLoad)
@@ -109,9 +109,7 @@ class SpaceTorRouter {
      * Select optimal node based on role and distance
      */
     selectNode(candidates, target, role, excludeNodes) {
-        const filtered = excludeNodes
-            ? candidates.filter(n => !excludeNodes.has(n.id))
-            : candidates;
+        const filtered = excludeNodes ? candidates.filter((n) => !excludeNodes.has(n.id)) : candidates;
         if (filtered.length === 0) {
             throw new Error(`No eligible nodes for ${role} role`);
         }
@@ -128,9 +126,7 @@ class SpaceTorRouter {
      * Select middle node optimized for security and balance
      */
     selectMiddleNode(candidates, entry, exit, excludeNodes) {
-        const filtered = excludeNodes
-            ? candidates.filter(n => !excludeNodes.has(n.id))
-            : candidates;
+        const filtered = excludeNodes ? candidates.filter((n) => !excludeNodes.has(n.id)) : candidates;
         if (filtered.length === 0) {
             throw new Error('No eligible nodes for middle role');
         }
@@ -138,7 +134,7 @@ class SpaceTorRouter {
         const midpoint = {
             x: (entry.coords.x + exit.coords.x) / 2,
             y: (entry.coords.y + exit.coords.y) / 2,
-            z: (entry.coords.z + exit.coords.z) / 2
+            z: (entry.coords.z + exit.coords.z) / 2,
         };
         return filtered.reduce((best, node) => {
             const distance = this.calculateDistance(node.coords, midpoint);

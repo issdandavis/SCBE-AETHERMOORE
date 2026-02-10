@@ -547,10 +547,10 @@ def verify_theorem_12_1(n_tests: int = 100) -> Tuple[bool, Dict]:
         d1 = np.random.uniform(0.01, 3)
         d2 = d1 + np.random.uniform(0.01, 2)  # d2 > d1
 
-        H1 = layer_12_harmonic_scaling(d1, R)
-        H2 = layer_12_harmonic_scaling(d2, R)
+        H1 = layer_12_harmonic_scaling(d1)
+        H2 = layer_12_harmonic_scaling(d2)
 
-        if H1 < H2:  # Strictly increasing
+        if H1 > H2:  # Strictly decreasing (higher d = lower safety score)
             results["passed"] += 1
         else:
             results["failed"] += 1

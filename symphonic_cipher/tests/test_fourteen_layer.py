@@ -356,28 +356,26 @@ class TestLayer12HarmonicScaling:
     """Tests for Layer 12: Harmonic Scaling."""
 
     def test_zero_distance_gives_one(self):
-        """H(0, R) = R^0 = 1."""
-        assert np.abs(layer_12_harmonic_scaling(0, R_BASE) - 1.0) < 1e-10
+        """H(0) = 1/(1+0) = 1.0."""
+        assert np.abs(layer_12_harmonic_scaling(0) - 1.0) < 1e-10
 
-    def test_superexponential_growth(self):
-        """H(d) should grow faster than exponential."""
+    def test_monotone_decreasing(self):
+        """H(d) should decrease with distance (higher d = lower safety)."""
         d1, d2, d3 = 1.0, 2.0, 3.0
         H1 = layer_12_harmonic_scaling(d1)
         H2 = layer_12_harmonic_scaling(d2)
         H3 = layer_12_harmonic_scaling(d3)
 
-        # Check superexponential: H(3)/H(2) > H(2)/H(1)
-        ratio_23 = H3 / H2
-        ratio_12 = H2 / H1
-        assert ratio_23 > ratio_12
+        # Safety score should decrease with distance
+        assert H1 > H2 > H3
 
     def test_monotonicity(self):
-        """H(d1) < H(d2) for d1 < d2."""
+        """H(d1) > H(d2) for d1 < d2."""
         d_values = np.linspace(0, 3, 20)
         H_values = [layer_12_harmonic_scaling(d) for d in d_values]
 
         for i in range(len(H_values) - 1):
-            assert H_values[i] < H_values[i+1]
+            assert H_values[i] > H_values[i+1]
 
 
 class TestLayer13Decision:
@@ -497,14 +495,14 @@ class TestFullPipeline:
         # For d = 3: H = φ^9 ≈ 76.0 (HIGH)
         # For d = 4: H = φ^16 ≈ 2207 (CRITICAL, >100)
 
-        from scbe_aethermoore.layers import layer_12_harmonic_scaling, R_BASE
+        from scbe_aethermoore.layers import layer_12_harmonic_scaling
 
-        # Test the scaling behavior
-        assert layer_12_harmonic_scaling(0, R_BASE) == 1.0
-        assert layer_12_harmonic_scaling(1, R_BASE) < 3.0
-        assert layer_12_harmonic_scaling(2, R_BASE) < 20.0
-        assert layer_12_harmonic_scaling(3, R_BASE) < 100.0
-        assert layer_12_harmonic_scaling(4, R_BASE) > 100.0  # CRITICAL threshold
+        # Test the bounded scaling behavior: H(d) = 1/(1+d), in (0, 1]
+        assert layer_12_harmonic_scaling(0) == 1.0
+        assert layer_12_harmonic_scaling(1) == 0.5
+        assert abs(layer_12_harmonic_scaling(2) - 1.0 / 3.0) < 1e-10
+        assert layer_12_harmonic_scaling(3) == 0.25
+        assert layer_12_harmonic_scaling(4) == 0.2
 
 
 class TestTheoremVerification:

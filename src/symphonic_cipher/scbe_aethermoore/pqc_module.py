@@ -127,7 +127,8 @@ class LiboqsKEM(KEMInterface):
             self._kem = oqs.KeyEncapsulation(algorithm)
             self._algorithm = algorithm
             self._available = True
-        except ImportError:
+        except (ImportError, RuntimeError):
+            # liboqs-python not installed or shared libraries not found
             self._available = False
             raise ImportError("liboqs not available")
 
@@ -179,7 +180,8 @@ class LiboqsSignature(SignatureInterface):
             self._sig = oqs.Signature(algorithm)
             self._algorithm = algorithm
             self._available = True
-        except ImportError:
+        except (ImportError, RuntimeError):
+            # liboqs-python not installed or shared libraries not found
             self._available = False
             raise ImportError("liboqs not available")
 
