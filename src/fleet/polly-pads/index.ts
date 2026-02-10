@@ -49,6 +49,10 @@ export {
   type MemoryEntry,
 } from './mode-pad.js';
 
+// ============================================================================
+// Specialist Modes (Canonical: ./modes)
+// ============================================================================
+
 // Specialist Modes (Dynamic Mode Switching) — legacy registry
 export {
   ModeRegistry,
@@ -109,7 +113,16 @@ export {
   MODE_CONFIGS,
 } from './modes/index.js';
 
-// Closed Network
+// Specialist Mode Registry (legacy/alternate implementation)
+// Note: its internal type names conflict with ./modes/types, so we only export
+// the registry wrapper + id type here.
+export {
+  ModeRegistry,
+  ALL_MODE_IDS,
+  type SpecialistModeId,
+} from './specialist-modes.js';
+
+// Closed Network (Air-Gapped)
 export {
   ClosedNetwork,
   DEFAULT_CLOSED_CONFIG,
