@@ -9,7 +9,7 @@ AetherMoore – Full‑stack reference implementation
 * Verification routine
 """
 
-import os, time, json, base64, hmac, hashlib
+import os, time, json, base64, hmac, hashlib, binascii, re
 import numpy as np
 import matplotlib; matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -23,7 +23,42 @@ DUR         = 0.8                    # seconds per utterance
 F0          = 220.0                  # fundamental (A3) for "Korah"
 DELTA_F     = 30.0                   # Hz per token‑id step
 NONCE_BYTES = 12
-MASTER_KEY  = os.getenv("MASTER_KEY", os.urandom(32))  # 256‑bit secret
+def _decode_master_key(value):
+    value = value.strip()
+    if not value:
+        raise ValueError("MASTER_KEY is set but empty.")
+    if re.fullmatch(r"[0-9a-fA-F]+", value) and len(value) % 2 == 0:
+        return bytes.fromhex(value)
+    padded = value + "=" * (-len(value) % 4)
+    try:
+        return base64.urlsafe_b64decode(padded)
+    except binascii.Error as exc:
+        raise ValueError(
+            "MASTER_KEY must be hex or base64 (urlsafe) encoded."
+        ) from exc
+
+
+def _load_master_key():
+    env_value = os.getenv("MASTER_KEY")
+    if env_value is not None:
+        key = _decode_master_key(env_value)
+        if not key:
+            raise ValueError("Decoded MASTER_KEY is empty.")
+        return key
+    key_path = os.getenv("MASTER_KEY_PATH", ".master_key")
+    if os.path.exists(key_path):
+        with open(key_path, "rb") as key_file:
+            key = key_file.read()
+        if not key:
+            raise ValueError(f"MASTER_KEY file '{key_path}' is empty.")
+        return key
+    key = os.urandom(32)
+    with open(key_path, "wb") as key_file:
+        key_file.write(key)
+    return key
+
+
+MASTER_KEY  = _load_master_key()  # 256‑bit secret (bytes)
 MAX_HARM    = 12                     # number of overtones for Adaptive mode
 
 # ----------------------------------------------------------------------
