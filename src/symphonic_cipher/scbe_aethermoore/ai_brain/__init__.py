@@ -79,6 +79,19 @@ from .hamiltonian_braid import (
     estimate_braid_fractal_dimension,
 )
 
+from .cymatic_voxel_net import (
+    CymaticVoxelNet,
+    NODAL_THRESHOLD,
+    REALM_CENTERS,
+    SACRED_TONGUES,
+    TONGUE_DIMENSION_MAP,
+    VOXEL_DIMS,
+    chladni_6d,
+    classify_zone,
+    dominant_tongue,
+    estimate_nodal_density,
+)
+
 __all__ = [
     "UnifiedBrainState",
     "safe_poincare_embed",
@@ -147,4 +160,15 @@ __all__ = [
     "harmonic_tube_cost",
     "is_inside_tube",
     "estimate_braid_fractal_dimension",
+    # Cymatic Voxel Net
+    "CymaticVoxelNet",
+    "NODAL_THRESHOLD",
+    "REALM_CENTERS",
+    "SACRED_TONGUES",
+    "TONGUE_DIMENSION_MAP",
+    "VOXEL_DIMS",
+    "chladni_6d",
+    "classify_zone",
+    "dominant_tongue",
+    "estimate_nodal_density",
 ]
