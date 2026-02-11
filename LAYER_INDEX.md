@@ -18,7 +18,7 @@
 | L9 | Spectral Coherence | S_spec = 1 - r_HF | FFT-based pattern stability |
 | L10 | Spin Coherence | C_spin | Mean resultant length |
 | L11 | Triadic Distance | d_tri | Byzantine consensus temporal |
-| L12 | Harmonic Scaling | H(d,R) = R^(d²) | Superexponential amplification |
+| L12 | Harmonic Scaling | H(d,pd)=1/(1+d+2*pd) | Bounded safety score |
 | L13 | Decision & Risk | ALLOW/QUARANTINE/DENY | Risk-gated decision gate |
 | L14 | Audio Axis | S_audio | Harmonic + stellar octave mapping |
 
@@ -42,7 +42,7 @@ src/symphonic_cipher/scbe_aethermoore/layers/
     ├── layer_9_spectral_coherence()  # L9: FFT coherence
     ├── layer_10_spin_coherence()     # L10: Phasor alignment
     ├── layer_11_triadic_distance()   # L11: Byzantine consensus
-    ├── layer_12_harmonic_scale()     # L12: R^(d²) scaling
+    ├── layer_12_harmonic_scale()     # L12: bounded score 1/(1+d+2*pd)
     ├── layer_13_decision()           # L13: Risk gating
     └── layer_14_audio_axis()         # L14: Spectral telemetry
 ```
