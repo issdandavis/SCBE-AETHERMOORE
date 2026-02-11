@@ -69,7 +69,7 @@ SCBE-AETHERMOORE/
 - `hyperbolic.ts` - Poincaré ball operations
 - `harmonicScaling.ts` - Risk amplification
 - `sacredTongues.ts` - 6×256 vocabulary tokenizer
-- `phdm.ts` - Poincaré Half-plane Drift Monitor
+- `phdm.ts` - Polyhedral Hamiltonian Defense Manifold (L8)
 
 ### Cryptography (`src/crypto/`)
 - `envelope.ts` - Sealed envelope (AES-256-GCM)
