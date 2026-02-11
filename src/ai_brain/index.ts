@@ -133,6 +133,29 @@ export {
   type ConservationLawResult,
   type RefactorAlignResult,
 } from './types.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Time-over-Intent Coupling (Maximum Build)
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  computeTimeDilation,
+  computeGamma,
+  computeTriadicWeights,
+  positiveKappa,
+  computeEffectiveR,
+  harmonicWallTOI,
+  triadicDistance as toiTriadicDistance,
+  evaluateTimeOverIntent,
+  computeHatchWeight,
+  meetsGenesisThreshold,
+  DEFAULT_TOI_CONFIG,
+  type TimeOverIntentConfig,
+  type TemporalObservation,
+  type TimeOverIntentResult,
+} from './timeOverIntent.js';
+
+// ═══════════════════════════════════════════════════════════════
 // HyperbolicRAG (Layer 12 cost-gated retrieval)
 // ═══════════════════════════════════════════════════════════════
 
@@ -157,6 +180,8 @@ export {
   type EntropicConfig,
   type EscapeAssessment,
 } from './entropic-layer.js';
+
+// ═══════════════════════════════════════════════════════════════
 // Trajectory Simulator
 // ═══════════════════════════════════════════════════════════════
 
