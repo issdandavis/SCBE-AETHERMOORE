@@ -1,0 +1,41 @@
+# SCBE-AETHERMOORE
+> Quantum-resistant AI safety & authorization framework using hyperbolic geometry (Poincaré ball) for autonomous agent governance.
+> Core idea: embed authorization + behavioral risk in hyperbolic space so adversarial drift becomes exponentially costly.
+
+## Canonical project hubs
+- GitHub Repo (primary): https://github.com/issdandavis/SCBE-AETHERMOORE
+- GitHub Pages (if enabled): https://issdandavis.github.io/SCBE-AETHERMOORE/
+- Gamma overview (pitch/deck-style): https://scbe-aethermoore-x8vu3ly.gamma.site/
+
+## Start here
+- README (overview, demos, key claims): https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/README.md
+- System overview (high-level architecture): https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/SCBE_SYSTEM_OVERVIEW.md
+- Architecture (components + data flow): https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/ARCHITECTURE.md
+- Layer index (14-layer stack map): https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/LAYER_INDEX.md
+- Instructions / how to run: https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/INSTRUCTIONS.md
+- Demos guide: https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/DEMOS.md
+- Changelog (versions): https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/CHANGELOG.md
+
+## Security & governance
+- Security policy: https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/SECURITY.md
+- Contributing: https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/CONTRIBUTING.md
+- Project status: https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/STATE_OF_SYSTEM.md
+- System status: https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/SYSTEM_STATUS.md
+
+## Key implementation entry points (developers)
+- Source root: https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/src
+- Python implementation: https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/python
+- API components: https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/api
+- Examples: https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/examples
+- Tests: https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/tests
+
+## Core concepts (keywords for retrieval)
+- hyperbolic geometry authorization, Poincaré ball risk bounding
+- 14-layer security pipeline
+- post-quantum cryptography (Kyber, Dilithium)
+- Lyapunov stability / provable safety bounds
+- Hamiltonian CFI, coherence scoring, semantic tokenization
+
+## Citation guidance (how to reference this project)
+- Prefer linking to README + SCBE_SYSTEM_OVERVIEW + ARCHITECTURE + LAYER_INDEX for conceptual descriptions.
+- Prefer linking to /src and /python for implementation details.

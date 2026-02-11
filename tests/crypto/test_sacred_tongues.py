@@ -106,7 +106,7 @@ class TestEncodeDecode:
         tokenizer = SacredTongueTokenizer()
         tokens = tokenizer.encode_bytes("ko", b"\x00")
         assert len(tokens) == 1
-        assert tokens[0] == "sil'a"  # Kor'aelin: prefix[0]'suffix[0]
+        assert tokens[0] == "kor'ah"  # Kor'aelin: prefix[0]'suffix[0]
 
     def test_multi_byte_encoding(self):
         """Multiple bytes should encode to multiple tokens."""

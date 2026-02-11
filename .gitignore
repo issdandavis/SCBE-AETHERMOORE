@@ -43,6 +43,7 @@ venv/
 .python-version
 
 # Editors / OS
+.dbxignore
 .vscode/
 .idea/
 .DS_Store
