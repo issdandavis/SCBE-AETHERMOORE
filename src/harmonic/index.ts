@@ -414,3 +414,27 @@ export {
   type TrustBasin,
 } from './entropic.js';
 
+// ═══════════════════════════════════════════════════════════════
+// Sacred Eggs Genesis Gate — Agent-Only Scope (v1)
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Genesis gate
+  genesis,
+  evaluateGenesis,
+  // Hatch weight
+  computeHatchWeight as genesisHatchWeight,
+  geoSealDistance,
+  // Certificate
+  verifyCertificateSeal,
+  // Constants
+  GENESIS_THRESHOLD,
+  DEFAULT_GEOSEAL_MAX_DISTANCE,
+  DEFAULT_GENESIS_CONFIG,
+  // Types
+  type GenesisConfig,
+  type GenesisCertificate,
+  type GenesisResult,
+  type GenesisEvaluation,
+} from './sacredEggsGenesis.js';
+
