@@ -118,42 +118,42 @@ export const TONGUE_CODES: TongueCode[] = ['KO', 'AV', 'RU', 'CA', 'UM', 'DR'] a
 // Vocabulary Definitions (16 prefixes × 16 suffixes = 256 tokens per tongue)
 // ============================================================================
 
-/** Kor'aelin (KO) - Liquid, flowing, swift */
+/** Kor'aelin (KO) - Liquid, flowing, swift (v1.1 bijective) */
 const KO_PREFIXES = [
-  'sil',
-  'vel',
   'kor',
   'ael',
-  'mir',
-  'thal',
-  'ven',
-  'lor',
-  'eth',
-  'kin',
-  'sol',
-  'ryn',
-  'fae',
-  'dor',
-  'nyl',
-  'zar',
+  'lin',
+  'dah',
+  'ru',
+  'mel',
+  'ik',
+  'sor',
+  'in',
+  'tiv',
+  'ar',
+  'ul',
+  'mar',
+  'vex',
+  'yn',
+  'zha',
 ];
 const KO_SUFFIXES = [
-  'a',
-  'an',
+  'ah',
   'el',
   'in',
   'or',
-  'un',
-  'ae',
-  'ie',
-  'al',
-  'en',
-  'il',
-  'on',
-  'ur',
-  'ar',
-  'er',
-  'ir',
+  'ru',
+  'ik',
+  'mel',
+  'sor',
+  'tiv',
+  'ul',
+  'vex',
+  'zha',
+  'dah',
+  'lin',
+  'yn',
+  'mar',
 ];
 
 /** Avali (AV) - Bright, diplomatic, clear */
@@ -226,7 +226,7 @@ const RU_SUFFIXES = [
   'eft',
   'igt',
   'olk',
-  'ung',
+  'ulf',
   'ard',
   'ert',
   'irt',
@@ -305,7 +305,7 @@ const UM_SUFFIXES = [
   'an',
   'ew',
   'am',
-  'yr',
+  'ash',
 ];
 
 /** Draumric (DR) - Structural, industrial, heavy */
