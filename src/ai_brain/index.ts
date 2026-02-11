@@ -98,3 +98,30 @@ export {
 // ═══════════════════════════════════════════════════════════════
 
 export { BrainAuditLogger } from './audit.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Conservation Law Enforcement (Maximum Build)
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  extractBlock,
+  replaceBlock,
+  projectContainment,
+  projectPhaseCoherence,
+  projectEnergyBalance,
+  projectLatticeContinuity,
+  projectFluxNormalization,
+  projectSpectralBounds,
+  computeGlobalInvariant,
+  refactorAlign,
+  enforceConservationLaws,
+} from './conservation.js';
+
+export {
+  BLOCK_RANGES,
+  type BlockName,
+  type ConservationConfig,
+  type ConservationLawName,
+  type ConservationLawResult,
+  type RefactorAlignResult,
+} from './types.js';
