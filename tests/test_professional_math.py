@@ -88,54 +88,36 @@ class TestGoldenRatio:
 @pytest.mark.professional
 @pytest.mark.math
 class TestHarmonicScalingLaw:
-    """Verify harmonic scaling law H(d, R) = R^(d²)."""
+    """Verify harmonic scaling score H(d, pd) = 1 / (1 + d + 2*pd)."""
 
-    def test_harmonic_scaling_at_zero(self, harmonic_scaling):
-        """Verify H(0, R) = 1 for any R."""
-        for R in [1.5, 2.0, 3.0, 1.25]:
-            assert harmonic_scaling(0, R) == 1.0
+    def test_harmonic_scaling_at_origin(self, harmonic_scaling):
+        """Verify H(0, 0) = 1."""
+        assert harmonic_scaling(0, 0.0) == 1.0
 
-    def test_harmonic_scaling_at_one(self, harmonic_scaling):
-        """Verify H(1, R) = R."""
-        for R in [1.5, 2.0, 3.0]:
-            assert np.isclose(harmonic_scaling(1, R), R)
-
-    def test_harmonic_scaling_super_exponential(self, harmonic_scaling):
-        """Verify super-exponential growth (d² exponent)."""
-        R = R_FIFTH
-
-        # Values should grow super-exponentially
-        h_values = [harmonic_scaling(d, R) for d in range(7)]
-
-        # h[2] = R^4, h[3] = R^9, etc.
-        assert np.isclose(h_values[2], R**4)
-        assert np.isclose(h_values[3], R**9)
-        assert np.isclose(h_values[4], R**16)
-
-    def test_harmonic_scaling_specific_values(self, harmonic_scaling):
-        """Verify specific known values for R=1.5."""
-        R = R_FIFTH
-
-        # d=2: H = 1.5^4 = 5.0625
-        assert np.isclose(harmonic_scaling(2, R), 5.0625)
-
-        # d=3: H = 1.5^9 ≈ 38.44
-        assert np.isclose(harmonic_scaling(3, R), 38.443359375, rtol=1e-6)
-
-        # d=6: H = 1.5^36 ≈ 1.50e13
-        # Note: This is a large value, just verify it's > 1e6
-        h_6 = harmonic_scaling(6, R)
-        assert h_6 > 1e6  # 1.5^36 = 1.50e13 approximately
+    def test_harmonic_scaling_no_phase_deviation(self, harmonic_scaling):
+        """Verify H(d, 0) = 1 / (1 + d)."""
+        for d in [0, 1, 2, 3, 10]:
+            assert np.isclose(harmonic_scaling(d, 0.0), 1.0 / (1.0 + d))
 
     def test_harmonic_scaling_monotonicity(self, harmonic_scaling):
-        """Verify H is monotonically increasing in d for R > 1."""
-        R = R_FIFTH
-        prev_h = 0
+        """Verify H decreases with d and phase deviation for valid inputs."""
+        # Decreases with distance
+        prev = 2.0  # larger than max
+        for d in np.linspace(0, 10, 50):
+            h = harmonic_scaling(d, 0.0)
+            assert 0.0 < h <= 1.0
+            assert h <= prev
+            prev = h
 
-        for d in np.linspace(0, 5, 100):
-            h = harmonic_scaling(d, R)
-            assert h >= prev_h, f"Monotonicity violated at d={d}"
-            prev_h = h
+        # Decreases with phase deviation
+        d = 2.0
+        assert harmonic_scaling(d, 0.0) > harmonic_scaling(d, 0.5) > harmonic_scaling(d, 1.0)
+
+    def test_harmonic_scaling_specific_values(self, harmonic_scaling):
+        """Verify a few known values."""
+        assert np.isclose(harmonic_scaling(1, 0.0), 0.5)
+        assert np.isclose(harmonic_scaling(2, 0.0), 1.0 / 3.0)
+        assert np.isclose(harmonic_scaling(0, 0.5), 0.5)
 
 
 # =============================================================================
@@ -301,17 +283,15 @@ class TestFourteenLayerPipeline:
 
     @pytest.mark.skipif(not SCBE_AVAILABLE, reason="SCBE modules not available")
     def test_pipeline_harmonic_amplification(self):
-        """Verify H = R^(d_star²) relationship."""
+        """Verify H = 1 / (1 + d_star) when phase deviation = 0."""
         position = np.array([1.0, 2.0, 3.0, 5.0, 8.0, 13.0])
         # Weights must sum to 1.0
         result = scbe_14layer_pipeline(
             t=position, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
         )
 
-        # Verify H = R^(d*²) approximately (default R=10.0 for strong super-exponential growth)
-        R = 10.0
-        expected_H = R ** (result["d_star"] ** 2)
-        assert np.isclose(result["H"], expected_H, rtol=0.1)
+        expected_H = 1.0 / (1.0 + result["d_star"])
+        assert np.isclose(result["H"], expected_H, rtol=1e-6)
 
     @pytest.mark.skipif(not SCBE_AVAILABLE, reason="SCBE modules not available")
     def test_pipeline_coherence_bounds(self):
@@ -425,12 +405,11 @@ class TestNumericalStability:
             assert d > 0, f"Distance not positive at r={r}"
 
     def test_harmonic_scaling_large_d(self, harmonic_scaling):
-        """Verify harmonic scaling doesn't overflow for large d."""
-        R = R_FIFTH
+        """Verify harmonic scaling stays finite for large d (bounded formula)."""
 
         # Large d values (should handle gracefully)
         for d in [5, 6, 7, 8]:
-            h = harmonic_scaling(d, R)
+            h = harmonic_scaling(d, 0.0)
             assert np.isfinite(h), f"H not finite at d={d}"
             assert h > 0, f"H not positive at d={d}"
 
