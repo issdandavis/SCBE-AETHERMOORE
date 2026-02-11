@@ -276,10 +276,17 @@ export {
   isValidTopology,
   serializePolyhedron,
   topologicalHash,
+  // Flux Governance
+  getActivePolyhedra,
+  // Phason Shift
+  generateProjectionMatrix,
+  phasonShift,
   type IntrusionResult,
   type Point6D,
   // Types
+  type FluxState,
   type Polyhedron,
+  type PolyhedronFamily,
 } from './phdm.js';
 
 // ═══════════════════════════════════════════════════════════════
