@@ -28,6 +28,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -68,19 +70,32 @@ jobs:
           set -euo pipefail
           node scripts/notion-sync.js --all
 
+      - name: Check for docs changes
+        id: docs_changed
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- docs/; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Create Pull Request
+        if: steps.docs_changed.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: 'docs: sync documentation from Notion'
-          title: 'docs: sync documentation from Notion'
+          commit-message: 'docs(notion-sync): sync HYDRA v1.0.0'
+          title: 'docs(notion-sync): sync HYDRA v1.0.0'
           body: |
             Automated Notion synchronization.
 
             - Source: Notion API
             - Destination: docs/ directory
             - Trigger: ${{ github.event_name }}
+            - Merge strategy: squash
           branch: automation/notion-sync
+          delete-branch: true
           labels: |
             documentation
             automated
