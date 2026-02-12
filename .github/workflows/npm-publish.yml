@@ -1,54 +1,105 @@
-name: Publish to npm
+name: npm Publish
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'package.json'
-      - 'src/**'
-      - 'lib/**'
-  release:
-    types: [published]
+      - package.json
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
+          cache: npm
 
-      - name: Install dependencies
-        run: npm install --legacy-peer-deps
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-      - name: Build
-        run: npm run build --if-present
-
-      - name: Check version change
-        id: version
+      - name: Verify package version changed
+        id: version_check
         run: |
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-          # Check if this version already exists on npm
-          if npm view scbe-aethermoore@$CURRENT_VERSION version 2>/dev/null; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
+          set -euo pipefail
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            current_version=$(node -p "require('./package.json').version")
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "version=$current_version" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
-      - name: Publish to npm
-        if: steps.version.outputs.exists == 'false'
-        run: npm publish --access public
+          before_sha='${{ github.event.before }}'
+          current_version=$(node -p "require('./package.json').version")
+
+          if [ "$before_sha" = "0000000000000000000000000000000000000000" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "version=$current_version" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          previous_version=$(git show "$before_sha:package.json" | node -p "JSON.parse(require('fs').readFileSync(0, 'utf8')).version")
+
+          if [ "$previous_version" != "$current_version" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "version=$current_version" >> "$GITHUB_OUTPUT"
+
+      - name: Stop if version unchanged
+        if: steps.version_check.outputs.changed != 'true'
+        run: |
+          echo "No package version change detected. Skipping publish."
+          exit 0
+
+      - name: Install dependencies
+        if: steps.version_check.outputs.changed == 'true'
+        run: npm ci
+
+      - name: Install Python dependencies
+        if: steps.version_check.outputs.changed == 'true'
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run full test suite
+        if: steps.version_check.outputs.changed == 'true'
+        run: |
+          npm test
+          pytest tests/ -v
+
+      - name: Publish package to npm
+        if: steps.version_check.outputs.changed == 'true'
+        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Skip publish (version exists)
-        if: steps.version.outputs.exists == 'true'
-        run: echo "Version ${{ steps.version.outputs.version }} already exists on npm, skipping publish"
+      - name: Create GitHub release
+        if: steps.version_check.outputs.changed == 'true'
+        uses: ncipollo/release-action@v1
+        with:
+          tag: v${{ steps.version_check.outputs.version }}
+          name: Release v${{ steps.version_check.outputs.version }}
+          body: |
+            ## Changelog
+
+            See [CHANGELOG.md](./CHANGELOG.md) for details.
+          generateReleaseNotes: true
+          allowUpdates: true
