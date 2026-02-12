@@ -34,6 +34,15 @@ try:
 except ImportError:
     SCBE_AVAILABLE = False
 
+if SCBE_AVAILABLE:
+    try:
+        RWPv3Protocol()
+        RWP_RUNTIME_AVAILABLE = True
+    except ImportError:
+        RWP_RUNTIME_AVAILABLE = False
+else:
+    RWP_RUNTIME_AVAILABLE = False
+
 
 # =============================================================================
 # NIST PQC COMPLIANCE TESTS
@@ -105,7 +114,10 @@ class TestNISTPQCCompliance:
 class TestCryptographicCorrectness:
     """Verify cryptographic operations are correct and complete."""
 
-    @pytest.mark.skipif(not SCBE_AVAILABLE, reason="SCBE modules not available")
+    @pytest.mark.skipif(
+        not RWP_RUNTIME_AVAILABLE,
+        reason="RWP runtime dependencies not available",
+    )
     def test_encryption_decryption_roundtrip(self):
         """Verify encrypt/decrypt produces identical plaintext."""
         rwp = RWPv3Protocol()
@@ -119,7 +131,10 @@ class TestCryptographicCorrectness:
 
         assert decrypted == plaintext, "Encryption roundtrip failed"
 
-    @pytest.mark.skipif(not SCBE_AVAILABLE, reason="SCBE modules not available")
+    @pytest.mark.skipif(
+        not RWP_RUNTIME_AVAILABLE,
+        reason="RWP runtime dependencies not available",
+    )
     def test_ciphertext_indistinguishability(self):
         """Verify ciphertexts are indistinguishable (IND-CPA)."""
         rwp = RWPv3Protocol()
@@ -133,7 +148,10 @@ class TestCryptographicCorrectness:
         # Same plaintext should produce different nonces (random)
         assert env1.nonce != env2.nonce, "Nonces should be unique"
 
-    @pytest.mark.skipif(not SCBE_AVAILABLE, reason="SCBE modules not available")
+    @pytest.mark.skipif(
+        not RWP_RUNTIME_AVAILABLE,
+        reason="RWP runtime dependencies not available",
+    )
     def test_authentication_tag_verification(self):
         """Verify tampering is detected via authentication tag."""
         rwp = RWPv3Protocol()
@@ -148,10 +166,10 @@ class TestCryptographicCorrectness:
 
         # Decryption should fail with tampered tag
         try:
-            rwp.decrypt(envelope, password)
+            rwp.decrypt(password=password, envelope=envelope)
             # If we get here, restore and check it actually decrypts normally
             envelope.tag = original_tag
-            result = rwp.decrypt(envelope, password)
+            result = rwp.decrypt(password=password, envelope=envelope)
             # Tampering should have been detected, but API may vary
             assert result == plaintext or True  # Pass if API handles gracefully
         except Exception:
