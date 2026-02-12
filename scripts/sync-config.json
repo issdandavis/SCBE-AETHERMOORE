@@ -1,72 +1,72 @@
 {
   "hydraMultiAgentCoordinationSystem": {
     "title": "HYDRA Multi-Agent Coordination System",
-    "pageId": "REPLACE_WITH_HYDRA_MULTI_AGENT_COORDINATION_SYSTEM_PAGE_ID",
+    "pageId": "0ecedff123704e65b249897bf534d6ef",
     "outputPath": "docs/HYDRA_COORDINATION.md"
   },
   "geosealGeometricAccessControlKernel": {
     "title": "GeoSeal: Geometric Access Control Kernel",
-    "pageId": "REPLACE_WITH_GEOSEAL_GEOMETRIC_ACCESS_CONTROL_KERNEL_PAGE_ID",
+    "pageId": "6f1c851a42e54f11bc14ba7ebfb9d559",
     "outputPath": "docs/GEOSEAL_ACCESS_CONTROL.md"
   },
   "quasiVectorSpinVoxelsAndMagnetics": {
     "title": "Quasi-Vector Spin Voxels & Magnetics",
-    "pageId": "REPLACE_WITH_QUASI_VECTOR_SPIN_VOXELS_MAGNETICS_PAGE_ID",
+    "pageId": "1083829cf1e846fcab046666d0823516",
     "outputPath": "docs/QUASI_VECTOR_MAGNETICS.md"
   },
   "ss1TokenizerProtocol": {
     "title": "SS1 Tokenizer Protocol",
-    "pageId": "REPLACE_WITH_SS1_TOKENIZER_PROTOCOL_PAGE_ID",
+    "pageId": "191399b1ded04bcca16f983c7f6769c3",
     "outputPath": "docs/SS1_TOKENIZER_PROTOCOL.md"
   },
   "multiAiDevelopmentCoordination": {
     "title": "Multi-AI Development Coordination",
-    "pageId": "REPLACE_WITH_MULTI_AI_DEVELOPMENT_COORDINATION_PAGE_ID",
+    "pageId": "8eced7428ec94feca00f76bcc7c07a25",
     "outputPath": "docs/MULTI_AI_COORDINATION.md"
   },
   "swarmDeploymentFormations": {
     "title": "Swarm Deployment Formations",
-    "pageId": "REPLACE_WITH_SWARM_DEPLOYMENT_FORMATIONS_PAGE_ID",
+    "pageId": "476ba4d2332048a58843ba25b53d0d07",
     "outputPath": "docs/SWARM_FORMATIONS.md"
   },
   "aetherAuthImplementation": {
     "title": "AetherAuth Implementation",
-    "pageId": "REPLACE_WITH_AETHERAUTH_IMPLEMENTATION_PAGE_ID",
+    "pageId": "c1c87f9373ce4a118dcc6fd1272c761f",
     "outputPath": "docs/AETHERAUTH_IMPLEMENTATION.md"
   },
   "googleCloudInfrastructureSetup": {
     "title": "Google Cloud Infrastructure Setup",
-    "pageId": "REPLACE_WITH_GOOGLE_CLOUD_INFRASTRUCTURE_SETUP_PAGE_ID",
+    "pageId": "11ac4a237afe4464a3a00b4e09fe3d7a",
     "outputPath": "docs/GOOGLE_CLOUD_SETUP.md"
   },
   "phdmNomenclatureReference": {
     "title": "PHDM Nomenclature Reference",
-    "pageId": "REPLACE_WITH_PHDM_NOMENCLATURE_REFERENCE_PAGE_ID",
+    "pageId": "e0927baf40b34899b89d5b0af05a1878",
     "outputPath": "docs/PHDM_NOMENCLATURE.md"
   },
   "commercialAgreementTechnologySchedule": {
     "title": "Commercial Agreement - Technology Schedule",
-    "pageId": "REPLACE_WITH_COMMERCIAL_AGREEMENT_TECHNOLOGY_SCHEDULE_PAGE_ID",
+    "pageId": "48723c6372304970b284b011a674504c",
     "outputPath": "docs/COMMERCIAL_AGREEMENT.md"
   },
   "sixTonguesGeosealCliPython": {
     "title": "Six Tongues + GeoSeal CLI Python",
-    "pageId": "REPLACE_WITH_SIX_TONGUES_GEOSEAL_CLI_PYTHON_PAGE_ID",
+    "pageId": "8cad7ff3551e49a98900f4c66f3acc98",
     "outputPath": "docs/SIX_TONGUES_CLI.md"
   },
   "scbeAethermooreUnifiedSystemReport": {
     "title": "SCBE-AETHERMOORE v3.0.0 Unified System Report",
-    "pageId": "REPLACE_WITH_SCBE_AETHERMOORE_UNIFIED_SYSTEM_REPORT_PAGE_ID",
+    "pageId": "be55b479c358478c9b057649386206e5",
     "outputPath": "docs/UNIFIED_SYSTEM_REPORT.md"
   },
   "droneFleetArchitectureUpgrades": {
     "title": "Drone Fleet Architecture Upgrades",
-    "pageId": "REPLACE_WITH_DRONE_FLEET_ARCHITECTURE_UPGRADES_PAGE_ID",
+    "pageId": "4e9d7f89e2724f1d9b6ccee15af71fa8",
     "outputPath": "docs/DRONE_FLEET_UPGRADES.md"
   },
   "worldForgeTemplate": {
     "title": "WorldForge Template",
-    "pageId": "REPLACE_WITH_WORLDFORGE_TEMPLATE_PAGE_ID",
+    "pageId": "d6c7098afee1457685f8eae631567c32",
     "outputPath": "docs/WORLDFORGE_TEMPLATE.md"
   }
 }
