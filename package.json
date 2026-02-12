@@ -83,7 +83,9 @@
     "docker:compose": "docker-compose up -d",
     "prepublishOnly": "npm run build",
     "package": "npm pack",
-    "notion:sync": "node scripts/notion-sync.js --all"
+    "notion:sync": "node scripts/notion-sync.js --all",
+    "version:bump": "node scripts/version-bump.js",
+    "precommit:check": "bash scripts/pre-commit-check.sh"
   },
   "keywords": [
     "cryptography",
