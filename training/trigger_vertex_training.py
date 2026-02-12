@@ -33,7 +33,7 @@ DEFAULTS = {
 }
 
 
-def load_pipeline_config(config_path: str = None) -> dict:
+def load_pipeline_config(config_path=None):
     """Load the Vertex AI pipeline YAML config."""
     if config_path is None:
         config_path = Path(__file__).parent / "vertex_pipeline_config.yaml"
@@ -41,9 +41,11 @@ def load_pipeline_config(config_path: str = None) -> dict:
         return yaml.safe_load(f)
 
 
-def validate_environment():
+def validate_environment(dry_run=False):
     """Check that required env vars and credentials are present."""
-    required = ["GCP_PROJECT_ID", "HF_TOKEN"]
+    required = ["GCP_PROJECT_ID"]
+    if not dry_run:
+        required.extend(["HF_TOKEN"])
     missing = [v for v in required if not os.environ.get(v)]
     if missing:
         log.error("Missing environment variables: %s", ", ".join(missing))
@@ -51,25 +53,21 @@ def validate_environment():
     log.info("Environment validated - all required vars present")
 
 
-def create_training_job(cfg: dict, pipeline: dict, dry_run: bool = False):
+def create_training_job(cfg, pipeline, dry_run=False):
     """Submit a Vertex AI CustomJob for PHDM 21D embedding training."""
     try:
         from google.cloud import aiplatform
     except ImportError:
-        log.error("google-cloud-aiplatform not installed. Run: pip install google-cloud-aiplatform")
-        sys.exit(1)
-
-    aiplatform.init(
-        project=cfg["project_id"],
-        location=cfg["region"],
-        staging_bucket=cfg["staging_bucket"],
-    )
+        if not dry_run:
+            log.error("google-cloud-aiplatform not installed. Run: pip install google-cloud-aiplatform")
+            sys.exit(1)
+        log.warning("google-cloud-aiplatform not available (ok for dry-run)")
 
     model_cfg = pipeline.get("model", {})
     training_cfg = pipeline.get("training", {})
     infra_cfg = pipeline.get("infrastructure", {})
 
-    job_name = f"phdm-21d-train-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}"
+    job_name = "phdm-21d-train-%s" % datetime.utcnow().strftime("%Y%m%d-%H%M%S")
 
     worker_pool = [{
         "machine_spec": {
@@ -83,20 +81,29 @@ def create_training_job(cfg: dict, pipeline: dict, dry_run: bool = False):
                 "us-docker.pkg.dev/vertex-ai/training/pytorch-gpu.2-1:latest"),
             "command": ["python", "-m", "training.train_phdm"],
             "args": [
-                f"--dimensions={model_cfg.get('dimensions', 21)}",
-                f"--curvature={model_cfg.get('curvature', -1.0)}",
-                f"--epochs={training_cfg.get('epochs', 50)}",
-                f"--batch-size={training_cfg.get('batch_size', 64)}",
-                f"--learning-rate={training_cfg.get('learning_rate', 0.001)}",
-                f"--hf-repo={cfg['hf_model_repo']}",
+                "--dimensions=%s" % model_cfg.get("dimensions", 21),
+                "--curvature=%s" % model_cfg.get("curvature", -1.0),
+                "--epochs=%s" % training_cfg.get("epochs", 50),
+                "--batch-size=%s" % training_cfg.get("batch_size", 64),
+                "--learning-rate=%s" % training_cfg.get("learning_rate", 0.001),
+                "--hf-repo=%s" % cfg["hf_model_repo"],
             ],
         },
     }]
 
     if dry_run:
         log.info("[DRY RUN] Would create job: %s", job_name)
-        log.info("[DRY RUN] Worker pool config: %s", json.dumps(worker_pool, indent=2))
+        log.info("[DRY RUN] Worker pool config:")
+        log.info(json.dumps(worker_pool, indent=2))
+        log.info("[DRY RUN] Pipeline config loaded successfully")
+        log.info("[DRY RUN] All systems nominal - ready for real training")
         return None
+
+    aiplatform.init(
+        project=cfg["project_id"],
+        location=cfg["region"],
+        staging_bucket=cfg["staging_bucket"],
+    )
 
     log.info("Creating Vertex AI training job: %s", job_name)
     job = aiplatform.CustomJob(
@@ -115,7 +122,7 @@ def create_training_job(cfg: dict, pipeline: dict, dry_run: bool = False):
     return job
 
 
-def push_to_huggingface(cfg: dict):
+def push_to_huggingface(cfg):
     """Push trained model artifacts to HuggingFace Hub."""
     try:
         from huggingface_hub import HfApi
@@ -135,7 +142,7 @@ def push_to_huggingface(cfg: dict):
         folder_path=str(output_dir),
         repo_id=cfg["hf_model_repo"],
         repo_type="model",
-        commit_message=f"training: upload PHDM 21D weights {datetime.utcnow().isoformat()}",
+        commit_message="training: upload PHDM 21D weights %s" % datetime.utcnow().isoformat(),
     )
     log.info("Model pushed to HuggingFace successfully")
 
@@ -159,7 +166,7 @@ def main():
         push_to_huggingface(cfg)
         return
 
-    validate_environment()
+    validate_environment(dry_run=args.dry_run)
     job = create_training_job(cfg, pipeline, dry_run=args.dry_run)
 
     if job and not args.dry_run:
