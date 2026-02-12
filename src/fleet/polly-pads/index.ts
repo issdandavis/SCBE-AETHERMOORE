@@ -49,11 +49,6 @@ export {
   type MemoryEntry,
 } from './mode-pad.js';
 
-// Specialist Modes (Original Mode Registry)
-// ============================================================================
-// Specialist Modes (Canonical: ./modes)
-// ============================================================================
-
 // Specialist Modes (Dynamic Mode Switching) — legacy registry
 export {
   ModeRegistry,
