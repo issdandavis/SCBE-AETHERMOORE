@@ -55,6 +55,41 @@ jobs:
         continue-on-error: true
         run: npm run typecheck
 
+      - name: Run coherence check
+        id: coherence
+        if: always()
+        continue-on-error: true
+        run: |
+          npm_outcome='${{ steps.npm_test.outcome }}'
+          pytest_outcome='${{ steps.pytest.outcome }}'
+          lint_outcome='${{ steps.lint.outcome }}'
+          type_outcome='${{ steps.typecheck.outcome }}'
+
+          if [ "$npm_outcome" = "success" ] && [ "$pytest_outcome" = "success" ]; then test_score=1; else test_score=0; fi
+          if [ "$lint_outcome" = "success" ]; then lint_score=1; else lint_score=0; fi
+          if [ "$type_outcome" = "success" ]; then type_score=1; else type_score=0; fi
+
+          python scripts/coherence-check.py \
+            --threshold 0.97 \
+            --test-pass-rate "$test_score" \
+            --lint-score "$lint_score" \
+            --type-coverage "$type_score" \
+            --json-path coherence-report.json
+
+      - name: Export coherence outputs
+        id: coherence_summary
+        if: always()
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          data = json.loads(Path('coherence-report.json').read_text())
+          with open(Path(__import__('os').environ['GITHUB_OUTPUT']), 'a', encoding='utf-8') as fh:
+              fh.write(f"coherence={data['coherence']}\n")
+              fh.write(f"coherence_status={data['status']}\n")
+          PY
+
       - name: Build review summary
         id: summary
         if: always()
@@ -63,13 +98,15 @@ jobs:
           pytest_result='${{ steps.pytest.outcome }}'
           lint_result='${{ steps.lint.outcome }}'
           typecheck_result='${{ steps.typecheck.outcome }}'
+          coherence_status='${{ steps.coherence_summary.outputs.coherence_status }}'
 
           echo "npm_result=$npm_result" >> "$GITHUB_OUTPUT"
           echo "pytest_result=$pytest_result" >> "$GITHUB_OUTPUT"
           echo "lint_result=$lint_result" >> "$GITHUB_OUTPUT"
           echo "typecheck_result=$typecheck_result" >> "$GITHUB_OUTPUT"
+          echo "coherence_status=$coherence_status" >> "$GITHUB_OUTPUT"
 
-          if [ "$npm_result" != "success" ] || [ "$pytest_result" != "success" ]; then
+          if [ "$npm_result" != "success" ] || [ "$pytest_result" != "success" ] || [ "$coherence_status" != "pass" ]; then
             echo "tests_failed=true" >> "$GITHUB_OUTPUT"
           else
             echo "tests_failed=false" >> "$GITHUB_OUTPUT"
@@ -88,6 +125,7 @@ jobs:
               `- pytest tests/ -v: **${{ steps.summary.outputs.pytest_result }}**`,
               `- npm run lint: **${{ steps.summary.outputs.lint_result }}**`,
               `- npm run typecheck: **${{ steps.summary.outputs.typecheck_result }}**`,
+              `- Layer 11 coherence score: **${{ steps.coherence_summary.outputs.coherence }}** (${{ steps.coherence_summary.outputs.coherence_status }})`,
               '',
               'This issue was created automatically by the Daily Review workflow.'
             ].join('\n');
@@ -103,5 +141,5 @@ jobs:
       - name: Fail job if tests failed
         if: always() && steps.summary.outputs.tests_failed == 'true'
         run: |
-          echo "Daily review detected failing tests."
+          echo "Daily review detected failing tests or low coherence."
           exit 1
