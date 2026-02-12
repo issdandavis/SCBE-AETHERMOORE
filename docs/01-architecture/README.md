@@ -2,6 +2,8 @@
 
 SCBE-AETHERMOORE's architecture provides defense-in-depth for AI agent governance.
 
+Related: [System Overview (Mind Map Translation)](system-overview-mindmap.md)
+
 ---
 
 ## High-Level Architecture
