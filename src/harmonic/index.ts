@@ -305,24 +305,30 @@ export {
 // ═══════════════════════════════════════════════════════════════
 
 export {
-  // Egg operations
-  sealEgg,
-  unsealEgg,
-  checkGeometryProximity,
+  // Egg creation and hatching
+  createEgg,
+  hatch,
+  // Predicates
+  predicateTongue,
+  predicateGeo,
+  predicatePath,
+  predicateQuorum,
+  predicateCrypto,
   // Key derivation
-  deriveEggKey,
-  // Quorum
-  generateQuorum,
-  combineShares,
-  // Path
-  pathHash,
+  deriveKey,
+  // Utilities
+  getRingLevel,
   // Constants
-  EGG_TONGUE_PHASES,
+  ALL_TONGUES,
+  RING_BOUNDARIES,
+  DEFAULT_TONGUE_WEIGHTS,
   // Types
   type SacredEgg,
-  type SacredEggConfig,
-  type UnsealResult,
-  type QuorumShare,
+  type EggPolicy,
+  type VerifierState,
+  type Approval,
+  type HatchResult,
+  type RingLevel,
 } from './sacredEggs.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -351,4 +357,53 @@ export {
   type TriDetectionResult,
   type TriDetectorConfig,
 } from './triMechanismDetector.js';
+
+// ═══════════════════════════════════════════════════════════════
+// HyperbolicRAG — Poincaré Ball Retrieval-Augmented Generation
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Engine
+  HyperbolicRAGEngine,
+  createHyperbolicRAG,
+  // Access cost
+  accessCost,
+  trustFromPosition,
+  // Types
+  type HyperbolicRAGConfig,
+  type RAGDocument,
+  type RetrievalResult,
+  type RetrievalSummary,
+} from './hyperbolicRAG.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Entropic Layer — Escape Detection, Adaptive-k, Expansion Tracking
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Monitor
+  EntropicMonitor,
+  createEntropicMonitor,
+  // Escape detection
+  detectEscape,
+  // Adaptive k
+  computeAdaptiveK,
+  computeLocalEntropy,
+  computeTrustDensity,
+  // Expansion tracking
+  computeExpansionRate,
+  estimateReachableVolume,
+  trackExpansion,
+  // Utilities
+  defaultBasins,
+  verifyEntropicInvariants,
+  // Types
+  type AdaptiveKResult,
+  type EntropicConfig,
+  type EntropicSample,
+  type EntropicState,
+  type EscapeResult,
+  type ExpansionResult,
+  type TrustBasin,
+} from './entropic.js';
 
