@@ -1,0 +1,88 @@
+name: Notion Sync
+
+on:
+  workflow_dispatch:
+    inputs:
+      page_id:
+        description: 'Specific Notion page ID to sync (optional)'
+        required: false
+        type: string
+      config_key:
+        description: 'Config key from scripts/sync-config.json (optional)'
+        required: false
+        type: string
+      output_path:
+        description: 'Output docs path override (optional)'
+        required: false
+        type: string
+  schedule:
+    - cron: '0 7 * * 1'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  notion-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Sync selected Notion page
+        if: github.event_name == 'workflow_dispatch' && (inputs.page_id != '' || inputs.config_key != '')
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+        run: |
+          set -euo pipefail
+          args=()
+
+          if [ -n "${{ inputs.page_id }}" ]; then
+            args+=("--page-id" "${{ inputs.page_id }}")
+          fi
+
+          if [ -n "${{ inputs.config_key }}" ]; then
+            args+=("--config-key" "${{ inputs.config_key }}")
+          fi
+
+          if [ -n "${{ inputs.output_path }}" ]; then
+            args+=("--output" "${{ inputs.output_path }}")
+          fi
+
+          node scripts/notion-sync.js "${args[@]}"
+
+      - name: Sync all configured Notion pages
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.page_id == '' && inputs.config_key == '')
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+        run: |
+          set -euo pipefail
+          node scripts/notion-sync.js --all
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'docs: sync documentation from Notion'
+          title: 'docs: sync documentation from Notion'
+          body: |
+            Automated Notion synchronization.
+
+            - Source: Notion API
+            - Destination: docs/ directory
+            - Trigger: ${{ github.event_name }}
+          branch: automation/notion-sync
+          labels: |
+            documentation
+            automated
+          add-paths: |
+            docs/**
