@@ -156,8 +156,9 @@ async function syncSinglePage(notion, pageId, outputPath) {
   const blocks = await getAllBlocks(notion, cleanPageId);
   const title = await fetchPageTitle(notion, cleanPageId);
   const markdown = await blocksToMarkdown(notion, blocks);
+  const lastSynced = process.env.NOTION_SYNC_TIMESTAMP || new Date().toISOString();
 
-  const content = `# ${title}\n\n${markdown}`;
+  const content = `# ${title}\n\n> last-synced: ${lastSynced}\n\n${markdown}`;
   const resolvedOutput = path.resolve(process.cwd(), outputPath);
 
   await ensureDocsPath(resolvedOutput);
