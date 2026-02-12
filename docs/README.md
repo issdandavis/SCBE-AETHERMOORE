@@ -89,6 +89,22 @@ docs/
 - [Architecture Overview](01-architecture/README.md) - System design
 - [Technical Reference](02-technical/README.md) - Deep technical docs
 
+### Notion Sync Placeholders
+- [HYDRA Multi-Agent Coordination System](HYDRA_COORDINATION.md)
+- [GeoSeal Geometric Access Control Kernel - RAG Immune System](GEOSEAL_ACCESS_CONTROL.md)
+- [Quasi-Vector Spin Voxels & Magnetics Integration](QUASI_VECTOR_MAGNETICS.md)
+- [SS1 Tokenizer Protocol for Sacred Tongue Integration](SS1_TOKENIZER_PROTOCOL.md)
+- [Multi-AI Development Coordination System](MULTI_AI_COORDINATION.md)
+- [Swarm Deployment Formations](SWARM_FORMATIONS.md)
+- [AetherAuth Implementation (Notion & Perplexity Bridge)](AETHERAUTH_IMPLEMENTATION.md)
+- [Google Cloud Infrastructure Setup for SCBE-AETHERMOORE](GOOGLE_CLOUD_SETUP.md)
+- [PHDM Nomenclature Reference with Canonical Definitions](PHDM_NOMENCLATURE.md)
+- [Commercial Agreement Technology Schedule](COMMERCIAL_AGREEMENT.md)
+- [Six Tongues + GeoSeal CLI Python Implementation Guide](SIX_TONGUES_CLI.md)
+- [SCBE-AETHERMOORE v3.0.0 Unified System Report](UNIFIED_SYSTEM_REPORT.md)
+- [Drone Fleet Architecture Upgrades for SCBE-AETHERMOORE Integration](DRONE_FLEET_UPGRADES.md)
+- [WorldForge Complete Worldbuilding & Conlang Template](WORLDFORGE_TEMPLATE.md)
+
 ---
 
 ## Key Features
