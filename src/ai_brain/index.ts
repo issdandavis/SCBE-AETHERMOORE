@@ -108,6 +108,54 @@ export {
 export { BrainAuditLogger } from './audit.js';
 
 // ═══════════════════════════════════════════════════════════════
+// Conservation Law Enforcement (Maximum Build)
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  extractBlock,
+  replaceBlock,
+  projectContainment,
+  projectPhaseCoherence,
+  projectEnergyBalance,
+  projectLatticeContinuity,
+  projectFluxNormalization,
+  projectSpectralBounds,
+  computeGlobalInvariant,
+  refactorAlign,
+  enforceConservationLaws,
+} from './conservation.js';
+
+export {
+  BLOCK_RANGES,
+  type BlockName,
+  type ConservationConfig,
+  type ConservationLawName,
+  type ConservationLawResult,
+  type RefactorAlignResult,
+} from './types.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Time-over-Intent Coupling (Maximum Build)
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  computeTimeDilation,
+  computeGamma,
+  computeTriadicWeights,
+  positiveKappa,
+  computeEffectiveR,
+  harmonicWallTOI,
+  triadicDistance as toiTriadicDistance,
+  evaluateTimeOverIntent,
+  computeHatchWeight,
+  meetsGenesisThreshold,
+  DEFAULT_TOI_CONFIG,
+  type TimeOverIntentConfig,
+  type TemporalObservation,
+  type TimeOverIntentResult,
+} from './timeOverIntent.js';
+
+// ═══════════════════════════════════════════════════════════════
 // HyperbolicRAG (Layer 12 cost-gated retrieval)
 // ═══════════════════════════════════════════════════════════════
 
@@ -132,6 +180,8 @@ export {
   type EntropicConfig,
   type EscapeAssessment,
 } from './entropic-layer.js';
+
+// ═══════════════════════════════════════════════════════════════
 // Trajectory Simulator
 // ═══════════════════════════════════════════════════════════════
 
