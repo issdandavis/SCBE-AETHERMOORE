@@ -10,7 +10,6 @@
  * does what during autonomous operations.
  */
 
-import { ModePad } from './mode-pad';
 import { Squad } from './squad';
 import {
   CrisisType,
@@ -293,7 +292,5 @@ export class MissionCoordinator {
    */
   getPhaseHistory(): Array<{ phase: MissionPhase; timestamp: number }> {
     return [...this.phaseHistory];
-          }
+  }
 }
-
- 
