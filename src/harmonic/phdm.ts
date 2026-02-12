@@ -1,14 +1,55 @@
 /**
  * Polyhedral Hamiltonian Defense Manifold (PHDM)
  *
- * Topological intrusion detection using graph theory and differential geometry.
- * Traverses 16 canonical polyhedra in a Hamiltonian path, generating cryptographic
- * keys while monitoring for deviations from the expected geodesic curve in 6D space.
- *
+ * @file phdm.ts
  * @module harmonic/phdm
+ * @layer Layer 8
+ * @component PHDM — Polyhedral Hamiltonian Defense Manifold
+ * @version 3.3.0
+ *
+ * Unified security + governance system built on 16 canonical polyhedra:
+ *
+ * 1. INTRUSION DETECTION — Monitors state deviations from the expected
+ *    geodesic curve through 6D polyhedral space via cubic spline interpolation.
+ *    Deviation or curvature anomalies trigger intrusion flags.
+ *
+ * 2. HMAC KEY CHAIN — Traverses the polyhedra in a Hamiltonian path,
+ *    generating K_{i+1} = HMAC-SHA256(K_i, Serialize(P_i)) at each step.
+ *    Path integrity verified via timingSafeEqual.
+ *
+ * 3. FLUX GOVERNANCE — Polyhedra are classified by family (Platonic, Archimedean,
+ *    Kepler-Poinsot, Toroidal, Johnson, Rhombic). Flux states restrict which
+ *    families are active:
+ *      POLLY (full) → all 16 polyhedra
+ *      QUASI (defensive) → Platonic + Archimedean (8)
+ *      DEMI (survival) → Platonic only (5)
+ *
+ * 4. PHASON SHIFT — Rotates the 6D→3D projection matrix (quasicrystal key
+ *    rotation), invalidating cached geodesic positions. Defense mechanism
+ *    against persistent adversaries.
+ *
+ * Merges the security manifold (formerly phdm.ts) and cognitive lattice
+ * (formerly python/scbe/brain.py) into a single canonical module.
+ *
+ * Canonical name: Polyhedral Hamiltonian Defense Manifold
+ * (All other expansions — "Dynamic Mesh", "Half-plane Drift Monitor",
+ *  "Piecewise Hamiltonian Distance Metric" — are retired.)
  */
 
 import * as crypto from 'crypto';
+
+// ═══════════════════════════════════════════════════════════════
+// Types
+// ═══════════════════════════════════════════════════════════════
+
+/** Polyhedra family classification */
+export type PolyhedronFamily =
+  | 'platonic'
+  | 'archimedean'
+  | 'kepler-poinsot'
+  | 'toroidal'
+  | 'johnson'
+  | 'rhombic';
 
 /**
  * Polyhedron representation with topological properties
@@ -19,7 +60,21 @@ export interface Polyhedron {
   edges: number; // E
   faces: number; // F
   genus: number; // g (topological invariant)
+  family: PolyhedronFamily;
 }
+
+/**
+ * Flux state — controls which polyhedra families are active.
+ * Maps to the POLLY/QUASI/DEMI containment postures.
+ */
+export type FluxState = 'POLLY' | 'QUASI' | 'DEMI';
+
+/** Families active per flux state */
+const FLUX_FAMILIES: Record<FluxState, PolyhedronFamily[]> = {
+  POLLY: ['platonic', 'archimedean', 'kepler-poinsot', 'toroidal', 'johnson', 'rhombic'],
+  QUASI: ['platonic', 'archimedean'],
+  DEMI: ['platonic'],
+};
 
 /**
  * Compute Euler characteristic: χ = V - E + F = 2(1-g)
@@ -56,36 +111,43 @@ export function serializePolyhedron(poly: Polyhedron): Buffer {
 }
 
 /**
- * 16 Canonical Polyhedra
+ * 16 Canonical Polyhedra — classified by family for flux governance.
+ *
+ * Platonic (5): Core axioms — always available, even in DEMI mode
+ * Archimedean (3): Processing layer — available in QUASI and POLLY
+ * Kepler-Poinsot (2): High-risk zone — POLLY only
+ * Toroidal (2): Recursive/self-diagnostic — POLLY only
+ * Johnson (2): Domain connectors — POLLY only
+ * Rhombic (2): Space-filling logic — POLLY only
  */
 export const CANONICAL_POLYHEDRA: Polyhedron[] = [
-  // Platonic Solids (5)
-  { name: 'Tetrahedron', vertices: 4, edges: 6, faces: 4, genus: 0 },
-  { name: 'Cube', vertices: 8, edges: 12, faces: 6, genus: 0 },
-  { name: 'Octahedron', vertices: 6, edges: 12, faces: 8, genus: 0 },
-  { name: 'Dodecahedron', vertices: 20, edges: 30, faces: 12, genus: 0 },
-  { name: 'Icosahedron', vertices: 12, edges: 30, faces: 20, genus: 0 },
+  // Platonic Solids (5) — Core
+  { name: 'Tetrahedron', vertices: 4, edges: 6, faces: 4, genus: 0, family: 'platonic' },
+  { name: 'Cube', vertices: 8, edges: 12, faces: 6, genus: 0, family: 'platonic' },
+  { name: 'Octahedron', vertices: 6, edges: 12, faces: 8, genus: 0, family: 'platonic' },
+  { name: 'Dodecahedron', vertices: 20, edges: 30, faces: 12, genus: 0, family: 'platonic' },
+  { name: 'Icosahedron', vertices: 12, edges: 30, faces: 20, genus: 0, family: 'platonic' },
 
-  // Archimedean Solids (3)
-  { name: 'Truncated Tetrahedron', vertices: 12, edges: 18, faces: 8, genus: 0 },
-  { name: 'Cuboctahedron', vertices: 12, edges: 24, faces: 14, genus: 0 },
-  { name: 'Icosidodecahedron', vertices: 30, edges: 60, faces: 32, genus: 0 },
+  // Archimedean Solids (3) — Processing
+  { name: 'Truncated Tetrahedron', vertices: 12, edges: 18, faces: 8, genus: 0, family: 'archimedean' },
+  { name: 'Cuboctahedron', vertices: 12, edges: 24, faces: 14, genus: 0, family: 'archimedean' },
+  { name: 'Icosidodecahedron', vertices: 30, edges: 60, faces: 32, genus: 0, family: 'archimedean' },
 
-  // Kepler-Poinsot (2) - Non-convex star polyhedra
-  { name: 'Small Stellated Dodecahedron', vertices: 12, edges: 30, faces: 12, genus: 4 },
-  { name: 'Great Dodecahedron', vertices: 12, edges: 30, faces: 12, genus: 4 },
+  // Kepler-Poinsot (2) — High-risk
+  { name: 'Small Stellated Dodecahedron', vertices: 12, edges: 30, faces: 12, genus: 4, family: 'kepler-poinsot' },
+  { name: 'Great Dodecahedron', vertices: 12, edges: 30, faces: 12, genus: 4, family: 'kepler-poinsot' },
 
-  // Toroidal (2) - genus 1
-  { name: 'Szilassi', vertices: 7, edges: 21, faces: 14, genus: 1 },
-  { name: 'Csaszar', vertices: 7, edges: 21, faces: 14, genus: 1 },
+  // Toroidal (2) — Recursive
+  { name: 'Szilassi', vertices: 7, edges: 21, faces: 14, genus: 1, family: 'toroidal' },
+  { name: 'Csaszar', vertices: 7, edges: 21, faces: 14, genus: 1, family: 'toroidal' },
 
-  // Johnson Solids (2)
-  { name: 'Pentagonal Bipyramid', vertices: 7, edges: 15, faces: 10, genus: 0 },
-  { name: 'Triangular Cupola', vertices: 9, edges: 15, faces: 8, genus: 0 },
+  // Johnson Solids (2) — Connectors
+  { name: 'Pentagonal Bipyramid', vertices: 7, edges: 15, faces: 10, genus: 0, family: 'johnson' },
+  { name: 'Triangular Cupola', vertices: 9, edges: 15, faces: 8, genus: 0, family: 'johnson' },
 
-  // Rhombic (2)
-  { name: 'Rhombic Dodecahedron', vertices: 14, edges: 24, faces: 12, genus: 0 },
-  { name: 'Bilinski Dodecahedron', vertices: 8, edges: 18, faces: 12, genus: 0 },
+  // Rhombic (2) — Space-filling
+  { name: 'Rhombic Dodecahedron', vertices: 14, edges: 24, faces: 12, genus: 0, family: 'rhombic' },
+  { name: 'Bilinski Dodecahedron', vertices: 8, edges: 18, faces: 12, genus: 0, family: 'rhombic' },
 ];
 
 /**
@@ -483,50 +545,226 @@ export class PHDMDeviationDetector {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// Flux Governance — Polyhedra family filtering
+// ═══════════════════════════════════════════════════════════════
+
 /**
- * Complete PHDM system
+ * Get the active polyhedra for a given flux state.
+ *
+ * POLLY: all 16 — full capability
+ * QUASI: Platonic + Archimedean (8) — defensive posture
+ * DEMI: Platonic only (5) — survival mode
+ */
+export function getActivePolyhedra(
+  fluxState: FluxState,
+  polyhedra: Polyhedron[] = CANONICAL_POLYHEDRA,
+): Polyhedron[] {
+  const allowedFamilies = new Set(FLUX_FAMILIES[fluxState]);
+  return polyhedra.filter((p) => allowedFamilies.has(p.family));
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Phason Shift — 6D projection rotation (key rotation defense)
+// ═══════════════════════════════════════════════════════════════
+
+const PHI = (1 + Math.sqrt(5)) / 2;
+
+/**
+ * Generate the default 6D→3D icosahedral projection matrix.
+ * Based on golden ratio for quasicrystal symmetry.
+ */
+export function generateProjectionMatrix(): number[][] {
+  const norm = Math.sqrt(2 + PHI);
+  return [
+    [1 / norm, PHI / norm, 0, -1 / norm, PHI / norm, 0],
+    [PHI / norm, 0, 1 / norm, PHI / norm, 0, -1 / norm],
+    [0, 1 / norm, PHI / norm, 0, -1 / norm, PHI / norm],
+  ];
+}
+
+/**
+ * Apply a phason shift: rotate the 6D→3D projection by angle theta
+ * in the (dim0, dim1) plane. This changes which 3D slice of the 6D
+ * lattice is visible, effectively rotating the quasicrystal tiling.
+ *
+ * @param matrix - Current 3x6 projection matrix
+ * @param theta - Rotation angle (radians)
+ * @param dim0 - First dimension of rotation plane (default: 0)
+ * @param dim1 - Second dimension of rotation plane (default: 1)
+ * @returns New projection matrix
+ */
+export function phasonShift(
+  matrix: number[][],
+  theta: number,
+  dim0: number = 0,
+  dim1: number = 1,
+): number[][] {
+  // Build 6D rotation matrix (identity + Givens rotation in (dim0, dim1))
+  const rot6d: number[][] = Array.from({ length: 6 }, (_, i) =>
+    Array.from({ length: 6 }, (_, j) => (i === j ? 1 : 0)),
+  );
+  const c = Math.cos(theta);
+  const s = Math.sin(theta);
+  rot6d[dim0][dim0] = c;
+  rot6d[dim0][dim1] = -s;
+  rot6d[dim1][dim0] = s;
+  rot6d[dim1][dim1] = c;
+
+  // Multiply: newMatrix = matrix @ rot6d^T  (each row of matrix * columns of rot6d)
+  const result: number[][] = [];
+  for (let r = 0; r < matrix.length; r++) {
+    const row: number[] = [];
+    for (let j = 0; j < 6; j++) {
+      let sum = 0;
+      for (let k = 0; k < 6; k++) {
+        sum += matrix[r][k] * rot6d[k][j];
+      }
+      row.push(sum);
+    }
+    result.push(row);
+  }
+
+  return result;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Complete PHDM System
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Polyhedral Hamiltonian Defense Manifold — unified security + governance.
+ *
+ * Combines:
+ * - HMAC key chain (PHDMHamiltonianPath)
+ * - Geodesic deviation intrusion detection (PHDMDeviationDetector)
+ * - Flux state governance (POLLY/QUASI/DEMI)
+ * - Phason shift defense (6D projection rotation)
  */
 export class PolyhedralHamiltonianDefenseManifold {
   private path: PHDMHamiltonianPath;
   private detector: PHDMDeviationDetector;
+  private _fluxState: FluxState = 'POLLY';
+  private _projectionMatrix: number[][];
+  private _allPolyhedra: Polyhedron[];
 
   constructor(
     polyhedra: Polyhedron[] = CANONICAL_POLYHEDRA,
     snapThreshold: number = 0.1,
-    curvatureThreshold: number = 0.5
+    curvatureThreshold: number = 0.5,
   ) {
+    this._allPolyhedra = polyhedra;
+    this._projectionMatrix = generateProjectionMatrix();
     this.path = new PHDMHamiltonianPath(polyhedra);
     this.detector = new PHDMDeviationDetector(polyhedra, snapThreshold, curvatureThreshold);
   }
 
   /**
-   * Initialize with master key
+   * Initialize with master key — computes HMAC key chain
    */
   initialize(masterKey: Buffer): Buffer[] {
     return this.path.computePath(masterKey);
   }
 
   /**
-   * Monitor state at time t
+   * Monitor state at time t — intrusion detection
    */
   monitor(state: Point6D, t: number): IntrusionResult {
     return this.detector.detect(state, t);
   }
 
   /**
-   * Simulate attack
+   * Simulate attack scenarios
    */
   simulateAttack(
     attackType: 'deviation' | 'skip' | 'curvature',
-    intensity: number = 1.0
+    intensity: number = 1.0,
   ): IntrusionResult[] {
     return this.detector.simulateAttack(attackType, intensity);
   }
 
   /**
-   * Get polyhedra
+   * Get all 16 canonical polyhedra
    */
   getPolyhedra(): Polyhedron[] {
-    return CANONICAL_POLYHEDRA;
+    return this._allPolyhedra;
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Flux Governance
+  // ─────────────────────────────────────────────────────────────
+
+  /**
+   * Get the current flux state.
+   */
+  get fluxState(): FluxState {
+    return this._fluxState;
+  }
+
+  /**
+   * Set flux state — restricts which polyhedra families are active.
+   * Rebuilds the detector geodesic with only the active polyhedra.
+   */
+  setFluxState(state: FluxState, snapThreshold?: number, curvatureThreshold?: number): void {
+    this._fluxState = state;
+    const active = this.getActivePolyhedra();
+    this.path = new PHDMHamiltonianPath(active);
+    this.detector = new PHDMDeviationDetector(
+      active,
+      snapThreshold ?? 0.1,
+      curvatureThreshold ?? 0.5,
+    );
+  }
+
+  /**
+   * Get polyhedra active under the current flux state.
+   */
+  getActivePolyhedra(): Polyhedron[] {
+    return getActivePolyhedra(this._fluxState, this._allPolyhedra);
+  }
+
+  /**
+   * Get count of active polyhedra.
+   */
+  get activeCount(): number {
+    return this.getActivePolyhedra().length;
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Phason Shift
+  // ─────────────────────────────────────────────────────────────
+
+  /**
+   * Execute a phason shift — rotates the 6D→3D projection matrix.
+   * This is a defense mechanism that invalidates cached positions.
+   *
+   * @param theta - Rotation angle (radians). Default: random.
+   * @param dim0 - First dimension of rotation plane
+   * @param dim1 - Second dimension of rotation plane
+   */
+  executePhasonShift(theta?: number, dim0: number = 0, dim1: number = 1): void {
+    const angle = theta ?? Math.random() * 2 * Math.PI;
+    this._projectionMatrix = phasonShift(this._projectionMatrix, angle, dim0, dim1);
+  }
+
+  /**
+   * Get the current projection matrix.
+   */
+  getProjectionMatrix(): number[][] {
+    return this._projectionMatrix.map((row) => [...row]);
+  }
+
+  /**
+   * Project a 6D point to 3D using the current projection matrix.
+   */
+  projectTo3D(point: Point6D): [number, number, number] {
+    const p = point6DToArray(point);
+    const result: [number, number, number] = [0, 0, 0];
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 6; c++) {
+        result[r] += this._projectionMatrix[r][c] * p[c];
+      }
+    }
+    return result;
   }
 }
