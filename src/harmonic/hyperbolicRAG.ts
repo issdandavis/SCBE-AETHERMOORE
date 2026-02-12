@@ -24,12 +24,13 @@ import {
   hyperbolicDistance6D,
   poincareNorm,
   projectIntoBall,
-  accessCost,
+  accessCost as chsfnAccessCost,
   tongueImpedanceAt,
   type CHSFNState,
   type TongueImpedance,
   DEFAULT_IMPEDANCE,
 } from './chsfn.js';
+/**
  * @layer Layer 5, Layer 7, Layer 12, Layer 13
  * @component HyperbolicRAG — Poincaré Ball Retrieval-Augmented Generation
  * @version 3.2.4
@@ -357,8 +358,8 @@ export function proximityScore(
   const dist = hyperbolicDistance6D(queryPos, chunkPos);
   if (dist > maxDist) return 0;
   // Use access cost for exponential decay, but normalize
-  const cost = accessCost(dist);
-  const baseCost = accessCost(0);
+  const cost = chsfnAccessCost(dist);
+  const baseCost = chsfnAccessCost(0);
   return baseCost / cost; // Ratio: cost at origin / cost at d → decays exponentially
 }
 
@@ -574,6 +575,8 @@ export function quarantineReport(
       quarantineRate: chunks.length > 0 ? quarantined.length / chunks.length : 0,
     },
   };
+}
+
 /** A document embedded in the Poincaré ball for retrieval. */
 export interface RAGDocument {
   /** Unique identifier */
