@@ -457,23 +457,24 @@ def layer_12_harmonic_scaling(d: float, phase_deviation: float = 0.0) -> float:
 # =============================================================================
 def layer_13_risk_decision(
     Risk_base: float, H: float, theta1: float = 0.33, theta2: float = 0.67
-) -> str:
+) -> Tuple[str, float]:
     """
     Layer 13: Three-Way Risk Decision
 
     Input: Base risk, harmonic amplification H
     Output: Decision ∈ {ALLOW, QUARANTINE, DENY}
 
-    A12: Risk' = Risk_base · H with thresholding.
+    A13: Risk' = Risk_base / H (amplified by inverse of safety score).
+    H close to 1 = safe (minimal amplification), H close to 0 = dangerous.
     """
-    Risk_prime = Risk_base * H
+    Risk_prime = Risk_base / max(H, 1e-10)
 
     if Risk_prime < theta1:
-        return "ALLOW"
+        return "ALLOW", Risk_prime
     elif Risk_prime < theta2:
-        return "QUARANTINE"
+        return "QUARANTINE", Risk_prime
     else:
-        return "DENY"
+        return "DENY", Risk_prime
 
 
 # =============================================================================
@@ -618,7 +619,7 @@ def scbe_14layer_pipeline(
         + w_a * (1.0 - S_audio)
     )
 
-    decision = layer_13_risk_decision(Risk_base, H, theta1, theta2)
+    decision, Risk_prime = layer_13_risk_decision(Risk_base, H, theta1, theta2)
 
     # =========================================================================
     # RETURN RESULTS
@@ -626,7 +627,7 @@ def scbe_14layer_pipeline(
     return {
         "decision": decision,
         "risk_base": Risk_base,
-        "risk_prime": Risk_base * H,
+        "risk_prime": Risk_prime,
         "d_star": d_star,
         "d_tri_norm": d_tri_norm,
         "H": H,
@@ -713,8 +714,8 @@ if __name__ == "__main__":
 
     print("\n[Layer 13] Risk Decision:")
     Risk_base = 0.4
-    decision = layer_13_risk_decision(Risk_base, H)
-    print(f"  Risk_base = {Risk_base:.4f}, Risk' = {Risk_base * H:.4f}")
+    decision, Risk_prime = layer_13_risk_decision(Risk_base, H)
+    print(f"  Risk_base = {Risk_base:.4f}, Risk' = {Risk_prime:.4f}")
     print(f"  Decision: {decision}")
 
     print("\n[Layer 14] Audio Axis:")

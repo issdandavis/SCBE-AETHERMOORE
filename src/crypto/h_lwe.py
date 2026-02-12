@@ -1,6 +1,5 @@
 """
 Hyperbolic LWE (H-LWE) Vector Encryption
-=========================================
 
 @file h_lwe.py
 @module crypto/h_lwe
@@ -22,11 +21,36 @@ Security model:
 NOTE: This is a governance/containment primitive, not a proven IND-CCA
 scheme. Treat it as an authenticated transport layer only when wrapped
 with AEAD/HMAC/signatures.
+H-LWE: Hyperbolic Learning With Errors - Poincaré Ball Vector Encryption
+
+@file h_lwe.py
+@module crypto/h_lwe
+@layer Layer 5, Layer 6, Layer 12, Layer 13
+@component Hyperbolic Vector Encryption
+@version 1.0.0
+@since 2026-02-08
+
+Symmetric "hyperbolic vector encryption" on the Poincaré ball using
+Möbius addition + tangent-space noise (breathing-safe behavior).
+
+Features:
+  - Geometry-preserving: encryption/decryption stay inside the ball
+  - Containment breach detection: decrypt raises if recovered vector
+    drifts toward or past the safety radius
+  - Optional hybrid wrapper: uses Kyber768 KEM to exchange session key,
+    then encrypts with symmetric H-LWE
+  - HMAC authentication for hybrid mode
+
+Security note:
+  This is a *governance/containment* primitive, not a proven IND-CCA
+  scheme. It ensures vectors stay within the Poincaré ball and detects
+  boundary violations. Use with AEAD/HMAC/signatures for transport.
 """
 
 from __future__ import annotations
 
 import hmac
+import hmac as hmac_mod
 import hashlib
 import math
 from dataclasses import dataclass
@@ -38,6 +62,9 @@ import numpy as np
 # ----------------------------
 # Exceptions
 # ----------------------------
+# ---------------------------------------------------------------------------
+# Exceptions
+# ---------------------------------------------------------------------------
 
 class HLWEError(Exception):
     """Base class for H-LWE errors."""
@@ -61,6 +88,11 @@ class AuthenticationError(HLWEError):
 
 def _norm(x: np.ndarray) -> float:
     """L2 norm of a vector."""
+# ---------------------------------------------------------------------------
+# Hyperbolic (Poincaré ball) operations
+# ---------------------------------------------------------------------------
+
+def _norm(x: np.ndarray) -> float:
     return float(np.linalg.norm(x))
 
 
@@ -75,6 +107,7 @@ def project_to_ball(x: np.ndarray, *, max_norm: float = 1.0 - 1e-8) -> np.ndarra
     Returns:
         Vector projected inside the ball.
     """
+    """Radially project to inside the open ball (norm < 1)."""
     x = np.asarray(x, dtype=float)
     n = _norm(x)
     if not np.isfinite(n):
@@ -132,6 +165,7 @@ def mobius_add(x: np.ndarray, y: np.ndarray, *, c: float = 1.0) -> np.ndarray:
     Formula:
         ((1 + 2c<x,y> + c||y||²)x + (1 - c||x||²)y) / (1 + 2c<x,y> + c²||x||²||y||²)
     """
+    """Möbius addition on Poincaré ball (curvature c)."""
     x = np.asarray(x, dtype=float)
     y = np.asarray(y, dtype=float)
     if x.shape != y.shape:
@@ -149,10 +183,18 @@ def mobius_add(x: np.ndarray, y: np.ndarray, *, c: float = 1.0) -> np.ndarray:
 
     num = (1 + 2 * c * xy + c * y2) * x + (1 - c * x2) * y
     den = 1 + 2 * c * xy + (c * c) * x2 * y2
+    x2 = min(float(np.dot(x, x)), 1.0 - 1e-12)
+    y2 = min(float(np.dot(y, y)), 1.0 - 1e-12)
+    xy = float(np.dot(x, y))
+
+    num = (1 + 2 * c * xy + c * y2) * x + (1 - c * x2) * y
+    den = 1 + 2 * c * xy + (c * c) * x2 * y2
+
     if abs(den) < 1e-15:
         xx = project_to_ball(x, max_norm=1.0 - 1e-6)
         yy = project_to_ball(y, max_norm=1.0 - 1e-6)
         return mobius_add(xx, yy, c=c)
+
     out = num / den
     return project_to_ball(out, max_norm=1.0 - 1e-10)
 
@@ -188,6 +230,21 @@ def hkdf_sha256(
     if length <= 0:
         raise ValueError("HKDF length must be > 0.")
     prk = hmac.new(salt, ikm, hashlib.sha256).digest()
+    """Negate a Poincaré ball vector (Möbius inverse)."""
+    return -np.asarray(x, dtype=float)
+
+
+# ---------------------------------------------------------------------------
+# Key derivation helpers
+# ---------------------------------------------------------------------------
+
+def hkdf_sha256(
+    ikm: bytes, *, salt: bytes = b"", info: bytes = b"", length: int = 32
+) -> bytes:
+    """Minimal HKDF (RFC 5869) with SHA-256."""
+    if length <= 0:
+        raise ValueError("HKDF length must be > 0.")
+    prk = hmac_mod.new(salt, ikm, hashlib.sha256).digest()
     t = b""
     okm = b""
     counter = 1
@@ -197,6 +254,11 @@ def hkdf_sha256(
         counter += 1
         if counter > 255:
             raise ValueError("HKDF too long.")
+        t = hmac_mod.new(prk, t + info + bytes([counter]), hashlib.sha256).digest()
+        okm += t
+        counter += 1
+        if counter > 255:
+            raise ValueError("HKDF output too long.")
     return okm[:length]
 
 
@@ -230,6 +292,13 @@ def key_vector_from_secret(
     tangent = u * tangent_scale
     k = exp_map_zero(tangent, c=c)
     # Ensure comfortably inside
+    Keeps key near origin to avoid pushing ciphertext toward boundary.
+    """
+    raw = hkdf_sha256(secret, salt=b"scbe-hlwe", info=b"keyvec", length=4 * dim)
+    ints = np.frombuffer(raw, dtype=np.uint32).astype(np.float64)
+    u = (ints / (2**32 - 1.0)) * 2.0 - 1.0
+    tangent = u * tangent_scale
+    k = exp_map_zero(tangent, c=c)
     if _norm(k) >= max_radius * 0.5:
         k = project_to_ball(k, max_norm=max_radius * 0.5)
     return k
@@ -238,6 +307,9 @@ def key_vector_from_secret(
 # ----------------------------
 # Symmetric H-LWE
 # ----------------------------
+# ---------------------------------------------------------------------------
+# Symmetric H-LWE
+# ---------------------------------------------------------------------------
 
 @dataclass(frozen=True)
 class HLWECiphertext:
@@ -247,6 +319,8 @@ class HLWECiphertext:
     ct = x (+) k (+) n
     where (+) is Möbius addition and n is noise mapped from
     tangent space via exp_map_zero.
+    ct = x ⊕ k ⊕ n
+    where ⊕ is Möbius addition and n is noise from tangent space via exp_map_zero.
     """
     ct: np.ndarray
     radius_ct: float
@@ -268,6 +342,14 @@ class HLWESymmetric:
         noise_scale: Std-dev for Gaussian tangent-space noise.
         max_radius: Maximum allowed norm for valid vectors.
         rng: NumPy random generator (for reproducibility).
+    Encrypt: ct = (x ⊕ k) ⊕ noise
+    Decrypt: x_hat = ct ⊕ (-k)
+
+    The noise is small (tangent-space Gaussian mapped via exp_map),
+    so decryption recovers x approximately (noise adds breathing).
+
+    Containment: if decrypt produces ||x_hat|| >= max_radius, raises
+    ContainmentBreach — the vector has escaped the safe zone.
     """
 
     def __init__(
@@ -293,6 +375,10 @@ class HLWESymmetric:
 
     def validate_vector(self, x: np.ndarray, *, label: str = "vector") -> np.ndarray:
         """Validate that x is a proper Poincaré-ball vector."""
+    def validate_vector(
+        self, x: np.ndarray, *, label: str = "vector"
+    ) -> np.ndarray:
+        """Validate that a vector is inside the Poincaré ball."""
         x = np.asarray(x, dtype=float).reshape(-1)
         if x.shape[0] != self.dim:
             raise InvalidVector(
@@ -309,11 +395,13 @@ class HLWESymmetric:
             raise InvalidVector(
                 f"{label} too close to boundary: ||x||={n:.6f} >= "
                 f"max_radius={self.max_radius}."
+                f"{label} too close to boundary: ||x||={n:.6f} >= max_radius={self.max_radius}."
             )
         return x
 
     def sample_noise(self) -> np.ndarray:
         """Sample small noise in tangent space, map to hyperbolic via exp_map."""
+        """Sample noise in tangent space and map to hyperbolic."""
         z = self.rng.normal(loc=0.0, scale=self.noise_scale, size=(self.dim,))
         return exp_map_zero(z, c=self.c)
 
@@ -337,6 +425,7 @@ class HLWESymmetric:
         Returns:
             HLWECiphertext with the encrypted vector and metadata.
         """
+        """Encrypt a Poincaré ball vector with a symmetric key vector."""
         key = self.validate_vector(
             project_to_ball(key, max_norm=self.max_radius * 0.5), label="key"
         )
@@ -345,6 +434,7 @@ class HLWESymmetric:
         # Left-key convention: ct = k (+) (x (+) n)
         # This allows exact left-cancellation on decrypt: (-k) (+) ct = x (+) n
         ct = mobius_add(key, mobius_add(x, n_hyp, c=self.c), c=self.c)
+        ct = mobius_add(mobius_add(x, key, c=self.c), n_hyp, c=self.c)
         rct = _norm(ct)
         return HLWECiphertext(ct=ct, radius_ct=rct, meta=dict(meta or {}))
 
@@ -368,6 +458,10 @@ class HLWESymmetric:
         Raises:
             ContainmentBreach: If decrypted vector exceeds safety radius.
             InvalidVector: If ciphertext is malformed.
+        Decrypt a ciphertext and check containment.
+
+        Returns (recovered_vector, radius).
+        Raises ContainmentBreach if radius >= max_radius.
         """
         key = self.validate_vector(
             project_to_ball(key, max_norm=self.max_radius * 0.5), label="key"
@@ -381,6 +475,11 @@ class HLWESymmetric:
             raise InvalidVector("ciphertext vector must be inside unit ball.")
         # Left-cancellation: (-k) (+) ct = (-k) (+) (k (+) (x (+) n)) = x (+) n
         x_hat = mobius_add(mobius_neg(key), ctv, c=self.c)
+            raise InvalidVector(f"ciphertext vector has wrong shape: {ctv.shape}")
+        if _norm(ctv) >= 1.0:
+            raise InvalidVector("ciphertext vector must be inside unit ball.")
+
+        x_hat = mobius_add(ctv, mobius_neg(key), c=self.c)
         r = _norm(x_hat)
         if r >= self.max_radius:
             raise ContainmentBreach(
@@ -399,6 +498,16 @@ class HLWEHybridCiphertext:
     kem_ct: Any
     vec_ct: HLWECiphertext
     tag: bytes  # HMAC over (kem_ct || vec_ct.ct)
+# ---------------------------------------------------------------------------
+# Optional Hybrid wrapper: Kyber768 KEM + symmetric H-LWE + HMAC tag
+# ---------------------------------------------------------------------------
+
+@dataclass(frozen=True)
+class HLWEHybridCiphertext:
+    """Hybrid ciphertext: Kyber KEM + H-LWE vector + HMAC tag."""
+    kem_ct: bytes
+    vec_ct: HLWECiphertext
+    tag: bytes
     meta: Dict[str, Any]
 
 
@@ -416,6 +525,13 @@ class HLWEHybridKEM:
         c: Poincaré ball curvature.
         noise_scale: Noise for symmetric H-LWE.
         max_radius: Containment radius.
+    Asymmetric transport for hyperbolic vectors:
+      1. Use Kyber768 KEM to derive a shared secret
+      2. Derive hyperbolic key vector from the shared secret
+      3. Encrypt vector with HLWESymmetric
+      4. Authenticate with HMAC(secret, kem_ct || vec_ct)
+
+    Requires symphonic_cipher.scbe_aethermoore.pqc to be importable.
     """
 
     def __init__(
@@ -473,6 +589,20 @@ class HLWEHybridKEM:
     def encrypt(
         self,
         pk: Any,
+        from symphonic_cipher.scbe_aethermoore.pqc.pqc_core import Kyber768
+
+        self._kyber = Kyber768
+
+    def _tag(
+        self, secret: bytes, kem_ct: bytes, vec_ct: HLWECiphertext
+    ) -> bytes:
+        """Compute HMAC tag binding KEM ciphertext to vector ciphertext."""
+        data = kem_ct + b"||" + vec_ct.ct.astype(np.float64).tobytes()
+        return hmac_mod.new(secret, data, hashlib.sha256).digest()
+
+    def encrypt(
+        self,
+        pk: bytes,
         x: np.ndarray,
         *,
         meta: Optional[Dict[str, Any]] = None,
@@ -489,6 +619,11 @@ class HLWEHybridKEM:
             HLWEHybridCiphertext with KEM ct, vector ct, and HMAC tag.
         """
         shared_secret, kem_ct = self.kem.encapsulate(pk)
+        """Encrypt a vector using Kyber768 KEM + H-LWE."""
+        result = self._kyber.encapsulate(pk)
+        shared_secret = result.shared_secret
+        kem_ct = result.ciphertext
+
         key_vec = key_vector_from_secret(
             shared_secret,
             dim=self.sym.dim,
@@ -497,6 +632,7 @@ class HLWEHybridKEM:
         )
         vec_ct = self.sym.encrypt(key_vec, x, meta=meta)
         tag = self._tag(shared_secret, kem_ct, vec_ct)
+
         return HLWEHybridCiphertext(
             kem_ct=kem_ct, vec_ct=vec_ct, tag=tag, meta=dict(meta or {})
         )
@@ -524,6 +660,15 @@ class HLWEHybridKEM:
         expected = self._tag(shared_secret, ct.kem_ct, ct.vec_ct)
         if not hmac.compare_digest(expected, ct.tag):
             raise AuthenticationError("HLWEHybridCiphertext tag mismatch.")
+        self, sk: bytes, ct: HLWEHybridCiphertext
+    ) -> Tuple[np.ndarray, float]:
+        """Decrypt a hybrid ciphertext. Verifies HMAC tag first."""
+        shared_secret = self._kyber.decapsulate(sk, ct.kem_ct)
+
+        expected = self._tag(shared_secret, ct.kem_ct, ct.vec_ct)
+        if not hmac_mod.compare_digest(expected, ct.tag):
+            raise AuthenticationError("HLWEHybridCiphertext tag mismatch.")
+
         key_vec = key_vector_from_secret(
             shared_secret,
             dim=self.sym.dim,
