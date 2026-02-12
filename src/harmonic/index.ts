@@ -284,7 +284,7 @@ export {
   type IntrusionResult,
   type Point6D,
   // Types
-  type FluxState,
+  type FluxState as PHDMFluxState,
   type Polyhedron,
   type PolyhedronFamily,
 } from './phdm.js';
