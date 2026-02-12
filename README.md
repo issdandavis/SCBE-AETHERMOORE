@@ -7,6 +7,7 @@
 [![Tests](https://img.shields.io/badge/tests-950%20passing-brightgreen)](.)
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](.)
 [![TypeScript](https://img.shields.io/badge/typescript-5.0+-blue)](.)
+[![Release & Deploy](https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/release-and-deploy.yml/badge.svg)](https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/release-and-deploy.yml)
 
 ---
 
@@ -73,7 +74,7 @@ Layer 6-7:   Breathing Transform + Phase (Möbius addition)
 Layer 8:     Multi-Well Realms
 Layer 9-10:  Spectral + Spin Coherence
 Layer 11:    Triadic Temporal Distance
-Layer 12:    H(d,R) = R^(d²)  [HARMONIC WALL]
+Layer 12:    score = 1 / (1 + d_H + 2 * phaseDeviation)  [HARMONIC SCALING]
 Layer 13:    Risk' → ALLOW / QUARANTINE / DENY
 Layer 14:    Audio Axis (FFT telemetry)
 
@@ -128,6 +129,25 @@ cd deploy/gcloud && ./deploy.sh YOUR_PROJECT_ID
 
 ---
 
+## Memory Sealing API (MVP)
+
+The MVP memory API in `src/api/main.py` persists sealed blobs so they can be retrieved and unsealed later. Configure the storage backend before running the API server:
+
+```bash
+# Required: where sealed blobs are stored on disk
+export SCBE_STORAGE_PATH="./sealed_blobs"
+
+# Optional: storage backend selection (default: filesystem)
+export SCBE_STORAGE_BACKEND="filesystem"
+```
+
+The API will write one JSON file per 6D position in the configured directory. Ensure the process has read/write access to this path when using `/seal-memory` and `/retrieve-memory`.
+
+---
+
+## Fleet API (Pilot Demo)
+
+Run a complete fleet scenario through the 14-layer SCBE pipeline:
 ## API Usage
 
 ### Authorize an Agent Action
@@ -213,6 +233,30 @@ curl -X POST https://YOUR_API/v1/fleet/run-scenario \
 - **Hamiltonian Mechanics**: Energy conservation
 - **Möbius Addition**: Gyrogroup operations
 - **Quasicrystal Lattice**: 6D → 3D projection
+
+---
+
+## Resources & Links
+
+### Live Demo & Packages
+- **Live Demo**: [SCBE Swarm Coordinator](https://scbe-aethermoore-ezaociw8wy6t5rnaynzvzc.streamlit.app/) - Interactive Streamlit dashboard
+- **npm Package**: [scbe-aethermoore](https://www.npmjs.com/package/scbe-aethermoore) - `npm install scbe-aethermoore`
+- **GitHub Pages**: [Project Site](https://issdandavis.github.io/SCBE-AETHERMOORE/)
+
+### Documentation (Notion)
+- [SCBE-AETHERMOORE System State Report (Feb 2026)](https://aethermoorgames.notion.site/) - Production-ready docs
+- [SCBE + Sacred Eggs Integration Pack](https://aethermoorgames.notion.site/) - Complete integration guide
+- [Phase-Breath Hyperbolic Governance (14-Layer Core v1.2)](https://aethermoorgames.notion.site/) - Mathematical core mapping
+- [Polly Pads: Mode-Switching Architecture](https://aethermoorgames.notion.site/) - Autonomous AI architecture
+- [Topological Linearization for CFI](https://aethermoorgames.notion.site/) - Patent analysis & Hamiltonian paths
+
+### Products & Templates
+- **Gumroad**: [aethermoorgames.gumroad.com](https://aethermoorgames.gumroad.com) - Notion templates, AI workflow tools
+- **Ko-fi**: [ko-fi.com/izdandavis](https://ko-fi.com/izdandavis) - Support development
+
+### Social & Updates
+- **X/Twitter**: [@davisissac](https://x.com/davisissac)
+- **Substack**: [Issac "Izreal" Davis](https://substack.com/profile/153446638-issac-izreal-davis)
 
 ---
 

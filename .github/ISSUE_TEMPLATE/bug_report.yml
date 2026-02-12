@@ -1,0 +1,89 @@
+name: Bug Report
+description: Report a bug in SCBE-AETHERMOORE
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+assignees:
+  - issdandavis
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+        Please provide as much detail as possible to help us diagnose and fix the issue.
+  
+  - type: dropdown
+    id: layer
+    attributes:
+      label: Affected Layer
+      description: Which layer of the SCBE-AETHERMOORE system is affected?
+      options:
+        - Layer 1-3 (Foundational)
+        - Layer 4-6 (Spectral/Harmonic)
+        - Layer 7-9 (Navigation/Temporal)
+        - Layer 10-12 (Security/Risk)
+        - Layer 13-14 (Advanced)
+        - Sacred Eggs
+        - Polly Pads
+        - API/Infrastructure
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe the bug...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Call function '...'
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: A clear description of what you expected to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Node.js (TypeScript)
+        - Python
+        - Browser
+        - Docker/Kubernetes
+        - AWS Lambda
+        - GCP
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Log Output
+      description: Please copy and paste any relevant log output.
+      render: shell

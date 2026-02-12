@@ -1,0 +1,1 @@
+{"version":3,"file":"ZBase32.d.ts","sourceRoot":"","sources":["../../../src/core/ZBase32.ts"],"names":[],"mappings":"AAAA;;;GAGG;AACH,qBAAa,OAAO;IAClB,OAAO,CAAC,MAAM,CAAC,QAAQ,CAAC,QAAQ,CAAsC;IAEtE,MAAM,CAAC,MAAM,CAAC,MAAM,EAAE,MAAM,GAAG,MAAM;IAwBrC,MAAM,CAAC,MAAM,CAAC,KAAK,EAAE,MAAM,GAAG,MAAM;CAwBrC"}

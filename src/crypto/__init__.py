@@ -159,6 +159,21 @@ from .dual_lattice_integration import (
     LayerDecision,
 )
 
+# Sacred Eggs (Cryptographic Secret Containers)
+from .sacred_eggs import (
+    SacredEgg,
+    EggCarton,
+    EggRing,
+    SacredRituals,
+    IncubationResult,
+    TriadicBindingResult,
+    RingDescentResult,
+    FailToNoiseResult,
+    flux_state_to_ring,
+    create_session_egg,
+    ring_allows,
+)
+
 __all__ = [
     # === Dual Lattice ===
     "SacredTongue",
@@ -250,6 +265,18 @@ __all__ = [
     "mobius_neg",
     "hlwe_project_to_ball",
     "key_vector_from_secret",
+    # === Sacred Eggs ===
+    "SacredEgg",
+    "EggCarton",
+    "EggRing",
+    "SacredRituals",
+    "IncubationResult",
+    "TriadicBindingResult",
+    "RingDescentResult",
+    "FailToNoiseResult",
+    "flux_state_to_ring",
+    "create_session_egg",
+    "ring_allows",
 ]
 
 __version__ = "3.2.5"  # Bumped for H-LWE vector encryption
