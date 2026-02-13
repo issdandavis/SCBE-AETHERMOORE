@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SCBE-AETHERMOORE Memory Chunk Schema",
+  "description": "Governs all memory records across Canon, Working, and Staging zones.",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["id", "title", "text", "zone", "type", "canon", "source", "provenance"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique chunk identifier (UUID or notion page ID)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable title"
+    },
+    "text": {
+      "type": "string",
+      "description": "The content body"
+    },
+    "zone": {
+      "type": "string",
+      "enum": ["canon", "working", "staging"],
+      "description": "Memory zone: canon (immutable truth), working (agent-generated), staging (curated for training)"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["lore", "system", "timeline", "character", "relationship", "architecture", "general"],
+      "description": "Content category"
+    },
+    "canon": {
+      "type": "boolean",
+      "description": "True = authoritative ground truth. False = draft/hypothesis/agent-generated."
+    },
+    "source": {
+      "type": "string",
+      "enum": ["notion", "agent", "github", "manual", "promoted"],
+      "description": "Origin of this chunk"
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["author", "created_at", "version"],
+      "properties": {
+        "author": {
+          "type": "string",
+          "description": "Human or agent ID that created this"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "version": {
+          "type": "string",
+          "description": "Canon version tag (e.g. canon-v1.0.0) or session ID for working memory"
+        },
+        "notion_page_id": {
+          "type": "string",
+          "description": "Source Notion page ID if applicable"
+        },
+        "promotion_pr": {
+          "type": "string",
+          "description": "GitHub PR number if promoted from working to staging"
+        }
+      }
+    },
+    "training_use": {
+      "type": "string",
+      "enum": ["reference_only", "finetune_ok", "eval_only", "excluded"],
+      "description": "How this chunk may be used in training pipelines"
+    },
+    "sensitivity": {
+      "type": "string",
+      "enum": ["public", "private", "experimental"],
+      "default": "private"
+    },
+    "retrieval_priority": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3,
+      "description": "RAG precedence: 1=Canon (highest), 2=Staging, 3=Working (lowest)"
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Freeform tags for search"
+    },
+    "relationships": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "target_id": { "type": "string" },
+          "relation_type": {
+            "type": "string",
+            "enum": ["references", "precedes", "follows", "contradicts", "extends", "collaborates_with"]
+          }
+        }
+      },
+      "description": "Links to other chunks for relationship/timeline coherence"
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "zone": { "const": "canon" } } },
+      "then": {
+        "properties": {
+          "canon": { "const": true },
+          "retrieval_priority": { "const": 1 },
+          "source": { "enum": ["notion", "manual", "github"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "zone": { "const": "working" } } },
+      "then": {
+        "properties": {
+          "canon": { "const": false },
+          "retrieval_priority": { "const": 3 },
+          "training_use": { "const": "excluded" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "zone": { "const": "staging" } } },
+      "then": {
+        "properties": {
+          "retrieval_priority": { "const": 2 },
+          "training_use": { "enum": ["finetune_ok", "eval_only"] }
+        },
+        "required": ["provenance"]
+      }
+    }
+  ],
+  "_zones": {
+    "canon": {
+      "description": "Zone A - Immutable ground truth. Humans only. Versioned releases.",
+      "write_access": "human_only",
+      "mutation": "versioned_release",
+      "rag_priority": 1
+    },
+    "working": {
+      "description": "Zone B - Agent-generated summaries, session notes, inferences.",
+      "write_access": "agents",
+      "mutation": "append_only",
+      "rag_priority": 3,
+      "lifetime": "session_or_rolling_30d"
+    },
+    "staging": {
+      "description": "Zone C - Curated training data. Promotion-gated. Versioned datasets.",
+      "write_access": "human_review_gated",
+      "mutation": "promotion_pr_required",
+      "rag_priority": 2
+    }
+  }
+}
