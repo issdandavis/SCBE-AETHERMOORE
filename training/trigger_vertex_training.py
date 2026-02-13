@@ -17,6 +17,7 @@ import argparse
 import logging
 from pathlib import Path
 from datetime import datetime
+from kernel_manifest import load_manifest, to_summary
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger(__name__)
@@ -41,6 +42,16 @@ def load_pipeline_config(config_path=None):
         return yaml.safe_load(f)
 
 
+
+
+def load_kernel_summary(manifest_path=None):
+    """Load canonical kernel file summary for training provenance."""
+    if manifest_path is None:
+        manifest_path = Path(__file__).parent / "kernel_manifest.yaml"
+    manifest = load_manifest(manifest_path)
+    return to_summary(manifest)
+
+
 def validate_environment(dry_run=False):
     """Check that required env vars and credentials are present."""
     required = ["GCP_PROJECT_ID"]
@@ -53,7 +64,7 @@ def validate_environment(dry_run=False):
     log.info("Environment validated - all required vars present")
 
 
-def create_training_job(cfg, pipeline, dry_run=False):
+def create_training_job(cfg, pipeline, kernel_summary, dry_run=False):
     """Submit a Vertex AI CustomJob for PHDM 21D embedding training."""
     try:
         from google.cloud import aiplatform
@@ -87,6 +98,8 @@ def create_training_job(cfg, pipeline, dry_run=False):
                 "--batch-size=%s" % training_cfg.get("batch_size", 64),
                 "--learning-rate=%s" % training_cfg.get("learning_rate", 0.001),
                 "--hf-repo=%s" % cfg["hf_model_repo"],
+                "--kernel-manifest-sha=%s" % kernel_summary["kernel_manifest_sha"],
+                "--kernel-file-count=%s" % kernel_summary["kernel_file_count"],
             ],
         },
     }]
@@ -113,6 +126,7 @@ def create_training_job(cfg, pipeline, dry_run=False):
             "model": "phdm-21d",
             "framework": "scbe-aethermoore",
             "type": "embedding",
+            "kernel_manifest_sha": kernel_summary["kernel_manifest_sha"][:32],
         },
     )
 
@@ -156,18 +170,20 @@ def main():
 
     cfg = DEFAULTS.copy()
     pipeline = load_pipeline_config(args.config)
+    kernel_summary = load_kernel_summary()
 
     log.info("PHDM 21D Embedding Training Trigger")
     log.info("Project: %s | Region: %s", cfg["project_id"], cfg["region"])
     log.info("HF Model: %s", cfg["hf_model_repo"])
     log.info("GKE Cluster: %s", cfg["gke_cluster"])
+    log.info("Kernel files: %s | Manifest SHA: %s", kernel_summary["kernel_file_count"], kernel_summary["kernel_manifest_sha"])
 
     if args.push_only:
         push_to_huggingface(cfg)
         return
 
     validate_environment(dry_run=args.dry_run)
-    job = create_training_job(cfg, pipeline, dry_run=args.dry_run)
+    job = create_training_job(cfg, pipeline, kernel_summary, dry_run=args.dry_run)
 
     if job and not args.dry_run:
         log.info("Training job is running. Monitor at:")
