@@ -1,0 +1,17 @@
+# Canonical kernel manifest for model-defining source files.
+# These files are treated as the core mathematical model surface for training provenance.
+version: 1
+kernel:
+  - src/harmonic/constants.ts
+  - src/harmonic/hyperbolic.ts
+  - src/harmonic/harmonicScaling.ts
+  - src/harmonic/spectral-identity.ts
+  - src/harmonic/phdm.ts
+  - src/harmonic/temporalPhase.ts
+  - src/harmonic/languesMetric.ts
+  - src/harmonic/halAttention.ts
+  - src/harmonic/trustCone.ts
+  - src/harmonic/scbe_voxel_types.ts
+  - src/fleet/types.ts
+  - src/fleet/governance.ts
+  - src/fleet/fleet-manager.ts
