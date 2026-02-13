@@ -3,6 +3,8 @@ description: "Post-Quantum AI Governance Framework - 14-Layer Hyperbolic Securit
 baseurl: "/SCBE-AETHERMOORE"
 url: "https://issdandavis.github.io"
 
+google_site_verification: o6yJ0dkho4HagDb92T-GbDtAAUvJHRppIoA6TQC5pZE
+
 remote_theme: just-the-docs/just-the-docs
 
 color_scheme: dark
