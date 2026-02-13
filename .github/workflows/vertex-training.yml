@@ -67,6 +67,10 @@ jobs:
         with:
           project_id: ${{ env.GCP_PROJECT_ID }}
 
+      - name: Validate kernel manifest
+        run: |
+          python training/kernel_manifest.py --check --json
+
       - name: Run training (manual dispatch)
         if: github.event_name == 'workflow_dispatch'
         env:
