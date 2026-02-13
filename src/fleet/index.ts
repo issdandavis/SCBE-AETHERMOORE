@@ -12,6 +12,7 @@
  * - Roundtable consensus for critical operations
  * - Polly Pads: Personal agent workspaces with dimensional flux
  * - Swarm coordination with flux ODE dynamics
+ * - Multi-agent browser crawl coordination
  *
  * @module fleet
  */
@@ -21,6 +22,11 @@ export * from './fleet-manager';
 export * from './governance';
 export * from './swarm';
 export * from './task-dispatcher';
+
+// Multi-Agent Browser Crawl Coordination
+export * from './crawl-message-bus';
+export * from './crawl-frontier';
+export * from './crawl-coordinator';
 
 // Export types (canonical source for shared types)
 export * from './types';
