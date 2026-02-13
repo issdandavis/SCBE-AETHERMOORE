@@ -438,3 +438,31 @@ export {
   type GenesisEvaluation,
 } from './sacredEggsGenesis.js';
 
+// ═══════════════════════════════════════════════════════════════
+// Decimal Drift Tracker — Entropy Harvesting Engine
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Tracker class
+  DriftTracker,
+  // Core functions
+  captureStepDrift,
+  estimateFractalDimension,
+  deriveHarmonicKey,
+  assessAuthenticity,
+  sonifyDrift,
+  // Constants
+  TONGUE_HARMONICS,
+  DEFAULT_BUFFER_CAPACITY,
+  SYNTHETIC_CV_THRESHOLD,
+  GENUINE_FRACTAL_MIN,
+  // Types
+  type DriftCapture,
+  type ShadowBufferConfig,
+  type FractalEstimate,
+  type HarmonicKey,
+  type DriftAuthenticity,
+  type DriftSonification,
+  type DriftTrackerStats,
+} from './driftTracker.js';
+
