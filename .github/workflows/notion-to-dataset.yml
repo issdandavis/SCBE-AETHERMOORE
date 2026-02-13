@@ -35,7 +35,7 @@ jobs:
 
       - name: Export Notion pages to training data
         env:
-          NOTION_TOKEN: ${{ secretsNOTION_API_KEY }}
+          NOTION_TOKEN: ${{ secre.tsNOTION_API_KEY }}
         run: |
           python scripts/notion_to_dataset.py \
             --category ${{ github.event.inputs.category || 'all' }} \
