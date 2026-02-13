@@ -14,7 +14,9 @@
     "electron:pack": "npm run build && electron-builder --dir",
     "start:system": "node scripts/start-system.js",
     "test": "vitest",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "test:run": "vitest run",
+    "test:serial": "vitest run --maxWorkers=1"
   },
   "dependencies": {
     "@google/genai": "^1.27.0",
@@ -42,7 +44,7 @@
   "build": {
     "appId": "com.aethermoorgames.scbe",
     "productName": "SCBE Visual System",
-    "copyright": "Copyright © 2026 Aethermoor Games - USPTO #63/961,403",
+    "copyright": "Copyright \u00a9 2026 Aethermoor Games - USPTO #63/961,403",
     "directories": {
       "output": "release"
     },
