@@ -14,6 +14,9 @@ from __future__ import annotations
 import asyncio
 import base64
 import logging
+import os
+import platform
+import shutil
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -56,6 +59,10 @@ class BrowserConfig:
     viewport_width: int = 1280
     viewport_height: int = 720
     user_agent: Optional[str] = None
+
+    # Optional browser selection (useful for Linux system Chrome)
+    browser_channel: Optional[str] = None
+    executable_path: Optional[str] = None
 
     # Safety limits
     max_actions_per_session: int = 100
@@ -120,6 +127,44 @@ class PlaywrightWrapper:
         """Async context manager exit."""
         await self.close()
 
+    def _resolve_linux_chrome_path(self) -> Optional[str]:
+        """Resolve a Linux Chrome/Chromium executable if available."""
+        env_path = os.environ.get("SCBE_CHROME_PATH")
+        if env_path:
+            return env_path
+
+        candidates = [
+            "google-chrome-stable",
+            "google-chrome",
+            "chromium-browser",
+            "chromium",
+            "chrome",
+        ]
+        for candidate in candidates:
+            path = shutil.which(candidate)
+            if path:
+                return path
+        return None
+
+    def _build_launch_options(self) -> Dict[str, Any]:
+        """Build Playwright launch options with Linux Chrome support."""
+        options: Dict[str, Any] = {"headless": self.config.headless}
+
+        if self.config.executable_path:
+            options["executable_path"] = self.config.executable_path
+            return options
+
+        if self.config.browser_channel:
+            options["channel"] = self.config.browser_channel
+            return options
+
+        if platform.system() == "Linux":
+            linux_path = self._resolve_linux_chrome_path()
+            if linux_path:
+                options["executable_path"] = linux_path
+
+        return options
+
     async def initialize(self):
         """
         Initialize the browser instance.
@@ -138,9 +183,8 @@ class PlaywrightWrapper:
             )
 
         self._playwright = await async_playwright().start()
-        self._browser = await self._playwright.chromium.launch(
-            headless=self.config.headless
-        )
+        launch_options = self._build_launch_options()
+        self._browser = await self._playwright.chromium.launch(**launch_options)
 
         context_options = {
             "viewport": {
@@ -590,7 +634,9 @@ class PlaywrightWrapper:
 async def create_browser(
     headless: bool = True,
     timeout_ms: int = 30000,
-    allowed_domains: Optional[List[str]] = None
+    allowed_domains: Optional[List[str]] = None,
+    browser_channel: Optional[str] = None,
+    executable_path: Optional[str] = None,
 ) -> PlaywrightWrapper:
     """
     Factory function to create and initialize a browser wrapper.
@@ -599,6 +645,8 @@ async def create_browser(
         headless: Run in headless mode
         timeout_ms: Default timeout for operations
         allowed_domains: Optional whitelist of allowed domains
+        browser_channel: Optional Playwright channel (e.g. "chrome")
+        executable_path: Optional explicit browser executable path
 
     Returns:
         Initialized PlaywrightWrapper
@@ -606,7 +654,9 @@ async def create_browser(
     config = BrowserConfig(
         headless=headless,
         default_timeout_ms=timeout_ms,
-        allowed_domains=allowed_domains
+        allowed_domains=allowed_domains,
+        browser_channel=browser_channel,
+        executable_path=executable_path,
     )
     browser = PlaywrightWrapper(config)
     await browser.initialize()
