@@ -110,21 +110,31 @@ export {
 // ═══════════════════════════════════════════════════════════════
 
 export {
-  // Pipeline utility
+  // Layer 5: Invariant Metric + Configurable Audit Epsilon
+  EPSILON as HYPERBOLIC_EPSILON,
   applyHyperbolicPipeline,
+  artanh,
   breathTransform,
+  clampToBall,
   expMap0,
-  // Layer 5: Invariant Metric
+  exponentialMap,
+  getAuditEpsilon,
   hyperbolicDistance,
   inverseBreathTransform,
   logMap0,
+  logarithmicMap,
   mobiusAdd,
+  mobiusAddition,
   multiPhaseModulation,
   multiWellGradient,
   multiWellPotential,
-  // Layer 7: Phase Modulation
+  phaseDeviation as hyperbolicPhaseDeviation,
+  phaseDistanceScore as hyperbolicPhaseDistanceScore,
   phaseModulation,
+  projectEmbeddingToBall,
   projectToBall,
+  scoreRetrievals,
+  setAuditEpsilon,
   // Layer 6: Breath Transform
   type BreathConfig,
   // Layer 8: Multi-Well Potential
