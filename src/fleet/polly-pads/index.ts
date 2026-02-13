@@ -1,21 +1,11 @@
 /**
  * Polly Pads - Fleet Mini-IDE System + Mode Switching Workspaces
  *
- * "Clone Trooper Field Upgrade Stations for AI Agents"
- *
- * Hot-swappable mini-IDEs that run on each AI agent in the fleet,
- * enabling real-time capability upgrades with SCBE security.
- *
- * Mode Switching: 6 specialist modes (Engineering, Navigation, Systems,
- * Science, Communications, Mission Planning) for autonomous operations
- * in Mars missions, disaster response, submarine ops, and autonomous fleets.
- *
- * @module fleet/polly-pads
- * @version 1.1.0
- * @author Issac Davis
+ * Consolidated export surface for drone core, mode-switching systems,
+ * closed-network comms, squad consensus, and mission coordination.
  */
 
-// Drone Core (original)
+// Drone Core
 export {
   DroneCore,
   createReconDrone,
@@ -41,14 +31,15 @@ export {
   type StoreQuery,
 } from './capability-store.js';
 
-// Mode Switching System
+// Mode Pad
 export {
   ModePad,
   type SacredTongue,
   type ModePadConfig,
   type MemoryEntry,
 } from './mode-pad.js';
-// Specialist Modes (Dynamic Mode Switching)
+
+// Specialist Mode Registry (lightweight mode system)
 export {
   ModeRegistry,
   ALL_MODE_IDS,
@@ -59,36 +50,7 @@ export {
   type ModeSwitchEvent,
 } from './specialist-modes.js';
 
-// Closed Network (Air-Gapped Communications)
-export {
-  ClosedNetwork,
-  DEFAULT_CHANNELS,
-  type NetworkChannel,
-  type BlockedChannel,
-  type NetworkMessage,
-  type ChannelConfig,
-  type NetworkStatus,
-} from './closed-network.js';
-
-// Mission Coordinator & Squad (Byzantine Consensus)
-export {
-  MissionCoordinator,
-  Squad,
-  BFT,
-  type CrisisType,
-  type VoteDecision,
-  type Vote,
-  type VotingSession,
-  type SquadMember,
-  type ModeAssignment,
-  type ConsensusResult,
-} from './mission-coordinator.js';
-
-// ============================================================================
-// Quick Start Example
-// ============================================================================
-
-// Specialist Modes
+// Full specialist mode classes + factories
 export {
   BaseMode,
   EngineeringMode,
@@ -99,11 +61,11 @@ export {
   MissionPlanningMode,
   createMode,
   createAllModes,
-  type SpecialistMode,
-  type ModeTool,
+  type SpecialistMode as ModeName,
+  type ModeTool as ModeCatalogTool,
   type ModeActionResult,
-  type ModeState,
-  type ModeSwitchEvent,
+  type ModeState as ModeRuntimeState,
+  type ModeSwitchEvent as ModeTransitionEvent,
   type SquadVote,
   type CrisisType,
   type ModeAssignment,
@@ -111,7 +73,7 @@ export {
   MODE_CONFIGS,
 } from './modes/index.js';
 
-// Closed Network
+// Closed Network (air-gapped comms)
 export {
   ClosedNetwork,
   DEFAULT_CLOSED_CONFIG,
@@ -122,7 +84,7 @@ export {
   type ClosedNetworkConfig,
 } from './closed-network.js';
 
-// Squad Coordination (Byzantine Consensus)
+// Squad Coordination (Byzantine consensus)
 export {
   Squad,
   type ConsensusDecision,
