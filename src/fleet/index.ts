@@ -27,6 +27,7 @@ export * from './task-dispatcher';
 export * from './crawl-message-bus';
 export * from './crawl-frontier';
 export * from './crawl-coordinator';
+export * from './crawl-runner';
 
 // Export types (canonical source for shared types)
 export * from './types';
