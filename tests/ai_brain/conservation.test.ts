@@ -24,7 +24,7 @@ import {
   projectFluxNormalization,
   projectSpectralBounds,
   computeGlobalInvariant,
-  refactorAlign,
+  conservationRefactorAlign as refactorAlign,
   enforceConservationLaws,
 } from '../../src/ai_brain/index';
 
