@@ -17,3 +17,4 @@ export * from './nonceManager.js';
 export * from './replayGuard.js';
 export * from './bloom.js';
 export * from './pqc.js';
+export * from './platform.js';
