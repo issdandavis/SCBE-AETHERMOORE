@@ -2,6 +2,25 @@
 
 ## Secure Cryptographic Behavioral Envelope - Enterprise AI Governance
 
+## Documentation Index
+
+### Canonical Spec
+- [`../SPEC.md`](../SPEC.md)
+- [`core-theorems/SACRED_EGGS_GENESIS_BOOTSTRAP_AUTHORIZATION.md`](core-theorems/SACRED_EGGS_GENESIS_BOOTSTRAP_AUTHORIZATION.md)
+
+### Orchestration
+- [`hydra/ARCHITECTURE.md`](hydra/ARCHITECTURE.md)
+
+### Concepts
+- [`../CONCEPTS.md`](../CONCEPTS.md)
+
+### Research (Non-Canonical)
+- [`research/README.md`](research/README.md)
+- [`research/QUASI_VECTOR_SPIN_VOXELS.md`](research/QUASI_VECTOR_SPIN_VOXELS.md)
+- [`research/MULTIMODAL_MATRIX_TRAINING.md`](research/MULTIMODAL_MATRIX_TRAINING.md)
+
+---
+
 ```
     ╔═══════════════════════════════════════════════════════════════╗
     ║                                                               ║
@@ -18,6 +37,9 @@
 ```
 
 ---
+
+### Operations
+- [`AI_BROWSER_ACCESS.md`](AI_BROWSER_ACCESS.md)
 
 ## Documentation Structure
 
