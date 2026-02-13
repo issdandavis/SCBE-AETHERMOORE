@@ -1,0 +1,58 @@
+name: Notion to Training Dataset Pipeline
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Weekly on Mondays at 6am UTC
+  workflow_dispatch:  # Manual trigger
+    inputs:
+      category:
+        description: 'Content category to export'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - technical
+          - lore
+          - relationships
+          - timelines
+
+jobs:
+  export-notion-to-dataset:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install notion-client huggingface-hub datasets jsonlines
+
+      - name: Export Notion pages to training data
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+        run: |
+          python scripts/notion_to_dataset.py \
+            --category ${{ github.event.inputs.category || 'all' }} \
+            --output training-data/
+
+      - name: Push to Hugging Face Dataset
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python scripts/push_to_hf.py \
+            --input training-data/ \
+            --repo issdandavis/scbe-aethermoore-training-data
+
+      - name: Update AI Hub Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python scripts/update_ai_hub.py \
+            --dataset issdandavis/scbe-aethermoore-training-data \
+            --space issdandavis/scbe-aethermoore-ai-hub
