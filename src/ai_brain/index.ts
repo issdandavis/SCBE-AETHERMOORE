@@ -121,7 +121,7 @@ export {
   projectFluxNormalization,
   projectSpectralBounds,
   computeGlobalInvariant,
-  refactorAlign,
+  refactorAlign as conservationRefactorAlign,
   enforceConservationLaws,
 } from './conservation.js';
 
