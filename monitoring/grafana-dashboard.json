@@ -1,0 +1,128 @@
+{
+  "dashboard": {
+    "title": "SCBE-AETHERMOORE Memory Governance System",
+    "tags": ["memory-governance", "scbe-aethermoore"],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 1,
+    "refresh": "30s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Memory Sync Operations",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "rate(memory_sync_operations_total[5m])",
+            "legendFormat": "Sync Rate"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Knowledge Graph Nodes",
+        "type": "stat",
+        "gridPos": {"x": 12, "y": 0, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "knowledge_graph_nodes_total",
+            "legendFormat": "Total Nodes"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Provenance Entries",
+        "type": "stat",
+        "gridPos": {"x": 18, "y": 0, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "provenance_entries_total",
+            "legendFormat": "Total Entries"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "API Request Duration",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(api_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "95th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(api_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "50th percentile"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Memory Usage",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 8, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "memory_usage_bytes",
+            "legendFormat": "Memory Usage (bytes)"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Integration Status",
+        "type": "table",
+        "gridPos": {"x": 0, "y": 16, "w": 24, "h": 8},
+        "targets": [
+          {
+            "expr": "integration_status",
+            "format": "table"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Error Rate",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 24, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "rate(errors_total[5m])",
+            "legendFormat": "Error Rate"
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Sync Conflicts",
+        "type": "stat",
+        "gridPos": {"x": 12, "y": 24, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "sync_conflicts_total",
+            "legendFormat": "Total Conflicts"
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "System Health",
+        "type": "stat",
+        "gridPos": {"x": 18, "y": 24, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "up",
+            "legendFormat": "System Status"
+          }
+        ],
+        "valueMaps": [
+          {"value": "1", "text": "UP"},
+          {"value": "0", "text": "DOWN"}
+        ]
+      }
+    ]
+  }
+}
