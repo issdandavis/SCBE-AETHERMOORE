@@ -1,3 +1,10 @@
+---
+title: Architecture
+layout: default
+nav_order: 3
+description: "SCBE-AETHERMOORE system architecture - 14-layer security stack, data flows, and deployment topology for post-quantum AI governance."
+---
+
 # SCBE-AETHERMOORE Architecture
 
 > System architecture, data flows, and deployment patterns for the 14-layer security framework
