@@ -18,3 +18,4 @@ export * from './replayGuard.js';
 export * from './bloom.js';
 export * from './pqc.js';
 export * from './platform.js';
+export * from './quantum-safe.js';
