@@ -4,8 +4,8 @@ Sacred Tongue Tokenizer - SS1 Spell-Text Encoding
 Deterministic 256-word lists (16 prefixes × 16 suffixes) for each of the
 Six Sacred Tongues. Each byte maps to exactly one token.
 
-Last Updated: January 18, 2026
-Version: 2.0.0 (RWP v3.0 compatible)
+Last Updated: February 14, 2026
+Version: 1.1 (RWP v3.0 compatible, bijective wordlists)
 
 Token format: prefix'suffix (apostrophe as morpheme seam)
 
