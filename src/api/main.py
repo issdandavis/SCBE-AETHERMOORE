@@ -327,17 +327,21 @@ async def retrieve_memory(
         except ValueError as exc:
             raise HTTPException(500, "Failed to decrypt sealed blob") from exc
 
+        resp_data = {
+            "plaintext": plaintext.decode("utf-8"),
+            "governance_result": result["decision"],
+            "risk_score": float(result["risk_base"]),
+            "risk_prime": float(result["risk_prime"]),
+            "coherence_metrics": {
+                k: float(v) for k, v in result["coherence"].items()
+            },
+        }
+        if result.get("mmx") is not None:
+            resp_data["mmx"] = result["mmx"]
+
         return {
             "status": "retrieved" if result["decision"] == "ALLOW" else "quarantined",
-            "data": {
-                "plaintext": plaintext.decode("utf-8"),
-                "governance_result": result["decision"],
-                "risk_score": float(result["risk_base"]),
-                "risk_prime": float(result["risk_prime"]),
-                "coherence_metrics": {
-                    k: float(v) for k, v in result["coherence"].items()
-                },
-            },
+            "data": resp_data,
         }
 
     except Exception as e:
@@ -381,19 +385,23 @@ async def governance_check(
             t=np.array(position, dtype=float), D=6, **context_params[context]
         )
 
+        gov_data = {
+            "decision": result["decision"],
+            "risk_score": float(result["risk_base"]),
+            "risk_prime": float(result["risk_prime"]),
+            "harmonic_factor": float(result["H"]),
+            "reason": f"Context: {context}, d*={result['d_star']:.3f}, Risk={result['risk_base']:.3f}",
+            "coherence_metrics": {
+                k: float(v) for k, v in result["coherence"].items()
+            },
+            "geometry": {k: float(v) for k, v in result["geometry"].items()},
+        }
+        if result.get("mmx") is not None:
+            gov_data["mmx"] = result["mmx"]
+
         return {
             "status": "ok",
-            "data": {
-                "decision": result["decision"],
-                "risk_score": float(result["risk_base"]),
-                "risk_prime": float(result["risk_prime"]),
-                "harmonic_factor": float(result["H"]),
-                "reason": f"Context: {context}, d*={result['d_star']:.3f}, Risk={result['risk_base']:.3f}",
-                "coherence_metrics": {
-                    k: float(v) for k, v in result["coherence"].items()
-                },
-                "geometry": {k: float(v) for k, v in result["geometry"].items()},
-            },
+            "data": gov_data,
         }
 
     except Exception as e:
@@ -425,24 +433,28 @@ async def simulate_attack(request: SimulateAttackRequest):
             theta2=0.5,  # Lower QUARANTINE threshold
         )
 
+        sim_data = {
+            "governance_result": result["decision"],
+            "risk_score": float(result["risk_base"]),
+            "risk_prime": float(result["risk_prime"]),
+            "fail_to_noise_example": np.random.bytes(16).hex(),
+            "reason": "Malicious agent detected via hyperbolic distance",
+            "detection_layers": [
+                f"Layer 5: Hyperbolic distance d_ℍ={result['d_star']:.4f}",
+                f"Layer 8: Realm distance d*={result['d_star']:.4f} (threshold exceeded)",
+                f"Layer 12: Harmonic amplification H={result['H']:.4f}",
+                f"Layer 13: Risk' = {result['risk_prime']:.4f} → {result['decision']}",
+            ],
+            "coherence_breakdown": {
+                k: float(v) for k, v in result["coherence"].items()
+            },
+        }
+        if result.get("mmx") is not None:
+            sim_data["mmx"] = result["mmx"]
+
         return {
             "status": "simulated",
-            "data": {
-                "governance_result": result["decision"],
-                "risk_score": float(result["risk_base"]),
-                "risk_prime": float(result["risk_prime"]),
-                "fail_to_noise_example": np.random.bytes(16).hex(),
-                "reason": "Malicious agent detected via hyperbolic distance",
-                "detection_layers": [
-                    f"Layer 5: Hyperbolic distance d_ℍ={result['d_star']:.4f}",
-                    f"Layer 8: Realm distance d*={result['d_star']:.4f} (threshold exceeded)",
-                    f"Layer 12: Harmonic amplification H={result['H']:.4f}",
-                    f"Layer 13: Risk' = {result['risk_prime']:.4f} → {result['decision']}",
-                ],
-                "coherence_breakdown": {
-                    k: float(v) for k, v in result["coherence"].items()
-                },
-            },
+            "data": sim_data,
         }
 
     except Exception as e:
