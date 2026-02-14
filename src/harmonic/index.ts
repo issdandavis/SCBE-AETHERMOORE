@@ -532,3 +532,19 @@ export {
   type SheafAnalysisResult,
 } from './sheafCohomology.js';
 
+// ── PHDM Sheaf Lattice (constraint-based governance routing) ──
+export {
+  PHDMGovernanceRouter,
+  buildPolyhedralGraph,
+  buildGovernanceSheaf,
+  computePolyhedralTrust,
+  polyhedralEulerCharacteristic,
+  trustDistanceMatrix,
+  requiredFluxState,
+  defaultGovernanceRouter,
+  type PolyhedralEdge,
+  type GovernanceDecision,
+  type GovernanceRoutingResult,
+  type GovernanceRouterConfig,
+} from './phdmSheafLattice.js';
+
