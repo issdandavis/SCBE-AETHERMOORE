@@ -26,7 +26,6 @@ try:
     MATPLOTLIB_AVAILABLE = True
 except ImportError:
     MATPLOTLIB_AVAILABLE = False
-    print("[VIZ] Warning: matplotlib not available, visualization disabled")
 
 
 def hyperbolic_distance_safe(x: np.ndarray, y: np.ndarray, eps: float = 1e-8) -> float:
