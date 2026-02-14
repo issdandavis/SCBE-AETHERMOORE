@@ -1,5 +1,16 @@
 /**
  * Tests for Polyhedral Hamiltonian Defense Manifold (PHDM)
+ *
+ * Covers:
+ * - Polyhedron topology (Euler characteristic, validity, hashing)
+ * - Canonical polyhedra catalogue (16 entries, families)
+ * - Hamiltonian path with HMAC key chain
+ * - 6D geometry (distance, centroid)
+ * - Cubic spline interpolation
+ * - Intrusion detection (deviation, skip, curvature attacks)
+ * - Flux governance (POLLY / QUASI / DEMI)
+ * - Phason shift (6D projection rotation)
+ * - Complete PHDM system integration
  */
 
 import { describe, expect, it } from 'vitest';
@@ -14,7 +25,10 @@ import {
   computeCentroid,
   distance6D,
   eulerCharacteristic,
+  getActivePolyhedra,
+  generateProjectionMatrix,
   isValidTopology,
+  phasonShift,
   serializePolyhedron,
   topologicalHash,
 } from '../../src/harmonic/phdm';
@@ -27,6 +41,7 @@ describe('Polyhedron Topology', () => {
       edges: 6,
       faces: 4,
       genus: 0,
+      family: 'platonic',
     };
 
     const chi = eulerCharacteristic(tetrahedron);
@@ -40,6 +55,7 @@ describe('Polyhedron Topology', () => {
       edges: 12,
       faces: 6,
       genus: 0,
+      family: 'platonic',
     };
 
     expect(isValidTopology(cube)).toBe(true);
@@ -53,6 +69,7 @@ describe('Polyhedron Topology', () => {
       edges: 21,
       faces: 14,
       genus: 1,
+      family: 'toroidal',
     };
 
     expect(isValidTopology(szilassi)).toBe(true);
@@ -66,6 +83,7 @@ describe('Polyhedron Topology', () => {
       edges: 30,
       faces: 12,
       genus: 0,
+      family: 'platonic',
     };
 
     const hash1 = topologicalHash(dodecahedron);
@@ -82,6 +100,7 @@ describe('Polyhedron Topology', () => {
       edges: 12,
       faces: 8,
       genus: 0,
+      family: 'platonic',
     };
 
     const serialized = serializePolyhedron(octahedron);
@@ -231,6 +250,7 @@ describe('6D Geometry', () => {
       edges: 12,
       faces: 6,
       genus: 0,
+      family: 'platonic',
     };
 
     const centroid = computeCentroid(cube);
@@ -449,5 +469,250 @@ describe('Property-Based Tests', () => {
       expect(Number.isFinite(k)).toBe(true);
       expect(k).toBeGreaterThanOrEqual(0);
     });
+  });
+
+  it('should have all canonical polyhedra with family classification', () => {
+    CANONICAL_POLYHEDRA.forEach((poly) => {
+      expect(poly.family).toBeDefined();
+      expect([
+        'platonic', 'archimedean', 'kepler-poinsot', 'toroidal', 'johnson', 'rhombic',
+      ]).toContain(poly.family);
+    });
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// Flux Governance
+// ═══════════════════════════════════════════════════════════════
+
+describe('Flux Governance', () => {
+  it('should return all 16 polyhedra in POLLY mode', () => {
+    const active = getActivePolyhedra('POLLY');
+    expect(active).toHaveLength(16);
+  });
+
+  it('should return only Platonic + Archimedean (8) in QUASI mode', () => {
+    const active = getActivePolyhedra('QUASI');
+    expect(active).toHaveLength(8);
+    active.forEach((p) => {
+      expect(['platonic', 'archimedean']).toContain(p.family);
+    });
+  });
+
+  it('should return only Platonic (5) in DEMI mode', () => {
+    const active = getActivePolyhedra('DEMI');
+    expect(active).toHaveLength(5);
+    active.forEach((p) => {
+      expect(p.family).toBe('platonic');
+    });
+  });
+
+  it('should preserve containment hierarchy: DEMI ⊂ QUASI ⊂ POLLY', () => {
+    const demi = getActivePolyhedra('DEMI');
+    const quasi = getActivePolyhedra('QUASI');
+    const polly = getActivePolyhedra('POLLY');
+
+    expect(demi.length).toBeLessThan(quasi.length);
+    expect(quasi.length).toBeLessThan(polly.length);
+
+    // All DEMI polyhedra should be in QUASI
+    const quasiNames = new Set(quasi.map((p) => p.name));
+    demi.forEach((p) => {
+      expect(quasiNames.has(p.name)).toBe(true);
+    });
+
+    // All QUASI polyhedra should be in POLLY
+    const pollyNames = new Set(polly.map((p) => p.name));
+    quasi.forEach((p) => {
+      expect(pollyNames.has(p.name)).toBe(true);
+    });
+  });
+
+  it('should work with custom polyhedra list', () => {
+    const subset: Polyhedron[] = [
+      { name: 'A', vertices: 4, edges: 6, faces: 4, genus: 0, family: 'platonic' },
+      { name: 'B', vertices: 12, edges: 18, faces: 8, genus: 0, family: 'archimedean' },
+    ];
+    expect(getActivePolyhedra('DEMI', subset)).toHaveLength(1);
+    expect(getActivePolyhedra('QUASI', subset)).toHaveLength(2);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// Phason Shift
+// ═══════════════════════════════════════════════════════════════
+
+describe('Phason Shift', () => {
+  it('should generate a 3x6 projection matrix', () => {
+    const matrix = generateProjectionMatrix();
+    expect(matrix).toHaveLength(3);
+    matrix.forEach((row) => {
+      expect(row).toHaveLength(6);
+      row.forEach((val) => expect(Number.isFinite(val)).toBe(true));
+    });
+  });
+
+  it('should produce identity-like result for theta=0', () => {
+    const matrix = generateProjectionMatrix();
+    const shifted = phasonShift(matrix, 0);
+    // theta=0 → cos=1, sin=0 → identity rotation → no change
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 6; c++) {
+        expect(shifted[r][c]).toBeCloseTo(matrix[r][c], 10);
+      }
+    }
+  });
+
+  it('should change the projection for non-zero theta', () => {
+    const matrix = generateProjectionMatrix();
+    const shifted = phasonShift(matrix, Math.PI / 4);
+
+    // At least some entries should differ
+    let anyDifferent = false;
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 6; c++) {
+        if (Math.abs(shifted[r][c] - matrix[r][c]) > 1e-10) {
+          anyDifferent = true;
+        }
+      }
+    }
+    expect(anyDifferent).toBe(true);
+  });
+
+  it('should preserve row norms (rotation is norm-preserving)', () => {
+    const matrix = generateProjectionMatrix();
+    const shifted = phasonShift(matrix, Math.PI / 3, 2, 4);
+
+    for (let r = 0; r < 3; r++) {
+      const origNorm = Math.sqrt(matrix[r].reduce((s, v) => s + v * v, 0));
+      const shiftNorm = Math.sqrt(shifted[r].reduce((s, v) => s + v * v, 0));
+      expect(shiftNorm).toBeCloseTo(origNorm, 8);
+    }
+  });
+
+  it('should compose: two half-rotations ≈ one full rotation', () => {
+    const matrix = generateProjectionMatrix();
+    const half1 = phasonShift(matrix, Math.PI / 6);
+    const half2 = phasonShift(half1, Math.PI / 6);
+    const full = phasonShift(matrix, Math.PI / 3);
+
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 6; c++) {
+        expect(half2[r][c]).toBeCloseTo(full[r][c], 8);
+      }
+    }
+  });
+
+  it('should support rotation in different planes', () => {
+    const matrix = generateProjectionMatrix();
+    const shift01 = phasonShift(matrix, Math.PI / 4, 0, 1);
+    const shift34 = phasonShift(matrix, Math.PI / 4, 3, 4);
+
+    // Different planes → different results
+    let anyDifferent = false;
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 6; c++) {
+        if (Math.abs(shift01[r][c] - shift34[r][c]) > 1e-10) {
+          anyDifferent = true;
+        }
+      }
+    }
+    expect(anyDifferent).toBe(true);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// PHDM System — Flux + Phason Integration
+// ═══════════════════════════════════════════════════════════════
+
+describe('PHDM Flux + Phason Integration', () => {
+  it('should start in POLLY mode with all 16 polyhedra', () => {
+    const phdm = new PolyhedralHamiltonianDefenseManifold();
+    expect(phdm.fluxState).toBe('POLLY');
+    expect(phdm.activeCount).toBe(16);
+  });
+
+  it('should switch to QUASI mode (8 polyhedra)', () => {
+    const phdm = new PolyhedralHamiltonianDefenseManifold();
+    phdm.setFluxState('QUASI');
+    expect(phdm.fluxState).toBe('QUASI');
+    expect(phdm.activeCount).toBe(8);
+    phdm.getActivePolyhedra().forEach((p) => {
+      expect(['platonic', 'archimedean']).toContain(p.family);
+    });
+  });
+
+  it('should switch to DEMI mode (5 polyhedra)', () => {
+    const phdm = new PolyhedralHamiltonianDefenseManifold();
+    phdm.setFluxState('DEMI');
+    expect(phdm.fluxState).toBe('DEMI');
+    expect(phdm.activeCount).toBe(5);
+  });
+
+  it('should rebuild path after flux state change', () => {
+    const phdm = new PolyhedralHamiltonianDefenseManifold();
+    const masterKey = Buffer.from('flux-rekey-test-32-bytes-long!!X');
+
+    // Initialize in POLLY (17 keys: master + 16)
+    const pollyKeys = phdm.initialize(masterKey);
+    expect(pollyKeys).toHaveLength(17);
+
+    // Switch to DEMI and re-initialize (6 keys: master + 5)
+    phdm.setFluxState('DEMI');
+    const demiKeys = phdm.initialize(masterKey);
+    expect(demiKeys).toHaveLength(6);
+  });
+
+  it('should execute phason shift', () => {
+    const phdm = new PolyhedralHamiltonianDefenseManifold();
+    const before = phdm.getProjectionMatrix();
+
+    phdm.executePhasonShift(Math.PI / 4);
+    const after = phdm.getProjectionMatrix();
+
+    // Matrix should change
+    let anyDifferent = false;
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 6; c++) {
+        if (Math.abs(before[r][c] - after[r][c]) > 1e-10) {
+          anyDifferent = true;
+        }
+      }
+    }
+    expect(anyDifferent).toBe(true);
+  });
+
+  it('should project 6D points to 3D', () => {
+    const phdm = new PolyhedralHamiltonianDefenseManifold();
+    const point: Point6D = { x1: 1, x2: 0, x3: 0, x4: 0, x5: 0, x6: 0 };
+
+    const proj = phdm.projectTo3D(point);
+    expect(proj).toHaveLength(3);
+    proj.forEach((v) => expect(Number.isFinite(v)).toBe(true));
+  });
+
+  it('should change projections after phason shift', () => {
+    const phdm = new PolyhedralHamiltonianDefenseManifold();
+    const point: Point6D = { x1: 0.5, x2: 0.3, x3: 0.1, x4: 0.2, x5: 0.4, x6: 0.6 };
+
+    const before = phdm.projectTo3D(point);
+    phdm.executePhasonShift(Math.PI / 3);
+    const after = phdm.projectTo3D(point);
+
+    // At least one coordinate should differ
+    const anyDifferent = before.some((v, i) => Math.abs(v - after[i]) > 1e-10);
+    expect(anyDifferent).toBe(true);
+  });
+
+  it('should monitor state after flux state change', () => {
+    const phdm = new PolyhedralHamiltonianDefenseManifold();
+    phdm.setFluxState('QUASI');
+    phdm.initialize(Buffer.from('monitor-after-flux-test-32bytes!'));
+
+    const state = computeCentroid(CANONICAL_POLYHEDRA[0]); // Tetrahedron
+    const result = phdm.monitor(state, 0);
+
+    expect(result).toHaveProperty('isIntrusion');
+    expect(result).toHaveProperty('deviation');
   });
 });
