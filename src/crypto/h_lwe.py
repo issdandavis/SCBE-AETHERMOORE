@@ -287,15 +287,6 @@ def key_vector_from_secret(
     """
     raw = hkdf_sha256(secret, salt=b"scbe-hlwe", info=b"keyvec", length=4 * dim)
     ints = np.frombuffer(raw, dtype=np.uint32).astype(np.float64)
-    # Map to [-1, 1]
-    u = (ints / (2**32 - 1.0)) * 2.0 - 1.0
-    tangent = u * tangent_scale
-    k = exp_map_zero(tangent, c=c)
-    # Ensure comfortably inside
-    Keeps key near origin to avoid pushing ciphertext toward boundary.
-    """
-    raw = hkdf_sha256(secret, salt=b"scbe-hlwe", info=b"keyvec", length=4 * dim)
-    ints = np.frombuffer(raw, dtype=np.uint32).astype(np.float64)
     u = (ints / (2**32 - 1.0)) * 2.0 - 1.0
     tangent = u * tangent_scale
     k = exp_map_zero(tangent, c=c)
@@ -475,11 +466,6 @@ class HLWESymmetric:
             raise InvalidVector("ciphertext vector must be inside unit ball.")
         # Left-cancellation: (-k) (+) ct = (-k) (+) (k (+) (x (+) n)) = x (+) n
         x_hat = mobius_add(mobius_neg(key), ctv, c=self.c)
-            raise InvalidVector(f"ciphertext vector has wrong shape: {ctv.shape}")
-        if _norm(ctv) >= 1.0:
-            raise InvalidVector("ciphertext vector must be inside unit ball.")
-
-        x_hat = mobius_add(ctv, mobius_neg(key), c=self.c)
         r = _norm(x_hat)
         if r >= self.max_radius:
             raise ContainmentBreach(
