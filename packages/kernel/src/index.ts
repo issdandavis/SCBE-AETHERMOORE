@@ -52,6 +52,7 @@ export * from './vacuumAcoustics.js';
 
 export * from './temporalIntent.js';
 export * from './temporalPhase.js';
+export * from './tBraid.js';
 
 // ═══════════════════════════════════════════════════════════════
 // CHSFN & Voxel (no conflicts with above)
