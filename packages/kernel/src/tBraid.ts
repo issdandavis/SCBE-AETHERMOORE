@@ -27,9 +27,11 @@
  * Security cost:
  *   H_braid(d_b, R, x) = R^(d_b² · x)
  *
- * Yang-Baxter invariant:
+ * Yang-Baxter invariant (TEST/DEBUG ONLY — not for production hot paths):
  *   σ_i σ_{i+1} σ_i = σ_{i+1} σ_i σ_{i+1}
  *   Swapping adjacent temporal strands preserves braided distance.
+ *   This is automatically true for unweighted pairwise sums (permutation-invariant).
+ *   The check verifies numerical consistency, catching implementation bugs.
  *
  * An adversary must maintain consistency across ALL edges simultaneously.
  * Any inconsistency between timescales increases d_b → exponential cost.
@@ -56,6 +58,15 @@ const MAX_TEMPORAL_EXPONENT = 20;
 
 /** Compression factor for tanh projection into Poincaré ball */
 const DEFAULT_ALPHA = 0.15;
+
+/**
+ * Minimum lifecycle ticks before braid has full discriminating power.
+ * Early-lifecycle agents (t < MIN_LIFECYCLE_TICKS) have Tp = T/t which
+ * saturates tanh to ~1, destroying resolution. We floor t at this value
+ * in variantsFromClocks() so newly spawned agents — the most likely
+ * adversary probes — are still well-characterized.
+ */
+const MIN_LIFECYCLE_TICKS = 3;
 
 // ═══════════════════════════════════════════════════════════════
 // Braid Variant Types
@@ -108,6 +119,42 @@ export interface BraidEdge {
   distance: number;
 }
 
+/**
+ * Configurable edge weights for the tetradic braid.
+ *
+ * Default uses golden-ratio decay: adjacent=1, skip-1=φ^-1, skip-2=φ^-2.
+ * The Ti↔Tp (immediate↔predictive) weight is configurable because it
+ * controls sensitivity to the exact signal tetradic adds over triadic.
+ *
+ * Claude Opus 4.6 review flagged that φ^-2 ≈ 0.382 may underweight
+ * the most valuable new signal. Boost immediateToPredict to 1.0 for
+ * maximum sensitivity to agents that look safe now but can't sustain it.
+ */
+export interface BraidEdgeWeights {
+  /** immediate ↔ memory (adjacent, default 1.0) */
+  immediateToMemory: number;
+  /** memory ↔ governance (adjacent, default 1.0) */
+  memoryToGovernance: number;
+  /** governance ↔ predictive (adjacent, default 1.0) */
+  governanceToPredictive: number;
+  /** immediate ↔ governance (skip-1, default φ^-1 ≈ 0.618) */
+  immediateToGovernance: number;
+  /** memory ↔ predictive (skip-1, default φ^-1 ≈ 0.618) */
+  memoryToPredictive: number;
+  /** immediate ↔ predictive (skip-2, default φ^-2 ≈ 0.382) */
+  immediateToPredict: number;
+}
+
+/** Default golden-ratio edge weights */
+export const DEFAULT_EDGE_WEIGHTS: BraidEdgeWeights = {
+  immediateToMemory: 1.0,
+  memoryToGovernance: 1.0,
+  governanceToPredictive: 1.0,
+  immediateToGovernance: 1 / PHI,
+  memoryToPredictive: 1 / PHI,
+  immediateToPredict: 1 / (PHI * PHI),
+};
+
 /** Full result of braid computation */
 export interface BraidResult {
   /** Raw temporal variants */
@@ -118,13 +165,19 @@ export interface BraidResult {
   edges: BraidEdge[];
   /** Braided distance d_b = sum of pairwise distances */
   braidedDistance: number;
+  /** Weighted braided distance using configured edge weights */
+  weightedDistance: number;
   /** Braided meta-time T_b */
   braidedMetaTime: number;
   /** H_braid security cost */
   hBraid: number;
   /** Harm score: 1 / (1 + log(max(1, H_braid))) */
   harmScore: number;
-  /** Whether Yang-Baxter consistency holds (within tolerance) */
+  /**
+   * Yang-Baxter consistency (TEST/DEBUG ONLY).
+   * Not computed in production — always true when skipYangBaxter is set.
+   * Use checkYangBaxter() explicitly in test suites.
+   */
   yangBaxterConsistent: boolean;
 }
 
@@ -380,6 +433,23 @@ export function checkYangBaxter(
 // Full Braid Pipeline
 // ═══════════════════════════════════════════════════════════════
 
+/** Options for computeBraid / braidFromClocks */
+export interface BraidOptions {
+  /** Intent persistence factor for H_eff (default 1.0) */
+  x?: number;
+  /** Poincaré projection compression (default 0.15) */
+  alpha?: number;
+  /** Harmonic ratio (default 1.5) */
+  R?: number;
+  /** Custom edge weights (default: golden-ratio) */
+  weights?: Partial<BraidEdgeWeights>;
+  /**
+   * Skip Yang-Baxter check (default true in production).
+   * Set to false in test suites to verify topological consistency.
+   */
+  skipYangBaxter?: boolean;
+}
+
 /**
  * Compute the full T-braid from raw parameters.
  *
@@ -389,33 +459,39 @@ export function checkYangBaxter(
  * @param intent — Intent alignment factor
  * @param context — System context factor
  * @param t — Temporal exponent
- * @param x — Intent persistence factor for H_eff (default 1.0)
- * @param alpha — Poincaré projection compression (default 0.15)
- * @param R — Harmonic ratio (default 1.5)
+ * @param opts — Optional configuration (x, alpha, R, weights, skipYangBaxter)
  */
 export function computeBraid(
   T: number,
   intent: number,
   context: number,
   t: number,
-  x: number = 1.0,
-  alpha: number = DEFAULT_ALPHA,
-  R: number = R_HARMONIC
+  opts?: BraidOptions | number // number for backward compat (x)
 ): BraidResult {
+  // Backward compatibility: if opts is a number, treat as x
+  const options: BraidOptions = typeof opts === 'number' ? { x: opts } : (opts ?? {});
+  const x = options.x ?? 1.0;
+  const alpha = options.alpha ?? DEFAULT_ALPHA;
+  const R = options.R ?? R_HARMONIC;
+  const weights = { ...DEFAULT_EDGE_WEIGHTS, ...options.weights };
+  const skipYB = options.skipYangBaxter ?? true;
+
   const variants = computeVariants(T, intent, context, t);
   const projected = projectVariants(variants, alpha);
   const edges = computePairwiseDistances(projected);
   const dBraid = braidedDistance(edges);
+  const wDist = weightedBraidedDistanceWithConfig(edges, weights);
   const tBraid = braidedMetaTime(variants);
   const hBraid = harmonicWallBraid(dBraid, x, R);
   const harmScore = braidHarmScore(hBraid);
-  const yb = checkYangBaxter(projected);
+  const yb = skipYB ? true : checkYangBaxter(projected);
 
   return {
     variants,
     projected,
     edges,
     braidedDistance: dBraid,
+    weightedDistance: wDist,
     braidedMetaTime: tBraid,
     hBraid,
     harmScore,
@@ -452,7 +528,10 @@ export function variantsFromClocks(
   breathingFactor: number = 1.0
 ): BraidVariants {
   const T = Math.max(EPSILON, breathingFactor);
-  const t = Math.max(1, memoryTick);
+  // Floor at MIN_LIFECYCLE_TICKS so early-lifecycle agents (the most
+  // likely adversary probes) still produce discriminating Tp values
+  // instead of saturating tanh to ~1.
+  const t = Math.max(MIN_LIFECYCLE_TICKS, memoryTick);
 
   return computeVariants(
     T,
@@ -465,6 +544,13 @@ export function variantsFromClocks(
 /**
  * Compute braided distance from multi-clock state.
  * Convenience wrapper for integration with temporalPhase.ts.
+ *
+ * @param fastIntent — FAST clock accumulated intent
+ * @param memoryTick — MEMORY clock tick count (floored at MIN_LIFECYCLE_TICKS)
+ * @param memoryIntent — MEMORY clock accumulated intent
+ * @param govIntent — GOVERNANCE clock accumulated intent
+ * @param breathingFactor — CIRCADIAN breathing factor (used as base T)
+ * @param opts — Optional braid configuration
  */
 export function braidFromClocks(
   fastIntent: number,
@@ -472,25 +558,32 @@ export function braidFromClocks(
   memoryIntent: number,
   govIntent: number,
   breathingFactor: number = 1.0,
-  x: number = 1.0,
-  alpha: number = DEFAULT_ALPHA
+  opts?: BraidOptions | number // number for backward compat (x)
 ): BraidResult {
+  const options: BraidOptions = typeof opts === 'number' ? { x: opts } : (opts ?? {});
+  const x = options.x ?? 1.0;
+  const alpha = options.alpha ?? DEFAULT_ALPHA;
+  const weights = { ...DEFAULT_EDGE_WEIGHTS, ...options.weights };
+  const skipYB = options.skipYangBaxter ?? true;
+
   const variants = variantsFromClocks(
     fastIntent, memoryTick, memoryIntent, govIntent, breathingFactor
   );
   const projected = projectVariants(variants, alpha);
   const edges = computePairwiseDistances(projected);
   const dBraid = braidedDistance(edges);
+  const wDist = weightedBraidedDistanceWithConfig(edges, weights);
   const tBraid = braidedMetaTime(variants);
   const hBraid = harmonicWallBraid(dBraid, x);
   const harmScore = braidHarmScore(hBraid);
-  const yb = checkYangBaxter(projected);
+  const yb = skipYB ? true : checkYangBaxter(projected);
 
   return {
     variants,
     projected,
     edges,
     braidedDistance: dBraid,
+    weightedDistance: wDist,
     braidedMetaTime: tBraid,
     hBraid,
     harmScore,
@@ -499,22 +592,12 @@ export function braidFromClocks(
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Weighted Braided Distance (Golden-Ratio Edge Weights)
+// Weighted Braided Distance (Configurable Edge Weights)
 // ═══════════════════════════════════════════════════════════════
 
 /**
- * Edge weight assignments for the tetradic braid.
- *
- * The 6 edges are weighted by proximity in the governance hierarchy:
- *   immediate ↔ memory:     φ^0 = 1.000  (adjacent, fast coupling)
- *   memory ↔ governance:    φ^0 = 1.000  (adjacent, medium coupling)
- *   governance ↔ predictive: φ^0 = 1.000  (adjacent, slow coupling)
- *   immediate ↔ governance:  φ^(-1) = 0.618  (skip-1, weaker tie)
- *   memory ↔ predictive:     φ^(-1) = 0.618  (skip-1, weaker tie)
- *   immediate ↔ predictive:  φ^(-2) = 0.382  (skip-2, weakest tie)
- *
- * Adjacent strands are tightly coupled; distant strands less so.
- * This mirrors braid group structure where σ_i and σ_j commute for |i-j| ≥ 2.
+ * Legacy edge weight record (kept for backward compatibility).
+ * Prefer using BraidEdgeWeights config via BraidOptions instead.
  */
 export const EDGE_WEIGHTS: Record<string, number> = {
   'immediate-memory': 1.0,
@@ -526,7 +609,8 @@ export const EDGE_WEIGHTS: Record<string, number> = {
 };
 
 /**
- * Get the weight for an edge between two variants.
+ * Get the weight for an edge between two variants (legacy API).
+ * For new code, use weightedBraidedDistanceWithConfig() with BraidEdgeWeights.
  */
 export function edgeWeight(from: BraidVariant, to: BraidVariant): number {
   const key1 = `${from}-${to}`;
@@ -535,12 +619,29 @@ export function edgeWeight(from: BraidVariant, to: BraidVariant): number {
 }
 
 /**
- * Compute weighted braided distance using golden-ratio edge weights.
+ * Look up weight from BraidEdgeWeights config for an edge.
+ */
+function lookupWeight(
+  from: BraidVariant,
+  to: BraidVariant,
+  weights: BraidEdgeWeights
+): number {
+  // Normalize order (alphabetical by variant name)
+  const [a, b] = [from, to].sort();
+  // Sorted pairs: governance < immediate < memory < predictive
+  if (a === 'governance' && b === 'immediate') return weights.immediateToGovernance;
+  if (a === 'governance' && b === 'memory') return weights.memoryToGovernance;
+  if (a === 'governance' && b === 'predictive') return weights.governanceToPredictive;
+  if (a === 'immediate' && b === 'memory') return weights.immediateToMemory;
+  if (a === 'immediate' && b === 'predictive') return weights.immediateToPredict;
+  if (a === 'memory' && b === 'predictive') return weights.memoryToPredictive;
+  return 1.0;
+}
+
+/**
+ * Compute weighted braided distance using legacy edge weights.
  *
  * d_bw = Σ w_ij · d_H(Vi, Vj)  for all i < j
- *
- * Adjacent strands (w=1) dominate; distant strands (w=φ^-2≈0.38)
- * contribute less, reflecting braid group commutativity relations.
  */
 export function weightedBraidedDistance(edges: BraidEdge[]): number {
   let sum = 0;
@@ -549,4 +650,62 @@ export function weightedBraidedDistance(edges: BraidEdge[]): number {
     sum += w * edge.distance;
   }
   return sum;
+}
+
+/**
+ * Compute weighted braided distance using configurable BraidEdgeWeights.
+ */
+function weightedBraidedDistanceWithConfig(
+  edges: BraidEdge[],
+  weights: BraidEdgeWeights
+): number {
+  let sum = 0;
+  for (const edge of edges) {
+    const w = lookupWeight(edge.from, edge.to, weights);
+    sum += w * edge.distance;
+  }
+  return sum;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Debug Serialization
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Serialize a BraidResult to a compact debug JSON object.
+ *
+ * Includes all 4 strands, all 6 edge distances with labels, and
+ * aggregate scores. Designed for production logging — when an agent
+ * gets flagged, this shows which timescale pair was inconsistent.
+ *
+ * @param result — BraidResult from computeBraid / braidFromClocks
+ * @returns Plain object safe for JSON.stringify
+ */
+export function toDebugJSON(result: BraidResult): Record<string, unknown> {
+  const edgeMap: Record<string, number> = {};
+  for (const edge of result.edges) {
+    edgeMap[`${edge.from}↔${edge.to}`] = Math.round(edge.distance * 1e6) / 1e6;
+  }
+
+  return {
+    strands: {
+      Ti: Math.round(result.variants.immediate * 1e6) / 1e6,
+      Tm: Math.round(result.variants.memory * 1e6) / 1e6,
+      Tg: Math.round(result.variants.governance * 1e6) / 1e6,
+      Tp: Math.round(result.variants.predictive * 1e6) / 1e6,
+    },
+    projected: {
+      Ti: Math.round(result.projected.immediate * 1e6) / 1e6,
+      Tm: Math.round(result.projected.memory * 1e6) / 1e6,
+      Tg: Math.round(result.projected.governance * 1e6) / 1e6,
+      Tp: Math.round(result.projected.predictive * 1e6) / 1e6,
+    },
+    edges: edgeMap,
+    d_b: Math.round(result.braidedDistance * 1e6) / 1e6,
+    d_bw: Math.round(result.weightedDistance * 1e6) / 1e6,
+    T_b: Math.round(result.braidedMetaTime * 1e6) / 1e6,
+    H_braid: result.hBraid >= Number.MAX_VALUE ? 'MAX' : Math.round(result.hBraid * 1e6) / 1e6,
+    harm: Math.round(result.harmScore * 1e6) / 1e6,
+    yb: result.yangBaxterConsistent,
+  };
 }
