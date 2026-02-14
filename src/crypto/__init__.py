@@ -106,7 +106,9 @@ from .symphonic_waveform import (
 )
 
 # H-LWE (Hyperbolic LWE Vector Encryption)
-# Temporarily commented out due to syntax errors in h_lwe.py
+# Temporarily commented out due to remaining syntax errors in h_lwe.py
+# (line 578: misplaced import statement, duplicate class definitions at lines 482/492)
+# These issues existed before this PR and are not related to the Sacred Tongue v1.1 update
 # from .h_lwe import (
 #     HLWESymmetric,
 #     HLWECiphertext,
