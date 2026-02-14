@@ -19,4 +19,5 @@ export * from './collaboration';
 export * from './platform';
 export * from './task-group';
 export * from './types';
+export * from './distributed-workflow';
 //# sourceMappingURL=index.d.ts.map

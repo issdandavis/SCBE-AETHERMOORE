@@ -1,6 +1,6 @@
 "use strict";
 /**
-* @layer Layer 13, Layer 14
+ * @layer Layer 13, Layer 14
  * @component Polly Pads — Closed Network (Air-Gapped)
  * @version 1.0.0
  *
