@@ -476,3 +476,59 @@ export {
   type DriftTrackerStats,
 } from './driftTracker.js';
 
+// ═══════════════════════════════════════════════════════════════
+// Sheaf Cohomology — Tarski Laplacian on Lattice-Valued Sheaves
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Lattice implementations
+  BooleanLattice,
+  IntervalLattice,
+  PowerSetLattice,
+  UnitIntervalLattice,
+  ProductLattice,
+  // Galois connections
+  identityConnection,
+  constantConnection,
+  thresholdConnection,
+  scalingConnection,
+  // Cell complex builders
+  graphComplex,
+  simplicialComplex,
+  // Sheaf constructors
+  constantSheaf,
+  thresholdSheaf,
+  twistedSheaf,
+  // Cochains
+  topCochain,
+  bottomCochain,
+  // Tarski Laplacian
+  tarskiLaplacian,
+  // Cohomology
+  tarskiCohomology,
+  globalSections,
+  // Hodge Laplacians
+  upLaplacian,
+  downLaplacian,
+  hodgeLaplacian,
+  hodgeCohomology,
+  // Diagnostics
+  analyseCohomology,
+  detectObstructions,
+  // SCBE Engine
+  SheafCohomologyEngine,
+  defaultSheafEngine,
+  // Types
+  type CompleteLattice,
+  type GaloisConnection,
+  type Cell,
+  type CellComplex,
+  type CellularSheaf,
+  type Cochain,
+  type CohomologyResult,
+  type CohomologyDiagnostics,
+  type Obstruction,
+  type SheafCohomologyConfig,
+  type SheafAnalysisResult,
+} from './sheafCohomology.js';
+
