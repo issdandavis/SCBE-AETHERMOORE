@@ -1,27 +1,257 @@
 /**
  * @file hyperbolicRAG.ts
  * @module harmonic/hyperbolicRAG
- * @layer Layer 5, Layer 7, Layer 12, Layer 13
- * @component HyperbolicRAG — Poincaré Ball Retrieval-Augmented Generation
+ * @layer Layer 5, Layer 12, Layer 13
+ * @component Hyperbolic Retrieval-Augmented Generation — GeoSeal v2 Scorer
  * @version 3.2.4
  *
- * Nearest-neighbor retrieval in the Poincaré ball where access cost
- * (harmonic wall) gates what enters context. Documents closer to the
- * origin (trust center) are cheaper to retrieve; documents near the
- * boundary are exponentially expensive, making adversarial injection
- * into context computationally infeasible.
+ * Retrieval scoring in the Poincaré ball where trust-distance gates what enters
+ * context. Replaces hand-tuned "repulsion + suspicion counters" with a
+ * geometry-aware three-signal fusion:
  *
- * Key invariants:
- *   1. accessCost(d*) >= 1 for all retrievals (minimum cost = 1)
- *   2. accessCost grows as phi^d / (1 + e^{-R}) near boundary
- *   3. Context budget enforces a hard cap on total retrieval cost
- *   4. Phase alignment gates relevance — wrong-phase docs are filtered
+ *   1. Hyperbolic proximity: d_H(query, chunk), d_H(anchor, chunk)
+ *   2. Phase consistency:    phase deviation across 6 tongues
+ *   3. Uncertainty:          variance proxy for retrieval confidence
  *
- * Builds on:
- *   - hyperbolic.ts: Poincaré ball ops (L5-L7)
- *   - harmonicScaling.ts: harmonicScale (L12)
- *   - adaptiveNavigator.ts: realm centers, trajectoryEntropy (L5, L13)
+ * Output per chunk: { trustScore, anomalyProb, quarantineFlag, attentionWeight }
+ *
+ * Design: This is a *scoring engine*, not the whole security system.
+ * Crypto gates (RWP), dialect grammar, and audio axis remain unchanged.
  */
+import type { Vector6D } from './constants.js';
+import { type TongueImpedance } from './chsfn.js';
+/**
+ * A retrieval chunk projected into the Poincaré ball.
+ *
+ * Raw embeddings (e.g. 768-dim) are projected via tanh mapping
+ * before entering this pipeline. The 6D projection aligns with
+ * the Sacred Tongue basis.
+ */
+export interface HyperbolicChunk {
+    /** Unique chunk identifier */
+    chunkId: string;
+    /** Position in 6D Poincaré ball (‖p‖ < 1) */
+    position: Vector6D;
+    /** Phase features per tongue [cos(θ), sin(θ)] flattened to 6 values */
+    phase: Vector6D;
+    /** Uncertainty estimate (higher = less confident). Variance proxy. */
+    uncertainty: number;
+    /** Optional: original embedding norm before projection (for calibration) */
+    originalNorm?: number;
+}
+/**
+ * Trust score output for a single retrieval chunk.
+ */
+export interface ChunkTrustScore {
+    /** Chunk identifier */
+    chunkId: string;
+    /** Trust score in [0, 1]: 1 = fully trusted, 0 = adversarial */
+    trustScore: number;
+    /** Anomaly probability in [0, 1]: likelihood this is foreign/poisoned */
+    anomalyProb: number;
+    /** Whether this chunk should be quarantined (blocked from context) */
+    quarantineFlag: boolean;
+    /** Attention weight for context assembly (higher = more influence) */
+    attentionWeight: number;
+    /** Individual signal components for interpretability */
+    signals: {
+        /** Hyperbolic proximity score [0, 1] */
+        proximityScore: number;
+        /** Phase consistency score [0, 1] */
+        phaseScore: number;
+        /** Uncertainty penalty [0, 1] */
+        uncertaintyPenalty: number;
+        /** Hyperbolic distance to query */
+        distanceToQuery: number;
+        /** Hyperbolic distance to nearest tongue anchor */
+        distanceToAnchor: number;
+    };
+}
+/**
+ * Configuration for the RAG scorer.
+ */
+export interface RAGScorerConfig {
+    /** Hyperbolic distance above which trust drops to near-zero (default 3.0) */
+    maxTrustDistance: number;
+    /** Phase coherence threshold below which anomaly is flagged (default 0.4) */
+    minPhaseCoherence: number;
+    /** Uncertainty threshold above which quarantine is triggered (default 0.7) */
+    maxUncertainty: number;
+    /** Weight for proximity signal in fusion (default 0.5) */
+    weightProximity: number;
+    /** Weight for phase signal in fusion (default 0.3) */
+    weightPhase: number;
+    /** Weight for uncertainty signal in fusion (default 0.2) */
+    weightUncertainty: number;
+    /** Trust score below which quarantine is triggered (default 0.3) */
+    quarantineThreshold: number;
+    /** Tongue impedance weights for phase scoring */
+    impedance: TongueImpedance;
+}
+export declare const DEFAULT_RAG_CONFIG: Readonly<RAGScorerConfig>;
+/**
+ * Project an arbitrary-dimensional embedding into the 6D Poincaré ball.
+ *
+ * Uses tanh mapping: u = tanh(α·‖x‖) · x / (‖x‖ + ε)
+ *
+ * For high-dim embeddings (768, 1536, etc.), we first reduce to 6D
+ * by chunked averaging (each of the 6 dims gets avg of dim/6 components).
+ *
+ * @param embedding - Raw embedding vector of any dimension >= 6
+ * @param scale - Contraction factor α (default 0.5) — controls how
+ *                compressed the projection is. Lower = more centered.
+ * @returns 6D position inside the Poincaré ball
+ */
+export declare function projectToBall(embedding: number[], scale?: number): Vector6D;
+/**
+ * Extract phase features from an embedding.
+ *
+ * Maps each tongue's chunk of the embedding to an angle via atan2
+ * of even/odd component averages.
+ *
+ * @param embedding - Raw embedding vector
+ * @returns Phase vector [θ_KO, θ_AV, θ_RU, θ_CA, θ_DR, θ_UM]
+ */
+export declare function extractPhase(embedding: number[]): Vector6D;
+/**
+ * Estimate uncertainty from an embedding using variance of components.
+ *
+ * Higher variance ≈ more spread-out representation ≈ less confident.
+ * Normalized to [0, 1] via sigmoid.
+ *
+ * @param embedding - Raw embedding vector
+ * @returns Uncertainty in [0, 1]
+ */
+export declare function estimateUncertainty(embedding: number[]): number;
+/**
+ * Build a HyperbolicChunk from a raw embedding.
+ *
+ * Convenience function that runs projection + phase extraction + uncertainty.
+ *
+ * @param chunkId - Unique identifier
+ * @param embedding - Raw embedding vector (any dimension >= 6)
+ * @param scale - Poincaré ball projection scale
+ * @returns HyperbolicChunk ready for scoring
+ */
+export declare function buildChunk(chunkId: string, embedding: number[], scale?: number): HyperbolicChunk;
+/**
+ * The 6 tongue anchors in the Poincaré ball.
+ *
+ * Each tongue occupies a canonical position along its primary axis.
+ * These are the "safe poles" — trusted retrieval should cluster near these.
+ */
+export declare const TONGUE_ANCHORS: Readonly<Record<string, Vector6D>>;
+/**
+ * Find the nearest tongue anchor to a position.
+ *
+ * @param position - 6D position in Poincaré ball
+ * @returns { tongue, distance } of nearest anchor
+ */
+export declare function nearestTongueAnchor(position: Vector6D): {
+    tongue: string;
+    distance: number;
+};
+/**
+ * Compute hyperbolic proximity score.
+ *
+ * Score = 1 / (1 + accessCost(d_H(query, chunk)))
+ *
+ * Near query → high score; far → near-zero (exponential decay).
+ *
+ * @param queryPos - Query position in ball
+ * @param chunkPos - Chunk position in ball
+ * @param maxDist - Distance at which score is effectively zero
+ * @returns Proximity score in [0, 1]
+ */
+export declare function proximityScore(queryPos: Vector6D, chunkPos: Vector6D, maxDist?: number): number;
+/**
+ * Compute phase consistency score.
+ *
+ * Average cosine similarity between chunk phase and expected tongue phases.
+ * Measures whether the chunk "speaks the right language."
+ *
+ * @param chunkPhase - Phase vector of the chunk
+ * @param queryPhase - Phase vector of the query (or expected alignment)
+ * @returns Phase score in [0, 1]
+ */
+export declare function phaseConsistencyScore(chunkPhase: Vector6D, queryPhase: Vector6D): number;
+/**
+ * Compute uncertainty penalty.
+ *
+ * Higher uncertainty → higher penalty → lower trust.
+ *
+ * @param uncertainty - Chunk uncertainty in [0, 1]
+ * @returns Penalty in [0, 1] where 0 = no penalty, 1 = max penalty
+ */
+export declare function uncertaintyPenalty(uncertainty: number): number;
+/**
+ * Score a single retrieval chunk against a query.
+ *
+ * Three-signal fusion:
+ *   trustScore = w_p · proximity + w_φ · phase - w_u · uncertainty
+ *   anomalyProb = 1 - trustScore
+ *   quarantine if trustScore < threshold
+ *   attentionWeight = trustScore² (soft gating)
+ *
+ * @param query - Query state (position + phase)
+ * @param chunk - Retrieval chunk
+ * @param config - Scorer configuration
+ * @returns ChunkTrustScore
+ */
+export declare function scoreChunk(query: {
+    position: Vector6D;
+    phase: Vector6D;
+}, chunk: HyperbolicChunk, config?: RAGScorerConfig): ChunkTrustScore;
+/**
+ * Score all retrieval candidates and return trust-gated results.
+ *
+ * @param query - Query state
+ * @param chunks - Candidate chunks (pre-projected into ball)
+ * @param topK - Max results to return (default 10)
+ * @param config - Scorer configuration
+ * @returns Sorted array of trust scores (highest trust first), quarantined removed
+ */
+export declare function scoreAndFilter(query: {
+    position: Vector6D;
+    phase: Vector6D;
+}, chunks: HyperbolicChunk[], topK?: number, config?: RAGScorerConfig): ChunkTrustScore[];
+/**
+ * Full retrieval pipeline: project raw embeddings → score → filter → return.
+ *
+ * @param queryEmbedding - Raw query embedding
+ * @param candidateEmbeddings - Array of { id, embedding } pairs
+ * @param topK - Number of results
+ * @param config - Scorer config
+ * @param scale - Projection scale
+ * @returns Trust-gated scored results
+ */
+export declare function retrieveWithTrust(queryEmbedding: number[], candidateEmbeddings: Array<{
+    id: string;
+    embedding: number[];
+}>, topK?: number, config?: RAGScorerConfig, scale?: number): ChunkTrustScore[];
+/**
+ * Score all chunks and return quarantine analytics.
+ *
+ * @param query - Query state
+ * @param chunks - All chunks
+ * @param config - Config
+ * @returns { trusted, quarantined, stats }
+ */
+export declare function quarantineReport(query: {
+    position: Vector6D;
+    phase: Vector6D;
+}, chunks: HyperbolicChunk[], config?: RAGScorerConfig): {
+    trusted: ChunkTrustScore[];
+    quarantined: ChunkTrustScore[];
+    stats: {
+        total: number;
+        trustedCount: number;
+        quarantinedCount: number;
+        avgTrustScore: number;
+        avgAnomalyProb: number;
+        quarantineRate: number;
+    };
+};
 /** A document embedded in the Poincaré ball for retrieval. */
 export interface RAGDocument {
     /** Unique identifier */
