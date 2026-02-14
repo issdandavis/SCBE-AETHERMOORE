@@ -213,21 +213,40 @@ describe('π^φ KDF — Avalanche smoke', () => {
 // =============================================================================
 
 describe('π^φ KDF — Cross-language parity', () => {
-  it('TS and Python use same HKDF construction (structural check)', () => {
-    // Derive with known params and verify it's a non-trivial 32-byte output
-    const key = derivePiPhiKey(BASE_PARAMS);
-    expect(key.length).toBe(32);
-    // Not all zeros
-    expect(key.some((b) => b !== 0)).toBe(true);
-    // Not all same byte
-    const first = key[0];
-    expect(key.some((b) => b !== first)).toBe(true);
-  });
-
   it('empty salt defaults to 32 zero bytes (matches Python)', () => {
     const k1 = derivePiPhiKey(withOverrides({ salt: Buffer.alloc(0) }));
     const k2 = derivePiPhiKey(withOverrides({ salt: undefined }));
-    // Both should use the default (empty → 32 zeros in HKDF-Extract)
     expect(k1.equals(k2)).toBe(true);
+  });
+
+  it('byte-for-byte parity: vector 1 (k16)', () => {
+    const key = derivePiPhiKey(withOverrides({ outLen: 16 }));
+    expect(key.toString('hex')).toBe('434715c507c065d3a4943fd5134e3664');
+  });
+
+  it('byte-for-byte parity: vector 1 (k32)', () => {
+    const key = derivePiPhiKey(withOverrides({ outLen: 32 }));
+    expect(key.toString('hex')).toBe(
+      '434715c507c065d3a4943fd5134e36641dd4a12736685caf942f125425eeff5a',
+    );
+  });
+
+  it('byte-for-byte parity: vector 1 (k64)', () => {
+    const key = derivePiPhiKey(withOverrides({ outLen: 64 }));
+    expect(key.toString('hex')).toBe(
+      '434715c507c065d3a4943fd5134e3664' +
+        '1dd4a12736685caf942f125425eeff5a' +
+        'ba98bee3e6cf55818708bf232dc457c9' +
+        'c66108d85cfaaead35e5e0790ee9ad53',
+    );
+  });
+
+  it('byte-for-byte parity: vector 2 (different d_star/coherence/cube_id)', () => {
+    const key = derivePiPhiKey(
+      withOverrides({ dStar: 1.0, coherence: 0.5, cubeId: 'cube-999', outLen: 32 }),
+    );
+    expect(key.toString('hex')).toBe(
+      '39627b7e61364c07dbcc9d9cf653d67b3ca5f7ddc105b0bbdf53eedccad78756',
+    );
   });
 });
