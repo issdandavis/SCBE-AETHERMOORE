@@ -36,7 +36,6 @@ try:
     SCIPY_AVAILABLE = True
 except ImportError:
     SCIPY_AVAILABLE = False
-    print("[WAVEFORM] scipy not available, using pure numpy wav export")
 
 
 # =============================================================================

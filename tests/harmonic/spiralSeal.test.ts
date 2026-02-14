@@ -163,26 +163,26 @@ describe('SacredTongueTokenizer', () => {
     it('byte 0x00 → prefix[0] + suffix[0]', () => {
       const tokenizer = new SacredTongueTokenizer('ko');
       const token = tokenizer.encodeByte(0x00);
-      expect(token).toBe("kor'ah");
+      expect(token).toBe("sil'a");
     });
 
     it('byte 0xFF → prefix[15] + suffix[15]', () => {
       const tokenizer = new SacredTongueTokenizer('ko');
       const token = tokenizer.encodeByte(0xff);
-      expect(token).toBe("zha'mar");
+      expect(token).toBe("vara'esh");
     });
 
     it('byte 0x2A (42) → prefix[2] + suffix[10]', () => {
       const tokenizer = new SacredTongueTokenizer('ko');
       const token = tokenizer.encodeByte(0x2a);
-      expect(token).toBe("lin'vex");
+      expect(token).toBe("vel'an");
     });
 
     it('high nibble selects prefix, low nibble selects suffix', () => {
       const tokenizer = new SacredTongueTokenizer('ko');
       // 0x53 = 5*16 + 3 = prefix[5] + suffix[3]
       const token = tokenizer.encodeByte(0x53);
-      expect(token).toBe("mel'or");
+      expect(token).toBe("thul'ia");
     });
   });
 
@@ -225,8 +225,8 @@ describe('SacredTongueTokenizer', () => {
   describe('Token validation', () => {
     it('isValidToken returns true for valid tokens', () => {
       const tokenizer = new SacredTongueTokenizer('ko');
-      expect(tokenizer.isValidToken("kor'ah")).toBe(true);
-      expect(tokenizer.isValidToken("zha'mar")).toBe(true);
+      expect(tokenizer.isValidToken("sil'a")).toBe(true);
+      expect(tokenizer.isValidToken("vara'esh")).toBe(true);
     });
 
     it('isValidToken returns false for invalid tokens', () => {
