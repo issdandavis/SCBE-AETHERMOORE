@@ -232,7 +232,10 @@ class SquadSpace {
      * @returns true if quorum is met
      */
     quorumOk(votes, n = 6, threshold = 4) {
-        return votes >= threshold && n >= 4 && threshold >= Math.floor((n * 2) / 3) + 1;
+        // BFT rule: n >= 3f + 1 where f = floor((n - 1) / 3)
+        // For n=6: f=1, threshold=3f+1=4
+        const f = Math.floor((n - 1) / 3);
+        return votes >= threshold && n >= 3 * f + 1 && threshold >= 2 * f + 1;
     }
     /**
      * Compute squad-level coherence: average coherence of all units.

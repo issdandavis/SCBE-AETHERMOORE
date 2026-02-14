@@ -14,6 +14,7 @@ All visualizations respect hyperbolic geometry:
 - Geodesics curve correctly for negative curvature
 """
 
+import sys
 import numpy as np
 from typing import List, Tuple, Optional, Dict, Any
 from datetime import datetime
@@ -26,6 +27,7 @@ try:
     MATPLOTLIB_AVAILABLE = True
 except ImportError:
     MATPLOTLIB_AVAILABLE = False
+    print("[VIZ] Warning: matplotlib not available, visualization disabled", file=sys.stderr)
 
 
 def hyperbolic_distance_safe(x: np.ndarray, y: np.ndarray, eps: float = 1e-8) -> float:
@@ -166,12 +168,12 @@ def visualize_poincare_disk(
         True if successful, False if matplotlib unavailable
     """
     if not MATPLOTLIB_AVAILABLE:
-        print("[VIZ] matplotlib not available")
+        print("[VIZ] matplotlib not available", file=sys.stderr)
         return False
 
     n = len(points)
     if n < 2:
-        print("[VIZ] Need at least 2 points")
+        print("[VIZ] Need at least 2 points", file=sys.stderr)
         return False
 
     # Extract core coordinates (exclude phase if present)
@@ -248,7 +250,7 @@ def visualize_poincare_disk(
     plt.savefig(filename, dpi=300, facecolor='black')
     plt.close()
 
-    print(f"[VIZ] Poincare disk saved: {filename}")
+    print(f"[VIZ] Poincare disk saved: {filename}", file=sys.stderr)
     return True
 
 
@@ -271,14 +273,14 @@ def visualize_3d_voxels(
         True if successful
     """
     if not MATPLOTLIB_AVAILABLE:
-        print("[VIZ] matplotlib not available")
+        print("[VIZ] matplotlib not available", file=sys.stderr)
         return False
 
     colors = octree.to_dense()
     occupied = colors != None
 
     if not np.any(occupied):
-        print("[VIZ] No occupied voxels to render")
+        print("[VIZ] No occupied voxels to render", file=sys.stderr)
         return False
 
     # Build facecolors array
@@ -355,7 +357,7 @@ def visualize_3d_voxels(
         plt.savefig(filename, dpi=300, facecolor='black')
         plt.close()
 
-    print(f"[VIZ] 3D voxel renders saved: {filename_prefix}_*.png")
+    print(f"[VIZ] 3D voxel renders saved: {filename_prefix}_*.png", file=sys.stderr)
     return True
 
 
@@ -430,6 +432,6 @@ def generate_demo_visualization(output_dir: str = ".") -> Dict[str, Any]:
 # =============================================================================
 
 if __name__ == "__main__":
-    print("[VIZ] Running demo visualization...")
+    print("[VIZ] Running demo visualization...", file=sys.stderr)
     result = generate_demo_visualization()
-    print(f"[VIZ] Result: {result}")
+    print(f"[VIZ] Result: {result}", file=sys.stderr)
