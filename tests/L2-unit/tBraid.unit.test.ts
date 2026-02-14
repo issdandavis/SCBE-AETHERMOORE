@@ -30,6 +30,8 @@ import {
   edgeWeight,
   weightedBraidedDistance,
   EDGE_WEIGHTS,
+  DEFAULT_EDGE_WEIGHTS,
+  toDebugJSON,
 } from '../../packages/kernel/src/tBraid.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -471,6 +473,7 @@ describe('computeBraid', () => {
     expect(r.projected).toBeDefined();
     expect(r.edges).toHaveLength(6);
     expect(typeof r.braidedDistance).toBe('number');
+    expect(typeof r.weightedDistance).toBe('number');
     expect(typeof r.braidedMetaTime).toBe('number');
     expect(typeof r.hBraid).toBe('number');
     expect(typeof r.harmScore).toBe('number');
@@ -503,10 +506,16 @@ describe('computeBraid', () => {
     expect(x3.hBraid).toBeGreaterThanOrEqual(x1.hBraid);
   });
 
-  it('Yang-Baxter always holds', () => {
+  it('Yang-Baxter skipped by default (production mode)', () => {
+    // skipYangBaxter defaults to true — always reports true without computing
     expect(computeBraid(1, 1, 1, 1).yangBaxterConsistent).toBe(true);
-    expect(computeBraid(2, 5, 0.1, 10).yangBaxterConsistent).toBe(true);
-    expect(computeBraid(0.5, 0, 3, 0.1).yangBaxterConsistent).toBe(true);
+  });
+
+  it('Yang-Baxter holds when explicitly checked (test mode)', () => {
+    const opts = { skipYangBaxter: false };
+    expect(computeBraid(1, 1, 1, 1, opts).yangBaxterConsistent).toBe(true);
+    expect(computeBraid(2, 5, 0.1, 10, opts).yangBaxterConsistent).toBe(true);
+    expect(computeBraid(0.5, 0, 3, 0.1, opts).yangBaxterConsistent).toBe(true);
   });
 });
 
@@ -529,13 +538,22 @@ describe('variantsFromClocks', () => {
   });
 
   it('uses breathing factor as base T', () => {
-    const v1 = variantsFromClocks(1, 1, 0, 1, 1.0);
-    const v2 = variantsFromClocks(1, 1, 0, 1, 2.0);
+    const v1 = variantsFromClocks(1, 10, 0, 1, 1.0);
+    const v2 = variantsFromClocks(1, 10, 0, 1, 2.0);
     expect(v2.immediate).toBe(2 * v1.immediate);
   });
 
+  it('floors memoryTick at MIN_LIFECYCLE_TICKS=3 for early-lifecycle agents', () => {
+    const v0 = variantsFromClocks(1, 0, 0, 1, 1.0);
+    const v1 = variantsFromClocks(1, 1, 0, 1, 1.0);
+    const v3 = variantsFromClocks(1, 3, 0, 1, 1.0);
+    // tick=0 and tick=1 both floor to 3, producing same variants as tick=3
+    expect(v0.predictive).toBeCloseTo(v3.predictive, 10);
+    expect(v1.predictive).toBeCloseTo(v3.predictive, 10);
+  });
+
   it('clamps breathing factor to epsilon', () => {
-    const v = variantsFromClocks(1, 1, 0, 1, 0);
+    const v = variantsFromClocks(1, 10, 0, 1, 0);
     expect(v.immediate).toBeGreaterThan(0);
   });
 });
@@ -619,6 +637,134 @@ describe('weightedBraidedDistance', () => {
     const weighted = weightedBraidedDistance(edges);
     // Weighted should be less because the largest edge (im↔pred) has weight φ^-2
     expect(weighted).toBeLessThan(unweighted);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// DEFAULT_EDGE_WEIGHTS config
+// ═══════════════════════════════════════════════════════════════
+
+describe('DEFAULT_EDGE_WEIGHTS', () => {
+  const PHI = (1 + Math.sqrt(5)) / 2;
+
+  it('has all 6 fields', () => {
+    expect(DEFAULT_EDGE_WEIGHTS.immediateToMemory).toBe(1.0);
+    expect(DEFAULT_EDGE_WEIGHTS.memoryToGovernance).toBe(1.0);
+    expect(DEFAULT_EDGE_WEIGHTS.governanceToPredictive).toBe(1.0);
+    expect(DEFAULT_EDGE_WEIGHTS.immediateToGovernance).toBeCloseTo(1 / PHI, 6);
+    expect(DEFAULT_EDGE_WEIGHTS.memoryToPredictive).toBeCloseTo(1 / PHI, 6);
+    expect(DEFAULT_EDGE_WEIGHTS.immediateToPredict).toBeCloseTo(1 / (PHI * PHI), 6);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// Configurable edge weights via BraidOptions
+// ═══════════════════════════════════════════════════════════════
+
+describe('configurable edge weights', () => {
+  it('boosting Ti↔Tp increases weighted distance', () => {
+    // Default φ^-2 ≈ 0.382 for Ti↔Tp
+    const defaultResult = computeBraid(1, 5, 0.5, 3);
+    // Boost Ti↔Tp to 1.0 (full weight)
+    const boosted = computeBraid(1, 5, 0.5, 3, {
+      weights: { immediateToPredict: 1.0 },
+    });
+    expect(boosted.weightedDistance).toBeGreaterThan(defaultResult.weightedDistance);
+  });
+
+  it('zeroing all weights makes weighted distance 0', () => {
+    const r = computeBraid(1, 5, 0.5, 3, {
+      weights: {
+        immediateToMemory: 0,
+        memoryToGovernance: 0,
+        governanceToPredictive: 0,
+        immediateToGovernance: 0,
+        memoryToPredictive: 0,
+        immediateToPredict: 0,
+      },
+    });
+    expect(r.weightedDistance).toBeCloseTo(0, 10);
+  });
+
+  it('uniform weights=1 makes weighted equal to unweighted', () => {
+    const r = computeBraid(1, 5, 0.5, 3, {
+      weights: {
+        immediateToMemory: 1,
+        memoryToGovernance: 1,
+        governanceToPredictive: 1,
+        immediateToGovernance: 1,
+        memoryToPredictive: 1,
+        immediateToPredict: 1,
+      },
+    });
+    expect(r.weightedDistance).toBeCloseTo(r.braidedDistance, 10);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// toDebugJSON
+// ═══════════════════════════════════════════════════════════════
+
+describe('toDebugJSON', () => {
+  it('returns plain object with all expected keys', () => {
+    const r = computeBraid(1, 2, 3, 4);
+    const debug = toDebugJSON(r);
+    expect(debug.strands).toBeDefined();
+    expect(debug.projected).toBeDefined();
+    expect(debug.edges).toBeDefined();
+    expect(typeof debug.d_b).toBe('number');
+    expect(typeof debug.d_bw).toBe('number');
+    expect(typeof debug.T_b).toBe('number');
+    expect(typeof debug.harm).toBe('number');
+    expect(typeof debug.yb).toBe('boolean');
+  });
+
+  it('has all 4 strand labels', () => {
+    const debug = toDebugJSON(computeBraid(1, 1, 1, 1));
+    const strands = debug.strands as Record<string, number>;
+    expect(strands).toHaveProperty('Ti');
+    expect(strands).toHaveProperty('Tm');
+    expect(strands).toHaveProperty('Tg');
+    expect(strands).toHaveProperty('Tp');
+  });
+
+  it('has all 6 edge labels', () => {
+    const debug = toDebugJSON(computeBraid(1, 2, 3, 4));
+    const edges = debug.edges as Record<string, number>;
+    const keys = Object.keys(edges);
+    expect(keys).toHaveLength(6);
+    // Each key should contain ↔
+    for (const k of keys) {
+      expect(k).toContain('↔');
+    }
+  });
+
+  it('rounds values to 6 decimal places', () => {
+    const debug = toDebugJSON(computeBraid(1, 1, 1, 1));
+    const strands = debug.strands as Record<string, number>;
+    // Values should be rounded (no more than 6 decimals)
+    const str = String(strands.Ti);
+    const parts = str.split('.');
+    if (parts.length > 1) {
+      expect(parts[1].length).toBeLessThanOrEqual(6);
+    }
+  });
+
+  it('handles MAX_VALUE H_braid as "MAX"', () => {
+    const r = computeBraid(1, 100, 0.001, 0.01);
+    // Force extreme H_braid
+    const debug = toDebugJSON({
+      ...r,
+      hBraid: Number.MAX_VALUE,
+    });
+    expect(debug.H_braid).toBe('MAX');
+  });
+
+  it('is JSON-serializable', () => {
+    const debug = toDebugJSON(computeBraid(1, 5, 0.5, 3));
+    const json = JSON.stringify(debug);
+    expect(typeof json).toBe('string');
+    expect(JSON.parse(json)).toEqual(debug);
   });
 });
 
