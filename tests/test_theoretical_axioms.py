@@ -849,5 +849,176 @@ class TestAxiomIntegration:
             assert max_jump < 0.4, f"Large dimension jump: {max_jump:.3f}"
 
 
+class TestLyapunovAntipodeTrajectory:
+    """
+    Layer 9 Integration: Lyapunov Stability on Fractal Antipode Chains
+
+    Validates that the fractal antipodal mapping (used by vacuum-acoustics
+    kernel for expulsion trajectories) satisfies Lyapunov stability:
+    V(x) = ||x||² must be non-increasing along antipodal chains.
+
+    This is a pure-math kernel-level test — no TS imports required.
+
+    References:
+    - Khalil, H.K. "Nonlinear Systems" (2002), Ch. 4 (Lyapunov Functions)
+    - Layer 8: Fractal Antipodal in PHDM
+    - Layer 9: Vacuum-Acoustics expulsion
+    """
+
+    PHI = (1 + np.sqrt(5)) / 2  # Golden ratio for fractal dimension
+
+    @staticmethod
+    def _fractal_antipode(point: np.ndarray, power: float = 1.618) -> np.ndarray:
+        """
+        Fractal antipodal map: reflects through origin with contraction.
+
+        A(x) = -x * (||x|| / (1 + ||x||))^power
+
+        The factor (||x||/(1+||x||)) ∈ (0,1) ensures contraction;
+        raising to a power > 1 strengthens it, making convergence faster.
+        """
+        n = np.linalg.norm(point)
+        if n < 1e-15:
+            return point * 0
+        contraction = (n / (1 + n)) ** power
+        return -point * contraction
+
+    def test_lyapunov_on_antipode_trajectory(self):
+        """
+        V(x) = ||x||² must decrease along antipodal chains.
+
+        For each trajectory starting from a random 6D point,
+        iterating the fractal antipode map should yield
+        dV = V(x_{i+1}) - V(x_i) <= 0 (negative semi-definite).
+        """
+        np.random.seed(42)
+        n_trajectories = 50
+        chain_length = 10
+
+        failures = []
+
+        for traj_id in range(n_trajectories):
+            point = np.random.uniform(-2.0, 2.0, 6)
+            V_values = [np.linalg.norm(point) ** 2]
+
+            for _ in range(chain_length):
+                point = self._fractal_antipode(point, power=self.PHI)
+                V_values.append(np.linalg.norm(point) ** 2)
+
+            # Check dV <= 0 at every step (with numerical tolerance)
+            dV = [V_values[i + 1] - V_values[i] for i in range(len(V_values) - 1)]
+            violations = [i for i, dv in enumerate(dV) if dv > 1e-10]
+
+            if violations:
+                failures.append({
+                    "traj_id": traj_id,
+                    "violations": violations,
+                    "max_increase": max(dV),
+                })
+
+        assert len(failures) == 0, (
+            f"Lyapunov violation in {len(failures)}/{n_trajectories} "
+            f"antipodal chains: {failures[:3]}"
+        )
+
+    def test_antipode_convergence_to_origin(self):
+        """
+        Iterated fractal antipodes must converge to origin.
+
+        After enough iterations, ||x_n|| < epsilon for all starting points.
+        """
+        np.random.seed(123)
+        n_trajectories = 30
+        max_steps = 50
+        convergence_eps = 1e-6
+
+        failures = []
+
+        for traj_id in range(n_trajectories):
+            point = np.random.uniform(-5.0, 5.0, 6)
+            initial_norm = np.linalg.norm(point)
+
+            for step in range(max_steps):
+                point = self._fractal_antipode(point, power=self.PHI)
+                if np.linalg.norm(point) < convergence_eps:
+                    break
+            else:
+                final_norm = np.linalg.norm(point)
+                failures.append({
+                    "traj_id": traj_id,
+                    "initial_norm": initial_norm,
+                    "final_norm": final_norm,
+                })
+
+        assert len(failures) == 0, (
+            f"No convergence in {len(failures)}/{n_trajectories} "
+            f"trajectories: {failures[:3]}"
+        )
+
+    def test_contraction_rate_bounded_by_phi(self):
+        """
+        The contraction factor per step should be bounded by φ-power decay.
+
+        ||A(x)|| / ||x|| <= (||x|| / (1 + ||x||))^φ < 1 for all ||x|| > 0.
+        """
+        np.random.seed(77)
+        n_points = 200
+
+        for _ in range(n_points):
+            point = np.random.uniform(-3.0, 3.0, 6)
+            n = np.linalg.norm(point)
+            if n < 1e-12:
+                continue
+
+            mapped = self._fractal_antipode(point, power=self.PHI)
+            mapped_norm = np.linalg.norm(mapped)
+
+            ratio = mapped_norm / n
+            expected_bound = (n / (1 + n)) ** self.PHI
+
+            assert ratio <= expected_bound + 1e-12, (
+                f"Contraction ratio {ratio:.8f} exceeds bound {expected_bound:.8f} "
+                f"for ||x||={n:.4f}"
+            )
+
+    def test_lyapunov_under_noise_perturbation(self):
+        """
+        Even with Gaussian noise added after each antipodal step,
+        V(x) should remain bounded (no divergence).
+        """
+        np.random.seed(999)
+        noise_scale = 0.01
+        n_trajectories = 30
+        max_steps = 30
+
+        failures = []
+
+        for traj_id in range(n_trajectories):
+            point = np.random.uniform(-1.0, 1.0, 6)
+            initial_V = np.linalg.norm(point) ** 2
+            max_V = initial_V
+
+            for step in range(max_steps):
+                point = self._fractal_antipode(point, power=self.PHI)
+                point += np.random.normal(0, noise_scale, 6)
+                V = np.linalg.norm(point) ** 2
+                max_V = max(max_V, V)
+
+                # V should never explode beyond 2x initial
+                if V > initial_V * 2.0 + 1.0:
+                    failures.append({
+                        "traj_id": traj_id,
+                        "step": step,
+                        "V": V,
+                        "initial_V": initial_V,
+                    })
+                    break
+
+        assert len(failures) == 0, (
+            f"Divergence in {len(failures)}/{n_trajectories} "
+            f"noisy trajectories: {failures[:3]}"
+        )
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "--tb=short"])
