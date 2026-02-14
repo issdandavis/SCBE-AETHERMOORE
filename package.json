@@ -57,7 +57,8 @@
     "packages/sixtongues",
     "scbe-cli.py",
     "scbe.js",
-    "sixtongues-cli-v1.1.0.zip"
+    "sixtongues-cli-v1.1.0.zip",
+    "examples/npm"
   ],
   "scripts": {
     "clean": "rimraf dist",
@@ -83,6 +84,8 @@
     "docker:compose": "docker-compose up -d",
     "prepublishOnly": "npm run build",
     "package": "npm pack",
+    "publish:check": "bash scripts/npm_publish_check.sh",
+    "publish:dryrun": "npm pack --dry-run --json"
     "notion:sync": "node scripts/notion-sync.js --all",
     "version:bump": "node scripts/version-bump.js",
     "precommit:check": "bash scripts/pre-commit-check.sh"

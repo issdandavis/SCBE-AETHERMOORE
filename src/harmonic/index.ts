@@ -110,21 +110,31 @@ export {
 // ═══════════════════════════════════════════════════════════════
 
 export {
-  // Pipeline utility
+  // Layer 5: Invariant Metric + Configurable Audit Epsilon
+  EPSILON as HYPERBOLIC_EPSILON,
   applyHyperbolicPipeline,
+  artanh,
   breathTransform,
+  clampToBall,
   expMap0,
-  // Layer 5: Invariant Metric
+  exponentialMap,
+  getAuditEpsilon,
   hyperbolicDistance,
   inverseBreathTransform,
   logMap0,
+  logarithmicMap,
   mobiusAdd,
+  mobiusAddition,
   multiPhaseModulation,
   multiWellGradient,
   multiWellPotential,
-  // Layer 7: Phase Modulation
+  phaseDeviation as hyperbolicPhaseDeviation,
+  phaseDistanceScore as hyperbolicPhaseDistanceScore,
   phaseModulation,
+  projectEmbeddingToBall,
   projectToBall,
+  scoreRetrievals,
+  setAuditEpsilon,
   // Layer 6: Breath Transform
   type BreathConfig,
   // Layer 8: Multi-Well Potential
@@ -437,4 +447,32 @@ export {
   type GenesisResult,
   type GenesisEvaluation,
 } from './sacredEggsGenesis.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Decimal Drift Tracker — Entropy Harvesting Engine
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Tracker class
+  DriftTracker,
+  // Core functions
+  captureStepDrift,
+  estimateFractalDimension,
+  deriveHarmonicKey,
+  assessAuthenticity,
+  sonifyDrift,
+  // Constants
+  TONGUE_HARMONICS,
+  DEFAULT_BUFFER_CAPACITY,
+  SYNTHETIC_CV_THRESHOLD,
+  GENUINE_FRACTAL_MIN,
+  // Types
+  type DriftCapture,
+  type ShadowBufferConfig,
+  type FractalEstimate,
+  type HarmonicKey,
+  type DriftAuthenticity,
+  type DriftSonification,
+  type DriftTrackerStats,
+} from './driftTracker.js';
 
