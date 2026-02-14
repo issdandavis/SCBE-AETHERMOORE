@@ -22,7 +22,7 @@ if sys.platform == "win32":
 
 import hashlib
 import numpy as np
-from typing import Tuple, List, Optional
+from typing import Dict, Tuple, List, Optional, Sequence
 
 # Use scipy-compatible imports with fallback
 try:
@@ -441,13 +441,23 @@ def layer_11_triadic_temporal(
 # =============================================================================
 def layer_12_harmonic_scaling(d: float, phase_deviation: float = 0.0) -> float:
     """
-    Layer 12: Harmonic Scaling (Bounded)
+    Layer 12: Harmonic Scaling (Bounded)  —  **H_score** variant
 
     Input: Distance d_H, phase deviation
-    Output: score = 1 / (1 + d_H + 2 * phase_deviation)
+    Output: H_score = 1 / (1 + d_H + 2 * phase_deviation)
 
     A12: Bounded risk scoring. Returns safety score in (0, 1].
     Replaces R^(d²) which caused numerical collapse on subtle attacks.
+
+    NOTE — Two H formulas coexist in the codebase:
+      • H_score (this function):  1/(1+d+2·pd)  ∈ (0,1]
+        Used by the 14-layer pipeline (L12→L13).
+        L13 divides: Risk' = Risk_base / H_score  (lower score → higher risk).
+      • H_wall  (harmonic_scaling_law.py):  1+α·tanh(β·d*)  ∈ [1, 1+α]
+        Risk amplification multiplier.
+        L13 multiplies: Final_Risk' = Behavioral_Risk * H_wall.
+    Both are monotonic, bounded, and metric-compatible; they differ only
+    in range and integration direction (division vs multiplication).
     """
     return 1.0 / (1.0 + d + 2.0 * phase_deviation)
 
@@ -530,6 +540,10 @@ def scbe_14layer_pipeline(
     R: float = 10.0,
     theta1: float = 0.33,
     theta2: float = 0.67,
+    # MMX (Layer 9.5) — cross-modal coherence tensor
+    modality_features: Optional[Dict[str, Sequence[float]]] = None,
+    mmx_agreement_floor: float = 0.5,
+    mmx_prev_alignment: Optional[List[List[float]]] = None,
 ) -> dict:
     """
     Execute full 14-layer SCBE pipeline.
@@ -590,6 +604,16 @@ def scbe_14layer_pipeline(
     phases = np.angle(c)
     C_spin = layer_10_spin_coherence(phases)
 
+    # L9.5: Cross-Modal Coherence Tensor (MMX)
+    mmx_result = None
+    if modality_features is not None and len(modality_features) >= 2:
+        from symphonic_cipher.scbe_aethermoore.multimodal.mmx import compute_mmx
+        mmx_result = compute_mmx(
+            modality_features,
+            agreement_floor=mmx_agreement_floor,
+            prev_alignment=mmx_prev_alignment,
+        )
+
     # L11: Triadic temporal
     if d_star_history is None or len(d_star_history) < 3:
         d_tri_norm = min(1.0, d_star)  # Not enough history, clamp to [0,1]
@@ -621,6 +645,13 @@ def scbe_14layer_pipeline(
 
     decision, Risk_prime = layer_13_risk_decision(Risk_base, H, theta1, theta2)
 
+    # L13 MMX governance overrides
+    if mmx_result is not None:
+        if mmx_result.conflict > 0.60 or min(mmx_result.weights) < 0.10:
+            decision = "DENY"
+        elif mmx_result.conflict > 0.35 and decision == "ALLOW":
+            decision = "QUARANTINE"
+
     # =========================================================================
     # RETURN RESULTS
     # =========================================================================
@@ -643,6 +674,14 @@ def scbe_14layer_pipeline(
             "u_final_norm": np.linalg.norm(u_final),
         },
         "all_realm_distances": all_distances,
+        "mmx": {
+            "alignment": mmx_result.alignment,
+            "weights": mmx_result.weights,
+            "coherence": mmx_result.coherence,
+            "conflict": mmx_result.conflict,
+            "drift": mmx_result.drift,
+            "modality_labels": mmx_result.modality_labels,
+        } if mmx_result is not None else None,
     }
 
 

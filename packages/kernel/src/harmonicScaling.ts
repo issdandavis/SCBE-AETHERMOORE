@@ -8,12 +8,21 @@
  *
  * SCBE Harmonic Scaling - Bounded risk scoring for the 14-layer pipeline.
  *
- * Layer 12: score = 1 / (1 + d_H + 2 * phaseDeviation)
+ * Layer 12 — **H_score** variant:
+ *   H_score = 1 / (1 + d_H + 2 * phaseDeviation)   ∈ (0, 1]
  *
  * The previous super-exponential formula R^(d²) caused numerical collapse:
  * small distances all mapped to ~1.0, destroying ranking (AUC 0.054 on
  * subtle attacks vs baseline 0.984). This bounded formula preserves
  * differentiation at all distance scales.
+ *
+ * NOTE — Two H formulas coexist in the codebase:
+ *   • H_score (this file):  1/(1+d+2·pd)  ∈ (0,1]
+ *     Used by the 14-layer pipeline (L12→L13).
+ *     L13 divides: Risk' = Risk_base / H_score  (lower → higher risk).
+ *   • H_wall (harmonic_scaling_law.py):  1+α·tanh(β·d*)  ∈ [1, 1+α]
+ *     Risk amplification multiplier.
+ *     L13 multiplies: Final_Risk' = Behavioral_Risk * H_wall.
  *
  * Key functions:
  * - harmonicScale(d, phaseDeviation) - Core risk scorer (bounded 0-1)
