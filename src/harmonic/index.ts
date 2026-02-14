@@ -110,21 +110,31 @@ export {
 // ═══════════════════════════════════════════════════════════════
 
 export {
-  // Pipeline utility
+  // Layer 5: Invariant Metric + Configurable Audit Epsilon
+  EPSILON as HYPERBOLIC_EPSILON,
   applyHyperbolicPipeline,
+  artanh,
   breathTransform,
+  clampToBall,
   expMap0,
-  // Layer 5: Invariant Metric
+  exponentialMap,
+  getAuditEpsilon,
   hyperbolicDistance,
   inverseBreathTransform,
   logMap0,
+  logarithmicMap,
   mobiusAdd,
+  mobiusAddition,
   multiPhaseModulation,
   multiWellGradient,
   multiWellPotential,
-  // Layer 7: Phase Modulation
+  phaseDeviation as hyperbolicPhaseDeviation,
+  phaseDistanceScore as hyperbolicPhaseDistanceScore,
   phaseModulation,
+  projectEmbeddingToBall,
   projectToBall,
+  scoreRetrievals,
+  setAuditEpsilon,
   // Layer 6: Breath Transform
   type BreathConfig,
   // Layer 8: Multi-Well Potential
@@ -276,10 +286,17 @@ export {
   isValidTopology,
   serializePolyhedron,
   topologicalHash,
+  // Flux Governance
+  getActivePolyhedra,
+  // Phason Shift
+  generateProjectionMatrix,
+  phasonShift,
   type IntrusionResult,
   type Point6D,
   // Types
+  type FluxState as PHDMFluxState,
   type Polyhedron,
+  type PolyhedronFamily,
 } from './phdm.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -357,4 +374,105 @@ export {
   type TriDetectionResult,
   type TriDetectorConfig,
 } from './triMechanismDetector.js';
+
+// ═══════════════════════════════════════════════════════════════
+// HyperbolicRAG — Poincaré Ball Retrieval-Augmented Generation
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Engine
+  HyperbolicRAGEngine,
+  createHyperbolicRAG,
+  // Access cost
+  accessCost,
+  trustFromPosition,
+  // Types
+  type HyperbolicRAGConfig,
+  type RAGDocument,
+  type RetrievalResult,
+  type RetrievalSummary,
+} from './hyperbolicRAG.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Entropic Layer — Escape Detection, Adaptive-k, Expansion Tracking
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Monitor
+  EntropicMonitor,
+  createEntropicMonitor,
+  // Escape detection
+  detectEscape,
+  // Adaptive k
+  computeAdaptiveK,
+  computeLocalEntropy,
+  computeTrustDensity,
+  // Expansion tracking
+  computeExpansionRate,
+  estimateReachableVolume,
+  trackExpansion,
+  // Utilities
+  defaultBasins,
+  verifyEntropicInvariants,
+  // Types
+  type AdaptiveKResult,
+  type EntropicConfig,
+  type EntropicSample,
+  type EntropicState,
+  type EscapeResult,
+  type ExpansionResult,
+  type TrustBasin,
+} from './entropic.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Sacred Eggs Genesis Gate — Agent-Only Scope (v1)
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Genesis gate
+  genesis,
+  evaluateGenesis,
+  // Hatch weight
+  computeHatchWeight as genesisHatchWeight,
+  geoSealDistance,
+  // Certificate
+  verifyCertificateSeal,
+  // Constants
+  GENESIS_THRESHOLD,
+  DEFAULT_GEOSEAL_MAX_DISTANCE,
+  DEFAULT_GENESIS_CONFIG,
+  // Types
+  type GenesisConfig,
+  type GenesisCertificate,
+  type GenesisResult,
+  type GenesisEvaluation,
+} from './sacredEggsGenesis.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Decimal Drift Tracker — Entropy Harvesting Engine
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Tracker class
+  DriftTracker,
+  // Core functions
+  captureStepDrift,
+  estimateFractalDimension,
+  deriveHarmonicKey,
+  assessAuthenticity,
+  sonifyDrift,
+  // Constants
+  TONGUE_HARMONICS,
+  DEFAULT_BUFFER_CAPACITY,
+  SYNTHETIC_CV_THRESHOLD,
+  GENUINE_FRACTAL_MIN,
+  // Types
+  type DriftCapture,
+  type ShadowBufferConfig,
+  type FractalEstimate,
+  type HarmonicKey,
+  type DriftAuthenticity,
+  type DriftSonification,
+  type DriftTrackerStats,
+} from './driftTracker.js';
 

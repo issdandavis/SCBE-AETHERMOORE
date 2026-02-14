@@ -1,3 +1,10 @@
+---
+title: API Reference
+layout: default
+nav_order: 5
+description: "SCBE-AETHERMOORE API documentation - FastAPI endpoints, npm/pip installation, TypeScript and Python integration guides."
+---
+
 # SCBE-AETHERMOORE API Reference
 
 > Complete API documentation for the Spectral Context-Bound Encryption framework

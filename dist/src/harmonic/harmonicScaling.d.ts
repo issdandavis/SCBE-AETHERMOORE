@@ -3,48 +3,61 @@
  * @module harmonic/harmonicScaling
  * @layer Layer 12
  * @component Risk Amplification Engine
- * @version 3.0.0
+ * @version 3.3.0
  * @since 2026-01-20
  *
- * SCBE Harmonic Scaling - Creates exponential "hard walls" for risk amplification.
+ * SCBE Harmonic Scaling - Bounded risk scoring for the 14-layer pipeline.
  *
- * Layer 12: H(d, R) = R^(d²) - Super-exponential risk amplification
+ * Layer 12: score = 1 / (1 + d_H + 2 * phaseDeviation)
+ *
+ * The previous super-exponential formula R^(d²) caused numerical collapse:
+ * small distances all mapped to ~1.0, destroying ranking (AUC 0.054 on
+ * subtle attacks vs baseline 0.984). This bounded formula preserves
+ * differentiation at all distance scales.
  *
  * Key functions:
- * - harmonicScale(d, R) - Core risk amplifier
- * - securityBits(H) - Convert to security bit equivalent
- * - harmonicDistance6D(a, b) - 6D space distance
+ * - harmonicScale(d, phaseDeviation) - Core risk scorer (bounded 0-1)
+ * - securityBits(baseBits, d, phaseDeviation) - Security bit equivalent
+ * - harmonicDistance(u, v) - 6D space distance
  * - octaveTranspose(f, n) - Frequency transposition
  */
 import { Vector6D } from './constants.js';
 /**
- * Harmonic scale function H(d, R) = exp(d² * ln(R)) = R^(d²)
+ * Harmonic scale function: score = 1 / (1 + d + 2 * phaseDeviation)
  *
- * For R=1.5, d=6: H = 1.5^36 ≈ 2.18 × 10⁶
+ * Returns a safety score in (0, 1]:
+ *   - d=0, pd=0 → 1.0 (at safe center)
+ *   - d=1, pd=0 → 0.5
+ *   - d=2, pd=0 → 0.333
+ *   - d→∞       → 0.0
  *
- * @param d - Dimension/deviation parameter (integer >= 1)
- * @param R - Base ratio (default: 1.5)
- * @returns Scaled value
+ * @param d - Hyperbolic distance / dimension parameter (>= 0)
+ * @param phaseDeviation - Phase deviation from expected coherence (>= 0, default: 0)
+ * @returns Safety score in (0, 1]
  */
-export declare function harmonicScale(d: number, R?: number): number;
+export declare function harmonicScale(d: number, phaseDeviation?: number): number;
 /**
- * Calculate security bits with harmonic amplification
+ * Calculate security bits with harmonic scaling
+ *
+ * S_bits = baseBits + log₂(1 + d + 2 * phaseDeviation)
  *
  * @param baseBits - Base security level in bits
- * @param d - Dimension parameter
- * @param R - Base ratio
- * @returns Amplified security bits
+ * @param d - Distance parameter (>= 0)
+ * @param phaseDeviation - Phase deviation (>= 0, default: 0)
+ * @returns Effective security bits (grows with distance)
  */
-export declare function securityBits(baseBits: number, d: number, R?: number): number;
+export declare function securityBits(baseBits: number, d: number, phaseDeviation?: number): number;
 /**
  * Calculate security level with harmonic scaling
  *
+ * S = base * (1 + d + 2 * phaseDeviation)
+ *
  * @param base - Base security level
- * @param d - Dimension parameter
- * @param R - Base ratio
- * @returns Scaled security level
+ * @param d - Distance parameter (>= 0)
+ * @param phaseDeviation - Phase deviation (>= 0, default: 0)
+ * @returns Scaled security level (grows linearly with distance)
  */
-export declare function securityLevel(base: number, d: number, R?: number): number;
+export declare function securityLevel(base: number, d: number, phaseDeviation?: number): number;
 /**
  * Harmonic distance in 6D phase space with weighted dimensions
  *

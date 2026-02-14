@@ -1,0 +1,120 @@
+name: PHDM 21D Vertex AI Training
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Training mode'
+        required: true
+        default: 'dry-run'
+        type: choice
+        options:
+          - dry-run
+          - train
+          - push-only
+      config_path:
+        description: 'Custom config path (optional)'
+        required: false
+        default: ''
+        type: string
+  push:
+    branches: [main]
+    paths:
+      - 'training/**'
+
+env:
+  GCP_PROJECT_ID: studio-6928670609-fdd4c
+  GCP_REGION: us-west1
+  HF_MODEL_REPO: issdandavis/phdm-21d-embedding
+  GKE_CLUSTER_NAME: test-scbecluser
+  PYTHON_VERSION: '3.10'
+
+jobs:
+  training:
+    name: PHDM 21D Training Pipeline
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install google-cloud-aiplatform huggingface-hub pyyaml
+
+      - name: Authenticate to Google Cloud
+        if: |
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.mode == 'train'
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        if: |
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.mode == 'train'
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Validate kernel manifest
+        run: |
+          python training/kernel_manifest.py --check --json
+
+      - name: Run training (manual dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          GCP_PROJECT_ID: ${{ env.GCP_PROJECT_ID }}
+          GCP_REGION: ${{ env.GCP_REGION }}
+          HF_MODEL_REPO: ${{ env.HF_MODEL_REPO }}
+          GKE_CLUSTER_NAME: ${{ env.GKE_CLUSTER_NAME }}
+        run: |
+          MODE="${{ github.event.inputs.mode }}"
+          CONFIG="${{ github.event.inputs.config_path }}"
+          ARGS=""
+          if [ "$MODE" = "dry-run" ]; then
+            ARGS="--dry-run"
+          elif [ "$MODE" = "push-only" ]; then
+            ARGS="--push-only"
+          fi
+          if [ -n "$CONFIG" ]; then
+            ARGS="$ARGS --config $CONFIG"
+          fi
+          echo "Running: python training/trigger_vertex_training.py $ARGS"
+          python training/trigger_vertex_training.py $ARGS
+
+      - name: Run dry-run validation (push trigger)
+        if: github.event_name == 'push'
+        env:
+          GCP_PROJECT_ID: ${{ env.GCP_PROJECT_ID }}
+          GCP_REGION: ${{ env.GCP_REGION }}
+          HF_MODEL_REPO: ${{ env.HF_MODEL_REPO }}
+          GKE_CLUSTER_NAME: ${{ env.GKE_CLUSTER_NAME }}
+        run: |
+          echo "Auto-triggered by push to training/ - running dry-run validation"
+          python training/trigger_vertex_training.py --dry-run
+
+      - name: Training Summary
+        if: always()
+        run: |
+          echo "## PHDM 21D Training Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Setting | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Project | $GCP_PROJECT_ID |" >> $GITHUB_STEP_SUMMARY
+          echo "| Region | $GCP_REGION |" >> $GITHUB_STEP_SUMMARY
+          echo "| HF Model | $HF_MODEL_REPO |" >> $GITHUB_STEP_SUMMARY
+          echo "| GKE Cluster | $GKE_CLUSTER_NAME |" >> $GITHUB_STEP_SUMMARY
+          echo "| Trigger | ${{ github.event_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Mode | ${{ github.event.inputs.mode || 'dry-run (auto)' }} |" >> $GITHUB_STEP_SUMMARY

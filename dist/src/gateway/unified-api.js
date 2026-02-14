@@ -347,9 +347,8 @@ class UnifiedSCBEGateway {
         return 0.9 + Math.random() * 0.08;
     }
     computeHarmonicScaling(distance) {
-        // H(d, R) = R^(d²) where R = e
-        const R = Math.E;
-        return Math.pow(R, distance * distance);
+        // score = 1 / (1 + d_H + 2 * phaseDeviation)
+        return 1 / (1 + distance);
     }
     computeCompositeRisk(factors) {
         const weights = {

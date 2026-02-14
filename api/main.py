@@ -31,6 +31,13 @@ from fastapi import FastAPI, HTTPException, Header, Depends, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, Field
+from api.metering import (
+    AUDIT_REPORT_GENERATIONS,
+    GOVERNANCE_EVALUATIONS,
+    WORKFLOW_EXECUTIONS,
+    export_monthly_billable_usage,
+    metering_store,
+)
 
 # Import persistence layer
 try:
@@ -378,6 +385,8 @@ async def authorize(
         "score": round(score, 3),
         "latency_ms": DECISIONS_STORE[decision_id]["latency_ms"]
     }))
+
+    metering_store.increment_metric(tenant_id=tenant, metric_name=GOVERNANCE_EVALUATIONS)
 
     # Persist to Firebase
     try:
@@ -828,6 +837,21 @@ class FleetScenarioResponse(BaseModel):
     metrics: Dict[str, float]
 
 
+class AuditReportResponse(BaseModel):
+    generated_at: str
+    tenant_id: str
+    total_decisions: int
+    decisions_by_outcome: Dict[str, int]
+
+
+class MonthlyUsageExportResponse(BaseModel):
+    month: str
+    tenant_id: Optional[str]
+    generated_at: str
+    rows: List[Dict[str, Any]]
+    totals: Dict[str, int]
+
+
 @app.post("/v1/fleet/run-scenario", response_model=FleetScenarioResponse, tags=["Fleet"])
 async def run_fleet_scenario(
     scenario: FleetScenario,
@@ -923,6 +947,8 @@ async def run_fleet_scenario(
         "elapsed_ms": round(elapsed_ms, 2)
     }))
 
+    metering_store.increment_metric(tenant_id=tenant, metric_name=WORKFLOW_EXECUTIONS)
+
     return FleetScenarioResponse(
         scenario_id=scenario_id,
         scenario_name=scenario.scenario_name,
@@ -967,6 +993,44 @@ class SwarmCoordinationResponse(BaseModel):
     boundary_breaches: int
     coordination_score: float
 
+
+
+
+@app.get("/v1/audit/report", response_model=AuditReportResponse, tags=["Audit"])
+async def generate_audit_report(
+    tenant: str = Depends(verify_api_key)
+):
+    """Generate an audit summary report for the current tenant."""
+    decisions = [
+        d for d in DECISIONS_STORE.values()
+        if d.get("tenant") == tenant
+    ]
+    by_outcome = {
+        "ALLOW": sum(1 for d in decisions if d.get("decision") == "ALLOW"),
+        "DENY": sum(1 for d in decisions if d.get("decision") == "DENY"),
+        "QUARANTINE": sum(1 for d in decisions if d.get("decision") == "QUARANTINE"),
+    }
+
+    metering_store.increment_metric(tenant_id=tenant, metric_name=AUDIT_REPORT_GENERATIONS)
+
+    return AuditReportResponse(
+        generated_at=datetime.utcnow().isoformat() + "Z",
+        tenant_id=tenant,
+        total_decisions=len(decisions),
+        decisions_by_outcome=by_outcome,
+    )
+
+
+@app.get("/v1/internal/billing/monthly-usage", response_model=MonthlyUsageExportResponse, tags=["Billing"])
+async def export_monthly_usage(
+    year: int,
+    month: int,
+    tenant: str = Depends(verify_api_key),
+    include_all_tenants: bool = False,
+):
+    """Export monthly billable usage aggregates for finance/reporting pipelines."""
+    target_tenant = None if include_all_tenants else tenant
+    return MonthlyUsageExportResponse(**export_monthly_billable_usage(year=year, month=month, tenant_id=target_tenant))
 
 @app.get("/v1/demo/rogue-detection", response_model=RogueDetectionResponse, tags=["Demo"])
 async def demo_rogue_detection(steps: int = 25):
