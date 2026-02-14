@@ -186,6 +186,16 @@ def key_vector_from_secret(
     Derive a small hyperbolic key vector from secret bytes.
 
     Keeps key near origin to avoid pushing ciphertext toward boundary.
+
+    Args:
+        secret: Raw secret bytes (e.g. from KEM shared secret).
+        dim: Vector dimensionality.
+        c: Poincaré ball curvature.
+        tangent_scale: Scale factor for tangent-space projection.
+        max_radius: Maximum allowed radius for any vector.
+
+    Returns:
+        Key vector inside the Poincaré ball.
     """
     raw = hkdf_sha256(secret, salt=b"scbe-hlwe", info=b"keyvec", length=4 * dim)
     ints = np.frombuffer(raw, dtype=np.uint32).astype(np.float64)
@@ -308,6 +318,13 @@ class HLWESymmetric:
         )
         ctv = np.asarray(ct.ct, dtype=float).reshape(-1)
         if ctv.shape[0] != self.dim:
+            raise InvalidVector(
+                f"ciphertext vector has wrong shape: {ctv.shape}"
+            )
+        if _norm(ctv) >= 1.0:
+            raise InvalidVector("ciphertext vector must be inside unit ball.")
+        # Left-cancellation: (-k) (+) ct = (-k) (+) (k (+) (x (+) n)) = x (+) n
+        x_hat = mobius_add(mobius_neg(key), ctv, c=self.c)
             raise InvalidVector(f"ciphertext vector has wrong shape: {ctv.shape}")
         if _norm(ctv) >= 1.0:
             raise InvalidVector("ciphertext vector must be inside unit ball.")

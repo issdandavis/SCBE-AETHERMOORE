@@ -26,6 +26,84 @@ export declare const BRAIN_EPSILON = 1e-10;
 /** Maximum norm for Poincare ball containment */
 export declare const POINCARE_MAX_NORM: number;
 /**
+ * Named block index ranges for the 21D state vector.
+ * Provides a secondary "conservation law" view of the same vector
+ * produced by UnifiedBrainState.toVector().
+ *
+ * BLOCK_HYPER   [0..5]   — Poincare ball coordinates (scbeContext)
+ * BLOCK_PHASE   [6..11]  — Tongue phase angles, Z_6 quantized (navigation)
+ * BLOCK_HAM     [12..15] — Hamiltonian momenta (cognitivePosition + activeTongue)
+ * BLOCK_LATTICE [16..17] — Lattice path indices (phaseAngle + tongueWeight)
+ * BLOCK_FLUX    [18]     — Breathing/flux scalar (trustScore)
+ * BLOCK_SPEC    [19..20] — Spectral summary: PR + entropy (byzantineVotes + spectralCoherence)
+ */
+export declare const BLOCK_RANGES: {
+    readonly BLOCK_HYPER: {
+        readonly start: 0;
+        readonly end: 6;
+    };
+    readonly BLOCK_PHASE: {
+        readonly start: 6;
+        readonly end: 12;
+    };
+    readonly BLOCK_HAM: {
+        readonly start: 12;
+        readonly end: 16;
+    };
+    readonly BLOCK_LATTICE: {
+        readonly start: 16;
+        readonly end: 18;
+    };
+    readonly BLOCK_FLUX: {
+        readonly start: 18;
+        readonly end: 19;
+    };
+    readonly BLOCK_SPEC: {
+        readonly start: 19;
+        readonly end: 21;
+    };
+};
+export type BlockName = keyof typeof BLOCK_RANGES;
+/** Names for the 6 conservation laws */
+export type ConservationLawName = 'containment' | 'phase_coherence' | 'energy_balance' | 'lattice_continuity' | 'flux_normalization' | 'spectral_bounds';
+/** Result from evaluating a single conservation law projection */
+export interface ConservationLawResult {
+    /** Which law was evaluated */
+    law: ConservationLawName;
+    /** Whether the law was satisfied before projection */
+    satisfied: boolean;
+    /** Magnitude of violation (0.0 = no violation) */
+    violationMagnitude: number;
+    /** The projected (corrected) vector */
+    projectedVector: number[];
+}
+/** Result from the full RefactorAlign kernel */
+export interface RefactorAlignResult {
+    /** The input vector */
+    inputVector: number[];
+    /** The fully projected vector (output of Pi(x)) */
+    outputVector: number[];
+    /** Per-law results */
+    lawResults: ConservationLawResult[];
+    /** Global invariant I(x) = sum of violation magnitudes; 0 iff all satisfied */
+    globalInvariant: number;
+    /** Whether all laws are satisfied (I(x) === 0) */
+    allSatisfied: boolean;
+}
+/** Configuration for conservation law enforcement */
+export interface ConservationConfig {
+    /** Maximum Poincare norm before clamping (default: 0.95) */
+    poincareClampNorm?: number;
+    /** Target Hamiltonian energy for energy balance (default: computed from state) */
+    targetEnergy?: number;
+    /** Spectral participation ratio lower bound (default: 1.0) */
+    prLowerBound?: number;
+    /** Spectral entropy upper bound (default: 6.0) */
+    entropyUpperBound?: number;
+    /** Adjacency matrix for lattice continuity (default: sequential path) */
+    adjacencyMatrix?: boolean[][];
+}
+/**
  * SCBE Core context (6D) - Layers 1-2
  */
 export interface SCBEContext {
@@ -190,7 +268,7 @@ export interface BrainAuditEvent {
     /** Layer where event occurred (1-14) */
     layer: number;
     /** Event type */
-    eventType: 'state_transition' | 'detection_alert' | 'boundary_violation' | 'consensus_vote' | 'risk_decision' | 'quarantine_action';
+    eventType: 'state_transition' | 'detection_alert' | 'boundary_violation' | 'consensus_vote' | 'risk_decision' | 'quarantine_action' | 'conservation_enforcement';
     /** Magnitude of state change */
     stateDelta: number;
     /** Distance from Poincare boundary */
