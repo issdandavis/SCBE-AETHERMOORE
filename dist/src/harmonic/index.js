@@ -17,10 +17,11 @@
  * @module harmonic
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SpiralSealSS1 = exports.SacredTongueTokenizer = exports.getTongueForSection = exports.UMBROTH = exports.SECTION_TONGUES = exports.SACRED_TONGUES = exports.RUNETHIC = exports.KOR_AELIN = exports.DRAUMRIC = exports.CASSISIVADAN = exports.AVALI = exports.projectToBall = exports.phaseModulation = exports.multiWellPotential = exports.multiWellGradient = exports.multiPhaseModulation = exports.mobiusAdd = exports.logMap0 = exports.inverseBreathTransform = exports.hyperbolicDistance = exports.expMap0 = exports.breathTransform = exports.applyHyperbolicPipeline = exports.createVertex = exports.HamiltonianCFI = exports.ControlFlowGraph = exports.generateTestSignal = exports.generateNoise = exports.AudioAxisProcessor = exports.getFluxState = exports.TONGUES = exports.LanguesMetric = exports.FluxingLanguesMetric = exports.standingWaveAmplitude = exports.nodalSurface = exports.fluxRedistribution = exports.checkCymaticResonance = exports.cavityResonance = exports.bottleBeamIntensity = exports.harmonicCouplingMatrix = exports.halAttention = exports.securityLevel = exports.securityBits = exports.octaveTranspose = exports.harmonicScale = exports.harmonicDistance = exports.log2 = exports.assertIntGE = exports.assertFinite = exports.CONSTANTS = void 0;
-exports.PHDMDeviationDetector = exports.CubicSpline6D = exports.CANONICAL_POLYHEDRA = exports.scbeToQuasicrystal = exports.quasicrystalPotential = exports.quasicrystalHash = exports.quasicrystal5to2 = exports.quasicrystal4to2 = exports.penroseToLattice = exports.penroseTiling = exports.penroseRhombus = exports.penroseInitial = exports.penroseDeflate = exports.nearestQCVertex = exports.fibonacciWord = exports.fibonacciSequence = exports.fibonacci2D = exports.fibonacci1D = exports.diffractionPattern = exports.defaultQCLattice = exports.cutAndProject2D = exports.checkRotationalSymmetry = exports.ammannBeenkerSquare = exports.ammannBeenkerRhombus = exports.SILVER_RATIO = exports.QCLatticeProvider = exports.PHI_INV = exports.PHI = exports.shake256 = exports.shake128 = exports.secureRandomBytes = exports.ntt = exports.mlkemKeyGen = exports.mlkemEncapsulate = exports.mlkemDecapsulate = exports.mldsaVerify = exports.mldsaSign = exports.mldsaKeyGen = exports.invNtt = exports.defaultPQCProvider = exports.PQCProvider = exports.unseal = exports.seal = exports.randomBytes = exports.parseSS1Blob = exports.formatSS1Blob = exports.encodeToSpelltext = exports.decodeFromSpelltext = exports.computeLWSWeights = exports.computeLWSScore = void 0;
-exports.verifyEntropicInvariants = exports.defaultBasins = exports.trackExpansion = exports.estimateReachableVolume = exports.computeExpansionRate = exports.computeTrustDensity = exports.computeLocalEntropy = exports.computeAdaptiveK = exports.detectEscape = exports.createEntropicMonitor = exports.EntropicMonitor = exports.trustFromPosition = exports.accessCost = exports.createHyperbolicRAG = exports.HyperbolicRAGEngine = exports.TONGUE_PHASES = exports.TONGUE_INDEX = exports.DEFAULT_CONFIG = exports.tonicCoherence = exports.phaseDistanceScore = exports.phaseDeviation = exports.triHyperbolicDistance = exports.driftDistanceToBaseline = exports.driftAuthScore = exports.computeDriftSignature = exports.TriMechanismDetector = exports.DEFAULT_TONGUE_WEIGHTS = exports.RING_BOUNDARIES = exports.ALL_TONGUES = exports.getRingLevel = exports.deriveKey = exports.predicateCrypto = exports.predicateQuorum = exports.predicatePath = exports.predicateGeo = exports.predicateTongue = exports.hatch = exports.createEgg = exports.spectralGenerator = exports.TONGUE_COLORS = exports.SpectralIdentityGenerator = exports.SPECTRAL_BANDS = exports.topologicalHash = exports.serializePolyhedron = exports.isValidTopology = exports.eulerCharacteristic = exports.distance6D = exports.computeCentroid = exports.PolyhedralHamiltonianDefenseManifold = exports.PHDMHamiltonianPath = void 0;
-exports.TONGUE_PHASES = exports.TONGUE_INDEX = exports.DEFAULT_CONFIG = exports.tonicCoherence = exports.phaseDistanceScore = exports.phaseDeviation = exports.triHyperbolicDistance = exports.driftDistanceToBaseline = exports.driftAuthScore = exports.computeDriftSignature = exports.TriMechanismDetector = exports.DEFAULT_TONGUE_WEIGHTS = exports.RING_BOUNDARIES = exports.ALL_TONGUES = exports.getRingLevel = exports.deriveKey = exports.predicateCrypto = exports.predicateQuorum = exports.predicatePath = exports.predicateGeo = exports.predicateTongue = exports.hatch = exports.createEgg = exports.spectralGenerator = exports.TONGUE_COLORS = exports.SpectralIdentityGenerator = exports.SPECTRAL_BANDS = exports.topologicalHash = exports.serializePolyhedron = exports.isValidTopology = exports.eulerCharacteristic = exports.distance6D = exports.computeCentroid = exports.PolyhedralHamiltonianDefenseManifold = exports.PHDMHamiltonianPath = void 0;
+exports.scoreRetrievals = exports.projectToBall = exports.projectEmbeddingToBall = exports.phaseModulation = exports.hyperbolicPhaseDistanceScore = exports.hyperbolicPhaseDeviation = exports.multiWellPotential = exports.multiWellGradient = exports.multiPhaseModulation = exports.mobiusAddition = exports.mobiusAdd = exports.logarithmicMap = exports.logMap0 = exports.inverseBreathTransform = exports.hyperbolicDistance = exports.getAuditEpsilon = exports.exponentialMap = exports.expMap0 = exports.clampToBall = exports.breathTransform = exports.artanh = exports.applyHyperbolicPipeline = exports.HYPERBOLIC_EPSILON = exports.createVertex = exports.HamiltonianCFI = exports.ControlFlowGraph = exports.generateTestSignal = exports.generateNoise = exports.AudioAxisProcessor = exports.getFluxState = exports.TONGUES = exports.LanguesMetric = exports.FluxingLanguesMetric = exports.standingWaveAmplitude = exports.nodalSurface = exports.fluxRedistribution = exports.checkCymaticResonance = exports.cavityResonance = exports.bottleBeamIntensity = exports.harmonicCouplingMatrix = exports.halAttention = exports.securityLevel = exports.securityBits = exports.octaveTranspose = exports.harmonicScale = exports.harmonicDistance = exports.log2 = exports.assertIntGE = exports.assertFinite = exports.CONSTANTS = void 0;
+exports.penroseDeflate = exports.nearestQCVertex = exports.fibonacciWord = exports.fibonacciSequence = exports.fibonacci2D = exports.fibonacci1D = exports.diffractionPattern = exports.defaultQCLattice = exports.cutAndProject2D = exports.checkRotationalSymmetry = exports.ammannBeenkerSquare = exports.ammannBeenkerRhombus = exports.SILVER_RATIO = exports.QCLatticeProvider = exports.PHI_INV = exports.PHI = exports.shake256 = exports.shake128 = exports.secureRandomBytes = exports.ntt = exports.mlkemKeyGen = exports.mlkemEncapsulate = exports.mlkemDecapsulate = exports.mldsaVerify = exports.mldsaSign = exports.mldsaKeyGen = exports.invNtt = exports.defaultPQCProvider = exports.PQCProvider = exports.unseal = exports.seal = exports.randomBytes = exports.parseSS1Blob = exports.formatSS1Blob = exports.encodeToSpelltext = exports.decodeFromSpelltext = exports.computeLWSWeights = exports.computeLWSScore = exports.SpiralSealSS1 = exports.SacredTongueTokenizer = exports.getTongueForSection = exports.UMBROTH = exports.SECTION_TONGUES = exports.SACRED_TONGUES = exports.RUNETHIC = exports.KOR_AELIN = exports.DRAUMRIC = exports.CASSISIVADAN = exports.AVALI = exports.setAuditEpsilon = void 0;
+exports.TONGUE_PHASES = exports.TONGUE_INDEX = exports.DEFAULT_CONFIG = exports.tonicCoherence = exports.phaseDistanceScore = exports.phaseDeviation = exports.triHyperbolicDistance = exports.driftDistanceToBaseline = exports.driftAuthScore = exports.computeDriftSignature = exports.TriMechanismDetector = exports.DEFAULT_TONGUE_WEIGHTS = exports.RING_BOUNDARIES = exports.ALL_TONGUES = exports.getRingLevel = exports.deriveKey = exports.predicateCrypto = exports.predicateQuorum = exports.predicatePath = exports.predicateGeo = exports.predicateTongue = exports.hatch = exports.createEgg = exports.spectralGenerator = exports.TONGUE_COLORS = exports.SpectralIdentityGenerator = exports.SPECTRAL_BANDS = exports.phasonShift = exports.generateProjectionMatrix = exports.getActivePolyhedra = exports.topologicalHash = exports.serializePolyhedron = exports.isValidTopology = exports.eulerCharacteristic = exports.distance6D = exports.computeCentroid = exports.PolyhedralHamiltonianDefenseManifold = exports.PHDMHamiltonianPath = exports.PHDMDeviationDetector = exports.CubicSpline6D = exports.CANONICAL_POLYHEDRA = exports.scbeToQuasicrystal = exports.quasicrystalPotential = exports.quasicrystalHash = exports.quasicrystal5to2 = exports.quasicrystal4to2 = exports.penroseToLattice = exports.penroseTiling = exports.penroseRhombus = exports.penroseInitial = void 0;
+exports.tarskiLaplacian = exports.bottomCochain = exports.topCochain = exports.twistedSheaf = exports.thresholdSheaf = exports.constantSheaf = exports.simplicialComplex = exports.graphComplex = exports.scalingConnection = exports.thresholdConnection = exports.constantConnection = exports.identityConnection = exports.ProductLattice = exports.UnitIntervalLattice = exports.PowerSetLattice = exports.IntervalLattice = exports.BooleanLattice = exports.GENUINE_FRACTAL_MIN = exports.SYNTHETIC_CV_THRESHOLD = exports.DEFAULT_BUFFER_CAPACITY = exports.TONGUE_HARMONICS = exports.sonifyDrift = exports.assessAuthenticity = exports.deriveHarmonicKey = exports.estimateFractalDimension = exports.captureStepDrift = exports.DriftTracker = exports.DEFAULT_GENESIS_CONFIG = exports.DEFAULT_GEOSEAL_MAX_DISTANCE = exports.GENESIS_THRESHOLD = exports.verifyCertificateSeal = exports.geoSealDistance = exports.genesisHatchWeight = exports.evaluateGenesis = exports.genesis = exports.verifyEntropicInvariants = exports.defaultBasins = exports.trackExpansion = exports.estimateReachableVolume = exports.computeExpansionRate = exports.computeTrustDensity = exports.computeLocalEntropy = exports.computeAdaptiveK = exports.detectEscape = exports.createEntropicMonitor = exports.EntropicMonitor = exports.trustFromPosition = exports.accessCost = exports.createHyperbolicRAG = exports.HyperbolicRAGEngine = void 0;
+exports.defaultGovernanceRouter = exports.requiredFluxState = exports.trustDistanceMatrix = exports.polyhedralEulerCharacteristic = exports.computePolyhedralTrust = exports.buildGovernanceSheaf = exports.buildPolyhedralGraph = exports.PHDMGovernanceRouter = exports.defaultSheafEngine = exports.SheafCohomologyEngine = exports.detectObstructions = exports.analyseCohomology = exports.hodgeCohomology = exports.hodgeLaplacian = exports.downLaplacian = exports.upLaplacian = exports.globalSections = exports.tarskiCohomology = void 0;
 // ═══════════════════════════════════════════════════════════════
 // Constants and Types
 // ═══════════════════════════════════════════════════════════════
@@ -81,21 +82,31 @@ Object.defineProperty(exports, "createVertex", { enumerable: true, get: function
 // Layers 5-8: Hyperbolic Geometry (Poincaré Ball)
 // ═══════════════════════════════════════════════════════════════
 var hyperbolic_js_1 = require("./hyperbolic.js");
-// Pipeline utility
+// Layer 5: Invariant Metric + Configurable Audit Epsilon
+Object.defineProperty(exports, "HYPERBOLIC_EPSILON", { enumerable: true, get: function () { return hyperbolic_js_1.EPSILON; } });
 Object.defineProperty(exports, "applyHyperbolicPipeline", { enumerable: true, get: function () { return hyperbolic_js_1.applyHyperbolicPipeline; } });
+Object.defineProperty(exports, "artanh", { enumerable: true, get: function () { return hyperbolic_js_1.artanh; } });
 Object.defineProperty(exports, "breathTransform", { enumerable: true, get: function () { return hyperbolic_js_1.breathTransform; } });
+Object.defineProperty(exports, "clampToBall", { enumerable: true, get: function () { return hyperbolic_js_1.clampToBall; } });
 Object.defineProperty(exports, "expMap0", { enumerable: true, get: function () { return hyperbolic_js_1.expMap0; } });
-// Layer 5: Invariant Metric
+Object.defineProperty(exports, "exponentialMap", { enumerable: true, get: function () { return hyperbolic_js_1.exponentialMap; } });
+Object.defineProperty(exports, "getAuditEpsilon", { enumerable: true, get: function () { return hyperbolic_js_1.getAuditEpsilon; } });
 Object.defineProperty(exports, "hyperbolicDistance", { enumerable: true, get: function () { return hyperbolic_js_1.hyperbolicDistance; } });
 Object.defineProperty(exports, "inverseBreathTransform", { enumerable: true, get: function () { return hyperbolic_js_1.inverseBreathTransform; } });
 Object.defineProperty(exports, "logMap0", { enumerable: true, get: function () { return hyperbolic_js_1.logMap0; } });
+Object.defineProperty(exports, "logarithmicMap", { enumerable: true, get: function () { return hyperbolic_js_1.logarithmicMap; } });
 Object.defineProperty(exports, "mobiusAdd", { enumerable: true, get: function () { return hyperbolic_js_1.mobiusAdd; } });
+Object.defineProperty(exports, "mobiusAddition", { enumerable: true, get: function () { return hyperbolic_js_1.mobiusAddition; } });
 Object.defineProperty(exports, "multiPhaseModulation", { enumerable: true, get: function () { return hyperbolic_js_1.multiPhaseModulation; } });
 Object.defineProperty(exports, "multiWellGradient", { enumerable: true, get: function () { return hyperbolic_js_1.multiWellGradient; } });
 Object.defineProperty(exports, "multiWellPotential", { enumerable: true, get: function () { return hyperbolic_js_1.multiWellPotential; } });
-// Layer 7: Phase Modulation
+Object.defineProperty(exports, "hyperbolicPhaseDeviation", { enumerable: true, get: function () { return hyperbolic_js_1.phaseDeviation; } });
+Object.defineProperty(exports, "hyperbolicPhaseDistanceScore", { enumerable: true, get: function () { return hyperbolic_js_1.phaseDistanceScore; } });
 Object.defineProperty(exports, "phaseModulation", { enumerable: true, get: function () { return hyperbolic_js_1.phaseModulation; } });
+Object.defineProperty(exports, "projectEmbeddingToBall", { enumerable: true, get: function () { return hyperbolic_js_1.projectEmbeddingToBall; } });
 Object.defineProperty(exports, "projectToBall", { enumerable: true, get: function () { return hyperbolic_js_1.projectToBall; } });
+Object.defineProperty(exports, "scoreRetrievals", { enumerable: true, get: function () { return hyperbolic_js_1.scoreRetrievals; } });
+Object.defineProperty(exports, "setAuditEpsilon", { enumerable: true, get: function () { return hyperbolic_js_1.setAuditEpsilon; } });
 // ═══════════════════════════════════════════════════════════════
 // Sacred Tongues - Definitions
 // ═══════════════════════════════════════════════════════════════
@@ -206,6 +217,11 @@ Object.defineProperty(exports, "eulerCharacteristic", { enumerable: true, get: f
 Object.defineProperty(exports, "isValidTopology", { enumerable: true, get: function () { return phdm_js_1.isValidTopology; } });
 Object.defineProperty(exports, "serializePolyhedron", { enumerable: true, get: function () { return phdm_js_1.serializePolyhedron; } });
 Object.defineProperty(exports, "topologicalHash", { enumerable: true, get: function () { return phdm_js_1.topologicalHash; } });
+// Flux Governance
+Object.defineProperty(exports, "getActivePolyhedra", { enumerable: true, get: function () { return phdm_js_1.getActivePolyhedra; } });
+// Phason Shift
+Object.defineProperty(exports, "generateProjectionMatrix", { enumerable: true, get: function () { return phdm_js_1.generateProjectionMatrix; } });
+Object.defineProperty(exports, "phasonShift", { enumerable: true, get: function () { return phdm_js_1.phasonShift; } });
 // ═══════════════════════════════════════════════════════════════
 // Spectral Identity - Rainbow Chromatic Fingerprinting
 // ═══════════════════════════════════════════════════════════════
@@ -285,4 +301,88 @@ Object.defineProperty(exports, "trackExpansion", { enumerable: true, get: functi
 // Utilities
 Object.defineProperty(exports, "defaultBasins", { enumerable: true, get: function () { return entropic_js_1.defaultBasins; } });
 Object.defineProperty(exports, "verifyEntropicInvariants", { enumerable: true, get: function () { return entropic_js_1.verifyEntropicInvariants; } });
+// ═══════════════════════════════════════════════════════════════
+// Sacred Eggs Genesis Gate — Agent-Only Scope (v1)
+// ═══════════════════════════════════════════════════════════════
+var sacredEggsGenesis_js_1 = require("./sacredEggsGenesis.js");
+// Genesis gate
+Object.defineProperty(exports, "genesis", { enumerable: true, get: function () { return sacredEggsGenesis_js_1.genesis; } });
+Object.defineProperty(exports, "evaluateGenesis", { enumerable: true, get: function () { return sacredEggsGenesis_js_1.evaluateGenesis; } });
+// Hatch weight
+Object.defineProperty(exports, "genesisHatchWeight", { enumerable: true, get: function () { return sacredEggsGenesis_js_1.computeHatchWeight; } });
+Object.defineProperty(exports, "geoSealDistance", { enumerable: true, get: function () { return sacredEggsGenesis_js_1.geoSealDistance; } });
+// Certificate
+Object.defineProperty(exports, "verifyCertificateSeal", { enumerable: true, get: function () { return sacredEggsGenesis_js_1.verifyCertificateSeal; } });
+// Constants
+Object.defineProperty(exports, "GENESIS_THRESHOLD", { enumerable: true, get: function () { return sacredEggsGenesis_js_1.GENESIS_THRESHOLD; } });
+Object.defineProperty(exports, "DEFAULT_GEOSEAL_MAX_DISTANCE", { enumerable: true, get: function () { return sacredEggsGenesis_js_1.DEFAULT_GEOSEAL_MAX_DISTANCE; } });
+Object.defineProperty(exports, "DEFAULT_GENESIS_CONFIG", { enumerable: true, get: function () { return sacredEggsGenesis_js_1.DEFAULT_GENESIS_CONFIG; } });
+// ═══════════════════════════════════════════════════════════════
+// Decimal Drift Tracker — Entropy Harvesting Engine
+// ═══════════════════════════════════════════════════════════════
+var driftTracker_js_1 = require("./driftTracker.js");
+// Tracker class
+Object.defineProperty(exports, "DriftTracker", { enumerable: true, get: function () { return driftTracker_js_1.DriftTracker; } });
+// Core functions
+Object.defineProperty(exports, "captureStepDrift", { enumerable: true, get: function () { return driftTracker_js_1.captureStepDrift; } });
+Object.defineProperty(exports, "estimateFractalDimension", { enumerable: true, get: function () { return driftTracker_js_1.estimateFractalDimension; } });
+Object.defineProperty(exports, "deriveHarmonicKey", { enumerable: true, get: function () { return driftTracker_js_1.deriveHarmonicKey; } });
+Object.defineProperty(exports, "assessAuthenticity", { enumerable: true, get: function () { return driftTracker_js_1.assessAuthenticity; } });
+Object.defineProperty(exports, "sonifyDrift", { enumerable: true, get: function () { return driftTracker_js_1.sonifyDrift; } });
+// Constants
+Object.defineProperty(exports, "TONGUE_HARMONICS", { enumerable: true, get: function () { return driftTracker_js_1.TONGUE_HARMONICS; } });
+Object.defineProperty(exports, "DEFAULT_BUFFER_CAPACITY", { enumerable: true, get: function () { return driftTracker_js_1.DEFAULT_BUFFER_CAPACITY; } });
+Object.defineProperty(exports, "SYNTHETIC_CV_THRESHOLD", { enumerable: true, get: function () { return driftTracker_js_1.SYNTHETIC_CV_THRESHOLD; } });
+Object.defineProperty(exports, "GENUINE_FRACTAL_MIN", { enumerable: true, get: function () { return driftTracker_js_1.GENUINE_FRACTAL_MIN; } });
+// ═══════════════════════════════════════════════════════════════
+// Sheaf Cohomology — Tarski Laplacian on Lattice-Valued Sheaves
+// ═══════════════════════════════════════════════════════════════
+var sheafCohomology_js_1 = require("./sheafCohomology.js");
+// Lattice implementations
+Object.defineProperty(exports, "BooleanLattice", { enumerable: true, get: function () { return sheafCohomology_js_1.BooleanLattice; } });
+Object.defineProperty(exports, "IntervalLattice", { enumerable: true, get: function () { return sheafCohomology_js_1.IntervalLattice; } });
+Object.defineProperty(exports, "PowerSetLattice", { enumerable: true, get: function () { return sheafCohomology_js_1.PowerSetLattice; } });
+Object.defineProperty(exports, "UnitIntervalLattice", { enumerable: true, get: function () { return sheafCohomology_js_1.UnitIntervalLattice; } });
+Object.defineProperty(exports, "ProductLattice", { enumerable: true, get: function () { return sheafCohomology_js_1.ProductLattice; } });
+// Galois connections
+Object.defineProperty(exports, "identityConnection", { enumerable: true, get: function () { return sheafCohomology_js_1.identityConnection; } });
+Object.defineProperty(exports, "constantConnection", { enumerable: true, get: function () { return sheafCohomology_js_1.constantConnection; } });
+Object.defineProperty(exports, "thresholdConnection", { enumerable: true, get: function () { return sheafCohomology_js_1.thresholdConnection; } });
+Object.defineProperty(exports, "scalingConnection", { enumerable: true, get: function () { return sheafCohomology_js_1.scalingConnection; } });
+// Cell complex builders
+Object.defineProperty(exports, "graphComplex", { enumerable: true, get: function () { return sheafCohomology_js_1.graphComplex; } });
+Object.defineProperty(exports, "simplicialComplex", { enumerable: true, get: function () { return sheafCohomology_js_1.simplicialComplex; } });
+// Sheaf constructors
+Object.defineProperty(exports, "constantSheaf", { enumerable: true, get: function () { return sheafCohomology_js_1.constantSheaf; } });
+Object.defineProperty(exports, "thresholdSheaf", { enumerable: true, get: function () { return sheafCohomology_js_1.thresholdSheaf; } });
+Object.defineProperty(exports, "twistedSheaf", { enumerable: true, get: function () { return sheafCohomology_js_1.twistedSheaf; } });
+// Cochains
+Object.defineProperty(exports, "topCochain", { enumerable: true, get: function () { return sheafCohomology_js_1.topCochain; } });
+Object.defineProperty(exports, "bottomCochain", { enumerable: true, get: function () { return sheafCohomology_js_1.bottomCochain; } });
+// Tarski Laplacian
+Object.defineProperty(exports, "tarskiLaplacian", { enumerable: true, get: function () { return sheafCohomology_js_1.tarskiLaplacian; } });
+// Cohomology
+Object.defineProperty(exports, "tarskiCohomology", { enumerable: true, get: function () { return sheafCohomology_js_1.tarskiCohomology; } });
+Object.defineProperty(exports, "globalSections", { enumerable: true, get: function () { return sheafCohomology_js_1.globalSections; } });
+// Hodge Laplacians
+Object.defineProperty(exports, "upLaplacian", { enumerable: true, get: function () { return sheafCohomology_js_1.upLaplacian; } });
+Object.defineProperty(exports, "downLaplacian", { enumerable: true, get: function () { return sheafCohomology_js_1.downLaplacian; } });
+Object.defineProperty(exports, "hodgeLaplacian", { enumerable: true, get: function () { return sheafCohomology_js_1.hodgeLaplacian; } });
+Object.defineProperty(exports, "hodgeCohomology", { enumerable: true, get: function () { return sheafCohomology_js_1.hodgeCohomology; } });
+// Diagnostics
+Object.defineProperty(exports, "analyseCohomology", { enumerable: true, get: function () { return sheafCohomology_js_1.analyseCohomology; } });
+Object.defineProperty(exports, "detectObstructions", { enumerable: true, get: function () { return sheafCohomology_js_1.detectObstructions; } });
+// SCBE Engine
+Object.defineProperty(exports, "SheafCohomologyEngine", { enumerable: true, get: function () { return sheafCohomology_js_1.SheafCohomologyEngine; } });
+Object.defineProperty(exports, "defaultSheafEngine", { enumerable: true, get: function () { return sheafCohomology_js_1.defaultSheafEngine; } });
+// ── PHDM Sheaf Lattice (constraint-based governance routing) ──
+var phdmSheafLattice_js_1 = require("./phdmSheafLattice.js");
+Object.defineProperty(exports, "PHDMGovernanceRouter", { enumerable: true, get: function () { return phdmSheafLattice_js_1.PHDMGovernanceRouter; } });
+Object.defineProperty(exports, "buildPolyhedralGraph", { enumerable: true, get: function () { return phdmSheafLattice_js_1.buildPolyhedralGraph; } });
+Object.defineProperty(exports, "buildGovernanceSheaf", { enumerable: true, get: function () { return phdmSheafLattice_js_1.buildGovernanceSheaf; } });
+Object.defineProperty(exports, "computePolyhedralTrust", { enumerable: true, get: function () { return phdmSheafLattice_js_1.computePolyhedralTrust; } });
+Object.defineProperty(exports, "polyhedralEulerCharacteristic", { enumerable: true, get: function () { return phdmSheafLattice_js_1.polyhedralEulerCharacteristic; } });
+Object.defineProperty(exports, "trustDistanceMatrix", { enumerable: true, get: function () { return phdmSheafLattice_js_1.trustDistanceMatrix; } });
+Object.defineProperty(exports, "requiredFluxState", { enumerable: true, get: function () { return phdmSheafLattice_js_1.requiredFluxState; } });
+Object.defineProperty(exports, "defaultGovernanceRouter", { enumerable: true, get: function () { return phdmSheafLattice_js_1.defaultGovernanceRouter; } });
 //# sourceMappingURL=index.js.map
