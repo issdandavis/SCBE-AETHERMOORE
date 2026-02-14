@@ -39,6 +39,40 @@ Linear Threshold:           38.7%
 
 ---
 
+## Architecture Docs (Index)
+
+- **SCBE Kernel Spec (Canonical):** `SPEC.md`
+- **HYDRA Orchestration (Execution Plane):** `docs/hydra/ARCHITECTURE.md`
+- **Concept Glossary (Indexable Terms):** `CONCEPTS.md`
+- **Research Drafts (Non-Canonical):** `docs/research/README.md`
+
+---
+
+
+## What npm users actually get
+
+When users install `scbe-aethermoore` from npm, they get:
+
+- compiled JS/TypeScript API from `dist/src`
+- CLI entrypoint (`scbe`)
+- SixTongues Python helper assets
+- starter fleet templates + use-case scenarios from `examples/npm/`
+
+They do **not** receive the full mono-repo runtime stack (e.g., all docs, test suites, and UI source).
+
+## Pre-made AI agents and use-case starters
+
+Yes — adding pre-made agents and scenarios is a good idea, if positioned as **starter templates** (not production policy).
+
+Included templates:
+
+- `examples/npm/agents/fraud_detection_fleet.json`
+- `examples/npm/agents/research_browser_fleet.json`
+- `examples/npm/use-cases/financial_fraud_triage.json`
+- `examples/npm/use-cases/autonomous_research_review.json`
+
+These give users a concrete launch path for common fleet patterns while keeping canonical security behavior in `SPEC.md`.
+
 ## Live Demos
 
 ### 1. Rogue Agent Detection
@@ -275,3 +309,8 @@ Proprietary. Contact for licensing inquiries.
 ---
 
 *Built with hyperbolic geometry. Secured by mathematics.*
+
+
+## Publishing (AI-assisted)
+
+Use `docs/PUBLISHING.md` for a safe human+AI release flow, including preflight checks and dry-run packaging.

@@ -124,3 +124,11 @@ export type {
 // Agent
 export { BrowserAgent, createBrowserAgent, MockBrowserBackend } from './agent.js';
 export type { BrowserBackend, EscalationHandler, BrowserAgentConfig } from './agent.js';
+
+// CDP Backend (SCBEPuppeteer — zero-dependency browser automation)
+export { CDPBackend, createCDPBackend } from './cdp-backend.js';
+export type { CDPBackendOptions } from './cdp-backend.js';
+
+// WebSocket Client (zero-dependency RFC 6455 client)
+export { WSClient } from './ws-client.js';
+export type { WSClientOptions, WSReadyState } from './ws-client.js';

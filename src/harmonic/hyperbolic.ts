@@ -1,3 +1,4 @@
+export * from '../../packages/kernel/src/hyperbolic.js';
 /**
  * @file hyperbolic.ts
  * @module harmonic/hyperbolic
@@ -15,8 +16,52 @@
  * Layer 7: Phase Modulation Φ(p,θ) = Möbius rotation in tangent space
  */
 
-/** Small epsilon for numerical stability */
-const EPSILON = 1e-10;
+/** Small epsilon for numerical stability (norm checks, zero-vector guards) */
+export const EPSILON = 1e-10;
+
+/**
+ * Boundary epsilon for artanh clamping (Layer 5/13 audits).
+ * Tighter than EPSILON to preserve precision near the Poincaré boundary.
+ * Configurable via setAuditEpsilon() for high-precision governance audits.
+ * @layer Layer 5, Layer 13
+ */
+let AUDIT_EPSILON = 1e-15;
+
+/**
+ * Set the audit epsilon for boundary clamping in artanh/distance calculations.
+ * Allows Layer 13 telemetry to tune precision for attack simulation or audit sweeps.
+ * @param eps - New epsilon value (must be positive and < 1e-6)
+ */
+export function setAuditEpsilon(eps: number): void {
+  if (eps <= 0 || eps >= 1e-6) {
+    throw new RangeError('Audit epsilon must be in (0, 1e-6)');
+  }
+  AUDIT_EPSILON = eps;
+}
+
+/** Get current audit epsilon */
+export function getAuditEpsilon(): number {
+  return AUDIT_EPSILON;
+}
+
+/**
+ * Inverse hyperbolic tangent with configurable boundary clamping.
+ *
+ * artanh(z) = 0.5 * ln((1+z)/(1-z))
+ *
+ * Clamps z to [-1 + ε, 1 - ε] where ε = AUDIT_EPSILON to prevent
+ * singularities at the Poincaré ball boundary.
+ *
+ * @layer Layer 5
+ * @param z - Input value
+ * @param eps - Override epsilon (defaults to AUDIT_EPSILON)
+ * @returns artanh(z)
+ */
+export function artanh(z: number, eps?: number): number {
+  const e = eps ?? AUDIT_EPSILON;
+  const zz = Math.max(-1 + e, Math.min(1 - e, z));
+  return 0.5 * Math.log((1 + zz) / (1 - zz));
+}
 
 /**
  * Compute Euclidean norm of a vector
@@ -215,8 +260,7 @@ export function expMap0(v: number[]): number[] {
 export function logMap0(p: number[]): number[] {
   const n = norm(p);
   if (n < EPSILON) return p.map(() => 0);
-  // arctanh(x) = 0.5 * ln((1+x)/(1-x))
-  const atanh = 0.5 * Math.log((1 + n) / (1 - n + EPSILON));
+  const atanh = artanh(n);
   const factor = (2 * atanh) / n;
   return scale(p, factor);
 }
@@ -273,8 +317,8 @@ export function logarithmicMap(p: number[], q: number[]): number[] {
   const diffNorm = norm(diff);
   if (diffNorm < EPSILON) return p.map(() => 0);
 
-  // arctanh(‖diff‖)
-  const atanh = 0.5 * Math.log((1 + diffNorm) / (1 - diffNorm + EPSILON));
+  // arctanh(‖diff‖) — uses configurable AUDIT_EPSILON for boundary precision
+  const atanh = artanh(diffNorm);
 
   // (2/λ_p) * arctanh * direction
   const factor = ((2 / lambda_p) * atanh) / diffNorm;
@@ -348,8 +392,8 @@ export function inverseBreathTransform(
   const A = Math.max(0, Math.min(0.1, config.amplitude));
 
   // atanh(n) - A·sin(ωt) gives approximate original radius
-  const atanh = 0.5 * Math.log((1 + n) / (1 - n + EPSILON));
-  const originalRadius = Math.max(0, atanh - A * Math.sin(config.omega * t));
+  const atanhN = artanh(n);
+  const originalRadius = Math.max(0, atanhN - A * Math.sin(config.omega * t));
 
   return scale(bp, originalRadius / n);
 }

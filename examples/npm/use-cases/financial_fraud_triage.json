@@ -1,0 +1,13 @@
+{
+  "use_case": "financial_fraud_triage",
+  "goal": "Detect suspicious transactions and route cases based on governance decisions.",
+  "scenario": {
+    "agents_template": "../agents/fraud_detection_fleet.json",
+    "workflow": [
+      {"step": 1, "agent": "detector-001", "action": "READ", "target": "transaction_stream"},
+      {"step": 2, "agent": "detector-001", "action": "ANALYZE", "target": "feature_vector"},
+      {"step": 3, "agent": "scorer-002", "action": "WRITE", "target": "risk_db"},
+      {"step": 4, "agent": "auditor-003", "action": "APPROVE", "target": "case_resolution"}
+    ]
+  }
+}
