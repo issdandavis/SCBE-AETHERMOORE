@@ -90,10 +90,21 @@ function assertFinite(value: number, name: string): void {
   }
 }
 
+/**
+ * Domain-separated SHA-256 commitment of a single field.
+ *
+ * Format: SHA-256(domain || le64(len(data)) || data)
+ *
+ * The 8-byte little-endian length prefix prevents boundary-ambiguity
+ * attacks where domain suffix could alias with data prefix.
+ */
 function commitField(domain: string, data: Buffer): Buffer {
+  const lenBuf = Buffer.alloc(8);
+  lenBuf.writeUInt32LE(data.length, 0); // LE u64 (high 4 bytes stay 0)
   return Buffer.from(
     createHash('sha256')
       .update(Buffer.from(domain))
+      .update(lenBuf)
       .update(data)
       .digest(),
   );

@@ -646,11 +646,18 @@ def scbe_14layer_pipeline(
     decision, Risk_prime = layer_13_risk_decision(Risk_base, H, theta1, theta2)
 
     # L13 MMX governance overrides
+    mmx_override_reason = None
     if mmx_result is not None:
-        if mmx_result.conflict > 0.60 or min(mmx_result.weights) < 0.10:
+        min_w = min(mmx_result.weights)
+        if mmx_result.conflict > 0.60:
             decision = "DENY"
+            mmx_override_reason = f"mmx_conflict={mmx_result.conflict:.4f}>0.60"
+        elif min_w < 0.10:
+            decision = "DENY"
+            mmx_override_reason = f"mmx_min_weight={min_w:.4f}<0.10"
         elif mmx_result.conflict > 0.35 and decision == "ALLOW":
             decision = "QUARANTINE"
+            mmx_override_reason = f"mmx_conflict={mmx_result.conflict:.4f}>0.35"
 
     # =========================================================================
     # RETURN RESULTS
@@ -680,7 +687,9 @@ def scbe_14layer_pipeline(
             "coherence": mmx_result.coherence,
             "conflict": mmx_result.conflict,
             "drift": mmx_result.drift,
+            "reliability_min": min(mmx_result.weights),
             "modality_labels": mmx_result.modality_labels,
+            "override_reason": mmx_override_reason,
         } if mmx_result is not None else None,
     }
 
