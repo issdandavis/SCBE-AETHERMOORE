@@ -24,6 +24,13 @@
  * - Swarm Formation Coordination (geometric governance formations)
  * - Brain Integration Pipeline (end-to-end unified pipeline)
  * - PHDM Core (Hamiltonian path + Kyber K₀ + geodesic monitoring + Langues metric)
+ *
+ * DAG Edge Governance (Layer 8 / Layer 9):
+ *   ai_brain → fleet is TYPE-ONLY.
+ *   This module imports GovernanceTier and CrawlRole type definitions from fleet/
+ *   but has ZERO runtime dependencies on fleet code. This preserves the acyclic
+ *   build graph: kernel → brain → fleet (no reverse runtime edge).
+ *   Violation of this invariant will cause tsc -b to fail by design.
  */
 
 // ═══════════════════════════════════════════════════════════════
@@ -108,6 +115,54 @@ export {
 export { BrainAuditLogger } from './audit.js';
 
 // ═══════════════════════════════════════════════════════════════
+// Conservation Law Enforcement (Maximum Build)
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  extractBlock,
+  replaceBlock,
+  projectContainment,
+  projectPhaseCoherence,
+  projectEnergyBalance,
+  projectLatticeContinuity,
+  projectFluxNormalization,
+  projectSpectralBounds,
+  computeGlobalInvariant,
+  refactorAlign as conservationRefactorAlign,
+  enforceConservationLaws,
+} from './conservation.js';
+
+export {
+  BLOCK_RANGES,
+  type BlockName,
+  type ConservationConfig,
+  type ConservationLawName,
+  type ConservationLawResult,
+  type RefactorAlignResult,
+} from './types.js';
+
+// ═══════════════════════════════════════════════════════════════
+// Time-over-Intent Coupling (Maximum Build)
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  computeTimeDilation,
+  computeGamma,
+  computeTriadicWeights,
+  positiveKappa,
+  computeEffectiveR,
+  harmonicWallTOI,
+  triadicDistance as toiTriadicDistance,
+  evaluateTimeOverIntent,
+  computeHatchWeight,
+  meetsGenesisThreshold,
+  DEFAULT_TOI_CONFIG,
+  type TimeOverIntentConfig,
+  type TemporalObservation,
+  type TimeOverIntentResult,
+} from './timeOverIntent.js';
+
+// ═══════════════════════════════════════════════════════════════
 // HyperbolicRAG (Layer 12 cost-gated retrieval)
 // ═══════════════════════════════════════════════════════════════
 
@@ -132,6 +187,8 @@ export {
   type EntropicConfig,
   type EscapeAssessment,
 } from './entropic-layer.js';
+
+// ═══════════════════════════════════════════════════════════════
 // Trajectory Simulator
 // ═══════════════════════════════════════════════════════════════
 
@@ -307,7 +364,7 @@ export {
   phaseDeviation,
   quantize as braidQuantize,
   quantizeVector as braidQuantizeVector,
-  refactorAlign,
+  refactorAlign as braidRefactorAlign,
   ternaryCenter,
   zeroGravityDistance,
   type BraidConfig,

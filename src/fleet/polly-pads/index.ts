@@ -49,11 +49,6 @@ export {
   type MemoryEntry,
 } from './mode-pad.js';
 
-// Specialist Modes (Original Mode Registry)
-// ============================================================================
-// Specialist Modes (Canonical: ./modes)
-// ============================================================================
-
 // Specialist Modes (Dynamic Mode Switching) — legacy registry
 export {
   ModeRegistry,
@@ -62,6 +57,7 @@ export {
 } from './specialist-modes.js';
 
 // Specialist Modes (Refactored Mode Classes & Types)
+export {
   type SpecialistMode as LegacySpecialistMode,
   type ModeTool as LegacyModeTool,
   type ModeState as LegacyModeState,
@@ -116,42 +112,6 @@ export {
   type ModeConfig,
   MODE_CONFIGS,
 } from './modes/index.js';
-
-// Closed Network (Air-Gapped Communications)
-// Specialist Mode Registry (legacy/alternate implementation)
-// Note: its internal type names conflict with ./modes/types, so we only export
-// the registry wrapper + id type here.
-export {
-  ModeRegistry,
-  ALL_MODE_IDS,
-  type SpecialistModeId,
-} from './specialist-modes.js';
-
-// Closed Network (Air-Gapped)
-export {
-  ClosedNetwork,
-  DEFAULT_CLOSED_CONFIG,
-  BLOCKED_NETWORKS,
-  type NetworkChannel,
-  type BlockedCategory,
-  type NetworkMessage,
-  type ClosedNetworkConfig,
-} from './closed-network.js';
-
-// Squad Coordination (Byzantine Consensus)
-export {
-  Squad,
-  type ConsensusDecision,
-  type SquadProposal,
-  type SquadConfig,
-} from './squad.js';
-
-// Mission Coordinator
-export {
-  MissionCoordinator,
-  type MissionPhase,
-  type CrisisAssessment,
-} from './mission-coordinator.js';
 
 // Voxel Record Types (6D addressing + Byzantine quorum)
 export {
