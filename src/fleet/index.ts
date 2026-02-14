@@ -28,6 +28,7 @@ export * from './crawl-message-bus';
 export * from './crawl-frontier';
 export * from './crawl-coordinator';
 export * from './crawl-runner';
+export * from './browser-pool';
 
 // Export types (canonical source for shared types)
 export * from './types';
