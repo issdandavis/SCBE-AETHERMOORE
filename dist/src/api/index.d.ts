@@ -185,7 +185,7 @@ export declare const Roundtable: {
  * @param depth - Task nesting depth (1-based)
  * @param ratio - Harmonic ratio (default 1.5 = perfect fifth)
  */
-export declare function harmonicComplexity(depth: number, ratio?: number): number;
+export declare function harmonicComplexity(depth: number, phaseDeviation?: number): number;
 /**
  * Get pricing tier based on task complexity.
  */
