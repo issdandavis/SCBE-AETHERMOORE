@@ -3,10 +3,12 @@
  * @module ai_brain
  * @layer Layer 1-14 (Unified)
  * @component AI Brain Mapping Module
- * @version 1.1.0
+ * @version 1.2.0
  * @since 2026-02-07
  *
- * Multi-Vectored Quasi-Space Architecture with Lattice Mesh Integration.
+ * Complete AI Brain Mapping - Multi-Vectored Quasi-Space Architecture
+ * with Lattice Mesh Integration.
+ *
  * Unifies all SCBE-AETHERMOORE components into a single coherent "AI brain"
  * architecture operating across a 21D manifold.
  *
@@ -16,6 +18,12 @@
  * - BFT Consensus (corrected: 3f+1 formula)
  * - Quasicrystal Icosahedral Projection
  * - Cryptographic Audit Logger
+ * - Trajectory Simulator (multi-profile agent behavior)
+ * - Immune Response System (GeoSeal suspicion/quarantine)
+ * - Flux State Management (POLLY/QUASI/DEMI/COLLAPSED tiered access)
+ * - Swarm Formation Coordination (geometric governance formations)
+ * - Brain Integration Pipeline (end-to-end unified pipeline)
+ * - PHDM Core (Hamiltonian path + Kyber K₀ + geodesic monitoring + Langues metric)
  */
 export { BRAIN_DIMENSIONS, BRAIN_EPSILON, DEFAULT_BRAIN_CONFIG, PHI, POINCARE_MAX_NORM, type AgentTrajectory, type BrainAuditEvent, type BrainConfig, type BrainStateComponents, type CognitivePosition, type CombinedAssessment, type DetectionMechanism, type DetectionResult, type NavigationVector, type RiskDecision, type SCBEContext, type SemanticPhase, type SwarmCoordination, type TrajectoryPoint, } from './types.js';
 export { UnifiedBrainState, applyGoldenWeighting, euclideanDistance, goldenWeightProduct, hyperbolicDistanceSafe, mobiusAddSafe, safePoincareEmbed, vectorNorm, } from './unified-state.js';
@@ -23,4 +31,22 @@ export { detectCurvatureAccumulation, detectDecimalDrift, detectPhaseDistance, d
 export { BFTConsensus, type ConsensusResult, type ConsensusVote } from './bft-consensus.js';
 export { brainStateToPenrose, classifyVoxelRealm, createOctreeRoot, icosahedralProjection, octreeInsert, quasicrystalPotential, type OctreeNode, type VoxelRealm, } from './quasi-space.js';
 export { BrainAuditLogger } from './audit.js';
+export { extractBlock, replaceBlock, projectContainment, projectPhaseCoherence, projectEnergyBalance, projectLatticeContinuity, projectFluxNormalization, projectSpectralBounds, computeGlobalInvariant, refactorAlign as conservationRefactorAlign, enforceConservationLaws, } from './conservation.js';
+export { BLOCK_RANGES, type BlockName, type ConservationConfig, type ConservationLawName, type ConservationLawResult, type RefactorAlignResult, } from './types.js';
+export { computeTimeDilation, computeGamma, computeTriadicWeights, positiveKappa, computeEffectiveR, harmonicWallTOI, triadicDistance as toiTriadicDistance, evaluateTimeOverIntent, computeHatchWeight, meetsGenesisThreshold, DEFAULT_TOI_CONFIG, type TimeOverIntentConfig, type TemporalObservation, type TimeOverIntentResult, } from './timeOverIntent.js';
+export { HyperbolicRAG, type HyperbolicRAGConfig, type RAGCandidate, type RAGResult, } from './hyperbolic-rag.js';
+export { EntropicLayer, DEFAULT_MAX_VOLUME, MIN_K, MAX_K, DEFAULT_ENTROPIC_CONFIG, type EntropicState, type EntropicConfig, type EscapeAssessment, } from './entropic-layer.js';
+export { AGENT_PROFILES, SeededRNG, generateMixedBatch, generateTrajectory, type AgentProfile, type SimulationConfig, } from './trajectory-simulator.js';
+export { DEFAULT_IMMUNE_CONFIG, ImmuneResponseSystem, type AgentImmuneStatus, type ImmuneConfig, type ImmuneEvent, type ImmuneState, } from './immune-response.js';
+export { DEFAULT_FLUX_CONFIG, FluxStateManager, POLYHEDRA, type AgentFluxRecord, type FluxConfig, type FluxState, type PolyhedronAccess, type PolyhedronCategory, } from './flux-states.js';
+export { DEFAULT_SWARM_CONFIG, SwarmFormationManager, type FormationPosition, type FormationType, type SwarmConfig, type SwarmFormation, } from './swarm-formation.js';
+export { BrainIntegrationPipeline, DEFAULT_INTEGRATION_CONFIG, type AgentAssessment, type EndToEndResult, type IntegrationConfig, type TrialResult, } from './brain-integration.js';
+export { DEFAULT_PHDM_CORE_CONFIG, INTENT_TONGUES, PHDMCore, TEMPORAL_TONGUES, TONGUE_LABELS, brainStateToLangues, decomposeLangues, deriveK0, type K0DerivationParams, type LanguesDecomposition, type PHDMCoreConfig, type PHDMMonitorResult, } from './phdm-core.js';
+export { CASTE_PROFILES, DEFAULT_HIVE_CONFIG, HiveImmuneSystem, type AgentCaste, type CasteProfile, type ColonyPheromoneState, type HiveImmuneConfig, type TieredImmuneResult, type WaggleDance, } from './bee-immune-tiers.js';
+export { DEFAULT_DUAL_LATTICE_CONFIG, DualLatticeSystem, dynamicTransform, estimateFractalDimension as estimateLatticeFractalDimension, generateAperiodicMesh, latticeDistance3D, latticeNorm6D, staticProjection, applyPhasonShift, type DualLatticeConfig, type DualLatticeResult, type DynamicTransformResult, type Lattice3D, type Lattice6D, type PhasonShift, type StaticProjectionResult, } from './dual-lattice.js';
+export { DEFAULT_DUAL_TERNARY_CONFIG, DualTernarySystem, FULL_STATE_SPACE, computeSpectrum as computeDualTernarySpectrum, computeStateEnergy, encodeToDualTernary, encodeSequence as encodeDualTernarySequence, estimateFractalDimension as estimateTernaryFractalDimension, stateFromIndex, stateIndex, transition as dualTernaryTransition, type DualTernaryConfig, type DualTernarySpectrum, type DualTernaryState, type FractalDimensionResult, type StateEnergy, type TernaryValue, } from './dual-ternary.js';
+export { AetherBraid, BRAID_GOVERNANCE_TABLE, BRAID_RAIL_CENTERS, DEFAULT_BRAID_CONFIG, braidSecurityAction, braidStateDistance, braidTrustLevel, buildGovernance, classifyBraidState, computeRailCenters, dBraid, estimateBraidFractalDimension, harmonicTubeCost, hyperbolicDistance2D, isInsideTube, isValidBraidTransition, mirrorShift, mirrorSwap, phaseAwareProject, phaseDeviation, quantize as braidQuantize, quantizeVector as braidQuantizeVector, refactorAlign as braidRefactorAlign, ternaryCenter, zeroGravityDistance, type BraidConfig, type BraidCycleResult, type BraidGovernance, type BraidState, type SecurityAction, type TrustLevel, } from './hamiltonian-braid.js';
+export { DEFAULT_KERNEL_CONFIG, UnifiedKernel, computeMetrics, torusWriteGate, type CanonicalState, type KernelConfig, type KernelDecision, type MemoryEvent, type MemoryWriteResult, type MetricBundle, type PenaltyState, type PipelineStepResult, type ProposedAction, type TorusCoordinates, } from './unified-kernel.js';
+export { DEFAULT_TRIADIC_WEIGHTS, DEFAULT_WINDOW_SIZES, HARMONIC_R, MAX_LATTICE_DEPTH, TemporalWindow, TriManifoldLattice, harmonicScale, harmonicScaleInverse, harmonicScaleTable, triadicDistance, triadicPartial, type LatticeNode, type LatticeSnapshot, type TriManifoldConfig, type TriadicWeights, } from './tri-manifold-lattice.js';
+export { CymaticVoxelNet, NODAL_THRESHOLD, REALM_CENTERS, SACRED_TONGUES, TONGUE_DIMENSION_MAP, VOXEL_DIMS, chladni6D, classifyZone, dominantTongue, estimateNodalDensity, type CymaticNetConfig, type CymaticVoxel, type NetSnapshot, type SacredTongue, type VoxelActivation, type VoxelZone, } from './cymatic-voxel-net.js';
 //# sourceMappingURL=index.d.ts.map
