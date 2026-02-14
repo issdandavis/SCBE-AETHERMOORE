@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g., v1.0.0)'
+        required: true
+        type: string
 
 jobs:
   build-and-release:
@@ -17,12 +23,28 @@ jobs:
 
       - name: Extract version from tag
         id: version
-        run: echo "VERSION=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.tag }}"
+          else
+            VERSION="${GITHUB_REF_NAME}"
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Releasing version: $VERSION"
+
+      - name: Validate source directory
+        run: |
+          if [ ! -d packages/sixtongues ]; then
+            echo "::error::packages/sixtongues directory not found"
+            echo "Available directories:"
+            ls -la packages/ 2>/dev/null || echo "No packages/ directory"
+            exit 1
+          fi
 
       - name: Create CLI archive
         run: |
           zip -r sixtongues-cli-${{ steps.version.outputs.VERSION }}.zip packages/sixtongues/ \
-              -x "*.pyc" -x "**/__pycache__/*"
+            -x "*.pyc" -x "**/__pycache__/*"
           echo "Created: sixtongues-cli-${{ steps.version.outputs.VERSION }}.zip"
           ls -la sixtongues-cli-*.zip
 
@@ -32,23 +54,20 @@ jobs:
           DROPBOX_TOKEN: ${{ secrets.DROPBOX_TOKEN }}
         run: |
           if [ -z "$DROPBOX_TOKEN" ]; then
-            echo "DROPBOX_TOKEN not configured, skipping upload"
+            echo "::notice::DROPBOX_TOKEN not configured, skipping upload"
             exit 0
           fi
           ZIP_FILE="sixtongues-cli-${{ steps.version.outputs.VERSION }}.zip"
           DROPBOX_PATH="/AetherVideo/products/cli/${ZIP_FILE}"
-
-          # Upload using Dropbox API
           curl -X POST https://content.dropboxapi.com/2/files/upload \
             --header "Authorization: Bearer ${DROPBOX_TOKEN}" \
             --header "Dropbox-API-Arg: {\"path\": \"${DROPBOX_PATH}\", \"mode\": \"overwrite\"}" \
             --header "Content-Type: application/octet-stream" \
             --data-binary @"${ZIP_FILE}"
-
           echo "Uploaded to Dropbox: ${DROPBOX_PATH}"
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.VERSION }}
           name: Six Tongues Secure Tokenizer ${{ steps.version.outputs.VERSION }}
@@ -56,14 +75,7 @@ jobs:
             ## Six Tongues Secure Tokenizer ${{ steps.version.outputs.VERSION }}
 
             Quantum-resistant tokenization CLI for AI-secured workflows.
-
-            ### Features
-            - Phonetically-engineered Six Sacred Tongues (KO, AV, RU, CA, UM, DR)
-            - AES-256-GCM encryption with post-quantum Kyber/Dilithium scaffolding
-            - Cross-tongue translation with attestation (`xlate`)
-            - Stripe-mode blending for multi-domain data (`blend`/`unblend`)
-            - GeoSeal encrypt/decrypt for location-bound tokens
-            - Interactive REPL mode
+            Part of the SCBE-Aethermoore governance system.
 
             ### Installation
             ```bash
@@ -71,15 +83,6 @@ jobs:
             cd sixtongues
             pip install -r requirements.txt
             python sixtongues.py --help
-            ```
-
-            ### Quick Start
-            ```bash
-            # Encode text with Avar tongue
-            python sixtongues.py encode --tongue av --text "Hello World"
-
-            # Interactive mode
-            python sixtongues.py interactive
             ```
 
             ---
@@ -90,13 +93,17 @@ jobs:
           prerelease: false
 
       - name: Summary
+        if: always()
         run: |
           echo "## Release Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- **Version:** ${{ steps.version.outputs.VERSION }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Archive:** sixtongues-cli-${{ steps.version.outputs.VERSION }}.zip" >> $GITHUB_STEP_SUMMARY
-          echo "- **GitHub Release:** Created" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Detail | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Version | **${{ steps.version.outputs.VERSION }}** |" >> $GITHUB_STEP_SUMMARY
+          echo "| Archive | sixtongues-cli-${{ steps.version.outputs.VERSION }}.zip |" >> $GITHUB_STEP_SUMMARY
+          echo "| GitHub Release | Created |" >> $GITHUB_STEP_SUMMARY
           if [ -n "${{ secrets.DROPBOX_TOKEN }}" ]; then
-            echo "- **Dropbox:** Uploaded to /AetherVideo/products/cli/" >> $GITHUB_STEP_SUMMARY
+            echo "| Dropbox | Uploaded to /AetherVideo/products/cli/ |" >> $GITHUB_STEP_SUMMARY
           else
-            echo "- **Dropbox:** Skipped (no token configured)" >> $GITHUB_STEP_SUMMARY
+            echo "| Dropbox | Skipped (no token) |" >> $GITHUB_STEP_SUMMARY
           fi
