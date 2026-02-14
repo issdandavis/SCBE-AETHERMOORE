@@ -1,3 +1,4 @@
+export * from '../../packages/kernel/src/hyperbolicRAG.js';
 /**
  * @file hyperbolicRAG.ts
  * @module harmonic/hyperbolicRAG

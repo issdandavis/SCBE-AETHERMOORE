@@ -1,0 +1,8 @@
+{
+  "name": "@scbe/kernel",
+  "version": "3.2.4",
+  "private": true,
+  "description": "SCBE-AETHERMOORE pure math kernel: hyperbolic geometry, harmonic scaling, Sacred Tongues, 14-layer pipeline",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts"
+}
