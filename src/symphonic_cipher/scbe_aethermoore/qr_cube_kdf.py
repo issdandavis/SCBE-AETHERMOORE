@@ -93,8 +93,16 @@ def _assert_finite(value: float, name: str) -> None:
 
 
 def _commit_field(domain: bytes, data: bytes) -> bytes:
-    """Domain-separated SHA-256 commitment of a single field."""
-    return hashlib.sha256(domain + data).digest()
+    """
+    Domain-separated SHA-256 commitment of a single field.
+
+    Format: SHA-256(domain || le64(len(data)) || data)
+
+    The 8-byte little-endian length prefix prevents boundary-ambiguity
+    attacks where domain suffix could alias with data prefix.
+    """
+    length_prefix = struct.pack("<Q", len(data))
+    return hashlib.sha256(domain + length_prefix + data).digest()
 
 
 # =============================================================================
