@@ -10,6 +10,12 @@
 import { ModePad } from './mode-pad';
 import { Squad as CoreSquad } from './squad';
 import { CrisisType, ModeAssignment, SpecialistMode } from './modes/types';
+import { Squad } from './squad';
+import {
+  CrisisType,
+  ModeAssignment,
+  SpecialistMode,
+} from './modes/types';
 
 export type MissionPhase =
   | 'transit'

@@ -1,0 +1,110 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#1a1a2e', 'primaryTextColor': '#eee', 'lineColor': '#e94560', 'secondaryColor': '#16213e'}}}%%
+%% SCBE-AETHERMOORE Module DAG — Layer 13 Visual Audit
+%% Acyclic build graph enforced by tsc -b project references.
+%% Edges labelled (type-only) carry ZERO runtime weight.
+
+graph TD
+  subgraph Kernel["Kernel (Layer 5 — zero deps)"]
+    K_hyp["harmonic/hyperbolic.ts<br/>L5-L8 Poincaré ops"]
+    K_const["harmonic/constants.ts<br/>Vector types"]
+    K_assert["harmonic/assertions.ts<br/>Math guards"]
+    K_scale["harmonic/harmonicScaling.ts<br/>L12 H(d,R)"]
+  end
+
+  subgraph Crypto["Crypto (Layer 4)"]
+    C_pqc["crypto/pqc.ts<br/>ML-KEM-768 + ML-DSA-65"]
+    C_env["crypto/envelope.ts<br/>AES-256-GCM"]
+    C_plat["crypto/platform.ts<br/>Web Crypto ↔ Node"]
+    C_replay["crypto/replayGuard.ts<br/>Nonce + Bloom"]
+  end
+
+  subgraph Harmonic["Harmonic Pipeline (L1-L14)"]
+    H_pipe["harmonic/pipeline14.ts<br/>14-layer pipeline"]
+    H_tongue["harmonic/sacredTongues.ts<br/>6×256 tokenizer"]
+    H_langues["harmonic/languesMetric.ts<br/>6D Sacred metric"]
+    H_phdm["harmonic/phdm.ts<br/>PHDM flux + phason"]
+    H_cfi["harmonic/hamiltonianCFI.ts<br/>L8 Hamiltonian"]
+    H_audio["harmonic/audioAxis.ts<br/>L14 FFT telemetry"]
+    H_drift["harmonic/driftTracker.ts<br/>Entropy harvesting"]
+    H_eggs["harmonic/sacredEggsGenesis.ts<br/>Genesis gate"]
+  end
+
+  subgraph Brain["AI Brain (L1-L14 unified)"]
+    B_state["ai_brain/unified-state.ts<br/>21D manifold"]
+    B_detect["ai_brain/detection.ts<br/>5-mechanism AUC"]
+    B_bft["ai_brain/bft-consensus.ts<br/>3f+1 BFT"]
+    B_conserv["ai_brain/conservation.ts<br/>6 conservation laws"]
+    B_toi["ai_brain/timeOverIntent.ts<br/>Triadic + R_eff"]
+    B_kernel["ai_brain/unified-kernel.ts<br/>Pipeline runner"]
+    B_braid["ai_brain/hamiltonian-braid.ts<br/>Ternary governance"]
+  end
+
+  subgraph Fleet["Fleet (Multi-agent)"]
+    F_mgr["fleet/fleet-manager.ts<br/>Orchestrator"]
+    F_swarm["fleet/swarm.ts<br/>Swarm ODE"]
+    F_coord["fleet/crawl-coordinator.ts<br/>Role-based crawl"]
+    F_runner["fleet/crawl-runner.ts<br/>Browser executor"]
+    F_pool["fleet/browser-pool.ts<br/>Memory-aware pool"]
+    F_bus["fleet/crawl-message-bus.ts<br/>Pub/sub messaging"]
+    F_front["fleet/crawl-frontier.ts<br/>Priority URL queue"]
+  end
+
+  subgraph Browser["Browser Agent"]
+    BR_agent["browser/agent.ts<br/>BrowserAgent"]
+    BR_eval["browser/evaluator.ts<br/>14-layer eval"]
+    BR_sess["browser/session.ts<br/>Session mgmt"]
+  end
+
+  %% Kernel has NO inbound deps
+  K_const --> K_hyp
+  K_const --> K_assert
+  K_const --> K_scale
+
+  %% Crypto depends on kernel constants only
+  K_const -.->|"type-only"| C_pqc
+
+  %% Harmonic depends on Kernel + Crypto
+  K_hyp --> H_pipe
+  K_hyp --> H_phdm
+  K_hyp --> H_langues
+  K_scale --> H_pipe
+  C_env --> H_pipe
+  H_tongue --> H_langues
+  H_tongue --> H_eggs
+  H_langues --> H_phdm
+  H_phdm --> H_cfi
+  H_pipe --> H_audio
+  H_pipe --> H_drift
+
+  %% Brain depends on Kernel + Harmonic
+  K_hyp --> B_state
+  K_scale --> B_toi
+  H_phdm --> B_conserv
+  H_langues --> B_detect
+  B_state --> B_detect
+  B_state --> B_bft
+  B_state --> B_conserv
+  B_state --> B_toi
+  B_detect --> B_kernel
+  B_conserv --> B_kernel
+  B_toi --> B_kernel
+  B_braid --> B_kernel
+
+  %% Brain → Fleet is TYPE-ONLY (no runtime deps)
+  B_detect -.->|"type-only"| F_coord
+  B_braid -.->|"type-only"| F_coord
+
+  %% Fleet depends on Brain types + Browser
+  F_bus --> F_coord
+  F_front --> F_coord
+  F_coord --> F_runner
+  F_pool --> F_runner
+  BR_agent --> F_runner
+  F_swarm --> F_mgr
+  F_coord --> F_mgr
+
+  %% Browser depends on Crypto platform + Harmonic eval
+  C_plat --> BR_agent
+  C_plat --> BR_eval
+  C_plat --> BR_sess
+  H_pipe --> BR_eval

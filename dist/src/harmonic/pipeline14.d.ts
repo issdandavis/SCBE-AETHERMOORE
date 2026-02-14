@@ -131,22 +131,24 @@ export declare function layer10SpinCoherence(phases: number[]): number;
  */
 export declare function layer11TriadicTemporal(d1: number, d2: number, dG: number, lambda1?: number, lambda2?: number, lambda3?: number, dScale?: number): number;
 /**
- * Layer 12: Harmonic Amplification
+ * Layer 12: Harmonic Scaling (Bounded)
  *
- * Input: Distance d, base R > 1
- * Output: H(d, R) = R^{d²}
+ * Input: Distance d_H, phase deviation
+ * Output: score = 1 / (1 + d_H + 2 * phaseDeviation)
  *
- * A12: Exponential penalty for geometric distance.
+ * A12: Bounded risk scoring. Returns safety score in (0, 1].
+ * Replaces R^(d²) which caused numerical collapse on subtle attacks.
  */
-export declare function layer12HarmonicScaling(d: number, R?: number): number;
+export declare function layer12HarmonicScaling(d: number, phaseDeviation?: number): number;
 export type Decision = 'ALLOW' | 'QUARANTINE' | 'DENY';
 /**
  * Layer 13: Three-Way Risk Decision
  *
- * Input: Base risk, harmonic amplification H
+ * Input: Base risk, harmonic score H ∈ (0, 1]
  * Output: Decision ∈ {ALLOW, QUARANTINE, DENY}
  *
- * A13: Risk' = Risk_base · H with thresholding.
+ * A13: Risk' = Risk_base / H (amplified by inverse of safety score).
+ * H close to 1 = safe (minimal amplification), H close to 0 = dangerous.
  */
 export declare function layer13RiskDecision(riskBase: number, H: number, theta1?: number, theta2?: number): {
     decision: Decision;

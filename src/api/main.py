@@ -18,6 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional, Dict
+import json
 import numpy as np
 import hashlib
 import time
@@ -29,8 +30,9 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 from src.scbe_14layer_reference import scbe_14layer_pipeline
-from src.crypto.rwp_v3 import RWPv3Protocol
+from src.crypto.rwp_v3 import RWPv3Protocol, RWPEnvelope
 from src.crypto.sacred_tongues import SacredTongueTokenizer
+from src.storage import BlobNotFoundError, SealedBlobRecord, get_storage_backend
 
 # ============================================================================
 # APP INITIALIZATION
@@ -128,6 +130,7 @@ class MetricsStore:
 
 
 metrics_store = MetricsStore()
+storage_backend = get_storage_backend()
 
 # ============================================================================
 # MODELS
@@ -223,8 +226,16 @@ async def seal_memory(request: SealRequest, user: str = Depends(verify_api_key))
         # Seal with RWP v3 (quantum-resistant)
         rwp = RWPv3Protocol()
         password = f"{request.agent}:{request.topic}".encode()
-        sealed_blob = rwp.encrypt(
-            plaintext=request.plaintext.encode(), password=password
+        envelope = rwp.encrypt(plaintext=request.plaintext.encode(), password=password)
+        sealed_blob_bytes = json.dumps(envelope.to_dict()).encode("utf-8")
+
+        storage_backend.save(
+            SealedBlobRecord(
+                position=request.position,
+                agent=request.agent,
+                topic=request.topic,
+                sealed_blob=sealed_blob_bytes,
+            )
         )
 
         # Record metrics
@@ -233,7 +244,7 @@ async def seal_memory(request: SealRequest, user: str = Depends(verify_api_key))
         return {
             "status": "sealed",
             "data": {
-                "sealed_blob": sealed_blob.hex(),
+                "sealed_blob": sealed_blob_bytes.hex(),
                 "position": request.position,
                 "risk_score": float(result["risk_base"]),
                 "risk_prime": float(result["risk_prime"]),
@@ -294,13 +305,32 @@ async def retrieve_memory(
                 },
             }
 
-        # ALLOW or QUARANTINE - retrieve plaintext
-        # TODO: Retrieve actual sealed blob from storage
-        # For MVP, return mock plaintext
+        # ALLOW or QUARANTINE - retrieve and unseal plaintext
+        try:
+            record = storage_backend.load(request.position)
+        except BlobNotFoundError as exc:
+            raise HTTPException(404, str(exc)) from exc
+
+        if record.agent != request.agent:
+            raise HTTPException(403, "Agent mismatch for sealed blob")
+
+        try:
+            envelope_dict = json.loads(record.sealed_blob.decode("utf-8"))
+            envelope = RWPEnvelope.from_dict(envelope_dict)
+        except (json.JSONDecodeError, UnicodeDecodeError, KeyError) as exc:
+            raise HTTPException(500, "Stored sealed blob is corrupted") from exc
+
+        rwp = RWPv3Protocol()
+        password = f"{record.agent}:{record.topic}".encode()
+        try:
+            plaintext = rwp.decrypt(password=password, envelope=envelope)
+        except ValueError as exc:
+            raise HTTPException(500, "Failed to decrypt sealed blob") from exc
+
         return {
             "status": "retrieved" if result["decision"] == "ALLOW" else "quarantined",
             "data": {
-                "plaintext": "[MOCK] Retrieved plaintext data",
+                "plaintext": plaintext.decode("utf-8"),
                 "governance_result": result["decision"],
                 "risk_score": float(result["risk_base"]),
                 "risk_prime": float(result["risk_prime"]),

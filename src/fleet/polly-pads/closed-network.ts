@@ -1,4 +1,26 @@
 import { createHmac } from 'crypto';
+/**
+ * @layer Layer 13, Layer 14
+ * @component Polly Pads — Closed Network (Air-Gapped)
+ * @version 1.0.0
+ *
+ * Air-gapped network layer for autonomous operations (Mars, submarine,
+ * disaster response). Polly Pads communicate ONLY through explicitly
+ * allowed channels — no internet, no cloud APIs.
+ *
+ * Allowed channels:
+ *   local_squad_mesh   — UHF radio to other verified pads
+ *   earth_deep_space   — When contact available (8-20 min delay)
+ *   onboard_sensors    — Direct wired rover instruments
+ *   emergency_beacon   — SOS signal
+ *
+ * All external access goes through SCBE governance.
+ */
+
+
+// ═══════════════════════════════════════════════════════════════
+// Types
+// ═══════════════════════════════════════════════════════════════
 
 /** Allowed communication channels */
 export type NetworkChannel =
