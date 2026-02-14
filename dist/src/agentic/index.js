@@ -35,4 +35,5 @@ __exportStar(require("./collaboration"), exports);
 __exportStar(require("./platform"), exports);
 __exportStar(require("./task-group"), exports);
 __exportStar(require("./types"), exports);
+__exportStar(require("./distributed-workflow"), exports);
 //# sourceMappingURL=index.js.map
