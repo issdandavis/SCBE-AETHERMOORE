@@ -33,8 +33,11 @@ except ImportError:
 try:
     from src.crypto.rwp_v3 import RWPv3Protocol
 
+    # Import can succeed even when runtime crypto deps are missing.
+    # Instantiate once so skip markers reflect true availability.
+    RWPv3Protocol()
     RWP_AVAILABLE = True
-except ImportError:
+except (ImportError, RuntimeError):
     RWP_AVAILABLE = False
 
 try:

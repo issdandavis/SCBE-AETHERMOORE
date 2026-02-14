@@ -1,0 +1,105 @@
+# PHDM 21D Embedding Model - Vertex AI Training Pipeline
+# SCBE-AETHERMOORE Custom Embedding Training Configuration
+# Deploys to: GKE test-scbecluser (us-west1) + Vertex AI Model Registry
+
+pipeline:
+  name: phdm-21d-embedding-train
+  description: Train custom 21D Poincare Ball embedding model for SCBE governance
+  region: us-west1
+  project_id: studio-6928670609-fdd4c
+
+model:
+  name: phdm-21d-embedding
+  version: 0.1.0
+  architecture:
+    embedding_dim: 21
+    components:
+      hyperbolic_coords: 6  # Poincare Ball B^n coordinates
+      phase_components: 6   # Sacred Tongue phase (KO/AV/RU/CA/UM/DR)
+      flux_state: 3         # Dimensional breathing (nu per dimension)
+      audit_metadata: 6     # Timestamps, provenance, layer tracking
+    geometry: poincare_ball
+    manifold_radius: 1.0
+    tube_radius: 0.15
+    polyhedral_nodes: 16
+
+data:
+  sources:
+    - type: huggingface_dataset
+      repo: issdandavis/scbe-aethermoore-knowledge-base
+      split: train
+    - type: huggingface_dataset
+      repo: issdandavis/scbe-interaction-logs
+      split: train
+    - type: notion_export
+      workspace: aethermoorgames
+      pages:
+        - PHDM-as-AI-Brain-Architecture
+        - Six-Tongues-GeoSeal-CLI
+        - SCBE-AETHERMOORE-Technical-Hub
+    - type: aws_s3
+      bucket: scbe-training-data
+      prefix: notion-exports/
+  preprocessing:
+    tokenizer: sacred-tongue-ss1
+    max_sequence_length: 512
+    privacy_filter: geoseal_layer5
+
+training:
+  base_model: sentence-transformers/all-MiniLM-L6-v2
+  epochs: 50
+  batch_size: 32
+  learning_rate: 0.0001
+  optimizer: adam
+  loss_function: poincare_distance_loss
+  sacred_tongue_weights:
+    KO: 1.00
+    AV: 1.62
+    RU: 2.62
+    CA: 4.24
+    UM: 6.85
+    DR: 11.09
+  harmonic_wall:
+    enabled: true
+    energy_function: "R^(d^2)"
+    max_radius: 0.95
+  compute:
+    machine_type: n1-standard-8
+    accelerator_type: NVIDIA_TESLA_T4
+    accelerator_count: 1
+    disk_size_gb: 100
+
+deployment:
+  targets:
+    - platform: vertex_ai
+      endpoint_name: phdm-embedding-endpoint
+      machine_type: n1-standard-4
+      min_replicas: 1
+      max_replicas: 3
+    - platform: gke
+      cluster: test-scbecluser
+      namespace: scbe-governance
+      deployment_name: phdm-embedding-service
+    - platform: huggingface
+      repo: issdandavis/phdm-21d-embedding
+      push_to_hub: true
+
+monitoring:
+  metrics:
+    - fractal_dimension_deviation
+    - trust_tube_distance
+    - harmonic_wall_energy
+    - sacred_tongue_coherence
+  alerts:
+    fractal_dim_threshold: 0.1  # deviation from phi
+    wall_energy_threshold: 0.9
+
+integration:
+  aws_lambda:
+    - function: scbe-intent-modulation-bedrock
+      trigger: model_update
+    - function: physics-simulation-engine
+      trigger: embedding_refresh
+  github_actions:
+    workflow: .github/workflows/train-embedding.yml
+    trigger: push_to_training_branch
