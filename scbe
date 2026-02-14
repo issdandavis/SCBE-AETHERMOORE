@@ -424,6 +424,28 @@ def cmd_ai_check(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_docs_scan(_args: argparse.Namespace) -> int:
+    """Delegate to doc_verifier.py for doc scanning."""
+    return subprocess.run(
+        [sys.executable, str(REPO_ROOT / "training" / "doc_verifier.py")],
+    ).returncode
+
+
+def cmd_docs_verify(args: argparse.Namespace) -> int:
+    manifest_path = args.manifest
+    return subprocess.run(
+        [sys.executable, str(REPO_ROOT / "training" / "doc_verifier.py"), "--check", manifest_path],
+    ).returncode
+
+
+def cmd_docs_attest(args: argparse.Namespace) -> int:
+    out_path = getattr(args, "out", "training/doc_manifest.json")
+    return subprocess.run(
+        [sys.executable, str(REPO_ROOT / "training" / "doc_verifier.py"),
+         "--attest", args.members, "--out", out_path],
+    ).returncode
+
+
 def cmd_selftest(_args: argparse.Namespace) -> int:
     errors = 0
     print("=== SCBE Unified CLI Self-Test ===\n")
@@ -513,6 +535,9 @@ Examples:
   scbe ai lint src/crypto/h_lwe.py
   scbe ai review src/harmonic/mmx.ts
   scbe ai check src/harmonic/pipeline14.ts
+  scbe docs scan                            Discover and count docs
+  scbe docs verify                          Verify existing manifest
+  scbe docs attest claude,gpt,sonar         Attest with 3 council members
   scbe selftest
   scbe status
 
@@ -570,6 +595,22 @@ Legacy (backward compat):
     ac = ai_sub.add_parser("check", help="Full lint + review")
     ac.add_argument("file", help="File path")
     ac.set_defaults(func=cmd_ai_check)
+
+    # ─── docs ───
+    docs = sub.add_parser("docs", help="Document verification (Round Table consensus)")
+    docs_sub = docs.add_subparsers(dest="docs_cmd")
+
+    ds = docs_sub.add_parser("scan", help="Scan and summarize project docs")
+    ds.set_defaults(func=cmd_docs_scan)
+
+    dv = docs_sub.add_parser("verify", help="Verify existing doc_manifest.json")
+    dv.add_argument("--manifest", default="training/doc_manifest.json")
+    dv.set_defaults(func=cmd_docs_verify)
+
+    da = docs_sub.add_parser("attest", help="Attest docs with council members")
+    da.add_argument("members", help="Comma-separated: claude,gpt,sonar,grok,gemini")
+    da.add_argument("--out", default="training/doc_manifest.json")
+    da.set_defaults(func=cmd_docs_attest)
 
     # ─── top-level ───
     sub.add_parser("status", help="Project status").set_defaults(func=cmd_status)
