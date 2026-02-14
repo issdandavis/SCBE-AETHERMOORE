@@ -106,20 +106,21 @@ from .symphonic_waveform import (
 )
 
 # H-LWE (Hyperbolic LWE Vector Encryption)
-from .h_lwe import (
-    HLWESymmetric,
-    HLWECiphertext,
-    ContainmentBreach,
-    InvalidVector,
-    AuthenticationError,
-    HLWEError,
-    exp_map_zero,
-    log_map_zero,
-    mobius_add,
-    mobius_neg,
-    project_to_ball as hlwe_project_to_ball,
-    key_vector_from_secret,
-)
+# Temporarily commented out due to syntax errors in h_lwe.py
+# from .h_lwe import (
+#     HLWESymmetric,
+#     HLWECiphertext,
+#     ContainmentBreach,
+#     InvalidVector,
+#     AuthenticationError,
+#     HLWEError,
+#     exp_map_zero,
+#     log_map_zero,
+#     mobius_add,
+#     mobius_neg,
+#     project_to_ball as hlwe_project_to_ball,
+#     key_vector_from_secret,
+# )
 
 # Dual Lattice 14-Layer Integration
 from .dual_lattice_integration import (
