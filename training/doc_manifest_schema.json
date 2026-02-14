@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SCBE-AETHERMOORE Document Verification Manifest",
+  "description": "Round Table consensus-verified document registry for HuggingFace dataset provenance",
+  "type": "object",
+  "required": ["schema_version", "verification_protocol", "council", "documents", "manifest_hash"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "verification_protocol": {
+      "type": "string",
+      "const": "roundtable-consensus"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "council": {
+      "type": "object",
+      "description": "Round Table AI Council configuration",
+      "required": ["members", "quorum", "orchestration_mode"],
+      "properties": {
+        "members": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "provider", "role", "tongue", "signature_suffix"],
+            "properties": {
+              "id": { "type": "string" },
+              "provider": { "type": "string", "enum": ["openai", "anthropic", "xai", "perplexity", "google"] },
+              "role": { "type": "string" },
+              "tongue": { "type": "string", "enum": ["KO", "AV", "RU", "CA", "UM", "DR"] },
+              "signature_suffix": { "type": "string" }
+            }
+          }
+        },
+        "quorum": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Minimum council members needed for consensus"
+        },
+        "orchestration_mode": {
+          "type": "string",
+          "enum": ["round_robin", "topic_based", "free_form"]
+        }
+      }
+    },
+    "documents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "filename", "content_hash", "category", "verification"],
+        "properties": {
+          "id": { "type": "string" },
+          "filename": { "type": "string" },
+          "content_hash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+          "size_bytes": { "type": "integer" },
+          "version": { "type": "string" },
+          "category": {
+            "type": "string",
+            "enum": ["whitepaper", "architecture", "api-spec", "patent", "security", "deployment", "tutorial", "reference", "changelog", "industry-guide"]
+          },
+          "layers": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Which pipeline layers this doc covers (L1-L14)"
+          },
+          "verification": {
+            "type": "object",
+            "required": ["status", "consensus_required", "verified_by"],
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": ["unverified", "pending", "verified", "disputed", "expired"]
+              },
+              "consensus_required": { "type": "integer" },
+              "verified_by": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "signatures": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "verified_at": { "type": "string", "format": "date-time" },
+              "attestation_hash": {
+                "type": "string",
+                "description": "HMAC-SHA256 of (content_hash || verified_by || timestamp)"
+              }
+            }
+          }
+        }
+      }
+    },
+    "manifest_hash": {
+      "type": "string",
+      "description": "SHA256 of the entire documents array for integrity verification"
+    }
+  }
+}
