@@ -206,9 +206,9 @@ describe('TypeScript → Python Vector Generation', () => {
   });
 
   it('should decode Python-encoded tokens correctly', () => {
-    // Manually verify a few known tokens from Python
+    // Manually verify a few known tokens from Python (v1.1 lexicons)
     const pythonTokens = {
-      ko: { token: "sil'a", byte: 0x00 },
+      ko: { token: "kor'ah", byte: 0x00 },
       av: { token: "saina'a", byte: 0x00 },
       ru: { token: "khar'ak", byte: 0x00 },
       ca: { token: "bip'a", byte: 0x00 },
