@@ -48,18 +48,62 @@ from typing import Dict, Iterable, List, Optional, Tuple
 
 TONGUES = ["KO", "AV", "RU", "CA", "UM", "DR"]
 
+# ---------------------------------------------------------------------------
+# Canonical Sacred Tongue tables — must match packages/kernel/src/sacredTongues.ts
+# Each tongue has 16 prefixes x 16 suffixes = 256 unique tokens.
+# Token for byte b = prefix[b >> 4] + "'" + suffix[b & 0x0F]
+# ---------------------------------------------------------------------------
+_CANONICAL_TONGUES: Dict[str, Tuple[List[str], List[str]]] = {
+    "KO": (
+        ["sil", "kor", "vel", "zar", "keth", "thul", "nav", "ael",
+         "ra", "med", "gal", "lan", "joy", "good", "nex", "vara"],
+        ["a", "ae", "ei", "ia", "oa", "uu", "eth", "ar",
+         "or", "il", "an", "en", "un", "ir", "oth", "esh"],
+    ),
+    "AV": (
+        ["saina", "talan", "vessa", "maren", "oriel", "serin", "nurel", "lirea",
+         "kiva", "lumen", "calma", "ponte", "verin", "nava", "sela", "tide"],
+        ["a", "e", "i", "o", "u", "y", "la", "re",
+         "na", "sa", "to", "mi", "ve", "ri", "en", "ul"],
+    ),
+    "RU": (
+        ["khar", "drath", "bront", "vael", "ur", "mem", "krak", "tharn",
+         "groth", "basalt", "rune", "sear", "oath", "gnarl", "rift", "iron"],
+        ["ak", "eth", "ik", "ul", "or", "ar", "um", "on",
+         "ir", "esh", "nul", "vek", "dra", "kh", "va", "th"],
+    ),
+    "CA": (
+        ["bip", "bop", "klik", "loopa", "ifta", "thena", "elsa", "spira",
+         "rythm", "quirk", "fizz", "gear", "pop", "zip", "mix", "chass"],
+        ["a", "e", "i", "o", "u", "y", "ta", "na",
+         "sa", "ra", "lo", "mi", "ki", "zi", "qwa", "sh"],
+    ),
+    "UM": (
+        ["veil", "zhur", "nar", "shul", "math", "hollow", "hush", "thorn",
+         "dusk", "echo", "ink", "wisp", "bind", "ache", "null", "shade"],
+        ["a", "e", "i", "o", "u", "ae", "sh", "th",
+         "ak", "ul", "or", "ir", "en", "on", "vek", "nul"],
+    ),
+    "DR": (
+        ["anvil", "tharn", "mek", "grond", "draum", "ektal", "temper", "forge",
+         "stone", "steam", "oath", "seal", "frame", "pillar", "rivet", "ember"],
+        ["a", "e", "i", "o", "u", "ae", "rak", "mek",
+         "tharn", "grond", "vek", "ul", "or", "ar", "en", "on"],
+    ),
+}
+
 
 class Lexicons:
     """Bijective 256-token lexicon per Sacred Tongue.
 
     Each tongue maps bytes 0..255 to unique tokens via a nibble scheme:
-    token = prefix + HI[b >> 4] + "'" + LO[b & 0x0F]
+    token = prefix[b >> 4] + "'" + suffix[b & 0x0F]
     This gives 16x16 = 256 unique tokens per tongue, guaranteed bijective.
     """
 
     def __init__(self, table: Optional[Dict[str, Dict[str, str]]] = None):
         if table is None:
-            table = self._demo_lexicons()
+            table = self._canonical_lexicons()
         self.by_idx: Dict[str, List[str]] = {}
         self.by_tok: Dict[str, Dict[str, int]] = {}
         for tg in TONGUES:
@@ -92,26 +136,18 @@ class Lexicons:
             raise KeyError(f"unknown token in {tongue}: {token}")
         return inv[token]
 
-    def _demo_lexicons(self) -> Dict[str, Dict[str, str]]:
-        """Generate 256-token bijective lexicon per tongue using nibble mapping (16x16)."""
-        HI = [
-            "ka", "ke", "ki", "ko", "ku", "sa", "se", "si",
-            "so", "su", "ra", "re", "ri", "ro", "ru", "za",
-        ]
-        LO = [
-            "na", "ne", "ni", "no", "nu", "la", "le", "li",
-            "lo", "lu", "ta", "te", "ti", "to", "tu", "ma",
-        ]
-
-        def gen(prefix: str) -> Dict[str, str]:
+    @staticmethod
+    def _canonical_lexicons() -> Dict[str, Dict[str, str]]:
+        """Build 256-token lexicons from canonical Sacred Tongue tables."""
+        result: Dict[str, Dict[str, str]] = {}
+        for tg, (prefixes, suffixes) in _CANONICAL_TONGUES.items():
             out: Dict[str, str] = {}
             for i in range(256):
-                hi = HI[(i >> 4) & 0xF]
-                lo = LO[i & 0xF]
-                out[str(i)] = f"{prefix.lower()}{hi}'{lo}"
-            return out
-
-        return {tg: gen(tg) for tg in TONGUES}
+                p = prefixes[(i >> 4) & 0xF]
+                s = suffixes[i & 0xF]
+                out[str(i)] = f"{p}'{s}"
+            result[tg] = out
+        return result
 
 
 class TongueTokenizer:
@@ -777,7 +813,12 @@ def load_lexicons(path: Optional[str]) -> Lexicons:
 def cmd_encode(args: argparse.Namespace) -> int:
     lex = load_lexicons(args.lexicons)
     tok = TongueTokenizer(lex)
-    data = sys.stdin.buffer.read() if not args.infile else open(args.infile, "rb").read()
+    if getattr(args, "text", None) is not None:
+        data = args.text.encode("utf-8")
+    elif args.infile:
+        data = open(args.infile, "rb").read()
+    else:
+        data = sys.stdin.buffer.read()
     tokens = tok.encode_bytes(args.tongue, data)
     out = (" ".join(tokens) + "\n").encode()
     if not args.outfile:
@@ -790,11 +831,20 @@ def cmd_encode(args: argparse.Namespace) -> int:
 def cmd_decode(args: argparse.Namespace) -> int:
     lex = load_lexicons(args.lexicons)
     tok = TongueTokenizer(lex)
-    text = sys.stdin.read() if not args.infile else open(args.infile, "r", encoding="utf-8").read()
+    if getattr(args, "text", None) is not None:
+        text = args.text
+    elif args.infile:
+        text = open(args.infile, "r", encoding="utf-8").read()
+    else:
+        text = sys.stdin.read()
     tokens = tok.normalize_token_stream(text)
     data = tok.decode_tokens(args.tongue, tokens)
     if not args.outfile:
-        sys.stdout.buffer.write(data)
+        if getattr(args, "as_text", False):
+            sys.stdout.write(data.decode("utf-8", errors="replace"))
+            sys.stdout.write("\n")
+        else:
+            sys.stdout.buffer.write(data)
     else:
         open(args.outfile, "wb").write(data)
     return 0
@@ -1065,22 +1115,25 @@ def build_cli() -> argparse.ArgumentParser:
     sub = p.add_subparsers(dest="cmd")
 
     pe = sub.add_parser("encode", help="Encode bytes to Sacred Tongue tokens")
-    pe.add_argument("--tongue", required=True, choices=TONGUES)
+    pe.add_argument("--tongue", required=True, choices=TONGUES + [t.lower() for t in TONGUES])
+    pe.add_argument("--text", help="Inline text to encode (instead of stdin)")
     pe.add_argument("--lexicons", help="Path to custom lexicon JSON")
     pe.add_argument("--in", dest="infile", help="Input file (default: stdin)")
     pe.add_argument("--out", dest="outfile", help="Output file (default: stdout)")
     pe.set_defaults(func=cmd_encode)
 
     pd = sub.add_parser("decode", help="Decode Sacred Tongue tokens to bytes")
-    pd.add_argument("--tongue", required=True, choices=TONGUES)
+    pd.add_argument("--tongue", required=True, choices=TONGUES + [t.lower() for t in TONGUES])
+    pd.add_argument("--text", help="Inline token string to decode (instead of stdin)")
+    pd.add_argument("--as-text", action="store_true", help="Output as UTF-8 text instead of raw bytes")
     pd.add_argument("--lexicons")
     pd.add_argument("--in", dest="infile")
     pd.add_argument("--out", dest="outfile")
     pd.set_defaults(func=cmd_decode)
 
     px = sub.add_parser("xlate", help="Cross-translate between tongues")
-    px.add_argument("--src", required=True, choices=TONGUES)
-    px.add_argument("--dst", required=True, choices=TONGUES)
+    px.add_argument("--src", required=True, choices=TONGUES + [t.lower() for t in TONGUES])
+    px.add_argument("--dst", required=True, choices=TONGUES + [t.lower() for t in TONGUES])
     px.add_argument("--mode", default="byte", choices=["byte", "semantic"])
     px.add_argument("--lexicons")
     px.add_argument("--attest-key", dest="attest_key", help="Base64-encoded HMAC key")
@@ -1115,14 +1168,26 @@ def build_cli() -> argparse.ArgumentParser:
     gd.add_argument("--env", help="Envelope JSON file (default: stdin)")
     gd.set_defaults(func=cmd_gendec)
 
+    st = sub.add_parser("selftest", help="Run built-in self-test suite")
+    st.set_defaults(func=lambda _args: selftest())
+
     return p
 
 
 if __name__ == "__main__":
+    # Handle SIGPIPE gracefully (e.g. piping through head/grep)
+    import signal
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+
     cli = build_cli()
     if len(sys.argv) == 1:
         sys.exit(selftest())
     args = cli.parse_args()
+    # Normalize tongue codes to uppercase for case-insensitive input
+    for attr in ("tongue", "src", "dst"):
+        v = getattr(args, attr, None)
+        if isinstance(v, str):
+            setattr(args, attr, v.upper())
     if not hasattr(args, "func"):
         print("no subcommand specified; running selftest")
         sys.exit(selftest())

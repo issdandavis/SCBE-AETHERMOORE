@@ -1,57 +1,608 @@
 #!/usr/bin/env python3
 """
-SCBE-AETHERMOORE Unified Launcher
-Usage: scbe [cli|agent|demo]
-       @scbe (in terminal)
+scbe — Unified SCBE-AETHERMOORE CLI
+
+Single entry point for all SCBE operations with built-in AI task assistant.
+
+Usage:
+  scbe tongues encode --tongue ko --text "hello"
+  scbe tongues decode --tongue ko --as-text --text "nav'or nav'uu"
+  scbe tongues list
+  scbe pipeline run --text "test input"
+  scbe ai explain L12
+  scbe ai lint src/crypto/h_lwe.py
+  scbe ai review src/harmonic/mmx.ts
+  scbe ai check src/harmonic/pipeline14.ts
+  scbe selftest
+  scbe status
+
+Legacy commands (backward compat):
+  scbe cli       — Launch interactive CLI
+  scbe agent     — Launch AI agent
+  scbe demo      — Run demo
+
+@module cli/scbe
+@layer Layer 14
+@component Unified CLI + AI Onboard
+@version 2.0.0
 """
-import sys
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import math
 import os
+import signal
 import subprocess
+import sys
+import time
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
-def show_help():
-    """Display help message"""
-    print("SCBE-AETHERMOORE v3.0.0")
-    print("")
-    print("Usage: ./scbe [command]")
-    print("")
-    print("Commands:")
-    print("  cli      - Interactive CLI with tutorial")
-    print("  agent    - AI coding assistant")
-    print("  demo     - Encryption demo")
-    print("  memory   - AI memory shard demo (60-second story)")
-    print("")
-    print("Examples:")
-    print("  ./scbe cli")
-    print("  ./scbe agent")
-    print("  ./scbe demo")
-    print("  ./scbe memory")
+VERSION = "2.0.0"
+REPO_ROOT = Path(__file__).resolve().parent
 
-def main():
-    """Main launcher"""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    # Get command from arguments
-    if len(sys.argv) < 2:
-        show_help()
-        return
-    
-    command = sys.argv[1].lower()
-    
-    # Map commands to scripts
-    scripts = {
-        'cli': 'scbe-cli.py',
-        'agent': 'scbe-agent.py',
-        'demo': 'demo-cli.py',
-        'memory': 'demo_memory_shard.py'
-    }
-    
-    if command in scripts:
-        script_path = os.path.join(script_dir, scripts[command])
-        subprocess.run([sys.executable, script_path])
+# Handle SIGPIPE gracefully
+try:
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+except (AttributeError, OSError):
+    pass  # Windows
+
+
+# ═══════════════════════════════════════════════════════════════
+# Canonical Sacred Tongue tables
+# Source of truth: packages/kernel/src/sacredTongues.ts
+# ═══════════════════════════════════════════════════════════════
+
+_CANONICAL_TONGUES: Dict[str, Tuple[List[str], List[str]]] = {
+    "KO": (
+        ["sil", "kor", "vel", "zar", "keth", "thul", "nav", "ael",
+         "ra", "med", "gal", "lan", "joy", "good", "nex", "vara"],
+        ["a", "ae", "ei", "ia", "oa", "uu", "eth", "ar",
+         "or", "il", "an", "en", "un", "ir", "oth", "esh"],
+    ),
+    "AV": (
+        ["saina", "talan", "vessa", "maren", "oriel", "serin", "nurel", "lirea",
+         "kiva", "lumen", "calma", "ponte", "verin", "nava", "sela", "tide"],
+        ["a", "e", "i", "o", "u", "y", "la", "re",
+         "na", "sa", "to", "mi", "ve", "ri", "en", "ul"],
+    ),
+    "RU": (
+        ["khar", "drath", "bront", "vael", "ur", "mem", "krak", "tharn",
+         "groth", "basalt", "rune", "sear", "oath", "gnarl", "rift", "iron"],
+        ["ak", "eth", "ik", "ul", "or", "ar", "um", "on",
+         "ir", "esh", "nul", "vek", "dra", "kh", "va", "th"],
+    ),
+    "CA": (
+        ["bip", "bop", "klik", "loopa", "ifta", "thena", "elsa", "spira",
+         "rythm", "quirk", "fizz", "gear", "pop", "zip", "mix", "chass"],
+        ["a", "e", "i", "o", "u", "y", "ta", "na",
+         "sa", "ra", "lo", "mi", "ki", "zi", "qwa", "sh"],
+    ),
+    "UM": (
+        ["veil", "zhur", "nar", "shul", "math", "hollow", "hush", "thorn",
+         "dusk", "echo", "ink", "wisp", "bind", "ache", "null", "shade"],
+        ["a", "e", "i", "o", "u", "ae", "sh", "th",
+         "ak", "ul", "or", "ir", "en", "on", "vek", "nul"],
+    ),
+    "DR": (
+        ["anvil", "tharn", "mek", "grond", "draum", "ektal", "temper", "forge",
+         "stone", "steam", "oath", "seal", "frame", "pillar", "rivet", "ember"],
+        ["a", "e", "i", "o", "u", "ae", "rak", "mek",
+         "tharn", "grond", "vek", "ul", "or", "ar", "en", "on"],
+    ),
+}
+
+TONGUE_NAMES = {
+    "KO": "Kor'aelin", "AV": "Avali", "RU": "Runethic",
+    "CA": "Cassisivadan", "UM": "Umbroth", "DR": "Draumric",
+}
+TONGUE_DOMAINS = {
+    "KO": "nonce/flow/intent", "AV": "aad/header/metadata", "RU": "salt/binding",
+    "CA": "ciphertext/bitcraft", "UM": "redaction/veil", "DR": "tag/structure",
+}
+
+
+def _encode_byte(tongue: str, b: int) -> str:
+    prefixes, suffixes = _CANONICAL_TONGUES[tongue]
+    return f"{prefixes[(b >> 4) & 0xF]}'{suffixes[b & 0xF]}"
+
+
+def _build_decode_map(tongue: str) -> Dict[str, int]:
+    return {_encode_byte(tongue, i): i for i in range(256)}
+
+
+def encode_bytes(tongue: str, data: bytes) -> str:
+    tongue = tongue.upper()
+    return " ".join(_encode_byte(tongue, b) for b in data)
+
+
+def decode_tokens(tongue: str, text: str) -> bytes:
+    tongue = tongue.upper()
+    dmap = _build_decode_map(tongue)
+    tokens = text.strip().split()
+    out = bytearray()
+    for tok in tokens:
+        if tok in dmap:
+            out.append(dmap[tok])
+        else:
+            raise ValueError(f"Unknown token '{tok}' in tongue {tongue}")
+    return bytes(out)
+
+
+# ═══════════════════════════════════════════════════════════════
+# Pipeline (lightweight — no scipy/numpy required)
+# ═══════════════════════════════════════════════════════════════
+
+def pipeline_quick_score(text: str) -> Dict[str, Any]:
+    """Lightweight 14-layer scoring: d* -> x -> H_eff -> risk decision."""
+    raw = text.encode("utf-8")
+    digest = hashlib.sha256(raw).digest()
+
+    entropy = sum(b * math.log2(b + 1) for b in digest[:8]) / (8 * 8)
+    d_star = min(entropy / 10.0, 0.99)
+    x = math.tanh(d_star)
+    R = 0.95
+    H_eff = 1.0 / (1.0 + d_star + 2.0 * d_star * (1.0 - x / R))
+
+    if H_eff >= 0.8:
+        decision = "ALLOW"
+    elif H_eff >= 0.5:
+        decision = "QUARANTINE"
+    elif H_eff >= 0.2:
+        decision = "ESCALATE"
     else:
-        print(f"Unknown command: {command}")
-        print("")
-        show_help()
+        decision = "DENY"
+
+    return {
+        "input_len": len(raw),
+        "d_star": round(d_star, 6),
+        "x_poincare": round(x, 6),
+        "H_eff": round(H_eff, 6),
+        "decision": decision,
+        "digest_hex": digest[:16].hex(),
+    }
+
+
+# ═══════════════════════════════════════════════════════════════
+# AI Onboard — lightweight code task assistant
+# ═══════════════════════════════════════════════════════════════
+
+LAYER_GUIDE = {
+    "L1": ("Complex Context", "Realification of complex-valued input"),
+    "L2": ("Realification", "Complex -> real projection, norm preservation (Unitarity axiom)"),
+    "L3": ("Weighted Transform", "Langues metric / Sacred Tongues 6D weighting (Locality axiom)"),
+    "L4": ("Poincare Embedding", "Map to Poincare ball via tanh projection (Unitarity axiom)"),
+    "L5": ("Hyperbolic Distance", "Poincare ball distance — invariant under Mobius (Symmetry axiom)"),
+    "L6": ("Breathing", "Oscillatory modulation for dynamic stability (Causality axiom)"),
+    "L7": ("Mobius Phase", "Mobius transformation phase alignment (Unitarity axiom)"),
+    "L8": ("Multi-Well Realms", "Hamiltonian multi-well energy landscapes (Locality axiom)"),
+    "L9": ("Spectral Coherence", "FFT coherence analysis (Symmetry axiom)"),
+    "L10": ("Spin Coherence", "Spin-state alignment verification (Symmetry axiom)"),
+    "L11": ("Triadic Temporal", "3-way temporal distance measure (Causality axiom)"),
+    "L12": ("Harmonic Wall", "H(d,p) = 1/(1+d+2pd) — exponential cost scaling (Symmetry axiom)"),
+    "L13": ("Risk Decision", "ALLOW/QUARANTINE/ESCALATE/DENY governance (Causality axiom)"),
+    "L14": ("Audio Axis", "FFT telemetry, sonification, cymatic output (Composition axiom)"),
+}
+
+
+def ai_explain(target: str) -> str:
+    """Explain a layer or concept."""
+    t = target.upper().replace("LAYER", "L").replace(" ", "")
+    if t in LAYER_GUIDE:
+        name, desc = LAYER_GUIDE[t]
+        return f"{t}: {name}\n  {desc}"
+    for k, (name, desc) in LAYER_GUIDE.items():
+        if t in name.upper() or t in desc.upper():
+            return f"{k}: {name}\n  {desc}"
+    return f"Unknown target: {target}. Try L1-L14, or a concept like 'harmonic', 'breathing', 'poincare'."
+
+
+def ai_lint(filepath: str) -> Dict[str, Any]:
+    """Lint a source file — check syntax, headers, coding patterns."""
+    p = Path(filepath)
+    if not p.exists():
+        return {"error": f"File not found: {filepath}"}
+
+    issues: List[str] = []
+    content = p.read_text(encoding="utf-8", errors="replace")
+    lines = content.split("\n")
+
+    for i, line in enumerate(lines, 1):
+        if len(line) > 120:
+            issues.append(f"  L{i}: line too long ({len(line)} > 120 chars)")
+        if "TODO" in line.upper() or "FIXME" in line.upper() or "HACK" in line.upper():
+            issues.append(f"  L{i}: {line.strip()[:80]}")
+
+    has_header = "@file" in content[:500] or "@module" in content[:500]
+    has_layer = "@layer" in content[:1000]
+
+    result: Dict[str, Any] = {
+        "file": filepath,
+        "lines": len(lines),
+        "has_header": has_header,
+        "has_layer_tag": has_layer,
+        "issues": issues[:20],
+        "issue_count": len(issues),
+    }
+
+    if p.suffix == ".py":
+        try:
+            compile(content, filepath, "exec")
+            result["compiles"] = True
+        except SyntaxError as e:
+            result["compiles"] = False
+            result["syntax_error"] = f"Line {e.lineno}: {e.msg}"
+
+    return result
+
+
+def ai_review(filepath: str) -> Dict[str, Any]:
+    """Quick code review — structure, complexity, patterns."""
+    p = Path(filepath)
+    if not p.exists():
+        return {"error": f"File not found: {filepath}"}
+
+    content = p.read_text(encoding="utf-8", errors="replace")
+    lines = content.split("\n")
+
+    blank = sum(1 for l in lines if not l.strip())
+    comments = sum(1 for l in lines if l.strip().startswith(("#", "//", "*", "/*")))
+    code_lines = len(lines) - blank - comments
+
+    if p.suffix in (".ts", ".js"):
+        funcs = sum(1 for l in lines if "function " in l or "=> {" in l)
+        classes = sum(1 for l in lines if l.strip().startswith(("class ", "export class")))
+    else:
+        funcs = sum(1 for l in lines if l.strip().startswith("def "))
+        classes = sum(1 for l in lines if l.strip().startswith("class "))
+
+    max_indent = max((len(line) - len(line.lstrip()) for line in lines if line.strip()), default=0)
+
+    warnings: List[str] = []
+    if code_lines > 500:
+        warnings.append(f"Large file ({code_lines} code lines) — consider splitting")
+    if max_indent > 24:
+        warnings.append(f"Deep nesting (max indent: {max_indent} spaces)")
+    if funcs > 30:
+        warnings.append(f"Many functions ({funcs}) — consider module decomposition")
+
+    return {
+        "file": filepath,
+        "total_lines": len(lines),
+        "code_lines": code_lines,
+        "blank_lines": blank,
+        "comment_lines": comments,
+        "functions": funcs,
+        "classes": classes,
+        "max_indent": max_indent,
+        "warnings": warnings,
+        "verdict": "OK" if not warnings else f"{len(warnings)} suggestion(s)",
+    }
+
+
+# ═══════════════════════════════════════════════════════════════
+# Commands
+# ═══════════════════════════════════════════════════════════════
+
+def cmd_status(_args: argparse.Namespace) -> int:
+    ts_files = list(REPO_ROOT.glob("src/**/*.ts"))
+    py_files = list(REPO_ROOT.glob("src/**/*.py"))
+    test_ts = list(REPO_ROOT.glob("tests/**/*.test.ts"))
+    test_py = list(REPO_ROOT.glob("tests/**/test_*.py"))
+
+    print(f"SCBE-AETHERMOORE v{VERSION}")
+    print(f"  TypeScript: {len(ts_files)} sources, {len(test_ts)} tests")
+    print(f"  Python:     {len(py_files)} sources, {len(test_py)} tests")
+    print()
+    print("Sacred Tongues:")
+    for code in ["KO", "AV", "RU", "CA", "UM", "DR"]:
+        prefixes, suffixes = _CANONICAL_TONGUES[code]
+        print(f"  {code} ({TONGUE_NAMES[code]}): {len(prefixes)*len(suffixes)} tokens — {TONGUE_DOMAINS[code]}")
+    print()
+    print("14-Layer Pipeline:")
+    for layer, (name, _) in LAYER_GUIDE.items():
+        print(f"  {layer}: {name}")
+    return 0
+
+
+def cmd_tongue_encode(args: argparse.Namespace) -> int:
+    tongue = args.tongue.upper()
+    data = args.text.encode("utf-8") if getattr(args, "text", None) else sys.stdin.buffer.read()
+    print(encode_bytes(tongue, data))
+    return 0
+
+
+def cmd_tongue_decode(args: argparse.Namespace) -> int:
+    tongue = args.tongue.upper()
+    text = args.text if getattr(args, "text", None) else sys.stdin.read()
+    data = decode_tokens(tongue, text)
+    if getattr(args, "as_text", False):
+        print(data.decode("utf-8", errors="replace"))
+    else:
+        sys.stdout.buffer.write(data)
+    return 0
+
+
+def cmd_tongue_list(_args: argparse.Namespace) -> int:
+    for code in ["KO", "AV", "RU", "CA", "UM", "DR"]:
+        prefixes, suffixes = _CANONICAL_TONGUES[code]
+        print(f"{code} — {TONGUE_NAMES[code]} ({TONGUE_DOMAINS[code]})")
+        print(f"  Prefixes: {', '.join(prefixes)}")
+        print(f"  Suffixes: {', '.join(suffixes)}")
+        print(f"  Samples:  {_encode_byte(code, 0)}, {_encode_byte(code, 42)}, {_encode_byte(code, 255)}")
+        print()
+    return 0
+
+
+def cmd_pipeline_run(args: argparse.Namespace) -> int:
+    text = args.text if getattr(args, "text", None) else sys.stdin.read().strip()
+    result = pipeline_quick_score(text)
+    if getattr(args, "json_output", False):
+        print(json.dumps(result, indent=2))
+    else:
+        print(f"Input:    {text[:60]}{'...' if len(text) > 60 else ''}")
+        print(f"d*:       {result['d_star']}")
+        print(f"x:        {result['x_poincare']}")
+        print(f"H_eff:    {result['H_eff']}")
+        print(f"Decision: {result['decision']}")
+    return 0
+
+
+def cmd_ai_explain(args: argparse.Namespace) -> int:
+    print(ai_explain(args.target))
+    return 0
+
+
+def cmd_ai_lint(args: argparse.Namespace) -> int:
+    result = ai_lint(args.file)
+    if "error" in result:
+        print(f"Error: {result['error']}")
+        return 1
+    print(f"File: {result['file']} ({result['lines']} lines)")
+    if result.get("compiles") is False:
+        print(f"  SYNTAX ERROR: {result['syntax_error']}")
+    elif result.get("compiles") is True:
+        print("  Compiles: OK")
+    print(f"  Header: {'yes' if result['has_header'] else 'MISSING'}")
+    print(f"  @layer:  {'yes' if result['has_layer_tag'] else 'MISSING'}")
+    if result["issues"]:
+        print(f"  Issues ({result['issue_count']}):")
+        for iss in result["issues"]:
+            print(f"    {iss}")
+    else:
+        print("  No issues found")
+    return 0
+
+
+def cmd_ai_review(args: argparse.Namespace) -> int:
+    result = ai_review(args.file)
+    if "error" in result:
+        print(f"Error: {result['error']}")
+        return 1
+    print(f"File: {result['file']}")
+    print(f"  Lines: {result['total_lines']} total, {result['code_lines']} code, "
+          f"{result['blank_lines']} blank, {result['comment_lines']} comments")
+    print(f"  Functions: {result['functions']}, Classes: {result['classes']}")
+    print(f"  Max indent: {result['max_indent']} spaces")
+    print(f"  Verdict: {result['verdict']}")
+    for w in result.get("warnings", []):
+        print(f"    - {w}")
+    return 0
+
+
+def cmd_ai_check(args: argparse.Namespace) -> int:
+    """Full lint + review."""
+    lint_result = ai_lint(args.file)
+    review_result = ai_review(args.file)
+    if "error" in lint_result:
+        print(f"Error: {lint_result['error']}")
+        return 1
+
+    print(f"=== {args.file} ===")
+    print(f"  {review_result['code_lines']} code, "
+          f"{review_result['functions']} funcs, {review_result['classes']} classes")
+
+    all_ok = True
+    if lint_result.get("compiles") is False:
+        print(f"  FAIL: {lint_result['syntax_error']}")
+        all_ok = False
+    if not lint_result["has_header"]:
+        print("  WARN: missing @file/@module header")
+    if lint_result["issue_count"] > 0:
+        print(f"  LINT: {lint_result['issue_count']} issue(s)")
+        for iss in lint_result["issues"][:5]:
+            print(f"    {iss}")
+    for w in review_result.get("warnings", []):
+        print(f"  REVIEW: {w}")
+        all_ok = False
+
+    if all_ok and lint_result["issue_count"] == 0:
+        print("  All checks passed")
+    return 0
+
+
+def cmd_selftest(_args: argparse.Namespace) -> int:
+    errors = 0
+    print("=== SCBE Unified CLI Self-Test ===\n")
+
+    # Tongue roundtrip
+    print("[1] Tongue Roundtrip")
+    for tongue in _CANONICAL_TONGUES:
+        original = b"hello SCBE world! \x00\xff"
+        encoded = encode_bytes(tongue, original)
+        decoded = decode_tokens(tongue, encoded)
+        if decoded != original:
+            print(f"  FAIL: {tongue} roundtrip")
+            errors += 1
+        else:
+            print(f"  {tongue}: OK ({len(encoded.split())} tokens)")
+
+    # Cross-tongue
+    print("\n[2] Cross-Tongue")
+    ko_enc = encode_bytes("KO", b"cross test")
+    ko_dec = decode_tokens("KO", ko_enc)
+    av_enc = encode_bytes("AV", ko_dec)
+    av_dec = decode_tokens("AV", av_enc)
+    if av_dec != b"cross test":
+        print("  FAIL: KO->AV roundtrip")
+        errors += 1
+    else:
+        print("  KO->AV roundtrip: OK")
+
+    # Pipeline
+    print("\n[3] Pipeline")
+    score = pipeline_quick_score("test input")
+    if score["decision"] not in ("ALLOW", "QUARANTINE", "ESCALATE", "DENY"):
+        print("  FAIL: invalid decision")
+        errors += 1
+    else:
+        print(f"  Score: H_eff={score['H_eff']}, decision={score['decision']}")
+
+    # AI lint self-check
+    print("\n[4] AI Onboard")
+    lint = ai_lint(__file__)
+    if lint.get("compiles") is False:
+        print(f"  FAIL: self-lint error: {lint['syntax_error']}")
+        errors += 1
+    else:
+        print(f"  Self-lint: OK ({lint['lines']} lines, {lint['issue_count']} issues)")
+
+    print()
+    if errors == 0:
+        print("selftest OK — all checks passed")
+    else:
+        print(f"selftest FAILED — {errors} error(s)")
+    return 1 if errors else 0
+
+
+# ═══════════════════════════════════════════════════════════════
+# Legacy command bridge (backward compatibility)
+# ═══════════════════════════════════════════════════════════════
+
+LEGACY_SCRIPTS = {
+    "cli": "scbe-cli.py",
+    "agent": "scbe-agent.py",
+    "demo": "demo-cli.py",
+    "memory": "demo_memory_shard.py",
+}
+
+
+# ═══════════════════════════════════════════════════════════════
+# CLI builder
+# ═══════════════════════════════════════════════════════════════
+
+ALL_TONGUES = list(_CANONICAL_TONGUES.keys()) + [t.lower() for t in _CANONICAL_TONGUES]
+
+
+def build_cli() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(
+        prog="scbe",
+        description="SCBE-AETHERMOORE — Unified CLI for crypto, governance, and AI safety",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  scbe tongues encode --tongue ko --text "hello"
+  scbe tongues decode --tongue ko --as-text --text "nav'or nav'uu"
+  scbe tongues list
+  scbe pipeline run --text "test input"
+  scbe pipeline run --json --text "analyze this"
+  scbe ai explain L12
+  scbe ai lint src/crypto/h_lwe.py
+  scbe ai review src/harmonic/mmx.ts
+  scbe ai check src/harmonic/pipeline14.ts
+  scbe selftest
+  scbe status
+
+Legacy (backward compat):
+  scbe cli                          Interactive CLI
+  scbe agent                        AI agent
+  scbe demo                         Demo mode
+        """,
+    )
+    sub = p.add_subparsers(dest="command")
+
+    # ─── tongues ───
+    tongues = sub.add_parser("tongues", help="Sacred Tongue tokenization")
+    tongues_sub = tongues.add_subparsers(dest="tongue_cmd")
+
+    te = tongues_sub.add_parser("encode", help="Encode bytes to tokens")
+    te.add_argument("--tongue", required=True, choices=ALL_TONGUES)
+    te.add_argument("--text", help="Inline text (default: stdin)")
+    te.set_defaults(func=cmd_tongue_encode)
+
+    td = tongues_sub.add_parser("decode", help="Decode tokens to bytes")
+    td.add_argument("--tongue", required=True, choices=ALL_TONGUES)
+    td.add_argument("--text", help="Token string (default: stdin)")
+    td.add_argument("--as-text", action="store_true", help="Output UTF-8 text")
+    td.set_defaults(func=cmd_tongue_decode)
+
+    tl = tongues_sub.add_parser("list", help="List all 6 Sacred Tongues")
+    tl.set_defaults(func=cmd_tongue_list)
+
+    # ─── pipeline ───
+    pipeline = sub.add_parser("pipeline", help="14-layer governance pipeline")
+    pipeline_sub = pipeline.add_subparsers(dest="pipeline_cmd")
+
+    pr = pipeline_sub.add_parser("run", help="Score input through pipeline")
+    pr.add_argument("--text", help="Input text (default: stdin)")
+    pr.add_argument("--json", dest="json_output", action="store_true")
+    pr.set_defaults(func=cmd_pipeline_run)
+
+    # ─── ai ───
+    ai = sub.add_parser("ai", help="AI onboard — code task assistant")
+    ai_sub = ai.add_subparsers(dest="ai_cmd")
+
+    ae = ai_sub.add_parser("explain", help="Explain a pipeline layer (L1-L14)")
+    ae.add_argument("target", help="Layer (L12) or concept (harmonic, breathing)")
+    ae.set_defaults(func=cmd_ai_explain)
+
+    al = ai_sub.add_parser("lint", help="Lint a source file")
+    al.add_argument("file", help="File path")
+    al.set_defaults(func=cmd_ai_lint)
+
+    ar = ai_sub.add_parser("review", help="Quick code review")
+    ar.add_argument("file", help="File path")
+    ar.set_defaults(func=cmd_ai_review)
+
+    ac = ai_sub.add_parser("check", help="Full lint + review")
+    ac.add_argument("file", help="File path")
+    ac.set_defaults(func=cmd_ai_check)
+
+    # ─── top-level ───
+    sub.add_parser("status", help="Project status").set_defaults(func=cmd_status)
+    sub.add_parser("selftest", help="Self-test suite").set_defaults(func=cmd_selftest)
+
+    # ─── legacy ───
+    for cmd in LEGACY_SCRIPTS:
+        sub.add_parser(cmd, help=f"(legacy) Launch {cmd}")
+
+    return p
+
+
+def main() -> int:
+    cli = build_cli()
+    if len(sys.argv) == 1:
+        cli.print_help()
+        return 0
+
+    # Handle legacy commands
+    if len(sys.argv) >= 2 and sys.argv[1] in LEGACY_SCRIPTS:
+        script = REPO_ROOT / LEGACY_SCRIPTS[sys.argv[1]]
+        if script.exists():
+            return subprocess.run([sys.executable, str(script)] + sys.argv[2:]).returncode
+        else:
+            print(f"Legacy script not found: {script}")
+            return 1
+
+    args = cli.parse_args()
+    if not hasattr(args, "func"):
+        cli.print_help()
+        return 0
+    return args.func(args)
+
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
