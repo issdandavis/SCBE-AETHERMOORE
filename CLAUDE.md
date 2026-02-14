@@ -71,7 +71,7 @@ src/
 │   ├── sacredTongues.ts   # 6x256 tokenizer (494 lines)
 │   ├── languesMetric.ts   # Sacred Tongues 6D metric
 │   ├── audioAxis.ts       # Audio axis telemetry (L14)
-│   ├── phdm.ts            # Poincare Half-plane Drift Monitor
+│   ├── phdm.ts            # Polyhedral Hamiltonian Defense Manifold (L8)
 │   ├── spiralSeal.ts      # SpiralSeal SS1 envelope encoding
 │   ├── hamiltonianCFI.ts  # Hamiltonian control flow integrity (L8)
 │   ├── vacuumAcoustics.ts # Cymatic/acoustic simulation (L14)
@@ -214,7 +214,7 @@ scbe-aethermoore/symphonic # Symphonic cipher
 scbe-aethermoore/crypto    # Cryptographic primitives
 scbe-aethermoore/spiralverse # Spiralverse protocol
 scbe-aethermoore/tokenizer # Sacred Tongues tokenizer
-scbe-aethermoore/phdm      # Poincare Half-plane Drift Monitor
+scbe-aethermoore/phdm      # Polyhedral Hamiltonian Defense Manifold
 scbe-aethermoore/ai_brain  # 21D AI Brain Mapping (unified manifold + detection)
 ```
 

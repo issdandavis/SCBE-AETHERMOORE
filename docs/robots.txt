@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://issdandavis.github.io/SCBE-AETHERMOORE/sitemap.xml

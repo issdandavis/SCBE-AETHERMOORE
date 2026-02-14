@@ -419,6 +419,7 @@ export function computeMetrics(
     decision: combinedRiskScore > 0.7 ? 'DENY' : combinedRiskScore > 0.4 ? 'QUARANTINE' : 'ALLOW',
     anyFlagged: combinedRiskScore > 0.5,
     flagCount: combinedRiskScore > 0.5 ? 1 : 0,
+    timestamp: Date.now(),
   };
 
   return {
