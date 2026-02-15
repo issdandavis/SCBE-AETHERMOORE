@@ -1,24 +1,18 @@
 "use strict";
-/**
- * @file hyperbolicRAG.ts
- * @module harmonic/hyperbolicRAG
- * @layer Layer 5, Layer 12, Layer 13
- * @component Hyperbolic Retrieval-Augmented Generation — GeoSeal v2 Scorer
- * @version 3.2.4
- *
- * Retrieval scoring in the Poincaré ball where trust-distance gates what enters
- * context. Replaces hand-tuned "repulsion + suspicion counters" with a
- * geometry-aware three-signal fusion:
- *
- *   1. Hyperbolic proximity: d_H(query, chunk), d_H(anchor, chunk)
- *   2. Phase consistency:    phase deviation across 6 tongues
- *   3. Uncertainty:          variance proxy for retrieval confidence
- *
- * Output per chunk: { trustScore, anomalyProb, quarantineFlag, attentionWeight }
- *
- * Design: This is a *scoring engine*, not the whole security system.
- * Crypto gates (RWP), dialect grammar, and audio axis remain unchanged.
- */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HyperbolicRAGEngine = exports.TONGUE_ANCHORS = exports.DEFAULT_RAG_CONFIG = void 0;
 exports.projectToBall = projectToBall;
@@ -36,6 +30,7 @@ exports.quarantineReport = quarantineReport;
 exports.accessCost = accessCost;
 exports.trustFromPosition = trustFromPosition;
 exports.createHyperbolicRAG = createHyperbolicRAG;
+__exportStar(require("../../packages/kernel/src/hyperbolicRAG.js"), exports);
 const chsfn_js_1 = require("./chsfn.js");
 /**
  * @layer Layer 5, Layer 7, Layer 12, Layer 13
