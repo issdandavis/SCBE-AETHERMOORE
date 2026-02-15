@@ -57,7 +57,8 @@
     "packages/sixtongues",
     "scbe-cli.py",
     "scbe.js",
-    "sixtongues-cli-v1.1.0.zip"
+    "sixtongues-cli-v1.1.0.zip",
+    "examples/npm"
   ],
   "scripts": {
     "clean": "rimraf dist",
@@ -82,7 +83,12 @@
     "docker:run": "docker run -it scbe-aethermoore:latest",
     "docker:compose": "docker-compose up -d",
     "prepublishOnly": "npm run build",
-    "package": "npm pack"
+    "package": "npm pack",
+    "publish:check": "bash scripts/npm_publish_check.sh",
+    "publish:dryrun": "npm pack --dry-run --json"
+    "notion:sync": "node scripts/notion-sync.js --all",
+    "version:bump": "node scripts/version-bump.js",
+    "precommit:check": "bash scripts/pre-commit-check.sh"
   },
   "keywords": [
     "cryptography",
@@ -98,13 +104,19 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/issdandavis/SCBE-AETHERMOORE.git"  },
+    "url": "git+https://github.com/issdandavis/SCBE-AETHERMOORE.git"
+  },
   "bugs": {
-    "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"  },
-  "homepage": "https://github.com/issdandavis/SCBE-AETHERMOORE#readme",  "engines": {
+    "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
+  },
+  "homepage": "https://github.com/issdandavis/SCBE-AETHERMOORE#readme",
+  "engines": {
     "node": ">=18.0.0"
   },
   "dependencies": {
+    "@aws-sdk/client-lambda": "^3.988.0",
+    "@aws-sdk/client-s3": "^3.988.0",
+    "@notionhq/client": "^5.9.0",
     "express": "^5.2.1"
   },
   "devDependencies": {
