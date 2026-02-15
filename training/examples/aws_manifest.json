@@ -1,0 +1,16 @@
+{
+  "provider": "aws",
+  "artifacts": [
+    {
+      "id": "spiralverse/runtime-distilled-v3",
+      "role": "runtime",
+      "metrics": {
+        "quality": 0.8,
+        "safety": 0.98,
+        "latency_ms_p95": 70,
+        "cost_per_1k_tokens": 0.5
+      },
+      "uri": "s3://scbe-training-data/models/runtime-distilled-v3"
+    }
+  ]
+}
