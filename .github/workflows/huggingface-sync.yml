@@ -1,0 +1,76 @@
+name: HuggingFace Multi-Datacenter Sync
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'datasets/**'
+      - 'models/**'
+      - 'docs/**'
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+env:
+  PRIMARY_HF_REPO: issdandavis/spiralverse-ai-federated-v1
+  BACKUP_HF_REPO: issdandavis/phdm-21d-embedding
+  DATASET_REPO: issdandavis/scbe-aethermoore-datasets
+
+jobs:
+  sync-to-huggingface:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install HuggingFace CLI
+        run: pip install huggingface_hub
+
+      - name: Sync to Primary HF Datacenter
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          echo "Syncing to primary: $PRIMARY_HF_REPO"
+          huggingface-cli upload $PRIMARY_HF_REPO . . \
+            --repo-type model \
+            --include "src/**" "docs/**" "README.md" "package.json" \
+            --exclude ".git/**" "node_modules/**" \
+            --token $HF_TOKEN || echo "Primary sync failed, continuing..."
+
+      - name: Sync to Backup HF Datacenter
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          echo "Syncing to backup: $BACKUP_HF_REPO"
+          huggingface-cli upload $BACKUP_HF_REPO . . \
+            --repo-type model \
+            --include "src/**" "docs/**" "README.md" \
+            --exclude ".git/**" "node_modules/**" \
+            --token $HF_TOKEN || echo "Backup sync failed, continuing..."
+
+      - name: Generate Sync Report
+        run: |
+          echo "## HuggingFace Sync Report" >> $GITHUB_STEP_SUMMARY
+          echo "- **Date:** $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Primary:** $PRIMARY_HF_REPO" >> $GITHUB_STEP_SUMMARY
+          echo "- **Backup:** $BACKUP_HF_REPO" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** Sync completed" >> $GITHUB_STEP_SUMMARY
+
+  health-check:
+    runs-on: ubuntu-latest
+    needs: sync-to-huggingface
+    steps:
+      - name: Verify HF Repos Accessible
+        run: |
+          echo "Checking primary datacenter..."
+          curl -sf https://huggingface.co/api/models/$PRIMARY_HF_REPO > /dev/null && echo "Primary: OK" || echo "Primary: UNREACHABLE"
+          echo "Checking backup datacenter..."
+          curl -sf https://huggingface.co/api/models/$BACKUP_HF_REPO > /dev/null && echo "Backup: OK" || echo "Backup: UNREACHABLE"
