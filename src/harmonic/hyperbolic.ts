@@ -1,3 +1,4 @@
+export * from '../../packages/kernel/src/hyperbolic.js';
 /**
  * @file hyperbolic.ts
  * @module harmonic/hyperbolic
