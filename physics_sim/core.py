@@ -18,9 +18,9 @@ PLANCK = 6.62607015e-34      # Planck's constant (J·s)
 HBAR = PLANCK / (2 * math.pi) # Reduced Planck constant (J·s)
 C = 299792458                 # Speed of light in vacuum (m/s)
 G = 6.67430e-11              # Gravitational constant (m³/(kg·s²))
-ELECTRON_MASS = 9.10938356e-31   # Electron mass (kg)
-PROTON_MASS = 1.6726219e-27      # Proton mass (kg)
-NEUTRON_MASS = 1.67493e-27       # Neutron mass (kg)
+ELECTRON_MASS = 9.1093837015e-31  # Electron mass (kg) - CODATA 2018
+PROTON_MASS = 1.67262192369e-27   # Proton mass (kg) - CODATA 2018
+NEUTRON_MASS = 1.67492749804e-27  # Neutron mass (kg) - CODATA 2018
 ELEMENTARY_CHARGE = 1.602176634e-19  # Elementary charge (C)
 BOLTZMANN = 1.380649e-23     # Boltzmann constant (J/K)
 AVOGADRO = 6.02214076e23     # Avogadro's number (mol⁻¹)
@@ -351,13 +351,13 @@ def electromagnetism(params: Dict[str, Any]) -> Dict[str, Any]:
         A = params['plate_area']
         d = params['plate_separation']
         if d > 0:
-            C = VACUUM_PERMITTIVITY * A / d
-            results['capacitance'] = C
+            cap = VACUUM_PERMITTIVITY * A / d
+            results['capacitance'] = cap
 
             if 'voltage' in params:
                 V = params['voltage']
-                energy = 0.5 * C * V**2
-                charge = C * V
+                energy = 0.5 * cap * V**2
+                charge = cap * V
                 results['stored_energy'] = energy
                 results['stored_charge'] = charge
 
@@ -404,7 +404,7 @@ def thermodynamics(params: Dict[str, Any]) -> Dict[str, Any]:
         results['average_kinetic_energy'] = avg_KE
 
         # RMS speed of gas molecules: v_rms = √(3kT/m)
-        if 'molecular_mass' in params:
+        if 'molecular_mass' in params and T > 0:
             m = params['molecular_mass']
             v_rms = math.sqrt(3 * BOLTZMANN * T / m)
             v_avg = math.sqrt(8 * BOLTZMANN * T / (math.pi * m))
