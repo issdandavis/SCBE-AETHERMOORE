@@ -86,7 +86,7 @@ multidict==6.7.0
 mypy==1.19.1
 mypy_extensions==1.1.0
 nodeenv==1.10.0
-numpy==2.4.0
+numpy==2.4.2
 openai==2.11.0
 openapi-schema-validator==0.6.3
 openapi-spec-validator==0.7.2
