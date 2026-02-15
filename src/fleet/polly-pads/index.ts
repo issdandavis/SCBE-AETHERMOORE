@@ -1,6 +1,8 @@
 /**
  * Polly Pads - Fleet Mini-IDE System + Mode Switching Workspaces
  *
+ * Consolidated export surface for drone core, mode-switching systems,
+ * closed-network comms, squad consensus, and mission coordination.
  * "Clone Trooper Field Upgrade Stations for AI Agents"
  *
  * Hot-swappable mini-IDEs that run on each AI agent in the fleet,
@@ -15,7 +17,7 @@
  * @author Issac Davis
  */
 
-// Drone Core (original)
+// Drone Core
 export {
   DroneCore,
   createReconDrone,
@@ -41,7 +43,7 @@ export {
   type StoreQuery,
 } from './capability-store.js';
 
-// Mode Switching System
+// Mode Pad
 export {
   ModePad,
   type SacredTongue,
@@ -49,11 +51,7 @@ export {
   type MemoryEntry,
 } from './mode-pad.js';
 
-// Specialist Modes (Original Mode Registry)
-// ============================================================================
-// Specialist Modes (Canonical: ./modes)
-// ============================================================================
-
+// Specialist Mode Registry (lightweight mode system)
 // Specialist Modes (Dynamic Mode Switching) — legacy registry
 export {
   ModeRegistry,
@@ -62,12 +60,14 @@ export {
 } from './specialist-modes.js';
 
 // Specialist Modes (Refactored Mode Classes & Types)
+export {
   type SpecialistMode as LegacySpecialistMode,
   type ModeTool as LegacyModeTool,
   type ModeState as LegacyModeState,
   type ModeSwitchEvent as LegacyModeSwitchEvent,
 } from './specialist-modes.js';
 
+// Full specialist mode classes + factories
 // Closed Network (Air-Gapped Communications)
 export {
   ClosedNetwork,
@@ -105,11 +105,11 @@ export {
   MissionPlanningMode,
   createMode,
   createAllModes,
-  type SpecialistMode,
-  type ModeTool,
+  type SpecialistMode as ModeName,
+  type ModeTool as ModeCatalogTool,
   type ModeActionResult,
-  type ModeState,
-  type ModeSwitchEvent,
+  type ModeState as ModeRuntimeState,
+  type ModeSwitchEvent as ModeTransitionEvent,
   type SquadVote,
   type CrisisType,
   type ModeAssignment,
@@ -117,17 +117,7 @@ export {
   MODE_CONFIGS,
 } from './modes/index.js';
 
-// Closed Network (Air-Gapped Communications)
-// Specialist Mode Registry (legacy/alternate implementation)
-// Note: its internal type names conflict with ./modes/types, so we only export
-// the registry wrapper + id type here.
-export {
-  ModeRegistry,
-  ALL_MODE_IDS,
-  type SpecialistModeId,
-} from './specialist-modes.js';
-
-// Closed Network (Air-Gapped)
+// Closed Network (air-gapped comms)
 export {
   ClosedNetwork,
   DEFAULT_CLOSED_CONFIG,
@@ -138,21 +128,7 @@ export {
   type ClosedNetworkConfig,
 } from './closed-network.js';
 
-// Squad Coordination (Byzantine Consensus)
-export {
-  Squad,
-  type ConsensusDecision,
-  type SquadProposal,
-  type SquadConfig,
-} from './squad.js';
-
-// Mission Coordinator
-export {
-  MissionCoordinator,
-  type MissionPhase,
-  type CrisisAssessment,
-} from './mission-coordinator.js';
-
+// Squad Coordination (Byzantine consensus)
 // Voxel Record Types (6D addressing + Byzantine quorum)
 export {
   type Lang,

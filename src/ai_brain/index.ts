@@ -364,7 +364,7 @@ export {
   phaseDeviation,
   quantize as braidQuantize,
   quantizeVector as braidQuantizeVector,
-  refactorAlign,
+  refactorAlign as braidRefactorAlign,
   ternaryCenter,
   zeroGravityDistance,
   type BraidConfig,
