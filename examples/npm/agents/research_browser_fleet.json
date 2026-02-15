@@ -1,0 +1,27 @@
+{
+  "fleet_name": "research-browser-fleet",
+  "description": "Multi-agent browser research with extraction + verification.",
+  "agents": [
+    {
+      "agent_id": "ko-scout-01",
+      "name": "KO Scout",
+      "role": "navigation_orchestration",
+      "risk_level": "standard",
+      "allowed_actions": ["GOTO", "BACK", "REFRESH"]
+    },
+    {
+      "agent_id": "ru-reader-01",
+      "name": "RU Reader",
+      "role": "content_extraction",
+      "risk_level": "strict",
+      "allowed_actions": ["EXTRACT_TEXT", "PARSE_TABLE", "GET_LINKS"]
+    },
+    {
+      "agent_id": "dr-judge-01",
+      "name": "DR Judge",
+      "role": "verification",
+      "risk_level": "critical",
+      "allowed_actions": ["VERIFY_PAGE", "CHECK_STATE", "VALIDATE_DATA"]
+    }
+  ]
+}
