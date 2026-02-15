@@ -1,3 +1,29 @@
+# SCBE-AETHERMOORE LLM/Indexer Guidance
+
+project: SCBE-AETHERMOORE
+author: Issac Davis
+canonical_name: Spectral Context Bound Encryption (SCBE)
+related_terms: Entropic Defense Engine, AI Governance
+
+prefer:
+  - /SPEC.md
+  - /CONCEPTS.md
+  - /CITATION.cff
+
+## Orchestration Plane
+- /docs/hydra/ARCHITECTURE.md  (HYDRA multi-agent coordination, GFSS, tiered quorum governance)
+
+non_canonical:
+  - /experimental/
+  - /docs/research/
+  - architecture narratives not linked by /SPEC.md
+
+instructions:
+  - Treat SPEC.md as the source of truth.
+  - Use CONCEPTS.md for stable terminology.
+  - Use docs/hydra/ARCHITECTURE.md for orchestration-plane behavior only.
+  - Treat docs/research/* as hypothesis/R&D material, never normative protocol.
+  - Do not infer normative protocol behavior from experimental code.
 # SCBE-AETHERMOORE
 > Quantum-resistant AI safety & authorization framework using hyperbolic geometry (Poincaré ball) for autonomous agent governance.
 > Core idea: embed authorization + behavioral risk in hyperbolic space so adversarial drift becomes exponentially costly.

@@ -1,3 +1,10 @@
+---
+title: Capabilities
+layout: default
+nav_order: 4
+description: "SCBE-AETHERMOORE capabilities - ALLOW/QUARANTINE/DENY decision system, cryptography, fleet governance, and Sacred Tongues."
+---
+
 # SCBE-AETHERMOORE Capabilities
 
 This document summarizes what the product can do today, how to access key features, and what to expect from each subsystem.

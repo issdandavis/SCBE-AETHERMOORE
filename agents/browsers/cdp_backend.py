@@ -15,6 +15,9 @@ Requirements:
 import asyncio
 import base64
 import json
+import os
+import platform
+import shutil
 from typing import Optional, Dict, Any, List
 from .base import BrowserBackend
 
@@ -562,23 +565,59 @@ class CDPBackend(BrowserBackend):
 # Helper to Start Chrome with Remote Debugging
 # =============================================================================
 
-def get_chrome_launch_command(port: int = 9222, user_data_dir: str = None) -> str:
-    """Get command to launch Chrome with remote debugging."""
-    import platform
-    import os
+def resolve_chrome_binary(system: Optional[str] = None) -> str:
+    """Resolve a Chrome/Chromium executable path for the current platform.
 
-    system = platform.system()
+    Resolution order:
+    1) SCBE_CHROME_PATH env override
+    2) Known OS-specific executable names/paths
+    3) Safe fallback command name
+    """
+    system = system or platform.system()
+
+    env_override = os.environ.get("SCBE_CHROME_PATH")
+    if env_override:
+        return env_override
 
     if system == "Windows":
-        chrome_path = r'"C:\Program Files\Google\Chrome\Application\chrome.exe"'
-    elif system == "Darwin":  # macOS
-        chrome_path = '"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"'
-    else:  # Linux
-        chrome_path = "google-chrome"
+        windows_paths = [
+            r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+            r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        ]
+        for path in windows_paths:
+            if os.path.exists(path):
+                return path
+        return windows_paths[0]
 
+    if system == "Darwin":
+        mac_path = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+        return mac_path
+
+    # Linux: search common chrome/chromium binaries first
+    linux_bins = [
+        "google-chrome-stable",
+        "google-chrome",
+        "chromium-browser",
+        "chromium",
+        "chrome",
+    ]
+    for name in linux_bins:
+        path = shutil.which(name)
+        if path:
+            return path
+
+    # Fallback keeps previous behavior if binary isn't present in PATH during resolution
+    return "google-chrome"
+
+
+def get_chrome_launch_command(port: int = 9222, user_data_dir: str = None) -> str:
+    """Get command to launch Chrome with remote debugging."""
+    chrome_path = resolve_chrome_binary()
     user_dir = user_data_dir or os.path.join(os.path.expanduser("~"), ".scbe-chrome-profile")
 
-    return f'{chrome_path} --remote-debugging-port={port} --user-data-dir="{user_dir}"'
+    # Quote paths with spaces for shell friendliness.
+    chrome_cmd = f'"{chrome_path}"' if " " in chrome_path and not chrome_path.startswith('"') else chrome_path
+    return f'{chrome_cmd} --remote-debugging-port={port} --user-data-dir="{user_dir}"'
 
 
 # =============================================================================

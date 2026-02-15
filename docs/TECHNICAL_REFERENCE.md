@@ -1,3 +1,10 @@
+---
+title: Technical Reference
+layout: default
+nav_order: 6
+description: "SCBE-AETHERMOORE technical specification - 14-layer pipeline architecture, quantum axiom mesh, harmonic scaling, governance tiers."
+---
+
 # SCBE-AETHERMOORE Technical Reference
 
 > This document contains the full technical specification. For a high-level overview, see the [README](../README.md).
