@@ -30,6 +30,11 @@ from .patrol import (
     validated_simulation,
     ValidationResult,
     Decision,
+    TongueProfile,
+    classify_physics_tongue,
+    harmonic_patrol,
+    harmonic_wall,
+    harmonic_risk,
 )
 
 __all__ = [
@@ -53,4 +58,9 @@ __all__ = [
     "validated_simulation",
     "ValidationResult",
     "Decision",
+    "TongueProfile",
+    "classify_physics_tongue",
+    "harmonic_patrol",
+    "harmonic_wall",
+    "harmonic_risk",
 ]
