@@ -24,6 +24,13 @@
  * - Swarm Formation Coordination (geometric governance formations)
  * - Brain Integration Pipeline (end-to-end unified pipeline)
  * - PHDM Core (Hamiltonian path + Kyber K₀ + geodesic monitoring + Langues metric)
+ *
+ * DAG Edge Governance (Layer 8 / Layer 9):
+ *   ai_brain → fleet is TYPE-ONLY.
+ *   This module imports GovernanceTier and CrawlRole type definitions from fleet/
+ *   but has ZERO runtime dependencies on fleet code. This preserves the acyclic
+ *   build graph: kernel → brain → fleet (no reverse runtime edge).
+ *   Violation of this invariant will cause tsc -b to fail by design.
  */
 export { BRAIN_DIMENSIONS, BRAIN_EPSILON, DEFAULT_BRAIN_CONFIG, PHI, POINCARE_MAX_NORM, type AgentTrajectory, type BrainAuditEvent, type BrainConfig, type BrainStateComponents, type CognitivePosition, type CombinedAssessment, type DetectionMechanism, type DetectionResult, type NavigationVector, type RiskDecision, type SCBEContext, type SemanticPhase, type SwarmCoordination, type TrajectoryPoint, } from './types.js';
 export { UnifiedBrainState, applyGoldenWeighting, euclideanDistance, goldenWeightProduct, hyperbolicDistanceSafe, mobiusAddSafe, safePoincareEmbed, vectorNorm, } from './unified-state.js';

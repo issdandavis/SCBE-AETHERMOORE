@@ -32,4 +32,7 @@ __exportStar(require("./nonceManager.js"), exports);
 __exportStar(require("./replayGuard.js"), exports);
 __exportStar(require("./bloom.js"), exports);
 __exportStar(require("./pqc.js"), exports);
+__exportStar(require("./platform.js"), exports);
+__exportStar(require("./quantum-safe.js"), exports);
+__exportStar(require("./pqc-strategies.js"), exports);
 //# sourceMappingURL=index.js.map
