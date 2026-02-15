@@ -124,43 +124,46 @@ from .symphonic_waveform import (
 #     key_vector_from_secret,
 # )
 
-# Dual Lattice 14-Layer Integration
-from .dual_lattice_integration import (
-    # Layer 1: PQC Gating
-    authorize_pqc_level,
-    build_lattice_point_gated,
-    # Layer 2-4: Projection
-    GeoContext,
-    RealmType,
-    realify_with_sign,
-    project_to_poincare_with_realm,
-    layers_2_4_process,
-    # Layer 5: Governance Distance
-    governance_aware_distance,
-    layer_5_evaluate,
-    # Layer 6-7: Breathing
-    breathing_transform,
-    apply_realm_breathing,
-    # Layer 8: Clustering
-    hierarchical_realm_clustering,
-    layer_8_cluster,
-    # Layer 9-11: Path Validation
-    spectral_coherence,
-    triadic_temporal_distance,
-    validate_hyperpath,
-    # Layer 12-13: Harmonic Scaling
-    harmonic_scaling,
-    compute_path_cost,
-    layer_12_13_evaluate,
-    # Layer 14: Sonification
-    coord_to_frequency,
-    hyperpath_to_audio,
-    layer_14_sonify,
-    # Complete Integrator
-    DualLatticeIntegrator,
-    IntegratedResult,
-    LayerDecision,
-)
+# Dual Lattice 14-Layer Integration (requires scipy — lazy import)
+try:
+    from .dual_lattice_integration import (
+        # Layer 1: PQC Gating
+        authorize_pqc_level,
+        build_lattice_point_gated,
+        # Layer 2-4: Projection
+        GeoContext,
+        RealmType,
+        realify_with_sign,
+        project_to_poincare_with_realm,
+        layers_2_4_process,
+        # Layer 5: Governance Distance
+        governance_aware_distance,
+        layer_5_evaluate,
+        # Layer 6-7: Breathing
+        breathing_transform,
+        apply_realm_breathing,
+        # Layer 8: Clustering
+        hierarchical_realm_clustering,
+        layer_8_cluster,
+        # Layer 9-11: Path Validation
+        spectral_coherence,
+        triadic_temporal_distance,
+        validate_hyperpath,
+        # Layer 12-13: Harmonic Scaling
+        harmonic_scaling,
+        compute_path_cost,
+        layer_12_13_evaluate,
+        # Layer 14: Sonification
+        coord_to_frequency,
+        hyperpath_to_audio,
+        layer_14_sonify,
+        # Complete Integrator
+        DualLatticeIntegrator,
+        IntegratedResult,
+        LayerDecision,
+    )
+except ImportError:
+    pass  # scipy not available — dual lattice integration disabled
 
 # Sacred Eggs (Cryptographic Secret Containers)
 from .sacred_eggs import (

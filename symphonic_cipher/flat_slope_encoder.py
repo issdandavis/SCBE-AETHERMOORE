@@ -167,8 +167,8 @@ def derive_harmonic_mask(
         if derived[byte_idx] & (1 << bit_idx):
             selected_harmonics.add(h)
 
-    # Ensure minimum harmonic count
-    while len(selected_harmonics) < MIN_HARMONICS_PER_TOKEN:
+    # Ensure minimum harmonic count (but not more than available in pool)
+    while len(selected_harmonics) < MIN_HARMONICS_PER_TOKEN and len(selected_harmonics) < len(harmonic_pool):
         # Add harmonics deterministically from remaining pool
         for h in harmonic_pool:
             if h not in selected_harmonics:
