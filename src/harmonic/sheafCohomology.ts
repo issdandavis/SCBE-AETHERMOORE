@@ -265,3 +265,8 @@ export function tarskiLaplacian0<V, E>(
     }
 
     result.set(v.id, accumulated);
+
+        }
+
+  return result;
+}
