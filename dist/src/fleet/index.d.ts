@@ -25,6 +25,7 @@ export * from './crawl-message-bus';
 export * from './crawl-frontier';
 export * from './crawl-coordinator';
 export * from './crawl-runner';
+export * from './browser-pool';
 export * from './types';
 export { AuditEntry, AuditStatus, GrowthMilestone, PadNote, PadSketch, PadTool, PollyPad, PollyPadManager, TIER_THRESHOLDS, getNextTier, getXPForNextTier, } from './polly-pad';
 //# sourceMappingURL=index.d.ts.map

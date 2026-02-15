@@ -43,6 +43,7 @@ __exportStar(require("./crawl-message-bus"), exports);
 __exportStar(require("./crawl-frontier"), exports);
 __exportStar(require("./crawl-coordinator"), exports);
 __exportStar(require("./crawl-runner"), exports);
+__exportStar(require("./browser-pool"), exports);
 // Export types (canonical source for shared types)
 __exportStar(require("./types"), exports);
 // Export polly-pad specific items (excluding types already exported from ./types)
