@@ -43,6 +43,44 @@ export {
 } from './harmonicScaling.js';
 
 // ═══════════════════════════════════════════════════════════════
+// Layers 5-6 + 12: Dual-Regime Harmonic Scaling (Patrol + Wall)
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Patrol (drift monitoring — Layers 5-6)
+  patrolScale,
+  patrolSensitivity,
+  patrolAmplify,
+  // Wall (governance gating — Layer 12)
+  wallScale,
+  wallSensitivity,
+  wallAmplify,
+  // Regime crossover
+  crossoverDistance,
+  activeRegime,
+  // Unified dual-regime
+  dualRegimeScale,
+  // Smooth blending
+  blendedScale,
+  blendedAmplify,
+  // Tongue-weighted braided scaling
+  braidedScale,
+  LWS_WEIGHTS,
+  PHDM_WEIGHTS,
+  TONGUE_CODES as DUAL_REGIME_TONGUE_CODES,
+  // Constants
+  R_DEFAULT,
+  R_FIFTH,
+  // Types
+  type RiskDecision,
+  type DualRegimeResult,
+  type GovernanceThresholds,
+  type TongueDrift,
+  type BraidedScaleResult,
+  type TongueCode as DualRegimeTongueCode,
+} from './dualRegimeScaling.js';
+
+// ═══════════════════════════════════════════════════════════════
 // HAL - Harmonic Attention Layer
 // ═══════════════════════════════════════════════════════════════
 
