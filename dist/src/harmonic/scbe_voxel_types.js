@@ -1,47 +1,18 @@
 "use strict";
-/**
- * @file scbe_voxel_types.ts
- * @module harmonic/scbe_voxel_types
- * @layer Layer 1, Layer 12, Layer 13, Layer 14
- * @component Voxel Record Schema
- * @version 3.2.4
- *
- * Canonical payload envelope stored at a voxel address [X,Y,Z,V,P,S] per tongue.
- * Fits QR Cubes + Sacred Eggs + Polly Pads + Byzantine quorum.
- *
- * Addressing: cubeId = sha256(canonical({lang, voxel, epoch, padMode}))
- * Content:    payloadDigest = sha256(payloadCiphertextBytes)
- * Quorum:     ≥4/6 votes on same (cubeId, payloadDigest) to commit
- */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TONGUE_ROLES = exports.PAD_MODE_TONGUE = exports.PAD_MODES = exports.LANGS = void 0;
-/** All valid tongue codes */
-exports.LANGS = ['KO', 'AV', 'RU', 'CA', 'UM', 'DR'];
-/** All valid pad modes */
-exports.PAD_MODES = [
-    'ENGINEERING',
-    'NAVIGATION',
-    'SYSTEMS',
-    'SCIENCE',
-    'COMMS',
-    'MISSION',
-];
-/** Pad mode to tongue mapping */
-exports.PAD_MODE_TONGUE = {
-    ENGINEERING: 'CA',
-    NAVIGATION: 'AV',
-    SYSTEMS: 'DR',
-    SCIENCE: 'UM',
-    COMMS: 'KO',
-    MISSION: 'RU',
-};
-/** Tongue semantic impedance roles */
-exports.TONGUE_ROLES = {
-    KO: 'flow_orientation',
-    AV: 'boundary_condition',
-    RU: 'constraint_field',
-    CA: 'active_operator',
-    DR: 'structural_tensor',
-    UM: 'entropic_sink',
-};
+__exportStar(require("../../packages/kernel/src/scbe_voxel_types.js"), exports);
 //# sourceMappingURL=scbe_voxel_types.js.map
