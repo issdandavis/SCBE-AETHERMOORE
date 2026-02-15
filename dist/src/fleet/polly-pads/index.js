@@ -2,6 +2,8 @@
 /**
  * Polly Pads - Fleet Mini-IDE System + Mode Switching Workspaces
  *
+ * Consolidated export surface for drone core, mode-switching systems,
+ * closed-network comms, squad consensus, and mission coordination.
  * "Clone Trooper Field Upgrade Stations for AI Agents"
  *
  * Hot-swappable mini-IDEs that run on each AI agent in the fleet,
@@ -17,7 +19,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.validateVoxelRecord = exports.tongueCodeToLang = exports.langToTongueCode = exports.MODE_CONFIGS = exports.createAllModes = exports.createMode = exports.MissionPlanningMode = exports.CommunicationsMode = exports.ScienceMode = exports.SystemsMode = exports.NavigationMode = exports.EngineeringMode = exports.BaseMode = exports.Squad = exports.MissionCoordinator = exports.BLOCKED_NETWORKS = exports.DEFAULT_CLOSED_CONFIG = exports.ClosedNetwork = exports.ALL_MODE_IDS = exports.ModeRegistry = exports.ModePad = exports.defaultStore = exports.CapabilityStore = exports.createGuardDrone = exports.createResearchDrone = exports.createDeployDrone = exports.createCoderDrone = exports.createReconDrone = exports.DroneCore = void 0;
-// Drone Core (original)
+// Drone Core
 var drone_core_js_1 = require("./drone-core.js");
 Object.defineProperty(exports, "DroneCore", { enumerable: true, get: function () { return drone_core_js_1.DroneCore; } });
 Object.defineProperty(exports, "createReconDrone", { enumerable: true, get: function () { return drone_core_js_1.createReconDrone; } });
@@ -29,13 +31,15 @@ Object.defineProperty(exports, "createGuardDrone", { enumerable: true, get: func
 var capability_store_js_1 = require("./capability-store.js");
 Object.defineProperty(exports, "CapabilityStore", { enumerable: true, get: function () { return capability_store_js_1.CapabilityStore; } });
 Object.defineProperty(exports, "defaultStore", { enumerable: true, get: function () { return capability_store_js_1.defaultStore; } });
-// Mode Switching System
+// Mode Pad
 var mode_pad_js_1 = require("./mode-pad.js");
 Object.defineProperty(exports, "ModePad", { enumerable: true, get: function () { return mode_pad_js_1.ModePad; } });
+// Specialist Mode Registry (lightweight mode system)
 // Specialist Modes (Dynamic Mode Switching) — legacy registry
 var specialist_modes_js_1 = require("./specialist-modes.js");
 Object.defineProperty(exports, "ModeRegistry", { enumerable: true, get: function () { return specialist_modes_js_1.ModeRegistry; } });
 Object.defineProperty(exports, "ALL_MODE_IDS", { enumerable: true, get: function () { return specialist_modes_js_1.ALL_MODE_IDS; } });
+// Full specialist mode classes + factories
 // Closed Network (Air-Gapped Communications)
 var closed_network_js_1 = require("./closed-network.js");
 Object.defineProperty(exports, "ClosedNetwork", { enumerable: true, get: function () { return closed_network_js_1.ClosedNetwork; } });
@@ -59,6 +63,12 @@ Object.defineProperty(exports, "MissionPlanningMode", { enumerable: true, get: f
 Object.defineProperty(exports, "createMode", { enumerable: true, get: function () { return index_js_1.createMode; } });
 Object.defineProperty(exports, "createAllModes", { enumerable: true, get: function () { return index_js_1.createAllModes; } });
 Object.defineProperty(exports, "MODE_CONFIGS", { enumerable: true, get: function () { return index_js_1.MODE_CONFIGS; } });
+// Closed Network (air-gapped comms)
+var closed_network_js_2 = require("./closed-network.js");
+Object.defineProperty(exports, "ClosedNetwork", { enumerable: true, get: function () { return closed_network_js_2.ClosedNetwork; } });
+Object.defineProperty(exports, "DEFAULT_CLOSED_CONFIG", { enumerable: true, get: function () { return closed_network_js_2.DEFAULT_CLOSED_CONFIG; } });
+Object.defineProperty(exports, "BLOCKED_NETWORKS", { enumerable: true, get: function () { return closed_network_js_2.BLOCKED_NETWORKS; } });
+// Squad Coordination (Byzantine consensus)
 // Voxel Record Types (6D addressing + Byzantine quorum)
 var voxel_types_js_1 = require("./voxel-types.js");
 Object.defineProperty(exports, "langToTongueCode", { enumerable: true, get: function () { return voxel_types_js_1.langToTongueCode; } });
