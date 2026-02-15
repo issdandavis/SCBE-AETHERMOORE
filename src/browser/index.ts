@@ -124,3 +124,7 @@ export type {
 // Agent
 export { BrowserAgent, createBrowserAgent, MockBrowserBackend } from './agent.js';
 export type { BrowserBackend, EscalationHandler, BrowserAgentConfig } from './agent.js';
+
+// Playwright backend (real browser)
+export { PlaywrightBackend, createPlaywrightBackend } from './playwright-backend.js';
+export type { PlaywrightBackendOptions } from './playwright-backend.js';
