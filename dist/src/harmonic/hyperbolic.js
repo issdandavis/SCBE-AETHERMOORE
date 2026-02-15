@@ -1,20 +1,18 @@
 "use strict";
-/**
- * @file hyperbolic.ts
- * @module harmonic/hyperbolic
- * @layer Layer 5, Layer 6, Layer 7
- * @component Poincaré Ball Operations
- * @version 3.0.0
- * @since 2026-01-20
- *
- * SCBE Hyperbolic Geometry - Core mathematical operations for the 14-layer pipeline.
- * The invariant hyperbolic metric NEVER changes - all dynamics come from
- * transforming points within the Poincaré ball.
- *
- * Layer 5: Invariant Metric d_ℍ(u,v) = arcosh(1 + 2‖u-v‖²/((1-‖u‖²)(1-‖v‖²)))
- * Layer 6: Breathing Transform B(p,t) = tanh(‖p‖ + A·sin(ωt))·p/‖p‖
- * Layer 7: Phase Modulation Φ(p,θ) = Möbius rotation in tangent space
- */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EPSILON = void 0;
 exports.setAuditEpsilon = setAuditEpsilon;
@@ -40,6 +38,23 @@ exports.phaseDeviation = phaseDeviation;
 exports.phaseDistanceScore = phaseDistanceScore;
 exports.scoreRetrievals = scoreRetrievals;
 exports.applyHyperbolicPipeline = applyHyperbolicPipeline;
+__exportStar(require("../../packages/kernel/src/hyperbolic.js"), exports);
+/**
+ * @file hyperbolic.ts
+ * @module harmonic/hyperbolic
+ * @layer Layer 5, Layer 6, Layer 7
+ * @component Poincaré Ball Operations
+ * @version 3.0.0
+ * @since 2026-01-20
+ *
+ * SCBE Hyperbolic Geometry - Core mathematical operations for the 14-layer pipeline.
+ * The invariant hyperbolic metric NEVER changes - all dynamics come from
+ * transforming points within the Poincaré ball.
+ *
+ * Layer 5: Invariant Metric d_ℍ(u,v) = arcosh(1 + 2‖u-v‖²/((1-‖u‖²)(1-‖v‖²)))
+ * Layer 6: Breathing Transform B(p,t) = tanh(‖p‖ + A·sin(ωt))·p/‖p‖
+ * Layer 7: Phase Modulation Φ(p,θ) = Möbius rotation in tangent space
+ */
 /** Small epsilon for numerical stability (norm checks, zero-vector guards) */
 exports.EPSILON = 1e-10;
 /**

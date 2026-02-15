@@ -1,111 +1,109 @@
 /**
  * @file mission-coordinator.ts
  * @module fleet/polly-pads/mission-coordinator
- * @layer L13
- * @component Mission Coordinator - Smart Mode Assignment
- * @version 1.0.0
  *
- * Dynamically assigns specialist modes to Polly Pads based on
- * mission phase and crisis type. The "brain" that decides who
- * does what during autonomous operations.
+ * Dual-surface coordinator module:
+ * 1) Legacy coordinator for ModePad + Core Squad integration (`setPhase`, `handleCrisis`).
+ * 2) Compatibility coordinator + BFT squad API used by v2 Polly Pad tests.
  */
-import { Squad } from './squad';
+import { Squad as CoreSquad } from './squad';
 import { CrisisType, ModeAssignment, SpecialistMode } from './modes/types';
-/**
- * Mission phase for mode assignment defaults.
- */
+import { Squad } from './squad';
 export type MissionPhase = 'transit' | 'science_ops' | 'maintenance' | 'crisis' | 'earth_sync' | 'standby';
-/**
- * Crisis assessment returned by the coordinator.
- */
 export interface CrisisAssessment {
-    /** Crisis type */
     type: CrisisType;
-    /** Severity (0-1) */
     severity: number;
-    /** Mode assignments for each pad */
     assignments: ModeAssignment[];
-    /** Whether Earth contact is needed */
     requiresEarthContact: boolean;
-    /** Estimated resolution time in minutes */
     estimatedResolutionMinutes: number;
-    /** Timestamp */
     assessedAt: number;
 }
-/**
- * Phase configuration for default mode assignments.
- */
 interface PhaseConfig {
-    /** Default modes for the first N pads in the squad */
     defaultModes: SpecialistMode[];
-    /** Description of this phase */
     description: string;
 }
-/**
- * MissionCoordinator — Smart Mode Assignment
- *
- * Dynamically assigns specialist modes to Polly Pads in a squad based on
- * the current mission phase or crisis type.
- *
- * @example
- * ```typescript
- * const coordinator = new MissionCoordinator(squad);
- *
- * // Normal science operations
- * coordinator.setPhase('science_ops');
- *
- * // Crisis hits!
- * const assessment = coordinator.handleCrisis('equipment_failure', 0.7);
- * // Pads are reassigned: 2 engineering, 1 systems, 1 planner, 1 comms, 1 standby
- *
- * // Crisis resolved
- * coordinator.setPhase('science_ops');
- * ```
- */
+export declare const BFT: {
+    readonly QUORUM: {
+        readonly routine: 3;
+        readonly critical: 4;
+        readonly destructive: 5;
+    };
+};
+export type VoteDecision = 'APPROVE' | 'REJECT' | 'DEFER';
+export interface Vote {
+    padId: string;
+    decision: VoteDecision;
+    confidence: number;
+    timestamp: number;
+}
+export interface VotingSession {
+    id: string;
+    proposal: string;
+    proposerId: string;
+    severity: keyof typeof BFT.QUORUM;
+    status: 'open' | 'approved' | 'rejected';
+    votes: Vote[];
+    createdAt: number;
+}
+export interface SquadMember {
+    padId: string;
+    healthy: boolean;
+    lastHeartbeat: number;
+}
+export interface ConsensusResult {
+    approved: boolean;
+    approveCount: number;
+    rejectCount: number;
+    deferCount: number;
+    quorumRequired: number;
+}
+export declare class Squad {
+    readonly id: string;
+    private readonly maxMembers;
+    private members;
+    private assignments;
+    private sessions;
+    constructor(id: string);
+    addMember(padId: string): void;
+    getMembers(): SquadMember[];
+    get healthyCount(): number;
+    get hasBftQuorum(): boolean;
+    assignMode(padId: string, mode: SpecialistMode): void;
+    getAssignedMode(padId: string): SpecialistMode | null;
+    createVotingSession(proposal: string, proposerId: string, severity: keyof typeof BFT.QUORUM): VotingSession;
+    castVote(sessionId: string, vote: Vote): void;
+    checkConsensus(sessionId: string): ConsensusResult;
+    getSession(sessionId: string): VotingSession | null;
+    checkHealth(staleThresholdMs: number): string[];
+}
 export declare class MissionCoordinator {
-    private squad;
+    private legacySquad;
+    private squads;
     private _currentPhase;
     private _activeCrisis;
     private phaseHistory;
     private crisisHistory;
-    constructor(squad: Squad);
+    constructor(squad?: CoreSquad);
     get currentPhase(): MissionPhase;
     get activeCrisis(): CrisisAssessment | null;
-    /**
-     * Set the mission phase and assign default modes to all pads.
-     */
     setPhase(phase: MissionPhase): ModeAssignment[];
-    /**
-     * Handle a crisis by dynamically reassigning modes.
-     *
-     * @param crisisType The type of crisis detected
-     * @param severity Severity score (0-1)
-     * @returns Crisis assessment with mode assignments
-     */
     handleCrisis(crisisType: CrisisType, severity?: number): CrisisAssessment;
-    /**
-     * Resolve the current crisis and return to a specified phase.
-     */
     resolveCrisis(returnPhase?: MissionPhase): ModeAssignment[];
-    /**
-     * Get the recommended mode assignments for a crisis type (without applying).
-     */
     assessCrisis(crisisType: CrisisType, severity?: number): CrisisAssessment;
-    /**
-     * Get the mode distribution for a given phase.
-     */
     getPhaseConfig(phase: MissionPhase): PhaseConfig;
-    /**
-     * Get crisis history.
-     */
     getCrisisHistory(): CrisisAssessment[];
-    /**
-     * Get phase history.
-     */
     getPhaseHistory(): Array<{
         phase: MissionPhase;
         timestamp: number;
     }>;
+    registerSquad(squad: Squad): void;
+    assignDefaultModes(squadId: string, mode: SpecialistMode): void;
+    getRecommendedAssignment(squadId: string, crisisType: CrisisType | 'power_emergency'): Map<string, SpecialistMode>;
+    executeCrisisReassignment(squadId: string, crisisType: CrisisType | 'power_emergency', immediate: boolean): {
+        assignment: Map<string, SpecialistMode>;
+        session?: VotingSession;
+    };
+    applyAssignment(squadId: string, assignment: Map<string, SpecialistMode>): void;
 }
 export {};
 //# sourceMappingURL=mission-coordinator.d.ts.map
