@@ -25,6 +25,13 @@
  * - Swarm Formation Coordination (geometric governance formations)
  * - Brain Integration Pipeline (end-to-end unified pipeline)
  * - PHDM Core (Hamiltonian path + Kyber K₀ + geodesic monitoring + Langues metric)
+ *
+ * DAG Edge Governance (Layer 8 / Layer 9):
+ *   ai_brain → fleet is TYPE-ONLY.
+ *   This module imports GovernanceTier and CrawlRole type definitions from fleet/
+ *   but has ZERO runtime dependencies on fleet code. This preserves the acyclic
+ *   build graph: kernel → brain → fleet (no reverse runtime edge).
+ *   Violation of this invariant will cause tsc -b to fail by design.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DEFAULT_TOI_CONFIG = exports.meetsGenesisThreshold = exports.computeHatchWeight = exports.evaluateTimeOverIntent = exports.toiTriadicDistance = exports.harmonicWallTOI = exports.computeEffectiveR = exports.positiveKappa = exports.computeTriadicWeights = exports.computeGamma = exports.computeTimeDilation = exports.BLOCK_RANGES = exports.enforceConservationLaws = exports.conservationRefactorAlign = exports.computeGlobalInvariant = exports.projectSpectralBounds = exports.projectFluxNormalization = exports.projectLatticeContinuity = exports.projectEnergyBalance = exports.projectPhaseCoherence = exports.projectContainment = exports.replaceBlock = exports.extractBlock = exports.BrainAuditLogger = exports.quasicrystalPotential = exports.octreeInsert = exports.icosahedralProjection = exports.createOctreeRoot = exports.classifyVoxelRealm = exports.brainStateToPenrose = exports.BFTConsensus = exports.runCombinedDetection = exports.detectThreatLissajous = exports.detectSixTonic = exports.detectPhaseDistance = exports.detectDecimalDrift = exports.detectCurvatureAccumulation = exports.vectorNorm = exports.safePoincareEmbed = exports.mobiusAddSafe = exports.hyperbolicDistanceSafe = exports.goldenWeightProduct = exports.euclideanDistance = exports.applyGoldenWeighting = exports.UnifiedBrainState = exports.POINCARE_MAX_NORM = exports.PHI = exports.DEFAULT_BRAIN_CONFIG = exports.BRAIN_EPSILON = exports.BRAIN_DIMENSIONS = void 0;
