@@ -7,6 +7,7 @@ Unified command-line tool for:
   - xlate: Cross-tongue retokenization with HMAC attestation
   - blend/unblend: Multi-tongue stripe encoding
   - geoseal-encrypt/decrypt: Context-bound envelope encryption
+  - seed: AetherLex Seed — Sacred Tongue mnemonic to PQC key material
 
 Run without args for selftest.
 
@@ -14,6 +15,7 @@ Usage:
   python cli_toolkit.py                     # selftest
   python cli_toolkit.py encode --tongue KO  # encode stdin
   python cli_toolkit.py xlate --src KO --dst AV  # cross-tongue
+  python cli_toolkit.py seed --length 13    # generate mnemonic + derive seed
 """
 
 import argparse
@@ -24,9 +26,14 @@ import hmac
 import json
 import math
 import os
+import struct
 import sys
 import time
 from typing import Dict, List, Tuple, Iterable
+
+# ---------- Constants ----------
+
+MAX_PAYLOAD_BYTES = 16 * 1024 * 1024  # 16 MiB safety limit
 
 # ---------- Core lexicon & tokenizer ----------
 
@@ -68,7 +75,7 @@ def canon_token(token: str) -> str:
 class Lexicons:
     def __init__(self, table: Dict[str, Dict[str, str]] | None = None):
         if table is None:
-            table = self._demo_lexicons()
+            table = self._canon_lexicons()
         self.by_idx: Dict[str, List[str]] = {}
         self.by_tok: Dict[str, Dict[str, int]] = {}
         for tg in TONGUES:
@@ -111,8 +118,110 @@ class Lexicons:
             )
         return inv[key]
 
-    def _demo_lexicons(self) -> Dict[str, Dict[str, str]]:
-        """256-token bijective generator per tongue using nibble mapping (16x16)."""
+    # ── Canonical Sacred Tongues v1.1 (from sacredTongues.ts) ──────────
+    # Each tongue: 16 prefixes × 16 suffixes = 256 tokens.
+    # Token format: prefix'suffix (apostrophe as morpheme seam).
+    # Index = (prefix_idx << 4) | suffix_idx.
+    _CANON = {
+        "KO": {
+            "name": "Kor'aelin",
+            "domain": "nonce/flow/intent",
+            "prefixes": [
+                "kor", "ael", "lin", "dah", "ru", "mel", "ik", "sor",
+                "in", "tiv", "ar", "ul", "mar", "vex", "yn", "zha",
+            ],
+            "suffixes": [
+                "ah", "el", "in", "or", "ru", "ik", "mel", "sor",
+                "tiv", "ul", "vex", "zha", "dah", "lin", "yn", "mar",
+            ],
+        },
+        "AV": {
+            "name": "Avali",
+            "domain": "aad/header/metadata",
+            "prefixes": [
+                "saina", "talan", "vessa", "maren", "oriel", "serin",
+                "nurel", "lirea", "kiva", "lumen", "calma", "ponte",
+                "verin", "nava", "sela", "tide",
+            ],
+            "suffixes": [
+                "a", "e", "i", "o", "u", "y", "la", "re",
+                "na", "sa", "to", "mi", "ve", "ri", "en", "ul",
+            ],
+        },
+        "RU": {
+            "name": "Runethic",
+            "domain": "salt/binding",
+            "prefixes": [
+                "khar", "drath", "bront", "vael", "ur", "mem", "krak",
+                "tharn", "groth", "basalt", "rune", "sear", "oath",
+                "gnarl", "rift", "iron",
+            ],
+            "suffixes": [
+                "ak", "eth", "ik", "ul", "or", "ar", "um", "on",
+                "ir", "esh", "nul", "vek", "dra", "kh", "va", "th",
+            ],
+        },
+        "CA": {
+            "name": "Cassisivadan",
+            "domain": "ciphertext/bitcraft",
+            "prefixes": [
+                "bip", "bop", "klik", "loopa", "ifta", "thena", "elsa",
+                "spira", "rythm", "quirk", "fizz", "gear", "pop",
+                "zip", "mix", "chass",
+            ],
+            "suffixes": [
+                "a", "e", "i", "o", "u", "y", "ta", "na",
+                "sa", "ra", "lo", "mi", "ki", "zi", "qwa", "sh",
+            ],
+        },
+        "UM": {
+            "name": "Umbroth",
+            "domain": "redaction/veil",
+            "prefixes": [
+                "veil", "zhur", "nar", "shul", "math", "hollow",
+                "hush", "thorn", "dusk", "echo", "ink", "wisp",
+                "bind", "ache", "null", "shade",
+            ],
+            "suffixes": [
+                "a", "e", "i", "o", "u", "ae", "sh", "th",
+                "ak", "ul", "or", "ir", "en", "on", "vek", "nul",
+            ],
+        },
+        "DR": {
+            "name": "Draumric",
+            "domain": "tag/structure",
+            "prefixes": [
+                "anvil", "tharn", "mek", "grond", "draum", "ektal",
+                "temper", "forge", "stone", "steam", "oath", "seal",
+                "frame", "pillar", "rivet", "ember",
+            ],
+            "suffixes": [
+                "a", "e", "i", "o", "u", "ae", "rak", "mek",
+                "tharn", "grond", "vek", "ul", "or", "ar", "en", "on",
+            ],
+        },
+    }
+
+    @classmethod
+    def _canon_lexicons(cls) -> Dict[str, Dict[str, str]]:
+        """Build 256-token bijective tables from canonical Sacred Tongues.
+
+        Byte value b maps to: prefix[b >> 4] + "'" + suffix[b & 0xF].
+        """
+        out: Dict[str, Dict[str, str]] = {}
+        for tg, spec in cls._CANON.items():
+            pfx = spec["prefixes"]
+            sfx = spec["suffixes"]
+            assert len(pfx) == 16 and len(sfx) == 16, f"{tg}: need 16×16"
+            table: Dict[str, str] = {}
+            for i in range(256):
+                table[str(i)] = f"{pfx[(i >> 4) & 0xF]}'{sfx[i & 0xF]}"
+            out[tg] = table
+        return out
+
+    @staticmethod
+    def _demo_lexicons() -> Dict[str, Dict[str, str]]:
+        """Legacy placeholder lexicons (deprecated — use canon)."""
         HI = [
             "ka", "ke", "ki", "ko", "ku", "sa", "se", "si",
             "so", "su", "ra", "re", "ri", "ro", "ru", "za",
@@ -186,14 +295,26 @@ class CrossTokenizer:
         "UM": 4 * math.pi / 3,
         "DR": 5 * math.pi / 3,
     }
-    WEIGHT = {
-        "KO": 1.00,
+    # PHDM weights (phi^n progression — crisis/governance)
+    WEIGHT_PHDM = {
+        "KO": 1.000,
         "AV": 1.618,
         "RU": 2.618,
         "CA": 4.236,
         "UM": 6.854,
         "DR": 11.090,
     }
+    # LWS weights (linear — base operations)
+    WEIGHT_LWS = {
+        "KO": 1.000,
+        "AV": 1.125,
+        "RU": 1.250,
+        "CA": 1.333,
+        "UM": 1.500,
+        "DR": 1.667,
+    }
+    # Default to PHDM (backwards compatible)
+    WEIGHT = WEIGHT_PHDM
 
     def __init__(self, tok: TongueTokenizer):
         self.tok = tok
@@ -441,6 +562,139 @@ def geoseal_decrypt(
     return True, pt
 
 
+# ---------- AetherLex Seed — Sacred Tongue mnemonic for PQC key material ----------
+
+# Global index: tongue_order * 256 + byte_index → [0, 1535]
+_TONGUE_ORDER = {"KO": 0, "AV": 1, "RU": 2, "CA": 3, "UM": 4, "DR": 5}
+BITS_PER_TOKEN = math.log2(6 * 256)  # ~10.585 bits per token
+SEED_DOMAIN = b"AETHERLEX-SEED-v1"
+SEED_SEPARATOR = b"\x1f"
+
+
+def token_to_global_index(tongue: str, byte_val: int) -> int:
+    """Map a (tongue, byte) pair to global index [0, 1535]."""
+    return _TONGUE_ORDER[tongue] * 256 + byte_val
+
+
+def global_index_to_token(lex: Lexicons, idx: int) -> Tuple[str, str]:
+    """Map global index [0, 1535] to (tongue_code, token_string)."""
+    tg_idx = idx // 256
+    byte_val = idx % 256
+    tg = TONGUES[tg_idx]
+    return tg, lex.token_of(tg, byte_val)
+
+
+def parse_aetherlex_phrase(lex: Lexicons, phrase: str) -> List[Tuple[str, int]]:
+    """Parse a space-separated phrase of Sacred Tongue tokens.
+
+    Returns list of (tongue_code, global_index) pairs.
+    Identifies the tongue by checking which tongue can decode each token.
+    """
+    results: List[Tuple[str, int]] = []
+    for raw_tok in phrase.strip().split():
+        raw_tok = raw_tok.strip()
+        if not raw_tok:
+            continue
+        found = False
+        for tg in TONGUES:
+            try:
+                byte_val = lex.byte_of(tg, raw_tok)
+                results.append((tg, token_to_global_index(tg, byte_val)))
+                found = True
+                break
+            except KeyError:
+                continue
+        if not found:
+            raise ValueError(f"token {raw_tok!r} not found in any tongue")
+    return results
+
+
+def encode_token_indices(indices: List[int], bits: int = 11) -> bytes:
+    """Pack global indices as 11-bit values into a byte string."""
+    total_bits = len(indices) * bits
+    total_bytes = (total_bits + 7) // 8
+    buf = bytearray(total_bytes)
+    bit_pos = 0
+    for idx in indices:
+        for b in range(bits):
+            if idx & (1 << (bits - 1 - b)):
+                byte_off = (bit_pos + b) // 8
+                bit_off = 7 - ((bit_pos + b) % 8)
+                buf[byte_off] |= 1 << bit_off
+        bit_pos += bits
+    return bytes(buf)
+
+
+def derive_seed(
+    lex: Lexicons,
+    phrase: str,
+    output_len: int = 64,
+    weight_system: str = "lws",
+    supplemental: bytes = b"",
+) -> bytes:
+    """Derive PQC key material from a Sacred Tongue mnemonic phrase.
+
+    1. Parse phrase → token indices
+    2. Encode as 11-bit packed bitstring
+    3. Compute LWS weight header (float32)
+    4. Domain separation: SEED_DOMAIN || 0x1F || weight || 0x1F || tokenBits || [supplemental]
+    5. SHA-512 hash
+    6. Truncate to output_len (32 or 64 bytes)
+    """
+    parsed = parse_aetherlex_phrase(lex, phrase)
+    if len(parsed) < 6:
+        raise ValueError("AetherLex phrase must have at least 6 tokens")
+
+    indices = [gi for _, gi in parsed]
+    token_bits = encode_token_indices(indices)
+
+    # Weight header: sum of weights for all tokens
+    weights = (
+        CrossTokenizer.WEIGHT_LWS if weight_system == "lws"
+        else CrossTokenizer.WEIGHT_PHDM
+    )
+    total_weight = sum(weights[tg] for tg, _ in parsed)
+    weight_bytes = struct.pack(">f", total_weight)
+
+    # Domain-separated input
+    preimage = (
+        SEED_DOMAIN
+        + SEED_SEPARATOR
+        + weight_bytes
+        + SEED_SEPARATOR
+        + token_bits
+    )
+    if supplemental:
+        preimage += SEED_SEPARATOR + supplemental
+
+    digest = hashlib.sha512(preimage).digest()
+    return digest[:output_len]
+
+
+def generate_random_phrase(lex: Lexicons, length: int = 13) -> str:
+    """Generate a CSPRNG-backed random AetherLex mnemonic phrase."""
+    tokens: List[str] = []
+    for _ in range(length):
+        global_idx = int.from_bytes(os.urandom(2), "big") % (6 * 256)
+        _, tok = global_index_to_token(lex, global_idx)
+        tokens.append(tok)
+    return " ".join(tokens)
+
+
+def split_for_mlkem(seed: bytes) -> Tuple[bytes, bytes]:
+    """Split a 64-byte seed into ML-KEM-768 (d, z) pair."""
+    if len(seed) < 64:
+        raise ValueError("need 64-byte seed for ML-KEM split")
+    return seed[:32], seed[32:64]
+
+
+def split_for_mldsa(seed: bytes) -> bytes:
+    """Extract ML-DSA-65 xi (32 bytes) from seed."""
+    if len(seed) < 32:
+        raise ValueError("need ≥32-byte seed for ML-DSA split")
+    return seed[:32]
+
+
 # ---------- CLI ----------
 
 def load_lexicons(path: str | None) -> Lexicons:
@@ -576,6 +830,38 @@ def cmd_gendec(args):
     sys.stdout.buffer.write(pt)
 
 
+def cmd_seed(args):
+    lex = load_lexicons(args.lexicons)
+    if args.phrase:
+        phrase = args.phrase
+    else:
+        phrase = generate_random_phrase(lex, args.length)
+    seed = derive_seed(
+        lex,
+        phrase,
+        output_len=args.bytes,
+        weight_system=args.weights,
+    )
+    result = {
+        "phrase": phrase,
+        "seed_hex": seed.hex(),
+        "seed_b64": base64.b64encode(seed).decode(),
+        "length_bytes": len(seed),
+        "entropy_bits": round(
+            len(phrase.split()) * BITS_PER_TOKEN, 2
+        ),
+        "weight_system": args.weights,
+    }
+    if args.split == "mlkem":
+        d, z = split_for_mlkem(seed)
+        result["mlkem_d"] = d.hex()
+        result["mlkem_z"] = z.hex()
+    elif args.split == "mldsa":
+        xi = split_for_mldsa(seed)
+        result["mldsa_xi"] = xi.hex()
+    print(json.dumps(result, indent=2))
+
+
 # ---------- Selftest ----------
 
 def selftest() -> int:
@@ -584,14 +870,26 @@ def selftest() -> int:
     xt = CrossTokenizer(tok)
     payload = os.urandom(1024)
 
-    # roundtrip per tongue
+    # ── Canon verification ──
+    # Verify canonical tokens match expected format
+    assert lex.token_of("KO", 0) == "kor'ah", "KO byte 0 should be kor'ah"
+    assert lex.token_of("AV", 0) == "saina'a", "AV byte 0 should be saina'a"
+    assert lex.token_of("RU", 0) == "khar'ak", "RU byte 0 should be khar'ak"
+    assert lex.token_of("CA", 0) == "bip'a", "CA byte 0 should be bip'a"
+    assert lex.token_of("UM", 0) == "veil'a", "UM byte 0 should be veil'a"
+    assert lex.token_of("DR", 0) == "anvil'a", "DR byte 0 should be anvil'a"
+    # Spot-check last token (byte 255 = prefix[15]'suffix[15])
+    assert lex.token_of("KO", 255) == "zha'mar"
+    assert lex.token_of("DR", 255) == "ember'on"
+
+    # ── Roundtrip per tongue ──
     for tg in TONGUES:
         toks = tok.encode_bytes(tg, payload)
         dec = tok.decode_tokens(tg, toks)
-        assert dec == payload
+        assert dec == payload, f"{tg} roundtrip failed"
         assert len(set(tok.encode_bytes(tg, bytes(range(256))))) == 256
 
-    # decoding robustness: case + smart quotes + punctuation shouldn't break
+    # ── Decoding robustness: case + smart quotes + punctuation ──
     for tg in TONGUES:
         toks = tok.encode_bytes(tg, payload)
         noisy = [
@@ -612,9 +910,9 @@ def selftest() -> int:
             == payload
         )
 
-    # canonical-collision guard
+    # ── Canonical-collision guard ──
     try:
-        base = Lexicons()._demo_lexicons()
+        base = Lexicons._canon_lexicons()
         base["KO"]["0"] = "X"
         base["KO"]["1"] = "x"  # canonical collision
         Lexicons(base)
@@ -622,7 +920,7 @@ def selftest() -> int:
     except ValueError:
         pass
 
-    # cross-retokenize (byte + semantic)
+    # ── Cross-retokenize (byte + semantic) ──
     for s in TONGUES:
         for d in TONGUES:
             ttext = " ".join(tok.encode_bytes(s, payload))
@@ -637,13 +935,13 @@ def selftest() -> int:
             )
             assert tok.decode_tokens(d, out_tokens2) == payload
 
-    # blend/unblend
+    # ── Blend/unblend ──
     pattern = ["KO", "KO", "AV", "RU", "CA", "UM", "DR"]
     pairs = xt.blend(pattern, payload)
     un = xt.unblend(pattern, pairs)
     assert un == payload
 
-    # geoseal
+    # ── GeoSeal ──
     ctx = [0.2, -0.3, 0.7, 1.0, -2.0, 0.5, 3.1, -9.9, 0.0]
     pt = b"hello aethermoore"
     pt_b64 = base64.b64encode(pt).decode()
@@ -653,13 +951,65 @@ def selftest() -> int:
     ok, decpt = geoseal_decrypt(env, ctx, kem, dsa)
     assert ok and decpt == pt
 
-    # negative: corrupted token should fail reverse map
+    # ── Negative: corrupted token should fail ──
     bad = tok.encode_bytes("KO", b"\x00\x01")
     bad[1] = bad[1] + "x"
     try:
         tok.decode_tokens("KO", bad)
         raise AssertionError("expected KeyError for bad token")
     except KeyError:
+        pass
+
+    # ── AetherLex Seed ──
+    # Global index space: [0, 1535]
+    assert token_to_global_index("KO", 0) == 0
+    assert token_to_global_index("DR", 255) == 1535
+    tg, tok_str = global_index_to_token(lex, 0)
+    assert tg == "KO" and tok_str == "kor'ah"
+    tg, tok_str = global_index_to_token(lex, 1535)
+    assert tg == "DR" and tok_str == "ember'on"
+
+    # Phrase generation and parsing roundtrip
+    phrase = generate_random_phrase(lex, 13)
+    parsed = parse_aetherlex_phrase(lex, phrase)
+    assert len(parsed) == 13
+    for tg_code, gi in parsed:
+        assert tg_code in TONGUES
+        assert 0 <= gi <= 1535
+
+    # Seed derivation: deterministic
+    fixed_phrase = "kor'ah saina'a khar'ak bip'a veil'a anvil'a"
+    seed1 = derive_seed(lex, fixed_phrase, output_len=64)
+    seed2 = derive_seed(lex, fixed_phrase, output_len=64)
+    assert seed1 == seed2, "seed derivation must be deterministic"
+    assert len(seed1) == 64
+
+    # Different weight systems give different seeds
+    seed_lws = derive_seed(lex, fixed_phrase, weight_system="lws")
+    seed_phdm = derive_seed(lex, fixed_phrase, weight_system="phdm")
+    assert seed_lws != seed_phdm, "LWS and PHDM should produce different seeds"
+
+    # ML-KEM split
+    d, z = split_for_mlkem(seed1)
+    assert len(d) == 32 and len(z) == 32
+    assert d + z == seed1
+
+    # ML-DSA split
+    xi = split_for_mldsa(seed1)
+    assert len(xi) == 32 and xi == seed1[:32]
+
+    # Short phrase should fail
+    try:
+        derive_seed(lex, "kor'ah saina'a khar'ak")
+        raise AssertionError("expected ValueError for short phrase")
+    except ValueError:
+        pass
+
+    # Unknown token should fail
+    try:
+        parse_aetherlex_phrase(lex, "kor'ah NOTAWORD saina'a")
+        raise AssertionError("expected ValueError for unknown token")
+    except ValueError:
         pass
 
     print("selftest ok")
@@ -727,6 +1077,15 @@ def build_cli():
     gd.add_argument("--dsa-pk", required=True)
     gd.add_argument("--env")
     gd.set_defaults(func=cmd_gendec)
+
+    ps = sub.add_parser("seed", help="AetherLex Seed: mnemonic to PQC key material")
+    ps.add_argument("--phrase", help="Existing mnemonic phrase (omit to generate)")
+    ps.add_argument("--length", type=int, default=13, help="Token count for generated phrase")
+    ps.add_argument("--bytes", type=int, default=64, choices=[32, 64], help="Seed output length")
+    ps.add_argument("--weights", default="lws", choices=["lws", "phdm"], help="Weight system")
+    ps.add_argument("--split", choices=["mlkem", "mldsa"], help="Split seed for PQC algorithm")
+    ps.add_argument("--lexicons")
+    ps.set_defaults(func=cmd_seed)
 
     return p
 
