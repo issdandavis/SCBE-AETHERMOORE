@@ -158,3 +158,13 @@ MIT License - See LICENSE file for details.
 - GitHub: https://github.com/anthropics/scbe-aethermoore
 - Documentation: https://scbe-aethermoore.readthedocs.io
 - npm Package: @scbe/aethermoore
+
+
+## Fleet Starter Templates (npm)
+
+If installed from npm, starter fleet assets are available under `examples/npm/`:
+
+- `examples/npm/agents/*.json`
+- `examples/npm/use-cases/*.json`
+
+Use them as scaffolds for orchestration payloads and risk policy bootstrapping.
