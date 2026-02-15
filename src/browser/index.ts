@@ -125,6 +125,9 @@ export type {
 export { BrowserAgent, createBrowserAgent, MockBrowserBackend } from './agent.js';
 export type { BrowserBackend, EscalationHandler, BrowserAgentConfig } from './agent.js';
 
+// Playwright backend (real browser)
+export { PlaywrightBackend, createPlaywrightBackend } from './playwright-backend.js';
+export type { PlaywrightBackendOptions } from './playwright-backend.js';
 // CDP Backend (SCBEPuppeteer — zero-dependency browser automation)
 export { CDPBackend, createCDPBackend } from './cdp-backend.js';
 export type { CDPBackendOptions } from './cdp-backend.js';

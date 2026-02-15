@@ -477,6 +477,53 @@ export {
 } from './driftTracker.js';
 
 // ═══════════════════════════════════════════════════════════════
+// Sheaf Cohomology — Tarski Lattice Governance
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Lattices
+  RiskLevel,
+  RISK_LATTICE,
+  BOOLEAN_LATTICE,
+  intervalLattice,
+  productLattice,
+  // Galois connections
+  identityConnection,
+  // Sheaf builders
+  constantSheaf,
+  buildTemporalComplex,
+  buildGovernanceSheaf,
+  // Tarski Laplacian + flow
+  tarskiLaplacian0,
+  harmonicFlowStep,
+  harmonicFlow,
+  globalSections,
+  // Obstruction
+  obstructionDegree,
+  isGlobalSection,
+  // Policy detection
+  detectPolicyObstruction,
+  // Fail-to-noise
+  failToNoise,
+  // T-braiding
+  braidedTemporalDistance,
+  braidedMetaTime,
+  // Harmonic wall
+  cohomologicalHarmonicWall,
+  // Types
+  type CompleteLattice,
+  type GaloisConnection,
+  type CellVertex,
+  type CellEdge,
+  type CellComplex,
+  type CellularSheaf,
+  type Cochain0,
+  type HarmonicFlowResult,
+  type EdgeTwist,
+  type TemporalVariant,
+  type PolicyObstructionResult,
+} from './sheafCohomology.js';
+
 // Sheaf Cohomology — Tarski Laplacian on Lattice-Valued Sheaves
 // ═══════════════════════════════════════════════════════════════
 
