@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scbe-aethermoore.dev/schemas/training-data",
+  "title": "SCBE-AETHERMOORE Training Data Schema",
+  "description": "JSON Schema for validating SCBE-AETHERMOORE AI training data entries. All JSONL files in the training-data/ directory must conform to this schema.",
+  "version": "3.0.0",
+  "type": "object",
+  "required": ["id", "category", "instruction", "response", "metadata"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z]+-[0-9]{3,4}$",
+      "description": "Unique identifier in format: prefix-NNN (e.g., 'inst-001', 'kb-012', 'eval-025')"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "architecture",
+        "post-quantum-crypto",
+        "governance",
+        "sacred-tongues",
+        "polyhedra",
+        "harmonic-scaling",
+        "trust-tubes",
+        "poincare-ball",
+        "fsgs",
+        "msr-algebra",
+        "quantum-lattice",
+        "breathing",
+        "layers",
+        "zones",
+        "constants",
+        "topology",
+        "trust-rings",
+        "21d-embedding",
+        "energy",
+        "phason",
+        "pipeline",
+        "hamiltonian",
+        "bone-density",
+        "phase-diagram",
+        "safety",
+        "quantum",
+        "toroidal",
+        "golden-ratio",
+        "transition",
+        "fractal",
+        "hmac-chain",
+        "ml-kem",
+        "ml-dsa",
+        "hamiltonian-routing",
+        "geometric-cages",
+        "quasicrystal",
+        "spiral-seal",
+        "harmonic-wall",
+        "poincare-embedding",
+        "energy-conservation"
+      ],
+      "description": "Domain category for the entry"
+    },
+    "instruction": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 500,
+      "description": "The question or instruction prompt"
+    },
+    "response": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 5000,
+      "description": "The expected response or answer"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["source", "version"],
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": ["crystal_cranium_v3", "scbe_aethermoore", "phdm_spec"],
+          "description": "Source document"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "Spec version (semver)"
+        },
+        "author": {
+          "type": "string",
+          "description": "Author name"
+        },
+        "eval_type": {
+          "type": "string",
+          "enum": ["factual_recall", "reasoning", "computation", "classification", "definition", "sequence"],
+          "description": "Type of evaluation (for eval entries)"
+        }
+      },
+      "additionalProperties": true
+    },
+    "expected": {
+      "type": "string",
+      "description": "Expected answer for evaluation entries"
+    },
+    "response_should_contain": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Keywords that a correct response should contain (for eval entries)"
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": ["easy", "medium", "hard"],
+      "description": "Difficulty level (for eval entries)"
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "id": "inst-001",
+      "category": "architecture",
+      "instruction": "Describe the SCBE-AETHERMOORE architecture at a high level.",
+      "response": "SCBE-AETHERMOORE is a 14-layer cryptographic-geometric stack...",
+      "metadata": {
+        "source": "crystal_cranium_v3",
+        "version": "3.0.0",
+        "author": "Issac Davis"
+      }
+    }
+  ]
+}
