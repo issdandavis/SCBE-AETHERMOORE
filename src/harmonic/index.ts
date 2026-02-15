@@ -532,6 +532,43 @@ export {
   type SheafAnalysisResult,
 } from './sheafCohomology.js';
 
+// ── Linguistic Cross-Talk Kernel (cross-domain reasoning) ──────
+export {
+  // Kernel class
+  CrossTalkKernel,
+  createCrossTalkKernel,
+  defaultCrossTalkKernel,
+  // Graph construction
+  buildCrossTalkEdges,
+  // Utilities
+  domainToTongue,
+  tongueToDomain,
+  resonanceToVector,
+  computeVagueness,
+  // Validation
+  isValidatorAvailable,
+  validatorFacetCount,
+  validationStrength,
+  // Constants
+  ALL_TONGUES as CROSS_TALK_TONGUES,
+  ALL_DOMAINS,
+  DOMAIN_PROFILES,
+  DEFAULT_KERNEL_CONFIG,
+  // Types
+  type TongueCode as CrossTalkTongueCode,
+  type AcademicDomain,
+  type CrossTalkEdge,
+  type CrossTalkRelationship,
+  type PolyhedralValidator,
+  type DomainProfile,
+  type DomainToken,
+  type CrossDomainTranslation,
+  type CrossTalkRoute,
+  type CrossTalkResult,
+  type CrossTalkKernelConfig,
+  type GrammarType,
+} from './linguisticCrossTalk.js';
+
 // ── PHDM Sheaf Lattice (constraint-based governance routing) ──
 export {
   PHDMGovernanceRouter,
