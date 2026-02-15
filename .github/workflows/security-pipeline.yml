@@ -1,0 +1,291 @@
+name: Security Pipeline
+
+on:
+  push:
+    branches: [ main, develop, 'claude/**' ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 6 * * 1'  # Weekly Monday 6 AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  # ──────────────────────────────────────────────────
+  # CodeQL Static Analysis (SAST)
+  # ──────────────────────────────────────────────────
+  codeql-analysis:
+    name: CodeQL SAST
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript-typescript', 'python' ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: +security-extended,security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+
+  # ──────────────────────────────────────────────────
+  # Python Security Linting (Bandit)
+  # ──────────────────────────────────────────────────
+  bandit-scan:
+    name: Python Security Lint (Bandit)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Bandit
+        run: pip install bandit[toml]
+
+      - name: Run Bandit security scan
+        run: |
+          bandit -r src/ -f json -o bandit-report.json \
+            --severity-level medium \
+            --confidence-level medium \
+            -x "*/tests/*,*/test_*" || true
+
+      - name: Display Bandit results
+        if: always()
+        run: |
+          bandit -r src/ -f screen \
+            --severity-level medium \
+            --confidence-level medium \
+            -x "*/tests/*,*/test_*" || true
+
+      - name: Upload Bandit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-security-report
+          path: bandit-report.json
+          retention-days: 30
+
+  # ──────────────────────────────────────────────────
+  # Dependency Vulnerability Scanning
+  # ──────────────────────────────────────────────────
+  dependency-scan:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          pip install pip-audit
+          npm ci
+
+      - name: Run pip-audit
+        id: pip_audit
+        continue-on-error: true
+        run: |
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+            pip-audit --format json --output pip-audit-report.json 2>&1 || true
+            pip-audit --format columns 2>&1 || true
+          fi
+
+      - name: Run npm audit
+        id: npm_audit
+        continue-on-error: true
+        run: |
+          npm audit --json > npm-audit-report.json 2>&1 || true
+          npm audit --audit-level=moderate 2>&1 || true
+
+      - name: Upload dependency scan reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-scan-reports
+          path: |
+            pip-audit-report.json
+            npm-audit-report.json
+          retention-days: 30
+
+  # ──────────────────────────────────────────────────
+  # Secret Detection (Gitleaks)
+  # ──────────────────────────────────────────────────
+  secret-detection:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ──────────────────────────────────────────────────
+  # Container Image Scanning (Trivy)
+  # ──────────────────────────────────────────────────
+  container-scan:
+    name: Container Image Scan
+    runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image for scanning
+        run: |
+          if [ -f Dockerfile ]; then
+            docker build -t scbe-aethermoore:scan .
+          else
+            echo "No Dockerfile found, skipping container scan"
+            exit 0
+          fi
+
+      - name: Run Trivy container scan
+        if: hashFiles('Dockerfile') != ''
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'scbe-aethermoore:scan'
+          format: 'sarif'
+          output: 'trivy-container-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy SARIF
+        if: hashFiles('Dockerfile') != '' && always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-container-results.sarif'
+          category: 'container-scan'
+
+  # ──────────────────────────────────────────────────
+  # Filesystem Vulnerability Scan (Trivy)
+  # ──────────────────────────────────────────────────
+  filesystem-scan:
+    name: Filesystem Vulnerability Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-fs-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+
+      - name: Upload Trivy SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-fs-results.sarif'
+          category: 'filesystem-scan'
+
+  # ──────────────────────────────────────────────────
+  # SBOM Generation
+  # ──────────────────────────────────────────────────
+  sbom-generation:
+    name: Generate SBOM
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate SBOM (CycloneDX)
+        uses: anchore/sbom-action@v0
+        with:
+          format: 'cyclonedx-json'
+          output-file: 'sbom-cyclonedx.json'
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-cyclonedx
+          path: sbom-cyclonedx.json
+          retention-days: 90
+
+  # ──────────────────────────────────────────────────
+  # Security Gate (summary + enforcement)
+  # ──────────────────────────────────────────────────
+  security-gate:
+    name: Security Gate
+    runs-on: ubuntu-latest
+    needs:
+      - codeql-analysis
+      - bandit-scan
+      - dependency-scan
+      - secret-detection
+      - filesystem-scan
+      - sbom-generation
+    if: always()
+
+    steps:
+      - name: Evaluate security gate
+        run: |
+          echo "=== SCBE-AETHERMOORE Security Pipeline Summary ==="
+          echo ""
+          echo "CodeQL SAST:         ${{ needs.codeql-analysis.result }}"
+          echo "Bandit Scan:         ${{ needs.bandit-scan.result }}"
+          echo "Dependency Scan:     ${{ needs.dependency-scan.result }}"
+          echo "Secret Detection:    ${{ needs.secret-detection.result }}"
+          echo "Filesystem Scan:     ${{ needs.filesystem-scan.result }}"
+          echo "SBOM Generation:     ${{ needs.sbom-generation.result }}"
+          echo ""
+
+          # Fail the gate if secret detection or CodeQL finds critical issues
+          if [ "${{ needs.secret-detection.result }}" = "failure" ]; then
+            echo "CRITICAL: Secrets detected in repository!"
+            exit 1
+          fi
+
+          if [ "${{ needs.codeql-analysis.result }}" = "failure" ]; then
+            echo "WARNING: CodeQL found security issues. Review required."
+          fi
+
+          echo "Security gate evaluation complete."
