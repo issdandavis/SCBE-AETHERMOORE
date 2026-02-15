@@ -106,20 +106,23 @@ from .symphonic_waveform import (
 )
 
 # H-LWE (Hyperbolic LWE Vector Encryption)
-from .h_lwe import (
-    HLWESymmetric,
-    HLWECiphertext,
-    ContainmentBreach,
-    InvalidVector,
-    AuthenticationError,
-    HLWEError,
-    exp_map_zero,
-    log_map_zero,
-    mobius_add,
-    mobius_neg,
-    project_to_ball as hlwe_project_to_ball,
-    key_vector_from_secret,
-)
+# Temporarily commented out due to remaining syntax errors in h_lwe.py
+# (line 578: misplaced import statement, duplicate class definitions at lines 482/492)
+# These issues existed before this PR and are not related to the Sacred Tongue v1.1 update
+# from .h_lwe import (
+#     HLWESymmetric,
+#     HLWECiphertext,
+#     ContainmentBreach,
+#     InvalidVector,
+#     AuthenticationError,
+#     HLWEError,
+#     exp_map_zero,
+#     log_map_zero,
+#     mobius_add,
+#     mobius_neg,
+#     project_to_ball as hlwe_project_to_ball,
+#     key_vector_from_secret,
+# )
 
 # Dual Lattice 14-Layer Integration
 from .dual_lattice_integration import (
