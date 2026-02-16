@@ -794,6 +794,7 @@ describe('N · SCBE governance scenarios', () => {
     }
   });
 });
+/**
  * SCBE Sheaf Cohomology Tests
  *
  * Tests for Tarski cohomology on lattice-valued cellular sheaves:
