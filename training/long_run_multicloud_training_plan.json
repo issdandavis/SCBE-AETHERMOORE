@@ -1,0 +1,72 @@
+{
+  "program_name": "scbe-overnight-multicloud-training",
+  "program_version": "1.0.0",
+  "description": "Long-form multi-cloud training orchestration for Hugging Face, Vertex AI, Kubernetes and AWS SageMaker",
+  "default_duration_hours": 8,
+  "providers": [
+    {
+      "id": "vertex-ai",
+      "name": "Vertex AI embedding lane",
+      "status": "ready",
+      "command": "python training/trigger_vertex_training.py {vertex_command_args} --config training/vertex_pipeline_config.yaml",
+      "working_directory": ".",
+      "required_tools": [
+        "python"
+      ],
+      "required_env": [
+        "GCP_PROJECT_ID",
+        "GCP_REGION",
+        "HF_MODEL_REPO"
+      ],
+      "notes": "Dry-run uses `--dry-run`. Execute mode submits a Vertex training job."
+    },
+    {
+      "id": "kubernetes",
+      "name": "Kubernetes long-run job lane",
+      "status": "ready",
+      "command": "kubectl apply -f k8s/training/phdm21d-longrun-training.yaml && kubectl get jobs -n scbe-training",
+      "working_directory": ".",
+      "required_tools": [
+        "kubectl"
+      ],
+      "required_env": [
+        "KUBECONFIG"
+      ],
+      "notes": "Runs a long-running job that you can swap to a real trainer image/entrypoint."
+    },
+    {
+      "id": "aws-sagemaker",
+      "name": "AWS SageMaker long-run distillation lane",
+      "status": "ready",
+      "command": "python scripts/launch_aws_sagemaker_training.py --hours {duration_hours} --run-root {run_dir} --submit --template training/aws_sagemaker_long_run_training_job.json",
+      "working_directory": ".",
+      "required_tools": [
+        "python",
+        "aws"
+      ],
+      "required_env": [
+        "AWS_REGION",
+        "SAGEMAKER_EXECUTION_ROLE_ARN",
+        "S3_TRAINING_DATA_URI",
+        "S3_OUTPUT_PATH"
+      ],
+      "notes": "Uses a rendered AWS spec and submits a real SageMaker job in execute mode."
+    },
+    {
+      "id": "huggingface",
+      "name": "Hugging Face experimental lane",
+      "status": "pending",
+      "command": "python scripts/train_hf_longrun_placeholder.py --dataset-repo {HF_DATASET_REPO} --model-repo {HF_MODEL_REPO} --duration-hours {duration_hours} --run-dir {run_dir}",
+      "working_directory": ".",
+      "required_tools": [
+        "python"
+      ],
+      "required_env": [
+        "HF_TOKEN",
+        "HF_DATASET_REPO",
+        "HF_MODEL_REPO"
+      ],
+      "notes": "Pending: replace placeholder command with your actual HF long-run training routine."
+    }
+  ]
+}
