@@ -14,9 +14,11 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+from pathlib import Path
 import shlex
 from typing import Any, Dict, Optional
 
+from agents.browsers import list_backends
 from agents.browser.session_manager import AetherbrowseSession, AetherbrowseSessionConfig
 
 
@@ -62,18 +64,35 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--backend",
         default="cdp",
-        choices=["cdp", "playwright", "selenium", "chrome_mcp", "mock"],
+        choices=["auto", "cdp", "playwright", "selenium", "chrome_mcp", "mock"],
         help="Backend driver (CDP default).",
     )
+    parser.add_argument("--list-backends", action="store_true", help="Print available backends and exit.")
     parser.add_argument("--host", default="127.0.0.1", help="Backend host for CDP/remote services.")
     parser.add_argument("--port", type=int, default=9222, help="Backend port for CDP mode.")
     parser.add_argument("--target-id", default=None, help="CDP target id (optional).")
+    parser.add_argument("--chrome-mcp-tab-id", type=int, default=None, help="Chrome MCP tab id (optional).")
+    parser.add_argument("--playwright-browser", default="chromium", help="Playwright browser type.")
+    parser.add_argument("--selenium-browser", default="chrome", help="Selenium browser type.")
+    parser.add_argument(
+        "--headless",
+        action="store_true",
+        help="Run browser backends in headless mode.",
+    )
+    parser.add_argument(
+        "--no-headless",
+        action="store_false",
+        dest="headless",
+        help="Run browser backends in non-headless mode.",
+    )
     parser.add_argument("--agent-id", default="aetherbrowse-ops", help="Agent identifier.")
     parser.add_argument("--auto-escalate", action="store_true", help="Automatically allow escalations.")
     parser.add_argument("--audit-only", action="store_true", help="Validate actions but do not execute.")
     parser.add_argument("--safe-radius", type=float, default=0.92, help="PHDM safe radius.")
     parser.add_argument("--dim", type=int, default=16, help="PHDM embedding dimension.")
     parser.add_argument("--sensitivity-factor", type=float, default=1.0, help="Scale all sensitivity scores.")
+    parser.add_argument("--training-log", type=Path, default=None, help="Append run audit records to JSONL for training.")
+    parser.set_defaults(headless=True)
 
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -127,13 +146,43 @@ async def _run_script(session: AetherbrowseSession, script_path: str, audit_only
     return results
 
 
+def _append_training_records(path: Path, session: AetherbrowseSession, results: list[dict[str, Any]]) -> None:
+    # Normalize audit payloads into model-focused training records.
+    with path.open("a", encoding="utf-8") as f:
+        for item in results:
+            audit = item.get("audit", {})
+            record = {
+                "event_type": "browser_action",
+                "session_id": item.get("session_id", session.session_id),
+                "agent_id": session.config.agent_id,
+                "backend": session.config.backend,
+                "action": item.get("action"),
+                "target": item.get("target"),
+                "decision": item.get("decision"),
+                "executed": bool(item.get("executed", False)),
+                "validation_decision": audit.get("validation", {}).get("decision"),
+                "validation_risk": audit.get("validation", {}).get("phdm_risk", None),
+                "snapshot": audit.get("snapshot"),
+                "error": item.get("error"),
+            }
+            f.write(json.dumps(record, default=str) + "\n")
+
+
 async def _main_async(args: argparse.Namespace) -> None:
+    if args.list_backends:
+        print(json.dumps(list_backends(), indent=2, default=str))
+        return
+
     cfg = AetherbrowseSessionConfig(
         backend=args.backend,
         host=args.host,
         port=args.port,
         target_id=args.target_id,
         agent_id=args.agent_id,
+        headless=args.headless,
+        playwright_browser=args.playwright_browser,
+        selenium_browser=args.selenium_browser,
+        chrome_mcp_tab_id=args.chrome_mcp_tab_id,
         auto_escalate=args.auto_escalate,
         safe_radius=args.safe_radius,
         phdm_dim=args.dim,
@@ -162,6 +211,10 @@ async def _main_async(args: argparse.Namespace) -> None:
             "results": results,
             "audit_log": session.get_audit_log(),
         }
+
+        if args.training_log:
+            _append_training_records(args.training_log, session, results)
+
         print(json.dumps(payload, indent=2, default=str))
 
 
