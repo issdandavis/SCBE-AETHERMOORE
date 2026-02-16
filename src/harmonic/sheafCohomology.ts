@@ -309,7 +309,7 @@ import { PHI } from './qcLattice.js';
  * Complete lattice with bounded meet and join.
  * A complete lattice (L, ≤) has ∧S and ∨S for every subset S ⊆ L.
  */
-export interface CompleteLattice<T> {
+export interface V2CompleteLattice<T> {
   /** Greatest element ⊤ */
   readonly top: T;
   /** Least element ⊥ */
@@ -333,7 +333,7 @@ export interface CompleteLattice<T> {
  *
  * lower preserves joins, upper preserves meets.
  */
-export interface GaloisConnection<A, B> {
+export interface V2GaloisConnection<A, B> {
   /** Left adjoint (lower): preserves joins, maps A → B */
   lower(a: A): B;
   /** Right adjoint (upper): preserves meets, maps B → A */
@@ -356,7 +356,7 @@ export interface Cell {
  * Abstract cell complex supporting arbitrary dimensions.
  * Stores incidence relations: which (k-1)-cells are faces of which k-cells.
  */
-export interface CellComplex {
+export interface V2CellComplex {
   /** All cells of dimension k */
   cells(dim: number): Cell[];
   /** Maximum dimension of any cell */
@@ -378,15 +378,15 @@ export interface CellComplex {
  * Assigns a lattice stalk F(σ) to each cell σ and Galois connections
  * for each face relation σ ≤ τ.
  */
-export interface CellularSheaf<T> {
+export interface V2CellularSheaf<T> {
   /** The target lattice */
-  readonly lattice: CompleteLattice<T>;
+  readonly lattice: V2CompleteLattice<T>;
   /** The underlying cell complex */
-  readonly complex: CellComplex;
+  readonly complex: V2CellComplex;
   /** Stalk at cell σ (same lattice for constant sheaf, may vary) */
-  stalk(cell: Cell): CompleteLattice<T>;
+  stalk(cell: Cell): V2CompleteLattice<T>;
   /** Restriction map for face relation: F(σ → τ) as Galois connection */
-  restriction(face: Cell, coface: Cell): GaloisConnection<T, T>;
+  restriction(face: Cell, coface: Cell): V2GaloisConnection<T, T>;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -399,7 +399,7 @@ export type Cochain<T> = Map<number, T>;
 /**
  * Create a cochain assigning top to every cell of dimension k.
  */
-export function topCochain<T>(sheaf: CellularSheaf<T>, dim: number): Cochain<T> {
+export function topCochain<T>(sheaf: V2CellularSheaf<T>, dim: number): Cochain<T> {
   const result: Cochain<T> = new Map();
   for (const cell of sheaf.complex.cells(dim)) {
     result.set(cell.id, sheaf.stalk(cell).top);
@@ -410,7 +410,7 @@ export function topCochain<T>(sheaf: CellularSheaf<T>, dim: number): Cochain<T> 
 /**
  * Create a cochain assigning bottom to every cell of dimension k.
  */
-export function bottomCochain<T>(sheaf: CellularSheaf<T>, dim: number): Cochain<T> {
+export function bottomCochain<T>(sheaf: V2CellularSheaf<T>, dim: number): Cochain<T> {
   const result: Cochain<T> = new Map();
   for (const cell of sheaf.complex.cells(dim)) {
     result.set(cell.id, sheaf.stalk(cell).bottom);
@@ -434,7 +434,7 @@ export function bottomCochain<T>(sheaf: CellularSheaf<T>, dim: number): Cochain<
  * so Tarski's theorem guarantees fixed points exist.
  */
 export function tarskiLaplacian<T>(
-  sheaf: CellularSheaf<T>,
+  sheaf: V2CellularSheaf<T>,
   dim: number,
   x: Cochain<T>
 ): Cochain<T> {
@@ -482,365 +482,6 @@ export function tarskiLaplacian<T>(
   }
 
   return result;
-}
-
-// ============================================================
-// HARMONIC FLOW
-// ============================================================
-
-export interface HarmonicFlowResult<V> {
-  /** Fixed point cochain (converged values) */
-  fixedPoint: Cochain0<V>;
-  /** Number of iterations to converge */
-  iterations: number;
-  /** Whether flow reached a true fixed point */
-  converged: boolean;
-}
-
-/**
- * Single harmonic flow step: Φ(x) = x ∧ L₀(x).
- *
- * Monotonically non-increasing in the lattice order — each step
- * can only lower (or maintain) values, never raise them.
- */
-export function harmonicFlowStep<V, E>(
-  sheaf: CellularSheaf<V, E>,
-  cochain: Cochain0<V>,
-): Cochain0<V> {
-  const lapl = tarskiLaplacian0(sheaf, cochain);
-  const result: Cochain0<V> = new Map();
-
-  for (const v of sheaf.complex.vertices) {
-    const vLat = sheaf.vertexLattice(v.id);
-    const cur = cochain.get(v.id) ?? vLat.bottom();
-    const lap = lapl.get(v.id) ?? vLat.bottom();
-    result.set(v.id, vLat.meet(cur, lap));
-  }
-
-  return result;
-}
-
-/**
- * Iterate harmonic flow Φ_t = (id ∧ L₀)^t until convergence.
- *
- * By Tarski's fixed-point theorem, the descending chain must
- * terminate in finitely many steps (for finite lattices).
- *
- * @param sheaf - cellular sheaf on graph
- * @param initial - starting 0-cochain
- * @param maxIterations - safety bound (default: 100)
- */
-export function harmonicFlow<V, E>(
-  sheaf: CellularSheaf<V, E>,
-  initial: Cochain0<V>,
-  maxIterations: number = 100,
-): HarmonicFlowResult<V> {
-  let current = new Map(initial);
-
-  for (let t = 0; t < maxIterations; t++) {
-    const next = harmonicFlowStep(sheaf, current);
-
-    let converged = true;
-    for (const v of sheaf.complex.vertices) {
-      const vLat = sheaf.vertexLattice(v.id);
-      const curVal = current.get(v.id) ?? vLat.bottom();
-      const nextVal = next.get(v.id) ?? vLat.bottom();
-      if (!vLat.eq(curVal, nextVal)) {
-        converged = false;
-        break;
-      }
-    }
-
-    if (converged) {
-      return { fixedPoint: current, iterations: t, converged: true };
-    }
-
-    current = next;
-  }
-
-  return { fixedPoint: current, iterations: maxIterations, converged: false };
-}
-
-// ============================================================
-// GLOBAL SECTIONS  (TH⁰)
-// ============================================================
-
-/**
- * Compute global sections TH⁰(X; F) via Tarski descent.
- *
- * Starts from the top cochain (all ⊤) and flows down to the
- * greatest postfixpoint, which equals the global sections.
- *
- * Theorem: TH⁰(X; F) = Γ(X; F) (global sections functor).
- */
-export function globalSections<V, E>(
-  sheaf: CellularSheaf<V, E>,
-  maxIterations: number = 100,
-): HarmonicFlowResult<V> {
-  const top: Cochain0<V> = new Map();
-  for (const v of sheaf.complex.vertices) {
-    top.set(v.id, sheaf.vertexLattice(v.id).top());
-  }
-  return harmonicFlow(sheaf, top, maxIterations);
-}
-
-// ============================================================
-// OBSTRUCTION MEASUREMENT
-// ============================================================
-
-/**
- * Obstruction degree: quantifies how far an initial assignment
- * is from being a global section (consensus).
- *
- * Computed as normalized total "drop" during harmonic flow.
- *
- * @returns [0, 1] where 0 = perfect consensus, 1 = maximal disagreement
- */
-export function obstructionDegree<V, E>(
-  sheaf: CellularSheaf<V, E>,
-  initial: Cochain0<V>,
-): number {
-  const { fixedPoint } = harmonicFlow(sheaf, initial);
-
-  let totalDrop = 0;
-  let vertexCount = 0;
-
-  for (const v of sheaf.complex.vertices) {
-    const lat = sheaf.vertexLattice(v.id);
-    const elems = lat.elements();
-    const maxRank = elems.length - 1;
-    if (maxRank === 0) continue;
-
-    const initVal = initial.get(v.id) ?? lat.bottom();
-    const fixedVal = fixedPoint.get(v.id) ?? lat.bottom();
-
-    const initRank = elems.findIndex((e) => lat.eq(e, initVal));
-    const fixedRank = elems.findIndex((e) => lat.eq(e, fixedVal));
-
-    totalDrop += Math.max(0, initRank - fixedRank) / maxRank;
-    vertexCount++;
-  }
-
-  return vertexCount > 0 ? totalDrop / vertexCount : 0;
-}
-
-/**
- * Check if a 0-cochain is already a global section
- * (consistent across all edges without flow needed).
- */
-export function isGlobalSection<V, E>(
-  sheaf: CellularSheaf<V, E>,
-  cochain: Cochain0<V>,
-): boolean {
-  const stepped = harmonicFlowStep(sheaf, cochain);
-  for (const v of sheaf.complex.vertices) {
-    const lat = sheaf.vertexLattice(v.id);
-    const cur = cochain.get(v.id) ?? lat.bottom();
-    const nxt = stepped.get(v.id) ?? lat.bottom();
-    if (!lat.eq(cur, nxt)) return false;
-  }
-  return true;
-}
-
-// ============================================================
-// SHEAF BUILDERS
-// ============================================================
-
-/**
- * Build a constant sheaf: same lattice L at every cell,
- * identity Galois connections everywhere.
- */
-export function constantSheaf<T>(
-  complex: CellComplex,
-  lattice: CompleteLattice<T>,
-): CellularSheaf<T, T> {
-  const id = identityConnection<T>();
-  return {
-    complex,
-    vertexLattice: () => lattice,
-    edgeLattice: () => lattice,
-    sourceRestriction: () => id,
-    targetRestriction: () => id,
-  };
-}
-
-// ============================================================
-// SCBE TEMPORAL COMPLEX
-// ============================================================
-
-/** Temporal variant identifiers */
-export type TemporalVariant = 'immediate' | 'memory' | 'governance' | 'predictive';
-
-/**
- * Build cell complex from temporal variants.
- *
- * - triadic:  3 vertices + 3 edges (triangle)
- * - tetradic: 4 vertices + 6 edges (complete K₄)
- */
-export function buildTemporalComplex(
-  mode: 'triadic' | 'tetradic' = 'triadic',
-): CellComplex {
-  const vertices: CellVertex[] = [
-    { id: 'immediate', label: 'T_i (Intent-dependent)' },
-    { id: 'memory', label: 'T_m (Time-dependent, T^t)' },
-    { id: 'governance', label: 'T_g (Context-dependent)' },
-  ];
-
-  const edges: CellEdge[] = [
-    { id: 'im-mem', source: 'immediate', target: 'memory', label: 'Intent↔Memory braid' },
-    { id: 'mem-gov', source: 'memory', target: 'governance', label: 'Memory↔Governance braid' },
-    { id: 'gov-im', source: 'governance', target: 'immediate', label: 'Governance↔Intent braid' },
-  ];
-
-  if (mode === 'tetradic') {
-    vertices.push({ id: 'predictive', label: 'T_p (Forecast, T/t)' });
-    edges.push(
-      { id: 'im-pred', source: 'immediate', target: 'predictive', label: 'Intent↔Forecast' },
-      { id: 'mem-pred', source: 'memory', target: 'predictive', label: 'Memory↔Forecast' },
-      {
-        id: 'gov-pred',
-        source: 'governance',
-        target: 'predictive',
-        label: 'Governance↔Forecast',
-      },
-    );
-  }
-
-  return { vertices, edges };
-}
-
-/**
- * Twist configuration for governance sheaf restriction maps.
- *
- * A twist on an edge adjusts the Galois connection to model
- * directional governance pressure:
- *   - raise > 0: lower adjoint escalates risk (push values up)
- *   - lower > 0: upper adjoint de-escalates (pull values down)
- *
- * Non-zero twist creates a non-constant (twisted) sheaf, which
- * can have non-trivial obstruction even when inputs are close.
- */
-export interface EdgeTwist {
-  /** How many risk levels f♭ raises (0 = identity) */
-  raise: number;
-  /** How many risk levels f♯ lowers (0 = identity) */
-  lower: number;
-}
-
-/**
- * Build a governance sheaf over the temporal complex.
- *
- * Default (no twist): constant sheaf with identity restrictions.
- * With twist: restriction maps shift risk levels per edge,
- * modeling directional governance pressure between temporal variants.
- */
-export function buildGovernanceSheaf(
-  complex: CellComplex,
-  twists?: Map<string, EdgeTwist>,
-): CellularSheaf<RiskLevel, RiskLevel> {
-  return {
-    complex,
-    vertexLattice: () => RISK_LATTICE,
-    edgeLattice: () => RISK_LATTICE,
-    sourceRestriction: (edgeId: string) => {
-      const tw = twists?.get(edgeId);
-      if (tw && (tw.raise !== 0 || tw.lower !== 0)) {
-        return {
-          lower: (v: RiskLevel) =>
-            Math.min(RiskLevel.DENY, Math.max(RiskLevel.ALLOW, v + tw.raise)) as RiskLevel,
-          upper: (e: RiskLevel) =>
-            Math.max(RiskLevel.ALLOW, Math.min(RiskLevel.DENY, e - tw.lower)) as RiskLevel,
-        };
-      }
-      return identityConnection<RiskLevel>();
-    },
-    targetRestriction: (edgeId: string) => {
-      const tw = twists?.get(edgeId);
-      if (tw && (tw.raise !== 0 || tw.lower !== 0)) {
-        return {
-          lower: (v: RiskLevel) =>
-            Math.min(RiskLevel.DENY, Math.max(RiskLevel.ALLOW, v + tw.raise)) as RiskLevel,
-          upper: (e: RiskLevel) =>
-            Math.max(RiskLevel.ALLOW, Math.min(RiskLevel.DENY, e - tw.lower)) as RiskLevel,
-        };
-      }
-      return identityConnection<RiskLevel>();
-    },
-  };
-}
-
-// ============================================================
-// POLICY OBSTRUCTION DETECTION
-// ============================================================
-
-export interface PolicyObstructionResult {
-  /** [0,1] obstruction: 0 = perfect consensus, 1 = maximal disagreement */
-  obstruction: number;
-  /** Risk level all variants converge to under harmonic flow (meet of fixed point) */
-  consensus: RiskLevel;
-  /** Fixed-point values for each temporal variant */
-  fixedPoint: Record<string, RiskLevel>;
-  /** Number of harmonic flow iterations to converge */
-  iterations: number;
-  /** Whether harmonic flow converged (should always be true for finite lattices) */
-  converged: boolean;
-  /** Whether obstruction exceeds fail-to-noise threshold */
-  noiseTriggered: boolean;
-}
-
-/**
- * Detect policy obstruction across temporal variants.
- *
- * Given risk assessments from each temporal manifold, uses Tarski
- * sheaf cohomology to determine whether global consensus exists
- * and measures the degree of obstruction.
- *
- * @param assessments - risk level from each temporal T variant
- * @param options - mode (triadic/tetradic), noise threshold, twists
- */
-export function detectPolicyObstruction(
-  assessments: Partial<Record<TemporalVariant, RiskLevel>>,
-  options?: {
-    mode?: 'triadic' | 'tetradic';
-    noiseThreshold?: number;
-    twists?: Map<string, EdgeTwist>;
-  },
-): PolicyObstructionResult {
-  const mode =
-    options?.mode ?? (assessments.predictive !== undefined ? 'tetradic' : 'triadic');
-  const noiseThreshold = options?.noiseThreshold ?? 0.5;
-
-  const complex = buildTemporalComplex(mode);
-  const sheaf = buildGovernanceSheaf(complex, options?.twists);
-
-  // Build initial cochain from assessments
-  const initial: Cochain0<RiskLevel> = new Map();
-  for (const v of complex.vertices) {
-    const key = v.id as TemporalVariant;
-    initial.set(v.id, assessments[key] ?? RiskLevel.ALLOW);
-  }
-
-  // Run harmonic flow
-  const { fixedPoint, iterations, converged } = harmonicFlow(sheaf, initial);
-
-  // Compute obstruction degree
-  const obstruction = obstructionDegree(sheaf, initial);
-
-  // Consensus = meet of all fixed-point values
-  let consensus = RiskLevel.DENY;
-  for (const v of complex.vertices) {
-    const val = fixedPoint.get(v.id) ?? RiskLevel.ALLOW;
-    consensus = RISK_LATTICE.meet(consensus, val);
-  }
-
-  return {
-    obstruction,
-    consensus,
-    fixedPoint: Object.fromEntries(fixedPoint) as Record<string, RiskLevel>,
-    iterations,
-    converged,
-    noiseTriggered: obstruction > noiseThreshold,
-  };
 }
 
 // ============================================================
@@ -984,7 +625,7 @@ export interface CohomologyResult<T> {
  * @returns CohomologyResult with fixed-point cochains
  */
 export function tarskiCohomology<T>(
-  sheaf: CellularSheaf<T>,
+  sheaf: V2CellularSheaf<T>,
   dim: number,
   maxIter?: number
 ): CohomologyResult<T> {
@@ -1030,7 +671,7 @@ export function tarskiCohomology<T>(
  * Compute global sections Γ(X; F) = TH^0(X; F).
  * These are assignments to vertices consistent across all edges.
  */
-export function globalSections<T>(sheaf: CellularSheaf<T>): CohomologyResult<T> {
+export function v2GlobalSections<T>(sheaf: V2CellularSheaf<T>): CohomologyResult<T> {
   return tarskiCohomology(sheaf, 0);
 }
 
@@ -1043,7 +684,7 @@ export function globalSections<T>(sheaf: CellularSheaf<T>): CohomologyResult<T> 
  * Acts on k-cochains using (k+1)-dimensional incidence.
  */
 export function upLaplacian<T>(
-  sheaf: CellularSheaf<T>,
+  sheaf: V2CellularSheaf<T>,
   dim: number,
   x: Cochain<T>
 ): Cochain<T> {
@@ -1061,7 +702,7 @@ export function upLaplacian<T>(
  * Uses join (∨) instead of meet, giving the dual operator.
  */
 export function downLaplacian<T>(
-  sheaf: CellularSheaf<T>,
+  sheaf: V2CellularSheaf<T>,
   dim: number,
   x: Cochain<T>
 ): Cochain<T> {
@@ -1113,7 +754,7 @@ export function downLaplacian<T>(
  * Hodge Laplacian L_k = L_k^+ ∧ L_k^- (meet of up and down).
  */
 export function hodgeLaplacian<T>(
-  sheaf: CellularSheaf<T>,
+  sheaf: V2CellularSheaf<T>,
   dim: number,
   x: Cochain<T>
 ): Cochain<T> {
@@ -1134,7 +775,7 @@ export function hodgeLaplacian<T>(
  * Hodge cohomology HH^k via greatest post-fixpoint of Hodge Laplacian.
  */
 export function hodgeCohomology<T>(
-  sheaf: CellularSheaf<T>,
+  sheaf: V2CellularSheaf<T>,
   dim: number,
   maxIter?: number
 ): CohomologyResult<T> {
@@ -1182,7 +823,7 @@ export function hodgeCohomology<T>(
  * Boolean lattice {false, true} with ∧ = AND, ∨ = OR.
  * Height = 1. The simplest complete lattice.
  */
-export const BooleanLattice: CompleteLattice<boolean> = {
+export const BooleanLattice: V2CompleteLattice<boolean> = {
   top: true,
   bottom: false,
   meet: (a, b) => a && b,
@@ -1196,7 +837,7 @@ export const BooleanLattice: CompleteLattice<boolean> = {
  * Bounded integer interval lattice [lo, hi] with min/max.
  * Height = hi - lo.
  */
-export function IntervalLattice(lo: number, hi: number): CompleteLattice<number> {
+export function IntervalLattice(lo: number, hi: number): V2CompleteLattice<number> {
   return {
     top: hi,
     bottom: lo,
@@ -1213,7 +854,7 @@ export function IntervalLattice(lo: number, hi: number): CompleteLattice<number>
  * Meet = intersection, Join = union, ⊤ = full set, ⊥ = empty set.
  * Height = n.
  */
-export function PowerSetLattice(n: number): CompleteLattice<number> {
+export function PowerSetLattice(n: number): V2CompleteLattice<number> {
   const full = (1 << n) - 1;
   return {
     top: full,
@@ -1231,7 +872,7 @@ export function PowerSetLattice(n: number): CompleteLattice<number> {
  * Useful for fuzzy/probabilistic sheaves.
  * Height = steps.
  */
-export function UnitIntervalLattice(steps: number = 100): CompleteLattice<number> {
+export function UnitIntervalLattice(steps: number = 100): V2CompleteLattice<number> {
   const clamp = (v: number) => Math.max(0, Math.min(1, v));
   const quantise = (v: number) => Math.round(clamp(v) * steps) / steps;
   return {
@@ -1249,9 +890,9 @@ export function UnitIntervalLattice(steps: number = 100): CompleteLattice<number
  * Product lattice L₁ × L₂ with component-wise meet/join.
  */
 export function ProductLattice<A, B>(
-  l1: CompleteLattice<A>,
-  l2: CompleteLattice<B>
-): CompleteLattice<[A, B]> {
+  l1: V2CompleteLattice<A>,
+  l2: V2CompleteLattice<B>
+): V2CompleteLattice<[A, B]> {
   return {
     top: [l1.top, l2.top],
     bottom: [l1.bottom, l2.bottom],
@@ -1268,15 +909,15 @@ export function ProductLattice<A, B>(
 // ═══════════════════════════════════════════════════════════════
 
 /** Identity connection: both adjoints are identity */
-export function identityConnection<T>(): GaloisConnection<T, T> {
+export function v2IdentityConnection<T>(): V2GaloisConnection<T, T> {
   return { lower: (a) => a, upper: (b) => b };
 }
 
 /** Constant connection: lower maps everything to a fixed element */
 export function constantConnection<T>(
-  lattice: CompleteLattice<T>,
+  lattice: V2CompleteLattice<T>,
   value: T
-): GaloisConnection<T, T> {
+): V2GaloisConnection<T, T> {
   return {
     lower: () => value,
     upper: () => lattice.top,
@@ -1290,8 +931,8 @@ export function constantConnection<T>(
  */
 export function thresholdConnection(
   threshold: number,
-  lattice: CompleteLattice<number>
-): GaloisConnection<number, number> {
+  lattice: V2CompleteLattice<number>
+): V2GaloisConnection<number, number> {
   return {
     lower: (a) => (a >= threshold ? a : lattice.bottom),
     upper: (b) => b,
@@ -1303,7 +944,7 @@ export function thresholdConnection(
  *   lower(a) = clamp(a * scale)
  *   upper(b) = clamp(b / scale)
  */
-export function scalingConnection(scale: number): GaloisConnection<number, number> {
+export function scalingConnection(scale: number): V2GaloisConnection<number, number> {
   const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
   return {
     lower: (a) => clamp01(a * scale),
@@ -1322,7 +963,7 @@ export function scalingConnection(scale: number): GaloisConnection<number, numbe
 export function graphComplex(
   numVertices: number,
   edges: [number, number][]
-): CellComplex {
+): V2CellComplex {
   const vertices: Cell[] = Array.from({ length: numVertices }, (_, i) => ({
     dim: 0,
     id: i,
@@ -1385,7 +1026,7 @@ export function simplicialComplex(
   numVertices: number,
   edges: [number, number][],
   triangles: [number, number, number][]
-): CellComplex {
+): V2CellComplex {
   const base = graphComplex(numVertices, edges);
   const faceCells: Cell[] = triangles.map((_, i) => ({ dim: 2, id: i }));
 
@@ -1458,15 +1099,15 @@ export function simplicialComplex(
 /**
  * Constant sheaf: every stalk is the same lattice, every restriction is identity.
  */
-export function constantSheaf<T>(
-  complex: CellComplex,
-  lattice: CompleteLattice<T>
-): CellularSheaf<T> {
+export function v2ConstantSheaf<T>(
+  complex: V2CellComplex,
+  lattice: V2CompleteLattice<T>
+): V2CellularSheaf<T> {
   return {
     lattice,
     complex,
     stalk: () => lattice,
-    restriction: () => identityConnection<T>(),
+    restriction: () => v2IdentityConnection<T>(),
   };
 }
 
@@ -1475,10 +1116,10 @@ export function constantSheaf<T>(
  * If a vertex value is below threshold, the edge restriction maps it to ⊥.
  */
 export function thresholdSheaf(
-  complex: CellComplex,
-  lattice: CompleteLattice<number>,
+  complex: V2CellComplex,
+  lattice: V2CompleteLattice<number>,
   threshold: number
-): CellularSheaf<number> {
+): V2CellularSheaf<number> {
   return {
     lattice,
     complex,
@@ -1492,10 +1133,10 @@ export function thresholdSheaf(
  * Useful for modelling trust decay or risk amplification across graph.
  */
 export function twistedSheaf(
-  complex: CellComplex,
-  lattice: CompleteLattice<number>,
+  complex: V2CellComplex,
+  lattice: V2CompleteLattice<number>,
   edgeScales: Map<number, number>
-): CellularSheaf<number> {
+): V2CellularSheaf<number> {
   return {
     lattice,
     complex,
@@ -1530,7 +1171,7 @@ export interface CohomologyDiagnostics<T> {
  */
 export function analyseCohomology<T>(
   result: CohomologyResult<T>,
-  lattice: CompleteLattice<T>
+  lattice: V2CompleteLattice<T>
 ): CohomologyDiagnostics<T> {
   let maxEl = lattice.bottom;
   let minEl = lattice.top;
@@ -1594,7 +1235,7 @@ export interface Obstruction {
  * where local data fails to glue.
  */
 export function detectObstructions<T>(
-  sheaf: CellularSheaf<T>,
+  sheaf: V2CellularSheaf<T>,
   localAssignment: Cochain<T>
 ): Obstruction[] {
   const obstructions: Obstruction[] = [];
@@ -1700,7 +1341,7 @@ const DEFAULT_SHEAF_CONFIG: Required<SheafCohomologyConfig> = {
  */
 export class SheafCohomologyEngine {
   private readonly config: Required<SheafCohomologyConfig>;
-  private readonly lattice: CompleteLattice<number>;
+  private readonly lattice: V2CompleteLattice<number>;
 
   constructor(config?: SheafCohomologyConfig) {
     this.config = { ...DEFAULT_SHEAF_CONFIG, ...config };
@@ -1821,3 +1462,5 @@ export class SheafCohomologyEngine {
  * Default sheaf cohomology engine with standard configuration.
  */
 export const defaultSheafEngine = new SheafCohomologyEngine();
+
+
