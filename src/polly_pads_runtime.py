@@ -389,6 +389,21 @@ PAD_TOOL_MATRIX: Dict[PadMode, Dict[CodeZone, Tuple[str, ...]]] = {
         "HOT": ("plan_only", "goals"),
     },
 }
+                    out[ids[i]].append(ids[j])
+                    out[ids[j]].append(ids[i])
+        return out
+
+    def quorum_ok(self, votes: int, n: int = 6, threshold: int = 4) -> bool:
+        """Byzantine quorum check: n=6 tolerates f=1, needs >=4."""
+        return votes >= threshold and n >= 2 * threshold - n
+
+    def commit_voxel(self, record: VoxelRecord, quorum_votes: int) -> bool:
+        """Commit a VoxelRecord to shared space if quorum is met."""
+        if not self.quorum_ok(quorum_votes):
+            return False
+        self.voxels[record.cube_id] = record
+        return True
+
 
 # ---------------------------------------------------------------------------
 # Polly Pad (per-unit AI workspace)
