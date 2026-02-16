@@ -94,7 +94,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--training-log", type=Path, default=None, help="Append run audit records to JSONL for training.")
     parser.set_defaults(headless=True)
 
-    subparsers = parser.add_subparsers(dest="command", required=True)
+    subparsers = parser.add_subparsers(dest="command", required=False)
 
     for action in ("navigate", "click", "type", "scroll", "snapshot", "screenshot", "extract", "close"):
         p = subparsers.add_parser(action, help=f"{action.title()} browser action.")
@@ -221,6 +221,8 @@ async def _main_async(args: argparse.Namespace) -> None:
 def main() -> None:
     parser = _build_parser()
     args = parser.parse_args()
+    if not args.list_backends and args.command is None:
+        parser.error("A command is required unless --list-backends is used.")
 
     asyncio.run(_main_async(args))
 
