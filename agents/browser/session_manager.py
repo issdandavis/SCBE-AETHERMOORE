@@ -83,6 +83,11 @@ class AetherbrowseSessionConfig:
     safe_radius: float = 0.92
     phdm_dim: int = 16
     sensitivity_factor: float = 1.0
+    # Backend options
+    headless: bool = True
+    playwright_browser: str = "chromium"
+    selenium_browser: str = "chrome"
+    chrome_mcp_tab_id: Optional[int] = None
 
 
 class AetherbrowseSession:
@@ -108,10 +113,38 @@ class AetherbrowseSession:
     async def _create_backend(self):
         if self.config.backend == "mock":
             return _MockBrowserBackend()
+
         if self.config.backend != "cdp":
+            if self.config.backend == "playwright":
+                from agents.browsers import PlaywrightBackend
+                return PlaywrightBackend(
+                    browser_type=self.config.playwright_browser,
+                    headless=self.config.headless,
+                )
+            if self.config.backend == "selenium":
+                from agents.browsers import SeleniumBackend
+                return SeleniumBackend(
+                    browser=self.config.selenium_browser,
+                    headless=self.config.headless,
+                )
+            if self.config.backend == "chrome_mcp":
+                from agents.browsers import ChromeMCPBackend
+                return ChromeMCPBackend(tab_id=self.config.chrome_mcp_tab_id)
+            if self.config.backend == "auto":
+                candidates = ("playwright", "cdp", "selenium", "chrome_mcp")
+                last_error: Optional[Exception] = None
+                for candidate in candidates:
+                    try:
+                        self.config.backend = candidate
+                        return await self._create_backend()
+                    except Exception as exc:  # noqa: BLE001
+                        last_error = exc
+                        continue
+                raise ValueError(f"No backend available for auto mode: {last_error}")
+
             raise ValueError(f"Unsupported backend '{self.config.backend}' in this phase.")
 
-        from agents.browsers.cdp_backend import CDPBackend
+        from agents.browsers import CDPBackend
 
         return CDPBackend(host=self.config.host, port=self.config.port, target_id=self.config.target_id)
 
