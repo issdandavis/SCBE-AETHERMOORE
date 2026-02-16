@@ -47,6 +47,45 @@ import {
   cohomologicalHarmonicWall,
 } from '../../src/harmonic/sheafCohomology.js';
 
+import {
+  // Lattices
+  BooleanLattice,
+  IntervalLattice,
+  PowerSetLattice,
+  UnitIntervalLattice,
+  ProductLattice,
+  // Galois connections
+  constantConnection,
+  thresholdConnection,
+  scalingConnection,
+  // Cell complexes
+  graphComplex,
+  simplicialComplex,
+  // Sheaf constructors
+  thresholdSheaf,
+  twistedSheaf,
+  // Cochains
+  topCochain,
+  bottomCochain,
+  // Laplacians
+  tarskiLaplacian,
+  upLaplacian,
+  downLaplacian,
+  hodgeLaplacian,
+  // Cohomology
+  tarskiCohomology,
+  hodgeCohomology,
+  // Diagnostics
+  analyseCohomology,
+  detectObstructions,
+  // SCBE Engine
+  SheafCohomologyEngine,
+  defaultSheafEngine,
+  // Types
+  type Cochain,
+  type Vector6D,
+} from '../../src/harmonic/index.js';
+
 // ============================================================
 // A. COMPLETE LATTICE AXIOMS
 // ============================================================
@@ -817,53 +856,6 @@ describe('N · SCBE governance scenarios', () => {
  *
  * @layer Layer 9, Layer 10, Layer 12
  */
-
-import { describe, it, expect } from 'vitest';
-import {
-  // Lattices
-  BooleanLattice,
-  IntervalLattice,
-  PowerSetLattice,
-  UnitIntervalLattice,
-  ProductLattice,
-  // Galois connections
-  identityConnection,
-  constantConnection,
-  thresholdConnection,
-  scalingConnection,
-  // Cell complexes
-  graphComplex,
-  simplicialComplex,
-  // Sheaf constructors
-  constantSheaf,
-  thresholdSheaf,
-  twistedSheaf,
-  // Cochains
-  topCochain,
-  bottomCochain,
-  // Laplacians
-  tarskiLaplacian,
-  upLaplacian,
-  downLaplacian,
-  hodgeLaplacian,
-  // Cohomology
-  tarskiCohomology,
-  globalSections,
-  hodgeCohomology,
-  // Diagnostics
-  analyseCohomology,
-  detectObstructions,
-  // SCBE Engine
-  SheafCohomologyEngine,
-  defaultSheafEngine,
-  // Types
-  type CompleteLattice,
-  type GaloisConnection,
-  type CellComplex,
-  type CellularSheaf,
-  type Cochain,
-  type Vector6D,
-} from '../../src/harmonic/index.js';
 
 // ═══════════════════════════════════════════════════════════════
 // Helper utilities
