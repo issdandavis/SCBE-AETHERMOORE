@@ -17,6 +17,8 @@ htmlcov/
 
 # Test artifacts
 tests/test_telemetry_*.json
+*.sqlite
+scbe_metering.db
 tests/test_artifacts/
 **/test_output.txt
 
