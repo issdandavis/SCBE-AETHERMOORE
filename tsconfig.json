@@ -12,7 +12,6 @@
     "packages/kernel/src/**/*"
   ],
   "exclude": [
-    "node_modules",
-    "src/harmonic/sheafCohomology.ts"
+    "node_modules"
   ]
 }
