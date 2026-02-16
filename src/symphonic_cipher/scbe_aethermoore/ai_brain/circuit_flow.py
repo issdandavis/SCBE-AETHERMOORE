@@ -439,16 +439,9 @@ def _governance_gate(
     """
     ring, latency = classify_trust_ring(radial_dist)
 
-    # WALL → instant deny
-    if ring == "WALL":
-        return (
-            GovernanceAction.ROLLBACK,
-            "-1",
-            f"Event horizon reached (r={radial_dist:.3f}). "
-            f"Harmonic Wall denies access beyond r=0.9."
-        )
-
-    # Risk Zone → quarantine + inspection
+    # Risk Zone nodes live at r=0.80–0.95 by design.
+    # They get QUARANTINE, not WALL denial — the geometric instability
+    # (χ=-6) IS the containment mechanism, not the wall.
     if node.zone == Zone.RISK:
         return (
             GovernanceAction.QUARANTINE,
@@ -456,6 +449,15 @@ def _governance_gate(
             f"Risk Zone node '{node.name}' (χ={node.euler_characteristic}). "
             f"Self-intersecting star polyhedra are intentionally unstable — "
             f"quarantine + inspection required before any output."
+        )
+
+    # WALL → instant deny (for non-Risk nodes that shouldn't be here)
+    if ring == "WALL":
+        return (
+            GovernanceAction.ROLLBACK,
+            "-1",
+            f"Event horizon reached (r={radial_dist:.3f}). "
+            f"Harmonic Wall denies access beyond r=0.9."
         )
 
     # Energy exhaustion → hold
