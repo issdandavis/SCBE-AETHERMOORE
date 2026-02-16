@@ -265,7 +265,11 @@ export function tarskiLaplacian0<V, E>(
     }
 
     result.set(v.id, accumulated);
- * @module harmonic/sheaf-cohomology
+  }
+  return result;
+}
+/**
+  * @module harmonic/sheaf-cohomology
  * @layer Layer 9, Layer 10, Layer 12
  * @component Sheaf Cohomology for Lattices — Tarski Laplacian
  * @version 3.2.4
