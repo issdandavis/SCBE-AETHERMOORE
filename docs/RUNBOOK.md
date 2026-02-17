@@ -18,6 +18,7 @@ Checks:
 1. `docs/scbe_full_system_layer_manifest.json` format and required fields.
 2. Layer dependency references (`depends_on`) are valid.
 3. `last_verified_commit` values are structurally valid hashes.
+4. PR CI enforces non-downgrade status transitions via `scripts/check_layer_status_transition.py`.
 
 ## Step 2: Bring up local governed browser service
 

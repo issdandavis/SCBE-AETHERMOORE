@@ -8,6 +8,7 @@ without extra package installs.
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
 import sys
@@ -41,6 +42,14 @@ def _load_json(path: Path) -> Any:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description="Validate SCBE layer manifest")
+    parser.add_argument(
+        "--strict-local-paths",
+        action="store_true",
+        help="Fail if local path references for canonical repo layers do not exist",
+    )
+    args = parser.parse_args()
+
     errors: list[str] = []
     warnings: list[str] = []
 
@@ -113,7 +122,11 @@ def main() -> int:
                     continue
                 local = ROOT / path
                 if not local.exists():
-                    warnings.append(f"{loc}.paths local reference not found: {path}")
+                    msg = f"{loc}.paths local reference not found: {path}"
+                    if args.strict_local_paths:
+                        errors.append(msg)
+                    else:
+                        warnings.append(msg)
 
         depends_on = layer.get("depends_on")
         if not isinstance(depends_on, list) or not all(isinstance(x, str) and LAYER_ID_RE.match(x) for x in depends_on):
