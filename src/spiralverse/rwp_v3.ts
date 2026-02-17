@@ -26,6 +26,18 @@ import {
   type TongueSpec,
 } from '../harmonic/sacredTongues.js';
 
+
+const RWP_KO_V11: TongueSpec = {
+  ...TONGUES.ko,
+  prefixes: ['kor', 'ael', 'lin', 'dah', 'ru', 'mel', 'ik', 'sor', 'in', 'tiv', 'ar', 'ul', 'mar', 'vex', 'yn', 'zha'],
+  suffixes: ['ah', 'el', 'in', 'or', 'ru', 'ik', 'mel', 'sor', 'tiv', 'ul', 'vex', 'zha', 'dah', 'lin', 'yn', 'mar'],
+};
+
+const RWP_TONGUES: Record<string, TongueSpec> = {
+  ...TONGUES,
+  ko: RWP_KO_V11,
+};
+
 // ============================================================
 // ARGON2 PARAMETERS (RFC 9106)
 // ============================================================
@@ -60,7 +72,7 @@ export class SacredTongueTokenizer {
   }
 
   private buildTables(): void {
-    for (const [code, spec] of Object.entries(TONGUES)) {
+    for (const [code, spec] of Object.entries(RWP_TONGUES)) {
       const b2t: string[] = new Array(256);
       const t2b = new Map<string, number>();
 
@@ -78,7 +90,7 @@ export class SacredTongueTokenizer {
   }
 
   private validateSecurityProperties(): void {
-    for (const [code, spec] of Object.entries(TONGUES)) {
+    for (const [code, spec] of Object.entries(RWP_TONGUES)) {
       const tokens = new Set(this.byteToToken.get(code)!);
       if (tokens.size !== 256) {
         throw new Error(`Tongue ${code} has ${tokens.size} tokens (expected 256)`);

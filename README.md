@@ -4,9 +4,9 @@
 
 **The mathematically-proven security layer your AI fleet needs.**
 
-[![Tests](https://img.shields.io/badge/tests-950%20passing-brightgreen)](.)
-[![Python](https://img.shields.io/badge/python-3.11+-blue)](.)
-[![TypeScript](https://img.shields.io/badge/typescript-5.0+-blue)](.)
+[![Tests](https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/ci.yml/badge.svg)](https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0%2B-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Release & Deploy](https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/release-and-deploy.yml/badge.svg)](https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/release-and-deploy.yml)
 
 ---

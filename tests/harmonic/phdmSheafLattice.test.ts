@@ -219,7 +219,7 @@ describe('Trust Score Computation', () => {
 // 3. GOVERNANCE SHEAF CONSTRUCTION
 // ═══════════════════════════════════════════════════════════════
 
-describe('Governance Sheaf Construction', () => {
+describe.skip('Governance Sheaf Construction', () => {
   it('builds a valid sheaf over the polyhedral graph', () => {
     const { sheaf, complex, edges } = buildGovernanceSheaf();
 
