@@ -8,6 +8,10 @@ import sys
 import json
 import hashlib
 import base64
+import os
+import shutil
+import subprocess
+from pathlib import Path
 from typing import Dict, List, Optional
 
 VERSION = "3.0.0"
@@ -441,6 +445,82 @@ check your code for vulnerabilities!"""
 
         return vulnerabilities
 
+    def _resolve_powershell(self) -> Optional[str]:
+        """Resolve a PowerShell executable on this machine."""
+        for candidate in ("pwsh", "powershell"):
+            found = shutil.which(candidate)
+            if found:
+                return found
+        return None
+
+    def cmd_autopilot(self):
+        """Run AetherBrowse swarm autopilot."""
+        print("\n🌐 AETHERBROWSE AUTOPILOT")
+        print("=" * 60)
+        print("Launches browser swarm jobs with governance + DecisionRecords.\n")
+
+        repo_root = Path(__file__).resolve().parent
+        script_path = repo_root / "scripts" / "run_aetherbrowse_autopilot.ps1"
+        if not script_path.exists():
+            print(f"❌ Missing script: {script_path}")
+            return
+
+        jobs_default = "examples/aetherbrowse_tasks.sample.json"
+        jobs_file = self.safe_input(f"Jobs file [{jobs_default}]: ").strip() or jobs_default
+
+        mode = self.safe_input("Mode (local/cloud) [local]: ").strip().lower() or "local"
+        endpoint_url = ""
+        if mode == "cloud":
+            endpoint_url = self.safe_input("Cloud endpoint URL: ").strip()
+            if not endpoint_url:
+                print("❌ Cloud mode requires endpoint URL")
+                return
+
+        concurrency_raw = self.safe_input("Concurrency [3]: ").strip() or "3"
+        try:
+            concurrency = int(concurrency_raw)
+        except ValueError:
+            print("❌ Concurrency must be an integer")
+            return
+
+        out_default = "artifacts/swarm_agent_run.json"
+        output_json = self.safe_input(f"Output JSON [{out_default}]: ").strip() or out_default
+
+        api_key = os.getenv("SCBE_API_KEY", "").strip() or "0123456789abcdef0123456789abcdef"
+        ps = self._resolve_powershell()
+        if not ps:
+            print("❌ PowerShell not found (pwsh/powershell).")
+            return
+
+        cmd = [
+            ps,
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(script_path),
+            "-JobsFile",
+            jobs_file,
+            "-ApiKey",
+            api_key,
+            "-Concurrency",
+            str(concurrency),
+            "-OutputJson",
+            output_json,
+        ]
+        if mode == "cloud":
+            cmd.extend(["-UseLocalService:$false", "-EndpointUrl", endpoint_url])
+
+        print("\n▶ Running autopilot...\n")
+        try:
+            result = subprocess.run(cmd, cwd=str(repo_root), check=False)
+            if result.returncode == 0:
+                print("\n✅ Autopilot completed successfully.")
+            else:
+                print(f"\n⚠️  Autopilot exited with code {result.returncode}.")
+        except Exception as exc:  # noqa: BLE001
+            print(f"\n❌ Failed to run autopilot: {exc}")
+
     def cmd_help(self):
         """Display help"""
         print("\n📖 AVAILABLE COMMANDS")
@@ -449,6 +529,7 @@ check your code for vulnerabilities!"""
         print("  search   - Secure web search with SCBE encryption")
         print("  code     - View code examples (Python & TypeScript)")
         print("  scan     - Scan code for security vulnerabilities")
+        print("  autopilot- Run browser swarm automation jobs")
         print("  help     - Show this help")
         print("  exit     - Exit the agent")
 
@@ -468,6 +549,8 @@ check your code for vulnerabilities!"""
             "search": self.cmd_search,
             "code": self.cmd_code,
             "scan": self.cmd_scan,
+            "autopilot": self.cmd_autopilot,
+            "browser": self.cmd_autopilot,
             "help": self.cmd_help,
         }
 
