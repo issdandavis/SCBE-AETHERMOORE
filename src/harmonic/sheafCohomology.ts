@@ -484,7 +484,6 @@ export function tarskiLaplacian<T>(
   return result;
 }
 
-// ============================================================
 // FAIL-TO-NOISE
 // ============================================================
 
@@ -767,7 +766,6 @@ export function hodgeLaplacian<T>(
     const dVal = down.get(cell.id)!;
     result.set(cell.id, sheaf.stalk(cell).meet(uVal, dVal));
   }
-
   return result;
 }
 
