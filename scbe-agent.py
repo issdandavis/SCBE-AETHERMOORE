@@ -521,6 +521,83 @@ check your code for vulnerabilities!"""
         except Exception as exc:  # noqa: BLE001
             print(f"\n❌ Failed to run autopilot: {exc}")
 
+    def cmd_asana(self):
+        """Run Asana -> AetherBrowse orchestration."""
+        print("\n📋 ASANA ORCHESTRATOR")
+        print("=" * 60)
+        print("Pulls due tasks from Asana and executes browser jobs.\n")
+
+        repo_root = Path(__file__).resolve().parent
+        script_path = repo_root / "scripts" / "asana_aetherbrowse_orchestrator.py"
+        if not script_path.exists():
+            print(f"❌ Missing script: {script_path}")
+            return
+
+        project_default = os.getenv("ASANA_PROJECT_ID", "").strip()
+        project_id = self.safe_input(f"Asana project GID [{project_default}]: ").strip() or project_default
+        if not project_id:
+            print("❌ Project GID is required.")
+            return
+
+        token = os.getenv("ASANA_TOKEN", os.getenv("ASANA_ACCESS_TOKEN", "")).strip()
+        if not token:
+            print("❌ Missing ASANA_TOKEN (or ASANA_ACCESS_TOKEN) in environment.")
+            return
+
+        endpoint_default = os.getenv(
+            "SCBE_BROWSER_WEBHOOK_URL",
+            "http://127.0.0.1:8001/v1/integrations/n8n/browse",
+        ).strip()
+        endpoint = self.safe_input(f"Browser endpoint [{endpoint_default}]: ").strip() or endpoint_default
+
+        api_key = os.getenv("SCBE_API_KEY", os.getenv("N8N_API_KEY", "")).strip()
+        if not api_key:
+            api_key = self.safe_input("SCBE API key: ").strip()
+        if not api_key:
+            print("❌ API key is required.")
+            return
+
+        max_tasks_raw = self.safe_input("Max tasks [5]: ").strip() or "5"
+        try:
+            max_tasks = int(max_tasks_raw)
+        except ValueError:
+            print("❌ Max tasks must be integer.")
+            return
+
+        complete = self.safe_input("Complete task when ALLOW? (y/N): ").strip().lower() in {"y", "yes"}
+        dry_run = self.safe_input("Dry run only? (y/N): ").strip().lower() in {"y", "yes"}
+
+        cmd = [
+            sys.executable,
+            str(script_path),
+            "--project-id",
+            project_id,
+            "--asana-token",
+            token,
+            "--endpoint-url",
+            endpoint,
+            "--api-key",
+            api_key,
+            "--max-tasks",
+            str(max_tasks),
+            "--output-json",
+            "artifacts/asana_bridge/latest_run.json",
+        ]
+        if complete:
+            cmd.append("--complete-on-allow")
+        if dry_run:
+            cmd.append("--dry-run")
+
+        print("\n▶ Running Asana orchestrator...\n")
+        try:
+            result = subprocess.run(cmd, cwd=str(repo_root), check=False)
+            if result.returncode == 0:
+                print("\n✅ Asana orchestration completed.")
+            else:
+                print(f"\n⚠️ Asana orchestration exited with code {result.returncode}.")
+        except Exception as exc:  # noqa: BLE001
+            print(f"\n❌ Failed to run Asana orchestration: {exc}")
+
     def cmd_help(self):
         """Display help"""
         print("\n📖 AVAILABLE COMMANDS")
@@ -530,6 +607,7 @@ check your code for vulnerabilities!"""
         print("  code     - View code examples (Python & TypeScript)")
         print("  scan     - Scan code for security vulnerabilities")
         print("  autopilot- Run browser swarm automation jobs")
+        print("  asana    - Run Asana scheduled browser orchestration")
         print("  help     - Show this help")
         print("  exit     - Exit the agent")
 
@@ -551,6 +629,7 @@ check your code for vulnerabilities!"""
             "scan": self.cmd_scan,
             "autopilot": self.cmd_autopilot,
             "browser": self.cmd_autopilot,
+            "asana": self.cmd_asana,
             "help": self.cmd_help,
         }
 
