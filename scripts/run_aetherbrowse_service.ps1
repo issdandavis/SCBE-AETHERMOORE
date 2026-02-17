@@ -26,9 +26,9 @@ if ($KillOnPortInUse) {
     $conns = Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue | Where-Object { $_.LocalAddress -in @('127.0.0.1', '0.0.0.0', '[::]') }
     if ($conns) {
         $pids = $conns | Select-Object -ExpandProperty OwningProcess -Unique
-        foreach ($pid in $pids) {
-            Write-Host ("Stopping existing process on port {0}: PID {1}" -f $Port, $pid) -ForegroundColor Yellow
-            Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
+        foreach ($procId in $pids) {
+            Write-Host ("Stopping existing process on port {0}: PID {1}" -f $Port, $procId) -ForegroundColor Yellow
+            Stop-Process -Id $procId -Force -ErrorAction SilentlyContinue
         }
         Start-Sleep -Milliseconds 800
     }
