@@ -1,0 +1,17 @@
+{
+  "items": [
+    "aws-fleet-node-001:ingest telemetry",
+    "gcp-browser-agent:market scan task",
+    "hf-training-worker:dataset sync",
+    "notion-export-agent:weekly snapshot",
+    "asana-orchestrator:due-task execution",
+    "swarm-ko-scout:recon pass",
+    "swarm-av-vision:layout verify",
+    "swarm-ru-reader:text extraction",
+    "swarm-ca-clicker:deliberation action",
+    "swarm-um-typer:secure form input",
+    "swarm-dr-judge:consensus verify",
+    "mission-control:route approval"
+  ]
+}
+
