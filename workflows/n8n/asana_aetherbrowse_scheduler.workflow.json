@@ -1,0 +1,327 @@
+{
+  "name": "SCBE Asana -> AetherBrowse Scheduler",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual_trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "schedule_trigger",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1120,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://app.asana.com/api/1.0/tasks",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer PASTE_ASANA_PAT"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "project",
+              "value": "1210507086219964"
+            },
+            {
+              "name": "limit",
+              "value": "50"
+            },
+            {
+              "name": "opt_fields",
+              "value": "gid,name,notes,completed,due_on,permalink_url"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get_asana_tasks",
+      "name": "Get Asana Tasks",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -860,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const projectId = \"1210507086219964\";\nconst asanaToken = \"PASTE_ASANA_PAT\";\nconst scbeApiKey = \"PASTE_SCBE_API_KEY\";\nconst scbeBrowseUrl = \"https://PASTE-CLOUD-RUN-HOST/v1/integrations/n8n/browse\";\n\nconst data = Array.isArray($json.data) ? $json.data : [];\nconst today = new Date().toISOString().slice(0, 10);\nconst urlRegex = /https?:\\/\\/[^\\s)]+/i;\n\nconst out = [];\nfor (const task of data) {\n  if (task.completed) continue;\n  if (task.due_on && task.due_on > today) continue;\n\n  const notes = String(task.notes || \"\");\n  const match = notes.match(urlRegex);\n  const target = match ? match[0] : \"https://example.com\";\n\n  out.push({\n    json: {\n      task_gid: task.gid,\n      task_name: task.name || `task-${task.gid}`,\n      asana_token: asanaToken,\n      scbe_api_key: scbeApiKey,\n      scbe_url: scbeBrowseUrl,\n      session_id: `asana-task-${task.gid}`,\n      workflow_id: `asana-project-${projectId}`,\n      run_id: `n8n-${Date.now()}`,\n      actions: [\n        { action: \"navigate\", target, timeout_ms: 12000 },\n        { action: \"extract\", target: \"h1\", timeout_ms: 12000 },\n        { action: \"screenshot\", target: \"full_page\", timeout_ms: 12000 }\n      ]\n    }\n  });\n}\n\nreturn out;"
+      },
+      "id": "build_browser_jobs",
+      "name": "Build Browser Jobs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -620,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.scbe_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{ $json.scbe_api_key }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { workflow_id: $json.workflow_id, run_id: $json.run_id, source: \"n8n\", session_id: $json.session_id, actions: $json.actions } }}",
+        "options": {}
+      },
+      "id": "run_browser_job",
+      "name": "Run Browser Job",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -380,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const res = $json;\nconst session = String(res.session_id || \"\");\nconst gid = session.replace(/^asana-task-/, \"\");\nconst results = Array.isArray(res.results) ? res.results : [];\nconst successes = results.filter(r => r && r.success === true).length;\n\nlet decision = \"NOISE\";\nif (results.length > 0 && successes === results.length) {\n  decision = \"ALLOW\";\n} else if (successes > 0) {\n  decision = \"QUARANTINE\";\n}\n\nconst comment = `[SCBE][AetherBrowse] decision=${decision} executed=${res.executed_actions ?? 0}/${res.total_actions ?? 0} trace=${res.trace ?? \"\"}`;\n\nreturn [{\n  json: {\n    task_gid: gid,\n    decision,\n    comment,\n    asana_token: \"PASTE_ASANA_PAT\"\n  }\n}];"
+      },
+      "id": "build_asana_comment",
+      "name": "Build Asana Comment",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -140,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ `https://app.asana.com/api/1.0/tasks/${$json.task_gid}/stories` }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ `Bearer ${$json.asana_token}` }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { data: { text: $json.comment } } }}",
+        "options": {}
+      },
+      "id": "post_asana_comment",
+      "name": "Post Asana Comment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        100,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "allow_condition",
+              "leftValue": "={{ $json.decision }}",
+              "rightValue": "ALLOW",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if_allow",
+      "name": "If Decision ALLOW",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        340,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ `https://app.asana.com/api/1.0/tasks/${$json.task_gid}` }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ `Bearer ${$json.asana_token}` }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { data: { completed: true } } }}",
+        "options": {}
+      },
+      "id": "complete_asana_task",
+      "name": "Complete Asana Task",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        580,
+        40
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Asana Tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Asana Tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Asana Tasks": {
+      "main": [
+        [
+          {
+            "node": "Build Browser Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Browser Jobs": {
+      "main": [
+        [
+          {
+            "node": "Run Browser Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Browser Job": {
+      "main": [
+        [
+          {
+            "node": "Build Asana Comment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Asana Comment": {
+      "main": [
+        [
+          {
+            "node": "Post Asana Comment",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If Decision ALLOW",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Decision ALLOW": {
+      "main": [
+        [
+          {
+            "node": "Complete Asana Task",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "active": false,
+  "versionId": "f1f1c745-2e5b-4a7c-9e1f-asa-aetherbrowse"
+}
