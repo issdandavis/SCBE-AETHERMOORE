@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "generated_at_utc": "2026-02-17T00:00:00Z",
   "canonical_repo": "SCBE-AETHERMOORE",
   "layers": [
@@ -7,63 +7,149 @@
       "id": "L0",
       "name": "Canonical Kernel Contract",
       "status": "implemented",
-      "repos": ["SCBE-AETHERMOORE"],
-      "paths": ["SPEC.md", "CONCEPTS.md"]
+      "repos": [
+        "SCBE-AETHERMOORE"
+      ],
+      "paths": [
+        "SPEC.md",
+        "CONCEPTS.md"
+      ],
+      "depends_on": [],
+      "last_verified_commit": "e51d530"
     },
     {
       "id": "L1",
       "name": "SCBE Governance Runtime",
       "status": "implemented",
-      "repos": ["SCBE-AETHERMOORE"],
-      "paths": ["api/main.py", "README.md", "ARCHITECTURE.md", "docs/hydra/ARCHITECTURE.md"]
+      "repos": [
+        "SCBE-AETHERMOORE"
+      ],
+      "paths": [
+        "api/main.py",
+        "README.md",
+        "ARCHITECTURE.md",
+        "docs/hydra/ARCHITECTURE.md"
+      ],
+      "depends_on": [
+        "L0"
+      ],
+      "last_verified_commit": "e51d530"
     },
     {
       "id": "L2",
       "name": "GeoSeal Access Kernel",
       "status": "implemented",
-      "repos": ["SCBE-AETHERMOORE"],
-      "paths": ["src/geoseal.py", "src/geoseal_v2.py", "tests/test_geoseal.py", "tests/test_geoseal_v2.py"]
+      "repos": [
+        "SCBE-AETHERMOORE"
+      ],
+      "paths": [
+        "src/geoseal.py",
+        "src/geoseal_v2.py",
+        "tests/test_geoseal.py",
+        "tests/test_geoseal_v2.py"
+      ],
+      "depends_on": [
+        "L1"
+      ],
+      "last_verified_commit": "e51d530"
     },
     {
       "id": "L3",
       "name": "AetherBrowse Single-Agent Plane",
       "status": "implemented",
-      "repos": ["SCBE-AETHERMOORE"],
-      "paths": ["agents/browser/main.py", "agents/aetherbrowse_cli.py", "docs/AETHERBROWSE_GOVERNANCE.md"]
+      "repos": [
+        "SCBE-AETHERMOORE"
+      ],
+      "paths": [
+        "agents/browser/main.py",
+        "agents/aetherbrowse_cli.py",
+        "docs/AETHERBROWSE_GOVERNANCE.md"
+      ],
+      "depends_on": [
+        "L1",
+        "L2"
+      ],
+      "last_verified_commit": "e51d530"
     },
     {
       "id": "L4",
       "name": "AetherBrowse Multi-Agent Runner",
       "status": "implemented",
-      "repos": ["SCBE-AETHERMOORE"],
-      "paths": ["scripts/aetherbrowse_swarm_runner.py", "examples/aetherbrowse_tasks.sample.json", "schemas/decision_record.schema.json"]
+      "repos": [
+        "SCBE-AETHERMOORE"
+      ],
+      "paths": [
+        "scripts/aetherbrowse_swarm_runner.py",
+        "examples/aetherbrowse_tasks.sample.json",
+        "schemas/decision_record.schema.json"
+      ],
+      "depends_on": [
+        "L3"
+      ],
+      "last_verified_commit": "e51d530"
     },
     {
       "id": "L5",
       "name": "HYDRA Governed Swarm Coordination",
       "status": "partial",
-      "repos": ["SCBE-AETHERMOORE"],
-      "paths": ["docs/hydra/ARCHITECTURE.md", "agents/swarm_browser.py", "training/doc_manifest.json"]
+      "repos": [
+        "SCBE-AETHERMOORE"
+      ],
+      "paths": [
+        "docs/hydra/ARCHITECTURE.md",
+        "agents/swarm_browser.py",
+        "training/doc_manifest.json"
+      ],
+      "depends_on": [
+        "L1",
+        "L2",
+        "L4"
+      ],
+      "last_verified_commit": "e51d530"
     },
     {
       "id": "L6",
       "name": "Asana/n8n Workflow Orchestration",
       "status": "implemented",
-      "repos": ["SCBE-AETHERMOORE"],
-      "paths": ["scripts/asana_aetherbrowse_orchestrator.py", "scripts/n8n_aetherbrowse_bridge.py", "workflows/n8n/asana_aetherbrowse_scheduler.workflow.json"]
+      "repos": [
+        "SCBE-AETHERMOORE"
+      ],
+      "paths": [
+        "scripts/asana_aetherbrowse_orchestrator.py",
+        "scripts/n8n_aetherbrowse_bridge.py",
+        "workflows/n8n/asana_aetherbrowse_scheduler.workflow.json"
+      ],
+      "depends_on": [
+        "L4"
+      ],
+      "last_verified_commit": "e51d530"
     },
     {
       "id": "L7",
       "name": "Cloud Execution Plane",
       "status": "implemented",
-      "repos": ["SCBE-AETHERMOORE"],
-      "paths": ["deploy/gcloud/deploy_aetherbrowse.sh", "deploy/gcloud/Dockerfile.aetherbrowse", "docs/AETHERBROWSE_CLOUD_RUN.md"]
+      "repos": [
+        "SCBE-AETHERMOORE"
+      ],
+      "paths": [
+        "deploy/gcloud/deploy_aetherbrowse.sh",
+        "deploy/gcloud/Dockerfile.aetherbrowse",
+        "docs/AETHERBROWSE_CLOUD_RUN.md"
+      ],
+      "depends_on": [
+        "L3",
+        "L4"
+      ],
+      "last_verified_commit": "e51d530"
     },
     {
       "id": "L8",
       "name": "Training and Data Plane",
       "status": "implemented_with_config",
-      "repos": ["SCBE-AETHERMOORE", "phdm-21d-embedding"],
+      "repos": [
+        "SCBE-AETHERMOORE",
+        "phdm-21d-embedding"
+      ],
       "paths": [
         "scripts/notion_access_check.py",
         "scripts/notion_to_dataset.py",
@@ -73,21 +159,47 @@
         ".github/workflows/vertex-training.yml",
         "phdm-21d-embedding/scripts/markdown_to_jsonl.py",
         "phdm-21d-embedding/scripts/push_jsonl_dataset.py"
-      ]
+      ],
+      "depends_on": [
+        "L1",
+        "L2"
+      ],
+      "last_verified_commit": "e51d530"
     },
     {
       "id": "L9",
       "name": "Protocol and Security Extensions",
       "status": "implemented",
-      "repos": ["spiralverse-protocol", "scbe-security-gate"],
-      "paths": ["spiralverse-protocol/README.md", "scbe-security-gate/README.md"]
+      "repos": [
+        "spiralverse-protocol",
+        "scbe-security-gate"
+      ],
+      "paths": [
+        "spiralverse-protocol/README.md",
+        "scbe-security-gate/README.md"
+      ],
+      "depends_on": [
+        "L1"
+      ],
+      "last_verified_commit": "e51d530"
     },
     {
       "id": "L10",
       "name": "Space Station Agentic Swarm Factory",
       "status": "conceptual",
-      "repos": ["scbe-aethermoore-demo"],
-      "paths": ["scbe-aethermoore-demo/L1_AETHERMOORE_STATION.md"]
+      "repos": [
+        "scbe-aethermoore-demo"
+      ],
+      "paths": [
+        "scbe-aethermoore-demo/L1_AETHERMOORE_STATION.md"
+      ],
+      "depends_on": [
+        "L4",
+        "L5",
+        "L8",
+        "L9"
+      ],
+      "last_verified_commit": null
     }
   ],
   "consolidation_priorities": [
@@ -104,4 +216,3 @@
     "SCBE_API_KEY"
   ]
 }
-

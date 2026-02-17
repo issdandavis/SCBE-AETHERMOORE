@@ -1,0 +1,32 @@
+name: Validate Layer Manifest
+
+on:
+  pull_request:
+    paths:
+      - docs/scbe_full_system_layer_manifest.json
+      - docs/scbe_full_system_layer_manifest.schema.json
+      - scripts/validate_layer_manifest.py
+      - .github/workflows/validate-layer-manifest.yml
+  push:
+    branches:
+      - main
+    paths:
+      - docs/scbe_full_system_layer_manifest.json
+      - docs/scbe_full_system_layer_manifest.schema.json
+      - scripts/validate_layer_manifest.py
+      - .github/workflows/validate-layer-manifest.yml
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Validate manifest
+        run: python scripts/validate_layer_manifest.py
