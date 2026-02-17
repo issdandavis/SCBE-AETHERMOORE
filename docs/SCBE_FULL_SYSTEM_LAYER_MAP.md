@@ -143,9 +143,16 @@ This map consolidates the current SCBE ecosystem across core repositories under 
 3. Promote AetherBrowse + Asana orchestration from feature branch into mainline release.
 4. Add one mission-runtime package (`mission_control/`) that operationalizes Layer 10 concepts into runnable workflows.
 
+## Manifest contract and validation
+
+1. Machine-readable manifest: `docs/scbe_full_system_layer_manifest.json`.
+2. Manifest schema: `docs/scbe_full_system_layer_manifest.schema.json`.
+3. Validator script: `scripts/validate_layer_manifest.py`.
+4. CI workflow gate: `.github/workflows/validate-layer-manifest.yml`.
+5. Execution-order runbook: `docs/RUNBOOK.md`.
+
 ## Known drift to control
 
 1. Formula notation drift across docs (`H(d,R)` variants) needs one canonical expression policy.
 2. Duplicate architecture prose across repos increases training inconsistency.
 3. Secret-dependent workflows fail silently if GitHub secrets are absent.
-
