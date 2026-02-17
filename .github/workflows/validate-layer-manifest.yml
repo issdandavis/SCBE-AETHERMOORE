@@ -22,11 +22,26 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Validate manifest
-        run: python scripts/validate_layer_manifest.py
+      - name: Validate manifest (strict local paths)
+        run: python scripts/validate_layer_manifest.py --strict-local-paths
+
+      - name: Export base manifest from target branch
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          git show "origin/${{ github.base_ref }}:docs/scbe_full_system_layer_manifest.json" > /tmp/base_manifest.json
+
+      - name: Enforce allowed layer status transitions
+        if: github.event_name == 'pull_request'
+        run: |
+          python scripts/check_layer_status_transition.py \
+            --base /tmp/base_manifest.json \
+            --current docs/scbe_full_system_layer_manifest.json
