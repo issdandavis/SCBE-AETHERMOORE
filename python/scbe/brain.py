@@ -54,6 +54,24 @@ R_FIFTH = 3 / 2                           # Perfect fifth harmonic ratio
 DIMENSIONS_21D = 21                        # Full state vector dimension
 DIMENSIONS_6D = 6                          # Hyperbolic subspace
 TUBE_RADIUS = 0.15                         # Trust tube ε
+POINCARE_BALL_SAFETY_RADIUS = 0.95         # Safety margin inside r=1 boundary
+
+
+def _project_to_poincare_ball(
+    vector: np.ndarray,
+    safety_radius: float = POINCARE_BALL_SAFETY_RADIUS,
+) -> np.ndarray:
+    """Project a vector into the Poincaré ball using a smooth, monotonic map.
+
+    tanh keeps directional ordering while guaranteeing ||v|| < safety_radius.
+    """
+    if vector.ndim != 1:
+        vector = np.asarray(vector).reshape(-1)
+    norm = np.linalg.norm(vector)
+    if norm < 1e-12:
+        return vector.astype(float)
+    radius = safety_radius * (np.tanh(norm) / norm)
+    return (vector.astype(float)) * radius
 
 # Six Sacred Tongues (Neurotransmitters)
 TONGUES = {
@@ -153,10 +171,8 @@ class PoincareBall:
             result[:n] = vector[:n]
             vector = result
 
-        norm = np.linalg.norm(vector)
-        if norm >= self.radius:
-            vector = vector / (norm + 1e-6) * 0.95 * self.radius
-        return vector
+        vector = _project_to_poincare_ball(vector, safety_radius=min(self.radius * 0.99, 1.0))
+        return vector / self.radius * min(self.radius, 1.0) if self.radius else vector
 
     def hyperbolic_distance(self, u: np.ndarray, v: np.ndarray) -> float:
         """
@@ -206,6 +222,7 @@ class PHDMLattice:
     def __init__(self):
         self.active_zones = {"core", "cortex", "risk", "recursive", "bridge"}
         self.projection_matrix = self._generate_projection_matrix()
+        self.projection_parity = 1
         self._router = None
         self._registry = None
 
@@ -248,20 +265,40 @@ class PHDMLattice:
             return sum(zone_counts.get(z, 0) for z in self.active_zones)
         return sum(1 for p in self.registry if p.zone.value in self.active_zones)
 
-    def rotate_6d_projection(self) -> float:
+    def rotate_6d_projection(
+        self,
+        theta: Optional[float] = None,
+        rotation_6d: Optional[np.ndarray] = None,
+    ) -> float:
         """
         Phason shift — rotate the 6D projection angle (key rotation).
 
         Section 3: Instant key rotation without system restart.
+        Supports both SO(6)-style rotations and O(6) isometries (reflections/phase flips).
         Returns the rotation angle θ.
         """
-        theta = np.random.uniform(0, 2 * np.pi)
-        rotation_6d = np.eye(6)
-        rotation_6d[0, 0] = np.cos(theta)
-        rotation_6d[0, 1] = -np.sin(theta)
-        rotation_6d[1, 0] = np.sin(theta)
-        rotation_6d[1, 1] = np.cos(theta)
-        self.projection_matrix = self.projection_matrix @ rotation_6d[:3, :]
+        if rotation_6d is None:
+            theta = np.random.uniform(0, 2 * np.pi) if theta is None else theta
+            rotation_6d = np.eye(6)
+            rotation_6d[0, 0] = np.cos(theta)
+            rotation_6d[0, 1] = -np.sin(theta)
+            rotation_6d[1, 0] = np.sin(theta)
+            rotation_6d[1, 1] = np.cos(theta)
+        else:
+            rotation_6d = np.asarray(rotation_6d)
+            if rotation_6d.shape != (6, 6):
+                raise ValueError("rotation_6d must be a 6x6 matrix")
+            if theta is None:
+                theta = float(np.pi if np.linalg.det(rotation_6d) < 0 else 0.0)
+
+        theta = float(0.0 if theta is None else theta)
+        if not isinstance(theta, (int, float)):
+            raise TypeError("theta must be a numeric value")
+        # NOTE: projection_matrix is 3x6 and rotation_6d is 6x6.
+        # Multiplying by the full 6x6 matrix preserves valid dimensions (3x6).
+        self.projection_matrix = self.projection_matrix @ rotation_6d
+        det = float(np.linalg.det(rotation_6d))
+        self.projection_parity *= -1 if det < 0 else 1
         logger.info(f"Phason shift executed: θ={theta:.4f} rad")
         return theta
 
@@ -350,7 +387,8 @@ def embed_to_21d(text: str, context: Optional[Dict] = None) -> np.ndarray:
 
     # 6D hyperbolic: hash-based embedding in Poincaré ball
     text_hash = hashlib.sha256(text.encode()).digest()
-    hyperbolic = np.array([(b / 255.0 - 0.5) * 0.8 for b in text_hash[:6]])
+    hyperbolic = np.array([(b / 255.0 - 0.5) for b in text_hash[:6]])
+    hyperbolic = _project_to_poincare_ball(hyperbolic)
 
     # 6D phase: Sacred Tongue activations
     phase = np.zeros(6)
@@ -398,7 +436,7 @@ def embed_vector_to_21d(vector: np.ndarray, context: Optional[Dict] = None) -> n
 
     # Copy hyperbolic subspace
     n = min(len(vector), DIMENSIONS_6D)
-    result[:n] = vector[:n]
+    result[:n] = _project_to_poincare_ball(vector[:n])
 
     # Fill phase from tongues
     for i, tongue in enumerate(TONGUES.values()):
@@ -647,6 +685,12 @@ class AetherBrain:
         old_state = self.flux_state
         self.flux_state = new_state
         self.lobes.set_flux_state(new_state)
+        sync_fn = getattr(self.lobes, "_sync_circuit_flux", None)
+        if callable(sync_fn):
+            try:
+                sync_fn(new_state)
+            except Exception as exc:
+                logger.warning(f"Circuit flux sync failed: {exc}")
         self._log_audit(
             "FLUX_CHANGE",
             f"{old_state.name} → {new_state.name}",
@@ -666,6 +710,9 @@ class AetherBrain:
             "has_automaton": self.automaton is not None,
             "has_router": self.lobes.router is not None,
             "has_registry": self.lobes.registry is not None,
+            "circuit_sync_supported": callable(getattr(self.lobes, "_sync_circuit_flux", None)),
+            "projection_parity": self.lobes.projection_parity,
+            "projection_matrix_shape": list(self.lobes.projection_matrix.shape),
         }
 
     def reset_energy(self):
@@ -681,8 +728,12 @@ class AetherBrain:
 def embed_text(text: str, dimensions: int = DIMENSIONS_6D) -> np.ndarray:
     """Convert text to a vector for brain processing."""
     text_hash = hashlib.sha256(text.encode()).digest()
-    vector = np.array([b / 255.0 for b in text_hash[:dimensions]])
-    return (vector - 0.5) * 1.5
+    vector = np.array([b / 255.0 for b in text_hash[:dimensions]], dtype=float)
+    norm = np.linalg.norm(vector)
+    if norm < 1e-12:
+        return vector
+    # Keep vectors inside the Poincaré ball to avoid wall-zone instability.
+    return _project_to_poincare_ball(vector, safety_radius=0.4)
 
 
 def create_brain(max_energy: float = 1e6) -> AetherBrain:

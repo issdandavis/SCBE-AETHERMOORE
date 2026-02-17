@@ -535,7 +535,7 @@ export {
   UnitIntervalLattice,
   ProductLattice,
   // Galois connections
-    identityConnection as v2IdentityConnection,
+  v2IdentityConnection,
   constantConnection,
   thresholdConnection,
   scalingConnection,
@@ -543,7 +543,7 @@ export {
   graphComplex,
   simplicialComplex,
   // Sheaf constructors
-    constantSheaf as v2ConstantSheaf,
+  v2ConstantSheaf,
   thresholdSheaf,
   twistedSheaf,
   // Cochains
@@ -553,7 +553,7 @@ export {
   tarskiLaplacian,
   // Cohomology
   tarskiCohomology,
-    globalSections as v2GlobalSections,
+  v2GlobalSections,
   // Hodge Laplacians
   upLaplacian,
   downLaplacian,
@@ -566,11 +566,11 @@ export {
   SheafCohomologyEngine,
   defaultSheafEngine,
   // Types
-    type CompleteLattice as V2CompleteLattice,
-    type GaloisConnection as V2GaloisConnection,
+  type V2CompleteLattice,
+  type V2GaloisConnection,
   type Cell,
-    type CellComplex as V2CellComplex,
-    type CellularSheaf as V2CellularSheaf,
+  type V2CellComplex,
+  type V2CellularSheaf,
   type Cochain,
   type CohomologyResult,
   type CohomologyDiagnostics,
