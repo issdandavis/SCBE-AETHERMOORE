@@ -8,6 +8,7 @@ invokes the existing Selenium uploader in ``--debugger-address`` mode.
 from __future__ import annotations
 
 import argparse
+from difflib import SequenceMatcher
 import json
 import os
 import re
@@ -63,6 +64,17 @@ def _resolve_images_dir(images_dir: str | None) -> Path:
         if candidate.exists():
             return candidate.resolve()
     return (Path.home() / "Downloads").resolve()
+
+
+def _iter_image_files(images_dir: Path) -> list[Path]:
+    """Return image files recursively from the given directory."""
+    if not images_dir.exists():
+        return []
+    return sorted(
+        p
+        for p in images_dir.rglob("*")
+        if p.is_file() and p.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp", ".gif"}
+    )
 
 
 def _resolve_chrome_binary(chrome_path: str | None) -> str:
@@ -215,6 +227,78 @@ def _append_training_records(path: Path, run_id: str, image_dir: Path, targets: 
             f.write(json.dumps(rec) + "\n")
 
 
+def _normalize_token(text: str) -> str:
+    return re.sub(r"[^a-z0-9]+", " ", text.lower()).strip().replace(" ", "")
+
+
+def _token_set(text: str) -> set[str]:
+    tokens = re.findall(r"[a-z0-9]+", text.lower())
+    return {t for t in tokens if t}
+
+
+def _verify_local_content(images_dir: Path, targets: list[str]) -> dict[str, Any]:
+    """Local-only verification pass for image matching (no browser required).
+
+    This verifies whether each target has at least one candidate image and
+    returns a summary suitable for operational dashboards.
+    """
+    files = _iter_image_files(images_dir)
+    matched: list[dict[str, str]] = []
+    missing: list[str] = []
+    missing_count = 0
+
+    used: set[Path] = set()
+    for target in targets:
+        target_key = _normalize_token(target)
+        target_tokens = _token_set(target)
+        chosen = None
+        best_score = 0.0
+        for image in files:
+            if image in used:
+                continue
+            image_key = _normalize_token(image.stem)
+            image_tokens = _token_set(image.stem)
+            # Prefer true token overlap; fallback to direct full-string containment.
+            token_overlap = 0.0
+            if target_tokens and image_tokens:
+                intersection = target_tokens & image_tokens
+                if intersection:
+                    token_overlap = len(intersection) / max(len(target_tokens), 1)
+            if token_overlap > 0:
+                score = token_overlap
+            elif target_key and image_key and (target_key in image_key or image_key in target_key):
+                score = SequenceMatcher(None, target_key, image_key).ratio()
+            else:
+                score = 0.0
+            if score > best_score:
+                best_score = score
+                chosen = image
+        if chosen is not None and best_score >= 0.35:
+            matched.append({"target": target, "image": chosen.name, "score": f"{best_score:.3f}"})
+            used.add(chosen)
+            print(f"MATCH: {target} -> {chosen.name} ({best_score:.3f})")
+            continue
+        if chosen is None:
+            missing.append(target)
+            missing_count += 1
+            print(f"NO_MATCH: {target}")
+
+        if chosen is not None and best_score < 0.35:
+            missing.append(target)
+            missing_count += 1
+            print(f"NO_MATCH: {target} (best_score={best_score:.3f})")
+
+    coverage = 0 if not targets else (len(matched) / len(targets))
+    return {
+        "targets": targets,
+        "total_images": len(files),
+        "matched": matched,
+        "missing": missing,
+        "missing_count": missing_count,
+        "coverage": coverage,
+    }
+
+
 @dataclass
 class RunContext:
     run_id: str
@@ -299,7 +383,16 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--timeout-step", type=int, default=0, help="Increase timeout per pass (for deeper retries)")
     parser.add_argument("--pause-between-passes", type=float, default=3.0, help="Seconds to wait between passes")
     parser.add_argument("--start-chrome", action=argparse.BooleanOptionalAction, default=True, help="Start Chrome with remote debugging")
+    parser.add_argument("--verify-only", action="store_true", help="Run local content verification only (no browser)")
     return parser.parse_args()
+
+def _resolve_debug_port_and_host(debugger_address: str | None, debugger_port: int) -> tuple[str, int]:
+    if debugger_address:
+        if ":" in debugger_address:
+            host, port = debugger_address.rsplit(":", 1)
+            return host, int(port)
+        return debugger_address, debugger_port
+    return "127.0.0.1", debugger_port
 
 
 def main() -> int:
@@ -310,13 +403,34 @@ def main() -> int:
     images_dir = _resolve_images_dir(args.images_dir)
     uploader_script = _resolve_script(args.uploader_script)
     train_log = Path(args.training_log).expanduser().resolve()
+    targets = args.targets
 
     debugger_address = args.debugger_address
     if not debugger_address:
         debugger_address = f"127.0.0.1:{args.debugger_port}"
 
+    debug_host, debug_port = _resolve_debug_port_and_host(args.debugger_address, args.debugger_port)
+
     if not args.start_chrome and not args.debugger_address:
         raise RuntimeError("Provide --debugger-address when --start-chrome is disabled")
+
+    if args.verify_only:
+        result = _verify_local_content(images_dir=images_dir, targets=targets)
+        record = {
+            "dataset": "gumroad_automation",
+            "run_id": _utc_now(),
+            "run_index": 0,
+            "created_at_utc": datetime.now(timezone.utc).isoformat(),
+            "images_dir": str(images_dir),
+            "targets": targets,
+            "event_type": "gumroad_local_verification",
+            "event_payload": result,
+        }
+        train_log.parent.mkdir(parents=True, exist_ok=True)
+        with train_log.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(record) + "\n")
+        print(json.dumps(result, indent=2))
+        return 0 if result["missing_count"] == 0 else 2
 
     # Keep automation output deterministic.
     os.environ.setdefault("PYTHONUNBUFFERED", "1")
@@ -330,7 +444,7 @@ def main() -> int:
         if args.start_chrome:
             chrome_proc = _start_remote_chrome(
                 chrome_path=args.chrome_path,
-                port=args.debugger_port,
+                port=debug_port,
                 products_url=args.products_url,
                 user_data_dir=args.chrome_profile_dir,
             )
@@ -342,10 +456,10 @@ def main() -> int:
                 run_id=run_id,
                 run_index=pass_index,
                 images_dir=images_dir,
-                targets=args.targets,
+                targets=targets,
                 dry_run=args.dry_run,
                 timeout=pass_timeout,
-                debug_port=args.debugger_port,
+                debug_port=debug_port,
                 headless=args.headless,
                 uploader_script=uploader_script,
                 train_log=train_log,
