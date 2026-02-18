@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scbe://schemas/kernel-v1/post_memory_seal.response.schema.json",
+  "title": "POST /memory/seal Response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "request_id",
+    "correlation_id",
+    "audit_hash",
+    "decision_id",
+    "decision",
+    "memory_id",
+    "sealed",
+    "seal_id",
+    "sealed_at"
+  ],
+  "properties": {
+    "request_id": { "type": "string", "minLength": 1 },
+    "correlation_id": { "type": "string", "minLength": 1 },
+    "audit_hash": {
+      "type": "string",
+      "pattern": "^sha256:[A-Fa-f0-9]{8,}$"
+    },
+    "decision_id": { "type": "string", "minLength": 1 },
+    "decision": {
+      "type": "string",
+      "enum": ["ALLOW", "QUARANTINE", "DENY"]
+    },
+    "memory_id": { "type": "string", "minLength": 1 },
+    "sealed": { "type": "boolean" },
+    "seal_id": { "type": "string", "minLength": 1 },
+    "sealed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
