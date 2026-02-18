@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0.0",
+  "decision_id": "mission1000-seeded:mission1000-job-020",
+  "timestamp_utc": "2026-02-18T04:04:55Z",
+  "kernel_version": "scbe-kernel-v1",
+  "profile_id": "default-safe",
+  "job_id": "mission1000-job-020",
+  "agent_id": "synthetic-agent-4",
+  "session_id": "mission1000-session-020",
+  "workflow_id": "hydra-mission-1000",
+  "runner_run_id": "mission1000-seeded",
+  "request_run_id": "mission-1000-seeded",
+  "decision": "NOISE",
+  "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+  "risk_tier": "DELIBERATION",
+  "metrics": {
+    "risk": 1.0,
+    "d_star": 1.0,
+    "coherence": 0.0,
+    "verification_score": 1.0
+  },
+  "capability": {
+    "required": true,
+    "present": false,
+    "valid": false,
+    "token_id": null,
+    "reason": "missing capability token for DELIBERATION"
+  },
+  "trace_hash": "e144ac95d7bb9b3361cb8795a81b11a4421a47a7e40d57f57b77494e8dda142f",
+  "verification": {
+    "score": 1.0,
+    "passed_checks": 1,
+    "total_checks": 1,
+    "checks": [
+      {
+        "check": "max_redirects",
+        "passed": true,
+        "observed": 0,
+        "expected_max": 2
+      }
+    ]
+  }
+}

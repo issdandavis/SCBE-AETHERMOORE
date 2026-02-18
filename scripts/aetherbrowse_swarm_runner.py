@@ -177,6 +177,12 @@ def _verify(job: Dict[str, Any], resp: Dict[str, Any]) -> Dict[str, Any]:
     return {"verification_score": score, "checks": checks, "passed_checks": passed, "total_checks": total, "metrics": {"risk": round(rmax, 6), "d_star": round(dmax, 6), "coherence": coh}}
 
 
+def _chunks(actions: List[Dict[str, Any]], max_actions: int) -> List[List[Dict[str, Any]]]:
+    if max_actions <= 0 or len(actions) <= max_actions:
+        return [actions]
+    return [actions[i : i + max_actions] for i in range(0, len(actions), max_actions)]
+
+
 def _decide(score: float, cap: Dict[str, Any], noise_on_deny: bool) -> Tuple[str, str]:
     if not cap.get("valid", False):
         return ("NOISE" if noise_on_deny else "DENY", f"capability gate failed: {cap.get('reason')}")
@@ -230,12 +236,21 @@ def main() -> None:
     p.add_argument("--profile-id", default=os.getenv("SCBE_PROFILE_ID", "default-safe"))
     p.add_argument("--noise-on-deny", dest="noise_on_deny", action="store_true")
     p.add_argument("--no-noise-on-deny", dest="noise_on_deny", action="store_false")
+    p.add_argument("--max-actions-per-request", type=int, default=0)
+    p.add_argument("--seed", type=int, default=None)
+    p.add_argument("--run-id", default=None)
     p.set_defaults(noise_on_deny=True)
     a = p.parse_args()
 
     token, url = _api_key(a.api_key), _url(a.url)
     jobs = _jobs(json.loads(pathlib.Path(a.jobs_file).read_text(encoding="utf-8")))
-    run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    if a.run_id:
+        run_id = str(a.run_id)
+    elif a.seed is not None:
+        seed_material = f"seed:{a.seed}|jobs:{_sha_t(_j({'jobs': jobs}))[:16]}"
+        run_id = f"swarm-seeded-{_sha_t(seed_material)[:12]}"
+    else:
+        run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     root = pathlib.Path(a.artifact_root) / run_id
     ddir, tdir = root / "decision_records", root / "traces"
     ddir.mkdir(parents=True, exist_ok=True)
@@ -261,15 +276,57 @@ def main() -> None:
         sid = str(job.get("session_id", f"{aid}-session"))
         tier = _tier(job)
         cap = _cap(job, tier)
-        payload = {"actions": job["actions"], "session_id": sid, "source": job.get("source", "swarm"), "workflow_id": job.get("workflow_id", "swarm-run"), "run_id": job.get("run_id", f"run-{int(time.time())}-{i+1}"), "dry_run": bool(job.get("dry_run", False))}
+        payload = {
+            "actions": job["actions"],
+            "session_id": sid,
+            "source": job.get("source", "swarm"),
+            "workflow_id": job.get("workflow_id", "swarm-run"),
+            "run_id": job.get("run_id", f"run-{run_id}-{i+1}"),
+            "dry_run": bool(job.get("dry_run", False)),
+        }
         t0 = time.time()
         err = None
         if cap["valid"]:
-            try:
-                resp = _post(url, token, payload, a.timeout_sec)
-            except Exception as exc:  # noqa: BLE001
-                err = str(exc)
-                resp = {"status": "request_error", "session_id": sid, "results": [], "total_actions": len(job["actions"]), "executed_actions": 0, "blocked_actions": len(job["actions"]), "trace": "request_error"}
+            req_chunks = _chunks(job["actions"], max(0, int(a.max_actions_per_request)))
+            all_results: List[Dict[str, Any]] = []
+            status = "success"
+            executed, blocked = 0, 0
+            traces: List[str] = []
+            for ci, chunk in enumerate(req_chunks, start=1):
+                chunk_payload = {
+                    "actions": chunk,
+                    "session_id": sid,
+                    "source": job.get("source", "swarm"),
+                    "workflow_id": job.get("workflow_id", "swarm-run"),
+                    "run_id": payload["run_id"],
+                    "dry_run": payload["dry_run"],
+                    "chunk_index": ci,
+                    "chunk_count": len(req_chunks),
+                    "page_lock": job.get("page_lock"),
+                }
+                try:
+                    chunk_resp = _post(url, token, chunk_payload, a.timeout_sec)
+                except Exception as exc:  # noqa: BLE001
+                    err = str(exc)
+                    status = "request_error"
+                    blocked += len(chunk)
+                    break
+                all_results.extend(chunk_resp.get("results", []) if isinstance(chunk_resp.get("results"), list) else [])
+                executed += int(chunk_resp.get("executed_actions", len(chunk)))
+                blocked += int(chunk_resp.get("blocked_actions", 0))
+                if isinstance(chunk_resp.get("trace"), str):
+                    traces.append(chunk_resp["trace"])
+            resp = {
+                "status": status,
+                "session_id": sid,
+                "results": all_results,
+                "total_actions": len(job["actions"]),
+                "executed_actions": executed,
+                "blocked_actions": blocked,
+                "trace": "|".join(traces) if traces else ("request_error" if status == "request_error" else ""),
+                "chunk_count": len(req_chunks),
+                "max_actions_per_request": max(0, int(a.max_actions_per_request)),
+            }
         else:
             err = cap["reason"]
             resp = {"status": "blocked_by_policy", "session_id": sid, "results": [], "total_actions": len(job["actions"]), "executed_actions": 0, "blocked_actions": len(job["actions"]), "trace": "policy_gate_blocked"}
