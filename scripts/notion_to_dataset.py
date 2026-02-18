@@ -15,6 +15,11 @@ from pathlib import Path
 from datetime import datetime
 from notion_client import Client
 
+try:
+    from training_auditor import audit_dataset_records
+except Exception:  # noqa: BLE001
+    audit_dataset_records = None
+
 # Content category mappings from Notion workspace
 CATEGORY_TAGS = {
     'technical': ['architecture', 'api', 'security', 'deployment', 'infrastructure',
@@ -108,6 +113,8 @@ def main():
     parser = argparse.ArgumentParser(description='Export Notion to training data')
     parser.add_argument('--category', default='all', help='Category filter')
     parser.add_argument('--output', default='training-data/', help='Output directory')
+    parser.add_argument('--audit-threshold', type=float, default=0.78, help='Anomaly threshold for training data audit')
+    parser.add_argument('--fail-on-quarantine', action='store_true', help='Exit non-zero if dataset audit status is QUARANTINE')
     args = parser.parse_args()
 
     token = os.environ.get('NOTION_TOKEN')
@@ -147,11 +154,29 @@ def main():
         for cat in record['categories']:
             meta['category_breakdown'][cat] = meta['category_breakdown'].get(cat, 0) + 1
 
+    audit_report = None
+    if audit_dataset_records is not None:
+        audit_report = audit_dataset_records(records, threshold=args.audit_threshold)
+        audit_file = output_dir / f'audit_{args.category}_{datetime.utcnow().strftime("%Y%m%d")}.json'
+        with open(audit_file, 'w') as f:
+            json.dump(audit_report, f, indent=2)
+        print(f'Audit report: {audit_file} [status={audit_report.get("status")}]')
+        meta['audit'] = {
+            'status': audit_report.get('status'),
+            'threshold': audit_report.get('threshold'),
+            'flagged_count': audit_report.get('flagged_count'),
+            'hashchain_root': audit_report.get('hashchain_root')
+        }
+    else:
+        print('Warning: training_auditor unavailable; skipping dataset audit')
+
     with open(output_dir / 'metadata.json', 'w') as f:
         json.dump(meta, f, indent=2)
 
     print(f'\nExported {len(records)} records to {output_file}')
     print(f'Category breakdown: {meta["category_breakdown"]}')
+    if args.fail_on_quarantine and isinstance(audit_report, dict) and audit_report.get('status') == 'QUARANTINE':
+        raise SystemExit('Dataset audit returned QUARANTINE (fail-on-quarantine enabled).')
 
 
 if __name__ == '__main__':
