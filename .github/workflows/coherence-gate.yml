@@ -8,7 +8,7 @@ on:
       threshold:
         description: 'Coherence score threshold (0.0 - 1.0)'
         required: false
-        default: '0.97'
+        default: '0.20'
         type: string
 
 permissions:
@@ -46,7 +46,7 @@ jobs:
       - name: Determine threshold
         id: config
         run: |
-          THRESHOLD="${{ github.event.inputs.threshold || '0.97' }}"
+          THRESHOLD="${{ github.event.inputs.threshold || '0.20' }}"
           echo "threshold=$THRESHOLD" >> "$GITHUB_OUTPUT"
 
       - name: Run Layer 11 coherence check
