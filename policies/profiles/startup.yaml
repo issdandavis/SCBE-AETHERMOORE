@@ -1,0 +1,10 @@
+{
+  "profile": "startup",
+  "version": "1.0.0",
+  "overrides": {
+    "controls": {
+      "max_session_minutes": 120,
+      "retention_days": 180
+    }
+  }
+}
