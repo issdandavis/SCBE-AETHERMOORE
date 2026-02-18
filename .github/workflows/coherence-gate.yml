@@ -34,9 +34,21 @@ jobs:
 
       - name: Run Layer 11 coherence check
         id: coherence
-        continue-on-error: true
         run: |
-          python scripts/coherence-check.py --threshold 0.97 --json-path coherence-report.json
+          set +e
+          if ! python scripts/coherence-check.py --threshold 0.97 --json-path coherence-report.json; then
+          python - <<'PY'
+            import json
+            from pathlib import Path
+            report = {
+              "coherence": 0.0,
+              "status": "error",
+              "reason": "coherence-check.py execution failed",
+            }
+            Path("coherence-report.json").write_text(json.dumps(report), encoding="utf-8")
+            print("coherence-check.py failed; wrote fallback error report.")
+PY
+          fi
 
       - name: Extract coherence score
         id: extract
@@ -47,7 +59,7 @@ jobs:
           import os
           from pathlib import Path
 
-          data = json.loads(Path('coherence-report.json').read_text())
+          data = json.loads(Path('coherence-report.json').read_text(encoding="utf-8"))
           with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as fh:
               fh.write(f"coherence={data['coherence']}\n")
               fh.write(f"status={data['status']}\n")
