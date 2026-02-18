@@ -25,6 +25,9 @@ DELTA_F     = 30.0                   # Hz per token‑id step
 NONCE_BYTES = 12
 MASTER_KEY  = os.getenv("MASTER_KEY", os.urandom(32))  # 256‑bit secret
 MAX_HARM    = 12                     # number of overtones for Adaptive mode
+REPLAY_WINDOW_MS = 60_000            # reject replays outside this window
+MAX_FUTURE_SKEW_MS = 5_000           # reject tokens too far in the future
+NONCE_CACHE = {}                     # in-memory nonce->timestamp cache
 
 # ----------------------------------------------------------------------
 # 1. CONLANG → TOKEN IDS (allows negatives)
@@ -117,6 +120,12 @@ def fingerprint(signal):
 # ----------------------------------------------------------------------
 # 5. RWP‑v3 ENVELOPE (HMAC, nonce, timestamp)
 # ----------------------------------------------------------------------
+def _prune_nonce_cache(cache, now_ms, window_ms):
+    cutoff = now_ms - window_ms
+    for nonce, seen_ms in list(cache.items()):
+        if seen_ms < cutoff:
+            cache.pop(nonce, None)
+
 def make_envelope(payload_bytes, mode, tongue="KO"):
     nonce = os.urandom(NONCE_BYTES)
     ts    = int(time.time()*1000)
@@ -136,17 +145,35 @@ def make_envelope(payload_bytes, mode, tongue="KO"):
     sig = hmac.new(MASTER_KEY, canon.encode(), hashlib.sha256).hexdigest()
     return {"header":hdr,"payload":plb64,"sig":sig}
 
-def verify_envelope(env):
+def verify_envelope(env, *, replay_cache=None, replay_window_ms=REPLAY_WINDOW_MS,
+                    max_future_skew_ms=MAX_FUTURE_SKEW_MS):
+    """Verify envelope, enforcing replay window and nonce reuse policy.
+
+    Policy: tokens are accepted only if their timestamp is within the replay
+    window and not more than max_future_skew_ms in the future. Nonces must be
+    unique within replay_window_ms. The default cache is in-memory; for
+    multi-process or long-lived deployments, pass a persistent/shared cache.
+    """
     hdr = env["header"]
     now = int(time.time()*1000)
-    if now - hdr["ts"] > 60_000: return False
+    if hdr["ts"] - now > max_future_skew_ms:
+        return False
+    if now - hdr["ts"] > replay_window_ms:
+        return False
     canon = ".".join([
         "v3",hdr["tongue"],
         ";".join(f"{k}={v}" for k,v in sorted(hdr["aad"].items())),
         str(hdr["ts"]), hdr["nonce"], env["payload"]
     ])
     exp = hmac.new(MASTER_KEY, canon.encode(), hashlib.sha256).hexdigest()
-    return hmac.compare_digest(exp, env["sig"])
+    if not hmac.compare_digest(exp, env["sig"]):
+        return False
+    cache = replay_cache if replay_cache is not None else NONCE_CACHE
+    _prune_nonce_cache(cache, now, replay_window_ms)
+    if hdr["nonce"] in cache:
+        return False
+    cache[hdr["nonce"]] = hdr["ts"]
+    return True
 
 # ----------------------------------------------------------------------
 # 6. DEMO PIPELINE (end‑to‑end)
