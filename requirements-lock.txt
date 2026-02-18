@@ -23,7 +23,7 @@ boto3==1.42.34
 botocore==1.42.16
 cachetools==6.2.4
 cattrs==25.3.0
-certifi==2025.11.12
+certifi==2026.1.4
 cffi==2.0.0
 cfgv==3.5.0
 chardet==5.2.0
@@ -86,7 +86,7 @@ multidict==6.7.0
 mypy==1.19.1
 mypy_extensions==1.1.0
 nodeenv==1.10.0
-numpy==2.4.0
+numpy==2.4.2
 openai==2.11.0
 openapi-schema-validator==0.6.3
 openapi-spec-validator==0.7.2
@@ -155,7 +155,7 @@ packaging==25.0
 pandas==2.3.3
 pathable==0.4.4
 pathspec==0.12.1
-pillow==11.3.0
+pillow==12.1.1
 platformdirs==4.5.1
 playwright==1.57.0
 pluggy==1.6.0
@@ -198,7 +198,7 @@ referencing==0.36.2
 requests==2.32.5
 responses==0.25.8
 rfc3339-validator==0.1.4
-rich==14.2.0
+rich==14.3.2
 rpds-py==0.30.0
 rsa==4.9.1
 ruamel.yaml==0.18.17

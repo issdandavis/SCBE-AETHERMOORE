@@ -535,7 +535,7 @@ export {
   UnitIntervalLattice,
   ProductLattice,
   // Galois connections
-  identityConnection,
+  v2IdentityConnection,
   constantConnection,
   thresholdConnection,
   scalingConnection,
@@ -543,7 +543,7 @@ export {
   graphComplex,
   simplicialComplex,
   // Sheaf constructors
-  constantSheaf,
+  v2ConstantSheaf,
   thresholdSheaf,
   twistedSheaf,
   // Cochains
@@ -553,7 +553,7 @@ export {
   tarskiLaplacian,
   // Cohomology
   tarskiCohomology,
-  globalSections,
+  v2GlobalSections,
   // Hodge Laplacians
   upLaplacian,
   downLaplacian,
@@ -566,11 +566,11 @@ export {
   SheafCohomologyEngine,
   defaultSheafEngine,
   // Types
-  type CompleteLattice,
-  type GaloisConnection,
+  type V2CompleteLattice,
+  type V2GaloisConnection,
   type Cell,
-  type CellComplex,
-  type CellularSheaf,
+  type V2CellComplex,
+  type V2CellularSheaf,
   type Cochain,
   type CohomologyResult,
   type CohomologyDiagnostics,
@@ -620,7 +620,7 @@ export {
 export {
   PHDMGovernanceRouter,
   buildPolyhedralGraph,
-  buildGovernanceSheaf,
+  buildGovernanceSheaf as phdmBuildGovernanceSheaf,
   computePolyhedralTrust,
   polyhedralEulerCharacteristic,
   trustDistanceMatrix,
