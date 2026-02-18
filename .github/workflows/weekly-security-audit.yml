@@ -21,20 +21,46 @@ jobs:
 
       - name: Run npm audit
         id: npm_audit
-        continue-on-error: true
         run: |
-          npm audit --json > npm-audit.json 2>&1 || true
-          echo "NPM_AUDIT_EXIT=$?" >> $GITHUB_ENV
+          set +e
+          npm audit --json > npm-audit.json 2>&1
+          AUDIT_EXIT=$?
+          set -e
+          echo "NPM_AUDIT_EXIT=$AUDIT_EXIT" >> "$GITHUB_ENV"
 
       - name: Parse npm audit results
         id: parse_npm
         run: |
-          if [ -f npm-audit.json ]; then
-            CRITICAL=$(cat npm-audit.json | jq '.metadata.vulnerabilities.critical // 0')
-            HIGH=$(cat npm-audit.json | jq '.metadata.vulnerabilities.high // 0')
-            echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
-            echo "high=$HIGH" >> $GITHUB_OUTPUT
-          fi
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path('npm-audit.json')
+          default = {"metadata": {"vulnerabilities": {"critical": 0, "high": 0}}}
+          if not path.exists():
+            summary = default
+          else:
+            try:
+              payload = json.loads(path.read_text(encoding='utf-8'))
+              if not isinstance(payload, dict):
+                summary = default
+              else:
+                metadata = payload.get('metadata', {})
+                vulnerabilities = metadata.get('vulnerabilities', {})
+                if not isinstance(vulnerabilities, dict):
+                  vulnerabilities = {}
+                summary = {"metadata": {"vulnerabilities": vulnerabilities}}
+            except Exception:
+              summary = default
+
+          critical = int(summary.get('metadata', {}).get('vulnerabilities', {}).get('critical', 0) or 0)
+          high = int(summary.get('metadata', {}).get('vulnerabilities', {}).get('high', 0) or 0)
+          print(f"critical={critical}")
+          print(f"high={high}")
+          Path(__import__('os').environ['GITHUB_OUTPUT']).write_text(
+              f"critical={critical}\nhigh={high}\n", encoding='utf-8'
+          )
+          PY
 
       - name: Upload npm audit report
         uses: actions/upload-artifact@v4
@@ -63,9 +89,12 @@ jobs:
 
       - name: Run pip-audit
         id: pip_audit
-        continue-on-error: true
         run: |
-          pip-audit --format json --output pip-audit.json || true
+          set +e
+          pip-audit --format json --output pip-audit.json
+          AUDIT_EXIT=$?
+          set -e
+          echo "PIP_AUDIT_EXIT=$AUDIT_EXIT" >> "$GITHUB_ENV"
 
       - name: Upload pip audit report
         uses: actions/upload-artifact@v4
@@ -97,16 +126,69 @@ jobs:
       - name: Check for critical vulnerabilities
         id: check_vulns
         run: |
-          CRITICAL=0
-          if [ -f ./reports/npm-audit.json ]; then
-            NPM_CRITICAL=$(cat ./reports/npm-audit.json | jq '.metadata.vulnerabilities.critical // 0')
-            CRITICAL=$((CRITICAL + NPM_CRITICAL))
-          fi
-          echo "total_critical=$CRITICAL" >> $GITHUB_OUTPUT
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from typing import Any, Dict
+          
+          def safe_read_int(path: str, keys):
+              p = Path(path)
+              if not p.exists():
+                  return 0
+              try:
+                  payload = json.loads(p.read_text(encoding='utf-8'))
+                  cursor: Any = payload
+                  for key in keys:
+                      if isinstance(cursor, dict) and key in cursor:
+                          cursor = cursor[key]
+                      else:
+                          return 0
+                  if isinstance(cursor, bool):
+                      return int(cursor)
+                  if isinstance(cursor, (int, float)):
+                      return int(cursor)
+                  if isinstance(cursor, str):
+                      return int(float(cursor))
+                  return 0
+              except Exception:
+                  return 0
+          
+          npm_critical = safe_read_int('./reports/npm-audit.json', ('metadata', 'vulnerabilities', 'critical'))
+          npm_high = safe_read_int('./reports/npm-audit.json', ('metadata', 'vulnerabilities', 'high'))
+          pip_critical = safe_read_int('./reports/pip-audit.json', ('vulnerabilities', 'critical'))
+          pip_high = safe_read_int('./reports/pip-audit.json', ('vulnerabilities', 'high'))
+
+          total_critical = npm_critical + pip_critical
+          total_high = npm_high + pip_high
+
+          with open(__import__('os').environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as fh:
+              fh.write(f"npm_critical={npm_critical}\n")
+              fh.write(f"npm_high={npm_high}\n")
+              fh.write(f"pip_critical={pip_critical}\n")
+              fh.write(f"pip_high={pip_high}\n")
+              fh.write(f"total_critical={total_critical}\n")
+              fh.write(f"total_high={total_high}\n")
+          PY
+
+      - name: Emit security audit summary
+        if: always()
+        run: |
+          echo "## Weekly Security Audit" >> "$GITHUB_STEP_SUMMARY"
+          echo "- NPM critical: ${{ steps.check_vulns.outputs.npm_critical }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- NPM high: ${{ steps.check_vulns.outputs.npm_high }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- pip-audit critical: ${{ steps.check_vulns.outputs.pip_critical }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- pip-audit high: ${{ steps.check_vulns.outputs.pip_high }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Total critical: ${{ steps.check_vulns.outputs.total_critical }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Total high: ${{ steps.check_vulns.outputs.total_high }}" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Create issue if critical vulnerabilities found
         if: steps.check_vulns.outputs.total_critical > 0
         uses: actions/github-script@v7
+        env:
+          NPM_CRITICAL: ${{ steps.check_vulns.outputs.npm_critical }}
+          NPM_HIGH: ${{ steps.check_vulns.outputs.npm_high }}
+          PIP_CRITICAL: ${{ steps.check_vulns.outputs.pip_critical }}
+          PIP_HIGH: ${{ steps.check_vulns.outputs.pip_high }}
         with:
           script: |
             const date = new Date().toISOString().split('T')[0];
@@ -114,6 +196,6 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: `🚨 Security Alert: Critical vulnerabilities found (${date})`,
-              body: `## Weekly Security Audit\n\nCritical vulnerabilities were detected in dependencies.\n\nPlease review the audit artifacts and update affected packages.\n\n**Action Required:** Run \`npm audit fix\` and \`pip-audit --fix\`\n\n---\n*Automated by weekly-security-audit workflow*`,
+              body: `## Weekly Security Audit\n\nCritical vulnerabilities were detected in dependencies.\n\n- NPM critical: ${process.env.NPM_CRITICAL}\n- NPM high: ${process.env.NPM_HIGH}\n- pip-audit critical: ${process.env.PIP_CRITICAL}\n- pip-audit high: ${process.env.PIP_HIGH}\n\nPlease review the audit artifacts and update affected packages.\n\n**Action Required:** Run \`npm audit fix\` and \`pip-audit --fix\`\n\n---\n*Automated by weekly-security-audit workflow*`,
               labels: ['security', 'critical', 'automated']
             });
