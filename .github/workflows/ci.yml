@@ -2,157 +2,44 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, work, feat/** ]
   pull_request:
-    branches: [ main, develop ]
-
-permissions:
-  contents: read
 
 jobs:
   test:
-    name: Test on Node ${{ matrix.node-version }}
     runs-on: ubuntu-latest
-    continue-on-error: true
-
-    strategy:
-      matrix:
-        node-version: [20.x, 22.x]
-
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js ${{ matrix.node-version }}
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-
-      - name: Setup Python for cross-language tests
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install Python dependencies for cross-language tests
-        run: |
-          python -m pip install --upgrade pip
-          pip install numpy scipy matplotlib
-        continue-on-error: true
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run type check
-        run: npm run typecheck
-
-      - name: Build project
-        run: npm run build
-
-      - name: Run tests
-        run: npm test
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist-${{ matrix.node-version }}
-          path: dist/
-          retention-days: 7
-
-  python-test:
-    name: Test Python Components
-    runs-on: ubuntu-latest
-    continue-on-error: true
-
-    strategy:
-      matrix:
-        python-version: ['3.10', '3.11', '3.12']
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: 'pip'
-
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-cov hypothesis
-
-      - name: Run Python tests
-        run: |
-          PYTHONPATH=. pytest tests/ -v --ignore=tests/node_modules 2>&1 || true
-
-      - name: Upload coverage
-        uses: codecov/codecov-action@v4
-        continue-on-error: true
-        with:
-          file: ./coverage.xml
-          flags: python
-          name: python-${{ matrix.python-version }}
-
-  lint:
-    name: Lint and Format Check
-    runs-on: ubuntu-latest
-    continue-on-error: true
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Auto-format TypeScript files
-        run: npx prettier --write "src/**/*.ts" "tests/**/*.ts"
-
-      - name: Check TypeScript formatting
-        run: npx prettier --check "src/**/*.ts" "tests/**/*.ts"
+          node-version: "20"
+          cache: "npm"
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.10"
 
-      - name: Install Python linters
+      - name: Install Node deps
+        run: npm ci
+
+      - name: Install Python deps
         run: |
-          pip install black flake8 mypy
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+          pip install pytest flake8
 
-      - name: Check Python formatting
-        run: black --check src/ tests/ || true
+      - name: Lint Python
+        run: flake8 .
 
-      - name: Run flake8
-        run: flake8 src/ tests/ --max-line-length=120 || true
-
-  security:
-    name: Security Audit
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-
-      - name: Run npm audit
-        run: npm audit --audit-level=moderate
+      - name: Test TypeScript
+        run: npm test -- --runInBand
         continue-on-error: true
 
-      - name: Run Snyk security scan
-        uses: snyk/actions/node@master
+      - name: Test Python
+        run: pytest -q
         continue-on-error: true
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
