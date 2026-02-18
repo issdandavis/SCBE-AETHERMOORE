@@ -1,0 +1,13 @@
+; Demonstrate compare + conditional jump
+ko:set r0, 7
+ko:set r1, 7
+ca:cmp_eq r2, r0, r1
+ko:jz r2, not_equal
+ko:set r3, 1
+ko:print r3
+ko:halt
+
+not_equal:
+ko:set r3, 0
+ko:print r3
+ko:halt
