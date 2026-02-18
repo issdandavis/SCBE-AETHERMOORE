@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: scbe-training
+  labels:
+    app: scbe-training
+    purpose: overnight-jobs
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: phdm21d-longrun-checkpoints
+  namespace: scbe-training
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: gp2
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: phdm21d-longrun-training
+  namespace: scbe-training
+  labels:
+    app: phdm21d-trainer
+    model: phdm-21d
+    runbook: overnight
+spec:
+  parallelism: 1
+  completions: 1
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 86400
+  activeDeadlineSeconds: 28800
+  template:
+    metadata:
+      labels:
+        app: phdm21d-trainer
+        model: phdm-21d
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: phdm21d-trainer
+          image: pytorch/pytorch:2.1.0-cuda11.8-cudnn8-runtime
+          command:
+            - /bin/bash
+            - -lc
+          args:
+            - |
+              set -euo pipefail
+              echo "Launching long-run K8s training placeholder"
+              python - <<'PY'
+              import os
+              import time
+              from datetime import datetime, timezone
+
+              hours = float(os.getenv("SCBE_TRAINING_HOURS", "8"))
+              output = os.getenv("SCBE_TRAINING_OUTPUT", "/mnt/checkpoints")
+              total = int(hours * 3600)
+              heartbeat = 300
+              step = 0
+
+              for _ in range(total):
+                  if step % heartbeat == 0:
+                      with open(f"{output}/heartbeat.txt", "a", encoding="utf-8") as log:
+                          ts = datetime.now(timezone.utc).isoformat()
+                          log.write(f"{ts} training tick\\n")
+                      print(f"checkpoint heartbeat at {ts}")
+                  time.sleep(1)
+                  step += 1
+              print("Long-run placeholder training window completed.")
+              PY
+          env:
+            - name: SCBE_TRAINING_HOURS
+              value: "8"
+            - name: SCBE_TRAINING_OUTPUT
+              value: /mnt/checkpoints
+          volumeMounts:
+            - name: checkpoints
+              mountPath: /mnt/checkpoints
+          resources:
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+      volumes:
+        - name: checkpoints
+          persistentVolumeClaim:
+            claimName: phdm21d-longrun-checkpoints
