@@ -70,14 +70,16 @@ jobs:
             echo '{"coherence": 0.0, "status": "error", "reason": "No report generated"}' > coherence-report.json
           fi
           python3 - <<'PY'
-          import json, os
-          from pathlib import Path
-          data = json.loads(Path('coherence-report.json').read_text())
-          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as fh:
-              fh.write(f"coherence={data.get('coherence', 0.0)}\n")
-              fh.write(f"status={data.get('status', 'error')}\n")
-              fh.write(f"reason={data.get('reason', '')}\n")
-          PY
+import json
+import os
+from pathlib import Path
+
+data = json.loads(Path('coherence-report.json').read_text())
+with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as fh:
+    fh.write(f"coherence={data.get('coherence', 0.0)}\n")
+    fh.write(f"status={data.get('status', 'error')}\n")
+    fh.write(f"reason={data.get('reason', '')}\n")
+PY
 
       - name: Upload coherence report
         if: always()
