@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scbe://schemas/kernel-v1/post_memory_seal.request.schema.json",
+  "title": "POST /memory/seal Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["request_id", "decision_id", "memory", "seal_options"],
+  "properties": {
+    "request_id": { "type": "string", "minLength": 1 },
+    "decision_id": { "type": "string", "minLength": 1 },
+    "memory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["memory_id", "content", "content_type"],
+      "properties": {
+        "memory_id": { "type": "string", "minLength": 1 },
+        "content": { "type": "string" },
+        "content_type": { "type": "string", "minLength": 1 }
+      }
+    },
+    "seal_options": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "ttl_seconds"],
+      "properties": {
+        "algorithm": { "type": "string", "minLength": 1 },
+        "ttl_seconds": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}
