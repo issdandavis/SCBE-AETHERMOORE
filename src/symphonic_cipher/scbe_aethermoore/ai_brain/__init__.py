@@ -81,6 +81,7 @@ from .hamiltonian_braid import (
     simulate_braid,
     BraidStepResult,
     BraidTrajectory,
+)
 from .dual_ternary import (
     DualTernarySystem,
     DualTernaryState,
@@ -142,6 +143,22 @@ from .hamiltonian_braid import (
     estimate_braid_fractal_dimension,
 )
 
+from .circuit_flow import (
+    PolyDidacticCircuit,
+    CircuitNode,
+    CircuitEdge,
+    CircuitStep,
+    CircuitTrace,
+    Zone,
+    FluxGate,
+    GovernanceAction,
+    harmonic_wall_cost,
+    classify_trust_ring,
+    classify_intent_tongue,
+    create_circuit,
+    TONGUE_WEIGHTS,
+    TONGUE_PHASES,
+)
 from .cymatic_voxel_net import (
     CymaticVoxelNet,
     NODAL_THRESHOLD,
@@ -282,6 +299,21 @@ __all__ = [
     "harmonic_tube_cost",
     "is_inside_tube",
     "estimate_braid_fractal_dimension",
+    # Poly-Didactic Circuit Flow
+    "PolyDidacticCircuit",
+    "CircuitNode",
+    "CircuitEdge",
+    "CircuitStep",
+    "CircuitTrace",
+    "Zone",
+    "FluxGate",
+    "GovernanceAction",
+    "harmonic_wall_cost",
+    "classify_trust_ring",
+    "classify_intent_tongue",
+    "create_circuit",
+    "TONGUE_WEIGHTS",
+    "TONGUE_PHASES",
     # Cymatic Voxel Net
     "CymaticVoxelNet",
     "NODAL_THRESHOLD",
