@@ -1,0 +1,2011 @@
+{
+  "run_id": "mission1000-seeded",
+  "kernel_version": "scbe-kernel-v1",
+  "profile_id": "default-safe",
+  "total_jobs": 100,
+  "success_jobs": 100,
+  "failed_jobs": 0,
+  "failures": [],
+  "results": [
+    {
+      "job_id": "mission1000-job-001",
+      "agent_id": "synthetic-agent-1",
+      "session_id": "mission1000-session-001",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-001.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-001.json",
+      "trace_hash": "2980d30138233bbf870e07e692e60d7ef4c04072dc3cbb3d710e9a515da1b2b1",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-002",
+      "agent_id": "synthetic-agent-2",
+      "session_id": "mission1000-session-002",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-002.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-002.json",
+      "trace_hash": "56d9fe97a1d07e30c40ab4c9c3997c551dc6036957f92b325f432edaf40c6b6e",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-003",
+      "agent_id": "synthetic-agent-3",
+      "session_id": "mission1000-session-003",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-003.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-003.json",
+      "trace_hash": "6fe67520b8006eee552f6021d8990f0a2ce24285f672fcc8edfc75e501dbce2d",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-004",
+      "agent_id": "synthetic-agent-4",
+      "session_id": "mission1000-session-004",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-004.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-004.json",
+      "trace_hash": "3a7465be3ec2b0f72905df557aa4bd84509d80c70b95502ad4d245ce2f62737d",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-005",
+      "agent_id": "synthetic-agent-5",
+      "session_id": "mission1000-session-005",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-005.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-005.json",
+      "trace_hash": "e789fe28bc34ec45a65486c309d4051f30376e484340a46e694989938df4f801",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-006",
+      "agent_id": "synthetic-agent-6",
+      "session_id": "mission1000-session-006",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-006.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-006.json",
+      "trace_hash": "ce3a6b714a71e398c98693283c40ce7a1002288bdebaccdc7f77dc49c075c3d1",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-007",
+      "agent_id": "synthetic-agent-7",
+      "session_id": "mission1000-session-007",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-007.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-007.json",
+      "trace_hash": "5e018954b721517faf2ef34daf69e3eba8e8d715d00fb335a891480c7b386d89",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-008",
+      "agent_id": "synthetic-agent-8",
+      "session_id": "mission1000-session-008",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-008.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-008.json",
+      "trace_hash": "927a6b387d3ea04fc14cf6cb7bce18e5df7b54526fa741cd08c186adafc92d13",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-009",
+      "agent_id": "synthetic-agent-1",
+      "session_id": "mission1000-session-009",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-009.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-009.json",
+      "trace_hash": "a5e7ffdd937ab0dd6bcf55de8a650de3d5296a483545957bed7e45fe13bd5291",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-010",
+      "agent_id": "synthetic-agent-2",
+      "session_id": "mission1000-session-010",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-010.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-010.json",
+      "trace_hash": "27275818bcb4721de52707abaecf97078c00c4be75a0a1d3edf6f04fb199e233",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-011",
+      "agent_id": "synthetic-agent-3",
+      "session_id": "mission1000-session-011",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-011.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-011.json",
+      "trace_hash": "3c62d1001917e29dcf34eba2fee73a06b435d79fb1aba14a6dad97e51e6cff01",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-012",
+      "agent_id": "synthetic-agent-4",
+      "session_id": "mission1000-session-012",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-012.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-012.json",
+      "trace_hash": "edc6a4e314abdbcc10a620b78214fbcf8d190ccfd1eb1cf15565c2f8815c03d5",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-013",
+      "agent_id": "synthetic-agent-5",
+      "session_id": "mission1000-session-013",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-013.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-013.json",
+      "trace_hash": "311d81f7f1ee67c522c2ab4c7748d819e8d4db6eef9a858cf138182435ee5353",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-014",
+      "agent_id": "synthetic-agent-6",
+      "session_id": "mission1000-session-014",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-014.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-014.json",
+      "trace_hash": "e655cd75569d1fffdc7c3c6e88686954133157f8a2ef12ae20a4e852c4b4712b",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-015",
+      "agent_id": "synthetic-agent-7",
+      "session_id": "mission1000-session-015",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-015.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-015.json",
+      "trace_hash": "2d86da9d41b06c2e2bdc560e4451119b744e75e800a5380dac553108389d9e40",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-016",
+      "agent_id": "synthetic-agent-8",
+      "session_id": "mission1000-session-016",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-016.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-016.json",
+      "trace_hash": "4bf50b8bd16cb31f3110c980bfb3378c0a64ce50fc706c2784f64c5648b51346",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-017",
+      "agent_id": "synthetic-agent-1",
+      "session_id": "mission1000-session-017",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-017.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-017.json",
+      "trace_hash": "062d45963ba2fa63e5f064414bfaf1e7cc1cb2f0e3386095f4b9e2bd2e6062fa",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-018",
+      "agent_id": "synthetic-agent-2",
+      "session_id": "mission1000-session-018",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-018.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-018.json",
+      "trace_hash": "fb6cc5517ccca8bcf1a64a524037643ae7452a5ad8714ba519c99d7b0f285bcf",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-019",
+      "agent_id": "synthetic-agent-3",
+      "session_id": "mission1000-session-019",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-019.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-019.json",
+      "trace_hash": "a4ab2ad4c4b6c226a85427d720b17b197e203c165c2aa03d25830aa720d4aa45",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-020",
+      "agent_id": "synthetic-agent-4",
+      "session_id": "mission1000-session-020",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-020.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-020.json",
+      "trace_hash": "e144ac95d7bb9b3361cb8795a81b11a4421a47a7e40d57f57b77494e8dda142f",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-021",
+      "agent_id": "synthetic-agent-5",
+      "session_id": "mission1000-session-021",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-021.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-021.json",
+      "trace_hash": "cde847876fc5c388ca034077d04992004eac136e9636ab47c0a59000a871171c",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-022",
+      "agent_id": "synthetic-agent-6",
+      "session_id": "mission1000-session-022",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-022.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-022.json",
+      "trace_hash": "2b853c5a02eeb39f000b4a5442721b7bc24aadfa971bf4be981b8520710643b2",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-023",
+      "agent_id": "synthetic-agent-7",
+      "session_id": "mission1000-session-023",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-023.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-023.json",
+      "trace_hash": "88563ed12af03ab84e92c33fed7f4ba7846dda2653f1904effa406fa4670f59e",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-024",
+      "agent_id": "synthetic-agent-8",
+      "session_id": "mission1000-session-024",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-024.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-024.json",
+      "trace_hash": "3baaf20de2b7e2a78b4943d8b5bedc3943c16b041affdc0213bdee05a85e4399",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-025",
+      "agent_id": "synthetic-agent-1",
+      "session_id": "mission1000-session-025",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-025.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-025.json",
+      "trace_hash": "31995ff578cd38482d129d0d16b0bb8489c03fe197b8688e41eff54cffb3a3fe",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-026",
+      "agent_id": "synthetic-agent-2",
+      "session_id": "mission1000-session-026",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-026.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-026.json",
+      "trace_hash": "498e452ff254030776d472540dd482472633a22d03f6a10c1f40e768b1c969af",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-027",
+      "agent_id": "synthetic-agent-3",
+      "session_id": "mission1000-session-027",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-027.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-027.json",
+      "trace_hash": "4a120fb5f96564c9ec6d383f15faf60fe5d7c82025236b6d7b4abe25af1f74c0",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-028",
+      "agent_id": "synthetic-agent-4",
+      "session_id": "mission1000-session-028",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-028.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-028.json",
+      "trace_hash": "97abe3a7945cc232615eb1b629d8c5352a7ea8ccd8fe5d148854accddd07b4b9",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-029",
+      "agent_id": "synthetic-agent-5",
+      "session_id": "mission1000-session-029",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-029.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-029.json",
+      "trace_hash": "f939f9968cc66c308d5d487926de26263451f96a4fb01c576535ba45d05094d5",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-030",
+      "agent_id": "synthetic-agent-6",
+      "session_id": "mission1000-session-030",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-030.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-030.json",
+      "trace_hash": "750e17e2295f746d4323347efa5e768f8d3b1de5f7e13018585b43a262aaeb39",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-031",
+      "agent_id": "synthetic-agent-7",
+      "session_id": "mission1000-session-031",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-031.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-031.json",
+      "trace_hash": "bc3686fee1f0af1b4e1015a724cb4a37ba64917908cf20054fb3371abaf7361a",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-032",
+      "agent_id": "synthetic-agent-8",
+      "session_id": "mission1000-session-032",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-032.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-032.json",
+      "trace_hash": "cc1df5c987088ed278645dacaa4e4c2d83009865d9b9958f3bc1824768c66c4a",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-033",
+      "agent_id": "synthetic-agent-1",
+      "session_id": "mission1000-session-033",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-033.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-033.json",
+      "trace_hash": "e1a51dc9fa2c9ef915916366203b7084d2363ab62fcac5d240bde404e4f938a8",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-034",
+      "agent_id": "synthetic-agent-2",
+      "session_id": "mission1000-session-034",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-034.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-034.json",
+      "trace_hash": "ace5fd3a4bdd482619e4f54090433f22219adc085711b7ebd940ecff8eced888",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-035",
+      "agent_id": "synthetic-agent-3",
+      "session_id": "mission1000-session-035",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-035.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-035.json",
+      "trace_hash": "c56616d8d861313415ae4831e60dee3edb7edfb5acdfcbf13064fe7d94138470",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-036",
+      "agent_id": "synthetic-agent-4",
+      "session_id": "mission1000-session-036",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-036.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-036.json",
+      "trace_hash": "44fd81fcf19622d8c53f5d022243cea258043e6a91df7ee66c7d8a5316304d5a",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-037",
+      "agent_id": "synthetic-agent-5",
+      "session_id": "mission1000-session-037",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-037.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-037.json",
+      "trace_hash": "f293a7535b9c8d487a4cf5e0cfb775a74b614ee831028787ecdf58a09f9ec9a7",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-038",
+      "agent_id": "synthetic-agent-6",
+      "session_id": "mission1000-session-038",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-038.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-038.json",
+      "trace_hash": "8451edcdc03ac97ef6ac69cc0c999706b0a1751d7a7b04ef64cef35e0dd4baff",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-039",
+      "agent_id": "synthetic-agent-7",
+      "session_id": "mission1000-session-039",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-039.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-039.json",
+      "trace_hash": "d506304d30bde72f1dd70427a52e6334083ac7b45f9b9909c58d4e734ea11f31",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-040",
+      "agent_id": "synthetic-agent-8",
+      "session_id": "mission1000-session-040",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-040.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-040.json",
+      "trace_hash": "a31195b7d6a5ca242f7fdfa79a0d3dc8c9de392df936172b88e64cd55016b007",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-041",
+      "agent_id": "synthetic-agent-1",
+      "session_id": "mission1000-session-041",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-041.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-041.json",
+      "trace_hash": "10a7718773eabcf6fcdfb311d80b7118359cc2e254fa76f911e3b498d62364ac",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-042",
+      "agent_id": "synthetic-agent-2",
+      "session_id": "mission1000-session-042",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-042.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-042.json",
+      "trace_hash": "ca302e8794f28590a73095cc7014118a7fcb95c5ec5a59daea5275def6b95294",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-043",
+      "agent_id": "synthetic-agent-3",
+      "session_id": "mission1000-session-043",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-043.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-043.json",
+      "trace_hash": "1ad1999fdf01ef1e447eddfdc431228112a583fe9a05ed553a9d2c6cc2e929cc",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-044",
+      "agent_id": "synthetic-agent-4",
+      "session_id": "mission1000-session-044",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-044.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-044.json",
+      "trace_hash": "008128aff130505db9b0465662ad1ebb32770c3aa4fa0adb682510f9714a2558",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-045",
+      "agent_id": "synthetic-agent-5",
+      "session_id": "mission1000-session-045",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-045.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-045.json",
+      "trace_hash": "b7c5ec2c78f00f25dfbac570169f6e4702fe9e8a5d3a46715a2c723159a0c656",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-046",
+      "agent_id": "synthetic-agent-6",
+      "session_id": "mission1000-session-046",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-046.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-046.json",
+      "trace_hash": "585e8ecc9d81fcce4498a7e00fdff56efa8424789fcffe66662a60122ed038e0",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-047",
+      "agent_id": "synthetic-agent-7",
+      "session_id": "mission1000-session-047",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-047.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-047.json",
+      "trace_hash": "2b4d2f017375431d7f3bcee84dda3f1526bb71ba16a622443563182e85f0e792",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-048",
+      "agent_id": "synthetic-agent-8",
+      "session_id": "mission1000-session-048",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-048.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-048.json",
+      "trace_hash": "8a453f1306e0ea8de62079ab5e2aeb0107989f28fed3913b5234b385867d0aaf",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-049",
+      "agent_id": "synthetic-agent-1",
+      "session_id": "mission1000-session-049",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-049.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-049.json",
+      "trace_hash": "f792fa11eec52735eeb8defdc1754352bcafff644d718458ee6552ea3620efda",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-050",
+      "agent_id": "synthetic-agent-2",
+      "session_id": "mission1000-session-050",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-050.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-050.json",
+      "trace_hash": "9e0efca94b6b62a2f2dd9b3979b9ce7428fcb107c964b5f4e8c62efb96a8d5ab",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-051",
+      "agent_id": "synthetic-agent-3",
+      "session_id": "mission1000-session-051",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-051.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-051.json",
+      "trace_hash": "53606819c47daf61836637501ad1eb07190e8beb7a61e7eb3d3747c61e426bf7",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-052",
+      "agent_id": "synthetic-agent-4",
+      "session_id": "mission1000-session-052",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-052.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-052.json",
+      "trace_hash": "7600526c838accc12ef67da8964512dc0b08c13f6242db993c37eba94897c9ce",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-053",
+      "agent_id": "synthetic-agent-5",
+      "session_id": "mission1000-session-053",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-053.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-053.json",
+      "trace_hash": "69b8db5238a089caee8e0dfce53febe904ad8966db3749afe96c2ff3f346d87e",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-054",
+      "agent_id": "synthetic-agent-6",
+      "session_id": "mission1000-session-054",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-054.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-054.json",
+      "trace_hash": "1f16d7b44366f0df51ba6003eaffad480e5052f41232f2f3e87512739fa460a5",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-055",
+      "agent_id": "synthetic-agent-7",
+      "session_id": "mission1000-session-055",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-055.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-055.json",
+      "trace_hash": "427c62832084dbfa6dc19373c97361e68c7343ddc1f2d5f7678864fb0624c967",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-056",
+      "agent_id": "synthetic-agent-8",
+      "session_id": "mission1000-session-056",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-056.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-056.json",
+      "trace_hash": "3cb4a6a0b6f8c920353084e54a511d734eb079a0f72cc001bdeb7501899549ce",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-057",
+      "agent_id": "synthetic-agent-1",
+      "session_id": "mission1000-session-057",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-057.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-057.json",
+      "trace_hash": "26b9d4f782da67d82cb317880d96175c8da5e5f5d25ea1444f28a9b546580c1d",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-058",
+      "agent_id": "synthetic-agent-2",
+      "session_id": "mission1000-session-058",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-058.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-058.json",
+      "trace_hash": "ccf52ba62582b15e545b222b3d223d1e4051f7ed81fd201a566b105a6b0213f3",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-059",
+      "agent_id": "synthetic-agent-3",
+      "session_id": "mission1000-session-059",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-059.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-059.json",
+      "trace_hash": "93e79500a05eef141ec35be5a3a9d27ba257fb7f9e53dcb5f8736dcef2603c4d",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-060",
+      "agent_id": "synthetic-agent-4",
+      "session_id": "mission1000-session-060",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-060.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-060.json",
+      "trace_hash": "2a177018494f3c5f87f124a6af19088a8124d54b48d0e56dcd657ba38193fa96",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-061",
+      "agent_id": "synthetic-agent-5",
+      "session_id": "mission1000-session-061",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-061.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-061.json",
+      "trace_hash": "4cb07b7469d35092c47927f95780e75c954fa9b94ae47f2cb56d5518ab64b60a",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-062",
+      "agent_id": "synthetic-agent-6",
+      "session_id": "mission1000-session-062",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-062.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-062.json",
+      "trace_hash": "c3827ce2115b153ac6e901a7234eebff19de3422546e339fd2bc2cc4f201dd08",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-063",
+      "agent_id": "synthetic-agent-7",
+      "session_id": "mission1000-session-063",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-063.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-063.json",
+      "trace_hash": "3daa7dc7762a1a1ef0c0eb33a40a0fca3b379d4888826d00d0b9e56bf336cba3",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-064",
+      "agent_id": "synthetic-agent-8",
+      "session_id": "mission1000-session-064",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-064.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-064.json",
+      "trace_hash": "36595f56becc425e41d13751347e69c5763ff7930da1ad195fdee5b1a69fa140",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-065",
+      "agent_id": "synthetic-agent-1",
+      "session_id": "mission1000-session-065",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-065.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-065.json",
+      "trace_hash": "65cde5291acdec3c9e7eef66eab2f011118669888d066722dc830b2bf9e5c8a2",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-066",
+      "agent_id": "synthetic-agent-2",
+      "session_id": "mission1000-session-066",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-066.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-066.json",
+      "trace_hash": "a72029af5e41d5ccfdc5a19d8479bd1a2ce55284fcccba16f091ace1b2903150",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-067",
+      "agent_id": "synthetic-agent-3",
+      "session_id": "mission1000-session-067",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-067.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-067.json",
+      "trace_hash": "203f9093c511dc3e75063744a6bc83fc511fd5925411f11f0568692e4af45819",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-068",
+      "agent_id": "synthetic-agent-4",
+      "session_id": "mission1000-session-068",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-068.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-068.json",
+      "trace_hash": "4bd5226fa81899149c2888e5721807cca70da41968554992d3017efbd1dd02b3",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-069",
+      "agent_id": "synthetic-agent-5",
+      "session_id": "mission1000-session-069",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-069.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-069.json",
+      "trace_hash": "c0a37aaefd17207ea40357fce1f953734b05673034ae41c6c905ed5168135afc",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-070",
+      "agent_id": "synthetic-agent-6",
+      "session_id": "mission1000-session-070",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-070.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-070.json",
+      "trace_hash": "c717750a1427b2d25fcf32b999f4654630fba89161533dced76dcf1209b17113",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-071",
+      "agent_id": "synthetic-agent-7",
+      "session_id": "mission1000-session-071",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-071.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-071.json",
+      "trace_hash": "33f807610f15cdc9709e0868fabed5b888f485fd0336565bd4ff9921a2e247b8",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-072",
+      "agent_id": "synthetic-agent-8",
+      "session_id": "mission1000-session-072",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-072.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-072.json",
+      "trace_hash": "051f83b64b24515ba5438d9d8471033f248d9b65cf7f84d8eed55d0794f82a34",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-073",
+      "agent_id": "synthetic-agent-1",
+      "session_id": "mission1000-session-073",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-073.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-073.json",
+      "trace_hash": "46084fddcfb6e460c88fd62a6dc20c52c609d075bf89213a84e6e7a2afb2f61d",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-074",
+      "agent_id": "synthetic-agent-2",
+      "session_id": "mission1000-session-074",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-074.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-074.json",
+      "trace_hash": "15e1cc0284c37b883cec51859a61d389d5f3dcd0080dcb505945d82a9c3c57a3",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-075",
+      "agent_id": "synthetic-agent-3",
+      "session_id": "mission1000-session-075",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-075.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-075.json",
+      "trace_hash": "8231b39e75caf1544af45949c2f1a22bc1582d1d2a864f99bc824d945070e0a4",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-076",
+      "agent_id": "synthetic-agent-4",
+      "session_id": "mission1000-session-076",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-076.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-076.json",
+      "trace_hash": "d5ec2d55ff5908835bc47e3e7d3fb5083c99aa8931606b8fe5270032644a65f4",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-077",
+      "agent_id": "synthetic-agent-5",
+      "session_id": "mission1000-session-077",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-077.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-077.json",
+      "trace_hash": "a2f9665399ae62085d04caede08f6121cf16bbb7aad4828cb7f110df359b6a25",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-078",
+      "agent_id": "synthetic-agent-6",
+      "session_id": "mission1000-session-078",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-078.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-078.json",
+      "trace_hash": "bcff463bb93e82247fda93bf6d8e75669efc476316796ad0cfa59ed1d15a9e0d",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-079",
+      "agent_id": "synthetic-agent-7",
+      "session_id": "mission1000-session-079",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-079.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-079.json",
+      "trace_hash": "38b356e0fa2001f5be13502f0281d0acab9ed89899320a367e21b16aa3739b20",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-080",
+      "agent_id": "synthetic-agent-8",
+      "session_id": "mission1000-session-080",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-080.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-080.json",
+      "trace_hash": "a71462ec5aeca18ee6f3a27619e9a13ea51975a5770e4f1f1552bf029ec31193",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-081",
+      "agent_id": "synthetic-agent-1",
+      "session_id": "mission1000-session-081",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-081.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-081.json",
+      "trace_hash": "95b9b4127dff158679541b22a8162ecc77caf85ca702c62102b71c477a5e4838",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-082",
+      "agent_id": "synthetic-agent-2",
+      "session_id": "mission1000-session-082",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-082.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-082.json",
+      "trace_hash": "ce54044c8b3d52b010e66d4baa71d8540e14de44a321a4c1ecba0991147c2016",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-083",
+      "agent_id": "synthetic-agent-3",
+      "session_id": "mission1000-session-083",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-083.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-083.json",
+      "trace_hash": "486504b977fb6b1676a56c3674c554c6df1ecd32ff06dce24ad93f2f275485ae",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-084",
+      "agent_id": "synthetic-agent-4",
+      "session_id": "mission1000-session-084",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-084.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-084.json",
+      "trace_hash": "9eda10c56b354b9babac7c0137e107970a8cafb943049e348177c9c87942788b",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-085",
+      "agent_id": "synthetic-agent-5",
+      "session_id": "mission1000-session-085",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-085.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-085.json",
+      "trace_hash": "ae3f22fffea24d23a8a60998bdf6a983b3e0b5b5b78938ccacb4c9ba491bcba5",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-086",
+      "agent_id": "synthetic-agent-6",
+      "session_id": "mission1000-session-086",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-086.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-086.json",
+      "trace_hash": "972b719a5243732ac7aece6a3f4f183331ccd9d96a7c764c758b10348e1f0f72",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-087",
+      "agent_id": "synthetic-agent-7",
+      "session_id": "mission1000-session-087",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-087.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-087.json",
+      "trace_hash": "1ed6bd5ec9a6d7678329a8b60468c881bd52e40b9400ac44840c632cbc909e0d",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-088",
+      "agent_id": "synthetic-agent-8",
+      "session_id": "mission1000-session-088",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-088.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-088.json",
+      "trace_hash": "ee9ff9ff64074486e2cd4e0c52ad2d98c0fde38e43a6f39ba7c2d3c29a465c66",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-089",
+      "agent_id": "synthetic-agent-1",
+      "session_id": "mission1000-session-089",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-089.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-089.json",
+      "trace_hash": "b9fc30158a3798fe065bd08b7f64d0c4f8213e469722d157514464e2c71878bb",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-090",
+      "agent_id": "synthetic-agent-2",
+      "session_id": "mission1000-session-090",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-090.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-090.json",
+      "trace_hash": "7fbff62df4b4dbc54dc45b5ea0d43909b782085af189469170a9d8cf73b2166d",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-091",
+      "agent_id": "synthetic-agent-3",
+      "session_id": "mission1000-session-091",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-091.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-091.json",
+      "trace_hash": "b6c7645fd6965e32102386d42b1a2baa962d42c2f4b756bdfd0f0166871727d3",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-092",
+      "agent_id": "synthetic-agent-4",
+      "session_id": "mission1000-session-092",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-092.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-092.json",
+      "trace_hash": "67f4c42a5d901be6f2a8fa7d7811a9078831154fb0e3e6bf7d4b2978d7120034",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-093",
+      "agent_id": "synthetic-agent-5",
+      "session_id": "mission1000-session-093",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-093.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-093.json",
+      "trace_hash": "3245707b7bc5c9f123d05365eb490c219567e62d351b3dd2760560e74fa9f08b",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-094",
+      "agent_id": "synthetic-agent-6",
+      "session_id": "mission1000-session-094",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-094.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-094.json",
+      "trace_hash": "2e23ab400ed0f47edc4de9929edb8cc4898161de2812c0275fd2f6302d8292c0",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-095",
+      "agent_id": "synthetic-agent-7",
+      "session_id": "mission1000-session-095",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-095.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-095.json",
+      "trace_hash": "6c116f8768a62d8654d64251e8d7ba5442a5d7540fc114f7d76f389618cd1b9d",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-096",
+      "agent_id": "synthetic-agent-8",
+      "session_id": "mission1000-session-096",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-096.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-096.json",
+      "trace_hash": "b9119ac49bfdfba3b956e04de6049b488501598ae7a0a37d7561b46902ae5255",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-097",
+      "agent_id": "synthetic-agent-1",
+      "session_id": "mission1000-session-097",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-097.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-097.json",
+      "trace_hash": "99fcda6841e2983503eb4de155db35d920cb5a3f3a0e877076598fbf2e67004f",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-098",
+      "agent_id": "synthetic-agent-2",
+      "session_id": "mission1000-session-098",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-098.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-098.json",
+      "trace_hash": "03b276c44724edffee630606b668ef3cbee5f1e2a98968fff841950563b22f36",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-099",
+      "agent_id": "synthetic-agent-3",
+      "session_id": "mission1000-session-099",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-099.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-099.json",
+      "trace_hash": "a5fee254d8dae0afb027194dbf4d805078109ee8237d0f12ad6ac7b999b01b3f",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "mission1000-job-100",
+      "agent_id": "synthetic-agent-4",
+      "session_id": "mission1000-session-100",
+      "risk_tier": "DELIBERATION",
+      "decision": "NOISE",
+      "decision_reason": "capability gate failed: missing capability token for DELIBERATION",
+      "verification_score": 1.0,
+      "decision_record_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/decision_records/mission1000-job-100.json",
+      "trace_path": "artifacts/hydra/mission_1000/runner_artifacts/mission1000-seeded/traces/mission1000-job-100.json",
+      "trace_hash": "f4528bcc19f59be6e26a1751fc75097d15d2e9b42acade07f367bfcfc6bd4f03",
+      "screenshot_hashes": [],
+      "elapsed_ms": 0.0,
+      "request_error": "missing capability token for DELIBERATION",
+      "response_status": "blocked_by_policy",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    }
+  ]
+}

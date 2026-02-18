@@ -1,0 +1,14 @@
+{
+  "mission_id": "MISSION_1000_SYNTHETIC",
+  "timestamp_utc": "2026-02-18T04:04:55Z",
+  "run_id": "mission1000-seeded",
+  "total_jobs": 100,
+  "total_actions": 1000,
+  "failed_actions": 0,
+  "failure_rate": 0.0,
+  "duplicate_lock_incidents": 2,
+  "decision_records": 100,
+  "missing_trace_hashes": 0,
+  "mission_pass": true,
+  "swarm_summary_path": "artifacts/hydra/mission_1000/swarm_summary.json"
+}
