@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scbe://schemas/kernel-v1/get_audit_decision_id.request.schema.json",
+  "title": "GET /audit/{decision_id} Request Parameters",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["request_id", "decision_id"],
+  "properties": {
+    "request_id": { "type": "string", "minLength": 1 },
+    "decision_id": { "type": "string", "minLength": 1 }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scbe://schemas/kernel-v1/post_authorize.response.schema.json",
+  "title": "POST /authorize Response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "request_id",
+    "correlation_id",
+    "audit_hash",
+    "decision_id",
+    "decision",
+    "reason",
+    "policy_version",
+    "evaluated_at"
+  ],
+  "properties": {
+    "request_id": { "type": "string", "minLength": 1 },
+    "correlation_id": { "type": "string", "minLength": 1 },
+    "audit_hash": {
+      "type": "string",
+      "pattern": "^sha256:[A-Fa-f0-9]{8,}$"
+    },
+    "decision_id": { "type": "string", "minLength": 1 },
+    "decision": {
+      "type": "string",
+      "enum": ["ALLOW", "QUARANTINE", "DENY"]
+    },
+    "reason": { "type": "string", "minLength": 1 },
+    "policy_version": { "type": "string", "minLength": 1 },
+    "evaluated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

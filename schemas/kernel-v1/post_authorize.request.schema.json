@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scbe://schemas/kernel-v1/post_authorize.request.schema.json",
+  "title": "POST /authorize Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["request_id", "subject", "resource", "action", "context"],
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subject_id"],
+      "properties": {
+        "subject_id": { "type": "string", "minLength": 1 },
+        "roles": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      }
+    },
+    "resource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["resource_id", "resource_type"],
+      "properties": {
+        "resource_id": { "type": "string", "minLength": 1 },
+        "resource_type": { "type": "string", "minLength": 1 }
+      }
+    },
+    "action": {
+      "type": "string",
+      "minLength": 1
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policy_tags"],
+      "properties": {
+        "hf_token": { "type": "string", "minLength": 1 },
+        "policy_tags": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    }
+  }
+}
