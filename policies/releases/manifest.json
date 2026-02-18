@@ -1,0 +1,16 @@
+{
+  "pack": "aethermoore-policies",
+  "version": "1.0.0",
+  "current_profile": "startup",
+  "base": [
+    "base/access.yaml",
+    "base/data.yaml",
+    "base/audit.yaml"
+  ],
+  "profiles": {
+    "startup": "profiles/startup.yaml",
+    "regulated": "profiles/regulated.yaml",
+    "defense": "profiles/defense.yaml"
+  },
+  "release_history": []
+}
