@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scbe://schemas/kernel-v1/get_health.response.schema.json",
+  "title": "GET /health Response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "request_id",
+    "correlation_id",
+    "audit_hash",
+    "status",
+    "service",
+    "version",
+    "uptime_seconds",
+    "timestamp"
+  ],
+  "properties": {
+    "request_id": { "type": "string", "minLength": 1 },
+    "correlation_id": { "type": "string", "minLength": 1 },
+    "audit_hash": {
+      "type": "string",
+      "pattern": "^sha256:[A-Fa-f0-9]{8,}$"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["ok", "degraded", "error"]
+    },
+    "service": { "type": "string", "minLength": 1 },
+    "version": { "type": "string", "minLength": 1 },
+    "uptime_seconds": { "type": "integer", "minimum": 0 },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scbe://schemas/kernel-v1/error.response.schema.json",
+  "title": "SCBE Kernel v1 Error Response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["request_id", "correlation_id", "audit_hash", "error"],
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "correlation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "audit_hash": {
+      "type": "string",
+      "pattern": "^sha256:[A-Fa-f0-9]{8,}$"
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "HF_TOKEN_MISSING",
+            "HF_TOKEN_INVALID",
+            "POLICY_VIOLATION",
+            "REQUEST_INVALID",
+            "REQUEST_CONFLICT",
+            "DECISION_NOT_FOUND",
+            "RATE_LIMITED",
+            "INTERNAL_ERROR"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "details": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    }
+  }
+}
