@@ -119,6 +119,18 @@ export interface TimeDilationResult {
 }
 
 /**
+ * Entropic anomaly record for runtime governance events.
+ */
+export interface EntropicAnomalyRecord {
+  /** Stable anomaly code */
+  code: string;
+  /** Epoch timestamp in milliseconds */
+  timestamp: number;
+  /** Optional redacted details */
+  details?: Record<string, unknown>;
+}
+
+/**
  * Configuration for the entropic layer.
  */
 export interface EntropicConfig {
@@ -153,6 +165,28 @@ export const DEFAULT_ENTROPIC_CONFIG: Readonly<EntropicConfig> = {
   loopWindowSize: 20,
   loopSimilarityThreshold: 0.95,
 };
+
+/**
+ * Emit a normalized entropic anomaly event.
+ *
+ * NOTE: Callers must pass only redacted details. This function never logs
+ * token values or secret material.
+ */
+export function entropicAnomaly(
+  code: string,
+  details?: Record<string, unknown>
+): EntropicAnomalyRecord {
+  const record: EntropicAnomalyRecord = {
+    code,
+    timestamp: Date.now(),
+    details,
+  };
+
+  // Minimal, redacted audit surface for runtime governance
+  // (no secrets, no tokens, no payloads).
+  console.warn(`[ENTROPIC] anomaly=${code}`);
+  return record;
+}
 
 // ═══════════════════════════════════════════════════════════════
 // 1. Escape Detection
