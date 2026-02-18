@@ -125,6 +125,32 @@ def _cap(job: Dict[str, Any], tier: str) -> Dict[str, Any]:
     }
 
 
+def _pqc_audit(job: Dict[str, Any], payload: Dict[str, Any], tier: str) -> Dict[str, Any]:
+    """Run optional PQC drift/rotation audit for DELIBERATION jobs.
+
+    Triggered only if job contains a `pqc` metadata object.
+    """
+    if tier != "DELIBERATION":
+        return {"status": "SKIP", "reason": "tier is REFLEX"}
+    pqc_meta = job.get("pqc")
+    if not isinstance(pqc_meta, dict):
+        return {"status": "SKIP", "reason": "missing job.pqc metadata"}
+
+    try:
+        from agents.pqc_key_auditor import audit_pqc_keyset
+    except Exception as exc:  # noqa: BLE001
+        return {"status": "ERROR", "reason": f"pqc auditor unavailable: {exc}"}
+
+    threshold = float(pqc_meta.get("drift_threshold", 0.82))
+    rotation_hours = int(pqc_meta.get("rotation_hours", 720))
+    return audit_pqc_keyset(
+        pqc_meta,
+        context_payload=payload,
+        drift_threshold=threshold,
+        rotation_hours=rotation_hours,
+    )
+
+
 def _verify(job: Dict[str, Any], resp: Dict[str, Any]) -> Dict[str, Any]:
     rules = job.get("verify", {}) if isinstance(job.get("verify"), dict) else {}
     results = resp.get("results", []) if isinstance(resp.get("results", []), list) else []
@@ -262,6 +288,9 @@ def main() -> None:
         tier = _tier(job)
         cap = _cap(job, tier)
         payload = {"actions": job["actions"], "session_id": sid, "source": job.get("source", "swarm"), "workflow_id": job.get("workflow_id", "swarm-run"), "run_id": job.get("run_id", f"run-{int(time.time())}-{i+1}"), "dry_run": bool(job.get("dry_run", False))}
+        pqc_result = _pqc_audit(job, payload, tier)
+        if pqc_result.get("status") in {"QUARANTINE", "DENY"}:
+            cap = {**cap, "valid": False, "reason": f"pqc audit failed: {pqc_result.get('reason', 'quarantine')}"}
         t0 = time.time()
         err = None
         if cap["valid"]:
@@ -273,7 +302,7 @@ def main() -> None:
         else:
             err = cap["reason"]
             resp = {"status": "blocked_by_policy", "session_id": sid, "results": [], "total_actions": len(job["actions"]), "executed_actions": 0, "blocked_actions": len(job["actions"]), "trace": "policy_gate_blocked"}
-        return i, {"job_id": job_id, "agent_id": aid, "session_id": sid, "risk_tier": tier, "payload": payload, "response": resp, "capability": cap, "verify": job.get("verify", {}), "elapsed_ms": round((time.time() - t0) * 1000.0, 2), "request_error": err}
+        return i, {"job_id": job_id, "agent_id": aid, "session_id": sid, "risk_tier": tier, "payload": payload, "response": resp, "capability": cap, "verify": job.get("verify", {}), "elapsed_ms": round((time.time() - t0) * 1000.0, 2), "request_error": err, "pqc_audit": pqc_result}
 
     with ThreadPoolExecutor(max_workers=max(1, a.concurrency)) as pool:
         futs = {pool.submit(run_one, i, j): i for i, j in enumerate(jobs)}
@@ -305,6 +334,7 @@ def main() -> None:
                 "risk_tier": out["risk_tier"],
                 "metrics": {"risk": v["metrics"]["risk"], "d_star": v["metrics"]["d_star"], "coherence": v["metrics"]["coherence"], "verification_score": v["verification_score"]},
                 "capability": out["capability"],
+                "pqc_audit": out.get("pqc_audit", {}),
                 "trace_hash": trace_hash,
                 "verification": {"score": v["verification_score"], "passed_checks": v["passed_checks"], "total_checks": v["total_checks"], "checks": v["checks"]},
             }
@@ -321,7 +351,7 @@ def main() -> None:
                 "job_id": out["job_id"], "agent_id": out["agent_id"], "session_id": out["session_id"], "risk_tier": out["risk_tier"],
                 "decision": decision, "decision_reason": why, "verification_score": v["verification_score"], "decision_record_path": str(rp),
                 "trace_path": str(tp), "trace_hash": trace_hash, "screenshot_hashes": sh, "elapsed_ms": out["elapsed_ms"],
-                "request_error": out["request_error"], "response_status": out["response"].get("status"), "response": pub,
+                "request_error": out["request_error"], "response_status": out["response"].get("status"), "response": pub, "pqc_audit": out.get("pqc_audit", {}),
             }
             print(f"[job {idx+1}] job_id={out['job_id']} decision={decision} score={v['verification_score']} elapsed_ms={out['elapsed_ms']}")
 
