@@ -97,12 +97,33 @@ jobs:
       - name: Check for critical vulnerabilities
         id: check_vulns
         run: |
-          CRITICAL=0
-          if [ -f ./reports/npm-audit.json ]; then
-            NPM_CRITICAL=$(cat ./reports/npm-audit.json | jq '.metadata.vulnerabilities.critical // 0')
-            CRITICAL=$((CRITICAL + NPM_CRITICAL))
-          fi
-          echo "total_critical=$CRITICAL" >> $GITHUB_OUTPUT
+          python3 - <<'PY'
+import json
+import os
+from pathlib import Path
+
+reports_dir = Path('./reports')
+npm_critical = 0
+pip_critical = 0
+
+npm_report = reports_dir / 'npm-audit.json'
+if npm_report.exists():
+    npm_data = json.loads(npm_report.read_text(encoding='utf-8'))
+    npm_critical = int(npm_data.get('metadata', {}).get('vulnerabilities', {}).get('critical', 0) or 0)
+
+pip_report = reports_dir / 'pip-audit.json'
+if pip_report.exists():
+    pip_data = json.loads(pip_report.read_text(encoding='utf-8'))
+    if isinstance(pip_data, list):
+        pip_critical = sum(1 for finding in pip_data if str(finding.get('severity', '')).lower() == 'critical')
+
+total_critical = npm_critical + pip_critical
+output_file = os.environ['GITHUB_OUTPUT']
+with open(output_file, 'a', encoding='utf-8') as fh:
+    fh.write(f'npm_critical={npm_critical}\n')
+    fh.write(f'pip_critical={pip_critical}\n')
+    fh.write(f'total_critical={total_critical}\n')
+PY
 
       - name: Create issue if critical vulnerabilities found
         if: steps.check_vulns.outputs.total_critical > 0
