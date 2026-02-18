@@ -325,11 +325,6 @@ class HLWESymmetric:
             raise InvalidVector("ciphertext vector must be inside unit ball.")
         # Left-cancellation: (-k) (+) ct = (-k) (+) (k (+) (x (+) n)) = x (+) n
         x_hat = mobius_add(mobius_neg(key), ctv, c=self.c)
-            raise InvalidVector(f"ciphertext vector has wrong shape: {ctv.shape}")
-        if _norm(ctv) >= 1.0:
-            raise InvalidVector("ciphertext vector must be inside unit ball.")
-
-        x_hat = mobius_add(ctv, mobius_neg(key), c=self.c)
         r = _norm(x_hat)
         if r >= self.max_radius:
             raise ContainmentBreach(
