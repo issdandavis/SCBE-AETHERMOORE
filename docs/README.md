@@ -40,6 +40,8 @@
 
 ### Operations
 - [`AI_BROWSER_ACCESS.md`](AI_BROWSER_ACCESS.md)
+- [`KERNEL_ANTIVIRUS_SCBE.md`](KERNEL_ANTIVIRUS_SCBE.md)
+- [`game/SPIRAL_ENGINE_MECHANICS_MATRIX.md`](game/SPIRAL_ENGINE_MECHANICS_MATRIX.md)
 
 ## Documentation Structure
 
@@ -100,6 +102,7 @@ docs/
 - [Security Model](04-security/README.md) - Security architecture
 - [Integration Guide](06-integration/README.md) - Working with engineering
 - [Templates](06-integration/templates/) - Ready-to-use forms
+- [Kernel Antivirus Bridge](KERNEL_ANTIVIRUS_SCBE.md) - Linux event-to-enforcement flow
 
 ### For Engineers
 - [Getting Started](00-overview/getting-started.md) - Quick start
@@ -110,6 +113,7 @@ docs/
 ### For Architects
 - [Architecture Overview](01-architecture/README.md) - System design
 - [Technical Reference](02-technical/README.md) - Deep technical docs
+- [Spiral Engine Mechanics Matrix](game/SPIRAL_ENGINE_MECHANICS_MATRIX.md) - Formula-to-HUD mapping
 
 ### Notion Sync Placeholders
 - [HYDRA Multi-Agent Coordination System](HYDRA_COORDINATION.md)

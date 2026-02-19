@@ -38,7 +38,22 @@
 | `H_eff` | `1.5^(d^2*x)` | Cost wall | Latency/friction storm |
 | `harm` | `1/(1+log(max(1,H_eff)))` | Safety inversion | Green-to-red permission dial |
 | `d_tri` | `(0.3*I_fast^phi + 0.5*I_memory^phi + 0.2*I_governance^phi)^(1/phi)` | Triadic pressure | Three guardian rings |
-| `Omega` | `pqc_valid*harm*drift_factor*triadic_stable*spectral_score*sheaf_stability` | Final gate | Door with five locks |
+| `obs` | `Tarski postfixpoint obstruction from lattice sheaf flow` | Sheaf fracture pressure | Fault lines / instability seams |
+| `sheaf_stability` | `1/(1+obs)` | Sheaf lock recovery | Sixth lock stabilizer |
+| `Omega` | `pqc_valid*harm*drift_factor*triadic_stable*spectral_score*sheaf_stability` | Final gate | Door with six locks |
+
+## Lock Semantics (Omega HUD)
+
+`Omega` is shown as six lock channels:
+
+1. `pqc_valid`
+2. `harm`
+3. `drift_factor`
+4. `triadic_stable`
+5. `spectral_score`
+6. `sheaf_stability`
+
+If any lock collapses toward zero, gate pressure increases and quarantine/deny risk rises.
 
 ## Visual Direction
 
