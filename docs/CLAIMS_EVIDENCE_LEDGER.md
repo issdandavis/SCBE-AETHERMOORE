@@ -84,7 +84,7 @@
 
 ## Formal Axiom Coverage
 
-The 13 Formal Axioms (FA1-FA13 from `docs/08-reference/archive/AXIOMS.md`, Jan 17, 2026) are **all verified** (13/13 pass, `test_theoretical_axioms.py`, Jan 19, 2026). These map to patent claims as follows:
+The 13 Formal Axioms (FA1-FA13 from `docs/08-reference/archive/AXIOMS.md`, Jan 17, 2026) are **all verified** (13/13 pass, `test_theoretical_axioms.py`, Jan 19, 2026). Re-verified Feb 18, 2026 after 8 bug fixes across 5 Quantum Axiom implementations (`locality_axiom.py`, `causality_axiom.py`, `symmetry_axiom.py`, `unitarity_axiom.py`): 10/10 + 57/57 tests pass, `verify_all_axioms()` returns all True. These map to patent claims as follows:
 
 | FA# | Formal Axiom | Patent Claims Supported |
 |-----|-------------|------------------------|
@@ -106,5 +106,5 @@ Full cross-reference: [AXIOM_CROSS_REFERENCE.md](AXIOM_CROSS_REFERENCE.md)
 
 ---
 
-*Derived from CLAIMS_AUDIT_V4 (Feb 7, 2026), PATENT_DETAILED_DESCRIPTION.md (21 claims), and AXIOMS.md (13 formal axioms)*
+*Derived from CLAIMS_AUDIT_V4 (Feb 7, 2026), PATENT_DETAILED_DESCRIPTION.md (21 claims), AXIOMS.md (13 formal axioms), and axiom re-verification (Feb 18, 2026)*
 *See LANGUAGE_GUARDRAILS.md for writing standards applied to this document*
