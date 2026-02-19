@@ -47,16 +47,23 @@ Layer 14:    Audio Axis (FFT telemetry)
 L(x,t) = Σ w_l exp(β_l · (d_l + sin(ω_l t + φ_l)))
 ```
 
+Canonical reference: [`LANGUES_WEIGHTING_SYSTEM.md`](LANGUES_WEIGHTING_SYSTEM.md)
+
+Profile mode must be declared:
+
+- `lws` (linear/base ops): `1.000, 1.125, 1.250, 1.333, 1.500, 1.667`
+- `phdm` (golden/governance): `φ^(l-1)` -> `1.000, 1.618, 2.618, 4.236, 6.854, 11.090`
+
 **Six Sacred Tongues:**
 
-| Tongue | Weight (φ^k) | Phase | Frequency |
+| Tongue | Phase | Typical omega multiplier |
 |--------|-------------|-------|-----------|
-| KO | 1.00 | 0° | 1.000 |
-| AV | 1.62 | 60° | 1.125 |
-| RU | 2.62 | 120° | 1.250 |
-| CA | 4.24 | 180° | 1.333 |
-| UM | 6.85 | 240° | 1.500 |
-| DR | 11.09 | 300° | 1.667 |
+| KO | 0° | 1 |
+| AV | 60° | 2 |
+| RU | 120° | 3 |
+| CA | 180° | 4 |
+| UM | 240° | 5 |
+| DR | 300° | 6 |
 
 ## Fluxing Dimensions
 
