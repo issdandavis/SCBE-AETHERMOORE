@@ -42,6 +42,7 @@ Linear Threshold:           38.7%
 ## Architecture Docs (Index)
 
 - **SCBE Kernel Spec (Canonical):** `SPEC.md`
+- **Langues Weighting System (Layer 3 + 6):** `docs/LANGUES_WEIGHTING_SYSTEM.md`
 - **HYDRA Orchestration (Execution Plane):** `docs/hydra/ARCHITECTURE.md`
 - **Concept Glossary (Indexable Terms):** `CONCEPTS.md`
 - **Research Drafts (Non-Canonical):** `docs/research/README.md`
