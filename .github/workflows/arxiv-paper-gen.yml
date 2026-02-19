@@ -1,0 +1,46 @@
+name: Generate arXiv package
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'paper-v*'
+
+jobs:
+  build-arxiv:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Aggregate docs
+        run: python scripts/arxiv_aggregate_docs.py --output artifacts/arxiv/aggregated_bundle.json
+
+      - name: Synthesize latex draft
+        run: python scripts/arxiv_synthesize_paper.py --bundle artifacts/arxiv/aggregated_bundle.json --output artifacts/arxiv/paper.tex
+
+      - name: Generate manifest
+        run: |
+          python scripts/arxiv_generate_manifest.py \
+            --title "Hyperbolic Lattice Cross-Stitch: Geometric AI Governance with Post-Quantum Security" \
+            --authors "Issac Davis" \
+            --category "cs.CR" \
+            --output artifacts/arxiv/manifest.json
+
+      - name: Bundle submission archive
+        run: python scripts/arxiv_bundle.py --input-dir artifacts/arxiv --output artifacts/arxiv/arxiv-submission.tar.gz
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: arxiv-submission-bundle
+          path: |
+            artifacts/arxiv/aggregated_bundle.json
+            artifacts/arxiv/paper.tex
+            artifacts/arxiv/manifest.json
+            artifacts/arxiv/arxiv-submission.tar.gz
