@@ -33,6 +33,33 @@ State derives from three signals:
 - `antibody_load` (time-decayed suspicion memory)
 - `membrane_stress` (geometry boundary pressure)
 
+## Linux adapter (Falco/eBPF) - implemented
+
+Bridge module:
+
+- `agents/linux_kernel_event_bridge.py`
+
+CLI monitor:
+
+- `scripts/linux_kernel_antivirus_monitor.py`
+
+Adapter responsibilities:
+
+- parse Falco JSON (`output_fields`) into normalized `KernelEvent`
+- map `evt.type` to SCBE operation classes (`exec`, `open`, `write`, `network_connect`, etc.)
+- carry antibody load per process key (`host:pid:process`) across events
+- emit SCBE containment decisions in JSONL
+
+Run:
+
+```powershell
+# from live stdin feed
+falco -o json_output=true | python scripts/linux_kernel_antivirus_monitor.py --input - --alerts-only
+
+# from replay file
+python scripts/linux_kernel_antivirus_monitor.py --input artifacts/falco_events.jsonl --pretty
+```
+
 ## Event schema
 
 Input (`KernelEvent`) includes:
@@ -61,5 +88,5 @@ Output (`KernelGateResult`) includes:
 
 ```powershell
 pytest -q tests/test_kernel_antivirus_gate.py
+pytest -q tests/test_linux_kernel_event_bridge.py
 ```
-
