@@ -22,6 +22,11 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from agents.linux_enforcement_backends import (
+    DEFAULT_BACKEND_NAMES,
+    build_enforcement_backends,
+    parse_backend_names,
+)
 from agents.linux_enforcement_hooks import LinuxEnforcementHooks
 from agents.linux_kernel_event_bridge import LinuxKernelAntivirusBridge
 
@@ -48,15 +53,38 @@ def main() -> int:
     parser.add_argument("--apply-enforcement", action="store_true", help="Execute emitted enforcement commands")
     parser.add_argument("--quarantine-dir", default="/var/quarantine/scbe", help="Quarantine directory for artifact isolation")
     parser.add_argument("--enforcement-cooldown", type=float, default=15.0, help="Seconds to suppress duplicate enforcement for a process")
+    parser.add_argument(
+        "--enforcement-backends",
+        default=",".join(DEFAULT_BACKEND_NAMES),
+        help="Comma-separated backends: systemd,journald,soc",
+    )
+    parser.add_argument("--soc-endpoint", default="", help="SOC sink HTTP endpoint (used when backend includes 'soc')")
+    parser.add_argument("--soc-timeout-seconds", type=float, default=3.0, help="SOC sink HTTP timeout in seconds")
+    parser.add_argument(
+        "--soc-bearer-token",
+        default="",
+        help="Optional SOC sink bearer token; if omitted, SCBE_SOC_BEARER_TOKEN is used",
+    )
     args = parser.parse_args()
 
     bridge = LinuxKernelAntivirusBridge()
     enforcer = None
     if args.emit_enforcement or args.apply_enforcement:
+        try:
+            backend_names = parse_backend_names(args.enforcement_backends)
+        except ValueError as exc:
+            parser.error(str(exc))
+        backends = build_enforcement_backends(
+            backend_names,
+            soc_endpoint=args.soc_endpoint,
+            soc_bearer_token=args.soc_bearer_token,
+            soc_timeout_seconds=args.soc_timeout_seconds,
+        )
         enforcer = LinuxEnforcementHooks(
             apply_enforcement=args.apply_enforcement,
             quarantine_dir=args.quarantine_dir,
             cooldown_seconds=args.enforcement_cooldown,
+            backends=backends,
         )
 
     seen = 0
