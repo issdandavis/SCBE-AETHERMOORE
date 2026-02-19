@@ -29,13 +29,13 @@ This project uses three overlapping axiom systems. They are not contradictory; t
 | FA4 | Bounded Temporal Breathing | PA8 | Breathing diffeomorphism b(t) | QA3: Causality | VERIFIED (post Jan 19) |
 | FA5 | Smoothness (C-infinity) | PA5, PA7 | d_H and Mobius are smooth | QA4: Symmetry | VERIFIED (13/13 tests) |
 | FA6 | Lyapunov Stability | PA6 | Breathing converges to safe state | QA3: Causality | VERIFIED (13/13 tests) |
-| FA7 | Harmonic Resonance | PA10 | Spin coherence (all gates) | QA4: Symmetry | VERIFIED (boundary fix needed) |
+| FA7 | Harmonic Resonance | PA10 | Spin coherence (all gates) | QA4: Symmetry | VERIFIED |
 | FA8 | Quantum Resistance | -- | Not in PA (separate PQC layer) | -- | VERIFIED (ML-KEM + ML-DSA) |
-| FA9 | Hyperbolic Geometry | PA5 | d_H invariant | QA4: Symmetry | VERIFIED (partial: boundary tests) |
+| FA9 | Hyperbolic Geometry | PA5 | d_H invariant | QA4: Symmetry | VERIFIED |
 | FA10 | Golden Ratio Weighting | PA3 | SPD weighting G_k = phi^k | QA2: Locality | VERIFIED |
 | FA11 | Fractional Dimension Flux | -- | Not in PA (Claim 6/16) | -- | VERIFIED (13/13 tests) |
 | FA12 | Topological Attack Detection | PA9 | Spectral coherence (PHDM) | QA4: Symmetry | VERIFIED |
-| FA13 | Atomic Rekeying | -- | Not in PA (Claim 5 PQC) | -- | VERIFIED (API fix needed) |
+| FA13 | Atomic Rekeying | -- | Not in PA (Claim 5 PQC) | -- | VERIFIED |
 
 ### Pipeline Axioms Not in Formal Axioms
 
@@ -90,8 +90,26 @@ The formal axioms (FA1-13) and pipeline axioms (A1-A12) are complementary, not c
 | Quantum Axioms (QA) | 5 (by construction) | 0 | 0 | 5 |
 
 Formal axioms: 13/13 verified as of Jan 19, 2026 (`test_theoretical_axioms.py`, 431+ tests).
+Quantum axiom implementations: re-verified Feb 18, 2026 after 8 bug fixes (10/10 + 57/57 tests, `verify_all_axioms()` all True).
 Pipeline axioms: verification status tracked per-claim in [CLAIMS_EVIDENCE_LEDGER.md](CLAIMS_EVIDENCE_LEDGER.md).
 Quantum axioms: verified by construction (each groups existing verified layers).
+
+### Feb 18, 2026 Axiom Bug Fixes
+
+8 breaking points fixed across 5 Quantum Axiom implementations:
+
+| # | File | Line | Fix |
+|---|------|------|-----|
+| 1 | `locality_axiom.py` | 64 | None operator bug: handle missing operator gracefully |
+| 2 | `causality_axiom.py` | 106 | Time-state leakage: prevent cross-contamination |
+| 3 | `causality_axiom.py` | 616 | Missing L11 triadic temporal distance argument |
+| 4 | `symmetry_axiom.py` | 222 | Mobius invariance check correction |
+| 5 | `symmetry_axiom.py` | 309 | Rotation-invariance verification fix |
+| 6 | `symmetry_axiom.py` | 340 | Spin coherence bounded assertion |
+| 7 | `symmetry_axiom.py` | 397, 433 | Harmonic scaling/inverse consistency |
+| 8 | `unitarity_axiom.py` | 422 | Layer 4 unitarity verification |
+
+Post-fix results: 10 passed + 57 passed, `verify_all_axioms()` returns all True.
 
 ---
 
@@ -110,4 +128,5 @@ Quantum axioms: verified by construction (each groups existing verified layers).
 
 ---
 
+*Updated Feb 18, 2026 with axiom re-verification status.*
 *See [LANGUAGE_GUARDRAILS.md](LANGUAGE_GUARDRAILS.md) for writing standards.*
