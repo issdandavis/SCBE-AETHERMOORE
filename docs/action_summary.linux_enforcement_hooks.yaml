@@ -1,0 +1,24 @@
+build:
+  files_changed:
+    - agents/antivirus_membrane.py
+    - hydra/turnstile.py
+    - agents/extension_gate.py
+    - agents/linux_enforcement_hooks.py
+    - scripts/linux_kernel_antivirus_monitor.py
+    - tests/test_antivirus_membrane.py
+    - tests/test_hydra_turnstile.py
+    - tests/test_extension_gate.py
+    - tests/test_linux_enforcement_hooks.py
+  rationale: "Complete missing kernel-gate dependencies and add Linux auto-response command emitters with cooldown control and optional execution."
+
+document:
+  files_changed:
+    - docs/KERNEL_ANTIVIRUS_SCBE.md
+  rationale: "Document Linux enforcement hook behavior and live-run commands for emit-only and apply modes."
+
+route:
+  services_to_update:
+    - github: issdandavis/SCBE-AETHERMOORE (branch feat/aetherbrowse-v0.1)
+  pending_integrations:
+    - "Wire emitted commands to hardened host-specific executors (systemd/journald or SOC sink)"
+    - "Add Windows ETW/minifilter adapter parity"

@@ -22,6 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from agents.linux_enforcement_hooks import LinuxEnforcementHooks
 from agents.linux_kernel_event_bridge import LinuxKernelAntivirusBridge
 
 
@@ -43,12 +44,27 @@ def main() -> int:
     parser.add_argument("--host-default", default="linux-node")
     parser.add_argument("--pretty", action="store_true", help="Pretty-print JSON")
     parser.add_argument("--include-kernel-event", action="store_true", help="Include normalized KernelEvent in output")
+    parser.add_argument("--emit-enforcement", action="store_true", help="Include enforcement command emitters in output")
+    parser.add_argument("--apply-enforcement", action="store_true", help="Execute emitted enforcement commands")
+    parser.add_argument("--quarantine-dir", default="/var/quarantine/scbe", help="Quarantine directory for artifact isolation")
+    parser.add_argument("--enforcement-cooldown", type=float, default=15.0, help="Seconds to suppress duplicate enforcement for a process")
     args = parser.parse_args()
 
     bridge = LinuxKernelAntivirusBridge()
+    enforcer = None
+    if args.emit_enforcement or args.apply_enforcement:
+        enforcer = LinuxEnforcementHooks(
+            apply_enforcement=args.apply_enforcement,
+            quarantine_dir=args.quarantine_dir,
+            cooldown_seconds=args.enforcement_cooldown,
+        )
+
     seen = 0
     emitted = 0
     errors = 0
+    enforcement_emitted = 0
+    enforcement_applied = 0
+    enforcement_failed = 0
 
     for raw in _iter_lines(args.input):
         if args.max_events and seen >= args.max_events:
@@ -83,6 +99,16 @@ def main() -> int:
         if args.include_kernel_event:
             payload["kernel_event"] = decision.kernel_event.__dict__
 
+        if enforcer is not None:
+            plan = enforcer.handle(decision)
+            if plan.commands:
+                enforcement_emitted += 1
+            if plan.applied:
+                enforcement_applied += 1
+            if plan.failures:
+                enforcement_failed += 1
+            payload["enforcement"] = plan.to_dict()
+
         if args.alerts_only and payload["kernel_action"] == "ALLOW":
             continue
 
@@ -92,11 +118,21 @@ def main() -> int:
         else:
             print(json.dumps(payload, separators=(",", ":")))
 
-    summary = {"events_seen": seen, "events_emitted": emitted, "errors": errors}
+    summary = {
+        "events_seen": seen,
+        "events_emitted": emitted,
+        "errors": errors,
+        "enforcement_emitted": enforcement_emitted,
+        "enforcement_applied": enforcement_applied,
+        "enforcement_failed": enforcement_failed,
+    }
     print(json.dumps(summary), file=sys.stderr)
-    return 0 if errors == 0 else 2
+    if errors:
+        return 2
+    if args.apply_enforcement and enforcement_failed:
+        return 3
+    return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

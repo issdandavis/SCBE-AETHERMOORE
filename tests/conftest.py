@@ -215,7 +215,7 @@ def _liboqs_available() -> bool:
     try:
         import oqs
         return True
-    except (ImportError, RuntimeError):
+    except BaseException:
         # liboqs-python not installed or shared libraries not found
         return False
 
@@ -253,3 +253,4 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
         if "requires_liboqs" in item.keywords or "pqc" in item.keywords:
             item.add_marker(skip_liboqs)
+

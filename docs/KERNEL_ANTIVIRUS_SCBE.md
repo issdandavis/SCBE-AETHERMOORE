@@ -1,7 +1,7 @@
 # Kernel Antivirus Bridge for PHDM/SCBE
 
-Status: active implementation (policy bridge)  
-Code: `agents/kernel_antivirus_gate.py`  
+Status: active implementation (policy bridge)
+Code: `agents/kernel_antivirus_gate.py`
 Tests: `tests/test_kernel_antivirus_gate.py`
 
 ## What this is
@@ -60,6 +60,34 @@ falco -o json_output=true | python scripts/linux_kernel_antivirus_monitor.py --i
 python scripts/linux_kernel_antivirus_monitor.py --input artifacts/falco_events.jsonl --pretty
 ```
 
+## Linux enforcement hooks (auto-response) - implemented
+
+Hook module:
+
+- `agents/linux_enforcement_hooks.py`
+
+Additional tests:
+
+- `tests/test_linux_enforcement_hooks.py`
+
+Behavior:
+
+- maps `kernel_action` into Linux command emitters (`renice`, `kill`, quarantine copy/chmod)
+- keeps per-process cooldown to avoid duplicate rapid enforcement
+- supports dry-run emission or optional command execution
+
+Run with command emitters only (safe default):
+
+```powershell
+falco -o json_output=true | python scripts/linux_kernel_antivirus_monitor.py --input - --alerts-only --emit-enforcement
+```
+
+Run with execution enabled (requires host permissions):
+
+```powershell
+falco -o json_output=true | python scripts/linux_kernel_antivirus_monitor.py --input - --alerts-only --apply-enforcement --quarantine-dir /var/quarantine/scbe
+```
+
 ## Event schema
 
 Input (`KernelEvent`) includes:
@@ -89,4 +117,6 @@ Output (`KernelGateResult`) includes:
 ```powershell
 pytest -q tests/test_kernel_antivirus_gate.py
 pytest -q tests/test_linux_kernel_event_bridge.py
+pytest -q tests/test_linux_enforcement_hooks.py
+pytest -q tests/test_antivirus_membrane.py tests/test_hydra_turnstile.py tests/test_extension_gate.py
 ```
