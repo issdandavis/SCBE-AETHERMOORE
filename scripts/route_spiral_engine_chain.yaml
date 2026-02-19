@@ -1,0 +1,43 @@
+chain:
+  id: "spiral-engine-aethermoor-v1"
+  name: "Spiral Engine Mission Route"
+  repo: "issdandavis/SCBE-AETHERMOORE"
+  steps:
+    - id: mission_generate
+      type: tool
+      tool: "local.script.run"
+      input:
+        command: "python scripts/spiral_engine_game_sim.py --seed aethermoor-mvp --ticks 1 --pad ENGINEERING --tongue KO --output artifacts/spiral_engine_tick.json"
+      output_key: "tick_payload"
+    - id: ko_engineering_review
+      type: llm
+      model: "claude-opus-4-6"
+      tongue: "KO"
+      input_from: "mission_generate.tick_payload"
+      output_key: "ko_review"
+    - id: ca_math_review
+      type: llm
+      model: "claude-opus-4-6"
+      tongue: "CA"
+      input_from: "mission_generate.tick_payload"
+      output_key: "ca_review"
+    - id: gate_consensus
+      type: gate
+      condition: "ko_review.DecisionRecord.action == 'ALLOW' and ca_review.DecisionRecord.action == 'ALLOW'"
+      on_true: "commit_voxel"
+      on_false: "open_quarantine"
+    - id: commit_voxel
+      type: tool
+      tool: "cloudrun.voxel.commit"
+      input:
+        endpoint: "POST /voxel/commit"
+        source: "mission_generate.tick_payload"
+      output_key: "commit_receipt"
+    - id: open_quarantine
+      type: tool
+      tool: "github.issue.create"
+      input:
+        repo: "issdandavis/SCBE-AETHERMOORE"
+        title: "Spiral Engine Quarantine Event"
+        body_from: "mission_generate.tick_payload"
+      output_key: "quarantine_issue"

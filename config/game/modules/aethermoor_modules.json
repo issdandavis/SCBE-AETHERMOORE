@@ -1,0 +1,88 @@
+{
+  "game_id": "spiral-engine",
+  "world_id": "aethermoor",
+  "core_loop": [
+    "Generate mission packet",
+    "Route through Polly Pad + Sacred Tongue",
+    "Compute governance chain",
+    "Apply Omega gate action",
+    "Commit voxel claim and progression"
+  ],
+  "systems": {
+    "exploration_map": {
+      "name": "Poincare Arena",
+      "features": [
+        "Hyperbolic distance heat",
+        "Fog-of-war voxel claiming",
+        "Safe highway routing"
+      ],
+      "voxel_key_format": "base/X:Y:Z:V:P:S",
+      "per_tongue_format": "KO/X:Y:Z:V:PL:S"
+    },
+    "skill_trees": {
+      "tongues": ["KO", "AV", "RU", "CA", "UM", "DR"],
+      "polly_pads": [
+        "ENGINEERING",
+        "NAVIGATION",
+        "SCIENCE",
+        "COMMS",
+        "SYSTEMS",
+        "MISSION_PLANNING"
+      ],
+      "xp_currencies": ["trust", "coherence"]
+    },
+    "inventory_crafting": {
+      "rare_items": ["sacred_eggs"],
+      "craftables": [
+        "audit_proof",
+        "consensus_seal",
+        "spectral_filter",
+        "quarantine_resolver"
+      ],
+      "loadout": "leyline_configuration"
+    },
+    "procedural_generation": {
+      "deterministic_seeded": true,
+      "adversarial_rhythm": "triadic watcher modulation",
+      "mission_variability": ["risk profile", "region", "faction", "target"]
+    }
+  },
+  "formula_mechanics": [
+    {
+      "symbol": "d",
+      "formula": "acosh(1 + 2||u-v||^2 / ((1-||u||^2)(1-||v||^2)))",
+      "mechanic": "Distance from safe center",
+      "player_feedback": "Map heat and curvature fog"
+    },
+    {
+      "symbol": "x",
+      "formula": "min(3, (0.5 + intent*0.25) * (1 + (1-trust)))",
+      "mechanic": "Intent persistence",
+      "player_feedback": "Rising heat meter"
+    },
+    {
+      "symbol": "H_eff",
+      "formula": "1.5^(d^2 * x)",
+      "mechanic": "Harmonic wall cost",
+      "player_feedback": "Latency and friction storm"
+    },
+    {
+      "symbol": "harm",
+      "formula": "1/(1+log(max(1,H_eff)))",
+      "mechanic": "Safety inversion",
+      "player_feedback": "Green to red permission dial"
+    },
+    {
+      "symbol": "d_tri",
+      "formula": "(0.3*I_fast^phi + 0.5*I_memory^phi + 0.2*I_governance^phi)^(1/phi)",
+      "mechanic": "Triadic watcher consensus pressure",
+      "player_feedback": "Three guardian rings"
+    },
+    {
+      "symbol": "Omega",
+      "formula": "pqc_valid*harm*drift_factor*triadic_stable*spectral_score*sheaf_stability",
+      "mechanic": "Final gate",
+      "player_feedback": "Door with five locks"
+    }
+  ]
+}

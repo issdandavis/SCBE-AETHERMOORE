@@ -1,0 +1,24 @@
+build:
+  files_changed:
+    - config/game/worlds/aethermoor.json
+    - config/game/modules/aethermoor_modules.json
+    - scripts/spiral_engine_game_sim.py
+    - tests/test_spiral_engine_game_sim.py
+    - scripts/route_spiral_engine_chain.yaml
+  rationale: "Implemented deterministic Spiral Engine simulation with Poincare distance, intent wall, triadic watchers, Tarski-style sheaf obstruction, Omega gating, voxel key/sharding, explicit Aethermoor world profile, machine-readable modular system config, and HUD-ready watcher/lock fields in StateVector."
+
+document:
+  files_changed:
+    - docs/game/SPIRAL_ENGINE_BUILD_PLAN.md
+    - docs/game/SHEAF_LATTICE_NOTES.md
+    - docs/game/SPIRAL_ENGINE_MECHANICS_MATRIX.md
+  rationale: "Captured MVP architecture, formula chain, module boundaries, visual/mechanics matrix, and chosen lattice-sheaf cohomology mechanics for gameplay integration."
+
+route:
+  services_to_update:
+    - github: issdandavis/SCBE-AETHERMOORE
+    - cloudrun: /voxel/commit (planned)
+  pending_integrations:
+    - "Bind simulator outputs to Cloud Run commit endpoint with auth + idempotency."
+    - "Render Triadic Watcher HUD and sheaf obstruction overlays in UI."
+    - "Wire quarantine resolution actions to inventory crafting economy."
