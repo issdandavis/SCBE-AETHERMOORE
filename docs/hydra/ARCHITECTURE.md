@@ -1592,6 +1592,9 @@ Swarm and fleet architecture:
 Infrastructure and deployment:
 
 - Google Cloud Infrastructure Setup - SCBE-AETHERMOORE: GCP deployment configs
+- Google Cloud Deployment Guide: step-by-step deployment
+
+Patent and formal specification:
 
 ## Voxel Record Schema
 
