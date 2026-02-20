@@ -67,3 +67,5 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+shopify/aethermoore-creator-os
+training/runs/wiki_git_ingest/

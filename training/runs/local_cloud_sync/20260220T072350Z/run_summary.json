@@ -1,15 +1,15 @@
 {
-  "run_id": "20260219T060132Z",
+  "run_id": "20260220T072350Z",
   "status": "ok",
-  "timestamp_utc": "2026-02-19T06:01:32.169229+00:00",
-  "run_dir": "training/runs/local_cloud_sync/20260219T060132Z",
-  "archive": "training/runs/local_cloud_sync/20260219T060132Z.zip",
-  "indexed_files": 1460,
+  "timestamp_utc": "2026-02-20T07:44:14.982951+00:00",
+  "run_dir": "training/runs/local_cloud_sync/20260220T072350Z",
+  "archive": "training/runs/local_cloud_sync/20260220T072350Z.zip",
+  "indexed_files": 1543,
   "delta_counts": {
-    "added": 0,
-    "modified": 3,
+    "added": 4,
+    "modified": 66,
     "removed": 0,
-    "changed": 3
+    "changed": 70
   },
   "shipping": {
     "enabled": true,
@@ -23,9 +23,9 @@
       "dropbox": {
         "status": "ok",
         "base_dir": "C:\\Users\\issda\\Dropbox",
-        "path": "C:\\Users\\issda\\Dropbox\\SCBE\\local-workspace-sync\\20260219T060132Z",
+        "path": "C:\\Users\\issda\\Dropbox\\SCBE\\local-workspace-sync\\20260220T072350Z",
         "files": [
-          "20260219T060132Z.zip",
+          "20260220T072350Z.zip",
           "manifest.json",
           "index.json"
         ]
@@ -33,9 +33,9 @@
       "adobe": {
         "status": "ok",
         "base_dir": "C:\\Users\\issda\\Creative Cloud Files  issdandavis@gmail.com CA7723D66864BE8D0A495FA8@AdobeID",
-        "path": "C:\\Users\\issda\\Creative Cloud Files  issdandavis@gmail.com CA7723D66864BE8D0A495FA8@AdobeID\\SCBE\\local-workspace-sync\\20260219T060132Z",
+        "path": "C:\\Users\\issda\\Creative Cloud Files  issdandavis@gmail.com CA7723D66864BE8D0A495FA8@AdobeID\\SCBE\\local-workspace-sync\\20260220T072350Z",
         "files": [
-          "20260219T060132Z.zip",
+          "20260220T072350Z.zip",
           "manifest.json",
           "index.json"
         ]
@@ -43,9 +43,9 @@
       "gdrive": {
         "status": "ok",
         "base_dir": "C:\\Users\\issda\\Drive",
-        "path": "C:\\Users\\issda\\Drive\\SCBE\\local-workspace-sync\\20260219T060132Z",
+        "path": "C:\\Users\\issda\\Drive\\SCBE\\local-workspace-sync\\20260220T072350Z",
         "files": [
-          "20260219T060132Z.zip",
+          "20260220T072350Z.zip",
           "manifest.json",
           "index.json"
         ]
@@ -53,9 +53,9 @@
       "proton": {
         "status": "ok",
         "base_dir": "C:\\Users\\issda\\Proton Drive.old",
-        "path": "C:\\Users\\issda\\Proton Drive.old\\SCBE\\local-workspace-sync\\20260219T060132Z",
+        "path": "C:\\Users\\issda\\Proton Drive.old\\SCBE\\local-workspace-sync\\20260220T072350Z",
         "files": [
-          "20260219T060132Z.zip",
+          "20260220T072350Z.zip",
           "manifest.json",
           "index.json"
         ]
@@ -64,7 +64,7 @@
     "errors": {}
   },
   "retention": {
-    "deleted_dirs": 0,
-    "deleted_archives": 0
+    "deleted_dirs": 1,
+    "deleted_archives": 1
   }
 }
