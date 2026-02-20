@@ -102,3 +102,13 @@ Each tick emits:
 - World profile: `config/game/worlds/aethermoor.json`
 - Module config: `config/game/modules/aethermoor_modules.json`
 - Mechanics matrix: `docs/game/SPIRAL_ENGINE_MECHANICS_MATRIX.md`
+- Operator quickstart: `docs/game/SPIRAL_ENGINE_QUICKSTART.md`
+
+## Operator Runbook
+
+- Quickstart commands and validation checks:
+  - `docs/game/SPIRAL_ENGINE_QUICKSTART.md`
+- Sheaf/tarski mechanics notes:
+  - `docs/game/SHEAF_LATTICE_NOTES.md`
+- Route contract for KO/CA review and commit/quarantine split:
+  - `scripts/route_spiral_engine_chain.yaml`

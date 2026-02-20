@@ -108,16 +108,16 @@ Available backend adapters:
 - `--soc-timeout-seconds 3.0`: SOC request timeout
 - `--soc-bearer-token <token>`: SOC auth token (or env fallback)
 
-Run with command emitters only (safe default):
+Run with command previews only (safe default):
 
 ```powershell
 falco -o json_output=true | python scripts/linux_kernel_antivirus_monitor.py --input - --alerts-only --emit-enforcement
 ```
 
-Run with execution enabled (requires host permissions):
+Run with execution enabled (default backends: `systemd,journald`):
 
 ```powershell
-falco -o json_output=true | python scripts/linux_kernel_antivirus_monitor.py --input - --alerts-only --apply-enforcement --quarantine-dir /var/quarantine/scbe
+falco -o json_output=true | python scripts/linux_kernel_antivirus_monitor.py --input - --alerts-only --apply-enforcement --enforcement-backends systemd,journald --quarantine-dir /var/quarantine/scbe
 ```
 
 Run with SOC forwarding enabled:
@@ -173,5 +173,6 @@ When enforcement hooks are enabled, output also includes:
 pytest -q tests/test_kernel_antivirus_gate.py
 pytest -q tests/test_linux_kernel_event_bridge.py
 pytest -q tests/test_linux_enforcement_hooks.py
+pytest -q tests/test_linux_enforcement_backends.py
 pytest -q tests/test_antivirus_membrane.py tests/test_hydra_turnstile.py tests/test_extension_gate.py
 ```

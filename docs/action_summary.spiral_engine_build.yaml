@@ -12,7 +12,8 @@ document:
     - docs/game/SPIRAL_ENGINE_BUILD_PLAN.md
     - docs/game/SHEAF_LATTICE_NOTES.md
     - docs/game/SPIRAL_ENGINE_MECHANICS_MATRIX.md
-  rationale: "Captured MVP architecture, formula chain, module boundaries, visual/mechanics matrix, and chosen lattice-sheaf cohomology mechanics for gameplay integration."
+    - docs/game/SPIRAL_ENGINE_QUICKSTART.md
+  rationale: "Captured MVP architecture, formula chain, module boundaries, visual/mechanics matrix, lattice-sheaf mechanics, and an operator quickstart/runbook for deterministic simulation execution."
 
 route:
   services_to_update:

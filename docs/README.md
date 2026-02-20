@@ -109,6 +109,8 @@ docs/
 - [API Reference](02-technical/api-reference.md) - API documentation
 - [Deployment Guide](03-deployment/README.md) - Production deployment
  - [CLI Guide](../README.md#cli-quick-start-six-tongues--geoseal) - Sacred Tongues + GeoSeal
+ - [Kernel Antivirus](KERNEL_ANTIVIRUS_SCBE.md) - Linux kernel bridge + hardened enforcement backends
+ - [Spiral Engine Quickstart](game/SPIRAL_ENGINE_QUICKSTART.md) - Run and validate Aethermoor simulator output
 
 ### For Architects
 - [Architecture Overview](01-architecture/README.md) - System design
