@@ -13,6 +13,12 @@ API file: `src/api/main.py`
 
 Endpoints:
 
+- `POST /mobile/connectors`
+  - Register connector endpoint (n8n, Zapier, Shopify, generic webhook)
+- `GET /mobile/connectors`
+  - List registered connectors
+- `POST /mobile/goals/{goal_id}/bind-connector`
+  - Bind connector to existing goal and switch execution mode
 - `POST /mobile/goals`
   - Submit a goal with channel profile (`store_ops`, `web_research`, `content_ops`, `custom`)
 - `GET /mobile/goals`
@@ -34,6 +40,7 @@ Endpoints:
 
 1. User submits goal from mobile app:
    - "Run storefront operations for today and process pending messages."
+   - Optional: pass `execution_mode=connector` + `connector_id`.
 2. App polls `GET /mobile/goals/{id}` for status.
 3. When status becomes `review_required`, app prompts user to approve.
 4. App calls `POST /mobile/goals/{id}/approve`.
@@ -51,14 +58,18 @@ Generated step plan:
 
 ## Next Integration Steps (to reach full automation)
 
-1. Replace simulated step execution with worker adapters:
-   - Shopify admin adapter
+1. Register real connectors per account:
+   - Shopify workflow endpoint (or n8n flow containing Shopify nodes)
+   - Zapier webhook for cross-service automations
+   - n8n endpoint for AetherBrowse + store task orchestration
+2. Replace simulated step execution with specialized worker adapters:
+   - Shopify admin adapter (orders/catalog/fulfillment)
    - Email/helpdesk adapter
    - Ad platform adapter
-2. Add OAuth + scoped capability tokens per store/account.
-3. Add approval policies by action type and spend threshold.
-4. Add webhook push to phone app for real-time status events.
-5. Add immutable audit sink (S3 + signed event hash chain).
+3. Add OAuth + scoped capability tokens per store/account.
+4. Add approval policies by action type and spend threshold.
+5. Add webhook push to phone app for real-time status events.
+6. Add immutable audit sink (S3 + signed event hash chain).
 
 ## Local Test
 
@@ -69,4 +80,3 @@ python -m pytest -q tests/test_mobile_goal_api.py
 ## Example API Key Header
 
 `x-api-key: demo_key_12345`
-
