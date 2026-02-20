@@ -45,6 +45,32 @@ data:
     max_sequence_length: 512
     privacy_filter: geoseal_layer5
 
+fine_tune:
+  enabled: true
+  description: Quasi-funnel for dual-mode SCBE training
+  target_repo: issdandavis/scbe-aethermoore-fine-tune
+  streams:
+    - name: technical_system_stream
+      lane: canonical
+      weight: 0.62
+      categories:
+        - technical
+        - all
+      description: SCBE pipeline, governance, and implementation corpus
+      required_min_records: 100
+    - name: isekai_emotive_stream
+      lane: emotional
+      weight: 0.38
+      categories:
+        - lore
+        - relationships
+        - timelines
+      description: 6-languages, vector-doc alignment, and emotional narrative corpus
+      required_min_records: 80
+  quality_checks:
+    max_category_imbalance: 4.0
+    required_dual_channel_ready: true
+
 training:
   base_model: sentence-transformers/all-MiniLM-L6-v2
   epochs: 50
