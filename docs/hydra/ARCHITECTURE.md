@@ -1572,6 +1572,12 @@ AI brain and governance architecture:
 
 Cryptographic language systems:
 
+- SS1 Tokenizer Protocol - Sacred Tongue Integration: Six Sacred Tongues domain separation
+- Sacred Tongue Tokenizer - Practical Tutorials and Use Cases: implementation guides
+- Six Tongues + GeoSeal CLI - Python Implementation: reference implementation toolkit
+
+Quantum and mathematical foundations:
+
 ## Voxel Record Schema
 
 Purpose:
