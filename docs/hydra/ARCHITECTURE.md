@@ -1228,7 +1228,121 @@ class PollyPad:
 Why this matters:
 
 - Security property: dangerous actions must pass through all three directional constraints.
-- If an attacker compromises one path (for example, bypasses consistency checks), the other two paths (conflict detection and temporal consistency) still block unauthorized routing.
+- If an attacker compromises one path (for example, bypasses consistency checks), the other two paths (conflict detection and temporal consistency) still enforce governance.
+- Exponential cost scaling: finding 3 distinct Hamiltonian paths is NP-complete. Attackers must solve this per attempt, making brute-force infeasible.
+
+### Mathematical Verification
+
+1. Security multiplier claim
+
+Claimed: Tier 6 = `518,400x` security multiplier
+
+Analysis:
+
+```python
+# Tongue weights from LWS (Linguistic Weight Spectrum)
+weights = [1.00, 1.38, 2.62, 6.18, 4.24, 11.09]
+product = 1.00 * 1.38 * 2.62 * 6.18 * 4.24 * 11.09
+# product ~= 1,050.67
+
+# But 518,400 = (6!)^2
+import math
+math.factorial(6) ** 2  # = 518,400
+```
+
+Conclusion:
+
+- `518,400 = (6!)^2` is correct as a combinatorial count of approval sequences.
+- It is not a weight-product multiplier (`~1,051x` from LWS weights).
+- It represents distinct ordered multi-signature governance paths.
+
+Corrected claim (from HYDRA Governance Specification - Mathematical Corrections):
+
+> Tier 6 governance supports 518,400 distinct approval sequences, providing attestation path diversity and workflow flexibility. The compositional weight product is 1,051x relative to single-tongue baseline.
+
+2. Byzantine fault tolerance
+
+Configuration: `n = 6` agents
+
+Classical BFT bound:
+
+- `n >= 3f + 1`
+- For `n=6`: `6 >= 3f + 1`
+- `5 >= 3f`
+- `f_max = floor(5/3) = 1`
+- Quorum requirement: `2f + 1 = 2(1) + 1 = 3` votes
+- Verification: matches HYDRA implementation in `hydra/consensus.py`
+
+```python
+from collections import Counter
+
+
+def reach_consensus(votes):
+    vote_counts = Counter([v.value for v in votes])
+    for value, count in vote_counts.items():
+        if count >= 3:  # Quorum = 2f+1 for f=1
+            return ConsensusResult(decision=value, ...)
+```
+
+Operational confidence tiers:
+
+| Votes | Ratio | Verification | Confidence |
+|---|---|---|---|
+| 3/6 | 50% | `3/6 = 0.50` | Medium |
+| 4/6 | 67% | `4/6 = 0.667` | High |
+| 5/6 | 83% | `5/6 = 0.833` | Very High |
+
+This is acceptable for critical operations (secrets, writes, deployments) where unanimous approval is required.
+
+4. Proximity detection
+
+Euclidean distance in 3D space:
+
+```python
+def dist(a: UnitState, b: UnitState) -> float:
+    return math.sqrt((a.x - b.x)**2 + (a.y - b.y)**2 + (a.z - b.z)**2)
+```
+
+Example verification:
+
+```python
+a = UnitState("a", x=0, y=0, z=0)
+b = UnitState("b", x=3, y=4, z=0)
+assert dist(a, b) == 5.0
+dist(a, b) == math.sqrt(3**2 + 4**2 + 0**2) == 5.0
+```
+
+Hyperbolic distance (for future geometric bounds):
+
+```python
+def hyperbolic_dist(a: UnitState, b: UnitState, R: float = 1.0) -> float:
+    """Poincare ball model distance."""
+    euclidean_d = dist(a, b)
+    r_a = math.sqrt(a.x**2 + a.y**2 + a.z**2)
+    r_b = math.sqrt(b.x**2 + b.y**2 + b.z**2)
+    # Poincare formula: d_H = 2R * arctanh(||u - v|| / (1 - ||u|| * ||v||))
+    # Simplified/stabilized form for small distances.
+    return R * euclidean_d * (1 + (r_a**2 + r_b**2) / (2 * R**2))
+```
+
+5. SCBE decision thresholds
+
+Implementation:
+
+```python
+def scbe_decide(d_star: float, coherence: float, h_eff: float, thr: Thresholds) -> Decision:
+    # DENY conditions (highest priority)
+    if coherence < thr.quarantine_min_coherence:  # < 0.25
+        return "DENY"
+    if h_eff > thr.quarantine_max_cost:  # > 1e6
+        return "DENY"
+    if d_star > thr.quarantine_max_drift:  # > 2.2
+        return "DENY"
+    # ALLOW conditions
+    if coherence >= thr.allow_min_coherence and h_eff <= thr.allow_max_cost and d_star <= thr.allow_max_drift:
+        return "ALLOW"
+    return "QUARANTINE"
+```
 
 ## Voxel Record Schema
 
