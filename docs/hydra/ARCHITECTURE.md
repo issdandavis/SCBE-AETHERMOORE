@@ -908,10 +908,210 @@ After applying the three remediations:
 Add a `Commit Voxel` button to `CognitiveTopologyViz.tsx` for interactive voxel creation with:
 
 - Live capture of simulation state (`x,y,z,vx,vy,vz,meanPhase,entropy`)
+- Pad mode dropdown (`ENGINEERING`, `NAVIGATION`, `SYSTEMS`, `SCIENCE`, `COMMS`, `MISSION`)
+- Real-time quorum status (`4/6 reached`, `quarantined`, `denied`)
+- Voxel preview panel showing `cubeId`, `payloadDigest`, and governance decision
+- Byzantine consensus simulation for per-commit vote outcomes
 - Deterministic voxel key generation (`baseKey`, `perLang`, shard)
 - Inline SCBE decision preview (`ALLOW`/`QUARANTINE`/`DENY`)
 - Idempotent commit payload generation (`correlation_id`, `idempotency_key`)
 - Backend submit and receipt rendering (`decision`, `receipt_id`, `ts`)
+
+Updated React component excerpt:
+
+```tsx
+import React, { useRef, useState } from 'react';
+import type { Decision, Lang, PadMode, QuorumProof, Voxel6, VoxelRecord } from '../harmonic/scbe_voxel_types';
+
+const PAD_MODES: PadMode[] = ['ENGINEERING', 'NAVIGATION', 'SYSTEMS', 'SCIENCE', 'COMMS', 'MISSION'];
+
+const toHexDigest = async (text: string): Promise<string> => {
+  const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+};
+
+export const CognitiveTopologyViz: React.FC = () => {
+  const mountRef = useRef<HTMLDivElement | null>(null);
+  const [entropy, setEntropy] = useState(0.5);
+  const [coherence, setCoherence] = useState(0.8);
+  const [padMode, setPadMode] = useState<PadMode>('ENGINEERING');
+  const [voxelRecord, setVoxelRecord] = useState<VoxelRecord | null>(null);
+  const [quorumStatus, setQuorumStatus] = useState('');
+
+  const simulateConsensus = (target: Decision): { votesForDecision: number; status: string } => {
+    const votes = Array.from({ length: 6 }, (_, idx) => {
+      if (idx < 4) return target;
+      return Math.random() < 0.5 ? 'QUARANTINE' : 'DENY';
+    });
+    const votesForDecision = votes.filter((v) => v === target).length;
+    const status = votesForDecision >= 4 ? `4/6 reached: ${target}` : `quorum not reached: ${votesForDecision}/6`;
+    return { votesForDecision, status };
+  };
+
+  async function commitVoxel(record: VoxelRecord): Promise<QuorumProof> {
+    // Stub: simulate 4/6 quorum if ALLOW, else 2/6.
+    const votesNeeded = record.decision === 'ALLOW' ? 4 : 2;
+    return {
+      n: 6,
+      f: 1,
+      threshold: 4,
+      votes: Array.from({ length: votesNeeded }).map((_, i) => ({
+        agentId: `agent-${i + 1}`,
+        digest: record.payloadDigest,
+        sig: `sig_stub_${i + 1}`,
+        ts: Date.now(),
+        pathTrace: `tri-path-${i + 1}`,
+      })),
+    };
+  }
+
+  const handleCommitVoxel = async () => {
+    const voxel: Voxel6 = [Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random()];
+    const epoch = Date.now();
+    const lang: Lang = 'KO';
+    const unitId = 'drone-1';
+    const squadId = 'squad-alpha';
+
+    const payloadPlain = 'Sample payload data';
+    const payloadCiphertext = btoa(payloadPlain); // Stub encrypt
+
+    const payloadDigest = await toHexDigest(payloadCiphertext);
+    const cubeId = await toHexDigest(
+      JSON.stringify({
+        scope: 'unit',
+        unitId,
+        squadId,
+        lang,
+        voxel,
+        epoch,
+        padMode,
+      })
+    );
+
+    const decision: Decision = entropy > 0.85 ? 'DENY' : entropy > 0.7 ? 'QUARANTINE' : 'ALLOW';
+    const consensus = simulateConsensus(decision);
+    setQuorumStatus(consensus.status);
+
+    const record: VoxelRecord = {
+      version: 1,
+      scope: 'unit',
+      unitId,
+      squadId,
+      lang,
+      voxel,
+      epoch,
+      padMode,
+      coherence,
+      dStar: Math.random(),
+      hEff: entropy * 1000,
+      decision,
+      cubeId,
+      payloadDigest,
+      seal: {
+        eggId: 'egg-ritual-1',
+        kdf: 'pi_phi',
+        dStar: Math.random(),
+        coherence,
+        nonce: btoa(String(Math.random())),
+        aad: payloadDigest,
+      },
+      payloadCiphertext,
+      tags: ['tool:ide', 'topic:proximity'],
+      parents: [],
+    };
+
+    const quorum = await commitVoxel(record);
+    record.quorum = quorum;
+    setVoxelRecord(record);
+    setQuorumStatus(
+      quorum.votes.length >= quorum.threshold
+        ? 'Quorum reached (ALLOW)'
+        : 'Quorum failed (QUARANTINE/DENY)'
+    );
+  };
+
+  return (
+    <div className="relative h-screen w-screen">
+      {/* 3D visualization */}
+      <div ref={mountRef} className="absolute inset-0" />
+
+      {/* Control panel */}
+      <div className="absolute top-4 left-4 w-96 rounded-lg bg-gray-800 p-4 text-white shadow-xl">
+        <h2 className="mb-2 text-xl font-bold">Cognitive Topology Viz</h2>
+
+        {/* Entropy slider */}
+        <div className="mb-2">
+          <label>Entropy: {entropy.toFixed(2)}</label>
+          <input
+            type="range"
+            min={0}
+            max={1}
+            step={0.01}
+            value={entropy}
+            onChange={(e) => setEntropy(parseFloat(e.target.value))}
+            className="w-full"
+          />
+        </div>
+
+        {/* Coherence slider */}
+        <div className="mb-2">
+          <label className="mb-1 block text-sm">Coherence: {coherence.toFixed(2)}</label>
+          <input
+            type="range"
+            min={0}
+            max={1}
+            step={0.01}
+            value={coherence}
+            onChange={(e) => setCoherence(Number(e.target.value))}
+            className="w-full"
+          />
+        </div>
+
+        {/* Pad mode dropdown */}
+        <div className="mb-2">
+          <label>Pad Mode:</label>
+          <select
+            className="mt-1 w-full rounded border border-slate-600 bg-slate-900 p-2 text-white"
+            value={padMode}
+            onChange={e => setPadMode(e.target.value as PadMode)}
+          >
+            {PAD_MODES.map((mode) => (
+              <option key={mode} value={mode}>
+                {mode}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleCommitVoxel}
+          className="w-full rounded bg-emerald-600 px-3 py-2 text-white hover:bg-emerald-700"
+        >
+          Commit Voxel
+        </button>
+
+        <p className="mt-3 text-sm">Quorum: {quorumStatus || 'pending'}</p>
+        {voxelRecord && (
+          <pre className="mt-3 max-h-56 overflow-auto rounded bg-slate-100 p-2 text-xs text-slate-900">
+            {JSON.stringify(
+              {
+                cubeId: voxelRecord.cubeId,
+                payloadDigest: voxelRecord.payloadDigest,
+                decision: voxelRecord.decision,
+              },
+              null,
+              2
+            )}
+          </pre>
+        )}
+      </div>
+    </div>
+  );
+};
+```
 
 ## Voxel Record Schema
 
