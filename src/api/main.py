@@ -17,12 +17,13 @@ from fastapi import FastAPI, HTTPException, Header, Depends, Request, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, field_validator
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 import json
 import numpy as np
 import hashlib
 import time
 from collections import defaultdict
+from enum import Enum
 import sys
 import os
 
@@ -132,6 +133,9 @@ class MetricsStore:
 metrics_store = MetricsStore()
 storage_backend = get_storage_backend()
 
+# Mobile autonomy goal control plane (in-memory MVP store).
+GOAL_STORE: Dict[str, Dict[str, Any]] = {}
+
 # ============================================================================
 # MODELS
 # ============================================================================
@@ -178,6 +182,48 @@ class SimulateAttackRequest(BaseModel):
     context: str = Field(default="untrusted")
 
 
+class GoalPriority(str, Enum):
+    low = "low"
+    normal = "normal"
+    high = "high"
+    critical = "critical"
+
+
+class GoalStatus(str, Enum):
+    queued = "queued"
+    running = "running"
+    review_required = "review_required"
+    completed = "completed"
+    failed = "failed"
+
+
+class MobileGoalRequest(BaseModel):
+    goal: str = Field(..., min_length=3, max_length=1024, description="Natural language goal description")
+    channel: str = Field(
+        default="store_ops",
+        pattern="^(store_ops|web_research|content_ops|custom)$",
+        description="Execution domain profile",
+    )
+    priority: GoalPriority = Field(default=GoalPriority.normal)
+    execution_mode: str = Field(
+        default="simulate",
+        pattern="^(simulate|hydra_headless)$",
+        description="Execution adapter mode",
+    )
+    targets: List[str] = Field(default_factory=list, description="Optional URLs or entity targets")
+    require_human_for_high_risk: bool = Field(
+        default=True, description="Require explicit approval for high risk actions"
+    )
+
+
+class MobileGoalApproveRequest(BaseModel):
+    note: str = Field(default="", max_length=512)
+
+
+class MobileGoalActionRequest(BaseModel):
+    note: str = Field(default="", max_length=512)
+
+
 # ============================================================================
 # AUTH
 # ============================================================================
@@ -198,6 +244,71 @@ async def verify_api_key(x_api_key: str = Header(...)):
         raise HTTPException(429, "Rate limit exceeded (100 req/min)")
 
     return VALID_API_KEYS[x_api_key]
+
+
+# ============================================================================
+# MOBILE AUTONOMY HELPERS
+# ============================================================================
+
+
+def _goal_id(user: str, goal: str) -> str:
+    seed = f"{user}:{goal}:{time.time_ns()}".encode("utf-8")
+    return hashlib.sha256(seed).hexdigest()[:20]
+
+
+def _build_goal_steps(channel: str, targets: List[str]) -> List[Dict[str, Any]]:
+    target_hint = f" ({len(targets)} targets)" if targets else ""
+    if channel == "store_ops":
+        return [
+            {"name": f"collect_store_state{target_hint}", "risk": "low", "status": "pending"},
+            {"name": "prioritize_orders_and_messages", "risk": "medium", "status": "pending"},
+            {"name": "execute_catalog_or_fulfillment_changes", "risk": "high", "status": "pending"},
+            {"name": "publish_daily_report", "risk": "low", "status": "pending"},
+        ]
+    if channel == "web_research":
+        return [
+            {"name": f"crawl_sources{target_hint}", "risk": "medium", "status": "pending"},
+            {"name": "scan_and_filter_results", "risk": "low", "status": "pending"},
+            {"name": "assemble_training_brief", "risk": "low", "status": "pending"},
+        ]
+    if channel == "content_ops":
+        return [
+            {"name": "collect_trend_inputs", "risk": "low", "status": "pending"},
+            {"name": "draft_content_batches", "risk": "medium", "status": "pending"},
+            {"name": "schedule_and_publish", "risk": "high", "status": "pending"},
+        ]
+    return [
+        {"name": "analyze_goal", "risk": "low", "status": "pending"},
+        {"name": "execute_goal_plan", "risk": "medium", "status": "pending"},
+    ]
+
+
+def _goal_view(record: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "goal_id": record["goal_id"],
+        "owner": record["owner"],
+        "goal": record["goal"],
+        "channel": record["channel"],
+        "priority": record["priority"],
+        "execution_mode": record["execution_mode"],
+        "status": record["status"],
+        "targets": record["targets"],
+        "require_human_for_high_risk": record["require_human_for_high_risk"],
+        "approved_high_risk": record["approved_high_risk"],
+        "created_at": record["created_at"],
+        "updated_at": record["updated_at"],
+        "completed_at": record.get("completed_at"),
+        "current_step_index": record["current_step_index"],
+        "steps": record["steps"],
+        "events": record["events"][-20:],
+    }
+
+
+def _next_pending_step(record: Dict[str, Any]) -> Optional[int]:
+    for i, step in enumerate(record["steps"]):
+        if step["status"] == "pending":
+            return i
+    return None
 
 
 # ============================================================================
@@ -461,6 +572,154 @@ async def simulate_attack(request: SimulateAttackRequest):
         raise HTTPException(500, f"Simulation failed: {str(e)}")
 
 
+@app.post("/mobile/goals", tags=["Mobile Autonomy"])
+async def create_mobile_goal(
+    request: MobileGoalRequest, user: str = Depends(verify_api_key)
+):
+    """
+    ## Create Mobile Goal
+
+    Submit a high-level goal from phone/app and receive deterministic step plan.
+    """
+    goal_id = _goal_id(user, request.goal)
+    ts = int(time.time())
+    steps = _build_goal_steps(request.channel, request.targets)
+    GOAL_STORE[goal_id] = {
+        "goal_id": goal_id,
+        "owner": user,
+        "goal": request.goal,
+        "channel": request.channel,
+        "priority": request.priority.value,
+        "execution_mode": request.execution_mode,
+        "targets": request.targets,
+        "require_human_for_high_risk": request.require_human_for_high_risk,
+        "approved_high_risk": False,
+        "status": GoalStatus.queued.value,
+        "created_at": ts,
+        "updated_at": ts,
+        "completed_at": None,
+        "current_step_index": 0,
+        "steps": steps,
+        "events": [{"ts": ts, "event": "goal_created", "detail": request.goal}],
+    }
+    return {"status": "accepted", "data": _goal_view(GOAL_STORE[goal_id])}
+
+
+@app.get("/mobile/goals", tags=["Mobile Autonomy"])
+async def list_mobile_goals(
+    limit: int = Query(20, ge=1, le=100),
+    user: str = Depends(verify_api_key),
+):
+    """
+    ## List Mobile Goals
+
+    List recently submitted goals for caller identity.
+    """
+    rows = [v for v in GOAL_STORE.values() if v["owner"] == user]
+    rows.sort(key=lambda x: x["created_at"], reverse=True)
+    return {"status": "ok", "data": [_goal_view(r) for r in rows[:limit]]}
+
+
+@app.get("/mobile/goals/{goal_id}", tags=["Mobile Autonomy"])
+async def get_mobile_goal(goal_id: str, user: str = Depends(verify_api_key)):
+    """
+    ## Get Mobile Goal
+
+    Get full state for one goal.
+    """
+    record = GOAL_STORE.get(goal_id)
+    if not record or record["owner"] != user:
+        raise HTTPException(404, "Goal not found")
+    return {"status": "ok", "data": _goal_view(record)}
+
+
+@app.post("/mobile/goals/{goal_id}/approve", tags=["Mobile Autonomy"])
+async def approve_mobile_goal(
+    goal_id: str,
+    request: MobileGoalApproveRequest,
+    user: str = Depends(verify_api_key),
+):
+    """
+    ## Approve High-Risk Steps
+
+    Explicitly approve high-risk actions for an existing goal.
+    """
+    record = GOAL_STORE.get(goal_id)
+    if not record or record["owner"] != user:
+        raise HTTPException(404, "Goal not found")
+    record["approved_high_risk"] = True
+    record["updated_at"] = int(time.time())
+    record["events"].append(
+        {"ts": record["updated_at"], "event": "high_risk_approved", "detail": request.note}
+    )
+    if record["status"] == GoalStatus.review_required.value:
+        record["status"] = GoalStatus.running.value
+    return {"status": "ok", "data": _goal_view(record)}
+
+
+@app.post("/mobile/goals/{goal_id}/advance", tags=["Mobile Autonomy"])
+async def advance_mobile_goal(
+    goal_id: str,
+    request: MobileGoalActionRequest,
+    user: str = Depends(verify_api_key),
+):
+    """
+    ## Advance Goal Execution
+
+    Execute the next pending step with guardrails.
+    """
+    record = GOAL_STORE.get(goal_id)
+    if not record or record["owner"] != user:
+        raise HTTPException(404, "Goal not found")
+
+    if record["status"] in {GoalStatus.completed.value, GoalStatus.failed.value}:
+        return {"status": "ok", "data": _goal_view(record)}
+
+    idx = _next_pending_step(record)
+    if idx is None:
+        record["status"] = GoalStatus.completed.value
+        record["completed_at"] = int(time.time())
+        record["updated_at"] = record["completed_at"]
+        record["events"].append({"ts": record["completed_at"], "event": "goal_completed", "detail": ""})
+        return {"status": "ok", "data": _goal_view(record)}
+
+    step = record["steps"][idx]
+    record["current_step_index"] = idx
+
+    if (
+        step["risk"] == "high"
+        and record["require_human_for_high_risk"]
+        and not record["approved_high_risk"]
+    ):
+        record["status"] = GoalStatus.review_required.value
+        record["updated_at"] = int(time.time())
+        record["events"].append(
+            {
+                "ts": record["updated_at"],
+                "event": "review_required",
+                "detail": f"approval required for step:{step['name']}",
+            }
+        )
+        return {"status": "blocked", "data": _goal_view(record)}
+
+    now = int(time.time())
+    record["status"] = GoalStatus.running.value
+    record["steps"][idx]["status"] = "done"
+    record["steps"][idx]["completed_at"] = now
+    if request.note:
+        record["steps"][idx]["note"] = request.note
+    record["updated_at"] = now
+    record["events"].append({"ts": now, "event": "step_completed", "detail": step["name"]})
+
+    nxt = _next_pending_step(record)
+    if nxt is None:
+        record["status"] = GoalStatus.completed.value
+        record["completed_at"] = now
+        record["events"].append({"ts": now, "event": "goal_completed", "detail": ""})
+
+    return {"status": "ok", "data": _goal_view(record)}
+
+
 @app.get("/health", tags=["System"])
 async def health():
     """
@@ -522,6 +781,9 @@ async def startup_event():
     print("  POST /retrieve-memory   - Retrieve with governance check")
     print("  GET  /governance-check  - Check governance decision")
     print("  POST /simulate-attack   - Demo fail-to-noise protection")
+    print("  POST /mobile/goals      - Submit mobile autonomy goal")
+    print("  POST /mobile/goals/{id}/advance - Run next goal step")
+    print("  POST /mobile/goals/{id}/approve - Approve high-risk step")
     print("  GET  /health            - System health")
     print("  GET  /metrics           - Usage metrics")
     print()
