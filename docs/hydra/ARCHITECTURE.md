@@ -475,6 +475,12 @@ Important behavior details:
 
 Every run writes the manifest hash to the ledger.
 
+Determinism controls:
+
+- canonical ordering of agents before spectral matrix construction
+- stable JSON serialization for signed/hashed payloads (sorted keys)
+- mandatory idempotency keys for all voxel commit writes
+
 ## Polly Pad Integration
 
 Concept:
@@ -844,7 +850,9 @@ def parse_token(tongue, token):
     if not token.isascii():
         raise ValueError("Only ASCII allowed")
     if token.count("'") != 1:
-        raise ValueError(f"Invalid token format (must have exactly one apostrophe): {token}")
+        raise ValueError("Exactly one apostrophe required")
+    if token != token.lower():
+        raise ValueError("Lowercase only")
     pre, suf = token.split("'", 1)
     # Existing logic...
 ```
@@ -1746,9 +1754,15 @@ Purpose:
 Voxel Records are the atomic unit of state in Polly Pads, combining:
 
 - Addressing: 6D hyperbolic coordinates (`X,Y,Z,V,P,S`) plus tongue, epoch, and pad mode
-- Governance snapshot: coherence, `d*`, `H_eff`, and decision (`ALLOW`, `QUARANTINE`, `DENY`, `EXILE`)
+- Governance snapshot: coherence, `d*`, `H_eff`, and decision (`ALLOW`, `QUARANTINE`, `DENY`)
+- Ledger escalation outcome: optional `ledger_outcome` (`ALLOW`, `QUARANTINE`, `DENY`, `EXILE`)
 - Execution context: workflow/session correlation and idempotent commit identity
 - Replayability: enough state to reproduce routing, risk scoring, and audit trails
+
+FVM sync clarification:
+
+- FVM synchronization provides asynchronous anchoring/replication of voxel state.
+- FVM sync is not equivalent to governance correctness; correctness is established by SCBE gate decisions, quorum rules, and ledger idempotency/audit invariants.
 
 Canonical voxel addressing:
 
@@ -1833,7 +1847,8 @@ ON voxel_records (env, created_at);
 
 Ledger receipt fields:
 
-- `decision` (`ALLOW`, `QUARANTINE`, `DENY`, `EXILE`)
+- `decision` (`ALLOW`, `QUARANTINE`, `DENY`)
+- `ledger_outcome` (`ALLOW`, `QUARANTINE`, `DENY`, `EXILE`)
 - `logG`, `T`, `I`, `dStar`, `coh`
 - `voxelKeyBase`, `voxelKeyPerLang`
 - `ts`
@@ -1863,6 +1878,10 @@ docs/
 Total: 2,860+ lines of production code.
 
 ## Performance Benchmarks
+
+Methodology line (required for audit interpretation):
+
+- report machine specs, input size `N`, cold vs warm start, embedding model ID, and latency distribution (`p50`/`p95`) for each benchmark.
 
 Multi-tab coordination:
 
