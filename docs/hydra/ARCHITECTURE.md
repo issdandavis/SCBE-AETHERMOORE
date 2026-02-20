@@ -17,6 +17,14 @@ keywords:
 
 Universal AI armor for terminal-native multi-agent coordination.
 
+Document status:
+
+- Status: Production-Ready with Pytest Validation
+- Last Updated: February 10, 2026
+- Maintainer: Issac Davis
+- Test Coverage: 16/16 tests passing (11 tokenizer + 5 Polly Pads)
+- "Every agent gets their own workshop. HYDRA makes sure they play nice together."
+
 ## Scope-of-Production (Reference Architecture)
 
 `Production-Ready (Reference Architecture)` means:
@@ -1543,9 +1551,26 @@ Phase 3: Scaling
 
 Related documentation:
 
+- [SCBE-AETHERMOORE Public Technical Theory Hub](https://www.notion.so/aethermoorgames/SCBE-AETHERMOORE-Public-Technical-Theory-Hub-558788e2135c483aac56f3acd77debc6) - Public documentation hub
 - [HYDRA Multi-Agent Coordination System - Complete Architecture](https://www.notion.so/HYDRA-Multi-Agent-Coordination-System-Complete-Architecture-0ecedff123704e65b249897bf534d6ef?pvs=21) - Parent architecture
 - [HYDRA Governance Specification - Mathematical Corrections](https://www.notion.so/HYDRA-Governance-Specification-Mathematical-Corrections-0e48a4c3a3ea40c6889f086fec027dcb?pvs=21) - Mathematical corrections
 - [SCBE-AETHERMOORE Tech Deck - Complete Setup Guide](https://www.notion.so/SCBE-AETHERMOORE-Tech-Deck-Complete-Setup-Guide-60922537b0cb4b9fa34ac82eb242ed9b?pvs=21) - 14-layer pipeline
+- [PHDM as AI Brain Architecture - The Geometric Skull](https://www.notion.so/PHDM-as-AI-Brain-Architecture-The-Geometric-Skull-63b69b5be92641379d552049d665a033?pvs=21) - Geometric Skull concept
+- [Six Tongues + GeoSeal CLI - Python Implementation](https://www.notion.so/Six-Tongues-GeoSeal-CLI-Python-Implementation-8cad7ff3551e49a98900f4c66f3acc98?pvs=21) - Python implementation
+
+Complete system documentation index:
+
+Core authentication and security systems:
+
+- AetherAuth Implementation - Notion and Perplexity Bridge: geometric OAuth alternative with context-bound envelopes
+- GeoSeal: Geometric Access Control Kernel - RAG Immune System: antivirus/immune system for vector RAG
+
+AI brain and governance architecture:
+
+- PHDM as AI Brain Architecture - The Geometric Skull: Polyhedral Hamiltonian Dynamic Mesh as AI containment framework
+- HYDRA Multi-Agent Coordination System - Complete Architecture: Byzantine fault-tolerant multi-agent coordination
+
+Cryptographic language systems:
 
 ## Voxel Record Schema
 
