@@ -43,12 +43,21 @@ except ImportError:
     CHACHA_AVAILABLE = False
     print("Warning: pycryptodome not installed. Install with: pip install pycryptodome")
 
-try:
-    import oqs  # liboqs-python for ML-KEM/ML-DSA
+_FORCE_SKIP_LIBOQS = os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+}
 
-    OQS_AVAILABLE = True
-except (ImportError, RuntimeError):
-    # liboqs-python not installed or shared libraries not found
+if not _FORCE_SKIP_LIBOQS:
+    try:
+        import oqs  # liboqs-python for ML-KEM/ML-DSA
+
+        OQS_AVAILABLE = True
+    except BaseException:
+        # liboqs-python not installed, shared libs missing, or bootstrap errors
+        OQS_AVAILABLE = False
+else:
     OQS_AVAILABLE = False
 
 from .sacred_tongues import SACRED_TONGUE_TOKENIZER, SECTION_TONGUES

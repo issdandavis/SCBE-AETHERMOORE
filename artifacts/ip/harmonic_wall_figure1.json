@@ -1,0 +1,31 @@
+{
+  "generated_at_utc": "2026-02-19T04:15:01.556689+00:00",
+  "formula": "H(d,R)=R^(d^2)",
+  "domain": {
+    "d_min": 0,
+    "d_max": 12,
+    "R_values": [
+      1.25,
+      1.5,
+      2.0
+    ]
+  },
+  "sample_points": {
+    "R=1.25": {
+      "d=6": 3081.4879110195775,
+      "d=10": 4909093465.297727
+    },
+    "R=1.5": {
+      "d=6": 2184164.4090745705,
+      "d=10": 4.065611775352152e+17
+    },
+    "R=2": {
+      "d=6": 68719476736.0,
+      "d=10": 1.2676506002282294e+30
+    }
+  },
+  "artifacts": {
+    "csv": "artifacts/ip/harmonic_wall_figure1.csv",
+    "svg": "artifacts/ip/harmonic_wall_figure1.svg"
+  }
+}

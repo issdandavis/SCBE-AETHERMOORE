@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "attest": "claude,gpt,sonar",
+  "sources": [
+    "docs/OFFLINE_MODE_SPEC.md",
+    "docs/MULTI_AI_COORDINATION.md",
+    "docs/HYDRA_COORDINATION.md",
+    "docs/SCBE_CONTEXT_AETHERBROWSE_AGENT.md",
+    "docs/gateway/*.md",
+    "docs/map-room/*.md",
+    "docs/news/*.md",
+    "docs/scbe-knowledge-v4.aetherbrowse.yaml",
+    "training/kernel_manifest.yaml"
+  ],
+  "external_intake_globs": [
+    "training/intake/airtable/*.jsonl",
+    "training/intake/asana/*.jsonl",
+    "training/intake/protonmail/*.jsonl",
+    "training/intake/gumroad/*.jsonl",
+    "training/intake/google_business/*.jsonl",
+    "training/intake/zapier/*.jsonl",
+    "training/intake/web_research/*.jsonl",
+    "training/intake/**/*.json"
+  ],
+  "thresholds": {
+    "truth_min": 0.62,
+    "useful_min": 0.58,
+    "harmful_max": 0.25,
+    "dataset_anomaly_threshold": 0.78,
+    "dataset_max_flagged_ratio": 0.08
+  },
+  "retention": {
+    "keep_local_runs": 30
+  },
+  "shipping": {
+    "hf": {
+      "enabled": true,
+      "repo": "issdandavis/scbe-kernel-datasets",
+      "path_prefix": "kernel-sync/runs"
+    },
+    "github": {
+      "enabled": true,
+      "repo": "issdandavis/SCBE-AETHERMOORE",
+      "release_prefix": "kernel-data-sync"
+    },
+    "dropbox": {
+      "enabled": false,
+      "base_path": "/SCBE/kernel-data-sync"
+    }
+  }
+}

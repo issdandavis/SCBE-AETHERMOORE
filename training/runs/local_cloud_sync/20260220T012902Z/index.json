@@ -1,0 +1,6036 @@
+{
+  "index": {
+    "ALIASES.md": {
+      "size": 524,
+      "mtime_ns": 1771221010226588200
+    },
+    "ARCHITECTURE.md": {
+      "size": 16616,
+      "mtime_ns": 1771221010226588200
+    },
+    "CHANGELOG.md": {
+      "size": 13940,
+      "mtime_ns": 1771221010227593500
+    },
+    "CLAUDE.md": {
+      "size": 19295,
+      "mtime_ns": 1771221010229599300
+    },
+    "CLEANUP_NOTES.md": {
+      "size": 3705,
+      "mtime_ns": 1771221010229599300
+    },
+    "COMMERCIAL.md": {
+      "size": 1958,
+      "mtime_ns": 1771221010230593200
+    },
+    "CONCEPTS.md": {
+      "size": 1438,
+      "mtime_ns": 1771221010230593200
+    },
+    "CONTRIBUTING.md": {
+      "size": 7035,
+      "mtime_ns": 1771221010231593800
+    },
+    "DEMOS.md": {
+      "size": 11666,
+      "mtime_ns": 1771221010231593800
+    },
+    "INSTRUCTIONS.md": {
+      "size": 5687,
+      "mtime_ns": 1771221010233593700
+    },
+    "LAYER_INDEX.md": {
+      "size": 5878,
+      "mtime_ns": 1771221010235098100
+    },
+    "PATENT_CLAIMS_COVERAGE.md": {
+      "size": 23118,
+      "mtime_ns": 1771221010237103800
+    },
+    "PITCH_EMAIL_BANK_INNOVATION_LAB.md": {
+      "size": 4964,
+      "mtime_ns": 1771221010237103800
+    },
+    "PROJECT_COMPLETION_STATUS.md": {
+      "size": 5206,
+      "mtime_ns": 1771221010238106500
+    },
+    "README.md": {
+      "size": 10519,
+      "mtime_ns": 1771488908192420900
+    },
+    "README_INDEX.md": {
+      "size": 1534,
+      "mtime_ns": 1771221010240105800
+    },
+    "REPO_REPORT.md": {
+      "size": 6185,
+      "mtime_ns": 1771221010241107900
+    },
+    "RESTRUCTURE_PLAN.md": {
+      "size": 10292,
+      "mtime_ns": 1771221010242103800
+    },
+    "ROADMAP_90_DAY_TO_PILOT.md": {
+      "size": 3779,
+      "mtime_ns": 1771221010242103800
+    },
+    "SCBE_PATENT_PORTFOLIO.md": {
+      "size": 142279,
+      "mtime_ns": 1771221010431685700
+    },
+    "SCBE_SYSTEM_OVERVIEW.md": {
+      "size": 28485,
+      "mtime_ns": 1771221010431685700
+    },
+    "SECURITY.md": {
+      "size": 3070,
+      "mtime_ns": 1771221010432690600
+    },
+    "SPEC.md": {
+      "size": 933,
+      "mtime_ns": 1771221010433690900
+    },
+    "STATE_OF_SYSTEM.md": {
+      "size": 5400,
+      "mtime_ns": 1771221010433690900
+    },
+    "STRUCTURE.md": {
+      "size": 7187,
+      "mtime_ns": 1771221010434690500
+    },
+    "SYSTEM_ARCHITECTURE.md": {
+      "size": 13072,
+      "mtime_ns": 1771221010435690900
+    },
+    "SYSTEM_IMPROVEMENT_RECOMMENDATIONS.md": {
+      "size": 12305,
+      "mtime_ns": 1771221010435690900
+    },
+    "SYSTEM_OVERVIEW.mermaid.md": {
+      "size": 5020,
+      "mtime_ns": 1771221010436690400
+    },
+    "SYSTEM_STATUS.md": {
+      "size": 4930,
+      "mtime_ns": 1771221010437690300
+    },
+    "TEST_AUDIT_REPORT.md": {
+      "size": 9978,
+      "mtime_ns": 1771221010437690300
+    },
+    "TEST_FAILURE_ANALYSIS.md": {
+      "size": 5065,
+      "mtime_ns": 1771221010438691800
+    },
+    "VIDEO_SCRIPT_90SEC.md": {
+      "size": 2178,
+      "mtime_ns": 1771221010440198400
+    },
+    "ZENODO_ABSTRACT.md": {
+      "size": 916,
+      "mtime_ns": 1771221010440198400
+    },
+    "aethermoore.py": {
+      "size": 8829,
+      "mtime_ns": 1771221010441204800
+    },
+    "aethermoore_patent_math.py": {
+      "size": 5680,
+      "mtime_ns": 1771221010441898600
+    },
+    "agents/__init__.py": {
+      "size": 288,
+      "mtime_ns": 1771221010441898600
+    },
+    "agents/aetherbrowse_cli.py": {
+      "size": 9113,
+      "mtime_ns": 1771252300552245500
+    },
+    "agents/antivirus_membrane.py": {
+      "size": 3813,
+      "mtime_ns": 1771426757211022500
+    },
+    "agents/browser/__init__.py": {
+      "size": 2268,
+      "mtime_ns": 1771221010443562100
+    },
+    "agents/browser/action_validator.py": {
+      "size": 8488,
+      "mtime_ns": 1771235894283825200
+    },
+    "agents/browser/bounds_checker.py": {
+      "size": 15893,
+      "mtime_ns": 1771221010444407700
+    },
+    "agents/browser/dom_snapshot.py": {
+      "size": 3984,
+      "mtime_ns": 1771232027593242600
+    },
+    "agents/browser/fleet_coordinator.py": {
+      "size": 3996,
+      "mtime_ns": 1771232036002723300
+    },
+    "agents/browser/main.py": {
+      "size": 23380,
+      "mtime_ns": 1771311628785161400
+    },
+    "agents/browser/phdm_brain.py": {
+      "size": 12945,
+      "mtime_ns": 1771221010445412900
+    },
+    "agents/browser/playwright_wrapper.py": {
+      "size": 20193,
+      "mtime_ns": 1771221010446010200
+    },
+    "agents/browser/session_manager.py": {
+      "size": 13397,
+      "mtime_ns": 1771252255061256100
+    },
+    "agents/browser/vision_embedding.py": {
+      "size": 16784,
+      "mtime_ns": 1771235897684119800
+    },
+    "agents/browser_agent.py": {
+      "size": 26397,
+      "mtime_ns": 1771221010448016700
+    },
+    "agents/browsers/__init__.py": {
+      "size": 6997,
+      "mtime_ns": 1771221010449015500
+    },
+    "agents/browsers/base.py": {
+      "size": 17992,
+      "mtime_ns": 1771221010449520300
+    },
+    "agents/browsers/cdp_backend.py": {
+      "size": 22975,
+      "mtime_ns": 1771221010449520300
+    },
+    "agents/browsers/chrome_mcp.py": {
+      "size": 8602,
+      "mtime_ns": 1771221010450526200
+    },
+    "agents/browsers/playwright_backend.py": {
+      "size": 10665,
+      "mtime_ns": 1771221010451526000
+    },
+    "agents/browsers/selenium_backend.py": {
+      "size": 17611,
+      "mtime_ns": 1771221010451526000
+    },
+    "agents/extension_gate.py": {
+      "size": 8128,
+      "mtime_ns": 1771487514018663700
+    },
+    "agents/hyperbolic_scanner.py": {
+      "size": 1406,
+      "mtime_ns": 1771376649709513200
+    },
+    "agents/kernel_antivirus_gate.py": {
+      "size": 9118,
+      "mtime_ns": 1771488250147915000
+    },
+    "agents/linux_kernel_event_bridge.py": {
+      "size": 7892,
+      "mtime_ns": 1771489271733265600
+    },
+    "agents/multi_model_modal_matrix.py": {
+      "size": 6508,
+      "mtime_ns": 1771490045796008400
+    },
+    "agents/pqc_key_auditor.py": {
+      "size": 3023,
+      "mtime_ns": 1771376640818984800
+    },
+    "agents/swarm_browser.py": {
+      "size": 34524,
+      "mtime_ns": 1771426583408634400
+    },
+    "api/__init__.py": {
+      "size": 59,
+      "mtime_ns": 1771221010453525400
+    },
+    "api/auth.py": {
+      "size": 7893,
+      "mtime_ns": 1771221010453525400
+    },
+    "api/billing/__init__.py": {
+      "size": 408,
+      "mtime_ns": 1771221010455529600
+    },
+    "api/billing/database.py": {
+      "size": 7738,
+      "mtime_ns": 1771221010455529600
+    },
+    "api/billing/routes.py": {
+      "size": 8182,
+      "mtime_ns": 1771221010456525800
+    },
+    "api/billing/stripe_client.py": {
+      "size": 6108,
+      "mtime_ns": 1771221010458036000
+    },
+    "api/billing/tiers.py": {
+      "size": 3956,
+      "mtime_ns": 1771221010458036000
+    },
+    "api/billing/webhooks.py": {
+      "size": 8908,
+      "mtime_ns": 1771221010459037700
+    },
+    "api/keys/__init__.py": {
+      "size": 145,
+      "mtime_ns": 1771221010461037100
+    },
+    "api/keys/generator.py": {
+      "size": 1837,
+      "mtime_ns": 1771221010461037100
+    },
+    "api/keys/routes.py": {
+      "size": 6777,
+      "mtime_ns": 1771221010462037000
+    },
+    "api/main.py": {
+      "size": 45899,
+      "mtime_ns": 1771221010462037000
+    },
+    "api/metering.py": {
+      "size": 4682,
+      "mtime_ns": 1771221010463037400
+    },
+    "api/persistence.py": {
+      "size": 19983,
+      "mtime_ns": 1771221010464038500
+    },
+    "build_package.py": {
+      "size": 5239,
+      "mtime_ns": 1771221010472507200
+    },
+    "cleanup_imports.py": {
+      "size": 1523,
+      "mtime_ns": 1771231834230929600
+    },
+    "demo-cli.py": {
+      "size": 5572,
+      "mtime_ns": 1771221010494582400
+    },
+    "demo.py": {
+      "size": 20607,
+      "mtime_ns": 1771221010495581800
+    },
+    "demo_complete_system.py": {
+      "size": 61259,
+      "mtime_ns": 1771221010502096100
+    },
+    "demo_full_system.py": {
+      "size": 22476,
+      "mtime_ns": 1771221010503096100
+    },
+    "demo_memory_shard.py": {
+      "size": 15811,
+      "mtime_ns": 1771221010504094600
+    },
+    "docker-compose.api.yml": {
+      "size": 979,
+      "mtime_ns": 1771221011060877700
+    },
+    "docker-compose.hydra-remote.yml": {
+      "size": 1367,
+      "mtime_ns": 1771378335122100800
+    },
+    "docker-compose.unified.yml": {
+      "size": 4774,
+      "mtime_ns": 1771221011061877900
+    },
+    "docker-compose.yml": {
+      "size": 921,
+      "mtime_ns": 1771221011061877900
+    },
+    "docs/00-overview/README.md": {
+      "size": 5741,
+      "mtime_ns": 1771221011065387500
+    },
+    "docs/00-overview/executive-summary.md": {
+      "size": 6087,
+      "mtime_ns": 1771221011065387500
+    },
+    "docs/00-overview/getting-started.md": {
+      "size": 4807,
+      "mtime_ns": 1771221011066386400
+    },
+    "docs/00-overview/glossary.md": {
+      "size": 4600,
+      "mtime_ns": 1771221011067386400
+    },
+    "docs/01-architecture/README.md": {
+      "size": 28771,
+      "mtime_ns": 1771221011069386300
+    },
+    "docs/01-architecture/aetherbrain-phdm-mathematical-framework.md": {
+      "size": 5492,
+      "mtime_ns": 1771221011069386300
+    },
+    "docs/01-architecture/diagrams/SECURITY_FLOW_DIAGRAM.md": {
+      "size": 2004,
+      "mtime_ns": 1771221011070386400
+    },
+    "docs/01-architecture/system-overview-mindmap.md": {
+      "size": 3813,
+      "mtime_ns": 1771221011082414900
+    },
+    "docs/03-deployment/firebase-setup.md": {
+      "size": 3524,
+      "mtime_ns": 1771221011083419700
+    },
+    "docs/03-deployment/zapier-setup.md": {
+      "size": 8228,
+      "mtime_ns": 1771221011083419700
+    },
+    "docs/05-industry-guides/README.md": {
+      "size": 6831,
+      "mtime_ns": 1771221011084419900
+    },
+    "docs/05-industry-guides/banking-financial.md": {
+      "size": 19645,
+      "mtime_ns": 1771221011085419800
+    },
+    "docs/05-industry-guides/government-defense.md": {
+      "size": 23382,
+      "mtime_ns": 1771221011086419700
+    },
+    "docs/05-industry-guides/healthcare.md": {
+      "size": 22974,
+      "mtime_ns": 1771221011087419600
+    },
+    "docs/05-industry-guides/technology-saas.md": {
+      "size": 21889,
+      "mtime_ns": 1771221011088431200
+    },
+    "docs/06-integration/README.md": {
+      "size": 16677,
+      "mtime_ns": 1771221011089945000
+    },
+    "docs/06-integration/templates/agent-onboarding.md": {
+      "size": 3603,
+      "mtime_ns": 1771221011090951700
+    },
+    "docs/06-integration/templates/integration-assessment.md": {
+      "size": 2867,
+      "mtime_ns": 1771221011091950700
+    },
+    "docs/08-reference/README.md": {
+      "size": 925,
+      "mtime_ns": 1771221011092953000
+    },
+    "docs/08-reference/archive/AETHERMOORE_AI_WORKFLOW_PLATFORM_DRAFT.md": {
+      "size": 11365,
+      "mtime_ns": 1771221011093951000
+    },
+    "docs/08-reference/archive/AGENT_README.md": {
+      "size": 7407,
+      "mtime_ns": 1771221011094959000
+    },
+    "docs/08-reference/archive/AUDIT_RESPONSE_ACTION_PLAN.md": {
+      "size": 14726,
+      "mtime_ns": 1771221011095951300
+    },
+    "docs/08-reference/archive/AWS_LAMBDA_DEPLOYMENT.md": {
+      "size": 9243,
+      "mtime_ns": 1771221011095951300
+    },
+    "docs/08-reference/archive/AXIOMS.md": {
+      "size": 5957,
+      "mtime_ns": 1771221011096951900
+    },
+    "docs/08-reference/archive/BANK_PILOT.md": {
+      "size": 13007,
+      "mtime_ns": 1771221011096951900
+    },
+    "docs/08-reference/archive/COMPETITIVE_ANALYSIS.md": {
+      "size": 9286,
+      "mtime_ns": 1771221011098456400
+    },
+    "docs/08-reference/archive/COMPETITIVE_ANALYSIS_2026.md": {
+      "size": 16053,
+      "mtime_ns": 1771221011099204800
+    },
+    "docs/08-reference/archive/COMPLETE_INVENTORY.md": {
+      "size": 21042,
+      "mtime_ns": 1771221011100048400
+    },
+    "docs/08-reference/archive/COMPLETE_SYSTEM.md": {
+      "size": 16376,
+      "mtime_ns": 1771221011100954300
+    },
+    "docs/08-reference/archive/COMPLETE_SYSTEM_OVERVIEW.md": {
+      "size": 21503,
+      "mtime_ns": 1771221011100954300
+    },
+    "docs/08-reference/archive/COMPREHENSIVE_MATH_SCBE.md": {
+      "size": 8668,
+      "mtime_ns": 1771221011101960000
+    },
+    "docs/08-reference/archive/CONTEXT_TRANSFER_SUMMARY.md": {
+      "size": 11350,
+      "mtime_ns": 1771221011102636000
+    },
+    "docs/08-reference/archive/CREDIBILITY_SUMMARY.md": {
+      "size": 8377,
+      "mtime_ns": 1771221011102636000
+    },
+    "docs/08-reference/archive/DEMONSTRATION_SUMMARY.md": {
+      "size": 12224,
+      "mtime_ns": 1771221011103641000
+    },
+    "docs/08-reference/archive/DIMENSIONAL_THEORY_INTEGRATION.md": {
+      "size": 0,
+      "mtime_ns": 1771221011103641000
+    },
+    "docs/08-reference/archive/DIMENSIONAL_THEORY_VISUAL_SUMMARY.md": {
+      "size": 7401,
+      "mtime_ns": 1771221011104644300
+    },
+    "docs/08-reference/archive/DUAL_CHANNEL_CONSENSUS.md": {
+      "size": 15575,
+      "mtime_ns": 1771221011105642600
+    },
+    "docs/08-reference/archive/DUAL_CHANNEL_IMPLEMENTATION_GUIDE.md": {
+      "size": 19661,
+      "mtime_ns": 1771221011107149600
+    },
+    "docs/08-reference/archive/ENTERPRISE_AI_ORCHESTRATION_INTEGRATION.md": {
+      "size": 0,
+      "mtime_ns": 1771221011107149600
+    },
+    "docs/08-reference/archive/ENTERPRISE_TESTING_GUIDE.md": {
+      "size": 15018,
+      "mtime_ns": 1771221011108156800
+    },
+    "docs/08-reference/archive/ENTERPRISE_TESTING_SUCCESS.md": {
+      "size": 8115,
+      "mtime_ns": 1771221011109156800
+    },
+    "docs/08-reference/archive/ENTERPRISE_TESTS_FIXED.md": {
+      "size": 7598,
+      "mtime_ns": 1771221011109156800
+    },
+    "docs/08-reference/archive/EXECUTIVE_SUMMARY.md": {
+      "size": 10219,
+      "mtime_ns": 1771221011110156700
+    },
+    "docs/08-reference/archive/FEATURES.md": {
+      "size": 11430,
+      "mtime_ns": 1771221011110156700
+    },
+    "docs/08-reference/archive/FINAL_SUMMARY.md": {
+      "size": 13232,
+      "mtime_ns": 1771221011111156700
+    },
+    "docs/08-reference/archive/FINAL_TEST_REPORT.md": {
+      "size": 9021,
+      "mtime_ns": 1771221011112161700
+    },
+    "docs/08-reference/archive/FOURIER_SERIES_FOUNDATIONS.md": {
+      "size": 17800,
+      "mtime_ns": 1771221011112161700
+    },
+    "docs/08-reference/archive/FULL_SYSTEM_ENABLEMENT.md": {
+      "size": 77136,
+      "mtime_ns": 1771221011114156500
+    },
+    "docs/08-reference/archive/FUTURE_WORK.md": {
+      "size": 9120,
+      "mtime_ns": 1771221011114156500
+    },
+    "docs/08-reference/archive/GEOSEAL_CONCEPT.md": {
+      "size": 11595,
+      "mtime_ns": 1771221011114156500
+    },
+    "docs/08-reference/archive/GETTING_STARTED.md": {
+      "size": 6429,
+      "mtime_ns": 1771221011115661200
+    },
+    "docs/08-reference/archive/GITHUB_INTEGRATION_GUIDE.md": {
+      "size": 22861,
+      "mtime_ns": 1771221011115661200
+    },
+    "docs/08-reference/archive/HARMONIC_SCALING_BUG_FIXES.md": {
+      "size": 8289,
+      "mtime_ns": 1771221011116667000
+    },
+    "docs/08-reference/archive/INDUSTRY_STANDARD_TESTS_SUMMARY.md": {
+      "size": 10182,
+      "mtime_ns": 1771221011117666800
+    },
+    "docs/08-reference/archive/KIRO_SPECS_PACK.md": {
+      "size": 9228,
+      "mtime_ns": 1771221011117666800
+    },
+    "docs/08-reference/archive/LANGUES_WEIGHTING_SYSTEM.md": {
+      "size": 15876,
+      "mtime_ns": 1771221011118668400
+    },
+    "docs/08-reference/archive/MASTER_INDEX.md": {
+      "size": 15971,
+      "mtime_ns": 1771221011119666700
+    },
+    "docs/08-reference/archive/MATHEMATICAL_PROOFS.md": {
+      "size": 8203,
+      "mtime_ns": 1771221011119666700
+    },
+    "docs/08-reference/archive/MATHEMATICAL_REVIEW_RESPONSE.md": {
+      "size": 12189,
+      "mtime_ns": 1771221011120666700
+    },
+    "docs/08-reference/archive/MATH_STABILITY_VERIFICATION.md": {
+      "size": 5446,
+      "mtime_ns": 1771221011121667700
+    },
+    "docs/08-reference/archive/MEMORY_SHARD_DEMO.md": {
+      "size": 7353,
+      "mtime_ns": 1771221011121667700
+    },
+    "docs/08-reference/archive/MISSION_ACCOMPLISHED.md": {
+      "size": 11113,
+      "mtime_ns": 1771221011122669100
+    },
+    "docs/08-reference/archive/PATENT_CLAIMS_COVERAGE.md": {
+      "size": 23118,
+      "mtime_ns": 1771221011124174600
+    },
+    "docs/08-reference/archive/PATENT_EVIDENCE_PACKAGE.md": {
+      "size": 8177,
+      "mtime_ns": 1771221011124174600
+    },
+    "docs/08-reference/archive/PERFORMANCE_OPTIMIZATION.md": {
+      "size": 16455,
+      "mtime_ns": 1771221011125180800
+    },
+    "docs/08-reference/archive/PHASE_COUPLED_DIMENSIONALITY_COLLAPSE.md": {
+      "size": 12310,
+      "mtime_ns": 1771221011126181100
+    },
+    "docs/08-reference/archive/PHASE_SHIFT_EXTENSION.md": {
+      "size": 16819,
+      "mtime_ns": 1771221011126181100
+    },
+    "docs/08-reference/archive/PHASE_SHIFT_SUMMARY.md": {
+      "size": 8492,
+      "mtime_ns": 1771221011127180900
+    },
+    "docs/08-reference/archive/PHDM_ACHIEVEMENT.md": {
+      "size": 9503,
+      "mtime_ns": 1771221011128182000
+    },
+    "docs/08-reference/archive/PILOT_PROGRAM_TERMS.md": {
+      "size": 1487,
+      "mtime_ns": 1771221011128182000
+    },
+    "docs/08-reference/archive/PRODUCT_READINESS_PLAN.md": {
+      "size": 5906,
+      "mtime_ns": 1771221011129383300
+    },
+    "docs/08-reference/archive/RELEASE_SUMMARY.md": {
+      "size": 9650,
+      "mtime_ns": 1771221011130388300
+    },
+    "docs/08-reference/archive/REVIEW_EXECUTIVE_SUMMARY.md": {
+      "size": 4394,
+      "mtime_ns": 1771221011130388300
+    },
+    "docs/08-reference/archive/RWP_v3_SACRED_TONGUE_HARMONIC_VERIFICATION.md": {
+      "size": 18358,
+      "mtime_ns": 1771221011131387100
+    },
+    "docs/08-reference/archive/SACRED_TONGUE_PQC_INTEGRATION.md": {
+      "size": 11934,
+      "mtime_ns": 1771221011131387100
+    },
+    "docs/08-reference/archive/SACRED_TONGUE_TEST_RESULTS.md": {
+      "size": 6160,
+      "mtime_ns": 1771221011132892000
+    },
+    "docs/08-reference/archive/SCBE_AETHERMOORE_TOPOLOGICAL_CFI_UNIFIED_STRATEGY.md": {
+      "size": 9478,
+      "mtime_ns": 1771221011132892000
+    },
+    "docs/08-reference/archive/SCBE_CHEATSHEET.md": {
+      "size": 6193,
+      "mtime_ns": 1771221011133896400
+    },
+    "docs/08-reference/archive/SCBE_COMPLETE_JOURNEY.md": {
+      "size": 39361,
+      "mtime_ns": 1771221011134896100
+    },
+    "docs/08-reference/archive/SCBE_MASTER_2026_001.md": {
+      "size": 7248,
+      "mtime_ns": 1771221011135896100
+    },
+    "docs/08-reference/archive/SCBE_PATENT_FIGURES.md": {
+      "size": 39637,
+      "mtime_ns": 1771221011135896100
+    },
+    "docs/08-reference/archive/SCBE_PATENT_PORTFOLIO.md": {
+      "size": 142279,
+      "mtime_ns": 1771221011136897400
+    },
+    "docs/08-reference/archive/SCBE_PATENT_SPECIFICATION.md": {
+      "size": 23245,
+      "mtime_ns": 1771221011137899700
+    },
+    "docs/08-reference/archive/SCBE_Production_Security_Spec.md": {
+      "size": 107,
+      "mtime_ns": 1771221011137899700
+    },
+    "docs/08-reference/archive/SCBE_SYSTEM_OVERVIEW.md": {
+      "size": 28485,
+      "mtime_ns": 1771221011138899600
+    },
+    "docs/08-reference/archive/SCBE_TOPOLOGICAL_CFI_UNIFIED.md": {
+      "size": 20557,
+      "mtime_ns": 1771221011139900700
+    },
+    "docs/08-reference/archive/SCBE_VISUAL_ARCHITECTURE.md": {
+      "size": 0,
+      "mtime_ns": 1771221011139900700
+    },
+    "docs/08-reference/archive/SECURITY_HARDENING_CHECKLIST.md": {
+      "size": 11954,
+      "mtime_ns": 1771221011141407700
+    },
+    "docs/08-reference/archive/SECURITY_HARDENING_PLAYBOOK.md": {
+      "size": 4940,
+      "mtime_ns": 1771221011141407700
+    },
+    "docs/08-reference/archive/SESSION_COMPLETE_SUMMARY.md": {
+      "size": 10976,
+      "mtime_ns": 1771221011142412600
+    },
+    "docs/08-reference/archive/SHARE_PROJECT.md": {
+      "size": 6120,
+      "mtime_ns": 1771221011142412600
+    },
+    "docs/08-reference/archive/SOCIAL_MEDIA_ANNOUNCEMENTS.md": {
+      "size": 15735,
+      "mtime_ns": 1771221011143416800
+    },
+    "docs/08-reference/archive/SPIRALSEAL_SS1_COMPLETE.md": {
+      "size": 46427,
+      "mtime_ns": 1771221011144414700
+    },
+    "docs/08-reference/archive/SPIRALVERSE_COMPLETE_ARCHITECTURE.md": {
+      "size": 0,
+      "mtime_ns": 1771221011144414700
+    },
+    "docs/08-reference/archive/SPIRALVERSE_EXPLAINED_SIMPLE.md": {
+      "size": 10788,
+      "mtime_ns": 1771221011145414600
+    },
+    "docs/08-reference/archive/SPIRALVERSE_INTEGRATION_SUMMARY.md": {
+      "size": 11754,
+      "mtime_ns": 1771221011145414600
+    },
+    "docs/08-reference/archive/SYSTEM_INTEGRATION.md": {
+      "size": 17685,
+      "mtime_ns": 1771221011146414600
+    },
+    "docs/08-reference/archive/TASKS.md": {
+      "size": 5544,
+      "mtime_ns": 1771221011147414000
+    },
+    "docs/08-reference/archive/TECHNICAL_FOUNDATION_SUMMARY.md": {
+      "size": 11625,
+      "mtime_ns": 1771221011147414000
+    },
+    "docs/08-reference/archive/TELEMETRY_PUSH_SUCCESS.md": {
+      "size": 4823,
+      "mtime_ns": 1771221011148481800
+    },
+    "docs/08-reference/archive/TEST_AUDIT.md": {
+      "size": 4248,
+      "mtime_ns": 1771221011148481800
+    },
+    "docs/08-reference/archive/UNIFIED_VISION.md": {
+      "size": 14968,
+      "mtime_ns": 1771221011148481800
+    },
+    "docs/08-reference/archive/WHAT_YOU_BUILT.md": {
+      "size": 13447,
+      "mtime_ns": 1771221011149986400
+    },
+    "docs/08-reference/archive/architecture/ARCHITECTURE_5_LAYERS.md": {
+      "size": 19798,
+      "mtime_ns": 1771221011150992200
+    },
+    "docs/08-reference/archive/architecture/ARCHITECTURE_FOR_PILOTS.md": {
+      "size": 4153,
+      "mtime_ns": 1771221011150992200
+    },
+    "docs/08-reference/archive/evidence/README.md": {
+      "size": 2528,
+      "mtime_ns": 1771221011159503400
+    },
+    "docs/08-reference/archive/guides/CLI_README.md": {
+      "size": 5627,
+      "mtime_ns": 1771221011160503500
+    },
+    "docs/08-reference/archive/guides/CLI_SETUP.md": {
+      "size": 3921,
+      "mtime_ns": 1771221011161503100
+    },
+    "docs/08-reference/archive/guides/DEMO_SUCCESS.md": {
+      "size": 8121,
+      "mtime_ns": 1771221011162504700
+    },
+    "docs/08-reference/archive/guides/DEPLOYMENT.md": {
+      "size": 10229,
+      "mtime_ns": 1771221011162504700
+    },
+    "docs/08-reference/archive/guides/HOW_TO_USE.md": {
+      "size": 5247,
+      "mtime_ns": 1771221011163503700
+    },
+    "docs/08-reference/archive/guides/INSTALL.md": {
+      "size": 11220,
+      "mtime_ns": 1771221011163503700
+    },
+    "docs/08-reference/archive/guides/MARS_DEMO_GUIDE.md": {
+      "size": 10954,
+      "mtime_ns": 1771221011164503300
+    },
+    "docs/08-reference/archive/guides/MVP_API_ROADMAP.md": {
+      "size": 17876,
+      "mtime_ns": 1771221011164503300
+    },
+    "docs/08-reference/archive/guides/MVP_QUICK_START.md": {
+      "size": 7015,
+      "mtime_ns": 1771221011165503300
+    },
+    "docs/08-reference/archive/guides/NPM_PUBLISH_NOW.md": {
+      "size": 11859,
+      "mtime_ns": 1771221011165503300
+    },
+    "docs/08-reference/archive/guides/PACKAGE_INSTRUCTIONS.md": {
+      "size": 2825,
+      "mtime_ns": 1771221011165503300
+    },
+    "docs/08-reference/archive/guides/PACKAGE_PREPARATION.md": {
+      "size": 8401,
+      "mtime_ns": 1771221011167007900
+    },
+    "docs/08-reference/archive/guides/PACKAGE_READY.md": {
+      "size": 8084,
+      "mtime_ns": 1771221011168015900
+    },
+    "docs/08-reference/archive/guides/PRODUCTION_READINESS_AUDIT.md": {
+      "size": 16279,
+      "mtime_ns": 1771221011168015900
+    },
+    "docs/08-reference/archive/guides/PRODUCT_READY.md": {
+      "size": 9366,
+      "mtime_ns": 1771221011169014000
+    },
+    "docs/08-reference/archive/guides/PUBLISHED_SUCCESS.md": {
+      "size": 7486,
+      "mtime_ns": 1771221011169014000
+    },
+    "docs/08-reference/archive/guides/PUBLISH_GUIDE.md": {
+      "size": 7768,
+      "mtime_ns": 1771221011170014300
+    },
+    "docs/08-reference/archive/guides/QUICKSTART.md": {
+      "size": 7989,
+      "mtime_ns": 1771221011171014500
+    },
+    "docs/08-reference/archive/guides/QUICK_START.md": {
+      "size": 3986,
+      "mtime_ns": 1771221011171014500
+    },
+    "docs/08-reference/archive/guides/README_SHIP_NOW.md": {
+      "size": 4411,
+      "mtime_ns": 1771221011172020400
+    },
+    "docs/08-reference/archive/guides/RWP_V3_QUICKSTART.md": {
+      "size": 9041,
+      "mtime_ns": 1771221011173015900
+    },
+    "docs/08-reference/archive/guides/SHIP_IT_NOW.md": {
+      "size": 7451,
+      "mtime_ns": 1771221011173015900
+    },
+    "docs/08-reference/archive/guides/SPIRALVERSE_VISUAL_GUIDE.md": {
+      "size": 0,
+      "mtime_ns": 1771221011174015600
+    },
+    "docs/08-reference/archive/guides/SYSTEM_BUILD_GUIDE.md": {
+      "size": 4762,
+      "mtime_ns": 1771221011174015600
+    },
+    "docs/08-reference/archive/guides/USAGE_GUIDE.md": {
+      "size": 6133,
+      "mtime_ns": 1771221011174015600
+    },
+    "docs/08-reference/archive/integration/COMPLETE_INTEGRATION_MASTER.md": {
+      "size": 18698,
+      "mtime_ns": 1771221011175520500
+    },
+    "docs/08-reference/archive/integration/INTEGRATION_COMPLETE.md": {
+      "size": 9584,
+      "mtime_ns": 1771221011176526000
+    },
+    "docs/08-reference/archive/integration/INTEGRATION_QUICK_START.md": {
+      "size": 8512,
+      "mtime_ns": 1771221011177436900
+    },
+    "docs/08-reference/archive/integration/INTEGRATION_ROADMAP.md": {
+      "size": 26239,
+      "mtime_ns": 1771221011178443200
+    },
+    "docs/08-reference/archive/ip/AETHERMOORE_CONSTANTS_IP_PORTFOLIO.md": {
+      "size": 17956,
+      "mtime_ns": 1771221011179456900
+    },
+    "docs/08-reference/archive/ip/COMPLETE_IP_PORTFOLIO_READY_FOR_USPTO.md": {
+      "size": 18422,
+      "mtime_ns": 1771221011180442600
+    },
+    "docs/08-reference/archive/ip/PATENT_CLAIMS_CORRECTED.md": {
+      "size": 14264,
+      "mtime_ns": 1771221011180442600
+    },
+    "docs/08-reference/archive/ip/PATENT_PROVISIONAL_APPLICATION.md": {
+      "size": 12672,
+      "mtime_ns": 1771221011181946400
+    },
+    "docs/08-reference/archive/ip/PATENT_STRATEGY_ACTION_ITEMS.md": {
+      "size": 11866,
+      "mtime_ns": 1771221011181946400
+    },
+    "docs/08-reference/archive/lambda/PATENT_CLAIMS_COVERAGE.md": {
+      "size": 23860,
+      "mtime_ns": 1771221011182953500
+    },
+    "docs/08-reference/archive/lambda/README.md": {
+      "size": 6434,
+      "mtime_ns": 1771221011183953600
+    },
+    "docs/08-reference/archive/lambda/SCBE_PATENT_PORTFOLIO.md": {
+      "size": 142279,
+      "mtime_ns": 1771221011184463100
+    },
+    "docs/08-reference/archive/lambda/SCBE_SYSTEM_OVERVIEW.md": {
+      "size": 28857,
+      "mtime_ns": 1771221011185466100
+    },
+    "docs/08-reference/archive/legal/PILOT_PROGRAM_AGREEMENT.md": {
+      "size": 14680,
+      "mtime_ns": 1771221011191466200
+    },
+    "docs/08-reference/archive/ops/Sentinel_Steward_Runbook.md": {
+      "size": 776,
+      "mtime_ns": 1771221011192464400
+    },
+    "docs/08-reference/archive/reference/ADVANCED_MATH_TELEMETRY_COMPLETE.md": {
+      "size": 13737,
+      "mtime_ns": 1771221011193522200
+    },
+    "docs/08-reference/archive/reference/AETHERMOORE_CONSTANTS_COMPLETE.md": {
+      "size": 11093,
+      "mtime_ns": 1771221011193522200
+    },
+    "docs/08-reference/archive/reference/AXIOM_VERIFICATION_STATUS.md": {
+      "size": 14838,
+      "mtime_ns": 1771221011194521300
+    },
+    "docs/08-reference/archive/reference/CLI_COMPLETE.md": {
+      "size": 5499,
+      "mtime_ns": 1771221011195527500
+    },
+    "docs/08-reference/archive/reference/DEMO_COMPLETE.md": {
+      "size": 11376,
+      "mtime_ns": 1771221011196521200
+    },
+    "docs/08-reference/archive/reference/DIMENSIONAL_THEORY_COMPLETE.md": {
+      "size": 63111,
+      "mtime_ns": 1771221011197522100
+    },
+    "docs/08-reference/archive/reference/DUAL_CHANNEL_IMPLEMENTATION_COMPLETE.md": {
+      "size": 11183,
+      "mtime_ns": 1771221011197522100
+    },
+    "docs/08-reference/archive/reference/ENABLEMENT_COMPLETE.md": {
+      "size": 4777,
+      "mtime_ns": 1771221011198520300
+    },
+    "docs/08-reference/archive/reference/ENTERPRISE_TESTING_COMPLETE.md": {
+      "size": 12139,
+      "mtime_ns": 1771221011199522300
+    },
+    "docs/08-reference/archive/reference/FINAL_ENGINEERING_STATUS.md": {
+      "size": 14066,
+      "mtime_ns": 1771221011199522300
+    },
+    "docs/08-reference/archive/reference/FINAL_PACKAGE_STATUS.md": {
+      "size": 13227,
+      "mtime_ns": 1771221011199522300
+    },
+    "docs/08-reference/archive/reference/FINAL_SHIPPING_STATUS.md": {
+      "size": 8317,
+      "mtime_ns": 1771221011201028800
+    },
+    "docs/08-reference/archive/reference/FINAL_STATUS_REPORT.md": {
+      "size": 12266,
+      "mtime_ns": 1771221011201028800
+    },
+    "docs/08-reference/archive/reference/GITHUB_INTEGRATION_COMPLETE.md": {
+      "size": 23921,
+      "mtime_ns": 1771221011202035100
+    },
+    "docs/08-reference/archive/reference/IMPLEMENTATION_STATUS.md": {
+      "size": 9001,
+      "mtime_ns": 1771221011203034800
+    },
+    "docs/08-reference/archive/reference/IMPLEMENTATION_STATUS_HONEST.md": {
+      "size": 15999,
+      "mtime_ns": 1771221011203034800
+    },
+    "docs/08-reference/archive/reference/MATHEMATICAL_FOUNDATION_COMPLETE.md": {
+      "size": 1703,
+      "mtime_ns": 1771221011205037500
+    },
+    "docs/08-reference/archive/reference/MVP_IMPLEMENTATION_COMPLETE.md": {
+      "size": 5,
+      "mtime_ns": 1771221011205037500
+    },
+    "docs/08-reference/archive/reference/PACKAGE_COMPLETE.md": {
+      "size": 10064,
+      "mtime_ns": 1771221011206037800
+    },
+    "docs/08-reference/archive/reference/PATENT_CLAIMS_QUICK_REFERENCE.md": {
+      "size": 10739,
+      "mtime_ns": 1771221011207035400
+    },
+    "docs/08-reference/archive/reference/PATENT_UPDATE_COMPLETE.md": {
+      "size": 12124,
+      "mtime_ns": 1771221011207035400
+    },
+    "docs/08-reference/archive/reference/PHDM_COMPLETE.md": {
+      "size": 10816,
+      "mtime_ns": 1771221011208034600
+    },
+    "docs/08-reference/archive/reference/PRODUCT_STATUS.md": {
+      "size": 8631,
+      "mtime_ns": 1771221011208034600
+    },
+    "docs/08-reference/archive/reference/PROJECT_COMPLETION_STATUS.md": {
+      "size": 0,
+      "mtime_ns": 1771221011208034600
+    },
+    "docs/08-reference/archive/reference/PROJECT_STATUS_SUMMARY.md": {
+      "size": 16756,
+      "mtime_ns": 1771221011209540000
+    },
+    "docs/08-reference/archive/reference/PUSH_AND_TEST_COMPLETE.md": {
+      "size": 9553,
+      "mtime_ns": 1771221011210545000
+    },
+    "docs/08-reference/archive/reference/QUICK_REFERENCE.md": {
+      "size": 6241,
+      "mtime_ns": 1771221011211549600
+    },
+    "docs/08-reference/archive/reference/RWP_V3_INTEGRATION_COMPLETE.md": {
+      "size": 12090,
+      "mtime_ns": 1771221011212544100
+    },
+    "docs/08-reference/archive/reference/SACRED_TONGUE_QUICK_REFERENCE.md": {
+      "size": 7864,
+      "mtime_ns": 1771221011213544800
+    },
+    "docs/08-reference/archive/reference/SACRED_TONGUE_STATUS.md": {
+      "size": 2960,
+      "mtime_ns": 1771221011213544800
+    },
+    "docs/08-reference/archive/reference/SCBE_SYSTEM_ARCHITECTURE_COMPLETE.md": {
+      "size": 16484,
+      "mtime_ns": 1771221011214545600
+    },
+    "docs/08-reference/archive/reference/SPIRALVERSE_MASTER_PACK_COMPLETE.md": {
+      "size": 11671,
+      "mtime_ns": 1771221011214545600
+    },
+    "docs/08-reference/archive/reference/SPIRALVERSE_SECURITY_FIXES_COMPLETE.md": {
+      "size": 10810,
+      "mtime_ns": 1771221011215545000
+    },
+    "docs/08-reference/archive/reference/SYSTEM_ORGANIZATION_COMPLETE.md": {
+      "size": 11337,
+      "mtime_ns": 1771221011216572900
+    },
+    "docs/08-reference/archive/reference/TESTS_COMPLETE.md": {
+      "size": 6024,
+      "mtime_ns": 1771221011216572900
+    },
+    "docs/08-reference/archive/reference/THEORETICAL_AXIOMS_COMPLETE.md": {
+      "size": 8990,
+      "mtime_ns": 1771221011218077600
+    },
+    "docs/08-reference/archive/reference/TRUST_MANAGER_COMPLETE.md": {
+      "size": 8725,
+      "mtime_ns": 1771221011219083300
+    },
+    "docs/08-reference/archive/reports/ACTION_ITEMS_FROM_REVIEW.md": {
+      "size": 6807,
+      "mtime_ns": 1771221011219083300
+    },
+    "docs/08-reference/archive/reports/AUDIT_SUMMARY.md": {
+      "size": 4093,
+      "mtime_ns": 1771221011220083500
+    },
+    "docs/08-reference/archive/reports/BUG_REPORT.md": {
+      "size": 6313,
+      "mtime_ns": 1771221011221084400
+    },
+    "docs/08-reference/archive/reports/CODEBASE_REVIEW_REPORT.md": {
+      "size": 27769,
+      "mtime_ns": 1771221011222084700
+    },
+    "docs/08-reference/archive/reports/ENGINEERING_REVIEW_CORRECTIONS.md": {
+      "size": 20028,
+      "mtime_ns": 1771221011222084700
+    },
+    "docs/08-reference/archive/reports/ISSUES_FIXED.md": {
+      "size": 4582,
+      "mtime_ns": 1771221011223084900
+    },
+    "docs/08-reference/archive/reports/KIRO_STARTUP_FIX.md": {
+      "size": 2385,
+      "mtime_ns": 1771221011223084900
+    },
+    "docs/08-reference/archive/reports/KIRO_STARTUP_TROUBLESHOOTING.md": {
+      "size": 0,
+      "mtime_ns": 1771221011224083800
+    },
+    "docs/08-reference/archive/reports/KIRO_SYSTEM_MAP.md": {
+      "size": 17807,
+      "mtime_ns": 1771221011225157800
+    },
+    "docs/08-reference/archive/reports/TEST_EXECUTION_PLAN.md": {
+      "size": 2885,
+      "mtime_ns": 1771221011225157800
+    },
+    "docs/08-reference/archive/reports/TEST_RESULTS_SUMMARY.md": {
+      "size": 7230,
+      "mtime_ns": 1771221011225157800
+    },
+    "docs/08-reference/archive/reports/TEST_SUITE_EXECUTIVE_SUMMARY.md": {
+      "size": 13202,
+      "mtime_ns": 1771221011226666800
+    },
+    "docs/08-reference/archive/reports/TEST_SUITE_OVERVIEW.md": {
+      "size": 16272,
+      "mtime_ns": 1771221011227309200
+    },
+    "docs/08-reference/archive/reports/VERIFICATION_REPORT.md": {
+      "size": 8721,
+      "mtime_ns": 1771221011227309200
+    },
+    "docs/08-reference/archive/reports/compliance_report.md": {
+      "size": 19013,
+      "mtime_ns": 1771221011228314100
+    },
+    "docs/08-reference/archive/scbe-layer9-corrections.md": {
+      "size": 12019,
+      "mtime_ns": 1771221011228314100
+    },
+    "docs/AETHERAUTH_IMPLEMENTATION.md": {
+      "size": 559,
+      "mtime_ns": 1771221011229314200
+    },
+    "docs/AETHERBRAIN_ROADMAP.md": {
+      "size": 7163,
+      "mtime_ns": 1771221011229314200
+    },
+    "docs/AETHERBROWSE_BLUEPRINT.md": {
+      "size": 1894,
+      "mtime_ns": 1771232038367740700
+    },
+    "docs/AETHERBROWSE_CLOUD_RUN.md": {
+      "size": 1870,
+      "mtime_ns": 1771303051448221400
+    },
+    "docs/AETHERBROWSE_GOVERNANCE.md": {
+      "size": 2109,
+      "mtime_ns": 1771304789257499300
+    },
+    "docs/AGENT_ARCHITECTURE.md": {
+      "size": 16723,
+      "mtime_ns": 1771221011230314100
+    },
+    "docs/AI_BROWSER_ACCESS.md": {
+      "size": 1306,
+      "mtime_ns": 1771221011230314100
+    },
+    "docs/AI_COGNITIVE_GOVERNANCE_MIND_MAP.md": {
+      "size": 3391,
+      "mtime_ns": 1771232135013595500
+    },
+    "docs/API.md": {
+      "size": 11697,
+      "mtime_ns": 1771221011231314500
+    },
+    "docs/ARCHITECTURE.md": {
+      "size": 57225,
+      "mtime_ns": 1771221011232313900
+    },
+    "docs/ASANA_AETHERBROWSE_AUTOMATION.md": {
+      "size": 2176,
+      "mtime_ns": 1771309298305806900
+    },
+    "docs/BILLING_METRICS.md": {
+      "size": 1311,
+      "mtime_ns": 1771221011232313900
+    },
+    "docs/BUILD_YOUR_OWN_AI_ASSISTANT.md": {
+      "size": 14130,
+      "mtime_ns": 1771221011233314100
+    },
+    "docs/BUYER_PROOF_CHECKLIST.md": {
+      "size": 1148,
+      "mtime_ns": 1771324407693767600
+    },
+    "docs/CAPABILITIES.md": {
+      "size": 3153,
+      "mtime_ns": 1771221011233314100
+    },
+    "docs/CHANGE_NOTES_SPIRAL_ENGINE_2026-02-20.md": {
+      "size": 2156,
+      "mtime_ns": 1771548078863875200
+    },
+    "docs/CHAPTER_6_PHDM_POLYHEDRAL_HAMILTONIAN_DYNAMIC_MESH.md": {
+      "size": 9686,
+      "mtime_ns": 1771232143223416700
+    },
+    "docs/CLAIMS_AUDIT_V4.md": {
+      "size": 13186,
+      "mtime_ns": 1771221011234314100
+    },
+    "docs/CLAIMS_EVIDENCE_LEDGER.md": {
+      "size": 4061,
+      "mtime_ns": 1771485472603946200
+    },
+    "docs/CLOUD_KERNEL_DATA_PIPELINE.md": {
+      "size": 2774,
+      "mtime_ns": 1771471163423060900
+    },
+    "docs/COMMERCIAL_AGREEMENT.md": {
+      "size": 525,
+      "mtime_ns": 1771221011234314100
+    },
+    "docs/COMPLEX_SYSTEMS_ANALYSIS_STYLE_GUIDE.md": {
+      "size": 3573,
+      "mtime_ns": 1771483207273859300
+    },
+    "docs/CORE_AXIOMS_CANONICAL_INDEX.md": {
+      "size": 923,
+      "mtime_ns": 1771485255578054200
+    },
+    "docs/DARPA_OUTREACH_PACKAGE.md": {
+      "size": 6609,
+      "mtime_ns": 1771221011235315200
+    },
+    "docs/DARPA_SWARM_BRIEF.md": {
+      "size": 6134,
+      "mtime_ns": 1771221011235315200
+    },
+    "docs/DISTRIBUTED_AGENTIC_WORKFLOW.md": {
+      "size": 2058,
+      "mtime_ns": 1771221011236544700
+    },
+    "docs/DRONE_FLEET_UPGRADES.md": {
+      "size": 562,
+      "mtime_ns": 1771221011237549200
+    },
+    "docs/DUAL_LATTICE_STACK_V2.md": {
+      "size": 7045,
+      "mtime_ns": 1771221011237549200
+    },
+    "docs/ENABLEMENT.md": {
+      "size": 18189,
+      "mtime_ns": 1771221011238556500
+    },
+    "docs/END_TO_END_SYSTEM_MAP_AND_IMPACT.md": {
+      "size": 4826,
+      "mtime_ns": 1771221011239546100
+    },
+    "docs/EXECUTIVE_SUMMARY_FOR_PARTNERS.md": {
+      "size": 5995,
+      "mtime_ns": 1771221011240545600
+    },
+    "docs/EXPERIMENT_QUEUE.md": {
+      "size": 3655,
+      "mtime_ns": 1771485495877298100
+    },
+    "docs/FEDERATED_MULTI_CLOUD_TRAINING_PLAN.md": {
+      "size": 4856,
+      "mtime_ns": 1771221011241544900
+    },
+    "docs/FLEET_MANAGEMENT.md": {
+      "size": 4896,
+      "mtime_ns": 1771221011241544900
+    },
+    "docs/GEOSEAL_ACCESS_CONTROL.md": {
+      "size": 563,
+      "mtime_ns": 1771221011242544900
+    },
+    "docs/GITHUB_DOCS_AUDIT_2026-02-20.md": {
+      "size": 981,
+      "mtime_ns": 1771550238984646600
+    },
+    "docs/GOOGLE_CLOUD_SETUP.md": {
+      "size": 560,
+      "mtime_ns": 1771221011242544900
+    },
+    "docs/GO_TO_MARKET_SKUS.md": {
+      "size": 1932,
+      "mtime_ns": 1771221011242544900
+    },
+    "docs/HYDRA_COORDINATION.md": {
+      "size": 64752,
+      "mtime_ns": 1771221011244049900
+    },
+    "docs/HYDRA_HEADLESS_MMX_COORDINATOR.md": {
+      "size": 1292,
+      "mtime_ns": 1771490129298302000
+    },
+    "docs/HYDRA_MULTI_AGENT_COORDINATION_SYSTEM_COMPLETE_ARCHITECTURE.md": {
+      "size": 131,
+      "mtime_ns": 1771221011244049900
+    },
+    "docs/IMPLEMENTATION_GAP_ANALYSIS.md": {
+      "size": 14152,
+      "mtime_ns": 1771221011245055500
+    },
+    "docs/INTEGRATIONS.md": {
+      "size": 10891,
+      "mtime_ns": 1771221011246055700
+    },
+    "docs/INTEGRATION_GUIDE_SPIRAL_ENGINE_OMEGA_WATCHERS.md": {
+      "size": 2849,
+      "mtime_ns": 1771548094100198000
+    },
+    "docs/INTEGRATION_ROADMAP.md": {
+      "size": 14116,
+      "mtime_ns": 1771221011246055700
+    },
+    "docs/KERNEL_ANTIVIRUS_SCBE.md": {
+      "size": 2739,
+      "mtime_ns": 1771489313760494400
+    },
+    "docs/LANDING_PAGE.md": {
+      "size": 10093,
+      "mtime_ns": 1771221011247056000
+    },
+    "docs/LANGUAGE_GUARDRAILS.md": {
+      "size": 2218,
+      "mtime_ns": 1771485511739396600
+    },
+    "docs/LANGUES_WEIGHTING_SYSTEM.md": {
+      "size": 5012,
+      "mtime_ns": 1771488895153671000
+    },
+    "docs/LOCAL_CLOUD_AUTOSYNC.md": {
+      "size": 3542,
+      "mtime_ns": 1771480874018211900
+    },
+    "docs/MCP_SERVER_BOOTSTRAP.md": {
+      "size": 2549,
+      "mtime_ns": 1771466108082967400
+    },
+    "docs/MEDICAL_NANOBOT_SWARMS.md": {
+      "size": 11512,
+      "mtime_ns": 1771221011247056000
+    },
+    "docs/MOBILE_AUTONOMY_RUNBOOK.md": {
+      "size": 2216,
+      "mtime_ns": 1771550228695411200
+    },
+    "docs/MONOREPO_RESTRUCTURING_PLAN.md": {
+      "size": 2578,
+      "mtime_ns": 1771221011248055400
+    },
+    "docs/MULTI_AI_COORDINATION.md": {
+      "size": 529,
+      "mtime_ns": 1771221011248055400
+    },
+    "docs/MULTI_AI_OFFLINE_ONLINE_SETUP.md": {
+      "size": 3074,
+      "mtime_ns": 1771471192309023600
+    },
+    "docs/MULTI_CLOUD_LONGRUN_TRAINING_BOOTSTRAP.md": {
+      "size": 2093,
+      "mtime_ns": 1771229442876268500
+    },
+    "docs/N8N_AETHERBROWSE_INTEGRATION.md": {
+      "size": 2185,
+      "mtime_ns": 1771294636568944900
+    },
+    "docs/OFFER_PILOT.md": {
+      "size": 1278,
+      "mtime_ns": 1771324399488192400
+    },
+    "docs/OFFLINE_MODE_SPEC.md": {
+      "size": 2813,
+      "mtime_ns": 1771464021109068500
+    },
+    "docs/ONE_PAGER_INVESTOR.md": {
+      "size": 1528,
+      "mtime_ns": 1771221011249055700
+    },
+    "docs/PATENT_PROVISIONAL_ABSTRACT_BACKGROUND.md": {
+      "size": 3617,
+      "mtime_ns": 1771474479802358100
+    },
+    "docs/PHDM_BRAIN_ARCHITECTURE.md": {
+      "size": 4460,
+      "mtime_ns": 1771221011249055700
+    },
+    "docs/PHDM_NOMENCLATURE.md": {
+      "size": 532,
+      "mtime_ns": 1771221011250055500
+    },
+    "docs/POLLY_PADS_ARCHITECTURE.md": {
+      "size": 24667,
+      "mtime_ns": 1771221011251055000
+    },
+    "docs/PUBLISHING.md": {
+      "size": 1164,
+      "mtime_ns": 1771221011251055000
+    },
+    "docs/QUASI_VECTOR_MAGNETICS.md": {
+      "size": 543,
+      "mtime_ns": 1771221011251055000
+    },
+    "docs/QUICKSTART_MONETIZATION.md": {
+      "size": 1431,
+      "mtime_ns": 1771221011252559300
+    },
+    "docs/README.md": {
+      "size": 9385,
+      "mtime_ns": 1771488902008309200
+    },
+    "docs/REMAINING_WORK.md": {
+      "size": 3647,
+      "mtime_ns": 1771221011253565000
+    },
+    "docs/REPO_CONSOLIDATION.md": {
+      "size": 4841,
+      "mtime_ns": 1771221011253565000
+    },
+    "docs/REVENUE_PLAN_90_DAYS.md": {
+      "size": 3046,
+      "mtime_ns": 1771221011254565600
+    },
+    "docs/RUNBOOK.md": {
+      "size": 2271,
+      "mtime_ns": 1771317796399764400
+    },
+    "docs/SACRED_TONGUE_SPECTRAL_MAP.md": {
+      "size": 24141,
+      "mtime_ns": 1771221011255566900
+    },
+    "docs/SAFE_EXTENSION_GATE.md": {
+      "size": 1602,
+      "mtime_ns": 1771487536822235600
+    },
+    "docs/SCBE_AETHERMOORE_TECH_DECK_V5_COMPLETE.md": {
+      "size": 12082,
+      "mtime_ns": 1771476523427101400
+    },
+    "docs/SCBE_COMPLETE_SYSTEM.md": {
+      "size": 23162,
+      "mtime_ns": 1771221011256567300
+    },
+    "docs/SCBE_CONTEXT_AETHERBROWSE_AGENT.md": {
+      "size": 1071,
+      "mtime_ns": 1771311828509223200
+    },
+    "docs/SCBE_FULL_SYSTEM_LAYER_MAP.md": {
+      "size": 6789,
+      "mtime_ns": 1771317370719014400
+    },
+    "docs/SCBE_HYDRA_TARSKI_SHEAF.md": {
+      "size": 1900,
+      "mtime_ns": 1771221011257565000
+    },
+    "docs/SCBE_SELF_IMPROVEMENT_LOOP_2026-02-17.md": {
+      "size": 1296,
+      "mtime_ns": 1771311819494832200
+    },
+    "docs/SCBE_TOPOLOGICAL_CFI_UNIFIED.md": {
+      "size": 18956,
+      "mtime_ns": 1771221011258894800
+    },
+    "docs/SIX_TONGUES_CLI.md": {
+      "size": 2330,
+      "mtime_ns": 1771475127601753500
+    },
+    "docs/SPACE_DEBRIS_FLEET.md": {
+      "size": 9169,
+      "mtime_ns": 1771221011259899900
+    },
+    "docs/SPIRALVERSE_CODEX.md": {
+      "size": 865,
+      "mtime_ns": 1771475688460912800
+    },
+    "docs/SS1_TOKENIZER_PROTOCOL.md": {
+      "size": 534,
+      "mtime_ns": 1771221011259899900
+    },
+    "docs/STVM_EXECUTION_MODEL.md": {
+      "size": 1816,
+      "mtime_ns": 1771484735153231900
+    },
+    "docs/ST_ISA_V0.md": {
+      "size": 2453,
+      "mtime_ns": 1771484724407177000
+    },
+    "docs/SWARM_CODER_ONEPAGER.md": {
+      "size": 7011,
+      "mtime_ns": 1771221011261404800
+    },
+    "docs/SWARM_FORMATIONS.md": {
+      "size": 527,
+      "mtime_ns": 1771221011261404800
+    },
+    "docs/TECHNICAL_REFERENCE.md": {
+      "size": 7198,
+      "mtime_ns": 1771488916764112600
+    },
+    "docs/UNIFIED_SYSTEM_REPORT.md": {
+      "size": 549,
+      "mtime_ns": 1771221011263412700
+    },
+    "docs/UNITY_VISUALIZATION_STRATEGY.md": {
+      "size": 34899,
+      "mtime_ns": 1771221011264897000
+    },
+    "docs/VOXEL_GOVERNANCE_SIM.md": {
+      "size": 1573,
+      "mtime_ns": 1771317023780010900
+    },
+    "docs/WEB_RESEARCH_TRAINING_PIPELINE.md": {
+      "size": 2314,
+      "mtime_ns": 1771490506878557500
+    },
+    "docs/WORLDFORGE_TEMPLATE.md": {
+      "size": 526,
+      "mtime_ns": 1771221011265907100
+    },
+    "docs/archive/ACTION_ITEMS_FROM_REVIEW.md": {
+      "size": 6785,
+      "mtime_ns": 1771221011267905800
+    },
+    "docs/archive/ADVANCED_MATH_TELEMETRY_COMPLETE.md": {
+      "size": 13687,
+      "mtime_ns": 1771221011267905800
+    },
+    "docs/archive/AETHERMOORE_AI_WORKFLOW_PLATFORM_DRAFT.md": {
+      "size": 12423,
+      "mtime_ns": 1771221011268905000
+    },
+    "docs/archive/AETHERMOORE_CONSTANTS_COMPLETE.md": {
+      "size": 10589,
+      "mtime_ns": 1771221011269905900
+    },
+    "docs/archive/AETHERMOORE_CONSTANTS_IP_PORTFOLIO.md": {
+      "size": 17492,
+      "mtime_ns": 1771221011270409900
+    },
+    "docs/archive/AGENT_README.md": {
+      "size": 7263,
+      "mtime_ns": 1771221011271421200
+    },
+    "docs/archive/ARCHITECTURE_5_LAYERS.md": {
+      "size": 19726,
+      "mtime_ns": 1771221011272415400
+    },
+    "docs/archive/ARCHITECTURE_FOR_PILOTS.md": {
+      "size": 3899,
+      "mtime_ns": 1771221011273417100
+    },
+    "docs/archive/AUDIT_SUMMARY.md": {
+      "size": 4019,
+      "mtime_ns": 1771221011273417100
+    },
+    "docs/archive/AXIOM_VERIFICATION_STATUS.md": {
+      "size": 14519,
+      "mtime_ns": 1771221011274416300
+    },
+    "docs/archive/BUG_REPORT.md": {
+      "size": 6313,
+      "mtime_ns": 1771221011275417900
+    },
+    "docs/archive/CHANGELOG.md": {
+      "size": 5542,
+      "mtime_ns": 1771221011275417900
+    },
+    "docs/archive/CLI_COMPLETE.md": {
+      "size": 5453,
+      "mtime_ns": 1771221011276416100
+    },
+    "docs/archive/CLI_README.md": {
+      "size": 5591,
+      "mtime_ns": 1771221011277415000
+    },
+    "docs/archive/CLI_SETUP.md": {
+      "size": 3909,
+      "mtime_ns": 1771221011277415000
+    },
+    "docs/archive/CODEBASE_REVIEW_REPORT.md": {
+      "size": 27037,
+      "mtime_ns": 1771221011278438600
+    },
+    "docs/archive/COMPLETE_INTEGRATION_MASTER.md": {
+      "size": 18411,
+      "mtime_ns": 1771221011279459900
+    },
+    "docs/archive/COMPLETE_INVENTORY.md": {
+      "size": 20389,
+      "mtime_ns": 1771221011280460000
+    },
+    "docs/archive/COMPLETE_IP_PORTFOLIO_READY_FOR_USPTO.md": {
+      "size": 17714,
+      "mtime_ns": 1771221011280460000
+    },
+    "docs/archive/COMPLETE_SYSTEM.md": {
+      "size": 16298,
+      "mtime_ns": 1771221011281459500
+    },
+    "docs/archive/COMPLETE_SYSTEM_OVERVIEW.md": {
+      "size": 20867,
+      "mtime_ns": 1771221011281459500
+    },
+    "docs/archive/CONTEXT_TRANSFER_SUMMARY.md": {
+      "size": 11128,
+      "mtime_ns": 1771221011282460800
+    },
+    "docs/archive/CONTRIBUTING.md": {
+      "size": 7035,
+      "mtime_ns": 1771221011283459300
+    },
+    "docs/archive/CREDIBILITY_SUMMARY.md": {
+      "size": 8085,
+      "mtime_ns": 1771221011284460800
+    },
+    "docs/archive/DEMOS.md": {
+      "size": 11666,
+      "mtime_ns": 1771221011284460800
+    },
+    "docs/archive/DEMO_COMPLETE.md": {
+      "size": 11065,
+      "mtime_ns": 1771221011285459600
+    },
+    "docs/archive/DEMO_SUCCESS.md": {
+      "size": 8074,
+      "mtime_ns": 1771221011285459600
+    },
+    "docs/archive/DEPLOYMENT.md": {
+      "size": 10058,
+      "mtime_ns": 1771221011286965500
+    },
+    "docs/archive/DIMENSIONAL_THEORY_COMPLETE.md": {
+      "size": 62484,
+      "mtime_ns": 1771221011286965500
+    },
+    "docs/archive/DIMENSIONAL_THEORY_INTEGRATION.md": {
+      "size": 0,
+      "mtime_ns": 1771221011287972700
+    },
+    "docs/archive/DIMENSIONAL_THEORY_VISUAL_SUMMARY.md": {
+      "size": 14675,
+      "mtime_ns": 1771221011288973700
+    },
+    "docs/archive/DUAL_CHANNEL_IMPLEMENTATION_COMPLETE.md": {
+      "size": 11006,
+      "mtime_ns": 1771221011288973700
+    },
+    "docs/archive/ENABLEMENT_COMPLETE.md": {
+      "size": 4757,
+      "mtime_ns": 1771221011289971700
+    },
+    "docs/archive/ENGINEERING_REVIEW_CORRECTIONS.md": {
+      "size": 19507,
+      "mtime_ns": 1771221011290971700
+    },
+    "docs/archive/ENTERPRISE_AI_ORCHESTRATION_INTEGRATION.md": {
+      "size": 0,
+      "mtime_ns": 1771221011290971700
+    },
+    "docs/archive/ENTERPRISE_TESTING_COMPLETE.md": {
+      "size": 11982,
+      "mtime_ns": 1771221011291972600
+    },
+    "docs/archive/ENTERPRISE_TESTING_SUCCESS.md": {
+      "size": 7932,
+      "mtime_ns": 1771221011291972600
+    },
+    "docs/archive/ENTERPRISE_TESTS_FIXED.md": {
+      "size": 7541,
+      "mtime_ns": 1771221011292970200
+    },
+    "docs/archive/FEATURES.md": {
+      "size": 9283,
+      "mtime_ns": 1771221011292970200
+    },
+    "docs/archive/FINAL_ENGINEERING_STATUS.md": {
+      "size": 13190,
+      "mtime_ns": 1771221011293970100
+    },
+    "docs/archive/FINAL_PACKAGE_STATUS.md": {
+      "size": 13133,
+      "mtime_ns": 1771221011293970100
+    },
+    "docs/archive/FINAL_SHIPPING_STATUS.md": {
+      "size": 7979,
+      "mtime_ns": 1771221011295473400
+    },
+    "docs/archive/FINAL_STATUS_REPORT.md": {
+      "size": 11244,
+      "mtime_ns": 1771221011295473400
+    },
+    "docs/archive/FINAL_SUMMARY.md": {
+      "size": 12818,
+      "mtime_ns": 1771221011296478000
+    },
+    "docs/archive/FINAL_TEST_REPORT.md": {
+      "size": 8786,
+      "mtime_ns": 1771221011297477000
+    },
+    "docs/archive/FULL_SYSTEM_ENABLEMENT.md": {
+      "size": 75915,
+      "mtime_ns": 1771221011298488000
+    },
+    "docs/archive/GITHUB_INTEGRATION_COMPLETE.md": {
+      "size": 23289,
+      "mtime_ns": 1771221011299492200
+    },
+    "docs/archive/HOW_TO_USE.md": {
+      "size": 5214,
+      "mtime_ns": 1771221011300946200
+    },
+    "docs/archive/IMPLEMENTATION_STATUS.md": {
+      "size": 8461,
+      "mtime_ns": 1771221011301477400
+    },
+    "docs/archive/IMPLEMENTATION_STATUS_HONEST.md": {
+      "size": 15633,
+      "mtime_ns": 1771221011302478200
+    },
+    "docs/archive/INDUSTRY_STANDARD_TESTS_SUMMARY.md": {
+      "size": 9851,
+      "mtime_ns": 1771221011302478200
+    },
+    "docs/archive/INSTALL.md": {
+      "size": 11135,
+      "mtime_ns": 1771221011303983000
+    },
+    "docs/archive/INTEGRATION_COMPLETE.md": {
+      "size": 9530,
+      "mtime_ns": 1771221011304991700
+    },
+    "docs/archive/INTEGRATION_QUICK_START.md": {
+      "size": 7905,
+      "mtime_ns": 1771221011305990600
+    },
+    "docs/archive/INTEGRATION_ROADMAP.md": {
+      "size": 26217,
+      "mtime_ns": 1771221011306992100
+    },
+    "docs/archive/ISSUES_FIXED.md": {
+      "size": 4561,
+      "mtime_ns": 1771221011306992100
+    },
+    "docs/archive/KIRO_STARTUP_FIX.md": {
+      "size": 2377,
+      "mtime_ns": 1771221011307988600
+    },
+    "docs/archive/KIRO_STARTUP_TROUBLESHOOTING.md": {
+      "size": 0,
+      "mtime_ns": 1771221011307988600
+    },
+    "docs/archive/KIRO_SYSTEM_MAP.md": {
+      "size": 17283,
+      "mtime_ns": 1771221011308988900
+    },
+    "docs/archive/LAYER_INDEX.md": {
+      "size": 5873,
+      "mtime_ns": 1771221011308988900
+    },
+    "docs/archive/MARS_DEMO_GUIDE.md": {
+      "size": 10905,
+      "mtime_ns": 1771221011309989400
+    },
+    "docs/archive/MASTER_INDEX.md": {
+      "size": 15634,
+      "mtime_ns": 1771221011309989400
+    },
+    "docs/archive/MATHEMATICAL_FOUNDATION_COMPLETE.md": {
+      "size": 1691,
+      "mtime_ns": 1771221011310988600
+    },
+    "docs/archive/MATHEMATICAL_REVIEW_RESPONSE.md": {
+      "size": 11891,
+      "mtime_ns": 1771221011310988600
+    },
+    "docs/archive/MEMORY_SHARD_DEMO.md": {
+      "size": 7316,
+      "mtime_ns": 1771221011312492400
+    },
+    "docs/archive/MISSION_ACCOMPLISHED.md": {
+      "size": 11170,
+      "mtime_ns": 1771221011312492400
+    },
+    "docs/archive/MVP_API_ROADMAP.md": {
+      "size": 17990,
+      "mtime_ns": 1771221011313497600
+    },
+    "docs/archive/MVP_IMPLEMENTATION_COMPLETE.md": {
+      "size": 5,
+      "mtime_ns": 1771221011314497700
+    },
+    "docs/archive/MVP_QUICK_START.md": {
+      "size": 6966,
+      "mtime_ns": 1771221011314497700
+    },
+    "docs/archive/NPM_PUBLISH_NOW.md": {
+      "size": 12049,
+      "mtime_ns": 1771221011315497100
+    },
+    "docs/archive/PACKAGE_COMPLETE.md": {
+      "size": 10026,
+      "mtime_ns": 1771221011315497100
+    },
+    "docs/archive/PACKAGE_INSTRUCTIONS.md": {
+      "size": 2813,
+      "mtime_ns": 1771221011316498700
+    },
+    "docs/archive/PACKAGE_PREPARATION.md": {
+      "size": 8352,
+      "mtime_ns": 1771221011317497500
+    },
+    "docs/archive/PACKAGE_READY.md": {
+      "size": 8014,
+      "mtime_ns": 1771221011317497500
+    },
+    "docs/archive/PATENT_CLAIMS_CORRECTED.md": {
+      "size": 13757,
+      "mtime_ns": 1771221011318497200
+    },
+    "docs/archive/PATENT_CLAIMS_QUICK_REFERENCE.md": {
+      "size": 9126,
+      "mtime_ns": 1771221011319498800
+    },
+    "docs/archive/PATENT_PROVISIONAL_APPLICATION.md": {
+      "size": 12575,
+      "mtime_ns": 1771221011319498800
+    },
+    "docs/archive/PATENT_UPDATE_COMPLETE.md": {
+      "size": 12046,
+      "mtime_ns": 1771221011319498800
+    },
+    "docs/archive/PERFORMANCE_OPTIMIZATION.md": {
+      "size": 16161,
+      "mtime_ns": 1771221011321004200
+    },
+    "docs/archive/PHASE_SHIFT_EXTENSION.md": {
+      "size": 16771,
+      "mtime_ns": 1771221011322010800
+    },
+    "docs/archive/PHASE_SHIFT_SUMMARY.md": {
+      "size": 8209,
+      "mtime_ns": 1771221011323017800
+    },
+    "docs/archive/PHDM_ACHIEVEMENT.md": {
+      "size": 9035,
+      "mtime_ns": 1771221011323017800
+    },
+    "docs/archive/PHDM_COMPLETE.md": {
+      "size": 10233,
+      "mtime_ns": 1771221011324011600
+    },
+    "docs/archive/PILOT_PROGRAM_TERMS.md": {
+      "size": 1286,
+      "mtime_ns": 1771221011325013700
+    },
+    "docs/archive/PRODUCTION_READINESS_AUDIT.md": {
+      "size": 16003,
+      "mtime_ns": 1771221011325013700
+    },
+    "docs/archive/PRODUCT_READY.md": {
+      "size": 9264,
+      "mtime_ns": 1771221011326013300
+    },
+    "docs/archive/PRODUCT_STATUS.md": {
+      "size": 8573,
+      "mtime_ns": 1771221011326013300
+    },
+    "docs/archive/PROJECT_COMPLETION_STATUS.md": {
+      "size": 5125,
+      "mtime_ns": 1771221011327011500
+    },
+    "docs/archive/PROJECT_STATUS_SUMMARY.md": {
+      "size": 16208,
+      "mtime_ns": 1771221011328011600
+    },
+    "docs/archive/PUBLISHED_SUCCESS.md": {
+      "size": 7456,
+      "mtime_ns": 1771221011328011600
+    },
+    "docs/archive/PUBLISH_GUIDE.md": {
+      "size": 7700,
+      "mtime_ns": 1771221011328011600
+    },
+    "docs/archive/PUSH_AND_TEST_COMPLETE.md": {
+      "size": 9253,
+      "mtime_ns": 1771221011329519600
+    },
+    "docs/archive/QUICKSTART.md": {
+      "size": 7973,
+      "mtime_ns": 1771221011329519600
+    },
+    "docs/archive/QUICK_REFERENCE.md": {
+      "size": 6022,
+      "mtime_ns": 1771221011330528900
+    },
+    "docs/archive/QUICK_START.md": {
+      "size": 3806,
+      "mtime_ns": 1771221011331525300
+    },
+    "docs/archive/README_SHIP_NOW.md": {
+      "size": 4400,
+      "mtime_ns": 1771221011332527900
+    },
+    "docs/archive/RELEASE_SUMMARY.md": {
+      "size": 9415,
+      "mtime_ns": 1771221011332527900
+    },
+    "docs/archive/REVIEW_EXECUTIVE_SUMMARY.md": {
+      "size": 4362,
+      "mtime_ns": 1771221011333524500
+    },
+    "docs/archive/RWP_V3_INTEGRATION_COMPLETE.md": {
+      "size": 11871,
+      "mtime_ns": 1771221011334584000
+    },
+    "docs/archive/RWP_V3_QUICKSTART.md": {
+      "size": 8797,
+      "mtime_ns": 1771221011334584000
+    },
+    "docs/archive/SACRED_TONGUE_PQC_INTEGRATION.md": {
+      "size": 11848,
+      "mtime_ns": 1771221011335620800
+    },
+    "docs/archive/SACRED_TONGUE_QUICK_REFERENCE.md": {
+      "size": 7125,
+      "mtime_ns": 1771221011335620800
+    },
+    "docs/archive/SACRED_TONGUE_STATUS.md": {
+      "size": 2952,
+      "mtime_ns": 1771221011336621400
+    },
+    "docs/archive/SACRED_TONGUE_TEST_RESULTS.md": {
+      "size": 6120,
+      "mtime_ns": 1771221011336621400
+    },
+    "docs/archive/SCBE_AETHERMOORE_TOPOLOGICAL_CFI_UNIFIED_STRATEGY.md": {
+      "size": 9731,
+      "mtime_ns": 1771221011338134200
+    },
+    "docs/archive/SCBE_CHEATSHEET.md": {
+      "size": 6011,
+      "mtime_ns": 1771221011339139500
+    },
+    "docs/archive/SCBE_COMPLETE_JOURNEY.md": {
+      "size": 41761,
+      "mtime_ns": 1771221011339139500
+    },
+    "docs/archive/SCBE_SYSTEM_ARCHITECTURE_COMPLETE.md": {
+      "size": 15460,
+      "mtime_ns": 1771221011340141800
+    },
+    "docs/archive/SCBE_TOPOLOGICAL_CFI_UNIFIED.md": {
+      "size": 18292,
+      "mtime_ns": 1771221011341172200
+    },
+    "docs/archive/SCBE_VISUAL_ARCHITECTURE.md": {
+      "size": 0,
+      "mtime_ns": 1771221011341172200
+    },
+    "docs/archive/SECURITY_HARDENING_PLAYBOOK.md": {
+      "size": 4932,
+      "mtime_ns": 1771221011342588800
+    },
+    "docs/archive/SESSION_COMPLETE_SUMMARY.md": {
+      "size": 10606,
+      "mtime_ns": 1771221011342588800
+    },
+    "docs/archive/SHARE_PROJECT.md": {
+      "size": 6076,
+      "mtime_ns": 1771221011343594400
+    },
+    "docs/archive/SHIP_IT_NOW.md": {
+      "size": 7425,
+      "mtime_ns": 1771221011343594400
+    },
+    "docs/archive/SOCIAL_MEDIA_ANNOUNCEMENTS.md": {
+      "size": 15675,
+      "mtime_ns": 1771221011344595300
+    },
+    "docs/archive/SPIRALVERSE_COMPLETE_ARCHITECTURE.md": {
+      "size": 0,
+      "mtime_ns": 1771221011344595300
+    },
+    "docs/archive/SPIRALVERSE_EXPLAINED_SIMPLE.md": {
+      "size": 10713,
+      "mtime_ns": 1771221011344595300
+    },
+    "docs/archive/SPIRALVERSE_INTEGRATION_SUMMARY.md": {
+      "size": 11333,
+      "mtime_ns": 1771221011345600800
+    },
+    "docs/archive/SPIRALVERSE_MASTER_PACK_COMPLETE.md": {
+      "size": 11314,
+      "mtime_ns": 1771221011346619100
+    },
+    "docs/archive/SPIRALVERSE_SECURITY_FIXES_COMPLETE.md": {
+      "size": 10618,
+      "mtime_ns": 1771221011347126100
+    },
+    "docs/archive/SPIRALVERSE_VISUAL_GUIDE.md": {
+      "size": 0,
+      "mtime_ns": 1771221011347126100
+    },
+    "docs/archive/SYSTEM_BUILD_GUIDE.md": {
+      "size": 4710,
+      "mtime_ns": 1771221011348128500
+    },
+    "docs/archive/SYSTEM_INTEGRATION.md": {
+      "size": 17398,
+      "mtime_ns": 1771221011349129100
+    },
+    "docs/archive/SYSTEM_ORGANIZATION_COMPLETE.md": {
+      "size": 11010,
+      "mtime_ns": 1771221011349129100
+    },
+    "docs/archive/TECHNICAL_FOUNDATION_SUMMARY.md": {
+      "size": 11324,
+      "mtime_ns": 1771221011350128100
+    },
+    "docs/archive/TELEMETRY_PUSH_SUCCESS.md": {
+      "size": 4813,
+      "mtime_ns": 1771221011350128100
+    },
+    "docs/archive/TESTS_COMPLETE.md": {
+      "size": 5982,
+      "mtime_ns": 1771221011351128000
+    },
+    "docs/archive/TEST_AUDIT_REPORT.md": {
+      "size": 9978,
+      "mtime_ns": 1771221011351128000
+    },
+    "docs/archive/TEST_EXECUTION_PLAN.md": {
+      "size": 2857,
+      "mtime_ns": 1771221011352128000
+    },
+    "docs/archive/TEST_FAILURE_ANALYSIS.md": {
+      "size": 5065,
+      "mtime_ns": 1771221011352128000
+    },
+    "docs/archive/TEST_RESULTS_SUMMARY.md": {
+      "size": 7186,
+      "mtime_ns": 1771221011353127800
+    },
+    "docs/archive/TEST_SUITE_EXECUTIVE_SUMMARY.md": {
+      "size": 12951,
+      "mtime_ns": 1771221011354129400
+    },
+    "docs/archive/TEST_SUITE_OVERVIEW.md": {
+      "size": 16272,
+      "mtime_ns": 1771221011355133600
+    },
+    "docs/archive/THEORETICAL_AXIOMS_COMPLETE.md": {
+      "size": 8918,
+      "mtime_ns": 1771221011355133600
+    },
+    "docs/archive/TRUST_MANAGER_COMPLETE.md": {
+      "size": 8358,
+      "mtime_ns": 1771221011356252900
+    },
+    "docs/archive/UNIFIED_VISION.md": {
+      "size": 14858,
+      "mtime_ns": 1771221011357232900
+    },
+    "docs/archive/USAGE_GUIDE.md": {
+      "size": 6097,
+      "mtime_ns": 1771221011357232900
+    },
+    "docs/archive/VERIFICATION_REPORT.md": {
+      "size": 8337,
+      "mtime_ns": 1771221011358232700
+    },
+    "docs/archive/VIDEO_SCRIPT_90SEC.md": {
+      "size": 2178,
+      "mtime_ns": 1771221011359235100
+    },
+    "docs/archive/compliance_report.md": {
+      "size": 14200,
+      "mtime_ns": 1771221011359235100
+    },
+    "docs/core-theorems/SACRED_EGGS_GENESIS_BOOTSTRAP_AUTHORIZATION.md": {
+      "size": 5058,
+      "mtime_ns": 1771221011360232700
+    },
+    "docs/gateway/AI_COLLABORATION_LOG.md": {
+      "size": 4959,
+      "mtime_ns": 1771221011362232500
+    },
+    "docs/gateway/COMPREHENSIVE_MATH_SCBE.md": {
+      "size": 11324,
+      "mtime_ns": 1771221011362232500
+    },
+    "docs/gateway/ENTROPIC_DUAL_QUANTUM_SYSTEM.md": {
+      "size": 24599,
+      "mtime_ns": 1771221011363738800
+    },
+    "docs/gateway/MULTI_AGENT_THREAT_MODEL.md": {
+      "size": 8091,
+      "mtime_ns": 1771221011364744300
+    },
+    "docs/gateway/QUASICRYSTAL_LATTICE_VERIFICATION.md": {
+      "size": 5748,
+      "mtime_ns": 1771221011364744300
+    },
+    "docs/gateway/README.md": {
+      "size": 1327,
+      "mtime_ns": 1771221011365743900
+    },
+    "docs/gateway/SIX_SACRED_TONGUES_CODEX.md": {
+      "size": 14811,
+      "mtime_ns": 1771221011365743900
+    },
+    "docs/headless_ide_quickstart.md": {
+      "size": 1252,
+      "mtime_ns": 1771386850262602300
+    },
+    "docs/hydra/ARCHITECTURE.md": {
+      "size": 15375,
+      "mtime_ns": 1771221011367744500
+    },
+    "docs/hyperbolic-mind-map-construction.md": {
+      "size": 2734,
+      "mtime_ns": 1771221011368744300
+    },
+    "docs/index.md": {
+      "size": 3859,
+      "mtime_ns": 1771221011368744300
+    },
+    "docs/local-run.md": {
+      "size": 3038,
+      "mtime_ns": 1771221011369743200
+    },
+    "docs/map-room/README.md": {
+      "size": 890,
+      "mtime_ns": 1771465911861868600
+    },
+    "docs/map-room/session_handoff_latest.md": {
+      "size": 19020,
+      "mtime_ns": 1771477136592920400
+    },
+    "docs/map-room/session_handoff_template.md": {
+      "size": 671,
+      "mtime_ns": 1771465918009191200
+    },
+    "docs/math-core-replication.md": {
+      "size": 3442,
+      "mtime_ns": 1771221011369743200
+    },
+    "docs/metrics-telemetry.md": {
+      "size": 1651,
+      "mtime_ns": 1771221011370744600
+    },
+    "docs/news/latest.md": {
+      "size": 926,
+      "mtime_ns": 1771374768557267300
+    },
+    "docs/news/node_fleet_20260217T105928Z.md": {
+      "size": 905,
+      "mtime_ns": 1771326245120024600
+    },
+    "docs/news/node_fleet_20260217T110715Z.md": {
+      "size": 905,
+      "mtime_ns": 1771326444109120300
+    },
+    "docs/news/node_fleet_20260217T143132Z.md": {
+      "size": 926,
+      "mtime_ns": 1771338700818955700
+    },
+    "docs/news/node_fleet_20260218T003239Z.md": {
+      "size": 926,
+      "mtime_ns": 1771374768556266600
+    },
+    "docs/notion_pages_sweep_notes.md": {
+      "size": 4759,
+      "mtime_ns": 1771235746241724900
+    },
+    "docs/polly_pad_auditable_runtime.md": {
+      "size": 1673,
+      "mtime_ns": 1771388981896938200
+    },
+    "docs/qkd-integration.md": {
+      "size": 4608,
+      "mtime_ns": 1771221011370744600
+    },
+    "docs/research/AETHERMOOR_SPIRAL_ENGINE_MVP.md": {
+      "size": 3511,
+      "mtime_ns": 1771494365966291400
+    },
+    "docs/research/MULTIMODAL_MATRIX_TRAINING.md": {
+      "size": 1275,
+      "mtime_ns": 1771221011372250800
+    },
+    "docs/research/MULTI_MODEL_MODAL_MATRIX.md": {
+      "size": 2095,
+      "mtime_ns": 1771485528489288500
+    },
+    "docs/research/QUASI_VECTOR_SPIN_VOXELS.md": {
+      "size": 3448,
+      "mtime_ns": 1771221011373257800
+    },
+    "docs/research/README.md": {
+      "size": 397,
+      "mtime_ns": 1771221011373257800
+    },
+    "docs/research/SHEAF_CONSENSUS_GATE.md": {
+      "size": 1148,
+      "mtime_ns": 1771492007863782900
+    },
+    "docs/research/SIGNED_MULTIPLANE_ENCODING.md": {
+      "size": 1905,
+      "mtime_ns": 1771486794238606400
+    },
+    "docs/sacred-tongue-tutorials.md": {
+      "size": 9019,
+      "mtime_ns": 1771221011374256900
+    },
+    "docs/specs/INTEGRATIONS.md": {
+      "size": 10891,
+      "mtime_ns": 1771221011375258400
+    },
+    "docs/specs/MEDICAL_NANOBOT_SWARMS.md": {
+      "size": 11512,
+      "mtime_ns": 1771221011376256900
+    },
+    "docs/specs/SCBE_MASTER_2026_001_CONSOLIDATED_SUBMISSION_NOTES_2026_02_19.md": {
+      "size": 3167,
+      "mtime_ns": 1771477131873667100
+    },
+    "docs/specs/SPACE_DEBRIS_FLEET.md": {
+      "size": 9169,
+      "mtime_ns": 1771221011377257100
+    },
+    "docs/specs/SPIRALVERSE_CANONICAL_LINGUISTIC_CODEX_V1.md": {
+      "size": 2165,
+      "mtime_ns": 1771475677225524300
+    },
+    "docs/specs/SPIRALVERSE_PROTOCOL_RWP_V3_0_ALPHA_QUANTUM_RESISTANT_ARCHITECTURE.md": {
+      "size": 4629,
+      "mtime_ns": 1771477101572514700
+    },
+    "docs/specs/patent/MASTER_PATENT_DOCUMENT.md": {
+      "size": 63451,
+      "mtime_ns": 1771221011378257000
+    },
+    "docs/specs/patent/RESEARCH_PATENT_ANALYSIS.md": {
+      "size": 20565,
+      "mtime_ns": 1771221011379256900
+    },
+    "docs/test-audit-report-2026-01-20.md": {
+      "size": 3371,
+      "mtime_ns": 1771221011379256900
+    },
+    "enhanced_scbe_cli.py": {
+      "size": 16758,
+      "mtime_ns": 1771487303883316800
+    },
+    "gumroad_image_uploader.py": {
+      "size": 11316,
+      "mtime_ns": 1771221011429621600
+    },
+    "harmonic_scaling_law.py": {
+      "size": 17064,
+      "mtime_ns": 1771221011430635800
+    },
+    "index.js": {
+      "size": 6362,
+      "mtime_ns": 1771221011439422400
+    },
+    "mcp/scbe-server/README.md": {
+      "size": 718,
+      "mtime_ns": 1771469853008229900
+    },
+    "mcp/scbe-server/server.mjs": {
+      "size": 22408,
+      "mtime_ns": 1771469847921860000
+    },
+    "packages/kernel/package.json": {
+      "size": 263,
+      "mtime_ns": 1771221011455442800
+    },
+    "packages/kernel/src/adaptiveNavigator.ts": {
+      "size": 23837,
+      "mtime_ns": 1771221011456443100
+    },
+    "packages/kernel/src/assertions.d.ts": {
+      "size": 504,
+      "mtime_ns": 1771221011456443100
+    },
+    "packages/kernel/src/assertions.ts": {
+      "size": 695,
+      "mtime_ns": 1771221011456443100
+    },
+    "packages/kernel/src/audioAxis.d.ts": {
+      "size": 3019,
+      "mtime_ns": 1771221011457948700
+    },
+    "packages/kernel/src/audioAxis.ts": {
+      "size": 6551,
+      "mtime_ns": 1771221011458954400
+    },
+    "packages/kernel/src/chsfn.ts": {
+      "size": 18405,
+      "mtime_ns": 1771221011459954100
+    },
+    "packages/kernel/src/constants.d.ts": {
+      "size": 816,
+      "mtime_ns": 1771221011459954100
+    },
+    "packages/kernel/src/constants.ts": {
+      "size": 761,
+      "mtime_ns": 1771221011459954100
+    },
+    "packages/kernel/src/entropicLayer.ts": {
+      "size": 18949,
+      "mtime_ns": 1771221011460954500
+    },
+    "packages/kernel/src/fluxState.ts": {
+      "size": 12719,
+      "mtime_ns": 1771221011461954000
+    },
+    "packages/kernel/src/governance-types.ts": {
+      "size": 1254,
+      "mtime_ns": 1771221011461954000
+    },
+    "packages/kernel/src/halAttention.d.ts": {
+      "size": 1973,
+      "mtime_ns": 1771221011461954000
+    },
+    "packages/kernel/src/halAttention.ts": {
+      "size": 4807,
+      "mtime_ns": 1771221011462954200
+    },
+    "packages/kernel/src/hamiltonianCFI.d.ts": {
+      "size": 4428,
+      "mtime_ns": 1771221011463954200
+    },
+    "packages/kernel/src/hamiltonianCFI.ts": {
+      "size": 10643,
+      "mtime_ns": 1771221011463954200
+    },
+    "packages/kernel/src/harmonicScaling.d.ts": {
+      "size": 1894,
+      "mtime_ns": 1771221011463954200
+    },
+    "packages/kernel/src/harmonicScaling.ts": {
+      "size": 4238,
+      "mtime_ns": 1771221011464954100
+    },
+    "packages/kernel/src/hyperbolic.d.ts": {
+      "size": 6591,
+      "mtime_ns": 1771221011464954100
+    },
+    "packages/kernel/src/hyperbolic.ts": {
+      "size": 19821,
+      "mtime_ns": 1771221011466459500
+    },
+    "packages/kernel/src/hyperbolicRAG.ts": {
+      "size": 19721,
+      "mtime_ns": 1771221011467466100
+    },
+    "packages/kernel/src/index.ts": {
+      "size": 5314,
+      "mtime_ns": 1771221011467466100
+    },
+    "packages/kernel/src/languesMetric.d.ts": {
+      "size": 3511,
+      "mtime_ns": 1771221011468465300
+    },
+    "packages/kernel/src/languesMetric.ts": {
+      "size": 6296,
+      "mtime_ns": 1771221011468465300
+    },
+    "packages/kernel/src/pipeline14.ts": {
+      "size": 21840,
+      "mtime_ns": 1771221011469465000
+    },
+    "packages/kernel/src/pqc.ts": {
+      "size": 41905,
+      "mtime_ns": 1771221011470466100
+    },
+    "packages/kernel/src/qcLattice.ts": {
+      "size": 22242,
+      "mtime_ns": 1771221011471469900
+    },
+    "packages/kernel/src/quasiSphereOverlap.ts": {
+      "size": 17457,
+      "mtime_ns": 1771221011471469900
+    },
+    "packages/kernel/src/quasiSphereSlice.ts": {
+      "size": 10532,
+      "mtime_ns": 1771221011472466400
+    },
+    "packages/kernel/src/sacredEggs.ts": {
+      "size": 16683,
+      "mtime_ns": 1771221011473484200
+    },
+    "packages/kernel/src/sacredTongues.d.ts": {
+      "size": 2334,
+      "mtime_ns": 1771221011474989000
+    },
+    "packages/kernel/src/sacredTongues.ts": {
+      "size": 10309,
+      "mtime_ns": 1771221011474989000
+    },
+    "packages/kernel/src/scbe_voxel_types.ts": {
+      "size": 5303,
+      "mtime_ns": 1771221011475994800
+    },
+    "packages/kernel/src/securityInvariants.ts": {
+      "size": 13834,
+      "mtime_ns": 1771221011475994800
+    },
+    "packages/kernel/src/spectral-identity.ts": {
+      "size": 15178,
+      "mtime_ns": 1771221011476995100
+    },
+    "packages/kernel/src/spiralSeal.d.ts": {
+      "size": 4656,
+      "mtime_ns": 1771221011476995100
+    },
+    "packages/kernel/src/spiralSeal.ts": {
+      "size": 17592,
+      "mtime_ns": 1771221011477995000
+    },
+    "packages/kernel/src/tBraid.ts": {
+      "size": 27217,
+      "mtime_ns": 1771221011477995000
+    },
+    "packages/kernel/src/temporalIntent.ts": {
+      "size": 17540,
+      "mtime_ns": 1771221011478994800
+    },
+    "packages/kernel/src/temporalPhase.ts": {
+      "size": 19422,
+      "mtime_ns": 1771221011479994400
+    },
+    "packages/kernel/src/triDirectionalPlanner.ts": {
+      "size": 14586,
+      "mtime_ns": 1771221011479994400
+    },
+    "packages/kernel/src/triMechanismDetector.ts": {
+      "size": 20586,
+      "mtime_ns": 1771221011480994900
+    },
+    "packages/kernel/src/trustCone.ts": {
+      "size": 9893,
+      "mtime_ns": 1771221011481995000
+    },
+    "packages/kernel/src/vacuumAcoustics.d.ts": {
+      "size": 3891,
+      "mtime_ns": 1771221011481995000
+    },
+    "packages/kernel/src/vacuumAcoustics.ts": {
+      "size": 5191,
+      "mtime_ns": 1771221011483501000
+    },
+    "packages/kernel/tsconfig.json": {
+      "size": 251,
+      "mtime_ns": 1771221011483501000
+    },
+    "packages/sixtongues/LICENSE": {
+      "size": 1099,
+      "mtime_ns": 1771221011484506200
+    },
+    "packages/sixtongues/README.md": {
+      "size": 4014,
+      "mtime_ns": 1771221011484506200
+    },
+    "packages/sixtongues/docs/quickstart.md": {
+      "size": 3827,
+      "mtime_ns": 1771221011485506600
+    },
+    "packages/sixtongues/requirements.txt": {
+      "size": 266,
+      "mtime_ns": 1771221011486506300
+    },
+    "packages/sixtongues/sixtongues.py": {
+      "size": 18165,
+      "mtime_ns": 1771221011486506300
+    },
+    "quick-test.js": {
+      "size": 1776,
+      "mtime_ns": 1771221011524545700
+    },
+    "render.yaml": {
+      "size": 435,
+      "mtime_ns": 1771221011524545700
+    },
+    "run_demo.py": {
+      "size": 377,
+      "mtime_ns": 1771221011526051700
+    },
+    "run_dual_lattice_demo.py": {
+      "size": 466,
+      "mtime_ns": 1771221011527057900
+    },
+    "run_spiralverse_demos.py": {
+      "size": 1447,
+      "mtime_ns": 1771221011528023800
+    },
+    "run_tests.py": {
+      "size": 7529,
+      "mtime_ns": 1771221011528728000
+    },
+    "scbe-agent.py": {
+      "size": 24818,
+      "mtime_ns": 1771306892735462200
+    },
+    "scbe-cli.py": {
+      "size": 54226,
+      "mtime_ns": 1771221011533733000
+    },
+    "scbe.js": {
+      "size": 949,
+      "mtime_ns": 1771221011572736700
+    },
+    "scripts/aetherbrowse_swarm_runner.py": {
+      "size": 19738,
+      "mtime_ns": 1771426611176916800
+    },
+    "scripts/aethermoor_spiral_demo.py": {
+      "size": 997,
+      "mtime_ns": 1771491855245736300
+    },
+    "scripts/asana_aetherbrowse_orchestrator.py": {
+      "size": 11511,
+      "mtime_ns": 1771306875968832000
+    },
+    "scripts/build_evidence_pack.py": {
+      "size": 5812,
+      "mtime_ns": 1771324384052191300
+    },
+    "scripts/check_layer_status_transition.py": {
+      "size": 2674,
+      "mtime_ns": 1771317766753664800
+    },
+    "scripts/cloud_kernel_data_pipeline.py": {
+      "size": 33589,
+      "mtime_ns": 1771471293022752900
+    },
+    "scripts/coherence-check.py": {
+      "size": 4036,
+      "mtime_ns": 1771221011573738200
+    },
+    "scripts/enable_mcp_servers.ps1": {
+      "size": 1500,
+      "mtime_ns": 1771466099845166500
+    },
+    "scripts/export_monthly_billable_usage.py": {
+      "size": 1233,
+      "mtime_ns": 1771221011573738200
+    },
+    "scripts/generate_harmonic_wall_figure.py": {
+      "size": 9459,
+      "mtime_ns": 1771474492973185400
+    },
+    "scripts/generate_node_fleet_news.py": {
+      "size": 4620,
+      "mtime_ns": 1771326225111660000
+    },
+    "scripts/gke_training_oneclick.ps1": {
+      "size": 1715,
+      "mtime_ns": 1771419007797839700
+    },
+    "scripts/gke_training_oneclick.sh": {
+      "size": 2312,
+      "mtime_ns": 1771418997818226500
+    },
+    "scripts/hydra_headless_mmx_coordinator.py": {
+      "size": 10206,
+      "mtime_ns": 1771490105375832100
+    },
+    "scripts/ingest_docs_to_training_jsonl.py": {
+      "size": 4202,
+      "mtime_ns": 1771385146264614700
+    },
+    "scripts/ingest_spiralverse_codex.py": {
+      "size": 5922,
+      "mtime_ns": 1771396231964358000
+    },
+    "scripts/ingest_x_post_via_hydra.py": {
+      "size": 13798,
+      "mtime_ns": 1771426623610545000
+    },
+    "scripts/install_local_cloud_sync_task.ps1": {
+      "size": 2885,
+      "mtime_ns": 1771481048936830800
+    },
+    "scripts/journal.py": {
+      "size": 6949,
+      "mtime_ns": 1771221011574736500
+    },
+    "scripts/launch_aws_sagemaker_training.py": {
+      "size": 3961,
+      "mtime_ns": 1771229416093245300
+    },
+    "scripts/layer9_spectral_coherence.py": {
+      "size": 6055,
+      "mtime_ns": 1771221011574736500
+    },
+    "scripts/linux_kernel_antivirus_monitor.py": {
+      "size": 3601,
+      "mtime_ns": 1771489287517406300
+    },
+    "scripts/local_cloud_autosync.py": {
+      "size": 31029,
+      "mtime_ns": 1771480855735439800
+    },
+    "scripts/long_run_training_bootstrap.py": {
+      "size": 9892,
+      "mtime_ns": 1771229455924712000
+    },
+    "scripts/make_proof_pack.bat": {
+      "size": 7810,
+      "mtime_ns": 1771221011575742400
+    },
+    "scripts/make_proof_pack.sh": {
+      "size": 5706,
+      "mtime_ns": 1771221011575742400
+    },
+    "scripts/monitor_training_growth.py": {
+      "size": 2185,
+      "mtime_ns": 1771324362197523700
+    },
+    "scripts/n8n_aetherbrowse_bridge.py": {
+      "size": 3315,
+      "mtime_ns": 1771294642356867200
+    },
+    "scripts/notion-sync.js": {
+      "size": 6207,
+      "mtime_ns": 1771221011577258800
+    },
+    "scripts/notion_access_check.py": {
+      "size": 5147,
+      "mtime_ns": 1771235744505323800
+    },
+    "scripts/notion_to_dataset.py": {
+      "size": 7484,
+      "mtime_ns": 1771376712527505500
+    },
+    "scripts/npm_publish_check.sh": {
+      "size": 1270,
+      "mtime_ns": 1771221011578264700
+    },
+    "scripts/omega_lock_diagnostic.py": {
+      "size": 2629,
+      "mtime_ns": 1771493991151864800
+    },
+    "scripts/polly_pad_watchdog.py": {
+      "size": 5542,
+      "mtime_ns": 1771388967380023500
+    },
+    "scripts/pre-commit-check.sh": {
+      "size": 1269,
+      "mtime_ns": 1771221011579270200
+    },
+    "scripts/prepare_gumroad_automation_dataset.py": {
+      "size": 10765,
+      "mtime_ns": 1771253524293020500
+    },
+    "scripts/push_to_hf.py": {
+      "size": 2658,
+      "mtime_ns": 1771221011579270200
+    },
+    "scripts/quickstart_demo.sh": {
+      "size": 5330,
+      "mtime_ns": 1771221011580264800
+    },
+    "scripts/remote_gumroad_upload.ps1": {
+      "size": 1043,
+      "mtime_ns": 1771252733440196400
+    },
+    "scripts/remote_gumroad_upload.py": {
+      "size": 18273,
+      "mtime_ns": 1771292589886480500
+    },
+    "scripts/render-diagrams.sh": {
+      "size": 1474,
+      "mtime_ns": 1771221011580264800
+    },
+    "scripts/run-local.bat": {
+      "size": 1842,
+      "mtime_ns": 1771221011581265100
+    },
+    "scripts/run-local.ps1": {
+      "size": 2421,
+      "mtime_ns": 1771221011581265100
+    },
+    "scripts/run-local.sh": {
+      "size": 3455,
+      "mtime_ns": 1771221011582265000
+    },
+    "scripts/run-long-run-training.ps1": {
+      "size": 675,
+      "mtime_ns": 1771229436999447700
+    },
+    "scripts/run-long-run-training.sh": {
+      "size": 205,
+      "mtime_ns": 1771229439286607200
+    },
+    "scripts/run_aetherbrowse_autopilot.ps1": {
+      "size": 3213,
+      "mtime_ns": 1771304806868128200
+    },
+    "scripts/run_aetherbrowse_service.ps1": {
+      "size": 2249,
+      "mtime_ns": 1771321057003964000
+    },
+    "scripts/run_cloud_kernel_data_pipeline.ps1": {
+      "size": 1109,
+      "mtime_ns": 1771471284562840800
+    },
+    "scripts/run_evidence_pack_oneclick.ps1": {
+      "size": 1505,
+      "mtime_ns": 1771324580526587600
+    },
+    "scripts/run_headless_ide_demo.ps1": {
+      "size": 377,
+      "mtime_ns": 1771386841451265700
+    },
+    "scripts/run_hf_training_and_monitor.ps1": {
+      "size": 843,
+      "mtime_ns": 1771324566807849800
+    },
+    "scripts/run_local_cloud_autosync.ps1": {
+      "size": 1062,
+      "mtime_ns": 1771473701495600200
+    },
+    "scripts/run_multi_ai_content_sync.ps1": {
+      "size": 906,
+      "mtime_ns": 1771470520874522500
+    },
+    "scripts/run_multi_ai_content_sync.py": {
+      "size": 8194,
+      "mtime_ns": 1771470512573035300
+    },
+    "scripts/run_node_fleet_pipeline.ps1": {
+      "size": 1690,
+      "mtime_ns": 1771326425688936100
+    },
+    "scripts/run_node_fleet_pipeline.py": {
+      "size": 2849,
+      "mtime_ns": 1771396245476124400
+    },
+    "scripts/run_polly_pad_watchdog.ps1": {
+      "size": 317,
+      "mtime_ns": 1771388971769244900
+    },
+    "scripts/scbe_headless_ide_demo.py": {
+      "size": 12211,
+      "mtime_ns": 1771386835986454400
+    },
+    "scripts/sheaf_consensus_gate.py": {
+      "size": 2146,
+      "mtime_ns": 1771491984493693100
+    },
+    "scripts/start_aetherbrowse_oneclick.ps1": {
+      "size": 3034,
+      "mtime_ns": 1771301038339618500
+    },
+    "scripts/stasm.py": {
+      "size": 6333,
+      "mtime_ns": 1771484692744809700
+    },
+    "scripts/stvm.py": {
+      "size": 2576,
+      "mtime_ns": 1771484707975358600
+    },
+    "scripts/stvm_core.py": {
+      "size": 11299,
+      "mtime_ns": 1771484664889724000
+    },
+    "scripts/sync-config.json": {
+      "size": 2728,
+      "mtime_ns": 1771221011582265000
+    },
+    "scripts/test_aetherbrowse_api.ps1": {
+      "size": 1281,
+      "mtime_ns": 1771300428639019700
+    },
+    "scripts/test_hydra_switchboard_e2e.py": {
+      "size": 2463,
+      "mtime_ns": 1771378417166648000
+    },
+    "scripts/train_hf_longrun_placeholder.py": {
+      "size": 14598,
+      "mtime_ns": 1771324490010276400
+    },
+    "scripts/training_auditor.py": {
+      "size": 4750,
+      "mtime_ns": 1771376672841723300
+    },
+    "scripts/unix/BUILD.sh": {
+      "size": 6619,
+      "mtime_ns": 1771221011584267000
+    },
+    "scripts/unix/INTEGRATE_TO_GITHUB.sh": {
+      "size": 6187,
+      "mtime_ns": 1771221011584267000
+    },
+    "scripts/update_ai_hub.py": {
+      "size": 4927,
+      "mtime_ns": 1771221011585777700
+    },
+    "scripts/validate_layer_manifest.py": {
+      "size": 5781,
+      "mtime_ns": 1771317750340198100
+    },
+    "scripts/version-bump.js": {
+      "size": 3093,
+      "mtime_ns": 1771221011586786500
+    },
+    "scripts/voxel_governance_sim.py": {
+      "size": 11597,
+      "mtime_ns": 1771317006485479400
+    },
+    "scripts/web_research_training_pipeline.py": {
+      "size": 19168,
+      "mtime_ns": 1771490501227467900
+    },
+    "scripts/windows/BUILD.bat": {
+      "size": 6986,
+      "mtime_ns": 1771221011587784700
+    },
+    "scripts/windows/BUILD_DIST.bat": {
+      "size": 1999,
+      "mtime_ns": 1771221011588788700
+    },
+    "scripts/windows/FIX_ALL_ISSUES.bat": {
+      "size": 580,
+      "mtime_ns": 1771221011588788700
+    },
+    "scripts/windows/INTEGRATE_TO_GITHUB.bat": {
+      "size": 6407,
+      "mtime_ns": 1771221011589783400
+    },
+    "scripts/windows/MAKE_PACKAGE_READY.bat": {
+      "size": 1840,
+      "mtime_ns": 1771221011590783100
+    },
+    "scripts/windows/PUSH_TO_GITHUB.bat": {
+      "size": 1309,
+      "mtime_ns": 1771221011590783100
+    },
+    "scripts/windows/TEST_PACKAGE.bat": {
+      "size": 1245,
+      "mtime_ns": 1771221011591783400
+    },
+    "scripts/windows/VERIFY_PACKAGE.bat": {
+      "size": 3007,
+      "mtime_ns": 1771221011591783400
+    },
+    "scripts/windows/scbe.bat": {
+      "size": 762,
+      "mtime_ns": 1771221011592782800
+    },
+    "scripts/workflow_audit.py": {
+      "size": 6695,
+      "mtime_ns": 1771293303181565400
+    },
+    "services/kernel-runner/README.md": {
+      "size": 1304,
+      "mtime_ns": 1771471965749995600
+    },
+    "services/kernel-runner/public/app.js": {
+      "size": 3294,
+      "mtime_ns": 1771471957177425700
+    },
+    "services/kernel-runner/public/index.html": {
+      "size": 3219,
+      "mtime_ns": 1771471940268151400
+    },
+    "services/kernel-runner/server.mjs": {
+      "size": 11445,
+      "mtime_ns": 1771472030926405700
+    },
+    "setup-providers.py": {
+      "size": 8645,
+      "mtime_ns": 1771221011592782800
+    },
+    "six-tongues-cli.py": {
+      "size": 48528,
+      "mtime_ns": 1771474916488092700
+    },
+    "spiralverse_core.py": {
+      "size": 13291,
+      "mtime_ns": 1771221011596293600
+    },
+    "spiralverse_sdk.py": {
+      "size": 10804,
+      "mtime_ns": 1771221011596293600
+    },
+    "src/README.md": {
+      "size": 1497,
+      "mtime_ns": 1771221011907385000
+    },
+    "src/aethermoore.py": {
+      "size": 9105,
+      "mtime_ns": 1771221011908383800
+    },
+    "src/agent/index.ts": {
+      "size": 2266,
+      "mtime_ns": 1771221011908383800
+    },
+    "src/agent/kafka.ts": {
+      "size": 12589,
+      "mtime_ns": 1771221011909888300
+    },
+    "src/agent/lifecycle.ts": {
+      "size": 13676,
+      "mtime_ns": 1771221011909888300
+    },
+    "src/agent/swarm.ts": {
+      "size": 14239,
+      "mtime_ns": 1771221011910904200
+    },
+    "src/agent/types.ts": {
+      "size": 9504,
+      "mtime_ns": 1771221011911894100
+    },
+    "src/agentic/agents.ts": {
+      "size": 7704,
+      "mtime_ns": 1771221011912893600
+    },
+    "src/agentic/collaboration.ts": {
+      "size": 10342,
+      "mtime_ns": 1771221011912893600
+    },
+    "src/agentic/demo-runner.ts": {
+      "size": 1650,
+      "mtime_ns": 1771221011913894000
+    },
+    "src/agentic/distributed-workflow.ts": {
+      "size": 7423,
+      "mtime_ns": 1771221011914892700
+    },
+    "src/agentic/index.ts": {
+      "size": 759,
+      "mtime_ns": 1771221011914892700
+    },
+    "src/agentic/platform.ts": {
+      "size": 17048,
+      "mtime_ns": 1771221011915894100
+    },
+    "src/agentic/providers.ts": {
+      "size": 15205,
+      "mtime_ns": 1771221011915894100
+    },
+    "src/agentic/task-group.ts": {
+      "size": 7081,
+      "mtime_ns": 1771221011916893800
+    },
+    "src/agentic/types.ts": {
+      "size": 5894,
+      "mtime_ns": 1771221011916893800
+    },
+    "src/ai_brain/audit.ts": {
+      "size": 6523,
+      "mtime_ns": 1771221011918398100
+    },
+    "src/ai_brain/bee-immune-tiers.ts": {
+      "size": 27751,
+      "mtime_ns": 1771221011918398100
+    },
+    "src/ai_brain/bft-consensus.ts": {
+      "size": 4302,
+      "mtime_ns": 1771221011919404000
+    },
+    "src/ai_brain/brain-integration.ts": {
+      "size": 20101,
+      "mtime_ns": 1771221011920404600
+    },
+    "src/ai_brain/conservation.ts": {
+      "size": 20057,
+      "mtime_ns": 1771221011921406200
+    },
+    "src/ai_brain/cymatic-voxel-net.ts": {
+      "size": 20587,
+      "mtime_ns": 1771221011922404400
+    },
+    "src/ai_brain/detection.ts": {
+      "size": 24249,
+      "mtime_ns": 1771221011923405300
+    },
+    "src/ai_brain/dual-lattice.ts": {
+      "size": 25860,
+      "mtime_ns": 1771221011924404400
+    },
+    "src/ai_brain/dual-ternary.ts": {
+      "size": 26050,
+      "mtime_ns": 1771221011924404400
+    },
+    "src/ai_brain/entropic-layer.ts": {
+      "size": 7813,
+      "mtime_ns": 1771221011925403900
+    },
+    "src/ai_brain/entropic_layer.py": {
+      "size": 6556,
+      "mtime_ns": 1771221011925403900
+    },
+    "src/ai_brain/flux-states.ts": {
+      "size": 13252,
+      "mtime_ns": 1771221011926909400
+    },
+    "src/ai_brain/hamiltonian-braid.ts": {
+      "size": 32579,
+      "mtime_ns": 1771221011926909400
+    },
+    "src/ai_brain/hyperbolic-rag.ts": {
+      "size": 6840,
+      "mtime_ns": 1771221011927915200
+    },
+    "src/ai_brain/hyperbolic_rag.py": {
+      "size": 5259,
+      "mtime_ns": 1771221011928914800
+    },
+    "src/ai_brain/immune-response.ts": {
+      "size": 14227,
+      "mtime_ns": 1771221011928914800
+    },
+    "src/ai_brain/index.ts": {
+      "size": 18368,
+      "mtime_ns": 1771221011929916600
+    },
+    "src/ai_brain/phdm-core.ts": {
+      "size": 16962,
+      "mtime_ns": 1771221011929916600
+    },
+    "src/ai_brain/quasi-space.ts": {
+      "size": 8548,
+      "mtime_ns": 1771221011930914900
+    },
+    "src/ai_brain/swarm-formation.ts": {
+      "size": 16117,
+      "mtime_ns": 1771221011931919900
+    },
+    "src/ai_brain/timeOverIntent.ts": {
+      "size": 12350,
+      "mtime_ns": 1771221011932914400
+    },
+    "src/ai_brain/trajectory-simulator.ts": {
+      "size": 18223,
+      "mtime_ns": 1771221011932914400
+    },
+    "src/ai_brain/tri-manifold-lattice.ts": {
+      "size": 20540,
+      "mtime_ns": 1771221011933915100
+    },
+    "src/ai_brain/types.ts": {
+      "size": 11843,
+      "mtime_ns": 1771221011933915100
+    },
+    "src/ai_brain/unified-kernel.ts": {
+      "size": 30853,
+      "mtime_ns": 1771221011935420000
+    },
+    "src/ai_brain/unified-state.ts": {
+      "size": 14587,
+      "mtime_ns": 1771221011936425700
+    },
+    "src/ai_orchestration/__init__.py": {
+      "size": 1389,
+      "mtime_ns": 1771221011937426700
+    },
+    "src/ai_orchestration/agents.py": {
+      "size": 26620,
+      "mtime_ns": 1771221011938427600
+    },
+    "src/ai_orchestration/autonomous_workflows.py": {
+      "size": 27053,
+      "mtime_ns": 1771221011938427600
+    },
+    "src/ai_orchestration/hallucination_guard.py": {
+      "size": 22036,
+      "mtime_ns": 1771221011939425800
+    },
+    "src/ai_orchestration/logging.py": {
+      "size": 22165,
+      "mtime_ns": 1771221011940427500
+    },
+    "src/ai_orchestration/orchestrator.py": {
+      "size": 19810,
+      "mtime_ns": 1771221011941426200
+    },
+    "src/ai_orchestration/security.py": {
+      "size": 21768,
+      "mtime_ns": 1771221011942426500
+    },
+    "src/ai_orchestration/setup_assistant.py": {
+      "size": 27078,
+      "mtime_ns": 1771221011942426500
+    },
+    "src/ai_orchestration/tasks.py": {
+      "size": 21281,
+      "mtime_ns": 1771221011943931100
+    },
+    "src/ai_orchestration/tool_calling.py": {
+      "size": 26130,
+      "mtime_ns": 1771221011943931100
+    },
+    "src/api/govern.ts": {
+      "size": 13505,
+      "mtime_ns": 1771221011944936600
+    },
+    "src/api/index.ts": {
+      "size": 19506,
+      "mtime_ns": 1771221011944936600
+    },
+    "src/api/main.py": {
+      "size": 27492,
+      "mtime_ns": 1771550198380926400
+    },
+    "src/api/routes.ts": {
+      "size": 15261,
+      "mtime_ns": 1771221011946936800
+    },
+    "src/api/server.ts": {
+      "size": 10194,
+      "mtime_ns": 1771221011946936800
+    },
+    "src/browser/agent.ts": {
+      "size": 18638,
+      "mtime_ns": 1771221011947936800
+    },
+    "src/browser/cdp-backend.ts": {
+      "size": 34576,
+      "mtime_ns": 1771221011948936800
+    },
+    "src/browser/evaluator.ts": {
+      "size": 17366,
+      "mtime_ns": 1771221011949936500
+    },
+    "src/browser/index.ts": {
+      "size": 3663,
+      "mtime_ns": 1771221011949936500
+    },
+    "src/browser/playwright-backend.ts": {
+      "size": 17792,
+      "mtime_ns": 1771221011950936500
+    },
+    "src/browser/session.ts": {
+      "size": 19777,
+      "mtime_ns": 1771221011950936500
+    },
+    "src/browser/types.ts": {
+      "size": 19007,
+      "mtime_ns": 1771221011950936500
+    },
+    "src/browser/ws-client.ts": {
+      "size": 12940,
+      "mtime_ns": 1771221011952440800
+    },
+    "src/cloud/__init__.py": {
+      "size": 2613,
+      "mtime_ns": 1771221011953446400
+    },
+    "src/cloud/cross_cloud_comms.py": {
+      "size": 21393,
+      "mtime_ns": 1771221011954447600
+    },
+    "src/cloud/monitoring_dashboard.py": {
+      "size": 24012,
+      "mtime_ns": 1771221011955450100
+    },
+    "src/cloud/multi_cloud_agents.py": {
+      "size": 41062,
+      "mtime_ns": 1771221011956447000
+    },
+    "src/constants/config.ts": {
+      "size": 3915,
+      "mtime_ns": 1771221011957448400
+    },
+    "src/core/Feistel.ts": {
+      "size": 2680,
+      "mtime_ns": 1771221011958448500
+    },
+    "src/core/ZBase32.ts": {
+      "size": 1312,
+      "mtime_ns": 1771221011958448500
+    },
+    "src/core/index.ts": {
+      "size": 76,
+      "mtime_ns": 1771221011959447000
+    },
+    "src/crypto/__init__.py": {
+      "size": 7593,
+      "mtime_ns": 1771221011959447000
+    },
+    "src/crypto/aetherlex-seed.ts": {
+      "size": 21039,
+      "mtime_ns": 1771221011960951700
+    },
+    "src/crypto/bloom.ts": {
+      "size": 929,
+      "mtime_ns": 1771221011960951700
+    },
+    "src/crypto/dual_lattice.py": {
+      "size": 32514,
+      "mtime_ns": 1771221011961957500
+    },
+    "src/crypto/dual_lattice_integration.py": {
+      "size": 32736,
+      "mtime_ns": 1771221011963019900
+    },
+    "src/crypto/envelope.ts": {
+      "size": 8875,
+      "mtime_ns": 1771221011963019900
+    },
+    "src/crypto/geo_seal.py": {
+      "size": 34728,
+      "mtime_ns": 1771221011964024800
+    },
+    "src/crypto/h_lwe.py": {
+      "size": 15008,
+      "mtime_ns": 1771426715909651100
+    },
+    "src/crypto/hkdf.ts": {
+      "size": 1841,
+      "mtime_ns": 1771221011965334700
+    },
+    "src/crypto/hyperbolic_viz.py": {
+      "size": 13499,
+      "mtime_ns": 1771221011965334700
+    },
+    "src/crypto/hyperpath_finder.py": {
+      "size": 16218,
+      "mtime_ns": 1771221011966339500
+    },
+    "src/crypto/index.ts": {
+      "size": 616,
+      "mtime_ns": 1771221011966339500
+    },
+    "src/crypto/jcs.ts": {
+      "size": 1371,
+      "mtime_ns": 1771221011967257800
+    },
+    "src/crypto/kms.ts": {
+      "size": 628,
+      "mtime_ns": 1771221011967257800
+    },
+    "src/crypto/nonceManager.ts": {
+      "size": 1229,
+      "mtime_ns": 1771221011967257800
+    },
+    "src/crypto/octree.py": {
+      "size": 19719,
+      "mtime_ns": 1771221011968262800
+    },
+    "src/crypto/platform.ts": {
+      "size": 8886,
+      "mtime_ns": 1771221011968262800
+    },
+    "src/crypto/pqc-strategies.ts": {
+      "size": 15903,
+      "mtime_ns": 1771221011969767500
+    },
+    "src/crypto/pqc.ts": {
+      "size": 34735,
+      "mtime_ns": 1771230478778217900
+    },
+    "src/crypto/pqc_liboqs.py": {
+      "size": 13453,
+      "mtime_ns": 1771425359046291300
+    },
+    "src/crypto/quantum-safe.ts": {
+      "size": 23961,
+      "mtime_ns": 1771221011972775200
+    },
+    "src/crypto/replayGuard.ts": {
+      "size": 3495,
+      "mtime_ns": 1771221011972775200
+    },
+    "src/crypto/replayStore.ts": {
+      "size": 6898,
+      "mtime_ns": 1771221011973774200
+    },
+    "src/crypto/rwp_v3.py": {
+      "size": 12734,
+      "mtime_ns": 1771425450610246400
+    },
+    "src/crypto/sacred_eggs.py": {
+      "size": 21935,
+      "mtime_ns": 1771221011975772700
+    },
+    "src/crypto/sacred_tongues.py": {
+      "size": 11951,
+      "mtime_ns": 1771221011975772700
+    },
+    "src/crypto/signed_lattice_bridge.py": {
+      "size": 14146,
+      "mtime_ns": 1771221011976773100
+    },
+    "src/crypto/symphonic_cipher.py": {
+      "size": 8329,
+      "mtime_ns": 1771221011976773100
+    },
+    "src/crypto/symphonic_waveform.py": {
+      "size": 22901,
+      "mtime_ns": 1771221011976773100
+    },
+    "src/errors/index.ts": {
+      "size": 3821,
+      "mtime_ns": 1771221011978277600
+    },
+    "src/fleet/agent-registry.ts": {
+      "size": 11658,
+      "mtime_ns": 1771221011979283200
+    },
+    "src/fleet/asymmetricMovement.ts": {
+      "size": 17783,
+      "mtime_ns": 1771221011980283200
+    },
+    "src/fleet/asymmetric_movement.py": {
+      "size": 8531,
+      "mtime_ns": 1771221011980283200
+    },
+    "src/fleet/browser-pool.ts": {
+      "size": 20182,
+      "mtime_ns": 1771221011981283200
+    },
+    "src/fleet/crawl-coordinator.ts": {
+      "size": 23763,
+      "mtime_ns": 1771221011981283200
+    },
+    "src/fleet/crawl-frontier.ts": {
+      "size": 14945,
+      "mtime_ns": 1771221011982283100
+    },
+    "src/fleet/crawl-message-bus.ts": {
+      "size": 11001,
+      "mtime_ns": 1771221011983283200
+    },
+    "src/fleet/crawl-runner.ts": {
+      "size": 34010,
+      "mtime_ns": 1771221011983283200
+    },
+    "src/fleet/fleet-manager.ts": {
+      "size": 16654,
+      "mtime_ns": 1771221011985181500
+    },
+    "src/fleet/governance.ts": {
+      "size": 12144,
+      "mtime_ns": 1771221011985449700
+    },
+    "src/fleet/index.ts": {
+      "size": 1501,
+      "mtime_ns": 1771221011986454200
+    },
+    "src/fleet/polly-pad-runtime.ts": {
+      "size": 12685,
+      "mtime_ns": 1771221011986958300
+    },
+    "src/fleet/polly-pad.ts": {
+      "size": 20906,
+      "mtime_ns": 1771221011986958300
+    },
+    "src/fleet/polly-pads/capability-store.ts": {
+      "size": 11976,
+      "mtime_ns": 1771221011987966500
+    },
+    "src/fleet/polly-pads/closed-network.ts": {
+      "size": 10470,
+      "mtime_ns": 1771221011988987900
+    },
+    "src/fleet/polly-pads/drone-core.ts": {
+      "size": 13421,
+      "mtime_ns": 1771221011990963900
+    },
+    "src/fleet/polly-pads/index.ts": {
+      "size": 3676,
+      "mtime_ns": 1771221011990963900
+    },
+    "src/fleet/polly-pads/mission-coordinator.ts": {
+      "size": 15249,
+      "mtime_ns": 1771251955705491500
+    },
+    "src/fleet/polly-pads/mode-pad.ts": {
+      "size": 10598,
+      "mtime_ns": 1771221011991964200
+    },
+    "src/fleet/polly-pads/modes/base-mode.ts": {
+      "size": 4259,
+      "mtime_ns": 1771221011992964900
+    },
+    "src/fleet/polly-pads/modes/communications.ts": {
+      "size": 3685,
+      "mtime_ns": 1771221011992964900
+    },
+    "src/fleet/polly-pads/modes/engineering.ts": {
+      "size": 4008,
+      "mtime_ns": 1771221011993964300
+    },
+    "src/fleet/polly-pads/modes/index.ts": {
+      "size": 1989,
+      "mtime_ns": 1771221011993964300
+    },
+    "src/fleet/polly-pads/modes/mission-planning.ts": {
+      "size": 4368,
+      "mtime_ns": 1771221011995468600
+    },
+    "src/fleet/polly-pads/modes/navigation.ts": {
+      "size": 4060,
+      "mtime_ns": 1771221011995468600
+    },
+    "src/fleet/polly-pads/modes/science.ts": {
+      "size": 4140,
+      "mtime_ns": 1771221011996474600
+    },
+    "src/fleet/polly-pads/modes/systems.ts": {
+      "size": 4448,
+      "mtime_ns": 1771221011996474600
+    },
+    "src/fleet/polly-pads/modes/types.ts": {
+      "size": 9566,
+      "mtime_ns": 1771221011997474200
+    },
+    "src/fleet/polly-pads/specialist-modes.ts": {
+      "size": 12004,
+      "mtime_ns": 1771221011997474200
+    },
+    "src/fleet/polly-pads/squad.ts": {
+      "size": 10607,
+      "mtime_ns": 1771221011998474200
+    },
+    "src/fleet/polly-pads/voxel-types.ts": {
+      "size": 5602,
+      "mtime_ns": 1771221011998474200
+    },
+    "src/fleet/redis-orchestrator.ts": {
+      "size": 16159,
+      "mtime_ns": 1771221011999474200
+    },
+    "src/fleet/swarm.ts": {
+      "size": 11686,
+      "mtime_ns": 1771221011999474200
+    },
+    "src/fleet/task-dispatcher.ts": {
+      "size": 14537,
+      "mtime_ns": 1771221012000474300
+    },
+    "src/fleet/types.ts": {
+      "size": 7481,
+      "mtime_ns": 1771221012000474300
+    },
+    "src/gateway/COMPUTATIONAL_IMMUNE_SYSTEM.py": {
+      "size": 17046,
+      "mtime_ns": 1771221012001474200
+    },
+    "src/gateway/DNA_MULTI_LAYER_ENCODING_TEST.py": {
+      "size": 16783,
+      "mtime_ns": 1771221012002474000
+    },
+    "src/gateway/complex_math_core.py": {
+      "size": 16334,
+      "mtime_ns": 1771221012003978900
+    },
+    "src/gateway/index.ts": {
+      "size": 773,
+      "mtime_ns": 1771221012004991000
+    },
+    "src/gateway/unified-api.ts": {
+      "size": 22719,
+      "mtime_ns": 1771221012005985500
+    },
+    "src/geoseal-v2.ts": {
+      "size": 16492,
+      "mtime_ns": 1771221012006987100
+    },
+    "src/geoseal.py": {
+      "size": 8271,
+      "mtime_ns": 1771221012007990900
+    },
+    "src/geoseal.ts": {
+      "size": 9748,
+      "mtime_ns": 1771221012008985100
+    },
+    "src/geosealMetrics.ts": {
+      "size": 3856,
+      "mtime_ns": 1771221012009984500
+    },
+    "src/geosealRAG.ts": {
+      "size": 8072,
+      "mtime_ns": 1771221012009984500
+    },
+    "src/geoseal_v2.py": {
+      "size": 10542,
+      "mtime_ns": 1771221012010984100
+    },
+    "src/governance/audit_ledger.ts": {
+      "size": 103,
+      "mtime_ns": 1771463979222410200
+    },
+    "src/governance/flux_manifest.ts": {
+      "size": 495,
+      "mtime_ns": 1771463951731635100
+    },
+    "src/governance/governance_engine.ts": {
+      "size": 417,
+      "mtime_ns": 1771463960027073100
+    },
+    "src/governance/immutable_laws.ts": {
+      "size": 1421,
+      "mtime_ns": 1771463943482213400
+    },
+    "src/governance/index.ts": {
+      "size": 309,
+      "mtime_ns": 1771464014287808800
+    },
+    "src/governance/mmx.ts": {
+      "size": 2021,
+      "mtime_ns": 1771463974084491900
+    },
+    "src/governance/offline_mode.ts": {
+      "size": 22654,
+      "mtime_ns": 1771463899899457600
+    },
+    "src/governance/pq_crypto.ts": {
+      "size": 101,
+      "mtime_ns": 1771463985589415700
+    },
+    "src/governance/sync_client.ts": {
+      "size": 946,
+      "mtime_ns": 1771464008470973200
+    },
+    "src/governance/voxel_store.ts": {
+      "size": 2267,
+      "mtime_ns": 1771463999553076000
+    },
+    "src/h_lwe.py": {
+      "size": 3641,
+      "mtime_ns": 1771231834224928500
+    },
+    "src/harmonic/adaptiveNavigator.ts": {
+      "size": 65,
+      "mtime_ns": 1771221012010984100
+    },
+    "src/harmonic/assertions.d.ts.map": {
+      "size": 370,
+      "mtime_ns": 1771221012010984100
+    },
+    "src/harmonic/assertions.ts": {
+      "size": 58,
+      "mtime_ns": 1771221012012488300
+    },
+    "src/harmonic/audioAxis.d.ts.map": {
+      "size": 1273,
+      "mtime_ns": 1771221012013495500
+    },
+    "src/harmonic/audioAxis.ts": {
+      "size": 57,
+      "mtime_ns": 1771221012013495500
+    },
+    "src/harmonic/chsfn.ts": {
+      "size": 53,
+      "mtime_ns": 1771221012014494300
+    },
+    "src/harmonic/constants.d.ts.map": {
+      "size": 513,
+      "mtime_ns": 1771221012014494300
+    },
+    "src/harmonic/constants.ts": {
+      "size": 57,
+      "mtime_ns": 1771221012015493900
+    },
+    "src/harmonic/context_encoder.py": {
+      "size": 3454,
+      "mtime_ns": 1771221012015493900
+    },
+    "src/harmonic/driftTracker.ts": {
+      "size": 25981,
+      "mtime_ns": 1771221012016495400
+    },
+    "src/harmonic/encryptedTransport.ts": {
+      "size": 13917,
+      "mtime_ns": 1771221012017495600
+    },
+    "src/harmonic/entropic.ts": {
+      "size": 25309,
+      "mtime_ns": 1771221012017495600
+    },
+    "src/harmonic/entropicLayer.ts": {
+      "size": 61,
+      "mtime_ns": 1771221012018494100
+    },
+    "src/harmonic/fluxState.ts": {
+      "size": 57,
+      "mtime_ns": 1771221012018494100
+    },
+    "src/harmonic/geoSealImmune.ts": {
+      "size": 20556,
+      "mtime_ns": 1771221012019494000
+    },
+    "src/harmonic/governanceSim.ts": {
+      "size": 14889,
+      "mtime_ns": 1771221012021002200
+    },
+    "src/harmonic/governance_logger.py": {
+      "size": 1884,
+      "mtime_ns": 1771231834227928700
+    },
+    "src/harmonic/halAttention.d.ts.map": {
+      "size": 762,
+      "mtime_ns": 1771221012022008700
+    },
+    "src/harmonic/halAttention.ts": {
+      "size": 60,
+      "mtime_ns": 1771221012023010400
+    },
+    "src/harmonic/hamiltonianCFI.d.ts.map": {
+      "size": 2262,
+      "mtime_ns": 1771221012024012100
+    },
+    "src/harmonic/hamiltonianCFI.ts": {
+      "size": 62,
+      "mtime_ns": 1771221012024012100
+    },
+    "src/harmonic/harmonicScaling.d.ts.map": {
+      "size": 667,
+      "mtime_ns": 1771221012025008400
+    },
+    "src/harmonic/harmonicScaling.ts": {
+      "size": 63,
+      "mtime_ns": 1771221012025008400
+    },
+    "src/harmonic/hyperbolic.d.ts.map": {
+      "size": 2196,
+      "mtime_ns": 1771221012026009000
+    },
+    "src/harmonic/hyperbolic.ts": {
+      "size": 23725,
+      "mtime_ns": 1771380771250520800
+    },
+    "src/harmonic/hyperbolicRAG.ts": {
+      "size": 36631,
+      "mtime_ns": 1771221012027009300
+    },
+    "src/harmonic/index.ts": {
+      "size": 20988,
+      "mtime_ns": 1771251957486690400
+    },
+    "src/harmonic/languesMetric.d.ts.map": {
+      "size": 1808,
+      "mtime_ns": 1771221012028008300
+    },
+    "src/harmonic/languesMetric.ts": {
+      "size": 61,
+      "mtime_ns": 1771221012029512800
+    },
+    "src/harmonic/linguisticCrossTalk.ts": {
+      "size": 37989,
+      "mtime_ns": 1771221012029512800
+    },
+    "src/harmonic/mmx.ts": {
+      "size": 5940,
+      "mtime_ns": 1771221012030518600
+    },
+    "src/harmonic/phdm.ts": {
+      "size": 25524,
+      "mtime_ns": 1771221012030518600
+    },
+    "src/harmonic/phdmSheafLattice.ts": {
+      "size": 29255,
+      "mtime_ns": 1771221012031518900
+    },
+    "src/harmonic/phdm_module.py": {
+      "size": 1252,
+      "mtime_ns": 1771231834202927400
+    },
+    "src/harmonic/pipeline14.ts": {
+      "size": 58,
+      "mtime_ns": 1771221012031518900
+    },
+    "src/harmonic/pqc.ts": {
+      "size": 51,
+      "mtime_ns": 1771221012032518600
+    },
+    "src/harmonic/qcLattice.ts": {
+      "size": 57,
+      "mtime_ns": 1771221012032518600
+    },
+    "src/harmonic/qrCubeKdf.ts": {
+      "size": 6415,
+      "mtime_ns": 1771221012033518700
+    },
+    "src/harmonic/quasiSphereOverlap.ts": {
+      "size": 66,
+      "mtime_ns": 1771221012033518700
+    },
+    "src/harmonic/quasiSphereSlice.ts": {
+      "size": 64,
+      "mtime_ns": 1771221012034518600
+    },
+    "src/harmonic/sacredEggs.ts": {
+      "size": 58,
+      "mtime_ns": 1771221012034518600
+    },
+    "src/harmonic/sacredEggsGenesis.ts": {
+      "size": 13744,
+      "mtime_ns": 1771221012036518400
+    },
+    "src/harmonic/sacredTongues.d.ts.map": {
+      "size": 1078,
+      "mtime_ns": 1771221012036518400
+    },
+    "src/harmonic/sacredTongues.ts": {
+      "size": 61,
+      "mtime_ns": 1771221012038030700
+    },
+    "src/harmonic/scbe_voxel_types.ts": {
+      "size": 64,
+      "mtime_ns": 1771221012038030700
+    },
+    "src/harmonic/securityInvariants.ts": {
+      "size": 66,
+      "mtime_ns": 1771221012039038400
+    },
+    "src/harmonic/sheafCohomology.ts": {
+      "size": 50508,
+      "mtime_ns": 1771251959313801600
+    },
+    "src/harmonic/sheaf_consensus_gate.py": {
+      "size": 5261,
+      "mtime_ns": 1771491971362213900
+    },
+    "src/harmonic/spectral-identity.ts": {
+      "size": 65,
+      "mtime_ns": 1771221012041039100
+    },
+    "src/harmonic/spectral_identity.py": {
+      "size": 15144,
+      "mtime_ns": 1771221012041039100
+    },
+    "src/harmonic/spiralSeal.d.ts.map": {
+      "size": 2374,
+      "mtime_ns": 1771221012042037800
+    },
+    "src/harmonic/spiralSeal.ts": {
+      "size": 58,
+      "mtime_ns": 1771221012042037800
+    },
+    "src/harmonic/tBraid.ts": {
+      "size": 54,
+      "mtime_ns": 1771221012043037800
+    },
+    "src/harmonic/tarski_sheaf.py": {
+      "size": 5021,
+      "mtime_ns": 1771221012043037800
+    },
+    "src/harmonic/temporalIntent.ts": {
+      "size": 62,
+      "mtime_ns": 1771221012044038000
+    },
+    "src/harmonic/temporalPhase.ts": {
+      "size": 61,
+      "mtime_ns": 1771221012044038000
+    },
+    "src/harmonic/triDirectionalPlanner.ts": {
+      "size": 69,
+      "mtime_ns": 1771221012045037900
+    },
+    "src/harmonic/triMechanismDetector.ts": {
+      "size": 68,
+      "mtime_ns": 1771221012045037900
+    },
+    "src/harmonic/trustCone.ts": {
+      "size": 57,
+      "mtime_ns": 1771221012045037900
+    },
+    "src/harmonic/vacuumAcoustics.d.ts.map": {
+      "size": 1483,
+      "mtime_ns": 1771221012045037900
+    },
+    "src/harmonic/vacuumAcoustics.ts": {
+      "size": 63,
+      "mtime_ns": 1771221012046541800
+    },
+    "src/harmonic/voxelRecord.ts": {
+      "size": 10866,
+      "mtime_ns": 1771221012047549000
+    },
+    "src/holographic_qr_cube.py": {
+      "size": 1262,
+      "mtime_ns": 1771221012047549000
+    },
+    "src/index.ts": {
+      "size": 2053,
+      "mtime_ns": 1771463912156070300
+    },
+    "src/integrations/huggingface.ts": {
+      "size": 12913,
+      "mtime_ns": 1771221012049548200
+    },
+    "src/integrations/index.ts": {
+      "size": 168,
+      "mtime_ns": 1771221012049548200
+    },
+    "src/integrations/six-tongues.ts": {
+      "size": 6637,
+      "mtime_ns": 1771221012050548400
+    },
+    "src/lambda/README.md": {
+      "size": 636,
+      "mtime_ns": 1771221012051546800
+    },
+    "src/lambda/demo.html": {
+      "size": 27771,
+      "mtime_ns": 1771221012051546800
+    },
+    "src/lambda/index.js": {
+      "size": 24179,
+      "mtime_ns": 1771221012052548900
+    },
+    "src/lambda/product-landing.html": {
+      "size": 28040,
+      "mtime_ns": 1771221012053548100
+    },
+    "src/lambda_tests/__init__.py": {
+      "size": 43,
+      "mtime_ns": 1771221012055053600
+    },
+    "src/lambda_tests/test_pqc.py": {
+      "size": 37343,
+      "mtime_ns": 1771221012056062400
+    },
+    "src/metrics/telemetry.ts": {
+      "size": 1665,
+      "mtime_ns": 1771221012057060600
+    },
+    "src/minimal/README.md": {
+      "size": 2704,
+      "mtime_ns": 1771221012058060200
+    },
+    "src/minimal/__init__.py": {
+      "size": 1108,
+      "mtime_ns": 1771221012058060200
+    },
+    "src/minimal/scbe_core.py": {
+      "size": 14466,
+      "mtime_ns": 1771221012059059600
+    },
+    "src/network/combat-network.ts": {
+      "size": 17268,
+      "mtime_ns": 1771221012060059600
+    },
+    "src/network/contact-graph.ts": {
+      "size": 19618,
+      "mtime_ns": 1771221012060059600
+    },
+    "src/network/hybrid-crypto.ts": {
+      "size": 4288,
+      "mtime_ns": 1771221012061059500
+    },
+    "src/network/index.ts": {
+      "size": 906,
+      "mtime_ns": 1771221012062062500
+    },
+    "src/network/space-tor-router.ts": {
+      "size": 7026,
+      "mtime_ns": 1771221012062062500
+    },
+    "src/package-lock.json": {
+      "size": 49817,
+      "mtime_ns": 1771221012063567500
+    },
+    "src/package.json": {
+      "size": 802,
+      "mtime_ns": 1771221012063567500
+    },
+    "src/paper_bundle_normalizer.py": {
+      "size": 2136,
+      "mtime_ns": 1771382851921105500
+    },
+    "src/physics_sim/__init__.py": {
+      "size": 803,
+      "mtime_ns": 1771221012064574100
+    },
+    "src/physics_sim/atmosphere.py": {
+      "size": 15819,
+      "mtime_ns": 1771221012065574300
+    },
+    "src/physics_sim/core.py": {
+      "size": 22796,
+      "mtime_ns": 1771221012066575600
+    },
+    "src/physics_sim/fluids.py": {
+      "size": 25086,
+      "mtime_ns": 1771221012067575300
+    },
+    "src/physics_sim/nuclear.py": {
+      "size": 23426,
+      "mtime_ns": 1771221012068573800
+    },
+    "src/physics_sim/numerical.py": {
+      "size": 24994,
+      "mtime_ns": 1771221012068573800
+    },
+    "src/physics_sim/orbital.py": {
+      "size": 25780,
+      "mtime_ns": 1771221012069574500
+    },
+    "src/physics_sim/simulator.py": {
+      "size": 26608,
+      "mtime_ns": 1771221012070574300
+    },
+    "src/physics_sim/statistical.py": {
+      "size": 19893,
+      "mtime_ns": 1771221012070574300
+    },
+    "src/physics_sim/test_physics.py": {
+      "size": 8321,
+      "mtime_ns": 1771221012072079800
+    },
+    "src/physics_sim/test_physics_comprehensive.py": {
+      "size": 21330,
+      "mtime_ns": 1771221012073087000
+    },
+    "src/physics_sim/waves_optics.py": {
+      "size": 25480,
+      "mtime_ns": 1771221012074087500
+    },
+    "src/polly_pads_runtime.py": {
+      "size": 18184,
+      "mtime_ns": 1771290719084716000
+    },
+    "src/pqc/symphonic_cipher/__init__.py": {
+      "size": 608,
+      "mtime_ns": 1771221012075927100
+    },
+    "src/pyproject.toml": {
+      "size": 2096,
+      "mtime_ns": 1771221012076796700
+    },
+    "src/requirements.txt": {
+      "size": 266,
+      "mtime_ns": 1771221012076796700
+    },
+    "src/rollout/canary.ts": {
+      "size": 1012,
+      "mtime_ns": 1771221012077880800
+    },
+    "src/rollout/circuitBreaker.ts": {
+      "size": 710,
+      "mtime_ns": 1771221012077880800
+    },
+    "src/scbe/context_encoder.py": {
+      "size": 5127,
+      "mtime_ns": 1771221012079406700
+    },
+    "src/scbe_14layer_reference.py": {
+      "size": 29888,
+      "mtime_ns": 1771385135306094900
+    },
+    "src/scbe_aethermoore_kyber_v2.1.py": {
+      "size": 3002,
+      "mtime_ns": 1771425546795732400
+    },
+    "src/scbe_cpse_unified.py": {
+      "size": 23487,
+      "mtime_ns": 1771221012080466000
+    },
+    "src/scbe_governance_math.py": {
+      "size": 9287,
+      "mtime_ns": 1771221012081471600
+    },
+    "src/scbe_math_reference.py": {
+      "size": 8266,
+      "mtime_ns": 1771221012082471500
+    },
+    "src/science_packs/__init__.py": {
+      "size": 29897,
+      "mtime_ns": 1771221012082471500
+    },
+    "src/security/__init__.py": {
+      "size": 150,
+      "mtime_ns": 1771221012083471600
+    },
+    "src/security/protobuf_patch.py": {
+      "size": 4419,
+      "mtime_ns": 1771221012084471600
+    },
+    "src/selfHealing/coordinator.ts": {
+      "size": 517,
+      "mtime_ns": 1771221012085471500
+    },
+    "src/selfHealing/deepHealing.ts": {
+      "size": 296,
+      "mtime_ns": 1771221012085471500
+    },
+    "src/selfHealing/quickFixBot.ts": {
+      "size": 294,
+      "mtime_ns": 1771221012086471800
+    },
+    "src/selfHealing/selfHealingOrchestrator.py": {
+      "size": 15079,
+      "mtime_ns": 1771221012087471800
+    },
+    "src/shell-executor.ts": {
+      "size": 26912,
+      "mtime_ns": 1771221012088998600
+    },
+    "src/skills/index.ts": {
+      "size": 636,
+      "mtime_ns": 1771221012090005200
+    },
+    "src/skills/socialContent.ts": {
+      "size": 12541,
+      "mtime_ns": 1771221012090005200
+    },
+    "src/skills/tweet-cli.ts": {
+      "size": 6739,
+      "mtime_ns": 1771221012091004100
+    },
+    "src/spaceTor/combat-network.ts": {
+      "size": 6253,
+      "mtime_ns": 1771221012092005100
+    },
+    "src/spaceTor/hybrid-crypto.ts": {
+      "size": 5435,
+      "mtime_ns": 1771221012092005100
+    },
+    "src/spaceTor/space-tor-router.ts": {
+      "size": 7025,
+      "mtime_ns": 1771221012093003900
+    },
+    "src/spaceTor/trust-manager.ts": {
+      "size": 13215,
+      "mtime_ns": 1771221012094005000
+    },
+    "src/spectral/index.ts": {
+      "size": 9993,
+      "mtime_ns": 1771221012095004000
+    },
+    "src/spiralverse/__init__.py": {
+      "size": 5555,
+      "mtime_ns": 1771221012096003800
+    },
+    "src/spiralverse/aethercode.py": {
+      "size": 35014,
+      "mtime_ns": 1771221012096003800
+    },
+    "src/spiralverse/aethermoor_spiral_engine.py": {
+      "size": 20850,
+      "mtime_ns": 1771494345984598300
+    },
+    "src/spiralverse/hive_memory.py": {
+      "size": 25929,
+      "mtime_ns": 1771221012097507800
+    },
+    "src/spiralverse/index.ts": {
+      "size": 11850,
+      "mtime_ns": 1771221012097507800
+    },
+    "src/spiralverse/policy.ts": {
+      "size": 4597,
+      "mtime_ns": 1771221012098513800
+    },
+    "src/spiralverse/polyglot_alphabet.py": {
+      "size": 17210,
+      "mtime_ns": 1771221012099513000
+    },
+    "src/spiralverse/proximity_optimizer.py": {
+      "size": 20014,
+      "mtime_ns": 1771221012100513800
+    },
+    "src/spiralverse/rwp.ts": {
+      "size": 8717,
+      "mtime_ns": 1771221012100513800
+    },
+    "src/spiralverse/rwp2_envelope.py": {
+      "size": 22015,
+      "mtime_ns": 1771221012101964500
+    },
+    "src/spiralverse/rwp_v3.ts": {
+      "size": 9734,
+      "mtime_ns": 1771221012101964500
+    },
+    "src/spiralverse/spiralverse-sdk.ts": {
+      "size": 7731,
+      "mtime_ns": 1771221012102969200
+    },
+    "src/spiralverse/temporal_intent.py": {
+      "size": 21171,
+      "mtime_ns": 1771493963753522500
+    },
+    "src/spiralverse/types.ts": {
+      "size": 3771,
+      "mtime_ns": 1771221012103970400
+    },
+    "src/spiralverse/vector_6d.py": {
+      "size": 22058,
+      "mtime_ns": 1771221012104970600
+    },
+    "src/storage/__init__.py": {
+      "size": 976,
+      "mtime_ns": 1771221012106475500
+    },
+    "src/storage/base.py": {
+      "size": 794,
+      "mtime_ns": 1771221012106475500
+    },
+    "src/storage/filesystem.py": {
+      "size": 1515,
+      "mtime_ns": 1771221012107483600
+    },
+    "src/symphonic/Complex.ts": {
+      "size": 4081,
+      "mtime_ns": 1771221012108484200
+    },
+    "src/symphonic/FFT.ts": {
+      "size": 8657,
+      "mtime_ns": 1771221012108484200
+    },
+    "src/symphonic/Feistel.ts": {
+      "size": 7986,
+      "mtime_ns": 1771221012109481700
+    },
+    "src/symphonic/HybridCrypto.ts": {
+      "size": 10218,
+      "mtime_ns": 1771221012110481600
+    },
+    "src/symphonic/SymphonicAgent.ts": {
+      "size": 9237,
+      "mtime_ns": 1771221012111481700
+    },
+    "src/symphonic/ZBase32.ts": {
+      "size": 5807,
+      "mtime_ns": 1771221012112481000
+    },
+    "src/symphonic/audio/bin-selector.ts": {
+      "size": 2242,
+      "mtime_ns": 1771221012112481000
+    },
+    "src/symphonic/audio/dual-channel-gate.ts": {
+      "size": 3405,
+      "mtime_ns": 1771221012113481600
+    },
+    "src/symphonic/audio/index.ts": {
+      "size": 388,
+      "mtime_ns": 1771221012114481500
+    },
+    "src/symphonic/audio/matched-filter.ts": {
+      "size": 2687,
+      "mtime_ns": 1771221012114481500
+    },
+    "src/symphonic/audio/types.ts": {
+      "size": 2695,
+      "mtime_ns": 1771221012115516200
+    },
+    "src/symphonic/audio/watermark-generator.ts": {
+      "size": 1695,
+      "mtime_ns": 1771221012115516200
+    },
+    "src/symphonic/index.ts": {
+      "size": 2130,
+      "mtime_ns": 1771221012116516500
+    },
+    "src/symphonic_cipher/__init__.py": {
+      "size": 4843,
+      "mtime_ns": 1771221012117526300
+    },
+    "src/symphonic_cipher/ai_verifier.py": {
+      "size": 49109,
+      "mtime_ns": 1771221012117526300
+    },
+    "src/symphonic_cipher/audio/__init__.py": {
+      "size": 242,
+      "mtime_ns": 1771221012118515700
+    },
+    "src/symphonic_cipher/audio/stellar_octave_mapping.py": {
+      "size": 11650,
+      "mtime_ns": 1771221012119515700
+    },
+    "src/symphonic_cipher/core.py": {
+      "size": 28630,
+      "mtime_ns": 1771221012121517800
+    },
+    "src/symphonic_cipher/core/__init__.py": {
+      "size": 366,
+      "mtime_ns": 1771221012123024000
+    },
+    "src/symphonic_cipher/core/cymatic_voxel_storage.py": {
+      "size": 10321,
+      "mtime_ns": 1771221012123024000
+    },
+    "src/symphonic_cipher/core/harmonic_scaling_law.py": {
+      "size": 6751,
+      "mtime_ns": 1771221012124030900
+    },
+    "src/symphonic_cipher/dsp.py": {
+      "size": 28359,
+      "mtime_ns": 1771221012125029600
+    },
+    "src/symphonic_cipher/dual_lattice_consensus.py": {
+      "size": 8043,
+      "mtime_ns": 1771221012125029600
+    },
+    "src/symphonic_cipher/dynamics/__init__.py": {
+      "size": 230,
+      "mtime_ns": 1771221012126028900
+    },
+    "src/symphonic_cipher/dynamics/flux_interaction.py": {
+      "size": 11283,
+      "mtime_ns": 1771221012127029000
+    },
+    "src/symphonic_cipher/flat_slope_encoder.py": {
+      "size": 20434,
+      "mtime_ns": 1771221012127029000
+    },
+    "src/symphonic_cipher/harmonic_scaling_law.py": {
+      "size": 138018,
+      "mtime_ns": 1771221012129029400
+    },
+    "src/symphonic_cipher/qasi_core.py": {
+      "size": 8994,
+      "mtime_ns": 1771221012130029200
+    },
+    "src/symphonic_cipher/scbe_aethermoore/PATENT_SPECIFICATION.md": {
+      "size": 33689,
+      "mtime_ns": 1771221012130029200
+    },
+    "src/symphonic_cipher/scbe_aethermoore/README.md": {
+      "size": 3515,
+      "mtime_ns": 1771221012131533700
+    },
+    "src/symphonic_cipher/scbe_aethermoore/__init__.py": {
+      "size": 19658,
+      "mtime_ns": 1771221012132539500
+    },
+    "src/symphonic_cipher/scbe_aethermoore/_scipy_compat.py": {
+      "size": 11966,
+      "mtime_ns": 1771221012133541000
+    },
+    "src/symphonic_cipher/scbe_aethermoore/adaptive_navigator.py": {
+      "size": 21662,
+      "mtime_ns": 1771221012133541000
+    },
+    "src/symphonic_cipher/scbe_aethermoore/aethercode_layer4_integration.py": {
+      "size": 14989,
+      "mtime_ns": 1771221012134539700
+    },
+    "src/symphonic_cipher/scbe_aethermoore/aetherlex_extract.py": {
+      "size": 35658,
+      "mtime_ns": 1771221012135539400
+    },
+    "src/symphonic_cipher/scbe_aethermoore/ai_brain/__init__.py": {
+      "size": 3902,
+      "mtime_ns": 1771426413584745900
+    },
+    "src/symphonic_cipher/scbe_aethermoore/ai_brain/bft_consensus.py": {
+      "size": 3625,
+      "mtime_ns": 1771221012136539400
+    },
+    "src/symphonic_cipher/scbe_aethermoore/ai_brain/cymatic_voxel_net.py": {
+      "size": 15926,
+      "mtime_ns": 1771221012137542000
+    },
+    "src/symphonic_cipher/scbe_aethermoore/ai_brain/detection.py": {
+      "size": 14821,
+      "mtime_ns": 1771221012138540400
+    },
+    "src/symphonic_cipher/scbe_aethermoore/ai_brain/dual_lattice.py": {
+      "size": 16108,
+      "mtime_ns": 1771221012138540400
+    },
+    "src/symphonic_cipher/scbe_aethermoore/ai_brain/dual_ternary.py": {
+      "size": 16983,
+      "mtime_ns": 1771221012140047000
+    },
+    "src/symphonic_cipher/scbe_aethermoore/ai_brain/fsgs.py": {
+      "size": 17862,
+      "mtime_ns": 1771221012141054700
+    },
+    "src/symphonic_cipher/scbe_aethermoore/ai_brain/governance_adapter.py": {
+      "size": 20718,
+      "mtime_ns": 1771221012142060100
+    },
+    "src/symphonic_cipher/scbe_aethermoore/ai_brain/hamiltonian_braid.py": {
+      "size": 19936,
+      "mtime_ns": 1771427057784941400
+    },
+    "src/symphonic_cipher/scbe_aethermoore/ai_brain/mirror_shift.py": {
+      "size": 15930,
+      "mtime_ns": 1771221012143060100
+    },
+    "src/symphonic_cipher/scbe_aethermoore/ai_brain/multiscale_spectrum.py": {
+      "size": 12509,
+      "mtime_ns": 1771221012144059800
+    },
+    "src/symphonic_cipher/scbe_aethermoore/ai_brain/tri_manifold_lattice.py": {
+      "size": 15410,
+      "mtime_ns": 1771221012144059800
+    },
+    "src/symphonic_cipher/scbe_aethermoore/ai_brain/unified_state.py": {
+      "size": 9462,
+      "mtime_ns": 1771221012145068800
+    },
+    "src/symphonic_cipher/scbe_aethermoore/attack_simulation.py": {
+      "size": 17657,
+      "mtime_ns": 1771221012145068800
+    },
+    "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/SPECIFICATION.md": {
+      "size": 10876,
+      "mtime_ns": 1771221012146060100
+    },
+    "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/__init__.py": {
+      "size": 12100,
+      "mtime_ns": 1771221012147060100
+    },
+    "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/audio_axis.py": {
+      "size": 11656,
+      "mtime_ns": 1771221012147060100
+    },
+    "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/benchmark_comparison.py": {
+      "size": 23623,
+      "mtime_ns": 1771221012148566100
+    },
+    "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/causality_axiom.py": {
+      "size": 22596,
+      "mtime_ns": 1771485905728699900
+    },
+    "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/composition_axiom.py": {
+      "size": 24435,
+      "mtime_ns": 1771221012150088300
+    },
+    "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/demo_for_elon.py": {
+      "size": 6397,
+      "mtime_ns": 1771221012150088300
+    },
+    "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/dual_mode_core.py": {
+      "size": 22166,
+      "mtime_ns": 1771221012151088100
+    },
+    "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/hamiltonian_cfi.py": {
+      "size": 15412,
+      "mtime_ns": 1771221012152089000
+    },
+    "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/langues_metric.py": {
+      "size": 22833,
+      "mtime_ns": 1771221012153089100
+    },
+    "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/locality_axiom.py": {
+      "size": 17905,
+      "mtime_ns": 1771485828760988000
+    },
+    "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/symmetry_axiom.py": {
+      "size": 19881,
+      "mtime_ns": 1771485972872777200
+    },
+    "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/tests/__init__.py": {
+      "size": 43,
+      "mtime_ns": 1771221012155088000
+    },
+    "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/tests/test_axiom_grouped.py": {
+      "size": 24224,
+      "mtime_ns": 1771221012156090500
+    },
+    "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/tests/test_dual_mode_pure.py": {
+      "size": 12407,
+      "mtime_ns": 1771221012157090100
+    },
+    "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/tests/validate_system.py": {
+      "size": 12402,
+      "mtime_ns": 1771221012157090100
+    },
+    "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/unitarity_axiom.py": {
+      "size": 16427,
+      "mtime_ns": 1771485965211887500
+    },
+    "src/symphonic_cipher/scbe_aethermoore/cli_toolkit.py": {
+      "size": 36954,
+      "mtime_ns": 1771221012158391800
+    },
+    "src/symphonic_cipher/scbe_aethermoore/constants.py": {
+      "size": 9107,
+      "mtime_ns": 1771221012159391500
+    },
+    "src/symphonic_cipher/scbe_aethermoore/cpse.py": {
+      "size": 25770,
+      "mtime_ns": 1771221012160391500
+    },
+    "src/symphonic_cipher/scbe_aethermoore/cpse_integrator.py": {
+      "size": 16405,
+      "mtime_ns": 1771221012161391600
+    },
+    "src/symphonic_cipher/scbe_aethermoore/cymatic_storage.py": {
+      "size": 23848,
+      "mtime_ns": 1771221012162391600
+    },
+    "src/symphonic_cipher/scbe_aethermoore/dual_lattice.py": {
+      "size": 26063,
+      "mtime_ns": 1771221012163017900
+    },
+    "src/symphonic_cipher/scbe_aethermoore/ede/__init__.py": {
+      "size": 4003,
+      "mtime_ns": 1771221012164023600
+    },
+    "src/symphonic_cipher/scbe_aethermoore/ede/chemistry_agent.py": {
+      "size": 19076,
+      "mtime_ns": 1771221012164023600
+    },
+    "src/symphonic_cipher/scbe_aethermoore/ede/ede_protocol.py": {
+      "size": 17373,
+      "mtime_ns": 1771221012165527900
+    },
+    "src/symphonic_cipher/scbe_aethermoore/ede/spiral_ring.py": {
+      "size": 16550,
+      "mtime_ns": 1771221012166533100
+    },
+    "src/symphonic_cipher/scbe_aethermoore/fractional_flux.py": {
+      "size": 23909,
+      "mtime_ns": 1771221012166533100
+    },
+    "src/symphonic_cipher/scbe_aethermoore/full_system.py": {
+      "size": 25669,
+      "mtime_ns": 1771221012167533600
+    },
+    "src/symphonic_cipher/scbe_aethermoore/governance/__init__.py": {
+      "size": 476,
+      "mtime_ns": 1771221012168534500
+    },
+    "src/symphonic_cipher/scbe_aethermoore/hal_attention.py": {
+      "size": 19900,
+      "mtime_ns": 1771221012168534500
+    },
+    "src/symphonic_cipher/scbe_aethermoore/kyber_orchestrator.py": {
+      "size": 20648,
+      "mtime_ns": 1771221012169533200
+    },
+    "src/symphonic_cipher/scbe_aethermoore/layer13_hive_integration.py": {
+      "size": 18103,
+      "mtime_ns": 1771221012170533900
+    },
+    "src/symphonic_cipher/scbe_aethermoore/layer_13.py": {
+      "size": 27678,
+      "mtime_ns": 1771221012171538000
+    },
+    "src/symphonic_cipher/scbe_aethermoore/layer_tests.py": {
+      "size": 61501,
+      "mtime_ns": 1771221012172533800
+    },
+    "src/symphonic_cipher/scbe_aethermoore/layers/__init__.py": {
+      "size": 3241,
+      "mtime_ns": 1771221012172533800
+    },
+    "src/symphonic_cipher/scbe_aethermoore/layers/fourteen_layer_pipeline.py": {
+      "size": 36848,
+      "mtime_ns": 1771376702195581600
+    },
+    "src/symphonic_cipher/scbe_aethermoore/layers/paper_aggregator.py": {
+      "size": 4776,
+      "mtime_ns": 1771382841093395600
+    },
+    "src/symphonic_cipher/scbe_aethermoore/layers_9_12.py": {
+      "size": 27085,
+      "mtime_ns": 1771221012175064000
+    },
+    "src/symphonic_cipher/scbe_aethermoore/living_metric.py": {
+      "size": 24884,
+      "mtime_ns": 1771221012176048200
+    },
+    "src/symphonic_cipher/scbe_aethermoore/manifold/__init__.py": {
+      "size": 518,
+      "mtime_ns": 1771221012177049300
+    },
+    "src/symphonic_cipher/scbe_aethermoore/mass_system_grok.py": {
+      "size": 20372,
+      "mtime_ns": 1771221012177049300
+    },
+    "src/symphonic_cipher/scbe_aethermoore/multimodal/__init__.py": {
+      "size": 327,
+      "mtime_ns": 1771221012178048100
+    },
+    "src/symphonic_cipher/scbe_aethermoore/multimodal/mmx.py": {
+      "size": 5987,
+      "mtime_ns": 1771221012179049900
+    },
+    "src/symphonic_cipher/scbe_aethermoore/organic_hyperbolic.py": {
+      "size": 35696,
+      "mtime_ns": 1771221012180049000
+    },
+    "src/symphonic_cipher/scbe_aethermoore/patent_validation_tests.py": {
+      "size": 27019,
+      "mtime_ns": 1771221012180049000
+    },
+    "src/symphonic_cipher/scbe_aethermoore/phdm_module.py": {
+      "size": 26011,
+      "mtime_ns": 1771221012181047900
+    },
+    "src/symphonic_cipher/scbe_aethermoore/polyglot_layer12_integration.py": {
+      "size": 16052,
+      "mtime_ns": 1771221012181047900
+    },
+    "src/symphonic_cipher/scbe_aethermoore/pqc/__init__.py": {
+      "size": 5248,
+      "mtime_ns": 1771221012182552500
+    },
+    "src/symphonic_cipher/scbe_aethermoore/pqc/pqc_audit.py": {
+      "size": 20467,
+      "mtime_ns": 1771221012183558400
+    },
+    "src/symphonic_cipher/scbe_aethermoore/pqc/pqc_core.py": {
+      "size": 19747,
+      "mtime_ns": 1771425468816912800
+    },
+    "src/symphonic_cipher/scbe_aethermoore/pqc/pqc_harmonic.py": {
+      "size": 25985,
+      "mtime_ns": 1771221012184558500
+    },
+    "src/symphonic_cipher/scbe_aethermoore/pqc/pqc_hmac.py": {
+      "size": 16030,
+      "mtime_ns": 1771221012185559400
+    },
+    "src/symphonic_cipher/scbe_aethermoore/pqc_module.py": {
+      "size": 21596,
+      "mtime_ns": 1771425538001493300
+    },
+    "src/symphonic_cipher/scbe_aethermoore/production_v2_1.py": {
+      "size": 60443,
+      "mtime_ns": 1771221012186558400
+    },
+    "src/symphonic_cipher/scbe_aethermoore/proofs_verification.py": {
+      "size": 24322,
+      "mtime_ns": 1771221012187569800
+    },
+    "src/symphonic_cipher/scbe_aethermoore/qasi_core.py": {
+      "size": 13834,
+      "mtime_ns": 1771221012188559200
+    },
+    "src/symphonic_cipher/scbe_aethermoore/qc_lattice/__init__.py": {
+      "size": 2843,
+      "mtime_ns": 1771221012189561700
+    },
+    "src/symphonic_cipher/scbe_aethermoore/qc_lattice/integration.py": {
+      "size": 16671,
+      "mtime_ns": 1771221012189561700
+    },
+    "src/symphonic_cipher/scbe_aethermoore/qc_lattice/phdm.py": {
+      "size": 21346,
+      "mtime_ns": 1771221012189561700
+    },
+    "src/symphonic_cipher/scbe_aethermoore/qc_lattice/quasicrystal.py": {
+      "size": 16999,
+      "mtime_ns": 1771221012191067500
+    },
+    "src/symphonic_cipher/scbe_aethermoore/qr_cube_kdf.py": {
+      "size": 7098,
+      "mtime_ns": 1771221012192470000
+    },
+    "src/symphonic_cipher/scbe_aethermoore/quantum/__init__.py": {
+      "size": 373,
+      "mtime_ns": 1771221012192470000
+    },
+    "src/symphonic_cipher/scbe_aethermoore/sacred_eggs.py": {
+      "size": 13341,
+      "mtime_ns": 1771221012193475500
+    },
+    "src/symphonic_cipher/scbe_aethermoore/sacred_eggs_ref.py": {
+      "size": 12930,
+      "mtime_ns": 1771221012194760600
+    },
+    "src/symphonic_cipher/scbe_aethermoore/scbe_aethermoore_core.py": {
+      "size": 15153,
+      "mtime_ns": 1771221012195420200
+    },
+    "src/symphonic_cipher/scbe_aethermoore/spiral_seal/__init__.py": {
+      "size": 1980,
+      "mtime_ns": 1771221012195420200
+    },
+    "src/symphonic_cipher/scbe_aethermoore/spiral_seal/key_exchange.py": {
+      "size": 5092,
+      "mtime_ns": 1771425495046774900
+    },
+    "src/symphonic_cipher/scbe_aethermoore/spiral_seal/sacred_tongues.py": {
+      "size": 11918,
+      "mtime_ns": 1771221012196808900
+    },
+    "src/symphonic_cipher/scbe_aethermoore/spiral_seal/seal.py": {
+      "size": 13282,
+      "mtime_ns": 1771221012197814800
+    },
+    "src/symphonic_cipher/scbe_aethermoore/spiral_seal/signatures.py": {
+      "size": 5039,
+      "mtime_ns": 1771425517238908100
+    },
+    "src/symphonic_cipher/scbe_aethermoore/spiral_seal/spiral_seal.py": {
+      "size": 35948,
+      "mtime_ns": 1771221012198814000
+    },
+    "src/symphonic_cipher/scbe_aethermoore/spiral_seal/utils.py": {
+      "size": 4681,
+      "mtime_ns": 1771221012199814300
+    },
+    "src/symphonic_cipher/scbe_aethermoore/test_scbe_system.py": {
+      "size": 29657,
+      "mtime_ns": 1771221012200319200
+    },
+    "src/symphonic_cipher/scbe_aethermoore/tri_mechanism_detector.py": {
+      "size": 16701,
+      "mtime_ns": 1771221012200319200
+    },
+    "src/symphonic_cipher/scbe_aethermoore/unified.py": {
+      "size": 37621,
+      "mtime_ns": 1771221012201325200
+    },
+    "src/symphonic_cipher/scbe_aethermoore/vacuum_acoustics.py": {
+      "size": 20221,
+      "mtime_ns": 1771221012202325400
+    },
+    "src/symphonic_cipher/scbe_aethermoore_core.py": {
+      "size": 13778,
+      "mtime_ns": 1771221012202325400
+    },
+    "src/symphonic_cipher/scbe_aethermoore_kyber_v2.1.py": {
+      "size": 22894,
+      "mtime_ns": 1771221012203325200
+    },
+    "src/symphonic_cipher/scbe_aethermoore_v2.1_production.py": {
+      "size": 25807,
+      "mtime_ns": 1771221012204331700
+    },
+    "src/symphonic_cipher/spiralverse/sdk.py": {
+      "size": 972,
+      "mtime_ns": 1771231834218957200
+    },
+    "src/symphonic_cipher/symphonic_core.py": {
+      "size": 28630,
+      "mtime_ns": 1771221012205326800
+    },
+    "src/symphonic_cipher/tests/__init__.py": {
+      "size": 35,
+      "mtime_ns": 1771221012206339900
+    },
+    "src/symphonic_cipher/tests/test_axiom_verification.py": {
+      "size": 22334,
+      "mtime_ns": 1771221012207325800
+    },
+    "src/symphonic_cipher/tests/test_core.py": {
+      "size": 16113,
+      "mtime_ns": 1771221012208325400
+    },
+    "src/symphonic_cipher/tests/test_cpse_physics.py": {
+      "size": 10369,
+      "mtime_ns": 1771221012208833800
+    },
+    "src/symphonic_cipher/tests/test_flat_slope.py": {
+      "size": 22575,
+      "mtime_ns": 1771221012208833800
+    },
+    "src/symphonic_cipher/tests/test_fourteen_layer.py": {
+      "size": 19908,
+      "mtime_ns": 1771221012209835500
+    },
+    "src/symphonic_cipher/tests/test_full_system.py": {
+      "size": 9079,
+      "mtime_ns": 1771221012210835700
+    },
+    "src/symphonic_cipher/tests/test_harmonic_scaling.py": {
+      "size": 108356,
+      "mtime_ns": 1771221012210835700
+    },
+    "src/symphonic_cipher/tests/test_patent_modules.py": {
+      "size": 11344,
+      "mtime_ns": 1771221012211835500
+    },
+    "src/symphonic_cipher/topological_cfi.py": {
+      "size": 15638,
+      "mtime_ns": 1771221012212849700
+    },
+    "src/synesthesia_embedding.py": {
+      "size": 2739,
+      "mtime_ns": 1771385100838156800
+    },
+    "src/tokenizer/index.ts": {
+      "size": 1445,
+      "mtime_ns": 1771221012212849700
+    },
+    "src/tokenizer/quantum-lattice.ts": {
+      "size": 13452,
+      "mtime_ns": 1771221012213854800
+    },
+    "src/tokenizer/ss1.ts": {
+      "size": 19243,
+      "mtime_ns": 1771221012214586200
+    },
+    "src/tsconfig.json": {
+      "size": 615,
+      "mtime_ns": 1771221012214586200
+    },
+    "src/utils/logger.ts": {
+      "size": 5023,
+      "mtime_ns": 1771221012215590900
+    },
+    "src/video/audio.ts": {
+      "size": 10803,
+      "mtime_ns": 1771221012215590900
+    },
+    "src/video/fractal.ts": {
+      "size": 12318,
+      "mtime_ns": 1771221012217094900
+    },
+    "src/video/generator.ts": {
+      "size": 15017,
+      "mtime_ns": 1771221012217094900
+    },
+    "src/video/index.ts": {
+      "size": 2064,
+      "mtime_ns": 1771221012218384500
+    },
+    "src/video/security-integration.ts": {
+      "size": 19693,
+      "mtime_ns": 1771221012219388800
+    },
+    "src/video/trajectory.ts": {
+      "size": 13962,
+      "mtime_ns": 1771221012219388800
+    },
+    "src/video/types.ts": {
+      "size": 6756,
+      "mtime_ns": 1771221012220406100
+    },
+    "src/video/watermark.ts": {
+      "size": 11059,
+      "mtime_ns": 1771221012221389800
+    },
+    "src/vitest.config.ts": {
+      "size": 383,
+      "mtime_ns": 1771221012221389800
+    },
+    "stress_test.py": {
+      "size": 34761,
+      "mtime_ns": 1771221012222389800
+    },
+    "symphonic_cipher_geoseal_manifold.py": {
+      "size": 8815,
+      "mtime_ns": 1771221012292479000
+    },
+    "symphonic_cipher_spiralverse_sdk.py": {
+      "size": 16565,
+      "mtime_ns": 1771221012292479000
+    },
+    "test_aethermoore_validation.py": {
+      "size": 22833,
+      "mtime_ns": 1771221012297130200
+    },
+    "test_combined_protocol.py": {
+      "size": 23608,
+      "mtime_ns": 1771221012297130200
+    },
+    "test_flat_slope.py": {
+      "size": 12393,
+      "mtime_ns": 1771221012298137900
+    },
+    "test_harmonic_scaling_integration.py": {
+      "size": 18035,
+      "mtime_ns": 1771221012299123600
+    },
+    "test_physics.py": {
+      "size": 3071,
+      "mtime_ns": 1771221012300129800
+    },
+    "tests/L1-basic/index.ts": {
+      "size": 489,
+      "mtime_ns": 1771221012302634300
+    },
+    "tests/L1-basic/smoke.test.ts": {
+      "size": 2158,
+      "mtime_ns": 1771221012303639800
+    },
+    "tests/L2-unit/asymmetricMovement.unit.test.ts": {
+      "size": 19479,
+      "mtime_ns": 1771221012304643000
+    },
+    "tests/L2-unit/cdp-backend.unit.test.ts": {
+      "size": 42076,
+      "mtime_ns": 1771221012305640400
+    },
+    "tests/L2-unit/chsfn.unit.test.ts": {
+      "size": 12370,
+      "mtime_ns": 1771221012306643000
+    },
+    "tests/L2-unit/cli.unit.test.ts": {
+      "size": 7098,
+      "mtime_ns": 1771389846860213900
+    },
+    "tests/L2-unit/entropicLayer.unit.test.ts": {
+      "size": 15591,
+      "mtime_ns": 1771221012307641700
+    },
+    "tests/L2-unit/governanceSim.unit.test.ts": {
+      "size": 19627,
+      "mtime_ns": 1771221012308641000
+    },
+    "tests/L2-unit/hyperbolicRAG.unit.test.ts": {
+      "size": 20261,
+      "mtime_ns": 1771221012309600500
+    },
+    "tests/L2-unit/index.ts": {
+      "size": 504,
+      "mtime_ns": 1771221012309600500
+    },
+    "tests/L2-unit/mmx.unit.test.ts": {
+      "size": 8927,
+      "mtime_ns": 1771221012310605700
+    },
+    "tests/L2-unit/polly-pad-runtime.unit.test.ts": {
+      "size": 12301,
+      "mtime_ns": 1771221012311110200
+    },
+    "tests/L2-unit/qrCubeKdf.unit.test.ts": {
+      "size": 9553,
+      "mtime_ns": 1771221012311110200
+    },
+    "tests/L2-unit/quasiSphereOverlap.unit.test.ts": {
+      "size": 19573,
+      "mtime_ns": 1771221012312115900
+    },
+    "tests/L2-unit/quasiSphereSlice.unit.test.ts": {
+      "size": 10739,
+      "mtime_ns": 1771221012313115500
+    },
+    "tests/L2-unit/securityInvariants.unit.test.ts": {
+      "size": 12892,
+      "mtime_ns": 1771221012313115500
+    },
+    "tests/L2-unit/sheafCohomology.unit.test.ts": {
+      "size": 32332,
+      "mtime_ns": 1771221012314116100
+    },
+    "tests/L2-unit/spectral-coherence.unit.test.ts": {
+      "size": 7197,
+      "mtime_ns": 1771221012315116000
+    },
+    "tests/L2-unit/tBraid.unit.test.ts": {
+      "size": 32786,
+      "mtime_ns": 1771221012316117000
+    },
+    "tests/L2-unit/temporalIntent.unit.test.ts": {
+      "size": 23927,
+      "mtime_ns": 1771221012316117000
+    },
+    "tests/L2-unit/temporalPhase.unit.test.ts": {
+      "size": 36485,
+      "mtime_ns": 1771221012317116600
+    },
+    "tests/L2-unit/triDirectionalPlanner.unit.test.ts": {
+      "size": 9012,
+      "mtime_ns": 1771221012318115800
+    },
+    "tests/L2-unit/voxelRecord.unit.test.ts": {
+      "size": 13043,
+      "mtime_ns": 1771221012318115800
+    },
+    "tests/L3-integration/index.ts": {
+      "size": 511,
+      "mtime_ns": 1771221012318115800
+    },
+    "tests/L3-integration/pipeline.integration.test.ts": {
+      "size": 9145,
+      "mtime_ns": 1771221012319619800
+    },
+    "tests/L4-property/index.ts": {
+      "size": 553,
+      "mtime_ns": 1771221012320625900
+    },
+    "tests/L4-property/spectral.property.test.ts": {
+      "size": 2704,
+      "mtime_ns": 1771221012320625900
+    },
+    "tests/L5-security/crypto-boundaries.security.test.ts": {
+      "size": 8665,
+      "mtime_ns": 1771221012322627600
+    },
+    "tests/L5-security/index.ts": {
+      "size": 554,
+      "mtime_ns": 1771221012322627600
+    },
+    "tests/L6-adversarial/index.ts": {
+      "size": 627,
+      "mtime_ns": 1771221012324625200
+    },
+    "tests/L6-adversarial/rwp-envelope.adversarial.test.ts": {
+      "size": 8471,
+      "mtime_ns": 1771221012324625200
+    },
+    "tests/README.md": {
+      "size": 9752,
+      "mtime_ns": 1771221012326007400
+    },
+    "tests/__init__.py": {
+      "size": 43,
+      "mtime_ns": 1771221012326656500
+    },
+    "tests/acceptance.tamper.test.ts": {
+      "size": 1997,
+      "mtime_ns": 1771221012326656500
+    },
+    "tests/aethermoore_aqm.png": {
+      "size": 87407,
+      "mtime_ns": 1771221012327982100
+    },
+    "tests/aethermoore_constants/test_all_constants.py": {
+      "size": 11311,
+      "mtime_ns": 1771221012328987800
+    },
+    "tests/aethermoore_soliton.png": {
+      "size": 57145,
+      "mtime_ns": 1771221012330123500
+    },
+    "tests/agent/agent.property.test.ts": {
+      "size": 19980,
+      "mtime_ns": 1771389876900849500
+    },
+    "tests/agent/hyperbolic-weakness.test.ts": {
+      "size": 1334,
+      "mtime_ns": 1771380801268787800
+    },
+    "tests/agentic/distributed-workflow.test.ts": {
+      "size": 4046,
+      "mtime_ns": 1771221012332130600
+    },
+    "tests/agentic/platform.test.ts": {
+      "size": 13316,
+      "mtime_ns": 1771221012333128400
+    },
+    "tests/ai_brain/audit.test.ts": {
+      "size": 3884,
+      "mtime_ns": 1771221012334131500
+    },
+    "tests/ai_brain/bee-immune-tiers.test.ts": {
+      "size": 23214,
+      "mtime_ns": 1771221012334131500
+    },
+    "tests/ai_brain/bft-consensus.test.ts": {
+      "size": 10869,
+      "mtime_ns": 1771221012335128700
+    },
+    "tests/ai_brain/brain-integration.test.ts": {
+      "size": 24616,
+      "mtime_ns": 1771221012336634300
+    },
+    "tests/ai_brain/conservation.test.ts": {
+      "size": 24676,
+      "mtime_ns": 1771221012336634300
+    },
+    "tests/ai_brain/cymatic-voxel-net.test.ts": {
+      "size": 17260,
+      "mtime_ns": 1771221012338666000
+    },
+    "tests/ai_brain/detection.test.ts": {
+      "size": 14991,
+      "mtime_ns": 1771221012339641200
+    },
+    "tests/ai_brain/dual-lattice.test.ts": {
+      "size": 17947,
+      "mtime_ns": 1771221012340646800
+    },
+    "tests/ai_brain/dual-ternary.test.ts": {
+      "size": 20930,
+      "mtime_ns": 1771221012341642400
+    },
+    "tests/ai_brain/entropic-layer.test.ts": {
+      "size": 14082,
+      "mtime_ns": 1771221012342640800
+    },
+    "tests/ai_brain/hamiltonian-braid.test.ts": {
+      "size": 35047,
+      "mtime_ns": 1771221012342640800
+    },
+    "tests/ai_brain/hyperbolic-rag.test.ts": {
+      "size": 15073,
+      "mtime_ns": 1771221012343650200
+    },
+    "tests/ai_brain/immune-response.test.ts": {
+      "size": 22653,
+      "mtime_ns": 1771221012343650200
+    },
+    "tests/ai_brain/phdm-core.test.ts": {
+      "size": 29317,
+      "mtime_ns": 1771221012345155800
+    },
+    "tests/ai_brain/quasi-space.test.ts": {
+      "size": 13556,
+      "mtime_ns": 1771221012346161700
+    },
+    "tests/ai_brain/swarm-formation.test.ts": {
+      "size": 18515,
+      "mtime_ns": 1771221012346161700
+    },
+    "tests/ai_brain/timeOverIntent.test.ts": {
+      "size": 14660,
+      "mtime_ns": 1771221012347161700
+    },
+    "tests/ai_brain/trajectory-simulator.test.ts": {
+      "size": 13446,
+      "mtime_ns": 1771221012348161600
+    },
+    "tests/ai_brain/tri-manifold-lattice.test.ts": {
+      "size": 25137,
+      "mtime_ns": 1771221012349161500
+    },
+    "tests/ai_brain/unified-kernel.test.ts": {
+      "size": 25994,
+      "mtime_ns": 1771221012349161500
+    },
+    "tests/ai_brain/unified-state.test.ts": {
+      "size": 10831,
+      "mtime_ns": 1771221012350161300
+    },
+    "tests/api/api.test.ts": {
+      "size": 12044,
+      "mtime_ns": 1771221012351161300
+    },
+    "tests/api/test_metering.py": {
+      "size": 1413,
+      "mtime_ns": 1771221012352161400
+    },
+    "tests/browser/playwrightBackend.test.ts": {
+      "size": 25306,
+      "mtime_ns": 1771221012352161400
+    },
+    "tests/compliance_report.py": {
+      "size": 80698,
+      "mtime_ns": 1771221012353667000
+    },
+    "tests/conftest.py": {
+      "size": 9444,
+      "mtime_ns": 1771427007388605500
+    },
+    "tests/cross-industry/bank/bank-scenarios.spec.ts": {
+      "size": 11441,
+      "mtime_ns": 1771221012356673500
+    },
+    "tests/cross-industry/common/attack-lib.ts": {
+      "size": 7511,
+      "mtime_ns": 1771221012357673200
+    },
+    "tests/cross-industry/common/governance-engine.mock.ts": {
+      "size": 16970,
+      "mtime_ns": 1771221012358672700
+    },
+    "tests/cross-industry/common/index.ts": {
+      "size": 257,
+      "mtime_ns": 1771221012358672700
+    },
+    "tests/cross-industry/common/types.ts": {
+      "size": 2786,
+      "mtime_ns": 1771221012358672700
+    },
+    "tests/cross-industry/healthcare/healthcare-scenarios.spec.ts": {
+      "size": 11677,
+      "mtime_ns": 1771221012359672700
+    },
+    "tests/cross-industry/manufacturing/manufacturing-scenarios.spec.ts": {
+      "size": 13534,
+      "mtime_ns": 1771221012360672600
+    },
+    "tests/cross-language/hyperbolic-parity.test.ts": {
+      "size": 7878,
+      "mtime_ns": 1771221012362177600
+    },
+    "tests/crypto/__init__.py": {
+      "size": 23,
+      "mtime_ns": 1771221012363183500
+    },
+    "tests/crypto/aetherlexSeed.test.ts": {
+      "size": 22665,
+      "mtime_ns": 1771221012363183500
+    },
+    "tests/crypto/platform.test.ts": {
+      "size": 7025,
+      "mtime_ns": 1771221012364183400
+    },
+    "tests/crypto/pqc-strategies.test.ts": {
+      "size": 20575,
+      "mtime_ns": 1771221012365183200
+    },
+    "tests/crypto/pqc.test.ts": {
+      "size": 2787,
+      "mtime_ns": 1771230460425080300
+    },
+    "tests/crypto/quantum-safe.test.ts": {
+      "size": 22953,
+      "mtime_ns": 1771221012365183200
+    },
+    "tests/crypto/replayGuard.redis.test.ts": {
+      "size": 6509,
+      "mtime_ns": 1771221012366183300
+    },
+    "tests/crypto/replayGuard.test.ts": {
+      "size": 7444,
+      "mtime_ns": 1771221012367183500
+    },
+    "tests/crypto/test_dual_lattice_integration.py": {
+      "size": 18034,
+      "mtime_ns": 1771221012368183500
+    },
+    "tests/crypto/test_rwp_v3.py": {
+      "size": 13415,
+      "mtime_ns": 1771221012368183500
+    },
+    "tests/crypto/test_rwp_v3_properties.py": {
+      "size": 14640,
+      "mtime_ns": 1771221012369183500
+    },
+    "tests/crypto/test_sacred_tongues.py": {
+      "size": 11821,
+      "mtime_ns": 1771221012369183500
+    },
+    "tests/demo_telemetry.py": {
+      "size": 10067,
+      "mtime_ns": 1771221012370691000
+    },
+    "tests/enterprise/ENTERPRISE_TESTING_GUIDE.md": {
+      "size": 15021,
+      "mtime_ns": 1771221012371697500
+    },
+    "tests/enterprise/README.md": {
+      "size": 1581,
+      "mtime_ns": 1771221012372699200
+    },
+    "tests/enterprise/SETUP_COMPLETE.md": {
+      "size": 6488,
+      "mtime_ns": 1771221012372699200
+    },
+    "tests/enterprise/TASK_1_SUMMARY.md": {
+      "size": 0,
+      "mtime_ns": 1771221012373696800
+    },
+    "tests/enterprise/agentic/README.md": {
+      "size": 1102,
+      "mtime_ns": 1771221012374790700
+    },
+    "tests/enterprise/agentic/property_tests.test.ts": {
+      "size": 9263,
+      "mtime_ns": 1771221012374790700
+    },
+    "tests/enterprise/ai_brain/README.md": {
+      "size": 1056,
+      "mtime_ns": 1771221012375795300
+    },
+    "tests/enterprise/ai_brain/brain-mapping.test.ts": {
+      "size": 30579,
+      "mtime_ns": 1771221012376795600
+    },
+    "tests/enterprise/ai_brain/property_tests.test.ts": {
+      "size": 10243,
+      "mtime_ns": 1771221012377795800
+    },
+    "tests/enterprise/compliance/README.md": {
+      "size": 1069,
+      "mtime_ns": 1771221012377795800
+    },
+    "tests/enterprise/compliance/property_tests.test.ts": {
+      "size": 10042,
+      "mtime_ns": 1771221012379300300
+    },
+    "tests/enterprise/conftest.py": {
+      "size": 4377,
+      "mtime_ns": 1771221012379300300
+    },
+    "tests/enterprise/formal/README.md": {
+      "size": 910,
+      "mtime_ns": 1771221012381307600
+    },
+    "tests/enterprise/formal/property_tests.test.ts": {
+      "size": 10669,
+      "mtime_ns": 1771221012382307000
+    },
+    "tests/enterprise/integration/README.md": {
+      "size": 647,
+      "mtime_ns": 1771221012382307000
+    },
+    "tests/enterprise/quantum/README.md": {
+      "size": 1072,
+      "mtime_ns": 1771221012383306100
+    },
+    "tests/enterprise/quantum/property_tests.test.ts": {
+      "size": 7623,
+      "mtime_ns": 1771221012384306400
+    },
+    "tests/enterprise/quantum/setup_verification.test.ts": {
+      "size": 746,
+      "mtime_ns": 1771221012384306400
+    },
+    "tests/enterprise/quantum/test_setup_verification.py": {
+      "size": 1208,
+      "mtime_ns": 1771221012385306100
+    },
+    "tests/enterprise/security/README.md": {
+      "size": 1046,
+      "mtime_ns": 1771221012386305900
+    },
+    "tests/enterprise/security/property_tests.test.ts": {
+      "size": 8849,
+      "mtime_ns": 1771221012386305900
+    },
+    "tests/enterprise/stress/README.md": {
+      "size": 985,
+      "mtime_ns": 1771221012388822800
+    },
+    "tests/enterprise/stress/property_tests.test.ts": {
+      "size": 7104,
+      "mtime_ns": 1771221012388822800
+    },
+    "tests/enterprise/test.config.ts": {
+      "size": 2251,
+      "mtime_ns": 1771221012389826100
+    },
+    "tests/enterprise/tsconfig.json": {
+      "size": 510,
+      "mtime_ns": 1771221012389826100
+    },
+    "tests/fleet/browser-pool.test.ts": {
+      "size": 24354,
+      "mtime_ns": 1771221012391823000
+    },
+    "tests/fleet/crawl-coordinator.test.ts": {
+      "size": 34581,
+      "mtime_ns": 1771221012392823000
+    },
+    "tests/fleet/crawl-runner.test.ts": {
+      "size": 36572,
+      "mtime_ns": 1771221012393822800
+    },
+    "tests/fleet/fleet-manager.test.ts": {
+      "size": 16892,
+      "mtime_ns": 1771221012394822400
+    },
+    "tests/fleet/polly-pad-modes.test.ts": {
+      "size": 33827,
+      "mtime_ns": 1771221012394822400
+    },
+    "tests/fleet/polly-pad.test.ts": {
+      "size": 16763,
+      "mtime_ns": 1771221012394822400
+    },
+    "tests/fleet/polly-pads-v2.test.ts": {
+      "size": 4318,
+      "mtime_ns": 1771221012396326500
+    },
+    "tests/harmonic/adaptiveNavigator.test.ts": {
+      "size": 17216,
+      "mtime_ns": 1771221012397332700
+    },
+    "tests/harmonic/audioAxis.test.ts": {
+      "size": 17651,
+      "mtime_ns": 1771221012398472700
+    },
+    "tests/harmonic/driftTracker.test.ts": {
+      "size": 21960,
+      "mtime_ns": 1771221012399477400
+    },
+    "tests/harmonic/encryptedTransport.test.ts": {
+      "size": 14374,
+      "mtime_ns": 1771221012399477400
+    },
+    "tests/harmonic/entropic.test.ts": {
+      "size": 17763,
+      "mtime_ns": 1771221012400477500
+    },
+    "tests/harmonic/fluxState.test.ts": {
+      "size": 11565,
+      "mtime_ns": 1771221012401477400
+    },
+    "tests/harmonic/geoSealImmune.test.ts": {
+      "size": 21096,
+      "mtime_ns": 1771221012401477400
+    },
+    "tests/harmonic/geoseal-v2.test.ts": {
+      "size": 16721,
+      "mtime_ns": 1771221012402477700
+    },
+    "tests/harmonic/geoseal.test.ts": {
+      "size": 13882,
+      "mtime_ns": 1771221012403478600
+    },
+    "tests/harmonic/halAttention.test.ts": {
+      "size": 18860,
+      "mtime_ns": 1771221012403478600
+    },
+    "tests/harmonic/hamiltonianCFI.test.ts": {
+      "size": 22911,
+      "mtime_ns": 1771221012404988200
+    },
+    "tests/harmonic/harmonicScaling.test.ts": {
+      "size": 10666,
+      "mtime_ns": 1771221012406017200
+    },
+    "tests/harmonic/hyperbolic.test.ts": {
+      "size": 17701,
+      "mtime_ns": 1771221012406017200
+    },
+    "tests/harmonic/hyperbolicRAG.test.ts": {
+      "size": 16601,
+      "mtime_ns": 1771221012407017400
+    },
+    "tests/harmonic/languesMetric.test.ts": {
+      "size": 17154,
+      "mtime_ns": 1771221012407017400
+    },
+    "tests/harmonic/linguisticCrossTalk.test.ts": {
+      "size": 42503,
+      "mtime_ns": 1771221012408016500
+    },
+    "tests/harmonic/phdm.test.ts": {
+      "size": 24137,
+      "mtime_ns": 1771221012409562300
+    },
+    "tests/harmonic/phdmSheafLattice.test.ts": {
+      "size": 36959,
+      "mtime_ns": 1771221012410162800
+    },
+    "tests/harmonic/pipeline14.test.ts": {
+      "size": 10420,
+      "mtime_ns": 1771221012410162800
+    },
+    "tests/harmonic/sacredEggs.test.ts": {
+      "size": 18318,
+      "mtime_ns": 1771221012411481200
+    },
+    "tests/harmonic/sacredEggsGenesis.test.ts": {
+      "size": 15599,
+      "mtime_ns": 1771221012411481200
+    },
+    "tests/harmonic/sacredTongues.test.ts": {
+      "size": 15206,
+      "mtime_ns": 1771221012412487800
+    },
+    "tests/harmonic/sheafCohomology.test.ts": {
+      "size": 70649,
+      "mtime_ns": 1771251470605872700
+    },
+    "tests/harmonic/spectral-identity.test.ts": {
+      "size": 10678,
+      "mtime_ns": 1771221012414259900
+    },
+    "tests/harmonic/spiralSeal.test.ts": {
+      "size": 22082,
+      "mtime_ns": 1771221012414259900
+    },
+    "tests/harmonic/triMechanismDetector.test.ts": {
+      "size": 21769,
+      "mtime_ns": 1771221012415265400
+    },
+    "tests/harmonic/trustCone.test.ts": {
+      "size": 13784,
+      "mtime_ns": 1771221012415265400
+    },
+    "tests/harmonic/vacuumAcoustics.test.ts": {
+      "size": 30807,
+      "mtime_ns": 1771221012416265100
+    },
+    "tests/hydra/swarm_governance.test.ts": {
+      "size": 16464,
+      "mtime_ns": 1771389856858283500
+    },
+    "tests/industry_standard/test_ai_safety_governance.py": {
+      "size": 13424,
+      "mtime_ns": 1771221012418265600
+    },
+    "tests/industry_standard/test_byzantine_consensus.py": {
+      "size": 16827,
+      "mtime_ns": 1771221012419265300
+    },
+    "tests/industry_standard/test_hyperbolic_geometry_research.py": {
+      "size": 17964,
+      "mtime_ns": 1771221012419265300
+    },
+    "tests/industry_standard/test_nist_pqc_compliance.py": {
+      "size": 22068,
+      "mtime_ns": 1771221012421270100
+    },
+    "tests/industry_standard/test_performance_benchmarks.py": {
+      "size": 14811,
+      "mtime_ns": 1771221012421270100
+    },
+    "tests/industry_standard/test_side_channel_resistance.py": {
+      "size": 17967,
+      "mtime_ns": 1771221012422773300
+    },
+    "tests/industry_standard/test_theoretical_axioms.py": {
+      "size": 29115,
+      "mtime_ns": 1771221012423776000
+    },
+    "tests/integrations/huggingface.test.ts": {
+      "size": 18965,
+      "mtime_ns": 1771221012424785700
+    },
+    "tests/interop/generate_vectors.py": {
+      "size": 6494,
+      "mtime_ns": 1771221012425775300
+    },
+    "tests/interop/interop.test.ts": {
+      "size": 7559,
+      "mtime_ns": 1771389872276249800
+    },
+    "tests/interop/test_interop.py": {
+      "size": 7211,
+      "mtime_ns": 1771221012426783200
+    },
+    "tests/interop/test_vectors.json": {
+      "size": 58268,
+      "mtime_ns": 1771389788914770400
+    },
+    "tests/network/combat-network.test.ts": {
+      "size": 21556,
+      "mtime_ns": 1771221012428775000
+    },
+    "tests/nonce_reuse_and_provider_switch.test.ts": {
+      "size": 3364,
+      "mtime_ns": 1771221012429775000
+    },
+    "tests/orchestration/README.md": {
+      "size": 986,
+      "mtime_ns": 1771221012430774600
+    },
+    "tests/orchestration/test_executor.ts": {
+      "size": 0,
+      "mtime_ns": 1771221012430774600
+    },
+    "tests/orchestration/test_scheduler.ts": {
+      "size": 9038,
+      "mtime_ns": 1771221012431278900
+    },
+    "tests/polly_live_test.py": {
+      "size": 1748,
+      "mtime_ns": 1771231834209930000
+    },
+    "tests/reporting/README.md": {
+      "size": 1153,
+      "mtime_ns": 1771221012432284400
+    },
+    "tests/reporting/compliance_dashboard.html": {
+      "size": 23031,
+      "mtime_ns": 1771221012432284400
+    },
+    "tests/scbe_compliance_report.html": {
+      "size": 8300,
+      "mtime_ns": 1771221012433692500
+    },
+    "tests/scbe_compliance_report.json": {
+      "size": 22631,
+      "mtime_ns": 1771221012433692500
+    },
+    "tests/scbe_compliance_report.md": {
+      "size": 19013,
+      "mtime_ns": 1771221012435372100
+    },
+    "tests/security/__init__.py": {
+      "size": 18,
+      "mtime_ns": 1771221012435372100
+    },
+    "tests/security/test_protobuf_patch.py": {
+      "size": 5035,
+      "mtime_ns": 1771221012436377400
+    },
+    "tests/shell-executor.test.ts": {
+      "size": 35961,
+      "mtime_ns": 1771221012437396400
+    },
+    "tests/skills/socialContent.test.ts": {
+      "size": 11530,
+      "mtime_ns": 1771221012438378200
+    },
+    "tests/spaceTor/trust-manager.test.ts": {
+      "size": 16318,
+      "mtime_ns": 1771221012439885400
+    },
+    "tests/spectral/spectral-coherence.test.ts": {
+      "size": 16942,
+      "mtime_ns": 1771221012440891800
+    },
+    "tests/spiralverse/rwp.envelope.extended.test.ts": {
+      "size": 18229,
+      "mtime_ns": 1771221012441890700
+    },
+    "tests/spiralverse/rwp.envelope.test.ts": {
+      "size": 16772,
+      "mtime_ns": 1771221012442890500
+    },
+    "tests/spiralverse/rwp.test.ts": {
+      "size": 16746,
+      "mtime_ns": 1771221012443892300
+    },
+    "tests/spiralverse/rwp_v3.test.ts": {
+      "size": 12269,
+      "mtime_ns": 1771389864638248600
+    },
+    "tests/stress_test.py": {
+      "size": 36889,
+      "mtime_ns": 1771221012444892800
+    },
+    "tests/symphonic/audio/dual-channel-gate.test.ts": {
+      "size": 12610,
+      "mtime_ns": 1771221012446891800
+    },
+    "tests/symphonic/symphonic.test.ts": {
+      "size": 13508,
+      "mtime_ns": 1771221012446891800
+    },
+    "tests/test_advanced_mathematics.py": {
+      "size": 20234,
+      "mtime_ns": 1771221012447891700
+    },
+    "tests/test_aethermoor_spiral_engine.py": {
+      "size": 3599,
+      "mtime_ns": 1771494357980463100
+    },
+    "tests/test_aethermoore.py": {
+      "size": 24675,
+      "mtime_ns": 1771221012448399400
+    },
+    "tests/test_aethermoore_patents.py": {
+      "size": 4926,
+      "mtime_ns": 1771221012449402600
+    },
+    "tests/test_aethermoore_validation.py": {
+      "size": 24148,
+      "mtime_ns": 1771221012449402600
+    },
+    "tests/test_ai_orchestration.py": {
+      "size": 21463,
+      "mtime_ns": 1771221012450401800
+    },
+    "tests/test_antivirus_membrane.py": {
+      "size": 1183,
+      "mtime_ns": 1771426633468325500
+    },
+    "tests/test_artifacts/discrete_sim_thresholds.png": {
+      "size": 49671,
+      "mtime_ns": 1771427662521758000
+    },
+    "tests/test_artifacts/stability_N0_16dex.png": {
+      "size": 27524,
+      "mtime_ns": 1771427662304386200
+    },
+    "tests/test_artifacts/stability_N0_2dex.png": {
+      "size": 27448,
+      "mtime_ns": 1771427661921279400
+    },
+    "tests/test_artifacts/stability_N0_4dex.png": {
+      "size": 30345,
+      "mtime_ns": 1771427662045349300
+    },
+    "tests/test_artifacts/stability_N0_8dex.png": {
+      "size": 30501,
+      "mtime_ns": 1771427662170575300
+    },
+    "tests/test_asymmetric_movement.py": {
+      "size": 10879,
+      "mtime_ns": 1771221012451403100
+    },
+    "tests/test_browser_linux_support.py": {
+      "size": 3157,
+      "mtime_ns": 1771221012451403100
+    },
+    "tests/test_combined_protocol.py": {
+      "size": 23956,
+      "mtime_ns": 1771221012452402500
+    },
+    "tests/test_cymatic_voxel_net.py": {
+      "size": 12738,
+      "mtime_ns": 1771221012452402500
+    },
+    "tests/test_doc_verifier.py": {
+      "size": 5851,
+      "mtime_ns": 1771221012453402800
+    },
+    "tests/test_dual_lattice_contract.py": {
+      "size": 5246,
+      "mtime_ns": 1771426690208749700
+    },
+    "tests/test_dual_ternary_full_flux.py": {
+      "size": 4104,
+      "mtime_ns": 1771426696172082500
+    },
+    "tests/test_ede.py": {
+      "size": 21966,
+      "mtime_ns": 1771221012456403800
+    },
+    "tests/test_enhanced_scbe_cli.py": {
+      "size": 1928,
+      "mtime_ns": 1771487310558915800
+    },
+    "tests/test_enterprise_compliance.py": {
+      "size": 20783,
+      "mtime_ns": 1771221012457568200
+    },
+    "tests/test_entropic_dual_quantum_system.py": {
+      "size": 24020,
+      "mtime_ns": 1771221012458567700
+    },
+    "tests/test_entropic_layer.py": {
+      "size": 10694,
+      "mtime_ns": 1771221012459569100
+    },
+    "tests/test_entropic_suite.py": {
+      "size": 5906,
+      "mtime_ns": 1771221012460566000
+    },
+    "tests/test_extension_gate.py": {
+      "size": 2187,
+      "mtime_ns": 1771487525668214000
+    },
+    "tests/test_failable_by_design.py": {
+      "size": 19217,
+      "mtime_ns": 1771221012461564900
+    },
+    "tests/test_federated_orchestrator.py": {
+      "size": 2921,
+      "mtime_ns": 1771221012461564900
+    },
+    "tests/test_flat_slope.py": {
+      "size": 12447,
+      "mtime_ns": 1771221012462568000
+    },
+    "tests/test_fsgs.py": {
+      "size": 21327,
+      "mtime_ns": 1771221012463565600
+    },
+    "tests/test_geoseal.py": {
+      "size": 9752,
+      "mtime_ns": 1771221012463565600
+    },
+    "tests/test_geoseal_v2.py": {
+      "size": 11689,
+      "mtime_ns": 1771221012465082200
+    },
+    "tests/test_governance_adapter.py": {
+      "size": 22662,
+      "mtime_ns": 1771221012465082200
+    },
+    "tests/test_h_lwe.py": {
+      "size": 4807,
+      "mtime_ns": 1771426498000359500
+    },
+    "tests/test_hamiltonian_braid.py": {
+      "size": 18906,
+      "mtime_ns": 1771221012467087400
+    },
+    "tests/test_harmonic_scaling_integration.py": {
+      "size": 18359,
+      "mtime_ns": 1771221012468087600
+    },
+    "tests/test_holographic_qr_cube_pi_phi_key_derivation.py": {
+      "size": 8874,
+      "mtime_ns": 1771221012468087600
+    },
+    "tests/test_homebrew_quick.py": {
+      "size": 13968,
+      "mtime_ns": 1771221012469088200
+    },
+    "tests/test_horadam_transcript_vectors.py": {
+      "size": 16257,
+      "mtime_ns": 1771221012469088200
+    },
+    "tests/test_hydra_turnstile.py": {
+      "size": 1660,
+      "mtime_ns": 1771380792116302200
+    },
+    "tests/test_hyperbolic_rag.py": {
+      "size": 10519,
+      "mtime_ns": 1771221012470088100
+    },
+    "tests/test_industry_grade.py": {
+      "size": 110519,
+      "mtime_ns": 1771221012471095500
+    },
+    "tests/test_integration_full.py": {
+      "size": 20380,
+      "mtime_ns": 1771221012472088500
+    },
+    "tests/test_kernel_antivirus_gate.py": {
+      "size": 2033,
+      "mtime_ns": 1771488302245205400
+    },
+    "tests/test_kernel_manifest.py": {
+      "size": 646,
+      "mtime_ns": 1771221012472088500
+    },
+    "tests/test_known_limitations.py": {
+      "size": 16103,
+      "mtime_ns": 1771221012472088500
+    },
+    "tests/test_layer12_voxel.py": {
+      "size": 14784,
+      "mtime_ns": 1771221012473603900
+    },
+    "tests/test_layer13_cymatic_voxel_pq_envelope.py": {
+      "size": 4356,
+      "mtime_ns": 1771426765972592700
+    },
+    "tests/test_linux_kernel_event_bridge.py": {
+      "size": 2779,
+      "mtime_ns": 1771489305625524000
+    },
+    "tests/test_mirror_shift.py": {
+      "size": 16882,
+      "mtime_ns": 1771221012475611500
+    },
+    "tests/test_mmx.py": {
+      "size": 12269,
+      "mtime_ns": 1771221012476609700
+    },
+    "tests/test_mobile_goal_api.py": {
+      "size": 3011,
+      "mtime_ns": 1771550213670362800
+    },
+    "tests/test_multi_cloud_agents.py": {
+      "size": 32339,
+      "mtime_ns": 1771221012476609700
+    },
+    "tests/test_multi_model_modal_matrix.py": {
+      "size": 2286,
+      "mtime_ns": 1771490118992601600
+    },
+    "tests/test_multiscale_spectrum.py": {
+      "size": 14099,
+      "mtime_ns": 1771221012477609900
+    },
+    "tests/test_paper_aggregator.py": {
+      "size": 2132,
+      "mtime_ns": 1771382870009855100
+    },
+    "tests/test_phdm_conservation.py": {
+      "size": 4571,
+      "mtime_ns": 1771221012477609900
+    },
+    "tests/test_phdm_suite5.py": {
+      "size": 14420,
+      "mtime_ns": 1771221012478609800
+    },
+    "tests/test_physics.py": {
+      "size": 3218,
+      "mtime_ns": 1771221012478609800
+    },
+    "tests/test_polly_pad_store.py": {
+      "size": 2197,
+      "mtime_ns": 1771389900407619200
+    },
+    "tests/test_polly_pads_runtime.py": {
+      "size": 14507,
+      "mtime_ns": 1771290719086222700
+    },
+    "tests/test_pqc.py": {
+      "size": 37345,
+      "mtime_ns": 1771221012480609900
+    },
+    "tests/test_professional_api.py": {
+      "size": 16717,
+      "mtime_ns": 1771221012480609900
+    },
+    "tests/test_professional_math.py": {
+      "size": 16362,
+      "mtime_ns": 1771221012480609900
+    },
+    "tests/test_property_based.py": {
+      "size": 15735,
+      "mtime_ns": 1771221012482113900
+    },
+    "tests/test_qr_cube_pi_phi_kdf.py": {
+      "size": 12681,
+      "mtime_ns": 1771221012483119600
+    },
+    "tests/test_sacred_eggs.py": {
+      "size": 27636,
+      "mtime_ns": 1771221012484119400
+    },
+    "tests/test_sacred_eggs_ref.py": {
+      "size": 15312,
+      "mtime_ns": 1771221012484119400
+    },
+    "tests/test_sacred_tongue_integration.py": {
+      "size": 18274,
+      "mtime_ns": 1771221012485119700
+    },
+    "tests/test_scbe_14layers.py": {
+      "size": 18723,
+      "mtime_ns": 1771221012486119800
+    },
+    "tests/test_scbe_chain.py": {
+      "size": 15025,
+      "mtime_ns": 1771221012486119800
+    },
+    "tests/test_scbe_comprehensive.py": {
+      "size": 40601,
+      "mtime_ns": 1771221012487120400
+    },
+    "tests/test_scbe_synesthesia.py": {
+      "size": 1522,
+      "mtime_ns": 1771385158671831200
+    },
+    "tests/test_sheaf_consensus_gate.py": {
+      "size": 1762,
+      "mtime_ns": 1771491996733491800
+    },
+    "tests/test_signed_multiplane_encoding.py": {
+      "size": 2034,
+      "mtime_ns": 1771486761431502700
+    },
+    "tests/test_six_tongues_cli.py": {
+      "size": 33366,
+      "mtime_ns": 1771221012488120400
+    },
+    "tests/test_spiral_seal.py": {
+      "size": 23681,
+      "mtime_ns": 1771221012489132200
+    },
+    "tests/test_spiral_seal_comprehensive.py": {
+      "size": 59070,
+      "mtime_ns": 1771221012490638200
+    },
+    "tests/test_spiralverse_canonical_registry.py": {
+      "size": 2318,
+      "mtime_ns": 1771475703496644500
+    },
+    "tests/test_stvm_phase1.py": {
+      "size": 699,
+      "mtime_ns": 1771484873025581200
+    },
+    "tests/test_swarm_browser_multisite.py": {
+      "size": 2192,
+      "mtime_ns": 1771426773748453300
+    },
+    "tests/test_tarski_sheaf.py": {
+      "size": 1747,
+      "mtime_ns": 1771221012490638200
+    },
+    "tests/test_telemetry_advanced_math.json": {
+      "size": 4626,
+      "mtime_ns": 1771427743131595800
+    },
+    "tests/test_telemetry_dna_audit_report.json": {
+      "size": 648,
+      "mtime_ns": 1771427742582214900
+    },
+    "tests/test_telemetry_dna_split.py": {
+      "size": 21483,
+      "mtime_ns": 1771221012492645400
+    },
+    "tests/test_temporal_lock_diagnostic.py": {
+      "size": 1378,
+      "mtime_ns": 1771494010116593600
+    },
+    "tests/test_theoretical_axioms.py": {
+      "size": 35243,
+      "mtime_ns": 1771221012493644800
+    },
+    "tests/test_tri_manifold_lattice.py": {
+      "size": 12214,
+      "mtime_ns": 1771221012494644300
+    },
+    "tests/test_visual_system_comprehensive.py": {
+      "size": 27863,
+      "mtime_ns": 1771221012494644300
+    },
+    "tests/test_web_research_training_pipeline.py": {
+      "size": 2460,
+      "mtime_ns": 1771490460412838000
+    },
+    "tests/tsconfig.json": {
+      "size": 213,
+      "mtime_ns": 1771221012495646200
+    },
+    "tests/utils/README.md": {
+      "size": 1307,
+      "mtime_ns": 1771221012496644300
+    },
+    "tests/verify_performance_budget.test.ts": {
+      "size": 721,
+      "mtime_ns": 1771221012496644300
+    },
+    "tests/video/fractal.test.ts": {
+      "size": 10125,
+      "mtime_ns": 1771221012497644300
+    },
+    "tests/video/generator.test.ts": {
+      "size": 13839,
+      "mtime_ns": 1771221012499150400
+    },
+    "tests/video/security-integration.test.ts": {
+      "size": 15243,
+      "mtime_ns": 1771221012500155700
+    },
+    "tests/video/trajectory.test.ts": {
+      "size": 11960,
+      "mtime_ns": 1771221012500155700
+    },
+    "training/aethermoore_ops_training.jsonl": {
+      "size": 4051,
+      "mtime_ns": 1771292617197566200
+    },
+    "training/agent_profiles/creative_writer_agent_v1.json": {
+      "size": 1158,
+      "mtime_ns": 1771396205532051400
+    },
+    "training/aws_sagemaker_long_run_training_job.json": {
+      "size": 1429,
+      "mtime_ns": 1771229495200779300
+    },
+    "training/cloud_kernel_pipeline.json": {
+      "size": 1344,
+      "mtime_ns": 1771490445072222400
+    },
+    "training/config/node_fleet_constants.json": {
+      "size": 1766,
+      "mtime_ns": 1771325704625856900
+    },
+    "training/doc_manifest.json": {
+      "size": 353292,
+      "mtime_ns": 1771221012509668800
+    },
+    "training/doc_manifest_schema.json": {
+      "size": 3742,
+      "mtime_ns": 1771221012510669900
+    },
+    "training/examples/aws_manifest.json": {
+      "size": 354,
+      "mtime_ns": 1771221012512669600
+    },
+    "training/examples/gcp_manifest.json": {
+      "size": 341,
+      "mtime_ns": 1771221012512669600
+    },
+    "training/examples/hf_manifest.json": {
+      "size": 343,
+      "mtime_ns": 1771221012514151800
+    },
+    "training/ingest/docs_20260217T143127Z.jsonl": {
+      "size": 7294414,
+      "mtime_ns": 1771338690421688900
+    },
+    "training/ingest/docs_20260218T003225Z.jsonl": {
+      "size": 7301612,
+      "mtime_ns": 1771374756406629100
+    },
+    "training/ingest/lore_drop_20260218T051042Z.jsonl": {
+      "size": 9263,
+      "mtime_ns": 1771391442831036700
+    },
+    "training/ingest/lore_drop_20260218T053758Z.jsonl": {
+      "size": 68386,
+      "mtime_ns": 1771393079726393600
+    },
+    "training/ingest/lore_drop_20260218T053842Z.jsonl": {
+      "size": 67486,
+      "mtime_ns": 1771393123546971400
+    },
+    "training/ingest/lore_drop_20260218T063116Z.jsonl": {
+      "size": 14434,
+      "mtime_ns": 1771396276565463900
+    },
+    "training/ingest/lore_drop_20260218T125029Z.jsonl": {
+      "size": 14434,
+      "mtime_ns": 1771419029359819200
+    },
+    "training/ingest/lore_verbatim_20260218T053758Z.jsonl": {
+      "size": 128236,
+      "mtime_ns": 1771393079718178800
+    },
+    "training/ingest/lore_verbatim_20260218T053842Z.jsonl": {
+      "size": 127636,
+      "mtime_ns": 1771393123539154400
+    },
+    "training/ingest/lore_verbatim_20260218T063116Z.jsonl": {
+      "size": 9920,
+      "mtime_ns": 1771396276562465200
+    },
+    "training/ingest/lore_verbatim_20260218T125029Z.jsonl": {
+      "size": 9920,
+      "mtime_ns": 1771419029356140200
+    },
+    "training/intake/README.md": {
+      "size": 831,
+      "mtime_ns": 1771471172512857900
+    },
+    "training/local_cloud_sync.json": {
+      "size": 1323,
+      "mtime_ns": 1771480863747106800
+    },
+    "training/long_run_multicloud_training_plan.json": {
+      "size": 2472,
+      "mtime_ns": 1771324391105963600
+    },
+    "training/notion_ingest/iseki_story_notion_api_20260218.md": {
+      "size": 4456,
+      "mtime_ns": 1771374735860307000
+    },
+    "training/raw/six_tongues_full_wiki_20260218T053758Z.md": {
+      "size": 118402,
+      "mtime_ns": 1771393079716156400
+    },
+    "training/raw/six_tongues_full_wiki_git_20260218T053842Z.md": {
+      "size": 118402,
+      "mtime_ns": 1771393123536485400
+    },
+    "training/raw/six_tongues_full_wiki_git_20260219T031923Z.md": {
+      "size": 118408,
+      "mtime_ns": 1771471164999627500
+    },
+    "training/raw/spiralverse_canonical_linguistic_codex_v1_seed_20260218.md": {
+      "size": 8989,
+      "mtime_ns": 1771396136696976200
+    },
+    "training/tmp_test/run/hf_training_metrics.json": {
+      "size": 1516,
+      "mtime_ns": 1771375627032721800
+    },
+    "training/tmp_test/run/label_map.json": {
+      "size": 48,
+      "mtime_ns": 1771375626554382700
+    },
+    "training/tmp_test/run/training_growth_summary.md": {
+      "size": 274,
+      "mtime_ns": 1771375626557502900
+    },
+    "training/tmp_test/test.jsonl": {
+      "size": 1599,
+      "mtime_ns": 1771375619587260000
+    },
+    "vitest.config.ts": {
+      "size": 1420,
+      "mtime_ns": 1771221012520835500
+    }
+  }
+}

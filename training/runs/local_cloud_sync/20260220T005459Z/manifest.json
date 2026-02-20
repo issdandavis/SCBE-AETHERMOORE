@@ -1,0 +1,28 @@
+{
+  "run_id": "20260220T005459Z",
+  "timestamp_utc": "2026-02-20T00:55:00.079852+00:00",
+  "fingerprint": "42c5d74dcdf565188fdc3b0014ec54f9be598e0210238c54e74242fe63f3efd4",
+  "counts": {
+    "indexed_files": 1505,
+    "added": 2,
+    "modified": 0,
+    "removed": 0,
+    "changed": 2
+  },
+  "delta": {
+    "added": [
+      "docs/CHANGE_NOTES_SPIRAL_ENGINE_2026-02-20.md",
+      "docs/INTEGRATION_GUIDE_SPIRAL_ENGINE_OMEGA_WATCHERS.md"
+    ],
+    "modified": [],
+    "removed": [],
+    "changed": [
+      "docs/CHANGE_NOTES_SPIRAL_ENGINE_2026-02-20.md",
+      "docs/INTEGRATION_GUIDE_SPIRAL_ENGINE_OMEGA_WATCHERS.md"
+    ]
+  },
+  "changed_hashes_sha256": {
+    "docs/CHANGE_NOTES_SPIRAL_ENGINE_2026-02-20.md": "c0727720732c3da8418dacb9705b9cd335abc8d7614da7e8c76d790bdad81bd5",
+    "docs/INTEGRATION_GUIDE_SPIRAL_ENGINE_OMEGA_WATCHERS.md": "fa9fd681ef7d2579e9e9f8000969d5d71902b49b732b9e497965d921e8cdcac5"
+  }
+}

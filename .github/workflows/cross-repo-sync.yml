@@ -28,6 +28,8 @@ jobs:
   sync-to-gumroad:
     runs-on: ubuntu-latest
     if: github.event.inputs.sync_direction != 'from-gumroad'
+    outputs:
+      has_token: ${{ steps.auth.outputs.has_token }}
     
     steps:
       - name: Checkout scbe-aethermoore-demo
@@ -36,7 +38,17 @@ jobs:
           path: source
           fetch-depth: 0
 
+      - name: Check cross-repo credentials
+        id: auth
+        run: |
+          if [ -n "${{ secrets.CROSS_REPO_TOKEN }}" ]; then
+            echo "has_token=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_token=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Checkout gumroad-automation-demo
+        if: steps.auth.outputs.has_token == 'true'
         uses: actions/checkout@v4
         with:
           repository: ${{ env.TARGET_REPO }}
@@ -45,6 +57,7 @@ jobs:
           fetch-depth: 0
 
       - name: Sync symphonic_cipher to gumroad
+        if: steps.auth.outputs.has_token == 'true'
         run: |
           set -euo pipefail
           echo "Syncing SCBE components to gumroad-automation-demo"
@@ -89,6 +102,7 @@ jobs:
           EOF
 
       - name: Commit and push to gumroad
+        if: steps.auth.outputs.has_token == 'true'
         working-directory: target
         run: |
           git config user.name "GitHub Actions Bot"
@@ -113,6 +127,10 @@ jobs:
     steps:
       - name: Generate sync report
         run: |
+          if [ "${{ needs.sync-to-gumroad.outputs.has_token }}" != "true" ]; then
+            echo "Cross-repo token missing; sync was skipped."
+          fi
+
           echo "## SCBE Cross-Repo Sync Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
