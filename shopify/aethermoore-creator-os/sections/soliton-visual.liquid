@@ -1,0 +1,45 @@
+<section class="soliton-visual-section">
+  <header>
+    <p class="aether-kicker">{{ section.settings.kicker }}</p>
+    <h2>{{ section.settings.title }}</h2>
+  </header>
+  {% render 'soliton-visual', asset_name: section.settings.asset_name, caption: section.settings.caption %}
+</section>
+
+{% schema %}
+{
+  "name": "Soliton Visual",
+  "settings": [
+    {
+      "type": "text",
+      "id": "kicker",
+      "label": "Kicker",
+      "default": "Soliton Visual"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Soliton State"
+    },
+    {
+      "type": "text",
+      "id": "asset_name",
+      "label": "Asset filename",
+      "default": "soliton.png"
+    },
+    {
+      "type": "text",
+      "id": "caption",
+      "label": "Caption",
+      "default": "Soliton visualization overlay."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Soliton Visual"
+    }
+  ]
+}
+{% endschema %}
+

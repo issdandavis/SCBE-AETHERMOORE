@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="{{ settings.brand_accent | default: '#1f6f78' }}">
+    <title>{{ page_title }}{% if current_tags %} - {{ current_tags | join: ', ' }}{% endif %}{% if current_page != 1 %} - Page {{ current_page }}{% endif %}{% unless page_title contains shop.name %} - {{ shop.name }}{% endunless %}</title>
+    {{ content_for_header }}
+    <style>
+      :root {
+        --aether-radius: {{ settings.border_radius | default: 14 }}px;
+        --aether-accent: {{ settings.brand_accent | default: '#2cb7a9' }};
+        {% case settings.typography_heading %}
+          {% when 'archivo' %}
+            --aether-font-heading: "Archivo", "Segoe UI", sans-serif;
+          {% when 'ibm_plex' %}
+            --aether-font-heading: "IBM Plex Sans", "Segoe UI", sans-serif;
+          {% else %}
+            --aether-font-heading: "Space Grotesk", "Segoe UI", sans-serif;
+        {% endcase %}
+        {% case settings.typography_body %}
+          {% when 'inter' %}
+            --aether-font-body: "Inter", "Segoe UI", sans-serif;
+          {% when 'system' %}
+            --aether-font-body: system-ui, "Segoe UI", sans-serif;
+          {% else %}
+            --aether-font-body: "IBM Plex Sans", "Segoe UI", sans-serif;
+        {% endcase %}
+        {% case settings.spacing_scale %}
+          {% when 'compact' %}
+            --aether-space-multiplier: 0.85;
+          {% when 'spacious' %}
+            --aether-space-multiplier: 1.2;
+          {% else %}
+            --aether-space-multiplier: 1;
+        {% endcase %}
+      }
+      {% case settings.palette %}
+        {% when 'soliton_gold' %}
+          :root { --aether-accent: #e2b557; --aether-accent-soft: #f2ce81; --aether-surface: #1d1710; --aether-card: #2b2216; }
+        {% when 'spiralverse_blue' %}
+          :root { --aether-accent: #5f9bff; --aether-accent-soft: #8db7ff; --aether-surface: #111a2d; --aether-card: #17233a; }
+        {% else %}
+          :root { --aether-accent: #2cb7a9; --aether-accent-soft: #58d7cb; --aether-surface: #111a1e; --aether-card: #152227; }
+      {% endcase %}
+    </style>
+    {{ 'aether.css' | asset_url | stylesheet_tag }}
+    <script src="{{ 'aether.js' | asset_url }}" defer></script>
+  </head>
+  <body
+    class="aether-theme"
+    data-glyph-set="{{ settings.glyph_set }}"
+    data-background-mode="{{ settings.background_mode }}"
+    data-fractal-intensity="{{ settings.fractal_intensity }}"
+    data-grid-density="{{ settings.blueprint_grid_density }}"
+    data-motion-level="{{ settings.motion_level }}"
+  >
+    <header class="aether-shell-header">
+      <div class="aether-shell-inner">
+        {% render 'signed-zero-icon' %}
+        <div>
+          <p class="aether-kicker">{{ settings.brand_kicker | default: 'Creator OS' }}</p>
+          <h1 class="aether-brand">{{ settings.brand_label | default: shop.name }}</h1>
+        </div>
+      </div>
+    </header>
+    <main id="MainContent" role="main">
+      {{ content_for_layout }}
+    </main>
+    <footer class="aether-shell-footer">
+      {% render 'glyph-divider' %}
+      <p>{{ settings.footer_text | default: 'SCBE governance-backed storefront surface.' }}</p>
+    </footer>
+  </body>
+</html>

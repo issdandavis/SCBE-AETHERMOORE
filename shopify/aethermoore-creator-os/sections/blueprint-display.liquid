@@ -1,0 +1,123 @@
+<section class="blueprint-display">
+  <header class="blueprint-display__header">
+    <p class="aether-kicker">{{ section.settings.kicker }}</p>
+    <h2>{{ section.settings.title }}</h2>
+    <p>{{ section.settings.subtitle }}</p>
+  </header>
+
+  <div class="blueprint-display__layout">
+    <div class="blueprint-display__params">
+      {% render 'parameter-readout', label: 'Coherence', value: section.settings.coherence %}
+      {% render 'parameter-readout', label: 'd*', value: section.settings.d_star %}
+      {% render 'parameter-readout', label: 'H_eff', value: section.settings.h_eff %}
+      {% render 'parameter-readout', label: 'Decision', value: section.settings.decision %}
+      <a
+        class="aether-btn aether-btn--primary"
+        href="{{ section.settings.demo_url }}"
+        data-aether-run-demo="true"
+      >
+        {{ section.settings.demo_label }}
+      </a>
+    </div>
+
+    <div class="blueprint-display__diagram">
+      {% render 'soliton-visual', asset_name: section.settings.visual_asset, caption: section.settings.visual_caption %}
+      {{
+        section.settings.protocol_asset
+        | asset_url
+        | image_tag: alt: section.settings.protocol_caption, loading: 'lazy', width: 1400, height: 900
+      }}
+      <p class="blueprint-display__caption">{{ section.settings.protocol_caption }}</p>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Blueprint Display",
+  "settings": [
+    {
+      "type": "text",
+      "id": "kicker",
+      "label": "Kicker",
+      "default": "Blueprint"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "System Blueprint Display"
+    },
+    {
+      "type": "textarea",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "Parameter readouts, protocol diagrams, and demo routing."
+    },
+    {
+      "type": "text",
+      "id": "coherence",
+      "label": "Coherence",
+      "default": "0.82"
+    },
+    {
+      "type": "text",
+      "id": "d_star",
+      "label": "d*",
+      "default": "0.34"
+    },
+    {
+      "type": "text",
+      "id": "h_eff",
+      "label": "H_eff",
+      "default": "1.41"
+    },
+    {
+      "type": "text",
+      "id": "decision",
+      "label": "Decision",
+      "default": "ALLOW"
+    },
+    {
+      "type": "text",
+      "id": "visual_asset",
+      "label": "Soliton visual asset filename",
+      "default": "soliton.png"
+    },
+    {
+      "type": "text",
+      "id": "visual_caption",
+      "label": "Soliton caption",
+      "default": "Soliton state visualization."
+    },
+    {
+      "type": "text",
+      "id": "protocol_asset",
+      "label": "Protocol diagram asset filename",
+      "default": "protocol-diagram-001.png"
+    },
+    {
+      "type": "text",
+      "id": "protocol_caption",
+      "label": "Protocol diagram caption",
+      "default": "Combined protocol analysis."
+    },
+    {
+      "type": "text",
+      "id": "demo_label",
+      "label": "Demo button label",
+      "default": "Run Demo"
+    },
+    {
+      "type": "url",
+      "id": "demo_url",
+      "label": "Demo button URL"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Blueprint Display"
+    }
+  ]
+}
+{% endschema %}

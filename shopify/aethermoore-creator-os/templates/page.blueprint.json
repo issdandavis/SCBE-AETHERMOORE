@@ -1,0 +1,15 @@
+{
+  "sections": {
+    "blueprint": {
+      "type": "blueprint-display"
+    },
+    "gallery": {
+      "type": "fractal-gallery"
+    }
+  },
+  "order": [
+    "blueprint",
+    "gallery"
+  ]
+}
+

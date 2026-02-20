@@ -1,0 +1,209 @@
+[
+  {
+    "name": "Theme Info",
+    "theme_name": "Aethermore Creator OS",
+    "theme_version": "0.1.0",
+    "theme_author": "SCBE-AETHERMOORE"
+  },
+  {
+    "name": "Brand",
+    "settings": [
+      {
+        "type": "text",
+        "id": "brand_label",
+        "label": "Brand label",
+        "default": "Aethermore Creator OS"
+      },
+      {
+        "type": "text",
+        "id": "brand_kicker",
+        "label": "Brand kicker",
+        "default": "Frontend For Your Universe"
+      },
+      {
+        "type": "text",
+        "id": "footer_text",
+        "label": "Footer text",
+        "default": "SCBE governance-backed storefront surface."
+      }
+    ]
+  },
+  {
+    "name": "Design Tokens",
+    "settings": [
+      {
+        "type": "color",
+        "id": "brand_accent",
+        "label": "Accent color override",
+        "default": "#2cb7a9"
+      },
+      {
+        "type": "select",
+        "id": "palette",
+        "label": "Color palette",
+        "default": "aether_teal",
+        "options": [
+          {
+            "value": "aether_teal",
+            "label": "Aether Teal"
+          },
+          {
+            "value": "soliton_gold",
+            "label": "Soliton Gold"
+          },
+          {
+            "value": "spiralverse_blue",
+            "label": "Spiralverse Blue"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "glyph_set",
+        "label": "Glyph set",
+        "default": "signed_zero",
+        "options": [
+          {
+            "value": "signed_zero",
+            "label": "Signed Zero"
+          },
+          {
+            "value": "triadic",
+            "label": "Triadic"
+          },
+          {
+            "value": "minimal",
+            "label": "Minimal"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "background_mode",
+        "label": "Global background mode",
+        "default": "spiralverse_gradient",
+        "options": [
+          {
+            "value": "spiralverse_gradient",
+            "label": "Spiralverse Gradient"
+          },
+          {
+            "value": "glyph_grid",
+            "label": "Glyph Grid"
+          },
+          {
+            "value": "image_overlay",
+            "label": "Image Overlay"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "fractal_intensity",
+        "label": "Default fractal intensity",
+        "min": 0,
+        "max": 100,
+        "step": 5,
+        "default": 40
+      },
+      {
+        "type": "range",
+        "id": "blueprint_grid_density",
+        "label": "Default blueprint grid density",
+        "min": 4,
+        "max": 40,
+        "step": 2,
+        "default": 14
+      },
+      {
+        "type": "select",
+        "id": "typography_heading",
+        "label": "Heading font set",
+        "default": "space_grotesk",
+        "options": [
+          {
+            "value": "space_grotesk",
+            "label": "Space Grotesk"
+          },
+          {
+            "value": "archivo",
+            "label": "Archivo"
+          },
+          {
+            "value": "ibm_plex",
+            "label": "IBM Plex Sans"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "typography_body",
+        "label": "Body font set",
+        "default": "ibm_plex",
+        "options": [
+          {
+            "value": "ibm_plex",
+            "label": "IBM Plex Sans"
+          },
+          {
+            "value": "inter",
+            "label": "Inter"
+          },
+          {
+            "value": "system",
+            "label": "System UI"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "spacing_scale",
+        "label": "Spacing scale",
+        "default": "normal",
+        "options": [
+          {
+            "value": "compact",
+            "label": "Compact"
+          },
+          {
+            "value": "normal",
+            "label": "Normal"
+          },
+          {
+            "value": "spacious",
+            "label": "Spacious"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "border_radius",
+        "label": "Border radius",
+        "min": 0,
+        "max": 32,
+        "step": 1,
+        "default": 14
+      },
+      {
+        "type": "select",
+        "id": "motion_level",
+        "label": "Animation level",
+        "default": "standard",
+        "options": [
+          {
+            "value": "off",
+            "label": "Off"
+          },
+          {
+            "value": "reduced",
+            "label": "Reduced"
+          },
+          {
+            "value": "standard",
+            "label": "Standard"
+          }
+        ]
+      }
+    ]
+  }
+]

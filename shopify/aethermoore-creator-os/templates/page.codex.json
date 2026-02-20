@@ -1,0 +1,11 @@
+{
+  "sections": {
+    "codex": {
+      "type": "codex-entry"
+    }
+  },
+  "order": [
+    "codex"
+  ]
+}
+

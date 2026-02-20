@@ -1,0 +1,27 @@
+{
+  "sections": {
+    "hero": {
+      "type": "hero-creator-os",
+      "settings": {
+        "title": "Protocol Product Surface",
+        "subtitle": "Technical evidence plus mythic framing in one governed page.",
+        "primary_cta_label": "Run Demo",
+        "primary_cta_url": "/products/demo",
+        "secondary_cta_label": "Protocol Details",
+        "secondary_cta_url": "/pages/blueprint"
+      }
+    },
+    "blueprint": {
+      "type": "blueprint-display"
+    },
+    "gallery": {
+      "type": "fractal-gallery"
+    }
+  },
+  "order": [
+    "hero",
+    "blueprint",
+    "gallery"
+  ]
+}
+

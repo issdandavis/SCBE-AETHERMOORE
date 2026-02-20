@@ -1,0 +1,27 @@
+{
+  "sections": {
+    "hero": {
+      "type": "hero-creator-os",
+      "settings": {
+        "title": "Frontend For Your Universe",
+        "subtitle": "A Creator OS shell rendering lore, math, governance, and commerce from one source of truth.",
+        "primary_cta_label": "Open Codex",
+        "primary_cta_url": "/pages/codex",
+        "secondary_cta_label": "View Blueprint",
+        "secondary_cta_url": "/pages/blueprint"
+      }
+    },
+    "cards": {
+      "type": "system-card-grid"
+    },
+    "timeline": {
+      "type": "protocol-timeline"
+    }
+  },
+  "order": [
+    "hero",
+    "cards",
+    "timeline"
+  ]
+}
+

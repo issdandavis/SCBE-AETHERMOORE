@@ -1,0 +1,18 @@
+{
+  "current": {
+    "brand_label": "Aethermore Creator OS",
+    "brand_kicker": "Frontend For Your Universe",
+    "footer_text": "SCBE governance-backed storefront surface.",
+    "brand_accent": "#2cb7a9",
+    "palette": "aether_teal",
+    "glyph_set": "signed_zero",
+    "background_mode": "spiralverse_gradient",
+    "fractal_intensity": 40,
+    "blueprint_grid_density": 14,
+    "typography_heading": "space_grotesk",
+    "typography_body": "ibm_plex",
+    "spacing_scale": "normal",
+    "border_radius": 14,
+    "motion_level": "standard"
+  }
+}

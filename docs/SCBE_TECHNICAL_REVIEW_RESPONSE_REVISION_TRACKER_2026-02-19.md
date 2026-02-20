@@ -19,6 +19,8 @@
 | Determinism controls | Added canonical ordering, stable JSON (sorted keys), mandatory idempotency keys | Addressed |
 | FVM sync claim | Clarified async anchoring != governance correctness | Addressed |
 | Exponential volume growth language | Clarified as geometric property, not cryptographic hardness claim | Addressed |
+| Phase transform section | Retained Möbius + O(n) section; reviewer-marked as strongest and technically coherent | Confirmed (no change) |
+| Triadic determinant semantics | Split non-degeneracy condition from stability drift condition | Addressed |
 | Theorem language tightening | Added radial injectivity and CAT(-1) theorem text revisions | Drafted for theorem source patch |
 | Formal methods note | Added future-work direction for Lean 4 formalization | Drafted for theorem/spec section |
 
@@ -90,6 +92,13 @@ of the form $x \mapsto f(|x|) \cdot x/|x|$ with $f$ smooth and monotone preserve
 The breathing transform $\beta_t(x) = \tanh(t \cdot \text{arctanh}(|x|)) \cdot x/|x|$ is therefore conformal.
 ```
 
+### Rev 6 — Phase Transform Retained
+
+**Disposition:** No change required.
+
+- Reviewer position: Möbius + O(n) treatment is the strongest section.
+- Action: retain section language as-is; preserve as canonical formulation.
+
 ### Rev 7 — Theorem 4.1 Retitle + Remark
 
 **Current title:** `Theorem 4.1 (Lyapunov Stability of Langues Weight Function)`
@@ -110,7 +119,7 @@ minimum of the energy landscape, ensuring robustness to small perturbations.
 
 **Current:** `super-exponential decay`
 
-**Revised:** `exponential decay in a quadratic exponent`
+**Revised:** `exponential decay in quadratic exponent`
 
 ```tex
 The harmonic cost $H(d^*, R) = R^{d^{*2}}$ exhibits exponential decay in the quadratic exponent

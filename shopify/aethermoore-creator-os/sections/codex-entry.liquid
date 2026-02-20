@@ -1,0 +1,100 @@
+<article class="codex-entry">
+  <header class="codex-entry__header">
+    <p class="aether-kicker">{{ section.settings.entry_label }}</p>
+    <h2>{{ section.settings.title }}</h2>
+    <p class="codex-entry__source">Source: {{ section.settings.source_id }}</p>
+  </header>
+
+  {% render 'glyph-divider' %}
+
+  <div class="codex-entry__body">
+    <section class="codex-entry__panel">
+      <h3>Lore</h3>
+      <p>{{ section.settings.lore_body }}</p>
+    </section>
+    <section class="codex-entry__panel">
+      <h3>Math</h3>
+      <p>{{ section.settings.math_body }}</p>
+    </section>
+    <section class="codex-entry__panel">
+      <h3>Governance</h3>
+      <p>{{ section.settings.governance_body }}</p>
+    </section>
+  </div>
+
+  <div class="codex-entry__diagram">
+    {{
+      section.settings.diagram_asset
+      | asset_url
+      | image_tag: alt: section.settings.title, loading: 'lazy', width: 1400, height: 900
+    }}
+  </div>
+
+  <a class="aether-btn aether-btn--primary" href="{{ section.settings.cta_url }}">{{ section.settings.cta_label }}</a>
+</article>
+
+{% schema %}
+{
+  "name": "Codex Entry",
+  "settings": [
+    {
+      "type": "text",
+      "id": "entry_label",
+      "label": "Entry label",
+      "default": "Codex Entry"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "SCBE Layered Governance Entry"
+    },
+    {
+      "type": "text",
+      "id": "source_id",
+      "label": "Source identifier",
+      "default": "CONCEPTS.md"
+    },
+    {
+      "type": "textarea",
+      "id": "lore_body",
+      "label": "Lore text",
+      "default": "Narrative context for this protocol surface."
+    },
+    {
+      "type": "textarea",
+      "id": "math_body",
+      "label": "Math text",
+      "default": "Use machine-generated theorem-safe language from source docs."
+    },
+    {
+      "type": "textarea",
+      "id": "governance_body",
+      "label": "Governance text",
+      "default": "All runtime actions remain server-side gated."
+    },
+    {
+      "type": "text",
+      "id": "diagram_asset",
+      "label": "Diagram asset filename",
+      "default": "protocol-diagram-001.png"
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "Button label",
+      "default": "Open Blueprint"
+    },
+    {
+      "type": "url",
+      "id": "cta_url",
+      "label": "Button URL"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Codex Entry"
+    }
+  ]
+}
+{% endschema %}

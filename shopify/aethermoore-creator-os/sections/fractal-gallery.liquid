@@ -1,0 +1,95 @@
+<section class="fractal-gallery">
+  <header class="fractal-gallery__header">
+    <p class="aether-kicker">{{ section.settings.kicker }}</p>
+    <h2>{{ section.settings.title }}</h2>
+  </header>
+
+  <div class="fractal-gallery__grid">
+    {% for block in section.blocks %}
+      <figure class="fractal-gallery__item" {{ block.shopify_attributes }}>
+        {% if block.settings.image != blank %}
+          {{
+            block.settings.image
+            | image_url: width: 1200
+            | image_tag: loading: 'lazy', width: 1200
+          }}
+        {% else %}
+          {{
+            block.settings.asset_fallback
+            | asset_url
+            | image_tag: alt: block.settings.title, loading: 'lazy', width: 1200, height: 900
+          }}
+        {% endif %}
+        <figcaption>
+          <strong>{{ block.settings.title }}</strong>
+          <span>{{ block.settings.caption }}</span>
+        </figcaption>
+      </figure>
+    {% endfor %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Fractal Gallery",
+  "settings": [
+    {
+      "type": "text",
+      "id": "kicker",
+      "label": "Kicker",
+      "default": "Fractal Gallery"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Spiralverse + Protocol Visuals"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image",
+      "name": "Gallery image",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "asset_fallback",
+          "label": "Fallback asset filename",
+          "default": "spiralverse-hero.png"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Spiralverse Frame"
+        },
+        {
+          "type": "text",
+          "id": "caption",
+          "label": "Caption",
+          "default": "Canonical visual artifact."
+        }
+      ]
+    }
+  ],
+  "max_blocks": 12,
+  "presets": [
+    {
+      "name": "Fractal Gallery",
+      "blocks": [
+        {
+          "type": "image"
+        },
+        {
+          "type": "image"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,8 @@
+<figure class="soliton-visual">
+  {{
+    asset_name
+    | asset_url
+    | image_tag: alt: caption, loading: 'lazy', width: 1400, height: 900
+  }}
+  <figcaption>{{ caption }}</figcaption>
+</figure>

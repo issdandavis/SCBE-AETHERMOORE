@@ -1,0 +1,80 @@
+<section class="protocol-timeline">
+  <header>
+    <p class="aether-kicker">{{ section.settings.kicker }}</p>
+    <h2>{{ section.settings.title }}</h2>
+  </header>
+  <ol class="protocol-timeline__list">
+    {% for block in section.blocks %}
+      <li class="protocol-timeline__item" {{ block.shopify_attributes }}>
+        <span class="protocol-timeline__step">{{ block.settings.step }}</span>
+        <div>
+          <h3>{{ block.settings.title }}</h3>
+          <p>{{ block.settings.body }}</p>
+        </div>
+      </li>
+    {% endfor %}
+  </ol>
+</section>
+
+{% schema %}
+{
+  "name": "Protocol Timeline",
+  "settings": [
+    {
+      "type": "text",
+      "id": "kicker",
+      "label": "Kicker",
+      "default": "Protocol Timeline"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "From Intent to Audit Receipt"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "milestone",
+      "name": "Milestone",
+      "settings": [
+        {
+          "type": "text",
+          "id": "step",
+          "label": "Step marker",
+          "default": "01"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Intent Submitted"
+        },
+        {
+          "type": "textarea",
+          "id": "body",
+          "label": "Body",
+          "default": "Theme submits intent; SCBE decides server-side."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Protocol Timeline",
+      "blocks": [
+        {
+          "type": "milestone"
+        },
+        {
+          "type": "milestone"
+        },
+        {
+          "type": "milestone"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
+

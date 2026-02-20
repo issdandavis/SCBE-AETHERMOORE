@@ -1,0 +1,90 @@
+<section class="system-card-grid">
+  <header>
+    <p class="aether-kicker">{{ section.settings.kicker }}</p>
+    <h2>{{ section.settings.title }}</h2>
+  </header>
+  <div class="system-card-grid__grid">
+    {% for block in section.blocks %}
+      <article class="system-card" {{ block.shopify_attributes }}>
+        <p class="system-card__tag">{{ block.settings.tag }}</p>
+        <h3>{{ block.settings.title }}</h3>
+        <p>{{ block.settings.body }}</p>
+        <a href="{{ block.settings.cta_url }}">{{ block.settings.cta_label }}</a>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "System Card Grid",
+  "settings": [
+    {
+      "type": "text",
+      "id": "kicker",
+      "label": "Kicker",
+      "default": "System Surface"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Repo to Theme Mapping"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "card",
+      "name": "Card",
+      "settings": [
+        {
+          "type": "text",
+          "id": "tag",
+          "label": "Tag",
+          "default": "Core"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Blueprint Display"
+        },
+        {
+          "type": "textarea",
+          "id": "body",
+          "label": "Body",
+          "default": "Expose system diagrams, parameter readouts, and governed run routes."
+        },
+        {
+          "type": "text",
+          "id": "cta_label",
+          "label": "Link label",
+          "default": "Open"
+        },
+        {
+          "type": "url",
+          "id": "cta_url",
+          "label": "Link URL"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "System Card Grid",
+      "blocks": [
+        {
+          "type": "card"
+        },
+        {
+          "type": "card"
+        },
+        {
+          "type": "card"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
+
