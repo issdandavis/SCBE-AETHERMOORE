@@ -1587,6 +1587,11 @@ Swarm and fleet architecture:
 - Agent Architecture and IP Classification: agent design patterns
 - Swarm Deployment Formations: swarm coordination strategies
 - Drone Fleet Architecture Upgrades - SCBE-AETHERMOORE Integration: physical drone integration
+- Multi-AI Development Coordination System: multi-AI orchestration
+
+Infrastructure and deployment:
+
+- Google Cloud Infrastructure Setup - SCBE-AETHERMOORE: GCP deployment configs
 
 ## Voxel Record Schema
 
