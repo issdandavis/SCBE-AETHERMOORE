@@ -1,0 +1,119 @@
+{
+  "@context": "https://scbe.aethermoore/context/decision-envelope/v1",
+  "@type": "SCBEDecisionEnvelopeV1",
+  "schema_version": "decision-envelope/v1",
+  "projection_of": "scbe.decision_envelope.v1.DecisionEnvelopeV1",
+  "envelope_id": "de_01J5Q6M7R8S9T0U1V2W3X4Y5Z6",
+  "issued_at_utc": "2026-02-20T05:00:00Z",
+  "identity": {
+    "mission_id": "mission-aetherbrowse-prod-01",
+    "swarm_id": "swarm-hydra-6"
+  },
+  "authority": {
+    "issuer": "ground-control",
+    "key_id": "gc-ml-dsa-65-k01",
+    "valid_from_utc": "2026-02-20T05:00:00Z",
+    "valid_until_utc": "2026-02-20T06:00:00Z",
+    "signature": {
+      "algorithm": "ML-DSA-65",
+      "value_b64": "c2lnbmF0dXJlLWJ5dGVzLWRlbW8=",
+      "signed_protobuf_sha256": "a00f6036f3a07fbd6cca7f6ab7ba5f020ecf9eb2d8d53288f9fc3f1f80f45c3e"
+    }
+  },
+  "scope": {
+    "agent_allowlist": [
+      "ko-agent-01",
+      "ru-agent-03",
+      "um-agent-05"
+    ],
+    "capability_allowlist": [
+      "browser.navigate",
+      "browser.extract",
+      "workflow.publish_draft"
+    ],
+    "target_allowlist": [
+      {
+        "kind": "host",
+        "id": "docs.example.internal"
+      },
+      {
+        "kind": "resource",
+        "id": "notion:workspace:ops"
+      }
+    ]
+  },
+  "constraints": {
+    "mission_phase_allowlist": [
+      "PLAN",
+      "DRAFT",
+      "REVIEW"
+    ],
+    "resource_floors": {
+      "power_mw_min": 12000,
+      "bandwidth_kbps_min": 2500,
+      "thermal_headroom_c_min": 8.0
+    },
+    "max_risk_tier": "DELIBERATION",
+    "harmonic_wall": {
+      "scarcity_limit": 0.35,
+      "base": 2.0,
+      "alpha": 1.5
+    }
+  },
+  "boundary": {
+    "behavior": "QUARANTINE",
+    "reason": "resource floor violated on thermal headroom",
+    "recovery": {
+      "playbook_id": "pb-thermal-cooldown-v2",
+      "required_steps": [
+        "pause_executor_90s",
+        "reduce_parallelism_to_2",
+        "re-evaluate_envelope"
+      ],
+      "escalation_target": "soc-oncall",
+      "retry_after_utc": "2026-02-20T05:03:00Z"
+    }
+  },
+  "quorum": {
+    "n": 6,
+    "f_max": 1,
+    "quorum_min": 3,
+    "quorum_policy": 4,
+    "approvals_observed": 4,
+    "approver_ids": [
+      "ko-agent-01",
+      "ru-agent-03",
+      "um-agent-05",
+      "dr-agent-06"
+    ],
+    "vote_set_sha256": "6df9388efd036be3962fead5425c4a7f1624ace6cc2de4e2fc4af5f469f1cb90"
+  },
+  "harmonic_wall": {
+    "d_star": 0.31,
+    "coherence": 0.88,
+    "scarcity_score": 0.41,
+    "harmonic_cost": 1.48,
+    "threshold": 1.35,
+    "inside_boundary": false
+  },
+  "audit": {
+    "canonicalization": "PROTOBUF_DETERMINISTIC_V1",
+    "signed_protobuf_sha256": "a00f6036f3a07fbd6cca7f6ab7ba5f020ecf9eb2d8d53288f9fc3f1f80f45c3e",
+    "mmr_leaf_sha256": "c6bc3d59cc36fa318ccf6e69cfcde94638e84b788f29331bb523f7f854f4f44f",
+    "mmr_prev_root_sha256": "43c63bd20fbede803db22f14fce180a530b91e267f662cbdd93db7f34fa7fe2d",
+    "mmr_leaf_index": 731,
+    "hash_fields": [
+      "schema_version",
+      "envelope_id",
+      "identity",
+      "authority.issuer",
+      "authority.key_id",
+      "scope",
+      "constraints",
+      "boundary",
+      "quorum",
+      "harmonic_wall"
+    ]
+  }
+}
+

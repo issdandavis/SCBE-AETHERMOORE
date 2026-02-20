@@ -1,0 +1,132 @@
+syntax = "proto3";
+
+package scbe.decision_envelope.v1;
+
+// Protobuf-first governance contract. Policy semantics are encoded in the envelope,
+// while runtime evaluators only check whether state/action is inside this boundary.
+
+message SignedDecisionEnvelopeV1 {
+  DecisionEnvelopeV1 envelope = 1;
+  SignatureBlock signature = 2;
+}
+
+message DecisionEnvelopeV1 {
+  string schema_version = 1;   // decision-envelope/v1
+  string envelope_id = 2;      // UUID/ULID
+  string issued_at_utc = 3;    // RFC3339 UTC
+
+  Identity identity = 4;
+  Authority authority = 5;
+  Scope scope = 6;
+  Constraints constraints = 7;
+  Boundary boundary = 8;
+
+  QuorumProof quorum = 9;
+  HarmonicWallProof harmonic_wall = 10;
+  AuditHooks audit = 11;
+}
+
+message Identity {
+  string mission_id = 1;
+  string swarm_id = 2;
+}
+
+message Authority {
+  string issuer = 1;          // e.g. ground-control
+  string key_id = 2;          // signing key identifier
+  string valid_from_utc = 3;  // RFC3339 UTC
+  string valid_until_utc = 4; // RFC3339 UTC
+}
+
+message Scope {
+  repeated string agent_allowlist = 1;      // explicit agent IDs
+  repeated string capability_allowlist = 2; // explicit capability IDs
+  repeated TargetRef target_allowlist = 3;  // explicit target allowlist
+}
+
+message TargetRef {
+  string kind = 1; // host|service|account|device|resource
+  string id = 2;
+}
+
+message Constraints {
+  repeated string mission_phase_allowlist = 1;
+  ResourceFloors resource_floors = 2;
+  RiskTier max_risk_tier = 3;
+  HarmonicWallParams harmonic_wall = 4;
+}
+
+message ResourceFloors {
+  double power_mw_min = 1;
+  double bandwidth_kbps_min = 2;
+  double thermal_headroom_c_min = 3;
+}
+
+message HarmonicWallParams {
+  double scarcity_limit = 1;
+  double base = 2;
+  double alpha = 3;
+}
+
+enum RiskTier {
+  RISK_TIER_UNSPECIFIED = 0;
+  RISK_TIER_REFLEX = 1;
+  RISK_TIER_DELIBERATION = 2;
+  RISK_TIER_CRITICAL = 3;
+}
+
+message Boundary {
+  BoundaryBehavior behavior = 1;
+  string reason = 2;
+  RecoveryPath recovery = 3;
+}
+
+enum BoundaryBehavior {
+  BOUNDARY_BEHAVIOR_UNSPECIFIED = 0;
+  AUTO_ALLOW = 1;
+  QUARANTINE = 2;
+  DENY = 3;
+}
+
+message RecoveryPath {
+  string playbook_id = 1;
+  repeated string required_steps = 2;
+  string escalation_target = 3;
+  string retry_after_utc = 4; // optional RFC3339 UTC
+}
+
+message QuorumProof {
+  uint32 n = 1;
+  uint32 f_max = 2;
+  uint32 quorum_min = 3;     // 2f+1
+  uint32 quorum_policy = 4;  // policy quorum, e.g. 4/6
+  uint32 approvals_observed = 5;
+  repeated string approver_ids = 6;
+  bytes vote_set_sha256 = 7;
+}
+
+message HarmonicWallProof {
+  double d_star = 1;
+  double coherence = 2;
+  double scarcity_score = 3;
+  double harmonic_cost = 4;
+  double threshold = 5;
+  bool inside_boundary = 6;
+}
+
+message AuditHooks {
+  string canonicalization = 1; // PROTOBUF_DETERMINISTIC_V1
+  bytes signed_protobuf_sha256 = 2;
+  bytes mmr_leaf_sha256 = 3;
+  bytes mmr_prev_root_sha256 = 4;
+  uint64 mmr_leaf_index = 5;
+  repeated string hash_fields = 6;
+}
+
+message SignatureBlock {
+  string algorithm = 1; // e.g. ML-DSA-65, ED25519, HMAC-SHA256
+  string key_id = 2;
+  bytes signature = 3;
+  bytes signed_protobuf_sha256 = 4;
+}
+
