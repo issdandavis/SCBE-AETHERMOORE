@@ -35,4 +35,5 @@ __exportStar(require("./pqc.js"), exports);
 __exportStar(require("./platform.js"), exports);
 __exportStar(require("./quantum-safe.js"), exports);
 __exportStar(require("./pqc-strategies.js"), exports);
+__exportStar(require("./aetherlex-seed.js"), exports);
 //# sourceMappingURL=index.js.map

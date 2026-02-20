@@ -38,7 +38,7 @@
  * @version 3.0.0
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.WSClient = exports.createCDPBackend = exports.CDPBackend = exports.MockBrowserBackend = exports.createBrowserAgent = exports.BrowserAgent = exports.defaultSessionConfig = exports.createBrowserSession = exports.BrowserSession = exports.encodeSessionPosition = exports.encodeActionSemantic = exports.classifyDomain = exports.computeRiskScore = exports.BrowserActionEvaluator = exports.describeAction = exports.isExecuteScriptAction = exports.isTypeAction = exports.isClickAction = exports.isNavigateAction = exports.DOMAIN_RISK = exports.ACTION_SENSITIVITY = void 0;
+exports.WSClient = exports.createCDPBackend = exports.CDPBackend = exports.createPlaywrightBackend = exports.PlaywrightBackend = exports.MockBrowserBackend = exports.createBrowserAgent = exports.BrowserAgent = exports.defaultSessionConfig = exports.createBrowserSession = exports.BrowserSession = exports.encodeSessionPosition = exports.encodeActionSemantic = exports.classifyDomain = exports.computeRiskScore = exports.BrowserActionEvaluator = exports.describeAction = exports.isExecuteScriptAction = exports.isTypeAction = exports.isClickAction = exports.isNavigateAction = exports.DOMAIN_RISK = exports.ACTION_SENSITIVITY = void 0;
 // Constants
 var types_js_1 = require("./types.js");
 Object.defineProperty(exports, "ACTION_SENSITIVITY", { enumerable: true, get: function () { return types_js_1.ACTION_SENSITIVITY; } });
@@ -67,6 +67,10 @@ var agent_js_1 = require("./agent.js");
 Object.defineProperty(exports, "BrowserAgent", { enumerable: true, get: function () { return agent_js_1.BrowserAgent; } });
 Object.defineProperty(exports, "createBrowserAgent", { enumerable: true, get: function () { return agent_js_1.createBrowserAgent; } });
 Object.defineProperty(exports, "MockBrowserBackend", { enumerable: true, get: function () { return agent_js_1.MockBrowserBackend; } });
+// Playwright backend (real browser)
+var playwright_backend_js_1 = require("./playwright-backend.js");
+Object.defineProperty(exports, "PlaywrightBackend", { enumerable: true, get: function () { return playwright_backend_js_1.PlaywrightBackend; } });
+Object.defineProperty(exports, "createPlaywrightBackend", { enumerable: true, get: function () { return playwright_backend_js_1.createPlaywrightBackend; } });
 // CDP Backend (SCBEPuppeteer — zero-dependency browser automation)
 var cdp_backend_js_1 = require("./cdp-backend.js");
 Object.defineProperty(exports, "CDPBackend", { enumerable: true, get: function () { return cdp_backend_js_1.CDPBackend; } });
