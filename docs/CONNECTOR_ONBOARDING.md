@@ -39,6 +39,13 @@ curl -X GET http://localhost:8000/mobile/connectors/templates \
   -H "x-api-key: demo_key_12345"
 ```
 
+## Terminal-first control
+
+To run the same connector + goal flow from terminal, use:
+
+- `scripts/scbe_terminal_ops.py`
+- `docs/TERMINAL_OPS_QUICKSTART.md`
+
 ## Register a connector
 
 Example (n8n):
