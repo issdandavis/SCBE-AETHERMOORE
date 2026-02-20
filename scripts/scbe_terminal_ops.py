@@ -101,16 +101,15 @@ def cmd_connector_add(args: argparse.Namespace) -> int:
 
 def cmd_goal_create(args: argparse.Namespace) -> int:
     client = _new_client(args)
-    payload: dict[str, Any] = {
-        "goal": args.goal,
-        "channel": args.channel,
-        "priority": args.priority,
-        "execution_mode": args.execution_mode,
-        "targets": _parse_targets(args.targets),
-        "require_human_for_high_risk": not args.no_human_gate,
-    }
-    if args.connector_id:
-        payload["connector_id"] = args.connector_id
+    payload = _build_goal_payload(
+        goal=args.goal,
+        channel=args.channel,
+        priority=args.priority,
+        execution_mode=args.execution_mode,
+        targets=args.targets,
+        no_human_gate=args.no_human_gate,
+        connector_id=args.connector_id,
+    )
     out = client.call("POST", "/mobile/goals", payload)
     _json_print(out)
     return 0
@@ -138,13 +137,41 @@ def _advance(client: APIClient, goal_id: str, note: str) -> dict[str, Any]:
     return client.call("POST", f"/mobile/goals/{goal_id}/advance", {"note": note})
 
 
-def cmd_goal_run(args: argparse.Namespace) -> int:
-    client = _new_client(args)
-    goal_id = args.goal_id
-    max_steps = max(1, args.max_steps)
+def _build_goal_payload(
+    *,
+    goal: str,
+    channel: str,
+    priority: str,
+    execution_mode: str,
+    targets: str,
+    no_human_gate: bool,
+    connector_id: str = "",
+) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "goal": goal,
+        "channel": channel,
+        "priority": priority,
+        "execution_mode": execution_mode,
+        "targets": _parse_targets(targets),
+        "require_human_for_high_risk": not no_human_gate,
+    }
+    if connector_id:
+        payload["connector_id"] = connector_id
+    return payload
 
+
+def _run_goal_until_terminal(
+    client: APIClient,
+    *,
+    goal_id: str,
+    max_steps: int,
+    poll_seconds: float,
+    note: str,
+    auto_approve_high_risk: bool,
+) -> int:
+    max_steps = max(1, max_steps)
     for _ in range(max_steps):
-        out = _advance(client, goal_id, args.note)
+        out = _advance(client, goal_id, note)
         _json_print(out)
 
         status = str(out.get("status", ""))
@@ -152,10 +179,10 @@ def cmd_goal_run(args: argparse.Namespace) -> int:
         goal_status = str(data.get("status", ""))
 
         if status == "blocked" and goal_status == "review_required":
-            if args.auto_approve_high_risk:
+            if auto_approve_high_risk:
                 appr = _approve(client, goal_id, "auto-approved via scbe_terminal_ops --auto-approve-high-risk")
                 _json_print(appr)
-                time.sleep(args.poll_seconds)
+                time.sleep(poll_seconds)
                 continue
             print("Goal requires human approval. Run:", file=sys.stderr)
             print(f"  python scripts/scbe_terminal_ops.py --api-key <key> goal approve --goal-id {goal_id}", file=sys.stderr)
@@ -164,10 +191,22 @@ def cmd_goal_run(args: argparse.Namespace) -> int:
         if goal_status in {"completed", "failed"}:
             return 0 if goal_status == "completed" else 3
 
-        time.sleep(args.poll_seconds)
+        time.sleep(poll_seconds)
 
     print(f"Reached max steps ({max_steps}) without terminal state.", file=sys.stderr)
     return 4
+
+
+def cmd_goal_run(args: argparse.Namespace) -> int:
+    client = _new_client(args)
+    return _run_goal_until_terminal(
+        client,
+        goal_id=args.goal_id,
+        max_steps=args.max_steps,
+        poll_seconds=args.poll_seconds,
+        note=args.note,
+        auto_approve_high_risk=args.auto_approve_high_risk,
+    )
 
 
 def cmd_goal_approve(args: argparse.Namespace) -> int:
@@ -175,6 +214,75 @@ def cmd_goal_approve(args: argparse.Namespace) -> int:
     out = _approve(client, args.goal_id, args.note)
     _json_print(out)
     return 0
+
+
+def _run_alias_flow(args: argparse.Namespace, *, channel: str, default_goal: str) -> int:
+    client = _new_client(args)
+    goal_text = (args.goal or "").strip() or default_goal
+    payload = _build_goal_payload(
+        goal=goal_text,
+        channel=channel,
+        priority=args.priority,
+        execution_mode=args.execution_mode,
+        targets=args.targets,
+        no_human_gate=args.no_human_gate,
+        connector_id=args.connector_id,
+    )
+    created = client.call("POST", "/mobile/goals", payload)
+    _json_print(created)
+
+    goal_id = ((created.get("data") or {}).get("goal_id") or "").strip()
+    if not goal_id:
+        print("Goal creation response missing goal_id.", file=sys.stderr)
+        return 1
+    if args.no_run:
+        return 0
+    return _run_goal_until_terminal(
+        client,
+        goal_id=goal_id,
+        max_steps=args.max_steps,
+        poll_seconds=args.poll_seconds,
+        note=args.note,
+        auto_approve_high_risk=args.auto_approve_high_risk,
+    )
+
+
+def cmd_research(args: argparse.Namespace) -> int:
+    return _run_alias_flow(
+        args,
+        channel="web_research",
+        default_goal="Research sources, filter results, and assemble a training brief",
+    )
+
+
+def cmd_article(args: argparse.Namespace) -> int:
+    return _run_alias_flow(
+        args,
+        channel="content_ops",
+        default_goal="Draft article batch, schedule submissions, and publish report",
+    )
+
+
+def cmd_products(args: argparse.Namespace) -> int:
+    return _run_alias_flow(
+        args,
+        channel="store_ops",
+        default_goal="Collect store state, prioritize actions, and run product operations",
+    )
+
+
+def _add_alias_flow_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--goal", default="")
+    parser.add_argument("--priority", default="high", choices=["low", "normal", "high", "critical"])
+    parser.add_argument("--execution-mode", default="connector", choices=["simulate", "hydra_headless", "connector"])
+    parser.add_argument("--connector-id", default="")
+    parser.add_argument("--targets", default="", help="Comma-separated URLs/targets")
+    parser.add_argument("--no-human-gate", action="store_true", help="Disable high-risk approval gate")
+    parser.add_argument("--no-run", action="store_true", help="Create goal but do not advance")
+    parser.add_argument("--max-steps", type=int, default=20)
+    parser.add_argument("--poll-seconds", type=float, default=0.2)
+    parser.add_argument("--note", default="advance via scbe_terminal_ops")
+    parser.add_argument("--auto-approve-high-risk", action="store_true")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -260,6 +368,18 @@ def build_parser() -> argparse.ArgumentParser:
     sp_goal_approve.add_argument("--note", default="approved from terminal")
     sp_goal_approve.set_defaults(func=cmd_goal_approve)
 
+    sp_research = sub.add_parser("research", help="Alias: create + run web research goal")
+    _add_alias_flow_args(sp_research)
+    sp_research.set_defaults(func=cmd_research)
+
+    sp_article = sub.add_parser("article", help="Alias: create + run content/article goal")
+    _add_alias_flow_args(sp_article)
+    sp_article.set_defaults(func=cmd_article)
+
+    sp_products = sub.add_parser("products", help="Alias: create + run product/store goal")
+    _add_alias_flow_args(sp_products)
+    sp_products.set_defaults(func=cmd_products)
+
     return p
 
 
@@ -277,4 +397,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

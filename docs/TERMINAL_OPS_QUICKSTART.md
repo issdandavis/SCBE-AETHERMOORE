@@ -23,6 +23,12 @@ uvicorn src.api.main:app --reload --port 8000
 python scripts/scbe_terminal_ops.py --api-key demo_key_12345 --help
 ```
 
+Shortcut aliases (single command flow):
+
+- `research` -> `web_research`
+- `article` -> `content_ops`
+- `products` -> `store_ops`
+
 ## List connector templates
 
 ```bash
@@ -79,10 +85,29 @@ Then continue run:
 python scripts/scbe_terminal_ops.py --api-key demo_key_12345 goal run --goal-id <GOAL_ID>
 ```
 
+## One-command alias flows
+
+Web research:
+
+```bash
+python scripts/scbe_terminal_ops.py --api-key demo_key_12345 research --connector-id <CONNECTOR_ID> --goal "Find new products and summarize sources"
+```
+
+Article/content:
+
+```bash
+python scripts/scbe_terminal_ops.py --api-key demo_key_12345 article --connector-id <CONNECTOR_ID> --goal "Draft and submit new article set"
+```
+
+Product/store ops:
+
+```bash
+python scripts/scbe_terminal_ops.py --api-key demo_key_12345 products --connector-id <CONNECTOR_ID> --goal "Upload product updates and sync catalog"
+```
+
 ## Notes
 
 1. Keep `require_human_for_high_risk=true` for production goals.
 2. Store real connector secrets in secret manager in production.
 3. For unattended test runs only, use:
    - `goal run --auto-approve-high-risk`
-
