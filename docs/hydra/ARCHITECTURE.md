@@ -1613,6 +1613,24 @@ Business and reports:
 
 - SCBE-AETHERMOORE v3.0.0 - Unified System Report: system status
 - Commercial Agreement - Technology Schedule: licensing terms
+- SCBE-AETHERMOORE Claims Audit v4.1 - Experimental Validation Report (February 6, 2026; USPTO #63/961,403): governance and detection validation
+
+Claims Audit v4.1 snapshot:
+
+- Experiments run: `7+7` (combined)
+- Combined defense AUC: `0.868` (new)
+
+Three validated detection mechanisms (defense in depth):
+
+1. Phase + distance scoring
+   - Formula: `score = 1 / (1 + d_H + 2 * phase_deviation)`
+   - AUC: `0.9999` | F1: `0.998` | Latency: `2.8ms`
+   - Detects wrong-tongue and synthetic attacks.
+   - 60 deg phase separation between Sacred Tongues creates an authentication signal adversaries cannot replicate without tongue assignment.
+   - Experimental setup: 20 trials, N=45 chunks/trial, `p < 0.05` vs baselines.
+2. 6-Tonic temporal coherence
+   - Formula: `baseAngle = phase + 0.1 * sin(freq * t)` with higher dimensions via spherical harmonic projection.
+   - AUC: `1.000` on replay, static, wrong-frequency, and synthetic attacks.
 
 Publication/export status:
 
