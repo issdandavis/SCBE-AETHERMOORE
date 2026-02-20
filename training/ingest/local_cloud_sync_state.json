@@ -1,7 +1,7 @@
 {
-  "updated_at_utc": "2026-02-20T05:54:00.365608+00:00",
-  "run_id": "20260220T055133Z",
-  "fingerprint": "55f4f295d26c5fe3c8f841d0ead1524cae919cb540abb312096d49988ce45b64",
+  "updated_at_utc": "2026-02-20T08:05:47.735453+00:00",
+  "run_id": "20260220T080009Z",
+  "fingerprint": "66fb207e0efa114f2ed011f9ca1593c6a29267401e5a438d41d23a7c1f87d47d",
   "index": {
     "ALIASES.md": {
       "size": 524,
@@ -136,8 +136,8 @@
       "mtime_ns": 1771221010440198400
     },
     "aethermoore.py": {
-      "size": 8829,
-      "mtime_ns": 1771221010441204800
+      "size": 10104,
+      "mtime_ns": 1771570081705091500
     },
     "aethermoore_patent_math.py": {
       "size": 5680,
@@ -248,8 +248,8 @@
       "mtime_ns": 1771376640818984800
     },
     "agents/swarm_browser.py": {
-      "size": 34524,
-      "mtime_ns": 1771426583408634400
+      "size": 34745,
+      "mtime_ns": 1771570172979249400
     },
     "api/__init__.py": {
       "size": 59,
@@ -1152,8 +1152,8 @@
       "mtime_ns": 1771221011228314100
     },
     "docs/AETHERAUTH_IMPLEMENTATION.md": {
-      "size": 559,
-      "mtime_ns": 1771221011229314200
+      "size": 29281,
+      "mtime_ns": 1771570081707099200
     },
     "docs/AETHERBRAIN_ROADMAP.md": {
       "size": 7163,
@@ -1232,8 +1232,8 @@
       "mtime_ns": 1771471163423060900
     },
     "docs/COMMERCIAL_AGREEMENT.md": {
-      "size": 525,
-      "mtime_ns": 1771221011234314100
+      "size": 12162,
+      "mtime_ns": 1771570081709107800
     },
     "docs/COMPLEX_SYSTEMS_ANALYSIS_STYLE_GUIDE.md": {
       "size": 3573,
@@ -1260,8 +1260,8 @@
       "mtime_ns": 1771221011236544700
     },
     "docs/DRONE_FLEET_UPGRADES.md": {
-      "size": 562,
-      "mtime_ns": 1771221011237549200
+      "size": 11507,
+      "mtime_ns": 1771570081710563900
     },
     "docs/DUAL_LATTICE_STACK_V2.md": {
       "size": 7045,
@@ -1292,24 +1292,24 @@
       "mtime_ns": 1771221011241544900
     },
     "docs/GEOSEAL_ACCESS_CONTROL.md": {
-      "size": 563,
-      "mtime_ns": 1771221011242544900
+      "size": 17073,
+      "mtime_ns": 1771570081710563900
     },
     "docs/GITHUB_DOCS_AUDIT_2026-02-20.md": {
       "size": 981,
       "mtime_ns": 1771550238984646600
     },
     "docs/GOOGLE_CLOUD_SETUP.md": {
-      "size": 560,
-      "mtime_ns": 1771221011242544900
+      "size": 13010,
+      "mtime_ns": 1771570081712315800
     },
     "docs/GO_TO_MARKET_SKUS.md": {
       "size": 1932,
       "mtime_ns": 1771221011242544900
     },
     "docs/HYDRA_COORDINATION.md": {
-      "size": 66207,
-      "mtime_ns": 1771553842491290000
+      "size": 66122,
+      "mtime_ns": 1771570172980765000
     },
     "docs/HYDRA_HEADLESS_MMX_COORDINATOR.md": {
       "size": 1292,
@@ -1356,8 +1356,8 @@
       "mtime_ns": 1771480874018211900
     },
     "docs/MCP_SERVER_BOOTSTRAP.md": {
-      "size": 2549,
-      "mtime_ns": 1771466108082967400
+      "size": 2631,
+      "mtime_ns": 1771570172982774900
     },
     "docs/MEDICAL_NANOBOT_SWARMS.md": {
       "size": 11512,
@@ -1372,8 +1372,8 @@
       "mtime_ns": 1771221011248055400
     },
     "docs/MULTI_AI_COORDINATION.md": {
-      "size": 529,
-      "mtime_ns": 1771221011248055400
+      "size": 18819,
+      "mtime_ns": 1771570081715556400
     },
     "docs/MULTI_AI_OFFLINE_ONLINE_SETUP.md": {
       "size": 3074,
@@ -1408,8 +1408,8 @@
       "mtime_ns": 1771221011249055700
     },
     "docs/PHDM_NOMENCLATURE.md": {
-      "size": 532,
-      "mtime_ns": 1771221011250055500
+      "size": 6767,
+      "mtime_ns": 1771570081717573500
     },
     "docs/POLLY_PADS_ARCHITECTURE.md": {
       "size": 24667,
@@ -1420,16 +1420,16 @@
       "mtime_ns": 1771221011251055000
     },
     "docs/QUASI_VECTOR_MAGNETICS.md": {
-      "size": 543,
-      "mtime_ns": 1771221011251055000
+      "size": 22053,
+      "mtime_ns": 1771570081717573500
     },
     "docs/QUICKSTART_MONETIZATION.md": {
       "size": 1431,
       "mtime_ns": 1771221011252559300
     },
     "docs/README.md": {
-      "size": 9385,
-      "mtime_ns": 1771488902008309200
+      "size": 9405,
+      "mtime_ns": 1771570172990583800
     },
     "docs/REMAINING_WORK.md": {
       "size": 3647,
@@ -1484,20 +1484,20 @@
       "mtime_ns": 1771221011258894800
     },
     "docs/SIX_TONGUES_CLI.md": {
-      "size": 2330,
-      "mtime_ns": 1771475127601753500
+      "size": 39203,
+      "mtime_ns": 1771570230076519300
     },
     "docs/SPACE_DEBRIS_FLEET.md": {
       "size": 9169,
       "mtime_ns": 1771221011259899900
     },
     "docs/SPIRALVERSE_CODEX.md": {
-      "size": 865,
-      "mtime_ns": 1771475688460912800
+      "size": 889,
+      "mtime_ns": 1771570172995106400
     },
     "docs/SS1_TOKENIZER_PROTOCOL.md": {
-      "size": 534,
-      "mtime_ns": 1771221011259899900
+      "size": 10531,
+      "mtime_ns": 1771570081721411300
     },
     "docs/STVM_EXECUTION_MODEL.md": {
       "size": 1816,
@@ -1512,8 +1512,8 @@
       "mtime_ns": 1771221011261404800
     },
     "docs/SWARM_FORMATIONS.md": {
-      "size": 527,
-      "mtime_ns": 1771221011261404800
+      "size": 16970,
+      "mtime_ns": 1771570081721917800
     },
     "docs/TECHNICAL_REFERENCE.md": {
       "size": 7198,
@@ -1524,8 +1524,8 @@
       "mtime_ns": 1771560057271749800
     },
     "docs/UNIFIED_SYSTEM_REPORT.md": {
-      "size": 549,
-      "mtime_ns": 1771221011263412700
+      "size": 15257,
+      "mtime_ns": 1771570081723926100
     },
     "docs/UNITY_VISUALIZATION_STRATEGY.md": {
       "size": 34899,
@@ -1540,8 +1540,8 @@
       "mtime_ns": 1771490506878557500
     },
     "docs/WORLDFORGE_TEMPLATE.md": {
-      "size": 526,
-      "mtime_ns": 1771221011265907100
+      "size": 289097,
+      "mtime_ns": 1771570081725935400
     },
     "docs/archive/ACTION_ITEMS_FROM_REVIEW.md": {
       "size": 6785,
@@ -2227,6 +2227,14 @@
       "size": 1673,
       "mtime_ns": 1771388981896938200
     },
+    "docs/product/LAUNCH_SKU.md": {
+      "size": 3969,
+      "mtime_ns": 1771570081735677900
+    },
+    "docs/product/SCBE_KERNEL_V1_API.md": {
+      "size": 4879,
+      "mtime_ns": 1771570081735677900
+    },
     "docs/qkd-integration.md": {
       "size": 4608,
       "mtime_ns": 1771221011370744600
@@ -2364,8 +2372,8 @@
       "mtime_ns": 1771221011459954100
     },
     "packages/kernel/src/entropicLayer.ts": {
-      "size": 18949,
-      "mtime_ns": 1771221011460954500
+      "size": 19818,
+      "mtime_ns": 1771570081743732100
     },
     "packages/kernel/src/fluxState.ts": {
       "size": 12719,
@@ -2453,7 +2461,7 @@
     },
     "packages/kernel/src/sacredTongues.ts": {
       "size": 10309,
-      "mtime_ns": 1771221011474989000
+      "mtime_ns": 1771570081745733100
     },
     "packages/kernel/src/scbe_voxel_types.ts": {
       "size": 5303,
@@ -2568,8 +2576,8 @@
       "mtime_ns": 1771221011572736700
     },
     "scripts/aetherbrowse_swarm_runner.py": {
-      "size": 19738,
-      "mtime_ns": 1771426611176916800
+      "size": 20156,
+      "mtime_ns": 1771570173016696900
     },
     "scripts/aethermoor_spiral_demo.py": {
       "size": 997,
@@ -2597,11 +2605,11 @@
     },
     "scripts/coherence-check.py": {
       "size": 4036,
-      "mtime_ns": 1771221011573738200
+      "mtime_ns": 1771570081768001000
     },
     "scripts/enable_mcp_servers.ps1": {
-      "size": 1500,
-      "mtime_ns": 1771466099845166500
+      "size": 1560,
+      "mtime_ns": 1771570173018705700
     },
     "scripts/export_monthly_billable_usage.py": {
       "size": 1233,
@@ -2711,6 +2719,10 @@
       "size": 2629,
       "mtime_ns": 1771493991151864800
     },
+    "scripts/pc_health_audit.ps1": {
+      "size": 7207,
+      "mtime_ns": 1771568171709136100
+    },
     "scripts/polly_pad_watchdog.py": {
       "size": 5542,
       "mtime_ns": 1771388967380023500
@@ -2722,6 +2734,10 @@
     "scripts/prepare_gumroad_automation_dataset.py": {
       "size": 10765,
       "mtime_ns": 1771253524293020500
+    },
+    "scripts/push_jsonl_dataset.py": {
+      "size": 1981,
+      "mtime_ns": 1771570081768001000
     },
     "scripts/push_to_hf.py": {
       "size": 6024,
@@ -2823,6 +2839,10 @@
       "size": 2146,
       "mtime_ns": 1771491984493693100
     },
+    "scripts/sort_skills_index.py": {
+      "size": 2260,
+      "mtime_ns": 1771568017080347700
+    },
     "scripts/start_aetherbrowse_oneclick.ps1": {
       "size": 3034,
       "mtime_ns": 1771301038339618500
@@ -2856,12 +2876,16 @@
       "mtime_ns": 1771378417166648000
     },
     "scripts/train_hf_longrun_placeholder.py": {
-      "size": 14598,
-      "mtime_ns": 1771324490010276400
+      "size": 14994,
+      "mtime_ns": 1771570173019218600
     },
     "scripts/training_auditor.py": {
       "size": 4750,
       "mtime_ns": 1771376672841723300
+    },
+    "scripts/uninstall_project_irrelevant_apps.ps1": {
+      "size": 3263,
+      "mtime_ns": 1771568803028880900
     },
     "scripts/unix/BUILD.sh": {
       "size": 6619,
@@ -2952,8 +2976,8 @@
       "mtime_ns": 1771221011592782800
     },
     "six-tongues-cli.py": {
-      "size": 48528,
-      "mtime_ns": 1771474916488092700
+      "size": 48623,
+      "mtime_ns": 1771570173021236200
     },
     "spiralverse_core.py": {
       "size": 13291,
@@ -3124,8 +3148,8 @@
       "mtime_ns": 1771221011933915100
     },
     "src/ai_brain/unified-kernel.ts": {
-      "size": 30853,
-      "mtime_ns": 1771221011935420000
+      "size": 32798,
+      "mtime_ns": 1771570081774855000
     },
     "src/ai_brain/unified-state.ts": {
       "size": 14587,
@@ -3176,8 +3200,8 @@
       "mtime_ns": 1771221011944936600
     },
     "src/api/hydra_routes.py": {
-      "size": 19198,
-      "mtime_ns": 1771566159579578800
+      "size": 19249,
+      "mtime_ns": 1771567925263135400
     },
     "src/api/index.ts": {
       "size": 19506,
@@ -3185,7 +3209,7 @@
     },
     "src/api/main.py": {
       "size": 46059,
-      "mtime_ns": 1771565977174453600
+      "mtime_ns": 1771570173034800200
     },
     "src/api/routes.ts": {
       "size": 15261,
@@ -3212,8 +3236,8 @@
       "mtime_ns": 1771221011949936500
     },
     "src/browser/playwright-backend.ts": {
-      "size": 17792,
-      "mtime_ns": 1771221011950936500
+      "size": 17760,
+      "mtime_ns": 1771570081777400400
     },
     "src/browser/session.ts": {
       "size": 19777,
@@ -3288,8 +3312,8 @@
       "mtime_ns": 1771221011964024800
     },
     "src/crypto/h_lwe.py": {
-      "size": 15008,
-      "mtime_ns": 1771426715909651100
+      "size": 15020,
+      "mtime_ns": 1771570173037363700
     },
     "src/crypto/hkdf.ts": {
       "size": 1841,
@@ -3336,8 +3360,8 @@
       "mtime_ns": 1771230478778217900
     },
     "src/crypto/pqc_liboqs.py": {
-      "size": 13453,
-      "mtime_ns": 1771425359046291300
+      "size": 13474,
+      "mtime_ns": 1771570173038875300
     },
     "src/crypto/quantum-safe.ts": {
       "size": 23961,
@@ -3352,8 +3376,8 @@
       "mtime_ns": 1771221011973774200
     },
     "src/crypto/rwp_v3.py": {
-      "size": 12734,
-      "mtime_ns": 1771425450610246400
+      "size": 12750,
+      "mtime_ns": 1771570173040883100
     },
     "src/crypto/sacred_eggs.py": {
       "size": 21935,
@@ -3361,7 +3385,7 @@
     },
     "src/crypto/sacred_tongues.py": {
       "size": 11951,
-      "mtime_ns": 1771221011975772700
+      "mtime_ns": 1771570081779421800
     },
     "src/crypto/signed_lattice_bridge.py": {
       "size": 14146,
@@ -3453,7 +3477,7 @@
     },
     "src/fleet/polly-pads/index.ts": {
       "size": 4832,
-      "mtime_ns": 1771561518559778000
+      "mtime_ns": 1771570173042863100
     },
     "src/fleet/polly-pads/mission-coordinator.ts": {
       "size": 15249,
@@ -3720,8 +3744,8 @@
       "mtime_ns": 1771221012026009000
     },
     "src/harmonic/hyperbolic.ts": {
-      "size": 23725,
-      "mtime_ns": 1771380771250520800
+      "size": 23828,
+      "mtime_ns": 1771570173044614700
     },
     "src/harmonic/hyperbolicRAG.ts": {
       "size": 36631,
@@ -3808,8 +3832,8 @@
       "mtime_ns": 1771221012039038400
     },
     "src/harmonic/sheafCohomology.ts": {
-      "size": 50508,
-      "mtime_ns": 1771251959313801600
+      "size": 50485,
+      "mtime_ns": 1771570081780930600
     },
     "src/harmonic/sheaf_consensus_gate.py": {
       "size": 5261,
@@ -3876,8 +3900,8 @@
       "mtime_ns": 1771221012047549000
     },
     "src/index.ts": {
-      "size": 2053,
-      "mtime_ns": 1771463912156070300
+      "size": 2067,
+      "mtime_ns": 1771570173048703400
     },
     "src/integrations/huggingface.ts": {
       "size": 12913,
@@ -3914,6 +3938,10 @@
     "src/lambda_tests/test_pqc.py": {
       "size": 37343,
       "mtime_ns": 1771221012056062400
+    },
+    "src/memory/quasi_allocator.ts": {
+      "size": 1857,
+      "mtime_ns": 1771570081782937500
     },
     "src/metrics/telemetry.ts": {
       "size": 1665,
@@ -4040,12 +4068,12 @@
       "mtime_ns": 1771221012079406700
     },
     "src/scbe_14layer_reference.py": {
-      "size": 29888,
-      "mtime_ns": 1771385135306094900
+      "size": 29950,
+      "mtime_ns": 1771570173050712700
     },
     "src/scbe_aethermoore_kyber_v2.1.py": {
-      "size": 3002,
-      "mtime_ns": 1771425546795732400
+      "size": 3083,
+      "mtime_ns": 1771570173051252000
     },
     "src/scbe_cpse_unified.py": {
       "size": 23487,
@@ -4332,16 +4360,20 @@
       "mtime_ns": 1771221012134539700
     },
     "src/symphonic_cipher/scbe_aethermoore/aetherlex_extract.py": {
-      "size": 35658,
-      "mtime_ns": 1771221012135539400
+      "size": 36022,
+      "mtime_ns": 1771570081782937500
     },
     "src/symphonic_cipher/scbe_aethermoore/ai_brain/__init__.py": {
-      "size": 3902,
-      "mtime_ns": 1771426413584745900
+      "size": 8257,
+      "mtime_ns": 1771570230079030600
     },
     "src/symphonic_cipher/scbe_aethermoore/ai_brain/bft_consensus.py": {
       "size": 3625,
       "mtime_ns": 1771221012136539400
+    },
+    "src/symphonic_cipher/scbe_aethermoore/ai_brain/circuit_flow.py": {
+      "size": 29739,
+      "mtime_ns": 1771570081786949900
     },
     "src/symphonic_cipher/scbe_aethermoore/ai_brain/cymatic_voxel_net.py": {
       "size": 15926,
@@ -4369,7 +4401,7 @@
     },
     "src/symphonic_cipher/scbe_aethermoore/ai_brain/hamiltonian_braid.py": {
       "size": 19936,
-      "mtime_ns": 1771427057784941400
+      "mtime_ns": 1771570173056796400
     },
     "src/symphonic_cipher/scbe_aethermoore/ai_brain/mirror_shift.py": {
       "size": 15930,
@@ -4408,8 +4440,8 @@
       "mtime_ns": 1771221012148566100
     },
     "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/causality_axiom.py": {
-      "size": 22596,
-      "mtime_ns": 1771485905728699900
+      "size": 22673,
+      "mtime_ns": 1771570173059405000
     },
     "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/composition_axiom.py": {
       "size": 24435,
@@ -4432,12 +4464,12 @@
       "mtime_ns": 1771221012153089100
     },
     "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/locality_axiom.py": {
-      "size": 17905,
-      "mtime_ns": 1771485828760988000
+      "size": 17916,
+      "mtime_ns": 1771570173060412100
     },
     "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/symmetry_axiom.py": {
-      "size": 19881,
-      "mtime_ns": 1771485972872777200
+      "size": 19944,
+      "mtime_ns": 1771570173064400700
     },
     "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/tests/__init__.py": {
       "size": 43,
@@ -4456,8 +4488,8 @@
       "mtime_ns": 1771221012157090100
     },
     "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/unitarity_axiom.py": {
-      "size": 16427,
-      "mtime_ns": 1771485965211887500
+      "size": 16462,
+      "mtime_ns": 1771570173066411500
     },
     "src/symphonic_cipher/scbe_aethermoore/cli_toolkit.py": {
       "size": 36954,
@@ -4592,8 +4624,8 @@
       "mtime_ns": 1771221012183558400
     },
     "src/symphonic_cipher/scbe_aethermoore/pqc/pqc_core.py": {
-      "size": 19747,
-      "mtime_ns": 1771425468816912800
+      "size": 19766,
+      "mtime_ns": 1771570173067034700
     },
     "src/symphonic_cipher/scbe_aethermoore/pqc/pqc_harmonic.py": {
       "size": 25985,
@@ -4604,8 +4636,8 @@
       "mtime_ns": 1771221012185559400
     },
     "src/symphonic_cipher/scbe_aethermoore/pqc_module.py": {
-      "size": 21596,
-      "mtime_ns": 1771425538001493300
+      "size": 21646,
+      "mtime_ns": 1771570173083461400
     },
     "src/symphonic_cipher/scbe_aethermoore/production_v2_1.py": {
       "size": 60443,
@@ -4660,20 +4692,20 @@
       "mtime_ns": 1771221012195420200
     },
     "src/symphonic_cipher/scbe_aethermoore/spiral_seal/key_exchange.py": {
-      "size": 5092,
-      "mtime_ns": 1771425495046774900
+      "size": 5118,
+      "mtime_ns": 1771570173086426000
     },
     "src/symphonic_cipher/scbe_aethermoore/spiral_seal/sacred_tongues.py": {
       "size": 11918,
-      "mtime_ns": 1771221012196808900
+      "mtime_ns": 1771570081787852600
     },
     "src/symphonic_cipher/scbe_aethermoore/spiral_seal/seal.py": {
       "size": 13282,
       "mtime_ns": 1771221012197814800
     },
     "src/symphonic_cipher/scbe_aethermoore/spiral_seal/signatures.py": {
-      "size": 5039,
-      "mtime_ns": 1771425517238908100
+      "size": 5065,
+      "mtime_ns": 1771570173088979900
     },
     "src/symphonic_cipher/scbe_aethermoore/spiral_seal/spiral_seal.py": {
       "size": 35948,
@@ -4872,8 +4904,8 @@
       "mtime_ns": 1771221012306643000
     },
     "tests/L2-unit/cli.unit.test.ts": {
-      "size": 7098,
-      "mtime_ns": 1771389846860213900
+      "size": 7164,
+      "mtime_ns": 1771570173101520000
     },
     "tests/L2-unit/entropicLayer.unit.test.ts": {
       "size": 15591,
@@ -5000,8 +5032,8 @@
       "mtime_ns": 1771221012330123500
     },
     "tests/agent/agent.property.test.ts": {
-      "size": 19980,
-      "mtime_ns": 1771389876900849500
+      "size": 19985,
+      "mtime_ns": 1771570173103135800
     },
     "tests/agent/hyperbolic-weakness.test.ts": {
       "size": 1334,
@@ -5092,8 +5124,8 @@
       "mtime_ns": 1771221012349161500
     },
     "tests/ai_brain/unified-kernel.test.ts": {
-      "size": 25994,
-      "mtime_ns": 1771221012349161500
+      "size": 26377,
+      "mtime_ns": 1771570081802188500
     },
     "tests/ai_brain/unified-state.test.ts": {
       "size": 10831,
@@ -5116,8 +5148,8 @@
       "mtime_ns": 1771221012353667000
     },
     "tests/conftest.py": {
-      "size": 9444,
-      "mtime_ns": 1771427007388605500
+      "size": 9521,
+      "mtime_ns": 1771570173105659100
     },
     "tests/cross-industry/bank/bank-scenarios.spec.ts": {
       "size": 11441,
@@ -5448,8 +5480,8 @@
       "mtime_ns": 1771562296055653100
     },
     "tests/hydra/swarm_governance.test.ts": {
-      "size": 16464,
-      "mtime_ns": 1771389856858283500
+      "size": 16503,
+      "mtime_ns": 1771570173107682100
     },
     "tests/hydra/test_consensus.py": {
       "size": 18120,
@@ -5458,6 +5490,10 @@
     "tests/hydra/test_head.py": {
       "size": 9981,
       "mtime_ns": 1771562445579106600
+    },
+    "tests/hydra/test_research.py": {
+      "size": 5888,
+      "mtime_ns": 1771566239726915600
     },
     "tests/hydra/test_spine.py": {
       "size": 13684,
@@ -5508,8 +5544,8 @@
       "mtime_ns": 1771221012425775300
     },
     "tests/interop/interop.test.ts": {
-      "size": 7559,
-      "mtime_ns": 1771389872276249800
+      "size": 7572,
+      "mtime_ns": 1771570173109693500
     },
     "tests/interop/test_interop.py": {
       "size": 7211,
@@ -5517,7 +5553,7 @@
     },
     "tests/interop/test_vectors.json": {
       "size": 58268,
-      "mtime_ns": 1771389788914770400
+      "mtime_ns": 1771570173111705200
     },
     "tests/network/combat-network.test.ts": {
       "size": 21556,
@@ -5600,8 +5636,8 @@
       "mtime_ns": 1771221012443892300
     },
     "tests/spiralverse/rwp_v3.test.ts": {
-      "size": 12269,
-      "mtime_ns": 1771389864638248600
+      "size": 12275,
+      "mtime_ns": 1771570173113214400
     },
     "tests/stress_test.py": {
       "size": 36889,
@@ -5675,6 +5711,10 @@
       "size": 3704,
       "mtime_ns": 1771559467309583700
     },
+    "tests/test_circuit_flow.py": {
+      "size": 16864,
+      "mtime_ns": 1771570081802188500
+    },
     "tests/test_combined_protocol.py": {
       "size": 23956,
       "mtime_ns": 1771221012452402500
@@ -5692,12 +5732,12 @@
       "mtime_ns": 1771221012453402800
     },
     "tests/test_dual_lattice_contract.py": {
-      "size": 5246,
-      "mtime_ns": 1771426690208749700
+      "size": 5387,
+      "mtime_ns": 1771570173115246600
     },
     "tests/test_dual_ternary_full_flux.py": {
-      "size": 4104,
-      "mtime_ns": 1771426696172082500
+      "size": 4226,
+      "mtime_ns": 1771570173117256200
     },
     "tests/test_ede.py": {
       "size": 21966,
@@ -5760,8 +5800,8 @@
       "mtime_ns": 1771221012465082200
     },
     "tests/test_h_lwe.py": {
-      "size": 4807,
-      "mtime_ns": 1771426498000359500
+      "size": 4955,
+      "mtime_ns": 1771570173119266200
     },
     "tests/test_hamiltonian_braid.py": {
       "size": 18906,
@@ -5816,8 +5856,8 @@
       "mtime_ns": 1771221012473603900
     },
     "tests/test_layer13_cymatic_voxel_pq_envelope.py": {
-      "size": 4356,
-      "mtime_ns": 1771426765972592700
+      "size": 4477,
+      "mtime_ns": 1771570173129673500
     },
     "tests/test_linux_kernel_event_bridge.py": {
       "size": 2779,
@@ -5965,7 +6005,7 @@
     },
     "tests/test_telemetry_advanced_math.json": {
       "size": 4626,
-      "mtime_ns": 1771427743131595800
+      "mtime_ns": 1771570173131743500
     },
     "tests/test_telemetry_dna_audit_report.json": {
       "size": 648,
@@ -6116,8 +6156,8 @@
       "mtime_ns": 1771480863747106800
     },
     "training/long_run_multicloud_training_plan.json": {
-      "size": 2472,
-      "mtime_ns": 1771324391105963600
+      "size": 2543,
+      "mtime_ns": 1771570173133751400
     },
     "training/notion_ingest/iseki_story_notion_api_20260218.md": {
       "size": 4456,
@@ -6220,7 +6260,9 @@
       "e285677c37d65fc5abdc5a5246c731f824679b5e8685ee07627357822872a3be",
       "3dd883a176825531ce758400ceab4776ab5deb10ad399e7425c91abc9c70fdb5",
       "df09c963eeb9e3a744d1a309488544a2f226461a74d82fcf88ed5ca9f76bee3a",
-      "55f4f295d26c5fe3c8f841d0ead1524cae919cb540abb312096d49988ce45b64"
+      "55f4f295d26c5fe3c8f841d0ead1524cae919cb540abb312096d49988ce45b64",
+      "c31e25471b0008bcc46c6dc4a593f30cbafac347f00bdf704c7c972828b4b017",
+      "66fb207e0efa114f2ed011f9ca1593c6a29267401e5a438d41d23a7c1f87d47d"
     ],
     "dropbox": [
       "9a06efabdbeff27fefc1bb5e0291aea6bf1eb0a065e611a134900fa8fba19f97",
@@ -6262,7 +6304,9 @@
       "e285677c37d65fc5abdc5a5246c731f824679b5e8685ee07627357822872a3be",
       "3dd883a176825531ce758400ceab4776ab5deb10ad399e7425c91abc9c70fdb5",
       "df09c963eeb9e3a744d1a309488544a2f226461a74d82fcf88ed5ca9f76bee3a",
-      "55f4f295d26c5fe3c8f841d0ead1524cae919cb540abb312096d49988ce45b64"
+      "55f4f295d26c5fe3c8f841d0ead1524cae919cb540abb312096d49988ce45b64",
+      "c31e25471b0008bcc46c6dc4a593f30cbafac347f00bdf704c7c972828b4b017",
+      "66fb207e0efa114f2ed011f9ca1593c6a29267401e5a438d41d23a7c1f87d47d"
     ],
     "gdrive": [
       "9a06efabdbeff27fefc1bb5e0291aea6bf1eb0a065e611a134900fa8fba19f97",
@@ -6304,7 +6348,9 @@
       "e285677c37d65fc5abdc5a5246c731f824679b5e8685ee07627357822872a3be",
       "3dd883a176825531ce758400ceab4776ab5deb10ad399e7425c91abc9c70fdb5",
       "df09c963eeb9e3a744d1a309488544a2f226461a74d82fcf88ed5ca9f76bee3a",
-      "55f4f295d26c5fe3c8f841d0ead1524cae919cb540abb312096d49988ce45b64"
+      "55f4f295d26c5fe3c8f841d0ead1524cae919cb540abb312096d49988ce45b64",
+      "c31e25471b0008bcc46c6dc4a593f30cbafac347f00bdf704c7c972828b4b017",
+      "66fb207e0efa114f2ed011f9ca1593c6a29267401e5a438d41d23a7c1f87d47d"
     ],
     "proton": [
       "9a06efabdbeff27fefc1bb5e0291aea6bf1eb0a065e611a134900fa8fba19f97",
@@ -6346,7 +6392,9 @@
       "e285677c37d65fc5abdc5a5246c731f824679b5e8685ee07627357822872a3be",
       "3dd883a176825531ce758400ceab4776ab5deb10ad399e7425c91abc9c70fdb5",
       "df09c963eeb9e3a744d1a309488544a2f226461a74d82fcf88ed5ca9f76bee3a",
-      "55f4f295d26c5fe3c8f841d0ead1524cae919cb540abb312096d49988ce45b64"
+      "55f4f295d26c5fe3c8f841d0ead1524cae919cb540abb312096d49988ce45b64",
+      "c31e25471b0008bcc46c6dc4a593f30cbafac347f00bdf704c7c972828b4b017",
+      "66fb207e0efa114f2ed011f9ca1593c6a29267401e5a438d41d23a7c1f87d47d"
     ]
   }
 }
