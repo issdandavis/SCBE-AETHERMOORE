@@ -1130,11 +1130,105 @@ async def commit_voxel(record: VoxelRecord):
     # Verify governance decision.
     decision = scbe_decide(record.dStar, record.coherence, record.hEff)
     if decision == "DENY":
-        raise HTTPException(status_code=403, detail="SCBE denied commit")
+        raise HTTPException(status_code=403, detail="SCBE decision: DENY")
 
-    squad.commit_voxel(record, quorum_votes=len(record.quorum.votes))
-    return {"status": "committed", "cubeId": record.cubeId, "decision": decision}
+    # Commit to squad space.
+    success = squad.commit_voxel(record, len(record.quorum.votes))
+    if not success:
+        raise HTTPException(status_code=500, detail="Commit failed")
+    return {"status": "committed", "cubeId": record.cubeId}
 ```
+
+### Tri-Directional Hamiltonian Paths
+
+Concept:
+
+- Model routing as three coupled Hamiltonian paths over shared voxel state.
+- Each path optimizes a different axis: mission progression, safety/governance, and resource cost.
+- Final route is accepted only when all three paths remain consistent with SCBE decision gates.
+- Tri-directional Hamiltonian paths enforce that all core functions traverse the governance graph via three distinct directional constraints:
+  - `P1` (Structure): `KO/CA` tongues, consistency checks first.
+  - `P2` (Conflict): `RU` tongue, adversarial tests interleaved.
+  - `P3` (Time): `AV/DR/UM` tongues, forward/backward consistency.
+
+Graph representation:
+
+- Nodes = `{intent, policy, memory, plan, cost, quorum, exec}`
+
+Enforcement:
+
+- Function fails if any of the 3 paths:
+  - Contains cycles (not Hamiltonian)
+  - Misses required nodes
+  - Diverges beyond threshold:
+    - `d_tri(t) = max(d(P1, P2), d(P2, P3), d(P1, P3))`
+
+Implementation sketch:
+
+```python
+import networkx as nx
+from typing import Dict, List
+
+
+def tri_hamiltonian_paths(graph: Dict[str, List[str]], threshold: int = 2) -> bool:
+    """
+    Verify graph has 3 valid Hamiltonian paths covering all nodes.
+    Args:
+        graph: Adjacency list {node: [neighbors]}
+    Returns:
+        True if 3 distinct Hamiltonian paths exist
+    """
+    G = nx.DiGraph(graph)
+    nodes = list(G.nodes())
+    # Find all Hamiltonian paths.
+    hamiltonian_paths = []
+    for source in nodes:
+        for target in nodes:
+            if source != target:
+                try:
+                    path = nx.shortest_path(G, source, target)
+                    if len(path) == len(nodes):  # Visits all nodes
+                        hamiltonian_paths.append(list(path))
+                except nx.NetworkXNoPath:
+                    continue
+    # Need at least 3 distinct paths.
+    if len(hamiltonian_paths) < 3:
+        return False
+    # Verify paths are directionally distinct.
+    # (In production: check P1/P2/P3 use correct tongue subsets.)
+    # Stub: accept if 3+ paths exist.
+    return True
+
+
+class PollyPad:
+    # ... existing methods ...
+    def route_task(self, task_kind: str, state: UnitState, squad: SquadSpace) -> str:
+        """Route task with tri-directional path enforcement."""
+        # Define governance graph (DAG).
+        graph = {
+            "intent": ["policy"],
+            "policy": ["memory"],
+            "memory": ["plan"],
+            "plan": ["cost"],
+            "cost": ["quorum"],
+            "quorum": ["exec"],
+        }
+        # Verify 3 Hamiltonian paths exist.
+        if not tri_hamiltonian_paths(graph):
+            return "DENY: Tri-directional path failure"
+        # Proceed with routing...
+        if self.zone == "HOT":
+            return "HOT: Plan/draft only (no exec)"
+        if task_kind not in self.tools:
+            return "DENY: Tool not allowed in mode"
+        # Task execution...
+        return "ALLOW: Task routed"
+```
+
+Why this matters:
+
+- Security property: dangerous actions must pass through all three directional constraints.
+- If an attacker compromises one path (for example, bypasses consistency checks), the other two paths (conflict detection and temporal consistency) still block unauthorized routing.
 
 ## Voxel Record Schema
 
