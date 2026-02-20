@@ -1598,6 +1598,44 @@ Patent and formal specification:
 
 - SCBE-AETHERMOORE + PHDM: Complete Mathematical and Security Specification
   - Chapter 1: Mathematical Foundation
+  - Chapter 2: Patent Claims (Formal)
+  - Chapter 3: Attacker vs Defender Asymmetry
+  - Chapter 4: Formal Security Proofs
+  - Chapter 5: Reference Implementation
+  - Chapter 6: Integration Guide
+  - Chapter 7: Threat Models and Attack Scenarios
+  - Chapter 4: Sacred Tongue Tokenizer - The Six Languages
+  - Chapter 5: GeoSeal - Geometric Access Control Kernel
+  - Chapter 7: Sacred Eggs - Ritual-Based Secret Distribution
+- SCBE-AETHERMOORE v5.0 - Final Consolidated Patent Application: patent filing
+
+Business and reports:
+
+- SCBE-AETHERMOORE v3.0.0 - Unified System Report: system status
+- Commercial Agreement - Technology Schedule: licensing terms
+
+Publication/export status:
+
+- Pages are live at `aethermoorgames.notion.site`.
+- Pages were exported to Hugging Face in the prior workflow run.
+
+Repository implementation alignment:
+
+- GeoSeal location/auth primitives: `src/symphonic_cipher/geoseal_location_library.py`
+- AetherAuth CLI/runtime: `scripts/agentic_aetherauth.py`
+- Sacred Eggs: `src/crypto/sacred_eggs.py`
+- Sacred Eggs tests: `tests/test_sacred_eggs.py`
+- Additional Sacred Eggs references: `src/symphonic_cipher/scbe_aethermoore/sacred_eggs.py`
+- HYDRA/agent coordination CLI: `scripts/scbe-system-cli.py`
+- Additional agentic tools:
+  - `scripts/agentic_web_tool.py`
+  - `scripts/agentic_antivirus.py`
+  - `scripts/self_improvement_orchestrator.py`
+
+Earlier checks:
+
+- Coding library is in place: yes (package-exported and usable).
+- Sacred Eggs are implemented: yes (with tests).
 
 ## Voxel Record Schema
 
