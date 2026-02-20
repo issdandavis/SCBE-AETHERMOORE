@@ -13,6 +13,7 @@
   - `docs/MOBILE_AUTONOMY_RUNBOOK.md` updates for expanded connector stack.
 - Terminal ops control surface:
   - `scripts/scbe_terminal_ops.py` for connector registration + goal orchestration from terminal.
+  - Alias commands `research`, `article`, `products` for one-command flow execution.
   - `docs/TERMINAL_OPS_QUICKSTART.md` for web research, content/article, and product/store operations.
 
 ### Documentation
