@@ -1,6 +1,6 @@
 ---
 title: HYDRA Multi-Agent Coordination System - Architecture
-status: Reference Architecture (HYDRA)
+status: Production-Ready v1.1.0 (Reference Architecture)
 scope: Multi-agent orchestration layer above SCBE-AETHERMOORE
 canonical_kernel_spec: SPEC.md
 keywords:
@@ -13,51 +13,60 @@ keywords:
   - audit log ledger librarian memory
 ---
 
-> **Status:** Reference Architecture (HYDRA).  
-> **Scope:** Multi-agent orchestration layer that runs *above* SCBE-AETHERMOORE.  
-> **Canonical Kernel Spec:** See `SPEC.md` and SCBE Phase-Breath Hyperbolic Governance (Layer 1-14).  
-> HYDRA is not the cryptographic kernel; it is the execution/orchestration plane.
+# HYDRA Multi-Agent Coordination System - Complete Architecture
 
-# HYDRA Multi-Agent Coordination System – Complete Architecture
+Universal AI armor for terminal-native multi-agent coordination.
 
-This document summarises the HYDRA Multi-Agent Coordination System as documented in the internal Notion page “HYDRA Multi-Agent Coordination System – Complete Architecture”. The goal is to make the core architectural concepts, components, and terminology available within this repository for ease of access and version control.
+## Scope-of-Production (Reference Architecture)
 
-## Executive summary
+`Production-Ready (Reference Architecture)` means:
 
-HYDRA is a terminal-native multi-agent coordination system designed to act as “armor” for any AI model. It provides the infrastructure to run and orchestrate multiple AI heads simultaneously while enforcing strong safety guarantees through consensus voting and spectral governance. Key features include:
+- deterministic control plane design
+- auditable interfaces
+- test-covered primitives (tokenizer, ledger idempotency, gating)
 
-- Multi-tab browser orchestration – a swarm of six phase-modulated agents control parallel browser sessions.
-- Cross-session memory – a librarian component stores vector embeddings and builds a knowledge graph for later retrieval.
-- Byzantine fault tolerance – the system tolerates one malicious agent (f=1) out of six and originally required a 2f+1 quorum (three matching votes) for approval. Subsequent governance updates introduce risk-tiered quorums and lineage diversity checks, as outlined in the governance specification.
-- Graph Fourier anomaly detection – spectral analysis of agent interactions detects collusion or drift.
-- Universal AI interface – any AI model (Claude, GPT, Codex, local LLMs) can “wear” HYDRA armor via the Head abstraction.
-- Terminal-native operation – a CLI and pipe-compatible interface integrate the system into shell workflows.
+Not implied:
 
-The system historically advertised a “518,400× security multiplier” when all six Sacred Tongues were used. Governance corrections clarify that this figure derives from the combinatorial diversity of agent permutations (6!×6!) and should not be interpreted as a cryptographic security factor; the actual weight product of the six agents is approximately 1,051×.
+- cryptographic strength claims beyond standard primitives
+- that GFSS is certified for adversarial detection in uncontrolled real-world environments
+- that browser limbs are hardened by default
 
-## Layered architecture
+## Executive Summary
 
-HYDRA’s architecture is organised into seven layers, spanning from the user interface down to the core cryptographic engine. The simplified ASCII diagram below captures the layering:
+HYDRA is a terminal-native multi-agent coordination system that lets any AI model (Claude, Codex, GPT, local LLMs) run inside a governed execution shell. It provides:
 
-```
+- Multi-tab browser orchestration with 6+ parallel agents
+- Cross-session memory with semantic search and knowledge graph recall
+- Byzantine fault tolerance with `n=6`, `f=1` tolerance
+- Graph Fourier Scan Statistics (GFSS) for collusion/drift detection
+- Pipe-compatible CLI workflows for shell-native operations
+- SCBE-AETHERMOORE governance enforcement for high-risk actions
+
+Note on security multiplier:
+
+- The historical Tier-6 value `518,400x` is a combinatorial coordination factor (`6! * 6!`), not a cryptographic strength claim.
+
+## System Architecture Overview
+
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                  LAYER 7: USER INTERFACE                    │
 │  Terminal CLI • Browser Tabs • API Endpoints • REPL         │
 └────────────────────────┬────────────────────────────────────┘
                          │
 ┌────────────────────────▼────────────────────────────────────┐
-│             LAYER 6: HYDRA COORDINATION                     │
-│  Spine  •  Heads  •  Limbs  •  Librarian                    │
+│              LAYER 6: HYDRA COORDINATION                    │
+│  Spine • Heads • Limbs • Librarian • Ledger                 │
 └────────────────────────┬────────────────────────────────────┘
                          │
 ┌────────────────────────▼────────────────────────────────────┐
 │           LAYER 5: SPECTRAL GOVERNANCE                      │
-│  Graph Fourier Scan Statistics  •  Byzantine Consensus      │
+│  GFSS anomaly detection • Byzantine quorum • risk tiers     │
 └────────────────────────┬────────────────────────────────────┘
                          │
 ┌────────────────────────▼────────────────────────────────────┐
 │              LAYER 4: SWARM BROWSER                         │
-│  Six Sacred Tongue agents with phase-modulated roles        │
+│  6 Sacred Tongue agents (phase-modulated lanes)             │
 └────────────────────────┬────────────────────────────────────┘
                          │
 ┌────────────────────────▼────────────────────────────────────┐
@@ -66,123 +75,1142 @@ HYDRA’s architecture is organised into seven layers, spanning from the user in
 └────────────────────────┬────────────────────────────────────┘
                          │
 ┌────────────────────────▼────────────────────────────────────┐
-│             LAYER 2: SCBE API GATEWAY                       │
-│  Four-tier authentication and SCBE core endpoints           │
+│              LAYER 2: SCBE API GATEWAY                      │
+│  4-Tier Auth • Roundtable endpoints • SCBE Core             │
 └────────────────────────┬────────────────────────────────────┘
                          │
 ┌────────────────────────▼────────────────────────────────────┐
 │          LAYER 1: SCBE-AETHERMOORE CORE                     │
-│  14-layer cryptographic pipeline with harmonic filters      │
+│  14-Layer Pipeline • Harmonic Wall • PQC • Hyperbolic       │
+│  Geometry • Multi-Signature Governance                       │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-Each layer builds on the one below it: the user interface accepts commands and displays results; the coordination layer orchestrates agents, memory and persistence; the spectral governance layer uses GFSS and quorum voting to enforce safety; the swarm browser provides domain-separated capabilities via six agents; backend layers handle browser drivers, API gateway calls and the cryptographic core.
+### Layer 6 Detail
 
-## Core components
+```text
+┌─────────────────────────────────────────────────────────────┐
+│              LAYER 6: HYDRA COORDINATION                    │
+│                                                             │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐    │
+│  │  Spine   │  │  Heads   │  │  Limbs   │  │Librarian │    │
+│  │(Coord.)  │  │(AI Intf) │  │(Execute) │  │(Memory)  │    │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘    │
+└─────────────────────────────────────────────────────────────┘
+```
 
-### HYDRA Spine (Coordinator)
+### Layer 5 Detail
 
-The Spine is the central orchestrator. It manages sessions, registers AI heads and execution limbs, and synchronises state across the system. It interacts with the Librarian and Ledger for memory and audit trails. In code it holds dictionaries of heads and limbs and exposes methods like `register_head`, `delegate_task` and `sync_state`.
+```text
+┌─────────────────────────────────────────────────────────────┐
+│           LAYER 5: SPECTRAL GOVERNANCE                      │
+│                                                             │
+│  ┌────────────────────────┐  ┌─────────────────────────┐    │
+│  │ Graph Fourier Scan     │  │ Byzantine Consensus     │    │
+│  │ Statistics (GFSS)      │  │ (4/6 policy quorum)     │    │
+│  │ - Anomaly detection    │  │ (f=1 max tolerated)      │    │
+│  │ - Collusion detection  │  │ - Right-shift detection  │    │
+│  └────────────────────────┘  └─────────────────────────┘    │
+└─────────────────────────────────────────────────────────────┘
+```
 
-### HYDRA Heads (Universal AI interface)
+## Core Components
 
-A Head wraps a specific AI model (Claude, GPT, Codex, or local LLM) and exposes a universal `process` method. It mediates input prompts through governance (intent validation), executes the prompt on the underlying model, and stores results in the Librarian. Multiple heads can be registered for one session, enabling ensemble reviews or parallel tasks.
+## 1) HYDRA Spine (Coordinator)
 
-### HYDRA Limbs (Execution backends)
+- File: `hydra/spine.py` (527 lines)
+- Purpose: central coordination hub for all HYDRA components
 
-Limbs execute real-world actions on behalf of the system. They include browser limbs (driven by Playwright, Selenium or Chrome MCP) for navigation and interaction, API limbs for REST/GraphQL calls, and tool limbs for file I/O or shell commands. A `BrowserLimb` exposes methods such as `navigate`, `click`, and `extract` to interact with web pages.
+Key features:
 
-### HYDRA Librarian (Memory & Knowledge)
+- Session management with unique IDs
+- Multi-agent task distribution
+- State synchronization across Heads
+- Ledger integration for audit trail persistence
 
-The Librarian provides cross-session memory and knowledge graph capabilities. It uses sentence-transformer embeddings and an SQLite database to store textual memories, perform semantic search and build a graph of relationships. Key tables include `memories` (storing content and embeddings) and `knowledge_graph` (edges between memories). The Librarian integrates with SCBE governance to control access to sensitive memories.
+Core methods:
 
-### HYDRA Ledger (Persistent state)
+- `create_session(...)`
+- `register_head(ai_type, instance)`
+- `register_limb(name, backend)`
+- `delegate_task(task, context)`
+- `sync_state()`
+- `close_session(session_id)`
 
-The Ledger logs all actions, decisions and agent states in a SQLite database. Tables include `sessions` (metadata), `events` (actions and governance decisions) and `agent_state` (agent metrics). This immutable audit trail supports compliance and post-hoc analysis.
+Skeleton:
 
-### HYDRA CLI (Terminal interface)
+```python
+class HydraSpine:
+    def __init__(self):
+        self.sessions = {}
+        self.heads = {}
+        self.limbs = {}
+        self.librarian = HydraLibrarian()
+        self.ledger = HydraLedger()
 
-The CLI provides pipe-friendly commands to start HYDRA, process workflows and interact with agents. Users can pipe JSON tasks into the CLI or run it in REPL mode.
+    def register_head(self, ai_type, instance):
+        """Register an AI (Claude, GPT, etc.) as a Head."""
+        ...
 
-## Swarm browser: the six Sacred Tongues
+    def delegate_task(self, task, context):
+        """Distribute task to appropriate Head based on specialty."""
+        ...
 
-HYDRA’s swarm browser uses six specialised agents operating at different phase angles to separate concerns and prevent cross-contamination. Their roles and approximate weights (from the original risk model) are:
+    def sync_state(self):
+        """Synchronize state across all Heads via Librarian."""
+        ...
+```
 
-| Agent | Phase | Role | Key actions | Weight |
-| --- | --- | --- | --- | --- |
-| KO-SCOUT | 0° | Navigation & coordination | `goto`, `back`, `forward`, `refresh` | 1.00 |
-| AV-VISION | 60° | Visual perceptions | `screenshot`, `analyze_layout`, `detect_elements` | 1.38 |
-| RU-READER | 120° | Content extraction | `extract_text`, `parse_table`, `get_links` | 2.62 |
-| CA-CLICKER | 180° | Interaction | `click`, `hover`, `drag`, `drop` | 6.18 |
-| UM-TYPER | 240° | Input & secrets | `type`, `fill_form`, `upload_file` | 4.24 |
-| DR-JUDGE | 300° | Verification & validation | `verify_page`, `check_state`, `validate_data` | 11.09 |
+## 2) HYDRA Heads (Universal AI Interface)
 
-The weights roughly capture the risk level of each action; heavier weights correspond to higher risk and therefore stronger governance scrutiny. HYDRA originally required a 3/6 quorum for actions, but the governance system now uses tiered quorums based on risk.
+- File: `hydra/head.py` (412 lines)
+- Purpose: abstraction layer allowing any AI to wear HYDRA armor
 
-## Spectral governance & consensus
+Supported AI types:
 
-The Spectral Governance layer combines Graph Fourier Scan Statistics (GFSS) with a Byzantine fault-tolerant consensus. GFSS constructs an interaction graph, computes the Laplacian and performs a Fourier transform to detect anomalous energy spikes. Meanwhile, a quorum voting mechanism (originally count >= 3 for six agents) determines approval. Recent corrections replace this flat threshold with a risk-tiered governance class that requires higher quorums (4/6, 5/6, 6/6) and lineage diversity checks for medium, high and critical actions.
+- Claude (Anthropic)
+- GPT/Codex (OpenAI)
+- Local LLMs (Ollama, LM Studio, similar adapters)
+- Custom AI agents
+
+Interface:
+
+```python
+class HydraHead:
+    def __init__(self, ai_type: str):
+        self.ai_type = ai_type
+        self.memory = []  # Cross-session context
+
+    def process(self, prompt: str, context: dict) -> str:
+        """Universal processing interface."""
+        validated_prompt = self.validate_intent(prompt)
+        result = self.execute(validated_prompt)
+        self.librarian.store_memory(result)
+        return result
+```
+
+Hot-swappable backend flow:
+
+```python
+hydra = HydraSpine()
+claude_id = hydra.register_head("claude", ClaudeHead(api_key=...))
+hydra.set_active_head(claude_id)
+
+gpt_id = hydra.register_head("gpt", GPTHead(api_key=...))
+hydra.set_active_head(gpt_id)
+
+context = hydra.librarian.get_session_context(hydra.session_id)
+hydra.heads[gpt_id].load_context(context)
+```
+
+## 3) HYDRA Limbs (Execution Backends)
+
+- File: `hydra/limbs.py` (289 lines)
+- Purpose: execute actions via browser automation, APIs, and local tools
+
+Backend types:
+
+- Browser limbs: Chrome MCP, Playwright, Selenium
+- API limbs: REST, GraphQL, WebSocket
+- Tool limbs: file I/O, shell commands, database access
+
+Example:
+
+```python
+class BrowserLimb:
+    def __init__(self, backend="playwright"):
+        self.backend = backend
+
+    def navigate(self, url: str) -> dict:
+        """Navigate and return page state."""
+        ...
+
+    def click(self, selector: str) -> bool:
+        """Click element."""
+        ...
+
+    def extract(self, selector: str) -> str:
+        """Extract text/data."""
+        ...
+```
+
+## 4) HYDRA Librarian (Memory and Knowledge)
+
+- File: `hydra/librarian.py` (548 lines)
+- Purpose: cross-session memory with semantic search + knowledge graph
+
+Core features:
+
+- Vector embeddings (sentence-transformers)
+- SQLite persistence (`memories`, `knowledge_graph`)
+- Semantic search via cosine similarity
+- Graph traversal for related memory expansion
+- SCBE-governed access control for memory reads/writes
+
+Schema:
+
+```sql
+CREATE TABLE memories (
+    id INTEGER PRIMARY KEY,
+    session_id TEXT,
+    content TEXT,
+    embedding BLOB,
+    timestamp REAL,
+    metadata JSON
+);
+
+CREATE TABLE knowledge_graph (
+    id INTEGER PRIMARY KEY,
+    source_memory_id INTEGER NOT NULL,
+    target_memory_id INTEGER NOT NULL,
+    relationship TEXT NOT NULL,
+    weight REAL DEFAULT 1.0,
+    FOREIGN KEY (source_memory_id) REFERENCES memories(id),
+    FOREIGN KEY (target_memory_id) REFERENCES memories(id)
+);
+```
+
+Usage:
+
+```python
+librarian = HydraLibrarian(db_path="hydra_ledger.db")
+librarian.store(
+    content="User requested GitHub PR analysis",
+    metadata={"action": "pr_review", "repo": "scbe-aethermoore"},
+)
+results = librarian.search(query="previous code reviews", top_k=5)
+related = librarian.get_related_memories(memory_id=42, relationship="caused_by")
+```
+
+## 5) HYDRA Ledger (Persistent State)
+
+- File: `hydra/ledger.py` (203 lines)
+- Purpose: SQLite audit trail and state persistence
+
+Tables:
+
+- `sessions`: session metadata and timestamps
+- `events`: all HYDRA actions and governance decisions
+- `agent_state`: current state snapshots of swarm agents
+
+## 6) HYDRA CLI (Terminal Interface)
+
+- File: `hydra/cli.py` (167 lines)
+- Purpose: pipe-compatible command-line interface
+
+Usage examples:
+
+```bash
+# Direct execution
+python -m hydra
+
+# Pipe navigation command
+echo '{"action":"navigate","target":"https://github.com"}' | python -m hydra
+
+# Multi-step workflow
+cat workflow.json | python -m hydra
+
+# REPL mode
+python -m hydra --repl
+```
+
+## Swarm Browser Integration
+
+6 Sacred Tongue agents operate at fixed phase angles for domain separation:
+
+- KO-SCOUT (0 deg - Kor'aelin)
+  - Role: navigation and coordination
+  - Actions: `goto`, `back`, `forward`, `refresh`
+  - Weight: `1.00` (base)
+- AV-VISION (60 deg - Avali)
+  - Role: visual perception
+  - Actions: `screenshot`, `analyze_layout`, `detect_elements`
+  - Weight: `1.38`
+- RU-READER (120 deg - Runethic)
+  - Role: content extraction
+  - Actions: `extract_text`, `parse_table`, `get_links`
+  - Weight: `2.62`
+- CA-CLICKER (180 deg - Cassisivadan)
+  - Role: interaction
+  - Actions: `click`, `hover`, `drag`, `drop`
+  - Weight: `6.18`
+- UM-TYPER (240 deg - Umbroth)
+  - Role: input and secrets
+  - Actions: `type`, `fill_form`, `upload_file`
+  - Weight: `4.24` (secrets handling)
+- DR-JUDGE (300 deg - Draumric)
+  - Role: verification and validation
+  - Actions: `verify_page`, `check_state`, `validate_data`
+  - Weight: `11.09` (highest authority)
+
+## Byzantine Fault Tolerance
+
+Configuration:
+
+- `n = 6` agents
+- `f_max = floor((n-1)/3) = 1`
+
+Quorum:
+
+- BFT minimum quorum: `2f+1 = 3`
+- Policy quorum (operational): typically `4/6` baseline, higher for high/critical risk tiers
+
+Guarantees:
+
+- Survives 1 Byzantine (malicious) agent
+- Detects and isolates dishonest or divergent lanes
+
+Consensus skeleton:
+
+```python
+def reach_consensus(votes: list[Vote]) -> ConsensusResult:
+    """
+    Byzantine fault-tolerant voting.
+    """
+    vote_counts = Counter([v.value for v in votes])
+    required_quorum = 3
+    for value, count in vote_counts.items():
+        if count >= required_quorum:
+            return ConsensusResult(
+                decision=value,
+                confidence=count / len(votes),
+                dissenters=[v for v in votes if v.value != value],
+            )
+    return ConsensusResult(
+        decision=None,
+        confidence=0.0,
+        dissenters=votes,
+    )
+```
+
+## Research-Validated Component: GFSS
+
+- File: `hydra/spectral.py` (446 lines)
+- Purpose: detect anomalous agent behavior via spectral graph analysis
+- Foundation: SentinelAgent (arXiv:2505.24201)
+
+Math pipeline:
+
+- Build interaction graph `G=(V,E)`
+- Compute Laplacian `L = D - A`
+- Eigen-decompose `L = U * Lambda * U^T`
+- Transform state signal `x_hat = U^T * x`
+- Detect high-frequency anomalies (energy spikes)
+
+Production constraint:
+
+- GFSS runs on bounded `n` (default 6 agents), so dense eigendecomposition is acceptable in this architecture.
+- If `n` is expanded beyond the bounded coordination profile, use sparse eigensolvers / partial spectrum (`top-k`) instead of full dense decomposition.
+- Node ordering is canonicalized by sorted agent IDs before matrix build, making the spectral input ordering deterministic and auditable.
+
+Implementation skeleton:
+
+```python
+class GraphFourierAnalyzer:
+    def detect_anomalies(self, agent_states: dict) -> list:
+        node_ids = sorted(agent_states.keys())  # deterministic ordering
+        G = self.build_graph(agent_states, node_order=node_ids)
+        L = nx.laplacian_matrix(G, nodelist=node_ids).astype(float).toarray()
+        eigenvalues, eigenvectors = np.linalg.eigh(L)
+
+        states_vector = np.array([agent_states[k]["state"] for k in node_ids], dtype=float)
+        frequency_components = eigenvectors.T @ states_vector
+
+        anomalies = []
+        for i, component in enumerate(frequency_components):
+            if np.abs(component) > self.threshold:
+                anomalies.append(
+                    {
+                        "frequency": float(eigenvalues[i]),
+                        "magnitude": float(component),
+                        "suspicious_agents": self.identify_contributors(i),
+                    }
+                )
+        return anomalies
+```
 
 ## Integration with SCBE-AETHERMOORE
 
-HYDRA sits atop the SCBE-AETHERMOORE cryptographic pipeline. All actions pass through layers such as Hyperbolic Distance, Spectral Coherence, Harmonic Scaling and Risk Decision before being allowed, denied or flagged for review. Critical operations may require multi-signature governance, where multiple Sacred Tongues sign off on actions. For example, basic navigation is Tier 1, form submission with sensitive data is Tier 3, and system-level changes are Tier 6.
+Governance layer mapping:
 
-## File structure & codebase
+- Layer 5 (Hyperbolic Distance): intent deviation measurement
+- Layer 9 (Spectral Coherence): multi-agent coordination validation
+- Layer 12 (Harmonic Scaling): exponential cost for suspicious behavior
+- Layer 13 (Risk Decision): allow/deny/review gate
+- Layer 14 (Topological Gate): final execution integrity boundary
 
-The HYDRA codebase is organised as follows:
+Multi-signature governance tiers:
 
+- Tier 1 (single tongue - KO): basic navigation
+- Tier 3 (triple - KO + RU + UM): sensitive form submission
+- Tier 6 (full roundtable): system-level changes and config updates
+
+Important behavior details:
+
+- Missing location does not hard-fail by default in AetherAuth; it is blended into risk unless `--enforce-location` is set.
+- Runtime issue fixed in `agentic_aetherauth.py`: `clock_drift` no longer referenced before assignment.
+
+### Law vs Flux Commitments
+
+| Class | Constraint | Source |
+|---|---|---|
+| Law (immutable) | Block layout of agent state | Schema/contract |
+| Law (immutable) | Quorum math and `f` bounds | BFT spec (`n=6`, `f_max=1`) |
+| Law (immutable) | Ledger idempotency invariant | Unique idempotency key |
+| Law (immutable) | Canonical ordering of agents for spectral ops | Sorted agent IDs |
+| Law (immutable) | Prefix/token grammar constraints | Token parser invariants |
+| Flux (manifest) | GFSS anomaly threshold | Runtime manifest |
+| Flux (manifest) | Policy quorum per tier | Runtime manifest |
+| Flux (manifest) | Embedding model ID | Runtime manifest |
+| Flux (manifest) | Smear/wave parameters (if used) | Runtime manifest |
+| Flux (manifest) | Enforcement toggles (`--enforce-location`, etc.) | Runtime manifest |
+
+Every run writes the manifest hash to the ledger.
+
+## Polly Pad Integration
+
+Concept:
+
+- PHDM is the geometric skull (cognitive core)
+- HYDRA is the operational armor any AI can wear
+- SCBE-AETHERMOORE is the deterministic governance boundary
+
+Armor layers:
+
+- Exoskeleton: terminal CLI and API interface
+- Sensory array: browser backends (swarm agents)
+- Processing core: AI heads (Claude/GPT/Codex/local)
+- Memory banks: Librarian with vector search
+- Governance shield: SCBE-AETHERMOORE protection
+- Audit log: Ledger for compliance
+
+## Polly Pads Runtime and Testing Specification (v2.0)
+
+Parent system:
+
+- [HYDRA Multi-Agent Coordination System - Complete Architecture](https://www.notion.so/HYDRA-Multi-Agent-Coordination-System-Complete-Architecture-0ecedff123704e65b249897bf534d6ef?pvs=21)
+
+Executive summary:
+
+- Polly Pads are personal IDE workspaces for AI agents extending HYDRA.
+- Mode-specialized environments: Engineering, Navigation, Systems, Science, Comms, Mission.
+- Dual code zones: HOT (drafting) and SAFE (execution).
+- Squad-level coordination with voxel-based shared state.
+- Proximity tracking via decimal placeholders + hyperbolic distance.
+- Per-pad AI assistance with scoped tool-calling agents.
+- Coherence-gated zone promotion for security upgrades.
+
+Key innovation:
+
+- Each agent receives a personal development environment with assistant tooling while HYDRA Spine orchestrates cross-pad interactions using Byzantine consensus and geometric bounds checks.
+
+### Mode-Specific Pads
+
+Each Polly Pad mode limits tools and workflow intent to reduce cross-domain blast radius:
+
+| Pad Mode | Focus | Primary Tools | Typical Outcome |
+|---|---|---|---|
+| `ENGINEERING` | Build and refactor | `code_edit`, `test_run`, `lint_fix` | Implement and validate code |
+| `NAVIGATION` | Discovery and routing | `navigate`, `index_scan`, `path_plan` | Locate targets and map workflows |
+| `SYSTEMS` | Runtime operations | `service_restart`, `health_check`, `config_apply` | Stabilize and operate services |
+| `SCIENCE` | Experiments and analysis | `experiment_run`, `measure`, `model_compare` | Evaluate hypotheses and metrics |
+| `COMMS` | Communication and negotiation | `msg_send`, `negotiate`, `protocol_exec` | Draft messages and broker agreements |
+| `MISSION` | Goal orchestration | `goal_set`, `constraint_check`, `orchestrate_squad` | Define objectives and coordinate squads |
+
+### Dual Code Zones
+
+`HOT` zone (exploratory):
+
+- Draft code, plans, and ideas
+- No execution permissions
+- Rapid iteration without full safety gates
+- Best for prototyping and brainstorming
+
+`SAFE` zone (production):
+
+- Vetted code with execution permissions
+- Requires SCBE decision + optional quorum gate
+- Full governance enforcement and audit trail
+- Best for deploys and critical operations
+
+Promotion rule (HOT -> SAFE):
+
+```python
+from dataclasses import dataclass, field
+from typing import Dict, List, Literal, Optional
+
+PadMode = Literal["ENGINEERING", "NAVIGATION", "SYSTEMS", "SCIENCE", "COMMS", "MISSION"]
+
+
+@dataclass
+class Thresholds:
+    allow_max_cost: float = 1e3
+    quarantine_max_cost: float = 1e6
+    allow_min_coherence: float = 0.55
+    quarantine_min_coherence: float = 0.25
+    allow_max_drift: float = 1.2
+    quarantine_max_drift: float = 2.2
+    quorum_min_votes: int = 4  # 4/6 for critical promotions
+
+
+@dataclass
+class PollyPad:
+    unit_id: str
+    mode: PadMode
+    zone: Literal["HOT", "SAFE"] = "HOT"
+    thr: Thresholds = field(default_factory=Thresholds)
+    tools: List[str] = field(default_factory=list)
+    memory: Dict[str, "VoxelRecord"] = field(default_factory=dict)
+
+    def __post_init__(self):
+        """Initialize mode-specific toolsets."""
+        if self.tools:
+            return
+        if self.mode == "ENGINEERING":
+            self.tools = ["ide_draft", "code_exec_safe", "build_deploy"]
+        elif self.mode == "NAVIGATION":
+            self.tools = ["map_query", "proximity_track", "path_plan"]
+        elif self.mode == "SYSTEMS":
+            self.tools = ["telemetry_read", "config_set", "policy_enforce"]
+        elif self.mode == "SCIENCE":
+            self.tools = ["hypothesis_gen", "experiment_run", "model_tune"]
+        elif self.mode == "COMMS":
+            self.tools = ["msg_send", "negotiate", "protocol_exec"]
+        elif self.mode == "MISSION":
+            self.tools = ["goal_set", "constraint_check", "orchestrate_squad"]
+        else:
+            self.tools = []
+
+    def route_task(self, task_kind: str, state: "UnitState", squad: "SquadSpace") -> str:
+        """Route task to appropriate handler."""
+        # HOT zone: plan/draft only.
+        if self.zone == "HOT":
+            return "HOT: plan/draft only (no exec)"
+        # SAFE zone: check tool availability.
+        if task_kind not in self.tools:
+            return "DENY: Tool not allowed in mode"
+        # Example: proximity tracking in Navigation mode.
+        if task_kind == "proximity_track" and self.mode == "NAVIGATION":
+            neighbors = squad.neighbors(radius=10.0)
+            return f"Neighbors: {neighbors.get(self.unit_id, [])}"
+        if not self.can_promote_to_safe(state):
+            return "QUARANTINE: governance gate blocked execution"
+        # Example: code execution in Engineering mode.
+        if task_kind == "code_exec_safe" and self.mode == "ENGINEERING":
+            return "SAFE: Exec with security envelope"
+        return "ALLOW: Task routed"
+
+    def assist(self, query: str, state: "UnitState", squad: "SquadSpace") -> str:
+        """Per-pad AI assistance (stub; real implementation uses scoped tool calls)."""
+        if "proximity" in query.lower() and self.mode == "NAVIGATION":
+            return self.route_task("proximity_track", state, squad)
+        if "code" in query.lower() and self.mode == "ENGINEERING":
+            task = "ide_draft" if self.zone == "HOT" else "code_exec_safe"
+            return self.route_task(task, state, squad)
+        squad_context = list(squad.voxels.values())[0] if squad.voxels else None
+        return f"Assist in {self.mode}: {query} (context: {squad_context})"
+
+    def can_promote_to_safe(self, state, quorum_votes: Optional[int] = None) -> bool:
+        """Check if HOT-zone content can promote to SAFE-zone execution."""
+        decision = scbe_decide(state.d_star, state.coherence, state.h_eff, self.thr)
+        if decision != "ALLOW":
+            return False
+        if quorum_votes is not None and quorum_votes < self.thr.quorum_min_votes:
+            return False
+        return True
 ```
+
+Reference gate function:
+
+```python
+from typing import Literal
+
+Decision = Literal["ALLOW", "QUARANTINE", "DENY"]
+
+
+def scbe_decide(
+    d_star: float,
+    coherence: float,
+    h_eff: float,
+    thr: Thresholds = Thresholds(),
+) -> Decision:
+    """SCBE governance decision function."""
+    if (
+        coherence < thr.quarantine_min_coherence
+        or h_eff > thr.quarantine_max_cost
+        or d_star > thr.quarantine_max_drift
+    ):
+        return "DENY"
+
+    if (
+        coherence >= thr.allow_min_coherence
+        and h_eff <= thr.allow_max_cost
+        and d_star <= thr.allow_max_drift
+    ):
+        return "ALLOW"
+
+    return "QUARANTINE"
+```
+
+### SquadSpace (Shared Coordination)
+
+`SquadSpace` is the shared memory + proximity layer for cross-pad collaboration.
+
+```python
+from dataclasses import dataclass, field
+from typing import Dict, List
+import math
+
+
+@dataclass
+class UnitState:
+    unit_id: str
+    x: float
+    y: float
+    z: float
+    vx: float = 0.0
+    vy: float = 0.0
+    vz: float = 0.0
+    coherence: float = 1.0
+    d_star: float = 0.0
+    h_eff: float = 0.0
+
+
+def dist(a: UnitState, b: UnitState) -> float:
+    """Euclidean distance between units."""
+    return math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2)
+
+
+@dataclass
+class SquadSpace:
+    squad_id: str
+    units: Dict[str, UnitState] = field(default_factory=dict)
+    voxels: Dict[str, "VoxelRecord"] = field(default_factory=dict)
+
+    def neighbors(self, radius: float) -> Dict[str, List[str]]:
+        """Find units within radius of each other."""
+        ids = list(self.units.keys())
+        out: Dict[str, List[str]] = {uid: [] for uid in ids}
+        for i in range(len(ids)):
+            for j in range(i + 1, len(ids)):
+                a = self.units[ids[i]]
+                b = self.units[ids[j]]
+                if dist(a, b) <= radius:
+                    out[ids[i]].append(ids[j])
+                    out[ids[j]].append(ids[i])
+        return out
+
+    def quorum_ok(self, votes: int, n: int = 6, threshold: int = 4) -> bool:
+        """Check if quorum threshold is met."""
+        return n == 6 and votes >= threshold
+
+    def commit_voxel(self, record: "VoxelRecord", quorum_votes: int) -> bool:
+        """Commit voxel to shared storage only if quorum is reached."""
+        if not self.quorum_ok(quorum_votes):
+            return False
+        self.voxels[record.cubeId] = record
+        return True
+```
+
+### Pytest Test Suite for Polly Pads
+
+Reference file: `tests/test_polly_pads_runtime.py`
+
+```python
+from src.polly_pads_runtime import SquadSpace, UnitState, PollyPad, scbe_decide, Thresholds
+
+
+def test_neighbors_radius():
+    """Verify proximity detection within radius."""
+    s = SquadSpace("squad-1")
+    s.units["a"] = UnitState("a", 0, 0, 0)
+    s.units["b"] = UnitState("b", 1, 0, 0)
+    s.units["c"] = UnitState("c", 10, 0, 0)
+    nb = s.neighbors(radius=2.0)
+    assert "b" in nb["a"]
+    assert "a" in nb["b"]
+    assert nb["c"] == []  # Too far
+
+
+def test_scbe_decision_thresholds():
+    """Verify governance decision boundaries."""
+    thr = Thresholds()
+    assert scbe_decide(0.2, 0.9, 10.0, thr) == "ALLOW"
+    assert scbe_decide(1.8, 0.7, 100.0, thr) == "QUARANTINE"
+    assert scbe_decide(5.0, 0.9, 10.0, thr) == "DENY"  # d_star too high
+    assert scbe_decide(0.2, 0.1, 10.0, thr) == "DENY"  # coherence too low
+
+
+def test_hot_to_safe_requires_allow_and_quorum():
+    """Verify HOT->SAFE promotion requires ALLOW + quorum."""
+    pad = PollyPad(unit_id="u1", mode="ENGINEERING", zone="HOT")
+    state = UnitState("u1", 0, 0, 0, coherence=0.9, d_star=0.2, h_eff=100.0)
+    # ALLOW decision alone is sufficient.
+    assert pad.can_promote_to_safe(state) is True
+    # With quorum requirement: must meet threshold.
+    assert pad.can_promote_to_safe(state, quorum_votes=3) is False  # Below threshold
+    assert pad.can_promote_to_safe(state, quorum_votes=4) is True   # Meets 4/6
+
+
+def test_tool_gating_by_pad_mode():
+    """Verify tools are gated by pad mode."""
+    eng = PollyPad(unit_id="u1", mode="ENGINEERING", zone="SAFE")
+    nav = PollyPad(unit_id="u2", mode="NAVIGATION", zone="SAFE")
+    assert "code_exec_safe" in eng.tools
+    assert "map_query" not in eng.tools
+    assert "proximity_track" in nav.tools
+    assert "code_exec_safe" not in nav.tools
+    pad_nav = PollyPad("u1", "NAVIGATION", "SAFE")
+    result = pad_nav.route_task("proximity_track", UnitState("u1", 0, 0, 0), SquadSpace("test"))
+    assert "Neighbors" in result
+```
+
+### Pytest Test Suite and Results
+
+Safety invariant coverage includes:
+
+- Bijectivity: byte <-> token mapping correctness
+- Round-trip fidelity: encode -> decode identity
+- Pitfall enforcement: reject curly quotes/case variants/invalid whitespace
+- Lexicon consistency: exactly 256 unique tokens per tongue
+- Cross-translation integrity: HMAC attestation
+
+Initial run summary:
+
+- `8/13` passed
+- `3/13` failed (high-value failures)
+- `2/13` skipped
+
+Reported failures:
+
+- `test_decode_rejects_unicode_quote_or_missing_apostrophe[KO]`
+- `test_decode_rejects_case_mismatch[KO]`
+- `test_encode_add_prefix_round_trip[KO]`
+
+Skipped checks:
+
+- SS1 helpers missing in module
+- Shamir helpers missing in module
+
+### Critical Failure 1: Unicode Quote Acceptance
+
+Issue:
+
+- `parse_token()` / `decode()` accepted Unicode quote variants instead of strict ASCII apostrophe (`U+0027`).
+
+Risk:
+
+- Visual-confusable token bypass.
+
+Fix pattern:
+
+```python
+def parse_token(tongue, token):
+    if not token.isascii():
+        raise ValueError("Only ASCII allowed")
+    if token.count("'") != 1:
+        raise ValueError(f"Invalid token format (must have exactly one apostrophe): {token}")
+    pre, suf = token.split("'", 1)
+    # Existing logic...
+```
+
+### Critical Failure 2: Case Sensitivity Bypass
+
+Issue:
+
+- `decode()` accepted title-case variants (example: `Dah'Dah`) when lexicon is lowercase.
+
+Risk:
+
+- Case-variant bypass against token-policy controls.
+
+Fix pattern:
+
+```python
+def parse_token(tongue, token):
+    if token != token.lower():
+        raise ValueError(f"Tokens must be lowercase: {token}")
+    # Existing logic...
+```
+
+### Critical Failure 3: Prefix Round-Trip Breakage
+
+Issue:
+
+- Prefix-encoded tokens failed decode because stripping/normalization was incomplete.
+
+Risk:
+
+- Prefix mode non-determinism and failed attested round-trips.
+
+Fix pattern:
+
+```python
+PREFIXES = ("ko:", "av:", "ru:", "ca:", "um:", "dr:")
+
+
+def decode(tokens, tongue=DEFAULT_TONGUE):
+    token_list = tokens.split()
+    normalized: list[str] = []
+    for t in token_list:
+        tok = t
+        for p in PREFIXES:
+            if tok.startswith(p):
+                tok = tok[len(p):]
+                break
+        normalized.append(tok)
+    return bytes(parse_token(tongue, t) for t in normalized)
+```
+
+Implementation notes:
+
+- Strip any recognized tongue prefix before strict parse/validation.
+- Keep one canonical parse pipeline for prefixed and non-prefixed tokens.
+
+### Post-Fix Test Results
+
+After applying the three remediations:
+
+- `11/11` core tests pass
+- SS1/Shamir checks remain skipped until helper wiring is completed
+
+## Voxel Record Schema
+
+Purpose:
+
+Voxel Records are the atomic unit of state in Polly Pads, combining:
+
+- Addressing: 6D hyperbolic coordinates (`X,Y,Z,V,P,S`) plus tongue, epoch, and pad mode
+- Governance snapshot: coherence, `d*`, `H_eff`, and decision (`ALLOW`, `QUARANTINE`, `DENY`, `EXILE`)
+- Execution context: workflow/session correlation and idempotent commit identity
+- Replayability: enough state to reproduce routing, risk scoring, and audit trails
+
+Canonical voxel addressing:
+
+- Base key: `X:Y:Z:V:P:S`
+- Per-tongue key: `L|X:Y:Z:V:PL:S`
+- Shard: `hash(base_key) % 64` (or `% 128` at higher write volumes)
+
+Example:
+
+- `base/12:08:19:03:14:12`
+- `KO|12:08:19:03:07:12`
+
+Recommended document pathing:
+
+- `voxels/{env}/shards/{shard}/cells/{voxel_key}`
+- `ledgerReceipts/{receipt_id}`
+
+### Runtime JSON Shape
+
+```json
+{
+  "env": "dev",
+  "correlation_id": "uuid",
+  "idempotency_key": "uuid",
+  "action": "voxel.commit",
+  "baseKey": "12:08:19:03:14:12",
+  "perLang": {
+    "KO": "12:08:19:03:07:12",
+    "AV": "12:08:19:03:05:12"
+  },
+  "metrics": {
+    "coh": 0.82,
+    "dStar": 0.34,
+    "cost": 1.41
+  },
+  "state": {
+    "x": 0.14,
+    "y": -0.08,
+    "z": 0.42,
+    "vx": 0.01,
+    "vy": -0.02,
+    "vz": 0.00,
+    "meanPhase": 0.44,
+    "entropy": 0.19
+  }
+}
+```
+
+### SQL-Friendly Equivalent
+
+```sql
+CREATE TABLE voxel_records (
+    id INTEGER PRIMARY KEY,
+    env TEXT NOT NULL,
+    shard INTEGER NOT NULL,
+    voxel_key TEXT NOT NULL,
+    correlation_id TEXT NOT NULL,
+    idempotency_key TEXT NOT NULL,
+    tongue TEXT,
+    x INTEGER NOT NULL,
+    y INTEGER NOT NULL,
+    z INTEGER NOT NULL,
+    v INTEGER NOT NULL,
+    p INTEGER NOT NULL,
+    s INTEGER NOT NULL,
+    coh REAL,
+    d_star REAL,
+    cost REAL,
+    state_json TEXT,
+    created_at REAL NOT NULL
+);
+
+CREATE UNIQUE INDEX ux_voxel_idempotency
+ON voxel_records (env, idempotency_key);
+
+CREATE INDEX ix_voxel_lookup
+ON voxel_records (env, shard, voxel_key, created_at);
+
+CREATE INDEX ix_voxel_created_at
+ON voxel_records (env, created_at);
+```
+
+Ledger receipt fields:
+
+- `decision` (`ALLOW`, `QUARANTINE`, `DENY`, `EXILE`)
+- `logG`, `T`, `I`, `dStar`, `coh`
+- `voxelKeyBase`, `voxelKeyPerLang`
+- `ts`
+
+## File Structure
+
+```text
 hydra/
-├── __init__.py      # Package initialisation
-├── base.py          # Base classes and types
-├── spine.py         # Coordinator
-├── head.py          # Universal AI interface
-├── limbs.py         # Execution backends
-├── librarian.py     # Memory & knowledge graph
-├── ledger.py        # SQLite persistence
-├── spectral.py      # Graph Fourier analysis
-├── consensus.py     # Voting & governance
-└── cli.py           # Terminal interface
+├── __init__.py           # Package initialization (v1.1.0)
+├── base.py               # Base classes and types
+├── spine.py              # Coordinator (527 lines)
+├── head.py               # Universal AI interface (412 lines)
+├── limbs.py              # Execution backends (289 lines)
+├── librarian.py          # Memory and knowledge graph (548 lines)
+├── ledger.py             # SQLite persistence (203 lines)
+├── spectral.py           # Graph Fourier analysis (446 lines)
+├── consensus.py          # Byzantine voting (268 lines)
+└── cli.py                # Terminal interface (167 lines)
 
 agents/
-└── swarm_browser.py  # Implementation of the six Sacred Tongues
+└── swarm_browser.py      # 6 Sacred Tongue agents (804 lines)
 
 docs/
-└── POLLY_PADS_ARCHITECTURE.md  # “Clone Trooper armour” concept
+└── POLLY_PADS_ARCHITECTURE.md  # Clone Trooper armor concept
 ```
 
-The combined code exceeds 2,800 lines and is accompanied by extensive tests and research notes.
+Total: 2,860+ lines of production code.
 
-## Performance benchmarks
+## Performance Benchmarks
 
-Benchmarks collected on the Notion page indicate HYDRA can coordinate six parallel browser tabs with an average latency of ~47 ms, while Byzantine consensus adds about 12 ms overhead. Semantic search over 10,000 memories completes in under 50 ms, and vector embeddings take around 23 ms each. CLI throughput can process around 500 commands per second, with end-to-end latency under 200 ms.
+Multi-tab coordination:
 
-## Use cases
+- 6 parallel browser tabs
+- Average coordination latency: 47 ms
+- Byzantine consensus overhead: 12 ms
 
-- Multi-AI code review – register multiple AI heads to analyse a pull request from different perspectives, delegate tasks and reach a consensus on approval.
-- Autonomous web scraping – define a JSON workflow and pipe it into the CLI; agents navigate, extract data and verify results.
-- Cross-session knowledge building – store memories in the Librarian, later perform semantic search to recall context and build knowledge graphs across sessions.
+Memory performance:
 
-## Security features
+- Semantic search: <50 ms for 10,000 memories
+- Vector embedding: 23 ms per memory
+- Graph traversal: <100 ms for 3-hop queries
 
-HYDRA incorporates multiple security controls:
+CLI throughput:
 
-- Byzantine fault tolerance – tolerates one malicious agent and uses quorums to agree on actions.
-- Spectral anomaly detection – GFSS catches collusion and drift by analysing the frequency domain of agent interactions.
-- SCBE governance – all actions pass through a multilayer pipeline that applies exponential cost scaling and risk decisions.
-- Audit trail – every action and decision is logged in the Ledger for compliance and post-mortem analysis.
+- Pipe processing: 500 commands/sec
+- JSON parsing overhead: 2 ms per command
+- End-to-end latency: <200 ms
 
-## Roadmap
+## Production Deployment
 
-Planned enhancements include WebSocket support for real-time coordination, distributed deployments, advanced graph machine learning for anomaly detection, integration with additional AI backends (Gemini, Mistral), WASM compilation for browser-native execution, quantum-resistant key exchange, federated learning, visual dashboards, self-healing swarms, predictive task delegation and natural-language control. An open-source community release is envisioned after these features are stabilised.
+Requirements:
 
-## Related documentation
+```bash
+# Python 3.11+
+pip install -r requirements.txt
+```
 
-This summary is based on the internal Notion page and related documents. For further details, consult the following pages:
+Key dependencies:
 
-- HYDRA Governance Specification – Mathematical Corrections – describes the risk-tiered governance model, Dilithium3 signatures, execution permits and corrected state computation.
-- Master Wiki & Navigation Hub – provides a directory of technical, marketing and world-building pages and explains how the SCBE-AETHERMOORE ecosystem fits together.
-- Roundtable Security – details the multi-signature governance requirements and the concept of Sacred Tongues.
-- Spectral Anomaly Detection – expands on GFSS and provides proofs and references.
+- `sqlite3` (Ledger + Librarian)
+- `sentence-transformers` (vector embeddings)
+- `networkx` (graph analysis)
+- `numpy`, `scipy` (spectral computations)
+- `playwright` (browser automation, recommended)
 
-Prepared February 2026. This document captures the state of HYDRA v1.1.0 and includes corrections and clarifications from subsequent governance audits.
+Deployment modes:
+
+```bash
+# 1) Standalone
+python -m hydra --mode standalone
+```
+
+```yaml
+# 2) Distributed (Kubernetes)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hydra-coordinator
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - name: hydra
+        image: hydra:v1.1.0
+        env:
+        - name: HYDRA_MODE
+          value: "distributed"
+```
+
+Configuration example:
+
+```yaml
+# config/hydra.yaml
+spine:
+  session_timeout: 3600
+  max_heads: 10
+librarian:
+  db_path: "hydra_ledger.db"
+  embedding_model: "all-MiniLM-L6-v2"
+  similarity_threshold: 0.75
+swarm:
+  agent_count: 6
+  byzantine_tolerance: 1
+  quorum_size: 3
+spectral:
+  anomaly_threshold: 2.5
+  detection_window: 100
+```
+
+Startup:
+
+```bash
+python -m hydra init
+python -m hydra start
+python -m hydra start --config config/production.yaml
+```
+
+## Use Cases
+
+### 1) Multi-AI Code Review
+
+```python
+hydra = HydraSpine()
+hydra.register_head("claude", ClaudeHead())  # Architecture review
+hydra.register_head("gpt", GPTHead())        # Code quality
+hydra.register_head("codex", CodexHead())    # Security scan
+
+results = hydra.delegate_task(
+    task="review_pr",
+    context={"pr_url": "https://github.com/repo/pull/123"},
+)
+consensus = hydra.reach_consensus(results)
+```
+
+### 2) Autonomous Web Extraction
+
+`workflow.json`:
+
+```json
+{
+  "tasks": [
+    {"agent": "KO-SCOUT", "action": "navigate", "url": "https://site1.com"},
+    {"agent": "RU-READER", "action": "extract_table", "selector": ".data"},
+    {"agent": "DR-JUDGE", "action": "verify_extraction"},
+    {"agent": "KO-SCOUT", "action": "navigate", "url": "https://site2.com"},
+    {"agent": "RU-READER", "action": "extract_table", "selector": ".data"},
+    {"agent": "DR-JUDGE", "action": "verify_extraction"}
+  ]
+}
+```
+
+```bash
+cat workflow.json | python -m hydra
+```
+
+### 3) Cross-Session Knowledge Building
+
+```python
+librarian.store(
+    content="Project uses SCBE-AETHERMOORE for security",
+    metadata={"topic": "architecture", "source": "docs"},
+)
+
+prior_knowledge = librarian.search(query="security architecture", top_k=10)
+librarian.add_relationship(
+    source_id=prior_knowledge[0]["id"],
+    target_id=new_learning_id,
+    relationship="prerequisite_for",
+)
+```
+
+## Security Features
+
+1. Byzantine fault tolerance
+   - `f=1` malicious tolerance with `n=6`
+   - quorum-driven decision boundary
+2. Spectral anomaly detection
+   - high-frequency drift/collusion detection in graph domain
+3. SCBE governance
+   - all actions validated through 14-layer pipeline
+   - harmonic cost scaling for suspicious behavior
+   - multi-signature requirements on critical tiers
+4. Audit trail
+   - immutable ledger events with governance rationale
+
+## Future Enhancements
+
+Phase 1 (Q2 2026):
+
+- WebSocket support for real-time coordination
+- Distributed HYDRA (multiple machines)
+- Advanced graph ML for anomaly detection
+- Integration with Gemini, Mistral, and additional backends
+
+Phase 2 (Q3 2026):
+
+- WASM compilation for browser-native execution
+- Quantum-resistant key exchange between Heads
+- Federated learning across HYDRA instances
+- Visual dashboard (Grafana/custom UI)
+
+Phase 3 (Q4 2026):
+
+- Self-healing swarms (automatic agent replacement)
+- Predictive task delegation from Librarian history
+- Natural-language HYDRA control
+- Open-source community release
+
+## Related Documentation
+
+Local repository references:
+
+- `SPEC.md`
+- `docs/HYDRA_COORDINATION.md`
+- `docs/POLLY_PADS_ARCHITECTURE.md`
+- `docs/KERNEL_ANTIVIRUS_SCBE.md`
+
+Notion references:
+
+- [SCBE-AETHERMOORE Tech Deck - Complete Setup Guide](https://www.notion.so/SCBE-AETHERMOORE-Tech-Deck-Complete-Setup-Guide-60922537b0cb4b9fa34ac82eb242ed9b?pvs=21)
+- [Polly Pads: Mode-Switching Architecture for Autonomous AI](https://www.notion.so/Polly-Pads-Mode-Switching-Architecture-for-Autonomous-AI-b63ef75d0cac47fd9619e717149ccb7e?pvs=21)
+- [Swarm Deployment Formations](https://www.notion.so/Swarm-Deployment-Formations-476ba4d2332048a58843ba25b53d0d07?pvs=21)
+- [PHDM as AI Brain Architecture - The Geometric Skull](https://www.notion.so/PHDM-as-AI-Brain-Architecture-The-Geometric-Skull-63b69b5be92641379d552049d665a033?pvs=21)
+- [Drone Fleet Architecture Upgrades - SCBE-AETHERMOORE Integration](https://www.notion.so/Drone-Fleet-Architecture-Upgrades-SCBE-AETHERMOORE-Integration-4e9d7f89e2724f1d9b6ccee15af71fa8?pvs=21)
+- [Multi-Signature Governance Template](https://www.notion.so/Multi-Signature-Governance-Template-2faf96de82e580609500eb8478e838fd?pvs=21)
+- [Polly Pads Runtime and Testing Specification](https://www.notion.so/Polly-Pads-Runtime-Testing-Specification-89c489be7e4f4c879cdbc0710d40bc49?pvs=21)
+- [HYDRA Multi-Agent Coordination System - Complete Architecture](https://www.notion.so/HYDRA-Multi-Agent-Coordination-System-Complete-Architecture-0ecedff123704e65b249897bf534d6ef?pvs=21)
+
+Research citations:
+
+- SentinelAgent: Graph Fourier Scan Statistics for Multi-Agent Systems (arXiv:2505.24201)
+- SwarmRaft: Byzantine Consensus for Crash Fault Tolerance (2025)
+- UniGAD: Maximum Rayleigh Quotient Subgraph Sampler (2024)
+- ML-KEM / ML-DSA: NIST PQC Standards (FIPS 203/204)
+
+Repository:
+
+- https://github.com/issdandavis/SCBE-AETHERMOORE
+
+Status:
+
+- Production-Ready v1.1.0
+
+"Any AI can wear the armor. HYDRA makes them unstoppable."
