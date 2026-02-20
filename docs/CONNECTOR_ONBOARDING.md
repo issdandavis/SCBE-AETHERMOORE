@@ -7,6 +7,7 @@ Scope: Bring-your-own service connectors for mobile goal execution
 
 In `src/api/main.py`:
 
+- `GET /mobile/connectors/templates`
 - `POST /mobile/connectors`
 - `GET /mobile/connectors`
 - `GET /mobile/connectors/{connector_id}`
@@ -17,6 +18,26 @@ Goal execution mode:
 
 - `execution_mode=connector` calls the registered connector endpoint from `/mobile/goals/{goal_id}/advance`.
 - High-risk approval gate remains active before dispatch.
+
+Supported connector kinds:
+
+- `n8n`
+- `zapier`
+- `shopify` (auto Shopify Admin GraphQL endpoint when only `shop_domain` is provided)
+- `slack`
+- `notion`
+- `airtable`
+- `github_actions`
+- `linear`
+- `discord`
+- `generic_webhook`
+
+## Discover templates
+
+```bash
+curl -X GET http://localhost:8000/mobile/connectors/templates \
+  -H "x-api-key: demo_key_12345"
+```
 
 ## Register a connector
 
@@ -62,6 +83,27 @@ Example (Shopify orchestrator webhook):
 }
 ```
 
+Example (direct Shopify Admin read connector, auto endpoint):
+
+```json
+{
+  "name": "shopify-admin-read",
+  "kind": "shopify",
+  "shop_domain": "your-shop.myshopify.com",
+  "auth_type": "header",
+  "auth_header_name": "X-Shopify-Access-Token",
+  "auth_token": "YOUR_SHOPIFY_ADMIN_TOKEN",
+  "enabled": true
+}
+```
+
+Optional connector fields:
+
+- `http_method`: `POST` (default), `PUT`, `PATCH`, `DELETE`, `GET`
+- `timeout_seconds`: default `8`
+- `payload_mode`: `scbe_step`, `raw_step`, `shopify_graphql_read`
+- `default_headers`: object of additional outbound headers
+
 ## Bind connector to goal
 
 1. Create goal (`POST /mobile/goals`) in simulate mode, or set:
@@ -97,4 +139,3 @@ Headers include:
 3. Add per-connector allowlists for endpoint domains.
 4. Persist connector + goal state to durable database.
 5. Add webhook callback verification for connector responses.
-
