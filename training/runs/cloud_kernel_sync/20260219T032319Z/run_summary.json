@@ -1,0 +1,65 @@
+{
+  "run_id": "20260219T032319Z",
+  "run_dir": "training/runs/cloud_kernel_sync/20260219T032319Z",
+  "artifacts": {
+    "raw_ingest": "training/runs/cloud_kernel_sync/20260219T032319Z/raw_production_ingest.jsonl",
+    "raw_combined": "training/runs/cloud_kernel_sync/20260219T032319Z/raw_combined.jsonl",
+    "doc_manifest": "training/runs/cloud_kernel_sync/20260219T032319Z/doc_manifest.json",
+    "curated_all": "training/runs/cloud_kernel_sync/20260219T032319Z/curated_all.jsonl",
+    "curated_allowed": "training/runs/cloud_kernel_sync/20260219T032319Z/curated_allowed.jsonl",
+    "curated_quarantine": "training/runs/cloud_kernel_sync/20260219T032319Z/curated_quarantine.jsonl",
+    "categories_dir": "training/runs/cloud_kernel_sync/20260219T032319Z/categories",
+    "dataset_audit": "training/runs/cloud_kernel_sync/20260219T032319Z/dataset_audit.json",
+    "verification_report": "training/runs/cloud_kernel_sync/20260219T032319Z/verification_report.json",
+    "archive": "training/runs/cloud_kernel_sync/20260219T032319Z.zip"
+  },
+  "latest_pointer": "training/ingest/latest_cloud_kernel_sync.txt",
+  "shipping": {
+    "enabled": false,
+    "allowed_by_policy": false,
+    "targets_selected": [
+      "github",
+      "hf"
+    ],
+    "results": {},
+    "errors": {}
+  },
+  "retention": {
+    "keep_local_runs": 10,
+    "cleanup": {
+      "deleted_dirs": 0,
+      "deleted_archives": 0
+    }
+  },
+  "external_intake": {
+    "globs": [
+      "training/intake/airtable/*.jsonl",
+      "training/intake/asana/*.jsonl",
+      "training/intake/protonmail/*.jsonl",
+      "training/intake/gumroad/*.jsonl",
+      "training/intake/google_business/*.jsonl",
+      "training/intake/zapier/*.jsonl",
+      "training/intake/**/*.json"
+    ],
+    "files_seen": 1,
+    "records_emitted": 1
+  },
+  "commands_executed": [
+    "C:\\Python314\\python.exe scripts/ingest_docs_to_training_jsonl.py --out C:\\Users\\issda\\SCBE-AETHERMOORE\\training\\runs\\cloud_kernel_sync\\20260219T032319Z\\raw_production_ingest.jsonl --glob docs/OFFLINE_MODE_SPEC.md --glob docs/MULTI_AI_COORDINATION.md --glob docs/HYDRA_COORDINATION.md --glob docs/SCBE_CONTEXT_AETHERBROWSE_AGENT.md --glob docs/gateway/*.md --glob docs/map-room/*.md --glob docs/news/*.md --glob docs/scbe-knowledge-v4.aetherbrowse.yaml --glob training/kernel_manifest.yaml",
+    "C:\\Python314\\python.exe training/doc_verifier.py --json --out C:\\Users\\issda\\SCBE-AETHERMOORE\\training\\runs\\cloud_kernel_sync\\20260219T032319Z\\doc_manifest.json --attest claude,gpt,sonar"
+  ],
+  "state_vector": {
+    "worker_id": "codex-agent",
+    "task_id": "cloud-kernel-data-pipeline",
+    "role": "implementer",
+    "status": "completed",
+    "timestamp": "2026-02-19T03:23:22.461149+00:00"
+  },
+  "decision_record": {
+    "action": "ALLOW",
+    "signature": "codex-agent:cloud-kernel-data-pipeline:20260219T032319Z",
+    "timestamp": "2026-02-19T03:23:22.461172+00:00",
+    "reason": "Curated dataset scored for truth/useful/harmful and audited for anomalies.",
+    "confidence": 0.97
+  }
+}

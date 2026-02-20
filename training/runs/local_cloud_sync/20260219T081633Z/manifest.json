@@ -1,0 +1,35 @@
+{
+  "run_id": "20260219T081633Z",
+  "timestamp_utc": "2026-02-19T08:16:33.445262+00:00",
+  "fingerprint": "955203be2b8e6d848c0cfb21b10c8e954a8f7b7a97941be254f8dc80344ca2c2",
+  "counts": {
+    "indexed_files": 1483,
+    "added": 1,
+    "modified": 3,
+    "removed": 0,
+    "changed": 4
+  },
+  "delta": {
+    "added": [
+      "docs/LANGUES_WEIGHTING_SYSTEM.md"
+    ],
+    "modified": [
+      "README.md",
+      "docs/README.md",
+      "docs/TECHNICAL_REFERENCE.md"
+    ],
+    "removed": [],
+    "changed": [
+      "README.md",
+      "docs/LANGUES_WEIGHTING_SYSTEM.md",
+      "docs/README.md",
+      "docs/TECHNICAL_REFERENCE.md"
+    ]
+  },
+  "changed_hashes_sha256": {
+    "README.md": "39b9647fd0fbb30499d871b2ffa781e067aafb6eda3e3ae21f6164cc11bf518b",
+    "docs/LANGUES_WEIGHTING_SYSTEM.md": "2301b55e3eb32f077ce498b8b7df6c06f4ca89c29f8faf5730b81dba0509ba80",
+    "docs/README.md": "534083d756cc3cf6cbac965962119bf4cbd25b82f4733a23fc6b30870be1a473",
+    "docs/TECHNICAL_REFERENCE.md": "c735f8ffa2d462f6a9b34c4d6a72e47dcf6689a62d6a394281f5123fa3990169"
+  }
+}

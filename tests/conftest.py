@@ -9,11 +9,41 @@ import pytest
 import numpy as np
 import sys
 import os
+import importlib
+from pathlib import Path
+from ctypes.util import find_library
 from typing import Dict, Any, List
 from dataclasses import dataclass
 
 # Add src to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+# Compatibility alias for ai_brain package imports that may resolve through
+# legacy/broken repo symlink paths.
+try:
+    _ai_pkg = importlib.import_module("src.symphonic_cipher.scbe_aethermoore.ai_brain")
+    sys.modules.setdefault("symphonic_cipher.scbe_aethermoore.ai_brain", _ai_pkg)
+    for _name in (
+        "unified_state",
+        "detection",
+        "bft_consensus",
+        "multiscale_spectrum",
+        "mirror_shift",
+        "governance_adapter",
+        "fsgs",
+        "hamiltonian_braid",
+        "dual_ternary",
+        "dual_lattice",
+        "cymatic_voxel_net",
+        "tri_manifold_lattice",
+    ):
+        try:
+            _mod = importlib.import_module(f"src.symphonic_cipher.scbe_aethermoore.ai_brain.{_name}")
+            sys.modules.setdefault(f"symphonic_cipher.scbe_aethermoore.ai_brain.{_name}", _mod)
+        except Exception:
+            continue
+except Exception:
+    pass
 
 
 # =============================================================================
@@ -211,13 +241,44 @@ def performance_timer():
 # =============================================================================
 
 def _liboqs_available() -> bool:
-    """Check if liboqs-python is available."""
-    try:
-        import oqs
-        return True
-    except (ImportError, RuntimeError):
-        # liboqs-python not installed or shared libraries not found
+    """
+    Check whether liboqs shared library appears available.
+
+    Important:
+    - Do NOT import `oqs` here because liboqs-python can trigger auto-install
+      side effects during import when the shared library is missing.
+    - Keep this probe side-effect free so test collection always succeeds.
+    """
+    if os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in {"1", "true", "yes"}:
         return False
+
+    # Fast path: system linker can resolve oqs
+    if find_library("oqs") or find_library("liboqs"):
+        return True
+
+    # Path probes for local installs
+    candidates: List[Path] = []
+    oqs_install = os.getenv("OQS_INSTALL_PATH")
+    if oqs_install:
+        base = Path(oqs_install)
+    else:
+        base = Path.home() / "_oqs"
+
+    candidates.extend(
+        [
+            base / "lib" / "liboqs.so",
+            base / "lib64" / "liboqs.so",
+            base / "lib" / "liboqs.dylib",
+            base / "lib64" / "liboqs.dylib",
+            base / "bin" / "liboqs.dll",
+            base / "lib" / "liboqs.dll",
+            Path("/usr/local/lib/liboqs.so"),
+            Path("/usr/local/lib/liboqs.dylib"),
+            Path("/usr/lib/liboqs.so"),
+        ]
+    )
+
+    return any(p.exists() for p in candidates)
 
 LIBOQS_AVAILABLE = _liboqs_available()
 

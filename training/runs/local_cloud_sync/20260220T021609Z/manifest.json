@@ -1,0 +1,25 @@
+{
+  "run_id": "20260220T021609Z",
+  "timestamp_utc": "2026-02-20T02:16:10.195105+00:00",
+  "fingerprint": "7296420cf76c48ac10b2beefc16b43c738fbb7cebbf360aa1daabb6442c6443f",
+  "counts": {
+    "indexed_files": 1509,
+    "added": 0,
+    "modified": 1,
+    "removed": 0,
+    "changed": 1
+  },
+  "delta": {
+    "added": [],
+    "modified": [
+      "docs/HYDRA_COORDINATION.md"
+    ],
+    "removed": [],
+    "changed": [
+      "docs/HYDRA_COORDINATION.md"
+    ]
+  },
+  "changed_hashes_sha256": {
+    "docs/HYDRA_COORDINATION.md": "626f49044027803f0f556d11ada4a39e5fefbf920013b3eb15d66fc8f4b2b45f"
+  }
+}

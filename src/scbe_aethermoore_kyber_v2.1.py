@@ -1,13 +1,18 @@
 """
-Kyber v2.1 (ML-KEM-768) integration for SCBE-AETHERMOORE (Layer 13)
+Kyber v2.1 (ML-KEM-768) integration for SCBE-AETHERMOORE (Layer 13).
 """
 
-from oqs import KeyEncapsulation  # liboqs Python binding
-from typing import Tuple, Optional
+import os
+from typing import Tuple, Optional, Any
 
 # --- Constants ---
 # Use ML-KEM-768 for PQC security level 3
 KYBER_ALG_NAME = "ML-KEM-768"
+_FORCE_SKIP_LIBOQS = os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+}
 
 class SCBEKyber:
     """
@@ -16,13 +21,17 @@ class SCBEKyber:
     and agents (Polly Pads).
     """
     def __init__(self):
-        self.kem: Optional[KeyEncapsulation] = None
+        self.kem: Optional[Any] = None
         self.public_key: Optional[bytes] = None
         self.secret_key: Optional[bytes] = None
+        if _FORCE_SKIP_LIBOQS:
+            self.kem = None
+            return
         try:
+            from oqs import KeyEncapsulation  # local import avoids module import side effects
             self.kem = KeyEncapsulation(KYBER_ALG_NAME)
             print(f"PQC module initialized: {KYBER_ALG_NAME}")
-        except ValueError as e:
+        except BaseException as e:
             print(f"Error initializing Kyber ({KYBER_ALG_NAME}): {e}")
             self.kem = None
 

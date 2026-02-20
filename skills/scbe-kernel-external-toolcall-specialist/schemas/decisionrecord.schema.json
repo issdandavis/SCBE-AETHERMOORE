@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scbe/decisionrecord.schema.json",
+  "title": "SCBE DecisionRecord",
+  "type": "object",
+  "required": [
+    "action",
+    "signature",
+    "timestamp",
+    "reason",
+    "confidence"
+  ],
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": [
+        "ALLOW",
+        "HOLD",
+        "PIVOT",
+        "DEGRADE",
+        "ISOLATE",
+        "HONEYPOT",
+        "STOP",
+        "DENY",
+        "QUARANTINE",
+        "ESCALATE"
+      ]
+    },
+    "signature": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0
+    }
+  },
+  "additionalProperties": false
+}

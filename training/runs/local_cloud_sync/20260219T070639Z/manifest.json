@@ -1,0 +1,41 @@
+{
+  "run_id": "20260219T070639Z",
+  "timestamp_utc": "2026-02-19T07:06:39.695696+00:00",
+  "fingerprint": "1852dedfdfab0c1ccf06dbafb5503bbcebfe5d525600665422a59faceeeb5d00",
+  "counts": {
+    "indexed_files": 1469,
+    "added": 5,
+    "modified": 1,
+    "removed": 0,
+    "changed": 6
+  },
+  "delta": {
+    "added": [
+      "docs/STVM_EXECUTION_MODEL.md",
+      "docs/ST_ISA_V0.md",
+      "scripts/stasm.py",
+      "scripts/stvm.py",
+      "scripts/stvm_core.py"
+    ],
+    "modified": [
+      "docs/README.md"
+    ],
+    "removed": [],
+    "changed": [
+      "docs/README.md",
+      "docs/STVM_EXECUTION_MODEL.md",
+      "docs/ST_ISA_V0.md",
+      "scripts/stasm.py",
+      "scripts/stvm.py",
+      "scripts/stvm_core.py"
+    ]
+  },
+  "changed_hashes_sha256": {
+    "docs/README.md": "0e8e608503e5bddf929fd208b2c40b60996857c801a1c7c10b1979625448404e",
+    "docs/STVM_EXECUTION_MODEL.md": "fb055b49b3e2e30ae3ff6b2c05ca0976a2c31f4e024aa00079378bbbf1ae6599",
+    "docs/ST_ISA_V0.md": "39f7d849b5b4a49937238a64a727f99cc11fd16763a8c15641b19380c61a8d78",
+    "scripts/stasm.py": "b42dd9ee53b10e9e30d41bf5fcf9757660a121b16925e7dd98e08a586bb170b6",
+    "scripts/stvm.py": "40364397ba19bd9f2f6c0f2365ca9b9642d5c5b9747890bd82c04679839a793f",
+    "scripts/stvm_core.py": "08a980b4fafa0a1b5f6f1205406fbd76e69d3c50c211e4dc1368b3066c1f2d74"
+  }
+}
