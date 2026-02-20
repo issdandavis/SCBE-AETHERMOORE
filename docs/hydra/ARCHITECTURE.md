@@ -1707,6 +1707,14 @@ Experiment log (7 experiments):
 6. Experiment 6: 6-Tonic Temporal Coherence — PROVEN
    - `AUC = 1.000` on replay/static/wrong-frequency/synthetic attacks.
 7. Experiment 7: Three-Mechanism Combined — PROVEN
+   - Overall `AUC = 0.868` across all 8 attack types; mechanisms cover complementary threat classes.
+
+Recommended next steps:
+
+- Patent filing: prioritize Claims A, B, E, F as primary independent claims; remove unsupported Tier 3 items; replace unsupported performance numbers with validated results.
+- Real embeddings: run Experiment 3 (phase+distance) on sentence-transformer embeddings instead of random vectors.
+- Rounded-decimal gap: validate the `sigma-decimal > 2x baseline` rule against real telemetry (for example, Lambda request jitter traces).
+- PHDM hallucination test: evaluate whether geometric containment states (AetherBrain Polly/Quasi/Demi) reduce hallucination rates versus threshold baselines.
 
 Publication/export status:
 
