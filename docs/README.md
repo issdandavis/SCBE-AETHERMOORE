@@ -42,6 +42,7 @@
 - [`AI_BROWSER_ACCESS.md`](AI_BROWSER_ACCESS.md)
 - [`KERNEL_ANTIVIRUS_SCBE.md`](KERNEL_ANTIVIRUS_SCBE.md)
 - [`game/SPIRAL_ENGINE_MECHANICS_MATRIX.md`](game/SPIRAL_ENGINE_MECHANICS_MATRIX.md)
+- [`SYSTEM_LOAD_ORDER_REVIEW.md`](SYSTEM_LOAD_ORDER_REVIEW.md)
 
 ## Documentation Structure
 
@@ -116,6 +117,7 @@ docs/
 - [Architecture Overview](01-architecture/README.md) - System design
 - [Technical Reference](02-technical/README.md) - Deep technical docs
 - [Spiral Engine Mechanics Matrix](game/SPIRAL_ENGINE_MECHANICS_MATRIX.md) - Formula-to-HUD mapping
+- [Full System Load Order Review](SYSTEM_LOAD_ORDER_REVIEW.md) - Every tracked file in deterministic order
 
 ### Notion Sync Placeholders
 - [HYDRA Multi-Agent Coordination System](HYDRA_COORDINATION.md)
