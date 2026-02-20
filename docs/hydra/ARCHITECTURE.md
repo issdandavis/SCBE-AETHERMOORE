@@ -1578,6 +1578,9 @@ Cryptographic language systems:
 
 Quantum and mathematical foundations:
 
+- Quasi-Vector Spin Voxels and Magnetics - Complete Integration: spin-field trust states with magnetic interactions
+- PHDM Nomenclature Reference - Canonical Definitions: mathematical definitions
+
 ## Voxel Record Schema
 
 Purpose:
