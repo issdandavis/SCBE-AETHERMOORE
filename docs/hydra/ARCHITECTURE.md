@@ -763,6 +763,33 @@ def test_tool_gating_by_pad_mode():
     pad_nav = PollyPad("u1", "NAVIGATION", "SAFE")
     result = pad_nav.route_task("proximity_track", UnitState("u1", 0, 0, 0), SquadSpace("test"))
     assert "Neighbors" in result
+    pad_eng = PollyPad("u1", "ENGINEERING", "SAFE")
+    result = pad_eng.route_task("code_exec_safe", UnitState("u1", 0, 0, 0), SquadSpace("test"))
+    assert "SAFE: Exec" in result
+
+
+def test_pad_assist_scoped_to_mode():
+    """Verify AI assistance is scoped to pad mode."""
+    squad = SquadSpace("test")
+    pad_eng = PollyPad("drone1", "ENGINEERING")
+    response = pad_eng.assist("Draft code for proximity", UnitState("drone1", 0, 0, 0), squad)
+    assert "draft" in response.lower()
+    pad_nav = PollyPad("drone1", "NAVIGATION", "SAFE")
+    response = pad_nav.assist("Check proximity", UnitState("drone1", 0, 0, 0), squad)
+    assert "Neighbors" in response
+```
+
+Focused run output:
+
+```text
+pytest tests/test_polly_pads_runtime.py -v
+============================== test session starts ===============================
+collected 5 items
+test_polly_pads_runtime.py::test_neighbors_radius PASSED
+test_polly_pads_runtime.py::test_scbe_decision_thresholds PASSED
+test_polly_pads_runtime.py::test_hot_to_safe_requires_allow_and_quorum PASSED
+test_polly_pads_runtime.py::test_tool_gating_by_pad_mode PASSED
+test_polly_pads_runtime.py::test_pad_assist_scoped_to_mode PASSED
 ```
 
 ### Pytest Test Suite and Results
@@ -873,6 +900,18 @@ After applying the three remediations:
 
 - `11/11` core tests pass
 - SS1/Shamir checks remain skipped until helper wiring is completed
+
+## React Simulation Integration
+
+### Commit Voxel UI Flow
+
+Add a `Commit Voxel` button to `CognitiveTopologyViz.tsx` for interactive voxel creation with:
+
+- Live capture of simulation state (`x,y,z,vx,vy,vz,meanPhase,entropy`)
+- Deterministic voxel key generation (`baseKey`, `perLang`, shard)
+- Inline SCBE decision preview (`ALLOW`/`QUARANTINE`/`DENY`)
+- Idempotent commit payload generation (`correlation_id`, `idempotency_key`)
+- Backend submit and receipt rendering (`decision`, `receipt_id`, `ts`)
 
 ## Voxel Record Schema
 
