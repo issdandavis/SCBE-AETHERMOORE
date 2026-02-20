@@ -12,7 +12,7 @@
  * Test F: Module contract verification
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from 'vitest';
 import {
   UnifiedKernel,
   torusWriteGate,
@@ -26,6 +26,21 @@ import {
   type PipelineStepResult,
 } from '../../src/ai_brain/unified-kernel.js';
 import { BRAIN_DIMENSIONS, POINCARE_MAX_NORM } from '../../src/ai_brain/types.js';
+
+
+const ORIGINAL_HF_TOKEN = process.env.HUGGINGFACE_TOKEN;
+
+beforeAll(() => {
+  process.env.HUGGINGFACE_TOKEN = process.env.HUGGINGFACE_TOKEN || 'test-token-redacted';
+});
+
+afterAll(() => {
+  if (ORIGINAL_HF_TOKEN === undefined) {
+    delete process.env.HUGGINGFACE_TOKEN;
+  } else {
+    process.env.HUGGINGFACE_TOKEN = ORIGINAL_HF_TOKEN;
+  }
+});
 
 // ═══════════════════════════════════════════════════════════════
 // Helpers
