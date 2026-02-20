@@ -181,6 +181,7 @@ class ExtractedPhrase:
     line_start: int        # Line number in source file
     tongue_bias: str       # Two-letter tongue code
     tongue_scores: Dict[str, float] = field(default_factory=dict)
+    tongue_confidence: float = 0.0  # 0 = no keywords matched, 1 = single dominant tongue
     # Populated after tokenization
     runic_tokens: List[int] = field(default_factory=list)
     particle_tokens: List[int] = field(default_factory=list)
@@ -304,8 +305,13 @@ def classify_tongue(phrase: ExtractedPhrase) -> str:
     # Pick highest; break ties by canonical order
     max_score = max(scores.values())
     if max_score == 0:
-        return "AV"  # Default to Avali (common tongue) for unclassified
+        # No keywords matched — flag as unclassified rather than
+        # silently inflating AV counts.  Callers can still fall back
+        # to "AV" if they want, but now they know the score was zero.
+        phrase.tongue_confidence = 0.0
+        return "AV"
 
+    phrase.tongue_confidence = max_score / max(sum(scores.values()), 1e-12)
     for code in TONGUE_CODES:
         if scores[code] == max_score:
             return code
