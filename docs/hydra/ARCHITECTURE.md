@@ -1383,6 +1383,30 @@ Actual vs expected checks:
 │  - Neighbor discovery                       │
 └────────────┬────────────────────────────────┘
              │
+┌────────────▼────────────────────────────────┐
+│       SCBE Governance Layer                 │
+│  - L5: Hyperbolic distance checks           │
+│  - L9: Spectral coherence                   │
+│  - L12: Harmonic cost scaling               │
+│  - L13: Risk decision (ALLOW/QUARANTINE/DENY)│
+└─────────────────────────────────────────────┘
+```
+
+### Workflow Example: Engineering Pad Code Execution
+
+Step 1: Draft in HOT zone
+
+```python
+pad_eng = PollyPad("drone-1", "ENGINEERING", zone="HOT")
+code_draft = pad_eng.assist("Draft proximity algorithm", state, squad)
+# Output: "HOT: Plan/draft only (no exec)"
+```
+
+Step 2: Request promotion to SAFE
+
+```python
+if pad_eng.can_promote_to_safe(state, quorum_votes=4):
+    pad_eng.zone = "SAFE"
 ```
 
 ## Voxel Record Schema
