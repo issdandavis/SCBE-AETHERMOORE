@@ -55,18 +55,17 @@
     {
       "id": "huggingface",
       "name": "Hugging Face experimental lane",
-      "status": "pending",
+      "status": "ready",
       "command": "python scripts/train_hf_longrun_placeholder.py --dataset-repo {HF_DATASET_REPO} --model-repo {HF_MODEL_REPO} --duration-hours {duration_hours} --run-dir {run_dir}",
       "working_directory": ".",
       "required_tools": [
         "python"
       ],
       "required_env": [
-        "HF_TOKEN",
         "HF_DATASET_REPO",
         "HF_MODEL_REPO"
       ],
-      "notes": "Pending: replace placeholder command with your actual HF long-run training routine."
+      "notes": "Runs real local training + growth monitoring artifacts. Upload to HF model repo when HF_TOKEN is set."
     }
   ]
 }

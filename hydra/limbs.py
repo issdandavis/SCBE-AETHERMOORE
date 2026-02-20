@@ -177,7 +177,15 @@ class BrowserLimb(HydraLimb):
 
                 elif action == "get_content":
                     content = await self._backend.get_page_content()
-                    result["data"] = {"length": len(content)}
+                    if isinstance(content, str):
+                        content_text = content
+                    else:
+                        content_text = str(content)
+                    result["data"] = {
+                        "length": len(content_text),
+                        "sha256": hashlib.sha256(content_text.encode("utf-8", errors="replace")).hexdigest(),
+                        "preview": content_text[:2000],
+                    }
 
             except Exception as e:
                 result["success"] = False

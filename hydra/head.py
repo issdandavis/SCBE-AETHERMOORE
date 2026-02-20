@@ -16,11 +16,13 @@ Features:
 import asyncio
 import json
 from datetime import datetime, timezone
-from typing import Dict, Any, Optional, Callable
+from typing import Dict, Any, List, Optional, Callable
 from dataclasses import dataclass, field
 from enum import Enum
 import hashlib
 import uuid
+
+from .llm_providers import LLMProvider, LLMResponse, create_provider, HYDRA_SYSTEM_PROMPT
 
 
 class AIType(str, Enum):
@@ -77,6 +79,7 @@ class HydraHead:
     # Runtime state (set after connection)
     _spine: 'HydraSpine' = field(default=None, repr=False)
     _polly_pad: Optional[Dict] = field(default=None, repr=False)
+    _provider: Optional[LLMProvider] = field(default=None, repr=False)
 
     def __post_init__(self):
         if self.callsign is None:
@@ -91,6 +94,132 @@ class HydraHead:
             }
             prefix = prefixes.get(self.ai_type.lower(), "XX")
             self.callsign = f"{prefix}-{uuid.uuid4().hex[:4].upper()}"
+
+        # Attempt to initialise the LLM provider for this head.
+        # Non-fatal: if the required SDK is missing or no API key is set
+        # the head still works for non-LLM operations (execute, workflows, etc.).
+        self._provider = self._init_provider()
+
+    # =========================================================================
+    # LLM Provider Integration
+    # =========================================================================
+
+    def _init_provider(self) -> Optional[LLMProvider]:
+        """Try to initialise an LLM provider based on ai_type and model.
+
+        Returns None silently when the required package or API key is
+        missing -- the head can still work without a live LLM connection.
+        """
+        # Map ai_type values that have a corresponding provider
+        provider_types = {"claude", "gpt", "openai", "gemini", "google", "local", "anthropic"}
+        key = self.ai_type.strip().lower()
+        if key not in provider_types:
+            return None
+        try:
+            # Let the factory pick the default model if self.model is a
+            # short alias (e.g. "sonnet", "opus") -- pass it through so
+            # users can override with a full model string.
+            return create_provider(key, model=self.model)
+        except (ImportError, ValueError) as exc:
+            print(f"[HEAD] LLM provider not available for {self.ai_type}: {exc}")
+            return None
+
+    @property
+    def has_llm(self) -> bool:
+        """True if this head has a live LLM provider attached."""
+        return self._provider is not None
+
+    async def think(self, prompt: str, system: Optional[str] = None) -> str:
+        """Call the LLM provider and return the text response.
+
+        This is the simplest way to get an LLM completion through a
+        HYDRA head.  The HYDRA system prompt is injected by default.
+
+        Args:
+            prompt: The user prompt / question.
+            system: Optional system prompt override.
+
+        Returns:
+            The LLM's text response.
+
+        Raises:
+            RuntimeError: If no LLM provider is available on this head.
+        """
+        if self._provider is None:
+            raise RuntimeError(
+                f"Head {self.callsign} ({self.ai_type}) has no LLM provider. "
+                "Ensure the required SDK is installed and the API key is set."
+            )
+        response: LLMResponse = await self._provider.complete(prompt, system=system)
+        return response.text
+
+    async def plan(self, task: str) -> List[Dict[str, Any]]:
+        """Ask the LLM to decompose a task into executable HYDRA actions.
+
+        The LLM is instructed to return a JSON array of action objects,
+        each with at least an "action" key (one of: navigate, click,
+        type, run, api) plus a "target" and optional "params".
+
+        Args:
+            task: Natural-language description of what needs to happen.
+
+        Returns:
+            A list of action dictionaries ready for ``head.execute()``.
+
+        Raises:
+            RuntimeError: If no LLM provider is available.
+        """
+        if self._provider is None:
+            raise RuntimeError(
+                f"Head {self.callsign} ({self.ai_type}) has no LLM provider. "
+                "Ensure the required SDK is installed and the API key is set."
+            )
+
+        planning_prompt = (
+            "You are a HYDRA planning agent. Decompose the following task "
+            "into a JSON array of HYDRA action objects.\n\n"
+            "Each action object MUST have:\n"
+            '  - "action": one of "navigate", "click", "type", "run", "api"\n'
+            '  - "target": the URL, selector, command, or endpoint\n'
+            '  - "params": (optional) additional parameters dict\n\n'
+            "Respond ONLY with valid JSON -- no markdown fences, no commentary.\n\n"
+            f"Task: {task}"
+        )
+
+        response: LLMResponse = await self._provider.complete(
+            planning_prompt,
+            system=HYDRA_SYSTEM_PROMPT,
+            temperature=0.3,  # Lower temperature for structured output
+        )
+
+        # Parse the JSON response robustly
+        text = response.text.strip()
+        # Strip markdown code fences if the LLM included them anyway
+        if text.startswith("```"):
+            # Remove opening fence (```json or ```)
+            first_newline = text.index("\n") if "\n" in text else 3
+            text = text[first_newline + 1:]
+        if text.endswith("```"):
+            text = text[:-3]
+        text = text.strip()
+
+        try:
+            actions = json.loads(text)
+        except json.JSONDecodeError:
+            # Last resort: try to extract the first JSON array from the text
+            start = text.find("[")
+            end = text.rfind("]")
+            if start != -1 and end != -1 and end > start:
+                actions = json.loads(text[start:end + 1])
+            else:
+                raise ValueError(
+                    f"LLM did not return valid JSON actions. Raw response:\n{response.text}"
+                )
+
+        if not isinstance(actions, list):
+            actions = [actions]
+
+        return actions
 
     async def connect(self, spine: 'HydraSpine') -> bool:
         """

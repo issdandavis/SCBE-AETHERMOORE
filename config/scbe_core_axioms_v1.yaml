@@ -1,0 +1,147 @@
+version: "1.0.1"
+updated_utc: "2026-02-19T00:00:00Z"
+scope: "scbe-aethermoore-core"
+mode: "bridge_index"
+note: "This file packages and indexes canonical axioms. Canonical math lives in source modules listed below."
+
+canonical_sources:
+  - "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/__init__.py"
+  - "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/SPECIFICATION.md"
+  - "src/symphonic_cipher/scbe_aethermoore/qasi_core.py"
+  - "src/symphonic_cipher/tests/test_axiom_verification.py"
+  - "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/tests/test_axiom_grouped.py"
+  - "docs/TECHNICAL_REFERENCE.md"
+
+axioms:
+  - id: A0
+    name: Deterministic Execution
+    statement: "Given fixed inputs, seeds, and policy, execution output is deterministic."
+    enforce:
+      - "fixed_seed_required"
+      - "canonical_protocol_required"
+      - "bytecode_replay_supported"
+    mapped_modules:
+      - "scripts/stvm_core.py"
+      - "packages/kernel/src/pipeline14.ts"
+      - "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/composition_axiom.py"
+
+  - id: A1
+    name: Bounded State
+    statement: "Operational state remains inside declared bounded manifolds and data bounds."
+    enforce:
+      - "poincare_projection"
+      - "register_bounds"
+      - "memory_bounds"
+    mapped_modules:
+      - "packages/kernel/src/hyperbolic.ts"
+      - "scripts/stvm_core.py"
+      - "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/locality_axiom.py"
+
+  - id: A2
+    name: Policy Before Actuation
+    statement: "No actuation-capable operation executes without pre-decision policy evaluation."
+    enforce:
+      - "score_before_execute"
+      - "allow_quarantine_deny_only"
+    mapped_modules:
+      - "src/ai_brain/unified-kernel.ts"
+      - "packages/kernel/src/pipeline14.ts"
+      - "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/causality_axiom.py"
+
+  - id: A3
+    name: Capability Isolation
+    statement: "Privileges are scoped; capabilities must be explicit, least-privilege, and auditable."
+    enforce:
+      - "core_inner_outer_wall_rings"
+      - "token_scoped_permissions"
+      - "syscall_gate"
+    mapped_modules:
+      - "packages/kernel/src/trustCone.ts"
+      - "src/fleet/polly-pad-runtime.ts"
+      - "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/locality_axiom.py"
+
+  - id: A4
+    name: Fail-to-Noise
+    statement: "Failed authorization paths return bounded non-oracular outputs."
+    enforce:
+      - "indistinguishable_failure_shape"
+      - "error_channel_minimization"
+    mapped_modules:
+      - "src/harmonic/sacredEggsGenesis.ts"
+      - "src/crypto/sacred_eggs.py"
+      - "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/symmetry_axiom.py"
+
+  - id: A5
+    name: Cryptographic Separation of Concerns
+    statement: "Security hardness comes from vetted crypto primitives; governance scores are decision logic."
+    enforce:
+      - "pqc_for_hardness"
+      - "score_not_hardness"
+      - "formula_regime_tags_required"
+    mapped_modules:
+      - "packages/kernel/src/pqc.ts"
+      - "docs/LANGUAGE_GUARDRAILS.md"
+      - "src/symphonic_cipher/scbe_aethermoore/qasi_core.py"
+
+  - id: A6
+    name: Provenance and Lineage
+    statement: "Every artifact and agent state transition carries lineage metadata."
+    enforce:
+      - "parent_child_chain"
+      - "source_attestation"
+      - "third_party_ingress_flag"
+    mapped_modules:
+      - "src/crypto/sacred_eggs.py"
+      - "src/governance/audit_ledger.ts"
+      - "src/symphonic_cipher/tests/test_axiom_verification.py"
+
+  - id: A7
+    name: Recoverability Over Perfection
+    statement: "The system must degrade gracefully, surface drift, and recover via controlled routing."
+    enforce:
+      - "drift_signal_tracking"
+      - "flux_recovery_paths"
+      - "penalty_decay"
+    mapped_modules:
+      - "src/harmonic/driftTracker.ts"
+      - "src/ai_brain/unified-kernel.ts"
+      - "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/unitarity_axiom.py"
+
+formula_regimes:
+  - id: FR1
+    name: WALL_ENFORCEMENT
+    formula_examples:
+      - "exp(d^2)"
+      - "R^(d^2)"
+  - id: FR2
+    name: PATROL_MONITORING
+    formula_examples:
+      - "R*pi^(phi*d)"
+  - id: FR3
+    name: BOUNDED_SCORING
+    formula_examples:
+      - "1/(1+d+2*phaseDeviation)"
+
+agent_lineage_model:
+  purpose: "controlled model evolution and third-party ingress handling"
+  classes:
+    - id: S
+      name: seed
+      description: "base model origin class"
+    - id: M
+      name: mutator
+      description: "variant creator class"
+    - id: V
+      name: verifier
+      description: "validation and certification class"
+    - id: X
+      name: external
+      description: "third-party entrant requiring quarantine checks"
+  compatibility_rule: "Only lineage-compatible transitions auto-promote; external class X requires explicit verification."
+
+quantum_axiom_mesh_reference:
+  unitarity_layers: [2, 4, 7]
+  locality_layers: [3, 8]
+  causality_layers: [6, 11, 13]
+  symmetry_layers: [5, 9, 10, 12]
+  composition_layers: [1, 14]

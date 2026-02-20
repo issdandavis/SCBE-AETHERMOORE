@@ -1,0 +1,50 @@
+{
+  "run_id": "20260220T055133Z",
+  "timestamp_utc": "2026-02-20T05:51:50.538426+00:00",
+  "fingerprint": "55f4f295d26c5fe3c8f841d0ead1524cae919cb540abb312096d49988ce45b64",
+  "counts": {
+    "indexed_files": 1539,
+    "added": 8,
+    "modified": 1,
+    "removed": 0,
+    "changed": 9
+  },
+  "delta": {
+    "added": [
+      "docker-compose.research.yml",
+      "docs/ide/ENVELOPE_SIGNING_SPEC.md",
+      "docs/ide/MISSION_CONTROL_SPEC.md",
+      "docs/specs/DECISION_ENVELOPE_V1.md",
+      "src/api/hydra_routes.py",
+      "tests/hydra/test_consensus.py",
+      "tests/hydra/test_head.py",
+      "tests/hydra/test_spine.py"
+    ],
+    "modified": [
+      "src/api/main.py"
+    ],
+    "removed": [],
+    "changed": [
+      "docker-compose.research.yml",
+      "docs/ide/ENVELOPE_SIGNING_SPEC.md",
+      "docs/ide/MISSION_CONTROL_SPEC.md",
+      "docs/specs/DECISION_ENVELOPE_V1.md",
+      "src/api/hydra_routes.py",
+      "src/api/main.py",
+      "tests/hydra/test_consensus.py",
+      "tests/hydra/test_head.py",
+      "tests/hydra/test_spine.py"
+    ]
+  },
+  "changed_hashes_sha256": {
+    "docker-compose.research.yml": "a690fe93d7f19e79355f498263a77c64df4ed338b7f33ff12d3486c5363300bf",
+    "docs/ide/ENVELOPE_SIGNING_SPEC.md": "82364685e669333b89c50e2b151e764fe20cfbb33e7ea3f0767ef18eb5456687",
+    "docs/ide/MISSION_CONTROL_SPEC.md": "7607a6ade28a309def8ac85f50b65d1097ae5273f9aa491534a6844709618da3",
+    "docs/specs/DECISION_ENVELOPE_V1.md": "c8aa1b900cfef93908f3362eb77f7c80caced40d0e379fe4f7b8754f9981178e",
+    "src/api/hydra_routes.py": "f876ccd1a2b2fbe931517172295dc43d954f1170f7a463a262df231cff0dc465",
+    "src/api/main.py": "1ce4d2891d92e9bc974436c3a7885da722c59cec0fa1515d5b6f48237eca25a9",
+    "tests/hydra/test_consensus.py": "a652cda4bdc17208813e4559ee4a112b992a1ce23d345e6a4a6f4a81949028d1",
+    "tests/hydra/test_head.py": "f75b7d10ab2aac100d6739e8933b1a037f539eb1c9ad5b6d2cb315df41fa1664",
+    "tests/hydra/test_spine.py": "28106f775bd1e60027a4d1b961de3adcd15f6466403647beee1e3801648aecee"
+  }
+}

@@ -37,6 +37,7 @@ from src.scbe_14layer_reference import scbe_14layer_pipeline
 from src.crypto.rwp_v3 import RWPv3Protocol, RWPEnvelope
 from src.crypto.sacred_tongues import SacredTongueTokenizer
 from src.storage import BlobNotFoundError, SealedBlobRecord, get_storage_backend
+from src.api.hydra_routes import hydra_router, init_hydra_spine
 
 # ============================================================================
 # APP INITIALIZATION
@@ -57,6 +58,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include HYDRA router
+app.include_router(hydra_router)
 
 # ============================================================================
 # RATE LIMITING
@@ -1239,8 +1243,25 @@ async def startup_event():
     print("  GET  /health            - System health")
     print("  GET  /metrics           - Usage metrics")
     print()
+    print("HYDRA Endpoints:")
+    print("  POST /hydra/execute     - Execute action through HYDRA spine")
+    print("  GET  /hydra/status      - HYDRA system status")
+    print("  POST /hydra/heads       - Register AI head")
+    print("  DELETE /hydra/heads/{id} - Disconnect AI head")
+    print("  POST /hydra/workflow    - Define and run workflow")
+    print("  GET  /hydra/switchboard/stats   - Switchboard statistics")
+    print("  POST /hydra/switchboard/enqueue - Enqueue switchboard task")
+    print("  POST /hydra/think       - Ask AI head to reason")
+    print("  POST /hydra/research    - Multi-agent web research")
+    print()
     print("Documentation: http://localhost:8000/docs")
     print("=" * 80)
+
+    # Initialize HYDRA spine
+    try:
+        await init_hydra_spine()
+    except Exception as exc:
+        print(f"[HYDRA-API] Spine initialization failed (non-fatal): {exc}")
 
 
 if __name__ == "__main__":

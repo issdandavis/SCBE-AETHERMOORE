@@ -451,6 +451,27 @@ def verify_layer_unitarity(
         # Apply layer
         if layer_func.__name__ == "layer_7_phase":
             result = layer_func(x, phase_angle=np.random.uniform(0, 2 * np.pi))
+        elif layer_func.__name__ == "layer_4_poincare":
+            result = layer_func(x)
+
+            # Layer 4 is not a Euclidean-norm isometry; verify its true invariant:
+            # direction preservation and strict containment in the open ball.
+            norm_x = np.linalg.norm(x)
+            norm_result = np.linalg.norm(result)
+            if norm_result >= 1.0:
+                all_passed = False
+                if verbose:
+                    print(f"Test {i}: Layer 4 left the open unit ball")
+                continue
+
+            if norm_x > EPS and norm_result > EPS:
+                dir_error = np.linalg.norm(result / norm_result - x / norm_x)
+                max_error = max(max_error, float(dir_error))
+                if dir_error > 1e-6:
+                    all_passed = False
+                    if verbose:
+                        print(f"Test {i}: Layer 4 direction error {dir_error:.3e}")
+            continue
         else:
             result = layer_func(x)
 

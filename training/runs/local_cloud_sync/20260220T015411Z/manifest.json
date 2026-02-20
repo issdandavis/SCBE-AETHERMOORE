@@ -1,0 +1,37 @@
+{
+  "run_id": "20260220T015411Z",
+  "timestamp_utc": "2026-02-20T01:54:11.258690+00:00",
+  "fingerprint": "6a431d3532131c71042223b0d40da765c091c4d4312e2a0ae1b1f0291c645daa",
+  "counts": {
+    "indexed_files": 1509,
+    "added": 0,
+    "modified": 5,
+    "removed": 0,
+    "changed": 5
+  },
+  "delta": {
+    "added": [],
+    "modified": [
+      "CHANGELOG.md",
+      "docs/CONNECTOR_ONBOARDING.md",
+      "docs/MOBILE_AUTONOMY_RUNBOOK.md",
+      "src/api/main.py",
+      "tests/test_mobile_goal_api.py"
+    ],
+    "removed": [],
+    "changed": [
+      "CHANGELOG.md",
+      "docs/CONNECTOR_ONBOARDING.md",
+      "docs/MOBILE_AUTONOMY_RUNBOOK.md",
+      "src/api/main.py",
+      "tests/test_mobile_goal_api.py"
+    ]
+  },
+  "changed_hashes_sha256": {
+    "CHANGELOG.md": "e757a736a786120d3516d7936029df78ce342727eac11e7c29b498edd57e11e0",
+    "docs/CONNECTOR_ONBOARDING.md": "a91d58d7a9b73cc4b22430ff5220d1f28b38f6346d7b0d4f48dff7f06a53b9f9",
+    "docs/MOBILE_AUTONOMY_RUNBOOK.md": "80e345c9340a11d49aafdb3ac43bedceb1d117a98056cbe2ee32005d6a7c5dc5",
+    "src/api/main.py": "04c72440f53919769a7ecee166c44ba837af31bd24d6de401a031f1d8b6fb46d",
+    "tests/test_mobile_goal_api.py": "4f276a060f6c8810fae3eec91020cc2bbc120394ab5085cebfeac153f6d5f660"
+  }
+}

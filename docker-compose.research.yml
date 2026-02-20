@@ -1,0 +1,89 @@
+version: "3.9"
+
+services:
+  hydra-research-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.research
+    command: uvicorn src.api.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      - SCBE_API_KEY=${SCBE_API_KEY:-demo_key_12345}
+    volumes:
+      - hydra_data:/app/artifacts/hydra
+    restart: unless-stopped
+
+  hydra-research-worker-1:
+    build:
+      context: .
+      dockerfile: Dockerfile.research
+    command: >
+      python -m hydra.research_worker
+      --db /app/artifacts/hydra/switchboard.db
+      --roles researcher
+      --worker-id researcher-1
+      --backend playwright
+      --poll-sec 1.0
+    volumes:
+      - hydra_data:/app/artifacts/hydra
+    depends_on:
+      - hydra-research-api
+    restart: unless-stopped
+
+  hydra-research-worker-2:
+    build:
+      context: .
+      dockerfile: Dockerfile.research
+    command: >
+      python -m hydra.research_worker
+      --db /app/artifacts/hydra/switchboard.db
+      --roles researcher
+      --worker-id researcher-2
+      --backend playwright
+      --poll-sec 1.0
+    volumes:
+      - hydra_data:/app/artifacts/hydra
+    depends_on:
+      - hydra-research-api
+    restart: unless-stopped
+
+  hydra-research-worker-3:
+    build:
+      context: .
+      dockerfile: Dockerfile.research
+    command: >
+      python -m hydra.research_worker
+      --db /app/artifacts/hydra/switchboard.db
+      --roles researcher
+      --worker-id researcher-3
+      --backend playwright
+      --poll-sec 1.0
+    volumes:
+      - hydra_data:/app/artifacts/hydra
+    depends_on:
+      - hydra-research-api
+    restart: unless-stopped
+
+  hydra-research-worker-4:
+    build:
+      context: .
+      dockerfile: Dockerfile.research
+    command: >
+      python -m hydra.research_worker
+      --db /app/artifacts/hydra/switchboard.db
+      --roles researcher
+      --worker-id researcher-4
+      --backend playwright
+      --poll-sec 1.0
+    volumes:
+      - hydra_data:/app/artifacts/hydra
+    depends_on:
+      - hydra-research-api
+    restart: unless-stopped
+
+volumes:
+  hydra_data:
