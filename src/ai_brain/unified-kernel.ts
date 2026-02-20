@@ -73,6 +73,7 @@ import {
 } from './dual-ternary.js';
 
 import { BrainAuditLogger } from './audit.js';
+import { entropicAnomaly } from '../harmonic/entropicLayer.js';
 
 // ═══════════════════════════════════════════════════════════════
 // Canonical State (the single truth struct)
@@ -218,7 +219,7 @@ export interface MemoryWriteResult {
 /**
  * Kernel decision — the output of the PHDM gate.
  */
-export type KernelDecision = 'ALLOW' | 'TRANSFORM' | 'BLOCK';
+export type KernelDecision = 'ALLOW' | 'TRANSFORM' | 'BLOCK' | 'QUARANTINE';
 
 /**
  * Result of a single pipeline step.
@@ -561,6 +562,67 @@ export class UnifiedKernel {
     // (action is already the proposal — received as input)
 
     // ═══ Step 2: Score (SCBE metrics) ═══
+    const hfToken = process.env.HUGGINGFACE_TOKEN;
+    if (!hfToken) {
+      const anomaly = entropicAnomaly('HF_TOKEN_MISSING', {
+        agentId,
+        step: state.step,
+        token: '[REDACTED]',
+      });
+
+      const quarantineMetrics: MetricBundle = {
+        hyperbolicDistance: 0,
+        phaseDeviation: 1,
+        spectralCoherence: 0,
+        driftMagnitude: 0,
+        combinedRiskScore: 1,
+        assessment: {
+          detections: [],
+          combinedScore: 1,
+          decision: 'QUARANTINE',
+          anyFlagged: true,
+          confidence: 1,
+          recommendation: 'QUARANTINE',
+          rationale: ['HUGGINGFACE_TOKEN missing at Score step'],
+        },
+      };
+
+      this.auditLogger.logRiskDecision(
+        'QUARANTINE',
+        agentId,
+        `step=${state.step} reason=HF_TOKEN_MISSING token=[REDACTED]`,
+        {
+          step: state.step,
+          anomaly: anomaly.code,
+          token: '[REDACTED]',
+          decision: 'QUARANTINE',
+        }
+      );
+
+      const hashChain = this.auditLogger.getHashChain();
+      const auditHash = hashChain.length > 0 ? hashChain[hashChain.length - 1] : '';
+      state.auditAnchor = auditHash;
+
+      const result: PipelineStepResult = {
+        step: state.step,
+        action,
+        metrics: quarantineMetrics,
+        latticeResult: this.dualLattice.process(
+          action.stateVector,
+          this.dualLattice.createThreatPhason(1.0, findAnomalyDimensions(action.stateVector))
+        ),
+        ternarySpectrum: this.dualTernary.analyzeSpectrum(),
+        decision: 'QUARANTINE',
+        memoryResult: null,
+        penaltyApplied: true,
+        state: { ...state, capabilities: new Set(state.capabilities) },
+        auditHash,
+      };
+
+      this.orderedLog.push(result);
+      return result;
+    }
+
     const phdmResult = this.phdm.monitor(action.stateVector, state.step);
     const metrics = computeMetrics(action.stateVector, phdmResult);
 
