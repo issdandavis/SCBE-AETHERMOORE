@@ -1,12 +1,6 @@
----
-title: HYDRA Protocol
-layout: default
-nav_order: 2
-parent: Home
-description: "HYDRA Multi-Agent Coordination System - 14-layer governance pipeline for AI safety with trust rings and Byzantine fault tolerance."
----
-
 # 🦾 HYDRA Multi-Agent Coordination System - Complete Architecture
+
+> last-synced: 2026-02-16T07:28:38.653Z
 
 # HYDRA Multi-Agent Coordination System
 
