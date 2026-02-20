@@ -1544,6 +1544,8 @@ Phase 3: Scaling
 Related documentation:
 
 - [HYDRA Multi-Agent Coordination System - Complete Architecture](https://www.notion.so/HYDRA-Multi-Agent-Coordination-System-Complete-Architecture-0ecedff123704e65b249897bf534d6ef?pvs=21) - Parent architecture
+- [HYDRA Governance Specification - Mathematical Corrections](https://www.notion.so/HYDRA-Governance-Specification-Mathematical-Corrections-0e48a4c3a3ea40c6889f086fec027dcb?pvs=21) - Mathematical corrections
+- [SCBE-AETHERMOORE Tech Deck - Complete Setup Guide](https://www.notion.so/SCBE-AETHERMOORE-Tech-Deck-Complete-Setup-Guide-60922537b0cb4b9fa34ac82eb242ed9b?pvs=21) - 14-layer pipeline
 
 ## Voxel Record Schema
 
