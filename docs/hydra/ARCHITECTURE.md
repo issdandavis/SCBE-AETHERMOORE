@@ -1631,6 +1631,82 @@ Three validated detection mechanisms (defense in depth):
 2. 6-Tonic temporal coherence
    - Formula: `baseAngle = phase + 0.1 * sin(freq * t)` with higher dimensions via spherical harmonic projection.
    - AUC: `1.000` on replay, static, wrong-frequency, and synthetic attacks.
+   - Six Sacred Tongues oscillate as hexagonal nodes through multi-dimensional space; legitimate agents track assigned nodes.
+   - Static, wrong-frequency, or replayed trajectories yield distinct temporal signatures.
+   - Experimental setup: 15 trials, `p < 0.001` on detectable attack classes.
+3. Decimal drift authentication
+   - Formula: Mahalanobis distance of 17D drift vector from legitimate pipeline baseline.
+   - AUC: `0.995` (synthetic), `1.000` (anomalous scale), `0.978` (partial pipeline).
+   - The 14-layer pipeline acts as a fingerprinting instrument: wrong-scale, partial, or non-pipeline data produces separable drift vectors.
+   - Tested on real SCBE 14-layer implementation; 20 trials, `p < 10^-8` improvement over phase alone.
+
+Per-attack detection matrix (partial):
+
+| Attack Type | Phase | 6-Tonic | Drift | Combined | Covered? |
+|---|---|---|---|---|---|
+| Wrong tongue | 1.000 | 1.000 | 0.499 | 1.000 | ✅ |
+| Static position | 0.500 | 1.000 | 0.515 | 1.000 | ✅ |
+| Wrong frequency | 0.500 | 1.000 | 0.500 | 1.000 | ✅ |
+| Replay attack | 0.500 | 1.000 | 0.498 | 1.000 | ✅ |
+| Synthetic (no pipeline) | 1.000 | 1.000 | 1.000 | 1.000 | ✅ |
+| Anomalous scale | 0.500 | 0.492 | 1.000 | 1.000 | ✅ |
+| Partial pipeline | 0.500 | 0.507 | 0.978 | 0.978 | ✅ |
+| Rounded decimals | 0.500 | 0.535 | 0.510 | 0.530 | ⚠️ |
+
+Coverage summary:
+
+- Coverage: 7/8 attack types fully detected.
+- Rounded-decimal attack (correct tongue + correct oscillation + reduced precision) remains a gap.
+- This attack is specific and narrow.
+- The `sigma-decimal > 2x baseline` rule from the patent specification targets this case, but requires real telemetry (not simulation) for full validation.
+
+Patent claims (updated):
+
+| Claim | Description | Evidence | Viability |
+|---|---|---|---|
+| A | Phase-augmented adversarial RAG detection | AUC=0.9999, p<0.05 | HIGH |
+| B | SS1 Sacred Tongue encoding protocol | Bijective, 100% tests | HIGH |
+| E | Multi-layer decimal drift authentication | AUC=0.995 synthetic, p<10^-8 | HIGH |
+| HF | 6-tonic spherical nodal oscillation | AUC=1.0 replay/static, 46 tests | HIGH |
+| C | Multi-layer hyperbolic governance pipeline | Architecture + 17D audit dims | MEDIUM |
+| D | Geometric containment (PHDM) | Code exists, needs experiment | MEDIUM |
+
+Governance architecture (reframing):
+
+- The SCBE-AETHERMOORE system is governance infrastructure, not an optimization system.
+- The 14-layer pipeline is not attempting to maximize a single metric (for example, AUC).
+- It is designed to preserve governance properties under adversarial, noisy, and operationally mixed conditions:
+  - Managed error propagation: decimal drift stays bounded through layers; fractional-dimension flux (breathing) can reduce propagation surface under stress by collapsing dimensions.
+  - Auditability: the 17-dimensional drift signature indicates which layer deviated; each layer contributes an independent audit dimension.
+  - Graceful degradation: `H(d,R) = R^(d^2)` is a visibility/cost function, not a standalone security barrier; high-risk actions incur exponentially higher cost and become traceable in audit logs.
+
+Claims scorecard:
+
+| Status | Count | Delta from v3 | Key Items |
+|---|---|---|---|
+| PROVEN | 18 | +4 | Phase+dist, 6-tonic, drift, SS1 |
+| CODE EXISTS | 14 | 0 | HYDRA, pipeline, octree, A* |
+| REPORTED | 8 | +8 | Reclassified from PROVEN |
+| UNPROVEN | 10 | +2 | New subsystems added |
+| DISPROVEN | 5 | +2 | Swarm AUC=0.543, d_H=Euclidean |
+| OVERSTATE | 50 | n/a | 518k multiplier interpretation, BFT claim wording |
+| UNTESTED | 1 | -3 | Tested or reclassified |
+
+Experiment log (7 experiments):
+
+1. Experiment 1: Hyperbolic vs Euclidean baseline — DISPROVEN
+   - `d_H(u,0)` is monotonic transform of `||u||`, identical AUC.
+2. Experiment 2: GeoSeal swarm dynamics — DISPROVEN
+   - `AUC = 0.543` after fixing 5 bugs; swarm consensus lacked discriminative signal.
+3. Experiment 3: Phase + Distance Scoring — PROVEN
+   - `AUC = 0.9999`, `F1 = 0.998`, latency `2.8ms`, 20 trials, `p < 0.05`.
+4. Experiment 4: Tripoint Centroid (Hyperbolic) — PARTIAL
+   - Breaks monotonicity as expected, but Euclidean centroid outperformed hyperbolic centroid across tested difficulty levels.
+5. Experiment 5: Decimal Drift Magnitude — PROVEN
+   - `AUC = 0.995` on synthetic, `1.000` on anomalous scale, `p < 10^-8` combined improvement.
+6. Experiment 6: 6-Tonic Temporal Coherence — PROVEN
+   - `AUC = 1.000` on replay/static/wrong-frequency/synthetic attacks.
+7. Experiment 7: Three-Mechanism Combined — PROVEN
 
 Publication/export status:
 
