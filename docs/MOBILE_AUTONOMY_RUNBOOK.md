@@ -81,6 +81,13 @@ Generated step plan:
 python -m pytest -q tests/test_mobile_goal_api.py
 ```
 
+## Terminal Control
+
+For terminal-first operations (research, article flows, product/store operations), use:
+
+- `scripts/scbe_terminal_ops.py`
+- `docs/TERMINAL_OPS_QUICKSTART.md`
+
 ## Example API Key Header
 
 `x-api-key: demo_key_12345`
