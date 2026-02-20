@@ -11,6 +11,9 @@
 - Connector integration guides:
   - `docs/CONNECTOR_ONBOARDING.md` (templates + registration patterns)
   - `docs/MOBILE_AUTONOMY_RUNBOOK.md` updates for expanded connector stack.
+- Terminal ops control surface:
+  - `scripts/scbe_terminal_ops.py` for connector registration + goal orchestration from terminal.
+  - `docs/TERMINAL_OPS_QUICKSTART.md` for web research, content/article, and product/store operations.
 
 ### Documentation
 - Corrected **Temporal-Intent Harmonic Scaling** formula to `H_eff(d, R, x) = R^(d^2 * x)` with x in exponent for super-exponential growth. Linked to L11 triadic temporal distance + CPSE deviation channels.
