@@ -10,6 +10,10 @@ on:
         default: '0.20'
         type: string
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   pull-requests: write
@@ -53,9 +57,6 @@ jobs:
             echo '{"coherence": 0.0, "status": "skip", "reason": "Script not found"}' > coherence-report.json
             exit 0
           fi
-          python scripts/coherence-check.py \\
-            --threshold ${{ steps.config.outputs.threshold }} \\
-            --json-path coherence-report.json
           python scripts/coherence-check.py \
             --threshold ${{ steps.config.outputs.threshold }} \
             --json-path coherence-report.json
@@ -73,20 +74,10 @@ jobs:
           from pathlib import Path
           data = json.loads(Path('coherence-report.json').read_text())
           with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as fh:
-            fh.write(f"coherence={data.get('coherence', 0.0)}\\n")
-            fh.write(f"status={data.get('status', 'error')}\\n")
-            fh.write(f"reason={data.get('reason', '')}\\n")
+            fh.write(f"coherence={data.get('coherence', 0.0)}\n")
+            fh.write(f"status={data.get('status', 'error')}\n")
+            fh.write(f"reason={data.get('reason', '')}\n")
           PY
-import json
-import os
-from pathlib import Path
-
-data = json.loads(Path('coherence-report.json').read_text())
-with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as fh:
-    fh.write(f"coherence={data.get('coherence', 0.0)}\n")
-    fh.write(f"status={data.get('status', 'error')}\n")
-    fh.write(f"reason={data.get('reason', '')}\n")
-PY
 
       - name: Upload coherence report
         if: always()
@@ -105,7 +96,6 @@ PY
             const status = '${{ steps.extract.outputs.status }}';
             const reason = '${{ steps.extract.outputs.reason }}';
             const threshold = '${{ steps.config.outputs.threshold }}';
-            const icon = status === 'pass' ? '\\u2705' : status === 'skip' ? '\\u26a0\\ufe0f' : '\\u274c';
             const icon = status === 'pass' ? '\u2705' : status === 'skip' ? '\u26a0\ufe0f' : '\u274c';
             const lines = [
               '## Layer 11 Coherence Gate',
@@ -122,8 +112,6 @@ PY
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: lines.join('\\n'),
-            });
               body: lines.join('\n'),
             });
 
