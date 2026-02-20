@@ -1407,7 +1407,50 @@ Step 2: Request promotion to SAFE
 ```python
 if pad_eng.can_promote_to_safe(state, quorum_votes=4):
     pad_eng.zone = "SAFE"
+    print("Promoted to SAFE zone")
+else:
+    print("Promotion denied: coherence too low or quorum failed")
 ```
+
+Step 3: Execute in SAFE zone
+
+```python
+result = pad_eng.route_task("code_exec_safe", state, squad)
+# Output: "SAFE: Exec with security envelope"
+```
+
+Step 4: Commit execution result as voxel
+
+```python
+import time
+
+voxel_record = VoxelRecord(
+    scope="unit",
+    unitId="drone-1",
+    squadId="squad-alpha",
+    lang="KO",
+    voxel=(0.1, 0.2, 0.3, 0.4, 0.5, 0.6),
+    epoch=int(time.time() * 1000),
+    padMode="ENGINEERING",
+    coherence=state.coherence,
+    dStar=state.d_star,
+    hEff=state.h_eff,
+    decision="ALLOW",
+    cubeId=cube_id(...),
+    payloadDigest="generated-digest",
+    seal=seal,
+    payloadCiphertext=encrypt(result),
+    # ...
+)
+
+# Commit to squad space with quorum
+success = squad.commit_voxel(voxel_record, quorum_votes=4)
+```
+
+Production deployment and file layout references:
+
+- See `## File Structure` for `hydra/` module layout.
+- See `## Production Deployment` for startup/configuration commands.
 
 ## Voxel Record Schema
 
