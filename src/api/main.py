@@ -205,6 +205,12 @@ class ConnectorKind(str, Enum):
     n8n = "n8n"
     zapier = "zapier"
     shopify = "shopify"
+    slack = "slack"
+    notion = "notion"
+    airtable = "airtable"
+    github_actions = "github_actions"
+    linear = "linear"
+    discord = "discord"
     generic_webhook = "generic_webhook"
 
 
@@ -212,6 +218,20 @@ class ConnectorAuthType(str, Enum):
     none = "none"
     bearer = "bearer"
     header = "header"
+
+
+class ConnectorHttpMethod(str, Enum):
+    post = "POST"
+    put = "PUT"
+    patch = "PATCH"
+    delete = "DELETE"
+    get = "GET"
+
+
+class ConnectorPayloadMode(str, Enum):
+    scbe_step = "scbe_step"
+    raw_step = "raw_step"
+    shopify_graphql_read = "shopify_graphql_read"
 
 
 class MobileGoalRequest(BaseModel):
@@ -245,15 +265,72 @@ class MobileGoalActionRequest(BaseModel):
 class ConnectorRegisterRequest(BaseModel):
     name: str = Field(..., min_length=2, max_length=64)
     kind: ConnectorKind
-    endpoint_url: str = Field(..., min_length=8, max_length=2048)
+    endpoint_url: str = Field(default="", max_length=2048)
+    http_method: ConnectorHttpMethod = Field(default=ConnectorHttpMethod.post)
+    timeout_seconds: int = Field(default=8, ge=2, le=60)
+    payload_mode: ConnectorPayloadMode = Field(default=ConnectorPayloadMode.scbe_step)
     auth_type: ConnectorAuthType = Field(default=ConnectorAuthType.none)
     auth_token: str = Field(default="", max_length=4096, description="Bearer or header token/secret")
     auth_header_name: str = Field(default="x-api-key", max_length=128)
+    default_headers: Dict[str, str] = Field(default_factory=dict)
+    shop_domain: str = Field(default="", max_length=255)
+    shopify_api_version: str = Field(default="2025-10", max_length=16)
     enabled: bool = Field(default=True)
 
 
 class MobileGoalBindConnectorRequest(BaseModel):
     connector_id: str = Field(..., min_length=6, max_length=64)
+
+
+CONNECTOR_TEMPLATES: List[Dict[str, Any]] = [
+    {
+        "template_id": "zapier_catch_hook",
+        "kind": "zapier",
+        "description": "Send goal-step payloads into a Zapier Catch Hook and fan out to downstream apps.",
+        "recommended_fields": {
+            "endpoint_url": "https://hooks.zapier.com/hooks/catch/<id>/<slug>/",
+            "auth_type": "none",
+            "payload_mode": "scbe_step",
+            "http_method": "POST",
+        },
+    },
+    {
+        "template_id": "n8n_webhook",
+        "kind": "n8n",
+        "description": "Use n8n webhook trigger as an automation hub for multi-service operations.",
+        "recommended_fields": {
+            "endpoint_url": "https://<n8n-host>/webhook/<flow>",
+            "auth_type": "header",
+            "auth_header_name": "x-n8n-key",
+            "payload_mode": "scbe_step",
+            "http_method": "POST",
+        },
+    },
+    {
+        "template_id": "shopify_admin_read",
+        "kind": "shopify",
+        "description": "Direct read-only Shopify Admin GraphQL connector for store state and order triage inputs.",
+        "recommended_fields": {
+            "shop_domain": "<shop>.myshopify.com",
+            "shopify_api_version": "2025-10",
+            "auth_type": "header",
+            "auth_header_name": "X-Shopify-Access-Token",
+            "payload_mode": "shopify_graphql_read",
+            "http_method": "POST",
+        },
+    },
+    {
+        "template_id": "generic_signed_webhook",
+        "kind": "generic_webhook",
+        "description": "Signed SCBE payload delivery to any HTTPS webhook endpoint.",
+        "recommended_fields": {
+            "endpoint_url": "https://<your-service>/webhooks/scbe",
+            "auth_type": "bearer",
+            "payload_mode": "scbe_step",
+            "http_method": "POST",
+        },
+    },
+]
 
 
 # ============================================================================
@@ -349,8 +426,14 @@ def _connector_view(record: Dict[str, Any]) -> Dict[str, Any]:
         "name": record["name"],
         "kind": record["kind"],
         "endpoint_url": record["endpoint_url"],
+        "http_method": record["http_method"],
+        "timeout_seconds": record["timeout_seconds"],
+        "payload_mode": record["payload_mode"],
         "auth_type": record["auth_type"],
         "auth_header_name": record["auth_header_name"],
+        "default_headers": record.get("default_headers", {}),
+        "shop_domain": record.get("shop_domain", ""),
+        "shopify_api_version": record.get("shopify_api_version", ""),
         "enabled": record["enabled"],
         "created_at": record["created_at"],
         "updated_at": record["updated_at"],
@@ -374,6 +457,96 @@ def _sign_connector_payload(payload: Dict[str, Any]) -> tuple[str, str]:
     return ts, sig
 
 
+def _normalize_shop_domain(raw: str) -> str:
+    value = (raw or "").strip().lower()
+    if value.startswith("https://"):
+        value = value[8:]
+    elif value.startswith("http://"):
+        value = value[7:]
+    return value.rstrip("/")
+
+
+def _build_shopify_endpoint(shop_domain: str, api_version: str) -> str:
+    domain = _normalize_shop_domain(shop_domain)
+    if not domain:
+        return ""
+    version = (api_version or "2025-10").strip()
+    return f"https://{domain}/admin/api/{version}/graphql.json"
+
+
+def _build_scbe_step_payload(record: Dict[str, Any], step: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "goal_id": record["goal_id"],
+        "channel": record["channel"],
+        "priority": record["priority"],
+        "step": {"name": step["name"], "risk": step["risk"]},
+        "targets": record["targets"],
+        "metadata": {
+            "owner": record["owner"],
+            "ts": int(time.time()),
+        },
+    }
+
+
+def _build_shopify_graphql_payload(record: Dict[str, Any], step: Dict[str, Any]) -> Dict[str, Any]:
+    risk = step.get("risk", "low")
+    orders = 8 if risk == "low" else 20
+    products = 8 if risk == "low" else 20
+    query = """
+query SCBEStoreOpsRead($orders: Int!, $products: Int!) {
+  shop {
+    name
+    myshopifyDomain
+    plan { displayName }
+  }
+  orders(first: $orders, sortKey: UPDATED_AT, reverse: true) {
+    edges {
+      node {
+        id
+        name
+        createdAt
+        displayFinancialStatus
+        displayFulfillmentStatus
+      }
+    }
+  }
+  products(first: $products, sortKey: UPDATED_AT, reverse: true) {
+    edges {
+      node {
+        id
+        title
+        status
+        totalInventory
+        updatedAt
+      }
+    }
+  }
+}
+""".strip()
+    return {
+        "query": query,
+        "operationName": "SCBEStoreOpsRead",
+        "variables": {"orders": orders, "products": products},
+        "extensions": {
+            "scbe": {
+                "goal_id": record["goal_id"],
+                "step": step.get("name"),
+                "risk": risk,
+                "owner": record["owner"],
+            }
+        },
+    }
+
+
+def _build_connector_payload(record: Dict[str, Any], step: Dict[str, Any]) -> Dict[str, Any]:
+    mode = record.get("payload_mode", ConnectorPayloadMode.scbe_step.value)
+    if mode == ConnectorPayloadMode.raw_step.value:
+        return {"step": step, "goal_id": record["goal_id"]}
+    if mode == ConnectorPayloadMode.shopify_graphql_read.value:
+        return _build_shopify_graphql_payload(record, step)
+    return _build_scbe_step_payload(record, step)
+
+
 def _dispatch_connector_step(record: Dict[str, Any], step: Dict[str, Any]) -> Dict[str, Any]:
     if record["execution_mode"] != "connector":
         return {"ok": True, "mode": record["execution_mode"], "detail": "non-connector-mode"}
@@ -388,19 +561,11 @@ def _dispatch_connector_step(record: Dict[str, Any], step: Dict[str, Any]) -> Di
     if not connector.get("enabled", False):
         return {"ok": False, "code": "connector_disabled", "detail": "connector disabled"}
 
-    payload = {
-        "goal_id": record["goal_id"],
-        "channel": record["channel"],
-        "priority": record["priority"],
-        "step": {"name": step["name"], "risk": step["risk"]},
-        "targets": record["targets"],
-        "metadata": {
-            "owner": record["owner"],
-            "ts": int(time.time()),
-        },
-    }
+    payload = _build_connector_payload(record, step)
 
     headers = {"Content-Type": "application/json"}
+    for key, value in record.get("default_headers", {}).items():
+        headers[str(key)] = str(value)
     if connector["auth_type"] == ConnectorAuthType.bearer.value and connector.get("auth_token"):
         headers["Authorization"] = f"Bearer {connector['auth_token']}"
     elif connector["auth_type"] == ConnectorAuthType.header.value and connector.get("auth_token"):
@@ -412,14 +577,16 @@ def _dispatch_connector_step(record: Dict[str, Any], step: Dict[str, Any]) -> Di
     if sig:
         headers["x-scbe-signature"] = sig
 
+    method = record.get("http_method", ConnectorHttpMethod.post.value).upper()
+    body_bytes = json.dumps(payload).encode("utf-8")
     req = urlrequest.Request(
         connector["endpoint_url"],
-        data=json.dumps(payload).encode("utf-8"),
+        data=body_bytes if method != "GET" else None,
         headers=headers,
-        method="POST",
+        method=method,
     )
     try:
-        with urlrequest.urlopen(req, timeout=8) as resp:
+        with urlrequest.urlopen(req, timeout=int(record.get("timeout_seconds", 8))) as resp:
             status = int(getattr(resp, "status", 200))
             text = resp.read().decode("utf-8", errors="replace")
             if 200 <= status < 300:
@@ -704,22 +871,59 @@ async def register_mobile_connector(
 
     Register external automation connector (n8n / Zapier / Shopify / generic webhook).
     """
+    endpoint_url = (request.endpoint_url or "").strip()
+    shop_domain = _normalize_shop_domain(request.shop_domain)
+    payload_mode = request.payload_mode.value
+    auth_type = request.auth_type.value
+    auth_header_name = request.auth_header_name
+
+    if request.kind == ConnectorKind.shopify:
+        if not endpoint_url:
+            endpoint_url = _build_shopify_endpoint(shop_domain, request.shopify_api_version)
+            if not endpoint_url:
+                raise HTTPException(400, "shop_domain required for shopify connector without endpoint_url")
+            if payload_mode == ConnectorPayloadMode.scbe_step.value:
+                payload_mode = ConnectorPayloadMode.shopify_graphql_read.value
+        if request.auth_token and request.auth_type == ConnectorAuthType.none:
+            auth_type = ConnectorAuthType.header.value
+            auth_header_name = "X-Shopify-Access-Token"
+
+    if not endpoint_url:
+        raise HTTPException(400, "endpoint_url required")
+
     connector_id = _connector_id(user, request.name, request.kind.value)
     ts = int(time.time())
+    safe_headers = {str(k): str(v) for k, v in request.default_headers.items() if str(k)}
     CONNECTOR_STORE[connector_id] = {
         "connector_id": connector_id,
         "owner": user,
         "name": request.name,
         "kind": request.kind.value,
-        "endpoint_url": request.endpoint_url,
-        "auth_type": request.auth_type.value,
+        "endpoint_url": endpoint_url,
+        "http_method": request.http_method.value,
+        "timeout_seconds": int(request.timeout_seconds),
+        "payload_mode": payload_mode,
+        "auth_type": auth_type,
         "auth_token": request.auth_token,
-        "auth_header_name": request.auth_header_name,
+        "auth_header_name": auth_header_name,
+        "default_headers": safe_headers,
+        "shop_domain": shop_domain,
+        "shopify_api_version": request.shopify_api_version,
         "enabled": bool(request.enabled),
         "created_at": ts,
         "updated_at": ts,
     }
     return {"status": "registered", "data": _connector_view(CONNECTOR_STORE[connector_id])}
+
+
+@app.get("/mobile/connectors/templates", tags=["Mobile Autonomy"])
+async def list_mobile_connector_templates(user: str = Depends(verify_api_key)):
+    """
+    ## Connector Templates
+
+    Return prebuilt connector profiles and required fields for rapid onboarding.
+    """
+    return {"status": "ok", "data": CONNECTOR_TEMPLATES}
 
 
 @app.get("/mobile/connectors", tags=["Mobile Autonomy"])
@@ -1026,7 +1230,8 @@ async def startup_event():
     print("  POST /retrieve-memory   - Retrieve with governance check")
     print("  GET  /governance-check  - Check governance decision")
     print("  POST /simulate-attack   - Demo fail-to-noise protection")
-    print("  POST /mobile/connectors - Register n8n/Zapier/Shopify connector")
+    print("  GET  /mobile/connectors/templates - Connector onboarding templates")
+    print("  POST /mobile/connectors - Register connector (Zapier/Shopify/n8n/etc)")
     print("  POST /mobile/goals      - Submit mobile autonomy goal")
     print("  POST /mobile/goals/{id}/bind-connector - Attach connector to goal")
     print("  POST /mobile/goals/{id}/advance - Run next goal step")

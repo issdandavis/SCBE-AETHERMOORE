@@ -135,6 +135,35 @@ def test_connector_register_and_bind_to_goal() -> None:
     assert bind_resp.json()["data"]["connector_id"] == connector_id
 
 
+def test_connector_templates_and_shopify_autobuild() -> None:
+    client = TestClient(app)
+
+    templates = client.get("/mobile/connectors/templates", headers=API_KEY_HEADER)
+    assert templates.status_code == 200
+    rows = templates.json()["data"]
+    assert any(t["kind"] == "zapier" for t in rows)
+    assert any(t["kind"] == "shopify" for t in rows)
+
+    shopify_conn = client.post(
+        "/mobile/connectors",
+        headers=API_KEY_HEADER,
+        json={
+            "name": "shopify-admin-read",
+            "kind": "shopify",
+            "shop_domain": "demo-store.myshopify.com",
+            "auth_type": "header",
+            "auth_header_name": "X-Shopify-Access-Token",
+            "auth_token": "test-token",
+            "enabled": True,
+        },
+    )
+    assert shopify_conn.status_code == 200
+    data = shopify_conn.json()["data"]
+    assert data["endpoint_url"] == "https://demo-store.myshopify.com/admin/api/2025-10/graphql.json"
+    assert data["payload_mode"] == "shopify_graphql_read"
+    assert data["auth_header_name"] == "X-Shopify-Access-Token"
+
+
 def test_connector_mode_dispatch_success_path(monkeypatch) -> None:
     client = TestClient(app)
 

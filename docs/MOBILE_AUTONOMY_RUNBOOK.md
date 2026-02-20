@@ -13,8 +13,10 @@ API file: `src/api/main.py`
 
 Endpoints:
 
+- `GET /mobile/connectors/templates`
+  - Get built-in connector setup profiles
 - `POST /mobile/connectors`
-  - Register connector endpoint (n8n, Zapier, Shopify, generic webhook)
+  - Register connector endpoint (n8n, Zapier, Shopify, Slack, Notion, Airtable, GitHub Actions, Linear, Discord, generic webhook)
 - `GET /mobile/connectors`
   - List registered connectors
 - `POST /mobile/goals/{goal_id}/bind-connector`
@@ -62,6 +64,8 @@ Generated step plan:
    - Shopify workflow endpoint (or n8n flow containing Shopify nodes)
    - Zapier webhook for cross-service automations
    - n8n endpoint for AetherBrowse + store task orchestration
+   - Slack/Discord notification hooks for approvals and exceptions
+   - Notion/Airtable sync endpoints for ops memory/state
 2. Replace simulated step execution with specialized worker adapters:
    - Shopify admin adapter (orders/catalog/fulfillment)
    - Email/helpdesk adapter
