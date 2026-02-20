@@ -21,9 +21,12 @@ from typing import List, Optional, Dict, Any
 import json
 import numpy as np
 import hashlib
+import hmac
 import time
 from collections import defaultdict
 from enum import Enum
+from urllib import request as urlrequest
+from urllib.error import HTTPError, URLError
 import sys
 import os
 
@@ -135,6 +138,7 @@ storage_backend = get_storage_backend()
 
 # Mobile autonomy goal control plane (in-memory MVP store).
 GOAL_STORE: Dict[str, Dict[str, Any]] = {}
+CONNECTOR_STORE: Dict[str, Dict[str, Any]] = {}
 
 # ============================================================================
 # MODELS
@@ -197,6 +201,19 @@ class GoalStatus(str, Enum):
     failed = "failed"
 
 
+class ConnectorKind(str, Enum):
+    n8n = "n8n"
+    zapier = "zapier"
+    shopify = "shopify"
+    generic_webhook = "generic_webhook"
+
+
+class ConnectorAuthType(str, Enum):
+    none = "none"
+    bearer = "bearer"
+    header = "header"
+
+
 class MobileGoalRequest(BaseModel):
     goal: str = Field(..., min_length=3, max_length=1024, description="Natural language goal description")
     channel: str = Field(
@@ -207,10 +224,11 @@ class MobileGoalRequest(BaseModel):
     priority: GoalPriority = Field(default=GoalPriority.normal)
     execution_mode: str = Field(
         default="simulate",
-        pattern="^(simulate|hydra_headless)$",
+        pattern="^(simulate|hydra_headless|connector)$",
         description="Execution adapter mode",
     )
     targets: List[str] = Field(default_factory=list, description="Optional URLs or entity targets")
+    connector_id: Optional[str] = Field(default=None, description="Connector to use when execution_mode=connector")
     require_human_for_high_risk: bool = Field(
         default=True, description="Require explicit approval for high risk actions"
     )
@@ -222,6 +240,20 @@ class MobileGoalApproveRequest(BaseModel):
 
 class MobileGoalActionRequest(BaseModel):
     note: str = Field(default="", max_length=512)
+
+
+class ConnectorRegisterRequest(BaseModel):
+    name: str = Field(..., min_length=2, max_length=64)
+    kind: ConnectorKind
+    endpoint_url: str = Field(..., min_length=8, max_length=2048)
+    auth_type: ConnectorAuthType = Field(default=ConnectorAuthType.none)
+    auth_token: str = Field(default="", max_length=4096, description="Bearer or header token/secret")
+    auth_header_name: str = Field(default="x-api-key", max_length=128)
+    enabled: bool = Field(default=True)
+
+
+class MobileGoalBindConnectorRequest(BaseModel):
+    connector_id: str = Field(..., min_length=6, max_length=64)
 
 
 # ============================================================================
@@ -254,6 +286,11 @@ async def verify_api_key(x_api_key: str = Header(...)):
 def _goal_id(user: str, goal: str) -> str:
     seed = f"{user}:{goal}:{time.time_ns()}".encode("utf-8")
     return hashlib.sha256(seed).hexdigest()[:20]
+
+
+def _connector_id(owner: str, name: str, kind: str) -> str:
+    seed = f"{owner}:{name}:{kind}:{time.time_ns()}".encode("utf-8")
+    return f"conn_{hashlib.sha256(seed).hexdigest()[:16]}"
 
 
 def _build_goal_steps(channel: str, targets: List[str]) -> List[Dict[str, Any]]:
@@ -291,6 +328,7 @@ def _goal_view(record: Dict[str, Any]) -> Dict[str, Any]:
         "channel": record["channel"],
         "priority": record["priority"],
         "execution_mode": record["execution_mode"],
+        "connector_id": record.get("connector_id"),
         "status": record["status"],
         "targets": record["targets"],
         "require_human_for_high_risk": record["require_human_for_high_risk"],
@@ -304,11 +342,96 @@ def _goal_view(record: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _connector_view(record: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "connector_id": record["connector_id"],
+        "owner": record["owner"],
+        "name": record["name"],
+        "kind": record["kind"],
+        "endpoint_url": record["endpoint_url"],
+        "auth_type": record["auth_type"],
+        "auth_header_name": record["auth_header_name"],
+        "enabled": record["enabled"],
+        "created_at": record["created_at"],
+        "updated_at": record["updated_at"],
+    }
+
+
 def _next_pending_step(record: Dict[str, Any]) -> Optional[int]:
     for i, step in enumerate(record["steps"]):
         if step["status"] == "pending":
             return i
     return None
+
+
+def _sign_connector_payload(payload: Dict[str, Any]) -> tuple[str, str]:
+    ts = str(int(time.time()))
+    signing_key = os.getenv("SCBE_CONNECTOR_SIGNING_KEY", "").encode("utf-8")
+    body = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    if not signing_key:
+        return ts, ""
+    sig = hmac.new(signing_key, ts.encode("utf-8") + b"." + body, hashlib.sha256).hexdigest()
+    return ts, sig
+
+
+def _dispatch_connector_step(record: Dict[str, Any], step: Dict[str, Any]) -> Dict[str, Any]:
+    if record["execution_mode"] != "connector":
+        return {"ok": True, "mode": record["execution_mode"], "detail": "non-connector-mode"}
+
+    connector_id = record.get("connector_id")
+    if not connector_id:
+        return {"ok": False, "code": "connector_missing", "detail": "connector_id required for connector mode"}
+
+    connector = CONNECTOR_STORE.get(connector_id)
+    if connector is None:
+        return {"ok": False, "code": "connector_not_found", "detail": "connector not found"}
+    if not connector.get("enabled", False):
+        return {"ok": False, "code": "connector_disabled", "detail": "connector disabled"}
+
+    payload = {
+        "goal_id": record["goal_id"],
+        "channel": record["channel"],
+        "priority": record["priority"],
+        "step": {"name": step["name"], "risk": step["risk"]},
+        "targets": record["targets"],
+        "metadata": {
+            "owner": record["owner"],
+            "ts": int(time.time()),
+        },
+    }
+
+    headers = {"Content-Type": "application/json"}
+    if connector["auth_type"] == ConnectorAuthType.bearer.value and connector.get("auth_token"):
+        headers["Authorization"] = f"Bearer {connector['auth_token']}"
+    elif connector["auth_type"] == ConnectorAuthType.header.value and connector.get("auth_token"):
+        hdr = connector.get("auth_header_name", "x-api-key")
+        headers[hdr] = connector["auth_token"]
+
+    sig_ts, sig = _sign_connector_payload(payload)
+    headers["x-scbe-ts"] = sig_ts
+    if sig:
+        headers["x-scbe-signature"] = sig
+
+    req = urlrequest.Request(
+        connector["endpoint_url"],
+        data=json.dumps(payload).encode("utf-8"),
+        headers=headers,
+        method="POST",
+    )
+    try:
+        with urlrequest.urlopen(req, timeout=8) as resp:
+            status = int(getattr(resp, "status", 200))
+            text = resp.read().decode("utf-8", errors="replace")
+            if 200 <= status < 300:
+                return {"ok": True, "status": status, "detail": text[:400]}
+            return {"ok": False, "code": "connector_http_status", "status": status, "detail": text[:400]}
+    except HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace") if hasattr(exc, "read") else str(exc)
+        return {"ok": False, "code": "connector_http_error", "status": int(exc.code), "detail": detail[:400]}
+    except URLError as exc:
+        return {"ok": False, "code": "connector_network_error", "detail": str(exc.reason)}
+    except Exception as exc:
+        return {"ok": False, "code": "connector_dispatch_error", "detail": str(exc)}
 
 
 # ============================================================================
@@ -572,6 +695,71 @@ async def simulate_attack(request: SimulateAttackRequest):
         raise HTTPException(500, f"Simulation failed: {str(e)}")
 
 
+@app.post("/mobile/connectors", tags=["Mobile Autonomy"])
+async def register_mobile_connector(
+    request: ConnectorRegisterRequest, user: str = Depends(verify_api_key)
+):
+    """
+    ## Register Connector
+
+    Register external automation connector (n8n / Zapier / Shopify / generic webhook).
+    """
+    connector_id = _connector_id(user, request.name, request.kind.value)
+    ts = int(time.time())
+    CONNECTOR_STORE[connector_id] = {
+        "connector_id": connector_id,
+        "owner": user,
+        "name": request.name,
+        "kind": request.kind.value,
+        "endpoint_url": request.endpoint_url,
+        "auth_type": request.auth_type.value,
+        "auth_token": request.auth_token,
+        "auth_header_name": request.auth_header_name,
+        "enabled": bool(request.enabled),
+        "created_at": ts,
+        "updated_at": ts,
+    }
+    return {"status": "registered", "data": _connector_view(CONNECTOR_STORE[connector_id])}
+
+
+@app.get("/mobile/connectors", tags=["Mobile Autonomy"])
+async def list_mobile_connectors(
+    limit: int = Query(50, ge=1, le=200),
+    user: str = Depends(verify_api_key),
+):
+    """
+    ## List Connectors
+
+    List connectors owned by caller.
+    """
+    rows = [v for v in CONNECTOR_STORE.values() if v["owner"] == user]
+    rows.sort(key=lambda x: x["created_at"], reverse=True)
+    return {"status": "ok", "data": [_connector_view(r) for r in rows[:limit]]}
+
+
+@app.get("/mobile/connectors/{connector_id}", tags=["Mobile Autonomy"])
+async def get_mobile_connector(connector_id: str, user: str = Depends(verify_api_key)):
+    """
+    ## Get Connector
+    """
+    record = CONNECTOR_STORE.get(connector_id)
+    if not record or record["owner"] != user:
+        raise HTTPException(404, "Connector not found")
+    return {"status": "ok", "data": _connector_view(record)}
+
+
+@app.delete("/mobile/connectors/{connector_id}", tags=["Mobile Autonomy"])
+async def delete_mobile_connector(connector_id: str, user: str = Depends(verify_api_key)):
+    """
+    ## Delete Connector
+    """
+    record = CONNECTOR_STORE.get(connector_id)
+    if not record or record["owner"] != user:
+        raise HTTPException(404, "Connector not found")
+    del CONNECTOR_STORE[connector_id]
+    return {"status": "deleted", "data": {"connector_id": connector_id}}
+
+
 @app.post("/mobile/goals", tags=["Mobile Autonomy"])
 async def create_mobile_goal(
     request: MobileGoalRequest, user: str = Depends(verify_api_key)
@@ -581,6 +769,13 @@ async def create_mobile_goal(
 
     Submit a high-level goal from phone/app and receive deterministic step plan.
     """
+    if request.execution_mode == "connector":
+        if not request.connector_id:
+            raise HTTPException(400, "connector_id required when execution_mode=connector")
+        conn = CONNECTOR_STORE.get(request.connector_id)
+        if conn is None or conn["owner"] != user:
+            raise HTTPException(404, "connector not found")
+
     goal_id = _goal_id(user, request.goal)
     ts = int(time.time())
     steps = _build_goal_steps(request.channel, request.targets)
@@ -591,6 +786,7 @@ async def create_mobile_goal(
         "channel": request.channel,
         "priority": request.priority.value,
         "execution_mode": request.execution_mode,
+        "connector_id": request.connector_id,
         "targets": request.targets,
         "require_human_for_high_risk": request.require_human_for_high_risk,
         "approved_high_risk": False,
@@ -630,6 +826,36 @@ async def get_mobile_goal(goal_id: str, user: str = Depends(verify_api_key)):
     record = GOAL_STORE.get(goal_id)
     if not record or record["owner"] != user:
         raise HTTPException(404, "Goal not found")
+    return {"status": "ok", "data": _goal_view(record)}
+
+
+@app.post("/mobile/goals/{goal_id}/bind-connector", tags=["Mobile Autonomy"])
+async def bind_mobile_goal_connector(
+    goal_id: str,
+    request: MobileGoalBindConnectorRequest,
+    user: str = Depends(verify_api_key),
+):
+    """
+    ## Bind Connector To Goal
+
+    Attach connector to existing goal and set execution mode to connector.
+    """
+    record = GOAL_STORE.get(goal_id)
+    if not record or record["owner"] != user:
+        raise HTTPException(404, "Goal not found")
+    conn = CONNECTOR_STORE.get(request.connector_id)
+    if conn is None or conn["owner"] != user:
+        raise HTTPException(404, "Connector not found")
+    record["connector_id"] = request.connector_id
+    record["execution_mode"] = "connector"
+    record["updated_at"] = int(time.time())
+    record["events"].append(
+        {
+            "ts": record["updated_at"],
+            "event": "connector_bound",
+            "detail": request.connector_id,
+        }
+    )
     return {"status": "ok", "data": _goal_view(record)}
 
 
@@ -702,12 +928,31 @@ async def advance_mobile_goal(
         )
         return {"status": "blocked", "data": _goal_view(record)}
 
+    dispatch = _dispatch_connector_step(record, step)
+    if not dispatch.get("ok", False):
+        now = int(time.time())
+        record["status"] = GoalStatus.failed.value
+        record["updated_at"] = now
+        record["events"].append(
+            {
+                "ts": now,
+                "event": "connector_dispatch_failed",
+                "detail": f"{dispatch.get('code', 'error')}:{dispatch.get('detail', '')}",
+            }
+        )
+        return {"status": "error", "data": _goal_view(record), "dispatch": dispatch}
+
     now = int(time.time())
     record["status"] = GoalStatus.running.value
     record["steps"][idx]["status"] = "done"
     record["steps"][idx]["completed_at"] = now
     if request.note:
         record["steps"][idx]["note"] = request.note
+    if record["execution_mode"] == "connector":
+        record["steps"][idx]["dispatch"] = {
+            "status": dispatch.get("status"),
+            "detail": dispatch.get("detail", ""),
+        }
     record["updated_at"] = now
     record["events"].append({"ts": now, "event": "step_completed", "detail": step["name"]})
 
@@ -781,7 +1026,9 @@ async def startup_event():
     print("  POST /retrieve-memory   - Retrieve with governance check")
     print("  GET  /governance-check  - Check governance decision")
     print("  POST /simulate-attack   - Demo fail-to-noise protection")
+    print("  POST /mobile/connectors - Register n8n/Zapier/Shopify connector")
     print("  POST /mobile/goals      - Submit mobile autonomy goal")
+    print("  POST /mobile/goals/{id}/bind-connector - Attach connector to goal")
     print("  POST /mobile/goals/{id}/advance - Run next goal step")
     print("  POST /mobile/goals/{id}/approve - Approve high-risk step")
     print("  GET  /health            - System health")
