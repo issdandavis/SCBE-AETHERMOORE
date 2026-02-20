@@ -1580,6 +1580,13 @@ Quantum and mathematical foundations:
 
 - Quasi-Vector Spin Voxels and Magnetics - Complete Integration: spin-field trust states with magnetic interactions
 - PHDM Nomenclature Reference - Canonical Definitions: mathematical definitions
+- The Mathematical Vine - Complete Formula Flow: complete formula reference
+
+Swarm and fleet architecture:
+
+- Agent Architecture and IP Classification: agent design patterns
+- Swarm Deployment Formations: swarm coordination strategies
+- Drone Fleet Architecture Upgrades - SCBE-AETHERMOORE Integration: physical drone integration
 
 ## Voxel Record Schema
 
