@@ -1073,7 +1073,7 @@ export const CognitiveTopologyViz: React.FC = () => {
         <div className="mb-2">
           <label>Pad Mode:</label>
           <select
-            className="mt-1 w-full rounded border border-slate-600 bg-slate-900 p-2 text-white"
+            className="bg-gray-700 p-1 rounded"
             value={padMode}
             onChange={e => setPadMode(e.target.value as PadMode)}
           >
@@ -1085,32 +1085,55 @@ export const CognitiveTopologyViz: React.FC = () => {
           </select>
         </div>
 
+        {/* Commit button */}
         <button
-          type="button"
           onClick={handleCommitVoxel}
-          className="w-full rounded bg-emerald-600 px-3 py-2 text-white hover:bg-emerald-700"
+          className="px-4 py-2 bg-blue-500 rounded hover:bg-blue-600"
         >
           Commit Voxel
         </button>
-
-        <p className="mt-3 text-sm">Quorum: {quorumStatus || 'pending'}</p>
-        {voxelRecord && (
-          <pre className="mt-3 max-h-56 overflow-auto rounded bg-slate-100 p-2 text-xs text-slate-900">
-            {JSON.stringify(
-              {
-                cubeId: voxelRecord.cubeId,
-                payloadDigest: voxelRecord.payloadDigest,
-                decision: voxelRecord.decision,
-              },
-              null,
-              2
-            )}
-          </pre>
-        )}
       </div>
+
+      {/* Voxel preview panel */}
+      {voxelRecord && (
+        <div className="absolute top-4 right-4 bg-gray-800 p-4 rounded-lg max-w-md overflow-auto">
+          <h2 className="text-xl font-bold mb-2">Voxel Record Preview</h2>
+          <pre className="text-sm whitespace-pre-wrap">{JSON.stringify(voxelRecord, null, 2)}</pre>
+          <p className="mt-2 font-bold">{quorumStatus}</p>
+        </div>
+      )}
     </div>
   );
 };
+
+export default CognitiveTopologyViz;
+```
+
+### Backend API Endpoint
+
+`api/voxel_commit.py`:
+
+```python
+from fastapi import APIRouter, HTTPException
+from src.polly_pads_runtime import VoxelRecord, SquadSpace, scbe_decide
+
+router = APIRouter()
+squad = SquadSpace("default-squad")
+
+
+@router.post("/voxel/commit")
+async def commit_voxel(record: VoxelRecord):
+    """Commit voxel to squad space if quorum reached."""
+    if not record.quorum or len(record.quorum.votes) < record.quorum.threshold:
+        raise HTTPException(status_code=400, detail="Quorum not reached")
+
+    # Verify governance decision.
+    decision = scbe_decide(record.dStar, record.coherence, record.hEff)
+    if decision == "DENY":
+        raise HTTPException(status_code=403, detail="SCBE denied commit")
+
+    squad.commit_voxel(record, quorum_votes=len(record.quorum.votes))
+    return {"status": "committed", "cubeId": record.cubeId, "decision": decision}
 ```
 
 ## Voxel Record Schema
