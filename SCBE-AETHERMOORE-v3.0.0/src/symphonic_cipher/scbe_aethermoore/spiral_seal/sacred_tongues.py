@@ -89,10 +89,10 @@ UMBROTH = TongueSpec(
 DRAUMRIC = TongueSpec(
     code='dr',
     name='Draumric',
-    prefixes=('anvil', 'tharn', 'mek', 'grond', 'draum', 'ektal', 'temper', 'forge',
-              'stone', 'steam', 'oath', 'seal', 'frame', 'pillar', 'rivet', 'ember'),
+    prefixes=('anvil', 'tharm', 'mek', 'grond', 'draum', 'ektal', 'temper', 'forge',
+              'stone', 'steam', 'pact', 'seal', 'frame', 'pillar', 'rivet', 'ember'),
     suffixes=('a', 'e', 'i', 'o', 'u', 'ae', 'rak', 'mek',
-              'tharn', 'grond', 'vek', 'ul', 'or', 'ar', 'en', 'on'),
+              'tharm', 'grond', 'vek', 'ul', 'or', 'ar', 'en', 'on'),
     domain='tag/structure'
 )
 
