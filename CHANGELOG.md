@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Added
+- Mobile connector expansion in `src/api/main.py`:
+  - `GET /mobile/connectors/templates` for prebuilt onboarding profiles.
+  - New connector kinds: `slack`, `notion`, `airtable`, `github_actions`, `linear`, `discord` (in addition to `n8n`, `zapier`, `shopify`, `generic_webhook`).
+  - Connector options: `http_method`, `timeout_seconds`, `payload_mode`, `default_headers`.
+  - Shopify auto-bootstrap (`shop_domain` -> Admin GraphQL endpoint) with read-safe `shopify_graphql_read` payload mode.
+- Connector integration guides:
+  - `docs/CONNECTOR_ONBOARDING.md` (templates + registration patterns)
+  - `docs/MOBILE_AUTONOMY_RUNBOOK.md` updates for expanded connector stack.
+
 ### Documentation
 - Corrected **Temporal-Intent Harmonic Scaling** formula to `H_eff(d, R, x) = R^(d^2 * x)` with x in exponent for super-exponential growth. Linked to L11 triadic temporal distance + CPSE deviation channels.
 - Updated legacy master reference to align the core 14-layer stack and source index with in-repo canonical docs.
