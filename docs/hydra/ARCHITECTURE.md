@@ -1374,6 +1374,15 @@ Actual vs expected checks:
 │  - HOT/SAFE dual zones                      │
 │  - Per-pad AI assistants                    │
 │  - Local voxel memory                       │
+└────────────┬────────────────────────────────┘
+             │
+┌────────────▼────────────────────────────────┐
+│          SquadSpace (Shared State)          │
+│  - Proximity tracking                       │
+│  - Voxel commits with quorum                │
+│  - Neighbor discovery                       │
+└────────────┬────────────────────────────────┘
+             │
 ```
 
 ## Voxel Record Schema
