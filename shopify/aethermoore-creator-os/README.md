@@ -39,3 +39,22 @@ This theme is a UI shell for the SCBE/Aethermoore universe. It is intentionally 
 - Codex entries: auto-generate from source docs and publish to page templates.
 - Asset pipeline: upload, resize, optimize, attach media to products.
 
+## Safe Shopify CLI Wrapper (Windows)
+
+Use `scripts/shopify-safe.ps1` to avoid Windows junction scan errors (for example `EPERM ... Application Data`).
+
+Examples:
+
+```powershell
+# Theme lint/check
+pwsh -File .\scripts\shopify-safe.ps1 -Mode check
+
+# Interactive auth (run in your local terminal)
+pwsh -File .\scripts\shopify-safe.ps1 -Mode auth
+
+# Dev server
+pwsh -File .\scripts\shopify-safe.ps1 -Mode dev -Store your-store.myshopify.com
+
+# Push unpublished
+pwsh -File .\scripts\shopify-safe.ps1 -Mode push -Store your-store.myshopify.com
+```
