@@ -1245,7 +1245,7 @@ Why this matters:
 
 - Security property: dangerous actions must pass through all three directional constraints.
 - If an attacker compromises one path (for example, bypasses consistency checks), the other two paths (conflict detection and temporal consistency) still enforce governance.
-- Exponential cost scaling: finding 3 distinct Hamiltonian paths is NP-complete. Attackers must solve this per attempt, making brute-force infeasible.
+- Complexity note: finding three distinct Hamiltonian paths is combinatorial (worst-case NP-hard). In HYDRA this is a coordination stress-check, not a cryptographic hardness assumption.
 
 ### Mathematical Verification
 
@@ -1271,6 +1271,7 @@ Conclusion:
 - `518,400 = (6!)^2` is correct as a combinatorial count of approval sequences.
 - It is not a weight-product multiplier (`~1,051x` from LWS weights).
 - It represents distinct ordered multi-signature governance paths.
+- Exponential volume growth in hyperbolic geometry is a geometric property, not a cryptographic hardness claim.
 
 Corrected claim (from HYDRA Governance Specification - Mathematical Corrections):
 
@@ -1687,6 +1688,7 @@ Governance architecture (reframing):
   - Managed error propagation: decimal drift stays bounded through layers; fractional-dimension flux (breathing) can reduce propagation surface under stress by collapsing dimensions.
   - Auditability: the 17-dimensional drift signature indicates which layer deviated; each layer contributes an independent audit dimension.
   - Graceful degradation: `H(d,R) = R^(d^2)` is a visibility/cost function, not a standalone security barrier; high-risk actions incur exponentially higher cost and become traceable in audit logs.
+  - Scope boundary: exponential/geometric growth terms in this document describe topology and routing pressure, not cryptographic hardness.
 
 Claims scorecard:
 

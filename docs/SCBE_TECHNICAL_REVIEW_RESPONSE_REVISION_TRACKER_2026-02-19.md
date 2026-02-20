@@ -2,7 +2,7 @@
 
 - Reviewer: External (anonymous, grant-prep review)
 - Date: 2026-02-19
-- Status: All 12 items addressed — revisions ready for commit
+- Status: 12 critical review items addressed; theorem/spec source patches drafted
 
 ## Revision Summary
 
@@ -18,6 +18,7 @@
 | Law vs Flux | Added immutable-vs-manifest table + manifest hash ledger requirement | Addressed |
 | Determinism controls | Added canonical ordering, stable JSON (sorted keys), mandatory idempotency keys | Addressed |
 | FVM sync claim | Clarified async anchoring != governance correctness | Addressed |
+| Exponential volume growth language | Clarified as geometric property, not cryptographic hardness claim | Addressed |
 | Theorem language tightening | Added radial injectivity and CAT(-1) theorem text revisions | Drafted for theorem source patch |
 | Formal methods note | Added future-work direction for Lean 4 formalization | Drafted for theorem/spec section |
 
@@ -115,6 +116,16 @@ minimum of the energy landscape, ensuring robustness to small perturbations.
 The harmonic cost $H(d^*, R) = R^{d^{*2}}$ exhibits exponential decay in the quadratic exponent
 $d^{*2}$, i.e., $H = \exp(d^{*2} \ln R)$ with $\ln R < 0$. This is not super-exponential in the classical
 sense (tower/iterated exponential), but decays faster than simple exponential in $d^*$ due to the quadratic exponent.
+```
+
+### Rev 9 — Exponential Volume Growth Clarification
+
+**Revised language:**
+
+```tex
+Exponential volume growth is a geometric property of hyperbolic space and is not a
+cryptographic hardness claim. Security claims remain grounded in standard cryptographic
+assumptions and primitives.
 ```
 
 ### Rev 10 — Triadic Determinant: Separate Conditions
