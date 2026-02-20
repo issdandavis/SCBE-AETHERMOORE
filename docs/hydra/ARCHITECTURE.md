@@ -1339,9 +1339,41 @@ def scbe_decide(d_star: float, coherence: float, h_eff: float, thr: Thresholds) 
     if d_star > thr.quarantine_max_drift:  # > 2.2
         return "DENY"
     # ALLOW conditions
-    if coherence >= thr.allow_min_coherence and h_eff <= thr.allow_max_cost and d_star <= thr.allow_max_drift:
-        return "ALLOW"
+    if coherence >= thr.allow_min_coherence:  # >= 0.55
+        if h_eff <= thr.allow_max_cost:  # <= 1e3
+            if d_star <= thr.allow_max_drift:  # <= 1.2
+                return "ALLOW"
+    # Default: QUARANTINE
     return "QUARANTINE"
+```
+
+Actual vs expected checks:
+
+| d_star | coherence | h_eff | Expected | Verified |
+|---|---|---|---|---|
+| 0.2 | 0.9 | 10 | ALLOW | ✅ ALLOW |
+| 5.0 | 0.9 | 10 | DENY | ✅ DENY (`d_star > 2.2`) |
+| 0.2 | 0.1 | 10 | DENY | ✅ DENY (`coherence < 0.25`) |
+| 1.8 | 0.7 | 100 | QUARANTINE | ✅ QUARANTINE |
+
+## Integration with HYDRA
+
+### Architectural Positioning
+
+```text
+┌─────────────────────────────────────────────┐
+│         HYDRA Spine (Orchestrator)          │
+│  - Multi-agent coordination                 │
+│  - Byzantine consensus (3/6 to 6/6)         │
+│  - Ledger & audit trail                     │
+└────────────┬────────────────────────────────┘
+             │
+┌────────────▼────────────────────────────────┐
+│          Polly Pads Layer                   │
+│  - 6 mode-specialized workspaces            │
+│  - HOT/SAFE dual zones                      │
+│  - Per-pad AI assistants                    │
+│  - Local voxel memory                       │
 ```
 
 ## Voxel Record Schema
