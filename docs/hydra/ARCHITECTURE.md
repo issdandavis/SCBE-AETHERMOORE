@@ -1452,6 +1452,99 @@ Production deployment and file layout references:
 - See `## File Structure` for `hydra/` module layout.
 - See `## Production Deployment` for startup/configuration commands.
 
+Suggested Polly Pads package layout:
+
+```text
+hydra/
+├── polly_pads/
+│   ├── __init__.py
+│   ├── pad.py                 # PollyPad class
+│   ├── squad.py               # SquadSpace class
+│   ├── voxel.py               # VoxelRecord schema
+│   └── governance.py          # scbe_decide, thresholds
+├── tests/
+│   ├── test_polly_pads_runtime.py
+│   └── test_sacred_tongue_tokenizer.py
+└── examples/
+    ├── engineering_workflow.py
+    └── squad_coordination.py
+```
+
+Configuration:
+
+```yaml
+# config/polly_pads.yaml
+pads:
+  default_zone: "HOT"
+  promotion_quorum: 4  # 4/6 votes required for HOT->SAFE
+modes:
+  - ENGINEERING
+  - NAVIGATION
+  - SYSTEMS
+  - SCIENCE
+  - COMMS
+  - MISSION
+squad:
+  proximity_radius: 10.0  # Distance units
+  quorum_threshold: 4     # 4/6 for voxel commits
+  max_voxels: 10000       # Per-squad storage limit
+governance:
+  allow_min_coherence: 0.55
+  allow_max_cost: 1000.0
+  allow_max_drift: 1.2
+  quarantine_min_coherence: 0.25
+  quarantine_max_cost: 1000000.0
+  quarantine_max_drift: 2.2
+```
+
+Startup:
+
+```python
+# Initialize Polly Pads runtime
+from hydra.polly_pads import PollyPad, SquadSpace, Thresholds, UnitState
+
+# Create squad
+squad = SquadSpace("alpha-squad")
+
+# Add unit
+squad.units["drone-1"] = UnitState("drone-1", x=0, y=0, z=0, coherence=0.9)
+squad.units["drone-2"] = UnitState("drone-2", x=1, y=1, z=1, coherence=0.85)
+
+# Create pads
+pad_eng = PollyPad("drone-1", "ENGINEERING")
+pad_nav = PollyPad("drone-2", "NAVIGATION")
+
+# Run workflow
+result = pad_eng.assist("Draft proximity algorithm", squad.units["drone-1"], squad)
+print(result)
+```
+
+Polly Pads future enhancements:
+
+Phase 1: Multi-language support
+
+- Cross-tongue voxel translation (`KO -> AV -> DR`)
+- Language-specific proximity metrics (tongue-based distance)
+- Polyglot AI assistants (multi-LLM per pad)
+
+Phase 2: Advanced governance
+
+- Consensus-gradient paths for squad coordination
+- Symplectic flow tubes for Navigation pads
+- Braided paths for Comms (negotiation without crossings)
+- Homology coverage for Science (hypothesis-space coverage)
+
+Phase 3: Scaling
+
+- Distributed squad spaces (cross-machine)
+- Federated voxel storage (IPFS/Arweave)
+- WebAssembly compilation for edge deployment
+- Quantum-resistant voxel signatures (ML-DSA)
+
+Related documentation:
+
+- [HYDRA Multi-Agent Coordination System - Complete Architecture](https://www.notion.so/HYDRA-Multi-Agent-Coordination-System-Complete-Architecture-0ecedff123704e65b249897bf534d6ef?pvs=21) - Parent architecture
+
 ## Voxel Record Schema
 
 Purpose:
