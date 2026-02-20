@@ -1,0 +1,54 @@
+chain:
+  id: "arxiv-paper-gen"
+  name: "SCBE arXiv paper generation"
+  repo: "issdandavis/SCBE-AETHERMOORE"
+  steps:
+    - id: discover_sources
+      type: tool
+      tool: "connector.discovery"
+      input:
+        targets: ["notion", "github", "npm", "huggingface", "spaces"]
+      output_key: source_manifest
+    - id: gate_sources
+      type: gate
+      condition: "source_manifest.callable_now == true"
+      on_true: harvest
+      on_false: config_issue
+    - id: harvest
+      type: tool
+      tool: "notion.harvest"
+      needs_configuration: true
+      input:
+        root_page: "558788e2135c483aac56f3acd77debc6"
+      output_key: doc_bundle
+    - id: synthesize
+      type: llm
+      model: "claude-sonnet-4"
+      tongue: "CA"
+      input_from: "harvest.doc_bundle"
+      output_key: latex_source
+    - id: compile
+      type: tool
+      tool: "latex.compile"
+      needs_configuration: true
+      input:
+        source_ref: "synthesize.latex_source"
+      output_key: pdf_artifact
+    - id: validate
+      type: gate
+      condition: "pdf_artifact.ok == true"
+      on_true: bundle
+      on_false: config_issue
+    - id: bundle
+      type: tool
+      tool: "arxiv.collector"
+      needs_configuration: true
+      input:
+        source_ref: "synthesize.latex_source"
+      output_key: submission_archive
+    - id: config_issue
+      type: tool
+      tool: "issue.create"
+      input:
+        title: "arxiv pipeline config issue"
+      output_key: ticket

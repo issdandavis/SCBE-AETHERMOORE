@@ -1,0 +1,60 @@
+{
+  "provider": "huggingface",
+  "status": "completed",
+  "generated_at": "2026-02-18T00:47:06.553842+00:00",
+  "run_id": "20260218T004706Z",
+  "dataset_repo": "test/test",
+  "model_repo": "test-model",
+  "duration_hours": 0.1,
+  "run_dir": "training\\tmp_test\\run",
+  "input_plan": null,
+  "data": {
+    "patterns": [
+      "training/tmp_test/test.jsonl"
+    ],
+    "sample_count": 24,
+    "train_count": 19,
+    "val_count": 5,
+    "label_count": 3,
+    "labels": [
+      "start",
+      "stop",
+      "update"
+    ]
+  },
+  "training": {
+    "epochs": 2,
+    "embedding_dim": 256,
+    "learning_rate": 0.5,
+    "seed": 42,
+    "history": [
+      {
+        "epoch": 1.0,
+        "learning_rate": 0.5,
+        "train_loss": 1.1087709665298462,
+        "train_accuracy": 0.0,
+        "val_loss": 1.0725334882736206,
+        "val_accuracy": 0.4000000059604645
+      },
+      {
+        "epoch": 2.0,
+        "learning_rate": 0.485,
+        "train_loss": 1.001102089881897,
+        "train_accuracy": 0.8421052694320679,
+        "val_loss": 1.0600011348724365,
+        "val_accuracy": 0.4000000059604645
+      }
+    ]
+  },
+  "growth": {
+    "confirmed": false,
+    "val_accuracy_gain": 0.0,
+    "val_loss_drop": 0.012532,
+    "best_val_accuracy": 0.4,
+    "best_epoch": 1
+  },
+  "huggingface_upload": {
+    "status": "failed",
+    "reason": "create_repo: [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions"
+  }
+}

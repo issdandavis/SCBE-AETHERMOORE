@@ -32,6 +32,12 @@ from dataclasses import dataclass
 from typing import Tuple, Optional, Dict, Any
 from abc import ABC, abstractmethod
 
+_FORCE_SKIP_LIBOQS = os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+}
+
 
 # =============================================================================
 # SECTION 1: ABSTRACT INTERFACES
@@ -119,12 +125,15 @@ class LiboqsKEM(KEMInterface):
     """ML-KEM-768 using liboqs Python bindings."""
 
     def __init__(self, algorithm: str = "ML-KEM-768"):
+        if _FORCE_SKIP_LIBOQS:
+            self._available = False
+            raise ImportError("liboqs force-disabled by SCBE_FORCE_SKIP_LIBOQS")
         try:
             import oqs
             self._kem = oqs.KeyEncapsulation(algorithm)
             self._algorithm = algorithm
             self._available = True
-        except ImportError:
+        except BaseException:
             self._available = False
             raise ImportError("liboqs not available")
 
@@ -169,12 +178,15 @@ class LiboqsSignature(SignatureInterface):
     """ML-DSA-65 using liboqs Python bindings."""
 
     def __init__(self, algorithm: str = "ML-DSA-65"):
+        if _FORCE_SKIP_LIBOQS:
+            self._available = False
+            raise ImportError("liboqs force-disabled by SCBE_FORCE_SKIP_LIBOQS")
         try:
             import oqs
             self._sig = oqs.Signature(algorithm)
             self._algorithm = algorithm
             self._available = True
-        except ImportError:
+        except BaseException:
             self._available = False
             raise ImportError("liboqs not available")
 
@@ -333,7 +345,7 @@ def get_kem(prefer_real: bool = True) -> KEMInterface:
     if prefer_real:
         try:
             return LiboqsKEM("ML-KEM-768")
-        except ImportError:
+        except BaseException:
             pass
     return SimulatedKEM()
 
@@ -351,7 +363,7 @@ def get_signature(prefer_real: bool = True) -> SignatureInterface:
     if prefer_real:
         try:
             return LiboqsSignature("ML-DSA-65")
-        except ImportError:
+        except BaseException:
             pass
     return SimulatedSignature()
 

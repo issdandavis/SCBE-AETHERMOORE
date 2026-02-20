@@ -1,0 +1,23 @@
+{
+  "generated_at_utc": "2026-02-17T10:36:57.549550+00:00",
+  "browser_evidence": {
+    "run_id": "20260217T103648Z",
+    "total_jobs": 2,
+    "success_jobs": 2,
+    "failed_jobs": 0,
+    "decision_counts": {
+      "ALLOW": 2
+    },
+    "avg_verification_score": 1.0
+  },
+  "training_evidence": {
+    "run_id": "20260217T103631Z",
+    "sample_count": 24,
+    "label_count": 2,
+    "growth_confirmed": true,
+    "val_accuracy_gain": 0.2,
+    "val_loss_drop": 0.081765,
+    "best_val_accuracy": 1.0,
+    "best_epoch": 2
+  }
+}

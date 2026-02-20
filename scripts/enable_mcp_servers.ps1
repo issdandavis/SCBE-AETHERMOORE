@@ -1,6 +1,6 @@
 param(
     [string]$ConfigPath = "",
-    [string[]]$Servers = @("fetch", "power-cloud-architect-fetch"),
+    [string[]]$Servers = @("fetch", "github", "scbe", "power-cloud-architect-fetch"),
     [switch]$DryRun
 )
 

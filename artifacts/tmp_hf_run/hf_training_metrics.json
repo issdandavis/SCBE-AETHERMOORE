@@ -1,0 +1,64 @@
+{
+  "provider": "huggingface",
+  "status": "completed",
+  "generated_at": "2026-02-18T00:52:16.846261+00:00",
+  "run_id": "20260218T005216Z",
+  "dataset_repo": "test/ds",
+  "model_repo": "test/model",
+  "duration_hours": 8.0,
+  "run_dir": "artifacts\\tmp_hf_run",
+  "input_plan": null,
+  "data": {
+    "patterns": [
+      "training/**/*.jsonl",
+      "training-data/**/*.jsonl"
+    ],
+    "sample_count": 24,
+    "train_count": 19,
+    "val_count": 5,
+    "label_count": 6,
+    "labels": [
+      "doc_chunk",
+      "gumroad_error",
+      "gumroad_local_verification",
+      "start",
+      "stop",
+      "update"
+    ]
+  },
+  "training": {
+    "epochs": 2,
+    "embedding_dim": 256,
+    "learning_rate": 0.15,
+    "seed": 42,
+    "history": [
+      {
+        "epoch": 1.0,
+        "learning_rate": 0.15,
+        "train_loss": 1.7918915748596191,
+        "train_accuracy": 0.05263157933950424,
+        "val_loss": 1.7753632068634033,
+        "val_accuracy": 0.6000000238418579
+      },
+      {
+        "epoch": 2.0,
+        "learning_rate": 0.1455,
+        "train_loss": 1.777848243713379,
+        "train_accuracy": 0.5263158082962036,
+        "val_loss": 1.7651984691619873,
+        "val_accuracy": 0.800000011920929
+      }
+    ]
+  },
+  "growth": {
+    "confirmed": true,
+    "val_accuracy_gain": 0.2,
+    "val_loss_drop": 0.010165,
+    "best_val_accuracy": 0.8,
+    "best_epoch": 2
+  },
+  "huggingface_upload": {
+    "status": "skipped",
+    "reason": "HF_TOKEN missing or upload disabled"
+  }
+}

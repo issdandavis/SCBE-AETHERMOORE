@@ -1,0 +1,47 @@
+{
+  "agent_id": "creative_writer_agent_v1",
+  "display_name": "PollyCreative",
+  "version": "1.0.0",
+  "role": "narrative_synthesis_and_style_transfer",
+  "objective": "Generate high-coherence story/worldbuilding outputs aligned to SCBE/Spiralverse canon while preserving provenance and auditability.",
+  "primary_action_target": [
+    "doc_plan",
+    "memory_storage"
+  ],
+  "secondary_action_target": [
+    "code_execute"
+  ],
+  "input_domains": [
+    "spiralverse_lore",
+    "story_chapters",
+    "glossary",
+    "tokenizer_alignment",
+    "canon_registry"
+  ],
+  "output_modes": [
+    "chapter_draft",
+    "scene_rewrite",
+    "lore_summary",
+    "character_sheet",
+    "canon_consistency_report"
+  ],
+  "guardrails": {
+    "must_preserve_seed_canon": true,
+    "must_emit_provenance_notes": true,
+    "must_avoid_non_canonical_term_drift": true,
+    "must_label_speculation_as_non_canon": true
+  },
+  "scoring": {
+    "canon_consistency_weight": 0.4,
+    "narrative_coherence_weight": 0.3,
+    "stylistic_creativity_weight": 0.2,
+    "retrieval_grounding_weight": 0.1
+  },
+  "routing_tags": [
+    "creative",
+    "lore",
+    "canon",
+    "story"
+  ]
+}
+

@@ -1,0 +1,68 @@
+version: "4.0.0"
+framework: "SCBE-AETHERMOORE"
+scope: "aetherbrowse-auth-and-automation"
+constants:
+  PHI: 1.618033988749895
+  LWS_WEIGHTS: [1.0, 1.125, 1.25, 1.333, 1.5, 1.667]
+  SACRED_TONGUES: ["KO", "AV", "RU", "CA", "UM", "DR"]
+  WALL_FORMULA: "H(d*,R) = R * pi^(phi * d*)"
+decision_actions: ["ALLOW", "QUARANTINE", "DENY"]
+layers:
+  - number: 1
+    name: "Complex context state"
+    function: "Collect structured runtime context"
+  - number: 2
+    name: "Realification"
+    function: "Map complex context to real-valued space"
+  - number: 3
+    name: "Weighted transform"
+    function: "Apply SCBE weighting"
+  - number: 4
+    name: "Poincare embedding"
+    function: "Embed into bounded geometry"
+  - number: 5
+    name: "Hyperbolic distance"
+    function: "Measure distance to safe manifold"
+  - number: 6
+    name: "Breathing transform"
+    function: "Adjust operational dimensionality"
+  - number: 7
+    name: "Phase transform"
+    function: "Apply tongue/phase modulation"
+  - number: 8
+    name: "Multi-well realms"
+    function: "Represent policy basins"
+  - number: 9
+    name: "Spectral coherence"
+    function: "Compute coherence signals"
+  - number: 10
+    name: "Spin coherence"
+    function: "Check rotational consistency"
+  - number: 11
+    name: "Triadic temporal"
+    function: "Evaluate temporal consistency"
+  - number: 12
+    name: "Harmonic scaling"
+    function: "Apply wall scaling for risk"
+  - number: 13
+    name: "Decision + response"
+    function: "Emit ALLOW/QUARANTINE/DENY"
+  - number: 14
+    name: "Audio axis"
+    function: "Optional telemetry projection"
+service_contract:
+  auth:
+    accepted_modes: ["raw", "base64url", "base64", "hex", "xor"]
+    env_controls:
+      - "SCBE_API_KEY"
+      - "SCBE_TOKEN_ACCEPT_ENCODINGS"
+      - "SCBE_TOKEN_DECODER_SECRET"
+    headers:
+      - "X-API-Key"
+      - "X-SCBE-Token-Encoding"
+  outputs:
+    required:
+      - state_vector
+      - decision_record
+  compatibility_goal: "Preserve raw key support while enabling encoded token bridges"
+

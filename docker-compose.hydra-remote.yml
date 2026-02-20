@@ -1,0 +1,51 @@
+version: "3.9"
+
+services:
+  hydra-worker-pilot:
+    image: python:3.11-slim
+    working_dir: /workspace
+    volumes:
+      - ./:/workspace
+      - hydra_data:/workspace/artifacts/hydra
+    command: >
+      sh -lc "python -m hydra.remote_worker
+      --db /workspace/artifacts/hydra/switchboard.db
+      --roles pilot
+      --worker-id pilot-1
+      --backend playwright
+      --scbe-url ${SCBE_URL:-http://host.docker.internal:8080}"
+    restart: unless-stopped
+
+  hydra-worker-copilot:
+    image: python:3.11-slim
+    working_dir: /workspace
+    volumes:
+      - ./:/workspace
+      - hydra_data:/workspace/artifacts/hydra
+    command: >
+      sh -lc "python -m hydra.remote_worker
+      --db /workspace/artifacts/hydra/switchboard.db
+      --roles copilot
+      --worker-id copilot-1
+      --backend playwright
+      --scbe-url ${SCBE_URL:-http://host.docker.internal:8080}"
+    restart: unless-stopped
+
+  hydra-worker-judge:
+    image: python:3.11-slim
+    working_dir: /workspace
+    volumes:
+      - ./:/workspace
+      - hydra_data:/workspace/artifacts/hydra
+    command: >
+      sh -lc "python -m hydra.remote_worker
+      --db /workspace/artifacts/hydra/switchboard.db
+      --roles judge
+      --worker-id judge-1
+      --backend playwright
+      --scbe-url ${SCBE_URL:-http://host.docker.internal:8080}"
+    restart: unless-stopped
+
+volumes:
+  hydra_data:
+

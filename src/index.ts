@@ -13,7 +13,8 @@ import * as symphonic from './symphonic/index.js';
 import * as crypto from './crypto/index.js';
 import * as spiralverse from './spiralverse/index.js';
 import * as ai_brain from './ai_brain/index.js';
-export { symphonic, crypto, spiralverse, ai_brain };
+import * as governance from './governance/index.js';
+export { symphonic, crypto, spiralverse, ai_brain, governance };
 
 // Core Crypto Exports (also available at top level)
 export * from './crypto/envelope.js';
@@ -35,6 +36,9 @@ export * from './rollout/circuitBreaker.js';
 export * from './selfHealing/coordinator.js';
 export * from './selfHealing/deepHealing.js';
 export * from './selfHealing/quickFixBot.js';
+
+// Governance Exports
+export * from './governance/offline_mode.js';
 
 // Version and Metadata
 export const VERSION = '3.0.0';

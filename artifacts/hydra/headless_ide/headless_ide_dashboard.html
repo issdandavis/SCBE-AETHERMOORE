@@ -1,0 +1,197 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>SCBE Headless IDE Dashboard</title>
+  <style>
+    body { font-family: Segoe UI, Arial, sans-serif; margin: 16px; background: #0d1117; color: #e6edf3; }
+    .stats { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .pill { border: 1px solid #30363d; padding: 8px 12px; border-radius: 8px; background: #161b22; }
+    .lanes { display: grid; grid-template-columns: repeat(4, minmax(220px, 1fr)); gap: 12px; }
+    .lane { border: 1px solid #30363d; border-radius: 8px; padding: 10px; background: #161b22; min-height: 180px; }
+    .card { border: 1px solid #30363d; border-radius: 6px; padding: 8px; margin-bottom: 8px; background: #0f172a; }
+    .task-id { font-size: 12px; opacity: 0.75; margin-bottom: 4px; }
+    .status-done { border-color: #1f6feb; }
+    .status-failed { border-color: #f85149; }
+    .status-queued { border-color: #d29922; }
+    .empty { opacity: 0.7; font-style: italic; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { border: 1px solid #30363d; padding: 8px; text-align: left; vertical-align: top; }
+    pre { white-space: pre-wrap; margin: 0; font-size: 12px; }
+    textarea { width: 100%; min-height: 220px; background: #0f172a; color: #e6edf3; border: 1px solid #30363d; border-radius: 6px; padding: 8px; }
+  </style>
+</head>
+<body>
+  <h1>SCBE Headless IDE Dashboard</h1>
+  <div class="stats">
+    <div class="pill">tasks: 4</div>
+    <div class="pill">done: 4</div>
+    <div class="pill">failed: 0</div>
+    <div class="pill">queued: 0</div>
+    <div class="pill">messages: 4</div>
+  </div>
+  <div class="lanes">
+    
+            <section class="lane">
+              <h3>PLANNER</h3>
+              
+                <div class="card status-done">
+                  <div class="task-id">task-53af39f6bb02</div>
+                  <div><b>plan_doc</b></div>
+                  <div>status: done</div>
+                </div>
+                
+            </section>
+            
+            <section class="lane">
+              <h3>CODER</h3>
+              
+                <div class="card status-done">
+                  <div class="task-id">task-e13756004d66</div>
+                  <div><b>write_file</b></div>
+                  <div>status: done</div>
+                </div>
+                
+            </section>
+            
+            <section class="lane">
+              <h3>REVIEWER</h3>
+              
+                <div class="card status-done">
+                  <div class="task-id">task-bc6fad5bd650</div>
+                  <div><b>run_cmd</b></div>
+                  <div>status: done</div>
+                </div>
+                
+            </section>
+            
+            <section class="lane">
+              <h3>MEMORY</h3>
+              
+                <div class="card status-done">
+                  <div class="task-id">task-92db201da1c2</div>
+                  <div><b>append_file</b></div>
+                  <div>status: done</div>
+                </div>
+                
+            </section>
+            
+  </div>
+  <h2>Mermaid Flow</h2>
+  <textarea readonly>flowchart LR
+  subgraph PLANNER
+    n_task_53af39f6bb02["planner:plan_doc (done)"]
+  end
+  subgraph CODER
+    n_task_e13756004d66["coder:write_file (done)"]
+  end
+  subgraph REVIEWER
+    n_task_bc6fad5bd650["reviewer:run_cmd (done)"]
+  end
+  subgraph MEMORY
+    n_task_92db201da1c2["memory:append_file (done)"]
+  end
+  n_task_53af39f6bb02 --> n_task_e13756004d66
+  n_task_e13756004d66 --> n_task_bc6fad5bd650
+  n_task_bc6fad5bd650 --> n_task_92db201da1c2
+</textarea>
+  <h2>Role Messages (Last 20)</h2>
+  <table>
+    <thead><tr><th>id</th><th>channel</th><th>sender</th><th>message</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>planner</td><td>LAPTOP-MON2B5GD-1771386861</td><td><pre>{
+  "DecisionRecord": {
+    "action": "ALLOW",
+    "confidence": 0.85,
+    "reason": "decision allow",
+    "signature": "LAPTOP-MON2B5GD-1771386861:task-53af39f6bb02:1771386861",
+    "timestamp": "2026-02-18T03:54:21.691992+00:00"
+  },
+  "StateVector": {
+    "attempts": 1,
+    "role": "planner",
+    "status": "done",
+    "task_id": "task-53af39f6bb02",
+    "timestamp": "2026-02-18T03:54:21.691967+00:00",
+    "turnstile_action": "ALLOW",
+    "worker_id": "LAPTOP-MON2B5GD-1771386861"
+  },
+  "status": "done",
+  "task_id": "task-53af39f6bb02"
+}</pre></td></tr><tr><td>2</td><td>coder</td><td>LAPTOP-MON2B5GD-1771386863</td><td><pre>{
+  "DecisionRecord": {
+    "action": "ALLOW",
+    "confidence": 0.65,
+    "reason": "decision allow",
+    "signature": "LAPTOP-MON2B5GD-1771386863:task-e13756004d66:1771386863",
+    "timestamp": "2026-02-18T03:54:23.399528+00:00"
+  },
+  "StateVector": {
+    "attempts": 1,
+    "role": "coder",
+    "status": "done",
+    "task_id": "task-e13756004d66",
+    "timestamp": "2026-02-18T03:54:23.399506+00:00",
+    "turnstile_action": "ALLOW",
+    "worker_id": "LAPTOP-MON2B5GD-1771386863"
+  },
+  "status": "done",
+  "task_id": "task-e13756004d66"
+}</pre></td></tr><tr><td>3</td><td>reviewer</td><td>LAPTOP-MON2B5GD-1771386865</td><td><pre>{
+  "DecisionRecord": {
+    "action": "ALLOW",
+    "confidence": 0.4,
+    "reason": "decision allow",
+    "signature": "LAPTOP-MON2B5GD-1771386865:task-bc6fad5bd650:1771386865",
+    "timestamp": "2026-02-18T03:54:25.215694+00:00"
+  },
+  "StateVector": {
+    "attempts": 1,
+    "role": "reviewer",
+    "status": "done",
+    "task_id": "task-bc6fad5bd650",
+    "timestamp": "2026-02-18T03:54:25.215671+00:00",
+    "turnstile_action": "ALLOW",
+    "worker_id": "LAPTOP-MON2B5GD-1771386865"
+  },
+  "status": "done",
+  "task_id": "task-bc6fad5bd650"
+}</pre></td></tr><tr><td>4</td><td>memory</td><td>LAPTOP-MON2B5GD-1771386867</td><td><pre>{
+  "DecisionRecord": {
+    "action": "ALLOW",
+    "confidence": 0.65,
+    "reason": "decision allow",
+    "signature": "LAPTOP-MON2B5GD-1771386867:task-92db201da1c2:1771386867",
+    "timestamp": "2026-02-18T03:54:27.035992+00:00"
+  },
+  "StateVector": {
+    "attempts": 1,
+    "role": "memory",
+    "status": "done",
+    "task_id": "task-92db201da1c2",
+    "timestamp": "2026-02-18T03:54:27.035970+00:00",
+    "turnstile_action": "ALLOW",
+    "worker_id": "LAPTOP-MON2B5GD-1771386867"
+  },
+  "status": "done",
+  "task_id": "task-92db201da1c2"
+}</pre></td></tr>
+    </tbody>
+  </table>
+  <h2>Raw Stats</h2>
+  <pre>{
+  "db_path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\artifacts\\hydra\\headless_ide\\switchboard.db",
+  "by_status": {
+    "done": 4
+  },
+  "by_role": {
+    "coder": 1,
+    "memory": 1,
+    "planner": 1,
+    "reviewer": 1
+  },
+  "leased": [],
+  "role_message_count": 4
+}</pre>
+</body>
+</html>

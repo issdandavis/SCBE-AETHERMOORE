@@ -237,12 +237,14 @@ def verify_mobius_invariance(
     max_error = 0.0
 
     for _ in range(n_tests):
-        # Random Möbius translation
-        a = random_mobius_translation(len(u))
+        # Random Möbius translation with margin to boundary for numeric stability
+        max_input_norm = max(np.linalg.norm(u), np.linalg.norm(v))
+        max_norm = min(0.2, max(0.05, (1.0 - max_input_norm) * 0.5))
+        a = random_mobius_translation(len(u), max_norm=max_norm)
 
-        # Apply Möbius addition to both points
-        u_transformed = mobius_addition(u, a)
-        v_transformed = mobius_addition(v, a)
+        # Isometric translation in the ball: x -> a ⊕ x
+        u_transformed = mobius_addition(a, u)
+        v_transformed = mobius_addition(a, v)
 
         d_transformed = layer_5_hyperbolic_distance(u_transformed, v_transformed)
         error = abs(d_transformed - d_original)
@@ -317,9 +319,9 @@ def verify_rotation_invariance(
     max_error = 0.0
 
     for _ in range(n_tests):
-        # Random permutation (discrete analogue of rotation)
-        perm = np.random.permutation(len(x))
-        x_rotated = x[perm]
+        # Circular shift is the discrete analogue of rotation for sampled signals.
+        shift = np.random.randint(0, len(x))
+        x_rotated = np.roll(x, shift)
 
         S_rotated = layer_9_spectral_coherence(x_rotated)
         error = abs(S_rotated - S_original)
@@ -361,7 +363,7 @@ def layer_10_spin_coherence(q: complex) -> float:
     Returns:
         Spin coherence C_spin ∈ [-1, 1]
     """
-    amplitude_sq = np.abs(q) ** 2
+    amplitude_sq = float(np.clip(np.abs(q) ** 2, 0.0, 1.0))
     return float(2 * amplitude_sq - 1)
 
 
@@ -392,48 +394,52 @@ def verify_phase_invariance(
 
 
 @symmetry_check(group=SymmetryGroup.SCALE, tolerance=0.0)
-def layer_12_harmonic_scaling(d: float, phase_deviation: float = 0.0) -> float:
+def layer_12_harmonic_scaling(
+    d: float, R: float = PHI, phase_deviation: float = 0.0
+) -> float:
     """
-    Layer 12: Harmonic Scaling (Bounded)
+    Layer 12: Harmonic Scaling (Cost Form)
 
-    score = 1 / (1 + d_H + 2 * phase_deviation)
+    H(d, R) = R^((d + 2*phase_deviation)^2)
 
-    Returns a safety score in (0, 1].
+    Returns a cost amplification score >= 1.
 
     Symmetry Property:
-        H is strictly monotonically decreasing in d, which means it
+        H is strictly monotonically increasing in d, which means it
         PRESERVES ORDER (a symmetry of the real line):
-            d₁ < d₂ ⟹ H(d₁) > H(d₂)
+            d₁ < d₂ ⟹ H(d₁) < H(d₂)
 
         This is the symmetry of "order preservation" which ensures
         that risk ranking is invariant under the scaling.
 
     Properties:
         - H(0) = 1 (identity at origin)
-        - H is strictly decreasing (preserves ranking)
-        - Bounded in (0, 1] (no numerical collapse)
+        - H is strictly increasing (preserves ranking)
+        - Positive and unbounded for d -> infinity
 
     Args:
         d: Distance value (>= 0)
+        R: Harmonic base (> 1)
         phase_deviation: Phase deviation (>= 0, default 0)
 
     Returns:
-        Safety score in (0, 1]
+        Cost amplification score >= 1
     """
-    return float(1.0 / (1.0 + d + 2.0 * phase_deviation))
+    d_eff = max(0.0, float(d)) + 2.0 * max(0.0, float(phase_deviation))
+    base = max(float(R), 1.0 + EPS)
+    return float(base ** (d_eff**2))
 
 
-def layer_12_inverse(score: float) -> float:
+def layer_12_inverse(score: float, R: float = PHI) -> float:
     """
-    Inverse of harmonic scaling (with phase_deviation=0).
+    Inverse of harmonic scaling with phase_deviation=0.
 
-    d = (1 / score) - 1
+    d = sqrt(log_R(score))
     """
-    if score <= 0:
-        return float('inf')
-    if score > 1:
+    if score < 1.0:
         return 0.0
-    return float(1.0 / score - 1.0)
+    base = max(float(R), 1.0 + EPS)
+    return float(np.sqrt(np.log(score) / np.log(base)))
 
 
 def verify_monotonicity(n_tests: int = 1000, R: float = PHI) -> Tuple[bool, int]:
@@ -446,8 +452,8 @@ def verify_monotonicity(n_tests: int = 1000, R: float = PHI) -> Tuple[bool, int]
     distances = np.sort(np.random.uniform(0, 5, n_tests))
 
     for i in range(1, len(distances)):
-        H_prev = layer_12_harmonic_scaling(distances[i - 1], R)
-        H_curr = layer_12_harmonic_scaling(distances[i], R)
+        H_prev = layer_12_harmonic_scaling(distances[i - 1], R=R)
+        H_curr = layer_12_harmonic_scaling(distances[i], R=R)
 
         if H_curr <= H_prev:
             violations += 1

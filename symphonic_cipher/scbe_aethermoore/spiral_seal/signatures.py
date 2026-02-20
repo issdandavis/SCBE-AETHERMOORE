@@ -17,18 +17,28 @@ import hmac
 from typing import Tuple
 
 # Try to import post-quantum library
-try:
-    from oqs import Signature
-    PQC_SIG_AVAILABLE = True
-    PQC_SIG_BACKEND = 'liboqs'
-except ImportError:
+_FORCE_SKIP_LIBOQS = os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+}
+
+if not _FORCE_SKIP_LIBOQS:
     try:
-        import pqcrypto.sign.dilithium3 as dilithium
+        from oqs import Signature
         PQC_SIG_AVAILABLE = True
-        PQC_SIG_BACKEND = 'pqcrypto'
-    except ImportError:
-        PQC_SIG_AVAILABLE = False
-        PQC_SIG_BACKEND = 'fallback'
+        PQC_SIG_BACKEND = 'liboqs'
+    except BaseException:
+        try:
+            import pqcrypto.sign.dilithium3 as dilithium
+            PQC_SIG_AVAILABLE = True
+            PQC_SIG_BACKEND = 'pqcrypto'
+        except BaseException:
+            PQC_SIG_AVAILABLE = False
+            PQC_SIG_BACKEND = 'fallback'
+else:
+    PQC_SIG_AVAILABLE = False
+    PQC_SIG_BACKEND = 'fallback'
 
 
 class DilithiumKeyPair:

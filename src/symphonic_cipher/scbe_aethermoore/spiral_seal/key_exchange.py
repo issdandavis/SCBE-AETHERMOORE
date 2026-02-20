@@ -17,21 +17,31 @@ import hmac
 from typing import Tuple, Optional
 
 # Try to import post-quantum library
-try:
-    from oqs import KeyEncapsulation
+_FORCE_SKIP_LIBOQS = os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+}
 
-    PQC_AVAILABLE = True
-    PQC_BACKEND = "liboqs"
-except (ImportError, RuntimeError):
-    # liboqs-python not installed or shared libraries not found
+if not _FORCE_SKIP_LIBOQS:
     try:
-        import pqcrypto.kem.kyber768 as kyber
+        from oqs import KeyEncapsulation
 
         PQC_AVAILABLE = True
-        PQC_BACKEND = "pqcrypto"
-    except ImportError:
-        PQC_AVAILABLE = False
-        PQC_BACKEND = "fallback"
+        PQC_BACKEND = "liboqs"
+    except BaseException:
+        # liboqs-python not installed, shared libs missing, or bootstrap errors
+        try:
+            import pqcrypto.kem.kyber768 as kyber
+
+            PQC_AVAILABLE = True
+            PQC_BACKEND = "pqcrypto"
+        except BaseException:
+            PQC_AVAILABLE = False
+            PQC_BACKEND = "fallback"
+else:
+    PQC_AVAILABLE = False
+    PQC_BACKEND = "fallback"
 
 
 class KyberKeyPair:

@@ -1,0 +1,8 @@
+{
+  "avoid_for": "current_version_truth,latest_ops_defaults",
+  "use_for": "background_theory,story_context,historical_architecture",
+  "relevance_weight": 0.85,
+  "source_tier": "legacy",
+  "dataset": "training.jsonl",
+  "recency_weight": 0.35
+}

@@ -1,0 +1,11 @@
+# STVM v0 example
+# Computes 2 + 3 and sends result on channel 1
+
+start:
+  CA.MOVI r0 2
+  CA.MOVI r1 3
+  CA.ADD r0 r1
+  DR.ASSERT r0
+  AV.SEND r0 1
+  KO.HALT
+
