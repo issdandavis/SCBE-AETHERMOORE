@@ -1596,6 +1596,9 @@ Infrastructure and deployment:
 
 Patent and formal specification:
 
+- SCBE-AETHERMOORE + PHDM: Complete Mathematical and Security Specification
+  - Chapter 1: Mathematical Foundation
+
 ## Voxel Record Schema
 
 Purpose:
