@@ -1,0 +1,14 @@
+action_summary:
+  build:
+    status: pending
+    files_changed: []
+    rationale: ""
+    validation: []
+  document:
+    status: pending
+    files_changed: []
+    rationale: ""
+  route:
+    status: pending
+    services_to_update: []
+    pending_integrations: []

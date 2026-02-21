@@ -1,0 +1,58 @@
+{
+  "mcpServers": {
+    "fs": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "C:\\Users\\issda\\SCBE-AETHERMOORE"
+      ],
+      "env": {}
+    },
+    "fetch": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-fetch"
+      ],
+      "env": {}
+    },
+    "github": {
+      "type": "stdio",
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "GITHUB_PERSONAL_ACCESS_TOKEN",
+        "-e",
+        "GITHUB_READ_ONLY",
+        "-e",
+        "GITHUB_DYNAMIC_TOOLSETS",
+        "ghcr.io/github/github-mcp-server"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PAT}",
+        "GITHUB_READ_ONLY": "1",
+        "GITHUB_DYNAMIC_TOOLSETS": "1"
+      }
+    },
+    "scbe": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "node",
+        "C:\\Users\\issda\\SCBE-AETHERMOORE\\mcp\\scbe-server\\server.mjs"
+      ],
+      "env": {}
+    }
+  }
+}

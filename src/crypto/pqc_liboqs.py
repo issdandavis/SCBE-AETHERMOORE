@@ -32,16 +32,26 @@ MLDSA65_SK_LEN = 4032  # ML-DSA-65 secret key size
 MLDSA65_SIG_LEN = 3293  # ML-DSA-65 signature size
 
 # Attempt to import liboqs
-try:
-    import oqs
+_FORCE_SKIP_LIBOQS = os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+}
 
-    LIBOQS_AVAILABLE = True
-    _LIBOQS_VERSION = getattr(oqs, "__version__", "unknown")
-except BaseException as exc:
-    # oqs may be installed without shared libs; treat as unavailable and fall back.
+if not _FORCE_SKIP_LIBOQS:
+    try:
+        import oqs
+
+        LIBOQS_AVAILABLE = True
+        _LIBOQS_VERSION = getattr(oqs, "__version__", "unknown")
+    except BaseException as exc:
+        # oqs may be installed without shared libs; treat as unavailable and fall back.
+        LIBOQS_AVAILABLE = False
+        _LIBOQS_VERSION = None
+        _LIBOQS_IMPORT_ERROR = exc
+else:
     LIBOQS_AVAILABLE = False
     _LIBOQS_VERSION = None
-    _LIBOQS_IMPORT_ERROR = exc
 
 
 def is_liboqs_available() -> bool:
