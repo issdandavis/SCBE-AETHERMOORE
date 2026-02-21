@@ -41,6 +41,10 @@ Use `governance_proxy(A)` outputs as signal inputs for SCBE policy gates:
 - `drift` -> scrutiny escalation
 - `conflict` -> quarantine/denial pressure
 
+## Multi-Model Extension
+
+See [MULTI_MODEL_MODAL_MATRIX.md](MULTI_MODEL_MODAL_MATRIX.md) for the N-model x K-modality voting matrix spec that extends this single-model scaffold into a multi-model governance reducer.
+
 ## Notes
 
 - This module is a training scaffold, not production governance logic.
