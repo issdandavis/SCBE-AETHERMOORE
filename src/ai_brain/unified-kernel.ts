@@ -581,9 +581,8 @@ export class UnifiedKernel {
           combinedScore: 1,
           decision: 'QUARANTINE',
           anyFlagged: true,
-          confidence: 1,
-          recommendation: 'QUARANTINE',
-          rationale: ['HUGGINGFACE_TOKEN missing at Score step'],
+          flagCount: 1,
+          timestamp: Date.now(),
         },
       };
 
