@@ -27,6 +27,12 @@ import math
 import random
 import hashlib
 import json
+import os
+import subprocess
+import sys
+import tempfile
+import shutil
+import time
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional, Callable, Tuple
 from dataclasses import dataclass, field
@@ -51,6 +57,45 @@ from .consensus import (
 # Constants
 EPSILON = 1e-10
 PHI = (1 + math.sqrt(5)) / 2  # Golden ratio
+
+# Dangerous command patterns that must never be executed via shell.
+# Each entry is checked (case-insensitive) against the full command string.
+BLOCKED_COMMANDS: List[str] = [
+    "rm -rf",
+    "rm -fr",
+    "rmdir /s",
+    "del /f",
+    "del /s",
+    "mkfs",
+    "dd if=",
+    "shutdown",
+    "reboot",
+    "halt",
+    "poweroff",
+    "init 0",
+    "init 6",
+    "format c:",
+    "format d:",
+    ":(){",            # fork bomb
+    ">(){ :|:",        # fork bomb variant
+    "chmod -R 777 /",
+    "chown -R",
+    "mv /* ",
+    "mv / ",
+    "wget -O- | sh",
+    "curl | sh",
+    "curl | bash",
+    "wget | bash",
+    "> /dev/sda",
+    "> /dev/null",     # harmless, but included for completeness of redirect attacks
+    "mkfs.ext",
+    "fdisk",
+    "parted",
+    "wipefs",
+]
+
+# Default timeout for code execution (seconds)
+DEFAULT_EXECUTION_TIMEOUT: int = 30
 
 # Sacred Tongue realm centers (6D)
 REALM_CENTERS = {
@@ -1022,8 +1067,8 @@ class AutonomousCodeAgent:
                 "risk": risk
             }
 
-        # Execute (simulated - real implementation would run code)
-        exec_result = self._simulate_execution(code, language, sandbox)
+        # Execute code in an isolated working directory
+        exec_result = self._execute_code(code, language, sandbox)
 
         # Log
         self.execution_history.append({
@@ -1061,13 +1106,198 @@ class AutonomousCodeAgent:
 
         return risk
 
-    def _simulate_execution(self, code: str, language: str, sandbox: bool) -> Dict:
-        """Simulate code execution (placeholder for real execution)."""
-        return {
-            "status": "success",
-            "output": f"Simulated execution of {language} code",
-            "sandbox": sandbox
-        }
+    def _execute_code(
+        self,
+        code: str,
+        language: str,
+        sandbox: bool,
+        timeout: int = DEFAULT_EXECUTION_TIMEOUT,
+    ) -> Dict[str, Any]:
+        """
+        Execute code in an isolated temporary directory.
+
+        For Python code: writes to a temp file and runs with the current interpreter.
+        For shell commands: executes directly via subprocess (no shell=True).
+
+        Dangerous command patterns listed in BLOCKED_COMMANDS are rejected outright.
+
+        Args:
+            code: The source code or shell command to run.
+            language: One of "python" or "shell".
+            sandbox: If True, execution uses an isolated temp directory as cwd.
+            timeout: Maximum seconds the process may run before being killed.
+
+        Returns:
+            A dict with keys: status, stdout, stderr, exit_code,
+            execution_time_ms, working_dir.
+        """
+        work_dir: Optional[str] = None
+        start_time = time.monotonic()
+
+        try:
+            # --- Create isolated working directory ---
+            work_dir = tempfile.mkdtemp(prefix="scbe_exec_")
+
+            if language.lower() == "python":
+                return self._execute_python(code, work_dir, timeout)
+            elif language.lower() == "shell":
+                return self._execute_shell(code, work_dir, timeout)
+            else:
+                return {
+                    "status": "error",
+                    "stdout": "",
+                    "stderr": f"Unsupported language: {language}",
+                    "exit_code": -1,
+                    "execution_time_ms": int((time.monotonic() - start_time) * 1000),
+                    "working_dir": work_dir,
+                }
+        except Exception as exc:
+            return {
+                "status": "error",
+                "stdout": "",
+                "stderr": str(exc),
+                "exit_code": -1,
+                "execution_time_ms": int((time.monotonic() - start_time) * 1000),
+                "working_dir": work_dir or "",
+            }
+        finally:
+            # --- Clean up temp directory ---
+            if work_dir and os.path.isdir(work_dir):
+                try:
+                    shutil.rmtree(work_dir)
+                except OSError:
+                    pass  # Best-effort cleanup
+
+    # ---------------------------------------------------------------
+    # Private execution helpers
+    # ---------------------------------------------------------------
+
+    @staticmethod
+    def _execute_python(
+        code: str,
+        work_dir: str,
+        timeout: int,
+    ) -> Dict[str, Any]:
+        """Write *code* to a temp .py file and run it with the current interpreter."""
+        start_time = time.monotonic()
+        script_path = os.path.join(work_dir, "_exec_script.py")
+
+        try:
+            with open(script_path, "w", encoding="utf-8") as fh:
+                fh.write(code)
+
+            result = subprocess.run(
+                [sys.executable, script_path],
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                cwd=work_dir,
+                # No shell=True -- prevents command injection
+            )
+
+            elapsed_ms = int((time.monotonic() - start_time) * 1000)
+
+            return {
+                "status": "success" if result.returncode == 0 else "error",
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+                "exit_code": result.returncode,
+                "execution_time_ms": elapsed_ms,
+                "working_dir": work_dir,
+            }
+        except subprocess.TimeoutExpired:
+            elapsed_ms = int((time.monotonic() - start_time) * 1000)
+            return {
+                "status": "timeout",
+                "stdout": "",
+                "stderr": f"Execution timed out after {timeout}s",
+                "exit_code": -1,
+                "execution_time_ms": elapsed_ms,
+                "working_dir": work_dir,
+            }
+
+    @staticmethod
+    def _execute_shell(
+        command: str,
+        work_dir: str,
+        timeout: int,
+    ) -> Dict[str, Any]:
+        """Execute a shell command after checking against BLOCKED_COMMANDS."""
+        start_time = time.monotonic()
+        command_lower = command.lower()
+
+        # --- Block dangerous patterns ---
+        for pattern in BLOCKED_COMMANDS:
+            if pattern.lower() in command_lower:
+                elapsed_ms = int((time.monotonic() - start_time) * 1000)
+                return {
+                    "status": "blocked",
+                    "stdout": "",
+                    "stderr": f"Command blocked: matches dangerous pattern '{pattern}'",
+                    "exit_code": -1,
+                    "execution_time_ms": elapsed_ms,
+                    "working_dir": work_dir,
+                }
+
+        # Split command into argument list (no shell=True)
+        # shlex.split handles quoting on POSIX; on Windows fall back to basic split.
+        if sys.platform == "win32":
+            args = command.split()
+        else:
+            import shlex
+            try:
+                args = shlex.split(command)
+            except ValueError as exc:
+                elapsed_ms = int((time.monotonic() - start_time) * 1000)
+                return {
+                    "status": "error",
+                    "stdout": "",
+                    "stderr": f"Failed to parse command: {exc}",
+                    "exit_code": -1,
+                    "execution_time_ms": elapsed_ms,
+                    "working_dir": work_dir,
+                }
+
+        try:
+            result = subprocess.run(
+                args,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                cwd=work_dir,
+                # No shell=True -- prevents command injection
+            )
+
+            elapsed_ms = int((time.monotonic() - start_time) * 1000)
+
+            return {
+                "status": "success" if result.returncode == 0 else "error",
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+                "exit_code": result.returncode,
+                "execution_time_ms": elapsed_ms,
+                "working_dir": work_dir,
+            }
+        except subprocess.TimeoutExpired:
+            elapsed_ms = int((time.monotonic() - start_time) * 1000)
+            return {
+                "status": "timeout",
+                "stdout": "",
+                "stderr": f"Execution timed out after {timeout}s",
+                "exit_code": -1,
+                "execution_time_ms": elapsed_ms,
+                "working_dir": work_dir,
+            }
+        except FileNotFoundError:
+            elapsed_ms = int((time.monotonic() - start_time) * 1000)
+            return {
+                "status": "error",
+                "stdout": "",
+                "stderr": f"Command not found: {args[0] if args else command}",
+                "exit_code": -1,
+                "execution_time_ms": elapsed_ms,
+                "working_dir": work_dir,
+            }
 
 
 # ═══════════════════════════════════════════════════════════════

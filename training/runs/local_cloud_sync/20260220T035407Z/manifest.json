@@ -1,0 +1,28 @@
+{
+  "run_id": "20260220T035407Z",
+  "timestamp_utc": "2026-02-20T03:54:07.781275+00:00",
+  "fingerprint": "3dd883a176825531ce758400ceab4776ab5deb10ad399e7425c91abc9c70fdb5",
+  "counts": {
+    "indexed_files": 1509,
+    "added": 0,
+    "modified": 2,
+    "removed": 0,
+    "changed": 2
+  },
+  "delta": {
+    "added": [],
+    "modified": [
+      "docs/MOBILE_AUTONOMY_RUNBOOK.md",
+      "scripts/push_to_hf.py"
+    ],
+    "removed": [],
+    "changed": [
+      "docs/MOBILE_AUTONOMY_RUNBOOK.md",
+      "scripts/push_to_hf.py"
+    ]
+  },
+  "changed_hashes_sha256": {
+    "docs/MOBILE_AUTONOMY_RUNBOOK.md": "6e87899038674f14050823db28cd2968393d8c7eb0c8068e98f6e28f38545c9e",
+    "scripts/push_to_hf.py": "f879c15cfbcf3aeb203879bed14b3cf953757cbcd47f18a981cb33e44d70529a"
+  }
+}

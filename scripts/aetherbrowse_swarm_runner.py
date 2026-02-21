@@ -9,6 +9,7 @@ import json
 import os
 import pathlib
 import re
+import shutil
 import time
 import urllib.error
 import urllib.request
@@ -18,6 +19,23 @@ from typing import Any, Dict, List, Tuple
 
 HIGH_RISK = {"click", "type"}
 MAX_MISSION_BATCH = 50
+
+try:
+    from agents.antivirus_membrane import scan_text_for_threats as _scan_text_for_threats
+    from agents.antivirus_membrane import turnstile_action as _turnstile_action
+except Exception:  # noqa: BLE001
+    class _FallbackScan:
+        risk_score = 0.0
+        verdict = "CLEAN"
+
+        def to_dict(self) -> Dict[str, Any]:
+            return {"risk_score": 0.0, "verdict": "CLEAN", "reasons": ["fallback"]}
+
+    def _scan_text_for_threats(text: str) -> _FallbackScan:  # type: ignore[misc]
+        return _FallbackScan()
+
+    def _turnstile_action(domain: str, scan: Any) -> str:  # type: ignore[misc]
+        return "ALLOW"
 
 
 def _sid(v: str) -> str:
@@ -127,6 +145,10 @@ def _cap(job: Dict[str, Any], tier: str) -> Dict[str, Any]:
 
 
 def _pqc_audit(job: Dict[str, Any], payload: Dict[str, Any], tier: str) -> Dict[str, Any]:
+    """Run optional PQC drift/rotation audit for DELIBERATION jobs.
+
+    Triggered only if job contains a `pqc` metadata object.
+    """
     """Optional PQC metadata gate used for long-horizon mission hygiene."""
     if tier != "DELIBERATION":
         return {"status": "SKIP", "reason": "tier is REFLEX"}
@@ -134,6 +156,19 @@ def _pqc_audit(job: Dict[str, Any], payload: Dict[str, Any], tier: str) -> Dict[
     if not isinstance(pqc_meta, dict):
         return {"status": "SKIP", "reason": "missing job.pqc metadata"}
 
+    try:
+        from agents.pqc_key_auditor import audit_pqc_keyset
+    except Exception as exc:  # noqa: BLE001
+        return {"status": "ERROR", "reason": f"pqc auditor unavailable: {exc}"}
+
+    threshold = float(pqc_meta.get("drift_threshold", 0.82))
+    rotation_hours = int(pqc_meta.get("rotation_hours", 720))
+    return audit_pqc_keyset(
+        pqc_meta,
+        context_payload=payload,
+        drift_threshold=threshold,
+        rotation_hours=rotation_hours,
+    )
     kyber_id = str(pqc_meta.get("kyber_id", "")).strip()
     dilithium_id = str(pqc_meta.get("dilithium_id", "")).strip()
     if not kyber_id or not dilithium_id:
@@ -211,7 +246,14 @@ def _verify(job: Dict[str, Any], resp: Dict[str, Any]) -> Dict[str, Any]:
     rmax = max(risk) if risk else 1.0
     dmax = max(dstar) if dstar else 1.0
     coh = max(0.0, min(1.0, round(1.0 - rmax, 4)))
-    return {"verification_score": score, "checks": checks, "passed_checks": passed, "total_checks": total, "metrics": {"risk": round(rmax, 6), "d_star": round(dmax, 6), "coherence": coh}}
+    return {
+        "verification_score": score,
+        "checks": checks,
+        "passed_checks": passed,
+        "total_checks": total,
+        "metrics": {"risk": round(rmax, 6), "d_star": round(dmax, 6), "coherence": coh},
+        "text_blob": blob[:20000],
+    }
 
 
 def _chunks(actions: List[Dict[str, Any]], max_actions: int) -> List[List[Dict[str, Any]]]:
@@ -269,6 +311,7 @@ def main() -> None:
     p.add_argument("--output-json", default=None)
     p.add_argument("--save-screenshots-dir", default=None)
     p.add_argument("--artifact-root", default="artifacts/aetherbrowse_runs")
+    p.add_argument("--replica-roots", nargs="*", default=[])
     p.add_argument("--kernel-version", default=os.getenv("SCBE_KERNEL_VERSION", "scbe-kernel-v1"))
     p.add_argument("--profile-id", default=os.getenv("SCBE_PROFILE_ID", "default-safe"))
     p.add_argument("--noise-on-deny", dest="noise_on_deny", action="store_true")
@@ -322,6 +365,10 @@ def main() -> None:
         sid = str(job.get("session_id", f"{aid}-session"))
         tier = _tier(job)
         cap = _cap(job, tier)
+        payload = {"actions": job["actions"], "session_id": sid, "source": job.get("source", "swarm"), "workflow_id": job.get("workflow_id", "swarm-run"), "run_id": job.get("run_id", f"run-{int(time.time())}-{i+1}"), "dry_run": bool(job.get("dry_run", False))}
+        pqc_result = _pqc_audit(job, payload, tier)
+        if pqc_result.get("status") in {"QUARANTINE", "DENY"}:
+            cap = {**cap, "valid": False, "reason": f"pqc audit failed: {pqc_result.get('reason', 'quarantine')}"}
         payload_base = {
             "session_id": sid,
             "source": job.get("source", "swarm"),
@@ -388,6 +435,17 @@ def main() -> None:
                 continue
             v = _verify(jobs[idx], out["response"])
             decision, why = _decide(v["verification_score"], out["capability"], a.noise_on_deny)
+            antivirus_scan = _scan_text_for_threats(v.get("text_blob", ""))
+            antivirus_action = _turnstile_action("browser", antivirus_scan)
+            antivirus_report = antivirus_scan.to_dict()
+            antivirus_report["turnstile_action"] = antivirus_action
+            if antivirus_action == "HONEYPOT":
+                decision = "NOISE" if a.noise_on_deny else "DENY"
+                why = "antivirus membrane action=HONEYPOT"
+            elif antivirus_action in {"HOLD", "ISOLATE"} and decision == "ALLOW":
+                decision = "QUARANTINE"
+                why = f"antivirus membrane action={antivirus_action}"
+            trace = {"request": {"payload": out["payload"], "risk_tier": out["risk_tier"], "verify": out["verify"]}, "response": out["response"]}
             trace = {
                 "request": {"payload": out["payload"], "risk_tier": out["risk_tier"], "verify": out["verify"]},
                 "response": out["response"],
@@ -412,6 +470,7 @@ def main() -> None:
                 "metrics": {"risk": v["metrics"]["risk"], "d_star": v["metrics"]["d_star"], "coherence": v["metrics"]["coherence"], "verification_score": v["verification_score"]},
                 "capability": out["capability"],
                 "pqc_audit": out.get("pqc_audit", {}),
+                "antivirus": antivirus_report,
                 "trace_hash": trace_hash,
                 "verification": {"score": v["verification_score"], "passed_checks": v["passed_checks"], "total_checks": v["total_checks"], "checks": v["checks"]},
             }
@@ -422,6 +481,17 @@ def main() -> None:
             tp = tdir / f"{out['job_id']}.json"
             rp.write_text(json.dumps(rec, indent=2), encoding="utf-8")
             tp.write_text(json.dumps(trace, indent=2), encoding="utf-8")
+            for replica_root in a.replica_roots:
+                try:
+                    replica_base = pathlib.Path(replica_root) / run_id
+                    dr = replica_base / "decision_records" / rp.name
+                    tr = replica_base / "traces" / tp.name
+                    dr.parent.mkdir(parents=True, exist_ok=True)
+                    tr.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copyfile(rp, dr)
+                    shutil.copyfile(tp, tr)
+                except Exception as exc:  # noqa: BLE001
+                    fails.append({"job_id": out["job_id"], "replica_root": replica_root, "error": str(exc)})
             sh = _scr_hashes(out["response"], shot_dir, out["job_id"], out["session_id"])
             pub = {"status": "noise", "detail": "suppressed by governance policy"} if decision == "NOISE" else out["response"]
             results[idx] = {
@@ -429,6 +499,7 @@ def main() -> None:
                 "decision": decision, "decision_reason": why, "verification_score": v["verification_score"], "decision_record_path": str(rp),
                 "trace_path": str(tp), "trace_hash": trace_hash, "screenshot_hashes": sh, "elapsed_ms": out["elapsed_ms"],
                 "request_error": out["request_error"], "response_status": out["response"].get("status"), "response": pub, "pqc_audit": out.get("pqc_audit", {}),
+                "antivirus": antivirus_report,
             }
             print(f"[job {idx+1}] job_id={out['job_id']} decision={decision} score={v['verification_score']} elapsed_ms={out['elapsed_ms']}")
 

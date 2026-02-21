@@ -1,15 +1,8 @@
 name: HuggingFace Multi-Datacenter Sync
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'src/**'
-      - 'datasets/**'
-      - 'models/**'
-      - 'docs/**'
   schedule:
-    - cron: '0 6 * * *'
+    - cron: '0 6 * * 1'  # Weekly on Mondays (was daily)
   workflow_dispatch:
 
 env:

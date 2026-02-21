@@ -1,0 +1,16 @@
+flowchart LR
+  subgraph PLANNER
+    n_task_53af39f6bb02["planner:plan_doc (done)"]
+  end
+  subgraph CODER
+    n_task_e13756004d66["coder:write_file (done)"]
+  end
+  subgraph REVIEWER
+    n_task_bc6fad5bd650["reviewer:run_cmd (done)"]
+  end
+  subgraph MEMORY
+    n_task_92db201da1c2["memory:append_file (done)"]
+  end
+  n_task_53af39f6bb02 --> n_task_e13756004d66
+  n_task_e13756004d66 --> n_task_bc6fad5bd650
+  n_task_bc6fad5bd650 --> n_task_92db201da1c2

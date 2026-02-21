@@ -1,0 +1,28 @@
+{
+  "run_id": "20260219T071825Z",
+  "timestamp_utc": "2026-02-19T07:18:25.160140+00:00",
+  "fingerprint": "d8fa50746aca01e65318f9ecc6412e08c662d5108efae85463e46695783a9c23",
+  "counts": {
+    "indexed_files": 1471,
+    "added": 0,
+    "modified": 2,
+    "removed": 0,
+    "changed": 2
+  },
+  "delta": {
+    "added": [],
+    "modified": [
+      "docs/CLAIMS_EVIDENCE_LEDGER.md",
+      "docs/EXPERIMENT_QUEUE.md"
+    ],
+    "removed": [],
+    "changed": [
+      "docs/CLAIMS_EVIDENCE_LEDGER.md",
+      "docs/EXPERIMENT_QUEUE.md"
+    ]
+  },
+  "changed_hashes_sha256": {
+    "docs/CLAIMS_EVIDENCE_LEDGER.md": "3a4fc883c2dd3b5e6cce5b2dcc9e0bd78809035ddceb0e435c484e3a4584e72b",
+    "docs/EXPERIMENT_QUEUE.md": "c7fd1e20b9c997171feb0b78416fec3521efb5764ad6abd5e72e3fe1dcee090f"
+  }
+}

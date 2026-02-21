@@ -31,17 +31,34 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check Notion API Key
+        id: auth
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+        run: |
+          if [ -z "${NOTION_API_KEY}" ]; then
+            echo "has_key=false" >> "$GITHUB_OUTPUT"
+            echo "NOTION_API_KEY is missing; skipping Notion sync."
+          else
+            echo "has_key=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Setup Node.js
+        if: steps.auth.outputs.has_key == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: npm
 
       - name: Install dependencies
+        if: steps.auth.outputs.has_key == 'true'
         run: npm ci
 
       - name: Sync selected Notion page
-        if: github.event_name == 'workflow_dispatch' && (inputs.page_id != '' || inputs.config_key != '')
+        if: |
+          steps.auth.outputs.has_key == 'true' &&
+          github.event_name == 'workflow_dispatch' &&
+          (inputs.page_id != '' || inputs.config_key != '')
         env:
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
         run: |
@@ -63,7 +80,9 @@ jobs:
           node scripts/notion-sync.js "${args[@]}"
 
       - name: Sync all configured Notion pages
-        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.page_id == '' && inputs.config_key == '')
+        if: |
+          steps.auth.outputs.has_key == 'true' &&
+          (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.page_id == '' && inputs.config_key == ''))
         env:
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
         run: |
@@ -72,6 +91,7 @@ jobs:
 
       - name: Check for docs changes
         id: docs_changed
+        if: steps.auth.outputs.has_key == 'true'
         run: |
           set -euo pipefail
           if git diff --quiet -- docs/; then
@@ -81,7 +101,7 @@ jobs:
           fi
 
       - name: Create Pull Request
-        if: steps.docs_changed.outputs.changed == 'true'
+        if: steps.auth.outputs.has_key == 'true' && steps.docs_changed.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

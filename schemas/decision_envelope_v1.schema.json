@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scbe.dev/schemas/decision_envelope_v1.schema.json",
+  "title": "SCBE Decision Envelope v1",
+  "type": "object",
+  "required": [
+    "identity",
+    "authority",
+    "scope",
+    "constraints",
+    "rules",
+    "audit"
+  ],
+  "properties": {
+    "identity": {
+      "type": "object",
+      "required": ["envelope_id", "version", "mission_id", "swarm_id"],
+      "properties": {
+        "envelope_id": { "type": "string", "minLength": 1 },
+        "version": { "const": "decision-envelope.v1" },
+        "mission_id": { "type": "string", "minLength": 1 },
+        "swarm_id": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "authority": {
+      "type": "object",
+      "required": [
+        "issuer",
+        "key_id",
+        "valid_from_ms",
+        "valid_until_ms",
+        "issued_at_ms",
+        "signature",
+        "signed_payload_hash"
+      ],
+      "properties": {
+        "issuer": { "type": "string", "minLength": 1 },
+        "key_id": { "type": "string", "minLength": 1 },
+        "valid_from_ms": { "type": "integer", "minimum": 0 },
+        "valid_until_ms": { "type": "integer", "minimum": 0 },
+        "issued_at_ms": { "type": "integer", "minimum": 0 },
+        "signature": {
+          "type": "string",
+          "contentEncoding": "base64"
+        },
+        "signed_payload_hash": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "scope": {
+      "type": "object",
+      "required": ["agent_allowlist", "capability_allowlist", "target_allowlist"],
+      "properties": {
+        "agent_allowlist": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        },
+        "capability_allowlist": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        },
+        "target_allowlist": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "constraints": {
+      "type": "object",
+      "required": ["mission_phase_allowlist", "resources", "max_risk_tier"],
+      "properties": {
+        "mission_phase_allowlist": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        },
+        "resources": {
+          "type": "object",
+          "required": ["power_min", "bandwidth_min", "thermal_max"],
+          "properties": {
+            "power_min": { "type": "number" },
+            "bandwidth_min": { "type": "number" },
+            "thermal_max": { "type": "number" }
+          },
+          "additionalProperties": false
+        },
+        "max_risk_tier": {
+          "type": "string",
+          "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["capability", "target", "boundary"],
+        "properties": {
+          "capability": { "type": "string", "minLength": 1 },
+          "target": { "type": "string", "minLength": 1 },
+          "boundary": {
+            "type": "string",
+            "enum": ["AUTO_ALLOW", "QUARANTINE", "DENY"]
+          },
+          "recovery": {
+            "type": "object",
+            "required": ["path_id", "playbook_ref", "quorum_min", "human_ack_required"],
+            "properties": {
+              "path_id": { "type": "string", "minLength": 1 },
+              "playbook_ref": { "type": "string", "minLength": 1 },
+              "quorum_min": { "type": "integer", "minimum": 0 },
+              "human_ack_required": { "type": "boolean" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "boundary": { "enum": ["QUARANTINE", "DENY"] } } },
+            "then": { "required": ["recovery"] }
+          }
+        ],
+        "additionalProperties": false
+      }
+    },
+    "audit": {
+      "type": "object",
+      "required": ["mmr_fields", "mmr_leaf_hash"],
+      "properties": {
+        "mmr_fields": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        },
+        "mmr_leaf_hash": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "_canonical": {
+      "type": "object",
+      "properties": {
+        "proto_sha256": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$"
+        },
+        "proto_b64": {
+          "type": "string",
+          "contentEncoding": "base64"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

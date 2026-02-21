@@ -1,0 +1,17 @@
+{
+  "run_id": "20260217T143132Z",
+  "generated_at": "2026-02-17T14:31:40.819798+00:00",
+  "verdict": "Growth confirmed across node-fleet",
+  "overall_confirmed": true,
+  "specialists_confirmed": true,
+  "fleet_confirmed": true,
+  "sample_count": 3403,
+  "huggingface_upload": {
+    "status": "ok",
+    "uploaded_files": [
+      "node_fleet_runs/20260217T143132Z/fleet_training_metrics.json",
+      "node_fleet_runs/20260217T143132Z/fleet_model.npz",
+      "node_fleet_runs/20260217T143132Z/fleet_growth_summary.md"
+    ]
+  }
+}

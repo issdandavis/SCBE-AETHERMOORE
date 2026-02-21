@@ -132,3 +132,49 @@ export {
   tongueCodeToLang,
   validateVoxelRecord,
 } from './voxel-types.js';
+
+// Decision Envelope (Mars-Grade Autonomy Boundaries)
+export {
+  EnvelopeManager,
+  envelopeDecide,
+  createEnvelope,
+  validateEnvelope,
+  matchAction,
+  validateEmergencyKey,
+  type EnvelopeBoundary,
+  type MissionPhase as EnvelopeMissionPhase,
+  type CommsState as EnvelopeCommsState,
+  type ActionCategory,
+  type EnvelopeRule,
+  type DecisionEnvelope,
+  type EnvelopeDecision,
+} from './decision-envelope.js';
+
+// Resource-Aware Harmonic Wall (Scarcity Multipliers)
+export {
+  scarcityMultiplier,
+  combinedScarcity,
+  resourceAwareHarmonicCost,
+  resourceAwareDecide,
+  predictResources,
+  timeToCritical,
+  ambientRiskScore,
+  createDefaultResources,
+  createResourceAwareUnit,
+  type ResourceMetric,
+  type ResourceState,
+  type ResourceAwareUnitState,
+  type ResourceAwareDecisionResult,
+} from './resource-harmonic.js';
+
+// Blackout MMR Audit Chain (Comms-Loss Resilient Logging)
+export {
+  MerkleAuditChain,
+  BlackoutManager,
+  hashEvent,
+  type CommsState as BlackoutCommsState,
+  type BlackoutEvent,
+  type MMRNode,
+  type MMRInclusionProof,
+  type BlackoutRecord,
+} from './blackout-audit.js';

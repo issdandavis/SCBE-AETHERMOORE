@@ -1,0 +1,29 @@
+{
+  "run_id": "20260219T072021Z",
+  "timestamp_utc": "2026-02-19T07:20:21.665781+00:00",
+  "fingerprint": "c52d931262113e5626ad0bc939d86122ea7cb96f19bcf22fb34abf7dd8f73a02",
+  "counts": {
+    "indexed_files": 1472,
+    "added": 1,
+    "modified": 1,
+    "removed": 0,
+    "changed": 2
+  },
+  "delta": {
+    "added": [
+      "docs/research/MULTI_MODEL_MODAL_MATRIX.md"
+    ],
+    "modified": [
+      "docs/LANGUAGE_GUARDRAILS.md"
+    ],
+    "removed": [],
+    "changed": [
+      "docs/LANGUAGE_GUARDRAILS.md",
+      "docs/research/MULTI_MODEL_MODAL_MATRIX.md"
+    ]
+  },
+  "changed_hashes_sha256": {
+    "docs/LANGUAGE_GUARDRAILS.md": "412bae97ade8bd802388659b7d3006a0f6583949d8693d456aa9895228b25f10",
+    "docs/research/MULTI_MODEL_MODAL_MATRIX.md": "80a59a8319b59ebdb7f418a8d826a4f216b9443b9cf9825b27c18a44681e6cdd"
+  }
+}

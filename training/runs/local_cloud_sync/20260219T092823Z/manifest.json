@@ -1,0 +1,43 @@
+{
+  "run_id": "20260219T092823Z",
+  "timestamp_utc": "2026-02-19T09:28:25.235806+00:00",
+  "fingerprint": "7a572fa54c8c70779b016c886653e867ced0c77f6f18c3dec3d5e71b55e2f33c",
+  "counts": {
+    "indexed_files": 1500,
+    "added": 7,
+    "modified": 0,
+    "removed": 0,
+    "changed": 7
+  },
+  "delta": {
+    "added": [
+      "docs/research/AETHERMOOR_SPIRAL_ENGINE_MVP.md",
+      "scripts/aethermoor_spiral_demo.py",
+      "scripts/sheaf_consensus_gate.py",
+      "src/harmonic/sheaf_consensus_gate.py",
+      "src/spiralverse/aethermoor_spiral_engine.py",
+      "tests/test_aethermoor_spiral_engine.py",
+      "tests/test_sheaf_consensus_gate.py"
+    ],
+    "modified": [],
+    "removed": [],
+    "changed": [
+      "docs/research/AETHERMOOR_SPIRAL_ENGINE_MVP.md",
+      "scripts/aethermoor_spiral_demo.py",
+      "scripts/sheaf_consensus_gate.py",
+      "src/harmonic/sheaf_consensus_gate.py",
+      "src/spiralverse/aethermoor_spiral_engine.py",
+      "tests/test_aethermoor_spiral_engine.py",
+      "tests/test_sheaf_consensus_gate.py"
+    ]
+  },
+  "changed_hashes_sha256": {
+    "docs/research/AETHERMOOR_SPIRAL_ENGINE_MVP.md": "de1facd6b44168f859e034d165d9d48d034224b218e611d773f79fc781536d1b",
+    "scripts/aethermoor_spiral_demo.py": "c4a7b62006c648ce9ec9dd0f8eb3c9979bdab2f218d131f245779aa110899e3f",
+    "scripts/sheaf_consensus_gate.py": "3d50b6701e010ef73b1bb08da86b6fe243e62d2a68c4afbc0f255654cd2d0c30",
+    "src/harmonic/sheaf_consensus_gate.py": "f94414d1f3fb54f8ada7a2ba8548e0ae3df140f4abb105193517ff392d45cb97",
+    "src/spiralverse/aethermoor_spiral_engine.py": "0577fcce1c660bcd55eafc9743c3fcab05ffeb9d974a0fa8c6b1b01aae66673d",
+    "tests/test_aethermoor_spiral_engine.py": "bc0d24e8d9daee2e90ab7015715224d65cc9965db739fe2b35d4520ceacc0b0b",
+    "tests/test_sheaf_consensus_gate.py": "47ee3bb4154a5a60e9ad5d6525742980071340614346a729b124e4953346c232"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "decision_id": "20260217T043815Z:job-001-market-scan",
+  "timestamp_utc": "2026-02-17T04:38:17Z",
+  "kernel_version": "scbe-kernel-v1",
+  "profile_id": "default-safe",
+  "job_id": "job-001-market-scan",
+  "agent_id": "agent-1-research",
+  "session_id": "research-session-1",
+  "workflow_id": "wf-market-scan",
+  "runner_run_id": "20260217T043815Z",
+  "request_run_id": "run-001",
+  "decision": "NOISE",
+  "decision_reason": "verification score < 0.60",
+  "risk_tier": "REFLEX",
+  "metrics": {
+    "risk": 1.0,
+    "d_star": 1.0,
+    "coherence": 0.0,
+    "verification_score": 0.3333
+  },
+  "capability": {
+    "required": false,
+    "present": false,
+    "valid": true,
+    "token_id": null,
+    "reason": "ok"
+  },
+  "trace_hash": "dc077b557f22d837a7a1ede2df83c128af94c66c1be05c07b48a24571d3dbab6",
+  "verification": {
+    "score": 0.3333,
+    "passed_checks": 1,
+    "total_checks": 3,
+    "checks": [
+      {
+        "check": "must_contain::example",
+        "passed": false
+      },
+      {
+        "check": "selector::body",
+        "passed": false
+      },
+      {
+        "check": "max_redirects",
+        "passed": true,
+        "observed": 0,
+        "expected_max": 3
+      }
+    ]
+  }
+}

@@ -9,6 +9,10 @@ on:
       - 'src/**/*.ts'
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   pages: write
@@ -18,8 +22,6 @@ jobs:
   build-docs:
     name: Build Documentation
     runs-on: ubuntu-latest
-    continue-on-error: true
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -34,13 +36,12 @@ jobs:
         run: npm install --legacy-peer-deps
 
       - name: Generate TypeDoc
-        continue-on-error: true
         run: |
           npx typedoc --out docs-build/api src/index.ts \
             --name "SCBE-AETHERMOORE API" \
             --readme README.md \
             --theme default \
-            --skipErrorChecking || echo "TypeDoc completed with warnings"
+            --skipErrorChecking
 
       - name: Ensure docs-build directory exists
         run: mkdir -p docs-build/api docs-build/demo
@@ -108,7 +109,6 @@ jobs:
     name: Deploy to GitHub Pages
     needs: build-docs
     runs-on: ubuntu-latest
-    continue-on-error: true
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -117,4 +117,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-        continue-on-error: true

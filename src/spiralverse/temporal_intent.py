@@ -244,6 +244,62 @@ class IntentHistory:
 
 
 # =============================================================================
+# Omega lock vector
+# =============================================================================
+
+
+def _clamp01(value: float) -> float:
+    return max(0.0, min(1.0, float(value)))
+
+
+def _permission_color(score: float) -> str:
+    s = _clamp01(score)
+    if s >= 0.70:
+        return "green"
+    if s >= 0.30:
+        return "amber"
+    return "red"
+
+
+@dataclass(frozen=True)
+class OmegaLockVector:
+    """
+    Explainable breakdown of the five-lock Omega gate.
+    """
+
+    pqc_factor: float
+    harm_score: float
+    drift_factor: float
+    triadic_stable: float
+    spectral_score: float
+    omega: float
+    decision: str
+    distance: float
+    x_factor: float
+    harmonic_wall: float
+    latency_multiplier: float
+    permission_color: str
+    weakest_lock: str
+
+    def to_dict(self) -> Dict[str, float | str]:
+        return {
+            "pqc_factor": round(self.pqc_factor, 6),
+            "harm_score": round(self.harm_score, 6),
+            "drift_factor": round(self.drift_factor, 6),
+            "triadic_stable": round(self.triadic_stable, 6),
+            "spectral_score": round(self.spectral_score, 6),
+            "omega": round(self.omega, 6),
+            "decision": self.decision,
+            "distance": round(self.distance, 6),
+            "x_factor": round(self.x_factor, 6),
+            "harmonic_wall": round(self.harmonic_wall, 6),
+            "latency_multiplier": round(self.latency_multiplier, 6),
+            "permission_color": self.permission_color,
+            "weakest_lock": self.weakest_lock,
+        }
+
+
+# =============================================================================
 # Extended Harmonic Wall
 # =============================================================================
 
@@ -330,21 +386,45 @@ class TemporalSecurityGate:
         spectral_score: float = 1.0
     ) -> Tuple[float, str]:
         """
-        Compute Omega decision score using temporal intent scaling.
+        Backward-compatible wrapper returning (omega, decision).
+        """
+        vector = self.compute_lock_vector(
+            agent_id=agent_id,
+            pqc_valid=pqc_valid,
+            triadic_stable=triadic_stable,
+            spectral_score=spectral_score,
+        )
+        return vector.omega, vector.decision
 
-        Ω = pqc_valid × harm_score × drift_factor × triadic_stable × spectral_score
-
-        Where harm_score = 1 / H(d, R)^x (inverted so higher is better)
-        And drift_factor = (1 - drift_norm/drift_max)
-
-        Returns:
-            (omega_score, decision) where decision is ALLOW/QUARANTINE/DENY/EXILE
+    def compute_lock_vector(
+        self,
+        agent_id: str,
+        pqc_valid: bool = True,
+        triadic_stable: float = 1.0,
+        spectral_score: float = 1.0,
+    ) -> OmegaLockVector:
+        """
+        Compute full 5-lock gate diagnostics for tooling and HUD.
         """
         history = self.get_or_create_history(agent_id)
 
         # Check for exile
         if history.state == IntentState.EXILED:
-            return 0.0, "EXILE"
+            return OmegaLockVector(
+                pqc_factor=0.0,
+                harm_score=0.0,
+                drift_factor=0.0,
+                triadic_stable=0.0,
+                spectral_score=0.0,
+                omega=0.0,
+                decision="EXILE",
+                distance=1.0,
+                x_factor=history.x_factor,
+                harmonic_wall=float("inf"),
+                latency_multiplier=float("inf"),
+                permission_color="red",
+                weakest_lock="trust_exile",
+            )
 
         # Get latest distance
         if history.samples:
@@ -359,16 +439,18 @@ class TemporalSecurityGate:
 
         # Invert for harm_score (lower H = higher score = safer)
         # Use 1/(1 + log(H)) to keep in reasonable range
-        harm_score = 1.0 / (1.0 + math.log(max(1.0, h_temporal)))
+        harm_score = _clamp01(1.0 / (1.0 + math.log(max(1.0, h_temporal))))
 
         # Drift factor from accumulated intent
-        drift_factor = 1.0 - (history.accumulated_intent / MAX_INTENT_ACCUMULATION)
+        drift_factor = _clamp01(1.0 - (history.accumulated_intent / MAX_INTENT_ACCUMULATION))
 
         # PQC factor
         pqc_factor = 1.0 if pqc_valid else 0.0
 
         # Compute Omega
-        omega = pqc_factor * harm_score * drift_factor * triadic_stable * spectral_score
+        triadic = _clamp01(triadic_stable)
+        spectral = _clamp01(spectral_score)
+        omega = pqc_factor * harm_score * drift_factor * triadic * spectral
 
         # Decision
         if omega > self.ALLOW_THRESHOLD:
@@ -378,13 +460,36 @@ class TemporalSecurityGate:
         else:
             decision = "DENY"
 
-        return omega, decision
+        locks = {
+            "pqc_factor": pqc_factor,
+            "harm_score": harm_score,
+            "drift_factor": drift_factor,
+            "triadic_stable": triadic,
+            "spectral_score": spectral,
+        }
+        weakest_lock = min(locks, key=locks.get)
+
+        return OmegaLockVector(
+            pqc_factor=pqc_factor,
+            harm_score=harm_score,
+            drift_factor=drift_factor,
+            triadic_stable=triadic,
+            spectral_score=spectral,
+            omega=omega,
+            decision=decision,
+            distance=float(d),
+            x_factor=float(x),
+            harmonic_wall=float(h_temporal),
+            latency_multiplier=max(1.0, float(h_temporal)),
+            permission_color=_permission_color(omega),
+            weakest_lock=weakest_lock,
+        )
 
     def get_status(self, agent_id: str) -> Dict:
         """Get full status for an agent."""
         history = self.get_or_create_history(agent_id)
 
-        omega, decision = self.compute_omega(agent_id)
+        vector = self.compute_lock_vector(agent_id)
 
         return {
             "agent_id": agent_id,
@@ -394,8 +499,9 @@ class TemporalSecurityGate:
             "x_factor": history.x_factor,
             "low_trust_rounds": history.low_trust_rounds,
             "samples": len(history.samples),
-            "omega": omega,
-            "decision": decision
+            "omega": vector.omega,
+            "decision": vector.decision,
+            "lock_vector": vector.to_dict(),
         }
 
 

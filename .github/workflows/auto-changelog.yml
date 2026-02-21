@@ -7,10 +7,16 @@ on:
     paths-ignore:
       - 'CHANGELOG.md'
       - '.github/**'
+      - '*.md'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   update-changelog:
     runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, 'auto-update CHANGELOG')"
     permissions:
       contents: write
 

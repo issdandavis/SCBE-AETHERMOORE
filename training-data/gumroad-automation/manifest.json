@@ -1,0 +1,34 @@
+{
+  "generated_at_utc": "2026-02-17T01:41:23.709741+00:00",
+  "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training\\runs\\gumroad-upload\\pass-5-depth.jsonl",
+  "output_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\gumroad-automation\\gumroad_automation.jsonl",
+  "dataset": "gumroad_automation",
+  "total_source_records": 1,
+  "summary": {
+    "valid_events": 1,
+    "invalid_lines": 0,
+    "missing_fields": 0,
+    "unknown_event_types": 0,
+    "unique_runs": 1,
+    "run_ids": [
+      "20260217-014111Z"
+    ],
+    "event_counts": {
+      "gumroad_error": 1
+    },
+    "product_counts": {}
+  },
+  "checks": {
+    "passes": true,
+    "errors": [],
+    "has_content": true
+  },
+  "label_map": {
+    "gumroad_match": 0,
+    "gumroad_uploaded": 1,
+    "gumroad_logged": 2,
+    "gumroad_skip": 3,
+    "gumroad_error": 4,
+    "gumroad_unknown": -1
+  }
+}
