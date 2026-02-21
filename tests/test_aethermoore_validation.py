@@ -14,14 +14,14 @@ Tests the mathematical foundations of the AETHERMOORE framework:
 """
 
 import numpy as np
-import matplotlib
+import pytest
 
+matplotlib = pytest.importorskip("matplotlib", reason="matplotlib not installed")
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from typing import Tuple, List
 from dataclasses import dataclass
 import struct
-import pytest
 
 from src.aethermoore import adaptive_wave, feistel_perm, fingerprint, square_wave
 
