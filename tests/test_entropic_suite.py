@@ -25,7 +25,7 @@ import math
 import numpy as np
 import pytest
 
-import matplotlib
+matplotlib = pytest.importorskip("matplotlib", reason="matplotlib not installed")
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
