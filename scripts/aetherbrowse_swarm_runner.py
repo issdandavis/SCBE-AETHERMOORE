@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Tuple
 
 HIGH_RISK = {"click", "type"}
+MAX_MISSION_BATCH = 50
 
 
 def _sid(v: str) -> str:
@@ -123,6 +124,42 @@ def _cap(job: Dict[str, Any], tier: str) -> Dict[str, Any]:
         "token_id": _sha_t(token)[:16] if token else None,
         "reason": "ok" if ok else "missing capability token for DELIBERATION",
     }
+
+
+def _pqc_audit(job: Dict[str, Any], payload: Dict[str, Any], tier: str) -> Dict[str, Any]:
+    """Optional PQC metadata gate used for long-horizon mission hygiene."""
+    if tier != "DELIBERATION":
+        return {"status": "SKIP", "reason": "tier is REFLEX"}
+    pqc_meta = job.get("pqc")
+    if not isinstance(pqc_meta, dict):
+        return {"status": "SKIP", "reason": "missing job.pqc metadata"}
+
+    kyber_id = str(pqc_meta.get("kyber_id", "")).strip()
+    dilithium_id = str(pqc_meta.get("dilithium_id", "")).strip()
+    if not kyber_id or not dilithium_id:
+        return {"status": "QUARANTINE", "reason": "missing kyber_id or dilithium_id"}
+
+    age_hours = float(pqc_meta.get("last_rotated_hours", 0) or 0)
+    rotation_hours = int(pqc_meta.get("rotation_hours", 720) or 720)
+    if age_hours >= rotation_hours:
+        return {
+            "status": "QUARANTINE",
+            "reason": f"key age {age_hours:.1f}h exceeds rotation policy {rotation_hours}h",
+        }
+
+    fp = _sha_t(_j({"kyber_id": kyber_id, "dilithium_id": dilithium_id, "workflow_id": payload.get("workflow_id")}))[:20]
+    return {"status": "ALLOW", "reason": "pqc metadata within policy", "key_fingerprint": fp}
+
+
+def _chunk_actions(actions: List[Dict[str, Any]], batch_size: int) -> List[List[Dict[str, Any]]]:
+    if batch_size <= 0:
+        raise ValueError("batch_size must be > 0")
+    return [actions[i : i + batch_size] for i in range(0, len(actions), batch_size)]
+
+
+def _page_lock_id(job: Dict[str, Any]) -> str | None:
+    val = str(job.get("page_lock", "")).strip()
+    return val if val else None
 
 
 def _verify(job: Dict[str, Any], resp: Dict[str, Any]) -> Dict[str, Any]:
@@ -236,7 +273,7 @@ def main() -> None:
     p.add_argument("--profile-id", default=os.getenv("SCBE_PROFILE_ID", "default-safe"))
     p.add_argument("--noise-on-deny", dest="noise_on_deny", action="store_true")
     p.add_argument("--no-noise-on-deny", dest="noise_on_deny", action="store_false")
-    p.add_argument("--max-actions-per-request", type=int, default=0)
+    p.add_argument("--max-actions-per-request", type=int, default=MAX_MISSION_BATCH)
     p.add_argument("--seed", type=int, default=None)
     p.add_argument("--run-id", default=None)
     p.set_defaults(noise_on_deny=True)
@@ -269,6 +306,15 @@ def main() -> None:
             pass
     results: List[Dict[str, Any]] = [None] * len(jobs)  # type: ignore[list-item]
     fails: List[Dict[str, Any]] = []
+    active_page_locks: set[str] = set()
+
+    for idx, job in enumerate(jobs):
+        lock_id = _page_lock_id(job)
+        if lock_id is None:
+            continue
+        if lock_id in active_page_locks:
+            raise ValueError(f"Duplicate page_lock detected for jobs-file entry {idx + 1}: {lock_id}")
+        active_page_locks.add(lock_id)
 
     def run_one(i: int, job: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
         job_id = _sid(str(job.get("job_id", f"job-{i+1:03d}")))
@@ -276,61 +322,60 @@ def main() -> None:
         sid = str(job.get("session_id", f"{aid}-session"))
         tier = _tier(job)
         cap = _cap(job, tier)
-        payload = {
-            "actions": job["actions"],
+        payload_base = {
             "session_id": sid,
             "source": job.get("source", "swarm"),
             "workflow_id": job.get("workflow_id", "swarm-run"),
             "run_id": job.get("run_id", f"run-{run_id}-{i+1}"),
             "dry_run": bool(job.get("dry_run", False)),
         }
+        pqc_result = _pqc_audit(job, payload_base, tier)
+        if pqc_result.get("status") in {"QUARANTINE", "DENY"}:
+            cap = {**cap, "valid": False, "reason": f"pqc audit failed: {pqc_result.get('reason', 'quarantine')}"}
+
+        chunks = _chunk_actions(job["actions"], max(1, a.max_actions_per_request))
+        payload = {**payload_base, "actions": job["actions"], "chunk_count": len(chunks)}
         t0 = time.time()
         err = None
         if cap["valid"]:
-            req_chunks = _chunks(job["actions"], max(0, int(a.max_actions_per_request)))
-            all_results: List[Dict[str, Any]] = []
-            status = "success"
-            executed, blocked = 0, 0
-            traces: List[str] = []
-            for ci, chunk in enumerate(req_chunks, start=1):
-                chunk_payload = {
-                    "actions": chunk,
-                    "session_id": sid,
-                    "source": job.get("source", "swarm"),
-                    "workflow_id": job.get("workflow_id", "swarm-run"),
-                    "run_id": payload["run_id"],
-                    "dry_run": payload["dry_run"],
-                    "chunk_index": ci,
-                    "chunk_count": len(req_chunks),
-                    "page_lock": job.get("page_lock"),
-                }
-                try:
+            try:
+                all_results: List[Dict[str, Any]] = []
+                blocked_actions = 0
+                traces: List[str] = []
+                for chunk_idx, chunk in enumerate(chunks, start=1):
+                    chunk_payload = {
+                        **payload_base,
+                        "actions": chunk,
+                        "chunk_index": chunk_idx,
+                        "chunk_count": len(chunks),
+                        "page_lock": job.get("page_lock"),
+                    }
                     chunk_resp = _post(url, token, chunk_payload, a.timeout_sec)
-                except Exception as exc:  # noqa: BLE001
-                    err = str(exc)
-                    status = "request_error"
-                    blocked += len(chunk)
-                    break
-                all_results.extend(chunk_resp.get("results", []) if isinstance(chunk_resp.get("results"), list) else [])
-                executed += int(chunk_resp.get("executed_actions", len(chunk)))
-                blocked += int(chunk_resp.get("blocked_actions", 0))
-                if isinstance(chunk_resp.get("trace"), str):
-                    traces.append(chunk_resp["trace"])
-            resp = {
-                "status": status,
-                "session_id": sid,
-                "results": all_results,
-                "total_actions": len(job["actions"]),
-                "executed_actions": executed,
-                "blocked_actions": blocked,
-                "trace": "|".join(traces) if traces else ("request_error" if status == "request_error" else ""),
-                "chunk_count": len(req_chunks),
-                "max_actions_per_request": max(0, int(a.max_actions_per_request)),
-            }
+                    if isinstance(chunk_resp.get("results"), list):
+                        all_results.extend(chunk_resp["results"])
+                    blocked_actions += int(chunk_resp.get("blocked_actions", 0) or 0)
+                    if isinstance(chunk_resp.get("trace"), str):
+                        traces.append(chunk_resp["trace"])
+                    if str(chunk_resp.get("status", "")).strip().lower() not in {"success", "ok"}:
+                        err = f"chunk {chunk_idx} status={chunk_resp.get('status')}"
+                        break
+                resp = {
+                    "status": "request_error" if err else "success",
+                    "session_id": sid,
+                    "results": all_results,
+                    "total_actions": len(job["actions"]),
+                    "executed_actions": len(all_results),
+                    "blocked_actions": blocked_actions,
+                    "trace": "|".join(traces) if traces else ("request_error" if err else "chunked_success"),
+                    "chunk_count": len(chunks),
+                }
+            except Exception as exc:  # noqa: BLE001
+                err = str(exc)
+                resp = {"status": "request_error", "session_id": sid, "results": [], "total_actions": len(job["actions"]), "executed_actions": 0, "blocked_actions": len(job["actions"]), "trace": "request_error"}
         else:
             err = cap["reason"]
             resp = {"status": "blocked_by_policy", "session_id": sid, "results": [], "total_actions": len(job["actions"]), "executed_actions": 0, "blocked_actions": len(job["actions"]), "trace": "policy_gate_blocked"}
-        return i, {"job_id": job_id, "agent_id": aid, "session_id": sid, "risk_tier": tier, "payload": payload, "response": resp, "capability": cap, "verify": job.get("verify", {}), "elapsed_ms": round((time.time() - t0) * 1000.0, 2), "request_error": err}
+        return i, {"job_id": job_id, "agent_id": aid, "session_id": sid, "risk_tier": tier, "payload": payload, "response": resp, "capability": cap, "verify": job.get("verify", {}), "elapsed_ms": round((time.time() - t0) * 1000.0, 2), "request_error": err, "pqc_audit": pqc_result}
 
     with ThreadPoolExecutor(max_workers=max(1, a.concurrency)) as pool:
         futs = {pool.submit(run_one, i, j): i for i, j in enumerate(jobs)}
@@ -343,7 +388,11 @@ def main() -> None:
                 continue
             v = _verify(jobs[idx], out["response"])
             decision, why = _decide(v["verification_score"], out["capability"], a.noise_on_deny)
-            trace = {"request": {"payload": out["payload"], "risk_tier": out["risk_tier"], "verify": out["verify"]}, "response": out["response"]}
+            trace = {
+                "request": {"payload": out["payload"], "risk_tier": out["risk_tier"], "verify": out["verify"]},
+                "response": out["response"],
+                "pqc_audit": out.get("pqc_audit", {}),
+            }
             trace_hash = _sha_t(_j(trace))
             rec = {
                 "schema_version": "1.0.0",
@@ -362,6 +411,7 @@ def main() -> None:
                 "risk_tier": out["risk_tier"],
                 "metrics": {"risk": v["metrics"]["risk"], "d_star": v["metrics"]["d_star"], "coherence": v["metrics"]["coherence"], "verification_score": v["verification_score"]},
                 "capability": out["capability"],
+                "pqc_audit": out.get("pqc_audit", {}),
                 "trace_hash": trace_hash,
                 "verification": {"score": v["verification_score"], "passed_checks": v["passed_checks"], "total_checks": v["total_checks"], "checks": v["checks"]},
             }
@@ -378,7 +428,7 @@ def main() -> None:
                 "job_id": out["job_id"], "agent_id": out["agent_id"], "session_id": out["session_id"], "risk_tier": out["risk_tier"],
                 "decision": decision, "decision_reason": why, "verification_score": v["verification_score"], "decision_record_path": str(rp),
                 "trace_path": str(tp), "trace_hash": trace_hash, "screenshot_hashes": sh, "elapsed_ms": out["elapsed_ms"],
-                "request_error": out["request_error"], "response_status": out["response"].get("status"), "response": pub,
+                "request_error": out["request_error"], "response_status": out["response"].get("status"), "response": pub, "pqc_audit": out.get("pqc_audit", {}),
             }
             print(f"[job {idx+1}] job_id={out['job_id']} decision={decision} score={v['verification_score']} elapsed_ms={out['elapsed_ms']}")
 
