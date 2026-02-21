@@ -26,6 +26,288 @@ exports.fromHex = fromHex;
 exports.isPQCAvailable = isPQCAvailable;
 exports.getPQCStatus = getPQCStatus;
 const crypto_1 = require("crypto");
+const LIBOQS_CANDIDATES = ['liboqs-node', 'liboqs'];
+const KEM_CTORS = ['KEM', 'KeyEncapsulation'];
+const SIG_CTORS = ['Signature'];
+const KEM_KEYPAIR_METHODS = [
+    'generateKeyPair',
+    'generate_keypair',
+    'generatekeypair',
+    'keypair',
+];
+const KEM_ENCAPSULATE_METHODS = [
+    'encapsulate',
+    'encap',
+    'encaps',
+    'encapsulate_secret',
+    'encap_secret',
+];
+const KEM_DECAPSULATE_METHODS = [
+    'decapsulate',
+    'decap',
+    'decaps',
+    'decapsulate_secret',
+    'decap_secret',
+];
+const SIG_KEYPAIR_METHODS = [
+    'generateKeyPair',
+    'generate_keypair',
+    'generatekeypair',
+    'keypair',
+];
+const SIG_SIGN_METHODS = [
+    'sign',
+    'signature',
+    'generate_signature',
+];
+const SIG_VERIFY_METHODS = [
+    'verify',
+    'verify_signature',
+];
+let liboqsModuleCache = undefined;
+let pqcStatusCache = null;
+function resolveLiboqsModule() {
+    if (liboqsModuleCache !== undefined) {
+        return liboqsModuleCache;
+    }
+    for (const moduleName of LIBOQS_CANDIDATES) {
+        try {
+            const mod = require(moduleName);
+            liboqsModuleCache = { moduleName, module: mod };
+            return liboqsModuleCache;
+        }
+        catch {
+            continue;
+        }
+    }
+    liboqsModuleCache = null;
+    return null;
+}
+function getClassFromModule(mod, candidates) {
+    for (const name of candidates) {
+        const candidate = mod?.[name];
+        if (typeof candidate === 'function') {
+            return candidate;
+        }
+    }
+    return null;
+}
+function firstMatchingMethod(target, candidates) {
+    for (const name of candidates) {
+        const fn = target[name];
+        if (typeof fn === 'function') {
+            return name;
+        }
+    }
+    return null;
+}
+async function invokeNativeMethod(target, candidates, args) {
+    const methodName = firstMatchingMethod(target, candidates);
+    if (!methodName) {
+        return null;
+    }
+    const fn = target[methodName];
+    return Promise.resolve(fn.apply(target, args));
+}
+function toBytes(value, label) {
+    if (typeof value === 'string') {
+        return new TextEncoder().encode(value);
+    }
+    if (value instanceof Uint8Array) {
+        return value;
+    }
+    if (value instanceof ArrayBuffer) {
+        return new Uint8Array(value);
+    }
+    if (Buffer.isBuffer(value)) {
+        return new Uint8Array(value);
+    }
+    if (Array.isArray(value)) {
+        return new Uint8Array(value);
+    }
+    throw new Error(`Expected byte payload for ${label}`);
+}
+function getAnyKey(obj, keys) {
+    for (const key of keys) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            return obj[key];
+        }
+    }
+    return undefined;
+}
+function parseKeyPair(value, label) {
+    if (Array.isArray(value) && value.length >= 2) {
+        return {
+            publicKey: toBytes(value[0], `${label} public key`),
+            secretKey: toBytes(value[1], `${label} secret key`),
+        };
+    }
+    if (value && typeof value === 'object') {
+        const obj = value;
+        const publicKey = getAnyKey(obj, ['publicKey', 'pk', 'public_key']);
+        const secretKey = getAnyKey(obj, ['secretKey', 'sk', 'secret_key', 'privateKey', 'private_key']);
+        if (publicKey !== undefined && secretKey !== undefined) {
+            return {
+                publicKey: toBytes(publicKey, `${label} public key`),
+                secretKey: toBytes(secretKey, `${label} secret key`),
+            };
+        }
+    }
+    throw new Error(`Native backend for ${label} returned keypair in unsupported shape`);
+}
+function parseKemEncapsulation(value) {
+    if (Array.isArray(value) && value.length >= 2) {
+        return {
+            ciphertext: toBytes(value[0], 'ML-KEM ciphertext'),
+            sharedSecret: toBytes(value[1], 'ML-KEM shared secret'),
+        };
+    }
+    if (value && typeof value === 'object') {
+        const obj = value;
+        const ciphertext = getAnyKey(obj, ['ciphertext', 'ct', 'encapsulated', 'encapsulation']);
+        const sharedSecret = getAnyKey(obj, ['sharedSecret', 'shared_secret', 'ss', 'sessionKey', 'shared_key']);
+        if (ciphertext !== undefined && sharedSecret !== undefined) {
+            return {
+                ciphertext: toBytes(ciphertext, 'ML-KEM ciphertext'),
+                sharedSecret: toBytes(sharedSecret, 'ML-KEM shared secret'),
+            };
+        }
+    }
+    throw new Error('Native backend for ML-KEM returned unsupported encapsulation shape');
+}
+function parseKemSharedSecret(value) {
+    if (value === undefined || value === null) {
+        throw new Error('Native backend for ML-KEM returned empty decapsulated shared secret');
+    }
+    if (typeof value === 'string' ||
+        value instanceof Uint8Array ||
+        value instanceof ArrayBuffer ||
+        Buffer.isBuffer(value)) {
+        return toBytes(value, 'ML-KEM decapsulated shared secret');
+    }
+    if (Array.isArray(value)) {
+        if (value.length === 1) {
+            return toBytes(value[0], 'ML-KEM decapsulated shared secret');
+        }
+        const allNumeric = value.every((item) => typeof item === 'number');
+        if (allNumeric) {
+            return toBytes(value, 'ML-KEM decapsulated shared secret');
+        }
+        return toBytes(value[1], 'ML-KEM decapsulated shared secret');
+    }
+    if (value && typeof value === 'object') {
+        const obj = value;
+        const sharedSecret = getAnyKey(obj, ['sharedSecret', 'shared_secret', 'ss', 'sessionKey', 'shared_key', 'key']);
+        if (sharedSecret !== undefined) {
+            return toBytes(sharedSecret, 'ML-KEM decapsulated shared secret');
+        }
+        const keys = Object.keys(obj);
+        if (keys.length === 1) {
+            return toBytes(obj[keys[0]], 'ML-KEM decapsulated shared secret');
+        }
+    }
+    throw new Error('Native backend for ML-KEM returned unsupported decapsulated shared secret shape');
+}
+function parseDsaSignature(value) {
+    if (value === undefined || value === null) {
+        throw new Error('Native backend for ML-DSA-65 returned empty signature');
+    }
+    return toBytes(value, 'ML-DSA-65 signature');
+}
+function createNativeKEM(algorithm) {
+    const mod = resolveLiboqsModule();
+    if (!mod) {
+        return null;
+    }
+    const ctor = getClassFromModule(mod.module, KEM_CTORS);
+    if (!ctor) {
+        return null;
+    }
+    const ctorArgs = [[algorithm], [{ algorithm }], []];
+    for (const ctorArgSet of ctorArgs) {
+        try {
+            const instance = new ctor(...ctorArgSet);
+            if (firstMatchingMethod(instance, KEM_KEYPAIR_METHODS) &&
+                firstMatchingMethod(instance, KEM_ENCAPSULATE_METHODS) &&
+                firstMatchingMethod(instance, KEM_DECAPSULATE_METHODS)) {
+                return { moduleName: mod.moduleName, instance };
+            }
+        }
+        catch {
+            continue;
+        }
+    }
+    return null;
+}
+function createNativeDSA(algorithm) {
+    const mod = resolveLiboqsModule();
+    if (!mod) {
+        return null;
+    }
+    const ctor = getClassFromModule(mod.module, SIG_CTORS);
+    if (!ctor) {
+        return null;
+    }
+    const ctorArgs = [[algorithm], [{ algorithm }], []];
+    for (const ctorArgSet of ctorArgs) {
+        try {
+            const instance = new ctor(...ctorArgSet);
+            if (firstMatchingMethod(instance, SIG_KEYPAIR_METHODS) &&
+                firstMatchingMethod(instance, SIG_SIGN_METHODS) &&
+                firstMatchingMethod(instance, SIG_VERIFY_METHODS)) {
+                return { moduleName: mod.moduleName, instance };
+            }
+        }
+        catch {
+            continue;
+        }
+    }
+    return null;
+}
+function getPQCStatusInternal() {
+    if (pqcStatusCache) {
+        return pqcStatusCache;
+    }
+    const module = resolveLiboqsModule();
+    if (!module) {
+        pqcStatusCache = {
+            available: false,
+            implementation: 'stub',
+            algorithms: ['ML-KEM-768', 'ML-DSA-65'],
+            reason: 'No native liboqs module available',
+        };
+        return pqcStatusCache;
+    }
+    const kemInstance = createNativeKEM(exports.ML_KEM_768_PARAMS.name);
+    if (!kemInstance) {
+        pqcStatusCache = {
+            available: false,
+            implementation: 'stub',
+            algorithms: ['ML-KEM-768', 'ML-DSA-65'],
+            moduleName: module.moduleName,
+            reason: `Native module ${module.moduleName} does not expose a usable ML-KEM interface`,
+        };
+        return pqcStatusCache;
+    }
+    const dsaInstance = createNativeDSA(exports.ML_DSA_65_PARAMS.name);
+    if (!dsaInstance) {
+        pqcStatusCache = {
+            available: false,
+            implementation: 'stub',
+            algorithms: ['ML-KEM-768', 'ML-DSA-65'],
+            moduleName: module.moduleName,
+            reason: `Native module ${module.moduleName} does not expose a usable ML-DSA interface`,
+        };
+        return pqcStatusCache;
+    }
+    pqcStatusCache = {
+        available: true,
+        implementation: 'native',
+        algorithms: ['ML-KEM-768', 'ML-DSA-65'],
+        moduleName: module.moduleName,
+    };
+    return pqcStatusCache;
+}
 // ============================================================
 // ML-KEM-768 PARAMETERS (NIST FIPS 203)
 // ============================================================
@@ -74,14 +356,16 @@ exports.ML_DSA_65_PARAMS = {
  */
 class MLKEM768 {
     static instance = null;
+    static nativeInstance = undefined;
     useNative = false;
+    nativeInstance = null;
     constructor() {
-        // Check for native liboqs availability
-        try {
-            // In production: const oqs = require('liboqs-node');
-            this.useNative = false; // Set to true when liboqs is available
+        if (MLKEM768.nativeInstance === undefined) {
+            MLKEM768.nativeInstance = createNativeKEM(exports.ML_KEM_768_PARAMS.name);
         }
-        catch {
+        this.useNative = MLKEM768.nativeInstance !== null;
+        this.nativeInstance = this.useNative ? MLKEM768.nativeInstance : null;
+        if (this.useNative && !this.nativeInstance) {
             this.useNative = false;
         }
     }
@@ -97,10 +381,16 @@ class MLKEM768 {
      * @returns Key pair with public and secret keys
      */
     async generateKeyPair() {
-        if (this.useNative) {
-            // Production: Use liboqs
-            // const kem = new oqs.KeyEncapsulation('ML-KEM-768');
-            // return kem.generateKeypair();
+        if (this.useNative && this.nativeInstance) {
+            try {
+                const output = await invokeNativeMethod(this.nativeInstance.instance, KEM_KEYPAIR_METHODS, []);
+                if (output !== null) {
+                    return parseKeyPair(output, 'ML-KEM-768');
+                }
+            }
+            catch {
+                this.useNative = false;
+            }
         }
         // Development stub: Generate deterministic test keys
         // WARNING: NOT FOR PRODUCTION USE
@@ -118,9 +408,15 @@ class MLKEM768 {
     async encapsulate(publicKey) {
         this.validatePublicKey(publicKey);
         if (this.useNative) {
-            // Production: Use liboqs
-            // const kem = new oqs.KeyEncapsulation('ML-KEM-768');
-            // return kem.encapsulate(publicKey);
+            try {
+                const output = await invokeNativeMethod(this.nativeInstance.instance, KEM_ENCAPSULATE_METHODS, [publicKey]);
+                if (output !== null) {
+                    return parseKemEncapsulation(output);
+                }
+            }
+            catch {
+                this.useNative = false;
+            }
         }
         // Development stub
         const randomness = (0, crypto_1.randomBytes)(32);
@@ -138,10 +434,16 @@ class MLKEM768 {
     async decapsulate(ciphertext, secretKey) {
         this.validateCiphertext(ciphertext);
         this.validateSecretKey(secretKey);
-        if (this.useNative) {
-            // Production: Use liboqs
-            // const kem = new oqs.KeyEncapsulation('ML-KEM-768');
-            // return kem.decapsulate(ciphertext, secretKey);
+        if (this.useNative && this.nativeInstance) {
+            try {
+                const output = await invokeNativeMethod(this.nativeInstance.instance, KEM_DECAPSULATE_METHODS, [ciphertext, secretKey]);
+                if (output !== null) {
+                    return parseKemSharedSecret(output);
+                }
+            }
+            catch {
+                this.useNative = false;
+            }
         }
         // Development stub: Deterministic decapsulation
         return this.deriveSharedSecret(secretKey.slice(0, 32), ciphertext.slice(0, 32));
@@ -195,10 +497,19 @@ exports.MLKEM768 = MLKEM768;
  */
 class MLDSA65 {
     static instance = null;
+    static nativeInstance = undefined;
     useNative = false;
+    nativeInstance = null;
     constructor() {
         try {
-            this.useNative = false; // Set to true when liboqs is available
+            if (MLDSA65.nativeInstance === undefined) {
+                MLDSA65.nativeInstance = createNativeDSA(exports.ML_DSA_65_PARAMS.name);
+            }
+            this.useNative = MLDSA65.nativeInstance !== null;
+            this.nativeInstance = this.useNative ? MLDSA65.nativeInstance : null;
+            if (this.useNative && !this.nativeInstance) {
+                this.useNative = false;
+            }
         }
         catch {
             this.useNative = false;
@@ -217,9 +528,15 @@ class MLDSA65 {
      */
     async generateKeyPair() {
         if (this.useNative) {
-            // Production: Use liboqs
-            // const sig = new oqs.Signature('ML-DSA-65');
-            // return sig.generateKeypair();
+            try {
+                const output = await invokeNativeMethod(this.nativeInstance.instance, SIG_KEYPAIR_METHODS, []);
+                if (output !== null) {
+                    return parseKeyPair(output, 'ML-DSA-65');
+                }
+            }
+            catch {
+                this.useNative = false;
+            }
         }
         // Development stub
         const seed = (0, crypto_1.randomBytes)(32);
@@ -237,9 +554,15 @@ class MLDSA65 {
     async sign(message, secretKey) {
         this.validateSecretKey(secretKey);
         if (this.useNative) {
-            // Production: Use liboqs
-            // const sig = new oqs.Signature('ML-DSA-65');
-            // return sig.sign(message, secretKey);
+            try {
+                const output = await invokeNativeMethod(this.nativeInstance.instance, SIG_SIGN_METHODS, [message, secretKey]);
+                if (output !== null) {
+                    return parseDsaSignature(output);
+                }
+            }
+            catch {
+                this.useNative = false;
+            }
         }
         // Development stub: Deterministic signature
         return this.expandKey(Buffer.concat([Buffer.from(message), Buffer.from(secretKey.slice(0, 32))]), exports.ML_DSA_65_PARAMS.signatureSize, 'sig');
@@ -256,9 +579,15 @@ class MLDSA65 {
         this.validatePublicKey(publicKey);
         this.validateSignature(signature);
         if (this.useNative) {
-            // Production: Use liboqs
-            // const sig = new oqs.Signature('ML-DSA-65');
-            // return sig.verify(message, signature, publicKey);
+            try {
+                const output = await invokeNativeMethod(this.nativeInstance.instance, SIG_VERIFY_METHODS, [message, signature, publicKey]);
+                if (output !== null) {
+                    return Boolean(output);
+                }
+            }
+            catch {
+                this.useNative = false;
+            }
         }
         // Development stub: Always returns true for valid-looking signatures
         // WARNING: NOT FOR PRODUCTION USE
@@ -390,25 +719,13 @@ function fromHex(hex) {
  * Check if PQC algorithms are available (native liboqs)
  */
 function isPQCAvailable() {
-    try {
-        // Check for liboqs-node
-        require.resolve('liboqs-node');
-        return true;
-    }
-    catch {
-        return false;
-    }
+    return getPQCStatusInternal().available;
 }
 /**
  * Get PQC implementation status
  */
 function getPQCStatus() {
-    const available = isPQCAvailable();
-    return {
-        available,
-        implementation: available ? 'native' : 'stub',
-        algorithms: ['ML-KEM-768', 'ML-DSA-65'],
-    };
+    return getPQCStatusInternal();
 }
 // ============================================================
 // DUAL LATTICE CONSENSUS (Patent USPTO #63/961,403)

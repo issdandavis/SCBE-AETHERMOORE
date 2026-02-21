@@ -33,7 +33,7 @@
  * @see Curry, Ghrist, Robinson — "Cellular Sheaves of Lattices"
  */
 import { type FluxState, type Polyhedron } from './phdm.js';
-import { type CellComplex, type CellularSheaf, type CohomologyResult, type Obstruction, type SheafAnalysisResult } from './sheafCohomology.js';
+import { type V2CellComplex as CellComplex, type V2CellularSheaf as CellularSheaf, type CohomologyResult, type Obstruction, type SheafAnalysisResult } from './sheafCohomology.js';
 /**
  * Edge in the polyhedral graph with trust-decay weight.
  */
