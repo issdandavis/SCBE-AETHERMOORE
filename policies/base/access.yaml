@@ -1,0 +1,9 @@
+{
+  "id": "base-access",
+  "version": "1.0.0",
+  "controls": {
+    "require_mfa": true,
+    "max_session_minutes": 60,
+    "least_privilege": true
+  }
+}
