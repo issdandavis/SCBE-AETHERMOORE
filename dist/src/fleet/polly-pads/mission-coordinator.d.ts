@@ -8,7 +8,6 @@
  */
 import { Squad as CoreSquad } from './squad';
 import { CrisisType, ModeAssignment, SpecialistMode } from './modes/types';
-import { Squad } from './squad';
 export type MissionPhase = 'transit' | 'science_ops' | 'maintenance' | 'crisis' | 'earth_sync' | 'standby';
 export interface CrisisAssessment {
     type: CrisisType;
