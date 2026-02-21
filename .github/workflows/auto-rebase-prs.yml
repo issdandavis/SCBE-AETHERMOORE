@@ -1,0 +1,29 @@
+name: Auto-Rebase Open PRs
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  rebase-open-prs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update all open PRs targeting main
+        run: |
+          PR_NUMBERS=$(gh pr list --repo "$REPO" --base main --state open --json number -q '.[].number')
+
+          for PR in $PR_NUMBERS; do
+            echo "Updating PR #$PR..."
+            gh api -X PUT "repos/$REPO/pulls/$PR/update-branch" \
+              -f update_method=rebase 2>/dev/null || \
+            gh api -X PUT "repos/$REPO/pulls/$PR/update-branch" \
+              -f update_method=merge 2>/dev/null || \
+            echo "Could not update PR #$PR (likely has conflicts)"
+          done
+        env:
+          REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
