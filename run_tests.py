@@ -30,30 +30,57 @@ def run_tests(
     coverage: bool = False,
     fast: bool = False,
     verbose: bool = True,
-    stop_on_fail: bool = False
+    stop_on_fail: bool = False,
+    preflight: bool = False
 ):
     """Run tests at the specified tier level."""
 
     # Base pytest command
     cmd = ["python", "-m", "pytest"]
 
-    # Test directory
-    cmd.append("tests/")
+    # Tier-specific test targets (reduces noisy collection from unrelated modules)
+    tier_targets = {
+        "integration": [
+            "tests/test_integration_full.py",
+            "tests/test_federated_orchestrator.py",
+            "tests/test_kernel_manifest.py",
+        ],
+        "crypto": [
+            "tests/crypto/",
+        ],
+        "api": [
+            "tests/test_scbe_comprehensive.py",
+            "tests/test_governance_adapter.py",
+        ],
+        "homebrew": [
+            "tests/test_homebrew_quick.py",
+            "tests/test_federated_orchestrator.py",
+        ],
+        "release": [
+            "tests/test_federated_orchestrator.py",
+            "tests/test_kernel_manifest.py",
+        ],
+    }
+
+    targets = tier_targets.get(tier, ["tests/"])
+    cmd.extend(targets)
 
     # Tier selection
     tier_markers = {
-        "homebrew": "-m homebrew",
-        "professional": "-m professional",
-        "enterprise": "-m enterprise",
-        "integration": "-m integration",
-        "property": "-m property",
-        "api": "-m api",
-        "crypto": "-m crypto",
-        "math": "-m math",
+        "homebrew": "homebrew",
+        "professional": "professional",
+        "enterprise": "enterprise",
+        "integration": "integration",
+        "property": "property",
+        "api": "api",
+        "crypto": "crypto",
+        "math": "math",
+        "release": "not slow",
     }
 
+    marker_expr = None
     if tier != "all" and tier in tier_markers:
-        cmd.extend(tier_markers[tier].split())
+        marker_expr = tier_markers[tier]
 
     # Verbosity
     if verbose:
@@ -65,7 +92,10 @@ def run_tests(
 
     # Fast mode (skip slow tests)
     if fast:
-        cmd.extend(["-m", "not slow"])
+        marker_expr = f"({marker_expr}) and not slow" if marker_expr else "not slow"
+
+    if marker_expr:
+        cmd.extend(["-m", marker_expr])
 
     # Stop on first failure
     if stop_on_fail:
@@ -81,6 +111,19 @@ def run_tests(
     print("-" * 70)
 
     start_time = time.time()
+
+    if preflight:
+        preflight_files = [
+            "training/federated_orchestrator.py",
+            "training/trigger_vertex_training.py",
+            "training/kernel_manifest.py",
+        ]
+        pf_cmd = ["python", "-m", "py_compile", *preflight_files]
+        print("Preflight:", " ".join(pf_cmd))
+        pf = subprocess.run(pf_cmd, cwd=Path(__file__).parent)
+        if pf.returncode != 0:
+            print("Preflight failed; aborting test run.")
+            return pf.returncode
 
     # Run tests
     result = subprocess.run(cmd, cwd=Path(__file__).parent)
@@ -126,6 +169,7 @@ SPECIAL MODES:
   api          API-specific tests
   crypto       Cryptographic tests
   math         Mathematical verification tests
+  release      Stable release-gate tests (small, deterministic)
 
 EXAMPLES:
 ---------
@@ -134,6 +178,7 @@ EXAMPLES:
   python run_tests.py professional --cov   # Professional + coverage
   python run_tests.py enterprise -x        # Enterprise, stop on fail
   python run_tests.py --fast               # Skip slow tests
+  python run_tests.py release --preflight  # Deterministic release gate
 
 TEST FILES:
 -----------
@@ -157,7 +202,7 @@ def main():
         "tier",
         nargs="?",
         default="all",
-        choices=["all", "homebrew", "professional", "enterprise", "integration", "property", "api", "crypto", "math"],
+        choices=["all", "homebrew", "professional", "enterprise", "integration", "property", "api", "crypto", "math", "release"],
         help="Test tier to run (default: all)"
     )
 
@@ -186,6 +231,12 @@ def main():
     )
 
     parser.add_argument(
+        "--preflight",
+        action="store_true",
+        help="Run syntax preflight (py_compile) for key training scripts before pytest"
+    )
+
+    parser.add_argument(
         "--help-tiers",
         action="store_true",
         help="Show detailed help about test tiers"
@@ -202,7 +253,8 @@ def main():
         coverage=args.coverage,
         fast=args.fast,
         verbose=not args.quiet,
-        stop_on_fail=args.stop_on_fail
+        stop_on_fail=args.stop_on_fail,
+        preflight=args.preflight
     )
 
 

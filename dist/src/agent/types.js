@@ -104,10 +104,10 @@ function hyperbolicDistance(u, v) {
 }
 /**
  * Calculate Harmonic Wall cost
- * score = 1 / (1 + d_H + 2 * phaseDeviation)
+ * score = exp(d_H + 2 * phaseDeviation)
  */
 function harmonicWallCost(distance, phaseDeviation = 0) {
-    return 1 / (1 + distance + 2 * phaseDeviation);
+    return Math.exp(distance + 2 * phaseDeviation);
 }
 /**
  * Generate initial position for tongue in Poincaré ball

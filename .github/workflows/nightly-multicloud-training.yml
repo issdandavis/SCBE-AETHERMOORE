@@ -1,0 +1,106 @@
+name: Nightly Multi-Cloud Training Bootstrap
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      execute:
+        description: 'Execute provider jobs (otherwise dry-run)'
+        required: false
+        default: 'false'
+      providers:
+        description: 'Comma-separated provider ids (vertex-ai,kubernetes,aws-sagemaker,huggingface)'
+        required: false
+        default: ''
+      hours:
+        description: 'Wall-time budget in hours'
+        required: false
+        default: '8'
+
+jobs:
+  training-bootstrap:
+    name: Nightly multi-cloud training
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install CLI dependencies
+        run: |
+          python -m pip install --upgrade pip
+
+      - name: Dry-run bootstrap summary
+        env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          GCP_REGION: ${{ vars.GCP_REGION || 'us-west1' }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_DATASET_REPO: ${{ vars.HF_DATASET_REPO || 'scbe/notion-exports' }}
+          HF_MODEL_REPO: ${{ vars.HF_MODEL_REPO || 'issdandavis/phdm-21d-embedding' }}
+          KUBECONFIG: ${{ github.workspace }}/.kube/config
+          AWS_REGION: ${{ vars.AWS_REGION || 'us-west-2' }}
+          SAGEMAKER_EXECUTION_ROLE_ARN: ${{ secrets.SAGEMAKER_EXECUTION_ROLE_ARN }}
+          S3_TRAINING_DATA_URI: ${{ vars.S3_TRAINING_DATA_URI || 's3://scbe-training-data/notion-exports/' }}
+          S3_OUTPUT_PATH: ${{ vars.S3_OUTPUT_PATH || 's3://scbe-training-output/long-run/' }}
+          PROVIDERS: ${{ github.event.inputs.providers }}
+          HOURS: ${{ github.event.inputs.hours || '8' }}
+        run: |
+          PROV_ARGS=""
+          if [ -n "$PROVIDERS" ]; then
+            PROV_ARGS="--providers $PROVIDERS"
+          fi
+          python scripts/long_run_training_bootstrap.py \
+            --plan training/long_run_multicloud_training_plan.json \
+            --hours "$HOURS" \
+            --run-root "training/runs/workflow-${{ github.run_id }}" \
+            $PROV_ARGS
+
+      - name: Configure AWS credentials (manual execute only)
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.execute == 'true'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION || 'us-west-2' }}
+
+      - name: Execute selected providers
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.execute == 'true'
+        env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          GCP_REGION: ${{ vars.GCP_REGION || 'us-west1' }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_DATASET_REPO: ${{ vars.HF_DATASET_REPO || 'scbe/notion-exports' }}
+          HF_MODEL_REPO: ${{ vars.HF_MODEL_REPO || 'issdandavis/phdm-21d-embedding' }}
+          KUBECONFIG: ${{ github.workspace }}/.kube/config
+          AWS_REGION: ${{ vars.AWS_REGION || 'us-west-2' }}
+          SAGEMAKER_EXECUTION_ROLE_ARN: ${{ secrets.SAGEMAKER_EXECUTION_ROLE_ARN }}
+          S3_TRAINING_DATA_URI: ${{ vars.S3_TRAINING_DATA_URI || 's3://scbe-training-data/notion-exports/' }}
+          S3_OUTPUT_PATH: ${{ vars.S3_OUTPUT_PATH || 's3://scbe-training-output/long-run/' }}
+          PROVIDERS: ${{ github.event.inputs.providers }}
+          HOURS: ${{ github.event.inputs.hours || '8' }}
+        run: |
+          PROV_ARGS=""
+          if [ -n "$PROVIDERS" ]; then
+            PROV_ARGS="--providers $PROVIDERS"
+          fi
+          python scripts/long_run_training_bootstrap.py \
+            --execute \
+            --plan training/long_run_multicloud_training_plan.json \
+            --hours "$HOURS" \
+            --run-root "training/runs/workflow-${{ github.run_id }}" \
+            $PROV_ARGS
+
+      - name: Workflow summary
+        if: always()
+        run: |
+          echo "## Nightly Multi-Cloud Training Bootstrap" >> $GITHUB_STEP_SUMMARY
+          echo "- Executed at: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_STEP_SUMMARY
+          echo "- Event: ${GITHUB_EVENT_NAME}" >> $GITHUB_STEP_SUMMARY
+          echo "- Execute: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.execute == 'true' }}" >> $GITHUB_STEP_SUMMARY

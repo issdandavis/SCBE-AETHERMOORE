@@ -1,6 +1,8 @@
 /**
  * Polly Pads - Fleet Mini-IDE System + Mode Switching Workspaces
  *
+ * Consolidated export surface for drone core, mode-switching systems,
+ * closed-network comms, squad consensus, and mission coordination.
  * "Clone Trooper Field Upgrade Stations for AI Agents"
  *
  * Hot-swappable mini-IDEs that run on each AI agent in the fleet,
@@ -15,7 +17,7 @@
  * @author Issac Davis
  */
 
-// Drone Core (original)
+// Drone Core
 export {
   DroneCore,
   createReconDrone,
@@ -41,7 +43,7 @@ export {
   type StoreQuery,
 } from './capability-store.js';
 
-// Mode Switching System
+// Mode Pad
 export {
   ModePad,
   type SacredTongue,
@@ -49,6 +51,7 @@ export {
   type MemoryEntry,
 } from './mode-pad.js';
 
+// Specialist Mode Registry (lightweight mode system)
 // Specialist Modes (Dynamic Mode Switching) — legacy registry
 export {
   ModeRegistry,
@@ -64,6 +67,7 @@ export {
   type ModeSwitchEvent as LegacyModeSwitchEvent,
 } from './specialist-modes.js';
 
+// Full specialist mode classes + factories
 // Closed Network (Air-Gapped Communications)
 export {
   ClosedNetwork,
@@ -101,11 +105,11 @@ export {
   MissionPlanningMode,
   createMode,
   createAllModes,
-  type SpecialistMode,
-  type ModeTool,
+  type SpecialistMode as ModeName,
+  type ModeTool as ModeCatalogTool,
   type ModeActionResult,
-  type ModeState,
-  type ModeSwitchEvent,
+  type ModeState as ModeRuntimeState,
+  type ModeSwitchEvent as ModeTransitionEvent,
   type SquadVote,
   type CrisisType,
   type ModeAssignment,

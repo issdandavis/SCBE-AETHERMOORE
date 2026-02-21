@@ -22,6 +22,7 @@ Integration Points:
 - HYDRA Ledger: Log audio hashes as cryptographic proofs
 """
 
+import sys
 import numpy as np
 from typing import List, Tuple, Dict, Any, Optional
 from dataclasses import dataclass
@@ -36,7 +37,7 @@ try:
     SCIPY_AVAILABLE = True
 except ImportError:
     SCIPY_AVAILABLE = False
-    print("[WAVEFORM] scipy not available, using pure numpy wav export")
+    print("[WAVEFORM] scipy not available, using pure numpy wav export", file=sys.stderr)
 
 
 # =============================================================================
@@ -363,7 +364,7 @@ def _export_wav_numpy(samples: np.ndarray, filename: str, sample_rate: int) -> b
 
         return True
     except Exception as e:
-        print(f"[WAVEFORM] Export error: {e}")
+        print(f"[WAVEFORM] Export error: {e}", file=sys.stderr)
         return False
 
 

@@ -12,20 +12,6 @@ Extends Polly Pads into full agent runtimes with:
 - Per-pad tool gating by mode + zone
 - SCBE decision gating for zone promotion
 - Tri-directional Hamiltonian path validation
-Polly Pads Runtime - Per-Pad AI Code Assistance
-
-Each Polly Pad is a namespaced agent workspace with:
-- Mode-specific toolsets (ENGINEERING, NAVIGATION, SYSTEMS, SCIENCE, COMMS, MISSION)
-- Dual code zones: HOT (draft/plan only) and SAFE (execution, requires quorum)
-- Squad code space with Byzantine 4/6 quorum for shared voxel commits
-- Proximity tracking via 3D Euclidean distance
-- SCBE three-tier governance: ALLOW / QUARANTINE / DENY
-
-Integration points:
-- Layer 12: Harmonic wall cost (h_eff) drives SCBE decision
-- Layer 13: Risk decision tier (ALLOW/QUARANTINE/DENY)
-- Sacred Tongues: Voxel addressing uses lang dimension
-- VoxelRecord: Canonical payload envelope at 6D address
 """
 
 from __future__ import annotations
@@ -69,53 +55,11 @@ PHI = (1 + math.sqrt(5)) / 2
 # ═══════════════════════════════════════════════════════════════
 # SCBE Thresholds & Decision
 # ═══════════════════════════════════════════════════════════════
-from dataclasses import dataclass, field
-from typing import Dict, List, Literal, Optional, Tuple
-import hashlib
-import json
-import math
-
-
-# ---------------------------------------------------------------------------
-# Type aliases
-# ---------------------------------------------------------------------------
-
-Lang = Literal["KO", "AV", "RU", "CA", "UM", "DR"]
-PadMode = Literal[
-    "ENGINEERING", "NAVIGATION", "SYSTEMS", "SCIENCE", "COMMS", "MISSION"
-]
-Decision = Literal["ALLOW", "QUARANTINE", "DENY"]
-Voxel6 = Tuple[float, float, float, float, float, float]
-
-PAD_MODES: Tuple[PadMode, ...] = (
-    "ENGINEERING",
-    "NAVIGATION",
-    "SYSTEMS",
-    "SCIENCE",
-    "COMMS",
-    "MISSION",
-)
-
-# Mode-specific toolsets
-MODE_TOOLS: Dict[PadMode, List[str]] = {
-    "ENGINEERING": ["ide_draft", "code_exec_safe", "build_deploy"],
-    "NAVIGATION": ["map_query", "proximity_track", "path_plan"],
-    "SYSTEMS": ["telemetry_read", "config_set", "policy_enforce"],
-    "SCIENCE": ["hypothesis_gen", "experiment_run", "model_tune"],
-    "COMMS": ["msg_send", "negotiate", "protocol_exec"],
-    "MISSION": ["goal_set", "constraint_check", "orchestrate_squad"],
-}
-
-
-# ---------------------------------------------------------------------------
-# SCBE governance
-# ---------------------------------------------------------------------------
 
 
 @dataclass(frozen=True)
 class Thresholds:
     """SCBE governance thresholds for risk decision."""
-    """SCBE Layer-12/13 decision thresholds."""
 
     allow_max_cost: float = 1e3
     quarantine_max_cost: float = 1e6
@@ -138,16 +82,6 @@ def scbe_decide(
         DENY if coherence < quarantine_min OR h_eff > quarantine_max OR d_star > quarantine_max
         ALLOW if coherence >= allow_min AND h_eff <= allow_max AND d_star <= allow_max
         QUARANTINE otherwise
-    """Three-tier SCBE risk decision (Layer 13).
-
-    Args:
-        d_star: Hyperbolic drift from safe centre.
-        coherence: NK coherence score [0, 1].
-        h_eff: Effective Hamiltonian cost (Layer 12).
-        thr: Decision thresholds.
-
-    Returns:
-        ALLOW, QUARANTINE, or DENY.
     """
     if coherence < thr.quarantine_min_coherence:
         return "DENY"
@@ -194,9 +128,6 @@ def cube_id(
         "scope": scope,
         "unit_id": unit_id,
         "voxel": voxel,
-        "squad_id": squad_id,
-        "unit_id": unit_id,
-        "voxel": list(voxel),
     }
     raw = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(raw).hexdigest()
@@ -210,15 +141,11 @@ def pad_namespace_key(unit_id: str, pad_mode: PadMode, lang: Lang, epoch: int) -
 # ═══════════════════════════════════════════════════════════════
 # Unit State
 # ═══════════════════════════════════════════════════════════════
-# ---------------------------------------------------------------------------
-# Unit state and spatial helpers
-# ---------------------------------------------------------------------------
 
 
 @dataclass
 class UnitState:
     """Physical + governance state of a single unit/drone."""
-    """Position + governance snapshot for a single unit."""
 
     unit_id: str
     x: float
@@ -240,61 +167,6 @@ def dist(a: UnitState, b: UnitState) -> float:
 # ═══════════════════════════════════════════════════════════════
 # Squad Space
 # ═══════════════════════════════════════════════════════════════
-# ---------------------------------------------------------------------------
-# Voxel record (Python mirror of scbe-voxel-types.ts)
-# ---------------------------------------------------------------------------
-
-
-@dataclass
-class QuorumProof:
-    """Byzantine 4/6 quorum proof for voxel commits."""
-
-    n: int
-    f: int
-    threshold: int
-    votes: List[Dict[str, object]]
-
-
-@dataclass
-class SacredEggSeal:
-    """Encryption envelope with pi^(phi*d*) key derivation."""
-
-    egg_id: str
-    d_star: float
-    coherence: float
-    nonce: str
-    aad: str
-    kdf: str = "pi_phi"
-
-
-@dataclass
-class VoxelRecord:
-    """Canonical payload envelope at 6D voxel address."""
-
-    scope: Literal["unit", "squad"]
-    lang: Lang
-    voxel: Voxel6
-    epoch: int
-    pad_mode: PadMode
-    coherence: float
-    d_star: float
-    h_eff: float
-    decision: Decision
-    cube_id: str
-    payload_digest: str
-    seal: SacredEggSeal
-    payload_ciphertext: str
-    version: int = 1
-    unit_id: Optional[str] = None
-    squad_id: Optional[str] = None
-    quorum: Optional[QuorumProof] = None
-    tags: Optional[List[str]] = None
-    parents: Optional[List[str]] = None
-
-
-# ---------------------------------------------------------------------------
-# Squad space (shared voxel memory + proximity)
-# ---------------------------------------------------------------------------
 
 
 @dataclass
@@ -306,17 +178,6 @@ class SquadSpace:
 
     def neighbors(self, radius: float) -> Dict[str, List[str]]:
         """Compute proximity graph: units within radius of each other."""
-    """Shared code space for a squad of units.
-
-    Writes require Byzantine quorum (>=4/6).
-    """
-
-    squad_id: str
-    units: Dict[str, UnitState] = field(default_factory=dict)
-    voxels: Dict[str, VoxelRecord] = field(default_factory=dict)
-
-    def neighbors(self, radius: float) -> Dict[str, List[str]]:
-        """Find neighbour pairs within *radius* Euclidean distance."""
         ids = list(self.units.keys())
         out: Dict[str, List[str]] = {uid: [] for uid in ids}
         for i in range(len(ids)):
@@ -389,25 +250,6 @@ PAD_TOOL_MATRIX: Dict[PadMode, Dict[CodeZone, Tuple[str, ...]]] = {
         "HOT": ("plan_only", "goals"),
     },
 }
-                    out[ids[i]].append(ids[j])
-                    out[ids[j]].append(ids[i])
-        return out
-
-    def quorum_ok(self, votes: int, n: int = 6, threshold: int = 4) -> bool:
-        """Byzantine quorum check: n=6 tolerates f=1, needs >=4."""
-        return votes >= threshold and n >= 2 * threshold - n
-
-    def commit_voxel(self, record: VoxelRecord, quorum_votes: int) -> bool:
-        """Commit a VoxelRecord to shared space if quorum is met."""
-        if not self.quorum_ok(quorum_votes):
-            return False
-        self.voxels[record.cube_id] = record
-        return True
-
-
-# ---------------------------------------------------------------------------
-# Polly Pad (per-unit AI workspace)
-# ---------------------------------------------------------------------------
 
 
 @dataclass
@@ -428,27 +270,6 @@ class PollyPad:
     def tools(self) -> Tuple[str, ...]:
         """Currently available tools based on mode + zone."""
         return PAD_TOOL_MATRIX[self.mode][self.zone]
-    """Personal AI workspace with mode-specific tools, dual zones, and assist().
-
-    Each pad provides:
-    - Scoped toolset determined by *mode*
-    - Dual code zones: HOT (draft only) / SAFE (exec, needs quorum)
-    - ``assist()`` method for per-pad AI code assistance
-    - Local voxel memory namespace
-    """
-
-    unit_id: str
-    mode: PadMode
-    zone: Literal["HOT", "SAFE"] = "HOT"
-    thr: Thresholds = field(default_factory=Thresholds)
-    tools: List[str] = field(default_factory=list)
-    memory: Dict[str, VoxelRecord] = field(default_factory=dict)
-
-    def __post_init__(self) -> None:
-        if not self.tools:
-            self.tools = list(MODE_TOOLS.get(self.mode, []))
-
-    # -- Zone promotion --
 
     def can_promote_to_safe(
         self, state: UnitState, quorum_votes: Optional[int] = None
@@ -459,9 +280,6 @@ class PollyPad:
         Requires:
         1. SCBE decision == ALLOW
         2. Optional: >= 4/6 squad quorum
-        """Check whether HOT -> SAFE promotion is allowed.
-
-        Requires SCBE decision == ALLOW and optional 4/6 quorum.
         """
         decision = scbe_decide(state.d_star, state.coherence, state.h_eff, self.thr)
         if decision != "ALLOW":
@@ -717,71 +535,3 @@ def quasi_sphere_volume(radius: float) -> float:
 def access_cost(d_star: float, r: float = 1.5) -> float:
     """Layer-12 access cost: H(d*, R) = R * pi^(phi * d*)."""
     return r * math.pow(math.pi, PHI * d_star)
-    # -- Task routing --
-
-    def route_task(
-        self,
-        task_kind: str,
-        state: UnitState,
-        squad: SquadSpace,
-    ) -> str:
-        """Route a task through SCBE governance and mode-specific tooling.
-
-        HOT zone: plan/draft only.  SAFE zone: tool execution allowed.
-        """
-        if self.zone == "HOT":
-            return "HOT: Plan/draft only (no exec)"
-
-        if task_kind not in self.tools:
-            return "DENY: Tool not allowed in mode"
-
-        if task_kind == "proximity_track" and self.mode == "NAVIGATION":
-            nbrs = squad.neighbors(radius=10.0)
-            return f"Neighbors: {nbrs.get(self.unit_id, [])}"
-
-        if task_kind == "ide_draft" and self.mode == "ENGINEERING":
-            return "HOT: Code draft generated"
-
-        if task_kind == "code_exec_safe" and self.mode == "ENGINEERING":
-            return "SAFE: Exec with security envelope"
-
-        if task_kind == "build_deploy" and self.mode == "ENGINEERING":
-            return "SAFE: Build and deploy initiated"
-
-        return "ALLOW: Task routed"
-
-    # -- Per-pad AI assistance --
-
-    def assist(self, query: str, state: UnitState, squad: SquadSpace) -> str:
-        """Per-pad AI code assistance (scoped to mode + zone).
-
-        Parses the query, routes subtasks through the pad's toolset,
-        and returns a response bounded by SCBE governance.
-        """
-        q = query.lower()
-
-        if "proximity" in q and self.mode == "NAVIGATION":
-            return self.route_task("proximity_track", state, squad)
-
-        if "code" in q and self.mode == "ENGINEERING":
-            tool = "ide_draft" if self.zone == "HOT" else "code_exec_safe"
-            return self.route_task(tool, state, squad)
-
-        if "build" in q and self.mode == "ENGINEERING":
-            return self.route_task("build_deploy", state, squad)
-
-        if "telemetry" in q and self.mode == "SYSTEMS":
-            return self.route_task("telemetry_read", state, squad)
-
-        if "hypothesis" in q and self.mode == "SCIENCE":
-            return self.route_task("hypothesis_gen", state, squad)
-
-        if "message" in q and self.mode == "COMMS":
-            return self.route_task("msg_send", state, squad)
-
-        if "goal" in q and self.mode == "MISSION":
-            return self.route_task("goal_set", state, squad)
-
-        # Contextual fallback with squad context
-        squad_ctx = next(iter(squad.voxels.values()), None) if squad.voxels else None
-        return f"Assist in {self.mode}: {query} (context: {squad_ctx})"

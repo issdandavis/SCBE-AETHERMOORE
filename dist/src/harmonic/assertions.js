@@ -1,32 +1,18 @@
 "use strict";
-/**
- * SCBE Harmonic Assertions
- * Runtime validation utilities for harmonic calculations.
- */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.assertIntGE = assertIntGE;
-exports.assertFinite = assertFinite;
-exports.log2 = log2;
-/**
- * Assert that a value is an integer >= minVal
- */
-function assertIntGE(name, val, minVal) {
-    if (!Number.isInteger(val) || val < minVal) {
-        throw new RangeError(`${name} must be an integer >= ${minVal}, got ${val}`);
-    }
-}
-/**
- * Assert that a value is finite (not NaN or Infinity)
- */
-function assertFinite(val, msg) {
-    if (!Number.isFinite(val)) {
-        throw new RangeError(msg);
-    }
-}
-/**
- * Base-2 logarithm
- */
-function log2(x) {
-    return Math.log(x) / Math.LN2;
-}
+__exportStar(require("../../packages/kernel/src/assertions.js"), exports);
 //# sourceMappingURL=assertions.js.map

@@ -1,0 +1,74 @@
+{
+  "jobs": [
+    {
+      "job_id": "job-001-market-scan",
+      "agent_id": "agent-1-research",
+      "session_id": "research-session-1",
+      "risk_tier": "REFLEX",
+      "workflow_id": "wf-market-scan",
+      "run_id": "run-001",
+      "source": "swarm",
+      "verify": {
+        "must_contain": [
+          "Example Domain"
+        ],
+        "selectors_present": [
+          "h1"
+        ],
+        "max_redirects": 3
+      },
+      "actions": [
+        {
+          "action": "navigate",
+          "target": "https://example.com",
+          "timeout_ms": 12000
+        },
+        {
+          "action": "extract",
+          "target": "h1",
+          "timeout_ms": 12000
+        },
+        {
+          "action": "screenshot",
+          "target": "full_page",
+          "timeout_ms": 12000
+        }
+      ]
+    },
+    {
+      "job_id": "job-002-verify-content",
+      "agent_id": "agent-2-verify",
+      "session_id": "verify-session-1",
+      "risk_tier": "REFLEX",
+      "workflow_id": "wf-market-scan",
+      "run_id": "run-002",
+      "source": "swarm",
+      "verify": {
+        "must_contain": [
+          "Example Domain"
+        ],
+        "selectors_present": [
+          "h1"
+        ],
+        "max_redirects": 3
+      },
+      "actions": [
+        {
+          "action": "navigate",
+          "target": "https://example.com",
+          "timeout_ms": 12000
+        },
+        {
+          "action": "extract",
+          "target": "h1",
+          "timeout_ms": 12000
+        },
+        {
+          "action": "screenshot",
+          "target": "full_page",
+          "timeout_ms": 12000
+        }
+      ]
+    }
+  ]
+}

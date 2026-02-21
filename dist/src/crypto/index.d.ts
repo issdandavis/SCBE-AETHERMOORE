@@ -16,4 +16,8 @@ export * from './nonceManager.js';
 export * from './replayGuard.js';
 export * from './bloom.js';
 export * from './pqc.js';
+export * from './platform.js';
+export * from './quantum-safe.js';
+export * from './pqc-strategies.js';
+export * from './aetherlex-seed.js';
 //# sourceMappingURL=index.d.ts.map
