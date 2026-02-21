@@ -100,6 +100,18 @@ from .harmonic_scaling_law import (
     EPSILON_THRESHOLD_NORMALIZED,
 )
 
+from .geoseal_location_library import (
+    Geolocation,
+    GeoSealLocationDecision,
+    DEFAULT_CORE_MAX,
+    DEFAULT_OUTER_MAX,
+    evaluate_geoseal_location,
+    geoid,
+    haversine_km,
+    infer_location_from_ip,
+    decision_to_metadata,
+)
+
 __all__ = [
     # Core cipher components
     "SymphonicCipher",
@@ -175,4 +187,14 @@ __all__ = [
     "EPSILON_THRESHOLD_HARMONIC",
     "EPSILON_THRESHOLD_UNIFORM",
     "EPSILON_THRESHOLD_NORMALIZED",
+    # GeoSeal Location Binding
+    "Geolocation",
+    "GeoSealLocationDecision",
+    "DEFAULT_CORE_MAX",
+    "DEFAULT_OUTER_MAX",
+    "evaluate_geoseal_location",
+    "geoid",
+    "haversine_km",
+    "infer_location_from_ip",
+    "decision_to_metadata",
 ]

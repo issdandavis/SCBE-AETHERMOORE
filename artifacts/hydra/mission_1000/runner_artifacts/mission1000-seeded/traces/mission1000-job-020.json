@@ -1,0 +1,76 @@
+{
+  "request": {
+    "payload": {
+      "actions": [
+        {
+          "action": "navigate",
+          "target": "https://example.com/mission/20",
+          "timeout_ms": 12000
+        },
+        {
+          "action": "extract",
+          "target": "h1",
+          "timeout_ms": 12000
+        },
+        {
+          "action": "extract",
+          "target": "h1",
+          "timeout_ms": 12000
+        },
+        {
+          "action": "extract",
+          "target": "h1",
+          "timeout_ms": 12000
+        },
+        {
+          "action": "extract",
+          "target": "h1",
+          "timeout_ms": 12000
+        },
+        {
+          "action": "extract",
+          "target": "h1",
+          "timeout_ms": 12000
+        },
+        {
+          "action": "extract",
+          "target": "h1",
+          "timeout_ms": 12000
+        },
+        {
+          "action": "extract",
+          "target": "h1",
+          "timeout_ms": 12000
+        },
+        {
+          "action": "extract",
+          "target": "h1",
+          "timeout_ms": 12000
+        },
+        {
+          "action": "extract",
+          "target": "h1",
+          "timeout_ms": 12000
+        }
+      ],
+      "session_id": "mission1000-session-020",
+      "source": "synthetic",
+      "workflow_id": "hydra-mission-1000",
+      "run_id": "mission-1000-seeded",
+      "dry_run": false
+    },
+    "risk_tier": "DELIBERATION",
+    "verify": {
+      "max_redirects": 2
+    }
+  },
+  "response": {
+    "status": "blocked_by_policy",
+    "session_id": "mission1000-session-020",
+    "results": [],
+    "total_actions": 10,
+    "executed_actions": 0,
+    "blocked_actions": 10,
+    "trace": "policy_gate_blocked"
+  }
+}

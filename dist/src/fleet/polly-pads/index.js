@@ -63,12 +63,6 @@ Object.defineProperty(exports, "MissionPlanningMode", { enumerable: true, get: f
 Object.defineProperty(exports, "createMode", { enumerable: true, get: function () { return index_js_1.createMode; } });
 Object.defineProperty(exports, "createAllModes", { enumerable: true, get: function () { return index_js_1.createAllModes; } });
 Object.defineProperty(exports, "MODE_CONFIGS", { enumerable: true, get: function () { return index_js_1.MODE_CONFIGS; } });
-// Closed Network (air-gapped comms)
-var closed_network_js_2 = require("./closed-network.js");
-Object.defineProperty(exports, "ClosedNetwork", { enumerable: true, get: function () { return closed_network_js_2.ClosedNetwork; } });
-Object.defineProperty(exports, "DEFAULT_CLOSED_CONFIG", { enumerable: true, get: function () { return closed_network_js_2.DEFAULT_CLOSED_CONFIG; } });
-Object.defineProperty(exports, "BLOCKED_NETWORKS", { enumerable: true, get: function () { return closed_network_js_2.BLOCKED_NETWORKS; } });
-// Squad Coordination (Byzantine consensus)
 // Voxel Record Types (6D addressing + Byzantine quorum)
 var voxel_types_js_1 = require("./voxel-types.js");
 Object.defineProperty(exports, "langToTongueCode", { enumerable: true, get: function () { return voxel_types_js_1.langToTongueCode; } });
