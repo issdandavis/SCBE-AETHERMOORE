@@ -76,6 +76,9 @@ jobs:
   create-issue:
     needs: [npm-audit, pip-audit]
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      actions: read
     if: always()
     steps:
       - uses: actions/checkout@v4
@@ -126,7 +129,7 @@ with open(output_file, 'a', encoding='utf-8') as fh:
 PY
 
       - name: Create issue if critical vulnerabilities found
-        if: steps.check_vulns.outputs.total_critical > 0
+        if: fromJSON(steps.check_vulns.outputs.total_critical) > 0
         uses: actions/github-script@v7
         with:
           script: |

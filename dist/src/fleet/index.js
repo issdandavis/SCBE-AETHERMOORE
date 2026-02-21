@@ -44,6 +44,11 @@ __exportStar(require("./crawl-frontier"), exports);
 __exportStar(require("./crawl-coordinator"), exports);
 __exportStar(require("./crawl-runner"), exports);
 __exportStar(require("./browser-pool"), exports);
+// Formalized 4-Layer Swarm Architecture
+__exportStar(require("./swarm-geometry"), exports);
+__exportStar(require("./oscillator-bus"), exports);
+__exportStar(require("./governed-drift"), exports);
+__exportStar(require("./node-kernel"), exports);
 // Export types (canonical source for shared types)
 __exportStar(require("./types"), exports);
 // Export polly-pad specific items (excluding types already exported from ./types)

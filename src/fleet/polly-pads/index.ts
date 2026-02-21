@@ -117,18 +117,6 @@ export {
   MODE_CONFIGS,
 } from './modes/index.js';
 
-// Closed Network (air-gapped comms)
-export {
-  ClosedNetwork,
-  DEFAULT_CLOSED_CONFIG,
-  BLOCKED_NETWORKS,
-  type NetworkChannel,
-  type BlockedCategory,
-  type NetworkMessage,
-  type ClosedNetworkConfig,
-} from './closed-network.js';
-
-// Squad Coordination (Byzantine consensus)
 // Voxel Record Types (6D addressing + Byzantine quorum)
 export {
   type Lang,
