@@ -38,8 +38,12 @@ exports.defaultSheafEngine = exports.SheafCohomologyEngine = exports.BooleanLatt
 exports.topCochain = topCochain;
 exports.bottomCochain = bottomCochain;
 exports.tarskiLaplacian = tarskiLaplacian;
+exports.failToNoise = failToNoise;
+exports.braidedTemporalDistance = braidedTemporalDistance;
+exports.braidedMetaTime = braidedMetaTime;
+exports.cohomologicalHarmonicWall = cohomologicalHarmonicWall;
 exports.tarskiCohomology = tarskiCohomology;
-exports.globalSections = globalSections;
+exports.v2GlobalSections = v2GlobalSections;
 exports.upLaplacian = upLaplacian;
 exports.downLaplacian = downLaplacian;
 exports.hodgeLaplacian = hodgeLaplacian;
@@ -48,13 +52,13 @@ exports.IntervalLattice = IntervalLattice;
 exports.PowerSetLattice = PowerSetLattice;
 exports.UnitIntervalLattice = UnitIntervalLattice;
 exports.ProductLattice = ProductLattice;
-exports.identityConnection = identityConnection;
+exports.v2IdentityConnection = v2IdentityConnection;
 exports.constantConnection = constantConnection;
 exports.thresholdConnection = thresholdConnection;
 exports.scalingConnection = scalingConnection;
 exports.graphComplex = graphComplex;
 exports.simplicialComplex = simplicialComplex;
-exports.constantSheaf = constantSheaf;
+exports.v2ConstantSheaf = v2ConstantSheaf;
 exports.thresholdSheaf = thresholdSheaf;
 exports.twistedSheaf = twistedSheaf;
 exports.analyseCohomology = analyseCohomology;
@@ -129,6 +133,98 @@ function tarskiLaplacian(sheaf, dim, x) {
     }
     return result;
 }
+// FAIL-TO-NOISE
+// ============================================================
+/**
+ * Fail-to-noise: produce a fixed-size output indistinguishable
+ * from legitimate governance data when obstruction is detected.
+ *
+ * Uses obstruction degree + vertex count as deterministic seed.
+ * Output is always `size` bytes regardless of input.
+ */
+function failToNoise(obstruction, size = 256) {
+    const buf = new Uint8Array(size);
+    // LCG seeded from obstruction — deterministic, reproducible
+    let seed = (Math.floor(obstruction * 2147483647) | 1) >>> 0;
+    for (let i = 0; i < size; i++) {
+        seed = ((seed * 1103515245 + 12345) & 0x7fffffff) >>> 0;
+        buf[i] = seed & 0xff;
+    }
+    return buf;
+}
+// ============================================================
+// BRAIDED TEMPORAL DISTANCE (T-braiding integration)
+// ============================================================
+/**
+ * Braided temporal distance: sum of pairwise hyperbolic distances
+ * between temporal T-variants embedded in the Poincaré ball.
+ *
+ * For triadic (3 variants):
+ *   d_b = d_H(T_i, T_m) + d_H(T_m, T_g) + d_H(T_g, T_i)
+ *
+ * For tetradic (4 variants):
+ *   d_b = Σ_{all 6 pairs} d_H(T_a, T_b)
+ *
+ * Uses arcosh formula: d_H(u,v) = arcosh(1 + 2|u-v|² / ((1-|u|²)(1-|v|²)))
+ *
+ * @param variants - scalar values for each T in (-1, 1) (Poincaré ball)
+ */
+function braidedTemporalDistance(variants) {
+    const n = variants.length;
+    let total = 0;
+    for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+            const u = Math.max(-0.999, Math.min(0.999, variants[i]));
+            const v = Math.max(-0.999, Math.min(0.999, variants[j]));
+            const diff2 = (u - v) * (u - v);
+            const denom = (1 - u * u) * (1 - v * v);
+            const arg = 1 + (2 * diff2) / Math.max(denom, 1e-15);
+            total += Math.acosh(Math.max(1, arg));
+        }
+    }
+    return total;
+}
+/**
+ * Braided meta-time: T_b = T^(t+k) · intent · context · [1/t]
+ *
+ * Multiplicative braiding of temporal variants through the base T.
+ *
+ * @param T - base time constant
+ * @param t - temporal exponent (memory variant)
+ * @param intent - intent alignment scalar
+ * @param context - governance context scalar
+ * @param includePredictive - if true, includes T/t forecast term
+ */
+function braidedMetaTime(T, t, intent, context, includePredictive = false) {
+    const k = includePredictive ? 2 : 2;
+    const base = Math.pow(Math.max(1e-10, T), t + k) * intent * context;
+    if (includePredictive && Math.abs(t) > 1e-10) {
+        return base / t;
+    }
+    return base;
+}
+// ============================================================
+// COHOMOLOGICAL HARMONIC WALL
+// ============================================================
+/**
+ * Cohomological harmonic wall: combines obstruction degree with
+ * the existing H(d, R) = R^(d²) super-exponential scaling.
+ *
+ * The obstruction degree from Tarski cohomology maps to an
+ * effective dimension d*, which feeds into the harmonic wall.
+ * Result: adversarial temporal disagreement gets exponentially
+ * amplified into governance cost.
+ *
+ * @param obstruction - [0,1] from detectPolicyObstruction
+ * @param maxDimension - maximum effective dimension (default: 6, one per tongue)
+ * @param R - harmonic ratio (default: 1.5, perfect fifth)
+ */
+function cohomologicalHarmonicWall(obstruction, maxDimension = 6, R = 1.5) {
+    // Map obstruction [0,1] → effective dimension [0, maxDimension]
+    const dStar = obstruction * maxDimension;
+    // H(d*, R) = R^(d*²)
+    return Math.pow(R, dStar * dStar);
+}
 /**
  * Compute Tarski cohomology TH^k(X; F) as the greatest post-fixpoint of L_k.
  *
@@ -177,7 +273,7 @@ function tarskiCohomology(sheaf, dim, maxIter) {
  * Compute global sections Γ(X; F) = TH^0(X; F).
  * These are assignments to vertices consistent across all edges.
  */
-function globalSections(sheaf) {
+function v2GlobalSections(sheaf) {
     return tarskiCohomology(sheaf, 0);
 }
 // ═══════════════════════════════════════════════════════════════
@@ -361,7 +457,7 @@ function ProductLattice(l1, l2) {
 // Concrete Galois Connections
 // ═══════════════════════════════════════════════════════════════
 /** Identity connection: both adjoints are identity */
-function identityConnection() {
+function v2IdentityConnection() {
     return { lower: (a) => a, upper: (b) => b };
 }
 /** Constant connection: lower maps everything to a fixed element */
@@ -529,12 +625,12 @@ function simplicialComplex(numVertices, edges, triangles) {
 /**
  * Constant sheaf: every stalk is the same lattice, every restriction is identity.
  */
-function constantSheaf(complex, lattice) {
+function v2ConstantSheaf(complex, lattice) {
     return {
         lattice,
         complex,
         stalk: () => lattice,
-        restriction: () => identityConnection(),
+        restriction: () => v2IdentityConnection(),
     };
 }
 /**

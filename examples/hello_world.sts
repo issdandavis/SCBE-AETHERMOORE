@@ -1,0 +1,11 @@
+; Print 72, 69, 76, 76, 79 (ASCII HELLO)
+ko:set r0, 72
+ko:print r0
+ko:set r0, 69
+ko:print r0
+ko:set r0, 76
+ko:print r0
+ko:print r0
+ko:set r0, 79
+ko:print r0
+ko:halt
