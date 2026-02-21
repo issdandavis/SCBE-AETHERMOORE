@@ -182,6 +182,31 @@ def layer_4_poincare(x: np.ndarray, alpha: float = ALPHA_EMBED) -> np.ndarray:
     return alpha * np.tanh(norm) * x / norm
 
 
+def layer_4_boundary_scan(
+    u: np.ndarray,
+    boundary_threshold: float = 0.95,
+    harmonic_base: float = 1.5,
+) -> Dict[str, float]:
+    """Boundary scan for quarantine-ready governance decisions.
+
+    Evaluates radial drift inside the Poincare ball and computes a harmonic
+    cost signal that can be used by decision gates.
+    """
+    norm = float(np.linalg.norm(u))
+    norm = min(max(norm, 0.0), 1.0 - EPS)
+    drift = max(0.0, norm - boundary_threshold)
+    # Scale drift to avoid numerical overflow while preserving exponential growth.
+    scaled = min(20.0, (drift / max(EPS, 1.0 - boundary_threshold)) ** 2)
+    harmonic_cost = float(np.exp(scaled) * harmonic_base)
+    return {
+        "norm": norm,
+        "boundary_threshold": float(boundary_threshold),
+        "boundary_drift": float(drift),
+        "boundary_cost": harmonic_cost,
+        "boundary_quarantine": 1.0 if norm >= boundary_threshold else 0.0,
+    }
+
+
 # =============================================================================
 # LAYER 5: HYPERBOLIC DISTANCE (THE INVARIANT)
 # =============================================================================
@@ -749,7 +774,17 @@ class FourteenLayerPipeline:
 
         # Layer 4: Poincaré Embedding
         u = layer_4_poincare(x_weighted, self.alpha)
-        self._record(4, "Poincaré Embedding", u, {"norm": np.linalg.norm(u)})
+        boundary = layer_4_boundary_scan(u)
+        self._record(
+            4,
+            "Poincaré Embedding",
+            u,
+            {
+                "norm": np.linalg.norm(u),
+                "boundary_cost": boundary["boundary_cost"],
+                "boundary_quarantine": boundary["boundary_quarantine"],
+            },
+        )
 
         # Layer 5: Hyperbolic Distance (if reference provided)
         if ref_u is None:
@@ -789,6 +824,9 @@ class FourteenLayerPipeline:
         if self.realm_centers is None:
             self.realm_centers = generate_realm_centers(len(u_phase))
         d_star, realm_idx = layer_8_multi_well(u_phase, self.realm_centers)
+        if boundary["boundary_quarantine"] > 0.5:
+            # Enforce stricter denial geometry when state approaches ball edge.
+            d_star = max(d_star, self.theta_2 + 0.1)
         self._record(
             8, "Multi-Well Realms", d_star, {"d_star": d_star, "realm": realm_idx}
         )

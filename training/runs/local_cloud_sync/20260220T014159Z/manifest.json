@@ -1,0 +1,31 @@
+{
+  "run_id": "20260220T014159Z",
+  "timestamp_utc": "2026-02-20T01:41:59.878152+00:00",
+  "fingerprint": "b34d381857f0a2810684a706e375c8ceeafd0b47f9e04e03f6def40a2f2350a9",
+  "counts": {
+    "indexed_files": 1508,
+    "added": 0,
+    "modified": 3,
+    "removed": 0,
+    "changed": 3
+  },
+  "delta": {
+    "added": [],
+    "modified": [
+      "docs/MOBILE_AUTONOMY_RUNBOOK.md",
+      "src/api/main.py",
+      "tests/test_mobile_goal_api.py"
+    ],
+    "removed": [],
+    "changed": [
+      "docs/MOBILE_AUTONOMY_RUNBOOK.md",
+      "src/api/main.py",
+      "tests/test_mobile_goal_api.py"
+    ]
+  },
+  "changed_hashes_sha256": {
+    "docs/MOBILE_AUTONOMY_RUNBOOK.md": "d6ba3d47719b68929afdcd9e4d80366c9240fb559c89811043957e8f0428edab",
+    "src/api/main.py": "f0085306f27b4895a902c4b67897003db829edc9fd125c25d56b5203178cd45d",
+    "tests/test_mobile_goal_api.py": "1df5bb2a6779b34573616ad8196d657260545f61f5b4f0c9182f78cb5a31fc86"
+  }
+}

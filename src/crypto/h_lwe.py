@@ -323,7 +323,7 @@ class HLWESymmetric:
             )
         if _norm(ctv) >= 1.0:
             raise InvalidVector("ciphertext vector must be inside unit ball.")
-        # Left-cancellation: (-k) (+) ct = (-k) (+) (k (+) (x (+) n)) = x (+) n
+        # Left-cancellation: (-k) (+) ct = x (+) noise
         x_hat = mobius_add(mobius_neg(key), ctv, c=self.c)
         r = _norm(x_hat)
         if r >= self.max_radius:

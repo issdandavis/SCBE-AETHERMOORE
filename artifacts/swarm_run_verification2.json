@@ -1,0 +1,51 @@
+{
+  "run_id": "20260217T043916Z",
+  "kernel_version": "scbe-kernel-v1",
+  "profile_id": "default-safe",
+  "total_jobs": 2,
+  "success_jobs": 2,
+  "failed_jobs": 0,
+  "failures": [],
+  "results": [
+    {
+      "job_id": "job-001-market-scan",
+      "agent_id": "agent-1-research",
+      "session_id": "research-session-1",
+      "risk_tier": "REFLEX",
+      "decision": "NOISE",
+      "decision_reason": "verification score < 0.60",
+      "verification_score": 0.3333,
+      "decision_record_path": "artifacts\\aetherbrowse_runs\\20260217T043916Z\\decision_records\\job-001-market-scan.json",
+      "trace_path": "artifacts\\aetherbrowse_runs\\20260217T043916Z\\traces\\job-001-market-scan.json",
+      "trace_hash": "dc077b557f22d837a7a1ede2df83c128af94c66c1be05c07b48a24571d3dbab6",
+      "screenshot_hashes": [],
+      "elapsed_ms": 2153.91,
+      "request_error": "<urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>",
+      "response_status": "request_error",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    },
+    {
+      "job_id": "job-002-verify-content",
+      "agent_id": "agent-2-verify",
+      "session_id": "verify-session-1",
+      "risk_tier": "REFLEX",
+      "decision": "NOISE",
+      "decision_reason": "verification score < 0.60",
+      "verification_score": 0.3333,
+      "decision_record_path": "artifacts\\aetherbrowse_runs\\20260217T043916Z\\decision_records\\job-002-verify-content.json",
+      "trace_path": "artifacts\\aetherbrowse_runs\\20260217T043916Z\\traces\\job-002-verify-content.json",
+      "trace_hash": "c26b84cd32378cfca889f967b00b18e4d0b138f2b01b73f2d61ea02bc1d7003b",
+      "screenshot_hashes": [],
+      "elapsed_ms": 2152.73,
+      "request_error": "<urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>",
+      "response_status": "request_error",
+      "response": {
+        "status": "noise",
+        "detail": "suppressed by governance policy"
+      }
+    }
+  ]
+}

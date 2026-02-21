@@ -36,6 +36,27 @@ Security Multiplier: Tier 6 (all 6 Sacred Tongues) = 518,400× security multipli
 
 ---
 
+## Law vs Flux Contract
+
+To keep governance deterministic and auditable, HYDRA treats some values as immutable law and others as runtime flux.
+
+| Class | Item | Rule |
+|---|---|---|
+| Law (immutable) | Agent state block layout | Fixed schema versioned in code |
+| Law (immutable) | Quorum math + Byzantine bound | n >= 3f + 1 and threshold >= 2f + 1 |
+| Law (immutable) | Ledger idempotency invariant | Duplicate idempotency key must not create a second write |
+| Law (immutable) | Canonical agent ordering for spectral ops | Sort by stable `agent_id` before matrix construction |
+| Law (immutable) | Prefix/token grammar constraints | ASCII-only, lowercase, exactly one apostrophe |
+| Flux (manifest) | GFSS anomaly threshold | Runtime manifest parameter |
+| Flux (manifest) | Policy quorum by tier | Runtime manifest parameter |
+| Flux (manifest) | Embedding model id | Runtime manifest parameter |
+| Flux (manifest) | Smear/wave parameters | Runtime manifest parameter |
+| Flux (manifest) | Enforcement toggles (`--enforce-location`) | Runtime manifest parameter |
+
+Every run writes the manifest hash to the ledger for replayable audit.
+
+---
+
 ## System Architecture Overview
 
 ```javascript
@@ -919,19 +940,14 @@ Fix:
 
 ```python
 def parse_token(tongue, token):
-    # Enforce ASCII apostrophe only
-    if "'" not in token or token.count("'") != 1:
-        raise ValueError(f"Invalid token format (must have exactly one apostrophe): {token}")
-    
-    # Reject non-ASCII characters
+    # Enforce strict token grammar
     if not token.isascii():
-        raise ValueError(f"Only ASCII characters allowed: {token}")
-    
-    # Verify apostrophe is ASCII (not Unicode variant)
-    apostrophe_idx = token.index("'")
-    if ord(token[apostrophe_idx]) != 0x27:  # ASCII apostrophe
-        raise ValueError(f"Only ASCII apostrophe (U+0027) allowed: {token}")
-    
+        raise ValueError("Only ASCII allowed")
+    if token.count("'") != 1:
+        raise ValueError("Exactly one apostrophe required")
+    if token != token.lower():
+        raise ValueError("Lowercase only")
+
     pre, suf = token.split("'", 1)
     # Existing logic...
 ```
@@ -962,16 +978,18 @@ Risk: Prefixed tokens cause ValueError on decode, breaking cross-tongue workflow
 Fix:
 
 ```python
+PREFIXES = ("ko:", "av:", "ru:", "ca:", "um:", "dr:")
+
 def decode(tokens, tongue=DEFAULT_TONGUE):
-    token_list = tokens.split()
-    
-    # Strip tongue prefixes (e.g., "ko:", "av:", "ru:")
-    prefix = tongue.lower() + ':'
-    token_list = [
-        t.removeprefix(prefix) if t.startswith(prefix) else t 
-        for t in token_list
-    ]
-    
+    token_list = []
+    for raw in tokens.split():
+        t = raw
+        for p in PREFIXES:
+            if t.startswith(p):
+                t = t[len(p):]
+                break
+        token_list.append(t)
+
     return bytes(parse_token(tongue, t) for t in token_list)
 ```
 
@@ -1122,6 +1140,13 @@ class VoxelRecord:
     parents: Optional[List[str]] = None
 ```
 
+### SQL Storage Index (Canonical)
+
+```sql
+CREATE INDEX ix_voxel_lookup
+ON voxel_records (env, shard, voxel_key, created_at);
+```
+
 ### Deterministic CubeId Generation
 
 Purpose: Content-addressable identifier for voxels, enables deduplication and verification
@@ -1190,20 +1215,14 @@ Polly Pad = Mode-specialized AI workspace with:
 
 ### Mode-Specific Pads
 
-<!-- Unsupported block type: table -->
-<!-- Unsupported block type: table_row -->
-
-<!-- Unsupported block type: table_row -->
-
-<!-- Unsupported block type: table_row -->
-
-<!-- Unsupported block type: table_row -->
-
-<!-- Unsupported block type: table_row -->
-
-<!-- Unsupported block type: table_row -->
-
-<!-- Unsupported block type: table_row -->
+| Pad Mode | Purpose | Tools | AI Assistant Role |
+|---|---|---|---|
+| ENGINEERING | Code development | `ide_draft`, `code_exec_safe`, `build_deploy` | Draft code, suggest patterns, run tests |
+| NAVIGATION | Path planning | `map_query`, `proximity_track`, `path_plan` | Find routes, track neighbors, optimize paths |
+| SYSTEMS | Infrastructure | `telemetry_read`, `config_set`, `policy_enforce` | Monitor health, adjust configs, enforce rules |
+| SCIENCE | Research & analysis | `hypothesis_gen`, `experiment_run`, `model_tune` | Generate hypotheses, design experiments |
+| COMMS | Communication and negotiation | `msg_send`, `negotiate`, `protocol_exec` | Draft messages, coordinate negotiation, execute protocol flows |
+| MISSION | Goal orchestration | `goal_set`, `constraint_check`, `orchestrate_squad` | Decompose objectives, validate constraints, coordinate squad execution |
 
 ### Dual Code Zones
 
@@ -1829,16 +1848,12 @@ def reach_consensus(votes):
 
 ### 3. Risk-Tiered Thresholds
 
-<!-- Unsupported block type: table -->
-<!-- Unsupported block type: table_row -->
-
-<!-- Unsupported block type: table_row -->
-
-<!-- Unsupported block type: table_row -->
-
-<!-- Unsupported block type: table_row -->
-
-<!-- Unsupported block type: table_row -->
+| Risk Tier | Quorum | Percentage | Verification |
+|---|---:|---:|---|
+| Low | 3/6 | 50% | ✅ 3/6 = 0.50 |
+| Medium | 4/6 | 67% | ✅ 4/6 = 0.667 |
+| High | 5/6 | 83% | ✅ 5/6 = 0.833 |
+| Critical | 6/6 | 100% | ✅ 6/6 = 1.00 |
 
 Liveness guarantee: Even at highest tier (6/6), system remains live as long as all 6 agents are operational. This is acceptable for critical operations (secrets, writes, deployments) where unanimous approval is required.
 
@@ -1899,16 +1914,12 @@ def scbe_decide(d_star: float, coherence: float, h_eff: float, thr: Thresholds) 
 
 Verification with test cases:
 
-<!-- Unsupported block type: table -->
-<!-- Unsupported block type: table_row -->
-
-<!-- Unsupported block type: table_row -->
-
-<!-- Unsupported block type: table_row -->
-
-<!-- Unsupported block type: table_row -->
-
-<!-- Unsupported block type: table_row -->
+| d_star | coherence | h_eff | Expected | Verification |
+|---:|---:|---:|---|---|
+| 0.2 | 0.9 | 10 | ALLOW | ✅ ALLOW |
+| 5.0 | 0.9 | 10 | DENY | ✅ DENY (`d_star > 2.2`) |
+| 0.2 | 0.1 | 1 | DENY | ✅ DENY (`coherence < 0.25`) |
+| 1.5 | 0.5 | 500 | QUARANTINE | ✅ QUARANTINE |
 
 ---
 

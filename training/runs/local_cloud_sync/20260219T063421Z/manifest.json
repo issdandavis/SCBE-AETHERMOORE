@@ -1,0 +1,35 @@
+{
+  "run_id": "20260219T063421Z",
+  "timestamp_utc": "2026-02-19T06:34:21.463976+00:00",
+  "fingerprint": "d2a3317f37a771cc6866dc03a32e94d3bad54d614ee511fb675f31789213a81c",
+  "counts": {
+    "indexed_files": 1463,
+    "added": 3,
+    "modified": 1,
+    "removed": 0,
+    "changed": 4
+  },
+  "delta": {
+    "added": [
+      "docs/CLAIMS_EVIDENCE_LEDGER.md",
+      "docs/EXPERIMENT_QUEUE.md",
+      "docs/LANGUAGE_GUARDRAILS.md"
+    ],
+    "modified": [
+      "docs/README.md"
+    ],
+    "removed": [],
+    "changed": [
+      "docs/CLAIMS_EVIDENCE_LEDGER.md",
+      "docs/EXPERIMENT_QUEUE.md",
+      "docs/LANGUAGE_GUARDRAILS.md",
+      "docs/README.md"
+    ]
+  },
+  "changed_hashes_sha256": {
+    "docs/CLAIMS_EVIDENCE_LEDGER.md": "733a121e7ce7bf5d4ac8ea22aa43ee00e4ac354dfba2f9fd7ff1cf4324eb63dd",
+    "docs/EXPERIMENT_QUEUE.md": "3b7485da55571530029aafa4195512e04bfa723d5530e6967b70f2c10406bfbb",
+    "docs/LANGUAGE_GUARDRAILS.md": "71a80ecee2c257cfcf9a7ecb8d630c8967c8001baefb12daecc6d51f9b6cf79b",
+    "docs/README.md": "025e13165ed20c252dafd18342480851d0964204c5a01483c7f2ea62148fbf4a"
+  }
+}

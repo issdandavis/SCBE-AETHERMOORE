@@ -18,7 +18,7 @@ import json
 import sys
 import os
 from datetime import datetime, timezone
-from typing import Dict, Any, List, Optional, Callable
+from typing import Dict, Any, List, Optional, Callable, Set
 from dataclasses import dataclass, field
 from enum import Enum
 import hashlib
@@ -28,6 +28,7 @@ import uuid
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from .ledger import Ledger, LedgerEntry, EntryType
+from .switchboard import Switchboard
 
 # Try to import dual lattice governor (optional but recommended)
 try:
@@ -91,7 +92,9 @@ class HydraSpine:
         self,
         ledger: Ledger = None,
         scbe_url: str = "http://127.0.0.1:8080",
-        use_dual_lattice: bool = True
+        use_dual_lattice: bool = True,
+        use_switchboard: bool = True,
+        switchboard_db: str = "artifacts/hydra/switchboard.db",
     ):
         self.ledger = ledger or Ledger()
         self.scbe_url = scbe_url
@@ -108,6 +111,7 @@ class HydraSpine:
 
         # Event handlers
         self._handlers: Dict[str, List[Callable]] = {}
+        self.role_channels: Dict[str, Set[str]] = {}
 
         # Terminal mode flag
         self._terminal_mode = False
@@ -117,6 +121,11 @@ class HydraSpine:
         if use_dual_lattice and DUAL_LATTICE_AVAILABLE:
             self.lattice_governor = TongueLatticeGovernor(scbe_url)
             print("[SPINE] Dual Lattice Cross-Stitch governance enabled")
+
+        self.switchboard = None
+        if use_switchboard:
+            self.switchboard = Switchboard(switchboard_db)
+            print(f"[SPINE] Switchboard enabled: {switchboard_db}")
 
     async def start(self, terminal_mode: bool = False) -> None:
         """Start the Hydra Spine."""
@@ -210,6 +219,10 @@ class HydraSpine:
         for lid, limb in self.limbs.items():
             print(f"  - {lid}: {limb.limb_type}")
         print(f"Active Workflows: {len(self.workflows)}")
+        if self.switchboard:
+            sb = self.switchboard.stats()
+            print(f"Switchboard tasks: {sb.get('by_status', {})}")
+            print(f"Role channels: {list(self.role_channels.keys())}")
         print("=" * 50 + "\n")
 
     async def execute(self, command: Dict[str, Any]) -> Dict[str, Any]:
@@ -260,30 +273,78 @@ class HydraSpine:
                 score=lattice_result.get("trust_score", 0)
             )
 
-            # Handle non-ALLOW decisions
-            if decision == "DENY":
+            # Domain-aware turnstile handling (browser vs vehicle vs fleet vs antivirus)
+            from .turnstile import resolve_turnstile
+
+            domain_type = str(
+                command.get("domain_type")
+                or params.get("domain_type")
+                or ("browser" if action in {"navigate", "click", "type"} else "fleet")
+            )
+            trust_score = float(lattice_result.get("trust_score", 0.0))
+            vector_norm = float(lattice_result.get("vector_norm", 0.0))
+            suspicion = max(0.0, min(1.0, 1.0 - trust_score))
+            quorum_ok = bool(command.get("quorum_ok", True))
+
+            turnstile = resolve_turnstile(
+                decision=decision,
+                domain=domain_type,
+                suspicion=suspicion,
+                geometry_norm=vector_norm,
+                previous_antibody_load=float(params.get("antibody_load", 0.0)),
+                quorum_ok=quorum_ok,
+            )
+
+            params["turnstile_action"] = turnstile.action
+            params["antibody_load"] = round(turnstile.antibody_load, 6)
+            params["membrane_stress"] = round(turnstile.membrane_stress, 6)
+
+            if decision != "ALLOW":
+                self._log_entry(
+                    EntryType.CHECKPOINT,
+                    "turnstile_resolution",
+                    target,
+                    {
+                        "action": action,
+                        "domain_type": domain_type,
+                        "decision": decision,
+                        "turnstile_action": turnstile.action,
+                        "honeypot": turnstile.deploy_honeypot,
+                        "reason": turnstile.reason,
+                    },
+                    head_id=head_id
+                )
+
+            if turnstile.isolate:
+                params["quarantine"] = True
+
+            if turnstile.deploy_honeypot:
+                params["honeypot"] = True
+                params["isolation_reason"] = turnstile.reason
+                if action in {"navigate", "click", "type"}:
+                    target = params.get("honeypot_target", "about:blank#scbe-honeypot")
+
+            if not turnstile.continue_execution:
+                blocked_decision = "ESCALATE" if turnstile.require_human else "DENY"
                 return {
                     "success": False,
-                    "decision": "DENY",
-                    "reason": "Dual lattice governance denied action",
-                    "trust_score": lattice_result.get("trust_score"),
+                    "decision": blocked_decision,
+                    "reason": turnstile.reason,
+                    "turnstile_action": turnstile.action,
+                    "domain_type": domain_type,
+                    "trust_score": trust_score,
                     "tongues_active": lattice_result.get("tongues_active"),
                     "action_id": action_id
                 }
-            elif decision == "ESCALATE":
-                # Mark for human review but allow to proceed with logging
-                print(f"[LATTICE] Action ESCALATED for review: {action} → {target[:30]}")
-                self._log_entry(
-                    EntryType.CHECKPOINT,
-                    "escalated_action",
-                    target,
-                    {"action": action, "trust_score": lattice_result.get("trust_score")},
-                    head_id=head_id
-                )
-            elif decision == "QUARANTINE":
-                # Execute in isolated context
-                print(f"[LATTICE] Action QUARANTINED: {action} → {target[:30]}")
-                params["quarantine"] = True
+
+            # Continue with constrained execution modes.
+            if turnstile.action in {"PIVOT", "DEGRADE"}:
+                params["safe_mode"] = turnstile.action.lower()
+                print(f"[LATTICE] Action {decision} rerouted via {turnstile.action}: {action} → {target[:30]}")
+            elif turnstile.action == "ISOLATE":
+                print(f"[LATTICE] Action {decision} isolated: {action} → {target[:30]}")
+            elif turnstile.action == "HONEYPOT":
+                print(f"[LATTICE] Honeypot deployed for action: {action} → {target[:30]}")
 
         # Log the action request
         self._log_entry(
@@ -328,11 +389,113 @@ class HydraSpine:
         elif action == "message":
             return await self._send_ai_message(command)
 
+        elif action == "switchboard_enqueue":
+            if not self.switchboard:
+                return {"success": False, "error": "Switchboard disabled"}
+            role = str(command.get("role", "")).strip().lower()
+            task = command.get("task")
+            if not role or not isinstance(task, dict):
+                return {"success": False, "error": "switchboard_enqueue requires role and task object"}
+            dedupe_key = command.get("dedupe_key")
+            priority = int(command.get("priority", 100))
+            queued = self.switchboard.enqueue_task(
+                role=role,
+                payload=task,
+                dedupe_key=str(dedupe_key) if dedupe_key else None,
+                priority=priority,
+            )
+            self._log_entry(
+                EntryType.ACTION,
+                "switchboard_enqueue",
+                role,
+                {"task": task, "dedupe_key": dedupe_key, "priority": priority},
+                head_id=head_id,
+                decision="ALLOW",
+                score=0.9,
+            )
+            return {"success": True, "queued": queued}
+
+        elif action == "switchboard_stats":
+            if not self.switchboard:
+                return {"success": False, "error": "Switchboard disabled"}
+            return {"success": True, "stats": self.switchboard.stats()}
+
+        elif action == "switchboard_post_message":
+            if not self.switchboard:
+                return {"success": False, "error": "Switchboard disabled"}
+            channel = str(command.get("channel", "")).strip().lower()
+            message = command.get("message", {})
+            sender = str(command.get("sender", head_id or "system")).strip()
+            if not channel:
+                return {"success": False, "error": "channel is required"}
+            msg_id = self.switchboard.post_role_message(channel, sender, message if isinstance(message, dict) else {"text": str(message)})
+            return {"success": True, "message_id": msg_id, "channel": channel}
+
+        elif action == "switchboard_get_messages":
+            if not self.switchboard:
+                return {"success": False, "error": "Switchboard disabled"}
+            channel = str(command.get("channel", "")).strip().lower()
+            since_id = int(command.get("since_id", 0))
+            if not channel:
+                return {"success": False, "error": "channel is required"}
+            messages = self.switchboard.get_role_messages(channel, since_id=since_id)
+            return {"success": True, "channel": channel, "messages": messages}
+
         else:
             return {"success": False, "error": f"Unknown action: {action}"}
 
-    async def execute_natural(self, text: str) -> Dict[str, Any]:
-        """Parse and execute natural language command."""
+    async def execute_natural(self, text: str, head_id: str = None) -> Dict[str, Any]:
+        """Parse and execute natural language command.
+
+        If a connected head with an LLM provider is available, the command
+        is sent to the LLM for planning and then each resulting action is
+        executed sequentially.  Falls back to the built-in regex parser
+        when no LLM is available.
+
+        Args:
+            text: The natural-language command string.
+            head_id: Optional head_id to route through a specific head's
+                     LLM.  If None, the first head with an LLM is used.
+        """
+
+        # -----------------------------------------------------------------
+        # Try LLM-based planning via an attached head
+        # -----------------------------------------------------------------
+        planner_head = None
+        if head_id and head_id in self.heads:
+            candidate = self.heads[head_id]
+            if getattr(candidate, "has_llm", False):
+                planner_head = candidate
+        else:
+            # Pick the first head that has a live LLM provider
+            for h in self.heads.values():
+                if getattr(h, "has_llm", False):
+                    planner_head = h
+                    break
+
+        if planner_head is not None:
+            try:
+                actions = await planner_head.plan(text)
+                results: List[Dict[str, Any]] = []
+                for action_cmd in actions:
+                    if not isinstance(action_cmd, dict):
+                        continue
+                    result = await self.execute(action_cmd)
+                    results.append(result)
+                return {
+                    "success": all(r.get("success", False) for r in results),
+                    "source": "llm",
+                    "head": planner_head.head_id,
+                    "actions_executed": len(results),
+                    "results": results,
+                }
+            except Exception as exc:
+                # LLM planning failed -- fall through to regex parser
+                print(f"[SPINE] LLM planning failed ({exc}), falling back to regex parser")
+
+        # -----------------------------------------------------------------
+        # Regex / keyword fallback
+        # -----------------------------------------------------------------
         text_lower = text.lower()
 
         # Simple parsing - in production, would use an AI for this
@@ -620,6 +783,9 @@ class HydraSpine:
         self.heads[head.head_id] = head
         self.message_queues[head.head_id] = asyncio.Queue()
         self.ledger.register_head(head.head_id, head.ai_type, head.model)
+        roles = getattr(head, "roles", None)
+        if isinstance(roles, list):
+            self.register_head_roles(head.head_id, [str(r) for r in roles])
 
         self._log_entry(
             EntryType.HEAD_CONNECT,
@@ -630,6 +796,16 @@ class HydraSpine:
 
         print(f"[SPINE] Head connected: {head.head_id} ({head.ai_type}/{head.model})")
         return head.head_id
+
+    def register_head_roles(self, head_id: str, roles: List[str]) -> None:
+        """Register role channels for head coordination."""
+        for role in roles:
+            key = str(role).strip().lower()
+            if not key:
+                continue
+            if key not in self.role_channels:
+                self.role_channels[key] = set()
+            self.role_channels[key].add(head_id)
 
     def disconnect_head(self, head_id: str) -> None:
         """Disconnect an AI head."""
