@@ -1,3 +1,4 @@
+export * from '../../packages/kernel/src/hyperbolic.js';
 /**
  * @file hyperbolic.ts
  * @module harmonic/hyperbolic
@@ -14,6 +15,30 @@
  * Layer 6: Breathing Transform B(p,t) = tanh(‖p‖ + A·sin(ωt))·p/‖p‖
  * Layer 7: Phase Modulation Φ(p,θ) = Möbius rotation in tangent space
  */
+/** Small epsilon for numerical stability (norm checks, zero-vector guards) */
+export declare const EPSILON = 1e-10;
+/**
+ * Set the audit epsilon for boundary clamping in artanh/distance calculations.
+ * Allows Layer 13 telemetry to tune precision for attack simulation or audit sweeps.
+ * @param eps - New epsilon value (must be positive and < 1e-6)
+ */
+export declare function setAuditEpsilon(eps: number): void;
+/** Get current audit epsilon */
+export declare function getAuditEpsilon(): number;
+/**
+ * Inverse hyperbolic tangent with configurable boundary clamping.
+ *
+ * artanh(z) = 0.5 * ln((1+z)/(1-z))
+ *
+ * Clamps z to [-1 + ε, 1 - ε] where ε = AUDIT_EPSILON to prevent
+ * singularities at the Poincaré ball boundary.
+ *
+ * @layer Layer 5
+ * @param z - Input value
+ * @param eps - Override epsilon (defaults to AUDIT_EPSILON)
+ * @returns artanh(z)
+ */
+export declare function artanh(z: number, eps?: number): number;
 /**
  * Hyperbolic distance in the Poincaré ball model (Layer 5)
  *

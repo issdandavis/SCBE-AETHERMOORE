@@ -1,0 +1,12 @@
+{
+  "use_case": "autonomous_research_review",
+  "goal": "Navigate a source set, extract evidence, and verify findings before publishing notes.",
+  "scenario": {
+    "agents_template": "../agents/research_browser_fleet.json",
+    "workflow": [
+      {"step": 1, "agent": "ko-scout-01", "action": "GOTO", "target": "seed_urls"},
+      {"step": 2, "agent": "ru-reader-01", "action": "EXTRACT_TEXT", "target": "article_body"},
+      {"step": 3, "agent": "dr-judge-01", "action": "VALIDATE_DATA", "target": "claim_set"}
+    ]
+  }
+}
