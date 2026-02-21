@@ -1,0 +1,199 @@
+{
+  "generated_at": "2026-02-16T07:44:40.245483+00:00",
+  "repo_root": "C:\\Users\\issda\\SCBE-AETHERMOORE-working",
+  "requested_mode": "all",
+  "coherence_report": "C:\\Users\\issda\\SCBE-AETHERMOORE-working\\coherence-report.json",
+  "summary": {
+    "total_tasks": 7,
+    "critical_tasks": 3,
+    "priority_breakdown": {
+      "critical": 3,
+      "high": 3,
+      "medium": 1
+    },
+    "mode_breakdown": {
+      "code-assistant": 2,
+      "fine-tune-funnel": 3,
+      "ai-nodal-dev-specialist": 2
+    },
+    "release_safe": false
+  },
+  "coherence": {
+    "status": "missing",
+    "coherence": 1.0,
+    "metrics": {},
+    "details": {}
+  },
+  "training_data_path": "C:\\Users\\issda\\SCBE-AETHERMOORE-working\\training-data",
+  "pipeline_config": "training/vertex_pipeline_config.yaml",
+  "tasks": [
+    {
+      "task_id": "6d050f530fe2",
+      "mode": "code-assistant",
+      "title": "Resume from coherence failure before merge/release",
+      "description": "Layer 11 coherence status is failing and should be treated as a release gate.",
+      "component": "Daily Review Workflow",
+      "tongue": "DR",
+      "priority": "critical",
+      "confidence": 0.98,
+      "evidence": {
+        "status": "missing",
+        "coherence": 1.0
+      },
+      "suggested_actions": [
+        "Create a focused hotfix branch for the failing checks.",
+        "Validate test/lint/typecheck manually and regenerate coherence artifact."
+      ]
+    },
+    {
+      "task_id": "d7f420120f6e",
+      "mode": "fine-tune-funnel",
+      "title": "Increase 'technical_system_stream' training stream coverage",
+      "description": "Stream 'technical_system_stream' has 0/100 records from configured Notion/fine-tune sources.",
+      "component": "Fine-Tune Funnel",
+      "tongue": "KO",
+      "priority": "critical",
+      "confidence": 0.86,
+      "evidence": {
+        "source": "scripts/notion_pipeline_gap_review.py",
+        "source_path": "C:\\Users\\issda\\SCBE-AETHERMOORE-working\\artifacts\\notion_pipeline_gap_review.json",
+        "status": null,
+        "evidence": {
+          "stream": {
+            "name": "technical_system_stream",
+            "lane": "canonical",
+            "weight": 0.62,
+            "categories": [
+              "technical",
+              "all"
+            ],
+            "description": "SCBE pipeline, governance, and implementation corpus",
+            "required_min_records": 100
+          },
+          "required_min_records": 100,
+          "matched_records": 0,
+          "total_records": 0
+        }
+      },
+      "suggested_actions": [
+        "Open artifacts/notion_pipeline_gap_review.md and implement the referenced remediation.",
+        "Re-run the notion pipeline review after updates."
+      ]
+    },
+    {
+      "task_id": "2a336d2f7844",
+      "mode": "fine-tune-funnel",
+      "title": "Increase 'isekai_emotive_stream' training stream coverage",
+      "description": "Stream 'isekai_emotive_stream' has 0/80 records from configured Notion/fine-tune sources.",
+      "component": "Fine-Tune Funnel",
+      "tongue": "KO",
+      "priority": "critical",
+      "confidence": 0.86,
+      "evidence": {
+        "source": "scripts/notion_pipeline_gap_review.py",
+        "source_path": "C:\\Users\\issda\\SCBE-AETHERMOORE-working\\artifacts\\notion_pipeline_gap_review.json",
+        "status": null,
+        "evidence": {
+          "stream": {
+            "name": "isekai_emotive_stream",
+            "lane": "emotional",
+            "weight": 0.38,
+            "categories": [
+              "lore",
+              "relationships",
+              "timelines"
+            ],
+            "description": "6-languages, vector-doc alignment, and emotional narrative corpus",
+            "required_min_records": 80
+          },
+          "required_min_records": 80,
+          "matched_records": 0,
+          "total_records": 0
+        }
+      },
+      "suggested_actions": [
+        "Open artifacts/notion_pipeline_gap_review.md and implement the referenced remediation.",
+        "Re-run the notion pipeline review after updates."
+      ]
+    },
+    {
+      "task_id": "f9b4101ceae2",
+      "mode": "code-assistant",
+      "title": "Rebuild training-data metadata file",
+      "description": "No training-data/metadata.json was found from notion-to-dataset export.",
+      "component": "Notion Export Pipeline",
+      "tongue": "KO",
+      "priority": "high",
+      "confidence": 0.93,
+      "evidence": {
+        "source": "scripts/notion_pipeline_gap_review.py",
+        "source_path": "C:\\Users\\issda\\SCBE-AETHERMOORE-working\\artifacts\\notion_pipeline_gap_review.json",
+        "status": null,
+        "evidence": {
+          "expected_file": "training-data/metadata.json"
+        }
+      },
+      "suggested_actions": [
+        "Open artifacts/notion_pipeline_gap_review.md and implement the referenced remediation.",
+        "Re-run the notion pipeline review after updates."
+      ]
+    },
+    {
+      "task_id": "a3bd16aaf9a5",
+      "mode": "fine-tune-funnel",
+      "title": "Seed Notion export for dual-stream training data",
+      "description": "No JSONL training rows were found in training-data/.",
+      "component": "Notion-to-Dataset Pipeline",
+      "tongue": "CA",
+      "priority": "high",
+      "confidence": 0.93,
+      "evidence": {
+        "training_data_path": "C:\\Users\\issda\\SCBE-AETHERMOORE-working\\training-data"
+      },
+      "suggested_actions": [
+        "Run notion-to-dataset workflow first.",
+        "Verify NOTION_TOKEN has read permission for both technical and lore spaces."
+      ]
+    },
+    {
+      "task_id": "6c3783181d20",
+      "mode": "ai-nodal-dev-specialist",
+      "title": "Route code tasks to repair lanes",
+      "description": "Repair tasks were generated and should be assigned by tongue lanes.",
+      "component": "Task Coordination",
+      "tongue": "AV",
+      "priority": "medium",
+      "confidence": 0.73,
+      "evidence": {
+        "code_task_count": 4,
+        "task_ids": [
+          "6d050f530fe2",
+          "d7f420120f6e",
+          "2a336d2f7844",
+          "f9b4101ceae2"
+        ]
+      },
+      "suggested_actions": [
+        "Assign KO tasks to code execution, RU to research traceability, DR to final risk checks.",
+        "Execute in small batches with release notes in session artifact."
+      ]
+    },
+    {
+      "task_id": "3c6e0ae1d90e",
+      "mode": "ai-nodal-dev-specialist",
+      "title": "Escalate critical self-improvement findings",
+      "description": "Critical issues were detected and should pause automation until resolved.",
+      "component": "Release Coordination",
+      "tongue": "DR",
+      "priority": "high",
+      "confidence": 0.86,
+      "evidence": {
+        "critical_count": 3
+      },
+      "suggested_actions": [
+        "Hold next release candidate.",
+        "Run only security and coherence verification until fixed."
+      ]
+    }
+  ]
+}
