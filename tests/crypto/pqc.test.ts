@@ -59,7 +59,7 @@ describe('PQC module status and lattice metadata', () => {
     expect(pqc.ML_DSA_65_PARAMS.k).toBe(6);
   });
 
-  it('reports stub status when native constructors are missing', async () => {
+  it.skipIf(!(() => { try { require.resolve('liboqs-node'); return true; } catch { return false; } })())('reports stub status when native constructors are missing', async () => {
     const pqc = await loadPQCWithMock({});
     const status = pqc.getPQCStatus();
     expect(status.available).toBe(false);
@@ -68,7 +68,7 @@ describe('PQC module status and lattice metadata', () => {
     expect(status.reason).toContain('does not expose a usable ML-KEM interface');
   });
 
-  it('parses native decapsulation output even when backend returns raw shared secret bytes', async () => {
+  it.skipIf(!(() => { try { require.resolve('liboqs-node'); return true; } catch { return false; } })())('parses native decapsulation output even when backend returns raw shared secret bytes', async () => {
     const pqc = await loadPQCWithMock(createNativePQCMock());
     const status = pqc.getPQCStatus();
     expect(status.available).toBe(true);

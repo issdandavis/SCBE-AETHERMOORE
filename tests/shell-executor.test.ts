@@ -756,7 +756,7 @@ describe('End-to-End Integration', () => {
     const result = await executor.execute({
       command: 'node',
       args: ['-e', 'console.log("test-passed")'],
-      cwd: '/home/user',
+      cwd: process.cwd(),
       intent: 'Run test',
       actorId: 'test-agent',
     });
@@ -777,7 +777,7 @@ describe('End-to-End Integration', () => {
     const result = await executor.execute({
       command: 'node',
       args: ['-e', 'console.log("hello")'],
-      cwd: '/home/user',
+      cwd: process.cwd(),
       intent: 'Run script',
       actorId: 'test-agent',
     });

@@ -573,6 +573,7 @@ export {
 export {
   PHDMGovernanceRouter,
   buildPolyhedralGraph,
+  buildGovernanceSheaf,
   buildGovernanceSheaf as phdmBuildGovernanceSheaf,
   computePolyhedralTrust,
   polyhedralEulerCharacteristic,
