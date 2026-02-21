@@ -58,7 +58,7 @@ jobs:
             exit 0
           fi
           python scripts/notion_to_dataset.py \
-            --category ${{ github.event.inputs.category || 'all' }} \
+            --category "${{ github.event.inputs.category || 'all' }}" \
             --output training-data/
 
       - name: Push to Hugging Face Dataset
