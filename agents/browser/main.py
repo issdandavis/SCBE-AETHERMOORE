@@ -12,7 +12,9 @@ Core loop: Observe → Embed → PHDM.is_safe() → Execute if radius < safe_rad
 from __future__ import annotations
 
 import asyncio
+import base64
 import logging
+import os
 from contextlib import asynccontextmanager
 from datetime import datetime
 from enum import Enum
@@ -28,18 +30,203 @@ from .vision_embedding import VisionEmbedder, EmbeddingResult, create_vision_emb
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# API key validation (matches existing pattern)
-VALID_API_KEYS = {
-    "browser-agent-key": "browser-agent",
-    "test-key": "test-user"
-}
+# API key validation (supports env-driven config + legacy defaults)
+def _load_browser_api_keys() -> Dict[str, str]:
+    """
+    Load valid API keys from environment.
+
+    Supported formats:
+    - BROWSER_AGENT_API_KEYS: "key1:user1,key2:user2" (recommended)
+    - SCBE_API_KEYS: "key1:user1,key2:user2"
+    - SCBE_API_KEY: "legacy_key,legacy_key2"
+    - N8N_API_KEY / N8N_WEBHOOK_TOKEN: single key for n8n callbacks
+    """
+    keys: Dict[str, str] = {
+        "browser-agent-key": "browser-agent",
+        "test-key": "test-user",
+    }
+
+    for source in ("BROWSER_AGENT_API_KEYS", "SCBE_API_KEYS"):
+        raw = os.getenv(source, "").strip()
+        if not raw:
+            continue
+        for item in raw.split(","):
+            item = item.strip()
+            if not item:
+                continue
+            if ":" in item:
+                key, user = item.split(":", 1)
+                keys[key.strip()] = user.strip() or "service-user"
+            else:
+                keys[item] = f"{source.lower()}_user"
+
+    for raw in filter(None, [os.getenv("SCBE_API_KEY", "").strip()]):
+        for item in raw.split(","):
+            item = item.strip()
+            if item:
+                keys[item] = "legacy"
+
+    for raw in filter(None, [os.getenv("N8N_API_KEY", "").strip(), os.getenv("N8N_WEBHOOK_TOKEN", "").strip()]):
+        for item in raw.split(","):
+            item = item.strip()
+            if item:
+                keys[item] = "n8n"
+
+    return keys
 
 
-async def verify_api_key(x_api_key: str = Header(...)):
+VALID_API_KEYS = _load_browser_api_keys()
+
+# Optional token-decoding support for encoded keys.
+# Examples:
+# - Header-driven: X-SCBE-Token-Encoding: base64url
+# - Embedded mode: enc:base64url:<payload>
+# Configure accepted encodings with SCBE_TOKEN_ACCEPT_ENCODINGS
+# (comma-separated: raw,base64url,base64,hex,xor,auto)
+def _load_token_accept_encodings() -> set[str]:
+    raw = os.getenv("SCBE_TOKEN_ACCEPT_ENCODINGS", "raw,base64url,base64,hex").strip()
+    encodings: set[str] = set()
+    for item in raw.split(","):
+        mode = item.strip().lower()
+        if mode:
+            encodings.add(mode)
+    encodings.add("raw")
+    return encodings
+
+
+TOKEN_ACCEPT_ENCODINGS = _load_token_accept_encodings()
+TOKEN_DECODER_SECRET = os.getenv("SCBE_TOKEN_DECODER_SECRET", "").encode("utf-8")
+
+
+def _b64pad(value: str) -> str:
+    missing = len(value) % 4
+    if missing:
+        value = value + ("=" * (4 - missing))
+    return value
+
+
+def _decode_with_mode(value: str, mode: str) -> Optional[str]:
+    mode = mode.strip().lower()
+    if mode == "raw":
+        return value
+    try:
+        if mode == "base64url":
+            return base64.urlsafe_b64decode(_b64pad(value)).decode("utf-8")
+        if mode == "base64":
+            return base64.b64decode(_b64pad(value)).decode("utf-8")
+        if mode == "hex":
+            return bytes.fromhex(value).decode("utf-8")
+        if mode == "xor":
+            if not TOKEN_DECODER_SECRET:
+                return None
+            blob = base64.urlsafe_b64decode(_b64pad(value))
+            plain = bytes(
+                b ^ TOKEN_DECODER_SECRET[i % len(TOKEN_DECODER_SECRET)]
+                for i, b in enumerate(blob)
+            )
+            return plain.decode("utf-8")
+    except Exception:
+        return None
+    return None
+
+
+def _decode_if_allowed(value: str, mode: str) -> Optional[str]:
+    mode = mode.strip().lower()
+    if mode not in TOKEN_ACCEPT_ENCODINGS:
+        return None
+    return _decode_with_mode(value, mode)
+
+
+def _decode_from_embedded_prefix(value: str) -> Optional[str]:
+    # Format: enc:<mode>:<payload>
+    if not value.lower().startswith("enc:"):
+        return None
+    parts = value.split(":", 2)
+    if len(parts) != 3:
+        return None
+    _, mode, payload = parts
+    return _decode_if_allowed(payload, mode)
+
+
+def _expand_api_key_candidates(token: str, encoding_hint: Optional[str]) -> List[str]:
+    candidates: List[str] = []
+    seen: set[str] = set()
+
+    def add(v: Optional[str]) -> None:
+        if not v:
+            return
+        if v in seen:
+            return
+        seen.add(v)
+        candidates.append(v)
+
+    add(token)
+    add(_decode_from_embedded_prefix(token))
+
+    if encoding_hint:
+        add(_decode_if_allowed(token, encoding_hint))
+
+    if "auto" in TOKEN_ACCEPT_ENCODINGS:
+        for mode in ("base64url", "base64", "hex", "xor"):
+            add(_decode_if_allowed(token, mode))
+
+    return candidates
+
+
+def _extract_api_key(x_api_key: Optional[str], scbe_api_key: Optional[str], authorization: Optional[str]) -> Optional[str]:
+    if x_api_key:
+        return x_api_key.strip()
+    if scbe_api_key:
+        return scbe_api_key.strip()
+    if authorization:
+        token = authorization.strip()
+        if token.lower().startswith("bearer "):
+            return token[7:].strip()
+        return token
+    return None
+
+
+async def verify_api_key(
+    x_api_key: Optional[str] = Header(default=None, alias="X-API-Key"),
+    scbe_api_key: Optional[str] = Header(default=None, alias="SCBE_api_key"),
+    authorization: Optional[str] = Header(default=None, alias="Authorization"),
+    x_scbe_token_encoding: Optional[str] = Header(default=None, alias="X-SCBE-Token-Encoding"),
+):
     """Verify API key authentication."""
-    if x_api_key not in VALID_API_KEYS:
-        raise HTTPException(status_code=401, detail="Invalid API key")
-    return VALID_API_KEYS[x_api_key]
+    candidate = _extract_api_key(x_api_key, scbe_api_key, authorization)
+    if not candidate:
+        raise HTTPException(status_code=401, detail="Missing API key")
+
+    for token_candidate in _expand_api_key_candidates(candidate, x_scbe_token_encoding):
+        if token_candidate in VALID_API_KEYS:
+            return VALID_API_KEYS[token_candidate]
+
+    raise HTTPException(status_code=403, detail="Invalid API key")
+
+
+class N8nBrowseAction(BaseModel):
+    """Compact action payload accepted by n8n webhook bridge."""
+    action: BrowseActionType
+    target: str = Field(..., description="URL, CSS selector, or direction.")
+    value: Optional[str] = None
+    timeout_ms: Optional[int] = Field(None, ge=1000, le=60000)
+
+    @field_validator("target")
+    @classmethod
+    def validate_target(cls, v):
+        if not v or not v.strip():
+            raise ValueError("Target cannot be empty.")
+        return v.strip()
+
+
+class N8nBrowseRequest(BaseModel):
+    """Payload expected from n8n."""
+    actions: List[N8nBrowseAction] = Field(..., min_length=1, max_length=10)
+    session_id: Optional[str] = None
+    dry_run: bool = False
+    workflow_id: Optional[str] = None
+    run_id: Optional[str] = None
+    source: str = "n8n"
 
 
 # Global state
@@ -404,6 +591,34 @@ async def browse(
     )
 
 
+@app.post("/v1/integrations/n8n/browse", tags=["Browser Agent"])
+async def n8n_browse(
+    request: N8nBrowseRequest,
+    user: str = Depends(verify_api_key)
+):
+    """
+    n8n-optimized browser bridge.
+
+    Accepts compact n8n action payload and executes through the same
+    containment pipeline as /v1/browse.
+    """
+    normalized = [
+        BrowseAction(action=action.action, target=action.target, value=action.value, timeout_ms=action.timeout_ms)
+        for action in request.actions
+    ]
+    browse_request = BrowseRequest(actions=normalized, session_id=request.session_id, dry_run=request.dry_run)
+
+    result = await browse(browse_request, user=user)
+    payload = result.dict()
+    payload["integration"] = {
+        "provider": request.source,
+        "workflow_id": request.workflow_id,
+        "run_id": request.run_id,
+        "user": user,
+    }
+    return payload
+
+
 @app.post("/v1/safety-check", response_model=SafetyCheckResponse, tags=["Safety"])
 async def safety_check(
     request: SafetyCheckRequest,
@@ -503,6 +718,7 @@ async def root():
         "dimension": 16,
         "endpoints": {
             "browse": "POST /v1/browse",
+            "n8n_browse": "POST /v1/integrations/n8n/browse",
             "safety_check": "POST /v1/safety-check",
             "stats": "GET /v1/containment-stats",
             "reset": "POST /v1/reset-session",

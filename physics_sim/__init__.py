@@ -19,9 +19,22 @@ from .core import (
     G,
     ELECTRON_MASS,
     PROTON_MASS,
+    NEUTRON_MASS,
     ELEMENTARY_CHARGE,
     BOLTZMANN,
     AVOGADRO,
+)
+
+from .patrol import (
+    validate_params,
+    validated_simulation,
+    ValidationResult,
+    Decision,
+    TongueProfile,
+    classify_physics_tongue,
+    harmonic_patrol,
+    harmonic_wall,
+    harmonic_risk,
 )
 
 __all__ = [
@@ -37,7 +50,17 @@ __all__ = [
     "G",
     "ELECTRON_MASS",
     "PROTON_MASS",
+    "NEUTRON_MASS",
     "ELEMENTARY_CHARGE",
     "BOLTZMANN",
     "AVOGADRO",
+    "validate_params",
+    "validated_simulation",
+    "ValidationResult",
+    "Decision",
+    "TongueProfile",
+    "classify_physics_tongue",
+    "harmonic_patrol",
+    "harmonic_wall",
+    "harmonic_risk",
 ]

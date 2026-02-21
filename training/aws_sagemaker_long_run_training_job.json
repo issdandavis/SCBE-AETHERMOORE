@@ -1,0 +1,59 @@
+{
+  "TrainingJobName": "{SAGEMAKER_JOB_NAME}",
+  "RoleArn": "{SAGEMAKER_EXECUTION_ROLE_ARN}",
+  "AlgorithmSpecification": {
+    "TrainingInputMode": "File",
+    "TrainingImage": "763104351884.dkr.ecr.{AWS_REGION}.amazonaws.com/pytorch-training:2.1.0-cpu-py310-cu118-ubuntu20.04-py3",
+    "MetricDefinitions": [
+      {
+        "Name": "validation_loss",
+        "Regex": "validation_loss=(.*)"
+      },
+      {
+        "Name": "train_loss",
+        "Regex": "train_loss=(.*)"
+      }
+    ]
+  },
+  "InputDataConfig": [
+    {
+      "ChannelName": "training",
+      "DataSource": {
+        "S3DataSource": {
+          "S3DataType": "S3Prefix",
+          "S3Uri": "{S3_TRAINING_DATA_URI}",
+          "S3DataDistributionType": "FullyReplicated"
+        }
+      },
+      "ContentType": "application/jsonl"
+    }
+  ],
+  "OutputDataConfig": {
+    "S3OutputPath": "{S3_OUTPUT_PATH}"
+  },
+  "ResourceConfig": {
+    "InstanceType": "ml.g5.xlarge",
+    "InstanceCount": 1,
+    "VolumeSizeInGB": 100
+  },
+  "StoppingCondition": {
+    "MaxRuntimeInSeconds": "{SAGEMAKER_MAX_RUNTIME_SECONDS}"
+  },
+  "HyperParameters": {
+    "epochs": "3",
+    "batch_size": "32",
+    "learning_rate": "5e-5",
+    "run_hours": "{TRAINING_HOURS}",
+    "model_id": "phdm-21d-embedding"
+  },
+  "Tags": [
+    {
+      "Key": "project",
+      "Value": "SCBE-AETHERMOORE"
+    },
+    {
+      "Key": "program",
+      "Value": "multi-cloud-long-run-training"
+    }
+  ]
+}

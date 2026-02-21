@@ -1,0 +1,11 @@
+{
+  "profile": "regulated",
+  "version": "1.1.0",
+  "overrides": {
+    "controls": {
+      "max_session_minutes": 45,
+      "retention_days": 2555,
+      "dual_approval_required": true
+    }
+  }
+}

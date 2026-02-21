@@ -1,0 +1,16 @@
+{
+  "provider": "hf",
+  "artifacts": [
+    {
+      "id": "spiralverse/textgen-lora-v1",
+      "role": "textgen",
+      "metrics": {
+        "quality": 0.82,
+        "safety": 0.97,
+        "latency_ms_p95": 140,
+        "cost_per_1k_tokens": 0.9
+      },
+      "uri": "hf://issdandavis/spiralverse/textgen-lora-v1"
+    }
+  ]
+}

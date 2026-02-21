@@ -1,21 +1,23 @@
 "use strict";
-/**
- * @file hyperbolic.ts
- * @module harmonic/hyperbolic
- * @layer Layer 5, Layer 6, Layer 7
- * @component Poincaré Ball Operations
- * @version 3.0.0
- * @since 2026-01-20
- *
- * SCBE Hyperbolic Geometry - Core mathematical operations for the 14-layer pipeline.
- * The invariant hyperbolic metric NEVER changes - all dynamics come from
- * transforming points within the Poincaré ball.
- *
- * Layer 5: Invariant Metric d_ℍ(u,v) = arcosh(1 + 2‖u-v‖²/((1-‖u‖²)(1-‖v‖²)))
- * Layer 6: Breathing Transform B(p,t) = tanh(‖p‖ + A·sin(ωt))·p/‖p‖
- * Layer 7: Phase Modulation Φ(p,θ) = Möbius rotation in tangent space
- */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.EPSILON = void 0;
+exports.setAuditEpsilon = setAuditEpsilon;
+exports.getAuditEpsilon = getAuditEpsilon;
+exports.artanh = artanh;
 exports.hyperbolicDistance = hyperbolicDistance;
 exports.mobiusAdd = mobiusAdd;
 exports.mobiusAddition = mobiusAdd;
@@ -36,8 +38,65 @@ exports.phaseDeviation = phaseDeviation;
 exports.phaseDistanceScore = phaseDistanceScore;
 exports.scoreRetrievals = scoreRetrievals;
 exports.applyHyperbolicPipeline = applyHyperbolicPipeline;
-/** Small epsilon for numerical stability */
-const EPSILON = 1e-10;
+__exportStar(require("../../packages/kernel/src/hyperbolic.js"), exports);
+/**
+ * @file hyperbolic.ts
+ * @module harmonic/hyperbolic
+ * @layer Layer 5, Layer 6, Layer 7
+ * @component Poincaré Ball Operations
+ * @version 3.0.0
+ * @since 2026-01-20
+ *
+ * SCBE Hyperbolic Geometry - Core mathematical operations for the 14-layer pipeline.
+ * The invariant hyperbolic metric NEVER changes - all dynamics come from
+ * transforming points within the Poincaré ball.
+ *
+ * Layer 5: Invariant Metric d_ℍ(u,v) = arcosh(1 + 2‖u-v‖²/((1-‖u‖²)(1-‖v‖²)))
+ * Layer 6: Breathing Transform B(p,t) = tanh(‖p‖ + A·sin(ωt))·p/‖p‖
+ * Layer 7: Phase Modulation Φ(p,θ) = Möbius rotation in tangent space
+ */
+/** Small epsilon for numerical stability (norm checks, zero-vector guards) */
+exports.EPSILON = 1e-10;
+/**
+ * Boundary epsilon for artanh clamping (Layer 5/13 audits).
+ * Tighter than EPSILON to preserve precision near the Poincaré boundary.
+ * Configurable via setAuditEpsilon() for high-precision governance audits.
+ * @layer Layer 5, Layer 13
+ */
+let AUDIT_EPSILON = 1e-15;
+/**
+ * Set the audit epsilon for boundary clamping in artanh/distance calculations.
+ * Allows Layer 13 telemetry to tune precision for attack simulation or audit sweeps.
+ * @param eps - New epsilon value (must be positive and < 1e-6)
+ */
+function setAuditEpsilon(eps) {
+    if (eps <= 0 || eps >= 1e-6) {
+        throw new RangeError('Audit epsilon must be in (0, 1e-6)');
+    }
+    AUDIT_EPSILON = eps;
+}
+/** Get current audit epsilon */
+function getAuditEpsilon() {
+    return AUDIT_EPSILON;
+}
+/**
+ * Inverse hyperbolic tangent with configurable boundary clamping.
+ *
+ * artanh(z) = 0.5 * ln((1+z)/(1-z))
+ *
+ * Clamps z to [-1 + ε, 1 - ε] where ε = AUDIT_EPSILON to prevent
+ * singularities at the Poincaré ball boundary.
+ *
+ * @layer Layer 5
+ * @param z - Input value
+ * @param eps - Override epsilon (defaults to AUDIT_EPSILON)
+ * @returns artanh(z)
+ */
+function artanh(z, eps) {
+    const e = eps ?? AUDIT_EPSILON;
+    const zz = Math.max(-1 + e, Math.min(1 - e, z));
+    return 0.5 * Math.log((1 + zz) / (1 - zz));
+}
 /**
  * Compute Euclidean norm of a vector
  */
@@ -103,8 +162,8 @@ function hyperbolicDistance(u, v) {
     const uNormSq = normSq(u);
     const vNormSq = normSq(v);
     // Clamp to ensure points are inside the ball
-    const uFactor = Math.max(EPSILON, 1 - uNormSq);
-    const vFactor = Math.max(EPSILON, 1 - vNormSq);
+    const uFactor = Math.max(exports.EPSILON, 1 - uNormSq);
+    const vFactor = Math.max(exports.EPSILON, 1 - vNormSq);
     const arg = 1 + (2 * diffNormSq) / (uFactor * vFactor);
     // arcosh(x) = ln(x + sqrt(x² - 1))
     return Math.acosh(Math.max(1, arg));
@@ -143,7 +202,7 @@ function mobiusAdd(u, v) {
  * @param maxNorm - Maximum norm (default 1 - ε)
  * @returns Projected point inside ball
  */
-function projectToBall(p, maxNorm = 1 - EPSILON) {
+function projectToBall(p, maxNorm = 1 - exports.EPSILON) {
     const n = norm(p);
     if (n < maxNorm)
         return [...p];
@@ -201,7 +260,7 @@ function clampToBall(u, rMax = 0.99) {
  */
 function expMap0(v) {
     const n = norm(v);
-    if (n < EPSILON)
+    if (n < exports.EPSILON)
         return v.map(() => 0);
     const factor = Math.tanh(n / 2) / n;
     return scale(v, factor);
@@ -216,10 +275,9 @@ function expMap0(v) {
  */
 function logMap0(p) {
     const n = norm(p);
-    if (n < EPSILON)
+    if (n < exports.EPSILON)
         return p.map(() => 0);
-    // arctanh(x) = 0.5 * ln((1+x)/(1-x))
-    const atanh = 0.5 * Math.log((1 + n) / (1 - n + EPSILON));
+    const atanh = artanh(n);
     const factor = (2 * atanh) / n;
     return scale(p, factor);
 }
@@ -235,10 +293,10 @@ function logMap0(p) {
  */
 function exponentialMap(p, v) {
     const vNorm = norm(v);
-    if (vNorm < EPSILON)
+    if (vNorm < exports.EPSILON)
         return [...p];
     const pNormSq = normSq(p);
-    const lambda_p = 2 / (1 - pNormSq + EPSILON);
+    const lambda_p = 2 / (1 - pNormSq + exports.EPSILON);
     // Direction of v
     const direction = scale(v, 1 / vNorm);
     // tanh(λ_p * ‖v‖ / 2) * direction
@@ -261,15 +319,15 @@ function exponentialMap(p, v) {
  */
 function logarithmicMap(p, q) {
     const pNormSq = normSq(p);
-    const lambda_p = 2 / (1 - pNormSq + EPSILON);
+    const lambda_p = 2 / (1 - pNormSq + exports.EPSILON);
     // -p ⊕ q (Möbius addition of -p and q)
     const negP = scale(p, -1);
     const diff = mobiusAdd(negP, q);
     const diffNorm = norm(diff);
-    if (diffNorm < EPSILON)
+    if (diffNorm < exports.EPSILON)
         return p.map(() => 0);
-    // arctanh(‖diff‖)
-    const atanh = 0.5 * Math.log((1 + diffNorm) / (1 - diffNorm + EPSILON));
+    // arctanh(‖diff‖) — uses configurable AUDIT_EPSILON for boundary precision
+    const atanh = artanh(diffNorm);
     // (2/λ_p) * arctanh * direction
     const factor = ((2 / lambda_p) * atanh) / diffNorm;
     return scale(diff, factor);
@@ -289,7 +347,7 @@ function logarithmicMap(p, q) {
  */
 function breathTransform(p, t, config = { amplitude: 0.05, omega: 1.0 }) {
     const n = norm(p);
-    if (n < EPSILON)
+    if (n < exports.EPSILON)
         return p.map(() => 0);
     // Clamp amplitude to [0, 0.1] as per spec
     const A = Math.max(0, Math.min(0.1, config.amplitude));
@@ -308,12 +366,12 @@ function breathTransform(p, t, config = { amplitude: 0.05, omega: 1.0 }) {
  */
 function inverseBreathTransform(bp, t, config = { amplitude: 0.05, omega: 1.0 }) {
     const n = norm(bp);
-    if (n < EPSILON)
+    if (n < exports.EPSILON)
         return bp.map(() => 0);
     const A = Math.max(0, Math.min(0.1, config.amplitude));
     // atanh(n) - A·sin(ωt) gives approximate original radius
-    const atanh = 0.5 * Math.log((1 + n) / (1 - n + EPSILON));
-    const originalRadius = Math.max(0, atanh - A * Math.sin(config.omega * t));
+    const atanhN = artanh(n);
+    const originalRadius = Math.max(0, atanhN - A * Math.sin(config.omega * t));
     return scale(bp, originalRadius / n);
 }
 // ═══════════════════════════════════════════════════════════════
