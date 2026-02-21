@@ -20,4 +20,5 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./six-tongues"), exports);
+__exportStar(require("./huggingface"), exports);
 //# sourceMappingURL=index.js.map

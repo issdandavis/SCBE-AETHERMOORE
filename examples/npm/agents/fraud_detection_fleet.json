@@ -1,0 +1,27 @@
+{
+  "fleet_name": "fraud-detection-fleet",
+  "description": "Banking fraud workflow with split duties and escalating governance.",
+  "agents": [
+    {
+      "agent_id": "detector-001",
+      "name": "Fraud Detector",
+      "role": "signal_detection",
+      "risk_level": "standard",
+      "allowed_actions": ["READ", "ANALYZE", "FLAG"]
+    },
+    {
+      "agent_id": "scorer-002",
+      "name": "Risk Scorer",
+      "role": "risk_scoring",
+      "risk_level": "strict",
+      "allowed_actions": ["READ", "WRITE", "QUARANTINE"]
+    },
+    {
+      "agent_id": "auditor-003",
+      "name": "Audit Notary",
+      "role": "compliance_audit",
+      "risk_level": "critical",
+      "allowed_actions": ["READ", "APPROVE", "DENY"]
+    }
+  ]
+}

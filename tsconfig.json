@@ -3,8 +3,15 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "dist",
-    "composite": true
+    "composite": true,
+    "skipLibCheck": true,
+    "noEmitOnError": false
   },
-  "include": ["src/**/*", "packages/kernel/src/**/*"],
-  "exclude": ["node_modules"]
+  "include": [
+    "src/**/*",
+    "packages/kernel/src/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

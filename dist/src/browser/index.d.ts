@@ -45,4 +45,10 @@ export { BrowserSession, createBrowserSession, defaultSessionConfig } from './se
 export type { SessionStatistics, PredictedOutcome, SessionSummary, HiveMemoryExport, SessionEvent, SessionEventListener, } from './session.js';
 export { BrowserAgent, createBrowserAgent, MockBrowserBackend } from './agent.js';
 export type { BrowserBackend, EscalationHandler, BrowserAgentConfig } from './agent.js';
+export { PlaywrightBackend, createPlaywrightBackend } from './playwright-backend.js';
+export type { PlaywrightBackendOptions } from './playwright-backend.js';
+export { CDPBackend, createCDPBackend } from './cdp-backend.js';
+export type { CDPBackendOptions } from './cdp-backend.js';
+export { WSClient } from './ws-client.js';
+export type { WSClientOptions, WSReadyState } from './ws-client.js';
 //# sourceMappingURL=index.d.ts.map

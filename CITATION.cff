@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+title: "SCBE-AETHERMOORE"
+message: "If you use this project, please cite it using this metadata."
+authors:
+  - family-names: "Davis"
+    given-names: "Issac"
+repository-code: "https://github.com/SCBE-AETHERMOORE/SCBE-AETHERMOORE"
+abstract: >-
+  SCBE-AETHERMOORE provides Spectral Context Bound Encryption (SCBE),
+  Entropic Defense Engine governance controls, and AI Governance policies
+  for model-assisted execution systems.
+keywords:
+  - SCBE
+  - Spectral Context Bound Encryption
+  - Entropic Defense Engine
+  - AI Governance
+  - security
+license: "MIT"

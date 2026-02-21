@@ -83,9 +83,9 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub release
-        uses: ncipollo/release-action@v1
+        uses: softprops/action-gh-release@v2
         with:
-          tag: v${{ steps.version_bump.outputs.version }}
+          tag_name: v${{ steps.version_bump.outputs.version }}
           name: Release v${{ steps.version_bump.outputs.version }}
           body: |
             ## Version
@@ -97,5 +97,5 @@ jobs:
             ## Changelog
 
             ${{ steps.changelog.outputs.content }}
-          generateReleaseNotes: false
-          allowUpdates: true
+          draft: false
+          prerelease: false

@@ -1,26 +1,7 @@
 "use strict";
-/**
-* @layer Layer 13, Layer 14
- * @component Polly Pads — Closed Network (Air-Gapped)
- * @version 1.0.0
- *
- * Air-gapped network layer for autonomous operations (Mars, submarine,
- * disaster response). Polly Pads communicate ONLY through explicitly
- * allowed channels — no internet, no cloud APIs.
- *
- * Allowed channels:
- *   local_squad_mesh   — UHF radio to other verified pads
- *   earth_deep_space   — When contact available (8-20 min delay)
- *   onboard_sensors    — Direct wired rover instruments
- *   emergency_beacon   — SOS signal
- *
- * All external access goes through SCBE governance.
- */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ClosedNetwork = exports.BLOCKED_NETWORKS = exports.DEFAULT_CLOSED_CONFIG = void 0;
-/**
- * Default closed network configuration (Mars scenario).
- */
+const crypto_1 = require("crypto");
 exports.DEFAULT_CLOSED_CONFIG = {
     mode: 'closed',
     allowedChannels: ['local_squad_mesh', 'earth_deep_space', 'onboard_sensors', 'emergency_beacon'],
@@ -29,64 +10,31 @@ exports.DEFAULT_CLOSED_CONFIG = {
     earthContactAvailable: false,
     earthDelayMinutes: Infinity,
 };
-/**
- * All blocked categories with descriptions.
- */
 exports.BLOCKED_NETWORKS = {
     internet: 'No internet on Mars',
     external_apis: 'No cloud services',
     social_media: 'No social media',
     unauthorized_devices: 'Only verified hardware',
 };
-/**
- * ClosedNetwork — Air-gapped network for autonomous operations.
- *
- * Implements network isolation where Polly Pads can only communicate through:
- * 1. Local squad mesh (UHF radio to other verified pads)
- * 2. Earth deep-space link (when available, 8-20 min delay)
- * 3. Onboard sensors (direct wired connection)
- * 4. Emergency beacon (SOS to Earth)
- *
- * @example
- * ```typescript
- * const network = new ClosedNetwork();
- *
- * // Check if a channel is available
- * network.canUseChannel('local_squad_mesh'); // true
- * network.canUseChannel('internet');          // false — blocked
- *
- * // Send a message to another pad in the squad
- * network.sendMessage('ALPHA-001', 'BETA-001', 'local_squad_mesh', {
- *   type: 'crisis_alert',
- *   component: 'wheel_motor_2',
- * });
- * ```
- */
 class ClosedNetwork {
     config;
-    /** Verified pad IDs in the local mesh */
     verifiedPads = new Set();
-    /** Message log */
     messageLog = [];
-    /** Queued messages waiting for Earth contact */
     earthQueue = [];
+    // v2 compatibility state
+    inboxes = new Map();
+    outboundQueues = new Map();
+    disabledChannels = new Set();
     constructor(config = {}) {
         this.config = { ...exports.DEFAULT_CLOSED_CONFIG, ...config };
     }
-    // === Channel Management ===
-    /**
-     * Check if a channel is allowed.
-     */
     canUseChannel(channel) {
-        // Check if it's a blocked category
-        if (channel in exports.BLOCKED_NETWORKS) {
+        if (channel in exports.BLOCKED_NETWORKS)
             return false;
-        }
+        if (this.disabledChannels.has(channel))
+            return false;
         return this.config.allowedChannels.includes(channel);
     }
-    /**
-     * Get all allowed channels with status.
-     */
     getChannelStatus() {
         return this.config.allowedChannels.map((ch) => {
             if (ch === 'earth_deep_space') {
@@ -98,40 +46,27 @@ class ClosedNetwork {
                         : 'No contact (behind planet or blackout)',
                 };
             }
-            return { channel: ch, available: true };
+            return { channel: ch, available: !this.disabledChannels.has(ch) };
         });
     }
-    // === Pad Verification ===
-    /**
-     * Register a verified pad in the mesh.
-     */
     registerPad(padId) {
         this.verifiedPads.add(padId);
+        if (!this.inboxes.has(padId))
+            this.inboxes.set(padId, []);
+        if (!this.outboundQueues.has(padId))
+            this.outboundQueues.set(padId, []);
     }
-    /**
-     * Remove a pad from the mesh.
-     */
     deregisterPad(padId) {
         this.verifiedPads.delete(padId);
+        this.inboxes.delete(padId);
+        this.outboundQueues.delete(padId);
     }
-    /**
-     * Check if a pad is verified.
-     */
     isPadVerified(padId) {
         return this.verifiedPads.has(padId);
     }
-    /**
-     * Get all verified pads.
-     */
     getVerifiedPads() {
         return Array.from(this.verifiedPads);
     }
-    // === Messaging ===
-    /**
-     * Send a message through the closed network.
-     *
-     * Validates channel availability, pad verification, and message size.
-     */
     sendMessage(from, to, channel, payload) {
         const message = {
             id: `msg-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
@@ -142,19 +77,16 @@ class ClosedNetwork {
             timestamp: Date.now(),
             delivered: false,
         };
-        // Validate channel
         if (!this.canUseChannel(channel)) {
             message.error = `Channel ${channel} is not available`;
             this.messageLog.push(message);
             return message;
         }
-        // Validate sender is verified
         if (!this.verifiedPads.has(from)) {
             message.error = `Sender ${from} is not a verified pad`;
             this.messageLog.push(message);
             return message;
         }
-        // Channel-specific validation
         if (channel === 'local_squad_mesh') {
             if (to !== 'broadcast' && !this.verifiedPads.has(to)) {
                 message.error = `Recipient ${to} is not a verified pad`;
@@ -165,7 +97,6 @@ class ClosedNetwork {
         }
         else if (channel === 'earth_deep_space') {
             if (!this.config.earthContactAvailable) {
-                // Queue for later
                 this.earthQueue.push(message);
                 message.error = 'No Earth contact — message queued';
                 this.messageLog.push(message);
@@ -173,60 +104,110 @@ class ClosedNetwork {
             }
             message.delivered = true;
         }
-        else if (channel === 'onboard_sensors') {
+        else {
             message.delivered = true;
         }
-        else if (channel === 'emergency_beacon') {
-            // Emergency beacons always "send" (may not be received)
-            message.delivered = true;
-        }
-        // Check message size
         const payloadSize = JSON.stringify(payload).length;
         if (payloadSize > this.config.maxMessageSize) {
             message.delivered = false;
             message.error = `Message too large: ${payloadSize} > ${this.config.maxMessageSize}`;
         }
         this.messageLog.push(message);
-        // Keep log bounded
-        if (this.messageLog.length > 5000) {
+        if (this.messageLog.length > 5000)
             this.messageLog = this.messageLog.slice(-2500);
-        }
         return message;
     }
-    /**
-     * Broadcast a message to all verified pads in the squad.
-     */
+    // v2 compatibility send API
+    send(fromPadId, toPadId, channel, payload) {
+        const sent = this.sendMessage(fromPadId, toPadId, channel, payload);
+        if (sent.error && channel !== 'earth_deep_space')
+            return null;
+        const signature = (0, crypto_1.createHmac)('sha256', 'scbe-closed-network-v2')
+            .update(JSON.stringify({ fromPadId, toPadId, channel, payload, timestamp: sent.timestamp }))
+            .digest('hex');
+        const legacy = {
+            ...sent,
+            fromPadId,
+            toPadId,
+            signature,
+        };
+        if (channel === 'local_squad_mesh') {
+            if (toPadId === 'broadcast') {
+                for (const pad of this.verifiedPads) {
+                    if (pad === fromPadId)
+                        continue;
+                    this.inboxes.get(pad)?.push(legacy);
+                }
+            }
+            else {
+                this.inboxes.get(toPadId)?.push(legacy);
+            }
+        }
+        if (channel === 'earth_deep_space') {
+            if (!this.config.earthContactAvailable) {
+                this.outboundQueues.get(fromPadId)?.push(legacy);
+            }
+            else {
+                this.inboxes.get(toPadId)?.push(legacy);
+            }
+        }
+        return legacy;
+    }
+    receive(padId) {
+        const messages = this.inboxes.get(padId) ?? [];
+        this.inboxes.set(padId, []);
+        return messages;
+    }
+    verifyMessage(message) {
+        const expected = (0, crypto_1.createHmac)('sha256', 'scbe-closed-network-v2')
+            .update(JSON.stringify({
+            fromPadId: message.fromPadId,
+            toPadId: message.toPadId,
+            channel: message.channel,
+            payload: message.payload,
+            timestamp: message.timestamp,
+        }))
+            .digest('hex');
+        return message.signature === expected;
+    }
+    setChannelEnabled(channel, enabled) {
+        if (enabled)
+            this.disabledChannels.delete(channel);
+        else
+            this.disabledChannels.add(channel);
+    }
     broadcast(from, payload) {
         return this.sendMessage(from, 'broadcast', 'local_squad_mesh', payload);
     }
-    // === Earth Contact ===
-    /**
-     * Set Earth contact availability.
-     */
     setEarthContact(available, delayMinutes) {
         this.config.earthContactAvailable = available;
-        if (delayMinutes !== undefined) {
+        if (delayMinutes !== undefined)
             this.config.earthDelayMinutes = delayMinutes;
-        }
-        // Flush queued messages when contact restored
         if (available && this.earthQueue.length > 0) {
             for (const msg of this.earthQueue) {
                 msg.delivered = true;
                 msg.error = undefined;
             }
             this.earthQueue = [];
+            for (const [sender, queued] of this.outboundQueues.entries()) {
+                for (const msg of queued) {
+                    if (msg.toPadId !== 'broadcast') {
+                        this.inboxes.get(msg.toPadId)?.push(msg);
+                    }
+                }
+                this.outboundQueues.set(sender, []);
+            }
         }
     }
-    /**
-     * Get queued Earth messages.
-     */
     getEarthQueue() {
         return [...this.earthQueue];
     }
-    // === Stats ===
-    /**
-     * Get network statistics.
-     */
+    getStatus(padId) {
+        const totalSent = this.messageLog.filter((m) => m.from === padId).length;
+        const totalReceived = this.messageLog.filter((m) => m.to === padId || (m.to === 'broadcast' && m.from !== padId)).length;
+        const outboundQueueSize = (this.outboundQueues.get(padId) ?? []).length;
+        return { totalSent, totalReceived, outboundQueueSize };
+    }
     getStats() {
         const delivered = this.messageLog.filter((m) => m.delivered).length;
         return {
@@ -238,9 +219,6 @@ class ClosedNetwork {
             earthContact: this.config.earthContactAvailable,
         };
     }
-    /**
-     * Get recent message log.
-     */
     getMessageLog(limit = 50) {
         return this.messageLog.slice(-limit);
     }

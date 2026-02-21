@@ -18,6 +18,13 @@
  * @module crypto/pqc
  * @version 1.0.0
  */
+type PQCStatus = {
+    available: boolean;
+    implementation: 'native' | 'stub';
+    algorithms: string[];
+    moduleName?: string;
+    reason?: string;
+};
 export interface MLKEMKeyPair {
     publicKey: Uint8Array;
     secretKey: Uint8Array;
@@ -73,7 +80,9 @@ export declare const ML_DSA_65_PARAMS: {
  */
 export declare class MLKEM768 {
     private static instance;
+    private static nativeInstance;
     private useNative;
+    private nativeInstance;
     private constructor();
     static getInstance(): MLKEM768;
     /**
@@ -111,7 +120,9 @@ export declare class MLKEM768 {
  */
 export declare class MLDSA65 {
     private static instance;
+    private static nativeInstance;
     private useNative;
+    private nativeInstance;
     private constructor();
     static getInstance(): MLDSA65;
     /**
@@ -202,11 +213,7 @@ export declare function isPQCAvailable(): boolean;
 /**
  * Get PQC implementation status
  */
-export declare function getPQCStatus(): {
-    available: boolean;
-    implementation: 'native' | 'stub';
-    algorithms: string[];
-};
+export declare function getPQCStatus(): PQCStatus;
 /**
  * Consensus result enum matching Python implementation
  */
@@ -291,11 +298,7 @@ export declare class DualLatticeConsensus {
     /**
      * Get PQC status
      */
-    getPQCStatus(): {
-        available: boolean;
-        implementation: 'native' | 'stub';
-        algorithms: string[];
-    };
+    getPQCStatus(): PQCStatus;
     private serializeContext;
     private hashWithDomain;
     private combineHashes;

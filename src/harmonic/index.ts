@@ -476,3 +476,112 @@ export {
   type DriftTrackerStats,
 } from './driftTracker.js';
 
+// ═══════════════════════════════════════════════════════════════
+// Sheaf Cohomology — Tarski Laplacian on Lattice-Valued Sheaves
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  // Lattice implementations
+  BooleanLattice,
+  IntervalLattice,
+  PowerSetLattice,
+  UnitIntervalLattice,
+  ProductLattice,
+  // Galois connections
+  v2IdentityConnection,
+  constantConnection,
+  thresholdConnection,
+  scalingConnection,
+  // Cell complex builders
+  graphComplex,
+  simplicialComplex,
+  // Sheaf constructors
+  v2ConstantSheaf,
+  thresholdSheaf,
+  twistedSheaf,
+  // Cochains
+  topCochain,
+  bottomCochain,
+  // Tarski Laplacian
+  tarskiLaplacian,
+  // Cohomology
+  tarskiCohomology,
+  v2GlobalSections,
+  // Hodge Laplacians
+  upLaplacian,
+  downLaplacian,
+  hodgeLaplacian,
+  hodgeCohomology,
+  // Diagnostics
+  analyseCohomology,
+  detectObstructions,
+  // SCBE Engine
+  SheafCohomologyEngine,
+  defaultSheafEngine,
+  // Types
+  type V2CompleteLattice,
+  type V2GaloisConnection,
+  type Cell,
+  type V2CellComplex,
+  type V2CellularSheaf,
+  type Cochain,
+  type CohomologyResult,
+  type CohomologyDiagnostics,
+  type Obstruction,
+  type SheafCohomologyConfig,
+  type SheafAnalysisResult,
+} from './sheafCohomology.js';
+
+// ── Linguistic Cross-Talk Kernel (cross-domain reasoning) ──────
+export {
+  // Kernel class
+  CrossTalkKernel,
+  createCrossTalkKernel,
+  defaultCrossTalkKernel,
+  // Graph construction
+  buildCrossTalkEdges,
+  // Utilities
+  domainToTongue,
+  tongueToDomain,
+  resonanceToVector,
+  computeVagueness,
+  // Validation
+  isValidatorAvailable,
+  validatorFacetCount,
+  validationStrength,
+  // Constants
+  ALL_TONGUES as CROSS_TALK_TONGUES,
+  ALL_DOMAINS,
+  DOMAIN_PROFILES,
+  DEFAULT_KERNEL_CONFIG,
+  // Types
+  type TongueCode as CrossTalkTongueCode,
+  type AcademicDomain,
+  type CrossTalkEdge,
+  type CrossTalkRelationship,
+  type PolyhedralValidator,
+  type DomainProfile,
+  type DomainToken,
+  type CrossDomainTranslation,
+  type CrossTalkRoute,
+  type CrossTalkResult,
+  type CrossTalkKernelConfig,
+  type GrammarType,
+} from './linguisticCrossTalk.js';
+
+// ── PHDM Sheaf Lattice (constraint-based governance routing) ──
+export {
+  PHDMGovernanceRouter,
+  buildPolyhedralGraph,
+  buildGovernanceSheaf as phdmBuildGovernanceSheaf,
+  computePolyhedralTrust,
+  polyhedralEulerCharacteristic,
+  trustDistanceMatrix,
+  requiredFluxState,
+  defaultGovernanceRouter,
+  type PolyhedralEdge,
+  type GovernanceDecision,
+  type GovernanceRoutingResult,
+  type GovernanceRouterConfig,
+} from './phdmSheafLattice.js';
+

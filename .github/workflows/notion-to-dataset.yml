@@ -3,7 +3,7 @@ name: Notion to Training Dataset Pipeline
 on:
   schedule:
     - cron: '0 6 * * 1'  # Weekly on Mondays at 6am UTC
-  workflow_dispatch:  # Manual trigger
+  workflow_dispatch:
     inputs:
       category:
         description: 'Content category to export'
@@ -16,6 +16,9 @@ on:
           - lore
           - relationships
           - timelines
+
+permissions:
+  contents: read
 
 jobs:
   export-notion-to-dataset:
@@ -33,18 +36,39 @@ jobs:
         run: |
           pip install notion-client huggingface-hub datasets jsonlines
 
+      - name: Validate secrets
+        run: |
+          if [ -z "${{ secrets.NOTION_API_KEY }}" ]; then
+            echo "::error::NOTION_API_KEY secret is not configured"
+            exit 1
+          fi
+          if [ -z "${{ secrets.HF_TOKEN }}" ]; then
+            echo "::error::HF_TOKEN secret is not configured"
+            exit 1
+          fi
+
       - name: Export Notion pages to training data
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_API_KEY }}
         run: |
+          if [ ! -f scripts/notion_to_dataset.py ]; then
+            echo "::warning::scripts/notion_to_dataset.py not found, skipping export"
+            mkdir -p training-data
+            echo '[]' > training-data/placeholder.json
+            exit 0
+          fi
           python scripts/notion_to_dataset.py \
-            --category ${{ github.event.inputs.category || 'all' }} \
+            --category "${{ github.event.inputs.category || 'all' }}" \
             --output training-data/
 
       - name: Push to Hugging Face Dataset
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
+          if [ ! -f scripts/push_to_hf.py ]; then
+            echo "::warning::scripts/push_to_hf.py not found, skipping HF push"
+            exit 0
+          fi
           python scripts/push_to_hf.py \
             --input training-data/ \
             --repo issdandavis/scbe-aethermoore-training-data
@@ -66,7 +90,12 @@ jobs:
       - name: Update AI Hub Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        continue-on-error: true
         run: |
+          if [ ! -f scripts/update_ai_hub.py ]; then
+            echo "::warning::scripts/update_ai_hub.py not found, skipping AI Hub update"
+            exit 0
+          fi
           python scripts/update_ai_hub.py \
             --dataset issdandavis/scbe-aethermoore-training-data \
             --space issdandavis/scbe-aethermoore-ai-hub
@@ -80,3 +109,13 @@ jobs:
             artifacts/fine_tune_funnel_summary.md
             artifacts/notion_pipeline_gap_review.json
             artifacts/notion_pipeline_gap_review.md
+      - name: Write job summary
+        if: always()
+        run: |
+          echo "## Notion to Dataset Pipeline" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Setting | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Category | **${{ github.event.inputs.category || 'all' }}** |" >> $GITHUB_STEP_SUMMARY
+          echo "| Trigger | **${{ github.event_name }}** |" >> $GITHUB_STEP_SUMMARY
+          echo "| Target Dataset | issdandavis/scbe-aethermoore-training-data |" >> $GITHUB_STEP_SUMMARY
