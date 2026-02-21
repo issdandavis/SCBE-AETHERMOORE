@@ -26,6 +26,10 @@ export * from './crawl-frontier';
 export * from './crawl-coordinator';
 export * from './crawl-runner';
 export * from './browser-pool';
+export * from './swarm-geometry';
+export * from './oscillator-bus';
+export * from './governed-drift';
+export * from './node-kernel';
 export * from './types';
 export { AuditEntry, AuditStatus, GrowthMilestone, PadNote, PadSketch, PadTool, PollyPad, PollyPadManager, TIER_THRESHOLDS, getNextTier, getXPForNextTier, } from './polly-pad';
 //# sourceMappingURL=index.d.ts.map
