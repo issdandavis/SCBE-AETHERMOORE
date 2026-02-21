@@ -1,0 +1,9 @@
+{
+  "id": "base-data",
+  "version": "1.0.0",
+  "controls": {
+    "classification_required": true,
+    "encryption_at_rest": "AES256",
+    "retention_days": 365
+  }
+}
