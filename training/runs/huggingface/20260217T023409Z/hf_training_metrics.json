@@ -1,0 +1,156 @@
+{
+  "provider": "huggingface",
+  "status": "completed",
+  "generated_at": "2026-02-17T10:34:11.010507+00:00",
+  "run_id": "20260217T103410Z",
+  "dataset_repo": "issdandavis/scbe-aethermoore-training-data",
+  "model_repo": "issdandavis/phdm-21d-embedding",
+  "duration_hours": 8.0,
+  "run_dir": "training\\runs\\huggingface\\20260217T023409Z",
+  "input_plan": null,
+  "data": {
+    "patterns": [
+      "training/**/*.jsonl",
+      "training-data/**/*.jsonl"
+    ],
+    "sample_count": 24,
+    "train_count": 19,
+    "val_count": 5,
+    "label_count": 2,
+    "labels": [
+      "gumroad_error",
+      "gumroad_local_verification"
+    ]
+  },
+  "training": {
+    "epochs": 14,
+    "embedding_dim": 256,
+    "learning_rate": 0.2,
+    "seed": 42,
+    "history": [
+      {
+        "epoch": 1.0,
+        "learning_rate": 0.2,
+        "train_loss": 0.6920938491821289,
+        "train_accuracy": 0.6842105388641357,
+        "val_loss": 0.6716379523277283,
+        "val_accuracy": 0.800000011920929
+      },
+      {
+        "epoch": 2.0,
+        "learning_rate": 0.194,
+        "train_loss": 0.6629814505577087,
+        "train_accuracy": 0.8947368264198303,
+        "val_loss": 0.6505774855613708,
+        "val_accuracy": 1.0
+      },
+      {
+        "epoch": 3.0,
+        "learning_rate": 0.18818000000000001,
+        "train_loss": 0.636915385723114,
+        "train_accuracy": 0.9473684430122375,
+        "val_loss": 0.6313245892524719,
+        "val_accuracy": 1.0
+      },
+      {
+        "epoch": 4.0,
+        "learning_rate": 0.1825346,
+        "train_loss": 0.6134806871414185,
+        "train_accuracy": 0.9473684430122375,
+        "val_loss": 0.6136606931686401,
+        "val_accuracy": 1.0
+      },
+      {
+        "epoch": 5.0,
+        "learning_rate": 0.177058562,
+        "train_loss": 0.5923256278038025,
+        "train_accuracy": 0.9473684430122375,
+        "val_loss": 0.5973995923995972,
+        "val_accuracy": 1.0
+      },
+      {
+        "epoch": 6.0,
+        "learning_rate": 0.17174680514,
+        "train_loss": 0.5731529593467712,
+        "train_accuracy": 0.9473684430122375,
+        "val_loss": 0.5823826193809509,
+        "val_accuracy": 1.0
+      },
+      {
+        "epoch": 7.0,
+        "learning_rate": 0.16659440098579997,
+        "train_loss": 0.5557105541229248,
+        "train_accuracy": 1.0,
+        "val_loss": 0.5684740543365479,
+        "val_accuracy": 1.0
+      },
+      {
+        "epoch": 8.0,
+        "learning_rate": 0.16159656895622598,
+        "train_loss": 0.5397850871086121,
+        "train_accuracy": 1.0,
+        "val_loss": 0.5555572509765625,
+        "val_accuracy": 1.0
+      },
+      {
+        "epoch": 9.0,
+        "learning_rate": 0.1567486718875392,
+        "train_loss": 0.5251949429512024,
+        "train_accuracy": 1.0,
+        "val_loss": 0.543531596660614,
+        "val_accuracy": 1.0
+      },
+      {
+        "epoch": 10.0,
+        "learning_rate": 0.15204621173091304,
+        "train_loss": 0.5117854475975037,
+        "train_accuracy": 1.0,
+        "val_loss": 0.5323101282119751,
+        "val_accuracy": 1.0
+      },
+      {
+        "epoch": 11.0,
+        "learning_rate": 0.14748482537898563,
+        "train_loss": 0.4994240403175354,
+        "train_accuracy": 1.0,
+        "val_loss": 0.5218169093132019,
+        "val_accuracy": 1.0
+      },
+      {
+        "epoch": 12.0,
+        "learning_rate": 0.14306028061761605,
+        "train_loss": 0.48799681663513184,
+        "train_accuracy": 1.0,
+        "val_loss": 0.5119858980178833,
+        "val_accuracy": 1.0
+      },
+      {
+        "epoch": 13.0,
+        "learning_rate": 0.13876847219908756,
+        "train_loss": 0.47740569710731506,
+        "train_accuracy": 1.0,
+        "val_loss": 0.5027586817741394,
+        "val_accuracy": 1.0
+      },
+      {
+        "epoch": 14.0,
+        "learning_rate": 0.13460541803311493,
+        "train_loss": 0.4675656259059906,
+        "train_accuracy": 1.0,
+        "val_loss": 0.49408406019210815,
+        "val_accuracy": 1.0
+      }
+    ]
+  },
+  "growth": {
+    "confirmed": true,
+    "val_accuracy_gain": 0.2,
+    "val_loss_drop": 0.177554,
+    "best_val_accuracy": 1.0,
+    "best_epoch": 2
+  },
+  "huggingface_upload": {
+    "status": "skipped",
+    "reason": "HF_TOKEN missing or upload disabled"
+  }
+}

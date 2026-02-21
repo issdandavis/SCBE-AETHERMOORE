@@ -1,5 +1,4 @@
 name: Coherence Gate
-
 on:
   pull_request:
     branches: [main]
@@ -11,28 +10,28 @@ on:
         default: '0.20'
         type: string
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   pull-requests: write
-
 jobs:
   coherence-gate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: npm
-
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
       - name: Install dependencies
         run: |
           npm ci
@@ -70,16 +69,15 @@ jobs:
             echo '{"coherence": 0.0, "status": "error", "reason": "No report generated"}' > coherence-report.json
           fi
           python3 - <<'PY'
-import json
-import os
-from pathlib import Path
-
-data = json.loads(Path('coherence-report.json').read_text())
-with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as fh:
-    fh.write(f"coherence={data.get('coherence', 0.0)}\n")
-    fh.write(f"status={data.get('status', 'error')}\n")
-    fh.write(f"reason={data.get('reason', '')}\n")
-PY
+          import json
+          import os
+          from pathlib import Path
+          data = json.loads(Path('coherence-report.json').read_text())
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as fh:
+            fh.write(f"coherence={data.get('coherence', 0.0)}\n")
+            fh.write(f"status={data.get('status', 'error')}\n")
+            fh.write(f"reason={data.get('reason', '')}\n")
+          PY
 
       - name: Upload coherence report
         if: always()

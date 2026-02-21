@@ -88,8 +88,8 @@ def locality_check(
             result = func(*args, **kwargs)
 
             # Compute locality metrics if the function has an associated matrix
-            if hasattr(wrapper, "_operator_matrix"):
-                matrix = wrapper._operator_matrix
+            matrix = getattr(wrapper, "_operator_matrix", None)
+            if matrix is not None:
                 radius, sparsity, bandwidth = _analyze_locality(matrix)
             else:
                 # For general functions, use output bounds as proxy

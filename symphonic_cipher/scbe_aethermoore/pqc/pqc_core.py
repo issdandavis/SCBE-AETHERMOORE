@@ -28,13 +28,22 @@ DILITHIUM3_SIGNATURE_SIZE = 3293
 # Try to import liboqs, fallback to mock if unavailable
 _LIBOQS_AVAILABLE = False
 _oqs = None
+_FORCE_SKIP_LIBOQS = os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+}
 
-try:
-    import oqs
-    _oqs = oqs
-    _LIBOQS_AVAILABLE = True
-except ImportError:
-    pass
+if not _FORCE_SKIP_LIBOQS:
+    try:
+        import oqs
+
+        _oqs = oqs
+        _LIBOQS_AVAILABLE = True
+    except BaseException:
+        # Includes ImportError plus runtime/bootstrap/shared-lib failures
+        _oqs = None
+        _LIBOQS_AVAILABLE = False
 
 
 class PQCBackend(Enum):

@@ -1,0 +1,19 @@
+{
+  "run_id": "20260217-013602Z",
+  "passes": 1,
+  "requested_passes": 5,
+  "dry_run": true,
+  "return_code": 2,
+  "pass_metrics": [
+    {
+      "events": {
+        "matched": 0,
+        "skipped": 0,
+        "uploaded": 0,
+        "logged": 0,
+        "errors": 1
+      },
+      "run_index": 0
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scbe/statevector.schema.json",
+  "title": "SCBE StateVector",
+  "type": "object",
+  "required": [
+    "worker_id",
+    "task_id",
+    "role",
+    "status",
+    "timestamp"
+  ],
+  "properties": {
+    "worker_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "role": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": ["queued", "leased", "done", "failed", "running"]
+    },
+    "turnstile_action": {
+      "type": "string",
+      "enum": ["ALLOW", "HOLD", "PIVOT", "DEGRADE", "ISOLATE", "HONEYPOT", "STOP"]
+    },
+    "attempts": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

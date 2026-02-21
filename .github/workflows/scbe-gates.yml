@@ -1,0 +1,26 @@
+name: SCBE Gates
+
+on:
+  workflow_dispatch:
+    inputs:
+      node-version:
+        description: 'Node.js version to validate'
+        required: false
+        default: '20'
+        type: string
+      python-version:
+        description: 'Python version to validate'
+        required: false
+        default: '3.11'
+        type: string
+  schedule:
+    - cron: '0 2 * * *'
+  push:
+    branches: [ main, 'claude/**' ]
+
+jobs:
+  reusable-gates:
+    uses: ./.github/workflows/scbe-reusable-gates.yml
+    with:
+      node-version: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.node-version || '20' }}
+      python-version: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.python-version || '3.11' }}

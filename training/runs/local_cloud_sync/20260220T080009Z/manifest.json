@@ -1,0 +1,40 @@
+{
+  "run_id": "20260220T080009Z",
+  "timestamp_utc": "2026-02-20T08:03:50.611507+00:00",
+  "fingerprint": "66fb207e0efa114f2ed011f9ca1593c6a29267401e5a438d41d23a7c1f87d47d",
+  "counts": {
+    "indexed_files": 1549,
+    "added": 6,
+    "modified": 0,
+    "removed": 0,
+    "changed": 6
+  },
+  "delta": {
+    "added": [
+      "docs/product/LAUNCH_SKU.md",
+      "docs/product/SCBE_KERNEL_V1_API.md",
+      "scripts/push_jsonl_dataset.py",
+      "scripts/uninstall_project_irrelevant_apps.ps1",
+      "src/memory/quasi_allocator.ts",
+      "src/symphonic_cipher/scbe_aethermoore/ai_brain/circuit_flow.py"
+    ],
+    "modified": [],
+    "removed": [],
+    "changed": [
+      "docs/product/LAUNCH_SKU.md",
+      "docs/product/SCBE_KERNEL_V1_API.md",
+      "scripts/push_jsonl_dataset.py",
+      "scripts/uninstall_project_irrelevant_apps.ps1",
+      "src/memory/quasi_allocator.ts",
+      "src/symphonic_cipher/scbe_aethermoore/ai_brain/circuit_flow.py"
+    ]
+  },
+  "changed_hashes_sha256": {
+    "docs/product/LAUNCH_SKU.md": "67bf22d86f9fff5b63fb3478136d525da5458b2764e6ff4a6f0fbccb088a6e9e",
+    "docs/product/SCBE_KERNEL_V1_API.md": "ab57139ce9074cba9aef09f756aa3d4f5e5307f234641e1ec4dbb3befbb504a5",
+    "scripts/push_jsonl_dataset.py": "175a60fc0a5bb98a7434cba04c6bb889fcb9ffe1da36f4d07004e167dfe8e3e8",
+    "scripts/uninstall_project_irrelevant_apps.ps1": "07793897d8344604d0610a9a25e88207d4afdd244b839f8bd46d64ccd3c8292b",
+    "src/memory/quasi_allocator.ts": "a5c621e86f2c478d481079e6f18ef2066b5a4d2f17783c0588d3e5e4a2055037",
+    "src/symphonic_cipher/scbe_aethermoore/ai_brain/circuit_flow.py": "cb1e8279d8b38db9057a8f0b7fee0ec847c045f795697ee61f7c854d5679ae29"
+  }
+}

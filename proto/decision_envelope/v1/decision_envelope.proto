@@ -1,0 +1,743 @@
+// SCBE-AETHERMOORE Decision Envelope v1
+//
+// Canonical protobuf schema for the signed governance envelope that authorizes
+// agent actions within a Mars mission swarm. This is the single source of truth
+// that the BFT Quorum, Scarcity-Adjusted Harmonic Wall, and MMR audit chain
+// all validate against.
+//
+// Design principles:
+//   1. Deterministic encoding for embedded use on Mars hardware (no JSON ambiguity).
+//   2. Minimal v1 -- easy to sign, verify, and reason about.
+//   3. The math only answers "is action inside envelope?" -- policy lives HERE.
+//   4. Round-trip: proto -> sign -> JSON-LD projection -> verify via protobufHash.
+//   5. Unknown fields are preserved (proto3 default) for forward compatibility.
+//
+// Patent reference: USPTO Application #63/961,403
+// SCBE Layer mapping: L12 (Harmonic Wall), L13 (Decision Gate)
+
+syntax = "proto3";
+
+package scbe.governance.v1;
+
+option java_package = "com.scbe.governance.v1";
+option java_multiple_files = true;
+option go_package = "github.com/scbe-aethermoore/governance/v1;governancev1";
+
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+// MissionPhase enumerates the discrete phases of a Mars mission.
+// Envelopes are scoped to a phase; phase transitions trigger envelope
+// replacement via the queued-envelope mechanism (see ENVELOPE_SIGNING_SPEC.md
+// section 6).
+enum MissionPhase {
+  // Unspecified is the proto3 zero-value sentinel. Must never appear in a
+  // signed envelope; validators reject envelopes with MISSION_PHASE_UNSPECIFIED.
+  MISSION_PHASE_UNSPECIFIED = 0;
+
+  // Earth-to-orbit launch window. High-vibration, limited comms.
+  LAUNCH = 1;
+
+  // Interplanetary cruise. Low activity, periodic deep-sleep cycles.
+  TRANSIT = 2;
+
+  // Mars orbit insertion burn. Critical navigation, no margin for error.
+  ORBIT_INSERT = 3;
+
+  // Powered descent to landing site. Real-time terrain avoidance.
+  DESCENT = 4;
+
+  // Terminal landing sequence. Maximum autonomy, zero comms latency tolerance.
+  LANDING = 5;
+
+  // Nominal surface operations. Standard science and maintenance activities.
+  SURFACE_OPS = 6;
+
+  // Emergency operations. Elevated autonomy, relaxed approval gates.
+  // Only reachable via emergency key override or Ground Control directive.
+  EMERGENCY_OPS = 7;
+
+  // Preparing for ascent. Propellant checks, sample sealing, habitat shutdown.
+  RETURN_PREP = 8;
+
+  // Mars ascent to orbit. Mirrors LAUNCH constraints.
+  ASCENT = 9;
+
+  // Return cruise to Earth. Mirrors TRANSIT.
+  TRANSIT_HOME = 10;
+
+  // Earth atmosphere reentry. Mirrors DESCENT + LANDING constraints.
+  REENTRY = 11;
+}
+
+// BoundaryType is the raw classification a rule assigns to an action pattern.
+// This is the envelope-level policy; the SCBE 14-layer pipeline produces a
+// separate mathematical assessment. The final decision combines both.
+enum BoundaryType {
+  // Proto3 zero-value sentinel. Must not appear in signed rules.
+  // If an action matches no rule and the boundary is UNSPECIFIED,
+  // the fail-closed default applies: the action is DENIED.
+  BOUNDARY_TYPE_UNSPECIFIED = 0;
+
+  // Action is pre-authorized. No quorum or human approval needed.
+  // The SCBE pipeline must still confirm the action is geometrically
+  // within the safe region (cost <= allow_max_cost, coherence >= allow_min_coherence,
+  // drift <= allow_max_drift).
+  AUTO_ALLOW = 1;
+
+  // Action requires BFT quorum approval before execution.
+  // The swarm votes; quorum threshold is defined in RecoveryPath.
+  // See ENVELOPE_SIGNING_SPEC.md section 4 for the voting protocol.
+  QUARANTINE = 2;
+
+  // Action is unconditionally blocked. No quorum can override this.
+  // Only the emergency key (section 5 of ENVELOPE_SIGNING_SPEC.md)
+  // can bypass a DENY.
+  DENY = 3;
+}
+
+// FinalDecision is the outcome after combining envelope policy with
+// SCBE pipeline assessment and (optionally) quorum voting.
+enum FinalDecision {
+  // Proto3 zero-value sentinel.
+  FINAL_DECISION_UNSPECIFIED = 0;
+
+  // Action was approved and executed (or cleared for execution).
+  EXECUTE = 1;
+
+  // Action matched a QUARANTINE rule; quorum vote is in progress.
+  // The action has NOT executed yet.
+  QUORUM_REQUIRED = 2;
+
+  // Action was denied by envelope policy, SCBE pipeline, or quorum vote.
+  DENIED = 3;
+
+  // Action is valid but no active envelope covers it, or the current
+  // envelope has expired with no replacement. The action is held in a
+  // FIFO queue until a new envelope arrives or a comms window opens.
+  QUEUED = 4;
+}
+
+// RiskTier classifies the operational risk of an action.
+// The envelope's max_risk_tier field caps which tiers are permitted.
+// Actions exceeding the cap are automatically DENIED before rule matching.
+enum RiskTier {
+  // Proto3 zero-value sentinel.
+  RISK_TIER_UNSPECIFIED = 0;
+
+  // Routine telemetry reads, status checks, passive observation.
+  LOW = 1;
+
+  // Configuration changes, non-critical actuator commands.
+  MEDIUM = 2;
+
+  // Propulsion burns, habitat atmosphere changes, drill operations.
+  HIGH = 3;
+
+  // Life-support overrides, abort sequences, emergency maneuvers.
+  // Only permitted when mission_phase is EMERGENCY_OPS or via
+  // emergency key override.
+  CRITICAL = 4;
+}
+
+// SignatureAlgorithm identifies the digital signature scheme used to
+// sign and counter-sign the envelope.
+enum SignatureAlgorithm {
+  // Proto3 zero-value sentinel.
+  SIGNATURE_ALGORITHM_UNSPECIFIED = 0;
+
+  // HMAC-SHA256 placeholder for development and testing environments.
+  // MUST NOT be used in flight hardware or production deployments.
+  // Allows offline development without PQC library dependencies.
+  SHA256_PLACEHOLDER = 1;
+
+  // Module-Lattice-Based Digital Signature Algorithm, security level 3.
+  // NIST FIPS 204. Post-quantum safe. Required for all flight envelopes.
+  // Key size: 1952 bytes (public), 4032 bytes (private).
+  // Signature size: 3309 bytes.
+  ML_DSA_65 = 2;
+}
+
+// RecoveryType defines what happens when a QUARANTINE action cannot
+// be resolved by the local swarm's BFT vote.
+enum RecoveryType {
+  // Proto3 zero-value sentinel.
+  RECOVERY_TYPE_UNSPECIFIED = 0;
+
+  // No recovery path. If quorum fails, the action is DENIED permanently
+  // for this envelope's lifetime (or until re-proposed with new context).
+  NONE = 1;
+
+  // Wait for Earth communication window and request Ground Control
+  // decision. Latency: 4-24 minutes one-way depending on orbital position.
+  // The action is QUEUED (not DENIED) while waiting.
+  EARTH_SYNC = 2;
+
+  // Retry with BFT quorum. The action is re-proposed to the swarm
+  // with additional context from the first failed attempt.
+  // Maximum retries: 3 (hardcoded; prevents infinite retry loops).
+  BFT_QUORUM = 3;
+
+  // Use the pre-shared emergency key to override the denial.
+  // Requires physical presence at the mission commander's console.
+  // All emergency overrides are flagged for Ground Control review
+  // in the next comms window.
+  EMERGENCY_KEY = 4;
+}
+
+// EnvelopeCapability enumerates the discrete action categories that
+// an envelope can authorize. The allowed_capabilities field acts as
+// a whitelist; agents may only perform actions within listed categories.
+// An empty allowed_capabilities list means NO capabilities are authorized
+// (lockdown envelope).
+enum EnvelopeCapability {
+  // Proto3 zero-value sentinel.
+  ENVELOPE_CAPABILITY_UNSPECIFIED = 0;
+
+  // Trajectory planning, waypoint setting, autonomous navigation.
+  NAVIGATE = 1;
+
+  // Rock/soil/atmosphere sample collection and storage.
+  SAMPLE = 2;
+
+  // Camera operation, panoramic imaging, microscopic photography.
+  PHOTOGRAPH = 3;
+
+  // In-situ chemical analysis, spectrometry, data processing.
+  ANALYZE = 4;
+
+  // Radio transmission, inter-agent messaging, Earth uplink/downlink.
+  COMMUNICATE = 5;
+
+  // Subsurface drilling operations.
+  DRILL = 6;
+
+  // Habitat module configuration changes (airlocks, thermal, lighting).
+  MODIFY_HABITAT = 7;
+
+  // Solar panel deployment, RTG management, power routing.
+  DEPLOY_POWER = 8;
+
+  // Hardware repair, component replacement, diagnostic procedures.
+  REPAIR = 9;
+
+  // Mission abort sequences at any phase.
+  ABORT = 10;
+}
+
+
+// =============================================================================
+// MESSAGES
+// =============================================================================
+
+// ResourceConstraints defines envelope-level resource gates.
+// If any resource drops below its minimum threshold, the ENTIRE envelope
+// is suspended -- all actions become QUEUED until resources recover or
+// a new envelope with lower thresholds is uplinked.
+//
+// Values are normalized to [0.0, 1.0] where 1.0 = full capacity.
+// A value of 0.0 means "do not check this resource" (gate disabled).
+message ResourceConstraints {
+  // Minimum power level (battery + solar combined).
+  // Below this, only life-support actions are permitted.
+  // Typical surface_ops value: 0.15 (15% reserves).
+  float min_power = 1;
+
+  // Minimum communication bandwidth availability.
+  // Below this, outbound telemetry is suspended to conserve bandwidth
+  // for emergency uplink. Typical value: 0.05.
+  float min_bandwidth = 2;
+
+  // Minimum thermal margin before hardware throttling.
+  // Thermal runaway on Mars hardware is unrecoverable.
+  // Typical value: 0.10 (10% margin above thermal limit).
+  float min_thermal_margin = 3;
+
+  // Minimum propellant remaining (ascent vehicle).
+  // Below this, no propulsion-related actions are permitted.
+  // Only relevant during RETURN_PREP, ASCENT, TRANSIT_HOME, REENTRY.
+  // Typical value: 0.30 (30% reserves for abort margin).
+  float min_propellant = 4;
+}
+
+// ResourceFloor defines a per-rule resource check.
+// Unlike ResourceConstraints (which suspends the entire envelope),
+// a ResourceFloor only gates the specific rule it belongs to.
+// This allows fine-grained resource management: e.g., drilling
+// requires 40% power but photography only requires 10%.
+message ResourceFloor {
+  // Name of the resource to check. Must match one of the canonical
+  // resource names: "power", "bandwidth", "thermal_margin", "propellant",
+  // or a mission-specific custom resource registered in the swarm's
+  // resource registry.
+  string resource_name = 1;
+
+  // Minimum value [0.0, 1.0] required for this rule to be active.
+  // If current resource level < minimum, this rule is skipped and
+  // the action falls through to the next matching rule (or DENY
+  // if no other rule matches).
+  float minimum = 2;
+}
+
+// RecoveryPath defines what happens when a QUARANTINE vote fails
+// or when a DENY needs to be overridden in extremis.
+message RecoveryPath {
+  // The recovery strategy to use.
+  RecoveryType type = 1;
+
+  // Human-readable description of the recovery procedure.
+  // Displayed to the mission commander when recovery is triggered.
+  // Example: "Wait for next Earth comms window (ETA 14m 22s) and
+  // request Ground Control override for drill depth > 2m."
+  string description = 2;
+
+  // Number of quorum votes required for BFT_QUORUM recovery type.
+  // Ignored for other recovery types.
+  //
+  // Standard BFT requirement: for f=1 fault tolerance, n >= 3f+1 = 4
+  // total nodes, quorum = 2f+1 = 3. We use 4 out of 6 for additional
+  // safety margin on Mars (tolerates f=1 with 1 extra vote).
+  //
+  // Validators reject envelopes where required_quorum_votes exceeds
+  // the swarm's total agent count.
+  uint32 required_quorum_votes = 3;
+}
+
+// SCBEThresholds defines the mathematical boundary conditions that
+// the SCBE 14-layer pipeline evaluates against. These thresholds
+// bridge the gap between the envelope's static policy rules and the
+// pipeline's dynamic geometric assessment.
+//
+// The pipeline computes three values for every action:
+//
+//   cost      Harmonic Wall output: H(d,R) = R^(d^2), where d is the
+//             hyperbolic distance from the safe center in the Poincare ball.
+//             Higher cost = further from safe operation.
+//
+//   coherence Spectral coherence score from L9-L10.
+//             Range [0.0, 1.0]: 0.0 = chaotic, 1.0 = perfectly stable.
+//
+//   drift     Phase deviation from the breathing transform (L6-L7).
+//             Range [0.0, 1.0]: 0.0 = no deviation, 1.0 = maximum drift.
+//
+// Decision logic (evaluated in order):
+//   1. cost <= allow_max_cost AND coherence >= allow_min_coherence
+//      AND drift <= allow_max_drift
+//      => use the matched rule's boundary classification as-is
+//
+//   2. cost <= quarantine_max_cost AND coherence >= quarantine_min_coherence
+//      AND drift <= quarantine_max_drift
+//      => escalate to QUARANTINE regardless of rule boundary
+//
+//   3. Otherwise => DENY regardless of rule boundary
+//
+// This ensures the math can override permissive policy when the
+// geometric assessment detects danger that the static rules missed.
+message SCBEThresholds {
+  // Maximum Harmonic Wall cost for an AUTO_ALLOW decision.
+  // Actions with cost above this are escalated even if the matching
+  // rule says AUTO_ALLOW. Typical value: 2.0 (low deviation).
+  double allow_max_cost = 1;
+
+  // Maximum Harmonic Wall cost for a QUARANTINE decision.
+  // Actions with cost above this are DENIED outright.
+  // Invariant: quarantine_max_cost >= allow_max_cost.
+  // Typical value: 10.0.
+  double quarantine_max_cost = 2;
+
+  // Minimum spectral coherence for AUTO_ALLOW.
+  // Coherence below this indicates anomalous agent behavior patterns.
+  // Typical value: 0.85 (85% coherence).
+  double allow_min_coherence = 3;
+
+  // Minimum spectral coherence for QUARANTINE.
+  // Below this, the agent's state is too chaotic for even quorum review.
+  // Invariant: quarantine_min_coherence <= allow_min_coherence.
+  // Typical value: 0.50.
+  double quarantine_min_coherence = 4;
+
+  // Maximum phase drift for AUTO_ALLOW.
+  // Drift measures deviation from the Mobius breathing transform (L6-L7).
+  // Typical value: 0.10 (10% phase deviation).
+  double allow_max_drift = 5;
+
+  // Maximum phase drift for QUARANTINE.
+  // Above this, the action is DENIED. Invariant: quarantine_max_drift >= allow_max_drift.
+  // Typical value: 0.40 (40% phase deviation).
+  double quarantine_max_drift = 6;
+}
+
+// EnvelopeRule defines a single policy rule within the envelope.
+// Rules are evaluated in declaration order (first match wins).
+// If no rule matches an action, the action is DENIED (fail-closed).
+//
+// The pattern language uses glob syntax against the fully-qualified
+// action identifier "domain.action_id":
+//   "navigation.set_waypoint"   => exact match on one action
+//   "navigation.*"              => all actions in the navigation domain
+//   "**"                        => wildcard, matches everything (catch-all)
+//
+// Example rule set for SURFACE_OPS phase:
+//   1. pattern="telemetry.*"             boundary=AUTO_ALLOW
+//   2. pattern="navigation.set_waypoint" boundary=AUTO_ALLOW
+//   3. pattern="drill.*"                 boundary=QUARANTINE  resource_floor={power:0.40}
+//   4. pattern="habitat.atmosphere.*"    boundary=DENY
+//   5. pattern="**"                      boundary=QUARANTINE   (catch-all)
+message EnvelopeRule {
+  // Glob pattern matching "domain.action_id".
+  // Patterns are evaluated in declaration order; first match wins.
+  // An empty pattern is invalid; validators reject envelopes containing
+  // rules with empty pattern strings.
+  string pattern = 1;
+
+  // The boundary classification assigned to actions matching this pattern.
+  BoundaryType boundary = 2;
+
+  // Maximum number of times this rule can authorize an action before
+  // it automatically transitions to DENY for subsequent matches.
+  // 0 = unlimited executions. Useful for one-shot operations like
+  // "deploy_solar_panel" that must not be repeatable.
+  uint32 max_executions = 3;
+
+  // Optional per-rule resource gate. If the named resource is below
+  // the floor, this rule is skipped and the action falls through to
+  // the next matching rule. If no subsequent rule matches, DENY applies.
+  ResourceFloor resource_floor = 4;
+
+  // Recovery path when this rule's QUARANTINE vote fails.
+  // Ignored when boundary is AUTO_ALLOW or DENY.
+  RecoveryPath recovery_path = 5;
+}
+
+// QuorumSummary records the result of a BFT quorum vote for a
+// QUARANTINE action. This is embedded in the ActionReport before
+// MMR hashing, ensuring the quorum outcome is part of the
+// tamper-evident audit chain.
+//
+// BFT correctness invariant: total_agents >= 3f + 1 where f is the
+// maximum tolerated faults. For f=1: total_agents >= 4, threshold >= 3.
+message QuorumSummary {
+  // Number of APPROVE votes received.
+  uint32 votes = 1;
+
+  // Number of APPROVE votes required for the action to proceed.
+  // This is max(rule.recovery_path.required_quorum_votes, bft.quorum_size).
+  uint32 threshold = 2;
+
+  // Total number of agents eligible to vote in this quorum round.
+  // Must satisfy n >= 3f + 1 for the configured fault tolerance f.
+  uint32 total_agents = 3;
+
+  // Identifiers of agents that cast APPROVE votes.
+  // Reject and abstain voters are not listed (privacy by default;
+  // prevents targeted retaliation against dissenting agents).
+  // Count of non-approve voters = total_agents - len(voter_ids).
+  repeated string voter_ids = 4;
+}
+
+// ActionReport is the record of a single action evaluated against an
+// envelope. This is the leaf data structure that gets protobuf-encoded,
+// SHA-256 hashed, and appended to the Merkle Mountain Range (MMR) audit chain.
+//
+// Ground Control can independently reconstruct any leaf hash from these
+// fields, enabling offline verification of the entire audit history
+// without access to the onboard MMR structure.
+//
+// The ActionReport is created at decision time (not execution time).
+// If the action is later executed, a separate execution receipt is
+// linked via the action_id + timestamp_ms pair.
+message ActionReport {
+  // The envelope_id of the DecisionEnvelope that was active when this
+  // action was evaluated. Used to join action reports back to the
+  // authorizing policy document. Empty if no envelope was active
+  // (in which case final_decision will be QUEUED).
+  string envelope_id = 1;
+
+  // The agent that requested the action.
+  // Format: agent type + instance (e.g., "rover-alpha-01", "drone-scout-03").
+  string agent_id = 2;
+
+  // The specific action identifier (e.g., "set_waypoint", "core_sample").
+  string action_id = 3;
+
+  // The action's domain (e.g., "navigation", "drill", "habitat").
+  // Combined as "domain.action_id" for envelope rule pattern matching.
+  string domain = 4;
+
+  // The risk tier assessed for this action by the SCBE 14-layer pipeline.
+  // This is computed by the pipeline (L5 hyperbolic distance -> L12 harmonic
+  // wall -> L13 risk classification), NOT self-reported by the requesting agent.
+  RiskTier risk_tier = 5;
+
+  // The boundary classification from the first matching envelope rule.
+  // AUTO_ALLOW, QUARANTINE, or DENY. If no rule matched, this is
+  // BOUNDARY_TYPE_UNSPECIFIED (which results in DENY via fail-closed default).
+  BoundaryType matched_boundary = 6;
+
+  // The final decision after combining envelope policy, SCBE pipeline
+  // assessment, and (optionally) quorum voting.
+  FinalDecision final_decision = 7;
+
+  // The glob pattern string of the envelope rule that matched this action.
+  // Empty if no rule matched. Useful for policy debugging and auditing:
+  // "why was this action allowed/denied?"
+  string matched_rule_pattern = 8;
+
+  // Unix timestamp in milliseconds when the decision was made.
+  // This is the evaluating agent's local clock, which may drift from
+  // Ground Control's clock. Clock synchronization is handled by the
+  // triadic temporal distance layer (L11). Monotonic within a single agent.
+  int64 timestamp_ms = 9;
+
+  // SHA-256 hash of the UnitState (21D brain state vector serialized as
+  // a fixed-order float64 array) at the moment the decision was made.
+  // This binds the decision to the agent's precise cognitive state,
+  // enabling Ground Control to verify that the agent was geometrically
+  // coherent when it acted. 32 bytes.
+  bytes state_hash = 10;
+
+  // SHA-256 hash of the ResourceState at decision time. This binds
+  // the decision to the swarm's resource levels, proving that
+  // resource gates were evaluated against accurate telemetry data.
+  // 32 bytes.
+  bytes resource_hash = 11;
+
+  // Quorum summary, populated only when matched_boundary is QUARANTINE
+  // and a BFT vote was conducted. Empty/default for AUTO_ALLOW and DENY
+  // actions. Must be populated before the ActionReport is hashed for
+  // MMR insertion.
+  QuorumSummary quorum_summary = 12;
+
+  // Set to true if this action was authorized via emergency key
+  // override rather than normal envelope evaluation. Emergency overrides
+  // bypass DENY rules but are always logged with this flag set,
+  // ensuring mandatory Ground Control review in the next comms window.
+  bool emergency_override = 13;
+}
+
+// DecisionEnvelope is the root signed document -- the canonical,
+// signable contract that authorizes a set of agent actions within a
+// specific mission phase and swarm.
+//
+// Lifecycle (see ENVELOPE_SIGNING_SPEC.md section 6 for full diagram):
+//
+//   CREATE -> SIGN -> UPLINK -> VALIDATE -> ACTIVATE -> EVALUATE -> EXPIRE -> REPLACE
+//
+// Concurrency rule: only one envelope can be ACTIVE per swarm at any time.
+// Queued envelopes activate automatically on phase transition or when the
+// current envelope expires. Expired envelopes with no replacement cause all
+// actions to be QUEUED until a comms window delivers a new envelope.
+//
+// Signing procedure (see ENVELOPE_SIGNING_SPEC.md section 1):
+//
+//   1. Populate all fields EXCEPT signature, counter_signature, and canonical_hash.
+//   2. Serialize to protobuf bytes with those three fields at zero-value
+//      (empty bytes / empty string). This is the "signable content."
+//   3. Compute digest = sha256(signable_content_bytes).
+//   4. Sign the digest with the issuer's private key (ML-DSA-65 or placeholder).
+//   5. Set the signature field.
+//   6. Optionally: counter-sign (second authority signs the same digest).
+//   7. Set counter_signature if counter-signed.
+//   8. Re-serialize the full envelope (now including signatures).
+//   9. Compute canonical_hash = sha256(full_serialized_bytes).
+//  10. Set canonical_hash. This is NOT part of the signed content; it is
+//      a convenience hash for JSON-LD projection (the "protobufHash" field).
+//
+// Verification procedure:
+//   1. Save signature, counter_signature, and canonical_hash values.
+//   2. Zero out those three fields.
+//   3. Serialize to get the signable content bytes.
+//   4. Compute sha256(signable_content_bytes).
+//   5. Verify the saved signature against the computed digest using the
+//      issuer's public key (looked up via key_id from the key registry).
+//   6. If counter-signed, verify counter_signature similarly.
+//   7. Restore the saved values.
+message DecisionEnvelope {
+
+  // === Identity ===
+  // Fields that uniquely identify this envelope instance.
+
+  // Globally unique identifier for this envelope.
+  // Format: UUID v4 (e.g., "a1b2c3d4-e5f6-7890-abcd-ef1234567890").
+  // Generated by Ground Control at envelope creation time.
+  string envelope_id = 1;
+
+  // Schema version number. Always 1 for this schema revision.
+  // Future versions increment this field. Receivers that do not
+  // support the version MUST reject the envelope (fail-closed).
+  // This enables controlled schema evolution while preserving
+  // proto3 unknown-field forwarding.
+  uint32 version = 2;
+
+  // The mission this envelope belongs to.
+  // Format: mission designator string (e.g., "ARES-IV", "SCBE-MARS-2029").
+  // All envelopes for a given mission share this identifier.
+  string mission_id = 3;
+
+  // The swarm this envelope authorizes.
+  // A swarm is a cooperating group of agents (rovers, drones, habitat
+  // systems) that share governance. Typically 4-8 agents per swarm.
+  // Format: swarm designator (e.g., "swarm-alpha", "hab-primary").
+  string swarm_id = 4;
+
+  // === Authority ===
+  // Fields that establish who signed this envelope and how.
+
+  // Identifier of the entity that created and signed this envelope.
+  // For flight envelopes: Ground Control station identifier.
+  // For emergency envelopes: mission commander's agent ID.
+  // Format: issuer URI (e.g., "gc://jpl-mission-control", "mc://commander-chen").
+  string issuer_id = 5;
+
+  // Identifier of the specific signing key used. Allows key rotation
+  // without changing issuer_id. The receiver looks up the corresponding
+  // public key from its onboard key registry.
+  // Format: "ml-dsa-65:<fingerprint>" or "sha256-hmac:<key-name>".
+  string key_id = 6;
+
+  // The signature algorithm used for both signature and counter_signature.
+  SignatureAlgorithm sig_algorithm = 7;
+
+  // Primary digital signature over sha256(signable_content_bytes).
+  // For ML_DSA_65: 3309 bytes. For SHA256_PLACEHOLDER: 32 bytes (HMAC output).
+  // This field is zeroed (empty bytes) during the signing and verification
+  // procedures to produce the deterministic signable content.
+  bytes signature = 8;
+
+  // Optional counter-signature from a second authority.
+  // Used for dual-authorization on CRITICAL-tier envelopes.
+  // Same algorithm as the primary signature. Empty bytes if not
+  // counter-signed. This field is zeroed during signing/verification.
+  bytes counter_signature = 9;
+
+  // Unix timestamp in milliseconds when the envelope was signed.
+  // This uses Ground Control's authoritative clock (UTC). Used for
+  // replay detection and temporal ordering in the audit chain.
+  int64 signed_at_ms = 10;
+
+  // === Validity ===
+  // Time window during which this envelope authorizes actions.
+
+  // Unix timestamp in milliseconds when this envelope becomes active.
+  // Before this time, the envelope exists on the agent but does NOT
+  // authorize any actions. Allows pre-staging envelopes for upcoming
+  // mission phases during a comms window.
+  int64 valid_from_ms = 11;
+
+  // Unix timestamp in milliseconds when this envelope expires.
+  // After expiry, all actions become QUEUED until a replacement
+  // envelope is activated. A value of 0 means "no expiry" (the envelope
+  // remains active until explicitly replaced). Use no-expiry with
+  // caution: it prevents automatic failsafe on comms loss.
+  int64 valid_until_ms = 12;
+
+  // === Phase ===
+
+  // The mission phase this envelope is designed for.
+  // An envelope can only be ACTIVE during its designated phase.
+  // Phase transitions trigger: if the new phase matches a queued
+  // envelope's mission_phase, that envelope activates and the current
+  // one deactivates. If no queued envelope matches, all actions QUEUED.
+  MissionPhase mission_phase = 13;
+
+  // === Scope ===
+  // Which agents, targets, and capabilities this envelope covers.
+
+  // Agent IDs authorized to act under this envelope.
+  // Empty list = ALL agents in the swarm are authorized.
+  // Non-empty list = only listed agents are authorized; unlisted agents
+  // receive DENIED for every action they attempt.
+  repeated string allowed_agent_ids = 14;
+
+  // Target IDs (sensors, actuators, subsystems) that agents may interact with.
+  // Empty list = all targets in the swarm are permitted.
+  // Non-empty list = only listed targets; actions on unlisted targets are DENIED.
+  repeated string allowed_target_ids = 15;
+
+  // Capability categories authorized by this envelope.
+  // Empty list = NO capabilities authorized (lockdown envelope: all actions DENIED).
+  // Capability check happens before rule matching: if the action's capability
+  // is not in this list, it is DENIED without consulting the rules.
+  repeated EnvelopeCapability allowed_capabilities = 16;
+
+  // === Constraints ===
+  // Resource gates, risk ceiling, and SCBE pipeline thresholds.
+
+  // Envelope-level resource gates. If ANY resource drops below its
+  // minimum, the entire envelope is suspended and all actions become QUEUED.
+  // This is a coarse safety mechanism; per-rule ResourceFloor provides
+  // finer-grained control.
+  ResourceConstraints resource_constraints = 17;
+
+  // Maximum risk tier permitted under this envelope.
+  // Actions assessed by the SCBE pipeline at a higher tier are automatically
+  // DENIED before reaching the rule matcher.
+  // Example: during TRANSIT, set max_risk_tier=MEDIUM to prevent HIGH or
+  // CRITICAL actions from being considered at all.
+  RiskTier max_risk_tier = 18;
+
+  // Thresholds for the SCBE 14-layer pipeline's geometric assessment.
+  // These bridge static policy rules with the dynamic mathematical evaluation
+  // performed by L5 (hyperbolic distance), L6-L7 (breathing/phase), L9-L10
+  // (spectral coherence), and L12 (harmonic wall). The pipeline can override
+  // permissive rules when geometric analysis detects danger.
+  SCBEThresholds scbe_thresholds = 19;
+
+  // === Rules ===
+  // Ordered list of policy rules. First match wins. No match = DENY.
+
+  // The envelope's policy rules, evaluated in declaration order.
+  // Every action is matched against these rules using glob patterns
+  // on "domain.action_id". The first matching rule determines the
+  // initial boundary classification (before SCBE pipeline override).
+  //
+  // Rule ordering convention:
+  //   1. Specific exact-match patterns first (e.g., "drill.core_sample")
+  //   2. Domain wildcards next (e.g., "navigation.*")
+  //   3. Global wildcard last (e.g., "**") as a catch-all
+  //
+  // If the rules list is empty, ALL actions are DENIED (maximum lockdown).
+  // This is a valid configuration for phases where no autonomous action
+  // is permitted (e.g., DESCENT with full Ground Control authority).
+  repeated EnvelopeRule rules = 20;
+
+  // === Emergency ===
+
+  // SHA-256 hash of the pre-shared 32-byte emergency override key.
+  // The key itself is known only to the mission commander and is stored
+  // in tamper-resistant hardware on the habitat module.
+  //
+  // Override procedure:
+  //   1. Commander presents the raw 32-byte key at the physical console.
+  //   2. System computes sha256(presented_key).
+  //   3. If sha256(presented_key) == emergency_key_hash, the action
+  //      is authorized with ActionReport.emergency_override = true.
+  //   4. The override is logged and flagged for Ground Control review.
+  //
+  // The raw key is NEVER transmitted, stored in the envelope, or sent
+  // over any communication channel. Only the hash is stored here.
+  // 32 bytes (SHA-256 digest output).
+  bytes emergency_key_hash = 21;
+
+  // === Audit ===
+
+  // SHA-256 hex digest of the complete canonical protobuf serialization
+  // (including signatures but before this field was populated).
+  //
+  // Population procedure:
+  //   1. Serialize the envelope with signature and counter_signature set
+  //      but canonical_hash as an empty string.
+  //   2. Compute sha256 of those serialized bytes.
+  //   3. Encode as lowercase hex string and set canonical_hash.
+  //
+  // This hash appears in JSON-LD projections as the "protobufHash" field,
+  // allowing Ground Cockpit tooling to reference the signed protobuf
+  // without carrying the full binary payload.
+  //
+  // This field is NOT part of the signed content (it is derived after
+  // signing). It is zeroed during signature verification along with
+  // signature and counter_signature.
+  string canonical_hash = 22;
+}

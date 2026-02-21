@@ -1,0 +1,70 @@
+{
+  "run_id": "20260220T013852Z",
+  "status": "ok",
+  "timestamp_utc": "2026-02-20T01:39:02.041145+00:00",
+  "run_dir": "training/runs/local_cloud_sync/20260220T013852Z",
+  "archive": "training/runs/local_cloud_sync/20260220T013852Z.zip",
+  "indexed_files": 1508,
+  "delta_counts": {
+    "added": 0,
+    "modified": 1,
+    "removed": 0,
+    "changed": 1
+  },
+  "shipping": {
+    "enabled": true,
+    "targets": [
+      "adobe",
+      "dropbox",
+      "gdrive",
+      "proton"
+    ],
+    "results": {
+      "dropbox": {
+        "status": "ok",
+        "base_dir": "C:\\Users\\issda\\Dropbox",
+        "path": "C:\\Users\\issda\\Dropbox\\SCBE\\local-workspace-sync\\20260220T013852Z",
+        "files": [
+          "20260220T013852Z.zip",
+          "manifest.json",
+          "index.json"
+        ]
+      },
+      "adobe": {
+        "status": "ok",
+        "base_dir": "C:\\Users\\issda\\Creative Cloud Files  issdandavis@gmail.com CA7723D66864BE8D0A495FA8@AdobeID",
+        "path": "C:\\Users\\issda\\Creative Cloud Files  issdandavis@gmail.com CA7723D66864BE8D0A495FA8@AdobeID\\SCBE\\local-workspace-sync\\20260220T013852Z",
+        "files": [
+          "20260220T013852Z.zip",
+          "manifest.json",
+          "index.json"
+        ]
+      },
+      "gdrive": {
+        "status": "ok",
+        "base_dir": "C:\\Users\\issda\\Drive",
+        "path": "C:\\Users\\issda\\Drive\\SCBE\\local-workspace-sync\\20260220T013852Z",
+        "files": [
+          "20260220T013852Z.zip",
+          "manifest.json",
+          "index.json"
+        ]
+      },
+      "proton": {
+        "status": "ok",
+        "base_dir": "C:\\Users\\issda\\Proton Drive.old",
+        "path": "C:\\Users\\issda\\Proton Drive.old\\SCBE\\local-workspace-sync\\20260220T013852Z",
+        "files": [
+          "20260220T013852Z.zip",
+          "manifest.json",
+          "index.json"
+        ]
+      }
+    },
+    "errors": {}
+  },
+  "retention": {
+    "deleted_dirs": 1,
+    "deleted_archives": 1
+  }
+}

@@ -65,7 +65,8 @@ describe('SacredTongueTokenizer', () => {
     it('should encode single byte to single token', () => {
       const tokens = tokenizer.encodeBytes('ko', Buffer.from([0x00]));
       expect(tokens.length).toBe(1);
-      expect(tokens[0]).toBe("kor'ah"); // Kor'aelin v1.1: prefix[0]'suffix[0]
+      const expected = `${TONGUES.ko.prefixes[0]}'${TONGUES.ko.suffixes[0]}`;
+      expect(tokens[0]).toBe(expected);
     });
 
     it('should encode multiple bytes to multiple tokens', () => {
