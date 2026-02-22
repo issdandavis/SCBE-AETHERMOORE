@@ -114,7 +114,7 @@ opentelemetry-instrumentation-django==0.54b1
 opentelemetry-instrumentation-elasticsearch==0.54b1
 opentelemetry-instrumentation-falcon==0.60b1
 opentelemetry-instrumentation-fastapi==0.54b1
-opentelemetry-instrumentation-flask==0.54b1
+opentelemetry-instrumentation-flask==0.60b1
 opentelemetry-instrumentation-grpc==0.54b1
 opentelemetry-instrumentation-httpx==0.54b1
 opentelemetry-instrumentation-jinja2==0.54b1
