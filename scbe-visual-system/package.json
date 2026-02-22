@@ -19,7 +19,7 @@
     "test:serial": "vitest run --maxWorkers=1"
   },
   "dependencies": {
-    "@google/genai": "^1.41.0",
+    "@google/genai": "^1.42.0",
     "lucide-react": "^0.575.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
