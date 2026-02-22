@@ -30,7 +30,7 @@
     "@vitest/coverage-v8": "^4.0.18",
     "concurrently": "^9.0.0",
     "electron": "^40.6.0",
-    "electron-builder": "^26.0.0",
+    "electron-builder": "^26.8.1",
     "jsdom": "^28.1.0",
     "typescript": "~5.8.2",
     "vite": "^7.3.1",
