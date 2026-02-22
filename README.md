@@ -141,6 +141,18 @@ Layer 14:    Audio Axis (FFT telemetry)
 docker run -p 8080:8080 -e SCBE_API_KEY=your-key ghcr.io/issdandavis/scbe-aethermoore
 ```
 
+### Docker Terminal Control (No UI)
+```powershell
+# Doctor + health checks
+.\scripts\scbe_docker_status.ps1 -Action doctor -Stack api
+
+# Start/stop stack
+.\scripts\scbe_docker_status.ps1 -Action up -Stack api
+.\scripts\scbe_docker_status.ps1 -Action down -Stack api
+```
+
+See `docs/DOCKER_TERMINAL_OPERATIONS.md` for full stack control commands.
+
 ### Local Development
 ```bash
 git clone https://github.com/issdandavis/SCBE-AETHERMOORE.git
