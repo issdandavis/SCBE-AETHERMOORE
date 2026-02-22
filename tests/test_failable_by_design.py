@@ -159,13 +159,13 @@ class TestGeometricConstraintViolations:
             ), f"Breathing b={b} pushed point outside ball"
 
     def test_F12_harmonic_scale_must_be_positive(self):
-        """F12: Harmonic scale H(d*) MUST be positive for all d*."""
+        """F12: Harmonic scale H(d*) MUST be positive and bounded in (0, 1]."""
         from scbe_14layer_reference import harmonic_scale
 
         for d_star in [0.0, 0.1, 0.5, 1.0, 2.0, 5.0, 10.0]:
             H = harmonic_scale(d_star)
             assert H > 0, f"H({d_star}) = {H} is not positive"
-            assert H >= 1.0, f"H({d_star}) = {H} < 1 (should amplify, not reduce)"
+            assert H <= 1.0, f"H({d_star}) = {H} > 1 (safety score must be in (0, 1])"
 
 
 class TestAxiomViolations:

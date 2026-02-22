@@ -659,6 +659,8 @@ async def seal_memory(request: SealRequest, user: str = Depends(verify_api_key))
             "trace": f"seal_v1_d{result['d_star']:.4f}_H{result['H']:.2f}",
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(500, f"Seal failed: {str(e)}")
 
@@ -680,11 +682,11 @@ async def retrieve_memory(
         # Convert position to numpy array
         position_array = np.array(request.position, dtype=float)
 
-        # Adjust weights based on context
+        # Adjust weights based on context (must sum to 1.0)
         context_params = {
-            "internal": {"w_d": 0.2, "w_tau": 0.2},
-            "external": {"w_d": 0.3, "w_tau": 0.3},
-            "untrusted": {"w_d": 0.4, "w_tau": 0.4},
+            "internal": {"w_d": 0.20, "w_c": 0.20, "w_s": 0.20, "w_tau": 0.20, "w_a": 0.20},
+            "external": {"w_d": 0.30, "w_c": 0.15, "w_s": 0.15, "w_tau": 0.30, "w_a": 0.10},
+            "untrusted": {"w_d": 0.35, "w_c": 0.10, "w_s": 0.10, "w_tau": 0.35, "w_a": 0.10},
         }
 
         # Run SCBE pipeline with context-aware weights
@@ -749,6 +751,8 @@ async def retrieve_memory(
             "data": resp_data,
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(500, f"Retrieve failed: {str(e)}")
 
@@ -778,11 +782,11 @@ async def governance_check(
         hash_bytes = hashlib.sha256(hash_input).digest()
         position = [int(b) % 100 for b in hash_bytes[:6]]
 
-        # Adjust weights based on context
+        # Adjust weights based on context (must sum to 1.0)
         context_params = {
-            "internal": {"w_d": 0.2, "w_tau": 0.2},
-            "external": {"w_d": 0.3, "w_tau": 0.3},
-            "untrusted": {"w_d": 0.4, "w_tau": 0.4},
+            "internal": {"w_d": 0.20, "w_c": 0.20, "w_s": 0.20, "w_tau": 0.20, "w_a": 0.20},
+            "external": {"w_d": 0.30, "w_c": 0.15, "w_s": 0.15, "w_tau": 0.30, "w_a": 0.10},
+            "untrusted": {"w_d": 0.35, "w_c": 0.10, "w_s": 0.10, "w_tau": 0.35, "w_a": 0.10},
         }
 
         # Run SCBE pipeline
@@ -809,6 +813,8 @@ async def governance_check(
             "data": gov_data,
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(500, f"Governance check failed: {str(e)}")
 
@@ -832,8 +838,11 @@ async def simulate_attack(request: SimulateAttackRequest):
             t=position_array,
             D=6,
             breathing_factor=2.0,  # Extreme breathing
-            w_d=0.5,  # High distance weight
-            w_tau=0.5,  # High trust weight
+            w_d=0.35,  # High distance weight
+            w_c=0.10,
+            w_s=0.10,
+            w_tau=0.35,  # High trust weight
+            w_a=0.10,
             theta1=0.2,  # Lower ALLOW threshold
             theta2=0.5,  # Lower QUARANTINE threshold
         )
@@ -862,6 +871,8 @@ async def simulate_attack(request: SimulateAttackRequest):
             "data": sim_data,
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(500, f"Simulation failed: {str(e)}")
 

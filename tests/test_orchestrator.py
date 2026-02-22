@@ -43,7 +43,7 @@ class TestToolRegistration:
 
     def test_total_tool_count(self):
         tools = _orch.mcp._tool_manager.list_tools()
-        assert len(tools) == 24
+        assert len(tools) == 30
 
     def test_scbe_tools_registered(self):
         names = {t.name for t in _orch.mcp._tool_manager.list_tools()}

@@ -607,6 +607,7 @@ describe('PHDM-Enabled Brain Integration Pipeline', () => {
   it('should process agents with PHDM enabled', () => {
     const pipeline = new BrainIntegrationPipeline({
       enablePHDM: true,
+      phdmKyberParams: makeDeterministicParams(),
     });
 
     expect(pipeline.phdmCore).not.toBeNull();
@@ -625,6 +626,7 @@ describe('PHDM-Enabled Brain Integration Pipeline', () => {
   it('should include PHDM result for malicious agents', () => {
     const pipeline = new BrainIntegrationPipeline({
       enablePHDM: true,
+      phdmKyberParams: makeDeterministicParams(),
     });
 
     const trajectory = generateTrajectory(
@@ -667,6 +669,7 @@ describe('PHDM-Enabled Brain Integration Pipeline', () => {
   it('should process a batch trial with PHDM enabled', () => {
     const pipeline = new BrainIntegrationPipeline({
       enablePHDM: true,
+      phdmKyberParams: makeDeterministicParams(),
     });
 
     const batch = generateMixedBatch(10, { ...defaultSimConfig, seed: 666 });

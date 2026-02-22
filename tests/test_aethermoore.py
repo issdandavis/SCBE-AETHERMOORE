@@ -132,40 +132,46 @@ class TestConstants:
 
 
 class TestHarmonicScaling:
-    """Test H(d, R) = R^(d^2) harmonic scaling formula."""
+    """Test H(d, pd) = 1/(1 + d + 2*pd) harmonic scaling (safety score)."""
 
     def test_harmonic_scale_basic(self):
         """Test basic harmonic scaling values."""
-        # H(1, 1.5) = 1.5^1 = 1.5
-        assert harmonic_scale(1, 1.5) == 1.5
+        # H(0) = 1/(1+0) = 1.0
+        assert harmonic_scale(0) == 1.0
 
-        # H(2, 1.5) = 1.5^4 = 5.0625
-        assert harmonic_scale(2, 1.5) == 1.5**4
+        # H(1) = 1/(1+1) = 0.5
+        assert harmonic_scale(1) == 0.5
 
-        # H(3, 1.5) = 1.5^9
-        assert abs(harmonic_scale(3, 1.5) - 1.5**9) < 1e-6
+        # H(2) = 1/(1+2) = 0.333...
+        assert abs(harmonic_scale(2) - 1 / 3) < 1e-10
 
-    def test_harmonic_scale_d6(self):
-        """Test d=6 harmonic scaling."""
-        # H(6, 1.5) = 1.5^36 = 2,184,164.40625
-        h6 = harmonic_scale(6, 1.5)
-        assert abs(h6 - 2184164.40625) < 0.01
+    def test_harmonic_scale_with_phase_deviation(self):
+        """Test harmonic scaling with phase deviation."""
+        # H(1, pd=0.5) = 1/(1+1+1) = 0.333...
+        assert abs(harmonic_scale(1, 0.5) - 1 / 3) < 1e-10
+
+        # H(0, pd=1.0) = 1/(1+0+2) = 0.333...
+        assert abs(harmonic_scale(0, 1.0) - 1 / 3) < 1e-10
 
     def test_harmonic_scale_invalid_dimension(self):
-        """Test error on invalid dimension."""
+        """Test error on invalid inputs."""
         with pytest.raises(ValueError):
-            harmonic_scale(0, 1.5)
+            harmonic_scale(-1)
         with pytest.raises(ValueError):
-            harmonic_scale(-1, 1.5)
+            harmonic_scale(1, -0.5)
 
     def test_security_bits(self):
         """Test security bits calculation."""
-        # S_bits = B + d^2 * log2(R)
-        # For d=6, R=1.5, B=128:
-        # S = 128 + 36 * log2(1.5) = 128 + 36 * 0.585 = 149.06
-        s_bits = security_bits(128, 6, 1.5)
-        expected = 128 + 36 * math.log2(1.5)
+        # S_bits = base + log2(1 + d + 2*pd)
+        # For d=6, pd=0: S = 128 + log2(7) ≈ 130.81
+        s_bits = security_bits(128, 6)
+        expected = 128 + math.log2(7)
         assert abs(s_bits - expected) < 0.01
+
+        # For d=6, pd=1.5: S = 128 + log2(1+6+3) = 128 + log2(10) ≈ 131.32
+        s_bits2 = security_bits(128, 6, 1.5)
+        expected2 = 128 + math.log2(10)
+        assert abs(s_bits2 - expected2) < 0.01
 
 
 class TestHarmonicDistance:
@@ -639,7 +645,9 @@ class TestHarmonicKyberOrchestrator:
         analysis = orch.get_security_analysis()
 
         assert analysis["dimension"] == 6
-        assert analysis["effective_security_bits"] > 200
+        # New formula: security_bits = base + log2(1+d+2*pd)
+        # Kyber768 base=192, so effective > 192
+        assert analysis["effective_security_bits"] > 192
 
 
 # =============================================================================
@@ -698,14 +706,15 @@ class TestAethermoorIntegration:
         # Start with base AES-128
         base_bits = 128
         dimension = 6
-        R = R_FIFTH
 
-        # Calculate enhanced security
-        enhanced_bits = security_bits(base_bits, dimension, R)
+        # Calculate enhanced security (new formula: base + log2(1+d))
+        enhanced_bits = security_bits(base_bits, dimension)
 
-        # Should be > 149 bits (128 + 36 * log2(1.5))
-        assert enhanced_bits > 149
+        # Should be > 128 (128 + log2(7) ≈ 130.81)
+        assert enhanced_bits > base_bits
 
-        # Calculate the multiplier
-        h_value = harmonic_scale(dimension, R)
-        assert h_value > 2_000_000  # Over 2 million multiplier
+        # Safety score decreases with distance
+        h_value = harmonic_scale(dimension)
+        assert 0 < h_value <= 1.0
+        # H(6) = 1/7 ≈ 0.143
+        assert abs(h_value - 1 / 7) < 1e-10

@@ -95,3 +95,13 @@ __pycache__/
 .ruff_cache/
 shopify/aethermoore-creator-os
 training/runs/wiki_git_ingest/
+
+# Claude IDE WAL/SHM temp files
+.claude-ide-pads.db-shm
+.claude-ide-pads.db-wal
+
+# Code Prism artifacts (regeneratable)
+artifacts/code_prism/
+
+# Connector health reports (regeneratable)
+artifacts/connector_health/

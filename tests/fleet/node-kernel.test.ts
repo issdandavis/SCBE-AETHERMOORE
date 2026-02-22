@@ -27,6 +27,7 @@ import type {
 // ──────────────── Helpers ────────────────
 
 const ORIGIN = { x: 0, y: 0, z: 0 };
+const TEST_SIGNING_KEY = 'test-signing-key-for-node-kernel-tests';
 
 /**
  * Creates and applies a valid policy to the given kernel.
@@ -48,7 +49,7 @@ describe('NodeKernel', () => {
   let kernel: NodeKernel;
 
   beforeEach(() => {
-    kernel = new NodeKernel('test-node-1', ORIGIN);
+    kernel = new NodeKernel('test-node-1', ORIGIN, { signingKey: TEST_SIGNING_KEY });
   });
 
   // ── State Management ──
@@ -520,8 +521,8 @@ describe('NodeKernel', () => {
   describe('policy signing', () => {
     it('Same policy content produces same signature', () => {
       // Create two kernels with the same signing key
-      const k1 = new NodeKernel('node-a', ORIGIN);
-      const k2 = new NodeKernel('node-b', ORIGIN);
+      const k1 = new NodeKernel('node-a', ORIGIN, { signingKey: TEST_SIGNING_KEY });
+      const k2 = new NodeKernel('node-b', ORIGIN, { signingKey: TEST_SIGNING_KEY });
 
       const m1 = k1.createPolicy();
       const m2 = k2.createPolicy();
@@ -557,14 +558,14 @@ describe('NodeKernel', () => {
 
       // Best deterministic approach: create policy, note the signature,
       // then verify applyPolicy validates that exact signature.
-      const kernel1 = new NodeKernel('det-1', ORIGIN);
+      const kernel1 = new NodeKernel('det-1', ORIGIN, { signingKey: TEST_SIGNING_KEY });
       const policy = kernel1.createPolicy();
       // Applying the same policy should work (signature matches)
       const applyResult = kernel1.applyPolicy(policy);
       expect(applyResult.applied).toBe(true);
 
       // Apply same manifest again to a fresh kernel with same key => signature should validate
-      const kernel2 = new NodeKernel('det-2', ORIGIN);
+      const kernel2 = new NodeKernel('det-2', ORIGIN, { signingKey: TEST_SIGNING_KEY });
       const applyResult2 = kernel2.applyPolicy(policy);
       expect(applyResult2.applied).toBe(true);
     });
