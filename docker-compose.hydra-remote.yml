@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   hydra-worker-pilot:
     image: python:3.11-slim
