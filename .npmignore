@@ -1,7 +1,23 @@
 # Source files (only ship dist/)
 src/
 tests/
-examples/
+agents/
+scripts/
+training/
+hydra/
+config/
+visual_system/
+electron/
+symphonic_cipher/
+packages/
+
+# Python — nothing Python ships in an npm package
+*.py
+*.pyc
+*.pyo
+__pycache__/
+.hypothesis/
+*.zip
 
 # Config files
 tsconfig*.json
@@ -9,6 +25,11 @@ vitest.config.ts
 .kiro/
 .vscode/
 .github/
+pytest.ini
+pyproject.toml
+Dockerfile*
+docker-compose*
+render.yaml
 
 # Development files
 *.test.ts
@@ -20,10 +41,12 @@ vitest.config.ts
 # Build artifacts
 node_modules/
 .pytest_cache/
-__pycache__/
-*.pyc
+artifacts/
+coverage/
+.nyc_output/
+*.tgz
 
-# Documentation (keep README.md)
+# Documentation (keep README.md and LICENSE)
 docs/
 *.md
 !README.md
@@ -37,3 +60,6 @@ hioujhn/
 # Misc
 *.log
 .DS_Store
+trust-policy.json
+compliance_report.json
+*.mermaid.md
