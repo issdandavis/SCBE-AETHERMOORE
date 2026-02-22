@@ -476,10 +476,16 @@ export class UnifiedKernel {
     this.dualTernary = new DualTernarySystem(this.config.dualTernary);
     this.auditLogger = new BrainAuditLogger();
 
-    // Initialize PHDM with a deterministic key (for non-Kyber contexts)
-    const masterKey = Buffer.alloc(32);
-    for (let i = 0; i < 32; i++) masterKey[i] = ((i * 137 + 42) % 256);
-    this.phdm.initializeWithKey(masterKey);
+    // Initialize PHDM — require explicit key from config or environment
+    const masterKeyHex = this.config.phdm?.masterKeyHex || process.env.SCBE_PHDM_MASTER_KEY;
+    if (!masterKeyHex) {
+      throw new Error(
+        'UnifiedBrainKernel requires a PHDM master key. ' +
+        'Set config.phdm.masterKeyHex or SCBE_PHDM_MASTER_KEY env var. ' +
+        'Generate with: crypto.randomBytes(32).toString("hex")'
+      );
+    }
+    this.phdm.initializeWithKey(Buffer.from(masterKeyHex, 'hex'));
 
     // Initialize static lattice mesh
     this.dualLattice.initializeMesh(3);

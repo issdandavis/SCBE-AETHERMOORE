@@ -29,9 +29,14 @@ import { BRAIN_DIMENSIONS, POINCARE_MAX_NORM } from '../../src/ai_brain/types.js
 
 
 const ORIGINAL_HF_TOKEN = process.env.HUGGINGFACE_TOKEN;
+const ORIGINAL_PHDM_KEY = process.env.SCBE_PHDM_MASTER_KEY;
+
+// Test-only 32-byte key (hex) — NOT for production use
+const TEST_PHDM_KEY = 'a'.repeat(64);
 
 beforeAll(() => {
   process.env.HUGGINGFACE_TOKEN = process.env.HUGGINGFACE_TOKEN || 'test-token-redacted';
+  process.env.SCBE_PHDM_MASTER_KEY = process.env.SCBE_PHDM_MASTER_KEY || TEST_PHDM_KEY;
 });
 
 afterAll(() => {
@@ -39,6 +44,11 @@ afterAll(() => {
     delete process.env.HUGGINGFACE_TOKEN;
   } else {
     process.env.HUGGINGFACE_TOKEN = ORIGINAL_HF_TOKEN;
+  }
+  if (ORIGINAL_PHDM_KEY === undefined) {
+    delete process.env.SCBE_PHDM_MASTER_KEY;
+  } else {
+    process.env.SCBE_PHDM_MASTER_KEY = ORIGINAL_PHDM_KEY;
   }
 });
 

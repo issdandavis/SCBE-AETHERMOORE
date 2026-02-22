@@ -26,7 +26,7 @@ def _iter_files(root: Path, include: Iterable[str]) -> list[Path]:
             for fp in p.rglob("*"):
                 if not fp.is_file() or fp.suffix.lower() not in ALLOWED_SUFFIXES:
                     continue
-                if any(part in DEFAULT_EXCLUDE_PARTS for part in fp.parts):
+                if any(part in DEFAULT_EXCLUDE_PARTS for part in fp.relative_to(root).parts):
                     continue
                 out.append(fp)
     return sorted(set(out))
