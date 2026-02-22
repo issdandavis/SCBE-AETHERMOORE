@@ -1,5 +1,3 @@
-version: '3.8'
-
 # SCBE-AETHERMOORE Unified Stack
 # ==============================
 # Deploys all ecosystem services as a unified stack
@@ -30,11 +28,12 @@ services:
       - SCBE_API_KEY=${SCBE_API_KEY:-dev-key-change-me}
       - REDIS_URL=redis://redis:6379
       - LOG_LEVEL=INFO
+      - PORT=8000
     depends_on:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/v1/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/v1/health')"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -147,6 +146,7 @@ services:
       - SCBE_CORE_URL=http://scbe-core:8000
       - REDIS_URL=redis://redis:6379
       - WEBSOCKET_PORT=8081
+      - PORT=8081
     depends_on:
       - scbe-core
       - redis
