@@ -1,1 +1,0 @@
-{"provider": "gcp", "artifacts": [{"id": "spiralverse/embedder-v2", "role": "embed", "metrics": {"quality": 0.8, "safety": 0.98, "latency_ms_p95": 100, "cost_per_1k_tokens": 0.8}, "uri": "gcp://example/spiralverse/embedder-v2"}]}

@@ -1,1 +1,0 @@
-{"provider": "aws", "artifacts": [{"id": "spiralverse/runtime-distilled-v3", "role": "runtime", "metrics": {"quality": 0.8, "safety": 0.98, "latency_ms_p95": 100, "cost_per_1k_tokens": 0.8}, "uri": "aws://example/spiralverse/runtime-distilled-v3"}]}
