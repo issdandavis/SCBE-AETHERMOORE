@@ -1,0 +1,29 @@
+{
+  "generated_at": "2026-02-21T15:21:58.871737+00:00",
+  "input_jsonl": "C:\\Users\\issda\\SCBE_Production_Pack_local\\src\\artifacts\\pytest_tmp\\test_query_rag_index_returns_r0\\normalized.jsonl",
+  "output_dir": "C:\\Users\\issda\\SCBE_Production_Pack_local\\src\\artifacts\\pytest_tmp\\test_query_rag_index_returns_r0\\rag_index",
+  "record_count": 3,
+  "dimension": 128,
+  "embedding_backend": "hash",
+  "model_name": null,
+  "hash_salt": "query-test-salt",
+  "text_fields": [
+    "text"
+  ],
+  "id_fields": [
+    "thread_id"
+  ],
+  "min_text_chars": 5,
+  "max_records": 0,
+  "load_stats": {
+    "rows_seen": 3,
+    "rows_kept": 3,
+    "rows_invalid_json": 0,
+    "rows_missing_text": 0
+  },
+  "files": {
+    "index": "C:\\Users\\issda\\SCBE_Production_Pack_local\\src\\artifacts\\pytest_tmp\\test_query_rag_index_returns_r0\\rag_index\\index.npz",
+    "documents": "C:\\Users\\issda\\SCBE_Production_Pack_local\\src\\artifacts\\pytest_tmp\\test_query_rag_index_returns_r0\\rag_index\\documents.jsonl",
+    "manifest": "C:\\Users\\issda\\SCBE_Production_Pack_local\\src\\artifacts\\pytest_tmp\\test_query_rag_index_returns_r0\\rag_index\\manifest.json"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "chain_id": "scbe-research-consolidation-v1",
+  "cloud": {
+    "enabled": true,
+    "config": "training/cloud_kernel_pipeline.json",
+    "run_root": "training/runs/cloud_kernel_sync",
+    "sync_notion": false,
+    "notion_config_key": [],
+    "ship_targets": "hf,github",
+    "keep_runs": 30,
+    "allow_quarantine": true,
+    "ship_on_quarantine": false,
+    "extra_globs": []
+  },
+  "local": {
+    "enabled": true,
+    "config": "training/local_cloud_sync.json",
+    "run_root": "training/runs/local_cloud_sync",
+    "state_file": "training/ingest/local_cloud_sync_state.json",
+    "latest_pointer": "training/ingest/latest_local_cloud_sync.txt",
+    "once": true,
+    "interval_seconds": 0,
+    "force": false,
+    "ship_targets": "github,dropbox"
+  },
+  "output": {
+    "latest_pointer": "training/ingest/latest_research_consolidation.txt",
+    "run_root": "training/runs/research_consolidation"
+  }
+}

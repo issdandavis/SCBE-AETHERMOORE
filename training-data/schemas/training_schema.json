@@ -9,8 +9,8 @@
   "properties": {
     "id": {
       "type": "string",
-      "pattern": "^[a-z]+-[0-9]{3,4}$",
-      "description": "Unique identifier in format: prefix-NNN (e.g., 'inst-001', 'kb-012', 'eval-025')"
+      "pattern": "^[a-z][a-z0-9-]+-[0-9]{3,5}$",
+      "description": "Unique identifier in format: prefix-NNN (e.g., 'inst-001', 'sft-0012', 'sft-sv-025')"
     },
     "category": {
       "type": "string",
@@ -54,7 +54,29 @@
         "spiral-seal",
         "harmonic-wall",
         "poincare-embedding",
-        "energy-conservation"
+        "energy-conservation",
+        "sacred-tongues-ko",
+        "sacred-tongues-av",
+        "sacred-tongues-ru",
+        "sacred-tongues-ca",
+        "sacred-tongues-um",
+        "sacred-tongues-dr",
+        "runic-alphabet",
+        "particle-grammar",
+        "magical-properties",
+        "tokenizer-alignment",
+        "spiralverse-lore",
+        "provenance",
+        "ouroboros-governance",
+        "ouroboros-invariants",
+        "ouroboros-specs",
+        "ouroboros-examples",
+        "codebase-docs",
+        "rosetta-concept",
+        "rosetta-cognate",
+        "lcda-dimension",
+        "dede-signal",
+        "temporal-intent"
       ],
       "description": "Domain category for the entry"
     },

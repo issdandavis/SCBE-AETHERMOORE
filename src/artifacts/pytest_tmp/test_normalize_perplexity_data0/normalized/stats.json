@@ -1,0 +1,10 @@
+{
+  "generated_at": "2026-02-21T15:22:20.613859+00:00",
+  "raw_dir": "C:\\Users\\issda\\SCBE_Production_Pack_local\\src\\artifacts\\pytest_tmp\\test_normalize_perplexity_data0\\raw",
+  "raw_files_seen": 1,
+  "threads_written": 1,
+  "records_written": 2,
+  "skipped_parse": 0,
+  "skipped_invalid": 0,
+  "output_jsonl": "C:\\Users\\issda\\SCBE_Production_Pack_local\\src\\artifacts\\pytest_tmp\\test_normalize_perplexity_data0\\normalized\\threads.jsonl"
+}

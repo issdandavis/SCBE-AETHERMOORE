@@ -26,9 +26,13 @@ _FORCE_SKIP_LIBOQS = os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in 
 if not _FORCE_SKIP_LIBOQS:
     try:
         from oqs import Signature
+        import oqs as _oqs_mod
 
         PQC_SIG_AVAILABLE = True
         PQC_SIG_BACKEND = "liboqs"
+        # Select algorithm: prefer ML-DSA-65 (FIPS 204), fall back to Dilithium3
+        _enabled = _oqs_mod.get_enabled_sig_mechanisms()
+        _SIG_ALG = "ML-DSA-65" if "ML-DSA-65" in _enabled else "Dilithium3"
     except BaseException:
         # liboqs-python not installed, shared libs missing, or bootstrap errors
         try:
@@ -65,7 +69,7 @@ def dilithium_keygen() -> Tuple[bytes, bytes]:
         Tuple of (secret_key, public_key)
     """
     if PQC_SIG_BACKEND == "liboqs":
-        sig = Signature("Dilithium3")
+        sig = Signature(_SIG_ALG)
         public_key = sig.generate_keypair()
         secret_key = sig.export_secret_key()
         return secret_key, public_key
@@ -94,7 +98,7 @@ def dilithium_sign(secret_key: bytes, message: bytes) -> bytes:
         Digital signature
     """
     if PQC_SIG_BACKEND == "liboqs":
-        sig = Signature("Dilithium3", secret_key)
+        sig = Signature(_SIG_ALG, secret_key)
         signature = sig.sign(message)
         return signature
 
@@ -123,7 +127,7 @@ def dilithium_verify(public_key: bytes, message: bytes, signature: bytes) -> boo
         True if signature is valid, False otherwise
     """
     if PQC_SIG_BACKEND == "liboqs":
-        sig = Signature("Dilithium3")
+        sig = Signature(_SIG_ALG)
         try:
             return sig.verify(message, signature, public_key)
         except Exception:

@@ -44,15 +44,15 @@
         "GITHUB_DYNAMIC_TOOLSETS": "1"
       }
     },
-    "scbe": {
+    "scbe-orchestrator": {
       "type": "stdio",
-      "command": "cmd",
+      "command": "python",
       "args": [
-        "/c",
-        "node",
-        "C:\\Users\\issda\\SCBE-AETHERMOORE\\mcp\\scbe-server\\server.mjs"
+        "mcp/orchestrator.py"
       ],
-      "env": {}
+      "env": {
+        "SWARM_DRY_RUN": "1"
+      }
     }
   }
 }
