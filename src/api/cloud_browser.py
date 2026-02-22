@@ -198,42 +198,223 @@ class LocalPlaywrightBackend:
 
 
 class BrowserbaseBackend:
-    """Cloud Browserbase backend stub.
+    """Cloud Browserbase backend — real headless Chromium in the cloud.
 
-    In production this would call the Browserbase REST API.
-    For now it delegates to LocalPlaywrightBackend as a shim.
+    Uses the Browserbase Python SDK + Playwright CDP connection to provide
+    full browser automation without running a local browser process.
+
+    Requires: BROWSERBASE_API_KEY and BROWSERBASE_PROJECT_ID in env.
+    Falls back to LocalPlaywrightBackend if the SDK or Playwright are missing.
     """
 
-    def __init__(self, api_key: Optional[str] = None) -> None:
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        project_id: Optional[str] = None,
+    ) -> None:
         self._api_key = api_key or os.getenv("BROWSERBASE_API_KEY", "")
-        self._delegate = LocalPlaywrightBackend()
+        self._project_id = project_id or os.getenv("BROWSERBASE_PROJECT_ID", "")
+        self._bb: Any = None          # Browserbase client
+        self._pw: Any = None          # playwright async instance
+        self._browsers: Dict[str, Any] = {}   # session_id -> browser
+        self._pages: Dict[str, Any] = {}      # session_id -> page
+        self._bb_sessions: Dict[str, str] = {}  # session_id -> bb_session_id
+        self._fallback = LocalPlaywrightBackend()
+        self._use_fallback = False
+
+        # Try to initialize real SDK
+        try:
+            from browserbase import Browserbase
+            self._bb = Browserbase(api_key=self._api_key)
+        except Exception:
+            self._use_fallback = True
+
+    async def _ensure_playwright(self) -> Any:
+        """Lazy-init Playwright."""
+        if self._pw is not None:
+            return self._pw
+        try:
+            from playwright.async_api import async_playwright
+            pw = await async_playwright().start()
+            self._pw = pw
+            return pw
+        except ImportError:
+            self._use_fallback = True
+            return None
 
     async def create_context(self, session_id: str) -> Dict[str, Any]:
-        result = await self._delegate.create_context(session_id)
-        result["backend"] = "browserbase-cloud"
-        return result
+        if self._use_fallback or not self._bb:
+            result = await self._fallback.create_context(session_id)
+            result["backend"] = "browserbase-fallback"
+            return result
+
+        try:
+            # Create a real Browserbase session
+            bb_session = self._bb.sessions.create(
+                project_id=self._project_id,
+            )
+            bb_session_id = bb_session.id
+            self._bb_sessions[session_id] = bb_session_id
+
+            # Connect via Playwright CDP
+            pw = await self._ensure_playwright()
+            if pw is None:
+                # Playwright not available, use fallback
+                result = await self._fallback.create_context(session_id)
+                result["backend"] = "browserbase-fallback"
+                result["bb_session_id"] = bb_session_id
+                return result
+
+            ws_url = self._bb.sessions.debug(bb_session_id).debug_url
+            browser = await pw.chromium.connect_over_cdp(ws_url)
+            self._browsers[session_id] = browser
+
+            # Get or create a page
+            contexts = browser.contexts
+            if contexts:
+                page = contexts[0].pages[0] if contexts[0].pages else await contexts[0].new_page()
+            else:
+                context = await browser.new_context()
+                page = await context.new_page()
+
+            self._pages[session_id] = page
+
+            return {
+                "session_id": session_id,
+                "backend": "browserbase-cloud",
+                "bb_session_id": bb_session_id,
+                "connected": True,
+            }
+        except Exception as e:
+            # Fallback on any error
+            result = await self._fallback.create_context(session_id)
+            result["backend"] = "browserbase-fallback"
+            result["error"] = str(e)
+            return result
 
     async def close_context(self, session_id: str) -> bool:
-        return await self._delegate.close_context(session_id)
+        page = self._pages.pop(session_id, None)
+        browser = self._browsers.pop(session_id, None)
+        bb_sid = self._bb_sessions.pop(session_id, None)
+
+        try:
+            if page:
+                await page.close()
+            if browser:
+                await browser.close()
+            if bb_sid and self._bb:
+                self._bb.sessions.update(bb_sid, status="REQUEST_RELEASE")
+        except Exception:
+            pass
+
+        if not page and not browser:
+            return await self._fallback.close_context(session_id)
+        return True
 
     async def navigate(self, session_id: str, url: str) -> Dict[str, Any]:
-        return await self._delegate.navigate(session_id, url)
+        page = self._pages.get(session_id)
+        if page is None:
+            return await self._fallback.navigate(session_id, url)
+
+        try:
+            response = await page.goto(url, wait_until="domcontentloaded", timeout=15000)
+            title = await page.title()
+            return {
+                "url": page.url,
+                "title": title,
+                "status": response.status if response else 0,
+            }
+        except Exception as e:
+            return {"url": url, "title": "", "status": 0, "error": str(e)}
 
     async def screenshot(self, session_id: str) -> str:
-        return await self._delegate.screenshot(session_id)
+        page = self._pages.get(session_id)
+        if page is None:
+            return await self._fallback.screenshot(session_id)
+
+        try:
+            img_bytes = await page.screenshot(full_page=False, type="png")
+            return base64.b64encode(img_bytes).decode()
+        except Exception:
+            return await self._fallback.screenshot(session_id)
 
     async def extract(
-        self, session_id: str, selector: Optional[str] = None
+        self, session_id: str, selector: Optional[str] = None,
     ) -> Dict[str, Any]:
-        return await self._delegate.extract(session_id, selector)
+        page = self._pages.get(session_id)
+        if page is None:
+            return await self._fallback.extract(session_id, selector)
+
+        try:
+            title = await page.title()
+            if selector:
+                elements = await page.query_selector_all(selector)
+                texts = []
+                for el in elements[:50]:  # cap at 50 elements
+                    t = await el.text_content()
+                    if t:
+                        texts.append(t.strip())
+                return {
+                    "url": page.url,
+                    "title": title,
+                    "selector": selector,
+                    "text": "\n".join(texts),
+                    "element_count": len(elements),
+                }
+            else:
+                body = await page.text_content("body")
+                return {
+                    "url": page.url,
+                    "title": title,
+                    "selector": None,
+                    "text": (body or "")[:10000],
+                    "element_count": 0,
+                }
+        except Exception as e:
+            return {
+                "url": page.url if page else "",
+                "title": "",
+                "selector": selector,
+                "text": "",
+                "element_count": 0,
+                "error": str(e),
+            }
 
     async def act(
-        self, session_id: str, action_type: str, target: str, value: Optional[str] = None
+        self, session_id: str, action_type: str, target: str, value: Optional[str] = None,
     ) -> Dict[str, Any]:
-        return await self._delegate.act(session_id, action_type, target, value)
+        page = self._pages.get(session_id)
+        if page is None:
+            return await self._fallback.act(session_id, action_type, target, value)
+
+        try:
+            if action_type == "click":
+                await page.click(target, timeout=5000)
+            elif action_type == "type":
+                await page.fill(target, value or "", timeout=5000)
+            elif action_type == "select":
+                await page.select_option(target, value or "", timeout=5000)
+            elif action_type == "scroll":
+                await page.evaluate(f"document.querySelector('{target}')?.scrollIntoView()")
+            elif action_type in ("submit", "press"):
+                await page.press(target, value or "Enter", timeout=5000)
+            else:
+                return {"action": action_type, "success": False, "error": f"Unknown action: {action_type}"}
+
+            return {"action": action_type, "target": target, "value": value, "success": True}
+        except Exception as e:
+            return {"action": action_type, "target": target, "success": False, "error": str(e)}
 
     async def run_script(self, session_id: str, script: str) -> Any:
-        return await self._delegate.run_script(session_id, script)
+        page = self._pages.get(session_id)
+        if page is None:
+            return await self._fallback.run_script(session_id, script)
+
+        try:
+            result = await page.evaluate(script)
+            return {"executed": True, "script_length": len(script), "result": result}
+        except Exception as e:
+            return {"executed": False, "script_length": len(script), "error": str(e)}
 
 
 # ============================================================================
@@ -304,11 +485,18 @@ _backend: Optional[BrowserBackend] = None
 
 
 def get_backend() -> BrowserBackend:
-    """Return the active browser backend (lazy init)."""
+    """Return the active browser backend (lazy init).
+
+    Auto-detects Browserbase credentials — if BROWSERBASE_API_KEY is set,
+    uses the real cloud backend. Otherwise falls back to local Playwright stubs.
+    """
     global _backend
     if _backend is None:
-        # Default to local Playwright backend
-        _backend = LocalPlaywrightBackend()
+        bb_key = os.getenv("BROWSERBASE_API_KEY", "")
+        if bb_key:
+            _backend = BrowserbaseBackend(api_key=bb_key)
+        else:
+            _backend = LocalPlaywrightBackend()
     return _backend
 
 
@@ -883,4 +1071,159 @@ async def browser_task(
         "assigned": assigned,
         "assigned_to": task.owner,
         "governance_vote": vote,
+    }, cost)
+
+
+# ============================================================================
+#  CROSS-LLM & INTEGRATIONS ENDPOINTS
+# ============================================================================
+
+from src.api.integrations import integration_hub
+
+
+class AICompleteRequest(BaseModel):
+    prompt: str = Field(..., min_length=1, max_length=16384)
+    task_type: str = Field("general", description="code|safety|extract|general|browser")
+    provider: Optional[str] = Field(None, description="Force a specific provider key")
+    model: Optional[str] = Field(None, description="Force a specific model")
+    max_tokens: int = Field(512, ge=1, le=4096)
+    temperature: float = Field(0.7, ge=0.0, le=2.0)
+
+
+class CrossLLMRequest(BaseModel):
+    prompt: str = Field(..., min_length=1, max_length=16384)
+    task_type: str = Field("general")
+    providers: Optional[List[str]] = Field(None, description="Specific providers to query")
+
+
+# Integration credit costs
+INTEGRATION_CREDIT_COSTS: Dict[str, float] = {
+    "ai.complete": 10.0,
+    "ai.cross_llm": 25.0,
+    "integrations.status": 0.0,
+    "integrations.health": 0.0,
+}
+CREDIT_COSTS.update(INTEGRATION_CREDIT_COSTS)
+
+
+@router.get("/integrations")
+async def integrations_status(tenant_id: str = Depends(_authenticate)):
+    """Show all connected integrations and available models."""
+    return _ok(integration_hub.status_summary(), 0.0)
+
+
+@router.get("/integrations/health")
+async def integrations_health(tenant_id: str = Depends(_authenticate)):
+    """Health-check all connected services."""
+    report = await integration_hub.health_check()
+    return _ok(report, 0.0)
+
+
+@router.post("/ai/complete")
+async def ai_complete(
+    req: AICompleteRequest,
+    tenant_id: str = Depends(_authenticate),
+):
+    """Send a prompt to the best available AI model.
+
+    Routes automatically based on task_type, or you can force a specific
+    provider/model.  Every call is antivirus-scanned and SFT-captured.
+    """
+    tenant = _get_tenant(tenant_id)
+    cost = _browser_charge(tenant, "ai.complete", req.task_type)
+
+    # Antivirus scan the prompt
+    threat = tenant.antivirus.scan(req.prompt)
+    if threat.governance_decision == "DENY":
+        _capture_sft(
+            instruction=req.prompt[:200],
+            response=f"BLOCKED by antivirus: {', '.join(threat.reasons)}",
+            tenant_id=tenant_id,
+            session_id="ai-complete",
+            action="ai.complete",
+            safety_score=threat.hamiltonian_score,
+            credits_used=cost,
+        )
+        return _ok({
+            "completed": False,
+            "reason": "Prompt blocked by SemanticAntivirus",
+            "threat_profile": threat.to_dict(),
+        }, cost)
+
+    result = await integration_hub.complete(
+        prompt=req.prompt,
+        task_type=req.task_type,
+        provider=req.provider,
+        model=req.model,
+        max_tokens=req.max_tokens,
+        temperature=req.temperature,
+    )
+
+    _capture_sft(
+        instruction=req.prompt[:500],
+        response=(result.get("response") or result.get("error", ""))[:500],
+        tenant_id=tenant_id,
+        session_id="ai-complete",
+        action="ai.complete",
+        safety_score=threat.hamiltonian_score,
+        credits_used=cost,
+    )
+
+    return _ok({
+        "completed": not bool(result.get("error")),
+        "provider": result.get("provider"),
+        "model": result.get("model"),
+        "response": result.get("response"),
+        "usage": result.get("usage"),
+        "latency_ms": result.get("latency_ms"),
+        "error": result.get("error"),
+        "safety": threat.to_dict(),
+    }, cost)
+
+
+@router.post("/ai/cross-llm")
+async def cross_llm(
+    req: CrossLLMRequest,
+    tenant_id: str = Depends(_authenticate),
+):
+    """Send a prompt to multiple AI models simultaneously.
+
+    This is the cross-LLM talk feature — different models discuss,
+    verify, and build on each other's responses.  Flock governance
+    aggregates the results.
+    """
+    tenant = _get_tenant(tenant_id)
+    cost = _browser_charge(tenant, "ai.cross_llm", req.task_type)
+
+    # Antivirus scan
+    threat = tenant.antivirus.scan(req.prompt)
+    if threat.governance_decision == "DENY":
+        return _ok({
+            "completed": False,
+            "reason": "Prompt blocked by SemanticAntivirus",
+        }, cost)
+
+    result = await integration_hub.cross_llm_exchange(
+        prompt=req.prompt,
+        providers=req.providers,
+        task_type=req.task_type,
+    )
+
+    _capture_sft(
+        instruction=f"[cross-llm] {req.prompt[:300]}",
+        response=f"{result['response_count']} responses from {result['providers_queried']} providers",
+        tenant_id=tenant_id,
+        session_id="cross-llm",
+        action="ai.cross_llm",
+        safety_score=threat.hamiltonian_score,
+        credits_used=cost,
+    )
+
+    return _ok({
+        "completed": True,
+        "results": result["results"],
+        "response_count": result["response_count"],
+        "providers_queried": result["providers_queried"],
+        "consensus": result["consensus"],
+        "safety": threat.to_dict(),
     }, cost)
