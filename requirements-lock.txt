@@ -216,7 +216,7 @@ sortedcontainers==2.4.0
 soupsieve==2.8.1
 sse-starlette==3.2.0
 starlette==0.50.0
-stone==3.3.1
+stone==3.3.9
 strands-agents==1.27.0
 strands-agents-tools==0.2.19
 sympy==1.14.0
