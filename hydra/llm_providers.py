@@ -485,6 +485,131 @@ class GeminiProvider(LLMProvider):
 
 
 # ---------------------------------------------------------------------------
+# HuggingFace Inference
+# ---------------------------------------------------------------------------
+
+class HuggingFaceProvider(LLMProvider):
+    """LLM provider backed by the HuggingFace Inference API.
+
+    Requires:
+        pip install huggingface_hub
+
+    Environment:
+        HF_TOKEN - your HuggingFace API token
+
+    Works with:
+    - HF Inference API (serverless)
+    - HF Inference Endpoints (dedicated)
+    - Any text-generation model hosted on HF
+    """
+
+    def __init__(
+        self,
+        model: str = "mistralai/Mistral-7B-Instruct-v0.3",
+        api_key: Optional[str] = None,
+        base_url: Optional[str] = None,
+    ):
+        try:
+            from huggingface_hub import InferenceClient  # noqa: F401
+        except ImportError:
+            raise ImportError(
+                "The 'huggingface_hub' package is required for HuggingFaceProvider.\n"
+                "Install it with:  pip install huggingface_hub"
+            )
+
+        self.model = model
+        self._api_key = api_key or os.environ.get("HF_TOKEN", "")
+
+        from huggingface_hub import InferenceClient
+
+        kwargs: Dict[str, Any] = {"model": model}
+        if self._api_key:
+            kwargs["token"] = self._api_key
+        if base_url:
+            kwargs["model"] = base_url  # InferenceClient uses model= for endpoint URL too
+
+        self._client = InferenceClient(**kwargs)
+
+    async def complete(
+        self,
+        prompt: str,
+        system: Optional[str] = None,
+        max_tokens: int = 4096,
+        temperature: float = 0.7,
+    ) -> LLMResponse:
+        """Send a completion request via HuggingFace Inference."""
+        system_prompt = system if system is not None else HYDRA_SYSTEM_PROMPT
+        messages: List[Dict[str, str]] = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt},
+        ]
+
+        async def _call():
+            response = await asyncio.to_thread(
+                self._client.chat_completion,
+                messages=messages,
+                max_tokens=max_tokens,
+                temperature=temperature,
+            )
+            choice = response.choices[0]
+            usage = response.usage
+            return LLMResponse(
+                text=choice.message.content or "",
+                model=self.model,
+                input_tokens=usage.prompt_tokens if usage else 0,
+                output_tokens=usage.completion_tokens if usage else 0,
+                finish_reason=choice.finish_reason or "stop",
+            )
+
+        return await _retry_with_backoff(_call)
+
+    async def stream(
+        self,
+        prompt: str,
+        system: Optional[str] = None,
+        max_tokens: int = 4096,
+        temperature: float = 0.7,
+    ) -> AsyncIterator[str]:
+        """Stream tokens from HuggingFace Inference."""
+        system_prompt = system if system is not None else HYDRA_SYSTEM_PROMPT
+        messages: List[Dict[str, str]] = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt},
+        ]
+
+        response = self._client.chat_completion(
+            messages=messages,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            stream=True,
+        )
+
+        # HF streaming is synchronous; bridge via queue
+        queue: asyncio.Queue[Optional[str]] = asyncio.Queue()
+
+        def _consume():
+            try:
+                for chunk in response:
+                    if chunk.choices and chunk.choices[0].delta.content:
+                        asyncio.get_event_loop().call_soon_threadsafe(
+                            queue.put_nowait, chunk.choices[0].delta.content
+                        )
+            finally:
+                asyncio.get_event_loop().call_soon_threadsafe(
+                    queue.put_nowait, None
+                )
+
+        loop = asyncio.get_event_loop()
+        loop.run_in_executor(None, _consume)
+
+        while True:
+            item = await queue.get()
+            if item is None:
+                break
+            yield item
+
+
+# ---------------------------------------------------------------------------
 # Local (OpenAI-compatible endpoint)
 # ---------------------------------------------------------------------------
 
@@ -594,6 +719,8 @@ _PROVIDER_MAP: Dict[str, type] = {
     "openai": OpenAIProvider,
     "gemini": GeminiProvider,
     "google": GeminiProvider,
+    "huggingface": HuggingFaceProvider,
+    "hf": HuggingFaceProvider,
     "local": LocalProvider,
 }
 

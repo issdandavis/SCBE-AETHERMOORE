@@ -174,6 +174,18 @@ class Ledger:
                 )
             """)
 
+            # Keyword index for Librarian cross-session persistence
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS keyword_index (
+                    keyword TEXT NOT NULL,
+                    memory_key TEXT NOT NULL,
+                    PRIMARY KEY (keyword, memory_key)
+                )
+            """)
+            cursor.execute(
+                "CREATE INDEX IF NOT EXISTS idx_keyword ON keyword_index(keyword)"
+            )
+
             conn.commit()
             conn.close()
 
@@ -374,6 +386,44 @@ class Ledger:
             conn.close()
 
             return [dict(row) for row in rows]
+
+    # =========================================================================
+    # Keyword Index Persistence
+    # =========================================================================
+
+    def save_keyword(self, keyword: str, memory_key: str) -> None:
+        """Persist a keyword→memory_key mapping."""
+        with self._lock:
+            conn = self._get_conn()
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT OR IGNORE INTO keyword_index (keyword, memory_key) VALUES (?, ?)",
+                (keyword, memory_key),
+            )
+            conn.commit()
+            conn.close()
+
+    def load_keywords(self) -> Dict[str, List[str]]:
+        """Load the full keyword index from SQLite.
+
+        Returns:
+            Dict mapping keyword → list of memory_keys.
+        """
+        with self._lock:
+            conn = self._get_conn()
+            cursor = conn.cursor()
+            cursor.execute("SELECT keyword, memory_key FROM keyword_index")
+            rows = cursor.fetchall()
+            conn.close()
+
+        index: Dict[str, List[str]] = {}
+        for row in rows:
+            kw = row["keyword"]
+            mk = row["memory_key"]
+            if kw not in index:
+                index[kw] = []
+            index[kw].append(mk)
+        return index
 
     # =========================================================================
     # Head/Limb Registry
