@@ -153,6 +153,13 @@ docker run -p 8080:8080 -e SCBE_API_KEY=your-key ghcr.io/issdandavis/scbe-aether
 
 See `docs/DOCKER_TERMINAL_OPERATIONS.md` for full stack control commands.
 
+Docker MCP terminal-only workflow:
+```powershell
+.\scripts\scbe_mcp_terminal.ps1 -Action doctor
+.\scripts\scbe_mcp_terminal.ps1 -Action tools
+.\scripts\scbe_mcp_terminal.ps1 -Action gateway
+```
+
 ### Local Development
 ```bash
 git clone https://github.com/issdandavis/SCBE-AETHERMOORE.git
