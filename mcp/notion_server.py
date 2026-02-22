@@ -25,7 +25,6 @@ from mcp.server.fastmcp import FastMCP
 # Notion API helpers
 # ---------------------------------------------------------------------------
 
-_NOTION_API_KEY = os.environ.get("NOTION_API_KEY", "")
 _NOTION_VERSION = "2022-06-28"
 _NOTION_BASE = "https://api.notion.com/v1"
 _INDEX_PATH = os.path.join(_PROJECT_ROOT, "docs", "NOTION_PAGE_INDEX.md")
@@ -68,23 +67,31 @@ def _ensure_index():
         _page_index = _load_index_from_file()
 
 
-def _notion_headers() -> dict:
+def _resolve_notion_api_key() -> str:
+    for key_name in ("NOTION_API_KEY", "NOTION_TOKEN", "NOTION_MCP_TOKEN"):
+        value = os.environ.get(key_name, "").strip()
+        if value:
+            return value
+    return ""
+
+
+def _notion_headers(api_key: str) -> dict:
     return {
-        "Authorization": f"Bearer {_NOTION_API_KEY}",
+        "Authorization": f"Bearer {api_key}",
         "Notion-Version": _NOTION_VERSION,
         "Content-Type": "application/json",
     }
 
 
-async def _notion_request(method: str, path: str, body: dict | None = None) -> dict:
+async def _notion_request(method: str, path: str, api_key: str, body: dict | None = None) -> dict:
     """Make a Notion API request. Requires httpx."""
     import httpx
     url = f"{_NOTION_BASE}{path}"
     async with httpx.AsyncClient(timeout=30) as client:
         if method == "POST":
-            resp = await client.post(url, headers=_notion_headers(), json=body or {})
+            resp = await client.post(url, headers=_notion_headers(api_key), json=body or {})
         else:
-            resp = await client.get(url, headers=_notion_headers())
+            resp = await client.get(url, headers=_notion_headers(api_key))
         resp.raise_for_status()
         return resp.json()
 
@@ -124,12 +131,18 @@ async def notion_search(query: str, max_results: int = 10) -> str:
         query: Search text
         max_results: Maximum number of results to return
     """
-    if _NOTION_API_KEY:
+    api_key = _resolve_notion_api_key()
+    if api_key:
         try:
-            data = await _notion_request("POST", "/search", {
-                "query": query,
-                "page_size": min(max_results, 100),
-            })
+            data = await _notion_request(
+                "POST",
+                "/search",
+                api_key=api_key,
+                body={
+                    "query": query,
+                    "page_size": min(max_results, 100),
+                },
+            )
             results = []
             for item in data.get("results", []):
                 title_parts = []
@@ -165,11 +178,17 @@ async def notion_fetch_page(page_id: str) -> str:
     Args:
         page_id: Notion page UUID
     """
-    if not _NOTION_API_KEY:
-        return json.dumps({"error": "NOTION_API_KEY not set. Cannot fetch live pages. Use notion_search for cached index."})
+    api_key = _resolve_notion_api_key()
+    if not api_key:
+        return json.dumps(
+            {
+                "error": "Notion token not set. Cannot fetch live pages.",
+                "accepted_env_keys": ["NOTION_API_KEY", "NOTION_TOKEN", "NOTION_MCP_TOKEN"],
+            }
+        )
     try:
-        page = await _notion_request("GET", f"/pages/{page_id}")
-        blocks = await _notion_request("GET", f"/blocks/{page_id}/children")
+        page = await _notion_request("GET", f"/pages/{page_id}", api_key=api_key)
+        blocks = await _notion_request("GET", f"/blocks/{page_id}/children", api_key=api_key)
         text_parts = []
         for block in blocks.get("results", []):
             btype = block.get("type", "")
@@ -231,6 +250,46 @@ def notion_refresh_index() -> str:
     global _page_index
     _page_index = _load_index_from_file()
     return json.dumps({"refreshed": True, "page_count": len(_page_index)})
+
+
+@mcp.tool()
+async def notion_health_check(page_id: str = "") -> str:
+    """Check direct Notion API route health using configured token.
+
+    Args:
+        page_id: Optional Notion page UUID to verify read access.
+    """
+    api_key = _resolve_notion_api_key()
+    if not api_key:
+        return json.dumps(
+            {
+                "ok": False,
+                "route": "direct_notion_api",
+                "reason": "missing_token",
+                "accepted_env_keys": ["NOTION_API_KEY", "NOTION_TOKEN", "NOTION_MCP_TOKEN"],
+            }
+        )
+
+    try:
+        await _notion_request("GET", "/users/me", api_key=api_key)
+        if page_id:
+            await _notion_request("GET", f"/pages/{page_id}", api_key=api_key)
+        return json.dumps(
+            {
+                "ok": True,
+                "route": "direct_notion_api",
+                "page_checked": page_id or None,
+            }
+        )
+    except Exception as exc:
+        return json.dumps(
+            {
+                "ok": False,
+                "route": "direct_notion_api",
+                "reason": "api_error",
+                "error": str(exc),
+            }
+        )
 
 
 # ---------------------------------------------------------------------------
