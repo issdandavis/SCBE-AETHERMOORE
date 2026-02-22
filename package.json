@@ -1,6 +1,6 @@
 {
   "name": "scbe-aethermoore",
-  "version": "3.2.5",
+  "version": "3.2.6",
   "description": "SCBE-AETHERMOORE: Hyperbolic Geometry-Based Security with 14-Layer Architecture",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "license": "MIT",
@@ -58,11 +58,6 @@
     "dist/src",
     "README.md",
     "LICENSE",
-    "sixtongues-cli-v1.0.0.zip",
-    "packages/sixtongues",
-    "scbe-cli.py",
-    "scbe.js",
-    "sixtongues-cli-v1.1.0.zip",
     "examples/npm"
   ],
   "scripts": {
@@ -145,8 +140,5 @@
   "overrides": {
     "tar": ">=7.0.0",
     "esbuild": ">=0.25.0"
-  },
-  "bin": {
-    "scbe": "scbe.js"
   }
 }
