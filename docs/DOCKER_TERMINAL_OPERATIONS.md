@@ -51,6 +51,33 @@ npm run docker:down:unified
 npm run docker:status:all
 ```
 
+## Docker MCP (No UI)
+
+Use this helper for Docker MCP Toolkit commands:
+
+`scripts/scbe_mcp_terminal.ps1`
+
+```powershell
+# Verify MCP status from terminal
+.\scripts\scbe_mcp_terminal.ps1 -Action doctor
+
+# List configured MCP servers and tools
+.\scripts\scbe_mcp_terminal.ps1 -Action servers
+.\scripts\scbe_mcp_terminal.ps1 -Action tools
+
+# Run gateway in foreground
+.\scripts\scbe_mcp_terminal.ps1 -Action gateway
+```
+
+`npm` shortcuts:
+
+```powershell
+npm run mcp:doctor
+npm run mcp:servers
+npm run mcp:tools
+npm run mcp:gateway
+```
+
 ## Runtime notes
 
 - `Dockerfile.api` healthcheck uses `/v1/health`.
