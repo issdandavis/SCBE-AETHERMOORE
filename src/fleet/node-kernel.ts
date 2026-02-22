@@ -145,7 +145,7 @@ export interface NodeKernelConfig {
 }
 
 export const DEFAULT_KERNEL_CONFIG: Readonly<NodeKernelConfig> = {
-  signingKey: 'scbe-default-signing-key',
+  signingKey: '',  // MUST be set by caller — empty triggers validation below
   policyGracePeriodMs: 30_000,
   energyPerStep: 0.001,
   energyRechargeRate: 0.002,
@@ -193,6 +193,13 @@ export class NodeKernel {
     config: Partial<NodeKernelConfig> = {},
   ) {
     this.config = { ...DEFAULT_KERNEL_CONFIG, ...config };
+
+    if (!this.config.signingKey) {
+      throw new Error(
+        'NodeKernel requires a signingKey in config. ' +
+        'Generate one with: crypto.randomBytes(32).toString("hex")'
+      );
+    }
 
     this.state = {
       id: nodeId,

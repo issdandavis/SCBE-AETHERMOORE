@@ -169,21 +169,6 @@ def _pqc_audit(job: Dict[str, Any], payload: Dict[str, Any], tier: str) -> Dict[
         drift_threshold=threshold,
         rotation_hours=rotation_hours,
     )
-    kyber_id = str(pqc_meta.get("kyber_id", "")).strip()
-    dilithium_id = str(pqc_meta.get("dilithium_id", "")).strip()
-    if not kyber_id or not dilithium_id:
-        return {"status": "QUARANTINE", "reason": "missing kyber_id or dilithium_id"}
-
-    age_hours = float(pqc_meta.get("last_rotated_hours", 0) or 0)
-    rotation_hours = int(pqc_meta.get("rotation_hours", 720) or 720)
-    if age_hours >= rotation_hours:
-        return {
-            "status": "QUARANTINE",
-            "reason": f"key age {age_hours:.1f}h exceeds rotation policy {rotation_hours}h",
-        }
-
-    fp = _sha_t(_j({"kyber_id": kyber_id, "dilithium_id": dilithium_id, "workflow_id": payload.get("workflow_id")}))[:20]
-    return {"status": "ALLOW", "reason": "pqc metadata within policy", "key_fingerprint": fp}
 
 
 def _chunk_actions(actions: List[Dict[str, Any]], batch_size: int) -> List[List[Dict[str, Any]]]:

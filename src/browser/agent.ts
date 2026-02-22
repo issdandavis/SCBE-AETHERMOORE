@@ -606,8 +606,8 @@ export class MockBrowserBackend implements BrowserBackend {
     // Mock scroll
   }
 
-  async executeScript<T>(script: string): Promise<T> {
-    return eval(script) as T;
+  async executeScript<T>(_script: string): Promise<T> {
+    throw new Error('MockBrowserBackend.executeScript is not available — use a real browser backend (CDP or Playwright)');
   }
 
   async screenshot(): Promise<Buffer> {

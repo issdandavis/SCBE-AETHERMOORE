@@ -360,8 +360,11 @@ export class StubSignature implements QuantumSafeSignature {
         `(expected ${this.descriptor.signatureSize})`
       );
     }
-    // Stub: size-only check. NOT secure — production uses liboqs.
-    return signature.length === this.descriptor.signatureSize;
+    // Refuse to verify with a stub — silently returning true is a security vulnerability.
+    throw new Error(
+      `${this.descriptor.name}: stub verify() is disabled for safety. ` +
+      `Register a real implementation via registerSignature() or install liboqs-node.`
+    );
   }
 }
 
