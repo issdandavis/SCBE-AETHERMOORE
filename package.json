@@ -78,6 +78,7 @@
     "lint:python": "flake8 src/ tests/ --max-line-length=120",
     "cli": "python scbe-cli.py",
     "codeprism:build": "python scripts/code_prism_build.py",
+    "connector:health": "python scripts/connector_health_check.py",
     "system:cli": "python scripts/scbe-system-cli.py",
     "demo": "start scbe-aethermoore/customer-demo.html",
     "agentic:demo": "ts-node src/agentic/demo-runner.ts",

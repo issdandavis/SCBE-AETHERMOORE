@@ -1,0 +1,63 @@
+name: Code Prism Parity
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - "src/code_prism/**"
+      - "tests/code_prism/**"
+      - "config/code_prism/**"
+      - "scripts/code_prism_build.py"
+      - "pyproject.toml"
+      - "package.json"
+      - ".github/workflows/code-prism-parity.yml"
+  workflow_dispatch:
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pytest
+
+      - name: Run Code Prism tests
+        run: |
+          pytest tests/code_prism/test_matrix.py tests/code_prism/test_builder.py tests/code_prism/test_parity.py -q
+
+      - name: Run Code Prism CLI smoke check
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          Path("artifacts/code_prism").mkdir(parents=True, exist_ok=True)
+          Path("artifacts/code_prism/sample_input.py").write_text(
+              "def add(a, b):\n    return a + b\n",
+              encoding="utf-8",
+          )
+          PY
+          python scripts/code_prism_build.py \
+            --input artifacts/code_prism/sample_input.py \
+            --source-lang python \
+            --targets typescript go \
+            --module-name ci_sample \
+            --out-dir artifacts/code_prism
+          test -f artifacts/code_prism/ci_sample.summary.json
+
+      - name: Upload Code Prism artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-prism-parity-artifacts
+          path: artifacts/code_prism/

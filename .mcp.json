@@ -53,6 +53,18 @@
       "env": {
         "SWARM_DRY_RUN": "1"
       }
+    },
+    "notion-sweep": {
+      "type": "stdio",
+      "command": "python",
+      "args": [
+        "mcp/notion_server.py"
+      ],
+      "env": {
+        "NOTION_API_KEY": "${NOTION_API_KEY}",
+        "NOTION_TOKEN": "${NOTION_TOKEN}",
+        "NOTION_MCP_TOKEN": "${NOTION_MCP_TOKEN}"
+      }
     }
   }
 }

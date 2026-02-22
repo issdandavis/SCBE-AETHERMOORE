@@ -21,10 +21,28 @@ Added initial Code Prism implementation for language interoperability:
 ### Validation
 - `pytest tests/code_prism/test_matrix.py tests/code_prism/test_builder.py -q`
   - Result: **4 passed**
+- `pytest tests/code_prism/test_matrix.py tests/code_prism/test_builder.py tests/code_prism/test_parity.py -q`
+  - Result: **5 passed**
 - CLI smoke run:
   - source: sample Python function
   - targets: TypeScript, Go
   - result: both outputs valid
+
+### Constraint Follow-Through (PR247 + Notion + Connector Ops)
+- Added conflict-safe merge plan:
+  - `docs/PR247_PHASED_MERGE_PLAN_2026-02-22.md`
+- Fixed direct Notion MCP route wiring:
+  - `.mcp.json` now registers `notion-sweep` MCP server
+  - `mcp/notion_server.py` now accepts `NOTION_API_KEY`, `NOTION_TOKEN`, or `NOTION_MCP_TOKEN`
+  - Added `notion_health_check` MCP tool
+  - Added runbook: `docs/NOTION_MCP_TOKEN_FIX_2026-02-22.md`
+- Added nightly connector health automation:
+  - `scripts/connector_health_check.py`
+  - `.github/workflows/nightly-connector-health.yml`
+  - npm command: `npm run connector:health`
+- Added Code Prism parity CI automation:
+  - `tests/code_prism/test_parity.py`
+  - `.github/workflows/code-prism-parity.yml`
 
 ### Dataset Push (Data Center Target)
 Uploaded merged/split training data to Hugging Face org dataset:
@@ -39,7 +57,10 @@ Artifacts uploaded include:
 - source shards under `data/sources/`
 
 ## Tomorrow’s First Actions
-1. Upgrade parser layer (AST-grade TS parsing instead of regex extraction).
-2. Add semantic parity tests (`source -> IR -> target` output behavior checks).
-3. Add CI job for `tests/code_prism/*` and Code Prism CLI smoke check.
-4. Add governance gate severity levels to block risky emissions.
+1. Resolve PR #247 conflicts by phase branch (`phase1-pr247` then `phase2-pr247`) and merge Phase 1 first.
+2. Populate CI secrets for nightly connector checks:
+   - `NOTION_API_KEY` or `NOTION_MCP_TOKEN`
+   - `GOOGLE_DRIVE_ACCESS_TOKEN`
+3. Upgrade parser layer (AST-grade TS parsing instead of regex extraction).
+4. Extend parity to semantic assertions on arithmetic and control-flow subset.
+5. Add governance gate severity levels to block risky emissions.
