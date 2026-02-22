@@ -201,9 +201,9 @@ export class BrainIntegrationPipeline {
       if (this.config.phdmKyberParams) {
         this.phdmCore.initializeFromKyber(this.config.phdmKyberParams);
       } else {
-        // Fallback: derive a deterministic key for testing
-        this.phdmCore.initializeWithKey(
-          Buffer.from('scbe-phdm-default-key-32-bytes!!')
+        throw new Error(
+          'PHDM is enabled but no phdmKyberParams provided. ' +
+          'Either set config.phdmKyberParams or disable PHDM (enablePHDM: false).'
         );
       }
     } else {
