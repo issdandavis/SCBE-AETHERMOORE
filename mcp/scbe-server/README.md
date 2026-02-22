@@ -1,6 +1,6 @@
 # SCBE MCP Server
 
-Local MCP server exposing SCBE tokenizer + Map Room tools.
+Local MCP server exposing SCBE tokenizer, Map Room, and Phase 1 state/egg governance tools.
 
 ## Tools
 
@@ -9,6 +9,9 @@ Local MCP server exposing SCBE tokenizer + Map Room tools.
 - `scbe_detect_tongue`
 - `scbe_fetch_url`
 - `scbe_decide_offline`
+- `scbe_state_emit_21d`
+- `scbe_sacred_egg_create`
+- `scbe_sacred_egg_hatch`
 - `scbe_map_room_read_latest`
 - `scbe_map_room_write_latest`
 - `scbe_tokenizer_health`
@@ -19,6 +22,7 @@ Local MCP server exposing SCBE tokenizer + Map Room tools.
 - Depends on:
   - `@modelcontextprotocol/sdk`
   - `dist/src/tokenizer/ss1.js`
+  - `dist/src/ai_brain/index.js`
 
 ## Notes
 
