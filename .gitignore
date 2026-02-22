@@ -54,6 +54,19 @@ Thumbs.db
 .pytest_cache/
 .mypy_cache/
 
+# Test temp artifacts
+artifacts/pytest_tmp/
+artifacts/test_swarm_hub/
+
+# Local caches & databases
+.npm-cache-local/
+.npm-pack-dryrun.txt
+*.db
+!src/symphonic_cipher/**/*.db
+
+# Training runs (large model artifacts)
+training/runs/
+
 ### codex cleanup
 node_modules/
 dist/
