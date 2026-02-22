@@ -43,6 +43,22 @@ CATEGORY_PATTERNS = {
     "safety": r"ai.safety|containment|boundary.enforcement|defense.in.depth",
 }
 
+GOVERNANCE_CATEGORIES = {
+    "governance",
+    "fsgs",
+    "trust-tubes",
+    "trust-rings",
+    "safety",
+}
+
+FUNCTION_CATEGORIES = {
+    "post-quantum-crypto",
+    "spiral-seal",
+    "ml-kem",
+    "ml-dsa",
+}
+
+
 # System prompt for chat-style output
 SYSTEM_PROMPT = (
     "You are SCBE-AETHERMOORE, a 14-layer AI safety and governance framework "
@@ -74,6 +90,16 @@ def clean_text(text: str) -> str:
     # Strip trailing whitespace per line
     text = re.sub(r"[ \t]+$", "", text, flags=re.MULTILINE)
     return text.strip()
+
+
+def infer_track(category: str) -> str:
+    """Assign high-level training track for downstream split datasets."""
+    if category in GOVERNANCE_CATEGORIES:
+        return "governance"
+    if category in FUNCTION_CATEGORIES:
+        return "functions"
+    return "system"
+
 
 
 def generate_instruction(title: str, text: str, category: str) -> str:
@@ -116,6 +142,7 @@ def convert_record(raw: dict, idx: int) -> dict | None:
         return None  # Skip empty or trivially short records
 
     category = detect_category(title, text)
+    track = infer_track(category)
     instruction = generate_instruction(title, text, category)
     response = truncate_response(clean_text(text))
 
@@ -130,6 +157,12 @@ def convert_record(raw: dict, idx: int) -> dict | None:
             "author": "Issac Davis",
             "notion_id": raw.get("id", ""),
             "original_title": title,
+            "track": track,
+            "source_type": "notion_page",
+            "quality": {
+                "dedup": True,
+                "validated": False,
+            },
         },
     }
 

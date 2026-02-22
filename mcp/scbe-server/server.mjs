@@ -2,6 +2,7 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { decode, detectTongue, encode, TONGUE_CODES } from '../../dist/src/tokenizer/ss1.js';
+import { BRAIN_DIMENSIONS, applyGoldenWeighting, safePoincareEmbed, vectorNorm } from '../../dist/src/ai_brain/index.js';
 import { promises as fs } from 'fs';
 import { createHash } from 'crypto';
 import path from 'path';
@@ -16,6 +17,16 @@ const MAP_ROOM_DIR = path.join(REPO_ROOT, 'docs', 'map-room');
 const MAP_ROOM_LATEST = path.join(MAP_ROOM_DIR, 'session_handoff_latest.md');
 const TRUST_STATES = ['T0', 'T1', 'T2', 'T3', 'T4'];
 const SAFE_OPS = new Set(['config.read', 'audit.export', 'diagnostics.run']);
+const PHASE_STEP = Math.PI / 3;
+const TONGUE_WEIGHTS = {
+  KO: 1.0,
+  AV: 1.618,
+  RU: 2.618,
+  CA: 4.236,
+  UM: 6.854,
+  DR: 11.09,
+};
+const RING_ORDER = { core: 0, inner: 1, middle: 2, outer: 3, edge: 4 };
 const execFileAsync = promisify(execFile);
 
 const server = new Server(
@@ -65,6 +76,10 @@ function canonicalStringify(value) {
 
 function sha512Hex(value) {
   return createHash('sha512').update(canonicalStringify(value)).digest('hex');
+}
+
+function sha256Hex(value) {
+  return createHash('sha256').update(canonicalStringify(value)).digest('hex');
 }
 
 function stripHtml(html) {
@@ -132,6 +147,295 @@ async function fetchViaCurl(url, method, headers, body, timeoutMs) {
     ok: status >= 200 && status <= 299,
     contentType: contentTypeRaw.trim(),
     responseText,
+  };
+}
+
+function normalizeContext6(value) {
+  const raw = Array.isArray(value) ? value : [];
+  const out = [];
+  for (let i = 0; i < 6; i++) out.push(asNumber(raw[i], 0));
+  return out;
+}
+
+function classifyRing(context6) {
+  const bounded = context6.map((x) => (Math.tanh(x / 5) + 1) / 2);
+  const radius = bounded.reduce((acc, x) => acc + x, 0) / Math.max(1, bounded.length);
+  if (radius < 0.3) return 'core';
+  if (radius < 0.5) return 'inner';
+  if (radius < 0.7) return 'middle';
+  if (radius < 0.9) return 'outer';
+  return 'edge';
+}
+
+function classifyPath(context6) {
+  const triadNorm = Math.sqrt(context6[0] ** 2 + context6[1] ** 2 + context6[2] ** 2);
+  return triadNorm < 0.95 ? 'interior' : 'exterior';
+}
+
+function normalizeVector21(value) {
+  if (!Array.isArray(value)) throw new Error('vector must be an array');
+  if (value.length !== BRAIN_DIMENSIONS) throw new Error(`vector must contain exactly ${BRAIN_DIMENSIONS} numeric entries`);
+  const out = value.map((v) => asNumber(v, Number.NaN));
+  if (out.some((v) => !Number.isFinite(v))) throw new Error('vector must contain finite numeric entries');
+  return out;
+}
+
+function xorWithSeed(buf, seed) {
+  const src = Buffer.from(buf);
+  if (src.length === 0) return src;
+  const out = Buffer.alloc(src.length);
+  let counter = 0;
+  let offset = 0;
+  while (offset < src.length) {
+    const block = createHash('sha256')
+      .update(seed)
+      .update(String(counter))
+      .digest();
+    const n = Math.min(block.length, src.length - offset);
+    for (let i = 0; i < n; i++) out[offset + i] = src[offset + i] ^ block[i];
+    offset += n;
+    counter += 1;
+  }
+  return out;
+}
+
+function splitSpellTokens(spellText) {
+  return asText(spellText)
+    .trim()
+    .split(/\s+/)
+    .filter((x) => x.length > 0);
+}
+
+function deriveEggSeed(primaryTongue, hatchCondition, context6) {
+  return createHash('sha256')
+    .update('SCBE_SACRED_EGG_V1')
+    .update(primaryTongue)
+    .update(canonicalStringify(hatchCondition))
+    .update(canonicalStringify(context6))
+    .digest();
+}
+
+function normalizeTongueList(value) {
+  const list = Array.isArray(value) ? value : [];
+  const unique = new Set();
+  for (const item of list) {
+    const tg = normalizeTongue(item);
+    if (tg) unique.add(tg);
+  }
+  return [...unique];
+}
+
+function ritualWeight(tongue) {
+  return TONGUE_WEIGHTS[tongue] ?? 0;
+}
+
+function deterministicNoiseBytes(length, seedText) {
+  const out = Buffer.alloc(Math.max(1, length));
+  let offset = 0;
+  let counter = 0;
+  while (offset < out.length) {
+    const block = createHash('sha256')
+      .update(seedText)
+      .update(String(counter))
+      .digest();
+    const n = Math.min(block.length, out.length - offset);
+    block.copy(out, offset, 0, n);
+    offset += n;
+    counter += 1;
+  }
+  return out;
+}
+
+function parseEggInput(value) {
+  if (typeof value === 'string') return JSON.parse(value);
+  if (value && typeof value === 'object') return value;
+  throw new Error('egg_json must be an object or JSON string');
+}
+
+function normalizePathHistory(value) {
+  const list = Array.isArray(value) ? value : [];
+  return list
+    .map((step) => asText(step?.ring).toLowerCase())
+    .filter((ring) => Object.prototype.hasOwnProperty.call(RING_ORDER, ring));
+}
+
+function isStrictlyInward(pathHistory) {
+  if (pathHistory.length < 1) return false;
+  for (let i = 0; i < pathHistory.length - 1; i++) {
+    if (RING_ORDER[pathHistory[i]] <= RING_ORDER[pathHistory[i + 1]]) return false;
+  }
+  return true;
+}
+
+export function scbeStateEmit21D(args = {}) {
+  const vector21d = normalizeVector21(args.vector ?? args.state_vector);
+  const weighted = asBoolean(args.apply_golden_weighting, false) ? applyGoldenWeighting(vector21d) : null;
+  const poincare21d = safePoincareEmbed(vector21d);
+  const payload = {
+    schema_version: 'scbe-21d-v1',
+    emitted_at: new Date().toISOString(),
+    decision: asText(args.decision || ''),
+    confidence: asNumber(args.confidence, 0),
+    vector_21d: vector21d,
+    blocks: {
+      tongue_position: vector21d.slice(0, 6),
+      phase: vector21d.slice(6, 12),
+      telemetry: vector21d.slice(12, BRAIN_DIMENSIONS),
+    },
+    projections: {
+      poincare_21d: poincare21d,
+      poincare_norm: vectorNorm(poincare21d),
+      radial_norm_6d: vectorNorm(poincare21d.slice(0, 6)),
+      inside_poincare_ball: vectorNorm(poincare21d) < 1,
+    },
+    weighted_21d: weighted,
+    metadata: typeof args.metadata === 'object' && args.metadata !== null ? args.metadata : {},
+  };
+  payload.hashes = {
+    state_sha256: sha256Hex(payload.vector_21d),
+    state_sha512: sha512Hex({ vector_21d: payload.vector_21d, decision: payload.decision }),
+  };
+  payload.state_id = payload.hashes.state_sha256.slice(0, 16);
+  return payload;
+}
+
+export function scbeSacredEggCreate(args = {}) {
+  const payloadB64 = asText(args.payload_b64).trim();
+  if (!payloadB64) throw new Error('Missing required field: payload_b64');
+  const payload = Buffer.from(payloadB64, 'base64');
+  const primaryTongue = normalizeTongue(args.primary_tongue) ?? 'KO';
+  const glyph = asText(args.glyph || '◇');
+  const hatchCondition = typeof args.hatch_condition === 'object' && args.hatch_condition !== null ? args.hatch_condition : {};
+  const context6 = normalizeContext6(args.context);
+  const seed = deriveEggSeed(primaryTongue, hatchCondition, context6);
+  const ciphertext = xorWithSeed(payload, seed);
+  const pathClass = classifyPath(context6);
+  const ring = classifyRing(context6);
+  const attest = {
+    ritual_version: 'sacred-eggs-v1',
+    ring,
+    path: pathClass,
+    context_sha256: sha256Hex(context6),
+    payload_sha256: createHash('sha256').update(payload).digest('hex'),
+    created_at_unix: Math.floor(Date.now() / 1000),
+  };
+  const yolkBase = {
+    ct_k: createHash('sha256').update(seed).update('ct_k').digest('base64'),
+    ct_spec: ciphertext.toString('base64'),
+    attest,
+  };
+  const yolk_ct = {
+    ...yolkBase,
+    sig: createHash('sha256').update(canonicalStringify(yolkBase)).digest('base64'),
+  };
+  const eggCore = {
+    primary_tongue: primaryTongue,
+    glyph,
+    hatch_condition: hatchCondition,
+    yolk_ct,
+  };
+  return {
+    egg_id: createHash('sha256').update(canonicalStringify(eggCore)).digest('hex').slice(0, 16),
+    ...eggCore,
+  };
+}
+
+export function scbeSacredEggHatch(args = {}) {
+  const egg = parseEggInput(args.egg_json ?? args.egg);
+  const primaryTongue = normalizeTongue(egg.primary_tongue);
+  if (!primaryTongue) throw new Error('egg_json.primary_tongue is invalid');
+  const agentTongue = normalizeTongue(args.agent_tongue);
+  if (!agentTongue) throw new Error('Invalid or missing agent_tongue. Expected one of KO/AV/RU/CA/UM/DR');
+  const hatchCondition = typeof egg.hatch_condition === 'object' && egg.hatch_condition !== null ? egg.hatch_condition : {};
+  const yolk = egg.yolk_ct ?? {};
+  const ctSpec = Buffer.from(asText(yolk.ct_spec || ''), 'base64');
+  if (!ctSpec.length) throw new Error('egg_json.yolk_ct.ct_spec is required');
+  const context6 = normalizeContext6(args.context ?? args.current_context);
+  const currentRing = classifyRing(context6);
+  const currentPath = classifyPath(context6);
+  const ritualMode = asText(args.ritual_mode || 'solitary').trim().toLowerCase();
+  const additionalTongues = normalizeTongueList(args.additional_tongues);
+  const pathHistory = normalizePathHistory(args.path_history);
+
+  let sealedReason = null;
+  const requiredPath = asText(hatchCondition.path || '').toLowerCase();
+  const requiredRing = asText(hatchCondition.ring || '').toLowerCase();
+  if (requiredPath && requiredPath !== currentPath) {
+    sealedReason = 'PATH_MISMATCH';
+  } else if (requiredRing && requiredRing !== currentRing) {
+    sealedReason = 'RING_MISMATCH';
+  } else if (ritualMode === 'solitary') {
+    if (agentTongue !== primaryTongue) sealedReason = 'TONGUE_MISMATCH';
+  } else if (ritualMode === 'triadic') {
+    const active = new Set([primaryTongue, agentTongue, ...additionalTongues]);
+    const minTongues = Math.max(1, Math.floor(asNumber(hatchCondition.min_tongues, 3)));
+    const minWeight = asNumber(hatchCondition.min_weight, 10.0);
+    const totalWeight = [...active].reduce((acc, tongue) => acc + ritualWeight(tongue), 0);
+    if (active.size < minTongues) sealedReason = 'INSUFFICIENT_TONGUES';
+    else if (totalWeight < minWeight) sealedReason = 'INSUFFICIENT_WEIGHT';
+  } else if (ritualMode === 'ring_descent') {
+    if (!isStrictlyInward(pathHistory)) sealedReason = 'INVALID_RING_PATH';
+    else if (currentRing !== 'core') sealedReason = 'CORE_REQUIRED';
+  } else {
+    sealedReason = 'UNKNOWN_RITUAL_MODE';
+  }
+
+  const fail = (reasonCode) => {
+    const seedText = canonicalStringify({ egg_id: egg.egg_id || '', reasonCode, context6, agentTongue });
+    const noiseBytes = deterministicNoiseBytes(ctSpec.length, seedText);
+    return {
+      success: false,
+      reason: 'sealed',
+      reason_code: reasonCode,
+      tokens: splitSpellTokens(encode(noiseBytes, agentTongue, true)),
+      attestation: null,
+    };
+  };
+
+  if (sealedReason) return fail(sealedReason);
+
+  const seed = deriveEggSeed(primaryTongue, hatchCondition, context6);
+  const payload = xorWithSeed(ctSpec, seed);
+  const payloadSha = createHash('sha256').update(payload).digest('hex');
+  const attest = yolk.attest ?? {};
+  if (asText(attest.context_sha256) && asText(attest.context_sha256) !== sha256Hex(context6)) {
+    return fail('CONTEXT_BINDING_FAILED');
+  }
+  if (asText(attest.payload_sha256) && asText(attest.payload_sha256) !== payloadSha) {
+    return fail('PAYLOAD_INTEGRITY_FAILED');
+  }
+
+  const primaryTokens = splitSpellTokens(encode(payload, primaryTongue, true));
+  if (agentTongue === primaryTongue) {
+    return {
+      success: true,
+      reason: 'hatched',
+      tokens: primaryTokens,
+      payload_b64: payload.toString('base64'),
+      attestation: { ...attest, xlate: null },
+    };
+  }
+
+  const translatedTokens = splitSpellTokens(encode(payload, agentTongue, true));
+  const srcIndex = Math.max(0, TONGUE_CODES.indexOf(primaryTongue));
+  const dstIndex = Math.max(0, TONGUE_CODES.indexOf(agentTongue));
+  const phaseDelta = ((dstIndex - srcIndex + 6) % 6) * PHASE_STEP;
+
+  return {
+    success: true,
+    reason: 'hatched',
+    tokens: translatedTokens,
+    payload_b64: payload.toString('base64'),
+    attestation: {
+      ...attest,
+      xlate: {
+        src: primaryTongue,
+        dst: agentTongue,
+        phase_delta: phaseDelta,
+        weight_ratio: ritualWeight(agentTongue) / Math.max(ritualWeight(primaryTongue), 1e-12),
+        payload_sha256: payloadSha,
+      },
+    },
   };
 }
 
@@ -489,6 +793,56 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ['action', 'scalars'],
       },
     },
+    {
+      name: 'scbe_state_emit_21d',
+      description: 'Emit canonical 21D state telemetry with projections and stable state hashes.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          vector: {
+            type: 'array',
+            description: 'Canonical 21D vector (length = 21).',
+            items: { type: 'number' },
+          },
+          apply_golden_weighting: { type: 'boolean', description: 'Include phi-weighted 21D vector in output.' },
+          decision: { type: 'string', description: 'Optional decision label (ALLOW/QUARANTINE/DENY).' },
+          confidence: { type: 'number', description: 'Optional confidence score [0,1].' },
+          metadata: { type: 'object', description: 'Optional metadata object to attach to state record.' },
+        },
+        required: ['vector'],
+      },
+    },
+    {
+      name: 'scbe_sacred_egg_create',
+      description: 'Create a Sacred Egg envelope from payload + ritual conditions.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          payload_b64: { type: 'string', description: 'Payload bytes encoded as base64.' },
+          primary_tongue: { type: 'string', enum: TONGUE_CODES, description: 'Primary hatch tongue.' },
+          glyph: { type: 'string', description: 'Display glyph for the egg.' },
+          hatch_condition: { type: 'object', description: 'Ritual constraints (path/ring/min_tongues/min_weight).' },
+          context: { type: 'array', description: 'Context vector used for context binding.', items: { type: 'number' } },
+        },
+        required: ['payload_b64'],
+      },
+    },
+    {
+      name: 'scbe_sacred_egg_hatch',
+      description: 'Attempt to hatch a Sacred Egg. Failures return fail-to-noise tokens.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          egg_json: { description: 'Sacred Egg object or JSON string.' },
+          context: { type: 'array', description: 'Current context vector for hatch evaluation.', items: { type: 'number' } },
+          agent_tongue: { type: 'string', enum: TONGUE_CODES, description: 'Active tongue attempting hatch.' },
+          ritual_mode: { type: 'string', description: 'solitary | triadic | ring_descent' },
+          additional_tongues: { type: 'array', items: { type: 'string', enum: TONGUE_CODES } },
+          path_history: { type: 'array', description: 'Ring traversal history for ring_descent mode.' },
+        },
+        required: ['egg_json', 'context', 'agent_tongue'],
+      },
+    },
   ],
 }));
 
@@ -579,7 +933,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               map_room_latest: MAP_ROOM_LATEST,
               tongues: TONGUE_CODES,
               server: 'scbe-mcp-server',
-              tools_added: ['scbe_fetch_url', 'scbe_decide_offline'],
+              tools_added: [
+                'scbe_fetch_url',
+                'scbe_decide_offline',
+                'scbe_state_emit_21d',
+                'scbe_sacred_egg_create',
+                'scbe_sacred_egg_hatch',
+              ],
             },
             null,
             2,
@@ -670,6 +1030,21 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         return okText(JSON.stringify(result, null, 2));
       }
 
+      case 'scbe_state_emit_21d': {
+        const result = scbeStateEmit21D(args);
+        return okText(JSON.stringify(result, null, 2));
+      }
+
+      case 'scbe_sacred_egg_create': {
+        const result = scbeSacredEggCreate(args);
+        return okText(JSON.stringify(result, null, 2));
+      }
+
+      case 'scbe_sacred_egg_hatch': {
+        const result = scbeSacredEggHatch(args);
+        return okText(JSON.stringify(result, null, 2));
+      }
+
       default:
         return errText(`Unknown tool: ${name}`);
     }
@@ -679,5 +1054,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 });
 
-const transport = new StdioServerTransport();
-await server.connect(transport);
+export async function startServer() {
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
+  await startServer();
+}
