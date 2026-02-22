@@ -48,7 +48,7 @@ flask-cors==6.0.2
 fonttools==4.61.1
 frozenlist==1.8.0
 google-auth==2.48.0
-google-genai==1.56.0
+google-genai==1.64.0
 googleapis-common-protos==1.72.0
 greenlet==3.3.0
 grpcio==1.76.0
