@@ -61,6 +61,31 @@ def _sid(v: str) -> str:
 
 
 def _text_from_record(row: dict[str, Any]) -> str:
+    # SFT instruction-response format
+    inst = row.get("instruction")
+    resp = row.get("response")
+    if isinstance(inst, str) and isinstance(resp, str):
+        text = f"{inst.strip()} {resp.strip()}".strip()
+        if text:
+            return text
+
+    # Chat-messages format
+    msgs = row.get("messages")
+    if isinstance(msgs, list):
+        parts: list[str] = []
+        for m in msgs:
+            if not isinstance(m, dict):
+                continue
+            role = str(m.get("role", "")).strip().lower()
+            content = str(m.get("content", "")).strip()
+            if not content:
+                continue
+            if role in {"user", "assistant", "system"}:
+                parts.append(content)
+        joined = " ".join(parts).strip()
+        if joined:
+            return joined
+
     parts: list[str] = []
     for key in (
         "dataset",
@@ -89,6 +114,15 @@ def _text_from_record(row: dict[str, Any]) -> str:
 
 
 def _label_from_record(row: dict[str, Any]) -> str:
+    # SFT format labels
+    cat = str(row.get("category", "")).strip()
+    if cat:
+        return cat
+    if isinstance(row.get("meta"), dict):
+        source_type = str(row["meta"].get("source_type", "")).strip()
+        if source_type:
+            return source_type
+
     for key in ("event_type", "dataset", "status"):
         val = str(row.get(key, "")).strip()
         if val:
