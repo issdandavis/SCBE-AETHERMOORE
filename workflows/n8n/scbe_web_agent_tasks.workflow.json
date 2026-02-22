@@ -1,0 +1,223 @@
+{
+  "name": "SCBE Web Agent — Task Orchestrator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "scbe-task",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "task_webhook",
+      "name": "Webhook: Submit Task",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-800, 200],
+      "webhookId": "scbe-task-001"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false },
+          "conditions": [
+            {
+              "id": "type_check",
+              "leftValue": "={{ $json.task_type }}",
+              "rightValue": "navigate",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ]
+        }
+      },
+      "id": "task_router_nav",
+      "name": "Is Navigation?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [-400, 100]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false },
+          "conditions": [
+            {
+              "id": "type_check_post",
+              "leftValue": "={{ $json.task_type }}",
+              "rightValue": "post_content",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ]
+        }
+      },
+      "id": "task_router_post",
+      "name": "Is Content Post?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [-400, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8001/v1/agent/task",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-API-Key", "value": "={{ $env.SCBE_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ task_type: $json.task_type, target_url: $json.target_url, goal: $json.goal, max_steps: $json.max_steps || 50, parameters: $json.parameters || {} }) }}",
+        "options": { "timeout": 30000 }
+      },
+      "id": "submit_nav_task",
+      "name": "Submit Navigation Task",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [0, 100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8001/v1/buffer/post",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-API-Key", "value": "={{ $env.SCBE_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.text, platforms: $json.platforms || ['twitter'], tags: $json.tags || [], schedule_at: $json.schedule_at || null, tongue_encode: $json.tongue_encode || false }) }}",
+        "options": { "timeout": 15000 }
+      },
+      "id": "submit_post_task",
+      "name": "Submit Content Post",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [0, 400]
+    },
+    {
+      "parameters": {
+        "amount": 5,
+        "unit": "seconds"
+      },
+      "id": "poll_wait",
+      "name": "Wait 5s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [300, 100]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://localhost:8001/v1/agent/task/={{ $json.task_id }}/status",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-API-Key", "value": "={{ $env.SCBE_API_KEY }}" }
+          ]
+        },
+        "options": { "timeout": 10000 }
+      },
+      "id": "poll_status",
+      "name": "Poll Task Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [600, 100]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "id": "done_check",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "running",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ]
+        }
+      },
+      "id": "still_running",
+      "name": "Still Running?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [900, 100]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ task_id: $json.task_id, status: $json.status, result: $json.result || null }) }}"
+      },
+      "id": "task_response",
+      "name": "Respond: Task Result",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1200, 300]
+    }
+  ],
+  "connections": {
+    "Webhook: Submit Task": {
+      "main": [
+        [
+          { "node": "Is Navigation?", "type": "main", "index": 0 },
+          { "node": "Is Content Post?", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Is Navigation?": {
+      "main": [
+        [{ "node": "Submit Navigation Task", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Is Content Post?": {
+      "main": [
+        [{ "node": "Submit Content Post", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Submit Navigation Task": {
+      "main": [
+        [{ "node": "Wait 5s", "type": "main", "index": 0 }]
+      ]
+    },
+    "Submit Content Post": {
+      "main": [
+        [{ "node": "Respond: Task Result", "type": "main", "index": 0 }]
+      ]
+    },
+    "Wait 5s": {
+      "main": [
+        [{ "node": "Poll Task Status", "type": "main", "index": 0 }]
+      ]
+    },
+    "Poll Task Status": {
+      "main": [
+        [{ "node": "Still Running?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Still Running?": {
+      "main": [
+        [{ "node": "Wait 5s", "type": "main", "index": 0 }],
+        [{ "node": "Respond: Task Result", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true
+  },
+  "tags": [
+    { "name": "scbe" },
+    { "name": "web-agent" },
+    { "name": "task-orchestration" }
+  ],
+  "meta": {
+    "scbe_version": "3.0.0",
+    "description": "Submit and monitor web agent tasks via webhook. Routes navigation tasks to the SCBE agent engine with polling, and content posts to the Buffer pipeline."
+  }
+}

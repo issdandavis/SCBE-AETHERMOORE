@@ -1,0 +1,18 @@
+{
+  "id": "abc123",
+  "title": "Test Thread",
+  "url": "https://www.perplexity.ai/search/test-thread",
+  "label": "label-x",
+  "message_count": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Q?"
+    },
+    {
+      "role": "assistant",
+      "content": "A."
+    }
+  ],
+  "exported_at": "2026-02-21T15:22:02.380925+00:00"
+}
