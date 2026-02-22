@@ -58,6 +58,7 @@ FUNCTION_CATEGORIES = {
     "ml-dsa",
 }
 
+
 # System prompt for chat-style output
 SYSTEM_PROMPT = (
     "You are SCBE-AETHERMOORE, a 14-layer AI safety and governance framework "
@@ -98,6 +99,7 @@ def infer_track(category: str) -> str:
     if category in FUNCTION_CATEGORIES:
         return "functions"
     return "system"
+
 
 
 def generate_instruction(title: str, text: str, category: str) -> str:
