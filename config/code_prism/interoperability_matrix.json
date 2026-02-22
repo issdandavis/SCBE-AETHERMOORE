@@ -1,0 +1,39 @@
+{
+  "version": "0.1.0",
+  "languages": [
+    "python",
+    "typescript",
+    "go"
+  ],
+  "transpilers": {
+    "python": ["typescript", "go"],
+    "typescript": ["python", "go"],
+    "go": ["python", "typescript"]
+  },
+  "conlang_routes": {
+    "KO": ["control-flow", "api-contracts"],
+    "AV": ["io-serialization", "adapter-edges"],
+    "RU": ["policy-and-constraints"],
+    "CA": ["computation-and-logic"],
+    "UM": ["security-privacy-hardening"],
+    "DR": ["types-and-structure"]
+  },
+  "safe_subset": {
+    "supported_constructs": [
+      "function_def",
+      "arguments",
+      "return_statement",
+      "basic_assignments",
+      "simple_expressions"
+    ],
+    "deferred_constructs": [
+      "classes",
+      "generics",
+      "decorators",
+      "async_await",
+      "macros",
+      "reflection"
+    ]
+  }
+}
+
