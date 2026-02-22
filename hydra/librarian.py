@@ -66,8 +66,8 @@ class Librarian:
         self._cache_hits = 0
         self._cache_misses = 0
 
-        # Keyword index for fast search
-        self._keyword_index: Dict[str, List[str]] = {}
+        # Keyword index for fast search — load persisted data
+        self._keyword_index: Dict[str, List[str]] = self.ledger.load_keywords()
 
     # =========================================================================
     # Memory Operations
@@ -109,6 +109,7 @@ class Librarian:
                 self._keyword_index[kw] = []
             if key not in self._keyword_index[kw]:
                 self._keyword_index[kw].append(key)
+                self.ledger.save_keyword(kw, key)
 
         # Invalidate cache
         if key in self._cache:

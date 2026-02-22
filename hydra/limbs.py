@@ -89,7 +89,7 @@ class BrowserLimb(HydraLimb):
 
     def __init__(
         self,
-        backend_type: str = "chrome_mcp",
+        backend_type: str = "playwright",
         tab_id: int = None,
         scbe_url: str = "http://127.0.0.1:8080"
     ):
@@ -105,17 +105,14 @@ class BrowserLimb(HydraLimb):
 
         # Import the appropriate backend
         try:
-            if self.backend_type == "chrome_mcp":
-                from agents.browsers import ChromeMCPBackend
-                self._backend = ChromeMCPBackend(tab_id=self.tab_id)
-            elif self.backend_type == "playwright":
-                from agents.browsers import PlaywrightBackend
+            if self.backend_type == "playwright":
+                from .browsers import PlaywrightBackend
                 self._backend = PlaywrightBackend(headless=True)
             elif self.backend_type == "selenium":
-                from agents.browsers import SeleniumBackend
+                from .browsers import SeleniumBackend
                 self._backend = SeleniumBackend(headless=True)
             elif self.backend_type == "cdp":
-                from agents.browsers import CDPBackend
+                from .browsers import CDPBackend
                 self._backend = CDPBackend()
             else:
                 print(f"[BROWSER] Unknown backend: {self.backend_type}")
