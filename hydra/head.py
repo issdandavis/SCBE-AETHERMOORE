@@ -111,7 +111,7 @@ class HydraHead:
         missing -- the head can still work without a live LLM connection.
         """
         # Map ai_type values that have a corresponding provider
-        provider_types = {"claude", "gpt", "openai", "gemini", "google", "local", "anthropic"}
+        provider_types = {"claude", "gpt", "openai", "gemini", "google", "local", "anthropic", "huggingface", "hf"}
         key = self.ai_type.strip().lower()
         if key not in provider_types:
             return None
