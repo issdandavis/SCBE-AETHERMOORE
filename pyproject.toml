@@ -1,13 +1,14 @@
 [build-system]
 requires = ["setuptools>=61.0"]
-build-backend = "setuptools.backends._legacy:_Backend"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "scbe-aethermoore"
 version = "3.3.0"
 description = "Hyperbolic Geometry AI Safety Framework with 14-Layer Architecture"
 readme = "README.md"
-license = {file = "LICENSE"}
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.11"
 authors = [
     {name = "Issac Daniel Davis", email = "issdandavis@gmail.com"},
@@ -41,6 +42,9 @@ classifiers = [
 Homepage = "https://github.com/issdandavis/SCBE-AETHERMOORE"
 Repository = "https://github.com/issdandavis/SCBE-AETHERMOORE"
 Issues = "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
+
+[project.scripts]
+scbe-convert-to-sft = "symphonic_cipher.scbe_aethermoore.convert_to_sft:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
