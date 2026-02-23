@@ -1,0 +1,42 @@
+{
+  "contract_id": "POLLY_CLAY_MIN_V1",
+  "risk_tier": "MIN",
+  "description": "Read-only reconnaissance and extraction. No write-side browser actions are permitted.",
+  "allow_actions": [
+    "navigate",
+    "extract",
+    "screenshot",
+    "wait",
+    "scroll"
+  ],
+  "blocked_actions": [
+    "click",
+    "type",
+    "select",
+    "press",
+    "upload",
+    "download",
+    "submit",
+    "execute_js",
+    "drag",
+    "drop",
+    "delete",
+    "checkout",
+    "publish"
+  ],
+  "require_human_for_actions": [],
+  "require_context_keys": [],
+  "force_dry_run": true,
+  "max_clays": 4,
+  "max_actions_per_request": 8,
+  "max_actions_per_order": 24,
+  "human_on": [
+    "DENY",
+    "ESCALATE",
+    "QUARANTINE"
+  ],
+  "hitl": {
+    "require_snapshot_on_escalation": true,
+    "auto_open_browser": false
+  }
+}
