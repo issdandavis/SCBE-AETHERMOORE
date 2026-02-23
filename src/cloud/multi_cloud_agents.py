@@ -97,6 +97,99 @@ class HealthCheckResult:
     details: Dict[str, Any] = field(default_factory=dict)
 
 
+@dataclass
+class SessionRecord:
+    """Stateful session record for Cloud Run session workloads."""
+
+    session_id: str
+    agent_id: str
+    cloud: str
+    created_at: datetime
+    expires_at: datetime
+    last_seen: datetime
+    context: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "session_id": self.session_id,
+            "agent_id": self.agent_id,
+            "cloud": self.cloud,
+            "created_at": self.created_at.isoformat(),
+            "expires_at": self.expires_at.isoformat(),
+            "last_seen": self.last_seen.isoformat(),
+            "ttl_seconds_remaining": max(0, int((self.expires_at - datetime.now()).total_seconds())),
+            "context": self.context,
+        }
+
+
+class CloudRunSessionManager:
+    """
+    Lightweight in-memory session manager suitable for Cloud Run entrypoints.
+
+    For production multi-instance deployments, replace backing store with Redis
+    or another shared KV with TTL support.
+    """
+
+    def __init__(self):
+        self._sessions: Dict[str, SessionRecord] = {}
+
+    def _prune_expired(self):
+        now = datetime.now()
+        expired = [sid for sid, rec in self._sessions.items() if rec.expires_at <= now]
+        for sid in expired:
+            self._sessions.pop(sid, None)
+
+    def start_session(
+        self,
+        *,
+        agent_id: str,
+        cloud: str,
+        ttl_seconds: int = 1800,
+        context: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        self._prune_expired()
+        now = datetime.now()
+        ttl = max(60, int(ttl_seconds))
+        sid = f"sess_{uuid.uuid4().hex[:12]}"
+        record = SessionRecord(
+            session_id=sid,
+            agent_id=agent_id,
+            cloud=cloud,
+            created_at=now,
+            expires_at=now + timedelta(seconds=ttl),
+            last_seen=now,
+            context=context or {},
+        )
+        self._sessions[sid] = record
+        return record.to_dict()
+
+    def get_session(self, session_id: str) -> Optional[Dict[str, Any]]:
+        self._prune_expired()
+        rec = self._sessions.get(session_id)
+        return rec.to_dict() if rec else None
+
+    def touch_session(self, session_id: str, extend_seconds: int = 300) -> Optional[Dict[str, Any]]:
+        self._prune_expired()
+        rec = self._sessions.get(session_id)
+        if not rec:
+            return None
+        now = datetime.now()
+        rec.last_seen = now
+        rec.expires_at = max(rec.expires_at, now) + timedelta(seconds=max(60, int(extend_seconds)))
+        return rec.to_dict()
+
+    def end_session(self, session_id: str) -> bool:
+        self._prune_expired()
+        return self._sessions.pop(session_id, None) is not None
+
+    def stats(self) -> Dict[str, Any]:
+        self._prune_expired()
+        by_cloud: Dict[str, int] = {}
+        for rec in self._sessions.values():
+            by_cloud[rec.cloud] = by_cloud.get(rec.cloud, 0) + 1
+        return {"active_sessions": len(self._sessions), "by_cloud": by_cloud}
+
+
 # =============================================================================
 # BASE CLOUD AGENT
 # =============================================================================
@@ -932,6 +1025,7 @@ class MultiCloudOrchestratorAgent(CloudAgent):
         self.cloud_endpoints: Dict[CloudProvider, str] = {}
         self.routing_table: Dict[str, CloudProvider] = {}
         self.failover_config: Dict[str, CloudProvider] = {}
+        self.session_manager = CloudRunSessionManager()
 
     async def process(self, event: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
         """Process orchestration request."""
@@ -961,6 +1055,36 @@ class MultiCloudOrchestratorAgent(CloudAgent):
 
             elif action == "balance_load":
                 return await self._balance_load(event)
+
+            elif action == "session_start":
+                return self.session_manager.start_session(
+                    agent_id=event.get("agent_id", "unknown"),
+                    cloud=event.get("cloud", self.cloud_config.provider.value),
+                    ttl_seconds=event.get("ttl_seconds", 1800),
+                    context=event.get("context", {}),
+                )
+
+            elif action == "session_get":
+                session_id = event.get("session_id", "")
+                record = self.session_manager.get_session(session_id)
+                if record is None:
+                    return {"error": f"Session not found: {session_id}"}
+                return record
+
+            elif action == "session_touch":
+                session_id = event.get("session_id", "")
+                record = self.session_manager.touch_session(
+                    session_id,
+                    extend_seconds=event.get("extend_seconds", 300),
+                )
+                if record is None:
+                    return {"error": f"Session not found: {session_id}"}
+                return record
+
+            elif action == "session_end":
+                session_id = event.get("session_id", "")
+                ended = self.session_manager.end_session(session_id)
+                return {"session_id": session_id, "ended": ended}
 
             else:
                 return {"error": f"Unknown action: {action}"}
@@ -1116,10 +1240,12 @@ class MultiCloudOrchestratorAgent(CloudAgent):
         }
 
     def _collect_custom_metrics(self) -> Dict[str, float]:
+        session_stats = self.session_manager.stats()
         return {
             "managed_agents": len(self.managed_agents),
             "aws_agents": len([a for a in self.managed_agents.values() if a["cloud"] == CloudProvider.AWS]),
-            "gcp_agents": len([a for a in self.managed_agents.values() if a["cloud"] == CloudProvider.GCP])
+            "gcp_agents": len([a for a in self.managed_agents.values() if a["cloud"] == CloudProvider.GCP]),
+            "active_sessions": float(session_stats.get("active_sessions", 0)),
         }
 
 
