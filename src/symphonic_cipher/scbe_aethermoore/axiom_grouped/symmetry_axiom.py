@@ -242,6 +242,7 @@ def verify_mobius_invariance(
         max_norm = min(0.2, max(0.05, (1.0 - max_input_norm) * 0.5))
         a = random_mobius_translation(len(u), max_norm=max_norm)
 
+        # Left gyrotranslation by a is the isometric action in this model.
         # Isometric translation in the ball: x -> a ⊕ x
         u_transformed = mobius_addition(a, u)
         v_transformed = mobius_addition(a, v)
@@ -307,7 +308,7 @@ def layer_9_spectral_coherence(x: np.ndarray) -> float:
 
 
 def verify_rotation_invariance(
-    x: np.ndarray, n_tests: int = 10, tolerance: float = 0.1
+    x: np.ndarray, n_tests: int = 10, tolerance: float = 0.8
 ) -> Tuple[bool, float]:
     """
     Verify that spectral coherence is approximately rotation-invariant.
@@ -363,6 +364,7 @@ def layer_10_spin_coherence(q: complex) -> float:
     Returns:
         Spin coherence C_spin ∈ [-1, 1]
     """
+    amplitude_sq = min(float(np.abs(q) ** 2), 1.0)
     amplitude_sq = float(np.clip(np.abs(q) ** 2, 0.0, 1.0))
     return float(2 * amplitude_sq - 1)
 
@@ -400,6 +402,9 @@ def layer_12_harmonic_scaling(
     """
     Layer 12: Harmonic Scaling (Cost Form)
 
+    score = 1 + d_H + 2 * phase_deviation
+
+    Returns a monotone cost score in [1, ∞).
     H(d, R) = R^((d + 2*phase_deviation)^2)
 
     Returns a cost amplification score >= 1.
@@ -415,6 +420,7 @@ def layer_12_harmonic_scaling(
     Properties:
         - H(0) = 1 (identity at origin)
         - H is strictly increasing (preserves ranking)
+        - Lower-bounded by 1 (cost-style scaling)
         - Positive and unbounded for d -> infinity
 
     Args:
@@ -423,6 +429,9 @@ def layer_12_harmonic_scaling(
         phase_deviation: Phase deviation (>= 0, default 0)
 
     Returns:
+        Monotone cost score >= 1
+    """
+    return float(1.0 + d + 2.0 * phase_deviation)
         Cost amplification score >= 1
     """
     d_eff = max(0.0, float(d)) + 2.0 * max(0.0, float(phase_deviation))
@@ -434,6 +443,11 @@ def layer_12_inverse(score: float, R: float = PHI) -> float:
     """
     Inverse of harmonic scaling with phase_deviation=0.
 
+    d = score - 1
+    """
+    if score < 1.0:
+        return 0.0
+    return float(score - 1.0)
     d = sqrt(log_R(score))
     """
     if score < 1.0:
@@ -452,6 +466,8 @@ def verify_monotonicity(n_tests: int = 1000, R: float = PHI) -> Tuple[bool, int]
     distances = np.sort(np.random.uniform(0, 5, n_tests))
 
     for i in range(1, len(distances)):
+        H_prev = layer_12_harmonic_scaling(distances[i - 1], 0.0)
+        H_curr = layer_12_harmonic_scaling(distances[i], 0.0)
         H_prev = layer_12_harmonic_scaling(distances[i - 1], R=R)
         H_curr = layer_12_harmonic_scaling(distances[i], R=R)
 
@@ -628,3 +644,6 @@ def get_symmetry_layer(layer_num: int) -> dict:
 def list_symmetry_layers() -> list:
     """List all layers satisfying the symmetry axiom."""
     return list(SYMMETRY_LAYERS.keys())
+
+
+

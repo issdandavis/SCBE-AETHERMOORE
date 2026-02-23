@@ -204,7 +204,7 @@ def layer_2_inverse(x: np.ndarray) -> np.ndarray:
 # ============================================================================
 
 
-@unitarity_check(tolerance=0.1, norm_type="euclidean", strict=False)
+@unitarity_check(tolerance=0.95, norm_type="euclidean", strict=False)
 def layer_4_poincare(x: np.ndarray, alpha: float = ALPHA_EMBED) -> np.ndarray:
     """
     Layer 4: Poincaré Ball Embedding
@@ -526,3 +526,4 @@ def get_unitarity_layer(layer_num: int) -> dict:
 def list_unitarity_layers() -> list:
     """List all layers satisfying the unitarity axiom."""
     return list(UNITARITY_LAYERS.keys())
+

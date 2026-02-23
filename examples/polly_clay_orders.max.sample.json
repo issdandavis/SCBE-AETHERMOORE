@@ -1,0 +1,42 @@
+{
+  "orders": [
+    {
+      "order_id": "max-gumroad-upload-review",
+      "workflow_id": "gumroad-polly-clay-max",
+      "source": "polly-clay-max-sample",
+      "context": {
+        "task_id": "TASK-001",
+        "change_ticket": "CHG-2026-02-21-01",
+        "human_approval_id": "APPROVED-LEAD-01"
+      },
+      "actions": [
+        {
+          "action": "navigate",
+          "target": "https://gumroad.com/products"
+        },
+        {
+          "action": "click",
+          "target": "button[aria-label='Add cover image']"
+        },
+        {
+          "action": "upload",
+          "target": "input[type='file']",
+          "value": "C:/path/to/product-image.png"
+        },
+        {
+          "action": "type",
+          "target": "textarea[name='description']",
+          "value": "Polly+Clay MAX contract test copy"
+        },
+        {
+          "action": "submit",
+          "target": "button[type='submit']"
+        },
+        {
+          "action": "screenshot",
+          "target": "full_page"
+        }
+      ]
+    }
+  ]
+}

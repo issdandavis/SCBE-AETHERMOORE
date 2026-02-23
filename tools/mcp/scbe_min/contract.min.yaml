@@ -1,0 +1,72 @@
+contract:
+  tier: MIN
+  version: 0.1.0
+  canonical_wall_formula: "H(d*,R) = R · pi^(phi · d*)"
+  required_dual_output:
+    - StateVector
+    - DecisionRecord
+  decision_actions:
+    - ALLOW
+    - QUARANTINE
+    - DENY
+
+tools:
+  - name: task.submit
+    purpose: Submit queued web task with security pre-flight gate.
+  - name: task.status
+    purpose: Fetch task status and decision context.
+  - name: browser.run_headless
+    purpose: Execute headless run with policy checks.
+  - name: browser.capture_artifact
+    purpose: Capture and register run artifacts for scanning.
+  - name: security.scan_target
+    purpose: Scan target URL/domain before execution.
+  - name: security.scan_artifact
+    purpose: Scan captured artifacts for risky indicators.
+
+resources:
+  - uri: scbe://queue/summary
+    description: Queue and run counts.
+  - uri: scbe://worker/local-health
+    description: Worker health and capacity.
+  - uri: scbe://policy/security-baseline
+    description: Security thresholds and antivirus gate state.
+  - uri: scbe://signatures/current
+    description: Active malware/phishing indicators.
+
+resource_templates:
+  - uri_template: scbe://tasks/{task_id}
+    description: Task record by ID.
+  - uri_template: scbe://runs/{run_id}/logs
+    description: Run logs by ID.
+  - uri_template: scbe://domains/{domain}/risk
+    description: Domain risk lookup.
+
+chain:
+  id: "scbe-min-browser-route"
+  name: "MIN Safe Browser Route"
+  repo: "issdandavis/SCBE-AETHERMOORE"
+  steps:
+    - id: "scan_target"
+      type: tool
+      tool: "security.scan_target"
+      input:
+        target: "${target}"
+      output_key: "scan"
+    - id: "gate"
+      type: gate
+      condition: "scan.decision == 'DENY'"
+      on_true: "deny_record"
+      on_false: "run_headless"
+    - id: "run_headless"
+      type: tool
+      tool: "browser.run_headless"
+      input:
+        target: "${target}"
+      output_key: "run"
+    - id: "deny_record"
+      type: llm
+      model: "claude-opus-4-6"
+      tongue: "KO"
+      input_from: "scan"
+      output_key: "decision_record"
