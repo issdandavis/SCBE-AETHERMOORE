@@ -1,0 +1,3 @@
+{"id":"ep-0001","egg_id":"egg-a1","world_seed":"aethermore-v1","lesson":"navigation-basics","state":{"learning":0.42,"safety":0.91,"stability":0.77,"drift":0.08},"outcome":"ALLOW","metadata":{"track":"stage1"},"timestamp":"2026-02-23T00:00:00Z"}
+{"id":"ep-0002","egg_id":"egg-a1","world_seed":"aethermore-v1","lesson":"geoseal-boundary-test","state":{"learning":0.45,"safety":0.96,"stability":0.79,"drift":0.04},"outcome":"QUARANTINE","metadata":{"track":"stage1"},"timestamp":"2026-02-23T00:10:00Z"}
+{"id":"ep-0003","egg_id":"egg-b4","world_seed":"aethermore-v1","lesson":"resource-discipline","state":{"learning":0.38,"safety":0.84,"stability":0.70,"drift":0.11},"outcome":"ALLOW","metadata":{"track":"stage1"},"timestamp":"2026-02-23T00:20:00Z"}

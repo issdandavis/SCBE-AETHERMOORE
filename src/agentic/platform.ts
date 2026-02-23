@@ -20,6 +20,8 @@ import {
   TASK_AGENT_RECOMMENDATIONS,
 } from './types';
 import { callProvider, getAvailableProviders, createProviderAttestation } from './providers';
+import { DecisionRoundabouts, GovernanceInput, RoundaboutDecision } from './roundabout-city';
+import { ExecutionDistrict } from './execution-district';
 
 /**
  * Task creation options
@@ -46,6 +48,7 @@ export type PlatformEventType =
   | 'task_started'
   | 'task_completed'
   | 'task_failed'
+  | 'governance_decided'
   | 'group_created'
   | 'group_dissolved'
   | 'agent_contribution'
@@ -70,6 +73,9 @@ export class AgenticCoderPlatform {
   private tasks: Map<string, CodingTask> = new Map();
   private groupManager: TaskGroupManager;
   private collaboration: CollaborationEngine;
+  private roundabouts: DecisionRoundabouts;
+  private executionDistrict: ExecutionDistrict;
+  private governanceTrails: Map<string, RoundaboutDecision[]> = new Map();
   private config: PlatformConfig;
   private eventListeners: ((event: PlatformEvent) => void)[] = [];
 
@@ -84,6 +90,8 @@ export class AgenticCoderPlatform {
 
     this.groupManager = new TaskGroupManager(builtInAgents);
     this.collaboration = new CollaborationEngine();
+    this.roundabouts = new DecisionRoundabouts();
+    this.executionDistrict = new ExecutionDistrict();
   }
 
   // ==================== Agent Management ====================
@@ -282,6 +290,38 @@ export class AgenticCoderPlatform {
       group = this.createGroupForTask(taskId);
     }
 
+    // Route through non-linear governance roundabouts before execution.
+    const governanceInput = this.buildGovernanceInput(task, group);
+    const governancePath = this.roundabouts.route(governanceInput);
+    this.governanceTrails.set(task.id, governancePath);
+
+    const executionTicket = this.roundabouts.createExecutionTicket(governanceInput);
+    this.emitEvent({
+      type: 'governance_decided',
+      timestamp: Date.now(),
+      data: {
+        taskId,
+        action: executionTicket.decisionRecord.action,
+        roundabout: executionTicket.decisionRecord.roundabout,
+        reason: executionTicket.decisionRecord.reason,
+      },
+    });
+
+    if (executionTicket.decisionRecord.action !== 'ALLOW') {
+      task.status = 'failed';
+      task.completedAt = Date.now();
+      this.groupManager.completeTask(group.id, false);
+      const blockedMsg = `Governance ${executionTicket.decisionRecord.action}: ${executionTicket.decisionRecord.reason}`;
+
+      this.emitEvent({
+        type: 'task_failed',
+        timestamp: Date.now(),
+        data: { taskId, error: blockedMsg, governanceAction: executionTicket.decisionRecord.action },
+      });
+
+      return { success: false, output: blockedMsg, contributions: [] };
+    }
+
     // Update task status
     task.status = 'in_progress';
     task.startedAt = Date.now();
@@ -290,63 +330,89 @@ export class AgenticCoderPlatform {
     this.emitEvent({
       type: 'task_started',
       timestamp: Date.now(),
-      data: { taskId, groupId: group.id },
+      data: {
+        taskId,
+        groupId: group.id,
+        governanceAction: executionTicket.decisionRecord.action,
+      },
     });
 
     try {
       // Use default executor if not provided
       const executeStep = executor || this.createDefaultExecutor();
 
-      // Execute collaborative workflow
-      const contributions = await this.collaboration.executeWorkflow(
-        task,
-        group,
-        this.agents,
-        executeStep
+      // Execution District enforces ALLOW-only execution and emits audit edges.
+      const districtResult = await this.executionDistrict.execute(
+        {
+          ticket: executionTicket,
+          workOrderId: task.id,
+          actionName: `task.${task.type}`,
+          payload: { taskId: task.id, groupId: group.id },
+        },
+        async () => {
+          // Execute collaborative workflow
+          const contributions = await this.collaboration.executeWorkflow(
+            task,
+            group,
+            this.agents,
+            executeStep
+          );
+
+          // Emit contribution events
+          for (const contrib of contributions) {
+            this.emitEvent({
+              type: 'agent_contribution',
+              timestamp: Date.now(),
+              data: { taskId, agentId: contrib.agentId, action: contrib.action },
+            });
+          }
+
+          // Check if consensus required for complex tasks
+          if (this.config.requireConsensus && task.complexity === 'complex') {
+            const mergedOutput = this.collaboration.mergeContributions(contributions);
+            const consensus = await this.collaboration.requestConsensus(
+              task,
+              group,
+              this.agents,
+              mergedOutput,
+              async () => ({
+                approve: true,
+                feedback: '',
+                confidence: 0.9,
+              })
+            );
+
+            this.emitEvent({
+              type: 'consensus_reached',
+              timestamp: Date.now(),
+              data: { taskId, approved: consensus.approved },
+            });
+          }
+
+          const confidence = this.collaboration.calculateGroupConfidence(contributions);
+          if (confidence < this.config.minConfidence) {
+            throw new Error(
+              `Confidence ${confidence.toFixed(2)} below threshold ${this.config.minConfidence}`
+            );
+          }
+
+          const output = this.collaboration.mergeContributions(contributions);
+          return { contributions, confidence, output };
+        }
       );
 
-      // Emit contribution events
-      for (const contrib of contributions) {
-        this.emitEvent({
-          type: 'agent_contribution',
-          timestamp: Date.now(),
-          data: { taskId, agentId: contrib.agentId, action: contrib.action },
-        });
+      if (!districtResult.success) {
+        throw new Error(districtResult.reason || 'Execution district blocked task.');
       }
 
-      // Check if consensus required for complex tasks
-      if (this.config.requireConsensus && task.complexity === 'complex') {
-        const mergedOutput = this.collaboration.mergeContributions(contributions);
-        const consensus = await this.collaboration.requestConsensus(
-          task,
-          group,
-          this.agents,
-          mergedOutput,
-          async (agent, proposal) => ({
-            approve: true,
-            feedback: '',
-            confidence: 0.9,
-          })
-        );
-
-        this.emitEvent({
-          type: 'consensus_reached',
-          timestamp: Date.now(),
-          data: { taskId, approved: consensus.approved },
-        });
-      }
-
-      // Calculate confidence
-      const confidence = this.collaboration.calculateGroupConfidence(contributions);
-
-      if (confidence < this.config.minConfidence) {
-        throw new Error(
-          `Confidence ${confidence.toFixed(2)} below threshold ${this.config.minConfidence}`
-        );
-      }
-
-      // Merge contributions into final output
-      const output = this.collaboration.mergeContributions(contributions);
+      const payload = districtResult.output as {
+        contributions: AgentContribution[];
+        confidence: number;
+        output: string;
+      };
+      const contributions = payload.contributions;
+      const confidence = payload.confidence;
+      const output = payload.output;
 
       // Update task
       task.status = 'completed';
@@ -592,3 +658,6 @@ Respond with clear, actionable output.`;
 export function createAgenticPlatform(provider: string = 'openai'): AgenticCoderPlatform {
   return new AgenticCoderPlatform({ defaultProvider: provider });
 }
+
+
+
