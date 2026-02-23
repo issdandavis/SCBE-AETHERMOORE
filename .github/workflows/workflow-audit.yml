@@ -1,0 +1,65 @@
+name: Workflow Governance Audit
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit-workflows:
+    name: Scan GitHub workflows for governance risks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run workflow audit
+        id: audit
+        run: |
+          python scripts/workflow_audit.py \
+            --workspace . \
+            --report .github/workflows/workflow-audit-report.json \
+            --summary .github/workflows/workflow-audit-summary.md
+
+      - name: Upload workflow audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: workflow-audit-report
+          path: |
+            .github/workflows/workflow-audit-report.json
+            .github/workflows/workflow-audit-summary.md
+
+      - name: Publish audit summary
+        if: always()
+        run: |
+          if [ -f .github/workflows/workflow-audit-summary.md ]; then
+            cat .github/workflows/workflow-audit-summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Open follow-up issue on high-risk findings
+        if: steps.audit.outputs.status == 'fail'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const highCount = Number("${{ steps.audit.outputs.high_count }}") || 0;
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Workflow Audit: ${highCount} high-risk CI masking issue(s) found`,
+              body: [
+                "## Workflow Governance Audit",
+                "",
+                "High-risk workflow issues were detected by the scheduled audit.",
+                "",
+                "Please review and fix masked error patterns before the next release gate.",
+                "",
+                `Output: .github/workflows/workflow-audit-report.json`,
+                "",
+                "*Automated by workflow-audit.*",
+              ].join("\n"),
+              labels: ["ci", "automation", "security"]
+            });

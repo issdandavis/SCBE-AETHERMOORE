@@ -43,13 +43,40 @@ except ImportError:
     CHACHA_AVAILABLE = False
     print("Warning: pycryptodome not installed. Install with: pip install pycryptodome")
 
-try:
-    import oqs  # liboqs-python for ML-KEM/ML-DSA
+_FORCE_SKIP_LIBOQS = os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+}
 
-    OQS_AVAILABLE = True
-except (ImportError, RuntimeError):
-    # liboqs-python not installed or shared libraries not found
+if not _FORCE_SKIP_LIBOQS:
+    try:
+        import oqs  # liboqs-python for ML-KEM/ML-DSA
+
+        OQS_AVAILABLE = True
+    except BaseException:
+        # liboqs-python not installed, shared libs missing, or bootstrap errors
+        OQS_AVAILABLE = False
+else:
     OQS_AVAILABLE = False
+
+
+def _select_kem_algorithm() -> str:
+    if not OQS_AVAILABLE:
+        return "ML-KEM-768"
+    enabled = oqs.get_enabled_kem_mechanisms()
+    return "ML-KEM-768" if "ML-KEM-768" in enabled else "Kyber768"
+
+
+def _select_sig_algorithm() -> str:
+    if not OQS_AVAILABLE:
+        return "ML-DSA-65"
+    enabled = oqs.get_enabled_sig_mechanisms()
+    return "ML-DSA-65" if "ML-DSA-65" in enabled else "Dilithium3"
+
+
+_KEM_ALG = _select_kem_algorithm()
+_SIG_ALG = _select_sig_algorithm()
 
 from .sacred_tongues import SACRED_TONGUE_TOKENIZER, SECTION_TONGUES
 
@@ -160,8 +187,8 @@ class RWPv3Protocol:
                 raise ImportError(
                     "liboqs-python required for PQC. Install with: pip install liboqs-python"
                 )
-            self.kem = oqs.KeyEncapsulation("Kyber768")  # ML-KEM-768
-            self.sig = oqs.Signature("Dilithium3")  # ML-DSA-65
+            self.kem = oqs.KeyEncapsulation(_KEM_ALG)
+            self.sig = oqs.Signature(_SIG_ALG)
 
     def _derive_key(self, password: bytes, salt: bytes) -> bytes:
         """Derive 256-bit key using Argon2id (RFC 9106)."""

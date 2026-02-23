@@ -1115,6 +1115,8 @@ export function v2ConstantSheaf<T>(
   };
 }
 
+export { v2ConstantSheaf as constantSheaf };
+
 /**
  * Threshold sheaf on a graph: edges enforce agreement above a threshold.
  * If a vertex value is below threshold, the edge restriction maps it to ⊥.

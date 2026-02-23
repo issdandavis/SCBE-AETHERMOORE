@@ -1,0 +1,72 @@
+{
+  "include_globs": [
+    "agents/**/*.py",
+    "api/**/*.py",
+    "docs/**/*.md",
+    "mcp/**/*",
+    "packages/**/*",
+    "scripts/**/*",
+    "services/**/*",
+    "src/**/*",
+    "tests/**/*",
+    "training/**/*.json",
+    "training/**/*.jsonl",
+    "training/**/*.md",
+    "*.md",
+    "*.ps1",
+    "*.py",
+    "*.ts",
+    "*.tsx",
+    "*.js",
+    "*.mjs",
+    "*.cjs",
+    "*.yml",
+    "*.yaml"
+  ],
+  "exclude_globs": [
+    ".git/**",
+    ".venv/**",
+    "node_modules/**",
+    "**/__pycache__/**",
+    ".pytest_cache/**",
+    ".mypy_cache/**",
+    ".ruff_cache/**",
+    "artifacts/**",
+    "training/runs/**",
+    "*.zip"
+  ],
+  "watch_interval_seconds": 120,
+  "keep_runs": 40,
+  "dedupe_uploads": true,
+  "dedupe_history_limit": 200,
+  "shipping": {
+    "hf": {
+      "enabled": false,
+      "repo_id": "",
+      "path_prefix": "local-workspace-sync"
+    },
+    "github": {
+      "enabled": true,
+      "repo": "",
+      "release_prefix": "local-workspace-sync"
+    },
+    "dropbox": {
+      "enabled": true,
+      "use_api": false,
+      "base_path": "/SCBE/local-workspace-sync",
+      "base_dir": ""
+    },
+    "adobe": {
+      "enabled": true,
+      "base_dir": ""
+    },
+    "gdrive": {
+      "enabled": true,
+      "base_dir": ""
+    },
+    "proton": {
+      "enabled": true,
+      "base_dir": ""
+    }
+  }
+}

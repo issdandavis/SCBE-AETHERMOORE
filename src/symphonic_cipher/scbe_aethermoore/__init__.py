@@ -714,6 +714,9 @@ from .cymatic_storage import (
     HolographicQRCube,
 )
 
+# Utility Logging
+from .util_logging import get_logger
+
 # Extend __all__ with new AETHERMOORE modules
 __all__.extend(
     [
@@ -780,5 +783,7 @@ __all__.extend(
         "Voxel",
         "KDTree",
         "HolographicQRCube",
+        # Utility Logging
+        "get_logger",
     ]
 )

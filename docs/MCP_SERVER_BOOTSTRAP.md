@@ -31,10 +31,37 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\enable_mcp_servers.ps1
 ```powershell
 pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\enable_mcp_servers.ps1 -Servers @(
   "fetch",
+  "github",
+  "scbe",
   "power-cloud-architect-fetch",
   "power-postman-postman"
 )
 ```
+
+## GitHub MCP server (local container)
+
+Workspace `.mcp.json` now includes a `github` MCP entry backed by:
+
+- `ghcr.io/github/github-mcp-server`
+- default mode: read-only (`GITHUB_READ_ONLY=1`)
+- dynamic toolsets enabled (`GITHUB_DYNAMIC_TOOLSETS=1`)
+
+Set a PAT in your environment before starting MCP hosts:
+
+```powershell
+$env:GITHUB_PAT = "<your_github_pat>"
+```
+
+Source repo reference: `git@github.com:github/github-mcp-server.git`
+
+## SCBE local MCP server
+
+Workspace `.mcp.json` includes a local `scbe` MCP server:
+
+- command: `node C:\Users\issda\SCBE-AETHERMOORE\mcp\scbe-server\server.mjs`
+- tools: tokenizer + map room handoff I/O
+
+If you run from user-level MCP config (`~/.kiro/settings/mcp.json`), add the same server block there or use the command snippet in the Map Room handoff.
 
 3. Do a dry run first if you want:
 

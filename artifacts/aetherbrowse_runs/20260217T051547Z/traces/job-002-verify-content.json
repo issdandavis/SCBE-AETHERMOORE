@@ -1,0 +1,112 @@
+{
+  "request": {
+    "payload": {
+      "actions": [
+        {
+          "action": "navigate",
+          "target": "https://example.com",
+          "timeout_ms": 12000
+        },
+        {
+          "action": "extract",
+          "target": "h1",
+          "timeout_ms": 12000
+        },
+        {
+          "action": "screenshot",
+          "target": "full_page",
+          "timeout_ms": 12000
+        }
+      ],
+      "session_id": "verify-session-1",
+      "source": "swarm",
+      "workflow_id": "wf-market-scan",
+      "run_id": "run-002",
+      "dry_run": false
+    },
+    "risk_tier": "REFLEX",
+    "verify": {
+      "must_contain": [
+        "Example Domain"
+      ],
+      "selectors_present": [
+        "h1"
+      ],
+      "max_redirects": 3
+    }
+  },
+  "response": {
+    "status": "success",
+    "session_id": "verify-session-1",
+    "total_actions": 3,
+    "executed_actions": 3,
+    "blocked_actions": 0,
+    "results": [
+      {
+        "action": "navigate",
+        "target": "https://example.com",
+        "success": true,
+        "containment": {
+          "decision": "ALLOW",
+          "radius": 0.46211716532707214,
+          "hyperbolic_distance": 1.0000000205151902,
+          "risk_score": 0.24612762141541497,
+          "safe_radius": 0.92,
+          "message": "ALLOWED: Safe operation (risk=0.2461, radius=0.4621)"
+        },
+        "data": {
+          "url": "https://example.com/"
+        },
+        "error": null,
+        "execution_ms": 1659.961462020874
+      },
+      {
+        "action": "extract",
+        "target": "h1",
+        "success": true,
+        "containment": {
+          "decision": "ALLOW",
+          "radius": 0.46211716532707214,
+          "hyperbolic_distance": 1.0000000205151902,
+          "risk_score": 0.24612762141541497,
+          "safe_radius": 0.92,
+          "message": "ALLOWED: Safe operation (risk=0.2461, radius=0.4621)"
+        },
+        "data": {
+          "text": "Example Domain",
+          "length": 14
+        },
+        "error": null,
+        "execution_ms": 85.30354499816895
+      },
+      {
+        "action": "screenshot",
+        "target": "full_page",
+        "success": true,
+        "containment": {
+          "decision": "ALLOW",
+          "radius": 0.46211716532707214,
+          "hyperbolic_distance": 1.0000000205151902,
+          "risk_score": 0.24612762141541497,
+          "safe_radius": 0.92,
+          "message": "ALLOWED: Safe operation (risk=0.2461, radius=0.4621)"
+        },
+        "data": {
+          "screenshot": "iVBORw0KGgoAAAANSUhEUgAABQAAAALQCAIAAABAH0oBAAAQAElEQVR4nOzdb4hVh53w8dOyj6GPkaWaxM5DM0OeaVgSy9pQHBaS...",
+          "width": 1280,
+          "height": 720,
+          "full_data_length": 10403
+        },
+        "error": null,
+        "execution_ms": 48.89702796936035
+      }
+    ],
+    "trace": "v1_browse_verify-session-1_3exec_0block",
+    "integration": {
+      "provider": "swarm",
+      "workflow_id": "wf-market-scan",
+      "run_id": "run-002",
+      "user": "n8n"
+    }
+  }
+}

@@ -190,19 +190,18 @@ class TestLayerIntegration:
 
     @pytest.mark.skipif(not SCBE_AVAILABLE, reason="SCBE not available")
     def test_layer_12_harmonic_scaling(self):
-        """Test Layer 12: Harmonic scaling amplification."""
+        """Test Layer 12: Harmonic scaling (safety score)."""
         position = np.array([1.0, 2.0, 3.0, 5.0, 8.0, 13.0])
         result = scbe_14layer_pipeline(
             t=position, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
         )
 
-        # H = R^(d_star²), default R=10.0 for strong super-exponential growth
-        R = 10.0
-        expected_H = R ** (result["d_star"] ** 2)
-        assert np.isclose(result["H"], expected_H, rtol=0.1)
+        # H = 1/(1 + d_star + 2*phase_deviation) — safety score in (0, 1]
+        H = result["H"]
+        assert 0 < H <= 1.0, f"H must be in (0, 1], got {H}"
 
-        # risk_prime = risk_base × H
-        expected_risk_prime = result["risk_base"] * result["H"]
+        # risk_prime = risk_base / H (lower safety → higher risk)
+        expected_risk_prime = result["risk_base"] / H
         assert np.isclose(result["risk_prime"], expected_risk_prime, rtol=0.1)
 
     @pytest.mark.skipif(not SCBE_AVAILABLE, reason="SCBE not available")

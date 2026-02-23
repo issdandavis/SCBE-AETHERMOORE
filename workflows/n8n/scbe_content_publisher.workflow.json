@@ -1,0 +1,317 @@
+{
+  "name": "SCBE Content Publisher — Multi-Platform with Governance",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "scbe-publish",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook_trigger",
+      "name": "Webhook: Publish Request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-800, 200],
+      "webhookId": "scbe-publish-001"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "minutes", "minutesInterval": 30 }]
+        }
+      },
+      "id": "schedule_trigger",
+      "name": "Schedule: Process Queue",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-800, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8001/v1/governance/scan",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-API-Key", "value": "={{ $env.SCBE_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "content", "value": "={{ $json.text }}" },
+            { "name": "platforms", "value": "={{ $json.platforms }}" },
+            { "name": "scan_mode", "value": "full" }
+          ]
+        },
+        "options": { "timeout": 10000 }
+      },
+      "id": "governance_scan",
+      "name": "Semantic Antivirus Scan",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-500, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false },
+          "conditions": [
+            {
+              "id": "gov_check",
+              "leftValue": "={{ $json.governance_decision }}",
+              "rightValue": "DENY",
+              "operator": { "type": "string", "operation": "notEquals" }
+            }
+          ]
+        }
+      },
+      "id": "governance_gate",
+      "name": "Governance Gate",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [-200, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8001/v1/tongue/encode",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-API-Key", "value": "={{ $env.SCBE_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "text", "value": "={{ $json.text }}" },
+            { "name": "tongue", "value": "={{ $json.tongue || 'KO' }}" },
+            { "name": "seal", "value": "={{ $json.geoseal || false }}" }
+          ]
+        },
+        "options": { "timeout": 5000 }
+      },
+      "id": "tongue_encode",
+      "name": "Tongue Encode (Optional)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [100, 100],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.twitter.com/2/tweets",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"text\": \"{{ $json.text }}\" }",
+        "options": { "timeout": 15000 }
+      },
+      "id": "twitter_post",
+      "name": "Post to Twitter/X",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [400, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://bsky.social/xrpc/com.atproto.repo.createRecord",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer {{ $env.BLUESKY_ACCESS_TOKEN }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"repo\": \"{{ $env.BLUESKY_DID }}\", \"collection\": \"app.bsky.feed.post\", \"record\": { \"$type\": \"app.bsky.feed.post\", \"text\": \"{{ $json.text }}\", \"createdAt\": \"{{ $now.toISO() }}\" } }",
+        "options": { "timeout": 15000 }
+      },
+      "id": "bluesky_post",
+      "name": "Post to Bluesky",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [400, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.MASTODON_INSTANCE }}/api/v1/statuses",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer {{ $env.MASTODON_TOKEN }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "status", "value": "={{ $json.text }}" }
+          ]
+        },
+        "options": { "timeout": 15000 }
+      },
+      "id": "mastodon_post",
+      "name": "Post to Mastodon",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [400, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.github.com/repos/={{ $env.GITHUB_REPO }}/issues",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer {{ $env.GITHUB_TOKEN }}" },
+            { "name": "X-GitHub-Api-Version", "value": "2022-11-28" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"title\": \"{{ $json.title || 'SCBE Agent Post' }}\", \"body\": \"{{ $json.text }}\", \"labels\": [\"scbe-agent\", \"automated\"] }",
+        "options": { "timeout": 15000 }
+      },
+      "id": "github_post",
+      "name": "Post to GitHub",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [400, 600]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8001/v1/telemetry/post-result",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-API-Key", "value": "={{ $env.SCBE_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "platform", "value": "={{ $json.platform }}" },
+            { "name": "success", "value": "={{ $json.statusCode < 400 }}" },
+            { "name": "post_url", "value": "={{ $json.html_url || $json.uri || '' }}" },
+            { "name": "timestamp", "value": "={{ $now.toISO() }}" }
+          ]
+        }
+      },
+      "id": "telemetry_log",
+      "name": "Log to SCBE Telemetry",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [700, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"blocked\", \"reason\": \"governance_deny\", \"risk_score\": {{ $json.risk_score || 0 }} }"
+      },
+      "id": "blocked_response",
+      "name": "Respond: Blocked",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [100, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"published\", \"platforms\": {{ JSON.stringify($json.platforms) }} }"
+      },
+      "id": "success_response",
+      "name": "Respond: Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [900, 200]
+    }
+  ],
+  "connections": {
+    "Webhook: Publish Request": {
+      "main": [
+        [{ "node": "Semantic Antivirus Scan", "type": "main", "index": 0 }]
+      ]
+    },
+    "Schedule: Process Queue": {
+      "main": [
+        [{ "node": "Semantic Antivirus Scan", "type": "main", "index": 0 }]
+      ]
+    },
+    "Semantic Antivirus Scan": {
+      "main": [
+        [{ "node": "Governance Gate", "type": "main", "index": 0 }]
+      ]
+    },
+    "Governance Gate": {
+      "main": [
+        [
+          { "node": "Post to Twitter/X", "type": "main", "index": 0 },
+          { "node": "Post to Bluesky", "type": "main", "index": 0 },
+          { "node": "Post to Mastodon", "type": "main", "index": 0 },
+          { "node": "Post to GitHub", "type": "main", "index": 0 }
+        ],
+        [{ "node": "Respond: Blocked", "type": "main", "index": 0 }]
+      ]
+    },
+    "Post to Twitter/X": {
+      "main": [
+        [{ "node": "Log to SCBE Telemetry", "type": "main", "index": 0 }]
+      ]
+    },
+    "Post to Bluesky": {
+      "main": [
+        [{ "node": "Log to SCBE Telemetry", "type": "main", "index": 0 }]
+      ]
+    },
+    "Post to Mastodon": {
+      "main": [
+        [{ "node": "Log to SCBE Telemetry", "type": "main", "index": 0 }]
+      ]
+    },
+    "Post to GitHub": {
+      "main": [
+        [{ "node": "Log to SCBE Telemetry", "type": "main", "index": 0 }]
+      ]
+    },
+    "Log to SCBE Telemetry": {
+      "main": [
+        [{ "node": "Respond: Success", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "tags": [
+    { "name": "scbe" },
+    { "name": "content-publishing" },
+    { "name": "governance" }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "scbe_version": "3.0.0",
+    "description": "Multi-platform content publishing with SCBE 14-layer governance. Webhook receives post requests, scans through semantic antivirus, then publishes to Twitter/Bluesky/Mastodon/GitHub with telemetry logging."
+  }
+}

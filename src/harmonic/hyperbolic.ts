@@ -127,6 +127,15 @@ function sub(u: number[], v: number[]): number[] {
  * @returns Hyperbolic distance
  */
 export function hyperbolicDistance(u: number[], v: number[]): number {
+  if (u.length !== v.length) {
+    throw new RangeError('Hyperbolic distance requires vectors of equal dimension');
+  }
+
+  const weakness = detectGeometricWeakness(u, v);
+  if (weakness.kind === 'non_finite') {
+    return Number.POSITIVE_INFINITY;
+  }
+
   const diff = sub(u, v);
   const diffNormSq = normSq(diff);
   const uNormSq = normSq(u);
@@ -136,10 +145,94 @@ export function hyperbolicDistance(u: number[], v: number[]): number {
   const uFactor = Math.max(EPSILON, 1 - uNormSq);
   const vFactor = Math.max(EPSILON, 1 - vNormSq);
 
-  const arg = 1 + (2 * diffNormSq) / (uFactor * vFactor);
+  const denominator = uFactor * vFactor;
+  if (!Number.isFinite(denominator) || denominator <= EPSILON * EPSILON) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  const arg = 1 + (2 * diffNormSq) / denominator;
+  if (!Number.isFinite(arg)) {
+    return Number.POSITIVE_INFINITY;
+  }
 
   // arcosh(x) = ln(x + sqrt(x² - 1))
   return Math.acosh(Math.max(1, arg));
+}
+
+export type GeometryWeaknessKind =
+  | 'ok'
+  | 'non_finite'
+  | 'boundary_saturation'
+  | 'denominator_collapse';
+
+export interface GeometryWeaknessSignal {
+  isWeak: boolean;
+  kind: GeometryWeaknessKind;
+  score: number;
+  uNormSq: number;
+  vNormSq: number;
+}
+
+/**
+ * Detect geometric weakness signals before high-stakes routing.
+ *
+ * This is used for "spin the system" adversarial tests:
+ * - non-finite coordinate injection (NaN/Inf)
+ * - boundary saturation near ||u||≈1
+ * - denominator collapse in Layer-5 hyperbolic metric
+ */
+export function detectGeometricWeakness(
+  u: number[],
+  v: number[],
+  boundaryThreshold: number = 1 - 1e-9
+): GeometryWeaknessSignal {
+  const nonFinite = [...u, ...v].some((x) => !Number.isFinite(x));
+  if (nonFinite) {
+    return {
+      isWeak: true,
+      kind: 'non_finite',
+      score: 1.0,
+      uNormSq: Number.POSITIVE_INFINITY,
+      vNormSq: Number.POSITIVE_INFINITY,
+    };
+  }
+
+  const uNormSq = normSq(u);
+  const vNormSq = normSq(v);
+  const uFactor = Math.max(EPSILON, 1 - uNormSq);
+  const vFactor = Math.max(EPSILON, 1 - vNormSq);
+  const denominator = uFactor * vFactor;
+
+  const boundaryPressure = Math.max(uNormSq, vNormSq) / Math.max(EPSILON, boundaryThreshold * boundaryThreshold);
+  const denominatorStress = (EPSILON * EPSILON) / Math.max(EPSILON * EPSILON, denominator);
+
+  if (denominator <= EPSILON * EPSILON * 10) {
+    return {
+      isWeak: true,
+      kind: 'denominator_collapse',
+      score: Math.min(1, Math.max(boundaryPressure, denominatorStress)),
+      uNormSq,
+      vNormSq,
+    };
+  }
+
+  if (uNormSq >= boundaryThreshold * boundaryThreshold || vNormSq >= boundaryThreshold * boundaryThreshold) {
+    return {
+      isWeak: true,
+      kind: 'boundary_saturation',
+      score: Math.min(1, Math.max(boundaryPressure, denominatorStress)),
+      uNormSq,
+      vNormSq,
+    };
+  }
+
+  return {
+    isWeak: false,
+    kind: 'ok',
+    score: Math.min(1, Math.max(boundaryPressure * 0.5, denominatorStress * 0.5)),
+    uNormSq,
+    vNormSq,
+  };
 }
 
 /**
