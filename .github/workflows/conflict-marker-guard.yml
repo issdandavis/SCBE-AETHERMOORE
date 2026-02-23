@@ -1,0 +1,85 @@
+name: Conflict Marker Guard
+
+on:
+  pull_request:
+  merge_group:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  conflict-marker-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fail on unresolved merge conflict markers
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from __future__ import annotations
+          import os
+          import re
+          import subprocess
+          import sys
+
+          marker_re = re.compile(r"^(<<<<<<< .+|=======|>>>>>>> .+)$")
+          ignore_prefixes = (
+              ".git/",
+              ".venv/",
+              "node_modules/",
+              "dist/",
+              "build/",
+              "__pycache__/",
+              ".pytest_cache/",
+              ".mypy_cache/",
+          )
+          ignore_suffixes = (
+              ".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico",
+              ".pdf", ".zip", ".tar", ".gz", ".7z",
+              ".woff", ".woff2", ".ttf", ".otf",
+              ".mp3", ".mp4", ".wav", ".mov", ".avi",
+          )
+
+          proc = subprocess.run(
+              ["git", "ls-files", "-z"],
+              check=True,
+              stdout=subprocess.PIPE,
+              stderr=subprocess.PIPE,
+          )
+          files = [p for p in proc.stdout.decode("utf-8", errors="ignore").split("\x00") if p]
+          hits = []
+
+          for rel in files:
+              if rel.startswith(ignore_prefixes) or rel.endswith(ignore_suffixes):
+                  continue
+              try:
+                  with open(rel, "rb") as f:
+                      data = f.read()
+              except OSError:
+                  continue
+
+              # Skip binary-like files.
+              if b"\x00" in data:
+                  continue
+
+              text = data.decode("utf-8", errors="ignore")
+              for idx, line in enumerate(text.splitlines(), start=1):
+                  if marker_re.match(line):
+                      hits.append(f"{rel}:{idx}: {line}")
+
+          if hits:
+              print("Unresolved merge conflict markers detected:")
+              for row in hits[:200]:
+                  print(row)
+              if len(hits) > 200:
+                  print(f"... and {len(hits)-200} more")
+              sys.exit(1)
+
+          print("No unresolved merge conflict markers found.")
+          PY
