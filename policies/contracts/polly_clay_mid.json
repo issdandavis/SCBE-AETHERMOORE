@@ -1,0 +1,42 @@
+{
+  "contract_id": "POLLY_CLAY_MID_V1",
+  "risk_tier": "MID",
+  "description": "Bounded write contract for routine automation with Polly oversight.",
+  "allow_actions": [
+    "navigate",
+    "extract",
+    "screenshot",
+    "wait",
+    "scroll",
+    "click",
+    "type",
+    "select",
+    "press"
+  ],
+  "blocked_actions": [
+    "execute_js",
+    "delete",
+    "checkout",
+    "publish"
+  ],
+  "require_human_for_actions": [
+    "upload",
+    "download",
+    "submit"
+  ],
+  "require_context_keys": [],
+  "force_dry_run": false,
+  "max_clays": 4,
+  "max_actions_per_request": 8,
+  "max_actions_per_order": 40,
+  "human_on": [
+    "REVIEW",
+    "DENY",
+    "ESCALATE",
+    "QUARANTINE"
+  ],
+  "hitl": {
+    "require_snapshot_on_escalation": true,
+    "auto_open_browser": false
+  }
+}

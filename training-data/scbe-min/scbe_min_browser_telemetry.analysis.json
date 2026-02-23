@@ -1,0 +1,34 @@
+{
+  "generated_at_utc": "2026-02-21T03:03:10+00:00",
+  "rows": 1,
+  "decision_counts": {
+    "ALLOW": 1,
+    "QUARANTINE": 0,
+    "DENY": 0
+  },
+  "deny_ratio": 0.0,
+  "quarantine_ratio": 0.0,
+  "click_offset_p95_px": 16.2788,
+  "click_offset_max_px": 16.2788,
+  "rounded_decimal_risk": {
+    "observed": true,
+    "min_precision_digits": 3,
+    "sample_count": 1
+  },
+  "next_steps": [
+    {
+      "priority": "P1",
+      "issue": "High click drift",
+      "action": "Enable pre-click recenter, viewport stabilization, and selector confidence gating",
+      "metric": "click_offset_p95_px=16.2788"
+    },
+    {
+      "priority": "P1",
+      "issue": "Low precision serialization observed",
+      "action": "Run targeted rounded-decimal adversarial test suite using real production traces",
+      "metric": "min_precision_digits=3"
+    }
+  ],
+  "source": "C:\\Users\\issda\\SCBE-AETHERMOORE\\artifacts\\scbe_min\\telemetry\\events.jsonl",
+  "output_dataset": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\scbe-min\\scbe_min_browser_telemetry.jsonl"
+}
