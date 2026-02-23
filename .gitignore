@@ -93,15 +93,12 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
-shopify/aethermoore-creator-os
-training/runs/wiki_git_ingest/
 
-# Claude IDE WAL/SHM temp files
-.claude-ide-pads.db-shm
-.claude-ide-pads.db-wal
-
-# Code Prism artifacts (regeneratable)
-artifacts/code_prism/
-
-# Connector health reports (regeneratable)
-artifacts/connector_health/
+# Local run outputs (do not commit)
+artifacts/playwright-both-side/
+artifacts/nonbinary_kernel/
+artifacts/scbe_min/
+artifacts/system-audit/
+demo/training_output/
+training/runs/
+scripts/*.bak

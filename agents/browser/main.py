@@ -210,6 +210,7 @@ class N8nBrowseAction(BaseModel):
     target: str = Field(..., description="URL, CSS selector, or direction.")
     value: Optional[str] = None
     timeout_ms: Optional[int] = Field(None, ge=1000, le=60000)
+    include_full_data: bool = Field(False, description="Include full screenshot payload for HITL inspection")
 
     @field_validator("target")
     @classmethod
@@ -295,6 +296,7 @@ class BrowseAction(BaseModel):
     target: str = Field(..., description="URL, CSS selector, or scroll direction")
     value: Optional[str] = Field(None, description="Text to type (for TYPE action)")
     timeout_ms: Optional[int] = Field(None, ge=1000, le=60000)
+    include_full_data: bool = Field(False, description="Include full screenshot payload for HITL inspection")
 
     @field_validator('target')
     @classmethod
@@ -459,8 +461,10 @@ async def execute_action(
             selector=action.target if action.target != "full_page" else None,
             timeout_ms=action.timeout_ms
         )
+        encoded = screenshot.to_base64()
         return {
-            "screenshot": screenshot.to_base64()[:100] + "...",  # Truncated for response
+            "screenshot": encoded if action.include_full_data else encoded[:100] + "...",
+            "truncated": not action.include_full_data,
             "width": screenshot.width,
             "height": screenshot.height,
             "full_data_length": len(screenshot.data)
@@ -603,7 +607,13 @@ async def n8n_browse(
     containment pipeline as /v1/browse.
     """
     normalized = [
-        BrowseAction(action=action.action, target=action.target, value=action.value, timeout_ms=action.timeout_ms)
+        BrowseAction(
+            action=action.action,
+            target=action.target,
+            value=action.value,
+            timeout_ms=action.timeout_ms,
+            include_full_data=action.include_full_data,
+        )
         for action in request.actions
     ]
     browse_request = BrowseRequest(actions=normalized, session_id=request.session_id, dry_run=request.dry_run)

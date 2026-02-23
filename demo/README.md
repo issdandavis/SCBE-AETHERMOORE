@@ -1,4 +1,72 @@
-# SCBE Secure Bank Demo
+# SCBE-AETHERMOORE Demos
+
+---
+
+## Aethermoor Character Creator + Origin Forge
+
+### Quick Start
+```bash
+python demo/play_aethermoor.py
+```
+
+### Controls
+- `Enter`: Start the run
+- `1-7`: Choose an action in scene
+- `o`: Open Origin Forge (show current party origin cards)
+- `q`: Quit and save training data
+
+### What It Generates
+- Choice-aligned SFT records
+- Companion-disagreement DPO records
+- Deterministic origin cards for active party members
+- Origin-to-SFT records for companion backstory grounding
+
+Files are written to `demo/training_output/`:
+- `sft_aethermoor_<hash>.jsonl`
+- `dpo_aethermoor_<hash>.jsonl`
+- `origins_aethermoor_<hash>.json`
+- `origin_sft_aethermoor_<hash>.jsonl`
+
+### Standalone Origin Builder
+```bash
+python demo/create_origins.py --names Polly Clay Aria
+```
+
+Optional flags:
+- `--seed <value>`: deterministic seed override
+- `--out-dir <path>`: output directory override
+
+---
+
+## Train Your AI - SCBE Governance Demo
+
+### Quick Start
+```bash
+streamlit run demo/train_your_ai.py
+```
+
+### What This Is
+A playable AI governance adventure game where your choices train a real AI model.
+Every decision generates SFT training data in HuggingFace-compatible format.
+
+### How It Works
+1. Play through governance scenarios (54 scenes, 24 endings)
+2. Your choices are recorded as instruction/response training pairs
+3. Export as JSONL for fine-tuning on HuggingFace
+4. Watch your AI companion level up as you play
+
+### Tech Stack
+- Streamlit (UI)
+- Twee/Twine game format (content)
+- SCBE-AETHERMOORE 14-layer governance (framework)
+
+### Files
+- `train_your_ai.py` -- Streamlit app (fully self-contained)
+- `governance_simulator.twee` -- Game data (54 scenes, Twee/Twine format)
+
+---
+
+## SCBE Secure Bank Demo
 
 A visual demonstration of the SCBE-AETHERMOORE 14-layer security system protecting financial transactions.
 

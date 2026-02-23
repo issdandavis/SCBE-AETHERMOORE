@@ -21,42 +21,25 @@ Components:
 - Ledger: SQLite-based action/decision history
 - Spectral: Graph Fourier analysis for anomaly detection
 - Consensus: Byzantine fault-tolerant voting
-
-Usage:
-    # Terminal pipe interface
-    echo '{"action": "navigate", "url": "https://example.com"}' | hydra
-
-    # Python API
-    from hydra import HydraSpine
-    spine = HydraSpine()
-    await spine.execute({"action": "navigate", "url": "..."})
-
-    # Any AI can wear the armor
-    from hydra import HydraHead
-    head = HydraHead(ai_type="claude", model="opus")
-    await head.connect(spine)
-
-    # Run spectral analysis
-    from hydra import GraphFourierAnalyzer, analyze_hydra_system
-    gfss = GraphFourierAnalyzer()
-    anomalies = await analyze_hydra_system(librarian, gfss)
-
-    # Byzantine consensus
-    from hydra import ByzantineConsensus, RoundtableConsensus
-    consensus = RoundtableConsensus()
-    result = await consensus.roundtable_consensus(...)
 """
 
 from .spine import HydraSpine
 from .head import HydraHead, create_claude_head, create_codex_head, create_gpt_head, create_local_head
 from .limbs import BrowserLimb, TerminalLimb, APILimb, MultiTabBrowserLimb
 from .librarian import Librarian, MemoryQuery, MemoryResult
+from .arxiv_retrieval import (
+    ArxivClient,
+    ArxivSearchResult,
+    ArxivPaper,
+    AI2AIRetrievalService,
+    ArxivAPIError,
+)
 from .ledger import Ledger, LedgerEntry, EntryType
 from .spectral import (
     GraphFourierAnalyzer,
     ByzantineDetector,
     SpectralAnomaly,
-    analyze_hydra_system
+    analyze_hydra_system,
 )
 from .consensus import (
     ByzantineConsensus,
@@ -64,7 +47,7 @@ from .consensus import (
     Vote,
     Proposal,
     ConsensusResult,
-    VoteDecision
+    VoteDecision,
 )
 from .websocket_manager import (
     WebSocketManager,
@@ -72,7 +55,7 @@ from .websocket_manager import (
     SubscriptionChannel,
     ClientState,
     create_websocket_manager,
-    run_websocket_server
+    run_websocket_server,
 )
 from .swarm_governance import (
     SwarmGovernance,
@@ -83,7 +66,7 @@ from .swarm_governance import (
     AutonomousCodeAgent,
     create_swarm_governance,
     create_autonomous_coder,
-    simulate_swarm_attack
+    simulate_swarm_attack,
 )
 from .switchboard import Switchboard
 from .research import (
@@ -120,10 +103,15 @@ __all__ = [
     "TerminalLimb",
     "APILimb",
     "MultiTabBrowserLimb",
-    # Memory
+    # Memory + Retrieval
     "Librarian",
     "MemoryQuery",
     "MemoryResult",
+    "ArxivClient",
+    "ArxivSearchResult",
+    "ArxivPaper",
+    "AI2AIRetrievalService",
+    "ArxivAPIError",
     "Ledger",
     "LedgerEntry",
     "EntryType",

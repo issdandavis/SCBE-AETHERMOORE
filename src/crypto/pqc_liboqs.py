@@ -81,6 +81,23 @@ def _select_sig_algorithm() -> str:
 _KEM_ALG = _select_kem_algorithm()
 _SIG_ALG = _select_sig_algorithm()
 
+def _enabled_signature_mechanisms() -> set[str]:
+    """Return enabled liboqs signature mechanisms when available."""
+    if not LIBOQS_AVAILABLE:
+        return set()
+    getter = getattr(oqs, "get_enabled_sig_mechanisms", None)
+    if callable(getter):
+        return set(getter())
+    return {"Dilithium3"}
+
+
+def _select_mldsa_algorithm() -> Optional[str]:
+    """Prefer standardized ML-DSA naming, fallback to Dilithium alias."""
+    enabled = _enabled_signature_mechanisms()
+    for candidate in ("ML-DSA-65", "Dilithium3"):
+        if candidate in enabled:
+            return candidate
+    return None
 
 def is_liboqs_available() -> bool:
     """Check if real liboqs is available."""
@@ -242,8 +259,19 @@ class MLDSA65:
         """
         self._using_real = LIBOQS_AVAILABLE
         self._seed = seed or os.urandom(32)
+        self._algorithm: Optional[str] = None
 
         if self._using_real:
+            # Use real liboqs (ML-DSA-65 preferred, Dilithium3 fallback).
+            self._algorithm = _select_mldsa_algorithm()
+            if self._algorithm is None:
+                self._using_real = False
+            else:
+                self._sig = oqs.Signature(self._algorithm)
+                self._public_key = self._sig.generate_keypair()
+                self._secret_key = self._sig.export_secret_key()
+
+        if not self._using_real:
             # Use real liboqs
             self._sig = oqs.Signature(_SIG_ALG)
             self._public_key = self._sig.generate_keypair()
@@ -277,11 +305,11 @@ class MLDSA65:
         """
         if self._using_real:
             return self._sig.sign(message)
-        else:
-            # Fallback: HMAC-SHA512 signature simulation
-            sig_core = hmac.new(self._secret_key[:32], message, hashlib.sha512).digest()
-            # Pad to approximate real signature size
-            return sig_core + os.urandom(MLDSA65_SIG_LEN - 64)
+
+        # Fallback: HMAC-SHA512 signature simulation
+        sig_core = hmac.new(self._secret_key[:32], message, hashlib.sha512).digest()
+        # Pad to approximate real signature size
+        return sig_core + os.urandom(MLDSA65_SIG_LEN - 64)
 
     def verify(self, message: bytes, signature: bytes) -> bool:
         """
@@ -296,12 +324,10 @@ class MLDSA65:
         """
         if self._using_real:
             return self._sig.verify(message, signature, self._public_key)
-        else:
-            # Fallback: verify HMAC-SHA512 signature
-            expected_core = hmac.new(
-                self._secret_key[:32], message, hashlib.sha512
-            ).digest()
-            return hmac.compare_digest(expected_core, signature[:64])
+
+        # Fallback: verify HMAC-SHA512 signature
+        expected_core = hmac.new(self._secret_key[:32], message, hashlib.sha512).digest()
+        return hmac.compare_digest(expected_core, signature[:64])
 
     @classmethod
     def from_keypair(cls, keypair: MLDSAKeyPair) -> "MLDSA65":
@@ -311,12 +337,17 @@ class MLDSA65:
         instance._public_key = keypair.public_key
         instance._secret_key = keypair.secret_key
         instance._seed = None
+        instance._algorithm = None
 
         if instance._using_real:
+            instance._algorithm = _select_mldsa_algorithm()
+            if instance._algorithm is None:
+                instance._using_real = False
+            else:
+                instance._sig = oqs.Signature(instance._algorithm)
             instance._sig = oqs.Signature(_SIG_ALG)
 
         return instance
-
 
 # =============================================================================
 # DUAL LATTICE CONSENSUS HELPERS
@@ -421,3 +452,5 @@ def run_pqc_diagnostics():
 
 if __name__ == "__main__":
     run_pqc_diagnostics()
+
+
