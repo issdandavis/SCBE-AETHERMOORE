@@ -1,0 +1,57 @@
+[
+  {
+    "id": "x-thread-01",
+    "channel": "x",
+    "title": "SCBE Build Thread",
+    "text": "We cleaned and hardened the SCBE pipeline top-to-bottom. Next: n8n-powered X + merch automation, real dispatch logs, and governed retriggers. Thread starts here.",
+    "cta": "Follow for build logs + live automation drops.",
+    "offer_path": "/offers/scbe-autopilot",
+    "intent": "launch_thread",
+    "hashtags": [
+      "#buildinpublic",
+      "#automation",
+      "#n8n",
+      "#indiehacker"
+    ]
+  },
+  {
+    "id": "x-thread-02",
+    "channel": "x",
+    "title": "Dispatcher Upgrade",
+    "text": "Dispatch payloads now include full post metadata. That unlocks reply routing, merch actions, and cleaner analytics in one webhook path.",
+    "cta": "Reply with your stack; we’ll publish a template.",
+    "offer_path": "/offers/scbe-connectors",
+    "intent": "technical_update"
+  },
+  {
+    "id": "x-reply-01",
+    "channel": "x_reply",
+    "title": "Reply Queue - Questions",
+    "text": "Appreciate the question. We route this through claim gate + approval before posting so each answer is source-backed and reusable.",
+    "cta": "Drop your use case and we’ll map it.",
+    "offer_path": "/offers/scbe-audit",
+    "reply_to_id": "",
+    "intent": "engage_reply"
+  },
+  {
+    "id": "merch-sale-01",
+    "channel": "merch_sale",
+    "title": "Merch Promo - Creator Pack",
+    "text": "New Creator Ops Pack is live: templates for posting, replies, and conversion loops across X + n8n.",
+    "cta": "Get the pack.",
+    "offer_path": "/shop/creator-ops-pack",
+    "sku": "CREATOR-OPS-001",
+    "intent": "promo_sale"
+  },
+  {
+    "id": "merch-upload-01",
+    "channel": "merch_upload",
+    "title": "Catalog Sync",
+    "text": "Syncing new product assets and descriptions to storefront channels.",
+    "cta": "Catalog update event",
+    "offer_path": "/shop",
+    "asset_batch": "drop-2026-02-23",
+    "intent": "catalog_upload"
+  }
+]
+
