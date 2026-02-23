@@ -1,107 +1,168 @@
-# Kiro MCP Manager - Sensitive configuration files
-.kiro/settings/
+# =============================================================================
+# SCBE-AETHERMOORE PUBLIC REPO .gitignore
+# =============================================================================
+# This file ensures private/sensitive content stays out of the public repo.
+# Companion private repo: https://github.com/issdandavis/SCBE-private
+# =============================================================================
 
-# Performance test evidence files (hardware-specific)
-docs/evidence/*.json
+# ---------------------------------------------------------------------------
+# PRIVATE DATA — synced to SCBE-private repo instead
+# ---------------------------------------------------------------------------
 
+# Training data (SFT pairs, JSONL datasets, game sessions, audio stems)
+training-data/
+
+# Training pipeline (raw lore drops, ingest files, verbatim files, runs)
+training/
+
+# ---------------------------------------------------------------------------
+# Secrets and environment files
+# ---------------------------------------------------------------------------
+.env
+.env.*
+!.env.template
+!.env.example
+deploy/.env
+deploy/.env.*
+!deploy/.env.template
+
+# AWS / cloud credentials
+trust-policy.json
+credentials.json
+*.pem
+*.key
+
+# ---------------------------------------------------------------------------
+# Audio / binary / large files
+# ---------------------------------------------------------------------------
+*.wav
+*.mp3
+*.flac
+*.ogg
+*.aac
+*.m4a
+
+# Model weights and binary artifacts
+*.npz
+*.pkl
+*.bin
+*.onnx
+*.pt
+*.pth
+*.safetensors
+*.gguf
+
+# ---------------------------------------------------------------------------
+# Everweave exports
+# ---------------------------------------------------------------------------
+everweave_export/
+**/everweave_export/
+
+# ---------------------------------------------------------------------------
+# OneDrive / personal file paths
+# ---------------------------------------------------------------------------
+OneDrive/
+**/OneDrive/
+
+# ---------------------------------------------------------------------------
 # Python
+# ---------------------------------------------------------------------------
 __pycache__/
+**/__pycache__/
 *.pyc
 *.pyo
+*.pyd
 .coverage
 coverage.json
 htmlcov/
-
-# Hypothesis (property-based testing)
+*.egg-info/
+.pytest_cache/
+**/.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 .hypothesis/
+.venv/
+venv/
+.python-version
 
-# Test artifacts
-tests/test_telemetry_*.json
-tests/test_artifacts/
-**/test_output.txt
-
-# Local generated images
-aethermoore_aqm.png
-aethermoore_soliton.png
-
+# ---------------------------------------------------------------------------
 # Node / frontend
+# ---------------------------------------------------------------------------
 node_modules/
+**/node_modules/
 dist/
 release/
 build/
+coverage/
 *.log
 logs/
 npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
 
-# Environments / secrets
-.env
-.env.*
-.venv/
-venv/
-.python-version
+# ---------------------------------------------------------------------------
+# Test artifacts
+# ---------------------------------------------------------------------------
+**/pytest_tmp/
+artifacts/pytest_tmp/
+artifacts/test_swarm_hub/
+tests/test_telemetry_*.json
+tests/test_artifacts/
+**/test_output.txt
 
+# ---------------------------------------------------------------------------
+# Local generated images
+# ---------------------------------------------------------------------------
+aethermoore_aqm.png
+aethermoore_soliton.png
+
+# ---------------------------------------------------------------------------
 # Editors / OS
+# ---------------------------------------------------------------------------
 .dbxignore
 .vscode/
 .idea/
 .DS_Store
 Thumbs.db
-
-# Python packaging
-*.egg-info/
-.pytest_cache/
-.mypy_cache/
-
-# Test temp artifacts
-artifacts/pytest_tmp/
-artifacts/test_swarm_hub/
-
-# Local caches & databases
-.npm-cache-local/
-.npm-pack-dryrun.txt
-*.db
-!src/symphonic_cipher/**/*.db
-
-# Training runs (large model artifacts)
-training/runs/
-
-# Generated/combined training data (regeneratable via scripts/merge_and_upload.py)
-training-data/sft_combined*.jsonl
-training-data/sft_*_regen*.jsonl
-training/sft_records/sft_combined*
-training/notion_codebase_comparison.json
-
-# Pytest temp artifacts (any location)
-**/pytest_tmp/
-
-# Model weights & binary artifacts
-*.npz
-*.pkl
-
-### codex cleanup
-node_modules/
-dist/
-build/
-coverage/
-*.log
 *.tmp
 *.swp
 *.swo
-__pycache__/
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-shopify/aethermoore-creator-os
-training/runs/wiki_git_ingest/
 
-# Claude IDE WAL/SHM temp files
+# ---------------------------------------------------------------------------
+# Kiro MCP Manager
+# ---------------------------------------------------------------------------
+.kiro/settings/
+
+# ---------------------------------------------------------------------------
+# Performance test evidence (hardware-specific)
+# ---------------------------------------------------------------------------
+docs/evidence/*.json
+
+# ---------------------------------------------------------------------------
+# Local databases (except SCBE symphonic_cipher internal ones)
+# ---------------------------------------------------------------------------
+*.db
+!src/symphonic_cipher/**/*.db
+
+# ---------------------------------------------------------------------------
+# Claude IDE temp files
+# ---------------------------------------------------------------------------
 .claude-ide-pads.db-shm
 .claude-ide-pads.db-wal
 
-# Code Prism artifacts (regeneratable)
+# ---------------------------------------------------------------------------
+# Code Prism & connector health (regeneratable)
+# ---------------------------------------------------------------------------
 artifacts/code_prism/
-
-# Connector health reports (regeneratable)
 artifacts/connector_health/
+
+# ---------------------------------------------------------------------------
+# Shopify submodule (if pulled)
+# ---------------------------------------------------------------------------
+shopify/aethermoore-creator-os
+
+# ---------------------------------------------------------------------------
+# Misc generated / npm packaging
+# ---------------------------------------------------------------------------
+.npm-cache-local/
+.npm-pack-dryrun.txt

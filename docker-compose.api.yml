@@ -9,9 +9,19 @@ services:
       dockerfile: Dockerfile.api
     ports:
       - "8080:8080"
+    env_file:
+      - .env
     environment:
       - SCBE_API_KEY=${SCBE_API_KEY:-sk_test_demo_key_12345}
-      - SCBE_LOG_LEVEL=INFO
+      - SCBE_LOG_LEVEL=${SCBE_LOG_LEVEL:-INFO}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET:-}
+      - VERCEL_AI_API_KEY=${VERCEL_AI_API_KEY:-}
+      - HF_TOKEN=${HF_TOKEN:-}
+      - BROWSERBASE_API_KEY=${BROWSERBASE_API_KEY:-}
+      - BROWSERBASE_PROJECT_ID=${BROWSERBASE_PROJECT_ID:-}
+    volumes:
+      - scbe_data:/app/data
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/v1/health')"]
       interval: 30s
@@ -35,5 +45,5 @@ services:
   #   volumes:
   #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
 
-# volumes:
-#   redis_data:
+volumes:
+  scbe_data:

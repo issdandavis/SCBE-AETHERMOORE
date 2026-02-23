@@ -1,0 +1,343 @@
+###############################################################################
+# SCBE-AETHERMOORE Kernel Registry — Single Source of Truth
+# =========================================================
+# version: 2.2.0
+# patent:  USPTO #63/961,403  (priority 2026-01-15)
+# rule:    CI MUST fail if code, docs, or test vectors disagree with this file.
+###############################################################################
+
+schema: scbe-kernel-registry-v2.2.0
+
+# =============================================================================
+# NAMESPACE SEPARATION
+# Kernel Axioms (A0-A4): mathematical invariants — never change
+# Pipeline Layers (L01-L14): operational stages — versioned
+# =============================================================================
+
+namespaces:
+  kernel_axioms:
+    prefix: "A"
+    range: [0, 4]
+    description: "Physical/mathematical invariants. Immutable."
+
+  pipeline_layers:
+    prefix: "L"
+    range: [1, 14]
+    description: "Operational pipeline stages. Versioned per profile."
+
+# =============================================================================
+# FIVE QUANTUM AXIOMS (A0-A4)
+# =============================================================================
+
+axioms:
+  A0_COMPOSITION:
+    property: "Pipeline integrity — entry/exit contracts honored"
+    layers: [1, 14]
+    test: "composition_check decorator"
+
+  A1_UNITARITY:
+    property: "Metric-consistent transforms (preserves the intended norm/metric, not Euclidean norm)"
+    layers: [2, 4, 7]
+    clarification: >
+      L2 Realification is isometric under the canonical C^D -> R^2D embedding.
+      L4 Poincare Embedding is norm-bounding (tanh map), not Euclidean-preserving.
+      L7 Mobius addition is an isometry under the HYPERBOLIC metric, not Euclidean.
+    test: "unitarity_check decorator"
+
+  A2_LOCALITY:
+    property: "Spatially-bounded operations — no action at a distance"
+    layers: [3, 8]
+    test: "locality_check decorator"
+
+  A3_CAUSALITY:
+    property: "Time-ordering — no retroactive state mutation, tau_dot > 0"
+    layers: [6, 11, 13]
+    test: "causality_check decorator"
+
+  A4_SYMMETRY:
+    property: "Gauge invariance — metrics unchanged under valid transforms"
+    layers: [5, 9, 10, 12]
+    test: "symmetry_check decorator"
+
+# =============================================================================
+# THE INVARIANT (Layer 5)
+# =============================================================================
+
+invariant:
+  name: "Poincare Ball Metric"
+  formula: "d_H(u,v) = arcosh(1 + 2||u-v||^2 / ((1-||u||^2)(1-||v||^2)))"
+  axiom: A4_SYMMETRY
+  property: "Distance to boundary -> infinity. NEVER changes."
+  canonical_impl: "packages/kernel/src/hyperbolic.ts:hyperbolicDistance()"
+  python_ref: "packages/kernel/src/pipeline14.ts:layer5HyperbolicDistance()"
+
+# =============================================================================
+# HARMONIC SCALING PROFILES (the two H formulas)
+# =============================================================================
+
+harmonic_profiles:
+  L12_SCORE:
+    formula: "H(d, pd) = 1 / (1 + d + 2*pd)"
+    range: "(0, 1]"
+    role: "Safety score for 14-layer pipeline runtime (L12 -> L13)"
+    decision_logic: "L13 divides: Risk' = Risk_base / H_score"
+    canonical_impl: "packages/kernel/src/harmonicScaling.ts:harmonicScale()"
+    pipeline_impl: "packages/kernel/src/pipeline14.ts:layer12HarmonicScaling()"
+
+  L12_WALL:
+    formula: "H(d, R) = R^(d^2)"
+    R: 1.5  # Perfect Fifth
+    range: "[1.0, +inf)"
+    role: "Super-exponential security amplification / hard governance wall"
+    amplification_table:
+      d1: 1.5
+      d2: 5.06
+      d3: 38.44
+      d4: 656.84
+      d5: 25251
+      d6: 2184164
+    extended_formula: "H_eff(d, R, x) = R^(d^2 * x)"
+    temporal_intent_factor: "x(t) = f(d_tri(t), chaosdev(t), fractaldev(t), energydev(t))"
+    canonical_impl: "symphonic_cipher/harmonic_scaling_law.py"
+
+  selection_rule: >
+    Every call site MUST declare which profile it uses.
+    Pipeline runtime uses L12_SCORE.
+    Extended governance / cost amplification uses L12_WALL.
+    No implicit fallback between profiles.
+
+# =============================================================================
+# AETHERMOORE CONSTANTS
+# =============================================================================
+
+constants:
+  PHI: 1.6180339887  # Golden Ratio
+  Phi_aether: 1.3782407725
+  Lambda_isaac: 3.9270509831
+  Omega_spiral: 1.4832588477
+  Alpha_abh: 3.1180339887
+  R_harmonic: 1.5  # Perfect Fifth (for L12_WALL)
+
+# =============================================================================
+# 9D STATE VECTOR
+# =============================================================================
+
+state_vector:
+  name: "xi"
+  dimensions: 9
+  layout:
+    "xi[0..5]":
+      name: "c(t)"
+      description: "6D Context Vector"
+      components: [identity, intent_phase, trajectory_score, linear_time, commitment_hash, signature_validity]
+    "xi[6]":
+      name: "tau(t)"
+      description: "Time flow rate (7th dimension)"
+      constraint: "tau_dot > 0 (causality)"
+    "xi[7]":
+      name: "eta(t)"
+      description: "Entropy (8th dimension, Ornstein-Uhlenbeck)"
+      bounds: [2.0, 6.0]
+      target: 4.0
+      decay_rate: 0.1
+    "xi[8]":
+      name: "q(t)"
+      description: "Quantum coherence proxy (9th dimension)"
+      status: "DETERMINISTIC_PROXY"
+      note: >
+        q(t) is currently a deterministic coherence proxy: U(t)=e^(-iHt).
+        Fidelity >= 0.9 and von Neumann entropy <= 0.2 are enforced
+        against this proxy model, not a true quantum density matrix.
+        When a full quantum state model is defined, promote to q_quantum.
+
+# =============================================================================
+# BYZANTINE CONSENSUS
+# =============================================================================
+
+consensus:
+  protocol: "SwarmRaft-BFT"
+  n: 6
+  f: 1  # max Byzantine faults tolerated (f < n/3)
+  soft_quorum: 3  # 2f+1, for non-final votes (suggest, observe, status)
+  hard_quorum: 4  # 3f+1, for world-changing commits (spawn, config, actuation, durable writes)
+  vote_decisions: [ALLOW, DENY, ABSTAIN, ESCALATE]
+  signature: "HMAC-SHA256 per vote"
+  quorum_rules:
+    read_only: "soft_quorum (3/6)"
+    suggest_observe: "soft_quorum (3/6)"
+    spawn_agent: "hard_quorum (4/6)"
+    config_change: "hard_quorum (4/6)"
+    destructive_action: "hard_quorum (4/6)"
+    durable_write: "hard_quorum (4/6)"
+    emergency_shutdown: "hard_quorum (4/6)"
+
+# =============================================================================
+# SIX SACRED TONGUES
+# =============================================================================
+
+sacred_tongues:
+  vocabulary_per_tongue: 256  # 16 prefixes x 16 suffixes
+  total_tokens: 1536
+
+  tongues:
+    KO:
+      name: "Kor'aelin"
+      domain: "Flow/Intent"
+      frequency_band: "440-523 Hz"
+      paradigm: "Imperative"
+      signature: "a3f7c2e1"
+      weight: 1.0  # PHI^0
+      color: "#8B0000"  # Deep Red
+
+    AV:
+      name: "Avali"
+      domain: "Context"
+      frequency_band: "330-392 Hz"
+      paradigm: "Functional"
+      signature: "b8e4d9c3"
+      weight: 1.618  # PHI^1
+      color: "#FFBF00"  # Amber
+
+    RU:
+      name: "Runethic"
+      domain: "Binding"
+      frequency_band: "262-311 Hz"
+      paradigm: "Systems"
+      signature: "c1d5a7f2"
+      weight: 2.618  # PHI^2
+      color: "#50C878"  # Emerald
+
+    CA:
+      name: "Cassisivadan"
+      domain: "Bitcraft/Time"
+      frequency_band: "494-587 Hz"
+      paradigm: "OOP"
+      signature: "d9a2b6e8"
+      weight: 4.236  # PHI^3
+      color: "#0F52BA"  # Sapphire
+
+    UM:
+      name: "Umbroth"
+      domain: "Veil/Harmony"
+      frequency_band: "370-440 Hz"
+      paradigm: "DSL"
+      signature: "e4f1c8d7"
+      weight: 6.854  # PHI^4
+      color: "#9966CC"  # Amethyst
+
+    DR:
+      name: "Draumric"
+      domain: "Structure/Record"
+      frequency_band: "220-262 Hz"
+      paradigm: "Concurrent"
+      signature: "f7b3e5a9"
+      weight: 11.090  # PHI^5
+      color: "#3D3D3D"  # Obsidian
+
+# =============================================================================
+# SS1 ROUTING TABLE (CANONICAL)
+# =============================================================================
+
+ss1:
+  version: "SS1"
+  format: "SS1|kid=...|aad=...|salt=...|nonce=...|ct=...|tag=..."
+  sections: [aad, salt, nonce, ct, tag]
+
+  routing:
+    aad:   AV   # Avali — context
+    salt:  RU   # Runethic — binding
+    nonce: KO   # Kor'aelin — flow
+    ct:    CA   # Cassisivadan — bitcraft
+    tag:   DR   # Draumric — record
+
+  overrides: >
+    The canonical routing above is the SS1 standard.
+    Overrides are permitted ONLY with explicit annotation in the aad field:
+    aad="routing=custom;salt=KO;nonce=RU;..."
+
+# =============================================================================
+# TRUST RINGS (Poincare Ball)
+# =============================================================================
+
+trust_rings:
+  model: "Poincare Ball ||u|| < 1"
+  rings:
+    CORE:
+      radius: "r < 0.3"
+      latency: "5ms"
+      access: "Full, minimal verification"
+    INNER:
+      radius: "0.3 <= r < 0.7"
+      latency: "30ms"
+      access: "Standard verification"
+    OUTER:
+      radius: "0.7 <= r < 0.9"
+      latency: "200ms"
+      access: "Enhanced verification"
+    WALL:
+      radius: "r >= 0.9"
+      latency: "DENY"
+      access: "Rejected — boundary penalty infinite"
+
+# =============================================================================
+# GOVERNANCE DECISION CASCADE
+# =============================================================================
+
+governance:
+  function: "G(xi, i, poly) -> {ALLOW, QUARANTINE, DENY}"
+  cascade_order:
+    1: "Topology: Euler chi = V - E + F must equal 2"
+    2: "Entropy: eta in [2.0, 6.0]"
+    3: "Causality: tau_dot > 0"
+    4: "Quantum: fidelity >= 0.9, von Neumann entropy <= 0.2"
+    5: "Harmonic gate: coherence >= 0.9 AND d_tri <= 1.5 AND h_cost <= 10.0 -> ALLOW"
+    6: "Default: DENY"
+
+  modality_masks:
+    STRICT: [1, 3, 5]
+    ADAPTIVE: [1, 2, 3, 4, 5]
+    PROBE: [1]
+
+# =============================================================================
+# PQC (Post-Quantum Cryptography)
+# =============================================================================
+
+pqc:
+  kem: "ML-KEM-768 (NIST FIPS 203)"
+  dsa: "ML-DSA-65 (NIST FIPS 204)"
+  symmetric: "AES-256-GCM"
+  kdf: "HKDF-SHA256"
+  nonce_bytes: 12
+  key_bytes: 32
+  legacy_names:
+    kem: "Kyber768"
+    dsa: "Dilithium3"
+  migration_pattern: "_select_dsa_algorithm() / _select_kem_algorithm()"
+
+# =============================================================================
+# CANONICALIZATION RULES
+# =============================================================================
+
+canonicalization:
+  transcript_label: "SCBE-v2.2-transcript"
+  endianness: "big"
+  nonce_len_bytes: 12
+  key_len_bytes: 32
+  intent_hash: "sha3_256(utf8(intent_ascii))"
+  conformance_anchor: "Horadam transcript vectors"
+
+# =============================================================================
+# CI ENFORCEMENT
+# =============================================================================
+
+ci:
+  registry_check: >
+    CI MUST validate that:
+    1. All H formula call sites declare their profile (L12_SCORE or L12_WALL)
+    2. SS1 routing matches this file's routing table
+    3. Consensus thresholds match soft_quorum/hard_quorum
+    4. Sacred Tongue weights match PHI^k sequence
+    5. Trust ring boundaries match the radii above
+    6. 9D state vector layout matches xi[0..8] specification
+  health_scan: "tests/health/daily_scan.py"
+  schedule: "daily at 03:00 UTC"

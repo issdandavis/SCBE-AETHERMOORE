@@ -355,8 +355,12 @@ class AlertManager:
         self.alerts[alert.alert_id] = alert
         self.alert_history.append(alert)
 
-        # Send notifications
-        asyncio.create_task(self._notify(alert))
+        # Send notifications (only if event loop is running)
+        try:
+            loop = asyncio.get_running_loop()
+            loop.create_task(self._notify(alert))
+        except RuntimeError:
+            pass  # No running loop — skip async notification in sync context
 
         return alert
 

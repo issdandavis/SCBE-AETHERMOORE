@@ -38,6 +38,13 @@ render.yaml
 .git/
 .gitignore
 
+# Source maps — halve the tarball size
+*.js.map
+*.d.ts.map
+
+# Compiled vitest config (should never ship)
+dist/src/vitest.config.*
+
 # Build artifacts
 node_modules/
 .pytest_cache/

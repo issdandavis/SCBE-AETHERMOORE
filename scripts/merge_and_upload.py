@@ -15,10 +15,20 @@ Usage:
 """
 import argparse
 import json
+import os
 import sys
 from collections import Counter
 from pathlib import Path
 from typing import Any
+
+# Auto-load .env from project root so HF_TOKEN is available
+_env_path = Path(__file__).resolve().parent.parent / ".env"
+if _env_path.exists():
+    for _line in _env_path.read_text().splitlines():
+        _line = _line.strip()
+        if _line and not _line.startswith("#") and "=" in _line:
+            _k, _, _v = _line.partition("=")
+            os.environ.setdefault(_k.strip(), _v.strip())
 
 # System prompt for chat-style output
 SYSTEM_PROMPT = (
@@ -40,10 +50,16 @@ SFT_SOURCES = [
     "sft_notion.jsonl",
     "sft_spiralverse.jsonl",
     "sft_iseki.jsonl",
+    "sft_novel.jsonl",
+    "sft_everweave.jsonl",
     "sft_kernel_manifest.jsonl",
     "sft_codebase.jsonl",
+    "sft_codebase_new.jsonl",
     "sft_ouroboros.jsonl",
     "sft_hydra_arch.jsonl",
+    "sft_saas_live.jsonl",
+    "sft_games.jsonl",
+    "sft_spiralverse_game.jsonl",
 ]
 
 DEFAULT_LEGACY_MAX_RATIO = 0.15
@@ -63,6 +79,16 @@ FUNCTION_CATEGORIES = {
     "ml-kem",
     "ml-dsa",
     "hamiltonian-routing",
+    "action_combat",
+    "game_mechanics",
+    "mmo_chat",
+}
+
+SYSTEM_CATEGORIES = {
+    "spiralverse-lore",
+    "story_branching",
+    "dream_system",
+    "world_exploration",
 }
 
 

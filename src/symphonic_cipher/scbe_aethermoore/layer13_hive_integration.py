@@ -38,6 +38,18 @@ from .layer_13 import (
     compute_composite_risk,
 )
 
+# Canonical 21D state auditing
+try:
+    from src.harmonic.canonical_state import (
+        build_canonical_state,
+        audit_state_transition as _audit_canonical,
+        safe_origin as _canonical_safe_origin,
+        CanonicalState,
+    )
+    _CANONICAL_AVAILABLE = True
+except ImportError:
+    _CANONICAL_AVAILABLE = False
+
 # Hive Memory imports (use relative import with fallback)
 try:
     from ...spiralverse.hive_memory import (
@@ -268,6 +280,35 @@ class HiveIntegratedLayer13:
         # Store in hot memory
         if store_in_hive:
             self._store_decision(record, response.decision)
+
+        # Canonical 21D state audit (Task #3: first real callsite)
+        if _CANONICAL_AVAILABLE:
+            try:
+                before_state = _canonical_safe_origin()
+                after_state = build_canonical_state(
+                    u=[0.0] * 6,  # TODO: wire from L4 tongue embedding
+                    theta=[0.0] * 6,  # TODO: wire from L7 phase state
+                    flux_participation=0.0,
+                    coherence_spectral=float(response.risk.confidence),
+                    coherence_spin=0.0,    # TODO: wire from L10
+                    coherence_triadic=0.0,  # TODO: wire from L11
+                    risk_aggregate=float(response.risk.risk_normalized),
+                    entropy_density=0.0,
+                    stabilization=float(1.0 / (1.0 + response.risk.risk_prime)),
+                )
+                _audit_canonical(
+                    before=before_state,
+                    after=after_state,
+                    decision=response.decision.value,
+                    agent_id=self.agent_id,
+                    metadata={
+                        "d_star": components.d_star,
+                        "risk_prime": response.risk.risk_prime,
+                        "record_id": record.record_id,
+                    },
+                )
+            except Exception:
+                pass  # Audit must never break the decision path
 
         # Update statistics
         self._decision_counts[response.decision.value] += 1

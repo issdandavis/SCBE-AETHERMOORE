@@ -1,0 +1,158 @@
+/// SCBE-AETHERMOORE Crypto Domain (Runethic / RU)
+///
+/// WIT interface for the scbe:crypto domain.
+/// Handles post-quantum cryptography, key exchange, signatures,
+/// and the Spiral Seal protocol.
+///
+/// Sacred Tongue: Runethic (RU) — Systems/Binding paradigm
+/// Programming paradigm: Rust, C, Assembly (systems-level)
+///
+/// Part of SCBE-AETHERMOORE (USPTO #63/961,403)
+
+package scbe:crypto@0.1.0;
+
+/// Core cryptographic types shared across the domain.
+interface types {
+    /// A 32-byte cryptographic key.
+    type key = list<u8>;
+
+    /// A variable-length ciphertext blob.
+    type ciphertext = list<u8>;
+
+    /// A digital signature.
+    type signature = list<u8>;
+
+    /// A cryptographic nonce (24 bytes for XChaCha20).
+    type nonce = list<u8>;
+
+    /// A SHA-256 hash digest.
+    type digest = list<u8>;
+
+    /// Post-quantum algorithm identifiers.
+    enum pq-algorithm {
+        /// ML-KEM-768 (formerly Kyber768) — key encapsulation
+        ml-kem-768,
+        /// ML-KEM-1024 (formerly Kyber1024) — key encapsulation (higher security)
+        ml-kem-1024,
+        /// ML-DSA-65 (formerly Dilithium3) — digital signatures
+        ml-dsa-65,
+        /// ML-DSA-87 (formerly Dilithium5) — digital signatures (higher security)
+        ml-dsa-87,
+    }
+
+    /// Result of a key generation operation.
+    record keypair {
+        public-key: key,
+        secret-key: key,
+        algorithm: pq-algorithm,
+    }
+
+    /// Result of a key encapsulation operation (KEM).
+    record encapsulation {
+        ciphertext: ciphertext,
+        shared-secret: key,
+    }
+
+    /// Cryptographic errors.
+    enum crypto-error {
+        /// Key generation failed
+        keygen-failed,
+        /// Encryption/encapsulation failed
+        encapsulation-failed,
+        /// Decryption/decapsulation failed
+        decapsulation-failed,
+        /// Signature generation failed
+        sign-failed,
+        /// Signature verification failed
+        verify-failed,
+        /// Invalid key material
+        invalid-key,
+        /// Algorithm not supported
+        unsupported-algorithm,
+        /// Internal error
+        internal-error,
+    }
+}
+
+/// Post-quantum key encapsulation mechanism (ML-KEM).
+interface kem {
+    use types.{key, keypair, encapsulation, pq-algorithm, crypto-error};
+
+    /// Generate a new ML-KEM keypair.
+    keygen: func(algorithm: pq-algorithm) -> result<keypair, crypto-error>;
+
+    /// Encapsulate: produce (ciphertext, shared_secret) using a public key.
+    encapsulate: func(public-key: key) -> result<encapsulation, crypto-error>;
+
+    /// Decapsulate: recover shared_secret from ciphertext using secret key.
+    decapsulate: func(secret-key: key, ciphertext: list<u8>) -> result<key, crypto-error>;
+}
+
+/// Post-quantum digital signatures (ML-DSA).
+interface dsa {
+    use types.{key, keypair, signature, pq-algorithm, crypto-error};
+
+    /// Generate a new ML-DSA signing keypair.
+    keygen: func(algorithm: pq-algorithm) -> result<keypair, crypto-error>;
+
+    /// Sign a message with a secret key.
+    sign: func(secret-key: key, message: list<u8>) -> result<signature, crypto-error>;
+
+    /// Verify a signature against a public key and message.
+    verify: func(public-key: key, message: list<u8>, signature: signature) -> result<bool, crypto-error>;
+}
+
+/// Symmetric encryption (AES-256-GCM / XChaCha20-Poly1305).
+interface symmetric {
+    use types.{key, ciphertext, nonce, crypto-error};
+
+    /// Encrypt plaintext with AES-256-GCM.
+    encrypt-aes256gcm: func(key: key, nonce: nonce, plaintext: list<u8>, aad: list<u8>) -> result<ciphertext, crypto-error>;
+
+    /// Decrypt ciphertext with AES-256-GCM.
+    decrypt-aes256gcm: func(key: key, nonce: nonce, ciphertext: ciphertext, aad: list<u8>) -> result<list<u8>, crypto-error>;
+}
+
+/// Hash and HMAC operations.
+interface hashing {
+    use types.{key, digest, crypto-error};
+
+    /// Compute SHA-256 hash.
+    sha256: func(data: list<u8>) -> digest;
+
+    /// Compute HMAC-SHA256.
+    hmac-sha256: func(key: key, data: list<u8>) -> digest;
+
+    /// HKDF-SHA256 key derivation.
+    hkdf-sha256: func(ikm: key, salt: list<u8>, info: list<u8>, length: u32) -> result<key, crypto-error>;
+}
+
+/// The Spiral Seal protocol — hybrid PQC key exchange + signing.
+interface spiral-seal {
+    use types.{key, keypair, ciphertext, signature, pq-algorithm, crypto-error};
+
+    /// A Spiral Seal session containing both KEM and DSA keypairs.
+    record seal-session {
+        session-id: string,
+        kem-keypair: keypair,
+        dsa-keypair: keypair,
+    }
+
+    /// Create a new Spiral Seal session (generates both KEM + DSA keypairs).
+    create-session: func() -> result<seal-session, crypto-error>;
+
+    /// Seal a message: encrypt with ML-KEM + sign with ML-DSA.
+    seal: func(session: seal-session, recipient-public-key: key, message: list<u8>) -> result<tuple<ciphertext, signature>, crypto-error>;
+
+    /// Unseal a message: verify signature + decrypt.
+    unseal: func(session: seal-session, sender-public-key: key, ciphertext: ciphertext, signature: signature) -> result<list<u8>, crypto-error>;
+}
+
+/// The complete scbe:crypto world — what a host provides to this component.
+world crypto-world {
+    export kem;
+    export dsa;
+    export symmetric;
+    export hashing;
+    export spiral-seal;
+}

@@ -1,0 +1,92 @@
+/// SCBE-AETHERMOORE Host API
+///
+/// The thin host layer that links WASM components together.
+/// This is the "one API outside" — all external callers go through here.
+/// Internally, the host routes to the appropriate domain component.
+///
+/// Part of SCBE-AETHERMOORE (USPTO #63/961,403)
+
+package scbe:host@0.1.0;
+
+/// Unified governance interface visible to external callers.
+interface governance {
+    /// Agent trust level.
+    enum trust-level {
+        core,
+        inner,
+        outer,
+        wall,
+    }
+
+    /// A governance request from an external agent.
+    record governance-request {
+        agent-id: string,
+        action: string,
+        resource: string,
+        current-trust: trust-level,
+        requested-trust: trust-level,
+        metadata: list<tuple<string, string>>,
+    }
+
+    /// A governance decision with audit trail.
+    record governance-response {
+        decision: string,
+        reason: string,
+        audit-id: string,
+        harmonic-score: float64,
+        trust-ring: string,
+    }
+
+    /// Submit a governance request for evaluation.
+    evaluate: func(request: governance-request) -> governance-response;
+}
+
+/// Unified crypto operations visible to external callers.
+interface crypto-ops {
+    /// Generate a new keypair for the specified algorithm.
+    keygen: func(algorithm: string) -> result<tuple<list<u8>, list<u8>>, string>;
+
+    /// Sign data with a secret key.
+    sign: func(algorithm: string, secret-key: list<u8>, data: list<u8>) -> result<list<u8>, string>;
+
+    /// Verify a signature.
+    verify: func(algorithm: string, public-key: list<u8>, data: list<u8>, signature: list<u8>) -> result<bool, string>;
+
+    /// Seal a message (encrypt + sign).
+    seal: func(recipient-public-key: list<u8>, message: list<u8>) -> result<list<u8>, string>;
+}
+
+/// Unified transform operations visible to external callers.
+interface transform-ops {
+    /// Encode data in a Sacred Tongue.
+    tongue-encode: func(tongue: string, data: list<u8>) -> result<string, string>;
+
+    /// Decode Sacred Tongue text back to data.
+    tongue-decode: func(encoded: string) -> result<list<u8>, string>;
+
+    /// Compute harmonic wall safety score.
+    harmonic-wall: func(distance: float64, realm: float64, factor: float64) -> float64;
+
+    /// Classify a radial position into a trust ring name.
+    classify-ring: func(radius: float64) -> string;
+}
+
+/// Health and introspection.
+interface health {
+    /// Get system health status.
+    health-check: func() -> string;
+
+    /// Get the list of loaded WASM components.
+    loaded-components: func() -> list<string>;
+
+    /// Get version information.
+    version: func() -> string;
+}
+
+/// The SCBE host world — what external callers see.
+world scbe-host {
+    export governance;
+    export crypto-ops;
+    export transform-ops;
+    export health;
+}

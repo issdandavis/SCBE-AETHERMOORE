@@ -24,7 +24,26 @@
       "Bash(gh pr edit:*)",
       "Bash(gh pr checks:*)",
       "Bash(gh run view:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "WebSearch",
+      "Bash(head:*)",
+      "WebFetch(domain:openai.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:colab.research.google.com)",
+      "mcp__claude_ai_Notion__notion-create-pages",
+      "Bash(cd \"C:\\\\Users\\\\issda\\\\SCBE_Production_Pack_local\" && HF_TOKEN=HF_TOKEN_PLACEHOLDER python scripts/merge_and_upload.py --upload 2>&1)",
+      "Bash(cd \"C:\\\\Users\\\\issda\\\\SCBE_Production_Pack_local\" && python games/spiralverse_terminal.py 2>&1 <<'EOF'\n1\n2\n1\nEO)",
+      "Bash(cd:*)",
+      "Bash(grep:*)",
+      "Bash(tail:*)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "fs",
+    "fetch",
+    "github",
+    "scbe-orchestrator",
+    "notion-sweep"
+  ]
 }

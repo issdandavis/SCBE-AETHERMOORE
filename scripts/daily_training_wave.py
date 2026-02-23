@@ -92,7 +92,43 @@ def main() -> None:
     else:
         print("[wave] skip kernel conversion: training/kernel_manifest.yaml not found")
 
+    run([sys.executable, "scripts/codebase_to_sft.py"])
+
+    run(
+        [
+            sys.executable,
+            "scripts/generate_sft_from_modules.py",
+            "--output",
+            "training-data/sft_codebase_new.jsonl",
+        ]
+    )
+
     run([sys.executable, "scripts/spiralverse_to_sft.py"])
+
+    # Spiralverse game tributaries (combat, story, chat, lore, dreams, world)
+    run(
+        [
+            sys.executable,
+            "scripts/spiralverse_game_to_sft.py",
+            "--output",
+            "training-data/sft_spiralverse_game.jsonl",
+        ]
+    )
+
+    game_dir = REPO_ROOT / "training-data" / "games"
+    if game_dir.exists() and any(game_dir.iterdir()):
+        run(
+            [
+                sys.executable,
+                "scripts/run_game_training.py",
+                "--agents",
+                "100",
+                "--output",
+                "training-data/sft_games.jsonl",
+            ]
+        )
+    else:
+        print("[wave] skip game training: no games found in training-data/games/")
 
     merge_cmd = [sys.executable, "scripts/merge_and_upload.py"]
     if args.upload:

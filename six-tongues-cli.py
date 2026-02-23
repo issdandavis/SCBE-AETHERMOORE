@@ -22,6 +22,13 @@ Usage:
   python six-tongues-cli.py unblend
   python six-tongues-cli.py geoseal-encrypt --context '[0.2,-0.3,0.7]' --kem-key <b64> --dsa-key <b64>
   python six-tongues-cli.py geoseal-decrypt --context '[0.2,-0.3,0.7]' --kem-key <b64> --dsa-pk <b64>
+  python six-tongues-cli.py derive --docx path/to/everweave.docx   # Derive tokenizer from campaign
+
+Everweave Genesis Seed:
+  Pass --everweave-seed <json> to any command to use campaign-derived bijection
+  tables instead of canonical defaults. The Everweave logs are the cryptographic
+  root — like a BIP-39 mnemonic for the entire linguistic architecture.
+  python six-tongues-cli.py --everweave-seed tokenizer.json encode --tongue KO
 
 @module cli/six-tongues
 @layer Layer 14
@@ -691,19 +698,30 @@ class EvolvingLexicons(Lexicons):
 # SemanticNavigator — Living 6D Meaning Space (requires numpy/scipy)
 # ═══════════════════════════════════════════════════════════════
 
-_HAS_NUMPY = False
-try:
-    import numpy as np
-    from scipy.integrate import odeint as _odeint
+_HAS_NUMPY = None  # Lazy: None = not yet checked
+np = None
+_odeint = None
 
-    _HAS_NUMPY = True
-except ImportError:
-    pass
+
+def _ensure_numpy():
+    """Lazy-load numpy/scipy on first use (avoids 5-10s startup penalty)."""
+    global _HAS_NUMPY, np, _odeint
+    if _HAS_NUMPY is not None:
+        return _HAS_NUMPY
+    try:
+        import numpy as _np
+        from scipy.integrate import odeint as _ode
+        np = _np
+        _odeint = _ode
+        _HAS_NUMPY = True
+    except ImportError:
+        _HAS_NUMPY = False
+    return _HAS_NUMPY
 
 
 def numpy_available() -> bool:
     """Check if numpy/scipy are available for SemanticNavigator."""
-    return _HAS_NUMPY
+    return _ensure_numpy()
 
 
 class SemanticNavigator:
@@ -730,7 +748,7 @@ class SemanticNavigator:
         initial_pos: Optional[List[float]] = None,
         chaos_strength: float = 0.1,
     ):
-        if not _HAS_NUMPY:
+        if not _ensure_numpy():
             raise ImportError("SemanticNavigator requires numpy and scipy")
         self.position = np.array(initial_pos or [0.0] * 6, dtype=float)
         self.chaos_strength = chaos_strength
@@ -821,8 +839,55 @@ class SemanticNavigator:
 # ═══════════════════════════════════════════════════════════════
 
 
-def load_lexicons(path: Optional[str]) -> Lexicons:
-    """Load lexicons from JSON file or use demo defaults."""
+def load_everweave_lexicons(json_path: str) -> Lexicons:
+    """Build Lexicons from an Everweave-derived tokenizer JSON.
+
+    The tokenizer JSON contains per-tongue bijection tables (byte->permuted_byte)
+    and prefix/suffix syllable lists. Token for byte b:
+        mapped = bijection[b]
+        token  = prefixes[mapped >> 4] + "'" + suffixes[mapped & 0x0F]
+
+    Supports both full (256-entry) bijections and sample-only (8-entry) mode.
+    In sample-only mode, falls back to identity mapping with Everweave syllables.
+    """
+    with open(json_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    tongues_data = data.get("tongues", {})
+    table: Dict[str, Dict[str, str]] = {}
+
+    for tg in TONGUES:
+        info = tongues_data.get(tg)
+        if not info:
+            raise ValueError(f"Everweave tokenizer missing tongue {tg}")
+
+        prefixes = info.get("prefixes", [])
+        suffixes = info.get("suffixes", [])
+        if len(prefixes) != 16 or len(suffixes) != 16:
+            raise ValueError(f"Tongue {tg}: need 16 prefixes and 16 suffixes")
+
+        # Prefer full bijection, fall back to sample, then identity
+        bij = info.get("bijection", info.get("bijection_sample", {}))
+        has_full = len(bij) >= 256
+
+        lex: Dict[str, str] = {}
+        for b in range(256):
+            if has_full:
+                mapped = bij[str(b)]
+            else:
+                mapped = b  # identity fallback
+            p = prefixes[(mapped >> 4) & 0xF]
+            s = suffixes[mapped & 0xF]
+            lex[str(b)] = f"{p}'{s}"
+        table[tg] = lex
+
+    return Lexicons(table)
+
+
+def load_lexicons(path: Optional[str], everweave_seed: Optional[str] = None) -> Lexicons:
+    """Load lexicons from Everweave seed, custom JSON, or canonical defaults."""
+    if everweave_seed:
+        return load_everweave_lexicons(everweave_seed)
     if not path:
         return Lexicons()
     with open(path, "r", encoding="utf-8") as f:
@@ -831,7 +896,7 @@ def load_lexicons(path: Optional[str]) -> Lexicons:
 
 
 def cmd_encode(args: argparse.Namespace) -> int:
-    lex = load_lexicons(args.lexicons)
+    lex = load_lexicons(args.lexicons, getattr(args, "everweave_seed", None))
     tok = TongueTokenizer(lex)
     if getattr(args, "text", None) is not None:
         data = args.text.encode("utf-8")
@@ -849,7 +914,7 @@ def cmd_encode(args: argparse.Namespace) -> int:
 
 
 def cmd_decode(args: argparse.Namespace) -> int:
-    lex = load_lexicons(args.lexicons)
+    lex = load_lexicons(args.lexicons, getattr(args, "everweave_seed", None))
     tok = TongueTokenizer(lex)
     if getattr(args, "text", None) is not None:
         text = args.text
@@ -871,7 +936,7 @@ def cmd_decode(args: argparse.Namespace) -> int:
 
 
 def cmd_xlate(args: argparse.Namespace) -> int:
-    lex = load_lexicons(args.lexicons)
+    lex = load_lexicons(args.lexicons, getattr(args, "everweave_seed", None))
     tok = TongueTokenizer(lex)
     xt = CrossTokenizer(tok)
     text = sys.stdin.read() if not args.infile else open(args.infile, "r", encoding="utf-8").read()
@@ -892,7 +957,7 @@ def cmd_xlate(args: argparse.Namespace) -> int:
 
 
 def cmd_blend(args: argparse.Namespace) -> int:
-    lex = load_lexicons(args.lexicons)
+    lex = load_lexicons(args.lexicons, getattr(args, "everweave_seed", None))
     tok = TongueTokenizer(lex)
     xt = CrossTokenizer(tok)
     data = sys.stdin.buffer.read() if not args.infile else open(args.infile, "rb").read()
@@ -912,7 +977,7 @@ def cmd_blend(args: argparse.Namespace) -> int:
 
 
 def cmd_unblend(args: argparse.Namespace) -> int:
-    lex = load_lexicons(args.lexicons)
+    lex = load_lexicons(args.lexicons, getattr(args, "everweave_seed", None))
     tok = TongueTokenizer(lex)
     xt = CrossTokenizer(tok)
     js = json.load(sys.stdin if not args.infile else open(args.infile, "r", encoding="utf-8"))
@@ -923,6 +988,70 @@ def cmd_unblend(args: argparse.Namespace) -> int:
         sys.stdout.buffer.write(data)
     else:
         open(args.outfile, "wb").write(data)
+    return 0
+
+
+def cmd_derive(args: argparse.Namespace) -> int:
+    """Derive the full Everweave tokenizer from the campaign DOCX."""
+    try:
+        # Import from the sibling scripts/ module
+        script_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "scripts")
+        if script_dir not in sys.path:
+            sys.path.insert(0, script_dir)
+        from everweave_seed import (
+            load_everweave_text,
+            derive_full_tokenizer,
+            selftest as seed_selftest,
+        )
+    except ImportError as e:
+        print(f"ERROR: Cannot import everweave_seed module: {e}", file=sys.stderr)
+        print("  Ensure scripts/everweave_seed.py exists.", file=sys.stderr)
+        return 1
+
+    from pathlib import Path
+    docx_path = Path(args.docx)
+    if not docx_path.exists():
+        print(f"ERROR: DOCX not found: {docx_path}", file=sys.stderr)
+        return 1
+
+    print(f"  Loading Everweave campaign: {docx_path}")
+    campaign_text = load_everweave_text(docx_path)
+    print(f"  Campaign: {len(campaign_text):,} chars, "
+          f"{len(campaign_text.splitlines()):,} lines")
+
+    # Run selftest
+    if not seed_selftest(campaign_text):
+        print("ERROR: Everweave seed selftest failed", file=sys.stderr)
+        return 1
+
+    # Derive and export
+    tokenizer = derive_full_tokenizer(campaign_text)
+    out_path = Path(args.output) if args.output else (
+        Path(os.path.dirname(os.path.abspath(__file__))) / "training-data" / "everweave_tokenizer.json"
+    )
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(tokenizer, f, indent=2, ensure_ascii=False)
+
+    print(f"\n  Tokenizer exported: {out_path}")
+    print(f"  Master attestation: {tokenizer['master_seed_hash'][:32]}...")
+    for t, info in tokenizer["tongues"].items():
+        bij_count = len(info.get("bijection", info.get("bijection_sample", {})))
+        print(f"    {t} ({info['name']}): weight={info['weight']:.3f}, "
+              f"bijection={bij_count} entries, seed={info['seed_hash']}")
+
+    # Verify the exported JSON can be loaded as lexicons
+    lex = load_everweave_lexicons(str(out_path))
+    payload = b"Everweave genesis seed verification"
+    tok = TongueTokenizer(lex)
+    for tg in TONGUES:
+        enc = tok.encode_bytes(tg, payload)
+        dec = tok.decode_tokens(tg, enc)
+        if dec != payload:
+            print(f"  FAIL: {tg} round-trip failed after export!", file=sys.stderr)
+            return 1
+    print(f"  All 6 tongues round-trip verified from exported JSON.")
+    print(f"\n  The story IS the key. The key IS the identity.")
     return 0
 
 
@@ -1069,9 +1198,50 @@ def selftest() -> int:
             dec.append(evo.byte_of(tg, t))
         check(f"{tg} round-trip after evolution", bytes(dec) == small_payload)
 
+    # --- Everweave Genesis Seed ---
+    everweave_json = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "training-data", "everweave_tokenizer.json",
+    )
+    if os.path.exists(everweave_json):
+        print("[7] Everweave Genesis Seed Lexicons")
+        ew_lex = load_everweave_lexicons(everweave_json)
+        ew_tok = TongueTokenizer(ew_lex)
+        ew_payload = b"The Everweave logs are the genesis block."
+
+        for tg in TONGUES:
+            ew_enc = ew_tok.encode_bytes(tg, ew_payload)
+            ew_dec = ew_tok.decode_tokens(tg, ew_enc)
+            check(f"EW {tg} round-trip", ew_dec == ew_payload)
+            ew_all = ew_tok.encode_bytes(tg, bytes(range(256)))
+            check(f"EW {tg} bijection (256 unique)", len(set(ew_all)) == 256)
+
+        # Everweave cross-tongue translation
+        ew_xt = CrossTokenizer(ew_tok)
+        ew_msg = b"The story IS the key."
+        for s in TONGUES:
+            for d in TONGUES:
+                ttext = " ".join(ew_tok.encode_bytes(s, ew_msg))
+                out_t, _ = ew_xt.retokenize(s, d, ttext, attest_key=b"everweave")
+                back = ew_tok.decode_tokens(d, out_t)
+                check(f"EW {s}->{d} cross-translate", back == ew_msg)
+
+        # Verify Everweave tokens differ from canonical tokens
+        canon_lex = Lexicons()
+        canon_tok = TongueTokenizer(canon_lex)
+        sample = bytes(range(8))
+        for tg in TONGUES:
+            canon_enc = canon_tok.encode_bytes(tg, sample)
+            ew_enc = ew_tok.encode_bytes(tg, sample)
+            check(f"EW {tg} differs from canonical", canon_enc != ew_enc)
+
+        print(f"  Everweave cross-translations: {len(TONGUES) * len(TONGUES)}")
+    else:
+        print("[7] Everweave Genesis Seed (SKIPPED — tokenizer JSON not found)")
+
     # --- SemanticNavigator ---
     if numpy_available():
-        print("[7] SemanticNavigator (numpy/scipy)")
+        print("[8] SemanticNavigator (numpy/scipy)")
         nav1 = SemanticNavigator(chaos_strength=0.01)
         nav2 = SemanticNavigator(initial_pos=[0.1, 0.0, 0.0, 0.0, 0.0, 0.0], chaos_strength=0.01)
         check("navigator starts at origin", float(np.linalg.norm(nav1.position)) < 1e-10)
@@ -1094,10 +1264,10 @@ def selftest() -> int:
         traj = nav1.export_trajectory()
         check("trajectory shape correct", traj.shape == (2, 6))
     else:
-        print("[7] SemanticNavigator (SKIPPED — numpy/scipy not available)")
+        print("[8] SemanticNavigator (SKIPPED — numpy/scipy not available)")
 
     # --- Error Handling ---
-    print("[8] Error Handling")
+    print("[9] Error Handling")
     bad_tokens = tok.encode_bytes("KO", b"\x00\x01")
     bad_tokens[1] = bad_tokens[1] + "x"
     try:
@@ -1124,6 +1294,10 @@ def build_cli() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="six-tongues-cli",
         description="Six Tongues + GeoSeal — SCBE-AETHERMOORE Cryptographic Toolkit",
+    )
+    p.add_argument(
+        "--everweave-seed", dest="everweave_seed", metavar="JSON",
+        help="Path to Everweave-derived tokenizer JSON (overrides --lexicons)",
     )
     sub = p.add_subparsers(dest="cmd")
 
@@ -1180,6 +1354,11 @@ def build_cli() -> argparse.ArgumentParser:
     gd.add_argument("--dsa-pk", required=True, help="Base64-encoded DSA public key")
     gd.add_argument("--env", help="Envelope JSON file (default: stdin)")
     gd.set_defaults(func=cmd_gendec)
+
+    pder = sub.add_parser("derive", help="Derive tokenizer from Everweave campaign DOCX")
+    pder.add_argument("--docx", required=True, help="Path to Everweave DOCX export")
+    pder.add_argument("--output", "-o", help="Output JSON path (default: training-data/everweave_tokenizer.json)")
+    pder.set_defaults(func=cmd_derive)
 
     st = sub.add_parser("selftest", help="Run built-in self-test suite")
     st.set_defaults(func=lambda _args: selftest())
