@@ -32,3 +32,13 @@ python scripts/arxiv_submit_playwright.py --dry-run
 - No credentials are hardcoded.
 - Browser submission script requires explicit env vars (`ARXIV_USER`, `ARXIV_PASS`).
 - Workflow generates artifacts only; it does not auto-submit to arXiv.
+
+## AI-to-AI Retrieval Add-on
+
+A retrieval service is now available for paper discovery and handoff packets:
+
+- Module: `hydra/arxiv_retrieval.py`
+- CLI: `python -m hydra arxiv search "query" --cat cs.AI --max 5`
+- API service: `uvicorn scripts.arxiv_ai2ai_service:app --host 127.0.0.1 --port 8099`
+
+This is designed to bridge research retrieval into drafting workflows before `arxiv_synthesize_paper.py`.

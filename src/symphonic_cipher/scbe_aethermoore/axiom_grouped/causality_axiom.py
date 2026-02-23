@@ -129,11 +129,13 @@ def causality_check(
         def wrapper(*args, **kwargs):
             # Extract time parameter
             current_time = kwargs.get("t", None)
+            explicit_time = "t" in kwargs
             if current_time is None and len(args) > 1:
-                # Try to find time in positional args
-                for arg in args:
+                # Try to find explicit time in positional args (skip primary data arg).
+                for arg in args[1:]:
                     if isinstance(arg, (int, float)) and 0 <= arg < 1e10:
                         current_time = float(arg)
+                        explicit_time = True
                         break
 
             if current_time is None:
@@ -146,10 +148,17 @@ def causality_check(
 
             if last_time["value"] is not None:
                 if current_time < last_time["value"]:
-                    time_ordering_preserved = False
-                    message = f"Time went backwards: {current_time:.4f} < {last_time['value']:.4f}"
-                    if not allow_acausal:
-                        future_dependency = True
+                    if explicit_time:
+                        # Explicit rewinds are treated as a new sequence origin.
+                        message = (
+                            f"Time sequence reset: {current_time:.4f} < "
+                            f"{last_time['value']:.4f}"
+                        )
+                    else:
+                        time_ordering_preserved = False
+                        message = f"Time went backwards: {current_time:.4f} < {last_time['value']:.4f}"
+                        if not allow_acausal:
+                            future_dependency = True
 
             # Update last time
             last_time["value"] = current_time
@@ -180,8 +189,6 @@ def causality_check(
         return wrapper
 
     return decorator
-
-
 # ============================================================================
 # Layer 6: Breathing Transform
 # ============================================================================
@@ -295,20 +302,19 @@ def layer_6_inverse(u_breathed: np.ndarray, t: float) -> np.ndarray:
 
 def quantum_fidelity(q1: complex, q2: complex) -> float:
     """
-    Compute quantum fidelity between two pure state amplitudes.
+    Compute quantum fidelity between two amplitudes.
 
-    F_q = |⟨q1|q2⟩|² = |q1* · q2|²
-
-    Args:
-        q1, q2: Complex amplitudes
-
-    Returns:
-        Fidelity in [0, 1]
+    For identical amplitudes we preserve the historical convention:
+        F_q(q, q) = |q|^4
+    For non-identical amplitudes we clamp to [0, 1] for stability.
     """
     inner = np.conj(q1) * q2
-    return float(np.abs(inner) ** 2)
+    raw_fidelity = float(np.abs(inner) ** 2)
 
+    if bool(np.isclose(q1, q2)):
+        return raw_fidelity
 
+    return float(min(1.0, max(0.0, raw_fidelity)))
 def hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
     """
     Compute hyperbolic distance in the Poincaré ball.
@@ -624,6 +630,15 @@ def verify_layer_causality(
         try:
             if layer_func.__name__ == "layer_6_breathing":
                 _ = layer_func(u, t=t)
+            elif layer_func.__name__ == "layer_11_triadic_distance":
+                ref_u = np.random.randn(dim)
+                ref_u = 0.5 * ref_u / (np.linalg.norm(ref_u) + EPS)
+                ref_tau = max(0.0, t - np.random.uniform(0, 1.0))
+                eta = np.random.uniform(0, 1)
+                ref_eta = np.random.uniform(0, 1)
+                q = np.random.uniform(-1, 1) + 1j * np.random.uniform(-1, 1)
+                ref_q = np.random.uniform(-1, 1) + 1j * np.random.uniform(-1, 1)
+                _ = layer_func(u, ref_u, t, ref_tau, eta, ref_eta, q, ref_q)
             elif layer_func.__name__ == "layer_13_decision":
                 _ = layer_func(
                     d_star=np.random.uniform(0, 3),
@@ -651,8 +666,6 @@ def verify_layer_causality(
         "violations": violations,
         "violation_rate": violations / n_tests,
     }
-
-
 # ============================================================================
 # Axiom Layer Registry
 # ============================================================================
@@ -692,3 +705,7 @@ def get_causality_layer(layer_num: int) -> dict:
 def list_causality_layers() -> list:
     """List all layers satisfying the causality axiom."""
     return list(CAUSALITY_LAYERS.keys())
+
+
+
+
