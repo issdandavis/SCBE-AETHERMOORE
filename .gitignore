@@ -67,3 +67,12 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+
+# Local run outputs (do not commit)
+artifacts/playwright-both-side/
+artifacts/nonbinary_kernel/
+artifacts/scbe_min/
+artifacts/system-audit/
+demo/training_output/
+training/runs/
+scripts/*.bak
