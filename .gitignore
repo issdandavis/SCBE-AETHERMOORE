@@ -54,6 +54,32 @@ Thumbs.db
 .pytest_cache/
 .mypy_cache/
 
+# Test temp artifacts
+artifacts/pytest_tmp/
+artifacts/test_swarm_hub/
+
+# Local caches & databases
+.npm-cache-local/
+.npm-pack-dryrun.txt
+*.db
+!src/symphonic_cipher/**/*.db
+
+# Training runs (large model artifacts)
+training/runs/
+
+# Generated/combined training data (regeneratable via scripts/merge_and_upload.py)
+training-data/sft_combined*.jsonl
+training-data/sft_*_regen*.jsonl
+training/sft_records/sft_combined*
+training/notion_codebase_comparison.json
+
+# Pytest temp artifacts (any location)
+**/pytest_tmp/
+
+# Model weights & binary artifacts
+*.npz
+*.pkl
+
 ### codex cleanup
 node_modules/
 dist/

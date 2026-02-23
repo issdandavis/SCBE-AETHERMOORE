@@ -23,6 +23,7 @@ if sys.platform == "win32":
 import hashlib
 import numpy as np
 from typing import Dict, Tuple, List, Optional, Sequence
+from src.synesthesia_embedding import flavor_scent_alignment, synesthesia_risk_factor
 
 # Use scipy-compatible imports with fallback
 try:
@@ -544,6 +545,10 @@ def scbe_14layer_pipeline(
     modality_features: Optional[Dict[str, Sequence[float]]] = None,
     mmx_agreement_floor: float = 0.5,
     mmx_prev_alignment: Optional[List[List[float]]] = None,
+    flavor_features: Optional[Sequence[float]] = None,
+    scent_features: Optional[Sequence[float]] = None,
+    synesthesia_beta: float = 0.2,
+    synesthesia_confidence_floor: float = 0.25,
 ) -> dict:
     """
     Execute full 14-layer SCBE pipeline.
@@ -659,6 +664,34 @@ def scbe_14layer_pipeline(
             decision = "QUARANTINE"
             mmx_override_reason = f"mmx_conflict={mmx_result.conflict:.4f}>0.35"
 
+    # Optional synesthesia gate (flavor/scent alignment)
+    synesthesia = None
+    synesthesia_override_reason = None
+    if flavor_features is not None or scent_features is not None:
+        synesthesia = flavor_scent_alignment(flavor_features, scent_features)
+        syn_factor = synesthesia_risk_factor(
+            c_syn=synesthesia["c_syn"],
+            confidence=synesthesia["confidence"],
+            beta=synesthesia_beta,
+            confidence_floor=synesthesia_confidence_floor,
+        )
+        Risk_prime = float(Risk_prime * syn_factor)
+        synesthesia["risk_factor"] = float(syn_factor)
+        synesthesia["beta"] = float(synesthesia_beta)
+        synesthesia["confidence_floor"] = float(synesthesia_confidence_floor)
+
+        if synesthesia["confidence"] >= synesthesia_confidence_floor:
+            if synesthesia["c_syn"] < 0.35:
+                decision = "DENY"
+                synesthesia_override_reason = (
+                    f"syn_c={synesthesia['c_syn']:.4f}<0.35"
+                )
+            elif synesthesia["c_syn"] < 0.55 and decision == "ALLOW":
+                decision = "QUARANTINE"
+                synesthesia_override_reason = (
+                    f"syn_c={synesthesia['c_syn']:.4f}<0.55"
+                )
+
     # =========================================================================
     # RETURN RESULTS
     # =========================================================================
@@ -675,6 +708,8 @@ def scbe_14layer_pipeline(
             "tau": tau,
             "S_audio": S_audio,
         },
+        "synesthesia": synesthesia,
+        "synesthesia_override_reason": synesthesia_override_reason,
         "geometry": {
             "u_norm": np.linalg.norm(u),
             "u_breath_norm": np.linalg.norm(u_breath),

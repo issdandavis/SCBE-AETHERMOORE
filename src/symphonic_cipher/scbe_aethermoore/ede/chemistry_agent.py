@@ -167,8 +167,8 @@ def harmonic_sink(value: float, sink_depth: int = 3) -> float:
     Returns:
         Absorbed (reduced) energy
     """
-    h_scale = harmonic_scale(sink_depth, R_FIFTH)
-    return value / h_scale
+    h_scale = harmonic_scale(sink_depth)
+    return value * h_scale
 
 
 # =============================================================================
