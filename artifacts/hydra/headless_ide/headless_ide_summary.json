@@ -1,0 +1,47 @@
+{
+  "db_path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\artifacts\\hydra\\headless_ide\\switchboard.db",
+  "queued": [
+    {
+      "task_id": "task-53af39f6bb02",
+      "role": "planner",
+      "status": "queued",
+      "deduped": false
+    },
+    {
+      "task_id": "task-e13756004d66",
+      "role": "coder",
+      "status": "queued",
+      "deduped": false
+    },
+    {
+      "task_id": "task-bc6fad5bd650",
+      "role": "reviewer",
+      "status": "queued",
+      "deduped": false
+    },
+    {
+      "task_id": "task-92db201da1c2",
+      "role": "memory",
+      "status": "queued",
+      "deduped": false
+    }
+  ],
+  "stats": {
+    "db_path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\artifacts\\hydra\\headless_ide\\switchboard.db",
+    "by_status": {
+      "done": 4
+    },
+    "by_role": {
+      "coder": 1,
+      "memory": 1,
+      "planner": 1,
+      "reviewer": 1
+    },
+    "leased": [],
+    "role_message_count": 4
+  },
+  "artifacts": {
+    "dashboard_html": "C:\\Users\\issda\\SCBE-AETHERMOORE\\artifacts\\hydra\\headless_ide\\headless_ide_dashboard.html",
+    "flow_mermaid": "C:\\Users\\issda\\SCBE-AETHERMOORE\\artifacts\\hydra\\headless_ide\\headless_ide_flow.mmd"
+  }
+}

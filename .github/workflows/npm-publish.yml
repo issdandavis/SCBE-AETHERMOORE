@@ -1,10 +1,18 @@
-name: npm Publish
+name: npm Publish (DEPRECATED — use auto-publish.yml)
 
+# Disabled: auto-publish.yml now handles npm + PyPI + GitHub Release in one workflow.
+# Keeping this file for reference only.
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type CONFIRM to run this deprecated workflow'
+        required: true
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: write

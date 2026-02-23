@@ -333,7 +333,7 @@ describe('E – Random Phrase Generation', () => {
       expect(t.globalIndex).toBeLessThan(TOTAL_TOKENS);
       expect(t.token).toContain("'");
       // Verify round-trip
-      const decoded = tokenToAether(t.token);
+      const decoded = tokenToAether(t.token, t.tongue);
       expect(decoded.globalIndex).toBe(t.globalIndex);
     }
   });

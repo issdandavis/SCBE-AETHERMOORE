@@ -2,8 +2,6 @@
 # Run: docker-compose -f docker-compose.api.yml up -d
 # Test: curl http://localhost:8080/v1/health
 
-version: '3.8'
-
 services:
   scbe-api:
     build:
@@ -15,7 +13,7 @@ services:
       - SCBE_API_KEY=${SCBE_API_KEY:-sk_test_demo_key_12345}
       - SCBE_LOG_LEVEL=INFO
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/v1/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/v1/health')"]
       interval: 30s
       timeout: 10s
       retries: 3

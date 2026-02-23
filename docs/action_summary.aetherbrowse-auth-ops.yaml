@@ -1,0 +1,29 @@
+version: "1.0.0"
+action_summary:
+  task: "scbe-self-improvement knowledge propagation for aetherbrowse auth ops"
+  touched_layers: [12, 13]
+  changed_files:
+    - "docs/SCBE_SELF_IMPROVEMENT_LOOP_2026-02-17.md"
+    - "docs/SCBE_CONTEXT_AETHERBROWSE_AGENT.md"
+    - "docs/scbe-knowledge-v4.aetherbrowse.yaml"
+    - "docs/action_summary.aetherbrowse-auth-ops.yaml"
+  services_updated: []
+  decisions:
+    - key: "path_selected"
+      value: "knowledge_propagation"
+      rationale: "User invoked self-improvement skill and needed reusable agent context"
+    - key: "skill_installation"
+      value: "deferred"
+      rationale: "Approval gate required before installing a new skill"
+    - key: "auth_contract"
+      value: "documented"
+      rationale: "Encoded token compatibility and required headers/env were formalized"
+  handoff:
+    next_skill: "scbe-system-engine"
+    inputs_required:
+      - "Decision on installing scbe-aetherbrowse-auth-ops (yes/no)"
+      - "Target agent runtime (n8n, Asana worker, cloud browser)"
+    risks:
+      - "No auto-install performed pending explicit approval"
+      - "Documentation can drift if runtime headers/env names change without updates"
+

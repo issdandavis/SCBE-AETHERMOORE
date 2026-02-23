@@ -28,13 +28,50 @@ DILITHIUM3_SIGNATURE_SIZE = 3309
 # Try to import liboqs, fallback to mock if unavailable
 _LIBOQS_AVAILABLE = False
 _oqs = None
+_FORCE_SKIP_LIBOQS = os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+}
 
-try:
-    import oqs
-    _oqs = oqs
-    _LIBOQS_AVAILABLE = True
-except ImportError:
-    pass
+if not _FORCE_SKIP_LIBOQS:
+    try:
+        import oqs
+
+        _oqs = oqs
+        _LIBOQS_AVAILABLE = True
+    except BaseException:
+        # Includes ImportError plus runtime/bootstrap/shared-lib failures
+        _oqs = None
+        _LIBOQS_AVAILABLE = False
+
+
+def _select_kem_algorithm() -> str:
+    """Select the best available KEM algorithm name for the installed liboqs."""
+    if not _LIBOQS_AVAILABLE:
+        return "ML-KEM-768"
+    enabled = _oqs.get_enabled_kem_mechanisms()
+    if "ML-KEM-768" in enabled:
+        return "ML-KEM-768"
+    if "Kyber768" in enabled:
+        return "Kyber768"
+    return "ML-KEM-768"
+
+
+def _select_sig_algorithm() -> str:
+    """Select the best available signature algorithm name for the installed liboqs."""
+    if not _LIBOQS_AVAILABLE:
+        return "ML-DSA-65"
+    enabled = _oqs.get_enabled_sig_mechanisms()
+    if "ML-DSA-65" in enabled:
+        return "ML-DSA-65"
+    if "Dilithium3" in enabled:
+        return "Dilithium3"
+    return "ML-DSA-65"
+
+
+_KEM_ALG = _select_kem_algorithm()
+_SIG_ALG = _select_sig_algorithm()
 
 def _enabled_kem_mechanisms() -> set[str]:
     """Best-effort query of enabled KEM mechanisms in liboqs."""
@@ -274,6 +311,7 @@ class _LiboqsKyber:
         if _KEM_ALGORITHM is None:
             raise RuntimeError("No supported liboqs KEM algorithm found")
         with _oqs.KeyEncapsulation(_KEM_ALGORITHM) as kem:
+        with _oqs.KeyEncapsulation(_KEM_ALG) as kem:
             public_key = kem.generate_keypair()
             secret_key = kem.export_secret_key()
             return KyberKeyPair(public_key=public_key, secret_key=secret_key)
@@ -286,6 +324,7 @@ class _LiboqsKyber:
         if _KEM_ALGORITHM is None:
             raise RuntimeError("No supported liboqs KEM algorithm found")
         with _oqs.KeyEncapsulation(_KEM_ALGORITHM) as kem:
+        with _oqs.KeyEncapsulation(_KEM_ALG) as kem:
             ciphertext, shared_secret = kem.encap_secret(public_key)
             return EncapsulationResult(ciphertext=ciphertext, shared_secret=shared_secret)
 
@@ -299,6 +338,7 @@ class _LiboqsKyber:
         if _KEM_ALGORITHM is None:
             raise RuntimeError("No supported liboqs KEM algorithm found")
         with _oqs.KeyEncapsulation(_KEM_ALGORITHM, secret_key) as kem:
+        with _oqs.KeyEncapsulation(_KEM_ALG, secret_key) as kem:
             shared_secret = kem.decap_secret(ciphertext)
             return shared_secret
 class _LiboqsDilithium:
@@ -319,6 +359,7 @@ class _LiboqsDilithium:
         """Generate a Dilithium3 keypair using liboqs."""
         algorithm = _LiboqsDilithium._algorithm()
         with _oqs.Signature(algorithm) as sig:
+        with _oqs.Signature(_SIG_ALG) as sig:
             public_key = sig.generate_keypair()
             secret_key = sig.export_secret_key()
             return DilithiumKeyPair(public_key=public_key, secret_key=secret_key)
@@ -336,6 +377,7 @@ class _LiboqsDilithium:
 
         algorithm = _LiboqsDilithium._algorithm()
         with _oqs.Signature(algorithm, secret_key) as sig:
+        with _oqs.Signature(_SIG_ALG, secret_key) as sig:
             signature = sig.sign(message)
 
         _LiboqsDilithium._deterministic_cache[cache_key] = signature
@@ -350,6 +392,7 @@ class _LiboqsDilithium:
             return False
         algorithm = _LiboqsDilithium._algorithm()
         with _oqs.Signature(algorithm) as sig:
+        with _oqs.Signature(_SIG_ALG) as sig:
             return sig.verify(message, signature, public_key)
 
 # =============================================================================
