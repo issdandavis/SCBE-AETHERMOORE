@@ -196,6 +196,8 @@ export interface PHDMCoreConfig {
   maxIntrusionsBeforeDeny: number;
   /** Intrusion rate threshold for escalation */
   intrusionRateThreshold: number;
+  /** Hex-encoded 32-byte master key for PHDM initialization (optional — use initializeWithKey) */
+  masterKeyHex?: string;
 }
 
 export const DEFAULT_PHDM_CORE_CONFIG: PHDMCoreConfig = {

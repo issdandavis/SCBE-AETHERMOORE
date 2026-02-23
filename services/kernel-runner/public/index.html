@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SCBE Kernel Runner</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 16px;
+        background: #0b1220;
+        color: #d8e0f0;
+      }
+      h1 {
+        margin: 0 0 8px 0;
+        font-size: 1.2rem;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .panel {
+        background: #151f33;
+        border: 1px solid #29364e;
+        border-radius: 8px;
+        padding: 10px;
+      }
+      label {
+        display: block;
+        font-weight: 600;
+        margin: 4px 0;
+      }
+      textarea,
+      input {
+        width: 100%;
+        background: #0d1628;
+        border: 1px solid #2a3b5d;
+        color: #d8e0f0;
+        border-radius: 6px;
+        padding: 8px;
+        box-sizing: border-box;
+      }
+      textarea {
+        min-height: 200px;
+        resize: vertical;
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin: 8px 0;
+      }
+      button {
+        background: #2f6feb;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      button.secondary {
+        background: #445372;
+      }
+      pre {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        max-height: 320px;
+        overflow: auto;
+        background: #0d1628;
+        border: 1px solid #2a3b5d;
+        border-radius: 6px;
+        padding: 8px;
+      }
+      .status {
+        font-weight: 700;
+      }
+      @media (max-width: 980px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>SCBE Kernel Runner</h1>
+    <div class="panel">
+      <p>Paste package.json and files JSON, run preflight, then execute in Docker-isolated sandbox.</p>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <label for="packageJson">package.json</label>
+        <textarea id="packageJson"></textarea>
+      </div>
+      <div class="panel">
+        <label for="files">files (JSON object)</label>
+        <textarea id="files"></textarea>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="row">
+        <label for="runCommand" style="min-width: 120px;">runCommand</label>
+        <input id="runCommand" value="npm test" />
+      </div>
+      <div class="row">
+        <button id="btnHealth" class="secondary">Health</button>
+        <button id="btnPreflight" class="secondary">Preflight</button>
+        <button id="btnRun">Run</button>
+        <span id="status" class="status"></span>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <label>Result</label>
+        <pre id="result"></pre>
+      </div>
+      <div class="panel">
+        <label>Execution Output</label>
+        <pre id="output"></pre>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
+

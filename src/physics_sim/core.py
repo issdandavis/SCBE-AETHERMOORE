@@ -8,7 +8,7 @@ No pseudoscience - only textbook physics.
 import json
 import math
 import cmath
-from typing import Dict, Any, Optional
+from typing import Dict, Any, List, Optional
 
 # =============================================================================
 # PHYSICAL CONSTANTS (CODATA 2018 values)
@@ -354,13 +354,13 @@ def electromagnetism(params: Dict[str, Any]) -> Dict[str, Any]:
         A = params["plate_area"]
         d = params["plate_separation"]
         if d > 0:
-            C = VACUUM_PERMITTIVITY * A / d
-            results["capacitance"] = C
+            capacitance = VACUUM_PERMITTIVITY * A / d
+            results["capacitance"] = capacitance
 
             if "voltage" in params:
                 V = params["voltage"]
-                energy = 0.5 * C * V**2
-                charge = C * V
+                energy = 0.5 * capacitance * V**2
+                charge = capacitance * V
                 results["stored_energy"] = energy
                 results["stored_charge"] = charge
 
@@ -410,12 +410,14 @@ def thermodynamics(params: Dict[str, Any]) -> Dict[str, Any]:
         # RMS speed of gas molecules: v_rms = √(3kT/m)
         if "molecular_mass" in params:
             m = params["molecular_mass"]
-            v_rms = math.sqrt(3 * BOLTZMANN * T / m)
-            v_avg = math.sqrt(8 * BOLTZMANN * T / (math.pi * m))
-            v_most_probable = math.sqrt(2 * BOLTZMANN * T / m)
-            results["rms_speed"] = v_rms
-            results["average_speed"] = v_avg
-            results["most_probable_speed"] = v_most_probable
+            # Guard domain of sqrt for negative Kelvin or invalid mass.
+            if T >= 0 and m > 0:
+                v_rms = math.sqrt(3 * BOLTZMANN * T / m)
+                v_avg = math.sqrt(8 * BOLTZMANN * T / (math.pi * m))
+                v_most_probable = math.sqrt(2 * BOLTZMANN * T / m)
+                results["rms_speed"] = v_rms
+                results["average_speed"] = v_avg
+                results["most_probable_speed"] = v_most_probable
 
     # Black body radiation (Stefan-Boltzmann): P = εσAT⁴
     if "temperature" in params and "surface_area" in params:
@@ -559,6 +561,200 @@ def relativity(params: Dict[str, Any]) -> Dict[str, Any]:
 
 
 # =============================================================================
+# HARSH PHYSICS MODE (STRICT VALIDATION + PENALTY SCORING)
+# =============================================================================
+
+
+def _collect_harsh_physics_violations(
+    simulation_type: str, params: Dict[str, Any]
+) -> List[Dict[str, Any]]:
+    """
+    Collect non-physical constraint violations.
+
+    Severity:
+    - hard: execution must be blocked
+    - soft: execution allowed, penalty applied
+    """
+    violations: List[Dict[str, Any]] = []
+
+    def add_violation(code: str, message: str, severity: str, penalty: float) -> None:
+        violations.append(
+            {
+                "code": code,
+                "message": message,
+                "severity": severity,
+                "penalty": float(penalty),
+            }
+        )
+
+    # Common numeric sanity: reject NaN/Inf for all numeric params.
+    for key, value in params.items():
+        if isinstance(value, (int, float)):
+            if not math.isfinite(value):
+                add_violation(
+                    "non_finite_value",
+                    f"Parameter '{key}' must be finite.",
+                    "hard",
+                    100.0,
+                )
+
+    # Mass constraints (strictly positive where physically required).
+    mass_keys = (
+        "mass",
+        "m1",
+        "m2",
+        "molecular_mass",
+        "particle_mass",
+        "black_hole_mass",
+    )
+    for key in mass_keys:
+        if key in params and params[key] <= 0:
+            add_violation(
+                "non_positive_mass",
+                f"Parameter '{key}' must be > 0.",
+                "hard",
+                80.0,
+            )
+
+    # Temperature in Kelvin must be > 0 in harsh mode.
+    if "temperature" in params and params["temperature"] <= 0:
+        add_violation(
+            "invalid_kelvin_temperature",
+            "Temperature must be > 0 K in harsh physics mode.",
+            "hard",
+            70.0,
+        )
+
+    # Relativistic speed limit.
+    if "velocity" in params:
+        v = abs(float(params["velocity"]))
+        if v >= C:
+            add_violation(
+                "velocity_superluminal",
+                "Velocity must be strictly less than the speed of light.",
+                "hard",
+                120.0,
+            )
+        elif v > 0.9 * C:
+            add_violation(
+                "velocity_near_relativistic_limit",
+                "Velocity is near relativistic limit; elevated risk penalty applied.",
+                "soft",
+                15.0,
+            )
+
+    # Electromagnetic domain guards.
+    if "em_frequency" in params and params["em_frequency"] <= 0:
+        add_violation(
+            "invalid_em_frequency",
+            "EM frequency must be > 0.",
+            "hard",
+            60.0,
+        )
+    if "plate_separation" in params and params["plate_separation"] <= 0:
+        add_violation(
+            "invalid_plate_separation",
+            "Plate separation must be > 0.",
+            "hard",
+            60.0,
+        )
+
+    # Spaceflight-specific hard envelope: thrust acceleration budget.
+    if "thrust" in params and "vehicle_mass" in params:
+        thrust = float(params["thrust"])
+        vehicle_mass = float(params["vehicle_mass"])
+        if vehicle_mass <= 0:
+            add_violation(
+                "invalid_vehicle_mass",
+                "vehicle_mass must be > 0 for thrust envelope checks.",
+                "hard",
+                80.0,
+            )
+        else:
+            accel = abs(thrust / vehicle_mass)
+            max_accel = 50.0 * 9.80665  # 50 g hard ceiling
+            if accel > max_accel:
+                add_violation(
+                    "thrust_envelope_exceeded",
+                    "Computed acceleration exceeds harsh envelope (50 g).",
+                    "hard",
+                    90.0,
+                )
+            elif accel > 15.0 * 9.80665:
+                add_violation(
+                    "thrust_envelope_high",
+                    "Computed acceleration is high (>15 g).",
+                    "soft",
+                    20.0,
+                )
+
+    # Descent stability heuristic for rotor/airbrake assisted profiles.
+    if "descent_rate_m_s" in params:
+        descent_rate = abs(float(params["descent_rate_m_s"]))
+        lift_coeff = float(params.get("rotor_lift_coefficient", 0.0))
+        drag_coeff = float(params.get("drag_coefficient", 0.0))
+        if descent_rate > 40.0 and (lift_coeff <= 0 and drag_coeff <= 0):
+            add_violation(
+                "unstable_descent_profile",
+                "High descent rate without lift/drag stabilization.",
+                "hard",
+                85.0,
+            )
+        elif descent_rate > 20.0:
+            add_violation(
+                "descent_profile_high_rate",
+                "Descent rate is high; stabilization penalty applied.",
+                "soft",
+                12.0,
+            )
+
+    return violations
+
+
+def harsh_physics_mode(simulation_type: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Strict wrapper for physically valid simulation runs.
+
+    - Applies hard constraints for non-physical inputs.
+    - Applies penalty scoring for risky but still computable regimes.
+    """
+    simulations = {
+        "classical": classical_mechanics,
+        "quantum": quantum_mechanics,
+        "electromagnetism": electromagnetism,
+        "thermodynamics": thermodynamics,
+        "relativity": relativity,
+    }
+    if simulation_type not in simulations:
+        raise ValueError(f"Invalid simulation type: {simulation_type}")
+
+    violations = _collect_harsh_physics_violations(simulation_type, params)
+    hard_violations = [v for v in violations if v["severity"] == "hard"]
+    soft_violations = [v for v in violations if v["severity"] == "soft"]
+    penalty_score = sum(v["penalty"] for v in violations)
+
+    if hard_violations:
+        return {
+            "allowed": False,
+            "simulation_type": simulation_type,
+            "penalty_score": penalty_score,
+            "hard_violations": hard_violations,
+            "soft_violations": soft_violations,
+            "results": None,
+        }
+
+    results = simulations[simulation_type](params)
+    return {
+        "allowed": True,
+        "simulation_type": simulation_type,
+        "penalty_score": penalty_score,
+        "hard_violations": hard_violations,
+        "soft_violations": soft_violations,
+        "results": results,
+    }
+
+
+# =============================================================================
 # LAMBDA HANDLER
 # =============================================================================
 
@@ -581,6 +777,7 @@ def lambda_handler(event: Dict[str, Any], context: Any = None) -> Dict[str, Any]
 
         simulation_type = event.get("simulation_type", "classical")
         params = event.get("parameters", {})
+        harsh_mode = bool(event.get("harsh_physics_mode", False))
 
         # Dispatch to appropriate simulation
         simulations = {
@@ -603,13 +800,31 @@ def lambda_handler(event: Dict[str, Any], context: Any = None) -> Dict[str, Any]
             }
 
         # Run simulation
-        results = simulations[simulation_type](params)
+        if harsh_mode:
+            wrapped = harsh_physics_mode(simulation_type, params)
+            if not wrapped["allowed"]:
+                return {
+                    "statusCode": 422,
+                    "body": json.dumps(
+                        {
+                            "error": "Non-physical input rejected by harsh mode",
+                            "simulation_type": simulation_type,
+                            "penalty_score": wrapped["penalty_score"],
+                            "hard_violations": wrapped["hard_violations"],
+                            "soft_violations": wrapped["soft_violations"],
+                        }
+                    ),
+                }
+            results = wrapped["results"]
+        else:
+            results = simulations[simulation_type](params)
 
         return {
             "statusCode": 200,
             "body": json.dumps(
                 {
                     "simulation_type": simulation_type,
+                    "harsh_physics_mode": harsh_mode,
                     "input_parameters": params,
                     "results": results,
                     "constants_used": {

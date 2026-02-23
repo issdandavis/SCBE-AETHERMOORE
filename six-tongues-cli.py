@@ -38,6 +38,7 @@ import json
 import math
 import os
 import random
+import secrets
 import sys
 import time
 from typing import Any, Dict, Iterable, List, Optional, Tuple
@@ -392,8 +393,12 @@ except ImportError:
 
 
 def hkdf(key: bytes, info: str) -> bytes:
-    """HKDF-like key derivation using HMAC-SHA256."""
-    return hmac.new(key, info.encode(), hashlib.sha256).digest()
+    """RFC 5869 HKDF-SHA256 (single 32-byte output block)."""
+    salt = b"\x00" * 32
+    # Extract
+    prk = hmac.new(salt, key, hashlib.sha256).digest()
+    # Expand (T1 only for 32-byte output)
+    return hmac.new(prk, info.encode() + b"\x01", hashlib.sha256).digest()
 
 
 def pqc_available() -> bool:
@@ -407,6 +412,9 @@ def kem_keygen() -> Tuple[bytes, bytes]:
         return _kem_keygen()
     sk = os.urandom(32)
     pk = hashlib.sha256(b"kem_pk:" + sk).digest()
+    # Mock mode: derive pk deterministically from sk for encaps/decaps consistency.
+    sk = secrets.token_bytes(32)
+    pk = hashlib.sha256(b"ml-kem-mock:pk:" + sk).digest()
     return pk, sk
 
 
@@ -421,6 +429,9 @@ def kyber_encaps(pk: bytes) -> Tuple[bytes, bytes]:
     nonce = os.urandom(32)
     ct = nonce + hashlib.sha256(b"ct" + pk + nonce).digest()
     ss = hashlib.sha256(b"ss" + pk + ct).digest()
+    # Mock mode: ciphertext carries an ephemeral nonce; shared secret binds pk + nonce.
+    ct = secrets.token_bytes(32)
+    ss = hmac.new(pk, b"ml-kem-mock:ss:" + ct, hashlib.sha256).digest()
     return ss, ct
 
 
@@ -433,6 +444,8 @@ def kyber_decaps(sk: bytes, ct: bytes) -> bytes:
         return _kem_decrypt(sk, ct)
     pk = hashlib.sha256(b"kem_pk:" + sk).digest()
     return hashlib.sha256(b"ss" + pk + ct).digest()
+    pk = hashlib.sha256(b"ml-kem-mock:pk:" + sk).digest()
+    return hmac.new(pk, b"ml-kem-mock:ss:" + ct, hashlib.sha256).digest()
 
 
 def dsa_keygen() -> Tuple[bytes, bytes]:
@@ -441,6 +454,9 @@ def dsa_keygen() -> Tuple[bytes, bytes]:
         return _dsa_keygen()
     sk = os.urandom(32)
     pk = hashlib.sha256(b"dsa_pk:" + sk).digest()
+    # Mock mode: derive pk deterministically from sk for sign/verify consistency.
+    sk = secrets.token_bytes(32)
+    pk = hashlib.sha256(b"ml-dsa-mock:pk:" + sk).digest()
     return pk, sk
 
 
@@ -450,6 +466,8 @@ def dsa_sign(sk: bytes, msg: bytes) -> bytes:
         return _dsa_sign_real(sk, msg)
     pk = hashlib.sha256(b"dsa_pk:" + sk).digest()
     return hmac.new(pk, msg, hashlib.sha256).digest()
+    pk = hashlib.sha256(b"ml-dsa-mock:pk:" + sk).digest()
+    return hmac.new(pk, b"ml-dsa-mock:sig:" + msg, hashlib.sha256).digest()
 
 
 def dsa_verify(pk: bytes, msg: bytes, sig: bytes) -> bool:
@@ -462,6 +480,7 @@ def dsa_verify(pk: bytes, msg: bytes, sig: bytes) -> bool:
         except Exception:
             return False
     expected = hmac.new(pk, msg, hashlib.sha256).digest()
+    expected = hmac.new(pk, b"ml-dsa-mock:sig:" + msg, hashlib.sha256).digest()
     return hmac.compare_digest(expected, sig)
 
 
@@ -515,10 +534,10 @@ def geoseal_encrypt(
         "path": path,
         "ring": ring_policy,
     }
-    sig = dsa_sign(
-        base64.b64decode(sk_dsa_b64),
-        hashlib.sha256(json.dumps(attest, sort_keys=True).encode() + ct_spec).digest(),
-    )
+    sig_payload = hashlib.sha256(
+        json.dumps(attest, sort_keys=True).encode() + ct_k + ct_spec
+    ).digest()
+    sig = dsa_sign(base64.b64decode(sk_dsa_b64), sig_payload)
     return {
         "ct_k": base64.b64encode(ct_k).decode(),
         "ct_spec": base64.b64encode(ct_spec).decode(),
@@ -539,11 +558,20 @@ def geoseal_decrypt(
     attest = env["attest"]
     sig = base64.b64decode(env["sig"]) if isinstance(env["sig"], str) else env["sig"]
 
-    if not dsa_verify(
-        base64.b64decode(pk_dsa_b64),
-        hashlib.sha256(json.dumps(attest, sort_keys=True).encode() + ct_spec).digest(),
-        sig,
-    ):
+    # Context binding check: same context must recreate the same realm projection.
+    Ls = int(attest.get("L_s", 2))
+    Lc = int(attest.get("L_c", 2))
+    u = project_to_sphere(context)
+    v = project_to_cube(context)
+    h_expected = healpix_id(u, Ls)
+    z_expected = morton_id(v, Lc)
+    if h_expected != attest.get("h") or z_expected != attest.get("z"):
+        return False, None
+
+    sig_payload = hashlib.sha256(
+        json.dumps(attest, sort_keys=True).encode() + ct_k + ct_spec
+    ).digest()
+    if not dsa_verify(base64.b64decode(pk_dsa_b64), sig_payload, sig):
         return False, None
 
     ss = kyber_decaps(base64.b64decode(sk_kem_b64), ct_k)
@@ -1183,20 +1211,13 @@ def selftest() -> int:
     pt = b"hello aethermoore"
     pt_b64 = base64.b64encode(pt).decode()
 
-    if pqc_available():
-        # Use real PQC keypairs
-        kem_pk, kem_sk = kem_keygen()
-        dsa_pk, dsa_sk = dsa_keygen()
-        kem_pk_b64 = base64.b64encode(kem_pk).decode()
-        kem_sk_b64 = base64.b64encode(kem_sk).decode()
-        dsa_pk_b64 = base64.b64encode(dsa_pk).decode()
-        dsa_sk_b64 = base64.b64encode(dsa_sk).decode()
-    else:
-        # Mock keys (same key for pk/sk in mock mode)
-        kem_pk_b64 = base64.b64encode(b"kem-key-32bytes-demo____").decode()
-        kem_sk_b64 = kem_pk_b64
-        dsa_pk_b64 = base64.b64encode(b"dsa-key-32bytes-demo____").decode()
-        dsa_sk_b64 = dsa_pk_b64
+    # Always use keygen so real and mock modes follow the same interface contract.
+    kem_pk, kem_sk = kem_keygen()
+    dsa_pk, dsa_sk = dsa_keygen()
+    kem_pk_b64 = base64.b64encode(kem_pk).decode()
+    kem_sk_b64 = base64.b64encode(kem_sk).decode()
+    dsa_pk_b64 = base64.b64encode(dsa_pk).decode()
+    dsa_sk_b64 = base64.b64encode(dsa_sk).decode()
 
     env = geoseal_encrypt(pt_b64, ctx, kem_pk_b64, dsa_sk_b64)
     check("envelope has ct_k", "ct_k" in env)

@@ -45,6 +45,7 @@ def test_pqc_audit_allows_valid_metadata() -> None:
                 "dilithium_id": "dili-1",
                 "last_rotated_hours": 1,
                 "rotation_hours": 720,
+                "drift_threshold": 0.999,
             }
         },
         {"workflow_id": "x"},

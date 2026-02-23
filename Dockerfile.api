@@ -43,11 +43,15 @@ COPY --from=builder /install /usr/local/lib/python3.11/site-packages/
 COPY --chown=scbe:scbe api/ ./api/
 COPY --chown=scbe:scbe src/ ./src/
 
+# Ensure runtime-writable directory exists for sqlite metering store.
+RUN mkdir -p /app/data && chown -R scbe:scbe /app
+
 # Set environment variables
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV SCBE_LOG_LEVEL=INFO
+ENV SCBE_METERING_DB_PATH=/app/data/scbe_metering.db
 # SECURITY: No default API key - must be provided at runtime
 # ENV SCBE_API_KEY is intentionally NOT set
 
@@ -59,7 +63,7 @@ EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:${PORT:-8080}/health')" || exit 1
+    CMD python -c "import os, urllib.request; urllib.request.urlopen(f\"http://localhost:{os.getenv('PORT', '8080')}/v1/health\")" || exit 1
 
-# Run the API - use shell form to expand PORT at runtime (Cloud Run compatibility)
-CMD uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-8080}
+# Run the API - use module invocation so uvicorn does not need a standalone binary.
+CMD python -m uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-8080}

@@ -24,7 +24,7 @@ Components:
 """
 
 from .spine import HydraSpine
-from .head import HydraHead, create_claude_head, create_codex_head, create_gpt_head
+from .head import HydraHead, create_claude_head, create_codex_head, create_gpt_head, create_local_head
 from .limbs import BrowserLimb, TerminalLimb, APILimb, MultiTabBrowserLimb
 from .librarian import Librarian, MemoryQuery, MemoryResult
 from .arxiv_retrieval import (
@@ -68,6 +68,28 @@ from .swarm_governance import (
     create_autonomous_coder,
     simulate_swarm_attack,
 )
+from .switchboard import Switchboard
+from .research import (
+    ResearchOrchestrator,
+    ResearchConfig,
+    ResearchReport,
+    ResearchSubTask,
+    ResearchSource,
+)
+from .llm_providers import (
+    LLMProvider,
+    LLMResponse,
+    ClaudeProvider,
+    OpenAIProvider,
+    GeminiProvider,
+    LocalProvider,
+    create_provider,
+    HYDRA_SYSTEM_PROMPT,
+)
+from .hf_summarizer import HFSummarizer
+from .browsers import BrowserBackend, PlaywrightBackend, SeleniumBackend, CDPBackend
+from .swarm_browser import SwarmBrowser, AGENTS as SWARM_AGENTS
+from .llm_providers import HuggingFaceProvider
 
 __all__ = [
     # Core
@@ -122,6 +144,33 @@ __all__ = [
     "create_swarm_governance",
     "create_autonomous_coder",
     "simulate_swarm_attack",
+    # Switchboard
+    "Switchboard",
+    # Research
+    "ResearchOrchestrator",
+    "ResearchConfig",
+    "ResearchReport",
+    "ResearchSubTask",
+    "ResearchSource",
+    "HFSummarizer",
+    # LLM Providers
+    "LLMProvider",
+    "LLMResponse",
+    "ClaudeProvider",
+    "OpenAIProvider",
+    "GeminiProvider",
+    "HuggingFaceProvider",
+    "LocalProvider",
+    "create_provider",
+    "HYDRA_SYSTEM_PROMPT",
+    # Browser Backends
+    "BrowserBackend",
+    "PlaywrightBackend",
+    "SeleniumBackend",
+    "CDPBackend",
+    # Swarm Browser
+    "SwarmBrowser",
+    "SWARM_AGENTS",
 ]
 
 __version__ = "1.3.0"
