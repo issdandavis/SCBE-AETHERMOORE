@@ -1,0 +1,84 @@
+{
+  "campaign_id": "scbe-x-monetize-launch",
+  "run_hours": 6,
+  "heartbeat_minutes": 15,
+  "channels": [
+    {
+      "name": "x",
+      "cadence_minutes": 180,
+      "enabled": true
+    },
+    {
+      "name": "x_reply",
+      "cadence_minutes": 90,
+      "enabled": true
+    },
+    {
+      "name": "merch_sale",
+      "cadence_minutes": 240,
+      "enabled": true
+    },
+    {
+      "name": "merch_upload",
+      "cadence_minutes": 360,
+      "enabled": true
+    }
+  ],
+  "posts": [
+    {
+      "id": "x-thread-01",
+      "channel": "x",
+      "title": "SCBE Build Thread",
+      "cta": "Follow for build logs + live automation drops.",
+      "offer_path": "/offers/scbe-autopilot"
+    },
+    {
+      "id": "x-thread-02",
+      "channel": "x",
+      "title": "Dispatcher Upgrade",
+      "cta": "Reply with your stack; we’ll publish a template.",
+      "offer_path": "/offers/scbe-connectors"
+    },
+    {
+      "id": "x-reply-01",
+      "channel": "x_reply",
+      "title": "Reply Queue",
+      "cta": "Drop your use case and we’ll map it.",
+      "offer_path": "/offers/scbe-audit"
+    },
+    {
+      "id": "merch-sale-01",
+      "channel": "merch_sale",
+      "title": "Merch Promo",
+      "cta": "Get the pack.",
+      "offer_path": "/shop/creator-ops-pack"
+    },
+    {
+      "id": "merch-upload-01",
+      "channel": "merch_upload",
+      "title": "Catalog Sync",
+      "cta": "Catalog update event",
+      "offer_path": "/shop"
+    }
+  ],
+  "retrigger_rules": [
+    {
+      "name": "low_ctr_x",
+      "channel": "x",
+      "metric": "ctr",
+      "operator": "lt",
+      "threshold": 0.015,
+      "cooldown_minutes": 60,
+      "action": "rewrite_hook"
+    },
+    {
+      "name": "low_conversion_merch",
+      "channel": "merch_sale",
+      "metric": "conversion_rate",
+      "operator": "lt",
+      "threshold": 0.01,
+      "cooldown_minutes": 120,
+      "action": "swap_offer_path"
+    }
+  ]
+}

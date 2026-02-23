@@ -1,0 +1,17 @@
+{
+  "title": "Ash Lantern - Volume 1",
+  "subtitle": "A Hand-Painted Grim-Dark Adventure for Young Readers",
+  "rating": "Ages 10+ (Kid-Safe Dark Fantasy)",
+  "formats": ["PDF", "EPUB"],
+  "price_usd": 9,
+  "includes": [
+    "Illustrated e-book",
+    "Lore companion",
+    "Printable art plates"
+  ],
+  "store_urls": {
+    "gumroad": "https://aetherdavis.gumroad.com",
+    "shopify": "https://PASTE-YOUR-SHOP"
+  },
+  "launch_tags": ["grimdark-kids", "illustrated-ebook", "fantasy", "worldbuilding"]
+}
