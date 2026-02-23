@@ -1,0 +1,61 @@
+name: Interface PR Ops Runner
+
+on:
+  workflow_dispatch:
+    inputs:
+      export_pr_queue:
+        description: "Export open PR queue snapshot"
+        required: false
+        default: "true"
+      validate_web_cursor_script:
+        description: "Validate local web-cursor merge script"
+        required: false
+        default: "true"
+  schedule:
+    - cron: "23 */6 * * *"
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  validate-web-cursor:
+    if: ${{ github.event_name == 'schedule' || inputs.validate_web_cursor_script == 'true' }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Script Help
+        shell: bash
+        run: |
+          python scripts/web_cursor_merge_prs.py --help
+
+  export-pr-queue:
+    if: ${{ github.event_name == 'schedule' || inputs.export_pr_queue == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build PR Queue Snapshot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/${{ github.repository }}/pulls --paginate --jq '.[] | {number,title,state,draft,html_url,updated_at}' > pr_queue.jsonl
+          wc -l pr_queue.jsonl || true
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-queue-${{ github.run_id }}
+          path: pr_queue.jsonl
+          if-no-files-found: error

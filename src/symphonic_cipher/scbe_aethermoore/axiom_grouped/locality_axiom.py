@@ -62,9 +62,7 @@ class LocalityCheckResult:
 
 
 def locality_check(
-    max_radius: float = 1.0,
-    require_sparse: bool = False,
-    max_bandwidth: Optional[int] = None,
+    max_radius: float = 2.0, require_sparse: bool = False, max_bandwidth: Optional[int] = None
 ) -> Callable[[F], F]:
     """
     Decorator that verifies an operation satisfies locality constraints.
@@ -87,6 +85,7 @@ def locality_check(
         def wrapper(*args, **kwargs):
             result = func(*args, **kwargs)
 
+            # Compute locality metrics when an operator matrix is present and set.
             # Compute locality metrics if the function has an associated matrix
             matrix = getattr(wrapper, "_operator_matrix", None)
             if matrix is not None:
@@ -112,10 +111,13 @@ def locality_check(
                 sparsity=sparsity,
                 bandwidth=bandwidth,
                 layer_name=func.__name__,
-                max_radius=max_radius,
+                max_radius=max_radius
             )
-
             wrapper.last_check = check_result
+
+            if not check_result.passed and require_sparse:
+                raise LocalityViolation(str(check_result))
+
             return result
 
         wrapper.last_check = None
@@ -124,8 +126,6 @@ def locality_check(
         return wrapper
 
     return decorator
-
-
 def _analyze_locality(matrix: np.ndarray) -> Tuple[float, float, Optional[int]]:
     """
     Analyze locality properties of an operator matrix.
@@ -601,3 +601,6 @@ def get_locality_layer(layer_num: int) -> dict:
 def list_locality_layers() -> list:
     """List all layers satisfying the locality axiom."""
     return list(LOCALITY_LAYERS.keys())
+
+
+
