@@ -1,9 +1,15 @@
 from __future__ import annotations
 
+import logging
+import math
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, List, Optional
 
 import torch
+
+logger = logging.getLogger(__name__)
+
+PHI = (1 + math.sqrt(5)) / 2
 
 CANONICAL_DIM = 21
 TONGUE_POSITION_DIMS = slice(0, 6)
@@ -38,6 +44,132 @@ class CanonicalState:
     @property
     def telemetry(self) -> torch.Tensor:
         return self.vector[TELEMETRY_DIMS]
+
+
+# ---------------------------------------------------------------------------
+# Layer 4: Gacha Floor & Monster Embedding
+# ---------------------------------------------------------------------------
+
+# Monster type -> system bug mapping (from Isekai Game Design)
+MONSTER_BUG_MAP = {
+    "glitchling": "null_pointer",
+    "drift_maw": "float_precision",
+    "echo_wraith": "race_condition",
+    "leak_slime": "memory_leak",
+    "phantom_fork": "forked_state",
+    "hollow_sprite": "cross_boundary_exploit",
+}
+
+
+def embed_gacha_floor(
+    floor_id: int,
+    monster_bug: Dict[str, float],
+    seed: Optional[int] = None,
+) -> torch.Tensor:
+    """Embed a gacha tower floor + monster into 21D canonical state.
+
+    The floor_id determines base tongue-subspace position in B^6.
+    The monster bug coefficients perturb the embedding — near-boundary
+    bugs (high coefficients) produce high harmonic wall cost, making
+    edge-case failures expensive to exploit.
+
+    Args:
+        floor_id: Tower floor number (1-indexed).
+        monster_bug: Dict with keys 'a', 'b', 'c' (quadratic coefficients
+                     representing the math-monster) and 'type' (bug name).
+        seed: Optional RNG seed for reproducibility.
+
+    Returns:
+        21D canonical state tensor for this floor encounter.
+    """
+    gen = torch.Generator()
+    if seed is not None:
+        gen.manual_seed(seed)
+    else:
+        gen.manual_seed(floor_id * 7919)  # Deterministic per floor
+
+    # Base tongue position — small norm, inside Poincaré ball
+    u = torch.randn(6, generator=gen) * 0.08
+    # Scale by floor depth — deeper floors drift closer to boundary
+    floor_scale = min(0.9, 0.05 * math.log1p(floor_id))
+    u = u * (1.0 + floor_scale)
+
+    # Monster bug perturbation — quadratic coefficients as Hamiltonian path offset
+    a = monster_bug.get("a", 1.0)
+    b = monster_bug.get("b", 0.0)
+    c = monster_bug.get("c", 0.0)
+    delta = torch.tensor([a, b, c, 0.0, 0.0, 0.0], dtype=torch.float32)
+    u = u + delta * 0.05  # A4: Clamping — small perturbation
+
+    # Clamp inside Poincaré ball (r < 1)
+    u_norm = torch.linalg.norm(u)
+    if u_norm >= 0.95:
+        u = u * (0.94 / u_norm)
+    u_norm = torch.linalg.norm(u)
+
+    # Tongue phase — floor-dependent oscillation
+    phase = torch.zeros(6)
+    for i in range(6):
+        phase[i] = math.sin(floor_id * PHI ** i) * 0.5
+
+    # Telemetry dims [12-20] — 9 dimensions total
+    # dim 12: intent signal (floor difficulty normalized)
+    intent = torch.tensor([min(1.0, floor_id / 100.0)])
+    # dims 13-15: coherence (spectral/spin/temporal)
+    coherence = torch.tensor([0.8, 0.7, 0.9])
+    # dim 16: risk aggregate
+    risk = torch.tensor([min(1.0, floor_id / 100.0)])
+    # dim 17: entropy density (bug complexity -> entropy)
+    entropy = torch.tensor([abs(a * 0.1 + b * 0.05)])
+    # dim 18: stabilization
+    stabilization = torch.tensor([max(0.0, 1.0 - floor_id / 50.0)])
+    # dim 19: radial cache
+    radial = torch.tensor([float(u_norm)])
+    # dim 20: harmonic energy cache
+    harmonic = harmonic_energy_from_radial(radial)
+
+    vector = torch.cat([u, phase, intent, coherence, risk, entropy, stabilization, radial, harmonic])
+
+    bug_type = monster_bug.get("type", "unknown")
+    logger.info(
+        "Layer 4 floor %d embedded: norm=%.3f, bug_type=%s",
+        floor_id, float(u_norm), bug_type,
+    )
+    return vector
+
+
+def compute_squad_ds_squared(
+    state_a: torch.Tensor,
+    state_b: torch.Tensor,
+    eps: float = 1e-12,
+) -> Dict[str, float]:
+    """Compute ds² between two 21D canonical states for squad path integrity.
+
+    Used by Layer 11 squad combat to validate Hamiltonian paths between
+    squad members and enemies.
+    """
+    u = state_a[TONGUE_POSITION_DIMS]
+    v = state_b[TONGUE_POSITION_DIMS]
+    diff = u - v
+    eucl_sq = float(torch.sum(diff * diff))
+    u_norm_sq = float(torch.sum(u * u))
+    v_norm_sq = float(torch.sum(v * v))
+
+    # Poincaré distance
+    denom = max(eps, (1.0 - u_norm_sq) * (1.0 - v_norm_sq))
+    arg = 1.0 + 2.0 * eucl_sq / denom
+    d_h = float(math.acosh(max(1.0, arg)))
+
+    # Boundary amplification
+    boundary_r = max(math.sqrt(u_norm_sq), math.sqrt(v_norm_sq))
+    amp = 1.0 / max(eps, 1.0 - boundary_r * boundary_r)
+
+    total = amp * d_h * d_h
+    return {
+        "total": total,
+        "hyperbolic_distance": d_h,
+        "boundary_amplification": amp,
+    }
 
 
 def validate_canonical_state(states: torch.Tensor, eps: float = 1e-6) -> Dict[str, float]:

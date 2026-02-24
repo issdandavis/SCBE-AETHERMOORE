@@ -12,7 +12,13 @@ try:
     from .wave import damped_wave
     from .smear import smear
     from .pipeline import M4Subsystem
-    from .canonical_state import CanonicalState, validate_canonical_state
+    from .canonical_state import (
+        CanonicalState,
+        validate_canonical_state,
+        embed_gacha_floor,
+        compute_squad_ds_squared,
+        MONSTER_BUG_MAP,
+    )
     from .canonical_bridge import run_governance_pipeline
 except ImportError:  # pragma: no cover - allows environments without torch
     MeshOps = None
@@ -30,6 +36,9 @@ except ImportError:  # pragma: no cover - allows environments without torch
     M4Subsystem = None
     CanonicalState = None
     validate_canonical_state = None
+    embed_gacha_floor = None
+    compute_squad_ds_squared = None
+    MONSTER_BUG_MAP = None
     run_governance_pipeline = None
 
 __all__ = [
@@ -50,4 +59,7 @@ __all__ = [
     "CanonicalState",
     "validate_canonical_state",
     "run_governance_pipeline",
+    "embed_gacha_floor",
+    "compute_squad_ds_squared",
+    "MONSTER_BUG_MAP",
 ]
