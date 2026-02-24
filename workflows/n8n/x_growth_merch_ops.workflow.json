@@ -24,7 +24,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const raw = $json.body ?? $json;\nconst action = String(raw.action || 'post').toLowerCase();\nconst text = String(raw.text || '');\nconst replyTo = String(raw.reply_to || '');\nconst productUrl = String(raw.product_url || 'https://aetherdavis.gumroad.com');\nconst productName = String(raw.product_name || 'SCBE Product');\n\nreturn [{\n  json: {\n    action,\n    text,\n    reply_to: replyTo,\n    product_url: productUrl,\n    product_name: productName,\n    scbe_api_key: String(raw.scbe_api_key || 'PASTE_SCBE_API_KEY'),\n    x_bearer: String(raw.x_bearer || 'PASTE_X_BEARER_TOKEN')\n  }\n}];"
+        "jsCode": "const raw = $json.body ?? $json;\nconst action = String(raw.action || 'post').toLowerCase();\nconst text = String(raw.text || '');\nconst replyTo = String(raw.reply_to || '');\nconst productUrl = String(raw.product_url || 'https://aetherdavis.gumroad.com');\nconst productName = String(raw.product_name || 'SCBE Product');\n\nreturn [{\n  json: {\n    action,\n    text,\n    reply_to: replyTo,\n    product_url: productUrl,\n    product_name: productName,\n    scbe_api_key: String(raw.scbe_api_key || $env.SCBE_API_KEY || 'scbe-dev-key'),\n    x_bearer: String(raw.x_bearer || $env.X_BEARER_TOKEN || '')\n  }\n}];"
       },
       "id": "normalize",
       "name": "Normalize Payload",

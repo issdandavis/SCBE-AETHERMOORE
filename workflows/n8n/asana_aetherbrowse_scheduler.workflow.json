@@ -41,7 +41,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer PASTE_ASANA_PAT"
+              "value": "={{ `Bearer ${$env.ASANA_PAT}` }}"
             },
             {
               "name": "Content-Type",
@@ -79,7 +79,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const projectId = \"1210507086219964\";\nconst asanaToken = \"PASTE_ASANA_PAT\";\nconst scbeApiKey = \"PASTE_SCBE_API_KEY\";\nconst scbeBrowseUrl = \"https://PASTE-CLOUD-RUN-HOST/v1/integrations/n8n/browse\";\n\nconst data = Array.isArray($json.data) ? $json.data : [];\nconst today = new Date().toISOString().slice(0, 10);\nconst urlRegex = /https?:\\/\\/[^\\s)]+/i;\n\nconst out = [];\nfor (const task of data) {\n  if (task.completed) continue;\n  if (task.due_on && task.due_on > today) continue;\n\n  const notes = String(task.notes || \"\");\n  const match = notes.match(urlRegex);\n  const target = match ? match[0] : \"https://example.com\";\n\n  out.push({\n    json: {\n      task_gid: task.gid,\n      task_name: task.name || `task-${task.gid}`,\n      asana_token: asanaToken,\n      scbe_api_key: scbeApiKey,\n      scbe_url: scbeBrowseUrl,\n      session_id: `asana-task-${task.gid}`,\n      workflow_id: `asana-project-${projectId}`,\n      run_id: `n8n-${Date.now()}`,\n      actions: [\n        { action: \"navigate\", target, timeout_ms: 12000 },\n        { action: \"extract\", target: \"h1\", timeout_ms: 12000 },\n        { action: \"screenshot\", target: \"full_page\", timeout_ms: 12000 }\n      ]\n    }\n  });\n}\n\nreturn out;"
+        "jsCode": "const projectId = \"1210507086219964\";\nconst asanaToken = $env.ASANA_PAT || \"\";\nconst scbeApiKey = $env.SCBE_API_KEY || \"scbe-dev-key\";\nconst scbeBrowseUrl = $env.SCBE_BROWSER_WEBHOOK_URL || \"http://127.0.0.1:8001/v1/integrations/n8n/browse\";\n\nconst data = Array.isArray($json.data) ? $json.data : [];\nconst today = new Date().toISOString().slice(0, 10);\nconst urlRegex = /https?:\\/\\/[^\\s)]+/i;\n\nconst out = [];\nfor (const task of data) {\n  if (task.completed) continue;\n  if (task.due_on && task.due_on > today) continue;\n\n  const notes = String(task.notes || \"\");\n  const match = notes.match(urlRegex);\n  const target = match ? match[0] : \"https://example.com\";\n\n  out.push({\n    json: {\n      task_gid: task.gid,\n      task_name: task.name || `task-${task.gid}`,\n      asana_token: asanaToken,\n      scbe_api_key: scbeApiKey,\n      scbe_url: scbeBrowseUrl,\n      session_id: `asana-task-${task.gid}`,\n      workflow_id: `asana-project-${projectId}`,\n      run_id: `n8n-${Date.now()}`,\n      actions: [\n        { action: \"navigate\", target, timeout_ms: 12000 },\n        { action: \"extract\", target: \"h1\", timeout_ms: 12000 },\n        { action: \"screenshot\", target: \"full_page\", timeout_ms: 12000 }\n      ]\n    }\n  });\n}\n\nreturn out;"
       },
       "id": "build_browser_jobs",
       "name": "Build Browser Jobs",
@@ -123,7 +123,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const res = $json;\nconst session = String(res.session_id || \"\");\nconst gid = session.replace(/^asana-task-/, \"\");\nconst results = Array.isArray(res.results) ? res.results : [];\nconst successes = results.filter(r => r && r.success === true).length;\n\nlet decision = \"NOISE\";\nif (results.length > 0 && successes === results.length) {\n  decision = \"ALLOW\";\n} else if (successes > 0) {\n  decision = \"QUARANTINE\";\n}\n\nconst comment = `[SCBE][AetherBrowse] decision=${decision} executed=${res.executed_actions ?? 0}/${res.total_actions ?? 0} trace=${res.trace ?? \"\"}`;\n\nreturn [{\n  json: {\n    task_gid: gid,\n    decision,\n    comment,\n    asana_token: \"PASTE_ASANA_PAT\"\n  }\n}];"
+        "jsCode": "const res = $json;\nconst session = String(res.session_id || \"\");\nconst gid = session.replace(/^asana-task-/, \"\");\nconst results = Array.isArray(res.results) ? res.results : [];\nconst successes = results.filter(r => r && r.success === true).length;\n\nlet decision = \"NOISE\";\nif (results.length > 0 && successes === results.length) {\n  decision = \"ALLOW\";\n} else if (successes > 0) {\n  decision = \"QUARANTINE\";\n}\n\nconst comment = `[SCBE][AetherBrowse] decision=${decision} executed=${res.executed_actions ?? 0}/${res.total_actions ?? 0} trace=${res.trace ?? \"\"}`;\n\nreturn [{\n  json: {\n    task_gid: gid,\n    decision,\n    comment,\n    asana_token: $env.ASANA_PAT || \"\"\n  }\n}];"
       },
       "id": "build_asana_comment",
       "name": "Build Asana Comment",
