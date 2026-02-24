@@ -4,6 +4,63 @@
 
 ## Documentation Index
 
+### Operator Quick Lanes (Current)
+
+Use this section when running day-to-day ROM + Obsidian + multi-agent workflows.
+
+#### ROM Training Data (GB/GBC)
+- Reader test (`Pokemon Crystal` memory profile):
+```powershell
+python demo/pokemon_memory.py --rom "C:\path\to\crystal.gbc" --steps 1500 --sample-every 25 --test --i-own-this-rom
+```
+- Bridge run (JSONL + optional GIF):
+```powershell
+python demo/rom_emulator_bridge.py --rom "C:\path\to\crystal.gbc" --steps 8000 --sample-every 8 --ocr-every 20 --max-pairs 600 --smart-agent --game pokemon_crystal --i-own-this-rom
+```
+- Primary refs:
+  - [`ROM_EMULATOR_COLAB.md`](ROM_EMULATOR_COLAB.md)
+  - [`ROM_OBSIDIAN_EXECUTION_PLAN_2026-02-24.md`](ROM_OBSIDIAN_EXECUTION_PLAN_2026-02-24.md)
+- One-command ROM -> Obsidian run:
+```powershell
+.\scripts\system\rom_obsidian_domino.ps1 `
+  -RomPath "C:\path\to\crystal.gbc" `
+  -VaultPath "C:\Users\issda\OneDrive\Documents\DOCCUMENTS\A follder" `
+  -InitHub $true `
+  -SmartAgent $true `
+  -CaptureGif
+```
+
+#### Obsidian Multi-AI Hub
+- Domino sync + hub bootstrap:
+```powershell
+.\scripts\system\obsidian_multi_ai_domino.ps1 `
+  -VaultPath "C:\Users\issda\OneDrive\Documents\DOCCUMENTS\A follder" `
+  -InitHub `
+  -SyncNotion
+```
+- Recompute training totals and push snapshot to Round Table + Shared State:
+```powershell
+.\scripts\system\update_training_totals.ps1 `
+  -VaultRoot "C:\Users\issda\OneDrive\Documents\DOCCUMENTS\A follder" `
+  -WorkspaceName "AI Workspace"
+```
+- Post an inter-AI handoff to Cross Talk + Sessions:
+```powershell
+.\scripts\system\cross_talk_append.ps1 `
+  -Agent "Codex" `
+  -Task "what-you-finished" `
+  -Status "done" `
+  -Summary "one-line summary" `
+  -Artifacts "path1","path2"
+```
+- Primary ref:
+  - [`OBSIDIAN_MULTI_AI_DOMINO.md`](OBSIDIAN_MULTI_AI_DOMINO.md)
+
+#### Default path conventions (team shorthand)
+- `@r/<name>` means `docs/<name>.md`
+- `@o/<name>` means `C:\Users\issda\OneDrive\Documents\DOCCUMENTS\A follder\AI Workspace\<name>.md`
+- `@readme` means `docs/README.md`
+
 ### Canonical Spec
 - [`../SPEC.md`](../SPEC.md)
 - [`LANGUES_WEIGHTING_SYSTEM.md`](LANGUES_WEIGHTING_SYSTEM.md)
@@ -50,6 +107,7 @@
 
 ### Operations
 - [`AI_BROWSER_ACCESS.md`](AI_BROWSER_ACCESS.md)
+- [`03-deployment/firebase-studio-game-sync.md`](03-deployment/firebase-studio-game-sync.md)
 
 ## Documentation Structure
 
