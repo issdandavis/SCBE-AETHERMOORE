@@ -955,6 +955,87 @@ async def acknowledge_alert(
 
 
 # =============================================================================
+# AetherNet Game Bridge (n8n <-> Aethermoor Game)
+# =============================================================================
+
+class GameActionRequest(BaseModel):
+    action_type: str = Field(
+        ...,
+        description="Action: spawn_enemy, give_item, trigger_scene, send_dialogue, modify_stat, tv_show, training_result, world_event",
+    )
+    data: Dict[str, Any] = Field(default_factory=dict, description="Action payload")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "action_type": "send_dialogue",
+                "data": {"speaker": "POLLY", "text": "The AetherNet stirs..."},
+            }
+        }
+
+
+@app.post("/v1/game/action", tags=["AetherNet"])
+async def push_game_action(
+    request: GameActionRequest,
+    tenant: str = Depends(verify_api_key),
+):
+    """
+    Push an action into the running Aethermoor game via AetherNet.
+
+    n8n workflows call this to trigger in-game effects:
+    - spawn_enemy: {name, tongue, hp, attack}
+    - give_item: {item, amount}
+    - trigger_scene: {scene_id}
+    - send_dialogue: {speaker, text}
+    - modify_stat: {stat, delta}
+    - tv_show: {show, content, channel}
+    - training_result: {metrics: {loss, accuracy, ...}}
+    """
+    try:
+        from demo.n8n_bridge import GameAction, get_shared_bus
+    except ImportError:
+        raise HTTPException(status_code=503, detail="AetherNet bridge not available")
+
+    bus = get_shared_bus()
+    if bus is None:
+        raise HTTPException(status_code=503, detail="Game not running")
+
+    action_id = f"act_{uuid.uuid4().hex[:8]}"
+    action = GameAction(
+        action_type=request.action_type,
+        action_id=action_id,
+        data=request.data,
+    )
+    queued = bus.put_action(action)
+
+    if not queued:
+        raise HTTPException(status_code=429, detail="Action queue full")
+
+    logger.info(json.dumps({
+        "event": "aethernet_action_queued",
+        "action_id": action_id,
+        "action_type": request.action_type,
+        "tenant": tenant,
+    }))
+
+    return {"action_id": action_id, "status": "queued"}
+
+
+@app.get("/v1/game/status", tags=["AetherNet"])
+async def game_bridge_status(tenant: str = Depends(verify_api_key)):
+    """Get AetherNet bridge status (game event bus stats)."""
+    try:
+        from demo.n8n_bridge import get_shared_bus
+    except ImportError:
+        return {"online": False, "message": "AetherNet bridge not installed"}
+
+    bus = get_shared_bus()
+    if bus is None:
+        return {"online": False, "message": "Game not running"}
+    return bus.status()
+
+
+# =============================================================================
 # Trust History Endpoints
 # =============================================================================
 
