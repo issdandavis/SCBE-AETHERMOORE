@@ -86,3 +86,29 @@ export {
 // Codex terminal (SCBE-gated internet access)
 export { CodexTerminal } from './codexTerminal.js';
 export type { CodexRequest, CodexEvaluation, CodexCategory } from './codexTerminal.js';
+
+// Micro blockchain ledger (AI-to-AI service trading)
+export {
+  DENOMINATION_WEIGHTS,
+  SERVICE_BASE_COSTS,
+  exchangeRate,
+  energyCost,
+  faceValue,
+  creditHash,
+  mintCredit,
+  merkleRoot,
+  blockHash,
+  ContextLedger,
+  ComputeExchange,
+} from './microLedger.js';
+export type {
+  Denomination,
+  ServiceType,
+  CreditDNA,
+  ContextCredit,
+  Block,
+  ExchangeOffer,
+  ExchangeTransaction,
+  ExchangeState,
+  OfferType,
+} from './microLedger.js';
