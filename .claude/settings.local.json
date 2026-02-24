@@ -35,7 +35,13 @@
       "Bash(cd \"C:\\\\Users\\\\issda\\\\SCBE_Production_Pack_local\" && python games/spiralverse_terminal.py 2>&1 <<'EOF'\n1\n2\n1\nEO)",
       "Bash(cd:*)",
       "Bash(grep:*)",
-      "Bash(tail:*)"
+      "Bash(tail:*)",
+      "Bash(SDL_VIDEODRIVER=dummy python:*)",
+      "Bash(start python:*)",
+      "mcp__notion-sweep__notion_search",
+      "mcp__notion-sweep__notion_list_pages",
+      "mcp__notion-sweep__notion_fetch_page",
+      "mcp__claude_ai_Notion__notion-search"
     ]
   },
   "enableAllProjectMcpServers": true,
