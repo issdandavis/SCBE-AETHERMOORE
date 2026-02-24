@@ -112,3 +112,40 @@ export type {
   ExchangeState,
   OfferType,
 } from './microLedger.js';
+
+// Energy token system (Human Currency → Compute Bridge)
+export {
+  SECONDS_PER_TOKEN,
+  TOKEN_PACKAGES,
+  ACTIVITY_COSTS,
+  EnergyWallet,
+} from './energyToken.js';
+export type {
+  TokenPackage,
+  ActivityCost,
+  PurchaseRecord,
+  ConsumptionRecord,
+} from './energyToken.js';
+
+// Training pipeline (Game Events → SFT → HuggingFace Fine-Tune)
+export {
+  AUTO_APPROVE_THRESHOLD,
+  QUARANTINE_THRESHOLD,
+  MIN_QUALITY_SCORE,
+  FINE_TUNE_THRESHOLD,
+  TrainingPipeline,
+  createGameEvent,
+} from './trainingPipeline.js';
+export type {
+  GameEventType,
+  GameEvent,
+  EventContext,
+  EventAction,
+  EventOutcome,
+  DatasetTier,
+  DatasetRecord,
+  SFTPair,
+  HFBatch,
+  FineTuneJob,
+  AdventureSession,
+} from './trainingPipeline.js';

@@ -15,6 +15,9 @@ Modules:
     skill_tree  — Player 6-path skill tree
     regions     — Tongue regions + 100-floor tower
     codex_terminal — SCBE-gated internet access
+    micro_ledger    — AI-to-AI micro blockchain service trading
+    energy_token    — Human Currency → Compute Bridge
+    training_pipeline — Game Events → SFT → HuggingFace Fine-Tune
 """
 
 from .types import (
@@ -34,6 +37,8 @@ from .combat import compute_type_advantage, calculate_damage
 from .sacred_eggs import check_hatchable_eggs, egg_starting_tongue
 from .symbiotic_network import SymbioticNetwork
 from .regions import REGIONS, get_tower_floor, get_rank
+from .energy_token import EnergyWallet, TOKEN_PACKAGES, ACTIVITY_COSTS
+from .training_pipeline import TrainingPipeline, create_game_event
 
 __all__ = [
     "TONGUE_CODES",
@@ -57,4 +62,9 @@ __all__ = [
     "REGIONS",
     "get_tower_floor",
     "get_rank",
+    "EnergyWallet",
+    "TOKEN_PACKAGES",
+    "ACTIVITY_COSTS",
+    "TrainingPipeline",
+    "create_game_event",
 ]
