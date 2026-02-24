@@ -12,6 +12,9 @@ Controls:
   Arrow keys / WASD  - Navigate menus
   Enter / Space      - Advance dialogue / select
   1-7                - Quick-select choices
+  P                  - Open Poly Pad (phone / in-game PC)
+  I                  - Open CodeLab IDE when at a terminal
+  L                  - Open lore library when at a terminal
   Tab                - Toggle dashboard detail
   Escape             - Pause menu
   B                  - Toggle battle mode (testing)
@@ -43,6 +46,7 @@ from engine import (
     GameState,
     Palette,
     Spell,
+    Stats,
     Tongue,
     TONGUE_NAMES,
     TONGUE_WEIGHTS,
@@ -58,6 +62,28 @@ from engine import (
     scene_transit,
     scene_aethermoor_arrival,
 )
+
+# ---------------------------------------------------------------------------
+# Import new Phase 1-5 modules
+# ---------------------------------------------------------------------------
+from n8n_bridge import (
+    GameEventBus, GameEventType, GameAction, GameActionType,
+    set_shared_bus, create_bus_from_env, start_inbound_server,
+)
+from overworld import OverworldManager
+from tilemap import TileType, TILE_SIZE
+from player import Direction
+from dungeon import TowerManager, DungeonFloor, generate_floor_enemies, generate_boss
+from pivot_knowledge import (
+    PivotKnowledge, SacredLanguages, TrainingDataGenerator,
+    build_npc_knowledge,
+)
+from npc_brain import create_npc_brain, NPCBrain
+from hf_trainer import RealTimeHFTrainer, TrainingEvent, load_dotenv
+from headless import HeadlessDisplay, detect_environment, RuntimeEnv
+
+# Load .env for HF_TOKEN / GOOGLE_AI_KEY
+load_dotenv()
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -100,6 +126,184 @@ TONGUE_FULL_NAMES: Dict[str, str] = {
     "UM": "Umbroth",
     "DR": "Draumric",
 }
+
+POLYPAD_APPS: List[str] = ["Home", "Contacts", "Messages", "Missions", "PC Box", "IDE"]
+
+IDE_TERMINALS: Dict[str, List[Tuple[int, int, str]]] = {
+    # Tile coordinates where Enter can open CodeLab directly from overworld.
+    "guild_hub": [(20, 7, "Guild Hall Terminal")],
+    "avalon_academy": [(15, 12, "Academy Terminal")],
+    "spiral_tower_entrance": [(10, 8, "Tower Ops Console")],
+}
+
+IDE_TICKETS: List[Dict[str, Any]] = [
+    {
+        "id": "null_guard",
+        "title": "Route Parser Null Guard",
+        "brief": "Navigator crashes when waypoint metadata is missing during fast travel.",
+        "tongue": "RU",
+        "reward_gold": 40,
+        "risk_penalty": 1,
+        "actions": [
+            {
+                "label": "Add Guard Clause",
+                "success": True,
+                "outcome": "Parser stabilized. Missing waypoints are skipped with a warning.",
+            },
+            {
+                "label": "Force Cast Waypoint",
+                "success": False,
+                "outcome": "Runtime panic. Route stack corrupts after two transitions.",
+            },
+            {
+                "label": "Retry Until It Works",
+                "success": False,
+                "outcome": "Loop spikes CPU usage and blocks mission updates.",
+            },
+            {
+                "label": "Write Regression Test First",
+                "success": True,
+                "outcome": "Test reproduces crash and validates the guard-clause fix.",
+            },
+        ],
+    },
+    {
+        "id": "race_lock",
+        "title": "Battle Event Race Condition",
+        "brief": "Battle result and rewards fire twice when network latency is high.",
+        "tongue": "KO",
+        "reward_gold": 50,
+        "risk_penalty": 1,
+        "actions": [
+            {
+                "label": "Add Event Lock",
+                "success": True,
+                "outcome": "Single-writer lock prevents duplicate reward commits.",
+            },
+            {
+                "label": "Increase Tick Rate",
+                "success": False,
+                "outcome": "Higher tick rate worsens desync and packet overlap.",
+            },
+            {
+                "label": "Queue + Deduplicate IDs",
+                "success": True,
+                "outcome": "Event queue now ignores repeated battle IDs safely.",
+            },
+            {
+                "label": "Ignore for Demo",
+                "success": False,
+                "outcome": "Players duplicate loot and progression stats drift.",
+            },
+        ],
+    },
+    {
+        "id": "save_schema",
+        "title": "Save Schema Migration",
+        "brief": "Older save files fail because new fields are missing in profile data.",
+        "tongue": "DR",
+        "reward_gold": 45,
+        "risk_penalty": 1,
+        "actions": [
+            {
+                "label": "Add Default Migration Map",
+                "success": True,
+                "outcome": "Legacy saves load with stable defaults and version bump.",
+            },
+            {
+                "label": "Delete Legacy Saves",
+                "success": False,
+                "outcome": "Player trust drops after data loss complaints.",
+            },
+            {
+                "label": "Ship Hotfix Without Tests",
+                "success": False,
+                "outcome": "Migration passes locally but breaks cloud backup sync.",
+            },
+            {
+                "label": "Add Compatibility Validator",
+                "success": True,
+                "outcome": "Validator blocks malformed saves before write time.",
+            },
+        ],
+    },
+    {
+        "id": "shader_budget",
+        "title": "Sapphire Palette Budget",
+        "brief": "New effects reduce readability; keep Ruby/Sapphire clarity with better feel.",
+        "tongue": "CA",
+        "reward_gold": 35,
+        "risk_penalty": 1,
+        "actions": [
+            {
+                "label": "Tone-map UI Contrast",
+                "success": True,
+                "outcome": "HUD readability returns while preserving richer color depth.",
+            },
+            {
+                "label": "Add More Bloom",
+                "success": False,
+                "outcome": "Bloom washes text edges and weakens battle readability.",
+            },
+            {
+                "label": "Split FX into Mini-game Scenes",
+                "success": True,
+                "outcome": "Core loop stays clean; heavy FX run only inside mini-games.",
+            },
+            {
+                "label": "Drop Back to Flat Colors",
+                "success": False,
+                "outcome": "Visual quality regresses below target baseline.",
+            },
+        ],
+    },
+]
+
+LORE_BOOKS: List[Dict[str, str]] = [
+    {
+        "id": "six_tongues_primer",
+        "title": "Six Tongues Integration Primer",
+        "source": "Obsidian: Context Room/99 - Isekai Six Tongues Integration.md",
+        "body": (
+            "Dialogue layer by emotional intent: KO for bonding and oaths, AV for diplomacy "
+            "and bridges, RU for legacy and archives, CA for invention and workshop scenes, "
+            "UM for grief and threshold moments, DR for forge and defense. "
+            "Scene cards should track Tongue used, emotional signature target, society present, "
+            "song anchor, and canon citation. Treat derived affect as proposed until canon lock."
+        ),
+    },
+    {
+        "id": "shared_state_manual",
+        "title": "Shared State Field Manual",
+        "source": "Obsidian: AI Workspace/Context/Shared State.md",
+        "body": (
+            "SCBE runtime has 14 layers with governance outcomes ALLOW, DENY, or QUARANTINE. "
+            "Game loop aligns to that model by recording choices, combat, and dialogue as "
+            "training artifacts. Keep technical SCBE and story canon linked only through "
+            "explicit source evidence."
+        ),
+    },
+    {
+        "id": "round_table_ops",
+        "title": "Round Table Operations",
+        "source": "Obsidian: AI Workspace/Round Table.md",
+        "body": (
+            "Agent workflow: read shared state, claim tasks, execute, write handoff, update status. "
+            "Open task from coordination board: add Morrowind-style in-game books with lore lessons. "
+            "Rule: coordinate, do not collide. Use explicit paths and preserve continuity."
+        ),
+    },
+    {
+        "id": "hybrid_patch_notes",
+        "title": "Hybrid Patch Notes",
+        "source": "Obsidian: Context Room/105 - Digimon Pokemon Hybrid Patch 2026-02-23.md",
+        "body": (
+            "Pokemon clarity plus Digimon identity progression: class loadouts, partner bond, "
+            "reputation, branching story battles, and training payload upgrades. "
+            "UI should surface class, partner, reputation, and bond without cluttering the core loop."
+        ),
+    },
+]
 
 SCBE_LAYERS: List[Tuple[int, str, Tuple[int, int, int]]] = [
     (1, "Intent", (220, 60, 60)),
@@ -864,7 +1068,15 @@ def lerp_color(c1: Tuple[int, int, int], c2: Tuple[int, int, int], t: float) -> 
 class AethermoorGame:
     """Main game class -- single-file Pygame-CE pilot demo."""
 
-    def __init__(self) -> None:
+    def __init__(self, headless: bool = False) -> None:
+        # Headless display setup (must happen BEFORE pygame.init)
+        self.headless_display: Optional[HeadlessDisplay] = None
+        if headless:
+            self.headless_display = HeadlessDisplay(
+                width=GAME_W, height=GAME_H,
+            )
+            self.headless_display.start()
+
         pygame.init()
         pygame.display.set_caption(GAME_TITLE)
 
@@ -882,6 +1094,29 @@ class AethermoorGame:
         self.battle = BattleManager()
         self.particles = ParticleSystem()
         self.exporter = TrainingExporter()
+
+        # Phase 1-5 managers
+        self.overworld = OverworldManager()
+        self.tower = TowerManager()
+        self.hf_trainer = RealTimeHFTrainer()
+        self.dialogue_gen = TrainingDataGenerator()
+        self.sacred_langs = SacredLanguages()
+        self.npc_brains: Dict[str, NPCBrain] = {}
+        self.npc_knowledge: Dict[str, PivotKnowledge] = {}
+
+        # Dialogue state (Phase 3)
+        self.dialogue_active: bool = False
+        self.dialogue_npc_id: str = ""
+        self.dialogue_response: str = ""
+        self.dialogue_pivots: List[Tuple[str, str]] = []
+        self.dialogue_pivot_cursor: int = 0
+        self.dialogue_sacred_text: str = ""
+
+        # Dungeon state (Phase 2)
+        self.dungeon_active: bool = False
+        self.dungeon_player_x: int = 1
+        self.dungeon_player_y: int = 1
+        self.dungeon_view_offset: Tuple[int, int] = (0, 0)
 
         # Game state
         self.cast = create_cast()
@@ -914,6 +1149,65 @@ class AethermoorGame:
             "Keys": False,
             "Gold": 0,
         }
+        # Poly Pad (cellphone / in-game PC) state.
+        self.polypad_tab: int = 0
+        self.polypad_cursor: int = 0
+        self.polypad_return_phase: str = "overworld"
+        self.polypad_contacts: List[Dict[str, Any]] = [
+            {"name": "MOM", "status": "Home", "last_call": "Never"},
+            {"name": "POLLY", "status": "On shoulder", "last_call": "Never"},
+            {"name": "CLAY", "status": "Guild Hub", "last_call": "Never"},
+            {"name": "MARCUS", "status": "Outer systems", "last_call": "Never"},
+            {"name": "FLEET COMMS", "status": "Listening", "last_call": "Never"},
+        ]
+        self.polypad_messages: List[Dict[str, Any]] = [
+            {
+                "from": "SYSTEM",
+                "subject": "Poly Pad Link",
+                "body": "Pick up your Poly Pad to unlock calls, mission logs, and PC box ops.",
+                "unread": True,
+                "time": "Boot",
+            },
+            {
+                "from": "POLLY",
+                "subject": "Quick Tip",
+                "body": "Core loop stays simple. Complex systems route through mini-game channels.",
+                "unread": True,
+                "time": "Boot",
+            },
+        ]
+        self.polypad_call_log: List[str] = []
+        self.polypad_missions: List[Dict[str, Any]] = [
+            {
+                "title": "Village Start",
+                "desc": "Collect kit, talk to Mom, and head toward the shoreline.",
+                "status": "active",
+            },
+            {
+                "title": "Traveler Assist",
+                "desc": "Help route the traveler and log goodwill for guild trust.",
+                "status": "queued",
+            },
+            {
+                "title": "Shoreline Threat",
+                "desc": "Handle ripple-beast event. Battle or tame based on risk posture.",
+                "status": "queued",
+            },
+        ]
+        # CodeLab IDE state (in-game computer coding mini-game).
+        self.ide_cursor: int = 0
+        self.ide_ticket_index: int = 0
+        self.ide_return_phase: str = "overworld"
+        self.ide_resolved: int = 0
+        self.ide_failures: int = 0
+        self.ide_last_result: str = "No coding runs yet."
+        self.ide_history: List[str] = []
+        # In-game lore library (Morrowind-style readable books).
+        self.library_index: int = 0
+        self.library_scroll: int = 0
+        self.library_return_phase: str = "ide"
+        self.library_reads: int = 0
+        self.library_read_books: Set[str] = set()
         self.materials: Dict[str, int] = {
             "herb": 0,
             "driftwood": 0,
@@ -971,8 +1265,39 @@ class AethermoorGame:
         self.bg_stars: List[Tuple[int, int, int]] = []
         self._generate_stars()
 
+        # Initialize overworld + NPC brains
+        self.overworld.initialize(self.cast["izack"], GAME_W, GAME_H)
+        self._init_npc_systems()
+
+        # Start HF trainer background thread
+        self.hf_trainer.start()
+
         # Game screen surface (rendered separately)
         self.game_surface = pygame.Surface((GAME_W, GAME_H))
+
+        # AetherNet bridge (n8n game event bus)
+        self.n8n_bus = create_bus_from_env()
+        if self.n8n_bus.enabled:
+            self.n8n_bus.start()
+        # Inbound HTTP server — n8n POSTs actions to localhost:9800/action
+        start_inbound_server()
+        # AetherNet announcement queue (overlay messages from n8n)
+        self.aethernet_announcements: List[Tuple[str, float]] = []
+
+        # Evolution screen state
+        self._evo_char: Optional[Character] = None
+        self._evo_from: str = ""
+        self._evo_to: str = ""
+        self._evo_timer: float = 0.0
+        self._evo_phase: int = 0  # 0=glow, 1=transform, 2=reveal, 3=done
+        self._evo_return_phase: str = "overworld"
+
+        # Gacha screen state
+        self._gacha_timer: float = 0.0
+        self._gacha_phase: int = 0  # 0=swirl, 1=crack, 2=reveal, 3=done
+        self._gacha_result: Optional[Character] = None
+        self._gacha_rarity: int = 1  # 1-5 stars
+        self._gacha_return_phase: str = "overworld"
 
         # Layer activity animation
         self.layer_activity: Dict[int, float] = {i: 0.0 for i in range(1, 15)}
@@ -985,6 +1310,501 @@ class AethermoorGame:
             y = random.randint(0, GAME_H)
             brightness = random.randint(80, 255)
             self.bg_stars.append((x, y, brightness))
+
+    def _init_npc_systems(self) -> None:
+        """Build PivotKnowledge and NPCBrain for each major NPC."""
+        npc_defs = [
+            ("polly", "Polly", "KO"),
+            ("clay", "Clay", "RU"),
+            ("eldrin", "Eldrin", "AV"),
+            ("aria", "Aria Ravencrest", "UM"),
+            ("zara", "Zara Millwright", "DR"),
+            ("kael", "Kael Nightwhisper", "UM"),
+        ]
+        for npc_id, npc_name, tongue in npc_defs:
+            char = self.cast.get(npc_id)
+            backstory = char.backstory if char else ""
+            self.npc_knowledge[npc_id] = build_npc_knowledge(
+                npc_id, npc_name, tongue
+            )
+            self.npc_brains[npc_id] = create_npc_brain(
+                npc_id, npc_name, tongue, backstory
+            )
+
+    def _polypad_has_device(self) -> bool:
+        return bool(self.inventory.get("PollyPad", False))
+
+    def _polypad_unread_count(self) -> int:
+        return sum(1 for m in self.polypad_messages if m.get("unread", False))
+
+    def _polypad_entries(self) -> List[str]:
+        app = POLYPAD_APPS[self.polypad_tab]
+        if app == "Home":
+            return [
+                "Open Contacts",
+                "Open Messages",
+                "Open Missions",
+                "Open PC Box",
+                "Open IDE",
+                "Fleet Sync",
+            ]
+        if app == "Contacts":
+            return [c["name"] for c in self.polypad_contacts]
+        if app == "Messages":
+            return [f"{m['from']}: {m['subject']}" for m in self.polypad_messages]
+        if app == "Missions":
+            return [f"{m['title']} [{m['status']}]" for m in self.polypad_missions]
+        if app == "PC Box":
+            rows = [
+                "Sit at Guild Computer (CodeLab IDE)",
+                "Open Lore Library (Morrowind-style books)",
+            ]
+            if not self.party:
+                rows.append("No party members registered")
+                return rows
+            rows.extend(
+                f"{c.name} Lv{c.stats.level}  HP {c.stats.hp}/{c.stats.max_hp}"
+                for c in self.party[:6]
+            )
+            return rows
+        if app == "IDE":
+            return [
+                "Launch CodeLab IDE",
+                "Read Lore Books",
+                "Review Last Build",
+                "Sync Sidekick Memory",
+            ]
+        return []
+
+    def _polypad_push_message(self, sender: str, subject: str, body: str, unread: bool = True) -> None:
+        stamp = f"F{self.frame_count}"
+        self.polypad_messages.insert(
+            0,
+            {
+                "from": sender,
+                "subject": subject[:42],
+                "body": body,
+                "unread": unread,
+                "time": stamp,
+            },
+        )
+        # Keep mailbox bounded for performance/readability.
+        if len(self.polypad_messages) > 40:
+            self.polypad_messages = self.polypad_messages[:40]
+
+    def _polypad_update_missions(self, scene_id: str, action: str) -> None:
+        """Keep Poly Pad mission cards aligned with story progression."""
+        by_title = {m["title"]: m for m in self.polypad_missions}
+        start = by_title.get("Village Start")
+        traveler = by_title.get("Traveler Assist")
+        shore = by_title.get("Shoreline Threat")
+
+        if scene_id == "earth_morning" and action in {"take_full_kit", "check_pollypad", "promise_help"}:
+            if start:
+                start["status"] = "done"
+            if traveler and traveler["status"] == "queued":
+                traveler["status"] = "active"
+
+        if scene_id == "earth_work" and action in {"help_traveler", "escort_traveler", "record_traveler"}:
+            if traveler:
+                traveler["status"] = "done"
+            if shore and shore["status"] == "queued":
+                shore["status"] = "active"
+
+        if scene_id == "earth_evening" and action in {"fight_monster", "tame_monster"}:
+            if shore:
+                shore["status"] = "done"
+
+    def _nearby_ide_terminal(self) -> Optional[str]:
+        """Return terminal label if player is adjacent to an IDE terminal tile."""
+        if not self.overworld.active:
+            return None
+        px, py = self.overworld.player_tile_pos
+        terminals = IDE_TERMINALS.get(self.overworld.current_map_name, [])
+        for tx, ty, label in terminals:
+            if abs(px - tx) + abs(py - ty) <= 1:
+                return label
+        return None
+
+    def _current_ide_ticket(self) -> Dict[str, Any]:
+        if not IDE_TICKETS:
+            return {
+                "id": "none",
+                "title": "No tickets",
+                "brief": "No IDE tickets loaded.",
+                "tongue": "CA",
+                "reward_gold": 0,
+                "risk_penalty": 0,
+                "actions": [],
+            }
+        return IDE_TICKETS[self.ide_ticket_index % len(IDE_TICKETS)]
+
+    def _ide_actions(self) -> List[str]:
+        ticket = self._current_ide_ticket()
+        options = [str(a.get("label", "Action")) for a in ticket.get("actions", [])]
+        options.append("Read Lore Books")
+        options.append("Next Ticket")
+        options.append("Exit IDE")
+        return options
+
+    def _open_ide(self, return_phase: Optional[str] = None) -> None:
+        """Open CodeLab IDE mini-game."""
+        if self.battle.active:
+            self.workshop_message = "CodeLab locked during battle."
+            return
+        self.ide_return_phase = return_phase or self.game_phase
+        self.ide_cursor = 0
+        self.game_phase = "ide"
+
+    def _close_ide(self) -> None:
+        fallback = "overworld"
+        self.game_phase = self.ide_return_phase or fallback
+        if self.game_phase == "ide":
+            self.game_phase = fallback
+
+    def _current_lore_book(self) -> Dict[str, str]:
+        if not LORE_BOOKS:
+            return {
+                "id": "none",
+                "title": "No books available",
+                "source": "Local",
+                "body": "No lore books have been loaded.",
+            }
+        return LORE_BOOKS[self.library_index % len(LORE_BOOKS)]
+
+    def _open_library(self, return_phase: Optional[str] = None) -> None:
+        self.library_return_phase = return_phase or self.game_phase
+        self.library_scroll = 0
+        self.game_phase = "library"
+
+    def _close_library(self) -> None:
+        fallback = "overworld"
+        self.game_phase = self.library_return_phase or fallback
+        if self.game_phase == "library":
+            self.game_phase = fallback
+
+    def _wrap_text_lines(self, text: str, font: pygame.font.Font, max_width: int) -> List[str]:
+        words = text.split()
+        if not words:
+            return [""]
+        lines: List[str] = []
+        current = words[0]
+        for word in words[1:]:
+            trial = f"{current} {word}"
+            if font.size(trial)[0] <= max_width:
+                current = trial
+            else:
+                lines.append(current)
+                current = word
+        lines.append(current)
+        return lines
+
+    def _mark_book_read(self, book_id: str, title: str) -> None:
+        first_read = book_id not in self.library_read_books
+        self.library_read_books.add(book_id)
+        self.library_reads += 1
+
+        self.hf_trainer.record_choice(
+            context=f"Lore library: {title}",
+            choice="Read Book",
+            alternatives=["Close Book", "Switch Book"],
+            outcome=f"Read lore source {book_id}",
+            tongue="RU",
+            layers=[3, 4, 5, 11],
+        )
+        self.sft_count += 1
+
+        if first_read:
+            self.inventory["Gold"] += 8
+            self.reputation_points += 1
+            self.partner_bond = min(1.0, self.partner_bond + 0.005)
+            self.workshop_message = f"Read '{title}'. Lore retained (+8g)."
+        else:
+            self.workshop_message = f"Re-read '{title}'. Notes refreshed."
+
+    def _handle_library_key(self, key: int) -> None:
+        if key in (pygame.K_ESCAPE, pygame.K_l):
+            self._close_library()
+            return
+
+        if key in (pygame.K_LEFT, pygame.K_a):
+            self.library_index = (self.library_index - 1) % max(1, len(LORE_BOOKS))
+            self.library_scroll = 0
+            return
+        if key in (pygame.K_RIGHT, pygame.K_d):
+            self.library_index = (self.library_index + 1) % max(1, len(LORE_BOOKS))
+            self.library_scroll = 0
+            return
+
+        book = self._current_lore_book()
+        preview_font = self.fonts.get(10)
+        lines = self._wrap_text_lines(book.get("body", ""), preview_font, 360)
+        max_lines = 16
+        max_scroll = max(0, len(lines) - max_lines)
+
+        if key in (pygame.K_UP, pygame.K_w):
+            self.library_scroll = max(0, self.library_scroll - 1)
+            return
+        if key in (pygame.K_DOWN, pygame.K_s):
+            self.library_scroll = min(max_scroll, self.library_scroll + 1)
+            return
+        if key in (pygame.K_RETURN, pygame.K_SPACE):
+            self._mark_book_read(book.get("id", "unknown"), book.get("title", "Lore Book"))
+            return
+
+    def _resolve_ide_action(self, choice: str) -> None:
+        ticket = self._current_ide_ticket()
+        if choice == "Read Lore Books":
+            self._open_library(return_phase="ide")
+            return
+        if choice == "Next Ticket":
+            self.ide_ticket_index = (self.ide_ticket_index + 1) % max(1, len(IDE_TICKETS))
+            self.ide_cursor = 0
+            self.workshop_message = "CodeLab switched to next ticket."
+            return
+        if choice == "Exit IDE":
+            self._close_ide()
+            return
+
+        action_map = {str(a.get("label", "")): a for a in ticket.get("actions", [])}
+        action_data = action_map.get(choice)
+        if action_data is None:
+            return
+
+        success = bool(action_data.get("success", False))
+        outcome = str(action_data.get("outcome", "No output."))
+        reward = int(ticket.get("reward_gold", 0))
+        penalty = int(ticket.get("risk_penalty", 1))
+        tongue = str(ticket.get("tongue", "CA"))
+        alternatives = [
+            str(a.get("label", ""))
+            for a in ticket.get("actions", [])
+            if str(a.get("label", "")) != choice
+        ]
+
+        self.hf_trainer.record_choice(
+            context=f"CodeLab ticket: {ticket.get('title', 'Unknown')}",
+            choice=choice,
+            alternatives=alternatives,
+            outcome=outcome,
+            tongue=tongue,
+            layers=[5, 6, 7, 12, 13],
+        )
+        self.sft_count += 1
+
+        if success:
+            self.ide_resolved += 1
+            self.inventory["Gold"] += reward
+            self._grant_skill_xp("inscription", 1)
+            self.reputation_points += 1
+            self.partner_bond = min(1.0, self.partner_bond + 0.01)
+            self.workshop_message = f"CodeLab resolved: {ticket.get('title', '')} (+{reward}g)."
+            self.particles.emit(GAME_W // 2, GAME_H // 2, (96, 214, 255), count=16, spread=3.0)
+            self._polypad_push_message(
+                "CODELAB",
+                f"{ticket.get('title', 'Ticket')} resolved",
+                outcome,
+                unread=True,
+            )
+        else:
+            self.ide_failures += 1
+            self.reputation_points -= penalty
+            self.partner_bond = max(0.0, self.partner_bond - 0.01)
+            self.workshop_message = f"CodeLab unstable: {ticket.get('title', '')} (-{penalty} rep)."
+            self._polypad_push_message(
+                "CODELAB",
+                f"{ticket.get('title', 'Ticket')} warning",
+                outcome,
+                unread=True,
+            )
+
+        self.ide_last_result = outcome
+        self.ide_history.insert(0, f"{ticket.get('id', 'ticket')}: {choice}")
+        self.ide_history = self.ide_history[:20]
+        self.ide_ticket_index = (self.ide_ticket_index + 1) % max(1, len(IDE_TICKETS))
+        self.ide_cursor = 0
+
+    def _handle_ide_key(self, key: int) -> None:
+        if key in (pygame.K_ESCAPE, pygame.K_i):
+            self._close_ide()
+            return
+        if key == pygame.K_l:
+            self._open_library(return_phase="ide")
+            return
+
+        if key in (pygame.K_LEFT, pygame.K_a):
+            self.ide_ticket_index = (self.ide_ticket_index - 1) % max(1, len(IDE_TICKETS))
+            self.ide_cursor = 0
+            return
+        if key in (pygame.K_RIGHT, pygame.K_d):
+            self.ide_ticket_index = (self.ide_ticket_index + 1) % max(1, len(IDE_TICKETS))
+            self.ide_cursor = 0
+            return
+
+        actions = self._ide_actions()
+        if not actions:
+            return
+
+        if key in (pygame.K_UP, pygame.K_w):
+            self.ide_cursor = (self.ide_cursor - 1) % len(actions)
+            return
+        if key in (pygame.K_DOWN, pygame.K_s):
+            self.ide_cursor = (self.ide_cursor + 1) % len(actions)
+            return
+        if key in (pygame.K_RETURN, pygame.K_SPACE):
+            selected = actions[self.ide_cursor]
+            self._resolve_ide_action(selected)
+            return
+
+    def _open_polypad(self) -> None:
+        if not self._polypad_has_device():
+            self.workshop_message = "No Poly Pad in inventory yet."
+            return
+        if self.battle.active:
+            self.workshop_message = "Poly Pad disabled during active battle."
+            return
+        if self.game_phase == "polypad":
+            return
+        self.polypad_return_phase = self.game_phase
+        self.polypad_cursor = 0
+        self.game_phase = "polypad"
+
+    def _close_polypad(self) -> None:
+        fallback = "overworld"
+        self.game_phase = self.polypad_return_phase or fallback
+        if self.game_phase == "polypad":
+            self.game_phase = fallback
+
+    def _handle_polypad_key(self, key: int) -> None:
+        if key in (pygame.K_ESCAPE, pygame.K_p):
+            self._close_polypad()
+            return
+
+        if key in (pygame.K_LEFT, pygame.K_a):
+            self.polypad_tab = (self.polypad_tab - 1) % len(POLYPAD_APPS)
+            self.polypad_cursor = 0
+            return
+
+        if key in (pygame.K_RIGHT, pygame.K_d):
+            self.polypad_tab = (self.polypad_tab + 1) % len(POLYPAD_APPS)
+            self.polypad_cursor = 0
+            return
+
+        quick_max = pygame.K_1 + min(len(POLYPAD_APPS), 9) - 1
+        if pygame.K_1 <= key <= quick_max:
+            self.polypad_tab = min(len(POLYPAD_APPS) - 1, key - pygame.K_1)
+            self.polypad_cursor = 0
+            return
+
+        entries = self._polypad_entries()
+        if not entries:
+            return
+
+        if key in (pygame.K_UP, pygame.K_w):
+            self.polypad_cursor = (self.polypad_cursor - 1) % len(entries)
+            return
+        if key in (pygame.K_DOWN, pygame.K_s):
+            self.polypad_cursor = (self.polypad_cursor + 1) % len(entries)
+            return
+
+        if key not in (pygame.K_RETURN, pygame.K_SPACE):
+            return
+
+        app = POLYPAD_APPS[self.polypad_tab]
+        idx = max(0, min(self.polypad_cursor, len(entries) - 1))
+
+        if app == "Home":
+            if idx == 0:
+                self.polypad_tab = POLYPAD_APPS.index("Contacts")
+                self.polypad_cursor = 0
+            elif idx == 1:
+                self.polypad_tab = POLYPAD_APPS.index("Messages")
+                self.polypad_cursor = 0
+            elif idx == 2:
+                self.polypad_tab = POLYPAD_APPS.index("Missions")
+                self.polypad_cursor = 0
+            elif idx == 3:
+                self.polypad_tab = POLYPAD_APPS.index("PC Box")
+                self.polypad_cursor = 0
+            elif idx == 4:
+                self.polypad_tab = POLYPAD_APPS.index("IDE")
+                self.polypad_cursor = 0
+            else:
+                self.workshop_message = "Fleet sync complete. Mission graph refreshed."
+                self._polypad_push_message(
+                    "FLEET COMMS",
+                    "Sync Report",
+                    "Routing table synced. Keep core loop simple; route complexity via mini-games.",
+                )
+            return
+
+        if app == "Contacts":
+            contact = self.polypad_contacts[idx]
+            name = contact["name"]
+            contact["last_call"] = f"F{self.frame_count}"
+            call_lines = {
+                "MOM": "Keep your Wallet, Keys, and Poly Pad close. You'll need all three.",
+                "POLLY": "Core loop first. Mini-games carry advanced tactics.",
+                "CLAY": "Shield discipline beats panic. Guard first, strike second.",
+                "MARCUS": "Proof before privilege. Keep your chain of decisions auditable.",
+                "FLEET COMMS": "Signal green. Elite threat channels are monitoring your zone.",
+            }
+            line = call_lines.get(name, "Signal received.")
+            self.workshop_message = f"Poly Pad call: {name}."
+            self._polypad_push_message(name, "Call Transcript", line)
+            self.polypad_call_log.insert(0, f"{name} @ F{self.frame_count}")
+            self.polypad_call_log = self.polypad_call_log[:24]
+            return
+
+        if app == "Messages":
+            msg = self.polypad_messages[idx]
+            msg["unread"] = False
+            self.workshop_message = f"Read: {msg['subject'][:34]}"
+            return
+
+        if app == "Missions":
+            for i, mission in enumerate(self.polypad_missions):
+                if i == idx:
+                    mission["status"] = "active"
+                elif mission["status"] == "active":
+                    mission["status"] = "queued"
+            self.workshop_message = f"Mission set: {self.polypad_missions[idx]['title']}"
+            return
+
+        if app == "PC Box":
+            if idx == 0:
+                terminal = self._nearby_ide_terminal() or "Guild Computer"
+                self.workshop_message = f"{terminal} online. Launching CodeLab."
+                self._open_ide(return_phase="polypad")
+                return
+            if idx == 1:
+                self.workshop_message = "Opening lore library."
+                self._open_library(return_phase="polypad")
+                return
+            party_idx = idx - 2
+            if 0 <= party_idx < len(self.party):
+                c = self.party[party_idx]
+                self.workshop_message = (
+                    f"PC Box: {c.name} Lv{c.stats.level} "
+                    f"ATK {c.stats.attack} DEF {c.stats.defense}"
+                )
+            return
+
+        if app == "IDE":
+            if idx == 0:
+                self._open_ide(return_phase="polypad")
+            elif idx == 1:
+                self._open_library(return_phase="polypad")
+            elif idx == 2:
+                self.workshop_message = f"Last build: {self.ide_last_result[:80]}"
+            else:
+                self.workshop_message = "Sidekick memory sync queued for cloud run."
+                self._polypad_push_message(
+                    "CODELAB",
+                    "Sidekick Sync",
+                    "Append-only sidekick memory sync queued for Firebase/HF pipeline.",
+                    unread=False,
+                )
 
     def _reputation_label(self) -> str:
         """Map score to a compact reputation tier."""
@@ -1475,6 +2295,12 @@ class AethermoorGame:
         self.partner_name = self.cast.get(partner_key, self.cast["polly"]).name
         self.partner_bond = min(1.0, self.partner_bond + float(config["bond_bonus"]))
 
+        # AetherNet: broadcast class selection
+        self.n8n_bus.emit(
+            GameEventType.LEVEL_UP,
+            class_name=str(config["name"]), partner=partner_key,
+        )
+
         if not self.party:
             return
         hero = self.party[0]
@@ -1505,12 +2331,22 @@ class AethermoorGame:
                 self.inventory["Keys"] = True
                 self.inventory["Gold"] += 100
                 self.reputation_points += 1
+                self._polypad_push_message(
+                    "MOM",
+                    "Starter Kit",
+                    "Poly Pad online. Keep your field logs updated and your route clean.",
+                )
             elif action == "check_wallet":
                 self.inventory["Wallet"] = True
                 self.inventory["Gold"] += 100
             elif action == "check_pollypad":
                 self.inventory["PollyPad"] = True
                 self.partner_bond = min(1.0, self.partner_bond + 0.04)
+                self._polypad_push_message(
+                    "POLLY",
+                    "Pad Sync",
+                    "Signal lock confirmed. You can now open Poly Pad with [P].",
+                )
             elif action == "test_keys":
                 self.inventory["Keys"] = True
             elif action == "promise_help":
@@ -1528,6 +2364,11 @@ class AethermoorGame:
             elif action in ("ask_directions", "record_traveler"):
                 self.story_flags["talked_to_everyone"] = True
                 self.reputation_points += 1
+                self._polypad_push_message(
+                    "FLEET COMMS",
+                    "Trust Record",
+                    "Traveler interaction logged. Guild trust vector increased.",
+                )
             elif action == "shrine_pause":
                 self.reputation_points += 1
                 self.partner_bond = min(1.0, self.partner_bond + 0.03)
@@ -1539,6 +2380,12 @@ class AethermoorGame:
             if action in ("fight_monster", "tame_monster"):
                 self.story_flags["caught_monster"] = True
                 self.reputation_points += 1 if action == "fight_monster" else 2
+                if action == "tame_monster":
+                    self._polypad_push_message(
+                        "POLLY",
+                        "Tone Capture",
+                        "Taming route succeeded. Harmonic resonance archived.",
+                    )
             elif action in ("talk_gossip", "document_path"):
                 self.story_flags["talked_to_everyone"] = True
                 self.reputation_points += 1
@@ -1567,9 +2414,16 @@ class AethermoorGame:
             self._update(dt)
             self._draw()
 
+            # Headless: capture frame from game_surface
+            if self.headless_display is not None:
+                self.headless_display.capture(self.game_surface)
+
             pygame.display.flip()
             self.frame_count += 1
 
+        # Cleanup
+        if self.headless_display is not None:
+            self.headless_display.stop()
         pygame.quit()
 
     # ------------------------------------------------------------------
@@ -1587,6 +2441,15 @@ class AethermoorGame:
 
     def _handle_key(self, key: int) -> None:
         """Handle a key press."""
+        if key == pygame.K_F9:
+            state = self.n8n_bus.toggle()
+            st = self.n8n_bus.status()
+            self.workshop_message = (
+                f"AetherNet {'ONLINE' if state else 'OFFLINE'} "
+                f"({st['events_sent']} sent, {st['endpoints']} endpoints)"
+            )
+            return
+
         if key == pygame.K_F7:
             self.autonomy_enabled = not self.autonomy_enabled
             state = "ON" if self.autonomy_enabled else "OFF"
@@ -1608,15 +2471,58 @@ class AethermoorGame:
             self._handle_workshop_key(key)
             return
 
+        if self.game_phase == "ide":
+            self._handle_ide_key(key)
+            return
+
+        if self.game_phase == "library":
+            self._handle_library_key(key)
+            return
+
+        if self.game_phase == "polypad":
+            self._handle_polypad_key(key)
+            return
+
+        if key == pygame.K_p:
+            if self.paused:
+                return
+            if self._polypad_has_device():
+                self._open_polypad()
+            else:
+                self.workshop_message = "No Poly Pad equipped yet."
+            return
+
+        if key == pygame.K_i and self.game_phase == "overworld":
+            terminal = self._nearby_ide_terminal()
+            if terminal:
+                self.workshop_message = f"{terminal} online. Launching CodeLab."
+                self._open_ide(return_phase="overworld")
+            else:
+                self.workshop_message = "Move next to a terminal to open CodeLab."
+            return
+
+        if key == pygame.K_l and self.game_phase == "overworld":
+            terminal = self._nearby_ide_terminal()
+            if terminal:
+                self.workshop_message = f"{terminal} archive opened."
+                self._open_library(return_phase="overworld")
+            else:
+                self.workshop_message = "Move next to a terminal to open the lore library."
+            return
+
         # Global controls
         if key == pygame.K_ESCAPE:
             if self.paused:
                 self.paused = False
+                return
             elif self.game_phase == "title":
                 self._save_and_quit()
+                return
+            elif self.game_phase in ("dialogue", "dungeon"):
+                pass  # Let phase-specific handlers deal with ESC
             else:
                 self.paused = True
-            return
+                return
 
         if self.paused:
             self._handle_pause_key(key)
@@ -1627,10 +2533,37 @@ class AethermoorGame:
             return
 
         # Phase-specific handling
-        if self.game_phase == "title":
+        if self.game_phase == "evolution":
+            if key in (pygame.K_RETURN, pygame.K_SPACE) and self._evo_phase >= 3:
+                self.game_phase = self._evo_return_phase
+                self._evo_char = None
+            return
+        elif self.game_phase == "gacha":
+            if self._gacha_phase >= 3:
+                if key in (pygame.K_RETURN, pygame.K_SPACE):
+                    if self._gacha_result and len(self.party) < 6:
+                        self.party.append(self._gacha_result)
+                        self.workshop_message = f"{self._gacha_result.name} joined the party!"
+                    self.game_phase = self._gacha_return_phase
+                    self._gacha_result = None
+                elif key == pygame.K_ESCAPE:
+                    self.game_phase = self._gacha_return_phase
+                    self._gacha_result = None
+            return
+        elif self.game_phase == "title":
             self._handle_title_key(key)
         elif self.battle.active:
             self._handle_battle_key(key)
+        elif self.game_phase == "overworld":
+            # G key for gacha pull (overworld only)
+            if key == pygame.K_g:
+                self._start_gacha_pull()
+                return
+            self._handle_overworld_key(key)
+        elif self.game_phase == "dungeon":
+            self._handle_dungeon_key(key)
+        elif self.game_phase == "dialogue":
+            self._handle_dialogue_key(key)
         else:
             self._handle_scene_key(key)
 
@@ -1682,22 +2615,75 @@ class AethermoorGame:
         """Handle keys during battle."""
         if self.battle.victory or self.battle.defeat:
             if key in (pygame.K_RETURN, pygame.K_SPACE):
+                result = "victory" if self.battle.victory else "defeat"
+                enemy_name = self.battle.enemies[0].name if self.battle.enemies else "Unknown"
+                enemy_tongue = self.battle.enemies[0].tongue_affinity.value if self.battle.enemies else "KO"
+                xp_gained = 10 if self.battle.victory else 0
+                context = "dungeon" if self.dungeon_active else "overworld"
+                self._polypad_push_message(
+                    "SYSTEM",
+                    f"Battle {result.title()}",
+                    f"{enemy_name} resolved in {context}. XP +{xp_gained}.",
+                    unread=False,
+                )
+
+                # HF trainer: battle result
+                self.hf_trainer.record_battle(
+                    self.party[0].name if self.party else "Player",
+                    enemy_name, result, xp_gained, enemy_tongue, context
+                )
+
+                # AetherNet: broadcast battle result
+                is_boss = any(
+                    getattr(e, 'title', '') == 'Floor Boss'
+                    for e in self.battle.enemies
+                )
+                self.n8n_bus.emit(
+                    GameEventType.BATTLE_WON if result == "victory" else GameEventType.BATTLE_LOST,
+                    enemy=enemy_name, tongue=enemy_tongue, xp=xp_gained,
+                    context=context, player_class=self.player_class,
+                )
+                if is_boss and result == "victory":
+                    self.n8n_bus.emit(
+                        GameEventType.BOSS_DEFEATED,
+                        boss=enemy_name, tongue=enemy_tongue,
+                        floor=self.tower.current_floor,
+                    )
+
                 if self.battle.victory and self._story_battle_active:
                     self._grant_material("crystal_dust", 1)
                     self._grant_material("shell", 1)
                     self._grant_skill_xp("ecology", 1)
                     self._progress_band_quest("craft", 1)
+
+                # Dungeon: track kills and tongue prof boost on victory
+                if self.battle.victory and self.dungeon_active:
+                    self.tower.floor_kills = getattr(self.tower, 'floor_kills', 0) + len(self.battle.enemies)
+                    if self.party:
+                        prof = self.party[0].stats.tongue_prof
+                        current = prof.get(enemy_tongue, 0.0)
+                        prof[enemy_tongue] = min(1.0, current + 0.01)
+
                 self.battle.end_battle()
                 # Heal party slightly after battle
                 for c in self.party:
                     c.stats.hp = min(c.stats.max_hp, c.stats.hp + c.stats.max_hp // 4)
                     c.stats.mp = min(c.stats.max_mp, c.stats.mp + c.stats.max_mp // 4)
                 self._story_battle_active = False
+
+                # Check for evolution after victory
+                if result == "victory":
+                    self._check_evolution()
+
                 if self._pending_scene_after_battle:
                     self.transitioning = True
                     self.transition_progress = 0.0
                     self._pending_scene = self._pending_scene_after_battle
                     self._pending_scene_after_battle = None
+                elif self.dungeon_active:
+                    self.game_phase = "dungeon"
+                elif self.overworld.active:
+                    self.game_phase = "overworld"
             return
 
         if not self.battle.is_player_turn:
@@ -1749,6 +2735,186 @@ class AethermoorGame:
             self._save_and_quit()
 
     # ------------------------------------------------------------------
+    # Overworld Key Handling
+    # ------------------------------------------------------------------
+    def _handle_overworld_key(self, key: int) -> None:
+        """Handle keys during overworld exploration."""
+        # B key for test battle
+        if key == pygame.K_b:
+            self._start_test_battle()
+            return
+        # Enter/Space for NPC interaction
+        if key in (pygame.K_RETURN, pygame.K_SPACE):
+            nearby = self.overworld.get_nearby_npc()
+            if nearby:
+                self._start_npc_dialogue(nearby)
+                return
+            terminal = self._nearby_ide_terminal()
+            if terminal:
+                self.workshop_message = f"{terminal} connected. Entering CodeLab."
+                self._open_ide(return_phase="overworld")
+
+    def _handle_dungeon_key(self, key: int) -> None:
+        """Handle keys during dungeon exploration."""
+        floor = self.tower.get_current_floor()
+        if not floor:
+            return
+
+        dx, dy = 0, 0
+        if key in (pygame.K_UP, pygame.K_w):
+            dy = -1
+        elif key in (pygame.K_DOWN, pygame.K_s):
+            dy = 1
+        elif key in (pygame.K_LEFT, pygame.K_a):
+            dx = -1
+        elif key in (pygame.K_RIGHT, pygame.K_d):
+            dx = 1
+        elif key == pygame.K_ESCAPE:
+            # Leave dungeon back to overworld
+            self.dungeon_active = False
+            self.game_phase = "overworld"
+            self.overworld.enter("spiral_tower_entrance", 10, 10)
+            return
+
+        if dx != 0 or dy != 0:
+            nx = self.dungeon_player_x + dx
+            ny = self.dungeon_player_y + dy
+            if floor.is_walkable(nx, ny):
+                self.dungeon_player_x = nx
+                self.dungeon_player_y = ny
+
+                tile = floor.get_tile(nx, ny)
+                # Monster spawn
+                if tile == 3:  # monster_spawn
+                    floor.tiles[ny, nx] = 1  # clear spawn
+                    enemies = generate_floor_enemies(self.tower.current_floor, floor.theme)
+                    if floor.is_boss_floor and not floor.cleared:
+                        enemies = [generate_boss(self.tower.current_floor, floor.theme)]
+                    self.battle.start_battle(
+                        party=[c for c in self.party if c.stats.hp > 0],
+                        enemies=enemies,
+                    )
+                    self.particles.emit(GAME_W // 2, GAME_H // 2, (255, 80, 80), count=25, spread=4.0)
+                    self._pending_scene_after_battle = None
+                    self._story_battle_active = True
+                    # Record tower battle
+                    self.hf_trainer.record_battle(
+                        self.party[0].name if self.party else "Player",
+                        enemies[0].name, "encounter",
+                        0, enemies[0].tongue_affinity.value, "tower"
+                    )
+                # Exit stair
+                elif tile == 4:  # exit_stair
+                    floor.cleared = True
+                    old_floor_num = self.tower.current_floor
+                    self.tower.advance_floor()
+                    self.tower.floor_kills = 0
+                    new_floor = self.tower.get_current_floor()
+                    if new_floor:
+                        self.dungeon_player_x = 1
+                        self.dungeon_player_y = 1
+                        self.hf_trainer.record_tower_floor(
+                            self.tower.current_floor,
+                            self.tower.floor_kills,
+                            new_floor.theme.name,
+                            new_floor.is_boss_floor,
+                        )
+                    # AetherNet: broadcast floor cleared
+                    self.n8n_bus.emit(
+                        GameEventType.DUNGEON_FLOOR_CLEARED,
+                        floor=old_floor_num,
+                        next_floor=self.tower.current_floor,
+                        theme=new_floor.theme.name if new_floor else "unknown",
+                        is_boss_next=new_floor.is_boss_floor if new_floor else False,
+                    )
+                    self.particles.emit(GAME_W // 2, GAME_H // 2, (80, 200, 255), count=20, spread=3.0)
+
+    def _handle_dialogue_key(self, key: int) -> None:
+        """Handle keys during NPC dialogue."""
+        if not self.dialogue_active:
+            return
+
+        if key in (pygame.K_ESCAPE,):
+            # Exit dialogue — broadcast to AetherNet
+            self.n8n_bus.emit(
+                GameEventType.NPC_DIALOGUE_COMPLETE,
+                npc=self.dialogue_npc_id,
+                topics_discussed=len(getattr(self, 'dialogue_gen', None).pairs if hasattr(self, 'dialogue_gen') and self.dialogue_gen else []),
+            )
+            self.dialogue_active = False
+            self.game_phase = "overworld"
+            return
+
+        if key in (pygame.K_UP, pygame.K_w):
+            if self.dialogue_pivots:
+                self.dialogue_pivot_cursor = (self.dialogue_pivot_cursor - 1) % len(self.dialogue_pivots)
+        elif key in (pygame.K_DOWN, pygame.K_s):
+            if self.dialogue_pivots:
+                self.dialogue_pivot_cursor = (self.dialogue_pivot_cursor + 1) % len(self.dialogue_pivots)
+        elif key in (pygame.K_RETURN, pygame.K_SPACE):
+            if self.dialogue_pivots:
+                topic_id, topic_name = self.dialogue_pivots[self.dialogue_pivot_cursor]
+                npc_id = self.dialogue_npc_id
+
+                # Pivot in knowledge graph
+                pk = self.npc_knowledge.get(npc_id)
+                brain = self.npc_brains.get(npc_id)
+                if pk:
+                    self.dialogue_response = pk.pivot(topic_id)
+                    self.dialogue_pivots = pk.get_pivots()
+                    self.dialogue_pivot_cursor = 0
+
+                    # Sacred language encoding as flavor text
+                    char = self.cast.get(npc_id)
+                    tongue = char.tongue_affinity.value if char else "KO"
+                    self.dialogue_sacred_text = self.sacred_langs.encode(
+                        self.dialogue_response[:60], tongue
+                    )
+
+                    # Generate training data
+                    pair = pk.generate_training_pair()
+                    self.dialogue_gen.pairs.append(pair)
+                    self.sft_count += 1
+
+                    # HF trainer
+                    self.hf_trainer.record_dialogue(
+                        pk.npc_name, tongue,
+                        topic_name, self.dialogue_response,
+                        topic_id,
+                    )
+
+                    # Try AI brain response (optional)
+                    if brain and brain.api_available:
+                        ai_resp = brain.get_response(topic_name, topic_id)
+                        if ai_resp:
+                            self.dialogue_response = ai_resp
+                            self.dialogue_sacred_text = self.sacred_langs.encode(
+                                ai_resp[:60], tongue
+                            )
+
+    def _start_npc_dialogue(self, npc_id: str) -> None:
+        """Start a PivotKnowledge dialogue with an NPC."""
+        # Extract base npc_id from the placement id (e.g., "polly_hub" -> "polly")
+        base_id = npc_id.split("_")[0] if "_" in npc_id else npc_id
+        pk = self.npc_knowledge.get(base_id)
+        if not pk:
+            return
+
+        self.dialogue_active = True
+        self.dialogue_npc_id = base_id
+        self.game_phase = "dialogue"
+        self.dialogue_response = pk.get_response()
+        self.dialogue_pivots = pk.get_pivots()
+        self.dialogue_pivot_cursor = 0
+
+        # Sacred text
+        char = self.cast.get(base_id)
+        tongue = char.tongue_affinity.value if char else "KO"
+        self.dialogue_sacred_text = self.sacred_langs.encode(
+            self.dialogue_response[:60], tongue
+        )
+
+    # ------------------------------------------------------------------
     # Actions
     # ------------------------------------------------------------------
     def _execute_choice(self, idx: int) -> None:
@@ -1771,6 +2937,7 @@ class AethermoorGame:
 
         # Story-state update before logging/export.
         self._apply_story_action(scene_id, action)
+        self._polypad_update_missions(scene_id, action)
         crafted_now = self._apply_progression_loop(scene_id, action)
         self._advance_life_cycle()
 
@@ -1800,6 +2967,24 @@ class AethermoorGame:
         )
         self.sft_count += 1
 
+        # HF trainer: real-time training event
+        self.hf_trainer.record_choice(
+            context=scene_id,
+            choice=label,
+            alternatives=[c[0] for c in self.scene.choices if c[0] != label],
+            outcome=action,
+            tongue=tongue,
+            layers=layers,
+        )
+
+        # AetherNet: broadcast choice
+        self.n8n_bus.emit(
+            GameEventType.CHOICE_MADE,
+            scene=scene_id, action=action, tongue=tongue,
+            layers=layers, player_class=self.player_class,
+            reputation=self.reputation_points,
+        )
+
         # Record DPO pair (chosen vs worst alternative)
         if len(self.scene.choices) > 1:
             self.dpo_count += 1
@@ -1823,6 +3008,11 @@ class AethermoorGame:
         """Transition to the next scene."""
         next_id = self.scene.next_scene()
         if next_id:
+            self.n8n_bus.emit(
+                GameEventType.SCENE_TRANSITION,
+                from_scene=self.scene.current_scene_id,
+                to_scene=next_id,
+            )
             self.transitioning = True
             self.transition_progress = 0.0
             self._pending_scene = next_id
@@ -1845,10 +3035,10 @@ class AethermoorGame:
                 if not any(c.name == "Aria Ravencrest" for c in self.party):
                     self.party.append(aria)
         else:
-            # Loop back or end: restart from first_lesson for demo purposes
+            # All linear scenes done — transition to overworld
             self.transitioning = True
             self.transition_progress = 0.0
-            self._pending_scene = "first_lesson"
+            self._pending_scene = "__overworld__"
 
     def _start_story_battle(self, action: str) -> None:
         """Start contextual story battle for shoreline monster events."""
@@ -1972,15 +3162,157 @@ class AethermoorGame:
                 path = self.exporter.save()
             except Exception:
                 pass
+        # Stop HF trainer daemon thread
+        try:
+            self.hf_trainer.stop()
+        except Exception:
+            pass
+        # Stop AetherNet bridge
+        try:
+            self.n8n_bus.stop()
+        except Exception:
+            pass
         self.running = False
 
     # ------------------------------------------------------------------
     # Update
     # ------------------------------------------------------------------
+    def _process_n8n_action(self, action: GameAction) -> None:
+        """Apply an action received from n8n (AetherNet inbound packet)."""
+        atype = action.action_type
+        data = action.data
+
+        if atype == GameActionType.SEND_DIALOGUE:
+            speaker = data.get("speaker", "AETHERNET")
+            text = data.get("text", "...")
+            self.scene.dialogue_lines.append((speaker, text))
+
+        elif atype == GameActionType.GIVE_ITEM:
+            item = data.get("item", "")
+            amount = data.get("amount", 1)
+            if item == "Gold":
+                self.inventory["Gold"] = self.inventory.get("Gold", 0) + amount
+            elif item in self.materials:
+                self.materials[item] = self.materials.get(item, 0) + amount
+
+        elif atype == GameActionType.MODIFY_STAT:
+            stat = data.get("stat", "")
+            delta = data.get("delta", 0)
+            if stat == "reputation":
+                self.reputation_points += delta
+            elif stat == "bond":
+                self.partner_bond = max(0.0, min(1.0, self.partner_bond + delta))
+            elif stat in ("hp", "mp", "attack", "defense", "speed", "wisdom"):
+                if self.party:
+                    current = getattr(self.party[0].stats, stat, 0)
+                    setattr(self.party[0].stats, stat, max(0, current + delta))
+
+        elif atype == GameActionType.TRIGGER_SCENE:
+            scene_id = data.get("scene_id", "")
+            if scene_id in SCENE_DIALOGUES:
+                self.transitioning = True
+                self.transition_progress = 0.0
+                self._pending_scene = scene_id
+
+        elif atype == GameActionType.SPAWN_ENEMY:
+            name = data.get("name", "AetherNet Construct")
+            tongue_code = data.get("tongue", "UM")
+            hp = data.get("hp", 50)
+            atk = data.get("attack", 8)
+            tongue_enum = Tongue[tongue_code] if tongue_code in Tongue.__members__ else Tongue.UM
+            enemy = Character(
+                name=name,
+                title="AetherNet Summoned",
+                tongue_affinity=tongue_enum,
+                evo_stage=EvoStage.ROOKIE,
+                stats=Stats(hp=hp, max_hp=hp, mp=20, max_mp=20,
+                            attack=atk, defense=6, speed=8, wisdom=5),
+                spells=[],
+                is_enemy=True,
+            )
+            self.battle.start_battle(
+                party=[c for c in self.party if c.stats.hp > 0],
+                enemies=[enemy],
+            )
+            self.particles.emit(GAME_W // 2, GAME_H // 2, (255, 60, 255), count=25, spread=5.0)
+
+        elif atype == GameActionType.TV_SHOW:
+            self.n8n_bus.push_tv(
+                show_name=data.get("show", "Unknown"),
+                content=data.get("content", ""),
+                channel=data.get("channel", "AetherTV"),
+            )
+
+        elif atype == GameActionType.TRAINING_RESULT:
+            # Surface HF training metrics in the dashboard
+            metrics = data.get("metrics", {})
+            loss = metrics.get("loss", "?")
+            self.workshop_message = f"HF Training: loss={loss}"
+
+        elif atype == GameActionType.ANNOUNCE:
+            text = data.get("text", "...")
+            self.aethernet_announcements.append((text, time.time()))
+            # Keep only last 5
+            self.aethernet_announcements = self.aethernet_announcements[-5:]
+
+        elif atype == GameActionType.BUFF_PARTY:
+            stat = data.get("stat", "attack")
+            delta = data.get("delta", 3)
+            for c in self.party:
+                if hasattr(c.stats, stat):
+                    current = getattr(c.stats, stat, 0)
+                    setattr(c.stats, stat, max(0, current + delta))
+            self.workshop_message = f"AetherNet buff: {stat} +{delta} to party"
+            self.particles.emit(GAME_W // 2, GAME_H // 2, (80, 255, 180), count=30, spread=4.0)
+
+        elif atype == GameActionType.FORCE_GACHA:
+            # Trigger a random gacha pull — add a new party member
+            tongue_code = data.get("tongue", random.choice(["KO", "AV", "RU", "CA", "UM", "DR"]))
+            tongue_enum = Tongue[tongue_code] if tongue_code in Tongue.__members__ else Tongue.KO
+            name = data.get("name", f"Gacha-{tongue_code}-{random.randint(100,999)}")
+            recruit = Character(
+                name=name,
+                title="AetherNet Recruit",
+                tongue_affinity=tongue_enum,
+                evo_stage=EvoStage.ROOKIE,
+                stats=Stats(hp=40, max_hp=40, mp=20, max_mp=20,
+                            attack=8, defense=6, speed=7, wisdom=6),
+                spells=[],
+                is_enemy=False,
+            )
+            if len(self.party) < 6:
+                self.party.append(recruit)
+                self.workshop_message = f"AetherNet gacha: {name} [{tongue_code}] joined!"
+            else:
+                self.workshop_message = f"Party full! {name} couldn't join."
+            self.n8n_bus.emit(
+                GameEventType.GACHA_PULL,
+                name=name, tongue=tongue_code, party_size=len(self.party),
+            )
+            self.particles.emit(GAME_W // 2, GAME_H // 2, GOLD, count=40, spread=5.0)
+
+        elif atype == GameActionType.DUNGEON_MODIFIER:
+            modifier = data.get("modifier", "")
+            if modifier == "harder":
+                # Increase current floor enemy HP
+                floor = self.tower.get_current_floor() if hasattr(self, 'tower') else None
+                if floor:
+                    self.workshop_message = "AetherNet: Dungeon difficulty increased!"
+            elif modifier == "heal":
+                for c in self.party:
+                    c.stats.hp = c.stats.max_hp
+                    c.stats.mp = c.stats.max_mp
+                self.workshop_message = "AetherNet: Party fully healed!"
+                self.particles.emit(GAME_W // 2, GAME_H // 2, (80, 255, 120), count=25, spread=4.0)
+
     def _update(self, dt: float) -> None:
         """Update game state."""
         if self.paused:
             return
+
+        # Process AetherNet inbound actions
+        for action in self.n8n_bus.drain_actions():
+            self._process_n8n_action(action)
 
         # Cursor blink
         self.cursor_timer += dt
@@ -2002,7 +3334,12 @@ class AethermoorGame:
             if self.transition_progress >= 1.0:
                 self.transitioning = False
                 self.transition_progress = 0.0
-                self._load_scene(self._pending_scene)
+                if self._pending_scene == "__overworld__":
+                    # Enter overworld after linear scenes complete
+                    self.game_phase = "overworld"
+                    self.overworld.enter("guild_hub")
+                else:
+                    self._load_scene(self._pending_scene)
 
         # Layer activity decay
         for layer_num in self.layer_activity:
@@ -2032,6 +3369,57 @@ class AethermoorGame:
             if not self.battle.victory and not self.battle.defeat:
                 self.battle.execute_enemy_turn()
 
+        # Overworld continuous movement (held keys)
+        if self.game_phase == "overworld" and not self.battle.active:
+            keys = pygame.key.get_pressed()
+            dx = (1 if keys[pygame.K_RIGHT] or keys[pygame.K_d] else 0) - \
+                 (1 if keys[pygame.K_LEFT] or keys[pygame.K_a] else 0)
+            dy = (1 if keys[pygame.K_DOWN] or keys[pygame.K_s] else 0) - \
+                 (1 if keys[pygame.K_UP] or keys[pygame.K_w] else 0)
+            self.overworld.update(dt, dx, dy, interact=False)
+
+            # Consume pending events from overworld
+            if self.overworld.encounter_pending:
+                enemies = self.overworld.consume_encounter()
+                if enemies:
+                    self.battle.start_battle(
+                        party=[c for c in self.party if c.stats.hp > 0],
+                        enemies=enemies,
+                    )
+                    self._story_battle_active = False
+                    self._pending_scene_after_battle = None
+                    self.particles.emit(GAME_W // 2, GAME_H // 2, (255, 80, 80), count=25, spread=4.0)
+                    self.hf_trainer.record_battle(
+                        self.party[0].name if self.party else "Player",
+                        enemies[0].name, "encounter",
+                        0, enemies[0].tongue_affinity.value, "overworld"
+                    )
+
+            if self.overworld.warp_pending:
+                warp = self.overworld.consume_warp()
+                if warp:
+                    self.overworld.enter(warp.map_name, warp.x, warp.y)
+                    self.particles.emit(GAME_W // 2, GAME_H // 2, (80, 200, 255), count=20, spread=3.0)
+
+            if self.overworld.npc_interaction_pending:
+                npc_id = self.overworld.consume_npc_interaction()
+                if npc_id:
+                    self._start_npc_dialogue(npc_id)
+
+            if self.overworld.dungeon_entry_pending:
+                self.overworld.consume_dungeon_entry()
+                self.dungeon_active = True
+                self.game_phase = "dungeon"
+                self.tower.enter_tower()
+                self.dungeon_player_x = 1
+                self.dungeon_player_y = 1
+                self.n8n_bus.emit(
+                    GameEventType.DUNGEON_ENTERED,
+                    floor=self.tower.current_floor,
+                    party_size=len(self.party),
+                )
+                self.particles.emit(GAME_W // 2, GAME_H // 2, (160, 80, 255), count=20, spread=3.0)
+
     # ------------------------------------------------------------------
     # Drawing
     # ------------------------------------------------------------------
@@ -2047,10 +3435,26 @@ class AethermoorGame:
 
         if self.game_phase == "title":
             self._draw_title_screen()
+        elif self.game_phase == "evolution":
+            self._draw_evolution_screen()
+        elif self.game_phase == "gacha":
+            self._draw_gacha_screen()
         elif self.workshop_open:
             self._draw_workshop_screen()
+        elif self.game_phase == "ide":
+            self._draw_ide_screen()
+        elif self.game_phase == "library":
+            self._draw_library_screen()
+        elif self.game_phase == "polypad":
+            self._draw_polypad_screen()
         elif self.battle.active:
             self._draw_battle_screen()
+        elif self.game_phase == "overworld":
+            self._draw_overworld_screen()
+        elif self.game_phase == "dungeon":
+            self._draw_dungeon_screen()
+        elif self.game_phase == "dialogue":
+            self._draw_dialogue_screen()
         else:
             self._draw_scene_screen()
 
@@ -2761,155 +4165,1251 @@ class AethermoorGame:
             self.game_surface.blit(legend, (menu_x + padding, legend_y))
 
     # ------------------------------------------------------------------
+    # Overworld Screen
+    # ------------------------------------------------------------------
+    def _draw_overworld_screen(self) -> None:
+        """Draw the tile-based overworld."""
+        self.game_surface.fill((24, 32, 20))
+        self.overworld.draw(self.game_surface)
+
+        # Map name HUD
+        map_name = self.overworld.current_map_name.replace("_", " ").title()
+        hud_font = self.fonts.get(12, bold=True)
+        name_surf = hud_font.render(map_name, True, GOLD)
+        bg = pygame.Surface((name_surf.get_width() + 12, name_surf.get_height() + 6), pygame.SRCALPHA)
+        bg.fill((10, 10, 26, 200))
+        self.game_surface.blit(bg, (8, 6))
+        self.game_surface.blit(name_surf, (14, 9))
+
+        # Controls hint
+        hint_font = self.fonts.get(9)
+        hint_surf = hint_font.render("WASD:Move  Enter:Talk  I:IDE  L:Library  P:PolyPad  B:Battle  Esc:Pause", True, DIM_TEXT)
+        self.game_surface.blit(hint_surf, (8, GAME_H - 16))
+
+        terminal = self._nearby_ide_terminal()
+        if terminal:
+            prompt = hint_font.render(f"Enter: Use {terminal}", True, (255, 220, 120))
+            self.game_surface.blit(prompt, (8, GAME_H - 30))
+
+        # Draw terminal beacons to improve discoverability.
+        if self.overworld.camera:
+            beacons = IDE_TERMINALS.get(self.overworld.current_map_name, [])
+            pulse = 0.5 + 0.5 * math.sin(self.frame_count * 0.15)
+            glow = lerp_color((70, 120, 220), (255, 220, 120), pulse)
+            for tx, ty, _label in beacons:
+                sx = int(tx * TILE_SIZE - self.overworld.camera.x + self.overworld.camera.view_w // 2 + TILE_SIZE // 2)
+                sy = int(ty * TILE_SIZE - self.overworld.camera.y + self.overworld.camera.view_h // 2 + TILE_SIZE // 2)
+                if -8 <= sx <= GAME_W + 8 and -8 <= sy <= GAME_H + 8:
+                    pygame.draw.circle(self.game_surface, glow, (sx, sy - 10), 5, 1)
+                    pygame.draw.rect(self.game_surface, glow, (sx - 4, sy - 5, 8, 6), 1)
+
+    # ------------------------------------------------------------------
+    # Dungeon Screen
+    # ------------------------------------------------------------------
+    def _draw_dungeon_screen(self) -> None:
+        """Draw the dungeon floor as a mini-map grid view."""
+        self.game_surface.fill((14, 8, 24))
+        floor = self.tower.get_current_floor()
+        if not floor:
+            font = self.fonts.get(16, bold=True)
+            self.game_surface.blit(font.render("No dungeon floor loaded", True, TEXT_COLOR), (40, 200))
+            return
+
+        # Calculate tile render size to fit the floor in the game area
+        max_tiles_w = floor.width
+        max_tiles_h = floor.height
+        tile_px = min((GAME_W - 40) // max_tiles_w, (GAME_H - 100) // max_tiles_h, 28)
+        offset_x = (GAME_W - max_tiles_w * tile_px) // 2
+        offset_y = 60
+
+        # Theme colors
+        from dungeon import FloorTheme, Tile as DTile
+        theme_colors = {
+            FloorTheme.CRYSTAL: (80, 140, 220),
+            FloorTheme.SHADOW: (100, 60, 140),
+            FloorTheme.FIRE: (200, 80, 40),
+            FloorTheme.DATA: (60, 200, 160),
+        }
+        accent = theme_colors.get(floor.theme, (120, 120, 140))
+
+        # Draw tiles
+        for ty in range(max_tiles_h):
+            for tx in range(max_tiles_w):
+                rx = offset_x + tx * tile_px
+                ry = offset_y + ty * tile_px
+                tile = floor.get_tile(tx, ty)
+                if tile == DTile.WALL:
+                    pygame.draw.rect(self.game_surface, (30, 25, 40), (rx, ry, tile_px - 1, tile_px - 1))
+                elif tile == DTile.FLOOR:
+                    pygame.draw.rect(self.game_surface, (50, 45, 60), (rx, ry, tile_px - 1, tile_px - 1))
+                elif tile == DTile.MONSTER_SPAWN:
+                    pygame.draw.rect(self.game_surface, (50, 45, 60), (rx, ry, tile_px - 1, tile_px - 1))
+                    pygame.draw.circle(self.game_surface, (200, 60, 60), (rx + tile_px // 2, ry + tile_px // 2), tile_px // 4)
+                elif tile == DTile.EXIT_STAIR:
+                    pygame.draw.rect(self.game_surface, (60, 180, 100), (rx, ry, tile_px - 1, tile_px - 1))
+                elif tile == DTile.CHEST:
+                    pygame.draw.rect(self.game_surface, (50, 45, 60), (rx, ry, tile_px - 1, tile_px - 1))
+                    pygame.draw.rect(self.game_surface, (220, 180, 60), (rx + 2, ry + 2, tile_px - 5, tile_px - 5), 1)
+                elif tile == DTile.TRAP:
+                    pygame.draw.rect(self.game_surface, (50, 45, 60), (rx, ry, tile_px - 1, tile_px - 1))
+                    pygame.draw.line(self.game_surface, (200, 60, 60), (rx + 2, ry + 2), (rx + tile_px - 3, ry + tile_px - 3))
+                    pygame.draw.line(self.game_surface, (200, 60, 60), (rx + tile_px - 3, ry + 2), (rx + 2, ry + tile_px - 3))
+
+        # Draw player
+        px = offset_x + self.dungeon_player_x * tile_px
+        py = offset_y + self.dungeon_player_y * tile_px
+        pygame.draw.rect(self.game_surface, (80, 200, 255), (px + 1, py + 1, tile_px - 3, tile_px - 3))
+        pygame.draw.rect(self.game_surface, (255, 255, 255), (px + 1, py + 1, tile_px - 3, tile_px - 3), 1)
+
+        # HUD: floor info
+        hud_font = self.fonts.get(12, bold=True)
+        floor_text = f"FLOOR {self.tower.current_floor}"
+        if floor.is_boss_floor:
+            floor_text += "  [BOSS]"
+        self.game_surface.blit(hud_font.render(floor_text, True, accent), (14, 10))
+
+        theme_font = self.fonts.get(10)
+        self.game_surface.blit(theme_font.render(f"Theme: {floor.theme.name}", True, DIM_TEXT), (14, 30))
+
+        # Controls
+        hint_font = self.fonts.get(9)
+        self.game_surface.blit(
+            hint_font.render("WASD:Move  P:PolyPad  Esc:Exit Tower", True, DIM_TEXT),
+            (8, GAME_H - 16),
+        )
+
+    def _draw_ide_screen(self) -> None:
+        """Draw the CodeLab IDE mini-game screen."""
+        # Navy -> cyan gradient to keep Sapphire-era readability.
+        top = (10, 24, 52)
+        bottom = (6, 12, 28)
+        for y in range(GAME_H):
+            t = y / max(1, GAME_H - 1)
+            col = lerp_color(top, bottom, t)
+            pygame.draw.line(self.game_surface, col, (0, y), (GAME_W, y))
+
+        shell = pygame.Rect(24, 20, GAME_W - 48, GAME_H - 40)
+        draw_rounded_rect(
+            self.game_surface,
+            (10, 16, 28),
+            shell,
+            radius=14,
+            border=2,
+            border_color=(80, 120, 168),
+        )
+
+        ticket = self._current_ide_ticket()
+        actions = self._ide_actions()
+        self.ide_cursor = max(0, min(self.ide_cursor, max(0, len(actions) - 1)))
+
+        title_font = self.fonts.get(14, bold=True)
+        info_font = self.fonts.get(10)
+        small_font = self.fonts.get(9)
+
+        head = title_font.render("CODELAB IDE // TERMINAL OPS", True, GOLD)
+        self.game_surface.blit(head, (shell.x + 14, shell.y + 10))
+
+        right = info_font.render(
+            f"Resolved {self.ide_resolved}  Failed {self.ide_failures}",
+            True,
+            (172, 210, 248),
+        )
+        self.game_surface.blit(right, (shell.right - right.get_width() - 14, shell.y + 14))
+
+        body = pygame.Rect(shell.x + 10, shell.y + 38, shell.w - 20, shell.h - 62)
+        list_rect = pygame.Rect(body.x, body.y, 220, body.h)
+        detail_rect = pygame.Rect(list_rect.right + 10, body.y, body.w - list_rect.w - 10, body.h)
+        draw_rounded_rect(self.game_surface, (14, 24, 40), list_rect, radius=8, border=1, border_color=(62, 98, 140))
+        draw_rounded_rect(self.game_surface, (14, 24, 40), detail_rect, radius=8, border=1, border_color=(62, 98, 140))
+
+        row_h = 20
+        for i, item in enumerate(actions[:15]):
+            ry = list_rect.y + 8 + i * row_h
+            rr = pygame.Rect(list_rect.x + 6, ry, list_rect.w - 12, row_h - 2)
+            active = i == self.ide_cursor
+            if active:
+                draw_rounded_rect(self.game_surface, (36, 74, 124), rr, radius=5, border=1, border_color=(124, 192, 255))
+            label = item if len(item) <= 31 else (item[:28] + "...")
+            tc = (244, 250, 255) if active else (166, 190, 222)
+            self.game_surface.blit(info_font.render(label, True, tc), (rr.x + 7, rr.y + 4))
+
+        x = detail_rect.x + 10
+        y = detail_rect.y + 10
+        t_title = str(ticket.get("title", "Unknown Ticket"))
+        self.game_surface.blit(self.fonts.get(12, bold=True).render(t_title, True, (192, 238, 255)), (x, y))
+        y += 18
+        tongue = str(ticket.get("tongue", "CA"))
+        reward = int(ticket.get("reward_gold", 0))
+        self.game_surface.blit(
+            small_font.render(f"Tongue {tongue}  Reward +{reward}g", True, (162, 196, 232)),
+            (x, y),
+        )
+        y += 14
+
+        y = draw_text_wrapped(
+            self.game_surface,
+            str(ticket.get("brief", "")),
+            info_font,
+            (188, 210, 236),
+            pygame.Rect(x, y, detail_rect.w - 20, 70),
+        ) + 6
+
+        self.game_surface.blit(info_font.render("Last build result:", True, (154, 186, 220)), (x, y))
+        y += 13
+        y = draw_text_wrapped(
+            self.game_surface,
+            self.ide_last_result,
+            small_font,
+            (170, 202, 236),
+            pygame.Rect(x, y, detail_rect.w - 20, 54),
+        ) + 6
+
+        self.game_surface.blit(info_font.render("Recent commands:", True, (154, 186, 220)), (x, y))
+        y += 13
+        if self.ide_history:
+            for line in self.ide_history[:5]:
+                clipped = line if len(line) <= 44 else line[:41] + "..."
+                self.game_surface.blit(small_font.render(f"- {clipped}", True, (140, 174, 208)), (x + 2, y))
+                y += 12
+        else:
+            self.game_surface.blit(small_font.render("- No command history yet", True, (140, 174, 208)), (x + 2, y))
+
+        footer = small_font.render(
+            "I/Esc:Close  L:Library  Left/Right:Ticket  Up/Down:Action  Enter:Run",
+            True,
+            (146, 170, 198),
+        )
+        self.game_surface.blit(footer, (shell.x + 12, shell.bottom - 14))
+
+    def _draw_library_screen(self) -> None:
+        """Draw Morrowind-style readable lore books."""
+        top = (36, 28, 18)
+        bottom = (20, 14, 8)
+        for y in range(GAME_H):
+            t = y / max(1, GAME_H - 1)
+            col = lerp_color(top, bottom, t)
+            pygame.draw.line(self.game_surface, col, (0, y), (GAME_W, y))
+
+        panel = pygame.Rect(18, 14, GAME_W - 36, GAME_H - 28)
+        draw_rounded_rect(
+            self.game_surface,
+            (34, 24, 14),
+            panel,
+            radius=10,
+            border=2,
+            border_color=(140, 112, 72),
+        )
+
+        title_font = self.fonts.get(14, bold=True)
+        info_font = self.fonts.get(10)
+        small_font = self.fonts.get(9)
+
+        head = title_font.render("AETHERMOOR LIBRARY // LORE ARCHIVE", True, (255, 220, 150))
+        self.game_surface.blit(head, (panel.x + 12, panel.y + 8))
+        reads = info_font.render(f"Reads: {self.library_reads}", True, (214, 190, 150))
+        self.game_surface.blit(reads, (panel.right - reads.get_width() - 12, panel.y + 14))
+
+        left = pygame.Rect(panel.x + 10, panel.y + 34, 214, panel.h - 50)
+        right = pygame.Rect(left.right + 10, left.y, panel.right - left.right - 20, left.h)
+        draw_rounded_rect(self.game_surface, (44, 30, 18), left, radius=8, border=1, border_color=(122, 96, 60))
+        draw_rounded_rect(self.game_surface, (54, 40, 26), right, radius=8, border=1, border_color=(140, 110, 72))
+
+        # Left: book list.
+        row_h = 20
+        self.library_index = max(0, min(self.library_index, max(0, len(LORE_BOOKS) - 1)))
+        for i, book in enumerate(LORE_BOOKS[:14]):
+            ry = left.y + 8 + i * row_h
+            rr = pygame.Rect(left.x + 6, ry, left.w - 12, row_h - 2)
+            active = i == self.library_index
+            if active:
+                draw_rounded_rect(self.game_surface, (88, 62, 34), rr, radius=5, border=1, border_color=(210, 170, 110))
+            title = book["title"] if len(book["title"]) <= 28 else (book["title"][:25] + "...")
+            col = (252, 238, 214) if active else (206, 182, 142)
+            self.game_surface.blit(small_font.render(title, True, col), (rr.x + 6, rr.y + 4))
+
+        book = self._current_lore_book()
+        x = right.x + 10
+        y = right.y + 10
+        self.game_surface.blit(self.fonts.get(12, bold=True).render(book.get("title", "Lore Book"), True, (255, 238, 202)), (x, y))
+        y += 16
+        source = small_font.render(book.get("source", "Source: Local"), True, (196, 168, 128))
+        self.game_surface.blit(source, (x, y))
+        y += 14
+
+        lines = self._wrap_text_lines(book.get("body", ""), info_font, right.w - 20)
+        max_lines = 16
+        max_scroll = max(0, len(lines) - max_lines)
+        self.library_scroll = max(0, min(self.library_scroll, max_scroll))
+
+        body_y = y + 2
+        for line in lines[self.library_scroll:self.library_scroll + max_lines]:
+            self.game_surface.blit(info_font.render(line, True, (236, 220, 194)), (x, body_y))
+            body_y += 14
+
+        progress = f"Book {self.library_index + 1}/{max(1, len(LORE_BOOKS))}  Line {self.library_scroll + 1}/{max(1, len(lines))}"
+        self.game_surface.blit(small_font.render(progress, True, (188, 160, 122)), (x, right.bottom - 28))
+
+        read_state = "Read (Enter)" if book.get("id") in self.library_read_books else "Mark Read (Enter)"
+        self.game_surface.blit(small_font.render(read_state, True, (255, 220, 120)), (x, right.bottom - 14))
+
+        footer = small_font.render(
+            "L/Esc:Close  Left/Right:Book  Up/Down:Scroll  Enter:Read/Log",
+            True,
+            (190, 166, 130),
+        )
+        self.game_surface.blit(footer, (panel.x + 12, panel.bottom - 12))
+
+    def _draw_polypad_screen(self) -> None:
+        """Draw the Poly Pad (cellphone / in-game PC) UI."""
+        # Sapphire-style blue gradient background.
+        top = (12, 26, 62)
+        bottom = (8, 12, 28)
+        for y in range(GAME_H):
+            t = y / max(1, GAME_H - 1)
+            col = lerp_color(top, bottom, t)
+            pygame.draw.line(self.game_surface, col, (0, y), (GAME_W, y))
+
+        # Device frame.
+        outer = pygame.Rect(38, 18, GAME_W - 76, GAME_H - 36)
+        draw_rounded_rect(self.game_surface, (18, 24, 38), outer, radius=16, border=2, border_color=(90, 112, 148))
+        inner = pygame.Rect(outer.x + 10, outer.y + 10, outer.w - 20, outer.h - 20)
+        draw_rounded_rect(self.game_surface, (10, 16, 26), inner, radius=12, border=1, border_color=(64, 88, 124))
+
+        app = POLYPAD_APPS[self.polypad_tab]
+        unread = self._polypad_unread_count()
+
+        # Header.
+        title_font = self.fonts.get(14, bold=True)
+        sub_font = self.fonts.get(9)
+        title = title_font.render("POLY PAD // FIELD LINK", True, GOLD)
+        self.game_surface.blit(title, (inner.x + 14, inner.y + 10))
+        right = sub_font.render(f"App: {app}   Unread: {unread}", True, (180, 205, 240))
+        self.game_surface.blit(right, (inner.right - right.get_width() - 14, inner.y + 16))
+
+        # Tabs.
+        tab_y = inner.y + 36
+        tab_w = (inner.w - 20) // len(POLYPAD_APPS)
+        for i, name in enumerate(POLYPAD_APPS):
+            tx = inner.x + 10 + i * tab_w
+            tr = pygame.Rect(tx, tab_y, tab_w - 4, 22)
+            active = i == self.polypad_tab
+            fill = (34, 66, 108) if active else (20, 30, 48)
+            border = (110, 180, 245) if active else (56, 74, 102)
+            draw_rounded_rect(self.game_surface, fill, tr, radius=6, border=1, border_color=border)
+            tc = (235, 245, 255) if active else (140, 162, 196)
+            lbl = sub_font.render(name, True, tc)
+            self.game_surface.blit(lbl, (tr.centerx - lbl.get_width() // 2, tr.y + 6))
+
+        entries = self._polypad_entries()
+        if entries:
+            self.polypad_cursor = max(0, min(self.polypad_cursor, len(entries) - 1))
+        else:
+            self.polypad_cursor = 0
+
+        # Left list panel.
+        list_rect = pygame.Rect(inner.x + 12, inner.y + 64, 220, inner.h - 92)
+        detail_rect = pygame.Rect(list_rect.right + 10, list_rect.y, inner.right - list_rect.right - 22, list_rect.h)
+        draw_rounded_rect(self.game_surface, (14, 24, 40), list_rect, radius=8, border=1, border_color=(66, 96, 132))
+        draw_rounded_rect(self.game_surface, (14, 24, 40), detail_rect, radius=8, border=1, border_color=(66, 96, 132))
+
+        item_font = self.fonts.get(10)
+        row_h = 20
+        for i, line in enumerate(entries[:14]):
+            ry = list_rect.y + 8 + i * row_h
+            rr = pygame.Rect(list_rect.x + 6, ry - 1, list_rect.w - 12, row_h - 2)
+            active = i == self.polypad_cursor
+            if active:
+                draw_rounded_rect(self.game_surface, (36, 74, 126), rr, radius=5, border=1, border_color=(128, 192, 255))
+            txt = line if len(line) <= 30 else (line[:27] + "...")
+            color = (244, 250, 255) if active else (164, 188, 220)
+            self.game_surface.blit(item_font.render(txt, True, color), (rr.x + 8, rr.y + 4))
+
+        # Right detail panel by app.
+        info_font = self.fonts.get(10)
+        x = detail_rect.x + 10
+        y = detail_rect.y + 10
+
+        if app == "Home":
+            status_line = (
+                f"Class {self.player_class} | Partner {self.partner_name} | "
+                f"Rep {self.reputation_points:+d}"
+            )
+            self.game_surface.blit(self.fonts.get(11, bold=True).render("FIELD SUMMARY", True, (186, 230, 255)), (x, y))
+            y += 18
+            y = draw_text_wrapped(
+                self.game_surface,
+                status_line,
+                info_font,
+                (198, 214, 236),
+                pygame.Rect(x, y, detail_rect.w - 20, 40),
+            ) + 4
+            y = draw_text_wrapped(
+                self.game_surface,
+                "Use Contacts for calls, Messages for intel, Missions for objectives, PC Box for party reviews, and IDE for coding mini-games.",
+                info_font,
+                (178, 198, 226),
+                pygame.Rect(x, y, detail_rect.w - 20, 72),
+            ) + 8
+            self.game_surface.blit(info_font.render("Core Loop Mode: SIMPLE", True, (120, 255, 172)), (x, y))
+            y += 14
+            self.game_surface.blit(info_font.render("Advanced Systems: MINI-GAMES", True, (255, 214, 120)), (x, y))
+            y += 16
+            if self.polypad_call_log:
+                self.game_surface.blit(info_font.render("Recent calls:", True, (160, 186, 220)), (x, y))
+                y += 14
+                for call in self.polypad_call_log[:4]:
+                    self.game_surface.blit(info_font.render(f"- {call}", True, (140, 170, 206)), (x + 4, y))
+                    y += 13
+
+        elif app == "Contacts":
+            if self.polypad_contacts:
+                c = self.polypad_contacts[self.polypad_cursor]
+                self.game_surface.blit(self.fonts.get(11, bold=True).render(c["name"], True, (194, 238, 255)), (x, y))
+                y += 18
+                self.game_surface.blit(info_font.render(f"Status: {c['status']}", True, (170, 200, 232)), (x, y))
+                y += 14
+                self.game_surface.blit(info_font.render(f"Last call: {c['last_call']}", True, (150, 182, 216)), (x, y))
+                y += 18
+                y = draw_text_wrapped(
+                    self.game_surface,
+                    "Press Enter to call. Calls add tactical hints to Messages without interrupting the core RPG flow.",
+                    info_font,
+                    (178, 198, 226),
+                    pygame.Rect(x, y, detail_rect.w - 20, 70),
+                ) + 4
+
+        elif app == "Messages":
+            if self.polypad_messages:
+                m = self.polypad_messages[self.polypad_cursor]
+                subject = f"{m['from']} // {m['subject']}"
+                self.game_surface.blit(self.fonts.get(11, bold=True).render(subject[:34], True, (194, 238, 255)), (x, y))
+                y += 18
+                unread_tag = "UNREAD" if m.get("unread", False) else "READ"
+                tag_color = (255, 224, 116) if m.get("unread", False) else (120, 206, 154)
+                self.game_surface.blit(info_font.render(f"{unread_tag}  @ {m.get('time', '-')}", True, tag_color), (x, y))
+                y += 16
+                draw_text_wrapped(
+                    self.game_surface,
+                    m.get("body", ""),
+                    info_font,
+                    (186, 208, 236),
+                    pygame.Rect(x, y, detail_rect.w - 20, detail_rect.h - 60),
+                )
+
+        elif app == "Missions":
+            if self.polypad_missions:
+                mission = self.polypad_missions[self.polypad_cursor]
+                self.game_surface.blit(self.fonts.get(11, bold=True).render(mission["title"], True, (194, 238, 255)), (x, y))
+                y += 18
+                st = mission.get("status", "queued")
+                st_color = (120, 255, 170) if st == "active" else ((255, 220, 120) if st == "queued" else (130, 160, 186))
+                self.game_surface.blit(info_font.render(f"Status: {st.upper()}", True, st_color), (x, y))
+                y += 16
+                y = draw_text_wrapped(
+                    self.game_surface,
+                    mission.get("desc", ""),
+                    info_font,
+                    (186, 208, 236),
+                    pygame.Rect(x, y, detail_rect.w - 20, 84),
+                ) + 6
+                active = sum(1 for m in self.polypad_missions if m.get("status") == "active")
+                done = sum(1 for m in self.polypad_missions if m.get("status") == "done")
+                total = max(1, len(self.polypad_missions))
+                self.game_surface.blit(info_font.render("Mission Progress", True, (156, 188, 220)), (x, y))
+                y += 12
+                draw_bar(self.game_surface, x, y, detail_rect.w - 24, 10, done / total, (90, 220, 150))
+                y += 14
+                self.game_surface.blit(info_font.render(f"Active {active} / Done {done} / Total {total}", True, (144, 176, 206)), (x, y))
+
+        elif app == "PC Box":
+            if self.polypad_cursor == 0:
+                self.game_surface.blit(
+                    self.fonts.get(11, bold=True).render("Guild Computer", True, (194, 238, 255)),
+                    (x, y),
+                )
+                y += 18
+                y = draw_text_wrapped(
+                    self.game_surface,
+                    "Sit at the terminal to enter CodeLab IDE. Solve coding tickets for rewards and training data.",
+                    info_font,
+                    (186, 208, 236),
+                    pygame.Rect(x, y, detail_rect.w - 20, 76),
+                ) + 6
+                self.game_surface.blit(info_font.render("Press Enter to launch IDE.", True, (255, 220, 120)), (x, y))
+            elif self.polypad_cursor == 1:
+                self.game_surface.blit(
+                    self.fonts.get(11, bold=True).render("Lore Library", True, (194, 238, 255)),
+                    (x, y),
+                )
+                y += 18
+                y = draw_text_wrapped(
+                    self.game_surface,
+                    "Read long-form field books sourced from Obsidian canon notes. First read grants small rewards.",
+                    info_font,
+                    (186, 208, 236),
+                    pygame.Rect(x, y, detail_rect.w - 20, 76),
+                ) + 6
+                self.game_surface.blit(info_font.render("Press Enter to open books.", True, (255, 220, 120)), (x, y))
+            elif self.party and (self.polypad_cursor - 2) < len(self.party):
+                c = self.party[self.polypad_cursor - 2]
+                self.game_surface.blit(self.fonts.get(11, bold=True).render(c.name, True, (194, 238, 255)), (x, y))
+                y += 18
+                self.game_surface.blit(info_font.render(f"Lv {c.stats.level}  {c.tongue_affinity.value}", True, (172, 205, 236)), (x, y))
+                y += 16
+                hp_ratio = c.stats.hp / max(1, c.stats.max_hp)
+                mp_ratio = c.stats.mp / max(1, c.stats.max_mp)
+                self.game_surface.blit(info_font.render("HP", True, (160, 188, 220)), (x, y))
+                y += 11
+                draw_bar(self.game_surface, x, y, detail_rect.w - 24, 10, hp_ratio, (84, 226, 136))
+                y += 16
+                self.game_surface.blit(info_font.render("MP", True, (160, 188, 220)), (x, y))
+                y += 11
+                draw_bar(self.game_surface, x, y, detail_rect.w - 24, 8, mp_ratio, (96, 156, 246))
+                y += 16
+                at = c.stats.attack
+                df = c.stats.defense
+                sp = c.stats.speed
+                ws = c.stats.wisdom
+                self.game_surface.blit(info_font.render(f"ATK {at}  DEF {df}  SPD {sp}  WIS {ws}", True, (172, 205, 236)), (x, y))
+                y += 16
+                self.game_surface.blit(
+                    info_font.render("PC Box mirrors Ruby/Sapphire quick-inspect flow.", True, (140, 176, 206)),
+                    (x, y),
+                )
+            else:
+                self.game_surface.blit(info_font.render("No party members in PC Box.", True, (172, 205, 236)), (x, y))
+
+        elif app == "IDE":
+            self.game_surface.blit(self.fonts.get(11, bold=True).render("CodeLab Bridge", True, (194, 238, 255)), (x, y))
+            y += 18
+            y = draw_text_wrapped(
+                self.game_surface,
+                "Run coding mini-game tickets from here. Keep overworld simple; send complex systems into IDE runs.",
+                info_font,
+                (186, 208, 236),
+                pygame.Rect(x, y, detail_rect.w - 20, 74),
+            ) + 8
+            self.game_surface.blit(info_font.render(f"Resolved: {self.ide_resolved}  Failed: {self.ide_failures}", True, (166, 196, 228)), (x, y))
+            y += 16
+            self.game_surface.blit(info_font.render(f"Last build: {self.ide_last_result[:48]}", True, (140, 176, 206)), (x, y))
+            y += 14
+            self.game_surface.blit(info_font.render(f"Lore books read: {self.library_reads}", True, (140, 176, 206)), (x, y))
+
+        # Footer controls.
+        quick_tabs = min(len(POLYPAD_APPS), 9)
+        footer = self.fonts.get(9).render(
+            f"P/Esc:Close  Left/Right:App  Up/Down:Select  Enter:Action  1-{quick_tabs}:Quick Tab",
+            True,
+            (148, 172, 202),
+        )
+        self.game_surface.blit(footer, (inner.x + 12, inner.bottom - 16))
+
+    # ------------------------------------------------------------------
+    # Dialogue Screen (PivotKnowledge NPC)
+    # ------------------------------------------------------------------
+    def _draw_dialogue_screen(self) -> None:
+        """Draw the NPC dialogue screen with PivotKnowledge pivots."""
+        self.game_surface.fill(BG_COLORS.get("aethermoor", (32, 24, 72)))
+
+        npc_id = self.dialogue_npc_id
+        char = self.cast.get(npc_id)
+        npc_name = char.name if char else npc_id.capitalize()
+        tongue = char.tongue_affinity.value if char else "KO"
+        tc = TONGUE_COLORS.get(tongue, (200, 200, 200))
+
+        # NPC portrait (left side)
+        if char:
+            portrait = self.sprites.get_scaled(char, 96)
+            self.game_surface.blit(portrait, (30, 40))
+
+        # NPC name badge
+        name_font = self.fonts.get(14, bold=True)
+        name_surf = name_font.render(npc_name, True, tc)
+        self.game_surface.blit(name_surf, (140, 40))
+
+        tongue_font = self.fonts.get(10)
+        tongue_name = TONGUE_FULL_NAMES.get(tongue, tongue)
+        self.game_surface.blit(tongue_font.render(f"[{tongue_name}]", True, DIM_TEXT), (140, 60))
+
+        # Response box
+        resp_box = pygame.Surface((GAME_W - 30, 140), pygame.SRCALPHA)
+        resp_box.fill((10, 10, 26, 220))
+        self.game_surface.blit(resp_box, (15, 100))
+        pygame.draw.rect(self.game_surface, tc, (15, 100, GAME_W - 30, 140), 1, border_radius=4)
+
+        resp_font = self.fonts.get(12)
+        # Word-wrap response
+        words = self.dialogue_response.split()
+        lines: List[str] = []
+        current_line = ""
+        for word in words:
+            test = current_line + " " + word if current_line else word
+            if resp_font.size(test)[0] < GAME_W - 60:
+                current_line = test
+            else:
+                lines.append(current_line)
+                current_line = word
+        if current_line:
+            lines.append(current_line)
+
+        for i, line in enumerate(lines[:6]):
+            self.game_surface.blit(resp_font.render(line, True, TEXT_COLOR), (25, 110 + i * 18))
+
+        # Sacred language flavor text
+        if self.dialogue_sacred_text:
+            sacred_font = self.fonts.get(9)
+            sacred_surf = sacred_font.render(f"[{tongue}] {self.dialogue_sacred_text}", True, tc)
+            sacred_surf.set_alpha(140)
+            self.game_surface.blit(sacred_surf, (25, 225))
+
+        # Pivot choices
+        pivot_y = 260
+        pivot_font = self.fonts.get(12)
+        header_font = self.fonts.get(11, bold=True)
+        self.game_surface.blit(header_font.render("Topics:", True, GOLD), (20, pivot_y))
+        pivot_y += 20
+
+        for i, (topic_id, topic_name) in enumerate(self.dialogue_pivots[:6]):
+            is_sel = (i == self.dialogue_pivot_cursor)
+            color = CHOICE_HIGHLIGHT if is_sel else TEXT_COLOR
+            prefix = "> " if is_sel else "  "
+            self.game_surface.blit(
+                pivot_font.render(f"{prefix}{topic_name}", True, color),
+                (28, pivot_y + i * 22),
+            )
+
+        # Controls
+        hint_font = self.fonts.get(9)
+        self.game_surface.blit(
+            hint_font.render("Up/Down:Select  Enter:Pivot  Esc:Leave", True, DIM_TEXT),
+            (8, GAME_H - 16),
+        )
+
+    # ------------------------------------------------------------------
     # Battle Screen
     # ------------------------------------------------------------------
-    def _draw_battle_screen(self) -> None:
-        """Draw the battle screen."""
-        self.game_surface.fill(BG_COLORS["battle"])
+    # ------------------------------------------------------------------
+    # Evolution System
+    # ------------------------------------------------------------------
+    EVO_THRESHOLDS = {
+        EvoStage.FRESH:    (0.5,  1, 0.0),   # (total_prof, tongues_needed, min_tongue)
+        EvoStage.ROOKIE:   (2.0,  1, 0.4),
+        EvoStage.CHAMPION: (3.5,  2, 0.6),
+        EvoStage.ULTIMATE: (5.0,  3, 0.8),
+        EvoStage.MEGA:     (999,  6, 1.0),    # Ultra — unreachable normally
+    }
+    EVO_ORDER = [EvoStage.FRESH, EvoStage.ROOKIE, EvoStage.CHAMPION,
+                 EvoStage.ULTIMATE, EvoStage.MEGA, EvoStage.ULTRA]
 
-        # Battle background
-        # Dark battlefield gradient
+    def _check_evolution(self) -> None:
+        """Check if any party member is ready to evolve after battle."""
+        for char in self.party:
+            if char.is_enemy:
+                continue
+            stage_idx = self.EVO_ORDER.index(char.evo_stage) if char.evo_stage in self.EVO_ORDER else -1
+            if stage_idx < 0 or stage_idx >= len(self.EVO_ORDER) - 1:
+                continue
+            threshold = self.EVO_THRESHOLDS.get(char.evo_stage)
+            if not threshold:
+                continue
+            total_prof = sum(char.stats.tongue_prof.values())
+            tongues_above = sum(1 for v in char.stats.tongue_prof.values() if v >= threshold[2])
+            if total_prof >= threshold[0] and tongues_above >= threshold[1]:
+                # Trigger evolution!
+                old_stage = char.evo_stage
+                new_stage = self.EVO_ORDER[stage_idx + 1]
+                self._evo_char = char
+                self._evo_from = old_stage.value
+                self._evo_to = new_stage.value
+                self._evo_timer = 0.0
+                self._evo_phase = 0
+                self._evo_return_phase = self.game_phase
+                self.game_phase = "evolution"
+                # Apply evolution
+                char.evo_stage = new_stage
+                # Stat boost on evolution
+                boost = 1 + stage_idx * 0.15
+                char.stats.max_hp = int(char.stats.max_hp * boost)
+                char.stats.hp = char.stats.max_hp
+                char.stats.max_mp = int(char.stats.max_mp * boost)
+                char.stats.mp = char.stats.max_mp
+                char.stats.attack = int(char.stats.attack * boost)
+                char.stats.defense = int(char.stats.defense * boost)
+                # Record training data
+                self.exporter.record_evolution(
+                    char.name, self._evo_from, self._evo_to, char.stats.tongue_prof
+                )
+                self.n8n_bus.emit(
+                    GameEventType.COMPANION_EVOLVED,
+                    name=char.name, from_stage=self._evo_from,
+                    to_stage=self._evo_to,
+                )
+                break  # One evolution per battle
+
+    def _draw_evolution_screen(self) -> None:
+        """Draw Digimon-style evolution sequence."""
+        self._evo_timer += 1.0 / FPS_CAP
+        char = self._evo_char
+        if not char:
+            self.game_phase = self._evo_return_phase
+            return
+
+        tc = TONGUE_COLORS.get(char.tongue_affinity.value, GOLD)
+        t = self._evo_timer
+
+        # Dark background with pulsing energy
+        self.game_surface.fill((8, 8, 16))
+
+        # Phase 0: Glow buildup (0-2s)
+        if t < 2.0:
+            self._evo_phase = 0
+            alpha = min(1.0, t / 2.0)
+            # Pulsing concentric rings
+            for ring in range(5):
+                radius = int(40 + ring * 30 + math.sin(t * 4 + ring) * 10)
+                ring_alpha = int(alpha * 120 * (1 - ring / 5))
+                ring_surf = pygame.Surface((GAME_W, GAME_H), pygame.SRCALPHA)
+                pygame.draw.circle(ring_surf, (*tc, ring_alpha),
+                                   (GAME_W // 2, GAME_H // 2 - 40), radius, 2)
+                self.game_surface.blit(ring_surf, (0, 0))
+            # Character sprite pulsing
+            scale = int(64 + math.sin(t * 6) * 8)
+            sprite = self.sprites.get_scaled(char, scale)
+            sx = GAME_W // 2 - scale // 2
+            sy = GAME_H // 2 - scale // 2 - 40
+            self.game_surface.blit(sprite, (sx, sy))
+            # "is evolving..." text
+            evo_font = self.fonts.get(14, bold=True)
+            text = evo_font.render(f"{char.name} is evolving...", True, TEXT_COLOR)
+            self.game_surface.blit(text, (GAME_W // 2 - text.get_width() // 2, GAME_H // 2 + 60))
+
+        # Phase 1: Transform flash (2-3s)
+        elif t < 3.0:
+            self._evo_phase = 1
+            flash_alpha = int(255 * (1 - (t - 2.0)))
+            flash = pygame.Surface((GAME_W, GAME_H), pygame.SRCALPHA)
+            flash.fill((*tc, flash_alpha))
+            self.game_surface.blit(flash, (0, 0))
+            # Larger sprite emerging
+            scale = int(80 + (t - 2.0) * 20)
+            sprite = self.sprites.get_scaled(char, scale)
+            sx = GAME_W // 2 - scale // 2
+            sy = GAME_H // 2 - scale // 2 - 40
+            self.game_surface.blit(sprite, (sx, sy))
+
+        # Phase 2: Reveal (3-5s)
+        elif t < 5.0:
+            self._evo_phase = 2
+            # Particle burst
+            for _ in range(3):
+                px = GAME_W // 2 + random.randint(-80, 80)
+                py = GAME_H // 2 - 40 + random.randint(-60, 60)
+                pygame.draw.circle(self.game_surface, tc, (px, py), random.randint(1, 4))
+            # Final sprite
+            sprite = self.sprites.get_scaled(char, 96)
+            sx = GAME_W // 2 - 48
+            sy = GAME_H // 2 - 88
+            self.game_surface.blit(sprite, (sx, sy))
+            # New stage name
+            stage_font = self.fonts.get(18, bold=True)
+            stage_text = stage_font.render(f"{self._evo_to}!", True, GOLD)
+            self.game_surface.blit(stage_text, (GAME_W // 2 - stage_text.get_width() // 2, GAME_H // 2 + 40))
+            # Congratulations
+            cong_font = self.fonts.get(12)
+            cong = cong_font.render(
+                f"{char.name} evolved from {self._evo_from} to {self._evo_to}!",
+                True, TEXT_COLOR,
+            )
+            self.game_surface.blit(cong, (GAME_W // 2 - cong.get_width() // 2, GAME_H // 2 + 70))
+
+        # Phase 3: Done — wait for input
+        else:
+            self._evo_phase = 3
+            sprite = self.sprites.get_scaled(char, 96)
+            self.game_surface.blit(sprite, (GAME_W // 2 - 48, GAME_H // 2 - 88))
+            stage_font = self.fonts.get(18, bold=True)
+            stage_text = stage_font.render(f"{self._evo_to}!", True, GOLD)
+            self.game_surface.blit(stage_text, (GAME_W // 2 - stage_text.get_width() // 2, GAME_H // 2 + 40))
+            prompt = self.fonts.get(11)
+            self.game_surface.blit(
+                prompt.render("Press ENTER to continue", True, DIM_TEXT),
+                (GAME_W // 2 - 70, GAME_H // 2 + 90),
+            )
+
+    # ------------------------------------------------------------------
+    # Gacha Pull System
+    # ------------------------------------------------------------------
+    GACHA_RARITY_NAMES = {1: "Common", 2: "Uncommon", 3: "Rare", 4: "Epic", 5: "Legendary"}
+    GACHA_RARITY_COLORS = {
+        1: (180, 180, 180), 2: (80, 200, 80), 3: (80, 140, 255),
+        4: (200, 80, 255), 5: (255, 215, 80),
+    }
+
+    def _start_gacha_pull(self) -> None:
+        """Initiate a gacha pull sequence."""
+        # Rarity roll (weighted)
+        roll = random.random()
+        if roll < 0.40:
+            rarity = 1
+        elif roll < 0.70:
+            rarity = 2
+        elif roll < 0.88:
+            rarity = 3
+        elif roll < 0.97:
+            rarity = 4
+        else:
+            rarity = 5
+
+        tongue = random.choice(list(Tongue))
+        # Stats scale with rarity
+        base_hp = 30 + rarity * 15
+        base_atk = 5 + rarity * 3
+        base_def = 4 + rarity * 2
+        base_spd = 5 + rarity * 2
+        base_wis = 4 + rarity * 3
+        # Pick a random name
+        prefixes = ["Aether", "Rune", "Spark", "Shadow", "Crystal", "Flux", "Void", "Nova"]
+        suffixes = ["ling", "maw", "crest", "wisp", "fin", "talon", "shard", "core"]
+        name = random.choice(prefixes) + random.choice(suffixes)
+
+        evo = EvoStage.FRESH if rarity <= 2 else (EvoStage.ROOKIE if rarity <= 4 else EvoStage.CHAMPION)
+        recruit = Character(
+            name=name,
+            title=f"{self.GACHA_RARITY_NAMES[rarity]} Summon",
+            tongue_affinity=tongue,
+            evo_stage=evo,
+            stats=Stats(hp=base_hp, max_hp=base_hp, mp=base_hp // 2, max_mp=base_hp // 2,
+                        attack=base_atk, defense=base_def, speed=base_spd, wisdom=base_wis),
+            spells=[],
+            is_enemy=False,
+        )
+
+        self._gacha_result = recruit
+        self._gacha_rarity = rarity
+        self._gacha_timer = 0.0
+        self._gacha_phase = 0
+        self._gacha_return_phase = self.game_phase
+        self.game_phase = "gacha"
+
+        self.n8n_bus.emit(
+            GameEventType.GACHA_PULL,
+            name=name, tongue=tongue.value, rarity=rarity, party_size=len(self.party),
+        )
+        self.sft_count += 1
+
+    def _draw_gacha_screen(self) -> None:
+        """Draw gacha pull animation."""
+        self._gacha_timer += 1.0 / FPS_CAP
+        t = self._gacha_timer
+        recruit = self._gacha_result
+        rarity = self._gacha_rarity
+
+        self.game_surface.fill((8, 6, 18))
+        rc = self.GACHA_RARITY_COLORS.get(rarity, (180, 180, 180))
+
+        # Phase 0: Swirling energy (0-1.5s)
+        if t < 1.5:
+            self._gacha_phase = 0
+            # Six tongue-colored particles swirling
+            for i, tongue_code in enumerate(["KO", "AV", "RU", "CA", "UM", "DR"]):
+                angle = t * 3 + i * (math.pi * 2 / 6)
+                radius = 80 + math.sin(t * 5) * 20
+                px = int(GAME_W // 2 + math.cos(angle) * radius)
+                py = int(GAME_H // 2 - 20 + math.sin(angle) * radius * 0.6)
+                tc = TONGUE_COLORS.get(tongue_code, (128, 128, 128))
+                pygame.draw.circle(self.game_surface, tc, (px, py), 6)
+                # Trail
+                for j in range(3):
+                    trail_angle = angle - j * 0.2
+                    trail_r = radius - j * 8
+                    tx = int(GAME_W // 2 + math.cos(trail_angle) * trail_r)
+                    ty = int(GAME_H // 2 - 20 + math.sin(trail_angle) * trail_r * 0.6)
+                    pygame.draw.circle(self.game_surface, tc, (tx, ty), 3 - j)
+            # Central orb growing
+            orb_size = int(10 + t * 20)
+            orb_surf = pygame.Surface((orb_size * 2, orb_size * 2), pygame.SRCALPHA)
+            pygame.draw.circle(orb_surf, (*rc, 150), (orb_size, orb_size), orb_size)
+            self.game_surface.blit(orb_surf, (GAME_W // 2 - orb_size, GAME_H // 2 - 20 - orb_size))
+            # Title
+            title = self.fonts.get(14, bold=True)
+            self.game_surface.blit(
+                title.render("Summoning...", True, TEXT_COLOR),
+                (GAME_W // 2 - 50, GAME_H - 60),
+            )
+
+        # Phase 1: Crack + rarity flash (1.5-2.5s)
+        elif t < 2.5:
+            self._gacha_phase = 1
+            flash_t = (t - 1.5) / 1.0
+            # Screen flash for high rarity
+            if rarity >= 4:
+                flash_alpha = int(200 * (1 - flash_t))
+                flash = pygame.Surface((GAME_W, GAME_H), pygame.SRCALPHA)
+                flash.fill((*rc, flash_alpha))
+                self.game_surface.blit(flash, (0, 0))
+            # Stars appearing one by one
+            stars_shown = min(rarity, int(flash_t * rarity * 2) + 1)
+            star_font = self.fonts.get(18, bold=True)
+            star_w = rarity * 22
+            start_x = GAME_W // 2 - star_w // 2
+            for s in range(stars_shown):
+                sx = start_x + s * 22
+                self.game_surface.blit(
+                    star_font.render("*", True, rc), (sx, GAME_H // 2 - 60)
+                )
+            # Rarity name
+            rarity_name = self.GACHA_RARITY_NAMES.get(rarity, "?")
+            rn_font = self.fonts.get(16, bold=True)
+            rn_surf = rn_font.render(rarity_name, True, rc)
+            self.game_surface.blit(rn_surf, (GAME_W // 2 - rn_surf.get_width() // 2, GAME_H // 2 - 30))
+
+        # Phase 2: Character reveal (2.5-4s)
+        elif t < 4.0:
+            self._gacha_phase = 2
+            if recruit:
+                sprite = self.sprites.get_scaled(recruit, 80)
+                self.game_surface.blit(sprite, (GAME_W // 2 - 40, GAME_H // 2 - 70))
+                # Stars
+                star_font = self.fonts.get(16, bold=True)
+                star_str = "*" * rarity
+                self.game_surface.blit(
+                    star_font.render(star_str, True, rc),
+                    (GAME_W // 2 - len(star_str) * 6, GAME_H // 2 - 90),
+                )
+                # Name + info
+                nf = self.fonts.get(14, bold=True)
+                name_surf = nf.render(recruit.name, True, TEXT_COLOR)
+                self.game_surface.blit(name_surf, (GAME_W // 2 - name_surf.get_width() // 2, GAME_H // 2 + 20))
+                info_font = self.fonts.get(11)
+                tongue_name = TONGUE_NAMES.get(recruit.tongue_affinity, recruit.tongue_affinity.value)
+                info = info_font.render(
+                    f"[{recruit.evo_stage.value}] {tongue_name}  ATK:{recruit.stats.attack} DEF:{recruit.stats.defense}",
+                    True, DIM_TEXT,
+                )
+                self.game_surface.blit(info, (GAME_W // 2 - info.get_width() // 2, GAME_H // 2 + 42))
+
+        # Phase 3: Done — wait for input
+        else:
+            self._gacha_phase = 3
+            if recruit:
+                sprite = self.sprites.get_scaled(recruit, 80)
+                self.game_surface.blit(sprite, (GAME_W // 2 - 40, GAME_H // 2 - 70))
+                star_font = self.fonts.get(16, bold=True)
+                self.game_surface.blit(
+                    star_font.render("*" * rarity, True, rc),
+                    (GAME_W // 2 - rarity * 6, GAME_H // 2 - 90),
+                )
+                nf = self.fonts.get(14, bold=True)
+                name_surf = nf.render(recruit.name, True, TEXT_COLOR)
+                self.game_surface.blit(name_surf, (GAME_W // 2 - name_surf.get_width() // 2, GAME_H // 2 + 20))
+                # Add to party prompt
+                prompt_font = self.fonts.get(12)
+                if len(self.party) < 6:
+                    self.game_surface.blit(
+                        prompt_font.render("Press ENTER to add to party", True, (80, 255, 120)),
+                        (GAME_W // 2 - 90, GAME_H // 2 + 70),
+                    )
+                else:
+                    self.game_surface.blit(
+                        prompt_font.render("Party full! Press ENTER to release", True, (255, 120, 80)),
+                        (GAME_W // 2 - 110, GAME_H // 2 + 70),
+                    )
+                self.game_surface.blit(
+                    self.fonts.get(10).render("Press ESC to skip", True, DIM_TEXT),
+                    (GAME_W // 2 - 45, GAME_H // 2 + 90),
+                )
+
+    # ------------------------------------------------------------------
+    # Pokemon Sapphire-style Battle UI helpers
+    # ------------------------------------------------------------------
+    def _draw_sapphire_hp_box(
+        self, x: int, y: int, w: int, char: Character,
+        show_hp_text: bool = False, show_xp: bool = False,
+        is_enemy: bool = False,
+    ) -> None:
+        """Draw a Pokemon Sapphire-style info box for a character."""
+        h = 42 if not show_xp else 52
+        if show_hp_text:
+            h += 12
+
+        # Box background — Sapphire uses white/cream with dark border
+        box = pygame.Surface((w, h), pygame.SRCALPHA)
+        box.fill((248, 248, 240, 230))
+        self.game_surface.blit(box, (x, y))
+        pygame.draw.rect(self.game_surface, (40, 40, 48), (x, y, w, h), 2, border_radius=3)
+
+        # Name and level
+        nf = self.fonts.get(11, bold=True)
+        name_surf = nf.render(char.name, True, (32, 32, 40))
+        self.game_surface.blit(name_surf, (x + 6, y + 3))
+        lvl = self.fonts.get(10)
+        lv_surf = lvl.render(f"Lv{char.stats.level}", True, (80, 80, 96))
+        self.game_surface.blit(lv_surf, (x + w - lv_surf.get_width() - 6, y + 4))
+
+        # Tongue icon (colored dot)
+        tc = TONGUE_COLORS.get(char.tongue_affinity.value, (128, 128, 128))
+        pygame.draw.circle(self.game_surface, tc, (x + w - 50, y + 10), 4)
+
+        # HP label
+        hp_label = self.fonts.get(9, bold=True)
+        self.game_surface.blit(hp_label.render("HP", True, (255, 180, 40)), (x + 6, y + 20))
+
+        # Curved HP bar (Sapphire style — green/yellow/red)
+        bar_x = x + 24
+        bar_y = y + 22
+        bar_w = w - 32
+        bar_h = 6
+        hp_ratio = char.stats.hp / char.stats.max_hp if char.stats.max_hp > 0 else 0
+        # Background
+        pygame.draw.rect(self.game_surface, (56, 56, 64), (bar_x, bar_y, bar_w, bar_h), border_radius=3)
+        # Fill
+        if hp_ratio > 0:
+            if hp_ratio > 0.5:
+                fill_color = (80, 200, 72)  # Sapphire green
+            elif hp_ratio > 0.25:
+                fill_color = (248, 184, 24)  # Sapphire yellow
+            else:
+                fill_color = (240, 64, 56)   # Sapphire red
+            fill_w = max(1, int(bar_w * hp_ratio))
+            pygame.draw.rect(self.game_surface, fill_color, (bar_x, bar_y, fill_w, bar_h), border_radius=3)
+
+        # HP numbers (player only)
+        if show_hp_text:
+            hp_num = self.fonts.get(10)
+            hp_text = hp_num.render(f"{char.stats.hp}/{char.stats.max_hp}", True, (40, 40, 48))
+            self.game_surface.blit(hp_text, (x + w - hp_text.get_width() - 6, y + 30))
+
+        # XP bar (player only)
+        if show_xp:
+            xp_y = y + h - 10
+            self.game_surface.blit(self.fonts.get(8).render("EXP", True, (80, 96, 128)), (x + 4, xp_y - 2))
+            xp_bar_x = x + 28
+            xp_bar_w = w - 36
+            total_prof = sum(char.stats.tongue_prof.values())
+            xp_ratio = (total_prof % 1.0) if total_prof > 0 else 0
+            pygame.draw.rect(self.game_surface, (56, 56, 80), (xp_bar_x, xp_y, xp_bar_w, 4), border_radius=2)
+            if xp_ratio > 0:
+                pygame.draw.rect(self.game_surface, (72, 136, 248),
+                                 (xp_bar_x, xp_y, max(1, int(xp_bar_w * xp_ratio)), 4), border_radius=2)
+
+    def _draw_ground_platform(self, cx: int, cy: int, w: int, h: int, is_enemy: bool = False) -> None:
+        """Draw a Pokemon Sapphire-style grass/ground ellipse platform."""
+        if is_enemy:
+            # Enemy platform — greenish grass
+            color_top = (88, 160, 72)
+            color_dark = (56, 112, 48)
+        else:
+            # Player platform — darker earth
+            color_top = (168, 136, 96)
+            color_dark = (120, 96, 64)
+        # Shadow
+        pygame.draw.ellipse(self.game_surface, (24, 24, 32), (cx - w // 2, cy + 2, w, h))
+        # Main platform
+        pygame.draw.ellipse(self.game_surface, color_dark, (cx - w // 2, cy, w, h))
+        pygame.draw.ellipse(self.game_surface, color_top, (cx - w // 2, cy - 2, w, h - 4))
+
+    def _draw_battle_screen(self) -> None:
+        """Draw a Pokemon Sapphire-style battle screen."""
+        # --- Background: sky gradient (Sapphire blue-grey) ---
         for y in range(GAME_H):
             ratio = y / GAME_H
-            r = int(58 - ratio * 30)
-            g = int(28 - ratio * 15)
-            b = int(32 - ratio * 16)
-            pygame.draw.line(self.game_surface, (max(0, r), max(0, g), max(0, b)),
-                           (0, y), (GAME_W, y))
+            if ratio < 0.6:
+                # Sky gradient
+                r = int(120 + ratio * 40)
+                g = int(152 + ratio * 30)
+                b = int(200 - ratio * 20)
+            else:
+                # Ground gradient
+                ground_r = (ratio - 0.6) / 0.4
+                r = int(88 + ground_r * 40)
+                g = int(136 + ground_r * 20)
+                b = int(72 + ground_r * 20)
+            pygame.draw.line(self.game_surface, (r, g, b), (0, y), (GAME_W, y))
 
-        # Ground line
-        pygame.draw.line(self.game_surface, (80, 50, 55), (0, 300), (GAME_W, 300), 2)
+        # --- Enemy platform (top-right) ---
+        enemy_plat_cx = GAME_W - 160
+        enemy_plat_cy = 170
+        self._draw_ground_platform(enemy_plat_cx, enemy_plat_cy, 160, 32, is_enemy=True)
 
-        # Digimon-like partner link panel
-        hud = pygame.Surface((220, 46), pygame.SRCALPHA)
-        hud.fill((14, 14, 24, 210))
-        self.game_surface.blit(hud, (14, 12))
-        pygame.draw.rect(self.game_surface, (88, 88, 120), (14, 12, 220, 46), 1, border_radius=4)
-        hud_font = self.fonts.get(10)
-        self.game_surface.blit(
-            hud_font.render(f"Class: {self.player_class}  Partner: {self.partner_name}", True, TEXT_COLOR),
-            (22, 18),
-        )
-        draw_bar(
-            self.game_surface,
-            22,
-            34,
-            176,
-            8,
-            self.partner_bond,
-            lerp_color((70, 70, 90), (120, 240, 165), self.partner_bond),
-        )
-        self.game_surface.blit(
-            self.fonts.get(9).render(self._bond_label(), True, DIM_TEXT),
-            (202, 33),
-        )
+        # --- Player platform (bottom-left) ---
+        player_plat_cx = 140
+        player_plat_cy = 310
+        self._draw_ground_platform(player_plat_cx, player_plat_cy, 180, 36, is_enemy=False)
 
-        # Draw enemies (top right)
-        alive_enemies = [e for e in self.battle.enemies if e.stats.hp > 0]
+        # --- Draw enemy sprites (on platform) ---
         for i, enemy in enumerate(self.battle.enemies):
-            ex = 380 + i * 120
-            ey = 80
+            ex = enemy_plat_cx - 32 + i * 70
+            ey = enemy_plat_cy - 72
             sprite = self.sprites.get_scaled(enemy, 64)
             if enemy.stats.hp > 0:
                 self.game_surface.blit(sprite, (ex, ey))
             else:
-                # Faded
                 faded = sprite.copy()
-                faded.set_alpha(80)
-                self.game_surface.blit(faded, (ex, ey + 10))
-            # Name and HP
-            name_font = self.fonts.get(10)
-            name_surf = name_font.render(enemy.name, True, TEXT_COLOR)
-            self.game_surface.blit(name_surf, (ex, ey - 14))
-            # HP bar
-            hp_ratio = enemy.stats.hp / enemy.stats.max_hp
-            hp_color = Palette.HP_GREEN if hp_ratio > 0.5 else (Palette.HP_YELLOW if hp_ratio > 0.25 else Palette.HP_RED)
-            draw_bar(self.game_surface, ex, ey + 68, 60, 6, hp_ratio, hp_color)
+                faded.set_alpha(60)
+                self.game_surface.blit(faded, (ex, ey + 16))
             # Target indicator
             if self.battle.selecting_target and i == self.battle.selected_target:
-                pygame.draw.rect(self.game_surface, CHOICE_HIGHLIGHT,
-                               (ex - 4, ey - 4, 72, 80), 2)
-                arrow = self.fonts.get(16).render(">", True, CHOICE_HIGHLIGHT)
-                self.game_surface.blit(arrow, (ex - 18, ey + 20))
+                # Bouncing arrow above enemy
+                bounce = int(math.sin(time.time() * 6) * 4)
+                arrow_pts = [(ex + 28, ey - 12 + bounce), (ex + 20, ey - 4 + bounce), (ex + 36, ey - 4 + bounce)]
+                pygame.draw.polygon(self.game_surface, CHOICE_HIGHLIGHT, arrow_pts)
 
-        # Draw party (bottom left)
-        for i, char in enumerate(self.battle.party):
-            px = 40 + i * 100
-            py = 220
-            sprite = self.sprites.get_scaled(char, 64)
-            if char.stats.hp > 0:
-                self.game_surface.blit(sprite, (px, py))
+        # --- Draw active party member sprite (on player platform) ---
+        if self.battle.party:
+            active_idx = min(self.battle.turn_index, len(self.battle.party) - 1)
+            active_char = self.battle.party[active_idx]
+            sprite = self.sprites.get_scaled(active_char, 80)
+            if active_char.stats.hp > 0:
+                self.game_surface.blit(sprite, (player_plat_cx - 40, player_plat_cy - 88))
             else:
                 faded = sprite.copy()
-                faded.set_alpha(80)
-                self.game_surface.blit(faded, (px, py + 10))
-            # Name
-            name_font = self.fonts.get(10)
-            name_surf = name_font.render(char.name, True, TEXT_COLOR)
-            self.game_surface.blit(name_surf, (px, py + 68))
-            # HP bar
-            hp_ratio = char.stats.hp / char.stats.max_hp
-            hp_color = Palette.HP_GREEN if hp_ratio > 0.5 else (Palette.HP_YELLOW if hp_ratio > 0.25 else Palette.HP_RED)
-            draw_bar(self.game_surface, px, py + 82, 60, 6, hp_ratio, hp_color)
-            # MP bar
-            mp_ratio = char.stats.mp / char.stats.max_mp if char.stats.max_mp > 0 else 0
-            draw_bar(self.game_surface, px, py + 90, 60, 4, mp_ratio, Palette.XP_BLUE)
-            # Current turn indicator
-            if (self.battle.is_player_turn and i == self.battle.turn_index
-                    and not self.battle.victory and not self.battle.defeat):
-                pygame.draw.rect(self.game_surface, GOLD,
-                               (px - 3, py - 3, 70, 100), 2)
+                faded.set_alpha(60)
+                self.game_surface.blit(faded, (player_plat_cx - 40, player_plat_cy - 70))
 
-        # Action menu (bottom)
+        # --- Enemy info box (top-left, Sapphire style) ---
+        if self.battle.enemies:
+            primary_enemy = self.battle.enemies[0]
+            self._draw_sapphire_hp_box(10, 16, 200, primary_enemy, is_enemy=True)
+
+        # --- Player info box (bottom-right, Sapphire style) ---
+        if self.battle.party:
+            active = self.battle.party[min(self.battle.turn_index, len(self.battle.party) - 1)]
+            self._draw_sapphire_hp_box(
+                GAME_W - 230, 260, 220, active,
+                show_hp_text=True, show_xp=True,
+            )
+
+        # --- Party mini-portraits (bottom-left corner, small) ---
+        mini_y = GAME_H - 64
+        for i, char in enumerate(self.battle.party[:6]):
+            mx = 8 + i * 28
+            mini = self.sprites.get_scaled(char, 24)
+            if char.stats.hp <= 0:
+                mini.set_alpha(80)
+            self.game_surface.blit(mini, (mx, mini_y))
+            # Tiny HP pip
+            pip_ratio = char.stats.hp / char.stats.max_hp if char.stats.max_hp > 0 else 0
+            pip_color = (80, 200, 72) if pip_ratio > 0.5 else ((248, 184, 24) if pip_ratio > 0.25 else (240, 64, 56))
+            pygame.draw.rect(self.game_surface, (40, 40, 48), (mx, mini_y + 26, 22, 3))
+            if pip_ratio > 0:
+                pygame.draw.rect(self.game_surface, pip_color, (mx, mini_y + 26, max(1, int(22 * pip_ratio)), 3))
+            # Current turn highlight
+            if i == self.battle.turn_index and self.battle.is_player_turn:
+                pygame.draw.rect(self.game_surface, GOLD, (mx - 1, mini_y - 1, 26, 32), 1)
+
+        # --- Action Menu (Sapphire 2x2 grid style) ---
         if self.battle.is_player_turn and not self.battle.victory and not self.battle.defeat:
+            menu_x = GAME_W - 230
+            menu_y = GAME_H - 84
+            menu_w = 220
+            menu_h = 76
+
+            # Menu background
+            menu_bg = pygame.Surface((menu_w, menu_h), pygame.SRCALPHA)
+            menu_bg.fill((248, 248, 240, 240))
+            self.game_surface.blit(menu_bg, (menu_x, menu_y))
+            pygame.draw.rect(self.game_surface, (40, 40, 48), (menu_x, menu_y, menu_w, menu_h), 2, border_radius=4)
+
             if not self.battle.selecting_target:
                 actions = self.battle.get_actions()
-                menu_x, menu_y = 20, 340
-                menu_w = 200
-                menu_h = len(actions) * 24 + 16
-                menu_surf = pygame.Surface((menu_w, menu_h), pygame.SRCALPHA)
-                menu_surf.fill((12, 12, 24, 230))
-                self.game_surface.blit(menu_surf, (menu_x, menu_y))
-                pygame.draw.rect(self.game_surface, (80, 80, 120),
-                               (menu_x, menu_y, menu_w, menu_h), 1)
-
-                action_font = self.fonts.get(13)
-                for j, action in enumerate(actions):
+                action_font = self.fonts.get(11, bold=True)
+                # Arrange in 2-column grid
+                cols = 2
+                col_w = menu_w // cols
+                row_h = 28
+                for j, action in enumerate(actions[:4]):  # max 4 in grid
+                    col = j % cols
+                    row = j // cols
+                    ax = menu_x + col * col_w + 8
+                    ay = menu_y + row * row_h + 10
                     is_sel = (j == self.battle.selected_action)
-                    color = CHOICE_HIGHLIGHT if is_sel else TEXT_COLOR
-                    prefix = "> " if is_sel else "  "
-                    txt = action_font.render(f"{prefix}{action}", True, color)
-                    self.game_surface.blit(txt, (menu_x + 8, menu_y + 8 + j * 24))
+                    if is_sel:
+                        # Sapphire cursor triangle
+                        pygame.draw.polygon(
+                            self.game_surface, (40, 40, 48),
+                            [(ax - 2, ay + 4), (ax + 6, ay + 8), (ax - 2, ay + 12)],
+                        )
+                    color = (32, 32, 40) if is_sel else (96, 96, 112)
+                    txt = action_font.render(action[:14], True, color)
+                    self.game_surface.blit(txt, (ax + 10, ay + 2))
+
+                # Overflow actions (spells beyond 4) in a list below
+                if len(actions) > 4:
+                    for j, action in enumerate(actions[4:], start=4):
+                        ay = menu_y + menu_h + 4 + (j - 4) * 18
+                        is_sel = (j == self.battle.selected_action)
+                        prefix = ">" if is_sel else " "
+                        color = (32, 32, 40) if is_sel else (96, 96, 112)
+                        overflow_bg = pygame.Surface((menu_w, 16), pygame.SRCALPHA)
+                        overflow_bg.fill((248, 248, 240, 220))
+                        self.game_surface.blit(overflow_bg, (menu_x, ay))
+                        txt = self.fonts.get(10).render(f"{prefix} {action}", True, color)
+                        self.game_surface.blit(txt, (menu_x + 8, ay))
             else:
-                hint_font = self.fonts.get(12)
-                hint = hint_font.render("Select target (UP/DOWN + ENTER)", True, CHOICE_HIGHLIGHT)
-                self.game_surface.blit(hint, (20, 340))
+                hint_font = self.fonts.get(11)
+                hint = hint_font.render("Select target", True, (32, 32, 40))
+                self.game_surface.blit(hint, (menu_x + 12, menu_y + 10))
+                arrow_hint = self.fonts.get(10)
+                self.game_surface.blit(
+                    arrow_hint.render("UP/DOWN + ENTER", True, (96, 96, 112)),
+                    (menu_x + 12, menu_y + 30),
+                )
 
-        # Battle log (bottom area)
+        # --- Message Box (Sapphire style — bottom of screen) ---
+        msg_x = 8
+        msg_y = GAME_H - 84
+        msg_w = GAME_W - 240
+        msg_h = 76
+        msg_bg = pygame.Surface((msg_w, msg_h), pygame.SRCALPHA)
+        msg_bg.fill((248, 248, 240, 240))
+        self.game_surface.blit(msg_bg, (msg_x, msg_y))
+        pygame.draw.rect(self.game_surface, (40, 40, 48), (msg_x, msg_y, msg_w, msg_h), 2, border_radius=4)
+
         log_font = self.fonts.get(11)
-        visible_log = self.battle.battle_log[-4:]
+        visible_log = self.battle.battle_log[-3:]
         for i, msg in enumerate(visible_log):
-            log_surf = log_font.render(msg, True, (200, 200, 220))
-            self.game_surface.blit(log_surf, (20, GAME_H - 80 + i * 16))
+            # Truncate to fit box
+            display_msg = msg[:48] if len(msg) > 48 else msg
+            log_surf = log_font.render(display_msg, True, (32, 32, 40))
+            self.game_surface.blit(log_surf, (msg_x + 10, msg_y + 8 + i * 20))
 
-        # Victory / Defeat overlay
+        # Advance indicator (triangle)
+        if visible_log:
+            tri_x = msg_x + msg_w - 16
+            tri_y = msg_y + msg_h - 14
+            bounce = int(math.sin(time.time() * 4) * 2)
+            pygame.draw.polygon(
+                self.game_surface, (40, 40, 48),
+                [(tri_x, tri_y + bounce), (tri_x + 8, tri_y + bounce), (tri_x + 4, tri_y + 6 + bounce)],
+            )
+
+        # --- Victory / Defeat overlay ---
         if self.battle.victory or self.battle.defeat:
             overlay = pygame.Surface((GAME_W, GAME_H), pygame.SRCALPHA)
-            overlay.fill((0, 0, 0, 120))
+            overlay.fill((0, 0, 0, 100))
             self.game_surface.blit(overlay, (0, 0))
-            result_font = self.fonts.get(28, bold=True)
+
+            result_font = self.fonts.get(24, bold=True)
             if self.battle.victory:
+                # Gold victory text with shadow
+                shadow = result_font.render("VICTORY!", True, (40, 32, 0))
+                self.game_surface.blit(shadow, (GAME_W // 2 - shadow.get_width() // 2 + 2, GAME_H // 2 - 22))
                 result = result_font.render("VICTORY!", True, GOLD)
+                # XP gained hint
+                xp_font = self.fonts.get(12)
+                xp_text = xp_font.render("+10 XP  +Tongue Proficiency", True, (255, 255, 200))
+                self.game_surface.blit(xp_text, (GAME_W // 2 - xp_text.get_width() // 2, GAME_H // 2 + 16))
             else:
-                result = result_font.render("DEFEAT", True, Palette.HP_RED)
+                result = result_font.render("DEFEAT...", True, (240, 64, 56))
+
             self.game_surface.blit(result,
                                   (GAME_W // 2 - result.get_width() // 2,
                                    GAME_H // 2 - result.get_height() // 2 - 20))
-            cont_font = self.fonts.get(13)
-            cont = cont_font.render("Press ENTER to continue", True, TEXT_COLOR)
+            cont_font = self.fonts.get(11)
+            cont = cont_font.render("Press ENTER to continue", True, (200, 200, 210))
             self.game_surface.blit(cont,
                                   (GAME_W // 2 - cont.get_width() // 2,
-                                   GAME_H // 2 + 20))
+                                   GAME_H // 2 + 36))
 
     # ------------------------------------------------------------------
     # Transition Effect
@@ -2989,6 +5489,24 @@ class AethermoorGame:
         )
         y += 12
         self.screen.blit(id_font.render(f"Mats: {self._material_summary()}", True, DIM_TEXT), (DASH_X + 12, y))
+        y += 14
+        pad_state = "ONLINE" if self._polypad_has_device() else "LOCKED"
+        unread = self._polypad_unread_count() if self._polypad_has_device() else 0
+        pad_color = (120, 250, 170) if self._polypad_has_device() else (180, 120, 120)
+        self.screen.blit(
+            id_font.render(f"Poly Pad: {pad_state}  Msg:{unread}  [P]", True, pad_color),
+            (DASH_X + 12, y),
+        )
+        y += 14
+        self.screen.blit(
+            id_font.render(f"CodeLab IDE: {self.ide_resolved} solved / {self.ide_failures} failed  [I]", True, (140, 198, 246)),
+            (DASH_X + 12, y),
+        )
+        y += 14
+        self.screen.blit(
+            id_font.render(f"Lore Library: {self.library_reads} reads  [L]", True, (194, 166, 124)),
+            (DASH_X + 12, y),
+        )
         y += 14
         quest = self._active_band_quest()
         prog = self._active_band_progress()
@@ -3143,6 +5661,76 @@ class AethermoorGame:
                 self.screen.blit(pct, (DASH_X + 130, y))
                 y += 16
 
+        # ---- HF Training (Live) ----
+        if y < WINDOW_H - 100:
+            hf_title = section_font.render("HF TRAINING (LIVE)", True, DIM_TEXT)
+            self.screen.blit(hf_title, (DASH_X + 12, y))
+            y += 18
+            hf_font = self.fonts.get(10)
+            hf_stats = self.hf_trainer.get_stats()
+            status_text = "pushing..." if hf_stats.get("running") else "local"
+            self.screen.blit(hf_font.render(f"Status: {status_text}", True, TEXT_COLOR), (DASH_X + 16, y))
+            y += 14
+            self.screen.blit(hf_font.render(f"Approved: {hf_stats.get('approved', 0)} pairs", True, DIM_TEXT), (DASH_X + 16, y))
+            y += 14
+            self.screen.blit(hf_font.render(f"Batches: {hf_stats.get('batches', 0)} pushed", True, DIM_TEXT), (DASH_X + 16, y))
+            y += 14
+            self.screen.blit(hf_font.render(f"Queue: {hf_stats.get('queue_size', 0)} pending", True, DIM_TEXT), (DASH_X + 16, y))
+            y += 16
+            pygame.draw.line(self.screen, DASH_BORDER, (DASH_X + 10, y), (WINDOW_W - 10, y), 1)
+            y += 8
+
+        # ---- AetherNet Status (n8n bridge) ----
+        if y < WINDOW_H - 120:
+            net_title = section_font.render("AETHERNET (n8n)", True, DIM_TEXT)
+            self.screen.blit(net_title, (DASH_X + 12, y))
+            y += 18
+            net_font = self.fonts.get(10)
+            st = self.n8n_bus.status()
+            online_color = (80, 255, 120) if st["online"] else (255, 80, 80)
+            online_text = "ONLINE" if st["online"] else "OFFLINE"
+            self.screen.blit(
+                net_font.render(f"Status: {online_text}  [F9]", True, online_color),
+                (DASH_X + 16, y),
+            )
+            y += 14
+            self.screen.blit(
+                net_font.render(
+                    f"Out: {st['events_sent']}  In: {st['actions_processed']}  Fail: {st['events_failed']}",
+                    True, DIM_TEXT,
+                ),
+                (DASH_X + 16, y),
+            )
+            y += 14
+            self.screen.blit(
+                net_font.render(f"Endpoints: {st['endpoints']}  TV: {st['tv_broadcasts']}", True, DIM_TEXT),
+                (DASH_X + 16, y),
+            )
+            y += 14
+            # Latest TV broadcast
+            tv = self.n8n_bus.latest_tv()
+            if tv:
+                tv_text = f"TV: [{tv['channel']}] {tv['show'][:20]}"
+                self.screen.blit(net_font.render(tv_text, True, (200, 180, 255)), (DASH_X + 16, y))
+                y += 14
+            # Latest announcement
+            if self.aethernet_announcements:
+                ann_text, ann_time = self.aethernet_announcements[-1]
+                age = time.time() - ann_time
+                if age < 30:  # Show for 30 seconds
+                    alpha = max(0.3, 1.0 - age / 30)
+                    ann_color = (
+                        int(255 * alpha), int(220 * alpha), int(80 * alpha)
+                    )
+                    self.screen.blit(
+                        net_font.render(f">> {ann_text[:30]}", True, ann_color),
+                        (DASH_X + 16, y),
+                    )
+                    y += 14
+            y += 4
+            pygame.draw.line(self.screen, DASH_BORDER, (DASH_X + 10, y), (WINDOW_W - 10, y), 1)
+            y += 8
+
         # ---- Training Data Counter (always at bottom) ----
         counter_y = WINDOW_H - 40
         pygame.draw.line(self.screen, DASH_BORDER, (DASH_X + 10, counter_y - 8), (WINDOW_W - 10, counter_y - 8), 1)
@@ -3192,11 +5780,7 @@ class AethermoorGame:
                                 WINDOW_H // 2 + i * 28))
 
 
-# ---------------------------------------------------------------------------
-# We need Stats from engine; it was imported via GameState's field defaults
-# but let's also make it available for _start_test_battle
-# ---------------------------------------------------------------------------
-from engine import Stats
+# Stats already imported at top of file
 
 
 # ---------------------------------------------------------------------------
@@ -3268,6 +5852,42 @@ class AIPilot:
         # Workshop open — close it
         if g.workshop_open:
             return pygame.K_ESCAPE
+
+        if g.game_phase == "polypad":
+            # Keep autopilot moving through core loop; do not linger in app UI.
+            return pygame.K_ESCAPE
+
+        if g.game_phase == "ide":
+            if random.random() < 0.12:
+                return pygame.K_ESCAPE
+            if random.random() < 0.25:
+                return random.choice([pygame.K_UP, pygame.K_DOWN])
+            return pygame.K_RETURN
+
+        if g.game_phase == "library":
+            if random.random() < 0.2:
+                return pygame.K_ESCAPE
+            return random.choice([pygame.K_DOWN, pygame.K_RETURN])
+
+        # Overworld — wander randomly
+        if g.game_phase == "overworld":
+            directions = [pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT]
+            if random.random() < 0.15:
+                return pygame.K_RETURN  # try interact
+            return random.choice(directions)
+
+        # Dungeon — wander toward exit
+        if g.game_phase == "dungeon":
+            directions = [pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT]
+            return random.choice(directions)
+
+        # Dialogue — pick a pivot or exit
+        if g.game_phase == "dialogue":
+            if random.random() < 0.2:
+                return pygame.K_ESCAPE  # sometimes leave
+            if random.random() < 0.4:
+                return random.choice([pygame.K_UP, pygame.K_DOWN])
+            return pygame.K_RETURN
 
         # Choices showing — pick one
         if g.scene.showing_choices:
@@ -3371,19 +5991,35 @@ def main() -> None:
     print(f"{'=' * 60}")
     print()
     print("  Controls:")
-    print("    Arrow Keys / WASD  -  Navigate menus")
-    print("    Enter / Space      -  Advance / Select")
+    print("    Arrow Keys / WASD  -  Move / Navigate")
+    print("    Enter / Space      -  Advance / Select / Talk to NPC")
     print("    1-7                -  Quick-select choice")
+    print("    P                  -  Poly Pad (phone / in-game PC)")
+    print("    I                  -  CodeLab IDE (at terminal)")
+    print("    L                  -  Lore Library (at terminal)")
     print("    Tab                -  Dashboard detail")
-    print("    Esc                -  Pause menu")
+    print("    Esc                -  Pause / Exit dialogue / Leave tower")
     print("    B                  -  Test battle")
     print("    F6                 -  Script Lab")
     print("    F7                 -  Companion free-will")
     print("    F8                 -  AI Autopilot")
     print()
+    print("  Phases: Story -> Overworld -> Dungeon Tower -> Battle")
+    print()
 
     ai_mode = "--ai" in sys.argv or "--autopilot" in sys.argv
-    game = AethermoorGame()
+    headless_mode = "--headless" in sys.argv
+    headless_steps = 0
+    if headless_mode:
+        # Parse --headless-steps N (default 300)
+        headless_steps = 300
+        for i, arg in enumerate(sys.argv):
+            if arg == "--headless-steps" and i + 1 < len(sys.argv):
+                headless_steps = int(sys.argv[i + 1])
+        print(f"  [HEADLESS MODE] {headless_steps} steps, env={detect_environment().name}")
+        ai_mode = True  # Force AI pilot in headless mode
+
+    game = AethermoorGame(headless=headless_mode)
     pilot = AIPilot(game)
 
     if ai_mode:
@@ -3408,9 +6044,50 @@ def main() -> None:
 
     game._update = _patched_update
     game._handle_key = _patched_handle_key
-    game.run()
 
-    print(f"\n  Session complete. AI took {pilot.total_actions} actions.")
+    if headless_mode and headless_steps > 0:
+        # Run fixed number of steps then exit
+        dt = 1.0 / FPS_CAP
+        hd = game.headless_display
+        print(f"  Running {headless_steps} headless steps...")
+        for step in range(headless_steps):
+            game._handle_events()
+            game._update(dt)
+            game._draw()
+            if hd:
+                hd.capture(game.game_surface)
+                if hd.env == RuntimeEnv.COLAB and step % 60 == 0:
+                    hd.show()
+            game.frame_count += 1
+            if not game.running:
+                break
+
+        # Export results
+        if hd and hd.stored_frames > 0:
+            gif_path = hd.save_gif("headless_session.gif", fps=15, scale=0.5)
+            if gif_path:
+                print(f"  GIF saved: {gif_path} ({hd.stored_frames} frames)")
+                if hd.env == RuntimeEnv.COLAB and hd._ipython_display:
+                    from IPython.display import Image
+                    hd._ipython_display(Image(filename=gif_path))
+            vid_path = hd.save_video("headless_session.mp4", fps=30)
+            if vid_path:
+                print(f"  Video saved: {vid_path}")
+
+        # Cleanup
+        try:
+            game.hf_trainer.stop()
+        except Exception:
+            pass
+        if hd:
+            hd.stop()
+        pygame.quit()
+        print(f"\n  Headless session complete. AI took {pilot.total_actions} actions.")
+        print(f"  Training data: {game.sft_count} SFT + {game.dpo_count} DPO pairs")
+    else:
+        game.run()
+        print(f"\n  Session complete. AI took {pilot.total_actions} actions.")
+
     print("  Aethermoor awaits your return.\n")
 
 

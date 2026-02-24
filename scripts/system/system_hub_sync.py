@@ -74,6 +74,147 @@ def notion_sync(repo_root: Path, args: argparse.Namespace) -> list[Path]:
     return [p for p in outputs if p.exists()]
 
 
+def init_obsidian_hub(vault_path: Path, repo_root: Path, dry_run: bool) -> list[str]:
+    hub_root = vault_path / "SCBE-Hub"
+    dirs = [
+        hub_root / "00-Inbox",
+        hub_root / "01-Map-Room",
+        hub_root / "02-Task-Board",
+        hub_root / "03-Agents",
+        hub_root / "04-Runs",
+        hub_root / "05-Evidence",
+        hub_root / "06-Knowledge",
+        hub_root / "07-Protocols",
+        hub_root / "Templates",
+    ]
+    created: list[str] = []
+
+    if dry_run:
+        for d in dirs:
+            created.append(str(d))
+        return created
+
+    for d in dirs:
+        d.mkdir(parents=True, exist_ok=True)
+        created.append(str(d))
+
+    files: dict[Path, str] = {
+        hub_root / "README.md": "\n".join(
+            [
+                "# SCBE Hub",
+                "",
+                "Central multi-AI collaboration workspace for SCBE operations.",
+                "",
+                "## Core lanes",
+                "- `00-Inbox`: raw intake",
+                "- `01-Map-Room`: handoff and current mission state",
+                "- `02-Task-Board`: active work, queue, done",
+                "- `03-Agents`: ownership and agent registry",
+                "- `04-Runs`: run logs and checkpoints",
+                "- `05-Evidence`: proofs and audit artifacts",
+                "- `06-Knowledge`: canonical references",
+                "- `07-Protocols`: workflow and governance rules",
+            ]
+        )
+        + "\n",
+        hub_root / "02-Task-Board" / "active_tasks.md": "\n".join(
+            [
+                "# Active Tasks",
+                "",
+                "## Now",
+                "",
+                "## Next",
+                "",
+                "## Blocked",
+                "",
+                "## Done",
+            ]
+        )
+        + "\n",
+        hub_root / "03-Agents" / "agent_registry.md": "\n".join(
+            [
+                "# Agent Registry",
+                "",
+                "| Agent | Role | Owner | Status | Notes |",
+                "|---|---|---|---|---|",
+            ]
+        )
+        + "\n",
+        hub_root / "Templates" / "task.md": "\n".join(
+            [
+                "# Task",
+                "",
+                "- `id`:",
+                "- `owner`:",
+                "- `status`:",
+                "- `scope`:",
+                "- `inputs`:",
+                "- `outputs`:",
+                "- `validation`:",
+            ]
+        )
+        + "\n",
+        hub_root / "Templates" / "agent_handoff.md": "\n".join(
+            [
+                "# Agent Handoff",
+                "",
+                "- `from`:",
+                "- `to`:",
+                "- `task_id`:",
+                "- `state_summary`:",
+                "- `artifacts`:",
+                "- `risks`:",
+                "- `next_action`:",
+            ]
+        )
+        + "\n",
+        hub_root / "Templates" / "decision_record.md": "\n".join(
+            [
+                "# Decision Record",
+                "",
+                "- `decision_id`:",
+                "- `action`:",
+                "- `timestamp`:",
+                "- `reason`:",
+                "- `confidence`:",
+                "- `evidence_paths`:",
+            ]
+        )
+        + "\n",
+        hub_root / "Templates" / "run_log.md": "\n".join(
+            [
+                "# Run Log",
+                "",
+                "- `run_id`:",
+                "- `start`:",
+                "- `end`:",
+                "- `services`:",
+                "- `outputs`:",
+                "- `failures`:",
+                "- `next`:",
+            ]
+        )
+        + "\n",
+    }
+
+    repo_map_room = repo_root / "docs" / "map-room" / "session_handoff_latest.md"
+    map_room_dst = hub_root / "01-Map-Room" / "session_handoff_latest.md"
+    if repo_map_room.exists():
+        shutil.copy2(repo_map_room, map_room_dst)
+        created.append(str(map_room_dst))
+    elif not map_room_dst.exists():
+        map_room_dst.write_text("# Session Handoff\n\n", encoding="utf-8")
+        created.append(str(map_room_dst))
+
+    for fp, content in files.items():
+        if not fp.exists():
+            fp.parent.mkdir(parents=True, exist_ok=True)
+            fp.write_text(content, encoding="utf-8")
+            created.append(str(fp))
+
+    return created
+
+
 def write_obsidian_snapshot(vault_path: Path, repo_root: Path, synced_files: list[Path], include_training_docs: bool, dry_run: bool) -> Path:
     ts = utc_now().strftime("%Y%m%d-%H%M%S")
     target = vault_path / "SCBE-Hub" / "notion-sync" / ts
@@ -234,6 +375,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--skip-git", action="store_true")
     p.add_argument("--skip-dropbox", action="store_true")
     p.add_argument("--dropbox-remote-dir", default="/SCBE/backups")
+    p.add_argument("--init-obsidian-hub", action="store_true", help="Initialize SCBE-Hub collaboration structure in the target vault.")
     p.add_argument("--zapier-webhook-url", default=os.getenv("ZAPIER_WEBHOOK_URL", ""))
     p.add_argument("--zapier-mode", choices=["off", "fail-only", "summary", "full"], default="summary")
     p.add_argument("--zapier-cooldown-seconds", type=int, default=900, help="minimum seconds between same event emits")
@@ -275,8 +417,12 @@ def main() -> int:
             synced_files = notion_sync(repo_root, args)
 
         snapshot_path = ""
+        hub_created: list[str] = []
         if args.vault_path:
             vault = Path(args.vault_path).expanduser().resolve()
+            if args.init_obsidian_hub:
+                hub_created = init_obsidian_hub(vault, repo_root, args.dry_run)
+                print(f"[obsidian] hub initialized: {len(hub_created)} paths")
             snapshot = write_obsidian_snapshot(vault, repo_root, synced_files, args.include_hf_training_docs, args.dry_run)
             snapshot_path = str(snapshot)
             print(f"[obsidian] snapshot: {snapshot}")
@@ -326,6 +472,7 @@ def main() -> int:
             "synced_file_count": len(synced_files),
             "synced_files": [str(p.relative_to(repo_root)) for p in synced_files],
             "obsidian_snapshot": snapshot_path,
+            "obsidian_hub_bootstrap": hub_created,
             "dropbox_remote": dropbox_remote,
             "dry_run": args.dry_run,
             "zapier_mode": args.zapier_mode,
