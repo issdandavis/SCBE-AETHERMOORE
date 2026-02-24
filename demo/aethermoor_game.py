@@ -67,18 +67,20 @@ GAME_W, GAME_H = 640, 480
 DASH_X = 660  # Dashboard panel starts here
 DASH_W = WINDOW_W - DASH_X
 FPS_CAP = 30
+BOOKS_OUT = Path(__file__).resolve().parent / "training_output" / "books"
+BOOKS_OUT.mkdir(parents=True, exist_ok=True)
 
 GOLD = (255, 215, 80)
-BEZEL_COLOR = (30, 30, 40)
-BEZEL_HIGHLIGHT = (50, 50, 65)
-SCREEN_BG = (16, 16, 24)
-DASH_BG = (20, 20, 30)
-DASH_BORDER = (55, 55, 75)
-TEXT_COLOR = (230, 230, 245)
-DIM_TEXT = (140, 140, 170)
+BEZEL_COLOR = (22, 22, 34)
+BEZEL_HIGHLIGHT = (40, 40, 58)
+SCREEN_BG = (14, 14, 22)
+DASH_BG = (16, 18, 28)
+DASH_BORDER = (48, 52, 72)
+TEXT_COLOR = (235, 235, 250)
+DIM_TEXT = (130, 135, 165)
 CHOICE_HIGHLIGHT = (255, 220, 80)
-DIALOGUE_BG = (16, 16, 32, 220)
-PAUSE_OVERLAY = (0, 0, 0, 180)
+DIALOGUE_BG = (10, 10, 26, 235)
+PAUSE_OVERLAY = (0, 0, 0, 200)
 
 # Tongue display colors keyed by two-letter code
 TONGUE_COLORS: Dict[str, Tuple[int, int, int]] = {
@@ -118,12 +120,12 @@ SCBE_LAYERS: List[Tuple[int, str, Tuple[int, int, int]]] = [
 
 # Background colors per location mood
 BG_COLORS: Dict[str, Tuple[int, int, int]] = {
-    "earth": (42, 46, 58),
-    "aethermoor": (68, 52, 120),
-    "battle": (58, 28, 32),
-    "academy": (72, 64, 52),
-    "transit": (24, 16, 48),
-    "title": (12, 8, 24),
+    "earth": (28, 34, 52),
+    "aethermoor": (32, 24, 72),
+    "battle": (42, 18, 24),
+    "academy": (26, 28, 48),
+    "transit": (12, 8, 36),
+    "title": (8, 6, 18),
 }
 
 # ---------------------------------------------------------------------------
@@ -132,39 +134,39 @@ BG_COLORS: Dict[str, Tuple[int, int, int]] = {
 # ---------------------------------------------------------------------------
 SCENE_CHOICES: Dict[str, List[Tuple[str, str, str, List[int]]]] = {
     "earth_morning": [
-        ("Check the terminal -- trace those anomalous logs", "trace", "CA", [1, 7, 8]),
-        ("Call the security team -- this needs escalation", "escalate", "KO", [1, 2, 13]),
-        ("Get coffee first -- collect your thoughts", "coffee", "RU", [5, 6]),
-        ("Message your research partner about the patterns", "message", "AV", [3, 4]),
-        ("Check the apartment's security system", "security", "UM", [9, 10]),
-        ("Document everything in your encrypted journal", "document", "DR", [11, 12]),
-        ("Go back to sleep -- ignore the noise", "sleep", "RU", [5, 6, 13]),
+        ("Take Mom's full kit: PollyPad, wallet, keys", "take_full_kit", "DR", [11, 12, 14]),
+        ("Ask Mom about Dad at the shore", "ask_mom", "AV", [3, 4, 12]),
+        ("Check PollyPad status window first", "check_pollypad", "CA", [1, 7, 11]),
+        ("Count wallet cash and secure it", "check_wallet", "RU", [5, 6, 11]),
+        ("Test the keyring rune on the front door", "test_keys", "UM", [8, 10, 12]),
+        ("Promise Mom you'll help people on the path", "promise_help", "KO", [1, 13, 14]),
+        ("Head out quietly, focused on the shore", "quiet_depart", "AV", [2, 3, 6]),
     ],
     "earth_work": [
-        ("Trace the anomaly deeper into the routing fabric", "trace_deep", "CA", [1, 7, 8]),
-        ("Document and escalate to the security council", "escalate_sec", "KO", [1, 2, 13]),
-        ("Run a spectral analysis on the folding patterns", "spectral", "UM", [9, 10]),
-        ("Cross-reference with the dimensional theory papers", "research", "AV", [3, 4]),
-        ("Write a containment script to isolate the anomaly", "contain", "DR", [11, 12]),
-        ("Talk to your colleague about the 'dimensional' joke", "colleague", "RU", [5, 6]),
-        ("Ignore it -- probably just clock drift", "ignore", "RU", [5, 6, 14]),
+        ("Help the lost traveler find the shore road", "help_traveler", "KO", [1, 2, 14]),
+        ("Share your supplies and escort the traveler", "escort_traveler", "AV", [3, 4, 6]),
+        ("Ask for rumors and map the forks in the path", "ask_directions", "CA", [2, 7, 11]),
+        ("Ignore the traveler and keep moving", "ignore_traveler", "UM", [5, 8, 13]),
+        ("Record the encounter in PollyPad for guild trust", "record_traveler", "DR", [3, 11, 12]),
+        ("Offer prayer at the roadside shrine, then continue", "shrine_pause", "RU", [4, 5, 9]),
+        ("Rush ahead before anyone can stop you", "rush_past", "CA", [1, 7, 10]),
     ],
     "earth_evening": [
-        ("Read the mysterious book immediately", "read_book", "DR", [11, 12, 3]),
-        ("Check if someone broke into your apartment", "check_apt", "UM", [9, 10]),
-        ("Call the police -- this is a break-in", "call_police", "KO", [1, 2, 13]),
-        ("Photograph the book and send it to your team", "photo", "AV", [3, 4]),
-        ("Run the book's title through your research database", "database", "CA", [7, 8]),
-        ("Set up a surveillance camera and wait", "surveille", "UM", [9, 10, 14]),
-        ("Just go to bed -- you are exhausted", "bed", "RU", [5, 6]),
+        ("Battle the wild ripple-beast on the dunes", "fight_monster", "DR", [7, 8, 13]),
+        ("Calm and tame the ripple-beast with PollyPad tones", "tame_monster", "KO", [1, 12, 14]),
+        ("Talk with fishers: 'Marcus is running portals again'", "talk_gossip", "AV", [3, 4, 11]),
+        ("Inspect shrine debris and accidentally break a vase", "break_vase", "UM", [5, 8, 10]),
+        ("Help beach vendors repair a broken cart", "help_vendors", "CA", [6, 7, 14]),
+        ("Document everything for guild reputation logs", "document_path", "DR", [3, 11, 12]),
+        ("Keep moving and avoid all side events", "keep_moving", "RU", [2, 5, 6]),
     ],
     "earth_night": [
-        ("'I intend to understand.' (Scholar's path)", "intent_understand", "CA", [1, 7, 8, 14]),
-        ("'I intend to protect.' (Guardian's path)", "intent_protect", "KO", [1, 2, 13, 14]),
-        ("'I intend to create.' (Architect's path)", "intent_create", "DR", [1, 11, 12, 14]),
-        ("'I intend to explore.' (Navigator's path)", "intent_explore", "AV", [1, 3, 4, 14]),
-        ("'I intend to endure.' (Sentinel's path)", "intent_endure", "RU", [1, 5, 6, 14]),
-        ("'I intend to uncover.' (Shadow's path)", "intent_uncover", "UM", [1, 9, 10, 14]),
+        ("Step through as Tamer class", "class_tamer", "CA", [1, 7, 10, 14]),
+        ("Step through as Cipher class", "class_cipher", "DR", [8, 11, 12, 14]),
+        ("Step through as Warden class", "class_warden", "KO", [1, 2, 13, 14]),
+        ("Step through as Broker class", "class_broker", "AV", [2, 3, 4, 14]),
+        ("Step through undecided and let the Tongues choose", "class_undecided", "RU", [4, 5, 6, 14]),
+        ("Wait for Polly's signal, then enter", "class_polly", "UM", [9, 10, 12, 14]),
     ],
     "aethermoor_arrival": [
         ("'Teach me everything.' -- Embrace the Protocol", "learn_all", "CA", [1, 7, 8, 14]),
@@ -198,68 +200,56 @@ SCENE_CHOICES: Dict[str, List[Tuple[str, str, str, List[int]]]] = {
 SCENE_DIALOGUES: Dict[str, List[Tuple[str, str]]] = {
     # (speaker, line) -- empty speaker means narration
     "earth_morning": [
-        ("", "Day 1. Your alarm goes off at 6:47 AM."),
-        ("", "The apartment is small but functional. Terminal glowing in the corner."),
-        ("", "You check your phone. Three missed messages from the research team."),
-        ("", "The routing logs from last night are still scrolling on your screen."),
-        ("", "Something in the data caught your eye before you fell asleep..."),
-        ("", "Another day at the Systems Architecture division."),
+        ("", "INT. CHEN FAMILY HOME - MORNING."),
+        ("", "Sunlight spills through rune-etched frames. A warm ocean breeze drifts in."),
+        ("MOM", "Rise and shine, dear. Your dad is out at the shore again."),
+        ("MOM", "Cellphone, Wallet, Keys. All a person needs to face the world."),
+        ("", "She offers a gleaming keyring, a PollyPad, and a wallet."),
+        ("MOM", "The PollyPad tracks your status window. The keys open more than doors."),
+        ("SYSTEM", "[Player Level 1 | Class: Undecided | Reputation: Neutral]"),
     ],
     "earth_work": [
-        ("", "The lab hums with server racks and the soft glow of monitors."),
-        ("", "You're debugging an authentication anomaly in the routing logs."),
-        ("", "Something feels off. The patterns don't match any known protocol."),
-        ("COLLEAGUE", "Hey, the routing logs are doing that thing again."),
-        ("COLLEAGUE", "Almost looks... dimensional. Ha. Wouldn't that be something."),
-        ("", "But the routing patterns... they look like they are folding into themselves."),
-        ("", "Like origami made of pure information."),
+        ("", "EXT. COASTAL PATH - DAY."),
+        ("", "You move through greenery and dunes toward the beach."),
+        ("", "A traveler waves you down near a fork in the trail."),
+        ("TRAVELER", "Please, I am turned around. Is the shattered shore this way?"),
+        ("SYSTEM", "Choice here sets early guild impressions."),
+        ("", "PollyPad hums softly, ready to log your decision."),
     ],
     "earth_evening": [
-        ("", "Home. The apartment feels different tonight."),
-        ("", "Your research notes are scattered across the desk."),
-        ("", "The air smells faintly of ozone and old parchment."),
-        ("", "A book on the shelf catches your eye:"),
-        ("", "'An Introduction to Dimensional Magic: Storage Spaces'"),
-        ("", "Wait -- that was not there before."),
-        ("", "The spine glows faintly in the dark."),
+        ("", "Further down the path, the air turns electric."),
+        ("", "A wild ripple-beast bursts from the dune grass."),
+        ("POLLYPAD", "Advisor Hint: exploit weakness or stabilize before strike."),
+        ("FISHER", "Heard Marcus Chen is trying portals again. Real crazy stuff."),
+        ("", "A cracked shrine vase teeters beside the trail."),
+        ("SYSTEM", "Actions here affect reputation and Marcus's reaction."),
     ],
     "earth_night": [
-        ("", "The book is warm to the touch."),
-        ("", "Pages filled with six languages you have never seen."),
-        ("", "Six tongues of power: KO... AV... RU... CA... UM... DR..."),
-        ("", "The words blur. The room darkens."),
-        ("", "Symbols begin to orbit your vision like satellites."),
-        ("VOICE", "What do you intend?"),
-        ("", "Your eyes close. The spiral turns."),
+        ("", "EXT. SHATTERED SHORE - LATE MORNING."),
+        ("", "Fractured masts and portal haze glitter across the sand."),
+        ("", "Marcus Chen stands beside a swirling dimensional gate."),
+        ("MARCUS CHEN", "There you are. This is the bridge experiment."),
+        ("MARCUS CHEN", "Collaboration builds empires. Domination crumbles them."),
+        ("MARCUS CHEN", "Step through. Choose your path. Guild Hub Town awaits."),
+        ("", "Polly swoops down and lands on your shoulder."),
+        ("POLLY", "Caw. The spiral turns. Choose with intent."),
     ],
     "transit": [
-        ("", "..."),
-        ("", "Reality collapses."),
-        ("", "You feel yourself falling through protocol space."),
-        ("", "Fourteen layers of governance cascade around you."),
-        ("", "Intent... Routing... Context... Memory..."),
-        ("", "Constraints... Policy... Compute... Encrypt..."),
-        ("", "Spectral... Quantum... Schema... Auth..."),
-        ("", "Governance... Integration."),
-        ("", "Location is authorization-dependent here."),
-        ("", "Existence is continuously verified."),
-        ("", "..."),
-        ("", "You wake on a floating island, bathed in purple light."),
-        ("", "A raven perches on a crystalline branch, watching you."),
+        ("", "The portal erupts with six-tone particles: KO, AV, RU, CA, UM, DR."),
+        ("", "Sil'thara nav'een drifts like subtitles in the light."),
+        ("", "You fall through layered protocol-space and hear the Tongues harmonize."),
+        ("SYSTEM", "Layer Cascade: Intent -> Routing -> Context -> ... -> Integration."),
+        ("", "For one breath, straight movement feels like a spiral."),
+        ("", "Then gravity returns."),
     ],
     "aethermoor_arrival": [
-        ("POLLY", "CAW! Finally. You were expected by the Protocol."),
-        ("POLLY", "I am Polly, Fifth Circle Keeper of the Archives."),
-        ("POLLY", "And you, Izack, are late."),
-        ("", "A sand golem shuffles toward you, eyes glowing warm gold."),
+        ("", "EXT. GUILD HUB TOWN - CONTINUOUS."),
+        ("", "Adventurers crowd the square under floating banners and rune-signs."),
+        ("POLLY", "No pet. Co-equal guide. I am Polly."),
+        ("POLLY", "Class registered. Next: tongue shrine and guild alignment."),
         ("CLAY", "*happy grinding noises*"),
-        ("POLLY", "That is Clay. He is... enthusiastic."),
-        ("POLLY", "Listen well. Survival here requires learning the"),
-        ("POLLY", "Six Sacred Tongues. Magic here is protocol architecture,"),
-        ("POLLY", "not folklore spellcraft."),
-        ("POLLY", "Each tongue maps to layers of governance. Master them,"),
-        ("POLLY", "and you can shape reality itself."),
-        ("POLLY", "Let us begin."),
+        ("SYSTEM", "New Arc Unlocked: Guild Registration"),
+        ("SYSTEM", "Training data capture is active for every decision."),
     ],
     "academy_entrance": [
         ("", "Avalon Academy rises from the floating island like a cathedral"),
@@ -339,6 +329,115 @@ SCENE_ORDER: List[str] = [
     "aethermoor_arrival",
     "academy_entrance",
     "first_lesson",
+]
+
+# Digimon-like class identity: each class has an origin partner and growth bias.
+CLASS_LOADOUTS: Dict[str, Dict[str, Any]] = {
+    "class_tamer": {
+        "name": "Tamer",
+        "partner_key": "clay",
+        "stat_boost": {"attack": 2, "speed": 1},
+        "bond_bonus": 0.14,
+    },
+    "class_cipher": {
+        "name": "Cipher",
+        "partner_key": "zara",
+        "stat_boost": {"wisdom": 2, "max_mp": 10},
+        "bond_bonus": 0.12,
+    },
+    "class_warden": {
+        "name": "Warden",
+        "partner_key": "aria",
+        "stat_boost": {"defense": 2, "max_hp": 18},
+        "bond_bonus": 0.10,
+    },
+    "class_broker": {
+        "name": "Broker",
+        "partner_key": "eldrin",
+        "stat_boost": {"speed": 2, "wisdom": 1},
+        "bond_bonus": 0.08,
+    },
+    "class_undecided": {
+        "name": "Undecided",
+        "partner_key": "polly",
+        "stat_boost": {},
+        "bond_bonus": 0.05,
+    },
+    "class_polly": {
+        "name": "Wildcard",
+        "partner_key": "polly",
+        "stat_boost": {"wisdom": 1},
+        "bond_bonus": 0.16,
+    },
+}
+
+# K-12-inspired zone progression: used as a quest and exploration guide.
+EDUCATION_BANDS: List[Tuple[str, int, int]] = [
+    ("K-2", 5, 7),
+    ("3-5", 8, 10),
+    ("6-8", 11, 13),
+    ("9-12", 14, 18),
+    ("Post-12", 19, 120),
+]
+
+SCENE_ZONE_MAP: Dict[str, str] = {
+    "earth_morning": "Home Grove",
+    "earth_work": "Coastal Path",
+    "earth_evening": "Dune Edge",
+    "earth_night": "Shattered Shore",
+    "transit": "Spiral Transit",
+    "aethermoor_arrival": "Guild Hub Commons",
+    "academy_entrance": "Avalon Gate",
+    "first_lesson": "Tongue Tower Commons",
+}
+
+BAND_QUESTS: Dict[str, Dict[str, Any]] = {
+    "K-2": {
+        "title": "Roots of Curiosity",
+        "requirements": {"explore": 2, "help": 1, "craft": 0},
+        "reward_gold": 20,
+    },
+    "3-5": {
+        "title": "Hands-on Makers",
+        "requirements": {"explore": 3, "help": 1, "craft": 1},
+        "reward_gold": 35,
+    },
+    "6-8": {
+        "title": "Steward of the Trail",
+        "requirements": {"explore": 4, "help": 2, "craft": 2},
+        "reward_gold": 55,
+    },
+    "9-12": {
+        "title": "Guild Apprentice",
+        "requirements": {"explore": 5, "help": 2, "craft": 3},
+        "reward_gold": 85,
+    },
+    "Post-12": {
+        "title": "Legacy Architect",
+        "requirements": {"explore": 8, "help": 3, "craft": 5},
+        "reward_gold": 140,
+    },
+}
+
+CRAFTING_RECIPES: List[Dict[str, Any]] = [
+    {
+        "name": "Driftwood Keychain",
+        "cost": {"driftwood": 2, "rune_ink": 1},
+        "skill": "woodcraft",
+        "reward_gold": 35,
+    },
+    {
+        "name": "Field Journal",
+        "cost": {"herb": 2, "shell": 1, "rune_ink": 2},
+        "skill": "inscription",
+        "reward_gold": 60,
+    },
+    {
+        "name": "Resonance Charm",
+        "cost": {"crystal_dust": 2, "driftwood": 1, "rune_ink": 1},
+        "skill": "ecology",
+        "reward_gold": 90,
+    },
 ]
 
 
@@ -796,6 +895,71 @@ class AethermoorGame:
         self.sft_count = 0
         self.dpo_count = 0
 
+        # Digimon-style identity state (origin -> partner -> growth path)
+        self.player_class: str = "Undecided"
+        self.partner_key: str = "polly"
+        self.partner_name: str = "Polly"
+        self.partner_bond: float = 0.10
+        self.reputation_points: int = 0
+        self.generation: int = 1
+        self.age_years: int = 14
+        self.lifespan_years: int = random.randint(68, 84)
+        self.years_per_choice: int = 1
+        self.lineage_name: str = "Chen"
+        self.lineage_history: List[Dict[str, Any]] = []
+        self.legacy_relics: int = 0
+        self.inventory: Dict[str, Any] = {
+            "PollyPad": False,
+            "Wallet": False,
+            "Keys": False,
+            "Gold": 0,
+        }
+        self.materials: Dict[str, int] = {
+            "herb": 0,
+            "driftwood": 0,
+            "shell": 0,
+            "rune_ink": 0,
+            "crystal_dust": 0,
+        }
+        self.crafted_items: Dict[str, int] = {}
+        self.nature_skills: Dict[str, int] = {
+            "foraging": 0,
+            "woodcraft": 0,
+            "ecology": 0,
+            "inscription": 0,
+        }
+        self.nature_skill_xp: Dict[str, int] = {
+            "foraging": 0,
+            "woodcraft": 0,
+            "ecology": 0,
+            "inscription": 0,
+        }
+        self.discovered_zones: Set[str] = set()
+        self.band_quest_progress: Dict[str, Dict[str, int]] = {
+            band: {"explore": 0, "help": 0, "craft": 0}
+            for band, _, _ in EDUCATION_BANDS
+        }
+        self.completed_band_quests: Set[str] = set()
+        self.story_flags: Dict[str, bool] = {
+            "helped_someone": False,
+            "caught_monster": False,
+            "broke_something": False,
+            "talked_to_everyone": False,
+            "promise_help": False,
+        }
+        self._pending_scene: str = "earth_morning"
+        self._pending_scene_after_battle: Optional[str] = None
+        self._story_battle_active: bool = False
+        self.workshop_open: bool = False
+        self.workshop_cursor: int = 0
+        self.workshop_message: str = "F6 toggles ChoiceScript Workshop."
+        self.workshop_projects: List[Dict[str, Any]] = []
+        self.workshop_active_index: int = -1
+        self.autonomy_enabled: bool = True
+        self.autonomy_timer: float = 0.0
+        self.autonomy_interval: float = 12.0
+        self.autonomy_log: List[str] = []
+
         # Visual state
         self.title_alpha = 0.0
         self.title_fade_in = True
@@ -821,6 +985,574 @@ class AethermoorGame:
             y = random.randint(0, GAME_H)
             brightness = random.randint(80, 255)
             self.bg_stars.append((x, y, brightness))
+
+    def _reputation_label(self) -> str:
+        """Map score to a compact reputation tier."""
+        score = self.reputation_points
+        if score >= 5:
+            return "Trusted"
+        if score >= 2:
+            return "Warm"
+        if score <= -3:
+            return "Shaky"
+        return "Neutral"
+
+    def _bond_label(self) -> str:
+        """Map partner bond value to human-readable tier."""
+        b = self.partner_bond
+        if b >= 0.80:
+            return "Synced"
+        if b >= 0.55:
+            return "Linked"
+        if b >= 0.30:
+            return "Growing"
+        return "Unstable"
+
+    def _grade_band_for_age(self, age: int) -> str:
+        """Resolve an age value to K-12-style band."""
+        for band, min_age, max_age in EDUCATION_BANDS:
+            if min_age <= age <= max_age:
+                return band
+        return "Post-12"
+
+    def _current_grade_band(self) -> str:
+        """Get current educational progression band."""
+        return self._grade_band_for_age(self.age_years)
+
+    def _zone_for_scene(self, scene_id: str) -> str:
+        """Map scene to exploration zone."""
+        return SCENE_ZONE_MAP.get(scene_id, "Unmapped Wilds")
+
+    def _current_zone(self) -> str:
+        """Get zone for current scene."""
+        return self._zone_for_scene(self.scene.current_scene_id)
+
+    def _active_band_quest(self) -> Dict[str, Any]:
+        """Return quest definition for the current grade band."""
+        return BAND_QUESTS[self._current_grade_band()]
+
+    def _active_band_progress(self) -> Dict[str, int]:
+        """Return mutable quest progress record for the current grade band."""
+        return self.band_quest_progress[self._current_grade_band()]
+
+    def _material_summary(self) -> str:
+        """Compact material display string."""
+        return (
+            f"H{self.materials['herb']} D{self.materials['driftwood']} "
+            f"S{self.materials['shell']} I{self.materials['rune_ink']} "
+            f"C{self.materials['crystal_dust']}"
+        )
+
+    def _grant_skill_xp(self, skill: str, amount: int) -> None:
+        """Grant skill XP and level-up when threshold reached."""
+        if skill not in self.nature_skill_xp:
+            return
+        self.nature_skill_xp[skill] += amount
+        threshold = 3 + self.nature_skills[skill] * 2
+        while self.nature_skill_xp[skill] >= threshold:
+            self.nature_skill_xp[skill] -= threshold
+            self.nature_skills[skill] += 1
+            self.reputation_points += 1
+            self.partner_bond = min(1.0, self.partner_bond + 0.02)
+            threshold = 3 + self.nature_skills[skill] * 2
+
+    def _grant_material(self, material: str, amount: int) -> None:
+        """Grant crafting materials safely."""
+        if material not in self.materials:
+            return
+        self.materials[material] = max(0, self.materials[material] + amount)
+
+    def _progress_band_quest(self, tag: str, amount: int = 1) -> None:
+        """Track quest progression for current education band."""
+        band = self._current_grade_band()
+        if band in self.completed_band_quests:
+            return
+        if tag not in ("explore", "help", "craft"):
+            return
+        progress = self.band_quest_progress[band]
+        progress[tag] += amount
+
+        requirements = BAND_QUESTS[band]["requirements"]
+        if all(progress[k] >= requirements[k] for k in requirements):
+            self.completed_band_quests.add(band)
+            self.inventory["Gold"] += int(BAND_QUESTS[band]["reward_gold"])
+            self.partner_bond = min(1.0, self.partner_bond + 0.05)
+            self.reputation_points += 2
+            self.scene.companion_thoughts.append(
+                ("POLLY", f"Quest complete: {BAND_QUESTS[band]['title']}. Legacy deepens.")
+            )
+
+    def _craft_available_items(self) -> List[str]:
+        """Craft at most one available recipe per choice."""
+        crafted: List[str] = []
+        for recipe in CRAFTING_RECIPES:
+            cost = recipe["cost"]
+            if all(self.materials.get(mat, 0) >= qty for mat, qty in cost.items()):
+                for mat, qty in cost.items():
+                    self.materials[mat] -= qty
+                name = str(recipe["name"])
+                self.crafted_items[name] = self.crafted_items.get(name, 0) + 1
+                self.inventory["Gold"] += int(recipe["reward_gold"])
+                self._grant_skill_xp(str(recipe["skill"]), 1)
+                self._progress_band_quest("craft", 1)
+                crafted.append(name)
+                break
+        return crafted
+
+    def _apply_progression_loop(self, scene_id: str, action: str) -> List[str]:
+        """Apply exploration, quest, skill, and crafting progression from one choice."""
+        zone = self._zone_for_scene(scene_id)
+        first_visit = zone not in self.discovered_zones
+        self.discovered_zones.add(zone)
+        self._progress_band_quest("explore", 1)
+        if first_visit:
+            self.reputation_points += 1
+
+        help_actions = {
+            "help_traveler",
+            "escort_traveler",
+            "help_vendors",
+            "promise_help",
+        }
+        if action in help_actions:
+            self._progress_band_quest("help", 1)
+
+        # Resource and skill gains by interaction style.
+        if action in ("help_traveler", "escort_traveler"):
+            self._grant_material("herb", 1)
+            self._grant_material("driftwood", 1)
+            self._grant_skill_xp("ecology", 1)
+            self._grant_skill_xp("foraging", 1)
+        elif action in ("ask_directions", "talk_gossip"):
+            self._grant_skill_xp("ecology", 1)
+        elif action in ("record_traveler", "document_path", "shrine_pause"):
+            self._grant_material("rune_ink", 1)
+            self._grant_skill_xp("inscription", 1)
+        elif action == "help_vendors":
+            self._grant_material("driftwood", 2)
+            self._grant_skill_xp("woodcraft", 1)
+        elif action == "break_vase":
+            self._grant_material("shell", 1)
+            self._grant_material("crystal_dust", 1)
+            self._grant_skill_xp("woodcraft", 1)
+        elif action in ("fight_monster", "tame_monster"):
+            self._grant_material("crystal_dust", 1)
+            self._grant_skill_xp("ecology", 2)
+        elif action.startswith("class_"):
+            self._grant_skill_xp("ecology", 1)
+        elif action.startswith("learn_"):
+            self._grant_material("rune_ink", 1)
+            self._grant_skill_xp("inscription", 1)
+
+        crafted = self._craft_available_items()
+        return crafted
+
+    def _advance_life_cycle(self) -> None:
+        """Age the current protagonist and rotate generation when lifespan ends."""
+        self.age_years += self.years_per_choice
+        if self.age_years >= self.lifespan_years:
+            self._trigger_generation_shift()
+
+    def _trigger_generation_shift(self) -> None:
+        """Retire current protagonist and continue as next generation heir."""
+        legacy_crafts = sum(self.crafted_items.values())
+        legacy_skills = sum(self.nature_skills.values())
+
+        self.lineage_history.append(
+            {
+                "generation": self.generation,
+                "age": self.age_years,
+                "class": self.player_class,
+                "reputation": self.reputation_points,
+                "crafted_total": legacy_crafts,
+                "skills_total": legacy_skills,
+            }
+        )
+
+        self.legacy_relics += legacy_crafts
+        self.generation += 1
+        self.age_years = 12
+        self.lifespan_years = random.randint(68, 84)
+        self.player_class = "Undecided"
+        self.partner_key = "polly"
+        self.partner_name = "Polly"
+        self.partner_bond = min(0.45, 0.15 + legacy_skills * 0.01)
+        self.reputation_points = max(0, self.reputation_points // 2)
+        self.materials = {k: max(0, v // 2) for k, v in self.materials.items()}
+        self.crafted_items = {}
+        self.story_flags = {k: False for k in self.story_flags}
+
+        if self.party:
+            heir = self.party[0]
+            heir.name = f"{self.lineage_name} Heir G{self.generation}"
+            heir.title = "Lineage Successor"
+            heir.stats.attack += legacy_crafts // 5
+            heir.stats.wisdom += legacy_skills // 6
+            heir.stats.hp = heir.stats.max_hp
+            heir.stats.mp = heir.stats.max_mp
+            for code, val in list(heir.stats.tongue_prof.items()):
+                heir.stats.tongue_prof[code] = min(1.0, val * 0.65 + 0.05)
+
+        self.scene.companion_thoughts.append(
+            ("POLLY", f"Generation shift complete. Dynasty rises to G{self.generation}.")
+        )
+
+    def _workshop_active_project(self) -> Optional[Dict[str, Any]]:
+        """Return currently selected workshop project."""
+        if 0 <= self.workshop_active_index < len(self.workshop_projects):
+            return self.workshop_projects[self.workshop_active_index]
+        return None
+
+    def _workshop_create_project(self) -> None:
+        """Create a new nested ChoiceScript book template."""
+        title = f"Dynasty Book G{self.generation}-{len(self.workshop_projects) + 1}"
+        script = [
+            f"*title {title}",
+            "*author Spiralverse Workshop",
+            "*label start",
+            "You wake inside the Scriptorium of the World Tree.",
+            "*choice",
+            "  #Seek allies first",
+            "    *goto allies",
+            "  #Walk alone into the unknown",
+            "    *goto solo",
+            "*label allies",
+            "You gather companions and map the zone with care.",
+            "*finish",
+            "*label solo",
+            "You test your resolve and face the dunes alone.",
+            "*finish",
+        ]
+        self.workshop_projects.append(
+            {
+                "title": title,
+                "script": script,
+                "reads": 0,
+                "playtests": 0,
+                "exports": 0,
+            }
+        )
+        self.workshop_active_index = len(self.workshop_projects) - 1
+        self.workshop_message = f"Created {title}."
+
+    def _workshop_add_branch_from_scene(self) -> None:
+        """Append current scene choices as a branch in active ChoiceScript book."""
+        project = self._workshop_active_project()
+        if project is None:
+            self._workshop_create_project()
+            project = self._workshop_active_project()
+        if project is None:
+            return
+
+        scene_id = self.scene.current_scene_id
+        branch_label = f"scene_{scene_id}_{int(time.time()) % 10000}"
+        project["script"].append(f"*label {branch_label}")
+        project["script"].append(f"You enter {scene_id.replace('_', ' ')} and weigh your options.")
+        project["script"].append("*choice")
+        if not self.scene.choices:
+            project["script"].append("  #Observe quietly")
+            project["script"].append("    *finish")
+        else:
+            for label, action, tongue, _ in self.scene.choices[:3]:
+                clean = label.replace("[", "").replace("]", "")
+                option_label = f"opt_{action}"
+                project["script"].append(f"  #{clean} [{tongue}]")
+                project["script"].append(f"    *goto {option_label}")
+                project["script"].append(f"*label {option_label}")
+                project["script"].append(f"You committed to {action}.")
+                project["script"].append("*finish")
+        self.workshop_message = f"Added branch from {scene_id} to {project['title']}."
+
+    def _workshop_ai_read(self) -> None:
+        """Simulate AI companions reading authored books."""
+        project = self._workshop_active_project()
+        if project is None:
+            self.workshop_message = "No book selected. Create one first."
+            return
+        project["reads"] += 1
+        self.inventory["Gold"] += 18
+        self.partner_bond = min(1.0, self.partner_bond + 0.03)
+        self._grant_skill_xp("inscription", 1)
+        self._progress_band_quest("craft", 1)
+        self.exporter.record_choice(
+            context=f"Workshop read in {project['title']}",
+            choice_made="AI reading session",
+            alternatives=["Skip reading"],
+            outcome=(
+                f"Companions read the book. Reads={project['reads']} "
+                f"Bond={self.partner_bond:.2f} Gold={self.inventory['Gold']}"
+            ),
+            category="nested_choicescript_read",
+        )
+        self.sft_count += 1
+        self.workshop_message = f"AI read {project['title']}. Insights increased."
+
+    def _workshop_playtest(self) -> None:
+        """Run a lightweight nested playtest pass."""
+        project = self._workshop_active_project()
+        if project is None:
+            self.workshop_message = "No project available to playtest."
+            return
+        project["playtests"] += 1
+        self.reputation_points += 1
+        self._progress_band_quest("explore", 1)
+        self.exporter.record_choice(
+            context=f"Nested playtest for {project['title']}",
+            choice_made="Run nested scenario",
+            alternatives=["Do not run nested scenario"],
+            outcome=(
+                f"Playtest count={project['playtests']} Reputation={self.reputation_points} "
+                f"Generation={self.generation}"
+            ),
+            category="nested_choicescript_playtest",
+        )
+        self.sft_count += 1
+        self.workshop_message = f"Playtest complete for {project['title']}."
+
+    def _workshop_export(self) -> None:
+        """Export active ChoiceScript draft to disk."""
+        project = self._workshop_active_project()
+        if project is None:
+            self.workshop_message = "No project to export."
+            return
+
+        stamp = int(time.time())
+        safe_title = "".join(ch if ch.isalnum() else "_" for ch in project["title"]).strip("_")
+        out_path = BOOKS_OUT / f"{safe_title}_{stamp}.txt"
+        out_path.write_text("\n".join(project["script"]) + "\n", encoding="utf-8")
+        project["exports"] += 1
+        self.workshop_message = f"Exported {project['title']} to {out_path.name}."
+
+    def _handle_workshop_key(self, key: int) -> None:
+        """Handle keyboard input while workshop overlay is open."""
+        options = 5
+        if key in (pygame.K_ESCAPE, pygame.K_F6):
+            self.workshop_open = False
+            self.workshop_message = "Workshop closed."
+            return
+        if key in (pygame.K_UP, pygame.K_w):
+            self.workshop_cursor = (self.workshop_cursor - 1) % options
+            return
+        if key in (pygame.K_DOWN, pygame.K_s):
+            self.workshop_cursor = (self.workshop_cursor + 1) % options
+            return
+        if key in (pygame.K_RETURN, pygame.K_SPACE):
+            if self.workshop_cursor == 0:
+                self._workshop_create_project()
+            elif self.workshop_cursor == 1:
+                self._workshop_add_branch_from_scene()
+            elif self.workshop_cursor == 2:
+                self._workshop_ai_read()
+            elif self.workshop_cursor == 3:
+                self._workshop_playtest()
+            elif self.workshop_cursor == 4:
+                self._workshop_export()
+
+    def _run_autonomy_tick(self) -> None:
+        """Let companions perform autonomous side actions (Sims-like lite mode)."""
+        if not self.autonomy_enabled:
+            return
+        if not self.party:
+            return
+
+        actor = random.choice(self.party[1:] if len(self.party) > 1 else self.party)
+        roll = random.random()
+        action_msg = ""
+        if roll < 0.25:
+            self._grant_material("herb", 1)
+            self._grant_skill_xp("foraging", 1)
+            action_msg = f"{actor.name} foraged herbs."
+        elif roll < 0.50:
+            self._grant_material("driftwood", 1)
+            self._grant_skill_xp("woodcraft", 1)
+            action_msg = f"{actor.name} salvaged driftwood."
+        elif roll < 0.70:
+            if not self.workshop_projects:
+                self._workshop_create_project()
+            self._workshop_ai_read()
+            action_msg = f"{actor.name} read a workshop book."
+        elif roll < 0.88:
+            crafted = self._craft_available_items()
+            if crafted:
+                action_msg = f"{actor.name} crafted {crafted[0]}."
+            else:
+                self._grant_material("rune_ink", 1)
+                action_msg = f"{actor.name} prepared rune ink."
+        else:
+            self.reputation_points += 1
+            self.partner_bond = min(1.0, self.partner_bond + 0.02)
+            action_msg = f"{actor.name} strengthened guild ties."
+
+        if action_msg:
+            self.autonomy_log.append(action_msg)
+            self.autonomy_log = self.autonomy_log[-5:]
+            self.scene.companion_thoughts.append(("SYSTEM", action_msg))
+            self.scene.companion_thoughts = self.scene.companion_thoughts[-8:]
+
+    def _load_scene(self, scene_id: str) -> None:
+        """Load scene then inject dynamic narrative state."""
+        self.scene.load_scene(scene_id)
+        zone = self._zone_for_scene(scene_id)
+        band = self._current_grade_band()
+        quest = self._active_band_quest()["title"]
+
+        if scene_id == "earth_morning":
+            # Keep the status popup grounded in current run state.
+            self.scene.dialogue_lines = [
+                line for line in self.scene.dialogue_lines
+                if not (
+                    line[0] == "SYSTEM"
+                    and "Player Level 1" in line[1]
+                )
+            ]
+            self.scene.dialogue_lines.append(
+                (
+                    "SYSTEM",
+                    (
+                        f"[Player L1 | Gen {self.generation} | Age {self.age_years} | "
+                        f"Class: {self.player_class} | Rep: {self._reputation_label()} | "
+                        f"Bond: {self._bond_label()} | Stage: {band}]"
+                    ),
+                )
+            )
+        elif scene_id == "earth_night":
+            self._inject_shore_reactivity()
+        elif scene_id == "aethermoor_arrival":
+            self.scene.dialogue_lines.insert(
+                4,
+                (
+                    "SYSTEM",
+                    (
+                        f"[Class Locked: {self.player_class} | Partner: {self.partner_name} | "
+                        f"Stage: {band} | Quest: {quest} | Gold: {self.inventory['Gold']}]"
+                    ),
+                ),
+            )
+
+        if scene_id != "title":
+            self.scene.dialogue_lines.append(
+                (
+                    "SYSTEM",
+                    (
+                        f"[Zone: {zone} | Materials: {self._material_summary()} | "
+                        f"Active Quest: {quest}]"
+                    ),
+                )
+            )
+
+    def _inject_shore_reactivity(self) -> None:
+        """Inject Marcus reactions using path flags."""
+        dynamic: List[Tuple[str, str]] = []
+        if self.story_flags["helped_someone"]:
+            dynamic.append(
+                ("MARCUS CHEN", "Heard you helped people on the path. Good instinct.")
+            )
+        if self.story_flags["caught_monster"]:
+            dynamic.append(
+                ("MARCUS CHEN", "You handled the ripple-beast already? Strong field composure.")
+            )
+        if self.story_flags["broke_something"]:
+            dynamic.append(
+                ("MARCUS CHEN", "Breaking relics happens. Owning it is what matters.")
+            )
+        if self.story_flags["talked_to_everyone"]:
+            dynamic.append(
+                ("MARCUS CHEN", "You mapped the chatter on the road. Broker mindset.")
+            )
+        if dynamic:
+            # Insert reactions right after Marcus appears.
+            self.scene.dialogue_lines[4:4] = dynamic
+
+    def _apply_class_loadout(self, action: str) -> None:
+        """Set class identity and apply one-time stat boost."""
+        config = CLASS_LOADOUTS.get(action)
+        if not config:
+            return
+
+        self.player_class = str(config["name"])
+        partner_key = str(config["partner_key"])
+        self.partner_key = partner_key
+        self.partner_name = self.cast.get(partner_key, self.cast["polly"]).name
+        self.partner_bond = min(1.0, self.partner_bond + float(config["bond_bonus"]))
+
+        if not self.party:
+            return
+        hero = self.party[0]
+        boost = config.get("stat_boost", {})
+        if "attack" in boost:
+            hero.stats.attack += int(boost["attack"])
+        if "defense" in boost:
+            hero.stats.defense += int(boost["defense"])
+        if "speed" in boost:
+            hero.stats.speed += int(boost["speed"])
+        if "wisdom" in boost:
+            hero.stats.wisdom += int(boost["wisdom"])
+        if "max_hp" in boost:
+            bonus_hp = int(boost["max_hp"])
+            hero.stats.max_hp += bonus_hp
+            hero.stats.hp += bonus_hp
+        if "max_mp" in boost:
+            bonus_mp = int(boost["max_mp"])
+            hero.stats.max_mp += bonus_mp
+            hero.stats.mp += bonus_mp
+
+    def _apply_story_action(self, scene_id: str, action: str) -> None:
+        """Apply scene-specific state changes for reputation/flags/inventory."""
+        if scene_id == "earth_morning":
+            if action == "take_full_kit":
+                self.inventory["PollyPad"] = True
+                self.inventory["Wallet"] = True
+                self.inventory["Keys"] = True
+                self.inventory["Gold"] += 100
+                self.reputation_points += 1
+            elif action == "check_wallet":
+                self.inventory["Wallet"] = True
+                self.inventory["Gold"] += 100
+            elif action == "check_pollypad":
+                self.inventory["PollyPad"] = True
+                self.partner_bond = min(1.0, self.partner_bond + 0.04)
+            elif action == "test_keys":
+                self.inventory["Keys"] = True
+            elif action == "promise_help":
+                self.story_flags["promise_help"] = True
+                self.reputation_points += 1
+                self.partner_bond = min(1.0, self.partner_bond + 0.05)
+            elif action == "quiet_depart":
+                self.reputation_points -= 1
+
+        elif scene_id == "earth_work":
+            if action in ("help_traveler", "escort_traveler"):
+                self.story_flags["helped_someone"] = True
+                self.reputation_points += 2
+                self.partner_bond = min(1.0, self.partner_bond + 0.06)
+            elif action in ("ask_directions", "record_traveler"):
+                self.story_flags["talked_to_everyone"] = True
+                self.reputation_points += 1
+            elif action == "shrine_pause":
+                self.reputation_points += 1
+                self.partner_bond = min(1.0, self.partner_bond + 0.03)
+            elif action in ("ignore_traveler", "rush_past"):
+                self.reputation_points -= 2
+                self.partner_bond = max(0.0, self.partner_bond - 0.04)
+
+        elif scene_id == "earth_evening":
+            if action in ("fight_monster", "tame_monster"):
+                self.story_flags["caught_monster"] = True
+                self.reputation_points += 1 if action == "fight_monster" else 2
+            elif action in ("talk_gossip", "document_path"):
+                self.story_flags["talked_to_everyone"] = True
+                self.reputation_points += 1
+            elif action == "help_vendors":
+                self.story_flags["helped_someone"] = True
+                self.reputation_points += 2
+                self.partner_bond = min(1.0, self.partner_bond + 0.05)
+            elif action == "break_vase":
+                self.story_flags["broke_something"] = True
+                self.reputation_points -= 2
+                self.partner_bond = max(0.0, self.partner_bond - 0.03)
+
+        elif scene_id == "earth_night":
+            self._apply_class_loadout(action)
 
     # ------------------------------------------------------------------
     # Main Loop
@@ -855,6 +1587,27 @@ class AethermoorGame:
 
     def _handle_key(self, key: int) -> None:
         """Handle a key press."""
+        if key == pygame.K_F7:
+            self.autonomy_enabled = not self.autonomy_enabled
+            state = "ON" if self.autonomy_enabled else "OFF"
+            self.workshop_message = f"Companion autonomy {state}."
+            return
+
+        if key == pygame.K_F6:
+            self.workshop_open = not self.workshop_open
+            if self.workshop_open and not self.workshop_projects:
+                self._workshop_create_project()
+            self.workshop_message = (
+                "Workshop opened. Build nested ChoiceScript stories."
+                if self.workshop_open
+                else "Workshop closed."
+            )
+            return
+
+        if self.workshop_open:
+            self._handle_workshop_key(key)
+            return
+
         # Global controls
         if key == pygame.K_ESCAPE:
             if self.paused:
@@ -885,7 +1638,7 @@ class AethermoorGame:
         """Handle keys on the title screen."""
         if key in (pygame.K_RETURN, pygame.K_SPACE):
             self.game_phase = "scene"
-            self.scene.load_scene("earth_morning")
+            self._load_scene("earth_morning")
             self.particles.emit(GAME_W // 2, GAME_H // 2, GOLD, count=30, spread=4.0)
 
     def _handle_scene_key(self, key: int) -> None:
@@ -929,11 +1682,22 @@ class AethermoorGame:
         """Handle keys during battle."""
         if self.battle.victory or self.battle.defeat:
             if key in (pygame.K_RETURN, pygame.K_SPACE):
+                if self.battle.victory and self._story_battle_active:
+                    self._grant_material("crystal_dust", 1)
+                    self._grant_material("shell", 1)
+                    self._grant_skill_xp("ecology", 1)
+                    self._progress_band_quest("craft", 1)
                 self.battle.end_battle()
                 # Heal party slightly after battle
                 for c in self.party:
                     c.stats.hp = min(c.stats.max_hp, c.stats.hp + c.stats.max_hp // 4)
                     c.stats.mp = min(c.stats.max_mp, c.stats.mp + c.stats.max_mp // 4)
+                self._story_battle_active = False
+                if self._pending_scene_after_battle:
+                    self.transitioning = True
+                    self.transition_progress = 0.0
+                    self._pending_scene = self._pending_scene_after_battle
+                    self._pending_scene_after_battle = None
             return
 
         if not self.battle.is_player_turn:
@@ -992,6 +1756,7 @@ class AethermoorGame:
         if idx >= len(self.scene.choices):
             return
         label, action, tongue, layers = self.scene.choices[idx]
+        scene_id = self.scene.current_scene_id
 
         # Activate layers
         self.scene.active_layers = set(layers)
@@ -1004,21 +1769,39 @@ class AethermoorGame:
         tc = TONGUE_COLORS.get(tongue, (200, 200, 200))
         self.particles.emit(GAME_W // 2, GAME_H // 2 - 40, tc, count=20, spread=3.5)
 
+        # Story-state update before logging/export.
+        self._apply_story_action(scene_id, action)
+        crafted_now = self._apply_progression_loop(scene_id, action)
+        self._advance_life_cycle()
+
         # Record training data
         all_labels = [c[0] for c in self.scene.choices]
+        active_flags = [k for k, v in self.story_flags.items() if v]
+        band = self._current_grade_band()
+        zone = self._zone_for_scene(scene_id)
+        quest_progress = self._active_band_progress()
         self.exporter.record_choice(
-            context=f"Scene: {self.scene.current_scene_id}. "
+            context=f"Scene: {scene_id}. "
                     f"Dialogue context: {self.scene.get_current_line()}",
             choice_made=label,
             alternatives=[l for l in all_labels if l != label],
-            outcome=f"Player chose {action} (Tongue: {tongue}, Layers: {layers})",
-            category=f"scene_{self.scene.current_scene_id}",
+            outcome=(
+                f"Player chose {action} (Tongue: {tongue}, Layers: {layers}). "
+                f"Class={self.player_class}, Partner={self.partner_name}, "
+                f"Gen={self.generation}, Age={self.age_years}, Stage={band}, Zone={zone}, "
+                f"Reputation={self._reputation_label()} ({self.reputation_points}), "
+                f"Bond={self.partner_bond:.2f}, "
+                f"Inventory={self.inventory}, Materials={self.materials}, "
+                f"NatureSkills={self.nature_skills}, QuestProgress={quest_progress}, "
+                f"CraftedNow={crafted_now or ['none']}, "
+                f"ActiveFlags={active_flags or ['none']}."
+            ),
+            category=f"scene_{scene_id}",
         )
         self.sft_count += 1
 
         # Record DPO pair (chosen vs worst alternative)
         if len(self.scene.choices) > 1:
-            worst_idx = (idx + len(self.scene.choices) // 2) % len(self.scene.choices)
             self.dpo_count += 1
 
         # Boost tongue proficiency for the protagonist
@@ -1026,6 +1809,12 @@ class AethermoorGame:
             prof = self.party[0].stats.tongue_prof
             current = prof.get(tongue, 0.0)
             prof[tongue] = min(1.0, current + 0.02)
+
+        # Digimon-like encounter pacing: some choices enter battle first.
+        if scene_id == "earth_evening" and action in {"fight_monster", "tame_monster"}:
+            self._pending_scene_after_battle = self.scene.next_scene()
+            self._start_story_battle(action)
+            return
 
         # Advance to next scene
         self._advance_to_next_scene()
@@ -1040,12 +1829,13 @@ class AethermoorGame:
 
             # Add party members at specific scenes
             if next_id == "aethermoor_arrival":
+                # Guide + chosen partner (Digimon-like origin pair)
                 polly = self.cast["polly"]
-                clay = self.cast["clay"]
-                if not any(c.name == "Polly" for c in self.party):
+                if not any(c.name == polly.name for c in self.party):
                     self.party.append(polly)
-                if not any(c.name == "Clay" for c in self.party):
-                    self.party.append(clay)
+                partner = self.cast.get(self.partner_key, self.cast["clay"])
+                if not any(c.name == partner.name for c in self.party):
+                    self.party.append(partner)
             elif next_id == "academy_entrance":
                 eldrin = self.cast["eldrin"]
                 if not any(c.name == "Eldrin" for c in self.party):
@@ -1060,8 +1850,89 @@ class AethermoorGame:
             self.transition_progress = 0.0
             self._pending_scene = "first_lesson"
 
+    def _start_story_battle(self, action: str) -> None:
+        """Start contextual story battle for shoreline monster events."""
+        self._story_battle_active = True
+        if action == "tame_monster":
+            enemy = Character(
+                name="Ripple Beast",
+                title="Agitated Familiar",
+                tongue_affinity=Tongue.CA,
+                evo_stage=EvoStage.FRESH,
+                stats=Stats(
+                    hp=55,
+                    max_hp=55,
+                    mp=28,
+                    max_mp=28,
+                    attack=7,
+                    defense=7,
+                    speed=8,
+                    wisdom=6,
+                ),
+                spells=[
+                    Spell("Wave Glint", Tongue.CA, 10, 6, "A nervous shimmer strike"),
+                ],
+                is_enemy=True,
+            )
+            self.battle.start_battle(
+                party=[c for c in self.party if c.stats.hp > 0],
+                enemies=[enemy],
+            )
+            self.battle.battle_log.append("PollyPad: Soften its stance, then bind with intent.")
+            self.partner_bond = min(1.0, self.partner_bond + 0.04)
+        else:
+            enemy1 = Character(
+                name="Ripple Beast",
+                title="Wild Surge",
+                tongue_affinity=Tongue.UM,
+                evo_stage=EvoStage.ROOKIE,
+                stats=Stats(
+                    hp=80,
+                    max_hp=80,
+                    mp=34,
+                    max_mp=34,
+                    attack=11,
+                    defense=8,
+                    speed=10,
+                    wisdom=8,
+                ),
+                spells=[
+                    Spell("Static Gnash", Tongue.UM, 14, 8, "A crackling bite of shadow"),
+                ],
+                is_enemy=True,
+            )
+            enemy2 = Character(
+                name="Shard Crab",
+                title="Beach Hazard",
+                tongue_affinity=Tongue.DR,
+                evo_stage=EvoStage.FRESH,
+                stats=Stats(
+                    hp=45,
+                    max_hp=45,
+                    mp=18,
+                    max_mp=18,
+                    attack=9,
+                    defense=9,
+                    speed=5,
+                    wisdom=4,
+                ),
+                spells=[
+                    Spell("Shell Crack", Tongue.DR, 12, 7, "Break stance with heavy shell impact"),
+                ],
+                is_enemy=True,
+            )
+            self.battle.start_battle(
+                party=[c for c in self.party if c.stats.hp > 0],
+                enemies=[enemy1, enemy2],
+            )
+            self.battle.battle_log.append("PollyPad: Multi-target threat. Focus the fast unit first.")
+            self.partner_bond = min(1.0, self.partner_bond + 0.02)
+
+        self.particles.emit(GAME_W // 2, GAME_H // 2, (255, 80, 80), count=30, spread=4.8)
+
     def _start_test_battle(self) -> None:
         """Start a test battle encounter."""
+        self._story_battle_active = False
         # Create wild enemies
         enemy1 = Character(
             name="Shadow Wisp",
@@ -1131,7 +2002,7 @@ class AethermoorGame:
             if self.transition_progress >= 1.0:
                 self.transitioning = False
                 self.transition_progress = 0.0
-                self.scene.load_scene(self._pending_scene)
+                self._load_scene(self._pending_scene)
 
         # Layer activity decay
         for layer_num in self.layer_activity:
@@ -1148,6 +2019,13 @@ class AethermoorGame:
         if self.battle.active:
             bx, by = self.battle.shake_offset
             self.battle.shake_offset = (int(bx * 0.85), int(by * 0.85))
+
+        # Autonomous companion side-actions (free-will lite).
+        if self.game_phase != "title" and not self.workshop_open:
+            self.autonomy_timer += dt
+            if self.autonomy_timer >= self.autonomy_interval:
+                self.autonomy_timer = 0.0
+                self._run_autonomy_tick()
 
         # Enemy AI turn
         if self.battle.active and not self.battle.is_player_turn:
@@ -1169,6 +2047,8 @@ class AethermoorGame:
 
         if self.game_phase == "title":
             self._draw_title_screen()
+        elif self.workshop_open:
+            self._draw_workshop_screen()
         elif self.battle.active:
             self._draw_battle_screen()
         else:
@@ -1200,91 +2080,75 @@ class AethermoorGame:
     # Bezel (console frame)
     # ------------------------------------------------------------------
     def _draw_bezel(self) -> None:
-        """Draw the GameBoy-style console bezel."""
-        # Outer bezel
-        bezel_rect = pygame.Rect(6, 6, 668, 708)
-        draw_rounded_rect(self.screen, BEZEL_COLOR, bezel_rect, radius=18)
-        draw_rounded_rect(self.screen, BEZEL_HIGHLIGHT, bezel_rect, radius=18,
-                          border=2, border_color=BEZEL_HIGHLIGHT)
+        """Draw a clean console-style frame around the game area."""
+        # Outer frame — dark, sleek
+        bezel_rect = pygame.Rect(4, 4, 656, 712)
+        draw_rounded_rect(self.screen, BEZEL_COLOR, bezel_rect, radius=12)
 
-        # Inner screen border
-        screen_border = pygame.Rect(16, 46, 648, 488)
-        pygame.draw.rect(self.screen, (10, 10, 16), screen_border, border_radius=4)
-        pygame.draw.rect(self.screen, (60, 60, 80), screen_border, width=1, border_radius=4)
+        # Subtle inner border
+        inner = pygame.Rect(14, 14, 636, 692)
+        pygame.draw.rect(self.screen, BEZEL_HIGHLIGHT, inner, width=1, border_radius=8)
 
-        # "AETHERMOOR" title text on bezel
-        title_font = self.fonts.get(16, bold=True)
+        # Inner screen border (where the game surface sits)
+        screen_border = pygame.Rect(16, 44, 648, 490)
+        pygame.draw.rect(self.screen, (8, 8, 14), screen_border, border_radius=4)
+        pygame.draw.rect(self.screen, (50, 55, 75), screen_border, width=1, border_radius=4)
+
+        # Title bar
+        title_font = self.fonts.get(14, bold=True)
         title_surf = title_font.render("AETHERMOOR", True, GOLD)
         title_x = 20 + (GAME_W - title_surf.get_width()) // 2
-        self.screen.blit(title_surf, (title_x, 20))
+        self.screen.blit(title_surf, (title_x, 22))
 
-        # Version badge
         ver_font = self.fonts.get(10)
-        ver_surf = ver_font.render("SCBE v3.0", True, DIM_TEXT)
-        self.screen.blit(ver_surf, (20, 24))
+        ver_surf = ver_font.render("SCBE v3.0", True, (60, 65, 85))
+        self.screen.blit(ver_surf, (22, 26))
 
-        # LED indicators (6 tongue dots below screen)
-        led_y = 544
-        led_start_x = 20 + (GAME_W - 6 * 28) // 2
-        led_font = self.fonts.get(9)
+        # Tongue LED strip below screen — horizontal bar with glowing dots
+        led_y = 542
+        led_start_x = 20 + (GAME_W - 6 * 80) // 2
+        led_font = self.fonts.get(10)
         tongue_codes = ["KO", "AV", "RU", "CA", "UM", "DR"]
+
+        # Subtle LED bar background
+        bar_rect = pygame.Rect(led_start_x - 16, led_y - 12, 6 * 80 + 32, 28)
+        draw_rounded_rect(self.screen, (18, 18, 28), bar_rect, radius=6)
+
         for i, code in enumerate(tongue_codes):
-            cx = led_start_x + i * 28 + 6
+            cx = led_start_x + i * 80 + 28
             color = TONGUE_COLORS[code]
-            # Pulse based on activity
             active = any(
                 l in self.scene.active_layers
                 for l in range(1, 15)
                 if self._tongue_for_layer(l) == code
             )
             if active:
-                pulse = 0.5 + 0.5 * math.sin(time.time() * 6 + i)
-                color = lerp_color((40, 40, 50), color, pulse)
-                pygame.draw.circle(self.screen, color, (cx, led_y), 6)
-                # Glow
-                glow_surf = pygame.Surface((18, 18), pygame.SRCALPHA)
-                pygame.draw.circle(glow_surf, (*color, 60), (9, 9), 9)
-                self.screen.blit(glow_surf, (cx - 9, led_y - 9))
+                pulse = 0.6 + 0.4 * math.sin(time.time() * 5 + i * 1.1)
+                glow_color = lerp_color((30, 30, 40), color, pulse)
+                # Outer glow
+                glow_surf = pygame.Surface((28, 28), pygame.SRCALPHA)
+                pygame.draw.circle(glow_surf, (*color, 50), (14, 14), 14)
+                self.screen.blit(glow_surf, (cx - 14, led_y - 14))
+                pygame.draw.circle(self.screen, glow_color, (cx, led_y), 7)
+                pygame.draw.circle(self.screen, color, (cx, led_y), 4)
             else:
-                dim = (color[0] // 4, color[1] // 4, color[2] // 4)
+                dim = (color[0] // 5, color[1] // 5, color[2] // 5)
                 pygame.draw.circle(self.screen, dim, (cx, led_y), 5)
-            # Label
-            lbl = led_font.render(code, True, DIM_TEXT)
-            self.screen.blit(lbl, (cx - lbl.get_width() // 2, led_y + 10))
+                pygame.draw.circle(self.screen, (30, 30, 42), (cx, led_y), 5, 1)
 
-        # D-pad graphic (decorative)
-        dpad_x, dpad_y = 120, 610
-        dpad_color = (50, 50, 65)
-        dpad_highlight = (70, 70, 90)
-        # Horizontal bar
-        pygame.draw.rect(self.screen, dpad_color, (dpad_x - 24, dpad_y - 8, 48, 16), border_radius=2)
-        # Vertical bar
-        pygame.draw.rect(self.screen, dpad_color, (dpad_x - 8, dpad_y - 24, 16, 48), border_radius=2)
-        # Center
-        pygame.draw.circle(self.screen, dpad_highlight, (dpad_x, dpad_y), 5)
-        # Arrow hints
-        arrow_font = self.fonts.get(10)
-        for dx, dy, char in [(-20, 0, "<"), (20, 0, ">"), (0, -20, "^"), (0, 18, "v")]:
-            arr = arrow_font.render(char, True, (100, 100, 120))
-            self.screen.blit(arr, (dpad_x + dx - arr.get_width() // 2, dpad_y + dy - arr.get_height() // 2))
+            lbl = led_font.render(code, True, color if active else (60, 60, 80))
+            self.screen.blit(lbl, (cx - lbl.get_width() // 2, led_y + 12))
 
-        # A/B buttons
-        btn_x = 500
-        for i, (label, color) in enumerate([("A", (60, 160, 60)), ("B", (160, 60, 60))]):
-            bx = btn_x + i * 60
-            by = 620
-            pygame.draw.circle(self.screen, color, (bx, by), 16)
-            pygame.draw.circle(self.screen, (40, 40, 50), (bx, by), 16, 2)
-            btn_label = self.fonts.get(14, bold=True).render(label, True, (220, 220, 220))
-            self.screen.blit(btn_label, (bx - btn_label.get_width() // 2,
-                                         by - btn_label.get_height() // 2))
+        # Bottom info bar — controls and session info
+        info_y = 575
+        info_font = self.fonts.get(11)
+        controls = "WASD/Arrows: Move  |  Enter: Select  |  Tab: Detail  |  Esc: Pause  |  B: Battle"
+        cs = info_font.render(controls, True, (55, 58, 78))
+        self.screen.blit(cs, (20 + (GAME_W - cs.get_width()) // 2, info_y))
 
-        # Control hints
-        hint_font = self.fonts.get(10)
-        hints = ["ENTER: Select", "ESC: Pause", "TAB: Dashboard", "B: Battle"]
-        for i, h in enumerate(hints):
-            hs = hint_font.render(h, True, (80, 80, 100))
-            self.screen.blit(hs, (230, 580 + i * 16))
+        extras = "F6: Script Lab  |  F7: Free Will  |  F8: AI Pilot"
+        es = self.fonts.get(10).render(extras, True, (45, 48, 68))
+        self.screen.blit(es, (20 + (GAME_W - es.get_width()) // 2, info_y + 18))
 
     def _tongue_for_layer(self, layer_num: int) -> str:
         """Map a layer number to its tongue code."""
@@ -1380,8 +2244,13 @@ class AethermoorGame:
         # Location title
         loc_font = self.fonts.get(12)
         scene_name = self.scene.current_scene_id.replace("_", " ").title()
-        loc_surf = loc_font.render(scene_name, True, DIM_TEXT)
+        loc_surf = loc_font.render(
+            f"{scene_name} | Gen {self.generation} Age {self.age_years} | {self.player_class}/{self.partner_name}",
+            True,
+            DIM_TEXT,
+        )
         self.game_surface.blit(loc_surf, (10, 8))
+        self._draw_status_popup()
 
         # Dialogue box
         if not self.scene.scene_finished:
@@ -1391,124 +2260,287 @@ class AethermoorGame:
         if self.scene.showing_choices:
             self._draw_choices()
 
+    def _draw_workshop_screen(self) -> None:
+        """Draw nested in-game ChoiceScript workshop overlay."""
+        self.game_surface.fill((12, 16, 34))
+
+        # Cyber grid background for Digimon-like vibe.
+        for x in range(0, GAME_W, 24):
+            pygame.draw.line(self.game_surface, (26, 40, 76), (x, 0), (x, GAME_H), 1)
+        for y in range(0, GAME_H, 20):
+            pygame.draw.line(self.game_surface, (24, 36, 70), (0, y), (GAME_W, y), 1)
+
+        title = self.fonts.get(16, bold=True).render("CHOICESCRIPT WORKSHOP (NESTED)", True, GOLD)
+        self.game_surface.blit(title, (12, 10))
+
+        controls = self.fonts.get(10).render("UP/DOWN + ENTER, F6/ESC to close", True, DIM_TEXT)
+        self.game_surface.blit(controls, (12, 30))
+
+        project = self._workshop_active_project()
+        if project:
+            meta = (
+                f"{project['title']}  |  Reads:{project['reads']}  "
+                f"Playtests:{project['playtests']}  Exports:{project['exports']}"
+            )
+        else:
+            meta = "No active script project."
+        meta_surf = self.fonts.get(10).render(meta, True, TEXT_COLOR)
+        self.game_surface.blit(meta_surf, (12, 50))
+
+        menu = [
+            "Create New Book Template",
+            "Add Branch From Current Scene",
+            "AI Read Current Book",
+            "Playtest Nested Book",
+            "Export Book to Files",
+        ]
+        menu_font = self.fonts.get(12)
+        for i, item in enumerate(menu):
+            is_sel = i == self.workshop_cursor
+            color = CHOICE_HIGHLIGHT if is_sel else (190, 196, 220)
+            prefix = "> " if is_sel else "  "
+            surf = menu_font.render(prefix + item, True, color)
+            self.game_surface.blit(surf, (18, 84 + i * 24))
+
+        # Script preview window.
+        preview_rect = pygame.Rect(12, 216, GAME_W - 24, GAME_H - 246)
+        pygame.draw.rect(self.game_surface, (8, 12, 24), preview_rect, border_radius=4)
+        pygame.draw.rect(self.game_surface, (86, 102, 150), preview_rect, 1, border_radius=4)
+
+        preview_font = self.fonts.get(10)
+        if project:
+            lines = project["script"][-13:]
+            py = preview_rect.y + 8
+            for line in lines:
+                txt = preview_font.render(line[:92], True, (178, 210, 245))
+                self.game_surface.blit(txt, (preview_rect.x + 8, py))
+                py += 14
+        else:
+            txt = preview_font.render("Create a project to start writing.", True, (178, 210, 245))
+            self.game_surface.blit(txt, (preview_rect.x + 8, preview_rect.y + 8))
+
+        message = self.fonts.get(10).render(self.workshop_message[:95], True, (140, 230, 180))
+        self.game_surface.blit(message, (12, GAME_H - 18))
+
     def _draw_scene_background(self) -> None:
-        """Draw scene-specific background elements."""
+        """Draw scene-specific background elements with GBA-era depth."""
         sid = self.scene.current_scene_id
         t = time.time()
 
         if sid.startswith("earth"):
-            # Urban / apartment background
-            # Floor line
-            pygame.draw.line(self.game_surface, (50, 54, 68), (0, 340), (GAME_W, 340), 1)
-            # Window
-            window_color = (60, 70, 100) if "night" not in sid else (20, 20, 40)
-            pygame.draw.rect(self.game_surface, window_color, (440, 60, 150, 120))
-            pygame.draw.rect(self.game_surface, (80, 80, 100), (440, 60, 150, 120), 2)
-            # Window cross
-            pygame.draw.line(self.game_surface, (80, 80, 100), (515, 60), (515, 180), 1)
-            pygame.draw.line(self.game_surface, (80, 80, 100), (440, 120), (590, 120), 1)
-            # Stars in window (if night/evening)
-            if "evening" in sid or "night" in sid:
-                for i in range(8):
-                    sx = 450 + random.Random(i * 37).randint(0, 130)
-                    sy = 70 + random.Random(i * 71).randint(0, 100)
-                    twinkle = 0.5 + 0.5 * math.sin(t * 2 + i)
-                    b = int(200 * twinkle)
-                    self.game_surface.set_at((sx, sy), (b, b, min(255, b + 40)))
-            # Terminal screen glow
-            if "morning" in sid or "work" in sid:
-                term_rect = pygame.Rect(50, 200, 120, 90)
-                pygame.draw.rect(self.game_surface, (20, 40, 30), term_rect)
-                pygame.draw.rect(self.game_surface, (40, 80, 60), term_rect, 1)
-                # Fake text lines
-                for line_y in range(6):
-                    lw = random.Random(line_y * 13).randint(30, 100)
-                    pygame.draw.line(self.game_surface, (40, 120, 60),
-                                   (58, 210 + line_y * 12), (58 + lw, 210 + line_y * 12), 1)
-            # Desk
-            pygame.draw.rect(self.game_surface, (60, 50, 40), (30, 290, 180, 50))
-            pygame.draw.rect(self.game_surface, (80, 65, 50), (30, 290, 180, 4))
+            bg = BG_COLORS["earth"]
+            # Sky gradient (top third)
+            is_night = "night" in sid or "evening" in sid
+            sky_top = (8, 10, 28) if is_night else (48, 72, 120)
+            sky_bot = (18, 24, 50) if is_night else (28, 42, 78)
+            for row in range(180):
+                ratio = row / 180.0
+                c = lerp_color(sky_top, sky_bot, ratio)
+                pygame.draw.line(self.game_surface, c, (0, row), (GAME_W, row))
+
+            # Stars (night/evening only)
+            if is_night:
+                for i in range(25):
+                    sx = random.Random(i * 37 + 1).randint(0, GAME_W - 1)
+                    sy = random.Random(i * 71 + 2).randint(0, 160)
+                    twinkle = 0.4 + 0.6 * math.sin(t * 1.8 + i * 0.9)
+                    b = int(180 * twinkle)
+                    if b > 20:
+                        self.game_surface.set_at((sx, sy), (b, b, min(255, b + 50)))
+
+            # Distant mountains/hills
+            for hill_pass in range(3):
+                points = [(0, 200 - hill_pass * 15)]
+                depth = 0.3 + hill_pass * 0.2
+                hill_color = lerp_color(bg, sky_bot, depth)
+                for px in range(0, GAME_W + 40, 40):
+                    h = random.Random(px * 7 + hill_pass * 99).randint(20, 50)
+                    points.append((px, 200 - hill_pass * 15 - h))
+                points.append((GAME_W, 200 - hill_pass * 15))
+                points.append((GAME_W, 200))
+                points.append((0, 200))
+                pygame.draw.polygon(self.game_surface, hill_color, points)
+
+            # Ground area
+            ground_top = (38, 45, 58) if is_night else (44, 56, 42)
+            ground_bot = (22, 28, 38) if is_night else (28, 36, 28)
+            for row in range(200, GAME_H):
+                ratio = (row - 200) / max(1, GAME_H - 200)
+                c = lerp_color(ground_top, ground_bot, ratio)
+                pygame.draw.line(self.game_surface, c, (0, row), (GAME_W, row))
+
+            # Grass tufts on ground line
+            for gx in range(0, GAME_W, 8):
+                gh = random.Random(gx + 3).randint(3, 10)
+                gc = lerp_color((40, 80, 45), (65, 110, 55), random.Random(gx * 5).random())
+                if is_night:
+                    gc = lerp_color(gc, (20, 30, 40), 0.6)
+                lean = random.Random(gx * 3).randint(-2, 2)
+                pygame.draw.line(self.game_surface, gc, (gx, 200), (gx + lean, 200 - gh), 1)
+
+            # Scene-specific details
+            if "morning" in sid:
+                # Cozy house window with warm glow
+                pygame.draw.rect(self.game_surface, (50, 44, 36), (420, 140, 170, 120))
+                pygame.draw.rect(self.game_surface, (70, 60, 48), (420, 140, 170, 4))
+                pygame.draw.rect(self.game_surface, (65, 75, 110), (440, 160, 60, 50))
+                pygame.draw.rect(self.game_surface, (80, 90, 120), (440, 160, 60, 50), 1)
+                pygame.draw.line(self.game_surface, (80, 90, 120), (470, 160), (470, 210), 1)
+                pygame.draw.line(self.game_surface, (80, 90, 120), (440, 185), (500, 185), 1)
+                # Warm light from window
+                for gy in range(160, 210):
+                    alpha = max(0, 40 - abs(gy - 185))
+                    if alpha > 5:
+                        pygame.draw.line(self.game_surface, (alpha + 40, alpha + 30, alpha // 2),
+                                        (442, gy), (498, gy))
+            elif "work" in sid:
+                # Path through greenery
+                for px in range(0, GAME_W, 3):
+                    py = 210 + int(math.sin(px * 0.02) * 8)
+                    pygame.draw.circle(self.game_surface, (52, 44, 36), (px, py), 4)
+
+            elif "evening" in sid:
+                # Beach dunes with orange horizon glow
+                for row in range(170, 200):
+                    ratio = (row - 170) / 30.0
+                    c = lerp_color((60, 40, 30), (30, 24, 40), ratio)
+                    pygame.draw.line(self.game_surface, c, (0, row), (GAME_W, row))
+                # Ocean shimmer
+                for row in range(130, 170):
+                    shimmer = int(8 * math.sin(t * 2 + row * 0.3))
+                    c = lerp_color((30, 50, 90), (20, 35, 70), (row - 130) / 40.0)
+                    pygame.draw.line(self.game_surface, c, (shimmer, row), (GAME_W + shimmer, row))
+
+            elif "night" in sid:
+                # Portal glow at center
+                portal_cx, portal_cy = GAME_W // 2, 160
+                for ring in range(40, 0, -1):
+                    alpha = max(0, int(80 - ring * 2))
+                    tc_list = list(TONGUE_COLORS.values())
+                    c = tc_list[ring % 6]
+                    glow = lerp_color((12, 8, 36), c, alpha / 120.0)
+                    r_phase = ring + int(math.sin(t * 3 + ring * 0.2) * 3)
+                    pygame.draw.circle(self.game_surface, glow, (portal_cx, portal_cy), r_phase)
 
         elif sid == "transit":
-            # Swirling dimensional transit
+            # Full-screen dimensional vortex with depth
             cx, cy = GAME_W // 2, GAME_H // 2
-            for i in range(120):
-                angle = t * 1.5 + i * 0.15
-                r = 10 + i * 2.5
-                px = int(cx + math.cos(angle) * r)
-                py = int(cy + math.sin(angle) * r * 0.6)
-                tc_list = list(TONGUE_COLORS.values())
-                color = tc_list[i % 6]
-                dim = lerp_color(BG_COLORS["transit"], color, max(0, 1.0 - i / 120.0))
-                if 0 <= px < GAME_W and 0 <= py < GAME_H:
-                    pygame.draw.circle(self.game_surface, dim, (px, py), max(1, 3 - i // 40))
+            # Radial gradient background
+            for ring in range(min(GAME_W, GAME_H) // 2, 0, -4):
+                ratio = ring / (min(GAME_W, GAME_H) // 2)
+                c = lerp_color((40, 20, 80), (8, 4, 20), ratio)
+                pygame.draw.circle(self.game_surface, c, (cx, cy), ring)
 
-            # Layer labels orbiting
-            small_font = self.fonts.get(9)
-            for layer_num, layer_name, layer_color in SCBE_LAYERS:
-                angle = t * 0.8 + layer_num * (math.pi * 2 / 14)
-                r = 100 + layer_num * 8
+            # Spiral streams
+            tc_list = list(TONGUE_COLORS.values())
+            for i in range(200):
+                angle = t * 1.2 + i * 0.12
+                r = 8 + i * 1.8
                 px = int(cx + math.cos(angle) * r)
-                py = int(cy + math.sin(angle) * r * 0.5)
-                if 10 <= px < GAME_W - 40 and 10 <= py < GAME_H - 20:
-                    lbl = small_font.render(layer_name, True, layer_color)
+                py = int(cy + math.sin(angle) * r * 0.55)
+                color = tc_list[i % 6]
+                brightness = max(0.1, 1.0 - i / 200.0)
+                dim = lerp_color((12, 8, 36), color, brightness)
+                if 0 <= px < GAME_W and 0 <= py < GAME_H:
+                    size = max(1, int(4 * brightness))
+                    pygame.draw.circle(self.game_surface, dim, (px, py), size)
+
+            # Layer names spiraling
+            small_font = self.fonts.get(11)
+            for layer_num, layer_name, layer_color in SCBE_LAYERS:
+                angle = t * 0.6 + layer_num * (math.pi * 2 / 14)
+                r = 80 + layer_num * 10
+                px = int(cx + math.cos(angle) * r)
+                py = int(cy + math.sin(angle) * r * 0.45)
+                if 10 <= px < GAME_W - 60 and 10 <= py < GAME_H - 20:
+                    lbl = small_font.render(f"L{layer_num} {layer_name}", True, layer_color)
                     self.game_surface.blit(lbl, (px, py))
 
         elif sid in ("aethermoor_arrival", "academy_entrance", "first_lesson"):
-            # Floating islands / Aethermoor sky
+            bg = BG_COLORS["aethermoor"]
+            # Deep sky gradient
+            for row in range(GAME_H):
+                ratio = row / GAME_H
+                c = lerp_color((12, 8, 42), (38, 28, 80), ratio * 0.6)
+                pygame.draw.line(self.game_surface, c, (0, row), (GAME_W, row))
+
             # Stars
             for sx, sy, brightness in self.bg_stars:
-                twinkle = 0.5 + 0.5 * math.sin(t * 1.5 + sx * 0.05)
-                b = int(brightness * 0.4 * twinkle)
-                if b > 10:
+                twinkle = 0.4 + 0.6 * math.sin(t * 1.2 + sx * 0.04 + sy * 0.03)
+                b = int(brightness * 0.5 * twinkle)
+                if b > 15:
+                    x_pos = sx % GAME_W
+                    y_pos = sy % (GAME_H - 140)
                     try:
-                        self.game_surface.set_at((sx % GAME_W, (sy % (GAME_H - 100))), (b, b, min(255, b + 60)))
+                        self.game_surface.set_at((x_pos, y_pos), (b, b, min(255, b + 60)))
+                        if b > 100:
+                            self.game_surface.set_at((x_pos + 1, y_pos), (b // 2, b // 2, b // 2 + 30))
                     except IndexError:
                         pass
 
-            # Floating island silhouettes
-            for i in range(3):
-                ix = 100 + i * 200
-                iy = 80 + i * 30 + int(math.sin(t * 0.5 + i) * 5)
-                iw = 120 + i * 20
-                ih = 30
-                island_color = lerp_color((50, 40, 80), (88, 68, 148), 0.5)
-                # Draw elliptical island
-                pygame.draw.ellipse(self.game_surface, island_color,
-                                   (ix - iw // 2, iy, iw, ih))
-                # Top detail
-                pygame.draw.ellipse(self.game_surface,
-                                   lerp_color(island_color, (120, 100, 180), 0.3),
-                                   (ix - iw // 2 + 10, iy - 5, iw - 20, 12))
+            # Floating islands with more depth
+            for i in range(4):
+                ix = 60 + i * 160
+                bob = int(math.sin(t * 0.4 + i * 1.3) * 6)
+                iy = 60 + i * 25 + bob
+                iw = 100 + i * 25
+                ih = 22 + i * 4
+                # Shadow underneath
+                shadow_c = (20, 14, 48)
+                pygame.draw.ellipse(self.game_surface, shadow_c,
+                                    (ix - iw // 2, iy + ih + 6, iw, ih // 2))
+                # Island body
+                island_dark = lerp_color((40, 32, 72), (60, 48, 100), i / 4.0)
+                island_light = lerp_color((70, 56, 120), (100, 80, 160), i / 4.0)
+                pygame.draw.ellipse(self.game_surface, island_dark,
+                                    (ix - iw // 2, iy, iw, ih))
+                pygame.draw.ellipse(self.game_surface, island_light,
+                                    (ix - iw // 2 + 8, iy - 4, iw - 16, ih // 2))
+                # Tiny trees/crystals on top
+                for ci in range(3):
+                    cx_tree = ix - iw // 4 + ci * (iw // 3)
+                    cy_tree = iy - 4
+                    tree_h = random.Random(i * 10 + ci).randint(6, 14)
+                    tree_c = lerp_color((50, 90, 60), (80, 140, 100), random.Random(i + ci * 7).random())
+                    pygame.draw.line(self.game_surface, tree_c, (cx_tree, cy_tree), (cx_tree, cy_tree - tree_h), 2)
 
-            # Ground platform
-            pygame.draw.rect(self.game_surface, (60, 48, 100),
-                           (0, 350, GAME_W, GAME_H - 350))
+            # Ground platform with gradient
+            for row in range(340, GAME_H):
+                ratio = (row - 340) / max(1, GAME_H - 340)
+                c = lerp_color((48, 36, 88), (28, 20, 56), ratio)
+                pygame.draw.line(self.game_surface, c, (0, row), (GAME_W, row))
+
             # Crystal grass
-            for gx in range(0, GAME_W, 12):
-                gh = random.Random(gx).randint(4, 12)
-                gc = lerp_color((60, 80, 140), (100, 120, 180), random.Random(gx * 7).random())
-                pygame.draw.line(self.game_surface, gc,
-                               (gx, 350), (gx + random.Random(gx * 3).randint(-3, 3), 350 - gh), 1)
+            for gx in range(0, GAME_W, 10):
+                gh = random.Random(gx + 1).randint(4, 14)
+                gc = lerp_color((60, 80, 140), (120, 140, 200), random.Random(gx * 7).random())
+                lean = random.Random(gx * 3).randint(-3, 3)
+                pygame.draw.line(self.game_surface, gc, (gx, 340), (gx + lean, 340 - gh), 1)
 
-            # Academy towers (for academy scenes)
+            # Academy towers
             if sid in ("academy_entrance", "first_lesson"):
                 tower_colors = list(TONGUE_COLORS.values())
                 for i in range(6):
-                    tx = 80 + i * 90
-                    tw = 30
-                    th = 80 + i * 10
-                    ty = 180 - th
+                    tx = 60 + i * 95
+                    tw = 36
+                    th = 90 + i * 12
+                    ty = 170 - th
                     tc = tower_colors[i]
-                    dim_tc = lerp_color((30, 20, 50), tc, 0.4)
-                    pygame.draw.rect(self.game_surface, dim_tc, (tx, ty, tw, th))
-                    # Tower top
+                    dim_tc = lerp_color((24, 16, 42), tc, 0.35)
+                    # Tower body with slight taper
+                    points = [(tx, ty + th), (tx + tw, ty + th),
+                              (tx + tw - 3, ty + 8), (tx + 3, ty + 8)]
+                    pygame.draw.polygon(self.game_surface, dim_tc, points)
+                    # Pointed roof
                     pygame.draw.polygon(self.game_surface, tc,
-                                       [(tx, ty), (tx + tw, ty), (tx + tw // 2, ty - 15)])
-                    # Window glow
-                    glow = lerp_color(tc, (255, 255, 255), 0.3 + 0.2 * math.sin(t * 2 + i))
-                    pygame.draw.rect(self.game_surface, glow,
-                                   (tx + tw // 2 - 3, ty + 10, 6, 8))
+                                        [(tx + 2, ty + 8), (tx + tw - 2, ty + 8),
+                                         (tx + tw // 2, ty - 18)])
+                    # Windows with glow
+                    for wy in range(2):
+                        glow_pulse = 0.4 + 0.3 * math.sin(t * 1.8 + i * 0.8 + wy)
+                        glow_c = lerp_color((30, 20, 50), tc, glow_pulse)
+                        pygame.draw.rect(self.game_surface, glow_c,
+                                         (tx + tw // 2 - 4, ty + 20 + wy * 30, 8, 12))
 
     def _draw_scene_characters(self) -> None:
         """Draw character sprites on the scene."""
@@ -1543,29 +2575,68 @@ class AethermoorGame:
             name_surf = name_font.render(char.name, True, TEXT_COLOR)
             self.game_surface.blit(name_surf, (x + 32 - name_surf.get_width() // 2, y + 68))
 
+    def _draw_status_popup(self) -> None:
+        """Draw a compact class/reputation/bond popup on scene screens."""
+        panel_w, panel_h = 258, 122
+        x = GAME_W - panel_w - 10
+        y = 10
+
+        panel = pygame.Surface((panel_w, panel_h), pygame.SRCALPHA)
+        panel.fill((10, 10, 20, 208))
+        self.game_surface.blit(panel, (x, y))
+        pygame.draw.rect(self.game_surface, (98, 98, 130), (x, y, panel_w, panel_h), 1, border_radius=6)
+
+        header = self.fonts.get(10, bold=True).render("STATUS", True, GOLD)
+        self.game_surface.blit(header, (x + 8, y + 6))
+
+        line_font = self.fonts.get(10)
+        rep_text = f"Rep: {self._reputation_label()} ({self.reputation_points:+d})"
+        bits_text = f"Bits: {self.inventory['Gold']}"
+        class_text = f"Class: {self.player_class}"
+        gen_text = f"Gen {self.generation}  Age {self.age_years}  Stage {self._current_grade_band()}"
+        zone_text = f"Zone: {self._current_zone()}"
+        self.game_surface.blit(line_font.render(class_text, True, TEXT_COLOR), (x + 8, y + 22))
+        self.game_surface.blit(line_font.render(gen_text, True, (180, 200, 220)), (x + 8, y + 36))
+        self.game_surface.blit(line_font.render(rep_text, True, (180, 200, 220)), (x + 8, y + 50))
+        self.game_surface.blit(line_font.render(bits_text, True, (180, 200, 220)), (x + 8, y + 64))
+        self.game_surface.blit(line_font.render(zone_text[:38], True, (160, 194, 226)), (x + 8, y + 78))
+        mat_text = f"Mats {self._material_summary()}"
+        self.game_surface.blit(self.fonts.get(9).render(mat_text, True, DIM_TEXT), (x + 8, y + 92))
+
+        bond_val = max(0.0, min(1.0, self.partner_bond))
+        bond_color = lerp_color((80, 90, 110), (120, 250, 170), bond_val)
+        draw_bar(self.game_surface, x + 154, y + 104, 92, 9, bond_val, bond_color)
+        bond_lbl = self.fonts.get(9).render(f"Bond: {self._bond_label()}", True, DIM_TEXT)
+        self.game_surface.blit(bond_lbl, (x + 154, y + 90))
+
     def _draw_dialogue_box(self) -> None:
-        """Draw the dialogue box at the bottom of the game screen."""
+        """Draw a polished RPG dialogue box at the bottom of the game screen."""
         line = self.scene.get_current_line()
         if line is None:
             return
 
         speaker, text = line
 
-        # Semi-transparent dialogue box
-        box_h = 120
-        box_y = GAME_H - box_h - 10
-        dialogue_surf = pygame.Surface((GAME_W - 20, box_h), pygame.SRCALPHA)
+        box_h = 130
+        box_y = GAME_H - box_h - 8
+        box_x = 8
+        box_w = GAME_W - 16
+
+        # Dialogue box with double border (GBA RPG style)
+        dialogue_surf = pygame.Surface((box_w, box_h), pygame.SRCALPHA)
         dialogue_surf.fill(DIALOGUE_BG)
-        self.game_surface.blit(dialogue_surf, (10, box_y))
+        self.game_surface.blit(dialogue_surf, (box_x, box_y))
 
-        # Border
-        pygame.draw.rect(self.game_surface, (80, 80, 120),
-                        (10, box_y, GAME_W - 20, box_h), 1, border_radius=4)
+        # Outer border
+        pygame.draw.rect(self.game_surface, (90, 90, 130),
+                         (box_x, box_y, box_w, box_h), 2, border_radius=6)
+        # Inner border highlight
+        pygame.draw.rect(self.game_surface, (50, 50, 72),
+                         (box_x + 3, box_y + 3, box_w - 6, box_h - 6), 1, border_radius=4)
 
-        # Speaker name
+        # Speaker name tag (raised above the box like classic RPGs)
         if speaker:
-            name_font = self.fonts.get(13, bold=True)
-            # Color based on character tongue
+            name_font = self.fonts.get(14, bold=True)
             name_color = TEXT_COLOR
             for c in self.party:
                 if c.name.upper().startswith(speaker.upper()):
@@ -1575,26 +2646,39 @@ class AethermoorGame:
                 name_color = TONGUE_COLORS["KO"]
             elif speaker == "CLAY":
                 name_color = TONGUE_COLORS["RU"]
+            elif speaker == "MARCUS CHEN":
+                name_color = (180, 140, 220)
             elif speaker == "VOICE":
                 name_color = GOLD
-            elif speaker == "COLLEAGUE":
-                name_color = (150, 150, 180)
+            elif speaker == "SYSTEM":
+                name_color = (100, 180, 220)
+            elif speaker in ("TRAVELER", "FISHER", "COLLEAGUE", "MOM", "POLLYPAD"):
+                name_color = (160, 160, 190)
 
+            # Name plate background
             name_surf = name_font.render(speaker, True, name_color)
-            self.game_surface.blit(name_surf, (20, box_y + 8))
-            text_y = box_y + 28
+            plate_w = name_surf.get_width() + 16
+            plate_rect = pygame.Rect(box_x + 12, box_y - 10, plate_w, 22)
+            plate_bg = pygame.Surface((plate_w, 22), pygame.SRCALPHA)
+            plate_bg.fill((12, 12, 28, 240))
+            self.game_surface.blit(plate_bg, (plate_rect.x, plate_rect.y))
+            pygame.draw.rect(self.game_surface, name_color, plate_rect, 1, border_radius=3)
+            self.game_surface.blit(name_surf, (box_x + 20, box_y - 8))
+            text_y = box_y + 18
         else:
-            text_y = box_y + 12
+            text_y = box_y + 14
 
         # Dialogue text
-        text_font = self.fonts.get(13)
-        text_rect = pygame.Rect(20, text_y, GAME_W - 44, box_h - (text_y - box_y) - 8)
+        text_font = self.fonts.get(14)
+        text_rect = pygame.Rect(box_x + 16, text_y, box_w - 36, box_h - (text_y - box_y) - 12)
         draw_text_wrapped(self.game_surface, text, text_font, TEXT_COLOR, text_rect)
 
-        # Advance indicator
+        # Blinking advance triangle (bottom right)
         if self.text_cursor_visible:
-            indicator = self.fonts.get(12).render(">>", True, CHOICE_HIGHLIGHT)
-            self.game_surface.blit(indicator, (GAME_W - 44, box_y + box_h - 20))
+            tri_x = box_x + box_w - 24
+            tri_y = box_y + box_h - 18
+            pygame.draw.polygon(self.game_surface, CHOICE_HIGHLIGHT,
+                                [(tri_x, tri_y), (tri_x + 10, tri_y + 5), (tri_x, tri_y + 10)])
 
     def _draw_choices(self) -> None:
         """Draw the choice menu overlay."""
@@ -1695,6 +2779,30 @@ class AethermoorGame:
 
         # Ground line
         pygame.draw.line(self.game_surface, (80, 50, 55), (0, 300), (GAME_W, 300), 2)
+
+        # Digimon-like partner link panel
+        hud = pygame.Surface((220, 46), pygame.SRCALPHA)
+        hud.fill((14, 14, 24, 210))
+        self.game_surface.blit(hud, (14, 12))
+        pygame.draw.rect(self.game_surface, (88, 88, 120), (14, 12, 220, 46), 1, border_radius=4)
+        hud_font = self.fonts.get(10)
+        self.game_surface.blit(
+            hud_font.render(f"Class: {self.player_class}  Partner: {self.partner_name}", True, TEXT_COLOR),
+            (22, 18),
+        )
+        draw_bar(
+            self.game_surface,
+            22,
+            34,
+            176,
+            8,
+            self.partner_bond,
+            lerp_color((70, 70, 90), (120, 240, 165), self.partner_bond),
+        )
+        self.game_surface.blit(
+            self.fonts.get(9).render(self._bond_label(), True, DIM_TEXT),
+            (202, 33),
+        )
 
         # Draw enemies (top right)
         alive_enemies = [e for e in self.battle.enemies if e.stats.hp > 0]
@@ -1839,6 +2947,75 @@ class AethermoorGame:
         pygame.draw.line(self.screen, DASH_BORDER, (DASH_X + 10, 32), (WINDOW_W - 10, 32), 1)
 
         y = 40
+
+        # ---- Run Identity ----
+        id_font = self.fonts.get(10)
+        self.screen.blit(id_font.render(f"Class: {self.player_class}", True, TEXT_COLOR), (DASH_X + 12, y))
+        y += 14
+        self.screen.blit(
+            id_font.render(
+                f"Gen {self.generation}  Age {self.age_years}  LifeCap {self.lifespan_years}",
+                True,
+                DIM_TEXT,
+            ),
+            (DASH_X + 12, y),
+        )
+        y += 14
+        self.screen.blit(
+            id_font.render(f"Partner: {self.partner_name} ({self._bond_label()})", True, TEXT_COLOR),
+            (DASH_X + 12, y),
+        )
+        y += 14
+        self.screen.blit(
+            id_font.render(
+                f"Reputation: {self._reputation_label()} ({self.reputation_points:+d})", True, DIM_TEXT
+            ),
+            (DASH_X + 12, y),
+        )
+        y += 14
+        self.screen.blit(
+            id_font.render(f"Stage: {self._current_grade_band()}  Zone: {self._current_zone()[:16]}", True, DIM_TEXT),
+            (DASH_X + 12, y),
+        )
+        y += 16
+        draw_bar(
+            self.screen,
+            DASH_X + 12,
+            y,
+            140,
+            8,
+            self.partner_bond,
+            lerp_color((70, 70, 90), (120, 240, 165), self.partner_bond),
+        )
+        y += 12
+        self.screen.blit(id_font.render(f"Mats: {self._material_summary()}", True, DIM_TEXT), (DASH_X + 12, y))
+        y += 14
+        quest = self._active_band_quest()
+        prog = self._active_band_progress()
+        qline = (
+            f"Quest: {quest['title'][:16]} "
+            f"E{prog['explore']}/{quest['requirements']['explore']} "
+            f"H{prog['help']}/{quest['requirements']['help']} "
+            f"C{prog['craft']}/{quest['requirements']['craft']}"
+        )
+        self.screen.blit(self.fonts.get(9).render(qline, True, (150, 192, 225)), (DASH_X + 12, y))
+        y += 16
+
+        sk = self.nature_skills
+        skills_line = f"Skills Fg{sk['foraging']} Wd{sk['woodcraft']} Ec{sk['ecology']} In{sk['inscription']}"
+        self.screen.blit(self.fonts.get(9).render(skills_line, True, (170, 214, 186)), (DASH_X + 12, y))
+        y += 12
+
+        auto_state = "ON" if self.autonomy_enabled else "OFF"
+        self.screen.blit(
+            self.fonts.get(9).render(f"Companion Free-Will: {auto_state}", True, (170, 214, 186)),
+            (DASH_X + 12, y),
+        )
+        y += 12
+        if self.autonomy_log:
+            last_auto = self.autonomy_log[-1][:34]
+            self.screen.blit(self.fonts.get(9).render(f"Last Auto: {last_auto}", True, DIM_TEXT), (DASH_X + 12, y))
+            y += 12
 
         # ---- Party Portraits ----
         section_font = self.fonts.get(11, bold=True)
@@ -2023,6 +3200,166 @@ from engine import Stats
 
 
 # ---------------------------------------------------------------------------
+# AI Autopilot — Virtual Keyboard for Self-Play
+# ---------------------------------------------------------------------------
+class AIPilot:
+    """AI autopilot that plays the game by injecting pygame key events.
+
+    Maps game telemetry to decisions:
+    - In dialogue: advance (Enter)
+    - In choices: pick based on tongue proficiency bias + exploration
+    - In battle: weighted action selection
+    - Generates training data as a side effect
+
+    Toggle with F8 in-game.
+    """
+
+    def __init__(self, game: AethermoorGame):
+        self.game = game
+        self.enabled = False
+        self.action_cooldown = 0.0
+        self.min_delay = 0.6      # Seconds between actions (readable pace)
+        self.battle_delay = 0.4   # Faster in battle
+        self.total_actions = 0
+        self.strategy = "balanced"  # balanced | aggressive | cautious
+
+    def toggle(self) -> str:
+        """Toggle autopilot on/off."""
+        self.enabled = not self.enabled
+        return "ON" if self.enabled else "OFF"
+
+    def tick(self, dt: float) -> None:
+        """Called every frame. Decides whether to inject an action."""
+        if not self.enabled:
+            return
+
+        self.action_cooldown -= dt
+        if self.action_cooldown > 0:
+            return
+
+        key = self._decide_action()
+        if key is not None:
+            event = pygame.event.Event(pygame.KEYDOWN, key=key)
+            pygame.event.post(event)
+            self.total_actions += 1
+            delay = self.battle_delay if self.game.battle.active else self.min_delay
+            self.action_cooldown = delay
+
+    def _decide_action(self) -> Optional[int]:
+        """Pick the next key to press based on game state."""
+        g = self.game
+
+        # Title screen — just press Enter
+        if g.game_phase == "title":
+            return pygame.K_RETURN
+
+        # Paused — resume
+        if g.paused:
+            return pygame.K_RETURN
+
+        # Battle
+        if g.battle.active:
+            return self._decide_battle_action()
+
+        # Transitioning — wait
+        if g.transitioning:
+            return None
+
+        # Workshop open — close it
+        if g.workshop_open:
+            return pygame.K_ESCAPE
+
+        # Choices showing — pick one
+        if g.scene.showing_choices:
+            return self._decide_choice()
+
+        # Dialogue — advance
+        return pygame.K_RETURN
+
+    def _decide_choice(self) -> int:
+        """Pick a choice based on tongue proficiency and exploration strategy."""
+        g = self.game
+        choices = g.scene.choices
+        if not choices:
+            return pygame.K_RETURN
+
+        # Score each choice
+        scores: List[float] = []
+        for i, (label, action, tongue, layers) in enumerate(choices):
+            score = 1.0
+
+            # Bias toward tongues we're good at (exploitation)
+            if g.party:
+                prof = g.party[0].stats.tongue_prof.get(tongue, 0.0)
+                score += prof * 0.5
+
+            # Exploration bonus for varied tongues
+            score += random.random() * 0.4
+
+            # Strategy modifiers
+            if self.strategy == "aggressive":
+                if "fight" in action or "rush" in action:
+                    score += 0.6
+            elif self.strategy == "cautious":
+                if "help" in action or "calm" in action or "promise" in action:
+                    score += 0.5
+
+            # Favor class-defining choices (earth_night)
+            if action.startswith("class_") and tongue in ("CA", "DR", "KO"):
+                score += 0.3
+
+            scores.append(score)
+
+        # Weighted random selection
+        total = sum(scores)
+        if total <= 0:
+            best = 0
+        else:
+            r = random.random() * total
+            cumulative = 0.0
+            best = 0
+            for i, s in enumerate(scores):
+                cumulative += s
+                if r <= cumulative:
+                    best = i
+                    break
+
+        # Navigate to selected choice then confirm
+        g.scene.selected_choice = best
+        return pygame.K_RETURN
+
+    def _decide_battle_action(self) -> Optional[int]:
+        """Pick a battle action."""
+        b = self.game.battle
+
+        # Victory/defeat — continue
+        if b.victory or b.defeat:
+            return pygame.K_RETURN
+
+        # Enemy turn — wait
+        if not b.is_player_turn:
+            return None
+
+        # Target selection mode — pick first alive enemy
+        if b.selecting_target:
+            return pygame.K_RETURN
+
+        # Pick action: prefer spells if MP available, otherwise attack
+        actions = b.get_actions()
+        if not actions:
+            return None
+
+        if len(actions) > 2 and random.random() < 0.5:
+            # Use a spell
+            spell_idx = random.randint(1, len(actions) - 2)
+            b.selected_action = spell_idx
+        else:
+            b.selected_action = 0  # Attack
+
+        return pygame.K_RETURN
+
+
+# ---------------------------------------------------------------------------
 # Entry Point
 # ---------------------------------------------------------------------------
 def main() -> None:
@@ -2037,15 +3374,44 @@ def main() -> None:
     print("    Arrow Keys / WASD  -  Navigate menus")
     print("    Enter / Space      -  Advance / Select")
     print("    1-7                -  Quick-select choice")
-    print("    Tab                -  Toggle dashboard detail")
-    print("    Escape             -  Pause menu")
-    print("    B                  -  Test battle encounter")
+    print("    Tab                -  Dashboard detail")
+    print("    Esc                -  Pause menu")
+    print("    B                  -  Test battle")
+    print("    F6                 -  Script Lab")
+    print("    F7                 -  Companion free-will")
+    print("    F8                 -  AI Autopilot")
     print()
 
+    ai_mode = "--ai" in sys.argv or "--autopilot" in sys.argv
     game = AethermoorGame()
+    pilot = AIPilot(game)
+
+    if ai_mode:
+        pilot.enabled = True
+        print("  [AI AUTOPILOT ENABLED]")
+        print()
+
+    # Patch the game to know about the pilot
+    _original_update = game._update
+    _original_handle_key = game._handle_key
+
+    def _patched_update(dt: float) -> None:
+        pilot.tick(dt)
+        _original_update(dt)
+
+    def _patched_handle_key(key: int) -> None:
+        if key == pygame.K_F8:
+            state = pilot.toggle()
+            game.workshop_message = f"AI Autopilot: {state} ({pilot.total_actions} actions)"
+            return
+        _original_handle_key(key)
+
+    game._update = _patched_update
+    game._handle_key = _patched_handle_key
     game.run()
 
-    print("\n  Session complete. Aethermoor awaits your return.\n")
+    print(f"\n  Session complete. AI took {pilot.total_actions} actions.")
+    print("  Aethermoor awaits your return.\n")
 
 
 if __name__ == "__main__":
