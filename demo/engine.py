@@ -878,6 +878,10 @@ class GamePhase(Enum):
     BATTLE         = auto()   # Battle mode
     EVOLUTION      = auto()   # Evolution sequence
     MENU           = auto()   # Pause menu
+    OVERWORLD      = auto()   # Tile-based overworld exploration
+    DUNGEON        = auto()   # Tower dungeon climbing
+    PARTY_SELECT   = auto()   # Party member selection screen
+    DIALOGUE       = auto()   # NPC dialogue / PivotKnowledge interaction
 
 
 @dataclass
@@ -1142,7 +1146,7 @@ def selftest() -> None:
               len(state.dialogue_queue) > 0)
 
     # 9. Game phases
-    check("8 game phases", len(GamePhase) == 9)
+    check("13 game phases", len(GamePhase) == 13)
 
     # 10. Palette colors
     check("6 tongue colors", len(Palette.TONGUE_COLORS) == 6)

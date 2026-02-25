@@ -88,8 +88,8 @@ metadata:
     app: scbe-gateway
     ip-tier: public
   annotations:
-    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
-    service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+    cloud.google.com/neg: '{"ingress": true}'
+    cloud.google.com/backend-config: '{"default": "scbe-gateway-backend"}'
 spec:
   type: LoadBalancer
   selector:

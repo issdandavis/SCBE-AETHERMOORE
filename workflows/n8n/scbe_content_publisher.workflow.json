@@ -106,11 +106,10 @@
       "parameters": {
         "method": "POST",
         "url": "https://api.twitter.com/2/tweets",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
+            { "name": "Authorization", "value": "Bearer {{ $env.X_BEARER_TOKEN }}" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
@@ -175,11 +174,11 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.github.com/repos/={{ $env.GITHUB_REPO }}/issues",
+        "url": "https://api.github.com/repos/{{ $env.GITHUB_REPO }}/issues",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "Authorization", "value": "Bearer {{ $env.GITHUB_TOKEN }}" },
+            { "name": "Authorization", "value": "token {{ $env.GITHUB_TOKEN }}" },
             { "name": "X-GitHub-Api-Version", "value": "2022-11-28" },
             { "name": "Content-Type", "value": "application/json" }
           ]
