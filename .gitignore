@@ -102,3 +102,7 @@ artifacts/system-audit/
 demo/training_output/
 training/runs/
 scripts/*.bak
+.npm-cache/
+artifacts/npm-pack/
+artifacts/shopify-both-side/
+artifacts/social/

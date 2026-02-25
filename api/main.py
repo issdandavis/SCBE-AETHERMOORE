@@ -38,6 +38,35 @@ from api.metering import (
     export_monthly_billable_usage,
     metering_store,
 )
+from api.validation import run_nextgen_action_validation
+
+try:
+    from src.api.mesh_routes import mesh_router
+except Exception:
+    mesh_router = None
+
+try:
+    from spiralverse_core import EnvelopeCore
+except Exception:
+    EnvelopeCore = None
+
+try:
+    from spiralverse_sdk import HarmonicVerifier
+except Exception:
+    HarmonicVerifier = None
+
+try:
+    from src.cloud.multi_cloud_agents import (
+        CloudConfig,
+        CloudProvider,
+        MultiCloudOrchestratorAgent,
+        CloudRunSessionManager,
+    )
+except Exception:
+    CloudConfig = None
+    CloudProvider = None
+    MultiCloudOrchestratorAgent = None
+    CloudRunSessionManager = None
 
 # Import persistence layer
 try:
@@ -72,6 +101,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Include Semantic Mesh router (embryonic intake + tongue-space KG)
+if mesh_router is not None:
+    app.include_router(mesh_router)
+
 # API Key authentication
 API_KEY_HEADER = APIKeyHeader(name="SCBE_api_key", auto_error=False)
 
@@ -100,6 +133,8 @@ VALID_API_KEYS = _load_api_keys()
 AGENTS_STORE: Dict[str, dict] = {}
 DECISIONS_STORE: Dict[str, dict] = {}
 CONSENSUS_STORE: Dict[str, dict] = {}
+ORCHESTRATOR: Optional[Any] = None
+SESSION_MANAGER: Optional[Any] = None
 
 # =============================================================================
 # Models
@@ -179,6 +214,28 @@ class HealthResponse(BaseModel):
     checks: Dict[str, str]
 
 
+class SpiralverseMeshRequest(BaseModel):
+    tongue: str = Field(default="KO", description="Sacred Tongue route")
+    origin: str = Field(default="api", description="Origin service identifier")
+    payload: Dict[str, Any] = Field(default_factory=dict, description="Mesh payload")
+    trust_score: float = Field(default=0.7, ge=0.0, le=1.0)
+    action: str = Field(default="mesh_sync")
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
+class FailoverRequest(BaseModel):
+    from_cloud: str = Field(default="aws")
+    to_cloud: str = Field(default="gcp")
+    agent_types: List[str] = Field(default_factory=list)
+
+
+class SessionStartRequest(BaseModel):
+    agent_id: str
+    cloud: str = Field(default="gcp")
+    ttl_seconds: int = Field(default=1800, ge=60, le=86400)
+    context: Dict[str, Any] = Field(default_factory=dict)
+
+
 # =============================================================================
 # Authentication
 # =============================================================================
@@ -189,6 +246,27 @@ async def verify_api_key(api_key: str = Security(API_KEY_HEADER)) -> str:
     if api_key not in VALID_API_KEYS:
         raise HTTPException(status_code=403, detail="Invalid API key")
     return VALID_API_KEYS[api_key]
+
+
+def _get_orchestrator() -> Optional[Any]:
+    global ORCHESTRATOR
+    if ORCHESTRATOR is not None:
+        return ORCHESTRATOR
+    if MultiCloudOrchestratorAgent is None or CloudConfig is None or CloudProvider is None:
+        return None
+    cfg = CloudConfig(provider=CloudProvider.LOCAL, region="local-dev")
+    ORCHESTRATOR = MultiCloudOrchestratorAgent(cloud_config=cfg)
+    return ORCHESTRATOR
+
+
+def _get_session_manager() -> Optional[Any]:
+    global SESSION_MANAGER
+    if SESSION_MANAGER is not None:
+        return SESSION_MANAGER
+    if CloudRunSessionManager is None:
+        return None
+    SESSION_MANAGER = CloudRunSessionManager()
+    return SESSION_MANAGER
 
 
 # =============================================================================
@@ -334,14 +412,16 @@ async def authorize(
     trust_score = agent["trust_score"]
     sensitivity = request.context.get("sensitivity", 0.5) if request.context else 0.5
 
-    # Run 14-layer pipeline
-    decision, score, explanation = scbe_14_layer_pipeline(
+    # Run unified validator (14-layer hyperbolic + Symphonic hallucination gate).
+    decision_str, score, explanation = run_nextgen_action_validation(
         agent_id=request.agent_id,
         action=request.action,
         target=request.target,
         trust_score=trust_score,
-        sensitivity=sensitivity
+        sensitivity=sensitivity,
+        context=request.context or {},
     )
+    decision = Decision(decision_str)
 
     # Generate decision ID and store
     decision_id = f"dec_{uuid.uuid4().hex[:12]}"
@@ -583,6 +663,153 @@ async def health_check():
 
 
 # =============================================================================
+# Mesh / Multi-Cloud Endpoints
+# =============================================================================
+
+@app.post("/v1/spiralverse/mesh", tags=["Spiralverse"])
+async def spiralverse_mesh(
+    request: SpiralverseMeshRequest,
+    tenant: str = Depends(verify_api_key),
+):
+    """
+    Spiralverse mesh packet seal/verify endpoint.
+
+    Uses EnvelopeCore for packet integrity and (optionally) HarmonicVerifier for
+    resonant gate scoring.
+    """
+    if EnvelopeCore is None:
+        raise HTTPException(status_code=503, detail="Spiralverse envelope runtime unavailable")
+
+    secret_key = hashlib.sha256(f"{tenant}:{request.origin}".encode("utf-8")).digest()
+    envelope = EnvelopeCore.seal(
+        tongue=request.tongue,
+        origin=request.origin,
+        payload=request.payload,
+        secret_key=secret_key,
+    )
+    opened = EnvelopeCore.verify_and_open(envelope, secret_key)
+    envelope_ok = not (isinstance(opened, dict) and opened.get("error") == "NOISE")
+
+    harmonic = {"available": False, "resonant": True, "score": 0.0}
+    if HarmonicVerifier is not None:
+        verifier = HarmonicVerifier(
+            kyber_shared_secret=hashlib.sha256(tenant.encode("utf-8")).digest(),
+            dilithium_public_key=hashlib.sha256(request.origin.encode("utf-8")).digest(),
+        )
+        resonant, score = verifier.play_chord(
+            source_id=request.origin.encode("utf-8"),
+            action=request.action,
+            auth_level=2 if request.trust_score >= 0.6 else 4,
+            state_history=["mesh_init", request.action, "mesh_verify"],
+            metadata=request.metadata,
+            message=json.dumps(request.payload, sort_keys=True).encode("utf-8"),
+            signature=b"mesh-signature",
+        )
+        harmonic = {"available": True, "resonant": bool(resonant), "score": round(float(score), 4)}
+
+    return {
+        "mesh_id": f"mesh_{uuid.uuid4().hex[:12]}",
+        "tenant": tenant,
+        "envelope_ok": envelope_ok,
+        "harmonic": harmonic,
+        "envelope": envelope,
+        "opened_payload": opened if envelope_ok else None,
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+    }
+
+
+@app.post("/v1/internal/failover", tags=["Multi-Cloud"])
+async def trigger_failover(
+    request: FailoverRequest,
+    tenant: str = Depends(verify_api_key),
+):
+    """Trigger cross-cloud routing failover for orchestrated agent types."""
+    orchestrator = _get_orchestrator()
+    if orchestrator is None:
+        raise HTTPException(status_code=503, detail="Multi-cloud orchestrator runtime unavailable")
+    result = await orchestrator.process(
+        {
+            "type": "failover",
+            "from_cloud": request.from_cloud,
+            "to_cloud": request.to_cloud,
+            "agent_types": request.agent_types,
+            "requested_by": tenant,
+        },
+        {},
+    )
+    return result
+
+
+@app.post("/v1/sessions/start", tags=["Multi-Cloud"])
+async def start_cloud_session(
+    request: SessionStartRequest,
+    tenant: str = Depends(verify_api_key),
+):
+    """Start a Cloud Run-style stateful session."""
+    manager = _get_session_manager()
+    if manager is None:
+        raise HTTPException(status_code=503, detail="Session manager runtime unavailable")
+    return manager.start_session(
+        agent_id=request.agent_id,
+        cloud=request.cloud,
+        ttl_seconds=request.ttl_seconds,
+        context={"tenant": tenant, **request.context},
+    )
+
+
+@app.get("/v1/sessions/{session_id}", tags=["Multi-Cloud"])
+async def get_cloud_session(
+    session_id: str,
+    tenant: str = Depends(verify_api_key),
+):
+    """Get session state."""
+    manager = _get_session_manager()
+    if manager is None:
+        raise HTTPException(status_code=503, detail="Session manager runtime unavailable")
+    record = manager.get_session(session_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if record.get("context", {}).get("tenant") != tenant:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    return record
+
+
+@app.post("/v1/sessions/{session_id}/touch", tags=["Multi-Cloud"])
+async def touch_cloud_session(
+    session_id: str,
+    tenant: str = Depends(verify_api_key),
+):
+    """Extend session heartbeat."""
+    manager = _get_session_manager()
+    if manager is None:
+        raise HTTPException(status_code=503, detail="Session manager runtime unavailable")
+    record = manager.touch_session(session_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if record.get("context", {}).get("tenant") != tenant:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    return record
+
+
+@app.delete("/v1/sessions/{session_id}", tags=["Multi-Cloud"])
+async def end_cloud_session(
+    session_id: str,
+    tenant: str = Depends(verify_api_key),
+):
+    """Terminate session."""
+    manager = _get_session_manager()
+    if manager is None:
+        raise HTTPException(status_code=503, detail="Session manager runtime unavailable")
+    record = manager.get_session(session_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if record.get("context", {}).get("tenant") != tenant:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    manager.end_session(session_id)
+    return {"status": "ended", "session_id": session_id}
+
+
+# =============================================================================
 # Metrics & Monitoring Endpoints
 # =============================================================================
 
@@ -734,6 +961,87 @@ async def acknowledge_alert(
         raise HTTPException(status_code=404, detail="Alert not found")
 
     return {"status": "acknowledged", "alert_id": alert_id}
+
+
+# =============================================================================
+# AetherNet Game Bridge (n8n <-> Aethermoor Game)
+# =============================================================================
+
+class GameActionRequest(BaseModel):
+    action_type: str = Field(
+        ...,
+        description="Action: spawn_enemy, give_item, trigger_scene, send_dialogue, modify_stat, tv_show, training_result, world_event",
+    )
+    data: Dict[str, Any] = Field(default_factory=dict, description="Action payload")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "action_type": "send_dialogue",
+                "data": {"speaker": "POLLY", "text": "The AetherNet stirs..."},
+            }
+        }
+
+
+@app.post("/v1/game/action", tags=["AetherNet"])
+async def push_game_action(
+    request: GameActionRequest,
+    tenant: str = Depends(verify_api_key),
+):
+    """
+    Push an action into the running Aethermoor game via AetherNet.
+
+    n8n workflows call this to trigger in-game effects:
+    - spawn_enemy: {name, tongue, hp, attack}
+    - give_item: {item, amount}
+    - trigger_scene: {scene_id}
+    - send_dialogue: {speaker, text}
+    - modify_stat: {stat, delta}
+    - tv_show: {show, content, channel}
+    - training_result: {metrics: {loss, accuracy, ...}}
+    """
+    try:
+        from demo.n8n_bridge import GameAction, get_shared_bus
+    except ImportError:
+        raise HTTPException(status_code=503, detail="AetherNet bridge not available")
+
+    bus = get_shared_bus()
+    if bus is None:
+        raise HTTPException(status_code=503, detail="Game not running")
+
+    action_id = f"act_{uuid.uuid4().hex[:8]}"
+    action = GameAction(
+        action_type=request.action_type,
+        action_id=action_id,
+        data=request.data,
+    )
+    queued = bus.put_action(action)
+
+    if not queued:
+        raise HTTPException(status_code=429, detail="Action queue full")
+
+    logger.info(json.dumps({
+        "event": "aethernet_action_queued",
+        "action_id": action_id,
+        "action_type": request.action_type,
+        "tenant": tenant,
+    }))
+
+    return {"action_id": action_id, "status": "queued"}
+
+
+@app.get("/v1/game/status", tags=["AetherNet"])
+async def game_bridge_status(tenant: str = Depends(verify_api_key)):
+    """Get AetherNet bridge status (game event bus stats)."""
+    try:
+        from demo.n8n_bridge import get_shared_bus
+    except ImportError:
+        return {"online": False, "message": "AetherNet bridge not installed"}
+
+    bus = get_shared_bus()
+    if bus is None:
+        return {"online": False, "message": "Game not running"}
+    return bus.status()
 
 
 # =============================================================================

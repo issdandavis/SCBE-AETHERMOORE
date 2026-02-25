@@ -30,11 +30,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build
+      - name: Prepublish cleanup + build
+        run: npm run publish:prepare
 
       - name: Run tests
         run: npm test
+
+      - name: Strict tarball guard
+        run: npm run publish:check:strict
 
       - name: Publish to NPM
         run: npm publish --provenance --access public
