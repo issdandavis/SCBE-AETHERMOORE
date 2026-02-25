@@ -39,6 +39,11 @@ from src.crypto.sacred_tongues import SacredTongueTokenizer
 from src.storage import BlobNotFoundError, SealedBlobRecord, get_storage_backend
 from src.api.hydra_routes import hydra_router, init_hydra_spine
 
+try:
+    from src.api.mesh_routes import mesh_router
+except ImportError:
+    mesh_router = None
+
 # ============================================================================
 # APP INITIALIZATION
 # ============================================================================
@@ -61,6 +66,10 @@ app.add_middleware(
 
 # Include HYDRA router
 app.include_router(hydra_router)
+
+# Include Semantic Mesh router (embryonic intake + tongue-space KG)
+if mesh_router is not None:
+    app.include_router(mesh_router)
 
 # ============================================================================
 # RATE LIMITING

@@ -1,23 +1,29 @@
 name: Deploy SCBE to GKE
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'api/**'
+      - 'src/**'
+      - 'k8s/deployment.yaml'
+      - 'k8s/service.yaml'
+      - 'k8s/namespace.yaml'
+      - 'Dockerfile.api'
+      - '.github/workflows/deploy-gke.yml'
   workflow_dispatch:
     inputs:
-      environment:
-        description: 'Deployment environment'
-        required: true
-        default: 'staging'
-        type: choice
-        options:
-          - production
-          - staging
+      image_tag:
+        description: 'Docker image tag (default: commit SHA)'
+        required: false
+        default: ''
 
 env:
-  PROJECT_ID: studio-6928670609-fdd4c
-  GKE_CLUSTER: test-scbecluser
-  GKE_ZONE: us-west1
-  DEPLOYMENT_NAME: scbe-aethermoore
-  IMAGE: gcr.io/studio-6928670609-fdd4c/scbe-aethermoore
+  PROJECT_ID: gen-lang-client-0103521392
+  GKE_CLUSTER: scbe-aethermoore-cluster
+  GKE_ZONE: us-central1
+  IMAGE: gcr.io/gen-lang-client-0103521392/scbe-aethermoore
+  NAMESPACE: scbe-aethermoore
 
 jobs:
   build-and-deploy:
@@ -28,62 +34,100 @@ jobs:
       id-token: write
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Install dependencies
-        run: npm ci
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        project_id: ${{ env.PROJECT_ID }}
 
-      - name: Build
-        run: npm run build
+    - name: Configure Docker for GCR
+      run: gcloud auth configure-docker gcr.io --quiet
 
-      - name: Run tests
-        run: npm test
+    - name: Determine image tag
+      id: tag
+      run: |
+        if [ -n "${{ github.event.inputs.image_tag }}" ]; then
+          echo "tag=${{ github.event.inputs.image_tag }}" >> "$GITHUB_OUTPUT"
+        else
+          echo "tag=${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
+        fi
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+    - name: Build Docker image
+      run: |
+        docker build \
+          -f Dockerfile.api \
+          -t "$IMAGE:${{ steps.tag.outputs.tag }}" \
+          -t "$IMAGE:latest" \
+          .
 
-      - name: Setup gcloud CLI
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: ${{ env.PROJECT_ID }}
+    - name: Push Docker image
+      run: |
+        docker push "$IMAGE:${{ steps.tag.outputs.tag }}"
+        docker push "$IMAGE:latest"
 
-      - name: Configure Docker for GCR
-        run: gcloud auth configure-docker gcr.io --quiet
+    - name: Get GKE credentials
+      uses: google-github-actions/get-gke-credentials@v2
+      with:
+        cluster_name: ${{ env.GKE_CLUSTER }}
+        location: ${{ env.GKE_ZONE }}
+        project_id: ${{ env.PROJECT_ID }}
 
-      - name: Build Docker image
-        run: |
-          docker build -t ${{ env.IMAGE }}:${{ github.sha }} .
-          docker tag ${{ env.IMAGE }}:${{ github.sha }} ${{ env.IMAGE }}:latest
+    - name: Create namespace
+      run: kubectl apply -f k8s/namespace.yaml
 
-      - name: Push Docker image
-        run: |
-          docker push ${{ env.IMAGE }}:${{ github.sha }}
-          docker push ${{ env.IMAGE }}:latest
+    - name: Ensure secrets exist
+      run: |
+        kubectl get secret scbe-secrets -n $NAMESPACE 2>/dev/null || \
+        kubectl create secret generic scbe-secrets \
+          -n $NAMESPACE \
+          --from-literal=api-key="${{ secrets.SCBE_API_KEY }}" \
+          --from-literal=hf-token="${{ secrets.HF_TOKEN }}"
 
-      - name: Get GKE credentials
-        uses: google-github-actions/get-gke-credentials@v2
-        with:
-          cluster_name: ${{ env.GKE_CLUSTER }}
-          location: ${{ env.GKE_ZONE }}
-          project_id: ${{ env.PROJECT_ID }}
+    - name: Deploy core API
+      run: |
+        kubectl apply -f k8s/deployment.yaml -f k8s/service.yaml
+        kubectl set image deployment/scbe-aethermoore \
+          scbe-api="$IMAGE:${{ steps.tag.outputs.tag }}" \
+          -n $NAMESPACE
 
-      - name: Deploy to GKE
-        run: |
-          kubectl apply -f k8s/
-          kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} \
-            ${{ env.DEPLOYMENT_NAME }}=${{ env.IMAGE }}:${{ github.sha }}
-          kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }}
+    - name: Wait for rollout
+      run: |
+        kubectl rollout status deployment/scbe-aethermoore \
+          -n $NAMESPACE --timeout=300s
 
-      - name: Verify deployment
-        run: |
-          kubectl get pods -l app=${{ env.DEPLOYMENT_NAME }}
-          kubectl get services -l app=${{ env.DEPLOYMENT_NAME }}
+    - name: Verify health
+      run: |
+        echo "Waiting for external IP..."
+        for i in $(seq 1 30); do
+          EXTERNAL_IP=$(kubectl get svc scbe-aethermoore-service \
+            -n $NAMESPACE \
+            -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null)
+          if [ -n "$EXTERNAL_IP" ]; then
+            echo "External IP: $EXTERNAL_IP"
+            curl -sf "http://$EXTERNAL_IP/v1/health" \
+              && echo " - Health OK" \
+              || echo " - Health check pending (service starting)"
+            break
+          fi
+          echo "  Waiting for LoadBalancer IP... ($i/30)"
+          sleep 10
+        done
+
+    - name: Print deployment info
+      if: always()
+      run: |
+        echo "=== Deployment Status ==="
+        kubectl get deployments -n $NAMESPACE
+        echo ""
+        echo "=== Pods ==="
+        kubectl get pods -n $NAMESPACE
+        echo ""
+        echo "=== Services ==="
+        kubectl get svc -n $NAMESPACE
