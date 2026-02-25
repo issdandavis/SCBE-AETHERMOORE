@@ -23,11 +23,11 @@ on:
       - 'training/**'
 
 env:
-  GCP_PROJECT_ID: studio-6928670609-fdd4c
-  GCP_REGION: us-west1
+  GCP_PROJECT_ID: gen-lang-client-0103521392
+  GCP_REGION: us-central1
   HF_MODEL_REPO: issdandavis/phdm-21d-embedding
-  GKE_CLUSTER_NAME: test-scbecluser
-  PYTHON_VERSION: '3.10'
+  GKE_CLUSTER_NAME: scbe-aethermoore-cluster
+  PYTHON_VERSION: '3.11'
 
 jobs:
   training:
