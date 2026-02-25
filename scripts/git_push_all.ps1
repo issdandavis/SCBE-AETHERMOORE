@@ -184,8 +184,7 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
 
 Generated with [Claude Code](https://claude.com/claude-code)
 '@
-        $prBodyContent = Get-Content -Path $prBodyFile -Raw
-        $prResult = gh pr create --title 'feat(hydra): multi-model training + browser squad' --body $prBodyContent 2>&1
+        $prResult = gh pr create --title 'feat(hydra): multi-model training + browser squad' --body-file $prBodyFile 2>&1
         $prResult | ForEach-Object { Log "  $_" }
         Remove-Item $prBodyFile -ErrorAction SilentlyContinue
     }
