@@ -41,6 +41,11 @@ from api.metering import (
 from api.validation import run_nextgen_action_validation
 
 try:
+    from src.api.mesh_routes import mesh_router
+except Exception:
+    mesh_router = None
+
+try:
     from spiralverse_core import EnvelopeCore
 except Exception:
     EnvelopeCore = None
@@ -95,6 +100,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include Semantic Mesh router (embryonic intake + tongue-space KG)
+if mesh_router is not None:
+    app.include_router(mesh_router)
 
 # API Key authentication
 API_KEY_HEADER = APIKeyHeader(name="SCBE_api_key", auto_error=False)

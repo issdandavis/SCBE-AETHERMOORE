@@ -1,5 +1,5 @@
 # SCBE-AETHERMOORE Kubernetes Service
-# Config Sync managed resource
+# Routes external traffic to the SCBE API pods.
 apiVersion: v1
 kind: Service
 metadata:
@@ -8,11 +8,13 @@ metadata:
   labels:
     app: scbe-aethermoore
     managed-by: config-sync
+  annotations:
+    cloud.google.com/neg: '{"ingress": true}'
 spec:
   type: LoadBalancer
   ports:
     - port: 80
-      targetPort: 80
+      targetPort: 8080
       protocol: TCP
       name: http
   selector:
