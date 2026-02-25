@@ -25,6 +25,7 @@ from .streams import (
 from .game_hooks import GameHooks
 from .shopify_bridge import ShopifyBridge, ShopProduct, CheckoutSession, MOCK_CATALOG
 from .publisher_bridge import PublisherBridge, PublishResult
+from .rwp_settlement import RWPSettlement, SettlementEnvelope
 
 __all__ = [
     # Core
@@ -50,4 +51,7 @@ __all__ = [
     # Publisher
     "PublisherBridge",
     "PublishResult",
+    # RWP Settlement
+    "RWPSettlement",
+    "SettlementEnvelope",
 ]

@@ -429,9 +429,6 @@ def layer_12_harmonic_scaling(
         phase_deviation: Phase deviation (>= 0, default 0)
 
     Returns:
-        Monotone cost score >= 1
-    """
-    return float(1.0 + d + 2.0 * phase_deviation)
         Cost amplification score >= 1
     """
     d_eff = max(0.0, float(d)) + 2.0 * max(0.0, float(phase_deviation))
@@ -448,12 +445,6 @@ def layer_12_inverse(score: float, R: float = PHI) -> float:
     if score < 1.0:
         return 0.0
     return float(score - 1.0)
-    d = sqrt(log_R(score))
-    """
-    if score < 1.0:
-        return 0.0
-    base = max(float(R), 1.0 + EPS)
-    return float(np.sqrt(np.log(score) / np.log(base)))
 
 
 def verify_monotonicity(n_tests: int = 1000, R: float = PHI) -> Tuple[bool, int]:
