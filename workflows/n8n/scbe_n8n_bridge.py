@@ -11,6 +11,12 @@ Endpoints:
   POST /v1/telemetry/post-result  — Log post telemetry
   POST /v1/training/ingest        — Ingest game events into HF training pipeline
   GET  /v1/training/status        — Training pipeline status
+  POST /v1/vertex/train           — Submit Vertex AI training job
+  GET  /v1/vertex/job/{id}        — Poll Vertex AI job status
+  POST /v1/vertex/predict         — Run Vertex AI prediction
+  POST /v1/vertex/push-to-hf     — Push Vertex artifacts to HuggingFace
+  POST /v1/hf/pull-model          — Pull model from HuggingFace for Vertex
+  GET  /v1/vertex/models           — List Vertex AI models
   GET  /health                    — Health check
 
 Start:
@@ -27,17 +33,19 @@ import time
 import uuid
 from typing import Any, Dict, List, Optional
 
-# Resolve project paths
+# Resolve project paths — src/ MUST come before project root to avoid
+# the root symphonic_cipher/ shadowing src/symphonic_cipher/ (see CLAUDE.md)
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _PROJECT = os.path.abspath(os.path.join(_HERE, "..", ".."))
 _SRC = os.path.join(_PROJECT, "src")
+_DEMO = os.path.join(_PROJECT, "demo")
+# Insert src first so concept_blocks resolves correctly
 if _SRC not in sys.path:
     sys.path.insert(0, _SRC)
-if _PROJECT not in sys.path:
-    sys.path.insert(0, _PROJECT)
-_DEMO = os.path.join(_PROJECT, "demo")
 if _DEMO not in sys.path:
     sys.path.insert(0, _DEMO)
+if _PROJECT not in sys.path:
+    sys.path.append(_PROJECT)  # append, not insert — avoid shadowing
 
 logger = logging.getLogger("scbe_n8n_bridge")
 
@@ -418,3 +426,289 @@ async def training_status(x_api_key: Optional[str] = Header(None)):
     _check_key(x_api_key)
     trainer = _get_trainer()
     return trainer.get_status_dict()
+
+
+# ---------------------------------------------------------------------------
+#  Vertex AI <-> HuggingFace bridge
+# ---------------------------------------------------------------------------
+
+_GCP_PROJECT = os.environ.get("GCP_PROJECT_ID", "gen-lang-client-0103521392")
+_GCP_REGION = os.environ.get("GCP_REGION", "us-central1")
+_HF_TOKEN = os.environ.get("HF_TOKEN", "")
+_HF_MODEL_REPO = os.environ.get("HF_MODEL_REPO", "issdandavis/phdm-21d-embedding")
+_HF_DATASET_REPO = os.environ.get("HF_DATASET_REPO", "issdandavis/scbe-aethermoore-datasets")
+
+# Track submitted Vertex jobs
+_vertex_jobs: Dict[str, Dict[str, Any]] = {}
+
+
+def _get_aiplatform():
+    """Lazy import and initialise google.cloud.aiplatform."""
+    try:
+        from google.cloud import aiplatform
+        aiplatform.init(project=_GCP_PROJECT, location=_GCP_REGION)
+        return aiplatform
+    except ImportError:
+        raise HTTPException(
+            status_code=503,
+            detail="google-cloud-aiplatform not installed. Run: pip install google-cloud-aiplatform",
+        )
+
+
+def _get_hf_api():
+    """Return a HuggingFace Hub API client."""
+    try:
+        from huggingface_hub import HfApi
+        return HfApi(token=_HF_TOKEN or None)
+    except ImportError:
+        raise HTTPException(
+            status_code=503,
+            detail="huggingface_hub not installed. Run: pip install huggingface_hub",
+        )
+
+
+class VertexTrainRequest(BaseModel):
+    """Submit a Vertex AI custom training job."""
+    display_name: str = "scbe-training-job"
+    container_image_uri: str = "us-docker.pkg.dev/vertex-ai/training/pytorch-gpu.2-1:latest"
+    model_display_name: Optional[str] = None
+    training_data_uri: Optional[str] = None  # gs:// path
+    args: List[str] = []
+    machine_type: str = "n1-standard-4"
+    accelerator_type: Optional[str] = None  # e.g. NVIDIA_TESLA_T4
+    accelerator_count: int = 0
+    push_to_hf: bool = True  # Auto-push result to HuggingFace
+    hf_repo: Optional[str] = None
+
+
+class VertexPredictRequest(BaseModel):
+    """Run a Vertex AI online prediction."""
+    endpoint_id: str
+    instances: List[Dict[str, Any]]
+    parameters: Dict[str, Any] = {}
+
+
+class HFPushRequest(BaseModel):
+    """Push local or GCS artifacts to a HuggingFace repo."""
+    local_path: Optional[str] = None  # Local dir to upload
+    gcs_uri: Optional[str] = None  # gs:// path to download first
+    hf_repo: Optional[str] = None
+    repo_type: str = "model"  # model, dataset, space
+    commit_message: str = "Vertex AI training artifacts"
+    path_in_repo: str = "."
+
+
+class HFPullRequest(BaseModel):
+    """Pull a model from HuggingFace to local or GCS."""
+    hf_repo: Optional[str] = None
+    revision: str = "main"
+    local_dir: str = "/tmp/hf_model"
+    upload_to_gcs: Optional[str] = None  # gs:// destination
+
+
+@app.post("/v1/vertex/train")
+async def vertex_train(req: VertexTrainRequest, x_api_key: Optional[str] = Header(None)):
+    """Submit a Vertex AI custom training job."""
+    _check_key(x_api_key)
+    aip = _get_aiplatform()
+
+    job_id = str(uuid.uuid4())[:8]
+
+    try:
+        job = aip.CustomContainerTrainingJob(
+            display_name=req.display_name,
+            container_uri=req.container_image_uri,
+            model_display_name=req.model_display_name or f"{req.display_name}-model",
+        )
+
+        # Run async — store the job reference
+        _vertex_jobs[job_id] = {
+            "status": "submitted",
+            "display_name": req.display_name,
+            "push_to_hf": req.push_to_hf,
+            "hf_repo": req.hf_repo or _HF_MODEL_REPO,
+            "created_at": time.time(),
+            "vertex_job": None,
+            "machine_type": req.machine_type,
+        }
+
+        # For dry-run capability, check if training data exists
+        if req.training_data_uri:
+            _vertex_jobs[job_id]["training_data"] = req.training_data_uri
+
+        # Submit the training job
+        model = job.run(
+            args=req.args,
+            replica_count=1,
+            machine_type=req.machine_type,
+            accelerator_type=req.accelerator_type if req.accelerator_count > 0 else None,
+            accelerator_count=req.accelerator_count if req.accelerator_count > 0 else None,
+            sync=False,
+        )
+
+        _vertex_jobs[job_id]["status"] = "running"
+        _vertex_jobs[job_id]["vertex_job"] = job.resource_name if hasattr(job, "resource_name") else str(job)
+
+        return {
+            "job_id": job_id,
+            "status": "running",
+            "display_name": req.display_name,
+            "vertex_resource": _vertex_jobs[job_id]["vertex_job"],
+            "push_to_hf": req.push_to_hf,
+            "hf_repo": req.hf_repo or _HF_MODEL_REPO,
+        }
+
+    except Exception as e:
+        _vertex_jobs[job_id]["status"] = "failed"
+        _vertex_jobs[job_id]["error"] = str(e)
+        raise HTTPException(status_code=500, detail=f"Vertex training submission failed: {e}")
+
+
+@app.get("/v1/vertex/job/{job_id}")
+async def vertex_job_status(job_id: str, x_api_key: Optional[str] = Header(None)):
+    """Poll Vertex AI job status."""
+    _check_key(x_api_key)
+    if job_id not in _vertex_jobs:
+        raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+    return _vertex_jobs[job_id]
+
+
+@app.post("/v1/vertex/predict")
+async def vertex_predict(req: VertexPredictRequest, x_api_key: Optional[str] = Header(None)):
+    """Run prediction against a Vertex AI endpoint."""
+    _check_key(x_api_key)
+    aip = _get_aiplatform()
+
+    try:
+        endpoint = aip.Endpoint(req.endpoint_id)
+        response = endpoint.predict(
+            instances=req.instances,
+            parameters=req.parameters,
+        )
+        return {
+            "predictions": [p if isinstance(p, dict) else {"value": p} for p in response.predictions],
+            "deployed_model_id": response.deployed_model_id,
+            "model_version_id": getattr(response, "model_version_id", None),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {e}")
+
+
+@app.post("/v1/vertex/push-to-hf")
+async def vertex_push_to_hf(req: HFPushRequest, x_api_key: Optional[str] = Header(None)):
+    """Push Vertex AI training artifacts to HuggingFace Hub."""
+    _check_key(x_api_key)
+    api = _get_hf_api()
+    repo = req.hf_repo or _HF_MODEL_REPO
+
+    try:
+        # If GCS URI provided, download first
+        local_path = req.local_path
+        if req.gcs_uri and not local_path:
+            import subprocess
+            local_path = f"/tmp/vertex_artifacts_{uuid.uuid4().hex[:8]}"
+            os.makedirs(local_path, exist_ok=True)
+            result = subprocess.run(
+                ["gsutil", "-m", "cp", "-r", req.gcs_uri, local_path],
+                capture_output=True, text=True, timeout=300,
+            )
+            if result.returncode != 0:
+                raise HTTPException(status_code=500, detail=f"GCS download failed: {result.stderr}")
+
+        if not local_path or not os.path.exists(local_path):
+            raise HTTPException(status_code=400, detail="No valid local_path or gcs_uri provided")
+
+        # Ensure repo exists
+        try:
+            api.create_repo(repo_id=repo, repo_type=req.repo_type, exist_ok=True)
+        except Exception:
+            pass  # Repo already exists
+
+        # Upload to HuggingFace
+        upload_info = api.upload_folder(
+            folder_path=local_path,
+            repo_id=repo,
+            repo_type=req.repo_type,
+            path_in_repo=req.path_in_repo,
+            commit_message=req.commit_message,
+        )
+
+        return {
+            "status": "pushed",
+            "hf_repo": repo,
+            "repo_type": req.repo_type,
+            "commit_url": str(upload_info) if upload_info else None,
+            "source": req.gcs_uri or req.local_path,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Push to HF failed: {e}")
+
+
+@app.post("/v1/hf/pull-model")
+async def hf_pull_model(req: HFPullRequest, x_api_key: Optional[str] = Header(None)):
+    """Pull a model from HuggingFace to local storage or GCS."""
+    _check_key(x_api_key)
+    api = _get_hf_api()
+    repo = req.hf_repo or _HF_MODEL_REPO
+
+    try:
+        from huggingface_hub import snapshot_download
+
+        local_dir = snapshot_download(
+            repo_id=repo,
+            revision=req.revision,
+            local_dir=req.local_dir,
+            token=_HF_TOKEN or None,
+        )
+
+        result: Dict[str, Any] = {
+            "status": "downloaded",
+            "hf_repo": repo,
+            "revision": req.revision,
+            "local_dir": str(local_dir),
+        }
+
+        # Optionally upload to GCS for Vertex AI
+        if req.upload_to_gcs:
+            import subprocess
+            gcs_result = subprocess.run(
+                ["gsutil", "-m", "cp", "-r", str(local_dir), req.upload_to_gcs],
+                capture_output=True, text=True, timeout=600,
+            )
+            if gcs_result.returncode == 0:
+                result["gcs_uri"] = req.upload_to_gcs
+                result["gcs_status"] = "uploaded"
+            else:
+                result["gcs_status"] = "failed"
+                result["gcs_error"] = gcs_result.stderr
+
+        return result
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"HF pull failed: {e}")
+
+
+@app.get("/v1/vertex/models")
+async def vertex_list_models(x_api_key: Optional[str] = Header(None)):
+    """List models registered in Vertex AI Model Registry."""
+    _check_key(x_api_key)
+    aip = _get_aiplatform()
+    try:
+        models = aip.Model.list()
+        return {
+            "models": [
+                {
+                    "display_name": m.display_name,
+                    "resource_name": m.resource_name,
+                    "create_time": str(m.create_time),
+                    "update_time": str(m.update_time),
+                }
+                for m in models
+            ],
+            "count": len(models),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"List models failed: {e}")

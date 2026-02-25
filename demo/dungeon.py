@@ -26,6 +26,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from engine import Character, EvoStage, Spell, Stats, Tongue, TONGUE_CHART
+from atla import ShardInventory, TongueShard, generate_floor_drops
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -477,6 +478,9 @@ class DungeonFloor:
         self.is_boss_floor: bool = (floor_num % 5 == 0)
         self.is_gate_boss: bool = (floor_num % 10 == 0)
         self.monsters: List[Dict[str, Any]] = []
+        self.chests_opened: int = 0
+        self.total_chests: int = 0
+        self.shard_drops: List[TongueShard] = []
         self.cleared: bool = False
 
     # ----- public API -----
@@ -546,6 +550,9 @@ class DungeonFloor:
         # Step 9: generate enemy characters
         self._generate_monsters()
 
+        # Step 10: count chests for shard generation
+        self.total_chests = int(np.sum(self.tiles == Tile.CHEST))
+
     def get_tile(self, x: int, y: int) -> int:
         """Return the tile type at (x, y). Out-of-bounds returns WALL."""
         if 0 <= x < self.width and 0 <= y < self.height:
@@ -557,6 +564,29 @@ class DungeonFloor:
         tile = self.get_tile(x, y)
         return tile in (Tile.FLOOR, Tile.MONSTER_SPAWN, Tile.EXIT_STAIR,
                         Tile.CHEST, Tile.TRAP)
+
+    def collect_shard_drops(self, shard_inv: ShardInventory,
+                            boss_killed: bool = False,
+                            gate_boss_killed: bool = False) -> List[TongueShard]:
+        """Generate and collect Tongue Shard drops for this floor.
+
+        Call after the floor is cleared or a boss is killed.
+        Returns list of newly collected shards.
+        """
+        drops = generate_floor_drops(
+            self.floor_num,
+            self.theme.value,
+            chest_count=self.total_chests,
+            boss_killed=boss_killed,
+            gate_boss_killed=gate_boss_killed,
+            already_found=shard_inv._found_names,
+        )
+        collected = []
+        for shard in drops:
+            if shard_inv.add(shard):
+                collected.append(shard)
+        self.shard_drops.extend(collected)
+        return collected
 
     # ----- private helpers -----
 
@@ -702,6 +732,7 @@ class TowerManager:
         self.floors: Dict[int, DungeonFloor] = {}
         self.floor_kills: int = 0
         self.total_kills: int = 0
+        self.shard_inventory: ShardInventory = ShardInventory()
 
     def enter_tower(self) -> DungeonFloor:
         """Enter the tower at floor 1.
@@ -792,6 +823,21 @@ class TowerManager:
         if all_dead:
             floor.cleared = True
         return all_dead
+
+    def collect_floor_shards(self) -> List[TongueShard]:
+        """Collect Tongue Shard drops from the current floor.
+
+        Automatically detects boss/gate-boss status.
+        Returns list of newly collected shards.
+        """
+        floor = self.get_current_floor()
+        if floor is None:
+            return []
+        return floor.collect_shard_drops(
+            self.shard_inventory,
+            boss_killed=floor.is_boss_floor,
+            gate_boss_killed=floor.is_gate_boss,
+        )
 
     def __repr__(self) -> str:
         return (

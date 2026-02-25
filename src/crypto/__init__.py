@@ -165,6 +165,15 @@ try:
 except ImportError:
     pass  # scipy not available — dual lattice integration disabled
 
+# Quasicrystal Lattice (Icosahedral 6D -> 3D Verification)
+from .quasicrystal_lattice import (
+    QuasicrystalLattice,
+    LatticePoint,
+    DefectReport,
+    fibonacci_gates,
+    tongue_fibonacci_gates,
+)
+
 # Sacred Eggs (Cryptographic Secret Containers)
 from .sacred_eggs import (
     SacredEgg,
@@ -283,7 +292,13 @@ __all__ = [
     "flux_state_to_ring",
     "create_session_egg",
     "ring_allows",
+    # === Quasicrystal Lattice ===
+    "QuasicrystalLattice",
+    "LatticePoint",
+    "DefectReport",
+    "fibonacci_gates",
+    "tongue_fibonacci_gates",
 ]
 
-__version__ = "3.2.5"  # Bumped for H-LWE vector encryption
+__version__ = "3.3.0"  # Quasicrystal lattice + tri-manifold integration
 

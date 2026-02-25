@@ -74,6 +74,14 @@ from overworld import OverworldManager
 from tilemap import TileType, TILE_SIZE
 from player import Direction
 from dungeon import TowerManager, DungeonFloor, generate_floor_enemies, generate_boss
+from atla import ShardInventory, TongueShard, SHARD_CATALOG
+from georama import Town
+from weapons import TongueWeapon, WeaponInventory, generate_weapon, WeaponType
+from aether_eggs import (
+    EggIncubator, SacredEgg, EggStage, EggLocation, DataPointType,
+    generate_egg_drop, StoryGenerator,
+)
+from npc_gateway import NPCGateway, get_gateway
 from pivot_knowledge import (
     PivotKnowledge, SacredLanguages, TrainingDataGenerator,
     build_npc_knowledge,
@@ -81,6 +89,7 @@ from pivot_knowledge import (
 from npc_brain import create_npc_brain, NPCBrain
 from hf_trainer import RealTimeHFTrainer, TrainingEvent, load_dotenv
 from headless import HeadlessDisplay, detect_environment, RuntimeEnv
+from save_system import save_game, load_game, list_saves, autosave, SaveSlot
 
 # Load .env for HF_TOKEN / GOOGLE_AI_KEY
 load_dotenv()
@@ -127,7 +136,7 @@ TONGUE_FULL_NAMES: Dict[str, str] = {
     "DR": "Draumric",
 }
 
-POLYPAD_APPS: List[str] = ["Home", "Contacts", "Messages", "Missions", "PC Box", "IDE"]
+POLYPAD_APPS: List[str] = ["Home", "Contacts", "Messages", "Missions", "Weapons", "Shards", "Eggs", "PC Box", "IDE"]
 
 IDE_TERMINALS: Dict[str, List[Tuple[int, int, str]]] = {
     # Tile coordinates where Enter can open CodeLab directly from overworld.
@@ -542,36 +551,42 @@ CLASS_LOADOUTS: Dict[str, Dict[str, Any]] = {
         "partner_key": "clay",
         "stat_boost": {"attack": 2, "speed": 1},
         "bond_bonus": 0.14,
+        "starter_weapon": {"tongue": "CA", "type": "staff"},
     },
     "class_cipher": {
         "name": "Cipher",
         "partner_key": "zara",
         "stat_boost": {"wisdom": 2, "max_mp": 10},
         "bond_bonus": 0.12,
+        "starter_weapon": {"tongue": "DR", "type": "blade"},
     },
     "class_warden": {
         "name": "Warden",
         "partner_key": "aria",
         "stat_boost": {"defense": 2, "max_hp": 18},
         "bond_bonus": 0.10,
+        "starter_weapon": {"tongue": "KO", "type": "gauntlet"},
     },
     "class_broker": {
         "name": "Broker",
         "partner_key": "eldrin",
         "stat_boost": {"speed": 2, "wisdom": 1},
         "bond_bonus": 0.08,
+        "starter_weapon": {"tongue": "AV", "type": "bow"},
     },
     "class_undecided": {
         "name": "Undecided",
         "partner_key": "polly",
         "stat_boost": {},
         "bond_bonus": 0.05,
+        "starter_weapon": {"tongue": "RU", "type": "blade"},
     },
     "class_polly": {
         "name": "Wildcard",
         "partner_key": "polly",
         "stat_boost": {"wisdom": 1},
         "bond_bonus": 0.16,
+        "starter_weapon": {"tongue": "UM", "type": "bow"},
     },
 }
 
@@ -1118,6 +1133,30 @@ class AethermoorGame:
         self.dungeon_player_y: int = 1
         self.dungeon_view_offset: Tuple[int, int] = (0, 0)
 
+        # Georama / Shard / Weapon systems
+        self.town: Town = Town("Starter Village")
+        self.weapon_inv: WeaponInventory = WeaponInventory()
+        self.shard_popup: Optional[TongueShard] = None
+        self.shard_popup_timer: float = 0.0
+
+        # AetherEgg system
+        self.egg_incubator: EggIncubator = EggIncubator()
+        self.egg_popup: Optional[SacredEgg] = None
+        self.egg_popup_timer: float = 0.0
+
+        # Edit mode (real-time map modding)
+        self.edit_mode: bool = False
+        self.edit_tile_type: int = 1  # Current brush (TileType.GRASS)
+        self.edit_cursor_x: int = 0
+        self.edit_cursor_y: int = 0
+
+        # Save/Load menu state
+        self.pause_mode: str = "main"   # "main", "save", "load"
+        self.save_slot_cursor: int = 1  # 1-3 (slot selection)
+        self.save_message: str = ""
+        self.save_message_timer: float = 0.0
+        self.playtime_seconds: float = 0.0  # Accumulated playtime
+
         # Game state
         self.cast = create_cast()
         self.party: List[Character] = [self.cast["izack"]]
@@ -1344,6 +1383,8 @@ class AethermoorGame:
                 "Open Contacts",
                 "Open Messages",
                 "Open Missions",
+                "Open Weapons",
+                "Open Shards",
                 "Open PC Box",
                 "Open IDE",
                 "Fleet Sync",
@@ -1354,6 +1395,41 @@ class AethermoorGame:
             return [f"{m['from']}: {m['subject']}" for m in self.polypad_messages]
         if app == "Missions":
             return [f"{m['title']} [{m['status']}]" for m in self.polypad_missions]
+        if app == "Weapons":
+            if not self.weapon_inv.weapons:
+                return ["(No weapons found)"]
+            rows = []
+            for w in self.weapon_inv.weapons:
+                tag = " [E]" if w is self.weapon_inv.equipped else ""
+                rows.append(f"{w.name} Lv{w.level}{tag}")
+            return rows
+        if app == "Shards":
+            inv = self.tower.shard_inventory
+            if inv.total == 0:
+                return ["(No shards collected)"]
+            rows = []
+            for tongue_enum in [t for t in Tongue]:
+                tongue_shards = inv.get_by_tongue(tongue_enum)
+                if tongue_shards:
+                    rows.append(f"-- {tongue_enum.value} ({len(tongue_shards)}) --")
+                    for s in tongue_shards:
+                        placed = " [P]" if s.placed else ""
+                        rows.append(f"  {s.name}{placed}")
+            return rows
+        if app == "Eggs":
+            eggs = self.egg_incubator.eggs
+            if not eggs:
+                return ["(No Sacred Eggs found)"]
+            rows = []
+            for egg in eggs:
+                stage_icons = {"embryo": "~", "hatchling": "*", "juvenile": "**", "adult": "***", "elder": "!"}
+                icon = stage_icons.get(egg.stage.value, "?")
+                loc = {"party": "PTY", "centre": "TRC", "storage": "BOX", "hatched": "MON"}
+                loc_tag = loc.get(egg.location.value, "?")
+                m = egg.manifold
+                m_tag = {1: "M+", 0: "M0", -1: "M-"}.get(m.ternary_address[0], "?")
+                rows.append(f"{icon} [{egg.tongue.value}] {egg.name} ({egg.stage.value}) [{loc_tag}] {egg.hatch_progress:.0%} {m_tag}")
+            return rows
         if app == "PC Box":
             rows = [
                 "Sit at Guild Computer (CodeLab IDE)",
@@ -1714,20 +1790,12 @@ class AethermoorGame:
         idx = max(0, min(self.polypad_cursor, len(entries) - 1))
 
         if app == "Home":
-            if idx == 0:
-                self.polypad_tab = POLYPAD_APPS.index("Contacts")
-                self.polypad_cursor = 0
-            elif idx == 1:
-                self.polypad_tab = POLYPAD_APPS.index("Messages")
-                self.polypad_cursor = 0
-            elif idx == 2:
-                self.polypad_tab = POLYPAD_APPS.index("Missions")
-                self.polypad_cursor = 0
-            elif idx == 3:
-                self.polypad_tab = POLYPAD_APPS.index("PC Box")
-                self.polypad_cursor = 0
-            elif idx == 4:
-                self.polypad_tab = POLYPAD_APPS.index("IDE")
+            _home_targets = [
+                "Contacts", "Messages", "Missions",
+                "Weapons", "Shards", "PC Box", "IDE",
+            ]
+            if idx < len(_home_targets):
+                self.polypad_tab = POLYPAD_APPS.index(_home_targets[idx])
                 self.polypad_cursor = 0
             else:
                 self.workshop_message = "Fleet sync complete. Mission graph refreshed."
@@ -1769,6 +1837,31 @@ class AethermoorGame:
                 elif mission["status"] == "active":
                     mission["status"] = "queued"
             self.workshop_message = f"Mission set: {self.polypad_missions[idx]['title']}"
+            return
+
+        if app == "Weapons":
+            weapons = self.weapon_inv.weapons
+            if not weapons or idx >= len(weapons):
+                return
+            w = weapons[idx]
+            if self.weapon_inv.equip(w):
+                self.workshop_message = f"Equipped: {w.name} (ATK {w.effective_attack})"
+            else:
+                self.workshop_message = "Cannot equip that weapon."
+            return
+
+        if app == "Shards":
+            # Shards are read-only; show detail on selection
+            inv = self.tower.shard_inventory
+            flat: List[TongueShard] = []
+            for tongue_enum in Tongue:
+                tongue_shards = inv.get_by_tongue(tongue_enum)
+                if tongue_shards:
+                    flat.append(None)  # type: ignore[arg-type]  # header placeholder
+                    flat.extend(tongue_shards)
+            if 0 <= idx < len(flat) and flat[idx] is not None:
+                s = flat[idx]
+                self.workshop_message = f"Shard: {s.name} [{s.shard_type.value}] ({s.rarity.value})"
             return
 
         if app == "PC Box":
@@ -2322,6 +2415,21 @@ class AethermoorGame:
             hero.stats.max_mp += bonus_mp
             hero.stats.mp += bonus_mp
 
+        # Grant starter weapon based on class
+        weapon_cfg = config.get("starter_weapon")
+        if weapon_cfg:
+            tongue_map = {"KO": Tongue.KO, "AV": Tongue.AV, "RU": Tongue.RU,
+                          "CA": Tongue.CA, "UM": Tongue.UM, "DR": Tongue.DR}
+            type_map = {"blade": WeaponType.BLADE, "staff": WeaponType.STAFF,
+                        "bow": WeaponType.BOW, "gauntlet": WeaponType.GAUNTLET}
+            from weapons import WeaponRarity
+            w_tongue = tongue_map.get(weapon_cfg["tongue"], Tongue.DR)
+            w_type = type_map.get(weapon_cfg["type"], WeaponType.BLADE)
+            starter = generate_weapon(w_tongue, w_type, WeaponRarity.UNCOMMON)
+            self.weapon_inv.add(starter)
+            self.weapon_inv.equip(starter)
+            self.workshop_message = f"Received {starter.name}! ({w_type.value}, {w_tongue.value} tongue)"
+
     def _apply_story_action(self, scene_id: str, action: str) -> None:
         """Apply scene-specific state changes for reputation/flags/inventory."""
         if scene_id == "earth_morning":
@@ -2554,10 +2662,35 @@ class AethermoorGame:
             self._handle_title_key(key)
         elif self.battle.active:
             self._handle_battle_key(key)
+        elif self.game_phase == "georama":
+            self._handle_georama_key(key)
         elif self.game_phase == "overworld":
             # G key for gacha pull (overworld only)
             if key == pygame.K_g:
                 self._start_gacha_pull()
+                return
+            # T key for town builder (georama)
+            if key == pygame.K_t:
+                if self.tower.shard_inventory.total > 0:
+                    self.game_phase = "georama"
+                    self._georama_cursor = 0
+                    self._georama_district_idx = 0
+                    self._georama_mode = "overview"  # overview / place / detail
+                    self.workshop_message = "Town Builder opened. Place shards to rebuild."
+                else:
+                    self.workshop_message = "No Tongue Shards yet. Explore the tower!"
+                return
+            # F5 key for edit mode toggle
+            if key == pygame.K_F5:
+                self.edit_mode = not self.edit_mode
+                if self.edit_mode:
+                    self.workshop_message = "EDIT MODE ON — Arrow:Move  1-9:Tile  Enter:Place  F5:Exit"
+                    # Set cursor to player position
+                    if hasattr(self.overworld, 'player') and self.overworld.player:
+                        self.edit_cursor_x = int(self.overworld.player.x)
+                        self.edit_cursor_y = int(self.overworld.player.y)
+                else:
+                    self.workshop_message = "Edit mode off."
                 return
             self._handle_overworld_key(key)
         elif self.game_phase == "dungeon":
@@ -2656,13 +2789,54 @@ class AethermoorGame:
                     self._grant_skill_xp("ecology", 1)
                     self._progress_band_quest("craft", 1)
 
-                # Dungeon: track kills and tongue prof boost on victory
+                # Dungeon: track kills, shard drops, weapon XP on victory
                 if self.battle.victory and self.dungeon_active:
                     self.tower.floor_kills = getattr(self.tower, 'floor_kills', 0) + len(self.battle.enemies)
                     if self.party:
                         prof = self.party[0].stats.tongue_prof
                         current = prof.get(enemy_tongue, 0.0)
                         prof[enemy_tongue] = min(1.0, current + 0.01)
+
+                    # AetherEgg: broadcast battle data
+                    self.egg_incubator.create_data_point(
+                        DataPointType.BATTLE_WIN,
+                        f"Defeated {enemy_name} (tongue:{enemy_tongue}) on floor {self.tower.current_floor}",
+                        context=f"dungeon_floor_{self.tower.current_floor}",
+                        floor=self.tower.current_floor,
+                        quality=1.0 if is_boss else 0.8,
+                    )
+
+                    # Weapon ABS XP from kill
+                    if self.weapon_inv.equipped:
+                        xp_per_kill = 15 + self.tower.current_floor * 2
+                        leveled = self.weapon_inv.equipped.absorb_xp(
+                            xp_per_kill * len(self.battle.enemies)
+                        )
+                        if leveled:
+                            wname = self.weapon_inv.equipped.name
+                            wlvl = self.weapon_inv.equipped.level
+                            self.workshop_message = f"{wname} leveled up to {wlvl}!"
+
+                    # Shard drops from dungeon kills
+                    floor = self.tower.get_current_floor()
+                    if floor and floor.is_boss_floor:
+                        shards = self.tower.collect_floor_shards()
+                        if shards:
+                            self.shard_popup = shards[0]
+                            self.shard_popup_timer = 3.0
+                            names = ", ".join(s.name for s in shards)
+                            self.workshop_message = f"Tongue Shard{'s' if len(shards) > 1 else ''}: {names}"
+
+                    # AetherEgg drop from boss
+                    egg_drop = generate_egg_drop(
+                        self.tower.current_floor,
+                        map_name="spiral_tower",
+                    )
+                    if egg_drop:
+                        self.egg_incubator.eggs.append(egg_drop)
+                        self.egg_popup = egg_drop
+                        self.egg_popup_timer = 4.0
+                        self.workshop_message = f"Sacred Egg found: {egg_drop.name} [{egg_drop.tongue.value}]!"
 
                 self.battle.end_battle()
                 # Heal party slightly after battle
@@ -2728,17 +2902,66 @@ class AethermoorGame:
                     self.battle.selected_target = alive[0]
 
     def _handle_pause_key(self, key: int) -> None:
-        """Handle keys in the pause menu."""
+        """Handle keys in the pause menu (main / save / load sub-menus)."""
+        if self.pause_mode == "save":
+            self._handle_save_slot_key(key)
+            return
+        if self.pause_mode == "load":
+            self._handle_load_slot_key(key)
+            return
+
+        # Main pause menu
         if key in (pygame.K_RETURN, pygame.K_SPACE, pygame.K_ESCAPE):
             self.paused = False
+            self.pause_mode = "main"
+        elif key == pygame.K_s:
+            self.pause_mode = "save"
+            self.save_slot_cursor = 1
+        elif key == pygame.K_l:
+            self.pause_mode = "load"
+            self.save_slot_cursor = 1
         elif key == pygame.K_q:
             self._save_and_quit()
+
+    def _handle_save_slot_key(self, key: int) -> None:
+        """Handle keys in the save slot selection sub-menu."""
+        if key == pygame.K_ESCAPE:
+            self.pause_mode = "main"
+        elif key in (pygame.K_UP, pygame.K_w):
+            self.save_slot_cursor = max(1, self.save_slot_cursor - 1)
+        elif key in (pygame.K_DOWN, pygame.K_s):
+            self.save_slot_cursor = min(3, self.save_slot_cursor + 1)
+        elif key in (pygame.K_RETURN, pygame.K_SPACE):
+            self._save_to_slot(self.save_slot_cursor)
+            self.pause_mode = "main"
+        elif key in (pygame.K_1, pygame.K_2, pygame.K_3):
+            slot = key - pygame.K_0
+            self._save_to_slot(slot)
+            self.pause_mode = "main"
+
+    def _handle_load_slot_key(self, key: int) -> None:
+        """Handle keys in the load slot selection sub-menu."""
+        if key == pygame.K_ESCAPE:
+            self.pause_mode = "main"
+        elif key in (pygame.K_UP, pygame.K_w):
+            self.save_slot_cursor = max(1, self.save_slot_cursor - 1)
+        elif key in (pygame.K_DOWN, pygame.K_s):
+            self.save_slot_cursor = min(3, self.save_slot_cursor + 1)
+        elif key in (pygame.K_RETURN, pygame.K_SPACE):
+            self._load_from_slot(self.save_slot_cursor)
+        elif key in (pygame.K_1, pygame.K_2, pygame.K_3):
+            slot = key - pygame.K_0
+            self._load_from_slot(slot)
 
     # ------------------------------------------------------------------
     # Overworld Key Handling
     # ------------------------------------------------------------------
     def _handle_overworld_key(self, key: int) -> None:
         """Handle keys during overworld exploration."""
+        # Edit mode: real-time tile editing
+        if self.edit_mode:
+            self._handle_edit_mode_key(key)
+            return
         # B key for test battle
         if key == pygame.K_b:
             self._start_test_battle()
@@ -2805,6 +3028,20 @@ class AethermoorGame:
                     )
                 # Exit stair
                 elif tile == 4:  # exit_stair
+                    # Collect shard drops for this floor before advancing
+                    shards = self.tower.collect_floor_shards()
+                    if shards:
+                        self.shard_popup = shards[0]
+                        self.shard_popup_timer = 3.0
+                        names = ", ".join(s.name for s in shards)
+                        self.workshop_message = f"Floor cleared! Shard{'s' if len(shards) > 1 else ''}: {names}"
+
+                    # Weapon durability wear per floor
+                    if self.weapon_inv.equipped:
+                        self.weapon_inv.equipped.use(2)
+                        if self.weapon_inv.equipped.is_broken:
+                            self.workshop_message = f"{self.weapon_inv.equipped.name} broke! Repair at a forge."
+
                     floor.cleared = True
                     old_floor_num = self.tower.current_floor
                     self.tower.advance_floor()
@@ -2828,6 +3065,99 @@ class AethermoorGame:
                         is_boss_next=new_floor.is_boss_floor if new_floor else False,
                     )
                     self.particles.emit(GAME_W // 2, GAME_H // 2, (80, 200, 255), count=20, spread=3.0)
+                    # Autosave on floor clear
+                    try:
+                        self._save_to_slot(0)
+                    except Exception:
+                        pass
+
+    def _handle_edit_mode_key(self, key: int) -> None:
+        """Handle keys in map edit mode (real-time tile modding)."""
+        tm = self.overworld.maps.get(self.overworld.current_map_name)
+        if not tm:
+            return
+
+        # Movement
+        if key in (pygame.K_UP, pygame.K_w):
+            self.edit_cursor_y = max(0, self.edit_cursor_y - 1)
+        elif key in (pygame.K_DOWN, pygame.K_s):
+            self.edit_cursor_y = min(tm.height - 1, self.edit_cursor_y + 1)
+        elif key in (pygame.K_LEFT, pygame.K_a):
+            self.edit_cursor_x = max(0, self.edit_cursor_x - 1)
+        elif key in (pygame.K_RIGHT, pygame.K_d):
+            self.edit_cursor_x = min(tm.width - 1, self.edit_cursor_x + 1)
+
+        # Tile type selection (1-9 keys)
+        elif pygame.K_1 <= key <= pygame.K_9:
+            tile_idx = key - pygame.K_1
+            tile_names = ["GRASS", "STONE", "WATER", "WALL", "WARP", "ENCOUNTER", "NPC_SPOT", "CHEST", "STAIR_UP"]
+            if tile_idx < len(tile_names):
+                self.edit_tile_type = tile_idx + 1  # TileType starts at 1 for GRASS
+                self.workshop_message = f"Brush: {tile_names[tile_idx]}"
+
+        # Place tile
+        elif key in (pygame.K_RETURN, pygame.K_SPACE):
+            tm.set_tile(self.edit_cursor_x, self.edit_cursor_y, self.edit_tile_type)
+            tile_name = TileType(self.edit_tile_type).name if self.edit_tile_type <= 10 else "?"
+            self.workshop_message = f"Placed {tile_name} at ({self.edit_cursor_x},{self.edit_cursor_y})"
+
+        # Delete tile (set to GRASS)
+        elif key == pygame.K_DELETE or key == pygame.K_BACKSPACE:
+            tm.set_tile(self.edit_cursor_x, self.edit_cursor_y, TileType.GRASS)
+            self.workshop_message = f"Cleared ({self.edit_cursor_x},{self.edit_cursor_y})"
+
+        # Exit edit mode
+        elif key == pygame.K_F5 or key == pygame.K_ESCAPE:
+            self.edit_mode = False
+            self.workshop_message = "Edit mode off."
+
+    def _handle_georama_key(self, key: int) -> None:
+        """Handle keys in the town builder (georama) screen."""
+        tongues = list(self.town.districts.keys())
+        inv = self.tower.shard_inventory
+
+        if key == pygame.K_ESCAPE:
+            self.game_phase = "overworld"
+            return
+
+        if self._georama_mode == "overview":
+            # Navigate districts
+            if key in (pygame.K_LEFT, pygame.K_a):
+                self._georama_district_idx = (self._georama_district_idx - 1) % 6
+            elif key in (pygame.K_RIGHT, pygame.K_d):
+                self._georama_district_idx = (self._georama_district_idx + 1) % 6
+            elif key in (pygame.K_RETURN, pygame.K_SPACE):
+                # Enter placement mode for this district
+                unplaced = inv.get_unplaced()
+                if unplaced:
+                    self._georama_mode = "place"
+                    self._georama_cursor = 0
+                else:
+                    self.workshop_message = "No unplaced shards. Find more in the tower!"
+        elif self._georama_mode == "place":
+            unplaced = inv.get_unplaced()
+            if not unplaced:
+                self._georama_mode = "overview"
+                return
+            if key in (pygame.K_UP, pygame.K_w):
+                self._georama_cursor = (self._georama_cursor - 1) % len(unplaced)
+            elif key in (pygame.K_DOWN, pygame.K_s):
+                self._georama_cursor = (self._georama_cursor + 1) % len(unplaced)
+            elif key in (pygame.K_RETURN, pygame.K_SPACE):
+                shard = unplaced[self._georama_cursor]
+                target_tongue = tongues[self._georama_district_idx]
+                if self.town.auto_place(shard):
+                    self.workshop_message = f"Placed {shard.name} in {self.town.districts[shard.tongue].name}!"
+                    # Refresh cursor
+                    unplaced = inv.get_unplaced()
+                    if not unplaced:
+                        self._georama_mode = "overview"
+                    else:
+                        self._georama_cursor = min(self._georama_cursor, len(unplaced) - 1)
+                else:
+                    self.workshop_message = f"No room for {shard.name}!"
+            elif key == pygame.K_ESCAPE:
+                self._georama_mode = "overview"
 
     def _handle_dialogue_key(self, key: int) -> None:
         """Handle keys during NPC dialogue."""
@@ -3155,8 +3485,72 @@ class AethermoorGame:
         )
         self.particles.emit(GAME_W // 2, GAME_H // 2, (255, 60, 60), count=25, spread=5.0)
 
+    def _build_save_state(self) -> Dict[str, Any]:
+        """Build a serializable game state dict for the save system."""
+        return {
+            "player_name": self.cast["izack"].name if "izack" in self.cast else "Izack",
+            "player_class": self.player_class,
+            "game_phase": self.game_phase,
+            "scene_id": self.scene.current_scene_id,
+            "party": list(self.party),
+            "tower_floor": self.tower.current_floor,
+            "shard_inventory": self.tower.shard_inventory,
+            "town": self.town,
+            "weapon_inventory": self.weapon_inv,
+            "egg_incubator": self.egg_incubator,
+            "gold": self.inventory.get("Gold", 0),
+            "materials": dict(self.materials),
+            "skill_xp": {},
+            "playtime_seconds": self.playtime_seconds,
+        }
+
+    def _save_to_slot(self, slot: int) -> None:
+        """Save game state to the given slot."""
+        state = self._build_save_state()
+        ok = save_game(slot, state)
+        if ok:
+            self.save_message = f"Saved to Slot {slot}!" if slot > 0 else "Autosaved!"
+        else:
+            self.save_message = f"Save failed (slot {slot})"
+        self.save_message_timer = 2.5
+
+    def _load_from_slot(self, slot: int) -> None:
+        """Load game state from a slot and apply it."""
+        loaded = load_game(slot)
+        if loaded is None:
+            self.save_message = f"Slot {slot} is empty"
+            self.save_message_timer = 2.0
+            return
+
+        # Apply loaded state
+        self.player_class = loaded.get("player_class", "Undecided")
+        self.game_phase = loaded.get("game_phase", "overworld")
+        self.party = loaded.get("party", self.party)
+        self.tower.current_floor = loaded.get("tower_floor", 1)
+        self.tower.shard_inventory = loaded.get("shard_inventory", self.tower.shard_inventory)
+        self.town = loaded.get("town", self.town)
+        self.weapon_inv = loaded.get("weapon_inventory", self.weapon_inv)
+        self.egg_incubator = loaded.get("egg_incubator", self.egg_incubator)
+        self.inventory["Gold"] = loaded.get("gold", 0)
+        self.materials = loaded.get("materials", self.materials)
+        self.playtime_seconds = loaded.get("playtime_seconds", 0.0)
+
+        # Reset to overworld after loading
+        if self.game_phase == "overworld":
+            self.overworld.enter("guild_hub", 5, 5)
+
+        self.paused = False
+        self.pause_mode = "main"
+        self.save_message = f"Loaded Slot {slot}!"
+        self.save_message_timer = 2.5
+
     def _save_and_quit(self) -> None:
-        """Save training data and quit."""
+        """Autosave, save training data, and quit."""
+        # Autosave the game state
+        try:
+            self._save_to_slot(0)
+        except Exception:
+            pass
         if self.exporter.total_pairs > 0:
             try:
                 path = self.exporter.save()
@@ -3307,8 +3701,17 @@ class AethermoorGame:
 
     def _update(self, dt: float) -> None:
         """Update game state."""
+        # Tick save message timer even while paused
+        if self.save_message_timer > 0:
+            self.save_message_timer -= dt
+            if self.save_message_timer <= 0:
+                self.save_message = ""
+
         if self.paused:
             return
+
+        # Track playtime (only when not paused)
+        self.playtime_seconds += dt
 
         # Process AetherNet inbound actions
         for action in self.n8n_bus.drain_actions():
@@ -3340,6 +3743,18 @@ class AethermoorGame:
                     self.overworld.enter("guild_hub")
                 else:
                     self._load_scene(self._pending_scene)
+
+        # Shard popup timer decay
+        if self.shard_popup_timer > 0:
+            self.shard_popup_timer -= dt
+            if self.shard_popup_timer <= 0:
+                self.shard_popup = None
+
+        # Egg popup decay
+        if self.egg_popup_timer > 0:
+            self.egg_popup_timer -= dt
+            if self.egg_popup_timer <= 0:
+                self.egg_popup = None
 
         # Layer activity decay
         for layer_num in self.layer_activity:
@@ -3453,6 +3868,8 @@ class AethermoorGame:
             self._draw_overworld_screen()
         elif self.game_phase == "dungeon":
             self._draw_dungeon_screen()
+        elif self.game_phase == "georama":
+            self._draw_georama_screen()
         elif self.game_phase == "dialogue":
             self._draw_dialogue_screen()
         else:
@@ -3571,65 +3988,108 @@ class AethermoorGame:
     # Title Screen
     # ------------------------------------------------------------------
     def _draw_title_screen(self) -> None:
-        """Draw the title screen on the game surface."""
-        # Starfield background
+        """Draw a Pokemon-style title screen with gradient sky and spiral."""
+        # --- Sky gradient (Pokemon RSE style) ---
+        for y in range(GAME_H):
+            ratio = y / GAME_H
+            if ratio < 0.5:
+                # Upper sky: deep indigo to purple
+                r = int(24 + ratio * 80)
+                g = int(16 + ratio * 40)
+                b = int(80 + ratio * 100)
+            else:
+                # Lower sky: purple to warm horizon
+                t = (ratio - 0.5) * 2
+                r = int(64 + t * 100)
+                g = int(36 + t * 60)
+                b = int(130 - t * 40)
+            pygame.draw.line(self.game_surface, (r, g, b), (0, y), (GAME_W, y))
+
+        # Starfield (subtle, twinkling)
         for sx, sy, brightness in self.bg_stars:
-            b = int(brightness * self.title_alpha)
+            b = int(brightness * self.title_alpha * 0.6)
             twinkle = 0.5 + 0.5 * math.sin(time.time() * 2 + sx * 0.1 + sy * 0.1)
             b = int(b * twinkle)
-            if b > 20:
-                self.game_surface.set_at((sx % GAME_W, sy % GAME_H), (b, b, min(255, b + 40)))
+            if b > 30 and sy % GAME_H < GAME_H * 0.6:
+                self.game_surface.set_at((sx % GAME_W, sy % GAME_H), (b, b, min(255, b + 60)))
 
-        # Central spiral effect
+        # Central spiral effect (tongue colors orbiting)
         t = time.time()
-        cx, cy = GAME_W // 2, GAME_H // 2 - 40
-        for i in range(60):
-            angle = t * 0.5 + i * 0.3
-            r = 20 + i * 2.2
-            px = int(cx + math.cos(angle) * r)
-            py = int(cy + math.sin(angle) * r)
+        cx, cy = GAME_W // 2, GAME_H // 2 - 60
+        for i in range(50):
+            angle = t * 0.4 + i * 0.35
+            radius = 30 + i * 2.5
+            px = int(cx + math.cos(angle) * radius)
+            py = int(cy + math.sin(angle) * radius * 0.6)  # elliptical
             tongue_idx = i % 6
             tc_list = list(TONGUE_COLORS.values())
             color = tc_list[tongue_idx]
-            alpha_val = max(0, 255 - i * 4)
+            alpha_val = max(0, 220 - i * 4)
             if 0 <= px < GAME_W and 0 <= py < GAME_H:
-                blended = lerp_color((16, 16, 24), color, alpha_val / 255.0)
-                pygame.draw.circle(self.game_surface, blended, (px, py), 2)
+                blended = lerp_color((24, 16, 80), color, alpha_val / 255.0)
+                pygame.draw.circle(self.game_surface, blended, (px, py), 3)
 
-        # Title text
-        title_font = self.fonts.get(28, bold=True)
-        subtitle_font = self.fonts.get(14)
-        alpha = int(255 * self.title_alpha)
+        # --- Title text (Pokemon style: large with shadow) ---
+        title_font = self.fonts.get(32, bold=True)
+        sub_font = self.fonts.get(16, bold=True)
+        subtitle_font = self.fonts.get(12)
 
+        # "AETHERMOOR" with drop shadow
         title1 = title_font.render("AETHERMOOR", True, GOLD)
-        title2 = self.fonts.get(18).render("Six Tongues Protocol", True, TEXT_COLOR)
-        subtitle = subtitle_font.render("An SCBE Governance RPG", True, DIM_TEXT)
+        shadow1 = title_font.render("AETHERMOOR", True, (80, 64, 16))
+        tx = GAME_W // 2 - title1.get_width() // 2
+        self.game_surface.blit(shadow1, (tx + 2, 122))
+        self.game_surface.blit(title1, (tx, 120))
 
-        self.game_surface.blit(title1, (GAME_W // 2 - title1.get_width() // 2, 160))
-        self.game_surface.blit(title2, (GAME_W // 2 - title2.get_width() // 2, 200))
-        self.game_surface.blit(subtitle, (GAME_W // 2 - subtitle.get_width() // 2, 230))
+        # "Six Tongues Protocol" subtitle
+        title2 = sub_font.render("Six Tongues Protocol", True, (240, 240, 255))
+        shadow2 = sub_font.render("Six Tongues Protocol", True, (40, 40, 80))
+        tx2 = GAME_W // 2 - title2.get_width() // 2
+        self.game_surface.blit(shadow2, (tx2 + 1, 163))
+        self.game_surface.blit(title2, (tx2, 162))
 
-        # Tongue names
-        tongue_font = self.fonts.get(11)
+        # "Version" badge (Pokemon style)
+        ver_font = self.fonts.get(10)
+        ver = ver_font.render("SCBE v3.0", True, (180, 180, 200))
+        self.game_surface.blit(ver, (GAME_W // 2 - ver.get_width() // 2, 186))
+
+        # --- Tongue strip (horizontal row of colored icons) ---
         codes = ["KO", "AV", "RU", "CA", "UM", "DR"]
         names = ["Kor'aelin", "Avali", "Runethic", "Cassisivadan", "Umbroth", "Draumric"]
+        tongue_font = self.fonts.get(10)
+        strip_w = 6 * 88
+        strip_x = (GAME_W - strip_w) // 2
         for i, (code, name) in enumerate(zip(codes, names)):
             color = TONGUE_COLORS[code]
-            txt = tongue_font.render(f"{code}: {name}", True, color)
-            x = GAME_W // 2 - txt.get_width() // 2
-            y = 270 + i * 18
-            self.game_surface.blit(txt, (x, y))
+            ix = strip_x + i * 88 + 20
+            iy = 220
+            # Colored diamond icon
+            pts = [(ix, iy - 6), (ix - 6, iy), (ix, iy + 6), (ix + 6, iy)]
+            pygame.draw.polygon(self.game_surface, color, pts)
+            pygame.draw.polygon(self.game_surface, (255, 255, 255), pts, 1)
+            # Name below
+            txt = tongue_font.render(name, True, color)
+            self.game_surface.blit(txt, (ix - txt.get_width() // 2, iy + 10))
 
-        # Press Enter prompt
+        # --- "An SCBE Governance RPG" ---
+        tagline = subtitle_font.render("An SCBE Governance RPG", True, (160, 160, 190))
+        self.game_surface.blit(tagline, (GAME_W // 2 - tagline.get_width() // 2, 260))
+
+        # --- Press Enter prompt (bouncing, Pokemon style) ---
         if self.text_cursor_visible:
-            prompt_font = self.fonts.get(14)
-            prompt = prompt_font.render("Press ENTER to begin", True, CHOICE_HIGHLIGHT)
-            self.game_surface.blit(prompt, (GAME_W // 2 - prompt.get_width() // 2, 420))
+            prompt_font = self.fonts.get(14, bold=True)
+            prompt = prompt_font.render("PRESS START", True, (255, 255, 255))
+            bounce = int(math.sin(time.time() * 3) * 3)
+            py = 400 + bounce
+            # Shadow
+            shadow = prompt_font.render("PRESS START", True, (40, 40, 80))
+            self.game_surface.blit(shadow, (GAME_W // 2 - prompt.get_width() // 2 + 1, py + 1))
+            self.game_surface.blit(prompt, (GAME_W // 2 - prompt.get_width() // 2, py))
 
         # Copyright
         copy_font = self.fonts.get(10)
-        copy_text = copy_font.render("(c) 2026 Issac Davis  |  USPTO #63/961,403", True, (80, 80, 100))
-        self.game_surface.blit(copy_text, (GAME_W // 2 - copy_text.get_width() // 2, 460))
+        copy_text = copy_font.render("(c) 2026 Issac Davis  |  USPTO #63/961,403", True, (80, 80, 120))
+        self.game_surface.blit(copy_text, (GAME_W // 2 - copy_text.get_width() // 2, 455))
 
     # ------------------------------------------------------------------
     # Scene Screen
@@ -4013,8 +4473,24 @@ class AethermoorGame:
         bond_lbl = self.fonts.get(9).render(f"Bond: {self._bond_label()}", True, DIM_TEXT)
         self.game_surface.blit(bond_lbl, (x + 154, y + 90))
 
+    def _draw_pokemon_box(self, x: int, y: int, w: int, h: int,
+                          fill: Tuple[int, ...] = (248, 248, 240, 240)) -> None:
+        """Draw a Pokemon RSE-style double-bordered text box."""
+        # Outer dark border
+        pygame.draw.rect(self.game_surface, (40, 40, 48), (x, y, w, h),
+                         border_radius=8)
+        # White/cream fill
+        inner = pygame.Surface((w - 4, h - 4), pygame.SRCALPHA)
+        inner.fill(fill)
+        self.game_surface.blit(inner, (x + 2, y + 2))
+        # Inner highlight border (Pokemon signature double-border)
+        pygame.draw.rect(self.game_surface, (40, 40, 48),
+                         (x, y, w, h), 3, border_radius=8)
+        pygame.draw.rect(self.game_surface, (200, 200, 208),
+                         (x + 3, y + 3, w - 6, h - 6), 1, border_radius=6)
+
     def _draw_dialogue_box(self) -> None:
-        """Draw a polished RPG dialogue box at the bottom of the game screen."""
+        """Draw a Pokemon RSE-style dialogue box at the bottom of the game screen."""
         line = self.scene.get_current_line()
         if line is None:
             return
@@ -4026,17 +4502,8 @@ class AethermoorGame:
         box_x = 8
         box_w = GAME_W - 16
 
-        # Dialogue box with double border (GBA RPG style)
-        dialogue_surf = pygame.Surface((box_w, box_h), pygame.SRCALPHA)
-        dialogue_surf.fill(DIALOGUE_BG)
-        self.game_surface.blit(dialogue_surf, (box_x, box_y))
-
-        # Outer border
-        pygame.draw.rect(self.game_surface, (90, 90, 130),
-                         (box_x, box_y, box_w, box_h), 2, border_radius=6)
-        # Inner border highlight
-        pygame.draw.rect(self.game_surface, (50, 50, 72),
-                         (box_x + 3, box_y + 3, box_w - 6, box_h - 6), 1, border_radius=4)
+        # Pokemon-style double-bordered box
+        self._draw_pokemon_box(box_x, box_y, box_w, box_h)
 
         # Speaker name tag (raised above the box like classic RPGs)
         if speaker:
@@ -4059,30 +4526,41 @@ class AethermoorGame:
             elif speaker in ("TRAVELER", "FISHER", "COLLEAGUE", "MOM", "POLLYPAD"):
                 name_color = (160, 160, 190)
 
-            # Name plate background
-            name_surf = name_font.render(speaker, True, name_color)
-            plate_w = name_surf.get_width() + 16
-            plate_rect = pygame.Rect(box_x + 12, box_y - 10, plate_w, 22)
-            plate_bg = pygame.Surface((plate_w, 22), pygame.SRCALPHA)
-            plate_bg.fill((12, 12, 28, 240))
-            self.game_surface.blit(plate_bg, (plate_rect.x, plate_rect.y))
-            pygame.draw.rect(self.game_surface, name_color, plate_rect, 1, border_radius=3)
-            self.game_surface.blit(name_surf, (box_x + 20, box_y - 8))
+            # Pokemon-style name plate (white box above dialogue box)
+            name_surf = name_font.render(speaker, True, (32, 32, 40))
+            plate_w = name_surf.get_width() + 20
+            plate_x = box_x + 12
+            plate_y = box_y - 14
+            # Plate background
+            pygame.draw.rect(self.game_surface, (40, 40, 48),
+                             (plate_x, plate_y, plate_w, 22), border_radius=4)
+            plate_inner = pygame.Surface((plate_w - 4, 18), pygame.SRCALPHA)
+            plate_inner.fill((248, 248, 240, 245))
+            self.game_surface.blit(plate_inner, (plate_x + 2, plate_y + 2))
+            # Inner highlight
+            pygame.draw.rect(self.game_surface, (200, 200, 208),
+                             (plate_x + 3, plate_y + 3, plate_w - 6, 16), 1, border_radius=2)
+            # Tongue color accent dot
+            pygame.draw.circle(self.game_surface, name_color, (plate_x + 10, plate_y + 11), 3)
+            self.game_surface.blit(name_surf, (plate_x + 16, plate_y + 3))
             text_y = box_y + 18
         else:
             text_y = box_y + 14
 
-        # Dialogue text
+        # Dialogue text (dark on light, Pokemon style)
         text_font = self.fonts.get(14)
         text_rect = pygame.Rect(box_x + 16, text_y, box_w - 36, box_h - (text_y - box_y) - 12)
-        draw_text_wrapped(self.game_surface, text, text_font, TEXT_COLOR, text_rect)
+        draw_text_wrapped(self.game_surface, text, text_font, (32, 32, 40), text_rect)
 
-        # Blinking advance triangle (bottom right)
+        # Blinking advance triangle (Pokemon style — small bouncing down arrow)
         if self.text_cursor_visible:
-            tri_x = box_x + box_w - 24
-            tri_y = box_y + box_h - 18
-            pygame.draw.polygon(self.game_surface, CHOICE_HIGHLIGHT,
-                                [(tri_x, tri_y), (tri_x + 10, tri_y + 5), (tri_x, tri_y + 10)])
+            tri_x = box_x + box_w - 20
+            tri_y = box_y + box_h - 16
+            bounce = int(math.sin(time.time() * 5) * 2)
+            pygame.draw.polygon(self.game_surface, (40, 40, 48),
+                                [(tri_x, tri_y + bounce),
+                                 (tri_x + 8, tri_y + bounce),
+                                 (tri_x + 4, tri_y + 6 + bounce)])
 
     def _draw_choices(self) -> None:
         """Draw the choice menu overlay."""
@@ -4098,16 +4576,12 @@ class AethermoorGame:
         menu_x = (GAME_W - menu_w) // 2
         menu_y = max(10, (GAME_H - menu_h) // 2 - 20)
 
-        # Background
-        menu_surf = pygame.Surface((menu_w, menu_h), pygame.SRCALPHA)
-        menu_surf.fill((12, 12, 24, 240))
-        self.game_surface.blit(menu_surf, (menu_x, menu_y))
-        pygame.draw.rect(self.game_surface, GOLD,
-                        (menu_x, menu_y, menu_w, menu_h), 1, border_radius=6)
+        # Pokemon-style double-bordered choice box
+        self._draw_pokemon_box(menu_x, menu_y, menu_w, menu_h)
 
         # Header
         header_font = self.fonts.get(13, bold=True)
-        header = header_font.render("Choose your action:", True, GOLD)
+        header = header_font.render("Choose your action:", True, (32, 32, 40))
         self.game_surface.blit(header, (menu_x + padding, menu_y + 8))
 
         # Choices
@@ -4117,16 +4591,23 @@ class AethermoorGame:
             y = menu_y + 28 + i * item_h
             is_selected = (i == self.scene.selected_choice)
 
-            # Highlight bar
+            # Highlight bar (Pokemon style — subtle blue tint)
             if is_selected:
                 highlight_surf = pygame.Surface((menu_w - padding * 2, item_h - 2), pygame.SRCALPHA)
-                highlight_surf.fill((255, 220, 80, 40))
+                highlight_surf.fill((80, 144, 248, 50))
                 self.game_surface.blit(highlight_surf, (menu_x + padding, y))
+                # Pokemon cursor triangle
+                pygame.draw.polygon(
+                    self.game_surface, (40, 40, 48),
+                    [(menu_x + padding + 2, y + 6),
+                     (menu_x + padding + 8, y + 12),
+                     (menu_x + padding + 2, y + 18)],
+                )
 
             # Number
-            num_color = CHOICE_HIGHLIGHT if is_selected else DIM_TEXT
+            num_color = (32, 32, 40) if is_selected else (128, 128, 144)
             num_surf = choice_font.render(f"{i + 1}.", True, num_color)
-            self.game_surface.blit(num_surf, (menu_x + padding + 4, y + 4))
+            self.game_surface.blit(num_surf, (menu_x + padding + 10, y + 4))
 
             # Tongue color indicator (small square)
             tc = TONGUE_COLORS.get(tongue, (180, 180, 180))
@@ -4135,8 +4616,8 @@ class AethermoorGame:
             pygame.draw.rect(self.game_surface, (200, 200, 220),
                            (menu_x + padding + 28, y + 7, 12, 12), 1)
 
-            # Label text
-            text_color = TEXT_COLOR if is_selected else (180, 180, 200)
+            # Label text (dark on light)
+            text_color = (32, 32, 40) if is_selected else (96, 96, 112)
             label_surf = choice_font.render(label[:48], True, text_color)
             self.game_surface.blit(label_surf, (menu_x + padding + 46, y + 4))
 
@@ -4181,9 +4662,40 @@ class AethermoorGame:
         self.game_surface.blit(bg, (8, 6))
         self.game_surface.blit(name_surf, (14, 9))
 
+        # Weapon/Shard HUD (top-right corner)
+        hud_info_font = self.fonts.get(9)
+        hud_x = GAME_W - 140
+        if self.weapon_inv.equipped:
+            w = self.weapon_inv.equipped
+            wc = (200, 200, 200) if not w.is_broken else (200, 60, 60)
+            # Background
+            hud_bg = pygame.Surface((136, 40), pygame.SRCALPHA)
+            hud_bg.fill((10, 10, 26, 180))
+            self.game_surface.blit(hud_bg, (hud_x - 4, 4))
+            self.game_surface.blit(
+                hud_info_font.render(f"{w.name} Lv{w.level}", True, wc),
+                (hud_x, 8),
+            )
+            dur_pct = w.durability / w.max_durability if w.max_durability else 0
+            dur_col = (60, 220, 120) if dur_pct > 0.5 else (220, 180, 60) if dur_pct > 0.2 else (200, 60, 60)
+            self.game_surface.blit(
+                hud_info_font.render(f"Dur: {w.durability}/{w.max_durability}", True, dur_col),
+                (hud_x, 22),
+            )
+        shard_total = self.tower.shard_inventory.total
+        if shard_total > 0:
+            self.game_surface.blit(
+                hud_info_font.render(f"Shards: {shard_total}", True, (220, 180, 60)),
+                (hud_x, 36 if self.weapon_inv.equipped else 8),
+            )
+
         # Controls hint
         hint_font = self.fonts.get(9)
-        hint_surf = hint_font.render("WASD:Move  Enter:Talk  I:IDE  L:Library  P:PolyPad  B:Battle  Esc:Pause", True, DIM_TEXT)
+        controls = "WASD:Move  Enter:Talk  I:IDE  L:Library  P:PolyPad  B:Battle"
+        if shard_total > 0:
+            controls += "  T:Town"
+        controls += "  Esc:Pause"
+        hint_surf = hint_font.render(controls, True, DIM_TEXT)
         self.game_surface.blit(hint_surf, (8, GAME_H - 16))
 
         terminal = self._nearby_ide_terminal()
@@ -4202,6 +4714,34 @@ class AethermoorGame:
                 if -8 <= sx <= GAME_W + 8 and -8 <= sy <= GAME_H + 8:
                     pygame.draw.circle(self.game_surface, glow, (sx, sy - 10), 5, 1)
                     pygame.draw.rect(self.game_surface, glow, (sx - 4, sy - 5, 8, 6), 1)
+
+        # Edit mode overlay
+        if self.edit_mode:
+            # Draw cursor
+            if self.overworld.camera:
+                cx = int(self.edit_cursor_x * TILE_SIZE - self.overworld.camera.x + self.overworld.camera.view_w // 2)
+                cy = int(self.edit_cursor_y * TILE_SIZE - self.overworld.camera.y + self.overworld.camera.view_h // 2)
+                # Pulsing cursor
+                pulse = 0.5 + 0.5 * math.sin(self.frame_count * 0.2)
+                cursor_color = (
+                    int(255 * pulse),
+                    int(255 * (1 - pulse)),
+                    80,
+                )
+                pygame.draw.rect(self.game_surface, cursor_color, (cx, cy, TILE_SIZE, TILE_SIZE), 2)
+
+            # Edit mode HUD
+            edit_font = self.fonts.get(10, bold=True)
+            tile_names = {1: "GRASS", 2: "STONE", 3: "WATER", 4: "WALL", 5: "WARP",
+                          6: "ENCOUNTER", 7: "NPC", 8: "CHEST", 9: "STAIR_UP", 10: "STAIR_DN"}
+            brush_name = tile_names.get(self.edit_tile_type, "?")
+            edit_bg = pygame.Surface((GAME_W, 24), pygame.SRCALPHA)
+            edit_bg.fill((200, 40, 40, 180))
+            self.game_surface.blit(edit_bg, (0, 0))
+            self.game_surface.blit(
+                edit_font.render(f"EDIT MODE  Brush: {brush_name}  Pos: ({self.edit_cursor_x},{self.edit_cursor_y})  1-9:Tile  Enter:Place  F5:Exit", True, (255, 255, 255)),
+                (8, 4),
+            )
 
     # ------------------------------------------------------------------
     # Dungeon Screen
@@ -4271,12 +4811,191 @@ class AethermoorGame:
         theme_font = self.fonts.get(10)
         self.game_surface.blit(theme_font.render(f"Theme: {floor.theme.name}", True, DIM_TEXT), (14, 30))
 
+        # Shard/weapon HUD
+        info_x = GAME_W - 130
+        shard_count = self.tower.shard_inventory.total
+        hud_font2 = self.fonts.get(9)
+        self.game_surface.blit(
+            hud_font2.render(f"Shards: {shard_count}", True, (220, 180, 60)),
+            (info_x, 10),
+        )
+        if self.weapon_inv.equipped:
+            w = self.weapon_inv.equipped
+            wcolor = (200, 200, 200) if not w.is_broken else (200, 60, 60)
+            self.game_surface.blit(
+                hud_font2.render(f"{w.name} Lv{w.level}", True, wcolor),
+                (info_x, 22),
+            )
+            self.game_surface.blit(
+                hud_font2.render(f"Dur: {w.durability}/{w.max_durability}", True, wcolor),
+                (info_x, 34),
+            )
+
+        # Shard popup notification
+        if self.shard_popup and self.shard_popup_timer > 0:
+            popup_alpha = min(1.0, self.shard_popup_timer)
+            tongue_colors = {
+                Tongue.KO: (220, 60, 60), Tongue.AV: (60, 180, 220),
+                Tongue.RU: (220, 180, 60), Tongue.CA: (60, 220, 120),
+                Tongue.UM: (140, 60, 220), Tongue.DR: (220, 120, 60),
+            }
+            scolor = tongue_colors.get(self.shard_popup.tongue, (200, 200, 200))
+            popup_font = self.fonts.get(11, bold=True)
+            popup_text = f"TONGUE SHARD: {self.shard_popup.name}"
+            tw = popup_font.size(popup_text)[0]
+            px = (GAME_W - tw) // 2
+            py = GAME_H - 50
+            pygame.draw.rect(self.game_surface, (20, 18, 30), (px - 8, py - 4, tw + 16, 22))
+            pygame.draw.rect(self.game_surface, scolor, (px - 8, py - 4, tw + 16, 22), 1)
+            self.game_surface.blit(popup_font.render(popup_text, True, scolor), (px, py))
+
         # Controls
         hint_font = self.fonts.get(9)
         self.game_surface.blit(
             hint_font.render("WASD:Move  P:PolyPad  Esc:Exit Tower", True, DIM_TEXT),
             (8, GAME_H - 16),
         )
+
+    # ------------------------------------------------------------------
+    # Georama Screen (Town Builder)
+    # ------------------------------------------------------------------
+    def _draw_georama_screen(self) -> None:
+        """Draw the town builder / georama screen."""
+        self.game_surface.fill((18, 22, 36))
+        title_font = self.fonts.get(14, bold=True)
+        body_font = self.fonts.get(10)
+        small_font = self.fonts.get(9)
+
+        # Tongue colors for district display
+        tongue_colors = {
+            Tongue.KO: (220, 60, 60),
+            Tongue.AV: (60, 180, 220),
+            Tongue.RU: (220, 180, 60),
+            Tongue.CA: (60, 220, 120),
+            Tongue.UM: (140, 60, 220),
+            Tongue.DR: (220, 120, 60),
+        }
+
+        tongues = list(self.town.districts.keys())
+        inv = self.tower.shard_inventory
+
+        if self._georama_mode == "overview":
+            # Title
+            self.game_surface.blit(
+                title_font.render(f"STARTER VILLAGE  |  Harmony: {self.town.total_harmony:.0%}", True, (255, 220, 80)),
+                (14, 8),
+            )
+            self.game_surface.blit(
+                body_font.render(f"Shards: {inv.total} found  |  {self.town.total_placed} placed", True, (180, 180, 200)),
+                (14, 28),
+            )
+
+            # District cards (3x2 grid)
+            card_w, card_h = 100, 80
+            gap = 8
+            start_x = (GAME_W - 3 * card_w - 2 * gap) // 2
+            start_y = 50
+
+            for i, (tongue, district) in enumerate(self.town.districts.items()):
+                col = i % 3
+                row = i // 3
+                cx = start_x + col * (card_w + gap)
+                cy = start_y + row * (card_h + gap)
+                color = tongue_colors.get(tongue, (140, 140, 160))
+
+                # Highlight selected
+                border_color = (255, 255, 255) if i == self._georama_district_idx else (60, 60, 80)
+                pygame.draw.rect(self.game_surface, (30, 28, 45), (cx, cy, card_w, card_h))
+                pygame.draw.rect(self.game_surface, border_color, (cx, cy, card_w, card_h), 1)
+
+                # Tongue color bar
+                pygame.draw.rect(self.game_surface, color, (cx, cy, card_w, 4))
+
+                # District name
+                self.game_surface.blit(
+                    small_font.render(district.name, True, color),
+                    (cx + 4, cy + 8),
+                )
+
+                # Stats
+                h = district.harmony
+                placed = len(district.placed_shards)
+                self.game_surface.blit(
+                    small_font.render(f"Harmony: {h:.0%}", True, (180, 180, 200)),
+                    (cx + 4, cy + 24),
+                )
+                self.game_surface.blit(
+                    small_font.render(f"Placed: {placed}", True, (160, 160, 180)),
+                    (cx + 4, cy + 38),
+                )
+                self.game_surface.blit(
+                    small_font.render(f"Spirits: {len(district.spirits)}", True, (160, 160, 180)),
+                    (cx + 4, cy + 52),
+                )
+
+            # Shops and buffs
+            shops = self.town.unlocked_shops
+            buffs = self.town.unlocked_buffs
+            info_y = start_y + 2 * (card_h + gap) + 10
+            if shops:
+                self.game_surface.blit(
+                    small_font.render(f"Shops: {', '.join(shops[:3])}", True, (120, 200, 255)),
+                    (14, info_y),
+                )
+                info_y += 14
+            if buffs:
+                self.game_surface.blit(
+                    small_font.render(f"Buffs: {', '.join(buffs[:3])}", True, (255, 200, 120)),
+                    (14, info_y),
+                )
+
+            # Controls
+            self.game_surface.blit(
+                small_font.render("A/D:District  Enter:Place Shards  Esc:Back", True, (100, 100, 120)),
+                (8, GAME_H - 16),
+            )
+
+        elif self._georama_mode == "place":
+            unplaced = inv.get_unplaced()
+            district = self.town.districts[tongues[self._georama_district_idx]]
+
+            self.game_surface.blit(
+                title_font.render(f"Place Shards -> {district.name}", True, tongue_colors.get(tongues[self._georama_district_idx], (200, 200, 200))),
+                (14, 8),
+            )
+
+            # List unplaced shards
+            list_y = 36
+            max_visible = min(len(unplaced), 12)
+            start = max(0, self._georama_cursor - 6)
+            for i in range(start, min(start + max_visible, len(unplaced))):
+                shard = unplaced[i]
+                color = tongue_colors.get(shard.tongue, (180, 180, 200))
+                prefix = ">" if i == self._georama_cursor else " "
+                label = f"{prefix} [{shard.tongue.value}] {shard.name} ({shard.shard_type.value}, {shard.rarity.value})"
+                self.game_surface.blit(
+                    body_font.render(label, True, color if i == self._georama_cursor else (140, 140, 160)),
+                    (14, list_y),
+                )
+                list_y += 14
+
+            # Selected shard details
+            if unplaced and 0 <= self._georama_cursor < len(unplaced):
+                sel = unplaced[self._georama_cursor]
+                det_y = GAME_H - 60
+                self.game_surface.blit(
+                    small_font.render(sel.description, True, (180, 180, 200)),
+                    (14, det_y),
+                )
+                self.game_surface.blit(
+                    small_font.render(f"Size: {sel.georama_slots} slot{'s' if sel.georama_slots > 1 else ''}  |  Found on Floor {sel.floor_found}", True, (140, 140, 160)),
+                    (14, det_y + 14),
+                )
+
+            self.game_surface.blit(
+                small_font.render("W/S:Select  Enter:Auto-Place  Esc:Back", True, (100, 100, 120)),
+                (8, GAME_H - 16),
+            )
 
     def _draw_ide_screen(self) -> None:
         """Draw the CodeLab IDE mini-game screen."""
@@ -4620,6 +5339,127 @@ class AethermoorGame:
                 draw_bar(self.game_surface, x, y, detail_rect.w - 24, 10, done / total, (90, 220, 150))
                 y += 14
                 self.game_surface.blit(info_font.render(f"Active {active} / Done {done} / Total {total}", True, (144, 176, 206)), (x, y))
+
+        elif app == "Weapons":
+            weapons = self.weapon_inv.weapons
+            if not weapons:
+                self.game_surface.blit(self.fonts.get(11, bold=True).render("WEAPONS", True, (194, 238, 255)), (x, y))
+                y += 18
+                self.game_surface.blit(info_font.render("No weapons found yet.", True, DIM_TEXT), (x, y))
+            else:
+                cur = max(0, min(self.polypad_cursor, len(weapons) - 1))
+                w = weapons[cur]
+                tc = TONGUE_COLORS.get(w.tongue.value, (200, 200, 200))
+                is_eq = w is self.weapon_inv.equipped
+                # Header
+                title_str = w.name + (" (EQUIPPED)" if is_eq else "")
+                self.game_surface.blit(self.fonts.get(11, bold=True).render(title_str, True, tc), (x, y))
+                y += 18
+                # Type / Tongue / Rarity
+                self.game_surface.blit(info_font.render(
+                    f"Type: {w.weapon_type.value.capitalize()}   Tongue: {w.tongue.value}   Rarity: {w.rarity.value.capitalize()}",
+                    True, (186, 208, 236)), (x, y))
+                y += 16
+                # Level
+                self.game_surface.blit(info_font.render(f"Level: {w.level}   ABS XP: {w.abs_xp}/{w.abs_to_next}", True, (172, 205, 236)), (x, y))
+                y += 16
+                # Stats
+                self.game_surface.blit(info_font.render(
+                    f"ATK {w.attack} ({w.effective_attack} eff)   WIS {w.wisdom}   SPD {w.speed}",
+                    True, (172, 205, 236)), (x, y))
+                y += 16
+                # Durability bar
+                dur_ratio = w.durability / max(1, w.max_durability)
+                dur_color = (84, 226, 136) if dur_ratio > 0.5 else ((255, 220, 80) if dur_ratio > 0.2 else (255, 80, 80))
+                self.game_surface.blit(info_font.render(f"Durability: {w.durability}/{w.max_durability}", True, (160, 188, 220)), (x, y))
+                y += 12
+                draw_bar(self.game_surface, x, y, detail_rect.w - 24, 8, dur_ratio, dur_color)
+                y += 14
+                # Abilities
+                if w.abilities:
+                    self.game_surface.blit(info_font.render("Abilities:", True, (156, 188, 220)), (x, y))
+                    y += 14
+                    for ab in w.abilities:
+                        ab_color = TONGUE_COLORS.get(ab.tongue.value, (180, 180, 200))
+                        self.game_surface.blit(info_font.render(
+                            f"  Lv{ab.unlock_level}: {ab.name} - {ab.description[:38]}",
+                            True, ab_color), (x, y))
+                        y += 13
+                        if y > detail_rect.bottom - 30:
+                            break
+                else:
+                    self.game_surface.blit(info_font.render("No abilities unlocked yet.", True, DIM_TEXT), (x, y))
+                    y += 14
+                # Footer hint
+                y = max(y + 4, detail_rect.bottom - 28)
+                eq_hint = "Already equipped." if is_eq else "Press Enter to equip."
+                self.game_surface.blit(info_font.render(eq_hint, True, (255, 220, 120)), (x, y))
+
+        elif app == "Shards":
+            inv = self.tower.shard_inventory
+            if inv.total == 0:
+                self.game_surface.blit(self.fonts.get(11, bold=True).render("TONGUE SHARDS", True, (194, 238, 255)), (x, y))
+                y += 18
+                self.game_surface.blit(info_font.render("No shards collected yet.", True, DIM_TEXT), (x, y))
+            else:
+                # Build flat list mirroring _polypad_entries for Shards
+                flat_shards: List[Optional[TongueShard]] = []
+                for tongue_enum in Tongue:
+                    tongue_shards = inv.get_by_tongue(tongue_enum)
+                    if tongue_shards:
+                        flat_shards.append(None)  # header row
+                        flat_shards.extend(tongue_shards)
+                cur = max(0, min(self.polypad_cursor, len(flat_shards) - 1))
+                selected = flat_shards[cur] if flat_shards else None
+                if selected is None:
+                    # Cursor is on a tongue header; show overview
+                    self.game_surface.blit(self.fonts.get(11, bold=True).render("TONGUE SHARDS", True, (194, 238, 255)), (x, y))
+                    y += 18
+                    self.game_surface.blit(info_font.render(f"Total: {inv.total}   Placed: {inv.total_placed}", True, (172, 205, 236)), (x, y))
+                    y += 18
+                    completion = inv.completion_by_tongue()
+                    for tcode, (found, possible) in completion.items():
+                        if found > 0:
+                            tc = TONGUE_COLORS.get(tcode, (200, 200, 200))
+                            ratio = found / max(1, possible)
+                            self.game_surface.blit(info_font.render(f"{tcode}: {found}/{possible}", True, tc), (x, y))
+                            y += 12
+                            draw_bar(self.game_surface, x, y, detail_rect.w - 24, 6, ratio, tc)
+                            y += 12
+                            if y > detail_rect.bottom - 20:
+                                break
+                else:  # selected is a real shard
+                    s = selected
+                    tc = TONGUE_COLORS.get(s.tongue.value, (200, 200, 200))
+                    self.game_surface.blit(self.fonts.get(11, bold=True).render(s.name, True, tc), (x, y))
+                    y += 18
+                    self.game_surface.blit(info_font.render(
+                        f"Tongue: {s.tongue.value}   Type: {s.shard_type.value.capitalize()}",
+                        True, (186, 208, 236)), (x, y))
+                    y += 16
+                    rarity_colors = {
+                        "common": (180, 180, 190), "uncommon": (120, 210, 160),
+                        "rare": (100, 160, 255), "legendary": (255, 200, 60),
+                    }
+                    rc = rarity_colors.get(s.rarity.value, (200, 200, 200))
+                    self.game_surface.blit(info_font.render(f"Rarity: {s.rarity.value.upper()}", True, rc), (x, y))
+                    y += 16
+                    placed_str = "PLACED in town" if s.placed else "Not placed"
+                    placed_color = (120, 255, 170) if s.placed else (255, 180, 100)
+                    self.game_surface.blit(info_font.render(f"Status: {placed_str}", True, placed_color), (x, y))
+                    y += 16
+                    self.game_surface.blit(info_font.render(f"District: {s.district}   Slots: {s.georama_slots}", True, (172, 205, 236)), (x, y))
+                    y += 16
+                    if s.floor_found > 0:
+                        self.game_surface.blit(info_font.render(f"Found on floor: {s.floor_found}", True, (150, 182, 216)), (x, y))
+                        y += 16
+                    y = draw_text_wrapped(
+                        self.game_surface,
+                        s.description,
+                        info_font,
+                        (186, 208, 236),
+                        pygame.Rect(x, y, detail_rect.w - 20, 60),
+                    ) + 4
 
         elif app == "PC Box":
             if self.polypad_cursor == 0:
@@ -5132,11 +5972,8 @@ class AethermoorGame:
         if show_hp_text:
             h += 12
 
-        # Box background — Sapphire uses white/cream with dark border
-        box = pygame.Surface((w, h), pygame.SRCALPHA)
-        box.fill((248, 248, 240, 230))
-        self.game_surface.blit(box, (x, y))
-        pygame.draw.rect(self.game_surface, (40, 40, 48), (x, y, w, h), 2, border_radius=3)
+        # Pokemon RSE double-bordered info box
+        self._draw_pokemon_box(x, y, w, h)
 
         # Name and level
         nf = self.fonts.get(11, bold=True)
@@ -5304,11 +6141,8 @@ class AethermoorGame:
             menu_w = 220
             menu_h = 76
 
-            # Menu background
-            menu_bg = pygame.Surface((menu_w, menu_h), pygame.SRCALPHA)
-            menu_bg.fill((248, 248, 240, 240))
-            self.game_surface.blit(menu_bg, (menu_x, menu_y))
-            pygame.draw.rect(self.game_surface, (40, 40, 48), (menu_x, menu_y, menu_w, menu_h), 2, border_radius=4)
+            # Pokemon-style double-bordered menu
+            self._draw_pokemon_box(menu_x, menu_y, menu_w, menu_h)
 
             if not self.battle.selecting_target:
                 actions = self.battle.get_actions()
@@ -5355,15 +6189,12 @@ class AethermoorGame:
                     (menu_x + 12, menu_y + 30),
                 )
 
-        # --- Message Box (Sapphire style — bottom of screen) ---
+        # --- Message Box (Pokemon RSE style — double-bordered) ---
         msg_x = 8
         msg_y = GAME_H - 84
         msg_w = GAME_W - 240
         msg_h = 76
-        msg_bg = pygame.Surface((msg_w, msg_h), pygame.SRCALPHA)
-        msg_bg.fill((248, 248, 240, 240))
-        self.game_surface.blit(msg_bg, (msg_x, msg_y))
-        pygame.draw.rect(self.game_surface, (40, 40, 48), (msg_x, msg_y, msg_w, msg_h), 2, border_radius=4)
+        self._draw_pokemon_box(msg_x, msg_y, msg_w, msg_h)
 
         log_font = self.fonts.get(11)
         visible_log = self.battle.battle_log[-3:]
@@ -5415,18 +6246,27 @@ class AethermoorGame:
     # Transition Effect
     # ------------------------------------------------------------------
     def _draw_transition(self) -> None:
-        """Draw scene transition effect on the game surface."""
+        """Draw Pokemon-style iris wipe transition on the game surface."""
         progress = self.transition_progress
+        # Iris wipe: circle shrinks to center then expands
         if progress < 0.5:
-            # Fade to black
-            alpha = int(255 * (progress * 2))
+            # Circle shrinks (closing)
+            t = 1.0 - (progress * 2)  # 1.0 -> 0.0
         else:
-            # Fade from black
-            alpha = int(255 * (2 - progress * 2))
-        alpha = max(0, min(255, alpha))
-        overlay = pygame.Surface((GAME_W, GAME_H), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, alpha))
-        self.game_surface.blit(overlay, (0, 0))
+            # Circle expands (opening)
+            t = (progress - 0.5) * 2  # 0.0 -> 1.0
+
+        max_radius = int((GAME_W ** 2 + GAME_H ** 2) ** 0.5 / 2) + 10
+        radius = int(max_radius * t)
+
+        cx, cy = GAME_W // 2, GAME_H // 2
+
+        # Create mask surface (black with transparent circle)
+        mask = pygame.Surface((GAME_W, GAME_H), pygame.SRCALPHA)
+        mask.fill((0, 0, 0, 255))
+        if radius > 0:
+            pygame.draw.circle(mask, (0, 0, 0, 0), (cx, cy), radius)
+        self.game_surface.blit(mask, (0, 0))
 
     # ------------------------------------------------------------------
     # Dashboard Panel
@@ -5753,31 +6593,115 @@ class AethermoorGame:
     # Pause Menu
     # ------------------------------------------------------------------
     def _draw_pause(self) -> None:
-        """Draw the pause overlay."""
+        """Draw Pokemon RSE-style pause overlay with double-bordered menu box."""
         overlay = pygame.Surface((WINDOW_W, WINDOW_H), pygame.SRCALPHA)
         overlay.fill(PAUSE_OVERLAY)
         self.screen.blit(overlay, (0, 0))
 
-        pause_font = self.fonts.get(28, bold=True)
-        pause_text = pause_font.render("PAUSED", True, GOLD)
-        self.screen.blit(pause_text,
-                        (WINDOW_W // 2 - pause_text.get_width() // 2, WINDOW_H // 2 - 60))
+        pause_font = self.fonts.get(20, bold=True)
+        menu_font = self.fonts.get(14)
+        cx = WINDOW_W // 2
+        top_y = WINDOW_H // 2 - 120
 
-        menu_font = self.fonts.get(16)
-        items = [
-            ("Press ENTER or ESC to resume", TEXT_COLOR),
-            ("Press Q to save & quit", DIM_TEXT),
-            ("", DIM_TEXT),
-            (f"Scene: {self.scene.current_scene_id}", DIM_TEXT),
-            (f"Party: {len(self.party)} members", DIM_TEXT),
-            (f"Training data: {self.exporter.total_pairs} pairs", DIM_TEXT),
-        ]
-        for i, (text, color) in enumerate(items):
-            if text:
-                surf = menu_font.render(text, True, color)
-                self.screen.blit(surf,
-                               (WINDOW_W // 2 - surf.get_width() // 2,
-                                WINDOW_H // 2 + i * 28))
+        # Menu box dimensions
+        box_w = 360
+        box_x = cx - box_w // 2
+
+        if self.pause_mode in ("save", "load"):
+            action = "SAVE" if self.pause_mode == "save" else "LOAD"
+            box_h = 220
+
+            # Pokemon-style box (on screen surface)
+            pygame.draw.rect(self.screen, (40, 40, 48),
+                             (box_x, top_y, box_w, box_h), border_radius=8)
+            inner = pygame.Surface((box_w - 4, box_h - 4), pygame.SRCALPHA)
+            inner.fill((248, 248, 240, 240))
+            self.screen.blit(inner, (box_x + 2, top_y + 2))
+            pygame.draw.rect(self.screen, (200, 200, 208),
+                             (box_x + 3, top_y + 3, box_w - 6, box_h - 6), 1, border_radius=6)
+
+            title = pause_font.render(f"{action} GAME", True, (32, 32, 40))
+            self.screen.blit(title, (cx - title.get_width() // 2, top_y + 12))
+
+            slots = list_saves()
+            for i, slot in enumerate(slots):
+                if slot.slot == 0:
+                    continue
+                is_selected = slot.slot == self.save_slot_cursor
+                sy = top_y + 48 + (slot.slot - 1) * 36
+                if is_selected:
+                    # Highlight bar
+                    hl = pygame.Surface((box_w - 20, 30), pygame.SRCALPHA)
+                    hl.fill((80, 144, 248, 50))
+                    self.screen.blit(hl, (box_x + 10, sy))
+                    # Cursor triangle
+                    pygame.draw.polygon(self.screen, (40, 40, 48),
+                                        [(box_x + 14, sy + 6),
+                                         (box_x + 22, sy + 14),
+                                         (box_x + 14, sy + 22)])
+                color = (32, 32, 40) if is_selected else (96, 96, 112)
+                surf = menu_font.render(slot.label, True, color)
+                self.screen.blit(surf, (box_x + 30, sy + 6))
+
+            hint = self.fonts.get(10).render("ENTER: confirm  |  ESC: back", True, (128, 128, 144))
+            self.screen.blit(hint, (cx - hint.get_width() // 2, top_y + box_h - 28))
+        else:
+            # Main pause menu
+            items = ["Resume", "Save Game", "Load Game", "Save & Quit"]
+            keys = ["ENTER", "S", "L", "Q"]
+            box_h = 60 + len(items) * 34 + 60
+
+            # Pokemon-style box
+            pygame.draw.rect(self.screen, (40, 40, 48),
+                             (box_x, top_y, box_w, box_h), border_radius=8)
+            inner = pygame.Surface((box_w - 4, box_h - 4), pygame.SRCALPHA)
+            inner.fill((248, 248, 240, 240))
+            self.screen.blit(inner, (box_x + 2, top_y + 2))
+            pygame.draw.rect(self.screen, (200, 200, 208),
+                             (box_x + 3, top_y + 3, box_w - 6, box_h - 6), 1, border_radius=6)
+
+            title = pause_font.render("PAUSED", True, (32, 32, 40))
+            self.screen.blit(title, (cx - title.get_width() // 2, top_y + 14))
+
+            for i, (label, key) in enumerate(zip(items, keys)):
+                sy = top_y + 52 + i * 34
+                # Key badge
+                key_font = self.fonts.get(10, bold=True)
+                key_surf = key_font.render(key, True, (255, 255, 255))
+                kw = key_surf.get_width() + 10
+                pygame.draw.rect(self.screen, (80, 80, 96),
+                                 (box_x + 20, sy + 2, kw, 20), border_radius=3)
+                self.screen.blit(key_surf, (box_x + 25, sy + 4))
+                # Label
+                lbl = menu_font.render(label, True, (32, 32, 40))
+                self.screen.blit(lbl, (box_x + 30 + kw, sy + 3))
+
+            # Info section
+            info_y = top_y + 52 + len(items) * 34 + 4
+            pygame.draw.line(self.screen, (200, 200, 208),
+                             (box_x + 10, info_y), (box_x + box_w - 10, info_y), 1)
+            info_font = self.fonts.get(10)
+            info_items = [
+                f"Scene: {self.scene.current_scene_id}",
+                f"Party: {len(self.party)}  |  Training: {self.exporter.total_pairs} pairs",
+            ]
+            for j, txt in enumerate(info_items):
+                surf = info_font.render(txt, True, (128, 128, 144))
+                self.screen.blit(surf, (box_x + 16, info_y + 6 + j * 16))
+
+        # Save/load message overlay
+        if self.save_message and self.save_message_timer > 0:
+            msg_surf = menu_font.render(self.save_message, True, (40, 160, 40))
+            # Draw message in a small box below the menu
+            msg_w = msg_surf.get_width() + 24
+            msg_x = cx - msg_w // 2
+            msg_y = top_y + box_h + 10
+            pygame.draw.rect(self.screen, (40, 40, 48),
+                             (msg_x, msg_y, msg_w, 28), border_radius=4)
+            msg_inner = pygame.Surface((msg_w - 4, 24), pygame.SRCALPHA)
+            msg_inner.fill((248, 248, 240, 240))
+            self.screen.blit(msg_inner, (msg_x + 2, msg_y + 2))
+            self.screen.blit(msg_surf, (msg_x + 12, msg_y + 5))
 
 
 # Stats already imported at top of file
