@@ -39,4 +39,5 @@ commonLabels:
 
 images:
   - name: scbe/agent
+    newName: gcr.io/gen-lang-client-0103521392/scbe-aethermoore
     newTag: latest

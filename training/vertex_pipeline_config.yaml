@@ -5,8 +5,8 @@
 pipeline:
   name: phdm-21d-embedding-train
   description: Train custom 21D Poincare Ball embedding model for SCBE governance
-  region: us-west1
-  project_id: studio-6928670609-fdd4c
+  region: us-central1
+  project_id: gen-lang-client-0103521392
 
 model:
   name: phdm-21d-embedding
@@ -103,7 +103,7 @@ deployment:
       min_replicas: 1
       max_replicas: 3
     - platform: gke
-      cluster: test-scbecluser
+      cluster: scbe-aethermoore-cluster
       namespace: scbe-governance
       deployment_name: phdm-embedding-service
     - platform: huggingface

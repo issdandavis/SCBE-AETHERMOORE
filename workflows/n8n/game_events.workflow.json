@@ -1,0 +1,267 @@
+{
+  "name": "AetherNet Game Events",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "aethermoor-events",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "game_webhook",
+      "name": "Game Event Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-600, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const evt = $json;\nconst t = evt.event_type || 'unknown';\nconst ts = new Date((evt.timestamp || 0) * 1000).toISOString();\nreturn [{ json: { ...evt, _routed_type: t, _ts: ts } }];"
+      },
+      "id": "normalize",
+      "name": "Normalize Event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-360, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false, "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "is_battle",
+              "leftValue": "={{ $json._routed_type }}",
+              "rightValue": "battle_won",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if_battle_won",
+      "name": "If Battle Won",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-100, 80]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false, "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "is_choice",
+              "leftValue": "={{ $json._routed_type }}",
+              "rightValue": "choice_made",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if_choice",
+      "name": "If Choice Made",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-100, 250]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false, "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "is_scene",
+              "leftValue": "={{ $json._routed_type }}",
+              "rightValue": "scene_transition",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if_scene",
+      "name": "If Scene Transition",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-100, 420]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8080/v1/game/action",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-API-Key", "value": "={{ $env.SCBE_API_KEY || 'dev-key' }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ action_type: 'send_dialogue', data: { speaker: 'POLLY', text: `Victory! ${$json.enemy || 'enemy'} defeated. The AetherNet grows stronger.` } }) }}",
+        "options": {}
+      },
+      "id": "victory_response",
+      "name": "Victory Dialogue",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [200, 80]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8080/v1/game/action",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-API-Key", "value": "={{ $env.SCBE_API_KEY || 'dev-key' }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ action_type: 'tv_show', data: { show: 'Aethermoor News', content: `Player chose ${$json.action || '?'} in ${$json.scene || '?'}. Tongue: ${$json.tongue || '?'}`, channel: 'AetherTV' } }) }}",
+        "options": {}
+      },
+      "id": "choice_broadcast",
+      "name": "TV Broadcast Choice",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [200, 250]
+    },
+    {
+      "parameters": {
+        "jsCode": "const evt = $json;\nconsole.log('Scene transition:', JSON.stringify(evt));\nreturn [{ json: { logged: true, from: evt.from_scene, to: evt.to_scene, ts: evt._ts } }];"
+      },
+      "id": "log_transition",
+      "name": "Log Scene Transition",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [200, 420]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8001/v1/training/ingest",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-API-Key", "value": "={{ $env.SCBE_API_KEY || 'dev-key' }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ event_type: 'battle_won', context: `Battle won against ${$json.enemy || 'enemy'}`, outcome: `Victory! ${$json.enemy || 'enemy'} defeated.`, tongue: $json.tongue || 'KO', metadata: { enemy: $json.enemy || 'unknown', scene: $json.scene || 'unknown', source: 'n8n_battle_route' } }) }}",
+        "options": { "timeout": 5000 }
+      },
+      "id": "train_battle",
+      "name": "Train: Battle Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 80]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8001/v1/training/ingest",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-API-Key", "value": "={{ $env.SCBE_API_KEY || 'dev-key' }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ event_type: 'choice_made', context: `Player chose ${$json.action || '?'} in ${$json.scene || '?'}`, outcome: `Choice: ${$json.action || '?'}. Result: ${$json.result || 'pending'}`, tongue: $json.tongue || 'KO', metadata: { action: $json.action || 'unknown', scene: $json.scene || 'unknown', alternatives: $json.alternatives || [], source: 'n8n_choice_route' } }) }}",
+        "options": { "timeout": 5000 }
+      },
+      "id": "train_choice",
+      "name": "Train: Choice Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 250]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8001/v1/training/ingest",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-API-Key", "value": "={{ $env.SCBE_API_KEY || 'dev-key' }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ event_type: 'scene_transition', context: `Transition from ${$json.from_scene || '?'} to ${$json.to_scene || '?'}`, outcome: `Scene changed: ${$json.from_scene || '?'} -> ${$json.to_scene || '?'}`, tongue: $json.tongue || 'KO', metadata: { from_scene: $json.from_scene || 'unknown', to_scene: $json.to_scene || 'unknown', source: 'n8n_scene_route' } }) }}",
+        "options": { "timeout": 5000 }
+      },
+      "id": "train_scene",
+      "name": "Train: Scene Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 420]
+    }
+  ],
+  "connections": {
+    "Game Event Webhook": {
+      "main": [
+        [
+          { "node": "Normalize Event", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Normalize Event": {
+      "main": [
+        [
+          { "node": "If Battle Won", "type": "main", "index": 0 },
+          { "node": "If Choice Made", "type": "main", "index": 0 },
+          { "node": "If Scene Transition", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "If Battle Won": {
+      "main": [
+        [ { "node": "Victory Dialogue", "type": "main", "index": 0 } ],
+        []
+      ]
+    },
+    "If Choice Made": {
+      "main": [
+        [ { "node": "TV Broadcast Choice", "type": "main", "index": 0 } ],
+        []
+      ]
+    },
+    "If Scene Transition": {
+      "main": [
+        [ { "node": "Log Scene Transition", "type": "main", "index": 0 } ],
+        []
+      ]
+    },
+    "Victory Dialogue": {
+      "main": [
+        [ { "node": "Train: Battle Event", "type": "main", "index": 0 } ]
+      ]
+    },
+    "TV Broadcast Choice": {
+      "main": [
+        [ { "node": "Train: Choice Event", "type": "main", "index": 0 } ]
+      ]
+    },
+    "Log Scene Transition": {
+      "main": [
+        [ { "node": "Train: Scene Event", "type": "main", "index": 0 } ]
+      ]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {},
+  "meta": { "templateCredsSetupCompleted": false },
+  "active": false,
+  "versionId": "aethernet-game-events-v2"
+}
