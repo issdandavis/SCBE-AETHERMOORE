@@ -3,13 +3,15 @@ SCBE n8n Bridge — FastAPI service connecting n8n workflows to SCBE Web Agent
 =============================================================================
 
 Endpoints:
-  POST /v1/governance/scan      — Semantic antivirus scan
-  POST /v1/tongue/encode        — Sacred Tongue encoding
-  POST /v1/buffer/post          — Content Buffer posting
-  POST /v1/agent/task           — Submit web agent task
+  POST /v1/governance/scan        — Semantic antivirus scan
+  POST /v1/tongue/encode          — Sacred Tongue encoding
+  POST /v1/buffer/post            — Content Buffer posting
+  POST /v1/agent/task             — Submit web agent task
   GET  /v1/agent/task/{id}/status — Poll task status
-  POST /v1/telemetry/post-result — Log post telemetry
-  GET  /health                   — Health check
+  POST /v1/telemetry/post-result  — Log post telemetry
+  POST /v1/training/ingest        — Ingest game events into HF training pipeline
+  GET  /v1/training/status        — Training pipeline status
+  GET  /health                    — Health check
 
 Start:
   uvicorn workflows.n8n.scbe_n8n_bridge:app --host 0.0.0.0 --port 8001
@@ -17,8 +19,10 @@ Start:
 
 from __future__ import annotations
 
+import logging
 import os
 import sys
+import threading
 import time
 import uuid
 from typing import Any, Dict, List, Optional
@@ -29,6 +33,13 @@ _PROJECT = os.path.abspath(os.path.join(_HERE, "..", ".."))
 _SRC = os.path.join(_PROJECT, "src")
 if _SRC not in sys.path:
     sys.path.insert(0, _SRC)
+if _PROJECT not in sys.path:
+    sys.path.insert(0, _PROJECT)
+_DEMO = os.path.join(_PROJECT, "demo")
+if _DEMO not in sys.path:
+    sys.path.insert(0, _DEMO)
+
+logger = logging.getLogger("scbe_n8n_bridge")
 
 try:
     from fastapi import FastAPI, HTTPException, Header, Request
@@ -125,6 +136,15 @@ class TelemetryRequest(BaseModel):
     success: bool
     post_url: Optional[str] = None
     timestamp: Optional[str] = None
+
+
+class TrainingIngestRequest(BaseModel):
+    """Game event forwarded from n8n for training data collection."""
+    event_type: str
+    context: str = ""
+    outcome: str = ""
+    tongue: str = "KO"
+    metadata: Dict[str, Any] = {}
 
 
 # ---------------------------------------------------------------------------
@@ -286,3 +306,115 @@ async def telemetry_log(req: TelemetryRequest, x_api_key: Optional[str] = Header
 async def telemetry_list(x_api_key: Optional[str] = Header(None)):
     _check_key(x_api_key)
     return {"entries": _telemetry[-100:], "total": len(_telemetry)}
+
+
+# ---------------------------------------------------------------------------
+#  Training pipeline integration (game events -> RealTimeHFTrainer)
+# ---------------------------------------------------------------------------
+
+_trainer = None
+_trainer_lock = threading.Lock()
+
+
+def _get_trainer():
+    """Lazy-initialise and return the shared RealTimeHFTrainer.
+
+    The trainer is created and started on the first request so that
+    importing this module alone does not spawn background threads.
+    """
+    global _trainer
+    if _trainer is not None:
+        return _trainer
+    with _trainer_lock:
+        # Double-check after acquiring the lock
+        if _trainer is not None:
+            return _trainer
+        try:
+            from hf_trainer import RealTimeHFTrainer, load_dotenv
+
+            load_dotenv()
+            _trainer = RealTimeHFTrainer()
+            _trainer.start()
+            logger.info("RealTimeHFTrainer started via n8n bridge")
+        except Exception as exc:
+            logger.error("Failed to start RealTimeHFTrainer: %s", exc)
+            raise HTTPException(
+                status_code=503,
+                detail=f"Training pipeline unavailable: {exc}",
+            )
+    return _trainer
+
+
+# Map n8n game event types to TrainingEvent event_type values
+_EVENT_TYPE_MAP: Dict[str, str] = {
+    "battle_won": "battle",
+    "battle_lost": "battle",
+    "choice_made": "choice",
+    "scene_transition": "dialogue",
+    "evolution": "evolution",
+    "gacha_pull": "choice",
+    "level_up": "evolution",
+    "quest_complete": "choice",
+    "npc_dialogue": "dialogue",
+    "dungeon_floor_cleared": "tower_floor",
+    "boss_defeated": "battle",
+    "tongue_mastered": "evolution",
+    "companion_evolved": "evolution",
+    "quest_progress": "choice",
+}
+
+
+@app.post("/v1/training/ingest")
+async def training_ingest(
+    req: TrainingIngestRequest,
+    x_api_key: Optional[str] = Header(None),
+):
+    """Accept a game event from n8n and feed it to the RealTimeHFTrainer.
+
+    The event is converted into a TrainingEvent (prompt/response SFT pair)
+    and enqueued for governance validation, local JSONL export, and
+    optional HuggingFace Hub upload.
+    """
+    _check_key(x_api_key)
+
+    trainer = _get_trainer()
+
+    from hf_trainer import TrainingEvent
+
+    # Build the SFT prompt/response pair from the game event
+    mapped_type = _EVENT_TYPE_MAP.get(req.event_type, req.event_type)
+    tongue = req.tongue or "KO"
+
+    prompt = f"[{tongue}] {req.event_type}: {req.context}" if req.context else f"[{tongue}] {req.event_type}"
+    response = req.outcome or f"{req.event_type} recorded"
+
+    meta: Dict[str, Any] = {
+        "tongue": tongue,
+        "source": "n8n",
+        "original_event_type": req.event_type,
+    }
+    if req.metadata:
+        meta.update(req.metadata)
+
+    event = TrainingEvent(
+        event_type=mapped_type,
+        prompt=prompt,
+        response=response,
+        metadata=meta,
+    )
+
+    trainer.put_event(event)
+
+    return {
+        "status": "queued",
+        "event_type": mapped_type,
+        "trainer_stats": trainer.get_stats(),
+    }
+
+
+@app.get("/v1/training/status")
+async def training_status(x_api_key: Optional[str] = Header(None)):
+    """Return the current trainer pipeline status."""
+    _check_key(x_api_key)
+    trainer = _get_trainer()
+    return trainer.get_status_dict()

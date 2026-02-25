@@ -1,8 +1,12 @@
 {
-  "updated_at_utc": "2026-02-20T08:05:47.735453+00:00",
-  "run_id": "20260220T080009Z",
-  "fingerprint": "66fb207e0efa114f2ed011f9ca1593c6a29267401e5a438d41d23a7c1f87d47d",
+  "updated_at_utc": "2026-02-24T14:46:19.925247+00:00",
+  "run_id": "20260224T144619Z",
+  "fingerprint": "e6461976f4a59e04e75b5be5d4fbbb404aefcb4fa03a3d5e8b04568e4c7889c9",
   "index": {
+    "AGENTS.md": {
+      "size": 4829,
+      "mtime_ns": 1771834182369415700
+    },
     "ALIASES.md": {
       "size": 524,
       "mtime_ns": 1771221010226588200
@@ -12,12 +16,12 @@
       "mtime_ns": 1771221010226588200
     },
     "CHANGELOG.md": {
-      "size": 14938,
-      "mtime_ns": 1771560066186100500
+      "size": 14957,
+      "mtime_ns": 1771834182370443600
     },
     "CLAUDE.md": {
-      "size": 19295,
-      "mtime_ns": 1771221010229599300
+      "size": 11590,
+      "mtime_ns": 1771800881837708100
     },
     "CLEANUP_NOTES.md": {
       "size": 3705,
@@ -51,6 +55,10 @@
       "size": 23118,
       "mtime_ns": 1771221010237103800
     },
+    "PATENT_DETAILED_DESCRIPTION.md": {
+      "size": 94619,
+      "mtime_ns": 1771634229628705100
+    },
     "PITCH_EMAIL_BANK_INNOVATION_LAB.md": {
       "size": 4964,
       "mtime_ns": 1771221010237103800
@@ -60,8 +68,8 @@
       "mtime_ns": 1771221010238106500
     },
     "README.md": {
-      "size": 10519,
-      "mtime_ns": 1771488908192420900
+      "size": 11086,
+      "mtime_ns": 1771834182373051100
     },
     "README_INDEX.md": {
       "size": 1534,
@@ -120,8 +128,8 @@
       "mtime_ns": 1771221010437690300
     },
     "TEST_AUDIT_REPORT.md": {
-      "size": 9978,
-      "mtime_ns": 1771221010437690300
+      "size": 9979,
+      "mtime_ns": 1771834182374079700
     },
     "TEST_FAILURE_ANALYSIS.md": {
       "size": 5065,
@@ -152,16 +160,16 @@
       "mtime_ns": 1771252300552245500
     },
     "agents/antivirus_membrane.py": {
-      "size": 3813,
-      "mtime_ns": 1771426757211022500
+      "size": 3968,
+      "mtime_ns": 1771834182375591800
     },
     "agents/browser/__init__.py": {
       "size": 2268,
       "mtime_ns": 1771221010443562100
     },
     "agents/browser/action_validator.py": {
-      "size": 8488,
-      "mtime_ns": 1771235894283825200
+      "size": 9610,
+      "mtime_ns": 1771834316372654600
     },
     "agents/browser/bounds_checker.py": {
       "size": 15893,
@@ -176,8 +184,12 @@
       "mtime_ns": 1771232036002723300
     },
     "agents/browser/main.py": {
-      "size": 23380,
-      "mtime_ns": 1771311628785161400
+      "size": 24073,
+      "mtime_ns": 1771643941514304800
+    },
+    "agents/browser/multi_cloud_failover.py": {
+      "size": 3159,
+      "mtime_ns": 1771834330440060500
     },
     "agents/browser/phdm_brain.py": {
       "size": 12945,
@@ -190,6 +202,10 @@
     "agents/browser/session_manager.py": {
       "size": 13397,
       "mtime_ns": 1771252255061256100
+    },
+    "agents/browser/symphonic_verifier.py": {
+      "size": 2866,
+      "mtime_ns": 1771834256821199700
     },
     "agents/browser/vision_embedding.py": {
       "size": 16784,
@@ -224,32 +240,128 @@
       "mtime_ns": 1771221010451526000
     },
     "agents/extension_gate.py": {
-      "size": 8128,
-      "mtime_ns": 1771487514018663700
+      "size": 8400,
+      "mtime_ns": 1771834182375591800
     },
     "agents/hyperbolic_scanner.py": {
-      "size": 1406,
-      "mtime_ns": 1771376649709513200
+      "size": 1454,
+      "mtime_ns": 1771834182375591800
     },
     "agents/kernel_antivirus_gate.py": {
-      "size": 9118,
-      "mtime_ns": 1771488250147915000
+      "size": 9407,
+      "mtime_ns": 1771834182378512100
     },
     "agents/linux_kernel_event_bridge.py": {
-      "size": 7892,
-      "mtime_ns": 1771489271733265600
+      "size": 8141,
+      "mtime_ns": 1771834182379072000
     },
     "agents/multi_model_modal_matrix.py": {
-      "size": 6508,
-      "mtime_ns": 1771490045796008400
+      "size": 6707,
+      "mtime_ns": 1771834182379072000
+    },
+    "agents/obsidian_researcher/__init__.py": {
+      "size": 1072,
+      "mtime_ns": 1771824790643781500
+    },
+    "agents/obsidian_researcher/byproduct_logger.py": {
+      "size": 1574,
+      "mtime_ns": 1771820821843390600
+    },
+    "agents/obsidian_researcher/coverage_map.py": {
+      "size": 9706,
+      "mtime_ns": 1771819010843112300
+    },
+    "agents/obsidian_researcher/cross_reference_engine.py": {
+      "size": 15575,
+      "mtime_ns": 1771817138530784800
+    },
+    "agents/obsidian_researcher/knowledge_graph.py": {
+      "size": 19695,
+      "mtime_ns": 1771819345847497700
+    },
+    "agents/obsidian_researcher/note_renderer.py": {
+      "size": 12193,
+      "mtime_ns": 1771819009888871400
+    },
+    "agents/obsidian_researcher/podcast_generator.py": {
+      "size": 26652,
+      "mtime_ns": 1771819278313220800
+    },
+    "agents/obsidian_researcher/selftest.py": {
+      "size": 14745,
+      "mtime_ns": 1771818803323379000
+    },
+    "agents/obsidian_researcher/source_adapter.py": {
+      "size": 2034,
+      "mtime_ns": 1771817019711545200
+    },
+    "agents/obsidian_researcher/sources/__init__.py": {
+      "size": 504,
+      "mtime_ns": 1771818859404930400
+    },
+    "agents/obsidian_researcher/sources/arxiv_source.py": {
+      "size": 6545,
+      "mtime_ns": 1771817112820140200
+    },
+    "agents/obsidian_researcher/sources/brainstorm_source.py": {
+      "size": 8218,
+      "mtime_ns": 1771818683049873700
+    },
+    "agents/obsidian_researcher/sources/notebook_lm_source.py": {
+      "size": 11721,
+      "mtime_ns": 1771818850597998600
+    },
+    "agents/obsidian_researcher/sources/reddit_source.py": {
+      "size": 8366,
+      "mtime_ns": 1771818624414943800
+    },
+    "agents/obsidian_researcher/sources/vault_source.py": {
+      "size": 12260,
+      "mtime_ns": 1771817154901701300
+    },
+    "agents/obsidian_researcher/sources/web_page_source.py": {
+      "size": 10501,
+      "mtime_ns": 1771818658718501000
+    },
+    "agents/obsidian_researcher/vault_manager.py": {
+      "size": 5188,
+      "mtime_ns": 1771819011832199500
+    },
+    "agents/obsidian_researcher/web_recon/__init__.py": {
+      "size": 1050,
+      "mtime_ns": 1771818672867352100
+    },
+    "agents/obsidian_researcher/web_recon/governed_recon.py": {
+      "size": 10629,
+      "mtime_ns": 1771818871139640400
+    },
+    "agents/obsidian_researcher/web_recon/pixel_scanner.py": {
+      "size": 5611,
+      "mtime_ns": 1771818764452511200
+    },
+    "agents/obsidian_researcher/web_recon/recon_goggles.py": {
+      "size": 11574,
+      "mtime_ns": 1771818742760936600
+    },
+    "agents/obsidian_researcher/web_recon/site_adapter.py": {
+      "size": 12088,
+      "mtime_ns": 1771818837118487300
+    },
+    "agents/obsidian_researcher/web_recon/site_recon.py": {
+      "size": 8924,
+      "mtime_ns": 1771818703724560900
+    },
+    "agents/obsidian_researcher/web_recon/site_skimmer.py": {
+      "size": 11052,
+      "mtime_ns": 1771818801407918500
     },
     "agents/pqc_key_auditor.py": {
-      "size": 3023,
-      "mtime_ns": 1771376640818984800
+      "size": 3111,
+      "mtime_ns": 1771834182379072000
     },
     "agents/swarm_browser.py": {
       "size": 34745,
-      "mtime_ns": 1771570172979249400
+      "mtime_ns": 1771834182383203700
     },
     "api/__init__.py": {
       "size": 59,
@@ -296,8 +408,8 @@
       "mtime_ns": 1771221010462037000
     },
     "api/main.py": {
-      "size": 45899,
-      "mtime_ns": 1771221010462037000
+      "size": 56629,
+      "mtime_ns": 1771905721223477300
     },
     "api/metering.py": {
       "size": 4682,
@@ -306,6 +418,10 @@
     "api/persistence.py": {
       "size": 19983,
       "mtime_ns": 1771221010464038500
+    },
+    "api/validation.py": {
+      "size": 8365,
+      "mtime_ns": 1771834565680830100
     },
     "build_package.py": {
       "size": 5239,
@@ -336,24 +452,24 @@
       "mtime_ns": 1771221010504094600
     },
     "docker-compose.api.yml": {
-      "size": 979,
-      "mtime_ns": 1771221011060877700
+      "size": 1012,
+      "mtime_ns": 1771834182497833100
     },
     "docker-compose.hydra-remote.yml": {
-      "size": 1367,
-      "mtime_ns": 1771378335122100800
+      "size": 1400,
+      "mtime_ns": 1771834182497833100
     },
     "docker-compose.research.yml": {
-      "size": 2208,
-      "mtime_ns": 1771566180227925100
+      "size": 2279,
+      "mtime_ns": 1771834182502557700
     },
     "docker-compose.unified.yml": {
-      "size": 4774,
-      "mtime_ns": 1771221011061877900
+      "size": 4845,
+      "mtime_ns": 1771834182503083100
     },
     "docker-compose.yml": {
-      "size": 921,
-      "mtime_ns": 1771221011061877900
+      "size": 885,
+      "mtime_ns": 1771834182503607200
     },
     "docs/00-overview/README.md": {
       "size": 5741,
@@ -390,6 +506,10 @@
     "docs/03-deployment/firebase-setup.md": {
       "size": 3524,
       "mtime_ns": 1771221011083419700
+    },
+    "docs/03-deployment/firebase-studio-game-sync.md": {
+      "size": 1516,
+      "mtime_ns": 1771912867835284100
     },
     "docs/03-deployment/zapier-setup.md": {
       "size": 8228,
@@ -428,8 +548,8 @@
       "mtime_ns": 1771221011091950700
     },
     "docs/08-reference/README.md": {
-      "size": 925,
-      "mtime_ns": 1771221011092953000
+      "size": 987,
+      "mtime_ns": 1771834182505347300
     },
     "docs/08-reference/archive/AETHERMOORE_AI_WORKFLOW_PLATFORM_DRAFT.md": {
       "size": 11365,
@@ -1171,9 +1291,21 @@
       "size": 2109,
       "mtime_ns": 1771304789257499300
     },
+    "docs/AETHERMORE_ROUNDABOUT_CITY_ARCH.md": {
+      "size": 3152,
+      "mtime_ns": 1771698512799536800
+    },
     "docs/AGENT_ARCHITECTURE.md": {
       "size": 16723,
       "mtime_ns": 1771221011230314100
+    },
+    "docs/AI2AI_ARXIV_RETRIEVAL_SERVICE.md": {
+      "size": 2241,
+      "mtime_ns": 1771688929085311400
+    },
+    "docs/AI_BRIDGE_TERMINAL_BROWSER.md": {
+      "size": 831,
+      "mtime_ns": 1771825066985367800
     },
     "docs/AI_BROWSER_ACCESS.md": {
       "size": 1306,
@@ -1183,6 +1315,10 @@
       "size": 3391,
       "mtime_ns": 1771232135013595500
     },
+    "docs/AI_KERNEL_BOOTSTRAP.md": {
+      "size": 1885,
+      "mtime_ns": 1771901985963546100
+    },
     "docs/API.md": {
       "size": 11697,
       "mtime_ns": 1771221011231314500
@@ -1191,9 +1327,21 @@
       "size": 57225,
       "mtime_ns": 1771221011232313900
     },
+    "docs/ARXIV_AUTOMATION.md": {
+      "size": 2140,
+      "mtime_ns": 1771688978075683100
+    },
     "docs/ASANA_AETHERBROWSE_AUTOMATION.md": {
       "size": 2176,
       "mtime_ns": 1771309298305806900
+    },
+    "docs/AUTONOMOUS_WEB_AGENT_RESEARCH_REPORT.md": {
+      "size": 46886,
+      "mtime_ns": 1771834182506382300
+    },
+    "docs/AXIOM_CROSS_REFERENCE.md": {
+      "size": 7291,
+      "mtime_ns": 1771634229689140700
     },
     "docs/BILLING_METRICS.md": {
       "size": 1311,
@@ -1204,16 +1352,16 @@
       "mtime_ns": 1771221011233314100
     },
     "docs/BUYER_PROOF_CHECKLIST.md": {
-      "size": 1148,
-      "mtime_ns": 1771324407693767600
+      "size": 1186,
+      "mtime_ns": 1771834182507959300
     },
     "docs/CAPABILITIES.md": {
       "size": 3153,
       "mtime_ns": 1771221011233314100
     },
     "docs/CHANGE_NOTES_SPIRAL_ENGINE_2026-02-20.md": {
-      "size": 2156,
-      "mtime_ns": 1771548078863875200
+      "size": 2222,
+      "mtime_ns": 1771834182509583800
     },
     "docs/CHAPTER_6_PHDM_POLYHEDRAL_HAMILTONIAN_DYNAMIC_MESH.md": {
       "size": 9686,
@@ -1224,28 +1372,32 @@
       "mtime_ns": 1771221011234314100
     },
     "docs/CLAIMS_EVIDENCE_LEDGER.md": {
-      "size": 4061,
-      "mtime_ns": 1771485472603946200
+      "size": 7021,
+      "mtime_ns": 1771634229690139400
     },
     "docs/CLOUD_KERNEL_DATA_PIPELINE.md": {
-      "size": 2774,
-      "mtime_ns": 1771471163423060900
+      "size": 2868,
+      "mtime_ns": 1771834182510626800
     },
     "docs/COMMERCIAL_AGREEMENT.md": {
       "size": 12162,
       "mtime_ns": 1771570081709107800
     },
     "docs/COMPLEX_SYSTEMS_ANALYSIS_STYLE_GUIDE.md": {
-      "size": 3573,
-      "mtime_ns": 1771483207273859300
+      "size": 3683,
+      "mtime_ns": 1771834182511668500
     },
     "docs/CONNECTOR_ONBOARDING.md": {
-      "size": 3575,
-      "mtime_ns": 1771559849519921000
+      "size": 3723,
+      "mtime_ns": 1771834182512710500
     },
     "docs/CORE_AXIOMS_CANONICAL_INDEX.md": {
-      "size": 923,
-      "mtime_ns": 1771485255578054200
+      "size": 948,
+      "mtime_ns": 1771834182513227200
+    },
+    "docs/CSTM_design.md": {
+      "size": 87821,
+      "mtime_ns": 1771834182514777600
     },
     "docs/DARPA_OUTREACH_PACKAGE.md": {
       "size": 6609,
@@ -1259,6 +1411,10 @@
       "size": 2058,
       "mtime_ns": 1771221011236544700
     },
+    "docs/DOCKER_TERMINAL_OPERATIONS.md": {
+      "size": 2316,
+      "mtime_ns": 1771834182515300800
+    },
     "docs/DRONE_FLEET_UPGRADES.md": {
       "size": 11507,
       "mtime_ns": 1771570081710563900
@@ -1266,6 +1422,14 @@
     "docs/DUAL_LATTICE_STACK_V2.md": {
       "size": 7045,
       "mtime_ns": 1771221011237549200
+    },
+    "docs/EBOOK_GRAPHIC_PRODUCT_PLAN.md": {
+      "size": 1283,
+      "mtime_ns": 1771834183357849600
+    },
+    "docs/EMULATOR_SIMPLE_CORE_MINIGAMES.md": {
+      "size": 2540,
+      "mtime_ns": 1771913339428104900
     },
     "docs/ENABLEMENT.md": {
       "size": 18189,
@@ -1280,8 +1444,8 @@
       "mtime_ns": 1771221011240545600
     },
     "docs/EXPERIMENT_QUEUE.md": {
-      "size": 3655,
-      "mtime_ns": 1771485495877298100
+      "size": 6406,
+      "mtime_ns": 1771634229698656900
     },
     "docs/FEDERATED_MULTI_CLOUD_TRAINING_PLAN.md": {
       "size": 4856,
@@ -1291,13 +1455,17 @@
       "size": 4896,
       "mtime_ns": 1771221011241544900
     },
+    "docs/FRANKENMODEL_SWARM_AGENT.md": {
+      "size": 706,
+      "mtime_ns": 1771826138373594600
+    },
     "docs/GEOSEAL_ACCESS_CONTROL.md": {
       "size": 17073,
       "mtime_ns": 1771570081710563900
     },
     "docs/GITHUB_DOCS_AUDIT_2026-02-20.md": {
-      "size": 981,
-      "mtime_ns": 1771550238984646600
+      "size": 1013,
+      "mtime_ns": 1771834182516331700
     },
     "docs/GOOGLE_CLOUD_SETUP.md": {
       "size": 13010,
@@ -1309,11 +1477,15 @@
     },
     "docs/HYDRA_COORDINATION.md": {
       "size": 66122,
-      "mtime_ns": 1771570172980765000
+      "mtime_ns": 1771834182517883900
     },
     "docs/HYDRA_HEADLESS_MMX_COORDINATOR.md": {
-      "size": 1292,
-      "mtime_ns": 1771490129298302000
+      "size": 1347,
+      "mtime_ns": 1771834182518928700
+    },
+    "docs/HYDRA_LONG_MISSION_PLAYBOOK.md": {
+      "size": 2303,
+      "mtime_ns": 1771634229699656700
     },
     "docs/HYDRA_MULTI_AGENT_COORDINATION_SYSTEM_COMPLETE_ARCHITECTURE.md": {
       "size": 131,
@@ -1328,44 +1500,56 @@
       "mtime_ns": 1771221011246055700
     },
     "docs/INTEGRATION_GUIDE_SPIRAL_ENGINE_OMEGA_WATCHERS.md": {
-      "size": 2849,
-      "mtime_ns": 1771548094100198000
+      "size": 2966,
+      "mtime_ns": 1771834182519989000
     },
     "docs/INTEGRATION_ROADMAP.md": {
       "size": 14116,
       "mtime_ns": 1771221011246055700
     },
+    "docs/ISA_V0.md": {
+      "size": 3346,
+      "mtime_ns": 1771634229700658000
+    },
     "docs/KERNEL_ANTIVIRUS_SCBE.md": {
-      "size": 2739,
-      "mtime_ns": 1771489313760494400
+      "size": 2831,
+      "mtime_ns": 1771834182521041600
     },
     "docs/LANDING_PAGE.md": {
       "size": 10093,
       "mtime_ns": 1771221011247056000
     },
     "docs/LANGUAGE_GUARDRAILS.md": {
-      "size": 2218,
-      "mtime_ns": 1771485511739396600
+      "size": 5619,
+      "mtime_ns": 1771634229700658000
     },
     "docs/LANGUES_WEIGHTING_SYSTEM.md": {
-      "size": 5012,
-      "mtime_ns": 1771488895153671000
+      "size": 5230,
+      "mtime_ns": 1771834182522593500
     },
     "docs/LOCAL_CLOUD_AUTOSYNC.md": {
-      "size": 3542,
-      "mtime_ns": 1771480874018211900
+      "size": 3631,
+      "mtime_ns": 1771834182523637700
+    },
+    "docs/MASTER_SPEC_M4_21D.md": {
+      "size": 1048,
+      "mtime_ns": 1771819699096656100
     },
     "docs/MCP_SERVER_BOOTSTRAP.md": {
       "size": 2631,
-      "mtime_ns": 1771570172982774900
+      "mtime_ns": 1771834182525188400
     },
     "docs/MEDICAL_NANOBOT_SWARMS.md": {
       "size": 11512,
       "mtime_ns": 1771221011247056000
     },
     "docs/MOBILE_AUTONOMY_RUNBOOK.md": {
-      "size": 3253,
-      "mtime_ns": 1771559488887707700
+      "size": 3346,
+      "mtime_ns": 1771834182526224400
+    },
+    "docs/MODEL_SYNTHESIS_AGENT.md": {
+      "size": 516,
+      "mtime_ns": 1771825187830841400
     },
     "docs/MONOREPO_RESTRUCTURING_PLAN.md": {
       "size": 2578,
@@ -1376,8 +1560,8 @@
       "mtime_ns": 1771570081715556400
     },
     "docs/MULTI_AI_OFFLINE_ONLINE_SETUP.md": {
-      "size": 3074,
-      "mtime_ns": 1771471192309023600
+      "size": 3166,
+      "mtime_ns": 1771834182527271500
     },
     "docs/MULTI_CLOUD_LONGRUN_TRAINING_BOOTSTRAP.md": {
       "size": 2093,
@@ -1387,21 +1571,61 @@
       "size": 2185,
       "mtime_ns": 1771294636568944900
     },
+    "docs/N8N_X_MONETIZE_AUTOMATION.md": {
+      "size": 1367,
+      "mtime_ns": 1771834183358387500
+    },
+    "docs/NEXTGEN_BROWSER_AGENT_SYSTEM.md": {
+      "size": 2515,
+      "mtime_ns": 1771834672394340600
+    },
+    "docs/NEXT_GEN_BROWSER_AGENT_IMPLEMENTATION.md": {
+      "size": 1406,
+      "mtime_ns": 1771834368529957000
+    },
+    "docs/NIGHTLY_CHANGE_NOTES_2026-02-21.md": {
+      "size": 2634,
+      "mtime_ns": 1771834182528305100
+    },
+    "docs/NIGHTLY_CHANGE_NOTES_2026-02-22.md": {
+      "size": 2879,
+      "mtime_ns": 1771834182528825400
+    },
+    "docs/NIGHTLY_NOTES_2026-02-23.md": {
+      "size": 1793,
+      "mtime_ns": 1771830713378628800
+    },
+    "docs/NONBINARY_KERNEL_SPEC.md": {
+      "size": 650,
+      "mtime_ns": 1771826670451761700
+    },
+    "docs/NOTION_MCP_TOKEN_FIX_2026-02-22.md": {
+      "size": 1507,
+      "mtime_ns": 1771834182529345700
+    },
+    "docs/NOTION_PAGE_INDEX.md": {
+      "size": 10126,
+      "mtime_ns": 1771834182530377100
+    },
+    "docs/OBSIDIAN_MULTI_AI_DOMINO.md": {
+      "size": 2233,
+      "mtime_ns": 1771907732181883000
+    },
     "docs/OFFER_PILOT.md": {
-      "size": 1278,
-      "mtime_ns": 1771324399488192400
+      "size": 1320,
+      "mtime_ns": 1771834182531418000
     },
     "docs/OFFLINE_MODE_SPEC.md": {
-      "size": 2813,
-      "mtime_ns": 1771464021109068500
+      "size": 2911,
+      "mtime_ns": 1771834182532973900
     },
     "docs/ONE_PAGER_INVESTOR.md": {
       "size": 1528,
       "mtime_ns": 1771221011249055700
     },
     "docs/PATENT_PROVISIONAL_ABSTRACT_BACKGROUND.md": {
-      "size": 3617,
-      "mtime_ns": 1771474479802358100
+      "size": 3657,
+      "mtime_ns": 1771834182534013700
     },
     "docs/PHDM_BRAIN_ARCHITECTURE.md": {
       "size": 4460,
@@ -1411,9 +1635,21 @@
       "size": 6767,
       "mtime_ns": 1771570081717573500
     },
+    "docs/PLAYWRIGHT_BOTH_SIDE.md": {
+      "size": 976,
+      "mtime_ns": 1771832030695481500
+    },
+    "docs/POLLY_CLAY_SQUAD.md": {
+      "size": 2852,
+      "mtime_ns": 1771662879178070100
+    },
     "docs/POLLY_PADS_ARCHITECTURE.md": {
       "size": 24667,
       "mtime_ns": 1771221011251055000
+    },
+    "docs/PR247_PHASED_MERGE_PLAN_2026-02-22.md": {
+      "size": 1666,
+      "mtime_ns": 1771834182534532800
     },
     "docs/PUBLISHING.md": {
       "size": 1164,
@@ -1428,8 +1664,8 @@
       "mtime_ns": 1771221011252559300
     },
     "docs/README.md": {
-      "size": 9405,
-      "mtime_ns": 1771570172990583800
+      "size": 11495,
+      "mtime_ns": 1771913695799003100
     },
     "docs/REMAINING_WORK.md": {
       "size": 3647,
@@ -1443,6 +1679,14 @@
       "size": 3046,
       "mtime_ns": 1771221011254565600
     },
+    "docs/ROM_EMULATOR_COLAB.md": {
+      "size": 3678,
+      "mtime_ns": 1771912874160574800
+    },
+    "docs/ROM_OBSIDIAN_EXECUTION_PLAN_2026-02-24.md": {
+      "size": 3559,
+      "mtime_ns": 1771913700298664300
+    },
     "docs/RUNBOOK.md": {
       "size": 2271,
       "mtime_ns": 1771317796399764400
@@ -1452,20 +1696,20 @@
       "mtime_ns": 1771221011255566900
     },
     "docs/SAFE_EXTENSION_GATE.md": {
-      "size": 1602,
-      "mtime_ns": 1771487536822235600
+      "size": 1655,
+      "mtime_ns": 1771834182537759900
     },
     "docs/SCBE_AETHERMOORE_TECH_DECK_V5_COMPLETE.md": {
-      "size": 12082,
-      "mtime_ns": 1771476523427101400
+      "size": 12525,
+      "mtime_ns": 1771834182539343200
     },
     "docs/SCBE_COMPLETE_SYSTEM.md": {
       "size": 23162,
       "mtime_ns": 1771221011256567300
     },
     "docs/SCBE_CONTEXT_AETHERBROWSE_AGENT.md": {
-      "size": 1071,
-      "mtime_ns": 1771311828509223200
+      "size": 1100,
+      "mtime_ns": 1771834182540349100
     },
     "docs/SCBE_FULL_SYSTEM_LAYER_MAP.md": {
       "size": 6789,
@@ -1476,12 +1720,28 @@
       "mtime_ns": 1771221011257565000
     },
     "docs/SCBE_SELF_IMPROVEMENT_LOOP_2026-02-17.md": {
-      "size": 1296,
-      "mtime_ns": 1771311819494832200
+      "size": 1332,
+      "mtime_ns": 1771834182541349100
+    },
+    "docs/SCBE_SYSTEM_CLI.md": {
+      "size": 6176,
+      "mtime_ns": 1771834182542349400
     },
     "docs/SCBE_TOPOLOGICAL_CFI_UNIFIED.md": {
       "size": 18956,
       "mtime_ns": 1771221011258894800
+    },
+    "docs/SCBE_WEB_AGENT_ARCHITECTURE.md": {
+      "size": 115066,
+      "mtime_ns": 1771834182543800700
+    },
+    "docs/SELF_IMPROVEMENT_AGENTS.md": {
+      "size": 4324,
+      "mtime_ns": 1771834182544831100
+    },
+    "docs/SEMANTIC_MESH_230.md": {
+      "size": 696,
+      "mtime_ns": 1771827849925436500
     },
     "docs/SIX_TONGUES_CLI.md": {
       "size": 39203,
@@ -1493,19 +1753,19 @@
     },
     "docs/SPIRALVERSE_CODEX.md": {
       "size": 889,
-      "mtime_ns": 1771570172995106400
+      "mtime_ns": 1771834182545868700
     },
     "docs/SS1_TOKENIZER_PROTOCOL.md": {
       "size": 10531,
       "mtime_ns": 1771570081721411300
     },
     "docs/STVM_EXECUTION_MODEL.md": {
-      "size": 1816,
-      "mtime_ns": 1771484735153231900
+      "size": 1874,
+      "mtime_ns": 1771834182546920300
     },
     "docs/ST_ISA_V0.md": {
-      "size": 2453,
-      "mtime_ns": 1771484724407177000
+      "size": 2566,
+      "mtime_ns": 1771834182547963200
     },
     "docs/SWARM_CODER_ONEPAGER.md": {
       "size": 7011,
@@ -1515,13 +1775,29 @@
       "size": 16970,
       "mtime_ns": 1771570081721917800
     },
+    "docs/SYSTEM_ACCESS_AUDIT_2026-02-22.md": {
+      "size": 1990,
+      "mtime_ns": 1771834182548990100
+    },
+    "docs/SYSTEM_COMPLETION_MASTER_PLAN_2026-02-22.md": {
+      "size": 2853,
+      "mtime_ns": 1771834182549545800
+    },
+    "docs/SYSTEM_CONNECTOR_HUB.md": {
+      "size": 1211,
+      "mtime_ns": 1771818499541432200
+    },
     "docs/TECHNICAL_REFERENCE.md": {
-      "size": 7198,
-      "mtime_ns": 1771488916764112600
+      "size": 7221,
+      "mtime_ns": 1771834182550552800
     },
     "docs/TERMINAL_OPS_QUICKSTART.md": {
-      "size": 3322,
-      "mtime_ns": 1771560057271749800
+      "size": 3435,
+      "mtime_ns": 1771834182551688100
+    },
+    "docs/TOMORROW_CODE_PRISM_2026-02-22.md": {
+      "size": 1421,
+      "mtime_ns": 1771834182552688000
     },
     "docs/UNIFIED_SYSTEM_REPORT.md": {
       "size": 15257,
@@ -1535,13 +1811,25 @@
       "size": 1573,
       "mtime_ns": 1771317023780010900
     },
+    "docs/WEB_CURSOR_PR_MERGE.md": {
+      "size": 1361,
+      "mtime_ns": 1771830841176623300
+    },
     "docs/WEB_RESEARCH_TRAINING_PIPELINE.md": {
-      "size": 2314,
-      "mtime_ns": 1771490506878557500
+      "size": 2393,
+      "mtime_ns": 1771834182553688600
+    },
+    "docs/WORKFLOW_VECTOR_Z.md": {
+      "size": 622,
+      "mtime_ns": 1771829210920588600
     },
     "docs/WORLDFORGE_TEMPLATE.md": {
       "size": 289097,
       "mtime_ns": 1771570081725935400
+    },
+    "docs/ZAPIER_SCBE_AUTOMATION.md": {
+      "size": 2091,
+      "mtime_ns": 1771830701179717900
     },
     "docs/archive/ACTION_ITEMS_FROM_REVIEW.md": {
       "size": 6785,
@@ -2103,6 +2391,22 @@
       "size": 14200,
       "mtime_ns": 1771221011359235100
     },
+    "docs/blog/00-scbe-aethermoore-definitive.md": {
+      "size": 8487,
+      "mtime_ns": 1771834182555193300
+    },
+    "docs/blog/01-scbe-governance-framework.md": {
+      "size": 3843,
+      "mtime_ns": 1771834182555706500
+    },
+    "docs/blog/02-flock-shepherd-multi-ai.md": {
+      "size": 5026,
+      "mtime_ns": 1771834182556714000
+    },
+    "docs/blog/03-polly-pads-dual-zone.md": {
+      "size": 5025,
+      "mtime_ns": 1771834182556714000
+    },
     "docs/core-theorems/SACRED_EGGS_GENESIS_BOOTSTRAP_AUTHORIZATION.md": {
       "size": 5058,
       "mtime_ns": 1771221011360232700
@@ -2136,40 +2440,44 @@
       "mtime_ns": 1771221011365743900
     },
     "docs/headless_ide_quickstart.md": {
-      "size": 1252,
-      "mtime_ns": 1771386850262602300
+      "size": 1290,
+      "mtime_ns": 1771834182558262200
     },
     "docs/hydra/ARCHITECTURE.md": {
       "size": 15375,
       "mtime_ns": 1771221011367744500
+    },
+    "docs/hydra/MISSION_1000_STEP_ACCEPTANCE.md": {
+      "size": 1532,
+      "mtime_ns": 1771634157132188100
     },
     "docs/hyperbolic-mind-map-construction.md": {
       "size": 2734,
       "mtime_ns": 1771221011368744300
     },
     "docs/ide/ARCH_OPTIONS.md": {
-      "size": 47403,
-      "mtime_ns": 1771559728551328800
+      "size": 48109,
+      "mtime_ns": 1771834182559860100
     },
     "docs/ide/BUILD_PLAN_90D.md": {
-      "size": 53177,
-      "mtime_ns": 1771560155671866700
+      "size": 53848,
+      "mtime_ns": 1771834182560930000
     },
     "docs/ide/ENVELOPE_SIGNING_SPEC.md": {
-      "size": 38322,
-      "mtime_ns": 1771561423111057000
+      "size": 39188,
+      "mtime_ns": 1771834182562497500
     },
     "docs/ide/MISSION_CONTROL_SPEC.md": {
-      "size": 67367,
-      "mtime_ns": 1771560922178240700
+      "size": 68221,
+      "mtime_ns": 1771834182564059500
     },
     "docs/ide/MVP_SPEC.md": {
-      "size": 24585,
-      "mtime_ns": 1771559638531898200
+      "size": 24975,
+      "mtime_ns": 1771834182565605000
     },
     "docs/ide/THREAT_MODEL.md": {
-      "size": 76979,
-      "mtime_ns": 1771559897042489000
+      "size": 77911,
+      "mtime_ns": 1771834182566835400
     },
     "docs/index.md": {
       "size": 3859,
@@ -2180,16 +2488,20 @@
       "mtime_ns": 1771221011369743200
     },
     "docs/map-room/README.md": {
-      "size": 890,
-      "mtime_ns": 1771465911861868600
+      "size": 921,
+      "mtime_ns": 1771834182568425200
     },
     "docs/map-room/session_handoff_latest.md": {
-      "size": 19020,
-      "mtime_ns": 1771477136592920400
+      "size": 19577,
+      "mtime_ns": 1771834182570075700
     },
     "docs/map-room/session_handoff_template.md": {
-      "size": 671,
-      "mtime_ns": 1771465918009191200
+      "size": 725,
+      "mtime_ns": 1771834182570598700
+    },
+    "docs/map-room/training_totals_latest.md": {
+      "size": 3278,
+      "mtime_ns": 1771913656755391500
     },
     "docs/math-core-replication.md": {
       "size": 3442,
@@ -2201,31 +2513,47 @@
     },
     "docs/news/latest.md": {
       "size": 926,
-      "mtime_ns": 1771374768557267300
+      "mtime_ns": 1771834182572205300
     },
     "docs/news/node_fleet_20260217T105928Z.md": {
       "size": 905,
-      "mtime_ns": 1771326245120024600
+      "mtime_ns": 1771834182573833300
     },
     "docs/news/node_fleet_20260217T110715Z.md": {
       "size": 905,
-      "mtime_ns": 1771326444109120300
+      "mtime_ns": 1771834182576467300
     },
     "docs/news/node_fleet_20260217T143132Z.md": {
       "size": 926,
-      "mtime_ns": 1771338700818955700
+      "mtime_ns": 1771834182577473400
     },
     "docs/news/node_fleet_20260218T003239Z.md": {
       "size": 926,
-      "mtime_ns": 1771374768556266600
+      "mtime_ns": 1771834182579976300
     },
     "docs/notion_pages_sweep_notes.md": {
       "size": 4759,
       "mtime_ns": 1771235746241724900
     },
+    "docs/open_source_tools_research.md": {
+      "size": 31294,
+      "mtime_ns": 1771834182579976300
+    },
+    "docs/patent/CIP_TECHNICAL_SPECIFICATION.md": {
+      "size": 54937,
+      "mtime_ns": 1771834182581519900
+    },
+    "docs/patent/CLAIMS_INVENTORY.md": {
+      "size": 54171,
+      "mtime_ns": 1771834182582523900
+    },
+    "docs/patent/PRIOR_ART_ANALYSIS.md": {
+      "size": 63060,
+      "mtime_ns": 1771834182582523900
+    },
     "docs/polly_pad_auditable_runtime.md": {
-      "size": 1673,
-      "mtime_ns": 1771388981896938200
+      "size": 1747,
+      "mtime_ns": 1771834182585685400
     },
     "docs/product/LAUNCH_SKU.md": {
       "size": 3969,
@@ -2240,40 +2568,44 @@
       "mtime_ns": 1771221011370744600
     },
     "docs/research/AETHERMOOR_SPIRAL_ENGINE_MVP.md": {
-      "size": 3511,
-      "mtime_ns": 1771494365966291400
+      "size": 3603,
+      "mtime_ns": 1771834182587006700
     },
     "docs/research/MULTIMODAL_MATRIX_TRAINING.md": {
-      "size": 1275,
-      "mtime_ns": 1771221011372250800
+      "size": 1496,
+      "mtime_ns": 1771634229702657500
     },
     "docs/research/MULTI_MODEL_MODAL_MATRIX.md": {
-      "size": 2095,
-      "mtime_ns": 1771485528489288500
+      "size": 7078,
+      "mtime_ns": 1771634229703655700
     },
     "docs/research/QUASI_VECTOR_SPIN_VOXELS.md": {
       "size": 3448,
       "mtime_ns": 1771221011373257800
     },
     "docs/research/README.md": {
-      "size": 397,
-      "mtime_ns": 1771221011373257800
+      "size": 596,
+      "mtime_ns": 1771634229703655700
     },
     "docs/research/SHEAF_CONSENSUS_GATE.md": {
-      "size": 1148,
-      "mtime_ns": 1771492007863782900
+      "size": 1200,
+      "mtime_ns": 1771834182588050600
     },
     "docs/research/SIGNED_MULTIPLANE_ENCODING.md": {
-      "size": 1905,
-      "mtime_ns": 1771486794238606400
+      "size": 1983,
+      "mtime_ns": 1771834182589089100
     },
     "docs/sacred-tongue-tutorials.md": {
       "size": 9019,
       "mtime_ns": 1771221011374256900
     },
+    "docs/shopify-headless-workflow.md": {
+      "size": 2233,
+      "mtime_ns": 1771844703726904800
+    },
     "docs/specs/DECISION_ENVELOPE_V1.md": {
-      "size": 2873,
-      "mtime_ns": 1771562769841443000
+      "size": 2978,
+      "mtime_ns": 1771834182590640400
     },
     "docs/specs/INTEGRATIONS.md": {
       "size": 10891,
@@ -2284,20 +2616,24 @@
       "mtime_ns": 1771221011376256900
     },
     "docs/specs/SCBE_MASTER_2026_001_CONSOLIDATED_SUBMISSION_NOTES_2026_02_19.md": {
-      "size": 3167,
-      "mtime_ns": 1771477131873667100
+      "size": 3245,
+      "mtime_ns": 1771834182590640400
     },
     "docs/specs/SPACE_DEBRIS_FLEET.md": {
       "size": 9169,
       "mtime_ns": 1771221011377257100
     },
     "docs/specs/SPIRALVERSE_CANONICAL_LINGUISTIC_CODEX_V1.md": {
-      "size": 2165,
-      "mtime_ns": 1771475677225524300
+      "size": 2236,
+      "mtime_ns": 1771834182590640400
     },
     "docs/specs/SPIRALVERSE_PROTOCOL_RWP_V3_0_ALPHA_QUANTUM_RESISTANT_ARCHITECTURE.md": {
-      "size": 4629,
-      "mtime_ns": 1771477101572514700
+      "size": 4768,
+      "mtime_ns": 1771834182590640400
+    },
+    "docs/specs/STATE_MANIFOLD_21D_PRODUCT_METRIC.md": {
+      "size": 2860,
+      "mtime_ns": 1771834182590640400
     },
     "docs/specs/patent/MASTER_PATENT_DOCUMENT.md": {
       "size": 63451,
@@ -2312,8 +2648,12 @@
       "mtime_ns": 1771221011379256900
     },
     "enhanced_scbe_cli.py": {
-      "size": 16758,
-      "mtime_ns": 1771487303883316800
+      "size": 17264,
+      "mtime_ns": 1771834182595718700
+    },
+    "generate_figures.py": {
+      "size": 15584,
+      "mtime_ns": 1771634229707705900
     },
     "gumroad_image_uploader.py": {
       "size": 11316,
@@ -2327,13 +2667,29 @@
       "size": 6362,
       "mtime_ns": 1771221011439422400
     },
+    "mcp/notion_server.py": {
+      "size": 10746,
+      "mtime_ns": 1771834182624108500
+    },
+    "mcp/orchestrator.py": {
+      "size": 29193,
+      "mtime_ns": 1771834182624620800
+    },
     "mcp/scbe-server/README.md": {
-      "size": 718,
-      "mtime_ns": 1771469853008229900
+      "size": 892,
+      "mtime_ns": 1771834182625641200
     },
     "mcp/scbe-server/server.mjs": {
-      "size": 22408,
-      "mtime_ns": 1771469847921860000
+      "size": 37767,
+      "mtime_ns": 1771834182626748600
+    },
+    "mcp/scbe_server.py": {
+      "size": 13340,
+      "mtime_ns": 1771834182627289800
+    },
+    "mcp/swarm_server.py": {
+      "size": 5374,
+      "mtime_ns": 1771834182628336800
     },
     "packages/kernel/package.json": {
       "size": 263,
@@ -2461,7 +2817,7 @@
     },
     "packages/kernel/src/sacredTongues.ts": {
       "size": 10309,
-      "mtime_ns": 1771570081745733100
+      "mtime_ns": 1771832096057676500
     },
     "packages/kernel/src/scbe_voxel_types.ts": {
       "size": 5303,
@@ -2568,96 +2924,192 @@
       "mtime_ns": 1771306892735462200
     },
     "scbe-cli.py": {
-      "size": 54226,
-      "mtime_ns": 1771221011533733000
+      "size": 62561,
+      "mtime_ns": 1771634229714715400
     },
     "scbe.js": {
       "size": 949,
       "mtime_ns": 1771221011572736700
     },
     "scripts/aetherbrowse_swarm_runner.py": {
-      "size": 20156,
-      "mtime_ns": 1771570173016696900
+      "size": 24317,
+      "mtime_ns": 1771834182646283300
     },
     "scripts/aethermoor_spiral_demo.py": {
-      "size": 997,
-      "mtime_ns": 1771491855245736300
+      "size": 1035,
+      "mtime_ns": 1771834182646283300
+    },
+    "scripts/agentic_aetherauth.py": {
+      "size": 18050,
+      "mtime_ns": 1771834182646283300
+    },
+    "scripts/agentic_antivirus.py": {
+      "size": 17141,
+      "mtime_ns": 1771834182650640500
+    },
+    "scripts/agentic_web_tool.py": {
+      "size": 8423,
+      "mtime_ns": 1771834182651652300
+    },
+    "scripts/arxiv_aggregate_docs.py": {
+      "size": 2713,
+      "mtime_ns": 1771834182651652300
+    },
+    "scripts/arxiv_ai2ai_service.py": {
+      "size": 3522,
+      "mtime_ns": 1771688805007364800
+    },
+    "scripts/arxiv_bundle.py": {
+      "size": 1168,
+      "mtime_ns": 1771634229721762000
+    },
+    "scripts/arxiv_generate_manifest.py": {
+      "size": 1387,
+      "mtime_ns": 1771634229723519100
+    },
+    "scripts/arxiv_submit_playwright.py": {
+      "size": 2200,
+      "mtime_ns": 1771634229724529100
+    },
+    "scripts/arxiv_synthesize_paper.py": {
+      "size": 4030,
+      "mtime_ns": 1771634229725528000
     },
     "scripts/asana_aetherbrowse_orchestrator.py": {
       "size": 11511,
       "mtime_ns": 1771306875968832000
     },
+    "scripts/build_emulator_packs.py": {
+      "size": 4890,
+      "mtime_ns": 1771912710649670700
+    },
     "scripts/build_evidence_pack.py": {
-      "size": 5812,
-      "mtime_ns": 1771324384052191300
+      "size": 5964,
+      "mtime_ns": 1771834182651652300
     },
     "scripts/build_rag_index.py": {
-      "size": 15442,
-      "mtime_ns": 1771559591739140200
+      "size": 15931,
+      "mtime_ns": 1771834182651652300
     },
     "scripts/check_layer_status_transition.py": {
       "size": 2674,
       "mtime_ns": 1771317766753664800
     },
     "scripts/cloud_kernel_data_pipeline.py": {
-      "size": 33589,
-      "mtime_ns": 1771471293022752900
+      "size": 34503,
+      "mtime_ns": 1771834182655643500
+    },
+    "scripts/code_prism_build.py": {
+      "size": 386,
+      "mtime_ns": 1771834182655643500
+    },
+    "scripts/codebase_to_sft.py": {
+      "size": 19846,
+      "mtime_ns": 1771834182655643500
     },
     "scripts/coherence-check.py": {
       "size": 4036,
       "mtime_ns": 1771570081768001000
     },
+    "scripts/compare_notion_to_codebase.py": {
+      "size": 8858,
+      "mtime_ns": 1771834182655643500
+    },
+    "scripts/connector_health_check.py": {
+      "size": 8794,
+      "mtime_ns": 1771834182655643500
+    },
+    "scripts/convert_to_sft.py": {
+      "size": 486,
+      "mtime_ns": 1771834182655643500
+    },
+    "scripts/daily_training_wave.py": {
+      "size": 3110,
+      "mtime_ns": 1771834182655643500
+    },
+    "scripts/disk_scan.ps1": {
+      "size": 1586,
+      "mtime_ns": 1771920149777443200
+    },
     "scripts/enable_mcp_servers.ps1": {
       "size": 1560,
-      "mtime_ns": 1771570173018705700
+      "mtime_ns": 1771834182661020800
     },
     "scripts/export_monthly_billable_usage.py": {
       "size": 1233,
       "mtime_ns": 1771221011573738200
     },
     "scripts/export_perplexity.py": {
-      "size": 18563,
-      "mtime_ns": 1771558620862958100
+      "size": 19122,
+      "mtime_ns": 1771834182662177100
+    },
+    "scripts/firebase_studio_sync.py": {
+      "size": 10241,
+      "mtime_ns": 1771912858241172900
     },
     "scripts/generate_harmonic_wall_figure.py": {
-      "size": 9459,
-      "mtime_ns": 1771474492973185400
+      "size": 9725,
+      "mtime_ns": 1771834182662901800
     },
     "scripts/generate_node_fleet_news.py": {
-      "size": 4620,
-      "mtime_ns": 1771326225111660000
+      "size": 4742,
+      "mtime_ns": 1771834182663906900
+    },
+    "scripts/generate_sft_from_modules.py": {
+      "size": 6011,
+      "mtime_ns": 1771834182665041400
     },
     "scripts/gke_training_oneclick.ps1": {
-      "size": 1715,
-      "mtime_ns": 1771419007797839700
+      "size": 1774,
+      "mtime_ns": 1771834182665908100
     },
     "scripts/gke_training_oneclick.sh": {
-      "size": 2312,
-      "mtime_ns": 1771418997818226500
+      "size": 2399,
+      "mtime_ns": 1771834182666914600
+    },
+    "scripts/hf-bootstrap-aethermore-org.ps1": {
+      "size": 2320,
+      "mtime_ns": 1771698653117188400
+    },
+    "scripts/hf_training_loop.py": {
+      "size": 8674,
+      "mtime_ns": 1771923237984958100
     },
     "scripts/hydra_headless_mmx_coordinator.py": {
-      "size": 10206,
-      "mtime_ns": 1771490105375832100
+      "size": 10525,
+      "mtime_ns": 1771834182667919200
+    },
+    "scripts/hydra_mission_1000_runner.py": {
+      "size": 6363,
+      "mtime_ns": 1771634157179964800
     },
     "scripts/ingest_docs_to_training_jsonl.py": {
-      "size": 4202,
-      "mtime_ns": 1771385146264614700
+      "size": 4347,
+      "mtime_ns": 1771834182668919500
     },
     "scripts/ingest_spiralverse_codex.py": {
-      "size": 5922,
-      "mtime_ns": 1771396231964358000
+      "size": 6111,
+      "mtime_ns": 1771834182669919000
     },
     "scripts/ingest_x_post_via_hydra.py": {
-      "size": 13798,
-      "mtime_ns": 1771426623610545000
+      "size": 14216,
+      "mtime_ns": 1771834182669919000
     },
     "scripts/install_local_cloud_sync_task.ps1": {
-      "size": 2885,
-      "mtime_ns": 1771481048936830800
+      "size": 2958,
+      "mtime_ns": 1771834182671423400
+    },
+    "scripts/iseki_markdown_to_sft.py": {
+      "size": 4868,
+      "mtime_ns": 1771834182672428900
     },
     "scripts/journal.py": {
       "size": 6949,
       "mtime_ns": 1771221011574736500
+    },
+    "scripts/kernel_manifest_to_sft.py": {
+      "size": 6763,
+      "mtime_ns": 1771834182672933100
     },
     "scripts/launch_aws_sagemaker_training.py": {
       "size": 3961,
@@ -2668,12 +3120,12 @@
       "mtime_ns": 1771221011574736500
     },
     "scripts/linux_kernel_antivirus_monitor.py": {
-      "size": 3601,
-      "mtime_ns": 1771489287517406300
+      "size": 3703,
+      "mtime_ns": 1771834182673955300
     },
     "scripts/local_cloud_autosync.py": {
-      "size": 31029,
-      "mtime_ns": 1771480855735439800
+      "size": 31894,
+      "mtime_ns": 1771834182675459300
     },
     "scripts/long_run_training_bootstrap.py": {
       "size": 9892,
@@ -2687,17 +3139,25 @@
       "size": 5706,
       "mtime_ns": 1771221011575742400
     },
+    "scripts/merge_and_upload.py": {
+      "size": 16276,
+      "mtime_ns": 1771834182675459300
+    },
+    "scripts/merge_training_data.py": {
+      "size": 10816,
+      "mtime_ns": 1771944280659622200
+    },
     "scripts/monitor_training_growth.py": {
-      "size": 2185,
-      "mtime_ns": 1771324362197523700
+      "size": 2248,
+      "mtime_ns": 1771834182677541800
     },
     "scripts/n8n_aetherbrowse_bridge.py": {
       "size": 3315,
       "mtime_ns": 1771294642356867200
     },
     "scripts/normalize_perplexity.py": {
-      "size": 8161,
-      "mtime_ns": 1771558953797051900
+      "size": 8431,
+      "mtime_ns": 1771834182678549400
     },
     "scripts/notion-sync.js": {
       "size": 6207,
@@ -2707,25 +3167,57 @@
       "size": 5147,
       "mtime_ns": 1771235744505323800
     },
+    "scripts/notion_pipeline_gap_review.py": {
+      "size": 20029,
+      "mtime_ns": 1771834182680054000
+    },
     "scripts/notion_to_dataset.py": {
-      "size": 7484,
-      "mtime_ns": 1771376712527505500
+      "size": 7530,
+      "mtime_ns": 1771834182681059800
+    },
+    "scripts/npm_pack_guard.js": {
+      "size": 3902,
+      "mtime_ns": 1771846552316369900
+    },
+    "scripts/npm_prepublish_cleanup.js": {
+      "size": 2380,
+      "mtime_ns": 1771846576116009100
     },
     "scripts/npm_publish_check.sh": {
       "size": 1270,
       "mtime_ns": 1771221011578264700
     },
+    "scripts/obsidian_ai_hub.py": {
+      "size": 11833,
+      "mtime_ns": 1771908563289955700
+    },
     "scripts/omega_lock_diagnostic.py": {
-      "size": 2629,
-      "mtime_ns": 1771493991151864800
+      "size": 2701,
+      "mtime_ns": 1771834182683569600
+    },
+    "scripts/ouroboros_sft.py": {
+      "size": 60515,
+      "mtime_ns": 1771834182684572900
     },
     "scripts/pc_health_audit.ps1": {
-      "size": 7207,
-      "mtime_ns": 1771568171709136100
+      "size": 7372,
+      "mtime_ns": 1771834182685923100
+    },
+    "scripts/playwright_both_side.py": {
+      "size": 4128,
+      "mtime_ns": 1771832022854261000
+    },
+    "scripts/polly_clay_squad.py": {
+      "size": 33183,
+      "mtime_ns": 1771661361285966900
+    },
+    "scripts/polly_clay_squad.py.bak": {
+      "size": 22998,
+      "mtime_ns": 1771644932788243100
     },
     "scripts/polly_pad_watchdog.py": {
-      "size": 5542,
-      "mtime_ns": 1771388967380023500
+      "size": 5713,
+      "mtime_ns": 1771834182685923100
     },
     "scripts/pre-commit-check.sh": {
       "size": 1269,
@@ -2740,8 +3232,8 @@
       "mtime_ns": 1771570081768001000
     },
     "scripts/push_to_hf.py": {
-      "size": 6024,
-      "mtime_ns": 1771559144369129500
+      "size": 6236,
+      "mtime_ns": 1771834182688456900
     },
     "scripts/quickstart_demo.sh": {
       "size": 5330,
@@ -2758,6 +3250,10 @@
     "scripts/render-diagrams.sh": {
       "size": 1474,
       "mtime_ns": 1771221011580264800
+    },
+    "scripts/research_system_consolidation.py": {
+      "size": 10765,
+      "mtime_ns": 1771834182688456900
     },
     "scripts/run-local.bat": {
       "size": 1842,
@@ -2784,108 +3280,248 @@
       "mtime_ns": 1771304806868128200
     },
     "scripts/run_aetherbrowse_service.ps1": {
-      "size": 2249,
-      "mtime_ns": 1771321057003964000
+      "size": 2303,
+      "mtime_ns": 1771834182690462600
+    },
+    "scripts/run_arxiv_ai2ai_service.ps1": {
+      "size": 185,
+      "mtime_ns": 1771688955003331000
     },
     "scripts/run_cloud_kernel_data_pipeline.ps1": {
-      "size": 1109,
-      "mtime_ns": 1771471284562840800
+      "size": 1158,
+      "mtime_ns": 1771834182691462000
+    },
+    "scripts/run_emulator_simple_core.ps1": {
+      "size": 816,
+      "mtime_ns": 1771911733742501800
     },
     "scripts/run_evidence_pack_oneclick.ps1": {
-      "size": 1505,
-      "mtime_ns": 1771324580526587600
+      "size": 1555,
+      "mtime_ns": 1771834182693035400
     },
     "scripts/run_headless_ide_demo.ps1": {
-      "size": 377,
-      "mtime_ns": 1771386841451265700
+      "size": 390,
+      "mtime_ns": 1771834182693594800
     },
     "scripts/run_hf_training_and_monitor.ps1": {
-      "size": 843,
-      "mtime_ns": 1771324566807849800
+      "size": 877,
+      "mtime_ns": 1771834182693594800
     },
     "scripts/run_local_cloud_autosync.ps1": {
-      "size": 1062,
-      "mtime_ns": 1771473701495600200
+      "size": 1106,
+      "mtime_ns": 1771834182695609300
     },
     "scripts/run_multi_ai_content_sync.ps1": {
-      "size": 906,
-      "mtime_ns": 1771470520874522500
+      "size": 945,
+      "mtime_ns": 1771834182695609300
     },
     "scripts/run_multi_ai_content_sync.py": {
-      "size": 8194,
-      "mtime_ns": 1771470512573035300
+      "size": 8458,
+      "mtime_ns": 1771834182695609300
     },
     "scripts/run_node_fleet_pipeline.ps1": {
-      "size": 1690,
-      "mtime_ns": 1771326425688936100
+      "size": 1750,
+      "mtime_ns": 1771834182695609300
     },
     "scripts/run_node_fleet_pipeline.py": {
-      "size": 2849,
-      "mtime_ns": 1771396245476124400
+      "size": 2949,
+      "mtime_ns": 1771834182695609300
+    },
+    "scripts/run_polly_clay_squad.ps1": {
+      "size": 1755,
+      "mtime_ns": 1771662617654127500
     },
     "scripts/run_polly_pad_watchdog.ps1": {
-      "size": 317,
-      "mtime_ns": 1771388971769244900
+      "size": 329,
+      "mtime_ns": 1771834182695609300
+    },
+    "scripts/scbe-system-cli.py": {
+      "size": 46644,
+      "mtime_ns": 1771834182695609300
+    },
+    "scripts/scbe_ai_kernel_wrapper.py": {
+      "size": 5940,
+      "mtime_ns": 1771901958131095300
+    },
+    "scripts/scbe_docker_status.ps1": {
+      "size": 8457,
+      "mtime_ns": 1771834182695609300
     },
     "scripts/scbe_headless_ide_demo.py": {
-      "size": 12211,
-      "mtime_ns": 1771386835986454400
+      "size": 12564,
+      "mtime_ns": 1771834182703385100
+    },
+    "scripts/scbe_mcp_terminal.ps1": {
+      "size": 3418,
+      "mtime_ns": 1771834182703385100
     },
     "scripts/scbe_terminal_ops.py": {
-      "size": 14362,
-      "mtime_ns": 1771560049657640900
+      "size": 14761,
+      "mtime_ns": 1771834182703385100
+    },
+    "scripts/self_improvement_orchestrator.py": {
+      "size": 24118,
+      "mtime_ns": 1771834182705898300
     },
     "scripts/sheaf_consensus_gate.py": {
-      "size": 2146,
-      "mtime_ns": 1771491984493693100
+      "size": 2203,
+      "mtime_ns": 1771834182707417100
+    },
+    "scripts/shopify_both_side_test.py": {
+      "size": 13668,
+      "mtime_ns": 1771843847789369300
+    },
+    "scripts/shopify_storefront_bootstrap.ps1": {
+      "size": 4837,
+      "mtime_ns": 1771844689197346900
+    },
+    "scripts/sidekick_memory.py": {
+      "size": 9206,
+      "mtime_ns": 1771911402934251000
+    },
+    "scripts/social/run_x_monetize_pack.ps1": {
+      "size": 1476,
+      "mtime_ns": 1771834183359907800
     },
     "scripts/sort_skills_index.py": {
-      "size": 2260,
-      "mtime_ns": 1771568017080347700
+      "size": 2347,
+      "mtime_ns": 1771834182707991200
+    },
+    "scripts/spiralverse_to_sft.py": {
+      "size": 52715,
+      "mtime_ns": 1771834182707991200
     },
     "scripts/start_aetherbrowse_oneclick.ps1": {
       "size": 3034,
       "mtime_ns": 1771301038339618500
     },
     "scripts/stasm.py": {
-      "size": 6333,
-      "mtime_ns": 1771484692744809700
+      "size": 6528,
+      "mtime_ns": 1771834182707991200
     },
     "scripts/stvm.py": {
-      "size": 2576,
-      "mtime_ns": 1771484707975358600
+      "size": 2661,
+      "mtime_ns": 1771834182707991200
     },
     "scripts/stvm_core.py": {
-      "size": 11299,
-      "mtime_ns": 1771484664889724000
+      "size": 11627,
+      "mtime_ns": 1771834182707991200
     },
     "scripts/sync-config.json": {
       "size": 2728,
       "mtime_ns": 1771221011582265000
     },
+    "scripts/system/ai.ps1": {
+      "size": 327,
+      "mtime_ns": 1771825066987366500
+    },
+    "scripts/system/ai_bridge.py": {
+      "size": 4627,
+      "mtime_ns": 1771828660704961200
+    },
+    "scripts/system/ai_bridge_streamlit.py": {
+      "size": 961,
+      "mtime_ns": 1771825066983358500
+    },
+    "scripts/system/clear_caches.ps1": {
+      "size": 1102,
+      "mtime_ns": 1771918687214368500
+    },
+    "scripts/system/cross_talk_append.ps1": {
+      "size": 2361,
+      "mtime_ns": 1771913678216141500
+    },
+    "scripts/system/enable_onedrive_fod.ps1": {
+      "size": 941,
+      "mtime_ns": 1771918681293848400
+    },
+    "scripts/system/frankenmodel_swarm_agent.py": {
+      "size": 1006,
+      "mtime_ns": 1771826138364882500
+    },
+    "scripts/system/model_synthesis_agent.py": {
+      "size": 1109,
+      "mtime_ns": 1771825187824784600
+    },
+    "scripts/system/multicloud_failover_demo.py": {
+      "size": 1676,
+      "mtime_ns": 1771834393110518100
+    },
+    "scripts/system/nonbinary_kernel_demo.py": {
+      "size": 1776,
+      "mtime_ns": 1771826832845407400
+    },
+    "scripts/system/obsidian_byproduct_note.py": {
+      "size": 1029,
+      "mtime_ns": 1771824766370391500
+    },
+    "scripts/system/obsidian_multi_ai_domino.ps1": {
+      "size": 3358,
+      "mtime_ns": 1771907722176640800
+    },
+    "scripts/system/rom_obsidian_domino.ps1": {
+      "size": 5023,
+      "mtime_ns": 1771913531818096000
+    },
+    "scripts/system/semantic_mesh_demo.py": {
+      "size": 838,
+      "mtime_ns": 1771827849930879700
+    },
+    "scripts/system/system_cleanup_safe.ps1": {
+      "size": 1007,
+      "mtime_ns": 1771818560424340200
+    },
+    "scripts/system/system_disk_audit.ps1": {
+      "size": 2559,
+      "mtime_ns": 1771818539972556500
+    },
+    "scripts/system/system_hub_sync.py": {
+      "size": 18370,
+      "mtime_ns": 1771907714519133400
+    },
+    "scripts/system/system_profile_disk_audit.ps1": {
+      "size": 1380,
+      "mtime_ns": 1771822934065407300
+    },
+    "scripts/system/update_training_totals.ps1": {
+      "size": 4156,
+      "mtime_ns": 1771913646199118900
+    },
+    "scripts/system/workflow_vector.py": {
+      "size": 1560,
+      "mtime_ns": 1771829210920588600
+    },
+    "scripts/system/worklog_wrap.ps1": {
+      "size": 417,
+      "mtime_ns": 1771820821885571000
+    },
+    "scripts/system/x_ops_queue_runner.mjs": {
+      "size": 2693,
+      "mtime_ns": 1771834183359907800
+    },
     "scripts/tag_perplexity_dataset.py": {
-      "size": 4073,
-      "mtime_ns": 1771559181388228800
+      "size": 4230,
+      "mtime_ns": 1771834182713694500
     },
     "scripts/test_aetherbrowse_api.ps1": {
       "size": 1281,
       "mtime_ns": 1771300428639019700
     },
     "scripts/test_hydra_switchboard_e2e.py": {
-      "size": 2463,
-      "mtime_ns": 1771378417166648000
+      "size": 2551,
+      "mtime_ns": 1771834182713694500
     },
     "scripts/train_hf_longrun_placeholder.py": {
-      "size": 14994,
-      "mtime_ns": 1771570173019218600
+      "size": 16110,
+      "mtime_ns": 1771834182715209300
     },
     "scripts/training_auditor.py": {
-      "size": 4750,
-      "mtime_ns": 1771376672841723300
+      "size": 4904,
+      "mtime_ns": 1771834182715724600
     },
     "scripts/uninstall_project_irrelevant_apps.ps1": {
-      "size": 3263,
-      "mtime_ns": 1771568803028880900
+      "size": 3362,
+      "mtime_ns": 1771834182715724600
     },
     "scripts/unix/BUILD.sh": {
       "size": 6619,
@@ -2911,9 +3547,13 @@
       "size": 11597,
       "mtime_ns": 1771317006485479400
     },
+    "scripts/web_cursor_merge_prs.py": {
+      "size": 8358,
+      "mtime_ns": 1771830893749228800
+    },
     "scripts/web_research_training_pipeline.py": {
-      "size": 19168,
-      "mtime_ns": 1771490501227467900
+      "size": 19720,
+      "mtime_ns": 1771834182715724600
     },
     "scripts/windows/BUILD.bat": {
       "size": 6986,
@@ -2952,32 +3592,36 @@
       "mtime_ns": 1771221011592782800
     },
     "scripts/workflow_audit.py": {
-      "size": 6695,
-      "mtime_ns": 1771293303181565400
+      "size": 6911,
+      "mtime_ns": 1771834182715724600
     },
     "services/kernel-runner/README.md": {
-      "size": 1304,
-      "mtime_ns": 1771471965749995600
+      "size": 1363,
+      "mtime_ns": 1771834182720884900
     },
     "services/kernel-runner/public/app.js": {
-      "size": 3294,
-      "mtime_ns": 1771471957177425700
+      "size": 3413,
+      "mtime_ns": 1771834182720884900
     },
     "services/kernel-runner/public/index.html": {
-      "size": 3219,
-      "mtime_ns": 1771471940268151400
+      "size": 3353,
+      "mtime_ns": 1771834182723196800
     },
     "services/kernel-runner/server.mjs": {
-      "size": 11445,
-      "mtime_ns": 1771472030926405700
+      "size": 11874,
+      "mtime_ns": 1771834182724775400
     },
     "setup-providers.py": {
       "size": 8645,
       "mtime_ns": 1771221011592782800
     },
     "six-tongues-cli.py": {
-      "size": 48623,
-      "mtime_ns": 1771570173021236200
+      "size": 60660,
+      "mtime_ns": 1771834182725800200
+    },
+    "spatial_engine.py": {
+      "size": 38467,
+      "mtime_ns": 1771813919537482100
     },
     "spiralverse_core.py": {
       "size": 13291,
@@ -3031,17 +3675,25 @@
       "size": 7423,
       "mtime_ns": 1771221011914892700
     },
+    "src/agentic/execution-district.ts": {
+      "size": 3390,
+      "mtime_ns": 1771701947929103200
+    },
     "src/agentic/index.ts": {
-      "size": 759,
-      "mtime_ns": 1771221011914892700
+      "size": 836,
+      "mtime_ns": 1771701962910034900
     },
     "src/agentic/platform.ts": {
-      "size": 17048,
-      "mtime_ns": 1771221011915894100
+      "size": 19612,
+      "mtime_ns": 1771704134496379200
     },
     "src/agentic/providers.ts": {
       "size": 15205,
       "mtime_ns": 1771221011915894100
+    },
+    "src/agentic/roundabout-city.ts": {
+      "size": 6955,
+      "mtime_ns": 1771701820026522100
     },
     "src/agentic/task-group.ts": {
       "size": 7081,
@@ -3064,8 +3716,8 @@
       "mtime_ns": 1771221011919404000
     },
     "src/ai_brain/brain-integration.ts": {
-      "size": 20101,
-      "mtime_ns": 1771221011920404600
+      "size": 20114,
+      "mtime_ns": 1771834182765896700
     },
     "src/ai_brain/conservation.ts": {
       "size": 20057,
@@ -3120,8 +3772,8 @@
       "mtime_ns": 1771221011929916600
     },
     "src/ai_brain/phdm-core.ts": {
-      "size": 16962,
-      "mtime_ns": 1771221011929916600
+      "size": 17090,
+      "mtime_ns": 1771834182765896700
     },
     "src/ai_brain/quasi-space.ts": {
       "size": 8548,
@@ -3148,8 +3800,8 @@
       "mtime_ns": 1771221011933915100
     },
     "src/ai_brain/unified-kernel.ts": {
-      "size": 32798,
-      "mtime_ns": 1771570081774855000
+      "size": 32997,
+      "mtime_ns": 1771834182765896700
     },
     "src/ai_brain/unified-state.ts": {
       "size": 14587,
@@ -3200,16 +3852,16 @@
       "mtime_ns": 1771221011944936600
     },
     "src/api/hydra_routes.py": {
-      "size": 19249,
-      "mtime_ns": 1771567925263135400
+      "size": 19801,
+      "mtime_ns": 1771834182765896700
     },
     "src/api/index.ts": {
       "size": 19506,
       "mtime_ns": 1771221011944936600
     },
     "src/api/main.py": {
-      "size": 46059,
-      "mtime_ns": 1771570173034800200
+      "size": 46580,
+      "mtime_ns": 1771834182771520200
     },
     "src/api/routes.ts": {
       "size": 15261,
@@ -3219,9 +3871,89 @@
       "size": 10194,
       "mtime_ns": 1771221011946936800
     },
+    "src/artifacts/test_swarm_hub/1771657097632/hub_primary.jsonl": {
+      "size": 6003,
+      "mtime_ns": 1771834182771520200
+    },
+    "src/artifacts/test_swarm_hub/1771657097632/hub_replica.jsonl": {
+      "size": 6003,
+      "mtime_ns": 1771834182771520200
+    },
+    "src/artifacts/test_swarm_hub/1771658838492/hub_primary.jsonl": {
+      "size": 6003,
+      "mtime_ns": 1771834182775564100
+    },
+    "src/artifacts/test_swarm_hub/1771658838492/hub_replica.jsonl": {
+      "size": 6003,
+      "mtime_ns": 1771834182775564100
+    },
+    "src/artifacts/test_swarm_hub/1771659581892/hub_primary.jsonl": {
+      "size": 6003,
+      "mtime_ns": 1771834182775564100
+    },
+    "src/artifacts/test_swarm_hub/1771659581892/hub_replica.jsonl": {
+      "size": 6003,
+      "mtime_ns": 1771834182775564100
+    },
+    "src/artifacts/test_swarm_hub/1771659892040/hub_primary.jsonl": {
+      "size": 6003,
+      "mtime_ns": 1771834182775564100
+    },
+    "src/artifacts/test_swarm_hub/1771659892040/hub_replica.jsonl": {
+      "size": 6003,
+      "mtime_ns": 1771834182775564100
+    },
+    "src/artifacts/test_swarm_hub/1771660194187/hub_primary.jsonl": {
+      "size": 6003,
+      "mtime_ns": 1771834182780627200
+    },
+    "src/artifacts/test_swarm_hub/1771660194187/hub_replica.jsonl": {
+      "size": 6003,
+      "mtime_ns": 1771834182780627200
+    },
+    "src/artifacts/test_swarm_hub/1771660503324/hub_primary.jsonl": {
+      "size": 6003,
+      "mtime_ns": 1771834182780627200
+    },
+    "src/artifacts/test_swarm_hub/1771660503324/hub_replica.jsonl": {
+      "size": 6003,
+      "mtime_ns": 1771834182780627200
+    },
+    "src/artifacts/test_swarm_hub/1771662808426/hub_primary.jsonl": {
+      "size": 6003,
+      "mtime_ns": 1771834182780627200
+    },
+    "src/artifacts/test_swarm_hub/1771662808426/hub_replica.jsonl": {
+      "size": 6003,
+      "mtime_ns": 1771834182780627200
+    },
+    "src/artifacts/test_swarm_hub/1771663160585/hub_primary.jsonl": {
+      "size": 6003,
+      "mtime_ns": 1771834182786157800
+    },
+    "src/artifacts/test_swarm_hub/1771663160585/hub_replica.jsonl": {
+      "size": 6003,
+      "mtime_ns": 1771834182786787600
+    },
+    "src/artifacts/test_swarm_hub/1771686803328/hub_primary.jsonl": {
+      "size": 6003,
+      "mtime_ns": 1771834182788084400
+    },
+    "src/artifacts/test_swarm_hub/1771686803328/hub_replica.jsonl": {
+      "size": 6003,
+      "mtime_ns": 1771834182788849900
+    },
+    "src/artifacts/test_swarm_hub/1771687387682/hub_primary.jsonl": {
+      "size": 6003,
+      "mtime_ns": 1771834182788849900
+    },
+    "src/artifacts/test_swarm_hub/1771687387682/hub_replica.jsonl": {
+      "size": 6003,
+      "mtime_ns": 1771834182789854300
+    },
     "src/browser/agent.ts": {
-      "size": 18638,
-      "mtime_ns": 1771221011947936800
+      "size": 18734,
+      "mtime_ns": 1771834182790854100
     },
     "src/browser/cdp-backend.ts": {
       "size": 34576,
@@ -3251,9 +3983,33 @@
       "size": 12940,
       "mtime_ns": 1771221011952440800
     },
+    "src/cddm/__init__.py": {
+      "size": 1179,
+      "mtime_ns": 1771814336870913700
+    },
+    "src/cddm/domain.py": {
+      "size": 3757,
+      "mtime_ns": 1771814352537269200
+    },
+    "src/cddm/functor.py": {
+      "size": 12620,
+      "mtime_ns": 1771814417027772400
+    },
+    "src/cddm/morphism.py": {
+      "size": 4960,
+      "mtime_ns": 1771814374837299100
+    },
+    "src/cddm/selftest.py": {
+      "size": 11535,
+      "mtime_ns": 1771814506505584100
+    },
+    "src/cddm/tongue_domains.py": {
+      "size": 8470,
+      "mtime_ns": 1771814453740447000
+    },
     "src/cloud/__init__.py": {
-      "size": 2613,
-      "mtime_ns": 1771221011953446400
+      "size": 2704,
+      "mtime_ns": 1771834656813662800
     },
     "src/cloud/cross_cloud_comms.py": {
       "size": 21393,
@@ -3264,8 +4020,40 @@
       "mtime_ns": 1771221011955450100
     },
     "src/cloud/multi_cloud_agents.py": {
-      "size": 41062,
-      "mtime_ns": 1771221011956447000
+      "size": 45620,
+      "mtime_ns": 1771834650655150100
+    },
+    "src/code_prism/__init__.py": {
+      "size": 508,
+      "mtime_ns": 1771834182791854500
+    },
+    "src/code_prism/builder.py": {
+      "size": 2562,
+      "mtime_ns": 1771834182792854400
+    },
+    "src/code_prism/cli.py": {
+      "size": 2645,
+      "mtime_ns": 1771834182792854400
+    },
+    "src/code_prism/emitter.py": {
+      "size": 2572,
+      "mtime_ns": 1771834182793854400
+    },
+    "src/code_prism/matrix.py": {
+      "size": 1556,
+      "mtime_ns": 1771834182793854400
+    },
+    "src/code_prism/models.py": {
+      "size": 619,
+      "mtime_ns": 1771834182794853700
+    },
+    "src/code_prism/parser.py": {
+      "size": 2797,
+      "mtime_ns": 1771834182795854400
+    },
+    "src/code_prism/validator.py": {
+      "size": 2039,
+      "mtime_ns": 1771834182796358000
     },
     "src/constants/config.ts": {
       "size": 3915,
@@ -3313,7 +4101,7 @@
     },
     "src/crypto/h_lwe.py": {
       "size": 15020,
-      "mtime_ns": 1771570173037363700
+      "mtime_ns": 1771834182797362600
     },
     "src/crypto/hkdf.ts": {
       "size": 1841,
@@ -3336,8 +4124,12 @@
       "mtime_ns": 1771221011967257800
     },
     "src/crypto/kms.ts": {
-      "size": 628,
-      "mtime_ns": 1771221011967257800
+      "size": 1477,
+      "mtime_ns": 1771834182798362500
+    },
+    "src/crypto/nonbinary_kernel.py": {
+      "size": 16129,
+      "mtime_ns": 1771826829716500600
     },
     "src/crypto/nonceManager.ts": {
       "size": 1229,
@@ -3356,16 +4148,16 @@
       "mtime_ns": 1771221011969767500
     },
     "src/crypto/pqc.ts": {
-      "size": 34735,
-      "mtime_ns": 1771230478778217900
+      "size": 35412,
+      "mtime_ns": 1771834182799364000
     },
     "src/crypto/pqc_liboqs.py": {
-      "size": 13474,
-      "mtime_ns": 1771570173038875300
+      "size": 15616,
+      "mtime_ns": 1771834182800363100
     },
     "src/crypto/quantum-safe.ts": {
-      "size": 23961,
-      "mtime_ns": 1771221011972775200
+      "size": 24114,
+      "mtime_ns": 1771834182800363100
     },
     "src/crypto/replayGuard.ts": {
       "size": 3495,
@@ -3376,8 +4168,8 @@
       "mtime_ns": 1771221011973774200
     },
     "src/crypto/rwp_v3.py": {
-      "size": 12750,
-      "mtime_ns": 1771570173040883100
+      "size": 13218,
+      "mtime_ns": 1771834182800363100
     },
     "src/crypto/sacred_eggs.py": {
       "size": 21935,
@@ -3385,7 +4177,7 @@
     },
     "src/crypto/sacred_tongues.py": {
       "size": 11951,
-      "mtime_ns": 1771570081779421800
+      "mtime_ns": 1771832098707675300
     },
     "src/crypto/signed_lattice_bridge.py": {
       "size": 14146,
@@ -3415,6 +4207,10 @@
       "size": 8531,
       "mtime_ns": 1771221011980283200
     },
+    "src/fleet/autoRetrigger.ts": {
+      "size": 6909,
+      "mtime_ns": 1771634229726528700
+    },
     "src/fleet/browser-pool.ts": {
       "size": 20182,
       "mtime_ns": 1771221011981283200
@@ -3443,9 +4239,25 @@
       "size": 12144,
       "mtime_ns": 1771221011985449700
     },
+    "src/fleet/governed-drift.ts": {
+      "size": 12955,
+      "mtime_ns": 1771634229727527200
+    },
     "src/fleet/index.ts": {
-      "size": 1501,
-      "mtime_ns": 1771221011986454200
+      "size": 1682,
+      "mtime_ns": 1771634229728528800
+    },
+    "src/fleet/mitosis.ts": {
+      "size": 9939,
+      "mtime_ns": 1771634229729528700
+    },
+    "src/fleet/node-kernel.ts": {
+      "size": 15986,
+      "mtime_ns": 1771834182800363100
+    },
+    "src/fleet/oscillator-bus.ts": {
+      "size": 14683,
+      "mtime_ns": 1771634229739632100
     },
     "src/fleet/polly-pad-runtime.ts": {
       "size": 12685,
@@ -3456,32 +4268,32 @@
       "mtime_ns": 1771221011986958300
     },
     "src/fleet/polly-pads/blackout-audit.ts": {
-      "size": 36002,
-      "mtime_ns": 1771560823184368200
+      "size": 37034,
+      "mtime_ns": 1771834182800363100
     },
     "src/fleet/polly-pads/capability-store.ts": {
-      "size": 11976,
-      "mtime_ns": 1771221011987966500
+      "size": 12149,
+      "mtime_ns": 1771834182800363100
     },
     "src/fleet/polly-pads/closed-network.ts": {
       "size": 10470,
       "mtime_ns": 1771221011988987900
     },
     "src/fleet/polly-pads/decision-envelope.ts": {
-      "size": 30867,
-      "mtime_ns": 1771560534379676400
+      "size": 31783,
+      "mtime_ns": 1771834182806224600
     },
     "src/fleet/polly-pads/drone-core.ts": {
       "size": 13421,
       "mtime_ns": 1771221011990963900
     },
     "src/fleet/polly-pads/index.ts": {
-      "size": 4832,
-      "mtime_ns": 1771570173042863100
+      "size": 4539,
+      "mtime_ns": 1771834182806739900
     },
     "src/fleet/polly-pads/mission-coordinator.ts": {
-      "size": 15249,
-      "mtime_ns": 1771251955705491500
+      "size": 15219,
+      "mtime_ns": 1771634229742737500
     },
     "src/fleet/polly-pads/mode-pad.ts": {
       "size": 10598,
@@ -3524,8 +4336,8 @@
       "mtime_ns": 1771221011997474200
     },
     "src/fleet/polly-pads/resource-harmonic.ts": {
-      "size": 17179,
-      "mtime_ns": 1771560518258096700
+      "size": 17671,
+      "mtime_ns": 1771834182806739900
     },
     "src/fleet/polly-pads/specialist-modes.ts": {
       "size": 12004,
@@ -3543,6 +4355,10 @@
       "size": 16159,
       "mtime_ns": 1771221011999474200
     },
+    "src/fleet/swarm-geometry.ts": {
+      "size": 13157,
+      "mtime_ns": 1771634229743736200
+    },
     "src/fleet/swarm.ts": {
       "size": 11686,
       "mtime_ns": 1771221011999474200
@@ -3554,6 +4370,30 @@
     "src/fleet/types.ts": {
       "size": 7481,
       "mtime_ns": 1771221012000474300
+    },
+    "src/gacha_isekai/__init__.py": {
+      "size": 905,
+      "mtime_ns": 1771898842631506500
+    },
+    "src/gacha_isekai/combat.py": {
+      "size": 9174,
+      "mtime_ns": 1771898971121898000
+    },
+    "src/gacha_isekai/evolution.py": {
+      "size": 9598,
+      "mtime_ns": 1771899250473171800
+    },
+    "src/gacha_isekai/nodal.py": {
+      "size": 10803,
+      "mtime_ns": 1771899069722747800
+    },
+    "src/gacha_isekai/squad.py": {
+      "size": 8350,
+      "mtime_ns": 1771899226068476400
+    },
+    "src/gacha_isekai/training.py": {
+      "size": 11506,
+      "mtime_ns": 1771899024519451400
     },
     "src/gateway/COMPUTATIONAL_IMMUNE_SYSTEM.py": {
       "size": 17046,
@@ -3600,48 +4440,48 @@
       "mtime_ns": 1771221012010984100
     },
     "src/governance/audit_ledger.ts": {
-      "size": 103,
-      "mtime_ns": 1771463979222410200
+      "size": 106,
+      "mtime_ns": 1771834182806739900
     },
     "src/governance/decision_envelope_v1.py": {
-      "size": 30113,
-      "mtime_ns": 1771561106551479500
+      "size": 30939,
+      "mtime_ns": 1771834182806739900
     },
     "src/governance/flux_manifest.ts": {
-      "size": 495,
-      "mtime_ns": 1771463951731635100
+      "size": 514,
+      "mtime_ns": 1771834182806739900
     },
     "src/governance/governance_engine.ts": {
-      "size": 417,
-      "mtime_ns": 1771463960027073100
+      "size": 438,
+      "mtime_ns": 1771834182806739900
     },
     "src/governance/immutable_laws.ts": {
-      "size": 1421,
-      "mtime_ns": 1771463943482213400
+      "size": 1460,
+      "mtime_ns": 1771834182806739900
     },
     "src/governance/index.ts": {
-      "size": 309,
-      "mtime_ns": 1771464014287808800
+      "size": 318,
+      "mtime_ns": 1771834182806739900
     },
     "src/governance/mmx.ts": {
-      "size": 2021,
-      "mtime_ns": 1771463974084491900
+      "size": 2093,
+      "mtime_ns": 1771834182815564600
     },
     "src/governance/offline_mode.ts": {
-      "size": 22654,
-      "mtime_ns": 1771463899899457600
+      "size": 23306,
+      "mtime_ns": 1771834182816122000
     },
     "src/governance/pq_crypto.ts": {
-      "size": 101,
-      "mtime_ns": 1771463985589415700
+      "size": 104,
+      "mtime_ns": 1771834182817134700
     },
     "src/governance/sync_client.ts": {
-      "size": 946,
-      "mtime_ns": 1771464008470973200
+      "size": 986,
+      "mtime_ns": 1771834182817134700
     },
     "src/governance/voxel_store.ts": {
-      "size": 2267,
-      "mtime_ns": 1771463999553076000
+      "size": 2354,
+      "mtime_ns": 1771834182817134700
     },
     "src/h_lwe.py": {
       "size": 3641,
@@ -3667,9 +4507,17 @@
       "size": 57,
       "mtime_ns": 1771221012013495500
     },
+    "src/harmonic/balancedTernary.ts": {
+      "size": 9840,
+      "mtime_ns": 1771634229744736500
+    },
     "src/harmonic/chsfn.ts": {
       "size": 53,
       "mtime_ns": 1771221012014494300
+    },
+    "src/harmonic/compute_ds_squared.py": {
+      "size": 3391,
+      "mtime_ns": 1771845490401220700
     },
     "src/harmonic/constants.d.ts.map": {
       "size": 513,
@@ -3703,6 +4551,10 @@
       "size": 57,
       "mtime_ns": 1771221012018494100
     },
+    "src/harmonic/frecency.ts": {
+      "size": 7488,
+      "mtime_ns": 1771634229745742000
+    },
     "src/harmonic/geoSealImmune.ts": {
       "size": 20556,
       "mtime_ns": 1771221012019494000
@@ -3712,8 +4564,12 @@
       "mtime_ns": 1771221012021002200
     },
     "src/harmonic/governance_logger.py": {
-      "size": 1884,
-      "mtime_ns": 1771231834227928700
+      "size": 3388,
+      "mtime_ns": 1771845474739664200
+    },
+    "src/harmonic/gravitationalBraking.ts": {
+      "size": 6975,
+      "mtime_ns": 1771634229745742000
     },
     "src/harmonic/halAttention.d.ts.map": {
       "size": 762,
@@ -3745,15 +4601,15 @@
     },
     "src/harmonic/hyperbolic.ts": {
       "size": 23828,
-      "mtime_ns": 1771570173044614700
+      "mtime_ns": 1771834182817134700
     },
     "src/harmonic/hyperbolicRAG.ts": {
       "size": 36631,
       "mtime_ns": 1771221012027009300
     },
     "src/harmonic/index.ts": {
-      "size": 20988,
-      "mtime_ns": 1771251957486690400
+      "size": 19882,
+      "mtime_ns": 1771834182817134700
     },
     "src/harmonic/languesMetric.d.ts.map": {
       "size": 1808,
@@ -3771,13 +4627,17 @@
       "size": 5940,
       "mtime_ns": 1771221012030518600
     },
+    "src/harmonic/negativeSpace.ts": {
+      "size": 6694,
+      "mtime_ns": 1771634229749414400
+    },
     "src/harmonic/phdm.ts": {
       "size": 25524,
       "mtime_ns": 1771221012030518600
     },
     "src/harmonic/phdmSheafLattice.ts": {
-      "size": 29255,
-      "mtime_ns": 1771221012031518900
+      "size": 29407,
+      "mtime_ns": 1771634229749922400
     },
     "src/harmonic/phdm_module.py": {
       "size": 1252,
@@ -3832,12 +4692,12 @@
       "mtime_ns": 1771221012039038400
     },
     "src/harmonic/sheafCohomology.ts": {
-      "size": 50485,
-      "mtime_ns": 1771570081780930600
+      "size": 50533,
+      "mtime_ns": 1771834182817134700
     },
     "src/harmonic/sheaf_consensus_gate.py": {
-      "size": 5261,
-      "mtime_ns": 1771491971362213900
+      "size": 5447,
+      "mtime_ns": 1771834182817134700
     },
     "src/harmonic/spectral-identity.ts": {
       "size": 65,
@@ -3854,6 +4714,10 @@
     "src/harmonic/spiralSeal.ts": {
       "size": 58,
       "mtime_ns": 1771221012042037800
+    },
+    "src/harmonic/state21_product_metric.py": {
+      "size": 6410,
+      "mtime_ns": 1771834182817134700
     },
     "src/harmonic/tBraid.ts": {
       "size": 54,
@@ -3895,13 +4759,17 @@
       "size": 10866,
       "mtime_ns": 1771221012047549000
     },
+    "src/harmonic/wormholeTransport.ts": {
+      "size": 9059,
+      "mtime_ns": 1771634229750930300
+    },
     "src/holographic_qr_cube.py": {
       "size": 1262,
       "mtime_ns": 1771221012047549000
     },
     "src/index.ts": {
       "size": 2067,
-      "mtime_ns": 1771570173048703400
+      "mtime_ns": 1771834182825579700
     },
     "src/integrations/huggingface.ts": {
       "size": 12913,
@@ -3938,6 +4806,58 @@
     "src/lambda_tests/test_pqc.py": {
       "size": 37343,
       "mtime_ns": 1771221012056062400
+    },
+    "src/m4mesh/__init__.py": {
+      "size": 1848,
+      "mtime_ns": 1771899287291922100
+    },
+    "src/m4mesh/canonical_bridge.py": {
+      "size": 3019,
+      "mtime_ns": 1771845536783606800
+    },
+    "src/m4mesh/canonical_state.py": {
+      "size": 7403,
+      "mtime_ns": 1771899207443815900
+    },
+    "src/m4mesh/cvl.py": {
+      "size": 2072,
+      "mtime_ns": 1771692726392853800
+    },
+    "src/m4mesh/geometry.py": {
+      "size": 1665,
+      "mtime_ns": 1771692804164630500
+    },
+    "src/m4mesh/manifest.py": {
+      "size": 4094,
+      "mtime_ns": 1771692690152454900
+    },
+    "src/m4mesh/mesh_graph.py": {
+      "size": 2227,
+      "mtime_ns": 1771692705386076000
+    },
+    "src/m4mesh/metrics.py": {
+      "size": 1374,
+      "mtime_ns": 1771692767956542700
+    },
+    "src/m4mesh/pipeline.py": {
+      "size": 2600,
+      "mtime_ns": 1771692838538583900
+    },
+    "src/m4mesh/scbe_graph.py": {
+      "size": 1827,
+      "mtime_ns": 1771845508040038600
+    },
+    "src/m4mesh/smear.py": {
+      "size": 507,
+      "mtime_ns": 1771692754309489400
+    },
+    "src/m4mesh/tie_kb.py": {
+      "size": 914,
+      "mtime_ns": 1771692713587907700
+    },
+    "src/m4mesh/wave.py": {
+      "size": 1046,
+      "mtime_ns": 1771692745726775300
     },
     "src/memory/quasi_allocator.ts": {
       "size": 1857,
@@ -3988,20 +4908,20 @@
       "mtime_ns": 1771221012063567500
     },
     "src/paper_bundle_normalizer.py": {
-      "size": 2136,
-      "mtime_ns": 1771382851921105500
+      "size": 2208,
+      "mtime_ns": 1771834182825579700
     },
     "src/physics_sim/__init__.py": {
-      "size": 803,
-      "mtime_ns": 1771221012064574100
+      "size": 855,
+      "mtime_ns": 1771834182827590000
     },
     "src/physics_sim/atmosphere.py": {
       "size": 15819,
       "mtime_ns": 1771221012065574300
     },
     "src/physics_sim/core.py": {
-      "size": 22796,
-      "mtime_ns": 1771221012066575600
+      "size": 30549,
+      "mtime_ns": 1771834182827590000
     },
     "src/physics_sim/fluids.py": {
       "size": 25086,
@@ -4068,12 +4988,12 @@
       "mtime_ns": 1771221012079406700
     },
     "src/scbe_14layer_reference.py": {
-      "size": 29950,
-      "mtime_ns": 1771570173050712700
+      "size": 32733,
+      "mtime_ns": 1771845562432704300
     },
     "src/scbe_aethermoore_kyber_v2.1.py": {
       "size": 3083,
-      "mtime_ns": 1771570173051252000
+      "mtime_ns": 1771834182831268500
     },
     "src/scbe_cpse_unified.py": {
       "size": 23487,
@@ -4090,6 +5010,10 @@
     "src/science_packs/__init__.py": {
       "size": 29897,
       "mtime_ns": 1771221012082471500
+    },
+    "src/sealed_blobs/1_2_3_5_8_13.json": {
+      "size": 1704,
+      "mtime_ns": 1771834182832034200
     },
     "src/security/__init__.py": {
       "size": 150,
@@ -4160,8 +5084,8 @@
       "mtime_ns": 1771221012096003800
     },
     "src/spiralverse/aethermoor_spiral_engine.py": {
-      "size": 20850,
-      "mtime_ns": 1771494345984598300
+      "size": 21457,
+      "mtime_ns": 1771834182832034200
     },
     "src/spiralverse/hive_memory.py": {
       "size": 25929,
@@ -4200,8 +5124,8 @@
       "mtime_ns": 1771221012102969200
     },
     "src/spiralverse/temporal_intent.py": {
-      "size": 21171,
-      "mtime_ns": 1771493963753522500
+      "size": 21362,
+      "mtime_ns": 1771834182835691800
     },
     "src/spiralverse/types.ts": {
       "size": 3771,
@@ -4276,8 +5200,8 @@
       "mtime_ns": 1771221012116516500
     },
     "src/symphonic_cipher/__init__.py": {
-      "size": 4843,
-      "mtime_ns": 1771221012117526300
+      "size": 5367,
+      "mtime_ns": 1771834182835691800
     },
     "src/symphonic_cipher/ai_verifier.py": {
       "size": 49109,
@@ -4312,8 +5236,8 @@
       "mtime_ns": 1771221012125029600
     },
     "src/symphonic_cipher/dual_lattice_consensus.py": {
-      "size": 8043,
-      "mtime_ns": 1771221012125029600
+      "size": 13724,
+      "mtime_ns": 1771658007234457600
     },
     "src/symphonic_cipher/dynamics/__init__.py": {
       "size": 230,
@@ -4326,6 +5250,10 @@
     "src/symphonic_cipher/flat_slope_encoder.py": {
       "size": 20434,
       "mtime_ns": 1771221012127029000
+    },
+    "src/symphonic_cipher/geoseal_location_library.py": {
+      "size": 6814,
+      "mtime_ns": 1771834182837703400
     },
     "src/symphonic_cipher/harmonic_scaling_law.py": {
       "size": 138018,
@@ -4344,8 +5272,8 @@
       "mtime_ns": 1771221012131533700
     },
     "src/symphonic_cipher/scbe_aethermoore/__init__.py": {
-      "size": 19658,
-      "mtime_ns": 1771221012132539500
+      "size": 19767,
+      "mtime_ns": 1771834182837703400
     },
     "src/symphonic_cipher/scbe_aethermoore/_scipy_compat.py": {
       "size": 11966,
@@ -4364,8 +5292,8 @@
       "mtime_ns": 1771570081782937500
     },
     "src/symphonic_cipher/scbe_aethermoore/ai_brain/__init__.py": {
-      "size": 8257,
-      "mtime_ns": 1771570230079030600
+      "size": 7617,
+      "mtime_ns": 1771834182837703400
     },
     "src/symphonic_cipher/scbe_aethermoore/ai_brain/bft_consensus.py": {
       "size": 3625,
@@ -4401,7 +5329,7 @@
     },
     "src/symphonic_cipher/scbe_aethermoore/ai_brain/hamiltonian_braid.py": {
       "size": 19936,
-      "mtime_ns": 1771570173056796400
+      "mtime_ns": 1771834182837703400
     },
     "src/symphonic_cipher/scbe_aethermoore/ai_brain/mirror_shift.py": {
       "size": 15930,
@@ -4440,8 +5368,8 @@
       "mtime_ns": 1771221012148566100
     },
     "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/causality_axiom.py": {
-      "size": 22673,
-      "mtime_ns": 1771570173059405000
+      "size": 24103,
+      "mtime_ns": 1771834182837703400
     },
     "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/composition_axiom.py": {
       "size": 24435,
@@ -4464,12 +5392,12 @@
       "mtime_ns": 1771221012153089100
     },
     "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/locality_axiom.py": {
-      "size": 17916,
-      "mtime_ns": 1771570173060412100
+      "size": 18112,
+      "mtime_ns": 1771834182837703400
     },
     "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/symmetry_axiom.py": {
-      "size": 19944,
-      "mtime_ns": 1771570173064400700
+      "size": 20546,
+      "mtime_ns": 1771834182837703400
     },
     "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/tests/__init__.py": {
       "size": 43,
@@ -4488,16 +5416,172 @@
       "mtime_ns": 1771221012157090100
     },
     "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/unitarity_axiom.py": {
-      "size": 16462,
-      "mtime_ns": 1771570173066411500
+      "size": 16465,
+      "mtime_ns": 1771834182837703400
     },
     "src/symphonic_cipher/scbe_aethermoore/cli_toolkit.py": {
-      "size": 36954,
-      "mtime_ns": 1771221012158391800
+      "size": 41776,
+      "mtime_ns": 1771834182837703400
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/__init__.py": {
+      "size": 1985,
+      "mtime_ns": 1771834182845899500
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/base.py": {
+      "size": 2640,
+      "mtime_ns": 1771834182846912000
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/context_catalog/__init__.py": {
+      "size": 1235,
+      "mtime_ns": 1771834182848555100
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/context_catalog/catalog.py": {
+      "size": 33643,
+      "mtime_ns": 1771834182849124600
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/context_credit_ledger/__init__.py": {
+      "size": 1348,
+      "mtime_ns": 1771834182850710500
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/context_credit_ledger/bitlocker.py": {
+      "size": 12235,
+      "mtime_ns": 1771834182851763100
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/context_credit_ledger/credit.py": {
+      "size": 10461,
+      "mtime_ns": 1771834182852289500
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/context_credit_ledger/exchange.py": {
+      "size": 15517,
+      "mtime_ns": 1771834182853347100
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/context_credit_ledger/ledger.py": {
+      "size": 9395,
+      "mtime_ns": 1771834182853871900
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/coordinate.py": {
+      "size": 4756,
+      "mtime_ns": 1771834182854931100
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/cstm/__init__.py": {
+      "size": 2440,
+      "mtime_ns": 1771834182856519100
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/cstm/kernel.py": {
+      "size": 16098,
+      "mtime_ns": 1771834182857042200
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/cstm/models.py": {
+      "size": 11872,
+      "mtime_ns": 1771834182857572700
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/cstm/nursery.py": {
+      "size": 17545,
+      "mtime_ns": 1771834182858087700
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/cstm/player_agent.py": {
+      "size": 15887,
+      "mtime_ns": 1771834182858616800
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/cstm/story_engine.py": {
+      "size": 14235,
+      "mtime_ns": 1771834182859662400
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/cstm/telemetry_bridge.py": {
+      "size": 13624,
+      "mtime_ns": 1771834182860187800
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/decide.py": {
+      "size": 5101,
+      "mtime_ns": 1771834182860715000
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/heart_vault/__init__.py": {
+      "size": 3017,
+      "mtime_ns": 1771834182861757300
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/heart_vault/emotions.py": {
+      "size": 8568,
+      "mtime_ns": 1771834182862275300
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/heart_vault/graph.py": {
+      "size": 20500,
+      "mtime_ns": 1771834182862841900
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/heart_vault/heart_credit.py": {
+      "size": 9372,
+      "mtime_ns": 1771834182863367700
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/heart_vault/literary.py": {
+      "size": 11125,
+      "mtime_ns": 1771834182863889800
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/matrix_catalog_bridge.py": {
+      "size": 16067,
+      "mtime_ns": 1771834182864408900
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/plan.py": {
+      "size": 6418,
+      "mtime_ns": 1771834182864931500
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/sense.py": {
+      "size": 8392,
+      "mtime_ns": 1771834182865943200
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/steer.py": {
+      "size": 4292,
+      "mtime_ns": 1771834182866468400
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/telemetry.py": {
+      "size": 2676,
+      "mtime_ns": 1771834182866995100
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/web_agent/__init__.py": {
+      "size": 2943,
+      "mtime_ns": 1771834182867516500
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/web_agent/agent_orchestrator.py": {
+      "size": 14675,
+      "mtime_ns": 1771834182868551800
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/web_agent/buffer_integration.py": {
+      "size": 15636,
+      "mtime_ns": 1771834182869079600
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/web_agent/headless_driver.py": {
+      "size": 20965,
+      "mtime_ns": 1771836991603642500
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/web_agent/navigation_engine.py": {
+      "size": 16078,
+      "mtime_ns": 1771834182869079600
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/web_agent/publishers.py": {
+      "size": 34677,
+      "mtime_ns": 1771834182869079600
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/web_agent/semantic_antivirus.py": {
+      "size": 12224,
+      "mtime_ns": 1771834182869079600
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/web_agent/store_publishers.py": {
+      "size": 21398,
+      "mtime_ns": 1771836972946675700
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/web_agent/tongue_transport.py": {
+      "size": 9973,
+      "mtime_ns": 1771834182869079600
+    },
+    "src/symphonic_cipher/scbe_aethermoore/concept_blocks/web_agent/web_polly_pad.py": {
+      "size": 10535,
+      "mtime_ns": 1771834182869079600
     },
     "src/symphonic_cipher/scbe_aethermoore/constants.py": {
       "size": 9107,
       "mtime_ns": 1771221012159391500
+    },
+    "src/symphonic_cipher/scbe_aethermoore/convert_to_sft.py": {
+      "size": 11222,
+      "mtime_ns": 1771834182869079600
     },
     "src/symphonic_cipher/scbe_aethermoore/cpse.py": {
       "size": 25770,
@@ -4511,6 +5595,10 @@
       "size": 23848,
       "mtime_ns": 1771221012162391600
     },
+    "src/symphonic_cipher/scbe_aethermoore/decision_telemetry.py": {
+      "size": 15107,
+      "mtime_ns": 1771834182869079600
+    },
     "src/symphonic_cipher/scbe_aethermoore/dual_lattice.py": {
       "size": 26063,
       "mtime_ns": 1771221012163017900
@@ -4520,8 +5608,8 @@
       "mtime_ns": 1771221012164023600
     },
     "src/symphonic_cipher/scbe_aethermoore/ede/chemistry_agent.py": {
-      "size": 19076,
-      "mtime_ns": 1771221012164023600
+      "size": 19067,
+      "mtime_ns": 1771834182869079600
     },
     "src/symphonic_cipher/scbe_aethermoore/ede/ede_protocol.py": {
       "size": 17373,
@@ -4531,6 +5619,10 @@
       "size": 16550,
       "mtime_ns": 1771221012166533100
     },
+    "src/symphonic_cipher/scbe_aethermoore/flock_shepherd.py": {
+      "size": 16229,
+      "mtime_ns": 1771834182869079600
+    },
     "src/symphonic_cipher/scbe_aethermoore/fractional_flux.py": {
       "size": 23909,
       "mtime_ns": 1771221012166533100
@@ -4539,9 +5631,17 @@
       "size": 25669,
       "mtime_ns": 1771221012167533600
     },
+    "src/symphonic_cipher/scbe_aethermoore/genesis_protocol.py": {
+      "size": 12181,
+      "mtime_ns": 1771834182869079600
+    },
     "src/symphonic_cipher/scbe_aethermoore/governance/__init__.py": {
       "size": 476,
       "mtime_ns": 1771221012168534500
+    },
+    "src/symphonic_cipher/scbe_aethermoore/governance/grand_unified.py": {
+      "size": 13233,
+      "mtime_ns": 1771834182875477000
     },
     "src/symphonic_cipher/scbe_aethermoore/hal_attention.py": {
       "size": 19900,
@@ -4568,12 +5668,12 @@
       "mtime_ns": 1771221012172533800
     },
     "src/symphonic_cipher/scbe_aethermoore/layers/fourteen_layer_pipeline.py": {
-      "size": 36848,
-      "mtime_ns": 1771376702195581600
+      "size": 36896,
+      "mtime_ns": 1771834182875477000
     },
     "src/symphonic_cipher/scbe_aethermoore/layers/paper_aggregator.py": {
-      "size": 4776,
-      "mtime_ns": 1771382841093395600
+      "size": 4935,
+      "mtime_ns": 1771834182878015000
     },
     "src/symphonic_cipher/scbe_aethermoore/layers_9_12.py": {
       "size": 27085,
@@ -4598,6 +5698,10 @@
     "src/symphonic_cipher/scbe_aethermoore/multimodal/mmx.py": {
       "size": 5987,
       "mtime_ns": 1771221012179049900
+    },
+    "src/symphonic_cipher/scbe_aethermoore/negabinary.py": {
+      "size": 13111,
+      "mtime_ns": 1771834182879021900
     },
     "src/symphonic_cipher/scbe_aethermoore/organic_hyperbolic.py": {
       "size": 35696,
@@ -4624,8 +5728,8 @@
       "mtime_ns": 1771221012183558400
     },
     "src/symphonic_cipher/scbe_aethermoore/pqc/pqc_core.py": {
-      "size": 19766,
-      "mtime_ns": 1771570173067034700
+      "size": 22852,
+      "mtime_ns": 1771834182879021900
     },
     "src/symphonic_cipher/scbe_aethermoore/pqc/pqc_harmonic.py": {
       "size": 25985,
@@ -4637,7 +5741,7 @@
     },
     "src/symphonic_cipher/scbe_aethermoore/pqc_module.py": {
       "size": 21646,
-      "mtime_ns": 1771570173083461400
+      "mtime_ns": 1771834182879021900
     },
     "src/symphonic_cipher/scbe_aethermoore/production_v2_1.py": {
       "size": 60443,
@@ -4675,6 +5779,42 @@
       "size": 373,
       "mtime_ns": 1771221012192470000
     },
+    "src/symphonic_cipher/scbe_aethermoore/quasicrystal_lattice.py": {
+      "size": 9971,
+      "mtime_ns": 1771834182879021900
+    },
+    "src/symphonic_cipher/scbe_aethermoore/rosetta/__init__.py": {
+      "size": 844,
+      "mtime_ns": 1771834182879021900
+    },
+    "src/symphonic_cipher/scbe_aethermoore/rosetta/dede.py": {
+      "size": 7646,
+      "mtime_ns": 1771834182879021900
+    },
+    "src/symphonic_cipher/scbe_aethermoore/rosetta/language_graph.py": {
+      "size": 8051,
+      "mtime_ns": 1771834182879021900
+    },
+    "src/symphonic_cipher/scbe_aethermoore/rosetta/lcda.py": {
+      "size": 10065,
+      "mtime_ns": 1771834182879021900
+    },
+    "src/symphonic_cipher/scbe_aethermoore/rosetta/rosetta_core.py": {
+      "size": 12306,
+      "mtime_ns": 1771834182879021900
+    },
+    "src/symphonic_cipher/scbe_aethermoore/rosetta/seed_data.py": {
+      "size": 31750,
+      "mtime_ns": 1771834182885649500
+    },
+    "src/symphonic_cipher/scbe_aethermoore/sacred_egg_integrator.py": {
+      "size": 14877,
+      "mtime_ns": 1771834182885649500
+    },
+    "src/symphonic_cipher/scbe_aethermoore/sacred_egg_registry.py": {
+      "size": 7962,
+      "mtime_ns": 1771834182885649500
+    },
     "src/symphonic_cipher/scbe_aethermoore/sacred_eggs.py": {
       "size": 13341,
       "mtime_ns": 1771221012193475500
@@ -4692,20 +5832,20 @@
       "mtime_ns": 1771221012195420200
     },
     "src/symphonic_cipher/scbe_aethermoore/spiral_seal/key_exchange.py": {
-      "size": 5118,
-      "mtime_ns": 1771570173086426000
+      "size": 5360,
+      "mtime_ns": 1771834182885649500
     },
     "src/symphonic_cipher/scbe_aethermoore/spiral_seal/sacred_tongues.py": {
       "size": 11918,
-      "mtime_ns": 1771570081787852600
+      "mtime_ns": 1771832101431620200
     },
     "src/symphonic_cipher/scbe_aethermoore/spiral_seal/seal.py": {
       "size": 13282,
       "mtime_ns": 1771221012197814800
     },
     "src/symphonic_cipher/scbe_aethermoore/spiral_seal/signatures.py": {
-      "size": 5065,
-      "mtime_ns": 1771570173088979900
+      "size": 5302,
+      "mtime_ns": 1771834182885649500
     },
     "src/symphonic_cipher/scbe_aethermoore/spiral_seal/spiral_seal.py": {
       "size": 35948,
@@ -4723,9 +5863,17 @@
       "size": 16701,
       "mtime_ns": 1771221012200319200
     },
+    "src/symphonic_cipher/scbe_aethermoore/trinary.py": {
+      "size": 11304,
+      "mtime_ns": 1771834182889167100
+    },
     "src/symphonic_cipher/scbe_aethermoore/unified.py": {
       "size": 37621,
       "mtime_ns": 1771221012201325200
+    },
+    "src/symphonic_cipher/scbe_aethermoore/util_logging.py": {
+      "size": 811,
+      "mtime_ns": 1771834182889167100
     },
     "src/symphonic_cipher/scbe_aethermoore/vacuum_acoustics.py": {
       "size": 20221,
@@ -4788,12 +5936,12 @@
       "mtime_ns": 1771221012211835500
     },
     "src/symphonic_cipher/topological_cfi.py": {
-      "size": 15638,
-      "mtime_ns": 1771221012212849700
+      "size": 18857,
+      "mtime_ns": 1771657804829748100
     },
     "src/synesthesia_embedding.py": {
-      "size": 2739,
-      "mtime_ns": 1771385100838156800
+      "size": 2837,
+      "mtime_ns": 1771834182889167100
     },
     "src/tokenizer/index.ts": {
       "size": 1445,
@@ -4810,6 +5958,10 @@
     "src/tsconfig.json": {
       "size": 615,
       "mtime_ns": 1771221012214586200
+    },
+    "src/util_logging.py": {
+      "size": 4057,
+      "mtime_ns": 1771834182889167100
     },
     "src/utils/logger.ts": {
       "size": 5023,
@@ -4905,7 +6057,7 @@
     },
     "tests/L2-unit/cli.unit.test.ts": {
       "size": 7164,
-      "mtime_ns": 1771570173101520000
+      "mtime_ns": 1771834182895550500
     },
     "tests/L2-unit/entropicLayer.unit.test.ts": {
       "size": 15591,
@@ -4948,8 +6100,8 @@
       "mtime_ns": 1771221012313115500
     },
     "tests/L2-unit/sheafCohomology.unit.test.ts": {
-      "size": 32332,
-      "mtime_ns": 1771221012314116100
+      "size": 32673,
+      "mtime_ns": 1771834182899351900
     },
     "tests/L2-unit/spectral-coherence.unit.test.ts": {
       "size": 7197,
@@ -5033,11 +6185,11 @@
     },
     "tests/agent/agent.property.test.ts": {
       "size": 19985,
-      "mtime_ns": 1771570173103135800
+      "mtime_ns": 1771834182899351900
     },
     "tests/agent/hyperbolic-weakness.test.ts": {
-      "size": 1334,
-      "mtime_ns": 1771380801268787800
+      "size": 1368,
+      "mtime_ns": 1771834182899351900
     },
     "tests/agentic/distributed-workflow.test.ts": {
       "size": 4046,
@@ -5046,6 +6198,10 @@
     "tests/agentic/platform.test.ts": {
       "size": 13316,
       "mtime_ns": 1771221012333128400
+    },
+    "tests/agentic/roundabout-city.test.ts": {
+      "size": 3059,
+      "mtime_ns": 1771702198820328900
     },
     "tests/ai_brain/audit.test.ts": {
       "size": 3884,
@@ -5100,8 +6256,8 @@
       "mtime_ns": 1771221012343650200
     },
     "tests/ai_brain/phdm-core.test.ts": {
-      "size": 29317,
-      "mtime_ns": 1771221012345155800
+      "size": 29470,
+      "mtime_ns": 1771834182899351900
     },
     "tests/ai_brain/quasi-space.test.ts": {
       "size": 13556,
@@ -5124,8 +6280,8 @@
       "mtime_ns": 1771221012349161500
     },
     "tests/ai_brain/unified-kernel.test.ts": {
-      "size": 26377,
-      "mtime_ns": 1771570081802188500
+      "size": 26791,
+      "mtime_ns": 1771834182899351900
     },
     "tests/ai_brain/unified-state.test.ts": {
       "size": 10831,
@@ -5143,13 +6299,25 @@
       "size": 25306,
       "mtime_ns": 1771221012352161400
     },
+    "tests/code_prism/test_builder.py": {
+      "size": 1029,
+      "mtime_ns": 1771834182899351900
+    },
+    "tests/code_prism/test_matrix.py": {
+      "size": 515,
+      "mtime_ns": 1771834182899351900
+    },
+    "tests/code_prism/test_parity.py": {
+      "size": 1273,
+      "mtime_ns": 1771834182899351900
+    },
     "tests/compliance_report.py": {
       "size": 80698,
       "mtime_ns": 1771221012353667000
     },
     "tests/conftest.py": {
       "size": 9521,
-      "mtime_ns": 1771570173105659100
+      "mtime_ns": 1771834182905447800
     },
     "tests/cross-industry/bank/bank-scenarios.spec.ts": {
       "size": 11441,
@@ -5188,8 +6356,8 @@
       "mtime_ns": 1771221012363183500
     },
     "tests/crypto/aetherlexSeed.test.ts": {
-      "size": 22665,
-      "mtime_ns": 1771221012363183500
+      "size": 22675,
+      "mtime_ns": 1771834182905447800
     },
     "tests/crypto/platform.test.ts": {
       "size": 7025,
@@ -5200,12 +6368,12 @@
       "mtime_ns": 1771221012365183200
     },
     "tests/crypto/pqc.test.ts": {
-      "size": 2787,
-      "mtime_ns": 1771230460425080300
+      "size": 3071,
+      "mtime_ns": 1771834182905447800
     },
     "tests/crypto/quantum-safe.test.ts": {
-      "size": 22953,
-      "mtime_ns": 1771221012365183200
+      "size": 23019,
+      "mtime_ns": 1771834182905447800
     },
     "tests/crypto/replayGuard.redis.test.ts": {
       "size": 6509,
@@ -5219,6 +6387,10 @@
       "size": 18034,
       "mtime_ns": 1771221012368183500
     },
+    "tests/crypto/test_nonbinary_kernel.py": {
+      "size": 2105,
+      "mtime_ns": 1771826847249831700
+    },
     "tests/crypto/test_rwp_v3.py": {
       "size": 13415,
       "mtime_ns": 1771221012368183500
@@ -5228,8 +6400,8 @@
       "mtime_ns": 1771221012369183500
     },
     "tests/crypto/test_sacred_tongues.py": {
-      "size": 11821,
-      "mtime_ns": 1771221012369183500
+      "size": 11916,
+      "mtime_ns": 1771834182909531000
     },
     "tests/demo_telemetry.py": {
       "size": 10067,
@@ -5335,6 +6507,10 @@
       "size": 510,
       "mtime_ns": 1771221012389826100
     },
+    "tests/fleet/autoRetrigger.test.ts": {
+      "size": 11528,
+      "mtime_ns": 1771634229752433100
+    },
     "tests/fleet/browser-pool.test.ts": {
       "size": 24354,
       "mtime_ns": 1771221012391823000
@@ -5351,6 +6527,22 @@
       "size": 16892,
       "mtime_ns": 1771221012394822400
     },
+    "tests/fleet/governed-drift.test.ts": {
+      "size": 20610,
+      "mtime_ns": 1771634229752433100
+    },
+    "tests/fleet/mitosis.test.ts": {
+      "size": 12690,
+      "mtime_ns": 1771634229753441200
+    },
+    "tests/fleet/node-kernel.test.ts": {
+      "size": 22547,
+      "mtime_ns": 1771834182910109700
+    },
+    "tests/fleet/oscillator-bus.test.ts": {
+      "size": 15914,
+      "mtime_ns": 1771634229756442200
+    },
     "tests/fleet/polly-pad-modes.test.ts": {
       "size": 33827,
       "mtime_ns": 1771221012394822400
@@ -5363,6 +6555,10 @@
       "size": 4318,
       "mtime_ns": 1771221012396326500
     },
+    "tests/fleet/swarm-geometry.test.ts": {
+      "size": 29314,
+      "mtime_ns": 1771634229757440500
+    },
     "tests/harmonic/adaptiveNavigator.test.ts": {
       "size": 17216,
       "mtime_ns": 1771221012397332700
@@ -5370,6 +6566,10 @@
     "tests/harmonic/audioAxis.test.ts": {
       "size": 17651,
       "mtime_ns": 1771221012398472700
+    },
+    "tests/harmonic/balancedTernary.test.ts": {
+      "size": 16604,
+      "mtime_ns": 1771634229758440200
     },
     "tests/harmonic/driftTracker.test.ts": {
       "size": 21960,
@@ -5387,6 +6587,10 @@
       "size": 11565,
       "mtime_ns": 1771221012401477400
     },
+    "tests/harmonic/frecency.test.ts": {
+      "size": 32412,
+      "mtime_ns": 1771634229760089500
+    },
     "tests/harmonic/geoSealImmune.test.ts": {
       "size": 21096,
       "mtime_ns": 1771221012401477400
@@ -5398,6 +6602,10 @@
     "tests/harmonic/geoseal.test.ts": {
       "size": 13882,
       "mtime_ns": 1771221012403478600
+    },
+    "tests/harmonic/gravitationalBraking.test.ts": {
+      "size": 19057,
+      "mtime_ns": 1771634229760089500
     },
     "tests/harmonic/halAttention.test.ts": {
       "size": 18860,
@@ -5427,6 +6635,10 @@
       "size": 42503,
       "mtime_ns": 1771221012408016500
     },
+    "tests/harmonic/negativeSpace.test.ts": {
+      "size": 26736,
+      "mtime_ns": 1771634229761089400
+    },
     "tests/harmonic/phdm.test.ts": {
       "size": 24137,
       "mtime_ns": 1771221012409562300
@@ -5452,8 +6664,8 @@
       "mtime_ns": 1771221012412487800
     },
     "tests/harmonic/sheafCohomology.test.ts": {
-      "size": 70649,
-      "mtime_ns": 1771251470605872700
+      "size": 71150,
+      "mtime_ns": 1771834182910109700
     },
     "tests/harmonic/spectral-identity.test.ts": {
       "size": 10678,
@@ -5475,37 +6687,65 @@
       "size": 30807,
       "mtime_ns": 1771221012416265100
     },
+    "tests/harmonic/wormholeTransport.test.ts": {
+      "size": 18466,
+      "mtime_ns": 1771634229762089900
+    },
+    "tests/heart_vault/test_heart_vault.py": {
+      "size": 30656,
+      "mtime_ns": 1771834182910109700
+    },
     "tests/hydra/__init__.py": {
       "size": 0,
-      "mtime_ns": 1771562296055653100
+      "mtime_ns": 1771834182910109700
     },
     "tests/hydra/swarm_governance.test.ts": {
       "size": 16503,
-      "mtime_ns": 1771570173107682100
+      "mtime_ns": 1771834182910109700
+    },
+    "tests/hydra/test_browsers.py": {
+      "size": 8119,
+      "mtime_ns": 1771834182910109700
+    },
+    "tests/hydra/test_cli_swarm.py": {
+      "size": 4949,
+      "mtime_ns": 1771834182910109700
     },
     "tests/hydra/test_consensus.py": {
-      "size": 18120,
-      "mtime_ns": 1771562505046401500
+      "size": 18670,
+      "mtime_ns": 1771834182915905400
     },
     "tests/hydra/test_head.py": {
-      "size": 9981,
-      "mtime_ns": 1771562445579106600
+      "size": 10290,
+      "mtime_ns": 1771834182915905400
+    },
+    "tests/hydra/test_keyword_persistence.py": {
+      "size": 7622,
+      "mtime_ns": 1771834182915905400
+    },
+    "tests/hydra/test_llm_providers_hf.py": {
+      "size": 5888,
+      "mtime_ns": 1771834182915905400
     },
     "tests/hydra/test_research.py": {
-      "size": 5888,
-      "mtime_ns": 1771566239726915600
+      "size": 6072,
+      "mtime_ns": 1771834182915905400
     },
     "tests/hydra/test_spine.py": {
-      "size": 13684,
-      "mtime_ns": 1771563244502343500
+      "size": 14079,
+      "mtime_ns": 1771834182919698600
+    },
+    "tests/hydra/test_swarm_browser.py": {
+      "size": 13080,
+      "mtime_ns": 1771834182919698600
     },
     "tests/hydra/test_switchboard.py": {
-      "size": 11928,
-      "mtime_ns": 1771562373474624400
+      "size": 12225,
+      "mtime_ns": 1771834182919698600
     },
     "tests/hydra/test_turnstile.py": {
-      "size": 12007,
-      "mtime_ns": 1771562335295254000
+      "size": 12326,
+      "mtime_ns": 1771834182919698600
     },
     "tests/industry_standard/test_ai_safety_governance.py": {
       "size": 13424,
@@ -5545,15 +6785,47 @@
     },
     "tests/interop/interop.test.ts": {
       "size": 7572,
-      "mtime_ns": 1771570173109693500
+      "mtime_ns": 1771834182919698600
     },
     "tests/interop/test_interop.py": {
       "size": 7211,
       "mtime_ns": 1771221012426783200
     },
+    "tests/interop/test_m4_canonical_bridge.py": {
+      "size": 808,
+      "mtime_ns": 1771845587842144900
+    },
+    "tests/interop/test_m4_gates_isolation.py": {
+      "size": 1074,
+      "mtime_ns": 1771692890378538000
+    },
+    "tests/interop/test_m4_leakage_metric.py": {
+      "size": 671,
+      "mtime_ns": 1771692902228208400
+    },
+    "tests/interop/test_m4_manifest_roundtrip.py": {
+      "size": 352,
+      "mtime_ns": 1771692859683513700
+    },
+    "tests/interop/test_m4_scbe_graph.py": {
+      "size": 749,
+      "mtime_ns": 1771845581088542300
+    },
+    "tests/interop/test_m4_smear_operator.py": {
+      "size": 588,
+      "mtime_ns": 1771692877590191400
+    },
+    "tests/interop/test_m4_wave_determinism.py": {
+      "size": 587,
+      "mtime_ns": 1771692866771325100
+    },
     "tests/interop/test_vectors.json": {
       "size": 58268,
-      "mtime_ns": 1771570173111705200
+      "mtime_ns": 1771834182924880700
+    },
+    "tests/mcp/scbe-server.phase1.test.ts": {
+      "size": 3842,
+      "mtime_ns": 1771834182925454000
     },
     "tests/network/combat-network.test.ts": {
       "size": 21556,
@@ -5608,8 +6880,8 @@
       "mtime_ns": 1771221012436377400
     },
     "tests/shell-executor.test.ts": {
-      "size": 35961,
-      "mtime_ns": 1771221012437396400
+      "size": 35963,
+      "mtime_ns": 1771834182925963700
     },
     "tests/skills/socialContent.test.ts": {
       "size": 11530,
@@ -5637,7 +6909,7 @@
     },
     "tests/spiralverse/rwp_v3.test.ts": {
       "size": 12275,
-      "mtime_ns": 1771570173113214400
+      "mtime_ns": 1771834182925963700
     },
     "tests/stress_test.py": {
       "size": 36889,
@@ -5653,31 +6925,35 @@
     },
     "tests/test_advanced_mathematics.py": {
       "size": 20234,
-      "mtime_ns": 1771221012447891700
+      "mtime_ns": 1771834182925963700
+    },
+    "tests/test_aetherbrowse_swarm_runner.py": {
+      "size": 1766,
+      "mtime_ns": 1771834182925963700
     },
     "tests/test_aethermoor_spiral_engine.py": {
-      "size": 3599,
-      "mtime_ns": 1771494357980463100
+      "size": 3682,
+      "mtime_ns": 1771834182929801500
     },
     "tests/test_aethermoore.py": {
-      "size": 24675,
-      "mtime_ns": 1771221012448399400
+      "size": 25133,
+      "mtime_ns": 1771834182929801500
     },
     "tests/test_aethermoore_patents.py": {
       "size": 4926,
       "mtime_ns": 1771221012449402600
     },
     "tests/test_aethermoore_validation.py": {
-      "size": 24148,
-      "mtime_ns": 1771221012449402600
+      "size": 24212,
+      "mtime_ns": 1771834182929801500
     },
     "tests/test_ai_orchestration.py": {
       "size": 21463,
       "mtime_ns": 1771221012450401800
     },
     "tests/test_antivirus_membrane.py": {
-      "size": 1183,
-      "mtime_ns": 1771426633468325500
+      "size": 1216,
+      "mtime_ns": 1771834182929801500
     },
     "tests/test_artifacts/discrete_sim_thresholds.png": {
       "size": 49671,
@@ -5699,6 +6975,14 @@
       "size": 30501,
       "mtime_ns": 1771427662170575300
     },
+    "tests/test_arxiv_ai2ai_retrieval.py": {
+      "size": 4265,
+      "mtime_ns": 1771688909328328800
+    },
+    "tests/test_arxiv_pipeline.py": {
+      "size": 1773,
+      "mtime_ns": 1771634229764091400
+    },
     "tests/test_asymmetric_movement.py": {
       "size": 10879,
       "mtime_ns": 1771221012451403100
@@ -5708,24 +6992,28 @@
       "mtime_ns": 1771221012451403100
     },
     "tests/test_build_rag_index.py": {
-      "size": 3704,
-      "mtime_ns": 1771559467309583700
+      "size": 3818,
+      "mtime_ns": 1771834182929801500
     },
     "tests/test_circuit_flow.py": {
       "size": 16864,
       "mtime_ns": 1771570081802188500
     },
     "tests/test_combined_protocol.py": {
-      "size": 23956,
-      "mtime_ns": 1771221012452402500
+      "size": 24035,
+      "mtime_ns": 1771834182929801500
+    },
+    "tests/test_compute_ds_squared.py": {
+      "size": 1605,
+      "mtime_ns": 1771845574416943200
     },
     "tests/test_cymatic_voxel_net.py": {
       "size": 12738,
       "mtime_ns": 1771221012452402500
     },
     "tests/test_decision_envelope_v1.py": {
-      "size": 8557,
-      "mtime_ns": 1771561018518825600
+      "size": 8806,
+      "mtime_ns": 1771834182929801500
     },
     "tests/test_doc_verifier.py": {
       "size": 5851,
@@ -5733,19 +7021,19 @@
     },
     "tests/test_dual_lattice_contract.py": {
       "size": 5387,
-      "mtime_ns": 1771570173115246600
+      "mtime_ns": 1771834182935542100
     },
     "tests/test_dual_ternary_full_flux.py": {
       "size": 4226,
-      "mtime_ns": 1771570173117256200
+      "mtime_ns": 1771834182935542100
     },
     "tests/test_ede.py": {
       "size": 21966,
       "mtime_ns": 1771221012456403800
     },
     "tests/test_enhanced_scbe_cli.py": {
-      "size": 1928,
-      "mtime_ns": 1771487310558915800
+      "size": 1990,
+      "mtime_ns": 1771834182938055400
     },
     "tests/test_enterprise_compliance.py": {
       "size": 20783,
@@ -5760,20 +7048,20 @@
       "mtime_ns": 1771221012459569100
     },
     "tests/test_entropic_suite.py": {
-      "size": 5906,
-      "mtime_ns": 1771221012460566000
+      "size": 5970,
+      "mtime_ns": 1771834182938055400
     },
     "tests/test_export_perplexity.py": {
-      "size": 1584,
-      "mtime_ns": 1771558454700030200
+      "size": 1624,
+      "mtime_ns": 1771834182940247300
     },
     "tests/test_extension_gate.py": {
-      "size": 2187,
-      "mtime_ns": 1771487525668214000
+      "size": 2242,
+      "mtime_ns": 1771834182940916500
     },
     "tests/test_failable_by_design.py": {
-      "size": 19217,
-      "mtime_ns": 1771221012461564900
+      "size": 19232,
+      "mtime_ns": 1771834182940916500
     },
     "tests/test_federated_orchestrator.py": {
       "size": 2921,
@@ -5783,9 +7071,17 @@
       "size": 12447,
       "mtime_ns": 1771221012462568000
     },
+    "tests/test_flock_shepherd.py": {
+      "size": 13915,
+      "mtime_ns": 1771834182940916500
+    },
     "tests/test_fsgs.py": {
       "size": 21327,
       "mtime_ns": 1771221012463565600
+    },
+    "tests/test_genesis_protocol.py": {
+      "size": 10222,
+      "mtime_ns": 1771834182940916500
     },
     "tests/test_geoseal.py": {
       "size": 9752,
@@ -5801,7 +7097,7 @@
     },
     "tests/test_h_lwe.py": {
       "size": 4955,
-      "mtime_ns": 1771570173119266200
+      "mtime_ns": 1771834182940916500
     },
     "tests/test_hamiltonian_braid.py": {
       "size": 18906,
@@ -5823,25 +7119,33 @@
       "size": 16257,
       "mtime_ns": 1771221012469088200
     },
+    "tests/test_hydra_swarm_browser.py": {
+      "size": 14787,
+      "mtime_ns": 1771834182945586900
+    },
     "tests/test_hydra_turnstile.py": {
-      "size": 1660,
-      "mtime_ns": 1771380792116302200
+      "size": 1720,
+      "mtime_ns": 1771834182945586900
     },
     "tests/test_hyperbolic_rag.py": {
       "size": 10519,
       "mtime_ns": 1771221012470088100
+    },
+    "tests/test_hyperbolic_validation_lambda.py": {
+      "size": 564,
+      "mtime_ns": 1771834367983634500
     },
     "tests/test_industry_grade.py": {
       "size": 110519,
       "mtime_ns": 1771221012471095500
     },
     "tests/test_integration_full.py": {
-      "size": 20380,
-      "mtime_ns": 1771221012472088500
+      "size": 20354,
+      "mtime_ns": 1771834182945586900
     },
     "tests/test_kernel_antivirus_gate.py": {
-      "size": 2033,
-      "mtime_ns": 1771488302245205400
+      "size": 2093,
+      "mtime_ns": 1771834182945586900
     },
     "tests/test_kernel_manifest.py": {
       "size": 646,
@@ -5857,11 +7161,15 @@
     },
     "tests/test_layer13_cymatic_voxel_pq_envelope.py": {
       "size": 4477,
-      "mtime_ns": 1771570173129673500
+      "mtime_ns": 1771834182945586900
     },
     "tests/test_linux_kernel_event_bridge.py": {
-      "size": 2779,
-      "mtime_ns": 1771489305625524000
+      "size": 2864,
+      "mtime_ns": 1771834182950501600
+    },
+    "tests/test_mcp_servers.py": {
+      "size": 13219,
+      "mtime_ns": 1771834182950501600
     },
     "tests/test_mirror_shift.py": {
       "size": 16882,
@@ -5872,28 +7180,32 @@
       "mtime_ns": 1771221012476609700
     },
     "tests/test_mobile_goal_api.py": {
-      "size": 7001,
-      "mtime_ns": 1771552043759762000
+      "size": 7211,
+      "mtime_ns": 1771834182950501600
     },
     "tests/test_multi_cloud_agents.py": {
-      "size": 32339,
-      "mtime_ns": 1771221012476609700
+      "size": 32482,
+      "mtime_ns": 1771834182950501600
     },
     "tests/test_multi_model_modal_matrix.py": {
-      "size": 2286,
-      "mtime_ns": 1771490118992601600
+      "size": 2346,
+      "mtime_ns": 1771834182950501600
     },
     "tests/test_multiscale_spectrum.py": {
       "size": 14099,
       "mtime_ns": 1771221012477609900
     },
     "tests/test_normalize_perplexity.py": {
-      "size": 2220,
-      "mtime_ns": 1771558945723485300
+      "size": 2286,
+      "mtime_ns": 1771834182950501600
+    },
+    "tests/test_orchestrator.py": {
+      "size": 13207,
+      "mtime_ns": 1771834182950501600
     },
     "tests/test_paper_aggregator.py": {
-      "size": 2132,
-      "mtime_ns": 1771382870009855100
+      "size": 2203,
+      "mtime_ns": 1771834182956256600
     },
     "tests/test_phdm_conservation.py": {
       "size": 4571,
@@ -5907,17 +7219,21 @@
       "size": 3218,
       "mtime_ns": 1771221012478609800
     },
+    "tests/test_physics_bug_regressions.py": {
+      "size": 2275,
+      "mtime_ns": 1771834182957402800
+    },
     "tests/test_polly_pad_store.py": {
-      "size": 2197,
-      "mtime_ns": 1771389900407619200
+      "size": 2262,
+      "mtime_ns": 1771834182958460800
     },
     "tests/test_polly_pads_runtime.py": {
       "size": 14507,
       "mtime_ns": 1771290719086222700
     },
     "tests/test_pqc.py": {
-      "size": 37345,
-      "mtime_ns": 1771221012480609900
+      "size": 38148,
+      "mtime_ns": 1771834182960042400
     },
     "tests/test_professional_api.py": {
       "size": 16717,
@@ -5932,12 +7248,28 @@
       "mtime_ns": 1771221012482113900
     },
     "tests/test_push_to_hf.py": {
-      "size": 771,
-      "mtime_ns": 1771559058392887600
+      "size": 797,
+      "mtime_ns": 1771834182960696500
     },
     "tests/test_qr_cube_pi_phi_kdf.py": {
       "size": 12681,
       "mtime_ns": 1771221012483119600
+    },
+    "tests/test_quasicrystal_lattice.py": {
+      "size": 10152,
+      "mtime_ns": 1771834182961227900
+    },
+    "tests/test_rosetta.py": {
+      "size": 19672,
+      "mtime_ns": 1771834182962302300
+    },
+    "tests/test_sacred_egg_integrator.py": {
+      "size": 30773,
+      "mtime_ns": 1771834182963365300
+    },
+    "tests/test_sacred_egg_registry.py": {
+      "size": 7360,
+      "mtime_ns": 1771834182963894800
     },
     "tests/test_sacred_eggs.py": {
       "size": 27636,
@@ -5950,6 +7282,10 @@
     "tests/test_sacred_tongue_integration.py": {
       "size": 18274,
       "mtime_ns": 1771221012485119700
+    },
+    "tests/test_scbe_14layer_audit_callsite.py": {
+      "size": 520,
+      "mtime_ns": 1771845594125942000
     },
     "tests/test_scbe_14layers.py": {
       "size": 18723,
@@ -5964,16 +7300,16 @@
       "mtime_ns": 1771221012487120400
     },
     "tests/test_scbe_synesthesia.py": {
-      "size": 1522,
-      "mtime_ns": 1771385158671831200
+      "size": 1567,
+      "mtime_ns": 1771834182964932100
     },
     "tests/test_sheaf_consensus_gate.py": {
-      "size": 1762,
-      "mtime_ns": 1771491996733491800
+      "size": 1824,
+      "mtime_ns": 1771834182966506300
     },
     "tests/test_signed_multiplane_encoding.py": {
-      "size": 2034,
-      "mtime_ns": 1771486761431502700
+      "size": 2106,
+      "mtime_ns": 1771834182968103000
     },
     "tests/test_six_tongues_cli.py": {
       "size": 33366,
@@ -5988,24 +7324,36 @@
       "mtime_ns": 1771221012490638200
     },
     "tests/test_spiralverse_canonical_registry.py": {
-      "size": 2318,
-      "mtime_ns": 1771475703496644500
+      "size": 2395,
+      "mtime_ns": 1771834182969159600
+    },
+    "tests/test_state21_product_metric.py": {
+      "size": 2299,
+      "mtime_ns": 1771834182969159600
     },
     "tests/test_stvm_phase1.py": {
-      "size": 699,
-      "mtime_ns": 1771484873025581200
+      "size": 732,
+      "mtime_ns": 1771834182971173200
     },
     "tests/test_swarm_browser_multisite.py": {
-      "size": 2192,
-      "mtime_ns": 1771426773748453300
+      "size": 2271,
+      "mtime_ns": 1771834182971724800
+    },
+    "tests/test_symphonic_verifier.py": {
+      "size": 775,
+      "mtime_ns": 1771834367402202200
+    },
+    "tests/test_system_hub_sync.py": {
+      "size": 2641,
+      "mtime_ns": 1771830422034935800
     },
     "tests/test_tarski_sheaf.py": {
       "size": 1747,
       "mtime_ns": 1771221012490638200
     },
     "tests/test_telemetry_advanced_math.json": {
-      "size": 4626,
-      "mtime_ns": 1771570173131743500
+      "size": 4724,
+      "mtime_ns": 1771834182973740400
     },
     "tests/test_telemetry_dna_audit_report.json": {
       "size": 648,
@@ -6016,8 +7364,8 @@
       "mtime_ns": 1771221012492645400
     },
     "tests/test_temporal_lock_diagnostic.py": {
-      "size": 1378,
-      "mtime_ns": 1771494010116593600
+      "size": 1411,
+      "mtime_ns": 1771834182973740400
     },
     "tests/test_theoretical_axioms.py": {
       "size": 35243,
@@ -6027,13 +7375,17 @@
       "size": 12214,
       "mtime_ns": 1771221012494644300
     },
+    "tests/test_trinary_negabinary.py": {
+      "size": 15511,
+      "mtime_ns": 1771834182975749100
+    },
     "tests/test_visual_system_comprehensive.py": {
       "size": 27863,
       "mtime_ns": 1771221012494644300
     },
     "tests/test_web_research_training_pipeline.py": {
-      "size": 2460,
-      "mtime_ns": 1771490460412838000
+      "size": 2528,
+      "mtime_ns": 1771834182975749100
     },
     "tests/tsconfig.json": {
       "size": 213,
@@ -6063,25 +7415,33 @@
       "size": 11960,
       "mtime_ns": 1771221012500155700
     },
+    "training/NOTION_CODEBASE_COMPARISON.md": {
+      "size": 15553,
+      "mtime_ns": 1771834183075732700
+    },
+    "training/STORY_TECH_MAPPING.md": {
+      "size": 35823,
+      "mtime_ns": 1771834183081716800
+    },
     "training/aethermoore_ops_training.jsonl": {
       "size": 4051,
-      "mtime_ns": 1771292617197566200
+      "mtime_ns": 1771834183082321300
     },
     "training/agent_profiles/creative_writer_agent_v1.json": {
-      "size": 1158,
-      "mtime_ns": 1771396205532051400
+      "size": 1205,
+      "mtime_ns": 1771834183082321300
     },
     "training/aws_sagemaker_long_run_training_job.json": {
       "size": 1429,
       "mtime_ns": 1771229495200779300
     },
     "training/cloud_kernel_pipeline.json": {
-      "size": 1344,
-      "mtime_ns": 1771490445072222400
+      "size": 1395,
+      "mtime_ns": 1771834183085534100
     },
     "training/config/node_fleet_constants.json": {
-      "size": 1766,
-      "mtime_ns": 1771325704625856900
+      "size": 1811,
+      "mtime_ns": 1771834183085534100
     },
     "training/doc_manifest.json": {
       "size": 353292,
@@ -6105,95 +7465,107 @@
     },
     "training/ingest/docs_20260217T143127Z.jsonl": {
       "size": 7294414,
-      "mtime_ns": 1771338690421688900
+      "mtime_ns": 1771834183124238200
     },
     "training/ingest/docs_20260218T003225Z.jsonl": {
       "size": 7301612,
-      "mtime_ns": 1771374756406629100
+      "mtime_ns": 1771834183159701500
     },
     "training/ingest/lore_drop_20260218T051042Z.jsonl": {
       "size": 9263,
-      "mtime_ns": 1771391442831036700
+      "mtime_ns": 1771834183168744600
     },
     "training/ingest/lore_drop_20260218T053758Z.jsonl": {
       "size": 68386,
-      "mtime_ns": 1771393079726393600
+      "mtime_ns": 1771834183168744600
     },
     "training/ingest/lore_drop_20260218T053842Z.jsonl": {
       "size": 67486,
-      "mtime_ns": 1771393123546971400
+      "mtime_ns": 1771834183168744600
     },
     "training/ingest/lore_drop_20260218T063116Z.jsonl": {
       "size": 14434,
-      "mtime_ns": 1771396276565463900
+      "mtime_ns": 1771834183168744600
     },
     "training/ingest/lore_drop_20260218T125029Z.jsonl": {
       "size": 14434,
-      "mtime_ns": 1771419029359819200
+      "mtime_ns": 1771834183168744600
     },
     "training/ingest/lore_verbatim_20260218T053758Z.jsonl": {
       "size": 128236,
-      "mtime_ns": 1771393079718178800
+      "mtime_ns": 1771834183168744600
     },
     "training/ingest/lore_verbatim_20260218T053842Z.jsonl": {
       "size": 127636,
-      "mtime_ns": 1771393123539154400
+      "mtime_ns": 1771834183177300100
     },
     "training/ingest/lore_verbatim_20260218T063116Z.jsonl": {
       "size": 9920,
-      "mtime_ns": 1771396276562465200
+      "mtime_ns": 1771834183178812900
     },
     "training/ingest/lore_verbatim_20260218T125029Z.jsonl": {
       "size": 9920,
-      "mtime_ns": 1771419029356140200
+      "mtime_ns": 1771834183180830000
     },
     "training/intake/README.md": {
-      "size": 831,
-      "mtime_ns": 1771471172512857900
+      "size": 865,
+      "mtime_ns": 1771834183180830000
     },
     "training/local_cloud_sync.json": {
-      "size": 1323,
-      "mtime_ns": 1771480863747106800
+      "size": 1395,
+      "mtime_ns": 1771834183185851600
     },
     "training/long_run_multicloud_training_plan.json": {
       "size": 2543,
-      "mtime_ns": 1771570173133751400
+      "mtime_ns": 1771834183189250100
     },
     "training/notion_ingest/iseki_story_notion_api_20260218.md": {
-      "size": 4456,
-      "mtime_ns": 1771374735860307000
+      "size": 4571,
+      "mtime_ns": 1771834183189250100
+    },
+    "training/raw/six_tongues_enhanced_v2.md": {
+      "size": 144103,
+      "mtime_ns": 1771834183192620200
     },
     "training/raw/six_tongues_full_wiki_20260218T053758Z.md": {
       "size": 118402,
-      "mtime_ns": 1771393079716156400
+      "mtime_ns": 1771834183193187200
     },
     "training/raw/six_tongues_full_wiki_git_20260218T053842Z.md": {
       "size": 118402,
-      "mtime_ns": 1771393123536485400
+      "mtime_ns": 1771834183195791500
     },
     "training/raw/six_tongues_full_wiki_git_20260219T031923Z.md": {
       "size": 118408,
-      "mtime_ns": 1771471164999627500
+      "mtime_ns": 1771834183195791500
     },
     "training/raw/spiralverse_canonical_linguistic_codex_v1_seed_20260218.md": {
-      "size": 8989,
-      "mtime_ns": 1771396136696976200
+      "size": 9230,
+      "mtime_ns": 1771834183195791500
+    },
+    "training/research_consolidation.json": {
+      "size": 940,
+      "mtime_ns": 1771834183199615400
+    },
+    "training/sft_records/sft_2026-02-22.jsonl": {
+      "size": 54176,
+      "mtime_ns": 1771834183199615400
     },
     "training/tmp_test/run/hf_training_metrics.json": {
       "size": 1516,
-      "mtime_ns": 1771375627032721800
+      "mtime_ns": 1771834183231328800
     },
     "training/tmp_test/run/label_map.json": {
       "size": 48,
-      "mtime_ns": 1771375626554382700
+      "mtime_ns": 1771834183233357900
     },
     "training/tmp_test/run/training_growth_summary.md": {
       "size": 274,
-      "mtime_ns": 1771375626557502900
+      "mtime_ns": 1771834183235932300
     },
     "training/tmp_test/test.jsonl": {
       "size": 1599,
-      "mtime_ns": 1771375619587260000
+      "mtime_ns": 1771834183236938700
     },
     "vitest.config.ts": {
       "size": 1420,
@@ -6262,7 +7634,50 @@
       "df09c963eeb9e3a744d1a309488544a2f226461a74d82fcf88ed5ca9f76bee3a",
       "55f4f295d26c5fe3c8f841d0ead1524cae919cb540abb312096d49988ce45b64",
       "c31e25471b0008bcc46c6dc4a593f30cbafac347f00bdf704c7c972828b4b017",
-      "66fb207e0efa114f2ed011f9ca1593c6a29267401e5a438d41d23a7c1f87d47d"
+      "66fb207e0efa114f2ed011f9ca1593c6a29267401e5a438d41d23a7c1f87d47d",
+      "e02d8d1c59c5ab476a4daedd066e1b4a8ff40352e94e4c77f027b851fe982f1a",
+      "5c76f1376a4aadd1731175864f544c4cfd18cbc25554ea3fb637acff0e7d0890",
+      "2145e10df609ae5e0c24ddd0ee092a0e6da770991e78fcbae557d6a0e950f920",
+      "4ebca7f36c54dd67131942e2b1c193ba2ffb18a6dc060817cafd1506354cdb6a",
+      "613b42fd862cc5b4d0c2fabc293d69fb67de8c3d28b5a87e83ec85726931221b",
+      "fa9925a15cdfecdfcb465b200b85438c573910ef03b5c77e695493312a50884b",
+      "28b72ca1c839c09d156455ffc0b9891c28f120232f6dffa8a4bd6d5e7ae7a51f",
+      "e197064db96385358a6d6cdd026a3982be76049a1f08e7e89168722232e91094",
+      "b11b09a4f423c29e7eb14f699fb662de4d4819d4067ed030bfb38f91fa9779c8",
+      "45cfe6718c1678dc69d0c402c4c9b468fbeaf80228389c0741daf9bb46fb70fe",
+      "343062bd06869394284032d0d107c736bcc86e9d7a7840339a7d20efe8b484dd",
+      "1d9f34af93de9cbfbfffb06fc9afef5e31a1a4f3410cec23df0838ec5e0682bb",
+      "dbbcd6fd2dbd6ce4c3d355a738825759f886290c19a8cdb7238a96344a28a790",
+      "c91e029164becca530006a2d5100dce39ee9f12061eb64f51782966fdf61600f",
+      "f307c4fafad1611e412187e8bcf696eb3347ad3ec130c9e02ec35dd6888141d6",
+      "cd6b3378d7da95847606257f194feef0ea0c2466916af439725e64496a75c1ba",
+      "1404616301624ef62cd2a76432ecf0f689b7cf17e7f3aa7f7d8ae78c88ed85b2",
+      "f91a8e8de8dad5381b25c74b445b253e86913651784d593a41434ab4312dff91",
+      "b0b641a463b3f8a27edadff81099c8a6365ff9781d1a9ecac16a02c86bbdae63",
+      "a1354c1f681d82e48375f7ce79350a92a9cf4ff730c877087cc7b9c22cbcc86e",
+      "4e6524d760085c045885a2f6a7eca843e3b711ef488f27e7c5d4a49b73f5b0db",
+      "adabd4779b35637d9ede9bf06c09e279f3e63a714a7604b9b78a3438f3da3406",
+      "176ee596484f1c257a45c56f72586bc98fee63e79d1d4610f62919c3ea8cefbb",
+      "69419252a9eae411916f2ab70e9319e7f094e85169aa7539e117b9b788628092",
+      "a7a8ad07b62825d207a588fed163a40d1a2924542494241e12209ae6bd839a24",
+      "ad5ccfaa99260208f13f173f0a612454657666b535be9ec5caba241b5d72e0c0",
+      "60e759d90b388fb830261f28a8394b9e89d8f0f9caac8628b850e60ded6fb542",
+      "474d3ba1d16675d94b663b75d10f9f203e449cc9998d2a8006ca681ef086b3a2",
+      "fce8a8d788a1f3440506c3ac8367ccf2614268f9812b83668882780f0a9ff2ae",
+      "cf7fc5c7b5f231827e7a8d22381101e2602385520d41b20107ca578592bf688d",
+      "52de5174572cc576516372dd9f80130b52ca6a43a284845593176fb061a7dd37",
+      "fc4c5b16f5d014a2d034c97f07f72e62d933d2a2f5639e58e85b5e1bc08987a8",
+      "008f7ab768f6d3c3c9d3f6d8112afcc326de738f74e22909ef2bd45b3d59dc7b",
+      "3276a4735fdfafdc6efcd22597c70526aa8bce2308265ba0670c4b2eea9a5412",
+      "40a2e38e09aa779ae303db3545a2432bb3ac09ca135381ed82f8cdf9b21814f1",
+      "c27f5cdad1df51128489c4205f3da9b75ec8e42e0dfaffcb5d7ef7cafbb55243",
+      "f4e9540e750bd5f35c2895722a6e1b8419dfe223ef77ed79b16a2dd16c9d8d06",
+      "371ec1a48acc7532a65c736f4a8e983cd56614588d904969c9aead3c60159bbe",
+      "16c7920e4dd051980035845a9d839f4c8e1e3e117fd6c10d41941672f66dc77c",
+      "e16272326dfcf8a7e5134f078901aa4ac6f97fa69ab08dbb158730131baec334",
+      "7d087e98fce1d32ad89016e36ad922386532c29ebfc77a73c47b50a0eebc9f43",
+      "2788bd60080b6401b815482a9484f791f9abb8a9343224e667769c267575c8fd",
+      "e6461976f4a59e04e75b5be5d4fbbb404aefcb4fa03a3d5e8b04568e4c7889c9"
     ],
     "dropbox": [
       "9a06efabdbeff27fefc1bb5e0291aea6bf1eb0a065e611a134900fa8fba19f97",
@@ -6306,7 +7721,50 @@
       "df09c963eeb9e3a744d1a309488544a2f226461a74d82fcf88ed5ca9f76bee3a",
       "55f4f295d26c5fe3c8f841d0ead1524cae919cb540abb312096d49988ce45b64",
       "c31e25471b0008bcc46c6dc4a593f30cbafac347f00bdf704c7c972828b4b017",
-      "66fb207e0efa114f2ed011f9ca1593c6a29267401e5a438d41d23a7c1f87d47d"
+      "66fb207e0efa114f2ed011f9ca1593c6a29267401e5a438d41d23a7c1f87d47d",
+      "e02d8d1c59c5ab476a4daedd066e1b4a8ff40352e94e4c77f027b851fe982f1a",
+      "5c76f1376a4aadd1731175864f544c4cfd18cbc25554ea3fb637acff0e7d0890",
+      "2145e10df609ae5e0c24ddd0ee092a0e6da770991e78fcbae557d6a0e950f920",
+      "4ebca7f36c54dd67131942e2b1c193ba2ffb18a6dc060817cafd1506354cdb6a",
+      "613b42fd862cc5b4d0c2fabc293d69fb67de8c3d28b5a87e83ec85726931221b",
+      "fa9925a15cdfecdfcb465b200b85438c573910ef03b5c77e695493312a50884b",
+      "28b72ca1c839c09d156455ffc0b9891c28f120232f6dffa8a4bd6d5e7ae7a51f",
+      "e197064db96385358a6d6cdd026a3982be76049a1f08e7e89168722232e91094",
+      "b11b09a4f423c29e7eb14f699fb662de4d4819d4067ed030bfb38f91fa9779c8",
+      "45cfe6718c1678dc69d0c402c4c9b468fbeaf80228389c0741daf9bb46fb70fe",
+      "343062bd06869394284032d0d107c736bcc86e9d7a7840339a7d20efe8b484dd",
+      "1d9f34af93de9cbfbfffb06fc9afef5e31a1a4f3410cec23df0838ec5e0682bb",
+      "dbbcd6fd2dbd6ce4c3d355a738825759f886290c19a8cdb7238a96344a28a790",
+      "c91e029164becca530006a2d5100dce39ee9f12061eb64f51782966fdf61600f",
+      "f307c4fafad1611e412187e8bcf696eb3347ad3ec130c9e02ec35dd6888141d6",
+      "cd6b3378d7da95847606257f194feef0ea0c2466916af439725e64496a75c1ba",
+      "1404616301624ef62cd2a76432ecf0f689b7cf17e7f3aa7f7d8ae78c88ed85b2",
+      "f91a8e8de8dad5381b25c74b445b253e86913651784d593a41434ab4312dff91",
+      "b0b641a463b3f8a27edadff81099c8a6365ff9781d1a9ecac16a02c86bbdae63",
+      "a1354c1f681d82e48375f7ce79350a92a9cf4ff730c877087cc7b9c22cbcc86e",
+      "4e6524d760085c045885a2f6a7eca843e3b711ef488f27e7c5d4a49b73f5b0db",
+      "adabd4779b35637d9ede9bf06c09e279f3e63a714a7604b9b78a3438f3da3406",
+      "176ee596484f1c257a45c56f72586bc98fee63e79d1d4610f62919c3ea8cefbb",
+      "69419252a9eae411916f2ab70e9319e7f094e85169aa7539e117b9b788628092",
+      "a7a8ad07b62825d207a588fed163a40d1a2924542494241e12209ae6bd839a24",
+      "ad5ccfaa99260208f13f173f0a612454657666b535be9ec5caba241b5d72e0c0",
+      "60e759d90b388fb830261f28a8394b9e89d8f0f9caac8628b850e60ded6fb542",
+      "474d3ba1d16675d94b663b75d10f9f203e449cc9998d2a8006ca681ef086b3a2",
+      "fce8a8d788a1f3440506c3ac8367ccf2614268f9812b83668882780f0a9ff2ae",
+      "cf7fc5c7b5f231827e7a8d22381101e2602385520d41b20107ca578592bf688d",
+      "52de5174572cc576516372dd9f80130b52ca6a43a284845593176fb061a7dd37",
+      "fc4c5b16f5d014a2d034c97f07f72e62d933d2a2f5639e58e85b5e1bc08987a8",
+      "008f7ab768f6d3c3c9d3f6d8112afcc326de738f74e22909ef2bd45b3d59dc7b",
+      "3276a4735fdfafdc6efcd22597c70526aa8bce2308265ba0670c4b2eea9a5412",
+      "40a2e38e09aa779ae303db3545a2432bb3ac09ca135381ed82f8cdf9b21814f1",
+      "c27f5cdad1df51128489c4205f3da9b75ec8e42e0dfaffcb5d7ef7cafbb55243",
+      "f4e9540e750bd5f35c2895722a6e1b8419dfe223ef77ed79b16a2dd16c9d8d06",
+      "371ec1a48acc7532a65c736f4a8e983cd56614588d904969c9aead3c60159bbe",
+      "16c7920e4dd051980035845a9d839f4c8e1e3e117fd6c10d41941672f66dc77c",
+      "e16272326dfcf8a7e5134f078901aa4ac6f97fa69ab08dbb158730131baec334",
+      "7d087e98fce1d32ad89016e36ad922386532c29ebfc77a73c47b50a0eebc9f43",
+      "2788bd60080b6401b815482a9484f791f9abb8a9343224e667769c267575c8fd",
+      "e6461976f4a59e04e75b5be5d4fbbb404aefcb4fa03a3d5e8b04568e4c7889c9"
     ],
     "gdrive": [
       "9a06efabdbeff27fefc1bb5e0291aea6bf1eb0a065e611a134900fa8fba19f97",
@@ -6350,7 +7808,50 @@
       "df09c963eeb9e3a744d1a309488544a2f226461a74d82fcf88ed5ca9f76bee3a",
       "55f4f295d26c5fe3c8f841d0ead1524cae919cb540abb312096d49988ce45b64",
       "c31e25471b0008bcc46c6dc4a593f30cbafac347f00bdf704c7c972828b4b017",
-      "66fb207e0efa114f2ed011f9ca1593c6a29267401e5a438d41d23a7c1f87d47d"
+      "66fb207e0efa114f2ed011f9ca1593c6a29267401e5a438d41d23a7c1f87d47d",
+      "e02d8d1c59c5ab476a4daedd066e1b4a8ff40352e94e4c77f027b851fe982f1a",
+      "5c76f1376a4aadd1731175864f544c4cfd18cbc25554ea3fb637acff0e7d0890",
+      "2145e10df609ae5e0c24ddd0ee092a0e6da770991e78fcbae557d6a0e950f920",
+      "4ebca7f36c54dd67131942e2b1c193ba2ffb18a6dc060817cafd1506354cdb6a",
+      "613b42fd862cc5b4d0c2fabc293d69fb67de8c3d28b5a87e83ec85726931221b",
+      "fa9925a15cdfecdfcb465b200b85438c573910ef03b5c77e695493312a50884b",
+      "28b72ca1c839c09d156455ffc0b9891c28f120232f6dffa8a4bd6d5e7ae7a51f",
+      "e197064db96385358a6d6cdd026a3982be76049a1f08e7e89168722232e91094",
+      "b11b09a4f423c29e7eb14f699fb662de4d4819d4067ed030bfb38f91fa9779c8",
+      "45cfe6718c1678dc69d0c402c4c9b468fbeaf80228389c0741daf9bb46fb70fe",
+      "343062bd06869394284032d0d107c736bcc86e9d7a7840339a7d20efe8b484dd",
+      "1d9f34af93de9cbfbfffb06fc9afef5e31a1a4f3410cec23df0838ec5e0682bb",
+      "dbbcd6fd2dbd6ce4c3d355a738825759f886290c19a8cdb7238a96344a28a790",
+      "c91e029164becca530006a2d5100dce39ee9f12061eb64f51782966fdf61600f",
+      "f307c4fafad1611e412187e8bcf696eb3347ad3ec130c9e02ec35dd6888141d6",
+      "cd6b3378d7da95847606257f194feef0ea0c2466916af439725e64496a75c1ba",
+      "1404616301624ef62cd2a76432ecf0f689b7cf17e7f3aa7f7d8ae78c88ed85b2",
+      "f91a8e8de8dad5381b25c74b445b253e86913651784d593a41434ab4312dff91",
+      "b0b641a463b3f8a27edadff81099c8a6365ff9781d1a9ecac16a02c86bbdae63",
+      "a1354c1f681d82e48375f7ce79350a92a9cf4ff730c877087cc7b9c22cbcc86e",
+      "4e6524d760085c045885a2f6a7eca843e3b711ef488f27e7c5d4a49b73f5b0db",
+      "adabd4779b35637d9ede9bf06c09e279f3e63a714a7604b9b78a3438f3da3406",
+      "176ee596484f1c257a45c56f72586bc98fee63e79d1d4610f62919c3ea8cefbb",
+      "69419252a9eae411916f2ab70e9319e7f094e85169aa7539e117b9b788628092",
+      "a7a8ad07b62825d207a588fed163a40d1a2924542494241e12209ae6bd839a24",
+      "ad5ccfaa99260208f13f173f0a612454657666b535be9ec5caba241b5d72e0c0",
+      "60e759d90b388fb830261f28a8394b9e89d8f0f9caac8628b850e60ded6fb542",
+      "474d3ba1d16675d94b663b75d10f9f203e449cc9998d2a8006ca681ef086b3a2",
+      "fce8a8d788a1f3440506c3ac8367ccf2614268f9812b83668882780f0a9ff2ae",
+      "cf7fc5c7b5f231827e7a8d22381101e2602385520d41b20107ca578592bf688d",
+      "52de5174572cc576516372dd9f80130b52ca6a43a284845593176fb061a7dd37",
+      "fc4c5b16f5d014a2d034c97f07f72e62d933d2a2f5639e58e85b5e1bc08987a8",
+      "008f7ab768f6d3c3c9d3f6d8112afcc326de738f74e22909ef2bd45b3d59dc7b",
+      "3276a4735fdfafdc6efcd22597c70526aa8bce2308265ba0670c4b2eea9a5412",
+      "40a2e38e09aa779ae303db3545a2432bb3ac09ca135381ed82f8cdf9b21814f1",
+      "c27f5cdad1df51128489c4205f3da9b75ec8e42e0dfaffcb5d7ef7cafbb55243",
+      "f4e9540e750bd5f35c2895722a6e1b8419dfe223ef77ed79b16a2dd16c9d8d06",
+      "371ec1a48acc7532a65c736f4a8e983cd56614588d904969c9aead3c60159bbe",
+      "16c7920e4dd051980035845a9d839f4c8e1e3e117fd6c10d41941672f66dc77c",
+      "e16272326dfcf8a7e5134f078901aa4ac6f97fa69ab08dbb158730131baec334",
+      "7d087e98fce1d32ad89016e36ad922386532c29ebfc77a73c47b50a0eebc9f43",
+      "2788bd60080b6401b815482a9484f791f9abb8a9343224e667769c267575c8fd",
+      "e6461976f4a59e04e75b5be5d4fbbb404aefcb4fa03a3d5e8b04568e4c7889c9"
     ],
     "proton": [
       "9a06efabdbeff27fefc1bb5e0291aea6bf1eb0a065e611a134900fa8fba19f97",
@@ -6394,7 +7895,50 @@
       "df09c963eeb9e3a744d1a309488544a2f226461a74d82fcf88ed5ca9f76bee3a",
       "55f4f295d26c5fe3c8f841d0ead1524cae919cb540abb312096d49988ce45b64",
       "c31e25471b0008bcc46c6dc4a593f30cbafac347f00bdf704c7c972828b4b017",
-      "66fb207e0efa114f2ed011f9ca1593c6a29267401e5a438d41d23a7c1f87d47d"
+      "66fb207e0efa114f2ed011f9ca1593c6a29267401e5a438d41d23a7c1f87d47d",
+      "e02d8d1c59c5ab476a4daedd066e1b4a8ff40352e94e4c77f027b851fe982f1a",
+      "5c76f1376a4aadd1731175864f544c4cfd18cbc25554ea3fb637acff0e7d0890",
+      "2145e10df609ae5e0c24ddd0ee092a0e6da770991e78fcbae557d6a0e950f920",
+      "4ebca7f36c54dd67131942e2b1c193ba2ffb18a6dc060817cafd1506354cdb6a",
+      "613b42fd862cc5b4d0c2fabc293d69fb67de8c3d28b5a87e83ec85726931221b",
+      "fa9925a15cdfecdfcb465b200b85438c573910ef03b5c77e695493312a50884b",
+      "28b72ca1c839c09d156455ffc0b9891c28f120232f6dffa8a4bd6d5e7ae7a51f",
+      "e197064db96385358a6d6cdd026a3982be76049a1f08e7e89168722232e91094",
+      "b11b09a4f423c29e7eb14f699fb662de4d4819d4067ed030bfb38f91fa9779c8",
+      "45cfe6718c1678dc69d0c402c4c9b468fbeaf80228389c0741daf9bb46fb70fe",
+      "343062bd06869394284032d0d107c736bcc86e9d7a7840339a7d20efe8b484dd",
+      "1d9f34af93de9cbfbfffb06fc9afef5e31a1a4f3410cec23df0838ec5e0682bb",
+      "dbbcd6fd2dbd6ce4c3d355a738825759f886290c19a8cdb7238a96344a28a790",
+      "c91e029164becca530006a2d5100dce39ee9f12061eb64f51782966fdf61600f",
+      "f307c4fafad1611e412187e8bcf696eb3347ad3ec130c9e02ec35dd6888141d6",
+      "cd6b3378d7da95847606257f194feef0ea0c2466916af439725e64496a75c1ba",
+      "1404616301624ef62cd2a76432ecf0f689b7cf17e7f3aa7f7d8ae78c88ed85b2",
+      "f91a8e8de8dad5381b25c74b445b253e86913651784d593a41434ab4312dff91",
+      "b0b641a463b3f8a27edadff81099c8a6365ff9781d1a9ecac16a02c86bbdae63",
+      "a1354c1f681d82e48375f7ce79350a92a9cf4ff730c877087cc7b9c22cbcc86e",
+      "4e6524d760085c045885a2f6a7eca843e3b711ef488f27e7c5d4a49b73f5b0db",
+      "adabd4779b35637d9ede9bf06c09e279f3e63a714a7604b9b78a3438f3da3406",
+      "176ee596484f1c257a45c56f72586bc98fee63e79d1d4610f62919c3ea8cefbb",
+      "69419252a9eae411916f2ab70e9319e7f094e85169aa7539e117b9b788628092",
+      "a7a8ad07b62825d207a588fed163a40d1a2924542494241e12209ae6bd839a24",
+      "ad5ccfaa99260208f13f173f0a612454657666b535be9ec5caba241b5d72e0c0",
+      "60e759d90b388fb830261f28a8394b9e89d8f0f9caac8628b850e60ded6fb542",
+      "474d3ba1d16675d94b663b75d10f9f203e449cc9998d2a8006ca681ef086b3a2",
+      "fce8a8d788a1f3440506c3ac8367ccf2614268f9812b83668882780f0a9ff2ae",
+      "cf7fc5c7b5f231827e7a8d22381101e2602385520d41b20107ca578592bf688d",
+      "52de5174572cc576516372dd9f80130b52ca6a43a284845593176fb061a7dd37",
+      "fc4c5b16f5d014a2d034c97f07f72e62d933d2a2f5639e58e85b5e1bc08987a8",
+      "008f7ab768f6d3c3c9d3f6d8112afcc326de738f74e22909ef2bd45b3d59dc7b",
+      "3276a4735fdfafdc6efcd22597c70526aa8bce2308265ba0670c4b2eea9a5412",
+      "40a2e38e09aa779ae303db3545a2432bb3ac09ca135381ed82f8cdf9b21814f1",
+      "c27f5cdad1df51128489c4205f3da9b75ec8e42e0dfaffcb5d7ef7cafbb55243",
+      "f4e9540e750bd5f35c2895722a6e1b8419dfe223ef77ed79b16a2dd16c9d8d06",
+      "371ec1a48acc7532a65c736f4a8e983cd56614588d904969c9aead3c60159bbe",
+      "16c7920e4dd051980035845a9d839f4c8e1e3e117fd6c10d41941672f66dc77c",
+      "e16272326dfcf8a7e5134f078901aa4ac6f97fa69ab08dbb158730131baec334",
+      "7d087e98fce1d32ad89016e36ad922386532c29ebfc77a73c47b50a0eebc9f43",
+      "2788bd60080b6401b815482a9484f791f9abb8a9343224e667769c267575c8fd",
+      "e6461976f4a59e04e75b5be5d4fbbb404aefcb4fa03a3d5e8b04568e4c7889c9"
     ]
   }
 }
