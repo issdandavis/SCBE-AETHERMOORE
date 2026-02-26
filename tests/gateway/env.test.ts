@@ -6,6 +6,17 @@ describe('gateway env validation', () => {
     expect(() => validateGatewayEnv({})).toThrow(/Missing required governance env vars/);
   });
 
+  it('rejects invalid port values', () => {
+    expect(() =>
+      validateGatewayEnv({
+        PORT: '70000',
+        GOVERNANCE_POLICY_ID: 'policy-1',
+        GOVERNANCE_ISSUER: 'issuer-a',
+        GOVERNANCE_TOKEN: 'token-value',
+      })
+    ).toThrow(/PORT must be a valid integer/);
+  });
+
   it('returns parsed env when all vars are present', () => {
     const env = validateGatewayEnv({
       PORT: '9090',

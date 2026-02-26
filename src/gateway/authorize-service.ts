@@ -1,6 +1,11 @@
 import express, { NextFunction, Request, Response } from 'express';
-import { UnifiedKernel, type ProposedAction, type MemoryEvent } from '../ai_brain/unified-kernel';
-import { validateGatewayEnv, redactDiagnostics } from './env';
+import {
+  UnifiedKernel,
+  type ProposedAction,
+  type MemoryEvent,
+} from '../ai_brain/unified-kernel.js';
+import { BRAIN_DIMENSIONS } from '../ai_brain/types.js';
+import { validateGatewayEnv, redactDiagnostics } from './env.js';
 
 interface AuthorizeRequest {
   agentId: string;
@@ -40,8 +45,8 @@ function toHttpDecision(
 function validateRequest(body: Partial<AuthorizeRequest>): string | null {
   if (!body.agentId || body.agentId.trim() === '') return 'agentId is required';
   if (!body.actionType || body.actionType.trim() === '') return 'actionType is required';
-  if (!Array.isArray(body.stateVector) || body.stateVector.length === 0) {
-    return 'stateVector must be a non-empty numeric array';
+  if (!Array.isArray(body.stateVector) || body.stateVector.length !== BRAIN_DIMENSIONS) {
+    return `stateVector must contain exactly ${BRAIN_DIMENSIONS} numeric values`;
   }
   if (body.stateVector.some((v) => typeof v !== 'number' || Number.isNaN(v))) {
     return 'stateVector must only contain valid numbers';

@@ -89,8 +89,8 @@
     "notion:sync": "node scripts/notion-sync.js --all",
     "version:bump": "node scripts/version-bump.js",
     "precommit:check": "bash scripts/pre-commit-check.sh",
-    "gateway:serve": "ts-node src/gateway/authorize-service.ts",
-    "gateway:build": "npm run build"
+    "gateway:serve": "node dist/src/gateway/authorize-service.js",
+    "gateway:build": "npm run build:src"
   },
   "keywords": [
     "cryptography",
