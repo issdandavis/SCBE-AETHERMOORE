@@ -1,0 +1,9 @@
+{
+  "models": [
+    {"name": "planner", "pos": [0.2, 0.1, 0.15], "trust": 0.88},
+    {"name": "coder", "pos": [0.25, 0.12, 0.18], "trust": 0.92},
+    {"name": "critic", "pos": [0.22, 0.08, 0.17], "trust": 0.90}
+  ],
+  "perp_space": [0.05, 0.04, 0.03],
+  "threshold": 1000.0
+}

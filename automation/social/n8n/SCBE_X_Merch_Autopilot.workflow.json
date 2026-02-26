@@ -1,0 +1,337 @@
+{
+  "name": "SCBE X + Merch Autopilot",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "scbe-dispatch",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "WebhookDispatch",
+      "name": "Webhook Dispatch",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst p = item.json || {};\nconst out = {\n  ...p,\n  channel: (p.channel || '').toLowerCase(),\n  post_text: p.text || '',\n  reply_to_id: p?.meta?.reply_to_id || p?.post_data?.reply_to_id || '',\n  offer_path: p.offer_path || p?.meta?.offer_path || ''\n};\nreturn [{ json: out }];"
+      },
+      "id": "NormalizePayload",
+      "name": "Normalize Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -380,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.channel}}",
+              "operation": "equal",
+              "value2": "x"
+            }
+          ]
+        }
+      },
+      "id": "IfXPost",
+      "name": "If X Post",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -120,
+        -220
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.channel}}",
+              "operation": "equal",
+              "value2": "x_reply"
+            }
+          ]
+        }
+      },
+      "id": "IfXReply",
+      "name": "If X Reply",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -120,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.channel}}",
+              "operation": "equal",
+              "value2": "merch_sale"
+            }
+          ]
+        }
+      },
+      "id": "IfMerchSale",
+      "name": "If Merch Sale",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -120,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.channel}}",
+              "operation": "equal",
+              "value2": "merch_upload"
+            }
+          ]
+        }
+      },
+      "id": "IfMerchUpload",
+      "name": "If Merch Upload",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -120,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.SCBE_X_POST_TARGET}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{$json}}",
+        "options": {}
+      },
+      "id": "XPostTarget",
+      "name": "X Post Target",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        160,
+        -220
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.SCBE_X_REPLY_TARGET}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{$json}}",
+        "options": {}
+      },
+      "id": "XReplyTarget",
+      "name": "X Reply Target",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        160,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.SCBE_MERCH_SALE_TARGET}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{$json}}",
+        "options": {}
+      },
+      "id": "MerchSaleTarget",
+      "name": "Merch Sale Target",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        160,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.SCBE_MERCH_UPLOAD_TARGET}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{$json}}",
+        "options": {}
+      },
+      "id": "MerchUploadTarget",
+      "name": "Merch Upload Target",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        160,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"ok\":true,\"channel\":\"{{$json.channel}}\",\"post_id\":\"{{$json.post_id}}\"}",
+        "options": {}
+      },
+      "id": "RespondOk",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        460,
+        20
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Dispatch": {
+      "main": [
+        [
+          {
+            "node": "Normalize Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Payload": {
+      "main": [
+        [
+          {
+            "node": "If X Post",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If X Reply",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If Merch Sale",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If Merch Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If X Post": {
+      "main": [
+        [
+          {
+            "node": "X Post Target",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "If X Reply": {
+      "main": [
+        [
+          {
+            "node": "X Reply Target",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "If Merch Sale": {
+      "main": [
+        [
+          {
+            "node": "Merch Sale Target",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "If Merch Upload": {
+      "main": [
+        [
+          {
+            "node": "Merch Upload Target",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "X Post Target": {
+      "main": [
+        [
+          {
+            "node": "Respond OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "X Reply Target": {
+      "main": [
+        [
+          {
+            "node": "Respond OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merch Sale Target": {
+      "main": [
+        [
+          {
+            "node": "Respond OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merch Upload Target": {
+      "main": [
+        [
+          {
+            "node": "Respond OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
+

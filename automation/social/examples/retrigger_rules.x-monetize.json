@@ -1,0 +1,32 @@
+{
+  "rules": [
+    {
+      "name": "low_ctr_x",
+      "channel": "x",
+      "metric": "ctr",
+      "operator": "lt",
+      "threshold": 0.015,
+      "cooldown_minutes": 60,
+      "action": "rewrite_hook"
+    },
+    {
+      "name": "low_reply_rate",
+      "channel": "x_reply",
+      "metric": "reply_rate",
+      "operator": "lt",
+      "threshold": 0.02,
+      "cooldown_minutes": 45,
+      "action": "switch_reply_opening"
+    },
+    {
+      "name": "low_merch_conversion",
+      "channel": "merch_sale",
+      "metric": "conversion_rate",
+      "operator": "lt",
+      "threshold": 0.01,
+      "cooldown_minutes": 120,
+      "action": "swap_offer_path"
+    }
+  ]
+}
+

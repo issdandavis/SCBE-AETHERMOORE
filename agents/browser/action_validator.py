@@ -12,6 +12,7 @@ import numpy as np
 
 from agents.browser.bounds_checker import ActionContext, BoundsChecker
 from agents.browser.phdm_brain import SafetyDecision, SimplePHDM, create_phdm_brain
+from agents.browser.symphonic_verifier import SymphonicVerifier
 from agents.browser.vision_embedding import VisionEmbedder
 
 
@@ -34,6 +35,9 @@ class ActionValidationResult:
     phdm_risk: float
     bounds_decision: str
     bounds_violations: List[str]
+    symphonic_passed: bool
+    symphonic_confidence: float
+    symphonic_reason: str
     explanation: str
     embedding: list[float]
 
@@ -53,6 +57,9 @@ class ActionValidationResult:
             "phdm_risk": self.phdm_risk,
             "bounds_decision": self.bounds_decision,
             "bounds_violations": self.bounds_violations,
+            "symphonic_passed": self.symphonic_passed,
+            "symphonic_confidence": self.symphonic_confidence,
+            "symphonic_reason": self.symphonic_reason,
             "explanation": self.explanation,
             "embedding": self.embedding,
         }
@@ -99,6 +106,7 @@ class ActionValidator:
             dim=self.policy.phdm_dim,
         )
         self.bounds_checker = BoundsChecker()
+        self.symphonic = SymphonicVerifier(min_confidence=0.67)
         self.embedder: Optional[VisionEmbedder] = None
 
     def _sensitivity(self, action: str, target: str, context: Optional[Dict[str, Any]] = None) -> float:
@@ -178,6 +186,9 @@ class ActionValidator:
         bounds_violation_count = len(bounds.violations)
         bounds_decision = bounds.decision.value
 
+        # Layer 14 style hallucination check (Symphonic overtones).
+        symphonic = self.symphonic.verify(action=action, target=target)
+
         # Merge governance layers:
         decision = containment.decision.value
         if decision == SafetyDecision.DENY.value:
@@ -197,11 +208,19 @@ class ActionValidator:
         else:
             decision = ValidationDecision.ALLOW.value
 
+        # Symphonic mismatch can force quarantine/deny depending on severity.
+        if not symphonic.passed:
+            if decision in (ValidationDecision.ALLOW.value, ValidationDecision.QUARANTINE.value):
+                decision = ValidationDecision.QUARANTINE.value
+            if symphonic.confidence < 0.34:
+                decision = ValidationDecision.DENY.value
+
         explanation = (
             f"{action} target='{target}' | "
             f"sensitivity={sensitivity:.3f} "
             f"phdm={containment.decision.value}/{containment.risk_score:.3f} "
-            f"bounds={bounds_decision}/{bounds_violation_count}"
+            f"bounds={bounds_decision}/{bounds_violation_count} "
+            f"symphonic={symphonic.reason}/{symphonic.confidence:.3f}"
         )
 
         return ActionValidationResult(
@@ -215,6 +234,9 @@ class ActionValidator:
             phdm_risk=containment.risk_score,
             bounds_decision=bounds_decision,
             bounds_violations=bounds.violations,
+            symphonic_passed=symphonic.passed,
+            symphonic_confidence=symphonic.confidence,
+            symphonic_reason=symphonic.reason,
             explanation=explanation,
             embedding=(euclid_embedding.astype(float).tolist() if isinstance(euclid_embedding, np.ndarray) else []),
         )

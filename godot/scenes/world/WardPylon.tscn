@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/world/Interactable.gd" id="1"]
+
+[node name="WardPylon" type="Node3D"]
+
+[node name="Model" type="MeshInstance3D" parent="."]
+mesh = CylinderMesh.new()
+
+[node name="Interactable" type="Area3D" parent="."]
+script = ExtResource("1")
+action_id = "fix_ward_pylon"
+prompt_text = "Fix Ward Pylon"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Interactable"]
+shape = SphereShape3D.new()

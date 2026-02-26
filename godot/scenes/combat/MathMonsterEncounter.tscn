@@ -1,0 +1,58 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/MathMonsterEncounter.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/combat/SquadCombat.gd" id="2"]
+
+[node name="MathMonsterEncounter" type="Control"]
+script = ExtResource("1")
+anchor_right = 1.0
+anchor_bottom = 1.0
+visible = false
+
+[node name="SquadCombat" type="Node" parent="."]
+script = ExtResource("2")
+
+[node name="Panel" type="Panel" parent="."]
+anchor_left = 0.05
+anchor_right = 0.95
+anchor_top = 0.05
+anchor_bottom = 0.95
+
+[node name="MonsterName" type="Label" parent="Panel"]
+position = Vector2(20, 15)
+size = Vector2(400, 30)
+text = "MATH MONSTER"
+
+[node name="MonsterHP" type="ProgressBar" parent="Panel"]
+position = Vector2(20, 50)
+size = Vector2(400, 20)
+value = 100.0
+
+[node name="ProblemLabel" type="RichTextLabel" parent="Panel"]
+position = Vector2(20, 90)
+size = Vector2(860, 120)
+bbcode_enabled = true
+text = "Solve: x² + 5x + 6 = 0"
+
+[node name="StepLabel" type="Label" parent="Panel"]
+position = Vector2(20, 220)
+size = Vector2(400, 25)
+text = "Step 1 of 3"
+
+[node name="CreatureName" type="Label" parent="Panel"]
+position = Vector2(20, 460)
+size = Vector2(300, 25)
+text = "Your Creature"
+
+[node name="Moves" type="VBoxContainer" parent="Panel"]
+position = Vector2(20, 280)
+size = Vector2(300, 180)
+
+[node name="FeedbackLabel" type="Label" parent="Panel"]
+position = Vector2(340, 280)
+size = Vector2(540, 180)
+text = "Choose a transform move..."
+
+[node name="PartySwitch" type="HBoxContainer" parent="Panel"]
+position = Vector2(20, 490)
+size = Vector2(860, 40)

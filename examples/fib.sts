@@ -1,0 +1,14 @@
+; Print first 8 Fibonacci values modulo 256
+ko:set r0, 0      ; a
+ko:set r1, 1      ; b
+ko:set r2, 8      ; remaining count
+
+loop:
+ko:print r0
+ca:add r3, r0, r1 ; next = a + b
+ko:mov r0, r1     ; a = b
+ko:mov r1, r3     ; b = next
+ko:set r4, 1
+ca:sub r2, r2, r4
+ko:jnz r2, loop
+ko:halt

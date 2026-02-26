@@ -73,6 +73,7 @@ import {
 } from './dual-ternary.js';
 
 import { BrainAuditLogger } from './audit.js';
+import { entropicAnomaly } from '../harmonic/entropicLayer.js';
 
 // ═══════════════════════════════════════════════════════════════
 // Canonical State (the single truth struct)
@@ -218,7 +219,7 @@ export interface MemoryWriteResult {
 /**
  * Kernel decision — the output of the PHDM gate.
  */
-export type KernelDecision = 'ALLOW' | 'TRANSFORM' | 'BLOCK';
+export type KernelDecision = 'ALLOW' | 'TRANSFORM' | 'BLOCK' | 'QUARANTINE';
 
 /**
  * Result of a single pipeline step.
@@ -475,10 +476,16 @@ export class UnifiedKernel {
     this.dualTernary = new DualTernarySystem(this.config.dualTernary);
     this.auditLogger = new BrainAuditLogger();
 
-    // Initialize PHDM with a deterministic key (for non-Kyber contexts)
-    const masterKey = Buffer.alloc(32);
-    for (let i = 0; i < 32; i++) masterKey[i] = ((i * 137 + 42) % 256);
-    this.phdm.initializeWithKey(masterKey);
+    // Initialize PHDM — require explicit key from config or environment
+    const masterKeyHex = this.config.phdm?.masterKeyHex || process.env.SCBE_PHDM_MASTER_KEY;
+    if (!masterKeyHex) {
+      throw new Error(
+        'UnifiedBrainKernel requires a PHDM master key. ' +
+        'Set config.phdm.masterKeyHex or SCBE_PHDM_MASTER_KEY env var. ' +
+        'Generate with: crypto.randomBytes(32).toString("hex")'
+      );
+    }
+    this.phdm.initializeWithKey(Buffer.from(masterKeyHex, 'hex'));
 
     // Initialize static lattice mesh
     this.dualLattice.initializeMesh(3);
@@ -561,6 +568,66 @@ export class UnifiedKernel {
     // (action is already the proposal — received as input)
 
     // ═══ Step 2: Score (SCBE metrics) ═══
+    const hfToken = process.env.HUGGINGFACE_TOKEN;
+    if (!hfToken) {
+      const anomaly = entropicAnomaly('HF_TOKEN_MISSING', {
+        agentId,
+        step: state.step,
+        token: '[REDACTED]',
+      });
+
+      const quarantineMetrics: MetricBundle = {
+        hyperbolicDistance: 0,
+        phaseDeviation: 1,
+        spectralCoherence: 0,
+        driftMagnitude: 0,
+        combinedRiskScore: 1,
+        assessment: {
+          detections: [],
+          combinedScore: 1,
+          decision: 'QUARANTINE',
+          anyFlagged: true,
+          flagCount: 1,
+          timestamp: Date.now(),
+        },
+      };
+
+      this.auditLogger.logRiskDecision(
+        'QUARANTINE',
+        agentId,
+        `step=${state.step} reason=HF_TOKEN_MISSING token=[REDACTED]`,
+        {
+          step: state.step,
+          anomaly: anomaly.code,
+          token: '[REDACTED]',
+          decision: 'QUARANTINE',
+        }
+      );
+
+      const hashChain = this.auditLogger.getHashChain();
+      const auditHash = hashChain.length > 0 ? hashChain[hashChain.length - 1] : '';
+      state.auditAnchor = auditHash;
+
+      const result: PipelineStepResult = {
+        step: state.step,
+        action,
+        metrics: quarantineMetrics,
+        latticeResult: this.dualLattice.process(
+          action.stateVector,
+          this.dualLattice.createThreatPhason(1.0, findAnomalyDimensions(action.stateVector))
+        ),
+        ternarySpectrum: this.dualTernary.analyzeSpectrum(),
+        decision: 'QUARANTINE',
+        memoryResult: null,
+        penaltyApplied: true,
+        state: { ...state, capabilities: new Set(state.capabilities) },
+        auditHash,
+      };
+
+      this.orderedLog.push(result);
+      return result;
+    }
+
     const phdmResult = this.phdm.monitor(action.stateVector, state.step);
     const metrics = computeMetrics(action.stateVector, phdmResult);
 
