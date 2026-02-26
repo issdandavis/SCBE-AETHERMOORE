@@ -6,10 +6,16 @@
 
 config/name="Spiral Forge"
 config/description="A distributed-systems fantasy action RPG with creature fleets and branching evolutions."
-config/version="0.1.0"
-run/main_scene="res://scenes/town/hearthstone_landing.tscn"
+config/version="0.2.0"
+run/main_scene="res://scenes/main/main.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
 config/icon="res://assets/ui/icon.svg"
+
+[autoload]
+
+EventBus="*res://scripts/autoload/event_bus.gd"
+TongueSystem="*res://scripts/autoload/tongue_system.gd"
+GameState="*res://scripts/autoload/game_state.gd"
 
 [display]
 

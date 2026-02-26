@@ -1,0 +1,37 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/main_scene.gd" id="0_main"]
+[ext_resource type="Script" path="res://scripts/camera/camera_controller.gd" id="1_camera"]
+[ext_resource type="Script" path="res://scripts/scbe/scbe_client.gd" id="2_scbe"]
+[ext_resource type="Script" path="res://scripts/combat/combat_system.gd" id="3_combat"]
+[ext_resource type="PackedScene" path="res://scenes/town/hearthstone_landing.tscn" id="4_town"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="5_player"]
+[ext_resource type="PackedScene" path="res://scenes/companion/crysling.tscn" id="6_crysling"]
+
+[node name="Main" type="Node3D"]
+script = ExtResource("0_main")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.707, 0.707, 0, -0.707, 0.707, 5, 12, 5)
+shadow_enabled = true
+
+[node name="Camera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.707, 0.707, 0, -0.707, 0.707, 7.5, 10, 15.5)
+script = ExtResource("1_camera")
+offset = Vector3(0, 10, 8)
+
+[node name="HearthstoneLanding" parent="." instance=ExtResource("4_town")]
+
+[node name="Player" parent="." instance=ExtResource("5_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 0.5, 7.5)
+
+[node name="Crysling" parent="." instance=ExtResource("6_crysling")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 0.5, 7.5)
+
+[node name="SCBEClient" type="Node" parent="."]
+script = ExtResource("2_scbe")
+
+[node name="CombatSystem" type="Node" parent="."]
+script = ExtResource("3_combat")
