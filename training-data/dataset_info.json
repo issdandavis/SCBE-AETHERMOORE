@@ -1,0 +1,173 @@
+{
+  "dataset_name": "scbe-aethermoore-sft",
+  "version": "1.0.0",
+  "description": "Supervised fine-tuning dataset for the SCBE-AETHERMOORE hyperbolic geometry AI safety framework",
+  "author": "Issac Davis",
+  "license": "MIT",
+  "language": "en",
+  "task": "text-generation",
+  "total_files": 55,
+  "total_pairs": 10978,
+  "generated_at": "2026-02-24",
+  "categories": {
+    "game_sessions": {
+      "description": "Gameplay SFT from Aethermoor isekai game sessions",
+      "files": {
+        "game_sessions/batch_1_1771902679.jsonl": 5,
+        "game_sessions/batch_1_1771902697.jsonl": 25,
+        "game_sessions/batch_1_1771905534.jsonl": 1,
+        "game_sessions/batch_1_1771905562.jsonl": 1,
+        "game_sessions/batch_1_1771905650.jsonl": 4,
+        "game_sessions/batch_1_1771905672.jsonl": 4,
+        "game_sessions/batch_1_1771905780.jsonl": 4,
+        "game_sessions/batch_1_1771906964.jsonl": 27,
+        "game_sessions/batch_1_1771913320.jsonl": 1,
+        "game_sessions/batch_1_1771913370.jsonl": 1,
+        "game_sessions/batch_1_1771913794.jsonl": 1,
+        "game_sessions/batch_1_1771922498.jsonl": 25,
+        "game_sessions/batch_1_1771923297.jsonl": 1,
+        "game_sessions/batch_1_1771944086.jsonl": 5,
+        "game_sessions/session_45692d87db96.jsonl": 10,
+        "game_sessions/session_6f716b8090b0.jsonl": 211,
+        "game_sessions/session_e54fe555e1e0.jsonl": 2
+      },
+      "total_lines": 328
+    },
+    "gacha_sessions": {
+      "description": "Gacha tower combat and pull sessions",
+      "files": {
+        "gacha_sessions/batch_0001.jsonl": 5
+      },
+      "total_lines": 5
+    },
+    "architecture_sessions": {
+      "description": "SCBE 14-layer architecture explanations and system design",
+      "files": {
+        "architecture_sessions/governance_runtime.jsonl": 4,
+        "architecture_sessions/phdm_system_atlas.jsonl": 6,
+        "architecture_sessions/scbe_architecture.jsonl": 11
+      },
+      "total_lines": 21
+    },
+    "tongues_sessions": {
+      "description": "Six Sacred Tongues phonotactics, encoding, and cross-translation",
+      "files": {
+        "tongues_sessions/sacred_tongues.jsonl": 7
+      },
+      "total_lines": 7
+    },
+    "math_sessions": {
+      "description": "Ternary Braid Algebra, emergent patterns, and mathematical proofs",
+      "files": {
+        "math_sessions/math_patterns.jsonl": 5
+      },
+      "total_lines": 5
+    },
+    "game_design_sessions": {
+      "description": "Isekai game design, minigames, hybrid systems, and emulator concepts",
+      "files": {
+        "game_design_sessions/hybrid_systems.jsonl": 3,
+        "game_design_sessions/isekai_core_loop.jsonl": 5,
+        "game_design_sessions/isekai_emulator_hybrid.jsonl": 22,
+        "game_design_sessions/isekai_game.jsonl": 8,
+        "game_design_sessions/isekai_minigames.jsonl": 17,
+        "game_design_sessions/isekai_polypad_minigames.jsonl": 8,
+        "game_design_sessions/pilot_minigames_open_source.jsonl": 5
+      },
+      "total_lines": 68
+    },
+    "lore_sessions": {
+      "description": "World lore, characters, Everweave canon, and RP transcripts",
+      "files": {
+        "lore_sessions/characters_and_world.jsonl": 11,
+        "lore_sessions/everweave_canon.jsonl": 8,
+        "lore_sessions/everweave_rp_sessions.jsonl": 5,
+        "lore_sessions/thalorion_compendium.jsonl": 7,
+        "lore_sessions/world_deep_lore.jsonl": 5
+      },
+      "total_lines": 36
+    },
+    "music_sessions": {
+      "description": "Original song compositions with production metadata",
+      "files": {
+        "music_sessions/stay_until_the_morning.jsonl": 7
+      },
+      "total_lines": 7
+    },
+    "instruction_tuning": {
+      "description": "Core SCBE instruction-response pairs for system knowledge",
+      "files": {
+        "instruction-tuning/scbe_instructions.jsonl": 25
+      },
+      "total_lines": 25
+    },
+    "knowledge_base": {
+      "description": "System architecture and cryptographic knowledge entries",
+      "files": {
+        "knowledge-base/crypto_knowledge.jsonl": 25,
+        "knowledge-base/system_knowledge.jsonl": 25
+      },
+      "total_lines": 50
+    },
+    "evals": {
+      "description": "Compliance evaluation benchmarks with expected answers",
+      "files": {
+        "evals/compliance_evals.jsonl": 25
+      },
+      "total_lines": 25
+    },
+    "sft_bulk": {
+      "description": "Bulk SFT data from codebase extraction, governance rules, spiralverse, and Notion exports",
+      "files": {
+        "sft_codebase.jsonl": 4031,
+        "sft_codebase_new.jsonl": 70,
+        "sft_functions.jsonl": 138,
+        "sft_governance.jsonl": 1016,
+        "sft_hydra_arch.jsonl": 10,
+        "sft_iseki.jsonl": 10,
+        "sft_kernel_manifest.jsonl": 32,
+        "sft_notion.jsonl": 497,
+        "sft_ouroboros.jsonl": 43,
+        "sft_spiralverse.jsonl": 90,
+        "sft_system.jsonl": 3395
+      },
+      "total_lines": 9332
+    },
+    "notion_raw": {
+      "description": "Raw Notion export cleaned for training",
+      "files": {
+        "notion_raw_clean.jsonl": 1054,
+        "notion_export_all_20260216.jsonl": 0
+      },
+      "total_lines": 1054
+    },
+    "hf_digimon_egg": {
+      "description": "Digimon-style evolution episode data",
+      "files": {
+        "hf-digimon-egg/episodes_generated.jsonl": 9,
+        "hf-digimon-egg/episodes_seed.jsonl": 3
+      },
+      "total_lines": 12
+    },
+    "scbe_min": {
+      "description": "Minimal browser telemetry for SCBE-min",
+      "files": {
+        "scbe-min/scbe_min_browser_telemetry.jsonl": 1
+      },
+      "total_lines": 1
+    },
+    "sidekick": {
+      "description": "Sidekick agent memory and SFT pairs",
+      "files": {
+        "sidekick/sidekick_memory.jsonl": 1,
+        "sidekick/sidekick_sft.jsonl": 1
+      },
+      "total_lines": 2
+    }
+  },
+  "field_conventions": {
+    "prompt_field": ["prompt", "instruction"],
+    "response_field": ["response"],
+    "note": "Some files use 'prompt' as the input field, others use 'instruction'. The merge script normalizes to 'prompt'/'response'."
+  }
+}

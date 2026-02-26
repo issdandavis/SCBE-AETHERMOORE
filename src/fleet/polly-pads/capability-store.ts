@@ -279,7 +279,13 @@ export class CapabilityStore {
   private signatureKey: Buffer;
 
   constructor(signatureKey?: Buffer) {
-    this.signatureKey = signatureKey || Buffer.from('polly-pads-default-key');
+    if (!signatureKey || signatureKey.length === 0) {
+      throw new Error(
+        'CapabilityStore requires an explicit signatureKey. ' +
+        'Generate one with: crypto.randomBytes(32)'
+      );
+    }
+    this.signatureKey = signatureKey;
 
     // Load built-in capabilities
     for (const cap of BUILTIN_CAPABILITIES) {

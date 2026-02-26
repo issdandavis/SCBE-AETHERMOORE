@@ -1,10 +1,13 @@
 name: SCBE-AETHERMOORE Tests
 
 on:
-  push:
-    branches: [ main, master, 'claude/**' ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:

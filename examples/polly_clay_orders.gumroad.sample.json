@@ -1,0 +1,49 @@
+{
+  "orders": [
+    {
+      "order_id": "gumroad-recon",
+      "workflow_id": "gumroad-polly-clay",
+      "source": "polly-clay-sample",
+      "dry_run": true,
+      "actions": [
+        {
+          "action": "navigate",
+          "target": "https://gumroad.com"
+        },
+        {
+          "action": "extract",
+          "target": "body"
+        },
+        {
+          "action": "screenshot",
+          "target": "full_page"
+        }
+      ]
+    },
+    {
+      "order_id": "gumroad-product-upload-outline",
+      "workflow_id": "gumroad-polly-clay",
+      "source": "polly-clay-sample",
+      "dry_run": true,
+      "actions": [
+        {
+          "action": "navigate",
+          "target": "https://gumroad.com/products"
+        },
+        {
+          "action": "click",
+          "target": "button[aria-label='Add cover image']"
+        },
+        {
+          "action": "type",
+          "target": "textarea[name='description']",
+          "value": "Draft product description from Polly+Clay workflow."
+        },
+        {
+          "action": "screenshot",
+          "target": "full_page"
+        }
+      ]
+    }
+  ]
+}

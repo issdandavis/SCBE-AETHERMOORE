@@ -1,0 +1,144 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: scbe-training
+  labels:
+    app: scbe-training
+    purpose: automation
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: scbe-training-data
+  namespace: scbe-training
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: node-fleet-automation-config
+  namespace: scbe-training
+data:
+  DOCS_GLOB_1: "training/raw/*.md"
+  EPOCHS: "8"
+  MODEL_REPO: "issdandavis/phdm-21d-embedding"
+  CONVERSATION_SPIN_GIST: "c38b2eface8d456b90c6bf02678871d8"
+  PUSH_TO_HUB: "true"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: codex-ingest-daily
+  namespace: scbe-training
+spec:
+  schedule: "15 3 * * *"
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 4
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      ttlSecondsAfterFinished: 86400
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: ingest-codex
+              image: ghcr.io/issdandavis/scbe-aethermoore:latest
+              command:
+                - /bin/bash
+                - -lc
+              args:
+                - |
+                  set -euo pipefail
+                  cd /workspace/SCBE-AETHERMOORE
+                  python scripts/ingest_spiralverse_codex.py \
+                    --source training/raw/spiralverse_canonical_linguistic_codex_v1_seed_20260218.md \
+                    --source-url "repo://training/raw/spiralverse_canonical_linguistic_codex_v1_seed_20260218.md"
+              volumeMounts:
+                - name: training-data
+                  mountPath: /workspace/SCBE-AETHERMOORE/training
+              resources:
+                requests:
+                  cpu: "500m"
+                  memory: "1Gi"
+                limits:
+                  cpu: "2"
+                  memory: "4Gi"
+          volumes:
+            - name: training-data
+              persistentVolumeClaim:
+                claimName: scbe-training-data
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: node-fleet-train-6h
+  namespace: scbe-training
+spec:
+  schedule: "0 */6 * * *"
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 6
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 21600
+      ttlSecondsAfterFinished: 86400
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: node-fleet-trainer
+              image: ghcr.io/issdandavis/scbe-aethermoore:latest
+              envFrom:
+                - configMapRef:
+                    name: node-fleet-automation-config
+              env:
+                - name: HF_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: hf-secrets
+                      key: token
+                - name: NOTION_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: notion-secrets
+                      key: token
+              command:
+                - /bin/bash
+                - -lc
+              args:
+                - |
+                  set -euo pipefail
+                  cd /workspace/SCBE-AETHERMOORE
+                  EXTRA_PUSH=""
+                  if [ "${PUSH_TO_HUB:-false}" = "true" ]; then
+                    EXTRA_PUSH="--push-to-hub"
+                  fi
+                  python scripts/run_node_fleet_pipeline.py \
+                    --docs-glob "${DOCS_GLOB_1}" \
+                    --epochs "${EPOCHS}" \
+                    --model-repo "${MODEL_REPO}" \
+                    --conversation-spin-gist "${CONVERSATION_SPIN_GIST}" \
+                    --generate-news ${EXTRA_PUSH}
+              volumeMounts:
+                - name: training-data
+                  mountPath: /workspace/SCBE-AETHERMOORE/training
+              resources:
+                requests:
+                  cpu: "2"
+                  memory: "8Gi"
+                limits:
+                  cpu: "8"
+                  memory: "24Gi"
+          volumes:
+            - name: training-data
+              persistentVolumeClaim:
+                claimName: scbe-training-data
+

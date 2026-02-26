@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PollyEggEpisode",
+  "type": "object",
+  "required": ["id", "egg_id", "world_seed", "lesson", "state", "outcome", "timestamp"],
+  "properties": {
+    "id": { "type": "string" },
+    "egg_id": { "type": "string" },
+    "world_seed": { "type": "string" },
+    "lesson": { "type": "string" },
+    "state": {
+      "type": "object",
+      "required": ["learning", "safety", "stability", "drift"],
+      "properties": {
+        "learning": { "type": "number" },
+        "safety": { "type": "number" },
+        "stability": { "type": "number" },
+        "drift": { "type": "number" }
+      }
+    },
+    "outcome": { "type": "string", "enum": ["ALLOW", "QUARANTINE", "DENY"] },
+    "metadata": { "type": "object" },
+    "timestamp": { "type": "string" }
+  }
+}

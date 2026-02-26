@@ -1,0 +1,133 @@
+{
+  "version": "1.0",
+  "edition": "Seed-Anchored",
+  "seed_source": "Everweave Origin Logs",
+  "tokenizer_alignment": "SCBE-AETHERMOORE Tokenizer v1",
+  "canonical_phrase": "Thul'medan kess'ara nav'kor zar'aelin",
+  "base_tongues": [
+    {
+      "code": "KO",
+      "name": "Kor'aelin",
+      "meaning": "Heart-Eternal",
+      "weight_phi": 1.0,
+      "phase_radians": 0.0,
+      "grammar_phonetics": "Elvish-Korean hybrid; SOV; spiraling calligraphy",
+      "primary_function": "Intent, binding, collaborative resonance"
+    },
+    {
+      "code": "AV",
+      "name": "Avali",
+      "meaning": "Common Tongue",
+      "weight_phi": 1.618,
+      "phase_radians": 1.0471975511965976,
+      "grammar_phonetics": "Romance-influenced; flexible SVO; trade pidgin",
+      "primary_function": "Diplomacy, context-headers, cross-paradigm bridge"
+    },
+    {
+      "code": "RU",
+      "name": "Runethic",
+      "meaning": "Ancient Tongue",
+      "weight_phi": 2.618,
+      "phase_radians": 2.0943951023931953,
+      "grammar_phonetics": "Archaic VSOT; ritualistic repetition; time-binding",
+      "primary_function": "Temporal anchoring, oaths, historical preservation"
+    },
+    {
+      "code": "CA",
+      "name": "Cassisivadan",
+      "meaning": "Nature's Speech",
+      "weight_phi": 4.236,
+      "phase_radians": 3.141592653589793,
+      "grammar_phonetics": "Recursive joy; bouncing rhythms; compound enthusiasm",
+      "primary_function": "Root-network wisdom, ecological communion, play"
+    },
+    {
+      "code": "UM",
+      "name": "Umbroth",
+      "meaning": "Shadow Tongue",
+      "weight_phi": 6.854,
+      "phase_radians": 4.1887902047863905,
+      "grammar_phonetics": "Guttural concealment; veiled syntax; pact-weaving",
+      "primary_function": "Concealment, severance, productive discontinuity"
+    },
+    {
+      "code": "DR",
+      "name": "Draumric",
+      "meaning": "Forge Tongue",
+      "weight_phi": 11.09,
+      "phase_radians": 5.235987755982989,
+      "grammar_phonetics": "Percussive structure; hammer-rhythm; power-songs",
+      "primary_function": "Manifestation, power-binding, structural authority"
+    }
+  ],
+  "sub_traditions": [
+    {
+      "name": "Mal'kythric",
+      "status": "UM sub-tradition",
+      "description": "Cutting phonetics; anti-syntax; deliberate semantic wounds",
+      "application": "Therapeutic cutting, deconstruction of flawed paradigms"
+    },
+    {
+      "name": "Draconic Aether-Song",
+      "status": "DR sub-tradition",
+      "description": "Fire-binding harmonics; dominance-or-collaborative power",
+      "application": "Shared strength, collective empowerment, forge rituals"
+    },
+    {
+      "name": "Nal'kythraelin",
+      "status": "Emergent 7th",
+      "description": "Paradox grammar; dialectical pairs; contradiction as creative force",
+      "application": "Advanced consciousness integration; future-facing"
+    }
+  ],
+  "kor_aelin": {
+    "runic_letters": [
+      "Arul",
+      "Belan",
+      "Calor",
+      "Dael",
+      "Elar",
+      "Fen",
+      "Gaer",
+      "Havar",
+      "Iril",
+      "Jael",
+      "Kor",
+      "Laris",
+      "Mael",
+      "Nera",
+      "Orun",
+      "Parun",
+      "Ren",
+      "Sylor",
+      "Thul",
+      "Uen",
+      "Vel",
+      "Wyn",
+      "Yul",
+      "Thana"
+    ],
+    "particle_grammar_core": [
+      "kor",
+      "sil",
+      "vel",
+      "zar",
+      "keth",
+      "thul",
+      "nav",
+      "ael",
+      "ra",
+      "med",
+      "gal",
+      "lan",
+      "bren",
+      "oen"
+    ]
+  },
+  "tokenizer_invariants": [
+    "exactly six base tongues",
+    "256-token bijection per tongue",
+    "encode-decode roundtrip identity",
+    "cross-translation byte integrity"
+  ]
+}
