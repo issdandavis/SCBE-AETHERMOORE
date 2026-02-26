@@ -88,7 +88,9 @@
     "publish:dryrun": "npm pack --dry-run --json",
     "notion:sync": "node scripts/notion-sync.js --all",
     "version:bump": "node scripts/version-bump.js",
-    "precommit:check": "bash scripts/pre-commit-check.sh"
+    "precommit:check": "bash scripts/pre-commit-check.sh",
+    "gateway:serve": "node dist-gateway/gateway/authorize-service.js",
+    "gateway:build": "tsc -p tsconfig.gateway.json"
   },
   "keywords": [
     "cryptography",
