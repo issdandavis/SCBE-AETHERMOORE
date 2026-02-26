@@ -1,0 +1,56 @@
+{
+  "id": "hearthstone_landing",
+  "name": "Hearthstone Landing",
+  "description": "Tutorial town. Home of Marcus Chen. Gateway to Avalon Academy.",
+  "tongue": null,
+  "size": {"width": 15, "height": 15},
+  "player_spawn": {"x": 7, "z": 7},
+  "companion_spawn": {"x": 5, "z": 7},
+  "palette": "neutral",
+  "music": "hearthstone_theme",
+  "ambient": "village_birds",
+  "layout": {
+    "legend": {
+      "0": "grass",
+      "1": "wall",
+      "2": "building_floor",
+      "3": "building_wall",
+      "4": "water",
+      "5": "path",
+      "7": "ward_pylon"
+    },
+    "grid": [
+      [1,1,1,1,1,1,0,5,0,1,1,1,1,1,1],
+      [1,0,0,0,0,0,0,5,0,0,0,0,0,0,1],
+      [1,0,3,3,2,0,0,5,0,0,3,3,2,0,1],
+      [1,0,3,2,2,0,0,5,0,0,3,2,2,0,1],
+      [1,0,0,0,0,0,0,5,0,0,0,0,0,0,1],
+      [1,0,0,0,5,5,5,5,5,5,5,0,0,0,1],
+      [0,0,0,0,5,0,0,4,0,0,5,0,0,0,0],
+      [5,5,5,5,5,0,4,4,4,0,5,5,5,5,5],
+      [0,0,0,0,5,0,0,4,0,0,5,0,0,0,0],
+      [1,0,0,0,5,5,5,5,5,5,5,0,0,0,1],
+      [1,0,0,0,0,0,0,5,0,0,0,0,0,0,1],
+      [1,0,3,3,2,0,0,5,0,0,0,7,0,0,1],
+      [1,0,3,2,2,0,0,5,0,0,0,0,0,0,1],
+      [1,0,0,0,0,0,0,5,0,0,0,0,0,0,1],
+      [1,1,1,1,1,1,0,5,0,1,1,1,1,1,1]
+    ]
+  },
+  "buildings": [
+    {"id": "marcus_house", "name": "Marcus's House", "position": {"x": 2, "z": 2}, "size": {"w": 3, "h": 2}},
+    {"id": "greta_shop", "name": "Greta's Shop", "position": {"x": 10, "z": 2}, "size": {"w": 3, "h": 2}},
+    {"id": "academy_annex", "name": "Academy Annex", "position": {"x": 2, "z": 11}, "size": {"w": 3, "h": 2}}
+  ],
+  "interactables": [
+    {"id": "fountain", "type": "decoration", "position": {"x": 7, "z": 7}, "description": "A stone fountain built by the first ward keepers."},
+    {"id": "ward_pylon_01", "type": "ward_pylon", "position": {"x": 11, "z": 11}, "quest_id": "ward_pylon_quest"},
+    {"id": "codex_terminal_01", "type": "codex_terminal", "position": {"x": 4, "z": 4}, "description": "A Codex terminal. Access knowledge through the SCBE pipeline."}
+  ],
+  "exits": [
+    {"direction": "north", "target_map": "ember_reach_outskirts", "position": {"x": 7, "z": 0}},
+    {"direction": "south", "target_map": "academy_road", "position": {"x": 7, "z": 14}},
+    {"direction": "east", "target_map": "glass_drift_border", "position": {"x": 14, "z": 7}},
+    {"direction": "west", "target_map": "aerial_expanse_landing", "position": {"x": 0, "z": 7}}
+  ]
+}

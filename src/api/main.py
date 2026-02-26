@@ -44,6 +44,11 @@ try:
 except ImportError:
     mesh_router = None
 
+try:
+    from src.api.game_routes import game_router
+except ImportError:
+    game_router = None
+
 # ============================================================================
 # APP INITIALIZATION
 # ============================================================================
@@ -70,6 +75,10 @@ app.include_router(hydra_router)
 # Include Semantic Mesh router (embryonic intake + tongue-space KG)
 if mesh_router is not None:
     app.include_router(mesh_router)
+
+# Include Spiral Forge RPG game routes (Godot client backend)
+if game_router is not None:
+    app.include_router(game_router)
 
 # ============================================================================
 # RATE LIMITING

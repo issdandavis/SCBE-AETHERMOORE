@@ -1,0 +1,72 @@
+{
+  "id": "emberspark",
+  "name": "Emberspark",
+  "description": "A flickering mote of command energy, burning with focused intent. It crackles when near other Tongues.",
+  "tongue": "KO",
+  "bond_type": "amplifier",
+  "base_state": {
+    "tongue_position": [0.45, 0.0, 0.0, 0.05, 0.0, 0.05],
+    "phase_angles": [0.3, 0.0, 0.0, 0.1, 0.0, 0.0],
+    "flux": 0.5,
+    "insight": 0.2,
+    "perception": 0.3,
+    "risk_tolerance": 0.3,
+    "entropy_affinity": 0.1,
+    "resilience": 0.4,
+    "proof_power": 0.4,
+    "authority": 0.2
+  },
+  "visual": {
+    "mesh": "sphere",
+    "color": [0.86, 0.24, 0.24],
+    "scale": [0.25, 0.25, 0.25],
+    "glow": true,
+    "trail_color": [1.0, 0.5, 0.2]
+  },
+  "evolution_tree": [
+    {
+      "stage": "spark",
+      "name": "Emberspark",
+      "radius_min": 0.0,
+      "radius_max": 0.3,
+      "tris": 300
+    },
+    {
+      "stage": "form",
+      "branches": [
+        {
+          "name": "Origin Drake",
+          "condition": "pure KO mastery, solo trait",
+          "tongue_bias": "KO",
+          "radius_min": 0.3,
+          "radius_max": 0.7,
+          "tris": 500,
+          "evolves_to": "Command Sovereign"
+        },
+        {
+          "name": "Phase Phoenix",
+          "condition": "KO + DR verification focus, collaborative trait",
+          "tongue_bias": "KO+DR",
+          "radius_min": 0.3,
+          "radius_max": 0.7,
+          "tris": 500,
+          "evolves_to": "Eclipse Wyrm"
+        },
+        {
+          "name": "Null Ember",
+          "condition": "KO exposed to Hollow Tongue (late game)",
+          "tongue_bias": "KO+hollow",
+          "radius_min": 0.3,
+          "radius_max": 0.7,
+          "tris": 500,
+          "evolves_to": "???"
+        }
+      ]
+    }
+  ],
+  "sounds": {
+    "idle": "fire_crackle",
+    "attack": "fire_burst",
+    "evolve": "fire_roar"
+  }
+}

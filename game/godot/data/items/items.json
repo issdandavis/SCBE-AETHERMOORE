@@ -1,0 +1,104 @@
+{
+  "items": [
+    {
+      "id": "potion_seal",
+      "name": "Seal Salve",
+      "description": "Restores 30 seal integrity to a companion.",
+      "category": "consumable",
+      "tongue": "UM",
+      "price": 10,
+      "effect": {"type": "heal_seal", "amount": 30},
+      "stack_max": 20
+    },
+    {
+      "id": "focus_lens",
+      "name": "Focus Lens",
+      "description": "Boosts Insight by 0.1 for one encounter.",
+      "category": "consumable",
+      "tongue": "CA",
+      "price": 25,
+      "effect": {"type": "buff_stat", "stat": "insight", "amount": 0.1, "duration": "encounter"},
+      "stack_max": 10
+    },
+    {
+      "id": "drift_anchor",
+      "name": "Drift Anchor",
+      "description": "Reduces drift level by 0.05. Stabilizes a volatile companion.",
+      "category": "consumable",
+      "tongue": "DR",
+      "price": 15,
+      "effect": {"type": "reduce_drift", "amount": 0.05},
+      "stack_max": 10
+    },
+    {
+      "id": "ember_shard",
+      "name": "Ember Shard",
+      "description": "Grants 0.5 KO tongue XP when consumed.",
+      "category": "consumable",
+      "tongue": "KO",
+      "price": 20,
+      "effect": {"type": "tongue_xp", "tongue_index": 0, "amount": 0.5},
+      "stack_max": 5
+    },
+    {
+      "id": "gale_feather",
+      "name": "Gale Feather",
+      "description": "Grants 0.5 AV tongue XP. Smells like sky.",
+      "category": "consumable",
+      "tongue": "AV",
+      "price": 20,
+      "effect": {"type": "tongue_xp", "tongue_index": 1, "amount": 0.5},
+      "stack_max": 5
+    },
+    {
+      "id": "void_dust",
+      "name": "Void Dust",
+      "description": "Grants 0.5 RU tongue XP. Handle with care.",
+      "category": "consumable",
+      "tongue": "RU",
+      "price": 20,
+      "effect": {"type": "tongue_xp", "tongue_index": 2, "amount": 0.5},
+      "stack_max": 5
+    },
+    {
+      "id": "proof_crystal",
+      "name": "Proof Crystal",
+      "description": "Boosts Proof Power by 0.15 for one encounter.",
+      "category": "consumable",
+      "tongue": "DR",
+      "price": 30,
+      "effect": {"type": "buff_stat", "stat": "proof_power", "amount": 0.15, "duration": "encounter"},
+      "stack_max": 5
+    },
+    {
+      "id": "ward_stone",
+      "name": "Ward Stone",
+      "description": "Creates a temporary defensive ward. +20% defense for 3 turns.",
+      "category": "consumable",
+      "tongue": "UM",
+      "price": 35,
+      "effect": {"type": "buff_stat", "stat": "resilience", "amount": 0.2, "duration": "3_turns"},
+      "stack_max": 5
+    },
+    {
+      "id": "academy_letter",
+      "name": "Academy Enrollment Letter",
+      "description": "Official enrollment to Avalon Academy. Given by Marcus Chen.",
+      "category": "key",
+      "tongue": "",
+      "price": 0,
+      "effect": {"type": "quest_item"},
+      "stack_max": 1
+    },
+    {
+      "id": "delivery_package",
+      "name": "Elder Tomas's Package",
+      "description": "A wrapped package for Marcus Chen. Smells like old paper.",
+      "category": "key",
+      "tongue": "",
+      "price": 0,
+      "effect": {"type": "quest_item"},
+      "stack_max": 1
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "npcs": [
+    {
+      "id": "marcus",
+      "name": "Marcus Chen",
+      "title": "System Coordinator (Retired)",
+      "tongue_affinity": "KO",
+      "position": {"x": 3, "z": 3},
+      "is_shopkeeper": false,
+      "is_quest_giver": false,
+      "dialogue": [
+        {"text": "Welcome home. The Academy awaits you.", "speaker": "Marcus Chen"},
+        {"text": "Take this egg. It chose you before you were born.", "speaker": "Marcus Chen"},
+        {"text": "And here — your enrollment letter. Make us proud.", "speaker": "Marcus Chen"}
+      ],
+      "gives_items": ["academy_letter"],
+      "triggers_event": "first_egg",
+      "visual": {
+        "color": [0.86, 0.24, 0.24],
+        "height": 1.2
+      }
+    },
+    {
+      "id": "greta",
+      "name": "Greta",
+      "title": "Shopkeeper",
+      "tongue_affinity": "DR",
+      "position": {"x": 11, "z": 3},
+      "is_shopkeeper": true,
+      "is_quest_giver": false,
+      "shop_inventory": ["potion_seal", "focus_lens", "drift_anchor", "ember_shard"],
+      "dialogue": [
+        {"text": "Welcome to my shop! Take a look.", "speaker": "Greta"}
+      ],
+      "visual": {
+        "color": [0.86, 0.24, 0.86],
+        "height": 1.0
+      }
+    },
+    {
+      "id": "tomas",
+      "name": "Elder Tomas",
+      "title": "Village Elder",
+      "tongue_affinity": "UM",
+      "position": {"x": 6, "z": 6},
+      "is_shopkeeper": false,
+      "is_quest_giver": true,
+      "quest": {
+        "id": "delivery_quest",
+        "name": "Package Delivery",
+        "type": "delivery",
+        "offer_text": "Could you deliver this package to Marcus? He's at the house to the northwest.",
+        "target_npc": "marcus",
+        "reward_gold": 15,
+        "reward_tongue_xp": {"AV": 1.0}
+      },
+      "dialogue": [
+        {"text": "Ah, a new face! Would you help an old man?", "speaker": "Elder Tomas"}
+      ],
+      "visual": {
+        "color": [0.24, 0.24, 0.86],
+        "height": 0.95
+      }
+    },
+    {
+      "id": "sila",
+      "name": "Ward Keeper Sila",
+      "title": "Ward Keeper",
+      "tongue_affinity": "KO",
+      "position": {"x": 12, "z": 11},
+      "is_shopkeeper": false,
+      "is_quest_giver": true,
+      "quest": {
+        "id": "ward_pylon_quest",
+        "name": "Fix the Ward Pylon",
+        "type": "repair",
+        "offer_text": "The ward pylon is flickering! Channel some KO energy into it to stabilize it.",
+        "reward_gold": 0,
+        "reward_tongue_xp": {"KO": 2.0}
+      },
+      "dialogue": [
+        {"text": "The wards are weakening... Can you help?", "speaker": "Ward Keeper Sila"}
+      ],
+      "visual": {
+        "color": [0.86, 0.24, 0.24],
+        "height": 1.05
+      }
+    },
+    {
+      "id": "polly",
+      "name": "Polly",
+      "title": "The Raven",
+      "tongue_affinity": "AV",
+      "position": {"x": 8, "z": 9},
+      "is_shopkeeper": false,
+      "is_quest_giver": false,
+      "dialogue": [
+        {"text": "*Caw!* Shiny! Shiny!", "speaker": "Polly"},
+        {"text": "*The raven eyes you curiously, then takes flight...*", "speaker": ""}
+      ],
+      "triggers_event": "polly_chase",
+      "visual": {
+        "color": [0.86, 0.71, 0.24],
+        "height": 0.4,
+        "mesh": "sphere"
+      }
+    }
+  ]
+}

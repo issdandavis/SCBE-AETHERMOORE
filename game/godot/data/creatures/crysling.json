@@ -1,0 +1,72 @@
+{
+  "id": "crysling",
+  "name": "Crysling",
+  "description": "A crystalline sprite born from pure computational energy. Its faceted body refracts light into spectral patterns.",
+  "tongue": "CA",
+  "bond_type": "processor",
+  "base_state": {
+    "tongue_position": [0.05, 0.0, 0.0, 0.4, 0.1, 0.0],
+    "phase_angles": [0.0, 0.5, 0.2, 0.0, 0.0, 0.0],
+    "flux": 0.3,
+    "insight": 0.4,
+    "perception": 0.2,
+    "risk_tolerance": 0.1,
+    "entropy_affinity": 0.15,
+    "resilience": 0.5,
+    "proof_power": 0.35,
+    "authority": 0.1
+  },
+  "visual": {
+    "mesh": "sphere",
+    "color": [0.24, 0.71, 0.86],
+    "scale": [0.3, 0.3, 0.3],
+    "glow": true,
+    "trail_color": [0.4, 0.85, 0.95]
+  },
+  "evolution_tree": [
+    {
+      "stage": "spark",
+      "name": "Crysling",
+      "radius_min": 0.0,
+      "radius_max": 0.3,
+      "tris": 300
+    },
+    {
+      "stage": "form",
+      "branches": [
+        {
+          "name": "Logicwyrm",
+          "condition": "high CA usage + careful_verifier trait",
+          "tongue_bias": "CA",
+          "radius_min": 0.3,
+          "radius_max": 0.7,
+          "tris": 500,
+          "evolves_to": "Axiom Dragon"
+        },
+        {
+          "name": "Prism Sentinel",
+          "condition": "balanced CA + UM, guardian trait",
+          "tongue_bias": "CA+UM",
+          "radius_min": 0.3,
+          "radius_max": 0.7,
+          "tris": 500,
+          "evolves_to": "Proof Aegis"
+        },
+        {
+          "name": "Fracture Shade",
+          "condition": "CA corrupted by RU drift, risk_tolerant trait",
+          "tongue_bias": "CA+RU",
+          "radius_min": 0.3,
+          "radius_max": 0.7,
+          "tris": 500,
+          "evolves_to": "Paradox Wraith"
+        }
+      ]
+    }
+  ],
+  "sounds": {
+    "idle": "crystal_hum",
+    "attack": "crystal_shatter",
+    "evolve": "crystal_resonance"
+  }
+}

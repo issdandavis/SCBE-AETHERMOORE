@@ -1,0 +1,148 @@
+{
+  "transforms": [
+    {
+      "id": "normalize",
+      "name": "Normalize",
+      "description": "Reduce expression to standard form. Safe and reliable.",
+      "tongue": "KO",
+      "risk": "low",
+      "base_cost": 1,
+      "unlock_floor": 1,
+      "tags": ["cleanup", "safe"],
+      "oracle_check": "solution_set_equality",
+      "visual": {"color": [0.86, 0.24, 0.24], "particle": "spark_burst"}
+    },
+    {
+      "id": "complete_square",
+      "name": "Complete the Square",
+      "description": "Transform quadratic to vertex form. Reveals structure.",
+      "tongue": "CA",
+      "risk": "low",
+      "base_cost": 2,
+      "unlock_floor": 1,
+      "tags": ["quadratic", "structural"],
+      "oracle_check": "solution_set_equality",
+      "visual": {"color": [0.24, 0.71, 0.86], "particle": "crystal_align"}
+    },
+    {
+      "id": "factor",
+      "name": "Factor",
+      "description": "Decompose into factors. Medium risk — can miss complex roots.",
+      "tongue": "CA",
+      "risk": "medium",
+      "base_cost": 3,
+      "unlock_floor": 3,
+      "tags": ["polynomial", "decomposition"],
+      "oracle_check": "solution_set_equality",
+      "visual": {"color": [0.24, 0.71, 0.86], "particle": "shatter"}
+    },
+    {
+      "id": "check_domain",
+      "name": "Check Domain",
+      "description": "Verify domain constraints. Catches extraneous solutions.",
+      "tongue": "UM",
+      "risk": "low",
+      "base_cost": 1,
+      "unlock_floor": 1,
+      "tags": ["verification", "safe", "defensive"],
+      "oracle_check": "domain_validity",
+      "visual": {"color": [0.24, 0.24, 0.86], "particle": "ward_pulse"}
+    },
+    {
+      "id": "substitute",
+      "name": "Substitute",
+      "description": "Replace variable with expression. Can introduce extraneous roots.",
+      "tongue": "AV",
+      "risk": "medium",
+      "base_cost": 2,
+      "unlock_floor": 5,
+      "tags": ["variable_change", "transport"],
+      "oracle_check": "solution_set_equality",
+      "visual": {"color": [0.86, 0.71, 0.24], "particle": "swap_glow"}
+    },
+    {
+      "id": "bound",
+      "name": "Bound",
+      "description": "Establish inequality bounds. Constrains the solution space.",
+      "tongue": "DR",
+      "risk": "low",
+      "base_cost": 2,
+      "unlock_floor": 5,
+      "tags": ["inequality", "structural"],
+      "oracle_check": "bound_validity",
+      "visual": {"color": [0.86, 0.24, 0.86], "particle": "wall_form"}
+    },
+    {
+      "id": "invariant_check",
+      "name": "Invariant Check",
+      "description": "Verify a conservation law holds. Pure defensive move.",
+      "tongue": "UM",
+      "risk": "low",
+      "base_cost": 1,
+      "unlock_floor": 8,
+      "tags": ["verification", "safe"],
+      "oracle_check": "invariant_preservation",
+      "visual": {"color": [0.24, 0.24, 0.86], "particle": "shield_glow"}
+    },
+    {
+      "id": "case_split",
+      "name": "Case Split",
+      "description": "Enumerate cases. Powerful but risks combinatorial explosion.",
+      "tongue": "RU",
+      "risk": "medium",
+      "base_cost": 4,
+      "unlock_floor": 10,
+      "tags": ["enumeration", "entropy"],
+      "oracle_check": "case_exhaustiveness",
+      "visual": {"color": [0.24, 0.86, 0.47], "particle": "split_burst"}
+    },
+    {
+      "id": "contradiction_probe",
+      "name": "Contradiction Probe",
+      "description": "Attempt proof by contradiction. High risk — can be circular.",
+      "tongue": "RU",
+      "risk": "high",
+      "base_cost": 5,
+      "unlock_floor": 20,
+      "tags": ["proof", "entropy", "dangerous"],
+      "oracle_check": "contradiction_validity",
+      "visual": {"color": [0.24, 0.86, 0.47], "particle": "void_pulse"}
+    },
+    {
+      "id": "differentiate",
+      "name": "Differentiate",
+      "description": "Apply calculus derivative. Opens optimization paths.",
+      "tongue": "CA",
+      "risk": "medium",
+      "base_cost": 3,
+      "unlock_floor": 30,
+      "tags": ["calculus", "analysis"],
+      "oracle_check": "derivative_correctness",
+      "visual": {"color": [0.24, 0.71, 0.86], "particle": "wave_flow"}
+    },
+    {
+      "id": "integrate",
+      "name": "Integrate",
+      "description": "Apply integration. High risk — antiderivative guessing.",
+      "tongue": "CA",
+      "risk": "high",
+      "base_cost": 5,
+      "unlock_floor": 40,
+      "tags": ["calculus", "analysis", "dangerous"],
+      "oracle_check": "integral_correctness",
+      "visual": {"color": [0.24, 0.71, 0.86], "particle": "spiral_absorb"}
+    },
+    {
+      "id": "apply_theorem",
+      "name": "Apply Theorem",
+      "description": "Invoke a known mathematical result. Cost varies by theorem.",
+      "tongue": "DR",
+      "risk": "varies",
+      "base_cost": 3,
+      "unlock_floor": 15,
+      "tags": ["theorem", "structural"],
+      "oracle_check": "theorem_applicability",
+      "visual": {"color": [0.86, 0.24, 0.86], "particle": "rune_invoke"}
+    }
+  ]
+}
