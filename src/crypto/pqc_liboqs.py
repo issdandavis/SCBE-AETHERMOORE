@@ -29,20 +29,75 @@ MLKEM768_SS_LEN = 32  # Shared secret size
 
 MLDSA65_PK_LEN = 1952  # ML-DSA-65 public key size
 MLDSA65_SK_LEN = 4032  # ML-DSA-65 secret key size
-MLDSA65_SIG_LEN = 3293  # ML-DSA-65 signature size
+MLDSA65_SIG_LEN = 3309  # ML-DSA-65 signature size
 
 # Attempt to import liboqs
-try:
-    import oqs
+_FORCE_SKIP_LIBOQS = os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+}
 
-    LIBOQS_AVAILABLE = True
-    _LIBOQS_VERSION = getattr(oqs, "__version__", "unknown")
-except BaseException as exc:
-    # oqs may be installed without shared libs; treat as unavailable and fall back.
+if not _FORCE_SKIP_LIBOQS:
+    try:
+        import oqs
+
+        LIBOQS_AVAILABLE = True
+        _LIBOQS_VERSION = getattr(oqs, "__version__", "unknown")
+    except BaseException as exc:
+        # oqs may be installed without shared libs; treat as unavailable and fall back.
+        LIBOQS_AVAILABLE = False
+        _LIBOQS_VERSION = None
+        _LIBOQS_IMPORT_ERROR = exc
+else:
     LIBOQS_AVAILABLE = False
     _LIBOQS_VERSION = None
-    _LIBOQS_IMPORT_ERROR = exc
 
+
+def _select_kem_algorithm() -> str:
+    """Select the best available KEM algorithm name for the installed liboqs."""
+    if not LIBOQS_AVAILABLE:
+        return "ML-KEM-768"
+    enabled = oqs.get_enabled_kem_mechanisms()
+    if "ML-KEM-768" in enabled:
+        return "ML-KEM-768"
+    if "Kyber768" in enabled:
+        return "Kyber768"
+    return "ML-KEM-768"
+
+
+def _select_sig_algorithm() -> str:
+    """Select the best available signature algorithm name for the installed liboqs."""
+    if not LIBOQS_AVAILABLE:
+        return "ML-DSA-65"
+    enabled = oqs.get_enabled_sig_mechanisms()
+    if "ML-DSA-65" in enabled:
+        return "ML-DSA-65"
+    if "Dilithium3" in enabled:
+        return "Dilithium3"
+    return "ML-DSA-65"
+
+
+_KEM_ALG = _select_kem_algorithm()
+_SIG_ALG = _select_sig_algorithm()
+
+def _enabled_signature_mechanisms() -> set[str]:
+    """Return enabled liboqs signature mechanisms when available."""
+    if not LIBOQS_AVAILABLE:
+        return set()
+    getter = getattr(oqs, "get_enabled_sig_mechanisms", None)
+    if callable(getter):
+        return set(getter())
+    return {"Dilithium3"}
+
+
+def _select_mldsa_algorithm() -> Optional[str]:
+    """Prefer standardized ML-DSA naming, fallback to Dilithium alias."""
+    enabled = _enabled_signature_mechanisms()
+    for candidate in ("ML-DSA-65", "Dilithium3"):
+        if candidate in enabled:
+            return candidate
+    return None
 
 def is_liboqs_available() -> bool:
     """Check if real liboqs is available."""
@@ -100,7 +155,7 @@ class MLKEM768:
 
         if self._using_real:
             # Use real liboqs
-            self._kem = oqs.KeyEncapsulation("Kyber768")
+            self._kem = oqs.KeyEncapsulation(_KEM_ALG)
             self._public_key = self._kem.generate_keypair()
             self._secret_key = self._kem.export_secret_key()
         else:
@@ -135,7 +190,7 @@ class MLKEM768:
 
         if self._using_real:
             # Use real liboqs encapsulation
-            kem = oqs.KeyEncapsulation("Kyber768")
+            kem = oqs.KeyEncapsulation(_KEM_ALG)
             ct, ss = kem.encap_secret(pk)
             return ct, ss
         else:
@@ -173,7 +228,7 @@ class MLKEM768:
         instance._seed = None
 
         if instance._using_real:
-            instance._kem = oqs.KeyEncapsulation("Kyber768")
+            instance._kem = oqs.KeyEncapsulation(_KEM_ALG)
             # Note: liboqs doesn't support importing keys directly in all versions
             # This is a limitation we document
 
@@ -204,10 +259,21 @@ class MLDSA65:
         """
         self._using_real = LIBOQS_AVAILABLE
         self._seed = seed or os.urandom(32)
+        self._algorithm: Optional[str] = None
 
         if self._using_real:
+            # Use real liboqs (ML-DSA-65 preferred, Dilithium3 fallback).
+            self._algorithm = _select_mldsa_algorithm()
+            if self._algorithm is None:
+                self._using_real = False
+            else:
+                self._sig = oqs.Signature(self._algorithm)
+                self._public_key = self._sig.generate_keypair()
+                self._secret_key = self._sig.export_secret_key()
+
+        if not self._using_real:
             # Use real liboqs
-            self._sig = oqs.Signature("Dilithium3")
+            self._sig = oqs.Signature(_SIG_ALG)
             self._public_key = self._sig.generate_keypair()
             self._secret_key = self._sig.export_secret_key()
         else:
@@ -239,11 +305,11 @@ class MLDSA65:
         """
         if self._using_real:
             return self._sig.sign(message)
-        else:
-            # Fallback: HMAC-SHA512 signature simulation
-            sig_core = hmac.new(self._secret_key[:32], message, hashlib.sha512).digest()
-            # Pad to approximate real signature size
-            return sig_core + os.urandom(MLDSA65_SIG_LEN - 64)
+
+        # Fallback: HMAC-SHA512 signature simulation
+        sig_core = hmac.new(self._secret_key[:32], message, hashlib.sha512).digest()
+        # Pad to approximate real signature size
+        return sig_core + os.urandom(MLDSA65_SIG_LEN - 64)
 
     def verify(self, message: bytes, signature: bytes) -> bool:
         """
@@ -258,12 +324,10 @@ class MLDSA65:
         """
         if self._using_real:
             return self._sig.verify(message, signature, self._public_key)
-        else:
-            # Fallback: verify HMAC-SHA512 signature
-            expected_core = hmac.new(
-                self._secret_key[:32], message, hashlib.sha512
-            ).digest()
-            return hmac.compare_digest(expected_core, signature[:64])
+
+        # Fallback: verify HMAC-SHA512 signature
+        expected_core = hmac.new(self._secret_key[:32], message, hashlib.sha512).digest()
+        return hmac.compare_digest(expected_core, signature[:64])
 
     @classmethod
     def from_keypair(cls, keypair: MLDSAKeyPair) -> "MLDSA65":
@@ -273,12 +337,17 @@ class MLDSA65:
         instance._public_key = keypair.public_key
         instance._secret_key = keypair.secret_key
         instance._seed = None
+        instance._algorithm = None
 
         if instance._using_real:
-            instance._sig = oqs.Signature("Dilithium3")
+            instance._algorithm = _select_mldsa_algorithm()
+            if instance._algorithm is None:
+                instance._using_real = False
+            else:
+                instance._sig = oqs.Signature(instance._algorithm)
+            instance._sig = oqs.Signature(_SIG_ALG)
 
         return instance
-
 
 # =============================================================================
 # DUAL LATTICE CONSENSUS HELPERS
@@ -383,3 +452,5 @@ def run_pqc_diagnostics():
 
 if __name__ == "__main__":
     run_pqc_diagnostics()
+
+

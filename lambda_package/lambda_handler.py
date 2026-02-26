@@ -49,6 +49,10 @@ else:
         import time
         import uuid
         from datetime import datetime, timedelta
+        try:
+            from api.validation import run_nextgen_action_validation as shared_action_validator
+        except Exception:
+            shared_action_validator = None
 
         # Parse request
         http_method = event.get('httpMethod') or event.get('requestContext', {}).get('http', {}).get('method', 'GET')
@@ -221,9 +225,19 @@ else:
             sensitivity = context.get('sensitivity', 0.5)
             trust_score = context.get('trust_score', 0.5)
 
-            decision, score, explanation = scbe_pipeline(
-                agent_id, action, target, trust_score, sensitivity
-            )
+            if shared_action_validator is not None:
+                decision, score, explanation = shared_action_validator(
+                    agent_id=agent_id,
+                    action=action,
+                    target=target,
+                    trust_score=trust_score,
+                    sensitivity=sensitivity,
+                    context=context,
+                )
+            else:
+                decision, score, explanation = scbe_pipeline(
+                    agent_id, action, target, trust_score, sensitivity
+                )
 
             decision_id = f"dec_{uuid.uuid4().hex[:12]}"
 

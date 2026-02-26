@@ -11,6 +11,7 @@ Modules:
     aether_braid.py   — MSR algebra + FSGS hybrid automaton
     quantum_lattice.py — Quantum lattice superposition extensions
     phdm_embedding.py — 21D PHDM embedding model
+    defensive_mesh.py — AI kernel governance wrapper for task gating
 
 Author: Issac Davis
 """
@@ -35,6 +36,12 @@ from .brain import (
     DIMENSIONS_21D,
     DIMENSIONS_6D,
     TUBE_RADIUS,
+)
+from .defensive_mesh import (
+    DefensiveMeshKernel,
+    GovernedJob,
+    GovernedTask,
+    TaskGateResult,
 )
 
 __version__ = "3.0.0"
@@ -62,4 +69,9 @@ __all__ = [
     "DIMENSIONS_21D",
     "DIMENSIONS_6D",
     "TUBE_RADIUS",
+    # Defensive mesh kernel
+    "DefensiveMeshKernel",
+    "GovernedJob",
+    "GovernedTask",
+    "TaskGateResult",
 ]

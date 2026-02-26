@@ -117,18 +117,6 @@ export {
   MODE_CONFIGS,
 } from './modes/index.js';
 
-// Closed Network (air-gapped comms)
-export {
-  ClosedNetwork,
-  DEFAULT_CLOSED_CONFIG,
-  BLOCKED_NETWORKS,
-  type NetworkChannel,
-  type BlockedCategory,
-  type NetworkMessage,
-  type ClosedNetworkConfig,
-} from './closed-network.js';
-
-// Squad Coordination (Byzantine consensus)
 // Voxel Record Types (6D addressing + Byzantine quorum)
 export {
   type Lang,
@@ -144,3 +132,49 @@ export {
   tongueCodeToLang,
   validateVoxelRecord,
 } from './voxel-types.js';
+
+// Decision Envelope (Mars-Grade Autonomy Boundaries)
+export {
+  EnvelopeManager,
+  envelopeDecide,
+  createEnvelope,
+  validateEnvelope,
+  matchAction,
+  validateEmergencyKey,
+  type EnvelopeBoundary,
+  type MissionPhase as EnvelopeMissionPhase,
+  type CommsState as EnvelopeCommsState,
+  type ActionCategory,
+  type EnvelopeRule,
+  type DecisionEnvelope,
+  type EnvelopeDecision,
+} from './decision-envelope.js';
+
+// Resource-Aware Harmonic Wall (Scarcity Multipliers)
+export {
+  scarcityMultiplier,
+  combinedScarcity,
+  resourceAwareHarmonicCost,
+  resourceAwareDecide,
+  predictResources,
+  timeToCritical,
+  ambientRiskScore,
+  createDefaultResources,
+  createResourceAwareUnit,
+  type ResourceMetric,
+  type ResourceState,
+  type ResourceAwareUnitState,
+  type ResourceAwareDecisionResult,
+} from './resource-harmonic.js';
+
+// Blackout MMR Audit Chain (Comms-Loss Resilient Logging)
+export {
+  MerkleAuditChain,
+  BlackoutManager,
+  hashEvent,
+  type CommsState as BlackoutCommsState,
+  type BlackoutEvent,
+  type MMRNode,
+  type MMRInclusionProof,
+  type BlackoutRecord,
+} from './blackout-audit.js';

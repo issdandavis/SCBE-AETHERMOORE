@@ -1,5 +1,6 @@
 # SCBE-AETHERMOORE Kubernetes Deployment
-# Config Sync managed resource
+# Deploys the real SCBE API with semantic mesh, HYDRA routes,
+# and 14-layer governance pipeline.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -7,9 +8,10 @@ metadata:
   namespace: scbe-aethermoore
   labels:
     app: scbe-aethermoore
+    component: api
     managed-by: config-sync
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: scbe-aethermoore
@@ -17,16 +19,107 @@ spec:
     metadata:
       labels:
         app: scbe-aethermoore
+        component: api
     spec:
+      serviceAccountName: scbe-api
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
       containers:
-      - name: scbe-aethermoore
-        image: nginx:alpine
+      - name: scbe-api
+        image: gcr.io/gen-lang-client-0103521392/scbe-aethermoore:latest
         ports:
-        - containerPort: 80
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        env:
+        - name: PORT
+          value: "8080"
+        - name: PYTHONPATH
+          value: "/app"
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        - name: SCBE_ENV
+          value: "production"
+        - name: SCBE_LOG_LEVEL
+          value: "INFO"
+        - name: SCBE_METERING_DB_PATH
+          value: "/app/data/scbe_metering.db"
+        - name: SEMANTIC_MESH_DB_PATH
+          value: "/app/data/semantic_mesh.db"
+        - name: SCBE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: scbe-secrets
+              key: api-key
+              optional: true
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: scbe-secrets
+              key: hf-token
+              optional: true
+        livenessProbe:
+          httpGet:
+            path: /v1/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /v1/health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /v1/health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          failureThreshold: 12
         resources:
           requests:
-            memory: "64Mi"
-            cpu: "50m"
+            memory: "256Mi"
+            cpu: "250m"
           limits:
-            memory: "128Mi"
-            cpu: "100m"
+            memory: "1Gi"
+            cpu: "1000m"
+        volumeMounts:
+        - name: data
+          mountPath: /app/data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: scbe-data-pvc
+---
+# PVC for metering DB + semantic mesh DB
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: scbe-data-pvc
+  namespace: scbe-aethermoore
+  labels:
+    app: scbe-aethermoore
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard-rwo
+  resources:
+    requests:
+      storage: 1Gi
+---
+# ServiceAccount for workload identity
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: scbe-api
+  namespace: scbe-aethermoore
+  labels:
+    app: scbe-aethermoore

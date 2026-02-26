@@ -28,6 +28,8 @@ jobs:
   sync-to-gumroad:
     runs-on: ubuntu-latest
     if: github.event.inputs.sync_direction != 'from-gumroad'
+    outputs:
+      has_token: ${{ steps.auth.outputs.has_token }}
     
     steps:
       - name: Checkout scbe-aethermoore-demo
@@ -36,7 +38,17 @@ jobs:
           path: source
           fetch-depth: 0
 
+      - name: Check cross-repo credentials
+        id: auth
+        run: |
+          if [ -n "${{ secrets.CROSS_REPO_TOKEN }}" ]; then
+            echo "has_token=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_token=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Checkout gumroad-automation-demo
+        if: steps.auth.outputs.has_token == 'true'
         uses: actions/checkout@v4
         with:
           repository: ${{ env.TARGET_REPO }}
@@ -45,6 +57,7 @@ jobs:
           fetch-depth: 0
 
       - name: Sync symphonic_cipher to gumroad
+        if: steps.auth.outputs.has_token == 'true'
         run: |
           set -euo pipefail
           echo "Syncing SCBE components to gumroad-automation-demo"
@@ -89,6 +102,7 @@ jobs:
           EOF
 
       - name: Commit and push to gumroad
+        if: steps.auth.outputs.has_token == 'true'
         working-directory: target
         run: |
           git config user.name "GitHub Actions Bot"
@@ -109,10 +123,15 @@ jobs:
     runs-on: ubuntu-latest
     needs: [sync-to-gumroad]
     if: always()
-    
+
     steps:
       - name: Generate sync report
         run: |
+          if [ "${{ needs.sync-to-gumroad.outputs.has_token }}" != "true" ]; then
+            echo "Cross-repo token missing; sync was skipped."
+          fi
+
+          SYNC_RESULT="${{ needs.sync-to-gumroad.result }}"
           echo "## SCBE Cross-Repo Sync Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
@@ -120,10 +139,18 @@ jobs:
           echo "| Source | scbe-aethermoore-demo |" >> $GITHUB_STEP_SUMMARY
           echo "| Target | gumroad-automation-demo |" >> $GITHUB_STEP_SUMMARY
           echo "| Version | 3.0.0 |" >> $GITHUB_STEP_SUMMARY
+          echo "| Sync Result | **${SYNC_RESULT}** |" >> $GITHUB_STEP_SUMMARY
           echo "| Timestamp | $(date -Iseconds) |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Synced Components" >> $GITHUB_STEP_SUMMARY
-          echo "- symphonic_cipher/" >> $GITHUB_STEP_SUMMARY
-          echo "- src/ (SCBE core)" >> $GITHUB_STEP_SUMMARY
-          echo "- demo/ -> SELLABLE_PACKAGES" >> $GITHUB_STEP_SUMMARY
-          echo "- docs/" >> $GITHUB_STEP_SUMMARY
+          if [ "$SYNC_RESULT" = "success" ]; then
+            echo "### Synced Components" >> $GITHUB_STEP_SUMMARY
+            echo "- symphonic_cipher/" >> $GITHUB_STEP_SUMMARY
+            echo "- src/ (SCBE core)" >> $GITHUB_STEP_SUMMARY
+            echo "- demo/ -> SELLABLE_PACKAGES" >> $GITHUB_STEP_SUMMARY
+            echo "- docs/" >> $GITHUB_STEP_SUMMARY
+          elif [ "$SYNC_RESULT" = "skipped" ]; then
+            echo "Sync was skipped (direction: from-gumroad only)." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### Sync Failed" >> $GITHUB_STEP_SUMMARY
+            echo "Check the sync-to-gumroad job logs for details." >> $GITHUB_STEP_SUMMARY
+          fi

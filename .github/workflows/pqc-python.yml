@@ -1,0 +1,63 @@
+name: PQC Python (liboqs)
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  pqc-tests:
+    name: PQC tests on Ubuntu with liboqs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install system build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build pkg-config git
+
+      - name: Build and install liboqs
+        run: |
+          git clone --depth 1 https://github.com/open-quantum-safe/liboqs.git
+          cmake -S liboqs -B liboqs/build -GNinja -DBUILD_SHARED_LIBS=ON -DOQS_BUILD_ONLY_LIB=ON -DCMAKE_INSTALL_PREFIX=/usr/local
+          cmake --build liboqs/build
+          sudo cmake --install liboqs/build
+          echo "/usr/local/lib" | sudo tee /etc/ld.so.conf.d/liboqs.conf
+          sudo ldconfig
+          ldconfig -p | grep oqs || true
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov hypothesis oqs pqcrypto
+
+      - name: Validate oqs import
+        run: |
+          python - <<'PY'
+          import oqs
+          print("oqs version:", oqs.oqs_python_version())
+          print("kem count:", len(oqs.get_enabled_kem_mechanisms()))
+          print("sig count:", len(oqs.get_enabled_sig_mechanisms()))
+          PY
+
+      - name: Run PQC marker lane
+        run: |
+          PYTHONPATH=. pytest tests/ -v -m "pqc or requires_liboqs" --ignore=tests/node_modules
+
