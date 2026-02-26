@@ -30,6 +30,12 @@ export * from './crawl-coordinator';
 export * from './crawl-runner';
 export * from './browser-pool';
 
+// Formalized 4-Layer Swarm Architecture
+export * from './swarm-geometry';
+export * from './oscillator-bus';
+export * from './governed-drift';
+export * from './node-kernel';
+
 // Export types (canonical source for shared types)
 export * from './types';
 

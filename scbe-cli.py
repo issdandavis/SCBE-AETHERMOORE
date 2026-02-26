@@ -14,12 +14,15 @@ Includes Six Sacred Tongues tokenizer for spell-text encoding:
 # Standard library imports (must come first)
 import argparse
 import base64
+import difflib
 import hashlib
 import hmac
 import json
 import os
+import re
 import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -506,6 +509,169 @@ def cmd_selftest(args) -> None:
         raise RuntimeError("GeoSeal encrypt/decrypt failed")
 
     print("selftest ok")
+
+
+SEMVER_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:[-+][0-9A-Za-z.-]+)?$")
+
+
+def _load_yaml_like(path: Path) -> Dict:
+    text = path.read_text(encoding="utf-8")
+    try:
+        import yaml  # type: ignore
+
+        parsed = yaml.safe_load(text)
+        if not isinstance(parsed, dict):
+            raise ValueError(f"{path} must contain a mapping object.")
+        return parsed
+    except ModuleNotFoundError:
+        parsed = json.loads(text)
+        if not isinstance(parsed, dict):
+            raise ValueError(f"{path} must contain an object.")
+        return parsed
+
+
+def _deep_merge(base: Dict, incoming: Dict) -> Dict:
+    out = dict(base)
+    for key, value in incoming.items():
+        if isinstance(value, dict) and isinstance(out.get(key), dict):
+            out[key] = _deep_merge(out[key], value)
+        else:
+            out[key] = value
+    return out
+
+
+def _is_semver(version: str) -> bool:
+    return bool(SEMVER_RE.match(version or ""))
+
+
+def _load_manifest(manifest_path: Path) -> Dict:
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if not isinstance(manifest, dict):
+        raise ValueError("Manifest must be a JSON object.")
+    version = manifest.get("version", "")
+    if not _is_semver(version):
+        raise ValueError(f"Manifest version is not semver: {version}")
+    return manifest
+
+
+def _load_effective_policy(manifest: Dict, policies_root: Path, profile: str) -> Dict:
+    if profile not in manifest.get("profiles", {}):
+        raise ValueError(f"Unknown profile '{profile}'.")
+
+    effective: Dict = {"pack": manifest.get("pack"), "pack_version": manifest.get("version")}
+    for rel in manifest.get("base", []):
+        doc = _load_yaml_like(policies_root / rel)
+        if not _is_semver(doc.get("version", "")):
+            raise ValueError(f"Base policy {rel} has invalid semver version.")
+        effective = _deep_merge(effective, doc)
+
+    profile_doc = _load_yaml_like(policies_root / manifest["profiles"][profile])
+    if not _is_semver(profile_doc.get("version", "")):
+        raise ValueError(f"Profile '{profile}' has invalid semver version.")
+    effective = _deep_merge(effective, profile_doc.get("overrides", {}))
+    effective["profile"] = profile
+    effective["profile_version"] = profile_doc.get("version")
+    return effective
+
+
+def _audit_record(policy: Dict, signing_key: str, dry_run: bool, replay_count: int = 0) -> Dict:
+    canonical = json.dumps(policy, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    checksum = hashlib.sha256(canonical).hexdigest()
+    signature = hmac.new(signing_key.encode("utf-8"), checksum.encode("utf-8"), hashlib.sha256).hexdigest()
+    return {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "policy_checksum": checksum,
+        "signed_checksum": signature,
+        "dry_run": dry_run,
+        "replayed_events": replay_count,
+    }
+
+
+def _load_replay_events(replay_file: Optional[str]) -> List[Dict]:
+    if not replay_file:
+        return []
+    raw = Path(replay_file).read_text(encoding="utf-8").strip()
+    if not raw:
+        return []
+    if raw.startswith("["):
+        events = json.loads(raw)
+    else:
+        events = [json.loads(line) for line in raw.splitlines() if line.strip()]
+    if not isinstance(events, list):
+        raise ValueError("Replay data must be a JSON list or JSONL lines.")
+    return events
+
+
+def cmd_policy_validate(args) -> None:
+    policies_root = Path(args.policies_dir)
+    manifest = _load_manifest(Path(args.manifest))
+    profile = args.profile or manifest.get("current_profile")
+    if not profile:
+        raise ValueError("No profile specified and no current_profile in manifest.")
+
+    effective = _load_effective_policy(manifest, policies_root, profile)
+    replay_events = _load_replay_events(args.replay_file) if args.dry_run else []
+    audit = _audit_record(
+        policy=effective,
+        signing_key=args.signing_key or os.getenv("SCBE_POLICY_SIGNING_KEY", "scbe-dev-signing-key"),
+        dry_run=bool(args.dry_run),
+        replay_count=len(replay_events),
+    )
+    print(
+        json.dumps(
+            {
+                "status": "valid",
+                "policy": effective,
+                "audit": audit,
+                "replay_sample": replay_events[:3] if args.dry_run else [],
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+
+
+def cmd_policy_diff(args) -> None:
+    manifest = _load_manifest(Path(args.manifest))
+    policies_root = Path(args.policies_dir)
+    from_policy = _load_effective_policy(manifest, policies_root, args.from_profile)
+    to_policy = _load_effective_policy(manifest, policies_root, args.to_profile)
+
+    from_lines = json.dumps(from_policy, indent=2, sort_keys=True).splitlines()
+    to_lines = json.dumps(to_policy, indent=2, sort_keys=True).splitlines()
+    diff = difflib.unified_diff(
+        from_lines,
+        to_lines,
+        fromfile=f"{args.from_profile}.json",
+        tofile=f"{args.to_profile}.json",
+        lineterm="",
+    )
+    print("\n".join(diff))
+
+
+def cmd_policy_promote(args) -> None:
+    manifest_path = Path(args.manifest)
+    manifest = _load_manifest(manifest_path)
+    if args.to_profile not in manifest.get("profiles", {}):
+        raise ValueError(f"Unknown target profile '{args.to_profile}'.")
+
+    _load_effective_policy(manifest, Path(args.policies_dir), args.to_profile)
+    change = {
+        "from": manifest.get("current_profile"),
+        "to": args.to_profile,
+        "at": datetime.now(timezone.utc).isoformat(),
+        "by": args.by,
+        "reason": args.reason,
+    }
+    if args.dry_run:
+        print(json.dumps({"status": "dry-run", "promotion": change}, indent=2, sort_keys=True))
+        return
+
+    manifest["current_profile"] = args.to_profile
+    history = manifest.setdefault("release_history", [])
+    history.append(change)
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps({"status": "promoted", "promotion": change}, indent=2, sort_keys=True))
 
 
 class SCBECLI:
@@ -1544,6 +1710,31 @@ def build_parser() -> argparse.ArgumentParser:
 
     st = sub.add_parser("selftest", help="Run self-test suite")
     st.set_defaults(func=cmd_selftest)
+
+    validate = sub.add_parser("validate", help="Validate policy pack/profile and emit audit output")
+    validate.add_argument("--manifest", default="policies/releases/manifest.json", help="Policy release manifest path")
+    validate.add_argument("--policies-dir", default="policies", help="Policy root directory")
+    validate.add_argument("--profile", help="Profile to validate (defaults to manifest current_profile)")
+    validate.add_argument("--dry-run", action="store_true", help="Replay historical policy events without mutation")
+    validate.add_argument("--replay-file", help="Replay data in JSON array or JSONL format")
+    validate.add_argument("--signing-key", help="Signing key for audit checksum signature")
+    validate.set_defaults(func=cmd_policy_validate)
+
+    diff = sub.add_parser("diff", help="Diff effective policy between two profiles")
+    diff.add_argument("--manifest", default="policies/releases/manifest.json", help="Policy release manifest path")
+    diff.add_argument("--policies-dir", default="policies", help="Policy root directory")
+    diff.add_argument("--from-profile", required=True, help="Source profile")
+    diff.add_argument("--to-profile", required=True, help="Target profile")
+    diff.set_defaults(func=cmd_policy_diff)
+
+    promote = sub.add_parser("promote", help="Promote release manifest current profile safely")
+    promote.add_argument("--manifest", default="policies/releases/manifest.json", help="Policy release manifest path")
+    promote.add_argument("--policies-dir", default="policies", help="Policy root directory")
+    promote.add_argument("--to-profile", required=True, help="Profile to promote")
+    promote.add_argument("--by", default=os.getenv("USER", "unknown"), help="Operator executing promotion")
+    promote.add_argument("--reason", default="manual-promotion", help="Promotion reason")
+    promote.add_argument("--dry-run", action="store_true", help="Validate promotion without mutating manifest")
+    promote.set_defaults(func=cmd_policy_promote)
 
     inter = sub.add_parser("interactive", help="Run interactive demo CLI")
     inter.set_defaults(func=lambda args: SCBECLI().run())

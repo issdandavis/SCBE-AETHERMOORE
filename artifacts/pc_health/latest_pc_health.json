@@ -1,0 +1,194 @@
+﻿{
+    "timestamp":  "2026-02-19T22:16:53.9915922-08:00",
+    "hostname":  "LAPTOP-MON2B5GD",
+    "system":  {
+                   "os":  "Microsoft Windows 11 Home",
+                   "version":  "10.0.26200",
+                   "build":  "26200",
+                   "architecture":  "64-bit",
+                   "uptime_hours":  245.53,
+                   "cpu":  "Intel(R) Core(TM) i7-10750H CPU @ 2.60GHz",
+                   "cpu_cores":  6,
+                   "cpu_logical":  12
+               },
+    "memory":  {
+                   "total_gb":  11.74,
+                   "used_gb":  10.24,
+                   "free_gb":  1.5,
+                   "used_pct":  87.24
+               },
+    "disks":  [
+                  {
+                      "drive":  "C:",
+                      "size_gb":  237.16,
+                      "free_gb":  8.24,
+                      "free_pct":  3.47
+                  },
+                  {
+                      "drive":  "E:",
+                      "size_gb":  1.98,
+                      "free_gb":  1.9,
+                      "free_pct":  96.03
+                  },
+                  {
+                      "drive":  "S:",
+                      "size_gb":  0.25,
+                      "free_gb":  0.15,
+                      "free_pct":  61.17
+                  }
+              ],
+    "physical_disks":  [
+                           {
+                               "name":  "KXG60ZNV256G KIOXIA",
+                               "media_type":  "SSD",
+                               "health":  "Healthy",
+                               "operational":  "OK",
+                               "size_gb":  238.47
+                           },
+                           {
+                               "name":  "Msft Virtual Disk",
+                               "media_type":  "SSD",
+                               "health":  "Healthy",
+                               "operational":  "OK",
+                               "size_gb":  2
+                           }
+                       ],
+    "events":  {
+                   "system_errors_sampled_24h":  4,
+                   "application_errors_sampled_24h":  2,
+                   "top_system_sources":  [
+                                              {
+                                                  "Name":  "Service Control Manager",
+                                                  "Count":  2
+                                              },
+                                              {
+                                                  "Name":  "nvlddmkm",
+                                                  "Count":  1
+                                              },
+                                              {
+                                                  "Name":  "Microsoft-Windows-DistributedCOM",
+                                                  "Count":  1
+                                              }
+                                          ],
+                   "top_application_sources":  [
+                                                   {
+                                                       "Name":  "Application Error",
+                                                       "Count":  1
+                                                   },
+                                                   {
+                                                       "Name":  "Application Hang",
+                                                       "Count":  1
+                                                   }
+                                               ]
+               },
+    "pending_reboot":  {
+                           "cbs_reboot_pending":  false,
+                           "wu_reboot_required":  false,
+                           "pending_file_rename":  true
+                       },
+    "top_process_mem":  [
+                            {
+                                "ProcessName":  "claude",
+                                "Id":  30460,
+                                "working_set_mb":  569.55,
+                                "cpu_sec":  1554.22
+                            },
+                            {
+                                "ProcessName":  "vmmemWSL",
+                                "Id":  28576,
+                                "working_set_mb":  315.34,
+                                "cpu_sec":  0
+                            },
+                            {
+                                "ProcessName":  "comet",
+                                "Id":  31464,
+                                "working_set_mb":  313.39,
+                                "cpu_sec":  37.53
+                            },
+                            {
+                                "ProcessName":  "OneDrive",
+                                "Id":  23612,
+                                "working_set_mb":  310.04,
+                                "cpu_sec":  39152.84
+                            },
+                            {
+                                "ProcessName":  "MsMpEng",
+                                "Id":  7336,
+                                "working_set_mb":  277.88,
+                                "cpu_sec":  0
+                            },
+                            {
+                                "ProcessName":  "com.docker.backend",
+                                "Id":  27120,
+                                "working_set_mb":  138.95,
+                                "cpu_sec":  1055498.08
+                            },
+                            {
+                                "ProcessName":  "comet",
+                                "Id":  16660,
+                                "working_set_mb":  136.87,
+                                "cpu_sec":  20.89
+                            },
+                            {
+                                "ProcessName":  "powershell",
+                                "Id":  24764,
+                                "working_set_mb":  127.39,
+                                "cpu_sec":  4.44
+                            },
+                            {
+                                "ProcessName":  "explorer",
+                                "Id":  28872,
+                                "working_set_mb":  122.46,
+                                "cpu_sec":  4564.27
+                            },
+                            {
+                                "ProcessName":  "comet",
+                                "Id":  21264,
+                                "working_set_mb":  112.7,
+                                "cpu_sec":  1.38
+                            }
+                        ],
+    "findings":  [
+                     {
+                         "severity":  "high",
+                         "category":  "memory",
+                         "message":  "Memory pressure is high",
+                         "data":  {
+                                      "used_pct":  87.24
+                                  }
+                     },
+                     {
+                         "severity":  "critical",
+                         "category":  "disk",
+                         "message":  "System drive free space is critically low",
+                         "data":  {
+                                      "drive":  "C:",
+                                      "free_gb":  8.24,
+                                      "free_pct":  3.47
+                                  }
+                     },
+                     {
+                         "severity":  "medium",
+                         "category":  "uptime",
+                         "message":  "Long uptime may amplify leaks and stale handles",
+                         "data":  {
+                                      "uptime_hours":  245.53
+                                  }
+                     },
+                     {
+                         "severity":  "medium",
+                         "category":  "reboot",
+                         "message":  "Reboot-pending indicators present",
+                         "data":  {
+                                      "wu_reboot_required":  false,
+                                      "cbs_reboot_pending":  false,
+                                      "pending_file_rename":  true
+                                  }
+                     }
+                 ],
+    "recommendations":  [
+                            "Free at least 25-30 GB on C: (target \u003e15% free) to avoid paging and update failures.",
+                            "Reduce steady RAM footprint: close heavy background apps, cap WSL/Docker memory, and trim startup apps.",
+                            "Perform a controlled reboot to clear pending operations and refresh kernel/runtime state."
+                        ]
+}

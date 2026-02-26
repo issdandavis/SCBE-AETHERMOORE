@@ -2,13 +2,59 @@
 Layer 13 governance audit logging decorator.
 """
 
+import json
 import logging
+import time
 from functools import wraps
-from typing import Callable, Any
+from typing import Any, Callable, Dict, Iterable, Optional
 
 # Configure basic logging for governance audit trail
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger('SCBE_GOVERNANCE_AUDIT')
+
+
+def _to_float_list(vector: Iterable[float]) -> list[float]:
+    return [float(v) for v in vector]
+
+
+def audit_state_transition(
+    state_vector: Iterable[float],
+    *,
+    decision: Optional[str] = None,
+    metadata: Optional[Dict[str, Any]] = None,
+    strict: bool = False,
+) -> Dict[str, Any]:
+    """Emit canonical 21D state transition telemetry.
+
+    This is the runtime Layer 13 callsite function used by governance pipelines.
+    It validates shape and logs one structured JSON event.
+    """
+    vec = _to_float_list(state_vector)
+    if len(vec) != 21:
+        raise ValueError(f"Expected 21D state vector, got {len(vec)} values")
+
+    validation: Dict[str, Any] = {}
+    try:
+        # Local import prevents hard dependency at module import time.
+        from src.harmonic.state21_product_metric import parse_state21_v1, validate_state21_v1
+
+        validation = validate_state21_v1(parse_state21_v1(vec))
+    except Exception as exc:  # pragma: no cover - defensive fallback
+        validation = {"validation_error": str(exc)}
+        if strict:
+            raise
+
+    event = {
+        "event": "state_transition",
+        "schema": "state21_v1",
+        "timestamp_unix": time.time(),
+        "decision": decision or "UNKNOWN",
+        "state_vector": vec,
+        "validation": validation,
+        "metadata": metadata or {},
+    }
+    logger.info("Governance State Transition: %s", json.dumps(event, sort_keys=True))
+    return event
 
 
 def audit_governance_decision(func: Callable) -> Callable:

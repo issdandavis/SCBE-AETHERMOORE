@@ -763,6 +763,9 @@ from .cymatic_storage import (
     HolographicQRCube,
 )
 
+# Utility Logging
+from .util_logging import get_logger
+
 # Extend __all__ with new AETHERMOORE modules
 __all__.extend([
     # Constants
@@ -785,4 +788,6 @@ __all__.extend([
     "compute_chladni_pattern", "resonance_strength", "create_bottle_beam_sources", "analyze_bottle_beam",
     # Cymatic Storage
     "StorageMode", "Voxel", "KDTree", "HolographicQRCube",
+    # Utility Logging
+    "get_logger",
 ])

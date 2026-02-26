@@ -24,6 +24,25 @@ from enum import Enum
 from typing import Dict, Any, List, Optional, Callable
 import hashlib
 import json
+from pathlib import Path
+
+try:
+    from agents.antivirus_membrane import scan_text_for_threats, turnstile_action
+except Exception:  # noqa: BLE001
+    class _Scan:
+        def __init__(self) -> None:
+            self.verdict = "CLEAN"
+            self.risk_score = 0.0
+            self.reasons = ("fallback",)
+
+        def to_dict(self) -> Dict[str, Any]:
+            return {"verdict": self.verdict, "risk_score": self.risk_score, "reasons": list(self.reasons)}
+
+    def scan_text_for_threats(text: str, **kwargs: Any) -> _Scan:  # type: ignore[misc]
+        return _Scan()
+
+    def turnstile_action(domain: str, scan: Any) -> str:  # type: ignore[misc]
+        return "ALLOW"
 
 
 class SacredTongue(str, Enum):
@@ -89,6 +108,58 @@ class SwarmVote:
     confidence: float
     reasoning: str
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+@dataclass
+class HubWriteStatus:
+    path: str
+    ok: bool
+    error: str = ""
+
+
+class DecentralizedHub:
+    """Replicated JSONL event depot with primary + replicas."""
+
+    def __init__(
+        self,
+        primary_path: str = "artifacts/swarm_hub/primary.jsonl",
+        replica_paths: Optional[List[str]] = None,
+    ):
+        self.primary_path = Path(primary_path)
+        self.replica_paths = [Path(p) for p in (replica_paths or [])]
+
+    @property
+    def all_paths(self) -> List[Path]:
+        return [self.primary_path, *self.replica_paths]
+
+    def write(self, record: Dict[str, Any]) -> List[HubWriteStatus]:
+        payload = json.dumps(record, ensure_ascii=True) + "\n"
+        statuses: List[HubWriteStatus] = []
+        for p in self.all_paths:
+            try:
+                p.parent.mkdir(parents=True, exist_ok=True)
+                with p.open("a", encoding="utf-8") as f:
+                    f.write(payload)
+                statuses.append(HubWriteStatus(path=str(p), ok=True))
+            except Exception as exc:  # noqa: BLE001
+                statuses.append(HubWriteStatus(path=str(p), ok=False, error=str(exc)))
+        return statuses
+
+    def health(self) -> Dict[str, Any]:
+        ok = 0
+        bad = 0
+        details = []
+        for p in self.all_paths:
+            try:
+                p.parent.mkdir(parents=True, exist_ok=True)
+                with p.open("a", encoding="utf-8"):
+                    pass
+                ok += 1
+                details.append({"path": str(p), "ok": True})
+            except Exception as exc:  # noqa: BLE001
+                bad += 1
+                details.append({"path": str(p), "ok": False, "error": str(exc)})
+        return {"ok_paths": ok, "failed_paths": bad, "details": details}
 
 
 class SwarmAgent:
@@ -517,10 +588,16 @@ class SwarmBrowser:
     def __init__(
         self,
         browser_backend=None,
-        scbe_url: str = "http://127.0.0.1:8080"
+        scbe_url: str = "http://127.0.0.1:8080",
+        hub_primary_path: str = "artifacts/swarm_hub/primary.jsonl",
+        hub_replica_paths: Optional[List[str]] = None,
     ):
         self.browser = browser_backend
         self.scbe_url = scbe_url
+        self.hub = DecentralizedHub(
+            primary_path=hub_primary_path,
+            replica_paths=hub_replica_paths,
+        )
 
         # Initialize all six agents
         self.agents: Dict[SacredTongue, SwarmAgent] = {
@@ -535,6 +612,14 @@ class SwarmBrowser:
         self.message_queue: List[SwarmMessage] = []
         self.action_history: List[Dict[str, Any]] = []
         self.consensus_log: List[Dict[str, Any]] = []
+
+    def _hub_event(self, event_type: str, payload: Dict[str, Any]) -> List[HubWriteStatus]:
+        record = {
+            "event_type": event_type,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "payload": payload,
+        }
+        return self.hub.write(record)
 
     async def initialize(self) -> bool:
         """Activate all agents (Megazord assembly)."""
@@ -595,6 +680,7 @@ class SwarmBrowser:
         }
 
         self.consensus_log.append(consensus)
+        self._hub_event("roundtable_consensus", consensus)
 
         print(f"\n[ROUNDTABLE] Final decision: {final_decision}")
         print("-" * 40)
@@ -639,6 +725,7 @@ class SwarmBrowser:
             result["executed"] = True
 
         self.action_history.append(result)
+        self._hub_event("swarm_action", result)
         return result
 
     async def click(self, target: str) -> Dict[str, Any]:
@@ -685,6 +772,7 @@ class SwarmBrowser:
             result["executed"] = True
 
         self.action_history.append(result)
+        self._hub_event("swarm_action", result)
         return result
 
     async def type_text(self, selector: str, text: str) -> Dict[str, Any]:
@@ -730,7 +818,115 @@ class SwarmBrowser:
             result["executed"] = True
 
         self.action_history.append(result)
+        self._hub_event("swarm_action", result)
         return result
+
+    def compute_growth_metrics(self, window: int = 20) -> Dict[str, Any]:
+        """Athlete-style reliability progression from action history."""
+        if not self.action_history:
+            return {
+                "total_actions": 0,
+                "allow_rate": 0.0,
+                "recent_allow_rate": 0.0,
+                "prior_allow_rate": 0.0,
+                "growth_delta": 0.0,
+                "stability_score": 0.0,
+            }
+
+        total = len(self.action_history)
+        allow_total = sum(1 for a in self.action_history if a.get("decision") == "ALLOW")
+        allow_rate = allow_total / total
+
+        w = max(1, int(window))
+        recent = self.action_history[-w:]
+        prior = self.action_history[-2 * w : -w] if total > w else []
+
+        recent_allow = sum(1 for a in recent if a.get("decision") == "ALLOW")
+        prior_allow = sum(1 for a in prior if a.get("decision") == "ALLOW")
+
+        recent_rate = recent_allow / len(recent) if recent else 0.0
+        prior_rate = prior_allow / len(prior) if prior else recent_rate
+        growth = recent_rate - prior_rate
+
+        transition_changes = 0
+        for i in range(1, total):
+            if self.action_history[i].get("decision") != self.action_history[i - 1].get("decision"):
+                transition_changes += 1
+        stability = 1.0 - (transition_changes / max(1, total - 1))
+
+        return {
+            "total_actions": total,
+            "allow_rate": round(allow_rate, 4),
+            "recent_allow_rate": round(recent_rate, 4),
+            "prior_allow_rate": round(prior_rate, 4),
+            "growth_delta": round(growth, 4),
+            "stability_score": round(stability, 4),
+        }
+
+    async def multi_site_surf(
+        self,
+        urls: List[str],
+        concurrency: int = 3,
+        extract_text: bool = True,
+    ) -> Dict[str, Any]:
+        """Collaborative multi-site surfing with membrane checks and hub writes."""
+        sem = asyncio.Semaphore(max(1, int(concurrency)))
+
+        async def _one(url: str) -> Dict[str, Any]:
+            async with sem:
+                nav = await self.navigate(url)
+                page_text = ""
+                if extract_text and self.browser and nav.get("executed"):
+                    try:
+                        page_text = await self.browser.execute_script(
+                            """
+                            () => {
+                              const main = document.querySelector("main");
+                              if (main && main.innerText) return main.innerText;
+                              return document.body ? document.body.innerText : "";
+                            }
+                            """
+                        ) or ""
+                    except Exception:  # noqa: BLE001
+                        page_text = ""
+
+                scan = scan_text_for_threats(page_text or "")
+                gate = turnstile_action("browser", scan)
+                final_decision = nav.get("decision", "DENY")
+
+                if gate == "HOLD" and final_decision == "ALLOW":
+                    final_decision = "QUARANTINE"
+                elif gate == "ISOLATE" and final_decision == "ALLOW":
+                    final_decision = "ESCALATE"
+                elif gate == "HONEYPOT":
+                    final_decision = "DENY"
+
+                result = {
+                    "url": url,
+                    "decision": final_decision,
+                    "executed": bool(nav.get("executed", False)),
+                    "base_decision": nav.get("decision"),
+                    "turnstile_action": gate,
+                    "membrane": scan.to_dict(),
+                }
+                self._hub_event("multi_site_result", result)
+                return result
+
+        outcomes = await asyncio.gather(*[_one(u) for u in urls])
+        counts: Dict[str, int] = {}
+        for o in outcomes:
+            d = o["decision"]
+            counts[d] = counts.get(d, 0) + 1
+
+        report = {
+            "total_sites": len(urls),
+            "decisions": counts,
+            "outcomes": outcomes,
+            "growth_metrics": self.compute_growth_metrics(window=min(20, max(1, len(urls)))),
+            "hub_health": self.hub.health(),
+        }
+        self._hub_event("multi_site_summary", report)
+        return report
 
     def get_summary(self) -> Dict[str, Any]:
         """Get swarm activity summary."""

@@ -5,8 +5,8 @@
 pipeline:
   name: phdm-21d-embedding-train
   description: Train custom 21D Poincare Ball embedding model for SCBE governance
-  region: us-west1
-  project_id: studio-6928670609-fdd4c
+  region: us-central1
+  project_id: gen-lang-client-0103521392
 
 model:
   name: phdm-21d-embedding
@@ -45,6 +45,32 @@ data:
     max_sequence_length: 512
     privacy_filter: geoseal_layer5
 
+fine_tune:
+  enabled: true
+  description: Quasi-funnel for dual-mode SCBE training
+  target_repo: issdandavis/scbe-aethermoore-fine-tune
+  streams:
+    - name: technical_system_stream
+      lane: canonical
+      weight: 0.62
+      categories:
+        - technical
+        - all
+      description: SCBE pipeline, governance, and implementation corpus
+      required_min_records: 100
+    - name: isekai_emotive_stream
+      lane: emotional
+      weight: 0.38
+      categories:
+        - lore
+        - relationships
+        - timelines
+      description: 6-languages, vector-doc alignment, and emotional narrative corpus
+      required_min_records: 80
+  quality_checks:
+    max_category_imbalance: 4.0
+    required_dual_channel_ready: true
+
 training:
   base_model: sentence-transformers/all-MiniLM-L6-v2
   epochs: 50
@@ -77,7 +103,7 @@ deployment:
       min_replicas: 1
       max_replicas: 3
     - platform: gke
-      cluster: test-scbecluser
+      cluster: scbe-aethermoore-cluster
       namespace: scbe-governance
       deployment_name: phdm-embedding-service
     - platform: huggingface

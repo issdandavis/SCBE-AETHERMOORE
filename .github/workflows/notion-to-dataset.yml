@@ -58,7 +58,7 @@ jobs:
             exit 0
           fi
           python scripts/notion_to_dataset.py \
-            --category ${{ github.event.inputs.category || 'all' }} \
+            --category "${{ github.event.inputs.category || 'all' }}" \
             --output training-data/
 
       - name: Push to Hugging Face Dataset
@@ -73,6 +73,20 @@ jobs:
             --input training-data/ \
             --repo issdandavis/scbe-aethermoore-training-data
 
+      - name: Run notion-to-pipeline gap review
+        run: |
+          python scripts/notion_pipeline_gap_review.py \
+            --output artifacts/notion_pipeline_gap_review.json \
+            --summary-path artifacts/notion_pipeline_gap_review.md
+
+      - name: Build fine-tune funnel manifest
+        run: |
+          python scripts/self_improvement_orchestrator.py \
+            --mode fine-tune-funnel \
+            --notion-gap-report artifacts/notion_pipeline_gap_review.json \
+            --output artifacts/fine_tune_funnel_manifest.json \
+            --summary-path artifacts/fine_tune_funnel_summary.md
+
       - name: Update AI Hub Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
@@ -86,6 +100,15 @@ jobs:
             --dataset issdandavis/scbe-aethermoore-training-data \
             --space issdandavis/scbe-aethermoore-ai-hub
 
+      - name: Upload fine-tune funnel output
+        uses: actions/upload-artifact@v4
+        with:
+          name: fine-tune-funnel
+          path: |
+            artifacts/fine_tune_funnel_manifest.json
+            artifacts/fine_tune_funnel_summary.md
+            artifacts/notion_pipeline_gap_review.json
+            artifacts/notion_pipeline_gap_review.md
       - name: Write job summary
         if: always()
         run: |

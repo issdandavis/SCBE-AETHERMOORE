@@ -1,0 +1,19 @@
+{
+  "items": [
+    {
+      "action": "post",
+      "text": "New illustrated e-book drop: hand-painted, old-school, kid-safe grim-dark fantasy world."
+    },
+    {
+      "action": "reply",
+      "reply_to": "PASTE_TWEET_ID",
+      "text": "If you want the launch link + preview plates, reply with \"ASH\" and I’ll send it."
+    },
+    {
+      "action": "merch",
+      "product_name": "Ash Lantern - Volume 1",
+      "product_url": "https://aetherdavis.gumroad.com",
+      "text": "Merch check + promo pass for Ash Lantern e-book listing."
+    }
+  ]
+}

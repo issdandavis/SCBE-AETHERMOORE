@@ -1,0 +1,12 @@
+{
+  "run_id": "20260222T031252Z",
+  "samples": 10093,
+  "labels": 56,
+  "first_val_accuracy": 0.452204,
+  "last_val_accuracy": 0.51263,
+  "first_val_loss": 4.00709,
+  "last_val_loss": 3.924865,
+  "val_accuracy_gain": 0.060426,
+  "val_loss_drop": 0.082225,
+  "growth_confirmed": true
+}
