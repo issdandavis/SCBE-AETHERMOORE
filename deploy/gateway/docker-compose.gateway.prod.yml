@@ -1,0 +1,24 @@
+version: '3.9'
+
+services:
+  decision-gateway:
+    image: scbe-aethermoore-gateway:latest
+    build:
+      context: ../..
+      dockerfile: Dockerfile.gateway
+    ports:
+      - '8081:8081'
+    environment:
+      NODE_ENV: production
+      PORT: ${PORT:-8081}
+      GOVERNANCE_POLICY_ID: ${GOVERNANCE_POLICY_ID:?required}
+      GOVERNANCE_ISSUER: ${GOVERNANCE_ISSUER:?required}
+      GOVERNANCE_TOKEN: ${GOVERNANCE_TOKEN:?required}
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: always
