@@ -106,3 +106,6 @@ scripts/*.bak
 artifacts/npm-pack/
 artifacts/shopify-both-side/
 artifacts/social/
+artifacts/documents/
+artifacts/connector_dispatches/
+artifacts/screenshots/
