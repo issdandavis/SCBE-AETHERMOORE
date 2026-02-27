@@ -1,0 +1,47 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/world/GridWorld.tscn" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/characters/Player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/characters/NPC.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/world/WardPylon.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/world/DungeonEntrance.tscn" id="5"]
+[ext_resource type="Script" path="res://scripts/world/CutsceneDirector.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/world/QuestSystem.gd" id="7"]
+
+[node name="HearthstoneLanding" type="Node3D"]
+
+[node name="GridWorld" parent="." instance=ExtResource("1")]
+
+[node name="QuestSystem" type="Node" parent="."]
+script = ExtResource("7")
+quest_file = "res://data/quests/hearthstone_day1.json"
+
+[node name="CutsceneDirector" type="Node" parent="."]
+script = ExtResource("6")
+
+[node name="Player" parent="." instance=ExtResource("2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="NPC_Polly" parent="." instance=ExtResource("3")]
+position = Vector3(2, 0, -2)
+npc_id = "polly"
+display_name = "Polly"
+dialogue_id = "polly_intro"
+
+[node name="NPC_TownfolkA" parent="." instance=ExtResource("3")]
+position = Vector3(-3, 0, -1)
+npc_id = "townfolk_a"
+display_name = "Mira (Townfolk)"
+dialogue_id = "package_receiver"
+
+[node name="NPC_Marcus" parent="." instance=ExtResource("3")]
+position = Vector3(1, 0, 4)
+npc_id = "marcus"
+display_name = "Marcus Chen"
+dialogue_id = "marcus_meet"
+
+[node name="WardPylon" parent="." instance=ExtResource("4")]
+position = Vector3(-1, 0, 3)
+
+[node name="DungeonEntrance" parent="." instance=ExtResource("5")]
+position = Vector3(6, 0, 0)

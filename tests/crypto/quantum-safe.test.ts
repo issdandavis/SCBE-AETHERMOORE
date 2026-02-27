@@ -224,12 +224,13 @@ describe('D. StubSignature', () => {
     expect(signature.length).toBe(3293);
   });
 
-  it('should verify valid signature', async () => {
+  it('should reject stub verify (no native liboqs)', async () => {
     const kp = await sig.generateKeyPair();
     const message = new TextEncoder().encode('governance payload');
     const signature = await sig.sign(message, kp.secretKey);
-    const valid = await sig.verify(message, signature, kp.publicKey);
-    expect(valid).toBe(true);
+    await expect(sig.verify(message, signature, kp.publicKey)).rejects.toThrow(
+      'stub verify() is disabled'
+    );
   });
 
   it('should reject invalid public key size on verify', async () => {
@@ -385,14 +386,13 @@ describe('F. QuantumSafeEnvelope — Default Config', () => {
     expect(Buffer.from(est1.sharedSecret).equals(Buffer.from(est2.sharedSecret))).toBe(false);
   });
 
-  it('should verify signature', async () => {
+  it('should reject stub verify (no native liboqs)', async () => {
     const est = await env.establish();
-    const valid = await env.verify(
+    await expect(env.verify(
       new TextEncoder().encode(est.bindingHash),
       est.signature,
       env.getSignerPublicKey()
-    );
-    expect(valid).toBe(true);
+    )).rejects.toThrow('stub verify() is disabled');
   });
 
   it('should decapsulate ciphertext', async () => {

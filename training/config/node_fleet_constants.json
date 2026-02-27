@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0.0",
+  "name": "scbe-node-fleet-specialty-constants",
+  "spin_formula": "((context - non_interest) + interest + relevancy) + k_ternary*ternary_flux - k_drift*hyperbolic_drift + k_memory*memory_retention + k_coherence*consensus_coherence + k_harmonic*harmonic_wall_signal",
+  "base_weights": {
+    "context": 0.42,
+    "interest": 0.28,
+    "relevancy": 0.30
+  },
+  "math_extensions": {
+    "k_ternary": 0.12,
+    "k_drift": 0.15,
+    "k_memory": 0.10,
+    "k_coherence": 0.14,
+    "k_harmonic": 0.09,
+    "harmonic_R": 1.5
+  },
+  "situational_constants": {
+    "alpha_focus": 1.08,
+    "beta_noise": 0.92,
+    "gamma_memory": 1.06,
+    "delta_execution": 1.10
+  },
+  "specialists": {
+    "code_execute": {
+      "context_terms": ["code", "execute", "script", "python", "api", "deploy", "runtime", "automation", "workflow", "shell"],
+      "non_interest_terms": ["lore", "novel", "character", "fantasy", "myth", "story-only"],
+      "action_targets": ["execute", "code_exec_safe", "deploy", "run", "api"],
+      "threshold": 0.18
+    },
+    "doc_plan": {
+      "context_terms": ["doc", "docs", "plan", "roadmap", "spec", "blueprint", "architecture", "checklist", "design", "guide"],
+      "non_interest_terms": ["raw-bytes", "benchmark-only", "shader", "css-only", "sprite-only"],
+      "action_targets": ["write_doc", "plan", "design", "spec"],
+      "threshold": 0.17
+    },
+    "memory_storage": {
+      "context_terms": ["memory", "store", "storage", "retrieve", "retrieval", "ledger", "provenance", "history", "index", "vector", "cache"],
+      "non_interest_terms": ["ephemeral", "throwaway", "stateless-only", "no-memory"],
+      "action_targets": ["store", "retrieve", "index", "sync", "audit"],
+      "threshold": 0.16
+    }
+  }
+}
+

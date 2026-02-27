@@ -733,9 +733,12 @@ export class MLDSA65 {
       }
     }
 
-    // Development stub: Always returns true for valid-looking signatures
-    // WARNING: NOT FOR PRODUCTION USE
-    return signature.length === ML_DSA_65_PARAMS.signatureSize;
+    // No native liboqs available — refuse to verify with a stub.
+    // Silently returning true would be a critical security vulnerability.
+    throw new Error(
+      'ML-DSA-65 verify() requires native liboqs. Stub verification is disabled for safety. ' +
+      'Install liboqs-node or use registerSignature() to provide a real implementation.'
+    );
   }
 
   // Helper methods

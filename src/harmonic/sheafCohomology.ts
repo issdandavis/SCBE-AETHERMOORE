@@ -265,6 +265,12 @@ export function tarskiLaplacian0<V, E>(
     }
 
     result.set(v.id, accumulated);
+  }
+
+  return result;
+}
+
+/**
  * @module harmonic/sheaf-cohomology
  * @layer Layer 9, Layer 10, Layer 12
  * @component Sheaf Cohomology for Lattices — Tarski Laplacian
@@ -1109,6 +1115,8 @@ export function v2ConstantSheaf<T>(
   };
 }
 
+export { v2ConstantSheaf as constantSheaf };
+
 /**
  * Threshold sheaf on a graph: edges enforce agreement above a threshold.
  * If a vertex value is below threshold, the edge restriction maps it to ⊥.
@@ -1460,5 +1468,4 @@ export class SheafCohomologyEngine {
  * Default sheaf cohomology engine with standard configuration.
  */
 export const defaultSheafEngine = new SheafCohomologyEngine();
-
 

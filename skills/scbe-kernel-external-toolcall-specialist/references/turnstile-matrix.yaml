@@ -1,0 +1,19 @@
+domains:
+  browser:
+    allowed_actions: ["ALLOW", "HOLD", "HONEYPOT"]
+    notes: "Human checkpoint accepted."
+  vehicle:
+    allowed_actions: ["ALLOW", "PIVOT", "DEGRADE"]
+    notes: "No stall; choose safe maneuver."
+  fleet:
+    allowed_actions: ["ALLOW", "ISOLATE", "DEGRADE", "HONEYPOT"]
+    notes: "Isolate bad node and continue swarm."
+  antivirus:
+    allowed_actions: ["ALLOW", "ISOLATE", "HONEYPOT"]
+    notes: "Last-line containment."
+  arxiv:
+    allowed_actions: ["ALLOW", "HOLD", "STOP"]
+    notes: "Hold for human review before final submit."
+  patent:
+    allowed_actions: ["ALLOW", "HOLD", "STOP"]
+    notes: "Hold for attorney review; never auto-file."

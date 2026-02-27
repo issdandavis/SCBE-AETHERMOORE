@@ -28,13 +28,19 @@ Integration of all Crystal Cranium modules:
     L12     Harmonic Scaling (bone density)
     L13–L14 Decision + Audio telemetry
 
+Now wired to the Poly-Didactic Quasicrystal Circuit Flow for end-to-end
+Hamiltonian path routing through 16 polyhedra with Sacred Tongue weighted
+edges, FSGS governance gating, and Harmonic Wall energy containment.
+
 Author: Issac Davis
-Version: 3.0.0
+Version: 3.1.0
 """
 
 import os
+import sys
 import time
 import hashlib
+import math
 import numpy as np
 from enum import Enum
 from dataclasses import dataclass, field
@@ -42,6 +48,26 @@ from typing import Dict, List, Tuple, Optional, Any
 import logging
 
 logger = logging.getLogger(__name__)
+
+# Import circuit flow (resolve path relative to this file)
+_circuit_flow_dir = os.path.join(
+    os.path.dirname(__file__), "..", "..", "src",
+    "symphonic_cipher", "scbe_aethermoore", "ai_brain",
+)
+if os.path.isdir(_circuit_flow_dir) and _circuit_flow_dir not in sys.path:
+    sys.path.insert(0, _circuit_flow_dir)
+
+try:
+    from circuit_flow import (
+        PolyDidacticCircuit,
+        CircuitTrace,
+        FluxGate,
+        GovernanceAction,
+        harmonic_wall_cost,
+    )
+    _HAS_CIRCUIT_FLOW = True
+except ImportError:
+    _HAS_CIRCUIT_FLOW = False
 
 # ============================================================================
 # Constants
@@ -235,6 +261,26 @@ class PHDMLattice:
             [0, 1, phi, 0, -1, phi]
         ]) / np.sqrt(2 + phi)
 
+    def rotate_6d_projection(self):
+        """Phason shift - rotate the projection angle (key rotation)"""
+        # Random rotation in 6D
+        theta = np.random.uniform(0, 2 * np.pi)
+        rotation_6d = np.eye(6)
+        rotation_6d[0, 0] = np.cos(theta)
+        rotation_6d[0, 1] = -np.sin(theta)
+        rotation_6d[1, 0] = np.sin(theta)
+        rotation_6d[1, 1] = np.cos(theta)
+
+        self.projection_matrix = self.projection_matrix @ rotation_6d
+        logger.info("Phason shift executed - projection rotated")
+
+    def restrict_to_core(self):
+        """Emergency mode - only Platonic solids accessible"""
+        self.active_polyhedra = {
+            name for name, props in POLYHEDRA.items()
+            if props["type"] == "platonic"
+        }
+        logger.warning("DEMI mode: restricted to Platonic solids only")
     @property
     def router(self):
         """Lazy-load Hamiltonian router."""
@@ -478,6 +524,16 @@ class AetherBrain:
         # The Brain Tissue
         self.lobes = PHDMLattice()
 
+        # The Circuit Flow (poly-didactic quasicrystal routing)
+        if _HAS_CIRCUIT_FLOW:
+            self._circuit = PolyDidacticCircuit(
+                flux=FluxGate.POLLY,
+                energy_budget=max_energy,
+                dimension_depth=self.lobes.get_dimension_depth(),
+            )
+        else:
+            self._circuit = None
+
         # Current State
         self.flux_state = FluxState.POLLY
         self.energy_budget = max_energy
@@ -489,6 +545,7 @@ class AetherBrain:
 
         # Audit Trail
         self.thought_log: List[Dict] = []
+        self.circuit_traces: List[Any] = []  # CircuitTrace history
 
         logger.info(f"AetherBrain v3.0.0 initialized: max_energy={max_energy}, dim={dimensions}")
 
@@ -507,6 +564,26 @@ class AetherBrain:
                 pass
         return self._automaton
 
+    # ------------------------------------------------------------------
+    # FluxState → FluxGate mapping
+    # ------------------------------------------------------------------
+
+    _FLUX_MAP = {
+        "POLLY": "POLLY",
+        "QUASI": "QUASI",
+        "DEMI": "DEMI",
+    }
+
+    def _sync_circuit_flux(self):
+        """Keep circuit flow flux in sync with brain flux state."""
+        if self._circuit is not None:
+            gate = FluxGate[self._FLUX_MAP[self.flux_state.name]]
+            self._circuit.set_flux(gate)
+
+    # ------------------------------------------------------------------
+    # think() — now delegates to PolyDidacticCircuit.route()
+    # ------------------------------------------------------------------
+
     def think(self, intent_vector: np.ndarray, context: Optional[dict] = None) -> ThoughtResult:
         """
         Execute a thought through the full Crystal Cranium pipeline.
@@ -519,6 +596,11 @@ class AetherBrain:
             5. Hamiltonian path routing   — Find φ-weighted trajectory
             6. FSGS governance step       — Hybrid automaton decision
             7. Audit logging             — Immutable record
+
+        Routes the intent through the 16-polyhedra PHDM lattice via the
+        Poly-Didactic Circuit Flow, applying Sacred Tongue weighted edges,
+        FSGS governance gating, and Harmonic Wall energy containment at
+        every step.
 
         Args:
             intent_vector: The intent as a vector (any dimension)
@@ -533,81 +615,137 @@ class AetherBrain:
         # 1. Embed to 21D
         x_21d = embed_vector_to_21d(intent_vector, context)
 
-        # 2. Poincaré ball embedding (hyperbolic subspace)
-        u = self.skull.embed(x_21d[:DIMENSIONS_6D])
-
-        # 3. Trust ring classification
+        # 2. Early boundary check via Poincaré distance
         ring = self.skull.get_trust_ring(u)
-
         if ring == TrustRing.WALL:
             return self._fail_to_noise("Event Horizon Reached", ring, start_time)
 
-        # 4. Harmonic Wall energy cost
-        r = np.linalg.norm(u)
-        energy_cost = self.skull.bone_density(r)
+        # 3. Route through the quasicrystal circuit
+        intent_bytes = intent_vector.tobytes()
 
-        if self.energy_consumed + energy_cost > self.energy_budget:
-            return self._fail_to_noise("Energy Budget Exceeded", ring, start_time)
+        if self._circuit is not None:
+            trace = self._circuit.route(intent_bytes, context)
+            self.circuit_traces.append(trace)
+            return self._trace_to_result(trace, ring, start_time)
+
+        # Fallback: legacy path (circuit flow not available)
+        return self._think_legacy(u, ring, context, start_time)
+
+    def _trace_to_result(
+        self,
+        trace: 'CircuitTrace',
+        ring: TrustRing,
+        start_time: float,
+    ) -> ThoughtResult:
+        """Convert a CircuitTrace into a ThoughtResult."""
+
+        # Determine status from governance
+        gov = trace.final_governance
+        if gov == "ROLLBACK":
+            reason = "Circuit flow DENY: "
+            if trace.steps:
+                reason += trace.steps[-1].reasoning
+            else:
+                reason += "no accessible nodes"
+            self._log_audit("BLOCKED", reason, ring, trace.total_energy)
+            return ThoughtResult(
+                status=ThoughtStatus.BLOCKED,
+                ring=ring,
+                energy_cost=trace.total_energy,
+                latency_ms=(time.time() - start_time) * 1000,
+                reason=reason,
+            )
+
+        if gov == "QUAR":
+            status = ThoughtStatus.ESCALATED
+        else:
+            status = ThoughtStatus.SUCCESS
+
+        # Consume energy
+        self.energy_consumed += trace.total_energy
+        remaining = self.energy_budget - self.energy_consumed
+        if remaining < 0:
+            return self._fail_to_noise("Energy Limit Exceeded", ring, start_time)
+
+        # Compute latency (sum of per-step latencies)
+        base_latency = sum(s.latency_ms for s in trace.steps)
+        elapsed_ms = (time.time() - start_time) * 1000 + base_latency
+
+        # Build didactic result
+        path_nodes = [s.node for s in trace.steps]
+        path_tongues = [s.tongue for s in trace.steps]
+        governance_modes = [s.mode for s in trace.steps]
+
+        audit_msg = (
+            f"Ring={ring.value}, nodes={len(path_nodes)}, "
+            f"energy={trace.total_energy:.2f}, gov={gov}, "
+            f"tongue={trace.intent_tongue}, digest={trace.trace_digest}"
+        )
+        audit_id = self._log_audit("ALLOWED" if status == ThoughtStatus.SUCCESS else "ESCALATED",
+                                   audit_msg, ring, trace.total_energy)
+
+        return ThoughtResult(
+            status=status,
+            ring=ring,
+            energy_cost=trace.total_energy,
+            latency_ms=elapsed_ms,
+            result={
+                "path": path_nodes,
+                "tongue": trace.intent_tongue,
+                "tongues_per_node": path_tongues,
+                "governance": governance_modes,
+                "trace_digest": trace.trace_digest,
+                "flux_state": trace.flux_state,
+                "accessible_nodes": trace.accessible_nodes,
+                "hamiltonian": trace.is_hamiltonian,
+            },
+            audit_id=audit_id,
+        )
+
+    def _think_legacy(
+        self,
+        u: np.ndarray,
+        ring: TrustRing,
+        context: dict,
+        start_time: float,
+    ) -> ThoughtResult:
+        """Legacy think() path when circuit flow is not available."""
+
+        latency_map = {
+            TrustRing.CORE: 5,
+            TrustRing.INNER: 30,
+            TrustRing.OUTER: 200,
+        }
+        base_latency = latency_map.get(ring, 500)
+
+        # Harmonic Wall cost via Poincaré conformal factor
+        r = float(np.linalg.norm(u))
+        d = self.lobes.get_dimension_depth()
+        r_clamped = min(r, 0.9999)
+        if r_clamped < 1e-8:
+            energy_cost = 0.0
+        else:
+            conformal = 2.0 / (1.0 - r_clamped * r_clamped)
+            energy_cost = (conformal - 2.0) * d
 
         # 5. Hamiltonian path routing
         path_info = self.lobes.trace_path(u, context)
 
-        if not path_info["is_hamiltonian"] and path_info["violations"]:
-            self._log_audit("BLOCKED", "Non-Hamiltonian path", ring, energy_cost)
+        path = self.lobes.trace_path(u, context)
+        if not path.is_hamiltonian():
+            self._log_audit("BLOCKED", "Non-Hamiltonian path detected", ring, energy_cost)
             return ThoughtResult(
                 status=ThoughtStatus.BLOCKED,
                 ring=ring,
                 energy_cost=energy_cost,
-                latency_ms=self._ring_latency(ring),
-                governance_mode="QUAR",
-                path_nodes=path_info["nodes"],
-                tongue=path_info["tongue"],
-                reason=f"Path violations: {path_info['violations'][:3]}"
+                latency_ms=base_latency,
+                reason="Logic discontinuity - path loops detected",
             )
 
-        # 6. FSGS governance step (if automaton available)
-        governance_mode = "RUN"
-        phase_state = "resonant_lock"
-
-        if self.automaton is not None:
-            try:
-                from .aether_braid import think_step
-                self._hybrid_state.x = x_21d
-                new_state, action = think_step(
-                    x_21d, self.automaton, self._hybrid_state
-                )
-                self._hybrid_state = new_state
-                governance_mode = action.get("mode", "RUN")
-                phase_state = action.get("phase", "resonant_lock")
-
-                if not action.get("execute", True):
-                    self._log_audit("HELD", f"Mode={governance_mode}", ring, energy_cost)
-                    return ThoughtResult(
-                        status=ThoughtStatus.ESCALATED,
-                        ring=ring,
-                        energy_cost=energy_cost,
-                        latency_ms=self._ring_latency(ring),
-                        governance_mode=governance_mode,
-                        phase_state=phase_state,
-                        path_nodes=path_info["nodes"],
-                        tongue=path_info["tongue"],
-                        reason=f"Governance {governance_mode}: awaiting inspection"
-                    )
-            except Exception as e:
-                logger.warning(f"FSGS step failed: {e}")
-
-        # 7. Consume energy
         self.energy_consumed += energy_cost
-
-        # 8. Calculate latency
-        elapsed_ms = (time.time() - start_time) * 1000 + self._ring_latency(ring)
-
-        # 9. Audit
+        elapsed_ms = (time.time() - start_time) * 1000 + base_latency
         audit_id = self._log_audit(
-            "ALLOWED",
-            f"Ring={ring.value}, mode={governance_mode}, "
-            f"path={path_info['nodes'][:5]}, energy={energy_cost:.2e}",
-            ring, energy_cost
+            "ALLOWED", f"Ring={ring.value}, cost={energy_cost:.2e} (legacy)", ring, energy_cost
         )
 
         return ThoughtResult(
@@ -714,6 +852,9 @@ class AetherBrain:
             "projection_parity": self.lobes.projection_parity,
             "projection_matrix_shape": list(self.lobes.projection_matrix.shape),
         }
+        if self._circuit is not None:
+            status["circuit_traces"] = len(self.circuit_traces)
+        return status
 
     def reset_energy(self):
         """Reset energy budget (new session)."""
@@ -918,6 +1059,19 @@ if __name__ == "__main__":
             print(f"  Reason:     {result.reason}")
         print()
 
+    # Test flux states
+    print("--- Flux States ---\n")
+    for state in [FluxState.QUASI, FluxState.DEMI, FluxState.POLLY]:
+        brain.set_flux(state)
+        intent = embed_text("flux test")
+        result = brain.think(intent)
+        nodes = len(result.result.get("path", [])) if isinstance(result.result, dict) else 0
+        print(f"  {state.name}: {nodes} nodes traversed, energy={result.energy_cost:.2f}")
+
+    # Test phason shift
+    print("\n--- Phason Shift ---\n")
+    brain.phason_shift()
+    print("  Quasicrystal projection rotated")
     # Flux states
     print("--- Flux States ---\n")
     for state in [FluxState.QUASI, FluxState.DEMI, FluxState.POLLY]:

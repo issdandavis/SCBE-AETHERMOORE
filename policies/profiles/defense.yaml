@@ -1,0 +1,12 @@
+{
+  "profile": "defense",
+  "version": "2.0.0",
+  "overrides": {
+    "controls": {
+      "max_session_minutes": 30,
+      "retention_days": 3650,
+      "airgap_required": true,
+      "quantum_safe_required": true
+    }
+  }
+}

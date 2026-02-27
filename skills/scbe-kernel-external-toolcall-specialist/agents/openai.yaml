@@ -1,0 +1,6 @@
+display_name: SCBE Kernel Toolcall Specialist
+short_description: Kernel + external connector routing with SCBE governance outputs.
+default_prompt: >-
+  Implement deterministic SCBE kernel/external tool-call workflows with
+  StateVector and DecisionRecord outputs, typed chain steps, and domain-aware
+  turnstile routing.

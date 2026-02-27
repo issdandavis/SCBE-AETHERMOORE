@@ -30,6 +30,7 @@ import { CryptoLabApp } from './components/apps/CryptoLabApp';
 import { AgentOrchestratorApp } from './components/apps/AgentOrchestratorApp';
 import { EntropicDefenseApp } from './components/apps/EntropicDefenseApp';
 import { KnowledgeBaseApp } from './components/apps/KnowledgeBaseApp';
+import { SidebarSharePanel } from './components/SidebarSharePanel';
 
 const APP_VERSION = "v2.0.0 SCBE";
 
@@ -93,6 +94,7 @@ export const App: React.FC = () => {
     const [toast, setToast] = useState<{ title?: string; message: React.ReactNode } | null>(null);
     const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'ready'>('idle');
     const [isApiKeySelected, setIsApiKeySelected] = useState<boolean>(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const timeoutRef = useRef<number | null>(null);
 
     // OTA Update Check Simulation
@@ -283,6 +285,7 @@ export const App: React.FC = () => {
                 <button onClick={clearInk} disabled={strokes.length === 0} className="p-4 text-zinc-500 hover:text-white transition-colors"><Eraser size={24} /></button>
                 <div className="w-px h-8 bg-white/10 mx-2" />
                 <button className="p-4 text-zinc-500 hover:text-sky-400"><Mic size={24} /></button>
+                <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={`p-4 rounded-full transition-colors ${isSidebarOpen ? (isEinkMode ? 'bg-black text-white' : 'bg-sky-500 text-white') : 'text-zinc-500 hover:text-sky-400'}`}><Share2 size={24} /></button>
             </div>
 
             <div className="h-full w-full relative pt-8">
@@ -319,6 +322,12 @@ export const App: React.FC = () => {
                 })}
 
                 <InkLayer active={inkMode} strokes={strokes} onStrokeComplete={handleStrokeComplete} isProcessing={isProcessing} />
+
+                <SidebarSharePanel
+                    isOpen={isSidebarOpen}
+                    onClose={() => setIsSidebarOpen(false)}
+                    openWindows={openWindows.map(w => ({ id: w.id, name: w.item.name, appId: w.item.appId }))}
+                />
 
                 {toast && (
                     <div className="fixed bottom-32 left-1/2 -translate-x-1/2 bg-zinc-950/95 border border-white/10 p-8 rounded-3xl shadow-4xl z-[10000] w-[90vw] max-w-xl animate-in slide-in-from-bottom-10">

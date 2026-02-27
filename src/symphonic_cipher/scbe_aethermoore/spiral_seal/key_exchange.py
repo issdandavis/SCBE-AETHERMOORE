@@ -17,21 +17,35 @@ import hmac
 from typing import Tuple, Optional
 
 # Try to import post-quantum library
-try:
-    from oqs import KeyEncapsulation
+_FORCE_SKIP_LIBOQS = os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+}
 
-    PQC_AVAILABLE = True
-    PQC_BACKEND = "liboqs"
-except (ImportError, RuntimeError):
-    # liboqs-python not installed or shared libraries not found
+if not _FORCE_SKIP_LIBOQS:
     try:
-        import pqcrypto.kem.kyber768 as kyber
+        from oqs import KeyEncapsulation
+        import oqs as _oqs_mod
 
         PQC_AVAILABLE = True
-        PQC_BACKEND = "pqcrypto"
-    except ImportError:
-        PQC_AVAILABLE = False
-        PQC_BACKEND = "fallback"
+        PQC_BACKEND = "liboqs"
+        # Select algorithm: prefer ML-KEM-768 (FIPS 203), fall back to Kyber768
+        _enabled = _oqs_mod.get_enabled_kem_mechanisms()
+        _KEM_ALG = "ML-KEM-768" if "ML-KEM-768" in _enabled else "Kyber768"
+    except BaseException:
+        # liboqs-python not installed, shared libs missing, or bootstrap errors
+        try:
+            import pqcrypto.kem.kyber768 as kyber
+
+            PQC_AVAILABLE = True
+            PQC_BACKEND = "pqcrypto"
+        except BaseException:
+            PQC_AVAILABLE = False
+            PQC_BACKEND = "fallback"
+else:
+    PQC_AVAILABLE = False
+    PQC_BACKEND = "fallback"
 
 
 class KyberKeyPair:
@@ -53,7 +67,7 @@ def kyber_keygen() -> Tuple[bytes, bytes]:
         Tuple of (secret_key, public_key)
     """
     if PQC_BACKEND == "liboqs":
-        kem = KeyEncapsulation("Kyber768")
+        kem = KeyEncapsulation(_KEM_ALG)
         public_key = kem.generate_keypair()
         secret_key = kem.export_secret_key()
         return secret_key, public_key
@@ -84,7 +98,7 @@ def kyber_encaps(public_key: bytes) -> Tuple[bytes, bytes]:
         - shared_secret: 32-byte key for symmetric encryption
     """
     if PQC_BACKEND == "liboqs":
-        kem = KeyEncapsulation("Kyber768")
+        kem = KeyEncapsulation(_KEM_ALG)
         ciphertext, shared_secret = kem.encap_secret(public_key)
         return ciphertext, shared_secret
 
@@ -115,7 +129,7 @@ def kyber_decaps(secret_key: bytes, ciphertext: bytes) -> bytes:
         32-byte shared secret (same as encapsulator derived)
     """
     if PQC_BACKEND == "liboqs":
-        kem = KeyEncapsulation("Kyber768", secret_key)
+        kem = KeyEncapsulation(_KEM_ALG, secret_key)
         shared_secret = kem.decap_secret(ciphertext)
         return shared_secret
 

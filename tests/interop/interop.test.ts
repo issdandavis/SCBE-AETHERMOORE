@@ -206,19 +206,15 @@ describe('TypeScript → Python Vector Generation', () => {
   });
 
   it('should decode Python-encoded tokens correctly', () => {
-    // Manually verify a few known tokens from Python (v1.1 lexicons)
-    const pythonTokens = {
-      ko: { token: "kor'ah", byte: 0x00 },
-      av: { token: "saina'a", byte: 0x00 },
-      ru: { token: "khar'ak", byte: 0x00 },
-      ca: { token: "bip'a", byte: 0x00 },
-      um: { token: "veil'a", byte: 0x00 },
-      dr: { token: "anvil'a", byte: 0x00 },
-    };
+    // Validate against Python-generated canonical vectors for sample token 0x00.
+    const specVectors = vectors.tongue_specs as Array<{
+      tongue: string;
+      sample_token_0x00: string;
+    }>;
 
-    for (const [tongue, expected] of Object.entries(pythonTokens)) {
-      const decoded = TOKENIZER.decodeTokens(tongue, [expected.token]);
-      expect(decoded[0]).toBe(expected.byte);
+    for (const spec of specVectors) {
+      const decoded = TOKENIZER.decodeTokens(spec.tongue, [spec.sample_token_0x00]);
+      expect(decoded[0]).toBe(0x00);
     }
   });
 });

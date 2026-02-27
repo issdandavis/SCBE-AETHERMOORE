@@ -13,11 +13,39 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { spawn } from 'child_process';
 import { promisify } from 'util';
+import { execSync } from 'child_process';
+
+function resolvePython(): string | null {
+  const envPython = process.env.PYTHON_BIN?.trim();
+  const candidates = [
+    envPython,
+    process.platform === 'win32' ? 'python' : 'python3',
+    'python3',
+    'python',
+  ].filter((v): v is string => Boolean(v && v.length > 0));
+
+  for (const candidate of candidates) {
+    try {
+      execSync(`${candidate} --version`, {
+        cwd: process.cwd(),
+        encoding: 'utf-8',
+        stdio: 'pipe',
+        timeout: 5000,
+      });
+      return candidate;
+    } catch {
+      // keep scanning candidates
+    }
+  }
+  return null;
+}
+
+const PYTHON = resolvePython();
 
 // Helper to run Python and capture output
 async function runPython(code: string): Promise<{ stdout: string; stderr: string; exitCode: number }> {
   return new Promise((resolve) => {
-    const proc = spawn('python3', ['-c', code]);
+    const proc = spawn(PYTHON || 'python', ['-c', code]);
     let stdout = '';
     let stderr = '';
 
@@ -30,7 +58,9 @@ async function runPython(code: string): Promise<{ stdout: string; stderr: string
   });
 }
 
-describe('SwarmGovernance', () => {
+const maybeDescribe = PYTHON ? describe : describe.skip;
+
+maybeDescribe('SwarmGovernance', () => {
   describe('Module Import', () => {
     it('should import SwarmGovernance without errors', async () => {
       const result = await runPython(`

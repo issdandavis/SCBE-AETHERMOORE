@@ -19,8 +19,9 @@ import hashlib
 import base64
 from typing import Tuple, Set, List, Dict
 import numpy as np
-import matplotlib
+import pytest
 
+matplotlib = pytest.importorskip("matplotlib", reason="matplotlib not installed")
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
