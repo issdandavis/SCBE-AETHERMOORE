@@ -64,6 +64,10 @@ class BrowserConfig:
     browser_channel: Optional[str] = None
     executable_path: Optional[str] = None
 
+    # Persistent context (launchPersistentContext with userDataDir)
+    persistent: bool = False
+    user_data_dir: Optional[str] = None  # Path for cookie/localStorage persistence
+
     # Safety limits
     max_actions_per_session: int = 100
     max_navigation_depth: int = 10
@@ -184,40 +188,77 @@ class PlaywrightWrapper:
 
         self._playwright = await async_playwright().start()
         launch_options = self._build_launch_options()
-        self._browser = await self._playwright.chromium.launch(**launch_options)
 
-        context_options = {
-            "viewport": {
-                "width": self.config.viewport_width,
-                "height": self.config.viewport_height
+        if self.config.persistent and self.config.user_data_dir:
+            # Persistent context: cookies, localStorage, cache survive restarts
+            persistent_opts = {
+                "headless": launch_options.get("headless", True),
+                "viewport": {
+                    "width": self.config.viewport_width,
+                    "height": self.config.viewport_height,
+                },
             }
-        }
-        if self.config.user_agent:
-            context_options["user_agent"] = self.config.user_agent
+            if self.config.user_agent:
+                persistent_opts["user_agent"] = self.config.user_agent
+            if "executable_path" in launch_options:
+                persistent_opts["executable_path"] = launch_options["executable_path"]
+            if "channel" in launch_options:
+                persistent_opts["channel"] = launch_options["channel"]
 
-        self._context = await self._browser.new_context(**context_options)
-        self._page = await self._context.new_page()
+            os.makedirs(self.config.user_data_dir, exist_ok=True)
+            self._context = await self._playwright.chromium.launch_persistent_context(
+                self.config.user_data_dir,
+                **persistent_opts,
+            )
+            self._browser = None  # No separate browser handle in persistent mode
+            self._page = (
+                self._context.pages[0]
+                if self._context.pages
+                else await self._context.new_page()
+            )
+            logger.info("Browser initialized in PERSISTENT mode (dir=%s)", self.config.user_data_dir)
+        else:
+            # Ephemeral context (original behavior)
+            self._browser = await self._playwright.chromium.launch(**launch_options)
+
+            context_options = {
+                "viewport": {
+                    "width": self.config.viewport_width,
+                    "height": self.config.viewport_height
+                }
+            }
+            if self.config.user_agent:
+                context_options["user_agent"] = self.config.user_agent
+
+            self._context = await self._browser.new_context(**context_options)
+            self._page = await self._context.new_page()
+            logger.info("Browser initialized in ephemeral mode")
 
         # Set default timeouts
         self._page.set_default_timeout(self.config.default_timeout_ms)
         self._page.set_default_navigation_timeout(self.config.navigation_timeout_ms)
 
         self._is_initialized = True
-        logger.info("Browser initialized successfully")
 
     async def close(self):
         """Close the browser and cleanup resources."""
-        if self._page:
-            await self._page.close()
-        if self._context:
-            await self._context.close()
-        if self._browser:
-            await self._browser.close()
+        if self.config.persistent:
+            # Persistent mode: close context (flushes data to userDataDir), skip page.close()
+            if self._context:
+                await self._context.close()
+        else:
+            # Ephemeral mode: close page → context → browser
+            if self._page:
+                await self._page.close()
+            if self._context:
+                await self._context.close()
+            if self._browser:
+                await self._browser.close()
         if self._playwright:
             await self._playwright.stop()
 
         self._is_initialized = False
-        logger.info("Browser closed")
+        logger.info("Browser closed (persistent=%s)", self.config.persistent)
 
     def _check_action_limits(self):
         """
@@ -637,6 +678,8 @@ async def create_browser(
     allowed_domains: Optional[List[str]] = None,
     browser_channel: Optional[str] = None,
     executable_path: Optional[str] = None,
+    persistent: bool = False,
+    user_data_dir: Optional[str] = None,
 ) -> PlaywrightWrapper:
     """
     Factory function to create and initialize a browser wrapper.
@@ -647,16 +690,23 @@ async def create_browser(
         allowed_domains: Optional whitelist of allowed domains
         browser_channel: Optional Playwright channel (e.g. "chrome")
         executable_path: Optional explicit browser executable path
+        persistent: Use launchPersistentContext for cookie/localStorage persistence
+        user_data_dir: Path to userDataDir (required when persistent=True)
 
     Returns:
         Initialized PlaywrightWrapper
     """
+    if persistent and not user_data_dir:
+        raise ValueError("user_data_dir is required when persistent=True")
+
     config = BrowserConfig(
         headless=headless,
         default_timeout_ms=timeout_ms,
         allowed_domains=allowed_domains,
         browser_channel=browser_channel,
         executable_path=executable_path,
+        persistent=persistent,
+        user_data_dir=user_data_dir,
     )
     browser = PlaywrightWrapper(config)
     await browser.initialize()
