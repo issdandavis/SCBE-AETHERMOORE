@@ -1,0 +1,49 @@
+{
+  "name": "research-and-document",
+  "description": "Research a topic, extract content, save as document, and push to GitHub",
+  "session_id": "productivity-demo",
+  "tongues": ["KO", "AV", "CA"],
+  "governance": true,
+  "output_dir": "artifacts/documents",
+  "connectors": [
+    {
+      "connector_id": "notify-zapier",
+      "kind": "zapier",
+      "endpoint_url": "https://hooks.zapier.com/hooks/catch/YOUR_ID/YOUR_SLUG/",
+      "auth_type": "none"
+    }
+  ],
+  "steps": [
+    {
+      "action": "navigate_and_extract",
+      "tongue": "AV",
+      "url": "https://example.com",
+      "selector": "body",
+      "max_chars": 3000
+    },
+    {
+      "action": "navigate_and_extract",
+      "tongue": "CA",
+      "url": "https://httpbin.org/html",
+      "selector": "body",
+      "max_chars": 3000
+    },
+    {
+      "action": "screenshot",
+      "tongue": "CA",
+      "path": "artifacts/screenshots/workflow_step3.png"
+    },
+    {
+      "action": "save_document",
+      "title": "Research Output Demo",
+      "format": "markdown",
+      "path": "artifacts/documents/workflow_output.md"
+    },
+    {
+      "action": "save_document",
+      "title": "Research Output Demo",
+      "format": "json",
+      "path": "artifacts/documents/workflow_output.json"
+    }
+  ]
+}
