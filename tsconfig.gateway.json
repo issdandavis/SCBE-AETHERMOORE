@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist-gateway",
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "skipLibCheck": true,
+    "noEmitOnError": true
+  },
+  "include": ["src/gateway/**/*.ts", "src/ai_brain/**/*.ts", "packages/kernel/src/**/*.ts"],
+  "exclude": ["node_modules"]
+}
