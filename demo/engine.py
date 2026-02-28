@@ -533,193 +533,352 @@ def _draw_rect(sprite: np.ndarray, x: int, y: int, w: int, h: int, color: tuple,
             _set_pixel(sprite, x + dx, y + dy, color, alpha)
 
 
+def _outline_sprite(sprite: np.ndarray):
+    """Add a 1px black outline around all non-transparent pixels (Pokemon style)."""
+    h, w = sprite.shape[:2]
+    outline = (0, 0, 0)
+    # Find all filled pixels, then draw outline around them
+    filled = sprite[:, :, 3] > 0
+    temp = sprite.copy()
+    for y in range(h):
+        for x in range(w):
+            if not filled[y, x]:
+                # Check if any neighbor is filled
+                for dy, dx in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    ny, nx = y + dy, x + dx
+                    if 0 <= ny < h and 0 <= nx < w and filled[ny, nx]:
+                        temp[y, x] = (*outline, 255)
+                        break
+    sprite[:] = temp
+
+
 def _draw_humanoid(sprite: np.ndarray, size: int, base: tuple, dark: tuple, light: tuple,
                    skin: tuple, eye: tuple):
-    """Draw a humanoid character sprite (Izack, Eldrin, Aria, Zara)."""
+    """Draw a Pokemon RSE-style humanoid with big head, clean proportions, and outline."""
     s = size
     cx = s // 2
 
-    # Head
-    head_w, head_h = s // 4, s // 4
+    # Pokemon proportions: head = ~1/3 of sprite height
+    head_h = s * 5 // 16    # ~10px on 32
+    head_w = s * 5 // 16
     head_x = cx - head_w // 2
-    head_y = s // 6
-    _draw_rect(sprite, head_x, head_y, head_w, head_h, skin)
+    head_y = s // 8          # ~4px from top
 
-    # Hair
-    _draw_rect(sprite, head_x - 1, head_y - 1, head_w + 2, 3, dark)
+    # --- Hair (covers top of head + sticks up) ---
+    hair_dark = (max(0, dark[0] - 20), max(0, dark[1] - 20), max(0, dark[2] - 20))
+    _draw_rect(sprite, head_x - 1, head_y - 2, head_w + 2, 4, dark)
+    # Spiky hair tips
+    _set_pixel(sprite, cx - 3, head_y - 3, dark)
+    _set_pixel(sprite, cx, head_y - 3, dark)
+    _set_pixel(sprite, cx + 2, head_y - 3, dark)
 
-    # Eyes
-    _set_pixel(sprite, cx - 2, head_y + head_h // 2, eye)
-    _set_pixel(sprite, cx + 1, head_y + head_h // 2, eye)
+    # --- Head (skin) ---
+    _draw_rect(sprite, head_x, head_y + 1, head_w, head_h - 1, skin)
+    # Hair overlaps top of head
+    _draw_rect(sprite, head_x, head_y, head_w, 2, dark)
 
-    # Body / armor
+    # --- Face details ---
+    eye_y = head_y + head_h // 2
+    # Eyes: 2px wide each, with white/pupil
+    _set_pixel(sprite, cx - 3, eye_y, eye)
+    _set_pixel(sprite, cx - 2, eye_y, (32, 32, 48))  # pupil
+    _set_pixel(sprite, cx + 1, eye_y, eye)
+    _set_pixel(sprite, cx + 2, eye_y, (32, 32, 48))  # pupil
+    # Mouth hint
+    _set_pixel(sprite, cx - 1, eye_y + 3, (200, 140, 120))
+    _set_pixel(sprite, cx, eye_y + 3, (200, 140, 120))
+
+    # --- Body / Tunic ---
     body_y = head_y + head_h
-    body_h = s // 3
-    body_w = s // 3
+    body_h = s * 5 // 16
+    body_w = s * 6 // 16
     body_x = cx - body_w // 2
     _draw_rect(sprite, body_x, body_y, body_w, body_h, base)
-    # Belt/detail
-    _draw_rect(sprite, body_x, body_y + body_h - 2, body_w, 2, dark)
+    # Collar (lighter strip at top)
+    _draw_rect(sprite, body_x + 1, body_y, body_w - 2, 2, light)
+    # Belt
+    _draw_rect(sprite, body_x, body_y + body_h - 3, body_w, 2, dark)
+    # Belt buckle (tongue color accent)
+    _set_pixel(sprite, cx, body_y + body_h - 3, light)
+    _set_pixel(sprite, cx, body_y + body_h - 2, light)
 
-    # Arms
+    # --- Arms ---
     arm_w = 3
-    _draw_rect(sprite, body_x - arm_w, body_y + 2, arm_w, body_h - 4, base)
-    _draw_rect(sprite, body_x + body_w, body_y + 2, arm_w, body_h - 4, base)
+    arm_h = body_h - 3
+    # Left arm
+    _draw_rect(sprite, body_x - arm_w, body_y + 2, arm_w, arm_h, base)
+    _set_pixel(sprite, body_x - arm_w, body_y + 2 + arm_h, skin)  # hand
+    _set_pixel(sprite, body_x - arm_w + 1, body_y + 2 + arm_h, skin)
+    # Right arm
+    _draw_rect(sprite, body_x + body_w, body_y + 2, arm_w, arm_h, base)
+    _set_pixel(sprite, body_x + body_w, body_y + 2 + arm_h, skin)
+    _set_pixel(sprite, body_x + body_w + 1, body_y + 2 + arm_h, skin)
 
-    # Legs
+    # --- Shoulder pads (tongue glow) ---
+    _draw_rect(sprite, body_x - 1, body_y, 2, 2, light)
+    _draw_rect(sprite, body_x + body_w - 1, body_y, 2, 2, light)
+
+    # --- Legs ---
     leg_y = body_y + body_h
-    leg_h = s - leg_y - 2
+    leg_h = s - leg_y - 3
     leg_w = body_w // 2 - 1
-    _draw_rect(sprite, cx - leg_w - 1, leg_y, leg_w, leg_h, dark)
-    _draw_rect(sprite, cx + 1, leg_y, leg_w, leg_h, dark)
+    pants_color = (max(0, dark[0] - 10), max(0, dark[1] - 10), max(0, dark[2] - 10))
+    _draw_rect(sprite, cx - leg_w - 1, leg_y, leg_w, leg_h, pants_color)
+    _draw_rect(sprite, cx + 1, leg_y, leg_w, leg_h, pants_color)
 
-    # Boots
-    _draw_rect(sprite, cx - leg_w - 2, leg_y + leg_h - 2, leg_w + 1, 2, (80, 60, 40))
-    _draw_rect(sprite, cx, leg_y + leg_h - 2, leg_w + 1, 2, (80, 60, 40))
+    # --- Boots ---
+    boot = (96, 72, 48)
+    boot_h = max(2, leg_h // 3)
+    _draw_rect(sprite, cx - leg_w - 2, leg_y + leg_h - boot_h, leg_w + 2, boot_h, boot)
+    _draw_rect(sprite, cx, leg_y + leg_h - boot_h, leg_w + 2, boot_h, boot)
+    # Boot highlight
+    _set_pixel(sprite, cx - leg_w - 1, leg_y + leg_h - boot_h, (128, 104, 80))
+    _set_pixel(sprite, cx + 1, leg_y + leg_h - boot_h, (128, 104, 80))
 
-    # Tongue glow effect (shoulder pads)
-    _set_pixel(sprite, body_x - 1, body_y, light)
-    _set_pixel(sprite, body_x + body_w, body_y, light)
+    # --- Outline (Pokemon signature look) ---
+    _outline_sprite(sprite)
 
 
 def _draw_raven(sprite: np.ndarray, size: int, base: tuple, dark: tuple, light: tuple):
-    """Draw Polly the raven familiar."""
+    """Draw Polly the raven familiar — Pokemon RSE style with outline."""
     s = size
     cx, cy = s // 2, s // 2
+    body_col = (40, 36, 56)
+    body_light = (56, 52, 72)
+    body_dark = (24, 20, 36)
+    beak = (224, 176, 48)
 
-    # Body (oval-ish)
-    for dy in range(-4, 5):
+    # Body (plump oval)
+    for dy in range(-5, 6):
+        for dx in range(-4, 5):
+            if dx * dx * 0.7 + dy * dy < 22:
+                c = body_light if dy < -2 else body_col
+                _set_pixel(sprite, cx + dx, cy + dy + 1, c)
+
+    # Head (round, above body)
+    for dy in range(-3, 2):
         for dx in range(-3, 4):
-            if dx * dx + dy * dy < 18:
-                _set_pixel(sprite, cx + dx, cy + dy, (30, 30, 40))
+            if dx * dx + dy * dy < 10:
+                _set_pixel(sprite, cx + dx, cy - 5 + dy, body_col)
+    # Head highlight
+    _set_pixel(sprite, cx - 1, cy - 7, body_light)
+    _set_pixel(sprite, cx, cy - 7, body_light)
 
-    # Wings
-    for i in range(6):
-        _set_pixel(sprite, cx - 4 - i, cy - 1 + i // 2, dark)
-        _set_pixel(sprite, cx + 4 + i, cy - 1 + i // 2, dark)
+    # Eyes (glowing tongue color, with white shine)
+    _set_pixel(sprite, cx - 2, cy - 5, base)
+    _set_pixel(sprite, cx + 1, cy - 5, base)
+    _set_pixel(sprite, cx - 2, cy - 6, (255, 255, 255))  # eye shine
 
-    # Head
-    _draw_rect(sprite, cx - 2, cy - 5, 4, 3, (30, 30, 40))
-
-    # Eyes (glowing with tongue color)
-    _set_pixel(sprite, cx - 1, cy - 4, base)
-    _set_pixel(sprite, cx + 1, cy - 4, base)
-
-    # Beak
-    _set_pixel(sprite, cx, cy - 3, (200, 160, 40))
+    # Beak (yellow, pointy)
+    _set_pixel(sprite, cx, cy - 3, beak)
+    _set_pixel(sprite, cx + 1, cy - 3, beak)
     _set_pixel(sprite, cx, cy - 2, (200, 160, 40))
 
-    # Tail feathers
-    for i in range(3):
-        _set_pixel(sprite, cx - 1 + i, cy + 5, dark)
-        _set_pixel(sprite, cx - 1 + i, cy + 6, (20, 20, 30))
+    # Wings (spread, angular)
+    for i in range(7):
+        wy = cy - 2 + i // 2
+        _set_pixel(sprite, cx - 5 - i, wy, body_dark)
+        _set_pixel(sprite, cx - 5 - i, wy + 1, body_dark)
+        _set_pixel(sprite, cx + 5 + i, wy, body_dark)
+        _set_pixel(sprite, cx + 5 + i, wy + 1, body_dark)
+    # Wing tips (lighter)
+    _set_pixel(sprite, cx - 11, cy + 1, body_light)
+    _set_pixel(sprite, cx + 11, cy + 1, body_light)
 
-    # Cosmic sparkle
-    for _ in range(4):
-        sx = cx + random.randint(-6, 6)
-        sy = cy + random.randint(-6, 6)
-        _set_pixel(sprite, sx, sy, light, 180)
+    # Tail feathers (fanned)
+    for i in range(4):
+        _set_pixel(sprite, cx - 2 + i, cy + 6, body_dark)
+        _set_pixel(sprite, cx - 2 + i, cy + 7, (20, 16, 32))
+    _set_pixel(sprite, cx - 3, cy + 6, body_dark)
+    _set_pixel(sprite, cx + 3, cy + 6, body_dark)
+
+    # Feet
+    _set_pixel(sprite, cx - 1, cy + 5, (180, 140, 40))
+    _set_pixel(sprite, cx + 1, cy + 5, (180, 140, 40))
+
+    _outline_sprite(sprite)
 
 
 def _draw_golem(sprite: np.ndarray, size: int, base: tuple, dark: tuple, light: tuple):
-    """Draw Clay the sand golem."""
+    """Draw Clay the sand golem — Pokemon RSE style with outline."""
     s = size
     cx, cy = s // 2, s // 2
 
     sand = (194, 168, 120)
-    sand_dark = (150, 130, 90)
-    sand_light = (220, 200, 160)
+    sand_dark = (156, 136, 96)
+    sand_darker = (120, 104, 72)
+    sand_light = (224, 204, 168)
 
-    # Big blocky body
-    body_w, body_h = s // 2, s // 2
-    _draw_rect(sprite, cx - body_w // 2, cy - body_h // 4, body_w, body_h, sand)
+    # --- Big blocky body ---
+    body_w, body_h = s * 9 // 16, s * 7 // 16
+    body_x = cx - body_w // 2
+    body_y = cy - body_h // 4
+    _draw_rect(sprite, body_x, body_y, body_w, body_h, sand)
+    # Body shading (left side darker)
+    for py in range(body_y, body_y + body_h):
+        _set_pixel(sprite, body_x, py, sand_dark)
+        _set_pixel(sprite, body_x + 1, py, sand_dark)
+    # Body highlight (right side)
+    for py in range(body_y + 1, body_y + body_h - 1):
+        _set_pixel(sprite, body_x + body_w - 1, py, sand_light)
 
-    # Head (smaller block on top)
-    head_w = body_w - 4
-    _draw_rect(sprite, cx - head_w // 2, cy - body_h // 4 - 5, head_w, 6, sand)
+    # --- Head (rounded block on top) ---
+    head_w = body_w - 2
+    head_h = 7
+    head_x = cx - head_w // 2
+    head_y = body_y - head_h + 1
+    _draw_rect(sprite, head_x, head_y, head_w, head_h, sand)
+    # Rounded top corners (clear to transparent)
+    sprite[head_y, head_x] = (0, 0, 0, 0)
+    if head_x + head_w - 1 < s:
+        sprite[head_y, head_x + head_w - 1] = (0, 0, 0, 0)
 
-    # Eyes (glowing)
-    _set_pixel(sprite, cx - 2, cy - body_h // 4 - 3, base)
-    _set_pixel(sprite, cx + 2, cy - body_h // 4 - 3, base)
+    # --- Eyes (glowing tongue color) ---
+    eye_y = head_y + 3
+    _set_pixel(sprite, cx - 3, eye_y, base)
+    _set_pixel(sprite, cx - 2, eye_y, base)
+    _set_pixel(sprite, cx + 2, eye_y, base)
+    _set_pixel(sprite, cx + 3, eye_y, base)
+    # Eye shine
+    _set_pixel(sprite, cx - 3, eye_y - 1, (255, 255, 255))
+    _set_pixel(sprite, cx + 2, eye_y - 1, (255, 255, 255))
 
-    # Arms (thick)
-    arm_y = cy - 1
-    _draw_rect(sprite, cx - body_w // 2 - 4, arm_y, 4, 8, sand_dark)
-    _draw_rect(sprite, cx + body_w // 2, arm_y, 4, 8, sand_dark)
+    # --- Mouth line ---
+    for dx in range(-2, 3):
+        _set_pixel(sprite, cx + dx, eye_y + 3, sand_darker)
 
-    # Legs (stubby)
-    leg_y = cy + body_h * 3 // 4 - 2
-    _draw_rect(sprite, cx - 4, leg_y, 3, 4, sand_dark)
-    _draw_rect(sprite, cx + 1, leg_y, 3, 4, sand_dark)
+    # --- Arms (thick, rocky) ---
+    arm_y = body_y + 2
+    arm_h = body_h - 2
+    _draw_rect(sprite, body_x - 5, arm_y, 5, arm_h, sand_dark)
+    _draw_rect(sprite, body_x + body_w, arm_y, 5, arm_h, sand_dark)
+    # Fists
+    _draw_rect(sprite, body_x - 6, arm_y + arm_h, 6, 3, sand_darker)
+    _draw_rect(sprite, body_x + body_w, arm_y + arm_h, 6, 3, sand_darker)
 
-    # Runic markings
+    # --- Legs (stubby, wide) ---
+    leg_y = body_y + body_h
+    _draw_rect(sprite, cx - 5, leg_y, 4, 5, sand_dark)
+    _draw_rect(sprite, cx + 1, leg_y, 4, 5, sand_dark)
+    # Feet
+    _draw_rect(sprite, cx - 6, leg_y + 4, 5, 2, sand_darker)
+    _draw_rect(sprite, cx, leg_y + 4, 5, 2, sand_darker)
+
+    # --- Runic markings (tongue color accents) ---
     for i in range(3):
-        _set_pixel(sprite, cx - 3 + i * 3, cy, base)
-        _set_pixel(sprite, cx - 3 + i * 3, cy + 2, light)
+        rx = cx - 3 + i * 3
+        _set_pixel(sprite, rx, cy, base)
+        _set_pixel(sprite, rx, cy + 1, light)
+    # Chest rune
+    _set_pixel(sprite, cx, body_y + 2, light)
 
-    # Sand particles
-    for _ in range(5):
-        px = cx + random.randint(-8, 8)
-        py = cy + random.randint(-2, 10)
-        _set_pixel(sprite, px, py, sand_light, 140)
+    _outline_sprite(sprite)
 
 
 def _draw_dragon(sprite: np.ndarray, size: int, base: tuple, dark: tuple, light: tuple):
-    """Draw Malzeth'irun / Shimmer dragon sprite."""
+    """Draw Malzeth'irun / Shimmer dragon — Pokemon RSE style with outline."""
     s = size
     cx, cy = s // 2, s // 2
+    belly = (min(255, base[0] + 40), min(255, base[1] + 40), min(255, base[2] + 20))
 
-    # Body (large oval)
+    # Body (large oval, with belly shading)
     for dy in range(-5, 6):
         for dx in range(-6, 7):
-            if dx * dx * 0.6 + dy * dy < 30:
-                _set_pixel(sprite, cx + dx, cy + dy + 2, base)
+            if dx * dx * 0.6 + dy * dy < 28:
+                c = belly if dy > 1 else (base if dy > -3 else light)
+                _set_pixel(sprite, cx + dx, cy + dy + 2, c)
 
-    # Head (forward)
-    _draw_rect(sprite, cx + 5, cy - 3, 5, 4, base)
-    _set_pixel(sprite, cx + 8, cy - 2, (255, 200, 40))  # eye
+    # Head (forward-facing snout)
+    for dy in range(-2, 3):
+        for dx in range(0, 7):
+            if dy * dy + (dx - 3) * (dx - 3) * 0.3 < 6:
+                _set_pixel(sprite, cx + 5 + dx, cy - 2 + dy, base)
+    # Eye
+    _set_pixel(sprite, cx + 9, cy - 2, (255, 220, 40))
+    _set_pixel(sprite, cx + 9, cy - 3, (255, 255, 255))  # shine
+    # Nostril
+    _set_pixel(sprite, cx + 11, cy - 1, dark)
 
-    # Wings
-    for i in range(8):
-        _set_pixel(sprite, cx - 2 + i, cy - 5 - i // 2, dark)
-        _set_pixel(sprite, cx - 2 + i, cy - 4 - i // 2, dark)
-        _set_pixel(sprite, cx + 2 - i, cy - 5 - i // 2, dark)
-        _set_pixel(sprite, cx + 2 - i, cy - 4 - i // 2, dark)
-
-    # Tail
+    # Wings (angular, membrane-like)
+    for i in range(9):
+        wy = cy - 4 - i * 2 // 3
+        # Left wing
+        _set_pixel(sprite, cx - 2 - i, wy, dark)
+        _set_pixel(sprite, cx - 2 - i, wy + 1, dark)
+        # Right wing
+        _set_pixel(sprite, cx + 2 + i, wy, dark)
+        _set_pixel(sprite, cx + 2 + i, wy + 1, dark)
+    # Wing membrane fill
     for i in range(6):
-        _set_pixel(sprite, cx - 6 - i, cy + 3 + i // 2, dark)
+        for j in range(i + 1):
+            _set_pixel(sprite, cx - 3 - i, cy - 3 + j, dark, 160)
+            _set_pixel(sprite, cx + 3 + i, cy - 3 + j, dark, 160)
 
-    # Fire breath sparkles
-    for _ in range(3):
-        fx = cx + 9 + random.randint(0, 3)
-        fy = cy - 2 + random.randint(-1, 1)
-        _set_pixel(sprite, fx, fy, (255, 120, 40), 200)
+    # Tail (curved)
+    for i in range(8):
+        tx = cx - 6 - i
+        ty = cy + 3 + (i * i) // 6
+        _set_pixel(sprite, tx, ty, dark)
+        _set_pixel(sprite, tx, ty + 1, dark)
+    # Tail tip
+    _set_pixel(sprite, cx - 14, cy + 12, light)
+
+    # Horns
+    _set_pixel(sprite, cx + 6, cy - 5, (200, 180, 120))
+    _set_pixel(sprite, cx + 7, cy - 6, (200, 180, 120))
+
+    _outline_sprite(sprite)
 
 
 def _draw_villain(sprite: np.ndarray, size: int, base: tuple, dark: tuple, light: tuple):
-    """Draw antagonist villain sprite (Veyra, etc)."""
+    """Draw antagonist villain — Pokemon RSE style with hooded cloak and outline."""
     s = size
     cx = s // 2
+    cloak = (32, 16, 48)
+    cloak_light = (48, 32, 64)
+    cloak_dark = (16, 8, 24)
+    skin_shadow = (12, 6, 18)
 
-    # Hooded cloak (triangular)
-    for row in range(s - 4):
-        width = min(row // 2 + 2, s // 2)
+    # --- Hooded cloak (triangular, with volume) ---
+    for row in range(s - 6):
+        width = min(row // 2 + 3, s // 2 - 1)
         for dx in range(-width, width + 1):
-            _set_pixel(sprite, cx + dx, 4 + row, (20, 10, 30))
+            # Left side lighter, right side darker for volume
+            c = cloak_light if dx < -width // 2 else (cloak_dark if dx > width // 2 else cloak)
+            _set_pixel(sprite, cx + dx, 3 + row, c)
 
-    # Face shadow under hood
-    _draw_rect(sprite, cx - 3, 8, 6, 5, (10, 5, 15))
+    # Hood (rounded top)
+    for dy in range(4):
+        hw = 5 - dy
+        for dx in range(-hw, hw + 1):
+            _set_pixel(sprite, cx + dx, 3 + dy, cloak if dy > 1 else cloak_light)
 
-    # Glowing eyes
-    _set_pixel(sprite, cx - 2, 10, (255, 40, 40))
-    _set_pixel(sprite, cx + 1, 10, (255, 40, 40))
+    # --- Face shadow under hood ---
+    _draw_rect(sprite, cx - 3, 7, 6, 5, skin_shadow)
 
-    # Phase effect (dithered edges)
-    for i in range(s):
-        if i % 3 == 0:
-            _set_pixel(sprite, cx - s // 4 + random.randint(-1, 1), 4 + i % (s - 6), base, 100)
-            _set_pixel(sprite, cx + s // 4 + random.randint(-1, 1), 4 + i % (s - 6), base, 100)
+    # --- Glowing eyes (piercing red) ---
+    _set_pixel(sprite, cx - 2, 9, (255, 40, 40))
+    _set_pixel(sprite, cx + 1, 9, (255, 40, 40))
+    # Eye glow halo
+    _set_pixel(sprite, cx - 3, 9, (160, 20, 20), 120)
+    _set_pixel(sprite, cx + 2, 9, (160, 20, 20), 120)
+
+    # --- Cloak clasp (tongue color) ---
+    _set_pixel(sprite, cx, 12, base)
+    _set_pixel(sprite, cx, 13, light)
+
+    # --- Hands peeking from cloak ---
+    _set_pixel(sprite, cx - 4, s - 10, (60, 40, 80))
+    _set_pixel(sprite, cx + 3, s - 10, (60, 40, 80))
+
+    # --- Dark aura wisps ---
+    for i in range(0, s, 4):
+        ax = cx - s // 4 + (i * 7) % (s // 2)
+        ay = 5 + i % (s - 8)
+        if 0 <= ax < s and 0 <= ay < s:
+            _set_pixel(sprite, ax, ay, base, 80)
+
+    _outline_sprite(sprite)
 
 
 # ---------------------------------------------------------------------------
