@@ -639,6 +639,32 @@ Respond with clear, actionable output.`;
   }
 
   /**
+   * Build governance input from a coding task and its assigned group.
+   */
+  private buildGovernanceInput(task: CodingTask, group: TaskGroup): GovernanceInput {
+    // Derive trust from group agent count (more agents = more review = higher trust)
+    const trustScore = Math.min(1.0, 0.5 + group.agents.length * 0.15);
+    // Derive risk from task complexity
+    const complexityRisk: Record<TaskComplexity, number> = {
+      simple: 0.2, moderate: 0.4, complex: 0.7,
+    };
+    const riskScore = complexityRisk[task.complexity] ?? 0.5;
+    // Coherence from contribution alignment
+    const coherenceScore = task.contributions.length > 0
+      ? Math.min(1.0, 0.6 + task.contributions.length * 0.1)
+      : 0.8;
+
+    return {
+      requestId: task.id,
+      trustScore,
+      riskScore,
+      coherenceScore,
+      humanReviewRequired: task.complexity === 'complex',
+      executionRequested: true,
+    };
+  }
+
+  /**
    * Emit platform event
    */
   private emitEvent(event: PlatformEvent): void {
