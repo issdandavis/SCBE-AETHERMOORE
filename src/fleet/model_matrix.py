@@ -496,57 +496,141 @@ class ModelMatrix:
         if len(self.interaction_log) > 500:
             self.interaction_log = self.interaction_log[-500:]
 
-    # ── Conversation Spin (PivotKnowledge) ─────────────────
+    # ── Conversation Spin (Magnetic Field Dynamics) ────────
+    #
+    # Topics are charged particles in a 2D field.
+    # Each Sacred Tongue node generates a magnetic field (B-vector)
+    # that curves the conversation trajectory via Lorentz force:
+    #
+    #   F = q * (v x B)
+    #
+    # The path looks chaotic but follows deterministic physics —
+    # natural fluctuations from the laws of nature applied to
+    # machine systems.
+
+    # Topic positions in a 2D semantic space
+    _TOPIC_POSITIONS: Dict[str, tuple] = {
+        "ai_safety": (0.0, 0.0),
+        "governance": (1.0, 0.5),
+        "alignment": (-0.5, 1.0),
+        "cryptography": (1.5, -0.5),
+        "ethics": (-1.0, 0.5),
+        "game_design": (2.0, 2.0),
+        "narrative": (1.5, 2.5),
+        "mechanics": (2.5, 1.5),
+        "training": (0.0, -1.5),
+        "datasets": (-0.5, -2.0),
+        "fine_tuning": (0.5, -2.0),
+        "evaluation": (1.0, -1.5),
+        "deployment": (2.0, -1.0),
+        "cloud": (2.5, -0.5),
+        "security": (1.0, 0.0),
+        "policy": (0.5, 1.0),
+        "audit": (1.5, 0.5),
+        "quantum": (2.0, -1.5),
+        "pqc": (2.5, -1.0),
+        "economics": (3.0, 1.0),
+        "monetization": (3.0, 1.5),
+        "marketplace": (3.5, 1.0),
+    }
+
+    # Sacred Tongue magnetic field vectors (direction + strength)
+    # Each tongue warps conversation trajectory toward its domain
+    _TONGUE_B_FIELD: Dict[str, tuple] = {
+        "KO": (0.0, 0.3),     # pulls toward intent/alignment (upward)
+        "AV": (0.2, 0.2),     # pulls toward creativity (diagonal)
+        "RU": (0.3, -0.1),    # pulls toward security (rightward)
+        "CA": (0.1, -0.3),    # pulls toward compute/deployment (downward)
+        "UM": (-0.2, 0.2),    # pulls toward governance (upper-left)
+        "DR": (0.0, 0.0),     # neutral — structural observer
+    }
 
     def conversation_spin(
         self,
         bundle_id: str,
         seed_topic: str,
-        spins: int = 3,
-    ) -> List[Dict[str, str]]:
-        """Generate a topic-pivot chain across nodes for cohesion building.
+        spins: int = 6,
+        charge: float = 1.0,
+        dt: float = 0.5,
+    ) -> List[Dict[str, Any]]:
+        """Generate a magnetically-curved topic trajectory across nodes.
 
-        Inspired by the Spiralverse PivotKnowledge graph from the AI Workflow
-        Architect. Each spin pivots to a related topic and assigns it to the
-        next Sacred Tongue node in the bundle, creating a natural conversation
-        flow that builds inter-node understanding over time.
+        Uses Lorentz force F = q(v x B) where:
+        - q = conversation charge (enthusiasm/urgency)
+        - v = current velocity (topic drift direction)
+        - B = Sacred Tongue magnetic field at current node
+
+        The path appears chaotic but follows deterministic physics.
+        Natural fluctuations from laws of nature applied to machine systems.
         """
-        _TOPIC_GRAPH: Dict[str, List[str]] = {
-            "ai_safety": ["governance", "alignment", "cryptography", "ethics"],
-            "governance": ["policy", "compliance", "audit", "ai_safety"],
-            "cryptography": ["quantum", "pqc", "lattice", "ai_safety"],
-            "game_design": ["narrative", "mechanics", "ai_training", "economy"],
-            "narrative": ["worldbuilding", "characters", "game_design", "lore"],
-            "training": ["datasets", "fine_tuning", "evaluation", "deployment"],
-            "deployment": ["cloud", "edge", "monitoring", "training"],
-            "security": ["threat_model", "cryptography", "audit", "governance"],
-            "economics": ["pricing", "monetization", "marketplace", "game_design"],
-            "alignment": ["interpretability", "reward_model", "ai_safety", "ethics"],
-        }
+        import math
 
         bundle = self.bundles.get(bundle_id)
         if not bundle:
             return [{"error": f"Bundle {bundle_id} not found"}]
 
-        chain: List[Dict[str, str]] = []
+        # Initial conditions
         current_topic = seed_topic.lower().replace(" ", "_")
+        pos = list(self._TOPIC_POSITIONS.get(current_topic, (0.0, 0.0)))
+        vel = [0.1, 0.05]  # initial drift velocity
+
+        chain: List[Dict[str, Any]] = []
 
         for spin_idx in range(spins):
             node = bundle.nodes[spin_idx % len(bundle.nodes)]
-            neighbors = _TOPIC_GRAPH.get(current_topic, ["ai_safety"])
-            import random as _rng
-            next_topic = _rng.choice(neighbors)
+            tongue = node.tongue
+
+            # Get B-field for this tongue
+            bx, by = self._TONGUE_B_FIELD.get(tongue, (0.0, 0.0))
+
+            # Lorentz force: F = q * (v x B)
+            # In 2D with B perpendicular to plane: F = q * |v| * |B| (rotational)
+            # Fx = q * vy * Bz  (we use Bx as the perpendicular component)
+            # Fy = -q * vx * Bz
+            # Simplified: apply B as a torque on the velocity vector
+            fx = charge * (vel[1] * by - vel[0] * bx * 0.5)
+            fy = charge * (-vel[0] * bx + vel[1] * by * 0.5)
+
+            # Update velocity (with damping to prevent runaway)
+            vel[0] = vel[0] + fx * dt
+            vel[1] = vel[1] + fy * dt
+            speed = math.sqrt(vel[0] ** 2 + vel[1] ** 2)
+            if speed > 1.0:  # terminal velocity
+                vel[0] /= speed
+                vel[1] /= speed
+
+            # Update position
+            pos[0] += vel[0] * dt
+            pos[1] += vel[1] * dt
+
+            # Find nearest topic to new position
+            nearest_topic = current_topic
+            nearest_dist = float("inf")
+            for topic, (tx, ty) in self._TOPIC_POSITIONS.items():
+                if topic == current_topic:
+                    continue
+                d = math.sqrt((pos[0] - tx) ** 2 + (pos[1] - ty) ** 2)
+                if d < nearest_dist:
+                    nearest_dist = d
+                    nearest_topic = topic
 
             chain.append({
                 "spin": spin_idx + 1,
-                "tongue": node.tongue,
+                "tongue": tongue,
                 "node_id": node.node_id,
                 "from_topic": current_topic,
-                "to_topic": next_topic,
-                "prompt": f"[{node.tongue}] As {TONGUE_ROLES[node.tongue]} specialist, "
-                          f"connect '{current_topic}' to '{next_topic}' and explain the implications.",
+                "to_topic": nearest_topic,
+                "position": [round(pos[0], 3), round(pos[1], 3)],
+                "velocity": [round(vel[0], 3), round(vel[1], 3)],
+                "force": [round(fx, 4), round(fy, 4)],
+                "b_field": [bx, by],
+                "distance_to_topic": round(nearest_dist, 3),
+                "prompt": f"[{tongue}] As {TONGUE_ROLES[tongue]} specialist, "
+                          f"the conversation drifts from '{current_topic}' toward "
+                          f"'{nearest_topic}' (magnetic pull: B=[{bx},{by}]). "
+                          f"Bridge these topics.",
             })
-            current_topic = next_topic
+            current_topic = nearest_topic
 
         return chain
 
