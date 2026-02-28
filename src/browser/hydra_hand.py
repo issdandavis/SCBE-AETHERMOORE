@@ -65,6 +65,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
+from src.browser.polly_vision import PollyVision, ObservationTier, PageObservation
+
 logger = logging.getLogger("hydra-hand")
 
 
@@ -135,6 +137,7 @@ class Finger:
     active: bool = False
     action_count: int = 0
     blocked_count: int = 0
+    vision: Optional[PollyVision] = None  # Polly Vision observation window
 
     @property
     def proximity(self) -> Proximity:
@@ -239,6 +242,17 @@ class Finger:
         """Execute JavaScript on current page."""
         return await self.page.evaluate(script)
 
+    async def observe(self, force_screenshot: bool = False, reason: str = "") -> Optional[PageObservation]:
+        """Observe the current page through PollyVision.
+
+        Returns a PageObservation with accessibility tree, interactive
+        elements, and optionally a screenshot — depending on the vision tier.
+        Returns None if vision is not attached or page is unavailable.
+        """
+        if not self.vision or not self.page:
+            return None
+        return await self.vision.observe(self.page, force_screenshot=force_screenshot, reason=reason)
+
 
 # ── Domain Safety (RU Finger's Job) ─────────────────────────────────
 
@@ -283,10 +297,11 @@ class HydraHand:
     6. KO synthesizes and returns the final result
     """
 
-    def __init__(self, head_id: str = "default"):
+    def __init__(self, head_id: str = "default", vision_tier: ObservationTier = ObservationTier.TIER_2):
         self.head_id = head_id
+        self.vision_tier = vision_tier
         self.fingers: Dict[Tongue, Finger] = {
-            t: Finger(tongue=t) for t in Tongue
+            t: Finger(tongue=t, vision=PollyVision(tier=vision_tier)) for t in Tongue
         }
         self._playwright = None
         self._open = False
@@ -395,20 +410,35 @@ class HydraHand:
             if len(safe_urls) >= max_urls:
                 break
 
-        # Step 3: CA extracts from safe URLs (parallel)
+        # Step 3: CA extracts from safe URLs (with PollyVision perception)
         ca = self.finger(Tongue.CA)
         extractions = []
         for url in safe_urls[:max_urls]:
             nav_result = await ca.navigate(url)
             if nav_result.metadata.get("status", 0) == 200 or nav_result.title:
-                text = await ca.extract_text()
-                # Truncate to first 2000 chars per page
-                extractions.append({
-                    "url": url,
-                    "title": nav_result.title,
-                    "text": text[:2000],
-                    "elapsed_ms": nav_result.elapsed_ms,
-                })
+                # Use PollyVision observation when available (structured perception)
+                obs = await ca.observe(reason=f"research:{query[:40]}")
+                if obs:
+                    extractions.append({
+                        "url": url,
+                        "title": obs.title or nav_result.title,
+                        "text": obs.accessibility_tree[:2000],
+                        "page_summary": obs.page_summary,
+                        "element_count": obs.element_count,
+                        "has_screenshot": obs.has_screenshot,
+                        "content_hash": obs.content_hash,
+                        "token_estimate": obs.token_estimate,
+                        "elapsed_ms": nav_result.elapsed_ms + obs.elapsed_ms,
+                    })
+                else:
+                    # Fallback: blind text extraction
+                    text = await ca.extract_text()
+                    extractions.append({
+                        "url": url,
+                        "title": nav_result.title,
+                        "text": text[:2000],
+                        "elapsed_ms": nav_result.elapsed_ms,
+                    })
 
         report["extractions"] = extractions
 
@@ -418,14 +448,26 @@ class HydraHand:
             for url in report["urls_quarantined"][:2]:  # Max 2 stealth visits
                 nav_result = await um.navigate(url)
                 if nav_result.title:
-                    text = await um.extract_text()
-                    extractions.append({
-                        "url": url,
-                        "title": nav_result.title,
-                        "text": text[:1000],  # Less text from quarantined
-                        "source": "stealth",
-                        "elapsed_ms": nav_result.elapsed_ms,
-                    })
+                    obs = await um.observe(reason="stealth-quarantined")
+                    if obs:
+                        extractions.append({
+                            "url": url,
+                            "title": obs.title or nav_result.title,
+                            "text": obs.accessibility_tree[:1000],
+                            "page_summary": obs.page_summary,
+                            "source": "stealth",
+                            "content_hash": obs.content_hash,
+                            "elapsed_ms": nav_result.elapsed_ms + obs.elapsed_ms,
+                        })
+                    else:
+                        text = await um.extract_text()
+                        extractions.append({
+                            "url": url,
+                            "title": nav_result.title,
+                            "text": text[:1000],
+                            "source": "stealth",
+                            "elapsed_ms": nav_result.elapsed_ms,
+                        })
 
         # Step 5: DR structures into knowledge-ready format
         structured = {
@@ -453,6 +495,31 @@ class HydraHand:
             "[%s] Research complete: %d sources, %.0fms",
             self.head_id, len(extractions), report["elapsed_ms"]
         )
+        return report
+
+    async def research_and_funnel(
+        self,
+        query: str,
+        max_urls: int = 5,
+        topics: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        """Research a query and automatically push findings to cloud storage.
+
+        Combines research() + ResearchFunnel.push() in one call.
+        Findings go to local JSONL, Notion (if configured), and HuggingFace (if configured).
+        """
+        from src.browser.research_funnel import ResearchFunnel
+
+        report = await self.research(query, max_urls=max_urls)
+        funnel = ResearchFunnel()
+        receipt = await funnel.push(report, topics=topics)
+        report["funnel_receipt"] = {
+            "run_id": receipt.run_id,
+            "local_path": receipt.local_path,
+            "notion_url": receipt.notion_url,
+            "hf_committed": receipt.hf_committed,
+            "errors": receipt.errors,
+        }
         return report
 
     # ── Status ───────────────────────────────────────────────────────
