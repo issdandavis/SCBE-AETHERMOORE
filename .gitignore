@@ -106,3 +106,11 @@ scripts/*.bak
 artifacts/npm-pack/
 artifacts/shopify-both-side/
 artifacts/social/
+
+artifacts/
+*.gif
+demo/saves/
+demo/tuxemon_src/
+demo/*.png
+training-data/audio/
+tmp_*.xml

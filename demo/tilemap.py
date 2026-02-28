@@ -274,185 +274,391 @@ def _lighten(
 
 
 def _make_grass() -> pygame.Surface:
-    """Grass tile with a subtle dither pattern."""
+    """Pokemon RSE-style grass tile with multi-tone shading and blade clusters."""
     surf = pygame.Surface((TILE_SIZE, TILE_SIZE))
-    surf.fill(GRASS)
-    dark = _darken(GRASS, 20)
-    light = _lighten(GRASS, 15)
-    # Scattered blade highlights
-    for px in range(0, TILE_SIZE, 3):
-        for py in range(0, TILE_SIZE, 4):
-            offset = (px * 7 + py * 13) % 5
-            if offset == 0:
-                surf.set_at((px, py), light)
-            elif offset == 1:
-                surf.set_at((px, py), dark)
-    # Short blade accents
-    for px in range(1, TILE_SIZE, 5):
-        surf.set_at((px, 3), _lighten(GRASS, 25))
-        surf.set_at((px, 10), _lighten(GRASS, 25))
+    # Base: warm mid-green like RSE routes
+    base = (72, 160, 72)
+    surf.fill(base)
+    dark1 = (56, 136, 56)
+    dark2 = (48, 120, 48)
+    light1 = (88, 176, 80)
+    light2 = (104, 192, 96)
+    highlight = (128, 208, 112)
+
+    # Checkerboard-ish two-tone base (like RSE grass)
+    for py in range(TILE_SIZE):
+        for px in range(TILE_SIZE):
+            if (px + py) % 2 == 0:
+                surf.set_at((px, py), dark1)
+
+    # Blade cluster patterns (3 clusters per tile)
+    clusters = [(3, 3), (10, 7), (5, 12)]
+    for cx, cy in clusters:
+        # Blade: 1px wide, 2-3px tall, lighter tip
+        for bx, by, bh in [(-1, 0, 2), (0, -1, 3), (1, 0, 2)]:
+            for h in range(bh):
+                px_pos = cx + bx
+                py_pos = cy + by - h
+                if 0 <= px_pos < TILE_SIZE and 0 <= py_pos < TILE_SIZE:
+                    c = light2 if h == bh - 1 else light1
+                    surf.set_at((px_pos, py_pos), c)
+
+    # Scattered highlight pixels (sun dappling)
+    for px, py in [(1, 1), (7, 5), (14, 2), (9, 13), (2, 9)]:
+        if px < TILE_SIZE and py < TILE_SIZE:
+            surf.set_at((px, py), highlight)
+
+    # Shadow pixels at bottom edge (depth cue)
+    for px in range(TILE_SIZE):
+        if (px * 5 + 3) % 7 < 3:
+            surf.set_at((px, TILE_SIZE - 1), dark2)
+
     return surf
 
 
 def _make_stone() -> pygame.Surface:
-    """Stone / floating-island floor tile."""
+    """Pokemon RSE-style stone path / indoor floor with clean cobblestone."""
     surf = pygame.Surface((TILE_SIZE, TILE_SIZE))
-    surf.fill(FLOAT_ISL)
-    dark = _darken(FLOAT_ISL, 18)
-    light = _lighten(FLOAT_ISL, 18)
-    # Cobblestone grid lines
+    # Warm beige-grey like Pokemon Center floors
+    base = (192, 184, 168)
+    surf.fill(base)
+    dark = (160, 152, 136)
+    darker = (136, 128, 112)
+    light = (216, 208, 196)
+    highlight = (232, 224, 212)
+
+    # Cobblestone grid: two rows of stones, offset
+    # Top row: 0-7 (two stones side by side)
     for px in range(TILE_SIZE):
-        surf.set_at((px, 0), dark)
-        surf.set_at((px, 7), dark)
-        surf.set_at((px, 15), dark)
-    for py in range(TILE_SIZE):
-        surf.set_at((0, py), dark)
-        surf.set_at((8, py), dark)
-        surf.set_at((15, py), dark)
-    # Inner highlights
-    for dx in range(2, 7):
-        surf.set_at((dx, 2), light)
-        surf.set_at((dx + 8, 10), light)
+        surf.set_at((px, 0), darker)   # top edge
+        surf.set_at((px, 7), darker)   # mid seam
+        surf.set_at((px, 15), darker)  # bottom edge
+    surf.set_at((7, 0), darker)        # vertical seam top row
+    surf.set_at((7, 1), darker)
+    surf.set_at((7, 2), darker)
+    surf.set_at((7, 3), darker)
+    surf.set_at((7, 4), darker)
+    surf.set_at((7, 5), darker)
+    surf.set_at((7, 6), darker)
+    # Bottom row offset
+    surf.set_at((3, 8), darker)
+    surf.set_at((3, 9), darker)
+    surf.set_at((3, 10), darker)
+    surf.set_at((3, 11), darker)
+    surf.set_at((3, 12), darker)
+    surf.set_at((3, 13), darker)
+    surf.set_at((3, 14), darker)
+    surf.set_at((11, 8), darker)
+    surf.set_at((11, 9), darker)
+    surf.set_at((11, 10), darker)
+    surf.set_at((11, 11), darker)
+    surf.set_at((11, 12), darker)
+    surf.set_at((11, 13), darker)
+    surf.set_at((11, 14), darker)
+
+    # Highlight: top-left inner corner of each stone
+    for dx in range(1, 6):
+        surf.set_at((dx, 1), light)
+        surf.set_at((dx + 8, 1), light)
+    for dx in range(1, 3):
+        surf.set_at((dx, 8), light)
+    for dx in range(4, 10):
+        surf.set_at((dx, 8), light)
+    for dx in range(12, 15):
+        surf.set_at((dx, 8), light)
+
+    # Subtle noise for texture
+    for px in range(0, TILE_SIZE, 3):
+        for py in range(0, TILE_SIZE, 3):
+            if (px * 11 + py * 7) % 13 == 0:
+                surf.set_at((px, py), dark)
+
     return surf
 
 
 def _make_water() -> pygame.Surface:
-    """Water tile with horizontal wave lines."""
+    """Pokemon RSE-style water with rich blues and animated-look wave crests."""
     surf = pygame.Surface((TILE_SIZE, TILE_SIZE))
-    surf.fill(WATER)
-    light = _lighten(WATER, 35)
-    dark = _darken(WATER, 25)
-    # Horizontal wave rows
+    # Deep Sapphire blue
+    base = (48, 96, 192)
+    surf.fill(base)
+    mid = (56, 112, 208)
+    light = (80, 144, 224)
+    crest = (128, 184, 248)
+    deep = (32, 72, 160)
+    specular = (200, 224, 255)
+
+    # Depth gradient: darker at top, lighter at bottom
+    for py in range(TILE_SIZE):
+        ratio = py / float(TILE_SIZE)
+        r = int(base[0] + (mid[0] - base[0]) * ratio)
+        g = int(base[1] + (mid[1] - base[1]) * ratio)
+        b = int(base[2] + (mid[2] - base[2]) * ratio)
+        for px in range(TILE_SIZE):
+            surf.set_at((px, py), (r, g, b))
+
+    # Wave crests (curved light lines, Pokemon style)
+    # Wave 1 (row ~4)
     for px in range(TILE_SIZE):
-        phase = (px * 3 + 1) % TILE_SIZE
-        surf.set_at((px, 4), light)
-        surf.set_at((px, 11), light)
-        if phase < 6:
-            surf.set_at((px, 7), dark)
-    # Specular dot
-    surf.set_at((5, 3), (200, 220, 255))
-    surf.set_at((12, 10), (200, 220, 255))
+        offset = 1 if px % 6 < 3 else 0
+        surf.set_at((px, 3 + offset), light)
+        if px % 3 == 1:
+            surf.set_at((px, 2 + offset), crest)
+    # Wave 2 (row ~10)
+    for px in range(TILE_SIZE):
+        offset = 1 if (px + 3) % 6 < 3 else 0
+        surf.set_at((px, 10 + offset), light)
+        if (px + 1) % 3 == 1:
+            surf.set_at((px, 9 + offset), crest)
+
+    # Dark troughs between waves
+    for px in range(0, TILE_SIZE, 2):
+        surf.set_at((px, 7), deep)
+
+    # Specular highlights (bright sparkle dots)
+    surf.set_at((4, 2), specular)
+    surf.set_at((12, 9), specular)
+    surf.set_at((8, 13), specular)
+
     return surf
 
 
 def _make_wall() -> pygame.Surface:
-    """Wall / BG_EARTH tile with brick pattern."""
+    """Pokemon RSE-style building wall / cliff face with proper brick & shadow."""
     surf = pygame.Surface((TILE_SIZE, TILE_SIZE))
-    surf.fill(BG_EARTH)
-    dark = _darken(BG_EARTH, 14)
-    light = _lighten(BG_EARTH, 12)
-    # Brick rows
-    for row in range(0, TILE_SIZE, 4):
+    # Dark grey-brown like Pokemon building exteriors
+    base = (72, 64, 80)
+    surf.fill(base)
+    mortar = (56, 48, 64)
+    face_light = (88, 80, 96)
+    face_dark = (64, 56, 72)
+    highlight = (104, 96, 112)
+    shadow = (40, 32, 48)
+
+    # Brick rows with offset pattern
+    brick_h = 4
+    for row_idx in range(4):
+        y0 = row_idx * brick_h
+        # Mortar line (horizontal seam)
         for px in range(TILE_SIZE):
-            surf.set_at((px, row), dark)
-        offset = 4 if (row // 4) % 2 else 0
-        for py in range(row, min(row + 4, TILE_SIZE)):
-            surf.set_at((offset, py), dark)
-            col2 = (offset + 8) % TILE_SIZE
-            surf.set_at((col2, py), dark)
-    # Mortar highlight
-    for px in range(1, TILE_SIZE, 8):
-        surf.set_at((px, 2), light)
-        surf.set_at((px, 6), light)
-        surf.set_at((px, 10), light)
-        surf.set_at((px, 14), light)
+            surf.set_at((px, y0), mortar)
+
+        offset = 4 if row_idx % 2 else 0
+        # Vertical mortar seams
+        for seam_x in range(offset, TILE_SIZE, 8):
+            for dy in range(1, brick_h):
+                if y0 + dy < TILE_SIZE:
+                    surf.set_at((seam_x, y0 + dy), mortar)
+
+        # Brick faces: top highlight, bottom shadow
+        for dy in range(1, brick_h):
+            for px in range(TILE_SIZE):
+                y = y0 + dy
+                if y >= TILE_SIZE:
+                    break
+                # Skip mortar columns
+                seam_x = offset
+                is_mortar = False
+                while seam_x < TILE_SIZE:
+                    if px == seam_x:
+                        is_mortar = True
+                        break
+                    seam_x += 8
+                if is_mortar:
+                    continue
+                if dy == 1:
+                    surf.set_at((px, y), face_light)   # top of brick = lit
+                elif dy == brick_h - 1:
+                    surf.set_at((px, y), face_dark)    # bottom = shadow
+                else:
+                    surf.set_at((px, y), base)
+
+    # Top edge highlight (if wall has a cap)
+    for px in range(TILE_SIZE):
+        surf.set_at((px, 0), highlight)
+
+    # Bottom shadow edge
+    for px in range(TILE_SIZE):
+        surf.set_at((px, TILE_SIZE - 1), shadow)
+
     return surf
 
 
 def _make_warp() -> pygame.Surface:
-    """Warp / special tile -- gold swirl pattern."""
+    """Pokemon RSE-style warp pad / portal with concentric glow rings."""
     surf = pygame.Surface((TILE_SIZE, TILE_SIZE))
-    surf.fill(_darken(GOLD, 80))
+    # Dark base (like a teleport pad)
+    surf.fill((24, 24, 48))
     mid = TILE_SIZE // 2
-    # Concentric diamond
-    for ring in range(1, mid + 1):
-        c = _lighten(GOLD, ring * 6) if ring % 2 == 0 else _darken(GOLD, ring * 4)
-        for d in range(-ring, ring + 1):
-            rdist = ring - abs(d)
-            if 0 <= mid + d < TILE_SIZE:
-                if 0 <= mid - rdist < TILE_SIZE:
-                    surf.set_at((mid + d, mid - rdist), c)
-                if 0 <= mid + rdist < TILE_SIZE:
-                    surf.set_at((mid + d, mid + rdist), c)
-    # Centre bright pixel
-    surf.set_at((mid, mid), (255, 255, 200))
+    # Concentric circles with alternating bright/dim
+    for py in range(TILE_SIZE):
+        for px in range(TILE_SIZE):
+            dx = px - mid + 0.5
+            dy = py - mid + 0.5
+            dist = (dx * dx + dy * dy) ** 0.5
+            if dist < 2:
+                surf.set_at((px, py), (255, 248, 200))  # bright center
+            elif dist < 3.5:
+                surf.set_at((px, py), (255, 220, 100))  # inner ring gold
+            elif dist < 5:
+                surf.set_at((px, py), (200, 160, 60))   # mid ring amber
+            elif dist < 6.5:
+                surf.set_at((px, py), (140, 100, 40))   # outer ring dim
+            elif dist < 7.5:
+                surf.set_at((px, py), (80, 56, 32))     # fade ring
+    # Cardinal sparkle points
+    for dx, dy in [(0, -6), (0, 6), (-6, 0), (6, 0)]:
+        px, py = mid + dx, mid + dy
+        if 0 <= px < TILE_SIZE and 0 <= py < TILE_SIZE:
+            surf.set_at((px, py), (255, 255, 220))
     return surf
 
 
 def _make_encounter() -> pygame.Surface:
-    """Encounter zone -- tall grass with red-tinted tips."""
-    surf = _make_grass()
-    tip = (180, 80, 60)
-    for px in range(0, TILE_SIZE, 2):
-        surf.set_at((px, 0), tip)
-        surf.set_at((px + 1, 1), tip)
+    """Pokemon RSE-style tall grass with visible blade tops and darker tone."""
+    surf = pygame.Surface((TILE_SIZE, TILE_SIZE))
+    # Darker green base (clearly different from regular grass)
+    base = (48, 128, 48)
+    dark = (36, 104, 36)
+    mid = (56, 144, 56)
+    light_tip = (96, 192, 80)
+    bright_tip = (128, 216, 104)
+
+    surf.fill(base)
+
+    # Checkerboard undertone
+    for py in range(TILE_SIZE):
+        for px in range(TILE_SIZE):
+            if (px + py) % 2 == 0:
+                surf.set_at((px, py), dark)
+
+    # Tall grass blades (Pokemon style: V-shaped blade pairs)
+    blade_positions = [(2, 0), (6, 1), (10, 0), (14, 1), (4, 7), (8, 8), (12, 7), (1, 8)]
+    for bx, by in blade_positions:
+        # Left blade
+        if 0 <= bx - 1 < TILE_SIZE:
+            for h in range(4):
+                py_pos = by + 3 - h
+                px_pos = bx - 1 if h > 1 else bx
+                if 0 <= px_pos < TILE_SIZE and 0 <= py_pos < TILE_SIZE:
+                    c = bright_tip if h == 0 else (light_tip if h == 1 else mid)
+                    surf.set_at((px_pos, py_pos), c)
+        # Right blade
+        if 0 <= bx + 1 < TILE_SIZE:
+            for h in range(4):
+                py_pos = by + 3 - h
+                px_pos = bx + 1 if h > 1 else bx
+                if 0 <= px_pos < TILE_SIZE and 0 <= py_pos < TILE_SIZE:
+                    c = bright_tip if h == 0 else (light_tip if h == 1 else mid)
+                    surf.set_at((px_pos, py_pos), c)
+
     return surf
 
 
 def _make_npc_spot() -> pygame.Surface:
-    """NPC standing spot -- stone with a small golden diamond marker."""
+    """Pokemon RSE-style NPC standing spot: clean stone with subtle marker."""
     surf = _make_stone()
     mid = TILE_SIZE // 2
+    # Small decorative diamond (gold)
     pts = [
         (mid, mid - 2),
         (mid - 2, mid),
         (mid, mid + 2),
         (mid + 2, mid),
     ]
-    pygame.draw.polygon(surf, GOLD, pts)
+    pygame.draw.polygon(surf, (248, 208, 80), pts)
+    # Inner bright pixel
+    surf.set_at((mid, mid), (255, 240, 160))
     return surf
 
 
 def _make_chest() -> pygame.Surface:
-    """Treasure chest tile -- stone floor with a small chest icon."""
+    """Pokemon RSE-style treasure chest on stone floor."""
     surf = _make_stone()
-    # Chest body (brown)
-    body_color = (140, 90, 40)
-    clasp_color = GOLD
     cx, cy = TILE_SIZE // 2, TILE_SIZE // 2
-    pygame.draw.rect(surf, body_color, (cx - 4, cy - 2, 8, 6))
-    pygame.draw.rect(surf, _darken(body_color, 30), (cx - 4, cy - 2, 8, 6), 1)
-    # Lid curve
-    pygame.draw.rect(surf, _lighten(body_color, 20), (cx - 4, cy - 3, 8, 2))
-    # Clasp
-    surf.set_at((cx, cy), clasp_color)
-    surf.set_at((cx - 1, cy), clasp_color)
+    # Shadow under chest
+    pygame.draw.rect(surf, (120, 112, 100), (cx - 5, cy + 3, 10, 2))
+    # Chest body (warm brown)
+    body = (168, 104, 48)
+    body_dark = (128, 80, 32)
+    body_light = (200, 136, 72)
+    pygame.draw.rect(surf, body, (cx - 4, cy - 1, 8, 5))
+    # Bottom edge shadow
+    pygame.draw.rect(surf, body_dark, (cx - 4, cy + 3, 8, 1))
+    # Lid (slightly wider, lighter)
+    pygame.draw.rect(surf, body_light, (cx - 5, cy - 3, 10, 3))
+    # Lid top highlight
+    for px in range(cx - 4, cx + 5):
+        surf.set_at((px, cy - 3), (224, 168, 96))
+    # Outline
+    pygame.draw.rect(surf, (64, 40, 16), (cx - 5, cy - 3, 10, 7), 1)
+    # Gold clasp (center)
+    surf.set_at((cx, cy), (255, 220, 80))
+    surf.set_at((cx - 1, cy), (255, 220, 80))
+    surf.set_at((cx, cy - 1), (255, 220, 80))
+    # Clasp highlight
+    surf.set_at((cx, cy - 1), (255, 248, 160))
     return surf
 
 
 def _make_stair(direction: str) -> pygame.Surface:
-    """Staircase tile (``'up'`` or ``'down'``).
+    """Pokemon RSE-style staircase tile with clear step pattern and arrow.
 
-    Draws diagonal lines on a stone base with an arrow hint.
+    Parameters
+    ----------
+    direction : str
+        ``'up'`` or ``'down'``.
     """
-    surf = _make_stone()
-    light = _lighten(FLOAT_ISL, 35)
-    dark = _darken(FLOAT_ISL, 25)
-    # Diagonal stair lines
-    for i in range(0, TILE_SIZE, 3):
-        for d in range(min(3, TILE_SIZE - i)):
-            if 0 <= i + d < TILE_SIZE and 0 <= i + d < TILE_SIZE:
-                surf.set_at((i + d, i + d), light)
-                if i + d + 1 < TILE_SIZE:
-                    surf.set_at((i + d + 1, i + d), dark)
+    surf = pygame.Surface((TILE_SIZE, TILE_SIZE))
+    # Stone base
+    base = (176, 168, 152)
+    step_light = (208, 200, 184)
+    step_dark = (144, 136, 120)
+    edge = (112, 104, 88)
+    arrow_color = (255, 220, 80)
+
+    surf.fill(base)
+
+    # Draw 4 visible stair steps (horizontal bands)
+    step_h = TILE_SIZE // 4
+    for i in range(4):
+        y0 = i * step_h
+        # Step face
+        for py in range(y0, min(y0 + step_h, TILE_SIZE)):
+            for px in range(TILE_SIZE):
+                surf.set_at((px, py), base)
+        # Top edge of step (highlight)
+        for px in range(TILE_SIZE):
+            if y0 < TILE_SIZE:
+                surf.set_at((px, y0), step_light)
+        # Bottom edge of step (shadow)
+        if y0 + step_h - 1 < TILE_SIZE:
+            for px in range(TILE_SIZE):
+                surf.set_at((px, y0 + step_h - 1), step_dark)
+        # Left & right wall edges
+        for py in range(y0, min(y0 + step_h, TILE_SIZE)):
+            surf.set_at((0, py), edge)
+            surf.set_at((TILE_SIZE - 1, py), edge)
+
     # Arrow indicator
     mid = TILE_SIZE // 2
     if direction == "up":
-        # Upward-pointing arrow
-        for dx in range(-2, 3):
-            surf.set_at((mid + dx, mid + 1), GOLD)
-        surf.set_at((mid, mid - 2), GOLD)
-        surf.set_at((mid - 1, mid - 1), GOLD)
-        surf.set_at((mid + 1, mid - 1), GOLD)
-        surf.set_at((mid, mid), GOLD)
+        # Upward triangle
+        for row in range(4):
+            for dx in range(-row, row + 1):
+                px = mid + dx
+                py = mid + row - 1
+                if 0 <= px < TILE_SIZE and 0 <= py < TILE_SIZE:
+                    surf.set_at((px, py), arrow_color)
     else:
-        # Downward-pointing arrow
-        for dx in range(-2, 3):
-            surf.set_at((mid + dx, mid - 1), GOLD)
-        surf.set_at((mid, mid + 2), GOLD)
-        surf.set_at((mid - 1, mid + 1), GOLD)
-        surf.set_at((mid + 1, mid + 1), GOLD)
-        surf.set_at((mid, mid), GOLD)
+        # Downward triangle
+        for row in range(4):
+            for dx in range(-row, row + 1):
+                px = mid + dx
+                py = mid - row + 1
+                if 0 <= px < TILE_SIZE and 0 <= py < TILE_SIZE:
+                    surf.set_at((px, py), arrow_color)
+
     return surf
 
 
