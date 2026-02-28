@@ -598,6 +598,13 @@ class ServiceRegistry:
                        capabilities=["search", "patents", "prior_art"],
                        notes="Patent search and filing tracker")
 
+        self._register("perplexity", ServiceCategory.ACADEMIC,
+                       provider="Perplexity",
+                       credentials_env=["PERPLEXITY_API_KEY"],
+                       capabilities=["search", "research", "competitive_analysis",
+                                     "patent_landscape", "market_research"],
+                       notes="AI-powered web search — sonar/sonar-pro/sonar-deep-research")
+
         # --- DevOps ---
         self._register("github", ServiceCategory.DEVOPS,
                        provider="GitHub",

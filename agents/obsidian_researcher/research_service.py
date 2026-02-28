@@ -5,7 +5,7 @@ Orchestrates all source adapters into a single search pipeline with
 scanning. This is the sellable service layer.
 
 Tiers (highest trust first):
-    Tier 1 — Academic:   arXiv, ORCID, USPTO, Semantic Scholar, CrossRef
+    Tier 1 — Academic:   arXiv, ORCID, USPTO, Semantic Scholar, CrossRef, Perplexity
     Tier 2 — Professional: GitHub, NotebookLM
     Tier 3 — General:    WebPage (with governance filter)
     Tier 4 — Community:  Reddit, forums (heavy filtration)
@@ -126,6 +126,7 @@ class ResearchConnectorService:
         self._try_register("uspto", Tier.ACADEMIC, self._make_uspto)
         self._try_register("semantic_scholar", Tier.ACADEMIC, self._make_semantic_scholar)
         self._try_register("crossref", Tier.ACADEMIC, self._make_crossref)
+        self._try_register("perplexity", Tier.ACADEMIC, self._make_perplexity)
 
         # Tier 2 — Professional
         self._try_register("github", Tier.PROFESSIONAL, self._make_github)
@@ -167,6 +168,10 @@ class ResearchConnectorService:
     def _make_crossref(self) -> SourceAdapter:
         from .sources.crossref_source import CrossRefSource
         return CrossRefSource(self._config.get("crossref"))
+
+    def _make_perplexity(self) -> SourceAdapter:
+        from .sources.perplexity_source import PerplexitySource
+        return PerplexitySource(self._config.get("perplexity"))
 
     def _make_github(self) -> SourceAdapter:
         from .sources.github_source import GitHubSource

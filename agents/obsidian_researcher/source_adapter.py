@@ -27,6 +27,7 @@ class SourceType(str, Enum):
     CROSSREF = "crossref"
     WEB = "web"
     FORUM = "forum"
+    PERPLEXITY = "perplexity"
 
 
 @dataclass

@@ -12,6 +12,7 @@ from .orcid_source import ORCIDSource
 from .semantic_scholar_source import SemanticScholarSource
 from .crossref_source import CrossRefSource
 from .medium_source import MediumSource
+from .perplexity_source import PerplexitySource
 
 __all__ = [
     "ArxivSource",
@@ -27,4 +28,5 @@ __all__ = [
     "SemanticScholarSource",
     "CrossRefSource",
     "MediumSource",
+    "PerplexitySource",
 ]
