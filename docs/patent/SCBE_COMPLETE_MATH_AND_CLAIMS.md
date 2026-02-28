@@ -1,0 +1,920 @@
+# SCBE: Complete Mathematical Specification and Patent Claims
+
+## Document Purpose
+
+This document contains:
+1. All mathematical formulas explained in plain English
+2. All 50 patent claims
+3. Testable predictions for each component
+4. Simple verification procedures
+
+---
+
+# PART 1: THE MATH (Explained Simply)
+
+## What SCBE Does
+
+Normal encryption: You have a key. Anyone with the key can decrypt anywhere, anytime.
+
+SCBE encryption: You need the key AND the right context AND the right intent AND the right timing. Miss any one = you get noise, not an error message.
+
+---
+
+## AXIS 1: Core Encryption (The Foundation)
+
+### 1.1 Context Commitment
+
+**What it does:** Turns your 6 environmental measurements into a unique fingerprint.
+
+**The 6 measurements:**
+1. Time (Unix timestamp)
+2. Device ID (a number identifying who's decrypting)
+3. Threat level (0-10 scale of current danger)
+4. Entropy (randomness in the system, 0-1)
+5. Server load (how busy the system is)
+6. Behavior stability (how "normal" actions are, 0-1)
+
+**The math:**
+```
+chi = SHA256(c1, c2, c3, c4, c5, c6)
+```
+
+**In English:** Take those 6 numbers, run them through a one-way scrambler (SHA256), get a 32-byte fingerprint.
+
+**Why it matters:** Two contexts that differ by 0.00001 produce completely different fingerprints.
+
+---
+
+### 1.2 Post-Quantum Key Exchange (Kyber)
+
+**What it does:** Creates a shared secret that quantum computers can't crack.
+
+**The math:**
+```
+(pk, sk) = Kyber.KeyGen()        # Generate key pair
+(ss, ct) = Kyber.Encaps(pk)      # Sender creates shared secret
+ss = Kyber.Decaps(sk, ct)        # Receiver recovers it
+```
+
+**In English:**
+- Sender and receiver agree on a secret password
+- Even a quantum computer watching the exchange can't figure out what it is
+- This is NIST-approved (ML-KEM standard)
+
+---
+
+### 1.3 Post-Quantum Signatures (Dilithium)
+
+**What it does:** Proves who sent the message and that it wasn't tampered with.
+
+**The math:**
+```
+(pk, sk) = Dilithium.KeyGen()    # Generate signing keys
+sig = Dilithium.Sign(sk, msg)    # Sign a message
+valid = Dilithium.Verify(pk, msg, sig)  # Check signature
+```
+
+**In English:**
+- Like a signature that quantum computers can't forge
+- This is NIST-approved (ML-DSA standard)
+
+---
+
+### 1.4 Chaos Diffusion (The Secret Sauce)
+
+**What it does:** Scrambles your message using chaos math. Wrong parameters = unscrambling gives noise.
+
+**The math:**
+```
+Logistic map: x_{n+1} = r * x_n * (1 - x_n)
+
+Where:
+- r is between 3.97 and 4.0 (derived from your key + context)
+- x_0 is your starting point (also derived from key + context)
+```
+
+**In English:**
+- This is the same math that describes population growth and chaos
+- Tiny changes in r or x_0 produce completely different sequences
+- After 100 iterations, a change of 0.0001 in r produces a totally different output
+
+**Visual test:** Try these in any calculator:
+```
+r = 3.99, x_0 = 0.5:
+  x_1 = 3.99 * 0.5 * 0.5 = 0.9975
+  x_2 = 3.99 * 0.9975 * 0.0025 = 0.00995...
+
+r = 3.99, x_0 = 0.50001:
+  After 50 steps: completely different sequence
+```
+
+---
+
+### 1.5 Spectral Encryption (FFT Phase Rotation)
+
+**What it does:** Converts your message to frequencies, rotates them by chaos amounts, converts back.
+
+**The math:**
+```
+1. S = FFT(plaintext)           # Convert to frequency domain
+2. chaos = logistic_sequence(n)  # Generate chaos from key+context
+3. S' = S * e^(2*pi*i * chaos)   # Rotate each frequency
+4. ciphertext = S'               # Store rotated frequencies
+
+Decrypt:
+5. S = ciphertext * e^(-2*pi*i * chaos)  # Reverse rotation
+6. plaintext = IFFT(S)           # Convert back
+```
+
+**In English:**
+- Your message is like a chord (multiple notes)
+- We spin each note by a secret amount
+- Wrong spin amounts = wrong notes = noise when you convert back
+
+---
+
+### 1.6 Key Derivation
+
+**What it does:** Combines shared secret + context + intent into the chaos parameters.
+
+**The math:**
+```
+diff_key = SHA512(shared_secret || context_hash || intent_fingerprint || domain)
+
+r = 3.97 + (diff_key[0:4] mod 300) / 100000
+x_0 = 0.1 + (diff_key[4:8] mod 8000) / 10000
+```
+
+**In English:**
+- Mix everything together
+- Extract the chaos parameters from the mix
+- Different inputs = different parameters = different chaos = noise output
+
+---
+
+## AXIS 2: Neural Defense (Behavioral Authorization)
+
+### 2.1 Hopfield Energy Function
+
+**What it does:** Learns what "normal" behavior looks like. Abnormal = high energy = rejected.
+
+**The math:**
+```
+E(c) = -1/2 * c^T * W * c + theta^T * c
+
+Where:
+- c = your current context (normalized)
+- W = weight matrix (learned from valid patterns)
+- theta = bias vector
+```
+
+**In English:**
+- Valid behaviors sit in "valleys" (low energy)
+- Invalid behaviors are on "hills" (high energy)
+- Like a marble in a bowl: normal positions = bottom of bowl
+
+**Learning rule (Hebbian):**
+```
+W = W + (1/N) * c * c^T    # Add outer product of valid pattern
+```
+
+**In English:** Every time you see a valid context, you make that valley deeper.
+
+---
+
+### 2.2 Energy Threshold
+
+**What it does:** Sets the cutoff for "too abnormal."
+
+**The math:**
+```
+E_threshold = mu_E + k * sigma_E
+
+Where:
+- mu_E = average energy of valid patterns
+- sigma_E = standard deviation of valid energies
+- k = multiplier (usually 3)
+```
+
+**In English:** If your energy is more than 3 standard deviations above normal, you're rejected.
+
+---
+
+### 2.3 Gradient Margin (Adversarial Detection)
+
+**What it does:** Detects attackers trying to barely sneak past the threshold.
+
+**The math:**
+```
+grad_E(c) = -W*c + theta           # Energy gradient
+delta_min = |E_threshold - E(c)| / ||grad_E(c)||  # Minimum perturbation needed
+```
+
+**In English:**
+- How far are you from the boundary?
+- If you're suspiciously close to the edge, you're probably an attacker
+
+---
+
+## AXIS 3: Intent Configuration (Spiralverse Vocabulary)
+
+### 3.1 Vocabulary Mapping
+
+**What it does:** Maps words from your constructed language to chaos parameters.
+
+**The vocabulary:**
+```
+sil'kor   -> c = (-0.4, 0.0),   meaning: Foundation
+nav'een   -> c = (-1.0, 0.0),   meaning: Journey
+thel'vori -> c = (-0.125, 0.744), meaning: Transformation
+keth'mar  -> c = (-0.5, 0.0),   meaning: Boundary
+aether'vel -> c = (-0.2, 0.5),  meaning: Connection
+pol'yaneth -> c = (-0.6, 0.0),  meaning: Unity
+```
+
+**In English:** Each word picks a different region of the fractal. Wrong word = wrong region = chaos fails.
+
+---
+
+### 3.2 Intent Sequence
+
+**What it does:** Combines two words + a harmonic + a phase into a full configuration.
+
+**The math:**
+```
+Intent I = (primary, modifier, harmonic, phase)
+
+Combined basin: c = w * c_primary + (1-w) * c_modifier
+                where w = harmonic_weight of primary
+
+Harmonic scaling: scale = R^(h^2)
+                  where R = |c|, h = harmonic (1-7)
+```
+
+**In English:**
+- Pick two words, blend them
+- Pick a harmonic (1-7, like musical octaves)
+- Pick a phase (0 to 2pi, like rotation)
+- This combination picks exactly one region in chaos-space
+
+---
+
+### 3.3 Configuration Fingerprint
+
+**What it does:** Creates a unique hash of the intent for verification.
+
+**The math:**
+```
+M_I = 4x4 matrix built from intent parameters
+F_I = SHA256(M_I)
+```
+
+**In English:** If the intent doesn't match exactly, the fingerprints won't match.
+
+---
+
+## AXIS 4: Temporal Trajectory
+
+### 4.1 Intent Trajectory
+
+**What it does:** Defines which intents are valid at which times.
+
+**The math:**
+```
+Trajectory gamma: [0,T] -> Intent Space
+
+gamma(t) = sequence of waypoints:
+  (Intent_0, t_0), (Intent_1, t_1), ..., (Intent_n, t_n)
+```
+
+**In English:**
+- At t=0, you must use Intent A
+- At t=60s, you must use Intent B
+- Use the wrong intent for the time = rejected
+
+---
+
+### 4.2 Geodesic Distance
+
+**What it does:** Measures how far your intent is from the expected intent.
+
+**The math:**
+```
+d_geo = sqrt(w_p*delta_p^2 + w_m*delta_m^2 + w_h*d_h^2 + w_phi*d_phi^2)
+
+Where:
+- delta_p = 0 if primary matches, 1 otherwise
+- delta_m = 0 if modifier matches, 1 otherwise
+- d_h = |h_actual - h_expected| / 7
+- d_phi = min(|phi_actual - phi_expected|, 2pi - |...|) / pi
+- weights: w_p=2, w_m=1.5, w_h=1, w_phi=0.5
+```
+
+**In English:** How wrong are you? Primary word matters most, phase matters least.
+
+---
+
+### 4.3 Coherence Check
+
+**What it does:** Accepts or rejects based on geodesic distance.
+
+**The math:**
+```
+Accept iff d_geo <= epsilon_coherence (typically 0.15-0.2)
+```
+
+**In English:** If you're more than 15-20% off the expected intent, rejected.
+
+---
+
+### 4.4 Phase Lock
+
+**What it does:** Your phase must evolve in sync with wall-clock time.
+
+**The math:**
+```
+Expected phase: phi_expected(t) = (2pi * (t - epoch) / period) mod 2pi
+
+Deviation: d = min(|phi_actual - phi_expected|, 2pi - |...|)
+
+Accumulated drift: D = D * e^(-dt/period) + max(0, d - tolerance)
+
+Accept iff d <= 2*tolerance AND D <= max_drift
+```
+
+**In English:**
+- Your phase must tick like a clock
+- Small jitter is okay, but if you accumulate too much drift, rejected
+- Prevents replay attacks where someone tries to use an old recording
+
+---
+
+## AXIS 5: Swarm Consensus
+
+### 5.1 Trust Score
+
+**What it does:** Each node has a trust score tau in [0,1].
+
+**The math:**
+```
+tau_new = alpha * tau_old + (1-alpha) * validity_factor
+
+Where:
+- alpha = 0.9 (memory factor)
+- validity_factor = (passed_neural) * confidence * (1 - deviation/d_max)
+```
+
+**In English:**
+- Your trust mostly comes from your history (90%)
+- Good behavior slowly raises trust
+- Bad behavior quickly lowers trust
+
+---
+
+### 5.2 Swarm Deviation
+
+**What it does:** Measures how far you are from the trusted group.
+
+**The math:**
+```
+centroid = sum(tau_i * c_i) / sum(tau_i)   # Trust-weighted average of contexts
+deviation = ||c - centroid|| / sqrt(dim)
+```
+
+**In English:**
+- Where is the "center" of the trusted nodes?
+- How far are you from that center?
+- Too far = you're probably rogue
+
+---
+
+### 5.3 Participation Threshold
+
+**What it does:** You need minimum trust to participate in crypto operations.
+
+**The math:**
+```
+Can participate iff tau >= tau_participate (typically 0.3)
+```
+
+**In English:**
+- If your trust drops below 30%, you're locked out
+- No one has to revoke you -- you just naturally fall out
+- This is "self-exclusion"
+
+---
+
+### 5.4 Swarm Health
+
+**What it does:** Measures overall swarm wellness.
+
+**The math:**
+```
+H_swarm = (1/N) * sum(tau_i)
+```
+
+**In English:** Average trust across all nodes. If too many go rogue, the whole swarm health drops.
+
+---
+
+## FRACTAL GATE (Cheap Early Reject)
+
+### What it does
+
+Rejects invalid contexts before doing expensive crypto.
+
+### The math
+
+```
+Julia set iteration:
+  z_0 = point derived from context hash
+  c = point derived from intent basin parameter
+
+  For i = 1 to 50:
+    z = z^2 + c
+    if |z| > escape_radius: REJECT
+
+  If survived 50 iterations: ACCEPT
+```
+
+**In English:**
+- Your context + intent picks a starting point
+- We iterate z = z^2 + c (like the Mandelbrot set)
+- If the orbit escapes, your context is wrong
+- This is cheap to compute (50 multiplications)
+
+---
+
+# PART 2: ALL 50 CLAIMS
+
+## Axis 1: Core SCBE (Claims 1-9)
+
+### Claim 1: Base Method
+A computer-implemented method for context-bound encryption comprising:
+- (a) receiving plaintext P and context vector c = (c1...c6)
+- (b) computing context commitment chi = H(canon(c))
+- (c) performing post-quantum KEM to obtain shared secret ss
+- (d) deriving diffusion key k_diff = KDF(ss, chi)
+- (e) applying spectral diffusion: FFT -> chaos phase rotation -> spectral ciphertext
+- (f) wherein incorrect context produces non-invertible output (noise, not error)
+
+### Claim 2: ML-KEM Specification
+The method of claim 1, wherein the KEM is ML-KEM-768 or ML-KEM-1024 (NIST FIPS 203).
+
+### Claim 3: ML-DSA Signature
+The method of claim 1, further comprising signing payload with ML-DSA-65 or ML-DSA-87 (NIST FIPS 204).
+
+### Claim 4: Logistic Map Chaos
+The method of claim 1, wherein chaos sequence is generated by:
+```
+x_{n+1} = r * x_n * (1 - x_n), where r in [3.97, 4.0)
+```
+
+### Claim 5: Parameter Derivation
+The method of claim 4, wherein r and x_0 are derived from k_diff via:
+```
+r = 3.97 + (k_diff[0:4] mod 300) / 100000
+x_0 = 0.1 + (k_diff[4:8] mod 8000) / 10000
+```
+
+### Claim 6: FFT Phase Rotation
+The method of claim 1, wherein spectral diffusion comprises:
+```
+S' = FFT(P) * exp(2*pi*i * chaos_sequence)
+```
+
+### Claim 7: Fractal Gate
+The method of claim 1, further comprising an early-reject gate using:
+```
+z_{n+1} = z_n^2 + c, rejecting if |z| > R_escape within N iterations
+```
+
+### Claim 8: Intent-Parameterized Gate
+The method of claim 7, wherein c is derived from intent vocabulary basin parameters.
+
+### Claim 9: Domain Separation
+The method of claim 1, wherein key derivation includes domain separator:
+```
+k_diff = KDF(ss || chi || intent_fingerprint || "SCBE-v1")
+```
+
+---
+
+## Axis 2: Neural Defense (Claims 10-17)
+
+### Claim 10: Hopfield Authorization
+A method for behavioral authorization comprising:
+- (a) weight matrix W learned from valid context patterns
+- (b) bias vector theta
+- (c) normalization c' = tanh((c - mu) / sigma)
+- (d) energy function E(c) = -1/2 * c'^T * W * c' + theta^T * c'
+- (e) threshold E_threshold = mu_E + k*sigma_E, accepting iff E <= E_threshold
+- (f) gradient grad_E = -W*c' + theta for margin estimation
+- (g) robustness check delta_min = |E_threshold - E| / ||grad_E|| > epsilon_robust
+
+### Claim 11: Hebbian Learning
+The method of claim 10, wherein W is updated by:
+```
+W <- W + (1/N) * c' * c'^T
+```
+
+### Claim 12: Adaptive Threshold
+The method of claim 10, wherein k in [2, 4] is selected based on security requirements.
+
+### Claim 13: Tanh Normalization
+The method of claim 10, wherein normalization uses running mean and standard deviation.
+
+### Claim 14: Adversarial Detection
+The method of claim 10, wherein contexts with delta_min < epsilon_robust are flagged as adversarial.
+
+### Claim 15: Confidence Score
+The method of claim 10, further computing:
+```
+confidence = 1 / (1 + exp(E - E_threshold))
+```
+
+### Claim 16: Capacity Management
+The method of claim 10, wherein oldest patterns are removed when capacity N_max is reached:
+```
+W <- W - (1/N_max) * c_old * c_old'^T
+```
+
+### Claim 17: Zero Diagonal
+The method of claim 10, wherein diagonal of W is zeroed to prevent self-reinforcement.
+
+---
+
+## Axis 3: Intent Configuration (Claims 18-24)
+
+### Claim 18: Vocabulary-to-Basin Mapping
+A method for intent-based authorization comprising:
+- (a) vocabulary V of linguistic terms, each mapped to basin center c in C (complex)
+- (b) intent sequence I = (primary, modifier, harmonic, phase)
+- (c) weighted interpolation c_combined = w*c_primary + (1-w)*c_modifier
+- (d) harmonic scaling scale = R^(h^2) where R = |c_combined|
+- (e) configuration matrix M_I encoding all parameters
+- (f) fingerprint F_I = H(M_I)
+
+### Claim 19: Six Sacred Languages
+The method of claim 18, wherein vocabulary includes terms:
+```
+sil'kor, nav'een, thel'vori, keth'mar, aether'vel, pol'yaneth
+```
+each with defined basin centers in the Julia set parameter space.
+
+### Claim 20: Harmonic Weights
+The method of claim 18, wherein each term has harmonic_weight in (0, 1] for interpolation.
+
+### Claim 21: Phase Rotation
+The method of claim 18, wherein basin parameter is rotated:
+```
+c_final = c_combined * exp(i * phase)
+```
+
+### Claim 22: Escape Modifiers
+The method of claim 18, wherein each term modifies fractal escape radius.
+
+### Claim 23: Chaos Offsets
+The method of claim 18, wherein each term offsets logistic map r parameter.
+
+### Claim 24: Matrix Encoding
+The method of claim 18, wherein M_I is a 4x4 matrix capturing all configuration parameters.
+
+---
+
+## Axis 4: Temporal Trajectory (Claims 25-33)
+
+### Claim 25: Trajectory-Bound Authorization
+A method for temporal authorization comprising:
+- (a) trajectory gamma: [0,T] -> Intent Space as ordered waypoints
+- (b) waypoint format (Intent_i, timestamp_i)
+- (c) interpolation between waypoints for intermediate times
+- (d) expected intent I_expected = gamma(t) at time t
+- (e) geodesic distance d_geo with weighted components
+- (f) acceptance iff d_geo <= epsilon_coherence
+
+### Claim 26: Geodesic Interpolation
+The method of claim 25, wherein interpolation uses:
+- smoothstep for harmonic: alpha' = alpha^2 * (3 - 2*alpha)
+- circular interpolation for phase
+- discrete switch at midpoint for vocabulary
+
+### Claim 27: Trajectory Fingerprint
+The method of claim 25, further computing:
+```
+F_gamma = H(concat(F_I0, t0, F_I1, t1, ...))
+```
+
+### Claim 28: Weighted Distance
+The method of claim 25, wherein geodesic weights satisfy:
+```
+w_primary > w_modifier > w_harmonic > w_phase
+```
+
+### Claim 29: Self-Expiring Credentials
+The method of claim 25, wherein past trajectory segments become invalid automatically.
+
+### Claim 30: Phase Lock
+The method of claim 25, further comprising:
+```
+phi_expected(t) = (2*pi*(t - epoch) / period) mod 2*pi
+```
+
+### Claim 31: Drift Accumulation
+The method of claim 30, wherein accumulated drift causes failure:
+```
+D <- D * exp(-dt/period) + max(0, deviation - tolerance)
+Reject if D > max_drift
+```
+
+### Claim 32: Replay Prevention
+The method of claim 25, wherein time-shifted intent replays are detected via trajectory coherence.
+
+### Claim 33: Epoch Binding
+The method of claim 30, wherein epoch is committed at session initialization.
+
+---
+
+## Axis 5: Swarm Consensus (Claims 34-48)
+
+### Claim 34: Behavioral Swarm Authorization
+A method for distributed authorization comprising:
+- (a) node set N = {n1, ..., nk}, each with trust score tau_i
+- (b) inter-node similarity weights w_ij
+- (c) trust update: tau_new = alpha*tau_old + (1-alpha)*validity_factor
+- (d) participation threshold: can_participate iff tau >= tau_participate
+- (e) self-exclusion: nodes falling below threshold are automatically excluded
+
+### Claim 35: Similarity Function
+The method of claim 34, wherein:
+```
+sim(a,b) = 1 - ||a-b|| / (||a|| + ||b|| + epsilon)
+```
+
+### Claim 36: Memory Factor
+The method of claim 34, wherein alpha in [0.8, 0.95] controls trust momentum.
+
+### Claim 37: Trust-Weighted Centroid
+The method of claim 34, wherein swarm centroid is:
+```
+centroid = sum(tau_i * c_i) / sum(tau_i)
+```
+
+### Claim 38: Swarm Health
+The method of claim 34, further computing:
+```
+H_swarm = (1/N) * sum(tau_i)
+```
+
+### Claim 39: Deviation Penalty
+The method of claim 34, wherein validity_factor includes:
+```
+(1 - deviation/d_max) term penalizing swarm outliers
+```
+
+### Claim 40: No Explicit Revocation
+The method of claim 34, wherein rogue nodes self-exclude without central authority action.
+
+### Claim 41: Verification Order
+The method of claim 34, wherein checks proceed:
+```
+(a) intent match -> (b) trajectory -> (c) phase lock ->
+(d) neural -> (e) fractal -> (f) swarm -> (g) crypto
+```
+
+### Claim 42: Lockout Escalation
+The method of claim 34, wherein repeated failures trigger:
+```
+lockout_duration = 2^failed_attempts seconds
+```
+
+### Claim 43: Trust Decay
+The method of claim 34, wherein inactive nodes decay:
+```
+tau <- tau * exp(-lambda * time_since_update)
+```
+
+### Claim 44: Minimum Consensus
+The method of claim 34, wherein operations require:
+```
+n_trusted >= min_consensus (e.g., 3 nodes above tau_min)
+```
+
+### Claim 45: Weight Symmetry
+The method of claim 34, wherein w_ij = w_ji.
+
+### Claim 46: Byzantine Tolerance
+The method of claim 34, tolerating up to f < N/3 malicious nodes.
+
+### Claim 47: Graceful Degradation
+The method of claim 34, wherein H_swarm < H_critical triggers alert mode.
+
+### Claim 48: Recovery Protocol
+The method of claim 34, wherein nodes can rejoin after sustained good behavior.
+
+---
+
+## Additional Claims (49-50)
+
+### Claim 49: System Integration
+A system implementing claims 1, 10, 18, 25, and 34 in combination.
+
+### Claim 50: Fail-to-Noise Property
+The system of claim 49, wherein any authorization failure produces cryptographically random output indistinguishable from noise.
+
+---
+
+# PART 3: TESTABLE PREDICTIONS
+
+## Test 1: Chaos Sensitivity
+
+**Prediction:** Changing r by 0.0001 produces completely different output after 50 iterations.
+
+**How to test:**
+```python
+def logistic(r, x0, n):
+    x = x0
+    for _ in range(n):
+        x = r * x * (1 - x)
+    return x
+
+# These should be VERY different
+print(logistic(3.99, 0.5, 50))    # One value
+print(logistic(3.9901, 0.5, 50))  # Completely different value
+```
+
+**Expected:** Values differ by more than 0.1 after 50 iterations.
+
+---
+
+## Test 2: Fractal Gate Discrimination
+
+**Prediction:** Valid contexts pass the gate; invalid contexts escape to infinity.
+
+**How to test:**
+```python
+def fractal_gate(z0, c, max_iter=50, escape=2.0):
+    z = z0
+    for i in range(max_iter):
+        z = z*z + c
+        if abs(z) > escape:
+            return False, i
+    return True, max_iter
+
+# Test with valid basin parameter
+print(fractal_gate(0.1+0.1j, -0.4+0.0j))  # Should pass
+
+# Test with invalid parameter
+print(fractal_gate(0.1+0.1j, 0.5+0.5j))   # Should fail
+```
+
+---
+
+## Test 3: Neural Energy Separation
+
+**Prediction:** Trained patterns have low energy; novel patterns have high energy.
+
+**How to test:**
+1. Train on 10 similar contexts
+2. Measure energy of trained contexts (should be low)
+3. Measure energy of very different context (should be high)
+4. The difference should be statistically significant
+
+---
+
+## Test 4: Trajectory Coherence
+
+**Prediction:** Correct intent at correct time passes; wrong intent fails.
+
+**How to test:**
+1. Define trajectory: Intent A at t=0, Intent B at t=60
+2. At t=30, try Intent A -> should pass (still in window)
+3. At t=30, try Intent B -> should fail (too early)
+4. At t=90, try Intent A -> should fail (expired)
+
+---
+
+## Test 5: Swarm Trust Decay
+
+**Prediction:** Rogue nodes lose trust and self-exclude.
+
+**How to test:**
+1. Register 5 normal nodes
+2. Register 1 rogue node with very different context
+3. Update all nodes 10 times
+4. Check: rogue node's trust should be < 0.3 (excluded)
+5. Check: normal nodes' trust should be > 0.5 (participating)
+
+---
+
+## Test 6: Full Round-Trip
+
+**Prediction:** Correct everything = success; wrong anything = noise.
+
+**How to test:**
+1. Encrypt with context C, intent I, at time T
+2. Decrypt with same C, I, T -> should get original message
+3. Decrypt with C' (slightly different) -> should get noise
+4. Decrypt with I' (different intent) -> should get noise
+5. Decrypt with T' (wrong time) -> should get noise
+
+---
+
+## Test 7: Signature Verification
+
+**Prediction:** Tampered ciphertext fails signature check.
+
+**How to test:**
+1. Create valid envelope
+2. Flip one bit in spectral ciphertext
+3. Attempt decrypt -> should fail at signature verification
+
+---
+
+## Test 8: Lockout Escalation
+
+**Prediction:** Repeated failures trigger exponential lockout.
+
+**How to test:**
+1. Fail 5 times rapidly
+2. Check lockout duration = 2^5 = 32 seconds
+3. Fail 10 times
+4. Check lockout duration = 2^10 = 1024 seconds (~17 minutes)
+
+---
+
+# PART 4: SECURITY PROPERTIES SUMMARY
+
+| Property | Mechanism | Claim |
+|----------|-----------|-------|
+| Quantum-resistant key exchange | ML-KEM (Kyber) | 2 |
+| Quantum-resistant signatures | ML-DSA (Dilithium) | 3 |
+| Context binding | SHA256 commitment | 1(b) |
+| Fail-to-noise | Chaos divergence | 1(f), 50 |
+| Behavioral authorization | Hopfield energy | 10 |
+| Adversarial detection | Gradient margin | 14 |
+| Intent binding | Vocabulary -> basin | 18 |
+| Temporal binding | Trajectory coherence | 25 |
+| Replay prevention | Phase lock | 30, 32 |
+| Self-expiring credentials | Trajectory segments | 29 |
+| Distributed trust | Swarm consensus | 34 |
+| Self-exclusion | Trust decay | 40, 43 |
+| No revocation needed | Automatic exclusion | 40 |
+
+---
+
+# PART 5: WHAT MAKES THIS PATENTABLE
+
+## What's NOT new (prior art):
+- Kyber and Dilithium (NIST standards)
+- Logistic map (known since 1976)
+- FFT (known since 1965)
+- Hopfield networks (known since 1982)
+- Julia/Mandelbrot sets (known since 1980s)
+
+## What IS new (our combination):
+1. **Context-bound chaos diffusion** - using chaos math so wrong context = noise output
+2. **Vocabulary-to-basin mapping** - constructed language terms as cryptographic parameters
+3. **Trajectory-dependent authorization** - time-evolving intent requirements
+4. **Self-excluding swarm consensus** - nodes automatically lose access without revocation
+5. **Fail-to-noise property** - attackers can't distinguish "close" from "far" wrong
+
+## The novel insight:
+Standard crypto: Wrong key -> Error message (tells attacker they're wrong)
+SCBE: Wrong anything -> Noise (attacker can't tell if they're close or far)
+
+This is the "moving target defense" meets "honey encryption" meets "behavioral biometrics" in a single system.
+
+---
+
+# APPENDIX: CONSTANTS AND PARAMETERS
+
+## AETHERMOORE Constants (Your IP)
+
+```
+H(d,R) = R^(d^2)    # Harmonic scaling formula
+
+Where:
+- d = harmonic degree (1-7)
+- R = radius in complex plane
+```
+
+## Recommended Parameter Ranges
+
+| Parameter | Range | Default | Claim |
+|-----------|-------|---------|-------|
+| r (chaos) | [3.97, 4.0) | 3.99 | 4 |
+| Fractal iterations | [30, 100] | 50 | 7 |
+| Escape radius | [1.5, 3.0] | 2.0 | 7 |
+| Energy threshold k | [2, 4] | 3 | 12 |
+| Trust alpha | [0.8, 0.95] | 0.9 | 36 |
+| tau_participate | [0.2, 0.4] | 0.3 | 34(d) |
+| epsilon_coherence | [0.1, 0.25] | 0.15 | 25(f) |
+| Phase period | [30, 120]s | 60s | 30 |
+
+---
+
+**Document Version:** 1.0
+**Date:** January 2025
+**Author:** Isaac (Spiralverse Chronicles)
+**Status:** Ready for provisional patent filing
