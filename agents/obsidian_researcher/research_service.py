@@ -130,6 +130,7 @@ class ResearchConnectorService:
         # Tier 2 — Professional
         self._try_register("github", Tier.PROFESSIONAL, self._make_github)
         self._try_register("notebook_lm", Tier.PROFESSIONAL, self._make_notebook_lm)
+        self._try_register("medium", Tier.PROFESSIONAL, self._make_medium)
 
         # Tier 3 — General
         self._try_register("web_page", Tier.GENERAL, self._make_web_page)
@@ -174,6 +175,10 @@ class ResearchConnectorService:
     def _make_notebook_lm(self) -> SourceAdapter:
         from .sources.notebook_lm_source import NotebookLMSource
         return NotebookLMSource(self._config.get("notebook_lm"))
+
+    def _make_medium(self) -> SourceAdapter:
+        from .sources.medium_source import MediumSource
+        return MediumSource(self._config.get("medium"))
 
     def _make_web_page(self) -> SourceAdapter:
         from .sources.web_page_source import WebPageSource
