@@ -24,7 +24,17 @@
       "Bash(gh pr edit:*)",
       "Bash(gh pr checks:*)",
       "Bash(gh run view:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(git:*)",
+      "Bash(sort:*)",
+      "Bash(find:*)",
+      "Bash(powershell:*)",
+      "Bash(docker images:*)",
+      "Bash(docker ps:*)",
+      "Bash(docker rmi:*)",
+      "Bash(docker builder:*)",
+      "Bash(docker system:*)",
+      "Bash(npm cache:*)"
     ]
   }
 }

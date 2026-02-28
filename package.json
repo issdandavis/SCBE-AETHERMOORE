@@ -109,7 +109,7 @@
     "version:bump": "node scripts/version-bump.js",
     "precommit:check": "bash scripts/pre-commit-check.sh",
     "gateway:serve": "node dist-gateway/gateway/authorize-service.js",
-    "gateway:build": "tsc -p tsconfig.gateway.json"
+    "gateway:build": "tsc -p tsconfig.gateway.json",
     "xops:dryrun": "node scripts/system/x_ops_queue_runner.mjs --queue workflows/n8n/x_ops_queue.sample.json --dry-run",
     "xops:run": "node scripts/system/x_ops_queue_runner.mjs --queue workflows/n8n/x_ops_queue.sample.json"
   },
