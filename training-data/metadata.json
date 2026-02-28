@@ -1,7 +1,19 @@
 {
-  "total_pages": 0,
-  "exported_records": 0,
+  "total_pages": 1315,
+  "exported_records": 1315,
   "category_filter": "all",
-  "export_date": "2026-02-16T09:05:54.251279",
-  "category_breakdown": {}
+  "export_date": "2026-02-27T05:30:59.707239",
+  "category_breakdown": {
+    "lore": 251,
+    "relationships": 114,
+    "technical": 223,
+    "timelines": 83,
+    "general": 871
+  },
+  "audit": {
+    "status": "QUARANTINE",
+    "threshold": 0.15,
+    "flagged_count": 1315,
+    "hashchain_root": "ea415bfa7939b60c29d54aa3facf3699ab93fe4b172f466de0dc2b7073fdd445"
+  }
 }

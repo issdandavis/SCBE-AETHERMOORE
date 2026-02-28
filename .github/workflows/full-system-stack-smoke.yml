@@ -1,0 +1,145 @@
+name: Full System Stack Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      require_webhook:
+        description: "Fail if the configured n8n webhook route is not present"
+        required: false
+        default: false
+        type: boolean
+      browse_real:
+        description: "Run a real Playwright browse action (not dry-run)"
+        required: false
+        default: false
+        type: boolean
+  schedule:
+    - cron: "15 6 * * *"
+  push:
+    branches: [main]
+    paths:
+      - "workflows/n8n/**"
+      - "agents/browser/**"
+      - "src/symphonic_cipher/scbe_aethermoore/concept_blocks/web_agent/**"
+      - "scripts/system/full_system_smoke.py"
+      - ".github/workflows/full-system-stack-smoke.yml"
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      SCBE_API_KEYS: "test-key"
+      SCBE_API_KEY: "test-key"
+      SCBE_BROWSER_API_KEY: "test-key"
+      SCBE_BROWSER_SERVICE_URL: "http://127.0.0.1:8011"
+      N8N_API_KEY: "test-key"
+      N8N_HOST: "127.0.0.1"
+      N8N_PORT: "5678"
+      N8N_USER_FOLDER: "${{ runner.temp }}/.n8n_scbe"
+      N8N_ENCRYPTION_KEY: "scbe-smoke-encryption-key-for-ci"
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "false"
+      N8N_RUNNERS_ENABLED: "false"
+      N8N_DIAGNOSTICS_ENABLED: "false"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install fastapi uvicorn "pydantic>=2,<3" numpy scipy
+
+      - name: Install n8n
+        run: |
+          npm install -g n8n@1
+
+      - name: Import baseline n8n workflow
+        run: |
+          mkdir -p "$N8N_USER_FOLDER"
+          n8n import:workflow --input workflows/n8n/notion_github_swarm_research.workflow.json || true
+
+      - name: Start browser, bridge, and n8n services
+        run: |
+          nohup python -m uvicorn agents.browser.main:app --host 127.0.0.1 --port 8011 > browser.log 2>&1 &
+          echo $! > browser.pid
+
+          nohup python -m uvicorn workflows.n8n.scbe_n8n_bridge:app --host 127.0.0.1 --port 8001 > bridge.log 2>&1 &
+          echo $! > bridge.pid
+
+          nohup n8n start > n8n.log 2>&1 &
+          echo $! > n8n.pid
+
+      - name: Run full-system smoke checks
+        run: |
+          REQUIRE_WEBHOOK="${{ github.event.inputs.require_webhook || 'false' }}"
+          BROWSE_REAL="${{ github.event.inputs.browse_real || 'false' }}"
+
+          ARGS=(
+            --startup-wait-sec 90
+            --timeout-sec 20
+            --poll-seconds 20
+            --probe-webhook
+            --output artifacts/system_smoke/github_action_report.json
+            --print-json
+          )
+
+          if [[ "$REQUIRE_WEBHOOK" == "true" ]]; then
+            ARGS+=(--require-webhook)
+          fi
+          if [[ "$BROWSE_REAL" == "true" ]]; then
+            ARGS+=(--browse-real)
+          fi
+
+          python scripts/system/full_system_smoke.py "${ARGS[@]}"
+
+      - name: Run connector health checks
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ github.token }}
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_MCP_TOKEN: ${{ secrets.NOTION_MCP_TOKEN }}
+          GOOGLE_DRIVE_ACCESS_TOKEN: ${{ secrets.GOOGLE_DRIVE_ACCESS_TOKEN }}
+          GDRIVE_ACCESS_TOKEN: ${{ secrets.GDRIVE_ACCESS_TOKEN }}
+        run: |
+          python scripts/connector_health_check.py \
+            --checks github notion drive \
+            --github-repo issdandavis/SCBE-AETHERMOORE \
+            --notion-page-id "${{ secrets.NOTION_PAGE_ID }}" \
+            --output artifacts/system_smoke/connector_health_report.json
+
+      - name: Upload smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-system-stack-smoke
+          path: |
+            artifacts/system_smoke/**
+            bridge.log
+            browser.log
+            n8n.log
+
+      - name: Cleanup background services
+        if: always()
+        run: |
+          for pid_file in browser.pid bridge.pid n8n.pid; do
+            if [[ -f "$pid_file" ]]; then
+              pid="$(cat "$pid_file")"
+              kill "$pid" 2>/dev/null || true
+            fi
+          done

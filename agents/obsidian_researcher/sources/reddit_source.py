@@ -42,6 +42,17 @@ _DEFAULT_SUBREDDITS: List[str] = [
     "crypto",
     "computersecurity",
     "CategoryTheory",
+    # Dev security + AI safety
+    "netsec",
+    "AIsafety",
+    "LocalLLaMA",
+    "cybersecurity",
+    # Game dev + AI experiment
+    "gamedev",
+    "indiegames",
+    "reinforcementlearning",
+    # Patent + IP
+    "patents",
 ]
 
 _DEFAULT_LIMIT = 10

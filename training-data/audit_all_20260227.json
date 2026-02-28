@@ -1,0 +1,115 @@
+{
+  "status": "QUARANTINE",
+  "reason": "too many high-anomaly records",
+  "threshold": 0.15,
+  "max_flagged_ratio": 0.08,
+  "sample_count": 1315,
+  "flagged_count": 1315,
+  "flagged_ratio": 1.0,
+  "mean_score": 0.280853,
+  "max_score": 0.672564,
+  "hashchain_root": "ea415bfa7939b60c29d54aa3facf3699ab93fe4b172f466de0dc2b7073fdd445",
+  "flagged_examples": [
+    {
+      "index": 0,
+      "score": 0.378229,
+      "preview": "Sardonic Character Traits - Spiral of Pollyoneth Universe\nPolly (Polymnia Aetheris) - Enhanced Personality Profile\nCore Sardonic Traits\nMeta"
+    },
+    {
+      "index": 1,
+      "score": 0.383004,
+      "preview": "Sardonic Elements & Character Wit Archive\nPolly (Polymnia Aetheris) - Meta-Narrator\nSignature Sardonic Quotes:\n\"Time is a boring juggler, gi"
+    },
+    {
+      "index": 2,
+      "score": 0.581342,
+      "preview": "Purpose: Give any AI operator (Claude, ChatGPT, Gemini, local models) instant context to work effectively with SCBE-AETHERMOORE.\nLast Update"
+    },
+    {
+      "index": 3,
+      "score": 0.425764,
+      "preview": "Date: February 26, 2026 | Research: Claude Opus 4.6 web research\nWhat is OpenClaw?\nOpenClaw (formerly Clawdbot \u2192 Moltbot \u2192 OpenClaw) is the "
+    },
+    {
+      "index": 4,
+      "score": 0.583221,
+      "preview": "Status: Design Approved | Date: February 26, 2026 | Author: Issac Davis\nCore Insight\nEvery bit that enters the system gets \"dressed\" through"
+    },
+    {
+      "index": 5,
+      "score": 0.394455,
+      "preview": "[nested content]\n[nested content]\nSCBE-AETHERMOORE: Complete Mathematical & Security Specification\nA Comprehensive Technical Reference for P"
+    },
+    {
+      "index": 6,
+      "score": 0.550027,
+      "preview": "The Mathematical Vine\nA single thread of mathematics that grows from foundation to decision.\nThis page traces every formula in SCBE-PHDM-AET"
+    },
+    {
+      "index": 7,
+      "score": 0.384809,
+      "preview": "Welcome to Your WorldForge Setup! QUICK CHECK LIST THEN 5 Minute set-up Guide Next! \nCongratulations on getting WorldForge! This wizard will"
+    },
+    {
+      "index": 8,
+      "score": 0.520874,
+      "preview": "\ud83d\udcc4 worldforge_overview.md\n/code\n\ud83c\udf0d WorldForge - Complete Worldbuilding & Conlang Template\nWelcome to WorldForge\n[nested content]\n[nested conte"
+    },
+    {
+      "index": 9,
+      "score": 0.381697,
+      "preview": "Character Personality Enhancement Project\nSardonic Traits & Wit Documentation\nExecutive Summary\nThis document outlines findings from Polly's"
+    },
+    {
+      "index": 10,
+      "score": 0.559292,
+      "preview": "Spiralverse Protocol\nSecure AI-to-AI Communication for the Autonomous Age\nThe SCBE-AETHERMOORE framework provides exponentially increasing s"
+    },
+    {
+      "index": 11,
+      "score": 0.381971,
+      "preview": "Character Enhancement Summary - February 2026\nPolly's Meta-Architectural Report\nKey Findings\nTimeline Status\nMajor events verified: The Sund"
+    },
+    {
+      "index": 12,
+      "score": 0.372688,
+      "preview": "Character Database Updates - February 2026\nScheduled Review Conducted by Polly, Meta Architect\nNew Characters Identified\nMira\nRole: Faculty "
+    },
+    {
+      "index": 13,
+      "score": 0.544415,
+      "preview": "The Six Tongues Protocol\nAn Isekai Story Where Magic Is Cryptographic Architecture\nBy Issac Davis\nCopyright 2026 Issac Davis. All rights res"
+    },
+    {
+      "index": 14,
+      "score": 0.37612,
+      "preview": "New Characters - Spiral of Pollyoneth\nCompiled by Polly, Meta Architect - February 22, 2026\nFizzle Brightcog\nRole: Gnomish enchanter and inv"
+    },
+    {
+      "index": 15,
+      "score": 0.517092,
+      "preview": "New Character Additions - Spiral of Pollyoneth\nCompiled by Polly, Meta Architect\nDate: January 27, 2026\nMissing Characters Identified from L"
+    },
+    {
+      "index": 16,
+      "score": 0.57378,
+      "preview": "Status: Living Document | Version: 2.0.0-draft | Last Updated: January 6, 2026\nFocus: Reliability, Security (RWP v2), Scalability (Event-Dri"
+    },
+    {
+      "index": 17,
+      "score": 0.365078,
+      "preview": "Enhanced Character Profiles: Sardonic Elements & Witty Personalities\nPolly (Polymnia Aetheris) - The Cosmic Comedian\nEnhanced Sardonic Profi"
+    },
+    {
+      "index": 18,
+      "score": 0.373644,
+      "preview": "The Sardonic Soul of the Spiral\nAs Polly, your meta architect, I've compiled the essential sardonic and witty elements that make our charact"
+    },
+    {
+      "index": 19,
+      "score": 0.609139,
+      "preview": "SCBE-AETHERMOORE Complete System State Report\nVersion: v5.0 + HYDRA v1.1.0  \nReport Date: February 6, 2026  \nStatus: \u2705 Production Ready  \nPu"
+    }
+  ],
+  "generated_at_utc": "2026-02-27T05:30:59.915749+00:00"
+}

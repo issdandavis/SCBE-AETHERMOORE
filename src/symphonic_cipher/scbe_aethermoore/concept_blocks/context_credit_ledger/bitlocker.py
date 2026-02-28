@@ -62,7 +62,7 @@ def _encrypt_payload(plaintext: bytes, key: bytes) -> Tuple[bytes, bytes]:
         ct = AESGCM(key).encrypt(nonce, plaintext, None)
         return ct, nonce
     except ImportError:
-        # Fallback: repeating-key XOR (NOT secure — development only)
+        # DEMO_CRYPTO: Fallback repeating-key XOR — NOT secure, development only
         nonce = os.urandom(12)
         extended = (key * ((len(plaintext) // len(key)) + 1))[:len(plaintext)]
         ct = bytes(a ^ b for a, b in zip(plaintext, extended))

@@ -354,10 +354,10 @@ class OverworldManager:
             start_map.height // 2 * TILE_SIZE,
         )
 
-        # Create camera
+        # Create camera (takes tile counts, not pixels)
         self.camera = Camera(
-            start_map.width * TILE_SIZE,
-            start_map.height * TILE_SIZE,
+            start_map.width,
+            start_map.height,
             view_w, view_h,
         )
 

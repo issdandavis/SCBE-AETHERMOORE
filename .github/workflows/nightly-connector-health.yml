@@ -29,9 +29,13 @@ jobs:
           NOTION_MCP_TOKEN: ${{ secrets.NOTION_MCP_TOKEN }}
           GOOGLE_DRIVE_ACCESS_TOKEN: ${{ secrets.GOOGLE_DRIVE_ACCESS_TOKEN }}
           GDRIVE_ACCESS_TOKEN: ${{ secrets.GDRIVE_ACCESS_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          SCBE_TELEGRAM_BOT_TOKEN: ${{ secrets.SCBE_TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          SCBE_TELEGRAM_CHAT_ID: ${{ secrets.SCBE_TELEGRAM_CHAT_ID }}
         run: |
           python scripts/connector_health_check.py \
-            --checks github notion drive \
+            --checks github notion drive telegram \
             --github-repo issdandavis/SCBE-AETHERMOORE \
             --notion-page-id "${{ secrets.NOTION_PAGE_ID }}" \
             --output artifacts/connector_health/nightly_report.json

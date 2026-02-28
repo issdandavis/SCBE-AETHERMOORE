@@ -1,0 +1,278 @@
+{
+  "name": "SCBE Telegram Local Router",
+  "nodes": [
+    {
+      "id": "tg_trigger",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        220,
+        280
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "telegram-local-router",
+        "responseMode": "onReceived",
+        "options": {}
+      }
+    },
+    {
+      "id": "parse_cmd",
+      "name": "Parse Telegram Command",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        280
+      ],
+      "parameters": {
+        "jsCode": "const update = $json.body || $json;\nconst message = update.message || update.edited_message || update.channel_post || {};\nconst chatId = message.chat?.id ?? null;\nif (!chatId) {\n  return [];\n}\n\nconst msg = String(message.text || '').trim();\nlet mode = 'dispatch';\nlet provider = 'huggingface';\nlet prompt = msg;\nconst lower = msg.toLowerCase();\n\nif (lower === '/status') {\n  mode = 'status';\n  prompt = 'status';\n} else if (lower.startsWith('/grok ')) {\n  provider = 'xai';\n  prompt = msg.slice(6).trim();\n} else if (lower.startsWith('/claude ')) {\n  provider = 'anthropic';\n  prompt = msg.slice(8).trim();\n} else if (lower.startsWith('/gpt ')) {\n  provider = 'openai';\n  prompt = msg.slice(5).trim();\n} else if (lower.startsWith('/hf ')) {\n  provider = 'huggingface';\n  prompt = msg.slice(4).trim();\n}\n\nif (!prompt) {\n  prompt = 'hello';\n}\n\nreturn [{\n  json: {\n    chat_id: chatId,\n    mode,\n    provider,\n    prompt,\n    original: msg,\n    update_id: update.update_id || null\n  }\n}];"
+      }
+    },
+    {
+      "id": "is_status",
+      "name": "Is Status?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        700,
+        280
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": false,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "mode_check",
+              "leftValue": "={{ $json.mode }}",
+              "rightValue": "status",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "status_call",
+      "name": "Bridge Providers Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        940,
+        160
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ ($env.SCBE_BRIDGE_URL || 'http://127.0.0.1:8002') + '/v1/llm/providers' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{ $env.SCBE_API_KEY || 'scbe-dev-key' }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 20000
+        }
+      }
+    },
+    {
+      "id": "status_text",
+      "name": "Build Status Reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1160,
+        160
+      ],
+      "parameters": {
+        "jsCode": "const p = $json.providers || {};\nconst line = (k, v) => `${k}: ${v?.configured ? 'on' : 'off'} (${v?.default_model || '-'})`;\nconst text = [\n  'SCBE Provider Status',\n  line('openai', p.openai),\n  line('anthropic', p.anthropic),\n  line('xai', p.xai),\n  line('huggingface', p.huggingface),\n  `zapier: ${$json.zapier?.configured ? 'on' : 'off'}`\n].join('\\n');\nreturn [{ json: { text } }];"
+      }
+    },
+    {
+      "id": "status_send",
+      "name": "Telegram Reply Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1380,
+        160
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://api.telegram.org/bot' + $env.TELEGRAM_BOT_TOKEN + '/sendMessage' }}",
+        "sendBody": true,
+        "contentType": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $('Parse Telegram Command').item.json.chat_id, text: $json.text }) }}",
+        "options": {
+          "timeout": 20000
+        }
+      }
+    },
+    {
+      "id": "dispatch_call",
+      "name": "Bridge LLM Dispatch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        940,
+        380
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.SCBE_BRIDGE_URL || 'http://127.0.0.1:8002') + '/v1/llm/dispatch' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{ $env.SCBE_API_KEY || 'scbe-dev-key' }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "jsonBody": "={{ JSON.stringify({ provider: $json.provider, messages: [{ role: 'user', content: $json.prompt }], temperature: 0.2, max_tokens: 700, metadata: { source: 'telegram', workflow: 'scbe_telegram_local_router' } }) }}",
+        "options": {
+          "timeout": 90000
+        }
+      }
+    },
+    {
+      "id": "dispatch_text",
+      "name": "Build Dispatch Reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1160,
+        380
+      ],
+      "parameters": {
+        "jsCode": "let text = String($json.text || '').trim();\nif (!text) {\n  text = 'No text response from provider.';\n}\nif (text.length > 3500) {\n  text = text.slice(0, 3500) + '\\n...[truncated]';\n}\nreturn [{ json: { text } }];"
+      }
+    },
+    {
+      "id": "dispatch_send",
+      "name": "Telegram Reply Dispatch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1380,
+        380
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://api.telegram.org/bot' + $env.TELEGRAM_BOT_TOKEN + '/sendMessage' }}",
+        "sendBody": true,
+        "contentType": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $('Parse Telegram Command').item.json.chat_id, text: $json.text }) }}",
+        "options": {
+          "timeout": 20000
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Parse Telegram Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Telegram Command": {
+      "main": [
+        [
+          {
+            "node": "Is Status?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Status?": {
+      "main": [
+        [
+          {
+            "node": "Bridge Providers Status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Bridge LLM Dispatch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bridge Providers Status": {
+      "main": [
+        [
+          {
+            "node": "Build Status Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Status Reply": {
+      "main": [
+        [
+          {
+            "node": "Telegram Reply Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bridge LLM Dispatch": {
+      "main": [
+        [
+          {
+            "node": "Build Dispatch Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Dispatch Reply": {
+      "main": [
+        [
+          {
+            "node": "Telegram Reply Dispatch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "pinData": {},
+  "versionId": "ca846583-99ef-4b97-b6d0-7312a9f9f2a1"
+}

@@ -32,7 +32,7 @@ HYDRA is a terminal-native, multi-agent coordination system that acts as "armor"
 
 - Terminal-native operation with pipe compatibility
 
-Security Multiplier: Tier 6 (all 6 Sacred Tongues) = 518,400× security multiplier
+Approval Diversity: Tier 6 (all 6 Sacred Tongues) = 518,400× combinatorial approval sequences ((6!)²). Golden ratio weight product = φ^15 ≈ 1,364×
 
 ---
 
@@ -508,7 +508,7 @@ Tier 3 (Triple - KO+RU+UM): Form submission with sensitive data
 
 Tier 6 (Full Roundtable): System-level changes, configuration updates
 
-Security Multiplier at Tier 6: 518,400×
+Approval Diversity at Tier 6: 518,400× (combinatorial sequences, not security multiplier)
 
 ---
 

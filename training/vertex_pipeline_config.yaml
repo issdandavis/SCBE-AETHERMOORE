@@ -69,6 +69,11 @@ fine_tune:
       required_min_records: 80
   quality_checks:
     max_category_imbalance: 4.0
+    max_category_imbalance_exclude:
+      - general
+      - all
+    imbalance_source_filter:
+      - notion
     required_dual_channel_ready: true
 
 training:

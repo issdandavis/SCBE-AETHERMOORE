@@ -46,6 +46,7 @@ Issues = "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
 [project.scripts]
 scbe-convert-to-sft = "symphonic_cipher.scbe_aethermoore.convert_to_sft:main"
 scbe-code-prism = "code_prism.cli:main"
+scbe-code-mesh = "code_prism.mesh_cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

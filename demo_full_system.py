@@ -356,7 +356,7 @@ async def demo_roundtable():
     The Roundtable requires signatures from Sacred Tongue agents:
 
     ┌──────┬─────────────────┬────────────┬───────────────────┐
-    │ Tier │ Required Tongues│ Multiplier │ Use Case          │
+    │ Tier │ Required Tongues│ Diversity  │ Use Case          │
     ├──────┼─────────────────┼────────────┼───────────────────┤
     │  1   │ KO              │     1.5×   │ Basic operations  │
     │  2   │ KO + RU         │    5.06×   │ Data access       │
@@ -365,6 +365,8 @@ async def demo_roundtable():
     │  5   │ + AV            │ 14,348×    │ Critical systems  │
     │  6   │ All 6 Tongues   │ 518,400×   │ Nuclear options   │
     └──────┴─────────────────┴────────────┴───────────────────┘
+    Note: Diversity = combinatorial approval sequences ((n!)²),
+    not a security multiplier. Golden ratio weight product = φ^15 ≈ 1,364×.
     """)
 
     roundtable = RoundtableConsensus()

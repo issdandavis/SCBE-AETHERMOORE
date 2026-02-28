@@ -62,6 +62,19 @@ The runner now emits DecisionRecords + traces per job:
 }
 ```
 
+## 5) Optional: route via SCBE n8n bridge
+
+If your n8n workflows already target the bridge (`workflows/n8n/scbe_n8n_bridge.py`), set:
+
+- `SCBE_BROWSER_SERVICE_URL=https://<cloud-run-host>`
+- `SCBE_BROWSER_API_KEY=<scbe-browser-api-key>` (optional; bridge can also forward `X-API-Key`)
+
+Then call:
+
+- `POST http://127.0.0.1:8001/v1/integrations/n8n/browse`
+
+This keeps a single n8n endpoint while still executing remote Playwright actions on Cloud Run.
+
 ## Operational Notes
 
 - This gives you remote browser execution; your local machine can stay small/off.

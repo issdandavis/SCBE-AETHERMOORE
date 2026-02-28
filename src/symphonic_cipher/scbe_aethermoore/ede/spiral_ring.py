@@ -336,7 +336,7 @@ class SpiralRing:
         """
         ring_state = self.get_ring_state()
 
-        # XOR with ring state (cycling through positions)
+        # DEMO_CRYPTO: XOR with ring state — replace with AEAD (AES-256-GCM) in production
         encoded = bytearray(len(data))
         for i, byte in enumerate(data):
             key_byte = ring_state[i % len(ring_state)]

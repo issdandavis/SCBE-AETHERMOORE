@@ -120,11 +120,19 @@ class BrowserLimb(HydraLimb):
 
             await self._backend.initialize()
             return True
-
         except ImportError as e:
             print(f"[BROWSER] Backend not available: {e}")
             # Continue without backend for mock operation
             return True
+
+    async def deactivate(self) -> None:
+        """Deactivate browser limb and close backend resources."""
+        if self._backend:
+            try:
+                await self._backend.close()
+            except Exception as e:
+                print(f"[BROWSER] Backend cleanup warning: {e}")
+        await super().deactivate()
 
     async def execute(self, action: str, target: str, params: Dict[str, Any]) -> Dict[str, Any]:
         """Execute browser action."""

@@ -4,6 +4,7 @@ param(
     [switch]$Headless,
     [int]$Passes = 1,
     [int]$Timeout = 30,
+    [string]$AssetExtensions = "",
     [string]$Targets = "",
     [string]$DebugAddress = ""
 )
@@ -29,6 +30,10 @@ if ($Passes -gt 1) {
 if ($Timeout -ne 30) {
     $argsList += "--timeout"
     $argsList += $Timeout
+}
+if ($AssetExtensions) {
+    $argsList += "--asset-exts"
+    $argsList += $AssetExtensions
 }
 if ($Targets) {
     $argsList += "--targets"

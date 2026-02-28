@@ -7,7 +7,7 @@ import argparse
 import hashlib
 import json
 import re
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -17,6 +17,18 @@ DEFAULT_CHECKLIST = [
     "notion-to-dataset",
     "fine-tune-funnel",
 ]
+
+
+def _to_jsonable(value: Any) -> Any:
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, dict):
+        return {str(k): _to_jsonable(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_to_jsonable(item) for item in value]
+    if isinstance(value, tuple):
+        return [_to_jsonable(item) for item in value]
+    return value
 
 
 def _safe_load_json(path: Path) -> Dict[str, Any]:
@@ -108,6 +120,25 @@ def _safe_load_yaml(path: Path) -> Dict[str, Any]:
         return data
 
 
+def _normalize_string_list(values: Any) -> List[str]:
+    if not isinstance(values, list):
+        return []
+    return [str(v).strip().lower() for v in values if str(v).strip()]
+
+
+def _filter_records_for_quality_checks(records: List[Dict[str, Any]], quality: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Filter records before applying quality checks based on explicit funnel curation rules."""
+    source_filter = _normalize_string_list(quality.get("imbalance_source_filter"))
+    if source_filter:
+        scoped = []
+        for record in records:
+            source = str(record.get("source", "")).strip().lower()
+            if source and source in source_filter:
+                scoped.append(record)
+        records = scoped
+    return records
+
+
 def _list_jsonl_records(training_data_dir: Path) -> List[Dict[str, Any]]:
     records: List[Dict[str, Any]] = []
     for jsonl_path in sorted(training_data_dir.glob("*.jsonl")):
@@ -156,7 +187,12 @@ def _build_task(
     }
 
 
-def _evaluate_sync_config(sync_config: Dict[str, Any], now: datetime, tasks: List[Dict[str, Any]]) -> None:
+def _evaluate_sync_config(
+    sync_config: Dict[str, Any],
+    now: datetime,
+    tasks: List[Dict[str, Any]],
+    repo_root: Path,
+) -> None:
     if not sync_config:
         tasks.append(
             _build_task(
@@ -201,7 +237,7 @@ def _evaluate_sync_config(sync_config: Dict[str, Any], now: datetime, tasks: Lis
         if output_path:
             normalized = Path(output_path)
             if not normalized.is_absolute():
-                normalized = Path("C:/Users/issda/SCBE-AETHERMOORE-working") / normalized
+                normalized = repo_root / normalized
             if not normalized.exists():
                 tasks.append(
                     _build_task(
@@ -211,7 +247,7 @@ def _evaluate_sync_config(sync_config: Dict[str, Any], now: datetime, tasks: Lis
                         mode="code-assistant",
                         priority="medium",
                         confidence=0.78,
-                        evidence={"sync_key": name, "output_path": output_path},
+                        evidence={"sync_key": name, "output_path": str(output_path)},
                         suggested_actions=[
                             "Verify docs folder path and run notion sync for this entry.",
                         ],
@@ -226,6 +262,10 @@ def _evaluate_funnel_config(
 ) -> None:
     streams = (pipeline_config.get("fine_tune") or {}).get("streams", [])
     quality = (pipeline_config.get("fine_tune") or {}).get("quality_checks", {})
+    quality_records = _filter_records_for_quality_checks(records, quality)
+    if not quality_records:
+        quality_records = records
+
     total = len(records)
     if not streams:
         tasks.append(
@@ -246,8 +286,12 @@ def _evaluate_funnel_config(
         return
 
     category_index: Dict[str, int] = {}
-    for record in records:
+    excluded_categories = set(_normalize_string_list(quality.get("max_category_imbalance_exclude")))
+    for record in quality_records:
         for category in record.get("categories", []) or ["general"]:
+            category = str(category).lower()
+            if category in excluded_categories:
+                continue
             category_index[category] = category_index.get(category, 0) + 1
 
     for stream in streams:
@@ -258,7 +302,7 @@ def _evaluate_funnel_config(
         stream_categories = {x.lower() for x in stream.get("categories", []) if isinstance(x, str)}
 
         matched = 0
-        for record in records:
+        for record in quality_records:
             cats = {str(cat).lower() for cat in record.get("categories", [])}
             if stream_categories.intersection(cats):
                 matched += 1
@@ -280,7 +324,7 @@ def _evaluate_funnel_config(
                         "stream": stream,
                         "required_min_records": required,
                         "matched_records": matched,
-                        "total_records": total,
+                        "total_records": len(quality_records),
                     },
                     suggested_actions=[
                         "Export missing notion categories using the requested sync query.",
@@ -409,7 +453,7 @@ def run_gap_review(
 
     tasks: List[Dict[str, Any]] = []
 
-    _evaluate_sync_config(sync_config, datetime.now(timezone.utc), tasks)
+    _evaluate_sync_config(sync_config, datetime.now(timezone.utc), tasks, repo_root)
     _evaluate_funnel_config(pipeline_config, records, tasks)
     _evaluate_metadata(metadata, tasks)
 
@@ -502,7 +546,7 @@ def main() -> int:
 
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    output_path.write_text(json.dumps(_to_jsonable(manifest), indent=2), encoding="utf-8")
     _write_summary(Path(args.summary_path), manifest)
 
     print(f"Notion gap review written to {output_path}")

@@ -146,13 +146,14 @@ print("""
 │                                                                               │
 │  φ = Golden Ratio = (1 + √5) / 2 ≈ 1.618                                      │
 │                                                                               │
-│  Tier Security Multipliers (Roundtable Consensus):                            │
+│  Tier Approval Diversity (Roundtable Consensus):                              │
 │    Tier 1 (KO only):           1.5×                                           │
 │    Tier 2 (KO+RU):             5.06×                                          │
 │    Tier 3 (KO+RU+UM):          38.4×                                          │
 │    Tier 4 (KO+RU+UM+CA):       656×                                           │
 │    Tier 5 (KO+RU+UM+CA+AV):    14,348×                                        │
-│    Tier 6 (Full Roundtable):   518,400×                                       │
+│    Tier 6 (Full Roundtable):   518,400× (=(6!)², not security multiplier)     │
+│  Golden ratio weight product:  φ^15 ≈ 1,364×                                  │
 │                                                                               │
 └───────────────────────────────────────────────────────────────────────────────┘
 """)
@@ -185,6 +186,9 @@ TONGUE_WEIGHTS = {
     SacredTongue.DR: PHI ** 5,  # 11.090
 }
 
+# Combinatorial approval diversity per tier (NOT security multipliers)
+# Tier 6 = (6!)² = 518,400 distinct approval sequences
+# Golden ratio weight product = φ^15 ≈ 1,364×
 TIER_MULTIPLIERS = {
     1: 1.5,
     2: 5.06,

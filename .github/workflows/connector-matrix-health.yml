@@ -1,0 +1,69 @@
+name: Connector Matrix Health
+
+on:
+  workflow_dispatch:
+    inputs:
+      strict:
+        description: "Fail when any selected check is not ok"
+        required: false
+        default: false
+        type: boolean
+  schedule:
+    - cron: "45 6 * * *"
+
+jobs:
+  connector-health:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+      GH_TOKEN: ${{ github.token }}
+      NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+      NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+      NOTION_MCP_TOKEN: ${{ secrets.NOTION_MCP_TOKEN }}
+      GOOGLE_DRIVE_ACCESS_TOKEN: ${{ secrets.GOOGLE_DRIVE_ACCESS_TOKEN }}
+      GDRIVE_ACCESS_TOKEN: ${{ secrets.GDRIVE_ACCESS_TOKEN }}
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      HUGGINGFACE_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
+      AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+      AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+      ZAPIER_WEBHOOK_URL: ${{ secrets.ZAPIER_WEBHOOK_URL }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      SCBE_TELEGRAM_BOT_TOKEN: ${{ secrets.SCBE_TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      SCBE_TELEGRAM_CHAT_ID: ${{ secrets.SCBE_TELEGRAM_CHAT_ID }}
+      N8N_BASE_URL: ${{ secrets.N8N_BASE_URL }}
+      SCBE_BRIDGE_URL: ${{ secrets.SCBE_BRIDGE_URL }}
+      SCBE_BROWSER_URL: ${{ secrets.SCBE_BROWSER_URL }}
+      SCBE_API_KEY: ${{ secrets.SCBE_API_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run connector matrix health checks
+        run: |
+          STRICT="${{ github.event.inputs.strict || 'false' }}"
+          ARGS=(
+            --checks github notion drive huggingface airtable zapier telegram n8n bridge playwright
+            --github-repo issdandavis/SCBE-AETHERMOORE
+            --notion-page-id "${{ secrets.NOTION_PAGE_ID }}"
+            --output artifacts/connector_health/connector_matrix_report.json
+          )
+          if [[ "$STRICT" == "true" ]]; then
+            ARGS+=(--strict)
+          fi
+          python scripts/connector_health_check.py "${ARGS[@]}"
+
+      - name: Upload connector matrix report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: connector-matrix-health
+          path: artifacts/connector_health/connector_matrix_report.json

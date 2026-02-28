@@ -231,7 +231,7 @@ export function createDualLatticeEnvelope(params: {
   const nonce = randomBytes(12);
   const salt = randomBytes(16);
 
-  // Simple XOR "encryption" for simulation (use AES-GCM in production)
+  // DEMO_CRYPTO: XOR placeholder — replace with AES-256-GCM AEAD in production
   const encryptedData = Buffer.alloc(params.data.length);
   for (let i = 0; i < params.data.length; i++) {
     encryptedData[i] = params.data[i] ^ sharedSecret[i % sharedSecret.length];
@@ -333,7 +333,7 @@ export function decryptDualLatticeEnvelope(
   // Step 3: Decrypt SS1 ciphertext
   const encryptedData = ss1Decode(envelope.ss1.ct, 'CA');
 
-  // Simple XOR "decryption" (use AES-GCM in production)
+  // DEMO_CRYPTO: XOR placeholder — replace with AES-256-GCM AEAD in production
   const decryptedData = Buffer.alloc(encryptedData.length);
   for (let i = 0; i < encryptedData.length; i++) {
     decryptedData[i] = encryptedData[i] ^ sharedSecret[i % sharedSecret.length];

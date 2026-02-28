@@ -34,6 +34,38 @@
       "macros",
       "reflection"
     ]
+  },
+  "native_systems": {
+    "python_runtime": {
+      "native_language": "python",
+      "default_tongue_combo": "KO+CA+DR",
+      "risk_profile": "strict"
+    },
+    "node_runtime": {
+      "native_language": "typescript",
+      "default_tongue_combo": "AV+CA+DR",
+      "risk_profile": "standard"
+    },
+    "go_runtime": {
+      "native_language": "go",
+      "default_tongue_combo": "KO+RU+DR",
+      "risk_profile": "strict"
+    },
+    "mcp_python": {
+      "native_language": "python",
+      "default_tongue_combo": "RU+UM+DR",
+      "risk_profile": "strict"
+    },
+    "mcp_node": {
+      "native_language": "typescript",
+      "default_tongue_combo": "RU+CA+DR",
+      "risk_profile": "strict"
+    }
+  },
+  "governance": {
+    "default_action": "QUARANTINE",
+    "allow_requires_clean_validation": true,
+    "quarantine_on_deferred_constructs": true
   }
 }
 

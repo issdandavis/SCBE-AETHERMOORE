@@ -380,6 +380,7 @@ def main() -> int:
     topics = read_topics(args)
     urls: list[str] = []
     discovery_rows: list[dict[str, str]] = []
+    scan_payload: dict[str, Any] | None = None
 
     if topics:
         d_urls, d_rows = discover_urls(topics, args.max_per_topic)
@@ -395,6 +396,19 @@ def main() -> int:
         if url and url not in seen:
             dedup_urls.append(url)
             seen.add(url)
+
+    if args.scan_json:
+        scan_payload = json.loads(Path(args.scan_json).read_text(encoding="utf-8"))
+        if not dedup_urls:
+            scan_seen: set[str] = set()
+            for row in scan_payload.get("results", []):
+                if not isinstance(row, dict):
+                    continue
+                row_url = str(row.get("url", "")).strip()
+                if row_url and row_url not in scan_seen:
+                    dedup_urls.append(row_url)
+                    scan_seen.add(row_url)
+
     if not dedup_urls:
         raise SystemExit("No URLs discovered. Provide --topics and/or --urls-file.")
 
@@ -416,7 +430,7 @@ def main() -> int:
 
     hydra_output = run_dir / "hydra_scan.json"
     if args.scan_json:
-        hydra_payload = json.loads(Path(args.scan_json).read_text(encoding="utf-8"))
+        hydra_payload = scan_payload or json.loads(Path(args.scan_json).read_text(encoding="utf-8"))
         write_json(hydra_output, hydra_payload)
     else:
         query = args.query.strip() if args.query.strip() else " ".join(topics)

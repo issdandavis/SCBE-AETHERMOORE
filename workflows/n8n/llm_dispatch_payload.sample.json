@@ -1,0 +1,15 @@
+{
+  "provider": "xai",
+  "messages": [
+    { "role": "system", "content": "You are SCBE orchestration AI." },
+    { "role": "user", "content": "Check system status and propose next task." }
+  ],
+  "temperature": 0.2,
+  "max_tokens": 500,
+  "tools": [],
+  "route_to_zapier": true,
+  "metadata": {
+    "source": "telegram",
+    "workflow": "scbe-ops-router"
+  }
+}

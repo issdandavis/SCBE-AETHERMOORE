@@ -371,15 +371,20 @@ class RoundtableConsensus(ByzantineConsensus):
     Extends Byzantine consensus with tier-based voting weights
     matching the SCBE Roundtable system.
 
-    Tiers:
-    1. Single (KO): 1 signature, 1.5× multiplier
-    2. Dual (KO+RU): 2 signatures, 5.06× multiplier
-    3. Triple (KO+RU+UM): 3 signatures, 38.4× multiplier
-    4. Quad (KO+RU+UM+CA): 4 signatures, 656× multiplier
-    5. Quint (KO+RU+UM+CA+AV): 5 signatures, 14,348× multiplier
-    6. Full Roundtable (all 6): 6 signatures, 518,400× multiplier
+    Tiers (combinatorial approval diversity, NOT security multipliers):
+    1. Single (KO): 1 signature, 1.5× diversity
+    2. Dual (KO+RU): 2 signatures, 5.06× diversity
+    3. Triple (KO+RU+UM): 3 signatures, 38.4× diversity
+    4. Quad (KO+RU+UM+CA): 4 signatures, 656× diversity
+    5. Quint (KO+RU+UM+CA+AV): 5 signatures, 14,348× diversity
+    6. Full Roundtable (all 6): 6 signatures, 518,400× diversity
+
+    Note: 518,400 = (6!)² represents distinct approval sequences, not a
+    cryptographic security factor. The actual golden ratio weight product
+    of all 6 tongues is φ^15 ≈ 1,364×.
     """
 
+    # Combinatorial approval diversity per tier (NOT security multipliers)
     TIER_MULTIPLIERS = {
         1: 1.5,
         2: 5.06,
@@ -452,7 +457,7 @@ class RoundtableConsensus(ByzantineConsensus):
 
         print(f"\n[ROUNDTABLE] Tier {tier} consensus required")
         print(f"  Tongues: {required_tongues}")
-        print(f"  Security multiplier: {multiplier:,.2f}×")
+        print(f"  Approval diversity: {multiplier:,.2f}×")
 
         # Check we have required heads
         available_tongues = [t for t in required_tongues if t in heads]

@@ -632,7 +632,7 @@ class SecureStorage:
         # Compute hash
         data_hash = hashlib.sha256(data).hexdigest()
 
-        # Simple XOR encryption (real implementation would use AES-256-GCM)
+        # DEMO_CRYPTO: XOR placeholder — replace with AES-256-GCM AEAD in production
         encrypted = self._encrypt(data)
 
         # Store file
@@ -696,7 +696,7 @@ class SecureStorage:
         return self.manifest[key]
 
     def _encrypt(self, data: bytes) -> bytes:
-        """Encrypt data (simplified XOR for demo; use AES-256-GCM in production)."""
+        """DEMO_CRYPTO: XOR placeholder — replace with AES-256-GCM AEAD in production."""
         key_bytes = self.encryption_key * (len(data) // len(self.encryption_key) + 1)
         return bytes(a ^ b for a, b in zip(data, key_bytes[: len(data)]))
 

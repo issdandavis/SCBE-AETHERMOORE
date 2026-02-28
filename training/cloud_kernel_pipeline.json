@@ -35,7 +35,7 @@
   "shipping": {
     "hf": {
       "enabled": true,
-      "repo": "issdandavis/scbe-kernel-datasets",
+      "repo": "issdandavis/scbe-aethermoore-training-data",
       "path_prefix": "kernel-sync/runs"
     },
     "github": {

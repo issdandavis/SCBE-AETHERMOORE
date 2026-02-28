@@ -13,6 +13,7 @@ Modules
 - ``web_polly_pad``      — Browser actuator: goals → actions, recovery on stuck
 - ``navigation_engine``  — Combines PLAN + SENSE + STEER + DECIDE for web nav
 - ``agent_orchestrator``  — Long-running task management + state persistence
+- ``browser_swarm``      — Multi-agent browser teams (2+) with Sacred Tongue roles
 - ``task_api``           — REST API for submitting/monitoring web tasks
 - ``federated_deploy``   — Flower client for distributed training/deployment
 - ``tongue_transport``   — Sacred Tongue encoding + GeoSeal for agent-to-agent comms
@@ -39,6 +40,16 @@ from .agent_orchestrator import (
     WebTask,
     TaskStatus,
     TaskResult,
+)
+from .browser_swarm import (
+    BrowserSwarmCoordinator,
+    SwarmTask,
+    SwarmResult,
+    SwarmAgent,
+    SacredTongueRole,
+    FindingsStore,
+    VisitedURLRegistry,
+    Finding,
 )
 from .buffer_integration import (
     ContentBuffer,
@@ -67,6 +78,8 @@ __all__ = [
     "WebPollyPad", "BrowserAction", "PadMode", "RecoveryStrategy",
     "NavigationEngine", "NavigationState", "PageUnderstanding",
     "AgentOrchestrator", "WebTask", "TaskStatus", "TaskResult",
+    "BrowserSwarmCoordinator", "SwarmTask", "SwarmResult", "SwarmAgent",
+    "SacredTongueRole", "FindingsStore", "VisitedURLRegistry", "Finding",
     "ContentBuffer", "Platform", "PlatformPublisher",
     "PostContent", "PostStatus", "ScheduledPost", "PublishResult",
     "TwitterPublisher", "LinkedInPublisher", "BlueskyPublisher",

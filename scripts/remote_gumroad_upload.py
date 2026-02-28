@@ -66,14 +66,15 @@ def _resolve_images_dir(images_dir: str | None) -> Path:
     return (Path.home() / "Downloads").resolve()
 
 
-def _iter_image_files(images_dir: Path) -> list[Path]:
+def _iter_image_files(images_dir: Path, allowed_exts: set[str] | None = None) -> list[Path]:
     """Return image files recursively from the given directory."""
     if not images_dir.exists():
         return []
+    extensions = allowed_exts or {".png", ".jpg", ".jpeg", ".webp", ".gif"}
     return sorted(
         p
         for p in images_dir.rglob("*")
-        if p.is_file() and p.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp", ".gif"}
+        if p.is_file() and p.suffix.lower() in extensions
     )
 
 
@@ -129,6 +130,7 @@ def _build_uploader_command(
     script: Path,
     images_dir: Path,
     targets: list[str],
+    asset_exts: str,
     debugger_address: str,
     timeout: int,
     dry_run: bool,
@@ -147,6 +149,8 @@ def _build_uploader_command(
         "--log",
         str(log_path),
     ]
+    if asset_exts:
+        cmd.extend(["--asset-exts", asset_exts])
     if targets:
         cmd.append("--targets")
         cmd.extend(targets)
@@ -236,13 +240,13 @@ def _token_set(text: str) -> set[str]:
     return {t for t in tokens if t}
 
 
-def _verify_local_content(images_dir: Path, targets: list[str]) -> dict[str, Any]:
+def _verify_local_content(images_dir: Path, targets: list[str], asset_exts: set[str] | None = None) -> dict[str, Any]:
     """Local-only verification pass for image matching (no browser required).
 
     This verifies whether each target has at least one candidate image and
     returns a summary suitable for operational dashboards.
     """
-    files = _iter_image_files(images_dir)
+    files = _iter_image_files(images_dir, asset_exts)
     matched: list[dict[str, str]] = []
     missing: list[str] = []
     missing_count = 0
@@ -312,6 +316,7 @@ def _run_once(
     run_index: int,
     images_dir: Path,
     targets: list[str],
+    asset_exts: str,
     dry_run: bool,
     timeout: int,
     debug_port: int,
@@ -327,6 +332,7 @@ def _run_once(
     cmd = _build_uploader_command(
         script=uploader_script,
         images_dir=images_dir,
+        asset_exts=asset_exts,
         targets=targets,
         debugger_address=f"127.0.0.1:{debug_port}",
         timeout=timeout,
@@ -368,6 +374,7 @@ def _run_once(
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Remote Gumroad upload automation runner")
     parser.add_argument("--images-dir", default=None, help="Folder containing product images")
+    parser.add_argument("--asset-exts", default="png,jpg,jpeg,webp,gif", help="Comma-separated file extensions (without dot) to upload")
     parser.add_argument("--targets", nargs="+", default=DEFAULT_TARGETS, help="Product names to target")
     parser.add_argument("--dry-run", action="store_true", help="Preview matches without uploading")
     parser.add_argument("--timeout", type=int, default=30, help="Per-page timeout for Selenium actions")
@@ -404,6 +411,7 @@ def main() -> int:
     uploader_script = _resolve_script(args.uploader_script)
     train_log = Path(args.training_log).expanduser().resolve()
     targets = args.targets
+    asset_exts = {f".{e.strip().lower().lstrip('.')}" for e in args.asset_exts.split(",") if e.strip()}
 
     debugger_address = args.debugger_address
     if not debugger_address:
@@ -415,7 +423,7 @@ def main() -> int:
         raise RuntimeError("Provide --debugger-address when --start-chrome is disabled")
 
     if args.verify_only:
-        result = _verify_local_content(images_dir=images_dir, targets=targets)
+        result = _verify_local_content(images_dir=images_dir, targets=targets, asset_exts=asset_exts)
         record = {
             "dataset": "gumroad_automation",
             "run_id": _utc_now(),
@@ -457,6 +465,7 @@ def main() -> int:
                 run_index=pass_index,
                 images_dir=images_dir,
                 targets=targets,
+                asset_exts=args.asset_exts,
                 dry_run=args.dry_run,
                 timeout=pass_timeout,
                 debug_port=debug_port,

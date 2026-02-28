@@ -307,16 +307,24 @@ export function harmonicWallCost(distance: number, phaseDeviation = 0): number {
 }
 
 /**
- * Generate initial position for tongue in Poincaré ball
+ * Generate initial position for tongue in Poincaré ball.
+ *
+ * Patent fix: radius is deterministic from tongue weight via ball embedding,
+ * not random. r = tanh(w / sqrt(2)) * 0.95 where w = φ^index.
+ * This ensures reproducible positioning and strengthens enablement claims.
  */
 export function generateInitialPosition(tongue: TongueCode): PoincarePosition {
   const phase = phaseToRadians(tongue);
-  const radius = 0.3 + Math.random() * 0.3; // 0.3 to 0.6 from center
+  const weight = calculateTongueWeight(tongue);
+  // Deterministic radius from Poincaré ball embedding: r = tanh(||u|| / √2) * 0.95
+  const radius = Math.tanh(weight / Math.SQRT2) * 0.95;
+  // z-coordinate deterministic from tongue index
+  const zOffset = (TONGUE_INDICES[tongue] - 2.5) * 0.04; // symmetric around 0
 
   return {
     x: radius * Math.cos(phase),
     y: radius * Math.sin(phase),
-    z: (Math.random() - 0.5) * 0.2, // Small z variation
+    z: zOffset,
   };
 }
 

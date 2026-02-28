@@ -1,0 +1,14 @@
+{
+  "run_id": "ng-swarm-2026-02-27-001",
+  "query": "align n8n + playwright + hydra swarm",
+  "notion_urls": [
+    "https://aethermoorgames.notion.site/SCBE-AETHERMOORE-Hub-300f96de82e580d09a66cdd048e5cab5",
+    "https://aethermoorgames.notion.site/GeoSeed-Network-6-Seed-Neural-Architecture-Design-313f96de82e581e1ad61d3d711140391"
+  ],
+  "github_urls": [
+    "https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/hydra/ARCHITECTURE.md",
+    "https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/NOTION_PAGE_INDEX.md"
+  ],
+  "max_sources": 4,
+  "dry_run": false
+}

@@ -9,11 +9,15 @@ IR and emits target-language code with validation metadata.
 """
 
 from .builder import CodePrismBuilder, TranslationArtifact
+from .mesh import CodeMeshBuilder, DecisionRecord, MeshArtifact
 from .matrix import InteroperabilityMatrix, load_interoperability_matrix
 
 __all__ = [
+    "CodeMeshBuilder",
     "CodePrismBuilder",
+    "DecisionRecord",
     "InteroperabilityMatrix",
+    "MeshArtifact",
     "TranslationArtifact",
     "load_interoperability_matrix",
 ]

@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at_utc": "2026-02-27T01:53:28.284989+00:00",
+  "template_sources": {
+    "local": [
+      "workflows/scbe_ai_kernel/manager_agent_prompt.md",
+      "scripts/web_research_training_pipeline.py",
+      "docs/WEB_RESEARCH_TRAINING_PIPELINE.md",
+      "workflows/n8n/scbe_n8n_bridge.py",
+      "workflows/n8n/scbe_web_agent_tasks.workflow.json",
+      "scripts/workflow_audit.py",
+      ".github/workflows/workflow-audit.yml",
+      "training/cloud_kernel_pipeline.json",
+      "src/ai_orchestration/autonomous_workflows.py"
+    ],
+    "github": [
+      "https://github.com/issdandavis/AI-Workflow-Architect/blob/main/README.md",
+      "https://github.com/issdandavis/AI-Workflow-Architect/blob/main/docs/PROJECT_DOCUMENTATION.md",
+      "https://github.com/issdandavis/AI-Workflow-Architect/blob/main/server/services/orchestrator.ts",
+      "https://github.com/issdandavis/AI-Workflow-Architect/blob/main/.github/workflows/deploy.yml"
+    ],
+    "selection_policy": "local-first, github-fallback"
+  },
+  "web_research": {
+    "topics": [
+      "agentic web automation",
+      "browser orchestration reliability",
+      "workflow governance for ai agents"
+    ],
+    "max_per_topic": 6,
+    "backend": "playwright",
+    "max_tabs": 6,
+    "query": "",
+    "run_root": "training/runs/web_research",
+    "intake_dir": "training/intake/web_research",
+    "skip_core_check": false
+  },
+  "governance_tuning": {
+    "cloud_kernel_config": "training/cloud_kernel_pipeline.json",
+    "output_cloud_kernel_config": "training/cloud_kernel_pipeline.tuned.json",
+    "output_report": "artifacts/internet_workflow_tuning_report.json",
+    "output_runtime_profile": "training/internet_workflow_profile.tuned.json",
+    "target_quarantine_ratio": 0.08
+  }
+}

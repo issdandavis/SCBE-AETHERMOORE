@@ -6,6 +6,8 @@ from .reddit_source import RedditSource
 from .web_page_source import WebPageSource
 from .brainstorm_source import BrainstormSource
 from .notebook_lm_source import NotebookLMSource
+from .uspto_source import USPTOSource
+from .github_source import GitHubSource
 
 __all__ = [
     "ArxivSource",
@@ -15,4 +17,6 @@ __all__ = [
     "WebPageSource",
     "BrainstormSource",
     "NotebookLMSource",
+    "USPTOSource",
+    "GitHubSource",
 ]

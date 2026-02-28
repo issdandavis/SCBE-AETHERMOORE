@@ -1,0 +1,26 @@
+{
+  "total_sft": 15203,
+  "total_dpo": 0,
+  "by_source": {
+    "spiral_search": 128,
+    "browser": 0,
+    "obsidian": 0,
+    "notion": 497,
+    "telegram": 0,
+    "mesh": 0,
+    "governance": 1020,
+    "architecture_sessions": 18,
+    "gacha_sessions": 5,
+    "game_design_sessions": 69,
+    "game_sessions": 334,
+    "instruction_tuning": 25,
+    "knowledge_base": 50,
+    "lore_sessions": 37,
+    "math_sessions": 6,
+    "training_data": 12998,
+    "music_sessions": 7,
+    "sidekick": 1,
+    "tongues_sessions": 8
+  },
+  "timestamp": 1772100165.9824142
+}

@@ -1,0 +1,115 @@
+{
+  "status": "QUARANTINE",
+  "reason": "too many high-anomaly records",
+  "threshold": 0.15,
+  "max_flagged_ratio": 0.08,
+  "sample_count": 111,
+  "flagged_count": 111,
+  "flagged_ratio": 1.0,
+  "mean_score": 0.424522,
+  "max_score": 0.629065,
+  "hashchain_root": "dad9a0f80ab9d38e8eca5e531a99c25353ba9fb9a98799e8ab803ded64a9069b",
+  "flagged_examples": [
+    {
+      "index": 0,
+      "score": 0.581342,
+      "preview": "Purpose: Give any AI operator (Claude, ChatGPT, Gemini, local models) instant context to work effectively with SCBE-AETHERMOORE.\nLast Update"
+    },
+    {
+      "index": 1,
+      "score": 0.425764,
+      "preview": "Date: February 26, 2026 | Research: Claude Opus 4.6 web research\nWhat is OpenClaw?\nOpenClaw (formerly Clawdbot \u2192 Moltbot \u2192 OpenClaw) is the "
+    },
+    {
+      "index": 2,
+      "score": 0.583221,
+      "preview": "Status: Design Approved | Date: February 26, 2026 | Author: Issac Davis\nCore Insight\nEvery bit that enters the system gets \"dressed\" through"
+    },
+    {
+      "index": 3,
+      "score": 0.394455,
+      "preview": "[nested content]\n[nested content]\nSCBE-AETHERMOORE: Complete Mathematical & Security Specification\nA Comprehensive Technical Reference for P"
+    },
+    {
+      "index": 4,
+      "score": 0.550027,
+      "preview": "The Mathematical Vine\nA single thread of mathematics that grows from foundation to decision.\nThis page traces every formula in SCBE-PHDM-AET"
+    },
+    {
+      "index": 5,
+      "score": 0.559292,
+      "preview": "Spiralverse Protocol\nSecure AI-to-AI Communication for the Autonomous Age\nThe SCBE-AETHERMOORE framework provides exponentially increasing s"
+    },
+    {
+      "index": 6,
+      "score": 0.544415,
+      "preview": "The Six Tongues Protocol\nAn Isekai Story Where Magic Is Cryptographic Architecture\nBy Issac Davis\nCopyright 2026 Issac Davis. All rights res"
+    },
+    {
+      "index": 7,
+      "score": 0.57378,
+      "preview": "Status: Living Document | Version: 2.0.0-draft | Last Updated: January 6, 2026\nFocus: Reliability, Security (RWP v2), Scalability (Event-Dri"
+    },
+    {
+      "index": 8,
+      "score": 0.609139,
+      "preview": "SCBE-AETHERMOORE Complete System State Report\nVersion: v5.0 + HYDRA v1.1.0  \nReport Date: February 6, 2026  \nStatus: \u2705 Production Ready  \nPu"
+    },
+    {
+      "index": 9,
+      "score": 0.50793,
+      "preview": "https://story.everweave.ai/api/full/pdf/b83e95dc-3897-45b5-822e-478b6312e090\nDM: The gentle rhythm of waves caressing the shore rouses you f"
+    },
+    {
+      "index": 10,
+      "score": 0.558669,
+      "preview": "The Six Tongues Protocol\nAn isekai where magic is cryptographic protocol architecture\n\ud83d\udcd6 Story Premise\nProtagonist: Marcus Chen, systems engi"
+    },
+    {
+      "index": 11,
+      "score": 0.421351,
+      "preview": "\ud83c\udfaf Executive Summary\nBuilding truly autonomous AI workers that generate revenue by combining:\nZapier Agents (2026 agentic AI)\nBrowser Automat"
+    },
+    {
+      "index": 12,
+      "score": 0.375941,
+      "preview": "Multi-AI Collaboration Framework for SCBE-AETHERMOORE\nPurpose: Enable multiple AI assistants to collaborate effectively on cryptographic arc"
+    },
+    {
+      "index": 13,
+      "score": 0.543241,
+      "preview": "MoeShaun's Questions & Observations\n2026-02-15 \u2014 CL / common workspace + fractal storage + semantic encoder (notes)\nWhat I understand so far"
+    },
+    {
+      "index": 14,
+      "score": 0.380093,
+      "preview": "This is your capture \u2192 classify \u2192 publish hub.\n[nested content]\nWhat goes in here\nBreaking / trending items you might react to\nEvergreen exp"
+    },
+    {
+      "index": 15,
+      "score": 0.543846,
+      "preview": "The Six Tongues Protocol\nAn Isekai Story Where Magic Is Cryptographic Architecture\nBy Issac Davis\nMarketing Asset: This story makes SCBE-AET"
+    },
+    {
+      "index": 16,
+      "score": 0.15,
+      "preview": ""
+    },
+    {
+      "index": 17,
+      "score": 0.478241,
+      "preview": "Chapter 5: GeoSeal - Geometric Access Control Kernel\nThis chapter documents GeoSeal\u2014the dual-space geometric manifold that enforces access c"
+    },
+    {
+      "index": 18,
+      "score": 0.401884,
+      "preview": "PHDM Nomenclature Reference\nVersion: 1.0.0\nDate: February 10, 2026\nStatus: Authoritative\nPurpose: Single source of truth for PHDM naming con"
+    },
+    {
+      "index": 19,
+      "score": 0.566634,
+      "preview": "Language connection\nTongue code: DR\nLanguage name: Draumric\nDomain meaning: Structure, integrity, authentication\nSS1 default sections: tag\nC"
+    }
+  ],
+  "generated_at_utc": "2026-02-27T02:46:41.127541+00:00"
+}

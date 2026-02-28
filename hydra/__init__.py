@@ -90,6 +90,20 @@ from .hf_summarizer import HFSummarizer
 from .browsers import BrowserBackend, PlaywrightBackend, SeleniumBackend, CDPBackend
 from .swarm_browser import SwarmBrowser, AGENTS as SWARM_AGENTS
 from .llm_providers import HuggingFaceProvider
+from .extensions import (
+    ColabLimb,
+    VertexLimb,
+    ZapierLimb,
+    N8nLimb,
+    TelegramLimb,
+    PlaywrightCloudLimb,
+    ExtensionRegistry,
+    register_all_extensions,
+)
+from .model_hub import ModelHub, HeadConfig, ModelState
+from .multi_screen_swarm import MultiScreenSwarm, CrossTalkBus, AgentScreen, DimensionalState as SwarmDimensionalState
+from .self_healing import SelfHealingMesh, ServiceNode, ServiceHealth, ServiceCategory
+from .training_funnel import TrainingFunnel, SFTPair, DPOTriple
 
 __all__ = [
     # Core
@@ -171,6 +185,33 @@ __all__ = [
     # Swarm Browser
     "SwarmBrowser",
     "SWARM_AGENTS",
+    # Extensions — Compute & Orchestration Limbs
+    "ColabLimb",
+    "VertexLimb",
+    "ZapierLimb",
+    "N8nLimb",
+    "TelegramLimb",
+    "PlaywrightCloudLimb",
+    "ExtensionRegistry",
+    "register_all_extensions",
+    # Model Hub
+    "ModelHub",
+    "HeadConfig",
+    "ModelState",
+    # Multi-Screen Swarm
+    "MultiScreenSwarm",
+    "CrossTalkBus",
+    "AgentScreen",
+    "SwarmDimensionalState",
+    # Self-Healing Mesh
+    "SelfHealingMesh",
+    "ServiceNode",
+    "ServiceHealth",
+    "ServiceCategory",
+    # Training Funnel
+    "TrainingFunnel",
+    "SFTPair",
+    "DPOTriple",
 ]
 
-__version__ = "1.3.0"
+__version__ = "1.4.0"

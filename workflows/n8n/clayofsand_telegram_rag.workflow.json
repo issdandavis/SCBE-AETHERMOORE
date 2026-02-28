@@ -1,0 +1,284 @@
+{
+  "name": "ClayOfSand Telegram RAG",
+  "nodes": [
+    {
+      "id": "form_trigger_upload",
+      "name": "Upload your file here",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        220,
+        -120
+      ],
+      "webhookId": "a2f8c44e-1e1d-4cd5-9f2a-5d91d5cc5f82",
+      "parameters": {
+        "options": {},
+        "formTitle": "ClayOfSand RAG File Upload",
+        "formFields": {
+          "values": [
+            {
+              "fieldType": "file",
+              "fieldLabel": "Upload your file(s)",
+              "requiredField": true,
+              "acceptFileTypes": ".pdf, .csv, .txt, .md"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "default_loader",
+      "name": "Default Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        660,
+        40
+      ],
+      "parameters": {
+        "options": {},
+        "dataType": "binary"
+      }
+    },
+    {
+      "id": "embeddings_openai",
+      "name": "Embeddings OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        860,
+        360
+      ],
+      "parameters": {
+        "options": {}
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "OPENAI_CREDENTIAL_ID",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "id": "insert_store",
+      "name": "Insert Data to Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.2,
+      "position": [
+        400,
+        -120
+      ],
+      "parameters": {
+        "mode": "insert",
+        "memoryKey": "clayofsand_vector_store"
+      }
+    },
+    {
+      "id": "chat_trigger",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        1060,
+        -140
+      ],
+      "webhookId": "af5b9f6d-03f4-45d3-8aa0-6546c6419d77",
+      "parameters": {
+        "options": {}
+      }
+    },
+    {
+      "id": "ai_agent",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        -140
+      ],
+      "parameters": {
+        "options": {}
+      }
+    },
+    {
+      "id": "openai_chat_model",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1060,
+        80
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "OPENAI_CREDENTIAL_ID",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "id": "query_tool",
+      "name": "Query Data Tool",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.2,
+      "position": [
+        1280,
+        80
+      ],
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "knowledge_base",
+        "memoryKey": "clayofsand_vector_store",
+        "toolDescription": "Use this knowledge base to answer questions from the user"
+      }
+    },
+    {
+      "id": "sticky_readme",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        -180
+      ],
+      "parameters": {
+        "color": 4,
+        "width": 440,
+        "height": 300,
+        "content": "### ClayOfSand RAG Bot\n1) Run the upload form flow first to insert documents.\n2) Open chat trigger endpoint and ask questions.\n3) Ensure OpenAI credential is set on both OpenAI nodes."
+      }
+    },
+    {
+      "id": "sticky_load_flow",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        160,
+        -180
+      ],
+      "parameters": {
+        "color": 7,
+        "width": 700,
+        "height": 460,
+        "content": "### 1) Load Data Flow"
+      }
+    },
+    {
+      "id": "sticky_retriever",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        940,
+        -180
+      ],
+      "parameters": {
+        "color": 7,
+        "width": 680,
+        "height": 460,
+        "content": "### 2) Retriever Flow"
+      }
+    },
+    {
+      "id": "sticky_embedding",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        320
+      ],
+      "parameters": {
+        "color": 4,
+        "width": 320,
+        "height": 240,
+        "content": "### Embeddings\nInsert and retrieve must use the same embedding model and credential."
+      }
+    }
+  ],
+  "connections": {
+    "Upload your file here": {
+      "main": [
+        [
+          {
+            "node": "Insert Data to Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Insert Data to Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Insert Data to Store",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Query Data Tool",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Data Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "pinData": {}
+}

@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${SCBE_SKIP_STACK_SMOKE:-0}" == "1" ]]; then
+  echo "[SCBE pre-push] Skipping stack smoke (SCBE_SKIP_STACK_SMOKE=1)."
+  exit 0
+fi
+
+PYTHON_BIN="${PYTHON_BIN:-python}"
+if ! command -v "$PYTHON_BIN" >/dev/null 2>&1; then
+  echo "[SCBE pre-push] Python not found on PATH. Set PYTHON_BIN or install python."
+  exit 1
+fi
+
+echo "[SCBE pre-push] Running full-system smoke gate..."
+"$PYTHON_BIN" scripts/system/full_system_smoke.py \
+  --startup-wait-sec 5 \
+  --timeout-sec 8 \
+  --probe-webhook \
+  --output artifacts/system_smoke/pre_push_smoke_report.json
+
+echo "[SCBE pre-push] Smoke gate passed."

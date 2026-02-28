@@ -8,7 +8,15 @@
 
 **Scope**: This document inventories claims that are **novel beyond the original provisional filing**, targeting the CIP expansion. Claims below focus on innovations implemented in the Python reference codebase that extend the original 14-layer architecture with Sacred Tongues, Polyhedral Hamiltonian Defense Manifold (PHDM), cultural intelligence, fleet governance, context-credit economics, semantic threat detection, navigation concept blocks, and post-quantum identity.
 
-**Total Claims**: 47 (15 independent + 32 dependent)
+**Total Claims**: ~105 (25 independent + ~80 dependent)
+
+**Update 2026-02-27**: Major consolidation:
+- Added Claim Groups 16-21 from 500-page theory doc extraction (12 claim sets, ~90 claims)
+- Added Claim 9.4 (Fractional Calculus Diffusion Primitive) per external review
+- Added Claim Group 22 cross-reference mapping theory doc Claims 51-62 → CIP groups
+- Added examiner simulation results (70% allowance rate, 3 physics overclaims flagged)
+- Added cross-reference table linking theory doc claim sets to CIP groups
+- Integrated `EXTRACTED_CLAIMS_FROM_THEORY_DOC.md` and `PATENT_5_QUASICRYSTAL_AUTH.md`
 
 ---
 
@@ -511,6 +519,23 @@ where energy_cost = H(d, pd) = 1 / (1 + d + 2*pd), complexity = |active_layers| 
 
 ---
 
+### Dependent Claim 9.4 (Fractional Power-Law Diffusion Primitive)
+**The method of Claim 9.1, wherein said spectral diffusion operation alternatively comprises:
+
+(i) deriving a fractional exponent alpha from said diffusion key, wherein alpha is in (0, 1);
+
+(ii) applying a power-law transformation to spectral coefficients: S'_k = |S_k|^alpha * exp(i * arg(S_k)), where S_k are the Fourier coefficients of the plaintext;
+
+(iii) wherein incorrect derivation of alpha produces output that diverges from correct plaintext without revealing the magnitude of the derivation error, and wherein a change of 0.001 in alpha produces measurable output drift due to the non-linear sensitivity of fractional power operations.**
+
+**Source**: Proposed extension — fractional calculus (Caputo/Riemann-Liouville definitions). Implementation target: `src/symphonic_cipher/scbe_aethermoore/cpse.py`
+**Mathematical verification**: D^0.5 log(x) verified via Caputo definition; exp(alpha * log(x)) = x^alpha (trivially correct). Fractional operations are non-invertible without knowing alpha, and small alpha changes produce chaotic output divergence.
+**Prior art note**: Fractional calculus less studied in crypto than logistic map chaos — potential novelty advantage over current chaotic diffusion.
+**Novelty**: Adds second chaos primitive (power-law bend) alongside existing logistic map without replacing it. Cross-domain application of fractional calculus to spectral cryptography.
+**Strength**: MEDIUM-STRONG
+
+---
+
 ## Claim Group 10: Harmonic Attention Layer (HAL-Attention)
 
 ### Independent Claim 10.1
@@ -654,6 +679,412 @@ where energy_cost = H(d, pd) = 1 / (1 + d + 2*pd), complexity = |active_layers| 
 
 ---
 
+## Claim Group 16: Quasicrystal Lattice Authentication (Patent 5 — Anchor Claim)
+
+*Source: `docs/patent/PATENT_5_QUASICRYSTAL_AUTH.md`, validated Colab implementation*
+*Examiner Review: STRONG PASS on §101, §102, §103*
+
+### Independent Claim 16.1 (Core: Quasicrystal Lattice Authentication)
+**A computer-implemented method for authenticating machine-to-machine interactions, the method comprising:**
+
+(a) receiving a multi-dimensional gate vector comprising at least six integer-valued verification parameters, each parameter representing a distinct authentication dimension;
+
+(b) projecting the gate vector from a six-dimensional integer lattice Z^6 into a three-dimensional physical space using a first projection matrix derived from icosahedral symmetry basis vectors;
+
+(c) simultaneously projecting the gate vector into a three-dimensional perpendicular space using a second projection matrix related to the first by Galois conjugation of the golden ratio;
+
+(d) computing a distance between the perpendicular-space projection and a current phason strain vector;
+
+(e) determining that the authentication is valid if and only if said distance is less than a predetermined acceptance radius defining an Atomic Surface boundary; and
+
+(f) denying the authentication request when the distance exceeds the acceptance radius.
+
+**Source**: `src/symphonic_cipher/pqc/quasicrystal_auth.py`
+**Tests**: `tests/test_quasicrystal_auth.py` (57 tests passing)
+**Novelty**: No known prior art combines quasicrystal (aperiodic) lattice geometry for authentication with icosahedral symmetry projection from Z^6.
+**Strength**: STRONG (examiner-validated)
+
+---
+
+### Dependent Claim 16.2 (Phason Rekeying)
+**The method of Claim 16.1, further comprising: (g) receiving an entropy seed value; (h) computing a new phason strain vector deterministically from the entropy seed using a cryptographic hash function; (i) replacing the current phason strain vector with the new phason strain vector, thereby atomically invalidating all previously-valid authentication states without modifying the projection matrices or gate vector logic.**
+
+**Novelty**: Phason rekeying is genuinely novel — no one uses quasicrystal deformation as key rotation.
+**Strength**: STRONG
+
+---
+
+### Dependent Claim 16.3 (Icosahedral Basis)
+**The method of Claim 16.1, wherein the first projection matrix comprises six basis vectors that are cyclic permutations of (1, phi, 0) normalized by 1/sqrt(1 + phi^2), where phi = (1 + sqrt(5))/2, and the second projection matrix comprises six basis vectors that are cyclic permutations of (1, -1/phi, 0) similarly normalized.**
+
+**Strength**: STRONG
+
+---
+
+### Dependent Claim 16.4 (Crystalline Defect Detection)
+**The method of Claim 16.1, further comprising: (j) maintaining a history of gate vectors received over a time window; (k) computing a discrete Fourier transform of the Euclidean norms of the history vectors; (l) analyzing the power spectrum for dominant low-frequency peaks indicative of periodic attack patterns; (m) computing a crystallinity defect score as a function of the normalized dominant peak power; (n) raising an alert or denying subsequent requests when the defect score exceeds a crystallinity threshold, thereby detecting attackers attempting to force periodicity in what should be an aperiodic authentication sequence.**
+
+**Novelty**: Catches a real attack class (forced periodicity) undetectable by conventional auth.
+**Strength**: STRONG
+
+---
+
+### Dependent Claim 16.5 (Hanning Window)
+**The method of Claim 16.4, wherein computing the discrete Fourier transform comprises applying a Hanning window function to the norm sequence prior to transformation, reducing spectral leakage.**
+
+**Strength**: MEDIUM
+
+---
+
+### Dependent Claim 16.6 (Tri-Manifold Governance)
+**The method of Claim 16.1, further comprising: (o) aggregating the six gate parameters into three dimension pairs; (p) converting each aggregated value to a negabinary (base negative-two) representation; (q) converting each negabinary representation to a balanced ternary representation comprising trits valued at -1, 0, or +1; (r) selecting the most significant trit from each balanced ternary representation to form a three-trit governance state; (s) computing a governance decision based on the sum of the three trits, wherein a positive sum yields ALLOW, a zero sum yields QUARANTINE, and a negative sum yields DENY.**
+
+**Strength**: STRONG
+
+---
+
+### Dependent Claim 16.7 (Security Override)
+**The method of Claim 16.6, wherein the third trit corresponding to cryptographic signature verification dimensions overrides the governance decision to DENY when its value is -1, regardless of the sum of all trits.**
+
+**Strength**: MEDIUM
+
+---
+
+### Dependent Claim 16.8 (Federated Multi-Tier Evaluation)
+**The method of Claim 16.6, further comprising: (t) registering a plurality of governance evaluation tiers, each tier independently evaluating the three-trit governance state; (u) collecting decisions from all tiers; (v) applying a consensus rule wherein any DENY from any tier results in final DENY, any QUARANTINE without DENY results in final QUARANTINE, and unanimous ALLOW results in final ALLOW.**
+
+**Strength**: STRONG
+
+---
+
+### Dependent Claim 16.9 (Integration with Harmonic Scaling)
+**The method of Claim 16.1, further comprising computing a harmonic security cost H(d,R) = R^(d^2) where d is the number of failed authentication dimensions and R is a harmonic amplification ratio, and applying said cost as an exponentially increasing penalty for repeated authentication failures.**
+
+**Cross-reference**: Links to Claim Group 9 (CPSE)
+**Strength**: STRONG
+
+---
+
+### Dependent Claim 16.10 (Integration with Cymatic Voxel Storage)
+**The method of Claim 16.1, further comprising storing authentication-protected data in a voxelized representation wherein data visibility is conditioned on both: (i) the quasicrystal lattice authentication succeeding per Claims 16.1-16.4, and (ii) a Chladni nodal-line resonance condition being satisfied per agent-state-derived mode parameters.**
+
+**Cross-reference**: Links to Claim Group 13 (Cymatic Storage)
+**Strength**: MEDIUM-STRONG
+
+---
+
+## Claim Group 17: Temporal Intent Trajectory Authorization (Theory Doc Claims 63-73)
+
+*Source: `docs/patent/EXTRACTED_CLAIMS_FROM_THEORY_DOC.md`, Claim Set C*
+*Note: Designed to snap onto examiner-cleaned Claims 51-62*
+
+### Independent Claim 17.1 (Temporal Intent Trajectory Authorization)
+**A computer-implemented method for controlling authorization of a cryptographic operation in a secure computing system, the method comprising:**
+
+(a) receiving, over a time interval [t_0, t_n], a sequence of interaction events associated with a user or agent;
+
+(b) for each interaction event e_i, generating a context vector c_i in R^k that encodes at least: (i) a timestamp, (ii) an actor identifier, (iii) a threat level, (iv) a system load metric, (v) an entropy metric, and (vi) a behavioral stability metric;
+
+(c) storing the context vectors c_i as an ordered temporal intent trajectory tau = (c_0, c_1, ..., c_n);
+
+(d) computing an intent coherence score S(tau) using a divergence function D(.,.) defined over context vectors; and
+
+(e) enabling the cryptographic operation only when S(tau) satisfies a predefined acceptance criterion and a current system time is within a predefined authorization window.
+
+**Source**: Theory doc paras 10236-10458
+**Novelty**: Temporal trajectory as authorization primitive — no prior art requires sustained behavioral coherence over time for crypto operations.
+**Strength**: STRONG
+
+---
+
+### Dependent Claim 17.2 (Concrete Coherence Score)
+**The method of Claim 17.1, wherein computing the intent coherence score comprises computing S(tau) = sum_{i=1}^{n} w_i D(c_i, c_{i-1}), wherein w_i are predefined non-negative weights.**
+
+**Strength**: STRONG
+
+---
+
+### Dependent Claim 17.3 (Metric Tensor Hook)
+**The method of Claim 17.1, wherein the divergence function D(c_i, c_j) comprises a weighted distance computed using a diagonal weight matrix or metric tensor g that assigns greater weight to the behavioral stability metric than to at least the timestamp and actor identifier.**
+
+**Cross-reference**: Links to Claim 1.2 (metric tensor)
+**Strength**: STRONG
+
+---
+
+### Dependent Claim 17.4 (Context-Gated Harmonic Checkpoints)
+**The method of Claim 17.1, further comprising: (a) for each context vector c_i, evaluating a checkpoint function chi(c_i, H(d,R)) that outputs a checkpoint value; and (b) enabling a key-release or decryption operation only if the checkpoint values satisfy a predefined ordered sequence constraint across at least m successive context vectors of the temporal intent trajectory.**
+
+**Strength**: STRONG
+
+---
+
+### Dependent Claim 17.5 (Temporal Dwell Time — Anti-Replay/Anti-Burst)
+**The method of Claim 17.1, wherein the acceptance criterion requires that the temporal intent trajectory include at least a minimum dwell time Delta_t between t_0 and t_n and at least a minimum number of interaction events n >= n_min.**
+
+**Strength**: STRONG
+
+---
+
+### Independent Claim 17.6 (Rolling Context-Bound Credentials)
+**A computer-implemented method for managing rolling cryptographic credentials, comprising:**
+
+(a) generating, at a first time, a credential bound to an initial context vector c_0;
+
+(b) updating the credential at subsequent times as a deterministic function f(c_i, c_{i-1}, H(d,R)) to produce an updated credential valid only for (i) a bounded time-to-live interval and (ii) a bounded context-distance threshold epsilon under a predefined divergence function; and
+
+(c) invalidating the credential when the time-to-live interval expires or when a divergence between a current context vector and the temporal intent trajectory exceeds a threshold.
+
+**Novelty**: Rolling credentials bound to trajectory coherence — JWT/OAuth only expire by time, not by behavioral drift.
+**Strength**: STRONG
+
+---
+
+### Dependent Claim 17.7 (Trajectory-Based Revocation)
+**The method of Claim 17.6, wherein invalidating the credential is triggered when a divergence between c_i and a predicted context vector c_hat_i derived from prior vectors in the temporal intent trajectory exceeds the threshold.**
+
+**Strength**: STRONG
+
+---
+
+### Dependent Claim 17.8 (Trajectory-Aware Dual-Lattice Consensus)
+**The system further comprising: (a) a trajectory evaluation circuit configured to compute the temporal intent trajectory and generate a trajectory validity flag; and (b) control logic permitting stabilization of a decryption equation only when (i) ML-KEM returns success, (ii) ML-DSA returns success, and (iii) the trajectory validity flag indicates validity, all within a synchronized time window Delta_T.**
+
+**Cross-reference**: Links to Claim Group 8 (PQC Identity), theory doc Claim 62
+**Strength**: STRONG
+
+---
+
+### Dependent Claim 17.9 (ML-KEM/ML-DSA Specification)
+**The system of Claim 17.8, wherein the lattice-based key encapsulation mechanism comprises ML-KEM as specified in FIPS 203 and the lattice-based digital signature algorithm comprises ML-DSA as specified in FIPS 204.**
+
+**Strength**: STRONG
+
+---
+
+## Claim Group 18: GeoSeal Manifold-Gated Dual-Lane KEM
+
+*Source: `docs/patent/EXTRACTED_CLAIMS_FROM_THEORY_DOC.md`, Claim Set A*
+
+### Independent Claim 18.1
+**A method for secure key management using manifold-gated dual-lane key derivation, comprising:**
+
+(a) performing a single post-quantum KEM encapsulation to obtain a shared secret s;
+
+(b) mapping live context to a spherical model and classifying the context position as inside or outside a governance boundary, with directional cell assignment;
+
+(c) deriving two domain-separated keys k_in, k_out from s using geometry-indexed domain separation tags (DSTs);
+
+(d) authorizing operations by lane, optionally requiring both keys or a composite key under boundary interaction conditions; and
+
+(e) rejecting unauthorized operations via a fractal pre-gate and diffusing ciphertext spectrally keyed by the selected lane.
+
+**Source**: Theory doc paras 2861-2873
+**Novelty**: Single encapsulation -> multi-lane keys via geometry + DST. Boundary-only composite key. Coupling to dual authorization semantics.
+**Strength**: STRONG
+
+---
+
+### Dependent Claim 18.2 (Spherical Quantizer)
+**The method of Claim 18.1, wherein the spherical quantizer is HEALPix, icosahedral, or orthant with fixed, signed projection P.**
+
+**Strength**: MEDIUM
+
+---
+
+### Dependent Claim 18.3 (Boundary Interaction)
+**The method of Claim 18.1, wherein "interaction" is defined by |r-R| <= epsilon or great-circle coincidence, and the composite key k_cap is only emitted under boundary interaction.**
+
+**Strength**: STRONG
+
+---
+
+### Dependent Claim 18.4 (Lane-Specific Signatures)
+**The method of Claim 18.1, further comprising lane-specific signature tuples (e.g., Dilithium) over envelope + DSTs enabling verifiable separation of powers.**
+
+**Strength**: STRONG
+
+---
+
+### Dependent Claim 18.5 (Fail-to-Noise)
+**The method of Claim 18.1, wherein lane-keyed phase diffusion (FFT + chaotic sequence) produces the fail-to-noise property: incorrect lane key produces cryptographic noise, not error messages.**
+
+**Cross-reference**: Links to Claim Group 12 (SpiralSeal)
+**Strength**: STRONG
+
+---
+
+## Claim Group 19: Conlang Acoustic Authentication (Symphonic Cipher)
+
+*Source: `docs/patent/EXTRACTED_CLAIMS_FROM_THEORY_DOC.md`, Claim Set E*
+
+### Independent Claim 19.1 (Acoustic Auth Method)
+**A method for authenticating a user within a digital environment, the method comprising:**
+
+(a) generating and presenting a challenge token comprising a specific Constructed Language (Conlang) phrase to a user;
+
+(b) capturing an acoustic signal generated by the user in response to the challenge token via an acoustic sensor;
+
+(c) transforming the captured acoustic signal from time domain to frequency domain to generate a spectral representation;
+
+(d) extracting a harmonic fingerprint from the spectral representation, comprising a ratio of odd-to-even harmonic amplitudes, a spectral centroid value, and a measure of sideband energy distribution around a fundamental frequency;
+
+(e) calculating a divergence score between the extracted harmonic fingerprint and a stored adaptive intent template associated with the user; and
+
+(f) authorizing the user only if the divergence score is below a pre-determined threshold and the spectral representation exhibits non-binary modulation characteristics defined by a minimum required spectral density between harmonic peaks.
+
+**Source**: Theory doc paras 24323-24337
+**Novelty**: Conlang + acoustic fingerprint + non-binary modulation detection is a unique combination.
+**Strength**: STRONG
+
+---
+
+### Dependent Claim 19.2 (Dynamic Token Generation)
+**The method of Claim 19.1, wherein the Conlang phrase is dynamically generated for each session to include specific phonetic sequences selected to elicit a target fundamental frequency and a verifiable harmonic decay profile, thereby preventing replay attacks.**
+
+**Strength**: STRONG
+
+---
+
+### Dependent Claim 19.3 (Micro-Modulation Vector)
+**The method of Claim 19.1, wherein extracting the harmonic fingerprint further comprises calculating a micro-modulation vector quantifying jitter (rate of change of fundamental frequency) and shimmer (rate of change of amplitude) over the duration of the token's syllabic nucleus.**
+
+**Strength**: MEDIUM
+
+---
+
+### Independent Claim 19.4 (Acoustic Auth System)
+**An authentication system comprising: an acoustic interface configured to capture audio input; a processor coupled to the acoustic interface; and memory storing instructions that cause the system to: implement a Harmonic Source Enhancer to decompose audio into harmonic and percussive components; execute a Spectral Comparator to compare harmonic components against a reference Non-Binary modulation profile; and execute a Decision Engine configured to reject audio classified as "Binary" (spectral energy confined to integer multiples of fundamental with sideband energy below noise floor).**
+
+**Strength**: STRONG
+
+---
+
+### Dependent Claim 19.5 (Rolling Key Update)
+**The system of Claim 19.4, wherein the reference Non-Binary modulation profile is updated recursively upon each successful authentication, creating a time-variant acoustic key.**
+
+**Strength**: STRONG
+
+---
+
+### Dependent Claim 19.6 (Liveness Detection)
+**The system of Claim 19.4, wherein the decision engine detects synthetic voice generation by analyzing phase continuity of high-frequency harmonics, rejecting inputs exhibiting phase discontinuities characteristic of concatenated synthesis or splicing.**
+
+**Strength**: STRONG
+
+---
+
+### Dependent Claim 19.7 (Parametric Transmission)
+**The method of Claim 19.1, further comprising encoding the extracted harmonic fingerprint into a parametric data structure comprising frequency-amplitude pairs and envelope coefficients, and transmitting said parametric data structure over a network for remote verification, requiring less bandwidth than the captured acoustic signal.**
+
+**Strength**: MEDIUM
+
+---
+
+## Claim Group 20: Grammar-Based Command Authentication
+
+*Source: `docs/patent/EXTRACTED_CLAIMS_FROM_THEORY_DOC.md`, Claim Set D*
+
+### Independent Claim 20.1
+**A method for authenticating commands using formal grammar validation, comprising:**
+
+(a) defining a context-free grammar specifying valid command structure;
+
+(b) receiving a token sequence purporting to represent a command;
+
+(c) applying a key-derived permutation to the sequence;
+
+(d) parsing the permuted sequence against the grammar; and
+
+(e) accepting the command if and only if parsing succeeds.
+
+**Source**: Theory doc paras 11285-11327
+**Novelty**: Combining formal grammar parsing with cryptographic key-derived permutation for command auth.
+**Strength**: MEDIUM-STRONG
+
+---
+
+### Dependent Claim 20.2 (Multi-Grammar Domains)
+**The method of Claim 20.1, wherein multiple grammars representing different authorization domains must all successfully parse the token sequence.**
+
+**Strength**: MEDIUM
+
+---
+
+### Dependent Claim 20.3 (Acoustic Parse Tree Verification)
+**The method of Claim 20.1, further comprising generating an acoustic representation of the parse tree for out-of-band verification.**
+
+**Cross-reference**: Links to Claim Group 19 (Conlang Acoustic)
+**Strength**: MEDIUM
+
+---
+
+## Claim Group 21: Intent-Modulated Command Authentication (Comprehensive)
+
+*Source: `docs/patent/EXTRACTED_CLAIMS_FROM_THEORY_DOC.md`, Claim Set K*
+*Note: This is the most comprehensive claim structure for the conlang+intent system, covering method/system/CRM claims*
+
+### Independent Claim 21.1 (Method)
+**A computer-implemented method for intent-modulated command authentication in multi-agent systems, comprising:**
+
+(a) interpreting a symbolic message using a proprietary grammar;
+
+(b) selecting an interpretation mode embedded within the message;
+
+(c) permuting message structure based on a shared key;
+
+(d) rejecting execution when symbolic, structural, or modal interpretations fail to align; and
+
+(e) optionally verifying correlated signal features.
+
+**Source**: Theory doc paras 19791-19956
+**Dependent Claims (recommended structure)**:
+- 21.2: Proprietary grammar specifics (Sacred Tongues)
+- 21.3: Modality encoding + effect on interpretation
+- 21.4: Keyed token permutation
+- 21.5: Keyed grammar-production permutation
+- 21.6: Parse-tree validation rule
+- 21.7: Anti-replay binding
+- 21.8: Audio-feature verification (links to Group 19)
+- 21.9: Rotation/versioning
+- 21.10: Logging/audit output (AI governance angle)
+
+**System Claims** (21.11-21.18): Mirror method claims as apparatus
+**CRM Claims** (21.19-21.26): Mirror as non-transitory computer-readable medium
+
+**Novelty**: Multi-layer modal cipher incorporating conlangs, gender-like intent modalities, and harmonic audio verification.
+**Strength**: STRONG (comprehensive 26-claim structure)
+
+---
+
+## Claim Group 22: Examiner-Cleaned Core Claims (Theory Doc Claims 51-62)
+
+*Source: `docs/patent/EXTRACTED_CLAIMS_FROM_THEORY_DOC.md`, Claim Set B*
+*Note: These overlap with CIP Claim Groups 9-13 but use examiner-cleaned language with physics metaphors removed. Filed as amendments to the provisional.*
+
+### Key Claims (examiner-cleaned language)
+
+| Claim | Title | Status | Maps To CIP Group |
+|---|---|---|---|
+| 51 | Harmonic Scaling Method: H(d,R) = R^(d^2) | Allowed as amended | 9 (CPSE) |
+| 52 | Deterministic Seeding (planetary ratios) | Allowed as amended | 9 (CPSE) |
+| 53 | Metric Tensor: g = diag(1,1,1,R,R^2,R^3) | Allowed as-is | 1 (Governance) |
+| 54 | Variable Latency Throttling (was "Acoustic Black Hole") | Allowed as rewritten | 9 (CPSE) |
+| 55 | Signal Coherence (soliton-like) | Allowed as rewritten | 15 (Signal Aggregation) |
+| 56 | Non-Stationary Oracle (anti-Grover) | Allowed as rewritten | 8 (PQC Identity) |
+| 57 | Entropy Export (0.934 damping) | Allowed as rewritten | 15 (Signal Aggregation) |
+| 58 | Cymatic Storage (Chladni resonance) | Allowed as refined | 13 (Cymatic Storage) |
+| 59 | HAL Attention (H(d,R) normalization) | Allowed as-is | 10 (HAL-Attention) |
+| 60 | Unified System | Allowed | 14 (Organic Hyperbolic) |
+| 61 | Temporal Lattice Stabilization | Allowed | 17 (Temporal Intent) |
+| 62 | Dual-Lattice Consensus (ML-KEM + ML-DSA) | Allowed | 8 (PQC Identity) |
+
+*Full claim text in `docs/patent/EXTRACTED_CLAIMS_FROM_THEORY_DOC.md`, Claim Set B*
+
+**Note**: Physics metaphors systematically removed: "event horizon" → "asymptotic maximum", "acoustic black hole" → "variable latency delay", "bending spacetime" → "signal attenuation".
+
+---
+
 ---
 
 ## Summary Table
@@ -668,14 +1099,23 @@ where energy_cost = H(d, pd) = 1 / (1 + d + 2*pd), complexity = |active_layers| 
 | 6. Semantic Antivirus | 6.1-6.4 | 1 | 3 | 6.1 (STRONG) |
 | 7. Navigation Blocks | 7.1-7.5 | 1 | 4 | 7.1 (STRONG) |
 | 8. PQC Identity + PHDM | 8.1-8.4 | 1 | 3 | 8.2 (STRONG) |
-| 9. CPSE Physics | 9.1-9.3 | 1 | 2 | 9.1 (STRONG) |
+| 9. CPSE Physics | 9.1-9.4 | 1 | 3 | 9.1 (STRONG) |
 | 10. HAL-Attention | 10.1-10.2 | 1 | 1 | 10.1 (STRONG) |
-| 11. Quasicrystal Lattice | 11.1 | 1 | 0 | 11.1 (STRONG) |
+| 11. Quasicrystal Lattice (simple) | 11.1 | 1 | 0 | 11.1 (STRONG) |
 | 12. SpiralSeal Encryption | 12.1 | 1 | 0 | 12.1 (STRONG) |
 | 13. Cymatic Storage | 13.1 | 1 | 0 | 13.1 (MEDIUM) |
 | 14. Organic Hyperbolic | 14.1-14.2 | 1 | 1 | 14.1 (STRONG) |
 | 15. Signal Aggregation | 15.1-15.2 | 1 | 1 | 15.1 (MEDIUM) |
-| **TOTAL** | **47** | **15** | **32** | |
+| **16. Quasicrystal Auth (P5 Anchor)** | **16.1-16.10** | **1** | **9** | **16.1 (STRONG)** |
+| **17. Temporal Intent Trajectory** | **17.1-17.9** | **2** | **7** | **17.1 (STRONG)** |
+| **18. GeoSeal Dual-Lane KEM** | **18.1-18.5** | **1** | **4** | **18.1 (STRONG)** |
+| **19. Conlang Acoustic Auth** | **19.1-19.7** | **2** | **5** | **19.1 (STRONG)** |
+| **20. Grammar Command Auth** | **20.1-20.3** | **1** | **2** | **20.1 (MEDIUM-STRONG)** |
+| **21. Intent-Modulated Auth** | **21.1-21.26** | **3** | **23** | **21.1 (STRONG)** |
+| **22. Examiner-Cleaned (51-62)** | **cross-ref** | — | — | **See mapping** |
+| **TOTAL** | **~105** | **~25** | **~80** | |
+
+*Note: Group 22 maps theory doc Claims 51-62 back to Groups 1, 8-10, 13-15, 17. These are examiner-cleaned versions of overlapping claims, not net-new claims. The ~105 total includes some overlap.*
 
 ---
 
@@ -683,8 +1123,9 @@ where energy_cost = H(d, pd) = 1 / (1 + d + 2*pd), complexity = |active_layers| 
 
 | Rating | Count | Claims |
 |---|---|---|
-| STRONG | 30 | 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 2.1, 2.2, 2.3, 3.1, 3.2, 4.1, 5.1, 5.2, 6.1, 6.3, 7.1, 8.1, 8.2, 8.3, 9.1, 9.2, 10.1, 11.1, 12.1, 14.1 (+ more) |
-| MEDIUM | 13 | 2.4, 2.5, 3.3, 4.2, 4.3, 5.3, 5.4, 6.2, 6.4, 7.2, 7.5, 9.3, 10.2, 13.1, 14.2, 15.1, 15.2 |
+| STRONG | 55+ | 1.1-1.6, 2.1-2.3, 3.1-3.2, 4.1, 5.1-5.2, 6.1, 6.3, 7.1, 8.1-8.3, 9.1-9.2, 10.1, 11.1, 12.1, 14.1, 16.1-16.4, 16.6, 16.8-16.9, 17.1-17.9, 18.1, 18.3-18.5, 19.1-19.2, 19.4-19.6, 21.1 |
+| MEDIUM-STRONG | 8 | 9.4, 16.10, 20.1, plus examiner-cleaned variants |
+| MEDIUM | 17 | 2.4-2.5, 3.3, 4.2-4.3, 5.3-5.4, 6.2, 6.4, 7.2, 7.5, 9.3, 10.2, 13.1, 14.2, 15.1-15.2, 16.5, 16.7, 18.2, 19.3, 19.7, 20.2-20.3 |
 | NEEDS STRENGTHENING | 4 | 3.4, 7.3, 7.4, 8.4 |
 
 ---
@@ -694,29 +1135,95 @@ where energy_cost = H(d, pd) = 1 / (1 + d + 2*pd), complexity = |active_layers| 
 | Formula | Location | Claim(s) |
 |---|---|---|
 | `H(d, pd) = 1 / (1 + d + 2*pd)` | `credit.py:93`, `semantic_antivirus.py:232` | 1.1, 5.1, 5.3, 6.1 |
-| `H(d, R) = R^(d^2)` | `cpse.py:97-100` | 9.1, 9.2 |
+| `H(d, R) = R^(d^2)` | `cpse.py:97-100` | 9.1, 9.2, 16.9, 17.4, 17.6 (theory doc 51) |
 | `H(d*) = 1 + alpha * tanh(beta * d*)` | `layer_13.py:72-98` | 1.4 |
 | `Psi(P) = 1 + (max - 1) * tanh(beta * P)` | `living_metric.py:80-100` | 1.5 |
 | `nu_dot_i = kappa_i(nu_bar_i - nu_i) + sigma_i sin(Omega_i t)` | `fractional_flux.py:8-11` | 1.6 |
 | `r_poincare = tanh(c * r_eucl / sqrt(2)) * 0.95` | `emotions.py:148-186` | 3.2 |
-| `d(p,q) = arccosh(1 + 2||p-q||^2 / ((1-||p||^2)(1-||q||^2)))` | `emotions.py:189-210` | 3.3 |
+| `d(p,q) = arccosh(1 + 2‖p-q‖^2 / ((1-‖p‖^2)(1-‖q‖^2)))` | `emotions.py:189-210` | 3.3 |
 | `value = weight * energy * complexity * legibility` | `credit.py:149-159` | 5.1 |
 | `gamma = 1 / sqrt(1 - (v/c)^2)` | `cpse.py` | 9.1, 9.3 |
 | `Lambda[i,j] = R_fifth^(d_i * d_j)` | `hal_attention.py` | 10.1 |
-| `g = diag(1, 1, 1, R, R^2, R^3)` | `cpse.py:35-46` | 1.2, 9.1 |
+| `g = diag(1, 1, 1, R, R^2, R^3)` | `cpse.py:35-46` | 1.2, 9.1, 17.3 (theory doc 53) |
+| `S(tau) = sum w_i D(c_i, c_{i-1})` | Theory doc (paras 10236+) | 17.1, 17.2 |
+| `S'_k = \|S_k\|^alpha * exp(i * arg(S_k))` | Proposed (fractional calculus) | 9.4 |
+| `tau_dwell = min(tau_max, tau_min * alpha^risk * beta^n)` | Security Gate spec | Related to 17.5 |
+| Quasicrystal: Z^6 → R^3 icosahedral projection | `pqc/quasicrystal_auth.py` | 16.1-16.10 |
+| GeoSeal: dual-lane k_in, k_out from geometry-indexed DSTs | Theory doc (paras 2861+) | 18.1-18.5 |
+| Conlang: harmonic fingerprint divergence score | Theory doc (paras 24323+) | 19.1-19.7 |
+
+---
+
+## Cross-Reference: Theory Doc Claims → CIP Groups
+
+| Theory Doc Claim | Theory Doc Set | CIP Group | Notes |
+|---|---|---|---|
+| 51 (Harmonic Scaling) | B | 9 (CPSE) | Examiner-cleaned language |
+| 52 (Deterministic Seeding) | B | 9 (CPSE) | Planetary ratios — examiner noted limited value |
+| 53 (Metric Tensor) | B | 1 (Governance) | Allowed as-is |
+| 54 (Latency Throttling) | B | 9 (CPSE) | Was "Acoustic Black Hole" — rewritten |
+| 55 (Signal Coherence) | B | 15 (Signal Aggregation) | Soliton → self-reinforcing FEC |
+| 56 (Non-Stationary Oracle) | B | 8 (PQC Identity) | Was "Breaks Grover" — reframed |
+| 57 (Entropy Export) | B | 15 (Signal Aggregation) | Damping coefficient Omega_spiral |
+| 58 (Cymatic Storage) | B | 13 (Cymatic Storage) | Chladni resonance gating |
+| 59 (HAL Attention) | B | 10 (HAL-Attention) | Allowed as-is |
+| 60 (Unified System) | B | 14 (Organic Hyperbolic) | System claim |
+| 61 (Temporal Stabilization) | B | 17 (Temporal Intent) | Time-dependent decryption |
+| 62 (Dual-Lattice Consensus) | B | 8 (PQC Identity) + 17 | ML-KEM + ML-DSA |
+| 63-73 (Temporal Trajectory) | C | 17 (Temporal Intent) | New independent claims |
+| GeoSeal 1-5 | A | 18 (GeoSeal KEM) | Manifold-gated dual-lane |
+| Grammar Auth 1-3 | D | 20 (Grammar Auth) | Formal grammar + crypto |
+| Conlang Acoustic 1-8 | E | 19 (Conlang Acoustic) | Symphonic Cipher |
+| Intent-Modulated 1-26 | K | 21 (Intent-Modulated) | Comprehensive method/system/CRM |
+
+---
+
+## Examiner Review Status (from ChatGPT Patent Examiner GPT, Jan 9 2026)
+
+10-scenario simulation run with mathematical verification:
+
+| Scenario | Claim | Verdict | Key Finding |
+|---|---|---|---|
+| H(d,R) = R^(d^2) | 51/9.1 | ALLOWED | 1.5^36 = 2,184,164 verified |
+| Acoustic Black Hole | 54 | REJECTED | Physics overclaim — rewrite as rate-limiting |
+| Chaos Sensitivity | 4 | ALLOWED | Lyapunov λ = 0.6447 > 0 (chaotic confirmed) |
+| Planetary Seeding | 52 | ALLOWED (limited) | Aesthetic, not security-relevant |
+| Hopfield Threshold | 12 | ALLOWED | Established neural network math |
+| FFT Spectral Diffusion | 5 | ALLOWED | MSE 10^-29 correct vs 80.65 wrong |
+| Swarm Self-Exclusion | 40 | ALLOWED | Malicious excluded at round 12 |
+| "Breaks Grover" | 56 | REJECTED | Overclaim — reframe as rate-limit |
+| HAL-Attention | 59 | ALLOWED | Novel softmax replacement |
+| Entropy Null-Space | 57 | REJECTED | Thermodynamics violation claim |
+
+**Allowance rate: 70% (7/10)**
+**Action: Remove physics overclaims, keep engineering-grounded mechanisms**
 
 ---
 
 ## Recommendations for CIP Filing
 
-1. **Prioritize Claim Groups 1-6 and 8-9** for the CIP. These have the strongest novelty arguments and the most detailed mathematical backing.
+### Priority 1: File Immediately (Strongest, Most Novel)
+1. **Claim Group 16 (Quasicrystal Auth)** — Anchor claim, examiner-validated STRONG PASS on all sections
+2. **Claim Group 17 (Temporal Intent)** — Two new independent claims, snaps onto examiner-cleaned 51-62
+3. **Claim Group 1 (Layered AI Governance)** — Core 9D hyperbolic manifold architecture
 
-2. **Claims needing strengthening** (3.4, 7.3, 7.4, 8.4) should either be folded into their parent independent claims or supported with additional implementation detail showing how the combination produces non-obvious results.
+### Priority 2: File in CIP (Strong Supporting Claims)
+4. **Claim Group 18 (GeoSeal)** — Novel dual-lane KEM via manifold gating
+5. **Claim Group 9 (CPSE Physics)** — Now with fractional calculus (9.4)
+6. **Claim Groups 2-8** — Sacred Tongues, Heart Vault, Fleet, Credits, Antivirus, Navigation, PQC
 
-3. **Consider additional claims** for:
-   - The balanced ternary governance encoding (`trinary.py`) as a standalone claim
-   - The SFT training data export from Rosetta Stone (`export_sft`) as a method for generating linguistically-grounded AI training data
-   - The Grok Oracle tie-breaker mechanism referenced in the architecture diagram
+### Priority 3: File as Continuation (Specialized Claims)
+7. **Claim Group 19 (Conlang Acoustic)** — Needs acoustic hardware for strongest claims
+8. **Claim Group 21 (Intent-Modulated)** — Comprehensive 26-claim structure, file when ready
+9. **Claim Group 20 (Grammar Auth)** — Small but clean
+
+### Action Items
+1. **Remove physics overclaims** from all filings (acoustic black holes, entropy export, "breaks Grover")
+2. **Use examiner-cleaned language** (theory doc Set B) as the canonical claim text
+3. **Add fractional calculus** (Claim 9.4) as alternative diffusion primitive
+4. **File Missing Parts by April 19** — PTO/SB/15A + PTO/SB/16 + $82
+5. **Prepare CIP specification** with Groups 16-21 by June 2026
+6. **Consider security gate / waiting room** (dwell time mechanism) as additional dependent claim under Group 17
 
 4. **Prior art search priority**: Focus on Claims 1.1 (hyperbolic AI governance), 3.2 (emotion-to-Poincare), 5.1 (context credits), and 9.1 (physics-simulated governance) as these represent the most defensible novelty.
 

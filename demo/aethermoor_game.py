@@ -962,19 +962,17 @@ class SpriteCache:
         key = f"{character.name}_{size}"
         if key not in self._cache:
             arr = generate_sprite(character, size=size)
-            # arr is (size, size, 4) RGBA; pygame needs (w, h, 3) with RGB
-            rgb = arr[:, :, :3]
-            alpha_mask = arr[:, :, 3]
-            # Transpose from (row, col, ch) to (col, row, ch) for pygame
-            rgb_t = np.transpose(rgb, (1, 0, 2)).copy()
-            surface = pygame.surfarray.make_surface(rgb_t)
-            # Build alpha from the original array
-            alpha_t = np.transpose(alpha_mask, (1, 0)).copy()
-            # Create per-pixel alpha surface
-            final = surface.convert_alpha()
-            # Set transparent pixels to colorkey approach: use black as transparent
-            final.set_colorkey((0, 0, 0))
-            self._cache[key] = final
+            # arr is (size, size, 4) RGBA numpy array
+            h, w = arr.shape[:2]
+            surf = pygame.Surface((w, h), pygame.SRCALPHA)
+            # pygame.surfarray expects (width, height, channels) — transposed
+            pygame.surfarray.blit_array(surf, arr[:, :, :3].transpose(1, 0, 2))
+            # Apply per-pixel alpha from the RGBA array
+            alpha_arr = arr[:, :, 3].T  # (w, h)
+            alpha_surf = pygame.surfarray.pixels_alpha(surf)
+            alpha_surf[:] = alpha_arr
+            del alpha_surf  # unlock surface
+            self._cache[key] = surf
         return self._cache[key]
 
     def get_scaled(self, character: Character, target_size: int = 64) -> pygame.Surface:

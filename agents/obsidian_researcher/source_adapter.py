@@ -20,6 +20,8 @@ class SourceType(str, Enum):
     VAULT = "vault"
     WEB_PAGE = "web_page"
     BRAINSTORM = "brainstorm"
+    USPTO = "uspto"
+    GITHUB = "github"
     # Pluggable placeholders — subclass SourceAdapter to implement
     SOURCE_X = "source_x"
     SOURCE_Y = "source_y"

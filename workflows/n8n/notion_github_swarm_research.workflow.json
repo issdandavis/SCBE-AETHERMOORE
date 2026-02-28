@@ -1,0 +1,314 @@
+{
+  "name": "SCBE Notion+GitHub Swarm Research",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "scbe-notion-github-swarm",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook_intake",
+      "name": "Webhook: Notion+GitHub Intake",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -900,
+        160
+      ],
+      "webhookId": "scbe-notion-github-swarm-001"
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $json || {};\nconst notionUrls = Array.isArray(payload.notion_urls)\n  ? payload.notion_urls\n  : (payload.notion_url ? [payload.notion_url] : []);\nconst githubUrls = Array.isArray(payload.github_urls)\n  ? payload.github_urls\n  : (payload.github_url ? [payload.github_url] : []);\n\nconst maxSources = Math.min(Math.max(Number(payload.max_sources || 4), 1), 5);\nconst deduped = [];\nconst seen = new Set();\n\nfor (const raw of [...notionUrls, ...githubUrls]) {\n  const url = String(raw || '').trim();\n  if (!url) continue;\n  if (!/^https?:\\/\\//i.test(url)) continue;\n  const key = url.toLowerCase();\n  if (seen.has(key)) continue;\n  seen.add(key);\n  deduped.push(url);\n}\n\nif (deduped.length === 0) {\n  deduped.push('https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/docs');\n}\n\nconst selected = deduped.slice(0, maxSources);\nconst actions = [];\nfor (const url of selected) {\n  actions.push({ action: 'navigate', target: url, timeout_ms: 15000 });\n  actions.push({ action: 'extract', target: 'body', timeout_ms: 12000 });\n  if (actions.length >= 10) break;\n}\n\nconst runId = payload.run_id || `notion-gh-${Date.now()}`;\nconst sessionId = payload.session_id || `swarm-${Date.now()}`;\nconst query = String(payload.query || '');\n\nreturn [{\n  json: {\n    workflow_id: 'n8n-notion-github-swarm',\n    run_id: runId,\n    session_id: sessionId,\n    source: 'n8n',\n    dry_run: !!payload.dry_run,\n    actions,\n    query,\n    source_manifest: {\n      notion_urls: notionUrls,\n      github_urls: githubUrls,\n      selected_urls: selected\n    }\n  }\n}];"
+      },
+      "id": "build_actions",
+      "name": "Build Browse Actions",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -620,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.SCBE_BRIDGE_URL || 'http://127.0.0.1:8002') + '/v1/integrations/n8n/browse' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{ $env.SCBE_API_KEY || $env.N8N_API_KEY || 'scbe-dev-key' }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ workflow_id: $json.workflow_id, run_id: $json.run_id, source: $json.source, session_id: $json.session_id, dry_run: $json.dry_run, actions: $json.actions }) }}",
+        "options": {
+          "timeout": 90000
+        }
+      },
+      "id": "run_browser",
+      "name": "Run Playwright Swarm",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -360,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $json || {};\nconst rows = Array.isArray(result.results) ? result.results : [];\nconst snippets = [];\nfor (const row of rows) {\n  if (row && row.data && typeof row.data.extracted_text === 'string') {\n    snippets.push(row.data.extracted_text.slice(0, 280));\n  }\n  if (snippets.length >= 4) break;\n}\n\nconst summary = [\n  `run=${result.integration?.run_id || result.session_id || 'unknown'}`,\n  `status=${result.status || 'unknown'}`,\n  `executed=${result.executed_actions ?? 0}/${result.total_actions ?? 0}`,\n  `blocked=${result.blocked_actions ?? 0}`,\n  `trace=${result.trace || ''}`,\n  snippets.length ? `snippets=${snippets.join(' | ')}` : 'snippets=none'\n].join(' ; ');\n\nreturn [{\n  json: {\n    summary,\n    run_id: result.integration?.run_id || result.session_id || `notion-gh-${Date.now()}`,\n    status: result.status || 'unknown',\n    trace: result.trace || '',\n    raw_result: result\n  }\n}];"
+      },
+      "id": "summarize",
+      "name": "Summarize Findings",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -100,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.SCBE_BRIDGE_URL || 'http://127.0.0.1:8002') + '/v1/governance/scan' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{ $env.SCBE_API_KEY || $env.N8N_API_KEY || 'scbe-dev-key' }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ content: $('Summarize Findings').item.json.summary, scan_mode: 'full' }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "governance_scan",
+      "name": "Governance Scan",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        140,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.verdict || $json.governance_decision || 'ALLOW' }}",
+              "rightValue": "DENY",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "governance_gate",
+      "name": "Governance Gate",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        380,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.SCBE_BRIDGE_URL || 'http://127.0.0.1:8002') + '/v1/training/ingest' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{ $env.SCBE_API_KEY || $env.N8N_API_KEY || 'scbe-dev-key' }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ event_type: 'notion_github_swarm_research', context: $('Summarize Findings').item.json.summary, outcome: $('Summarize Findings').item.json.status, tongue: 'RU', metadata: { run_id: $('Summarize Findings').item.json.run_id, trace: $('Summarize Findings').item.json.trace } }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "training_ingest",
+      "name": "Training Ingest",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        620,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: 'ok', pipeline: 'notion_github_swarm_research', run_id: $('Summarize Findings').item.json.run_id, summary: $('Summarize Findings').item.json.summary, training_status: $('Training Ingest').item.json.status || 'queued' }) }}"
+      },
+      "id": "respond_ok",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        860,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: 'blocked', pipeline: 'notion_github_swarm_research', reason: 'governance_deny', verdict: $json.verdict || $json.governance_decision || 'DENY' }) }}",
+        "options": {
+          "responseCode": 403
+        }
+      },
+      "id": "respond_denied",
+      "name": "Respond Denied",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        620,
+        260
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook: Notion+GitHub Intake": {
+      "main": [
+        [
+          {
+            "node": "Build Browse Actions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Browse Actions": {
+      "main": [
+        [
+          {
+            "node": "Run Playwright Swarm",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Playwright Swarm": {
+      "main": [
+        [
+          {
+            "node": "Summarize Findings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize Findings": {
+      "main": [
+        [
+          {
+            "node": "Governance Scan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Governance Scan": {
+      "main": [
+        [
+          {
+            "node": "Governance Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Governance Gate": {
+      "main": [
+        [
+          {
+            "node": "Training Ingest",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Denied",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Training Ingest": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true
+  },
+  "tags": [
+    {
+      "name": "scbe"
+    },
+    {
+      "name": "n8n"
+    },
+    {
+      "name": "playwright"
+    },
+    {
+      "name": "swarm"
+    }
+  ],
+  "meta": {
+    "scbe_version": "3.0.0",
+    "description": "Ingest Notion/GitHub URLs, run Playwright swarm research via bridge proxy, gate via governance, and feed training ingest."
+  }
+}

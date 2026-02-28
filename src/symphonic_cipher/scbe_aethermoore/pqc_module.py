@@ -459,7 +459,7 @@ class PQCManager:
         Args:
             recipient_kem_public: Recipient's KEM public key
             sender_sig_secret: Sender's signature secret key
-            payload: Data to encrypt (will be XORed with shared secret)
+            payload: Data to encrypt (DEMO_CRYPTO: XOR placeholder, use AEAD in production)
             context_commitment: Context hash
             intent_fingerprint: Intent hash
 
@@ -469,7 +469,7 @@ class PQCManager:
         # Key encapsulation (Claim 2)
         shared_secret, kem_ciphertext = self.kem.encaps(recipient_kem_public)
 
-        # Simple XOR encryption of payload with expanded key
+        # DEMO_CRYPTO: XOR placeholder — replace with AES-256-GCM AEAD in production
         expanded_key = self._expand_key(shared_secret, len(payload))
         encrypted_payload = bytes(a ^ b for a, b in zip(payload, expanded_key))
 

@@ -1,0 +1,81 @@
+{
+  "schema_version": "1.0.0",
+  "profile_name": "m5_mesh_funnel_profile",
+  "generated_at_utc": "2026-02-26T09:55:00Z",
+  "source_connectors": {
+    "local_repo": {
+      "enabled": true,
+      "repo_root": "C:/Users/issda/SCBE-AETHERMOORE",
+      "include_globs": [
+        "docs/**/*.md",
+        "scripts/**/*.py",
+        "training/runs/local_cloud_sync/**/run_summary.json",
+        "training/runs/web_research/**/summary.json"
+      ]
+    },
+    "notion": {
+      "enabled": true,
+      "seed_pages": [
+        "be55b479-c358-478c-9b05-7649386206e5",
+        "1b9b084c-992b-42d5-b47d-4e411c133c7b",
+        "95b4f674-c950-4021-a047-717e3e5dd1f4"
+      ]
+    },
+    "dropbox": {
+      "enabled": true,
+      "search_query": "SCBE AETHERMOORE mesh tokenizer",
+      "max_results": 20
+    }
+  },
+  "mesh_semantics": {
+    "m5_axes": [
+      "intent",
+      "transport",
+      "policy",
+      "compute",
+      "security"
+    ],
+    "six_tongue_roles": {
+      "KO": "intent_control",
+      "AV": "transport_metadata",
+      "RU": "policy_binding",
+      "CA": "compute_ciphertext",
+      "UM": "security_redaction",
+      "DR": "schema_authentication"
+    }
+  },
+  "governance": {
+    "threshold_config": "training/cloud_kernel_pipeline.tuned.json",
+    "required_artifacts": [
+      "audit.json",
+      "statevector.json",
+      "decision_record.json",
+      "summary.json"
+    ],
+    "skip_core_check": false
+  },
+  "sinks": {
+    "airtable": {
+      "base_id": "appMDRF5kiLNWleI5",
+      "project_table_id": "tblRHgVdvRVAoh3vB",
+      "task_table_id": "tblEn5kfQNaInz3W3",
+      "release_table_id": "tblOwQxZKvFyfqwck",
+      "revenue_table_id": "tblyaeehZA10AL7Ga"
+    },
+    "hugging_face": {
+      "owner": "issdandavis",
+      "dataset_repo": "issdandavis/scbe-aethermoore-training-data",
+      "path_prefix": "m5-mesh/runs"
+    }
+  },
+  "optional_blockchain_anchor": {
+    "enabled": false,
+    "network": "polygon-or-solana",
+    "payload_fields": [
+      "run_id",
+      "decision_signature",
+      "content_merkle_root",
+      "published_at_utc"
+    ]
+  }
+}

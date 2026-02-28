@@ -26,6 +26,7 @@ import {
   hyperbolicDistance,
   poincareNorm,
   phaseToRadians,
+  calculateTongueWeight,
   GOLDEN_RATIO,
   TONGUE_INDICES,
 } from './types.js';
@@ -185,12 +186,14 @@ export function generateConvergentFormation(): Map<TongueCode, PoincarePosition>
 
   for (const tongue of TONGUE_CODES) {
     const phase = phaseToRadians(tongue);
-    const radius = 0.1 + 0.1 * Math.random();
+    // Patent fix: deterministic radius from tongue weight (Poincaré ball embedding)
+    const weight = calculateTongueWeight(tongue);
+    const radius = Math.tanh(weight / Math.SQRT2) * 0.2; // convergent = tighter cluster
 
     positions.set(tongue, {
       x: radius * Math.cos(phase),
       y: radius * Math.sin(phase),
-      z: (Math.random() - 0.5) * 0.05,
+      z: (TONGUE_INDICES[tongue] - 2.5) * 0.01,
     });
   }
 

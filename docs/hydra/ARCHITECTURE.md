@@ -33,7 +33,7 @@ HYDRA is a terminal-native multi-agent coordination system designed to act as �
 - Universal AI interface – any AI model (Claude, GPT, Codex, local LLMs) can “wear” HYDRA armor via the Head abstraction.
 - Terminal-native operation – a CLI and pipe-compatible interface integrate the system into shell workflows.
 
-The system historically advertised a “518,400× security multiplier” when all six Sacred Tongues were used. Governance corrections clarify that this figure derives from the combinatorial diversity of agent permutations (6!×6!) and should not be interpreted as a cryptographic security factor; the actual weight product of the six agents is approximately 1,051×.
+The system historically advertised a “518,400× security multiplier” when all six Sacred Tongues were used. Governance corrections clarify that this figure derives from the combinatorial diversity of agent permutations (6!×6!) and should not be interpreted as a cryptographic security factor; the actual golden ratio weight product of all six tongues is φ^(0+1+2+3+4+5) = φ^15 ≈ 1,364×.
 
 ## Layered architecture
 

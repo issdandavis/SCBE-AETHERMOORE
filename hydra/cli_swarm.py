@@ -14,12 +14,28 @@ Usage:
 
 import argparse
 import asyncio
+import os
 import sys
 
 from .swarm_browser import SwarmBrowser
 
 
+def _configure_console_encoding() -> None:
+    """Ensure UTF-8 console output to avoid provider-dependent chcp failures."""
+    try:
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        if hasattr(sys.stderr, "reconfigure"):
+            sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+        if os.name == "nt":
+            os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+    except Exception:
+        # Best effort; avoid blocking startup on locale edge cases.
+        pass
+
+
 def main() -> None:
+    _configure_console_encoding()
     parser = argparse.ArgumentParser(
         prog="hydra-swarm",
         description="HYDRA 6-Agent Sacred Tongue Swarm Browser",

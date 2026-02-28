@@ -155,8 +155,6 @@ class TileMap:
         for ty in range(min_ty, max_ty + 1):
             for tx in range(min_tx, max_tx + 1):
                 tid = self.get_tile(tx, ty)
-                if tid == TileType.EMPTY:
-                    continue
                 ts = tile_surfaces.get(tid)
                 if ts is None:
                     continue
@@ -673,7 +671,13 @@ def generate_tile_surfaces() -> Dict[int, pygame.Surface]:
     dict[int, pygame.Surface]
         Mapping from ``TileType`` integer to its rendered tile graphic.
     """
+    # Provide a fallback surface for EMPTY tiles so they don't render as
+    # black holes if the camera overshoots or a tile is left unset.
+    empty_surf = pygame.Surface((TILE_SIZE, TILE_SIZE))
+    empty_surf.fill((24, 28, 20))  # dark earth tone (matches game_surface.fill)
+
     return {
+        TileType.EMPTY:      empty_surf,
         TileType.GRASS:      _make_grass(),
         TileType.STONE:      _make_stone(),
         TileType.WATER:      _make_water(),

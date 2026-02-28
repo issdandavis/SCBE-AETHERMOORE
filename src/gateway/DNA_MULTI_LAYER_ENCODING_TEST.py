@@ -260,7 +260,7 @@ class DNAMultiLayerMessage:
         h.update(combined_entropy)
         final_key = h.digest()
         
-        # Simple XOR encryption (replace with AES in production)
+        # DEMO_CRYPTO: XOR placeholder — replace with AES-256-GCM AEAD in production
         plaintext_bytes = self.plaintext.encode()
         encrypted = bytes([plaintext_bytes[i % len(plaintext_bytes)] ^ final_key[i % len(final_key)] 
                           for i in range(len(plaintext_bytes))])
