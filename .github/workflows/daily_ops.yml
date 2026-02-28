@@ -1,0 +1,246 @@
+name: SCBE Daily Ops
+
+on:
+  schedule:
+    # Run daily at 6 AM UTC (1 AM EST / 10 PM PST)
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      run_training_push:
+        description: 'Push training data to HuggingFace'
+        type: boolean
+        default: true
+      run_health_check:
+        description: 'Health check the VM'
+        type: boolean
+        default: true
+
+env:
+  VM_IP: "34.134.99.90"
+  VM_PORT: "8001"
+  HF_REPO: "issdandavis/scbe-aethermoore-training-data"
+
+jobs:
+  # -------------------------------------------------------------------
+  #  Job 1: Health Check — make sure the VM bridge is alive
+  # -------------------------------------------------------------------
+  health-check:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'schedule' || inputs.run_health_check }}
+    outputs:
+      vm_status: ${{ steps.check.outputs.status }}
+    steps:
+      - name: Check VM Bridge Health
+        id: check
+        run: |
+          set +e
+          RESPONSE=$(curl -s --connect-timeout 10 "http://${{ env.VM_IP }}:${{ env.VM_PORT }}/health" 2>&1)
+          EXIT_CODE=$?
+          if [ $EXIT_CODE -eq 0 ] && echo "$RESPONSE" | grep -q '"healthy"'; then
+            echo "status=healthy" >> $GITHUB_OUTPUT
+            echo "VM is healthy: $RESPONSE"
+          else
+            echo "status=unhealthy" >> $GITHUB_OUTPUT
+            echo "VM health check failed (exit=$EXIT_CODE): $RESPONSE"
+          fi
+
+      - name: Report Status
+        run: |
+          echo "## SCBE Daily Health Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **VM IP**: ${{ env.VM_IP }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ${{ steps.check.outputs.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Time**: $(date -u)" >> $GITHUB_STEP_SUMMARY
+
+  # -------------------------------------------------------------------
+  #  Job 2: Training Data — merge, validate, push to HuggingFace
+  # -------------------------------------------------------------------
+  training-data-push:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'schedule' || inputs.run_training_push }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --quiet huggingface_hub datasets
+
+      - name: Count training data
+        id: count
+        run: |
+          TOTAL=0
+          for f in training-data/**/*.jsonl training/intake/**/*.jsonl; do
+            if [ -f "$f" ]; then
+              COUNT=$(wc -l < "$f")
+              TOTAL=$((TOTAL + COUNT))
+              echo "  $f: $COUNT records"
+            fi
+          done
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+          echo "Total training records: $TOTAL"
+
+      - name: Merge and push to HuggingFace
+        if: steps.count.outputs.total > 0
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python -c "
+          import json, glob, os
+          from pathlib import Path
+
+          # Collect all JSONL files
+          patterns = [
+              'training-data/**/*.jsonl',
+              'training/intake/**/*.jsonl',
+          ]
+          records = []
+          for pattern in patterns:
+              for fp in glob.glob(pattern, recursive=True):
+                  with open(fp) as f:
+                      for line in f:
+                          line = line.strip()
+                          if line:
+                              try:
+                                  records.append(json.loads(line))
+                              except json.JSONDecodeError:
+                                  pass
+
+          print(f'Collected {len(records)} total records')
+
+          if not records:
+              print('No records to push')
+              exit(0)
+
+          # Write merged file
+          merged_path = '/tmp/scbe_training_merged.jsonl'
+          with open(merged_path, 'w') as f:
+              for r in records:
+                  f.write(json.dumps(r) + '\n')
+
+          # Push to HuggingFace
+          token = os.environ.get('HF_TOKEN')
+          if not token:
+              print('HF_TOKEN not set — skipping push')
+              exit(0)
+
+          from huggingface_hub import HfApi
+          api = HfApi(token=token)
+          api.upload_file(
+              path_or_fileobj=merged_path,
+              path_in_repo='training_data/merged_daily.jsonl',
+              repo_id='${{ env.HF_REPO }}',
+              repo_type='dataset',
+              commit_message=f'Daily training data merge: {len(records)} records',
+          )
+          print(f'Pushed {len(records)} records to HuggingFace')
+          "
+
+      - name: Report
+        run: |
+          echo "## Training Data Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Records**: ${{ steps.count.outputs.total }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **HF Repo**: ${{ env.HF_REPO }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Time**: $(date -u)" >> $GITHUB_STEP_SUMMARY
+
+  # -------------------------------------------------------------------
+  #  Job 3: arXiv Research Sweep — find new relevant papers daily
+  # -------------------------------------------------------------------
+  arxiv-research:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install --quiet huggingface_hub
+
+      - name: Run arXiv research sweep
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python -c "
+          import sys, json
+          sys.path.insert(0, '.')
+          from src.aaoe.research_hub import ResearchHub
+          hub = ResearchHub()
+          result = hub.daily_research_sweep()
+          print(json.dumps(result, indent=2))
+          with open('/tmp/research_summary.json', 'w') as f:
+              json.dump(result, f, indent=2)
+          "
+
+      - name: Report
+        run: |
+          echo "## arXiv Research Sweep" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f /tmp/research_summary.json ]; then
+            echo '```json' >> $GITHUB_STEP_SUMMARY
+            cat /tmp/research_summary.json >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Research sweep did not produce output" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # -------------------------------------------------------------------
+  #  Job 4: Governance Scan — scan the codebase for security issues
+  # -------------------------------------------------------------------
+  governance-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run governance scan via VM
+        run: |
+          set +e
+          RESULT=$(curl -s --connect-timeout 10 \
+            -X POST "http://${{ env.VM_IP }}:${{ env.VM_PORT }}/v1/governance/scan" \
+            -H "Content-Type: application/json" \
+            -d '{"content": "daily automated governance check", "context": "github_actions_daily_ops"}' \
+            2>&1)
+          echo "Governance scan result: $RESULT"
+          echo "## Governance Scan" >> $GITHUB_STEP_SUMMARY
+          echo '```json' >> $GITHUB_STEP_SUMMARY
+          echo "$RESULT" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+  # -------------------------------------------------------------------
+  #  Job 4: Daily Summary — aggregate results
+  # -------------------------------------------------------------------
+  daily-summary:
+    needs: [health-check, training-data-push, arxiv-research, governance-scan]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Summary
+        run: |
+          echo "## SCBE Daily Operations Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Health Check | ${{ needs.health-check.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Training Push | ${{ needs.training-data-push.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| arXiv Research | ${{ needs.arxiv-research.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Governance Scan | ${{ needs.governance-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "VM Status: ${{ needs.health-check.outputs.vm_status }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "*Generated by SCBE Mesh Foundry Daily Ops*" >> $GITHUB_STEP_SUMMARY
