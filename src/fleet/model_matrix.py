@@ -496,6 +496,60 @@ class ModelMatrix:
         if len(self.interaction_log) > 500:
             self.interaction_log = self.interaction_log[-500:]
 
+    # ── Conversation Spin (PivotKnowledge) ─────────────────
+
+    def conversation_spin(
+        self,
+        bundle_id: str,
+        seed_topic: str,
+        spins: int = 3,
+    ) -> List[Dict[str, str]]:
+        """Generate a topic-pivot chain across nodes for cohesion building.
+
+        Inspired by the Spiralverse PivotKnowledge graph from the AI Workflow
+        Architect. Each spin pivots to a related topic and assigns it to the
+        next Sacred Tongue node in the bundle, creating a natural conversation
+        flow that builds inter-node understanding over time.
+        """
+        _TOPIC_GRAPH: Dict[str, List[str]] = {
+            "ai_safety": ["governance", "alignment", "cryptography", "ethics"],
+            "governance": ["policy", "compliance", "audit", "ai_safety"],
+            "cryptography": ["quantum", "pqc", "lattice", "ai_safety"],
+            "game_design": ["narrative", "mechanics", "ai_training", "economy"],
+            "narrative": ["worldbuilding", "characters", "game_design", "lore"],
+            "training": ["datasets", "fine_tuning", "evaluation", "deployment"],
+            "deployment": ["cloud", "edge", "monitoring", "training"],
+            "security": ["threat_model", "cryptography", "audit", "governance"],
+            "economics": ["pricing", "monetization", "marketplace", "game_design"],
+            "alignment": ["interpretability", "reward_model", "ai_safety", "ethics"],
+        }
+
+        bundle = self.bundles.get(bundle_id)
+        if not bundle:
+            return [{"error": f"Bundle {bundle_id} not found"}]
+
+        chain: List[Dict[str, str]] = []
+        current_topic = seed_topic.lower().replace(" ", "_")
+
+        for spin_idx in range(spins):
+            node = bundle.nodes[spin_idx % len(bundle.nodes)]
+            neighbors = _TOPIC_GRAPH.get(current_topic, ["ai_safety"])
+            import random as _rng
+            next_topic = _rng.choice(neighbors)
+
+            chain.append({
+                "spin": spin_idx + 1,
+                "tongue": node.tongue,
+                "node_id": node.node_id,
+                "from_topic": current_topic,
+                "to_topic": next_topic,
+                "prompt": f"[{node.tongue}] As {TONGUE_ROLES[node.tongue]} specialist, "
+                          f"connect '{current_topic}' to '{next_topic}' and explain the implications.",
+            })
+            current_topic = next_topic
+
+        return chain
+
     # ── Factory ──────────────────────────────────────────────
 
     @classmethod
