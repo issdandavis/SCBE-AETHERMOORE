@@ -1,0 +1,16 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/world/GridWorld.gd" id="1"]
+
+[node name="GridWorld" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+mesh = BoxMesh.new()
+scale = Vector3(20, 0.1, 20)
+position = Vector3(0, -0.05, 0)
+
+[node name="Nav" type="NavigationRegion3D" parent="."]
+
+[node name="Lights" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-55, 40, 0)
+light_energy = 1.2
