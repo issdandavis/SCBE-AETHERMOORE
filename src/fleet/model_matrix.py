@@ -111,6 +111,45 @@ class NodeBundle:
 
 
 # ═══════════════════════════════════════════════════════════════
+# Mirror Tunnel Photon Architecture — Data Classes
+# ═══════════════════════════════════════════════════════════════
+
+@dataclass
+class ConversationPhoton:
+    """A directed context vector emitted by a tube in the tunnel wall.
+
+    Photon tubes are fixed points along the mirror tunnel that fire
+    context vectors at the conversation trajectory.  Each photon carries
+    a target topic, an energy level, and a spectral wavelength that maps
+    to a Layer 14 FFT frequency bin.
+    """
+
+    source_wall: str                    # "left" or "right"
+    target_topic: str                   # prescribed context target
+    energy: float                       # photon intensity [0, 1]
+    wavelength: float                   # spectral position (Layer 14 freq bin)
+    position_along_tunnel: float        # [0, 1] — where the tube is mounted
+
+
+@dataclass
+class TunnelState:
+    """Instantaneous state of the mirror tunnel.
+
+    Captures both wall trajectories, photon collision events, the
+    spectral wave function Psi(f), decimal drift, accumulated micro-
+    parameter adjustments, and overall alignment score.
+    """
+
+    left_trajectory: List[Dict[str, Any]]     # conversation_spin output from left wall
+    right_trajectory: List[Dict[str, Any]]    # mirror reflection
+    photon_impacts: List[Dict[str, Any]]      # photon -> trajectory collision events
+    spectral_psi: List[float]                 # Psi(f) — Layer 14 FFT bins
+    decimal_drift: float                      # fractional shift in peak frequency
+    micro_params: Dict[str, float]            # accumulated micro adjustments
+    alignment_score: float                    # [0, 1] — how close to prescribed context
+
+
+# ═══════════════════════════════════════════════════════════════
 # Provider Adapters
 # ═══════════════════════════════════════════════════════════════
 
@@ -633,6 +672,207 @@ class ModelMatrix:
             current_topic = nearest_topic
 
         return chain
+
+    # ── Mirror Tunnel Photon Architecture ─────────────────────
+    #
+    # Dual conversation pivot tools running in parallel inside a
+    # pseudo-mirror tunnel.  Photon tubes along the walls shoot
+    # context vectors at the trajectory, inducing oscillation
+    # toward prescribed context-space targets.
+    #
+    # Layer 14 spectral wave function Psi(f) tracks topic resonance.
+    # Decimal drift across Psi detects natural migration.
+    # Micro-parameter stacking aligns trajectory in real time.
+
+    # Layer 14 spectral wave function bins (topic resonance frequencies)
+    _SPECTRAL_BINS: Dict[str, float] = {
+        "ai_safety": 0.05,
+        "governance": 0.10,
+        "alignment": 0.15,
+        "cryptography": 0.20,
+        "ethics": 0.25,
+        "game_design": 0.30,
+        "narrative": 0.35,
+        "mechanics": 0.40,
+        "training": 0.45,
+        "datasets": 0.50,
+        "fine_tuning": 0.55,
+        "evaluation": 0.60,
+        "deployment": 0.65,
+        "cloud": 0.70,
+        "security": 0.75,
+        "policy": 0.80,
+        "audit": 0.85,
+        "quantum": 0.90,
+        "pqc": 0.92,
+        "economics": 0.95,
+        "monetization": 0.97,
+        "marketplace": 0.99,
+    }
+
+    def mirror_tunnel(
+        self,
+        bundle_id: str,
+        seed_topic: str,
+        prescribed_targets: List[str],
+        tunnel_length: int = 12,
+        photon_energy: float = 0.3,
+        charge: float = 1.0,
+        dt: float = 0.5,
+    ) -> Dict[str, Any]:
+        """Run dual conversation spins in a mirror tunnel with photon bombardment.
+
+        Architecture:
+          - Left wall: conversation_spin with positive charge (forward trajectory)
+          - Right wall: conversation_spin with negative charge (mirror reflection)
+          - Photon tubes: emit context vectors at prescribed_targets
+          - Layer 14: spectral wave function Psi(f) tracks topic resonance
+          - Decimal drift: fractional shift in peak Psi frequency
+          - Micro-parameter stacking: cumulative charge/velocity adjustments
+
+        Args:
+            bundle_id: which bundle to use
+            seed_topic: starting topic
+            prescribed_targets: list of target topics the conversation should oscillate toward
+            tunnel_length: number of spins per wall
+            photon_energy: intensity of context vector photons [0, 1]
+            charge: base conversation charge
+            dt: time step
+        """
+        import math
+
+        bundle = self.bundles.get(bundle_id)
+        if not bundle:
+            return {"error": f"Bundle {bundle_id} not found"}
+
+        # ── Phase 1: Run dual conversation spins (the mirror walls) ──
+        left_chain = self.conversation_spin(
+            bundle_id, seed_topic, spins=tunnel_length, charge=charge, dt=dt
+        )
+        right_chain = self.conversation_spin(
+            bundle_id, seed_topic, spins=tunnel_length, charge=-charge, dt=dt
+        )
+
+        # ── Phase 2: Build spectral wave function Psi(f) ──
+        # Each topic visited adds energy to its frequency bin
+        psi_bins = {topic: 0.0 for topic in self._SPECTRAL_BINS}
+        for step in left_chain + right_chain:
+            topic = step.get("to_topic", "")
+            if topic in psi_bins:
+                psi_bins[topic] += 1.0
+
+        # Normalize Psi to [0, 1]
+        psi_max = max(psi_bins.values()) or 1.0
+        psi = {t: v / psi_max for t, v in psi_bins.items()}
+
+        # Peak frequency detection
+        peak_topic = max(psi, key=lambda t: psi[t])
+        peak_freq = self._SPECTRAL_BINS.get(peak_topic, 0.5)
+
+        # ── Phase 3: Emit photons from tunnel walls ──
+        photon_impacts: List[Dict[str, Any]] = []
+        micro_params = {"charge_adj": 0.0, "vel_x_adj": 0.0, "vel_y_adj": 0.0, "field_adj": 0.0}
+
+        for i, target in enumerate(prescribed_targets):
+            target_key = target.lower().replace(" ", "_")
+            target_freq = self._SPECTRAL_BINS.get(target_key, 0.5)
+            target_pos = self._TOPIC_POSITIONS.get(target_key, (0.0, 0.0))
+
+            # Photon tube position along tunnel
+            tube_pos = (i + 1) / (len(prescribed_targets) + 1)
+
+            # Find the closest trajectory step to the tube position
+            step_idx = int(tube_pos * (tunnel_length - 1))
+            left_step = left_chain[min(step_idx, len(left_chain) - 1)] if left_chain else {}
+            right_step = right_chain[min(step_idx, len(right_chain) - 1)] if right_chain else {}
+
+            # Compute photon impact force
+            # F_photon = energy * (target_pos - current_pos) / distance
+            for wall, step in [("left", left_step), ("right", right_step)]:
+                if not step:
+                    continue
+                current_pos = step.get("position", [0, 0])
+                dx = target_pos[0] - current_pos[0]
+                dy = target_pos[1] - current_pos[1]
+                dist = math.sqrt(dx ** 2 + dy ** 2) or 0.001
+
+                # Photon force induces oscillation toward target
+                fx = photon_energy * dx / dist
+                fy = photon_energy * dy / dist
+
+                # Spectral coupling: photon is more effective when target
+                # frequency is close to current peak (resonance)
+                freq_coupling = 1.0 / (1.0 + abs(target_freq - peak_freq) * 10)
+
+                # Micro-parameter stacking: small cumulative adjustments
+                micro_params["charge_adj"] += fx * freq_coupling * 0.01
+                micro_params["vel_x_adj"] += fx * freq_coupling * 0.05
+                micro_params["vel_y_adj"] += fy * freq_coupling * 0.05
+                micro_params["field_adj"] += photon_energy * freq_coupling * 0.02
+
+                photon_impacts.append({
+                    "wall": wall,
+                    "tube_position": round(tube_pos, 3),
+                    "target": target_key,
+                    "photon_force": [round(fx, 4), round(fy, 4)],
+                    "freq_coupling": round(freq_coupling, 4),
+                    "distance": round(dist, 3),
+                    "step_idx": step_idx,
+                })
+
+        # ── Phase 4: Compute decimal drift across Psi ──
+        # Decimal drift = shift in center-of-mass frequency
+        weighted_freq_sum = sum(self._SPECTRAL_BINS.get(t, 0) * v for t, v in psi.items())
+        total_energy = sum(psi.values()) or 1.0
+        center_freq = weighted_freq_sum / total_energy
+
+        # Drift from prescribed center
+        target_center = sum(
+            self._SPECTRAL_BINS.get(t.lower().replace(" ", "_"), 0.5)
+            for t in prescribed_targets
+        ) / max(1, len(prescribed_targets))
+        decimal_drift = center_freq - target_center
+
+        # ── Phase 5: Alignment score ──
+        # How well does the tunnel trajectory align with prescribed targets?
+        visited_topics: set = set()
+        for step in left_chain + right_chain:
+            visited_topics.add(step.get("to_topic", ""))
+        target_set = {t.lower().replace(" ", "_") for t in prescribed_targets}
+        if target_set:
+            alignment = len(visited_topics & target_set) / len(target_set)
+        else:
+            alignment = 0.0
+
+        # ── Phase 6: Re-run with micro-parameter adjustments ──
+        # The "real-time updated" part — apply stacked micro-params to a second pass
+        adjusted_charge = charge + micro_params["charge_adj"]
+        adjusted_dt = dt * (1.0 + micro_params["field_adj"])
+
+        # Second pass: corrected trajectory
+        corrected_left = self.conversation_spin(
+            bundle_id, seed_topic, spins=tunnel_length,
+            charge=adjusted_charge, dt=adjusted_dt,
+        )
+
+        return {
+            "tunnel_id": f"tunnel-{hash(seed_topic) % 100000:05d}",
+            "seed_topic": seed_topic,
+            "prescribed_targets": prescribed_targets,
+            "left_wall": left_chain,
+            "right_wall": right_chain,
+            "corrected_trajectory": corrected_left,
+            "photon_impacts": photon_impacts,
+            "spectral_psi": {t: round(v, 4) for t, v in psi.items() if v > 0},
+            "peak_topic": peak_topic,
+            "peak_frequency": round(peak_freq, 4),
+            "center_frequency": round(center_freq, 4),
+            "decimal_drift": round(decimal_drift, 6),
+            "micro_params": {k: round(v, 6) for k, v in micro_params.items()},
+            "alignment_score": round(alignment, 4),
+            "tunnel_length": tunnel_length,
+            "photon_energy": photon_energy,
+        }
 
     # ── Factory ──────────────────────────────────────────────
 

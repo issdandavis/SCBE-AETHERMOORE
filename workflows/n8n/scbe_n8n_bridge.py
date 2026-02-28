@@ -17,6 +17,20 @@ Endpoints:
   GET  /v1/training/status        — Training pipeline status
   POST /v1/council/deliberate     — AI Round Table: multi-LLM deliberation with governance
   GET  /v1/council/status         — Round Table session history
+  POST /v1/auth/register          — Register an AI agent with Spiralverse authenticator
+  POST /v1/auth/sign              — Sign a message with multi-layer verification
+  POST /v1/auth/verify            — Verify a signed message
+  GET  /v1/auth/trust             — Get trust scores for registered agents
+  GET  /v1/auth/status            — Authenticator status
+  POST /v1/marketplace/register-client — Register marketplace client
+  POST /v1/marketplace/submit-job     — Submit job with auto-quote + profit pricing
+  POST /v1/marketplace/accept-quote   — Accept quote, trigger Stripe payment
+  POST /v1/marketplace/payment-webhook — Payment confirmation callback
+  POST /v1/marketplace/start-job      — Agent begins executing work
+  POST /v1/marketplace/complete-job   — Finish job, profit algorithm billing
+  GET  /v1/marketplace/job/{id}       — Job status and billing details
+  GET  /v1/marketplace/stats          — Revenue, profit, hourly rate analytics
+  GET  /v1/marketplace/revenue        — Revenue report for recent jobs
   GET  /health                    — Health check
 
 Start:
@@ -57,6 +71,9 @@ try:
 except ImportError:
     print("pip install fastapi uvicorn  # required for n8n bridge")
     raise
+
+from src.fleet.spiralverse_auth import SpiralverseAuthenticator, SignedMessage as AuthSignedMessage
+from src.fleet.agent_marketplace import AgentMarketplace, JobCategory, JobStatus
 
 from symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent import (
     SemanticAntivirus,
@@ -245,6 +262,8 @@ async def health():
         "orchestrator": _orchestrator.summary(),
         "telemetry_count": len(_telemetry),
         "council_sessions": len(_council_sessions),
+        "marketplace": _marketplace.get_marketplace_stats(),
+        "authenticator": _authenticator.get_status(),
         "browser_service_url": _BROWSER_SERVICE_URL,
     }
 
@@ -938,6 +957,286 @@ async def council_status(x_api_key: Optional[str] = Header(None)):
         "total_sessions": len(_council_sessions),
         "recent": _council_sessions[-20:],
     }
+
+
+# ---------------------------------------------------------------------------
+#  Spiralverse Auth — AI-to-AI Multi-Layer Authentication
+# ---------------------------------------------------------------------------
+
+_authenticator = SpiralverseAuthenticator()
+
+
+class AuthRegisterRequest(BaseModel):
+    """Register an AI agent with the Spiralverse authenticator."""
+    name: str
+    tongue: str = "DR"
+    public_key_hash: str = ""
+
+
+class AuthSignRequest(BaseModel):
+    """Sign a message with multi-layer verification."""
+    sender_id: str
+    content: str
+    tongue: str = ""
+    metadata: Dict[str, Any] = {}
+
+
+class AuthVerifyRequest(BaseModel):
+    """Verify a signed message by replaying all 4 signature layers."""
+    message_id: str
+    content: str
+    sender_id: str
+    timestamp: float
+    signatures: Dict[str, str]
+    tongue: str
+    metadata: Dict[str, Any] = {}
+
+
+@app.post("/v1/auth/register")
+async def auth_register(req: AuthRegisterRequest, x_api_key: Optional[str] = Header(None)):
+    """Register an AI agent with the Spiralverse authenticator."""
+    _check_key(x_api_key)
+    identity = _authenticator.register_agent(
+        name=req.name,
+        tongue=req.tongue,
+        public_key_hash=req.public_key_hash,
+    )
+    return {
+        "agent_id": identity.agent_id,
+        "name": identity.name,
+        "tongue": identity.tongue,
+        "public_key_hash": identity.public_key_hash,
+        "registered_at": identity.registered_at,
+        "trust_score": identity.trust_score,
+    }
+
+
+@app.post("/v1/auth/sign")
+async def auth_sign(req: AuthSignRequest, x_api_key: Optional[str] = Header(None)):
+    """Sign a message with 4-layer verification (content, identity, roundtable, sacred tongue)."""
+    _check_key(x_api_key)
+    try:
+        msg = _authenticator.sign_message(
+            sender_id=req.sender_id,
+            content=req.content,
+            tongue=req.tongue or "",
+            metadata=req.metadata,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    return {
+        "message_id": msg.message_id,
+        "sender_id": msg.sender_id,
+        "timestamp": msg.timestamp,
+        "tongue": msg.tongue,
+        "signatures": msg.signatures,
+        "metadata": msg.metadata,
+    }
+
+
+@app.post("/v1/auth/verify")
+async def auth_verify(req: AuthVerifyRequest, x_api_key: Optional[str] = Header(None)):
+    """Verify a signed message by replaying all 4 signature layers."""
+    _check_key(x_api_key)
+    msg = AuthSignedMessage(
+        message_id=req.message_id,
+        content=req.content,
+        sender_id=req.sender_id,
+        timestamp=req.timestamp,
+        signatures=req.signatures,
+        tongue=req.tongue,
+        metadata=req.metadata,
+    )
+    result = _authenticator.verify_message(msg)
+    return result
+
+
+@app.get("/v1/auth/trust")
+async def auth_trust(x_api_key: Optional[str] = Header(None)):
+    """Get trust scores for all registered agents."""
+    _check_key(x_api_key)
+    return {
+        "agents": _authenticator.get_trust_scores(),
+        "total": len(_authenticator.agents),
+    }
+
+
+@app.get("/v1/auth/status")
+async def auth_status(x_api_key: Optional[str] = Header(None)):
+    """Spiralverse authenticator status summary."""
+    _check_key(x_api_key)
+    return _authenticator.get_status()
+
+
+# ---------------------------------------------------------------------------
+#  Agent Marketplace — Autonomous AI Service with Profit Algorithm
+# ---------------------------------------------------------------------------
+
+_marketplace = AgentMarketplace()
+
+
+class MarketplaceClientRequest(BaseModel):
+    """Register a new client."""
+    name: str
+    email: str = ""
+    payment_method: str = "stripe"  # stripe | cashapp | kofi | manual
+    payment_id: str = ""
+
+
+class MarketplaceJobRequest(BaseModel):
+    """Submit a new job for an AI agent."""
+    client_id: str
+    category: str = "custom"
+    title: str
+    description: str
+    metadata: Dict[str, Any] = {}
+
+
+class MarketplaceCompleteRequest(BaseModel):
+    """Mark a job as complete with deliverables."""
+    result_summary: str
+    deliverables: List[str] = []
+    knowledge_growth: float = 0.0
+    tokens_used: int = 0
+    actual_cost: float = 0.0
+
+
+@app.post("/v1/marketplace/register-client")
+async def marketplace_register_client(
+    req: MarketplaceClientRequest, x_api_key: Optional[str] = Header(None)
+):
+    """Register a client in the marketplace."""
+    _check_key(x_api_key)
+    client = _marketplace.register_client(
+        name=req.name,
+        email=req.email,
+        payment_method=req.payment_method,
+        payment_id=req.payment_id,
+    )
+    return {
+        "client_id": client.client_id,
+        "name": client.name,
+        "payment_method": client.payment_method,
+    }
+
+
+@app.post("/v1/marketplace/submit-job")
+async def marketplace_submit_job(
+    req: MarketplaceJobRequest, x_api_key: Optional[str] = Header(None)
+):
+    """Submit a job — auto-generates quote with profit algorithm pricing."""
+    _check_key(x_api_key)
+    try:
+        job = _marketplace.submit_job(
+            client_id=req.client_id,
+            category=req.category,
+            title=req.title,
+            description=req.description,
+            metadata=req.metadata,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {
+        "job_id": job.job_id,
+        "status": job.status.value,
+        "quote": {
+            "quote_id": job.quote.quote_id,
+            "pre_payment": job.quote.pre_payment,
+            "estimated_total": job.quote.estimated_total,
+            "estimated_tokens": job.quote.estimated_tokens,
+            "model": job.quote.model_plan,
+            "breakdown": job.quote.breakdown,
+            "valid_until": job.quote.valid_until,
+        } if job.quote else None,
+    }
+
+
+@app.post("/v1/marketplace/accept-quote/{job_id}")
+async def marketplace_accept_quote(
+    job_id: str, x_api_key: Optional[str] = Header(None)
+):
+    """Accept a quote — triggers pre-payment via Stripe."""
+    _check_key(x_api_key)
+    result = _marketplace.accept_quote(job_id)
+    if "error" in result:
+        raise HTTPException(status_code=404, detail=result["error"])
+    return result
+
+
+@app.post("/v1/marketplace/payment-webhook")
+async def marketplace_payment_webhook(request: Request):
+    """Stripe/CashApp payment webhook — confirms pre-payment received."""
+    body = await request.json()
+    job_id = body.get("job_id", "")
+    amount = float(body.get("amount", 0))
+    if not job_id:
+        raise HTTPException(status_code=400, detail="Missing job_id")
+    result = _marketplace.confirm_prepayment(job_id, amount)
+    if "error" in result:
+        raise HTTPException(status_code=404, detail=result["error"])
+    return result
+
+
+@app.post("/v1/marketplace/start-job/{job_id}")
+async def marketplace_start_job(
+    job_id: str, x_api_key: Optional[str] = Header(None)
+):
+    """Start executing a job (agent begins work)."""
+    _check_key(x_api_key)
+    result = _marketplace.start_job(job_id)
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+    return result
+
+
+@app.post("/v1/marketplace/complete-job/{job_id}")
+async def marketplace_complete_job(
+    job_id: str,
+    req: MarketplaceCompleteRequest,
+    x_api_key: Optional[str] = Header(None),
+):
+    """Complete a job — runs profit algorithm, generates final bill."""
+    _check_key(x_api_key)
+    # Log token usage if provided
+    if req.tokens_used or req.actual_cost:
+        _marketplace.log_tokens(job_id, req.tokens_used, req.actual_cost)
+    result = _marketplace.complete_job(
+        job_id=job_id,
+        result_summary=req.result_summary,
+        deliverables=req.deliverables,
+        knowledge_growth=req.knowledge_growth,
+    )
+    if "error" in result:
+        raise HTTPException(status_code=404, detail=result["error"])
+    return result
+
+
+@app.get("/v1/marketplace/job/{job_id}")
+async def marketplace_job_status(
+    job_id: str, x_api_key: Optional[str] = Header(None)
+):
+    """Get job status and billing details."""
+    _check_key(x_api_key)
+    result = _marketplace.get_job_status(job_id)
+    if "error" in result:
+        raise HTTPException(status_code=404, detail=result["error"])
+    return result
+
+
+@app.get("/v1/marketplace/stats")
+async def marketplace_stats(x_api_key: Optional[str] = Header(None)):
+    """Marketplace analytics — revenue, profit, hourly rate."""
+    _check_key(x_api_key)
+    return _marketplace.get_marketplace_stats()
+
+
+@app.get("/v1/marketplace/revenue")
+async def marketplace_revenue(
+    last_n: int = 20, x_api_key: Optional[str] = Header(None)
+):
+    """Revenue report for recent jobs."""
+    _check_key(x_api_key)
+    return _marketplace.get_revenue_report(last_n)
 
 
 # ---------------------------------------------------------------------------
