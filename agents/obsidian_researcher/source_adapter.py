@@ -22,10 +22,11 @@ class SourceType(str, Enum):
     BRAINSTORM = "brainstorm"
     USPTO = "uspto"
     GITHUB = "github"
-    # Pluggable placeholders — subclass SourceAdapter to implement
-    SOURCE_X = "source_x"
-    SOURCE_Y = "source_y"
-    SOURCE_Z = "source_z"
+    ORCID = "orcid"
+    SEMANTIC_SCHOLAR = "semantic_scholar"
+    CROSSREF = "crossref"
+    WEB = "web"
+    FORUM = "forum"
 
 
 @dataclass

@@ -8,6 +8,9 @@ from .brainstorm_source import BrainstormSource
 from .notebook_lm_source import NotebookLMSource
 from .uspto_source import USPTOSource
 from .github_source import GitHubSource
+from .orcid_source import ORCIDSource
+from .semantic_scholar_source import SemanticScholarSource
+from .crossref_source import CrossRefSource
 
 __all__ = [
     "ArxivSource",
@@ -19,4 +22,7 @@ __all__ = [
     "NotebookLMSource",
     "USPTOSource",
     "GitHubSource",
+    "ORCIDSource",
+    "SemanticScholarSource",
+    "CrossRefSource",
 ]
