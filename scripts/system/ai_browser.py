@@ -10,6 +10,7 @@ import logging
 from typing import Any, Dict, List, Sequence
 
 from src.browser.headless import HeadlessBrowser
+from src.browser.headless import scan_content
 
 logger = logging.getLogger("ai-browser")
 
@@ -58,19 +59,50 @@ async def run_cli(argv: Sequence[str] | None = None) -> Dict[str, Any]:
     ) as browser:
         if args.command == "search":
             results = await browser.search(args.query, num_results=args.num_results)
+            query_scan = scan_content(args.query)
+            evidence = [
+                (
+                    f"evidence://search/{args.query}?"
+                    f"attempts=1&governance_verdict={query_scan.verdict}&governance_score={query_scan.risk_score:.4f}"
+                )
+            ]
             return {
                 "command": "search",
                 "query": args.query,
                 "stats": browser.stats,
-                "results": [r.__dict__ for r in results],
+                "governance_verdict": query_scan.verdict,
+                "governance_score": query_scan.risk_score,
+                "results": [
+                    {
+                        "title": r.title,
+                        "url": r.url,
+                        "snippet": r.snippet,
+                        "governance_score": r.governance_score,
+                        "governance_verdict": r.governance_verdict,
+                        "attempts": r.attempts,
+                    }
+                    for r in results
+                ],
+                "evidence": evidence,
             }
 
         if args.command == "fetch":
             page = await browser.fetch(args.url, use_playwright=args.playwright)
+            evidence = [
+                (
+                    "evidence://fetch/"
+                    f"{args.url}?governance_verdict={page.scan.verdict if page.scan else 'UNSCANNED'}"
+                    f"&governance_score={page.scan.risk_score if page.scan else 0.0:.4f}"
+                    f"&attempts={page.attempts}"
+                )
+            ]
             return {
                 "command": "fetch",
+                "governance_verdict": page.scan.verdict if page.scan else "UNSCANNED",
+                "governance_score": page.scan.risk_score if page.scan else 0.0,
                 "stats": browser.stats,
                 "result": page.to_dict(),
+                "evidence": evidence,
             }
 
         if args.command == "research":
@@ -80,19 +112,45 @@ async def run_cli(argv: Sequence[str] | None = None) -> Dict[str, Any]:
                     depth=args.depth,
                     output_dir=args.output_dir,
                 )
+                marker_pages = [
+                    (
+                        f"evidence://research/{args.query}/page/{idx}?"
+                        f"governance_verdict={r.scan.verdict if r.scan else 'UNSCANNED'}&"
+                        f"governance_score={r.scan.risk_score if r.scan else 0.0:.4f}&"
+                        f"attempts={r.attempts}"
+                    )
+                    for idx, r in enumerate(report.results)
+                ]
                 return {
                     "command": "research-store",
                     "query": args.query,
                     "stats": browser.stats,
                     "report": report.to_dict(),
+                    "evidence": [
+                        f"evidence://research/{args.query}?depth={args.depth}&action=research-store",
+                        *marker_pages,
+                    ],
                 }
 
             report = await browser.research(args.query, depth=args.depth)
+            marker_pages = [
+                (
+                    f"evidence://research/{args.query}/page/{idx}?"
+                    f"governance_verdict={r.scan.verdict if r.scan else 'UNSCANNED'}&"
+                    f"governance_score={r.scan.risk_score if r.scan else 0.0:.4f}&"
+                    f"attempts={r.attempts}"
+                )
+                for idx, r in enumerate(report.results)
+            ]
             return {
                 "command": "research",
                 "query": args.query,
                 "stats": browser.stats,
                 "report": report.to_dict(),
+                "evidence": [
+                    f"evidence://research/{args.query}?depth={args.depth}&action=research",
+                    *marker_pages,
+                ],
             }
 
     raise RuntimeError(f"unsupported command: {args.command}")

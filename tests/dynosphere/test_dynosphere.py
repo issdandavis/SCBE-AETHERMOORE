@@ -13,10 +13,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from src.dynosphere.mapper import (
     DynosphereMapper,
     DynospherePoint,
+    DynosphereState21Payload,
     TongueProjection,
     CanonicalLift,
     project_to_tongues,
     lift_to_21d,
+    state21_payload_from_point,
     round_trip_3d,
     reconstruct_3d_from_21d,
     reconstruct_tongue_proj_from_21d,
@@ -29,6 +31,34 @@ from src.dynosphere.mapper import (
     _to_spherical,
 )
 from src.geoseed.sphere_grid import TONGUE_NAMES, TONGUE_PHASES, PHI_WEIGHTS
+from src.harmonic.state21_product_metric import STATE21_SCHEMA_VERSION, parse_state21_v1
+
+
+def test_state21_payload_version_and_roundtrip():
+    point = np.array([0.57, 0.19, 0.80])
+    payload = state21_payload_from_point(point)
+    payload_dup = state21_payload_from_point(payload.source_3d)
+
+    assert payload.schema_version == STATE21_SCHEMA_VERSION
+    assert isinstance(payload, DynosphereState21Payload)
+    assert payload.language_tensor.shape == (6,)
+    assert payload.state_21d.shape == (21,)
+    assert payload.validation["u_norm"] < 1.0
+    assert np.allclose(payload.validation["radial_abs_err"], 0.0, atol=1e-9)
+    assert np.allclose(payload.validation["harmonic_abs_err"], 0.0, atol=1e-9)
+
+    # Deterministic roundtrip for same source point
+    np.testing.assert_allclose(payload.state_21d, payload_dup.state_21d)
+    np.testing.assert_allclose(payload.language_tensor, payload_dup.language_tensor)
+
+
+def test_state21_payload_is_parseable():
+    point = np.array([0.5, 0.3, 0.8])
+    payload = state21_payload_from_point(point)
+    parsed = parse_state21_v1(payload.state_21d)
+    assert parsed.u.shape == (6,)
+    assert parsed.theta.shape == (6,)
+    assert parsed.telemetry.shape == (9,)
 
 
 # ── Tongue Projection Tests ─────────────────────────────────────────────

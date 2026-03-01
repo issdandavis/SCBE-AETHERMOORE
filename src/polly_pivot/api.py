@@ -26,6 +26,7 @@ from pydantic import BaseModel
 
 from .indexer import KnowledgeIndexer
 from .searcher import HybridSearcher, SearchResult
+from src.governance import GovernancePacket, packet_from_request
 
 # Module-level indexer (singleton for the API)
 _indexer: Optional[KnowledgeIndexer] = None
@@ -37,6 +38,12 @@ class AddTextRequest(BaseModel):
     source_path: str = ""
     title: str = ""
     doc_type: str = "text"
+    packet_id: Optional[str] = None
+    idempotency_key: Optional[str] = None
+    actor_id: str = ""
+    agent_id: str = ""
+    intent: Optional[str] = None
+    category: Optional[str] = None
 
 
 class AddDirectoryRequest(BaseModel):
@@ -44,6 +51,12 @@ class AddDirectoryRequest(BaseModel):
     extensions: Optional[List[str]] = None
     doc_type: Optional[str] = None
     recursive: bool = True
+    packet_id: Optional[str] = None
+    idempotency_key: Optional[str] = None
+    actor_id: str = ""
+    agent_id: str = ""
+    intent: Optional[str] = None
+    category: Optional[str] = None
 
 
 class SearchRequest(BaseModel):
@@ -51,6 +64,12 @@ class SearchRequest(BaseModel):
     top_k: int = 10
     tongue_filter: Optional[str] = None
     doc_type_filter: Optional[str] = None
+    packet_id: Optional[str] = None
+    idempotency_key: Optional[str] = None
+    actor_id: str = ""
+    agent_id: str = ""
+    intent: Optional[str] = None
+    category: Optional[str] = None
 
 
 class SearchResultResponse(BaseModel):
@@ -64,9 +83,10 @@ class SearchResultResponse(BaseModel):
     semantic_score: float
     keyword_score: float
     rank: int
+    packet_id: str = ""
+    idempotency_token: str = ""
 
-
-def _result_to_response(r: SearchResult) -> SearchResultResponse:
+def _result_to_response(r: SearchResult, packet: GovernancePacket) -> SearchResultResponse:
     return SearchResultResponse(
         doc_id=r.document.doc_id,
         title=r.document.title,
@@ -78,6 +98,8 @@ def _result_to_response(r: SearchResult) -> SearchResultResponse:
         semantic_score=r.semantic_score,
         keyword_score=r.keyword_score,
         rank=r.rank,
+        packet_id=packet.packet_id,
+        idempotency_token=packet.idempotency_token,
     )
 
 
@@ -102,6 +124,19 @@ def create_app(indexer: Optional[KnowledgeIndexer] = None) -> FastAPI:
     if _indexer.is_built:
         _searcher = HybridSearcher(_indexer)
 
+    def _packet_from_request(req: dict, *, intent: str, category: str) -> GovernancePacket:
+        payload = dict(req)
+        payload.setdefault("intent", intent)
+        payload.setdefault("category", category)
+        packet = packet_from_request(payload)
+        if not packet.actor_id:
+            packet.actor_id = "polly-pivot"
+        if not packet.targets:
+            target = payload.get("query") or payload.get("directory") or payload.get("source_path")
+            if isinstance(target, str) and target.strip():
+                packet.targets = [target]
+        return packet
+
     @app.get("/health")
     async def health():
         return {
@@ -116,51 +151,87 @@ def create_app(indexer: Optional[KnowledgeIndexer] = None) -> FastAPI:
     async def add_text(req: AddTextRequest):
         if _indexer is None:
             raise HTTPException(500, "Indexer not initialized")
+        packet = _packet_from_request(
+            req.dict(),
+            intent="polly_index",
+            category="polly_pivot",
+        )
         count = _indexer.add_text(
             text=req.text,
             source_path=req.source_path,
             title=req.title,
             doc_type=req.doc_type,
         )
-        return {"chunks_added": count, "total_documents": _indexer.doc_count}
+        return {
+            "chunks_added": count,
+            "total_documents": _indexer.doc_count,
+            "packet_id": packet.packet_id,
+            "idempotency_token": packet.idempotency_token,
+        }
 
     @app.post("/index/directory")
     async def add_directory(req: AddDirectoryRequest):
         if _indexer is None:
             raise HTTPException(500, "Indexer not initialized")
+        packet = _packet_from_request(
+            req.dict(),
+            intent="polly_index",
+            category="polly_pivot",
+        )
         count = _indexer.add_directory(
             directory=req.directory,
             extensions=req.extensions,
             doc_type=req.doc_type,
             recursive=req.recursive,
         )
-        return {"chunks_added": count, "total_documents": _indexer.doc_count}
+        return {
+            "chunks_added": count,
+            "total_documents": _indexer.doc_count,
+            "packet_id": packet.packet_id,
+            "idempotency_token": packet.idempotency_token,
+        }
 
     @app.post("/build")
     async def build_index():
         global _searcher
         if _indexer is None:
             raise HTTPException(500, "Indexer not initialized")
+        packet = _packet_from_request({}, intent="polly_build", category="polly_pivot")
         _indexer.build()
         _searcher = HybridSearcher(_indexer)
-        return {"status": "built", "documents": _indexer.doc_count}
+        return {
+            "status": "built",
+            "documents": _indexer.doc_count,
+            "packet_id": packet.packet_id,
+            "idempotency_token": packet.idempotency_token,
+        }
 
     @app.post("/search", response_model=List[SearchResultResponse])
     async def search(req: SearchRequest):
         if _searcher is None:
             raise HTTPException(400, "Index not built. Call POST /build first.")
+        packet = _packet_from_request(
+            req.dict(),
+            intent=req.intent or "polly_search",
+            category=req.category or "polly_pivot",
+        )
         results = _searcher.search(
             query=req.query,
             top_k=req.top_k,
             tongue_filter=req.tongue_filter,
             doc_type_filter=req.doc_type_filter,
         )
-        return [_result_to_response(r) for r in results]
+        return [_result_to_response(r, packet) for r in results]
 
     @app.post("/search/semantic", response_model=List[SearchResultResponse])
     async def search_semantic(req: SearchRequest):
         if _searcher is None:
             raise HTTPException(400, "Index not built. Call POST /build first.")
+        packet = _packet_from_request(
+            req.dict(),
+            intent=req.intent or "polly_search_semantic",
+            category=req.category or "polly_pivot",
+        )
         sem_results = _searcher.search_semantic(req.query, req.top_k)
         results = []
         for rank, (idx, score) in enumerate(sem_results):
@@ -176,6 +247,8 @@ def create_app(indexer: Optional[KnowledgeIndexer] = None) -> FastAPI:
                 semantic_score=score,
                 keyword_score=0.0,
                 rank=rank,
+                packet_id=packet.packet_id,
+                idempotency_token=packet.idempotency_token,
             ))
         return results
 
@@ -183,6 +256,11 @@ def create_app(indexer: Optional[KnowledgeIndexer] = None) -> FastAPI:
     async def search_keyword(req: SearchRequest):
         if _searcher is None:
             raise HTTPException(400, "Index not built. Call POST /build first.")
+        packet = _packet_from_request(
+            req.dict(),
+            intent=req.intent or "polly_search_keyword",
+            category=req.category or "polly_pivot",
+        )
         kw_results = _searcher.search_keyword(req.query, req.top_k)
         results = []
         for rank, (idx, score) in enumerate(kw_results):
@@ -198,6 +276,8 @@ def create_app(indexer: Optional[KnowledgeIndexer] = None) -> FastAPI:
                 semantic_score=0.0,
                 keyword_score=score,
                 rank=rank,
+                packet_id=packet.packet_id,
+                idempotency_token=packet.idempotency_token,
             ))
         return results
 

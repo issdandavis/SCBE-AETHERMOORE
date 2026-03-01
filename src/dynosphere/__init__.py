@@ -16,7 +16,9 @@ from .mapper import (
     DynospherePoint,
     TongueProjection,
     CanonicalLift,
+    DynosphereState21Payload,
     project_to_tongues,
+    state21_payload_from_point,
     lift_to_21d,
     round_trip_3d,
 )
@@ -26,7 +28,9 @@ __all__ = [
     "DynospherePoint",
     "TongueProjection",
     "CanonicalLift",
+    "DynosphereState21Payload",
     "project_to_tongues",
+    "state21_payload_from_point",
     "lift_to_21d",
     "round_trip_3d",
 ]

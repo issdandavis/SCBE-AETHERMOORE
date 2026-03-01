@@ -54,6 +54,13 @@ from src.geoseed.sphere_grid import (
     poincare_project,
     hyperbolic_distance,
 )
+from src.harmonic.state21_product_metric import (
+    SCHEMA_VERSION as STATE21_SCHEMA_VERSION,
+    compute_energy_harmonic,
+    compute_radial_norm,
+    parse_state21_v1,
+    validate_state21_v1,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -101,6 +108,30 @@ class CanonicalLift:
     tongue_projection: TongueProjection
     source_3d: np.ndarray       # original 3D point
     braid_phase: Tuple[int, int]  # dual ternary phase state
+
+
+@dataclass(frozen=True)
+class DynosphereState21Payload:
+    """Versioned transform payload for Dynosphere -> 6-language tensor + 21D manifold."""
+
+    schema_version: str
+    language_tensor: np.ndarray
+    state_21d: np.ndarray
+    poincare_point: np.ndarray
+    validation: Dict[str, float]
+    braid_phase: Tuple[int, int]
+    source_3d: np.ndarray
+
+    def to_dict(self) -> Dict[str, object]:
+        return {
+            "schema_version": self.schema_version,
+            "language_tensor": [float(v) for v in self.language_tensor.tolist()],
+            "state_21d": [float(v) for v in self.state_21d.tolist()],
+            "poincare_point": [float(v) for v in self.poincare_point.tolist()],
+            "validation": self.validation,
+            "braid_phase": list(self.braid_phase),
+            "source_3d": [float(v) for v in self.source_3d.tolist()],
+        }
 
 
 @dataclass(frozen=True)
@@ -340,6 +371,77 @@ def lift_to_21d(
         tongue_projection=tongue_proj,
         source_3d=point.copy(),
         braid_phase=braid_phase,
+    )
+
+
+def state21_payload_from_point(
+    point_3d: np.ndarray,
+    tongue_proj: Optional[TongueProjection] = None,
+    braid_phase: Optional[Tuple[int, int]] = None,
+) -> DynosphereState21Payload:
+    """Build a versioned Dynosphere payload for 6-language tensor + 21D manifold schema.
+
+    The returned structure includes:
+    - versioned 21D state vector (state21_v1 layout)
+    - six-language projection tensor
+    - Poincare embedding for cache/search
+    - deterministic telemetry with validation details
+    """
+    point = np.asarray(point_3d, dtype=float)
+    norm = np.linalg.norm(point)
+    if norm > 1e-12:
+        point = point / norm
+
+    if tongue_proj is None:
+        tongue_proj = project_to_tongues(point)
+    if braid_phase is None:
+        braid_phase = _compute_braid_phase(tongue_proj)
+
+    language_tensor = np.array([tongue_proj.normalized[t] for t in TONGUE_NAMES], dtype=float)
+
+    # Keep u in the Poincare unit ball by centering and scaling tongue projections.
+    tongue_u = (language_tensor - 0.5) * 0.75
+    max_u = max(float(np.linalg.norm(tongue_u)), 1e-12)
+    if max_u > 0.95:
+        tongue_u *= 0.95 / max_u
+
+    phi = np.array([TONGUE_PHASES[t] for t in TONGUE_NAMES], dtype=float)
+    # Phase block mirrors tongue orientation with small language-weighted modulation.
+    theta = phi + (language_tensor - 0.5) * 0.25
+    trust, byzantine, coherence = _cross_tongue_coherence(tongue_proj)
+    entropy_density = float(-np.sum(language_tensor * np.log(language_tensor + 1e-12)))
+
+    state_21d = np.concatenate(
+        [
+            tongue_u,
+            theta,
+            [
+                float(np.mean(language_tensor)),  # flux_breath
+                float(trust),                    # coherence_spectral
+                float(byzantine),                # coherence_spin
+                float(coherence),                # coherence_triadic
+                float(max(0.0, 1.0 - trust)),   # risk_aggregate
+                float(max(0.0, entropy_density)),# entropy_density
+                float(max(0.0, trust)),          # stabilization
+            ],
+        ]
+    )
+
+    radial_norm = compute_radial_norm(tongue_u)
+    harmonic_cache = compute_energy_harmonic(tongue_u)
+    state_21d = np.concatenate([state_21d, [radial_norm, harmonic_cache]])
+
+    parsed = parse_state21_v1(state_21d)
+    validation = validate_state21_v1(parsed)
+
+    return DynosphereState21Payload(
+        schema_version=STATE21_SCHEMA_VERSION,
+        language_tensor=language_tensor,
+        state_21d=state_21d,
+        poincare_point=poincare_project(state_21d),
+        validation=validation,
+        braid_phase=braid_phase,
+        source_3d=point.copy(),
     )
 
 

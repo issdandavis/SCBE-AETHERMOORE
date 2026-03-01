@@ -13,6 +13,7 @@ In `src/api/main.py`:
 - `GET /mobile/connectors/{connector_id}`
 - `DELETE /mobile/connectors/{connector_id}`
 - `POST /mobile/goals/{goal_id}/bind-connector`
+- `POST /mobile/connectors/policy-check`
 
 Goal execution mode:
 
@@ -141,6 +142,42 @@ Headers include:
 - For local runs, store this key via the local tokenized vault:
   - `python scripts/system/secret_store.py set SCBE_CONNECTOR_SIGNING_KEY "your_local_key"`
   - `python scripts/system/secret_store.py get SCBE_CONNECTOR_SIGNING_KEY`
+
+## Governance policy-check endpoint
+
+Use `POST /mobile/connectors/policy-check` to get deterministic policy verdicts for pending connector actions before dispatch.
+
+Supported decision tiers:
+
+- `ALLOW`
+- `QUARANTINE`
+- `DENY`
+
+Example:
+
+```bash
+curl -X POST http://localhost:8000/mobile/connectors/policy-check \
+  -H "x-api-key: demo_key_12345" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "action": "submit",
+    "goal": "Update product title",
+    "channel": "store_ops",
+    "priority": "high",
+    "step_risk": "medium",
+    "owner": "shopify-app",
+    "targets": ["gid://shopify/Product/123"],
+    "connector_id": "conn_xxx",
+    "emit_webhook": true
+  }'
+```
+
+Response includes:
+
+- `action` (echoed request action)
+- `policy.verdict` (`ALLOW` | `QUARANTINE` | `DENY`)
+- `policy.risk_score` and `policy.coherence`
+- optional `webhook` result when `emit_webhook=true`
 
 ## Recommended production hardening
 

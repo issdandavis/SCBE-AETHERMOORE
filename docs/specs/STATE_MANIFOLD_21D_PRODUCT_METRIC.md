@@ -91,13 +91,14 @@ Required checks per snapshot:
 - `len(s) == 21`
 - `||u|| < 1`
 - telemetry ranges:
-  - `coherence_* in [0,1]`
-  - `risk_score in [0,1]`
-  - `trust_score in [0,1]`
-  - `d_star >= 0`
-  - `h_eff >= 0`
+  - `coherence_* in [0,1]` where `_*` is spectral/spin/triadic
+  - `risk_aggregate in [0,1]`
+  - `entropy_density >= 0`
+  - `stabilization >= 0`
+  - `radial_norm >= 0`
+  - `energy_harmonic >= 0`
 
-`flux_breath` and `flux_rate` are real-valued channels (implementation-normalized by policy).
+`flux_breath` and `entropy_density` are implementation-derived policy telemetry channels.
 
 ## 5. Harmonic Wall Convention
 
@@ -117,6 +118,21 @@ Any field changes require:
 - new version id (e.g. `state21_v2`)
 - explicit migration map
 - side-by-side reader support during transition window
+
+## Dynosphere transform payload (`src/dynosphere/mapper.py`)
+
+`DynosphereState21Payload` is the versioned transform container used by dynosphere exports:
+
+- `schema_version`: schema tag expected to be `state21_v1`
+- `language_tensor`: 6-language tongue tensor (`KO, AV, RU, CA, UM, DR`) in `[0, 1]`
+- `state_21d`: canonical 21D vector in state21 layout (`[u(6), theta(6), telemetry(9)]`)
+  - `0:6` tongue geometry in `B^6`
+  - `6:12` tongue phase block
+  - `12:21` telemetry (`flux_breath, coherence_spectral, coherence_spin, coherence_triadic, risk_aggregate, entropy_density, stabilization, radial_norm, energy_harmonic`)
+- `poincare_point`: Poincaré projection of `state_21d` (same dimension as payload)
+- `validation`: `u_norm`, radial cache err, harmonic cache err from `validate_state21_v1`
+- `braid_phase`: dual ternary phase tuple `(parallel, perpendicular)`
+- `source_3d`: normalized source point on dynosphere sphere
 
 ## 7. Reference Implementation
 

@@ -25,7 +25,7 @@ import numpy as np
 
 STATE21_DIM = 21
 SCHEMA_VERSION = "state21_v1"
-
+STATE21_SCHEMA_VERSION = SCHEMA_VERSION
 # Telemetry block is slots [12:21]
 TELEMETRY_DIM = 9
 
@@ -194,3 +194,5 @@ def product_metric_distance_v1(
 
     total_sq = float(w_h * d_h * d_h + w_theta * d_theta * d_theta + d_tel_sq)
     return float(math.sqrt(max(0.0, total_sq)))
+
+

@@ -50,6 +50,9 @@ from urllib.parse import quote_plus, urljoin, urlparse
 import httpx
 from bs4 import BeautifulSoup
 
+from src.governance import GovernancePacket, packet_from_request
+from src.runtime.locks import IdempotentRunStore, file_lock
+
 logger = logging.getLogger("headless-browser")
 
 # ── Paths ───────────────────────────────────────────────────────────────
@@ -62,6 +65,8 @@ def _find_project_root() -> Path:
     return here.parent.parent
 
 PROJECT_ROOT = _find_project_root()
+RUNTIME_ROOT = PROJECT_ROOT / ".scbe" / "runtime"
+HEADLESS_RUNTIME_ROOT = RUNTIME_ROOT / "headless"
 
 
 # ── Antivirus membrane (inline lightweight version) ─────────────────────
@@ -148,6 +153,7 @@ class PageResult:
     status_code: int = 0
     error: Optional[str] = None
     timestamp: str = ""
+    attempts: int = 1
 
     def to_dict(self) -> dict:
         d = {
@@ -162,6 +168,9 @@ class PageResult:
             "status_code": self.status_code,
             "error": self.error,
             "timestamp": self.timestamp,
+            "governance_score": self.scan.risk_score if self.scan else 0.0,
+            "governance_verdict": self.scan.verdict if self.scan else "UNSCANNED",
+            "attempts": self.attempts,
         }
         return d
 
@@ -173,6 +182,9 @@ class SearchResult:
     url: str
     snippet: str
     position: int = 0
+    governance_verdict: str = "UNSCANNED"
+    governance_score: float = 0.0
+    attempts: int = 1
 
 
 @dataclass
@@ -323,6 +335,7 @@ class HeadlessBrowser:
         self._playwright = None
         self._browser = None
         self._stats = {"fetched": 0, "blocked": 0, "errors": 0}
+        self._run_store = IdempotentRunStore(HEADLESS_RUNTIME_ROOT / "idempotent_runs")
 
     async def __aenter__(self):
         await self.open()
@@ -361,10 +374,21 @@ class HeadlessBrowser:
             error,
         )
 
-    def _log_scan(self, *, url: str, tier: str, scan: ThreatScan, elapsed_ms: float, attempt: int):
+    def _log_scan(
+        self,
+        *,
+        action: str,
+        url: str,
+        tier: str,
+        scan: ThreatScan,
+        elapsed_ms: float,
+        attempt: int,
+    ):
         if scan.verdict in ("SUSPICIOUS", "MALICIOUS"):
             logger.warning(
-                "Governance blocked: url=%s tier=%s attempt=%s verdict=%s risk=%.4f reasons=%s",
+                "Governance blocked: action=%s url=%s tier=%s attempt=%s verdict=%s "
+                "governance_score=%.4f reasons=%s",
+                action,
                 url,
                 tier,
                 attempt,
@@ -374,7 +398,9 @@ class HeadlessBrowser:
             )
         else:
             logger.info(
-                "Governance passed: url=%s tier=%s attempt=%s verdict=%s risk=%.4f elapsed_ms=%.1f",
+                "Governance passed: action=%s url=%s tier=%s attempt=%s verdict=%s "
+                "governance_score=%.4f elapsed_ms=%.1f",
+                action,
                 url,
                 tier,
                 attempt,
@@ -382,6 +408,76 @@ class HeadlessBrowser:
                 scan.risk_score,
                 elapsed_ms,
             )
+
+    @staticmethod
+    def _action_log(*, action: str, target: str, status: str, verdict: str, governance_score: float, attempt: int):
+        logger.info(
+            "Action result: action=%s target=%s status=%s verdict=%s governance_score=%.4f attempts=%s",
+            action,
+            target,
+            status,
+            verdict,
+            governance_score,
+            attempt,
+        )
+
+    @staticmethod
+    def _build_packet(payload: Dict[str, Any]) -> GovernancePacket:
+        return packet_from_request(payload, defaults={"actor_id": "headless_browser", "category": "headless_browser"})
+
+    @staticmethod
+    def _load_cached_report(state: Dict[str, Any], fallback_query: str) -> ResearchReport:
+        output_path = state.get("output_path")
+        rows = []
+        if output_path and Path(output_path).exists():
+            try:
+                for line in Path(output_path).read_text(encoding="utf-8").splitlines():
+                    item = json.loads(line)
+                    rows.append(item)
+            except Exception:
+                rows = []
+
+        results = []
+        for row in rows:
+            scan_data = row.get("scan") or {}
+            scan = None
+            if scan_data:
+                scan = ThreatScan(
+                    verdict=scan_data.get("scan_verdict") or scan_data.get("verdict", "UNSCANNED"),
+                    risk_score=float(scan_data.get("scan_risk", scan_data.get("risk_score", 0.0))),
+                    prompt_hits=tuple(),
+                    malware_hits=tuple(),
+                    reasons=tuple(),
+                )
+            results.append(
+                PageResult(
+                    url=row.get("url", ""),
+                    title=row.get("title", ""),
+                    text=row.get("text", ""),
+                    html=row.get("html", ""),
+                    links=row.get("links", []),
+                    images=row.get("images", []),
+                    meta=row.get("meta", {}),
+                    scan=scan,
+                    fetch_tier=row.get("fetch_tier", "cache"),
+                    elapsed_ms=float(row.get("elapsed_ms", 0.0)),
+                    status_code=int(row.get("status_code", 0) or 0),
+                    error=row.get("error") or None,
+                    timestamp=row.get("timestamp", ""),
+                    attempts=int(row.get("attempts", 1) or 1),
+                )
+            )
+
+        return ResearchReport(
+            query=state.get("query", fallback_query),
+            results=results,
+            total_pages=int(state.get("total_pages", len(results))),
+            clean_pages=int(state.get("clean_pages", 0)),
+            blocked_pages=int(state.get("blocked_pages", 0)),
+            elapsed_ms=float(state.get("elapsed_ms", 0.0)),
+            timestamp=state.get("created_at", ""),
+            summary=f"Replayed from {output_path}" if output_path else "Replayed from cache",
+        )
 
     async def open(self):
         """Initialize HTTP client."""
@@ -455,10 +551,18 @@ class HeadlessBrowser:
                 elapsed = (time.monotonic() - t0) * 1000
                 content_type = resp.headers.get("content-type", "")
                 if "text/html" not in content_type and "text/plain" not in content_type:
+                    self._action_log(
+                        action="fetch",
+                        target=url,
+                        status="ok",
+                        verdict="UNSCANNED",
+                        governance_score=0.0,
+                        attempt=attempt,
+                    )
                     return PageResult(
                         url=url, text=f"[Non-HTML content: {content_type}]",
                         status_code=status_code, elapsed_ms=elapsed,
-                        timestamp=ts, fetch_tier="httpx",
+                        timestamp=ts, fetch_tier="httpx", attempts=attempt,
                     )
 
                 html = resp.text[:self.max_content_length]
@@ -466,16 +570,39 @@ class HeadlessBrowser:
                 scan = scan_content(extracted["text"][:10000])
 
                 self._stats["fetched"] += 1
-                self._log_scan(url=url, tier="httpx", scan=scan, elapsed_ms=elapsed, attempt=attempt)
+                self._log_scan(
+                    action="httpx_fetch",
+                    url=url,
+                    tier="httpx",
+                    scan=scan,
+                    elapsed_ms=elapsed,
+                    attempt=attempt,
+                )
                 if scan.verdict in ("SUSPICIOUS", "MALICIOUS"):
                     self._stats["blocked"] += 1
+                    self._action_log(
+                        action="fetch",
+                        target=url,
+                        status="blocked",
+                        verdict=scan.verdict,
+                        governance_score=scan.risk_score,
+                        attempt=attempt,
+                    )
                     return PageResult(
                         url=url, title=extracted["title"],
                         text=f"[BLOCKED: {scan.verdict} — {scan.reasons}]",
                         scan=scan, status_code=status_code,
-                        elapsed_ms=elapsed, timestamp=ts, fetch_tier="httpx",
+                        elapsed_ms=elapsed, timestamp=ts, fetch_tier="httpx", attempts=attempt,
                     )
 
+                self._action_log(
+                    action="fetch",
+                    target=url,
+                    status="ok",
+                    verdict=scan.verdict,
+                    governance_score=scan.risk_score,
+                    attempt=attempt,
+                )
                 return PageResult(
                     url=url,
                     title=extracted["title"],
@@ -489,15 +616,22 @@ class HeadlessBrowser:
                     elapsed_ms=elapsed,
                     timestamp=ts,
                     fetch_tier="httpx",
+                    attempts=attempt,
                 )
 
             except Exception as e:
                 last_error = e
                 if attempt < self.max_retries and self._is_retryable_error(e, status_code=status_code):
-                    self._log_retry(context="httpx fetch", attempt=attempt, max_attempts=self.max_retries, url=url, error=e)
+                    self._log_retry(
+                        context="httpx fetch",
+                        attempt=attempt,
+                        max_attempts=self.max_retries,
+                        url=url,
+                        error=e,
+                    )
                     await self._sleep_before_retry(attempt)
                     continue
-                break
+            break
 
         self._stats["errors"] += 1
         elapsed = (time.monotonic() - t0) * 1000
@@ -508,9 +642,17 @@ class HeadlessBrowser:
             url,
             error_message,
         )
+        self._action_log(
+            action="fetch",
+            target=url,
+            status="error",
+            verdict="ERROR",
+            governance_score=0.0,
+            attempt=self.max_retries,
+        )
         return PageResult(
             url=url, error=error_message, elapsed_ms=elapsed,
-            timestamp=ts, status_code=status_code, fetch_tier="httpx",
+            timestamp=ts, status_code=status_code, fetch_tier="httpx", attempts=self.max_retries,
         )
 
     async def _fetch_playwright(self, url: str, ts: str, t0: float) -> PageResult:
@@ -535,16 +677,39 @@ class HeadlessBrowser:
                 scan = scan_content(extracted["text"][:10000])
 
                 self._stats["fetched"] += 1
-                self._log_scan(url=url, tier="playwright", scan=scan, elapsed_ms=elapsed, attempt=attempt)
+                self._log_scan(
+                    action="playwright_fetch",
+                    url=url,
+                    tier="playwright",
+                    scan=scan,
+                    elapsed_ms=elapsed,
+                    attempt=attempt,
+                )
                 if scan.verdict in ("SUSPICIOUS", "MALICIOUS"):
                     self._stats["blocked"] += 1
+                    self._action_log(
+                        action="fetch",
+                        target=url,
+                        status="blocked",
+                        verdict=scan.verdict,
+                        governance_score=scan.risk_score,
+                        attempt=attempt,
+                    )
                     return PageResult(
                         url=url, title=extracted["title"],
                         text=f"[BLOCKED: {scan.verdict} — {scan.reasons}]",
                         scan=scan, elapsed_ms=elapsed, timestamp=ts,
-                        fetch_tier="playwright",
+                        fetch_tier="playwright", attempts=attempt,
                     )
 
+                self._action_log(
+                    action="fetch",
+                    target=url,
+                    status="ok",
+                    verdict=scan.verdict,
+                    governance_score=scan.risk_score,
+                    attempt=attempt,
+                )
                 return PageResult(
                     url=url,
                     title=extracted["title"],
@@ -557,6 +722,7 @@ class HeadlessBrowser:
                     elapsed_ms=elapsed,
                     timestamp=ts,
                     fetch_tier="playwright",
+                    attempts=attempt,
                 )
 
             except Exception as e:
@@ -586,6 +752,14 @@ class HeadlessBrowser:
             url,
             str(last_error),
         )
+        self._action_log(
+            action="fetch",
+            target=url,
+            status="error",
+            verdict="ERROR",
+            governance_score=0.0,
+            attempt=self.max_retries,
+        )
         logger.info("Falling back to httpx for %s after Playwright failures", url)
         return await self._fetch_httpx(url, ts, t0)
 
@@ -608,8 +782,28 @@ class HeadlessBrowser:
                 if status_code >= 500:
                     raise RuntimeError(f"Search backend error: HTTP {resp.status_code}")
 
+                query_scan = scan_content(query)
                 results = parse_duckduckgo_results(resp.text)
-                logger.info("Search completed: query=%s results=%s attempts=%s", query, len(results), attempt)
+                for result in results:
+                    result.governance_verdict = query_scan.verdict
+                    result.governance_score = query_scan.risk_score
+                    result.attempts = attempt
+                self._action_log(
+                    action="search",
+                    target=query,
+                    status="ok",
+                    verdict=query_scan.verdict,
+                    governance_score=query_scan.risk_score,
+                    attempt=attempt,
+                )
+                logger.info(
+                    "Search completed: query=%s results=%s attempts=%s governance=%s score=%.4f",
+                    query,
+                    len(results),
+                    attempt,
+                    query_scan.verdict,
+                    query_scan.risk_score,
+                )
                 return results[:num_results]
             except Exception as e:
                 last_error = e
@@ -695,32 +889,65 @@ class HeadlessBrowser:
         query: str,
         depth: int = 3,
         output_dir: Optional[str] = None,
+        packet: Optional[GovernancePacket] = None,
     ) -> ResearchReport:
-        """Research and save results to JSONL file."""
-        report = await self.research(query, depth=depth)
+        """Research and save results to JSONL file with idempotent replay support."""
+        gov_packet = packet or self._build_packet({"query": query, "depth": depth})
+        run_token = gov_packet.idempotency_token
 
-        # Save to local JSONL
         out_dir = Path(output_dir) if output_dir else PROJECT_ROOT / "training" / "intake" / "web_research"
         out_dir.mkdir(parents=True, exist_ok=True)
 
-        slug = re.sub(r"[^a-z0-9]+", "_", query.lower())[:40]
-        ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-        out_file = out_dir / f"headless_{slug}_{ts}.jsonl"
+        lock_path = HEADLESS_RUNTIME_ROOT / "locks" / f"{run_token}.lock"
+        lock_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(out_file, "w", encoding="utf-8") as f:
-            for page in report.results:
-                if page.error:
-                    continue
-                record = {
-                    "source": "headless_browser",
+        cached = self._run_store.load(run_token)
+        if cached and cached.get("status") == "complete":
+            return self._load_cached_report(cached, fallback_query=query)
+
+        with file_lock(lock_path, timeout_sec=20.0):
+            marker = self._run_store.load(run_token)
+            if marker and marker.get("status") == "complete":
+                return self._load_cached_report(marker, fallback_query=query)
+
+            report = await self.research(query, depth=depth)
+
+            slug = re.sub(r"[^a-z0-9]+", "_", query.lower())[:40]
+            ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+            out_file = out_dir / f"headless_{slug}_{ts}_{run_token[:8]}.jsonl"
+
+            with open(out_file, "w", encoding="utf-8") as f:
+                for page in report.results:
+                    if page.error:
+                        continue
+                    record = {
+                        "source": "headless_browser",
+                        "query": query,
+                        "packet_id": gov_packet.packet_id,
+                        **page.to_dict(),
+                    }
+                    f.write(json.dumps(record, ensure_ascii=False) + "\\n")
+
+            self._run_store.save(
+                run_token,
+                {
+                    "status": "complete",
+                    "packet_id": gov_packet.packet_id,
+                    "intent": gov_packet.intent or "research",
                     "query": query,
-                    **page.to_dict(),
-                }
-                f.write(json.dumps(record, ensure_ascii=False) + "\n")
+                    "depth": int(depth),
+                    "total_pages": report.total_pages,
+                    "clean_pages": report.clean_pages,
+                    "blocked_pages": report.blocked_pages,
+                    "elapsed_ms": report.elapsed_ms,
+                    "created_at": report.timestamp,
+                    "output_path": str(out_file),
+                },
+            )
 
-        logger.info(f"Saved {len(report.results)} results to {out_file}")
-        report.summary = f"Saved to {out_file}"
-        return report
+            logger.info(f"Saved {len(report.results)} results to {out_file}")
+            report.summary = f"Saved to {out_file}"
+            return report
 
     @property
     def stats(self) -> Dict[str, int]:
@@ -740,15 +967,33 @@ def create_app():
     class SearchRequest(BaseModel):
         query: str
         num_results: int = 10
+        packet_id: Optional[str] = None
+        idempotency_key: Optional[str] = None
+        actor_id: str = ""
+        agent_id: str = ""
+        intent: Optional[str] = None
+        category: Optional[str] = None
 
     class FetchRequest(BaseModel):
         url: str
         use_playwright: bool = False
+        packet_id: Optional[str] = None
+        idempotency_key: Optional[str] = None
+        actor_id: str = ""
+        agent_id: str = ""
+        intent: Optional[str] = None
+        category: Optional[str] = None
 
     class ResearchRequest(BaseModel):
         query: str
         depth: int = 3
         store: bool = True
+        packet_id: Optional[str] = None
+        idempotency_key: Optional[str] = None
+        actor_id: str = ""
+        agent_id: str = ""
+        intent: Optional[str] = None
+        category: Optional[str] = None
 
     @app.on_event("startup")
     async def startup():
@@ -758,27 +1003,51 @@ def create_app():
     async def shutdown():
         await browser.close()
 
+    def _packet_from_request(req: dict, intent: str, category: str) -> GovernancePacket:
+        payload = dict(req)
+        if not payload.get("intent"):
+            payload["intent"] = intent
+        if not payload.get("category"):
+            payload["category"] = category
+        packet = packet_from_request(payload)
+        if not packet.actor_id:
+            packet.actor_id = "headless-browser"
+        if not packet.targets:
+            packet.targets = [payload.get("query", payload.get("url", ""))]
+        return packet
+
     @app.get("/health")
     async def health():
         return {"status": "ok", "stats": browser.stats}
 
     @app.post("/v1/search")
     async def api_search(req: SearchRequest):
+        packet = _packet_from_request(req.dict(), intent="headless_search", category="headless_browser")
         results = await browser.search(req.query, req.num_results)
-        return {"results": [{"title": r.title, "url": r.url, "snippet": r.snippet} for r in results]}
+        return {
+            "packet_id": packet.packet_id,
+            "idempotency_token": packet.idempotency_token,
+            "results": [{"title": r.title, "url": r.url, "snippet": r.snippet} for r in results],
+        }
 
     @app.post("/v1/fetch")
     async def api_fetch(req: FetchRequest):
+        packet = _packet_from_request(req.dict(), intent="headless_fetch", category="headless_browser")
         page = await browser.fetch(req.url, use_playwright=req.use_playwright)
-        return page.to_dict()
+        payload = page.to_dict()
+        payload.update({"packet_id": packet.packet_id, "idempotency_token": packet.idempotency_token})
+        return payload
 
     @app.post("/v1/research")
     async def api_research(req: ResearchRequest):
+        packet = _packet_from_request(req.dict(), intent="headless_research", category="headless_browser")
         if req.store:
-            report = await browser.research_and_store(req.query, depth=req.depth)
+            report = await browser.research_and_store(req.query, depth=req.depth, packet=packet)
         else:
             report = await browser.research(req.query, depth=req.depth)
-        return report.to_dict()
+        payload = report.to_dict()
+        payload.update({"packet_id": packet.packet_id, "idempotency_token": packet.idempotency_token})
+        return payload
 
     return app
 
