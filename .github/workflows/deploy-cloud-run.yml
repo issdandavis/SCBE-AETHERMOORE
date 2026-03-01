@@ -1,0 +1,139 @@
+name: Deploy SCBE Browser Agent API to Cloud Run
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+      image_tag:
+        description: 'Optional Docker image tag (defaults to commit SHA)'
+        required: false
+        default: ''
+  push:
+    branches: [main]
+    paths:
+      - 'agents/browser/**'
+      - 'agents/**'
+      - 'api/**'
+      - 'src/**'
+      - 'Dockerfile.cloudrun'
+      - '.github/workflows/deploy-cloud-run.yml'
+
+env:
+  PROJECT_ID: gen-lang-client-0103521392
+  REGION: us-central1
+  SERVICE_NAME: scbe-browser-agent-api
+  IMAGE: gcr.io/gen-lang-client-0103521392/scbe-browser-agent-api
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  deploy:
+    name: Build and Deploy Cloud Run
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Smoke test API module import
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install fastapi pydantic
+          python -c "from api.main import app; print('api.main import ok')"
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Configure Docker for GCR
+        run: gcloud auth configure-docker gcr.io --quiet
+
+      - name: Resolve image tag
+        id: tag
+        run: |
+          if [ -n "${{ github.event.inputs.image_tag }}" ]; then
+            echo "tag=${{ github.event.inputs.image_tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build Cloud Run image
+        run: |
+          docker build \
+            -f Dockerfile.cloudrun \
+            -t "$IMAGE:${{ steps.tag.outputs.tag }}" \
+            -t "$IMAGE:latest" \
+            .
+
+      - name: Push image
+        run: |
+          docker push "$IMAGE:${{ steps.tag.outputs.tag }}"
+          docker push "$IMAGE:latest"
+
+      - name: Deploy to Cloud Run
+        env:
+          SCBE_API_KEY: ${{ secrets.SCBE_API_KEY }}
+          SCBE_LOG_LEVEL: INFO
+        run: |
+          EXTRA_ENV="SCBE_ENV=production,SCBE_LOG_LEVEL=${SCBE_LOG_LEVEL}"
+          if [ -n "${SCBE_API_KEY}" ]; then
+            EXTRA_ENV="${EXTRA_ENV},SCBE_API_KEY=${SCBE_API_KEY}"
+          fi
+
+          gcloud run deploy "$SERVICE_NAME" \
+            --image "$IMAGE:${{ steps.tag.outputs.tag }}" \
+            --region "$REGION" \
+            --platform managed \
+            --allow-unauthenticated \
+            --timeout 30s \
+            --memory 1Gi \
+            --set-env-vars "$EXTRA_ENV" \
+            --project "$PROJECT_ID" 
+
+      - name: Verify deployment health
+        run: |
+          SERVICE_URL=$(gcloud run services describe "$SERVICE_NAME" --region "$REGION" --project "$PROJECT_ID" --format 'value(status.url)' || true)
+          if [ -z "$SERVICE_URL" ]; then
+            echo "Cloud Run URL unavailable after deploy"
+            exit 1
+          fi
+
+          echo "Service URL: $SERVICE_URL"
+          for i in $(seq 1 20); do
+            STATUS=$(curl -sS --max-time 8 "$SERVICE_URL/v1/health" || true)
+            if echo "$STATUS" | grep -q '"status"[[:space:]]*:[[:space:]]*"healthy"\\|"status"[[:space:]]*:[[:space:]]*"ok"'; then
+              echo "Health OK: $STATUS"
+              exit 0
+            fi
+            echo "Waiting for health endpoint... ($i/20)"
+            sleep 10
+          done
+
+          echo "Health check failed"
+          curl -sv "$SERVICE_URL/v1/health" || true
+          exit 1
+
+      - name: Print Cloud Run URL
+        if: always()
+        run: |
+          gcloud run services describe "$SERVICE_NAME" --region "$REGION" --project "$PROJECT_ID" --format 'value(status.url)' || true
