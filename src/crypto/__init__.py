@@ -174,6 +174,29 @@ from .quasicrystal_lattice import (
     tongue_fibonacci_gates,
 )
 
+# Harmonic Cryptography (P6 patent family)
+from .harmonic_crypto import (
+    PYTHAGOREAN_COMMA,
+    HARMONIC_RATIOS,
+    TONGUE_INTERVAL_MAP,
+    VOICE_LEADING_COSTS,
+    MotionType,
+    SpiralState,
+    RingState,
+    KeyState,
+    TransitionResult,
+    AgentVoice,
+    CounterpointValidation,
+    HarmonicKeyGenerator,
+    RingRotationCipher,
+    VoiceLeadingOptimizer,
+    CounterpointProtocol,
+    HarmonicCryptosystem,
+    _hamming_distance,
+    _consonance,
+    _voice_leading_cost,
+)
+
 # Sacred Eggs (Cryptographic Secret Containers)
 from .sacred_eggs import (
     SacredEgg,
@@ -298,6 +321,26 @@ __all__ = [
     "DefectReport",
     "fibonacci_gates",
     "tongue_fibonacci_gates",
+    # === P6 Harmonic Cryptography ===
+    "PYTHAGOREAN_COMMA",
+    "HARMONIC_RATIOS",
+    "TONGUE_INTERVAL_MAP",
+    "VOICE_LEADING_COSTS",
+    "MotionType",
+    "SpiralState",
+    "RingState",
+    "KeyState",
+    "TransitionResult",
+    "AgentVoice",
+    "CounterpointValidation",
+    "HarmonicKeyGenerator",
+    "RingRotationCipher",
+    "VoiceLeadingOptimizer",
+    "CounterpointProtocol",
+    "HarmonicCryptosystem",
+    "_hamming_distance",
+    "_consonance",
+    "_voice_leading_cost",
 ]
 
 __version__ = "3.3.0"  # Quasicrystal lattice + tri-manifold integration

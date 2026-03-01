@@ -81,12 +81,16 @@
 - unison=1.0, minor_third=6/5, major_third=5/4, perfect_fourth=4/3
 - perfect_fifth=3/2, minor_sixth=8/5, major_sixth=5/3, octave=2.0
 
-### What Still Needs Building (for full enablement)
+### Enablement Status (P6)
 
-1. **Ring Rotation Cipher**: Dedicated class that rotates cipher rings by harmonic ratio products
-2. **Circle of Fifths Spiral**: Key generator using Pythagorean comma (531441:524288) drift
-3. **Voice Leading Optimizer**: Hamming-distance-minimizing state transition selector
-4. **Counterpoint Coordinator**: Multi-agent harmony score with parallel motion detection
+The following P6 module classes are implemented in `src/crypto/harmonic_crypto.py` and validated by `tests/test_harmonic_crypto.py`:
+
+1. **Ring Rotation Cipher**: `RingRotationCipher` with six ring operations (Claim 1-5)
+2. **Circle of Fifths Spiral**: `HarmonicKeyGenerator` with Pythagorean comma drift (Claim 6-10)
+3. **Voice Leading Optimizer**: `VoiceLeadingOptimizer` with Hamming-distance transition costs (Claim 11-15)
+4. **Counterpoint Coordinator**: `CounterpointProtocol` for multi-agent parallelism scoring (Claim 16-20)
+
+**Status:** IMPLEMENTED — Reference package and tests are present, and filing bundle is ready to generate for evidence preservation.
 
 ---
 
