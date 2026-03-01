@@ -156,5 +156,5 @@ if (Test-Path $awsMd) {
 
 # 10. Final listing
 Write-Host "`n=== FINAL VAULT STRUCTURE ==="
-Get-ChildItem $vault -Directory | ForEach-Object { Write-Host "  📁 $($_.Name)" }
-Get-ChildItem $vault -File | ForEach-Object { Write-Host "  📄 $($_.Name)" }
+Get-ChildItem $vault -Directory | ForEach-Object { Write-Host "  [DIR] $($_.Name)" }
+Get-ChildItem $vault -File | ForEach-Object { Write-Host "  [FILE] $($_.Name)" }
