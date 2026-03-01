@@ -72,7 +72,7 @@ jsonschema-path==0.3.4
 jsonschema-specifications==2025.9.1
 kiwisolver==1.4.9
 lazy-object-proxy==1.12.0
-librt==0.7.8
+librt==0.8.1
 markdown-it-py==4.0.0
 markdownify==1.2.2
 MarkupSafe==3.0.3
