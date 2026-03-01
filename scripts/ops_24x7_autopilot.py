@@ -37,6 +37,7 @@ MONEY_OPS = ROOT / "scripts" / "money_ops.py"
 MONEY_NIGHTLY = ROOT / "scripts" / "money_ops_nightly.py"
 SMOKE_TRAIN = ROOT / "training" / "hf_smoke_sft_uv.py"
 TELEGRAM_NOTIFY = ROOT / "scripts" / "telegram_notify.py"
+ISSUE_LIFECYCLE = ROOT / "scripts" / "issue_lifecycle.py"
 
 
 def _utc_now() -> str:
@@ -185,6 +186,19 @@ def run_ops_cycle(args: argparse.Namespace, iteration: int) -> Dict[str, Any]:
         if status["steps"]["hf_smoke"]["status"] != "ok":
             status["status"] = "blocked"
 
+    # Issue lifecycle: triage + council + optional execute/close/merge
+    if getattr(args, "run_lifecycle", False):
+        lifecycle_cmd = [sys.executable, str(ISSUE_LIFECYCLE)]
+        if getattr(args, "lifecycle_execute", False):
+            lifecycle_cmd.append("--auto-execute")
+        if getattr(args, "lifecycle_close", False):
+            lifecycle_cmd.append("--auto-close")
+        if getattr(args, "lifecycle_merge", False):
+            lifecycle_cmd.append("--auto-merge")
+        if getattr(args, "telegram", False):
+            lifecycle_cmd.append("--telegram")
+        status["steps"]["issue_lifecycle"] = _run_cmd(lifecycle_cmd, timeout_sec=300, cwd=ROOT)
+
     status["finished_utc"] = _utc_now()
     return status
 
@@ -230,6 +244,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-stale-lock-sec", type=int, default=7200, help="Stale lock reclaim window")
     parser.add_argument("--skip-defaults", action="store_true", help="Do not enable money/smoke by default")
     parser.add_argument("--telegram", action="store_true", help="Send Telegram notification after each cycle")
+    parser.add_argument("--run-lifecycle", action="store_true", help="Run issue lifecycle (triage + council) each cycle")
+    parser.add_argument("--lifecycle-execute", action="store_true", help="Auto-execute approved lifecycle items")
+    parser.add_argument("--lifecycle-close", action="store_true", help="Auto-close stale issues")
+    parser.add_argument("--lifecycle-merge", action="store_true", help="Auto-merge passing auto PRs")
     return parser.parse_args()
 
 

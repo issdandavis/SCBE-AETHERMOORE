@@ -157,4 +157,5 @@ artifacts/repo_scans/*/
 artifacts/ops-autopilot/*/
 artifacts/ops-autopilot/24x7-latest.json
 artifacts/ops-autopilot/24x7/*.json
+artifacts/issue-lifecycle/
 
