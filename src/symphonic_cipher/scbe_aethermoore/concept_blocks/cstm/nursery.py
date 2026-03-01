@@ -59,7 +59,7 @@ class AgentRecord:
     curriculum_progress: Dict[str, bool] = field(default_factory=dict)
     spawn_time: float = field(default_factory=time.time)
     graduation_time: Optional[float] = None
-    graduation_score: Optional[float] = None
+    graduation_score: Optional[Dict[str, float]] = None
 
 
 # ---------------------------------------------------------------------------
@@ -448,7 +448,7 @@ class NurseryManager:
             if result.passed:
                 rec.state = AgentLifecycleState.GRADUATED
                 rec.graduation_time = time.time()
-                rec.graduation_score = result.scores.get("overall", 0.0)
+                rec.graduation_score = result.scores
                 graduated.append(rec)
             else:
                 rec.state = AgentLifecycleState.FAILED

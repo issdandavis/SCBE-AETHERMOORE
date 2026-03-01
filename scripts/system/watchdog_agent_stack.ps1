@@ -5,6 +5,15 @@ param(
     [int]$BrowserPort = 8012,
     [int]$N8nPort = 5680,
     [int]$N8nTaskBrokerPort = 5681,
+    [switch]$StartOpenClaw,
+    [int]$OpenClawGatewayPort = 18789,
+    [int]$OpenClawBridgePort = 18790,
+    [string]$OpenClawImage = "openclaw:local",
+    [string]$OpenClawConfigDir = "",
+    [string]$OpenClawWorkspaceDir = "",
+    [string]$OpenClawGatewayBind = "lan",
+    [string]$OpenClawGatewayToken = "",
+    [string]$OpenClawComposeFile = "",
     [string]$LogFile = "C:\Users\issda\SCBE-AETHERMOORE\artifacts\ops\watchdog_agent_stack.log",
     [string]$TelegramBotToken = "",
     [string]$TelegramChatId = "",
@@ -118,15 +127,19 @@ $n8nHealthy = Test-Http -Url "http://127.0.0.1:$N8nPort/healthz"
 if (-not $n8nHealthy) {
     $n8nHealthy = Test-Http -Url "http://127.0.0.1:$N8nPort"
 }
+$openClawHealthy = $true
+if ($StartOpenClaw) {
+    $openClawHealthy = Test-Http -Url "http://127.0.0.1:$OpenClawGatewayPort/health"
+}
 
-if ($bridgeHealthy -and $browserHealthy -and $n8nHealthy) {
-    Write-Log "Healthy: bridge=$BridgePort browser=$BrowserPort n8n=$N8nPort"
+if ($bridgeHealthy -and $browserHealthy -and $n8nHealthy -and $openClawHealthy) {
+    Write-Log "Healthy: bridge=$BridgePort browser=$BrowserPort n8n=$N8nPort openclaw=$OpenClawGatewayPort"
     exit 0
 }
 
-Write-Log "Unhealthy: bridge=$bridgeHealthy browser=$browserHealthy n8n=$n8nHealthy. Restarting stack."
-Send-TelegramAlert -Level "WARN" -Text "Watchdog detected unhealthy stack. bridge=$bridgeHealthy browser=$browserHealthy n8n=$n8nHealthy. Restarting."
-Stop-Ports -Ports @($BridgePort, $BrowserPort, $N8nPort, $N8nTaskBrokerPort)
+Write-Log "Unhealthy: bridge=$bridgeHealthy browser=$browserHealthy n8n=$n8nHealthy openclaw=$openClawHealthy. Restarting stack."
+Send-TelegramAlert -Level "WARN" -Text "Watchdog detected unhealthy stack. bridge=$bridgeHealthy browser=$browserHealthy n8n=$n8nHealthy openclaw=$openClawHealthy. Restarting."
+Stop-Ports -Ports @($BridgePort, $BrowserPort, $N8nPort, $N8nTaskBrokerPort, $OpenClawGatewayPort, $OpenClawBridgePort)
 
 $startScript = Join-Path $ProjectRoot "workflows\n8n\start_n8n_local.ps1"
 if (-not (Test-Path $startScript)) {
@@ -145,6 +158,25 @@ $argsList = @(
     "-N8nTaskBrokerPort", "$N8nTaskBrokerPort",
     "-StartBrowserAgent"
 )
+if ($StartOpenClaw) {
+    $argsList += "-StartOpenClaw"
+    $argsList += "-OpenClawGatewayPort", "$OpenClawGatewayPort"
+    $argsList += "-OpenClawBridgePort", "$OpenClawBridgePort"
+    $argsList += "-OpenClawImage", "$OpenClawImage"
+    $argsList += "-OpenClawGatewayBind", "$OpenClawGatewayBind"
+    if ($OpenClawComposeFile) {
+        $argsList += "-OpenClawComposeFile", "$OpenClawComposeFile"
+    }
+    if ($OpenClawGatewayToken) {
+        $argsList += "-OpenClawGatewayToken", "$OpenClawGatewayToken"
+    }
+    if ($OpenClawConfigDir) {
+        $argsList += "-OpenClawConfigDir", "$OpenClawConfigDir"
+    }
+    if ($OpenClawWorkspaceDir) {
+        $argsList += "-OpenClawWorkspaceDir", "$OpenClawWorkspaceDir"
+    }
+}
 if ($ImportWorkflows) { $argsList += "-ImportWorkflows" }
 if ($PublishWorkflows) { $argsList += "-PublishWorkflows" }
 
@@ -157,13 +189,17 @@ $n8nHealthy = Test-Http -Url "http://127.0.0.1:$N8nPort/healthz"
 if (-not $n8nHealthy) {
     $n8nHealthy = Test-Http -Url "http://127.0.0.1:$N8nPort"
 }
+$openClawHealthy = $true
+if ($StartOpenClaw) {
+    $openClawHealthy = Test-Http -Url "http://127.0.0.1:$OpenClawGatewayPort/health"
+}
 
-if ($bridgeHealthy -and $browserHealthy -and $n8nHealthy) {
-    Write-Log "Recovery succeeded: bridge=$BridgePort browser=$BrowserPort n8n=$N8nPort"
-    Send-TelegramAlert -Level "INFO" -Text "Recovery succeeded. bridge=$BridgePort browser=$BrowserPort n8n=$N8nPort"
+if ($bridgeHealthy -and $browserHealthy -and $n8nHealthy -and $openClawHealthy) {
+    Write-Log "Recovery succeeded: bridge=$BridgePort browser=$BrowserPort n8n=$N8nPort openclaw=$OpenClawGatewayPort"
+    Send-TelegramAlert -Level "INFO" -Text "Recovery succeeded. bridge=$BridgePort browser=$BrowserPort n8n=$N8nPort openclaw=$OpenClawGatewayPort"
     exit 0
 }
 
-Write-Log "Recovery failed: bridge=$bridgeHealthy browser=$browserHealthy n8n=$n8nHealthy"
-Send-TelegramAlert -Level "ERROR" -Text "Recovery failed. bridge=$bridgeHealthy browser=$browserHealthy n8n=$n8nHealthy"
+Write-Log "Recovery failed: bridge=$bridgeHealthy browser=$browserHealthy n8n=$n8nHealthy openclaw=$openClawHealthy"
+Send-TelegramAlert -Level "ERROR" -Text "Recovery failed. bridge=$bridgeHealthy browser=$browserHealthy n8n=$n8nHealthy openclaw=$openClawHealthy"
 exit 1

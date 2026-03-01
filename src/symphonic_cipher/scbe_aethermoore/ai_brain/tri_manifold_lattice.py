@@ -38,6 +38,8 @@ from .unified_state import (
     safe_poincare_embed,
     _vec_norm as vector_norm,
 )
+from ..quasicrystal_lattice import QuasicrystalLattice
+from ..axiom_grouped.dual_mode_core import LANGUES_TENSOR_FIELDS, langues_metric_fields
 
 # ═══════════════════════════════════════════════════════════════
 # Constants
@@ -51,6 +53,8 @@ DEFAULT_WINDOW_MEMORY = 25
 DEFAULT_WINDOW_GOVERNANCE = 100
 
 MAX_LATTICE_DEPTH = 1000
+SPIN_DIMENSIONS = 4
+SPIN_COORD_COUNT = 1 << SPIN_DIMENSIONS
 
 
 @dataclass
@@ -82,6 +86,12 @@ class LatticeNode:
     harmonic_cost: float
     embedded_norm: float
     timestamp: float
+    spin_step: int = 0
+    spin_coordinate: Tuple[int, int, int, int] = (0, 0, 0, 0)
+    spin_gate: List[int] = field(default_factory=list)
+    quasi_valid: bool = True
+    quasi_perp_distance: float = 0.0
+    quad_tensor_fields: List[dict] = field(default_factory=list)
 
 
 @dataclass
@@ -95,6 +105,8 @@ class LatticeSnapshot:
     weights: TriadicWeights
     node_count: int
     drift_velocity: float
+    spin_cursor: int = 0
+    spin_coverage: float = 0.0
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -284,6 +296,89 @@ class TriManifoldLattice:
 
         self._nodes: List[LatticeNode] = []
         self._tick: int = 0
+        self._spin_cursor: int = 0
+        self._spin_coverage: List[bool] = [False] * SPIN_COORD_COUNT
+        self._spin_hits: List[Dict[str, object]] = []
+        self._quasicrystal = QuasicrystalLattice()
+
+    @staticmethod
+    def _spin_gray_code(n: int) -> int:
+        """4-bit Gray-code map for deterministic Hamiltonian-like traversal."""
+        return n ^ (n >> 1)
+
+    @staticmethod
+    def _spin_coordinate(step: int) -> Tuple[int, int, int, int]:
+        """Map spin step to 4D binary coordinate tuple."""
+        g = TriManifoldLattice._spin_gray_code(step)
+        return (
+            (g >> 0) & 1,
+            (g >> 1) & 1,
+            (g >> 2) & 1,
+            (g >> 3) & 1,
+        )
+
+    @staticmethod
+    def _spin_gate_from_coordinate(coord: Tuple[int, int, int, int]) -> List[int]:
+        """Map 4D spin coordinate into 6 gate dimensions (2 parity-derived channels)."""
+        b0, b1, b2, b3 = coord
+        return [b0, b1, b2, b3, b0 ^ b1, b2 ^ b3]
+
+    def _next_spin_pivot(self, step: int) -> Dict[str, object]:
+        """Return next pivot hit for this lattice node."""
+        coord = self._spin_coordinate(step)
+        gate = self._spin_gate_from_coordinate(coord)
+
+        qc = self._quasicrystal.map_gates_to_lattice(gate)
+        idx = step % SPIN_COORD_COUNT
+        self._spin_coverage[idx] = True
+
+        self._spin_hits.append(
+            {
+                "step": step,
+                "coord": coord,
+                "gate": gate,
+                "is_valid": qc.is_valid,
+                "perp_distance": qc.perp_distance,
+            }
+        )
+
+        tensor_fields = [
+            {
+                "tongue": f.tongue,
+                "r": f.r,
+                "base_metric": f.base_metric,
+                "diagonal_metric": f.diagonal_metric,
+                "coupling_mass": f.coupling_mass,
+                "gate_gain": f.gate_gain,
+            }
+            for f in langues_metric_fields(gate)
+        ]
+
+        return {
+            "spin_step": step,
+            "coord": coord,
+            "gate": gate,
+            "qcp": qc,
+            "tensor_fields": tensor_fields,
+            "index": idx,
+        }
+
+    def spin_coverage(self) -> float:
+        """Return fraction of 4D spin pivot nodes visited in current cycle."""
+        if not self._spin_coverage:
+            return 0.0
+        return sum(1 for hit in self._spin_coverage if hit) / len(self._spin_coverage)
+
+    def spin_probe(self) -> Dict[str, object]:
+        """Current spin traversal summary (state + diagnostics)."""
+        return {
+            "spin_cursor": self._spin_cursor,
+            "spin_coverage": self.spin_coverage(),
+            "next_coordinate": self._spin_coordinate(self._spin_cursor),
+            "next_gate": self._spin_gate_from_coordinate(self._spin_coordinate(self._spin_cursor)),
+            "total_hits": len(self._spin_hits),
+            "coverage_complete": self.spin_coverage() >= 1.0,
+        }
 
     def ingest(self, raw_state: List[float]) -> LatticeNode:
         """Ingest a new 21D state vector into the lattice.
@@ -313,9 +408,13 @@ class TriManifoldLattice:
         d_g = self._governance.average()
 
         d_tri = triadic_distance(d1, d2, d_g, self._weights)
+        pivot_step = self._spin_cursor
+        pivot = self._next_spin_pivot(pivot_step)
+        self._spin_cursor += 1
 
         h_scale = harmonic_scale(self._harmonic_dimensions, self._harmonic_r)
         h_cost = d_tri * h_scale
+        qc_point = pivot["qcp"]
 
         node = LatticeNode(
             tick=self._tick,
@@ -327,6 +426,12 @@ class TriManifoldLattice:
             harmonic_cost=h_cost,
             embedded_norm=embedded_norm,
             timestamp=time.time(),
+            spin_step=int(pivot_step),
+            spin_coordinate=pivot["coord"],
+            spin_gate=list(pivot["gate"]),
+            quasi_valid=bool(getattr(qc_point, "is_valid", True)),
+            quasi_perp_distance=float(getattr(qc_point, "perp_distance", 0.0)),
+            quad_tensor_fields=pivot["tensor_fields"],
         )
 
         self._nodes.append(node)
@@ -404,6 +509,8 @@ class TriManifoldLattice:
             weights=TriadicWeights(self._weights.immediate, self._weights.memory, self._weights.governance),
             node_count=len(self._nodes),
             drift_velocity=self.drift_velocity(),
+            spin_cursor=self._spin_cursor,
+            spin_coverage=self.spin_coverage(),
         )
 
     def verify_duality(self, d: int) -> Tuple[float, float, float]:

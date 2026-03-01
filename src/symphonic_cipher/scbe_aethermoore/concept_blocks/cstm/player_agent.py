@@ -425,6 +425,7 @@ class PlayerAgent:
                 choice=chosen,
                 stats=dict(self.stats),
                 personality=self.personality.vector,
+                available_choices=choices,
             )
             current = graph.get_scene(chosen.next_scene_id)
             steps += 1

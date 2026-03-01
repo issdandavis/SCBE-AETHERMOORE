@@ -5,6 +5,15 @@ param(
     [int]$BrowserPort = 8012,
     [int]$N8nPort = 5680,
     [int]$N8nTaskBrokerPort = 5681,
+    [switch]$StartOpenClaw,
+    [int]$OpenClawGatewayPort = 18789,
+    [int]$OpenClawBridgePort = 18790,
+    [string]$OpenClawImage = "openclaw:local",
+    [string]$OpenClawConfigDir = "",
+    [string]$OpenClawWorkspaceDir = "",
+    [string]$OpenClawGatewayBind = "lan",
+    [string]$OpenClawGatewayToken = "",
+    [string]$OpenClawComposeFile = "",
     [int]$WatchdogMinutes = 5,
     [string]$TaskPrefix = "SCBE-AgentStack"
 )
@@ -26,6 +35,14 @@ $watchdogName = "$TaskPrefix-Watchdog"
 
 $bootArgs = "-NoProfile -ExecutionPolicy Bypass -File `"$startScript`" -ProjectRoot `"$ProjectRoot`" -N8nUserFolder `"$N8nUserFolder`" -BridgePort $BridgePort -BrowserPort $BrowserPort -N8nPort $N8nPort -N8nTaskBrokerPort $N8nTaskBrokerPort -StartBrowserAgent"
 $watchdogArgs = "-NoProfile -ExecutionPolicy Bypass -File `"$watchdogScript`" -ProjectRoot `"$ProjectRoot`" -N8nUserFolder `"$N8nUserFolder`" -BridgePort $BridgePort -BrowserPort $BrowserPort -N8nPort $N8nPort -N8nTaskBrokerPort $N8nTaskBrokerPort"
+if ($StartOpenClaw) {
+    $bootArgs += " -StartOpenClaw -OpenClawGatewayPort $OpenClawGatewayPort -OpenClawBridgePort $OpenClawBridgePort -OpenClawImage $OpenClawImage -OpenClawGatewayBind $OpenClawGatewayBind"
+    $watchdogArgs += " -StartOpenClaw -OpenClawGatewayPort $OpenClawGatewayPort -OpenClawBridgePort $OpenClawBridgePort -OpenClawImage $OpenClawImage -OpenClawGatewayBind $OpenClawGatewayBind"
+    if ($OpenClawComposeFile) { $bootArgs += " -OpenClawComposeFile `"$OpenClawComposeFile`""; $watchdogArgs += " -OpenClawComposeFile `"$OpenClawComposeFile`"" }
+    if ($OpenClawGatewayToken) { $bootArgs += " -OpenClawGatewayToken `"$OpenClawGatewayToken`""; $watchdogArgs += " -OpenClawGatewayToken `"$OpenClawGatewayToken`"" }
+    if ($OpenClawConfigDir) { $bootArgs += " -OpenClawConfigDir `"$OpenClawConfigDir`""; $watchdogArgs += " -OpenClawConfigDir `"$OpenClawConfigDir`"" }
+    if ($OpenClawWorkspaceDir) { $bootArgs += " -OpenClawWorkspaceDir `"$OpenClawWorkspaceDir`""; $watchdogArgs += " -OpenClawWorkspaceDir `"$OpenClawWorkspaceDir`"" }
+}
 
 $registeredVia = "ScheduledTasks"
 try {

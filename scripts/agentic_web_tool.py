@@ -9,12 +9,14 @@ import hashlib
 import json
 import os
 import re
+from pathlib import Path
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib.parse import quote_plus
 from urllib.request import Request, urlopen
+
+from scripts.browser_autodoor import build_auto_door_headers
 
 
 @dataclass
@@ -29,8 +31,12 @@ class CaptureResult:
     warning: str | None = None
 
 
-def _http_fetch_html(url: str, timeout: int = 25) -> tuple[int | None, str]:
-    req = Request(url, headers={"User-Agent": "SCBE-Agentic-Web-Tool/1.0"})
+def _http_fetch_html(url: str, timeout: int = 25, *, intent: str = "agentic", action: str = "fetch") -> tuple[int | None, str]:
+    headers = {"User-Agent": "SCBE-Agentic-Web-Tool/1.0"}
+    decision = build_auto_door_headers(url, action=action, intent=intent)
+    headers.update(decision.headers)
+
+    req = Request(url, headers=headers)
     with urlopen(req, timeout=timeout) as response:
         html_bytes = response.read()
         status_code = getattr(response, "status", 200)
@@ -39,8 +45,14 @@ def _http_fetch_html(url: str, timeout: int = 25) -> tuple[int | None, str]:
     return status_code, html
 
 
-def _http_fetch(url: str, timeout: int = 25) -> CaptureResult:
-    status_code, html = _http_fetch_html(url, timeout=timeout)
+def _http_fetch(
+    url: str,
+    timeout: int = 25,
+    *,
+    intent: str = "agentic",
+    action: str = "fetch",
+) -> CaptureResult:
+    status_code, html = _http_fetch_html(url, timeout=timeout, intent=intent, action=action)
 
     title_match = re.search(r"<title[^>]*>(.*?)</title>", html, flags=re.I | re.S)
     title = title_match.group(1).strip() if title_match else url
@@ -68,13 +80,23 @@ def _http_fetch(url: str, timeout: int = 25) -> CaptureResult:
     )
 
 
-async def _playwright_capture(url: str, output_dir: Path, timeout_ms: int = 30000) -> CaptureResult:
+async def _playwright_capture(
+    url: str,
+    output_dir: Path,
+    timeout_ms: int = 30000,
+    *,
+    intent: str = "agentic",
+) -> CaptureResult:
     result: CaptureResult
     from playwright.async_api import async_playwright  # type: ignore
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
-        context = await browser.new_context(ignore_https_errors=True)
+        decision = build_auto_door_headers(url, action="playwright_capture", intent=intent)
+        context = await browser.new_context(
+            ignore_https_errors=True,
+            extra_http_headers=decision.headers,
+        )
         page = await context.new_page()
         response = await page.goto(url, timeout=timeout_ms, wait_until="domcontentloaded")
         title = await page.title()
@@ -107,21 +129,21 @@ async def _playwright_capture(url: str, output_dir: Path, timeout_ms: int = 3000
     return result
 
 
-def _capture_with_fallback(url: str, output_dir: Path, engine: str) -> CaptureResult:
+def _capture_with_fallback(url: str, output_dir: Path, engine: str, *, intent: str = "agentic") -> CaptureResult:
     if engine == "playwright":
         try:
-            return asyncio.run(_playwright_capture(url, output_dir))
+            return asyncio.run(_playwright_capture(url, output_dir, intent=intent))
         except Exception as exc:
-            capture = _http_fetch(url)
+            capture = _http_fetch(url, intent=intent, action="playwright_fallback")
             capture.method = "http-fallback"
             capture.warning = f"playwright_failed: {exc}"
             return capture
 
     if engine == "auto":
         try:
-            return asyncio.run(_playwright_capture(url, output_dir))
+            return asyncio.run(_playwright_capture(url, output_dir, intent=intent))
         except Exception:
-            return _http_fetch(url)
+            return _http_fetch(url, intent=intent, action="playwright_fallback")
 
     return _http_fetch(url)
 
@@ -190,6 +212,7 @@ def main() -> int:
 
     capture_parser = subparsers.add_parser("capture")
     capture_parser.add_argument("--url", required=True)
+    capture_parser.add_argument("--intent", default="agentic")
 
     args = parser.parse_args()
     output_dir = Path(args.output_dir)
@@ -202,7 +225,7 @@ def main() -> int:
 
     if args.command == "capture":
         os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", "0")
-        result = _capture_with_fallback(args.url, output_dir, args.engine)
+        result = _capture_with_fallback(args.url, output_dir, args.engine, intent=args.intent)
         output_path = _save_capture(output_dir, result)
         print(f"Capture output written to {output_path}")
         if result.screenshot_path:

@@ -13,5 +13,7 @@ if (-not (Test-Path $watchdogScript)) {
     -BridgePort 8002 `
     -BrowserPort 8012 `
     -N8nPort 5680 `
-    -N8nTaskBrokerPort 5681
-
+    -N8nTaskBrokerPort 5681 `
+    -StartOpenClaw `
+    -OpenClawGatewayPort 18789 `
+    -OpenClawBridgePort 18790

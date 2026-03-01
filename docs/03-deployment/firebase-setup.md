@@ -52,6 +52,32 @@ export FIREBASE_SERVICE_ACCOUNT_KEY='{"type":"service_account","project_id":"...
 python -m uvicorn api.main:app --port 8080
 ```
 
+## Local secret store (recommended for local laptop mode)
+
+Use SCBE's local tokenized secret store to avoid checking in plain-text JSON.
+
+Set these secret names before startup:
+
+- `FIREBASE_SERVICE_ACCOUNT_KEY`
+- `FIREBASE_CREDENTIALS_JSON`
+- `FIREBASE_PROJECT_ID`
+
+```python
+from src.security import set_secret
+
+set_secret("FIREBASE_SERVICE_ACCOUNT_KEY", "{\"type\":\"service_account\", ...}")
+set_secret("FIREBASE_PROJECT_ID", "studio-6928670609-fdd4c")
+```
+
+Connector behavior is:
+
+1. `FIREBASE_CREDENTIALS_PATH` (if set and file exists)
+2. `GOOGLE_APPLICATION_CREDENTIALS` (if set and file exists)
+3. `FIREBASE_SERVICE_ACCOUNT_KEY` / `FIREBASE_CREDENTIALS_JSON` (environment or local secret store)
+4. Firebase ADC (Cloud Run / GKE default credentials)
+
+See also: `docs/03-deployment/aethernet_firestore_schema.md`
+
 ---
 
 ## Verify Connection

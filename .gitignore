@@ -4,6 +4,13 @@
 # Performance test evidence files (hardware-specific)
 docs/evidence/*.json
 
+# Secrets (Firebase keys, service accounts, etc.)
+secrets/
+firebase-config.json
+**/firebase-config.json
+**/serviceAccountKey.json
+**/firebase-service-account.json
+
 # Python
 __pycache__/
 *.pyc
@@ -23,6 +30,7 @@ tests/test_artifacts/
 # Local generated images
 aethermoore_aqm.png
 aethermoore_soliton.png
+external/openclaw/
 
 # Node / frontend
 node_modules/
@@ -114,3 +122,28 @@ demo/tuxemon_src/
 demo/*.png
 training-data/audio/
 tmp_*.xml
+# Local runtime scratch and tool artifacts (keep off Git)
+.grok/
+.scbe/
+.scbe-gumroad-profile/
+.scbe/playwriter_session.json
+.tmp_*
+tmp_*.*
+.claude-plugins/
+tmp_import_check.py
+tmp_n8n_check.py
+tmp_n8n_error.py
+tmp_notion_access.txt
+tmp_notion_gap_refresh.json
+temp/
+.groq/
+tmp/
+pytest-cache-files-*/
+.n8n_local/
+.n8n_local_iso/
+.n8n_smoke_tmp/
+.n8n_workflow_validate_tmp/
+.deploy/
+# Large generated/local folders
+training-data/polly_logs/
+training/intake/web_research/*.jsonl

@@ -34,6 +34,7 @@ except ImportError:
 PHI = (1 + np.sqrt(5)) / 2  # Golden ratio ≈ 1.618
 EPS = 1e-10
 EPSILON_COUPLING = 0.05  # Langues coupling constant
+LANGUES_TENSOR_FIELDS = ("KO", "AV", "RU", "CA", "UM", "DR")
 
 
 class HarmonicMode(Enum):
@@ -59,6 +60,22 @@ class DualModeConfig:
     d_sq_clamp: float = 50.0  # Only used in BOUNDED mode
     epsilon_coupling: float = EPSILON_COUPLING
     langues_enabled: bool = True
+
+
+@dataclass
+class LanguesMetricField:
+    """Per-axis tensor metadata emitted for 6-language governance telemetry.
+
+    The 6 sacred tongue axes are emitted in canonical order:
+    KO, AV, RU, CA, UM, DR.
+    """
+
+    tongue: str
+    r: float
+    base_metric: float
+    diagonal_metric: float
+    coupling_mass: float
+    gate_gain: float
 
 
 # ============================================================================
@@ -203,6 +220,66 @@ def build_langues_metric_tensor(
     return G_L
 
 
+def build_langues_metric_fields(
+    r: np.ndarray, G_0: Optional[np.ndarray] = None, epsilon: float = EPSILON_COUPLING
+) -> Tuple[np.ndarray, Dict[str, float], list[LanguesMetricField]]:
+    """
+    Build Langues tensor and return array + diagnostics + per-axis fields.
+
+    Returns:
+        (
+            metric_tensor: np.ndarray,
+            summary: Dict[str, float],
+            fields: List[LanguesMetricField]
+        )
+    """
+    r_vec = np.array(r, dtype=float).flatten()
+    G_L = build_langues_metric_tensor(r_vec, G_0=G_0, epsilon=epsilon)
+
+    if G_0 is None:
+        if G_L.shape[0] <= 6:
+            G_0 = np.diag([1, 1, 1, PHI, PHI**2, PHI**3][: G_L.shape[0]])
+        else:
+            diag = []
+            for i in range(G_L.shape[0]):
+                if i < 3:
+                    diag.append(1.0)
+                else:
+                    diag.append(PHI ** (i - 2))
+            G_0 = np.diag(diag)
+
+    is_pd, min_eig = verify_langues_positive_definite(r_vec, epsilon=epsilon)
+    fields: list[LanguesMetricField] = []
+    for i, tongue in enumerate(LANGUES_TENSOR_FIELDS):
+        if i >= len(r_vec):
+            break
+
+        row_abs = float(np.sum(np.abs(np.delete(G_L[i], i))))
+        base = float(G_0[i, i]) if i < G_0.shape[0] else 1.0
+        diag = float(G_L[i, i])
+        gate_gain = diag / base if base else 0.0
+        fields.append(
+            LanguesMetricField(
+                tongue=tongue,
+                r=float(r_vec[i]),
+                base_metric=base,
+                diagonal_metric=diag,
+                coupling_mass=row_abs,
+                gate_gain=gate_gain,
+            )
+        )
+
+    summary = {
+        "rank": float(G_L.shape[0]),
+        "is_positive_definite": float(is_pd),
+        "min_eigenvalue": float(min_eig),
+        "determinant": float(np.linalg.det(G_L)),
+        "condition_number": float(np.linalg.cond(G_L)),
+        "r_norm": float(np.linalg.norm(r_vec)),
+    }
+    return G_L, summary, fields
+
+
 def langues_distance(
     x: np.ndarray, mu: np.ndarray, r: np.ndarray, epsilon: float = EPSILON_COUPLING
 ) -> float:
@@ -233,6 +310,14 @@ def langues_distance(
 
     d_sq = diff.T @ G_L @ diff
     return float(np.sqrt(max(0, d_sq)))
+
+
+def langues_metric_fields(
+    r: np.ndarray, epsilon: float = EPSILON_COUPLING
+) -> list[LanguesMetricField]:
+    """Convenience: return only the canonical langue field diagnostics."""
+    _, _, fields = build_langues_metric_fields(np.array(r, dtype=float), epsilon=epsilon)
+    return fields
 
 
 def verify_langues_positive_definite(

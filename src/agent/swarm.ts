@@ -132,6 +132,35 @@ export function hyperbolicCentroid(
   return centroid;
 }
 
+/** Clamp a Poincaré position into the open unit ball. */
+function clampToPoincareBall(pos: PoincarePosition): PoincarePosition {
+  const norm = poincareNorm(pos);
+  if (norm <= 0 || norm < 0.999) {
+    return pos;
+  }
+
+  const scale = 0.999 / norm;
+  return {
+    x: pos.x * scale,
+    y: pos.y * scale,
+    z: pos.z * scale,
+  };
+}
+
+/** Options for dynamic tri-point centroid selection. */
+export interface TriPointCentroidConfig {
+  /** Number of trusted points used for centroid (default: 3). */
+  neighborCount?: number;
+  /** Minimum coherence to consider an agent trusted in centroid calc. */
+  minTrustCoherence?: number;
+  /** Optional oscillation amplitude in Poincaré coordinates. */
+  oscillationAmplitude?: number;
+  /** Oscillation frequency in Hz. */
+  oscillationFrequencyHz?: number;
+  /** Optional fixed timestamp override for deterministic tests. */
+  timestampMs?: number;
+}
+
 // ============================================================================
 // Swarm Formation
 // ============================================================================
@@ -239,6 +268,19 @@ export function createFormationTarget(
 export class SwarmCoordinator {
   private agents: Map<string, Agent> = new Map();
   private formation: 'dispersed' | 'convergent' | 'ring' | 'custom' = 'dispersed';
+  private triPointCentroidConfig: TriPointCentroidConfig = {
+    neighborCount: 3,
+    minTrustCoherence: MIN_COHERENCE_THRESHOLD,
+    oscillationAmplitude: 0.008,
+    oscillationFrequencyHz: 0.08,
+  };
+
+  constructor(config: TriPointCentroidConfig = {}) {
+    this.triPointCentroidConfig = {
+      ...this.triPointCentroidConfig,
+      ...config,
+    };
+  }
 
   /**
    * Add agent to swarm
@@ -274,10 +316,7 @@ export class SwarmCoordinator {
     const agentList = Array.from(this.agents.values());
     const activeAgents = agentList.filter((a) => a.status === 'active' || a.status === 'degraded');
 
-    const centroid = hyperbolicCentroid(
-      activeAgents.map((a) => a.position),
-      activeAgents.map((a) => a.weight)
-    );
+    const centroid = this.computeDynamicCentroid(activeAgents);
 
     const totalCoherence = activeAgents.reduce((sum, a) => sum + a.coherence, 0);
     const avgCoherence = activeAgents.length > 0 ? totalCoherence / activeAgents.length : 0;
@@ -289,6 +328,54 @@ export class SwarmCoordinator {
       averageCoherence: avgCoherence,
       lastUpdate: Date.now(),
     };
+  }
+
+  /** Compute dynamic tri-point centroid with trust filter and breathing oscillation. */
+  private computeDynamicCentroid(activeAgents: Agent[]): PoincarePosition {
+    if (activeAgents.length === 0) {
+      return { x: 0, y: 0, z: 0 };
+    }
+
+    const {
+      neighborCount = 3,
+      minTrustCoherence = MIN_COHERENCE_THRESHOLD,
+    } = this.triPointCentroidConfig;
+
+    const trusted = activeAgents
+      .filter((agent) => agent.coherence >= minTrustCoherence)
+      .sort((a, b) => b.coherence - a.coherence);
+
+    const baseline = trusted.length >= 1 ? trusted : activeAgents;
+    const selected = baseline.slice(0, Math.max(1, Math.min(neighborCount, baseline.length)));
+
+    const centroidSeed = hyperbolicCentroid(
+      selected.map((agent) => agent.position),
+      selected.map((agent) => agent.weight)
+    );
+
+    return this.applyCentroidOscillation(centroidSeed);
+  }
+
+  /** Add a small periodic breathing vector to avoid static manifolds. */
+  private applyCentroidOscillation(position: PoincarePosition): PoincarePosition {
+    const {
+      oscillationAmplitude = 0,
+      oscillationFrequencyHz = 0.05,
+      timestampMs = Date.now(),
+    } = this.triPointCentroidConfig;
+
+    if (oscillationAmplitude <= 0 || oscillationFrequencyHz <= 0) {
+      return position;
+    }
+
+    const phase = (2 * Math.PI * oscillationFrequencyHz * timestampMs) / 1000;
+    const shifted = {
+      x: position.x + oscillationAmplitude * Math.sin(phase),
+      y: position.y + oscillationAmplitude * Math.cos(phase),
+      z: position.z + oscillationAmplitude * Math.sin(phase * 0.75),
+    };
+
+    return clampToPoincareBall(shifted);
   }
 
   /**

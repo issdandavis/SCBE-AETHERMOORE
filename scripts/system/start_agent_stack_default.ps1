@@ -14,5 +14,7 @@ if (-not (Test-Path $startScript)) {
     -BrowserPort 8012 `
     -N8nPort 5680 `
     -N8nTaskBrokerPort 5681 `
-    -StartBrowserAgent
-
+    -StartBrowserAgent `
+    -StartOpenClaw `
+    -OpenClawGatewayPort 18789 `
+    -OpenClawBridgePort 18790

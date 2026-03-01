@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import json
 import math
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple
@@ -379,13 +380,16 @@ class KernelExtractor:
         tree = DecisionTree(agent_id=record.agent_id)
         for pt in record.playthroughs:
             for step in pt.steps:
-                # Reconstruct alternatives (all choices minus the chosen one)
-                # We don't have the full list here, but we store the chosen choice
+                # Build alternatives from stored available_choices minus the chosen one
+                alternatives = [
+                    c for c in step.available_choices
+                    if c.choice_id != step.choice.choice_id
+                ]
                 tree.add_node(DecisionNode(
                     scene_id=step.scene_id,
                     story_id=pt.story_id,
                     chosen=step.choice,
-                    alternatives=[],
+                    alternatives=alternatives,
                     personality_at_decision=step.personality_snapshot or agent.personality.vector,
                     stats_at_decision=step.stats_snapshot,
                 ))
@@ -416,7 +420,3 @@ class KernelExtractor:
             final_stats=dict(agent.stats),
             graduation_scores=record.graduation_score or {},
         )
-
-
-# Need time for default timestamp
-import time

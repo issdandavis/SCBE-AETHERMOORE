@@ -42,6 +42,12 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 
+from scripts.browser_autodoor import (
+    AUTODOOR_INTENT,
+    AutoDoorDecision,
+    build_auto_door_headers,
+)
+
 logger = logging.getLogger("scbe.headless_browser")
 
 
@@ -171,6 +177,13 @@ class HeadlessBrowser:
         self._pw = None
         self._browser = None
         self._page = None
+        self._last_door_decision = AutoDoorDecision(
+            matched_key=False,
+            has_secret=False,
+            headers={},
+            api_key_hint="",
+            context={},
+        )
 
     async def __aenter__(self):
         await self.start()
@@ -195,6 +208,29 @@ class HeadlessBrowser:
         self._page = await context.new_page()
         self._page.set_default_timeout(self.timeout_ms)
         self._page.set_default_navigation_timeout(self.timeout_ms)
+
+        # Keep the request authorization decision for diagnostics.
+        self._last_door_decision = AutoDoorDecision(
+            matched_key=False,
+            has_secret=False,
+            headers={},
+            api_key_hint="",
+            context={},
+        )
+
+    def _apply_auto_door(self, url: str, action: str, intent: str | None = None) -> Dict[str, str]:
+        decision = build_auto_door_headers(url, action=action, intent=intent or AUTODOOR_INTENT)
+        self._last_door_decision = decision
+        if decision.headers and self._page and self._page.context:
+            self._page.context.set_default_timeout(self.timeout_ms)
+            # Context headers are set for subsequent requests and kept as-is until next navigation.
+            # No-op when there are no headers.
+            self._page.context.set_extra_http_headers(decision.headers)
+        return decision.headers
+
+    @property
+    def last_door_decision(self) -> AutoDoorDecision:
+        return self._last_door_decision
 
     async def stop(self):
         """Shut down the browser."""
@@ -222,10 +258,11 @@ class HeadlessBrowser:
 
     # -- Core actions -------------------------------------------------------
 
-    async def navigate(self, url: str, wait_until: str = "domcontentloaded") -> BrowserResult:
+    async def navigate(self, url: str, wait_until: str = "domcontentloaded", *, intent: str | None = None) -> BrowserResult:
         """Navigate to a URL and return the final URL."""
         t0 = time.perf_counter()
         try:
+            self._apply_auto_door(url, "navigate", intent=intent)
             resp = await self.page.goto(url, wait_until=wait_until)
             status = resp.status if resp else None
             return BrowserResult(
@@ -422,6 +459,7 @@ Examples:
     parser.add_argument("--output", default=None, help="Output file path (for screenshot/pdf)")
     parser.add_argument("--full-page", action="store_true", help="Full page screenshot")
     parser.add_argument("--govern", action="store_true", help="Run SCBE governance scan on content")
+    parser.add_argument("--intent", default=AUTODOOR_INTENT, help="Time-intent label for automatic auth doors")
     parser.add_argument("--headed", action="store_true", help="Run with visible browser")
     parser.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT_MS, help="Timeout in ms")
     parser.add_argument("--json", action="store_true", dest="json_output", help="Output as JSON")
@@ -435,9 +473,10 @@ async def run_cli(args: argparse.Namespace) -> BrowserResult:
     async with HeadlessBrowser(
         headless=not args.headed,
         timeout_ms=args.timeout,
+        # intent is passed to navigate and captured in auto-door headers.
     ) as browser:
         # Navigate first
-        nav_result = await browser.navigate(args.url)
+        nav_result = await browser.navigate(args.url, intent=args.intent)
         if not nav_result.success:
             return nav_result
 

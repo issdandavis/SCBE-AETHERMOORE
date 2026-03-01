@@ -19,6 +19,8 @@
 | Feb 27, 2026 | Theory doc claims extracted | Internal | ~90 claims (12 sets) | DRAFT — Not filed |
 | Feb 27, 2026 | Attorney-ready 21 claims drafted | Internal | 21 claims (11 ind + 10 dep) | DRAFT — Not filed |
 | Feb 27, 2026 | Quasicrystal auth claims drafted | Internal | 11 claims | DRAFT — Not filed |
+| Feb 28, 2026 | **P6 Harmonic Cryptography** drafted | P6-HARMONIC-CRYPTO | 25 claims (5 ind + 20 dep) | DRAFT — Standalone filing recommended |
+| **April 19, 2026** | **Missing Parts DEADLINE** | USPTO #63/961,403 | PTO/SB/15A + $82 | **HARD DEADLINE** |
 | **Jan 15, 2027** | **Non-Provisional DEADLINE** | — | — | **HARD DEADLINE** |
 
 **Critical**: Everything after Jan 15, 2026 that introduces NEW matter (not in the original provisional) requires either a CIP filing or a new provisional to establish priority.
@@ -45,6 +47,46 @@
 | Living Metric | Not present | Not present | Implemented | NEW MATTER |
 | AAOE | Not present | Not present | Implemented | NEW MATTER |
 | GeoSeed Network | Not present | Not present | Implemented | NEW MATTER |
+| **Harmonic Crypto (P6)** | Partial (A-3 Harmonic Cipher) | Not present | Drafted (25 claims) | NEW MATTER — standalone filing recommended |
+
+---
+
+## P6: HARMONIC CRYPTOGRAPHY — Implementation Evidence Map
+
+**Document**: `docs/patent/PATENT_6_HARMONIC_CRYPTOGRAPHY.md`
+**Claims**: 25 (5 independent + 20 dependent)
+**Filing**: Standalone provisional recommended (Option A)
+**Estimated Value**: $300K-$800K
+
+### Enablement Evidence (35 USC 112)
+
+| P6 Claim | SCBE Implementation | File | Layer |
+|----------|-------------------|------|-------|
+| Claim 1 (Ring Cipher) | Harmonic ratios in TONGUE_FREQUENCIES | `src/symphonic_cipher/.../langues_metric.py` | L3-4 |
+| Claim 2-3 (6 Rings = 6 Tongues) | Sacred Tongue 6-domain encoding | `src/harmonic/languesMetric.ts` | L3-4 |
+| Claim 4 (XOR Combination) | Feistel Network XOR rounds | `src/symphonic/Feistel.ts` | L1 |
+| Claim 6 (Spiral Key Gen) | Spiral seal + harmonic key stretch | `src/symphonic_cipher/.../pqc/pqc_harmonic.py` | L12 |
+| Claim 10 (PQC Integration) | ML-KEM-768 + harmonic key material | `src/symphonic_cipher/.../pqc/pqc_harmonic.py` | L12 |
+| Claim 11 (Voice Leading) | Phase-shifted deviation + cost function | `langues_metric.py` L_phase_shift() | L9-10 |
+| Claim 16 (Counterpoint) | Multi-agent fleet governance | `src/fleet/` + AAOE task_monitor | L13 |
+| Claim 21 (Integrated System) | Full 14-layer pipeline | `src/harmonic/pipeline14.ts` | L1-14 |
+| Claim 22 (ML-DSA) | ML-DSA-65 signature module | `src/crypto/` | L12 |
+| Claim 23 (ML-KEM) | ML-KEM-768 encapsulation | `src/crypto/` | L12 |
+| Claim 24 (Sacred Languages) | Sacred Tongue domain classifier | `languesMetric.ts` | L3-4 |
+| Claim 25 (Blockchain) | Combat blockchain + context ledger | `demo/tuxemon_src/mods/aethermoor/combat_blockchain.py` | L14 |
+
+### Content Spin Pipeline Evidence
+
+`scripts/content_spin.py` lines 46-55 — HARMONIC_RATIOS dict with exact ratios from P6 Claims 1-3:
+- unison=1.0, minor_third=6/5, major_third=5/4, perfect_fourth=4/3
+- perfect_fifth=3/2, minor_sixth=8/5, major_sixth=5/3, octave=2.0
+
+### What Still Needs Building (for full enablement)
+
+1. **Ring Rotation Cipher**: Dedicated class that rotates cipher rings by harmonic ratio products
+2. **Circle of Fifths Spiral**: Key generator using Pythagorean comma (531441:524288) drift
+3. **Voice Leading Optimizer**: Hamming-distance-minimizing state transition selector
+4. **Counterpoint Coordinator**: Multi-agent harmony score with parallel motion detection
 
 ---
 

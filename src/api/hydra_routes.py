@@ -14,6 +14,7 @@ from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Header
 from pydantic import BaseModel, Field
+from src.security.secret_store import get_api_key_map
 
 
 # ============================================================================
@@ -88,12 +89,7 @@ def get_spine():
 # AUTH (mirrors main.py verify_api_key)
 # ============================================================================
 
-# Import at module level is safe; the dict is defined in main.py and we
-# re-use the same validation logic here without coupling tightly.
-VALID_API_KEYS = {
-    "demo_key_12345": "demo_user",
-    "pilot_key_67890": "pilot_customer",
-}
+VALID_API_KEYS = get_api_key_map() or {"demo_key_12345": "demo_user", "pilot_key_67890": "pilot_customer"}
 
 
 async def verify_api_key(x_api_key: str = Header(...)):

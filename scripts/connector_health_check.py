@@ -19,6 +19,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from src.security.secret_store import get_secret
+
 
 VALID_CHECKS = (
     "github",
@@ -90,7 +92,7 @@ def _request_json(
 
 def _pick_env(*keys: str) -> tuple[str, str]:
     for key in keys:
-        value = os.getenv(key, "").strip()
+        value = get_secret(key, "").strip()
         if value:
             return key, value
     return "", ""

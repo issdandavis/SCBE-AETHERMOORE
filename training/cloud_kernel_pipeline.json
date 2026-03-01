@@ -20,6 +20,9 @@
     "training/intake/google_business/*.jsonl",
     "training/intake/zapier/*.jsonl",
     "training/intake/web_research/*.jsonl",
+    "training/intake/copilot/podcasts/*.jsonl",
+    "training/intake/suno/*.jsonl",
+    "training/intake/podcast/*.jsonl",
     "training/intake/**/*.json"
   ],
   "thresholds": {

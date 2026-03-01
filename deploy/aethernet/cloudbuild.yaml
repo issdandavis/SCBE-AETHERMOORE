@@ -1,0 +1,67 @@
+# =============================================================================
+# AetherNet AI Social Platform — Cloud Build Configuration
+# =============================================================================
+# Trigger manually:
+#   gcloud builds submit --config deploy/aethernet/cloudbuild.yaml \
+#       --project issac-ai-vtfqup .
+# =============================================================================
+
+steps:
+  # Step 1: Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/aethernet:latest'
+      - '-f'
+      - 'deploy/aethernet/Dockerfile'
+      - '.'
+    timeout: '900s'
+
+  # Step 2: Push to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/aethernet:latest'
+
+  # Step 3: Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'aethernet'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/aethernet:latest'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '8300'
+      - '--memory'
+      - '1Gi'
+      - '--cpu'
+      - '1'
+      - '--min-instances'
+      - '0'
+      - '--max-instances'
+      - '10'
+      - '--timeout'
+      - '300'
+      - '--concurrency'
+      - '80'
+      - '--set-env-vars'
+      - 'FIREBASE_PROJECT_ID=studio-6928670609-fdd4c,SCBE_ENV=production,PYTHONUNBUFFERED=1'
+      - '--set-secrets'
+      - 'FIREBASE_SERVICE_ACCOUNT_KEY=firebase-service-account-json:latest,SCBE_API_KEYS=scbe-api-keys:latest'
+
+images:
+  - 'gcr.io/$PROJECT_ID/aethernet:latest'
+
+timeout: '900s'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_HIGHCPU_8'

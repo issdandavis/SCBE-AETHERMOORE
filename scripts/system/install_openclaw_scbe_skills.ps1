@@ -12,6 +12,18 @@ if ([string]::IsNullOrWhiteSpace($OpenClawSkillsDir)) {
 }
 
 $sourceRoot = Join-Path $RepoRoot "external\openclaw\skills"
+$bootstrapScript = Join-Path $RepoRoot "scripts\system\bootstrap_openclaw_sources.ps1"
+if (-not (Test-Path $sourceRoot)) {
+    if (Test-Path $bootstrapScript) {
+        & $bootstrapScript -ProjectRoot $RepoRoot -OpenClawSourceDir (Join-Path $RepoRoot "external\openclaw")
+    } else {
+        throw "Missing source skill path: $sourceRoot"
+    }
+}
+if (-not (Test-Path $sourceRoot)) {
+    throw "Missing source skill path after bootstrap: $sourceRoot"
+}
+
 $skillNames = @(
     "scbe-hydra-armor",
     "scbe-internet-navigation-lanes",

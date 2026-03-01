@@ -23,15 +23,23 @@ Use isolated service ports to avoid collisions with legacy local processes:
 - n8n task broker: `5681`
 - bridge: `8002`
 - browser agent: `8012`
+- OpenClaw Gateway: `18789`
+- OpenClaw Bridge: `18790`
 - user folder: `.n8n_local_iso`
 
 ### Start stack once
 ```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\system\bootstrap_openclaw_sources.ps1
+
+# first run / repair
 powershell -NoProfile -ExecutionPolicy Bypass -File workflows\n8n\start_n8n_local.ps1 `
   -ProjectRoot C:\Users\issda\SCBE-AETHERMOORE `
   -N8nUserFolder C:\Users\issda\SCBE-AETHERMOORE\.n8n_local_iso `
   -BridgePort 8002 -BrowserPort 8012 -N8nPort 5680 -N8nTaskBrokerPort 5681 `
-  -StartBrowserAgent
+  -StartBrowserAgent `
+  -StartOpenClaw `
+  -OpenClawGatewayPort 18789 `
+  -OpenClawBridgePort 18790
 ```
 
 ### Register background auto-start + watchdog
@@ -40,6 +48,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\system\register_agen
   -ProjectRoot C:\Users\issda\SCBE-AETHERMOORE `
   -N8nUserFolder C:\Users\issda\SCBE-AETHERMOORE\.n8n_local_iso `
   -BridgePort 8002 -BrowserPort 8012 -N8nPort 5680 -N8nTaskBrokerPort 5681 `
+  -StartOpenClaw `
+  -OpenClawGatewayPort 18789 `
+  -OpenClawBridgePort 18790 `
   -WatchdogMinutes 5
 ```
 
@@ -48,7 +59,15 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\system\register_agen
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\system\watchdog_agent_stack.ps1 `
   -ProjectRoot C:\Users\issda\SCBE-AETHERMOORE `
   -N8nUserFolder C:\Users\issda\SCBE-AETHERMOORE\.n8n_local_iso `
-  -BridgePort 8002 -BrowserPort 8012 -N8nPort 5680 -N8nTaskBrokerPort 5681
+  -BridgePort 8002 -BrowserPort 8012 -N8nPort 5680 -N8nTaskBrokerPort 5681 `
+  -StartOpenClaw -OpenClawGatewayPort 18789 -OpenClawBridgePort 18790
+```
+
+Optional OpenClaw env overrides (before startup):
+```powershell
+$env:OPENCLAW_CONFIG_DIR = "$env:USERPROFILE\\.openclaw"
+$env:OPENCLAW_WORKSPACE_DIR = "$env:OPENCLAW_CONFIG_DIR\\workspace"
+$env:OPENCLAW_GATEWAY_TOKEN = "replace-with-strong-token"
 ```
 
 ### Telegram incident alerts (recommended)
@@ -63,7 +82,8 @@ Then run watchdog normally. On restart/failure events it will send Telegram aler
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\system\watchdog_agent_stack.ps1 `
   -ProjectRoot C:\Users\issda\SCBE-AETHERMOORE `
   -N8nUserFolder C:\Users\issda\SCBE-AETHERMOORE\.n8n_local_iso `
-  -BridgePort 8002 -BrowserPort 8012 -N8nPort 5680 -N8nTaskBrokerPort 5681
+  -BridgePort 8002 -BrowserPort 8012 -N8nPort 5680 -N8nTaskBrokerPort 5681 `
+  -StartOpenClaw -OpenClawGatewayPort 18789 -OpenClawBridgePort 18790
 ```
 
 ## Cloud 24x7 Runtime (Production)

@@ -38,6 +38,7 @@ from src.crypto.rwp_v3 import RWPv3Protocol, RWPEnvelope
 from src.crypto.sacred_tongues import SacredTongueTokenizer
 from src.storage import BlobNotFoundError, SealedBlobRecord, get_storage_backend
 from src.api.hydra_routes import hydra_router, init_hydra_spine
+from src.security.secret_store import get_api_key_map, get_secret
 
 try:
     from src.api.mesh_routes import mesh_router
@@ -350,10 +351,17 @@ CONNECTOR_TEMPLATES: List[Dict[str, Any]] = [
 # AUTH
 # ============================================================================
 
-VALID_API_KEYS = {
-    "demo_key_12345": "demo_user",
-    "pilot_key_67890": "pilot_customer",
-}
+def _load_api_keys() -> Dict[str, str]:
+    keyring = get_api_key_map()
+    if keyring:
+        return keyring
+    return {
+        "demo_key_12345": "demo_user",
+        "pilot_key_67890": "pilot_customer",
+    }
+
+
+VALID_API_KEYS = _load_api_keys()
 
 
 async def verify_api_key(x_api_key: str = Header(...)):
@@ -462,7 +470,7 @@ def _next_pending_step(record: Dict[str, Any]) -> Optional[int]:
 
 def _sign_connector_payload(payload: Dict[str, Any]) -> tuple[str, str]:
     ts = str(int(time.time()))
-    signing_key = os.getenv("SCBE_CONNECTOR_SIGNING_KEY", "").encode("utf-8")
+    signing_key = get_secret("SCBE_CONNECTOR_SIGNING_KEY", "").encode("utf-8")
     body = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     if not signing_key:
         return ts, ""

@@ -10,6 +10,9 @@ Place raw exports from operational systems here.
 - `gumroad/*.jsonl`
 - `google_business/*.jsonl`
 - `zapier/*.jsonl`
+- `copilot/podcasts/*.jsonl` (Microsoft Copilot / Teams podcast transcripts)
+- `suno/*.jsonl`
+- `podcast/*.jsonl`
 - Any nested `*.json` under `training/intake/`
 
 ## Minimal Record Shape

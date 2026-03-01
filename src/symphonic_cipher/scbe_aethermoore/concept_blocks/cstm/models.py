@@ -11,7 +11,6 @@ Pure Python — no external dependencies.
 
 from __future__ import annotations
 
-import math
 from collections import deque
 from dataclasses import dataclass, field
 from enum import Enum
@@ -313,6 +312,7 @@ class PlaythroughStep:
     choice: Choice
     stats_snapshot: Dict[str, float] = field(default_factory=dict)
     personality_snapshot: Optional[List[float]] = None
+    available_choices: List[Choice] = field(default_factory=list)
 
 
 @dataclass
@@ -328,12 +328,14 @@ class PlaythroughRecord:
 
     def add_step(self, scene_id: str, choice: Choice,
                  stats: Optional[Dict[str, float]] = None,
-                 personality: Optional[List[float]] = None) -> None:
+                 personality: Optional[List[float]] = None,
+                 available_choices: Optional[List[Choice]] = None) -> None:
         self.steps.append(PlaythroughStep(
             scene_id=scene_id,
             choice=choice,
             stats_snapshot=dict(stats) if stats else {},
             personality_snapshot=personality,
+            available_choices=list(available_choices) if available_choices else [],
         ))
 
     def finalize(self, personality: List[float], stats: Dict[str, float]) -> None:

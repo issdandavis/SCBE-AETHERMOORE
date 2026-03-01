@@ -41,6 +41,7 @@ Built on the Poincare ball model with bounded harmonic scaling and post-quantum 
 | [Sacred Tongue](SACRED_TONGUE_SPECTRAL_MAP) | Neurotransmitter-weighted language processing |
 | [API Reference](API) | FastAPI endpoints for SaaS deployment |
 | [Technical Reference](TECHNICAL_REFERENCE) | Governance tiers, harmonic scaling math |
+| [Local Secret Store](ops/LOCAL_SECRET_STORE) | Local tokenized secret lookup for API keys and connector signing |
 
 ---
 

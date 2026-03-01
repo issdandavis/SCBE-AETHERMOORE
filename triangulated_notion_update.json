@@ -1,16 +1,157 @@
 {
   "name": "Triangulated Notion Update",
   "nodes": [
-    {"id":"1","name":"Incoming Item","type":"n8n-nodes-base.noOp","typeVersion":1,"position":[200,300]},
-    {"id":"2","name":"Pivot Classifier","type":"n8n-nodes-base.code","typeVersion":2,"position":[420,200],"parameters":{"language":"javascript","code":"const title = $json.title || '';\nconst text = `${title} ${$json.summary||''}`.toLowerCase();\nconst topics = [ ['ai','ml','model','llm','prompt','gpt'], ['security','cyber','vuln','exploit','threat'], ['programming','code','dev','framework','api'], ['product','release','roadmap','feature'], ['research','paper','study','benchmark'] ];\nconst labels = ['AI','Cybersecurity','Programming','Product','Research'];\nlet best = 'Misc';\nfor (let i=0;i<topics.length;i++) { if (topics[i].some(k=>text.includes(k))) { best = labels[i]; break; } }\nreturn [{ ...$json, pivot: best }];"}},
-    {"id":"3","name":"Intent to Sacred Language","type":"n8n-nodes-base.code","typeVersion":2,"position":[420,400],"parameters":{"language":"javascript","code":"const map = { informational:'Verdant', urgent:'Ember', research:'Abyssal', opinion:'Prismata' };\nconst intent = ($json.intent || 'informational').toLowerCase();\nreturn [{ ...$json, language: map[intent] || 'Verdant' }];"}},
-    {"id":"4","name":"Hash Summary","type":"n8n-nodes-base.code","typeVersion":2,"position":[640,300],"parameters":{"language":"javascript","code":"const crypto = require('crypto');\nconst payload = `${$json.summary||''}|${$json.url||''}|${$json.pivot||''}|${$json.language||''}`;\nreturn [{ ...$json, hash: crypto.createHash('sha256').update(payload).digest('hex') }];"}},
-    {"id":"5","name":"Update Notion","type":"n8n-nodes-base.notion","typeVersion":1,"position":[880,300],"credentials":{"notionApi":{"id":"__YOUR_CRED_ID__","name":"Notion"}},"parameters":{"operation":"update","pageId":"={{ \$json.id }}","propertiesUi":{"propertyValues":[{"key":"Duplicate","type":"checkbox","value":true},{"key":"Pivot","type":"select","value":"={{$json.pivot}}"},{"key":"Language","type":"select","value":"={{$json.language}}"},{"key":"Summary","type":"richText","value":"={{$json.summary}}"},{"key":"Hash","type":"richText","value":"={{$json.hash}}"}]}}}
+    {
+      "id": "1",
+      "name": "Incoming Item",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "id": "2",
+      "name": "Pivot Classifier",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        420,
+        200
+      ],
+      "parameters": {
+        "language": "javascript",
+        "code": "const title = $json.title || '';\nconst text = `${title} ${$json.summary||''}`.toLowerCase();\nconst topics = [ ['ai','ml','model','llm','prompt','gpt'], ['security','cyber','vuln','exploit','threat'], ['programming','code','dev','framework','api'], ['product','release','roadmap','feature'], ['research','paper','study','benchmark'] ];\nconst labels = ['AI','Cybersecurity','Programming','Product','Research'];\nlet best = 'Misc';\nfor (let i=0;i<topics.length;i++) { if (topics[i].some(k=>text.includes(k))) { best = labels[i]; break; } }\nreturn [{ ...$json, pivot: best }];"
+      }
+    },
+    {
+      "id": "3",
+      "name": "Intent to Sacred Language",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        420,
+        400
+      ],
+      "parameters": {
+        "language": "javascript",
+        "code": "const map = { informational:'Verdant', urgent:'Ember', research:'Abyssal', opinion:'Prismata' };\nconst intent = ($json.intent || 'informational').toLowerCase();\nreturn [{ ...$json, language: map[intent] || 'Verdant' }];"
+      }
+    },
+    {
+      "id": "4",
+      "name": "Hash Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        300
+      ],
+      "parameters": {
+        "language": "javascript",
+        "code": "const crypto = require('crypto');\nconst payload = `${$json.summary||''}|${$json.url||''}|${$json.pivot||''}|${$json.language||''}`;\nreturn [{ ...$json, hash: crypto.createHash('sha256').update(payload).digest('hex') }];"
+      }
+    },
+    {
+      "id": "5",
+      "name": "Update Notion",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 1,
+      "position": [
+        880,
+        300
+      ],
+      "credentials": {
+        "notionApi": {
+          "id": "__YOUR_CRED_ID__",
+          "name": "Notion"
+        }
+      },
+      "parameters": {
+        "operation": "update",
+        "pageId": "={{ $json.id }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Duplicate",
+              "type": "checkbox",
+              "value": true
+            },
+            {
+              "key": "Pivot",
+              "type": "select",
+              "value": "={{$json.pivot}}"
+            },
+            {
+              "key": "Language",
+              "type": "select",
+              "value": "={{$json.language}}"
+            },
+            {
+              "key": "Summary",
+              "type": "richText",
+              "value": "={{$json.summary}}"
+            },
+            {
+              "key": "Hash",
+              "type": "richText",
+              "value": "={{$json.hash}}"
+            }
+          ]
+        }
+      }
+    }
   ],
   "connections": {
-    "Incoming Item": { "main": [ [ { "node": "Pivot Classifier", "type": "main", "index": 0 }, { "node": "Intent to Sacred Language", "type": "main", "index": 0 } ] ] },
-    "Pivot Classifier": { "main": [ [ { "node": "Hash Summary", "type": "main", "index": 0 } ] ] },
-    "Intent to Sacred Language": { "main": [ [ { "node": "Hash Summary", "type": "main", "index": 0 } ] ] },
-    "Hash Summary": { "main": [ [ { "node": "Update Notion", "type": "main", "index": 0 } ] ] }
+    "Incoming Item": {
+      "main": [
+        [
+          {
+            "node": "Pivot Classifier",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Intent to Sacred Language",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pivot Classifier": {
+      "main": [
+        [
+          {
+            "node": "Hash Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Intent to Sacred Language": {
+      "main": [
+        [
+          {
+            "node": "Hash Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hash Summary": {
+      "main": [
+        [
+          {
+            "node": "Update Notion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   }
 }

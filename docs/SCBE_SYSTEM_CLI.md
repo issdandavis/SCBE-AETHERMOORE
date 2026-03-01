@@ -28,6 +28,17 @@ python scripts/scbe-system-cli.py tongues selftest
 
 This command gives you the "core protocol CLI" from your technical spec.
 
+### `secret-store ...`
+
+Manage local tokenized secrets used by API/auth/connectors:
+
+```bash
+python scripts/system/secret_store.py list --names-only
+python scripts/system/secret_store.py get SCBE_CONNECTOR_SIGNING_KEY
+python scripts/system/secret_store.py set SCBE_VALID_API_KEYS '{ "demo_key_12345":"demo_user" }'
+python scripts/system/secret_store.py remove SCBE_VALID_API_KEYS
+```
+
 ### `notion-gap`
 
 Run the Notion/pipeline gap audit used in the self-improvement loop.

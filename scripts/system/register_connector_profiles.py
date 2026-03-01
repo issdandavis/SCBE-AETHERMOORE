@@ -18,6 +18,7 @@ import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+from src.security.secret_store import get_secret, pick_secret
 
 
 @dataclass(frozen=True)
@@ -149,7 +150,12 @@ PAID_SPECS: tuple[ConnectorSpec, ...] = (
 
 def _pick_env(*names: str) -> str:
     for name in names:
-        value = os.getenv(name, "").strip()
+        _, value = pick_secret(name)
+        if not value:
+            value = os.getenv(name, "").strip()
+        if value:
+            return value
+    return ""
         if value:
             return value
     return ""
@@ -259,7 +265,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--base-url", default=os.getenv("SCBE_MOBILE_API_URL", "http://127.0.0.1:8000"))
     parser.add_argument(
         "--api-key",
-        default=os.getenv("SCBE_MOBILE_API_KEY", os.getenv("SCBE_API_KEY", "demo_key_12345")),
+        default=get_secret("SCBE_MOBILE_API_KEY") or get_secret("SCBE_API_KEY") or "demo_key_12345",
         help="Mobile API x-api-key.",
     )
     parser.add_argument("--n8n-base-url", default=os.getenv("N8N_BASE_URL", ""))

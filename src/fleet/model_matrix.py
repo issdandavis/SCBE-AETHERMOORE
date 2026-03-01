@@ -55,6 +55,8 @@ class ModelProvider(str, Enum):
     """Supported LLM backend providers."""
 
     CLAUDE = "claude"
+    OPENAI = "openai"
+    XAI = "xai"           # Grok
     GEMINI = "gemini"
     LLAMA = "llama"
     MISTRAL = "mistral"
@@ -182,6 +184,62 @@ async def _call_claude(config: ModelConfig, prompt: str, context: Optional[str] 
         return f"[Claude error: {exc}]"
 
 
+async def _call_openai(config: ModelConfig, prompt: str, context: Optional[str] = None) -> str:
+    """Query OpenAI (GPT-4o, etc.). Falls back to mock if SDK unavailable."""
+    try:
+        import openai  # type: ignore[import-untyped]
+
+        key = config.api_key
+        if not key:
+            return _mock("OpenAI", config, prompt)
+
+        client = openai.OpenAI(api_key=key)
+        messages = []
+        if context:
+            messages.append({"role": "system", "content": context})
+        messages.append({"role": "user", "content": prompt})
+
+        resp = client.chat.completions.create(
+            model=config.model_id,
+            messages=messages,
+            max_tokens=config.max_tokens,
+            temperature=config.temperature,
+        )
+        return resp.choices[0].message.content or "[empty OpenAI response]"
+    except ImportError:
+        return _mock("OpenAI", config, prompt)
+    except Exception as exc:
+        return f"[OpenAI error: {exc}]"
+
+
+async def _call_xai(config: ModelConfig, prompt: str, context: Optional[str] = None) -> str:
+    """Query xAI Grok. Uses OpenAI-compatible API at api.x.ai."""
+    try:
+        import openai  # type: ignore[import-untyped]
+
+        key = config.api_key
+        if not key:
+            return _mock("xAI/Grok", config, prompt)
+
+        client = openai.OpenAI(api_key=key, base_url="https://api.x.ai/v1")
+        messages = []
+        if context:
+            messages.append({"role": "system", "content": context})
+        messages.append({"role": "user", "content": prompt})
+
+        resp = client.chat.completions.create(
+            model=config.model_id,
+            messages=messages,
+            max_tokens=config.max_tokens,
+            temperature=config.temperature,
+        )
+        return resp.choices[0].message.content or "[empty Grok response]"
+    except ImportError:
+        return _mock("xAI/Grok", config, prompt)
+    except Exception as exc:
+        return f"[xAI/Grok error: {exc}]"
+
+
 async def _call_gemini(config: ModelConfig, prompt: str, context: Optional[str] = None) -> str:
     """Query Google Gemini. Falls back to mock if SDK unavailable."""
     try:
@@ -281,6 +339,8 @@ def _mock(provider: str, config: ModelConfig, prompt: str, *, note: str = "") ->
 # Provider dispatch table
 _PROVIDER_DISPATCH = {
     ModelProvider.CLAUDE: _call_claude,
+    ModelProvider.OPENAI: _call_openai,
+    ModelProvider.XAI: _call_xai,
     ModelProvider.GEMINI: _call_gemini,
     ModelProvider.LLAMA: _call_ollama,      # Llama via Ollama
     ModelProvider.MISTRAL: _call_ollama,    # Mistral via Ollama

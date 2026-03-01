@@ -10,7 +10,16 @@ param(
     [switch]$ResetUserFolder,
     [switch]$PublishWorkflows,
     [switch]$StartBrowserAgent,
-    [switch]$UseTunnel
+    [switch]$UseTunnel,
+    [switch]$StartOpenClaw,
+    [int]$OpenClawGatewayPort = 18789,
+    [int]$OpenClawBridgePort = 18790,
+    [string]$OpenClawImage = "openclaw:local",
+    [string]$OpenClawConfigDir = "",
+    [string]$OpenClawWorkspaceDir = "",
+    [string]$OpenClawGatewayBind = "lan",
+    [string]$OpenClawGatewayToken = "",
+    [string]$OpenClawComposeFile = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -105,6 +114,44 @@ if ($StartBrowserAgent) {
     }
 }
 
+if ($StartOpenClaw) {
+    Write-Host "Starting OpenClaw Gateway..."
+    $startOpenClawScript = Join-Path $ProjectRoot "scripts\system\start_openclaw_gateway.ps1"
+    if (Test-Path $startOpenClawScript) {
+        if (-not $OpenClawConfigDir) {
+            $OpenClawConfigDir = Join-Path $env:USERPROFILE ".openclaw"
+        }
+        if (-not $OpenClawWorkspaceDir) {
+            $OpenClawWorkspaceDir = Join-Path $OpenClawConfigDir "workspace"
+        }
+        if (-not $OpenClawComposeFile) {
+            $OpenClawComposeFile = Join-Path $ProjectRoot "external\openclaw\docker-compose.yml"
+        }
+        if (-not (Test-Path $OpenClawComposeFile)) {
+            $bootstrapScript = Join-Path $ProjectRoot "scripts\system\bootstrap_openclaw_sources.ps1"
+            if (-not (Test-Path $bootstrapScript)) {
+                throw "OpenClaw source is missing and bootstrap script was not found: $bootstrapScript"
+            }
+            & $bootstrapScript -ProjectRoot $ProjectRoot -OpenClawSourceDir (Split-Path -Parent $OpenClawComposeFile)
+        }
+
+        & $startOpenClawScript `
+            -ProjectRoot $ProjectRoot `
+            -ComposeFile $OpenClawComposeFile `
+            -GatewayPort $OpenClawGatewayPort `
+            -BridgePort $OpenClawBridgePort `
+            -GatewayBind $OpenClawGatewayBind `
+            -GatewayToken $OpenClawGatewayToken `
+            -OpenClawConfigDir $OpenClawConfigDir `
+            -OpenClawWorkspaceDir $OpenClawWorkspaceDir `
+            -ImageName $OpenClawImage `
+            -StartupTimeoutSec 30 `
+            -HealthCheck
+    } else {
+        Write-Warning "OpenClaw starter script not found: $startOpenClawScript"
+    }
+}
+
 Write-Host "Starting n8n on port $N8nPort"
 $env:N8N_PORT = "$N8nPort"
 if ($N8nTaskBrokerPort -le 0) {
@@ -146,6 +193,9 @@ Write-Host "n8n PID: $($n8n.Id)"
 Write-Host "Bridge URL: http://127.0.0.1:$BridgePort/health"
 Write-Host "Browser URL: $($env:SCBE_BROWSER_SERVICE_URL)/health"
 Write-Host "n8n URL: http://127.0.0.1:$N8nPort"
+if ($StartOpenClaw) {
+    Write-Host "OpenClaw Gateway URL: http://127.0.0.1:$OpenClawGatewayPort/health"
+}
 if ($UseTunnel) {
     Write-Host "n8n tunnel mode: enabled"
 }

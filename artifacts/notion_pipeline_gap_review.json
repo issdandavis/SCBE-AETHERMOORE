@@ -1,15 +1,15 @@
 {
-  "generated_at": "2026-02-27T05:41:51.021139+00:00",
+  "generated_at": "2026-03-01T03:58:28.180334+00:00",
   "repo_root": "C:\\Users\\issda\\SCBE-AETHERMOORE",
   "sync_config": "C:\\Users\\issda\\SCBE-AETHERMOORE\\scripts\\sync-config.json",
   "pipeline_config": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training\\vertex_pipeline_config.yaml",
   "training_data": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data",
   "summary": {
     "status": "healthy",
-    "generated_at": "2026-02-27T05:41:51.021157+00:00",
+    "generated_at": "2026-03-01T03:58:28.180364+00:00",
     "total_tasks": 0,
     "task_priority_counts": {},
-    "total_records": 17119,
+    "total_records": 30923,
     "exported_records": 1315,
     "category_breakdown": {
       "lore": 251,

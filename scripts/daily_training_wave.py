@@ -42,6 +42,22 @@ def parse_args() -> argparse.Namespace:
         default="issdandavis/scbe-aethermoore-training-data",
         help="HF dataset repo id used when --upload is set",
     )
+    parser.add_argument(
+        "--notes-glob",
+        action="append",
+        default=[],
+        help="Extra markdown glob patterns to include in notes SFT conversion (repeatable).",
+    )
+    parser.add_argument(
+        "--obsidian-vault",
+        default="",
+        help="Optional Obsidian vault path to include markdown notes.",
+    )
+    parser.add_argument(
+        "--skip-notes",
+        action="store_true",
+        help="Skip markdown notes conversion step.",
+    )
     return parser.parse_args()
 
 
@@ -93,6 +109,29 @@ def main() -> None:
         print("[wave] skip kernel conversion: training/kernel_manifest.yaml not found")
 
     run([sys.executable, "scripts/spiralverse_to_sft.py"])
+
+    if not args.skip_notes:
+        notes_globs = list(args.notes_glob)
+        if not notes_globs:
+            notes_globs = [
+                "docs/**/*.md",
+                "training/**/*.md",
+                "notes/**/*.md",
+                "README.md",
+            ]
+        notes_cmd = [
+            sys.executable,
+            "scripts/markdown_notes_to_sft.py",
+            "--out",
+            "training-data/sft_notes.jsonl",
+            "--max-records",
+            "2500",
+        ]
+        for pattern in notes_globs:
+            notes_cmd.extend(["--glob", pattern])
+        if args.obsidian_vault:
+            notes_cmd.extend(["--obsidian-vault", args.obsidian_vault])
+        run(notes_cmd)
 
     merge_cmd = [sys.executable, "scripts/merge_and_upload.py"]
     if args.upload:

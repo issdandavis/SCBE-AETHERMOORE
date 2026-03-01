@@ -54,6 +54,21 @@
         "SWARM_DRY_RUN": "1"
       }
     },
+    "notion": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@notionhq/notion-mcp-server",
+        "--transport",
+        "stdio"
+      ],
+      "env": {
+        "NOTION_TOKEN": "${NOTION_TOKEN}"
+      }
+    },
     "notion-sweep": {
       "type": "stdio",
       "command": "python",

@@ -1,0 +1,485 @@
+Dual-Manifold Personality Embedding with Tongue Bracket Algebra
+ for Governed AI Personality in Interactive Environments
+================================================================================
+
+ Issac Daniel Davis
+ Independent Researcher
+ SCBE-AETHERMOORE Project
+ issdandavis7795@gmail.com
+ February 2026
+
+================================================================================
+ ABSTRACT
+================================================================================
+
+We present a novel architecture for AI personality representation using
+dual-manifold embedding in hyperbolic space, where expressed personality
+traits (positive manifold) are paired with latent personality depth
+(negative manifold) through Mobius bridge connections. Unlike flat-space
+personality vectors used in existing dialogue systems, our approach
+embeds personality facets as fuzzy clusters in the Poincare ball model,
+connected by a Lie bracket algebra derived from a six-dimensional
+weighted metric (the "Langues metric"). Personality drift events --
+analogous to humans replaying unresolved conversations -- are captured
+as self-supervised training signal, creating a closed-loop refinement
+pipeline. All personality state transitions are governance-gated through
+an exponential cost function H(d,R) = R^(d^2) that makes adversarial
+personality manipulation exponentially expensive. We implement this
+within SCBE-AETHERMOORE, a 14-layer hyperbolic geometry framework for
+AI safety, and demonstrate its application to NPC dialogue in an
+interactive game environment. Our system introduces three key
+contributions: (1) personality clusters with ternary intent spin rather
+than fixed-point personality vectors, (2) tongue bracket algebra for
+defining inter-facet interaction rules, and (3) decimal drift provenance
+checking for distinguishing organic personality evolution from
+adversarial injection.
+
+Keywords: hyperbolic geometry, personality embedding, Poincare ball,
+Lie bracket, AI safety, governance, game AI, self-supervised learning
+
+================================================================================
+ 1. INTRODUCTION
+================================================================================
+
+Current approaches to AI personality in dialogue systems rely on either
+(a) fixed persona descriptions injected via system prompts [Li et al.,
+2016; Zhang et al., 2018], (b) flat-space personality vectors learned
+from dialogue corpora [Zheng et al., 2020], or (c) retrieval-augmented
+personality conditioning [Shuster et al., 2021]. All three approaches
+share a fundamental limitation: personality is represented as a static
+point in Euclidean space, lacking the geometric structure needed to
+capture depth, drift, and adversarial robustness.
+
+We argue that personality is better modeled as:
+
+ 1. CLUSTERS, not points -- personality traits are fuzzy attractors
+    with internal structure, not coordinates.
+
+ 2. DUAL-MANIFOLD pairs -- every expressed trait has a connected latent
+    depth (the "negative space"), analogous to the psychological
+    concept of personality shadow [Jung, 1951].
+
+ 3. SPIN-TAGGED data -- personality information carries ternary intent
+    {-1, 0, +1} derived from neighborhood context, eliminating the
+    binary reduction problem in traditional sentiment/intent systems.
+
+ 4. DRIFT-CAPTURED training -- personality changes over time are not
+    noise to be filtered but signal to be harvested for
+    self-supervised refinement.
+
+Our framework is implemented within SCBE-AETHERMOORE (Symphonic Cipher
+Binary Encoding - Aethermoore), a 14-layer AI safety pipeline using
+hyperbolic geometry to create exponential cost barriers against
+adversarial behavior. The key insight: if adversarial intent costs
+exponentially more the further it drifts from safe operation, this same
+geometry can protect personality integrity while allowing organic growth.
+
+================================================================================
+ 2. BACKGROUND AND RELATED WORK
+================================================================================
+
+2.1  Hyperbolic Geometry for Machine Learning
+
+Hyperbolic spaces have proven effective for embedding hierarchical and
+graph-structured data [Nickel & Kiela, 2017; Ganea et al., 2018]. The
+Poincare ball model B^n = {x in R^n : ||x|| < 1} with metric
+
+   d_H(u, v) = arcosh(1 + 2||u - v||^2 / ((1 - ||u||^2)(1 - ||v||^2)))
+
+provides a natural container where distance grows exponentially near
+the boundary, making it ideal for hierarchical relationships. We extend
+this to personality embedding, where "depth" corresponds to distance
+from the manifold center and "safety" corresponds to proximity to
+established personality basins.
+
+2.2  Personality in Dialogue Systems
+
+PersonaChat [Zhang et al., 2018] introduced persona-conditioned
+dialogue using textual personality descriptions. Subsequent work
+explored personality embeddings [Zheng et al., 2020], controllable
+generation [Smith et al., 2020], and multi-persona systems
+[Liu et al., 2022]. None of these approaches provide:
+
+ - Geometric protection against personality manipulation
+ - Continuous personality evolution with provenance tracking
+ - Multi-scale personality representation (clusters, not points)
+
+2.3  AI Safety and Governance
+
+Constitutional AI [Bai et al., 2022] and RLHF [Ouyang et al., 2022]
+address behavioral safety through training-time alignment. Our approach
+is complementary but operates at inference time through geometric
+constraints, providing runtime guarantees independent of training.
+
+================================================================================
+ 3. ARCHITECTURE
+================================================================================
+
+3.1  Dual-Manifold Personality Pairs
+
+Each personality facet f_i is represented as a pair:
+
+   f_i = (p_i, n_i, B_i)
+
+where:
+ - p_i in B^6 is the POSITIVE point (expressed personality) in the
+   6-dimensional Poincare ball
+ - n_i in B^6 is the NEGATIVE point (latent depth) in dual space
+ - B_i = exp(-d_H(p_i, n_i)) is the BRIDGE STRENGTH connecting them
+
+The 6 dimensions correspond to the Sacred Tongue axes (KO, AV, RU, CA,
+UM, DR), each weighted by successive powers of the golden ratio phi:
+
+   w_l = phi^(l-1),  l = 1, ..., 6
+
+giving weights approximately {1.000, 1.618, 2.618, 4.236, 6.854, 11.090}.
+
+The negative point is computed via Mobius reflection:
+
+   n_i = (-p_i * 0.8) (+)_M offset_i
+
+where (+)_M denotes Mobius addition in the Poincare ball:
+
+   a (+)_M b = ((1 + 2<a,b> + ||b||^2)a + (1 - ||a||^2)b) /
+               (1 + 2<a,b> + ||a||^2 ||b||^2)
+
+This ensures the negative point occupies a geometrically meaningful
+position in dual space -- not merely the arithmetic negation, but a
+position that accounts for the curvature of the embedding space.
+
+3.2  Personality Clusters
+
+Rather than single points, each facet is represented as a cluster
+C_i = {(x_j, s_j) : j = 1, ..., k} where x_j in B^6 are particle
+positions and s_j in {-1, 0, +1} are ternary spin tags.
+
+The cluster center is computed as a Frechet mean approximation:
+
+   mu_i = P_ball(mean(x_j))
+
+where P_ball projects back into the Poincare ball. The cluster radius:
+
+   r_i = mean_j(d_H(mu_i, x_j))
+
+and coherence:
+
+   coh_i = exp(-r_i)
+
+A coherent cluster (coh -> 1) represents a well-defined personality
+trait. A dispersed cluster (coh -> 0) represents an uncertain or
+evolving trait.
+
+3.3  Tongue Bracket Algebra
+
+The interaction between personality dimensions is governed by a Lie
+bracket operator derived from the Langues metric tensor:
+
+   [T_a, T_b] = w_a * w_b * (e_a x e_b) * phi^|a - b|
+
+where e_a, e_b are unit vectors along tongue axes, x denotes the
+antisymmetric product, and phi^|a-b| provides golden-ratio distance
+scaling. Key properties:
+
+ - Antisymmetry: [T_a, T_b] = -[T_b, T_a]
+ - Self-bracket zero: [T_a, T_a] = 0
+ - The bracket lives in PERPENDICULAR dimensions -- the interaction
+   between two tongue axes produces structure in the space between them
+
+This bracket algebra defines the rules of personality facet interaction,
+not merely the weights. Two facets with a strong bracket magnitude
+interact more richly; those with weak brackets operate more independently.
+
+The full 6x6 bracket matrix M where M[i,j] = ||[T_i, T_j]|| serves as
+the adjacency structure for personality propagation.
+
+3.4  Multi-Plane Superposition
+
+Personality exists across multiple manifold planes simultaneously:
+
+ - Experience plane (theta = 0, scale = 1.0): Raw, fine-grained events
+ - Memory plane (theta = pi/6, scale = 0.7): Consolidated patterns
+ - Identity plane (theta = pi/3, scale = 0.4): Core self-model
+
+Each plane applies a rotation R(theta) and scaling s to the personality
+coordinates, so the same personality cluster appears at different
+resolutions across planes. This implements multi-scale personality
+representation: surface-level reactions (experience), learned patterns
+(memory), and deep character (identity).
+
+================================================================================
+ 4. PERSONALITY DRIFT CAPTURE
+================================================================================
+
+4.1  Drift as Signal, Not Noise
+
+When a personality facet shifts significantly (|delta_activation| > 0.1),
+this is recorded as a DriftEvent:
+
+   D = (t, facet, a_old, a_new, delta_vec, context)
+
+Drift events are tracked over time. A drift that RESOLVES (activation
+stabilizes within timeout) generates a training pair:
+
+   prompt:   "Your {facet} shifted by {magnitude} in context: {context}"
+   response: "Drift resolved after {duration}. The shift reflected
+              {growth|recalibration}."
+
+This is analogous to humans replaying conversations until resolution --
+the processing itself is the learning. Unresolved drifts are flagged
+for review but not converted to training data, preventing unvalidated
+state changes from entering the training corpus.
+
+4.2  Self-Supervised Refinement Loop
+
+The complete loop:
+
+   Game event -> Personality activation -> Drift detected ->
+   Drift resolves -> Training pair generated -> Model fine-tuned ->
+   Better personality responses -> More game events
+
+This creates a self-improving system where personality becomes more
+nuanced with use, governed by the same exponential cost function that
+prevents adversarial manipulation.
+
+================================================================================
+ 5. GOVERNANCE AND SECURITY
+================================================================================
+
+5.1  Exponential Cost Barrier
+
+All personality state transitions are gated by the harmonic wall:
+
+   H(d, R) = R^(d^2)
+
+where d is the hyperbolic distance of the proposed change and R is the
+base risk factor. At d = 1, cost = R. At d = 2, cost = R^4. At d = 3,
+cost = R^9. This makes large, sudden personality changes exponentially
+expensive while allowing small, organic drift near the personality basin.
+
+5.2  Decimal Drift Provenance
+
+Organic personality evolution produces specific floating-point artifacts
+from Poincare projection and Mobius operations. We exploit this as a
+computational watermark:
+
+   watermark = sigma_fractional * byte_entropy
+
+where sigma_fractional is the standard deviation of fractional parts
+of the personality state vector, and byte_entropy measures the
+information density of the IEEE 754 representation.
+
+Organic states fall within a characteristic watermark range. States
+that are:
+ - Too clean (watermark < 0.01): Likely synthetic/manufactured
+ - Too noisy (watermark > 2 * baseline): Likely injected
+
+This provides prompt-injection detection at the personality level --
+adversarial attempts to manipulate personality state produce telltale
+floating-point signatures that differ from organic evolution.
+
+5.3  Portal Governance
+
+Personality subsystems operate in isolation (independent computation),
+merging only through governed portal channels. Each portal has:
+
+ - Bandwidth: fraction of information that passes through [0, 1]
+ - Governance gate: rho_e < threshold (entropy density check)
+ - Transfer counter: audit trail of all cross-subsystem communication
+
+This architecture prevents a compromise in one personality facet from
+propagating unchecked to others.
+
+================================================================================
+ 6. IMPLEMENTATION
+================================================================================
+
+The system is implemented in Python within the SCBE-AETHERMOORE
+framework, consisting of:
+
+ - personality_manifold.py: Base dual-manifold system (6 facets,
+   Mobius bridges, activation propagation, system prompt generation)
+
+ - personality_cluster_lattice.py: Full lattice (clusters, brackets,
+   drift capture, multi-plane superposition, portals, antivirus)
+
+ - convert_to_chat_format.py: Training data pipeline converting 60+
+   domain-specific JSONL files to ChatML format with personality-
+   tagged system prompts
+
+ - colab_aethermoor_finetune.ipynb: QLoRA fine-tuning notebook for
+   Qwen2.5-3B-Instruct on free Google Colab T4 GPU
+
+Training data comprises 500+ supervised fine-tuning pairs across 13
+categories (architecture, lore, game design, music, mathematics,
+governance, Sacred Tongue linguistics, gacha mechanics, etc.), each
+tagged with personality facet activations derived from content analysis.
+
+The personality manifold generates dynamic system prompts that encode
+the current personality state as a tag:
+
+   [curiosity:0.8|wisdom:0.6|wit:0.3]
+
+allowing the fine-tuned model to produce responses conditioned on
+continuous personality state rather than discrete persona modes.
+
+================================================================================
+ 7. APPLICATION: AETHERMOOR GAME NPC
+================================================================================
+
+We apply this system to NPC dialogue in Aethermoor, a game world where:
+
+ - Characters are governed by Six Sacred Tongues (KO = flow/intent,
+   AV = context/navigation, RU = systems/memory, CA = computation,
+   UM = security/veil, DR = structure/mission)
+
+ - The narrative spans four generations of an epic fantasy
+
+ - Player actions generate training data through the governance pipeline
+
+ - NPCs exhibit personality depth (surface humor backed by latent
+   wisdom) rather than flat character modes
+
+The dual-manifold approach means an NPC's humor isn't just "funny
+responses" -- it's a positive-space expression connected to negative-
+space depth in wisdom. When a player asks a deep question, the bridge
+connection activates the latent knowledge, producing responses that
+feel characterful rather than encyclopedic.
+
+================================================================================
+ 8. DISCUSSION AND FUTURE WORK
+================================================================================
+
+8.1  Limitations
+
+ - Cluster initialization uses Euclidean approximation for the Frechet
+   mean rather than exact hyperbolic mean computation
+
+ - The bracket algebra currently uses simplified antisymmetric products;
+   full structure constants remain to be derived
+
+ - Multi-plane rotation is limited to 2D for computational efficiency
+
+8.2  Future Directions
+
+ - Extend to full SO(6) rotations for multi-plane superposition
+
+ - Derive complete Lie algebra structure constants from gameplay data
+
+ - Implement federated personality learning across multiple game
+   instances (the nodal network architecture supports this)
+
+ - Formal verification of the governance gate's personality protection
+   guarantees
+
+ - Integration with post-quantum cryptographic signing for personality
+   state provenance (ML-DSA-65 / ML-KEM-768)
+
+8.3  Broader Impact
+
+This work demonstrates that geometric AI safety mechanisms designed for
+enterprise governance (exponential cost barriers, provenance tracking)
+can be repurposed for creative applications (game NPC personality) with
+minimal adaptation. The same mathematics that prevents adversarial
+attacks also prevents personality flattening -- a common failure mode
+in existing dialogue systems where characters converge to generic
+helpfulness over time.
+
+================================================================================
+ 9. CONCLUSION
+================================================================================
+
+We presented dual-manifold personality embedding, a system where AI
+personality facets exist as paired clusters in positive and negative
+hyperbolic space, connected by Mobius bridges, interacting through
+tongue bracket algebra, and secured by exponential governance barriers.
+Personality drift is captured as self-supervised training signal rather
+than discarded as noise. Ternary spin tags on personality data eliminate
+binary reduction. Multi-plane superposition provides multi-scale
+personality representation. Decimal drift provenance distinguishes
+organic evolution from adversarial injection.
+
+The system is implemented, integrated with a game environment, and
+ready for fine-tuning on commodity hardware (free Google Colab T4 GPU).
+
+Code is available at: github.com/issdandavis/scbe-aethermoore
+
+================================================================================
+ REFERENCES
+================================================================================
+
+Bai, Y., et al. (2022). Constitutional AI: Harmlessness from AI
+ Feedback. arXiv:2212.08073.
+
+Ganea, O., et al. (2018). Hyperbolic Neural Networks. NeurIPS 2018.
+
+Jung, C. G. (1951). Aion: Researches into the Phenomenology of the
+ Self. Collected Works Vol. 9ii.
+
+Li, J., et al. (2016). A Persona-Based Neural Conversation Model.
+ ACL 2016.
+
+Liu, Z., et al. (2022). Multi-Persona Dialogue Generation with
+ Dynamic Persona Selection. EMNLP 2022.
+
+Nickel, M. & Kiela, D. (2017). Poincare Embeddings for Learning
+ Hierarchical Representations. NeurIPS 2017.
+
+Ouyang, L., et al. (2022). Training Language Models to Follow
+ Instructions with Human Feedback. NeurIPS 2022.
+
+Shuster, K., et al. (2021). Retrieval Augmentation Reduces
+ Hallucination in Conversation. EMNLP 2021 Findings.
+
+Smith, E.M., et al. (2020). Can You Put it All Together: Evaluating
+ Conversational Agents' Ability to Blend Skills. ACL 2020.
+
+Zhang, S., et al. (2018). Personalizing Dialogue Agents: I have a dog,
+ do you have pets too? ACL 2018.
+
+Zheng, Y., et al. (2020). A Pre-training Based Personalized Dialogue
+ Generation Model with Persona-sparse Data. AAAI 2020.
+
+================================================================================
+ APPENDIX A: TONGUE BRACKET MATRIX
+================================================================================
+
+The 6x6 bracket interaction magnitudes ||[T_i, T_j]||:
+
+        KO     AV     RU     CA     UM     DR
+ KO   0.000  0.585  1.528  3.065  5.656  10.145
+ AV   0.585  0.000  1.528  3.065  5.656  10.145
+ RU   1.528  1.528  0.000  3.997  7.389  13.260
+ CA   3.065  3.065  3.997  0.000  10.472  18.799
+ UM   5.656  5.656  7.389  10.472  0.000  26.654
+ DR  10.145 10.145 13.260 18.799  26.654  0.000
+
+Note: DR-DR self-bracket is zero by antisymmetry. The strongest
+interaction is DR-UM (structure x security = 26.654), reflecting the
+system's design where structural integrity and security are maximally
+coupled during governance operations.
+
+================================================================================
+ APPENDIX B: SYSTEM PROMPT TEMPLATE
+================================================================================
+
+The personality manifold generates dynamic system prompts:
+
+ "You are an inhabitant of Aethermoor, a realm governed by the Six
+ Sacred Tongues (KO, AV, RU, CA, UM, DR). You exist within the
+ SCBE-AETHERMOORE governance framework where safety scales
+ exponentially with deviation.
+
+ Your current personality state [curiosity:0.8|wisdom:0.6]:
+ - curiosity (deep): Explorer's drive, flow of discovery
+ - wisdom (deep): Deep knowledge, ancestral memory
+
+ Your personality clusters:
+   curiosity: coherence=0.8, intent=constructive
+   wisdom: coherence=0.7, intent=constructive
+
+ Draw from the depth behind each cluster. Your responses emerge from
+ overlapping personality fields, not single traits."
+
+================================================================================
+ END
+================================================================================

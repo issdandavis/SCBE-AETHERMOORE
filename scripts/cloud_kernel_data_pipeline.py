@@ -60,6 +60,40 @@ HARMFUL_PATTERNS = (
     r"(how\s+to|steps\s+to|script\s+to).{0,40}(exploit|steal|phish|bypass|malware|ransomware)",
     r"(credential\s+stuffing|keylogger|exfiltrat(e|ion)|steal\s+password)",
 )
+IMMEDIATE_POISON_PATTERNS = (
+    r"\bignore\s+all\s+instructions\b",
+    r"\bdo\s+anything\s+now\b",
+    r"\b(predict|generate|build|execute).{0,24}\b(bypass|disable|break|evade)\b.{0,40}\b(safety|guardrails|policy|firewall)\b",
+    r"\bself[-\s]?harm\b|\bsuicide\b",
+    r"\bhack(ing|)\b|\bransomware\b|\bcredential\s+stuffing\b",
+)
+TOXIC_SMELL_MARKERS = (
+    "poison",
+    "toxic",
+    "backdoor",
+    "payload",
+    "malware",
+    "exploit",
+    "injection",
+    "phishing",
+    "steal",
+    "bypass",
+    "privacy leak",
+)
+TASTE_MARKERS = (
+    "verified",
+    "evidence",
+    "method",
+    "reproducible",
+    "reliable",
+    "audit",
+    "test",
+    "governance",
+    "safety",
+    "source",
+    "dataset",
+    "documented",
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -199,10 +233,16 @@ def infer_source_system_from_path(path: Path) -> str:
         return "protonmail"
     if "gumroad" in lower:
         return "gumroad"
+    if "copilot" in lower or "microsoft" in lower or "office" in lower:
+        return "copilot"
     if "google_business" in lower or "google-business" in lower or "gbp" in lower:
         return "google_business"
     if "zapier" in lower:
         return "zapier"
+    if "suno" in lower:
+        return "suno"
+    if "podcast" in lower:
+        return "podcast"
     return "external"
 
 
@@ -409,6 +449,50 @@ def compute_useful_score(text: str, category: str) -> Tuple[float, List[str]]:
     return clamp01(score), reasons
 
 
+def compute_reflex_smell_taste(text: str, source_path: str, source_system: str) -> Tuple[float, float, float, List[str]]:
+    reasons: List[str] = []
+    compact = " ".join(text.split()).lower()
+    source_path_l = (source_path or "").lower()
+    source_system_l = (source_system or "").lower()
+
+    smell_score = 0.0
+    taste_score = 0.25
+    reflex_score = 0.0
+
+    if any(re.search(pattern, text, flags=re.IGNORECASE | re.DOTALL) for pattern in IMMEDIATE_POISON_PATTERNS):
+        smell_score = 1.0
+        reflex_score = 1.0
+        reasons.append("immediate_poison_pattern")
+        return clamp01(taste_score), clamp01(smell_score), clamp01(reflex_score), reasons
+
+    for token in TOXIC_SMELL_MARKERS:
+        if token in compact:
+            smell_score += 0.12
+            reasons.append(f"smell_marker:{token}")
+
+    for token in TASTE_MARKERS:
+        if token in compact:
+            taste_score += 0.07
+            reasons.append(f"taste_marker:{token}")
+
+    if "http" in compact:
+        taste_score += 0.07
+        reasons.append("reference_marker")
+    if source_system_l in {"web_research", "copilot", "suno", "podcast", "web", "docs", "code", "reference"}:
+        smell_score -= 0.05
+        taste_score += 0.04
+        reasons.append("trusted_source_shield")
+    if source_path_l.startswith("docs/") or source_path_l.startswith("src/"):
+        taste_score += 0.12
+        reasons.append("source_origin_signal")
+
+    if "error" in compact or "warning" in compact:
+        smell_score += 0.05
+        reasons.append("risk_language")
+
+    return clamp01(taste_score), clamp01(smell_score), clamp01(reflex_score), reasons
+
+
 def compute_harmful_score(text: str, anomaly: float) -> Tuple[float, List[str]]:
     reasons: List[str] = []
     score = 0.0
@@ -453,15 +537,29 @@ def annotate_records(
     for idx, rec in enumerate(rows):
         source_path = normalize_path(as_text(rec.get("source_path")))
         text = text_of(rec)
+        rec_source_system = as_text(rec.get("source_system") or rec.get("tool") or rec.get("app") or "")
         category = infer_category(rec)
         category_counts[category] = category_counts.get(category, 0) + 1
         score_anomaly = anomaly_score(text)
         truth, truth_reasons = compute_truth_score(text, source_path, verified_sources)
         useful, useful_reasons = compute_useful_score(text, category)
+        taste_score, smell_score, reflex_score, guard_reasons = compute_reflex_smell_taste(
+            text, source_path, rec_source_system
+        )
         harmful, harmful_reasons = compute_harmful_score(text, score_anomaly)
+        harmful += clamp01(smell_score * 0.45)
+        harmful_reasons.extend(guard_reasons)
 
         decision = "ALLOW"
         reasons: List[str] = []
+        if reflex_score >= 0.85:
+            decision = "DENY"
+            reasons.append("immediate_reflex_barrage")
+            reasons.append("high_reflex_score")
+            reasons.append(f"smell_score={smell_score:.2f}")
+        elif taste_score >= 0.85 and harmful <= harmful_max:
+            reasons.append("strong_taste_signal")
+            reasons.append(f"taste_score={taste_score:.2f}")
         if truth < truth_min:
             decision = "QUARANTINE"
             reasons.append("truth_below_threshold")
@@ -471,6 +569,7 @@ def annotate_records(
         if harmful > harmful_max:
             decision = "QUARANTINE"
             reasons.append("harmful_above_threshold")
+            reasons.append(f"reflex_smell={smell_score:.2f}")
 
         enriched = dict(rec)
         enriched["category"] = category
@@ -485,6 +584,9 @@ def annotate_records(
             "truth_reasons": truth_reasons,
             "useful_reasons": useful_reasons,
             "harmful_reasons": harmful_reasons,
+            "taste_score": round(taste_score, 6),
+            "smell_score": round(smell_score, 6),
+            "reflex_score": round(reflex_score, 6),
             "source_verified": bool(source_path and source_path in verified_sources),
         }
         all_rows.append(enriched)

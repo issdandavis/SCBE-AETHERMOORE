@@ -9,12 +9,14 @@ distinct graduated personality kernels.
 
 Modules
 -------
-- ``models``        — Core data structures (Scene, Choice, StoryGraph, etc.)
-- ``story_engine``  — Parse ChoiceScript / Twee / JSON into StoryGraph DAGs
-- ``player_agent``  — Autonomous agent with 21D personality vector
-- ``nursery``       — Cohort management, curriculum, graduation
-- ``kernel``        — Kernel extraction and export
-- ``telemetry_bridge`` — Bridge game telemetry to SCBE concept blocks
+- ``models``            — Core data structures (Scene, Choice, StoryGraph, etc.)
+- ``story_engine``      — Parse ChoiceScript / Twee / JSON into StoryGraph DAGs
+- ``player_agent``      — Autonomous agent with 21D personality vector
+- ``nursery``           — Cohort management, curriculum, graduation
+- ``kernel``            — Kernel extraction and export
+- ``telemetry_bridge``  — Bridge game telemetry to SCBE concept blocks
+- ``training_exporter`` — SFT/DPO training data generation from playthroughs
+- ``mass_tester``       — Monte Carlo and exhaustive branch testing
 """
 
 from .models import (
@@ -24,6 +26,7 @@ from .models import (
     HistoryEntry,
     PhaseSpec,
     PlaythroughRecord,
+    PlaythroughStep,
     Scene,
     StoryCategory,
     StoryGraph,
@@ -63,12 +66,23 @@ from .telemetry_bridge import (
     TelemetryEvent,
     TelemetryEventType,
 )
+from .training_exporter import (
+    DPOTriple,
+    SFTPair,
+    TrainingExporter,
+)
+from .mass_tester import (
+    CoverageReport,
+    GraphAnalysis,
+    Quicktest,
+    Randomtest,
+)
 
 __all__ = [
     # Models
     "Choice", "Scene", "StoryGraph", "StoryCategory",
     "CurriculumPhase", "PhaseSpec", "Curriculum",
-    "HistoryEntry", "PlaythroughRecord",
+    "HistoryEntry", "PlaythroughRecord", "PlaythroughStep",
     # StoryEngine
     "StoryEngine", "JSONParser", "TweeParser", "ConditionEvaluator",
     # PlayerAgent
@@ -82,4 +96,8 @@ __all__ = [
     # TelemetryBridge
     "TelemetryBridge", "TelemetryEvent", "TelemetryEventType",
     "ConceptBlockActivation", "HamiltonianTracker",
+    # TrainingExporter
+    "TrainingExporter", "SFTPair", "DPOTriple",
+    # MassTester
+    "Randomtest", "Quicktest", "CoverageReport", "GraphAnalysis",
 ]

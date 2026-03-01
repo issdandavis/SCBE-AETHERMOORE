@@ -1,0 +1,45 @@
+{
+  "published_at": "2026-02-28T19:34:16.362766+00:00",
+  "products": {
+    "n8n": {
+      "name": "SCBE n8n Workflow Starter Pack",
+      "price": 4900,
+      "gumroad_id": null,
+      "gumroad_url": null,
+      "stripe_link": "https://buy.stripe.com/8x228sc0y3XNeBafWSdby05",
+      "zip_file": "artifacts/products/scbe-n8n-workflow-pack-v1.0.0.zip",
+      "success": false,
+      "error": null
+    },
+    "governance": {
+      "name": "AI Governance Toolkit",
+      "price": 2900,
+      "gumroad_id": null,
+      "gumroad_url": null,
+      "stripe_link": "https://buy.stripe.com/cNibJ25Ca2TJ9gQ3a6dby06",
+      "zip_file": "artifacts/products/scbe-ai-governance-toolkit-v1.0.0.zip",
+      "success": false,
+      "error": null
+    },
+    "spin": {
+      "name": "Content Spin Engine",
+      "price": 1900,
+      "gumroad_id": null,
+      "gumroad_url": null,
+      "stripe_link": "https://buy.stripe.com/5kQ5kE5Ca65V78I5iedby07",
+      "zip_file": "artifacts/products/scbe-content-spin-engine-v1.0.0.zip",
+      "success": false,
+      "error": null
+    },
+    "hydra": {
+      "name": "HYDRA Agent Templates",
+      "price": 900,
+      "gumroad_id": null,
+      "gumroad_url": null,
+      "stripe_link": "https://buy.stripe.com/6oUeVe5Ca2TJdx6262dby08",
+      "zip_file": "artifacts/products/scbe-hydra-agent-templates-v1.0.0.zip",
+      "success": false,
+      "error": null
+    }
+  }
+}

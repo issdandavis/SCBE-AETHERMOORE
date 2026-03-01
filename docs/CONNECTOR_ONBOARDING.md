@@ -138,6 +138,9 @@ Headers include:
 - optional auth header/bearer
 - `x-scbe-ts`
 - `x-scbe-signature` (when `SCBE_CONNECTOR_SIGNING_KEY` is set)
+- For local runs, store this key via the local tokenized vault:
+  - `python scripts/system/secret_store.py set SCBE_CONNECTOR_SIGNING_KEY "your_local_key"`
+  - `python scripts/system/secret_store.py get SCBE_CONNECTOR_SIGNING_KEY`
 
 ## Recommended production hardening
 
