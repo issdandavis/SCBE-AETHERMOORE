@@ -15,11 +15,15 @@ FastAPI endpoint on port 8400.
 from .indexer import KnowledgeIndexer, Document
 from .searcher import HybridSearcher, SearchResult
 from .api import create_app
+from .quick_pivot import QuickPivot, PivotCard, ThoughtAccumulator
 
 __all__ = [
     "KnowledgeIndexer",
     "Document",
     "HybridSearcher",
     "SearchResult",
+    "QuickPivot",
+    "PivotCard",
+    "ThoughtAccumulator",
     "create_app",
 ]
