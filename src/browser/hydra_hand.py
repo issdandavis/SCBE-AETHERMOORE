@@ -242,6 +242,237 @@ class Finger:
         """Execute JavaScript on current page."""
         return await self.page.evaluate(script)
 
+    # ── Interaction Methods (Full Browser Control) ────────────────
+
+    async def click(self, selector: str, timeout: int = 5000) -> BrowsingResult:
+        """Click an element on the page."""
+        start = time.monotonic()
+        url = self.page.url if self.page else ""
+        try:
+            await self.page.click(selector, timeout=timeout)
+            self.action_count += 1
+            return BrowsingResult(
+                tongue=self.tongue, url=url,
+                metadata={"action": "click", "selector": selector},
+                elapsed_ms=(time.monotonic() - start) * 1000,
+            )
+        except Exception as e:
+            return BrowsingResult(
+                tongue=self.tongue, url=url,
+                metadata={"action": "click", "selector": selector, "error": str(e)},
+                elapsed_ms=(time.monotonic() - start) * 1000,
+            )
+
+    async def type_text(self, selector: str, text: str, clear: bool = True, timeout: int = 5000) -> BrowsingResult:
+        """Type text into an input element."""
+        start = time.monotonic()
+        url = self.page.url if self.page else ""
+        masked = text[:2] + "*" * max(0, len(text) - 4) + text[-2:] if len(text) > 4 else "****"
+        try:
+            if clear:
+                await self.page.fill(selector, text, timeout=timeout)
+            else:
+                await self.page.type(selector, text, timeout=timeout)
+            self.action_count += 1
+            return BrowsingResult(
+                tongue=self.tongue, url=url,
+                metadata={"action": "type", "selector": selector, "masked_text": masked},
+                elapsed_ms=(time.monotonic() - start) * 1000,
+            )
+        except Exception as e:
+            return BrowsingResult(
+                tongue=self.tongue, url=url,
+                metadata={"action": "type", "selector": selector, "error": str(e)},
+                elapsed_ms=(time.monotonic() - start) * 1000,
+            )
+
+    async def fill_form(self, fields: Dict[str, str], submit_selector: Optional[str] = None) -> BrowsingResult:
+        """Fill multiple form fields and optionally submit."""
+        start = time.monotonic()
+        url = self.page.url if self.page else ""
+        filled = []
+        errors = []
+        for selector, value in fields.items():
+            try:
+                tag = await self.page.eval_on_selector(selector, "el => el.tagName.toLowerCase()")
+                input_type = await self.page.eval_on_selector(selector, "el => (el.type || '').toLowerCase()")
+                if tag == "select":
+                    await self.page.select_option(selector, value)
+                elif input_type in ("checkbox", "radio"):
+                    checked = await self.page.eval_on_selector(selector, "el => el.checked")
+                    should_check = value.lower() in ("true", "1", "yes", "on")
+                    if checked != should_check:
+                        await self.page.click(selector)
+                else:
+                    await self.page.fill(selector, value)
+                filled.append(selector)
+            except Exception as e:
+                errors.append({"selector": selector, "error": str(e)})
+
+        if submit_selector:
+            try:
+                await self.page.click(submit_selector)
+                filled.append(f"submit:{submit_selector}")
+            except Exception as e:
+                errors.append({"selector": submit_selector, "error": str(e)})
+
+        self.action_count += len(filled)
+        return BrowsingResult(
+            tongue=self.tongue, url=url,
+            metadata={"action": "fill_form", "filled": filled, "errors": errors},
+            elapsed_ms=(time.monotonic() - start) * 1000,
+        )
+
+    async def select_option(self, selector: str, value: str, timeout: int = 5000) -> BrowsingResult:
+        """Select an option from a dropdown."""
+        start = time.monotonic()
+        url = self.page.url if self.page else ""
+        try:
+            await self.page.select_option(selector, value, timeout=timeout)
+            self.action_count += 1
+            return BrowsingResult(
+                tongue=self.tongue, url=url,
+                metadata={"action": "select", "selector": selector, "value": value},
+                elapsed_ms=(time.monotonic() - start) * 1000,
+            )
+        except Exception as e:
+            return BrowsingResult(
+                tongue=self.tongue, url=url,
+                metadata={"action": "select", "selector": selector, "error": str(e)},
+                elapsed_ms=(time.monotonic() - start) * 1000,
+            )
+
+    async def upload_file(self, selector: str, file_path: str, timeout: int = 10000) -> BrowsingResult:
+        """Upload a file through a file input element."""
+        start = time.monotonic()
+        url = self.page.url if self.page else ""
+        try:
+            await self.page.set_input_files(selector, file_path, timeout=timeout)
+            self.action_count += 1
+            return BrowsingResult(
+                tongue=self.tongue, url=url,
+                metadata={"action": "upload", "selector": selector, "file": file_path},
+                elapsed_ms=(time.monotonic() - start) * 1000,
+            )
+        except Exception as e:
+            return BrowsingResult(
+                tongue=self.tongue, url=url,
+                metadata={"action": "upload", "selector": selector, "error": str(e)},
+                elapsed_ms=(time.monotonic() - start) * 1000,
+            )
+
+    async def download(self, trigger_selector: str, download_dir: str = "/tmp/scbe_downloads") -> BrowsingResult:
+        """Trigger a download by clicking an element and capture the file."""
+        import os
+        start = time.monotonic()
+        url = self.page.url if self.page else ""
+        os.makedirs(download_dir, exist_ok=True)
+        try:
+            async with self.page.expect_download(timeout=30000) as dl_info:
+                await self.page.click(trigger_selector)
+            download = await dl_info.value
+            save_path = os.path.join(download_dir, download.suggested_filename)
+            await download.save_as(save_path)
+            self.action_count += 1
+            return BrowsingResult(
+                tongue=self.tongue, url=url,
+                metadata={"action": "download", "path": save_path, "filename": download.suggested_filename},
+                elapsed_ms=(time.monotonic() - start) * 1000,
+            )
+        except Exception as e:
+            return BrowsingResult(
+                tongue=self.tongue, url=url,
+                metadata={"action": "download", "error": str(e)},
+                elapsed_ms=(time.monotonic() - start) * 1000,
+            )
+
+    async def wait_for(self, selector: str, state: str = "visible", timeout: int = 10000) -> BrowsingResult:
+        """Wait for an element to reach a state (visible, hidden, attached, detached)."""
+        start = time.monotonic()
+        url = self.page.url if self.page else ""
+        try:
+            await self.page.wait_for_selector(selector, state=state, timeout=timeout)
+            return BrowsingResult(
+                tongue=self.tongue, url=url,
+                metadata={"action": "wait_for", "selector": selector, "state": state},
+                elapsed_ms=(time.monotonic() - start) * 1000,
+            )
+        except Exception as e:
+            return BrowsingResult(
+                tongue=self.tongue, url=url,
+                metadata={"action": "wait_for", "selector": selector, "error": str(e)},
+                elapsed_ms=(time.monotonic() - start) * 1000,
+            )
+
+    async def scroll_to(self, target: str = "bottom", selector: Optional[str] = None) -> BrowsingResult:
+        """Scroll to a position or element."""
+        start = time.monotonic()
+        url = self.page.url if self.page else ""
+        try:
+            if selector:
+                await self.page.eval_on_selector(selector, "el => el.scrollIntoView({behavior:'smooth'})")
+            elif target == "bottom":
+                await self.page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+            elif target == "top":
+                await self.page.evaluate("window.scrollTo(0, 0)")
+            else:
+                await self.page.evaluate(f"window.scrollTo(0, {target})")
+            self.action_count += 1
+            return BrowsingResult(
+                tongue=self.tongue, url=url,
+                metadata={"action": "scroll", "target": target or selector},
+                elapsed_ms=(time.monotonic() - start) * 1000,
+            )
+        except Exception as e:
+            return BrowsingResult(
+                tongue=self.tongue, url=url,
+                metadata={"action": "scroll", "error": str(e)},
+                elapsed_ms=(time.monotonic() - start) * 1000,
+            )
+
+    async def get_attribute(self, selector: str, attribute: str) -> Optional[str]:
+        """Read an attribute from an element."""
+        try:
+            return await self.page.get_attribute(selector, attribute)
+        except Exception:
+            return None
+
+    async def handle_dialog(self, action: str = "accept", prompt_text: str = "") -> None:
+        """Set up a dialog handler for the next alert/confirm/prompt."""
+        async def _handler(dialog):
+            if action == "accept":
+                await dialog.accept(prompt_text)
+            else:
+                await dialog.dismiss()
+        self.page.on("dialog", _handler)
+
+    async def get_cookies(self) -> List[Dict[str, Any]]:
+        """Get all cookies from the current browser context."""
+        try:
+            context = self.page.context
+            return await context.cookies()
+        except Exception:
+            return []
+
+    async def set_cookies(self, cookies: List[Dict[str, Any]]) -> None:
+        """Set cookies on the current browser context."""
+        try:
+            context = self.page.context
+            await context.add_cookies(cookies)
+        except Exception:
+            pass
+
+    async def current_url(self) -> str:
+        """Get the current page URL."""
+        return self.page.url if self.page else ""
+
+    async def page_title(self) -> str:
+        """Get the current page title."""
+        try:
+            return await self.page.title()
+        except Exception:
+            return ""
+
     async def observe(self, force_screenshot: bool = False, reason: str = "") -> Optional[PageObservation]:
         """Observe the current page through PollyVision.
 
