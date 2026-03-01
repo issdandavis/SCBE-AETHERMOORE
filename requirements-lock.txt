@@ -64,7 +64,7 @@ importlib_resources==6.5.2
 iniconfig==2.3.0
 itsdangerous==2.2.0
 Jinja2==3.1.6
-jiter==0.12.0
+jiter==0.13.0
 jmespath==1.1.0
 jsii==1.122.0
 jsonschema==4.26.0
