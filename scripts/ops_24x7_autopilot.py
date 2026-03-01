@@ -36,6 +36,7 @@ RUN_OPS = ROOT / "scripts" / "run_ops_autopilot.py"
 MONEY_OPS = ROOT / "scripts" / "money_ops.py"
 MONEY_NIGHTLY = ROOT / "scripts" / "money_ops_nightly.py"
 SMOKE_TRAIN = ROOT / "training" / "hf_smoke_sft_uv.py"
+TELEGRAM_NOTIFY = ROOT / "scripts" / "telegram_notify.py"
 
 
 def _utc_now() -> str:
@@ -228,6 +229,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-runtime-sec-hf", type=int, default=600, help="Timeout for hf smoke run")
     parser.add_argument("--max-stale-lock-sec", type=int, default=7200, help="Stale lock reclaim window")
     parser.add_argument("--skip-defaults", action="store_true", help="Do not enable money/smoke by default")
+    parser.add_argument("--telegram", action="store_true", help="Send Telegram notification after each cycle")
     return parser.parse_args()
 
 
@@ -278,6 +280,17 @@ def main() -> int:
             }
             AUTOPILOT_DIR.mkdir(parents=True, exist_ok=True)
             LATEST.write_text(json.dumps(latest_status, indent=2), encoding="utf-8")
+
+            # Telegram notification (best-effort, never blocks the loop)
+            if getattr(args, "telegram", False):
+                try:
+                    _run_cmd(
+                        [sys.executable, str(TELEGRAM_NOTIFY), "--report", str(LATEST)],
+                        timeout_sec=30,
+                        cwd=ROOT,
+                    )
+                except Exception:
+                    pass  # notification failure must not stop the loop
 
             if args.repeat_every_minutes <= 0 or iteration >= args.iterations:
                 break
