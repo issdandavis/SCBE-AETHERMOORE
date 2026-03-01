@@ -43,7 +43,7 @@ docstring_parser==0.17.0
 dropbox==12.0.2
 filelock==3.20.3
 flake8==7.3.0
-Flask==3.1.2
+Flask==3.1.3
 flask-cors==6.0.2
 fonttools==4.61.1
 frozenlist==1.8.0
@@ -164,7 +164,7 @@ prance==25.4.8.0
 pre_commit==4.5.1
 prompt_toolkit==3.0.52
 propcache==0.4.1
-protobuf==5.29.5
+protobuf==5.29.6
 psutil==7.2.2
 publication==0.0.3
 py-openapi-schema-to-json-schema==0.0.3
@@ -188,7 +188,7 @@ pytest-cov==7.0.0
 pytest-mock==3.15.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.1
-python-multipart==0.0.21
+python-multipart==0.0.22
 pytokens==0.3.0
 pytz==2025.2
 pywin32==311
@@ -235,7 +235,7 @@ virtualenv==20.36.1
 watchdog==6.0.0
 wcwidth==0.6.0
 websockets==15.0.1
-Werkzeug==3.1.5
+Werkzeug==3.1.6
 wrapt==1.17.3
 xmltodict==1.0.2
 yarl==1.22.0
