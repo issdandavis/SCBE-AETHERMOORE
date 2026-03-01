@@ -632,7 +632,6 @@ class SecureStorage:
         # Compute hash
         data_hash = hashlib.sha256(data).hexdigest()
 
-        # DEMO_CRYPTO: XOR placeholder — replace with AES-256-GCM AEAD in production
         encrypted = self._encrypt(data)
 
         # Store file
@@ -696,13 +695,35 @@ class SecureStorage:
         return self.manifest[key]
 
     def _encrypt(self, data: bytes) -> bytes:
-        """DEMO_CRYPTO: XOR placeholder — replace with AES-256-GCM AEAD in production."""
-        key_bytes = self.encryption_key * (len(data) // len(self.encryption_key) + 1)
-        return bytes(a ^ b for a, b in zip(data, key_bytes[: len(data)]))
+        """Encrypt data with AES-256-GCM AEAD.
+
+        Format: nonce (12 bytes) || ciphertext+tag
+        """
+        try:
+            from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+        except ImportError:
+            raise RuntimeError(
+                "cryptography package required for secure storage. "
+                "Install with: pip install cryptography"
+            )
+        nonce = secrets.token_bytes(12)
+        aesgcm = AESGCM(self.encryption_key[:32])
+        ct = aesgcm.encrypt(nonce, data, None)
+        return nonce + ct
 
     def _decrypt(self, data: bytes) -> bytes:
-        """Decrypt data."""
-        return self._encrypt(data)  # XOR is symmetric
+        """Decrypt AES-256-GCM AEAD data."""
+        try:
+            from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+        except ImportError:
+            raise RuntimeError(
+                "cryptography package required for secure storage. "
+                "Install with: pip install cryptography"
+            )
+        nonce = data[:12]
+        ct = data[12:]
+        aesgcm = AESGCM(self.encryption_key[:32])
+        return aesgcm.decrypt(nonce, ct, None)
 
     def _save_manifest(self):
         """Save manifest to disk."""

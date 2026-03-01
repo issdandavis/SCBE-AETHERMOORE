@@ -39,6 +39,7 @@ from src.crypto.sacred_tongues import SacredTongueTokenizer
 from src.storage import BlobNotFoundError, SealedBlobRecord, get_storage_backend
 from src.api.hydra_routes import hydra_router, init_hydra_spine
 from src.security.secret_store import get_api_key_map, get_secret
+from src.api.governance_saas import evaluate_text
 
 try:
     from src.api.mesh_routes import mesh_router
@@ -57,12 +58,16 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS for demo
+# CORS — defaults to localhost dev origins; override with SCBE_CORS_ORIGINS env var
+_CORS_ORIGINS = os.environ.get(
+    "SCBE_CORS_ORIGINS",
+    "http://localhost:3000,http://localhost:8000,http://localhost:8080",
+).split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TODO: Restrict in production
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=[o.strip() for o in _CORS_ORIGINS if o.strip()],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-API-Key"],
 )
 
 # Include HYDRA router
@@ -215,6 +220,12 @@ class GoalStatus(str, Enum):
     failed = "failed"
 
 
+class PolicyDecision(str, Enum):
+    allow = "ALLOW"
+    quarantine = "QUARANTINE"
+    deny = "DENY"
+
+
 class ConnectorKind(str, Enum):
     n8n = "n8n"
     zapier = "zapier"
@@ -289,11 +300,33 @@ class ConnectorRegisterRequest(BaseModel):
     default_headers: Dict[str, str] = Field(default_factory=dict)
     shop_domain: str = Field(default="", max_length=255)
     shopify_api_version: str = Field(default="2025-10", max_length=16)
+    webhook_url: str = Field(default="", max_length=2048)
+    webhook_timeout_seconds: int = Field(default=5, ge=1, le=15)
     enabled: bool = Field(default=True)
 
 
 class MobileGoalBindConnectorRequest(BaseModel):
     connector_id: str = Field(..., min_length=6, max_length=64)
+
+
+class ConnectorPolicyCheckRequest(BaseModel):
+    action: str = Field(..., min_length=1, max_length=64, description="Action verb (submit/edit/approve/etc.)")
+    goal: str = Field(..., min_length=3, max_length=1024, description="Goal context for policy check")
+    channel: str = Field(
+        default="store_ops",
+        pattern="^(store_ops|web_research|content_ops|custom)$",
+        description="Execution profile used for policy context",
+    )
+    priority: GoalPriority = Field(default=GoalPriority.normal)
+    step_risk: str = Field(
+        default="medium",
+        pattern="^(low|medium|high)$",
+        description="Synthetic step risk tier for policy evaluation",
+    )
+    owner: str = Field(default="shopify-app", max_length=256)
+    targets: List[str] = Field(default_factory=list, description="Optional affected resources/targets")
+    connector_id: Optional[str] = Field(default=None, description="Connector for optional outbound policy event webhook")
+    emit_webhook: bool = Field(default=False, description="Emit policy event to connector webhook_url if set")
 
 
 CONNECTOR_TEMPLATES: List[Dict[str, Any]] = [
@@ -453,6 +486,8 @@ def _connector_view(record: Dict[str, Any]) -> Dict[str, Any]:
         "auth_type": record["auth_type"],
         "auth_header_name": record["auth_header_name"],
         "default_headers": record.get("default_headers", {}),
+        "webhook_url": record.get("webhook_url", ""),
+        "webhook_timeout_seconds": record.get("webhook_timeout_seconds", 5),
         "shop_domain": record.get("shop_domain", ""),
         "shopify_api_version": record.get("shopify_api_version", ""),
         "enabled": record["enabled"],
@@ -495,21 +530,11 @@ def _build_shopify_endpoint(shop_domain: str, api_version: str) -> str:
     return f"https://{domain}/admin/api/{version}/graphql.json"
 
 
-def _build_scbe_step_payload(record: Dict[str, Any], step: Dict[str, Any]) -> Dict[str, Any]:
-    return {
-        "goal_id": record["goal_id"],
-        "channel": record["channel"],
-        "priority": record["priority"],
-        "step": {"name": step["name"], "risk": step["risk"]},
-        "targets": record["targets"],
-        "metadata": {
-            "owner": record["owner"],
-            "ts": int(time.time()),
-        },
-    }
-
-
-def _build_shopify_graphql_payload(record: Dict[str, Any], step: Dict[str, Any]) -> Dict[str, Any]:
+def _build_shopify_graphql_payload(
+    record: Dict[str, Any],
+    step: Dict[str, Any],
+    policy: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
     risk = step.get("risk", "low")
     orders = 8 if risk == "low" else 20
     products = 8 if risk == "low" else 20
@@ -554,21 +579,129 @@ query SCBEStoreOpsRead($orders: Int!, $products: Int!) {
                 "step": step.get("name"),
                 "risk": risk,
                 "owner": record["owner"],
+                "policy": policy,
             }
         },
     }
 
 
-def _build_connector_payload(record: Dict[str, Any], step: Dict[str, Any]) -> Dict[str, Any]:
+def _build_connector_payload(
+    record: Dict[str, Any],
+    step: Dict[str, Any],
+    policy: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
     mode = record.get("payload_mode", ConnectorPayloadMode.scbe_step.value)
     if mode == ConnectorPayloadMode.raw_step.value:
         return {"step": step, "goal_id": record["goal_id"]}
     if mode == ConnectorPayloadMode.shopify_graphql_read.value:
-        return _build_shopify_graphql_payload(record, step)
-    return _build_scbe_step_payload(record, step)
+        return _build_shopify_graphql_payload(record, step, policy=policy)
+    return _build_scbe_step_payload(record, step, policy=policy)
 
 
-def _dispatch_connector_step(record: Dict[str, Any], step: Dict[str, Any]) -> Dict[str, Any]:
+def _build_scbe_step_payload(
+    record: Dict[str, Any],
+    step: Dict[str, Any],
+    policy: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    payload = {
+        "goal_id": record["goal_id"],
+        "channel": record["channel"],
+        "priority": record["priority"],
+        "step": {"name": step["name"], "risk": step["risk"]},
+        "targets": record["targets"],
+        "metadata": {
+            "owner": record["owner"],
+            "ts": int(time.time()),
+        },
+    }
+    if policy is not None:
+        payload["scbe_policy"] = policy
+    return payload
+
+
+def _goal_action_policy_text(record: Dict[str, Any], step: Dict[str, Any]) -> str:
+    target_text = ", ".join(record.get("targets", []))
+    return (
+        f"action={step['name']} "
+        f"risk={step.get('risk', 'low')} "
+        f"goal={record['goal']} "
+        f"channel={record['channel']} "
+        f"owner={record['owner']} "
+        f"priority={record['priority']} "
+        f"targets={target_text}"
+    )
+
+
+def _evaluate_connector_policy(record: Dict[str, Any], step: Dict[str, Any]) -> Dict[str, Any]:
+    result = evaluate_text(_goal_action_policy_text(record, step), profile="enterprise")
+    decision = result.get("decision", PolicyDecision.quarantine.value)
+    if decision not in (PolicyDecision.allow.value, PolicyDecision.quarantine.value, PolicyDecision.deny.value):
+        decision = PolicyDecision.deny.value
+    if decision == "ESCALATE":
+        decision = PolicyDecision.quarantine.value
+
+    return {
+        "version": "policy_v1",
+        "verdict": decision,
+        "risk_score": float(result.get("risk_score", 0.0)),
+        "decision": decision,
+        "coherence": float(result.get("coherence", 0.0)),
+        "threat_count": int(result.get("threat_count", 0)),
+        "timestamp": result.get("timestamp", ""),
+        "profile": result.get("profile", "enterprise"),
+    }
+
+
+def _emit_connector_webhook(
+    connector: Dict[str, Any],
+    payload: Dict[str, Any],
+) -> Dict[str, Any]:
+    webhook_url = (connector.get("webhook_url") or "").strip()
+    if not webhook_url:
+        return {"ok": False, "code": "webhook_not_configured"}
+
+    headers = {"Content-Type": "application/json"}
+    body = json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    req = urlrequest.Request(
+        webhook_url,
+        data=body,
+        headers=headers,
+        method="POST",
+    )
+    timeout_seconds = int(connector.get("webhook_timeout_seconds", 5))
+    try:
+        with urlrequest.urlopen(req, timeout=timeout_seconds) as response:
+            return {
+                "ok": True,
+                "status": int(response.status),
+                "bytes": int(response.length or 0),
+            }
+    except HTTPError as exc:
+        return {
+            "ok": False,
+            "code": f"webhook_http_{exc.code}",
+            "status": int(exc.code),
+            "error": exc.reason,
+        }
+    except URLError as exc:
+        return {
+            "ok": False,
+            "code": "webhook_url_error",
+            "error": str(exc.reason),
+        }
+    except Exception as exc:
+        return {
+            "ok": False,
+            "code": "webhook_error",
+            "error": str(exc),
+        }
+
+
+def _dispatch_connector_step(
+    record: Dict[str, Any],
+    step: Dict[str, Any],
+    policy: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
     if record["execution_mode"] != "connector":
         return {"ok": True, "mode": record["execution_mode"], "detail": "non-connector-mode"}
 
@@ -582,7 +715,7 @@ def _dispatch_connector_step(record: Dict[str, Any], step: Dict[str, Any]) -> Di
     if not connector.get("enabled", False):
         return {"ok": False, "code": "connector_disabled", "detail": "connector disabled"}
 
-    payload = _build_connector_payload(record, step)
+    payload = _build_connector_payload(record, step, policy=policy)
 
     headers = {"Content-Type": "application/json"}
     for key, value in record.get("default_headers", {}).items():
@@ -836,6 +969,63 @@ async def governance_check(
         raise HTTPException(500, f"Governance check failed: {str(e)}")
 
 
+@app.post("/mobile/connectors/policy-check", tags=["Governance"])
+async def mobile_connector_policy_check(
+    request: ConnectorPolicyCheckRequest,
+    user: str = Depends(verify_api_key),
+):
+    """
+    ## Connector Policy Check
+
+    Evaluate SCBE governance for a connector action (submit/edit) without executing it.
+    Returns decision tiers: ALLOW, QUARANTINE, DENY.
+    """
+    record = {
+        "goal_id": "policy_check",
+        "owner": request.owner,
+        "goal": request.goal,
+        "channel": request.channel,
+        "priority": request.priority.value,
+        "targets": request.targets,
+    }
+    step = {
+        "name": f"shopify_{request.action}",
+        "risk": request.step_risk,
+    }
+
+    policy = _evaluate_connector_policy(record, step)
+    result: Dict[str, Any] = {
+        "status": "ok",
+        "action": request.action,
+        "policy": policy,
+    }
+
+    if request.emit_webhook:
+        if not request.connector_id:
+            result["webhook"] = {
+                "ok": False,
+                "code": "connector_id_required",
+                "detail": "emit_webhook=true requires connector_id",
+            }
+        else:
+            connector = CONNECTOR_STORE.get(request.connector_id)
+            if not connector or connector["owner"] != user:
+                result["webhook"] = {"ok": False, "code": "connector_not_found"}
+            else:
+                result["webhook"] = _emit_connector_webhook(
+                    connector,
+                    {
+                        "event": "policy_check",
+                        "action": request.action,
+                        "goal": request.goal,
+                        "targets": request.targets,
+                        "policy": policy,
+                    },
+                )
+
+    return result
+
+
 @app.post("/simulate-attack", tags=["Demo"])
 async def simulate_attack(request: SimulateAttackRequest):
     """
@@ -939,6 +1129,8 @@ async def register_mobile_connector(
         "auth_token": request.auth_token,
         "auth_header_name": auth_header_name,
         "default_headers": safe_headers,
+        "webhook_url": request.webhook_url.strip(),
+        "webhook_timeout_seconds": int(request.webhook_timeout_seconds),
         "shop_domain": shop_domain,
         "shopify_api_version": request.shopify_api_version,
         "enabled": bool(request.enabled),
@@ -1147,6 +1339,47 @@ async def advance_mobile_goal(
 
     step = record["steps"][idx]
     record["current_step_index"] = idx
+    governance = None
+    connector = None
+    if record["execution_mode"] == "connector":
+        connector = CONNECTOR_STORE.get(record.get("connector_id"))
+
+    if record["execution_mode"] == "connector":
+        governance = _evaluate_connector_policy(record, step)
+        if governance["verdict"] == PolicyDecision.deny.value:
+            now = int(time.time())
+            record["status"] = GoalStatus.failed.value
+            record["updated_at"] = now
+            record["steps"][idx]["policy"] = governance
+            record["events"].append(
+                {
+                    "ts": now,
+                    "event": "policy_decision",
+                    "detail": f"DENY:{governance['verdict']}:{step['name']}",
+                }
+            )
+            return {
+                "status": "error",
+                "data": _goal_view(record),
+                "governance": governance,
+                "dispatch": {
+                    "ok": False,
+                    "code": "policy_denied",
+                    "detail": "SCBE policy blocked connector action",
+                },
+            }
+        if governance["verdict"] == PolicyDecision.quarantine.value:
+            record["status"] = GoalStatus.review_required.value
+            record["updated_at"] = int(time.time())
+            record["steps"][idx]["policy"] = governance
+            record["events"].append(
+                {
+                    "ts": record["updated_at"],
+                    "event": "policy_decision",
+                    "detail": f"QUARANTINE:{step['name']}",
+                }
+            )
+            return {"status": "blocked", "data": _goal_view(record), "governance": governance}
 
     if (
         step["risk"] == "high"
@@ -1164,11 +1397,13 @@ async def advance_mobile_goal(
         )
         return {"status": "blocked", "data": _goal_view(record)}
 
-    dispatch = _dispatch_connector_step(record, step)
+    dispatch = _dispatch_connector_step(record, step, policy=governance)
     if not dispatch.get("ok", False):
         now = int(time.time())
         record["status"] = GoalStatus.failed.value
         record["updated_at"] = now
+        if governance is not None:
+            dispatch["governance"] = governance
         record["events"].append(
             {
                 "ts": now,
@@ -1182,9 +1417,24 @@ async def advance_mobile_goal(
     record["status"] = GoalStatus.running.value
     record["steps"][idx]["status"] = "done"
     record["steps"][idx]["completed_at"] = now
+    if governance is not None:
+        record["steps"][idx]["policy"] = governance
     if request.note:
         record["steps"][idx]["note"] = request.note
     if record["execution_mode"] == "connector":
+        if connector is not None:
+            webhook_result = _emit_connector_webhook(
+                connector,
+                {
+                    "goal_id": record["goal_id"],
+                    "connector_id": connector["connector_id"],
+                    "step": step,
+                    "policy": governance,
+                    "dispatch": dispatch,
+                },
+            )
+            record["steps"][idx]["webhook"] = webhook_result
+            dispatch["webhook"] = webhook_result
         record["steps"][idx]["dispatch"] = {
             "status": dispatch.get("status"),
             "detail": dispatch.get("detail", ""),
@@ -1198,7 +1448,10 @@ async def advance_mobile_goal(
         record["completed_at"] = now
         record["events"].append({"ts": now, "event": "goal_completed", "detail": ""})
 
-    return {"status": "ok", "data": _goal_view(record)}
+    result = {"status": "ok", "data": _goal_view(record)}
+    if governance is not None:
+        result["governance"] = governance
+    return result
 
 
 @app.get("/health", tags=["System"])

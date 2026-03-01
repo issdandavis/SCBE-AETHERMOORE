@@ -297,11 +297,8 @@ class RWPv3Protocol:
         ct = self.tokenizer.decode_section("ct", envelope.ct)
         tag = self.tokenizer.decode_section("tag", envelope.tag)
 
-        # Derive decryption key (fallback to placeholder if KDF unavailable)
-        try:
-            key = self._derive_key(password, salt)
-        except Exception:
-            key = b"\x00" * 32
+        # Derive decryption key — must succeed or abort
+        key = self._derive_key(password, salt)
 
         # Optional: Hybrid PQC key exchange
         if self.enable_pqc and envelope.ml_kem_ct and ml_kem_secret_key:

@@ -74,6 +74,8 @@ artifacts/test_swarm_hub/
 
 # Training runs (large model artifacts)
 training/runs/
+training/ingest/local_cloud_sync_state.json
+training/ingest/latest_local_cloud_sync.txt
 
 # Generated/combined training data (regeneratable via scripts/merge_and_upload.py)
 training-data/sft_combined*.jsonl
