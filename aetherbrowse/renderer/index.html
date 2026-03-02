@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AetherBrowse</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0d1117; color: #c9d1d9; display: flex; flex-direction: column; height: 100vh; }
+
+    /* Top bar */
+    .top-bar { height: 50px; background: #161b22; display: flex; align-items: center; padding: 0 12px; gap: 8px; border-bottom: 1px solid #30363d; }
+    .nav-btn { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 16px; }
+    .nav-btn:hover { background: #30363d; }
+    .url-bar { flex: 1; background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; padding: 6px 12px; border-radius: 8px; font-size: 14px; }
+    .url-bar:focus { outline: none; border-color: #58a6ff; }
+    .runtime-dot { width: 10px; height: 10px; border-radius: 50%; background: #f85149; margin-left: 8px; }
+    .runtime-dot.connected { background: #3fb950; }
+
+    /* Main layout */
+    .main { display: flex; flex: 1; overflow: hidden; }
+
+    /* Sidebar */
+    .sidebar { width: 280px; background: #161b22; border-right: 1px solid #30363d; display: flex; flex-direction: column; overflow-y: auto; }
+    .sidebar h3 { padding: 12px; font-size: 13px; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; }
+    .agent-card { padding: 10px 12px; border-bottom: 1px solid #21262d; }
+    .agent-card .name { font-weight: 600; color: #58a6ff; font-size: 13px; }
+    .agent-card .status { font-size: 11px; color: #8b949e; margin-top: 2px; }
+    .agent-card .tongue { display: inline-block; background: #21262d; padding: 1px 6px; border-radius: 4px; font-size: 10px; margin-top: 4px; }
+
+    /* Browser pane placeholder */
+    .browser-pane { flex: 1; display: flex; align-items: center; justify-content: center; color: #484f58; font-size: 14px; }
+
+    /* Bottom panel */
+    .bottom-panel { height: 200px; background: #161b22; border-top: 1px solid #30363d; display: flex; flex-direction: column; }
+    .panel-tabs { display: flex; gap: 0; border-bottom: 1px solid #21262d; }
+    .panel-tab { padding: 8px 16px; font-size: 12px; cursor: pointer; color: #8b949e; border-bottom: 2px solid transparent; }
+    .panel-tab.active { color: #58a6ff; border-bottom-color: #58a6ff; }
+    .panel-content { flex: 1; overflow-y: auto; padding: 8px 12px; font-family: 'Cascadia Code', monospace; font-size: 12px; }
+    .log-entry { padding: 2px 0; border-bottom: 1px solid #0d1117; }
+    .log-allow { color: #3fb950; }
+    .log-deny { color: #f85149; }
+    .log-quarantine { color: #d29922; }
+
+    /* Command bar */
+    .command-bar { display: flex; padding: 8px 12px; background: #0d1117; border-top: 1px solid #30363d; }
+    .command-input { flex: 1; background: #161b22; border: 1px solid #30363d; color: #c9d1d9; padding: 8px 12px; border-radius: 8px; font-size: 13px; }
+    .command-input:focus { outline: none; border-color: #58a6ff; }
+    .send-btn { background: #238636; border: none; color: white; padding: 8px 16px; border-radius: 8px; margin-left: 8px; cursor: pointer; font-weight: 600; }
+    .send-btn:hover { background: #2ea043; }
+  </style>
+</head>
+<body>
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <button class="nav-btn" onclick="aetherbrowse.goBack()">&#8592;</button>
+    <button class="nav-btn" onclick="aetherbrowse.goForward()">&#8594;</button>
+    <input class="url-bar" id="urlBar" placeholder="Enter URL or search..." onkeydown="if(event.key==='Enter')aetherbrowse.navigateTo(this.value)">
+    <div class="runtime-dot" id="runtimeDot" title="Agent Runtime: Disconnected"></div>
+  </div>
+
+  <!-- Main Layout -->
+  <div class="main">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h3>Active Agents</h3>
+      <div class="agent-card">
+        <div class="name">Kael (Executor)</div>
+        <div class="status">Idle — waiting for task</div>
+        <span class="tongue" style="color:#e3b341">CA</span>
+      </div>
+      <div class="agent-card">
+        <div class="name">Aria (Validator)</div>
+        <div class="status">Idle — waiting for task</div>
+        <span class="tongue" style="color:#58a6ff">AV</span>
+      </div>
+      <div class="agent-card">
+        <div class="name">Zara (Leader)</div>
+        <div class="status">Idle — waiting for task</div>
+        <span class="tongue" style="color:#f0883e">KO</span>
+      </div>
+      <div class="agent-card">
+        <div class="name">Polly (Observer)</div>
+        <div class="status">Idle — waiting for task</div>
+        <span class="tongue" style="color:#a371f7">UM</span>
+      </div>
+
+      <h3>DM Threads</h3>
+      <div style="padding: 12px; color: #484f58; font-size: 12px;">No active threads</div>
+    </div>
+
+    <!-- Browser pane (BrowserView renders on top of this) -->
+    <div class="browser-pane">
+      Browser view renders here (Electron BrowserView overlay)
+    </div>
+  </div>
+
+  <!-- Bottom Panel -->
+  <div class="bottom-panel">
+    <div class="panel-tabs">
+      <div class="panel-tab active">Governance Log</div>
+      <div class="panel-tab">Step Plan</div>
+      <div class="panel-tab">Training Data</div>
+    </div>
+    <div class="panel-content" id="logContent">
+      <div class="log-entry log-allow">[ALLOW] AetherBrowse initialized — governance active</div>
+    </div>
+
+    <!-- Command Bar -->
+    <div class="command-bar">
+      <input class="command-input" id="commandInput" placeholder="Tell your agents what to do... (e.g., 'upload products to Gumroad')" onkeydown="if(event.key==='Enter')sendCommand()">
+      <button class="send-btn" onclick="sendCommand()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    // URL bar tracking
+    aetherbrowse.onNavigation(({ url }) => {
+      document.getElementById('urlBar').value = url;
+    });
+
+    // Runtime connection status
+    aetherbrowse.onRuntimeStatus(({ connected }) => {
+      const dot = document.getElementById('runtimeDot');
+      dot.className = connected ? 'runtime-dot connected' : 'runtime-dot';
+      dot.title = connected ? 'Agent Runtime: Connected' : 'Agent Runtime: Disconnected';
+    });
+
+    // Agent messages → governance log
+    aetherbrowse.onAgentMessage((msg) => {
+      const log = document.getElementById('logContent');
+      const cls = msg.governance?.decision === 'ALLOW' ? 'log-allow'
+                : msg.governance?.decision === 'DENY' ? 'log-deny'
+                : 'log-quarantine';
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${cls}`;
+      entry.textContent = `[${msg.governance?.decision || 'INFO'}] ${msg.from || 'system'}: ${msg.payload?.work_done || msg.message || JSON.stringify(msg)}`;
+      log.appendChild(entry);
+      log.scrollTop = log.scrollHeight;
+    });
+
+    // Send command
+    function sendCommand() {
+      const input = document.getElementById('commandInput');
+      const text = input.value.trim();
+      if (!text) return;
+      aetherbrowse.sendCommand(text);
+      // Show in log
+      const log = document.getElementById('logContent');
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.textContent = `[USER] ${text}`;
+      log.appendChild(entry);
+      input.value = '';
+    }
+  </script>
+</body>
+</html>

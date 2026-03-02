@@ -1,0 +1,135 @@
+# AetherBrowse — Governance Policies
+# Every browser action passes through SCBE governance before execution.
+
+version: "0.1.0"
+
+# Default decision when no rule matches
+default_decision: ALLOW
+
+# Domain-level policies
+domains:
+  # Always allowed
+  allow_list:
+    - "*.google.com"
+    - "*.github.com"
+    - "*.huggingface.co"
+    - "*.notion.so"
+    - "*.shopify.com"
+    - "*.gumroad.com"
+    - "*.airtable.com"
+    - "*.stackoverflow.com"
+    - "*.arxiv.org"
+    - "*.wikipedia.org"
+
+  # Always blocked
+  deny_list:
+    - "*.malware-domain.example"
+
+  # Requires elevated governance check
+  quarantine_patterns:
+    - "*banking*"
+    - "*wallet*"
+    - "*crypto-exchange*"
+
+# Action-level policies
+actions:
+  navigate:
+    decision: ALLOW
+    coherence_threshold: 0.5
+
+  click:
+    decision: ALLOW
+    coherence_threshold: 0.6
+
+  fill:
+    decision: ALLOW
+    coherence_threshold: 0.7
+    # Higher threshold for form filling — could submit sensitive data
+
+  upload:
+    decision: QUARANTINE
+    coherence_threshold: 0.85
+    # File uploads always require elevated governance
+    require_user_confirm: true
+
+  evaluate:
+    decision: QUARANTINE
+    coherence_threshold: 0.9
+    # JavaScript execution is high-risk
+    max_script_length: 5000
+
+  upload_product:
+    decision: QUARANTINE
+    coherence_threshold: 0.85
+    require_user_confirm: true
+
+  huggingface_upload:
+    decision: QUARANTINE
+    coherence_threshold: 0.8
+    require_user_confirm: true
+
+# Rate limiting
+rate_limits:
+  actions_per_minute: 30
+  navigations_per_minute: 10
+  uploads_per_hour: 20
+
+# Agent permissions (which agents can do what)
+agent_permissions:
+  kael:
+    role: executor
+    tongue: CA
+    allowed_actions:
+      - navigate
+      - click
+      - fill
+      - upload
+      - evaluate
+      - screenshot
+      - snapshot
+      - upload_product
+      - huggingface_upload
+
+  aria:
+    role: validator
+    tongue: AV
+    allowed_actions:
+      - snapshot
+      - screenshot
+      - get_text
+      - evaluate
+
+  zara:
+    role: leader
+    tongue: KO
+    allowed_actions:
+      - navigate
+      - snapshot
+      - screenshot
+      - get_text
+    # Leader can override QUARANTINE decisions
+
+  polly:
+    role: observer
+    tongue: UM
+    allowed_actions:
+      - snapshot
+      - screenshot
+      - get_text
+    # Observer is read-only — cannot modify page state
+
+# Training data generation
+training:
+  enabled: true
+  output_dir: "training-data/aetherbrowse/"
+  # Generate SFT pairs from every governed action
+  sft_on_allow: true
+  sft_on_deny: true
+  # Generate DPO pairs from quarantine decisions
+  dpo_on_quarantine: true
+
+# Logging
+logging:
+  level: INFO
+  governance_log: "artifacts/aetherbrowse/governance.jsonl"
+  action_log: "artifacts/aetherbrowse/actions.jsonl"

@@ -1,0 +1,24 @@
+{
+  "name": "aetherbrowse",
+  "version": "0.1.0",
+  "description": "SCBE-Governed AI Browser — Comet-class automation with 14-layer security",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "electron .",
+    "build": "electron-builder",
+    "runtime": "python runtime/server.py"
+  },
+  "dependencies": {
+    "electron": "^34.0.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "electron-builder": "^25.1.8"
+  },
+  "author": "Issac Davis <issdandavis@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/issdandavis/SCBE-AETHERMOORE"
+  }
+}

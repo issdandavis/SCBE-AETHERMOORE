@@ -34,6 +34,20 @@ Health check (new terminal):
 Invoke-RestMethod -Method Get -Uri "http://127.0.0.1:8001/health"
 ```
 
+### Step 2a: Start Browser-as-a-Service (BaaS)
+
+If `src.api.browser_saas` is present, run:
+
+```powershell
+python -m uvicorn src.api.browser_saas:app --host 127.0.0.1 --port 8600
+```
+
+Smoke check the service:
+
+```powershell
+python scripts/baas_smoke_client.py --base-url http://127.0.0.1:8600
+```
+
 ## Step 3: Execute multi-agent browser jobs
 
 Commands:

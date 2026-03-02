@@ -1,0 +1,83 @@
+# AetherBrowse — Model Routing Configuration
+# Routes LLM requests through OctoArmor (multi-provider fleet).
+
+version: "0.1.0"
+
+# OctoArmor connection
+octoarmor:
+  module: "src.fleet.octo_armor"
+  # Priority: FREE → CHEAP → PREMIUM
+  strategy: "cost_ascending"
+
+# Task-to-model mapping
+# Each task type routes to the best model for its complexity level.
+task_routing:
+  # Simple classification (allow/deny/quarantine)
+  governance_check:
+    tier: free
+    preferred:
+      - groq          # Llama-3.3-70B — fast, free
+      - cerebras      # Llama-3.3-70B — fast, free
+    fallback:
+      - google_ai     # Gemini 2.0 Flash
+    max_tokens: 256
+    temperature: 0.1
+
+  # DOM understanding and element selection
+  page_understanding:
+    tier: cheap
+    preferred:
+      - google_ai     # Gemini 2.0 Flash — good vision
+      - openrouter    # Routing to best available
+    fallback:
+      - groq
+    max_tokens: 1024
+    temperature: 0.2
+
+  # Multi-step planning (what to click, fill, upload)
+  action_planning:
+    tier: cheap
+    preferred:
+      - google_ai     # Gemini 2.0 Flash
+      - openrouter
+    fallback:
+      - claude        # Claude Haiku
+    max_tokens: 2048
+    temperature: 0.3
+
+  # Complex reasoning (multi-page workflows, error recovery)
+  complex_reasoning:
+    tier: premium
+    preferred:
+      - claude        # Claude Sonnet/Opus
+      - xai           # Grok
+    fallback:
+      - google_ai
+    max_tokens: 4096
+    temperature: 0.4
+
+  # Training data generation
+  training_pair_generation:
+    tier: free
+    preferred:
+      - groq
+      - cerebras
+    fallback:
+      - huggingface
+    max_tokens: 512
+    temperature: 0.5
+
+# Provider health check
+health_check:
+  interval_seconds: 300
+  timeout_ms: 5000
+  # Skip providers that fail 3+ times in a row
+  max_consecutive_failures: 3
+
+# Cost tracking
+cost_tracking:
+  enabled: true
+  daily_budget_usd: 1.00
+  # Alert when 80% of daily budget used
+  alert_threshold: 0.8
+  log_file: "artifacts/aetherbrowse/cost_log.jsonl"
