@@ -1,66 +1,389 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AetherBrowse</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0d1117; color: #c9d1d9; display: flex; flex-direction: column; height: 100vh; }
+    :root {
+      --bg: #0d1117;
+      --panel: #161b22;
+      --line: #30363d;
+      --text: #c9d1d9;
+      --muted: #8b949e;
+      --accent: #58a6ff;
+      --ok: #3fb950;
+      --warn: #d29922;
+      --bad: #f85149;
+      --ok-bg: #0f2415;
+      --bad-bg: #2f1115;
+      --warn-bg: #2c2612;
+    }
 
-    /* Top bar */
-    .top-bar { height: 50px; background: #161b22; display: flex; align-items: center; padding: 0 12px; gap: 8px; border-bottom: 1px solid #30363d; }
-    .nav-btn { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 16px; }
-    .nav-btn:hover { background: #30363d; }
-    .url-bar { flex: 1; background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; padding: 6px 12px; border-radius: 8px; font-size: 14px; }
-    .url-bar:focus { outline: none; border-color: #58a6ff; }
-    .runtime-dot { width: 10px; height: 10px; border-radius: 50%; background: #f85149; margin-left: 8px; }
-    .runtime-dot.connected { background: #3fb950; }
+    body {
+      font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
 
-    /* Main layout */
-    .main { display: flex; flex: 1; overflow: hidden; }
+    .top-shell {
+      background: #0f1420;
+      border-bottom: 1px solid var(--line);
+    }
 
-    /* Sidebar */
-    .sidebar { width: 280px; background: #161b22; border-right: 1px solid #30363d; display: flex; flex-direction: column; overflow-y: auto; }
-    .sidebar h3 { padding: 12px; font-size: 13px; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; }
-    .agent-card { padding: 10px 12px; border-bottom: 1px solid #21262d; }
-    .agent-card .name { font-weight: 600; color: #58a6ff; font-size: 13px; }
-    .agent-card .status { font-size: 11px; color: #8b949e; margin-top: 2px; }
-    .agent-card .tongue { display: inline-block; background: #21262d; padding: 1px 6px; border-radius: 4px; font-size: 10px; margin-top: 4px; }
+    .top-bar {
+      height: 50px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
 
-    /* Browser pane placeholder */
-    .browser-pane { flex: 1; display: flex; align-items: center; justify-content: center; color: #484f58; font-size: 14px; }
+    .toolbar-left,
+    .toolbar-mid,
+    .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
 
-    /* Bottom panel */
-    .bottom-panel { height: 200px; background: #161b22; border-top: 1px solid #30363d; display: flex; flex-direction: column; }
-    .panel-tabs { display: flex; gap: 0; border-bottom: 1px solid #21262d; }
-    .panel-tab { padding: 8px 16px; font-size: 12px; cursor: pointer; color: #8b949e; border-bottom: 2px solid transparent; }
-    .panel-tab.active { color: #58a6ff; border-bottom-color: #58a6ff; }
-    .panel-content { flex: 1; overflow-y: auto; padding: 8px 12px; font-family: 'Cascadia Code', monospace; font-size: 12px; }
-    .log-entry { padding: 2px 0; border-bottom: 1px solid #0d1117; }
-    .log-allow { color: #3fb950; }
-    .log-deny { color: #f85149; }
-    .log-quarantine { color: #d29922; }
+    .toolbar-mid { flex: 1; }
 
-    /* Command bar */
-    .command-bar { display: flex; padding: 8px 12px; background: #0d1117; border-top: 1px solid #30363d; }
-    .command-input { flex: 1; background: #161b22; border: 1px solid #30363d; color: #c9d1d9; padding: 8px 12px; border-radius: 8px; font-size: 13px; }
-    .command-input:focus { outline: none; border-color: #58a6ff; }
-    .send-btn { background: #238636; border: none; color: white; padding: 8px 16px; border-radius: 8px; margin-left: 8px; cursor: pointer; font-weight: 600; }
+    .toolbar-right {
+      min-width: 112px;
+      justify-content: flex-end;
+    }
+
+    .nav-btn,
+    .tool-btn {
+      background: #21262d;
+      border: 1px solid var(--line);
+      color: var(--text);
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      min-width: 32px;
+      text-align: center;
+      line-height: 1;
+      user-select: none;
+    }
+
+    .nav-btn:hover,
+    .tool-btn:hover {
+      background: #30363d;
+    }
+
+    .url-bar {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      color: var(--text);
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      min-width: 0;
+    }
+
+    .url-bar:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.1);
+    }
+
+    .runtime-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--bad);
+      margin-left: 4px;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3) inset;
+      flex: 0 0 10px;
+    }
+
+    .runtime-dot.connected {
+      background: var(--ok);
+    }
+
+    .tab-strip {
+      height: 34px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 10px;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: thin;
+      scrollbar-color: #30363d var(--panel);
+    }
+
+    .tab-list {
+      display: flex;
+      gap: 6px;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #0f1622;
+      border: 1px solid #27303b;
+      border-radius: 8px 8px 0 0;
+      padding: 5px 8px;
+      max-width: 240px;
+      cursor: pointer;
+      min-width: 120px;
+    }
+
+    .tab.active {
+      background: #20252e;
+      border-color: #2f6fbf;
+      color: white;
+    }
+
+    .tab-title {
+      font-size: 12px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tab-sub {
+      font-size: 10px;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 140px;
+    }
+
+    .tab-close {
+      border: none;
+      color: #8e96a1;
+      background: transparent;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tab-close:hover {
+      background: #2d333a;
+      color: #f0f6fc;
+    }
+
+    .new-tab {
+      border: 1px dashed #2d3745;
+      background: #101722;
+      color: #9ca7b3;
+      width: 32px;
+      justify-content: center;
+      padding: 0;
+      min-width: 32px;
+    }
+
+    .main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: var(--panel);
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      flex: 0 0 auto;
+    }
+
+    .sidebar h3 {
+      padding: 12px;
+      font-size: 13px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .agent-card {
+      padding: 10px 12px;
+      border-bottom: 1px solid #21262d;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .agent-card .name {
+      font-weight: 600;
+      color: var(--accent);
+      font-size: 13px;
+    }
+
+    .agent-card .status {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .agent-card .tongue {
+      width: fit-content;
+      display: inline-block;
+      background: #21262d;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      margin-top: 4px;
+    }
+
+    .browser-pane {
+      flex: 1;
+      background: #0a0d12;
+      color: #424a56;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .bottom-panel {
+      height: 210px;
+      background: var(--panel);
+      border-top: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid #21262d;
+      overflow-x: auto;
+    }
+
+    .panel-tab {
+      padding: 8px 16px;
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--muted);
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+    }
+
+    .panel-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      background: rgba(88, 166, 255, 0.08);
+    }
+
+    .panel-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 12px;
+      font-family: 'Cascadia Code', 'Consolas', monospace;
+      font-size: 12px;
+      line-height: 1.3;
+    }
+
+    .log-entry {
+      padding: 2px 0;
+      border-bottom: 1px solid #0d1117;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    .log-allow { color: var(--ok); }
+    .log-deny { color: var(--bad); }
+    .log-quarantine { color: var(--warn); }
+
+    .command-bar {
+      display: flex;
+      padding: 8px 12px;
+      background: #0d1117;
+      border-top: 1px solid var(--line);
+      gap: 8px;
+    }
+
+    .command-input {
+      flex: 1;
+      background: #161b22;
+      border: 1px solid var(--line);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .command-input:focus { outline: none; border-color: var(--accent); }
+
+    .send-btn {
+      background: #238636;
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      margin-left: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
     .send-btn:hover { background: #2ea043; }
+
+    .statusline {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 11px;
+      padding: 6px 12px;
+      background: #0c1118;
+      border-top: 1px solid #1e242e;
+    }
   </style>
 </head>
 <body>
-  <!-- Top Bar -->
-  <div class="top-bar">
-    <button class="nav-btn" onclick="aetherbrowse.goBack()">&#8592;</button>
-    <button class="nav-btn" onclick="aetherbrowse.goForward()">&#8594;</button>
-    <input class="url-bar" id="urlBar" placeholder="Enter URL or search..." onkeydown="if(event.key==='Enter')aetherbrowse.navigateTo(this.value)">
-    <div class="runtime-dot" id="runtimeDot" title="Agent Runtime: Disconnected"></div>
+  <div class="top-shell">
+    <div class="top-bar">
+      <div class="toolbar-left">
+        <button class="nav-btn" id="backBtn" title="Back">&#8592;</button>
+        <button class="nav-btn" id="forwardBtn" title="Forward">&#8594;</button>
+        <button class="nav-btn" id="refreshBtn" title="Reload">⟳</button>
+        <button class="nav-btn" id="stopBtn" title="Stop">✕</button>
+        <button class="nav-btn" id="homeBtn" title="Home">⌂</button>
+      </div>
+      <div class="toolbar-mid">
+        <input
+          class="url-bar"
+          id="urlBar"
+          placeholder="Search web or enter a URL..."
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+      <div class="toolbar-right">
+        <span class="runtime-dot" id="runtimeDot" title="Agent Runtime: Disconnected"></span>
+        <button class="tool-btn" id="readerBtn" title="Read article from current page">Reader</button>
+        <button class="tool-btn" id="videoBtn" title="Inspect page media">Video</button>
+      </div>
+    </div>
+
+    <div class="tab-strip">
+      <div class="tab-list" id="tabList"></div>
+      <button class="nav-btn new-tab" id="newTabBtn" title="New tab">+</button>
+    </div>
   </div>
 
-  <!-- Main Layout -->
   <div class="main">
-    <!-- Sidebar -->
     <div class="sidebar">
       <h3>Active Agents</h3>
       <div class="agent-card">
@@ -87,14 +410,11 @@
       <h3>DM Threads</h3>
       <div style="padding: 12px; color: #484f58; font-size: 12px;">No active threads</div>
     </div>
-
-    <!-- Browser pane (BrowserView renders on top of this) -->
     <div class="browser-pane">
       Browser view renders here (Electron BrowserView overlay)
     </div>
   </div>
 
-  <!-- Bottom Panel -->
   <div class="bottom-panel">
     <div class="panel-tabs">
       <div class="panel-tab active">Governance Log</div>
@@ -104,54 +424,284 @@
     <div class="panel-content" id="logContent">
       <div class="log-entry log-allow">[ALLOW] AetherBrowse initialized — governance active</div>
     </div>
-
-    <!-- Command Bar -->
     <div class="command-bar">
-      <input class="command-input" id="commandInput" placeholder="Tell your agents what to do... (e.g., 'upload products to Gumroad')" onkeydown="if(event.key==='Enter')sendCommand()">
-      <button class="send-btn" onclick="sendCommand()">Send</button>
+      <input
+        class="command-input"
+        id="commandInput"
+        placeholder="Tell your agents what to do... (e.g., 'snapshot current page')"
+        autocomplete="off"
+      />
+      <button class="send-btn" id="sendCommandBtn">Send</button>
     </div>
+    <div class="statusline" id="statusLine">Ready</div>
   </div>
 
   <script>
-    // URL bar tracking
-    aetherbrowse.onNavigation(({ url }) => {
-      document.getElementById('urlBar').value = url;
-    });
+    const state = {
+      tabs: [],
+      activeTabId: null,
+      focusedUrlInput: false,
+    };
 
-    // Runtime connection status
-    aetherbrowse.onRuntimeStatus(({ connected }) => {
-      const dot = document.getElementById('runtimeDot');
-      dot.className = connected ? 'runtime-dot connected' : 'runtime-dot';
-      dot.title = connected ? 'Agent Runtime: Connected' : 'Agent Runtime: Disconnected';
-    });
+    const tabList = document.getElementById('tabList');
+    const urlBar = document.getElementById('urlBar');
+    const commandInput = document.getElementById('commandInput');
+    const runtimeDot = document.getElementById('runtimeDot');
+    const logContent = document.getElementById('logContent');
+    const statusLine = document.getElementById('statusLine');
 
-    // Agent messages → governance log
-    aetherbrowse.onAgentMessage((msg) => {
-      const log = document.getElementById('logContent');
-      const cls = msg.governance?.decision === 'ALLOW' ? 'log-allow'
-                : msg.governance?.decision === 'DENY' ? 'log-deny'
-                : 'log-quarantine';
-      const entry = document.createElement('div');
-      entry.className = `log-entry ${cls}`;
-      entry.textContent = `[${msg.governance?.decision || 'INFO'}] ${msg.from || 'system'}: ${msg.payload?.work_done || msg.message || JSON.stringify(msg)}`;
-      log.appendChild(entry);
-      log.scrollTop = log.scrollHeight;
-    });
+    function shortUrl(url) {
+      return (url || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+    }
 
-    // Send command
+    function setStatus(text) {
+      if (statusLine) statusLine.textContent = text;
+    }
+
+    function appendLog(entry, cls = 'log-entry') {
+      const line = document.createElement('div');
+      line.className = `log-entry ${cls}`;
+      line.textContent = entry;
+      logContent.appendChild(line);
+      logContent.scrollTop = logContent.scrollHeight;
+    }
+
+    function currentTab() {
+      return state.tabs.find((tab) => tab.id === state.activeTabId) || null;
+    }
+
+    function renderTabs() {
+      tabList.innerHTML = '';
+      for (const tab of state.tabs) {
+        const el = document.createElement('button');
+        el.className = `tab ${tab.id === state.activeTabId ? 'active' : ''}`;
+        el.type = 'button';
+
+        const labelWrap = document.createElement('div');
+        labelWrap.style.display = 'flex';
+        labelWrap.style.flexDirection = 'column';
+        labelWrap.style.alignItems = 'flex-start';
+        labelWrap.style.minWidth = '0';
+        labelWrap.style.flex = '1';
+
+        const title = document.createElement('span');
+        title.className = 'tab-title';
+        title.title = tab.title || shortUrl(tab.url);
+        title.textContent = tab.title || 'New tab';
+
+        const sub = document.createElement('span');
+        sub.className = 'tab-sub';
+        sub.title = tab.url || '';
+        sub.textContent = shortUrl(tab.url || '');
+
+        labelWrap.appendChild(title);
+        labelWrap.appendChild(sub);
+
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'tab-close';
+        closeBtn.type = 'button';
+        closeBtn.innerHTML = '&#10005;';
+        closeBtn.title = 'Close tab';
+        closeBtn.addEventListener('click', (evt) => {
+          evt.preventDefault();
+          evt.stopPropagation();
+          aetherbrowse.closeTab(tab.id);
+        });
+
+        el.appendChild(labelWrap);
+        el.appendChild(closeBtn);
+        el.addEventListener('click', () => aetherbrowse.switchTab(tab.id));
+        tabList.appendChild(el);
+      }
+    }
+
+    function setActiveTab(tabId) {
+      const normalized = String(tabId);
+      state.activeTabId = normalized;
+      renderTabs();
+    }
+
+    function setTabUrl(tabId, url) {
+      const tab = state.tabs.find((item) => item.id === tabId);
+      if (!tab) {
+        return;
+      }
+      tab.url = url || '';
+      if (state.activeTabId === tabId && !state.focusedUrlInput) {
+        urlBar.value = tab.url || '';
+      }
+      renderTabs();
+    }
+
+    function setTabTitle(tabId, title) {
+      const tab = state.tabs.find((item) => item.id === tabId);
+      if (!tab) return;
+      tab.title = title || 'New tab';
+      renderTabs();
+    }
+
+    function syncTabsFromRenderer(payload) {
+      state.tabs = Array.isArray(payload.tabs) ? payload.tabs.map((tab) => ({
+        id: String(tab.id),
+        url: tab.url || '',
+        title: tab.title || 'New tab',
+        loading: !!tab.loading,
+      })) : [];
+      state.activeTabId = payload.activeTabId ? String(payload.activeTabId) : (state.activeTabId ? state.activeTabId : (state.tabs[0] && String(state.tabs[0].id)));
+      renderTabs();
+      const active = currentTab();
+      if (active && !state.focusedUrlInput) {
+        urlBar.value = active.url || '';
+      }
+    }
+
+    function sendUrl(openNewTab = false) {
+      const value = urlBar.value.trim();
+      if (!value) return;
+      const payload = {
+        url: value,
+        tabId: state.activeTabId,
+        newTab: openNewTab,
+      };
+      aetherbrowse.navigateTo(payload);
+      setStatus(openNewTab ? 'Opened in new tab' : 'Navigating...');
+    }
+
     function sendCommand() {
-      const input = document.getElementById('commandInput');
-      const text = input.value.trim();
+      const text = commandInput.value.trim();
       if (!text) return;
       aetherbrowse.sendCommand(text);
-      // Show in log
-      const log = document.getElementById('logContent');
-      const entry = document.createElement('div');
-      entry.className = 'log-entry';
-      entry.textContent = `[USER] ${text}`;
-      log.appendChild(entry);
-      input.value = '';
+      appendLog(`[USER] ${text}`, 'log-entry');
+      commandInput.value = '';
+      setStatus('Command sent');
     }
+
+    function sendReaderCommand() {
+      aetherbrowse.sendCommand('extract article');
+      setStatus('Reader extraction requested');
+    }
+
+    function sendVideoCommand() {
+      aetherbrowse.sendCommand('extract video');
+      setStatus('Video extraction requested');
+    }
+
+    aetherbrowse.onNavigation(({ tabId, url }) => {
+      if (!tabId) {
+        const active = currentTab();
+        if (active) {
+          setTabUrl(active.id, url);
+        }
+        return;
+      }
+      setTabUrl(String(tabId), url);
+    });
+
+    aetherbrowse.onPageTitle(({ tabId, title }) => {
+      if (!tabId) {
+        const active = currentTab();
+        if (active) {
+          setTabTitle(active.id, title);
+        }
+        return;
+      }
+      setTabTitle(String(tabId), title);
+    });
+
+    aetherbrowse.onRuntimeStatus(({ connected }) => {
+      runtimeDot.className = connected ? 'runtime-dot connected' : 'runtime-dot';
+      runtimeDot.title = connected ? 'Agent Runtime: Connected' : 'Agent Runtime: Disconnected';
+      setStatus(connected ? 'Runtime connected' : 'Runtime disconnected');
+    });
+
+    aetherbrowse.onTabsUpdated((payload) => {
+      syncTabsFromRenderer(payload || {});
+      setStatus(`Tabs: ${state.tabs.length}`);
+    });
+
+    aetherbrowse.onActiveTabChanged(({ activeTabId }) => {
+      if (activeTabId) {
+        state.activeTabId = String(activeTabId);
+      }
+      renderTabs();
+      const active = currentTab();
+      if (active && !state.focusedUrlInput) {
+        urlBar.value = active.url || '';
+      }
+    });
+
+    aetherbrowse.onAgentMessage((msg) => {
+      const decision = msg.governance?.decision || 'INFO';
+      const cls = decision === 'ALLOW' ? 'log-allow' : decision === 'DENY' ? 'log-deny' : 'log-quarantine';
+      const from = msg.from || 'system';
+      const text = msg.message || msg.payload?.message || msg.payload?.result || '';
+      let preview;
+      if (typeof text === 'object' && text !== null) {
+        preview = JSON.stringify(text);
+      } else {
+        preview = String(text || '');
+      }
+      appendLog(`[${decision}] ${from}: ${preview}`, cls);
+
+      if (msg.payload && msg.payload.result) {
+        appendLog(`Result: ${JSON.stringify(msg.payload.result).slice(0, 250)}`, 'log-entry');
+      }
+      if (msg.type === 'command-result' && msg.payload && msg.payload.action) {
+        const result = msg.payload.result;
+        if (result && result.result) {
+          appendLog(`Action result (${result.action}): ${JSON.stringify(result.result).slice(0, 240)}`, 'log-entry');
+        }
+      }
+    });
+
+    // Buttons
+    document.getElementById('backBtn').addEventListener('click', () => aetherbrowse.goBack(state.activeTabId));
+    document.getElementById('forwardBtn').addEventListener('click', () => aetherbrowse.goForward(state.activeTabId));
+    document.getElementById('refreshBtn').addEventListener('click', () => aetherbrowse.reload(state.activeTabId));
+    document.getElementById('stopBtn').addEventListener('click', () => aetherbrowse.stop(state.activeTabId));
+    document.getElementById('homeBtn').addEventListener('click', () => aetherbrowse.goHome(state.activeTabId));
+    document.getElementById('newTabBtn').addEventListener('click', () => aetherbrowse.newTab());
+    document.getElementById('readerBtn').addEventListener('click', sendReaderCommand);
+    document.getElementById('videoBtn').addEventListener('click', sendVideoCommand);
+    document.getElementById('sendCommandBtn').addEventListener('click', sendCommand);
+
+    urlBar.addEventListener('focus', () => {
+      state.focusedUrlInput = true;
+    });
+    urlBar.addEventListener('blur', () => {
+      state.focusedUrlInput = false;
+    });
+
+    urlBar.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        const openNewTab = event.ctrlKey || event.metaKey || event.shiftKey;
+        sendUrl(openNewTab);
+      }
+    });
+
+    commandInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        sendCommand();
+      }
+    });
+
+    window.addEventListener('keydown', (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 't') {
+        event.preventDefault();
+        aetherbrowse.newTab();
+      }
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'l') {
+        event.preventDefault();
+        urlBar.focus();
+        state.focusedUrlInput = true;
+      }
+    });
+
+    window.addEventListener('message', (event) => {
+      if (event.data?.type === 'aetherbrowse-tabs') {
+        syncTabsFromRenderer(event.data);
+      }
+    });
   </script>
 </body>
 </html>

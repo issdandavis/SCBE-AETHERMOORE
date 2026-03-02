@@ -82,6 +82,7 @@ class AgentRuntime:
     async def handle_user_command(self, text: str):
         """Handle natural language command from user."""
         logger.info(f"User command: {text}")
+        command = text.strip().lower()
 
         # Log the governance check
         await self.send({
@@ -92,7 +93,7 @@ class AgentRuntime:
         })
 
         # For v0.1: simple URL navigation detection
-        if text.startswith("go to ") or text.startswith("navigate to "):
+        if command.startswith("go to ") or command.startswith("navigate to "):
             url = text.replace("go to ", "").replace("navigate to ", "").strip()
             if not url.startswith("http"):
                 url = "https://" + url
@@ -107,7 +108,7 @@ class AgentRuntime:
                 "message": f"Navigating to {url}",
                 "governance": {"decision": "ALLOW", "coherence": 0.92},
             })
-        elif text.startswith("snapshot") or text.startswith("perceive"):
+        elif command.startswith("snapshot") or command.startswith("perceive"):
             # Request a perception snapshot via Playwright worker
             if self.worker_ws:
                 await self.send_to_worker("snapshot")
@@ -124,6 +125,49 @@ class AgentRuntime:
                     "message": "No Playwright worker connected. Cannot perceive.",
                     "governance": {"decision": "QUARANTINE", "coherence": 0.5},
                 })
+        elif "extract article" in command or "reader mode" in command:
+            if self.worker_ws:
+                await self.send_to_worker("extract_article")
+                await self.send({
+                    "type": "governance-event",
+                    "from": "polly",
+                    "message": "Extracting article from current page.",
+                    "governance": {"decision": "ALLOW", "coherence": 0.96},
+                })
+            else:
+                await self.send({
+                    "type": "governance-event",
+                    "from": "polly",
+                    "message": "No Playwright worker connected. Cannot extract article.",
+                    "governance": {"decision": "QUARANTINE", "coherence": 0.5},
+                })
+        elif "extract video" in command or "video mode" in command or "watch video" in command:
+            if self.worker_ws:
+                await self.send_to_worker("extract_video")
+                await self.send({
+                    "type": "governance-event",
+                    "from": "polly",
+                    "message": "Inspecting page video/media content.",
+                    "governance": {"decision": "ALLOW", "coherence": 0.96},
+                })
+            else:
+                await self.send({
+                    "type": "governance-event",
+                    "from": "polly",
+                    "message": "No Playwright worker connected. Cannot inspect media.",
+                    "governance": {"decision": "QUARANTINE", "coherence": 0.5},
+                })
+        elif command in {"reload", "refresh"}:
+            await self.send({
+                "type": "browser-command",
+                "action": "reload",
+            })
+            await self.send({
+                "type": "governance-event",
+                "from": "kael",
+                "message": "Refresh requested.",
+                "governance": {"decision": "ALLOW", "coherence": 0.9},
+            })
         else:
             # PLAN phase: Generate an action plan
             await self.send({
