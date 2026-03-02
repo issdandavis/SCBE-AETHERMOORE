@@ -1,0 +1,133 @@
+{
+  "version": "0.1",
+  "generated_at_utc": "2026-03-02T00:01:05Z",
+  "status": "runtime-canonical",
+  "entries": [
+    {
+      "topic": "Layer 1 context/state generation",
+      "file": "src/symphonic_cipher/scbe_aethermoore/layers/fourteen_layer_pipeline.py",
+      "symbol": "layer_1_complex_context",
+      "notes": "Runtime canonical L1 complex state function."
+    },
+    {
+      "topic": "Layer 2 realification",
+      "file": "src/symphonic_cipher/scbe_aethermoore/layers/fourteen_layer_pipeline.py",
+      "symbol": "layer_2_realify",
+      "notes": "Real channel interleave map from C^D -> R^(2D)."
+    },
+    {
+      "topic": "Layer 3 weighted transform",
+      "file": "src/symphonic_cipher/scbe_aethermoore/layers/fourteen_layer_pipeline.py",
+      "symbol": "layer_3_weighted",
+      "notes": "SPD-weighted embedding with eigen-based sqrt matrix path."
+    },
+    {
+      "topic": "Layer 4 Poincaré map",
+      "file": "src/symphonic_cipher/scbe_aethermoore/layers/fourteen_layer_pipeline.py",
+      "symbol": "layer_4_poincare",
+      "notes": "tanh radial map + in-ball clamp."
+    },
+    {
+      "topic": "Layer 5 hyperbolic metric",
+      "file": "src/symphonic_cipher/scbe_aethermoore/layers/fourteen_layer_pipeline.py",
+      "symbol": "layer_5_hyperbolic_distance",
+      "notes": "Canonical arccosh distance formula + clamp on denominator and cosh argument."
+    },
+    {
+      "topic": "Layer 6 breathing transform",
+      "file": "src/symphonic_cipher/scbe_aethermoore/layers/fourteen_layer_pipeline.py",
+      "symbol": "layer_6_breathing",
+      "notes": "Time-dependent radial diffeomorphism."
+    },
+    {
+      "topic": "Layer 7 phase transform",
+      "file": "src/symphonic_cipher/scbe_aethermoore/layers/fourteen_layer_pipeline.py",
+      "symbol": "layer_7_phase",
+      "notes": "Möbius addition + rotation in first coordinate plane."
+    },
+    {
+      "topic": "Layer 8 realm projection",
+      "file": "src/symphonic_cipher/scbe_aethermoore/layers/fourteen_layer_pipeline.py",
+      "symbol": "layer_8_multi_well",
+      "notes": "d* = min_k d_H(u, μ_k)."
+    },
+    {
+      "topic": "Layer 9 spectral coherence",
+      "file": "src/symphonic_cipher/scbe_aethermoore/layers_9_12.py",
+      "symbol": "compute_spectral_coherence",
+      "notes": "S_spec = 1 - high-frequency ratio."
+    },
+    {
+      "topic": "Layer 10 spin coherence",
+      "file": "src/symphonic_cipher/scbe_aethermoore/layers_9_12.py",
+      "symbol": "compute_spin_coherence",
+      "notes": "Mean phasor magnitude as coherence score."
+    },
+    {
+      "topic": "Layer 11 triadic distance",
+      "file": "src/symphonic_cipher/scbe_aethermoore/layers_9_12.py",
+      "symbol": "compute_triadic_distance",
+      "notes": "Weighted L2 aggregate with configurable lambdas."
+    },
+    {
+      "topic": "Layer 12 bounded harmonic profile",
+      "file": "src/symphonic_cipher/scbe_aethermoore/layers/fourteen_layer_pipeline.py",
+      "symbol": "layer_12_harmonic_scaling",
+      "notes": "production profile: 1 / (1 + d + 2*phase_deviation)."
+    },
+    {
+      "topic": "Layer 12 wall profile",
+      "file": "src/symphonic_cipher/qasi_core.py",
+      "symbol": "harmonic_scaling",
+      "notes": "R^(d^2) with log-domain clamp for overflow control."
+    },
+    {
+      "topic": "Layer 13 risk + decision",
+      "file": "src/symphonic_cipher/scbe_aethermoore/layer_13.py",
+      "symbol": "compute_composite_risk",
+      "notes": "Layer-13 profile with BehavioralRisk×H×Time×Intent and WARN/REVIEW/ALLOW/DENY thresholds."
+    },
+    {
+      "topic": "Wrapper governance graph",
+      "file": "agents/browser/session_manager.py",
+      "symbol": "AetherbrowseSession.execute_action",
+      "notes": "Session -> validator -> backend dispatch -> audit log."
+    },
+    {
+      "topic": "Validation layer",
+      "file": "agents/browser/action_validator.py",
+      "symbol": "ActionValidator.validate",
+      "notes": "Sensitivity + PHDM + bounds + symphonic merge to ALLOW/QUARANTINE/ESCALATE/DENY."
+    },
+    {
+      "topic": "Bounds enforcement",
+      "file": "agents/browser/bounds_checker.py",
+      "symbol": "check_all_bounds",
+      "notes": "6-constraint intersection; violation-count rule maps to session decision."
+    },
+    {
+      "topic": "PHDM containment",
+      "file": "agents/browser/phdm_brain.py",
+      "symbol": "check_containment",
+      "notes": "Euclidean radius + harmonic risk score + 4-tier containment output."
+    },
+    {
+      "topic": "System manifest (global structure)",
+      "file": "docs/scbe_full_system_layer_manifest.json",
+      "symbol": "layer entries + verification",
+      "notes": "Topology truth surface for stack-level orchestration."
+    },
+    {
+      "topic": "Master canonical runtime reference",
+      "file": "docs/AETHERMOORE_AETHERBROWSE_MASTER.md",
+      "symbol": "canonical_layer_contract",
+      "notes": "Single source of truth for truth files, axiom mapping, and runtime equations."
+    },
+    {
+      "topic": "Numeric determinism profile",
+      "file": "docs/NUMERIC_POLICY.md",
+      "symbol": "numeric_stability_policy",
+      "notes": "Defines EPS, clamp policy, tiering, and profile split."
+    }
+  ]
+}
