@@ -1,0 +1,217 @@
+{
+  "version": "2026-03-03",
+  "selection_policy": {
+    "default_mode": "2d",
+    "default_profile": "github_codespaces",
+    "require_codespaces_default": true,
+    "notes": [
+      "Use native Codespaces support when available.",
+      "Use bridge mode when external IDEs are needed for specialized workflows (for example, 3D scene tooling).",
+      "Treat this file as the authoritative platform registry for IDE routing."
+    ]
+  },
+  "platforms": [
+    {
+      "id": "github_codespaces",
+      "label": "GitHub Codespaces",
+      "mode": "2d",
+      "firebase_like": false,
+      "github_integration": "native",
+      "codespaces_integration": "native",
+      "task_keywords": [
+        "codespace",
+        "devcontainer",
+        "ci",
+        "test",
+        "build",
+        "python",
+        "node",
+        "typescript",
+        "backend",
+        "api"
+      ],
+      "use_cases": [
+        "deterministic repository development",
+        "devcontainer-based builds and tests",
+        "ai-assisted coding with repository controls"
+      ],
+      "entrypoints": {
+        "docs": "https://docs.github.com/en/codespaces",
+        "quickstart": "https://docs.github.com/en/codespaces/getting-started/quickstart"
+      }
+    },
+    {
+      "id": "firebase_studio",
+      "label": "Firebase Studio",
+      "mode": "2d",
+      "firebase_like": true,
+      "github_integration": "import_repo",
+      "codespaces_integration": "bridge",
+      "task_keywords": [
+        "firebase",
+        "studio",
+        "prototype",
+        "next.js",
+        "hosting",
+        "firestore",
+        "auth",
+        "figma"
+      ],
+      "use_cases": [
+        "rapid browser-based full-stack prototyping",
+        "firebase backend integration",
+        "template-driven startup and app iteration"
+      ],
+      "entrypoints": {
+        "docs": "https://firebase.google.com/docs/studio",
+        "import": "https://firebase.google.com/docs/studio/get-started-import"
+      }
+    },
+    {
+      "id": "gitpod",
+      "label": "Gitpod",
+      "mode": "2d",
+      "firebase_like": false,
+      "github_integration": "oauth",
+      "codespaces_integration": "bridge",
+      "task_keywords": [
+        "gitpod",
+        "workspace",
+        "runner",
+        "prebuild",
+        "browser extension"
+      ],
+      "use_cases": [
+        "ephemeral cloud workspaces",
+        "sdk-driven environment automation",
+        "quick branch-based preview environments"
+      ],
+      "entrypoints": {
+        "docs": "https://www.gitpod.io/docs/gitpod/source-control/overview",
+        "open_from_url": "https://www.gitpod.io/docs/gitpod/integrations/gitpod-url",
+        "sdk": "https://www.gitpod.io/docs/gitpod/integrations/sdk"
+      }
+    },
+    {
+      "id": "replit",
+      "label": "Replit",
+      "mode": "2d",
+      "firebase_like": false,
+      "github_integration": "import_repo",
+      "codespaces_integration": "bridge",
+      "task_keywords": [
+        "replit",
+        "agent",
+        "import",
+        "rapid",
+        "prototype"
+      ],
+      "use_cases": [
+        "quick browser-based app iteration",
+        "import-and-run GitHub repositories",
+        "agent-assisted general app workflows"
+      ],
+      "entrypoints": {
+        "docs": "https://docs.replit.com/replit-workspace/using-git-on-replit/running-github-repositories-replit",
+        "import": "https://docs.replit.com/getting-started/quickstarts/import-to-replit"
+      }
+    },
+    {
+      "id": "stackblitz",
+      "label": "StackBlitz",
+      "mode": "2d",
+      "firebase_like": false,
+      "github_integration": "url_import",
+      "codespaces_integration": "bridge",
+      "task_keywords": [
+        "stackblitz",
+        "frontend",
+        "web",
+        "vite",
+        "react",
+        "next"
+      ],
+      "use_cases": [
+        "instant web app previews from GitHub repos",
+        "frontend-only rapid debugging",
+        "browser-based sandbox sharing"
+      ],
+      "entrypoints": {
+        "docs": "https://developer.stackblitz.com/guides/user-guide/importing-projects"
+      }
+    },
+    {
+      "id": "playcanvas_editor",
+      "label": "PlayCanvas Editor",
+      "mode": "3d",
+      "firebase_like": false,
+      "github_integration": "vscode_extension_bridge",
+      "codespaces_integration": "bridge",
+      "task_keywords": [
+        "playcanvas",
+        "scene",
+        "3d",
+        "webgl",
+        "entity",
+        "asset"
+      ],
+      "use_cases": [
+        "web-native 3D scene and game development",
+        "real-time collaboration workflows",
+        "VS Code and AI-assisted script editing connected to PlayCanvas projects"
+      ],
+      "entrypoints": {
+        "docs": "https://developer.playcanvas.com/user-manual/editor/scripting/vscode-extension/",
+        "collaboration": "https://developer.playcanvas.com/user-manual/editor/realtime-collaboration/"
+      }
+    },
+    {
+      "id": "babylonjs_editor",
+      "label": "Babylon.js Editor",
+      "mode": "3d",
+      "firebase_like": false,
+      "github_integration": "repo_template_bridge",
+      "codespaces_integration": "bridge",
+      "task_keywords": [
+        "babylon",
+        "3d",
+        "next.js",
+        "scene",
+        "render"
+      ],
+      "use_cases": [
+        "3D web app authoring with visual scene workflows",
+        "template-based game/app startup",
+        "open-source editor workflows"
+      ],
+      "entrypoints": {
+        "docs": "https://editor.babylonjs.com/documentation",
+        "download": "https://editor.babylonjs.com/download"
+      }
+    },
+    {
+      "id": "unity_devops_uvcs",
+      "label": "Unity DevOps + UVCS",
+      "mode": "3d",
+      "firebase_like": false,
+      "github_integration": "git_bridge",
+      "codespaces_integration": "bridge",
+      "task_keywords": [
+        "unity",
+        "uvcs",
+        "build automation",
+        "asset lock",
+        "game"
+      ],
+      "use_cases": [
+        "3D game production pipelines",
+        "asset locking and repository governance",
+        "build automation connected to source control"
+      ],
+      "entrypoints": {
+        "docs": "https://docs.unity.com/build-automation/get-started-with-build-automation/connect-your-version-control-system/",
+        "git_bridge": "https://docs.unity.com/en-us/unity-version-control/migrating-from-git"
+      }
+    }
+  ]
+}

@@ -55,6 +55,8 @@ Outputs:
 
 ### Automation Added
 - Router script: `scripts/system/github_dual_tentacle_router.py`
+- IDE mesh router: `scripts/system/github_ide_mesh_router.py`
+- IDE platform matrix: `config/governance/ide_platform_matrix.json`
 
 Run examples:
 ```powershell
@@ -67,6 +69,31 @@ Artifacts:
 - `artifacts/agent_comm/github_lanes/cli_lane.jsonl`
 - `artifacts/agent_comm/github_lanes/codespaces_lane.jsonl`
 - `artifacts/agent_comm/github_lanes/cross_talk.jsonl`
+- `artifacts/agent_comm/ide_mesh/ide_decisions.jsonl`
+
+## IDE Mesh (Firebase-Style + Codespaces + 3D/2D)
+
+### Why
+- Keep a single GitHub execution spine while still using specialized IDEs.
+- Support both 2D product work and 3D scene/game workflows without breaking governance.
+
+### Modes
+1. `2d`
+- API/product/docs/testing pipelines.
+- Default profile is `github_codespaces`.
+
+2. `3d`
+- Scene tooling and asset-heavy workflows.
+- Profiles include `playcanvas_editor`, `babylonjs_editor`, and `unity_devops_uvcs`.
+
+### Run it
+```powershell
+python scripts/system/github_ide_mesh_router.py --task "ship firebase auth prototype" --mode 2d --require-codespaces
+python scripts/system/github_ide_mesh_router.py --task "build 3d scene and sync scripts to github" --mode 3d --prefer playcanvas_editor --require-codespaces
+```
+
+### Skill Tree
+- See: `docs/system/GITHUB_IDE_SKILL_TREE.md`
 
 ## Recommended Team Pattern
 1. Webhook Agent
