@@ -4,6 +4,14 @@
     "default_mode": "2d",
     "default_profile": "github_codespaces",
     "require_codespaces_default": true,
+    "tongue_axes": [
+      "KO",
+      "AV",
+      "RU",
+      "CA",
+      "UM",
+      "DR"
+    ],
     "notes": [
       "Use native Codespaces support when available.",
       "Use bridge mode when external IDEs are needed for specialized workflows (for example, 3D scene tooling).",
@@ -18,6 +26,14 @@
       "firebase_like": false,
       "github_integration": "native",
       "codespaces_integration": "native",
+      "tongue_vector": [
+        0.95,
+        0.72,
+        0.61,
+        0.86,
+        0.58,
+        0.92
+      ],
       "task_keywords": [
         "codespace",
         "devcontainer",
@@ -47,6 +63,14 @@
       "firebase_like": true,
       "github_integration": "import_repo",
       "codespaces_integration": "bridge",
+      "tongue_vector": [
+        0.63,
+        0.79,
+        0.56,
+        0.70,
+        0.74,
+        0.67
+      ],
       "task_keywords": [
         "firebase",
         "studio",
@@ -74,6 +98,14 @@
       "firebase_like": false,
       "github_integration": "oauth",
       "codespaces_integration": "bridge",
+      "tongue_vector": [
+        0.77,
+        0.69,
+        0.54,
+        0.73,
+        0.56,
+        0.72
+      ],
       "task_keywords": [
         "gitpod",
         "workspace",
@@ -99,6 +131,14 @@
       "firebase_like": false,
       "github_integration": "import_repo",
       "codespaces_integration": "bridge",
+      "tongue_vector": [
+        0.68,
+        0.73,
+        0.50,
+        0.69,
+        0.66,
+        0.61
+      ],
       "task_keywords": [
         "replit",
         "agent",
@@ -123,6 +163,14 @@
       "firebase_like": false,
       "github_integration": "url_import",
       "codespaces_integration": "bridge",
+      "tongue_vector": [
+        0.58,
+        0.84,
+        0.57,
+        0.64,
+        0.70,
+        0.55
+      ],
       "task_keywords": [
         "stackblitz",
         "frontend",
@@ -147,6 +195,14 @@
       "firebase_like": false,
       "github_integration": "vscode_extension_bridge",
       "codespaces_integration": "bridge",
+      "tongue_vector": [
+        0.64,
+        0.72,
+        0.87,
+        0.67,
+        0.78,
+        0.64
+      ],
       "task_keywords": [
         "playcanvas",
         "scene",
@@ -172,6 +228,14 @@
       "firebase_like": false,
       "github_integration": "repo_template_bridge",
       "codespaces_integration": "bridge",
+      "tongue_vector": [
+        0.61,
+        0.69,
+        0.89,
+        0.65,
+        0.75,
+        0.62
+      ],
       "task_keywords": [
         "babylon",
         "3d",
@@ -196,6 +260,14 @@
       "firebase_like": false,
       "github_integration": "git_bridge",
       "codespaces_integration": "bridge",
+      "tongue_vector": [
+        0.78,
+        0.58,
+        0.94,
+        0.72,
+        0.60,
+        0.85
+      ],
       "task_keywords": [
         "unity",
         "uvcs",

@@ -59,6 +59,12 @@ python scripts/system/github_ide_mesh_router.py --task "ship firebase auth proto
 python scripts/system/github_ide_mesh_router.py --task "build 3d web scene and sync scripts to github" --mode 3d --prefer playcanvas_editor --require-codespaces
 ```
 
+Spiralverse-governed example:
+
+```powershell
+python scripts/system/github_ide_mesh_router.py --task "integrate spiralverse" --mode auto --require-codespaces
+```
+
 Outputs:
 
 - GitHub lanes:
@@ -68,6 +74,15 @@ Outputs:
   - `artifacts/agent_comm/github_lanes/cross_talk.jsonl`
 - IDE selection log:
   - `artifacts/agent_comm/ide_mesh/ide_decisions.jsonl`
+  - `artifacts/agent_comm/ide_mesh/telemetry.jsonl`
+
+## Spiralverse Governance Overlay
+
+1. Layer 5: 6D tongue-vector distance (`KO/AV/RU/CA/UM/DR`) between task and IDE profiles.
+2. Layer 9: Resonant gate check with dissonant containment.
+3. Layer 11: Roundtable multi-tongue quorum for high-risk/codespaces tasks.
+4. Layer 12: Telemetry records tongue, frequency, distance, and gate outcomes.
+5. Layer 14: Signed route envelope digest for auditable route integrity.
 
 ## Tier 5: Governance
 

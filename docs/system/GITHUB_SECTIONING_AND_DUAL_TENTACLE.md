@@ -70,6 +70,7 @@ Artifacts:
 - `artifacts/agent_comm/github_lanes/codespaces_lane.jsonl`
 - `artifacts/agent_comm/github_lanes/cross_talk.jsonl`
 - `artifacts/agent_comm/ide_mesh/ide_decisions.jsonl`
+- `artifacts/agent_comm/ide_mesh/telemetry.jsonl`
 
 ## IDE Mesh (Firebase-Style + Codespaces + 3D/2D)
 
@@ -90,10 +91,16 @@ Artifacts:
 ```powershell
 python scripts/system/github_ide_mesh_router.py --task "ship firebase auth prototype" --mode 2d --require-codespaces
 python scripts/system/github_ide_mesh_router.py --task "build 3d scene and sync scripts to github" --mode 3d --prefer playcanvas_editor --require-codespaces
+python scripts/system/github_ide_mesh_router.py --task "integrate spiralverse" --mode auto --require-codespaces
 ```
 
 ### Skill Tree
 - See: `docs/system/GITHUB_IDE_SKILL_TREE.md`
+
+### Spiralverse Overlay
+- 6D tongue-vector routing (`KO/AV/RU/CA/UM/DR`) for profile matching.
+- Resonance gates enforce dissonant containment before lane dispatch.
+- Multi-tongue route envelope signatures provide auditable quorum evidence.
 
 ## Recommended Team Pattern
 1. Webhook Agent
