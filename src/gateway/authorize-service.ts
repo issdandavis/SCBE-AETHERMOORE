@@ -3,6 +3,7 @@ import {
   UnifiedKernel,
   type ProposedAction,
   type MemoryEvent,
+  type KernelDecision,
 } from '../ai_brain/unified-kernel.js';
 import { BRAIN_DIMENSIONS } from '../ai_brain/types.js';
 import { validateGatewayEnv, redactDiagnostics } from './env.js';
@@ -34,11 +35,9 @@ function parseMemoryEvent(event: AuthorizeRequest['memoryEvent']): MemoryEvent |
   };
 }
 
-function toHttpDecision(
-  kernelDecision: 'ALLOW' | 'TRANSFORM' | 'BLOCK'
-): 'ALLOW' | 'QUARANTINE' | 'DENY' {
+function toHttpDecision(kernelDecision: KernelDecision): 'ALLOW' | 'QUARANTINE' | 'DENY' {
   if (kernelDecision === 'ALLOW') return 'ALLOW';
-  if (kernelDecision === 'TRANSFORM') return 'QUARANTINE';
+  if (kernelDecision === 'TRANSFORM' || kernelDecision === 'QUARANTINE') return 'QUARANTINE';
   return 'DENY';
 }
 
