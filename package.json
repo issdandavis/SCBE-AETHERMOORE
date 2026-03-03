@@ -103,6 +103,7 @@
     "publish:prepare": "npm run clean:release && npm run build",
     "publish:pack:json": "node -e \"require('fs').mkdirSync('artifacts/npm-pack',{recursive:true})\" && npm pack --dry-run --json --ignore-scripts --cache ./.npm-cache > artifacts/npm-pack/pack.json",
     "publish:check:strict": "npm run publish:pack:json && node scripts/npm_pack_guard.js --pack-json artifacts/npm-pack/pack.json",
+    "release:guard": "pwsh -NoProfile -File ./scripts/run_release_guard.ps1",
     "prepublishOnly": "npm run publish:prepare",
     "prepack": "npm run publish:check:strict",
     "package": "npm pack",
