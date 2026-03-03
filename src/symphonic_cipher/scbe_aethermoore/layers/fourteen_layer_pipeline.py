@@ -267,12 +267,12 @@ def layer_6_breathing(u: np.ndarray, t: float) -> np.ndarray:
     T_breath(u; t) = tanh(b(t) · artanh(||u||)) · u/||u||
 
     Properties:
-        - Diffeomorphism of 𝔹ⁿ onto itself
-        - Preserves hyperbolic distance (isometry)
-        - Expands/contracts based on breathing cycle
-        - b > 1 expands, b < 1 contracts
+        - Smooth ball-preserving diffeomorphism of B^n onto itself
+        - NOT an isometry unless b(t) = 1 (radial rescaling changes distances)
+        - b(t) > 1: expansion phase (pushes points toward boundary)
+        - b(t) < 1: contraction phase (pulls points toward origin)
 
-    Theorem: T_breath is an isometry of (𝔹ⁿ, d_H)
+    See: COMPREHENSIVE_MATH_SCBE.md (v3.0.0 axioms) for formal properties.
     """
     norm = np.linalg.norm(u)
     if norm < EPS:

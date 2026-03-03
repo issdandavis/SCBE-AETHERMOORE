@@ -1,0 +1,114 @@
+{
+  "schema_version": "0.1.0",
+  "generated_at": "2026-03-03",
+  "sources": {
+    "hydra_coordination_doc": "docs/HYDRA_COORDINATION.md",
+    "hydra_architecture_doc": "docs/hydra/ARCHITECTURE.md",
+    "hydra_spec": "docs/HYDRA_SPEC.md",
+    "hydra_code_root": "hydra/"
+  },
+  "agents": [
+    { "tongue": "KO", "role": "SCOUT", "phase_deg": 0, "capability": ["navigate"] },
+    { "tongue": "AV", "role": "VISION", "phase_deg": 60, "capability": ["screenshot", "capture"] },
+    { "tongue": "RU", "role": "READER", "phase_deg": 120, "capability": ["extract", "parse"] },
+    { "tongue": "CA", "role": "CLICKER", "phase_deg": 180, "capability": ["interact"] },
+    { "tongue": "UM", "role": "TYPER", "phase_deg": 240, "capability": ["input"] },
+    { "tongue": "DR", "role": "JUDGE", "phase_deg": 300, "capability": ["verify", "validate"] }
+  ],
+  "state_models": {
+    "UnitState_9D": {
+      "description": "Operational unit state used for proximity + governance",
+      "fields": [
+        { "name": "unit_id", "type": "string", "kind": "identifier" },
+        { "name": "x", "type": "number", "kind": "position" },
+        { "name": "y", "type": "number", "kind": "position" },
+        { "name": "z", "type": "number", "kind": "position" },
+        { "name": "vx", "type": "number", "kind": "velocity" },
+        { "name": "vy", "type": "number", "kind": "velocity" },
+        { "name": "vz", "type": "number", "kind": "velocity" },
+        { "name": "coherence", "type": "number", "range": [0, 1], "kind": "governance" },
+        { "name": "d_star", "type": "number", "kind": "governance" },
+        { "name": "h_eff", "type": "number", "kind": "governance" }
+      ]
+    },
+    "VoxelRecord": {
+      "description": "Atomic state commit with governance snapshot + quorum proof",
+      "fields": [
+        { "name": "lang", "type": "enum", "values": ["KO", "AV", "RU", "CA", "UM", "DR"] },
+        { "name": "voxel6", "type": "tuple[number,number,number,number,number,number]", "alias": "Voxel6" },
+        { "name": "epoch", "type": "number" },
+        { "name": "padMode", "type": "enum", "values": ["ENGINEERING", "NAVIGATION", "SYSTEMS", "SCIENCE", "COMMS", "MISSION"] },
+        { "name": "coherence", "type": "number" },
+        { "name": "dStar", "type": "number" },
+        { "name": "hEff", "type": "number" },
+        { "name": "decision", "type": "enum", "values": ["ALLOW", "QUARANTINE", "DENY"] },
+        { "name": "payloadCiphertext", "type": "string" },
+        { "name": "quorum", "type": "object", "ref": "QuorumProof" }
+      ]
+    }
+  },
+  "gates": [
+    {
+      "id": "G0",
+      "name": "Flux-state gate",
+      "inputs": ["flux_state", "target_realm", "step_vector"],
+      "outputs": ["allow|deny", "reason"],
+      "implementation": "packages/kernel/src/fluxState.ts"
+    },
+    {
+      "id": "G1",
+      "name": "Realm allowlist gate",
+      "inputs": ["allowedRealms", "targetRealm"],
+      "outputs": ["allow|deny"]
+    },
+    {
+      "id": "G2",
+      "name": "Step norm gate",
+      "inputs": ["maxStepNorm", "stepVector"],
+      "outputs": ["allow|deny"]
+    },
+    {
+      "id": "G3",
+      "name": "Collapsed nearest realm gate",
+      "inputs": ["flux_state=COLLAPSED", "current_position", "realm_centers", "targetRealm"],
+      "outputs": ["allow|deny"]
+    },
+    {
+      "id": "G4",
+      "name": "SCBE decision gate",
+      "inputs": ["coherence", "d_star", "h_eff", "thresholds"],
+      "outputs": ["ALLOW|QUARANTINE|DENY"]
+    },
+    {
+      "id": "G5",
+      "name": "Quorum gate",
+      "inputs": ["n", "f", "threshold", "votes"],
+      "outputs": ["pass|fail"]
+    },
+    {
+      "id": "G6",
+      "name": "Phase-lock gate (ENTANGLED)",
+      "inputs": ["self_phase", "partner_phase", "lock_threshold"],
+      "outputs": ["locked|unlocked"],
+      "implementation": "packages/kernel/src/fluxState.ts"
+    }
+  ],
+  "thresholds": {
+    "quorum": { "n": 6, "f": 1, "threshold": 4 },
+    "phase_lock": { "lock_threshold_default": 0.8 }
+  },
+  "modules": [
+    { "path": "hydra/spine.py", "role": "orchestrator" },
+    { "path": "hydra/head.py", "role": "model providers" },
+    { "path": "hydra/limbs.py", "role": "execution backends" },
+    { "path": "hydra/librarian.py", "role": "memory + indexing" },
+    { "path": "hydra/consensus.py", "role": "byzantine/quorum" },
+    { "path": "hydra/spectral.py", "role": "GFSS/anomaly detection" },
+    { "path": "hydra/ledger.py", "role": "audit + idempotency" },
+    { "path": "hydra/swarm_browser.py", "role": "six-agent browser plane" },
+    { "path": "hydra/browsers.py", "role": "browser backends/adapter layer" },
+    { "path": "hydra/switchboard.py", "role": "task routing/dispatch" },
+    { "path": "hydra/swarm_governance.py", "role": "SCBE decision integration" },
+    { "path": "hydra/polly_pad.py", "role": "Polly pad state management" }
+  ]
+}
