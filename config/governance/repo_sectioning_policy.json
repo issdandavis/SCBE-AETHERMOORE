@@ -1,0 +1,40 @@
+{
+  "private_keywords": [
+    "private",
+    "secret",
+    "token",
+    "key",
+    "client",
+    "internal",
+    "vault",
+    "billing",
+    "finance"
+  ],
+  "sellable_keywords": [
+    "shopify",
+    "creator",
+    "os",
+    "toolkit",
+    "template",
+    "automation",
+    "engine",
+    "sdk",
+    "saas",
+    "agent",
+    "workflow"
+  ],
+  "public_education_keywords": [
+    "demo",
+    "example",
+    "research",
+    "docs",
+    "tutorial",
+    "learning"
+  ],
+  "tier_labels": {
+    "private_restricted": "Keep private. Contains sensitive or business-critical signals.",
+    "public_sellable": "Keep public with product framing, pricing links, and lead capture.",
+    "public_open": "Keep public as trust/credibility/research surface.",
+    "public_education": "Keep public as education/community funnel content."
+  }
+}
