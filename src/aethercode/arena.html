@@ -76,6 +76,7 @@ body{
 .seat-status.thinking{color:var(--amber);background:rgba(245,158,11,0.1)}
 .seat-status.error{color:var(--red);background:rgba(239,68,68,0.1)}
 .seat-status.offline{color:var(--dim);background:rgba(148,163,184,0.1)}
+.seat-status.proxy{color:#67e8f9;background:rgba(6,182,212,0.14)}
 
 .seat-chat{flex:1;overflow-y:auto;padding:6px 10px;font-size:12px;line-height:1.4;min-height:0}
 .seat-chat .msg{margin-bottom:6px;padding:5px 8px;border-radius:6px;word-wrap:break-word}
@@ -379,6 +380,14 @@ function orderedAvailableIds() {
   return [...inPref, ...rest];
 }
 
+function resolveTentacleForSeat(playerId) {
+  const row = providerStatus[playerId];
+  if (!row || row.available !== false) return { tentacle: playerId, proxied: false, via: '' };
+  const candidates = orderedAvailableIds().filter(id => id !== playerId);
+  if (!candidates.length) return { tentacle: playerId, proxied: false, via: '' };
+  return { tentacle: candidates[0], proxied: true, via: candidates[0] };
+}
+
 function narratorSeatId() {
   const ids = orderedAvailableIds();
   return ids.length ? ids[0] : PLAYERS[0].id;
@@ -434,7 +443,10 @@ async function askPlayer(playerId, message) {
   if (!text) return null;
 
   const provider = providerStatus[playerId];
-  if (provider && !provider.available) {
+  const route = resolveTentacleForSeat(playerId);
+  if (provider && !provider.available && route.proxied) {
+    setStatus(playerId, 'proxy', `proxy:${route.via}`);
+  } else if (provider && !provider.available) {
     addMessage(playerId, 'error', `No API key. Set ${provider.required_env || 'key'} in .env`);
     return null;
   }
@@ -451,8 +463,9 @@ async function askPlayer(playerId, message) {
     const body = {
       message: text,
       mode: 'chat',
-      tentacle: playerId,
+      tentacle: route.tentacle,
       context: [
+        ...(route.proxied ? [{ role: 'system', content: `Proxy mode: provider ${route.via} is responding as seat ${playerId}. Keep the seat persona/role exactly.` }] : []),
         { role: 'system', content: roleContext },
         ...(sharedCode ? [{ role: 'system', content: 'Shared code:\n```\n' + sharedCode + '\n```' }] : []),
       ],
@@ -467,8 +480,9 @@ async function askPlayer(playerId, message) {
     const data = await resp.json();
 
     if (resp.ok && data.response) {
+      const routeMeta = route.proxied ? `proxy:${route.via} / ` : '';
       addMessage(playerId, 'ai', data.response,
-        `${data.tentacle} / ${data.model} / ${Math.round(data.latency_ms)}ms / ${Math.round(data.governance_score * 100)}%`
+        `${routeMeta}${data.tentacle} / ${data.model} / ${Math.round(data.latency_ms)}ms / ${Math.round(data.governance_score * 100)}%`
       );
       setStatus(playerId, 'idle', 'ready');
       return { id: playerId, name: player.name, tongue: player.tongue, role: player.role, response: data.response };
