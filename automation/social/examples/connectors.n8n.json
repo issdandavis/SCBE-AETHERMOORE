@@ -1,0 +1,47 @@
+{
+  "defaults": {
+    "timeout_seconds": 20
+  },
+  "connectors": {
+    "x": {
+      "mode": "webhook",
+      "endpoint_env": "SCBE_X_WEBHOOK_URL",
+      "token_env": "SCBE_X_WEBHOOK_TOKEN",
+      "method": "POST",
+      "headers": {
+        "X-SCBE-Channel": "x"
+      }
+    },
+    "x_reply": {
+      "mode": "webhook",
+      "endpoint_env": "SCBE_X_REPLY_WEBHOOK_URL",
+      "token_env": "SCBE_X_REPLY_WEBHOOK_TOKEN",
+      "method": "POST",
+      "headers": {
+        "X-SCBE-Channel": "x_reply"
+      }
+    },
+    "merch_sale": {
+      "mode": "webhook",
+      "endpoint_env": "SCBE_MERCH_SALE_WEBHOOK_URL",
+      "token_env": "SCBE_MERCH_SALE_WEBHOOK_TOKEN",
+      "method": "POST",
+      "headers": {
+        "X-SCBE-Channel": "merch_sale"
+      }
+    },
+    "merch_upload": {
+      "mode": "webhook",
+      "endpoint_env": "SCBE_MERCH_UPLOAD_WEBHOOK_URL",
+      "token_env": "SCBE_MERCH_UPLOAD_WEBHOOK_TOKEN",
+      "method": "POST",
+      "headers": {
+        "X-SCBE-Channel": "merch_upload"
+      }
+    },
+    "default": {
+      "mode": "stdout"
+    }
+  }
+}
+

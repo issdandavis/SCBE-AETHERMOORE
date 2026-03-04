@@ -1,0 +1,9 @@
+{
+  "obsidian_vault_path": "C:/Users/issda/OneDrive/Documents/ObsidianVault",
+  "dropbox_remote_dir": "/SCBE/backups",
+  "git_commit_message": "chore(sync): notion obsidian github dropbox",
+  "push": false,
+  "sync_mode": "all",
+  "config_key": "",
+  "notes": "Set NOTION_API_KEY and DROPBOX_TOKEN in environment before running system_hub_sync.py"
+}

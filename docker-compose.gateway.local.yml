@@ -1,0 +1,17 @@
+version: '3.9'
+
+services:
+  decision-gateway:
+    profiles: ['gateway-local']
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    ports:
+      - '8081:8081'
+    environment:
+      NODE_ENV: development
+      PORT: 8081
+      GOVERNANCE_POLICY_ID: local-policy-v1
+      GOVERNANCE_ISSUER: local-dev
+      GOVERNANCE_TOKEN: local_demo_token_replace_me
+    restart: unless-stopped

@@ -1,0 +1,19 @@
+{
+  "total_jobs": 2,
+  "success_jobs": 0,
+  "failed_jobs": 2,
+  "failures": [
+    {
+      "job_index": 1,
+      "error": "<urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>"
+    },
+    {
+      "job_index": 0,
+      "error": "<urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>"
+    }
+  ],
+  "results": [
+    null,
+    null
+  ]
+}

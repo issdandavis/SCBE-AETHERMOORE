@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="640" viewBox="0 0 1024 640">
+<rect x="0" y="0" width="100%" height="100%" fill="#ffffff"/>
+<text x="90" y="24" font-family="monospace" font-size="18" fill="#222">Figure 1: Harmonic Wall Scaling (log10 H(d,R))</text>
+<line x1="90" y1="560" x2="984" y2="560" stroke="#333" stroke-width="2"/>
+<line x1="90" y1="560" x2="90" y2="40" stroke="#333" stroke-width="2"/>
+<line x1="90.00" y1="40" x2="90.00" y2="560" stroke="#e8e8e8" stroke-width="1"/>
+<text x="90.00" y="582" text-anchor="middle" font-family="monospace" font-size="12" fill="#444">0</text>
+<line x1="164.50" y1="40" x2="164.50" y2="560" stroke="#e8e8e8" stroke-width="1"/>
+<text x="164.50" y="582" text-anchor="middle" font-family="monospace" font-size="12" fill="#444">1</text>
+<line x1="239.00" y1="40" x2="239.00" y2="560" stroke="#e8e8e8" stroke-width="1"/>
+<text x="239.00" y="582" text-anchor="middle" font-family="monospace" font-size="12" fill="#444">2</text>
+<line x1="313.50" y1="40" x2="313.50" y2="560" stroke="#e8e8e8" stroke-width="1"/>
+<text x="313.50" y="582" text-anchor="middle" font-family="monospace" font-size="12" fill="#444">3</text>
+<line x1="388.00" y1="40" x2="388.00" y2="560" stroke="#e8e8e8" stroke-width="1"/>
+<text x="388.00" y="582" text-anchor="middle" font-family="monospace" font-size="12" fill="#444">4</text>
+<line x1="462.50" y1="40" x2="462.50" y2="560" stroke="#e8e8e8" stroke-width="1"/>
+<text x="462.50" y="582" text-anchor="middle" font-family="monospace" font-size="12" fill="#444">5</text>
+<line x1="537.00" y1="40" x2="537.00" y2="560" stroke="#e8e8e8" stroke-width="1"/>
+<text x="537.00" y="582" text-anchor="middle" font-family="monospace" font-size="12" fill="#444">6</text>
+<line x1="611.50" y1="40" x2="611.50" y2="560" stroke="#e8e8e8" stroke-width="1"/>
+<text x="611.50" y="582" text-anchor="middle" font-family="monospace" font-size="12" fill="#444">7</text>
+<line x1="686.00" y1="40" x2="686.00" y2="560" stroke="#e8e8e8" stroke-width="1"/>
+<text x="686.00" y="582" text-anchor="middle" font-family="monospace" font-size="12" fill="#444">8</text>
+<line x1="760.50" y1="40" x2="760.50" y2="560" stroke="#e8e8e8" stroke-width="1"/>
+<text x="760.50" y="582" text-anchor="middle" font-family="monospace" font-size="12" fill="#444">9</text>
+<line x1="835.00" y1="40" x2="835.00" y2="560" stroke="#e8e8e8" stroke-width="1"/>
+<text x="835.00" y="582" text-anchor="middle" font-family="monospace" font-size="12" fill="#444">10</text>
+<line x1="909.50" y1="40" x2="909.50" y2="560" stroke="#e8e8e8" stroke-width="1"/>
+<text x="909.50" y="582" text-anchor="middle" font-family="monospace" font-size="12" fill="#444">11</text>
+<line x1="984.00" y1="40" x2="984.00" y2="560" stroke="#e8e8e8" stroke-width="1"/>
+<text x="984.00" y="582" text-anchor="middle" font-family="monospace" font-size="12" fill="#444">12</text>
+<line x1="90" y1="560.00" x2="984" y2="560.00" stroke="#f1f1f1" stroke-width="1"/>
+<text x="82" y="564.00" text-anchor="end" font-family="monospace" font-size="11" fill="#444">0.00</text>
+<line x1="90" y1="495.00" x2="984" y2="495.00" stroke="#f1f1f1" stroke-width="1"/>
+<text x="82" y="499.00" text-anchor="end" font-family="monospace" font-size="11" fill="#444">5.42</text>
+<line x1="90" y1="430.00" x2="984" y2="430.00" stroke="#f1f1f1" stroke-width="1"/>
+<text x="82" y="434.00" text-anchor="end" font-family="monospace" font-size="11" fill="#444">10.84</text>
+<line x1="90" y1="365.00" x2="984" y2="365.00" stroke="#f1f1f1" stroke-width="1"/>
+<text x="82" y="369.00" text-anchor="end" font-family="monospace" font-size="11" fill="#444">16.26</text>
+<line x1="90" y1="300.00" x2="984" y2="300.00" stroke="#f1f1f1" stroke-width="1"/>
+<text x="82" y="304.00" text-anchor="end" font-family="monospace" font-size="11" fill="#444">21.67</text>
+<line x1="90" y1="235.00" x2="984" y2="235.00" stroke="#f1f1f1" stroke-width="1"/>
+<text x="82" y="239.00" text-anchor="end" font-family="monospace" font-size="11" fill="#444">27.09</text>
+<line x1="90" y1="170.00" x2="984" y2="170.00" stroke="#f1f1f1" stroke-width="1"/>
+<text x="82" y="174.00" text-anchor="end" font-family="monospace" font-size="11" fill="#444">32.51</text>
+<line x1="90" y1="105.00" x2="984" y2="105.00" stroke="#f1f1f1" stroke-width="1"/>
+<text x="82" y="109.00" text-anchor="end" font-family="monospace" font-size="11" fill="#444">37.93</text>
+<line x1="90" y1="40.00" x2="984" y2="40.00" stroke="#f1f1f1" stroke-width="1"/>
+<text x="82" y="44.00" text-anchor="end" font-family="monospace" font-size="11" fill="#444">43.35</text>
+<polyline points="90.00,560.00 164.50,558.84 239.00,555.35 313.50,549.54 388.00,541.40 462.50,530.94 537.00,518.15 611.50,503.04 686.00,485.60 760.50,465.84 835.00,443.75 909.50,419.34 984.00,392.60" fill="none" stroke="#0b6e4f" stroke-width="2.5"/>
+<circle cx="90.00" cy="560.00" r="2.2" fill="#0b6e4f"/>
+<circle cx="164.50" cy="558.84" r="2.2" fill="#0b6e4f"/>
+<circle cx="239.00" cy="555.35" r="2.2" fill="#0b6e4f"/>
+<circle cx="313.50" cy="549.54" r="2.2" fill="#0b6e4f"/>
+<circle cx="388.00" cy="541.40" r="2.2" fill="#0b6e4f"/>
+<circle cx="462.50" cy="530.94" r="2.2" fill="#0b6e4f"/>
+<circle cx="537.00" cy="518.15" r="2.2" fill="#0b6e4f"/>
+<circle cx="611.50" cy="503.04" r="2.2" fill="#0b6e4f"/>
+<circle cx="686.00" cy="485.60" r="2.2" fill="#0b6e4f"/>
+<circle cx="760.50" cy="465.84" r="2.2" fill="#0b6e4f"/>
+<circle cx="835.00" cy="443.75" r="2.2" fill="#0b6e4f"/>
+<circle cx="909.50" cy="419.34" r="2.2" fill="#0b6e4f"/>
+<circle cx="984.00" cy="392.60" r="2.2" fill="#0b6e4f"/>
+<polyline points="90.00,560.00 164.50,557.89 239.00,551.55 313.50,540.99 388.00,526.20 462.50,507.19 537.00,483.95 611.50,456.49 686.00,424.81 760.50,388.90 835.00,348.76 909.50,304.40 984.00,255.82" fill="none" stroke="#1f4e79" stroke-width="2.5"/>
+<circle cx="90.00" cy="560.00" r="2.2" fill="#1f4e79"/>
+<circle cx="164.50" cy="557.89" r="2.2" fill="#1f4e79"/>
+<circle cx="239.00" cy="551.55" r="2.2" fill="#1f4e79"/>
+<circle cx="313.50" cy="540.99" r="2.2" fill="#1f4e79"/>
+<circle cx="388.00" cy="526.20" r="2.2" fill="#1f4e79"/>
+<circle cx="462.50" cy="507.19" r="2.2" fill="#1f4e79"/>
+<circle cx="537.00" cy="483.95" r="2.2" fill="#1f4e79"/>
+<circle cx="611.50" cy="456.49" r="2.2" fill="#1f4e79"/>
+<circle cx="686.00" cy="424.81" r="2.2" fill="#1f4e79"/>
+<circle cx="760.50" cy="388.90" r="2.2" fill="#1f4e79"/>
+<circle cx="835.00" cy="348.76" r="2.2" fill="#1f4e79"/>
+<circle cx="909.50" cy="304.40" r="2.2" fill="#1f4e79"/>
+<circle cx="984.00" cy="255.82" r="2.2" fill="#1f4e79"/>
+<polyline points="90.00,560.00 164.50,556.39 239.00,545.56 313.50,527.50 388.00,502.22 462.50,469.72 537.00,430.00 611.50,383.06 686.00,328.89 760.50,267.50 835.00,198.89 909.50,123.06 984.00,40.00" fill="none" stroke="#b23a48" stroke-width="2.5"/>
+<circle cx="90.00" cy="560.00" r="2.2" fill="#b23a48"/>
+<circle cx="164.50" cy="556.39" r="2.2" fill="#b23a48"/>
+<circle cx="239.00" cy="545.56" r="2.2" fill="#b23a48"/>
+<circle cx="313.50" cy="527.50" r="2.2" fill="#b23a48"/>
+<circle cx="388.00" cy="502.22" r="2.2" fill="#b23a48"/>
+<circle cx="462.50" cy="469.72" r="2.2" fill="#b23a48"/>
+<circle cx="537.00" cy="430.00" r="2.2" fill="#b23a48"/>
+<circle cx="611.50" cy="383.06" r="2.2" fill="#b23a48"/>
+<circle cx="686.00" cy="328.89" r="2.2" fill="#b23a48"/>
+<circle cx="760.50" cy="267.50" r="2.2" fill="#b23a48"/>
+<circle cx="835.00" cy="198.89" r="2.2" fill="#b23a48"/>
+<circle cx="909.50" cy="123.06" r="2.2" fill="#b23a48"/>
+<circle cx="984.00" cy="40.00" r="2.2" fill="#b23a48"/>
+<text x="537.00" y="616" text-anchor="middle" font-family="monospace" font-size="14" fill="#222">d (hyperbolic distance index)</text>
+<text transform="translate(20 300.00) rotate(-90)" text-anchor="middle" font-family="monospace" font-size="14" fill="#222">log10(H(d,R))</text>
+<rect x="804" y="36" width="180" height="92" fill="#fafafa" stroke="#ddd"/>
+<line x1="814" y1="54" x2="840" y2="54" stroke="#0b6e4f" stroke-width="3"/>
+<text x="848" y="58" font-family="monospace" font-size="12" fill="#333">R = 1.25</text>
+<line x1="814" y1="78" x2="840" y2="78" stroke="#1f4e79" stroke-width="3"/>
+<text x="848" y="82" font-family="monospace" font-size="12" fill="#333">R = 1.5</text>
+<line x1="814" y1="102" x2="840" y2="102" stroke="#b23a48" stroke-width="3"/>
+<text x="848" y="106" font-family="monospace" font-size="12" fill="#333">R = 2</text>
+</svg>

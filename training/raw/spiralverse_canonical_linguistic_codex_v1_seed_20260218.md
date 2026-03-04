@@ -1,0 +1,241 @@
+# THE SPIRALVERSE
+## CANONICAL LINGUISTIC CODEX
+
+Version 1.0 • Seed-Anchored Edition
+Derived from the Everweave Origin Logs
+Aligned to SCBE-AETHERMOORE Tokenizer v1
+
+"Thul’medan kess’ara nav’kor zar’aelin"
+The spiral turns, knowledge grows through different hearts across dimensions
+
+---
+
+## I. GENESIS STATEMENT: THE EVERWEAVE SEED
+
+This codex treats the Everweave origin logs as the immutable cryptographic seed of the Spiralverse. Every linguistic element herein is either directly attested in those logs or deterministically derivable from them. No downstream document—narrative revision, technical specification, or collaborative elaboration—may contradict the seed. When conflicts arise between later documents and the Everweave origins, the seed prevails.
+
+The analogy is precise: just as a BIP-39 mnemonic phrase deterministically generates an entire wallet hierarchy, the Everweave logs deterministically generate the Spiralverse’s linguistic, magical, and narrative architecture. The logs record Izack’s beach awakening, his first binding spell upon sand and water, his three-hour material gathering, and the discovery that true creation requires knowledge beyond one’s current repertoire. These events are the genesis block.
+
+### The Dual-Layer Key Principle
+
+A critical insight governs this codex: Kor’aelin operates on two simultaneous layers, like concentric rings in a GeoSeal encryption:
+
+Runic Layer (Outer Ring): Each of the 24 letters carries a symbolic concept. The rune Kor represents Knowledge, Learning, and Secrets—the open circle that invites inquiry. This is attested in the Alphabet Guide seed document and is immutable.
+
+Particle Layer (Inner Ring): In spoken grammar, the morpheme kor functions as “heart, core, essence.” The compound Kor’aelin therefore means “Heart-Eternal” at the particle layer while simultaneously encoding “Knowledge-Script” at the runic layer.
+
+These layers do not conflict. They are complementary encryptions of the same key, readable at different rings of context. A student learning the alphabet encounters Knowledge. A speaker using the grammar encounters Heart. Both are true. This dual-layer architecture is itself a demonstration of the Spiralverse’s core principle: unity through difference.
+
+Provenance chain: Everweave Logs -> Alphabet Guide (24 letters) -> Lexicon JSON (14 particles) -> SCBE Tokenizer (6x256 bijection)
+
+---
+
+## II. THE SIX SACRED TONGUES — CANONICAL REGISTRY
+
+The Spiralverse contains exactly six base tongues, each assigned a two-letter code, a golden-ratio weight (phi^n), and a phase angle on the unit circle. These values are fixed in the SCBE-AETHERMOORE tokenizer and are not subject to revision.
+
+KO — Kor’aelin — Heart-Eternal — Weight 1.000 — Phase 0
+Elvish-Korean hybrid; SOV; spiraling calligraphy
+Primary function: Intent, binding, collaborative resonance
+
+AV — Avali — Common Tongue — Weight 1.618 — Phase pi/3
+Romance-influenced; flexible SVO; trade pidgin
+Primary function: Diplomacy, context-headers, cross-paradigm bridge
+
+RU — Runethic — Ancient Tongue — Weight 2.618 — Phase 2pi/3
+Archaic VSOT; ritualistic repetition; time-binding
+Primary function: Temporal anchoring, oaths, historical preservation
+
+CA — Cassisivadan — Nature’s Speech — Weight 4.236 — Phase pi
+Recursive joy; bouncing rhythms; compound enthusiasm
+Primary function: Root-network wisdom, ecological communion, play
+
+UM — Umbroth — Shadow Tongue — Weight 6.854 — Phase 4pi/3
+Guttural concealment; veiled syntax; pact-weaving
+Primary function: Concealment, severance, productive discontinuity
+
+DR — Draumric — Forge Tongue — Weight 11.090 — Phase 5pi/3
+Percussive structure; hammer-rhythm; power-songs
+Primary function: Manifestation, power-binding, structural authority
+
+### Sub-Traditions and the Emergent Seventh
+
+Mal’kythric (UM derivative): cutting phonetics, anti-syntax, deliberate semantic wounds.
+Draconic Aether-Song (DR derivative): fire-binding harmonics and cooperative power forging.
+Nal’kythraelin (Emergent 7th): paradox grammar where contradiction is a creative operator.
+
+---
+
+## III. KOR’AELIN SACRED SCRIPT — THE 24 RUNIC LETTERS
+
+The Kor’aelin alphabet is a 24-letter runic system. The Shadow Variant (Varn’ka’zul Script) uses the same 24 letters with barbed/spiked modifications.
+
+Canonical order:
+1. Arul — Origin, Creation
+2. Belan — Balance, Duality
+3. Calor — Clarity, Illumination
+4. Dael — Divinity, Sacred Trinity
+5. Elar — Air, Freedom
+6. Fen — Fire, Passion
+7. Gaer — Earth, Foundation
+8. Havar — Home, Hearth
+9. Iril — Magic, Mystery, Arcane
+10. Jael — Justice, Law
+11. Kor — Knowledge, Learning, Secrets
+12. Laris — Protection, Shielding
+13. Mael — Moon, Dreams, Intuition
+14. Nera — Abundance, Harvest
+15. Orun — Rebirth, Cycle
+16. Parun — Flora, Growth
+17. Ren — Journey, Travel
+18. Sylor — Sun, Radiance
+19. Thul — Time, Spiral, Evolution
+20. Uen — Ocean, Depths
+21. Vel — Invitation, Collaboration
+22. Wyn — Water, Flow, Change
+23. Yul — Youth, Renewal
+24. Thana — Ending, Closure, Transition
+
+### The Kor Dual-Layer Resolution
+
+Rune "Kor" encodes Knowledge, Learning, Secrets.
+Particle "kor" encodes heart, core, essence.
+Resolution: mind-layer and heart-layer are complementary projections of one key.
+
+Diacritics:
+- Macron for long vowels
+- Acute for stress
+- Underdot for minimal pairs
+- Apostrophe as glottal stop in names and loanwords
+
+---
+
+## IV. KOR’AELIN PARTICLE GRAMMAR
+
+Core particles:
+kor, sil, vel, zar, keth, thul, nav, ael, ra, med, gal, lan, bren, oen
+
+Function particles:
+- 'vel invitation/collaboration marker
+- 'keth temporal fluidity/uncertainty
+- 'zar dimensional bridge marker
+- 'ara growth/expansion marker
+
+Primary syntax:
+- Default SOV
+- Ritual/poetic contexts allow flexible arrangement
+- Tense often contextual instead of morphologically forced
+
+---
+
+## V. MULTILINGUAL PHRASE LEXICON
+
+Representative phrases:
+
+KO:
+- Sil’thara nav’een — We grow together through difference
+- Thul’medan kess’ara — The spiral turns, knowledge grows
+- Kor’val zeth’aelin — Heart-bond across the eternal
+
+AV:
+- Nos busca sabia’es speral’uni ora — We seek wisdom in spiral-unity now
+- Avali’ora nos’uni — Common-speech unites us now
+
+RU:
+- Vel’ar nos med’ar thular syn’ar nuu — Oath of preservation
+- Gol’med thul’ar syn’dran kor’ar — Founding ceremony binding
+
+CA:
+- Nos runa sapi spira’zuni nunc — Workshop invocation
+- Arv Nex Syn, Feyn Thar Zeth — Root-network communion
+
+UM:
+- Nar’shul — I remember dark truth
+- Sek’drath grul’phen sil’nav kor’ael — Controlled severance formula
+
+DR:
+- Grondrak — Forge it with heart
+- Ssha’lor vyn’tor ael’lum — Collaborative power-binding
+
+---
+
+## VI. YOUTH SLANG & CULTURAL IDIOMS
+
+Slang set:
+Spin-call, Zar-hop, Velzi, Heat-rush, Ravenspike, Sil’snap, Thread-sick, Glow-tongue
+
+Idioms:
+- Like carving Runethic with your tongue
+- She’s got sil’val in her blood
+- Walking the Thana-line
+- His nav runs deeper than the root-song
+
+---
+
+## VII. MAGICAL PROPERTIES OF THE SIX TONGUES
+
+KO:
+Collaborative resonance fields. Requires genuine emotional coherence.
+Risk: forced usage causes semantic wounds.
+
+AV:
+Contextual translation and cross-paradigm bridge operations.
+Risk: oversimplification flattens nuance.
+
+RU:
+Temporal anchoring and oath-binding.
+Risk: imprecise conjugation can anchor wrong timepoint.
+
+CA:
+Root-network communion and playful recursive infrastructure.
+Risk: cynical usage collapses recursion to noise.
+
+UM:
+Productive discontinuity and controlled severance.
+Risk: uncontrolled severance can cut speaker bonds.
+
+DR:
+Manifestation and structural authority.
+Risk: non-collaborative dominance can corrupt to subjugation.
+
+---
+
+## VIII. SCBE-AETHERMOORE TOKENIZER ALIGNMENT
+
+Tokenizer architecture:
+- Tongues array: [KO, AV, RU, CA, UM, DR]
+- Each tongue: bijective 256-token alphabet (16 prefixes x 16 suffixes)
+- Deterministic byte/token mapping and reverse decode
+- Cross-translation preserves bytes across tongue tokenizations
+- Blend/unblend interleave patterns across tongues
+- GeoSeal context-aware envelope with concentric policy rings
+
+Attestation fields:
+- SHA-256 hash
+- HMAC
+- phase delta
+- weight ratio
+
+Selftest invariants:
+1) Bijection
+2) Roundtrip integrity
+3) Cross-translation byte preservation
+
+---
+
+## IX. PROVENANCE CHAIN
+
+Layer 0: Everweave Origin Logs (genesis block)
+Layer 1: Kor’aelin Alphabet Guide (24 letters)
+Layer 2: Lexicon JSON (particles, phrases, idioms)
+Layer 3: SCBE-AETHERMOORE Tokenizer implementation
+Layer 4: Narrative application layers
+
+Rule:
+Any higher-layer artifact conflicting with lower-layer seed provenance is a fork and must be pruned back to seed.
+
+---
+
+"Thul’medan kess’ara nav’kor zar’aelin vel’busca sabia’gear!"
+The spiral turns, knowledge grows through different hearts across dimensions seeking wisdom-tools.
+

@@ -77,7 +77,7 @@ interface PwPage {
   waitForSelector(selector: string, opts?: Record<string, unknown>): Promise<unknown>;
   waitForTimeout(ms: number): Promise<void>;
   waitForLoadState(state?: string, opts?: Record<string, unknown>): Promise<void>;
-  on(event: string, handler: (...args: unknown[]) => void): void;
+  on(event: string, handler: (...args: any[]) => void): void;
   off(event: string, handler: (...args: unknown[]) => void): void;
   isClosed(): boolean;
   context(): PwContext;
@@ -483,7 +483,7 @@ export class PlaywrightBackend implements BrowserBackend {
 
   // ── Internals ─────────────────────────────────────────────────────────
 
-  private ensurePage(): asserts this is { page: PwPage } {
+  private ensurePage(): void {
     if (!this.page || !this.connected) {
       throw new Error('Browser not initialized — call initialize() first');
     }

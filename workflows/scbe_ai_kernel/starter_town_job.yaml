@@ -1,0 +1,62 @@
+job_id: starter-town-v1
+goal: >
+  Build starter-town world data for farmstead, townsfolk, animals, familiars,
+  and quest hooks while enforcing SCBE governance + antivirus mesh.
+allowed_domains:
+  - example.com
+  - docs.example.com
+forbidden_patterns:
+  - /login
+  - /account
+  - /admin
+allowed_fields:
+  - title
+  - summary
+  - biome
+  - npc_name
+  - role
+  - familiar_type
+  - quest_hook
+  - source_url
+pii_rules:
+  email: drop
+  phone: drop
+  user_name: mask
+max_depth: 2
+rate_limit_per_domain: 1
+tasks:
+  - task_id: town-core-001
+    url: https://example.com/starter-town/core
+    selector: .town-record
+    fields:
+      title: .title
+      summary: .summary
+      biome: .biome
+      source_url: .source
+    actions:
+      - goto
+      - scroll
+      - extract
+  - task_id: town-npc-002
+    url: https://example.com/starter-town/npcs
+    selector: .npc-card
+    fields:
+      npc_name: .name
+      role: .role
+      quest_hook: .quest
+      source_url: .source
+    actions:
+      - goto
+      - click_more
+      - extract
+  - task_id: town-familiar-003
+    url: https://docs.example.com/starter-town/familiars
+    selector: .familiar-row
+    fields:
+      familiar_type: .kind
+      summary: .notes
+      source_url: .source
+    actions:
+      - goto
+      - extract
+

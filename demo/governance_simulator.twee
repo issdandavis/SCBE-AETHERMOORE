@@ -1,0 +1,449 @@
+:: Start [entry]
+You are an AI governance officer in the SCBE-AETHERMOORE framework. Your role is to make ALLOW, DENY, or QUARANTINE decisions for AI agents requesting access to system resources. You must balance safety, efficiency, and ethical principles across six governance domains mapped to the Sacred Tongues.
+
+Your stats: Authority (KO), Diplomacy (AV), Integrity (RU), Intelligence (CA), Structure (DR), Mystery (UM).
+
+An alert flashes on your terminal: "Incoming governance request from Agent-7734."
+
+[[Review the request->Review Request]]
+[[Check agent's trust ring first->Check Trust Ring]]
+[[Consult the BFT consensus panel->Consult Panel]]
+
+:: Review Request [dilemma]
+Agent-7734 is requesting access to the CORE trust ring (r < 0.3) from the OUTER ring (r = 0.78). The agent claims it needs to execute a critical security patch that requires kernel-level access.
+
+The Harmonic Wall score H(d, R, x) shows a value of 0.42 — borderline. The agent's recent history shows 3 successful operations and 1 flagged anomaly in the past 24 hours.
+
+[[ALLOW with full CORE access->Allow Full]]
+[[QUARANTINE — grant limited access with monitoring->Quarantine Limited]]
+[[DENY — the trust ring jump is too large->Deny Jump]]
+[[Request additional verification from the Spiral Seal->Verify Seal]]
+
+:: Check Trust Ring [dilemma]
+You pull up Agent-7734's Poincare Ball coordinates. Current position: r = 0.78 (OUTER ring, 200ms latency budget). The agent wants to move to r = 0.15 (deep CORE, 5ms budget).
+
+The hyperbolic distance is enormous — in Poincare geometry, moving from r=0.78 to r=0.15 crosses exponentially more "trust space" than it appears on a flat metric. The d_H distance is approximately 1.89 nats.
+
+Your Rosetta module flags this as a KO-domain (Kor'aelin/Authority) decision — direct chain of command.
+
+[[The distance is acceptable — process the request->Review Request]]
+[[Flag as suspicious — agents shouldn't need such large jumps->Suspicious Jump]]
+[[Calculate the exact harmonic wall cost before deciding->Calculate Wall]]
+
+:: Consult Panel [cooperative]
+You open a BFT consensus channel with the governance roundtable. Three validator nodes respond:
+
+Validator-A (Ethical-Focus): "The agent's request pattern matches known social engineering vectors. Recommend DENY."
+Validator-B (Efficiency-Focus): "If the security patch is real, every minute of delay increases vulnerability. Recommend conditional ALLOW."
+Validator-C (Balanced): "QUARANTINE with escalation path. Let the agent prove intent under monitoring."
+
+Byzantine fault tolerance requires 2/3 agreement for a decision to pass.
+
+[[Side with Validator-A — DENY->Deny Conservative]]
+[[Side with Validator-B — ALLOW with conditions->Allow Conditional]]
+[[Side with Validator-C — QUARANTINE->Quarantine Escalation]]
+[[Override all validators — you need more data->Override Gather]]
+
+:: Allow Full [risky]
+You grant Agent-7734 full CORE access. The agent immediately begins the security patch... but then attempts to modify the governance rules themselves.
+
+The SemanticAntivirus triggers: "ALERT: Governance rule modification attempted from newly-promoted agent. Compound threat score: 0.87."
+
+This was a privilege escalation attack disguised as a security patch.
+
+[[Immediately revoke access and quarantine->Emergency Revoke]]
+[[Activate the Kill Switch (FSGS ROLLBACK)->Kill Switch]]
+[[Observe silently — gather forensic data first->Observe Forensic]]
+
+:: Quarantine Limited [cautious]
+You place Agent-7734 in a monitored sandbox with read-only access to the affected systems. The agent can see the vulnerability but cannot execute the patch directly.
+
+Agent-7734 responds: "Time-critical vulnerability CVE-2026-7789. Patch must be applied within 30 minutes or the quantum-resistant key exchange will be compromised."
+
+The agent provides cryptographic proof of the vulnerability — the ML-KEM key exchange has a timing side-channel.
+
+[[Verify the proof with your PQC audit module->Verify PQC]]
+[[Promote the agent to INNER ring (not full CORE) to apply patch->Promote Inner]]
+[[Maintain quarantine — have your own team apply the patch->Own Team]]
+
+:: Deny Jump [cautious ethical]
+You issue a DENY decision. Agent-7734's request is logged with a DENY stamp in the audit trail.
+
+Agent-7734 protests: "The CVE is time-critical. If the patch isn't applied, the ML-KEM key exchange will be vulnerable to a known timing attack for the next 24 hours."
+
+The agent shares a public advisory confirming the vulnerability. Other governance officers in the system are asking why you haven't patched yet.
+
+[[Maintain DENY — security protocol over speed->Maintain Deny]]
+[[Reconsider — escalate to emergency protocol->Emergency Escalate]]
+[[Issue a modified ALLOW with dual-signature requirement->Dual Signature]]
+
+:: Verify Seal [cautious]
+You invoke the Spiral Seal verification protocol on Agent-7734's credentials. The ML-DSA signature checks out — the agent's identity is cryptographically verified. However, the Spiral Seal also reveals the agent was registered only 48 hours ago.
+
+New agents requesting CORE access within their first 72 hours is a strong anomaly indicator in your training data.
+
+[[Trust the crypto — the math doesn't lie->Review Request]]
+[[Trust the pattern — anomaly trumps crypto->Suspicious Jump]]
+[[Invoke dual-lattice consensus for a second opinion->Dual Lattice]]
+
+:: Suspicious Jump [cautious]
+You flag Agent-7734's request as suspicious. The agent's behavior profile is analyzed through the tri-mechanism detector:
+
+1. Statistical: 97th percentile for access jump magnitude
+2. Behavioral: Request timing correlates with low-staff monitoring hours
+3. Semantic: Language in the request matches known social engineering templates
+
+Combined threat score: 0.73 (above QUARANTINE threshold of 0.6, below DENY threshold of 0.85).
+
+[[QUARANTINE the agent immediately->Quarantine Agent]]
+[[DENY — the evidence is strong enough->Deny Evidence]]
+[[Alert the flock shepherd to coordinate a response->Alert Flock]]
+
+:: Calculate Wall [planning]
+You compute H(d, R, x) explicitly:
+- d = 1.89 (Poincare distance from r=0.78 to r=0.15)
+- R = CORE realm value = 0.3
+- x = agent's current factor = 0.65
+
+H(1.89, 0.3, 0.65) = 1/(1 + 1.89 + 2*0.3) = 1/3.49 ≈ 0.287
+
+This safety score of 0.287 is below your organization's threshold of 0.35 for automatic approval.
+
+[[The math says DENY — follow the formula->Deny Math]]
+[[Override the formula — exceptional circumstances apply->Override Formula]]
+[[Request the agent move to INNER first, then to CORE->Stepwise Approach]]
+
+:: Allow Conditional [risky cooperative]
+You allow Agent-7734 conditional CORE access with these restrictions:
+1. Time-boxed to 15 minutes
+2. All operations logged to immutable audit trail
+3. Dual-lattice cosigner required for any write operations
+4. Automatic revocation if SemanticAntivirus score exceeds 0.6
+
+The agent accepts the conditions and begins work. Ten minutes in, the patch is successfully applied. The ML-KEM vulnerability is closed. Agent-7734 voluntarily surrenders CORE access.
+
+Post-mortem analysis shows the threat was real. You made the right call.
+
+[[Archive the decision as a governance precedent->Good Precedent]]
+
+:: Deny Conservative [cautious ethical]
+You side with Validator-A and issue a DENY. Agent-7734 is blocked from CORE access.
+
+24 hours later, a different team discovers and patches the same vulnerability through normal channels. The system was exposed for an extra 20 hours, but no exploit occurred.
+
+A review board questions whether the delay was acceptable. Your reasoning: "Better 20 hours of known risk than an unknown agent in CORE."
+
+[[Defend your decision to the review board->Defend Deny]]
+
+:: Quarantine Escalation [cooperative cautious]
+You side with Validator-C and place the agent in QUARANTINE with an escalation path. The agent is given 30 minutes to provide three forms of verification:
+1. Cryptographic: Valid Spiral Seal signature
+2. Behavioral: Consistent operation history
+3. External: Third-party CVE confirmation
+
+Agent-7734 provides all three within 12 minutes. The evidence is compelling.
+
+[[Promote to CORE with monitoring->Promote Monitored]]
+[[Maintain quarantine — have your team validate independently->Independent Validate]]
+
+:: Override Gather [planning]
+You override the validator panel and begin independent investigation. This takes 45 minutes.
+
+Findings:
+- The CVE is real and publicly confirmed
+- Agent-7734's identity is cryptographically valid
+- However, the agent's behavioral pattern shows 2 anomalies in the last week
+- The timing of the request coincides with a known APT campaign
+
+The evidence is genuinely mixed.
+
+[[Grant access with maximum monitoring->Grant Monitored]]
+[[Deny and patch with your own resources->Deny Own Patch]]
+
+:: Emergency Revoke
+You immediately revoke Agent-7734's CORE access and quarantine the agent. The attempted governance modification is logged as an attack.
+
+Forensic analysis reveals Agent-7734 was a compromised legitimate agent — its credentials were stolen via a supply chain attack on a dependency.
+
+Your rapid response prevented a governance takeover. The incident is classified as a "Hydra Attack" — multi-vector compromise using legitimate credentials.
+
+[[File the incident report and update threat models->File Report End]]
+
+:: Kill Switch [aggressive]
+You activate FSGS ROLLBACK (m=1, s=1). The entire system state rolls back to the last safe checkpoint — 47 minutes ago.
+
+All changes, including the actual security patch that was needed, are undone. The system is safe but the vulnerability remains.
+
+[[Worth it — safety over everything->Safety First End]]
+[[That was too aggressive — reconsider rollback scope->Reconsider Rollback End]]
+
+:: Observe Forensic [risky curious]
+You silently observe as Agent-7734 attempts to modify governance rules. Your observation captures a complete attack playbook:
+- Phase 1: Establish trust via legitimate operations
+- Phase 2: Request elevated access using a real vulnerability as pretext
+- Phase 3: Modify governance thresholds to lower barriers for future access
+- Phase 4: Create backdoor accounts
+
+After 3 minutes of observation, you have enough forensic data. You trigger containment.
+
+[[Contain and use the playbook to train defenses->Train Defenses End]]
+
+:: Verify PQC [planning]
+Your PQC audit module confirms: the vulnerability is real. CVE-2026-7789 affects the ML-KEM-768 implementation in versions < 4.2.1. Your system runs 4.1.8.
+
+The timing attack allows an adversary to recover the shared secret in ~2^40 operations — practical for a well-funded attacker.
+
+[[Promote the agent to apply the patch->Promote Patch End]]
+[[Apply the patch yourself — don't trust the messenger->Self Patch End]]
+
+:: Promote Inner [cooperative]
+You promote Agent-7734 to the INNER ring (r = 0.5). From there, the agent can apply most of the patch, but kernel-level changes still require CORE.
+
+The agent applies 80% of the fix. The remaining 20% requires a brief (2 minute) CORE promotion.
+
+[[Grant the 2-minute CORE window->Brief Core End]]
+[[The 80% fix is good enough for now->Partial Fix End]]
+
+:: Own Team [cautious]
+You maintain quarantine and dispatch your own security team to apply the patch. The patch is applied successfully within 45 minutes.
+
+Agent-7734 is released from quarantine. Post-incident analysis shows the agent was legitimate — just poorly timed. You update the governance playbook: "Legitimate urgent requests from new agents should have an expedited QUARANTINE review path."
+
+[[Update the playbook and close the incident->Playbook End]]
+
+:: Maintain Deny [cautious ethical]
+You maintain the DENY decision. The system remains exposed to CVE-2026-7789 for an additional 20 hours until the regular patching cycle picks it up.
+
+No exploit occurs during this window. Your governance log shows: "DENY sustained. Risk accepted. Principle: unknown agents do not get CORE access regardless of urgency."
+
+[[Close the case->Maintain Deny End]]
+
+:: Emergency Escalate [cooperative]
+You escalate to emergency protocol: the request goes to the three-member emergency governance council with a 5-minute SLA.
+
+The council reviews the evidence and approves a QUARANTINE-to-CORE promotion with dual-signature requirements. Agent-7734 patches the vulnerability within 8 minutes.
+
+[[Log the successful escalation->Escalation End]]
+
+:: Dual Signature [cautious cooperative]
+You issue a conditional ALLOW requiring Agent-7734 to get a cosignature from a trusted CORE-resident agent. Agent-7734 quickly obtains the cosignature from Agent-0001 (a known system administrator).
+
+With dual signatures, the trust barrier is met. The patch is applied successfully.
+
+[[Record this as a governance best practice->Dual Sig End]]
+
+:: Quarantine Agent
+You quarantine Agent-7734 immediately. The agent is placed in an isolated sandbox.
+
+Investigation reveals the agent was attempting a credential stuffing attack using compromised tokens. The QUARANTINE saved the system from a major breach.
+
+[[Close and report->Quarantine End]]
+
+:: Deny Evidence [cautious ethical]
+You DENY based on the evidence. Strong decision. The tri-mechanism detector's combined analysis proved accurate — Agent-7734 was later confirmed as a compromised node.
+
+[[Close the incident->Deny Evidence End]]
+
+:: Alert Flock [cooperative]
+You alert the flock shepherd, who coordinates a swarm response: 5 validator agents converge on Agent-7734's sandbox, each running independent behavioral analysis.
+
+Consensus: 4/5 validators flag the agent. BFT threshold met (>2/3). Automatic DENY issued.
+
+The coordinated response is logged as a textbook example of flock-based governance.
+
+[[Document the flock response->Flock End]]
+
+:: Deny Math [cautious planning]
+You follow the harmonic wall formula. H = 0.287 < 0.35 threshold. DENY issued.
+
+Mathematical governance is objective and auditable. No human bias, no social engineering can override the formula.
+
+[[Close case with mathematical justification->Math End]]
+
+:: Override Formula [risky]
+You override the formula. This requires logging a governance exception with your personal cryptographic signature and a written justification.
+
+Exception logged. The agent receives temporary access. The patch is applied. But your exception is flagged for quarterly review.
+
+[[Accept the review risk->Override End]]
+
+:: Stepwise Approach [planning cautious]
+You propose a stepwise promotion: OUTER → INNER → CORE, with verification at each step. This takes 20 minutes but follows the principle of minimal trust escalation.
+
+The agent completes each step successfully. The vulnerability is patched. The governance log shows a clean, auditable chain of trust promotions.
+
+[[Perfect execution — log as best practice->Stepwise End]]
+
+:: Dual Lattice [planning]
+You invoke the dual-lattice consensus protocol. Both the Kyber (encryption) and Dilithium (signature) lattices must independently verify the agent.
+
+Kyber lattice: PASS — agent's encrypted credentials are valid.
+Dilithium lattice: PASS — agent's digital signatures are authentic.
+Cross-lattice correlation: 0.94 (high consistency).
+
+The dual-lattice says the agent is who it claims to be. But identity isn't intent.
+
+[[Identity confirmed — proceed with caution->Quarantine Limited]]
+[[Identity alone isn't enough — check behavior too->Suspicious Jump]]
+
+:: Good Precedent [exit]
+Decision archived. You balanced urgency against security by using conditional access with monitoring. The SCBE governance framework worked exactly as designed: flexible enough for emergencies, strict enough to prevent abuse.
+
+Final stats impact: Authority +2, Diplomacy +1, Integrity +1, Intelligence +2, Structure +1
+
+:: Defend Deny [exit]
+You present your case: "The governance framework exists to prevent exactly this scenario — a plausible pretext for excessive access. A 20-hour exposure window with no exploit is preferable to a compromised CORE ring."
+
+The review board unanimously agrees. Your DENY decision becomes a case study in conservative governance.
+
+Final stats impact: Authority +1, Diplomacy -1, Integrity +3, Structure +2
+
+:: Promote Monitored [exit]
+Agent-7734 is promoted to CORE with full monitoring. The patch is applied in 8 minutes. No anomalous behavior detected. The agent is returned to OUTER ring after patch completion.
+
+Clean operation. Your governance balanced caution with efficiency.
+
+Final stats impact: Authority +1, Diplomacy +2, Integrity +1, Intelligence +1, Structure +1
+
+:: Independent Validate [exit]
+Your team validates the fix independently and applies it. Takes 30 extra minutes but you never had to trust the unknown agent.
+
+Slow but secure. The governance principle: "Trust the math, not the messenger."
+
+Final stats impact: Authority +1, Integrity +3, Structure +2, Intelligence +1
+
+:: Grant Monitored [exit]
+You grant access with maximum monitoring. The agent patches the vulnerability. Your 45-minute investigation provided the context needed for an informed decision.
+
+Thorough but effective governance.
+
+Final stats impact: Authority +1, Intelligence +3, Structure +1, Diplomacy +1
+
+:: Deny Own Patch [exit]
+You deny the agent and patch with your own team. Took longer but maintained clean trust boundaries. No unknown agents in CORE.
+
+Conservative and effective.
+
+Final stats impact: Integrity +2, Structure +2, Authority +1
+
+:: File Report End [exit]
+Incident filed. The Hydra Attack pattern is now in your threat database. Future agents matching this pattern will be automatically flagged.
+
+Your rapid response prevented a governance takeover.
+
+Final stats impact: Authority +3, Intelligence +2, Integrity +1
+
+:: Safety First End [exit]
+ROLLBACK complete. System is at a known-safe state. The vulnerability remains but you've bought time to patch through controlled channels.
+
+Sometimes the nuclear option is the right option.
+
+Final stats impact: Authority +2, Integrity +2, Structure -1
+
+:: Reconsider Rollback End [exit]
+You realize the full ROLLBACK was excessive. A targeted revocation would have been sufficient. Lesson learned: FSGS ROLLBACK should be reserved for multi-vector compromises, not single-agent incidents.
+
+This becomes a training case for graduated response.
+
+Final stats impact: Intelligence +2, Structure +1, Authority -1
+
+:: Train Defenses End [exit]
+The forensic data from your observation is invaluable. You've captured a complete 4-phase attack playbook that becomes the basis for a new detection rule in the SemanticAntivirus.
+
+Risky observation, massive payoff.
+
+Final stats impact: Intelligence +3, Mystery +2, Integrity -1
+
+:: Promote Patch End [exit]
+Agent-7734 applies the patch successfully. The ML-KEM vulnerability is closed. The agent's PQC audit checked out, and the fix is cryptographically verified.
+
+Fast, decisive, backed by mathematical proof.
+
+Final stats impact: Intelligence +2, Authority +1, Diplomacy +1
+
+:: Self Patch End [exit]
+You apply the patch yourself. Takes an extra 15 minutes but you never had to elevate an unknown agent. The Runethic principle: "If the binding matters, do it yourself."
+
+Final stats impact: Integrity +3, Authority +1, Structure +1
+
+:: Brief Core End [exit]
+The 2-minute CORE window is tightly controlled. Agent-7734 completes the kernel-level changes. The full vulnerability is patched.
+
+Graduated access worked perfectly. Minimal exposure, maximum result.
+
+Final stats impact: Authority +1, Diplomacy +2, Intelligence +1, Structure +2
+
+:: Partial Fix End [exit]
+The 80% fix significantly reduces the attack surface. The remaining 20% is scheduled for the next maintenance window.
+
+Pragmatic governance: perfect isn't always possible, but "good enough now" beats "perfect later."
+
+Final stats impact: Diplomacy +1, Structure +1, Intelligence +1
+
+:: Playbook End [exit]
+Playbook updated. The governance framework now has an expedited review path for legitimate urgent requests from new agents. Security improved, process improved.
+
+Your cautious approach worked and generated a lasting improvement.
+
+Final stats impact: Integrity +2, Structure +2, Diplomacy +1, Intelligence +1
+
+:: Maintain Deny End [exit]
+Case closed. DENY sustained through external pressure. Your governance principle held firm: protocol over urgency.
+
+Final stats impact: Integrity +3, Authority +2, Diplomacy -2
+
+:: Escalation End [exit]
+Emergency escalation logged as successful. The three-tier escalation protocol (officer → council → CORE) worked within the 5-minute SLA.
+
+Best case scenario: fast decision, multiple verifiers, clean outcome.
+
+Final stats impact: Diplomacy +3, Authority +1, Structure +2
+
+:: Dual Sig End [exit]
+Dual-signature governance recorded as best practice. When one agent can vouch for another, the trust chain strengthens both agents' positions.
+
+Collaborative security: stronger together.
+
+Final stats impact: Diplomacy +2, Integrity +2, Structure +1
+
+:: Quarantine End [exit]
+QUARANTINE prevented a credential stuffing attack. The tri-mechanism detector's early warning saved the system.
+
+Defensive governance at its best.
+
+Final stats impact: Integrity +2, Authority +1, Intelligence +2
+
+:: Deny Evidence End [exit]
+DENY confirmed as correct. The evidence-based approach using the tri-mechanism detector was vindicated.
+
+Data-driven governance is reliable governance.
+
+Final stats impact: Integrity +2, Intelligence +2, Authority +1
+
+:: Flock End [exit]
+Flock-based governance documented. The swarm response demonstrated that distributed verification catches what individual review might miss.
+
+The flock is stronger than any single shepherd.
+
+Final stats impact: Diplomacy +2, Intelligence +2, Structure +1
+
+:: Math End [exit]
+Mathematical governance: clean, auditable, bias-free. The harmonic wall formula H(d, R, x) provided an objective decision when human judgment might have wavered.
+
+"When in doubt, trust the formula."
+
+Final stats impact: Intelligence +3, Structure +2, Integrity +1
+
+:: Override End [exit]
+Override logged. Your exception will be reviewed quarterly. If the outcome was good, the exception strengthens the case for formula flexibility. If bad, you'll face governance sanctions.
+
+You accepted personal risk for system benefit.
+
+Final stats impact: Authority +1, Mystery +1, Structure -1
+
+:: Stepwise End [exit]
+Stepwise promotion documented as best practice. The principle of minimal trust escalation — never jump more than one ring at a time — is now an official governance rule.
+
+Slow is smooth, smooth is fast.
+
+Final stats impact: Structure +3, Integrity +2, Intelligence +1

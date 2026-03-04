@@ -1,0 +1,1052 @@
+"""
+SCBE n8n Bridge — FastAPI service connecting n8n workflows to SCBE Web Agent
+=============================================================================
+
+Endpoints:
+  POST /v1/governance/scan        — Semantic antivirus scan
+  POST /v1/tongue/encode          — Sacred Tongue encoding
+  POST /v1/buffer/post            — Content Buffer posting
+  POST /v1/agent/task             — Submit web agent task
+  GET  /v1/agent/task/{id}/status — Poll task status
+  GET  /v1/llm/providers          — Provider availability for tool-calling router
+  POST /v1/llm/dispatch           — Unified dispatch to HF/OpenAI/Claude/Grok + Zapier callback
+  POST /v1/integrations/n8n/browse — Proxy to Playwright browser service
+  GET  /v1/integrations/status    — Integration health (browser service)
+  POST /v1/telemetry/post-result  — Log post telemetry
+  POST /v1/training/ingest        — Ingest game events into HF training pipeline
+  GET  /v1/training/status        — Training pipeline status
+  POST /v1/council/deliberate     — AI Round Table: multi-LLM deliberation with governance
+  GET  /v1/council/status         — Round Table session history
+  GET  /health                    — Health check
+
+Start:
+  uvicorn workflows.n8n.scbe_n8n_bridge:app --host 0.0.0.0 --port 8001
+"""
+
+from __future__ import annotations
+
+import logging
+import json
+import os
+import sys
+import threading
+import time
+import uuid
+from typing import Any, Dict, List, Optional
+from urllib import error as urllib_error
+from urllib import request as urllib_request
+
+# Resolve project paths
+_HERE = os.path.dirname(os.path.abspath(__file__))
+_PROJECT = os.path.abspath(os.path.join(_HERE, "..", ".."))
+_SRC = os.path.join(_PROJECT, "src")
+if _SRC not in sys.path:
+    sys.path.insert(0, _SRC)
+if _PROJECT not in sys.path:
+    sys.path.insert(0, _PROJECT)
+_DEMO = os.path.join(_PROJECT, "demo")
+if _DEMO not in sys.path:
+    sys.path.insert(0, _DEMO)
+
+logger = logging.getLogger("scbe_n8n_bridge")
+
+try:
+    from fastapi import FastAPI, HTTPException, Header, Request
+    from fastapi.responses import JSONResponse
+    from pydantic import BaseModel
+except ImportError:
+    print("pip install fastapi uvicorn  # required for n8n bridge")
+    raise
+
+from symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent import (
+    SemanticAntivirus,
+    ContentBuffer,
+    Platform,
+    PlatformPublisher,
+    AgentOrchestrator,
+    WebTask,
+    TaskStatus,
+)
+from symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent.publishers import create_publisher
+
+# ---------------------------------------------------------------------------
+#  App setup
+# ---------------------------------------------------------------------------
+
+app = FastAPI(
+    title="SCBE n8n Bridge",
+    version="2.0.0",
+    description="SCBE-AETHERMOORE web agent pipeline + AI Round Table council",
+)
+
+# Shared instances
+_antivirus = SemanticAntivirus()
+_buffer = ContentBuffer(antivirus=_antivirus)
+_orchestrator = AgentOrchestrator(antivirus=_antivirus)
+_telemetry: List[Dict[str, Any]] = []
+
+# Register dry-run publishers (replace with real credentials in production)
+for plat in Platform:
+    _buffer.register_publisher(PlatformPublisher(plat))
+
+# API key validation
+_API_KEYS = set(
+    k.strip()
+    for k in os.environ.get("SCBE_API_KEYS", "scbe-dev-key,test-key").split(",")
+    if k.strip()
+)
+_BROWSER_SERVICE_URL = os.environ.get(
+    "SCBE_BROWSER_SERVICE_URL",
+    "http://127.0.0.1:8011",
+).rstrip("/")
+_BROWSER_SERVICE_API_KEY = os.environ.get("SCBE_BROWSER_API_KEY", "").strip()
+try:
+    _BROWSER_TIMEOUT_SEC = int(os.environ.get("SCBE_BROWSER_TIMEOUT_SEC", "45"))
+except ValueError:
+    _BROWSER_TIMEOUT_SEC = 45
+
+# LLM provider router settings
+_OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "").strip()
+_ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+_XAI_API_KEY = os.environ.get("XAI_API_KEY", "").strip()
+_HF_ROUTER_TOKEN = (
+    os.environ.get("HF_TOKEN", "").strip()
+    or os.environ.get("HUGGINGFACEHUB_API_TOKEN", "").strip()
+    or os.environ.get("HUGGINGFACE_HUB_TOKEN", "").strip()
+)
+_ZAPIER_WEBHOOK_URL = os.environ.get("SCBE_ZAPIER_HOOK_URL", "").strip()
+
+_OPENAI_DEFAULT_MODEL = os.environ.get("SCBE_OPENAI_MODEL", "gpt-4o-mini").strip()
+_ANTHROPIC_DEFAULT_MODEL = os.environ.get(
+    "SCBE_ANTHROPIC_MODEL",
+    "claude-3-5-sonnet-latest",
+).strip()
+_XAI_DEFAULT_MODEL = os.environ.get("SCBE_XAI_MODEL", "grok-beta").strip()
+_HF_DEFAULT_MODEL = os.environ.get("SCBE_HF_MODEL", "Qwen/Qwen2.5-7B-Instruct").strip()
+
+
+def _check_key(api_key: Optional[str] = None):
+    if api_key and api_key in _API_KEYS:
+        return
+    raise HTTPException(status_code=401, detail="Invalid or missing API key")
+
+
+# ---------------------------------------------------------------------------
+#  Request/response models
+# ---------------------------------------------------------------------------
+
+class ScanRequest(BaseModel):
+    content: str
+    platforms: Optional[List[str]] = None
+    scan_mode: str = "full"
+
+
+class TongueEncodeRequest(BaseModel):
+    text: str
+    tongue: str = "KO"
+    seal: bool = False
+    context: Optional[List[float]] = None
+
+
+class BufferPostRequest(BaseModel):
+    text: str
+    platforms: List[str] = ["twitter"]
+    tags: Optional[List[str]] = None
+    schedule_at: Optional[float] = None
+    tongue_encode: bool = False
+    tongue: Optional[str] = None
+
+
+class TaskRequest(BaseModel):
+    task_type: str = "navigate"
+    target_url: Optional[str] = None
+    goal: str = ""
+    max_steps: int = 50
+    parameters: Dict[str, Any] = {}
+    # Content posting fields
+    text: Optional[str] = None
+    platforms: Optional[List[str]] = None
+
+
+class TelemetryRequest(BaseModel):
+    platform: str
+    success: bool
+    post_url: Optional[str] = None
+    timestamp: Optional[str] = None
+
+
+class TrainingIngestRequest(BaseModel):
+    """Game event forwarded from n8n for training data collection."""
+    event_type: str
+    context: str = ""
+    outcome: str = ""
+    tongue: str = "KO"
+    metadata: Dict[str, Any] = {}
+
+
+class N8nBrowseAction(BaseModel):
+    """Compact action payload expected by browser integration endpoint."""
+    action: str
+    target: str
+    value: Optional[str] = None
+    timeout_ms: Optional[int] = None
+    include_full_data: bool = False
+
+
+class N8nBrowseRequest(BaseModel):
+    """Bridge request used by n8n workflows for Playwright browsing."""
+    actions: List[N8nBrowseAction]
+    session_id: Optional[str] = None
+    dry_run: bool = False
+    workflow_id: Optional[str] = None
+    run_id: Optional[str] = None
+    source: str = "n8n"
+
+
+class CouncilRequest(BaseModel):
+    """AI Round Table — fan out a query to multiple LLMs with governance."""
+    query: str
+    system: Optional[str] = None
+    providers: List[str] = ["anthropic", "openai", "xai"]
+    rounds: int = 1
+    strategy: str = "consensus"  # consensus | majority | debate | chain
+    governance_scan: bool = True
+    tongue: str = "DR"
+
+
+class LLMDispatchRequest(BaseModel):
+    """Unified provider dispatch for OpenAI, Anthropic, xAI, and HF router."""
+    provider: str
+    model: Optional[str] = None
+    messages: List[Dict[str, Any]] = []
+    prompt: Optional[str] = None
+    system: Optional[str] = None
+    temperature: Optional[float] = 0.2
+    max_tokens: Optional[int] = 800
+    tools: List[Dict[str, Any]] = []
+    tool_choice: Optional[Any] = None
+    metadata: Dict[str, Any] = {}
+    passthrough: Dict[str, Any] = {}
+    route_to_zapier: bool = False
+    zapier_hook_url: Optional[str] = None
+
+
+# ---------------------------------------------------------------------------
+#  Endpoints
+# ---------------------------------------------------------------------------
+
+@app.get("/health")
+async def health():
+    return {
+        "status": "ok",
+        "service": "scbe-n8n-bridge",
+        "version": "2.0.0",
+        "buffer_queue": _buffer.summary(),
+        "orchestrator": _orchestrator.summary(),
+        "telemetry_count": len(_telemetry),
+        "council_sessions": len(_council_sessions),
+        "browser_service_url": _BROWSER_SERVICE_URL,
+    }
+
+
+def _normalize_provider(raw: str) -> str:
+    p = (raw or "").strip().lower()
+    aliases = {
+        "gpt": "openai",
+        "codex": "openai",
+        "openai": "openai",
+        "claude": "anthropic",
+        "anthropic": "anthropic",
+        "grok": "xai",
+        "xai": "xai",
+        "hf": "huggingface",
+        "huggingface": "huggingface",
+    }
+    return aliases.get(p, p)
+
+
+def _coerce_messages(req: LLMDispatchRequest) -> List[Dict[str, Any]]:
+    if req.messages:
+        return req.messages
+    if req.prompt:
+        msgs: List[Dict[str, Any]] = []
+        if req.system:
+            msgs.append({"role": "system", "content": req.system})
+        msgs.append({"role": "user", "content": req.prompt})
+        return msgs
+    return [{"role": "user", "content": ""}]
+
+
+def _http_post_json(
+    url: str,
+    payload: Dict[str, Any],
+    headers: Dict[str, str],
+    timeout_sec: int = 60,
+) -> Dict[str, Any]:
+    req = urllib_request.Request(
+        url=url,
+        method="POST",
+        headers=headers,
+        data=json.dumps(payload).encode("utf-8"),
+    )
+    try:
+        with urllib_request.urlopen(req, timeout=timeout_sec) as resp:
+            body = resp.read().decode("utf-8")
+            return json.loads(body) if body else {}
+    except urllib_error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "error": "upstream_http_error",
+                "upstream_status": exc.code,
+                "url": url,
+                "body": detail[:1800],
+            },
+        )
+    except urllib_error.URLError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Upstream provider unavailable: {exc.reason}",
+        )
+
+
+def _extract_openai_style_response(resp: Dict[str, Any]) -> Dict[str, Any]:
+    choices = resp.get("choices", [])
+    if not choices:
+        return {"text": "", "tool_calls": []}
+    message = choices[0].get("message", {}) or {}
+    content = message.get("content", "")
+    if isinstance(content, list):
+        content = "\n".join(
+            str(block.get("text", "")) if isinstance(block, dict) else str(block)
+            for block in content
+        )
+    return {
+        "text": content or "",
+        "tool_calls": message.get("tool_calls", []) or [],
+    }
+
+
+def _extract_anthropic_response(resp: Dict[str, Any]) -> Dict[str, Any]:
+    blocks = resp.get("content", []) or []
+    text_parts: List[str] = []
+    tool_calls: List[Dict[str, Any]] = []
+    for block in blocks:
+        if not isinstance(block, dict):
+            continue
+        block_type = block.get("type")
+        if block_type == "text":
+            text_parts.append(str(block.get("text", "")))
+        elif block_type == "tool_use":
+            tool_calls.append(block)
+    return {
+        "text": "\n".join(t for t in text_parts if t).strip(),
+        "tool_calls": tool_calls,
+    }
+
+
+def _dispatch_openai_compatible(
+    req: LLMDispatchRequest,
+    base_url: str,
+    bearer_token: str,
+    default_model: str,
+) -> Dict[str, Any]:
+    if not bearer_token:
+        raise HTTPException(status_code=400, detail="Provider API key not configured")
+    payload: Dict[str, Any] = {
+        "model": req.model or default_model,
+        "messages": _coerce_messages(req),
+    }
+    if req.temperature is not None:
+        payload["temperature"] = req.temperature
+    if req.max_tokens is not None:
+        payload["max_tokens"] = req.max_tokens
+    if req.tools:
+        payload["tools"] = req.tools
+    if req.tool_choice is not None:
+        payload["tool_choice"] = req.tool_choice
+    if req.passthrough:
+        payload.update(req.passthrough)
+
+    headers = {
+        "Authorization": f"Bearer {bearer_token}",
+        "Content-Type": "application/json",
+    }
+    return _http_post_json(
+        url=base_url,
+        payload=payload,
+        headers=headers,
+        timeout_sec=max(20, _BROWSER_TIMEOUT_SEC),
+    )
+
+
+def _dispatch_anthropic(req: LLMDispatchRequest) -> Dict[str, Any]:
+    if not _ANTHROPIC_API_KEY:
+        raise HTTPException(status_code=400, detail="ANTHROPIC_API_KEY not configured")
+
+    src_messages = _coerce_messages(req)
+    system_chunks: List[str] = []
+    msgs: List[Dict[str, Any]] = []
+    for m in src_messages:
+        role = str(m.get("role", "user")).lower()
+        content = m.get("content", "")
+        if role == "system":
+            system_chunks.append(str(content))
+            continue
+        if role not in ("user", "assistant"):
+            role = "user"
+        msgs.append({"role": role, "content": str(content)})
+
+    payload: Dict[str, Any] = {
+        "model": req.model or _ANTHROPIC_DEFAULT_MODEL,
+        "messages": msgs,
+        "max_tokens": int(req.max_tokens or 800),
+    }
+    system_prompt = req.system or "\n".join(t for t in system_chunks if t)
+    if system_prompt:
+        payload["system"] = system_prompt
+    if req.temperature is not None:
+        payload["temperature"] = req.temperature
+    if req.tools:
+        payload["tools"] = req.tools
+    if req.tool_choice is not None:
+        payload["tool_choice"] = req.tool_choice
+    if req.passthrough:
+        payload.update(req.passthrough)
+
+    headers = {
+        "x-api-key": _ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+        "Content-Type": "application/json",
+    }
+    return _http_post_json(
+        url="https://api.anthropic.com/v1/messages",
+        payload=payload,
+        headers=headers,
+        timeout_sec=max(20, _BROWSER_TIMEOUT_SEC),
+    )
+
+
+def _send_zapier_event(hook_url: str, event_payload: Dict[str, Any]) -> Dict[str, Any]:
+    if not hook_url:
+        return {"status": "skipped", "reason": "missing_hook_url"}
+    req = urllib_request.Request(
+        url=hook_url,
+        method="POST",
+        headers={"Content-Type": "application/json"},
+        data=json.dumps(event_payload).encode("utf-8"),
+    )
+    try:
+        with urllib_request.urlopen(req, timeout=20) as resp:
+            body = resp.read().decode("utf-8", errors="replace")
+            return {
+                "status": "sent",
+                "status_code": getattr(resp, "status", 200),
+                "body": body[:800],
+            }
+    except Exception as exc:  # noqa: BLE001
+        return {"status": "failed", "error": str(exc)}
+
+
+@app.get("/v1/llm/providers")
+async def llm_provider_status(x_api_key: Optional[str] = Header(None)):
+    _check_key(x_api_key)
+    return {
+        "providers": {
+            "openai": {"configured": bool(_OPENAI_API_KEY), "default_model": _OPENAI_DEFAULT_MODEL},
+            "anthropic": {"configured": bool(_ANTHROPIC_API_KEY), "default_model": _ANTHROPIC_DEFAULT_MODEL},
+            "xai": {"configured": bool(_XAI_API_KEY), "default_model": _XAI_DEFAULT_MODEL},
+            "huggingface": {"configured": bool(_HF_ROUTER_TOKEN), "default_model": _HF_DEFAULT_MODEL},
+        },
+        "zapier": {"configured": bool(_ZAPIER_WEBHOOK_URL)},
+    }
+
+
+@app.post("/v1/llm/dispatch")
+async def llm_dispatch(req: LLMDispatchRequest, x_api_key: Optional[str] = Header(None)):
+    _check_key(x_api_key)
+    provider = _normalize_provider(req.provider)
+
+    raw_response: Dict[str, Any]
+    if provider == "openai":
+        raw_response = _dispatch_openai_compatible(
+            req=req,
+            base_url="https://api.openai.com/v1/chat/completions",
+            bearer_token=_OPENAI_API_KEY,
+            default_model=_OPENAI_DEFAULT_MODEL,
+        )
+        extracted = _extract_openai_style_response(raw_response)
+    elif provider == "xai":
+        raw_response = _dispatch_openai_compatible(
+            req=req,
+            base_url="https://api.x.ai/v1/chat/completions",
+            bearer_token=_XAI_API_KEY,
+            default_model=_XAI_DEFAULT_MODEL,
+        )
+        extracted = _extract_openai_style_response(raw_response)
+    elif provider == "huggingface":
+        raw_response = _dispatch_openai_compatible(
+            req=req,
+            base_url="https://router.huggingface.co/v1/chat/completions",
+            bearer_token=_HF_ROUTER_TOKEN,
+            default_model=_HF_DEFAULT_MODEL,
+        )
+        extracted = _extract_openai_style_response(raw_response)
+    elif provider == "anthropic":
+        raw_response = _dispatch_anthropic(req)
+        extracted = _extract_anthropic_response(raw_response)
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported provider '{req.provider}'. Use openai|anthropic|xai|huggingface.",
+        )
+
+    result: Dict[str, Any] = {
+        "provider": provider,
+        "model": req.model,
+        "text": extracted.get("text", ""),
+        "tool_calls": extracted.get("tool_calls", []),
+        "raw": raw_response,
+    }
+
+    if req.route_to_zapier:
+        hook = req.zapier_hook_url or _ZAPIER_WEBHOOK_URL
+        result["zapier"] = _send_zapier_event(
+            hook_url=hook,
+            event_payload={
+                "event": "llm_dispatch",
+                "provider": provider,
+                "metadata": req.metadata,
+                "result": {
+                    "text": result["text"],
+                    "tool_calls": result["tool_calls"],
+                },
+            },
+        )
+
+    return result
+
+
+def _browser_health_check() -> Dict[str, Any]:
+    """Probe browser service /health endpoint."""
+    url = f"{_BROWSER_SERVICE_URL}/health"
+    req = urllib_request.Request(url=url, method="GET")
+    try:
+        with urllib_request.urlopen(req, timeout=max(3, _BROWSER_TIMEOUT_SEC // 2)) as resp:
+            body = resp.read().decode("utf-8")
+            data = json.loads(body) if body else {}
+            return {
+                "reachable": True,
+                "status_code": getattr(resp, "status", 200),
+                "health": data,
+                "url": url,
+            }
+    except Exception as exc:  # noqa: BLE001
+        return {
+            "reachable": False,
+            "error": str(exc),
+            "url": url,
+        }
+
+
+def _forward_to_browser_service(payload: Dict[str, Any], bridge_api_key: str) -> Dict[str, Any]:
+    """Forward browse request from n8n bridge to browser service."""
+    url = f"{_BROWSER_SERVICE_URL}/v1/integrations/n8n/browse"
+    data = json.dumps(payload).encode("utf-8")
+    browser_api_key = _BROWSER_SERVICE_API_KEY or bridge_api_key
+    headers = {
+        "Content-Type": "application/json",
+        "X-API-Key": browser_api_key,
+    }
+    req = urllib_request.Request(url=url, data=data, headers=headers, method="POST")
+
+    try:
+        with urllib_request.urlopen(req, timeout=_BROWSER_TIMEOUT_SEC) as resp:
+            body = resp.read().decode("utf-8")
+            return json.loads(body) if body else {"status": "ok"}
+    except urllib_error.HTTPError as exc:
+        body = exc.read().decode("utf-8", errors="replace")
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "error": "browser_service_http_error",
+                "upstream_status": exc.code,
+                "url": url,
+                "body": body[:1500],
+            },
+        )
+    except urllib_error.URLError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Browser service unavailable at {_BROWSER_SERVICE_URL}: {exc.reason}",
+        )
+    except json.JSONDecodeError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Browser service returned invalid JSON: {exc}",
+        )
+
+
+@app.get("/v1/integrations/status")
+async def integrations_status(x_api_key: Optional[str] = Header(None)):
+    """Return integration health for n8n->bridge->browser pipeline."""
+    _check_key(x_api_key)
+    return {
+        "bridge": {
+            "status": "ok",
+            "service": "scbe-n8n-bridge",
+        },
+        "browser_service": _browser_health_check(),
+    }
+
+
+@app.post("/v1/governance/scan")
+async def governance_scan(req: ScanRequest, x_api_key: Optional[str] = Header(None)):
+    _check_key(x_api_key)
+    profile = _antivirus.scan(req.content)
+    return profile.to_dict()
+
+
+@app.post("/v1/tongue/encode")
+async def tongue_encode(req: TongueEncodeRequest, x_api_key: Optional[str] = Header(None)):
+    _check_key(x_api_key)
+    try:
+        from symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent.tongue_transport import TongueTransport
+        transport = TongueTransport()
+        if req.seal and req.context:
+            env = transport.seal(req.text, tongue=req.tongue, context=req.context)
+            return {
+                "tongue": env.tongue,
+                "encoded_text": env.encoded_text,
+                "geoseal": env.geoseal,
+                "transport": "tongue+geoseal",
+            }
+        else:
+            env = transport.encode(req.text, tongue=req.tongue)
+            return {
+                "tongue": env.tongue,
+                "encoded_text": env.encoded_text,
+                "token_count": len(env.tokens),
+                "transport": "tongue",
+            }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/v1/buffer/post")
+async def buffer_post(req: BufferPostRequest, x_api_key: Optional[str] = Header(None)):
+    _check_key(x_api_key)
+    text = req.text
+
+    # Optional tongue encoding
+    if req.tongue_encode:
+        try:
+            from symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent.tongue_transport import TongueTransport
+            transport = TongueTransport()
+            tongue = req.tongue or "KO"
+            env = transport.encode(text, tongue=tongue)
+            text = env.encoded_text
+        except Exception:
+            pass  # Fall through to plain text
+
+    post = _buffer.create_post(
+        text=text,
+        platforms=req.platforms,
+        tags=req.tags,
+        schedule_at=req.schedule_at,
+    )
+
+    if post.status.value == "blocked":
+        return {
+            "status": "blocked",
+            "governance_verdict": post.governance_verdict,
+            "governance_risk": post.governance_risk,
+        }
+
+    # Publish immediately if no schedule
+    results = []
+    if not req.schedule_at:
+        publish_results = _buffer.publish_due()
+        results = [
+            {"platform": r.platform.value, "success": r.success, "url": r.post_url}
+            for r in publish_results
+        ]
+
+    return {
+        "post_id": post.post_id,
+        "status": post.status.value,
+        "platforms": [p.value for p in post.platforms],
+        "governance_verdict": post.governance_verdict,
+        "governance_risk": post.governance_risk,
+        "results": results,
+    }
+
+
+@app.post("/v1/agent/task")
+async def submit_task(req: TaskRequest, x_api_key: Optional[str] = Header(None)):
+    _check_key(x_api_key)
+    from symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent.agent_orchestrator import TaskType
+
+    task = WebTask(
+        task_type=TaskType(req.task_type),
+        target_url=req.target_url,
+        goal=req.goal,
+        max_steps=req.max_steps,
+        parameters=req.parameters,
+    )
+
+    if req.text:
+        task.post_content = req.text
+    if req.platforms:
+        task.post_platforms = req.platforms
+
+    task_id = _orchestrator.submit_task(task)
+    return {
+        "task_id": task_id,
+        "status": task.status.value,
+        "task_type": task.task_type.value,
+    }
+
+
+@app.post("/v1/integrations/n8n/browse")
+async def n8n_browse_proxy(req: N8nBrowseRequest, x_api_key: Optional[str] = Header(None)):
+    """Proxy n8n browse payloads to Playwright browser service."""
+    _check_key(x_api_key)
+    serialized_actions = [
+        action.model_dump() if hasattr(action, "model_dump") else action.dict()
+        for action in req.actions
+    ]
+    payload = {
+        "actions": serialized_actions,
+        "session_id": req.session_id,
+        "dry_run": req.dry_run,
+        "workflow_id": req.workflow_id,
+        "run_id": req.run_id,
+        "source": req.source,
+    }
+    return _forward_to_browser_service(payload=payload, bridge_api_key=x_api_key or "")
+
+
+@app.get("/v1/agent/task/{task_id}/status")
+async def task_status(task_id: str, x_api_key: Optional[str] = Header(None)):
+    _check_key(x_api_key)
+    task = _orchestrator.get_task(task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
+    result = None
+    if task.result:
+        result = task.result.to_dict()
+    return {
+        "task_id": task.task_id,
+        "status": task.status.value,
+        "task_type": task.task_type.value,
+        "result": result,
+    }
+
+
+@app.post("/v1/telemetry/post-result")
+async def telemetry_log(req: TelemetryRequest, x_api_key: Optional[str] = Header(None)):
+    _check_key(x_api_key)
+    entry = {
+        "platform": req.platform,
+        "success": req.success,
+        "post_url": req.post_url,
+        "timestamp": req.timestamp or time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "logged_at": time.time(),
+    }
+    _telemetry.append(entry)
+    return {"status": "logged", "total_entries": len(_telemetry)}
+
+
+@app.get("/v1/telemetry")
+async def telemetry_list(x_api_key: Optional[str] = Header(None)):
+    _check_key(x_api_key)
+    return {"entries": _telemetry[-100:], "total": len(_telemetry)}
+
+
+# ---------------------------------------------------------------------------
+#  AI Round Table — Multi-LLM Council Deliberation
+# ---------------------------------------------------------------------------
+
+_council_sessions: List[Dict[str, Any]] = []
+
+_TONGUE_COUNCIL_ROLES: Dict[str, Dict[str, str]] = {
+    "KO": {"role": "Intent Analyst", "instruction": "Analyze the intent, motivation, and alignment of this query."},
+    "AV": {"role": "Creative Advocate", "instruction": "Explore creative solutions and narrative possibilities."},
+    "RU": {"role": "Security Auditor", "instruction": "Identify risks, vulnerabilities, and edge cases."},
+    "CA": {"role": "Compute Optimizer", "instruction": "Evaluate efficiency, cost, and implementation feasibility."},
+    "UM": {"role": "Governance Arbiter", "instruction": "Assess policy compliance, ethics, and governance alignment."},
+    "DR": {"role": "Lead Architect", "instruction": "Synthesize all perspectives into a coherent, actionable plan."},
+}
+
+
+def _dispatch_single_provider(provider: str, prompt: str, system_prompt: str, max_tokens: int = 1000) -> Dict[str, Any]:
+    """Dispatch to a single LLM provider and return text + metadata."""
+    p = _normalize_provider(provider)
+    try:
+        req = LLMDispatchRequest(
+            provider=provider,
+            prompt=prompt,
+            system=system_prompt,
+            max_tokens=max_tokens,
+            temperature=0.3,
+        )
+        if p == "openai":
+            raw = _dispatch_openai_compatible(req, "https://api.openai.com/v1/chat/completions", _OPENAI_API_KEY, _OPENAI_DEFAULT_MODEL)
+            return {"provider": p, "text": _extract_openai_style_response(raw).get("text", ""), "status": "ok"}
+        elif p == "xai":
+            raw = _dispatch_openai_compatible(req, "https://api.x.ai/v1/chat/completions", _XAI_API_KEY, _XAI_DEFAULT_MODEL)
+            return {"provider": p, "text": _extract_openai_style_response(raw).get("text", ""), "status": "ok"}
+        elif p == "huggingface":
+            raw = _dispatch_openai_compatible(req, "https://router.huggingface.co/v1/chat/completions", _HF_ROUTER_TOKEN, _HF_DEFAULT_MODEL)
+            return {"provider": p, "text": _extract_openai_style_response(raw).get("text", ""), "status": "ok"}
+        elif p == "anthropic":
+            raw = _dispatch_anthropic(req)
+            return {"provider": p, "text": _extract_anthropic_response(raw).get("text", ""), "status": "ok"}
+        else:
+            return {"provider": p, "text": "", "status": "unsupported"}
+    except Exception as exc:
+        return {"provider": p, "text": "", "status": "error", "error": str(exc)[:500]}
+
+
+@app.post("/v1/council/deliberate")
+async def council_deliberate(req: CouncilRequest, x_api_key: Optional[str] = Header(None)):
+    """AI Round Table: fan query to multiple LLMs, run governance, synthesize consensus.
+
+    Inspired by the AI Workflow Architect's Multi-AI Roundtable pattern:
+    - Each provider gets the query with a Sacred Tongue role assignment
+    - Responses go through SCBE governance scan
+    - A synthesis round merges all perspectives into a governed result
+    """
+    _check_key(x_api_key)
+
+    session_id = str(uuid.uuid4())[:12]
+    tongue_role = _TONGUE_COUNCIL_ROLES.get(req.tongue, _TONGUE_COUNCIL_ROLES["DR"])
+    base_system = req.system or f"You are {tongue_role['role']} in the SCBE AI Council. {tongue_role['instruction']}"
+
+    # Round 1: Fan out to all providers
+    responses: List[Dict[str, Any]] = []
+    for provider in req.providers:
+        p_norm = _normalize_provider(provider)
+        # Check if provider is configured
+        configured = {
+            "openai": bool(_OPENAI_API_KEY),
+            "anthropic": bool(_ANTHROPIC_API_KEY),
+            "xai": bool(_XAI_API_KEY),
+            "huggingface": bool(_HF_ROUTER_TOKEN),
+        }
+        if not configured.get(p_norm, False):
+            responses.append({"provider": p_norm, "text": "", "status": "not_configured"})
+            continue
+        result = _dispatch_single_provider(provider, req.query, base_system)
+        responses.append(result)
+
+    # Governance scan each response
+    governance_results = []
+    if req.governance_scan:
+        for resp in responses:
+            if resp.get("text"):
+                scan = _antivirus.scan(resp["text"])
+                gov = scan.to_dict()
+                resp["governance"] = gov
+                governance_results.append(gov)
+
+    # Multi-round debate (if rounds > 1)
+    debate_log = [{"round": 1, "responses": responses}]
+    for round_num in range(2, req.rounds + 1):
+        prior_texts = [r.get("text", "") for r in responses if r.get("text")]
+        if not prior_texts:
+            break
+        debate_prompt = (
+            f"Previous council responses (Round {round_num - 1}):\n\n"
+            + "\n---\n".join(prior_texts)
+            + f"\n\nOriginal query: {req.query}\n\n"
+            f"Critique the above responses. Identify agreements, disagreements, and blind spots. "
+            f"Then provide your improved answer."
+        )
+        round_responses = []
+        for provider in req.providers:
+            p_norm = _normalize_provider(provider)
+            configured = {
+                "openai": bool(_OPENAI_API_KEY),
+                "anthropic": bool(_ANTHROPIC_API_KEY),
+                "xai": bool(_XAI_API_KEY),
+                "huggingface": bool(_HF_ROUTER_TOKEN),
+            }
+            if not configured.get(p_norm, False):
+                continue
+            result = _dispatch_single_provider(provider, debate_prompt, base_system, max_tokens=1200)
+            round_responses.append(result)
+        debate_log.append({"round": round_num, "responses": round_responses})
+        responses = round_responses  # latest round becomes the current state
+
+    # Synthesis: merge all responses
+    all_texts = [r.get("text", "") for r in responses if r.get("text")]
+    if req.strategy == "majority":
+        # Simple: pick the longest response (most detailed)
+        synthesis = max(all_texts, key=len) if all_texts else ""
+    elif req.strategy == "chain":
+        synthesis = all_texts[-1] if all_texts else ""
+    elif req.strategy == "debate":
+        synthesis = "\n\n---\n\n".join(
+            f"[{r.get('provider', '?')}]: {r.get('text', '')}"
+            for r in responses if r.get("text")
+        )
+    else:  # consensus
+        synthesis = " | ".join(all_texts) if len(all_texts) <= 2 else all_texts[0] if all_texts else ""
+
+    # Final governance stamp
+    final_governance = None
+    if req.governance_scan and synthesis:
+        final_scan = _antivirus.scan(synthesis)
+        final_governance = final_scan.to_dict()
+
+    session = {
+        "session_id": session_id,
+        "query": req.query,
+        "tongue": req.tongue,
+        "role": tongue_role["role"],
+        "strategy": req.strategy,
+        "rounds": req.rounds,
+        "providers_used": [r.get("provider") for r in responses],
+        "provider_count": len([r for r in responses if r.get("status") == "ok"]),
+        "synthesis": synthesis[:3000],
+        "governance": final_governance,
+        "debate_rounds": len(debate_log),
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    }
+    _council_sessions.append(session)
+
+    return {
+        "session_id": session_id,
+        "synthesis": synthesis,
+        "responses": responses,
+        "debate_log": debate_log,
+        "governance": final_governance,
+        "tongue_role": tongue_role,
+        "strategy": req.strategy,
+        "providers_active": len([r for r in responses if r.get("status") == "ok"]),
+    }
+
+
+@app.get("/v1/council/status")
+async def council_status(x_api_key: Optional[str] = Header(None)):
+    """Return recent council deliberation sessions."""
+    _check_key(x_api_key)
+    return {
+        "total_sessions": len(_council_sessions),
+        "recent": _council_sessions[-20:],
+    }
+
+
+# ---------------------------------------------------------------------------
+#  Training pipeline integration (game events -> RealTimeHFTrainer)
+# ---------------------------------------------------------------------------
+
+_trainer = None
+_trainer_lock = threading.Lock()
+
+
+def _get_trainer():
+    """Lazy-initialise and return the shared RealTimeHFTrainer.
+
+    The trainer is created and started on the first request so that
+    importing this module alone does not spawn background threads.
+    """
+    global _trainer
+    if _trainer is not None:
+        return _trainer
+    with _trainer_lock:
+        # Double-check after acquiring the lock
+        if _trainer is not None:
+            return _trainer
+        try:
+            from hf_trainer import RealTimeHFTrainer, load_dotenv
+
+            load_dotenv()
+            _trainer = RealTimeHFTrainer()
+            _trainer.start()
+            logger.info("RealTimeHFTrainer started via n8n bridge")
+        except Exception as exc:
+            logger.error("Failed to start RealTimeHFTrainer: %s", exc)
+            raise HTTPException(
+                status_code=503,
+                detail=f"Training pipeline unavailable: {exc}",
+            )
+    return _trainer
+
+
+# Map n8n game event types to TrainingEvent event_type values
+_EVENT_TYPE_MAP: Dict[str, str] = {
+    "battle_won": "battle",
+    "battle_lost": "battle",
+    "choice_made": "choice",
+    "scene_transition": "dialogue",
+    "evolution": "evolution",
+    "gacha_pull": "choice",
+    "level_up": "evolution",
+    "quest_complete": "choice",
+    "npc_dialogue": "dialogue",
+    "dungeon_floor_cleared": "tower_floor",
+    "boss_defeated": "battle",
+    "tongue_mastered": "evolution",
+    "companion_evolved": "evolution",
+    "quest_progress": "choice",
+}
+
+
+@app.post("/v1/training/ingest")
+async def training_ingest(
+    req: TrainingIngestRequest,
+    x_api_key: Optional[str] = Header(None),
+):
+    """Accept a game event from n8n and feed it to the RealTimeHFTrainer.
+
+    The event is converted into a TrainingEvent (prompt/response SFT pair)
+    and enqueued for governance validation, local JSONL export, and
+    optional HuggingFace Hub upload.
+    """
+    _check_key(x_api_key)
+
+    trainer = _get_trainer()
+
+    from hf_trainer import TrainingEvent
+
+    # Build the SFT prompt/response pair from the game event
+    mapped_type = _EVENT_TYPE_MAP.get(req.event_type, req.event_type)
+    tongue = req.tongue or "KO"
+
+    prompt = f"[{tongue}] {req.event_type}: {req.context}" if req.context else f"[{tongue}] {req.event_type}"
+    response = req.outcome or f"{req.event_type} recorded"
+
+    meta: Dict[str, Any] = {
+        "tongue": tongue,
+        "source": "n8n",
+        "original_event_type": req.event_type,
+    }
+    if req.metadata:
+        meta.update(req.metadata)
+
+    event = TrainingEvent(
+        event_type=mapped_type,
+        prompt=prompt,
+        response=response,
+        metadata=meta,
+    )
+
+    trainer.put_event(event)
+
+    return {
+        "status": "queued",
+        "event_type": mapped_type,
+        "trainer_stats": trainer.get_stats(),
+    }
+
+
+@app.get("/v1/training/status")
+async def training_status(x_api_key: Optional[str] = Header(None)):
+    """Return the current trainer pipeline status."""
+    _check_key(x_api_key)
+    trainer = _get_trainer()
+    return trainer.get_status_dict()
