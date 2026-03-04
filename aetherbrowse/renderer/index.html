@@ -60,6 +60,35 @@
       justify-content: flex-end;
     }
 
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-right: 4px;
+      user-select: none;
+    }
+
+    .brand-mark {
+      width: 22px;
+      height: 22px;
+      border-radius: 7px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: #ffffff;
+      background: radial-gradient(circle at 30% 30%, #6cb6ff 0%, #58a6ff 45%, #1f6feb 100%);
+      box-shadow: 0 0 0 1px rgba(88, 166, 255, 0.55), 0 2px 7px rgba(0, 0, 0, 0.35);
+    }
+
+    .brand-name {
+      font-size: 12px;
+      letter-spacing: 0.3px;
+      color: #d6e8ff;
+      font-weight: 600;
+    }
+
     .nav-btn,
     .tool-btn {
       background: #21262d;
@@ -155,6 +184,30 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+
+    .tab-icon {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      flex: 0 0 16px;
+      object-fit: contain;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .tab-fallback {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #9aa7b4;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      flex: 0 0 16px;
     }
 
     .tab-sub {
@@ -355,6 +408,10 @@
   <div class="top-shell">
     <div class="top-bar">
       <div class="toolbar-left">
+        <div class="brand" title="AetherBrowse">
+          <span class="brand-mark">A</span>
+          <span class="brand-name">AetherBrowse</span>
+        </div>
         <button class="nav-btn" id="backBtn" title="Back">&#8592;</button>
         <button class="nav-btn" id="forwardBtn" title="Forward">&#8594;</button>
         <button class="nav-btn" id="refreshBtn" title="Reload">⟳</button>
@@ -497,6 +554,25 @@
         labelWrap.appendChild(title);
         labelWrap.appendChild(sub);
 
+        let iconNode;
+        if (tab.icon) {
+          const img = document.createElement('img');
+          img.className = 'tab-icon';
+          img.src = tab.icon;
+          img.alt = '';
+          img.loading = 'lazy';
+          img.referrerPolicy = 'no-referrer';
+          img.addEventListener('error', () => {
+            img.style.display = 'none';
+          });
+          iconNode = img;
+        } else {
+          const fallback = document.createElement('span');
+          fallback.className = 'tab-fallback';
+          fallback.textContent = '◎';
+          iconNode = fallback;
+        }
+
         const closeBtn = document.createElement('button');
         closeBtn.className = 'tab-close';
         closeBtn.type = 'button';
@@ -508,6 +584,7 @@
           aetherbrowse.closeTab(tab.id);
         });
 
+        el.appendChild(iconNode);
         el.appendChild(labelWrap);
         el.appendChild(closeBtn);
         el.addEventListener('click', () => aetherbrowse.switchTab(tab.id));
@@ -545,6 +622,7 @@
         id: String(tab.id),
         url: tab.url || '',
         title: tab.title || 'New tab',
+        icon: tab.icon || '',
         loading: !!tab.loading,
       })) : [];
       state.activeTabId = payload.activeTabId ? String(payload.activeTabId) : (state.activeTabId ? state.activeTabId : (state.tabs[0] && String(state.tabs[0].id)));

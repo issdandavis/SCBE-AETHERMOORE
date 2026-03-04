@@ -20,3 +20,9 @@ def test_workspace_autofill_login_parse():
     assert plan.steps[0].action == "autofill_login"
     assert plan.steps[0].value == "github.com"
     assert plan.steps[0].submit is True
+
+
+def test_workspace_shortcut_replit_repo():
+    plan = plan_rule_based("open replit build repo", page_context="", perception=None)
+    assert plan.steps[0].action == "navigate"
+    assert "ai-workflow-architect-replit" in plan.steps[0].value

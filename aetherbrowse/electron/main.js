@@ -10,6 +10,7 @@
 
 const { app, BrowserWindow, BrowserView, ipcMain } = require('electron');
 const WebSocket = require('ws');
+const fs = require('fs');
 const path = require('path');
 
 let runtimeWs = null;
@@ -21,10 +22,11 @@ const runtimeHost =
   '127.0.0.1';
 const runtimePort = process.env.AETHERBROWSE_RUNTIME_PORT || process.env.AETHERSCREEN_RUNTIME_PORT || process.env.AETHERSCREEN_PORT || '8400';
 const runtimeUrl = `ws://${runtimeHost}:${runtimePort}/ws`;
+const appBaseUrl = process.env.AETHERBROWSE_APP_BASE_URL || `http://${runtimeHost}:${runtimePort}`;
 const homeUrl =
   process.env.AETHERBROWSE_HOME_URL ||
   process.env.AETHERSCREEN_HOME_URL ||
-  'http://127.0.0.1:8500/home';
+  `${appBaseUrl}/landing`;
 const sideBarWidth = 280;
 const topBarHeight = 84;
 const bottomPanelHeight = 210;
@@ -38,6 +40,7 @@ function formatTabState() {
     id: tab.id,
     url: tab.url,
     title: tab.title,
+    icon: tab.icon || '',
     loading: tab.loading,
   }));
 }
@@ -55,12 +58,20 @@ function normalizeUrl(raw) {
     return homeUrl;
   }
   if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(value)) {
+    if (value.toLowerCase() === 'aether://home') {
+      return homeUrl;
+    }
+    if (value.toLowerCase().startsWith('aether://search')) {
+      const parts = value.split('?', 2);
+      const query = parts.length > 1 ? parts[1] : '';
+      return `${appBaseUrl}/search${query ? `?${query}` : ''}`;
+    }
     return value;
   }
   if (value.includes('.') && !/\s/.test(value)) {
     return `https://${value}`;
   }
-  return `https://duckduckgo.com/?q=${encodeURIComponent(value)}`;
+  return `${appBaseUrl}/search?q=${encodeURIComponent(value)}`;
 }
 
 function sendToRenderer(channel, payload) {
@@ -90,11 +101,13 @@ function applyLayout() {
   if (!active) {
     return;
   }
+  const viewWidth = Math.max(320, width - sideBarWidth);
+  const viewHeight = Math.max(240, height - topBarHeight - bottomPanelHeight);
   active.view.setBounds({
     x: sideBarWidth,
     y: topBarHeight,
-    width: width - sideBarWidth,
-    height: height - topBarHeight - bottomPanelHeight,
+    width: viewWidth,
+    height: viewHeight,
   });
   active.view.setAutoResize({ width: true, height: true });
   mainWindow.setBrowserView(active.view);
@@ -139,6 +152,7 @@ function createTab(rawUrl, activate = true, title = 'New tab') {
     view,
     url: normalizeUrl(rawUrl || homeUrl),
     title,
+    icon: '',
     loading: false,
   };
   tabs.set(id, tab);
@@ -172,6 +186,12 @@ function createTab(rawUrl, activate = true, title = 'New tab') {
     if (activeTabId === id) {
       sendToRenderer('page-title', { tabId: id, title: tab.title });
     }
+    emitTabState();
+  });
+
+  wc.on('page-favicon-updated', (_event, favicons) => {
+    const icon = Array.isArray(favicons) && favicons.length ? String(favicons[0]) : '';
+    tab.icon = icon;
     emitTabState();
   });
 
@@ -269,7 +289,50 @@ function getTargetTabId(input) {
   if (typeof input === 'string' || typeof input.tabId === 'undefined') {
     return getOrCreateActiveTabId();
   }
-  return tabs.has(input.tabId) ? input.tabId : getOrCreateActiveTabId();
+  const requested = String(input.tabId);
+  return tabs.has(requested) ? requested : getOrCreateActiveTabId();
+}
+
+function resolveWindowIcon() {
+  const explicit = (process.env.AETHERBROWSE_APP_ICON || '').trim();
+  const candidates = [
+    explicit,
+    path.join(__dirname, '..', 'assets', 'icon-512.png'),
+    path.join(__dirname, '..', '..', 'src', 'aethercode', 'static', 'icons', 'icon-512.png'),
+  ].filter(Boolean);
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+  return undefined;
+}
+
+function withDebuggerCommand(webContents, command, params = {}) {
+  let attachedHere = false;
+  return new Promise((resolve, reject) => {
+    try {
+      if (!webContents.debugger.isAttached()) {
+        webContents.debugger.attach('1.3');
+        attachedHere = true;
+      }
+    } catch (err) {
+      reject(err);
+      return;
+    }
+
+    webContents.debugger.sendCommand(command, params).then(resolve).catch(reject).finally(() => {
+      if (attachedHere) {
+        try {
+          if (webContents.debugger.isAttached()) {
+            webContents.debugger.detach();
+          }
+        } catch (_err) {
+          // Ignore detach failures.
+        }
+      }
+    });
+  });
 }
 
 // WebSocket connection to Python agent runtime
@@ -306,7 +369,7 @@ function connectRuntime() {
 }
 
 function handleBrowserCommand(msg) {
-  const target = msg.tabId ? tabs.get(msg.tabId) : getActiveTab();
+  const target = msg.tabId ? tabs.get(String(msg.tabId)) : getActiveTab();
   if (!target) {
     return;
   }
@@ -314,6 +377,19 @@ function handleBrowserCommand(msg) {
   switch (msg.action) {
     case 'navigate':
       wc.loadURL(normalizeUrl(msg.url || homeUrl));
+      break;
+    case 'new-tab':
+      createTab(msg.url || homeUrl, true, 'New tab');
+      break;
+    case 'switch-tab':
+      if (msg.tabId) {
+        switchTab(String(msg.tabId));
+      }
+      break;
+    case 'close-tab':
+      if (msg.tabId || activeTabId) {
+        closeTab(String(msg.tabId || activeTabId));
+      }
       break;
     case 'go-back':
       if (wc.canGoBack()) wc.goBack();
@@ -339,14 +415,40 @@ function handleBrowserCommand(msg) {
       break;
     case 'snapshot':
       // Get accessibility tree via CDP
-      wc.debugger.attach('1.3');
-      wc.debugger.sendCommand('Accessibility.getFullAXTree').then(tree => {
-        wc.debugger.detach();
+      withDebuggerCommand(wc, 'Accessibility.getFullAXTree').then(tree => {
         sendToRuntime({ type: 'dom-snapshot', requestId: msg.requestId, tree });
-      }).catch(() => {
-        wc.debugger.detach();
+      }).catch((err) => {
+        sendToRuntime({
+          type: 'dom-snapshot-error',
+          requestId: msg.requestId,
+          error: String(err && err.message ? err.message : err),
+        });
       });
       break;
+    case 'cdp':
+    case 'puppeteer-pipe': {
+      const command = String(msg.command || '').trim();
+      if (!command) {
+        sendToRuntime({ type: 'cdp-error', requestId: msg.requestId, error: 'Missing CDP command.' });
+        break;
+      }
+      withDebuggerCommand(wc, command, msg.params || {}).then((result) => {
+        sendToRuntime({
+          type: 'cdp-result',
+          requestId: msg.requestId,
+          command,
+          result,
+        });
+      }).catch((err) => {
+        sendToRuntime({
+          type: 'cdp-error',
+          requestId: msg.requestId,
+          command,
+          error: String(err && err.message ? err.message : err),
+        });
+      });
+      break;
+    }
   }
 }
 
@@ -357,10 +459,17 @@ function sendToRuntime(msg) {
 }
 
 function createWindow() {
+  const icon = resolveWindowIcon();
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
-    title: 'Kerrigan — AI Home',
+    minWidth: 1100,
+    minHeight: 760,
+    title: 'AetherBrowse — Governed Browser',
+    icon,
+    autoHideMenuBar: true,
+    backgroundColor: '#0d1117',
+    show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -368,8 +477,13 @@ function createWindow() {
     },
   });
 
-  // Load the React UI
+  mainWindow.setMenuBarVisibility(false);
+
+  // Load the shell UI.
   mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+  });
 
   mainWindow.on('resize', applyLayout);
   createTab(homeUrl, true, 'New tab');
@@ -380,7 +494,7 @@ function createWindow() {
 ipcMain.on('navigate-to', (event, url) => {
   const openInNewTab = typeof url === 'object' && !!url.newTab;
   if (openInNewTab) {
-    const newTabId = createTab(url && (url.url || url.value || ''));
+    createTab(url && (url.url || url.value || ''));
     return;
   }
 
@@ -423,7 +537,7 @@ ipcMain.on('switch-tab', (_event, tabId) => {
   if (!tabId) {
     return;
   }
-  switchTab(tabId);
+  switchTab(String(tabId));
 });
 
 ipcMain.on('go-back', (_event, tabId) => {
@@ -483,6 +597,10 @@ ipcMain.on('browser-command', (_event, command) => {
 });
 
 app.whenReady().then(() => {
+  app.setName('AetherBrowse');
+  if (process.platform === 'win32') {
+    app.setAppUserModelId('com.issdandavis.aetherbrowse');
+  }
   createWindow();
   connectRuntime();
 });

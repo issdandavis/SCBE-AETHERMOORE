@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aether Search</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #101730;
+      --line: #26355f;
+      --text: #dbe8ff;
+      --muted: #8fa4ce;
+      --accent: #58a6ff;
+      --ok: #2ea043;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "Inter", system-ui, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(900px 600px at 0 -10%, #2a3e7066 0%, transparent 62%),
+        radial-gradient(900px 700px at 100% 0, #00539f4c 0%, transparent 60%),
+        var(--bg);
+      padding: 22px;
+    }
+    .shell {
+      max-width: 980px;
+      margin: 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(180deg, #111932, #0f162c);
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.32);
+    }
+    .top {
+      padding: 16px 18px;
+      border-bottom: 1px solid #24345d;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: radial-gradient(circle at 30% 30%, #99c9ff, #58a6ff 45%, #1f6feb);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #fff;
+    }
+    form { display: flex; gap: 8px; flex: 1; min-width: 280px; }
+    input[type="search"] {
+      flex: 1;
+      border: 1px solid #355194;
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: #0b1226;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+    }
+    input[type="search"]:focus { border-color: var(--accent); box-shadow: 0 0 0 2px #58a6ff33; }
+    button {
+      border: none;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #fff;
+      padding: 10px 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover { filter: brightness(1.05); }
+    .content { display: grid; grid-template-columns: 1fr 240px; gap: 0; }
+    .results {
+      padding: 16px 18px 20px;
+      border-right: 1px solid #24345d;
+      min-height: 420px;
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .result {
+      border: 1px solid #263b70;
+      background: #0b142b;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .result a {
+      color: #93c6ff;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .result a:hover { text-decoration: underline; }
+    .url {
+      color: #66c2a3;
+      font-size: 11px;
+      margin: 5px 0;
+      overflow-wrap: anywhere;
+    }
+    .snippet {
+      color: #c8d8f7;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .side {
+      padding: 16px;
+      background: #0d1530;
+    }
+    .side h3 { margin: 0 0 10px; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
+    .side a {
+      display: block;
+      margin-bottom: 8px;
+      border: 1px solid #2b3f74;
+      border-radius: 10px;
+      padding: 8px 10px;
+      text-decoration: none;
+      color: var(--text);
+      background: #0b1429;
+      font-size: 13px;
+    }
+    .side a:hover { border-color: #4b73cc; }
+    .loading {
+      color: var(--muted);
+      font-size: 13px;
+      padding: 8px 0;
+    }
+    .ok {
+      color: #7fe2a5;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+    @media (max-width: 900px) {
+      .content { grid-template-columns: 1fr; }
+      .results { border-right: none; border-bottom: 1px solid #24345d; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="top">
+      <span class="badge">A</span>
+      <strong>Aether Search</strong>
+      <form id="searchForm">
+        <input id="q" type="search" name="q" placeholder="Search web, code, research..." autocomplete="off" />
+        <button type="submit">Search</button>
+      </form>
+      <a href="/landing" style="color:#9ec8ff; text-decoration:none; font-size:13px;">Home</a>
+    </div>
+
+    <div class="content">
+      <section class="results">
+        <div class="meta" id="meta">Ready</div>
+        <div id="results"></div>
+      </section>
+      <aside class="side">
+        <h3>Jump To</h3>
+        <a id="ghLink" href="#">GitHub Code Search</a>
+        <a id="hfLink" href="#">Hugging Face Models</a>
+        <a id="ytLink" href="#">YouTube Search</a>
+        <a id="ddgLink" href="#">DuckDuckGo Direct</a>
+        <a id="newsLink" href="#">Hacker News Search</a>
+        <div class="ok">Source blend: Aether parser + DuckDuckGo index.</div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const qs = new URLSearchParams(window.location.search);
+    const input = document.getElementById('q');
+    const resultsNode = document.getElementById('results');
+    const meta = document.getElementById('meta');
+    const form = document.getElementById('searchForm');
+
+    function escapeHtml(text) {
+      return String(text || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function setQuickLinks(q) {
+      const encoded = encodeURIComponent(q || '');
+      document.getElementById('ghLink').href = `https://github.com/search?q=${encoded}&type=code`;
+      document.getElementById('hfLink').href = `https://huggingface.co/models?search=${encoded}`;
+      document.getElementById('ytLink').href = `https://www.youtube.com/results?search_query=${encoded}`;
+      document.getElementById('ddgLink').href = `https://duckduckgo.com/?q=${encoded}`;
+      document.getElementById('newsLink').href = `https://hn.algolia.com/?q=${encoded}`;
+    }
+
+    async function runSearch(q) {
+      const query = String(q || '').trim();
+      if (!query) {
+        meta.textContent = 'Enter a query to search.';
+        resultsNode.innerHTML = '';
+        return;
+      }
+      setQuickLinks(query);
+      meta.textContent = `Searching for "${query}" ...`;
+      resultsNode.innerHTML = '<div class="loading">Aether Search is gathering results...</div>';
+      try {
+        const resp = await fetch(`/api/search?q=${encodeURIComponent(query)}&limit=10`, { cache: 'no-store' });
+        const data = await resp.json();
+        const items = Array.isArray(data.results) ? data.results : [];
+        meta.textContent = `Found ${items.length} results for "${query}"`;
+        if (!items.length) {
+          resultsNode.innerHTML = '<div class="loading">No results returned.</div>';
+          return;
+        }
+        resultsNode.innerHTML = items.map((item) => `
+          <article class="result">
+            <a href="${escapeHtml(item.url)}">${escapeHtml(item.title)}</a>
+            <div class="url">${escapeHtml(item.url)}</div>
+            <div class="snippet">${escapeHtml(item.snippet || '')}</div>
+          </article>
+        `).join('');
+      } catch (err) {
+        meta.textContent = `Search error for "${query}"`;
+        resultsNode.innerHTML = `<div class="loading">${escapeHtml(String(err && err.message ? err.message : err))}</div>`;
+      }
+    }
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const q = input.value.trim();
+      const next = `/search?q=${encodeURIComponent(q)}`;
+      history.replaceState({}, '', next);
+      runSearch(q);
+    });
+
+    const initial = qs.get('q') || '';
+    input.value = initial;
+    setQuickLinks(initial);
+    runSearch(initial);
+  </script>
+</body>
+</html>

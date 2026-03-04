@@ -1128,10 +1128,15 @@ def _parse_workspace_goal(goal: str) -> Optional[ActionPlan]:
 
     # Workspace direct open shortcuts
     shortcuts = [
+        ("replit build repo", "https://github.com/issdandavis/ai-workflow-architect-replit"),
+        ("ai workflow architect replit", "https://github.com/issdandavis/ai-workflow-architect-replit"),
+        ("ai studio repo", "https://github.com/issdandavis/Omni-Heal-"),
+        ("google ai studio repo", "https://github.com/issdandavis/Omni-Heal-"),
         ("colab", "https://colab.research.google.com/"),
         ("google colab", "https://colab.research.google.com/"),
         ("ai studio", "https://aistudio.google.com/"),
         ("google ai studio", "https://aistudio.google.com/"),
+        ("replit", "https://replit.com/@issdandavis"),
         ("shopify", "https://admin.shopify.com/"),
     ]
     for keyword, url in shortcuts:

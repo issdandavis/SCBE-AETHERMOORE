@@ -11,12 +11,16 @@ Connects: ws://127.0.0.1:8400/ws
 import asyncio
 import json
 import logging
+import re
 import sys
 import time
 import uuid
 from collections import deque
+from html import unescape
 from pathlib import Path
 from typing import Any, Optional
+from urllib.parse import parse_qs, quote_plus, unquote, urlparse
+from urllib.request import Request, urlopen
 
 # Add project root to path for SCBE imports
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -44,6 +48,11 @@ from aetherbrowse.runtime.hydra_bridge import register_hydra_routes
 
 RUNTIME_ARTIFACTS_DIR = ROOT / "artifacts" / "agent_comm" / "aetherbrowse"
 RUN_LOG_PATH = RUNTIME_ARTIFACTS_DIR / "runs.jsonl"
+SEARCH_LOG_PATH = RUNTIME_ARTIFACTS_DIR / "search_queries.jsonl"
+
+_DDG_RESULT_RE = re.compile(r'<a[^>]*class="result__a"[^>]*href="([^"]+)"[^>]*>(.*?)</a>', re.IGNORECASE | re.DOTALL)
+_DDG_SNIPPET_RE = re.compile(r'<a[^>]*class="result__snippet"[^>]*>(.*?)</a>|<div[^>]*class="result__snippet"[^>]*>(.*?)</div>', re.IGNORECASE | re.DOTALL)
+_HTML_TAG_RE = re.compile(r"<[^>]+>")
 
 # ---------------------------------------------------------------------------
 #  Agent State
@@ -592,6 +601,113 @@ class AgentRuntime:
 
 runtime = AgentRuntime()
 
+
+def _clean_html_text(raw: str) -> str:
+    text = _HTML_TAG_RE.sub("", raw or "")
+    text = unescape(text)
+    return " ".join(text.split()).strip()
+
+
+def _decode_ddg_href(href: str) -> str:
+    value = str(href or "").strip()
+    if not value:
+        return ""
+    if value.startswith("//duckduckgo.com/l/?"):
+        value = f"https:{value}"
+    elif value.startswith("/l/?"):
+        value = f"https://duckduckgo.com{value}"
+    if "duckduckgo.com/l/?" in value:
+        parsed = urlparse(value)
+        target = parse_qs(parsed.query).get("uddg", [""])[0]
+        if target:
+            return unquote(target)
+    if value.startswith("/"):
+        return f"https://duckduckgo.com{value}"
+    return value
+
+
+def _extract_duckduckgo_results(html_text: str, limit: int) -> list[dict[str, str]]:
+    results: list[dict[str, str]] = []
+    for match in _DDG_RESULT_RE.finditer(html_text):
+        href = _decode_ddg_href(match.group(1))
+        title = _clean_html_text(match.group(2))
+        if not href or not title:
+            continue
+        tail = html_text[match.end() : match.end() + 1200]
+        snippet_match = _DDG_SNIPPET_RE.search(tail)
+        snippet = ""
+        if snippet_match:
+            snippet = _clean_html_text(snippet_match.group(1) or snippet_match.group(2) or "")
+        results.append(
+            {
+                "title": title,
+                "url": href,
+                "snippet": snippet,
+                "source": "duckduckgo",
+            }
+        )
+        if len(results) >= limit:
+            break
+    return results
+
+
+def _aether_search(query: str, limit: int = 8) -> list[dict[str, str]]:
+    q = str(query or "").strip()
+    if not q:
+        return []
+
+    ddg_url = f"https://duckduckgo.com/html/?q={quote_plus(q)}"
+    headers = {"User-Agent": "AetherBrowse/0.2 (+https://github.com/issdandavis/SCBE-AETHERMOORE)"}
+    try:
+        req = Request(ddg_url, headers=headers)
+        with urlopen(req, timeout=12) as resp:
+            payload = resp.read().decode("utf-8", errors="ignore")
+        results = _extract_duckduckgo_results(payload, max(1, min(limit, 20)))
+    except Exception as exc:
+        logger.warning("Search fetch failed for query '%s': %s", q, exc)
+        results = []
+
+    if results:
+        return results
+
+    fallback = [
+        {
+            "title": f"Search DuckDuckGo for '{q}'",
+            "url": f"https://duckduckgo.com/?q={quote_plus(q)}",
+            "snippet": "Fallback web search",
+            "source": "fallback",
+        },
+        {
+            "title": f"Search GitHub for '{q}'",
+            "url": f"https://github.com/search?q={quote_plus(q)}&type=code",
+            "snippet": "Code and repository results",
+            "source": "fallback",
+        },
+        {
+            "title": f"Search Hugging Face for '{q}'",
+            "url": f"https://huggingface.co/models?search={quote_plus(q)}",
+            "snippet": "Models and datasets",
+            "source": "fallback",
+        },
+    ]
+    return fallback[: max(1, min(limit, 20))]
+
+
+def _log_search_query(query: str, result_count: int) -> None:
+    SEARCH_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with SEARCH_LOG_PATH.open("a", encoding="utf-8") as f:
+        f.write(
+            json.dumps(
+                {
+                    "timestamp": time.time(),
+                    "query": str(query or ""),
+                    "result_count": int(result_count),
+                },
+                ensure_ascii=True,
+            )
+            + "\n"
+        )
+
 # ---------------------------------------------------------------------------
 #  FastAPI WebSocket Server
 # ---------------------------------------------------------------------------
@@ -603,6 +719,8 @@ if HAS_FASTAPI:
     app = FastAPI(title="Kerrigan — AI Home")
 
     _DASHBOARD_HTML = _Path(__file__).parent / "dashboard.html"
+    _LANDING_HTML = _Path(__file__).parent / "landing.html"
+    _SEARCH_HTML = _Path(__file__).parent / "search.html"
 
     @app.get("/", response_class=HTMLResponse)
     @app.get("/home", response_class=HTMLResponse)
@@ -611,6 +729,20 @@ if HAS_FASTAPI:
         if _DASHBOARD_HTML.exists():
             return HTMLResponse(_DASHBOARD_HTML.read_text(encoding="utf-8"))
         return HTMLResponse("<h1>Kerrigan — dashboard.html not found</h1>", status_code=404)
+
+    @app.get("/landing", response_class=HTMLResponse)
+    async def landing():
+        """Serve the AetherBrowse landing page."""
+        if _LANDING_HTML.exists():
+            return HTMLResponse(_LANDING_HTML.read_text(encoding="utf-8"))
+        return HTMLResponse("<h1>AetherBrowse landing page not found</h1>", status_code=404)
+
+    @app.get("/search", response_class=HTMLResponse)
+    async def search_page():
+        """Serve the AetherBrowse search page."""
+        if _SEARCH_HTML.exists():
+            return HTMLResponse(_SEARCH_HTML.read_text(encoding="utf-8"))
+        return HTMLResponse("<h1>AetherBrowse search page not found</h1>", status_code=404)
 
     @app.get("/health")
     async def health():
@@ -633,6 +765,21 @@ if HAS_FASTAPI:
                 "actions": len(runtime.action_log),
             },
             "agents": runtime.agents,
+        }
+
+    @app.get("/api/search")
+    async def api_search(q: str = "", limit: int = 8):
+        query = str(q or "").strip()
+        safe_limit = max(1, min(int(limit), 20))
+        if not query:
+            return {"ok": True, "query": query, "count": 0, "results": []}
+        results = await asyncio.to_thread(_aether_search, query, safe_limit)
+        _log_search_query(query, len(results))
+        return {
+            "ok": True,
+            "query": query,
+            "count": len(results),
+            "results": results,
         }
 
     @app.get("/api/runs/latest")

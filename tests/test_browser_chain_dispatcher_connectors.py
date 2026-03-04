@@ -9,6 +9,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+import scripts.system.browser_chain_dispatcher as dispatcher_mod
 from scripts.system.browser_chain_dispatcher import BrowserChainDispatcher, build_default_fleet
 
 
@@ -23,6 +24,9 @@ def test_provider_mesh_status_shape():
     dispatcher = _dispatcher()
     status = dispatcher.get_provider_mesh_status()
     assert "claude_code" in status
+    assert "groq" in status
+    assert "cerebras" in status
+    assert "google_ai" in status
     assert "grok_xai" in status
     assert "huggingface" in status
     assert "ollama_local" in status
@@ -55,3 +59,17 @@ def test_strict_connectivity_blocks_unknown_domain():
     assert result["error"] == "connector_not_ready"
     assert "connection_plan" in result
 
+
+def test_provider_mesh_uses_secret_store_fallback(monkeypatch):
+    dispatcher = _dispatcher()
+    monkeypatch.delenv("GROQ_API_KEY", raising=False)
+
+    def _fake_pick_secret(*names: str):
+        if "GROQ_API_KEY" in names:
+            return "GROQ_API_KEY", "gsk-test-secret"
+        return "", ""
+
+    monkeypatch.setattr(dispatcher_mod, "pick_secret", _fake_pick_secret)
+    status = dispatcher.get_provider_mesh_status()
+    assert status["groq"]["ready"] is True
+    assert "GROQ_API_KEY" in status["groq"]["active_secret_vars"]

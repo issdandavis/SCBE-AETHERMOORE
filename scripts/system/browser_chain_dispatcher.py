@@ -31,16 +31,26 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+try:
+    from src.security.secret_store import pick_secret
+except Exception:  # pragma: no cover - optional dependency
+    def pick_secret(*_names: str):  # type: ignore[override]
+        return "", ""
+
 
 # ── Paths ────────────────────────────────────────────────────────────
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
 LANE_ROOT = REPO_ROOT / "artifacts" / "agent_comm" / "github_lanes"
 CROSSTALK_LOG = LANE_ROOT / "cross_talk.jsonl"
 PLAYWRITER_LANE_LOG = LANE_ROOT / "playwriter_lane.jsonl"
@@ -101,6 +111,9 @@ DEFAULT_COST_PROFILE: Dict[str, Any] = {
 PROVIDER_ENV_MAP: Dict[str, List[str]] = {
     "github": ["GITHUB_TOKEN"],
     "claude_code": ["ANTHROPIC_API_KEY", "CLAUDE_API_KEY"],
+    "groq": ["GROQ_API_KEY"],
+    "cerebras": ["CEREBRAS_API_KEY"],
+    "google_ai": ["GOOGLE_AI_API_KEY", "GOOGLE_API_KEY", "GEMINI_API_KEY"],
     "grok_xai": ["XAI_API_KEY"],
     "huggingface": ["HF_TOKEN", "HUGGINGFACEHUB_API_TOKEN"],
     "openrouter_free": ["OPENROUTER_API_KEY"],
@@ -211,9 +224,21 @@ class BrowserChainDispatcher:
         return best
 
     @staticmethod
+    def _secret_ready(var_name: str) -> bool:
+        key = str(var_name or "").strip()
+        if not key:
+            return False
+        _, secret_value = pick_secret(key)
+        return bool(str(secret_value or "").strip())
+
+    @staticmethod
     def _env_ready(var_name: str) -> bool:
         key = str(var_name or "").strip()
-        return bool(key and os.getenv(key))
+        if not key:
+            return False
+        if os.getenv(key):
+            return True
+        return BrowserChainDispatcher._secret_ready(key)
 
     @staticmethod
     def _github_cli_ready() -> bool:
@@ -320,11 +345,13 @@ class BrowserChainDispatcher:
         """Return which AI providers are wired and ready in this runtime."""
         status: Dict[str, Any] = {}
         for provider, env_vars in PROVIDER_ENV_MAP.items():
-            active = [name for name in env_vars if self._env_ready(name)]
-            ready = bool(active)
+            active_env = [name for name in env_vars if bool(os.getenv(name))]
+            active_secret = [name for name in env_vars if (name not in active_env and self._secret_ready(name))]
+            ready = bool(active_env or active_secret)
             status[provider] = {
                 "ready": ready,
-                "active_env_vars": active,
+                "active_env_vars": active_env,
+                "active_secret_vars": active_secret,
                 "required_env_vars": env_vars,
             }
 

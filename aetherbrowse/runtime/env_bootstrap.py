@@ -121,6 +121,25 @@ def bootstrap_runtime_env() -> None:
             "CEREBRAS_API_KEY",
             "CEREBRAS_KEY",
         ),
+        "GROQ_API_KEY": (
+            "GROQ_API_KEY",
+            "GROQ_KEY",
+            "GROQ_TOKEN",
+        ),
+        "XAI_API_KEY": (
+            "XAI_API_KEY",
+            "GROK_API_KEY",
+        ),
+        "ANTHROPIC_API_KEY": (
+            "ANTHROPIC_API_KEY",
+            "CLAUDE_API_KEY",
+            "ANTHROPIC_ADMIN_API_KEY",
+            "CLAUDE_ADMIN_API_KEY",
+        ),
+        "CLAUDE_API_KEY": (
+            "CLAUDE_API_KEY",
+            "ANTHROPIC_API_KEY",
+        ),
         "SHOPIFY_ACCESS_TOKEN": (
             "SHOPIFY_ACCESS_TOKEN",
             "SHOPIFY_API_TOKEN",
