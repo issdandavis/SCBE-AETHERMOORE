@@ -38,6 +38,15 @@ from src.crypto.rwp_v3 import RWPv3Protocol, RWPEnvelope
 from src.crypto.sacred_tongues import SacredTongueTokenizer
 from src.storage import BlobNotFoundError, SealedBlobRecord, get_storage_backend
 from src.api.hydra_routes import hydra_router, init_hydra_spine
+from src.api.antenna import (
+    antenna_router,
+    antenna_bus,
+    broadcast_governance_decision,
+    broadcast_seal_event,
+    broadcast_retrieve_event,
+    broadcast_attack_sim,
+    broadcast_system_event,
+)
 
 # ============================================================================
 # APP INITIALIZATION
@@ -51,16 +60,19 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS for demo
+# CORS — env-configurable, defaults to permissive for dev
+_allowed_origins = os.getenv("SCBE_CORS_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TODO: Restrict in production
-    allow_methods=["*"],
+    allow_origins=[o.strip() for o in _allowed_origins],
+    allow_methods=["GET", "POST", "DELETE"],
     allow_headers=["*"],
+    expose_headers=["x-request-id"],
 )
 
-# Include HYDRA router
+# Include routers
 app.include_router(hydra_router)
+app.include_router(antenna_router)
 
 # ============================================================================
 # RATE LIMITING
@@ -341,10 +353,19 @@ CONNECTOR_TEMPLATES: List[Dict[str, Any]] = [
 # AUTH
 # ============================================================================
 
-VALID_API_KEYS = {
-    "demo_key_12345": "demo_user",
-    "pilot_key_67890": "pilot_customer",
-}
+# API keys: load from env (SCBE_API_KEYS="key1:user1,key2:user2") or fall back to demo keys
+_raw_keys = os.getenv("SCBE_API_KEYS", "")
+if _raw_keys.strip():
+    VALID_API_KEYS = {}
+    for pair in _raw_keys.split(","):
+        parts = pair.strip().split(":", 1)
+        if len(parts) == 2:
+            VALID_API_KEYS[parts[0].strip()] = parts[1].strip()
+else:
+    VALID_API_KEYS = {
+        "demo_key_12345": "demo_user",
+        "pilot_key_67890": "pilot_customer",
+    }
 
 
 async def verify_api_key(x_api_key: str = Header(...)):
@@ -643,8 +664,18 @@ async def seal_memory(request: SealRequest, user: str = Depends(verify_api_key))
             )
         )
 
-        # Record metrics
+        # Record metrics + broadcast
         metrics_store.record_seal(request.agent, result["risk_base"])
+        broadcast_seal_event(request.agent, request.topic, result["decision"], result["risk_base"])
+        broadcast_governance_decision(
+            decision=result["decision"],
+            risk_prime=result["risk_prime"],
+            risk_base=result["risk_base"],
+            harmonic=result["H"],
+            d_star=result["d_star"],
+            agent=request.agent,
+            endpoint="seal-memory",
+        )
 
         return {
             "status": "sealed",
@@ -694,9 +725,20 @@ async def retrieve_memory(
             t=position_array, D=6, **context_params[request.context]
         )
 
-        # Record metrics
+        # Record metrics + broadcast
         denied = result["decision"] == "DENY"
         metrics_store.record_retrieval(request.agent, denied)
+        broadcast_retrieve_event(request.agent, request.context, result["decision"], denied)
+        broadcast_governance_decision(
+            decision=result["decision"],
+            risk_prime=result["risk_prime"],
+            risk_base=result["risk_base"],
+            harmonic=result["H"],
+            d_star=result["d_star"],
+            agent=request.agent,
+            context=request.context,
+            endpoint="retrieve-memory",
+        )
 
         # Check governance decision
         if result["decision"] == "DENY":
@@ -794,6 +836,18 @@ async def governance_check(
             t=np.array(position, dtype=float), D=6, **context_params[context]
         )
 
+        # Broadcast governance decision
+        broadcast_governance_decision(
+            decision=result["decision"],
+            risk_prime=result["risk_prime"],
+            risk_base=result["risk_base"],
+            harmonic=result["H"],
+            d_star=result["d_star"],
+            agent=agent,
+            context=context,
+            endpoint="governance-check",
+        )
+
         gov_data = {
             "decision": result["decision"],
             "risk_score": float(result["risk_base"]),
@@ -846,6 +900,8 @@ async def simulate_attack(request: SimulateAttackRequest):
             theta1=0.2,  # Lower ALLOW threshold
             theta2=0.5,  # Lower QUARANTINE threshold
         )
+
+        broadcast_attack_sim(result["decision"], result["risk_prime"], request.agent)
 
         sim_data = {
             "governance_result": result["decision"],
@@ -1189,18 +1245,49 @@ async def health():
     """
     ## Health Check
 
-    System health and status.
+    System health and runtime status.
 
     **Security:** Public endpoint
     """
+    m = metrics_store.get_metrics()
     return {
         "status": "healthy",
-        "version": "3.0.0",
-        "tests_passing": 120,
-        "tests_total": 160,
-        "coverage": "75%",
-        "uptime_seconds": metrics_store.get_metrics()["uptime_seconds"],
+        "version": "3.2.6",
+        "uptime_seconds": m["uptime_seconds"],
+        "total_seals": m["total_seals"],
+        "total_retrievals": m["total_retrievals"],
+        "antenna_listeners": antenna_bus.listener_count,
+        "antenna_total_events": antenna_bus.total_events,
     }
+
+
+@app.get("/ready", tags=["System"])
+async def readiness():
+    """
+    ## Readiness Probe
+
+    Kubernetes/Docker readiness check. Returns 200 when the API is ready
+    to serve traffic (pipeline importable, storage reachable).
+
+    **Security:** Public endpoint
+    """
+    checks = {}
+    try:
+        # Verify pipeline is callable
+        test_input = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], dtype=float)
+        result = scbe_14layer_pipeline(t=test_input, D=3)
+        checks["pipeline"] = "ok" if "decision" in result else "degraded"
+    except Exception as exc:
+        checks["pipeline"] = f"error: {exc}"
+
+    checks["storage"] = "ok" if storage_backend is not None else "missing"
+    checks["antenna"] = "ok"
+
+    all_ok = all(v == "ok" for v in checks.values())
+    return JSONResponse(
+        status_code=200 if all_ok else 503,
+        content={"status": "ready" if all_ok else "degraded", "checks": checks},
+    )
 
 
 @app.get("/metrics", tags=["System"])
@@ -1225,6 +1312,16 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     return JSONResponse(
         status_code=exc.status_code,
         content={"status": "error", "error": exc.detail, "code": exc.status_code},
+    )
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    """Catch-all: never leak stack traces to clients."""
+    broadcast_system_event("unhandled_error", str(exc)[:200])
+    return JSONResponse(
+        status_code=500,
+        content={"status": "error", "error": "Internal server error", "code": 500},
     )
 
 
@@ -1273,6 +1370,14 @@ async def startup_event():
         await init_hydra_spine()
     except Exception as exc:
         print(f"[HYDRA-API] Spine initialization failed (non-fatal): {exc}")
+
+    broadcast_system_event("startup", "SCBE-AETHERMOORE API v3.2.6 online")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    broadcast_system_event("shutdown", "SCBE-AETHERMOORE API shutting down")
+    print("[SCBE] Graceful shutdown complete.")
 
 
 if __name__ == "__main__":

@@ -15,8 +15,8 @@ RUN npm install --legacy-peer-deps
 # Copy source code
 COPY src/ ./src/
 
-# Build TypeScript
-RUN npm run build || true
+# Build TypeScript (fail build if compilation errors)
+RUN npm run build
 
 # Stage 2: Build liboqs C library
 FROM python:3.11-slim AS liboqs-builder
@@ -112,17 +112,26 @@ COPY demo/ ./demo/
 # Copy documentation
 COPY README.md LICENSE ./
 
+# Run as non-root user for security
+RUN groupadd -r scbe && useradd -r -g scbe -d /app -s /sbin/nologin scbe && \
+    chown -R scbe:scbe /app
+
 # Environment variables
 ENV SCBE_ENV=production
 ENV SCBE_PQC_BACKEND=liboqs
 
 # Expose ports
 EXPOSE 8080
-# Health check - verify API is responding
+
+# Health check against readiness probe
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:8080/health || exit 1
-# Verify PQC on startup
+    CMD curl -f http://localhost:8080/ready || exit 1
+
+# Verify PQC on startup (as root, before switching user)
 RUN python -c "from src.crypto.pqc_liboqs import get_pqc_backend; print(f'PQC Backend: {get_pqc_backend()}')"
 
-# Default command
-CMD uvicorn src.api.main:app --host 0.0.0.0 --port ${PORT:-8080}
+# Switch to non-root user
+USER scbe
+
+# Default command — graceful shutdown on SIGTERM (uvicorn handles it)
+CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8080", "--timeout-graceful-shutdown", "15"]
