@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0.0",
+  "owner": "issda",
+  "portal_name": "SCBE Verified Links Portal",
+  "entries": [
+    {
+      "id": "github-home",
+      "name": "GitHub",
+      "url": "https://github.com",
+      "category": "developer",
+      "tags": ["repo", "code", "automation"],
+      "enabled": true
+    },
+    {
+      "id": "arxiv-home",
+      "name": "arXiv",
+      "url": "https://arxiv.org",
+      "category": "research",
+      "tags": ["papers", "evidence"],
+      "enabled": true
+    },
+    {
+      "id": "notion-home",
+      "name": "Notion",
+      "url": "https://www.notion.so",
+      "category": "knowledge",
+      "tags": ["workspace", "notes"],
+      "enabled": true
+    },
+    {
+      "id": "shopify-admin",
+      "name": "Shopify Admin",
+      "url": "https://admin.shopify.com",
+      "category": "commerce",
+      "tags": ["store", "ops"],
+      "enabled": true
+    }
+  ]
+}

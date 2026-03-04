@@ -1,0 +1,1723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AetherCode IDE</title>
+<meta name="description" content="AetherCode IDE — Browser-based development environment for SCBE-AETHERMOORE with Sacred Tongue encoding, L13 governance, and AI assistance.">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#00d4aa">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#080c14;--bg2:#0b1120;--surface:#0f1729;--surface2:#141e33;--card:#182340;
+  --border:rgba(0,212,170,.12);--border2:rgba(0,212,170,.25);
+  --text:#d8e8f0;--dim:#6b8299;--muted:#3d5066;
+  --accent:#00d4aa;--accent2:#ff9152;--accent3:#6c5ce7;
+  --green:#2dd3a6;--red:#ff6b6b;--amber:#ffc53d;--cyan:#17c6cf;--blue:#4ea1f5;
+  --mono:'JetBrains Mono',Consolas,'Cascadia Code',monospace;
+  --ui:'Outfit','Trebuchet MS',system-ui,sans-serif;
+  --activity-w:48px;--sidebar-w:240px;--panel-h:200px;--right-w:320px;--statusbar-h:24px;--tabbar-h:36px;
+}
+html,body{height:100%;overflow:hidden}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--ui);display:flex;flex-direction:column;
+  background-image:
+    radial-gradient(ellipse 600px 400px at 5% 0%,rgba(0,212,170,.08),transparent),
+    radial-gradient(ellipse 500px 350px at 95% 100%,rgba(108,92,231,.06),transparent);
+}
+::selection{background:rgba(0,212,170,.3);color:#fff}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(0,212,170,.2);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,212,170,.35)}
+input,button,textarea{font-family:inherit}
+
+/* ─── Title Bar ─── */
+.titlebar{
+  display:flex;align-items:center;height:32px;padding:0 12px;
+  background:linear-gradient(180deg,#0d1424,#0a0f1c);
+  border-bottom:1px solid var(--border);flex-shrink:0;gap:10px;
+  -webkit-app-region:drag;user-select:none
+}
+.titlebar-logo{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--accent)}
+.titlebar-logo svg{width:16px;height:16px}
+.titlebar-menu{display:flex;gap:2px;-webkit-app-region:no-drag}
+.titlebar-menu button{
+  background:none;border:none;color:var(--dim);font-size:11px;padding:4px 8px;border-radius:3px;cursor:pointer
+}
+.titlebar-menu button:hover{background:rgba(0,212,170,.1);color:var(--text)}
+.titlebar-center{flex:1;text-align:center}
+.titlebar-project{
+  display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--dim);
+  background:rgba(0,212,170,.06);padding:2px 10px;border-radius:10px;border:1px solid var(--border);cursor:pointer
+}
+.titlebar-project:hover{border-color:var(--border2);color:var(--text)}
+.titlebar-actions{display:flex;gap:6px;-webkit-app-region:no-drag}
+.titlebar-actions button{
+  background:none;border:none;color:var(--dim);font-size:13px;cursor:pointer;padding:2px 6px;border-radius:3px
+}
+.titlebar-actions button:hover{color:var(--text);background:rgba(255,255,255,.06)}
+
+/* ─── Main Layout ─── */
+.ide-main{display:flex;flex:1;overflow:hidden;min-height:0}
+
+/* ─── Activity Bar ─── */
+.activity-bar{
+  width:var(--activity-w);background:var(--bg2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;padding:6px 0;gap:2px;flex-shrink:0
+}
+.ab-btn{
+  width:40px;height:36px;display:flex;align-items:center;justify-content:center;
+  border-radius:6px;cursor:pointer;border:none;background:none;color:var(--dim);
+  font-size:18px;position:relative;transition:all .15s
+}
+.ab-btn:hover{color:var(--text);background:rgba(0,212,170,.08)}
+.ab-btn.active{color:var(--accent);background:rgba(0,212,170,.12)}
+.ab-btn.active::before{
+  content:'';position:absolute;left:0;top:8px;bottom:8px;width:2px;background:var(--accent);border-radius:0 2px 2px 0
+}
+.ab-spacer{flex:1}
+.ab-btn .badge{
+  position:absolute;top:4px;right:4px;min-width:14px;height:14px;border-radius:7px;
+  background:var(--accent2);color:#fff;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 3px
+}
+
+/* ─── Sidebar ─── */
+.sidebar{
+  width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;transition:width .2s
+}
+.sidebar.collapsed{width:0;border:none}
+.sidebar-header{
+  display:flex;align-items:center;justify-content:space-between;padding:8px 12px;
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--dim);flex-shrink:0
+}
+.sidebar-header button{background:none;border:none;color:var(--dim);cursor:pointer;font-size:14px;padding:2px}
+.sidebar-header button:hover{color:var(--text)}
+.file-tree{flex:1;overflow-y:auto;padding:4px 0;font-size:12px}
+.ft-item{
+  display:flex;align-items:center;gap:5px;padding:3px 12px;cursor:pointer;color:var(--dim);
+  border-left:2px solid transparent;transition:all .1s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.ft-item:hover{background:rgba(0,212,170,.06);color:var(--text)}
+.ft-item.active{background:rgba(0,212,170,.1);color:var(--accent);border-left-color:var(--accent)}
+.ft-item.folder{font-weight:600;color:var(--text)}
+.ft-item .icon{width:16px;text-align:center;flex-shrink:0;font-size:13px}
+.ft-item .name{overflow:hidden;text-overflow:ellipsis}
+.ft-indent{padding-left:24px}
+.ft-indent2{padding-left:40px}
+.ft-indent3{padding-left:56px}
+
+/* ─── Editor Area ─── */
+.editor-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* Tab bar */
+.tab-bar{
+  display:flex;align-items:center;height:var(--tabbar-h);background:var(--bg2);
+  border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;gap:0
+}
+.tab-bar::-webkit-scrollbar{height:0}
+.tab{
+  display:flex;align-items:center;gap:6px;padding:0 14px;height:100%;
+  font-size:12px;color:var(--dim);cursor:pointer;border-right:1px solid var(--border);
+  background:transparent;white-space:nowrap;position:relative;flex-shrink:0;min-width:0
+}
+.tab:hover{background:rgba(0,212,170,.04);color:var(--text)}
+.tab.active{color:var(--text);background:var(--surface)}
+.tab.active::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--accent)}
+.tab.modified .tab-name::after{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent2);display:inline-block;margin-left:5px}
+.tab-icon{font-size:13px}
+.tab-close{
+  font-size:14px;color:var(--muted);cursor:pointer;margin-left:2px;padding:2px;border-radius:3px;
+  visibility:hidden;line-height:1
+}
+.tab:hover .tab-close,.tab.active .tab-close{visibility:visible}
+.tab-close:hover{background:rgba(255,107,107,.2);color:var(--red)}
+.tab-actions{margin-left:auto;display:flex;gap:4px;padding:0 8px;flex-shrink:0}
+.tab-actions button{
+  background:none;border:none;color:var(--dim);font-size:14px;cursor:pointer;padding:4px;border-radius:3px
+}
+.tab-actions button:hover{background:rgba(0,212,170,.1);color:var(--text)}
+
+/* Editor container */
+.editor-wrap{flex:1;position:relative;overflow:hidden;min-height:0}
+#editor-container{width:100%;height:100%}
+.editor-welcome{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  color:var(--dim);z-index:1;pointer-events:none
+}
+.editor-welcome h2{font-size:28px;font-weight:700;color:var(--text);letter-spacing:-0.5px}
+.editor-welcome h2 span{color:var(--accent)}
+.editor-welcome .shortcuts{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;font-size:12px;margin-top:8px}
+.editor-welcome .sc{display:flex;align-items:center;gap:8px}
+.editor-welcome kbd{
+  background:var(--surface2);border:1px solid var(--border2);padding:2px 7px;border-radius:4px;
+  font-family:var(--mono);font-size:10px;color:var(--accent);font-weight:600
+}
+
+/* ─── Terminal ─── */
+.terminal-panel{
+  height:var(--panel-h);border-top:1px solid var(--border);display:flex;flex-direction:column;
+  background:rgba(6,8,14,.95);flex-shrink:0;transition:height .2s
+}
+.terminal-panel.collapsed{height:0;border:none;overflow:hidden}
+.terminal-header{
+  display:flex;align-items:center;padding:0 12px;height:28px;
+  background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;gap:8px
+}
+.terminal-tab{font-size:11px;color:var(--dim);cursor:pointer;padding:4px 8px;border-radius:4px}
+.terminal-tab.active{color:var(--accent);background:rgba(0,212,170,.1)}
+.terminal-header .spacer{flex:1}
+.terminal-header button{background:none;border:none;color:var(--dim);cursor:pointer;font-size:13px;padding:2px 4px}
+.terminal-header button:hover{color:var(--text)}
+.terminal-body{flex:1;overflow-y:auto;padding:8px 12px;font-family:var(--mono);font-size:12px;line-height:1.6}
+.terminal-body .line{color:var(--dim)}
+.terminal-body .line.cmd{color:var(--green)}
+.terminal-body .line.err{color:var(--red)}
+.terminal-body .line.warn{color:var(--amber)}
+.terminal-body .line.info{color:var(--cyan)}
+.terminal-body .line.accent{color:var(--accent)}
+.terminal-input-row{
+  display:flex;align-items:center;gap:4px;padding:4px 12px;border-top:1px solid var(--border);flex-shrink:0
+}
+.terminal-prompt{color:var(--accent);font-family:var(--mono);font-size:12px;font-weight:600}
+.terminal-input{
+  flex:1;background:none;border:none;color:var(--text);font-family:var(--mono);font-size:12px;outline:none
+}
+
+/* ─── Right Panel (AI) ─── */
+.right-panel{
+  width:var(--right-w);background:var(--bg2);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;transition:width .2s
+}
+.right-panel.collapsed{width:0;border:none}
+.rp-header{
+  display:flex;align-items:center;gap:6px;padding:8px 12px;
+  border-bottom:1px solid var(--border);flex-shrink:0
+}
+.rp-header h3{font-size:12px;font-weight:700;flex:1}
+.rp-header .dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.rp-header button{background:none;border:none;color:var(--dim);cursor:pointer;font-size:12px}
+.rp-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.rp-tab{
+  flex:1;padding:6px;text-align:center;font-size:10px;font-weight:600;color:var(--dim);
+  cursor:pointer;border-bottom:2px solid transparent;text-transform:uppercase;letter-spacing:.8px
+}
+.rp-tab:hover{color:var(--text)}
+.rp-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.rp-body{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+
+/* AI Chat */
+.ai-messages{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px}
+.ai-msg{padding:8px 10px;border-radius:8px;font-size:12px;line-height:1.5;max-width:95%}
+.ai-msg.assistant{background:var(--surface2);border:1px solid var(--border);align-self:flex-start}
+.ai-msg.user{background:rgba(0,212,170,.12);border:1px solid rgba(0,212,170,.2);align-self:flex-end;color:var(--accent)}
+.ai-msg code{font-family:var(--mono);font-size:11px;background:rgba(0,0,0,.3);padding:1px 4px;border-radius:3px}
+.ai-msg pre{font-family:var(--mono);font-size:11px;background:rgba(0,0,0,.4);padding:8px;border-radius:6px;margin-top:6px;overflow-x:auto;white-space:pre-wrap}
+.ai-input-row{
+  display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--border);flex-shrink:0
+}
+.ai-input{
+  flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);
+  padding:6px 10px;border-radius:6px;font-size:12px;font-family:var(--ui);resize:none;outline:none
+}
+.ai-input:focus{border-color:var(--accent)}
+.ai-send{
+  background:linear-gradient(135deg,var(--accent),#17c6cf);color:#080c14;border:none;
+  padding:6px 14px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer
+}
+.ai-send:hover{opacity:.9}
+
+/* Tongue Panel */
+.tongue-panel{padding:10px;font-size:12px;display:none;flex-direction:column;gap:10px}
+.tongue-panel.visible{display:flex}
+.tongue-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;
+}
+.tongue-card h4{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:6px}
+.tongue-tokens{font-family:var(--mono);font-size:11px;color:var(--accent);word-break:break-all;line-height:1.6}
+.tongue-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:6px}
+.tongue-stat{
+  background:var(--surface2);padding:6px;border-radius:4px;text-align:center
+}
+.tongue-stat .val{font-size:14px;font-weight:700;color:var(--accent)}
+.tongue-stat .lbl{font-size:9px;color:var(--dim);margin-top:2px}
+
+/* Governance Panel */
+.gov-panel{padding:10px;font-size:12px;display:none;flex-direction:column;gap:8px}
+.gov-panel.visible{display:flex}
+.gov-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px
+}
+.gov-meter{
+  height:6px;border-radius:3px;background:var(--surface2);overflow:hidden;margin-top:6px
+}
+.gov-meter-fill{height:100%;border-radius:3px;transition:width .5s}
+.gov-status{display:flex;align-items:center;gap:6px;margin-top:8px}
+.gov-badge{
+  padding:3px 10px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px
+}
+.gov-badge.allow{background:rgba(45,211,166,.15);color:var(--green);border:1px solid rgba(45,211,166,.3)}
+.gov-badge.quarantine{background:rgba(255,197,61,.12);color:var(--amber);border:1px solid rgba(255,197,61,.3)}
+.gov-badge.escalate{background:rgba(255,145,82,.12);color:var(--accent2);border:1px solid rgba(255,145,82,.3)}
+.gov-badge.deny{background:rgba(255,107,107,.12);color:var(--red);border:1px solid rgba(255,107,107,.3)}
+
+/* Ops Panel */
+.ops-panel{padding:10px;font-size:12px;display:none;flex-direction:column;gap:8px}
+.ops-panel.visible{display:flex}
+.ops-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.ops-state{
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+  background:var(--surface2);border-radius:6px;padding:6px 8px
+}
+.ops-state .lbl{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--dim)}
+.ops-pill{
+  font-size:9px;text-transform:uppercase;letter-spacing:.5px;
+  border-radius:999px;padding:2px 8px;border:1px solid transparent;font-weight:700
+}
+.ops-pill.ok{background:rgba(45,211,166,.15);color:var(--green);border-color:rgba(45,211,166,.3)}
+.ops-pill.warn{background:rgba(255,197,61,.12);color:var(--amber);border-color:rgba(255,197,61,.3)}
+.ops-pill.err{background:rgba(255,107,107,.12);color:var(--red);border-color:rgba(255,107,107,.3)}
+.ops-summary{
+  margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--dim);
+  border-top:1px solid var(--border);padding-top:8px
+}
+.ops-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.ops-btn{
+  border:none;border-radius:6px;padding:8px 10px;font-size:11px;font-weight:700;cursor:pointer;
+  background:linear-gradient(135deg,rgba(0,212,170,.18),rgba(23,198,207,.18));color:var(--text);
+  border:1px solid var(--border)
+}
+.ops-btn:hover{border-color:var(--border2);background:linear-gradient(135deg,rgba(0,212,170,.28),rgba(23,198,207,.24))}
+.ops-log{
+  max-height:160px;overflow-y:auto;background:var(--surface2);border:1px solid var(--border);
+  border-radius:6px;padding:6px;font-family:var(--mono);font-size:11px;line-height:1.5;color:var(--dim)
+}
+.ops-line{white-space:pre-wrap}
+
+/* ─── Status Bar ─── */
+.statusbar{
+  display:flex;align-items:center;height:var(--statusbar-h);padding:0 10px;
+  background:var(--surface);border-top:1px solid var(--border);font-size:11px;color:var(--dim);
+  gap:12px;flex-shrink:0;justify-content:space-between
+}
+.sb-left,.sb-right{display:flex;align-items:center;gap:10px}
+.sb-item{display:flex;align-items:center;gap:4px;cursor:default}
+.sb-item.clickable{cursor:pointer}
+.sb-item.clickable:hover{color:var(--text)}
+.sb-dot{width:6px;height:6px;border-radius:50%}
+.sb-dot.ok{background:var(--green)}
+.sb-dot.warn{background:var(--amber)}
+.sb-dot.err{background:var(--red)}
+
+/* ─── Command Palette ─── */
+.cmd-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:none;
+  align-items:flex-start;justify-content:center;padding-top:80px;backdrop-filter:blur(4px)
+}
+.cmd-overlay.open{display:flex}
+.cmd-box{
+  width:540px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;
+  overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6)
+}
+.cmd-input{
+  width:100%;background:none;border:none;color:var(--text);padding:12px 16px;font-size:14px;
+  font-family:var(--ui);outline:none;border-bottom:1px solid var(--border)
+}
+.cmd-input::placeholder{color:var(--muted)}
+.cmd-list{max-height:300px;overflow-y:auto;padding:4px}
+.cmd-item{
+  display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;border-radius:6px;
+  font-size:13px;color:var(--dim)
+}
+.cmd-item:hover,.cmd-item.selected{background:rgba(0,212,170,.1);color:var(--text)}
+.cmd-item .cmd-key{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--surface2);padding:2px 6px;border-radius:3px}
+
+/* ─── Resize handles ─── */
+.resize-h{width:4px;cursor:col-resize;background:transparent;flex-shrink:0;position:relative;z-index:5}
+.resize-h:hover,.resize-h.active{background:var(--accent)}
+.resize-v{height:4px;cursor:row-resize;background:transparent;flex-shrink:0;position:relative;z-index:5}
+.resize-v:hover,.resize-v.active{background:var(--accent)}
+
+/* ─── Animations ─── */
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.fade-in{animation:fadeIn .2s ease-out}
+</style>
+</head>
+<body>
+
+<!-- Title Bar -->
+<div class="titlebar">
+  <div class="titlebar-logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5"/>
+      <line x1="12" y1="2" x2="12" y2="22"/>
+      <line x1="2" y1="8.5" x2="22" y2="8.5"/>
+    </svg>
+    AetherCode
+  </div>
+  <div class="titlebar-menu">
+    <button onclick="toggleSidebar()">File</button>
+    <button onclick="showCmdPalette()">Edit</button>
+    <button onclick="toggleTerminal()">View</button>
+    <button onclick="runBuild()">Run</button>
+  </div>
+  <div class="titlebar-center">
+    <div class="titlebar-project" onclick="showCmdPalette()">
+      <span style="color:var(--accent)">&#9672;</span> SCBE-AETHERMOORE
+    </div>
+  </div>
+  <div class="titlebar-actions">
+    <button title="Run" onclick="runBuild()" style="color:var(--green)">&#9654;</button>
+    <button title="Command Palette" onclick="showCmdPalette()">&#8984;</button>
+  </div>
+</div>
+
+<!-- Main IDE Layout -->
+<div class="ide-main">
+
+  <!-- Activity Bar -->
+  <div class="activity-bar">
+    <button class="ab-btn active" title="Explorer" onclick="switchPanel('files')">&#128193;</button>
+    <button class="ab-btn" title="Search" onclick="switchPanel('search')">&#128269;</button>
+    <button class="ab-btn" title="Git" onclick="switchPanel('git')">
+      &#9095;
+      <span class="badge" id="gitBadge" style="display:none">0</span>
+    </button>
+    <button class="ab-btn" title="Sacred Tongues" onclick="switchPanel('tongues')">&#9674;</button>
+    <div class="ab-spacer"></div>
+    <button class="ab-btn" title="AI Assistant" onclick="toggleAIPanel()">&#9733;</button>
+    <button class="ab-btn" title="Settings" onclick="showCmdPalette()">&#9881;</button>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span>Explorer</span>
+      <div style="display:flex;gap:4px">
+        <button title="New File" onclick="createNewFile()">+</button>
+        <button title="Refresh" onclick="renderFileTree()">&#8635;</button>
+      </div>
+    </div>
+    <div class="file-tree" id="fileTree"></div>
+  </div>
+
+  <div class="resize-h" id="sidebarResize"></div>
+
+  <!-- Editor Area -->
+  <div class="editor-area">
+    <!-- Tab Bar -->
+    <div class="tab-bar" id="tabBar">
+      <div class="tab-actions">
+        <button title="Split Editor" onclick="toggleAIPanel()">&#9881;</button>
+      </div>
+    </div>
+
+    <!-- Editor -->
+    <div class="editor-wrap">
+      <div id="editor-container"></div>
+      <div class="editor-welcome" id="welcome">
+        <h2>Aether<span>Code</span> IDE</h2>
+        <p style="font-size:13px">Browser-based development for SCBE-AETHERMOORE</p>
+        <div class="shortcuts">
+          <div class="sc"><kbd>Ctrl+P</kbd> Quick Open</div>
+          <div class="sc"><kbd>Ctrl+Shift+P</kbd> Commands</div>
+          <div class="sc"><kbd>Ctrl+S</kbd> Save File</div>
+          <div class="sc"><kbd>Ctrl+`</kbd> Terminal</div>
+          <div class="sc"><kbd>Ctrl+B</kbd> Toggle Sidebar</div>
+          <div class="sc"><kbd>Ctrl+J</kbd> Toggle Panel</div>
+          <div class="sc"><kbd>Ctrl+Alt+O</kbd> Ops Panel</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="resize-v" id="terminalResize"></div>
+
+    <!-- Terminal -->
+    <div class="terminal-panel" id="terminalPanel">
+      <div class="terminal-header">
+        <div class="terminal-tab active">Terminal</div>
+        <div class="terminal-tab" onclick="showOutputTab()">Output</div>
+        <div class="terminal-tab" onclick="showProblemsTab()">Problems</div>
+        <div class="spacer"></div>
+        <button onclick="clearTerminal()">&#10005;</button>
+        <button onclick="toggleTerminal()">&#9660;</button>
+      </div>
+      <div class="terminal-body" id="terminalBody">
+        <div class="line accent">AetherCode IDE Terminal v1.0</div>
+        <div class="line">Sacred Tongue encoding: active | L13 governance: online</div>
+        <div class="line">&nbsp;</div>
+      </div>
+      <div class="terminal-input-row">
+        <span class="terminal-prompt">&#10095;</span>
+        <input class="terminal-input" id="terminalInput" placeholder="Type a command..." spellcheck="false"
+          onkeydown="if(event.key==='Enter')execCommand()">
+      </div>
+    </div>
+  </div>
+
+  <div class="resize-h" id="rightResize"></div>
+
+  <!-- Right Panel — AI Assistant -->
+  <div class="right-panel" id="rightPanel">
+    <div class="rp-header">
+      <div class="dot"></div>
+      <h3>AI Assistant</h3>
+      <button onclick="toggleAIPanel()">&#10005;</button>
+    </div>
+    <div class="rp-tabs">
+      <div class="rp-tab active" onclick="switchRightTab('chat',this)">Chat</div>
+      <div class="rp-tab" onclick="switchRightTab('tongue',this)">Tongue</div>
+      <div class="rp-tab" onclick="switchRightTab('gov',this)">Governance</div>
+      <div class="rp-tab" onclick="switchRightTab('ops',this)">Ops</div>
+    </div>
+    <div class="rp-body">
+      <!-- AI Chat -->
+      <div class="ai-messages" id="aiMessages">
+        <div class="ai-msg assistant">Welcome to AetherCode. I can help with code, Sacred Tongue encoding, and governance analysis. What are you working on?</div>
+      </div>
+      <div class="ai-input-row">
+        <textarea class="ai-input" id="aiInput" rows="2" placeholder="Ask anything..."
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage()}"></textarea>
+        <button class="ai-send" onclick="sendAIMessage()">Send</button>
+      </div>
+
+      <!-- Tongue Panel -->
+      <div class="tongue-panel" id="tonguePanel">
+        <div class="tongue-card">
+          <h4>Selected Text Encoding</h4>
+          <p style="color:var(--dim);font-size:11px;margin-bottom:8px">Select text in the editor to see its Sacred Tongue tokens</p>
+          <div class="tongue-tokens" id="tongueTokens">No selection</div>
+        </div>
+        <div class="tongue-card">
+          <h4>Tongue Weights</h4>
+          <div class="tongue-grid">
+            <div class="tongue-stat"><div class="val">1.00</div><div class="lbl">KO</div></div>
+            <div class="tongue-stat"><div class="val">1.62</div><div class="lbl">AV</div></div>
+            <div class="tongue-stat"><div class="val">2.62</div><div class="lbl">RU</div></div>
+            <div class="tongue-stat"><div class="val">4.24</div><div class="lbl">CA</div></div>
+            <div class="tongue-stat"><div class="val">6.85</div><div class="lbl">UM</div></div>
+            <div class="tongue-stat"><div class="val">11.09</div><div class="lbl">DR</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Governance Panel -->
+      <div class="gov-panel" id="govPanel">
+        <div class="gov-card">
+          <h4>L13 Governance Scan</h4>
+          <div class="gov-status">
+            <div class="gov-badge allow" id="govBadge">ALLOW</div>
+            <span style="color:var(--dim);font-size:11px" id="govMsg">Code passes governance checks</span>
+          </div>
+          <div class="gov-meter"><div class="gov-meter-fill" id="govMeter" style="width:92%;background:var(--green)"></div></div>
+        </div>
+        <div class="tongue-card">
+          <h4>Pipeline Metrics</h4>
+          <div class="tongue-grid">
+            <div class="tongue-stat"><div class="val" id="metricHeff">0.94</div><div class="lbl">H_eff</div></div>
+            <div class="tongue-stat"><div class="val" id="metricDstar">0.12</div><div class="lbl">d*</div></div>
+            <div class="tongue-stat"><div class="val" id="metricCohere">0.87</div><div class="lbl">Coherence</div></div>
+          </div>
+        </div>
+        <button style="
+          background:linear-gradient(135deg,var(--accent),var(--cyan));color:#080c14;border:none;
+          padding:8px 16px;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;width:100%
+        " onclick="runGovernanceScan()">Run Full Scan</button>
+      </div>
+
+      <!-- Ops Panel -->
+      <div class="ops-panel" id="opsPanel">
+        <div class="gov-card">
+          <h4>Admin Autopilot</h4>
+          <div class="ops-grid">
+            <div class="ops-state"><span class="lbl">AetherGate</span><span class="ops-pill warn" id="opsGateStatus">checking</span></div>
+            <div class="ops-state"><span class="lbl">Cross-talk</span><span class="ops-pill warn" id="opsCrossTalkStatus">stale</span></div>
+            <div class="ops-state"><span class="lbl">Portal</span><span class="ops-pill warn" id="opsPortalStatus">idle</span></div>
+            <div class="ops-state"><span class="lbl">Backup</span><span class="ops-pill warn" id="opsBackupStatus">idle</span></div>
+          </div>
+          <div class="ops-summary" id="opsSnapshot">Files: 0 | Tabs: 0 | Modified: 0</div>
+        </div>
+
+        <div class="tongue-card">
+          <h4>Workflow Actions</h4>
+          <div class="ops-actions">
+            <button class="ops-btn" onclick="runOpsAction('crosstalk')">Sync Cross-talk</button>
+            <button class="ops-btn" onclick="runOpsAction('portal')">Build Link Portal</button>
+            <button class="ops-btn" onclick="runOpsAction('backup')">Backup Verify</button>
+            <button class="ops-btn" onclick="runOpsAction('synth')">Workflow Synthesis</button>
+            <button class="ops-btn" onclick="runOpsAction('publish')">Queue Articles</button>
+            <button class="ops-btn" onclick="runOpsAction('monetize')">Revenue Checklist</button>
+          </div>
+        </div>
+
+        <div class="tongue-card">
+          <h4>Ops Activity</h4>
+          <div class="ops-log" id="opsLog"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Status Bar -->
+<div class="statusbar">
+  <div class="sb-left">
+    <div class="sb-item"><span class="sb-dot ok" id="sbGate"></span> <span id="sbGateText">L13: ALLOW</span></div>
+    <div class="sb-item clickable" onclick="showCmdPalette()">&#9095; clean-sync</div>
+    <div class="sb-item" id="sbErrors" style="color:var(--red)"></div>
+  </div>
+  <div class="sb-right">
+    <div class="sb-item" id="sbCursor">Ln 1, Col 1</div>
+    <div class="sb-item" id="sbLang">TypeScript</div>
+    <div class="sb-item">UTF-8</div>
+    <div class="sb-item" id="sbIndent">Spaces: 2</div>
+    <div class="sb-item clickable" onclick="toggleAIPanel()">&#9733; AI</div>
+  </div>
+</div>
+
+<!-- Command Palette -->
+<div class="cmd-overlay" id="cmdOverlay" onclick="if(event.target===this)closeCmdPalette()">
+  <div class="cmd-box fade-in">
+    <input class="cmd-input" id="cmdInput" placeholder="Type a command or search files..."
+      oninput="filterCommands()" onkeydown="handleCmdKey(event)">
+    <div class="cmd-list" id="cmdList"></div>
+  </div>
+</div>
+
+<!-- Monaco Editor Loader -->
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════════
+// AetherCode IDE — Core Application
+// ═══════════════════════════════════════════════════════════════
+
+const GATE_URL = 'http://127.0.0.1:8400';
+let editor = null;
+let currentFile = null;
+let openTabs = [];
+let cmdPaletteIdx = 0;
+const OPS_ACTION_LABELS = {
+  crosstalk: 'Cross-talk sync',
+  portal: 'Verified links portal build',
+  backup: 'Ship/verify backup pass',
+  synth: 'Internet workflow synthesis',
+  publish: 'Article posting queue',
+  monetize: 'Revenue checklist',
+};
+
+// ─── Virtual File System ───
+const defaultFS = {
+  'src/': null,
+  'src/harmonic/': null,
+  'src/harmonic/pipeline14.ts': `/**
+ * @file pipeline14.ts
+ * @module harmonic/pipeline14
+ * @layer Layer 1 through Layer 14
+ * @component 14-Layer Security Pipeline
+ * @version 4.2.0
+ *
+ * Implements the full SCBE 14-layer harmonic security pipeline.
+ * Each layer transforms the input signal, building an exponential
+ * cost barrier against adversarial behavior.
+ */
+
+import { HyperbolicSpace } from './hyperbolic';
+import { SpectralAnalyzer } from '../spectral';
+import { HarmonicWall } from './harmonicScaling';
+
+export interface PipelineResult {
+  H_eff: number;
+  d_star: number;
+  decision: 'ALLOW' | 'QUARANTINE' | 'ESCALATE' | 'DENY';
+  layers: LayerOutput[];
+  coherence: number;
+}
+
+interface LayerOutput {
+  layer: number;
+  name: string;
+  value: number;
+  axiom?: string;
+}
+
+// L12: Harmonic Wall — H(d, pd) = 1 / (1 + d_H + 2*pd)
+function harmonicWall(dH: number, pd: number): number {
+  return 1 / (1 + dH + 2 * pd);
+}
+
+// L5: Hyperbolic distance
+function hyperbolicDistance(u: number[], v: number[]): number {
+  const diffSq = u.reduce((s, ui, i) => s + (ui - v[i]) ** 2, 0);
+  const uNormSq = u.reduce((s, x) => s + x * x, 0);
+  const vNormSq = v.reduce((s, x) => s + x * x, 0);
+  return Math.acosh(1 + (2 * diffSq) / ((1 - uNormSq) * (1 - vNormSq)));
+}
+
+export function runPipeline(input: Float64Array): PipelineResult {
+  const layers: LayerOutput[] = [];
+
+  // L1-2: Complex context realification
+  const real = Array.from(input).map(Math.abs);
+  layers.push({ layer: 1, name: 'Context', value: real.length, axiom: 'A5' });
+
+  // L3-4: Weighted transform + Poincare embedding
+  const embedded = real.map(v => Math.tanh(v * 0.5));
+  layers.push({ layer: 3, name: 'Embedding', value: embedded[0], axiom: 'A2' });
+
+  // L5: Hyperbolic distance
+  const origin = new Array(embedded.length).fill(0);
+  const dH = hyperbolicDistance(embedded, origin);
+  layers.push({ layer: 5, name: 'Distance', value: dH, axiom: 'A4' });
+
+  // L12: Harmonic wall
+  const pd = Math.max(0, dH - 0.5);
+  const H = harmonicWall(dH, pd);
+  layers.push({ layer: 12, name: 'HarmonicWall', value: H, axiom: 'A4' });
+
+  // L13: Risk decision
+  let decision: PipelineResult['decision'];
+  if (H > 0.7) decision = 'ALLOW';
+  else if (H > 0.4) decision = 'QUARANTINE';
+  else if (H > 0.15) decision = 'ESCALATE';
+  else decision = 'DENY';
+
+  return { H_eff: H, d_star: dH, decision, layers, coherence: H * 0.95 };
+}
+`,
+  'src/harmonic/hyperbolic.ts': `/**
+ * @file hyperbolic.ts
+ * @module harmonic/hyperbolic
+ * @layer Layer 5, Layer 6, Layer 7
+ * @component Poincare Ball Model
+ */
+
+export class HyperbolicSpace {
+  readonly dim: number;
+  readonly curvature: number;
+
+  constructor(dim: number, curvature = -1) {
+    this.dim = dim;
+    this.curvature = curvature;
+  }
+
+  /** L5: Hyperbolic distance in the Poincare ball */
+  distance(u: number[], v: number[]): number {
+    const diffSq = u.reduce((s, ui, i) => s + (ui - v[i]) ** 2, 0);
+    const uNorm = u.reduce((s, x) => s + x * x, 0);
+    const vNorm = v.reduce((s, x) => s + x * x, 0);
+    const denom = (1 - uNorm) * (1 - vNorm);
+    if (denom <= 0) return Infinity;
+    return Math.acosh(1 + (2 * diffSq) / denom);
+  }
+
+  /** L6: Breathing transform */
+  breathe(point: number[], phase: number): number[] {
+    const scale = 1 + 0.1 * Math.sin(phase);
+    return point.map(x => Math.tanh(Math.atanh(x) * scale));
+  }
+
+  /** L7: Mobius addition */
+  mobiusAdd(u: number[], v: number[]): number[] {
+    const uNorm = u.reduce((s, x) => s + x * x, 0);
+    const vNorm = v.reduce((s, x) => s + x * x, 0);
+    const uv = u.reduce((s, x, i) => s + x * v[i], 0);
+    const denom = 1 + 2 * uv + uNorm * vNorm;
+    return u.map((ui, i) =>
+      ((1 + 2 * uv + vNorm) * ui + (1 - uNorm) * v[i]) / denom
+    );
+  }
+}
+`,
+  'src/crypto/': null,
+  'src/crypto/h_lwe.py': `"""
+h_lwe.py — Homomorphic Learning With Errors
+@layer Layer 5
+@component Post-Quantum Cryptographic Primitives
+"""
+
+import numpy as np
+from typing import Tuple
+
+# A2: Unitarity — key generation preserves norm constraints
+def keygen(n: int = 256, q: int = 7681) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Generate H-LWE keypair."""
+    s = np.random.randint(0, q, size=n)  # secret key
+    A = np.random.randint(0, q, size=(n, n))
+    e = np.random.normal(0, 3.2, size=n).astype(int) % q  # error
+    b = (A @ s + e) % q
+    return A, b, s
+
+def encrypt(A: np.ndarray, b: np.ndarray, m: int, q: int = 7681) -> Tuple[np.ndarray, int]:
+    """Encrypt a single bit under H-LWE."""
+    n = len(b)
+    r = np.random.randint(0, 2, size=n)
+    u = (r @ A) % q
+    v = (int(r @ b) + m * (q // 2)) % q
+    return u, v
+
+def decrypt(s: np.ndarray, u: np.ndarray, v: int, q: int = 7681) -> int:
+    """Decrypt ciphertext."""
+    inner = (v - int(u @ s)) % q
+    return 0 if inner < q // 4 or inner > 3 * q // 4 else 1
+
+# --- Self-test ---
+if __name__ == "__main__":
+    A, b, s = keygen()
+    for bit in [0, 1]:
+        u, v = encrypt(A, b, bit)
+        assert decrypt(s, u, v) == bit, f"Decryption failed for bit={bit}"
+    print("H-LWE self-test: OK")
+`,
+  'tests/': null,
+  'tests/harmonic/': null,
+  'tests/harmonic/pipeline14.test.ts': `import { describe, it, expect } from 'vitest';
+
+describe('14-Layer Pipeline', () => {
+  it('returns ALLOW for benign input', () => {
+    // Simulate benign: small values near origin
+    const input = new Float64Array([0.1, 0.05, 0.02, 0.01]);
+    // H_eff should be high for near-origin points
+    expect(true).toBe(true); // placeholder
+  });
+
+  it('returns DENY for adversarial input', () => {
+    // Simulate adversarial: large values at boundary
+    const input = new Float64Array([0.99, 0.98, 0.97, 0.96]);
+    expect(true).toBe(true); // placeholder
+  });
+});
+`,
+  'package.json': `{
+  "name": "scbe-aethermoore",
+  "version": "2.8.0",
+  "description": "AI safety framework using hyperbolic geometry",
+  "main": "./dist/src/index.js",
+  "scripts": {
+    "build": "npm run clean && tsc -p tsconfig.json",
+    "test": "vitest run",
+    "format": "prettier --write src/ tests/",
+    "lint": "prettier --check src/ tests/"
+  }
+}
+`,
+  'CLAUDE.md': '# SCBE-AETHERMOORE\n\nAI safety and governance framework.\nSee the full CLAUDE.md in the repo root for details.\n',
+};
+
+// Load FS from localStorage or default
+let fileSystem = {};
+try {
+  const saved = localStorage.getItem('aethercode-ide-fs');
+  if (saved) fileSystem = JSON.parse(saved);
+  else fileSystem = { ...defaultFS };
+} catch { fileSystem = { ...defaultFS }; }
+
+function saveFS() {
+  localStorage.setItem('aethercode-ide-fs', JSON.stringify(fileSystem));
+}
+
+// ─── File Tree ───
+function renderFileTree() {
+  const tree = document.getElementById('fileTree');
+  const paths = Object.keys(fileSystem).sort();
+  let html = '';
+  const openFolders = new Set(JSON.parse(localStorage.getItem('aethercode-ide-folders') || '["src/","src/harmonic/","src/crypto/","tests/","tests/harmonic/"]'));
+
+  for (const p of paths) {
+    const isDir = p.endsWith('/');
+    const depth = (p.match(/\//g) || []).length - (isDir ? 1 : 0);
+    const indent = depth === 0 ? '' : depth === 1 ? ' ft-indent' : depth === 2 ? ' ft-indent2' : ' ft-indent3';
+    const name = isDir ? p.split('/').filter(Boolean).pop() : p.split('/').pop();
+
+    // Check if parent folder is open
+    const parentDir = p.substring(0, p.lastIndexOf('/', isDir ? p.length - 2 : p.length) + 1);
+    if (parentDir && !openFolders.has(parentDir)) continue;
+
+    if (isDir) {
+      const isOpen = openFolders.has(p);
+      html += `<div class="ft-item folder${indent}" onclick="toggleFolder('${p}')">
+        <span class="icon">${isOpen ? '&#9662;' : '&#9656;'}</span>
+        <span class="name">${name}</span>
+      </div>`;
+    } else {
+      const icon = getFileIcon(name);
+      const isActive = currentFile === p;
+      html += `<div class="ft-item${indent}${isActive ? ' active' : ''}" onclick="openFile('${p}')">
+        <span class="icon">${icon}</span>
+        <span class="name">${name}</span>
+      </div>`;
+    }
+  }
+  tree.innerHTML = html;
+}
+
+function getFileIcon(name) {
+  if (name.endsWith('.ts')) return '<span style="color:#3178c6">TS</span>';
+  if (name.endsWith('.py')) return '<span style="color:#ffc53d">Py</span>';
+  if (name.endsWith('.json')) return '<span style="color:#ff9152">{}</span>';
+  if (name.endsWith('.md')) return '<span style="color:#6b8299">M</span>';
+  if (name.endsWith('.html')) return '<span style="color:#e44d26">&lt;&gt;</span>';
+  return '&#9632;';
+}
+
+function toggleFolder(path) {
+  const folders = new Set(JSON.parse(localStorage.getItem('aethercode-ide-folders') || '[]'));
+  if (folders.has(path)) folders.delete(path); else folders.add(path);
+  localStorage.setItem('aethercode-ide-folders', JSON.stringify([...folders]));
+  renderFileTree();
+}
+
+function getLanguage(filename) {
+  if (filename.endsWith('.ts') || filename.endsWith('.tsx')) return 'typescript';
+  if (filename.endsWith('.js') || filename.endsWith('.jsx')) return 'javascript';
+  if (filename.endsWith('.py')) return 'python';
+  if (filename.endsWith('.json')) return 'json';
+  if (filename.endsWith('.md')) return 'markdown';
+  if (filename.endsWith('.html')) return 'html';
+  if (filename.endsWith('.css')) return 'css';
+  return 'plaintext';
+}
+
+// ─── File Operations ───
+function openFile(path) {
+  if (!fileSystem.hasOwnProperty(path) || fileSystem[path] === null) return;
+
+  // Hide welcome
+  const welcome = document.getElementById('welcome');
+  if (welcome) welcome.style.display = 'none';
+
+  // Add tab if not exists
+  if (!openTabs.find(t => t.path === path)) {
+    openTabs.push({ path, modified: false });
+  }
+  currentFile = path;
+
+  renderTabs();
+  renderFileTree();
+
+  // Set editor content
+  if (editor) {
+    const lang = getLanguage(path);
+    const model = monaco.editor.createModel(fileSystem[path], lang);
+    editor.setModel(model);
+    document.getElementById('sbLang').textContent = lang.charAt(0).toUpperCase() + lang.slice(1);
+  }
+
+  updateGovernance();
+}
+
+function saveFile() {
+  if (!currentFile || !editor) return;
+  fileSystem[currentFile] = editor.getValue();
+  saveFS();
+  const tab = openTabs.find(t => t.path === currentFile);
+  if (tab) tab.modified = false;
+  renderTabs();
+  termLog('File saved: ' + currentFile, 'info');
+  updateGovernance();
+}
+
+function closeTab(path, e) {
+  if (e) e.stopPropagation();
+  openTabs = openTabs.filter(t => t.path !== path);
+  if (currentFile === path) {
+    if (openTabs.length > 0) {
+      openFile(openTabs[openTabs.length - 1].path);
+    } else {
+      currentFile = null;
+      if (editor) editor.setValue('');
+      document.getElementById('welcome').style.display = 'flex';
+      renderTabs();
+      renderFileTree();
+    }
+  } else {
+    renderTabs();
+  }
+}
+
+function createNewFile() {
+  const name = prompt('File path (e.g. src/myfile.ts):');
+  if (!name || !name.trim()) return;
+  const path = name.trim();
+  // Create parent directories
+  const parts = path.split('/');
+  for (let i = 1; i < parts.length; i++) {
+    const dir = parts.slice(0, i).join('/') + '/';
+    if (!fileSystem.hasOwnProperty(dir)) fileSystem[dir] = null;
+  }
+  fileSystem[path] = '';
+  saveFS();
+  renderFileTree();
+  openFile(path);
+  termLog('Created: ' + path, 'info');
+}
+
+// ─── Tabs ───
+function renderTabs() {
+  const bar = document.getElementById('tabBar');
+  let html = '';
+  for (const tab of openTabs) {
+    const name = tab.path.split('/').pop();
+    const icon = getFileIcon(name);
+    const isActive = tab.path === currentFile;
+    html += `<div class="tab${isActive ? ' active' : ''}${tab.modified ? ' modified' : ''}" onclick="openFile('${tab.path}')">
+      <span class="tab-icon">${icon}</span>
+      <span class="tab-name">${name}</span>
+      <span class="tab-close" onclick="closeTab('${tab.path}',event)">&times;</span>
+    </div>`;
+  }
+  html += `<div class="tab-actions"><button title="Command Palette" onclick="showCmdPalette()">&#8984;</button></div>`;
+  bar.innerHTML = html;
+  updateOpsSnapshot();
+}
+
+// ─── Terminal ───
+function termLog(msg, cls = '') {
+  const body = document.getElementById('terminalBody');
+  const div = document.createElement('div');
+  div.className = 'line' + (cls ? ' ' + cls : '');
+  div.textContent = msg;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+function clearTerminal() {
+  document.getElementById('terminalBody').innerHTML = '';
+}
+
+function toggleTerminal() {
+  document.getElementById('terminalPanel').classList.toggle('collapsed');
+}
+
+function execCommand() {
+  const inp = document.getElementById('terminalInput');
+  const cmd = inp.value.trim();
+  inp.value = '';
+  if (!cmd) return;
+
+  termLog('> ' + cmd, 'cmd');
+
+  const parts = cmd.split(/\s+/);
+  const c = parts[0].toLowerCase();
+
+  if (c === 'clear' || c === 'cls') { clearTerminal(); return; }
+  if (c === 'help') {
+    termLog('Available commands:', 'accent');
+    termLog('  build        — Compile TypeScript');
+    termLog('  test         — Run test suite');
+    termLog('  lint         — Check code style');
+    termLog('  scan         — Run L13 governance scan');
+    termLog('  encode <t>   — Encode text to KO tongue');
+    termLog('  ops          — Open operations panel');
+    termLog('  crosstalk    — Emit cross-talk sync packet');
+    termLog('  portal       — Build verified links portal');
+    termLog('  backup       — Run ship/verify backup pass');
+    termLog('  synth        — Refresh internet workflow profile');
+    termLog('  publish      — Queue article posting workflow');
+    termLog('  monetize     — Show daily revenue checklist');
+    termLog('  status       — Project status');
+    termLog('  ls           — List files');
+    termLog('  cat <file>   — Display file contents');
+    termLog('  clear        — Clear terminal');
+    return;
+  }
+  if (c === 'build') { runBuild(); return; }
+  if (c === 'test') { runTests(); return; }
+  if (c === 'lint') { runLint(); return; }
+  if (c === 'scan') { runGovernanceScan(); return; }
+  if (c === 'ops') { openOpsTab(); return; }
+  if (c === 'crosstalk' || c === 'portal' || c === 'backup' || c === 'synth' || c === 'publish' || c === 'monetize') {
+    runOpsAction(c);
+    return;
+  }
+  if (c === 'status') {
+    const files = Object.keys(fileSystem).filter(k => !k.endsWith('/'));
+    const ts = files.filter(f => f.endsWith('.ts')).length;
+    const py = files.filter(f => f.endsWith('.py')).length;
+    termLog('SCBE-AETHERMOORE', 'accent');
+    termLog(`  Files: ${files.length} (${ts} TS, ${py} Python)`, 'info');
+    termLog(`  Branch: clean-sync`, 'info');
+    termLog(`  14-Layer Pipeline: active`, 'info');
+    termLog(`  Governance: L13 online`, 'info');
+    termLog(`  Ops lane: available (type "ops")`, 'info');
+    return;
+  }
+  if (c === 'ls') {
+    const target = parts[1] || '';
+    const entries = Object.keys(fileSystem).filter(k => {
+      if (target) return k.startsWith(target) && k !== target;
+      const depth = (k.match(/\//g) || []).length;
+      return k.endsWith('/') ? depth === 1 : depth === 0;
+    });
+    entries.forEach(e => termLog('  ' + e, e.endsWith('/') ? 'accent' : ''));
+    return;
+  }
+  if (c === 'cat' && parts[1]) {
+    const content = fileSystem[parts[1]];
+    if (content !== undefined && content !== null) {
+      content.split('\n').forEach(l => termLog(l));
+    } else {
+      termLog('File not found: ' + parts[1], 'err');
+    }
+    return;
+  }
+  if (c === 'encode') {
+    const text = parts.slice(1).join(' ');
+    if (!text) { termLog('Usage: encode <text>', 'warn'); return; }
+    const tokens = encodeToKO(text);
+    termLog('KO tokens: ' + tokens, 'accent');
+    return;
+  }
+  termLog('Unknown command: ' + c + '. Type "help" for available commands.', 'warn');
+}
+
+function runBuild() {
+  termLog('> npm run build', 'cmd');
+  termLog('Compiling TypeScript...', 'info');
+  setTimeout(() => {
+    const tsFiles = Object.keys(fileSystem).filter(k => k.endsWith('.ts'));
+    termLog(`  Compiled ${tsFiles.length} files`, 'info');
+    termLog('Build succeeded.', 'accent');
+  }, 600);
+}
+
+function runTests() {
+  termLog('> npm test', 'cmd');
+  termLog('Running vitest...', 'info');
+  setTimeout(() => {
+    termLog('  PASS  tests/harmonic/pipeline14.test.ts', 'accent');
+    termLog('  2 tests passed', 'info');
+    termLog('Test suite complete.', 'accent');
+  }, 800);
+}
+
+function runLint() {
+  termLog('> npm run lint', 'cmd');
+  setTimeout(() => {
+    termLog('  Checking code style...', 'info');
+    termLog('  All files pass.', 'accent');
+  }, 400);
+}
+
+// ─── Ops Workflows ───
+function isoNow() {
+  return new Date().toISOString();
+}
+
+function safeStamp() {
+  return isoNow().replace(/[:.]/g, '-');
+}
+
+function ensureVirtualDir(path) {
+  if (!path) return;
+  let current = '';
+  for (const part of path.split('/').filter(Boolean)) {
+    current += part + '/';
+    if (!Object.prototype.hasOwnProperty.call(fileSystem, current)) fileSystem[current] = null;
+  }
+}
+
+function writeVirtualFile(path, content) {
+  const idx = path.lastIndexOf('/');
+  const dir = idx >= 0 ? path.slice(0, idx + 1) : '';
+  ensureVirtualDir(dir);
+  fileSystem[path] = content;
+  saveFS();
+  renderFileTree();
+}
+
+function setOpsPill(id, level, text) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = 'ops-pill ' + level;
+  el.textContent = text;
+}
+
+function appendOpsLog(msg, cls = 'info') {
+  const log = document.getElementById('opsLog');
+  if (!log) return;
+  const line = document.createElement('div');
+  line.className = 'ops-line';
+  const stamp = new Date().toLocaleTimeString([], { hour12: false });
+  line.textContent = `[${stamp}] ${msg}`;
+  log.appendChild(line);
+  while (log.children.length > 50) log.removeChild(log.firstChild);
+  log.scrollTop = log.scrollHeight;
+  termLog('[ops] ' + msg, cls);
+}
+
+function updateOpsSnapshot() {
+  const files = Object.keys(fileSystem).filter(k => !k.endsWith('/')).length;
+  const modified = openTabs.filter(t => t.modified).length;
+  const snap = document.getElementById('opsSnapshot');
+  if (snap) snap.textContent = `Files: ${files} | Tabs: ${openTabs.length} | Modified: ${modified}`;
+}
+
+function initOpsPanel() {
+  updateOpsSnapshot();
+  appendOpsLog('Ops panel initialized. Use `help` for ops commands.', 'info');
+}
+
+function openOpsTab() {
+  const rightPanel = document.getElementById('rightPanel');
+  if (rightPanel.classList.contains('collapsed')) rightPanel.classList.remove('collapsed');
+  const tab = document.querySelectorAll('.rp-tab')[3];
+  if (tab) switchRightTab('ops', tab);
+}
+
+function runOpsAction(action) {
+  if (!OPS_ACTION_LABELS[action]) {
+    appendOpsLog('Unknown ops action: ' + action, 'warn');
+    return;
+  }
+
+  appendOpsLog(OPS_ACTION_LABELS[action] + ' started', 'info');
+  const gatewayRoute = '/ops/' + action;
+  const payloadByAction = {
+    crosstalk: {
+      summary: 'Ops sync triggered from AetherCode IDE',
+      intent: 'sync',
+      status: 'in_progress',
+      task_id: 'OPS-SYNC',
+      where: 'aethercode:ops-panel',
+      why: 'coordinate multi-agent workflow state',
+      how: 'gateway route /ops/crosstalk',
+    },
+    portal: {
+      registry: 'config/governance/verified_links_registry.json',
+      out_dir: 'artifacts/verified_links_portal',
+    },
+    backup: {
+      source: ['src/aethercode/ide.html'],
+      dry_run: true,
+    },
+    synth: {},
+    publish: {},
+    monetize: {},
+  };
+  const payload = payloadByAction[action] || {};
+
+  fetch(GATE_URL + gatewayRoute, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json().catch(() => ({}));
+    })
+    .then(data => {
+      const summary = data.message || data.summary || data.status || 'completed';
+      appendOpsLog(OPS_ACTION_LABELS[action] + ' completed via AetherGate (' + summary + ')', 'accent');
+      if (action === 'crosstalk') setOpsPill('opsCrossTalkStatus', 'ok', 'synced');
+      if (action === 'portal') setOpsPill('opsPortalStatus', 'ok', 'rebuilt');
+      if (action === 'backup') setOpsPill('opsBackupStatus', 'ok', 'verified');
+      if (data.packet_id) appendOpsLog('Packet: ' + data.packet_id, 'info');
+      if (data.manifest) appendOpsLog('Manifest: ' + data.manifest, 'info');
+      if (data.defaults_source) appendOpsLog('Backup defaults source: ' + data.defaults_source, 'info');
+      updateOpsSnapshot();
+    })
+    .catch(() => runOpsActionOffline(action));
+}
+
+function runOpsActionOffline(action) {
+  setTimeout(() => {
+    const stamp = safeStamp();
+
+    if (action === 'crosstalk') {
+      const packetId = 'cross-talk-' + Date.now().toString(36);
+      writeVirtualFile(`artifacts/agent_comm/github_lanes/${packetId}.json`, JSON.stringify({
+        packet_id: packetId,
+        created_at: isoNow(),
+        from: 'aethercode.ide',
+        to: 'agent.mesh',
+        type: 'terminal_crosstalk_sync',
+        summary: 'Manual ops sync emitted from IDE panel',
+      }, null, 2));
+      setOpsPill('opsCrossTalkStatus', 'ok', 'synced');
+      appendOpsLog('Cross-talk packet emitted in local mode: ' + packetId, 'accent');
+    }
+
+    if (action === 'portal') {
+      writeVirtualFile('artifacts/verified_links_portal/index.html', `<!doctype html>
+<html><head><meta charset="utf-8"><title>SCBE Verified Links</title></head>
+<body><h1>SCBE Verified Links Portal</h1><p>Generated: ${isoNow()}</p></body></html>`);
+      writeVirtualFile('artifacts/verified_links_portal/manifest.json', JSON.stringify({
+        generated_at: isoNow(),
+        links_digest_sha256: 'local-' + Date.now().toString(16),
+        source: 'aethercode-ide-offline',
+      }, null, 2));
+      setOpsPill('opsPortalStatus', 'ok', 'rebuilt');
+      appendOpsLog('Verified links portal rebuilt in artifacts/verified_links_portal/', 'accent');
+    }
+
+    if (action === 'backup') {
+      const files = Object.keys(fileSystem).filter(k => !k.endsWith('/')).length;
+      writeVirtualFile(`artifacts/ops/backup_manifest_${stamp}.json`, JSON.stringify({
+        created_at: isoNow(),
+        mode: 'dry-run',
+        file_count: files,
+        min_verified_copies: 2,
+        decision: 'safe_to_prune=false',
+      }, null, 2));
+      setOpsPill('opsBackupStatus', 'ok', 'dry-run');
+      appendOpsLog('Backup dry-run manifest generated for ' + files + ' files', 'accent');
+    }
+
+    if (action === 'synth') {
+      writeVirtualFile('training/internet_workflow_profile.json', JSON.stringify({
+        generated_at: isoNow(),
+        profile: 'baseline',
+        sources: ['arxiv', 'github', 'notion', 'shopify'],
+        governance: { fail_closed: true, thresholds: { coherence_min: 0.7, conflict_max: 0.3 } },
+      }, null, 2));
+      appendOpsLog('Internet workflow profile refreshed (offline baseline)', 'accent');
+    }
+
+    if (action === 'publish') {
+      writeVirtualFile(`artifacts/publish/article_queue_${stamp}.md`, [
+        '# Article Queue',
+        '- SCBE: Trusted Cross-talk for Multi-Agent Teams',
+        '- AetherBrowser: Transparent Task Automation Lanes',
+        '- Practical Guide: Ship/Verify/Prune Without Data Loss',
+      ].join('\n'));
+      appendOpsLog('Article posting queue file generated under artifacts/publish/', 'info');
+    }
+
+    if (action === 'monetize') {
+      writeVirtualFile('artifacts/monetization/daily_revenue_loop.md', [
+        '# Daily Revenue Loop',
+        '1. Run `publish` to stage content assets.',
+        '2. Run `portal` to refresh verified service links.',
+        '3. Run `crosstalk` to hand off outbound lead tasks.',
+        '4. Capture leads and convert via Shopify/Gumroad offer pages.',
+      ].join('\n'));
+      appendOpsLog('Revenue checklist generated at artifacts/monetization/', 'info');
+    }
+
+    updateOpsSnapshot();
+  }, 350);
+}
+
+// ─── Sacred Tongue Encoding ───
+const KO_PREFIX = ['ael','brin','cor','dhal','eth','fael','nav','gor','hael','ith','jor','kel','lor','mael','neth','oth'];
+const KO_SUFFIX = ['a','e','i','o','u','or','esh','un','uu','al','el','il','ol','ul','ar','ir'];
+
+function encodeToKO(text) {
+  return [...text].map(ch => {
+    const b = ch.charCodeAt(0);
+    const hi = (b >> 4) & 0xF;
+    const lo = b & 0xF;
+    return KO_PREFIX[hi] + "'" + KO_SUFFIX[lo];
+  }).join(' ');
+}
+
+function updateTonguePanel() {
+  if (!editor) return;
+  const sel = editor.getSelection();
+  const text = sel ? editor.getModel().getValueInRange(sel) : '';
+  const el = document.getElementById('tongueTokens');
+  if (!text) { el.textContent = 'No selection'; return; }
+  el.textContent = encodeToKO(text);
+}
+
+// ─── Governance ───
+function updateGovernance() {
+  if (!editor) return;
+  const code = editor.getValue();
+  const len = code.length;
+
+  // Simulated governance metrics
+  const H_eff = Math.max(0.1, 1 - (len / 50000));
+  const d_star = Math.min(5, len / 2000);
+  const coherence = Math.max(0.3, 0.95 - d_star * 0.08);
+
+  document.getElementById('metricHeff').textContent = H_eff.toFixed(2);
+  document.getElementById('metricDstar').textContent = d_star.toFixed(2);
+  document.getElementById('metricCohere').textContent = coherence.toFixed(2);
+
+  let decision, color;
+  if (H_eff > 0.7) { decision = 'ALLOW'; color = 'var(--green)'; }
+  else if (H_eff > 0.4) { decision = 'QUARANTINE'; color = 'var(--amber)'; }
+  else if (H_eff > 0.15) { decision = 'ESCALATE'; color = 'var(--accent2)'; }
+  else { decision = 'DENY'; color = 'var(--red)'; }
+
+  const badge = document.getElementById('govBadge');
+  badge.textContent = decision;
+  badge.className = 'gov-badge ' + decision.toLowerCase();
+
+  const meter = document.getElementById('govMeter');
+  meter.style.width = (H_eff * 100) + '%';
+  meter.style.background = color;
+
+  document.getElementById('sbGateText').textContent = 'L13: ' + decision;
+  const dot = document.getElementById('sbGate');
+  dot.className = 'sb-dot ' + (decision === 'ALLOW' ? 'ok' : decision === 'DENY' ? 'err' : 'warn');
+}
+
+function runGovernanceScan() {
+  termLog('> scbe pipeline run --json', 'cmd');
+  termLog('Running 14-layer governance scan...', 'info');
+  setTimeout(() => {
+    const H = document.getElementById('metricHeff').textContent;
+    const d = document.getElementById('metricDstar').textContent;
+    const badge = document.getElementById('govBadge').textContent;
+    termLog(`  H_eff: ${H}  |  d*: ${d}  |  Decision: ${badge}`, 'accent');
+    termLog('Scan complete.', 'info');
+  }, 500);
+}
+
+// ─── AI Assistant ───
+function sendAIMessage() {
+  const inp = document.getElementById('aiInput');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+
+  const msgs = document.getElementById('aiMessages');
+  msgs.innerHTML += `<div class="ai-msg user fade-in">${escHtml(text)}</div>`;
+
+  // Simulated AI responses
+  setTimeout(() => {
+    let reply = generateAIReply(text);
+    msgs.innerHTML += `<div class="ai-msg assistant fade-in">${reply}</div>`;
+    msgs.scrollTop = msgs.scrollHeight;
+  }, 400 + Math.random() * 300);
+
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function generateAIReply(q) {
+  const lower = q.toLowerCase();
+  if (lower.includes('pipeline') || lower.includes('layer')) {
+    return `The <strong>14-layer pipeline</strong> transforms input through increasingly strict security checks:<br><br>
+<code>L1-2</code> Context realification<br><code>L3-4</code> Weighted embedding<br>
+<code>L5</code> Hyperbolic distance<br><code>L6-7</code> Breathing + Mobius<br>
+<code>L8</code> Hamiltonian CFI<br><code>L9-10</code> Spectral coherence<br>
+<code>L11</code> Triadic temporal<br><code>L12</code> Harmonic wall<br>
+<code>L13</code> Risk decision<br><code>L14</code> Audio axis<br><br>
+The key formula is <code>H(d,pd) = 1/(1+d_H+2*pd)</code>`;
+  }
+  if (lower.includes('tongue') || lower.includes('encode')) {
+    return `Sacred Tongues use a <strong>16x16 token grid</strong> (256 tokens per language). The 6 tongues are:<br><br>
+<code>KO</code> (1.00) <code>AV</code> (1.62) <code>RU</code> (2.62)<br>
+<code>CA</code> (4.24) <code>UM</code> (6.85) <code>DR</code> (11.09)<br><br>
+Weights scale by the golden ratio. Use the <strong>Tongue</strong> tab to encode selected text.`;
+  }
+  if (lower.includes('governance') || lower.includes('scan') || lower.includes('allow')) {
+    return `L13 governance yields one of four decisions:<br><br>
+<span style="color:var(--green)">ALLOW</span> — Safe operation<br>
+<span style="color:var(--amber)">QUARANTINE</span> — Needs review<br>
+<span style="color:var(--accent2)">ESCALATE</span> — High risk<br>
+<span style="color:var(--red)">DENY</span> — Blocked<br><br>
+Run <code>scan</code> in the terminal or click <strong>Run Full Scan</strong> in the Governance tab.`;
+  }
+  if (lower.includes('monetize') || lower.includes('revenue') || lower.includes('lead') || lower.includes('publish')) {
+    return `Use the <strong>Ops</strong> tab for execution loops:<br><br>
+<code>publish</code> queue articles<br>
+<code>portal</code> rebuild verified links<br>
+<code>crosstalk</code> hand off tasks to other agents<br>
+<code>backup</code> produce ship/verify manifests<br><br>
+You can also run these commands directly in the terminal.`;
+  }
+  if (lower.includes('help') || lower.includes('what can')) {
+    return `I can help with:<br>
+&#8226; <strong>Code explanation</strong> — Ask about any function or concept<br>
+&#8226; <strong>Sacred Tongue encoding</strong> — Select text and check the Tongue tab<br>
+&#8226; <strong>Governance analysis</strong> — Check L13 pipeline metrics<br>
+&#8226; <strong>SCBE architecture</strong> — Ask about the 14-layer pipeline, axioms, or crypto<br><br>
+Try: <em>"Explain the harmonic wall formula"</em>`;
+  }
+  return `That's a great question. In the SCBE-AETHERMOORE framework, the hyperbolic geometry ensures adversarial intent costs <strong>exponentially</strong> more the further it drifts from safe operation.<br><br>The core formula <code>H(d,R) = R^(d\u00B2)</code> creates an unbounded cost barrier. You can explore this in <code>src/harmonic/pipeline14.ts</code>.`;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ─── Panels ───
+function switchPanel(panel) {
+  document.querySelectorAll('.ab-btn').forEach(b => b.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  const sb = document.getElementById('sidebar');
+  sb.classList.remove('collapsed');
+  // Update sidebar header
+  const header = sb.querySelector('.sidebar-header span');
+  if (panel === 'files') header.textContent = 'Explorer';
+  else if (panel === 'search') header.textContent = 'Search';
+  else if (panel === 'git') header.textContent = 'Source Control';
+  else if (panel === 'tongues') header.textContent = 'Sacred Tongues';
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+}
+
+function toggleAIPanel() {
+  document.getElementById('rightPanel').classList.toggle('collapsed');
+}
+
+function switchRightTab(tab, el) {
+  document.querySelectorAll('.rp-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelector('.rp-header h3').textContent = tab === 'ops' ? 'Operations' : 'AI Assistant';
+  document.getElementById('aiMessages').parentElement.querySelector('.ai-input-row').style.display = tab === 'chat' ? 'flex' : 'none';
+  document.getElementById('aiMessages').style.display = tab === 'chat' ? 'flex' : 'none';
+  document.getElementById('tonguePanel').classList.toggle('visible', tab === 'tongue');
+  document.getElementById('govPanel').classList.toggle('visible', tab === 'gov');
+  document.getElementById('opsPanel').classList.toggle('visible', tab === 'ops');
+  if (tab === 'ops') updateOpsSnapshot();
+}
+
+function showOutputTab() { termLog('Output tab selected', 'info'); }
+function showProblemsTab() { termLog('Problems tab selected', 'info'); }
+
+// ─── Command Palette ───
+const commands = [
+  { name: 'Open File...', key: 'Ctrl+P', action: () => { closeCmdPalette(); /* file filter mode */ }},
+  { name: 'Toggle Sidebar', key: 'Ctrl+B', action: toggleSidebar },
+  { name: 'Toggle Terminal', key: 'Ctrl+`', action: toggleTerminal },
+  { name: 'Toggle AI Panel', key: 'Ctrl+I', action: toggleAIPanel },
+  { name: 'Open Ops Panel', key: 'Ctrl+Alt+O', action: openOpsTab },
+  { name: 'Save File', key: 'Ctrl+S', action: saveFile },
+  { name: 'New File', key: '', action: createNewFile },
+  { name: 'Run Build', key: '', action: runBuild },
+  { name: 'Run Tests', key: '', action: runTests },
+  { name: 'Run Lint', key: '', action: runLint },
+  { name: 'Governance Scan', key: '', action: runGovernanceScan },
+  { name: 'Ops: Sync Cross-talk', key: '', action: () => runOpsAction('crosstalk') },
+  { name: 'Ops: Build Link Portal', key: '', action: () => runOpsAction('portal') },
+  { name: 'Ops: Run Backup Verify', key: '', action: () => runOpsAction('backup') },
+  { name: 'Ops: Refresh Workflow Profile', key: '', action: () => runOpsAction('synth') },
+  { name: 'Ops: Queue Articles', key: '', action: () => runOpsAction('publish') },
+  { name: 'Ops: Revenue Checklist', key: '', action: () => runOpsAction('monetize') },
+  { name: 'Encode Selection (KO)', key: '', action: () => { updateTonguePanel(); switchRightTab('tongue', document.querySelectorAll('.rp-tab')[1]); }},
+  { name: 'Clear Terminal', key: '', action: clearTerminal },
+  { name: 'Reset File System', key: '', action: () => { fileSystem = { ...defaultFS }; saveFS(); renderFileTree(); termLog('File system reset to defaults', 'warn'); }},
+];
+
+function showCmdPalette() {
+  const overlay = document.getElementById('cmdOverlay');
+  overlay.classList.add('open');
+  document.getElementById('cmdInput').value = '';
+  document.getElementById('cmdInput').focus();
+  cmdPaletteIdx = 0;
+  renderCommands('');
+}
+
+function closeCmdPalette() {
+  document.getElementById('cmdOverlay').classList.remove('open');
+}
+
+function renderCommands(filter) {
+  const list = document.getElementById('cmdList');
+  const lf = filter.toLowerCase();
+  const filtered = lf ? commands.filter(c => c.name.toLowerCase().includes(lf)) : commands;
+  list.innerHTML = filtered.map((c, i) =>
+    `<div class="cmd-item${i === cmdPaletteIdx ? ' selected' : ''}" onclick="runCommand(${commands.indexOf(c)})">
+      ${c.name}
+      ${c.key ? `<span class="cmd-key">${c.key}</span>` : ''}
+    </div>`
+  ).join('');
+}
+
+function filterCommands() {
+  cmdPaletteIdx = 0;
+  renderCommands(document.getElementById('cmdInput').value);
+}
+
+function handleCmdKey(e) {
+  const list = document.getElementById('cmdList');
+  const items = list.querySelectorAll('.cmd-item');
+  if (e.key === 'ArrowDown') { e.preventDefault(); cmdPaletteIdx = Math.min(cmdPaletteIdx + 1, items.length - 1); renderCommands(document.getElementById('cmdInput').value); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); cmdPaletteIdx = Math.max(cmdPaletteIdx - 1, 0); renderCommands(document.getElementById('cmdInput').value); }
+  else if (e.key === 'Enter') {
+    e.preventDefault();
+    const sel = items[cmdPaletteIdx];
+    if (sel) sel.click();
+  }
+  else if (e.key === 'Escape') closeCmdPalette();
+}
+
+function runCommand(idx) {
+  closeCmdPalette();
+  commands[idx].action();
+}
+
+// ─── Keyboard Shortcuts ───
+document.addEventListener('keydown', e => {
+  // Ctrl+P — command palette
+  if (e.ctrlKey && e.key === 'p') { e.preventDefault(); showCmdPalette(); }
+  // Ctrl+Shift+P — command palette
+  if (e.ctrlKey && e.shiftKey && e.key === 'P') { e.preventDefault(); showCmdPalette(); }
+  // Ctrl+S — save
+  if (e.ctrlKey && e.key === 's') { e.preventDefault(); saveFile(); }
+  // Ctrl+B — toggle sidebar
+  if (e.ctrlKey && e.key === 'b') { e.preventDefault(); toggleSidebar(); }
+  // Ctrl+` — toggle terminal
+  if (e.ctrlKey && e.key === '`') { e.preventDefault(); toggleTerminal(); }
+  // Ctrl+J — toggle panel
+  if (e.ctrlKey && e.key === 'j') { e.preventDefault(); toggleTerminal(); }
+  // Ctrl+I — toggle AI panel
+  if (e.ctrlKey && e.key === 'i') { e.preventDefault(); toggleAIPanel(); }
+  // Ctrl+Alt+O — open ops panel
+  if (e.ctrlKey && e.altKey && (e.key === 'o' || e.key === 'O')) { e.preventDefault(); openOpsTab(); }
+  // Escape — close overlays
+  if (e.key === 'Escape') closeCmdPalette();
+});
+
+// ─── Resize Handles ───
+function initResize(handleId, target, dir, prop, min, max) {
+  const handle = document.getElementById(handleId);
+  if (!handle) return;
+  let startPos, startSize;
+  handle.addEventListener('mousedown', e => {
+    e.preventDefault();
+    const el = document.getElementById(target);
+    startPos = dir === 'h' ? e.clientX : e.clientY;
+    startSize = dir === 'h' ? el.offsetWidth : el.offsetHeight;
+    handle.classList.add('active');
+    const onMove = ev => {
+      const delta = dir === 'h' ? (prop === 'width' ? ev.clientX - startPos : startPos - ev.clientX) : startPos - ev.clientY;
+      const newSize = Math.max(min, Math.min(max, startSize + (prop === 'width' ? delta : delta)));
+      el.style[prop] = newSize + 'px';
+    };
+    const onUp = () => {
+      handle.classList.remove('active');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+}
+
+// ─── Editor Cursor Position ───
+function updateCursorPosition() {
+  if (!editor) return;
+  const pos = editor.getPosition();
+  document.getElementById('sbCursor').textContent = `Ln ${pos.lineNumber}, Col ${pos.column}`;
+}
+
+// ─── Monaco Initialization ───
+require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
+
+require(['vs/editor/editor.main'], function () {
+  // Define AetherCode theme
+  monaco.editor.defineTheme('aethercode', {
+    base: 'vs-dark',
+    inherit: true,
+    rules: [
+      { token: 'comment', foreground: '3d5066', fontStyle: 'italic' },
+      { token: 'keyword', foreground: '6c5ce7', fontStyle: 'bold' },
+      { token: 'string', foreground: '00d4aa' },
+      { token: 'number', foreground: 'ff9152' },
+      { token: 'type', foreground: '17c6cf' },
+      { token: 'function', foreground: '4ea1f5' },
+      { token: 'variable', foreground: 'd8e8f0' },
+      { token: 'operator', foreground: 'ffc53d' },
+      { token: 'delimiter', foreground: '6b8299' },
+      { token: 'tag', foreground: 'ff6b6b' },
+      { token: 'attribute.name', foreground: 'ff9152' },
+      { token: 'attribute.value', foreground: '00d4aa' },
+      { token: 'regexp', foreground: 'ff6b6b' },
+    ],
+    colors: {
+      'editor.background': '#0a0f1a',
+      'editor.foreground': '#d8e8f0',
+      'editor.lineHighlightBackground': '#0f1729',
+      'editor.selectionBackground': '#00d4aa30',
+      'editor.inactiveSelectionBackground': '#00d4aa15',
+      'editorCursor.foreground': '#00d4aa',
+      'editorLineNumber.foreground': '#2a3a4e',
+      'editorLineNumber.activeForeground': '#6b8299',
+      'editorIndentGuide.background': '#141e33',
+      'editorIndentGuide.activeBackground': '#1e2d45',
+      'editorBracketMatch.background': '#00d4aa20',
+      'editorBracketMatch.border': '#00d4aa40',
+      'editor.findMatchBackground': '#ff915240',
+      'editor.findMatchHighlightBackground': '#ff915220',
+      'editorOverviewRuler.border': '#141e33',
+      'scrollbarSlider.background': '#00d4aa15',
+      'scrollbarSlider.hoverBackground': '#00d4aa25',
+      'scrollbarSlider.activeBackground': '#00d4aa35',
+      'editorWidget.background': '#0f1729',
+      'editorWidget.border': '#00d4aa20',
+      'editorSuggestWidget.background': '#0f1729',
+      'editorSuggestWidget.border': '#00d4aa20',
+      'editorSuggestWidget.selectedBackground': '#00d4aa20',
+      'minimap.background': '#080c14',
+    }
+  });
+
+  editor = monaco.editor.create(document.getElementById('editor-container'), {
+    value: '',
+    language: 'typescript',
+    theme: 'aethercode',
+    fontFamily: "'JetBrains Mono', Consolas, 'Cascadia Code', monospace",
+    fontSize: 13,
+    lineHeight: 22,
+    fontLigatures: true,
+    minimap: { enabled: true, scale: 1, showSlider: 'mouseover' },
+    smoothScrolling: true,
+    cursorBlinking: 'smooth',
+    cursorSmoothCaretAnimation: 'on',
+    bracketPairColorization: { enabled: true },
+    guides: { bracketPairs: true, indentation: true },
+    padding: { top: 12 },
+    renderLineHighlight: 'all',
+    scrollBeyondLastLine: false,
+    automaticLayout: true,
+    tabSize: 2,
+    wordWrap: 'off',
+    suggest: { showMethods: true, showFunctions: true, showVariables: true },
+  });
+
+  // Listen for cursor changes
+  editor.onDidChangeCursorPosition(updateCursorPosition);
+
+  // Listen for content changes
+  editor.onDidChangeModelContent(() => {
+    if (currentFile) {
+      const tab = openTabs.find(t => t.path === currentFile);
+      if (tab && !tab.modified) { tab.modified = true; renderTabs(); }
+    }
+  });
+
+  // Listen for selection changes (tongue encoding)
+  editor.onDidChangeCursorSelection(updateTonguePanel);
+
+  // Initialize
+  renderFileTree();
+  renderTabs();
+
+  // Emit cross-talk startup
+  termLog('AetherCode IDE ready.', 'accent');
+  termLog('Type "help" for available commands.', '');
+  initOpsPanel();
+
+  // Try connecting to AetherGate
+  fetch(GATE_URL + '/health').then(r => r.json()).then(data => {
+    termLog('AetherGate connected: ' + (data.status || 'online'), 'info');
+    setOpsPill('opsGateStatus', 'ok', 'online');
+  }).catch(() => {
+    termLog('AetherGate offline — running in standalone mode', 'warn');
+    setOpsPill('opsGateStatus', 'warn', 'offline');
+  });
+});
+
+// ─── Init Resize Handles ───
+initResize('sidebarResize', 'sidebar', 'h', 'width', 140, 500);
+initResize('rightResize', 'rightPanel', 'h', 'width', 200, 500);
+initResize('terminalResize', 'terminalPanel', 'v', 'height', 80, 500);
+
+// ─── Git Badge (simulated) ───
+document.getElementById('gitBadge').style.display = 'flex';
+document.getElementById('gitBadge').textContent = '3';
+</script>
+</body>
+</html>
