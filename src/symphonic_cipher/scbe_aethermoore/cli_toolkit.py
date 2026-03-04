@@ -830,6 +830,84 @@ def cmd_gendec(args):
     sys.stdout.buffer.write(pt)
 
 
+def cmd_egg_create(args):
+    from src.symphonic_cipher.scbe_aethermoore.sacred_egg_integrator import (
+        SacredEggIntegrator,
+    )
+    lex = Lexicons()
+    tok = TongueTokenizer(lex)
+    xt = CrossTokenizer(tok)
+    integrator = SacredEggIntegrator(xt)
+
+    payload = base64.b64decode(args.payload_b64)
+    ctx = json.loads(args.context)
+    hatch_cond = json.loads(args.hatch_condition)
+
+    egg = integrator.create_egg(
+        payload, args.primary_tongue, args.glyph,
+        hatch_cond, ctx, args.kem_key, args.dsa_key,
+    )
+    out = integrator.to_json(egg)
+    if not args.outfile:
+        print(out)
+    else:
+        open(args.outfile, "w", encoding="utf-8").write(out)
+
+
+def cmd_egg_hatch(args):
+    from src.symphonic_cipher.scbe_aethermoore.sacred_egg_integrator import (
+        SacredEggIntegrator,
+    )
+    lex = load_lexicons(getattr(args, "lexicons", None))
+    tok = TongueTokenizer(lex)
+    xt = CrossTokenizer(tok)
+    integrator = SacredEggIntegrator(xt)
+
+    egg_data = open(args.egg_json, "r", encoding="utf-8").read()
+    egg = integrator.from_json(egg_data)
+    ctx = json.loads(args.context)
+    additional = json.loads(args.additional_tongues)
+    history = json.loads(args.path_history)
+
+    result = integrator.hatch_egg(
+        egg, ctx, args.agent_tongue, args.kem_key, args.dsa_pk,
+        ritual_mode=args.ritual_mode,
+        additional_tongues=additional or None,
+        path_history=history or None,
+    )
+    out = {
+        "success": result.success,
+        "reason": result.reason,
+        "tokens": result.tokens,
+        "attestation": result.attestation,
+    }
+    print(json.dumps(out, indent=2, ensure_ascii=False))
+    if not result.success:
+        sys.exit(1)
+
+
+def cmd_egg_paint(args):
+    from src.symphonic_cipher.scbe_aethermoore.sacred_egg_integrator import (
+        SacredEggIntegrator,
+    )
+    lex = Lexicons()
+    tok = TongueTokenizer(lex)
+    xt = CrossTokenizer(tok)
+    integrator = SacredEggIntegrator(xt)
+
+    egg_data = open(args.egg_json, "r", encoding="utf-8").read()
+    egg = integrator.from_json(egg_data)
+
+    hatch_cond = json.loads(args.hatch_condition) if args.hatch_condition else None
+    painted = integrator.paint_egg(egg, glyph=args.glyph, hatch_condition=hatch_cond)
+
+    out = integrator.to_json(painted)
+    if not args.outfile:
+        print(out)
+    else:
+        open(args.outfile, "w", encoding="utf-8").write(out)
+
+
 def cmd_seed(args):
     lex = load_lexicons(args.lexicons)
     if args.phrase:
@@ -1077,6 +1155,38 @@ def build_cli():
     gd.add_argument("--dsa-pk", required=True)
     gd.add_argument("--env")
     gd.set_defaults(func=cmd_gendec)
+
+    # ── Sacred Egg commands ──
+
+    ec = sub.add_parser("egg-create", help="Create a Sacred Egg (GeoSeal-encrypted + ritual-gated)")
+    ec.add_argument("--payload-b64", required=True, help="Base64-encoded payload to seal")
+    ec.add_argument("--primary-tongue", required=True, choices=TONGUES, help="Tongue identity bound to egg")
+    ec.add_argument("--glyph", default="egg", help="Visual symbol for the egg")
+    ec.add_argument("--hatch-condition", default="{}", help="JSON dict of ritual requirements")
+    ec.add_argument("--context", required=True, help="JSON array of 6 floats for GeoSeal context")
+    ec.add_argument("--kem-key", required=True, help="Base64 KEM public key")
+    ec.add_argument("--dsa-key", required=True, help="Base64 DSA signing key")
+    ec.add_argument("--out", dest="outfile", help="Output JSON file (default: stdout)")
+    ec.set_defaults(func=cmd_egg_create)
+
+    eh = sub.add_parser("egg-hatch", help="Attempt to hatch a Sacred Egg")
+    eh.add_argument("--egg-json", required=True, help="Path to Sacred Egg JSON file")
+    eh.add_argument("--agent-tongue", required=True, choices=TONGUES, help="Agent's active tongue")
+    eh.add_argument("--ritual-mode", default="solitary", choices=["solitary", "triadic", "ring_descent"])
+    eh.add_argument("--additional-tongues", default="[]", help="JSON array of extra tongues (triadic mode)")
+    eh.add_argument("--path-history", default="[]", help="JSON array of ring traversal (ring_descent mode)")
+    eh.add_argument("--context", required=True, help="JSON array of 6 floats for current context")
+    eh.add_argument("--kem-key", required=True, help="Base64 KEM secret key")
+    eh.add_argument("--dsa-pk", required=True, help="Base64 DSA verification key")
+    eh.add_argument("--lexicons")
+    eh.set_defaults(func=cmd_egg_hatch)
+
+    ep = sub.add_parser("egg-paint", help="Paint an egg — change the shell, keep the yolk")
+    ep.add_argument("--egg-json", required=True, help="Path to Sacred Egg JSON file")
+    ep.add_argument("--glyph", help="New visual symbol for the egg")
+    ep.add_argument("--hatch-condition", help="New hatch condition JSON (replaces existing)")
+    ep.add_argument("--out", dest="outfile", help="Output JSON file (default: stdout)")
+    ep.set_defaults(func=cmd_egg_paint)
 
     ps = sub.add_parser("seed", help="AetherLex Seed: mnemonic to PQC key material")
     ps.add_argument("--phrase", help="Existing mnemonic phrase (omit to generate)")

@@ -207,7 +207,7 @@ describe('Harmonic Wall Properties', () => {
     );
   });
 
-  it('Property 10: Harmonic wall decreases with distance', () => {
+  it('Property 10: Harmonic wall increases with distance', () => {
     fc.assert(
       fc.property(
         fc.double({ min: 0, max: 5, noNaN: true }),
@@ -216,7 +216,7 @@ describe('Harmonic Wall Properties', () => {
           const d2 = d1 + delta;
           const cost1 = harmonicWallCost(d1);
           const cost2 = harmonicWallCost(d2);
-          expect(cost2).toBeLessThan(cost1);
+          expect(cost2).toBeGreaterThan(cost1);
           return true;
         }
       ),

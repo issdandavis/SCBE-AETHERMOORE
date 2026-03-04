@@ -11,11 +11,6 @@ on:
         options:
           - production
           - staging
-  push:
-    branches: [main]
-    paths:
-      - 'k8s/**'
-      - '.github/workflows/deploy-eks.yml'
 
 env:
   AWS_REGION: us-west-2

@@ -1,0 +1,40 @@
+{
+  "approvals": [
+    {
+      "post_id": "x-thread-01",
+      "channel": "x",
+      "approved": true,
+      "approved_by": "issac",
+      "expires_at": "2026-12-31T00:00:00Z"
+    },
+    {
+      "post_id": "x-thread-02",
+      "channel": "x",
+      "approved": true,
+      "approved_by": "issac",
+      "expires_at": "2026-12-31T00:00:00Z"
+    },
+    {
+      "post_id": "x-reply-01",
+      "channel": "x_reply",
+      "approved": true,
+      "approved_by": "issac",
+      "expires_at": "2026-12-31T00:00:00Z"
+    },
+    {
+      "post_id": "merch-sale-01",
+      "channel": "merch_sale",
+      "approved": true,
+      "approved_by": "issac",
+      "expires_at": "2026-12-31T00:00:00Z"
+    },
+    {
+      "post_id": "merch-upload-01",
+      "channel": "merch_upload",
+      "approved": true,
+      "approved_by": "issac",
+      "expires_at": "2026-12-31T00:00:00Z"
+    }
+  ]
+}
+

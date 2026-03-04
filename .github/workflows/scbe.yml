@@ -1,10 +1,13 @@
 name: "SCBE-AETHERMOORE Validation"
 
 on:
-  push:
-    branches: [ main, 'claude/**' ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   axiom-verification:

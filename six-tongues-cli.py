@@ -38,9 +38,10 @@ import json
 import math
 import os
 import random
+import secrets
 import sys
 import time
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 # ═══════════════════════════════════════════════════════════════
 # Core Lexicon & Tokenizer
@@ -392,8 +393,12 @@ except ImportError:
 
 
 def hkdf(key: bytes, info: str) -> bytes:
-    """HKDF-like key derivation using HMAC-SHA256."""
-    return hmac.new(key, info.encode(), hashlib.sha256).digest()
+    """RFC 5869 HKDF-SHA256 (single 32-byte output block)."""
+    salt = b"\x00" * 32
+    # Extract
+    prk = hmac.new(salt, key, hashlib.sha256).digest()
+    # Expand (T1 only for 32-byte output)
+    return hmac.new(prk, info.encode() + b"\x01", hashlib.sha256).digest()
 
 
 def pqc_available() -> bool:
@@ -402,43 +407,56 @@ def pqc_available() -> bool:
 
 
 def kem_keygen() -> Tuple[bytes, bytes]:
-    """Generate ML-KEM-768 keypair (pk, sk). Falls back to mock."""
+    """Generate ML-KEM-768 keypair (pk, sk). Falls back to deterministic mock."""
     if _REAL_PQC:
         return _kem_keygen()
-    pk = os.urandom(32)
     sk = os.urandom(32)
+    pk = hashlib.sha256(b"kem_pk:" + sk).digest()
+    # Mock mode: derive pk deterministically from sk for encaps/decaps consistency.
+    sk = secrets.token_bytes(32)
+    pk = hashlib.sha256(b"ml-kem-mock:pk:" + sk).digest()
     return pk, sk
 
 
 def kyber_encaps(pk: bytes) -> Tuple[bytes, bytes]:
     """ML-KEM-768 encapsulation. Returns (shared_secret, ciphertext).
 
-    Uses real ML-KEM-768 when pqcrypto is available, HMAC-SHA256 mock otherwise.
+    Uses real ML-KEM-768 when pqcrypto is available, deterministic mock otherwise.
     """
     if _REAL_PQC:
         ct, ss = _kem_encrypt(pk)
         return ss, ct
-    ss = hashlib.sha256(b"ss" + pk).digest()
-    ct = hashlib.sha256(b"ct" + pk).digest()
+    nonce = os.urandom(32)
+    ct = nonce + hashlib.sha256(b"ct" + pk + nonce).digest()
+    ss = hashlib.sha256(b"ss" + pk + ct).digest()
+    # Mock mode: ciphertext carries an ephemeral nonce; shared secret binds pk + nonce.
+    ct = secrets.token_bytes(32)
+    ss = hmac.new(pk, b"ml-kem-mock:ss:" + ct, hashlib.sha256).digest()
     return ss, ct
 
 
 def kyber_decaps(sk: bytes, ct: bytes) -> bytes:
     """ML-KEM-768 decapsulation. Returns shared_secret.
 
-    Uses real ML-KEM-768 when pqcrypto is available, HMAC-SHA256 mock otherwise.
+    Uses real ML-KEM-768 when pqcrypto is available, deterministic mock otherwise.
     """
     if _REAL_PQC:
         return _kem_decrypt(sk, ct)
-    return hashlib.sha256(b"ss" + sk).digest()
+    pk = hashlib.sha256(b"kem_pk:" + sk).digest()
+    return hashlib.sha256(b"ss" + pk + ct).digest()
+    pk = hashlib.sha256(b"ml-kem-mock:pk:" + sk).digest()
+    return hmac.new(pk, b"ml-kem-mock:ss:" + ct, hashlib.sha256).digest()
 
 
 def dsa_keygen() -> Tuple[bytes, bytes]:
-    """Generate ML-DSA-65 keypair (pk, sk). Falls back to mock."""
+    """Generate ML-DSA-65 keypair (pk, sk). Falls back to deterministic mock."""
     if _REAL_PQC:
         return _dsa_keygen()
-    pk = os.urandom(32)
     sk = os.urandom(32)
+    pk = hashlib.sha256(b"dsa_pk:" + sk).digest()
+    # Mock mode: derive pk deterministically from sk for sign/verify consistency.
+    sk = secrets.token_bytes(32)
+    pk = hashlib.sha256(b"ml-dsa-mock:pk:" + sk).digest()
     return pk, sk
 
 
@@ -446,7 +464,10 @@ def dsa_sign(sk: bytes, msg: bytes) -> bytes:
     """ML-DSA-65 sign. Uses real ML-DSA-65 when pqcrypto is available."""
     if _REAL_PQC:
         return _dsa_sign_real(sk, msg)
-    return hmac.new(sk, msg, hashlib.sha256).digest()
+    pk = hashlib.sha256(b"dsa_pk:" + sk).digest()
+    return hmac.new(pk, msg, hashlib.sha256).digest()
+    pk = hashlib.sha256(b"ml-dsa-mock:pk:" + sk).digest()
+    return hmac.new(pk, b"ml-dsa-mock:sig:" + msg, hashlib.sha256).digest()
 
 
 def dsa_verify(pk: bytes, msg: bytes, sig: bytes) -> bool:
@@ -458,7 +479,9 @@ def dsa_verify(pk: bytes, msg: bytes, sig: bytes) -> bool:
             return result is True or result is None
         except Exception:
             return False
-    return hmac.compare_digest(hmac.new(pk, msg, hashlib.sha256).digest(), sig)
+    expected = hmac.new(pk, msg, hashlib.sha256).digest()
+    expected = hmac.new(pk, b"ml-dsa-mock:sig:" + msg, hashlib.sha256).digest()
+    return hmac.compare_digest(expected, sig)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -511,10 +534,10 @@ def geoseal_encrypt(
         "path": path,
         "ring": ring_policy,
     }
-    sig = dsa_sign(
-        base64.b64decode(sk_dsa_b64),
-        hashlib.sha256(json.dumps(attest, sort_keys=True).encode() + ct_spec).digest(),
-    )
+    sig_payload = hashlib.sha256(
+        json.dumps(attest, sort_keys=True).encode() + ct_k + ct_spec
+    ).digest()
+    sig = dsa_sign(base64.b64decode(sk_dsa_b64), sig_payload)
     return {
         "ct_k": base64.b64encode(ct_k).decode(),
         "ct_spec": base64.b64encode(ct_spec).decode(),
@@ -535,11 +558,20 @@ def geoseal_decrypt(
     attest = env["attest"]
     sig = base64.b64decode(env["sig"]) if isinstance(env["sig"], str) else env["sig"]
 
-    if not dsa_verify(
-        base64.b64decode(pk_dsa_b64),
-        hashlib.sha256(json.dumps(attest, sort_keys=True).encode() + ct_spec).digest(),
-        sig,
-    ):
+    # Context binding check: same context must recreate the same realm projection.
+    Ls = int(attest.get("L_s", 2))
+    Lc = int(attest.get("L_c", 2))
+    u = project_to_sphere(context)
+    v = project_to_cube(context)
+    h_expected = healpix_id(u, Ls)
+    z_expected = morton_id(v, Lc)
+    if h_expected != attest.get("h") or z_expected != attest.get("z"):
+        return False, None
+
+    sig_payload = hashlib.sha256(
+        json.dumps(attest, sort_keys=True).encode() + ct_k + ct_spec
+    ).digest()
+    if not dsa_verify(base64.b64decode(pk_dsa_b64), sig_payload, sig):
         return False, None
 
     ss = kyber_decaps(base64.b64decode(sk_kem_b64), ct_k)
@@ -926,6 +958,197 @@ def cmd_gendec(args: argparse.Namespace) -> int:
 
 
 # ═══════════════════════════════════════════════════════════════
+# Spatial Engine Integration
+# ═══════════════════════════════════════════════════════════════
+
+try:
+    from spatial_engine import (
+        Vec3, Mat4, Mesh, SpatialArray, AsciiRenderer, TongueSpatialMapper,
+        cube as sp_cube, sphere as sp_sphere, tetrahedron as sp_tetrahedron,
+        torus as sp_torus, tongue_axes as sp_tongue_axes,
+        spatial_array_cube as sp_array_cube,
+        TONGUE_ANSI, ANSI_RESET, ANSI_BOLD,
+        selftest as spatial_selftest,
+    )
+    _HAS_SPATIAL = True
+except ImportError:
+    _HAS_SPATIAL = False
+
+
+def spatial_available() -> bool:
+    """Check if spatial_engine is importable."""
+    return _HAS_SPATIAL
+
+
+SPATIAL_PRIMITIVES = {
+    "cube": lambda: sp_cube(),
+    "sphere": lambda: sp_sphere(1.0, 12),
+    "tetrahedron": lambda: sp_tetrahedron(),
+    "torus": lambda: sp_torus(1.0, 0.3, 16),
+    "axes": lambda: sp_tongue_axes(),
+} if _HAS_SPATIAL else {}
+
+
+def cmd_spatial_view(args: argparse.Namespace) -> int:
+    if not _HAS_SPATIAL:
+        print("spatial_engine.py not found — cannot render 3D", file=sys.stderr)
+        return 1
+    name = args.primitive
+    if name not in SPATIAL_PRIMITIVES:
+        print(f"unknown primitive: {name}. Choose from: {', '.join(SPATIAL_PRIMITIVES)}", file=sys.stderr)
+        return 1
+    mesh = SPATIAL_PRIMITIVES[name]()
+    # Apply rotation
+    rx, ry, rz = 0.0, 0.0, 0.0
+    if args.rotate:
+        parts = args.rotate.split(",")
+        if len(parts) >= 1:
+            rx = math.radians(float(parts[0]))
+        if len(parts) >= 2:
+            ry = math.radians(float(parts[1]))
+        if len(parts) >= 3:
+            rz = math.radians(float(parts[2]))
+    transform = Mat4.rotate_x(rx) * Mat4.rotate_y(ry) * Mat4.rotate_z(rz)
+    mesh = mesh.transform(transform)
+    renderer = AsciiRenderer(
+        width=int(args.width),
+        height=int(args.height),
+        use_color=not args.no_color,
+    )
+    print(renderer.render(mesh, mode=args.mode))
+    return 0
+
+
+def cmd_spatial_array(args: argparse.Namespace) -> int:
+    if not _HAS_SPATIAL:
+        print("spatial_engine.py not found", file=sys.stderr)
+        return 1
+    parts = args.dims.split(",")
+    nx, ny, nz = int(parts[0]), int(parts[1]), int(parts[2])
+    arr = SpatialArray(nx, ny, nz)
+    if args.fill == "tongue":
+        arr.fill_tongue_data()
+    print(f"SpatialArray({nx}, {ny}, {nz}) — {arr.count()} cells filled")
+    # Show tongue region counts
+    mapper = TongueSpatialMapper()
+    for tg in ["KO", "AV", "RU", "CA", "UM", "DR"]:
+        region = arr.tongue_region(tg)
+        color = TONGUE_ANSI.get(tg, "") if not args.no_color else ""
+        reset = ANSI_RESET if color else ""
+        print(f"  {color}{tg}{reset}: {len(region)} cells")
+    if args.view:
+        grid_mesh = sp_array_cube(min(nx, 6), min(ny, 6), min(nz, 6))
+        rx, ry, rz = math.radians(25), math.radians(35), 0.0
+        transform = Mat4.rotate_x(rx) * Mat4.rotate_y(ry)
+        grid_mesh = grid_mesh.transform(transform)
+        renderer = AsciiRenderer(width=60, height=30, use_color=not args.no_color)
+        print(renderer.render(grid_mesh, mode="points"))
+    return 0
+
+
+def cmd_spatial_encode(args: argparse.Namespace) -> int:
+    if not _HAS_SPATIAL:
+        print("spatial_engine.py not found", file=sys.stderr)
+        return 1
+    tongue = args.tongue.upper()
+    text = args.text
+    data = text.encode("utf-8")
+    lex = Lexicons()
+    tok = TongueTokenizer(lex)
+    tokens = tok.encode_bytes(tongue, data)
+    # Place tokens into a spatial array
+    side = max(2, math.ceil(len(tokens) ** (1 / 3)))
+    arr = SpatialArray(side, side, side)
+    mapper = TongueSpatialMapper()
+    for i, token in enumerate(tokens):
+        x = i % side
+        y = (i // side) % side
+        z = (i // (side * side)) % side
+        arr.set(x, y, z, {"tongue": tongue, "token": token, "byte": data[i]})
+    color = TONGUE_ANSI.get(tongue, "") if not args.no_color else ""
+    reset = ANSI_RESET if color else ""
+    print(f"Encoded {len(data)} bytes as {len(tokens)} {color}{tongue}{reset} tokens in {side}x{side}x{side} array")
+    # Show first tokens
+    for i, token in enumerate(tokens[:12]):
+        x = i % side
+        y = (i // side) % side
+        z = (i // (side * side)) % side
+        print(f"  ({x},{y},{z}) {color}{token}{reset}")
+    if len(tokens) > 12:
+        print(f"  ... ({len(tokens) - 12} more)")
+    if args.view:
+        mesh = sp_array_cube(min(side, 6), min(side, 6), min(side, 6))
+        transform = Mat4.rotate_x(math.radians(20)) * Mat4.rotate_y(math.radians(30))
+        mesh = mesh.transform(transform)
+        renderer = AsciiRenderer(width=60, height=30, use_color=not args.no_color)
+        print(renderer.render(mesh, mode="points"))
+    return 0
+
+
+def cmd_spatial_navigate(args: argparse.Namespace) -> int:
+    if not _HAS_SPATIAL:
+        print("spatial_engine.py not found", file=sys.stderr)
+        return 1
+    fr = [int(x) for x in args.nav_from.split(",")]
+    to = [int(x) for x in args.nav_to.split(",")]
+    mapper = TongueSpatialMapper()
+    start = Vec3(fr[0], fr[1], fr[2])
+    end = Vec3(to[0], to[1], to[2])
+    path_type = args.path
+
+    # Generate path
+    path: List[Vec3] = []
+    if path_type == "linear":
+        steps = 20
+        for i in range(steps + 1):
+            t = i / steps
+            p = start + (end - start) * t
+            path.append(p)
+    else:  # spiral
+        steps = 40
+        center = (start + end) * 0.5
+        radius = (end - start).length() * 0.3
+        for i in range(steps + 1):
+            t = i / steps
+            base = start + (end - start) * t
+            angle = t * 4 * math.pi
+            offset = Vec3(
+                radius * math.cos(angle) * (1 - t),
+                radius * math.sin(angle) * (1 - t),
+                0,
+            )
+            path.append(base + offset)
+
+    # Build path mesh
+    mesh = Mesh()
+    for i, p in enumerate(path):
+        tongue = mapper.classify_point(p)
+        mesh.add_vertex(p, tongue)
+        if i > 0:
+            mesh.add_edge(i - 1, i)
+
+    # Normalize to renderable range
+    mn, mx = mesh.bounds()
+    span = max(mx.x - mn.x, mx.y - mn.y, mx.z - mn.z, 1.0)
+    norm_mat = Mat4.translate(
+        -(mn.x + mx.x) / 2, -(mn.y + mx.y) / 2, -(mn.z + mx.z) / 2
+    ) * Mat4.scale(2 / span, 2 / span, 2 / span)
+    # Note: this is a conceptual normalization; for rendering we just use the transform
+    rot = Mat4.rotate_y(math.radians(30)) * Mat4.rotate_x(math.radians(15))
+    mesh = mesh.transform(Mat4.scale(2 / span, 2 / span, 2 / span))
+    mesh = mesh.transform(Mat4.translate(
+        -(mn.x + mx.x) / span, -(mn.y + mx.y) / span, -(mn.z + mx.z) / span
+    ))
+    mesh = mesh.transform(rot)
+
+    no_color = getattr(args, 'no_color', False)
+    renderer = AsciiRenderer(width=60, height=30, use_color=not no_color)
+    print(f"Path: ({fr[0]},{fr[1]},{fr[2]}) -> ({to[0]},{to[1]},{to[2]}) [{path_type}]")
+    print(renderer.render_wireframe(mesh))
+    return 0
+
+
+# ═══════════════════════════════════════════════════════════════
 # Self-Test
 # ═══════════════════════════════════════════════════════════════
 
@@ -988,20 +1211,13 @@ def selftest() -> int:
     pt = b"hello aethermoore"
     pt_b64 = base64.b64encode(pt).decode()
 
-    if pqc_available():
-        # Use real PQC keypairs
-        kem_pk, kem_sk = kem_keygen()
-        dsa_pk, dsa_sk = dsa_keygen()
-        kem_pk_b64 = base64.b64encode(kem_pk).decode()
-        kem_sk_b64 = base64.b64encode(kem_sk).decode()
-        dsa_pk_b64 = base64.b64encode(dsa_pk).decode()
-        dsa_sk_b64 = base64.b64encode(dsa_sk).decode()
-    else:
-        # Mock keys (same key for pk/sk in mock mode)
-        kem_pk_b64 = base64.b64encode(b"kem-key-32bytes-demo____").decode()
-        kem_sk_b64 = kem_pk_b64
-        dsa_pk_b64 = base64.b64encode(b"dsa-key-32bytes-demo____").decode()
-        dsa_sk_b64 = dsa_pk_b64
+    # Always use keygen so real and mock modes follow the same interface contract.
+    kem_pk, kem_sk = kem_keygen()
+    dsa_pk, dsa_sk = dsa_keygen()
+    kem_pk_b64 = base64.b64encode(kem_pk).decode()
+    kem_sk_b64 = base64.b64encode(kem_sk).decode()
+    dsa_pk_b64 = base64.b64encode(dsa_pk).decode()
+    dsa_sk_b64 = base64.b64encode(dsa_sk).decode()
 
     env = geoseal_encrypt(pt_b64, ctx, kem_pk_b64, dsa_sk_b64)
     check("envelope has ct_k", "ct_k" in env)
@@ -1093,6 +1309,47 @@ def selftest() -> int:
     except KeyError:
         check("bad token raises KeyError", True)
 
+    # --- Spatial Engine ---
+    if spatial_available():
+        print("[9] Spatial Engine Integration")
+        # Vec3 basics
+        v = Vec3(1, 2, 3)
+        check("Vec3 creation", abs(v.x - 1) < 1e-9)
+        # Mat4 transform
+        m = Mat4.translate(5, 0, 0)
+        tv = m.transform_vec3(Vec3(0, 0, 0))
+        check("Mat4 translate", abs(tv.x - 5) < 1e-6)
+        # Mesh primitive
+        c = sp_cube()
+        check("cube has 8 verts", len(c.vertices) == 8)
+        check("cube has 6 faces", len(c.faces) == 6)
+        # SpatialArray round-trip
+        sa = SpatialArray(4, 4, 4)
+        sa.set(1, 2, 3, {"tongue": "KO", "value": 99})
+        check("spatial array set/get", sa.get(1, 2, 3)["value"] == 99)
+        sa.fill_tongue_data()
+        check("spatial array fill", sa.count() == 64)
+        # TongueSpatialMapper
+        mapper = TongueSpatialMapper()
+        check("mapper classify +X", mapper.classify_point(Vec3(1, 0, 0)) == "KO")
+        check("mapper 6D->3D", mapper.project_6d_to_3d([1, 0, 0, 0, 0, 0]).x == 1.0)
+        # AsciiRenderer
+        renderer = AsciiRenderer(width=30, height=15, use_color=False)
+        rot = Mat4.rotate_y(math.radians(30))
+        output = renderer.render_wireframe(c.transform(rot))
+        check("renderer produces output", len(output) > 0)
+        check("renderer correct height", len(output.split("\n")) == 15)
+        # Slice and spiral
+        sl = sa.slice_plane("z", 3)
+        check("slice returns data", len(sl) > 0)
+        spiral = sa.spiral_traverse()
+        check("spiral returns all", len(spiral) == sa.count())
+        # Full spatial selftest
+        se_result = spatial_selftest()
+        check("spatial_engine selftest passes", se_result == 0)
+    else:
+        print("[9] Spatial Engine (SKIPPED — spatial_engine.py not found)")
+
     # --- Summary ---
     print(f"\n{'=' * 40}")
     if errors == 0:
@@ -1171,13 +1428,45 @@ def build_cli() -> argparse.ArgumentParser:
     st = sub.add_parser("selftest", help="Run built-in self-test suite")
     st.set_defaults(func=lambda _args: selftest())
 
+    # --- Spatial subcommands ---
+    sp_view = sub.add_parser("spatial-view", help="Render 3D primitive to terminal")
+    sp_view.add_argument("primitive", choices=["cube", "sphere", "tetrahedron", "torus", "axes"])
+    sp_view.add_argument("--rotate", help="Rotation angles x,y,z in degrees (e.g. 30,45,0)")
+    sp_view.add_argument("--mode", default="wireframe", choices=["wireframe", "solid", "points"])
+    sp_view.add_argument("--width", default="72", help="Terminal width")
+    sp_view.add_argument("--height", default="36", help="Terminal height")
+    sp_view.add_argument("--no-color", action="store_true", help="Disable ANSI colors")
+    sp_view.set_defaults(func=cmd_spatial_view)
+
+    sp_arr = sub.add_parser("spatial-array", help="Create and inspect 3D spatial array")
+    sp_arr.add_argument("--dims", required=True, help="Dimensions x,y,z (e.g. 8,8,8)")
+    sp_arr.add_argument("--fill", default="tongue", choices=["tongue", "empty"])
+    sp_arr.add_argument("--view", action="store_true", help="Render 3D visualization")
+    sp_arr.add_argument("--no-color", action="store_true")
+    sp_arr.set_defaults(func=cmd_spatial_array)
+
+    sp_enc = sub.add_parser("spatial-encode", help="Encode text as 3D tongue token array")
+    sp_enc.add_argument("--tongue", required=True, choices=TONGUES + [t.lower() for t in TONGUES])
+    sp_enc.add_argument("--text", required=True, help="Text to encode")
+    sp_enc.add_argument("--view", action="store_true", help="Render 3D visualization")
+    sp_enc.add_argument("--no-color", action="store_true")
+    sp_enc.set_defaults(func=cmd_spatial_encode)
+
+    sp_nav = sub.add_parser("spatial-navigate", help="Navigate a 3D path between coordinates")
+    sp_nav.add_argument("--from", dest="nav_from", required=True, help="Start x,y,z (e.g. 0,0,0)")
+    sp_nav.add_argument("--to", dest="nav_to", required=True, help="End x,y,z (e.g. 7,7,7)")
+    sp_nav.add_argument("--path", default="spiral", choices=["spiral", "linear"])
+    sp_nav.add_argument("--no-color", action="store_true")
+    sp_nav.set_defaults(func=cmd_spatial_navigate)
+
     return p
 
 
 if __name__ == "__main__":
     # Handle SIGPIPE gracefully (e.g. piping through head/grep)
     import signal
-    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+    if hasattr(signal, "SIGPIPE"):
+        signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
     cli = build_cli()
     if len(sys.argv) == 1:
@@ -1192,3 +1481,5 @@ if __name__ == "__main__":
         print("no subcommand specified; running selftest")
         sys.exit(selftest())
     sys.exit(args.func(args) or 0)
+
+

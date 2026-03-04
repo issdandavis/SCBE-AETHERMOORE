@@ -1,0 +1,109 @@
+{
+  "request": {
+    "payload": {
+      "actions": [
+        {
+          "action": "navigate",
+          "target": "https://httpbin.org/html",
+          "timeout_ms": 12000
+        },
+        {
+          "action": "extract",
+          "target": "h1",
+          "timeout_ms": 12000
+        },
+        {
+          "action": "screenshot",
+          "target": "full_page",
+          "timeout_ms": 12000
+        }
+      ],
+      "session_id": "verify-session-1",
+      "source": "swarm",
+      "workflow_id": "wf-market-scan",
+      "run_id": "run-002",
+      "dry_run": false
+    },
+    "risk_tier": "REFLEX",
+    "verify": {
+      "must_contain": [
+        "Herman Melville"
+      ],
+      "selectors_present": [
+        "h1"
+      ],
+      "max_redirects": 3
+    }
+  },
+  "response": {
+    "status": "success",
+    "session_id": "verify-session-1",
+    "total_actions": 3,
+    "executed_actions": 2,
+    "blocked_actions": 0,
+    "results": [
+      {
+        "action": "navigate",
+        "target": "https://httpbin.org/html",
+        "success": true,
+        "containment": {
+          "decision": "ALLOW",
+          "radius": 0.46211716532707214,
+          "hyperbolic_distance": 1.0000000205151902,
+          "risk_score": 0.24612762141541497,
+          "safe_radius": 0.92,
+          "message": "ALLOWED: Safe operation (risk=0.2461, radius=0.4621)"
+        },
+        "data": {
+          "url": "about:blank"
+        },
+        "error": null,
+        "execution_ms": 409.04784202575684
+      },
+      {
+        "action": "extract",
+        "target": "h1",
+        "success": false,
+        "containment": {
+          "decision": "ALLOW",
+          "radius": 0.46211716532707214,
+          "hyperbolic_distance": 1.0000000205151902,
+          "risk_score": 0.24612762141541497,
+          "safe_radius": 0.92,
+          "message": "ALLOWED: Safe operation (risk=0.2461, radius=0.4621)"
+        },
+        "data": null,
+        "error": "Page.query_selector: Execution context was destroyed, most likely because of a navigation",
+        "execution_ms": 98.1440544128418
+      },
+      {
+        "action": "screenshot",
+        "target": "full_page",
+        "success": true,
+        "containment": {
+          "decision": "ALLOW",
+          "radius": 0.46211716532707214,
+          "hyperbolic_distance": 1.0000000205151902,
+          "risk_score": 0.24612762141541497,
+          "safe_radius": 0.92,
+          "message": "ALLOWED: Safe operation (risk=0.2461, radius=0.4621)"
+        },
+        "data": {
+          "screenshot": "iVBORw0KGgoAAAANSUhEUgAABQAAAALQCAIAAABAH0oBAAAQAElEQVR4nOzdb4hVh53w8dOyj6GPkaWaxM5DM0OeaVgSy9pQHBaS...",
+          "width": 1280,
+          "height": 720,
+          "full_data_length": 10403
+        },
+        "error": null,
+        "execution_ms": 139.89567756652832
+      }
+    ],
+    "trace": "v1_browse_verify-session-1_2exec_0block",
+    "integration": {
+      "provider": "swarm",
+      "workflow_id": "wf-market-scan",
+      "run_id": "run-002",
+      "user": "n8n"
+    }
+  }
+}

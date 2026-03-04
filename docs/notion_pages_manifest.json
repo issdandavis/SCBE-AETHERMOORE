@@ -1,0 +1,273 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-02-16T00:00:00Z",
+  "source": "scripts/sync-config.json",
+  "pages": [
+    {
+      "notion_key": "hydraMultiAgentCoordinationSystem",
+      "notion_title": "HYDRA Multi-Agent Coordination System",
+      "notion_page_id": "0ecedff123704e65b249897bf534d6ef",
+      "docs_output_path": "docs/HYDRA_COORDINATION.md",
+      "code_paths": [
+        "scripts/scbe-system-cli.py",
+        "scripts/agentic_web_tool.py",
+        "scripts/agentic_antivirus.py",
+        "scripts/self_improvement_orchestrator.py",
+        "docs/hydra/ARCHITECTURE.md"
+      ],
+      "verification_state": "implemented",
+      "last_verification": {
+        "state": "implemented",
+        "at": "2026-02-16",
+        "evidence": [
+          "scripts/scbe-system-cli.py",
+          "scripts/agentic_web_tool.py",
+          "scripts/agentic_antivirus.py",
+          "scripts/self_improvement_orchestrator.py"
+        ]
+      }
+    },
+    {
+      "notion_key": "geosealGeometricAccessControlKernel",
+      "notion_title": "GeoSeal: Geometric Access Control Kernel",
+      "notion_page_id": "6f1c851a42e54f11bc14ba7ebfb9d559",
+      "docs_output_path": "docs/GEOSEAL_ACCESS_CONTROL.md",
+      "code_paths": [
+        "src/symphonic_cipher/geoseal_location_library.py",
+        "scripts/agentic_aetherauth.py"
+      ],
+      "verification_state": "implemented",
+      "last_verification": {
+        "state": "implemented",
+        "at": "2026-02-16",
+        "evidence": [
+          "src/symphonic_cipher/geoseal_location_library.py",
+          "scripts/agentic_aetherauth.py"
+        ]
+      }
+    },
+    {
+      "notion_key": "quasiVectorSpinVoxelsAndMagnetics",
+      "notion_title": "Quasi-Vector Spin Voxels & Magnetics",
+      "notion_page_id": "1083829cf1e846fcab046666d0823516",
+      "docs_output_path": "docs/QUASI_VECTOR_MAGNETICS.md",
+      "code_paths": [
+        "src/ai_brain/quasi-space.ts",
+        "src/ai_brain/dual-lattice.ts",
+        "src/physics_sim/core.py",
+        "src/physics_sim/simulator.py",
+        "src/symphonic_cipher/scbe_aethermoore/qc_lattice"
+      ],
+      "verification_state": "implemented",
+      "last_verification": {
+        "state": "implemented",
+        "at": "2026-02-16",
+        "evidence": [
+          "docs/research/QUASI_VECTOR_SPIN_VOXELS.md",
+          "src/ai_brain/dual-lattice.ts",
+          "src/ai_brain/quasi-space.ts"
+        ]
+      }
+    },
+    {
+      "notion_key": "ss1TokenizerProtocol",
+      "notion_title": "SS1 Tokenizer Protocol",
+      "notion_page_id": "191399b1ded04bcca16f983c7f6769c3",
+      "docs_output_path": "docs/SS1_TOKENIZER_PROTOCOL.md",
+      "code_paths": [
+        "src/crypto/sacred_eggs.py",
+        "tests/test_sacred_eggs.py",
+        "src/crypto/sacred_tongues.py"
+      ],
+      "verification_state": "tested",
+      "last_verification": {
+        "state": "tested",
+        "at": "2026-02-16",
+        "evidence": [
+          "src/crypto/sacred_eggs.py",
+          "tests/test_sacred_eggs.py"
+        ]
+      }
+    },
+    {
+      "notion_key": "multiAiDevelopmentCoordination",
+      "notion_title": "Multi-AI Development Coordination",
+      "notion_page_id": "8eced7428ec94feca00f76bcc7c07a25",
+      "docs_output_path": "docs/MULTI_AI_COORDINATION.md",
+      "code_paths": [
+        "scripts/agentic_web_tool.py",
+        "scripts/scbe-system-cli.py"
+      ],
+      "verification_state": "implemented",
+      "last_verification": {
+        "state": "implemented",
+        "at": "2026-02-16",
+        "evidence": [
+          "scripts/agentic_web_tool.py",
+          "scripts/scbe-system-cli.py"
+        ]
+      }
+    },
+    {
+      "notion_key": "swarmDeploymentFormations",
+      "notion_title": "Swarm Deployment Formations",
+      "notion_page_id": "476ba4d2332048a58843ba25b53d0d07",
+      "docs_output_path": "docs/SWARM_FORMATIONS.md",
+      "code_paths": [
+        "src/fleet",
+        "scripts/scbe-system-cli.py",
+        "scbe-visual-system/src/fleet"
+      ],
+      "verification_state": "implemented",
+      "last_verification": {
+        "state": "implemented",
+        "at": "2026-02-16",
+        "evidence": [
+          "src/fleet",
+          "scbe-visual-system/src/fleet"
+        ]
+      }
+    },
+    {
+      "notion_key": "aetherAuthImplementation",
+      "notion_title": "AetherAuth Implementation",
+      "notion_page_id": "c1c87f9373ce4a118dcc6fd1272c761f",
+      "docs_output_path": "docs/AETHERAUTH_IMPLEMENTATION.md",
+      "code_paths": [
+        "scripts/agentic_aetherauth.py",
+        "src/symphonic_cipher/geoseal_location_library.py"
+      ],
+      "verification_state": "implemented",
+      "last_verification": {
+        "state": "implemented",
+        "at": "2026-02-16",
+        "evidence": [
+          "scripts/agentic_aetherauth.py",
+          "src/symphonic_cipher/geoseal_location_library.py"
+        ]
+      }
+    },
+    {
+      "notion_key": "googleCloudInfrastructureSetup",
+      "notion_title": "Google Cloud Infrastructure Setup",
+      "notion_page_id": "11ac4a237afe4464a3a00b4e09fe3d7a",
+      "docs_output_path": "docs/GOOGLE_CLOUD_SETUP.md",
+      "code_paths": [
+        "k8s/agent-manifests"
+      ],
+      "verification_state": "implemented",
+      "last_verification": {
+        "state": "implemented",
+        "at": "2026-02-16",
+        "evidence": [
+          "k8s/agent-manifests"
+        ]
+      }
+    },
+    {
+      "notion_key": "phdmNomenclatureReference",
+      "notion_title": "PHDM Nomenclature Reference",
+      "notion_page_id": "e0927baf40b34899b89d5b0af05a1878",
+      "docs_output_path": "docs/PHDM_NOMENCLATURE.md",
+      "code_paths": [
+        "src/symphonic_cipher/scbe_aethermoore"
+      ],
+      "verification_state": "pending",
+      "last_verification": {
+        "state": "pending",
+        "at": "2026-02-16",
+        "evidence": [
+          "docs/PHDM_NOMENCLATURE.md still contains placeholder sync text; implementation mapping pending."
+        ]
+      }
+    },
+    {
+      "notion_key": "commercialAgreementTechnologySchedule",
+      "notion_title": "Commercial Agreement - Technology Schedule",
+      "notion_page_id": "48723c6372304970b284b011a674504c",
+      "docs_output_path": "docs/COMMERCIAL_AGREEMENT.md",
+      "code_paths": [],
+      "verification_state": "pending",
+      "last_verification": {
+        "state": "pending",
+        "at": "2026-02-16",
+        "evidence": [
+          "No runtime code path yet defined in repository for commercial agreement publication workflow."
+        ]
+      }
+    },
+    {
+      "notion_key": "sixTonguesGeosealCliPython",
+      "notion_title": "Six Tongues + GeoSeal CLI Python",
+      "notion_page_id": "8cad7ff3551e49a98900f4c66f3acc98",
+      "docs_output_path": "docs/SIX_TONGUES_CLI.md",
+      "code_paths": [
+        "scripts/agentic_aetherauth.py",
+        "src/crypto/sacred_tongues.py",
+        "src/crypto/sacred_eggs.py"
+      ],
+      "verification_state": "implemented",
+      "last_verification": {
+        "state": "implemented",
+        "at": "2026-02-16",
+        "evidence": [
+          "scripts/agentic_aetherauth.py",
+          "src/crypto/sacred_tongues.py"
+        ]
+      }
+    },
+    {
+      "notion_key": "scbeAethermooreUnifiedSystemReport",
+      "notion_title": "SCBE-AETHERMOORE v3.0.0 Unified System Report",
+      "notion_page_id": "be55b479c358478c9b057649386206e5",
+      "docs_output_path": "docs/UNIFIED_SYSTEM_REPORT.md",
+      "code_paths": [
+        "docs/UNIFIED_SYSTEM_REPORT.md",
+        "README.md"
+      ],
+      "verification_state": "pending",
+      "last_verification": {
+        "state": "pending",
+        "at": "2026-02-16",
+        "evidence": [
+          "This page is currently a sync placeholder and has no dedicated implementation module."
+        ]
+      }
+    },
+    {
+      "notion_key": "droneFleetArchitectureUpgrades",
+      "notion_title": "Drone Fleet Architecture Upgrades",
+      "notion_page_id": "4e9d7f89e2724f1d9b6ccee15af71fa8",
+      "docs_output_path": "docs/DRONE_FLEET_UPGRADES.md",
+      "code_paths": [
+        "src/fleet",
+        "scbe-visual-system/src/fleet",
+        "k8s/agent-manifests"
+      ],
+      "verification_state": "implemented",
+      "last_verification": {
+        "state": "implemented",
+        "at": "2026-02-16",
+        "evidence": [
+          "src/fleet",
+          "scbe-visual-system/src/fleet"
+        ]
+      }
+    },
+    {
+      "notion_key": "worldForgeTemplate",
+      "notion_title": "WorldForge Template",
+      "notion_page_id": "d6c7098afee1457685f8eae631567c32",
+      "docs_output_path": "docs/WORLDFORGE_TEMPLATE.md",
+      "code_paths": [],
+      "verification_state": "pending",
+      "last_verification": {
+        "state": "pending",
+        "at": "2026-02-16",
+        "evidence": [
+          "No dedicated runtime code path has been linked yet."
+        ]
+      }
+    }
+  ]
+}

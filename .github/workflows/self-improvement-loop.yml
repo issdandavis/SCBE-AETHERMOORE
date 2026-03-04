@@ -1,0 +1,132 @@
+name: Self-Improvement Agent Loop
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Execution mode for the self-improvement orchestrator'
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - code-assistant
+          - ai-nodal-dev-specialist
+          - fine-tune-funnel
+      produce_issue:
+        description: 'Open an issue when critical/high tasks are emitted'
+        required: false
+        default: true
+        type: boolean
+  schedule:
+    - cron: '0 7 * * *'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  run-self-improvement-loop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Prepare output directory
+        run: mkdir -p artifacts
+
+      - name: Run notion-to-pipeline gap review
+        run: |
+          python scripts/notion_pipeline_gap_review.py \
+            --output artifacts/notion_pipeline_gap_review.json \
+            --summary-path artifacts/notion_pipeline_gap_review.md
+
+      - name: Run self-improvement orchestration
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            MODE="${{ inputs.mode }}"
+          else
+            MODE="all"
+          fi
+          python scripts/self_improvement_orchestrator.py \
+            --mode "$MODE" \
+            --notion-gap-report artifacts/notion_pipeline_gap_review.json \
+            --output artifacts/self_improvement_manifest.json \
+            --summary-path artifacts/self_improvement_summary.md
+
+      - name: Upload self-improvement artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: self-improvement-loop-artifacts
+          path: |
+            artifacts/self_improvement_manifest.json
+            artifacts/self_improvement_summary.md
+            artifacts/notion_pipeline_gap_review.json
+            artifacts/notion_pipeline_gap_review.md
+
+      - name: Evaluate critical tasks
+        id: evaluation
+        run: |
+          python - <<'PY'
+          import json
+          with open('artifacts/self_improvement_manifest.json', 'r', encoding='utf-8') as handle:
+              manifest = json.load(handle)
+
+          critical = sum(1 for task in manifest.get('tasks', []) if task.get('priority') == 'critical')
+          high = sum(1 for task in manifest.get('tasks', []) if task.get('priority') == 'high')
+          total = manifest.get('summary', {}).get('total_tasks', len(manifest.get('tasks', [])))
+
+          with open('${{ runner.temp }}/evaluation.txt', 'w', encoding='utf-8') as out:
+              out.write(f"{critical}\\n{high}\\n{total}")
+          PY
+
+          echo "critical=$(cut -d$'\\n' -f1 '${{ runner.temp }}/evaluation.txt')" >> "$GITHUB_OUTPUT"
+          echo "high=$(cut -d$'\\n' -f2 '${{ runner.temp }}/evaluation.txt')" >> "$GITHUB_OUTPUT"
+          echo "total=$(cut -d$'\\n' -f3 '${{ runner.temp }}/evaluation.txt')" >> "$GITHUB_OUTPUT"
+
+      - name: Open review issue for critical/high tasks
+        if: ${{ (github.event_name != 'workflow_dispatch' || inputs.produce_issue != 'false') && (steps.evaluation.outputs.critical != '0' || steps.evaluation.outputs.high != '0') }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const manifest = JSON.parse(fs.readFileSync('artifacts/self_improvement_manifest.json', 'utf8'));
+            const critical = manifest.tasks?.filter((task) => task.priority === 'critical') || [];
+            const high = manifest.tasks?.filter((task) => task.priority === 'high') || [];
+            const criticalItems = critical
+              .slice(0, 12)
+              .map((task) => `- [${task.priority.toUpperCase()}] **${task.title}** (${task.mode})\\n  - ${task.description}`)
+              .join('\\n\\n');
+            const highItems = high
+              .slice(0, 12)
+              .map((task) => `- [${task.priority.toUpperCase()}] **${task.title}** (${task.mode})\\n  - ${task.description}`)
+              .join('\\n\\n');
+            const title = `Self-Improvement Loop: ${manifest.summary?.total_tasks || 0} tasks`;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body: [
+                '## Automated Self-Improvement Report',
+                `Mode: **${manifest.requested_mode}**`,
+                `Release safe: **${manifest.summary?.release_safe ? 'Yes' : 'No'}**`,
+                `Critical tasks: **${critical.length}**`,
+                `High tasks: **${high.length}**`,
+                '',
+                '### Critical',
+                criticalItems || 'No critical tasks.',
+                '',
+                '### High',
+                highItems || 'No high tasks.',
+                '',
+                '---',
+                'Generated by `.github/workflows/self-improvement-loop.yml`',
+              ].join('\\n'),
+              labels: ['self-improvement', 'auto-generated'],
+            });

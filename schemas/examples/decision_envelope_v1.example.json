@@ -1,0 +1,86 @@
+{
+  "identity": {
+    "envelope_id": "env-surface-sol-48-001",
+    "version": "decision-envelope.v1",
+    "mission_id": "mars-sol-48",
+    "swarm_id": "swarm-alpha"
+  },
+  "authority": {
+    "issuer": "ground-control",
+    "key_id": "gc-kid-2026-01",
+    "valid_from_ms": 1763611200000,
+    "valid_until_ms": 1763625600000,
+    "issued_at_ms": 1763611100000,
+    "signature": "Yg0If5oLkJwQ8BYpPfQ7sF5Z4qsvf0Q9MxXc9zjF9KQ=",
+    "signed_payload_hash": "f4f3fcd15593f7ca8f4db35963332f65ca037f2566043175b4be4b84eec6ecf4"
+  },
+  "scope": {
+    "agent_allowlist": ["agent-1", "agent-2"],
+    "capability_allowlist": ["nav.move", "sample.collect"],
+    "target_allowlist": ["site-A", "site-B"]
+  },
+  "constraints": {
+    "mission_phase_allowlist": ["SURFACE_OPS"],
+    "resources": {
+      "power_min": 40.0,
+      "bandwidth_min": 10.0,
+      "thermal_max": 85.0
+    },
+    "max_risk_tier": "HIGH"
+  },
+  "rules": [
+    {
+      "capability": "nav.move",
+      "target": "site-A",
+      "boundary": "AUTO_ALLOW"
+    },
+    {
+      "capability": "sample.collect",
+      "target": "site-B",
+      "boundary": "QUARANTINE",
+      "recovery": {
+        "path_id": "recovery-q-01",
+        "playbook_ref": "playbooks/recovery_q01.yaml",
+        "quorum_min": 4,
+        "human_ack_required": true
+      }
+    },
+    {
+      "capability": "sample.collect",
+      "target": "site-A",
+      "boundary": "DENY",
+      "recovery": {
+        "path_id": "recovery-d-01",
+        "playbook_ref": "playbooks/recovery_d01.yaml",
+        "quorum_min": 6,
+        "human_ack_required": true
+      }
+    }
+  ],
+  "audit": {
+    "mmr_fields": [
+      "identity.envelope_id",
+      "identity.version",
+      "identity.mission_id",
+      "identity.swarm_id",
+      "authority.issuer",
+      "authority.key_id",
+      "authority.valid_from_ms",
+      "authority.valid_until_ms",
+      "scope.agent_allowlist",
+      "scope.capability_allowlist",
+      "scope.target_allowlist",
+      "constraints.mission_phase_allowlist",
+      "constraints.resources.power_min",
+      "constraints.resources.bandwidth_min",
+      "constraints.resources.thermal_max",
+      "constraints.max_risk_tier",
+      "rules"
+    ],
+    "mmr_leaf_hash": "0c9e4f2d163aa8a674f04d668ce9d2fd22db2f4d8d3d6d89613f077a8b72bdef"
+  },
+  "_canonical": {
+    "proto_sha256": "4129e75035e1d8ac39fca0ee7f8c6f4f8f6258fc4c3e49cc678f3c63ebd3cf42"
+  }
+}
+
