@@ -1422,6 +1422,79 @@ async def providers():
     return _provider_status_payload()
 
 
+@app.get("/v1/research/replit")
+async def research_replit(
+    owner: str = Query("issdandavis", min_length=1),
+    repo: str = Query("", description="Optional repo name. If blank, searches all owner repos."),
+    limit: int = Query(12, ge=1, le=50),
+):
+    """Find Replit-related code on GitHub for a user or specific repo."""
+    import httpx
+
+    owner = owner.strip()
+    repo = repo.strip()
+    scope = f"repo:{owner}/{repo}" if repo else f"user:{owner}"
+    query = f"replit in:file {scope}"
+    per_page = min(limit, 50)
+
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    gh_token = os.environ.get("GITHUB_TOKEN", "").strip()
+    if gh_token:
+        headers["Authorization"] = f"Bearer {gh_token}"
+
+    try:
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            resp = await client.get(
+                "https://api.github.com/search/code",
+                params={"q": query, "per_page": per_page, "page": 1},
+                headers=headers,
+            )
+    except Exception as e:
+        return {
+            "ok": False,
+            "query": query,
+            "count": 0,
+            "items": [],
+            "error": f"github_search_failed: {str(e)[:220]}",
+        }
+
+    if resp.status_code >= 400:
+        detail = resp.text[:220]
+        return {
+            "ok": False,
+            "query": query,
+            "count": 0,
+            "items": [],
+            "error": f"github_{resp.status_code}: {detail}",
+        }
+
+    payload = resp.json()
+    items_out = []
+    for row in payload.get("items", [])[:limit]:
+        repo_meta = row.get("repository", {}) if isinstance(row, dict) else {}
+        items_out.append(
+            {
+                "name": row.get("name", ""),
+                "path": row.get("path", ""),
+                "repository": repo_meta.get("full_name", ""),
+                "url": row.get("html_url", ""),
+                "score": row.get("score", 0),
+            }
+        )
+
+    return {
+        "ok": True,
+        "query": query,
+        "count": len(items_out),
+        "items": items_out,
+        "owner": owner,
+        "repo": repo,
+    }
+
+
 @app.get("/v1/lore/art")
 async def lore_art_manifest():
     """Return available Codex/Everweave art assets for the UI."""

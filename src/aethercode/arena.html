@@ -46,6 +46,10 @@ body{
   background:rgba(255,145,82,.14);color:var(--accent2);border:1px solid rgba(255,145,82,.45);
   padding:6px 10px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer
 }
+.scout-btn{
+  background:rgba(45,211,166,.14);color:var(--green);border:1px solid rgba(45,211,166,.45);
+  padding:6px 10px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer
+}
 .lore-strip{display:flex;gap:6px;align-items:center}
 .lore-thumb{
   width:38px;height:24px;border-radius:6px;overflow:hidden;border:1px solid var(--border);
@@ -122,6 +126,7 @@ body{
     <span id="playerCount">0 seated</span>
     <span id="trainingCount">0 pairs</span>
     <span id="agentCallsign">Lyra Forge</span>
+    <button class="scout-btn" id="replitScoutBtn" onclick="scoutReplitLegacy()">Scout Replit</button>
     <button class="xtalk-btn" onclick="emitCrossTalk()">Cross-talk</button>
     <button class="install-btn" id="arenaInstallBtn" onclick="promptInstall()">Install</button>
     <button class="train-btn" onclick="flushTraining()">Train</button>
@@ -136,6 +141,8 @@ body{
 <div class="deal-bar">
   <input class="deal-input" id="dealInput" placeholder="Deal to all players or Deliberate for consensus..." autocomplete="off" />
   <button class="deal-btn" id="dealBtn" onclick="dealToAll()">Deal</button>
+  <button class="deal-btn" id="relayBtn" style="background:#0ea5b7" onclick="relayChain()">Relay</button>
+  <button class="deal-btn" id="debateBtn" style="background:#f97316" onclick="debateDuel()">Debate</button>
   <button class="deal-btn" id="deliberateBtn" style="background:var(--green)" onclick="deliberate()">Deliberate</button>
 </div>
 
@@ -169,6 +176,15 @@ const seats = {};
 const providerStatus = {};
 let deferredInstallPrompt = null;
 let sharedCode = `# Shared workspace — all players see this code\n# Edit here, then Deal or Deliberate\n\ndef hello():\n    print("Hello from the Round Table")\n`;
+const REPLIT_OWNERS = ['issdandavis', 'ISDanDavis2'];
+const LEGACY_REPLIT_REPOS = [
+  'ai-workflow-architect-replit',
+  'ai-workflow-architect-main',
+  'AI-Workflow-Architect-1.2.2',
+  'AI-Workflow-Architect-1',
+  'Replit.gt',
+  'Repelit',
+];
 const LORE_FALLBACK = [
   { title: 'Codex I', url: '/v1/lore/art/codex-spiralverse' },
   { title: 'Codex II', url: '/v1/lore/art/everweave-fibonacci' },
@@ -344,6 +360,30 @@ function escHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+function trimText(s, maxLen = 1800) {
+  if (!s) return '';
+  return s.length > maxLen ? s.slice(0, maxLen) + '\n...[trimmed]' : s;
+}
+
+function availablePlayerIds() {
+  return PLAYERS
+    .map(p => p.id)
+    .filter(id => !(providerStatus[id] && providerStatus[id].available === false));
+}
+
+function orderedAvailableIds() {
+  const avail = availablePlayerIds();
+  const preferred = ['google_ai', 'claude', 'xai', 'github_models', 'huggingface', 'ollama', 'groq', 'cerebras', 'openrouter'];
+  const inPref = preferred.filter(id => avail.includes(id));
+  const rest = avail.filter(id => !inPref.includes(id));
+  return [...inPref, ...rest];
+}
+
+function narratorSeatId() {
+  const ids = orderedAvailableIds();
+  return ids.length ? ids[0] : PLAYERS[0].id;
+}
+
 function addMessage(playerId, role, text, meta) {
   const chat = document.getElementById('chat-' + playerId);
   if (!chat) return;
@@ -431,7 +471,7 @@ async function askPlayer(playerId, message) {
         `${data.tentacle} / ${data.model} / ${Math.round(data.latency_ms)}ms / ${Math.round(data.governance_score * 100)}%`
       );
       setStatus(playerId, 'idle', 'ready');
-      return { name: player.name, tongue: player.tongue, role: player.role, response: data.response };
+      return { id: playerId, name: player.name, tongue: player.tongue, role: player.role, response: data.response };
     } else {
       const errMsg = data.detail || data.response || JSON.stringify(data);
       addMessage(playerId, 'error', errMsg);
@@ -461,6 +501,89 @@ async function dealToAll() {
 
   document.getElementById('dealBtn').disabled = false;
   document.getElementById('dealBtn').textContent = 'Deal';
+  updateTrainingCount();
+}
+
+async function relayChain() {
+  const input = document.getElementById('dealInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+
+  const btn = document.getElementById('relayBtn');
+  btn.disabled = true;
+  btn.textContent = 'Relaying...';
+
+  const ids = orderedAvailableIds().slice(0, 6);
+  if (!ids.length) {
+    btn.disabled = false;
+    btn.textContent = 'Relay';
+    return;
+  }
+
+  const transcript = [];
+  let baton = text;
+  for (const id of ids) {
+    const relayPrompt = `RELAY MODE\nOriginal ask: "${text}"\nCurrent baton:\n${trimText(baton, 1200)}\n\nAdd one useful step and pass it on.\nFormat:\n1) Insight\n2) Action\n3) Handoff`;
+    const res = await askPlayer(id, relayPrompt);
+    if (res && res.response) {
+      baton = res.response;
+      transcript.push(`[${res.name}] ${trimText(res.response, 900)}`);
+    }
+  }
+
+  if (transcript.length) {
+    const synthId = ids.includes('google_ai') ? 'google_ai' : narratorSeatId();
+    const synthPrompt = `RELAY TRANSCRIPT\n${transcript.join('\n\n---\n\n')}\n\nReturn a single practical execution plan with numbered steps.`;
+    const synth = await askPlayer(synthId, synthPrompt);
+    if (synth && synth.response) {
+      addMessage(synth.id || synthId, 'synthesis', '[RELAY SYNTHESIS] ' + synth.response);
+    }
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Relay';
+  updateTrainingCount();
+}
+
+async function debateDuel() {
+  const input = document.getElementById('dealInput');
+  const topic = input.value.trim();
+  if (!topic) return;
+  input.value = '';
+
+  const btn = document.getElementById('debateBtn');
+  btn.disabled = true;
+  btn.textContent = 'Debating...';
+
+  const ids = orderedAvailableIds();
+  if (ids.length < 2) {
+    btn.disabled = false;
+    btn.textContent = 'Debate';
+    return;
+  }
+
+  const a = ids[0];
+  const b = ids.find(x => x !== a) || ids[1];
+  const aOpen = await askPlayer(a, `DEBATE OPENING\nTopic: ${topic}\nTake a strong position and include 3 concrete claims.`);
+  const bRebut = await askPlayer(
+    b,
+    `DEBATE REBUTTAL\nTopic: ${topic}\nOpponent said:\n${trimText(aOpen?.response || 'No opening received.', 1000)}\n\nRebut with evidence and tradeoffs.`
+  );
+  const aCounter = await askPlayer(
+    a,
+    `DEBATE COUNTER\nTopic: ${topic}\nOpponent rebuttal:\n${trimText(bRebut?.response || 'No rebuttal received.', 1000)}\n\nCounter with revised, stronger plan.`
+  );
+
+  const synthId = ids.includes('google_ai') ? 'google_ai' : narratorSeatId();
+  const synthPrompt = `DEBATE LOG\nTopic: ${topic}\n\nA opening:\n${trimText(aOpen?.response || '', 1000)}\n\nB rebuttal:\n${trimText(bRebut?.response || '', 1000)}\n\nA counter:\n${trimText(aCounter?.response || '', 1000)}\n\nProduce: winner, why, and merged best plan.`;
+  const synth = await askPlayer(synthId, synthPrompt);
+  if (synth && synth.response) {
+    addMessage(synth.id || synthId, 'synthesis', '[DEBATE SYNTHESIS] ' + synth.response);
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Debate';
   updateTrainingCount();
 }
 
@@ -503,6 +626,64 @@ async function deliberate() {
   btn.disabled = false;
   btn.textContent = 'Deliberate';
   updateTrainingCount();
+}
+
+async function scoutReplitLegacy() {
+  const btn = document.getElementById('replitScoutBtn');
+  btn.disabled = true;
+  btn.textContent = 'Scouting...';
+
+  try {
+    const merged = [];
+    const seen = new Set();
+
+    for (const owner of REPLIT_OWNERS) {
+      for (const repo of LEGACY_REPLIT_REPOS) {
+        const resp = await fetch(`${API}/v1/research/replit?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}&limit=6`);
+        const data = await resp.json();
+        if (!resp.ok || !data.ok) continue;
+        const rows = Array.isArray(data.items) ? data.items : [];
+        for (const item of rows) {
+          const key = `${item.repository}::${item.path}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          merged.push(item);
+        }
+      }
+    }
+
+    if (!merged.length) {
+      for (const owner of REPLIT_OWNERS) {
+        const broad = await fetch(`${API}/v1/research/replit?owner=${encodeURIComponent(owner)}&limit=12`);
+        const data = await broad.json();
+        if (broad.ok && data.ok && Array.isArray(data.items)) {
+          for (const item of data.items) {
+            const key = `${item.repository}::${item.path}`;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            merged.push(item);
+          }
+        }
+      }
+    }
+
+    const top = merged.slice(0, 12);
+    const summaryLines = top.map((item, i) => `${i + 1}. ${item.repository} :: ${item.path}\n${item.url}`);
+    const summary = summaryLines.length ? summaryLines.join('\n\n') : 'No Replit-related hits found on GitHub.';
+
+    const seatId = narratorSeatId();
+    addMessage(seatId, 'synthesis', '[REPLIT LEGACY SCOUT]\n' + summary, `${top.length} GitHub hits`);
+
+    if (top.length) {
+      document.getElementById('dealInput').value =
+        `Using these legacy Replit code hits from GitHub:\n${summary}\n\nPropose how to port the best parts into current Arena + gateway in 5 concrete steps.`;
+    }
+  } catch (err) {
+    addMessage(narratorSeatId(), 'error', 'Replit scout failed: ' + (err.message || 'unknown error'));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Scout Replit';
+  }
 }
 
 // Training flywheel — flush pairs + push to HuggingFace
