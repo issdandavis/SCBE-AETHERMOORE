@@ -26,6 +26,7 @@ from src.crypto.sacred_eggs import (
     SacredRituals,
     IncubationResult,
     TriadicBindingResult,
+    TriadicPolicyResult,
     RingDescentResult,
     FailToNoiseResult,
     flux_state_to_ring,
@@ -526,6 +527,136 @@ class TestTriadicBinding:
         r2 = SacredRituals.triadic_binding(*set2)
 
         assert r1.binding_hash != r2.binding_hash
+
+
+# =============================================================================
+# Triadic Policy Key Tests
+# =============================================================================
+
+
+class TestTriadicPolicyKey:
+    """Tests for quorum-gated triadic operational key derivation."""
+
+    def test_low_risk_two_of_three_passes(self):
+        """Low risk should approve with 2 presented eggs."""
+        a = SacredEgg.create(context="triadic-policy")
+        b = SacredEgg.create(context="triadic-policy")
+        c = SacredEgg.create(context="triadic-policy")
+
+        result = SacredRituals.triadic_policy_key(
+            a,
+            b,
+            c,
+            presented_egg_ids=[a.egg_id, b.egg_id],
+            risk_level="low",
+        )
+
+        assert isinstance(result, TriadicPolicyResult)
+        assert result.approved is True
+        assert result.policy == "2-of-3"
+        assert result.required_count == 2
+        assert result.provided_count == 2
+        assert result.fail_to_noise is False
+        assert len(result.operational_key) == ALBUMEN_KEY_SIZE
+
+    def test_low_risk_one_of_three_fails_to_noise(self):
+        """Low risk should fail with 1 presented egg and return noise key."""
+        a = SacredEgg.create(context="triadic-policy")
+        b = SacredEgg.create(context="triadic-policy")
+        c = SacredEgg.create(context="triadic-policy")
+
+        result = SacredRituals.triadic_policy_key(
+            a,
+            b,
+            c,
+            presented_egg_ids=[a.egg_id],
+            risk_level="low",
+        )
+
+        assert result.approved is False
+        assert result.required_count == 2
+        assert result.provided_count == 1
+        assert result.fail_to_noise is True
+        assert len(result.operational_key) == ALBUMEN_KEY_SIZE
+
+    def test_high_risk_requires_three_of_three(self):
+        """High risk should reject 2-of-3 and approve only 3-of-3."""
+        a = SacredEgg.create(context="triadic-policy")
+        b = SacredEgg.create(context="triadic-policy")
+        c = SacredEgg.create(context="triadic-policy")
+
+        reject = SacredRituals.triadic_policy_key(
+            a,
+            b,
+            c,
+            presented_egg_ids=[a.egg_id, b.egg_id],
+            risk_level="high",
+        )
+        approve = SacredRituals.triadic_policy_key(
+            a,
+            b,
+            c,
+            presented_egg_ids=[a.egg_id, b.egg_id, c.egg_id],
+            risk_level="high",
+        )
+
+        assert reject.approved is False
+        assert reject.policy == "3-of-3"
+        assert reject.required_count == 3
+        assert reject.provided_count == 2
+        assert reject.fail_to_noise is True
+
+        assert approve.approved is True
+        assert approve.required_count == 3
+        assert approve.provided_count == 3
+        assert approve.fail_to_noise is False
+
+    def test_key_derivation_is_deterministic_for_same_nonce(self):
+        """Approved route should derive stable key for same eggs + nonce."""
+        a = SacredEgg.create(context="triadic-policy")
+        b = SacredEgg.create(context="triadic-policy")
+        c = SacredEgg.create(context="triadic-policy")
+        nonce = b"\x01" * 16
+
+        r1 = SacredRituals.triadic_policy_key(
+            a,
+            b,
+            c,
+            presented_egg_ids=[a.egg_id, b.egg_id, c.egg_id],
+            risk_level="high",
+            nonce=nonce,
+        )
+        r2 = SacredRituals.triadic_policy_key(
+            a,
+            b,
+            c,
+            presented_egg_ids=[a.egg_id, b.egg_id, c.egg_id],
+            risk_level="high",
+            nonce=nonce,
+        )
+
+        assert r1.approved is True
+        assert r2.approved is True
+        assert r1.operational_key == r2.operational_key
+        assert r1.key_id == r2.key_id
+
+    def test_unknown_presented_ids_do_not_count(self):
+        """Unknown IDs should not satisfy quorum."""
+        a = SacredEgg.create(context="triadic-policy")
+        b = SacredEgg.create(context="triadic-policy")
+        c = SacredEgg.create(context="triadic-policy")
+
+        result = SacredRituals.triadic_policy_key(
+            a,
+            b,
+            c,
+            presented_egg_ids=["deadbeefdeadbeef", a.egg_id],
+            risk_level="medium",
+        )
+
+        assert result.approved is False
+        assert result.required_count == 2
+        assert result.provided_count == 1
 
 
 # =============================================================================

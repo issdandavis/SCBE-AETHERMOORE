@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kerrigan — Home</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0a0e14;
+      --surface: #131920;
+      --card: #1a2028;
+      --border: #2a3140;
+      --text: #d4dae4;
+      --muted: #6b7a8d;
+      --accent: #58a6ff;
+      --green: #3fb950;
+      --red: #f85149;
+      --orange: #d29922;
+      --purple: #a371f7;
+      --teal: #39d2c0;
+    }
+
+    body {
+      font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-y: auto;
+    }
+
+    .header {
+      padding: 24px 32px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .header h1 span { color: var(--accent); }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      padding: 24px 32px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+    }
+
+    .card h2 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    /* Service Status */
+    .service-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .service-row:last-child { border-bottom: none; }
+
+    .service-name {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .service-port {
+      font-size: 11px;
+      color: var(--muted);
+      margin-left: 8px;
+    }
+
+    .status-badge {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+
+    .status-up {
+      background: rgba(63, 185, 80, 0.15);
+      color: var(--green);
+    }
+
+    .status-down {
+      background: rgba(248, 81, 73, 0.15);
+      color: var(--red);
+    }
+
+    .status-checking {
+      background: rgba(210, 153, 34, 0.15);
+      color: var(--orange);
+    }
+
+    /* Agents */
+    .agent-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .agent-row:last-child { border-bottom: none; }
+
+    .agent-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .agent-name {
+      font-size: 13px;
+      font-weight: 600;
+      min-width: 50px;
+    }
+
+    .agent-role {
+      font-size: 12px;
+      color: var(--muted);
+      flex: 1;
+    }
+
+    .agent-tongue {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.06);
+    }
+
+    /* Quick Actions */
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .action-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      text-align: left;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .action-btn:hover {
+      border-color: var(--accent);
+      background: rgba(88, 166, 255, 0.06);
+    }
+
+    .action-btn .action-label {
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+
+    .action-btn .action-desc {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* Task Queue */
+    .task-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .task-row:last-child { border-bottom: none; }
+
+    .task-priority {
+      width: 4px;
+      height: 28px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .priority-high { background: var(--red); }
+    .priority-med { background: var(--orange); }
+    .priority-low { background: var(--green); }
+
+    .task-info { flex: 1; }
+
+    .task-title {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .task-meta {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .task-action {
+      background: rgba(88, 166, 255, 0.1);
+      border: 1px solid rgba(88, 166, 255, 0.3);
+      color: var(--accent);
+      padding: 5px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .task-action:hover {
+      background: rgba(88, 166, 255, 0.2);
+    }
+
+    /* Full Width Cards */
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    .two-col {
+      grid-column: span 2;
+    }
+
+    /* Revenue */
+    .revenue-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+    }
+
+    .revenue-label { font-size: 13px; }
+    .revenue-value {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .revenue-value.positive { color: var(--green); }
+
+    /* Links */
+    .link-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    .link-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      text-align: center;
+      text-decoration: none;
+      transition: border-color 0.15s;
+    }
+
+    .link-btn:hover {
+      border-color: var(--accent);
+    }
+
+    /* Empty State */
+    .empty {
+      color: var(--muted);
+      font-size: 13px;
+      padding: 16px 0;
+      text-align: center;
+    }
+
+    /* Footer */
+    .footer {
+      padding: 16px 32px;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Visual Transparency Lane */
+    .glass-card {
+      background: rgba(26, 32, 40, 0.72);
+      border: 1px solid rgba(88, 166, 255, 0.28);
+      backdrop-filter: blur(8px);
+    }
+
+    .run-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 320px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .run-item {
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(10, 14, 20, 0.5);
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    .run-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .run-goal {
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.35;
+    }
+
+    .pill {
+      font-size: 10px;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-weight: 700;
+      letter-spacing: 0.25px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .pill-running { background: rgba(210, 153, 34, 0.18); color: var(--orange); }
+    .pill-succeeded { background: rgba(63, 185, 80, 0.18); color: var(--green); }
+    .pill-failed { background: rgba(248, 81, 73, 0.18); color: var(--red); }
+
+    .run-meta {
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .autopilot-meta {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .ai-cursor {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      background: rgba(88, 166, 255, 0.2);
+      box-shadow: 0 0 16px rgba(88, 166, 255, 0.5);
+      transform: translate(-50%, -50%);
+      transition: left 180ms ease, top 180ms ease, opacity 120ms ease;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .ai-cursor.active {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1><span>Kerrigan</span> — AI Home</h1>
+    <div class="header-right">
+      <span id="clock"></span>
+      <span id="uptime"></span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- Service Status -->
+    <div class="card">
+      <h2>Services</h2>
+      <div id="services">
+        <div class="service-row">
+          <span><span class="service-name">Runtime</span><span class="service-port">:8400</span></span>
+          <span class="status-badge status-checking" id="svc-runtime">checking</span>
+        </div>
+        <div class="service-row">
+          <span><span class="service-name">n8n Bridge</span><span class="service-port">:8001</span></span>
+          <span class="status-badge status-checking" id="svc-bridge">checking</span>
+        </div>
+        <div class="service-row">
+          <span><span class="service-name">AetherNet</span><span class="service-port">:8300</span></span>
+          <span class="status-badge status-checking" id="svc-aethernet">checking</span>
+        </div>
+        <div class="service-row">
+          <span><span class="service-name">GCP VM</span><span class="service-port">34.134.99.90</span></span>
+          <span class="status-badge status-checking" id="svc-gcp">checking</span>
+        </div>
+        <div class="service-row">
+          <span><span class="service-name">Firebase</span><span class="service-port">google</span></span>
+          <span class="status-badge status-checking" id="svc-firebase">checking</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agents -->
+    <div class="card">
+      <h2>Agents</h2>
+      <div class="agent-row">
+        <div class="agent-dot" style="background: #f0883e"></div>
+        <span class="agent-name">Zara</span>
+        <span class="agent-role">Leader</span>
+        <span class="agent-tongue" style="color: #f0883e">KO</span>
+      </div>
+      <div class="agent-row">
+        <div class="agent-dot" style="background: #e3b341"></div>
+        <span class="agent-name">Kael</span>
+        <span class="agent-role">Executor</span>
+        <span class="agent-tongue" style="color: #e3b341">CA</span>
+      </div>
+      <div class="agent-row">
+        <div class="agent-dot" style="background: #58a6ff"></div>
+        <span class="agent-name">Aria</span>
+        <span class="agent-role">Validator</span>
+        <span class="agent-tongue" style="color: #58a6ff">AV</span>
+      </div>
+      <div class="agent-row">
+        <div class="agent-dot" style="background: #a371f7"></div>
+        <span class="agent-name">Polly</span>
+        <span class="agent-role">Observer</span>
+        <span class="agent-tongue" style="color: #a371f7">UM</span>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card">
+      <h2>Quick Actions</h2>
+      <div class="action-grid">
+        <button class="action-btn" onclick="action('post_content')">
+          <div class="action-label">Post Content</div>
+          <div class="action-desc">Publish from queue</div>
+        </button>
+        <button class="action-btn" onclick="action('run_research')">
+          <div class="action-label">Research</div>
+          <div class="action-desc">Polly investigates</div>
+        </button>
+        <button class="action-btn" onclick="action('check_patent')">
+          <div class="action-label">Patent Status</div>
+          <div class="action-desc">USPTO #63/961,403</div>
+        </button>
+        <button class="action-btn" onclick="action('push_training')">
+          <div class="action-label">Push Training</div>
+          <div class="action-desc">Merge + HF push</div>
+        </button>
+        <button class="action-btn" onclick="nav('https://www.notion.so/aethermoorgames')">
+          <div class="action-label">Notion</div>
+          <div class="action-desc">Open workspace</div>
+        </button>
+        <button class="action-btn" onclick="nav('https://github.com/issdandavis/SCBE-AETHERMOORE')">
+          <div class="action-label">GitHub</div>
+          <div class="action-desc">Open repo</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Task Queue -->
+    <div class="card two-col">
+      <h2>Task Queue</h2>
+      <div id="taskQueue">
+        <div class="task-row">
+          <div class="task-priority priority-high"></div>
+          <div class="task-info">
+            <div class="task-title">Respond to USPTO Missing Parts</div>
+            <div class="task-meta">Deadline: April 19, 2026 &mdash; PTO/SB/15A + $65 fee</div>
+          </div>
+          <button class="task-action" onclick="nav('https://patentcenter.uspto.gov')">Open</button>
+        </div>
+        <div class="task-row">
+          <div class="task-priority priority-med"></div>
+          <div class="task-info">
+            <div class="task-title">Publish content queue (148 pieces ready)</div>
+            <div class="task-meta">85 main + 63 spin variations, all governance-passed</div>
+          </div>
+          <button class="task-action" onclick="action('post_content')">Run</button>
+        </div>
+        <div class="task-row">
+          <div class="task-priority priority-med"></div>
+          <div class="task-info">
+            <div class="task-title">List digital products on Gumroad/Shopify</div>
+            <div class="task-meta">4 products packaged: Workflow Pack, Governance Kit, Spin Engine, HYDRA</div>
+          </div>
+          <button class="task-action" onclick="action('list_products')">Start</button>
+        </div>
+        <div class="task-row">
+          <div class="task-priority priority-low"></div>
+          <div class="task-info">
+            <div class="task-title">Push training data to HuggingFace</div>
+            <div class="task-meta">14,654 pairs &mdash; issdandavis/scbe-aethermoore-training-data</div>
+          </div>
+          <button class="task-action" onclick="action('push_training')">Push</button>
+        </div>
+        <div class="task-row">
+          <div class="task-priority priority-low"></div>
+          <div class="task-info">
+            <div class="task-title">Renew GitHub token (expires in 6 days)</div>
+            <div class="task-meta">GCP Cloud Shell &mdash; SCBE PR Fix</div>
+          </div>
+          <button class="task-action" onclick="nav('https://github.com/settings/tokens')">Open</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Autopilot -->
+    <div class="card">
+      <h2>AI Autopilot</h2>
+      <div class="action-grid">
+        <button class="action-btn" onclick="startAutopilot()">
+          <div class="action-label">Start $1/day Loop</div>
+          <div class="action-desc">Runs posting + listing cycle</div>
+        </button>
+        <button class="action-btn" onclick="stopAutopilot()">
+          <div class="action-label">Stop Autopilot</div>
+          <div class="action-desc">Disable browser auto-execution</div>
+        </button>
+        <button class="action-btn" id="cursorToggleBtn" onclick="toggleAICursor()">
+          <div class="action-label">AI Cursor: Off</div>
+          <div class="action-desc">Visual auto-pilot pointer</div>
+        </button>
+        <button class="action-btn" onclick="nav('/arena')">
+          <div class="action-label">Open Arena</div>
+          <div class="action-desc">Multi-model code table</div>
+        </button>
+      </div>
+      <div class="autopilot-meta" id="autopilotMeta">Autopilot idle.</div>
+    </div>
+
+    <div class="card two-col glass-card">
+      <h2>Live Transparency Lane</h2>
+      <div id="runLane" class="run-list">
+        <div class="empty">Waiting for runs...</div>
+      </div>
+    </div>
+
+    <!-- Revenue -->
+    <div class="card">
+      <h2>Revenue Pipeline</h2>
+      <div class="revenue-row">
+        <span class="revenue-label">Digital Products</span>
+        <span class="revenue-value">4 ready</span>
+      </div>
+      <div class="revenue-row">
+        <span class="revenue-label">Merch Designs</span>
+        <span class="revenue-value">74 items</span>
+      </div>
+      <div class="revenue-row">
+        <span class="revenue-label">Content Queue</span>
+        <span class="revenue-value">148 pieces</span>
+      </div>
+      <div class="revenue-row">
+        <span class="revenue-label">Training Pairs</span>
+        <span class="revenue-value">14,654</span>
+      </div>
+      <div class="revenue-row" style="border-top: 1px solid var(--border); padding-top: 10px; margin-top: 6px;">
+        <span class="revenue-label" style="font-weight: 700;">Revenue This Month</span>
+        <span class="revenue-value positive">$0.00</span>
+      </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="card full-width">
+      <h2>Workspaces</h2>
+      <div class="link-grid">
+        <a class="link-btn" href="https://www.notion.so/aethermoorgames" onclick="nav(this.href); return false;">Notion Hub</a>
+        <a class="link-btn" href="https://github.com/issdandavis/SCBE-AETHERMOORE" onclick="nav(this.href); return false;">GitHub Repo</a>
+        <a class="link-btn" href="https://huggingface.co/issdandavis" onclick="nav(this.href); return false;">HuggingFace</a>
+        <a class="link-btn" href="https://patentcenter.uspto.gov" onclick="nav(this.href); return false;">USPTO Patent Center</a>
+        <a class="link-btn" href="https://console.cloud.google.com" onclick="nav(this.href); return false;">Google Cloud</a>
+        <a class="link-btn" href="https://aistudio.google.com" onclick="nav(this.href); return false;">AI Studio</a>
+        <a class="link-btn" href="https://console.firebase.google.com" onclick="nav(this.href); return false;">Firebase</a>
+        <a class="link-btn" href="http://localhost:5678" onclick="nav(this.href); return false;">n8n Workflows</a>
+        <a class="link-btn" href="http://localhost:8300/dashboard" onclick="nav(this.href); return false;">AetherNet Dashboard</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>Kerrigan v0.1.0 &mdash; SCBE-AETHERMOORE</span>
+    <span id="footerStatus">Initializing...</span>
+  </div>
+
+  <div id="aiCursor" class="ai-cursor"></div>
+
+  <script>
+    // Clock
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').textContent = now.toLocaleTimeString();
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Navigation — works both standalone and inside Electron
+    function nav(url) {
+      if (window.aetherbrowse && window.aetherbrowse.navigateTo) {
+        window.aetherbrowse.navigateTo({ url: url, newTab: true });
+      } else {
+        window.open(url, '_blank');
+      }
+    }
+
+    // Action triggers
+    async function action(name) {
+      const btn = event.target.closest('.action-btn, .task-action');
+      if (btn) {
+        btn.textContent = '...';
+        btn.disabled = true;
+      }
+
+      try {
+        const resp = await fetch('/api/action/' + name, { method: 'POST' });
+        const data = await resp.json();
+        if (data.ok) {
+          if (btn) btn.textContent = 'Done';
+          log('Action ' + name + ': ' + (data.message || 'OK'));
+        } else {
+          if (btn) btn.textContent = 'Error';
+          log('Action ' + name + ' failed: ' + (data.error || 'Unknown'));
+        }
+      } catch (err) {
+        if (btn) btn.textContent = 'Offline';
+        log('Action ' + name + ' failed: ' + err.message);
+      }
+
+      if (btn) {
+        setTimeout(() => {
+          btn.textContent = btn.dataset.originalText || 'Run';
+          btn.disabled = false;
+        }, 3000);
+      }
+    }
+
+    // Save original button text
+    document.querySelectorAll('.action-btn, .task-action').forEach(btn => {
+      btn.dataset.originalText = btn.textContent.trim();
+    });
+
+    // Health checks
+    async function checkService(id, url) {
+      const badge = document.getElementById(id);
+      try {
+        const resp = await fetch(url, { signal: AbortSignal.timeout(3000) });
+        if (resp.ok) {
+          badge.textContent = 'UP';
+          badge.className = 'status-badge status-up';
+        } else {
+          badge.textContent = resp.status;
+          badge.className = 'status-badge status-down';
+        }
+      } catch {
+        badge.textContent = 'DOWN';
+        badge.className = 'status-badge status-down';
+      }
+    }
+
+    async function checkAll() {
+      await Promise.allSettled([
+        checkService('svc-runtime', '/api/status'),
+        checkService('svc-bridge', 'http://127.0.0.1:8001/health'),
+        checkService('svc-aethernet', 'http://127.0.0.1:8300/health'),
+        checkService('svc-gcp', 'http://34.134.99.90:8001/health'),
+      ]);
+      document.getElementById('footerStatus').textContent =
+        'Last checked: ' + new Date().toLocaleTimeString();
+    }
+
+    checkAll();
+    setInterval(checkAll, 30000);
+
+    function log(msg) {
+      console.log('[Kerrigan]', msg);
+    }
+
+    function timeAgo(ts) {
+      if (!ts) return 'just now';
+      const delta = Math.max(0, Math.floor(Date.now() / 1000 - Number(ts)));
+      if (delta < 5) return 'just now';
+      if (delta < 60) return `${delta}s ago`;
+      if (delta < 3600) return `${Math.floor(delta / 60)}m ago`;
+      return `${Math.floor(delta / 3600)}h ago`;
+    }
+
+    function runPillClass(status) {
+      if (status === 'succeeded') return 'pill-succeeded';
+      if (status === 'failed') return 'pill-failed';
+      return 'pill-running';
+    }
+
+    function renderRuns(runs) {
+      const lane = document.getElementById('runLane');
+      if (!runs || !runs.length) {
+        lane.innerHTML = '<div class="empty">No recent runs yet.</div>';
+        return;
+      }
+
+      lane.innerHTML = runs.map((run) => {
+        const status = String(run.status || 'running');
+        const safeGoal = String(run.goal || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const error = run.error ? String(run.error).replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
+        return `
+          <div class="run-item">
+            <div class="run-top">
+              <div class="run-goal">${safeGoal || 'Untitled run'}</div>
+              <span class="pill ${runPillClass(status)}">${status}</span>
+            </div>
+            <div class="run-meta">
+              <span>Steps ${run.steps_completed || 0}/${run.steps_total || 0}</span>
+              <span>Method ${run.plan_method || 'unknown'}</span>
+              <span>Conf ${(Number(run.plan_confidence || 0) * 100).toFixed(0)}%</span>
+              <span>Updated ${timeAgo(run.updated_at)}</span>
+            </div>
+            ${error ? `<div class="run-meta" style="color: var(--red); margin-top: 6px;">${error}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function refreshRuns() {
+      try {
+        const resp = await fetch('/api/runs/latest?limit=8', { signal: AbortSignal.timeout(2000) });
+        if (!resp.ok) return;
+        const data = await resp.json();
+        if (data && data.ok) {
+          renderRuns(data.runs || []);
+        }
+      } catch {
+        // Keep current render if offline.
+      }
+    }
+
+    refreshRuns();
+    setInterval(refreshRuns, 3000);
+  </script>
+</body>
+</html>

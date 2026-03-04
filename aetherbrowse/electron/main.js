@@ -24,7 +24,7 @@ const runtimeUrl = `ws://${runtimeHost}:${runtimePort}/ws`;
 const homeUrl =
   process.env.AETHERBROWSE_HOME_URL ||
   process.env.AETHERSCREEN_HOME_URL ||
-  'https://duckduckgo.com';
+  'http://127.0.0.1:8500/home';
 const sideBarWidth = 280;
 const topBarHeight = 84;
 const bottomPanelHeight = 210;
@@ -360,7 +360,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
-    title: 'AetherBrowse — SCBE Governed Browser',
+    title: 'Kerrigan — AI Home',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,

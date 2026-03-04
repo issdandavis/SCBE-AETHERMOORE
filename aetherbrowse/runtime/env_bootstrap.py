@@ -19,6 +19,12 @@ logger = logging.getLogger("aetherbrowse-env-bootstrap")
 
 _BOOTSTRAPPED = False
 
+try:
+    from src.security.secret_store import pick_secret
+except Exception:  # pragma: no cover - optional at runtime
+    def pick_secret(*_names: str):  # type: ignore[override]
+        return "", ""
+
 
 def _load_dotenv_file(path: Path) -> None:
     if not path.exists():
@@ -44,6 +50,9 @@ def _copy_alias(canonical: str, aliases: tuple[str, ...]) -> None:
     if os.getenv(canonical):
         return
     value = _first_env(*aliases)
+    if not value:
+        _, secret_value = pick_secret(*aliases)
+        value = (secret_value or "").strip()
     if value:
         os.environ[canonical] = value
         logger.debug("Set %s from alias key (value redacted)", canonical)
@@ -90,6 +99,27 @@ def bootstrap_runtime_env() -> None:
             "GITHUB_TOKEN",
             "GH_TOKEN",
             "GITHUB_PAT",
+        ),
+        "GOOGLE_AI_API_KEY": (
+            "GOOGLE_AI_API_KEY",
+            "GEMINI_API_KEY",
+            "GOOGLE_API_KEY",
+        ),
+        "GOOGLE_API_KEY": (
+            "GOOGLE_API_KEY",
+            "GOOGLE_AI_API_KEY",
+            "GEMINI_API_KEY",
+        ),
+        "SHOPIFY_ADMIN_TOKEN": (
+            "SHOPIFY_ADMIN_TOKEN",
+            "SHOPIFY_ACCESS_TOKEN",
+            "SHOPIFY_API_TOKEN",
+            "SHOPIFY_TOKEN",
+            "SHOPIFY_PRIVATE_APP_TOKEN",
+        ),
+        "CEREBRAS_API_KEY": (
+            "CEREBRAS_API_KEY",
+            "CEREBRAS_KEY",
         ),
         "SHOPIFY_ACCESS_TOKEN": (
             "SHOPIFY_ACCESS_TOKEN",
@@ -183,10 +213,52 @@ def bootstrap_runtime_env() -> None:
             "SHOP_DOMAIN",
             "SHOPIFY_SHOP",
         ),
+        # Browser network/proxy routing aliases
+        "AETHERBROWSE_NETWORK_PROFILE": (
+            "AETHERBROWSE_NETWORK_PROFILE",
+            "AETHERSCREEN_NETWORK_PROFILE",
+        ),
+        "AETHERBROWSE_PROXY_SERVER": (
+            "AETHERBROWSE_PROXY_SERVER",
+            "AETHERSCREEN_PROXY_SERVER",
+            "HTTP_PROXY",
+            "HTTPS_PROXY",
+        ),
+        "AETHERBROWSE_TOR_PROXY": (
+            "AETHERBROWSE_TOR_PROXY",
+            "AETHERSCREEN_TOR_PROXY",
+            "TOR_PROXY",
+        ),
+        "AETHERBROWSE_PROXY_USERNAME": (
+            "AETHERBROWSE_PROXY_USERNAME",
+            "AETHERSCREEN_PROXY_USERNAME",
+        ),
+        "AETHERBROWSE_PROXY_PASSWORD": (
+            "AETHERBROWSE_PROXY_PASSWORD",
+            "AETHERSCREEN_PROXY_PASSWORD",
+        ),
+        "AETHERBROWSE_PROXY_BYPASS": (
+            "AETHERBROWSE_PROXY_BYPASS",
+            "AETHERSCREEN_PROXY_BYPASS",
+        ),
+        "AETHERBROWSE_FORCE_PROXY": (
+            "AETHERBROWSE_FORCE_PROXY",
+            "AETHERSCREEN_FORCE_PROXY",
+        ),
         "SCBE_API_KEY": (
             "SCBE_API_KEY",
             "SCBE_MOBILE_API_KEY",
             "SCBE_CLIENT_API_KEY",
+        ),
+        "SCBE_COLAB_BACKEND_URL_COLAB_LOCAL": (
+            "SCBE_COLAB_BACKEND_URL_COLAB_LOCAL",
+            "SCBE_COLAB_BACKEND_URL",
+            "COLAB_BACKEND_URL",
+        ),
+        "SCBE_COLAB_TOKEN_COLAB_LOCAL": (
+            "SCBE_COLAB_TOKEN_COLAB_LOCAL",
+            "SCBE_COLAB_TOKEN",
+            "COLAB_TOKEN",
         ),
     }
 

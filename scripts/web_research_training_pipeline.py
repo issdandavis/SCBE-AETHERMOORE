@@ -350,6 +350,197 @@ def choose_action(
     return ("ALLOW", "safe intake generated", clamp01(0.5 + 0.5 * allow_ratio))
 
 
+def _load_obsidian_candidates(explicit_root: str = "") -> list[Path]:
+    candidates: list[Path] = []
+    if explicit_root.strip():
+        candidates.append(Path(explicit_root.strip()))
+
+    env_root = os.environ.get("SCBE_OBSIDIAN_VAULT", "").strip()
+    if env_root:
+        candidates.append(Path(env_root))
+
+    appdata = os.environ.get("APPDATA", "").strip()
+    if appdata:
+        cfg_path = Path(appdata) / "Obsidian" / "obsidian.json"
+        if cfg_path.is_file():
+            try:
+                cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+                vaults = cfg.get("vaults", {})
+                if isinstance(vaults, dict):
+                    for meta in vaults.values():
+                        if not isinstance(meta, dict):
+                            continue
+                        raw = str(meta.get("path", "")).strip()
+                        if raw:
+                            candidates.append(Path(raw))
+            except Exception:
+                pass
+
+    # Known local fallback path for this workstation.
+    candidates.append(Path.home() / "OneDrive" / "Documents" / "DOCCUMENTS" / "A follder")
+
+    dedup: list[Path] = []
+    seen: set[str] = set()
+    for candidate in candidates:
+        key = str(candidate).strip().lower()
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        dedup.append(candidate)
+    return dedup
+
+
+def resolve_ai_workspace(explicit_root: str = "") -> Path | None:
+    for root in _load_obsidian_candidates(explicit_root):
+        if not root.exists():
+            continue
+        # Vault root containing AI Workspace/
+        vault_workspace = root / "AI Workspace"
+        if vault_workspace.is_dir():
+            return vault_workspace.resolve()
+        # Direct AI Workspace path passed in.
+        if (root / "Cross Talk.md").is_file() and (root / "Tasks").is_dir():
+            return root.resolve()
+    return None
+
+
+def _append_markdown_block(path: Path, block: str, marker: str) -> bool:
+    existing = path.read_text(encoding="utf-8") if path.is_file() else ""
+    if marker and marker in existing:
+        return False
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as handle:
+        if existing and not existing.endswith("\n"):
+            handle.write("\n")
+        handle.write(block)
+        if not block.endswith("\n"):
+            handle.write("\n")
+    return True
+
+
+def write_obsidian_nodal_log(
+    *,
+    run_id: str,
+    topics: list[str],
+    urls_discovered: int,
+    allowed_records: int,
+    quarantined_records: int,
+    action: str,
+    reason: str,
+    confidence: float,
+    run_dir: Path,
+    intake_path: Path,
+    explicit_root: str = "",
+) -> dict[str, Any]:
+    workspace = resolve_ai_workspace(explicit_root)
+    if workspace is None:
+        return {
+            "status": "skipped",
+            "reason": "AI Workspace not found (set --obsidian-root or SCBE_OBSIDIAN_VAULT).",
+        }
+
+    date_key = run_id[:8]
+    node_id = f"node-web-research-{run_id}"
+    network_root = workspace / "Nodal Network"
+    day_dir = network_root / date_key
+    node_path = day_dir / f"{node_id}.md"
+    index_path = network_root / "Network Index.md"
+    edge_path = network_root / "Edge Ledger.md"
+    crosstalk_path = workspace / "Cross Talk.md"
+    now = utc_now()
+
+    topic_line = ", ".join(topics) if topics else "(none)"
+    node_note = (
+        f"---\n"
+        f"node_id: {node_id}\n"
+        f"created_at: {now}\n"
+        f"pipeline: web_research_training_pipeline\n"
+        f"status: {action}\n"
+        f"tags: [scbe, headless, research, nodal-network]\n"
+        f"---\n\n"
+        f"# Web Research Node {run_id}\n\n"
+        f"## Outcome\n"
+        f"- action: {action}\n"
+        f"- reason: {reason}\n"
+        f"- confidence: {round(float(confidence), 6)}\n\n"
+        f"## Intake Stats\n"
+        f"- topics: {topic_line}\n"
+        f"- urls_discovered: {urls_discovered}\n"
+        f"- allowed_records: {allowed_records}\n"
+        f"- quarantined_records: {quarantined_records}\n\n"
+        f"## Artifacts\n"
+        f"- `{run_dir / 'summary.json'}`\n"
+        f"- `{run_dir / 'audit.json'}`\n"
+        f"- `{run_dir / 'hydra_scan.json'}`\n"
+        f"- `{intake_path}`\n\n"
+        f"## Links\n"
+        f"- [[Cross Talk]]\n"
+        f"- [[Round Table]]\n"
+        f"- [[Nodal Network/Network Index]]\n"
+    )
+    node_path.parent.mkdir(parents=True, exist_ok=True)
+    node_path.write_text(node_note, encoding="utf-8")
+
+    index_header = (
+        "# Nodal Network Index\n\n"
+        "Editable index of executed research/pipeline nodes.\n\n"
+    )
+    if not index_path.is_file():
+        index_path.write_text(index_header, encoding="utf-8")
+    index_rel = f"Nodal Network/{date_key}/{node_id}"
+    _append_markdown_block(
+        index_path,
+        (
+            f"- [[{index_rel}|{run_id}]] | action={action} | "
+            f"allowed={allowed_records} | quarantined={quarantined_records}\n"
+        ),
+        marker=run_id,
+    )
+
+    edge_header = (
+        "# Edge Ledger\n\n"
+        "Directed links between Obsidian work nodes for later editing/refactoring.\n\n"
+    )
+    if not edge_path.is_file():
+        edge_path.write_text(edge_header, encoding="utf-8")
+    edge_marker = f"{node_id} -> Cross Talk"
+    _append_markdown_block(
+        edge_path,
+        (
+            f"- {now} :: [[{index_rel}|{node_id}]] -> [[Cross Talk]]\n"
+            f"- {now} :: [[{index_rel}|{node_id}]] -> [[Nodal Network/Network Index]]\n"
+        ),
+        marker=edge_marker,
+    )
+
+    crosstalk_updated = False
+    if crosstalk_path.is_file():
+        cross_block = (
+            f"\n## {now} | Codex | nodal-log-{run_id}\n\n"
+            f"- status: done\n"
+            f"- summary: Logged web research pipeline run into Obsidian nodal network for editable continuity.\n"
+            f"- node: [[{index_rel}|{node_id}]]\n"
+            f"- artifacts:\n"
+            f"  - `{run_dir / 'summary.json'}`\n"
+            f"  - `{intake_path}`\n"
+            f"- next: continue runs; each run appends to the same network index/edge ledger.\n"
+        )
+        crosstalk_updated = _append_markdown_block(
+            crosstalk_path,
+            cross_block,
+            marker=f"nodal-log-{run_id}",
+        )
+
+    return {
+        "status": "logged",
+        "workspace": str(workspace),
+        "node_path": str(node_path),
+        "index_path": str(index_path),
+        "edge_path": str(edge_path),
+        "crosstalk_updated": crosstalk_updated,
+    }
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="SCBE web research training pipeline")
     parser.add_argument("--topics", nargs="*", default=[], help="Search topics")
@@ -368,6 +559,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--hf-repo", default="", help="HF dataset repo id")
     parser.add_argument("--hf-token-env", default="HF_TOKEN", help="Environment variable for HF token")
     parser.add_argument("--n8n-webhook", default="", help="Optional n8n webhook URL for run handoff")
+    parser.add_argument("--obsidian-root", default="", help="Vault root or AI Workspace path for nodal logging")
+    parser.add_argument("--skip-obsidian-log", action="store_true", help="Skip Obsidian nodal logging")
     return parser.parse_args()
 
 
@@ -543,6 +736,22 @@ def main() -> int:
             },
         )
 
+    obsidian_log = {"status": "skipped"}
+    if not args.skip_obsidian_log:
+        obsidian_log = write_obsidian_nodal_log(
+            run_id=run_id,
+            topics=topics,
+            urls_discovered=len(dedup_urls),
+            allowed_records=len(allowed_rows),
+            quarantined_records=len(quarantined_rows),
+            action=action,
+            reason=reason,
+            confidence=confidence,
+            run_dir=run_dir,
+            intake_path=intake_path,
+            explicit_root=args.obsidian_root,
+        )
+
     summary = {
         "run_id": run_id,
         "run_dir": str(run_dir),
@@ -555,6 +764,7 @@ def main() -> int:
         "decision_record": decision_record,
         "hf_upload": hf_upload,
         "n8n_dispatch": n8n_dispatch,
+        "obsidian_log": obsidian_log,
     }
     write_json(run_dir / "summary.json", summary)
 

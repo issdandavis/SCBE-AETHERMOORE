@@ -1,0 +1,40 @@
+name: Auto-Publish to Gumroad
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish-to-gumroad:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get release info
+        id: release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const release = context.payload.release;
+            return {
+              tag: release.tag_name,
+              name: release.name,
+              body: release.body,
+              url: release.html_url
+            };
+
+      - name: Update Gumroad product
+        env:
+          GUMROAD_ACCESS_TOKEN: ${{ secrets.GUMROAD_ACCESS_TOKEN }}
+          GUMROAD_PRODUCT_ID: ${{ secrets.GUMROAD_PRODUCT_ID }}
+        run: |
+          curl -X PUT "https://api.gumroad.com/v2/products/${GUMROAD_PRODUCT_ID}" \
+            -H "Authorization: Bearer ${GUMROAD_ACCESS_TOKEN}" \
+            -F "description=New Release: ${{ fromJSON(steps.release.outputs.result).name }}\n\n${{ fromJSON(steps.release.outputs.result).body }}\n\nDownload from GitHub: ${{ fromJSON(steps.release.outputs.result).url }}" \
+            -F "price=0"
+
+      - name: Notify completion
+        run: |
+          echo "✅ Successfully published release ${{ fromJSON(steps.release.outputs.result).name }} to Gumroad"
+          echo "Release URL: ${{ fromJSON(steps.release.outputs.result).url }}"

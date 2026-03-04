@@ -43,8 +43,10 @@ from __future__ import annotations
 
 import json
 import os
+import site
 import time
 import uuid
+import importlib
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -61,6 +63,29 @@ if _env_path.exists():
                 _k, _, _v = _line.partition("=")
                 if _v and _k.strip():
                     os.environ.setdefault(_k.strip(), _v.strip())
+
+
+def _ensure_google_cloud_namespace() -> None:
+    """Ensure google.cloud namespace can see user-site packages on Windows.
+
+    Some setups install google-cloud-firestore in user site-packages while a
+    base google.cloud namespace exists in system site-packages. In that case,
+    firestore imports can fail unless both paths are visible on google.cloud.
+    """
+    try:
+        user_cloud = Path(site.getusersitepackages()) / "google" / "cloud"
+        if not user_cloud.exists():
+            return
+        cloud_pkg = importlib.import_module("google.cloud")
+        namespace = getattr(cloud_pkg, "__path__", None)
+        if namespace is None:
+            return
+        user_cloud_str = str(user_cloud)
+        if user_cloud_str not in namespace:
+            namespace.append(user_cloud_str)
+    except Exception:
+        # Best-effort compatibility shim; never block normal initialization.
+        return
 
 
 class FirebaseSync:
@@ -120,6 +145,7 @@ class FirebaseSync:
         if self._initialized:
             return True
         try:
+            _ensure_google_cloud_namespace()
             import firebase_admin
             from firebase_admin import credentials as fb_creds, firestore
 

@@ -1,0 +1,184 @@
+{
+  "version": "2026-03-03",
+  "raven_monitor": {
+    "memory_window_days": 3650,
+    "threat_keywords": [
+      "token",
+      "secret",
+      "credential",
+      "breach",
+      "fraud",
+      "abuse",
+      "exfiltration",
+      "chargeback",
+      "takedown",
+      "ban"
+    ],
+    "alert_threshold": 0.7
+  },
+  "tentacle_profiles": [
+    {
+      "tentacle_id": "KO",
+      "lane": "webhook_lane",
+      "role": "action_publisher",
+      "focus_keywords": [
+        "publish",
+        "post",
+        "shopify",
+        "gumroad",
+        "github pages"
+      ]
+    },
+    {
+      "tentacle_id": "AV",
+      "lane": "webhook_lane",
+      "role": "social_scout",
+      "focus_keywords": [
+        "x",
+        "twitter",
+        "bluesky",
+        "reddit",
+        "linkedin",
+        "lead"
+      ]
+    },
+    {
+      "tentacle_id": "RU",
+      "lane": "cli_lane",
+      "role": "package_ops",
+      "focus_keywords": [
+        "pypi",
+        "huggingface",
+        "build",
+        "release",
+        "package"
+      ]
+    },
+    {
+      "tentacle_id": "CA",
+      "lane": "cli_lane",
+      "role": "connector_bridge",
+      "focus_keywords": [
+        "notion",
+        "airtable",
+        "firebase",
+        "gcp",
+        "api"
+      ]
+    },
+    {
+      "tentacle_id": "UM",
+      "lane": "webhook_lane",
+      "role": "research_shadow",
+      "focus_keywords": [
+        "research",
+        "paper",
+        "citation",
+        "analysis"
+      ]
+    },
+    {
+      "tentacle_id": "DR",
+      "lane": "codespaces_lane",
+      "role": "guardian_runtime",
+      "focus_keywords": [
+        "ci",
+        "integration test",
+        "codespace",
+        "runtime",
+        "security"
+      ]
+    }
+  ],
+  "portals": [
+    {
+      "portal_id": "github-api",
+      "lane": "cli_lane",
+      "domain": "github.com",
+      "endpoint": "https://api.github.com",
+      "auth_ref": "env:GITHUB_TOKEN",
+      "scopes": [
+        "repo",
+        "pull_request",
+        "issues"
+      ],
+      "ttl_seconds": 900,
+      "risk": "medium"
+    },
+    {
+      "portal_id": "pypi-upload",
+      "lane": "cli_lane",
+      "domain": "pypi.org",
+      "endpoint": "https://upload.pypi.org/legacy/",
+      "auth_ref": "env:PYPI_API_TOKEN",
+      "scopes": [
+        "package_upload"
+      ],
+      "ttl_seconds": 600,
+      "risk": "high"
+    },
+    {
+      "portal_id": "shopify-admin",
+      "lane": "webhook_lane",
+      "domain": "shopify.com",
+      "endpoint": "https://{shop}.myshopify.com/admin/api",
+      "auth_ref": "env:SHOPIFY_ADMIN_TOKEN",
+      "scopes": [
+        "product_write",
+        "content_write"
+      ],
+      "ttl_seconds": 900,
+      "risk": "high"
+    },
+    {
+      "portal_id": "devto-publish",
+      "lane": "webhook_lane",
+      "domain": "dev.to",
+      "endpoint": "https://dev.to/api/articles",
+      "auth_ref": "env:DEVTO_API_KEY",
+      "scopes": [
+        "article_write"
+      ],
+      "ttl_seconds": 900,
+      "risk": "medium"
+    },
+    {
+      "portal_id": "linkedin-outreach",
+      "lane": "webhook_lane",
+      "domain": "linkedin.com",
+      "endpoint": "https://www.linkedin.com/voyager/api",
+      "auth_ref": "env:LINKEDIN_SESSION_TOKEN",
+      "scopes": [
+        "lead_discovery",
+        "message_send"
+      ],
+      "ttl_seconds": 900,
+      "risk": "high"
+    },
+    {
+      "portal_id": "github-actions",
+      "lane": "codespaces_lane",
+      "domain": "github.com",
+      "endpoint": "https://api.github.com/repos/{owner}/{repo}/actions",
+      "auth_ref": "env:GITHUB_TOKEN",
+      "scopes": [
+        "workflow_read",
+        "workflow_rerun"
+      ],
+      "ttl_seconds": 900,
+      "risk": "medium"
+    },
+    {
+      "portal_id": "github-webhook",
+      "lane": "webhook_lane",
+      "domain": "github.com",
+      "endpoint": "https://your-host/github/webhook",
+      "auth_ref": "env:GITHUB_WEBHOOK_SECRET",
+      "scopes": [
+        "event_ingest"
+      ],
+      "ttl_seconds": 3600,
+      "risk": "low"
+    }
+  ]
+}

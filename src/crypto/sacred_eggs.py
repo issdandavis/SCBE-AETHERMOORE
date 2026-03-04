@@ -410,6 +410,26 @@ class TriadicBindingResult:
 
 
 @dataclass
+class TriadicPolicyResult:
+    """Result of triadic policy gate + operational key derivation.
+
+    Supports practical quorum policies:
+    - low/medium risk: 2-of-3 eggs required
+    - high risk: 3-of-3 eggs required
+    """
+
+    approved: bool
+    policy: str
+    risk_level: str
+    required_count: int
+    provided_count: int
+    binding_hash: str
+    key_id: str
+    fail_to_noise: bool
+    operational_key: bytes = field(repr=False)
+
+
+@dataclass
 class RingDescentResult:
     """Result of ring descent ritual."""
 
@@ -528,6 +548,97 @@ class SacredRituals:
             egg_ids=[e.egg_id for e in eggs],
             binding_strength=round(binding_strength, 2),
         )
+
+    @staticmethod
+    def triadic_policy_key(
+        egg_a: SacredEgg,
+        egg_b: SacredEgg,
+        egg_c: SacredEgg,
+        presented_egg_ids: List[str],
+        risk_level: str = "low",
+        nonce: Optional[bytes] = None,
+        policy_context: str = "default",
+    ) -> TriadicPolicyResult:
+        """Apply a triadic quorum policy and derive an operational key.
+
+        This is the practical policy gate on top of triadic binding:
+        - low/medium risk: require 2-of-3 eggs
+        - high risk: require 3-of-3 eggs
+
+        On failed quorum, returns random key material (fail-to-noise) and
+        marks ``approved=False`` so callers can uniformly deny without leaking
+        real key material.
+        """
+        eggs = [egg_a, egg_b, egg_c]
+        binding = SacredRituals.triadic_binding(egg_a, egg_b, egg_c)
+
+        risk = risk_level.lower().strip()
+        if risk not in {"low", "medium", "high"}:
+            raise ValueError("risk_level must be one of: low, medium, high")
+
+        required = 3 if risk == "high" else 2
+        expected_ids = [e.egg_id for e in eggs]
+        provided = SacredRituals._count_presented_ids(expected_ids, presented_egg_ids)
+        approved = provided >= required
+
+        if nonce is None:
+            nonce = secrets.token_bytes(16)
+        if len(nonce) < 16:
+            raise ValueError("nonce must be at least 16 bytes")
+
+        info = (
+            f"sacred-egg:triadic-policy:v1|risk={risk}|required={required}"
+            f"|provided={provided}|ctx={policy_context}"
+        ).encode("utf-8")
+
+        if approved:
+            # Deterministic aggregation anchored to egg material and triadic binding.
+            sorted_eggs = sorted(eggs, key=lambda e: e.shell_hash)
+            aggregate_yolk = hashlib.sha256(
+                b"".join(e._yolk for e in sorted_eggs)
+                + binding.binding_hash.encode("utf-8")
+            ).digest()
+            operational_key = hkdf_sha256(aggregate_yolk, nonce, info, ALBUMEN_KEY_SIZE)
+            fail_to_noise = False
+        else:
+            operational_key = secrets.token_bytes(ALBUMEN_KEY_SIZE)
+            fail_to_noise = True
+
+        key_id = hashlib.sha256(
+            b"sacred-egg:key-id:v1|" + operational_key + binding.binding_hash.encode("utf-8")
+        ).hexdigest()[:16]
+
+        return TriadicPolicyResult(
+            approved=approved,
+            policy=f"{required}-of-3",
+            risk_level=risk,
+            required_count=required,
+            provided_count=provided,
+            binding_hash=binding.binding_hash,
+            key_id=key_id,
+            fail_to_noise=fail_to_noise,
+            operational_key=operational_key,
+        )
+
+    @staticmethod
+    def _count_presented_ids(expected_ids: List[str], presented_ids: List[str]) -> int:
+        """Count how many expected egg IDs were presented (deduplicated)."""
+        matched = 0
+        seen: set[str] = set()
+
+        for expected in expected_ids:
+            if expected in seen:
+                continue
+            hit = False
+            for presented in presented_ids:
+                if hmac.compare_digest(expected, presented):
+                    hit = True
+                    break
+            if hit:
+                matched += 1
+                seen.add(expected)
+
+        return matched
 
     @staticmethod
     def ring_descent(

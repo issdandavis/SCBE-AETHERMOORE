@@ -11,12 +11,14 @@ Start: python aetherbrowse/worker/browser_worker.py
 import asyncio
 import json
 import logging
+import re
 import sys
 import os
 import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import Optional
+from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
@@ -41,6 +43,7 @@ except ImportError:
     HAS_HF_HUB = False
 
 from src.fleet.connector_bridge import ConnectorBridge
+from src.security.secret_store import get_secret
 
 # Try importing SCBE governance for per-action checks
 try:
@@ -57,6 +60,13 @@ def _env_bool(name: str, default: bool = False) -> bool:
     if not val:
         return default
     return val in {"1", "true", "yes", "on", "y"}
+
+
+def _env_str(name: str, default: str = "") -> str:
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return str(value).strip()
 
 
 def _mobile_context():
@@ -77,52 +87,348 @@ def _mobile_context():
     }
 
 
+def _normalize_profile(profile: str) -> str:
+    raw = (profile or "").strip().lower()
+    if raw in {"open", "soft", "hard", "dark"}:
+        return raw
+    return "open"
+
+
+def _normalize_profile_id(profile_id: str) -> str:
+    raw = (profile_id or "").strip().lower()
+    if not raw:
+        return "default"
+    clean = re.sub(r"[^a-z0-9_-]+", "-", raw).strip("-")
+    return clean or "default"
+
+
+def _proxy_for_profile(profile: str) -> Optional[dict]:
+    """Resolve per-profile proxy settings.
+
+    dark profile:
+      - Uses AETHERBROWSE_TOR_PROXY or AETHERBROWSE_PROXY_SERVER.
+      - Defaults to socks5://127.0.0.1:9050 (local Tor daemon).
+    non-dark profiles:
+      - Direct by default.
+      - Can be forced to use custom proxy with AETHERBROWSE_FORCE_PROXY=1.
+    """
+    profile = _normalize_profile(profile)
+    force_proxy = _env_bool("AETHERBROWSE_FORCE_PROXY", False)
+    proxy_server = _env_str("AETHERBROWSE_PROXY_SERVER", "")
+    tor_proxy = _env_str("AETHERBROWSE_TOR_PROXY", "") or proxy_server or "socks5://127.0.0.1:9050"
+
+    server = ""
+    if profile == "dark":
+        server = tor_proxy
+    elif force_proxy:
+        server = proxy_server
+
+    if not server:
+        return None
+
+    proxy: dict[str, str] = {"server": server}
+    username = _env_str("AETHERBROWSE_PROXY_USERNAME", "")
+    password = _env_str("AETHERBROWSE_PROXY_PASSWORD", "")
+    bypass = _env_str("AETHERBROWSE_PROXY_BYPASS", "")
+    if username:
+        proxy["username"] = username
+    if password:
+        proxy["password"] = password
+    if bypass:
+        proxy["bypass"] = bypass
+    return proxy
+
+
+def _mask_proxy(proxy: Optional[dict]) -> str:
+    if not proxy:
+        return "direct"
+    server = proxy.get("server", "")
+    if not server:
+        return "direct"
+    try:
+        parsed = urlparse(server)
+        host = parsed.hostname or ""
+        port = parsed.port or ""
+        scheme = parsed.scheme or "proxy"
+        if host:
+            return f"{scheme}://{host}:{port}" if port else f"{scheme}://{host}"
+    except Exception:
+        pass
+    return "proxy-configured"
+
+
 class BrowserWorker:
     """Drives a headed Chromium browser via Playwright."""
 
     def __init__(self):
         self.browser: Optional[Browser] = None
+        self.context = None
         self.page: Optional[Page] = None
         self.playwright = None
+        self.network_profile = _normalize_profile(_env_str("AETHERBROWSE_NETWORK_PROFILE", "open"))
+        self.profile_id = _normalize_profile_id(_env_str("AETHERBROWSE_PROFILE_ID", "default"))
         self._screenshots_dir = ROOT / "aetherbrowse" / "artifacts" / "screenshots"
         self._screenshots_dir.mkdir(parents=True, exist_ok=True)
+        self._profiles_root = ROOT / "aetherbrowse" / "profiles"
+        self._profiles_root.mkdir(parents=True, exist_ok=True)
+        self._credentials_root = ROOT / "external" / "credentials" / "browser_profiles"
         self._connector_bridge = ConnectorBridge()
+
+    def _storage_state_path(self, profile_id: Optional[str] = None) -> Path:
+        pid = _normalize_profile_id(profile_id or self.profile_id)
+        profile_dir = self._profiles_root / pid
+        profile_dir.mkdir(parents=True, exist_ok=True)
+        return profile_dir / "storage_state.json"
+
+    async def _persist_storage_state(self) -> None:
+        if self.context is None:
+            return
+        path = self._storage_state_path(self.profile_id)
+        await self.context.storage_state(path=str(path))
+
+    def _context_kwargs(self, profile: str, profile_id: Optional[str] = None) -> dict:
+        mobile_ctx = _mobile_context()
+        context_kwargs = dict(mobile_ctx or {})
+        if not mobile_ctx:
+            context_kwargs.update(
+                {
+                    "viewport": {"width": 1280, "height": 800},
+                    "user_agent": (
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) "
+                        "Chrome/120.0.0.0 Safari/537.36"
+                    ),
+                }
+            )
+
+        proxy = _proxy_for_profile(profile)
+        if proxy:
+            context_kwargs["proxy"] = proxy
+
+        state_path = self._storage_state_path(profile_id)
+        if state_path.exists():
+            context_kwargs["storage_state"] = str(state_path)
+        return context_kwargs
+
+    async def _recreate_context(self, profile: str, profile_id: Optional[str] = None) -> dict:
+        pid = _normalize_profile_id(profile_id or self.profile_id)
+        if self.browser is None:
+            return {"ok": False, "error": "browser_not_initialized", "requested_profile": profile, "profile_id": pid}
+
+        if self.page is not None:
+            await self.page.close()
+            self.page = None
+        if self.context is not None:
+            await self._persist_storage_state()
+            await self.context.close()
+            self.context = None
+
+        kwargs = self._context_kwargs(profile, profile_id=pid)
+        self.context = await self.browser.new_context(**kwargs)
+        self.page = await self.context.new_page()
+        self.network_profile = _normalize_profile(profile)
+        self.profile_id = pid
+        return {
+            "ok": True,
+            "network_profile": self.network_profile,
+            "profile_id": self.profile_id,
+            "storage_state_path": str(self._storage_state_path(self.profile_id)),
+            "proxy": _mask_proxy(kwargs.get("proxy")),
+        }
+
+    async def set_network_profile(self, profile: str) -> dict:
+        """Switch browsing profile (open/soft/hard/dark) at runtime."""
+        requested = _normalize_profile(profile)
+        if self.browser is None:
+            return {"ok": False, "error": "browser_not_initialized", "requested_profile": requested}
+        if requested == self.network_profile and self.page is not None:
+            return {
+                "ok": True,
+                "network_profile": self.network_profile,
+                "changed": False,
+                "profile_id": self.profile_id,
+                "proxy": _mask_proxy(_proxy_for_profile(self.network_profile)),
+            }
+        result = await self._recreate_context(requested, self.profile_id)
+        if not result.get("ok"):
+            return result
+
+        logger.info(
+            "Network profile switched | profile=%s | browser_profile=%s | proxy=%s",
+            self.network_profile,
+            self.profile_id,
+            result.get("proxy", "direct"),
+        )
+        result["changed"] = True
+        return result
+
+    async def switch_profile(self, profile_id: str) -> dict:
+        """Switch persistent browser storage profile."""
+        requested = _normalize_profile_id(profile_id)
+        if requested == self.profile_id and self.page is not None:
+            return {
+                "ok": True,
+                "changed": False,
+                "profile_id": self.profile_id,
+                "network_profile": self.network_profile,
+                "storage_state_path": str(self._storage_state_path(self.profile_id)),
+            }
+        result = await self._recreate_context(self.network_profile, requested)
+        if result.get("ok"):
+            result["changed"] = True
+            logger.info("Browser profile switched | browser_profile=%s", self.profile_id)
+        return result
+
+    async def list_profiles(self) -> dict:
+        """List known browser profiles with storage-state presence."""
+        rows = []
+        for child in sorted(self._profiles_root.iterdir(), key=lambda p: p.name):
+            if not child.is_dir():
+                continue
+            state = child / "storage_state.json"
+            rows.append(
+                {
+                    "profile_id": child.name,
+                    "storage_state_exists": state.exists(),
+                    "storage_state_path": str(state),
+                }
+            )
+        if not any(r["profile_id"] == self.profile_id for r in rows):
+            current_state = self._storage_state_path(self.profile_id)
+            rows.append(
+                {
+                    "profile_id": self.profile_id,
+                    "storage_state_exists": current_state.exists(),
+                    "storage_state_path": str(current_state),
+                }
+            )
+        return {"ok": True, "active_profile_id": self.profile_id, "profiles": rows}
+
+    def _credentials_index_path(self, profile_id: Optional[str] = None) -> Path:
+        pid = _normalize_profile_id(profile_id or self.profile_id)
+        return self._credentials_root / pid / "credentials_index.json"
+
+    async def autofill_login(self, domain: str = "", submit: bool = False, profile_id: str = "") -> dict:
+        """Autofill username/password from secret-backed profile credential index."""
+        pid = _normalize_profile_id(profile_id or self.profile_id)
+        index_path = self._credentials_index_path(pid)
+        if not index_path.exists():
+            return {"ok": False, "error": f"credentials_index_missing: {index_path}", "profile_id": pid}
+
+        payload = json.loads(index_path.read_text(encoding="utf-8"))
+        entries = payload.get("entries", [])
+        if not isinstance(entries, list):
+            return {"ok": False, "error": "invalid_credentials_index", "profile_id": pid}
+
+        active_domain = domain.strip().lower()
+        if not active_domain:
+            try:
+                parsed = urlparse(self.page.url)
+                active_domain = (parsed.hostname or "").lower()
+            except Exception:
+                active_domain = ""
+
+        match = None
+        for entry in entries:
+            row_domain = str(entry.get("domain", "")).strip().lower()
+            if not row_domain:
+                continue
+            if active_domain == row_domain or active_domain.endswith("." + row_domain) or row_domain in active_domain:
+                match = entry
+                break
+        if not match:
+            return {"ok": False, "error": f"no_credentials_for_domain:{active_domain}", "profile_id": pid}
+
+        user_secret = str(match.get("username_secret", "")).strip()
+        pass_secret = str(match.get("password_secret", "")).strip()
+        username = get_secret(user_secret, "")
+        password = get_secret(pass_secret, "")
+        if not (username and password):
+            return {"ok": False, "error": "credential_secret_missing", "profile_id": pid}
+
+        username_selectors = [
+            "input[type='email']",
+            "input[name='username']",
+            "input[name='email']",
+            "input[autocomplete='username']",
+            "input[autocomplete='email']",
+            "input[type='text']",
+        ]
+        password_selectors = [
+            "input[type='password']",
+            "input[name='password']",
+            "input[autocomplete='current-password']",
+            "input[autocomplete='new-password']",
+        ]
+
+        async def _first_visible(selectors: list[str]):
+            for sel in selectors:
+                loc = self.page.locator(sel)
+                if await loc.count() > 0:
+                    try:
+                        if await loc.first.is_visible():
+                            return sel
+                    except Exception:
+                        continue
+            return ""
+
+        user_sel = await _first_visible(username_selectors)
+        pass_sel = await _first_visible(password_selectors)
+        if not (user_sel and pass_sel):
+            return {"ok": False, "error": "login_fields_not_found", "profile_id": pid}
+
+        await self.page.fill(user_sel, username)
+        await self.page.fill(pass_sel, password)
+
+        submitted = False
+        if submit:
+            submit_selectors = [
+                "button[type='submit']",
+                "input[type='submit']",
+                "button:has-text('Sign in')",
+                "button:has-text('Log in')",
+                "button:has-text('Continue')",
+            ]
+            sub_sel = await _first_visible(submit_selectors)
+            if sub_sel:
+                await self.page.click(sub_sel)
+                submitted = True
+
+        return {
+            "ok": True,
+            "action": "autofill_login",
+            "profile_id": pid,
+            "domain": active_domain,
+            "filled": True,
+            "submitted": submitted,
+            "username_hint": str(match.get("username_hint", "")),
+        }
 
     async def launch(self, headless: Optional[bool] = None):
         """Start Playwright and launch Chromium."""
         if headless is None:
             headless = _env_bool("AETHERSCREEN_HEADLESS", True)
 
-        mobile_ctx = _mobile_context()
-
         self.playwright = await async_playwright().start()
         self.browser = await self.playwright.chromium.launch(
             headless=headless,
             args=["--disable-blink-features=AutomationControlled"],
         )
-
-        context_kwargs = {}
-        if mobile_ctx:
-            context_kwargs.update(mobile_ctx)
-        else:
-            context_kwargs.update({
-                "viewport": {"width": 1280, "height": 800},
-                "user_agent": (
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                    "AppleWebKit/537.36 (KHTML, like Gecko) "
-                    "Chrome/120.0.0.0 Safari/537.36"
-                ),
-            })
-        context = await self.browser.new_context(**context_kwargs)
-        self.page = await context.new_page()
+        result = await self._recreate_context(self.network_profile, self.profile_id)
         logger.info(
-            "Playwright Chromium launched | headless=%s | mobile=%s",
+            "Playwright Chromium launched | headless=%s | mobile=%s | net_profile=%s | browser_profile=%s | proxy=%s",
             headless,
-            bool(mobile_ctx),
+            bool(_mobile_context()),
+            self.network_profile,
+            self.profile_id,
+            result.get("proxy", "direct"),
         )
 
     async def close(self):
         """Shutdown browser and Playwright."""
+        if self.context:
+            await self._persist_storage_state()
+            await self.context.close()
         if self.browser:
             await self.browser.close()
         if self.playwright:
@@ -133,11 +439,14 @@ class BrowserWorker:
     #  Core actions — called by the agent runtime
     # ------------------------------------------------------------------
 
-    async def navigate(self, url: str) -> dict:
+    async def navigate(self, url: str, network_profile: str = "") -> dict:
         """Navigate to URL. Returns page title + URL."""
+        requested_profile = _normalize_profile(network_profile) if network_profile else self.network_profile
+        if requested_profile != self.network_profile:
+            await self.set_network_profile(requested_profile)
         await self.page.goto(url, wait_until="domcontentloaded", timeout=30000)
         title = await self.page.title()
-        return {"url": self.page.url, "title": title}
+        return {"url": self.page.url, "title": title, "network_profile": self.network_profile}
 
     async def snapshot(self) -> dict:
         """Get accessibility tree (text representation) of current page."""
@@ -338,6 +647,85 @@ class BrowserWorker:
         """Get all visible text content from the page."""
         return await self.page.inner_text("body")
 
+    async def extract_article(self) -> dict:
+        """Extract article-like structured content from the current page."""
+        script = """
+        () => {
+          const root =
+            document.querySelector('article') ||
+            document.querySelector('main') ||
+            document.body;
+
+          const titleEl = document.querySelector('h1') || document.querySelector('title');
+          const title = (titleEl?.innerText || titleEl?.textContent || document.title || '').trim();
+
+          const paragraphs = Array.from(root.querySelectorAll('p'))
+            .map((p) => (p.innerText || p.textContent || '').trim())
+            .filter((t) => t.length >= 40);
+
+          const headings = Array.from(root.querySelectorAll('h1,h2,h3'))
+            .map((h) => (h.innerText || h.textContent || '').trim())
+            .filter(Boolean)
+            .slice(0, 20);
+
+          const text = paragraphs.join('\\n\\n').slice(0, 50000);
+          const words = text.split(/\\s+/).filter(Boolean).length;
+          const readingMinutes = words > 0 ? Math.max(1, Math.round(words / 220)) : 0;
+
+          return {
+            title,
+            url: window.location.href,
+            paragraph_count: paragraphs.length,
+            headings,
+            excerpt: text.slice(0, 600),
+            text,
+            word_count: words,
+            estimated_reading_minutes: readingMinutes,
+          };
+        }
+        """
+        data = await self.page.evaluate(script)
+        return {"action": "extract_article", **(data or {})}
+
+    async def extract_video(self) -> dict:
+        """Extract on-page video and media embedding metadata."""
+        script = """
+        () => {
+          const videos = Array.from(document.querySelectorAll('video')).map((v, idx) => ({
+            index: idx,
+            src: v.currentSrc || v.src || '',
+            poster: v.poster || '',
+            muted: !!v.muted,
+            autoplay: !!v.autoplay,
+            controls: !!v.controls,
+            duration: Number.isFinite(v.duration) ? Number(v.duration) : null,
+            width: v.videoWidth || null,
+            height: v.videoHeight || null
+          }));
+
+          const iframes = Array.from(document.querySelectorAll('iframe'))
+            .map((f) => f.src || '')
+            .filter(Boolean)
+            .filter((src) => /youtube|youtu\\.be|vimeo|dailymotion|twitch/i.test(src))
+            .slice(0, 20);
+
+          const links = Array.from(document.querySelectorAll('a[href]'))
+            .map((a) => a.href || '')
+            .filter((href) => /youtube|youtu\\.be|vimeo|dailymotion|twitch/i.test(href))
+            .slice(0, 20);
+
+          return {
+            url: window.location.href,
+            video_count: videos.length,
+            videos,
+            embedded_video_iframes: iframes,
+            video_links: links
+          };
+        }
+        """
+        data = await self.page.evaluate(script)
+        return {"action": "extract_video", **(data or {})}
+
     async def wait_for(self, selector: str, timeout: int = 10000) -> dict:
         """Wait for an element to appear."""
         await self.page.wait_for_selector(selector, timeout=timeout)
@@ -401,7 +789,13 @@ class BrowserWorker:
         action = cmd.get("action", "")
         try:
             if action == "navigate":
-                return await self.navigate(cmd["url"])
+                return await self.navigate(cmd["url"], cmd.get("network_profile", ""))
+            elif action == "set_network_profile":
+                return await self.set_network_profile(cmd.get("network_profile", "open"))
+            elif action == "switch_profile":
+                return await self.switch_profile(cmd.get("profile_id", "default"))
+            elif action == "list_profiles":
+                return await self.list_profiles()
             elif action == "snapshot":
                 return await self.snapshot()
             elif action == "screenshot":
@@ -450,6 +844,16 @@ class BrowserWorker:
             elif action == "get_text":
                 text = await self.get_text()
                 return {"text": text[:5000]}  # Truncate for transport
+            elif action == "extract_article":
+                return await self.extract_article()
+            elif action == "extract_video":
+                return await self.extract_video()
+            elif action == "autofill_login":
+                return await self.autofill_login(
+                    domain=cmd.get("domain", ""),
+                    submit=bool(cmd.get("submit", False)),
+                    profile_id=cmd.get("profile_id", ""),
+                )
             elif action == "wait_for":
                 return await self.wait_for(cmd["selector"], cmd.get("timeout", 10000))
             elif action == "form_submit":
@@ -491,6 +895,9 @@ async def worker_loop():
                 await ws.send(json.dumps({"type": "worker-ready", "capabilities": [
                     "navigate", "snapshot", "screenshot", "click", "fill",
                     "upload", "evaluate", "huggingface_upload", "get_text", "wait_for",
+                    "extract_article", "extract_video",
+                    "set_network_profile",
+                    "switch_profile", "list_profiles", "autofill_login",
                     "form_submit", "upload_product",
                     "telegram_send", "telegram_get_updates",
                     "github_issue_list", "github_issue_create", "github_issue_comment",

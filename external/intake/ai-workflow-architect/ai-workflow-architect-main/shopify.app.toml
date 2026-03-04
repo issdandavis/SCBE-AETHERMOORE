@@ -1,0 +1,31 @@
+# Shopify App Configuration for AI Orchestration Hub
+# This file is used by Shopify CLI to manage app settings
+
+name = "AI Orchestration Hub"
+client_id = "73fd0999c6a25186327e64aa101c9710"
+application_url = "https://de1427f3-8456-46c0-b7c0-1b93d8b0f2ab-00-2jrucxt94eeir.picard.replit.dev"
+embedded = true
+
+[access_scopes]
+# Scopes required for the AI product description generator
+scopes = "read_products,write_products,read_content,write_content"
+
+[auth]
+redirect_urls = [
+  "https://de1427f3-8456-46c0-b7c0-1b93d8b0f2ab-00-2jrucxt94eeir.picard.replit.dev/api/shopify/auth/callback"
+]
+
+[webhooks]
+api_version = "2024-01"
+
+  [webhooks.privacy_compliance]
+  customer_deletion_url = "https://de1427f3-8456-46c0-b7c0-1b93d8b0f2ab-00-2jrucxt94eeir.picard.replit.dev/api/shopify/webhooks/customers/redact"
+  customer_data_request_url = "https://de1427f3-8456-46c0-b7c0-1b93d8b0f2ab-00-2jrucxt94eeir.picard.replit.dev/api/shopify/webhooks/customers/data_request"
+  shop_deletion_url = "https://de1427f3-8456-46c0-b7c0-1b93d8b0f2ab-00-2jrucxt94eeir.picard.replit.dev/api/shopify/webhooks/shop/redact"
+
+[pos]
+embedded = false
+
+[build]
+automatically_update_urls_on_dev = true
+dev_store_url = "aethermore-code.myshopify.com"

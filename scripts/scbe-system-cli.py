@@ -22,6 +22,7 @@ import subprocess
 from datetime import datetime, timezone
 import sys
 import urllib.error
+import urllib.parse
 from urllib.request import Request, urlopen
 from pathlib import Path
 
@@ -150,15 +151,25 @@ def _resolve_agent_api_key(agent: dict, env_cache: dict[str, str]) -> tuple[str 
     env_var = agent.get("api_key_env")
     if not env_var:
         provider = (agent.get("provider") or "").lower()
-        env_var = (
-            "ANTHROPIC_API_KEY" if provider == "anthropic" else
-            "OPENAI_API_KEY" if provider == "openai" else
-            "GOOGLE_API_KEY" if provider == "gemini" else
-            None
-        )
-    if not env_var:
-        return None, None
-    return os.environ.get(env_var) or env_cache.get(env_var), env_var
+        if provider == "anthropic":
+            env_candidates = ["ANTHROPIC_API_KEY"]
+        elif provider == "openai":
+            env_candidates = ["OPENAI_API_KEY"]
+        elif provider == "gemini":
+            env_candidates = ["GOOGLE_API_KEY", "GOOGLE_AI_API_KEY", "GEMINI_API_KEY"]
+        else:
+            env_candidates = []
+    else:
+        env_candidates = [env_var]
+
+    for candidate in env_candidates:
+        value = os.environ.get(candidate) or env_cache.get(candidate)
+        if value:
+            return value, candidate
+
+    if env_candidates:
+        return None, env_candidates[0]
+    return None, None
 
 
 def _call_openai_agent(agent: dict, prompt: str, output_dir: Path, env_cache: dict[str, str], max_tokens: int) -> dict:
@@ -232,6 +243,78 @@ def _call_openai_agent(agent: dict, prompt: str, output_dir: Path, env_cache: di
         }
 
 
+def _call_gemini_agent(agent: dict, prompt: str, output_dir: Path, env_cache: dict[str, str], max_tokens: int) -> dict:
+    provider = (agent.get("provider") or "gemini").lower()
+    if provider not in {"gemini", "google", "google-ai-studio"}:
+        return {
+            "ok": False,
+            "agent_id": agent.get("agent_id"),
+            "provider": provider,
+            "error": f"Gemini REST path is only for gemini/google providers, got {provider}",
+        }
+    api_key, env_key = _resolve_agent_api_key(agent, env_cache)
+    if not api_key:
+        return {
+            "ok": False,
+            "agent_id": agent.get("agent_id"),
+            "provider": provider,
+            "error": f"Missing API key. Set {env_key or 'GOOGLE_API_KEY'} and retry.",
+        }
+    model = agent.get("model") or "gemini-2.5-flash"
+    payload = {
+        "contents": [
+            {"role": "user", "parts": [{"text": prompt}]},
+        ],
+        "generationConfig": {
+            "temperature": 0.2,
+            "maxOutputTokens": max_tokens,
+        },
+    }
+    endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+    url = f"{endpoint}?{urllib.parse.urlencode({'key': api_key})}"
+    req = Request(
+        url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urlopen(req, timeout=60) as resp:
+            response_obj = json.loads(resp.read().decode("utf-8"))
+        content = (
+            response_obj.get("candidates", [{}])[0]
+            .get("content", {})
+            .get("parts", [{}])[0]
+            .get("text", "")
+        )
+        usage = response_obj.get("usageMetadata", {})
+        return {
+            "ok": True,
+            "agent_id": agent.get("agent_id"),
+            "provider": provider,
+            "model": model,
+            "raw": response_obj,
+            "content": content,
+            "usage": usage,
+            "output_path": str((output_dir / f"{agent.get('agent_id')}_gemini.json").resolve()) if output_dir else None,
+        }
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode("utf-8", errors="ignore") if getattr(exc, "read", None) else ""
+        return {
+            "ok": False,
+            "agent_id": agent.get("agent_id"),
+            "provider": provider,
+            "error": f"HTTP {exc.code}: {body or str(exc)}",
+        }
+    except Exception as exc:  # pragma: no cover - defensive
+        return {
+            "ok": False,
+            "agent_id": agent.get("agent_id"),
+            "provider": provider,
+            "error": str(exc),
+        }
+
+
 def _write_agent_call_result(output_dir: Path, agent_id: str, result: dict) -> str:
     output_dir.mkdir(parents=True, exist_ok=True)
     path = output_dir / f"{agent_id}_agent_call.json"
@@ -243,13 +326,15 @@ def _route_agent_call(agent: dict, prompt: str, output_dir: Path, env_cache: dic
     provider = (agent.get("provider") or "").lower()
     if provider in {"openai", "openai-compatible", ""}:
         return _call_openai_agent(agent, prompt, output_dir, env_cache, max_tokens)
+    if provider in {"gemini", "google", "google-ai-studio"}:
+        return _call_gemini_agent(agent, prompt, output_dir, env_cache, max_tokens)
     if provider in {"notebooklm", "notebooklm-web", "notebooklm-ui"}:
         return _notebooklm_fallback(agent, prompt, output_dir)
     return {
         "ok": False,
         "agent_id": agent.get("agent_id"),
         "provider": provider or "unknown",
-        "error": f"Unsupported provider '{provider}'. Supported providers: openai, notebooklm.",
+        "error": f"Unsupported provider '{provider}'. Supported providers: openai, gemini, notebooklm.",
     }
 
 
@@ -723,6 +808,27 @@ def cmd_agent_bootstrap(args: argparse.Namespace) -> int:
             description="Research and reflection assistant through NotebookLM.",
             notebook_url=DEFAULT_NOTEBOOKLM_URL,
         )
+    if args.include_gemini:
+        env_cache = _read_env_file(args.repo_root)
+        gemini_key = (
+            os.environ.get("GOOGLE_API_KEY")
+            or os.environ.get("GOOGLE_AI_API_KEY")
+            or os.environ.get("GEMINI_API_KEY")
+            or env_cache.get("GOOGLE_API_KEY")
+            or env_cache.get("GOOGLE_AI_API_KEY")
+            or env_cache.get("GEMINI_API_KEY")
+        )
+        if gemini_key:
+            seed_agents["gemini-main"] = _new_agent_entry(
+                agent_id="gemini-main",
+                provider="gemini",
+                display_name="Gemini",
+                description="Google AI Studio connector for SCBE agent routing.",
+                api_key_env="GOOGLE_API_KEY",
+                model="gemini-2.5-flash",
+            )
+        else:
+            print("Gemini key not found in env/.env; skipping default gemini-main agent.")
 
     if args.force and not args.append:
         registry["agents"] = {}
@@ -781,7 +887,7 @@ def cmd_agent_register(args: argparse.Namespace) -> int:
 
     registry_path = _agent_registry_path(args.repo_root)
     registry = _load_agent_registry(registry_path)
-    providers = {"openai", "notebooklm"}
+    providers = {"openai", "gemini", "notebooklm"}
     if args.provider not in providers:
         print(f"Unsupported provider '{args.provider}'. Use {', '.join(sorted(providers))}")
         return 2
@@ -789,6 +895,8 @@ def cmd_agent_register(args: argparse.Namespace) -> int:
     capabilities = [c.strip() for c in args.capabilities.split(",")] if args.capabilities else []
     if args.provider == "openai" and not args.api_key_env:
         args.api_key_env = "OPENAI_API_KEY"
+    if args.provider == "gemini" and not args.api_key_env:
+        args.api_key_env = "GOOGLE_API_KEY"
 
     entry = _new_agent_entry(
         agent_id=args.agent_id,
@@ -1023,6 +1131,8 @@ def build_parser() -> argparse.ArgumentParser:
     a_boot.add_argument("--force", action="store_true", help="Replace existing registry before bootstrapping")
     a_boot.add_argument("--include-notebooklm", action="store_true", default=True, help="Include NotebookLM default entry")
     a_boot.add_argument("--no-include-notebooklm", dest="include_notebooklm", action="store_false", help="Skip NotebookLM default entry")
+    a_boot.add_argument("--include-gemini", action="store_true", default=True, help="Include Gemini default entry when key is available")
+    a_boot.add_argument("--no-include-gemini", dest="include_gemini", action="store_false", help="Skip Gemini default entry")
     a_boot.add_argument("--codex-model", default="gpt-4o-mini")
     a_boot.set_defaults(func=cmd_agent_bootstrap)
 
@@ -1031,7 +1141,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     a_reg = agent_sub.add_parser("register", help="Register or update one squad agent")
     a_reg.add_argument("--agent-id", required=True)
-    a_reg.add_argument("--provider", required=True, choices=("openai", "notebooklm"))
+    a_reg.add_argument("--provider", required=True, choices=("openai", "gemini", "notebooklm"))
     a_reg.add_argument("--display-name")
     a_reg.add_argument("--description")
     a_reg.add_argument("--api-key-env", default="")

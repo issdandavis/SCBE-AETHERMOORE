@@ -1,0 +1,374 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - region "Official government website" [ref=e4]:
+      - generic [ref=e7]:
+        - img "U.S. flag" [ref=e8]
+        - paragraph [ref=e9]: An official website of the United States government
+        - button "Here’s how you know Arrow icon" [ref=e10] [cursor=pointer]:
+          - text: Here’s how you know
+          - img "Arrow icon" [ref=e11]: keyboard_arrow_down
+    - banner [ref=e12]:
+      - paragraph [ref=e13]:
+        - link "Jump to main content" [ref=e14] [cursor=pointer]:
+          - /url: "#main"
+      - generic [ref=e16]:
+        - link "USPTO - United States Patent and Trademark Office" [ref=e18] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e19]: USPTO - United States Patent and Trademark Office
+        - generic [ref=e20]:
+          - navigation "User account menu" [ref=e21]:
+            - heading "User account menu" [level=2] [ref=e22]
+            - list [ref=e23]:
+              - listitem [ref=e24]:
+                - link "About Us" [ref=e25] [cursor=pointer]:
+                  - /url: /about-us
+              - listitem [ref=e26]:
+                - link "Jobs" [ref=e27] [cursor=pointer]:
+                  - /url: /jobs/join-us
+              - listitem [ref=e28]:
+                - link "Contact Us" [ref=e29] [cursor=pointer]:
+                  - /url: /about-us/contact-us
+              - listitem [ref=e30]:
+                - link "MyUSPTO" [ref=e31] [cursor=pointer]:
+                  - /url: https://my.uspto.gov
+          - generic [ref=e34]:
+            - generic [ref=e35]: "Search:"
+            - searchbox "Search:" [ref=e36]
+            - button "Search" [ref=e37] [cursor=pointer]:
+              - img [ref=e38]
+              - generic [ref=e40]: Search
+      - navigation [ref=e43]:
+        - generic [ref=e44]:
+          - navigation "Main navigation" [ref=e46]:
+            - heading "Main navigation" [level=2] [ref=e47]
+            - menu [ref=e49]:
+              - menuitem "Patents" [ref=e50]:
+                - button "Patents" [ref=e51] [cursor=pointer]
+              - menuitem "Trademarks" [ref=e52]:
+                - button "Trademarks" [ref=e53] [cursor=pointer]
+              - menuitem "IP Policy" [ref=e54]:
+                - button "IP Policy" [ref=e55] [cursor=pointer]
+              - menuitem "Learning and Resources" [ref=e56]:
+                - button "Learning and Resources" [ref=e57] [cursor=pointer]
+          - generic [ref=e59]:
+            - generic [ref=e60] [cursor=pointer]:
+              - img [ref=e61]
+              - text: Find It Fast
+            - text: "| | | | | | | | | | | |"
+      - navigation "Breadcrumb" [ref=e68]:
+        - heading "Breadcrumb" [level=2] [ref=e69]
+        - list [ref=e70]:
+          - listitem [ref=e71]:
+            - link "Home" [ref=e72] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=e73]:
+            - text: ">"
+            - link "Patents" [ref=e74] [cursor=pointer]:
+              - /url: /patents
+          - listitem [ref=e75]:
+            - text: ">"
+            - link "Basics" [ref=e76] [cursor=pointer]:
+              - /url: /patents/basics
+          - listitem [ref=e77]:
+            - text: ">"
+            - link "Applying" [ref=e78] [cursor=pointer]:
+              - /url: /patents/basics/apply
+          - listitem [ref=e79]: "> Provisional Application for Patent"
+    - main [ref=e80]:
+      - generic [ref=e82]:
+        - complementary [ref=e83]:
+          - generic [ref=e85]:
+            - navigation "Applying for a patent" [ref=e86]:
+              - heading "Applying for a patent" [level=2] [ref=e87]:
+                - link "Applying for a patent" [ref=e88] [cursor=pointer]:
+                  - /url: /patents/basics/apply
+              - list [ref=e89]:
+                - listitem [ref=e90]:
+                  - link "Design patent guide" [ref=e91] [cursor=pointer]:
+                    - /url: /patents/basics/apply/design-patent
+                - listitem [ref=e92]:
+                  - link "Plant patent guide" [ref=e93] [cursor=pointer]:
+                    - /url: /patents/basics/apply/plant-patent
+                - listitem [ref=e94]:
+                  - link "Utility patent guide" [ref=e95] [cursor=pointer]:
+                    - /url: /patents/basics/apply/utility-patent
+                - listitem [ref=e96]:
+                  - link "Provisional applications" [ref=e97] [cursor=pointer]:
+                    - /url: /patents/basics/apply/provisional-application
+            - article [ref=e99]:
+              - generic [ref=e101]:
+                - article [ref=e106]:
+                  - heading "File Online" [level=3] [ref=e107]:
+                    - link "File Online" [ref=e108] [cursor=pointer]:
+                      - /url: /patents/apply
+                  - generic [ref=e110]: File a patent application online with Patent Center
+                - article [ref=e116]:
+                  - heading "Maintenance Fees" [level=3] [ref=e117]:
+                    - link "Maintenance Fees" [ref=e118] [cursor=pointer]:
+                      - /url: /learning-and-resources/ip-policy/foia-reading-room/maintenance-fees
+                  - generic [ref=e120]: Estimate your patent maintenance fees
+                - article [ref=e125]:
+                  - strong [ref=e127]: Contact Us
+                  - generic [ref=e129]:
+                    - generic [ref=e130]: "Local:"
+                    - generic [ref=e131]: 1-800-786-9199
+        - main [ref=e132]:
+          - generic [ref=e133]:
+            - heading "Provisional Application for Patent" [level=1] [ref=e135]
+            - article [ref=e137]:
+              - generic [ref=e139]:
+                - heading "Provisional patent application forms" [level=2] [ref=e140]
+                - paragraph [ref=e141]:
+                  - strong [ref=e142]: A provisional patent application allows you to file without a formal patent claim, oath or declaration, or any information disclosure (prior art) statement.
+                - paragraph [ref=e143]: Since June 8, 1995, the United States Patent and Trademark Office (USPTO) has offered inventors the option of filing a provisional application for patent which was designed to provide a lower-cost first patent filing in the United States and to give U.S. applicants parity with foreign applicants under the GATT Uruguay Round Agreements.
+                - paragraph [ref=e144]:
+                  - text: A provisional application for patent (provisional application) is a U.S. national application filed in the USPTO under
+                  - link "35 U.S.C. §111(b)" [ref=e145] [cursor=pointer]:
+                    - /url: /web/offices/pac/mpep/consolidated_laws.pdf
+                  - text: . A provisional application is not required to have a formal patent claim or an oath or declaration. Provisional applications also should not include any information disclosure (prior art) statement since provisional applications are not examined. A provisional application provides the means to establish an early effective filing date in a later filed nonprovisional patent application filed under
+                  - link "35 U.S.C. §111(a)" [ref=e146] [cursor=pointer]:
+                    - /url: /web/offices/pac/mpep/consolidated_laws.pdf
+                  - text: . It also allows the term "Patent Pending" to be applied in connection with the description of the invention.
+                - paragraph [ref=e147]:
+                  - text: A provisional application for patent has a pendency lasting 12 months from the date the provisional application is filed.
+                  - strong [ref=e148]: The 12-month pendency period cannot be extended.
+                  - text: Therefore, an applicant who files a provisional application must file a corresponding nonprovisional application for patent (nonprovisional application) during the 12-month pendency period of the provisional application in order to benefit from the earlier filing of the provisional application. However, a nonprovisional application that was filed more than 12 months after the filing date of the provisional application, but within 14 months after the filing date of the provisional application, may have the benefit of the provisional application restored by filing a grantable petition (including a statement that the delay in filing the nonprovisional application was unintentional and the required petition fee) to restore the benefit under 37 CFR 1.78.
+                - paragraph [ref=e149]:
+                  - text: In accordance with
+                  - link "35 U.S.C. §119(e)" [ref=e150] [cursor=pointer]:
+                    - /url: /web/offices/pac/mpep/consolidated_laws.pdf
+                  - text: ", the corresponding nonprovisional application must contain or be amended to contain a specific reference to the provisional application. For nonprovisional applications filed on or after September 16, 2012, the specific reference must be included in an application data sheet. Further, a claim under"
+                  - link "35 U.S.C. §119(e" [ref=e151] [cursor=pointer]:
+                    - /url: /web/offices/pac/mpep/consolidated_laws.pdf
+                  - text: ) for the benefit of a prior provisional application must be filed during the pendency of the nonprovisional application, and within four months of the nonprovisional application filing date or within sixteen months of the provisional application filing date (whichever is later). See
+                  - link "37 CFR 1.78" [ref=e152] [cursor=pointer]:
+                    - /url: /web/offices/pac/mpep/consolidated_rules.pdf
+                  - text: .
+                - paragraph [ref=e153]:
+                  - text: Once a provisional application is filed, an alternative to filing a corresponding nonprovisional application is to convert the provisional application to a nonprovisional application by filing a grantable petition under
+                  - link "37 C.F.R. 1.53(c)(3)" [ref=e154] [cursor=pointer]:
+                    - /url: /web/offices/pac/mpep/consolidated_rules.pdf
+                  - text: requesting such a conversion within 12 months of the provisional application filing date.
+                - paragraph [ref=e155]: Converting a provisional application into a nonprovisional application (versus filing a nonprovisional application claiming the benefit of the provisional application) will have a negative impact on patent term. The term of a patent issuing from a nonprovisional application resulting from the conversion of a provisional application will be measured from the original filing date of the provisional application. By filing a provisional application first, and then filing a corresponding nonprovisional application that references the provisional application within the 12-month provisional application pendency period, a patent term endpoint may be extended by as much as 12 months.
+                - heading "Provisional application for patent filing date requirements" [level=3] [ref=e156]
+                - paragraph [ref=e157]: The provisional application must name all of the inventor(s). In view of the one-year grace period provided by 35 U.S.C. 102(b)(1) in conjunction with 35 U.S.C. 102(a)(1), a provisional application can be filed up to 12 months following an inventor's public disclosure of the invention. (Such a pre-filing disclosure, although protected in the United States, may preclude patenting in foreign countries.) A public disclosure (e.g., publication, public use, offer for sale) more than one year before the provisional application filing date would preclude patenting in the United States. Keep in mind that a publication, use, sale, or other activity only has to be made available to the public to qualify as a public disclosure.
+                - paragraph [ref=e158]:
+                  - text: A filing date will be accorded to a provisional application only when it contains a written description of the invention, complying with all requirements of
+                  - link "35 U.S.C. §112" [ref=e159] [cursor=pointer]:
+                    - /url: /web/offices/pac/mpep/consolidated_laws.pdf
+                  - text: (a).
+                - paragraph [ref=e160]: Although the application will be accorded a filing date regardless of whether any drawings are submitted, applicants are advised to file with the application any drawings necessary for the understanding of the invention, complying with 35 U.S.C. 113. A drawing necessary to understand the invention cannot be introduced into an application after the filing date because of the prohibition against new matter. Further, 37 CFR 1.53(c) prohibits amendments from being filed in provisional applications which are not required to comply with the patent statute and all applicable regulations.
+                - paragraph [ref=e161]:
+                  - text: To be complete, a provisional application
+                  - strong [ref=e162]: must also
+                  - text: include the filing fee as set forth in
+                  - link "37 CFR 1.16(d)" [ref=e163] [cursor=pointer]:
+                    - /url: /web/offices/pac/mpep/consolidated_rules.pdf
+                  - text: "and a cover sheet* identifying:"
+                - list [ref=e164]:
+                  - listitem [ref=e165]: the application as a provisional application for patent;
+                  - listitem [ref=e166]: the name(s) of all inventors;
+                  - listitem [ref=e167]: inventor residence(s);
+                  - listitem [ref=e168]: title of the invention;
+                  - listitem [ref=e169]: name and registration number of attorney or agent and docket number (if applicable);
+                  - listitem [ref=e170]: correspondence address; and
+                  - listitem [ref=e171]: any U.S. Government agency that has a property interest in the application.
+                - paragraph [ref=e172]:
+                  - text: "*"
+                  - link "A cover sheet, form PTO/SB/16, pages 1 and 2, is available" [ref=e173] [cursor=pointer]:
+                    - /url: https://www.uspto.gov/sites/default/files/documents/sb0016.pdf
+                  - text: .
+                - paragraph [ref=e174]:
+                  - strong [ref=e175]: "Note:"
+                  - text: The information in this brochure is general in nature and is not meant to substitute for advice provided by a patent practitioner. Applicants unfamiliar with the requirements of U.S. patent law and procedures should consult an attorney or agent registered to practice before the USPTO.
+                - paragraph [ref=e176]:
+                  - text: A list of attorneys and agents can be searched at the
+                  - link "USPTO Website" [ref=e177] [cursor=pointer]:
+                    - /url: http://www.uspto.gov
+                  - text: .
+                - heading "Cautions" [level=3] [ref=e178]
+                - list [ref=e179]:
+                  - listitem [ref=e180]: The benefits of the provisional application cannot be claimed if the 12-month deadline for filing a nonprovisional application has expired (unless the benefit of the provisional application has been restored under 37 CFR 1.78).
+                  - listitem [ref=e181]: "A provisional application cannot result in a U.S. patent unless one of the following two events occur within 12 months of the provisional application filing date:"
+                - list [ref=e182]:
+                  - listitem [ref=e183]: a corresponding nonprovisional application for patent entitled to a filing date is filed that claims the benefit of the earlier filed provisional application (unless the benefit of the provisional application was restored under 37 CFR 1.78 in which case the nonprovisional application may be filed within 14 months from provisional application filing date); or
+                  - listitem [ref=e184]:
+                    - text: a grantable petition under
+                    - link "37 CFR 1.53(c)(3)" [ref=e185] [cursor=pointer]:
+                      - /url: /web/offices/pac/mpep/consolidated_rules.pdf
+                    - text: to convert the provisional application into a nonprovisional application is filed.
+                - list [ref=e186]:
+                  - listitem [ref=e187]: Provisional applications for patent may not be filed for design inventions.
+                  - listitem [ref=e188]: Provisional applications are not examined on their merits.
+                  - listitem [ref=e189]: Provisional applications for patent cannot claim the benefit of a previously-filed application, either foreign or domestic.
+                  - listitem [ref=e190]: It is recommended that the disclosure of the invention in the provisional application be as complete as possible.
+                  - listitem [ref=e191]: In order to obtain the benefit of the filing date of a provisional application, the claimed subject matter in the later filed nonprovisional application must have support in the provisional application.
+                  - listitem [ref=e192]: If there are multiple inventors, each inventor must be named in the application.
+                  - listitem [ref=e193]: All inventor(s) named in the provisional application must have made a contribution, either jointly or individually, to the invention disclosed in the application.
+                  - listitem [ref=e194]: The nonprovisional application must have at least one inventor in common with the inventor(s) named in the provisional application to claim benefit of the provisional application filing date.
+                  - listitem [ref=e195]: A provisional application must be entitled to a filing date and include the basic filing fee in order for a nonprovisional application to claim benefit of that provisional application.
+                  - listitem [ref=e196]: There is a surcharge for filing the basic filing fee or the cover sheet on a date later than filing the provisional application.
+                  - listitem [ref=e197]: Amendments are not permitted in provisional applications after filing, other than those to make the provisional application comply with applicable regulations.
+                  - listitem [ref=e198]: No information disclosure statement may be filed in a provisional application.
+                - heading "Fee" [level=3] [ref=e199]
+                - paragraph [ref=e200]:
+                  - text: Fees are subject to change annually. See current fees (37 CFR 1.16(d)) at
+                  - link "www.uspto.gov" [ref=e201] [cursor=pointer]:
+                    - /url: /
+                  - text: . Call the USPTO Contact Center (UCC) Monday to Friday (except federal holidays) at 800-786-9199 for fee information. Payment by check or money order must be made payable to "Director of the U.S. Patent and Trademark Office."
+                - heading "How to file" [level=3] [ref=e202]
+                - paragraph [ref=e203]: The provisional application papers (written description and drawings), filing fee and cover sheet can be filed electronically using Patent Center or filed by mail.
+                - paragraph [ref=e204]:
+                  - strong [ref=e205]: "Electronically Using Patent Center:"
+                  - text: The provisional application can be filed electronically only if Patent Center is used. Patent Center allows patent applications, including provisional applications, to be filed securely via the Internet. Applicants prepare documents in Portable Document Format (PDF), attach the documents, validate that the PDF documents will be compatible with USPTO internal automated information systems, submit the documents, and pay fees with real-time payment processing. When fillable Patent Center forms are used, the data entered into the forms is automatically loaded into USPTO information systems. Further information on Patent Center is available at
+                  - link "https://www.uspto.gov/patents/apply/patent-center" [ref=e206] [cursor=pointer]:
+                    - /url: https://www.uspto.gov/patents/apply/patent-center
+                  - text: .
+                - paragraph [ref=e207]:
+                  - strong [ref=e208]: "By Mail:"
+                  - text: "The provisional application and filing fee can be mailed to:"
+                - paragraph [ref=e209]:
+                  - text: Commissioner for Patents
+                  - text: P.O. Box 1450
+                  - text: Alexandria, VA 22313-1450
+                - heading "Features" [level=3] [ref=e210]
+                - list [ref=e211]:
+                  - listitem [ref=e212]: Provides simplified filing with a lower initial investment with 12 months to assess the invention's commercial potential before committing to higher cost of filing and prosecuting a nonprovisional application for patent.
+                  - listitem [ref=e213]: Establishes official United States patent application filing date for the invention.
+                  - listitem [ref=e214]: Permits authorized use of "Patent Pending" notice for 12 months in connection with the description of the invention.
+                  - listitem [ref=e215]: Begins the Paris Convention priority year.
+                  - listitem [ref=e216]: Enables immediate commercial promotion of invention with greater security against having the invention stolen.
+                  - listitem [ref=e217]: Permits applicant(s) to obtain USPTO certified copies.
+                - heading "Warnings" [level=3] [ref=e218]
+                - paragraph [ref=e219]: A provisional application automatically becomes abandoned when its pendency period expires 12 months after the provisional application filing date by operation of law. Applicants must file a nonprovisional application claiming benefit of the earlier provisional application filing date in the USPTO before the provisional application pendency period expires in order to preserve any benefit from the provisional application filing (unless the benefit of the provisional application has been restored under 37 CFR 1.78).
+                - paragraph [ref=e220]:
+                  - text: Beware that an applicant who publicly discloses his or her invention (e.g., publishes, uses, sells, or otherwise makes available to the public) during the 12 month provisional application pendency period may lose more than the benefit of the provisional application filing date if the 12 month provisional application pendency period expires before a corresponding nonprovisional application is filed. Such an applicant may also lose the right to ever patent the invention. See
+                  - link "35 U.S.C. §§102(a)" [ref=e221] [cursor=pointer]:
+                    - /url: /web/offices/pac/mpep/consolidated_laws.pdf
+                  - text: (1) and (b)(1).
+                  - text: Independent inventors should fully understand that a provisional application will not mature into a granted patent without further submissions by the inventor. Some invention promotion firms misuse the provisional application process leaving the inventor with no patent.
+                - heading "Contacts" [level=3] [ref=e222]
+                - paragraph [ref=e223]: Direct questions regarding regulations or procedures to the Office of the Deputy Commissioner for Patent Examination Policy.
+                - paragraph [ref=e224]: "Telephone: 571-272-8800 Fax: 571-273-0125"
+                - paragraph [ref=e225]: Direct questions regarding legislative changes to the Office of Policy and External Affairs.
+                - paragraph [ref=e226]: "Telephone: 571-272-9300 Fax: 571-273-0085"
+                - paragraph [ref=e227]:
+                  - text: The
+                  - link "Inventors Assistance Center" [ref=e228] [cursor=pointer]:
+                    - /url: /learning-and-resources/support-centers/inventors-assistance-center-iac
+                  - text: "(IAC) provides patent information and services to the public. The IAC is staffed by former Supervisory Patent Examiners and experienced Primary Examiners who answer general questions concerning patent examining policy and procedure. Send e-mail to:"
+                  - link "IndependentInventor@uspto.gov" [ref=e229] [cursor=pointer]:
+                    - /url: mailto:independentinventor@uspto.gov
+                  - text: .
+                - paragraph [ref=e230]:
+                  - text: For additional copies of this brochure, or for further information, contact the USPTO Contact Center.
+                  - text: "Telephone: 800-786-9199"
+                  - text: "Email:"
+                  - link "usptoinfo@uspto.gov" [ref=e231] [cursor=pointer]:
+                    - /url: /patents/usptoinfo@uspto.gov
+                  - text: .
+                  - text: Access USPTO's website at
+                  - link "www.uspto.gov" [ref=e232] [cursor=pointer]:
+                    - /url: /
+                  - text: .
+                - paragraph [ref=e233]: "Provisional application mailing address:"
+                - paragraph [ref=e234]:
+                  - text: Commissioner for Patents
+                  - text: P.O. Box 1450
+                  - text: Alexandria, VA 22313-1450
+    - generic [ref=e239]:
+      - generic [ref=e240]:
+        - button "Share Share this page" [ref=e241] [cursor=pointer]:
+          - img "Share" [ref=e242]: share
+          - text: Share this page
+        - link "print Print this page" [ref=e243] [cursor=pointer]:
+          - /url: ""
+          - img "print" [ref=e244]
+          - text: Print this page
+      - generic [ref=e245]:
+        - link "Additional information" [ref=e246] [cursor=pointer]:
+          - /url: ""
+        - text: about this page
+    - contentinfo [ref=e247]:
+      - generic [ref=e250]:
+        - generic [ref=e251]:
+          - paragraph [ref=e252]: Receive updates from the USPTO
+          - generic [ref=e254]:
+            - generic [ref=e255]: Enter your email to subscribe or update your preferences
+            - generic [ref=e256]:
+              - textbox "Enter your email to subscribe or update your preferences" [ref=e257]:
+                - /placeholder: your@email.com
+              - button "Subscribe" [ref=e258] [cursor=pointer]
+        - generic [ref=e259]:
+          - generic [ref=e260]:
+            - generic [ref=e261]:
+              - link "About the USPTO" [ref=e262] [cursor=pointer]:
+                - /url: https://www.uspto.gov/about-us
+              - text: •
+            - generic [ref=e263]:
+              - link "Search for patents" [ref=e264] [cursor=pointer]:
+                - /url: https://www.uspto.gov/patents/search
+              - text: •
+            - link "Search for trademarks" [ref=e266] [cursor=pointer]:
+              - /url: https://www.uspto.gov/trademarks/search
+          - generic [ref=e267]:
+            - generic [ref=e268]:
+              - link "US Department of Commerce" [ref=e270] [cursor=pointer]:
+                - /url: https://www.commerce.gov
+              - link "Accessibility" [ref=e272] [cursor=pointer]:
+                - /url: https://www.uspto.gov/using-usptogov/accessibility-uspto-website
+              - link "Privacy Policy" [ref=e274] [cursor=pointer]:
+                - /url: https://www.uspto.gov/privacy-policy
+              - link "Terms of Use" [ref=e276] [cursor=pointer]:
+                - /url: https://www.uspto.gov/terms-use-uspto-websites
+              - link "Financial and Performance Data" [ref=e278] [cursor=pointer]:
+                - /url: https://www.uspto.gov/about-us/financial-and-performance
+            - generic [ref=e279]:
+              - link "Vulnerability Disclosure Policy" [ref=e281] [cursor=pointer]:
+                - /url: https://www.uspto.gov/about-us/security/vulnerability-disclosure-policy
+              - link "Freedom of Information Act" [ref=e283] [cursor=pointer]:
+                - /url: https://www.uspto.gov/learning-and-resources/ip-policy/electronic-freedom-information-act-e-foia
+              - link "Inspector General" [ref=e285] [cursor=pointer]:
+                - /url: https://www.oig.doc.gov/about/oversight-areas/u-s-patent-and-trademark-office-pto/
+              - link "NoFEAR Act" [ref=e287] [cursor=pointer]:
+                - /url: https://www.uspto.gov/about-us/nofear-act
+              - link "USA.gov" [ref=e289] [cursor=pointer]:
+                - /url: https://www.usa.gov
+      - generic [ref=e292]:
+        - link "United States Patent and Trademark Office - An Agency of the Department of Commerce USPTO - United States Patent and Trademark Office" [ref=e294] [cursor=pointer]:
+          - /url: https://www.uspto.gov
+          - img "United States Patent and Trademark Office - An Agency of the Department of Commerce" [ref=e295]
+          - generic [ref=e296]: USPTO - United States Patent and Trademark Office
+        - generic [ref=e297]:
+          - generic [ref=e298]: Follow us
+          - generic [ref=e299]:
+            - link "Facebook USPTO Facebook page" [ref=e300] [cursor=pointer]:
+              - /url: https://www.facebook.com/uspto.gov
+              - img "Facebook" [ref=e301]
+              - generic [ref=e302]: USPTO Facebook page
+            - link "Instagram USPTO Instagram page" [ref=e303] [cursor=pointer]:
+              - /url: https://www.instagram.com/uspto
+              - img "Instagram" [ref=e304]
+              - generic [ref=e305]:
+                - text: USPTO Instagram
+                - generic [ref=e306]: page
+            - link "Linkedin USPTO Linkedin page" [ref=e307] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/uspto
+              - img "Linkedin" [ref=e308]
+              - generic [ref=e309]:
+                - text: USPTO Linkedin
+                - generic [ref=e310]: page
+            - link "X USPTO X page" [ref=e311] [cursor=pointer]:
+              - /url: https://x.com/uspto
+              - img "X" [ref=e312]
+              - generic [ref=e313]:
+                - text: USPTO X
+                - generic [ref=e314]: page
+            - link "Youtube USPTO Youtube page" [ref=e315] [cursor=pointer]:
+              - /url: https://www.youtube.com/user/USPTOvideo
+              - img "Youtube" [ref=e316]
+              - generic [ref=e317]:
+                - text: USPTO Youtube
+                - generic [ref=e318]: page

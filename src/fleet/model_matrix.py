@@ -82,6 +82,17 @@ class ModelConfig:
     @property
     def api_key(self) -> Optional[str]:
         """Resolve the key from the environment at call time."""
+        if self.provider == ModelProvider.GEMINI:
+            # Accept all supported Gemini key aliases so config stays portable.
+            candidates = []
+            if self.api_key_env:
+                candidates.append(self.api_key_env)
+            candidates.extend(["GOOGLE_API_KEY", "GOOGLE_AI_API_KEY", "GEMINI_API_KEY"])
+            for name in candidates:
+                value = os.environ.get(name)
+                if value:
+                    return value
+            return None
         if not self.api_key_env:
             return None
         return os.environ.get(self.api_key_env)
@@ -241,17 +252,22 @@ async def _call_xai(config: ModelConfig, prompt: str, context: Optional[str] = N
 
 
 async def _call_gemini(config: ModelConfig, prompt: str, context: Optional[str] = None) -> str:
-    """Query Google Gemini. Falls back to mock if SDK unavailable."""
+    """Query Google Gemini.
+
+    Prefers official SDK when available. If SDK is missing, falls back to
+    direct REST call so GOOGLE_* keys remain usable in minimal environments.
+    """
+    key = config.api_key
+    if not key:
+        return _mock("Gemini", config, prompt)
+
+    full_prompt = f"{context}\n\n{prompt}" if context else prompt
+
     try:
         import google.generativeai as genai  # type: ignore[import-untyped]
 
-        key = config.api_key
-        if not key:
-            return _mock("Gemini", config, prompt)
-
         genai.configure(api_key=key)
         model = genai.GenerativeModel(config.model_id)
-        full_prompt = f"{context}\n\n{prompt}" if context else prompt
         resp = model.generate_content(
             full_prompt,
             generation_config=genai.GenerationConfig(
@@ -261,9 +277,50 @@ async def _call_gemini(config: ModelConfig, prompt: str, context: Optional[str] 
         )
         return resp.text  # type: ignore[union-attr]
     except ImportError:
-        return _mock("Gemini", config, prompt)
+        return _call_gemini_rest(config, full_prompt, key)
     except Exception as exc:
-        return f"[Gemini error: {exc}]"
+        # SDK can fail on package/runtime drift; retry via REST before giving up.
+        rest_text = _call_gemini_rest(config, full_prompt, key)
+        if rest_text.startswith("[Gemini REST error:"):
+            return f"[Gemini error: {exc}]"
+        return rest_text
+
+
+def _call_gemini_rest(config: ModelConfig, full_prompt: str, key: str) -> str:
+    """Direct Gemini REST fallback for environments without google.generativeai."""
+    try:
+        import urllib.parse
+        import urllib.request
+
+        endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/{config.model_id}:generateContent"
+        url = f"{endpoint}?{urllib.parse.urlencode({'key': key})}"
+        payload = json.dumps(
+            {
+                "contents": [{"role": "user", "parts": [{"text": full_prompt}]}],
+                "generationConfig": {
+                    "temperature": config.temperature,
+                    "maxOutputTokens": config.max_tokens,
+                },
+            }
+        ).encode("utf-8")
+
+        req = urllib.request.Request(
+            url,
+            data=payload,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=120) as resp:
+            body = json.loads(resp.read().decode("utf-8"))
+        return (
+            body.get("candidates", [{}])[0]
+            .get("content", {})
+            .get("parts", [{}])[0]
+            .get("text", "")
+            or "[empty Gemini response]"
+        )
+    except Exception as exc:  # noqa: BLE001
+        return f"[Gemini REST error: {exc}]"
 
 
 async def _call_ollama(config: ModelConfig, prompt: str, context: Optional[str] = None) -> str:
@@ -987,7 +1044,7 @@ class ModelMatrix:
                 ),
                 ModelConfig(
                     provider=ModelProvider.GEMINI,
-                    model_id="gemini-2.0-flash",
+                    model_id="gemini-2.5-flash",
                     api_key_env="GOOGLE_AI_API_KEY",
                     role="creative",
                     temperature=0.85,
@@ -1031,7 +1088,7 @@ class ModelMatrix:
             models=[
                 ModelConfig(
                     provider=ModelProvider.GEMINI,
-                    model_id="gemini-2.0-flash",
+                    model_id="gemini-2.5-flash",
                     api_key_env="GOOGLE_AI_API_KEY",
                     role="optimizer",
                     temperature=0.3,
@@ -1083,7 +1140,7 @@ class ModelMatrix:
                 ),
                 ModelConfig(
                     provider=ModelProvider.GEMINI,
-                    model_id="gemini-2.0-flash",
+                    model_id="gemini-2.5-flash",
                     api_key_env="GOOGLE_AI_API_KEY",
                     role="planner",
                     temperature=0.3,

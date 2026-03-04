@@ -1,0 +1,8 @@
+{
+  "customer_id": "aethermoore-core",
+  "created_at": "2026-03-03T08:19:36Z",
+  "algorithm": "pbkdf2_sha256",
+  "iterations": 200000,
+  "salt": "df6e3abe2e99a30f49f4380a1156f3a2",
+  "pin_hash": "f1372df4758627881e79107792c0cd741821a966c78a3fda64ac5dd78a6b9bd8"
+}

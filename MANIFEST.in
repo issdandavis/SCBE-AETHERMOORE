@@ -1,0 +1,42 @@
+include README.md
+include LICENSE
+include pyproject.toml
+
+graft src
+
+# Keep published source distributions lean.
+prune src/.github
+prune src/.hypothesis
+prune src/.kiro
+prune src/artifacts
+prune src/backups
+prune src/demo
+prune src/docs
+prune src/external
+prune src/node_modules
+prune src/notebooks
+prune src/scripts
+prune src/shopify
+prune src/tests
+prune src/training
+prune src/training-data
+
+prune artifacts
+prune backups
+prune demo
+prune dist
+prune docs
+prune external
+prune hydra
+prune node_modules
+prune notebooks
+prune scripts
+prune shopify
+prune tests
+prune training
+prune training-data
+prune SCBE-AETHERMOORE-v3.0.0
+
+global-exclude __pycache__/*
+global-exclude *.py[cod]
+global-exclude .DS_Store

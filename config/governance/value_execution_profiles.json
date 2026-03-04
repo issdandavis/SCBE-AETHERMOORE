@@ -1,0 +1,50 @@
+{
+  "version": "2026-03-03",
+  "intent_value_weights": {
+    "lead_generation": 0.92,
+    "publish_content": 0.84,
+    "release_ops": 0.78,
+    "research_intel": 0.7,
+    "maintenance": 0.55,
+    "generic": 0.5
+  },
+  "execution_modes": {
+    "api_first": {
+      "estimated_cost_cents": 2.0,
+      "quality": 0.7,
+      "speed": 0.92
+    },
+    "browser_assist": {
+      "estimated_cost_cents": 7.0,
+      "quality": 0.85,
+      "speed": 0.78
+    },
+    "full_browser": {
+      "estimated_cost_cents": 20.0,
+      "quality": 0.93,
+      "speed": 0.58
+    }
+  },
+  "risk_mode_caps": {
+    "low": [
+      "api_first",
+      "browser_assist",
+      "full_browser"
+    ],
+    "medium": [
+      "api_first",
+      "browser_assist",
+      "full_browser"
+    ],
+    "high": [
+      "api_first",
+      "browser_assist"
+    ]
+  },
+  "default_budget_cents": {
+    "low": 20,
+    "medium": 12,
+    "high": 8
+  }
+}
+

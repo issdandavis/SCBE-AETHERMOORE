@@ -5,6 +5,10 @@ Master publishing script. Runs all platform posting scripts based on available c
 Checks which env vars are set for each platform and only runs scripts
 where all required credentials are present.
 
+Optional browser fallback:
+    If credentials are missing, run Playwright-based posting for supported
+    platforms using existing browser session state.
+
 Required env vars by platform:
     Reddit:     REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_USERNAME, REDDIT_PASSWORD
     Medium:     MEDIUM_TOKEN
@@ -16,16 +20,19 @@ Usage:
     python scripts/publish/post_all.py
     python scripts/publish/post_all.py --dry-run      # Check credentials without posting
     python scripts/publish/post_all.py --only reddit   # Run only one platform
+    python scripts/publish/post_all.py --browser-fallback --browser-publish --only twitter
 """
 
 import os
 import sys
 import subprocess
 import argparse
+import json
 from pathlib import Path
 from datetime import datetime, timezone
 
 SCRIPT_DIR = Path(__file__).resolve().parent
+BROWSER_FALLBACK_SCRIPT = SCRIPT_DIR / "post_via_browser.py"
 
 # Platform definitions: name, script file, required env vars
 PLATFORMS = [
@@ -34,30 +41,35 @@ PLATFORMS = [
         "script": "post_to_reddit.py",
         "env_vars": ["REDDIT_CLIENT_ID", "REDDIT_CLIENT_SECRET", "REDDIT_USERNAME", "REDDIT_PASSWORD"],
         "target": "r/aisafety, r/MachineLearning",
+        "browser_platform": "reddit",
     },
     {
         "name": "Medium",
         "script": "post_to_medium.py",
         "env_vars": ["MEDIUM_TOKEN"],
         "target": "Draft article",
+        "browser_platform": "medium",
     },
     {
         "name": "Twitter/X",
         "script": "post_to_twitter.py",
         "env_vars": ["TWITTER_API_KEY", "TWITTER_API_SECRET", "TWITTER_ACCESS_TOKEN", "TWITTER_ACCESS_SECRET"],
         "target": "Thread",
+        "browser_platform": "x",
     },
     {
         "name": "LinkedIn",
         "script": "post_to_linkedin.py",
         "env_vars": ["LINKEDIN_ACCESS_TOKEN"],
         "target": "Share post",
+        "browser_platform": "linkedin",
     },
     {
         "name": "Hacker News",
         "script": "post_to_hackernews.py",
         "env_vars": ["HN_USERNAME", "HN_PASSWORD"],
         "target": "Show HN submission",
+        "browser_platform": "hackernews",
     },
 ]
 
@@ -96,10 +108,87 @@ def run_script(platform: dict) -> tuple[bool, str]:
         return False, f"Failed to run script: {exc}"
 
 
+def run_browser_fallback(platform: dict, args: argparse.Namespace) -> tuple[bool, str]:
+    """Run Playwright browser posting fallback. Returns (success, output)."""
+    if not BROWSER_FALLBACK_SCRIPT.exists():
+        return False, f"Browser fallback script not found: {BROWSER_FALLBACK_SCRIPT}"
+
+    browser_platform = platform.get("browser_platform", "").strip()
+    if not browser_platform:
+        return False, "No browser fallback mapping defined for this platform."
+
+    cmd = [sys.executable, str(BROWSER_FALLBACK_SCRIPT), "--platform", browser_platform]
+    if args.browser_publish:
+        cmd.append("--publish")
+    if args.browser_headed:
+        cmd.append("--headed")
+
+    if args.browser_user_data_dir:
+        cmd.extend(["--user-data-dir", args.browser_user_data_dir])
+    if args.browser_storage_state:
+        cmd.extend(["--storage-state", args.browser_storage_state])
+
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=180,
+            cwd=str(SCRIPT_DIR.parents[1]),
+        )
+        output = result.stdout.strip()
+        if result.stderr:
+            output = f"{output}\nSTDERR:\n{result.stderr.strip()}".strip()
+
+        # Preserve the JSON payload from the fallback script when available.
+        if output:
+            last_line = output.splitlines()[-1]
+            try:
+                payload = json.loads(last_line)
+                status = payload.get("status", "unknown")
+                if status:
+                    output = f"{output}\n[post_all] browser_status={status}"
+            except json.JSONDecodeError:
+                pass
+
+        return result.returncode == 0, output or "No output from browser fallback."
+    except subprocess.TimeoutExpired:
+        return False, "Browser fallback timed out after 180 seconds."
+    except Exception as exc:
+        return False, f"Failed to run browser fallback: {exc}"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Publish to all configured platforms.")
     parser.add_argument("--dry-run", action="store_true", help="Check credentials without posting.")
     parser.add_argument("--only", type=str, help="Run only the specified platform (case-insensitive).")
+    parser.add_argument(
+        "--browser-fallback",
+        action="store_true",
+        help="When API credentials are missing, attempt posting via browser automation.",
+    )
+    parser.add_argument(
+        "--browser-publish",
+        action="store_true",
+        help="With --browser-fallback, click the final publish button instead of draft-only prep.",
+    )
+    parser.add_argument(
+        "--browser-headed",
+        action="store_true",
+        help="Run browser fallback in headed mode for interactive debugging.",
+    )
+    parser.add_argument(
+        "--browser-user-data-dir",
+        type=str,
+        default=os.environ.get("SCBE_BROWSER_USER_DATA_DIR", ""),
+        help="Optional persistent browser profile directory for authenticated sessions.",
+    )
+    parser.add_argument(
+        "--browser-storage-state",
+        type=str,
+        default=os.environ.get("SCBE_BROWSER_STORAGE_STATE", ""),
+        help="Optional Playwright storage state file path.",
+    )
     args = parser.parse_args()
 
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
@@ -128,7 +217,22 @@ def main() -> int:
         creds_ok, missing = check_credentials(platform)
 
         if not creds_ok:
-            print(f"  SKIPPED: Missing credentials: {', '.join(missing)}")
+            missing_msg = f"Missing credentials: {', '.join(missing)}"
+            print(f"  SKIPPED: {missing_msg}")
+            if args.browser_fallback and not args.dry_run:
+                print("  Browser fallback: attempting headless posting path...")
+                success, output = run_browser_fallback(platform, args)
+                for line in output.split("\n"):
+                    print(f"  | {line}")
+
+                if success:
+                    results.append({"platform": platform["name"], "status": "BROWSER_SUCCESS", "reason": "Posted via browser fallback"})
+                else:
+                    reason = output.split("\n")[-1] if output else "Browser fallback failed"
+                    results.append({"platform": platform["name"], "status": "BROWSER_FAILED", "reason": reason})
+                print()
+                continue
+
             results.append({"platform": platform["name"], "status": "SKIPPED", "reason": f"Missing: {', '.join(missing)}"})
             print()
             continue
@@ -161,9 +265,10 @@ def main() -> int:
     print("=" * 60)
 
     succeeded = [r for r in results if r["status"] == "SUCCESS"]
-    failed = [r for r in results if r["status"] == "FAILED"]
+    failed = [r for r in results if r["status"] in {"FAILED", "BROWSER_FAILED"}]
     skipped = [r for r in results if r["status"] == "SKIPPED"]
     dry_run = [r for r in results if r["status"] == "DRY_RUN"]
+    browser_success = [r for r in results if r["status"] == "BROWSER_SUCCESS"]
 
     for r in results:
         status_icon = {
@@ -171,13 +276,18 @@ def main() -> int:
             "FAILED": "[FAIL]",
             "SKIPPED": "[SKIP]",
             "DRY_RUN": "[DRY]",
+            "BROWSER_SUCCESS": "[B-OK]",
+            "BROWSER_FAILED": "[B-FAIL]",
         }.get(r["status"], "[??]")
 
         detail = f"  ({r['reason']})" if r["reason"] else ""
         print(f"  {status_icon} {r['platform']}{detail}")
 
     print()
-    print(f"  Posted: {len(succeeded)}  |  Failed: {len(failed)}  |  Skipped: {len(skipped)}  |  Dry run: {len(dry_run)}")
+    print(
+        f"  Posted: {len(succeeded)}  |  Browser posted: {len(browser_success)}  |  "
+        f"Failed: {len(failed)}  |  Skipped: {len(skipped)}  |  Dry run: {len(dry_run)}"
+    )
     print("=" * 60)
 
     # Return 0 if nothing failed (skips are OK)

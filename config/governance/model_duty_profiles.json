@@ -1,0 +1,179 @@
+{
+  "version": "1.0.0",
+  "notes": "Primary/secondary duty-cycle profiles for specialist model routing and idle work.",
+  "profiles": [
+    {
+      "id": "flagger-gemini",
+      "provider": "gemini",
+      "model_id": "gemini-2.5-flash",
+      "primary_task_types": [
+        "research",
+        "summarize",
+        "translation"
+      ],
+      "secondary_task_types": [
+        "analysis",
+        "general"
+      ],
+      "primary_tags": [
+        "flagging",
+        "research",
+        "summarize"
+      ],
+      "secondary_tags": [
+        "triage",
+        "cleanup",
+        "classify"
+      ],
+      "primary_bonus_pct": 0.26,
+      "secondary_bonus_pct": 0.1,
+      "spectrum_bonus_pct": 0.14,
+      "tongue_vector": {
+        "ko": 0.72,
+        "av": 0.26,
+        "ru": 0.66,
+        "ca": 0.28,
+        "um": 0.46,
+        "dr": 0.36
+      },
+      "idle_jobs": [
+        {
+          "id": "digest-queue",
+          "prompt": "Summarize latest research backlog into 5 bullet points.",
+          "task_type": "summarize",
+          "max_cost": "cheap"
+        },
+        {
+          "id": "tag-inbox",
+          "prompt": "Classify pending notes into research, code, governance buckets.",
+          "task_type": "analysis",
+          "max_cost": "cheap"
+        }
+      ]
+    },
+    {
+      "id": "builder-openai",
+      "provider": "openai",
+      "model_id": "gpt-4o",
+      "primary_task_types": [
+        "code",
+        "architecture"
+      ],
+      "secondary_task_types": [
+        "analysis",
+        "general"
+      ],
+      "primary_tags": [
+        "code",
+        "build",
+        "refactor",
+        "test"
+      ],
+      "secondary_tags": [
+        "triage",
+        "classify"
+      ],
+      "primary_bonus_pct": 0.2,
+      "secondary_bonus_pct": 0.07,
+      "spectrum_bonus_pct": 0.12,
+      "tongue_vector": {
+        "ko": 0.34,
+        "av": 0.16,
+        "ru": 0.24,
+        "ca": 0.92,
+        "um": 0.30,
+        "dr": 0.84
+      },
+      "idle_jobs": [
+        {
+          "id": "test-gap-scan",
+          "prompt": "Scan for missing tests in recently changed modules.",
+          "task_type": "code",
+          "max_cost": "standard"
+        }
+      ]
+    },
+    {
+      "id": "guardian-claude",
+      "provider": "claude",
+      "model_id": "claude-sonnet-4-20250514",
+      "primary_task_types": [
+        "governance",
+        "architecture"
+      ],
+      "secondary_task_types": [
+        "analysis",
+        "research"
+      ],
+      "primary_tags": [
+        "flagging",
+        "risk",
+        "policy",
+        "audit"
+      ],
+      "secondary_tags": [
+        "research",
+        "summarize"
+      ],
+      "primary_bonus_pct": 0.22,
+      "secondary_bonus_pct": 0.09,
+      "spectrum_bonus_pct": 0.13,
+      "tongue_vector": {
+        "ko": 0.42,
+        "av": 0.20,
+        "ru": 0.86,
+        "ca": 0.24,
+        "um": 0.94,
+        "dr": 0.62
+      },
+      "idle_jobs": [
+        {
+          "id": "policy-audit",
+          "prompt": "Audit latest run logs for policy drift and summarize risks.",
+          "task_type": "governance",
+          "max_cost": "premium"
+        }
+      ]
+    },
+    {
+      "id": "maintainer-ollama",
+      "provider": "ollama",
+      "model_id": "llama3",
+      "primary_task_types": [
+        "general",
+        "analysis"
+      ],
+      "secondary_task_types": [
+        "summarize",
+        "research"
+      ],
+      "primary_tags": [
+        "triage",
+        "cleanup",
+        "classify"
+      ],
+      "secondary_tags": [
+        "summarize"
+      ],
+      "primary_bonus_pct": 0.16,
+      "secondary_bonus_pct": 0.06,
+      "spectrum_bonus_pct": 0.1,
+      "tongue_vector": {
+        "ko": 0.52,
+        "av": 0.24,
+        "ru": 0.32,
+        "ca": 0.48,
+        "um": 0.30,
+        "dr": 0.56
+      },
+      "idle_jobs": [
+        {
+          "id": "queue-cleanup",
+          "prompt": "Triage low-priority queue and prepare concise handoff notes.",
+          "task_type": "analysis",
+          "max_cost": "free"
+        }
+      ]
+    }
+  ]
+}

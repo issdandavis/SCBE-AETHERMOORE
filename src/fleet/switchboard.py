@@ -35,17 +35,75 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
+import math
 import os
 import time
 import uuid
 from dataclasses import dataclass, field
 from enum import Enum
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from .model_matrix import (
     ModelMatrix, ModelProvider, ModelConfig, ModelNode,
     _PROVIDER_DISPATCH, _mock,
 )
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_VALUE_PROFILE_PATH = REPO_ROOT / "config" / "governance" / "value_execution_profiles.json"
+DEFAULT_DUTY_PROFILE_PATH = REPO_ROOT / "config" / "governance" / "model_duty_profiles.json"
+
+FALLBACK_VALUE_PROFILE: Dict[str, Any] = {
+    "intent_value_weights": {
+        "lead_generation": 0.92,
+        "publish_content": 0.84,
+        "release_ops": 0.78,
+        "research_intel": 0.70,
+        "maintenance": 0.55,
+        "generic": 0.50,
+    },
+}
+
+FALLBACK_DUTY_PROFILE: Dict[str, Any] = {
+    "version": "1.0.0",
+    "profiles": [],
+}
+
+TONGUE_AXES: Tuple[str, ...] = ("ko", "av", "ru", "ca", "um", "dr")
+
+# Task seeds in Sacred Tongue space. Values stay in [0, 1] and are normalized.
+TASK_SPECTRUM_SEEDS: Dict[str, Dict[str, float]] = {
+    "code": {"ko": 0.28, "av": 0.08, "ru": 0.20, "ca": 0.95, "um": 0.26, "dr": 0.88},
+    "research": {"ko": 0.62, "av": 0.22, "ru": 0.72, "ca": 0.34, "um": 0.42, "dr": 0.50},
+    "creative": {"ko": 0.36, "av": 0.95, "ru": 0.14, "ca": 0.24, "um": 0.20, "dr": 0.38},
+    "governance": {"ko": 0.42, "av": 0.16, "ru": 0.86, "ca": 0.26, "um": 0.95, "dr": 0.64},
+    "analysis": {"ko": 0.64, "av": 0.24, "ru": 0.50, "ca": 0.56, "um": 0.46, "dr": 0.62},
+    "architecture": {"ko": 0.54, "av": 0.18, "ru": 0.40, "ca": 0.70, "um": 0.42, "dr": 0.94},
+    "translation": {"ko": 0.30, "av": 0.58, "ru": 0.36, "ca": 0.22, "um": 0.24, "dr": 0.38},
+    "summarize": {"ko": 0.48, "av": 0.34, "ru": 0.42, "ca": 0.24, "um": 0.26, "dr": 0.36},
+    "general": {"ko": 0.40, "av": 0.32, "ru": 0.34, "ca": 0.40, "um": 0.34, "dr": 0.42},
+}
+
+PROMPT_AXIS_HINTS: Dict[str, Tuple[str, float]] = {
+    "security": ("ru", 0.24),
+    "risk": ("ru", 0.20),
+    "policy": ("um", 0.24),
+    "audit": ("um", 0.22),
+    "governance": ("um", 0.25),
+    "code": ("ca", 0.20),
+    "refactor": ("ca", 0.20),
+    "build": ("ca", 0.16),
+    "architecture": ("dr", 0.24),
+    "schema": ("dr", 0.18),
+    "design": ("dr", 0.20),
+    "creative": ("av", 0.22),
+    "story": ("av", 0.20),
+    "marketing": ("av", 0.18),
+    "research": ("ko", 0.20),
+    "summarize": ("ko", 0.16),
+    "classify": ("ko", 0.14),
+}
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -90,6 +148,225 @@ PROVIDER_COSTS = {
     ModelProvider.LLAMA: 0.0,          # Via Ollama
     ModelProvider.MISTRAL: 0.0,        # Via Ollama
 }
+
+# Value-route priors for M4 auto-routing (quality/speed in [0,1]).
+PROVIDER_ROUTE_PRIORS: Dict[ModelProvider, Dict[str, float]] = {
+    ModelProvider.CLAUDE: {"quality": 0.95, "speed": 0.68},
+    ModelProvider.OPENAI: {"quality": 0.90, "speed": 0.82},
+    ModelProvider.XAI: {"quality": 0.88, "speed": 0.79},
+    ModelProvider.GEMINI: {"quality": 0.84, "speed": 0.93},
+    ModelProvider.HUGGINGFACE: {"quality": 0.62, "speed": 0.64},
+    ModelProvider.OLLAMA: {"quality": 0.70, "speed": 0.73},
+    ModelProvider.LOCAL: {"quality": 0.66, "speed": 0.71},
+    ModelProvider.LLAMA: {"quality": 0.68, "speed": 0.72},
+    ModelProvider.MISTRAL: {"quality": 0.76, "speed": 0.78},
+}
+
+
+def _load_value_profile(path: Path = DEFAULT_VALUE_PROFILE_PATH) -> Dict[str, Any]:
+    if not path.exists():
+        return FALLBACK_VALUE_PROFILE
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            return FALLBACK_VALUE_PROFILE
+        return data
+    except Exception:
+        return FALLBACK_VALUE_PROFILE
+
+
+def _load_duty_profile(path: Path = DEFAULT_DUTY_PROFILE_PATH) -> Dict[str, Any]:
+    if not path.exists():
+        return FALLBACK_DUTY_PROFILE
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            return FALLBACK_DUTY_PROFILE
+        if not isinstance(data.get("profiles", []), list):
+            data["profiles"] = []
+        return data
+    except Exception:
+        return FALLBACK_DUTY_PROFILE
+
+
+def _infer_value_intent(task_type: TaskType) -> str:
+    mapping = {
+        TaskType.RESEARCH: "research_intel",
+        TaskType.CODE: "release_ops",
+        TaskType.ARCHITECTURE: "release_ops",
+        TaskType.CREATIVE: "publish_content",
+        TaskType.GOVERNANCE: "maintenance",
+        TaskType.ANALYSIS: "maintenance",
+        TaskType.SUMMARIZE: "maintenance",
+        TaskType.TRANSLATION: "maintenance",
+        TaskType.GENERAL: "generic",
+    }
+    return mapping.get(task_type, "generic")
+
+
+def _route_score_for_candidate(
+    provider: ModelProvider,
+    task_type: TaskType,
+    priority: TaskPriority,
+    profile: Dict[str, Any],
+) -> float:
+    intent_key = _infer_value_intent(task_type)
+    objective_value = float(profile.get("intent_value_weights", {}).get(intent_key, 0.5))
+    prior = PROVIDER_ROUTE_PRIORS.get(provider, {"quality": 0.7, "speed": 0.7})
+    quality = float(prior.get("quality", 0.7))
+    speed = float(prior.get("speed", 0.7))
+    utility = objective_value * 0.68 + quality * 0.20 + speed * 0.12
+    if priority in (TaskPriority.HIGH, TaskPriority.URGENT):
+        utility *= 1.08
+    # Convert USD/1k tokens to cents/1k tokens.
+    cost_cents = max(0.05, float(PROVIDER_COSTS.get(provider, 0.01)) * 100.0)
+    return (utility * 100.0) / cost_cents
+
+
+def _prompt_tags(prompt: str) -> List[str]:
+    text = (prompt or "").lower()
+    tag_keywords = {
+        "flagging": ["flag", "risk", "gate", "guard", "moderate"],
+        "summarize": ["summarize", "summary", "digest", "tldr"],
+        "classify": ["classify", "label", "categorize", "tag"],
+        "triage": ["triage", "queue", "backlog", "cleanup"],
+        "research": ["research", "investigate", "scan", "find"],
+        "code": ["code", "fix", "test", "refactor", "implement"],
+        "creative": ["write", "story", "narrative", "content", "marketing"],
+    }
+    tags: List[str] = []
+    for tag, words in tag_keywords.items():
+        if any(word in text for word in words):
+            tags.append(tag)
+    return tags
+
+
+def _normalize_axis_vector(vector: Dict[str, float]) -> Dict[str, float]:
+    ordered = [max(0.0, float(vector.get(axis, 0.0))) for axis in TONGUE_AXES]
+    norm = math.sqrt(sum(v * v for v in ordered))
+    if norm <= 1e-9:
+        return {axis: 0.0 for axis in TONGUE_AXES}
+    return {axis: ordered[i] / norm for i, axis in enumerate(TONGUE_AXES)}
+
+
+def _task_spectrum_vector(task_type: TaskType, prompt: str) -> Dict[str, float]:
+    seed = dict(TASK_SPECTRUM_SEEDS.get(task_type.value, TASK_SPECTRUM_SEEDS[TaskType.GENERAL.value]))
+    text = (prompt or "").lower()
+    for word, (axis, delta) in PROMPT_AXIS_HINTS.items():
+        if word in text:
+            seed[axis] = max(0.0, min(1.0, float(seed.get(axis, 0.0)) + delta))
+    return _normalize_axis_vector(seed)
+
+
+def _profile_spectrum_vector(profile: Dict[str, Any]) -> Dict[str, float]:
+    raw = profile.get("tongue_vector", {})
+    if isinstance(raw, dict):
+        projected: Dict[str, float] = {}
+        for axis in TONGUE_AXES:
+            value = raw.get(axis, raw.get(axis.upper(), 0.0))
+            try:
+                projected[axis] = float(value)
+            except Exception:
+                projected[axis] = 0.0
+        return _normalize_axis_vector(projected)
+    return {axis: 0.0 for axis in TONGUE_AXES}
+
+
+def _cosine_similarity(a: Dict[str, float], b: Dict[str, float]) -> float:
+    return sum(float(a.get(axis, 0.0)) * float(b.get(axis, 0.0)) for axis in TONGUE_AXES)
+
+
+def _spectrum_fit_for_candidate(
+    provider: ModelProvider,
+    model_id: str,
+    task_type: TaskType,
+    prompt: str,
+    duty_profile: Dict[str, Any],
+) -> Tuple[float, float, str]:
+    """Return (alignment, bonus_pct, profile_id) for 6-axis spectrum fit."""
+    profiles = duty_profile.get("profiles", [])
+    if not isinstance(profiles, list):
+        return 0.0, 0.0, ""
+
+    task_vector = _task_spectrum_vector(task_type, prompt)
+    best_alignment = -1.0
+    best_bonus = 0.0
+    best_profile_id = ""
+
+    for profile in profiles:
+        if not isinstance(profile, dict):
+            continue
+        if str(profile.get("provider", "")).strip().lower() != provider.value:
+            continue
+        profile_model = str(profile.get("model_id", "")).strip()
+        if profile_model and profile_model != "*" and profile_model != model_id:
+            continue
+
+        profile_vec = _profile_spectrum_vector(profile)
+        alignment = _cosine_similarity(task_vector, profile_vec)
+        if alignment > best_alignment:
+            best_alignment = alignment
+            spectrum_bonus = float(profile.get("spectrum_bonus_pct", 0.12))
+            # Non-linear boost: square positive alignment to favor high-coherence routes.
+            best_bonus = spectrum_bonus * max(0.0, alignment) ** 2
+            best_profile_id = str(profile.get("id", "")).strip()
+
+    if best_alignment < 0:
+        return 0.0, 0.0, ""
+    return best_alignment, best_bonus, best_profile_id
+
+
+def _duty_fit_for_candidate(
+    provider: ModelProvider,
+    model_id: str,
+    task_type: TaskType,
+    prompt: str,
+    duty_profile: Dict[str, Any],
+) -> Tuple[str, float, str]:
+    """Return (role, bonus_pct, profile_id) for primary/secondary duty fit."""
+    profiles = duty_profile.get("profiles", [])
+    if not isinstance(profiles, list):
+        return "none", 0.0, ""
+
+    prompt_tags = set(_prompt_tags(prompt))
+    task_name = task_type.value
+    best_role = "none"
+    best_bonus = 0.0
+    best_profile_id = ""
+
+    for profile in profiles:
+        if not isinstance(profile, dict):
+            continue
+        if str(profile.get("provider", "")).strip().lower() != provider.value:
+            continue
+        profile_model = str(profile.get("model_id", "")).strip()
+        if profile_model and profile_model != "*" and profile_model != model_id:
+            continue
+
+        primary_tasks = {str(x).strip().lower() for x in profile.get("primary_task_types", []) if str(x).strip()}
+        secondary_tasks = {str(x).strip().lower() for x in profile.get("secondary_task_types", []) if str(x).strip()}
+        primary_tags = {str(x).strip().lower() for x in profile.get("primary_tags", []) if str(x).strip()}
+        secondary_tags = {str(x).strip().lower() for x in profile.get("secondary_tags", []) if str(x).strip()}
+
+        role = "none"
+        bonus = 0.0
+        if (task_name in primary_tasks) or bool(prompt_tags.intersection(primary_tags)):
+            role = "primary"
+            bonus = float(profile.get("primary_bonus_pct", 0.24))
+        elif (task_name in secondary_tasks) or bool(prompt_tags.intersection(secondary_tags)):
+            role = "secondary"
+            bonus = float(profile.get("secondary_bonus_pct", 0.09))
+
+        if role == "primary" and (best_role != "primary" or bonus > best_bonus):
+            best_role = role
+            best_bonus = bonus
+            best_profile_id = str(profile.get("id", ""))
+        elif role == "secondary" and best_role == "none" and bonus > best_bonus:
+            best_role = role
+            best_bonus = bonus
+            best_profile_id = str(profile.get("id", ""))
+
+    return best_role, best_bonus, best_profile_id
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -233,12 +510,12 @@ TASK_ROUTING: Dict[TaskType, List[Tuple[ModelProvider, str]]] = {
     TaskType.RESEARCH: [
         (ModelProvider.XAI, "grok-3"),       # Web-connected
         (ModelProvider.OPENAI, "gpt-4o"),
-        (ModelProvider.GEMINI, "gemini-2.0-flash"),
+        (ModelProvider.GEMINI, "gemini-2.5-flash"),
         (ModelProvider.CLAUDE, "claude-sonnet-4-20250514"),
     ],
     TaskType.CREATIVE: [
         (ModelProvider.CLAUDE, "claude-sonnet-4-20250514"),
-        (ModelProvider.GEMINI, "gemini-2.0-flash"),
+        (ModelProvider.GEMINI, "gemini-2.5-flash"),
         (ModelProvider.OPENAI, "gpt-4o"),
     ],
     TaskType.GOVERNANCE: [
@@ -256,16 +533,16 @@ TASK_ROUTING: Dict[TaskType, List[Tuple[ModelProvider, str]]] = {
         (ModelProvider.OPENAI, "gpt-4o"),
     ],
     TaskType.TRANSLATION: [
-        (ModelProvider.GEMINI, "gemini-2.0-flash"),
+        (ModelProvider.GEMINI, "gemini-2.5-flash"),
         (ModelProvider.OPENAI, "gpt-4o"),
     ],
     TaskType.SUMMARIZE: [
-        (ModelProvider.GEMINI, "gemini-2.0-flash"),    # Cheapest
+        (ModelProvider.GEMINI, "gemini-2.5-flash"),    # Cheapest
         (ModelProvider.OLLAMA, "llama3"),                # Free
         (ModelProvider.OPENAI, "gpt-4o-mini"),
     ],
     TaskType.GENERAL: [
-        (ModelProvider.GEMINI, "gemini-2.0-flash"),
+        (ModelProvider.GEMINI, "gemini-2.5-flash"),
         (ModelProvider.OLLAMA, "llama3"),
         (ModelProvider.OPENAI, "gpt-4o"),
     ],
@@ -276,13 +553,38 @@ PROVIDER_KEY_ENV: Dict[ModelProvider, str] = {
     ModelProvider.CLAUDE: "ANTHROPIC_API_KEY",
     ModelProvider.OPENAI: "OPENAI_API_KEY",
     ModelProvider.XAI: "XAI_API_KEY",
-    ModelProvider.GEMINI: "GOOGLE_AI_API_KEY",
+    ModelProvider.GEMINI: "GOOGLE_API_KEY",
     ModelProvider.HUGGINGFACE: "HF_TOKEN",
     ModelProvider.OLLAMA: "",        # No key needed
     ModelProvider.LOCAL: "",
     ModelProvider.LLAMA: "",
     ModelProvider.MISTRAL: "",
 }
+
+PROVIDER_DEFAULT_MODEL: Dict[ModelProvider, str] = {
+    ModelProvider.CLAUDE: "claude-sonnet-4-20250514",
+    ModelProvider.OPENAI: "gpt-4o",
+    ModelProvider.XAI: "grok-3",
+    ModelProvider.GEMINI: "gemini-2.5-flash",
+    ModelProvider.HUGGINGFACE: "mistralai/Mistral-7B-Instruct-v0.2",
+    ModelProvider.OLLAMA: "llama3",
+    ModelProvider.LOCAL: "local-default",
+    ModelProvider.LLAMA: "llama3",
+    ModelProvider.MISTRAL: "mistral-small",
+}
+
+
+def _provider_has_key(provider: ModelProvider) -> bool:
+    key_env = PROVIDER_KEY_ENV.get(provider, "")
+    if provider == ModelProvider.GEMINI:
+        return bool(
+            os.environ.get("GOOGLE_API_KEY")
+            or os.environ.get("GOOGLE_AI_API_KEY")
+            or os.environ.get("GEMINI_API_KEY")
+        )
+    if not key_env:
+        return True
+    return bool(os.environ.get(key_env))
 
 
 @dataclass
@@ -296,8 +598,12 @@ class TaskTicket:
     max_cost_tier: CostTier = CostTier.STANDARD
     assigned_provider: Optional[ModelProvider] = None
     assigned_model: Optional[str] = None
+    assigned_duty_role: str = "none"  # none | primary | secondary
+    assigned_duty_profile: str = ""
+    spectrum_alignment: float = 0.0
     result: Optional[str] = None
     cost_incurred: float = 0.0
+    route_score: float = 0.0
     status: str = "pending"    # pending, routed, executing, done, error
     created_at: float = field(default_factory=time.time)
     completed_at: float = 0.0
@@ -333,6 +639,8 @@ class Switchboard:
         self.board = notice_board or NoticeBoard()
         self._tickets: Dict[str, TaskTicket] = {}
         self._execution_log: List[Dict[str, Any]] = []
+        self.value_profile: Dict[str, Any] = _load_value_profile()
+        self.duty_profile: Dict[str, Any] = _load_duty_profile()
 
     def submit(
         self,
@@ -371,7 +679,8 @@ class Switchboard:
         1. Get preferred providers for this task type
         2. Filter by availability (API key present)
         3. Filter by cost tier
-        4. Pick the cheapest available that meets quality requirements
+        4. Score candidates with value/cost routing formula
+        5. Pick highest-scoring candidate
         """
         ticket = self._tickets.get(ticket_id)
         if not ticket:
@@ -385,27 +694,92 @@ class Switchboard:
             CostTier.PREMIUM: 1.0,
         }[ticket.max_cost_tier]
 
-        # For HIGH/URGENT priority, use quality-first ordering (as listed)
-        # For LOW/NORMAL, sort by cost (cheapest first)
-        candidates = []
+        candidates: List[Dict[str, Any]] = []
         for provider, model_id in preferred:
             cost = PROVIDER_COSTS.get(provider, 0.01)
             if cost > cost_limit and ticket.priority not in (TaskPriority.HIGH, TaskPriority.URGENT):
                 continue
 
-            # Check if provider has API key available
-            key_env = PROVIDER_KEY_ENV.get(provider, "")
-            if key_env and not os.environ.get(key_env):
+            if not _provider_has_key(provider):
                 continue
 
-            candidates.append((provider, model_id, cost))
+            base_score = _route_score_for_candidate(
+                provider=provider,
+                task_type=ticket.task_type,
+                priority=ticket.priority,
+                profile=self.value_profile,
+            )
+            duty_role, duty_bonus_pct, duty_profile_id = _duty_fit_for_candidate(
+                provider=provider,
+                model_id=model_id,
+                task_type=ticket.task_type,
+                prompt=ticket.prompt,
+                duty_profile=self.duty_profile,
+            )
+            spectrum_alignment, spectrum_bonus_pct, spectrum_profile_id = _spectrum_fit_for_candidate(
+                provider=provider,
+                model_id=model_id,
+                task_type=ticket.task_type,
+                prompt=ticket.prompt,
+                duty_profile=self.duty_profile,
+            )
+            route_score = base_score * (1.0 + duty_bonus_pct) * (1.0 + spectrum_bonus_pct)
+            candidates.append(
+                {
+                    "provider": provider,
+                    "model_id": model_id,
+                    "cost": cost,
+                    "base_score": base_score,
+                    "score": route_score,
+                    "duty_role": duty_role,
+                    "duty_bonus_pct": duty_bonus_pct,
+                    "duty_profile_id": duty_profile_id,
+                    "spectrum_alignment": spectrum_alignment,
+                    "spectrum_bonus_pct": spectrum_bonus_pct,
+                    "spectrum_profile_id": spectrum_profile_id,
+                }
+            )
 
         if not candidates:
             # Fallback: try any provider with a key
             for provider in ModelProvider:
-                key_env = PROVIDER_KEY_ENV.get(provider, "")
-                if not key_env or os.environ.get(key_env):
-                    candidates.append((provider, "default", PROVIDER_COSTS.get(provider, 0.0)))
+                if _provider_has_key(provider):
+                    model_id = PROVIDER_DEFAULT_MODEL.get(provider, "default")
+                    base_score = _route_score_for_candidate(
+                        provider=provider,
+                        task_type=ticket.task_type,
+                        priority=ticket.priority,
+                        profile=self.value_profile,
+                    )
+                    duty_role, duty_bonus_pct, duty_profile_id = _duty_fit_for_candidate(
+                        provider=provider,
+                        model_id=model_id,
+                        task_type=ticket.task_type,
+                        prompt=ticket.prompt,
+                        duty_profile=self.duty_profile,
+                    )
+                    spectrum_alignment, spectrum_bonus_pct, spectrum_profile_id = _spectrum_fit_for_candidate(
+                        provider=provider,
+                        model_id=model_id,
+                        task_type=ticket.task_type,
+                        prompt=ticket.prompt,
+                        duty_profile=self.duty_profile,
+                    )
+                    candidates.append(
+                        {
+                            "provider": provider,
+                            "model_id": model_id,
+                            "cost": PROVIDER_COSTS.get(provider, 0.0),
+                            "base_score": base_score,
+                            "score": base_score * (1.0 + duty_bonus_pct) * (1.0 + spectrum_bonus_pct),
+                            "duty_role": duty_role,
+                            "duty_bonus_pct": duty_bonus_pct,
+                            "duty_profile_id": duty_profile_id,
+                            "spectrum_alignment": spectrum_alignment,
+                            "spectrum_bonus_pct": spectrum_bonus_pct,
+                            "spectrum_profile_id": spectrum_profile_id,
+                        }
+                    )
                     break
 
         if not candidates:
@@ -419,23 +793,37 @@ class Switchboard:
             )
             return ticket
 
-        # Sort: LOW/NORMAL = cheapest first, HIGH/URGENT = quality first (keep original order)
-        if ticket.priority in (TaskPriority.LOW, TaskPriority.NORMAL):
-            candidates.sort(key=lambda x: x[2])
-
-        provider, model_id, cost = candidates[0]
+        candidates.sort(key=lambda x: (x["score"], -x["cost"]), reverse=True)
+        best = candidates[0]
+        provider = best["provider"]
+        model_id = best["model_id"]
+        cost = float(best["cost"])
+        score = float(best["score"])
+        duty_role = str(best.get("duty_role", "none") or "none")
+        duty_profile_id = str(best.get("duty_profile_id", "") or "")
+        spectrum_alignment = float(best.get("spectrum_alignment", 0.0))
         ticket.assigned_provider = provider
         ticket.assigned_model = model_id
+        ticket.assigned_duty_role = duty_role
+        ticket.assigned_duty_profile = duty_profile_id
+        ticket.spectrum_alignment = spectrum_alignment
         ticket.cost_incurred = cost
+        ticket.route_score = score
         ticket.status = "routed"
+
+        duty_suffix = ""
+        if duty_role != "none":
+            duty_suffix = f", duty={duty_role}"
+            if duty_profile_id:
+                duty_suffix += f":{duty_profile_id}"
 
         self.board.post(
             author="switchboard",
             task_id=ticket_id,
             status="routed",
-            message=f"Routed to {provider.value}/{model_id} (est ${cost:.4f}/1k tok)",
+            message=f"Routed to {provider.value}/{model_id} (est ${cost:.4f}/1k tok, score={score:.2f}, spec={spectrum_alignment:.2f}{duty_suffix})",
             cost=cost,
-            tags=[provider.value, model_id],
+            tags=[provider.value, model_id, duty_role],
         )
 
         return ticket
@@ -459,7 +847,7 @@ class Switchboard:
             author=f"{ticket.assigned_provider.value}",
             task_id=ticket_id,
             status="working",
-            message=f"Executing on {ticket.assigned_model}...",
+            message=f"Executing on {ticket.assigned_model} (duty={ticket.assigned_duty_role})...",
         )
 
         config = ModelConfig(
@@ -548,7 +936,7 @@ class Switchboard:
         providers = []
         for provider in ModelProvider:
             key_env = PROVIDER_KEY_ENV.get(provider, "")
-            has_key = not key_env or bool(os.environ.get(key_env))
+            has_key = _provider_has_key(provider)
             cost = PROVIDER_COSTS.get(provider, 0.0)
             providers.append({
                 "provider": provider.value,
@@ -564,6 +952,46 @@ class Switchboard:
             })
         return providers
 
+    def suggest_idle_secondary_jobs(self, limit: int = 8) -> List[Dict[str, Any]]:
+        """Suggest low-priority secondary duties for currently available specialists."""
+        jobs: List[Dict[str, Any]] = []
+        profiles = self.duty_profile.get("profiles", [])
+        if not isinstance(profiles, list):
+            return jobs
+
+        for profile in profiles:
+            if not isinstance(profile, dict):
+                continue
+            provider_name = str(profile.get("provider", "")).strip().lower()
+            model_id = str(profile.get("model_id", "")).strip() or "*"
+            profile_id = str(profile.get("id", "")).strip() or "unknown"
+
+            try:
+                provider = ModelProvider(provider_name)
+            except Exception:
+                continue
+
+            if not _provider_has_key(provider):
+                continue
+
+            for job in profile.get("idle_jobs", []):
+                if not isinstance(job, dict):
+                    continue
+                jobs.append(
+                    {
+                        "profile_id": profile_id,
+                        "provider": provider.value,
+                        "model_id": model_id,
+                        "job_id": str(job.get("id", "")).strip() or "idle",
+                        "prompt": str(job.get("prompt", "")).strip(),
+                        "task_type": str(job.get("task_type", "general")).strip() or "general",
+                        "max_cost": str(job.get("max_cost", "cheap")).strip() or "cheap",
+                    }
+                )
+                if len(jobs) >= max(1, limit):
+                    return jobs
+        return jobs
+
     def status(self) -> Dict[str, Any]:
         """Full switchboard status."""
         tickets = list(self._tickets.values())
@@ -576,6 +1004,10 @@ class Switchboard:
             "providers": self.available_providers(),
             "notice_board": self.board.summary(),
             "total_cost": sum(t.cost_incurred for t in tickets if t.status == "done"),
+            "duty_profiles_loaded": len(self.duty_profile.get("profiles", []))
+            if isinstance(self.duty_profile.get("profiles", []), list)
+            else 0,
+            "idle_secondary_jobs": self.suggest_idle_secondary_jobs(limit=5),
         }
 
     def _log(self, ticket: TaskTicket) -> None:
@@ -584,6 +1016,10 @@ class Switchboard:
             "task_type": ticket.task_type.value,
             "provider": ticket.assigned_provider.value if ticket.assigned_provider else None,
             "model": ticket.assigned_model,
+            "duty_role": ticket.assigned_duty_role,
+            "duty_profile": ticket.assigned_duty_profile,
+            "route_score": ticket.route_score,
+            "spectrum_alignment": ticket.spectrum_alignment,
             "status": ticket.status,
             "cost": ticket.cost_incurred,
             "attempts": ticket.attempts,

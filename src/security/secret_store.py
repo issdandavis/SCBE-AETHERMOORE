@@ -16,7 +16,14 @@ from typing import Any, Dict, List, Optional, Tuple
 from src.crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER
 
 
-DEFAULT_TONGUE = "KO"
+DEFAULT_TONGUE = "ko"
+
+
+def _normalize_tongue_code(code: str) -> str:
+    value = str(code or DEFAULT_TONGUE).strip()
+    if not value:
+        return DEFAULT_TONGUE
+    return value.lower()
 
 
 def store_path() -> str:
@@ -111,12 +118,17 @@ def get_secret(name: str, default: str = "") -> str:
     if not encoded:
         return default
 
-    tongue = str(record.get("tongue") or DEFAULT_TONGUE)
+    tongue = _normalize_tongue_code(str(record.get("tongue") or DEFAULT_TONGUE))
     try:
         raw = SACRED_TONGUE_TOKENIZER.decode_tokens(tongue, encoded)
         return raw.decode("utf-8")
     except Exception:
-        return default
+        # Backward compatibility: if legacy records used uppercase codes.
+        try:
+            raw = SACRED_TONGUE_TOKENIZER.decode_tokens(tongue.upper(), encoded)
+            return raw.decode("utf-8")
+        except Exception:
+            return default
 
 
 def set_secret(name: str, value: str, note: str = "", tongue: str = DEFAULT_TONGUE) -> None:
@@ -128,12 +140,13 @@ def set_secret(name: str, value: str, note: str = "", tongue: str = DEFAULT_TONG
         raise ValueError("secret value required")
 
     record = _pick_secret_record(name) or {}
-    tokens = SACRED_TONGUE_TOKENIZER.encode_bytes(tongue, value.encode("utf-8"))
+    tongue_norm = _normalize_tongue_code(tongue)
+    tokens = SACRED_TONGUE_TOKENIZER.encode_bytes(tongue_norm, value.encode("utf-8"))
 
     store = _load_store()
     store.setdefault("secrets", {})[name] = {
         "name": name,
-        "tongue": tongue,
+        "tongue": tongue_norm,
         "value_tokens": tokens,
         "note": str(note or ""),
         "created_at": record.get("created_at", _now_iso()),

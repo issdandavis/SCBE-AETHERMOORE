@@ -1,0 +1,123 @@
+{
+  "profile_id": "cust-aethermoore-core-a2fb67e9",
+  "customer_id": "aethermoore-core",
+  "created_at": "2026-03-03T08:19:36Z",
+  "connectors": [
+    {
+      "service": "GitHub",
+      "domain": "github.com",
+      "tier": "full_access",
+      "channels": {
+        "api": true,
+        "browser": true,
+        "cli": true
+      },
+      "api_base_url": "https://api.github.com",
+      "auth_env_vars": [
+        "GITHUB_TOKEN"
+      ],
+      "notes": "User: issdandavis. gh CLI authenticated. Primary repo: SCBE-AETHERMOORE. GitHub Actions configured for daily_ops.yml. GITHUB_TOKEN also used by n8n bridge."
+    },
+    {
+      "service": "HuggingFace",
+      "domain": "huggingface.co",
+      "tier": "full_access",
+      "channels": {
+        "api": true,
+        "browser": true,
+        "cli": true
+      },
+      "api_base_url": "https://huggingface.co/api",
+      "auth_env_vars": [
+        "HF_TOKEN"
+      ],
+      "notes": "User: issdandavis. Core dataset: issdandavis/scbe-aethermoore-training-data (14,654 pairs, 22MB). Models: issdandavis/phdm-21d-embedding, issdandavis/spiralverse-ai-federated-v1. Inference router at router.huggingface.co (NOT api-inference). OctoArmor tentacle READY."
+    },
+    {
+      "service": "Shopify",
+      "domain": "shopify.com",
+      "tier": "full_access",
+      "channels": {
+        "api": true,
+        "browser": true,
+        "cli": true
+      },
+      "api_base_url": "https://{store}.myshopify.com/admin/api/2024-01",
+      "auth_env_vars": [
+        "SHOPIFY_ADMIN_API_TOKEN"
+      ],
+      "notes": "Shopify CLI v3.91.0. Admin API for product/order management. shopify_bridge.py connects content queue to Shopify storefront. Digital products: n8n Workflow Pack ($49), Governance Toolkit ($29), Content Spin Engine ($19), HYDRA Templates ($9)."
+    },
+    {
+      "service": "Notion",
+      "domain": "notion.so",
+      "tier": "full_access",
+      "channels": {
+        "api": true,
+        "browser": true,
+        "cli": false
+      },
+      "api_base_url": "https://api.notion.com/v1",
+      "auth_env_vars": [
+        "NOTION_API_KEY"
+      ],
+      "notes": "MCP integration configured (claude_ai_Notion + plugin_Notion_notion). Key pages: SCBE Tech Hub (558788e2), GeoSeed Design (313f96de), Sacred Eggs (069c0520), AI Operator README (313f96de). Used as knowledge source for model semantics, geometry, ritual constraints, and governance rules."
+    },
+    {
+      "service": "Dev.to",
+      "domain": "dev.to",
+      "tier": "partial_access",
+      "channels": {
+        "api": true,
+        "browser": true,
+        "cli": false
+      },
+      "api_base_url": "https://dev.to/api",
+      "auth_env_vars": [
+        "DEVTO_API_KEY"
+      ],
+      "notes": "API available for article publishing. Good for developer-audience content. Forem API v1. Content spin targets dev.to."
+    },
+    {
+      "service": "LinkedIn",
+      "domain": "linkedin.com",
+      "tier": "partial_access",
+      "channels": {
+        "api": false,
+        "browser": true,
+        "cli": false
+      },
+      "api_base_url": null,
+      "auth_env_vars": [],
+      "notes": "Browser-only. No API access (LinkedIn API requires company-level approval). Content spin targets LinkedIn as a platform. Manual or browser-automated posting only."
+    },
+    {
+      "service": "Twitter/X",
+      "domain": "x.com",
+      "tier": "partial_access",
+      "channels": {
+        "api": true,
+        "browser": true,
+        "cli": false
+      },
+      "api_base_url": "https://api.twitter.com/2",
+      "auth_env_vars": [
+        "X_BEARER_TOKEN"
+      ],
+      "notes": "Env vars may exist for X API access. Part of SCBE X Growth + Merch Ops n8n workflow. Content spin pipeline targets X as a platform. Rate limits apply."
+    }
+  ],
+  "runtime_policy": {
+    "strict_connectivity": true,
+    "default_channel_priority": [
+      "api",
+      "cli",
+      "browser"
+    ],
+    "allow_browser_fallback": true
+  },
+  "admin": {
+    "pin_hash_ref": "admin_pin.json",
+    "pin_policy": "8+ digits, rotate monthly"
+  }
+}

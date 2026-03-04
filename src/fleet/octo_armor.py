@@ -188,6 +188,7 @@ TENTACLE_REGISTRY: Dict[Tentacle, TentacleConfig] = {
         ],
         rate_limit_rpm=30,
         daily_token_limit=1_000_000,
+        cost_per_1k=0.005,
         notes="Wafer-scale, ~3000 tok/sec. Permanent free tier.",
     ),
     Tentacle.MISTRAL_FREE: TentacleConfig(
@@ -702,6 +703,41 @@ class TentacleThrottle:
         self._minute_buckets: Dict[str, List[float]] = {}
         self._day_buckets: Dict[str, List[float]] = {}
         self._token_usage: Dict[str, int] = {}
+        self._cost_events: Dict[str, List[Tuple[float, float]]] = {}
+
+    @staticmethod
+    def _safe_float(value: Any, default: float = 0.0) -> float:
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return default
+
+    def _provider_slug(self, tentacle: Tentacle) -> str:
+        return tentacle.value.upper().replace("-", "_")
+
+    def _daily_cost_cap_usd(self, tentacle: Tentacle) -> float:
+        slug = self._provider_slug(tentacle)
+        specific = os.getenv(f"SCBE_{slug}_DAILY_BUDGET_USD")
+        if specific:
+            return max(0.0, self._safe_float(specific, 0.0))
+        shared = os.getenv("SCBE_DAILY_BUDGET_USD")
+        if shared:
+            return max(0.0, self._safe_float(shared, 0.0))
+        return 0.0  # 0 => unlimited
+
+    def _estimated_cost_per_1k(self, tentacle: Tentacle, config: TentacleConfig) -> float:
+        slug = self._provider_slug(tentacle)
+        override = os.getenv(f"SCBE_EST_COST_PER_1K_{slug}")
+        if override:
+            return max(0.0, self._safe_float(override, config.cost_per_1k))
+        return max(0.0, float(config.cost_per_1k))
+
+    def _recent_cost_used(self, tentacle: Tentacle) -> float:
+        now = time.time()
+        name = tentacle.value
+        events = [(ts, usd) for ts, usd in self._cost_events.get(name, []) if now - ts < 86400]
+        self._cost_events[name] = events
+        return sum(usd for _, usd in events)
 
     def can_use(self, tentacle: Tentacle) -> bool:
         """Check if this tentacle has capacity."""
@@ -728,6 +764,13 @@ class TentacleThrottle:
         if len(day_requests) >= config.rate_limit_rpd:
             return False
 
+        # Optional hard spend cap (provider-specific or global).
+        daily_cap = self._daily_cost_cap_usd(tentacle)
+        if daily_cap > 0:
+            used = self._recent_cost_used(tentacle)
+            if used >= daily_cap:
+                return False
+
         return True
 
     def record_use(self, tentacle: Tentacle, tokens: int = 0) -> None:
@@ -741,6 +784,12 @@ class TentacleThrottle:
         self._minute_buckets[name].append(now)
         self._day_buckets[name].append(now)
         self._token_usage[name] = self._token_usage.get(name, 0) + tokens
+        config = TENTACLE_REGISTRY.get(tentacle)
+        if config:
+            est_cost_per_1k = self._estimated_cost_per_1k(tentacle, config)
+            est_cost = max(0.0, float(tokens)) / 1000.0 * est_cost_per_1k
+            if est_cost > 0:
+                self._cost_events.setdefault(name, []).append((now, est_cost))
 
     def usage_report(self) -> Dict[str, Any]:
         """Usage report for all tentacles."""
@@ -759,6 +808,8 @@ class TentacleThrottle:
                 t for t in self._day_buckets.get(name, [])
                 if now - t < 86400
             ])
+            daily_cost_cap_usd = self._daily_cost_cap_usd(tentacle)
+            cost_used_usd = self._recent_cost_used(tentacle)
             report[name] = {
                 "available": config.available,
                 "rpm_used": minute_reqs,
@@ -767,6 +818,10 @@ class TentacleThrottle:
                 "rpd_limit": config.rate_limit_rpd,
                 "tokens_used": self._token_usage.get(name, 0),
                 "daily_token_limit": config.daily_token_limit,
+                "estimated_cost_per_1k": self._estimated_cost_per_1k(tentacle, config),
+                "cost_used_usd_24h": round(cost_used_usd, 6),
+                "daily_cost_cap_usd": daily_cost_cap_usd,
+                "cost_cap_reached": bool(daily_cost_cap_usd > 0 and cost_used_usd >= daily_cost_cap_usd),
             }
         return report
 
@@ -979,6 +1034,9 @@ class OctoArmor:
                 "cost": "FREE" if config.cost_per_1k == 0 else f"${config.cost_per_1k:.4f}/1k",
                 "rpm": f"{u.get('rpm_used', 0)}/{config.rate_limit_rpm}",
                 "rpd": f"{u.get('rpd_used', 0)}/{config.rate_limit_rpd}",
+                "cost_used_usd_24h": u.get("cost_used_usd_24h", 0.0),
+                "daily_cost_cap_usd": u.get("daily_cost_cap_usd", 0.0),
+                "cost_cap_reached": bool(u.get("cost_cap_reached", False)),
                 "default_model": config.default_model,
                 "free_models": len(config.free_models),
                 "notes": config.notes,

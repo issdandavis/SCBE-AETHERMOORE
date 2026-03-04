@@ -59,6 +59,7 @@ class BrowserAction:
     repo_type: str = "model"       # For huggingface_upload
     path_in_repo: str = ""         # For huggingface_upload
     commit_message: str = ""        # For huggingface_upload
+    network_profile: str = ""      # open, soft, hard, dark (routing profile for navigate/switch)
     metadata: dict[str, Any] = field(default_factory=dict)  # Extensible action metadata
     github_action: str = ""        # Action name when sending a github verb
     offset: int = 0
@@ -66,6 +67,8 @@ class BrowserAction:
     description: str = ""          # Human-readable explanation
     governance_required: bool = False  # Whether this needs extra governance check
     wait_after_ms: int = 500       # How long to wait after this action
+    profile_id: str = ""           # Browser profile id for multi-profile workflows
+    submit: bool = False           # Optional submit toggle (e.g. autofill_login)
 
     def to_dict(self) -> dict:
         d = {"action": self.action, "description": self.description}
@@ -93,6 +96,8 @@ class BrowserAction:
             d["body"] = self.body
         if self.commit_message:
             d["commit_message"] = self.commit_message
+        if self.network_profile:
+            d["network_profile"] = self.network_profile
         if self.offset:
             d["offset"] = self.offset
         if self.limit != 100:
@@ -105,6 +110,10 @@ class BrowserAction:
             d["governance_required"] = True
         if self.wait_after_ms != 500:
             d["wait_after_ms"] = self.wait_after_ms
+        if self.profile_id:
+            d["profile_id"] = self.profile_id
+        if self.submit:
+            d["submit"] = True
         return d
 
     def to_worker_command(self) -> dict:
@@ -112,6 +121,10 @@ class BrowserAction:
         cmd = {"type": "browser-command", "action": self.action}
         if self.action == "navigate":
             cmd["url"] = self.value
+            if self.network_profile:
+                cmd["network_profile"] = self.network_profile
+        elif self.action == "set_network_profile":
+            cmd["network_profile"] = self.network_profile or self.value or "open"
         elif self.action == "click":
             cmd["selector"] = self.selector
         elif self.action == "fill":
@@ -137,6 +150,16 @@ class BrowserAction:
             cmd["name"] = self.value or "step"
         elif self.action == "snapshot":
             pass  # No extra params needed
+        elif self.action == "switch_profile":
+            cmd["profile_id"] = self.profile_id or self.value or "default"
+        elif self.action == "list_profiles":
+            pass
+        elif self.action == "autofill_login":
+            if self.value:
+                cmd["domain"] = self.value
+            cmd["submit"] = bool(self.submit)
+            if self.profile_id:
+                cmd["profile_id"] = self.profile_id
         elif self.action == "telegram_send":
             cmd["message"] = self.message
             cmd["chat_id"] = self.chat_id
@@ -197,6 +220,10 @@ You receive a user's goal and a description of the current page, and you produce
 
 Available actions:
 - navigate: Go to a URL. Requires "value" (the URL).
+- set_network_profile: Switch browser network profile. Use "network_profile" with one of: open, soft, hard, dark.
+- switch_profile: Switch persistent browser profile. Use "profile_id".
+- list_profiles: List available browser profiles.
+- autofill_login: Autofill login form from secret-backed profile credentials. Optional "value" as domain and "submit": true.
 - click: Click an element. Requires "selector" (CSS selector from the page perception).
 - fill: Type text into a field. Requires "selector" and "value".
 - upload: Upload a file. Requires "selector" (file input) and "file_path" (local path).
@@ -221,6 +248,7 @@ Available actions:
 Rules:
 1. Use the selectors from the page perception — they are stable aria-label selectors.
 2. If the user's goal requires navigating to a different page first, start with a navigate step.
+2b. For dark-web/Tor goals, add set_network_profile with network_profile="dark" before navigate.
 3. After filling a form, include a click step for the submit button.
 4. After navigation or form submission, include a snapshot step to perceive the new page.
 5. For file uploads, use the local file paths from C:\\Users\\issda\\SCBE-AETHERMOORE\\
@@ -296,6 +324,10 @@ def _parse_llm_plan(goal: str, raw_response: str) -> Optional[ActionPlan]:
         action = step_data.get("action", "")
         if action not in (
             "navigate",
+            "set_network_profile",
+            "switch_profile",
+            "list_profiles",
+            "autofill_login",
             "click",
             "fill",
             "upload",
@@ -328,6 +360,7 @@ def _parse_llm_plan(goal: str, raw_response: str) -> Optional[ActionPlan]:
             repo_type=step_data.get("repo_type", "model"),
             path_in_repo=step_data.get("path_in_repo", ""),
             commit_message=step_data.get("commit_message", ""),
+            network_profile=step_data.get("network_profile", ""),
             repo=step_data.get("repo", ""),
             chat_id=step_data.get("chat_id", ""),
             message=step_data.get("message", ""),
@@ -340,6 +373,8 @@ def _parse_llm_plan(goal: str, raw_response: str) -> Optional[ActionPlan]:
             description=step_data.get("description", ""),
             governance_required=step_data.get("governance_required", False),
             wait_after_ms=step_data.get("wait_after_ms", 500),
+            profile_id=step_data.get("profile_id", ""),
+            submit=bool(step_data.get("submit", False)),
         )
         steps.append(step)
 
@@ -388,6 +423,10 @@ def plan_rule_based(goal: str, page_context: str, perception=None) -> ActionPlan
     connector_plan = _parse_connector_goal(goal)
     if connector_plan is not None:
         return connector_plan
+
+    workspace_plan = _parse_workspace_goal(goal)
+    if workspace_plan is not None:
+        return workspace_plan
 
     goal_lower = goal.lower().strip()
     steps = []
@@ -1018,6 +1057,106 @@ def _parse_github_goal(goal: str) -> Optional[ActionPlan]:
 def _parse_connector_goal(goal: str) -> Optional[ActionPlan]:
     """Apply connector parsers before normal browser rule patterns."""
     return _parse_telegram_goal(goal) or _parse_github_goal(goal)
+
+
+def _parse_workspace_goal(goal: str) -> Optional[ActionPlan]:
+    """Parse workspace navigation and browser-profile control intents."""
+    goal_lower = goal.lower().strip()
+
+    # Browser profile control
+    profile_switch = re.search(
+        r"(?:switch|use|activate|set)\s+(?:browser\s+)?profile\s*(?:to)?\s*[:=]?\s*([a-z0-9_-]+)",
+        goal_lower,
+    )
+    if profile_switch:
+        pid = profile_switch.group(1).strip()
+        return ActionPlan(
+            goal=goal,
+            steps=[
+                BrowserAction(
+                    action="switch_profile",
+                    profile_id=pid,
+                    description=f"Switch browser profile to '{pid}'",
+                    wait_after_ms=500,
+                ),
+                BrowserAction(
+                    action="list_profiles",
+                    description="Confirm available profiles after switch",
+                    wait_after_ms=300,
+                ),
+            ],
+            reasoning="Parsed browser profile switch intent.",
+            confidence=0.95,
+            method="rule_based",
+        )
+
+    if re.search(r"\b(list|show)\b.*\bprofiles?\b", goal_lower):
+        return ActionPlan(
+            goal=goal,
+            steps=[
+                BrowserAction(
+                    action="list_profiles",
+                    description="List known browser profiles",
+                    wait_after_ms=300,
+                )
+            ],
+            reasoning="Parsed browser profile listing intent.",
+            confidence=0.93,
+            method="rule_based",
+        )
+
+    # Login autofill from secret-backed credential index
+    if "autofill login" in goal_lower or "fill login" in goal_lower:
+        domain_match = re.search(r"(?:for|on|domain)\s*[:=]?\s*([a-z0-9.-]+\.[a-z]{2,})", goal_lower)
+        submit = bool(re.search(r"\bsubmit\b|\blog in\b|\bsign in\b", goal_lower))
+        return ActionPlan(
+            goal=goal,
+            steps=[
+                BrowserAction(
+                    action="autofill_login",
+                    value=domain_match.group(1).strip() if domain_match else "",
+                    submit=submit,
+                    description="Autofill login fields from secret-backed profile credentials",
+                    governance_required=True,
+                    wait_after_ms=700,
+                )
+            ],
+            reasoning="Parsed secret-backed login autofill intent.",
+            confidence=0.9,
+            method="rule_based",
+        )
+
+    # Workspace direct open shortcuts
+    shortcuts = [
+        ("colab", "https://colab.research.google.com/"),
+        ("google colab", "https://colab.research.google.com/"),
+        ("ai studio", "https://aistudio.google.com/"),
+        ("google ai studio", "https://aistudio.google.com/"),
+        ("shopify", "https://admin.shopify.com/"),
+    ]
+    for keyword, url in shortcuts:
+        if keyword in goal_lower and re.search(r"\b(open|go to|navigate|launch|start)\b", goal_lower):
+            return ActionPlan(
+                goal=goal,
+                steps=[
+                    BrowserAction(
+                        action="navigate",
+                        value=url,
+                        description=f"Navigate to {url}",
+                        wait_after_ms=900,
+                    ),
+                    BrowserAction(
+                        action="snapshot",
+                        description="Perceive the workspace landing page",
+                        wait_after_ms=400,
+                    ),
+                ],
+                reasoning=f"Parsed workspace shortcut for {keyword}.",
+                confidence=0.95,
+                method="rule_based",
+            )
+
+    return None
 # ---------------------------------------------------------------------------
 #  Main planner interface
 # ---------------------------------------------------------------------------

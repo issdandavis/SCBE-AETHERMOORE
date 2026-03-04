@@ -1,0 +1,93 @@
+name: Webhook Orchestrator
+
+# Triggered by external webhooks from Notion, Proton Mail, or manual dispatch
+on:
+  repository_dispatch:
+    types: 
+      - notion-trigger
+      - email-trigger
+      - ai-agent-trigger
+      - deploy-trigger
+      - test-trigger
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to run'
+        required: true
+        type: choice
+        options:
+          - main-app
+          - ai-agent
+          - email-router
+          - shopify
+          - all
+      action:
+        description: 'Action to perform'
+        required: true
+        type: choice
+        options:
+          - deploy
+          - test
+          - build
+          - run
+
+jobs:
+  route-webhook:
+    runs-on: ubuntu-latest
+    outputs:
+      service: ${{ steps.parse.outputs.service }}
+      action: ${{ steps.parse.outputs.action }}
+    steps:
+      - name: Parse webhook payload
+        id: parse
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "service=${{ inputs.service }}" >> $GITHUB_OUTPUT
+            echo "action=${{ inputs.action }}" >> $GITHUB_OUTPUT
+          else
+            SERVICE="${{ github.event.client_payload.service }}"
+            ACTION="${{ github.event.client_payload.action }}"
+            echo "service=${SERVICE:-main-app}" >> $GITHUB_OUTPUT
+            echo "action=${ACTION:-run}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Log webhook received
+        run: |
+          echo "🔔 Webhook received!"
+          echo "Service: ${{ steps.parse.outputs.service }}"
+          echo "Action: ${{ steps.parse.outputs.action }}"
+          echo "Trigger: ${{ github.event_name }}"
+          echo "Payload: ${{ toJson(github.event.client_payload) }}"
+
+  trigger-main-app:
+    needs: route-webhook
+    if: needs.route-webhook.outputs.service == 'main-app' || needs.route-webhook.outputs.service == 'all'
+    uses: ./.github/workflows/main-app-ci.yml
+    with:
+      action: ${{ needs.route-webhook.outputs.action }}
+    secrets: inherit
+
+  trigger-ai-agent:
+    needs: route-webhook
+    if: needs.route-webhook.outputs.service == 'ai-agent' || needs.route-webhook.outputs.service == 'all'
+    uses: ./.github/workflows/ai-agent-runner.yml
+    with:
+      task: ${{ github.event.client_payload.task || 'default' }}
+    secrets: inherit
+
+  trigger-email-router:
+    needs: route-webhook
+    if: needs.route-webhook.outputs.service == 'email-router' || needs.route-webhook.outputs.service == 'all'
+    uses: ./.github/workflows/email-router.yml
+    secrets: inherit
+
+  notify-completion:
+    needs: [route-webhook, trigger-main-app, trigger-ai-agent, trigger-email-router]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send completion notification
+        run: |
+          echo "✅ Workflow orchestration complete"
+          echo "Service: ${{ needs.route-webhook.outputs.service }}"
+          echo "Status: ${{ job.status }}"

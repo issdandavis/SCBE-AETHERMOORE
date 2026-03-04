@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AetherCode</title>
+<meta name="description" content="Governed Multi-Model AI Development Platform">
+<meta name="theme-color" content="#0a0e17">
+<link rel="manifest" href="/manifest.json">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#070b12;--bg2:#111a2a;--surface:rgba(12,19,31,.84);--card:rgba(20,30,46,.8);--border:rgba(142,170,199,.28);
+  --text:#e8f0fb;--dim:#a2b6cc;--accent:#17c6cf;--accent2:#ff9152;
+  --green:#2dd3a6;--red:#ff7272;--amber:#ffb84a;--blue:#5ba6ff;--lore:#d2f178;
+  --sidebar-w:280px;--topbar-h:56px;
+  --font:'Space Grotesk','Sora','Avenir Next','Trebuchet MS',sans-serif;
+  --display:'Sora','Space Grotesk','Avenir Next',sans-serif;
+  --mono:'JetBrains Mono','Cascadia Code','IBM Plex Mono','Consolas',monospace;
+}
+body{
+  background:
+    radial-gradient(1100px 640px at 7% -8%, rgba(23,198,207,.26), transparent 60%),
+    radial-gradient(900px 520px at 95% 0%, rgba(255,145,82,.2), transparent 58%),
+    linear-gradient(160deg, var(--bg), var(--bg2));
+  color:var(--text);font-family:var(--font);min-height:100vh;overflow:hidden;position:relative
+}
+body::before{
+  content:"";position:fixed;inset:-10%;pointer-events:none;opacity:.22;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,.18) 0 1px, transparent 1px),
+    radial-gradient(circle at 70% 60%, rgba(255,255,255,.12) 0 1px, transparent 1px);
+  background-size:120px 120px,180px 180px;animation:drift 28s linear infinite;
+}
+body::after{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.45;
+  background:linear-gradient(180deg, transparent 0 70%, rgba(6,10,17,.8) 100%);
+}
+a{color:var(--accent2);text-decoration:none}
+a:hover{text-decoration:underline}
+button{cursor:pointer;font-family:var(--font);border:none;outline:none}
+input,textarea,select{font-family:var(--font);background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 12px;outline:none}
+input:focus,textarea:focus{border-color:var(--accent)}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-track{background:transparent}
+
+@keyframes riseIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes breathe{0%,100%{box-shadow:0 0 0 rgba(23,198,207,0)}50%{box-shadow:0 0 22px rgba(23,198,207,.2)}}
+@keyframes drift{from{transform:translate3d(0,0,0)}to{transform:translate3d(-120px,80px,0)}}
+
+/* ---- App Shell ---- */
+.app{display:flex;height:100vh;width:100vw;position:relative;z-index:1}
+
+/* ---- Sidebar ---- */
+.sidebar{
+  width:var(--sidebar-w);background:linear-gradient(180deg,rgba(9,15,24,.92),rgba(8,13,22,.76));
+  border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;backdrop-filter:blur(14px)
+}
+.brand{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.brand .logo{
+  width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:800;color:#061019;background:linear-gradient(135deg,var(--accent),var(--lore));
+  animation:breathe 3.2s ease-in-out infinite
+}
+.brand h1{font-size:1.2rem;font-weight:700;letter-spacing:-0.4px;font-family:var(--display)}
+.brand h1 span{color:var(--accent)}
+.brand .ver{font-size:0.64rem;color:var(--dim);margin-left:6px}
+
+/* Mode Selector */
+.mode-selector{padding:12px 16px;border-bottom:1px solid var(--border)}
+.mode-selector label{font-size:0.64rem;text-transform:uppercase;letter-spacing:1.4px;color:var(--dim);font-weight:700;display:block;margin-bottom:8px}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.mode-btn{
+  background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 8px;font-size:0.75rem;color:var(--dim);
+  display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .18s
+}
+.mode-btn:hover{border-color:rgba(23,198,207,.8);color:var(--text);transform:translateY(-1px)}
+.mode-btn.active{
+  background:linear-gradient(180deg, rgba(23,198,207,.2), rgba(23,198,207,.09));
+  border-color:rgba(23,198,207,.85);color:var(--accent);font-weight:700
+}
+.mode-btn .icon{font-size:1.2rem}
+
+/* History */
+.history-section{flex:1;overflow-y:auto;padding:8px 0}
+.history-label{font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--dim);padding:8px 20px;font-weight:600}
+.history-item{padding:8px 20px;font-size:0.8rem;color:var(--dim);cursor:pointer;display:flex;align-items:center;gap:8px;border-left:3px solid transparent;transition:all .12s}
+.history-item:hover{background:rgba(23,198,207,0.09);color:var(--text)}
+.history-item.active{color:var(--accent);border-left-color:var(--accent)}
+.history-item .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.history-item .dot.chat{background:var(--blue)}
+.history-item .dot.code{background:var(--green)}
+.history-item .dot.research{background:var(--lore)}
+.history-item .dot.browse{background:var(--amber)}
+
+/* Sidebar Footer */
+.sidebar-footer{padding:12px 16px;border-top:1px solid var(--border);font-size:0.7rem;color:var(--dim)}
+.sidebar-footer .tier-badge{display:inline-block;background:var(--card);border:1px solid var(--border);padding:3px 8px;border-radius:6px;font-weight:700;font-size:0.64rem}
+.sidebar-footer .tier-badge.pro{border-color:var(--blue);color:var(--blue)}
+.sidebar-footer .tier-badge.team{border-color:var(--lore);color:var(--lore)}
+.sidebar-footer .tier-badge.enterprise{border-color:var(--amber);color:var(--amber)}
+
+/* ---- Main Panel ---- */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* Topbar */
+.topbar{
+  height:var(--topbar-h);background:linear-gradient(180deg,rgba(14,22,34,.92),rgba(10,17,27,.8));
+  border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0
+}
+.topbar .page-title{font-size:0.96rem;font-weight:700;letter-spacing:.2px}
+.topbar .spacer{flex:1}
+.topbar .chip{
+  display:flex;align-items:center;gap:5px;font-size:0.72rem;color:var(--dim);background:var(--card);
+  padding:5px 10px;border-radius:999px;border:1px solid var(--border)
+}
+.topbar .chip .dot{width:5px;height:5px;border-radius:50%}
+.topbar .chip .dot.on{background:var(--green);box-shadow:0 0 4px var(--green)}
+.topbar .chip .dot.off{background:var(--red)}
+
+/* ---- Chat Area ---- */
+.chat-area{flex:1;overflow-y:auto;padding:22px;display:flex;flex-direction:column;gap:16px}
+
+/* Messages */
+.msg{
+  max-width:85%;padding:14px 18px;border-radius:16px;font-size:0.89rem;line-height:1.62;position:relative;
+  box-shadow:0 8px 24px rgba(4,8,14,.32)
+}
+.msg.user{
+  background:linear-gradient(135deg,rgba(23,198,207,.95),rgba(47,166,211,.92));color:#fff;
+  align-self:flex-end;border-bottom-right-radius:5px
+}
+.msg.assistant{
+  background:linear-gradient(180deg,rgba(22,33,48,.85),rgba(17,27,40,.78));
+  border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:5px
+}
+.msg .meta{font-size:0.65rem;color:var(--dim);margin-top:6px;display:flex;gap:8px;align-items:center}
+.msg.assistant .meta{color:var(--dim)}
+.msg.user .meta{color:rgba(255,255,255,0.6)}
+
+/* Code blocks in messages */
+.msg pre{background:rgba(6,10,17,.9);border:1px solid var(--border);border-radius:10px;padding:12px;margin:8px 0;overflow-x:auto;font-family:var(--mono);font-size:0.82rem;line-height:1.5}
+.msg code{font-family:var(--mono);font-size:0.84rem;background:rgba(23,198,207,.2);padding:1px 5px;border-radius:3px}
+.msg pre code{background:none;padding:0}
+
+/* Welcome Screen */
+.welcome{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;flex:1;text-align:left;gap:16px;padding:34px}
+.welcome h2{font-size:2rem;line-height:1.1;font-weight:800;font-family:var(--display)}
+.welcome h2 span{color:var(--accent)}
+.welcome p{color:var(--dim);line-height:1.64;font-size:0.92rem;max-width:780px}
+.lore-hero{
+  width:min(980px,100%);margin:0 auto;border:1px solid var(--border);border-radius:22px;padding:22px;
+  background:linear-gradient(140deg,rgba(13,23,35,.92),rgba(14,20,31,.84));
+  display:grid;grid-template-columns:1.2fr 1fr;gap:18px;animation:riseIn .55s ease both
+}
+.hero-kicker{
+  display:inline-flex;align-items:center;gap:8px;font-size:.68rem;letter-spacing:1.6px;text-transform:uppercase;
+  color:var(--lore);font-weight:700;margin-bottom:10px
+}
+.hero-kicker::before{content:"";width:20px;height:2px;background:var(--lore)}
+.lore-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.lore-tag{
+  font-size:.68rem;padding:5px 9px;border:1px solid var(--border);border-radius:999px;
+  color:var(--dim);background:rgba(255,255,255,.02)
+}
+.mission{
+  margin-top:14px;padding:12px 13px;border-radius:12px;border:1px solid var(--border);
+  background:rgba(11,18,29,.72);max-width:560px
+}
+.mission h3{font-size:.78rem;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.mission ul{list-style:none;display:grid;gap:6px}
+.mission li{font-size:.79rem;color:var(--dim);line-height:1.45}
+.mission li::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--lore);margin-right:8px}
+.lore-gallery{display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));gap:10px}
+.lore-card{
+  position:relative;min-height:112px;border-radius:12px;overflow:hidden;border:1px solid var(--border);
+  background:linear-gradient(145deg,rgba(30,41,59,.88),rgba(15,23,38,.82));animation:riseIn .5s ease both
+}
+.lore-card.skeleton{
+  background:linear-gradient(110deg,rgba(37,51,72,.58) 20%,rgba(55,72,96,.78) 45%,rgba(37,51,72,.58) 70%);
+  background-size:200% 100%;animation:skeleton 2s linear infinite
+}
+.lore-card img{width:100%;height:100%;object-fit:cover;filter:saturate(1.08) contrast(1.06)}
+.lore-card .cap{
+  position:absolute;left:0;right:0;bottom:0;padding:8px 9px;font-size:.66rem;line-height:1.35;
+  color:#f4f8ff;background:linear-gradient(180deg,transparent,rgba(6,10,17,.86))
+}
+@keyframes skeleton{from{background-position:200% 0}to{background-position:-200% 0}}
+.quick-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-start;margin:4px auto 0;max-width:980px}
+.quick-btn{
+  background:rgba(18,28,42,.82);border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-size:0.8rem;
+  color:var(--dim);display:flex;align-items:center;gap:8px;transition:all .18s;animation:riseIn .6s ease both
+}
+.quick-btn:hover{border-color:rgba(23,198,207,.7);color:var(--text);background:rgba(23,198,207,.09);transform:translateY(-1px)}
+.quick-btn .qicon{font-size:1.1rem}
+
+/* ---- Input Bar ---- */
+.input-bar{background:linear-gradient(180deg,rgba(13,20,31,.92),rgba(10,17,27,.84));border-top:1px solid var(--border);padding:12px 20px;display:flex;gap:10px;align-items:flex-end}
+.input-wrap{flex:1;background:var(--card);border:1px solid var(--border);border-radius:14px;display:flex;align-items:flex-end;padding:4px;transition:border-color .15s}
+.input-wrap:focus-within{border-color:var(--accent)}
+.input-wrap textarea{flex:1;background:transparent;border:none;resize:none;min-height:38px;max-height:200px;padding:8px 12px;font-size:0.88rem;line-height:1.5;color:var(--text);font-family:var(--font)}
+.input-wrap textarea::placeholder{color:var(--dim)}
+.send-btn{background:linear-gradient(135deg,var(--accent),#2e98dd);color:#fff;border-radius:10px;padding:9px 16px;font-size:0.85rem;font-weight:700;transition:all .15s;white-space:nowrap}
+.send-btn:hover{filter:brightness(1.07)}
+.send-btn:disabled{opacity:0.4;cursor:not-allowed}
+
+/* Input extras */
+.input-extras{display:flex;gap:6px;align-items:center}
+.extra-btn{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.9rem;color:var(--dim);transition:all .12s}
+.extra-btn:hover{border-color:var(--accent);color:var(--text)}
+.extra-btn.active{background:rgba(23,198,207,.18);border-color:var(--accent);color:var(--accent)}
+
+/* ---- Code Panel (Split View) ---- */
+.split-view{display:flex;flex:1;overflow:hidden}
+.split-view .chat-side{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:300px}
+.split-view .code-side{flex:1;display:flex;flex-direction:column;overflow:hidden;border-left:1px solid var(--border);min-width:300px}
+.code-header{height:36px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:8px;font-size:0.75rem;color:var(--dim)}
+.code-header .file-tab{background:var(--card);border:1px solid var(--border);padding:4px 12px;border-radius:6px 6px 0 0;font-family:var(--mono);font-size:0.72rem;cursor:pointer}
+.code-header .file-tab.active{background:var(--bg);border-bottom-color:var(--bg);color:var(--text)}
+.code-editor{flex:1;background:var(--bg);overflow:auto;padding:16px;font-family:var(--mono);font-size:0.82rem;line-height:1.6;white-space:pre-wrap;color:var(--text)}
+.code-editor .line-num{display:inline-block;width:40px;color:var(--dim);text-align:right;margin-right:16px;user-select:none}
+
+/* ---- Stats Bar ---- */
+.stats-bar{
+  height:26px;background:linear-gradient(180deg,rgba(13,20,31,.9),rgba(10,17,27,.84));
+  border-top:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:16px;font-size:0.65rem;color:var(--dim);flex-shrink:0
+}
+.stats-bar .stat{display:flex;align-items:center;gap:4px}
+
+/* ---- Pricing Modal ---- */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:1000}
+.modal-overlay.show{display:flex}
+.modal{
+  background:linear-gradient(180deg,rgba(11,18,29,.95),rgba(11,17,26,.9));
+  border:1px solid var(--border);border-radius:16px;max-width:900px;width:95%;max-height:90vh;overflow-y:auto;padding:32px
+}
+.modal h2{font-size:1.4rem;margin-bottom:4px}
+.modal .subtitle{color:var(--dim);margin-bottom:24px}
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}
+.price-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;text-align:center;transition:all .2s}
+.price-card:hover{border-color:var(--accent)}
+.price-card.featured{border-color:var(--accent);box-shadow:0 0 20px rgba(23,198,207,.2)}
+.price-card .tier-name{font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;color:var(--dim);font-weight:600}
+.price-card .price{font-size:2.2rem;font-weight:800;margin:8px 0}
+.price-card .price span{font-size:0.8rem;font-weight:400;color:var(--dim)}
+.price-card .feat{text-align:left;font-size:0.78rem;color:var(--dim);margin:16px 0;line-height:2}
+.price-card .feat .yes{color:var(--green)}
+.price-card .feat .no{color:var(--red);opacity:0.5}
+.price-card .cta-btn{width:100%;padding:10px;border-radius:8px;font-weight:600;font-size:0.85rem;margin-top:8px}
+.price-card .cta-btn.primary{background:linear-gradient(135deg,var(--accent),#2e98dd);color:#fff}
+.price-card .cta-btn.secondary{background:var(--card);border:1px solid var(--border);color:var(--text)}
+
+/* ---- Responsive ---- */
+@media(max-width:1100px){
+  .lore-hero{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  .sidebar{display:none}
+  .chat-area{padding:16px}
+  .welcome{padding:18px}
+  .welcome h2{font-size:1.4rem}
+  .quick-actions{max-width:none}
+  .quick-btn{width:100%;justify-content:flex-start}
+  .split-view .code-side{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">A</div>
+      <h1>Aether<span>Code</span> <span class="ver">v0.1</span></h1>
+    </div>
+
+    <div class="mode-selector">
+      <label>Mode</label>
+      <div class="mode-grid">
+        <button class="mode-btn active" data-mode="chat" onclick="setMode('chat')">
+          <span class="icon">&#x1F4AC;</span> Chat
+        </button>
+        <button class="mode-btn" data-mode="code" onclick="setMode('code')">
+          <span class="icon">&#x1F4BB;</span> Code
+        </button>
+        <button class="mode-btn" data-mode="research" onclick="setMode('research')">
+          <span class="icon">&#x1F50D;</span> Research
+        </button>
+        <button class="mode-btn" data-mode="browse" onclick="setMode('browse')">
+          <span class="icon">&#x1F310;</span> Browse
+        </button>
+      </div>
+    </div>
+
+    <div class="history-section">
+      <div class="history-label">Sessions</div>
+      <div id="history-list">
+        <div class="history-item active">
+          <span class="dot chat"></span>
+          <span>New conversation</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span class="tier-badge" id="tier-badge" style="border-color:var(--green);color:var(--green)">ALL ACCESS</span>
+        <a href="/arena" style="font-size:0.7rem;color:var(--blue)">Arena</a>
+      </div>
+      <div id="usage-counter">Free forever — bring your own keys</div>
+      <div style="margin-top:4px">
+        <a href="/docs" style="font-size:0.7rem;color:var(--dim)">API Docs</a> &middot;
+        <a href="/health" style="font-size:0.7rem;color:var(--dim)">Health</a> &middot;
+        <a href="#" id="install-link" onclick="promptInstall(); return false;" style="font-size:0.7rem;color:var(--dim)">Install App</a> &middot;
+        <a href="#" onclick="showPricing(); return false;" style="font-size:0.7rem;color:var(--dim)">Keys</a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <span class="page-title" id="page-title">Chat</span>
+      <span class="spacer"></span>
+      <div class="chip"><span class="dot on" id="status-dot"></span> <span id="status-text">Connected</span></div>
+      <div class="chip" id="model-chip">Model: Auto</div>
+      <div class="chip" id="tentacle-chip">Tentacle: -</div>
+      <div class="chip" id="agent-chip">Agent: Lyra Forge</div>
+      <button class="extra-btn" id="install-btn" onclick="promptInstall()" title="Install app">Install</button>
+    </div>
+
+    <!-- Content: Chat or Split View -->
+    <div class="split-view" id="content-area">
+      <!-- Chat Side -->
+      <div class="chat-side">
+        <div class="chat-area" id="chat-area">
+          <!-- Welcome Screen -->
+          <div class="welcome" id="welcome-screen">
+            <div class="lore-hero">
+              <div>
+                <div class="hero-kicker">Everweave Command Deck</div>
+                <h2>Welcome to <span>AetherCode</span></h2>
+                <p>Codex I, II, and III are now your working surface. Chat, code, and research in one place while the Everweave and Polloneth story visuals stay in-frame as live creative context.</p>
+                <div class="lore-tags">
+                  <span class="lore-tag">Codex I: Spiralverse</span>
+                  <span class="lore-tag">Codex II: Everweave</span>
+                  <span class="lore-tag">Codex III: Polloneth</span>
+                </div>
+                <section class="mission">
+                  <h3>Tonight - Lyra Forge</h3>
+                  <ul>
+                    <li>Keep desktop + mobile install path clean.</li>
+                    <li>Post progress through Obsidian cross-talk lane.</li>
+                    <li>Ship one measurable browser improvement each cycle.</li>
+                  </ul>
+                </section>
+              </div>
+              <div class="lore-gallery" id="lore-gallery">
+                <div class="lore-card skeleton"></div>
+                <div class="lore-card skeleton"></div>
+                <div class="lore-card skeleton"></div>
+                <div class="lore-card skeleton"></div>
+              </div>
+            </div>
+            <div class="quick-actions">
+              <button class="quick-btn" onclick="quickAction('Explain this codebase structure')">
+                <span class="qicon">&#x1F4C1;</span> Explain codebase
+              </button>
+              <button class="quick-btn" onclick="quickAction('Write a Python function to parse JSON safely')">
+                <span class="qicon">&#x1F4BB;</span> Write code
+              </button>
+              <button class="quick-btn" onclick="quickAction('Research the latest AI safety papers from 2026')">
+                <span class="qicon">&#x1F50D;</span> Research papers
+              </button>
+              <button class="quick-btn" onclick="quickAction('Browse and extract data from the top 10 GitHub trending repos')">
+                <span class="qicon">&#x1F310;</span> Browse web
+              </button>
+              <button class="quick-btn" onclick="sendCrossTalkPacket()">
+                <span class="qicon">&#x1F517;</span> Obsidian cross-talk
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Input Bar -->
+        <div class="input-bar">
+          <div class="input-extras">
+            <button class="extra-btn" id="voice-btn" title="Voice input" onclick="toggleVoice()">&#x1F3A4;</button>
+            <button class="extra-btn" id="attach-btn" title="Attach file">&#x1F4CE;</button>
+          </div>
+          <div class="input-wrap">
+            <textarea id="msg-input" rows="1" placeholder="Message AetherCode..." onkeydown="handleKey(event)" oninput="autoGrow(this)"></textarea>
+          </div>
+          <button class="send-btn" id="send-btn" onclick="sendMessage()" disabled>Send</button>
+        </div>
+      </div>
+
+      <!-- Code Side (hidden until code mode) -->
+      <div class="code-side" id="code-side" style="display:none">
+        <div class="code-header">
+          <span style="font-weight:600">Code Preview</span>
+          <span class="spacer" style="flex:1"></span>
+          <button class="extra-btn" onclick="copyCode()" title="Copy code">&#x1F4CB;</button>
+          <button class="extra-btn" onclick="downloadCode()" title="Download">&#x2B07;</button>
+        </div>
+        <div class="code-editor" id="code-editor">
+          <span style="color:var(--dim)">// Code output will appear here
+// Select "Code" mode and ask a coding question</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+      <div class="stat"><span>Latency:</span> <span id="stat-latency">-</span></div>
+      <div class="stat"><span>Gov Score:</span> <span id="stat-gov">-</span></div>
+      <div class="stat"><span>Tokens:</span> <span id="stat-tokens">-</span></div>
+      <div class="stat"><span>Training Pairs:</span> <span id="stat-pairs">0</span></div>
+      <div class="stat" style="margin-left:auto"><span>Session:</span> <span id="stat-session">-</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- API Keys Modal -->
+<div class="modal-overlay" id="pricing-modal">
+  <div class="modal">
+    <h2>AetherCode is Free Forever</h2>
+    <p class="subtitle">Bring your own API keys — you pay the providers directly</p>
+    <div class="pricing-grid">
+      <div class="price-card featured">
+        <div class="tier-name">Free Models</div>
+        <div class="price">$0</div>
+        <div class="feat">
+          <div><span class="yes">&#10003;</span> Ollama (local, unlimited)</div>
+          <div><span class="yes">&#10003;</span> HuggingFace (free tier)</div>
+          <div><span class="yes">&#10003;</span> GitHub Models (free tier)</div>
+        </div>
+        <button class="cta-btn secondary">Works now</button>
+      </div>
+      <div class="price-card">
+        <div class="tier-name">Your Keys</div>
+        <div class="price">BYOK</div>
+        <div class="feat">
+          <div><span class="yes">&#10003;</span> Google AI (Gemini)</div>
+          <div><span class="yes">&#10003;</span> Claude (Anthropic)</div>
+          <div><span class="yes">&#10003;</span> Groq / Cerebras (free)</div>
+          <div><span class="yes">&#10003;</span> xAI (Grok)</div>
+          <div><span class="yes">&#10003;</span> OpenRouter (any model)</div>
+        </div>
+        <button class="cta-btn primary" onclick="closePricing()">Add keys in .env</button>
+      </div>
+      <div class="price-card">
+        <div class="tier-name">Everything Unlocked</div>
+        <div class="price">&#8734;</div>
+        <div class="feat">
+          <div><span class="yes">&#10003;</span> All modes (chat, code, research)</div>
+          <div><span class="yes">&#10003;</span> Arena (multi-model)</div>
+          <div><span class="yes">&#10003;</span> Multi-agent browsing</div>
+          <div><span class="yes">&#10003;</span> Training data export</div>
+          <div><span class="yes">&#10003;</span> Unlimited messages</div>
+        </div>
+        <button class="cta-btn secondary">Always free</button>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:20px">
+      <button class="extra-btn" onclick="closePricing()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------------------------------------------------------------------------
+//  State
+// ---------------------------------------------------------------------------
+const API = window.location.origin;
+let currentMode = 'chat';
+let sessionId = null;
+let messageCount = 0;
+let pairsCount = 0;
+let ws = null;
+let isRecording = false;
+let lastCode = '';
+let deferredInstallPrompt = null;
+const LORE_FALLBACK = [
+  {id:'codex-spiralverse', title:'Codex I - Spiralverse', story:'Codex I', url:'/v1/lore/art/codex-spiralverse'},
+  {id:'everweave-fibonacci', title:'Everweave Harmonic Spiral', story:'Codex II', url:'/v1/lore/art/everweave-fibonacci'},
+  {id:'polloneth-protocol', title:'Polloneth Protocol Weave', story:'Codex III', url:'/v1/lore/art/polloneth-protocol'},
+  {id:'spiral-risk-zones', title:'Spiral Risk Landscape', story:'Everweave Atlas', url:'/v1/lore/art/spiral-risk-zones'},
+];
+
+// ---------------------------------------------------------------------------
+//  Mode switching
+// ---------------------------------------------------------------------------
+function setMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.mode-btn[data-mode="${mode}"]`).classList.add('active');
+
+  const title = {chat:'Chat',code:'Code',research:'Research',browse:'Browse'}[mode] || 'Chat';
+  document.getElementById('page-title').textContent = title;
+
+  // Show/hide code panel
+  const codePanel = document.getElementById('code-side');
+  codePanel.style.display = mode === 'code' ? 'flex' : 'none';
+
+  // Update placeholder
+  const placeholders = {
+    chat: 'Message AetherCode...',
+    code: 'Describe what code to write (e.g., "FastAPI endpoint for user auth")...',
+    research: 'What should I research? (e.g., "AI safety papers from 2026")...',
+    browse: 'Enter URLs or describe what to browse (e.g., "top 10 GitHub trending repos")...',
+  };
+  document.getElementById('msg-input').placeholder = placeholders[mode] || placeholders.chat;
+}
+
+// ---------------------------------------------------------------------------
+//  Send message
+// ---------------------------------------------------------------------------
+async function sendMessage() {
+  const input = document.getElementById('msg-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  // Hide welcome screen
+  const welcome = document.getElementById('welcome-screen');
+  if (welcome) welcome.style.display = 'none';
+
+  // Add user message
+  appendMessage('user', text);
+  input.value = '';
+  input.style.height = 'auto';
+  document.getElementById('send-btn').disabled = true;
+
+  // Show typing indicator
+  const typingId = appendMessage('assistant', '<span style="color:var(--dim)">Thinking...</span>', true);
+
+  try {
+    const body = {
+      message: text,
+      mode: currentMode,
+      session_id: sessionId,
+      temperature: 0.7,
+      max_tokens: 4096,
+    };
+
+    const resp = await fetch(`${API}/v1/chat`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body),
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({detail: resp.statusText}));
+      throw new Error(err.detail || resp.statusText);
+    }
+
+    const data = await resp.json();
+
+    // Remove typing indicator
+    removeMessage(typingId);
+
+    // Display response
+    const formatted = formatResponse(data.response);
+    appendMessage('assistant', formatted, false, {
+      tentacle: data.tentacle,
+      model: data.model,
+      latency: data.latency_ms,
+      gov: data.governance_score,
+    });
+
+    // Update code panel if code mode
+    if (currentMode === 'code') {
+      extractAndShowCode(data.response);
+    }
+
+    // Update stats
+    sessionId = data.session_id;
+    messageCount++;
+    pairsCount++;
+    updateStats(data);
+
+  } catch (err) {
+    removeMessage(typingId);
+    appendMessage('assistant', `<span style="color:var(--red)">Error: ${err.message}</span>`);
+  }
+
+  document.getElementById('send-btn').disabled = false;
+}
+
+function quickAction(text) {
+  document.getElementById('msg-input').value = text;
+  sendMessage();
+}
+
+function isStandaloneMode() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
+function updateInstallUi() {
+  const btn = document.getElementById('install-btn');
+  const link = document.getElementById('install-link');
+  const installed = isStandaloneMode();
+  if (btn) {
+    btn.textContent = installed ? 'Installed' : 'Install';
+    btn.disabled = installed;
+  }
+  if (link) {
+    link.textContent = installed ? 'Installed' : 'Install App';
+    if (installed) link.style.color = 'var(--green)';
+  }
+}
+
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.register('/sw.js').then(() => {
+    updateInstallUi();
+  }).catch(() => {});
+}
+
+function setupInstallPrompt() {
+  window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    updateInstallUi();
+  });
+  window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    appendMessage('assistant', 'AetherCode installed. You can pin it on your browser/app bar now.');
+    updateInstallUi();
+  });
+}
+
+async function promptInstall() {
+  updateInstallUi();
+  if (isStandaloneMode()) return;
+  if (!deferredInstallPrompt) {
+    appendMessage(
+      'assistant',
+      'Install prompt not ready yet. In browser menu, choose "Install app" or "Add to Home Screen".'
+    );
+    return;
+  }
+  deferredInstallPrompt.prompt();
+  try {
+    await deferredInstallPrompt.userChoice;
+  } finally {
+    deferredInstallPrompt = null;
+    updateInstallUi();
+  }
+}
+
+async function loadLoreGallery() {
+  try {
+    const resp = await fetch(`${API}/v1/lore/art`);
+    if (!resp.ok) throw new Error('lore-art unavailable');
+    const data = await resp.json();
+    const items = Array.isArray(data.items) && data.items.length ? data.items : LORE_FALLBACK;
+    renderLoreGallery(items.slice(0, 4));
+  } catch {
+    renderLoreGallery(LORE_FALLBACK);
+  }
+}
+
+function renderLoreGallery(items) {
+  const gallery = document.getElementById('lore-gallery');
+  if (!gallery) return;
+  gallery.innerHTML = items.map(item => `
+    <figure class="lore-card">
+      <img src="${item.url}" alt="${escapeHtml(item.title || 'Lore art')}" loading="lazy" />
+      <figcaption class="cap">${escapeHtml(item.story || 'Codex')} • ${escapeHtml(item.title || 'Lore')}</figcaption>
+    </figure>
+  `).join('');
+}
+
+async function sendCrossTalkPacket() {
+  const summary = 'AetherCode session active with Codex lore UI and model orchestration.';
+  try {
+    const resp = await fetch(`${API}/v1/crosstalk/send`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        summary,
+        recipient: 'agent.claude',
+        sender: 'agent.codex',
+        intent: 'sync',
+        status: 'in_progress',
+        task_id: 'AETHERCODE-OBSIDIAN-CROSSTALK',
+        next_action: 'Continue UI and orchestration refinements.',
+        proof: ['src/aethercode/app.html', 'src/aethercode/gateway.py'],
+      }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.detail || 'cross-talk failed');
+    appendMessage(
+      'assistant',
+      `Cross-talk sent to Obsidian lane.<br><code>${escapeHtml(data.packet_id || 'packet')}</code>`
+    );
+  } catch (err) {
+    appendMessage('assistant', `<span style="color:var(--red)">Cross-talk error: ${escapeHtml(err.message || 'failed')}</span>`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+//  Message rendering
+// ---------------------------------------------------------------------------
+let msgCounter = 0;
+
+function appendMessage(role, content, isTyping = false, meta = null) {
+  const area = document.getElementById('chat-area');
+  const div = document.createElement('div');
+  const id = `msg-${++msgCounter}`;
+  div.id = id;
+  div.className = `msg ${role}`;
+  div.innerHTML = content;
+
+  if (meta && role === 'assistant') {
+    const metaDiv = document.createElement('div');
+    metaDiv.className = 'meta';
+    metaDiv.innerHTML = `
+      ${meta.tentacle ? `<span>&#x1F419; ${meta.tentacle}</span>` : ''}
+      ${meta.model ? `<span>&#x2699; ${meta.model}</span>` : ''}
+      ${meta.latency ? `<span>&#x23F1; ${Math.round(meta.latency)}ms</span>` : ''}
+      ${meta.gov !== undefined ? `<span>&#x1F6E1; ${(meta.gov * 100).toFixed(0)}%</span>` : ''}
+    `;
+    div.appendChild(metaDiv);
+  }
+
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+  return id;
+}
+
+function removeMessage(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+function formatResponse(text) {
+  if (!text) return '';
+  // Code blocks
+  text = text.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+    return `<pre><code class="lang-${lang}">${escapeHtml(code)}</code></pre>`;
+  });
+  // Inline code
+  text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+  // Bold
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // Italic
+  text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  // Line breaks
+  text = text.replace(/\n/g, '<br>');
+  return text;
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ---------------------------------------------------------------------------
+//  Code panel
+// ---------------------------------------------------------------------------
+function extractAndShowCode(text) {
+  const codeBlocks = [];
+  const regex = /```(\w*)\n([\s\S]*?)```/g;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    codeBlocks.push({lang: match[1] || 'text', code: match[2]});
+  }
+
+  const editor = document.getElementById('code-editor');
+  if (codeBlocks.length === 0) {
+    editor.innerHTML = '<span style="color:var(--dim)">// No code blocks in response</span>';
+    return;
+  }
+
+  // Show the last/largest code block
+  const block = codeBlocks[codeBlocks.length - 1];
+  lastCode = block.code;
+  const lines = block.code.split('\n');
+  editor.innerHTML = lines.map((line, i) => {
+    const num = String(i + 1).padStart(3, ' ');
+    return `<span class="line-num">${num}</span>${escapeHtml(line)}`;
+  }).join('\n');
+}
+
+function copyCode() {
+  if (lastCode) {
+    navigator.clipboard.writeText(lastCode).then(() => {
+      // Brief flash feedback
+      const btn = event.target;
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = '\u{1F4CB}', 1500);
+    });
+  }
+}
+
+function downloadCode() {
+  if (!lastCode) return;
+  const blob = new Blob([lastCode], {type: 'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'aethercode_output.txt';
+  a.click();
+}
+
+// ---------------------------------------------------------------------------
+//  Stats
+// ---------------------------------------------------------------------------
+function updateStats(data) {
+  document.getElementById('stat-latency').textContent = Math.round(data.latency_ms) + 'ms';
+  document.getElementById('stat-gov').textContent = (data.governance_score * 100).toFixed(0) + '%';
+  document.getElementById('stat-tokens').textContent = data.tokens_used || '-';
+  document.getElementById('stat-pairs').textContent = pairsCount;
+  document.getElementById('stat-session').textContent = data.session_id?.slice(0, 8) || '-';
+  document.getElementById('tentacle-chip').textContent = 'Tentacle: ' + (data.tentacle || '-');
+  document.getElementById('model-chip').textContent = 'Model: ' + (data.model || 'Auto');
+}
+
+// ---------------------------------------------------------------------------
+//  Input handling
+// ---------------------------------------------------------------------------
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoGrow(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 200) + 'px';
+  document.getElementById('send-btn').disabled = !el.value.trim();
+}
+
+// ---------------------------------------------------------------------------
+//  Voice (Web Speech API)
+// ---------------------------------------------------------------------------
+function toggleVoice() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    alert('Voice input not supported in this browser');
+    return;
+  }
+  const btn = document.getElementById('voice-btn');
+  if (isRecording) {
+    isRecording = false;
+    btn.classList.remove('active');
+    if (window._recognition) window._recognition.stop();
+    return;
+  }
+
+  const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const rec = new Recognition();
+  rec.continuous = false;
+  rec.interimResults = true;
+  rec.lang = 'en-US';
+
+  rec.onstart = () => { isRecording = true; btn.classList.add('active'); };
+  rec.onend = () => { isRecording = false; btn.classList.remove('active'); };
+  rec.onresult = (e) => {
+    const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
+    document.getElementById('msg-input').value = transcript;
+    autoGrow(document.getElementById('msg-input'));
+  };
+
+  window._recognition = rec;
+  rec.start();
+}
+
+// ---------------------------------------------------------------------------
+//  Pricing modal
+// ---------------------------------------------------------------------------
+function showPricing() { document.getElementById('pricing-modal').classList.add('show'); }
+function closePricing() { document.getElementById('pricing-modal').classList.remove('show'); }
+
+// ---------------------------------------------------------------------------
+//  Health check on load
+// ---------------------------------------------------------------------------
+async function checkHealth() {
+  try {
+    const resp = await fetch(`${API}/health`);
+    const data = await resp.json();
+    document.getElementById('status-dot').className = 'dot on';
+    document.getElementById('status-text').textContent = `v${data.version} OK`;
+  } catch {
+    document.getElementById('status-dot').className = 'dot off';
+    document.getElementById('status-text').textContent = 'Offline';
+  }
+}
+
+// Init
+checkHealth();
+loadLoreGallery();
+registerServiceWorker();
+setupInstallPrompt();
+updateInstallUi();
+document.getElementById('msg-input').addEventListener('input', function() {
+  document.getElementById('send-btn').disabled = !this.value.trim();
+});
+</script>
+
+</body>
+</html>

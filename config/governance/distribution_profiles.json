@@ -1,0 +1,57 @@
+{
+  "version": "2026-03-03",
+  "profiles": {
+    "core_public": {
+      "description": "Minimal installable/public developer surface.",
+      "include": [
+        "README.md",
+        "LICENSE",
+        "pyproject.toml",
+        "MANIFEST.in",
+        "src/**"
+      ],
+      "exclude": [
+        "src/**/__pycache__/**",
+        "src/**/*.pyc",
+        "src/**/*.pyo"
+      ]
+    },
+    "sellable_bundle": {
+      "description": "Revenue-facing package surface and go-to-market assets.",
+      "include": [
+        "monetize-launchpad.html",
+        "scripts/sales/**",
+        "scripts/publish/**",
+        "docs/research/**",
+        "docs/system/**",
+        "config/governance/**"
+      ],
+      "exclude": [
+        "docs/patent/filing_kit/**",
+        "**/__pycache__/**",
+        "**/*.pyc"
+      ]
+    },
+    "internal_full": {
+      "description": "Internal operations surface excluding bulky local artifacts.",
+      "include": [
+        "src/**",
+        "scripts/**",
+        "config/**",
+        "docs/**"
+      ],
+      "exclude": [
+        "artifacts/**",
+        "node_modules/**",
+        "training/**",
+        "training-data/**",
+        "demo/**",
+        "backups/**",
+        "docs/patent/filing_kit/**",
+        "**/__pycache__/**",
+        "**/*.pyc"
+      ]
+    }
+  }
+}
+

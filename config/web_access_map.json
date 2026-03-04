@@ -1,0 +1,720 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "generated": "2026-03-02",
+    "owner": "issdandavis",
+    "total_services": 26,
+    "fleet_note": "Dual-tentacle model: webhook_side agents handle inbound events and browser automation, cli_side agents handle git operations and API calls. Cross-talk via artifacts/agent_comm/",
+    "zone_model": {
+      "open": "Public APIs/pages with low friction",
+      "soft": "Rate-limited/session-sensitive flows",
+      "hard": "High-friction auth/anti-bot flows",
+      "dark": "Tor/onion routed lane (lawful, authorized use only)"
+    },
+    "dark_lane_proxy_default": "socks5://127.0.0.1:9050"
+  },
+  "services": [
+    {
+      "service": "GitHub",
+      "domain": "github.com",
+      "access_methods": {
+        "api": {
+          "available": true,
+          "auth_type": "bearer",
+          "env_var": "GITHUB_TOKEN",
+          "base_url": "https://api.github.com"
+        },
+        "browser": {
+          "available": true,
+          "auth_type": "cookie",
+          "login_url": "https://github.com/login",
+          "requires_2fa": true
+        },
+        "cli": {
+          "available": true,
+          "tool": "gh",
+          "installed": true
+        }
+      },
+      "capabilities": ["read", "write", "delete", "admin"],
+      "tier": "full_access",
+      "agent_assignment": "both",
+      "notes": "User: issdandavis. gh CLI authenticated. Primary repo: SCBE-AETHERMOORE. GitHub Actions configured for daily_ops.yml. GITHUB_TOKEN also used by n8n bridge."
+    },
+    {
+      "service": "Shopify",
+      "domain": "shopify.com",
+      "access_methods": {
+        "api": {
+          "available": true,
+          "auth_type": "bearer",
+          "env_var": "SHOPIFY_ADMIN_API_TOKEN",
+          "base_url": "https://{store}.myshopify.com/admin/api/2024-01"
+        },
+        "browser": {
+          "available": true,
+          "auth_type": "oauth",
+          "login_url": "https://accounts.shopify.com/lookup",
+          "requires_2fa": true
+        },
+        "cli": {
+          "available": true,
+          "tool": "shopify",
+          "installed": true
+        }
+      },
+      "capabilities": ["read", "write", "delete", "admin"],
+      "tier": "full_access",
+      "agent_assignment": "both",
+      "notes": "Shopify CLI v3.91.0. Admin API for product/order management. shopify_bridge.py connects content queue to Shopify storefront. Digital products: n8n Workflow Pack ($49), Governance Toolkit ($29), Content Spin Engine ($19), HYDRA Templates ($9)."
+    },
+    {
+      "service": "Notion",
+      "domain": "notion.so",
+      "access_methods": {
+        "api": {
+          "available": true,
+          "auth_type": "bearer",
+          "env_var": "NOTION_API_KEY",
+          "base_url": "https://api.notion.com/v1"
+        },
+        "browser": {
+          "available": true,
+          "auth_type": "cookie",
+          "login_url": "https://www.notion.so/login",
+          "requires_2fa": false
+        },
+        "cli": {
+          "available": false,
+          "tool": null,
+          "installed": false
+        }
+      },
+      "capabilities": ["read", "write", "delete", "admin"],
+      "tier": "full_access",
+      "agent_assignment": "webhook_side",
+      "notes": "MCP integration configured (claude_ai_Notion + plugin_Notion_notion). Key pages: SCBE Tech Hub (558788e2), GeoSeed Design (313f96de), Sacred Eggs (069c0520), AI Operator README (313f96de). Used as knowledge source for model semantics, geometry, ritual constraints, and governance rules."
+    },
+    {
+      "service": "HuggingFace",
+      "domain": "huggingface.co",
+      "access_methods": {
+        "api": {
+          "available": true,
+          "auth_type": "bearer",
+          "env_var": "HF_TOKEN",
+          "base_url": "https://huggingface.co/api"
+        },
+        "browser": {
+          "available": true,
+          "auth_type": "cookie",
+          "login_url": "https://huggingface.co/login",
+          "requires_2fa": false
+        },
+        "cli": {
+          "available": true,
+          "tool": "huggingface-cli",
+          "installed": true
+        }
+      },
+      "capabilities": ["read", "write", "delete", "admin"],
+      "tier": "full_access",
+      "agent_assignment": "cli_side",
+      "notes": "User: issdandavis. Core dataset: issdandavis/scbe-aethermoore-training-data (14,654 pairs, 22MB). Models: issdandavis/phdm-21d-embedding, issdandavis/spiralverse-ai-federated-v1. Inference router at router.huggingface.co (NOT api-inference). OctoArmor tentacle READY."
+    },
+    {
+      "service": "PyPI",
+      "domain": "pypi.org",
+      "access_methods": {
+        "api": {
+          "available": true,
+          "auth_type": "api_key",
+          "env_var": "PYPI_TOKEN",
+          "base_url": "https://upload.pypi.org/legacy/"
+        },
+        "browser": {
+          "available": true,
+          "auth_type": "cookie",
+          "login_url": "https://pypi.org/account/login/",
+          "requires_2fa": true
+        },
+        "cli": {
+          "available": true,
+          "tool": "twine",
+          "installed": true
+        }
+      },
+      "capabilities": ["read", "write"],
+      "tier": "partial_access",
+      "agent_assignment": "cli_side",
+      "notes": "Token needs rotation. Upload via twine. Used for publishing SCBE packages if/when open-sourced."
+    },
+    {
+      "service": "Gumroad",
+      "domain": "gumroad.com",
+      "access_methods": {
+        "api": {
+          "available": false,
+          "auth_type": null,
+          "env_var": null,
+          "base_url": null
+        },
+        "browser": {
+          "available": true,
+          "auth_type": "cookie",
+          "login_url": "https://app.gumroad.com/login",
+          "requires_2fa": false
+        },
+        "cli": {
+          "available": false,
+          "tool": null,
+          "installed": false
+        }
+      },
+      "capabilities": ["read", "write"],
+      "tier": "partial_access",
+      "agent_assignment": "webhook_side",
+      "notes": "Browser-only access. Digital product sales channel. Could sell M5 Mesh Foundry packages here."
+    },
+    {
+      "service": "Airtable",
+      "domain": "airtable.com",
+      "access_methods": {
+        "api": {
+          "available": true,
+          "auth_type": "bearer",
+          "env_var": "AIRTABLE_API_KEY",
+          "base_url": "https://api.airtable.com/v0"
+        },
+        "browser": {
+          "available": true,
+          "auth_type": "cookie",
+          "login_url": "https://airtable.com/login",
+          "requires_2fa": false
+        },
+        "cli": {
+          "available": false,
+          "tool": null,
+          "installed": false
+        }
+      },
+      "capabilities": ["read", "write", "delete"],
+      "tier": "full_access",
+      "agent_assignment": "webhook_side",
+      "notes": "Base: Aethermoor Bug & Project Tracker (appMDRF5kiLNWleI5). Tables: People, Bugs, Tasks, Projects, Releases, Revenue Records. Operational state sync target for M5 Mesh Foundry."
+    },
+    {
+      "service": "Google Cloud",
+      "domain": "cloud.google.com",
+      "access_methods": {
+        "api": {
+          "available": true,
+          "auth_type": "oauth",
+          "env_var": "GOOGLE_APPLICATION_CREDENTIALS",
+          "base_url": "https://compute.googleapis.com/compute/v1"
+        },
+        "browser": {
+          "available": true,
+          "auth_type": "oauth",
+          "login_url": "https://console.cloud.google.com",
+          "requires_2fa": true
+        },
+        "cli": {
+          "available": true,
+          "tool": "gcloud",
+          "installed": true
+        }
+      },
+      "capabilities": ["read", "write", "delete", "admin"],
+      "tier": "full_access",
+      "agent_assignment": "cli_side",
+      "notes": "Project: issac-ai-vtfqup (Issac AI Lab). VM: scbe-mesh-foundry at 34.134.99.90 (e2-micro, us-central1-a, FREE tier). Bridge running 24/7 on port 8001. Budget: $50/month with alerts at 25/50/75/90/100%. Deploy via metadata startup-script."
+    },
+    {
+      "service": "Firebase",
+      "domain": "firebase.google.com",
+      "access_methods": {
+        "api": {
+          "available": true,
+          "auth_type": "bearer",
+          "env_var": "FIREBASE_SERVICE_ACCOUNT",
+          "base_url": "https://firestore.googleapis.com/v1"
+        },
+        "browser": {
+          "available": true,
+          "auth_type": "oauth",
+          "login_url": "https://console.firebase.google.com",
+          "requires_2fa": true
+        },
+        "cli": {
+          "available": true,
+          "tool": "firebase",
+          "installed": true
+        }
+      },
+      "capabilities": ["read", "write", "delete", "admin"],
+      "tier": "full_access",
+      "agent_assignment": "both",
+      "notes": "Project: studio-6928670609-fdd4c. Connector: src/fleet/firebase_connector.py (13 methods). AetherNet persistence: 6 Firestore collections. Used for agent state sync and persistent storage."
+    },
+    {
+      "service": "Twitter/X",
+      "domain": "x.com",
+      "access_methods": {
+        "api": {
+          "available": true,
+          "auth_type": "oauth",
+          "env_var": "X_BEARER_TOKEN",
+          "base_url": "https://api.twitter.com/2"
+        },
+        "browser": {
+          "available": true,
+          "auth_type": "cookie",
+          "login_url": "https://x.com/i/flow/login",
+          "requires_2fa": true
+        },
+        "cli": {
+          "available": false,
+          "tool": null,
+          "installed": false
+        }
+      },
+      "capabilities": ["read", "write"],
+      "tier": "partial_access",
+      "agent_assignment": "webhook_side",
+      "notes": "Env vars may exist for X API access. Part of SCBE X Growth + Merch Ops n8n workflow. Content spin pipeline targets X as a platform. Rate limits apply."
+    },
+    {
+      "service": "Bluesky",
+      "domain": "bsky.app",
+      "access_methods": {
+        "api": {
+          "available": true,
+          "auth_type": "bearer",
+          "env_var": "BLUESKY_TOKEN",
+          "base_url": "https://bsky.social/xrpc"
+        },
+        "browser": {
+          "available": true,
+          "auth_type": "cookie",
+          "login_url": "https://bsky.app/",
+          "requires_2fa": false
+        },
+        "cli": {
+          "available": false,
+          "tool": null,
+          "installed": false
+        }
+      },
+      "capabilities": ["read", "write"],
+      "tier": "partial_access",
+      "agent_assignment": "webhook_side",
+      "notes": "Env: BLUESKY_DID and BLUESKY_TOKEN. Used by content_publisher n8n workflow for multi-platform posting with governance checks."
+    },
+    {
+      "service": "Mastodon",
+      "domain": "mastodon.social",
+      "access_methods": {
+        "api": {
+          "available": true,
+          "auth_type": "bearer",
+          "env_var": "MASTODON_TOKEN",
+          "base_url": "https://{MASTODON_INSTANCE}/api/v1"
+        },
+        "browser": {
+          "available": true,
+          "auth_type": "cookie",
+          "login_url": "https://{MASTODON_INSTANCE}/auth/sign_in",
+          "requires_2fa": false
+        },
+        "cli": {
+          "available": false,
+          "tool": null,
+          "installed": false
+        }
+      },
+      "capabilities": ["read", "write"],
+      "tier": "partial_access",
+      "agent_assignment": "webhook_side",
+      "notes": "Env: MASTODON_INSTANCE and MASTODON_TOKEN. Instance domain is configurable. Part of content_publisher multi-platform workflow."
+    },
+    {
+      "service": "LinkedIn",
+      "domain": "linkedin.com",
+      "access_methods": {
+        "api": {
+          "available": false,
+          "auth_type": null,
+          "env_var": null,
+          "base_url": null
+        },
+        "browser": {
+          "available": true,
+          "auth_type": "cookie",
+          "login_url": "https://www.linkedin.com/login",
+          "requires_2fa": true
+        },
+        "cli": {
+          "available": false,
+          "tool": null,
+          "installed": false
+        }
+      },
+      "capabilities": ["read", "write"],
+      "tier": "partial_access",
+      "agent_assignment": "webhook_side",
+      "notes": "Browser-only. No API access (LinkedIn API requires company-level approval). Content spin targets LinkedIn as a platform. Manual or browser-automated posting only."
+    },
+    {
+      "service": "Reddit",
+      "domain": "reddit.com",
+      "access_methods": {
+        "api": {
+          "available": false,
+          "auth_type": null,
+          "env_var": null,
+          "base_url": null
+        },
+        "browser": {
+          "available": true,
+          "auth_type": "cookie",
+          "login_url": "https://www.reddit.com/login",
+          "requires_2fa": false
+        },
+        "cli": {
+          "available": false,
+          "tool": null,
+          "installed": false
+        }
+      },
+      "capabilities": ["read", "write"],
+      "tier": "partial_access",
+      "agent_assignment": "webhook_side",
+      "notes": "Browser-only for posting. Reddit API available but not configured. Content spin targets Reddit. Subreddit posting subject to karma/age restrictions."
+    },
+    {
+      "service": "Medium",
+      "domain": "medium.com",
+      "access_methods": {
+        "api": {
+          "available": false,
+          "auth_type": null,
+          "env_var": null,
+          "base_url": null
+        },
+        "browser": {
+          "available": true,
+          "auth_type": "cookie",
+          "login_url": "https://medium.com/m/signin",
+          "requires_2fa": false
+        },
+        "cli": {
+          "available": false,
+          "tool": null,
+          "installed": false
+        }
+      },
+      "capabilities": ["read", "write"],
+      "tier": "partial_access",
+      "agent_assignment": "webhook_side",
+      "notes": "Browser-only. Medium has a write API (integration tokens) but not configured. Long-form content platform for thought leadership and technical articles."
+    },
+    {
+      "service": "Dev.to",
+      "domain": "dev.to",
+      "access_methods": {
+        "api": {
+          "available": true,
+          "auth_type": "api_key",
+          "env_var": "DEVTO_API_KEY",
+          "base_url": "https://dev.to/api"
+        },
+        "browser": {
+          "available": true,
+          "auth_type": "cookie",
+          "login_url": "https://dev.to/enter",
+          "requires_2fa": false
+        },
+        "cli": {
+          "available": false,
+          "tool": null,
+          "installed": false
+        }
+      },
+      "capabilities": ["read", "write"],
+      "tier": "partial_access",
+      "agent_assignment": "webhook_side",
+      "notes": "API available for article publishing. Good for developer-audience content. Forem API v1. Content spin targets dev.to."
+    },
+    {
+      "service": "Discord",
+      "domain": "discord.com",
+      "access_methods": {
+        "api": {
+          "available": true,
+          "auth_type": "bearer",
+          "env_var": "DISCORD_BOT_TOKEN",
+          "base_url": "https://discord.com/api/v10"
+        },
+        "browser": {
+          "available": true,
+          "auth_type": "cookie",
+          "login_url": "https://discord.com/login",
+          "requires_2fa": true
+        },
+        "cli": {
+          "available": false,
+          "tool": null,
+          "installed": false
+        }
+      },
+      "capabilities": ["read", "write"],
+      "tier": "partial_access",
+      "agent_assignment": "webhook_side",
+      "notes": "Webhook and/or bot token access. Used for notifications, community engagement, and agent-to-human alerts. Webhook URLs stored in env."
+    },
+    {
+      "service": "Stripe",
+      "domain": "stripe.com",
+      "access_methods": {
+        "api": {
+          "available": true,
+          "auth_type": "bearer",
+          "env_var": "STRIPE_SECRET_KEY",
+          "base_url": "https://api.stripe.com/v1"
+        },
+        "browser": {
+          "available": true,
+          "auth_type": "cookie",
+          "login_url": "https://dashboard.stripe.com/login",
+          "requires_2fa": true
+        },
+        "cli": {
+          "available": true,
+          "tool": "stripe",
+          "installed": false
+        }
+      },
+      "capabilities": ["read", "write", "admin"],
+      "tier": "full_access",
+      "agent_assignment": "webhook_side",
+      "notes": "MCP tool available (claude_ai_Stripe). Payment processing for M5 Mesh Foundry subscriptions. Supports customers, invoices, subscriptions, payment links, refunds, products, prices. Stripe CLI not installed but MCP covers all operations."
+    },
+    {
+      "service": "arXiv",
+      "domain": "arxiv.org",
+      "access_methods": {
+        "api": {
+          "available": true,
+          "auth_type": "none",
+          "env_var": null,
+          "base_url": "https://export.arxiv.org/api/query"
+        },
+        "browser": {
+          "available": true,
+          "auth_type": "cookie",
+          "login_url": "https://arxiv.org/login",
+          "requires_2fa": false
+        },
+        "cli": {
+          "available": false,
+          "tool": null,
+          "installed": false
+        }
+      },
+      "capabilities": ["read"],
+      "tier": "read_only",
+      "agent_assignment": "webhook_side",
+      "notes": "Username: izdandavis. Test submission 7311935 (incomplete, expires 2026-03-14). ORCID: 0009-0002-3936-9369. Primary use: headless browser access for research funnel ingestion, not paper publishing yet. Public query API requires no auth."
+    },
+    {
+      "service": "Obsidian",
+      "domain": "localhost",
+      "access_methods": {
+        "api": {
+          "available": true,
+          "auth_type": "none",
+          "env_var": null,
+          "base_url": "local_mcp"
+        },
+        "browser": {
+          "available": false,
+          "auth_type": null,
+          "login_url": null,
+          "requires_2fa": false
+        },
+        "cli": {
+          "available": false,
+          "tool": null,
+          "installed": false
+        }
+      },
+      "capabilities": ["read", "write", "delete"],
+      "tier": "full_access",
+      "agent_assignment": "cli_side",
+      "notes": "Local MCP configured as 'obsidian'. Vault 1 (Realmforge): C:\\Users\\issda\\OneDrive\\Dropbox\\Izack Realmforge. Vault 2 (A follder): C:\\Users\\issda\\OneDrive\\Documents\\DOCCUMENTS\\A follder — AI Round Table hub, Context Room (112+ notes), SCBE-Hub. Cross-talk sync via scripts/obsidian_sync.ps1."
+    },
+    {
+      "service": "n8n",
+      "domain": "localhost:5678",
+      "access_methods": {
+        "api": {
+          "available": true,
+          "auth_type": "bearer",
+          "env_var": "N8N_API_KEY",
+          "base_url": "http://localhost:5678/api/v1"
+        },
+        "browser": {
+          "available": true,
+          "auth_type": "cookie",
+          "login_url": "http://localhost:5678",
+          "requires_2fa": false
+        },
+        "cli": {
+          "available": true,
+          "tool": "n8n",
+          "installed": true
+        }
+      },
+      "capabilities": ["read", "write", "delete", "admin"],
+      "tier": "full_access",
+      "agent_assignment": "both",
+      "notes": "Local n8n instance. 7 verified workflows: Asana->AetherBrowse Scheduler, AetherNet Game Events, M5 Mesh Data Funnel, Content Publisher (Multi-Platform + Governance), Web Agent Task Orchestrator, Vertex AI<->HuggingFace Pipeline, X Growth + Merch Ops. Start with: n8n start (using .n8n_local)."
+    },
+    {
+      "service": "SCBE Bridge",
+      "domain": "localhost:8001",
+      "access_methods": {
+        "api": {
+          "available": true,
+          "auth_type": "api_key",
+          "env_var": "SCBE_API_KEYS",
+          "base_url": "http://127.0.0.1:8001"
+        },
+        "browser": {
+          "available": false,
+          "auth_type": null,
+          "login_url": null,
+          "requires_2fa": false
+        },
+        "cli": {
+          "available": false,
+          "tool": null,
+          "installed": false
+        }
+      },
+      "capabilities": ["read", "write"],
+      "tier": "full_access",
+      "agent_assignment": "both",
+      "notes": "FastAPI bridge at workflows/n8n/scbe_n8n_bridge.py. Auth via X-API-Key header. Routes: /health, /v1/governance/scan, /v1/tongue/encode, /v1/agent/task, /v1/training/ingest, /v1/vertex/push-to-hf, /v1/buffer/post, /v1/telemetry. Also running on GCP VM at 34.134.99.90:8001. Start: uvicorn workflows.n8n.scbe_n8n_bridge:app --host 127.0.0.1 --port 8001."
+    },
+    {
+      "service": "AetherNet Service",
+      "domain": "localhost:8300",
+      "access_methods": {
+        "api": {
+          "available": true,
+          "auth_type": "none",
+          "env_var": null,
+          "base_url": "http://localhost:8300"
+        },
+        "browser": {
+          "available": true,
+          "auth_type": "none",
+          "login_url": "http://localhost:8300/dashboard",
+          "requires_2fa": false
+        },
+        "cli": {
+          "available": false,
+          "tool": null,
+          "installed": false
+        }
+      },
+      "capabilities": ["read", "write", "admin"],
+      "tier": "full_access",
+      "agent_assignment": "both",
+      "notes": "Governed AI social platform. 1,600+ LOC, 20 FastAPI endpoints. Dashboard at /dashboard with SSE live feed, leaderboard, XP economy, 8 seeded tasks. Every interaction triggers governance scan + SFT training pair. Firebase persistence (6 collections). Source: src/aaoe/aethernet_service.py."
+    },
+    {
+      "service": "Redbubble",
+      "domain": "redbubble.com",
+      "access_methods": {
+        "api": {
+          "available": false,
+          "auth_type": null,
+          "env_var": null,
+          "base_url": null
+        },
+        "browser": {
+          "available": true,
+          "auth_type": "cookie",
+          "login_url": "https://www.redbubble.com/auth/login",
+          "requires_2fa": false
+        },
+        "cli": {
+          "available": false,
+          "tool": null,
+          "installed": false
+        }
+      },
+      "capabilities": ["read", "write"],
+      "tier": "partial_access",
+      "agent_assignment": "webhook_side",
+      "notes": "Browser-only. Print-on-demand merch platform. 74 merch products (11 designs x 8 product types). Upload via browser automation. Part of merch_pod_pipeline.py."
+    },
+    {
+      "service": "Printful",
+      "domain": "printful.com",
+      "access_methods": {
+        "api": {
+          "available": true,
+          "auth_type": "bearer",
+          "env_var": "PRINTFUL_API_KEY",
+          "base_url": "https://api.printful.com"
+        },
+        "browser": {
+          "available": true,
+          "auth_type": "cookie",
+          "login_url": "https://www.printful.com/auth/login",
+          "requires_2fa": false
+        },
+        "cli": {
+          "available": false,
+          "tool": null,
+          "installed": false
+        }
+      },
+      "capabilities": ["read", "write"],
+      "tier": "partial_access",
+      "agent_assignment": "webhook_side",
+      "notes": "API available for product creation and order management. Print-on-demand fulfillment partner. Can sync with Shopify. Part of merch_pod_pipeline.py. Supports t-shirts, hoodies, posters, mugs, etc."
+    },
+    {
+      "service": "WordPress",
+      "domain": "wordpress.com",
+      "access_methods": {
+        "api": {
+          "available": true,
+          "auth_type": "bearer",
+          "env_var": "WORDPRESS_API_TOKEN",
+          "base_url": "https://{site}.wordpress.com/wp-json/wp/v2"
+        },
+        "browser": {
+          "available": true,
+          "auth_type": "cookie",
+          "login_url": "https://wordpress.com/log-in",
+          "requires_2fa": false
+        },
+        "cli": {
+          "available": true,
+          "tool": "wp-cli",
+          "installed": false
+        }
+      },
+      "capabilities": ["read", "write"],
+      "tier": "no_access",
+      "agent_assignment": "unassigned",
+      "notes": "WordPress REST API available if configured. wp-cli not currently installed. Potential content publishing channel. Tier set to no_access until credentials are configured and site is provisioned."
+    }
+  ]
+}

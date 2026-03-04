@@ -84,11 +84,14 @@ function getProviderConfigs(): Map<ProviderName, ProviderConfig> {
   });
 
   // Google
-  const googleKey = process.env.GOOGLE_API_KEY;
+  const googleKey =
+    process.env.GOOGLE_API_KEY ||
+    process.env.GOOGLE_AI_API_KEY ||
+    process.env.GEMINI_API_KEY;
   configs.set('google', {
     name: 'google',
     apiKey: googleKey || '',
-    model: process.env.GOOGLE_MODEL || 'gemini-2.0-flash',
+    model: process.env.GOOGLE_MODEL || 'gemini-2.5-flash',
     baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
     available: !!googleKey && !googleKey.includes('...'),
   });

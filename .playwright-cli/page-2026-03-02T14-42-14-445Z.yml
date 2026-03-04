@@ -1,0 +1,386 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - region "Official government website" [ref=e4]:
+      - generic [ref=e7]:
+        - img "U.S. flag" [ref=e8]
+        - paragraph [ref=e9]: An official website of the United States government
+        - button "Here’s how you know Arrow icon" [ref=e10] [cursor=pointer]:
+          - text: Here’s how you know
+          - img "Arrow icon" [ref=e11]: keyboard_arrow_down
+    - banner [ref=e12]:
+      - paragraph [ref=e13]:
+        - link "Jump to main content" [ref=e14] [cursor=pointer]:
+          - /url: "#main"
+      - generic [ref=e16]:
+        - link "USPTO - United States Patent and Trademark Office" [ref=e18] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e19]: USPTO - United States Patent and Trademark Office
+        - generic [ref=e20]:
+          - navigation "User account menu" [ref=e21]:
+            - heading "User account menu" [level=2] [ref=e22]
+            - list [ref=e23]:
+              - listitem [ref=e24]:
+                - link "About Us" [ref=e25] [cursor=pointer]:
+                  - /url: /about-us
+              - listitem [ref=e26]:
+                - link "Jobs" [ref=e27] [cursor=pointer]:
+                  - /url: /jobs/join-us
+              - listitem [ref=e28]:
+                - link "Contact Us" [ref=e29] [cursor=pointer]:
+                  - /url: /about-us/contact-us
+              - listitem [ref=e30]:
+                - link "MyUSPTO" [ref=e31] [cursor=pointer]:
+                  - /url: https://my.uspto.gov
+          - generic [ref=e34]:
+            - generic [ref=e35]: "Search:"
+            - searchbox "Search:" [ref=e36]
+            - button "Search" [ref=e37] [cursor=pointer]:
+              - img [ref=e38]
+              - generic [ref=e40]: Search
+      - navigation [ref=e43]:
+        - generic [ref=e44]:
+          - navigation "Main navigation" [ref=e46]:
+            - heading "Main navigation" [level=2] [ref=e47]
+            - menu [ref=e49]:
+              - menuitem "Patents" [ref=e50]:
+                - button "Patents" [ref=e51] [cursor=pointer]
+              - menuitem "Trademarks" [ref=e52]:
+                - button "Trademarks" [ref=e53] [cursor=pointer]
+              - menuitem "IP Policy" [ref=e54]:
+                - button "IP Policy" [ref=e55] [cursor=pointer]
+              - menuitem "Learning and Resources" [ref=e56]:
+                - button "Learning and Resources" [ref=e57] [cursor=pointer]
+          - generic [ref=e59]:
+            - generic [ref=e60] [cursor=pointer]:
+              - img [ref=e61]
+              - text: Find It Fast
+            - text: "| | | | | | | | | | | |"
+      - navigation "Breadcrumb" [ref=e68]:
+        - heading "Breadcrumb" [level=2] [ref=e69]
+        - list [ref=e70]:
+          - listitem [ref=e71]:
+            - link "Home" [ref=e72] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=e73]:
+            - text: ">"
+            - link "Patents" [ref=e74] [cursor=pointer]:
+              - /url: /patents
+          - listitem [ref=e75]:
+            - text: ">"
+            - link "Laws" [ref=e76] [cursor=pointer]:
+              - /url: /patents/laws
+          - listitem [ref=e77]: "> Micro entity status"
+    - main [ref=e78]:
+      - generic [ref=e80]:
+        - complementary [ref=e81]:
+          - generic [ref=e83]:
+            - navigation "Main menu" [ref=e84]:
+              - heading "Main menu" [level=2] [ref=e85]
+              - list [ref=e86]:
+                - listitem [ref=e87]:
+                  - link "Patents" [ref=e88] [cursor=pointer]:
+                    - /url: /patents
+                - listitem [ref=e89]:
+                  - link "Trademarks" [ref=e90] [cursor=pointer]:
+                    - /url: /trademarks
+                - listitem [ref=e91]:
+                  - link "IP Policy" [ref=e92] [cursor=pointer]:
+                    - /url: /ip-policy
+                - listitem [ref=e93]:
+                  - link "Learning and Resources" [ref=e94] [cursor=pointer]:
+                    - /url: /learning-resources
+                - listitem [ref=e95]:
+                  - link "About Us" [ref=e96] [cursor=pointer]:
+                    - /url: /about-us
+                - listitem [ref=e97]:
+                  - link "Jobs" [ref=e98] [cursor=pointer]:
+                    - /url: /jobs/join-us
+                - listitem [ref=e99]:
+                  - link "Contact Us" [ref=e100] [cursor=pointer]:
+                    - /url: /about-us/contact-us
+                - listitem [ref=e101]:
+                  - link "MyUSPTO" [ref=e102] [cursor=pointer]:
+                    - /url: https://my.uspto.gov/
+            - generic:
+              - article
+        - main [ref=e103]:
+          - alert "Site alert" [ref=e109]:
+            - generic [ref=e111]: warning
+            - paragraph [ref=e113]: As of September 9, 2025, the "maximum qualifying gross income" for purposes of paying any eligible fee at the micro entity discount rate under the gross income basis has changed to $251,190. This change is based on a report by the Census Bureau. See section 2.3 for more information about this income limit.
+            - button "Close" [ref=e115] [cursor=pointer]:
+              - generic [ref=e116]: Close
+          - generic [ref=e117]:
+            - heading "Micro entity status" [level=1] [ref=e119]
+            - article [ref=e121]:
+              - generic [ref=e124]:
+                - generic [ref=e125]:
+                  - paragraph [ref=e126]:
+                    - text: Some applicants and patent owners can benefit from an 80% reduction on most fees charged by the United States Patent and Trademark Office (USPTO) if they qualify and file the appropriate papers in their application or patent. To benefit from this fee reduction, applicants and patentees must establish “micro entity status” according to the USPTO Regulation -
+                    - link "37 CFR 1.29" [ref=e127] [cursor=pointer]:
+                      - /url: https://www.ecfr.gov/current/title-37/chapter-I/subchapter-A/part-1/subpart-A/subject-group-ECFR474fceace21a5df/section-1.29
+                      - strong [ref=e128]: 37 CFR 1.29
+                    - text: . Micro entity status may be available if you have limited income and have never or have rarely filed a patent application. This page explains your options for establishing micro entity status and gives details about application filing and income limits. You will also find information about how different work situations can affect your eligibility.
+                  - paragraph [ref=e129]
+                  - paragraph [ref=e130]:
+                    - text: Looking for quick access to income limit information?
+                    - link "Click here." [ref=e131] [cursor=pointer]:
+                      - /url: "#2.3.3"
+                  - paragraph [ref=e132]
+                  - heading "1. General information" [level=2] [ref=e133]
+                  - heading "1.1 Establishing micro entity status" [level=3] [ref=e134]
+                  - paragraph [ref=e135]: "An application or patent may qualify for micro entity status if:"
+                  - paragraph [ref=e136]:
+                    - text: (1) Each applicant, each inventor, and every other party with an ownership interest in the application or patent is a
+                    - link "small entity" [ref=e137] [cursor=pointer]:
+                      - /url: https://www.uspto.gov/web/offices/pac/mpep/s509.html#d0e30961
+                  - paragraph [ref=e138]:
+                    - text: (2) The additional requirements of the micro entity
+                    - link "gross income basis" [ref=e139] [cursor=pointer]:
+                      - /url: "#Gross%20Income%20Basis"
+                    - text: or
+                    - link "institution of higher education basis" [ref=e140] [cursor=pointer]:
+                      - /url: "#Institution%20of%20Higher%20Education%20Basis"
+                    - text: are satisfied;
+                    - strong [ref=e141]: and
+                  - paragraph [ref=e142]: (3) The applicant or patentee files a micro entity certification in the application or patent for which micro entity status is desired.
+                  - paragraph [ref=e143]:
+                    - text: Most applications and patents that qualify for micro entity status do so under the
+                    - link "gross income basis" [ref=e144] [cursor=pointer]:
+                      - /url: "#Gross%20Income%20Basis"
+                    - text: ", which requires that additional limits on gross income and the number of previously filed applications be met. Go to the"
+                    - link "Gross income basis" [ref=e145] [cursor=pointer]:
+                      - /url: "#Gross%20Income%20Basis"
+                    - text: section for more information. Some applications and patents may qualify for the
+                    - link "institution of higher education basis" [ref=e146] [cursor=pointer]:
+                      - /url: "#Institution%20of%20Higher%20Education%20Basis"
+                    - text: ", if certain limits on the applicant’s employer or on the ownership of the application or patent are met. Go to the"
+                    - link "Institution of higher education basis" [ref=e147] [cursor=pointer]:
+                      - /url: "#Institution%20of%20Higher%20Education%20Basis"
+                    - text: section for more information for establishing micro entity status.
+                  - paragraph [ref=e148]:
+                    - text: You must establish micro entity status prior to paying, or at the time of paying, a fee in the micro entity amount. To establish micro entity status on the
+                    - strong [ref=e149]: gross income basis
+                    - text: ", the applicant or patentee should file form"
+                    - link "SB/15A" [ref=e150] [cursor=pointer]:
+                      - /url: https://www.uspto.gov/sites/default/files/documents/sb0015a.pdf
+                    - text: in the application or patent. To establish micro entity status on the
+                    - strong [ref=e151]: institution of higher education basis
+                    - text: ", the applicant or patentee should file form"
+                    - link "SB/15B" [ref=e152] [cursor=pointer]:
+                      - /url: https://www.uspto.gov/sites/default/files/documents/sb0015b.pdf
+                    - text: in the application or patent. These forms, along with all other USPTO patent-related forms can be found on our
+                    - link "Patents Forms page" [ref=e153] [cursor=pointer]:
+                      - /url: /patents/apply/forms
+                    - text: .
+                  - paragraph [ref=e154]:
+                    - text: For more information on small and micro entities, see
+                    - link "MPEP sections 509.02" [ref=e155] [cursor=pointer]:
+                      - /url: https://www.uspto.gov/web/offices/pac/mpep/s509.html#d0e30961
+                      - strong [ref=e156]: MPEP sections 509.02
+                    - text: "-"
+                    - link "509.04" [ref=e157] [cursor=pointer]:
+                      - /url: https://www.uspto.gov/web/offices/pac/mpep/s509.html#ch500_d1ff69_210b3_1ca
+                      - strong [ref=e158]: "509.04"
+                    - text: .
+                  - heading "1.2 Micro entity status must be reevaluated every time a fee is paid" [level=3] [ref=e159]: 1.2 Micro entity status must be reevaluated every time a fee is paid
+                  - paragraph [ref=e160]:
+                    - text: After micro entity status has been established in an application or patent, it will remain in effect until it is changed. However, the applicant or patentee
+                    - strong [ref=e161]: must re-evaluate
+                    - text: whether or not the application or patent still qualifies for micro entity status
+                    - strong [ref=e162]: each and every time a fee is paid
+                    - text: to the USPTO in that application or patent. This is particularly important if the application or patent qualified under the gross income basis, because (1) the income limit changes every year (usually in September or October) and (2) the gross income of any applicant, inventor or other person with an ownership interest in the patent or application will likely change from year to year. For more information concerning the income limit, see
+                    - link "section 2.3 Maximum qualifying gross income" [ref=e163] [cursor=pointer]:
+                      - /url: "#Maximum%20Qualifying%20Gross%20Income"
+                    - text: .
+                  - paragraph [ref=e164]:
+                    - text: If the applicant or patentee determines that the application or patent
+                    - strong [ref=e165]: still qualifies
+                    - text: for micro entity status, then the fee may be paid in the micro entity amount. There is no need to re-file the micro entity certification form every time a payment is made.
+                  - paragraph [ref=e166]:
+                    - text: If an application or patent
+                    - strong [ref=e167]: no longer qualifies
+                    - text: for micro entity status, for example because the income limit for the gross income basis is no longer met, then the applicant or patentee must file a notification of a loss of entitlement to micro entity status in the application or patent. The
+                    - link "“Notification of Loss of Entitlement to Micro Entity Status” form (Form SB/460)" [ref=e168] [cursor=pointer]:
+                      - /url: https://www.uspto.gov/sites/default/files/documents/sb0460.pdf
+                    - text: may be used to notify the USPTO of loss of entitlement to micro entity status. Information about how to notify the USPTO of loss on entitlement to micro entity status can be found in MPEP sections
+                    - link "509.04(e)" [ref=e169] [cursor=pointer]:
+                      - /url: https://www.uspto.gov/web/offices/pac/mpep/s509.html#ch500_d1ff69_271ef_147
+                    - text: ","
+                    - link "509.04(f)" [ref=e170] [cursor=pointer]:
+                      - /url: https://www.uspto.gov/web/offices/pac/mpep/s509.html#ch500_d1ff69_2750f_29
+                    - text: and
+                    - link "2550(II)" [ref=e171] [cursor=pointer]:
+                      - /url: https://www.uspto.gov/web/offices/pac/mpep/s2550.html
+                    - text: (maintenance fees). If micro entity status is no longer applicable, the fee should be paid in either the small entity or undiscounted amount.
+                  - heading "1.3 What to do when micro entity status was established by mistake" [level=3] [ref=e172]: 1.3 What to do when micro entity status was established by mistake
+                  - paragraph [ref=e173]:
+                    - text: If status as a micro entity is established in good faith in an application or patent, and fees as a micro entity are paid in good faith in the application or patent, and it is later discovered that such micro entity status either was established in error, or that the Office was not notified of a loss of entitlement to micro entity status through error, the error will be excused upon compliance with the separate submission and itemization requirements of
+                    - link "37 CFR 1.29(k)(1)" [ref=e174] [cursor=pointer]:
+                      - /url: https://www.ecfr.gov/current/title-37/chapter-I/subchapter-A/part-1/subpart-A/subject-group-ECFR474fceace21a5df/section-1.29#p-1.29(k)(1)
+                    - text: and the deficiency payment requirement of
+                    - link "37 CFR 1.29(k)(2)" [ref=e175] [cursor=pointer]:
+                      - /url: https://www.ecfr.gov/current/title-37/chapter-I/subchapter-A/part-1/subpart-A/subject-group-ECFR474fceace21a5df/section-1.29#p-1.29(k)(2)
+                    - text: .
+                  - paragraph [ref=e176]:
+                    - strong [ref=e177]
+                    - text: The
+                    - link "“Notification of Loss of Entitlement to Micro Entity Status” form (Form SB/460)" [ref=e178] [cursor=pointer]:
+                      - /url: https://www.uspto.gov/sites/default/files/documents/sb0460.pdf
+                    - text: may be used to notify the USPTO of loss of entitlement to micro entity status, and to submit the required itemization and deficiency payments. Information about how to correct micro entity status that was established by mistake can be found in MPEP section
+                    - link "509.04(f)" [ref=e179] [cursor=pointer]:
+                      - /url: https://www.uspto.gov/web/offices/pac/mpep/s509.html#ch500_d1ff69_2750f_29
+                    - text: .
+                - generic [ref=e180]:
+                  - link "Expand all" [ref=e181] [cursor=pointer]:
+                    - /url: "#"
+                  - text: "|"
+                  - link "Collapse all" [ref=e182] [cursor=pointer]:
+                    - /url: "#"
+                - group [ref=e183]:
+                  - button "2. Gross income basis" [ref=e184] [cursor=pointer]:
+                    - img [ref=e185]
+                    - text: 2. Gross income basis
+                - generic [ref=e187]:
+                  - paragraph [ref=e188]
+                  - paragraph [ref=e189]
+                - group [ref=e190]:
+                  - button "3. Institution of higher education basis" [ref=e191] [cursor=pointer]:
+                    - img [ref=e192]
+                    - text: 3. Institution of higher education basis
+                - generic [ref=e194]:
+                  - paragraph [ref=e195]
+                  - heading "4. Reminders regarding micro entity status" [level=2] [ref=e196]: 4. Reminders regarding micro entity status
+                  - list [ref=e197]:
+                    - listitem [ref=e198]:
+                      - text: To receive the micro entity reduced fees, you must file a form with your application showing that you meet the requirements as indicated above. These forms must be filed with every application for which you qualify and wish to receive the micro entity discount. Filers qualifying on the gross income basis should use form
+                      - link "SB/15A" [ref=e199] [cursor=pointer]:
+                        - /url: https://www.uspto.gov/sites/default/files/documents/sb0015a.pdf
+                      - text: . For filers qualifying on the institution of higher education basis, use form
+                      - link "SB/15B" [ref=e200] [cursor=pointer]:
+                        - /url: https://www.uspto.gov/sites/default/files/documents/sb0015b.pdf
+                      - text: . These forms, along with all other USPTO patent-related forms can be found on our
+                      - link "Patents Forms page" [ref=e201] [cursor=pointer]:
+                        - /url: https://www.uspto.gov/patents/apply/forms
+                      - text: .
+                    - listitem [ref=e202]:
+                      - text: Please remember that if you file a nonprovisional utility application in paper, you are subject to
+                      - strong [ref=e203]: two surcharges
+                      - text: in addition to the normal fees associated with filing a nonprovisional application. The surcharges do not apply to reissue, design, plant, or provisional applications, and can be avoided by filing electronically in DOCX format using
+                      - link "Patent Center" [ref=e204] [cursor=pointer]:
+                        - /url: https://patentcenter.uspto.gov/
+                      - text: ", the USPTO's automated online solution for patent filing. Visit our"
+                      - link "Patent Center information page" [ref=e205] [cursor=pointer]:
+                        - /url: https://www.uspto.gov/patents/apply/patent-center
+                      - text: to learn more.
+                      - list [ref=e206]:
+                        - listitem [ref=e207]:
+                          - text: The first surcharge is for “non-electronic filings.”
+                          - strong [ref=e208]: There is no micro entity discount for this surcharge
+                          - text: . That means if you are filing as a micro entity using a paper application, you will be required to pay the small entity non-electronic filing surcharge of $200.
+                        - listitem [ref=e209]: The second surcharge is for filing an application where the specification, claims, and/or abstract do not conform to the USPTO requirements for submission in DOCX format. There is a micro entity discount for this surcharge. This surcharge applies to applications filed on or after January 17, 2024.
+                  - paragraph [ref=e210]
+                  - paragraph [ref=e211]
+    - generic [ref=e214]:
+      - group "Was this page helpful?" [ref=e299]:
+        - generic [ref=e300]: Was this page helpful?
+        - generic [ref=e301]:
+          - button "Thumbs Up" [ref=e302] [cursor=pointer]:
+            - img "Thumbs Up" [ref=e303]
+          - button "Thumbs Down" [ref=e306] [cursor=pointer]:
+            - img "Thumbs Down" [ref=e307]
+      - generic [ref=e216]:
+        - generic [ref=e217]:
+          - button "Share Share this page" [ref=e218] [cursor=pointer]:
+            - img "Share" [ref=e219]: share
+            - text: Share this page
+          - link "print Print this page" [ref=e220] [cursor=pointer]:
+            - /url: ""
+            - img "print" [ref=e221]
+            - text: Print this page
+        - generic [ref=e222]:
+          - link "Additional information" [ref=e223] [cursor=pointer]:
+            - /url: ""
+          - text: about this page
+    - contentinfo [ref=e224]:
+      - generic [ref=e227]:
+        - generic [ref=e228]:
+          - paragraph [ref=e229]: Receive updates from the USPTO
+          - generic [ref=e231]:
+            - generic [ref=e232]: Enter your email to subscribe or update your preferences
+            - generic [ref=e233]:
+              - textbox "Enter your email to subscribe or update your preferences" [ref=e234]:
+                - /placeholder: your@email.com
+              - button "Subscribe" [ref=e235] [cursor=pointer]
+        - generic [ref=e236]:
+          - generic [ref=e237]:
+            - generic [ref=e238]:
+              - link "About the USPTO" [ref=e239] [cursor=pointer]:
+                - /url: https://www.uspto.gov/about-us
+              - text: •
+            - generic [ref=e240]:
+              - link "Search for patents" [ref=e241] [cursor=pointer]:
+                - /url: https://www.uspto.gov/patents/search
+              - text: •
+            - link "Search for trademarks" [ref=e243] [cursor=pointer]:
+              - /url: https://www.uspto.gov/trademarks/search
+          - generic [ref=e244]:
+            - generic [ref=e245]:
+              - link "US Department of Commerce" [ref=e247] [cursor=pointer]:
+                - /url: https://www.commerce.gov
+              - link "Accessibility" [ref=e249] [cursor=pointer]:
+                - /url: https://www.uspto.gov/using-usptogov/accessibility-uspto-website
+              - link "Privacy Policy" [ref=e251] [cursor=pointer]:
+                - /url: https://www.uspto.gov/privacy-policy
+              - link "Terms of Use" [ref=e253] [cursor=pointer]:
+                - /url: https://www.uspto.gov/terms-use-uspto-websites
+              - link "Financial and Performance Data" [ref=e255] [cursor=pointer]:
+                - /url: https://www.uspto.gov/about-us/financial-and-performance
+            - generic [ref=e256]:
+              - link "Vulnerability Disclosure Policy" [ref=e258] [cursor=pointer]:
+                - /url: https://www.uspto.gov/about-us/security/vulnerability-disclosure-policy
+              - link "Freedom of Information Act" [ref=e260] [cursor=pointer]:
+                - /url: https://www.uspto.gov/learning-and-resources/ip-policy/electronic-freedom-information-act-e-foia
+              - link "Inspector General" [ref=e262] [cursor=pointer]:
+                - /url: https://www.oig.doc.gov/about/oversight-areas/u-s-patent-and-trademark-office-pto/
+              - link "NoFEAR Act" [ref=e264] [cursor=pointer]:
+                - /url: https://www.uspto.gov/about-us/nofear-act
+              - link "USA.gov" [ref=e266] [cursor=pointer]:
+                - /url: https://www.usa.gov
+      - generic [ref=e269]:
+        - link "United States Patent and Trademark Office - An Agency of the Department of Commerce USPTO - United States Patent and Trademark Office" [ref=e271] [cursor=pointer]:
+          - /url: https://www.uspto.gov
+          - img "United States Patent and Trademark Office - An Agency of the Department of Commerce" [ref=e272]
+          - generic [ref=e273]: USPTO - United States Patent and Trademark Office
+        - generic [ref=e274]:
+          - generic [ref=e275]: Follow us
+          - generic [ref=e276]:
+            - link "Facebook USPTO Facebook page" [ref=e277] [cursor=pointer]:
+              - /url: https://www.facebook.com/uspto.gov
+              - img "Facebook" [ref=e278]
+              - generic [ref=e279]: USPTO Facebook page
+            - link "Instagram USPTO Instagram page" [ref=e280] [cursor=pointer]:
+              - /url: https://www.instagram.com/uspto
+              - img "Instagram" [ref=e281]
+              - generic [ref=e282]:
+                - text: USPTO Instagram
+                - generic [ref=e283]: page
+            - link "Linkedin USPTO Linkedin page" [ref=e284] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/uspto
+              - img "Linkedin" [ref=e285]
+              - generic [ref=e286]:
+                - text: USPTO Linkedin
+                - generic [ref=e287]: page
+            - link "X USPTO X page" [ref=e288] [cursor=pointer]:
+              - /url: https://x.com/uspto
+              - img "X" [ref=e289]
+              - generic [ref=e290]:
+                - text: USPTO X
+                - generic [ref=e291]: page
+            - link "Youtube USPTO Youtube page" [ref=e292] [cursor=pointer]:
+              - /url: https://www.youtube.com/user/USPTOvideo
+              - img "Youtube" [ref=e293]
+              - generic [ref=e294]:
+                - text: USPTO Youtube
+                - generic [ref=e295]: page

@@ -4,6 +4,9 @@
 # Performance test evidence files (hardware-specific)
 docs/evidence/*.json
 
+# Patent filing kit (contains PII — name, address, phone)
+docs/patent/filing_kit/01-urgent/
+
 # Secrets (Firebase keys, service accounts, etc.)
 secrets/
 firebase-config.json
