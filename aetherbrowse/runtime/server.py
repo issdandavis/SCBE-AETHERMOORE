@@ -52,7 +52,20 @@ SEARCH_LOG_PATH = RUNTIME_ARTIFACTS_DIR / "search_queries.jsonl"
 
 _DDG_RESULT_RE = re.compile(r'<a[^>]*class="result__a"[^>]*href="([^"]+)"[^>]*>(.*?)</a>', re.IGNORECASE | re.DOTALL)
 _DDG_SNIPPET_RE = re.compile(r'<a[^>]*class="result__snippet"[^>]*>(.*?)</a>|<div[^>]*class="result__snippet"[^>]*>(.*?)</div>', re.IGNORECASE | re.DOTALL)
+_BING_RESULT_RE = re.compile(r'<li[^>]*class="b_algo"[^>]*>(.*?)</li>', re.IGNORECASE | re.DOTALL)
+_BING_LINK_RE = re.compile(r'<h2[^>]*>\s*<a[^>]*href="([^"]+)"[^>]*>(.*?)</a>', re.IGNORECASE | re.DOTALL)
+_BING_SNIPPET_RE = re.compile(r'<p[^>]*>(.*?)</p>', re.IGNORECASE | re.DOTALL)
 _HTML_TAG_RE = re.compile(r"<[^>]+>")
+_SEARCH_ENGINE_ALIASES = {
+    "auto": "roundtable",
+    "all": "roundtable",
+    "blend": "roundtable",
+    "roundtable": "roundtable",
+    "ddg": "duckduckgo",
+    "duckduckgo": "duckduckgo",
+    "bing": "bing",
+    "fallback": "fallback",
+}
 
 # ---------------------------------------------------------------------------
 #  Agent State
@@ -651,49 +664,179 @@ def _extract_duckduckgo_results(html_text: str, limit: int) -> list[dict[str, st
     return results
 
 
-def _aether_search(query: str, limit: int = 8) -> list[dict[str, str]]:
+def _extract_bing_results(html_text: str, limit: int) -> list[dict[str, str]]:
+    results: list[dict[str, str]] = []
+    for block in _BING_RESULT_RE.finditer(html_text):
+        chunk = block.group(1) or ""
+        link_match = _BING_LINK_RE.search(chunk)
+        if not link_match:
+            continue
+        href = str(link_match.group(1) or "").strip()
+        title = _clean_html_text(link_match.group(2) or "")
+        if not href or not title:
+            continue
+        snippet_match = _BING_SNIPPET_RE.search(chunk)
+        snippet = _clean_html_text(snippet_match.group(1) or "") if snippet_match else ""
+        results.append(
+            {
+                "title": title,
+                "url": href,
+                "snippet": snippet,
+                "source": "bing",
+            }
+        )
+        if len(results) >= limit:
+            break
+    return results
+
+
+def _normalize_search_engine(engine: str) -> str:
+    raw = str(engine or "").strip().lower()
+    return _SEARCH_ENGINE_ALIASES.get(raw, "roundtable")
+
+
+def _dedupe_results(results: list[dict[str, str]], limit: int) -> list[dict[str, str]]:
+    unique: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for item in results:
+        url = str(item.get("url", "")).strip()
+        if not url:
+            continue
+        key = url.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(item)
+        if len(unique) >= limit:
+            break
+    return unique
+
+
+def _search_duckduckgo(query: str, limit: int) -> list[dict[str, str]]:
     q = str(query or "").strip()
     if not q:
         return []
-
     ddg_url = f"https://duckduckgo.com/html/?q={quote_plus(q)}"
     headers = {"User-Agent": "AetherBrowse/0.2 (+https://github.com/issdandavis/SCBE-AETHERMOORE)"}
     try:
         req = Request(ddg_url, headers=headers)
         with urlopen(req, timeout=12) as resp:
             payload = resp.read().decode("utf-8", errors="ignore")
-        results = _extract_duckduckgo_results(payload, max(1, min(limit, 20)))
+        return _extract_duckduckgo_results(payload, max(1, min(limit, 20)))
     except Exception as exc:
-        logger.warning("Search fetch failed for query '%s': %s", q, exc)
-        results = []
+        logger.warning("DuckDuckGo fetch failed for query '%s': %s", q, exc)
+        return []
 
-    if results:
-        return results
 
+def _search_bing(query: str, limit: int) -> list[dict[str, str]]:
+    q = str(query or "").strip()
+    if not q:
+        return []
+    bing_url = f"https://www.bing.com/search?q={quote_plus(q)}&setlang=en-US&cc=US"
+    headers = {"User-Agent": "AetherBrowse/0.2 (+https://github.com/issdandavis/SCBE-AETHERMOORE)"}
+    try:
+        req = Request(bing_url, headers=headers)
+        with urlopen(req, timeout=12) as resp:
+            payload = resp.read().decode("utf-8", errors="ignore")
+        return _extract_bing_results(payload, max(1, min(limit, 20)))
+    except Exception as exc:
+        logger.warning("Bing fetch failed for query '%s': %s", q, exc)
+        return []
+
+
+def _fallback_link_results(query: str, limit: int) -> list[dict[str, str]]:
+    q = str(query or "").strip()
+    if not q:
+        return []
+
+    encoded = quote_plus(q)
     fallback = [
         {
             "title": f"Search DuckDuckGo for '{q}'",
-            "url": f"https://duckduckgo.com/?q={quote_plus(q)}",
-            "snippet": "Fallback web search",
-            "source": "fallback",
+            "url": f"https://duckduckgo.com/?q={encoded}",
+            "snippet": "Direct web search lane on DuckDuckGo.",
+            "source": "link:duckduckgo",
         },
         {
-            "title": f"Search GitHub for '{q}'",
-            "url": f"https://github.com/search?q={quote_plus(q)}&type=code",
-            "snippet": "Code and repository results",
-            "source": "fallback",
+            "title": f"Search Bing for '{q}'",
+            "url": f"https://www.bing.com/search?q={encoded}",
+            "snippet": "Direct web search lane on Bing.",
+            "source": "link:bing",
+        },
+        {
+            "title": f"Search Google for '{q}'",
+            "url": f"https://www.google.com/search?q={encoded}",
+            "snippet": "Direct web search lane on Google.",
+            "source": "link:google",
+        },
+        {
+            "title": f"Search Brave for '{q}'",
+            "url": f"https://search.brave.com/search?q={encoded}",
+            "snippet": "Direct web search lane on Brave Search.",
+            "source": "link:brave",
+        },
+        {
+            "title": f"Search GitHub code for '{q}'",
+            "url": f"https://github.com/search?q={encoded}&type=code",
+            "snippet": "Code and repository results.",
+            "source": "link:github",
         },
         {
             "title": f"Search Hugging Face for '{q}'",
-            "url": f"https://huggingface.co/models?search={quote_plus(q)}",
-            "snippet": "Models and datasets",
-            "source": "fallback",
+            "url": f"https://huggingface.co/models?search={encoded}",
+            "snippet": "Model and dataset results.",
+            "source": "link:huggingface",
+        },
+        {
+            "title": f"Search YouTube for '{q}'",
+            "url": f"https://www.youtube.com/results?search_query={encoded}",
+            "snippet": "Video results and demos.",
+            "source": "link:youtube",
+        },
+        {
+            "title": f"Search Wikipedia for '{q}'",
+            "url": f"https://en.wikipedia.org/w/index.php?search={encoded}",
+            "snippet": "Reference and encyclopedia results.",
+            "source": "link:wikipedia",
         },
     ]
     return fallback[: max(1, min(limit, 20))]
 
 
-def _log_search_query(query: str, result_count: int) -> None:
+def _aether_search(query: str, limit: int = 8, engine: str = "roundtable") -> list[dict[str, str]]:
+    q = str(query or "").strip()
+    if not q:
+        return []
+
+    safe_limit = max(1, min(int(limit), 20))
+    selected_engine = _normalize_search_engine(engine)
+
+    if selected_engine == "duckduckgo":
+        results = _search_duckduckgo(q, safe_limit)
+        return results or _fallback_link_results(q, safe_limit)
+
+    if selected_engine == "bing":
+        results = _search_bing(q, safe_limit)
+        return results or _fallback_link_results(q, safe_limit)
+
+    if selected_engine == "fallback":
+        return _fallback_link_results(q, safe_limit)
+
+    combined: list[dict[str, str]] = []
+    combined.extend(_search_duckduckgo(q, safe_limit))
+    remaining = max(0, safe_limit - len(combined))
+    if remaining > 0:
+        combined.extend(_search_bing(q, remaining))
+    combined = _dedupe_results(combined, safe_limit)
+    if len(combined) >= safe_limit:
+        return combined
+
+    filler = _fallback_link_results(q, safe_limit)
+    combined.extend(filler)
+    return _dedupe_results(combined, safe_limit)
+
+
+def _log_search_query(query: str, result_count: int, engine: str = "roundtable") -> None:
     SEARCH_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
     with SEARCH_LOG_PATH.open("a", encoding="utf-8") as f:
         f.write(
@@ -702,6 +845,7 @@ def _log_search_query(query: str, result_count: int) -> None:
                     "timestamp": time.time(),
                     "query": str(query or ""),
                     "result_count": int(result_count),
+                    "engine": _normalize_search_engine(engine),
                 },
                 ensure_ascii=True,
             )
@@ -768,16 +912,21 @@ if HAS_FASTAPI:
         }
 
     @app.get("/api/search")
-    async def api_search(q: str = "", limit: int = 8):
+    async def api_search(q: str = "", limit: int = 8, engine: str = "roundtable"):
         query = str(q or "").strip()
-        safe_limit = max(1, min(int(limit), 20))
+        try:
+            safe_limit = max(1, min(int(limit), 20))
+        except (TypeError, ValueError):
+            safe_limit = 8
+        selected_engine = _normalize_search_engine(engine)
         if not query:
-            return {"ok": True, "query": query, "count": 0, "results": []}
-        results = await asyncio.to_thread(_aether_search, query, safe_limit)
-        _log_search_query(query, len(results))
+            return {"ok": True, "query": query, "engine": selected_engine, "count": 0, "results": []}
+        results = await asyncio.to_thread(_aether_search, query, safe_limit, selected_engine)
+        _log_search_query(query, len(results), selected_engine)
         return {
             "ok": True,
             "query": query,
+            "engine": selected_engine,
             "count": len(results),
             "results": results,
         }

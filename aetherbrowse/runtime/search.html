@@ -66,6 +66,17 @@
       outline: none;
     }
     input[type="search"]:focus { border-color: var(--accent); box-shadow: 0 0 0 2px #58a6ff33; }
+    select {
+      border: 1px solid #355194;
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: #0b1226;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+      min-width: 130px;
+    }
+    select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px #58a6ff33; }
     button {
       border: none;
       border-radius: 10px;
@@ -151,6 +162,12 @@
       <strong>Aether Search</strong>
       <form id="searchForm">
         <input id="q" type="search" name="q" placeholder="Search web, code, research..." autocomplete="off" />
+        <select id="engine" name="engine" title="Search route">
+          <option value="roundtable">Roundtable (multi-engine)</option>
+          <option value="duckduckgo">DuckDuckGo</option>
+          <option value="bing">Bing</option>
+          <option value="fallback">Direct links</option>
+        </select>
         <button type="submit">Search</button>
       </form>
       <a href="/landing" style="color:#9ec8ff; text-decoration:none; font-size:13px;">Home</a>
@@ -166,9 +183,12 @@
         <a id="ghLink" href="#">GitHub Code Search</a>
         <a id="hfLink" href="#">Hugging Face Models</a>
         <a id="ytLink" href="#">YouTube Search</a>
+        <a id="googleLink" href="#">Google Search</a>
+        <a id="bingLink" href="#">Bing Search</a>
+        <a id="braveLink" href="#">Brave Search</a>
         <a id="ddgLink" href="#">DuckDuckGo Direct</a>
         <a id="newsLink" href="#">Hacker News Search</a>
-        <div class="ok">Source blend: Aether parser + DuckDuckGo index.</div>
+        <div class="ok">Roundtable lane blends DuckDuckGo + Bing + direct specialist lanes.</div>
       </aside>
     </div>
   </div>
@@ -176,6 +196,7 @@
   <script>
     const qs = new URLSearchParams(window.location.search);
     const input = document.getElementById('q');
+    const engineSelect = document.getElementById('engine');
     const resultsNode = document.getElementById('results');
     const meta = document.getElementById('meta');
     const form = document.getElementById('searchForm');
@@ -194,25 +215,30 @@
       document.getElementById('ghLink').href = `https://github.com/search?q=${encoded}&type=code`;
       document.getElementById('hfLink').href = `https://huggingface.co/models?search=${encoded}`;
       document.getElementById('ytLink').href = `https://www.youtube.com/results?search_query=${encoded}`;
+      document.getElementById('googleLink').href = `https://www.google.com/search?q=${encoded}`;
+      document.getElementById('bingLink').href = `https://www.bing.com/search?q=${encoded}`;
+      document.getElementById('braveLink').href = `https://search.brave.com/search?q=${encoded}`;
       document.getElementById('ddgLink').href = `https://duckduckgo.com/?q=${encoded}`;
       document.getElementById('newsLink').href = `https://hn.algolia.com/?q=${encoded}`;
     }
 
-    async function runSearch(q) {
+    async function runSearch(q, engine) {
       const query = String(q || '').trim();
+      const selectedEngine = String(engine || 'roundtable').trim() || 'roundtable';
       if (!query) {
         meta.textContent = 'Enter a query to search.';
         resultsNode.innerHTML = '';
         return;
       }
       setQuickLinks(query);
-      meta.textContent = `Searching for "${query}" ...`;
+      meta.textContent = `Searching for "${query}" via ${selectedEngine} ...`;
       resultsNode.innerHTML = '<div class="loading">Aether Search is gathering results...</div>';
       try {
-        const resp = await fetch(`/api/search?q=${encodeURIComponent(query)}&limit=10`, { cache: 'no-store' });
+        const resp = await fetch(`/api/search?q=${encodeURIComponent(query)}&limit=10&engine=${encodeURIComponent(selectedEngine)}`, { cache: 'no-store' });
         const data = await resp.json();
         const items = Array.isArray(data.results) ? data.results : [];
-        meta.textContent = `Found ${items.length} results for "${query}"`;
+        const engineLabel = data && data.engine ? String(data.engine) : selectedEngine;
+        meta.textContent = `Found ${items.length} results for "${query}" via ${engineLabel}`;
         if (!items.length) {
           resultsNode.innerHTML = '<div class="loading">No results returned.</div>';
           return;
@@ -233,15 +259,18 @@
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       const q = input.value.trim();
-      const next = `/search?q=${encodeURIComponent(q)}`;
+      const engine = engineSelect.value || 'roundtable';
+      const next = `/search?q=${encodeURIComponent(q)}&engine=${encodeURIComponent(engine)}`;
       history.replaceState({}, '', next);
-      runSearch(q);
+      runSearch(q, engine);
     });
 
     const initial = qs.get('q') || '';
+    const initialEngine = qs.get('engine') || 'roundtable';
     input.value = initial;
+    engineSelect.value = initialEngine;
     setQuickLinks(initial);
-    runSearch(initial);
+    runSearch(initial, initialEngine);
   </script>
 </body>
 </html>
