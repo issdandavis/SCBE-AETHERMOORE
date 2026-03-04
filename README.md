@@ -42,6 +42,7 @@ Linear Threshold:           38.7%
 ## Architecture Docs (Index)
 
 - **SCBE Kernel Spec (Canonical):** `SPEC.md`
+- **Langues Weighting System (Layer 3 + 6):** `docs/LANGUES_WEIGHTING_SYSTEM.md`
 - **HYDRA Orchestration (Execution Plane):** `docs/hydra/ARCHITECTURE.md`
 - **Concept Glossary (Indexable Terms):** `CONCEPTS.md`
 - **Research Drafts (Non-Canonical):** `docs/research/README.md`
@@ -138,6 +139,25 @@ Layer 14:    Audio Axis (FFT telemetry)
 ### Docker (Fastest)
 ```bash
 docker run -p 8080:8080 -e SCBE_API_KEY=your-key ghcr.io/issdandavis/scbe-aethermoore
+```
+
+### Docker Terminal Control (No UI)
+```powershell
+# Doctor + health checks
+.\scripts\scbe_docker_status.ps1 -Action doctor -Stack api
+
+# Start/stop stack
+.\scripts\scbe_docker_status.ps1 -Action up -Stack api
+.\scripts\scbe_docker_status.ps1 -Action down -Stack api
+```
+
+See `docs/DOCKER_TERMINAL_OPERATIONS.md` for full stack control commands.
+
+Docker MCP terminal-only workflow:
+```powershell
+.\scripts\scbe_mcp_terminal.ps1 -Action doctor
+.\scripts\scbe_mcp_terminal.ps1 -Action tools
+.\scripts\scbe_mcp_terminal.ps1 -Action gateway
 ```
 
 ### Local Development

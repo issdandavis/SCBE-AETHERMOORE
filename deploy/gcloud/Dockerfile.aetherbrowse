@@ -1,0 +1,57 @@
+# Cloud Run image for SCBE AetherBrowse (agents/browser/main.py)
+
+FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+WORKDIR /app
+
+# Playwright Chromium dependencies for Debian slim
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    wget \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libcups2 \
+    libdrm2 \
+    libgbm1 \
+    libgtk-3-0 \
+    libnspr4 \
+    libnss3 \
+    libx11-6 \
+    libx11-xcb1 \
+    libxcb1 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxext6 \
+    libxfixes3 \
+    libxkbcommon0 \
+    libxrandr2 \
+    fonts-liberation \
+    && rm -rf /var/lib/apt/lists/*
+
+# Python dependencies
+RUN pip install --no-cache-dir \
+    numpy>=2.0.0 \
+    scipy>=1.14.0 \
+    fastapi>=0.109.0 \
+    "uvicorn[standard]>=0.27.0" \
+    pydantic>=2.6.0 \
+    playwright>=1.57.0
+
+# Install Chromium for Playwright
+RUN python -m playwright install chromium
+
+# App code
+COPY agents/ ./agents/
+COPY src/ ./src/
+
+ENV PYTHONPATH=/app
+ENV SCBE_ENV=production
+ENV SCBE_LOG_LEVEL=INFO
+
+EXPOSE 8080
+
+CMD uvicorn agents.browser.main:app --host 0.0.0.0 --port ${PORT:-8080}

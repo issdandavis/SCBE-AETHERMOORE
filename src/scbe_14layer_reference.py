@@ -23,6 +23,11 @@ if sys.platform == "win32":
 import hashlib
 import numpy as np
 from typing import Dict, Tuple, List, Optional, Sequence
+from src.synesthesia_embedding import flavor_scent_alignment, synesthesia_risk_factor
+try:
+    from src.harmonic.governance_logger import audit_state_transition
+except ImportError:  # pragma: no cover - fallback when imported from src path directly
+    from harmonic.governance_logger import audit_state_transition
 
 # Use scipy-compatible imports with fallback
 try:
@@ -513,6 +518,53 @@ def layer_14_audio_axis(audio: Optional[np.ndarray], eps: float = 1e-5) -> float
     return np.clip(stability, 0.0, 1.0)
 
 
+def _build_state21_v1_vector(
+    *,
+    u_final: np.ndarray,
+    phases: np.ndarray,
+    d_tri_norm: float,
+    d_star: float,
+    c_spin: float,
+    s_spec: float,
+    tau: float,
+    s_audio: float,
+    risk_prime: float,
+    H: float,
+) -> List[float]:
+    """Build canonical 21D telemetry vector for Layer 13 audit logging."""
+    # Canonical tongue position uses first 6 geometric axes.
+    u6 = np.asarray(u_final[:6], dtype=float)
+    # Canonical phase is wrapped to [-pi, pi].
+    theta6 = np.arctan2(np.sin(phases[:6]), np.cos(phases[:6]))
+
+    flux_participation = float(np.clip(abs(risk_prime - d_tri_norm), 0.0, 1.0))
+    coherence_spectral = float(np.clip(s_spec, 0.0, 1.0))
+    coherence_spin = float(np.clip(c_spin, 0.0, 1.0))
+    coherence_triadic = float(np.clip(1.0 - d_tri_norm, 0.0, 1.0))
+    risk_aggregate = float(np.clip(risk_prime / (1.0 + risk_prime), 0.0, 1.0))
+    entropy_density = float(np.clip(1.0 - s_spec, 0.0, 1.0))
+    stabilization = float(np.clip(H, 0.0, 1.0))
+    radial_norm = float(np.linalg.norm(u6))
+    harmonic_energy = float(1.0 / max(1e-10, H))
+
+    telemetry = np.array(
+        [
+            flux_participation,
+            coherence_spectral,
+            coherence_spin,
+            coherence_triadic,
+            risk_aggregate,
+            entropy_density,
+            stabilization,
+            radial_norm,
+            harmonic_energy,
+        ],
+        dtype=float,
+    )
+
+    return np.concatenate([u6, theta6, telemetry]).astype(float).tolist()
+
+
 # =============================================================================
 # FULL PIPELINE INTEGRATION
 # =============================================================================
@@ -544,6 +596,10 @@ def scbe_14layer_pipeline(
     modality_features: Optional[Dict[str, Sequence[float]]] = None,
     mmx_agreement_floor: float = 0.5,
     mmx_prev_alignment: Optional[List[List[float]]] = None,
+    flavor_features: Optional[Sequence[float]] = None,
+    scent_features: Optional[Sequence[float]] = None,
+    synesthesia_beta: float = 0.2,
+    synesthesia_confidence_floor: float = 0.25,
 ) -> dict:
     """
     Execute full 14-layer SCBE pipeline.
@@ -659,6 +715,63 @@ def scbe_14layer_pipeline(
             decision = "QUARANTINE"
             mmx_override_reason = f"mmx_conflict={mmx_result.conflict:.4f}>0.35"
 
+    # Optional synesthesia gate (flavor/scent alignment)
+    synesthesia = None
+    synesthesia_override_reason = None
+    if flavor_features is not None or scent_features is not None:
+        synesthesia = flavor_scent_alignment(flavor_features, scent_features)
+        syn_factor = synesthesia_risk_factor(
+            c_syn=synesthesia["c_syn"],
+            confidence=synesthesia["confidence"],
+            beta=synesthesia_beta,
+            confidence_floor=synesthesia_confidence_floor,
+        )
+        Risk_prime = float(Risk_prime * syn_factor)
+        synesthesia["risk_factor"] = float(syn_factor)
+        synesthesia["beta"] = float(synesthesia_beta)
+        synesthesia["confidence_floor"] = float(synesthesia_confidence_floor)
+
+        if synesthesia["confidence"] >= synesthesia_confidence_floor:
+            if synesthesia["c_syn"] < 0.35:
+                decision = "DENY"
+                synesthesia_override_reason = (
+                    f"syn_c={synesthesia['c_syn']:.4f}<0.35"
+                )
+            elif synesthesia["c_syn"] < 0.55 and decision == "ALLOW":
+                decision = "QUARANTINE"
+                synesthesia_override_reason = (
+                    f"syn_c={synesthesia['c_syn']:.4f}<0.55"
+                )
+
+    # Layer 13 runtime telemetry callsite: audit canonical state transition.
+    state21_v1 = _build_state21_v1_vector(
+        u_final=u_final,
+        phases=phases,
+        d_tri_norm=d_tri_norm,
+        d_star=d_star,
+        c_spin=C_spin,
+        s_spec=S_spec,
+        tau=tau,
+        s_audio=S_audio,
+        risk_prime=float(Risk_prime),
+        H=float(H),
+    )
+    audit_event = audit_state_transition(
+        state21_v1,
+        decision=decision,
+        metadata={
+            "module": "scbe_14layer_reference",
+            "d_star": float(d_star),
+            "risk_base": float(Risk_base),
+            "risk_prime": float(Risk_prime),
+            "tau": float(tau),
+            "s_audio": float(S_audio),
+            "s_spec": float(S_spec),
+            "c_spin": float(C_spin),
+        },
+        strict=False,
+    )
+
     # =========================================================================
     # RETURN RESULTS
     # =========================================================================
@@ -675,12 +788,20 @@ def scbe_14layer_pipeline(
             "tau": tau,
             "S_audio": S_audio,
         },
+        "synesthesia": synesthesia,
+        "synesthesia_override_reason": synesthesia_override_reason,
         "geometry": {
             "u_norm": np.linalg.norm(u),
             "u_breath_norm": np.linalg.norm(u_breath),
             "u_final_norm": np.linalg.norm(u_final),
         },
         "all_realm_distances": all_distances,
+        "state21_v1": state21_v1,
+        "audit_event": {
+            "decision": audit_event["decision"],
+            "schema": audit_event["schema"],
+            "timestamp_unix": audit_event["timestamp_unix"],
+        },
         "mmx": {
             "alignment": mmx_result.alignment,
             "weights": mmx_result.weights,

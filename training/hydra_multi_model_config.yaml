@@ -1,0 +1,225 @@
+# HYDRA Multi-Model Training Configuration
+# ==========================================
+# Maps each Sacred Tongue HYDRA head to a free/open-source base model
+# with tongue-specific fine-tuning data and Vertex AI compute specs.
+#
+# All models fit on Colab free T4 (16GB VRAM) via QLoRA 4-bit.
+# Vertex AI specs given for production-grade training.
+
+project:
+  gcp_project_id: gen-lang-client-0103521392
+  gcp_region: us-central1
+  hf_org: issdandavis
+  artifact_registry: gcr.io/gen-lang-client-0103521392/hydra-models
+
+# Governance integration: TriManifoldLattice + Federated 6D Analysis
+governance:
+  tri_manifold:
+    harmonic_r: 1.5              # Perfect fifth ratio
+    harmonic_dimensions: 6        # All 6 Sacred Tongues
+    window_immediate: 5
+    window_memory: 25
+    window_governance: 100
+  federated:
+    min_local_allow_ratio: 0.5    # Tier 1: 50% for training validation (hash proxy)
+    min_regional_health: 0.6      # Tier 2: regional pulse threshold
+    byzantine_quorum: 4           # Tier 3: 4/6 consensus (f=1 tolerance)
+  negabinary:
+    gate_inputs: 6                # Context, Intent, Trajectory, AAD, Commit, Signature
+    polarity_map:
+      even_positive: [KO, CA]     # Positive polarity tongues
+      odd_negative: [AV, DR]      # Negative polarity tongues
+      balanced: [RU, UM]          # Mixed polarity tongues
+
+# Sacred Tongue weights (phi-scaled)
+tongue_weights:
+  KO: 1.00      # Commander / Scout
+  AV: 1.618     # Vision / Navigator
+  RU: 2.618     # Reader / Policy
+  CA: 4.236     # Clicker / Compute
+  UM: 6.854     # Typer / Shadow
+  DR: 11.09     # Judge / Schema
+
+# ── HYDRA Head Model Assignments ──────────────────────────────
+heads:
+  KO:
+    role: scout
+    description: "Navigate to targets, orchestrate squad, issue commands"
+    base_model: TinyLlama/TinyLlama-1.1B-Chat-v1.0
+    model_size_gb: 1.1
+    why: "Smallest and fastest — KO needs speed for orchestration, not depth"
+    hf_repo: issdandavis/hydra-ko-scout
+    training_data:
+      categories: [architecture_sessions, architecture_theory, game_sessions, sft_system, sft_hydra, sft_governance, sft_codebase]
+      weight: 0.15
+    lora:
+      r: 16
+      alpha: 32
+      dropout: 0.05
+      target_modules: [q_proj, k_proj, v_proj, o_proj]
+    training:
+      epochs: 3
+      batch_size: 4
+      learning_rate: 2e-4
+      max_seq_length: 1024
+    vertex_compute:
+      machine_type: n1-standard-4
+      accelerator: NVIDIA_TESLA_T4
+      accelerator_count: 1
+
+  AV:
+    role: vision
+    description: "Screenshot analysis, visual navigation, page layout understanding"
+    base_model: vikhyatk/moondream2
+    model_size_gb: 1.6
+    why: "Tiny vision-language model — AV needs eyes, not just text"
+    hf_repo: issdandavis/hydra-av-vision
+    training_data:
+      categories: [game_design_sessions, gacha_sessions, isekai, sft_iseki, hf-digimon, pilot_minigames]
+      weight: 0.15
+    lora:
+      r: 8
+      alpha: 16
+      dropout: 0.05
+      target_modules: [q_proj, v_proj]
+    training:
+      epochs: 5
+      batch_size: 2
+      learning_rate: 1e-4
+      max_seq_length: 512
+    vertex_compute:
+      machine_type: n1-standard-8
+      accelerator: NVIDIA_TESLA_T4
+      accelerator_count: 1
+
+  RU:
+    role: reader
+    description: "Content extraction, page understanding, safety policy enforcement"
+    base_model: microsoft/phi-2
+    model_size_gb: 2.7
+    why: "Best reasoning per parameter — RU needs deep comprehension for policy checks"
+    hf_repo: issdandavis/hydra-ru-reader
+    training_data:
+      categories: [security_attacks, patent_claims, tongues_sessions, sft_governance, sft_functions, compliance, crypto_knowledge, system_knowledge]
+      weight: 0.20
+    lora:
+      r: 16
+      alpha: 32
+      dropout: 0.05
+      target_modules: [q_proj, k_proj, v_proj, dense]
+    training:
+      epochs: 3
+      batch_size: 4
+      learning_rate: 2e-4
+      max_seq_length: 2048
+    vertex_compute:
+      machine_type: n1-standard-8
+      accelerator: NVIDIA_TESLA_T4
+      accelerator_count: 1
+
+  CA:
+    role: clicker
+    description: "Element interaction, action planning, structured data extraction"
+    base_model: Qwen/Qwen2.5-1.5B-Instruct
+    model_size_gb: 1.5
+    why: "Strong instruction following at small size — CA needs precise action plans"
+    hf_repo: issdandavis/hydra-ca-clicker
+    training_data:
+      categories: [architecture_theory, geoseal_crypto, math_sessions, sft_codebase, sft_functions, sft_kernel, notion]
+      weight: 0.20
+    lora:
+      r: 16
+      alpha: 32
+      dropout: 0.05
+      target_modules: [q_proj, k_proj, v_proj, o_proj]
+    training:
+      epochs: 4
+      batch_size: 4
+      learning_rate: 2e-4
+      max_seq_length: 1024
+    vertex_compute:
+      machine_type: n1-standard-4
+      accelerator: NVIDIA_TESLA_T4
+      accelerator_count: 1
+
+  UM:
+    role: typer
+    description: "Form filling, text input, stealth data entry, structured output"
+    base_model: HuggingFaceTB/SmolLM-1.7B-Instruct
+    model_size_gb: 1.7
+    why: "Lightweight with good structured output — UM fills forms precisely"
+    hf_repo: issdandavis/hydra-um-typer
+    training_data:
+      categories: [conlang_intent, tongues_sessions, lore_sessions, sft_notion, sft_instructions, sidekick]
+      weight: 0.15
+    lora:
+      r: 8
+      alpha: 16
+      dropout: 0.05
+      target_modules: [q_proj, k_proj, v_proj, o_proj]
+    training:
+      epochs: 3
+      batch_size: 4
+      learning_rate: 2e-4
+      max_seq_length: 1024
+    vertex_compute:
+      machine_type: n1-standard-4
+      accelerator: NVIDIA_TESLA_T4
+      accelerator_count: 1
+
+  DR:
+    role: judge
+    description: "Result verification, safety judgment, final approval/deny gate"
+    base_model: TinyLlama/TinyLlama-1.1B-Chat-v1.0
+    model_size_gb: 1.1
+    why: "Same fast base as KO but fine-tuned for safety verdicts, not navigation"
+    hf_repo: issdandavis/hydra-dr-judge
+    training_data:
+      categories: [security_attacks, patent_claims, spiralverse_lore, sft_spiralverse, sft_ouroboros, sft_governance, compliance]
+      weight: 0.15
+    lora:
+      r: 16
+      alpha: 32
+      dropout: 0.10
+      target_modules: [q_proj, k_proj, v_proj, o_proj]
+    training:
+      epochs: 5
+      batch_size: 4
+      learning_rate: 1e-4
+      max_seq_length: 1024
+    vertex_compute:
+      machine_type: n1-standard-4
+      accelerator: NVIDIA_TESLA_T4
+      accelerator_count: 1
+
+# ── Quality Gates (from federated_orchestrator.py) ────────────
+quality_gates:
+  min_quality: 0.70
+  min_safety: 0.85
+  max_latency_ms_p95: 500
+  max_cost_per_1k_tokens: 1.0
+
+# ── Deployment Targets ────────────────────────────────────────
+deployment:
+  - platform: vertex_ai
+    endpoint_prefix: hydra-
+    machine_type: n1-standard-4
+    min_replicas: 0          # Scale to zero when idle (cost savings)
+    max_replicas: 2
+  - platform: huggingface
+    push_to_hub: true
+  - platform: colab
+    description: "Free-tier training and inference via notebooks"
+
+# ── Training Data Sources ─────────────────────────────────────
+data_sources:
+  local_jsonl:
+    path: training-data/
+    pattern: "*.jsonl"
+  theory_doc:
+    path: training-data/theory_doc_*.jsonl
+    description: "97 pairs from 500-page theory document"
+  hf_dataset:
+    repo: issdandavis/scbe-aethermoore-knowledge-base
+  wiki_ingest:
+    path: training/runs/wiki_git_ingest/

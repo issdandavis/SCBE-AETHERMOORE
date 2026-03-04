@@ -1,0 +1,118 @@
+name: Cloud Kernel Data Pipeline
+
+on:
+  schedule:
+    - cron: "30 6 * * 1"  # Weekly on Mondays (was every 6 hours)
+  workflow_dispatch:
+    inputs:
+      sync_notion:
+        description: "Sync Notion before ingest"
+        required: false
+        default: true
+        type: boolean
+      ship_targets:
+        description: "CSV targets: hf,github,dropbox"
+        required: false
+        default: "hf,github"
+        type: string
+      no_upload:
+        description: "Build and verify only (skip cloud upload)"
+        required: false
+        default: false
+        type: boolean
+      allow_quarantine:
+        description: "Do not fail when dataset audit is QUARANTINE"
+        required: false
+        default: false
+        type: boolean
+      ship_on_quarantine:
+        description: "Allow shipping even if dataset audit is QUARANTINE"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install huggingface_hub notion-client
+
+      - name: Run cloud kernel data pipeline
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DROPBOX_TOKEN: ${{ secrets.DROPBOX_TOKEN }}
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+        run: |
+          set -euo pipefail
+
+          ARGS=(
+            "--config" "training/cloud_kernel_pipeline.json"
+            "--run-root" "training/runs/cloud_kernel_sync"
+            "--keep-runs" "30"
+            "--ship-targets" "${{ github.event.inputs.ship_targets || 'hf,github' }}"
+          )
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            if [[ "${{ github.event.inputs.sync_notion }}" == "true" ]]; then
+              ARGS+=("--sync-notion")
+            fi
+            if [[ "${{ github.event.inputs.no_upload }}" == "true" ]]; then
+              ARGS+=("--no-upload")
+            fi
+            if [[ "${{ github.event.inputs.allow_quarantine }}" == "true" ]]; then
+              ARGS+=("--allow-quarantine")
+            fi
+            if [[ "${{ github.event.inputs.ship_on_quarantine }}" == "true" ]]; then
+              ARGS+=("--ship-on-quarantine")
+            fi
+          fi
+
+          python scripts/cloud_kernel_data_pipeline.py "${ARGS[@]}"
+
+      - name: Resolve latest run
+        id: latest
+        run: |
+          RUN_DIR="$(cat training/ingest/latest_cloud_kernel_sync.txt)"
+          echo "run_dir=$RUN_DIR" >> "$GITHUB_OUTPUT"
+          echo "run_dir=$RUN_DIR"
+
+      - name: Upload run artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-kernel-data-${{ github.run_id }}
+          path: |
+            ${{ steps.latest.outputs.run_dir }}
+            ${{ steps.latest.outputs.run_dir }}.zip
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Cloud Kernel Data Pipeline" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Run dir: \`${{ steps.latest.outputs.run_dir }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Ship targets: \`${{ github.event.inputs.ship_targets || 'hf,github' }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Trigger: \`${{ github.event_name }}\`" >> "$GITHUB_STEP_SUMMARY"
+

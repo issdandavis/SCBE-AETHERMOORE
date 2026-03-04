@@ -124,6 +124,7 @@ PHI: float = (1 + math.sqrt(5)) / 2
 @dataclass(frozen=True)
 class Thresholds:
     """SCBE Layer-12/13 decision thresholds for risk governance."""
+    """SCBE governance thresholds for risk decision."""
 
     allow_max_cost: float = 1e3
     quarantine_max_cost: float = 1e6
@@ -253,6 +254,7 @@ def pad_namespace_key(
 @dataclass
 class UnitState:
     """Position and governance snapshot for a single unit/drone."""
+    """Physical + governance state of a single unit/drone."""
 
     unit_id: str
     x: float
@@ -336,6 +338,9 @@ class VoxelRecord:
 # ---------------------------------------------------------------------------
 # Squad space (shared voxel memory + proximity)
 # ---------------------------------------------------------------------------
+# ═══════════════════════════════════════════════════════════════
+# Squad Space
+# ═══════════════════════════════════════════════════════════════
 
 
 @dataclass
@@ -476,6 +481,11 @@ class PollyPad:
     @property
     def tongue(self) -> Lang:
         """Sacred Tongue for this pad's mode namespace."""
+    thr: Thresholds = Thresholds()
+
+    @property
+    def tongue(self) -> Lang:
+        """Sacred Tongue for this pad's namespace."""
         return PAD_MODE_TONGUE[self.mode]
 
     @property

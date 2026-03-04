@@ -1,0 +1,83 @@
+name: Auto-Resolve Merge Conflicts
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  resolve-conflicts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check and resolve conflicts in open PRs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          PR_DATA=$(gh pr list --repo "$REPO" --base main --state open --json number,headRefName,mergeable)
+          CONFLICTING=$(echo "$PR_DATA" | jq -r '.[] | select(.mergeable == "CONFLICTING") | "\(.number) \(.headRefName)"')
+
+          if [ -z "$CONFLICTING" ]; then
+            echo "No conflicting PRs found"
+            exit 0
+          fi
+
+          echo "$CONFLICTING" | while read PR BRANCH; do
+            echo "=== Processing PR #$PR (branch: $BRANCH) ==="
+
+            git fetch origin "$BRANCH"
+            git checkout "$BRANCH"
+
+            git merge origin/main --no-commit --no-ff 2>/dev/null || true
+
+            CONFLICTS=$(git diff --name-only --diff-filter=U 2>/dev/null)
+            if [ -z "$CONFLICTS" ]; then
+              echo "No actual conflicts in PR #$PR"
+              git merge --abort 2>/dev/null || true
+              git checkout main
+              continue
+            fi
+
+            UNRESOLVED=""
+            for FILE in $CONFLICTS; do
+              case "$FILE" in
+                *.md|docs/*|README*|CHANGELOG*)
+                  echo "  Auto-resolving $FILE (accepting main)"
+                  git checkout --theirs "$FILE"
+                  git add "$FILE"
+                  ;;
+                package-lock.json|yarn.lock|requirements-lock.txt)
+                  echo "  Auto-resolving $FILE (accepting main)"
+                  git checkout --theirs "$FILE"
+                  git add "$FILE"
+                  ;;
+                *)
+                  UNRESOLVED="$UNRESOLVED $FILE"
+                  ;;
+              esac
+            done
+
+            if [ -n "$UNRESOLVED" ]; then
+              echo "  Cannot auto-resolve:$UNRESOLVED"
+              git merge --abort
+              gh pr comment "$PR" --repo "$REPO" --body "Auto-conflict-resolution could not resolve all conflicts. Manual resolution needed for: \`$UNRESOLVED\`"
+            else
+              git commit -m "Auto-resolve merge conflicts with main"
+              git push origin "$BRANCH"
+              echo "  PR #$PR conflicts resolved"
+            fi
+
+            git checkout main
+          done
+        env:
+          REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

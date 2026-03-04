@@ -1,0 +1,49 @@
+{
+  "contract_id": "POLLY_CLAY_MAX_V1",
+  "risk_tier": "MAX",
+  "description": "High-impact execution contract. Requires explicit context binding and human approval metadata.",
+  "allow_actions": [
+    "navigate",
+    "extract",
+    "screenshot",
+    "wait",
+    "scroll",
+    "click",
+    "type",
+    "select",
+    "press",
+    "upload",
+    "download",
+    "submit",
+    "execute_js"
+  ],
+  "blocked_actions": [],
+  "require_human_for_actions": [
+    "upload",
+    "download",
+    "submit",
+    "execute_js",
+    "delete",
+    "checkout",
+    "publish"
+  ],
+  "require_context_keys": [
+    "task_id",
+    "change_ticket",
+    "human_approval_id"
+  ],
+  "force_dry_run": false,
+  "max_clays": 6,
+  "max_actions_per_request": 10,
+  "max_actions_per_order": 60,
+  "human_on": [
+    "REVIEW",
+    "DENY",
+    "ESCALATE",
+    "QUARANTINE"
+  ],
+  "hitl": {
+    "require_snapshot_on_escalation": true,
+    "auto_open_browser": true
+  }
+}

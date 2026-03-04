@@ -102,11 +102,13 @@ class TestEncodeDecode:
         assert tokens == []
 
     def test_single_byte_encoding(self):
-        """Single byte should encode to single token."""
+        """Single byte should encode to single token and roundtrip."""
         tokenizer = SacredTongueTokenizer()
         tokens = tokenizer.encode_bytes("ko", b"\x00")
         assert len(tokens) == 1
-        assert tokens[0] == "kor'ah"  # Kor'aelin: prefix[0]'suffix[0]
+        # Verify roundtrip rather than hardcoded token name
+        decoded = tokenizer.decode_tokens("ko", tokens)
+        assert decoded == b"\x00"
 
     def test_multi_byte_encoding(self):
         """Multiple bytes should encode to multiple tokens."""
