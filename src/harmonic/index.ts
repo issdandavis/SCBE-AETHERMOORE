@@ -477,53 +477,6 @@ export {
 } from './driftTracker.js';
 
 // ═══════════════════════════════════════════════════════════════
-// Sheaf Cohomology — Tarski Lattice Governance
-// ═══════════════════════════════════════════════════════════════
-
-export {
-  // Lattices
-  RiskLevel,
-  RISK_LATTICE,
-  BOOLEAN_LATTICE,
-  intervalLattice,
-  productLattice,
-  // Galois connections
-  identityConnection,
-  // Sheaf builders
-  constantSheaf,
-  buildTemporalComplex,
-  buildGovernanceSheaf,
-  // Tarski Laplacian + flow
-  tarskiLaplacian0,
-  harmonicFlowStep,
-  harmonicFlow,
-  globalSections,
-  // Obstruction
-  obstructionDegree,
-  isGlobalSection,
-  // Policy detection
-  detectPolicyObstruction,
-  // Fail-to-noise
-  failToNoise,
-  // T-braiding
-  braidedTemporalDistance,
-  braidedMetaTime,
-  // Harmonic wall
-  cohomologicalHarmonicWall,
-  // Types
-  type CompleteLattice,
-  type GaloisConnection,
-  type CellVertex,
-  type CellEdge,
-  type CellComplex,
-  type CellularSheaf,
-  type Cochain0,
-  type HarmonicFlowResult,
-  type EdgeTwist,
-  type TemporalVariant,
-  type PolicyObstructionResult,
-} from './sheafCohomology.js';
-
 // Sheaf Cohomology — Tarski Laplacian on Lattice-Valued Sheaves
 // ═══════════════════════════════════════════════════════════════
 
@@ -535,7 +488,7 @@ export {
   UnitIntervalLattice,
   ProductLattice,
   // Galois connections
-  identityConnection,
+  v2IdentityConnection,
   constantConnection,
   thresholdConnection,
   scalingConnection,
@@ -543,7 +496,7 @@ export {
   graphComplex,
   simplicialComplex,
   // Sheaf constructors
-  constantSheaf,
+  v2ConstantSheaf,
   thresholdSheaf,
   twistedSheaf,
   // Cochains
@@ -553,7 +506,7 @@ export {
   tarskiLaplacian,
   // Cohomology
   tarskiCohomology,
-  globalSections,
+  v2GlobalSections,
   // Hodge Laplacians
   upLaplacian,
   downLaplacian,
@@ -566,11 +519,11 @@ export {
   SheafCohomologyEngine,
   defaultSheafEngine,
   // Types
-  type CompleteLattice,
-  type GaloisConnection,
+  type V2CompleteLattice,
+  type V2GaloisConnection,
   type Cell,
-  type CellComplex,
-  type CellularSheaf,
+  type V2CellComplex,
+  type V2CellularSheaf,
   type Cochain,
   type CohomologyResult,
   type CohomologyDiagnostics,
@@ -621,6 +574,7 @@ export {
   PHDMGovernanceRouter,
   buildPolyhedralGraph,
   buildGovernanceSheaf,
+  buildGovernanceSheaf as phdmBuildGovernanceSheaf,
   computePolyhedralTrust,
   polyhedralEulerCharacteristic,
   trustDistanceMatrix,

@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scbe://schemas/decision_record.schema.json",
+  "title": "SCBE AetherBrowse DecisionRecord",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "decision_id",
+    "timestamp_utc",
+    "kernel_version",
+    "profile_id",
+    "job_id",
+    "agent_id",
+    "session_id",
+    "decision",
+    "metrics",
+    "capability",
+    "trace_hash",
+    "verification"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "decision_id": { "type": "string" },
+    "timestamp_utc": { "type": "string" },
+    "kernel_version": { "type": "string" },
+    "profile_id": { "type": "string" },
+    "job_id": { "type": "string" },
+    "agent_id": { "type": "string" },
+    "session_id": { "type": "string" },
+    "workflow_id": { "type": "string" },
+    "runner_run_id": { "type": "string" },
+    "request_run_id": { "type": "string" },
+    "decision": {
+      "type": "string",
+      "enum": ["ALLOW", "QUARANTINE", "DENY", "NOISE"]
+    },
+    "decision_reason": { "type": "string" },
+    "risk_tier": {
+      "type": "string",
+      "enum": ["REFLEX", "DELIBERATION"]
+    },
+    "metrics": {
+      "type": "object",
+      "required": ["risk", "d_star", "coherence", "verification_score"],
+      "properties": {
+        "risk": { "type": "number" },
+        "d_star": { "type": "number" },
+        "coherence": { "type": "number" },
+        "verification_score": { "type": "number" }
+      }
+    },
+    "capability": {
+      "type": "object",
+      "required": ["required", "present", "valid", "reason"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "present": { "type": "boolean" },
+        "valid": { "type": "boolean" },
+        "token_id": { "type": ["string", "null"] },
+        "reason": { "type": "string" },
+        "expires_at_epoch": { "type": ["number", "null"] }
+      }
+    },
+    "trace_hash": { "type": "string" },
+    "verification": {
+      "type": "object",
+      "required": ["score", "passed_checks", "total_checks", "checks"],
+      "properties": {
+        "score": { "type": "number" },
+        "passed_checks": { "type": "integer" },
+        "total_checks": { "type": "integer" },
+        "checks": { "type": "array" }
+      }
+    }
+  }
+}

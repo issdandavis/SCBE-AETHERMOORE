@@ -353,8 +353,17 @@ class VisionEmbedder:
         # Convert to float array
         embedding = np.frombuffer(expanded, dtype=np.float32)
 
-        # Normalize
-        embedding = embedding / (np.linalg.norm(embedding) + EPSILON)
+        # Normalize with numeric safety for pathological hashes
+        norm = np.linalg.norm(embedding)
+        if not np.isfinite(norm) or norm < EPSILON:
+            fallback = np.arange(embedding.size, dtype=np.float32) + 1.0
+            fallback = fallback[: embedding.size]
+            norm = np.linalg.norm(fallback)
+            embedding = fallback
+
+        # Keep bounded deterministic magnitude
+        embedding = embedding / (norm + EPSILON)
+        embedding = np.nan_to_num(embedding, nan=0.0, posinf=0.0, neginf=0.0)
 
         return embedding
 

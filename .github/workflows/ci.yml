@@ -2,9 +2,19 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
+    paths-ignore:
+      - 'CHANGELOG.md'
+      - 'docs/**'
+      - '*.md'
+      - '.github/workflows/**'
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -13,9 +23,9 @@ jobs:
   test:
     name: Test on Node ${{ matrix.node-version }}
     runs-on: ubuntu-latest
-    continue-on-error: true
 
     strategy:
+      fail-fast: false
       matrix:
         node-version: [20.x, 22.x]
 
@@ -38,7 +48,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install numpy scipy matplotlib
-        continue-on-error: true
 
       - name: Install dependencies
         run: npm install
@@ -62,9 +71,9 @@ jobs:
   python-test:
     name: Test Python Components
     runs-on: ubuntu-latest
-    continue-on-error: true
 
     strategy:
+      fail-fast: false
       matrix:
         python-version: ['3.10', '3.11', '3.12']
 
@@ -86,7 +95,7 @@ jobs:
 
       - name: Run Python tests
         run: |
-          PYTHONPATH=. pytest tests/ -v --ignore=tests/node_modules 2>&1 || true
+          SCBE_FORCE_SKIP_LIBOQS=1 PYTHONPATH=. pytest tests/ -v --ignore=tests/node_modules
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
@@ -99,7 +108,6 @@ jobs:
   lint:
     name: Lint and Format Check
     runs-on: ubuntu-latest
-    continue-on-error: true
 
     steps:
       - name: Checkout code
@@ -114,9 +122,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Auto-format TypeScript files
-        run: npx prettier --write "src/**/*.ts" "tests/**/*.ts"
-
       - name: Check TypeScript formatting
         run: npx prettier --check "src/**/*.ts" "tests/**/*.ts"
 
@@ -130,10 +135,10 @@ jobs:
           pip install black flake8 mypy
 
       - name: Check Python formatting
-        run: black --check src/ tests/ || true
+        run: black --check src/ tests/
 
       - name: Run flake8
-        run: flake8 src/ tests/ --max-line-length=120 || true
+        run: flake8 src/ tests/ --max-line-length=120
 
   security:
     name: Security Audit

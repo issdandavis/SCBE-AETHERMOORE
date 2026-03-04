@@ -28,13 +28,19 @@ Integration of all Crystal Cranium modules:
     L12     Harmonic Scaling (bone density)
     L13–L14 Decision + Audio telemetry
 
+Now wired to the Poly-Didactic Quasicrystal Circuit Flow for end-to-end
+Hamiltonian path routing through 16 polyhedra with Sacred Tongue weighted
+edges, FSGS governance gating, and Harmonic Wall energy containment.
+
 Author: Issac Davis
-Version: 3.0.0
+Version: 3.1.0
 """
 
 import os
+import sys
 import time
 import hashlib
+import math
 import numpy as np
 from enum import Enum
 from dataclasses import dataclass, field
@@ -42,6 +48,26 @@ from typing import Dict, List, Tuple, Optional, Any
 import logging
 
 logger = logging.getLogger(__name__)
+
+# Import circuit flow (resolve path relative to this file)
+_circuit_flow_dir = os.path.join(
+    os.path.dirname(__file__), "..", "..", "src",
+    "symphonic_cipher", "scbe_aethermoore", "ai_brain",
+)
+if os.path.isdir(_circuit_flow_dir) and _circuit_flow_dir not in sys.path:
+    sys.path.insert(0, _circuit_flow_dir)
+
+try:
+    from circuit_flow import (
+        PolyDidacticCircuit,
+        CircuitTrace,
+        FluxGate,
+        GovernanceAction,
+        harmonic_wall_cost,
+    )
+    _HAS_CIRCUIT_FLOW = True
+except ImportError:
+    _HAS_CIRCUIT_FLOW = False
 
 # ============================================================================
 # Constants
@@ -54,6 +80,24 @@ R_FIFTH = 3 / 2                           # Perfect fifth harmonic ratio
 DIMENSIONS_21D = 21                        # Full state vector dimension
 DIMENSIONS_6D = 6                          # Hyperbolic subspace
 TUBE_RADIUS = 0.15                         # Trust tube ε
+POINCARE_BALL_SAFETY_RADIUS = 0.95         # Safety margin inside r=1 boundary
+
+
+def _project_to_poincare_ball(
+    vector: np.ndarray,
+    safety_radius: float = POINCARE_BALL_SAFETY_RADIUS,
+) -> np.ndarray:
+    """Project a vector into the Poincaré ball using a smooth, monotonic map.
+
+    tanh keeps directional ordering while guaranteeing ||v|| < safety_radius.
+    """
+    if vector.ndim != 1:
+        vector = np.asarray(vector).reshape(-1)
+    norm = np.linalg.norm(vector)
+    if norm < 1e-12:
+        return vector.astype(float)
+    radius = safety_radius * (np.tanh(norm) / norm)
+    return (vector.astype(float)) * radius
 
 # Six Sacred Tongues (Neurotransmitters)
 TONGUES = {
@@ -153,10 +197,8 @@ class PoincareBall:
             result[:n] = vector[:n]
             vector = result
 
-        norm = np.linalg.norm(vector)
-        if norm >= self.radius:
-            vector = vector / (norm + 1e-6) * 0.95 * self.radius
-        return vector
+        vector = _project_to_poincare_ball(vector, safety_radius=min(self.radius * 0.99, 1.0))
+        return vector / self.radius * min(self.radius, 1.0) if self.radius else vector
 
     def hyperbolic_distance(self, u: np.ndarray, v: np.ndarray) -> float:
         """
@@ -206,6 +248,7 @@ class PHDMLattice:
     def __init__(self):
         self.active_zones = {"core", "cortex", "risk", "recursive", "bridge"}
         self.projection_matrix = self._generate_projection_matrix()
+        self.projection_parity = 1
         self._router = None
         self._registry = None
 
@@ -218,6 +261,26 @@ class PHDMLattice:
             [0, 1, phi, 0, -1, phi]
         ]) / np.sqrt(2 + phi)
 
+    def rotate_6d_projection(self):
+        """Phason shift - rotate the projection angle (key rotation)"""
+        # Random rotation in 6D
+        theta = np.random.uniform(0, 2 * np.pi)
+        rotation_6d = np.eye(6)
+        rotation_6d[0, 0] = np.cos(theta)
+        rotation_6d[0, 1] = -np.sin(theta)
+        rotation_6d[1, 0] = np.sin(theta)
+        rotation_6d[1, 1] = np.cos(theta)
+
+        self.projection_matrix = self.projection_matrix @ rotation_6d
+        logger.info("Phason shift executed - projection rotated")
+
+    def restrict_to_core(self):
+        """Emergency mode - only Platonic solids accessible"""
+        self.active_polyhedra = {
+            name for name, props in POLYHEDRA.items()
+            if props["type"] == "platonic"
+        }
+        logger.warning("DEMI mode: restricted to Platonic solids only")
     @property
     def router(self):
         """Lazy-load Hamiltonian router."""
@@ -248,20 +311,40 @@ class PHDMLattice:
             return sum(zone_counts.get(z, 0) for z in self.active_zones)
         return sum(1 for p in self.registry if p.zone.value in self.active_zones)
 
-    def rotate_6d_projection(self) -> float:
+    def rotate_6d_projection(
+        self,
+        theta: Optional[float] = None,
+        rotation_6d: Optional[np.ndarray] = None,
+    ) -> float:
         """
         Phason shift — rotate the 6D projection angle (key rotation).
 
         Section 3: Instant key rotation without system restart.
+        Supports both SO(6)-style rotations and O(6) isometries (reflections/phase flips).
         Returns the rotation angle θ.
         """
-        theta = np.random.uniform(0, 2 * np.pi)
-        rotation_6d = np.eye(6)
-        rotation_6d[0, 0] = np.cos(theta)
-        rotation_6d[0, 1] = -np.sin(theta)
-        rotation_6d[1, 0] = np.sin(theta)
-        rotation_6d[1, 1] = np.cos(theta)
-        self.projection_matrix = self.projection_matrix @ rotation_6d[:3, :]
+        if rotation_6d is None:
+            theta = np.random.uniform(0, 2 * np.pi) if theta is None else theta
+            rotation_6d = np.eye(6)
+            rotation_6d[0, 0] = np.cos(theta)
+            rotation_6d[0, 1] = -np.sin(theta)
+            rotation_6d[1, 0] = np.sin(theta)
+            rotation_6d[1, 1] = np.cos(theta)
+        else:
+            rotation_6d = np.asarray(rotation_6d)
+            if rotation_6d.shape != (6, 6):
+                raise ValueError("rotation_6d must be a 6x6 matrix")
+            if theta is None:
+                theta = float(np.pi if np.linalg.det(rotation_6d) < 0 else 0.0)
+
+        theta = float(0.0 if theta is None else theta)
+        if not isinstance(theta, (int, float)):
+            raise TypeError("theta must be a numeric value")
+        # NOTE: projection_matrix is 3x6 and rotation_6d is 6x6.
+        # Multiplying by the full 6x6 matrix preserves valid dimensions (3x6).
+        self.projection_matrix = self.projection_matrix @ rotation_6d
+        det = float(np.linalg.det(rotation_6d))
+        self.projection_parity *= -1 if det < 0 else 1
         logger.info(f"Phason shift executed: θ={theta:.4f} rad")
         return theta
 
@@ -350,7 +433,8 @@ def embed_to_21d(text: str, context: Optional[Dict] = None) -> np.ndarray:
 
     # 6D hyperbolic: hash-based embedding in Poincaré ball
     text_hash = hashlib.sha256(text.encode()).digest()
-    hyperbolic = np.array([(b / 255.0 - 0.5) * 0.8 for b in text_hash[:6]])
+    hyperbolic = np.array([(b / 255.0 - 0.5) for b in text_hash[:6]])
+    hyperbolic = _project_to_poincare_ball(hyperbolic)
 
     # 6D phase: Sacred Tongue activations
     phase = np.zeros(6)
@@ -398,7 +482,7 @@ def embed_vector_to_21d(vector: np.ndarray, context: Optional[Dict] = None) -> n
 
     # Copy hyperbolic subspace
     n = min(len(vector), DIMENSIONS_6D)
-    result[:n] = vector[:n]
+    result[:n] = _project_to_poincare_ball(vector[:n])
 
     # Fill phase from tongues
     for i, tongue in enumerate(TONGUES.values()):
@@ -440,6 +524,16 @@ class AetherBrain:
         # The Brain Tissue
         self.lobes = PHDMLattice()
 
+        # The Circuit Flow (poly-didactic quasicrystal routing)
+        if _HAS_CIRCUIT_FLOW:
+            self._circuit = PolyDidacticCircuit(
+                flux=FluxGate.POLLY,
+                energy_budget=max_energy,
+                dimension_depth=self.lobes.get_dimension_depth(),
+            )
+        else:
+            self._circuit = None
+
         # Current State
         self.flux_state = FluxState.POLLY
         self.energy_budget = max_energy
@@ -451,6 +545,7 @@ class AetherBrain:
 
         # Audit Trail
         self.thought_log: List[Dict] = []
+        self.circuit_traces: List[Any] = []  # CircuitTrace history
 
         logger.info(f"AetherBrain v3.0.0 initialized: max_energy={max_energy}, dim={dimensions}")
 
@@ -469,6 +564,26 @@ class AetherBrain:
                 pass
         return self._automaton
 
+    # ------------------------------------------------------------------
+    # FluxState → FluxGate mapping
+    # ------------------------------------------------------------------
+
+    _FLUX_MAP = {
+        "POLLY": "POLLY",
+        "QUASI": "QUASI",
+        "DEMI": "DEMI",
+    }
+
+    def _sync_circuit_flux(self):
+        """Keep circuit flow flux in sync with brain flux state."""
+        if self._circuit is not None:
+            gate = FluxGate[self._FLUX_MAP[self.flux_state.name]]
+            self._circuit.set_flux(gate)
+
+    # ------------------------------------------------------------------
+    # think() — now delegates to PolyDidacticCircuit.route()
+    # ------------------------------------------------------------------
+
     def think(self, intent_vector: np.ndarray, context: Optional[dict] = None) -> ThoughtResult:
         """
         Execute a thought through the full Crystal Cranium pipeline.
@@ -481,6 +596,11 @@ class AetherBrain:
             5. Hamiltonian path routing   — Find φ-weighted trajectory
             6. FSGS governance step       — Hybrid automaton decision
             7. Audit logging             — Immutable record
+
+        Routes the intent through the 16-polyhedra PHDM lattice via the
+        Poly-Didactic Circuit Flow, applying Sacred Tongue weighted edges,
+        FSGS governance gating, and Harmonic Wall energy containment at
+        every step.
 
         Args:
             intent_vector: The intent as a vector (any dimension)
@@ -495,81 +615,137 @@ class AetherBrain:
         # 1. Embed to 21D
         x_21d = embed_vector_to_21d(intent_vector, context)
 
-        # 2. Poincaré ball embedding (hyperbolic subspace)
-        u = self.skull.embed(x_21d[:DIMENSIONS_6D])
-
-        # 3. Trust ring classification
+        # 2. Early boundary check via Poincaré distance
         ring = self.skull.get_trust_ring(u)
-
         if ring == TrustRing.WALL:
             return self._fail_to_noise("Event Horizon Reached", ring, start_time)
 
-        # 4. Harmonic Wall energy cost
-        r = np.linalg.norm(u)
-        energy_cost = self.skull.bone_density(r)
+        # 3. Route through the quasicrystal circuit
+        intent_bytes = intent_vector.tobytes()
 
-        if self.energy_consumed + energy_cost > self.energy_budget:
-            return self._fail_to_noise("Energy Budget Exceeded", ring, start_time)
+        if self._circuit is not None:
+            trace = self._circuit.route(intent_bytes, context)
+            self.circuit_traces.append(trace)
+            return self._trace_to_result(trace, ring, start_time)
+
+        # Fallback: legacy path (circuit flow not available)
+        return self._think_legacy(u, ring, context, start_time)
+
+    def _trace_to_result(
+        self,
+        trace: 'CircuitTrace',
+        ring: TrustRing,
+        start_time: float,
+    ) -> ThoughtResult:
+        """Convert a CircuitTrace into a ThoughtResult."""
+
+        # Determine status from governance
+        gov = trace.final_governance
+        if gov == "ROLLBACK":
+            reason = "Circuit flow DENY: "
+            if trace.steps:
+                reason += trace.steps[-1].reasoning
+            else:
+                reason += "no accessible nodes"
+            self._log_audit("BLOCKED", reason, ring, trace.total_energy)
+            return ThoughtResult(
+                status=ThoughtStatus.BLOCKED,
+                ring=ring,
+                energy_cost=trace.total_energy,
+                latency_ms=(time.time() - start_time) * 1000,
+                reason=reason,
+            )
+
+        if gov == "QUAR":
+            status = ThoughtStatus.ESCALATED
+        else:
+            status = ThoughtStatus.SUCCESS
+
+        # Consume energy
+        self.energy_consumed += trace.total_energy
+        remaining = self.energy_budget - self.energy_consumed
+        if remaining < 0:
+            return self._fail_to_noise("Energy Limit Exceeded", ring, start_time)
+
+        # Compute latency (sum of per-step latencies)
+        base_latency = sum(s.latency_ms for s in trace.steps)
+        elapsed_ms = (time.time() - start_time) * 1000 + base_latency
+
+        # Build didactic result
+        path_nodes = [s.node for s in trace.steps]
+        path_tongues = [s.tongue for s in trace.steps]
+        governance_modes = [s.mode for s in trace.steps]
+
+        audit_msg = (
+            f"Ring={ring.value}, nodes={len(path_nodes)}, "
+            f"energy={trace.total_energy:.2f}, gov={gov}, "
+            f"tongue={trace.intent_tongue}, digest={trace.trace_digest}"
+        )
+        audit_id = self._log_audit("ALLOWED" if status == ThoughtStatus.SUCCESS else "ESCALATED",
+                                   audit_msg, ring, trace.total_energy)
+
+        return ThoughtResult(
+            status=status,
+            ring=ring,
+            energy_cost=trace.total_energy,
+            latency_ms=elapsed_ms,
+            result={
+                "path": path_nodes,
+                "tongue": trace.intent_tongue,
+                "tongues_per_node": path_tongues,
+                "governance": governance_modes,
+                "trace_digest": trace.trace_digest,
+                "flux_state": trace.flux_state,
+                "accessible_nodes": trace.accessible_nodes,
+                "hamiltonian": trace.is_hamiltonian,
+            },
+            audit_id=audit_id,
+        )
+
+    def _think_legacy(
+        self,
+        u: np.ndarray,
+        ring: TrustRing,
+        context: dict,
+        start_time: float,
+    ) -> ThoughtResult:
+        """Legacy think() path when circuit flow is not available."""
+
+        latency_map = {
+            TrustRing.CORE: 5,
+            TrustRing.INNER: 30,
+            TrustRing.OUTER: 200,
+        }
+        base_latency = latency_map.get(ring, 500)
+
+        # Harmonic Wall cost via Poincaré conformal factor
+        r = float(np.linalg.norm(u))
+        d = self.lobes.get_dimension_depth()
+        r_clamped = min(r, 0.9999)
+        if r_clamped < 1e-8:
+            energy_cost = 0.0
+        else:
+            conformal = 2.0 / (1.0 - r_clamped * r_clamped)
+            energy_cost = (conformal - 2.0) * d
 
         # 5. Hamiltonian path routing
         path_info = self.lobes.trace_path(u, context)
 
-        if not path_info["is_hamiltonian"] and path_info["violations"]:
-            self._log_audit("BLOCKED", "Non-Hamiltonian path", ring, energy_cost)
+        path = self.lobes.trace_path(u, context)
+        if not path.is_hamiltonian():
+            self._log_audit("BLOCKED", "Non-Hamiltonian path detected", ring, energy_cost)
             return ThoughtResult(
                 status=ThoughtStatus.BLOCKED,
                 ring=ring,
                 energy_cost=energy_cost,
-                latency_ms=self._ring_latency(ring),
-                governance_mode="QUAR",
-                path_nodes=path_info["nodes"],
-                tongue=path_info["tongue"],
-                reason=f"Path violations: {path_info['violations'][:3]}"
+                latency_ms=base_latency,
+                reason="Logic discontinuity - path loops detected",
             )
 
-        # 6. FSGS governance step (if automaton available)
-        governance_mode = "RUN"
-        phase_state = "resonant_lock"
-
-        if self.automaton is not None:
-            try:
-                from .aether_braid import think_step
-                self._hybrid_state.x = x_21d
-                new_state, action = think_step(
-                    x_21d, self.automaton, self._hybrid_state
-                )
-                self._hybrid_state = new_state
-                governance_mode = action.get("mode", "RUN")
-                phase_state = action.get("phase", "resonant_lock")
-
-                if not action.get("execute", True):
-                    self._log_audit("HELD", f"Mode={governance_mode}", ring, energy_cost)
-                    return ThoughtResult(
-                        status=ThoughtStatus.ESCALATED,
-                        ring=ring,
-                        energy_cost=energy_cost,
-                        latency_ms=self._ring_latency(ring),
-                        governance_mode=governance_mode,
-                        phase_state=phase_state,
-                        path_nodes=path_info["nodes"],
-                        tongue=path_info["tongue"],
-                        reason=f"Governance {governance_mode}: awaiting inspection"
-                    )
-            except Exception as e:
-                logger.warning(f"FSGS step failed: {e}")
-
-        # 7. Consume energy
         self.energy_consumed += energy_cost
-
-        # 8. Calculate latency
-        elapsed_ms = (time.time() - start_time) * 1000 + self._ring_latency(ring)
-
-        # 9. Audit
+        elapsed_ms = (time.time() - start_time) * 1000 + base_latency
         audit_id = self._log_audit(
-            "ALLOWED",
-            f"Ring={ring.value}, mode={governance_mode}, "
-            f"path={path_info['nodes'][:5]}, energy={energy_cost:.2e}",
-            ring, energy_cost
+            "ALLOWED", f"Ring={ring.value}, cost={energy_cost:.2e} (legacy)", ring, energy_cost
         )
 
         return ThoughtResult(
@@ -647,6 +823,12 @@ class AetherBrain:
         old_state = self.flux_state
         self.flux_state = new_state
         self.lobes.set_flux_state(new_state)
+        sync_fn = getattr(self.lobes, "_sync_circuit_flux", None)
+        if callable(sync_fn):
+            try:
+                sync_fn(new_state)
+            except Exception as exc:
+                logger.warning(f"Circuit flux sync failed: {exc}")
         self._log_audit(
             "FLUX_CHANGE",
             f"{old_state.name} → {new_state.name}",
@@ -666,7 +848,13 @@ class AetherBrain:
             "has_automaton": self.automaton is not None,
             "has_router": self.lobes.router is not None,
             "has_registry": self.lobes.registry is not None,
+            "circuit_sync_supported": callable(getattr(self.lobes, "_sync_circuit_flux", None)),
+            "projection_parity": self.lobes.projection_parity,
+            "projection_matrix_shape": list(self.lobes.projection_matrix.shape),
         }
+        if self._circuit is not None:
+            status["circuit_traces"] = len(self.circuit_traces)
+        return status
 
     def reset_energy(self):
         """Reset energy budget (new session)."""
@@ -681,8 +869,12 @@ class AetherBrain:
 def embed_text(text: str, dimensions: int = DIMENSIONS_6D) -> np.ndarray:
     """Convert text to a vector for brain processing."""
     text_hash = hashlib.sha256(text.encode()).digest()
-    vector = np.array([b / 255.0 for b in text_hash[:dimensions]])
-    return (vector - 0.5) * 1.5
+    vector = np.array([b / 255.0 for b in text_hash[:dimensions]], dtype=float)
+    norm = np.linalg.norm(vector)
+    if norm < 1e-12:
+        return vector
+    # Keep vectors inside the Poincaré ball to avoid wall-zone instability.
+    return _project_to_poincare_ball(vector, safety_radius=0.4)
 
 
 def create_brain(max_energy: float = 1e6) -> AetherBrain:
@@ -867,6 +1059,19 @@ if __name__ == "__main__":
             print(f"  Reason:     {result.reason}")
         print()
 
+    # Test flux states
+    print("--- Flux States ---\n")
+    for state in [FluxState.QUASI, FluxState.DEMI, FluxState.POLLY]:
+        brain.set_flux(state)
+        intent = embed_text("flux test")
+        result = brain.think(intent)
+        nodes = len(result.result.get("path", [])) if isinstance(result.result, dict) else 0
+        print(f"  {state.name}: {nodes} nodes traversed, energy={result.energy_cost:.2f}")
+
+    # Test phason shift
+    print("\n--- Phason Shift ---\n")
+    brain.phason_shift()
+    print("  Quasicrystal projection rotated")
     # Flux states
     print("--- Flux States ---\n")
     for state in [FluxState.QUASI, FluxState.DEMI, FluxState.POLLY]:

@@ -1,0 +1,34 @@
+{
+  "task": {
+    "id": "task-001",
+    "requires": ["read", "write", "reason"],
+    "threshold": 1000.0
+  },
+  "perp_space": [0.05, 0.04, 0.03],
+  "candidates": [
+    {
+      "name": "reader-hf",
+      "provider": "hf",
+      "model": "mistralai/Mistral-7B-Instruct-v0.3",
+      "capabilities": ["read", "summarize"],
+      "trust": 0.87,
+      "pos": [0.2, 0.1, 0.15]
+    },
+    {
+      "name": "writer-vertex",
+      "provider": "vertex",
+      "model": "gemini-2.5-flash",
+      "capabilities": ["write", "format"],
+      "trust": 0.91,
+      "pos": [0.24, 0.12, 0.18]
+    },
+    {
+      "name": "reasoner-local",
+      "provider": "local",
+      "model": "deepseek-r1-distill",
+      "capabilities": ["reason", "validate"],
+      "trust": 0.89,
+      "pos": [0.22, 0.11, 0.17]
+    }
+  ]
+}

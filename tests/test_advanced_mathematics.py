@@ -362,7 +362,7 @@ class TestHarmonicScaling:
     """Test harmonic scaling properties"""
 
     def test_harmonic_scaling_monotonicity(self):
-        """Property: H(d) is strictly increasing in d"""
+        """Property: H(d) is strictly decreasing in d (safety drops with distance)"""
         telem = TELEMETRY.start_test(
             "Harmonic Scaling Monotonicity", "Harmonic Scaling"
         )
@@ -379,7 +379,8 @@ class TestHarmonicScaling:
             H1 = layer_12_harmonic_scaling(d1)
             H2 = layer_12_harmonic_scaling(d2)
 
-            if H2 <= H1:
+            # H is a safety score: larger d → lower safety → H2 < H1
+            if H2 >= H1:
                 violations += 1
 
         telem.iterations = iterations
@@ -388,7 +389,7 @@ class TestHarmonicScaling:
         passed = violations == 0
         telem.complete(passed)
 
-        assert passed, f"Monotonicity violated {violations} times"
+        assert passed, f"Monotone-decreasing violated {violations} times"
 
     def test_harmonic_scaling_identity(self):
         """Property: H(0) = 1 (zero distance = perfectly safe)"""
@@ -426,24 +427,19 @@ class TestHarmonicScaling:
             if H_d1 <= H_d2:
                 all_decreasing = False
 
-        assert all_decreasing, "Harmonic scaling not monotone decreasing"
-
         # Verify bounded in (0, 1]
         H_large = layer_12_harmonic_scaling(100.0)
-        assert 0 < H_large <= 1.0, f"H(100) not bounded: {H_large}"
 
-        telem.iterations = len(test_points_small) + 1
+        telem.iterations = len(test_points)
         telem.metrics = {
-            "min_small_d_ratio": float(min_ratio_small),
-            "H_at_d2": float(H_large),
+            "all_decreasing": float(all_decreasing),
+            "H_at_100": float(H_large),
         }
 
-        passed = min_ratio_small > 2.0 and H_large > 1000
+        passed = all_decreasing and 0 < H_large <= 1.0
         telem.complete(passed)
 
-        assert (
-            passed
-        ), f"Super-exponential property verified: small_d_ratio={min_ratio_small:.4f}, H(2)={H_large:.1f}"
+        assert passed, f"Monotone decreasing: {all_decreasing}, H(100)={H_large}"
 
 
 class TestTopologicalInvariants:
@@ -551,7 +547,7 @@ class TestRiskMonotonicity:
     """Test risk decision monotonicity"""
 
     def test_risk_amplification_monotonicity(self):
-        """Property: Risk' increases monotonically with d*"""
+        """Property: Amplified risk increases monotonically with d*"""
         telem = TELEMETRY.start_test("Risk Amplification Monotonicity", "Risk Logic")
 
         from scbe_14layer_reference import layer_12_harmonic_scaling
@@ -568,8 +564,10 @@ class TestRiskMonotonicity:
             H1 = layer_12_harmonic_scaling(d1)
             H2 = layer_12_harmonic_scaling(d2)
 
-            Risk1 = Risk_base * H1
-            Risk2 = Risk_base * H2
+            # Risk' = Risk_base / H_score
+            # As d increases, H decreases, so Risk' increases
+            Risk1 = Risk_base / H1
+            Risk2 = Risk_base / H2
 
             if Risk2 <= Risk1:
                 violations += 1

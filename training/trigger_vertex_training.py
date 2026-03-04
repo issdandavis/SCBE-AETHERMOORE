@@ -52,6 +52,24 @@ def load_kernel_summary(manifest_path=None):
     return to_summary(manifest)
 
 
+def summarize_fine_tune_plan(pipeline):
+    """Build a safe human-readable summary of fine-tune funnel config."""
+    cfg = pipeline.get("fine_tune") or {}
+    streams = cfg.get("streams", [])
+    lane_weights = [
+        f"{stream.get('name', 'unknown')}={stream.get('weight', 0):.2f}"
+        for stream in streams
+        if isinstance(stream, dict)
+    ]
+    return {
+        "enabled": bool(cfg.get("enabled", False)),
+        "target_repo": cfg.get("target_repo", "not-set"),
+        "stream_count": len(streams),
+        "stream_weights": lane_weights,
+        "quality_checks": cfg.get("quality_checks", {}),
+    }
+
+
 def validate_environment(dry_run=False):
     """Check that required env vars and credentials are present."""
     required = ["GCP_PROJECT_ID"]
@@ -171,12 +189,20 @@ def main():
     cfg = DEFAULTS.copy()
     pipeline = load_pipeline_config(args.config)
     kernel_summary = load_kernel_summary()
+    fine_tune_summary = summarize_fine_tune_plan(pipeline)
 
     log.info("PHDM 21D Embedding Training Trigger")
     log.info("Project: %s | Region: %s", cfg["project_id"], cfg["region"])
     log.info("HF Model: %s", cfg["hf_model_repo"])
     log.info("GKE Cluster: %s", cfg["gke_cluster"])
     log.info("Kernel files: %s | Manifest SHA: %s", kernel_summary["kernel_file_count"], kernel_summary["kernel_manifest_sha"])
+    log.info(
+        "Fine-tune funnel enabled: %s | target repo: %s | streams: %s | checks: %s",
+        fine_tune_summary["enabled"],
+        fine_tune_summary["target_repo"],
+        fine_tune_summary["stream_count"],
+        ", ".join(fine_tune_summary["stream_weights"]) or "none",
+    )
 
     if args.push_only:
         push_to_huggingface(cfg)
