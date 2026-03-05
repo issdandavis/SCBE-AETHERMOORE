@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useApi } from '../hooks/useApi';
 import GovernanceBadge from '../components/GovernanceBadge';
+import NDASigningCeremony from '../components/NDASigningCeremony';
 import type { ProjectCapsule } from '../../shared/types/index.js';
 
 export default function Dashboard() {
@@ -28,12 +29,7 @@ export default function Dashboard() {
 
   if (!user) return null;
 
-  const handleSignNda = async () => {
-    const res = await post('/ndas/sign', {});
-    if (res.success) {
-      setNdaStatus({ platformNdaSigned: true });
-    }
-  };
+  const [showNdaCeremony, setShowNdaCeremony] = useState(false);
 
   return (
     <div>
@@ -48,15 +44,22 @@ export default function Dashboard() {
           : 'Manage conferences, curate projects, and open deal rooms.'}
       </p>
 
-      {user.role === 'investor' && !ndaStatus.platformNdaSigned && (
+      {user.role === 'investor' && !ndaStatus.platformNdaSigned && !showNdaCeremony && (
         <div className="card" style={{ marginBottom: 24, borderColor: 'var(--accent-amber)' }}>
           <h3 style={{ color: 'var(--accent-amber)', fontFamily: 'var(--font-mono)', marginBottom: 8 }}>
             Platform NDA Required
           </h3>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: 16 }}>
             Sign the platform NDA to access project details, join live Q&A, and register soft-commits.
+            All access is recorded to the HYDRA governance ledger.
           </p>
-          <button className="btn-primary" onClick={handleSignNda}>Sign Platform NDA</button>
+          <button className="btn-primary" onClick={() => setShowNdaCeremony(true)}>Begin NDA Signing</button>
+        </div>
+      )}
+
+      {user.role === 'investor' && showNdaCeremony && !ndaStatus.platformNdaSigned && (
+        <div style={{ marginBottom: 24 }}>
+          <NDASigningCeremony onSigned={() => { setNdaStatus({ platformNdaSigned: true }); setShowNdaCeremony(false); }} />
         </div>
       )}
 
