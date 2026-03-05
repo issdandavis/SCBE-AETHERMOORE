@@ -1,0 +1,15 @@
+- generic [ref=e2]:
+  - img [ref=e4]
+  - generic [ref=e9]:
+    - generic [ref=e10]:
+      - heading "Aethermore Code" [level=2] [ref=e11]
+      - paragraph [ref=e12]: This store is password protected. Use the password to enter the store.
+    - generic [ref=e14]:
+      - generic [ref=e16]:
+        - generic [ref=e18]: Enter store password
+        - textbox "Enter store password" [ref=e19]
+      - button "Enter" [ref=e20] [cursor=pointer]
+    - generic [ref=e23]:
+      - text: Are you the store owner?
+      - link "Log in here" [ref=e24] [cursor=pointer]:
+        - /url: /admin

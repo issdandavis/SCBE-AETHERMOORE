@@ -1,0 +1,417 @@
+{
+    "name":  "SCBE M5 Mesh Data Funnel",
+    "nodes":  [
+                  {
+                      "parameters":  {
+                                         "httpMethod":  "POST",
+                                         "path":  "scbe-m5-funnel",
+                                         "responseMode":  "responseNode",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "webhook_trigger",
+                      "name":  "Webhook: M5 Intake",
+                      "type":  "n8n-nodes-base.webhook",
+                      "typeVersion":  2,
+                      "position":  [
+                                       -920,
+                                       220
+                                   ],
+                      "webhookId":  "scbe-m5-funnel-001"
+                  },
+                  {
+                      "parameters":  {
+                                         "rule":  {
+                                                      "interval":  [
+                                                                       {
+                                                                           "field":  "hours",
+                                                                           "hoursInterval":  2
+                                                                       }
+                                                                   ]
+                                                  }
+                                     },
+                      "id":  "schedule_trigger",
+                      "name":  "Schedule: M5 Sweep",
+                      "type":  "n8n-nodes-base.scheduleTrigger",
+                      "typeVersion":  1.2,
+                      "position":  [
+                                       -920,
+                                       -20
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const input = $json || {};\nconst nowIso = new Date().toISOString();\nconst summary = input.summary || input.text || input.context || \u0027m5 mesh intake event\u0027;\nconst tongue = (input.tongue || \u0027KO\u0027).toUpperCase();\nconst eventType = input.event_type || input.eventType || \u0027mesh_intake\u0027;\nconst source = input.source || input.source_system || \u0027n8n\u0027;\n\nconst metadata = {\n  run_id: input.run_id || `m5-${Date.now()}`,\n  source_system: source,\n  mesh_node: input.mesh_node || \u0027m5.funnel.intake\u0027,\n  decision_hint: input.decision || \u0027UNKNOWN\u0027,\n  published_at_utc: nowIso,\n  confidence: input.confidence ?? null,\n  tags: input.tags || []\n};\n\nreturn [{\n  json: {\n    event_type: eventType,\n    summary,\n    outcome: input.outcome || input.response || \u0027captured\u0027,\n    tongue,\n    source_system: source,\n    record_id: input.record_id || `${source}-${Date.now()}`,\n    metadata\n  }\n}];"
+                                     },
+                      "id":  "prepare_payload",
+                      "name":  "Prepare M5 Payload",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       -660,
+                                       120
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "http://localhost:8001/v1/governance/scan",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "X-API-Key",
+                                                                                         "value":  "={{ $env.SCBE_API_KEY }}"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "Content-Type",
+                                                                                         "value":  "application/json"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "specifyBody":  "json",
+                                         "jsonBody":  "={{ JSON.stringify({ content: $(\u0027Prepare M5 Payload\u0027).item.json.summary, scan_mode: \u0027full\u0027 }) }}",
+                                         "options":  {
+                                                         "timeout":  10000
+                                                     }
+                                     },
+                      "id":  "governance_scan",
+                      "name":  "Governance Scan",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.2,
+                      "position":  [
+                                       -380,
+                                       120
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "caseSensitive":  false
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "leftValue":  "={{ $json.verdict || $json.governance_decision || \u0027ALLOW\u0027 }}",
+                                                                                   "rightValue":  "DENY",
+                                                                                   "operator":  {
+                                                                                                    "type":  "string",
+                                                                                                    "operation":  "notEquals"
+                                                                                                }
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        }
+                                     },
+                      "id":  "governance_gate",
+                      "name":  "Governance Gate",
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  2,
+                      "position":  [
+                                       -120,
+                                       120
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "http://localhost:8001/v1/training/ingest",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "X-API-Key",
+                                                                                         "value":  "={{ $env.SCBE_API_KEY }}"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "Content-Type",
+                                                                                         "value":  "application/json"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "specifyBody":  "json",
+                                         "jsonBody":  "={{ JSON.stringify({ event_type: $(\u0027Prepare M5 Payload\u0027).item.json.event_type, context: $(\u0027Prepare M5 Payload\u0027).item.json.summary, outcome: $(\u0027Prepare M5 Payload\u0027).item.json.outcome, tongue: $(\u0027Prepare M5 Payload\u0027).item.json.tongue, metadata: $(\u0027Prepare M5 Payload\u0027).item.json.metadata }) }}",
+                                         "options":  {
+                                                         "timeout":  15000
+                                                     }
+                                     },
+                      "id":  "training_ingest",
+                      "name":  "Training Ingest",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.2,
+                      "position":  [
+                                       140,
+                                       20
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "=https://api.airtable.com/v0/{{$env.AIRTABLE_BASE_ID}}/{{$env.AIRTABLE_TABLE_ID}}",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "Authorization",
+                                                                                         "value":  "=Bearer {{$env.AIRTABLE_API_KEY}}"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "Content-Type",
+                                                                                         "value":  "application/json"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "specifyBody":  "json",
+                                         "jsonBody":  "={{ JSON.stringify({ records: [{ fields: { Name: $(\u0027Prepare M5 Payload\u0027).item.json.event_type + \u0027 :: \u0027 + $(\u0027Prepare M5 Payload\u0027).item.json.record_id, Description: $(\u0027Prepare M5 Payload\u0027).item.json.summary, Status: \u0027In Progress\u0027, \u0027Priority Level\u0027: \u0027Medium\u0027, \u0027Estimated Hours\u0027: 1, \u0027Created Date\u0027: new Date().toISOString() } }] }) }}",
+                                         "options":  {
+                                                         "timeout":  15000
+                                                     }
+                                     },
+                      "id":  "airtable_log",
+                      "name":  "Airtable: Log Event",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.2,
+                      "position":  [
+                                       400,
+                                       20
+                                   ],
+                      "continueOnFail":  true
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "http://localhost:8001/v1/vertex/push-to-hf",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "X-API-Key",
+                                                                                         "value":  "={{ $env.SCBE_API_KEY }}"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "Content-Type",
+                                                                                         "value":  "application/json"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "specifyBody":  "json",
+                                         "jsonBody":  "={{ JSON.stringify({ local_path: $env.M5_FALLBACK_LOCAL_PATH || null, hf_repo: $env.HF_DATASET_REPO || \u0027issdandavis/scbe-aethermoore-training-data\u0027, repo_type: \u0027dataset\u0027, path_in_repo: \u0027m5-funnel\u0027, commit_message: \u0027M5 mesh intake \u0027 + new Date().toISOString() }) }}",
+                                         "options":  {
+                                                         "timeout":  120000
+                                                     }
+                                     },
+                      "id":  "hf_push",
+                      "name":  "HuggingFace: Push Dataset",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.2,
+                      "position":  [
+                                       660,
+                                       20
+                                   ],
+                      "continueOnFail":  true
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "http://localhost:8001/v1/telemetry/post-result",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "X-API-Key",
+                                                                                         "value":  "={{ $env.SCBE_API_KEY }}"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "Content-Type",
+                                                                                         "value":  "application/json"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "specifyBody":  "json",
+                                         "jsonBody":  "={{ JSON.stringify({ platform: \u0027m5-mesh-funnel\u0027, success: true, post_url: $(\u0027Prepare M5 Payload\u0027).item.json.record_id, timestamp: new Date().toISOString() }) }}",
+                                         "options":  {
+                                                         "timeout":  5000
+                                                     }
+                                     },
+                      "id":  "telemetry_log",
+                      "name":  "Telemetry Log",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.2,
+                      "position":  [
+                                       920,
+                                       20
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "respondWith":  "json",
+                                         "responseBody":  "={{ JSON.stringify({ status: \u0027ok\u0027, pipeline: \u0027m5_mesh_funnel\u0027, record_id: $(\u0027Prepare M5 Payload\u0027).item.json.record_id, trainer_status: $(\u0027Training Ingest\u0027).item.json.status || \u0027queued\u0027 }) }}"
+                                     },
+                      "id":  "respond_success",
+                      "name":  "Respond Success",
+                      "type":  "n8n-nodes-base.respondToWebhook",
+                      "typeVersion":  1.1,
+                      "position":  [
+                                       1180,
+                                       20
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "respondWith":  "json",
+                                         "responseBody":  "={{ JSON.stringify({ status: \u0027blocked\u0027, reason: \u0027governance_deny\u0027, verdict: $json.verdict || $json.governance_decision || \u0027DENY\u0027 }) }}",
+                                         "options":  {
+                                                         "responseCode":  403
+                                                     }
+                                     },
+                      "id":  "respond_denied",
+                      "name":  "Respond Denied",
+                      "type":  "n8n-nodes-base.respondToWebhook",
+                      "typeVersion":  1.1,
+                      "position":  [
+                                       140,
+                                       260
+                                   ]
+                  }
+              ],
+    "connections":  {
+                        "Webhook: M5 Intake":  {
+                                                   "main":  [
+                                                                [
+                                                                    {
+                                                                        "node":  "Prepare M5 Payload",
+                                                                        "type":  "main",
+                                                                        "index":  0
+                                                                    }
+                                                                ]
+                                                            ]
+                                               },
+                        "Schedule: M5 Sweep":  {
+                                                   "main":  [
+                                                                [
+                                                                    {
+                                                                        "node":  "Prepare M5 Payload",
+                                                                        "type":  "main",
+                                                                        "index":  0
+                                                                    }
+                                                                ]
+                                                            ]
+                                               },
+                        "Prepare M5 Payload":  {
+                                                   "main":  [
+                                                                [
+                                                                    {
+                                                                        "node":  "Governance Scan",
+                                                                        "type":  "main",
+                                                                        "index":  0
+                                                                    }
+                                                                ]
+                                                            ]
+                                               },
+                        "Governance Scan":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "Governance Gate",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "Governance Gate":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "Training Ingest",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ],
+                                                             [
+                                                                 {
+                                                                     "node":  "Respond Denied",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "Training Ingest":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "Airtable: Log Event",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "Airtable: Log Event":  {
+                                                    "main":  [
+                                                                 [
+                                                                     {
+                                                                         "node":  "HuggingFace: Push Dataset",
+                                                                         "type":  "main",
+                                                                         "index":  0
+                                                                     }
+                                                                 ]
+                                                             ]
+                                                },
+                        "HuggingFace: Push Dataset":  {
+                                                          "main":  [
+                                                                       [
+                                                                           {
+                                                                               "node":  "Telemetry Log",
+                                                                               "type":  "main",
+                                                                               "index":  0
+                                                                           }
+                                                                       ]
+                                                                   ]
+                                                      },
+                        "Telemetry Log":  {
+                                              "main":  [
+                                                           [
+                                                               {
+                                                                   "node":  "Respond Success",
+                                                                   "type":  "main",
+                                                                   "index":  0
+                                                               }
+                                                           ]
+                                                       ]
+                                          }
+                    },
+    "settings":  {
+                     "executionOrder":  "v1",
+                     "saveManualExecutions":  true
+                 },
+    "tags":  [
+                 {
+                     "name":  "scbe"
+                 },
+                 {
+                     "name":  "m5"
+                 },
+                 {
+                     "name":  "funnel"
+                 },
+                 {
+                     "name":  "airtable"
+                 },
+                 {
+                     "name":  "huggingface"
+                 }
+             ],
+    "meta":  {
+                 "scbe_version":  "3.0.0",
+                 "description":  "M5 mesh intake pipeline: governance scan, training ingest, Airtable log, and HF dataset push."
+             },
+    "id":  "2651d67c-ff69-4930-85f5-63e0cdf43a7c"
+}
