@@ -79,6 +79,8 @@ export type {
   DomainRiskCategory,
   BrowserDecision,
   GovernanceResult,
+  SidepanelActionRecommendation,
+  SidepanelBrief,
   ActionResult,
   // Session types
   BrowserSessionConfig,
