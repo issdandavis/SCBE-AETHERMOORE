@@ -14,6 +14,7 @@ export default function Landing() {
         <div className="hero-actions">
           <Link to="/auth"><button className="btn-primary">I'm a Vibe Coder</button></Link>
           <Link to="/auth"><button className="btn-secondary">I'm an Investor</button></Link>
+          <Link to="/pricing"><button className="btn-secondary" style={{ borderColor: 'var(--accent-purple)' }}>Run Your Own (CaaS)</button></Link>
         </div>
       </section>
 
