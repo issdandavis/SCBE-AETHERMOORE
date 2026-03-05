@@ -24,6 +24,32 @@ function Invoke-NpmChecked {
   }
 }
 
+function Resolve-BuildArtifact {
+  param(
+    [string]$SearchDir,
+    [string[]]$PreferredFiles,
+    [string]$FallbackPattern
+  )
+
+  foreach ($name in $PreferredFiles) {
+    $candidate = Join-Path $SearchDir $name
+    if (Test-Path $candidate) {
+      return $candidate
+    }
+  }
+
+  $fallback = Get-ChildItem -Path $SearchDir -Filter $FallbackPattern -File -ErrorAction SilentlyContinue |
+    Sort-Object LastWriteTime -Descending |
+    Select-Object -First 1
+
+  if ($fallback) {
+    return $fallback.FullName
+  }
+
+  $preferredList = $PreferredFiles -join ", "
+  throw "No build artifact found in $SearchDir. Preferred: [$preferredList], fallback pattern: $FallbackPattern"
+}
+
 if (-not (Test-Path $kindleDir)) {
   throw "kindle-app directory not found: $kindleDir"
 }
@@ -57,18 +83,22 @@ try {
     } else {
       Invoke-NpmChecked -Label "npm run build:aab:aetherbrowse" -CommandArgs @("run", "build:aab:aetherbrowse")
     }
-    $sourceFile = Join-Path $kindleDir "android\app\build\outputs\bundle\release\app-release.aab"
+    $sourceDir = Join-Path $kindleDir "android\app\build\outputs\bundle\release"
+    $sourceFile = Resolve-BuildArtifact `
+      -SearchDir $sourceDir `
+      -PreferredFiles @("app-release.aab", "app-release-unsigned.aab") `
+      -FallbackPattern "*.aab"
   } else {
     if ($Store -eq "kindle") {
       Invoke-NpmChecked -Label "npm run build:apk:aetherbrowse:kindle" -CommandArgs @("run", "build:apk:aetherbrowse:kindle")
     } else {
       Invoke-NpmChecked -Label "npm run build:apk:aetherbrowse" -CommandArgs @("run", "build:apk:aetherbrowse")
     }
-    $sourceFile = Join-Path $kindleDir "android\app\build\outputs\apk\release\app-release.apk"
-  }
-
-  if (-not (Test-Path $sourceFile)) {
-    throw "Build completed but artifact not found at $sourceFile"
+    $sourceDir = Join-Path $kindleDir "android\app\build\outputs\apk\release"
+    $sourceFile = Resolve-BuildArtifact `
+      -SearchDir $sourceDir `
+      -PreferredFiles @("app-release.apk", "app-release-unsigned.apk") `
+      -FallbackPattern "*.apk"
   }
 
   $stamp = (Get-Date).ToUniversalTime().ToString("yyyyMMddTHHmmssZ")
