@@ -1,0 +1,126 @@
+{
+  "tenreary_type": "mcp.tenreary.v1",
+  "name": "three-by-three-monetization-grid",
+  "metadata": {
+    "grid": "3x3",
+    "description": "3 lanes x 3 phases: discover, analyze, execute",
+    "notion_logging": "Pass notion.page_id via --set notion.page_id=<page_id> to append run output."
+  },
+  "dual_browser": {
+    "enabled": true,
+    "primary_engine": "playwright",
+    "secondary_engine": "cdp",
+    "max_tabs": 4
+  },
+  "steps": [
+    {
+      "id": "d1_primary_discover",
+      "type": "browser.navigate",
+      "params": {
+        "role": "primary",
+        "tab": "discover-main",
+        "url": "https://github.com/issdandavis/SCBE-AETHERMOORE"
+      }
+    },
+    {
+      "id": "d2_secondary_discover",
+      "type": "browser.navigate",
+      "params": {
+        "role": "secondary",
+        "tab": "discover-issues",
+        "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/issues",
+        "fallback_to_primary": true
+      }
+    },
+    {
+      "id": "d3_automation_discover",
+      "type": "github.rest",
+      "params": {
+        "method": "GET",
+        "path": "/repos/issdandavis/SCBE-AETHERMOORE"
+      }
+    },
+    {
+      "id": "a1_primary_analyze",
+      "type": "browser.get_content",
+      "params": {
+        "role": "primary",
+        "tab": "discover-main"
+      }
+    },
+    {
+      "id": "a2_secondary_analyze",
+      "type": "analysis.content",
+      "params": {
+        "backend": "rule",
+        "source_key": "tab.primary.discover-main.content_preview",
+        "prompt": "Extract monetization intent and conversion opportunities."
+      }
+    },
+    {
+      "id": "a3_automation_analyze",
+      "type": "github.graphql",
+      "if_env": [
+        "GITHUB_TOKEN"
+      ],
+      "params": {
+        "query": "query($owner:String!, $name:String!) { repository(owner:$owner, name:$name) { name stargazerCount forkCount issues(states: OPEN) { totalCount } pullRequests(states: OPEN) { totalCount } } }",
+        "variables": {
+          "owner": "issdandavis",
+          "name": "SCBE-AETHERMOORE"
+        }
+      }
+    },
+    {
+      "id": "e1_primary_execute",
+      "type": "browser.action",
+      "params": {
+        "role": "primary",
+        "tab": "discover-main",
+        "action": "scroll",
+        "target": "",
+        "direction": "down",
+        "amount": 450
+      }
+    },
+    {
+      "id": "e2_secondary_execute",
+      "type": "automation.emit",
+      "params": {
+        "channels": [
+          "n8n",
+          "zapier"
+        ],
+        "action": "trigger",
+        "payload": {
+          "event": "tenreary_3x3_execute",
+          "workflow": "three-by-three-monetization-grid",
+          "analysis": "{{step.a2_secondary_analyze.data}}",
+          "repo_probe": "{{step.d3_automation_discover.data}}"
+        }
+      }
+    },
+    {
+      "id": "e3_automation_execute",
+      "type": "connector.execute",
+      "params": {
+        "platform": "n8n",
+        "action": "trigger",
+        "payload": {
+          "event": "tenreary_3x3_finalize",
+          "name": "three-by-three-monetization-grid",
+          "status": "complete"
+        }
+      }
+    },
+    {
+      "id": "e4_notion_log",
+      "type": "notion.append",
+      "params": {
+        "page_id": "{{notion.page_id}}",
+        "heading": "3x3 Monetization Run",
+        "text": "workflow={{tenreary_name}} ok={{step.e3_automation_execute.data.success}} channels={{step.e2_secondary_execute.data}} benchmark={{step.e3_automation_execute.status}}"
+      }
+    }
+  ]
+}

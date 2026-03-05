@@ -1,0 +1,17 @@
+{
+  "total_sft": 120,
+  "total_dpo": 0,
+  "by_source": {
+    "spiral_search": 0,
+    "browser": 0,
+    "obsidian": 0,
+    "notion": 0,
+    "telegram": 0,
+    "mesh": 0,
+    "governance": 0,
+    "gacha_sessions": 5,
+    "game_design_sessions": 25,
+    "game_sessions": 90
+  },
+  "timestamp": 1772663874.8129354
+}

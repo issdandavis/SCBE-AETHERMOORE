@@ -1,0 +1,627 @@
+{
+    "name":  "SCBE Vertex AI â†” HuggingFace Pipeline",
+    "nodes":  [
+                  {
+                      "parameters":  {
+                                         "httpMethod":  "POST",
+                                         "path":  "vertex-hf-pipeline",
+                                         "responseMode":  "responseNode",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "webhook_trigger",
+                      "name":  "Webhook: Pipeline Trigger",
+                      "type":  "n8n-nodes-base.webhook",
+                      "typeVersion":  2,
+                      "position":  [
+                                       -900,
+                                       200
+                                   ],
+                      "webhookId":  "vertex-hf-001"
+                  },
+                  {
+                      "parameters":  {
+                                         "rule":  {
+                                                      "interval":  [
+                                                                       {
+                                                                           "field":  "hours",
+                                                                           "hoursInterval":  6
+                                                                       }
+                                                                   ]
+                                                  }
+                                     },
+                      "id":  "schedule_trigger",
+                      "name":  "Schedule: Periodic Sync",
+                      "type":  "n8n-nodes-base.scheduleTrigger",
+                      "typeVersion":  1.2,
+                      "position":  [
+                                       -900,
+                                       -50
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "caseSensitive":  false
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "leftValue":  "={{ $json.action }}",
+                                                                                   "rightValue":  "train",
+                                                                                   "operator":  {
+                                                                                                    "type":  "string",
+                                                                                                    "operation":  "equals"
+                                                                                                }
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        }
+                                     },
+                      "id":  "route_action",
+                      "name":  "Route: Action Type",
+                      "type":  "n8n-nodes-base.switch",
+                      "typeVersion":  3.2,
+                      "position":  [
+                                       -600,
+                                       200
+                                   ],
+                      "parameters_extra":  {
+                                               "rules":  [
+                                                             {
+                                                                 "outputIndex":  0,
+                                                                 "value":  "train"
+                                                             },
+                                                             {
+                                                                 "outputIndex":  1,
+                                                                 "value":  "predict"
+                                                             },
+                                                             {
+                                                                 "outputIndex":  2,
+                                                                 "value":  "push-to-hf"
+                                                             },
+                                                             {
+                                                                 "outputIndex":  3,
+                                                                 "value":  "pull-from-hf"
+                                                             },
+                                                             {
+                                                                 "outputIndex":  4,
+                                                                 "value":  "sync"
+                                                             }
+                                                         ]
+                                           }
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "http://localhost:8001/v1/governance/scan",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "X-API-Key",
+                                                                                         "value":  "={{ $env.SCBE_API_KEY }}"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "Content-Type",
+                                                                                         "value":  "application/json"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "specifyBody":  "json",
+                                         "jsonBody":  "={{ JSON.stringify({ content: $json.goal || $json.display_name || \u0027vertex-hf-pipeline\u0027, scan_mode: \u0027full\u0027 }) }}",
+                                         "options":  {
+                                                         "timeout":  10000
+                                                     }
+                                     },
+                      "id":  "governance_scan",
+                      "name":  "Governance: Scan Intent",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.2,
+                      "position":  [
+                                       -350,
+                                       200
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "leftValue":  "={{ $json.verdict }}",
+                                                                                   "rightValue":  "DENY",
+                                                                                   "operator":  {
+                                                                                                    "type":  "string",
+                                                                                                    "operation":  "notEquals"
+                                                                                                }
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        }
+                                     },
+                      "id":  "governance_gate",
+                      "name":  "Gate: Governance Check",
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  2,
+                      "position":  [
+                                       -100,
+                                       200
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "http://localhost:8001/v1/vertex/train",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "X-API-Key",
+                                                                                         "value":  "={{ $env.SCBE_API_KEY }}"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "Content-Type",
+                                                                                         "value":  "application/json"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "specifyBody":  "json",
+                                         "jsonBody":  "={{ JSON.stringify({ display_name: $(\u0027Webhook: Pipeline Trigger\u0027).item.json.display_name || \u0027scbe-vertex-job\u0027, container_image_uri: $(\u0027Webhook: Pipeline Trigger\u0027).item.json.container_image_uri || \u0027us-docker.pkg.dev/vertex-ai/training/pytorch-gpu.2-1:latest\u0027, training_data_uri: $(\u0027Webhook: Pipeline Trigger\u0027).item.json.training_data_uri || null, machine_type: $(\u0027Webhook: Pipeline Trigger\u0027).item.json.machine_type || \u0027n1-standard-4\u0027, accelerator_type: $(\u0027Webhook: Pipeline Trigger\u0027).item.json.accelerator_type || null, accelerator_count: $(\u0027Webhook: Pipeline Trigger\u0027).item.json.accelerator_count || 0, push_to_hf: $(\u0027Webhook: Pipeline Trigger\u0027).item.json.push_to_hf !== false, hf_repo: $(\u0027Webhook: Pipeline Trigger\u0027).item.json.hf_repo || null, args: $(\u0027Webhook: Pipeline Trigger\u0027).item.json.args || [] }) }}",
+                                         "options":  {
+                                                         "timeout":  30000
+                                                     }
+                                     },
+                      "id":  "vertex_train",
+                      "name":  "Vertex AI: Submit Training",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.2,
+                      "position":  [
+                                       200,
+                                       0
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "GET",
+                                         "url":  "=http://localhost:8001/v1/vertex/job/{{ $json.job_id }}",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "X-API-Key",
+                                                                                         "value":  "={{ $env.SCBE_API_KEY }}"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "options":  {
+                                                         "timeout":  10000
+                                                     }
+                                     },
+                      "id":  "vertex_poll",
+                      "name":  "Vertex AI: Poll Job Status",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.2,
+                      "position":  [
+                                       500,
+                                       0
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "amount":  30,
+                                         "unit":  "seconds"
+                                     },
+                      "id":  "wait_poll",
+                      "name":  "Wait: Poll Interval",
+                      "type":  "n8n-nodes-base.wait",
+                      "typeVersion":  1.1,
+                      "position":  [
+                                       500,
+                                       -150
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "http://localhost:8001/v1/vertex/push-to-hf",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "X-API-Key",
+                                                                                         "value":  "={{ $env.SCBE_API_KEY }}"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "Content-Type",
+                                                                                         "value":  "application/json"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "specifyBody":  "json",
+                                         "jsonBody":  "={{ JSON.stringify({ gcs_uri: $(\u0027Webhook: Pipeline Trigger\u0027).item.json.gcs_uri || null, local_path: $(\u0027Webhook: Pipeline Trigger\u0027).item.json.local_path || null, hf_repo: $(\u0027Webhook: Pipeline Trigger\u0027).item.json.hf_repo || null, repo_type: $(\u0027Webhook: Pipeline Trigger\u0027).item.json.repo_type || \u0027model\u0027, commit_message: \u0027Vertex AI artifacts â€” \u0027 + new Date().toISOString() }) }}",
+                                         "options":  {
+                                                         "timeout":  120000
+                                                     }
+                                     },
+                      "id":  "push_to_hf",
+                      "name":  "HuggingFace: Push Artifacts",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.2,
+                      "position":  [
+                                       200,
+                                       200
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "http://localhost:8001/v1/hf/pull-model",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "X-API-Key",
+                                                                                         "value":  "={{ $env.SCBE_API_KEY }}"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "Content-Type",
+                                                                                         "value":  "application/json"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "specifyBody":  "json",
+                                         "jsonBody":  "={{ JSON.stringify({ hf_repo: $(\u0027Webhook: Pipeline Trigger\u0027).item.json.hf_repo || null, revision: $(\u0027Webhook: Pipeline Trigger\u0027).item.json.revision || \u0027main\u0027, local_dir: $(\u0027Webhook: Pipeline Trigger\u0027).item.json.local_dir || \u0027/tmp/hf_model\u0027, upload_to_gcs: $(\u0027Webhook: Pipeline Trigger\u0027).item.json.upload_to_gcs || null }) }}",
+                                         "options":  {
+                                                         "timeout":  120000
+                                                     }
+                                     },
+                      "id":  "pull_from_hf",
+                      "name":  "HuggingFace: Pull Model",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.2,
+                      "position":  [
+                                       200,
+                                       400
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "http://localhost:8001/v1/vertex/predict",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "X-API-Key",
+                                                                                         "value":  "={{ $env.SCBE_API_KEY }}"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "Content-Type",
+                                                                                         "value":  "application/json"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "specifyBody":  "json",
+                                         "jsonBody":  "={{ JSON.stringify({ endpoint_id: $(\u0027Webhook: Pipeline Trigger\u0027).item.json.endpoint_id, instances: $(\u0027Webhook: Pipeline Trigger\u0027).item.json.instances || [], parameters: $(\u0027Webhook: Pipeline Trigger\u0027).item.json.parameters || {} }) }}",
+                                         "options":  {
+                                                         "timeout":  30000
+                                                     }
+                                     },
+                      "id":  "vertex_predict",
+                      "name":  "Vertex AI: Run Prediction",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.2,
+                      "position":  [
+                                       200,
+                                       -200
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "http://localhost:8001/v1/telemetry/post-result",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "X-API-Key",
+                                                                                         "value":  "={{ $env.SCBE_API_KEY }}"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "Content-Type",
+                                                                                         "value":  "application/json"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "specifyBody":  "json",
+                                         "jsonBody":  "={{ JSON.stringify({ platform: \u0027vertex-hf-pipeline\u0027, success: true, post_url: $json.commit_url || $json.hf_repo || $json.vertex_resource || \u0027n/a\u0027 }) }}",
+                                         "options":  {
+                                                         "timeout":  5000
+                                                     }
+                                     },
+                      "id":  "log_telemetry",
+                      "name":  "Telemetry: Log Result",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.2,
+                      "position":  [
+                                       600,
+                                       200
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "respondWith":  "json",
+                                         "responseBody":  "={{ JSON.stringify({ status: \u0027complete\u0027, pipeline: \u0027vertex-hf\u0027, result: $json }) }}"
+                                     },
+                      "id":  "respond_success",
+                      "name":  "Respond: Success",
+                      "type":  "n8n-nodes-base.respondToWebhook",
+                      "typeVersion":  1.1,
+                      "position":  [
+                                       850,
+                                       200
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "respondWith":  "json",
+                                         "responseBody":  "={{ JSON.stringify({ status: \u0027denied\u0027, reason: \u0027governance_gate_blocked\u0027, verdict: $json.verdict }) }}",
+                                         "options":  {
+                                                         "responseCode":  403
+                                                     }
+                                     },
+                      "id":  "respond_denied",
+                      "name":  "Respond: Denied by Governance",
+                      "type":  "n8n-nodes-base.respondToWebhook",
+                      "typeVersion":  1.1,
+                      "position":  [
+                                       200,
+                                       600
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "http://localhost:8001/v1/vertex/push-to-hf",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "X-API-Key",
+                                                                                         "value":  "={{ $env.SCBE_API_KEY }}"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "Content-Type",
+                                                                                         "value":  "application/json"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "specifyBody":  "json",
+                                         "jsonBody":  "={{ JSON.stringify({ hf_repo: $json.hf_repo, gcs_uri: $json.training_data || null, commit_message: \u0027Auto-push from Vertex training job \u0027 + ($json.job_id || \u0027unknown\u0027) }) }}",
+                                         "options":  {
+                                                         "timeout":  120000
+                                                     }
+                                     },
+                      "id":  "auto_push_hf",
+                      "name":  "Auto-Push: Training Result to HF",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.2,
+                      "position":  [
+                                       800,
+                                       0
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "GET",
+                                         "url":  "http://localhost:8001/v1/vertex/models",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "X-API-Key",
+                                                                                         "value":  "={{ $env.SCBE_API_KEY }}"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "options":  {
+                                                         "timeout":  15000
+                                                     }
+                                     },
+                      "id":  "list_models",
+                      "name":  "Vertex AI: List Models",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.2,
+                      "position":  [
+                                       200,
+                                       -400
+                                   ]
+                  }
+              ],
+    "connections":  {
+                        "Webhook: Pipeline Trigger":  {
+                                                          "main":  [
+                                                                       [
+                                                                           {
+                                                                               "node":  "Governance: Scan Intent",
+                                                                               "type":  "main",
+                                                                               "index":  0
+                                                                           }
+                                                                       ]
+                                                                   ]
+                                                      },
+                        "Schedule: Periodic Sync":  {
+                                                        "main":  [
+                                                                     [
+                                                                         {
+                                                                             "node":  "Vertex AI: List Models",
+                                                                             "type":  "main",
+                                                                             "index":  0
+                                                                         }
+                                                                     ]
+                                                                 ]
+                                                    },
+                        "Governance: Scan Intent":  {
+                                                        "main":  [
+                                                                     [
+                                                                         {
+                                                                             "node":  "Gate: Governance Check",
+                                                                             "type":  "main",
+                                                                             "index":  0
+                                                                         }
+                                                                     ]
+                                                                 ]
+                                                    },
+                        "Gate: Governance Check":  {
+                                                       "main":  [
+                                                                    [
+                                                                        {
+                                                                            "node":  "Vertex AI: Submit Training",
+                                                                            "type":  "main",
+                                                                            "index":  0
+                                                                        },
+                                                                        {
+                                                                            "node":  "HuggingFace: Push Artifacts",
+                                                                            "type":  "main",
+                                                                            "index":  0
+                                                                        },
+                                                                        {
+                                                                            "node":  "HuggingFace: Pull Model",
+                                                                            "type":  "main",
+                                                                            "index":  0
+                                                                        },
+                                                                        {
+                                                                            "node":  "Vertex AI: Run Prediction",
+                                                                            "type":  "main",
+                                                                            "index":  0
+                                                                        }
+                                                                    ],
+                                                                    [
+                                                                        {
+                                                                            "node":  "Respond: Denied by Governance",
+                                                                            "type":  "main",
+                                                                            "index":  0
+                                                                        }
+                                                                    ]
+                                                                ]
+                                                   },
+                        "Vertex AI: Submit Training":  {
+                                                           "main":  [
+                                                                        [
+                                                                            {
+                                                                                "node":  "Vertex AI: Poll Job Status",
+                                                                                "type":  "main",
+                                                                                "index":  0
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                       },
+                        "Vertex AI: Poll Job Status":  {
+                                                           "main":  [
+                                                                        [
+                                                                            {
+                                                                                "node":  "Auto-Push: Training Result to HF",
+                                                                                "type":  "main",
+                                                                                "index":  0
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                       },
+                        "Auto-Push: Training Result to HF":  {
+                                                                 "main":  [
+                                                                              [
+                                                                                  {
+                                                                                      "node":  "Telemetry: Log Result",
+                                                                                      "type":  "main",
+                                                                                      "index":  0
+                                                                                  }
+                                                                              ]
+                                                                          ]
+                                                             },
+                        "HuggingFace: Push Artifacts":  {
+                                                            "main":  [
+                                                                         [
+                                                                             {
+                                                                                 "node":  "Telemetry: Log Result",
+                                                                                 "type":  "main",
+                                                                                 "index":  0
+                                                                             }
+                                                                         ]
+                                                                     ]
+                                                        },
+                        "HuggingFace: Pull Model":  {
+                                                        "main":  [
+                                                                     [
+                                                                         {
+                                                                             "node":  "Telemetry: Log Result",
+                                                                             "type":  "main",
+                                                                             "index":  0
+                                                                         }
+                                                                     ]
+                                                                 ]
+                                                    },
+                        "Vertex AI: Run Prediction":  {
+                                                          "main":  [
+                                                                       [
+                                                                           {
+                                                                               "node":  "Telemetry: Log Result",
+                                                                               "type":  "main",
+                                                                               "index":  0
+                                                                           }
+                                                                       ]
+                                                                   ]
+                                                      },
+                        "Vertex AI: List Models":  {
+                                                       "main":  [
+                                                                    [
+                                                                        {
+                                                                            "node":  "Telemetry: Log Result",
+                                                                            "type":  "main",
+                                                                            "index":  0
+                                                                        }
+                                                                    ]
+                                                                ]
+                                                   },
+                        "Telemetry: Log Result":  {
+                                                      "main":  [
+                                                                   [
+                                                                       {
+                                                                           "node":  "Respond: Success",
+                                                                           "type":  "main",
+                                                                           "index":  0
+                                                                       }
+                                                                   ]
+                                                               ]
+                                                  }
+                    },
+    "settings":  {
+                     "executionOrder":  "v1"
+                 },
+    "staticData":  null,
+    "tags":  [
+                 {
+                     "name":  "vertex-ai"
+                 },
+                 {
+                     "name":  "huggingface"
+                 },
+                 {
+                     "name":  "scbe"
+                 },
+                 {
+                     "name":  "ml-pipeline"
+                 }
+             ],
+    "id":  "526c3902-ccc2-4077-aec7-94c7df7363ae"
+}
