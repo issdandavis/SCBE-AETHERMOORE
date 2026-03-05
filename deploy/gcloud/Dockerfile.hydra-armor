@@ -1,0 +1,43 @@
+# Hydra Armor API — Standalone Governance-as-a-Service deployment
+# Lean image: just the runtime server with Hydra Armor endpoints.
+# No Electron, no Playwright worker, no browser automation.
+
+FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+WORKDIR /app
+
+RUN pip install --no-cache-dir \
+    fastapi>=0.109.0 \
+    "uvicorn[standard]>=0.27.0" \
+    pydantic>=2.6.0 \
+    httpx>=0.27.0
+
+# Copy only what the Hydra Armor API needs
+COPY aetherbrowse/runtime/server.py ./aetherbrowse/runtime/server.py
+COPY aetherbrowse/runtime/perceiver.py ./aetherbrowse/runtime/perceiver.py
+COPY aetherbrowse/runtime/planner.py ./aetherbrowse/runtime/planner.py
+COPY aetherbrowse/runtime/hydra_bridge.py ./aetherbrowse/runtime/hydra_bridge.py
+COPY aetherbrowse/runtime/env_bootstrap.py ./aetherbrowse/runtime/env_bootstrap.py
+COPY aetherbrowse/runtime/landing.html ./aetherbrowse/runtime/landing.html
+COPY aetherbrowse/runtime/search.html ./aetherbrowse/runtime/search.html
+COPY aetherbrowse/runtime/dashboard.html ./aetherbrowse/runtime/dashboard.html
+COPY aetherbrowse/runtime/__init__.py ./aetherbrowse/runtime/__init__.py
+COPY aetherbrowse/__init__.py ./aetherbrowse/__init__.py
+COPY aetherbrowse/config/ ./aetherbrowse/config/
+
+# Minimal src stubs for imports
+COPY src/fleet/ ./src/fleet/
+COPY src/security/ ./src/security/
+COPY src/symphonic_cipher/scbe_aethermoore/axiom_grouped/ ./src/symphonic_cipher/scbe_aethermoore/axiom_grouped/
+
+# Package inits
+RUN touch src/__init__.py src/symphonic_cipher/__init__.py src/symphonic_cipher/scbe_aethermoore/__init__.py
+
+ENV PYTHONPATH=/app
+ENV SCBE_ENV=production
+
+EXPOSE 8400
+
+CMD ["uvicorn", "aetherbrowse.runtime.server:app", "--host", "0.0.0.0", "--port", "8400"]

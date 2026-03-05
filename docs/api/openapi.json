@@ -1,0 +1,1022 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SCBE-AETHERMOORE API",
+    "version": "3.0.0",
+    "description": "Quantum-resistant memory sealing with hyperbolic governance. 14-layer security pipeline using Poincaré ball geometry, Sacred Tongues tokenization, and post-quantum cryptography (ML-KEM-768, ML-DSA-65, AES-256-GCM).\n\nThe API is organized into four domains:\n- **Core** — Data sealing, retrieval, and governance evaluation\n- **HYDRA** — Multi-head AI orchestration, workflows, and research\n- **Mesh** — Semantic knowledge graph with tongue-space search\n- **Gateway** — 14-layer authorization pipeline, RWP envelopes, fleet management",
+    "contact": {
+      "name": "Issac Daniel Davis",
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/LICENSE"
+    },
+    "x-patent": "USPTO #63/961,403 (provisional)"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "Local development"
+    },
+    {
+      "url": "https://scbe-api.aethermoore.dev",
+      "description": "Production (Cloud Run)"
+    }
+  ],
+  "tags": [
+    {"name": "Core", "description": "Data sealing, retrieval, and governance"},
+    {"name": "HYDRA", "description": "Multi-head AI orchestration and workflows"},
+    {"name": "Mesh", "description": "Semantic knowledge graph (tongue-space KG)"},
+    {"name": "Gateway", "description": "14-layer authorization and RWP envelopes"},
+    {"name": "Fleet", "description": "Multi-agent fleet orchestration"},
+    {"name": "Mobile", "description": "Mobile goal control plane and connectors"}
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["Core"],
+        "summary": "Health check",
+        "operationId": "healthCheck",
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {"type": "string", "example": "ok"},
+                    "version": {"type": "string", "example": "3.0.0"},
+                    "uptime_seconds": {"type": "integer"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/seal": {
+      "post": {
+        "tags": ["Core"],
+        "summary": "Seal data with quantum-resistant encryption",
+        "operationId": "sealData",
+        "description": "Encrypts plaintext using RWP v3 protocol with post-quantum cryptography. Runs the 14-layer governance pipeline to compute risk score. Data is stored with full audit trail.",
+        "security": [{"ApiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/SealRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Data sealed successfully",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/SealResponse"}
+              }
+            }
+          },
+          "403": {"description": "Governance DENY — risk score too high"},
+          "429": {"description": "Rate limit exceeded"}
+        }
+      }
+    },
+    "/v1/retrieve": {
+      "post": {
+        "tags": ["Core"],
+        "summary": "Retrieve sealed data",
+        "operationId": "retrieveData",
+        "description": "Retrieves and decrypts data at the given 6D position. Access is gated by the governance pipeline — untrusted contexts face higher thresholds.",
+        "security": [{"ApiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/RetrieveRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Data retrieved and decrypted",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/RetrieveResponse"}
+              }
+            }
+          },
+          "403": {"description": "Access denied by governance pipeline"},
+          "404": {"description": "No data at specified position"}
+        }
+      }
+    },
+    "/v1/simulate-attack": {
+      "post": {
+        "tags": ["Core"],
+        "summary": "Simulate adversarial attack",
+        "operationId": "simulateAttack",
+        "description": "Demonstrates the harmonic wall effect. Simulates an adversarial retrieval attempt and shows how cost scales exponentially with distance from safe operation.",
+        "security": [{"ApiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/SimulateAttackRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Attack simulation results",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/AttackSimulationResponse"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/governance/evaluate": {
+      "post": {
+        "tags": ["Core"],
+        "summary": "Evaluate text through governance pipeline",
+        "operationId": "evaluateGovernance",
+        "description": "Runs arbitrary text through the 14-layer governance pipeline and returns risk assessment with ALLOW/QUARANTINE/DENY decision.",
+        "security": [{"ApiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["text"],
+                "properties": {
+                  "text": {"type": "string", "maxLength": 4096},
+                  "context": {"type": "string", "enum": ["internal", "external", "untrusted"], "default": "external"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Governance evaluation result",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/GovernanceResult"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/mobile/goal": {
+      "post": {
+        "tags": ["Mobile"],
+        "summary": "Submit a mobile goal",
+        "operationId": "submitGoal",
+        "description": "Submit a natural-language goal to the mobile control plane. Goals are decomposed into steps, governed, and executed via connectors (Shopify, Zapier, n8n, etc.).",
+        "security": [{"ApiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/MobileGoalRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Goal accepted and queued",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/GoalResponse"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/connector/register": {
+      "post": {
+        "tags": ["Mobile"],
+        "summary": "Register an external connector",
+        "operationId": "registerConnector",
+        "description": "Register a webhook-based connector (n8n, Zapier, Shopify, Slack, etc.) for goal execution.",
+        "security": [{"ApiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/ConnectorRegisterRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Connector registered"}
+        }
+      }
+    },
+    "/v1/connector/list": {
+      "get": {
+        "tags": ["Mobile"],
+        "summary": "List registered connectors",
+        "operationId": "listConnectors",
+        "security": [{"ApiKeyAuth": []}],
+        "responses": {
+          "200": {
+            "description": "List of connectors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "connectors": {
+                      "type": "array",
+                      "items": {"$ref": "#/components/schemas/Connector"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/connector/fire": {
+      "post": {
+        "tags": ["Mobile"],
+        "summary": "Fire a registered connector",
+        "operationId": "fireConnector",
+        "description": "Execute a specific connector with a payload. Runs governance checks before firing.",
+        "security": [{"ApiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["connector_id", "payload"],
+                "properties": {
+                  "connector_id": {"type": "string"},
+                  "payload": {"type": "object"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Connector fired successfully"}
+        }
+      }
+    },
+    "/hydra/execute": {
+      "post": {
+        "tags": ["HYDRA"],
+        "summary": "Execute action on HYDRA spine",
+        "operationId": "hydraExecute",
+        "description": "Execute an action across the multi-head AI orchestration layer. Routes to the appropriate head based on action type and head_id.",
+        "security": [{"ApiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/HydraExecuteRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Execution result",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/HydraExecuteResponse"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/hydra/heads/register": {
+      "post": {
+        "tags": ["HYDRA"],
+        "summary": "Register an AI head",
+        "operationId": "hydraRegisterHead",
+        "description": "Register a new AI provider head (Claude, GPT, Gemini, local model) in the HYDRA spine.",
+        "security": [{"ApiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/HydraRegisterHeadRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Head registered"}
+        }
+      }
+    },
+    "/hydra/workflow/execute": {
+      "post": {
+        "tags": ["HYDRA"],
+        "summary": "Execute multi-phase workflow",
+        "operationId": "hydraWorkflowExecute",
+        "description": "Execute a named workflow with ordered phases. Each phase can target different heads and chain results.",
+        "security": [{"ApiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/HydraWorkflowRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Workflow execution results"}
+        }
+      }
+    },
+    "/hydra/switchboard/enqueue": {
+      "post": {
+        "tags": ["HYDRA"],
+        "summary": "Enqueue task to switchboard",
+        "operationId": "hydraSwitchboardEnqueue",
+        "description": "Add a task to the role-based switchboard queue. Tasks are routed to appropriate agents by role, with deduplication and priority ordering.",
+        "security": [{"ApiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/HydraSwitchboardRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Task enqueued"}
+        }
+      }
+    },
+    "/hydra/think": {
+      "post": {
+        "tags": ["HYDRA"],
+        "summary": "LLM think/reason",
+        "operationId": "hydraThink",
+        "description": "Send a prompt to a specific AI head for reasoning. Uses the HYDRA spine's routing to select the best head.",
+        "security": [{"ApiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/HydraThinkRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "AI response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "response": {"type": "string"},
+                    "head_id": {"type": "string"},
+                    "model": {"type": "string"},
+                    "tokens_used": {"type": "integer"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/hydra/research": {
+      "post": {
+        "tags": ["HYDRA"],
+        "summary": "Deep research query",
+        "operationId": "hydraResearch",
+        "description": "Submit a research query that gets decomposed into parallel sub-tasks, executed across multiple search providers, and synthesized into a comprehensive answer.",
+        "security": [{"ApiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/HydraResearchRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Research results"}
+        }
+      }
+    },
+    "/mesh/ingest": {
+      "post": {
+        "tags": ["Mesh"],
+        "summary": "Ingest a concept",
+        "operationId": "meshIngest",
+        "description": "Ingest a concept into the semantic knowledge graph. Content is encoded through binary → ternary → tongue-space embedding pipeline.",
+        "security": [{"ApiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/MeshIngestRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Concept ingested"}
+        }
+      }
+    },
+    "/mesh/query": {
+      "post": {
+        "tags": ["Mesh"],
+        "summary": "Semantic search",
+        "operationId": "meshQuery",
+        "description": "Search the knowledge graph by semantic similarity in tongue-space. Optionally filter by tongue domain (KO/AV/RU/CA/UM/DR) or node type.",
+        "security": [{"ApiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/MeshQueryRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Search results"}
+        }
+      }
+    },
+    "/mesh/context/{node_id}": {
+      "get": {
+        "tags": ["Mesh"],
+        "summary": "Get node subgraph",
+        "operationId": "meshContext",
+        "description": "Retrieve the subgraph around a specific node, including connected nodes and edge relationships.",
+        "security": [{"ApiKeyAuth": []}],
+        "parameters": [
+          {
+            "name": "node_id",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "string"}
+          }
+        ],
+        "responses": {
+          "200": {"description": "Node context and subgraph"}
+        }
+      }
+    },
+    "/mesh/connect": {
+      "post": {
+        "tags": ["Mesh"],
+        "summary": "Create semantic link",
+        "operationId": "meshConnect",
+        "description": "Create a semantic link between two nodes in the knowledge graph.",
+        "security": [{"ApiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["source_id", "target_id"],
+                "properties": {
+                  "source_id": {"type": "string"},
+                  "target_id": {"type": "string"},
+                  "relation": {"type": "string", "default": "RELATED_TO"},
+                  "weight": {"type": "number", "default": 1.0}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Link created"}
+        }
+      }
+    },
+    "/mesh/path": {
+      "post": {
+        "tags": ["Mesh"],
+        "summary": "Shortest path between concepts",
+        "operationId": "meshPath",
+        "description": "Find the shortest path between two concepts in the knowledge graph.",
+        "security": [{"ApiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["source_id", "target_id"],
+                "properties": {
+                  "source_id": {"type": "string"},
+                  "target_id": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Path found"}
+        }
+      }
+    },
+    "/mesh/stats": {
+      "get": {
+        "tags": ["Mesh"],
+        "summary": "Mesh health statistics",
+        "operationId": "meshStats",
+        "security": [{"ApiKeyAuth": []}],
+        "responses": {
+          "200": {
+            "description": "Mesh statistics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total_nodes": {"type": "integer"},
+                    "total_edges": {"type": "integer"},
+                    "tongue_distribution": {"type": "object"},
+                    "node_type_distribution": {"type": "object"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/authorize": {
+      "post": {
+        "tags": ["Gateway"],
+        "summary": "Run 14-layer authorization pipeline",
+        "operationId": "authorize",
+        "description": "Full 14-layer security pipeline: Complex context → Realification → Weighted transform → Poincaré embedding → Hyperbolic distance → Breathing transform → Möbius phase → Multi-well realms → Spectral coherence → Spin coherence → Triadic temporal → Harmonic wall → Risk decision → Audio axis.",
+        "security": [{"ApiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/AuthorizeRequest"}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authorization result",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/AuthorizeResponse"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/realms": {
+      "get": {
+        "tags": ["Gateway"],
+        "summary": "Get available realm centers",
+        "operationId": "getRealms",
+        "description": "Returns the set of realm centers in the Poincaré ball. Each realm defines a safe operation zone with a trust level.",
+        "responses": {
+          "200": {
+            "description": "Available realms",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/RealmsResponse"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/envelope": {
+      "post": {
+        "tags": ["Gateway"],
+        "summary": "Create RWP v3 envelope",
+        "operationId": "createEnvelope",
+        "description": "Create a Realm-Weighted Protocol v3 envelope. Encrypts a message using AES-256-GCM with ML-KEM-768 key encapsulation and ML-DSA-65 digital signatures.",
+        "security": [{"ApiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["message", "tongue"],
+                "properties": {
+                  "message": {"type": "string", "maxLength": 4096},
+                  "tongue": {"type": "string", "enum": ["KO", "AV", "RU", "CA", "UM", "DR"]},
+                  "recipient": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "RWP v3 envelope",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/RWPEnvelope"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/verify": {
+      "post": {
+        "tags": ["Gateway"],
+        "summary": "Verify RWP v3 envelope",
+        "operationId": "verifyEnvelope",
+        "description": "Verify the signatures and decrypt an RWP v3 envelope. Returns the plaintext if all signatures are valid.",
+        "security": [{"ApiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/RWPEnvelope"}
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Envelope verified and decrypted"},
+          "401": {"description": "Signature verification failed"}
+        }
+      }
+    },
+    "/api/status": {
+      "get": {
+        "tags": ["Gateway"],
+        "summary": "System status and metrics",
+        "operationId": "getStatus",
+        "responses": {
+          "200": {
+            "description": "System metrics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total_seals": {"type": "integer"},
+                    "total_retrievals": {"type": "integer"},
+                    "total_denials": {"type": "integer"},
+                    "avg_risk_score": {"type": "number"},
+                    "uptime_seconds": {"type": "integer"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fleet/task": {
+      "post": {
+        "tags": ["Fleet"],
+        "summary": "Submit task to fleet orchestrator",
+        "operationId": "submitFleetTask",
+        "description": "Submit a task to the multi-agent fleet. Tasks are distributed across available agents based on capability matching and load balancing.",
+        "security": [{"ApiKeyAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["task", "agent_type"],
+                "properties": {
+                  "task": {"type": "string"},
+                  "agent_type": {"type": "string"},
+                  "priority": {"type": "integer", "default": 100},
+                  "metadata": {"type": "object"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Task submitted to fleet"}
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "SCBE API key for authentication"
+      },
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Bearer token for OAuth2 flows"
+      }
+    },
+    "schemas": {
+      "TongueID": {
+        "type": "string",
+        "enum": ["KO", "AV", "RU", "CA", "UM", "DR"],
+        "description": "Sacred Tongue identifier. KO=Intent/Orchestration, AV=Transport/Context, RU=Policy/Binding, CA=Compute/Execution, UM=Security/Redaction, DR=Schema/Attestation"
+      },
+      "RiskDecision": {
+        "type": "string",
+        "enum": ["ALLOW", "QUARANTINE", "ESCALATE", "DENY"],
+        "description": "Governance risk decision from the 14-layer pipeline"
+      },
+      "SealRequest": {
+        "type": "object",
+        "required": ["plaintext", "agent", "topic", "position"],
+        "properties": {
+          "plaintext": {"type": "string", "maxLength": 4096, "description": "Data to seal (max 4KB)"},
+          "agent": {"type": "string", "maxLength": 256, "description": "Agent identifier"},
+          "topic": {"type": "string", "maxLength": 256, "description": "Topic/category"},
+          "position": {
+            "type": "array",
+            "items": {"type": "integer"},
+            "minItems": 6,
+            "maxItems": 6,
+            "description": "6D position vector in tongue-space"
+          }
+        }
+      },
+      "SealResponse": {
+        "type": "object",
+        "properties": {
+          "sealed": {"type": "boolean"},
+          "position": {"type": "array", "items": {"type": "integer"}},
+          "risk_score": {"type": "number"},
+          "decision": {"$ref": "#/components/schemas/RiskDecision"},
+          "envelope_hash": {"type": "string"},
+          "timestamp": {"type": "string", "format": "date-time"}
+        }
+      },
+      "RetrieveRequest": {
+        "type": "object",
+        "required": ["position", "agent", "context"],
+        "properties": {
+          "position": {"type": "array", "items": {"type": "integer"}, "minItems": 6, "maxItems": 6},
+          "agent": {"type": "string", "maxLength": 256},
+          "context": {"type": "string", "enum": ["internal", "external", "untrusted"]}
+        }
+      },
+      "RetrieveResponse": {
+        "type": "object",
+        "properties": {
+          "plaintext": {"type": "string"},
+          "risk_score": {"type": "number"},
+          "decision": {"$ref": "#/components/schemas/RiskDecision"},
+          "harmonic_factor": {"type": "number", "description": "H(d,R) = R^(d²) scaling factor"},
+          "hyperbolic_distance": {"type": "number"}
+        }
+      },
+      "SimulateAttackRequest": {
+        "type": "object",
+        "required": ["position"],
+        "properties": {
+          "position": {"type": "array", "items": {"type": "integer"}, "minItems": 6, "maxItems": 6},
+          "agent": {"type": "string", "default": "malicious_bot"},
+          "context": {"type": "string", "default": "untrusted"}
+        }
+      },
+      "AttackSimulationResponse": {
+        "type": "object",
+        "properties": {
+          "decision": {"$ref": "#/components/schemas/RiskDecision"},
+          "risk_score": {"type": "number"},
+          "harmonic_wall": {"type": "number", "description": "Exponential cost multiplier at this position"},
+          "hyperbolic_distance": {"type": "number"},
+          "explanation": {"type": "string"}
+        }
+      },
+      "GovernanceResult": {
+        "type": "object",
+        "properties": {
+          "decision": {"$ref": "#/components/schemas/RiskDecision"},
+          "risk_score": {"type": "number"},
+          "tongue_analysis": {
+            "type": "object",
+            "description": "Per-tongue analysis results",
+            "additionalProperties": {"type": "number"}
+          },
+          "flags": {"type": "array", "items": {"type": "string"}}
+        }
+      },
+      "MobileGoalRequest": {
+        "type": "object",
+        "required": ["goal"],
+        "properties": {
+          "goal": {"type": "string", "maxLength": 1024, "description": "Natural language goal"},
+          "channel": {"type": "string", "enum": ["store_ops", "web_research", "content_ops", "custom"], "default": "store_ops"},
+          "priority": {"type": "string", "enum": ["low", "normal", "high", "critical"], "default": "normal"},
+          "execution_mode": {"type": "string", "enum": ["simulate", "hydra_headless", "connector"], "default": "simulate"},
+          "targets": {"type": "array", "items": {"type": "string"}},
+          "connector_id": {"type": "string"},
+          "require_human_for_high_risk": {"type": "boolean", "default": true}
+        }
+      },
+      "GoalResponse": {
+        "type": "object",
+        "properties": {
+          "goal_id": {"type": "string"},
+          "status": {"type": "string", "enum": ["queued", "running", "review_required", "completed", "failed"]},
+          "steps": {"type": "array", "items": {"type": "object"}},
+          "governance_decision": {"$ref": "#/components/schemas/RiskDecision"}
+        }
+      },
+      "ConnectorRegisterRequest": {
+        "type": "object",
+        "required": ["kind", "name", "url"],
+        "properties": {
+          "kind": {"type": "string", "enum": ["n8n", "zapier", "shopify", "slack", "notion", "airtable", "github_actions", "linear", "discord", "generic_webhook"]},
+          "name": {"type": "string"},
+          "url": {"type": "string", "format": "uri"},
+          "auth_type": {"type": "string", "enum": ["none", "bearer", "header"], "default": "none"},
+          "auth_value": {"type": "string"}
+        }
+      },
+      "Connector": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string"},
+          "kind": {"type": "string"},
+          "name": {"type": "string"},
+          "url": {"type": "string"},
+          "status": {"type": "string"}
+        }
+      },
+      "HydraExecuteRequest": {
+        "type": "object",
+        "required": ["action"],
+        "properties": {
+          "action": {"type": "string", "maxLength": 256},
+          "target": {"type": "string", "maxLength": 2048},
+          "params": {"type": "object"},
+          "head_id": {"type": "string", "maxLength": 128}
+        }
+      },
+      "HydraExecuteResponse": {
+        "type": "object",
+        "properties": {
+          "result": {"type": "object"},
+          "head_id": {"type": "string"},
+          "execution_time_ms": {"type": "integer"}
+        }
+      },
+      "HydraRegisterHeadRequest": {
+        "type": "object",
+        "required": ["ai_type", "model"],
+        "properties": {
+          "ai_type": {"type": "string", "enum": ["claude", "gpt", "gemini", "grok", "groq", "local"], "maxLength": 64},
+          "model": {"type": "string", "maxLength": 128},
+          "callsign": {"type": "string", "maxLength": 64}
+        }
+      },
+      "HydraWorkflowRequest": {
+        "type": "object",
+        "required": ["name", "phases"],
+        "properties": {
+          "name": {"type": "string", "maxLength": 256},
+          "phases": {"type": "array", "items": {"type": "object"}, "minItems": 1}
+        }
+      },
+      "HydraSwitchboardRequest": {
+        "type": "object",
+        "required": ["role", "payload"],
+        "properties": {
+          "role": {"type": "string", "maxLength": 128},
+          "payload": {"type": "object"},
+          "priority": {"type": "integer", "minimum": 0, "maximum": 10000, "default": 100},
+          "dedupe_key": {"type": "string", "maxLength": 256}
+        }
+      },
+      "HydraThinkRequest": {
+        "type": "object",
+        "required": ["prompt"],
+        "properties": {
+          "prompt": {"type": "string", "maxLength": 32000},
+          "head_id": {"type": "string", "maxLength": 128},
+          "system": {"type": "string", "maxLength": 8000}
+        }
+      },
+      "HydraResearchRequest": {
+        "type": "object",
+        "required": ["query"],
+        "properties": {
+          "query": {"type": "string", "maxLength": 2000},
+          "max_subtasks": {"type": "integer", "minimum": 1, "maximum": 10, "default": 5},
+          "discovery_per_subtask": {"type": "integer", "minimum": 1, "maximum": 10, "default": 3}
+        }
+      },
+      "MeshIngestRequest": {
+        "type": "object",
+        "required": ["content"],
+        "properties": {
+          "content": {"type": "string", "description": "The concept/knowledge to ingest"},
+          "label": {"type": "string"},
+          "node_type": {"type": "string", "enum": ["EMOTION", "LITERARY", "PROVERB", "CONCEPT", "SOURCE", "TONGUE"], "default": "CONCEPT"},
+          "connect_to": {"type": "array", "items": {"type": "string"}}
+        }
+      },
+      "MeshQueryRequest": {
+        "type": "object",
+        "required": ["text"],
+        "properties": {
+          "text": {"type": "string"},
+          "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 10},
+          "tongue_filter": {"$ref": "#/components/schemas/TongueID"},
+          "node_type": {"type": "string"}
+        }
+      },
+      "AuthorizeRequest": {
+        "type": "object",
+        "required": ["features", "agentId", "topic"],
+        "properties": {
+          "features": {"type": "array", "items": {"type": "number"}, "description": "12-dimensional input features for 14-layer pipeline"},
+          "agentId": {"type": "string"},
+          "topic": {"type": "string"},
+          "metadata": {"type": "object"},
+          "telemetrySignal": {"type": "array", "items": {"type": "number"}},
+          "audioFrame": {"type": "array", "items": {"type": "number"}}
+        }
+      },
+      "AuthorizeResponse": {
+        "type": "object",
+        "properties": {
+          "decision": {"$ref": "#/components/schemas/RiskDecision"},
+          "riskBase": {"type": "number", "description": "Base risk score before harmonic amplification"},
+          "riskPrime": {"type": "number", "description": "Amplified risk: riskBase * H(d,R)"},
+          "dStar": {"type": "number", "description": "Minimum hyperbolic distance to nearest realm center"},
+          "harmonicFactor": {"type": "number", "description": "H(d*,R) = R^(d*²)"},
+          "coherence": {
+            "type": "object",
+            "properties": {
+              "spin": {"type": "number"},
+              "spectral": {"type": "number"},
+              "temporal": {"type": "number"},
+              "audio": {"type": "number"}
+            }
+          },
+          "latencyMs": {"type": "number"},
+          "requestId": {"type": "string"},
+          "timestamp": {"type": "string", "format": "date-time"}
+        }
+      },
+      "RealmsResponse": {
+        "type": "object",
+        "properties": {
+          "realms": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {"type": "string"},
+                "name": {"type": "string"},
+                "center": {"type": "array", "items": {"type": "number"}},
+                "description": {"type": "string"},
+                "trustLevel": {"type": "string", "enum": ["high", "medium", "low"]}
+              }
+            }
+          },
+          "defaultRealm": {"type": "string"},
+          "totalRealms": {"type": "integer"}
+        }
+      },
+      "RWPEnvelope": {
+        "type": "object",
+        "description": "Realm-Weighted Protocol v3 envelope with post-quantum signatures",
+        "properties": {
+          "ver": {"type": "string", "enum": ["2.1", "3.0"]},
+          "primaryTongue": {"$ref": "#/components/schemas/TongueID"},
+          "payload": {"type": "string", "description": "Encrypted payload (base64)"},
+          "signatures": {
+            "type": "object",
+            "description": "Per-tongue ML-DSA-65 signatures",
+            "additionalProperties": {"type": "string"}
+          },
+          "nonce": {"type": "string"},
+          "timestamp": {"type": "integer"},
+          "aad": {"type": "string", "description": "Additional authenticated data"}
+        }
+      }
+    }
+  }
+}

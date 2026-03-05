@@ -1,0 +1,98 @@
+{
+  "tenreary_type": "mcp.tenreary.v1",
+  "name": "dual-browser-monetization-assistant",
+  "metadata": {
+    "goal": "Run browser + GitHub + automation steps in a single governed workflow."
+  },
+  "dual_browser": {
+    "enabled": true,
+    "primary_engine": "playwright",
+    "secondary_engine": "cdp",
+    "max_tabs": 3
+  },
+  "steps": [
+    {
+      "id": "set_owner",
+      "type": "context.set",
+      "params": {
+        "key": "github.owner",
+        "value": "issdandavis"
+      }
+    },
+    {
+      "id": "set_repo",
+      "type": "context.set",
+      "params": {
+        "key": "github.repo",
+        "value": "SCBE-AETHERMOORE"
+      }
+    },
+    {
+      "id": "primary_nav",
+      "type": "browser.navigate",
+      "params": {
+        "role": "primary",
+        "tab": "main",
+        "url": "https://github.com/{{github.owner}}/{{github.repo}}"
+      }
+    },
+    {
+      "id": "secondary_nav",
+      "type": "browser.navigate",
+      "params": {
+        "role": "secondary",
+        "tab": "issues",
+        "url": "https://github.com/{{github.owner}}/{{github.repo}}/issues"
+      }
+    },
+    {
+      "id": "repo_readme",
+      "type": "github.rest",
+      "params": {
+        "method": "GET",
+        "path": "/repos/{{github.owner}}/{{github.repo}}/readme"
+      }
+    },
+    {
+      "id": "repo_query",
+      "type": "github.graphql",
+      "if_env": [
+        "GITHUB_TOKEN"
+      ],
+      "params": {
+        "query": "query($owner:String!, $name:String!) { repository(owner:$owner, name:$name) { name stargazerCount forkCount openIssues: issues(states: OPEN) { totalCount } } }",
+        "variables": {
+          "owner": "{{github.owner}}",
+          "name": "{{github.repo}}"
+        }
+      }
+    },
+    {
+      "id": "analysis",
+      "type": "analysis.content",
+      "params": {
+        "backend": "rule",
+        "text": "Shopify + Stripe + lead conversion + automation + n8n + zapier + checkout funnel",
+        "prompt": "Extract monetization priorities."
+      }
+    },
+    {
+      "id": "emit_connectors",
+      "type": "automation.emit",
+      "params": {
+        "channels": [
+          "n8n",
+          "zapier"
+        ],
+        "action": "trigger",
+        "payload": {
+          "event": "tenreary_monetization_ping",
+          "repo": "{{github.repo}}",
+          "owner": "{{github.owner}}",
+          "analysis": "{{step.analysis.data}}"
+        }
+      }
+    }
+  ]
+}
+

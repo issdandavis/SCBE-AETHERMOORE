@@ -1,0 +1,25 @@
+{
+  "repo_root": "C:\\Users\\issda\\SCBE-AETHERMOORE",
+  "output_dir": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\funnel_cross_model",
+  "files_scanned": 25,
+  "rows_scanned": 207,
+  "sft_pairs": 120,
+  "dpo_triples": 0,
+  "by_source": {
+    "gacha_sessions": 5,
+    "game_design_sessions": 25,
+    "game_sessions": 90
+  },
+  "paths": {
+    "sft": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\funnel_cross_model\\sft_pairs.jsonl",
+    "chat": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\funnel_cross_model\\chat_format.jsonl",
+    "stats": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\funnel_cross_model\\funnel_stats.json",
+    "merged_all": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\funnel_cross_model\\merged_all.jsonl"
+  },
+  "hf": {
+    "status": "skipped"
+  },
+  "colab": {
+    "status": "skipped"
+  }
+}

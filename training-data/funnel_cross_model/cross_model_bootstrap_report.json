@@ -1,0 +1,115 @@
+{
+  "started_utc": "2026-03-04T22:37:49.754830+00:00",
+  "repo_root": "C:\\Users\\issda\\SCBE-AETHERMOORE",
+  "output_dir": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\funnel_cross_model",
+  "config": {
+    "hf_repo": "issdandavis/scbe-aethermoore-training-data",
+    "run_trainer": "dry-run",
+    "head": "KO",
+    "push_hf": false,
+    "trigger_colab": false,
+    "push_model": false,
+    "audit_threshold": 0.78,
+    "allow_quarantine": false
+  },
+  "steps": {
+    "build_funnel": {
+      "command": [
+        "C:\\Python314\\python.exe",
+        "scripts/build_hydra_training_funnel.py",
+        "--repo-root",
+        "C:\\Users\\issda\\SCBE-AETHERMOORE",
+        "--output-dir",
+        "training-data\\funnel_cross_model",
+        "--hf-repo",
+        "issdandavis/scbe-aethermoore-training-data",
+        "--tongue",
+        "KO",
+        "--include-glob",
+        "training-data/game_sessions/**/*.jsonl",
+        "--include-glob",
+        "training-data/game_design_sessions/**/*.jsonl",
+        "--include-glob",
+        "training-data/gacha_sessions/**/*.jsonl",
+        "--include-glob",
+        "training-data/lore_sessions/**/*.jsonl",
+        "--include-glob",
+        "training-data/npc_roundtable_sessions/**/*.jsonl",
+        "--include-glob",
+        "training-data/sidekick/**/*.jsonl",
+        "--include-glob",
+        "training-data/hf-digimon-egg/**/*.jsonl",
+        "--include-glob",
+        "training-data/space_commerce_sessions/**/*.jsonl",
+        "--include-glob",
+        "training-data/dm_sessions/**/*.jsonl",
+        "--include-glob",
+        "training-data/graphics_feedback/**/*.jsonl",
+        "--exclude-glob",
+        "training-data/funnel/**/*.jsonl",
+        "--exclude-glob",
+        "training-data/funnel_cross_model/**/*.jsonl",
+        "--max-records",
+        "120"
+      ],
+      "returncode": 0,
+      "stdout_preview": "{\n  \"repo_root\": \"C:\\\\Users\\\\issda\\\\SCBE-AETHERMOORE\",\n  \"output_dir\": \"C:\\\\Users\\\\issda\\\\SCBE-AETHERMOORE\\\\training-data\\\\funnel_cross_model\",\n  \"files_scanned\": 25,\n  \"rows_scanned\": 207,\n  \"sft_pairs\": 120,\n  \"dpo_triples\": 0,\n  \"by_source\": {\n    \"gacha_sessions\": 5,\n    \"game_design_sessions\": 25,\n    \"game_sessions\": 90\n  },\n  \"paths\": {\n    \"sft\": \"C:\\\\Users\\\\issda\\\\SCBE-AETHERMOORE\\\\training-data\\\\funnel_cross_model\\\\sft_pairs.jsonl\",\n    \"chat\": \"C:\\\\Users\\\\issda\\\\SCBE-AETHERMOORE\\\\training-data\\\\funnel_cross_model\\\\chat_format.jsonl\",\n    \"stats\": \"C:\\\\Users\\\\issda\\\\SCBE-AETHERMOORE\\\\training-data\\\\funnel_cross_model\\\\funnel_stats.json\",\n    \"merged_all\": \"C:\\\\Users\\\\issda\\\\SCBE-AETHERMOORE\\\\training-data\\\\funnel_cross_model\\\\merged_all.jsonl\"\n  },\n  \"hf\": {\n    \"status\": \"skipped\"\n  },\n  \"colab\": {\n    \"status\": \"skipped\"\n  },\n  \"summary_path\": \"C:\\\\Users\\\\issda\\\\SCBE-AETHERMOORE\\\\training-data\\\\funnel_cross_model\\\\build_summary.json\"\n}\n",
+      "stderr_preview": ""
+    },
+    "funnel_summary": {
+      "repo_root": "C:\\Users\\issda\\SCBE-AETHERMOORE",
+      "output_dir": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\funnel_cross_model",
+      "files_scanned": 25,
+      "rows_scanned": 207,
+      "sft_pairs": 120,
+      "dpo_triples": 0,
+      "by_source": {
+        "gacha_sessions": 5,
+        "game_design_sessions": 25,
+        "game_sessions": 90
+      },
+      "paths": {
+        "sft": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\funnel_cross_model\\sft_pairs.jsonl",
+        "chat": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\funnel_cross_model\\chat_format.jsonl",
+        "stats": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\funnel_cross_model\\funnel_stats.json",
+        "merged_all": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\funnel_cross_model\\merged_all.jsonl"
+      },
+      "hf": {
+        "status": "skipped"
+      },
+      "colab": {
+        "status": "skipped"
+      }
+    },
+    "audit": {
+      "command": [
+        "C:\\Python314\\python.exe",
+        "scripts/training_auditor.py",
+        "--jsonl",
+        "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\funnel_cross_model\\merged_all.jsonl",
+        "--threshold",
+        "0.78",
+        "--out",
+        "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\funnel_cross_model\\merged_all.audit.json"
+      ],
+      "returncode": 0,
+      "status": "ALLOW",
+      "flagged_count": 0,
+      "flagged_ratio": 0.0,
+      "hashchain_root": "decacae5407e955d92314a44fc5a4ef6f8f28c7e448cb26f1a7f35f01ef12662",
+      "report_path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\funnel_cross_model\\merged_all.audit.json"
+    },
+    "trainer": {
+      "command": [
+        "C:\\Python314\\python.exe",
+        "training/vertex_hydra_trainer.py",
+        "--dry-run"
+      ],
+      "returncode": 0,
+      "stdout_preview": "\n============================================================\n  HYDRA Multi-Model Trainer \u2014 DRY RUN\n============================================================\n\n  Project:  gen-lang-client-0103521392\n  Region:   us-central1\n  HF org:   issdandavis\n\n  Tongue   Role       Model                                          Size   Data\n  -------- ---------- --------------------------------------------- ----- ------\n  KO       scout      TinyLlama/TinyLlama-1.1B-Chat-v1.0             1.1G  8963 [PASS]\n  AV       vision     vikhyatk/moondream2                            1.6G   160 [PASS]\n  RU       reader     microsoft/phi-2                                2.7G  1332 [PASS]\n  CA       clicker    Qwen/Qwen2.5-1.5B-Instruct                     1.5G  7354 [PASS]\n  UM       typer      HuggingFaceTB/SmolLM-1.7B-Instruct             1.7G   625 [PASS]\n  DR       judge      TinyLlama/TinyLlama-1.1B-Chat-v1.0             1.1G  1285 [PASS]\n\n  Total training pairs: 19719\n  Total model size:     9.7 GB (unquantized)\n  QLoRA 4-bit:          ~2.4 GB VRAM needed per head\n\n  No GPU detected \u2014 use Colab or Vertex AI for training\n\n  Dry run complete. Use --head <TONGUE> to train.\n\n",
+      "stderr_preview": ""
+    }
+  },
+  "status": "ok",
+  "finished_utc": "2026-03-04T22:38:26.955712+00:00"
+}

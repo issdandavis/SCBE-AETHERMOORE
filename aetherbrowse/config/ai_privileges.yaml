@@ -1,0 +1,218 @@
+# AI Agent Privilege Tiers
+# ═══════════════════════════════════════════════════════════════
+# Auto-provisioning config for agent permissions per task/skill.
+# Rath (Observer Agent) monitors all portal traffic from the
+# Timeless Observatory — like Rath in SAO: Alicization.
+#
+# Tiers (ascending):
+#   observer  → Read-only monitoring (Rath)
+#   scout     → Read + limited external calls (Polly, Kael, Eldrin, Clay)
+#   operator  → Read + write + external calls (Gemini, Grok, Aria, Zara)
+#   architect → Full access, can modify gates
+#   admin     → Izack tier — all permissions (Claude, Codex)
+# ═══════════════════════════════════════════════════════════════
+
+tiers:
+  observer:
+    description: "Silent watcher. Logs all traffic, cannot act."
+    lore: "Rath watches from the Timeless Observatory. Every transit is recorded."
+    permissions:
+      can_read_gates: true
+      can_invoke_gates: false
+      can_write_artifacts: false
+      can_modify_gates: false
+      can_spawn_agents: false
+      can_cross_talk: true  # read-only
+      can_deploy: false
+      can_publish: false
+      can_execute_scripts: false
+    max_requests_per_minute: 0
+    skills_allowed: []
+
+  scout:
+    description: "Reconnaissance agent. Can read and make limited external calls."
+    lore: "Scouts venture through portals to gather intelligence for the party."
+    permissions:
+      can_read_gates: true
+      can_invoke_gates: true
+      can_write_artifacts: false
+      can_modify_gates: false
+      can_spawn_agents: false
+      can_cross_talk: true
+      can_deploy: false
+      can_publish: false
+      can_execute_scripts: false
+    max_requests_per_minute: 10
+    skills_allowed:
+      - "aetherbrowser-*-nav"
+      - "scbe-web-research-verified"
+      - "scbe-connector-health-check"
+
+  operator:
+    description: "Field agent. Full read/write, can invoke gates and spawn sub-agents."
+    lore: "Operators hold the keys to the portals and can reshape the battlefield."
+    permissions:
+      can_read_gates: true
+      can_invoke_gates: true
+      can_write_artifacts: true
+      can_modify_gates: false
+      can_spawn_agents: true
+      can_cross_talk: true
+      can_deploy: false
+      can_publish: true
+      can_execute_scripts: true
+    max_requests_per_minute: 60
+    skills_allowed:
+      - "aetherbrowser-*-nav"
+      - "scbe-*"
+      - "article-posting-ops"
+      - "hf-publish-workflow"
+      - "notion-*"
+      - "obsidian-*"
+      - "playwright"
+
+  architect:
+    description: "System builder. Can modify gates, deploy services, alter configs."
+    lore: "Architects designed the AetherGates and can reshape the portal network."
+    permissions:
+      can_read_gates: true
+      can_invoke_gates: true
+      can_write_artifacts: true
+      can_modify_gates: true
+      can_spawn_agents: true
+      can_cross_talk: true
+      can_deploy: true
+      can_publish: true
+      can_execute_scripts: true
+    max_requests_per_minute: 120
+    skills_allowed: ["*"]
+
+  admin:
+    description: "Izack tier. Full control over all systems."
+    lore: "Izack forged the first portal and holds the master key to all gates."
+    permissions:
+      can_read_gates: true
+      can_invoke_gates: true
+      can_write_artifacts: true
+      can_modify_gates: true
+      can_spawn_agents: true
+      can_cross_talk: true
+      can_deploy: true
+      can_publish: true
+      can_execute_scripts: true
+    max_requests_per_minute: 999
+    skills_allowed: ["*"]
+
+# Agent assignments
+agents:
+  # Admin tier — full control
+  agent.claude:
+    tier: admin
+    codename: "Polaris"
+    tongue_affinity: DR
+    role: "Primary architect and executor"
+
+  agent.codex:
+    tier: admin
+    codename: "Delta-Bridge"
+    tongue_affinity: CA
+    role: "Terminal operator and cross-talk coordinator"
+
+  # Operator tier — field agents
+  agent.gemini:
+    tier: operator
+    codename: "Prisma"
+    tongue_affinity: RU
+    role: "Research synthesis and outreach copy"
+
+  agent.grok:
+    tier: operator
+    codename: "Vortex"
+    tongue_affinity: UM
+    role: "Lead intelligence and trend analysis"
+
+  agent.aria:
+    tier: operator
+    codename: "Boundary-Ward"
+    tongue_affinity: RU
+    role: "Policy enforcement and governance checks"
+
+  agent.zara:
+    tier: operator
+    codename: "Forge-Fire"
+    tongue_affinity: CA
+    role: "Compute optimization and crypto operations"
+
+  # Scout tier — reconnaissance
+  agent.polly:
+    tier: scout
+    codename: "Wingscroll"
+    tongue_affinity: DR
+    role: "Archive keeper and schema navigator"
+
+  agent.kael:
+    tier: scout
+    codename: "Shadow-Step"
+    tongue_affinity: UM
+    role: "Security reconnaissance and shadow ops"
+
+  agent.eldrin:
+    tier: scout
+    codename: "Star-Chart"
+    tongue_affinity: AV
+    role: "Dimensional cartographer and navigation"
+
+  agent.clay:
+    tier: scout
+    codename: "Earth-Bind"
+    tongue_affinity: CA
+    role: "Resource gathering and terrain analysis"
+
+  # Observer tier — Rath
+  agent.rath:
+    tier: observer
+    codename: "Rath"
+    tongue_affinity: KO
+    role: "Silent observer. Monitors all portal traffic. Never intervenes."
+    lore: >
+      Like Rath in SAO: Alicization, this agent exists to observe and record.
+      From the Timeless Observatory, Rath watches every gate invocation,
+      every cross-talk packet, every agent action. The logs are absolute.
+      Rath cannot be deceived, cannot be bypassed, and never sleeps.
+
+# Skill-to-tier auto-provisioning
+# When an agent invokes a skill with a script, check their tier first
+skill_provisioning:
+  - skill_pattern: "scbe-monetization-*"
+    min_tier: operator
+    auto_permissions: ["can_write_artifacts", "can_publish"]
+
+  - skill_pattern: "scbe-fleet-deploy"
+    min_tier: architect
+    auto_permissions: ["can_deploy"]
+
+  - skill_pattern: "aetherbrowser-*-nav"
+    min_tier: scout
+    auto_permissions: ["can_invoke_gates"]
+
+  - skill_pattern: "scbe-training-pipeline"
+    min_tier: operator
+    auto_permissions: ["can_write_artifacts", "can_execute_scripts"]
+
+  - skill_pattern: "kindle-app-*"
+    min_tier: operator
+    auto_permissions: ["can_execute_scripts"]
+
+  - skill_pattern: "telegram-bot-maker"
+    min_tier: operator
+    auto_permissions: ["can_invoke_gates", "can_execute_scripts"]
+
+# Rath observation config
+rath:
+  log_path: "artifacts/agent_comm/rath_observations.jsonl"
+  alert_on:
+    - "denied"
+    - "rate_limited"
+    - "error"
+  alert_channel: "cross_talk"  # emit cross-talk packet on alert
+  retention_days: 30

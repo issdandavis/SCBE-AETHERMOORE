@@ -1,0 +1,124 @@
+{
+  "name": "SCBE AI2AI Research Debate Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "scbe-ai2ai-research-debate",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook_ai2ai_research",
+      "name": "Webhook: AI2AI Research Debate",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-880, 240],
+      "webhookId": "scbe-ai2ai-research-debate-001"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.SCBE_BRIDGE_URL || 'http://127.0.0.1:8001') + '/v1/research/web' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-API-Key", "value": "={{ $env.SCBE_API_KEY || 'scbe-dev-key' }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ query: $json.body?.query || $json.body?.prompt || 'AI monetization strategies for autonomous browser agents', max_results: Number($json.body?.max_results ?? 8), include_duckduckgo: $json.body?.include_duckduckgo ?? true, include_google_news: $json.body?.include_google_news ?? true, include_arxiv: $json.body?.include_arxiv ?? true, fetch_snippets: $json.body?.fetch_snippets ?? true }) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "run_web_research",
+      "name": "Run Web Research",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-500, 240]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.SCBE_BRIDGE_URL || 'http://127.0.0.1:8001') + '/v1/workflow/ai2ai/debate' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-API-Key", "value": "={{ $env.SCBE_API_KEY || 'scbe-dev-key' }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ prompt: (($node['Webhook: AI2AI Research Debate'].json.body?.prompt || $node['Webhook: AI2AI Research Debate'].json.body?.query || 'Debate the best implementation plan from research evidence.') + '\\n\\nEvidence Pack:\\n' + (($json.evidence_pack || []).map((line, idx) => `${idx + 1}. ${line}`).join('\\n'))), max_models: Number($node['Webhook: AI2AI Research Debate'].json.body?.max_models ?? 4), create_issue: $node['Webhook: AI2AI Research Debate'].json.body?.create_issue ?? true, labels: $node['Webhook: AI2AI Research Debate'].json.body?.labels || ['ai2ai', 'workflow', 'research'], assignees: $node['Webhook: AI2AI Research Debate'].json.body?.assignees || [], min_avg_governance: Number($node['Webhook: AI2AI Research Debate'].json.body?.min_avg_governance ?? 0.64), min_any_governance: Number($node['Webhook: AI2AI Research Debate'].json.body?.min_any_governance ?? 0.45), require_tests_hint: $node['Webhook: AI2AI Research Debate'].json.body?.require_tests_hint ?? true }) }}",
+        "options": {
+          "timeout": 150000
+        }
+      },
+      "id": "run_ai2ai_debate",
+      "name": "Run AI2AI Debate Workflow",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-110, 240]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, research: $node['Run Web Research'].json, debate: $json, workflow_issue: $json.issue || null, review_gate: $json.review_gate || null, production_decision: $json.production_decision || 'hold', production_route: $json.production_route || 'review_queue' }) }}"
+      },
+      "id": "respond_result",
+      "name": "Respond: Research + Debate",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [240, 240]
+    }
+  ],
+  "connections": {
+    "Webhook: AI2AI Research Debate": {
+      "main": [
+        [
+          {
+            "node": "Run Web Research",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Web Research": {
+      "main": [
+        [
+          {
+            "node": "Run AI2AI Debate Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run AI2AI Debate Workflow": {
+      "main": [
+        [
+          {
+            "node": "Respond: Research + Debate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true
+  },
+  "tags": [
+    { "name": "scbe" },
+    { "name": "ai2ai" },
+    { "name": "workflow" },
+    { "name": "research" }
+  ],
+  "active": false
+}
