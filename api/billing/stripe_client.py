@@ -5,12 +5,21 @@ Handles checkout sessions, customer portal, and subscription management.
 """
 
 import os
-from typing import Optional
+from typing import Optional, Dict, Any
 
-import stripe
+try:
+    import stripe
+except ImportError:  # pragma: no cover - depends on environment
+    stripe = None
 
-# Configure Stripe
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "")
+def _require_stripe() -> None:
+    if stripe is None:
+        raise RuntimeError("stripe package is not installed. Run: pip install stripe")
+
+
+# Configure Stripe when dependency is available
+if stripe is not None:
+    stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 
 # URLs for redirects
@@ -30,18 +39,20 @@ class StripeClient:
         customer_id: Optional[str] = None,
         success_url: Optional[str] = None,
         cancel_url: Optional[str] = None,
+        metadata: Optional[Dict[str, str]] = None,
     ) -> dict:
         """
         Create a Stripe Checkout session for subscription signup.
 
         Returns dict with session_id and checkout_url.
         """
+        _require_stripe()
         session_params = {
             "mode": "subscription",
             "line_items": [{"price": price_id, "quantity": 1}],
             "success_url": success_url or f"{SUCCESS_URL}?session_id={{CHECKOUT_SESSION_ID}}",
             "cancel_url": cancel_url or CANCEL_URL,
-            "metadata": {"tier": tier},
+            "metadata": {"tier": tier, **(metadata or {})},
         }
 
         if customer_id:
@@ -67,6 +78,7 @@ class StripeClient:
 
         Returns dict with portal_url.
         """
+        _require_stripe()
         session = stripe.billing_portal.Session.create(
             customer=stripe_customer_id,
             return_url=return_url or PORTAL_RETURN_URL,
@@ -79,6 +91,7 @@ class StripeClient:
     @staticmethod
     def get_subscription(subscription_id: str) -> dict:
         """Get subscription details from Stripe."""
+        _require_stripe()
         sub = stripe.Subscription.retrieve(subscription_id)
         return {
             "id": sub.id,
@@ -92,6 +105,7 @@ class StripeClient:
     @staticmethod
     def cancel_subscription(subscription_id: str, at_period_end: bool = True) -> dict:
         """Cancel a subscription (optionally at period end)."""
+        _require_stripe()
         if at_period_end:
             sub = stripe.Subscription.modify(
                 subscription_id,
@@ -109,6 +123,7 @@ class StripeClient:
     @staticmethod
     def reactivate_subscription(subscription_id: str) -> dict:
         """Reactivate a subscription that was set to cancel at period end."""
+        _require_stripe()
         sub = stripe.Subscription.modify(
             subscription_id,
             cancel_at_period_end=False,
@@ -123,6 +138,7 @@ class StripeClient:
     @staticmethod
     def update_subscription_price(subscription_id: str, new_price_id: str) -> dict:
         """Change the subscription to a new price (upgrade/downgrade)."""
+        _require_stripe()
         sub = stripe.Subscription.retrieve(subscription_id)
 
         # Update the subscription item with new price
@@ -149,6 +165,7 @@ class StripeClient:
     @staticmethod
     def get_customer(customer_id: str) -> dict:
         """Get customer details from Stripe."""
+        _require_stripe()
         customer = stripe.Customer.retrieve(customer_id)
         return {
             "id": customer.id,
@@ -159,6 +176,7 @@ class StripeClient:
     @staticmethod
     def list_invoices(customer_id: str, limit: int = 10) -> list:
         """List invoices for a customer."""
+        _require_stripe()
         invoices = stripe.Invoice.list(customer=customer_id, limit=limit)
         return [
             {
@@ -175,8 +193,9 @@ class StripeClient:
         ]
 
     @staticmethod
-    def construct_webhook_event(payload: bytes, sig_header: str) -> stripe.Event:
+    def construct_webhook_event(payload: bytes, sig_header: str) -> Any:
         """Construct and verify a Stripe webhook event."""
+        _require_stripe()
         return stripe.Webhook.construct_event(
             payload,
             sig_header,
