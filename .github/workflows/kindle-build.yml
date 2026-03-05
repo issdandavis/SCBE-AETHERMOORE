@@ -1,0 +1,67 @@
+name: Build Kindle APK
+
+on:
+  push:
+    paths:
+      - 'kindle-app/**'
+      - 'src/aethercode/**'
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        working-directory: kindle-app
+        run: npm install
+
+      - name: Copy PWA assets
+        working-directory: kindle-app
+        run: node scripts/copy-pwa-assets.js
+
+      - name: Initialize Capacitor (if needed)
+        working-directory: kindle-app
+        run: |
+          if [ ! -d "android" ]; then
+            npx cap add android
+          fi
+          npx cap sync android
+
+      - name: Build debug APK
+        working-directory: kindle-app/android
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aethercode-kindle-debug
+          path: kindle-app/android/app/build/outputs/apk/debug/*.apk
+          retention-days: 30
+
+      - name: Copy APK to releases
+        run: |
+          mkdir -p artifacts/releases/kindle
+          cp kindle-app/android/app/build/outputs/apk/debug/*.apk \
+             artifacts/releases/kindle/AetherCode-Kindle-debug.apk
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aethercode-kindle-release
+          path: artifacts/releases/kindle/*.apk

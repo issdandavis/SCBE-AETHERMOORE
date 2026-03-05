@@ -1,0 +1,3 @@
+company,contact_name,role,channel,profile_url,pain_point,offer_fit,priority,next_step,status,owner
+Example Store Ops,Jane Doe,Operations Manager,LinkedIn,https://linkedin.com/in/example,Manual Shopify catalog updates,Browser Automation Setup Sprint,high,Send audit offer,email_sent,agent.grok
+Example Agency,John Smith,Founder,Email,mailto:john@example.com,Client workflow handoff bottlenecks,AI Workflow Buildout,high,Book discovery call,prospecting,agent.grok

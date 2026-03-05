@@ -1,0 +1,53 @@
+{
+  "agents": {
+    "codex": {
+      "agent_id": "codex",
+      "api_key_env": "OPENAI_API_KEY",
+      "capabilities": [],
+      "created_at": "2026-03-03T04:47:28Z",
+      "description": "General-purpose coding and architecture agent using OpenAI Chat Completions API.",
+      "display_name": "Codex",
+      "enabled": true,
+      "model": "gpt-4o-mini",
+      "provider": "openai",
+      "updated_at": "2026-03-03T04:47:28Z"
+    },
+    "gemini-m4": {
+      "agent_id": "gemini-m4",
+      "api_key_env": "GOOGLE_API_KEY",
+      "capabilities": [],
+      "created_at": "2026-03-03T04:49:32Z",
+      "description": "M4 cost-routed Gemini agent",
+      "display_name": "Gemini M4",
+      "enabled": true,
+      "model": "gemini-2.5-flash",
+      "notebook_url": "https://notebooklm.google.com/notebook/bf1e9a1b-b49c-4343-8f0e-8494546e4f24",
+      "provider": "gemini",
+      "updated_at": "2026-03-03T04:49:32Z"
+    },
+    "gemini-main": {
+      "agent_id": "gemini-main",
+      "api_key_env": "GOOGLE_API_KEY",
+      "capabilities": [],
+      "created_at": "2026-03-03T04:47:28Z",
+      "description": "Google AI Studio connector for SCBE agent routing.",
+      "display_name": "Gemini",
+      "enabled": true,
+      "model": "gemini-2.5-flash",
+      "provider": "gemini",
+      "updated_at": "2026-03-03T04:47:28Z"
+    },
+    "notebooklm-main": {
+      "agent_id": "notebooklm-main",
+      "capabilities": [],
+      "created_at": "2026-03-03T04:47:28Z",
+      "description": "Research and reflection assistant through NotebookLM.",
+      "display_name": "NotebookLM",
+      "enabled": true,
+      "notebook_url": "https://notebooklm.google.com/notebook/bf1e9a1b-b49c-4343-8f0e-8494546e4f24",
+      "provider": "notebooklm",
+      "updated_at": "2026-03-03T04:47:28Z"
+    }
+  },
+  "version": "1.0.0"
+}
