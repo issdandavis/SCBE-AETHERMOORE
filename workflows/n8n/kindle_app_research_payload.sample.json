@@ -1,0 +1,16 @@
+{
+  "query": "Kindle Fire app packaging with Capacitor, APK sideload over ADB, and Amazon Appstore submission checklist",
+  "prompt": "Debate the best implementation and release plan for shipping AetherCode to Kindle Fire tablets with fast iteration and low risk. Include build, sideload testing, Appstore submission, and UI constraints.",
+  "max_results": 10,
+  "include_duckduckgo": true,
+  "include_google_news": true,
+  "include_arxiv": false,
+  "fetch_snippets": true,
+  "max_models": 4,
+  "create_issue": true,
+  "labels": ["ai2ai", "workflow", "research", "kindle", "android"],
+  "assignees": [],
+  "min_avg_governance": 0.64,
+  "min_any_governance": 0.45,
+  "require_tests_hint": true
+}

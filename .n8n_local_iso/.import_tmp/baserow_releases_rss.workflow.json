@@ -1,0 +1,374 @@
+{
+    "name":  "Baserow Releases RSS Feed",
+    "nodes":  [
+                  {
+                      "id":  "manual_trigger_exec",
+                      "name":  "On clicking \u0027execute\u0027",
+                      "type":  "n8n-nodes-base.manualTrigger",
+                      "position":  [
+                                       240,
+                                       300
+                                   ],
+                      "parameters":  {
+
+                                     },
+                      "typeVersion":  1
+                  },
+                  {
+                      "id":  "item_lists_split",
+                      "name":  "Item Lists",
+                      "type":  "n8n-nodes-base.itemLists",
+                      "position":  [
+                                       1120,
+                                       300
+                                   ],
+                      "parameters":  {
+                                         "options":  {
+
+                                                     },
+                                         "fieldToSplitOut":  "post"
+                                     },
+                      "typeVersion":  1
+                  },
+                  {
+                      "id":  "extract_posts",
+                      "name":  "Extract Posts",
+                      "type":  "n8n-nodes-base.htmlExtract",
+                      "position":  [
+                                       900,
+                                       300
+                                   ],
+                      "parameters":  {
+                                         "options":  {
+
+                                                     },
+                                         "extractionValues":  {
+                                                                  "values":  [
+                                                                                 {
+                                                                                     "key":  "post",
+                                                                                     "cssSelector":  ".blog-listing__post-content",
+                                                                                     "returnArray":  true,
+                                                                                     "returnValue":  "html"
+                                                                                 }
+                                                                             ]
+                                                              }
+                                     },
+                      "typeVersion":  1
+                  },
+                  {
+                      "id":  "fetch_website",
+                      "name":  "Fetch Website",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "position":  [
+                                       680,
+                                       300
+                                   ],
+                      "parameters":  {
+                                         "url":  "={{$json[\"base_domain\"]}}/blog/category/release",
+                                         "options":  {
+                                                         "timeout":  10000
+                                                     },
+                                         "responseFormat":  "string"
+                                     },
+                      "typeVersion":  1
+                  },
+                  {
+                      "id":  "set_url",
+                      "name":  "Set URL",
+                      "type":  "n8n-nodes-base.set",
+                      "position":  [
+                                       460,
+                                       300
+                                   ],
+                      "parameters":  {
+                                         "values":  {
+                                                        "string":  [
+                                                                       {
+                                                                           "name":  "base_domain",
+                                                                           "value":  "https://baserow.io"
+                                                                       }
+                                                                   ]
+                                                    },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "typeVersion":  1
+                  },
+                  {
+                      "id":  "complete_link",
+                      "name":  "Complete Link",
+                      "type":  "n8n-nodes-base.set",
+                      "position":  [
+                                       240,
+                                       500
+                                   ],
+                      "parameters":  {
+                                         "values":  {
+                                                        "string":  [
+                                                                       {
+                                                                           "name":  "link",
+                                                                           "value":  "={{$item(0).$node[\"Set URL\"].json[\"base_domain\"]}}{{$json[\"link\"]}}"
+                                                                       }
+                                                                   ]
+                                                    },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "typeVersion":  1
+                  },
+                  {
+                      "id":  "format_date",
+                      "name":  "Format Date",
+                      "type":  "n8n-nodes-base.dateTime",
+                      "position":  [
+                                       460,
+                                       500
+                                   ],
+                      "parameters":  {
+                                         "value":  "={{$json[\"date\"]}}",
+                                         "options":  {
+
+                                                     },
+                                         "toFormat":  "YYYY-MM-DD",
+                                         "dataPropertyName":  "date"
+                                     },
+                      "typeVersion":  1
+                  },
+                  {
+                      "id":  "create_rss_items",
+                      "name":  "Create RSS Items",
+                      "type":  "n8n-nodes-base.functionItem",
+                      "position":  [
+                                       680,
+                                       500
+                                   ],
+                      "parameters":  {
+                                         "functionCode":  "return {\n  rss_item: \n`\u003citem\u003e\n  \u003ctitle\u003e${item.title}\u003c/title\u003e\n  \u003clink\u003e${item.link}\u003c/link\u003e\n  \u003cdescription\u003e${item.description}\u003c/description\u003e\n  \u003cpubDate\u003e${item.date}\u003c/pubDate\u003e\n\u003c/item\u003e`\n}"
+                                     },
+                      "typeVersion":  1
+                  },
+                  {
+                      "id":  "webhook_releases",
+                      "name":  "Webhook",
+                      "type":  "n8n-nodes-base.webhook",
+                      "position":  [
+                                       240,
+                                       100
+                                   ],
+                      "webhookId":  "27c1e4db-568f-4bf9-9474-0898ce1173f7",
+                      "parameters":  {
+                                         "path":  "baserow-releases",
+                                         "options":  {
+
+                                                     },
+                                         "responseMode":  "responseNode"
+                                     },
+                      "typeVersion":  1
+                  },
+                  {
+                      "id":  "respond_webhook",
+                      "name":  "Respond to Webhook",
+                      "type":  "n8n-nodes-base.respondToWebhook",
+                      "position":  [
+                                       1120,
+                                       500
+                                   ],
+                      "parameters":  {
+                                         "options":  {
+                                                         "responseHeaders":  {
+                                                                                 "entries":  [
+                                                                                                 {
+                                                                                                     "name":  "content-type",
+                                                                                                     "value":  "application/xml"
+                                                                                                 }
+                                                                                             ]
+                                                                             }
+                                                     },
+                                         "respondWith":  "text",
+                                         "responseBody":  "={{$json[\"feed\"]}}"
+                                     },
+                      "typeVersion":  1
+                  },
+                  {
+                      "id":  "prepare_response",
+                      "name":  "Prepare Response",
+                      "type":  "n8n-nodes-base.function",
+                      "position":  [
+                                       900,
+                                       500
+                                   ],
+                      "parameters":  {
+                                         "functionCode":  "let feed =\n`\u003c?xml version=\"1.0\" encoding=\"UTF-8\" ?\u003e\n\u003crss version=\"2.0\"\u003e\n\n\u003cchannel\u003e\n  \u003ctitle\u003eBaserow Releases\u003c/title\u003e\n  \u003clink\u003ehttps://baserow.io/blog/category/release\u003c/link\u003e\n  \u003cdescription\u003eStay up to date with the latest changes and updates of Baserow\u003c/description\u003e\n  ${items.map(e =\u003e e.json.rss_item).join(\u0027\\n\u0027)}\n\u003c/channel\u003e\n\n\u003c/rss\u003e`;\n\nreturn [{\n  json: {\n    feed: feed\n  }\n}];"
+                                     },
+                      "typeVersion":  1
+                  },
+                  {
+                      "id":  "extract_fields",
+                      "name":  "Extract Fields",
+                      "type":  "n8n-nodes-base.htmlExtract",
+                      "position":  [
+                                       1340,
+                                       300
+                                   ],
+                      "parameters":  {
+                                         "options":  {
+
+                                                     },
+                                         "dataPropertyName":  "post",
+                                         "extractionValues":  {
+                                                                  "values":  [
+                                                                                 {
+                                                                                     "key":  "date",
+                                                                                     "cssSelector":  ".blog-listing__post-info \u003e strong"
+                                                                                 },
+                                                                                 {
+                                                                                     "key":  "title",
+                                                                                     "cssSelector":  ".blog-listing__post-title"
+                                                                                 },
+                                                                                 {
+                                                                                     "key":  "link",
+                                                                                     "attribute":  "href",
+                                                                                     "cssSelector":  ".blog-listing__post-title \u003e a",
+                                                                                     "returnValue":  "attribute"
+                                                                                 },
+                                                                                 {
+                                                                                     "key":  "description",
+                                                                                     "cssSelector":  ".blog-listing__post-description"
+                                                                                 }
+                                                                             ]
+                                                              }
+                                     },
+                      "typeVersion":  1
+                  }
+              ],
+    "connections":  {
+                        "Set URL":  {
+                                        "main":  [
+                                                     [
+                                                         {
+                                                             "node":  "Fetch Website",
+                                                             "type":  "main",
+                                                             "index":  0
+                                                         }
+                                                     ]
+                                                 ]
+                                    },
+                        "Webhook":  {
+                                        "main":  [
+                                                     [
+                                                         {
+                                                             "node":  "Set URL",
+                                                             "type":  "main",
+                                                             "index":  0
+                                                         }
+                                                     ]
+                                                 ]
+                                    },
+                        "Item Lists":  {
+                                           "main":  [
+                                                        [
+                                                            {
+                                                                "node":  "Extract Fields",
+                                                                "type":  "main",
+                                                                "index":  0
+                                                            }
+                                                        ]
+                                                    ]
+                                       },
+                        "Format Date":  {
+                                            "main":  [
+                                                         [
+                                                             {
+                                                                 "node":  "Create RSS Items",
+                                                                 "type":  "main",
+                                                                 "index":  0
+                                                             }
+                                                         ]
+                                                     ]
+                                        },
+                        "Complete Link":  {
+                                              "main":  [
+                                                           [
+                                                               {
+                                                                   "node":  "Format Date",
+                                                                   "type":  "main",
+                                                                   "index":  0
+                                                               }
+                                                           ]
+                                                       ]
+                                          },
+                        "Extract Posts":  {
+                                              "main":  [
+                                                           [
+                                                               {
+                                                                   "node":  "Item Lists",
+                                                                   "type":  "main",
+                                                                   "index":  0
+                                                               }
+                                                           ]
+                                                       ]
+                                          },
+                        "Fetch Website":  {
+                                              "main":  [
+                                                           [
+                                                               {
+                                                                   "node":  "Extract Posts",
+                                                                   "type":  "main",
+                                                                   "index":  0
+                                                               }
+                                                           ]
+                                                       ]
+                                          },
+                        "Extract Fields":  {
+                                               "main":  [
+                                                            [
+                                                                {
+                                                                    "node":  "Complete Link",
+                                                                    "type":  "main",
+                                                                    "index":  0
+                                                                }
+                                                            ]
+                                                        ]
+                                           },
+                        "Create RSS Items":  {
+                                                 "main":  [
+                                                              [
+                                                                  {
+                                                                      "node":  "Prepare Response",
+                                                                      "type":  "main",
+                                                                      "index":  0
+                                                                  }
+                                                              ]
+                                                          ]
+                                             },
+                        "Prepare Response":  {
+                                                 "main":  [
+                                                              [
+                                                                  {
+                                                                      "node":  "Respond to Webhook",
+                                                                      "type":  "main",
+                                                                      "index":  0
+                                                                  }
+                                                              ]
+                                                          ]
+                                             },
+                        "On clicking \u0027execute\u0027":  {
+                                                                "main":  [
+                                                                             [
+                                                                                 {
+                                                                                     "node":  "Set URL",
+                                                                                     "type":  "main",
+                                                                                     "index":  0
+                                                                                 }
+                                                                             ]
+                                                                         ]
+                                                            }
+                    },
+    "settings":  {
+                     "executionOrder":  "v1"
+                 },
+    "active":  false,
+    "id":  "f5742318-9b49-4b8d-a765-228cccf8c84c"
+}

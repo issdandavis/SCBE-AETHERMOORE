@@ -1,0 +1,14 @@
+{
+  "status": "ALLOW",
+  "reason": "dataset within policy",
+  "threshold": 0.78,
+  "max_flagged_ratio": 0.08,
+  "sample_count": 48,
+  "flagged_count": 0,
+  "flagged_ratio": 0.0,
+  "mean_score": 0.437991,
+  "max_score": 0.55405,
+  "hashchain_root": "27c1de93f1157fde21811b9f97565464721aec75a36672b2f056acde9e800fef",
+  "flagged_examples": [],
+  "generated_at_utc": "2026-03-04T22:37:34.754261+00:00"
+}

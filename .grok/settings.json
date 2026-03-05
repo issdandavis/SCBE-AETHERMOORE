@@ -1,0 +1,49 @@
+{
+  "model": "grok-4",
+  "mcpServers": {
+    "fs": {
+      "name": "fs",
+      "transport": {
+        "type": "stdio",
+        "command": "mcp-server-filesystem",
+        "args": [
+          "C:\\Users\\issda\\SCBE-AETHERMOORE"
+        ],
+        "env": {}
+      }
+    },
+    "github": {
+      "name": "github",
+      "transport": {
+        "type": "stdio",
+        "command": "docker",
+        "args": [
+          "run",
+          "-i",
+          "--rm",
+          "-e",
+          "GITHUB_PERSONAL_ACCESS_TOKEN",
+          "-e",
+          "GITHUB_READ_ONLY",
+          "-e",
+          "GITHUB_DYNAMIC_TOOLSETS",
+          "ghcr.io/github/github-mcp-server"
+        ],
+        "env": {
+          "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PAT}",
+          "GITHUB_READ_ONLY": "1",
+          "GITHUB_DYNAMIC_TOOLSETS": "1"
+        }
+      }
+    },
+    "scbe-orchestrator": {
+      "name": "scbe-orchestrator",
+      "transport": {
+        "type": "sse",
+        "args": [],
+        "url": "http://127.0.0.1:8100/sse",
+        "env": {}
+      }
+    }
+  }
+}

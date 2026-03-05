@@ -1,0 +1,32 @@
+{
+  "name": "aethercode-kindle",
+  "version": "0.1.0",
+  "description": "AetherCode — Governed AI Workspace for Kindle Fire",
+  "private": true,
+  "scripts": {
+    "copy:assets": "node scripts/copy-pwa-assets.js",
+    "cap:init": "npx cap init AetherCode com.issdandavis.aethercode --web-dir www",
+    "cap:add:android": "npx cap add android",
+    "cap:sync": "npx cap sync android",
+    "cap:open": "npx cap open android",
+    "build:apk": "cd android && ./gradlew assembleDebug",
+    "build:apk:kindle": "cross-env AETHERCODE_TARGET=kindle npm run build && cd android && ./gradlew assembleDebug",
+    "build:release": "cd android && ./gradlew assembleRelease",
+    "build:aab": "cd android && ./gradlew bundleRelease",
+    "build": "npm run copy:assets && npm run cap:sync",
+    "postinstall": "npm run copy:assets"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/app": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/network": "^7.0.0",
+    "@capacitor/splash-screen": "^7.0.0",
+    "@capacitor/status-bar": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.0.0"
+  },
+  "author": "Issac Davis <issdandavis@gmail.com>",
+  "license": "MIT"
+}
