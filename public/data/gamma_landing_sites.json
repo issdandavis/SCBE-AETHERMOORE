@@ -1,0 +1,97 @@
+{
+  "updated_at": "2026-03-05T00:00:00Z",
+  "owner": "issdandavis",
+  "workspace_url": "https://gamma.app/",
+  "sites": [
+    {
+      "id": "gamma-arxiv-research-briefs",
+      "title": "arXiv Research Briefs",
+      "resource_url": "https://arxiv.org/",
+      "gamma_url": "",
+      "status": "draft",
+      "goal": "Lead magnet for weekly AI/security paper briefs",
+      "primary_cta": "Join the research digest"
+    },
+    {
+      "id": "gamma-hf-model-lab",
+      "title": "Hugging Face Model Lab",
+      "resource_url": "https://huggingface.co/issdandavis",
+      "gamma_url": "",
+      "status": "draft",
+      "goal": "Showcase models and datasets with clear value paths",
+      "primary_cta": "Try dataset pack"
+    },
+    {
+      "id": "gamma-github-systems",
+      "title": "GitHub Systems Portfolio",
+      "resource_url": "https://github.com/issdandavis",
+      "gamma_url": "",
+      "status": "draft",
+      "goal": "Turn repos into product/service narratives",
+      "primary_cta": "Book implementation sprint"
+    },
+    {
+      "id": "gamma-notion-ops",
+      "title": "Notion Ops Command Center",
+      "resource_url": "https://www.notion.so/",
+      "gamma_url": "",
+      "status": "draft",
+      "goal": "Sell structured operating systems and templates",
+      "primary_cta": "Get the ops template"
+    },
+    {
+      "id": "gamma-shopify-digital-products",
+      "title": "Shopify Digital Product Funnel",
+      "resource_url": "https://admin.shopify.com/store/aethermore-works",
+      "gamma_url": "",
+      "status": "draft",
+      "goal": "High-conversion page for digital bundles",
+      "primary_cta": "Buy the launch pack"
+    },
+    {
+      "id": "gamma-gumroad-offers",
+      "title": "Gumroad Offer Ladder",
+      "resource_url": "https://app.gumroad.com/products",
+      "gamma_url": "",
+      "status": "draft",
+      "goal": "Stack low/mid/high ticket digital offers",
+      "primary_cta": "Start with the starter kit"
+    },
+    {
+      "id": "gamma-nvd-threat-brief",
+      "title": "NVD Threat Intelligence Brief",
+      "resource_url": "https://nvd.nist.gov/developers/vulnerabilities",
+      "gamma_url": "",
+      "status": "draft",
+      "goal": "Security brief lead generation",
+      "primary_cta": "Subscribe to CVE brief"
+    },
+    {
+      "id": "gamma-wikidata-knowledge-graph",
+      "title": "Wikidata Knowledge Graph Explorer",
+      "resource_url": "https://query.wikidata.org/",
+      "gamma_url": "",
+      "status": "draft",
+      "goal": "Educational explainer + consulting funnel",
+      "primary_cta": "Get graph build help"
+    },
+    {
+      "id": "gamma-mit-dataverse-bridge",
+      "title": "MIT + Dataverse Research Bridge",
+      "resource_url": "https://mitlibraries.github.io/timdex/",
+      "gamma_url": "",
+      "status": "draft",
+      "goal": "Academic pipeline service positioning",
+      "primary_cta": "Request library integration"
+    },
+    {
+      "id": "gamma-roundtable-engine",
+      "title": "Aether Round Table Engine",
+      "resource_url": "https://docs.langchain.com/oss/python/langchain/multi-agent",
+      "gamma_url": "",
+      "status": "draft",
+      "goal": "Sell architecture package for multi-agent ops",
+      "primary_cta": "Get architecture blueprint"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "generated_at": "2026-03-05T20:29:39.320236+00:00",
+  "query": "aether browser connectors rag arxiv wikidata nvd mit dataverse knowledge library governance memory graph",
+  "window_count": 5,
+  "sources": [
+    {
+      "chunk_id": "wikidata_query_service",
+      "title": "Wikidata Query Service",
+      "category": "knowledge_graph",
+      "docs_url": "https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual",
+      "score": 6.0
+    },
+    {
+      "chunk_id": "harvard_dataverse_native_api",
+      "title": "Dataverse Native API",
+      "category": "datasets",
+      "docs_url": "https://guides.dataverse.org/en/latest/api/native-api.html",
+      "score": 6.0
+    },
+    {
+      "chunk_id": "nvd_vulnerabilities_api",
+      "title": "NVD Vulnerabilities API",
+      "category": "security",
+      "docs_url": "https://nvd.nist.gov/developers/vulnerabilities",
+      "score": 6.0
+    },
+    {
+      "chunk_id": "arxiv_api",
+      "title": "arXiv API",
+      "category": "academic",
+      "docs_url": "https://info.arxiv.org/help/api/user-manual.html",
+      "score": 5.0
+    },
+    {
+      "chunk_id": "arxiv_oai_pmh",
+      "title": "arXiv OAI-PMH",
+      "category": "academic",
+      "docs_url": "https://info.arxiv.org/help/oa/index.html",
+      "score": 5.0
+    }
+  ],
+  "context_text": "[1] Wikidata Query Service\nWikidata Query Service. Category: knowledge_graph. Base URL: https://query.wikidata.org/sparql. Auth: none. Best for: entity graph traversal, facts, linked-data joins. Constraints: SPARQL endpoint fair-use expectations.\nSource: https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual\n\n[2] Dataverse Native API\nDataverse Native API. Category: datasets. Base URL: https://dataverse.harvard.edu/api. Auth: token optional by endpoint. Best for: dataset metadata, files, collection traversal. Constraints: Dataverse installation policy.\nSource: https://guides.dataverse.org/en/latest/api/native-api.html\n\n[3] NVD Vulnerabilities API\nNVD Vulnerabilities API. Category: security. Base URL: https://services.nvd.nist.gov/rest/json/cves/2.0. Auth: none (API key optional). Best for: CVE ingestion, security governance, risk intelligence. Constraints: pagination and request limits.\nSource: https://nvd.nist.gov/developers/vulnerabilities\n\n[4] arXiv API\narXiv API. Category: academic. Base URL: https://export.arxiv.org/api/query. Auth: none. Best for: preprints, paper metadata, topic discovery. Constraints: 3-second polite delay between requests.\nSource: https://info.arxiv.org/help/api/user-manual.html\n\n[5] arXiv OAI-PMH\narXiv OAI-PMH. Category: academic. Base URL: https://export.arxiv.org/oai2. Auth: none. Best for: bulk metadata harvesting. Constraints: OAI-PMH harvest semantics.\nSource: https://info.arxiv.org/help/oa/index.html",
+  "usage": {
+    "load_first": "capsule_5w.json",
+    "then_retrieve_from": "library_chunks.jsonl",
+    "intent": "small active context, large retrieval memory"
+  }
+}
