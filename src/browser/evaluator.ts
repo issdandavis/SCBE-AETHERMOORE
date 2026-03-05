@@ -24,6 +24,8 @@ import {
   BrowserObservation,
   BrowserDecision,
   GovernanceResult,
+  SidepanelBrief,
+  SidepanelActionRecommendation,
   ACTION_SENSITIVITY,
   DOMAIN_RISK,
   DomainRiskCategory,
@@ -329,7 +331,8 @@ function computeRiskScore(
  */
 function makeDecision(
   riskScore: number,
-  action: BrowserAction
+  action: BrowserAction,
+  thresholds: typeof THRESHOLDS = THRESHOLDS
 ): {
   decision: BrowserDecision;
   confidence: number;
@@ -343,23 +346,23 @@ function makeDecision(
   let decision: BrowserDecision;
   let confidence: number;
 
-  if (riskScore < THRESHOLDS.allow) {
+  if (riskScore < thresholds.allow) {
     decision = 'ALLOW';
-    confidence = 1 - riskScore / THRESHOLDS.allow;
-  } else if (riskScore < THRESHOLDS.quarantine) {
+    confidence = 1 - riskScore / thresholds.allow;
+  } else if (riskScore < thresholds.quarantine) {
     decision = 'QUARANTINE';
-    confidence = (riskScore - THRESHOLDS.allow) / (THRESHOLDS.quarantine - THRESHOLDS.allow);
-  } else if (riskScore < THRESHOLDS.escalate) {
+    confidence = (riskScore - thresholds.allow) / (thresholds.quarantine - thresholds.allow);
+  } else if (riskScore < thresholds.escalate) {
     decision = 'ESCALATE';
     confidence =
-      (riskScore - THRESHOLDS.quarantine) / (THRESHOLDS.escalate - THRESHOLDS.quarantine);
+      (riskScore - thresholds.quarantine) / (thresholds.escalate - thresholds.quarantine);
   } else {
     decision = 'DENY';
-    confidence = Math.min((riskScore - THRESHOLDS.deny) / (1 - THRESHOLDS.deny), 1);
+    confidence = Math.min((riskScore - thresholds.deny) / (1 - thresholds.deny), 1);
   }
 
-  // High-risk actions always require Roundtable unless ALLOW
-  const requiresRoundtable = isHighRiskAction && decision !== 'DENY';
+  // High-risk actions require Roundtable for non-ALLOW, non-DENY paths.
+  const requiresRoundtable = isHighRiskAction && decision !== 'ALLOW' && decision !== 'DENY';
 
   return { decision, confidence, requiresRoundtable };
 }
@@ -453,7 +456,11 @@ export class BrowserActionEvaluator {
     } = computeRiskScore(action, observation, sessionState);
 
     // Make decision
-    const { decision, confidence, requiresRoundtable } = makeDecision(riskScore, action);
+    const { decision, confidence, requiresRoundtable } = makeDecision(
+      riskScore,
+      action,
+      this.thresholds
+    );
 
     // Get required tier
     const requiredTier = TIER_REQUIREMENTS[action.type] ?? 'RU';
@@ -497,6 +504,57 @@ export class BrowserActionEvaluator {
   }
 
   /**
+   * Build a sidepanel brief with governed candidate next actions.
+   *
+   * This is a deterministic helper for local browser UIs:
+   * - summarizes current page state,
+   * - proposes low-risk next actions first,
+   * - surfaces caution flags for sensitive contexts.
+   */
+  buildSidepanelBrief(
+    observation: BrowserObservation,
+    sessionState: { sessionRisk: number; actionCount: number; errorCount: number },
+    options: { maxRecommendations?: number } = {}
+  ): SidepanelBrief {
+    const maxRecommendations = Math.max(1, options.maxRecommendations ?? 4);
+    const domainCategory = classifyDomain(observation.page.url);
+
+    const recommendations: SidepanelActionRecommendation[] = [];
+    const candidates = this.buildCandidateActions(observation);
+    const evaluated = this.evaluateBatch(candidates, observation, sessionState);
+
+    for (let i = 0; i < candidates.length; i++) {
+      const gov = evaluated[i];
+      recommendations.push({
+        action: candidates[i],
+        decision: gov.decision,
+        riskScore: gov.riskScore,
+        requiresRoundtable: gov.requiresRoundtable,
+        reason: gov.explanation,
+      });
+    }
+
+    recommendations.sort((a, b) => {
+      if (a.riskScore !== b.riskScore) {
+        return a.riskScore - b.riskScore;
+      }
+      return a.action.type.localeCompare(b.action.type);
+    });
+
+    const cautionFlags = this.buildCautionFlags(observation, domainCategory);
+    const pageSummary = this.buildPageSummary(observation, domainCategory, cautionFlags);
+
+    return {
+      url: observation.page.url,
+      title: observation.page.title,
+      domainCategory,
+      pageSummary,
+      recommendations: recommendations.slice(0, maxRecommendations),
+      cautionFlags,
+    };
+  }
+
+  /**
    * Check if a token is valid.
    */
   validateToken(token: string, decisionId: string, action: BrowserAction): boolean {
@@ -510,6 +568,65 @@ export class BrowserActionEvaluator {
   private generateToken(decisionId: string, action: BrowserAction): string {
     const content = `${decisionId}:${action.type}:${JSON.stringify(action)}`;
     return hashString(content).toString(16).padStart(16, '0');
+  }
+
+  private buildCandidateActions(observation: BrowserObservation): BrowserAction[] {
+    const candidates: BrowserAction[] = [{ type: 'screenshot', fullPage: false }];
+
+    if (observation.page.interactiveElements.length > 8) {
+      candidates.push({ type: 'scroll', delta: { x: 0, y: 420 } });
+    }
+
+    const keywordElement = observation.page.interactiveElements.find((element) => {
+      if (!element.visible || !element.interactive) {
+        return false;
+      }
+      const text = element.textContent.toLowerCase();
+      return /next|continue|submit|search|login|sign in/.test(text);
+    });
+
+    if (keywordElement) {
+      const selector = keywordElement.id ? `#${keywordElement.id}` : keywordElement.tagName.toLowerCase();
+      candidates.push({ type: 'click', selector });
+    } else if (observation.page.interactiveElements[0]) {
+      const first = observation.page.interactiveElements[0];
+      const selector = first.id ? `#${first.id}` : first.tagName.toLowerCase();
+      candidates.push({ type: 'click', selector });
+    }
+
+    return candidates;
+  }
+
+  private buildCautionFlags(
+    observation: BrowserObservation,
+    domainCategory: DomainRiskCategory
+  ): string[] {
+    const cautions: string[] = [];
+    if (DOMAIN_RISK[domainCategory] >= 0.8) {
+      cautions.push(`high_domain_risk:${domainCategory}`);
+    }
+
+    const sensitiveForms = observation.page.forms.filter((form) => form.hasSensitiveFields);
+    if (sensitiveForms.length > 0) {
+      cautions.push('sensitive_form_detected');
+    }
+
+    if (observation.page.dialogs.length > 0) {
+      cautions.push('modal_dialog_present');
+    }
+    return cautions;
+  }
+
+  private buildPageSummary(
+    observation: BrowserObservation,
+    domainCategory: DomainRiskCategory,
+    cautionFlags: string[]
+  ): string {
+    const interactiveCount = observation.page.interactiveElements.length;
+    const formCount = observation.page.forms.length;
+    const cautionSuffix =
+      cautionFlags.length > 0 ? ` Cautions: ${cautionFlags.join(', ')}.` : '';
+    return `${observation.page.title} on ${domainCategory} domain with ${interactiveCount} interactive element(s) and ${formCount} form(s).${cautionSuffix}`;
   }
 }
 
