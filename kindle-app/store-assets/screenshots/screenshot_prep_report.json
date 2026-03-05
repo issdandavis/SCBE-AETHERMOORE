@@ -1,0 +1,16 @@
+{
+  "generated_at_utc": "2026-03-04T23:46:47.644Z",
+  "web_root": "C:\\Users\\issda\\SCBE-AETHERMOORE\\kindle-app\\www",
+  "out_dir": "C:\\Users\\issda\\SCBE-AETHERMOORE\\kindle-app\\store-assets\\screenshots",
+  "viewport": {
+    "width": 1024,
+    "height": 600
+  },
+  "screenshots": [
+    "C:\\Users\\issda\\SCBE-AETHERMOORE\\kindle-app\\store-assets\\screenshots\\01-welcome-screen.png",
+    "C:\\Users\\issda\\SCBE-AETHERMOORE\\kindle-app\\store-assets\\screenshots\\02-chat-mode.png",
+    "C:\\Users\\issda\\SCBE-AETHERMOORE\\kindle-app\\store-assets\\screenshots\\03-code-mode.png",
+    "C:\\Users\\issda\\SCBE-AETHERMOORE\\kindle-app\\store-assets\\screenshots\\04-research-mode.png",
+    "C:\\Users\\issda\\SCBE-AETHERMOORE\\kindle-app\\store-assets\\screenshots\\05-byok-keys-modal.png"
+  ]
+}
