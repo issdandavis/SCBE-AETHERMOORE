@@ -1,0 +1,18 @@
+{
+  "generated_at": "2026-03-05T20:29:39.319303+00:00",
+  "library": "C:\\Users\\issda\\SCBE-AETHERMOORE\\src\\knowledge\\storage\\open_source_api_library.json",
+  "query": "aether browser connectors rag arxiv wikidata nvd mit dataverse knowledge library governance memory graph",
+  "connector_count": 26,
+  "chunk_count": 26,
+  "windows_generated": [
+    1,
+    3,
+    5
+  ],
+  "files": [
+    "library_chunks.jsonl",
+    "capsule_1w.json",
+    "capsule_3w.json",
+    "capsule_5w.json"
+  ]
+}
