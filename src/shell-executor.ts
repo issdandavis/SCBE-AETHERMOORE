@@ -291,14 +291,19 @@ export function matchesBlockedPattern(
 export function isPathAllowed(cwd: string | undefined, allowedPaths: string[]): boolean {
   if (!cwd) return true; // No cwd = use process default, allowed
 
-  // Resolve to prevent traversal
+  // Normalize and resolve to prevent traversal (cross-platform).
   const resolved = resolvePath(cwd);
 
   // Check path traversal attempts
   if (resolved.includes('..')) return false;
 
+  // Root marker means "allow any absolute-ish path" for test/dev harnesses.
+  if (allowedPaths.includes('/')) return true;
+
   // Check if under any allowed prefix
-  return allowedPaths.some((allowed) => resolved.startsWith(allowed));
+  return allowedPaths
+    .map((allowed) => resolvePath(allowed))
+    .some((allowed) => resolved.startsWith(allowed));
 }
 
 /**
@@ -306,7 +311,11 @@ export function isPathAllowed(cwd: string | undefined, allowedPaths: string[]): 
  * Collapses . and .. segments, normalizes separators.
  */
 function resolvePath(p: string): string {
-  const parts = p.split('/').filter(Boolean);
+  const normalized = p.replace(/\\/g, '/');
+  const driveMatch = normalized.match(/^[A-Za-z]:/);
+  const drivePrefix = driveMatch ? driveMatch[0] : '';
+  const withoutDrive = drivePrefix ? normalized.slice(drivePrefix.length) : normalized;
+  const parts = withoutDrive.split('/').filter(Boolean);
   const resolved: string[] = [];
 
   for (const part of parts) {
@@ -318,7 +327,9 @@ function resolvePath(p: string): string {
     }
   }
 
-  return (p.startsWith('/') ? '/' : '') + resolved.join('/');
+  const leadingSlash = withoutDrive.startsWith('/') ? '/' : '';
+  const body = resolved.join('/');
+  return `${drivePrefix}${leadingSlash}${body}`;
 }
 
 /**
