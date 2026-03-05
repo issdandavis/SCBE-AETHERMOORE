@@ -50,13 +50,37 @@ try {
       if ($LASTEXITCODE -ne 0) {
         throw "Gradle release build failed. Ensure JDK 17 is installed and JAVA_HOME is set."
       }
-      $apkPath = Join-Path (Get-Location) "app\build\outputs\apk\release\app-release.apk"
+      $releaseDir = Join-Path (Get-Location) "app\build\outputs\apk\release"
+      $preferredRelease = Join-Path $releaseDir "app-release.apk"
+      if (Test-Path $preferredRelease) {
+        $apkPath = $preferredRelease
+      } else {
+        $releaseApk = Get-ChildItem -Path $releaseDir -Filter "*.apk" -File -ErrorAction SilentlyContinue |
+          Sort-Object LastWriteTimeUtc -Descending |
+          Select-Object -First 1
+        if (-not $releaseApk) {
+          throw "Gradle release build completed but no APK was found in: $releaseDir"
+        }
+        $apkPath = $releaseApk.FullName
+      }
     } else {
       .\gradlew assembleDebug | Out-Host
       if ($LASTEXITCODE -ne 0) {
         throw "Gradle debug build failed. Ensure JDK 17 is installed and JAVA_HOME is set."
       }
-      $apkPath = Join-Path (Get-Location) "app\build\outputs\apk\debug\app-debug.apk"
+      $debugDir = Join-Path (Get-Location) "app\build\outputs\apk\debug"
+      $preferredDebug = Join-Path $debugDir "app-debug.apk"
+      if (Test-Path $preferredDebug) {
+        $apkPath = $preferredDebug
+      } else {
+        $debugApk = Get-ChildItem -Path $debugDir -Filter "*.apk" -File -ErrorAction SilentlyContinue |
+          Sort-Object LastWriteTimeUtc -Descending |
+          Select-Object -First 1
+        if (-not $debugApk) {
+          throw "Gradle debug build completed but no APK was found in: $debugDir"
+        }
+        $apkPath = $debugApk.FullName
+      }
     }
   } finally {
     Pop-Location
