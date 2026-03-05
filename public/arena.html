@@ -101,6 +101,18 @@ body{
 .file-tab.active{background:var(--bg);color:var(--text);border-color:var(--accent)}
 .code-editor{flex:1;overflow:auto;padding:0;margin:0;min-height:0}
 .code-editor textarea{width:100%;height:100%;background:var(--bg);color:var(--text);border:none;padding:12px 16px;font-family:var(--mono);font-size:13px;line-height:1.6;resize:none;outline:none;tab-size:4}
+.service-pane{flex:1;overflow:auto;padding:12px 12px 14px;background:rgba(8,13,22,.96);min-height:0}
+.service-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.service-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.service-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.service-name{font-size:12px;font-weight:700;color:var(--text)}
+.service-zone{font-size:9px;font-weight:700;padding:2px 6px;border-radius:999px;border:1px solid transparent}
+.service-zone.green{color:var(--green);border-color:rgba(45,211,166,.38);background:rgba(45,211,166,.12)}
+.service-zone.yellow{color:var(--amber);border-color:rgba(255,184,74,.4);background:rgba(255,184,74,.12)}
+.service-zone.red{color:var(--red);border-color:rgba(255,114,114,.42);background:rgba(255,114,114,.12)}
+.service-path{font-size:10px;color:var(--dim);line-height:1.35;word-break:break-word}
+.service-open{display:inline-flex;justify-content:center;align-items:center;text-decoration:none;color:#fff;background:linear-gradient(135deg,var(--accent),#2e98dd);padding:6px 10px;border-radius:7px;font-size:11px;font-weight:700}
+.service-hint{font-size:10px;color:var(--dim)}
 
 /* Deal prompt bar */
 .deal-bar{display:flex;gap:8px;padding:8px 16px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
@@ -111,6 +123,7 @@ body{
 @media(max-width:1100px){
   .table-layout{grid-template-columns:1fr}
   .seat-column{display:grid;grid-template-columns:1fr 1fr}
+  .service-grid{grid-template-columns:1fr}
 }
 
 ::-webkit-scrollbar{width:5px}
@@ -192,6 +205,36 @@ const LORE_FALLBACK = [
   { title: 'Codex III', url: '/v1/lore/art/polloneth-protocol' },
   { title: 'Atlas', url: '/v1/lore/art/spiral-risk-zones' },
 ];
+const SERVICE_PORTALS = [
+  { id: 'github',     name: 'GitHub',            zone: 'GREEN',  url: 'https://github.com/issdandavis',                                path: 'https://api.github.com',                                 hint: 'Code + PR lanes' },
+  { id: 'huggingface',name: 'Hugging Face',      zone: 'GREEN',  url: 'https://huggingface.co/issdandavis',                            path: 'https://huggingface.co',                                 hint: 'Models + datasets' },
+  { id: 'firebase',   name: 'Firebase Console',  zone: 'GREEN',  url: 'https://console.firebase.google.com/',                           path: 'https://firebase.google.com',                             hint: 'Hosting + project ops' },
+  { id: 'shopify',    name: 'Shopify Admin',     zone: 'GREEN',  url: 'https://admin.shopify.com/store/aethermore-works',              path: 'https://aethermore-works.myshopify.com/admin/api/2025-01', hint: 'Store products + orders' },
+  { id: 'gumroad',    name: 'Gumroad',           zone: 'GREEN',  url: 'https://app.gumroad.com/products',                               path: 'https://api.gumroad.com/v2',                              hint: 'Digital product sales' },
+  { id: 'notion',     name: 'Notion',            zone: 'GREEN',  url: 'https://www.notion.so/',                                         path: 'https://api.notion.com/v1',                               hint: 'Knowledge + planning' },
+  { id: 'kaggle',     name: 'Kaggle',            zone: 'GREEN',  url: 'https://www.kaggle.com/',                                        path: 'https://www.kaggle.com/api/v1',                           hint: 'Data + benchmarks' },
+  { id: 'n8n',        name: 'n8n',               zone: 'GREEN',  url: 'http://127.0.0.1:5680',                                         path: 'http://127.0.0.1:5680',                                   hint: 'Local automation' },
+  { id: 'zapier',     name: 'Zapier',            zone: 'GREEN',  url: 'https://zapier.com/app/zaps',                                   path: 'https://hooks.zapier.com',                                hint: 'Webhook automations' },
+  { id: 'gamma',      name: 'Gamma',             zone: 'YELLOW', url: 'https://gamma.app/',                                            path: 'https://gamma.app',                                       hint: 'Deck generation' },
+  { id: 'x',          name: 'X / Twitter',       zone: 'YELLOW', url: 'https://x.com/home',                                            path: 'https://api.twitter.com/2',                               hint: 'Distribution lane' },
+  { id: 'newgrounds', name: 'Newgrounds',        zone: 'YELLOW', url: 'https://www.newgrounds.com/',                                   path: 'https://www.newgrounds.com',                              hint: 'Game discovery channel' },
+  { id: 'godot',      name: 'Godot Docs',        zone: 'GREEN',  url: 'https://docs.godotengine.org/en/stable/',                       path: 'https://docs.godotengine.org',                            hint: 'Game dev reference' },
+  { id: 'unity',      name: 'Unity Learn',       zone: 'YELLOW', url: 'https://learn.unity.com/',                                      path: 'https://learn.unity.com',                                 hint: 'Engine training' },
+];
+
+const GAMMA_FALLBACK_SITES = [
+  {
+    id: 'gamma-fallback-1',
+    title: 'Aether Research Briefs',
+    resource_url: 'https://arxiv.org/',
+    gamma_url: '',
+    status: 'draft',
+    goal: 'Lead magnet for weekly research briefs',
+    primary_cta: 'Join the research digest',
+  },
+];
+
+let gammaLandingSites = [...GAMMA_FALLBACK_SITES];
 
 async function loadLoreStrip() {
   const strip = document.getElementById('loreStrip');
@@ -285,6 +328,91 @@ async function emitCrossTalk() {
   }
 }
 
+function setCenterView(view) {
+  const code = document.getElementById('centerCodeView');
+  const services = document.getElementById('centerServicesView');
+  const gamma = document.getElementById('centerGammaView');
+  const tabs = document.querySelectorAll('.file-tab[data-center-view]');
+  tabs.forEach((tab) => {
+    if (tab.getAttribute('data-center-view') === view) tab.classList.add('active');
+    else tab.classList.remove('active');
+  });
+  if (view === 'services') {
+    if (code) code.style.display = 'none';
+    if (services) services.style.display = 'block';
+    if (gamma) gamma.style.display = 'none';
+  } else if (view === 'gamma') {
+    if (code) code.style.display = 'none';
+    if (services) services.style.display = 'none';
+    if (gamma) gamma.style.display = 'block';
+  } else {
+    if (code) code.style.display = 'block';
+    if (services) services.style.display = 'none';
+    if (gamma) gamma.style.display = 'none';
+  }
+}
+
+function renderServiceGrid() {
+  const grid = document.getElementById('serviceGrid');
+  if (!grid) return;
+  grid.innerHTML = SERVICE_PORTALS.map((svc) => `
+    <div class="service-card">
+      <div class="service-head">
+        <span class="service-name">${escHtml(svc.name)}</span>
+        <span class="service-zone ${svc.zone.toLowerCase()}">${svc.zone}</span>
+      </div>
+      <div class="service-path">${escHtml(svc.path)}</div>
+      <div class="service-hint">${escHtml(svc.hint)}</div>
+      <a class="service-open" href="${svc.url}" target="_blank" rel="noreferrer">Open</a>
+    </div>
+  `).join('');
+}
+
+function gammaStatusClass(status) {
+  const s = String(status || '').toLowerCase();
+  if (s === 'live') return 'green';
+  if (s === 'draft') return 'yellow';
+  return 'red';
+}
+
+function renderGammaGrid() {
+  const grid = document.getElementById('gammaGrid');
+  if (!grid) return;
+  grid.innerHTML = gammaLandingSites.map((site) => {
+    const status = String(site.status || 'draft').toUpperCase();
+    const gammaUrl = site.gamma_url || 'https://gamma.app/';
+    const gammaLabel = site.gamma_url ? 'Open Gamma Page' : 'Open Gamma Workspace';
+    return `
+      <div class="service-card">
+        <div class="service-head">
+          <span class="service-name">${escHtml(site.title)}</span>
+          <span class="service-zone ${gammaStatusClass(site.status)}">${status}</span>
+        </div>
+        <div class="service-hint">${escHtml(site.goal || 'Landing page slot')}</div>
+        <div class="service-path">Resource: ${escHtml(site.resource_url || '')}</div>
+        <div class="service-path">Primary CTA: ${escHtml(site.primary_cta || '')}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <a class="service-open" href="${site.resource_url}" target="_blank" rel="noreferrer">Open Source</a>
+          <a class="service-open" href="${gammaUrl}" target="_blank" rel="noreferrer">${gammaLabel}</a>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function loadGammaLandingSites() {
+  try {
+    const resp = await fetch(API + '/data/gamma_landing_sites.json');
+    if (!resp.ok) throw new Error('gamma config missing');
+    const data = await resp.json();
+    const sites = Array.isArray(data.sites) ? data.sites : [];
+    if (sites.length > 0) gammaLandingSites = sites;
+  } catch (_err) {
+    gammaLandingSites = [...GAMMA_FALLBACK_SITES];
+  }
+  renderGammaGrid();
+}
+
 function buildTable() {
   const table = document.getElementById('table');
   table.innerHTML = '';
@@ -305,11 +433,19 @@ function buildTable() {
     <div class="center-header">
       <h2>Shared Code</h2>
       <div class="file-tabs">
-        <div class="file-tab active">main.py</div>
+        <div class="file-tab active" data-center-view="code">main.py</div>
+        <div class="file-tab" data-center-view="services">Services</div>
+        <div class="file-tab" data-center-view="gamma">Gamma Wing</div>
       </div>
     </div>
-    <div class="code-editor">
+    <div class="code-editor" id="centerCodeView">
       <textarea id="sharedEditor" spellcheck="false">${escHtml(sharedCode)}</textarea>
+    </div>
+    <div class="service-pane" id="centerServicesView" style="display:none">
+      <div class="service-grid" id="serviceGrid"></div>
+    </div>
+    <div class="service-pane" id="centerGammaView" style="display:none">
+      <div class="service-grid" id="gammaGrid"></div>
     </div>
   `;
   table.appendChild(center);
@@ -321,9 +457,23 @@ function buildTable() {
   table.appendChild(rightCol);
 
   document.getElementById('playerCount').textContent = PLAYERS.length + ' seated';
-  document.getElementById('sharedEditor').addEventListener('input', e => {
-    sharedCode = e.target.value;
+  const editor = document.getElementById('sharedEditor');
+  if (editor) {
+    editor.addEventListener('input', e => {
+      sharedCode = e.target.value;
+    });
+  }
+
+  const tabs = center.querySelectorAll('.file-tab');
+  tabs.forEach((tabEl) => {
+    tabEl.addEventListener('click', () => {
+      const view = tabEl.getAttribute('data-center-view') || 'code';
+      setCenterView(view);
+    });
   });
+
+  renderServiceGrid();
+  loadGammaLandingSites();
 }
 
 function createSeat(player) {
@@ -358,7 +508,7 @@ function createSeat(player) {
 }
 
 function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 function trimText(s, maxLen = 1800) {
