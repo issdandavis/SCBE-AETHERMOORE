@@ -83,12 +83,18 @@ function sha256Hex(value) {
 }
 
 function stripHtml(html) {
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[\s\S]*?<\/style>/gi, '')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+  // Iteratively strip tags to handle nested/malformed HTML
+  let text = String(html);
+  // Remove script and style blocks first (non-greedy, case-insensitive)
+  text = text.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  text = text.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
+  // Strip remaining tags iteratively until stable
+  let prev;
+  do {
+    prev = text;
+    text = text.replace(/<[^>]*>/g, ' ');
+  } while (text !== prev);
+  return text.replace(/\s+/g, ' ').trim();
 }
 
 function isTlsIssuerCertError(error) {

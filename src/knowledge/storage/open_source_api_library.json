@@ -1,0 +1,293 @@
+{
+  "library_name": "SCBE Open Source Knowledge Connector Library",
+  "version": "2026-03-05",
+  "generated_at": "2026-03-05T00:00:00Z",
+  "connectors": [
+    {
+      "id": "arxiv_api",
+      "name": "arXiv API",
+      "category": "academic",
+      "docs_url": "https://info.arxiv.org/help/api/user-manual.html",
+      "base_url": "https://export.arxiv.org/api/query",
+      "auth": "none",
+      "format": ["Atom XML"],
+      "best_for": ["preprints", "paper metadata", "topic discovery"],
+      "constraints": ["3-second polite delay between requests"]
+    },
+    {
+      "id": "arxiv_oai_pmh",
+      "name": "arXiv OAI-PMH",
+      "category": "academic",
+      "docs_url": "https://info.arxiv.org/help/oa/index.html",
+      "base_url": "https://export.arxiv.org/oai2",
+      "auth": "none",
+      "format": ["XML"],
+      "best_for": ["bulk metadata harvesting"],
+      "constraints": ["OAI-PMH harvest semantics"]
+    },
+    {
+      "id": "openalex_api",
+      "name": "OpenAlex API",
+      "category": "academic",
+      "docs_url": "https://docs.openalex.org/",
+      "base_url": "https://api.openalex.org",
+      "auth": "none (email recommended)",
+      "format": ["JSON"],
+      "best_for": ["papers", "authors", "institutions", "citation graph"],
+      "constraints": ["polite usage and paging"]
+    },
+    {
+      "id": "crossref_rest",
+      "name": "Crossref REST API",
+      "category": "academic",
+      "docs_url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/",
+      "base_url": "https://api.crossref.org",
+      "auth": "none (mailto recommended)",
+      "format": ["JSON"],
+      "best_for": ["DOI metadata", "references", "publisher records"],
+      "constraints": ["polite pool best practices"]
+    },
+    {
+      "id": "semantic_scholar_api",
+      "name": "Semantic Scholar API",
+      "category": "academic",
+      "docs_url": "https://www.semanticscholar.org/product/api",
+      "base_url": "https://api.semanticscholar.org/graph/v1",
+      "auth": "optional key for higher limits",
+      "format": ["JSON"],
+      "best_for": ["paper embeddings", "authors", "citations", "recommendations"],
+      "constraints": ["rate limits by tier"]
+    },
+    {
+      "id": "ncbi_eutils",
+      "name": "NCBI E-utilities",
+      "category": "biomedical",
+      "docs_url": "https://www.ncbi.nlm.nih.gov/books/NBK25501/",
+      "base_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/",
+      "auth": "none (API key optional)",
+      "format": ["XML", "JSON"],
+      "best_for": ["PubMed", "biomedical papers", "gene and taxonomy records"],
+      "constraints": ["request throttling guidelines"]
+    },
+    {
+      "id": "wikidata_query_service",
+      "name": "Wikidata Query Service",
+      "category": "knowledge_graph",
+      "docs_url": "https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual",
+      "base_url": "https://query.wikidata.org/sparql",
+      "auth": "none",
+      "format": ["SPARQL JSON", "RDF"],
+      "best_for": ["entity graph traversal", "facts", "linked-data joins"],
+      "constraints": ["SPARQL endpoint fair-use expectations"]
+    },
+    {
+      "id": "wikidata_action_api",
+      "name": "Wikidata Action API",
+      "category": "knowledge_graph",
+      "docs_url": "https://www.wikidata.org/w/api.php",
+      "base_url": "https://www.wikidata.org/w/api.php",
+      "auth": "none",
+      "format": ["JSON"],
+      "best_for": ["entity search", "label lookups", "claims pull"],
+      "constraints": ["query parameter pagination"]
+    },
+    {
+      "id": "harvard_dataverse_native_api",
+      "name": "Dataverse Native API",
+      "category": "datasets",
+      "docs_url": "https://guides.dataverse.org/en/latest/api/native-api.html",
+      "base_url": "https://dataverse.harvard.edu/api",
+      "auth": "token optional by endpoint",
+      "format": ["JSON"],
+      "best_for": ["dataset metadata", "files", "collection traversal"],
+      "constraints": ["Dataverse installation policy"]
+    },
+    {
+      "id": "mit_timdex_api",
+      "name": "MIT TIMDEX",
+      "category": "library",
+      "docs_url": "https://mitlibraries.github.io/timdex/",
+      "base_url": "https://timdex.mit.edu/",
+      "auth": "public discovery",
+      "format": ["JSON"],
+      "best_for": ["MIT library discovery", "catalog search"],
+      "constraints": ["index scope set by MIT libraries"]
+    },
+    {
+      "id": "sec_edgar_api",
+      "name": "SEC EDGAR APIs",
+      "category": "regulatory",
+      "docs_url": "https://www.sec.gov/search-filings/edgar-application-programming-interfaces",
+      "base_url": "https://data.sec.gov/",
+      "auth": "none",
+      "format": ["JSON", "IDX"],
+      "best_for": ["10-K/10-Q filings", "company facts", "regulatory events"],
+      "constraints": ["identify user-agent, rate responsibly"]
+    },
+    {
+      "id": "nvd_vulnerabilities_api",
+      "name": "NVD Vulnerabilities API",
+      "category": "security",
+      "docs_url": "https://nvd.nist.gov/developers/vulnerabilities",
+      "base_url": "https://services.nvd.nist.gov/rest/json/cves/2.0",
+      "auth": "none (API key optional)",
+      "format": ["JSON"],
+      "best_for": ["CVE ingestion", "security governance", "risk intelligence"],
+      "constraints": ["pagination and request limits"]
+    },
+    {
+      "id": "uspto_open_data",
+      "name": "USPTO Open Data APIs",
+      "category": "ip",
+      "docs_url": "https://developer.uspto.gov/",
+      "base_url": "https://developer.uspto.gov/",
+      "auth": "varies by API",
+      "format": ["JSON", "CSV"],
+      "best_for": ["patent search", "trademark records", "legal status"],
+      "constraints": ["API-specific usage rules"]
+    },
+    {
+      "id": "library_of_congress_apis",
+      "name": "Library of Congress APIs",
+      "category": "library",
+      "docs_url": "https://www.loc.gov/apis/",
+      "base_url": "https://www.loc.gov/",
+      "auth": "none",
+      "format": ["JSON"],
+      "best_for": ["digitized archives", "photos", "books", "historical records"],
+      "constraints": ["collection-specific limits"]
+    },
+    {
+      "id": "openlibrary_api",
+      "name": "Open Library API",
+      "category": "library",
+      "docs_url": "https://openlibrary.org/developers/api",
+      "base_url": "https://openlibrary.org",
+      "auth": "none",
+      "format": ["JSON"],
+      "best_for": ["book metadata", "author works", "edition linking"],
+      "constraints": ["public endpoint availability"]
+    },
+    {
+      "id": "internet_archive_apis",
+      "name": "Internet Archive Developer APIs",
+      "category": "archive",
+      "docs_url": "https://archive.org/developers/",
+      "base_url": "https://archive.org",
+      "auth": "none for search/read",
+      "format": ["JSON", "metadata XML"],
+      "best_for": ["historical snapshots", "books", "audio/video"],
+      "constraints": ["item availability and rights"]
+    },
+    {
+      "id": "commoncrawl_index",
+      "name": "Common Crawl Index",
+      "category": "web_corpus",
+      "docs_url": "https://index.commoncrawl.org/",
+      "base_url": "https://index.commoncrawl.org/",
+      "auth": "none",
+      "format": ["JSON lines"],
+      "best_for": ["large-scale web text", "RAG corpora", "historical crawls"],
+      "constraints": ["large data volumes, downstream filtering required"]
+    },
+    {
+      "id": "nasa_open_apis",
+      "name": "NASA Open APIs",
+      "category": "science",
+      "docs_url": "https://api.nasa.gov/",
+      "base_url": "https://api.nasa.gov/",
+      "auth": "API key",
+      "format": ["JSON"],
+      "best_for": ["astronomy feeds", "imagery", "space-science data"],
+      "constraints": ["per-key rate limits"]
+    },
+    {
+      "id": "world_bank_api",
+      "name": "World Bank Data API",
+      "category": "economics",
+      "docs_url": "https://datahelpdesk.worldbank.org/knowledgebase/articles/889392-about-the-indicators-api-documentation",
+      "base_url": "https://api.worldbank.org/v2/",
+      "auth": "none",
+      "format": ["JSON", "XML"],
+      "best_for": ["indicators", "country-level macro data"],
+      "constraints": ["pagination and indicator availability"]
+    },
+    {
+      "id": "census_api",
+      "name": "US Census Bureau APIs",
+      "category": "economics",
+      "docs_url": "https://www.census.gov/data/developers.html",
+      "base_url": "https://api.census.gov/data/",
+      "auth": "API key recommended",
+      "format": ["JSON"],
+      "best_for": ["demographics", "economic surveys", "geographic stats"],
+      "constraints": ["dataset-specific query syntax"]
+    },
+    {
+      "id": "github_rest_api",
+      "name": "GitHub REST API",
+      "category": "code",
+      "docs_url": "https://docs.github.com/en/rest",
+      "base_url": "https://api.github.com",
+      "auth": "token",
+      "format": ["JSON"],
+      "best_for": ["repos", "issues", "PRs", "release data"],
+      "constraints": ["rate limits by auth scope"]
+    },
+    {
+      "id": "huggingface_hub_api",
+      "name": "Hugging Face Hub API",
+      "category": "ai",
+      "docs_url": "https://huggingface.co/docs/hub/api",
+      "base_url": "https://huggingface.co/api",
+      "auth": "token for write ops",
+      "format": ["JSON"],
+      "best_for": ["datasets", "model cards", "spaces", "file sync"],
+      "constraints": ["repo permissions"]
+    },
+    {
+      "id": "notion_api",
+      "name": "Notion API",
+      "category": "knowledge_ops",
+      "docs_url": "https://developers.notion.com/reference/intro",
+      "base_url": "https://api.notion.com/v1",
+      "auth": "bearer token",
+      "format": ["JSON"],
+      "best_for": ["workspace pages", "databases", "structured note ingest"],
+      "constraints": ["workspace permissions and integration share"]
+    },
+    {
+      "id": "dropbox_api",
+      "name": "Dropbox API",
+      "category": "storage",
+      "docs_url": "https://www.dropbox.com/developers/documentation/http/overview",
+      "base_url": "https://api.dropboxapi.com/2",
+      "auth": "oauth token",
+      "format": ["JSON"],
+      "best_for": ["file sync", "knowledge backups", "artifact mirroring"],
+      "constraints": ["app scopes and user/team access rules"]
+    },
+    {
+      "id": "hubspot_legacy_api",
+      "name": "HubSpot CRM API",
+      "category": "ops_crm",
+      "docs_url": "https://developers.hubspot.com/docs/api/overview",
+      "base_url": "https://api.hubapi.com",
+      "auth": "private app token or oauth",
+      "format": ["JSON"],
+      "best_for": ["contact enrichment", "pipeline tracking", "deal ops integration"],
+      "constraints": ["portal scopes and per-endpoint limits"]
+    },
+    {
+      "id": "zotero_web_api",
+      "name": "Zotero Web API",
+      "category": "research_ops",
+      "docs_url": "https://www.zotero.org/support/dev/web_api/v3/start",
+      "base_url": "https://api.zotero.org",
+      "auth": "API key for private libraries",
+      "format": ["JSON"],
+      "best_for": ["citation libraries", "bibliography synchronization"],
+      "constraints": ["library privacy and key scope"]
+    }
+  ]
+}

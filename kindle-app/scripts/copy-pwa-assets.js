@@ -5,7 +5,10 @@
 const fs = require('fs');
 const path = require('path');
 
-const SRC = path.resolve(__dirname, '../../src/aethercode');
+// Try public/ first (current), fallback to src/aethercode/ (legacy)
+const SRC_PUBLIC = path.resolve(__dirname, '../../public');
+const SRC_LEGACY = path.resolve(__dirname, '../../src/aethercode');
+const SRC = fs.existsSync(path.join(SRC_PUBLIC, 'arena.html')) ? SRC_PUBLIC : SRC_LEGACY;
 const WWW = path.resolve(__dirname, '../www');
 
 // API endpoint override for packaged builds.
