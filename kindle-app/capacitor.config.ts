@@ -1,17 +1,24 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 // Build target: set AETHERCODE_TARGET=kindle for Amazon Appstore builds
-const isKindle = process.env.AETHERCODE_TARGET === 'kindle';
+const target = (process.env.AETHERCODE_TARGET || '').toLowerCase();
+const variant = (process.env.AETHERCODE_APP_VARIANT || '').toLowerCase();
+const isKindle = target === 'kindle';
+const isAetherBrowse = variant === 'aetherbrowse';
+const appId = isAetherBrowse ? 'com.issdandavis.aetherbrowse' : 'com.issdandavis.aethercode';
+const appName = isAetherBrowse ? 'AetherBrowse' : 'AetherCode';
 
 const config: CapacitorConfig = {
-  appId: 'com.issdandavis.aethercode',
-  appName: 'AetherCode',
+  appId,
+  appName,
   webDir: 'www',
   server: {
     androidScheme: 'https',
     allowNavigation: [
       '34.134.99.90',
       'aethercode.issdandavis.com',
+      'aetherbrowse.web.app',
+      'aetherbrowse.issdandavis.com',
       '*.googleapis.com',
       '*.openai.com',
       '*.anthropic.com',
