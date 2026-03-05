@@ -1,0 +1,110 @@
+{
+  "version": "2026-03-04",
+  "provider_order": [
+    "openai",
+    "anthropic",
+    "xai"
+  ],
+  "complexity_tiers": {
+    "easy": [
+      "cheap"
+    ],
+    "medium": [
+      "cheap",
+      "standard"
+    ],
+    "hard": [
+      "cheap",
+      "standard",
+      "premium"
+    ]
+  },
+  "providers": {
+    "openai": {
+      "enabled": true,
+      "env_keys": [
+        "OPENAI_API_KEY",
+        "OPENAI_KEY"
+      ],
+      "health_endpoint": "https://api.openai.com/v1/models",
+      "chat_endpoint": "https://api.openai.com/v1/chat/completions",
+      "daily_cap_usd": 6.0,
+      "timeout_sec": 45,
+      "tiers": {
+        "cheap": {
+          "model": "gpt-4o-mini",
+          "estimated_cents": 1.2
+        },
+        "standard": {
+          "model": "gpt-4.1-mini",
+          "estimated_cents": 2.8
+        },
+        "premium": {
+          "model": "gpt-4.1",
+          "estimated_cents": 9.5
+        }
+      }
+    },
+    "anthropic": {
+      "enabled": true,
+      "env_keys": [
+        "ANTHROPIC_API_KEY",
+        "CLAUDE_API_KEY"
+      ],
+      "health_endpoint": "https://api.anthropic.com/v1/models",
+      "chat_endpoint": "https://api.anthropic.com/v1/messages",
+      "daily_cap_usd": 6.0,
+      "timeout_sec": 45,
+      "tiers": {
+        "cheap": {
+          "model": "claude-haiku-4-5-20251001",
+          "estimated_cents": 1.6
+        },
+        "standard": {
+          "model": "claude-sonnet-4-20250514",
+          "estimated_cents": 3.4
+        },
+        "premium": {
+          "model": "claude-opus-4-1-20250805",
+          "estimated_cents": 11.0
+        }
+      }
+    },
+    "xai": {
+      "enabled": true,
+      "env_keys": [
+        "XAI_API_KEY",
+        "GROK_API_KEY"
+      ],
+      "health_endpoint": "https://api.x.ai/v1/models",
+      "chat_endpoint": "https://api.x.ai/v1/chat/completions",
+      "daily_cap_usd": 4.0,
+      "timeout_sec": 45,
+      "tiers": {
+        "cheap": {
+          "model": "grok-3-mini",
+          "estimated_cents": 1.0
+        },
+        "standard": {
+          "model": "grok-3-latest",
+          "estimated_cents": 2.4
+        },
+        "premium": {
+          "model": "grok-4",
+          "estimated_cents": 8.5
+        }
+      }
+    },
+    "huggingface": {
+      "enabled": true,
+      "env_keys": [
+        "HF_TOKEN",
+        "HUGGINGFACE_TOKEN",
+        "HUGGING_FACE_HUB_TOKEN"
+      ],
+      "health_endpoint": "https://huggingface.co/api/whoami-v2",
+      "daily_cap_usd": 2.0
+    }
+  },
+  "default_system_prompt": "You are an SCBE terminal assistant. Keep answers short, practical, and evidence-aware."
+}

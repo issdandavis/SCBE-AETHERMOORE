@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCBE-AETHERMOORE — AI Safety Through Hyperbolic Geometry</title>
+    <meta name="description" content="Open-source AI governance framework using Poincare ball geometry, Sacred Tongues tokenization, and post-quantum cryptography. Born from a DnD campaign.">
+    <meta property="og:title" content="SCBE-AETHERMOORE">
+    <meta property="og:description" content="AI safety framework where adversarial behavior costs exponentially more. 14-layer security pipeline with post-quantum crypto.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://issdandavis.github.io/SCBE-AETHERMOORE/">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a1a;
+            color: #e2e2e2;
+            line-height: 1.6;
+        }
+        .hero {
+            background: linear-gradient(135deg, #0f3460 0%, #533483 40%, #e94560 100%);
+            padding: 80px 40px;
+            text-align: center;
+        }
+        .hero h1 { font-size: 48px; margin-bottom: 16px; letter-spacing: -1px; }
+        .hero .subtitle { font-size: 20px; opacity: 0.9; max-width: 700px; margin: 0 auto 30px; }
+        .hero .tagline { font-size: 14px; opacity: 0.7; font-style: italic; }
+        .nav-links { margin-top: 30px; display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+        .nav-links a {
+            color: white; text-decoration: none; padding: 10px 24px;
+            border: 1px solid rgba(255,255,255,0.3); border-radius: 6px;
+            font-size: 15px; transition: all 0.2s;
+        }
+        .nav-links a:hover { background: rgba(255,255,255,0.15); border-color: white; }
+        .nav-links a.primary { background: rgba(255,255,255,0.2); border-color: white; font-weight: 600; }
+        .content { max-width: 900px; margin: 0 auto; padding: 60px 30px; }
+        h2 { font-size: 28px; margin: 40px 0 20px; color: #e94560; }
+        h3 { font-size: 20px; margin: 24px 0 12px; }
+        p { margin-bottom: 16px; color: #bbb; }
+        .formula {
+            background: #111; padding: 20px; border-radius: 8px; text-align: center;
+            font-family: 'Courier New', monospace; font-size: 24px; color: #e94560;
+            margin: 20px 0; border-left: 3px solid #533483;
+        }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px 0; }
+        .card {
+            background: #111; padding: 24px; border-radius: 8px;
+            border: 1px solid #222; transition: border-color 0.2s;
+        }
+        .card:hover { border-color: #533483; }
+        .card h3 { margin-top: 0; color: #e2e2e2; font-size: 18px; }
+        .card p { font-size: 14px; }
+        .card .tag { display: inline-block; background: #1a1a3e; color: #7b7bff; padding: 2px 8px; border-radius: 3px; font-size: 12px; margin-right: 4px; }
+        .tongues-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .tongues-table th, .tongues-table td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #222; }
+        .tongues-table th { color: #e94560; font-size: 13px; text-transform: uppercase; }
+        .tongues-table td { font-size: 14px; color: #ccc; }
+        .tongues-table td:first-child { font-weight: 600; color: #e2e2e2; }
+        .tongues-table td:last-child { font-family: monospace; color: #7b7bff; }
+        .footer {
+            text-align: center; padding: 40px 20px; border-top: 1px solid #222;
+            color: #666; font-size: 13px;
+        }
+        .footer a { color: #7b7bff; text-decoration: none; }
+        code { background: #1a1a2e; padding: 2px 6px; border-radius: 3px; font-size: 14px; }
+        .badge { display: inline-block; margin: 4px; }
+        .badge img { height: 20px; }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>SCBE-AETHERMOORE</h1>
+        <div class="subtitle">AI safety framework where adversarial behavior costs exponentially more. Born from 12,596 paragraphs of a DnD campaign.</div>
+        <div class="tagline">Thul'medan kess'ara nav'kor zar'aelin — "The spiral turns, knowledge grows through different hearts across dimensions."</div>
+        <div class="nav-links">
+            <a href="api/" class="primary">API Docs</a>
+            <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">GitHub</a>
+            <a href="https://huggingface.co/datasets/issdandavis/scbe-aethermoore-training-data">Dataset</a>
+            <a href="https://huggingface.co/issdandavis/geoseed-network">Model</a>
+            <a href="api/openapi.json">OpenAPI Spec</a>
+        </div>
+    </div>
+
+    <div class="content">
+        <h2>The Harmonic Wall</h2>
+        <p>The core innovation: adversarial intent costs exponentially more the further it drifts from safe operation.</p>
+        <div class="formula">H(d, R) = R<sup>d&sup2;</sup></div>
+        <p>Where <code>d</code> is the hyperbolic distance from safe operation (measured in the Poincare ball) and <code>R</code> is the realm radius. At d=0.3, cost is ~1.1x. At d=0.95, cost explodes beyond computational feasibility.</p>
+
+        <h2>Six Sacred Tongues</h2>
+        <p>Six semantic domains with golden ratio (phi) weighting. Higher-privilege operations cost exponentially more.</p>
+        <table class="tongues-table">
+            <tr><th>Tongue</th><th>Domain</th><th>Weight</th></tr>
+            <tr><td>KO (Kor'aelin)</td><td>Intent / Orchestration</td><td>1.000</td></tr>
+            <tr><td>AV (Avali)</td><td>Transport / Context</td><td>1.618</td></tr>
+            <tr><td>RU (Runethic)</td><td>Policy / Binding</td><td>2.618</td></tr>
+            <tr><td>CA (Cassisivadan)</td><td>Compute / Execution</td><td>4.236</td></tr>
+            <tr><td>UM (Umbroth)</td><td>Security / Redaction</td><td>6.854</td></tr>
+            <tr><td>DR (Draumric)</td><td>Schema / Attestation</td><td>11.09</td></tr>
+        </table>
+
+        <h2>14-Layer Security Pipeline</h2>
+        <div class="grid">
+            <div class="card">
+                <h3>L1-L4: Embedding</h3>
+                <p>Complex context, realification, weighted transform, Poincare ball embedding</p>
+                <span class="tag">Unitarity</span><span class="tag">Locality</span>
+            </div>
+            <div class="card">
+                <h3>L5-L7: Geometry</h3>
+                <p>Hyperbolic distance, breathing transform, Mobius phase rotation</p>
+                <span class="tag">Symmetry</span><span class="tag">Causality</span>
+            </div>
+            <div class="card">
+                <h3>L8-L10: Coherence</h3>
+                <p>Multi-well realms (Hamiltonian), spectral FFT, spin coherence</p>
+                <span class="tag">Symmetry</span>
+            </div>
+            <div class="card">
+                <h3>L11-L14: Decision</h3>
+                <p>Triadic temporal, harmonic wall, risk decision (ALLOW/QUARANTINE/DENY), audio axis</p>
+                <span class="tag">Causality</span><span class="tag">Composition</span>
+            </div>
+        </div>
+
+        <h2>API Domains</h2>
+        <div class="grid">
+            <div class="card">
+                <h3>Core</h3>
+                <p>Quantum-resistant data sealing, retrieval, governance evaluation, attack simulation</p>
+                <a href="api/#/Core" style="color: #7b7bff; font-size: 14px;">View endpoints</a>
+            </div>
+            <div class="card">
+                <h3>HYDRA</h3>
+                <p>Multi-head AI orchestration. Register Claude, GPT, Gemini, Grok heads. Execute workflows.</p>
+                <a href="api/#/HYDRA" style="color: #7b7bff; font-size: 14px;">View endpoints</a>
+            </div>
+            <div class="card">
+                <h3>Mesh</h3>
+                <p>Semantic knowledge graph with tongue-space search and governed writes</p>
+                <a href="api/#/Mesh" style="color: #7b7bff; font-size: 14px;">View endpoints</a>
+            </div>
+            <div class="card">
+                <h3>Gateway</h3>
+                <p>14-layer authorization pipeline, RWP v3 envelopes, fleet task submission</p>
+                <a href="api/#/Gateway" style="color: #7b7bff; font-size: 14px;">View endpoints</a>
+            </div>
+        </div>
+
+        <h2>Post-Quantum Cryptography</h2>
+        <p>All cryptographic operations use NIST-approved post-quantum algorithms:</p>
+        <div class="grid">
+            <div class="card">
+                <h3>ML-KEM-768</h3>
+                <p>Key Encapsulation Mechanism (formerly Kyber). Lattice-based key exchange resistant to quantum attacks.</p>
+            </div>
+            <div class="card">
+                <h3>ML-DSA-65</h3>
+                <p>Digital Signature Algorithm (formerly Dilithium). Lattice-based signatures for envelope authentication.</p>
+            </div>
+            <div class="card">
+                <h3>AES-256-GCM</h3>
+                <p>Symmetric encryption with authenticated additional data. Used for payload encryption inside RWP envelopes.</p>
+            </div>
+        </div>
+
+        <h2>Quick Start</h2>
+        <pre style="background: #111; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 14px; color: #ccc;">
+git clone https://github.com/issdandavis/SCBE-AETHERMOORE
+cd SCBE-AETHERMOORE
+npm install && npm run build
+npm test
+
+# Start the API
+pip install fastapi uvicorn numpy
+uvicorn src.api.main:app --reload --port 8000
+
+# Open API docs
+open http://localhost:8000/docs</pre>
+
+        <h2>Origin</h2>
+        <p>SCBE-AETHERMOORE started as a DnD campaign on <a href="https://everweave.ai/" style="color: #7b7bff;">Everweave</a>. 12,596 paragraphs of AI-generated collaborative storytelling became the tokenizer seed for the Sacred Tongues system. The magic system — where collaboration was cheap and unilateral force was expensive — turned out to be a security architecture.</p>
+        <p>Patent: USPTO #63/961,403 (provisional)</p>
+    </div>
+
+    <div class="footer">
+        <p>Built by <a href="https://github.com/issdandavis">Issac Daniel Davis</a> | Port Angeles, WA</p>
+        <p style="margin-top: 8px;">USPTO #63/961,403 | <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">Code</a> | <a href="https://huggingface.co/datasets/issdandavis/scbe-aethermoore-training-data">Dataset</a> | <a href="api/">API</a></p>
+    </div>
+</body>
+</html>
