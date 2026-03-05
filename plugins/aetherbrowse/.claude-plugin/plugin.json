@@ -1,0 +1,12 @@
+{
+  "name": "aetherbrowse",
+  "version": "0.1.0",
+  "description": "Full development and operations toolkit for the AetherBrowse governed AI browser",
+  "author": {
+    "name": "Issac Davis",
+    "email": "issdandavis@gmail.com"
+  },
+  "repository": "https://github.com/issdandavis/SCBE-AETHERMOORE",
+  "license": "MIT",
+  "keywords": ["browser", "governance", "aetherbrowse", "hydra-armor", "playwright"]
+}

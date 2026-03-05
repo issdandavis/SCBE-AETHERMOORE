@@ -1,0 +1,114 @@
+{
+  "tenreary_type": "mcp.tenreary.v1",
+  "name": "three-by-three-cash-ops",
+  "metadata": {
+    "grid": "3x3",
+    "description": "Browser-independent 3x3 cash execution: discover, analyze, execute.",
+    "notion_logging": "Pass notion.page_id via --set notion.page_id=<page_id> to append run output."
+  },
+  "dual_browser": {
+    "enabled": false
+  },
+  "steps": [
+    {
+      "id": "d1_set_offer_context",
+      "type": "context.set",
+      "params": {
+        "key": "offer_context",
+        "value": "shopify offer refresh stripe checkout conversion lead magnet pricing automation"
+      }
+    },
+    {
+      "id": "d2_repo_probe",
+      "type": "github.rest",
+      "params": {
+        "method": "GET",
+        "path": "/repos/issdandavis/SCBE-AETHERMOORE"
+      }
+    },
+    {
+      "id": "d3_market_discovery_emit",
+      "type": "connector.execute",
+      "params": {
+        "platform": "n8n",
+        "action": "trigger",
+        "payload": {
+          "event": "cash_ops_discovery",
+          "workflow": "three-by-three-cash-ops",
+          "repo_probe": "{{step.d2_repo_probe.data}}"
+        }
+      }
+    },
+    {
+      "id": "a1_offer_signal_analysis",
+      "type": "analysis.content",
+      "params": {
+        "backend": "rule",
+        "source_key": "offer_context",
+        "prompt": "Identify strongest near-term cash levers."
+      }
+    },
+    {
+      "id": "a2_pipeline_emit",
+      "type": "automation.emit",
+      "params": {
+        "channels": [
+          "n8n",
+          "zapier"
+        ],
+        "action": "trigger",
+        "payload": {
+          "event": "cash_ops_analysis_ready",
+          "workflow": "three-by-three-cash-ops",
+          "analysis": "{{step.a1_offer_signal_analysis.data.analysis}}"
+        }
+      }
+    },
+    {
+      "id": "a3_offer_sync",
+      "type": "connector.execute",
+      "params": {
+        "platform": "n8n",
+        "action": "trigger",
+        "payload": {
+          "event": "cash_ops_offer_sync",
+          "workflow": "three-by-three-cash-ops",
+          "analysis": "{{step.a1_offer_signal_analysis.data.analysis}}"
+        }
+      }
+    },
+    {
+      "id": "e1_shopify_revenue_push",
+      "type": "connector.execute",
+      "params": {
+        "platform": "n8n",
+        "action": "trigger",
+        "payload": {
+          "event": "shopify_revenue_push",
+          "workflow": "three-by-three-cash-ops"
+        }
+      }
+    },
+    {
+      "id": "e2_stripe_checkout_push",
+      "type": "connector.execute",
+      "params": {
+        "platform": "n8n",
+        "action": "trigger",
+        "payload": {
+          "event": "stripe_checkout_push",
+          "workflow": "three-by-three-cash-ops"
+        }
+      }
+    },
+    {
+      "id": "e3_notion_run_log",
+      "type": "notion.append",
+      "params": {
+        "page_id": "{{notion.page_id}}",
+        "heading": "3x3 Cash Ops Run",
+        "text": "workflow={{tenreary_name}} emit={{step.a2_pipeline_emit.data}} shopify={{step.e1_shopify_revenue_push.data.success}} stripe={{step.e2_stripe_checkout_push.data.success}}"
+      }
+    }
+  ]
+}

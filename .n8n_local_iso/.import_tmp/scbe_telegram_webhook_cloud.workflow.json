@@ -1,0 +1,307 @@
+{
+    "name":  "SCBE Telegram Webhook Cloud Router",
+    "nodes":  [
+                  {
+                      "id":  "webhook_tg",
+                      "name":  "Telegram Webhook",
+                      "type":  "n8n-nodes-base.webhook",
+                      "typeVersion":  2.1,
+                      "position":  [
+                                       220,
+                                       280
+                                   ],
+                      "parameters":  {
+                                         "httpMethod":  "POST",
+                                         "path":  "telegram-clayofsand",
+                                         "responseMode":  "onReceived",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "webhookId":  "scbe-telegram-cloud-router-001"
+                  },
+                  {
+                      "id":  "parse_update",
+                      "name":  "Parse Telegram Update",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       460,
+                                       280
+                                   ],
+                      "parameters":  {
+                                         "jsCode":  "const update = $json.body || $json;\nconst message = update.message || update.edited_message || update.channel_post || {};\nconst chatId = message.chat?.id ?? null;\nif (!chatId) {\n  return [];\n}\nconst original = String(message.text || \u0027\u0027).trim();\nconst lower = original.toLowerCase();\nlet mode = \u0027dispatch\u0027;\nlet provider = \u0027huggingface\u0027;\nlet prompt = original;\n\nif (lower === \u0027/status\u0027) {\n  mode = \u0027status\u0027;\n  prompt = \u0027status\u0027;\n} else if (lower.startsWith(\u0027/grok \u0027)) {\n  provider = \u0027xai\u0027;\n  prompt = original.slice(6).trim();\n} else if (lower.startsWith(\u0027/claude \u0027)) {\n  provider = \u0027anthropic\u0027;\n  prompt = original.slice(8).trim();\n} else if (lower.startsWith(\u0027/gpt \u0027)) {\n  provider = \u0027openai\u0027;\n  prompt = original.slice(5).trim();\n} else if (lower.startsWith(\u0027/hf \u0027)) {\n  provider = \u0027huggingface\u0027;\n  prompt = original.slice(4).trim();\n}\n\nif (!prompt) {\n  prompt = \u0027hello\u0027;\n}\n\nreturn [{\n  json: {\n    update_id: update.update_id,\n    chat_id: chatId,\n    mode,\n    provider,\n    prompt,\n    original\n  }\n}];"
+                                     }
+                  },
+                  {
+                      "id":  "if_status",
+                      "name":  "Is Status?",
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  2.2,
+                      "position":  [
+                                       700,
+                                       280
+                                   ],
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "version":  2,
+                                                                            "leftValue":  "",
+                                                                            "caseSensitive":  false,
+                                                                            "typeValidation":  "strict"
+                                                                        },
+                                                            "combinator":  "and",
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "mode_eq_status",
+                                                                                   "leftValue":  "={{ $json.mode }}",
+                                                                                   "rightValue":  "status",
+                                                                                   "operator":  {
+                                                                                                    "type":  "string",
+                                                                                                    "operation":  "equals"
+                                                                                                }
+                                                                               }
+                                                                           ]
+                                                        },
+                                         "options":  {
+
+                                                     }
+                                     }
+                  },
+                  {
+                      "id":  "call_provider_status",
+                      "name":  "Bridge Providers Status",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.2,
+                      "position":  [
+                                       940,
+                                       160
+                                   ],
+                      "continueOnFail":  true,
+                      "parameters":  {
+                                         "method":  "GET",
+                                         "url":  "={{ ($env.SCBE_BRIDGE_URL || \u0027http://127.0.0.1:8002\u0027) + \u0027/v1/llm/providers\u0027 }}",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "X-API-Key",
+                                                                                         "value":  "={{ $env.SCBE_API_KEY || \u0027scbe-dev-key\u0027 }}"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "options":  {
+                                                         "timeout":  20000
+                                                     }
+                                     }
+                  },
+                  {
+                      "id":  "build_status_message",
+                      "name":  "Build Status Reply",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       1160,
+                                       160
+                                   ],
+                      "parameters":  {
+                                         "jsCode":  "if ($json.error) {\n  return [{ json: { text: `Status check failed: ${$json.error.message || \u0027unknown error\u0027}` } }];\n}\nconst p = $json.providers || {};\nconst line = (k, v) =\u003e `${k}: ${v?.configured ? \u0027on\u0027 : \u0027off\u0027} (${v?.default_model || \u0027-\u0027})`;\nconst text = [\n  \u0027SCBE Provider Status\u0027,\n  line(\u0027openai\u0027, p.openai),\n  line(\u0027anthropic\u0027, p.anthropic),\n  line(\u0027xai\u0027, p.xai),\n  line(\u0027huggingface\u0027, p.huggingface),\n  `zapier: ${$json.zapier?.configured ? \u0027on\u0027 : \u0027off\u0027}`\n].join(\u0027\\n\u0027);\nreturn [{ json: { text } }];"
+                                     }
+                  },
+                  {
+                      "id":  "send_status_reply",
+                      "name":  "Send Telegram Status",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.2,
+                      "position":  [
+                                       1380,
+                                       160
+                                   ],
+                      "continueOnFail":  true,
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "={{ \u0027https://api.telegram.org/bot\u0027 + $env.TELEGRAM_BOT_TOKEN + \u0027/sendMessage\u0027 }}",
+                                         "sendBody":  true,
+                                         "contentType":  "json",
+                                         "jsonBody":  "={{ JSON.stringify({ chat_id: $(\u0027Parse Telegram Update\u0027).item.json.chat_id, text: $json.text }) }}",
+                                         "options":  {
+                                                         "timeout":  20000
+                                                     }
+                                     }
+                  },
+                  {
+                      "id":  "call_dispatch",
+                      "name":  "Bridge LLM Dispatch",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.2,
+                      "position":  [
+                                       940,
+                                       380
+                                   ],
+                      "continueOnFail":  true,
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "={{ ($env.SCBE_BRIDGE_URL || \u0027http://127.0.0.1:8002\u0027) + \u0027/v1/llm/dispatch\u0027 }}",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "X-API-Key",
+                                                                                         "value":  "={{ $env.SCBE_API_KEY || \u0027scbe-dev-key\u0027 }}"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "contentType":  "json",
+                                         "jsonBody":  "={{ JSON.stringify({ provider: $json.provider, messages: [{ role: \u0027user\u0027, content: $json.prompt }], temperature: 0.2, max_tokens: 700, metadata: { source: \u0027telegram\u0027, workflow: \u0027scbe_telegram_webhook_cloud\u0027 } }) }}",
+                                         "options":  {
+                                                         "timeout":  90000
+                                                     }
+                                     }
+                  },
+                  {
+                      "id":  "build_dispatch_message",
+                      "name":  "Build Dispatch Reply",
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       1160,
+                                       380
+                                   ],
+                      "parameters":  {
+                                         "jsCode":  "if ($json.error) {\n  return [{ json: { text: `Dispatch failed: ${$json.error.message || \u0027unknown error\u0027}` } }];\n}\nlet text = String($json.text || \u0027\u0027).trim();\nif (!text) {\n  text = \u0027No text response from provider.\u0027;\n}\nif (text.length \u003e 3500) {\n  text = `${text.slice(0, 3500)}\\n...[truncated]`;\n}\nreturn [{ json: { text } }];"
+                                     }
+                  },
+                  {
+                      "id":  "send_dispatch_reply",
+                      "name":  "Send Telegram Dispatch",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.2,
+                      "position":  [
+                                       1380,
+                                       380
+                                   ],
+                      "continueOnFail":  true,
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "={{ \u0027https://api.telegram.org/bot\u0027 + $env.TELEGRAM_BOT_TOKEN + \u0027/sendMessage\u0027 }}",
+                                         "sendBody":  true,
+                                         "contentType":  "json",
+                                         "jsonBody":  "={{ JSON.stringify({ chat_id: $(\u0027Parse Telegram Update\u0027).item.json.chat_id, text: $json.text }) }}",
+                                         "options":  {
+                                                         "timeout":  20000
+                                                     }
+                                     }
+                  },
+                  {
+                      "id":  "note_usage",
+                      "name":  "Sticky Note",
+                      "type":  "n8n-nodes-base.stickyNote",
+                      "typeVersion":  1,
+                      "position":  [
+                                       80,
+                                       20
+                                   ],
+                      "parameters":  {
+                                         "color":  4,
+                                         "width":  560,
+                                         "height":  220,
+                                         "content":  "### Cloud-safe Telegram Router\n- No Telegram credentials required in nodes.\n- Uses webhook + Telegram Bot API HTTP calls.\n- Set env vars in n8n: TELEGRAM_BOT_TOKEN, SCBE_BRIDGE_URL, SCBE_API_KEY.\n- Set BotFather webhook to: https://\u003cyour-n8n-domain\u003e/webhook/telegram-clayofsand"
+                                     }
+                  }
+              ],
+    "connections":  {
+                        "Telegram Webhook":  {
+                                                 "main":  [
+                                                              [
+                                                                  {
+                                                                      "node":  "Parse Telegram Update",
+                                                                      "type":  "main",
+                                                                      "index":  0
+                                                                  }
+                                                              ]
+                                                          ]
+                                             },
+                        "Parse Telegram Update":  {
+                                                      "main":  [
+                                                                   [
+                                                                       {
+                                                                           "node":  "Is Status?",
+                                                                           "type":  "main",
+                                                                           "index":  0
+                                                                       }
+                                                                   ]
+                                                               ]
+                                                  },
+                        "Is Status?":  {
+                                           "main":  [
+                                                        [
+                                                            {
+                                                                "node":  "Bridge Providers Status",
+                                                                "type":  "main",
+                                                                "index":  0
+                                                            }
+                                                        ],
+                                                        [
+                                                            {
+                                                                "node":  "Bridge LLM Dispatch",
+                                                                "type":  "main",
+                                                                "index":  0
+                                                            }
+                                                        ]
+                                                    ]
+                                       },
+                        "Bridge Providers Status":  {
+                                                        "main":  [
+                                                                     [
+                                                                         {
+                                                                             "node":  "Build Status Reply",
+                                                                             "type":  "main",
+                                                                             "index":  0
+                                                                         }
+                                                                     ]
+                                                                 ]
+                                                    },
+                        "Build Status Reply":  {
+                                                   "main":  [
+                                                                [
+                                                                    {
+                                                                        "node":  "Send Telegram Status",
+                                                                        "type":  "main",
+                                                                        "index":  0
+                                                                    }
+                                                                ]
+                                                            ]
+                                               },
+                        "Bridge LLM Dispatch":  {
+                                                    "main":  [
+                                                                 [
+                                                                     {
+                                                                         "node":  "Build Dispatch Reply",
+                                                                         "type":  "main",
+                                                                         "index":  0
+                                                                     }
+                                                                 ]
+                                                             ]
+                                                },
+                        "Build Dispatch Reply":  {
+                                                     "main":  [
+                                                                  [
+                                                                      {
+                                                                          "node":  "Send Telegram Dispatch",
+                                                                          "type":  "main",
+                                                                          "index":  0
+                                                                      }
+                                                                  ]
+                                                              ]
+                                                 }
+                    },
+    "active":  false,
+    "settings":  {
+
+                 },
+    "pinData":  {
+
+                },
+    "id":  "0a0e5c72-a82d-40cd-9590-08c529ab9d67"
+}

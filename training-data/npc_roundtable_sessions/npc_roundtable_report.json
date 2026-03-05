@@ -1,0 +1,30 @@
+{
+  "source_files": [
+    "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\lore_sessions\\characters_and_world.jsonl",
+    "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\lore_sessions\\complete_character_database.jsonl",
+    "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\lore_sessions\\everweave_canon.jsonl",
+    "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\lore_sessions\\everweave_rp_sessions.jsonl",
+    "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\lore_sessions\\thalorion_compendium.jsonl",
+    "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\lore_sessions\\world_deep_lore.jsonl",
+    "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sidekick\\sidekick_memory.jsonl",
+    "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sidekick\\sidekick_sft.jsonl"
+  ],
+  "npc_count": 8,
+  "rows": {
+    "npc_cards": 8,
+    "roundtable_sft": 48,
+    "roundtable_dpo": 8
+  },
+  "paths": {
+    "npc_cards": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\npc_roundtable_sessions\\npc_cards.jsonl",
+    "roundtable_sft": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\npc_roundtable_sessions\\npc_roundtable_sft.jsonl",
+    "roundtable_dpo": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\npc_roundtable_sessions\\npc_roundtable_dpo.jsonl",
+    "npc_registry": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\npc_roundtable_sessions\\npc_registry.json"
+  },
+  "audit": {
+    "returncode": 0,
+    "threshold": 0.78,
+    "report_path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\npc_roundtable_sessions\\npc_roundtable_sft.audit.json",
+    "stdout_preview": "Audit report written: C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\npc_roundtable_sessions\\npc_roundtable_sft.audit.json\nstatus=ALLOW sample_count=48 flagged=0\n"
+  }
+}
