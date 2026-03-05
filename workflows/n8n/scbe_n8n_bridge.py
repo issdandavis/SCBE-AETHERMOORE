@@ -431,6 +431,19 @@ def _dispatch_anthropic(req: LLMDispatchRequest) -> Dict[str, Any]:
 def _send_zapier_event(hook_url: str, event_payload: Dict[str, Any]) -> Dict[str, Any]:
     if not hook_url:
         return {"status": "skipped", "reason": "missing_hook_url"}
+    # SSRF protection: only allow known webhook domains
+    from urllib.parse import urlparse
+    parsed = urlparse(hook_url)
+    _ALLOWED_WEBHOOK_HOSTS = {
+        "hooks.zapier.com",
+        "api.zapier.com",
+        "hook.us1.make.com",
+        "hook.eu1.make.com",
+    }
+    if parsed.hostname not in _ALLOWED_WEBHOOK_HOSTS:
+        return {"status": "blocked", "reason": f"host not in allowlist: {parsed.hostname}"}
+    if parsed.scheme != "https":
+        return {"status": "blocked", "reason": "only https allowed"}
     req = urllib_request.Request(
         url=hook_url,
         method="POST",

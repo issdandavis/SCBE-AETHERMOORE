@@ -14,6 +14,23 @@ const MAX_TOTAL_BYTES = 2 * 1024 * 1024;
 const MAX_OUTPUT_BYTES = 300 * 1024;
 const DOCKER_IMAGE = process.env.KERNEL_RUNNER_IMAGE || 'node:20-bookworm';
 const PORT = Number(process.env.KERNEL_RUNNER_PORT || 4242);
+const MAX_CONCURRENT_RUNS = 3;
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX_REQUESTS = 10;
+
+let activeRuns = 0;
+const rateLimitMap = new Map();
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  let entry = rateLimitMap.get(ip);
+  if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+    entry = { windowStart: now, count: 0 };
+    rateLimitMap.set(ip, entry);
+  }
+  entry.count++;
+  return entry.count <= RATE_LIMIT_MAX_REQUESTS;
+}
 
 const SECRET_PATTERNS = [
   /\bghp_[A-Za-z0-9]{20,}\b/gi,
@@ -108,9 +125,9 @@ function normalizePackageJson(input) {
 }
 
 function safeRunCommand(input) {
-  const raw = String(input || 'npm test').trim();
-  if (/^npm\s+test(\s+.*)?$/i.test(raw)) return raw;
-  if (/^npm\s+run\s+[a-zA-Z0-9:_-]+(\s+.*)?$/i.test(raw)) return raw;
+  const raw = String(input || 'npm test').trim().slice(0, 256);
+  if (/^npm\s+test\b.*$/i.test(raw)) return raw;
+  if (/^npm\s+run\s+[a-zA-Z0-9:_-]+\b.*$/i.test(raw)) return raw;
   throw new Error('runCommand is restricted to `npm test` or `npm run <script>`');
 }
 
@@ -331,6 +348,10 @@ app.get('/api/health', async (_req, res) => {
 });
 
 app.post('/api/preflight', (req, res) => {
+  const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+  if (!checkRateLimit(clientIp)) {
+    return res.status(429).json({ ok: false, error: 'Rate limit exceeded.' });
+  }
   try {
     const payload = parsePayload(req.body || {});
     const result = buildVerification(payload);
@@ -348,6 +369,14 @@ app.post('/api/preflight', (req, res) => {
 });
 
 app.post('/api/run', async (req, res) => {
+  const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+  if (!checkRateLimit(clientIp)) {
+    return res.status(429).json({ ok: false, error: 'Rate limit exceeded. Try again later.' });
+  }
+  if (activeRuns >= MAX_CONCURRENT_RUNS) {
+    return res.status(503).json({ ok: false, error: `Max concurrent runs (${MAX_CONCURRENT_RUNS}) reached.` });
+  }
+  activeRuns++;
   let workspace = '';
   try {
     const payload = parsePayload(req.body || {});
@@ -414,6 +443,7 @@ app.post('/api/run', async (req, res) => {
       error: String(error?.message || error),
     });
   } finally {
+    activeRuns--;
     if (workspace) {
       await fs.rm(workspace, { recursive: true, force: true });
     }
