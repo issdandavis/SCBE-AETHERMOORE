@@ -1,4 +1,4 @@
-name: Build AetherCode — Play Store + Kindle
+name: Build AetherCode - Play Store and Kindle
 
 on:
   push:
@@ -11,19 +11,14 @@ on:
         description: 'Build signed release AAB for Play Store'
         type: boolean
         default: true
-      bump_version:
-        description: 'Bump versionCode by 1'
-        type: boolean
-        default: false
-
-env:
-  KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD || 'aethercode2026' }}
-  KEY_ALIAS: aethercode
-  KEY_PASSWORD: ${{ secrets.KEY_PASSWORD || 'aethercode2026' }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      KEY_ALIAS: aethercode
+      KEYSTORE_PASSWORD: aethercode2026
+      KEY_PASSWORD: aethercode2026
     steps:
       - uses: actions/checkout@v4
 
@@ -45,7 +40,7 @@ jobs:
         working-directory: kindle-app
         run: npm install
 
-      - name: Copy PWA assets to www/
+      - name: Copy PWA assets
         working-directory: kindle-app
         run: node scripts/copy-pwa-assets.js
 
@@ -57,7 +52,6 @@ jobs:
           fi
           npx cap sync android
 
-      # --- Debug APK (always) ---
       - name: Build debug APK
         working-directory: kindle-app/android
         run: ./gradlew assembleDebug
@@ -69,106 +63,81 @@ jobs:
           path: kindle-app/android/app/build/outputs/apk/debug/*.apk
           retention-days: 90
 
-      # --- Signed Release AAB (for Play Store) ---
       - name: Generate signing keystore
-        if: ${{ github.event.inputs.build_release == 'true' || github.event_name == 'workflow_dispatch' }}
+        if: inputs.build_release == true || github.event_name == 'push'
         working-directory: kindle-app/android
         run: |
-          # Use secret keystore if available, otherwise generate one
-          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
-            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/aethercode-release.jks
-          else
-            keytool -genkeypair \
-              -v \
-              -keystore app/aethercode-release.jks \
-              -keyalg RSA \
-              -keysize 2048 \
-              -validity 10000 \
-              -alias ${{ env.KEY_ALIAS }} \
-              -storepass "${{ env.KEYSTORE_PASSWORD }}" \
-              -keypass "${{ env.KEY_PASSWORD }}" \
-              -dname "CN=Issac Davis, OU=AetherCode, O=Aethermoore Works, L=Port Angeles, ST=WA, C=US"
-          fi
+          keytool -genkeypair \
+            -v \
+            -keystore app/aethercode-release.jks \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -alias "$KEY_ALIAS" \
+            -storepass "$KEYSTORE_PASSWORD" \
+            -keypass "$KEY_PASSWORD" \
+            -dname "CN=Issac Davis, OU=AetherCode, O=Aethermoore Works, L=Port Angeles, ST=WA, C=US"
 
-      - name: Add signing config to build.gradle
-        if: ${{ github.event.inputs.build_release == 'true' || github.event_name == 'workflow_dispatch' }}
+      - name: Inject signing config
+        if: inputs.build_release == true || github.event_name == 'push'
         working-directory: kindle-app/android
         run: |
-          # Inject signing config into app/build.gradle
-          cat > /tmp/signing_patch.py << 'PYEOF'
-          import re
+          python3 - << 'PYEOF'
           with open("app/build.gradle", "r") as f:
               content = f.read()
           if "signingConfigs" not in content:
-              signing_block = """
-      signingConfigs {
-          release {
-              storeFile file("aethercode-release.jks")
-              storePassword System.getenv("KEYSTORE_PASSWORD") ?: "aethercode2026"
-              keyAlias System.getenv("KEY_ALIAS") ?: "aethercode"
-              keyPassword System.getenv("KEY_PASSWORD") ?: "aethercode2026"
-          }
-      }
-          """
-              content = content.replace(
-                  "buildTypes {",
-                  signing_block + "\n    buildTypes {"
-              )
+              signing = '''
+              signingConfigs {
+                  release {
+                      storeFile file("aethercode-release.jks")
+                      storePassword System.getenv("KEYSTORE_PASSWORD") ?: "aethercode2026"
+                      keyAlias System.getenv("KEY_ALIAS") ?: "aethercode"
+                      keyPassword System.getenv("KEY_PASSWORD") ?: "aethercode2026"
+                  }
+              }
+          '''
+              content = content.replace("buildTypes {", signing + "\n    buildTypes {")
               content = content.replace(
                   "minifyEnabled false",
                   "minifyEnabled false\n            signingConfig signingConfigs.release"
               )
-          with open("app/build.gradle", "w") as f:
-              f.write(content)
+              with open("app/build.gradle", "w") as f:
+                  f.write(content)
+              print("Signing config injected")
+          else:
+              print("Signing config already present")
           PYEOF
-          python3 /tmp/signing_patch.py
 
-      - name: Build release AAB
-        if: ${{ github.event.inputs.build_release == 'true' || github.event_name == 'workflow_dispatch' }}
+      - name: Build release AAB (Play Store)
+        if: inputs.build_release == true || github.event_name == 'push'
         working-directory: kindle-app/android
-        env:
-          KEYSTORE_PASSWORD: ${{ env.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ env.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ env.KEY_PASSWORD }}
         run: ./gradlew bundleRelease
 
-      - name: Build release APK (for Amazon Appstore)
-        if: ${{ github.event.inputs.build_release == 'true' || github.event_name == 'workflow_dispatch' }}
+      - name: Build release APK (Amazon Appstore)
+        if: inputs.build_release == true || github.event_name == 'push'
         working-directory: kindle-app/android
-        env:
-          KEYSTORE_PASSWORD: ${{ env.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ env.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ env.KEY_PASSWORD }}
         run: ./gradlew assembleRelease
 
-      - name: Upload release AAB (Play Store)
-        if: ${{ github.event.inputs.build_release == 'true' || github.event_name == 'workflow_dispatch' }}
+      - name: Upload release AAB
+        if: inputs.build_release == true || github.event_name == 'push'
         uses: actions/upload-artifact@v4
         with:
           name: AetherCode-release-aab
           path: kindle-app/android/app/build/outputs/bundle/release/*.aab
           retention-days: 90
 
-      - name: Upload release APK (Amazon Appstore)
-        if: ${{ github.event.inputs.build_release == 'true' || github.event_name == 'workflow_dispatch' }}
+      - name: Upload release APK
+        if: inputs.build_release == true || github.event_name == 'push'
         uses: actions/upload-artifact@v4
         with:
           name: AetherCode-release-apk
           path: kindle-app/android/app/build/outputs/apk/release/*.apk
           retention-days: 90
 
-      # --- Summary ---
-      - name: Build summary
+      - name: Summary
         run: |
-          echo "## AetherCode Build Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Artifact | Format | Store |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------|--------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Debug APK | .apk | Sideload / Testing |" >> $GITHUB_STEP_SUMMARY
-          if [ -f kindle-app/android/app/build/outputs/bundle/release/*.aab 2>/dev/null ]; then
-            echo "| Release AAB | .aab | Google Play Store |" >> $GITHUB_STEP_SUMMARY
-            echo "| Release APK | .apk | Amazon Appstore |" >> $GITHUB_STEP_SUMMARY
-          fi
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Package: com.issdandavis.aethercode" >> $GITHUB_STEP_SUMMARY
-          echo "Version: 1.1.0 (versionCode 2)" >> $GITHUB_STEP_SUMMARY
+          echo "## AetherCode Build" >> $GITHUB_STEP_SUMMARY
+          echo "- Package: com.issdandavis.aethercode" >> $GITHUB_STEP_SUMMARY
+          echo "- Debug APK: uploaded" >> $GITHUB_STEP_SUMMARY
+          ls kindle-app/android/app/build/outputs/bundle/release/*.aab 2>/dev/null && echo "- Release AAB: uploaded (Play Store ready)" >> $GITHUB_STEP_SUMMARY || true
+          ls kindle-app/android/app/build/outputs/apk/release/*.apk 2>/dev/null && echo "- Release APK: uploaded (Amazon ready)" >> $GITHUB_STEP_SUMMARY || true
