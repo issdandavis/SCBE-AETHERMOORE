@@ -58,6 +58,10 @@ async function runPython(code: string): Promise<{ stdout: string; stderr: string
   });
 }
 
+function splitOutputLines(stdout: string): string[] {
+  return stdout.trim().split(/\r?\n/).map((line) => line.trimEnd());
+}
+
 const maybeDescribe = PYTHON ? describe : describe.skip;
 
 maybeDescribe('SwarmGovernance', () => {
@@ -107,7 +111,7 @@ gov.add_agent("agent-2", AgentRole.EXECUTOR)
 print(len(gov.agents))
 print(gov.agents["agent-1"].role.value)
       `);
-      const lines = result.stdout.trim().split('\n');
+      const lines = splitOutputLines(result.stdout);
       expect(lines[0]).toBe('2');
       expect(lines[1]).toBe('validator');
     });
@@ -126,7 +130,7 @@ gov.remove_agent("agent-1")
 print(len(gov.agents))
 print("agent-1" in gov.agents)
       `);
-      const lines = result.stdout.trim().split('\n');
+      const lines = splitOutputLines(result.stdout);
       expect(lines[0]).toBe('1');
       expect(lines[1]).toBe('False');
     });
@@ -166,7 +170,7 @@ print(f"{r_mid:.2f}")
 print(f"{r_low:.2f}")
 print(r_low > r_mid > r_high)
       `);
-      const lines = result.stdout.trim().split('\n');
+      const lines = splitOutputLines(result.stdout);
       expect(parseFloat(lines[0])).toBeCloseTo(1.5, 1);  // Base R
       expect(lines[3]).toBe('True');  // Low coherence → higher R
     });
@@ -185,7 +189,7 @@ k_low = gov.get_kappa(0.0)
 print(f"{k_high:.4f}")
 print(k_low < k_high)  # More negative for low coherence
       `);
-      const lines = result.stdout.trim().split('\n');
+      const lines = splitOutputLines(result.stdout);
       expect(parseFloat(lines[0])).toBeCloseTo(-1.0, 3);  // κ = -1 at full coherence
       expect(lines[1]).toBe('True');
     });
@@ -207,7 +211,7 @@ d2 = gov.hyperbolic_distance(a, b, -2)
 print(d1 > 0)
 print(d1 != d2)
       `);
-      const lines = result.stdout.trim().split('\n');
+      const lines = splitOutputLines(result.stdout);
       expect(lines[0]).toBe('True');
       expect(lines[1]).toBe('True');
     });
@@ -226,7 +230,7 @@ p_large = gov.harmonic_penalty(2.0, 1.5)
 print(p_large > p_small)
 print(p_small > 1)
       `);
-      const lines = result.stdout.trim().split('\n');
+      const lines = splitOutputLines(result.stdout);
       expect(lines[0]).toBe('True');  // Larger distance → larger penalty
       expect(lines[1]).toBe('True');
     });
@@ -248,7 +252,7 @@ result = gov.simulation_step(dt=0.1)
 print(result["agents_updated"])
 print("swarm_coherence" in result)
       `);
-      const lines = result.stdout.trim().split('\n');
+      const lines = splitOutputLines(result.stdout);
       expect(lines[0]).toBe('2');
       expect(lines[1]).toBe('True');
     });
@@ -325,7 +329,7 @@ print(expelled_count > 0)  # At least some agents should be expelled
 print(honest_active >= 3)  # Most honest agents should remain active
 print(gov.swarm_coherence > 0.7)  # Swarm coherence should recover
       `);
-      const lines = result.stdout.trim().split('\n');
+      const lines = splitOutputLines(result.stdout);
       expect(lines[0]).toBe('True');  // Malicious agents expelled
       expect(lines[1]).toBe('True');  // Honest agents remain
       expect(lines[2]).toBe('True');  // Swarm coherence recovered
@@ -349,7 +353,7 @@ result = gov.simulation_step()
 print("mal-1" in gov.agents)
 print(result["agents_expelled"])
       `);
-      const lines = result.stdout.trim().split('\n');
+      const lines = splitOutputLines(result.stdout);
       expect(lines[0]).toBe('False');
       expect(lines[1]).toBe('1');
     });
@@ -383,7 +387,7 @@ result = asyncio.run(test())
 print(result["success"])
 print("auto_executed" in result or "consensus_reached" in result)
       `);
-      const lines = result.stdout.trim().split('\n');
+      const lines = splitOutputLines(result.stdout);
       expect(lines[0]).toBe('True');
       expect(lines[1]).toBe('True');
     });
@@ -431,7 +435,7 @@ coder = AutonomousCodeAgent(gov, "coder-1")
 print(coder.agent_id)
 print("coder-1" in gov.agents)
       `);
-      const lines = result.stdout.trim().split('\n');
+      const lines = splitOutputLines(result.stdout);
       expect(lines[0]).toBe('coder-1');
       expect(lines[1]).toBe('True');
     });
@@ -452,7 +456,7 @@ print(safe_risk < 0.5)
 print(risky_risk > 0.5)
 print(risky_risk > safe_risk)
       `);
-      const lines = result.stdout.trim().split('\n');
+      const lines = splitOutputLines(result.stdout);
       expect(lines[0]).toBe('True');
       expect(lines[1]).toBe('True');
       expect(lines[2]).toBe('True');
@@ -486,7 +490,7 @@ result = asyncio.run(test())
 print(result["executed"])
 print("risk" in result)
       `);
-      const lines = result.stdout.trim().split('\n');
+      const lines = splitOutputLines(result.stdout);
       expect(lines[0]).toBe('True');
       expect(lines[1]).toBe('True');
     });
@@ -513,7 +517,7 @@ print("swarm_coherence" in status)
 print("attack_detected" in status)
 print("agents_by_role" in status)
       `);
-      const lines = result.stdout.trim().split('\n');
+      const lines = splitOutputLines(result.stdout);
       expect(lines[0]).toBe('3');
       expect(lines[1]).toBe('True');
       expect(lines[2]).toBe('True');
@@ -535,7 +539,7 @@ distances = gov.get_agent_distances()
 print("a1" in distances)
 print("a2" in distances.get("a1", {}))
       `);
-      const lines = result.stdout.trim().split('\n');
+      const lines = splitOutputLines(result.stdout);
       expect(lines[0]).toBe('True');
       expect(lines[1]).toBe('True');
     });
@@ -563,10 +567,11 @@ print("final_status" in result)
 print("history" in result)
 print(len(result["history"]))
       `);
-      const lines = result.stdout.trim().split('\n');
+      const lines = splitOutputLines(result.stdout);
       expect(lines[0]).toBe('True');
       expect(lines[1]).toBe('True');
       expect(lines[2]).toBe('10');
     });
   });
 });
+
