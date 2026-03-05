@@ -185,6 +185,20 @@ export const RIVERS: River[] = [
     },
   },
   {
+    id: 'github-codespaces-api',
+    name: 'GitHub Codespaces API',
+    localPath: 'https://api.github.com/user/codespaces',
+    type: 'api',
+    status: 'unknown',
+    syncDirection: 'bidirectional',
+    policy: {
+      readFromRiver: true,
+      writeToRiver: true,
+      allowedCategories: ['devenv', 'codespaces', 'code', 'ops'],
+      requireExplicitCategory: true,
+    },
+  },
+  {
     id: 'gamma-mcp',
     name: 'Gamma MCP',
     localPath: 'https://gamma.app',
