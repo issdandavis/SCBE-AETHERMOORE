@@ -8,6 +8,7 @@ import SubmitProject from './pages/SubmitProject';
 import ProjectDetail from './pages/ProjectDetail';
 import Conferences from './pages/Conferences';
 import LiveRoom from './pages/LiveRoom';
+import CaaSPricing from './pages/CaaSPricing';
 
 export default function App() {
   const auth = useAuthProvider();
@@ -22,6 +23,7 @@ export default function App() {
               <>
                 <Link to="/dashboard">Dashboard</Link>
                 <Link to="/conferences">Demo Days</Link>
+                <Link to="/pricing">CaaS</Link>
                 {auth.user.role === 'coder' && <Link to="/submit">Submit Project</Link>}
                 <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
                   {auth.user.displayName} ({auth.user.role})
@@ -45,6 +47,7 @@ export default function App() {
             <Route path="/projects/:id" element={<ProjectDetail />} />
             <Route path="/conferences" element={<Conferences />} />
             <Route path="/live/:id" element={<LiveRoom />} />
+            <Route path="/pricing" element={<CaaSPricing />} />
           </Routes>
         </main>
       </div>

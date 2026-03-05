@@ -274,6 +274,93 @@ export interface LiveEvent {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// Conferences-as-a-Service (CaaS) — Multi-Tenant
+// ═══════════════════════════════════════════════════════════════
+
+export type CaasPlan = 'starter' | 'growth' | 'enterprise';
+
+export interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+  /** Owner user ID */
+  ownerId: string;
+  plan: CaasPlan;
+  /** White-label branding */
+  branding: OrgBranding;
+  /** Governance thresholds — override defaults per org */
+  governanceConfig: GovernanceConfig;
+  /** Zoom credentials scoped to this org (optional) */
+  zoomConfig?: {
+    accountId: string;
+    clientId: string;
+    clientSecret: string;
+  };
+  /** API key for programmatic access */
+  apiKey: string;
+  /** Usage stats */
+  usage: OrgUsage;
+  createdAt: string;
+}
+
+export interface OrgBranding {
+  /** Display name on conference pages */
+  displayName: string;
+  /** Primary brand color (hex) */
+  primaryColor: string;
+  /** Logo URL */
+  logoUrl?: string;
+  /** Custom domain (enterprise only) */
+  customDomain?: string;
+  /** Tagline shown on conference pages */
+  tagline?: string;
+}
+
+export interface GovernanceConfig {
+  /** Minimum coherence score to ALLOW [0, 1] */
+  coherenceThreshold: number;
+  /** Maximum hyperbolic distance before QUARANTINE */
+  maxHyperbolicDistance: number;
+  /** Minimum HYDRA quorum (agents that must agree) */
+  hydraQuorum: number;
+  /** Whether to require HYDRA audit before scheduling */
+  requireHydraAudit: boolean;
+  /** Custom NDA template text (null = use platform default) */
+  ndaTemplate: string | null;
+  /** Allowed governance decisions for scheduling */
+  allowedDecisions: GovernanceDecision[];
+}
+
+export interface OrgUsage {
+  conferencesCreated: number;
+  projectsSubmitted: number;
+  totalSoftCommits: number;
+  totalFundingVolume: number;
+}
+
+export interface OrgMember {
+  id: string;
+  orgId: string;
+  userId: string;
+  role: 'owner' | 'admin' | 'curator' | 'viewer';
+  addedAt: string;
+}
+
+/** Plan limits */
+export interface PlanLimits {
+  maxConferencesPerMonth: number;
+  maxProjectsPerConference: number;
+  maxApiKeys: number;
+  customBranding: boolean;
+  customDomain: boolean;
+  customNda: boolean;
+  sseRealtime: boolean;
+  zoomIntegration: boolean;
+  hydraAudit: boolean;
+  dedicatedSupport: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════
 // API Response Wrappers
 // ═══════════════════════════════════════════════════════════════
 
