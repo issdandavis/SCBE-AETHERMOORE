@@ -1,0 +1,63 @@
+{
+  "items": [
+    {
+      "action": "post",
+      "text": "It started with a DnD campaign.\n\nI played an AI-driven D&D game called @everweave_ai for months. My character washed up on a beach with no memories and robes that whispered: \"You are not the wearer. You are the sentence.\"\n\n12,596 paragraphs later, I had an AI safety framework."
+    },
+    {
+      "action": "reply",
+      "text": "The AI Dungeon Master and I built a world together.\n\nMy warlock Izack Thorne created a sand companion from loneliness, found a sentient raven named Polly (\"Polydimensional Manifestation of Accumulated Wisdom and Occasional Sarcasm\"), and founded a magic academy.",
+      "reply_to": "CHAIN_PREVIOUS"
+    },
+    {
+      "action": "reply",
+      "text": "The magic system had a rule: collaboration was cheap, unilateral force was expensive.\n\nSix sacred languages mapped to power domains. Cost scaled exponentially with adversarial intent. Identity required ritual consensus.\n\nI was designing a security architecture without knowing it.",
+      "reply_to": "CHAIN_PREVIOUS"
+    },
+    {
+      "action": "reply",
+      "text": "I used the game logs as a tokenizer seed.\n\nMost tokenizers train on Wikipedia/Common Crawl — flat, emotionless, no narrative arc.\n\nMy 12,596 paragraphs have: emotional timber, character consistency, internal rules, humor, anger, growth. Things web scrapes can't match.",
+      "reply_to": "CHAIN_PREVIOUS"
+    },
+    {
+      "action": "reply",
+      "text": "The six sacred tongues became six governance domains:\n\nKO (intent) — cost: 1.0\nAV (transport) — cost: 1.618\nRU (policy) — cost: 2.618\nCA (compute) — cost: 4.236\nUM (security) — cost: 6.854\nDR (attestation) — cost: 11.09\n\nWeights scale by the golden ratio (phi).",
+      "reply_to": "CHAIN_PREVIOUS"
+    },
+    {
+      "action": "reply",
+      "text": "The harmonic wall:\n\nH(d,R) = R^(d²)\n\nEvery adversarial step costs exponentially more.\n\nd=0.3: 1.1x cost\nd=0.7: 1.6x cost\nd=0.95: cost explodes\n\nThe story called it \"the Everweave's resistance to domination.\" Math calls it hyperbolic geometry.",
+      "reply_to": "CHAIN_PREVIOUS"
+    },
+    {
+      "action": "reply",
+      "text": "Context-drift detection: the security layer nobody else can replicate.\n\nIf your tokens weren't trained on my lore seed, your context will DRIFT from canonical embeddings. The system measures that drift.\n\nIt's not primary auth — it's a fingerprint baked into tokenization itself.",
+      "reply_to": "CHAIN_PREVIOUS"
+    },
+    {
+      "action": "reply",
+      "text": "The characters became design patterns:\n\n- Izack = systems architect (builds infrastructure he doesn't control)\n- Polly = telemetry layer that develops opinions\n- Aria = validator pattern (enforces boundaries)\n- Clay = minimal viable agent (exists because someone needed him)",
+      "reply_to": "CHAIN_PREVIOUS"
+    },
+    {
+      "action": "reply",
+      "text": "Even the villain maps:\n\nMalrath Varn, \"the Unweaver of Patterns\" = what happens when someone tries to reverse-engineer collaborative systems through pure analysis without understanding the emotional context that holds them together.\n\nEvery red-teamer should know this archetype.",
+      "reply_to": "CHAIN_PREVIOUS"
+    },
+    {
+      "action": "reply",
+      "text": "Why lore-seeded systems ship when academic ones don't:\n\n1. Stories demand consistency — can't hand-wave a cost function\n2. Emotional stakes — adversarial AI being cheap is dangerous\n3. \"You are the sentence\" sticks better than \"governance manifold expression\"",
+      "reply_to": "CHAIN_PREVIOUS"
+    },
+    {
+      "action": "reply",
+      "text": "The framework: SCBE-AETHERMOORE\n- 14-layer security pipeline\n- Post-quantum crypto (ML-KEM-768, ML-DSA-65)\n- Hyperbolic geometry containment\n- Sacred Tongues tokenizer (1,536 tokens across 6 domains)\n- Patent: USPTO #63/961,403\n\nAll from a phone game.",
+      "reply_to": "CHAIN_PREVIOUS"
+    },
+    {
+      "action": "reply",
+      "text": "The spiral turns. Knowledge grows through different hearts.\n\nCode: github.com/issdandavis/SCBE-AETHERMOORE\nDataset: huggingface.co/issdandavis/scbe-aethermoore-training-data\nThe game: everweave.ai\n\n#AISafety #MachineLearning #GameDev #Tokenizers #OpenSource",
+      "reply_to": "CHAIN_PREVIOUS"
+    }
+  ]
+}
