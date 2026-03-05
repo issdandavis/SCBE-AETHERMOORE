@@ -186,7 +186,17 @@ export interface Conference {
   slots: ConferenceSlot[];
   /** Stream URL (populated when live) */
   streamUrl?: string;
+  /** Zoom meeting details (populated after meeting creation) */
+  zoom?: ZoomMeetingInfo;
   createdAt: string;
+}
+
+export interface ZoomMeetingInfo {
+  meetingId: number;
+  joinUrl: string;
+  password: string;
+  /** Whether this is a real Zoom meeting or simulated (dev mode) */
+  configured: boolean;
 }
 
 export interface ConferenceSlot {
