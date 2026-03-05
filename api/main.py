@@ -46,6 +46,13 @@ except Exception:
     mesh_router = None
 
 try:
+    from api.billing.routes import router as billing_router
+    from api.billing.database import init_db as init_billing_db
+except Exception:
+    billing_router = None
+    init_billing_db = None
+
+try:
     from spiralverse_core import EnvelopeCore
 except Exception:
     EnvelopeCore = None
@@ -104,6 +111,10 @@ app.add_middleware(
 # Include Semantic Mesh router (embryonic intake + tongue-space KG)
 if mesh_router is not None:
     app.include_router(mesh_router)
+
+# Include billing router for checkout + subscription lifecycle
+if billing_router is not None:
+    app.include_router(billing_router)
 
 # API Key authentication
 API_KEY_HEADER = APIKeyHeader(name="SCBE_api_key", auto_error=False)
@@ -1694,6 +1705,11 @@ async def demo_pipeline_layers(
 
 @app.on_event("startup")
 async def startup():
+    if init_billing_db is not None:
+        try:
+            init_billing_db()
+        except Exception as exc:
+            logger.warning(json.dumps({"event": "billing_db_init_failed", "error": str(exc)}))
     persistence = get_persistence()
     logger.info(json.dumps({
         "event": "api_startup",

@@ -6,9 +6,12 @@ Handles subscription lifecycle events from Stripe.
 
 import logging
 from datetime import datetime
-from typing import Callable, Dict
+from typing import Any, Callable, Dict
 
-import stripe
+try:
+    import stripe
+except ImportError:  # pragma: no cover - depends on environment
+    stripe = None
 
 from .database import get_db, Customer, Subscription, ApiKey, BillingEvent
 from .tiers import get_tier_from_price_id
@@ -17,12 +20,18 @@ from ..keys.generator import generate_api_key
 logger = logging.getLogger(__name__)
 
 
-async def handle_checkout_completed(event: stripe.Event) -> dict:
+def _require_stripe() -> None:
+    if stripe is None:
+        raise RuntimeError("stripe package is not installed. Run: pip install stripe")
+
+
+async def handle_checkout_completed(event: Any) -> dict:
     """
     Handle checkout.session.completed event.
 
     Creates customer, subscription, and initial API key.
     """
+    _require_stripe()
     session = event.data.object
     logger.info(f"Checkout completed: {session.id}")
 
@@ -74,8 +83,9 @@ async def handle_checkout_completed(event: stripe.Event) -> dict:
     return {"status": "success", "customer_id": customer.id}
 
 
-async def handle_subscription_created(event: stripe.Event) -> dict:
+async def handle_subscription_created(event: Any) -> dict:
     """Handle customer.subscription.created event."""
+    _require_stripe()
     stripe_sub = event.data.object
     logger.info(f"Subscription created: {stripe_sub.id}")
 
@@ -114,8 +124,9 @@ async def handle_subscription_created(event: stripe.Event) -> dict:
     return {"status": "created"}
 
 
-async def handle_subscription_updated(event: stripe.Event) -> dict:
+async def handle_subscription_updated(event: Any) -> dict:
     """Handle customer.subscription.updated event."""
+    _require_stripe()
     stripe_sub = event.data.object
     logger.info(f"Subscription updated: {stripe_sub.id}")
 
@@ -150,8 +161,9 @@ async def handle_subscription_updated(event: stripe.Event) -> dict:
     return {"status": "updated", "tier": subscription.tier}
 
 
-async def handle_subscription_deleted(event: stripe.Event) -> dict:
+async def handle_subscription_deleted(event: Any) -> dict:
     """Handle customer.subscription.deleted event."""
+    _require_stripe()
     stripe_sub = event.data.object
     logger.info(f"Subscription deleted: {stripe_sub.id}")
 
@@ -176,8 +188,9 @@ async def handle_subscription_deleted(event: stripe.Event) -> dict:
     return {"status": "canceled"}
 
 
-async def handle_invoice_paid(event: stripe.Event) -> dict:
+async def handle_invoice_paid(event: Any) -> dict:
     """Handle invoice.paid event."""
+    _require_stripe()
     invoice = event.data.object
     logger.info(f"Invoice paid: {invoice.id}")
 
@@ -203,8 +216,9 @@ async def handle_invoice_paid(event: stripe.Event) -> dict:
     return {"status": "recorded"}
 
 
-async def handle_payment_failed(event: stripe.Event) -> dict:
+async def handle_payment_failed(event: Any) -> dict:
     """Handle invoice.payment_failed event."""
+    _require_stripe()
     invoice = event.data.object
     logger.warning(f"Payment failed: {invoice.id}")
 
@@ -249,7 +263,7 @@ WEBHOOK_HANDLERS: Dict[str, Callable] = {
 }
 
 
-async def process_webhook_event(event: stripe.Event) -> dict:
+async def process_webhook_event(event: Any) -> dict:
     """Process a Stripe webhook event."""
     handler = WEBHOOK_HANDLERS.get(event.type)
 

@@ -102,7 +102,10 @@
           <a href="#pricing" class="hover:text-blue-400 transition">Pricing</a>
           <a href="#contact" class="hover:text-blue-400 transition">Contact</a>
         </div>
-        <button class="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition font-semibold">
+        <button
+          data-checkout-tier="PRO"
+          class="checkout-button px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition font-semibold"
+        >
           Get Started
         </button>
       </div>
@@ -128,9 +131,10 @@
           </p>
           <div class="flex flex-wrap justify-center gap-4">
             <button
-              class="px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-lg transition font-bold text-lg glow"
+              data-checkout-tier="PRO"
+              class="checkout-button px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-lg transition font-bold text-lg glow"
             >
-              Start Free Trial
+              Start Professional
             </button>
             <button
               class="px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition font-bold text-lg"
@@ -139,7 +143,7 @@
             </button>
           </div>
           <div class="mt-12 flex justify-center gap-8 text-sm text-gray-400">
-            <div>✓ No credit card required</div>
+            <div>✓ Secure Stripe checkout</div>
             <div>✓ 14-day free trial</div>
             <div>✓ Enterprise ready</div>
           </div>
@@ -360,6 +364,18 @@
         <div class="text-center mb-16">
           <h2 class="text-4xl font-bold mb-4">Simple, Transparent Pricing</h2>
           <p class="text-xl text-gray-300">Choose the plan that fits your security needs</p>
+          <div class="mt-8 max-w-xl mx-auto">
+            <label for="checkout-email" class="block text-sm text-gray-300 mb-2"
+              >Work Email (required for checkout)</label
+            >
+            <input
+              id="checkout-email"
+              type="email"
+              placeholder="you@company.com"
+              class="w-full px-4 py-3 rounded-lg bg-black/40 border border-white/20 text-white placeholder-gray-500 focus:outline-none focus:border-blue-400"
+            />
+            <p id="checkout-status" class="mt-3 text-sm text-gray-400"></p>
+          </div>
         </div>
 
         <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -374,7 +390,7 @@
             <ul class="space-y-3 mb-8">
               <li class="flex items-center gap-2">
                 <span class="text-green-400">✓</span>
-                <span>Up to 10,000 requests/day</span>
+                <span>Up to 100,000 requests/month</span>
               </li>
               <li class="flex items-center gap-2">
                 <span class="text-green-400">✓</span>
@@ -390,9 +406,10 @@
               </li>
             </ul>
             <button
-              class="w-full px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition font-bold"
+              data-checkout-tier="STARTER"
+              class="checkout-button w-full px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition font-bold"
             >
-              Start Free Trial
+              Start Starter
             </button>
           </div>
 
@@ -406,13 +423,13 @@
             <h3 class="text-2xl font-bold mb-2">Professional</h3>
             <p class="text-gray-400 mb-6">For growing businesses</p>
             <div class="mb-6">
-              <span class="text-5xl font-bold">$299</span>
+              <span class="text-5xl font-bold">$499</span>
               <span class="text-gray-400">/month</span>
             </div>
             <ul class="space-y-3 mb-8">
               <li class="flex items-center gap-2">
                 <span class="text-green-400">✓</span>
-                <span>Up to 100,000 requests/day</span>
+                <span>Up to 1,000,000 requests/month</span>
               </li>
               <li class="flex items-center gap-2">
                 <span class="text-green-400">✓</span>
@@ -432,9 +449,10 @@
               </li>
             </ul>
             <button
-              class="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg transition font-bold"
+              data-checkout-tier="PRO"
+              class="checkout-button w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg transition font-bold"
             >
-              Start Free Trial
+              Start Professional
             </button>
           </div>
 
@@ -468,6 +486,7 @@
               </li>
             </ul>
             <button
+              id="contact-sales-button"
               class="w-full px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition font-bold"
             >
               Contact Sales
@@ -548,18 +567,20 @@
           </p>
           <div class="flex flex-wrap justify-center gap-4 mb-8">
             <button
-              class="px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-lg transition font-bold text-lg"
+              data-checkout-tier="PRO"
+              class="checkout-button px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-lg transition font-bold text-lg"
             >
-              Start Free Trial
+              Start Professional
             </button>
             <button
+              id="schedule-demo-button"
               class="px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition font-bold text-lg"
             >
               Schedule Demo
             </button>
           </div>
           <div class="flex justify-center gap-8 text-sm text-gray-400">
-            <div>✓ No credit card required</div>
+            <div>✓ Secure Stripe checkout</div>
             <div>✓ Full feature access</div>
             <div>✓ Cancel anytime</div>
           </div>
@@ -680,6 +701,83 @@
       document.querySelectorAll('section').forEach((section) => {
         observer.observe(section);
       });
+
+      const checkoutButtons = document.querySelectorAll('.checkout-button');
+      const checkoutEmailInput = document.getElementById('checkout-email');
+      const checkoutStatus = document.getElementById('checkout-status');
+      const scheduleDemoButton = document.getElementById('schedule-demo-button');
+      const contactSalesButton = document.getElementById('contact-sales-button');
+
+      function setCheckoutStatus(message, isError = false) {
+        if (!checkoutStatus) return;
+        checkoutStatus.textContent = message;
+        checkoutStatus.className = isError
+          ? 'mt-3 text-sm text-red-400'
+          : 'mt-3 text-sm text-green-400';
+      }
+
+      async function startCheckout(tier) {
+        const email = (checkoutEmailInput?.value || '').trim();
+        if (!email || !email.includes('@')) {
+          setCheckoutStatus('Enter a valid work email before starting checkout.', true);
+          checkoutEmailInput?.focus();
+          return;
+        }
+
+        const apiBase =
+          window.SCBE_API_BASE || (location.protocol === 'file:' ? 'http://127.0.0.1:8080' : location.origin);
+        const successUrl = `${location.origin}${location.pathname}?checkout=success&tier=${tier}`;
+        const cancelUrl = `${location.origin}${location.pathname}?checkout=cancel&tier=${tier}`;
+
+        setCheckoutStatus(`Creating ${tier} checkout session...`);
+
+        try {
+          const response = await fetch(`${apiBase}/v1/billing/public-checkout`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email,
+              tier,
+              success_url: successUrl,
+              cancel_url: cancelUrl,
+              source: 'product-landing',
+            }),
+          });
+
+          const payload = await response.json();
+          if (!response.ok) {
+            throw new Error(payload.detail || 'Checkout request failed.');
+          }
+          if (!payload.checkout_url) {
+            throw new Error('Checkout URL missing from response.');
+          }
+
+          window.location.href = payload.checkout_url;
+        } catch (error) {
+          setCheckoutStatus(error.message || 'Unable to start checkout.', true);
+        }
+      }
+
+      checkoutButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const tier = button.getAttribute('data-checkout-tier') || 'PRO';
+          startCheckout(tier);
+        });
+      });
+
+      if (scheduleDemoButton) {
+        scheduleDemoButton.addEventListener('click', () => {
+          window.location.href =
+            'mailto:issdandavis7795@gmail.com?subject=SCBE%20Demo%20Request&body=Hi%20team,%20I%20want%20a%20demo%20of%20SCBE-AETHERMOORE.';
+        });
+      }
+
+      if (contactSalesButton) {
+        contactSalesButton.addEventListener('click', () => {
+          window.location.href =
+            'mailto:issdandavis7795@gmail.com?subject=Enterprise%20Security%20Inquiry&body=Hi%20team,%20I%20need%20enterprise%20pricing%20for%20SCBE-AETHERMOORE.';
+        });
+      }
     </script>
   </body>
 </html>
