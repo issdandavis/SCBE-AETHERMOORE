@@ -58,7 +58,7 @@ export const SidebarSharePanel: React.FC<SidebarSharePanelProps> = ({
   };
 
   const generateShareLink = () => {
-    const sessionId = Math.random().toString(36).substring(2, 10);
+    const sessionId = globalThis.crypto.randomUUID().slice(0, 8);
     const windowIds = Array.from(selectedWindows).join(',');
     return `scbe://share/${sessionId}?apps=${windowIds}&v=${visibility}`;
   };

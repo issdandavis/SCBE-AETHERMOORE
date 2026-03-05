@@ -309,7 +309,11 @@
 
         const entry = document.createElement('div');
         entry.className = `mb-2 ${color}`;
-        entry.innerHTML = `<span class="text-gray-500">[${timestamp}]</span> ${message}`;
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'text-gray-500';
+        timeSpan.textContent = `[${timestamp}]`;
+        entry.appendChild(timeSpan);
+        entry.appendChild(document.createTextNode(` ${message}`));
         log.appendChild(entry);
         log.scrollTop = log.scrollHeight;
       }

@@ -159,7 +159,9 @@ class LayerStackUI {
     log(message) {
         const output = document.getElementById('outputDisplay');
         const time = new Date().toLocaleTimeString();
-        output.innerHTML += `<div>[${time}] ${message}</div>`;
+        const div = document.createElement('div');
+        div.textContent = `[${time}] ${message}`;
+        output.appendChild(div);
         output.scrollTop = output.scrollHeight;
     }
 

@@ -941,7 +941,8 @@ function findAnomalyDimensions(
   threshold: number = 0.7
 ): number[] {
   const dims: number[] = [];
-  for (let i = 0; i < state.length; i++) {
+  const maxLen = Math.min(state.length, 10000);
+  for (let i = 0; i < maxLen; i++) {
     if (Math.abs(state[i]) > threshold) {
       dims.push(i);
     }
