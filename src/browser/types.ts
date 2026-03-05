@@ -617,6 +617,40 @@ export interface GovernanceResult {
 }
 
 /**
+ * Sidepanel recommendation entry for guided browsing.
+ */
+export interface SidepanelActionRecommendation {
+  /** Candidate browser action */
+  action: BrowserAction;
+  /** Governance decision for candidate */
+  decision: BrowserDecision;
+  /** Candidate risk score */
+  riskScore: number;
+  /** Whether review/roundtable is required */
+  requiresRoundtable: boolean;
+  /** Human-readable reason */
+  reason: string;
+}
+
+/**
+ * Sidepanel brief payload for UI rendering.
+ */
+export interface SidepanelBrief {
+  /** URL of current page */
+  url: string;
+  /** Page title */
+  title: string;
+  /** Domain risk category */
+  domainCategory: DomainRiskCategory;
+  /** Plain-language page summary */
+  pageSummary: string;
+  /** Recommended next actions */
+  recommendations: SidepanelActionRecommendation[];
+  /** Caution flags shown in UI */
+  cautionFlags: string[];
+}
+
+/**
  * Action execution result.
  */
 export interface ActionResult {
