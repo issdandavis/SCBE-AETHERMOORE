@@ -26,6 +26,14 @@ class CheckoutRequest(BaseModel):
     cancel_url: Optional[str] = None
 
 
+class PublicCheckoutRequest(BaseModel):
+    email: str
+    tier: str
+    success_url: Optional[str] = None
+    cancel_url: Optional[str] = None
+    source: Optional[str] = "landing"
+
+
 class CheckoutResponse(BaseModel):
     session_id: str
     checkout_url: str
@@ -61,6 +69,34 @@ class InvoiceItem(BaseModel):
 
 
 # Endpoints
+@router.post("/public-checkout", response_model=CheckoutResponse)
+async def create_public_checkout_session(request: PublicCheckoutRequest):
+    """
+    Public checkout endpoint for landing-page conversion.
+
+    This route intentionally avoids API-key auth to support first-time buyers.
+    """
+    tier = request.tier.upper().strip()
+    if tier not in {"STARTER", "PRO"}:
+        raise HTTPException(status_code=400, detail="Public checkout supports STARTER or PRO tiers.")
+    if "@" not in request.email:
+        raise HTTPException(status_code=400, detail="Valid email is required.")
+
+    price_id = get_price_id_for_tier(tier)
+    if not price_id:
+        raise HTTPException(status_code=503, detail=f"Tier {tier} is not configured for checkout.")
+
+    result = StripeClient.create_checkout_session(
+        tier=tier,
+        price_id=price_id,
+        customer_email=request.email.strip(),
+        success_url=request.success_url,
+        cancel_url=request.cancel_url,
+        metadata={"source": (request.source or "landing").strip()[:64]},
+    )
+    return CheckoutResponse(**result)
+
+
 @router.post("/checkout", response_model=CheckoutResponse)
 async def create_checkout_session(
     request: CheckoutRequest,
