@@ -1,8 +1,6 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
-import { decode, detectTongue, encode, TONGUE_CODES } from '../../dist/src/tokenizer/ss1.js';
-import { BRAIN_DIMENSIONS, applyGoldenWeighting, safePoincareEmbed, vectorNorm } from '../../dist/src/ai_brain/index.js';
 import { promises as fs } from 'fs';
 import { createHash } from 'crypto';
 import path from 'path';
@@ -28,6 +26,23 @@ const TONGUE_WEIGHTS = {
 };
 const RING_ORDER = { core: 0, inner: 1, middle: 2, outer: 3, edge: 4 };
 const execFileAsync = promisify(execFile);
+
+// Prefer built dist artifacts in production; fallback to source TS in test/dev.
+let tokenizerMod;
+let brainMod;
+try {
+  tokenizerMod = await import('../../dist/src/tokenizer/ss1.js');
+} catch {
+  tokenizerMod = await import('../../src/tokenizer/ss1.ts');
+}
+try {
+  brainMod = await import('../../dist/src/ai_brain/index.js');
+} catch {
+  brainMod = await import('../../src/ai_brain/index.ts');
+}
+
+const { decode, detectTongue, encode, TONGUE_CODES } = tokenizerMod;
+const { BRAIN_DIMENSIONS, applyGoldenWeighting, safePoincareEmbed, vectorNorm } = brainMod;
 
 const server = new Server(
   {
