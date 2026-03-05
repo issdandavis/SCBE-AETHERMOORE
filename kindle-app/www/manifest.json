@@ -1,0 +1,53 @@
+{
+  "name": "AetherCode",
+  "short_name": "AetherCode",
+  "id": "/",
+  "description": "Codex-native multi-model browser workspace with Everweave lore context.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "window-controls-overlay",
+    "minimal-ui"
+  ],
+  "background_color": "#070b12",
+  "theme_color": "#17c6cf",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "./static/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./static/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "./static/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "categories": [
+    "developer",
+    "productivity",
+    "utilities",
+    "education"
+  ],
+  "shortcuts": [
+    {
+      "name": "Code Mode",
+      "url": "./?mode=code",
+      "description": "Open AetherCode in code mode"
+    },
+    {
+      "name": "Research Mode",
+      "url": "./?mode=research",
+      "description": "Open AetherCode in research mode"
+    }
+  ]
+}

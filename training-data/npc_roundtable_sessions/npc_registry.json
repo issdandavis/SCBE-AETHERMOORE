@@ -1,0 +1,50 @@
+[
+  {
+    "name": "Alexander Thorne",
+    "role": "Prodigy bridge figure with unusual resonance to realm consciousness",
+    "canon_status": "STABLE",
+    "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\lore_sessions\\characters_and_world.jsonl"
+  },
+  {
+    "name": "Aria Ravencrest",
+    "role": "a temporal mage, boundary specialist, and co-founder of Avalon \u2014 known as the 'Mother of Avalon.' Her status is LOCKED (confirmed across 2+ sources)",
+    "canon_status": "LOCKED",
+    "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\lore_sessions\\characters_and_world.jsonl"
+  },
+  {
+    "name": "Izack Thorne",
+    "role": "Dimensional Weaver who evolved from curious apprentice to legendary Dimensional Architect",
+    "canon_status": "STABLE",
+    "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\lore_sessions\\characters_and_world.jsonl"
+  },
+  {
+    "name": "Polly",
+    "role": "Living Codex, runic memory feathers, experiential library influence",
+    "canon_status": "STABLE",
+    "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\lore_sessions\\characters_and_world.jsonl"
+  },
+  {
+    "name": "Pollyoneth",
+    "role": "NPC",
+    "canon_status": "STABLE",
+    "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\lore_sessions\\characters_and_world.jsonl"
+  },
+  {
+    "name": "The Avalon Codex",
+    "role": "a planned 4-book adult fantasy series (90-110k words each) set 500 years after Izack's founding of Avalon",
+    "canon_status": "STABLE",
+    "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\lore_sessions\\characters_and_world.jsonl"
+  },
+  {
+    "name": "The Third Thread",
+    "role": "a revolutionary magical concept that emerges from Izack's early experiments in the Cave of Dimensional Resonance",
+    "canon_status": "STABLE",
+    "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\lore_sessions\\characters_and_world.jsonl"
+  },
+  {
+    "name": "The Void Seed",
+    "role": "the primary antagonist force in the Spiralverse, representing centralized failure \u2014 the opposite of everything Avalon and the Six Tongues stand for",
+    "canon_status": "STABLE",
+    "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\lore_sessions\\characters_and_world.jsonl"
+  }
+]
