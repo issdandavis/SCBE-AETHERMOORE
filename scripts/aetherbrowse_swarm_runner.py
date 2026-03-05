@@ -13,6 +13,7 @@ import shutil
 import time
 import urllib.error
 import urllib.request
+from urllib.parse import urlsplit
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Tuple
@@ -119,6 +120,8 @@ def _jobs(obj: Dict[str, Any]) -> List[Dict[str, Any]]:
         if not isinstance(acts, list) or not acts:
             raise ValueError(f"Job {ji} requires actions[]")
         jj = dict(j)
+        if "job_id" not in jj and "id" in jj:
+            jj["job_id"] = str(jj["id"])
         jj["actions"] = [_na(dict(a), ji, ai) for ai, a in enumerate(acts, start=1)]
         out.append(jj)
     return out
@@ -182,6 +185,17 @@ def _page_lock_id(job: Dict[str, Any]) -> str | None:
     return val if val else None
 
 
+def _canonical_nav_url(url: str) -> str:
+    parsed = urlsplit(url.strip())
+    scheme = (parsed.scheme or "https").lower()
+    host = parsed.netloc.lower()
+    path = parsed.path or "/"
+    if path != "/" and path.endswith("/"):
+        path = path[:-1]
+    query = parsed.query
+    return f"{scheme}://{host}{path}" + (f"?{query}" if query else "")
+
+
 def _verify(job: Dict[str, Any], resp: Dict[str, Any]) -> Dict[str, Any]:
     rules = job.get("verify", {}) if isinstance(job.get("verify"), dict) else {}
     results = resp.get("results", []) if isinstance(resp.get("results", []), list) else []
@@ -223,6 +237,22 @@ def _verify(job: Dict[str, Any], resp: Dict[str, Any]) -> Dict[str, Any]:
         m = int(rules["max_redirects"])
         rd = sum(1 for a, b in zip(nav_req, nav_obs) if a.strip().rstrip("/").lower() != b.strip().rstrip("/").lower())
         checks.append({"check": "max_redirects", "passed": rd <= m, "observed": rd, "expected_max": m})
+    if bool(rules.get("exact_navigate", False)):
+        pairs = list(zip(nav_req, nav_obs))
+        mismatches = []
+        for req_url, obs_url in pairs:
+            if _canonical_nav_url(req_url) != _canonical_nav_url(obs_url):
+                mismatches.append({"requested": req_url, "observed": obs_url})
+        count_match = len(nav_req) == len(nav_obs)
+        checks.append(
+            {
+                "check": "exact_navigate",
+                "passed": count_match and not mismatches,
+                "requested_count": len(nav_req),
+                "observed_count": len(nav_obs),
+                "mismatches": mismatches[:5],
+            }
+        )
     if not checks:
         checks.append({"check": "response_status", "passed": resp.get("status") == "success"})
     passed = len([c for c in checks if c.get("passed")])
