@@ -12,6 +12,7 @@ import { Router, type Request, type Response } from 'express';
 import { v4 as uuid } from 'uuid';
 import { store } from '../store.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
+import { liveEventBus } from '../services/liveEvents.js';
 import type { SoftCommit, DealRoom, ApiResponse } from '../../shared/types/index.js';
 
 const router = Router();
@@ -71,6 +72,26 @@ router.post('/soft-commit', requireRole('investor'), (req: Request, res: Respons
   };
 
   store.softCommits.set(commit.id, commit);
+
+  // Broadcast real-time event to live conference
+  const project = store.getProject(projectId);
+  liveEventBus.emitNewCommit(
+    conferenceId,
+    req.user!.displayName,
+    project?.title ?? projectId,
+    amount,
+    tier
+  );
+
+  // Also broadcast updated ticker
+  const allCommits = store.listSoftCommits({ conferenceId });
+  const byProject: Record<string, { projectId: string; totalAmount: number; commitCount: number }> = {};
+  for (const c of allCommits) {
+    if (!byProject[c.projectId]) byProject[c.projectId] = { projectId: c.projectId, totalAmount: 0, commitCount: 0 };
+    byProject[c.projectId].totalAmount += c.amount;
+    byProject[c.projectId].commitCount += 1;
+  }
+  liveEventBus.emitTickerUpdate(conferenceId, Object.values(byProject));
 
   res.status(201).json({ success: true, data: commit } as ApiResponse<SoftCommit>);
 });
