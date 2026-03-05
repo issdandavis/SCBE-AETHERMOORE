@@ -1,0 +1,39 @@
+{
+  "name": "vibe-coder-conference",
+  "version": "0.1.0",
+  "description": "Live conference app for vibe coders — SCBE/HYDRA governance-gated demo days with NDA-locked investor access",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:frontend\"",
+    "dev:api": "tsx watch src/api/server.ts",
+    "dev:frontend": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest --watch"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "uuid": "^11.1.0",
+    "cors": "^2.8.5",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/cors": "^2.8.17",
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@types/uuid": "^10.0.0",
+    "@vitejs/plugin-react": "^4.5.2",
+    "concurrently": "^9.1.2",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vitest": "^4.0.17"
+  }
+}
