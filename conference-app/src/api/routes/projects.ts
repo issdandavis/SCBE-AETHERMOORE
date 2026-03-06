@@ -15,6 +15,12 @@ import type { ProjectCapsule, FundingAsk, ApiResponse } from '../../shared/types
 
 const router = Router();
 
+/** Express v5 params may be string | string[]; extract safely */
+function param(req: Request, name: string): string {
+  const v = req.params[name];
+  return Array.isArray(v) ? v[0] : v;
+}
+
 router.use(authMiddleware);
 
 /**
@@ -86,7 +92,7 @@ router.get('/', (req: Request, res: Response) => {
  * GET /api/projects/:id
  */
 router.get('/:id', (req: Request, res: Response) => {
-  const project = store.getProject(req.params.id);
+  const project = store.getProject(param(req, 'id'));
   if (!project) {
     res.status(404).json({ success: false, error: 'Project not found' });
     return;
@@ -99,7 +105,7 @@ router.get('/:id', (req: Request, res: Response) => {
  * Submit project for SCBE/HYDRA governance scoring.
  */
 router.post('/:id/submit', requireRole('coder'), (req: Request, res: Response) => {
-  const project = store.getProject(req.params.id);
+  const project = store.getProject(param(req, 'id'));
   if (!project) {
     res.status(404).json({ success: false, error: 'Project not found' });
     return;
@@ -155,7 +161,7 @@ router.post('/:id/submit', requireRole('coder'), (req: Request, res: Response) =
  * Get detailed governance scores and HYDRA audit for a project.
  */
 router.get('/:id/governance', (req: Request, res: Response) => {
-  const project = store.getProject(req.params.id);
+  const project = store.getProject(param(req, 'id'));
   if (!project) {
     res.status(404).json({ success: false, error: 'Project not found' });
     return;

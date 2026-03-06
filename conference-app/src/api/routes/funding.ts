@@ -17,6 +17,12 @@ import type { SoftCommit, DealRoom, ApiResponse } from '../../shared/types/index
 
 const router = Router();
 
+/** Express v5 params may be string | string[]; extract safely */
+function param(req: Request, name: string): string {
+  const v = req.params[name];
+  return Array.isArray(v) ? v[0] : v;
+}
+
 router.use(authMiddleware);
 
 /**
@@ -103,7 +109,7 @@ router.post('/soft-commit', requireRole('investor'), (req: Request, res: Respons
  * (except to the project creator).
  */
 router.get('/ticker/:conferenceId', (req: Request, res: Response) => {
-  const commits = store.listSoftCommits({ conferenceId: req.params.conferenceId });
+  const commits = store.listSoftCommits({ conferenceId: param(req, 'conferenceId') });
 
   // Aggregate by project
   const byProject: Record<string, { projectId: string; totalAmount: number; commitCount: number; latestTier: string }> = {};
@@ -127,7 +133,7 @@ router.get('/ticker/:conferenceId', (req: Request, res: Response) => {
  * Get all soft-commits for a project (project creator or curator only).
  */
 router.get('/commits/:projectId', (req: Request, res: Response) => {
-  const project = store.getProject(req.params.projectId);
+  const project = store.getProject(param(req, 'projectId'));
   if (!project) {
     res.status(404).json({ success: false, error: 'Project not found' });
     return;
@@ -139,7 +145,7 @@ router.get('/commits/:projectId', (req: Request, res: Response) => {
     return;
   }
 
-  const commits = store.listSoftCommits({ projectId: req.params.projectId });
+  const commits = store.listSoftCommits({ projectId: param(req, 'projectId') });
   const totalAmount = commits.reduce((s, c) => s + c.amount, 0);
 
   res.json({
