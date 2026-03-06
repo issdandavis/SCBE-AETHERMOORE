@@ -43,6 +43,10 @@ def _hash_unit(seed: str) -> float:
     return raw / float((1 << 64) - 1)
 
 
+# Safe root directory - all loaded notes must reside within this directory
+_SAFE_NOTES_ROOT = Path(__file__).parent.parent.resolve()
+
+
 def load_notes_from_glob(
     pattern: str,
     max_notes: int = 100,
@@ -54,7 +58,12 @@ def load_notes_from_glob(
     for p in paths:
         if len(notes) >= max(0, max_notes):
             break
-        path = Path(p)
+        path = Path(p).resolve()
+        # Guard against path traversal: reject paths outside the safe root
+        try:
+            path.relative_to(_SAFE_NOTES_ROOT)
+        except ValueError:
+            continue
         if not path.is_file():
             continue
         suffix = path.suffix.lower()
