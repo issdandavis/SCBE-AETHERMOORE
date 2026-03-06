@@ -35,10 +35,10 @@ function parseMemoryEvent(event: AuthorizeRequest['memoryEvent']): MemoryEvent |
 }
 
 function toHttpDecision(
-  kernelDecision: 'ALLOW' | 'TRANSFORM' | 'BLOCK'
+  kernelDecision: 'ALLOW' | 'TRANSFORM' | 'BLOCK' | 'QUARANTINE'
 ): 'ALLOW' | 'QUARANTINE' | 'DENY' {
   if (kernelDecision === 'ALLOW') return 'ALLOW';
-  if (kernelDecision === 'TRANSFORM') return 'QUARANTINE';
+  if (kernelDecision === 'TRANSFORM' || kernelDecision === 'QUARANTINE') return 'QUARANTINE';
   return 'DENY';
 }
 
