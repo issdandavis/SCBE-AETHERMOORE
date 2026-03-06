@@ -70,6 +70,7 @@ SUPPORTED_COMMANDS = {
     "switchboard",
     "canvas",
     "branch",
+    "lattice25d",
 }
 
 COMMAND_ALIASES = {
@@ -82,6 +83,7 @@ COMMAND_ALIASES = {
     "cv": "canvas",
     "paint": "canvas",
     "br": "branch",
+    "l25": "lattice25d",
 }
 
 
@@ -191,6 +193,11 @@ Canvas Commands (multi-step orchestrated workflows):
   hydra canvas run training --topic "governance"   Generate SFT training data
   hydra canvas run content --topic "SCBE update"   Multi-platform content
 
+Lattice Commands (2.5D hyperbolic lattice ops):
+  hydra lattice25d sample --count 12
+  hydra lattice25d notes --glob "docs/**/*.md" --max-notes 40
+  hydra lattice25d notes --no-glob --note "inline note" --json
+
 Branch Commands (ChoiceScript branching + council):
   hydra branch list                                 List branch templates and strategies
   hydra branch show research_pipeline --topic "swarm"
@@ -208,7 +215,7 @@ Branch Commands (ChoiceScript branching + council):
         default=None,
         help=(
             "Command to run (interactive, status, stats, execute, research, workflow, "
-            "remember, recall, search, arxiv, switchboard, canvas, branch). If omitted and stdin has "
+            "remember, recall, search, arxiv, switchboard, canvas, branch, lattice25d). If omitted and stdin has "
             "JSON, HYDRA runs execute."
         ),
     )
@@ -283,6 +290,15 @@ Branch Commands (ChoiceScript branching + council):
             print(f"Did you mean: {', '.join(suggestions)}?")
         parser.print_help()
         sys.exit(1)
+
+    if command == "lattice25d":
+        try:
+            handle_lattice25d(cmd_args, args)
+        except ImportError as exc:
+            print(f"Error: lattice25d module not available: {exc}")
+            print("Ensure hydra/lattice25d_ops.py and hydra/octree_sphere_grid.py exist.")
+            sys.exit(1)
+        return
 
     # Initialize system
     ledger = Ledger()
@@ -861,6 +877,255 @@ def _parse_branch_options(tokens: List[str], default_providers: str) -> Optional
         options["topic"] = " ".join(trailing_topic_parts).strip()
 
     return options
+
+
+def _parse_triplet(raw: str, context: str) -> Optional[List[float]]:
+    parts = [p.strip() for p in raw.split(",") if p.strip()]
+    if len(parts) != 3:
+        print(f"Error: {context} expects 3 comma-separated floats")
+        return None
+    try:
+        return [float(parts[0]), float(parts[1]), float(parts[2])]
+    except ValueError:
+        print(f"Error: {context} contains invalid float values: {raw}")
+        return None
+
+
+def _parse_lattice25d_options(tokens: List[str]) -> Optional[Dict[str, Any]]:
+    options: Dict[str, Any] = {
+        "glob": "docs/**/*.md",
+        "include_glob": True,
+        "max_notes": 40,
+        "inline_notes": [],
+        "count": 12,
+        "cell_size": 0.4,
+        "max_depth": 6,
+        "phase_weight": 0.35,
+        "radius": 0.72,
+        "query_intent": [0.9, 0.1, 0.1],
+        "query_x": 0.1,
+        "query_y": 0.1,
+        "query_phase": 0.0,
+        "query_top_k": 5,
+    }
+
+    idx = 0
+    while idx < len(tokens):
+        tok = tokens[idx]
+
+        if tok in {"--glob", "--notes-glob"} and idx + 1 < len(tokens):
+            options["glob"] = tokens[idx + 1]
+            options["include_glob"] = True
+            idx += 2
+            continue
+        if tok == "--no-glob":
+            options["include_glob"] = False
+            idx += 1
+            continue
+        if tok == "--max-notes" and idx + 1 < len(tokens):
+            try:
+                options["max_notes"] = max(1, int(tokens[idx + 1]))
+            except ValueError:
+                print(f"Error: --max-notes expects integer, got: {tokens[idx + 1]}")
+                return None
+            idx += 2
+            continue
+        if tok == "--note" and idx + 1 < len(tokens):
+            options["inline_notes"].append(tokens[idx + 1])
+            idx += 2
+            continue
+        if tok == "--count" and idx + 1 < len(tokens):
+            try:
+                options["count"] = max(1, int(tokens[idx + 1]))
+            except ValueError:
+                print(f"Error: --count expects integer, got: {tokens[idx + 1]}")
+                return None
+            idx += 2
+            continue
+        if tok == "--cell-size" and idx + 1 < len(tokens):
+            try:
+                options["cell_size"] = float(tokens[idx + 1])
+            except ValueError:
+                print(f"Error: --cell-size expects float, got: {tokens[idx + 1]}")
+                return None
+            idx += 2
+            continue
+        if tok == "--max-depth" and idx + 1 < len(tokens):
+            try:
+                options["max_depth"] = max(1, int(tokens[idx + 1]))
+            except ValueError:
+                print(f"Error: --max-depth expects integer, got: {tokens[idx + 1]}")
+                return None
+            idx += 2
+            continue
+        if tok == "--phase-weight" and idx + 1 < len(tokens):
+            try:
+                options["phase_weight"] = float(tokens[idx + 1])
+            except ValueError:
+                print(f"Error: --phase-weight expects float, got: {tokens[idx + 1]}")
+                return None
+            idx += 2
+            continue
+        if tok == "--radius" and idx + 1 < len(tokens):
+            try:
+                options["radius"] = float(tokens[idx + 1])
+            except ValueError:
+                print(f"Error: --radius expects float, got: {tokens[idx + 1]}")
+                return None
+            idx += 2
+            continue
+        if tok == "--query-intent" and idx + 1 < len(tokens):
+            parsed = _parse_triplet(tokens[idx + 1], "--query-intent")
+            if parsed is None:
+                return None
+            options["query_intent"] = parsed
+            idx += 2
+            continue
+        if tok == "--query-x" and idx + 1 < len(tokens):
+            try:
+                options["query_x"] = float(tokens[idx + 1])
+            except ValueError:
+                print(f"Error: --query-x expects float, got: {tokens[idx + 1]}")
+                return None
+            idx += 2
+            continue
+        if tok == "--query-y" and idx + 1 < len(tokens):
+            try:
+                options["query_y"] = float(tokens[idx + 1])
+            except ValueError:
+                print(f"Error: --query-y expects float, got: {tokens[idx + 1]}")
+                return None
+            idx += 2
+            continue
+        if tok == "--query-phase" and idx + 1 < len(tokens):
+            try:
+                options["query_phase"] = float(tokens[idx + 1])
+            except ValueError:
+                print(f"Error: --query-phase expects float, got: {tokens[idx + 1]}")
+                return None
+            idx += 2
+            continue
+        if tok == "--query-top-k" and idx + 1 < len(tokens):
+            try:
+                options["query_top_k"] = max(1, int(tokens[idx + 1]))
+            except ValueError:
+                print(f"Error: --query-top-k expects integer, got: {tokens[idx + 1]}")
+                return None
+            idx += 2
+            continue
+
+        options["inline_notes"].append(tok)
+        idx += 1
+
+    return options
+
+
+def handle_lattice25d(args: List[str], parsed_args) -> None:
+    """Handle 2.5D hyperbolic lattice workflows in the main HYDRA CLI."""
+    from .lattice25d_ops import (
+        NoteRecord,
+        build_lattice25d_payload,
+        load_notes_from_glob,
+        sample_notes,
+    )
+
+    as_json = parsed_args.json
+
+    if not args or args[0] in {"help", "-h", "--help"}:
+        print("Lattice25D Commands:")
+        print("  hydra lattice25d sample [--count N] [--cell-size F] [--phase-weight F] [--json]")
+        print("  hydra lattice25d notes [--glob PATTERN] [--max-notes N] [--note \"text\"] [--json]")
+        print("                 [--cell-size F] [--max-depth N] [--phase-weight F] [--radius F]")
+        print("                 [--query-intent a,b,c] [--query-x X] [--query-y Y] [--query-phase P] [--query-top-k K]")
+        print()
+        print("Examples:")
+        print("  hydra lattice25d sample --count 16")
+        print("  hydra lattice25d notes --glob \"docs/**/*.md\" --max-notes 50")
+        print("  hydra lattice25d notes --no-glob --note \"council decision packet\" --json")
+        return
+
+    subcmd = args[0].strip().lower()
+    options = _parse_lattice25d_options(args[1:])
+    if options is None:
+        return
+
+    notes: List[NoteRecord] = []
+    if subcmd == "sample":
+        notes = sample_notes(options["count"])
+    elif subcmd == "notes":
+        for idx, text in enumerate(options["inline_notes"]):
+            text_value = (text or "").strip()
+            if not text_value:
+                continue
+            notes.append(
+                NoteRecord(
+                    note_id=f"inline-{idx}",
+                    text=text_value,
+                    tags=("inline", "cli"),
+                    source="cli",
+                    authority="internal",
+                    tongue="DR",
+                )
+            )
+
+        if options["include_glob"]:
+            remaining = max(0, int(options["max_notes"]) - len(notes))
+            if remaining > 0:
+                notes.extend(
+                    load_notes_from_glob(
+                        pattern=options["glob"],
+                        max_notes=remaining,
+                        source="repo",
+                        authority="internal",
+                    )
+                )
+    else:
+        print(f"Unknown lattice25d subcommand: {subcmd}")
+        print("Try: hydra lattice25d help")
+        return
+
+    if not notes:
+        print("Error: No notes found. Provide --note text or enable --glob with valid files.")
+        return
+
+    payload = build_lattice25d_payload(
+        notes,
+        cell_size=options["cell_size"],
+        max_depth=options["max_depth"],
+        phase_weight=options["phase_weight"],
+        radius=options["radius"],
+        query_intent=options["query_intent"],
+        query_x=options["query_x"],
+        query_y=options["query_y"],
+        query_phase=options["query_phase"],
+        query_top_k=options["query_top_k"],
+    )
+
+    if as_json:
+        print(json.dumps(payload, indent=2))
+        return
+
+    print()
+    print("=" * 60)
+    print("  HYDRA LATTICE25D")
+    print("=" * 60)
+    print(f"  Mode:        {subcmd}")
+    print(f"  Notes:       {payload['ingested_count']}")
+    print(f"  Glob:        {options['glob'] if options['include_glob'] else '(disabled)'}")
+    stats = payload["stats"]
+    print(f"  Cells:       {stats['occupied_cells']} occupied, {stats['overlap_cells']} overlap")
+    print(f"  Lace edges:  {payload['lace_edge_count']}")
+    print(f"  Octree vox:  {stats['octree_voxel_count']}")
+    print(f"  Weight avg:  {stats['semantic_weight_avg']:.3f}")
+    print()
+    print("  Nearest Bundles:")
+    for row in payload.get("nearest", [])[:5]:
+        print(
+            f"    - {row['note_label']:28s} "
+            f"tongue={row['tongue']:2s} d={row['distance']:.4f}"
+        )
+    print("=" * 60)
+    print()
 
 
 def handle_branch(args: List[str], parsed_args) -> None:

@@ -306,6 +306,278 @@ class OctreeVoxel:
     payload: Dict[str, Any] = field(default_factory=dict)
 
 
+# ---------------------------------------------------------------------------
+#  2.5D Cyclic Lattice Layer (x, y, phase) with six-tongue semantic weighting
+# ---------------------------------------------------------------------------
+
+@dataclass
+class CyclicBundle25D:
+    """A 2.5D bundle: planar position + cyclic phase + semantic metadata.
+
+    - x, y live in toroidally wrapped lattice coordinates [-1, 1]
+    - phase_rad is cyclic [0, 2π)
+    - tongue controls semantic weighting via six-tongue phi metrics
+    """
+    bundle_id: str
+    x: float
+    y: float
+    phase_rad: float
+    tongue: str = "KO"
+    authority: str = "public"
+    intent_vector: np.ndarray = field(default_factory=lambda: np.zeros(3))
+    intent_label: str = ""
+    payload: Dict[str, Any] = field(default_factory=dict)
+
+    @property
+    def tongue_weight(self) -> float:
+        return TONGUE_WEIGHTS.get(self.tongue, 1.0)
+
+    @property
+    def phase_unit(self) -> Tuple[float, float]:
+        return (math.cos(self.phase_rad), math.sin(self.phase_rad))
+
+
+class HyperbolicLattice25D:
+    """2.5D hyperbolic index with cyclic flow and overlap-aware lattice bundles.
+
+    Conceptual mapping:
+      - 2D plane: hyperbolic/Poincare indexing for (x,y)
+      - +0.5D cycle: phase angle for periodic flow lanes
+      - semantic weighting: six Sacred Tongue phi metrics
+
+    Implementation notes:
+      - Overlap is allowed by design: multiple bundles can occupy one cell.
+      - Each bundle is also projected into SignedOctree using z=sin(phase),
+        preserving compatibility with existing 3D octree tooling.
+    """
+
+    def __init__(
+        self,
+        cell_size: float = 0.25,
+        max_depth: int = 6,
+        chladni_mode: Tuple[int, int] = (3, 2),
+        phase_weight: float = 0.35,
+    ):
+        if not (0 < cell_size <= 2.0):
+            raise ValueError("cell_size must be in (0, 2]")
+        if phase_weight < 0:
+            raise ValueError("phase_weight must be >= 0")
+
+        self.cell_size = cell_size
+        self.phase_weight = phase_weight
+        self.grid_span = max(1, int(math.ceil(2.0 / cell_size)))
+        self.octree = SignedOctree(max_depth=max_depth, chladni_mode=chladni_mode)
+
+        self._cells: Dict[Tuple[int, int], List[CyclicBundle25D]] = {}
+        self._bundles: Dict[str, CyclicBundle25D] = {}
+
+    @staticmethod
+    def normalize_phase(phase_rad: float) -> float:
+        two_pi = 2.0 * math.pi
+        return phase_rad % two_pi
+
+    def _wrap_xy(self, x: float, y: float) -> Tuple[float, float]:
+        return toroidal_wrap(x), toroidal_wrap(y)
+
+    def _cell_for(self, x: float, y: float) -> Tuple[int, int]:
+        xw, yw = self._wrap_xy(x, y)
+        ix = int(math.floor((xw + 1.0) / self.cell_size)) % self.grid_span
+        iy = int(math.floor((yw + 1.0) / self.cell_size)) % self.grid_span
+        return ix, iy
+
+    @staticmethod
+    def cyclic_phase_distance(a: float, b: float) -> float:
+        """Normalized cyclic distance on [0, 1]."""
+        two_pi = 2.0 * math.pi
+        d = abs((a - b) % two_pi)
+        d = min(d, two_pi - d)
+        return d / math.pi
+
+    @staticmethod
+    def hyperbolic_distance_2d(ax: float, ay: float, bx: float, by: float) -> float:
+        """Poincare-disk distance for 2D points inside unit ball."""
+        na2 = ax * ax + ay * ay
+        nb2 = bx * bx + by * by
+        if na2 >= 1.0 or nb2 >= 1.0:
+            return float("inf")
+
+        dx = ax - bx
+        dy = ay - by
+        diff_sq = dx * dx + dy * dy
+        denom = (1.0 - na2) * (1.0 - nb2)
+        if denom <= 0:
+            return float("inf")
+
+        arg = 1.0 + (2.0 * diff_sq) / denom
+        return math.acosh(max(1.0, arg))
+
+    def insert_bundle(
+        self,
+        x: float,
+        y: float,
+        phase_rad: float,
+        tongue: str = "KO",
+        authority: str = "public",
+        intent_vector: Optional[List[float]] = None,
+        intent_label: str = "",
+        payload: Optional[Dict[str, Any]] = None,
+        bundle_id: Optional[str] = None,
+        wavelength_nm: float = 550.0,
+    ) -> CyclicBundle25D:
+        """Insert a cyclic bundle into the 2.5D lattice and octree projection."""
+        xw, yw = self._wrap_xy(x, y)
+        phase = self.normalize_phase(phase_rad)
+        iv = normalize_intent(intent_vector or [0, 0, 0])
+
+        if bundle_id is None:
+            digest = hashlib.blake2s(
+                f"{xw:.6f}:{yw:.6f}:{phase:.6f}:{tongue}:{intent_label}".encode("utf-8"),
+                digest_size=8,
+            ).hexdigest()
+            bundle_id = f"b_{digest}"
+
+        bundle = CyclicBundle25D(
+            bundle_id=bundle_id,
+            x=xw,
+            y=yw,
+            phase_rad=phase,
+            tongue=tongue,
+            authority=authority,
+            intent_vector=iv,
+            intent_label=intent_label,
+            payload=payload or {},
+        )
+
+        cell = self._cell_for(xw, yw)
+        self._cells.setdefault(cell, []).append(bundle)
+        self._bundles[bundle.bundle_id] = bundle
+
+        # 3D projection for octree interoperability; keep inside open unit ball.
+        z = max(-0.99, min(0.99, math.sin(phase) * 0.98))
+        self.octree.insert(
+            x=xw,
+            y=yw,
+            z=z,
+            wavelength_nm=wavelength_nm,
+            tongue=tongue,
+            authority=authority,
+            intent_vector=list(iv),
+            intent_label=intent_label or bundle_id,
+            payload={**(payload or {}), "_bundle_id": bundle_id, "_phase_rad": phase},
+            create_sphere_grid=True,
+        )
+        return bundle
+
+    def get_cell_bundles(self, cell: Tuple[int, int]) -> List[CyclicBundle25D]:
+        return list(self._cells.get(cell, []))
+
+    def overlapping_cells(self, min_bundles: int = 2) -> Dict[Tuple[int, int], List[CyclicBundle25D]]:
+        """Return cells containing overlap bundles."""
+        return {k: list(v) for k, v in self._cells.items() if len(v) >= min_bundles}
+
+    def lattice_neighbors(self, cell: Tuple[int, int]) -> List[Tuple[int, int]]:
+        """8-neighborhood with toroidal wrapping."""
+        ix, iy = cell
+        out: List[Tuple[int, int]] = []
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                if dx == 0 and dy == 0:
+                    continue
+                out.append(((ix + dx) % self.grid_span, (iy + dy) % self.grid_span))
+        return out
+
+    def lace_edges(self) -> Set[Tuple[Tuple[int, int], Tuple[int, int]]]:
+        """Build lattice-lace connectivity over occupied cells."""
+        occupied = set(self._cells.keys())
+        edges: Set[Tuple[Tuple[int, int], Tuple[int, int]]] = set()
+        for cell in occupied:
+            for n in self.lattice_neighbors(cell):
+                if n in occupied:
+                    edge = (cell, n) if cell < n else (n, cell)
+                    edges.add(edge)
+        return edges
+
+    def bundle_distance(self, a: CyclicBundle25D, b: CyclicBundle25D) -> float:
+        """Composite 2.5D distance with cyclic and semantic weighting."""
+        d_h = self.hyperbolic_distance_2d(a.x, a.y, b.x, b.y)
+        d_phase = self.cyclic_phase_distance(a.phase_rad, b.phase_rad)
+
+        sim = float(intent_similarity(a.intent_vector, b.intent_vector))
+        avg_weight = (a.tongue_weight + b.tongue_weight) / 2.0
+        semantic_penalty = (1.0 - sim) * (1.0 + (1.0 / max(1.0, avg_weight)))
+
+        return d_h + self.phase_weight * d_phase + semantic_penalty
+
+    def query_nearest(
+        self,
+        x: float,
+        y: float,
+        phase_rad: float,
+        intent_vector: Optional[List[float]] = None,
+        tongue: str = "KO",
+        top_k: int = 10,
+    ) -> List[Tuple[CyclicBundle25D, float]]:
+        """Nearest-neighbor query in 2.5D bundle space."""
+        xw, yw = self._wrap_xy(x, y)
+        phase = self.normalize_phase(phase_rad)
+        query = CyclicBundle25D(
+            bundle_id="_query",
+            x=xw,
+            y=yw,
+            phase_rad=phase,
+            tongue=tongue,
+            authority="public",
+            intent_vector=normalize_intent(intent_vector or [0, 0, 0]),
+            intent_label="query",
+        )
+
+        scored: List[Tuple[CyclicBundle25D, float]] = []
+        for b in self._bundles.values():
+            scored.append((b, self.bundle_distance(query, b)))
+        scored.sort(key=lambda item: item[1])
+        return scored[:max(1, top_k)]
+
+    def advance_cycle(self, delta_rad: float) -> None:
+        """Advance all bundle phases and rebuild octree projection."""
+        for b in self._bundles.values():
+            b.phase_rad = self.normalize_phase(b.phase_rad + delta_rad)
+        self.rebuild_octree_projection()
+
+    def rebuild_octree_projection(self) -> None:
+        """Rebuild octree projection from current 2.5D bundle states."""
+        rebuilt = SignedOctree(
+            max_depth=self.octree.max_depth,
+            chladni_mode=self.octree.chladni_mode,
+        )
+        for b in self._bundles.values():
+            z = max(-0.99, min(0.99, math.sin(b.phase_rad) * 0.98))
+            rebuilt.insert(
+                x=b.x,
+                y=b.y,
+                z=z,
+                tongue=b.tongue,
+                authority=b.authority,
+                intent_vector=list(b.intent_vector),
+                intent_label=b.intent_label or b.bundle_id,
+                payload={**b.payload, "_bundle_id": b.bundle_id, "_phase_rad": b.phase_rad},
+            )
+        self.octree = rebuilt
+
+    def stats(self) -> Dict[str, Any]:
+        overlap = self.overlapping_cells()
+        weights = [b.tongue_weight for b in self._bundles.values()]
+        return {
+            "bundle_count": len(self._bundles),
+            "occupied_cells": len(self._cells),
+            "overlap_cells": len(overlap),
+            "max_overlap": max((len(v) for v in overlap.values()), default=0),
+            "lace_edges": len(self.lace_edges()),
+            "semantic_weight_sum": float(sum(weights)),
+            "semantic_weight_avg": float(sum(weights) / len(weights)) if weights else 0.0,
+            "octree_voxel_count": self.octree.stats().get("count", 0),
+        }
+
+
 class OctreeNode:
     """Recursive octree node with signed-axis awareness.
 
@@ -671,6 +943,14 @@ INTEROP_MATRIX = {
             "html_css": "CSS Grid with 8 quadrant divs, transform: scaleX(-1) for mirror",
             "solidity": "mapping(bytes32 => Voxel) public voxels; // octant as high bits",
             "glsl": "uniform vec3 u_center; int octant = (x>=c.x?1:0)|(y>=c.y?2:0)|(z>=c.z?4:0);",
+        },
+        "HyperbolicLattice25D": {
+            "python": "hydra.octree_sphere_grid.HyperbolicLattice25D (x,y + cyclic phase)",
+            "typescript": "class HyperbolicLattice25D { insertBundle/queryNearest/advanceCycle }",
+            "rust": "struct HyperbolicLattice25D { cells: HashMap<(i32,i32), Vec<Bundle>>, phase_weight: f64 }",
+            "go": "type HyperbolicLattice25D struct { Cells map[[2]int][]Bundle; PhaseWeight float64 }",
+            "sql": "TABLE lattice_bundles(bundle_id, cell_x, cell_y, phase_rad, tongue, authority, intent_json)",
+            "glsl": "vec3 p = vec3(xy, sin(phase)); // 2.5D projection into octree-compatible z",
         },
         "MortonCode": {
             "python": "morton_encode_3d(x, y, z) -> int",

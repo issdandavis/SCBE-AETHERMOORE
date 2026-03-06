@@ -17,6 +17,7 @@ Endpoints:
   GET  /v1/training/status        — Training pipeline status
   POST /v1/council/deliberate     — AI Round Table: multi-LLM deliberation with governance
   GET  /v1/council/status         — Round Table session history
+  POST /v1/workflow/lattice25d    — HyperbolicLattice25D note embedding and tagging
   GET  /health                    — Health check
 
 Start:
@@ -53,7 +54,7 @@ logger = logging.getLogger("scbe_n8n_bridge")
 try:
     from fastapi import FastAPI, HTTPException, Header, Request
     from fastapi.responses import JSONResponse
-    from pydantic import BaseModel
+    from pydantic import BaseModel, Field
 except ImportError:
     print("pip install fastapi uvicorn  # required for n8n bridge")
     raise
@@ -228,6 +229,33 @@ class LLMDispatchRequest(BaseModel):
     metadata: Dict[str, Any] = {}
     passthrough: Dict[str, Any] = {}
     route_to_zapier: bool = False
+
+
+class LatticeNoteInput(BaseModel):
+    note_id: Optional[str] = None
+    text: str
+    tags: List[str] = Field(default_factory=list)
+    source: str = "n8n"
+    authority: str = "public"
+    tongue: str = "KO"
+    phase_rad: Optional[float] = None
+
+
+class Lattice25DRequest(BaseModel):
+    notes: List[LatticeNoteInput] = Field(default_factory=list)
+    include_repo_notes: bool = False
+    notes_glob: str = "docs/**/*.md"
+    max_notes: int = 60
+    cell_size: float = 0.4
+    max_depth: int = 6
+    phase_weight: float = 0.35
+    radius: float = 0.72
+    query_intent: List[float] = Field(default_factory=lambda: [0.9, 0.1, 0.1])
+    query_x: float = 0.1
+    query_y: float = 0.1
+    query_phase: float = 0.0
+    query_top_k: int = 5
+    include_note_payload: bool = True
 
 
 # ---------------------------------------------------------------------------
@@ -1061,6 +1089,82 @@ async def training_status(x_api_key: Optional[str] = Header(None)):
     _check_key(x_api_key)
     trainer = _get_trainer()
     return trainer.get_status_dict()
+
+
+# ---------------------------------------------------------------------------
+#  Hyperbolic Lattice 2.5D Workflow Route
+# ---------------------------------------------------------------------------
+
+@app.post("/v1/workflow/lattice25d")
+async def workflow_lattice25d(
+    req: Lattice25DRequest,
+    x_api_key: Optional[str] = Header(None),
+):
+    """Embed notes into HyperbolicLattice25D with metric tags and intent vectors."""
+    _check_key(x_api_key)
+
+    from hydra.lattice25d_ops import (
+        NoteRecord,
+        build_lattice25d_payload,
+        load_notes_from_glob,
+    )
+
+    notes: List[NoteRecord] = []
+    for idx, row in enumerate(req.notes):
+        text_value = (row.text or "").strip()
+        if not text_value:
+            continue
+        note_id = row.note_id or f"n8n-note-{idx}"
+        notes.append(
+            NoteRecord(
+                note_id=note_id,
+                text=text_value,
+                tags=tuple(row.tags),
+                source=row.source or "n8n",
+                authority=row.authority or "public",
+                tongue=row.tongue or "KO",
+                phase_rad=row.phase_rad,
+            )
+        )
+
+    if req.include_repo_notes:
+        remaining = max(0, int(req.max_notes) - len(notes))
+        if remaining > 0:
+            notes.extend(
+                load_notes_from_glob(
+                    pattern=req.notes_glob,
+                    max_notes=remaining,
+                    source="repo",
+                    authority="internal",
+                )
+            )
+
+    if not notes:
+        raise HTTPException(
+            status_code=400,
+            detail="No notes supplied. Provide notes[] or set include_repo_notes=true with a valid notes_glob.",
+        )
+
+    payload = build_lattice25d_payload(
+        notes,
+        cell_size=req.cell_size,
+        max_depth=req.max_depth,
+        phase_weight=req.phase_weight,
+        radius=req.radius,
+        query_intent=list(req.query_intent),
+        query_x=req.query_x,
+        query_y=req.query_y,
+        query_phase=req.query_phase,
+        query_top_k=req.query_top_k,
+    )
+
+    if not req.include_note_payload:
+        payload.pop("notes", None)
+
+    payload["source"] = "n8n-bridge"
+    payload["notes_glob"] = req.notes_glob if req.include_repo_notes else None
+    payload["input_notes"] = len(req.notes)
+    return payload
 
 
 # ---------------------------------------------------------------------------

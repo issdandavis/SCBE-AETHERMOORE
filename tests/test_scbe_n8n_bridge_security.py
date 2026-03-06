@@ -42,7 +42,7 @@ async def test_llm_dispatch_ignores_user_hook_override(monkeypatch) -> None:
     monkeypatch.setattr(
         bridge,
         "_send_zapier_event",
-        lambda payload: {"status": "sent", "event": payload.get("event")},
+        lambda **kwargs: {"status": "sent", "event": kwargs.get("event_payload", {}).get("event")},
     )
 
     req = bridge.LLMDispatchRequest.model_validate(
@@ -58,3 +58,56 @@ async def test_llm_dispatch_ignores_user_hook_override(monkeypatch) -> None:
 
     assert result["zapier"]["status"] == "sent"
     assert "zapier_hook_url" not in req.model_dump()
+
+
+@pytest.mark.asyncio
+async def test_workflow_lattice25d_accepts_inline_notes(monkeypatch) -> None:
+    monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
+
+    req = bridge.Lattice25DRequest.model_validate(
+        {
+            "notes": [
+                {
+                    "note_id": "n1",
+                    "text": "Swarm lane note with 2026-03-05 checkpoint and metric tags.",
+                    "tags": ["swarm", "checkpoint"],
+                    "source": "notion",
+                    "authority": "internal",
+                    "tongue": "DR",
+                },
+                {
+                    "note_id": "n2",
+                    "text": "Council synthesis note with url https://example.com and fallback plan.",
+                    "tags": ["council"],
+                    "source": "repo",
+                    "authority": "sealed",
+                    "tongue": "KO",
+                },
+            ],
+            "include_repo_notes": False,
+            "query_top_k": 2,
+        }
+    )
+    result = await bridge.workflow_lattice25d(req, x_api_key="test-key")
+
+    assert result["ingested_count"] == 2
+    assert result["source"] == "n8n-bridge"
+    assert result["stats"]["bundle_count"] == 2
+    assert len(result["nearest"]) == 2
+    assert any("tag:swarm" in tag for tag in result["notes"][0]["metric_tags"])
+
+
+@pytest.mark.asyncio
+async def test_workflow_lattice25d_rejects_empty_input(monkeypatch) -> None:
+    monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
+
+    req = bridge.Lattice25DRequest.model_validate(
+        {
+            "notes": [],
+            "include_repo_notes": False,
+        }
+    )
+    with pytest.raises(bridge.HTTPException) as exc:
+        await bridge.workflow_lattice25d(req, x_api_key="test-key")
+
+    assert exc.value.status_code == 400
