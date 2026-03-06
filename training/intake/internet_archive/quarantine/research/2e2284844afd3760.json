@@ -1,0 +1,31 @@
+{
+  "id": "2e2284844afd3760",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Almost sure purely singular continuous spectrum for quasicrystal models",
+  "content": "# Almost sure purely singular continuous spectrum for quasicrystal models\n\nCreator: Christian Seifert\nDate: 2016-08-08T00:00:00Z\nDownloads: 51\nSubjects: Spectral Theory, Mathematical Physics, Mathematics\n\nWe review recent developments in the spectral theory of continuum one-dimensional quasicystals, yielding purely singular continuous spectrum for these Schr\\\"odinger operators. Allowing measures as potentials we can generalize some results to very singular potentials, including Kronig-Penney type models.",
+  "url": "https://archive.org/details/arxiv-1608.02469",
+  "timestamp": "2026-03-06T04:17:45.776805",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "73e08b7c27e1723b56a89898635e5d17f223da0d1a889bd75537032bd3b78fba",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "arxiv-1608.02469",
+    "media_type": "texts",
+    "downloads": 51,
+    "subjects": [
+      "Spectral Theory",
+      "Mathematical Physics",
+      "Mathematics"
+    ]
+  }
+}

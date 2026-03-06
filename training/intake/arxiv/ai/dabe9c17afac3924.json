@@ -1,0 +1,28 @@
+{
+  "id": "dabe9c17afac3924",
+  "source": "arxiv",
+  "category": "ai",
+  "title": "Ailed: A Psyche-Driven Chess Engine with Dynamic Emotional Modulation",
+  "content": "# Ailed: A Psyche-Driven Chess Engine with Dynamic Emotional Modulation\n\nAuthors: Diego Armando Resendez Prado\nPublished: 2026-03-05T16:32:40Z\n\nChess engines passed human strength years ago, but they still don't play like humans. A grandmaster under clock pressure blunders in ways a club player on a hot streak never would. Conventional engines capture none of this.\n  This paper proposes a personality x psyche decomposition to produce behavioral variability in chess play, drawing on patterns observed in human games. Personality is static -- a preset that pins down the engine's character. Psyche is dynamic -- a bounded scalar \u03c8_t \\in [-100, +100], recomputed from five positional factors after every move. These two components feed into an audio-inspired signal chain (noise gate, compressor/expander, five-band equalizer, saturation limiter) that reshapes move probability distributions on the fly. The chain doesn't care what engine sits behind it: any system that outputs move probabilities will do. It needs no search and carries no state beyond \u03c8_t.\n  I test the framework across 12,414 games against Maia2-1100, feeding it two probability sources that differ by ~2,800x in training data. Both show the same monotonic gradient in top-move agreement (~20-25 pp spread from stress to overconfidence), which tells us the behavioral variation comes from the signal chain, not from the model underneath. When the psyche runs overconfident, the chain mostly gets out of the way (66% agreement with vanilla Maia2). Under stress, the competitive score falls from 50.8% to 30.1%. The patterns are reminiscent of tilt and overconfidence as described in human play, but I should be upfront: this study includes no human-subject validation.",
+  "url": "http://arxiv.org/abs/2603.05352v1",
+  "timestamp": "2026-03-05T16:32:40Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "1876316c9b02bc5312e54dacf8ceacd9e63d303fa039254003af5c0b0530b3e6",
+  "parent_hash": "b37ca5b4663ad40ed97758d1552f49c4545d4dc46b509ce1258a5737b5ac7475",
+  "metadata": {
+    "authors": [
+      "Diego Armando Resendez Prado"
+    ],
+    "arxiv_category": "cs.AI",
+    "arxiv_id": "2603.05352v1"
+  }
+}

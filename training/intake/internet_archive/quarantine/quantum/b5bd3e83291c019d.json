@@ -1,0 +1,30 @@
+{
+  "id": "b5bd3e83291c019d",
+  "source": "internet_archive",
+  "category": "quarantine/quantum",
+  "title": "Quantum and Spectral Properties of the Labyrinth Model",
+  "content": "# Quantum and Spectral Properties of the Labyrinth Model\n\nCreator: Yuki Takahashi\nDate: 2016-01-06T00:00:00Z\nDownloads: 43\nSubjects: Mathematical Physics, Mathematics\n\nWe consider the Labyrinth model, which is a two-dimensional quasicrystal model. We show that the spectrum of this model, which is known to be a product of two Cantor sets, is an interval for small values of the coupling constant. We also consider the density of states measure of the Labyrinth model, and show that it is absolutely continuous with respect to Lebesgue measure for almost all values of coupling constants in small coupling regime.",
+  "url": "https://archive.org/details/arxiv-1601.01284",
+  "timestamp": "2026-03-06T04:17:45.776626",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "6dae822f15306e54b991b74abdd7812d32a840bab10b9e924432daef959c206b",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "arxiv-1601.01284",
+    "media_type": "texts",
+    "downloads": 43,
+    "subjects": [
+      "Mathematical Physics",
+      "Mathematics"
+    ]
+  }
+}

@@ -69,6 +69,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:python": "pytest tests/ -v",
+    "test:rust": "cargo test --manifest-path rust/scbe_core/Cargo.toml",
     "test:all": "npm test && npm run test:python",
     "typecheck": "tsc --noEmit",
     "check:circular": "madge --circular --extensions ts src/",

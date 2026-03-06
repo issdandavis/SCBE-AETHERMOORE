@@ -1,0 +1,33 @@
+{
+  "id": "2a286a59cfc4b7f2",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "Efficient Time-Aware Partitioning of Quantum Circuits for Distributed Quantum Computing",
+  "content": "# Efficient Time-Aware Partitioning of Quantum Circuits for Distributed Quantum Computing\n\nAuthors: Raymond P. H. Wu, Chathu Ranaweera, Sutharshan Rajasegarar, Ria Rushin Joseph, Jinho Choi, Seng W. Loke\nPublished: 2026-03-04T14:43:10Z\n\nTo overcome the physical limitations of scaling monolithic quantum computers, distributed quantum computing (DQC) interconnects multiple smaller-scale quantum processing units (QPUs) to form a quantum network. However, this approach introduces a critical challenge, namely the high cost of quantum communication between remote QPUs incurred by quantum state teleportation and quantum gate teleportation. To minimize this communication overhead, DQC compilers must strategically partition quantum circuits by mapping logical qubits to distributed physical QPUs. Static graph partitioning methods are fundamentally ill-equipped for this task as they ignore execution dynamics and underlying network topology, while metaheuristics require substantial computational runtime. In this work, we propose a heuristic based on beam search to solve the circuit partitioning problem. Our time-aware algorithm incrementally constructs a low-cost sequence of qubit assignments across successive time steps to minimize overall communication overhead. The time and space complexities of the proposed algorithm scale quadratically with the number of qubits and linearly with circuit depth, offering a significant computational speedup over common metaheuristics. We demonstrate that our proposed algorithm consistently achieves significantly lower communication costs than static baselines across varying circuit sizes, depths, and network topologies, providing an efficient compilation tool for near-term distributed quantum hardware.",
+  "url": "http://arxiv.org/abs/2603.04126v1",
+  "timestamp": "2026-03-04T14:43:10Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "08c1fc8cf3c6fe213b060e1374b5f12b1f564e6aac8cb22f88b8acb02c86dee4",
+  "parent_hash": "11adbb9103cc0a8f5b1c68aefeb6549c8378d9048c53672206ae09f40a1b0d46",
+  "metadata": {
+    "authors": [
+      "Raymond P. H. Wu",
+      "Chathu Ranaweera",
+      "Sutharshan Rajasegarar",
+      "Ria Rushin Joseph",
+      "Jinho Choi",
+      "Seng W. Loke"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.04126v1"
+  }
+}

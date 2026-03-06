@@ -1,0 +1,42 @@
+{
+  "id": "6fecd094e3386d48",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "George Miseyko Collection",
+  "content": "# George Miseyko Collection\n\nContributors: fleischer, leslie, miseyko, george, va medical center charles george, asheville, north carolina, lafontaine, john\nDate: 1943\nSubjects: personal narratives, united states. navy, navy, veteran, male\n\nCryptographic Specialist First Class, Navy, World War, 1939-1945 - Boston, Massachusetts; Detroit, Michigan; Chicago, Illinois; Camp Sampson, New York.",
+  "url": "https://www.loc.gov/item/afc2001001.102054/",
+  "timestamp": "2026-03-06T02:37:46.460889",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "2ae2d86d933329f6ff4c04f96fc777cda83d7dde1677aab7caedf464b8181064",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "personal narratives",
+      "united states. navy",
+      "navy",
+      "veteran",
+      "male",
+      "world war, 1939-1945",
+      "enlisted",
+      "world war",
+      "miseyko, george",
+      "white"
+    ],
+    "dates": "1943",
+    "original_format": [
+      "sound recording",
+      "personal narrative",
+      "manuscript/mixed material"
+    ]
+  }
+}

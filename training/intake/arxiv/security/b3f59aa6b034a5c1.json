@@ -1,0 +1,32 @@
+{
+  "id": "b3f59aa6b034a5c1",
+  "source": "arxiv",
+  "category": "security",
+  "title": "When Denoising Becomes Unsigning: Theoretical and Empirical Analysis of Watermark Fragility Under Diffusion-Based Image Editing",
+  "content": "# When Denoising Becomes Unsigning: Theoretical and Empirical Analysis of Watermark Fragility Under Diffusion-Based Image Editing\n\nAuthors: Fai Gu, Qiyu Tang, Te Wen, Emily Davis, Finn Carter\nPublished: 2026-03-05T00:26:34Z\n\nRobust invisible watermarking systems aim to embed imperceptible payloads that remain decodable after common post-processing such as JPEG compression, cropping, and additive noise. In parallel, diffusion-based image editing has rapidly matured into a default transformation layer for modern content pipelines, enabling instruction-based editing, object insertion and composition, and interactive geometric manipulation. This paper studies a subtle but increasingly consequential interaction between these trends: diffusion-based editing procedures may unintentionally compromise, and in extreme cases practically bypass, robust watermarking mechanisms that were explicitly engineered to survive conventional distortions. We develop a unified view of diffusion editors that (i) inject substantial Gaussian noise in a latent space and (ii) project back to the natural image manifold via learned denoising dynamics. Under this view, watermark payloads behave as low-energy, high-frequency signals that are systematically attenuated by the forward diffusion step and then treated as nuisance variation by the reverse generative process. We formalize this degradation using information-theoretic tools, proving that for broad classes of pixel-level watermark encoders/decoders the mutual information between the watermark payload and the edited output decays toward zero as the editing strength increases, yielding decoding error close to random guessing. We complement the theory with a realistic hypothetical experimental protocol and tables spanning representative watermarking methods and representative diffusion editors. Finally, we discuss ethical implications, responsible disclosure norms, and concrete design guidelines for watermarking schemes that remain meaningful in the era of generative transformations.",
+  "url": "http://arxiv.org/abs/2603.04696v1",
+  "timestamp": "2026-03-05T00:26:34Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "af2c1ac012da7e92e1cc524eae91507265b197b92e89a66b2058921d20e50ed9",
+  "parent_hash": "a52efece03b4c5612fa93fc5a547d7eec24e30f11df25a35e81d53b85b109d7e",
+  "metadata": {
+    "authors": [
+      "Fai Gu",
+      "Qiyu Tang",
+      "Te Wen",
+      "Emily Davis",
+      "Finn Carter"
+    ],
+    "arxiv_category": "cs.CR",
+    "arxiv_id": "2603.04696v1"
+  }
+}

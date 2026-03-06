@@ -1,0 +1,38 @@
+{
+  "id": "409595431ae49c53",
+  "source": "internet_archive",
+  "category": "quarantine/math",
+  "title": "Logical approaches to computational barriers : Second Conference on Computability in Europe, CiE 2006, Swansea, UK, June 30-July 5, 2006 : proceedings",
+  "content": "# Logical approaches to computational barriers : Second Conference on Computability in Europe, CiE 2006, Swansea, UK, June 30-July 5, 2006 : proceedings\n\nCreator: Conference on Computability in Europe (2nd : 2006 : Swansea, Wales)\nDate: 2006-01-01T00:00:00Z\nDownloads: 68\nSubjects: Biocomputer, Church-These, Swansea, Fonctions calculables -- Congre\u0300s, Computable functions -- Congresses\n\n1 online resource (xv, 608 pages) : CiE 2006: Logical Approaches to Computational Barriers Swansea, Wales, June 30 - July 5, 2006 Computability in Europe (CiE) is an informal network of European scientists working on computability theory, including its foundations, technical devel- ment, and applications. Among the aims of the network is to advance our t- oretical understanding of what can and cannot be computed, by any means of computation. Its scienti?c vision is broad: computations may be performed with discrete or continuous data by all kinds of algorithms, programs, and - chines. Computations may be made by experimenting with any sort of physical system obeying the laws of a physical theory such as Newtonian mechanics, quantum theory or relativity. Computations may be very general, depending upon the foundations of set theory; or very speci?c, using the combinatorics of?nite structures. CiE also works on subjects intimately related to computation, especially theories of data and information, and methods for formal reasoning about computations. The sources of new ideas and methods include practical developments in areas such as neural networks, quantum computation, natural computation, molecular computation, and computational learning. Applications are everywhere, especially, in algebra, analysis and geometry, or data types and programming. This volume, Logical Approaches to Computational Barriers, is the proce- ings of the second in a series of conferences of CiE that was held at the Depa- ment of Computer Science, Swansea University, 30 June - 5 July, 2006 Includes bibliographical references and index Heap-Abstraction for an Object-Oriented Calculus with Thread Classes -- From Constructibility and Absoluteness to Computability and Domain Independence -- Datatype-Generic Reasoning -- The Logical Strength of the Uniform Continuity Theorem -- Elementary Algebraic Specifications of the Rational Function Field -- Random Closed Sets -- Deep Inference and Its Normal Form of Derivations -- Logspace Complexity of Functions and Structures -- Prefix-Like Complexities and Computability in the Limit -- Partial Continuous Functions and Admissible Domain Representations -- An Invariant Cost Model for the Lambda Calculus -- On the Complexity of the Sperner Lemma -- The Church-Turing Thesis: Consensus and Opposition -- Go\u0308del and the Origins of Computer Science -- The Role of Algebraic Models and Type-2 Theory of Effectivity in Special Purpose Processor Design -- Turing Universality in Dynamical Systems -- Every Sequence Is Decompressible from a Random One -- Reversible Conservative Rational Abstract Geometrical Computation Is Turing-Universal -- LJQ: A Strongly Focused Calculus for Intuitionistic Logic -- Bo\u0308hm Trees, Krivine's Machine and the Taylor Expansion of Lambda-Terms -- What Does the Incompleteness Theorem Add to the Unsolvability of the Halting Problem? -- An Analysis of the Lemmas of Urysohn and Urysohn-Tietze According to Effective Borel Measur",
+  "url": "https://archive.org/details/logicalapproache0000conf",
+  "timestamp": "2026-03-06T02:40:48.213935",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "f658fc3062c277dce624bedb997a05e61cd5fcb9e071e603f314694d550f3ecb",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "logicalapproache0000conf",
+    "media_type": "texts",
+    "downloads": 68,
+    "subjects": [
+      "Biocomputer",
+      "Church-These",
+      "Swansea",
+      "Fonctions calculables -- Congre\u0300s",
+      "Computable functions -- Congresses",
+      "Fonctions calculables",
+      "COMPUTERS -- Machine Theory",
+      "Informatique",
+      "Computable functions",
+      "Berechnungskomplexita\u0308t"
+    ]
+  }
+}

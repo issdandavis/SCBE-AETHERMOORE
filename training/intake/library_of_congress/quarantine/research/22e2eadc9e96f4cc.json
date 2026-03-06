@@ -1,0 +1,32 @@
+{
+  "id": "22e2eadc9e96f4cc",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "H.Res.1102 - 115th Congress (2017-2018): Expressing support for digital currencies and blockchain technology.",
+  "content": "# H.Res.1102 - 115th Congress (2017-2018): Expressing support for digital currencies and blockchain technology.\n\nContributors: 115th congress, rep. emmer, tom [r-mn-6], house of representatives\nDate: 2018-09-28\nSubjects: finance and financial sector, congress\n\nSummary of H.Res.1102 - 115th Congress (2017-2018): Expressing support for digital currencies and blockchain technology.",
+  "url": "https://www.congress.gov/bill/115th-congress/house-resolution/1102",
+  "timestamp": "2026-03-06T02:38:39.088130",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "160c6ab480deb1e3aee291777d07de163665a144a5759e15fe2af80aecae58f1",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "finance and financial sector",
+      "congress"
+    ],
+    "dates": "2018-09-28",
+    "original_format": [
+      "legislation"
+    ]
+  }
+}

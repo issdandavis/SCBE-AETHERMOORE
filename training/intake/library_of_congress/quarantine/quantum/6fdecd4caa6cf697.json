@@ -1,0 +1,31 @@
+{
+  "id": "6fdecd4caa6cf697",
+  "source": "library_of_congress",
+  "category": "quarantine/quantum",
+  "title": "Fourteen weeks in natural philosophy.",
+  "content": "# Fourteen weeks in natural philosophy.\n\nContributors: steele, joel dorman\nDate: 1878\nSubjects: physics\n\nAlso available in digital form.",
+  "url": "https://www.loc.gov/item/43045803/",
+  "timestamp": "2026-03-06T04:17:18.822513",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "e47545246d207fd9e8e43fd15a013f10729b25f18e055aa8a0d5bdd5aa39a8dd",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "physics"
+    ],
+    "dates": "1878",
+    "original_format": [
+      "book"
+    ]
+  }
+}

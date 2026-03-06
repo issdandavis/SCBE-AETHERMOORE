@@ -1,0 +1,26 @@
+{
+  "id": "1500dc918ae9cea1",
+  "source": "notion",
+  "category": "governance",
+  "title": "4-Tier AI Governance Explainer",
+  "content": "# 4-Tier AI Governance Explainer\n\n4-Tier AI Governance Explainer",
+  "url": "https://www.notion.so/4-Tier-AI-Governance-Explainer-710c5dffb1ee4750ba2462b791b54732",
+  "timestamp": "2026-02-02T07:43:00.000Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "88c6b03de5c50b640635302f076cc63d073bd710c5ee93c31cc25bc5e105eaa9",
+  "parent_hash": "ae0c7e21ab7d84003df7d397cfc8c37adb525c809e462568db35568b4d076579",
+  "metadata": {
+    "notion_id": "710c5dff-b1ee-4750-ba24-62b791b54732",
+    "page_type": "page",
+    "parent_type": "database_id"
+  }
+}

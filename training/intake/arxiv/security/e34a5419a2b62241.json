@@ -1,0 +1,28 @@
+{
+  "id": "e34a5419a2b62241",
+  "source": "arxiv",
+  "category": "security",
+  "title": "Zero-Knowledge Federated Learning with Lattice-Based Hybrid Encryption for Quantum-Resilient Medical AI",
+  "content": "# Zero-Knowledge Federated Learning with Lattice-Based Hybrid Encryption for Quantum-Resilient Medical AI\n\nAuthors: Edouard Lansiaux\nPublished: 2026-03-03T12:43:44Z\n\nFederated Learning (FL) enables collaborative training of medical AI models across hospitals without centralizing patient data. However, the exchange of model updates exposes critical vulnerabilities: gradient inversion attacks can reconstruct patient information, Byzantine clients can poison the global model, and the \\emph{Harvest Now, Decrypt Later} (HNDL) threat renders today's encrypted traffic vulnerable to future quantum adversaries.We introduce \\textbf{ZKFL-PQ} (\\emph{Zero-Knowledge Federated Learning, Post-Quantum}), a three-tiered cryptographic protocol that hybridizes (i) ML-KEM (FIPS~203) for quantum-resistant key encapsulation, (ii) lattice-based Zero-Knowledge Proofs for verifiable \\emph{norm-constrained} gradient integrity, and (iii) BFV homomorphic encryption for privacy-preserving aggregation. We formalize the security model and prove correctness and zero-knowledge properties under the Module-LWE, Ring-LWE, and SIS assumptions \\emph{in the classical random oracle model}. We evaluate ZKFL-PQ on synthetic medical imaging data across 5 federated clients over 10 training rounds. Our protocol achieves \\textbf{100\\% rejection of norm-violating updates} while maintaining model accuracy at 100\\%, compared to a catastrophic drop to 23\\% under standard FL. The computational overhead (factor $\\sim$20$\\times$) is analyzed and shown to be compatible with clinical research workflows operating on daily or weekly training cycles. We emphasize that the current defense guarantees rejection of large-norm malicious updates; robustness against subtle low-norm or directional poisoning remains future work.",
+  "url": "http://arxiv.org/abs/2603.03398v1",
+  "timestamp": "2026-03-03T12:43:44Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "69fb935a205f7c893d32b3946ab5a9b21f6c051c8ecfb39f71501ed6eff1ce0f",
+  "parent_hash": "a1932633eba4731cb55edde5d1d76c410f68fe44fa9d34d72fd475c205ef5445",
+  "metadata": {
+    "authors": [
+      "Edouard Lansiaux"
+    ],
+    "arxiv_category": "cs.CR",
+    "arxiv_id": "2603.03398v1"
+  }
+}

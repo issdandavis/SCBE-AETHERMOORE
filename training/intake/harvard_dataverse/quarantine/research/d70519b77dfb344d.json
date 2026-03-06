@@ -1,0 +1,31 @@
+{
+  "id": "d70519b77dfb344d",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Neural computation_MEG",
+  "content": "# Neural computation_MEG\n\nAuthors: Li, Shuang\nPublished: 2020-12-19T14:16:22Z\nSubjects: Other\nDOI: doi:10.7910/DVN/PXAX3Q\n\nThis dataset is the raw data of MEG\n\nCitation: Li, Shuang, 2020, \"Neural computation_MEG\", https://doi.org/10.7910/DVN/PXAX3Q, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/PXAX3Q",
+  "timestamp": "2026-03-06T02:42:16.312164",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "d323f9d650ff65c375e2b01518f9764c575f9673ad14c5394e193edcfea6bf0d",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/PXAX3Q",
+    "subjects": [
+      "Other"
+    ],
+    "authors": [
+      "Li, Shuang"
+    ],
+    "file_count": 2
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "b59e59bdb5b090c1",
+  "source": "harvard_dataverse",
+  "category": "quarantine/ai",
+  "title": "Conformer models and training datasets",
+  "content": "# Conformer models and training datasets\n\nAuthors: Axelrod, Simon, Gomez-Bombarelli, Rafael\nPublished: 2021-02-11T22:02:13Z\nSubjects: Chemistry, Computer and Information Science\nDOI: doi:10.7910/DVN/N4VLQL\n\nHere you can find pre-trained machine learning models that generate predictions from conformer ensembles. You can also find the PyTorch datasets that were used to train them.\n\nCitation: Axelrod, Simon; Gomez-Bombarelli, Rafael, 2021, \"Conformer models and training datasets\", https://doi.org/10.7910/DVN/N4VLQL, Harvard Dataverse, V3, UNF:6:8QjkuDIzvDUeu9ccbD20+A== [fileUNF]",
+  "url": "https://doi.org/10.7910/DVN/N4VLQL",
+  "timestamp": "2026-03-06T02:42:07.859295",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "d786b3c867ed6ec9ccb86965b9f0de9bae5563545480ae634eda01a94588b6d6",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/N4VLQL",
+    "subjects": [
+      "Chemistry",
+      "Computer and Information Science"
+    ],
+    "authors": [
+      "Axelrod, Simon",
+      "Gomez-Bombarelli, Rafael"
+    ],
+    "file_count": 2496
+  }
+}

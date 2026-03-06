@@ -1,0 +1,28 @@
+{
+  "id": "95466fa68301a82b",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Calibrations for the Sasaki volume on odd spheres and the no-gap problem",
+  "content": "# Calibrations for the Sasaki volume on odd spheres and the no-gap problem\n\nAuthors: Jonas Matuzas\nPublished: 2026-02-26T12:55:20Z\n\nFor each odd sphere $S^n$ with $n=2m+1\\ge 5$, we consider the Sasaki volume functional $\\mathrm{Vol}^S(V)=\\int_{S^n}\\sqrt{\\det(I+(\\nabla V)^\\top(\\nabla V))}\\,d\\mathrm{vol}$ on smooth unit tangent vector fields $V$. Using the Gluck--Ziller calibration $\u03c9=a\\wedge\u0398$ on the unit tangent bundle $E=UT S^n$ (extended to constant sectional curvature by Brito--Chac\u00f3n--Naveira), we establish the universal calibrated lower bound $\\mathrm{Vol}^S(V)\\ge c(m;1)\\,\\mathrm{vol}(S^n)$, where $c(m;1)=4^m/\\binom{2m}{m}$. In the relaxed (integral-current) setting, we show that the section-constrained stable mass in $E$ equals the calibration value and is attained by an $\u03c9$-calibrated mass-minimizing integral $n$-cycle in the section class. We also analyze the equality case on smooth graphs. If a smooth graph is $\u03c9$-calibrated on an open set, then it satisfies the rigidity system $\\nabla_V V=0$ and $\\nabla_X V=\u03bbX$ for all $X\\perp V$, hence is locally a radial distance-gradient field. In particular, for $m\\ge 2$ there is no smooth unit field on $S^n$ whose graph is $\u03c9$-calibrated everywhere. Finally, we construct an explicit smooth recovery sequence (presented in detail for $S^5$ and then extended to all odd dimensions) and prove a uniform nonvanishing estimate for the polar-shell normalization in the patching construction. As a consequence, $\\inf_V \\mathrm{Vol}^S(V)=c(m;1)\\,\\mathrm{vol}(S^n)$, so there is no Lavrentiev gap.",
+  "url": "http://arxiv.org/abs/2602.22961v2",
+  "timestamp": "2026-02-26T12:55:20Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "f74ca400b76bd4bb1a644feab51a4a7449743d120e41359521cd51f0a7f6b2e5",
+  "parent_hash": "4562b997c1a6a7ec0661b4e9a3fb1918d4a53e18258322feced6df8da7c3070d",
+  "metadata": {
+    "authors": [
+      "Jonas Matuzas"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.22961v2"
+  }
+}

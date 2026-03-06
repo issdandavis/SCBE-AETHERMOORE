@@ -1,0 +1,29 @@
+{
+  "id": "bed448b4bc63b052",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Calculating trace distances of bosonic states in Krylov subspace",
+  "content": "# Calculating trace distances of bosonic states in Krylov subspace\n\nAuthors: Javier Mart\u00ednez-Cifuentes, Nicol\u00e1s Quesada\nPublished: 2026-03-05T18:59:06Z\n\nContinuous-variable quantum systems are central to quantum technologies, with Gaussian states playing a key role due to their broad applicability and simple description via first and second moments. Distinguishing Gaussian states requires computing their trace distance, but no analytical formula exists for general states, and numerical evaluation is difficult due to the exponential cost of representing infinite-dimensional operators. We introduce an efficient numerical method to compute the trace distance between a pure and a mixed Gaussian state, based on a generalized Lanczos algorithm that avoids explicit matrix representations and uses only moment information. The technique extends to non-Gaussian states expressible as linear combinations of Gaussian states. We also show how it can yield lower bounds on the trace distance between mixed Gaussian states, offering a practical tool for state certification and learning in continuous-variable quantum systems.",
+  "url": "http://arxiv.org/abs/2603.05499v1",
+  "timestamp": "2026-03-05T18:59:06Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "af703216bf310a301f1710f449076d71a166fee757ef0a3599219d9fe44455a8",
+  "parent_hash": "42d54e128bfe5b056d709face4b61a0a24ca4a57ac5408c5ff047cd8dc938a09",
+  "metadata": {
+    "authors": [
+      "Javier Mart\u00ednez-Cifuentes",
+      "Nicol\u00e1s Quesada"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05499v1"
+  }
+}

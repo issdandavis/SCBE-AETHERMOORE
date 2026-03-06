@@ -1,0 +1,52 @@
+{
+  "id": "582fe31802b5f1f5",
+  "source": "harvard_dataverse",
+  "category": "quarantine/ai",
+  "title": "Deep Learning for Clouds and Cloud Shadow Segmentation in Methane Satellite and Airborne Imaging Spectroscopy",
+  "content": "# Deep Learning for Clouds and Cloud Shadow Segmentation in Methane Satellite and Airborne Imaging Spectroscopy\n\nAuthors: Perez-Carrasco, Manuel, Perez-Carrasco, Manuel, Nasr, Maya, Nasr, Maya, Roche, Sebastien\nPublished: 2025-09-24T17:15:21Z\nSubjects: Earth and Environmental Sciences\nDOI: doi:10.7910/DVN/IKLZOJ\n\nCode and data for: Deep Learning for Clouds and Cloud Shadow Segmentation in Methane Satellite and Airborne Imaging Spectroscopy\n\nCitation: Perez-Carrasco, Manuel; Nasr, Maya; Roche, Sebastien; Chan Miller, Christopher; Zhang, Zhan; Park, Core Francisco; Walker, Eleanor; Garraffo, Cecilia; Finkbeiner, Douglas; Gautam, Ritesh; Wofsy, Steven, 2025, \"Deep Learning for Clouds and Cloud Shadow Segmentation in Methane Satellite and Airborne Imaging Spectroscopy\", https://doi.org/10.7910/DVN/IKLZOJ, Harvard Dataverse, V2",
+  "url": "https://doi.org/10.7910/DVN/IKLZOJ",
+  "timestamp": "2026-03-06T04:18:54.179750",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "1c817f5d0d0209f6d46e1ed8ad7815184003fb9aab3bd8266d7c3b0ce40149ac",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/IKLZOJ",
+    "subjects": [
+      "Earth and Environmental Sciences"
+    ],
+    "authors": [
+      "Perez-Carrasco, Manuel",
+      "Perez-Carrasco, Manuel",
+      "Nasr, Maya",
+      "Nasr, Maya",
+      "Roche, Sebastien",
+      "Roche, Sebastien",
+      "Chan Miller, Christopher",
+      "Chan Miller, Christopher",
+      "Zhang, Zhan",
+      "Zhang, Zhan",
+      "Park, Core Francisco",
+      "Park, Core Francisco",
+      "Walker, Eleanor",
+      "Walker, Eleanor",
+      "Garraffo, Cecilia",
+      "Garraffo, Cecilia",
+      "Finkbeiner, Douglas",
+      "Finkbeiner, Douglas",
+      "Gautam, Ritesh",
+      "Gautam, Ritesh",
+      "Wofsy, Steven",
+      "Wofsy, Steven"
+    ],
+    "file_count": 2008
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "id": "0b6bddfba08d5afb",
+  "source": "harvard_dataverse",
+  "category": "quarantine/security",
+  "title": "Replication Data for: AI Ethics on Blockchain: Topic Analysis on Twitter Data for Blockchain Security",
+  "content": "# Replication Data for: AI Ethics on Blockchain: Topic Analysis on Twitter Data for Blockchain Security\n\nAuthors: Yihang Fu, Zesen Zhuang, Luyao Zhang\nPublished: 2023-07-15T19:04:30Z\nSubjects: Arts and Humanities, Business and Management, Computer and Information Science, Engineering, Law\nDOI: doi:10.7910/DVN/CTBEF7\n\nBlockchain has empowered computer systems to be more secure using a distributed network. However, the current blockchain design suffers from fairness issues in transaction ordering. Miners are able to reorder transactions to generate profits, the so-called miner extractable value (MEV). Existing research recognizes MEV as a severe security issue and proposes potential solutions, including prominent Flashbots. However, previous studies have mostly analyzed blockchain data, which might not capture the impacts of MEV in a much broader AI society. Thus, in this research, we applied natural language processing (NLP) methods to comprehensively analyze topics in tweets on MEV. We collected more than 20000 tweets with \\#MEV and \\#Flashbots hashtags and analyzed their topics. Our results show that the tweets discussed profound topics of ethical concern, including security, equity, emotional sentiments, and the desire for solutions to MEV. We also identify the co-movements of MEV activities on blockchain and social media platforms. Our study contributes to the literature at the interface of blockchain security, MEV solutions, and AI ethics.\n\nCitation: Yihang Fu; Zesen Zhuang; Luyao Zhang, 2023, \"Replication Data for: AI Ethics on Blockchain: Topic Analysis on Twitter Data for Blockchain Security\", https://doi.org/10.7910/DVN/CTBEF7, Harvard Dataverse, V2, UNF:6:JV12jMWLzoNbU5bbBQiobg== [fileUNF]",
+  "url": "https://doi.org/10.7910/DVN/CTBEF7",
+  "timestamp": "2026-03-06T02:42:29.165314",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "7f4d54068228bfa5e98ab045d6eaec80a167bff11320fbec80de8cabb4a443d0",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/CTBEF7",
+    "subjects": [
+      "Arts and Humanities",
+      "Business and Management",
+      "Computer and Information Science",
+      "Engineering",
+      "Law",
+      "Social Sciences"
+    ],
+    "authors": [
+      "Yihang Fu",
+      "Zesen Zhuang",
+      "Luyao Zhang"
+    ],
+    "file_count": 13
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "e259bcdd610a3f2e",
+  "source": "library_of_congress",
+  "category": "quarantine/ai",
+  "title": "Connecting Patrons & Collections with Machine Learning Technology",
+  "content": "# Connecting Patrons & Collections with Machine Learning Technology\n\nContributors: trent, rachel, hasier, paulette\nDate: 2024-05-15\nSubjects: \n\nIn support of its mission to increase access and engagement with collections, the Library of Congress has shepherded a machine learning pilot project to improve description of cartographic hidden gems. Learn how the Library is working to make one million records, with minimal level description in the form of handwritten folder labels, available for patrons to browse and search online. The presentation includes details of an experimental project to test handwritten text recognition tools for converting the handwritten labels into machine-readable text. Techniques and outcomes will be discussed, as well as potential implications for large-scale transformation of handwritten metadata into fully searchable, machine-readable text.",
+  "url": "https://www.loc.gov/item/video-10132/",
+  "timestamp": "2026-03-06T02:38:34.742648",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "6dbb19e3b0cb1eedc45b618dd3b0118c70c64bb066aba761b8760d854662bd05",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [],
+    "dates": "2024-05-15",
+    "original_format": [
+      "film, video"
+    ]
+  }
+}

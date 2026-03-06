@@ -1,0 +1,25 @@
+{
+  "id": "fd78b43aa7ded1ee",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Penrose Tilings as Jammed Solids (Q85919849)",
+  "content": "# Penrose Tilings as Jammed Solids\n\nWikidata ID: Q85919849\nDescription: scientific article published on 06 October 2014\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q85919849",
+  "timestamp": "2026-03-06T04:18:16.815802",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "ac3d6a32eef93741eda5eb4796bf32a7d9e28c836009375a5c43c255b32d3c71",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "wikidata_id": "Q85919849",
+    "description": "scientific article published on 06 October 2014"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "id": "88e0b582adbeb6af",
+  "source": "harvard_dataverse",
+  "category": "quarantine/security",
+  "title": "Automotive Blockchain",
+  "content": "# Automotive Blockchain\n\nAuthors: Delija, Milaim\nPublished: 2024-07-18T17:45:14Z\nSubjects: Computer and Information Science, Mathematical Sciences\nDOI: doi:10.7910/DVN/3V26UX\n\nOriginally designed as the backbone for cryptocurrencies like Bitcoin, blockchain technology has significantly evolved over recent years, offering promising applications across various industries, including the automotive sector. This decentralized and tamper-proof technology enables transparent, secure, and efficient transactions, with the potential to revolutionize traditional business models and processes[1]. The automotive sector is currently undergoing profound changes, driven by increasing digitalization, connectivity, and the transition to electric mobility. In this context, blockchain technology is gaining importance as it offers solutions to many current challenges, such as the traceability of supply chains, the security and integrity of vehicle data, and the support of autonomous vehicles[2]. Furthermore, integrating Artificial Intelligence (AI) and the Internet of Things (IoT) with blockchain opens up entirely new possibilities for innovative vehicle technologies and business models. This combination allows for more efficient management of complex systems, secure data sharing, and the provision of new services beneficial to both manufacturers and end-users[3].\n\nCitation: Delija, Milaim, 2024, \"Automotive Blockchain\", https://doi.org/10.7910/DVN/3V26UX, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/3V26UX",
+  "timestamp": "2026-03-06T02:42:29.165256",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "ca140471c14e69be45f71733be76ce9c74be9863fdfdcecfc273555e44a97418",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/3V26UX",
+    "subjects": [
+      "Computer and Information Science",
+      "Mathematical Sciences"
+    ],
+    "authors": [
+      "Delija, Milaim"
+    ],
+    "file_count": 1
+  }
+}

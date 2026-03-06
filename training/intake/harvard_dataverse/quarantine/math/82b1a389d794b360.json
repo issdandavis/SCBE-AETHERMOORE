@@ -1,0 +1,42 @@
+{
+  "id": "82b1a389d794b360",
+  "source": "harvard_dataverse",
+  "category": "quarantine/math",
+  "title": "A Real Swell Noise Benchmark Dataset for Seismic Data Denoising with Deep Learning",
+  "content": "# A Real Swell Noise Benchmark Dataset for Seismic Data Denoising with Deep Learning\n\nAuthors: M. Barros, Pablo, de L. Sardinha, Roosevelt, A. M. Arboleda, Giovanny, de S. S. Valente, Lessandro, R. V. de Melo, Isabelle\nPublished: 2024-12-03T19:27:23Z\nSubjects: Computer and Information Science, Earth and Environmental Sciences, Engineering, Mathematical Sciences\nDOI: doi:10.7910/DVN/EXOCYD\n\nThe recent development of deep learning (DL) methods for computer vision has been driven by the creation of open benchmark datasets on which new algorithms can be tested and compared with reproducible results. Although DL methods have many applications in geophysics, few real seismic datasets are available for benchmarking DL models, especially for denoising real data, which is one of the main problems in seismic data processing scenarios in the oil and gas industry. This article presents a benchmark dataset composed of synthetic seismic data corrupted with noise extracted from a filtering process on real data. In this work, a comparison between two DL-based denoising models is performed on this dataset, which is proposed as a benchmark for accelerating the development of new solutions for seismic data denoising. This work also introduces a new evaluation metric that can capture small variations in model results. The results show that DL models are effective for noise reduction in seismic data, but removing noise while preserving the signal remains a challenging open problem.\n\nCitation: M. Barros, Pablo; de L. Sardinha, Roosevelt; A. M. Arboleda, Giovanny; de S. S. Valente, Lessandro; R. V. de Melo, Isabelle; Aveleda, Albino; Bulc\u00e3o, Andr\u00e9; L. Netto, Sergio; Evsukoff G. , Alexandre, 2024, \"A Real Swell Noise Benchmark Dataset for Seismic Data Denoising with Deep Learning\", https://doi.org/10.7910/DVN/EXOCYD, Harvard Dataverse, V3",
+  "url": "https://doi.org/10.7910/DVN/EXOCYD",
+  "timestamp": "2026-03-06T04:18:54.179605",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "a1522fb159b1679657c31120abfc68cfc59f39eab11441c04d79027702f1dd46",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/EXOCYD",
+    "subjects": [
+      "Computer and Information Science",
+      "Earth and Environmental Sciences",
+      "Engineering",
+      "Mathematical Sciences"
+    ],
+    "authors": [
+      "M. Barros, Pablo",
+      "de L. Sardinha, Roosevelt",
+      "A. M. Arboleda, Giovanny",
+      "de S. S. Valente, Lessandro",
+      "R. V. de Melo, Isabelle",
+      "Aveleda, Albino",
+      "Bulc\u00e3o, Andr\u00e9",
+      "L. Netto, Sergio",
+      "Evsukoff G. , Alexandre"
+    ],
+    "file_count": 53
+  }
+}

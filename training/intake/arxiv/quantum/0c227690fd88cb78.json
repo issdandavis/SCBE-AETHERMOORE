@@ -1,0 +1,29 @@
+{
+  "id": "0c227690fd88cb78",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Dirac Wave Functions of Positive Energy with Arbitrarily Small Position Uncertainty",
+  "content": "# Dirac Wave Functions of Positive Energy with Arbitrarily Small Position Uncertainty\n\nAuthors: Ilmar B\u00fcrck, Roderich Tumulka\nPublished: 2026-03-04T19:56:07Z\n\nWe consider wave functions in the Hilbert space $\\mathcal{H}=L^2(\\mathbb{R}^3,\\mathbb{C}^4)$ of a single Dirac particle, specifically from the positive-energy subspace $\\mathcal{H}_+$ of the free Dirac Hamiltonian. Over the decades, various authors conjectured that for wave functions from $\\mathcal{H}_+$, there is a positive lower bound to the position uncertainty $\u03c3_x$; in other words, that such states cannot be arbitrarily narrow in $x$. Building on work by Bracken and Melloy, we show that this conjecture is false. (In fact, they already stated that this conjecture is false and already had a counter-example, but their proof that it is a counter-example had a gap.)",
+  "url": "http://arxiv.org/abs/2603.04569v1",
+  "timestamp": "2026-03-04T19:56:07Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "3926d367c780e2a19105df1b3a1fa179ee39aa4a7ed97673034f32c41db5b3b1",
+  "parent_hash": "e9328af6fa86913ab1da3e18c62ca5697856cc0c669850066ec382860c3b8bc4",
+  "metadata": {
+    "authors": [
+      "Ilmar B\u00fcrck",
+      "Roderich Tumulka"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.04569v1"
+  }
+}

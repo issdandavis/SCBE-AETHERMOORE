@@ -1,0 +1,35 @@
+{
+  "id": "a37b6a9d592f7979",
+  "source": "library_of_congress",
+  "category": "quarantine/quantum",
+  "title": "Quantum communication, measurement and computing (QCMC) : the ninth international conference, Calgary, Canada, 19-24 August 2008",
+  "content": "# Quantum communication, measurement and computing (QCMC) : the ninth international conference, Calgary, Canada, 19-24 August 2008\n\nContributors: lvovsky, alexander, international conference on quantum communication, measurement, and computing\nDate: 2009\nSubjects: quantum computers, quantum optics, quantum electronics, congresses, optical communications\n\n\"QCMC, Calgary, 2008.\" \"Ninth International Conference on Quantum Communication, Measurement and Computing (QCMC)\"--P. xiii. Includes bibliographical references and index. Also available via the World Wide Web.",
+  "url": "//lccn.loc.gov/2009923301",
+  "timestamp": "2026-03-06T02:38:03.635034",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "54bb384308a2fb981e9fb08d5cdd2d3bcb2615f02a29ffd7dd807de4ce509e11",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "quantum computers",
+      "quantum optics",
+      "quantum electronics",
+      "congresses",
+      "optical communications"
+    ],
+    "dates": "2009",
+    "original_format": [
+      "book"
+    ]
+  }
+}

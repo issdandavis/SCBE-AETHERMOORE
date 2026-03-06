@@ -1,0 +1,28 @@
+{
+  "id": "4306c816fb43f1ae",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Optimal inequalities involving Casorati curvatures along Riemannian maps and Riemannian submersions for quaternionic space form",
+  "content": "# Optimal inequalities involving Casorati curvatures along Riemannian maps and Riemannian submersions for quaternionic space form\n\nAuthors: Ravindra Singh\nPublished: 2026-02-24T04:57:04Z\n\nIn this paper, we establish Casorati inequalities for Riemannian maps and Riemannian submersions involving quaternionic space forms, and we provide geometric characterisations of their equality cases. First, we derive Casorati inequalities for Riemannian maps to quaternionic space forms and describe the corresponding equality cases, showing that the leaves of the range space are invariantly quasi-umbilical, and that the associated shape operator matrix commutes. Next, we obtain Casorati inequalities involving the fundamental tensor fields $T$ and $A$ for Riemannian submersions from quaternionic space forms onto Riemannian manifolds, together with their geometric interpretations. In particular, we prove that the equality case corresponding to the tensor field $A$ along the horizontal distribution is equivalent to the integrability of the horizontal distribution. Moreover, the equality case associated with the tensor field $T$ along the vertical distribution characterises fibres that are invariantly quasi-umbilical with a commuting shape operator matrix. Finally, the simultaneous equality cases involving both tensor fields $T$ and $A$ along the horizontal and vertical distributions imply the integrability of the horizontal distribution together with the invariantly quasi-umbilical nature of the fibres and the commutativity of the corresponding shape operators.",
+  "url": "http://arxiv.org/abs/2602.20545v1",
+  "timestamp": "2026-02-24T04:57:04Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "518ff8a08ddf44fda816be68c74ef8eb9eb823ff155caba7e13dd42a6e5ab722",
+  "parent_hash": "9439abfda9f9ec74dd78bcba483a97980271bcd2d3ead852a4eb22a3619baf49",
+  "metadata": {
+    "authors": [
+      "Ravindra Singh"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.20545v1"
+  }
+}

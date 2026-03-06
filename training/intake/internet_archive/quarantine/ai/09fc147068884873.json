@@ -1,0 +1,32 @@
+{
+  "id": "09fc147068884873",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "Enhancing Cybersecurity to Predict DDOS Attack Using Deep Learning Algorithms",
+  "content": "# Enhancing Cybersecurity to Predict DDOS Attack Using Deep Learning Algorithms\n\nCreator: International Research Journal on Advanced Engineering and Management (IRJAEM)\nDate: 2025-04-28T00:00:00Z\nDownloads: 21\nSubjects: Distributed Denial of Service (DDoS), hybrid algorithm, Gated Recurrent Unit (GRU), Long Short-Term Memory (LSTM)\n\nThe increasing prevalence of Distributed Denial of Service (DDoS) attacks poses a critical threat to network security, particularly in Software-Defined Networking (SDN) environments where centralized control and programmability introduce new vulnerabilities. Traditional Machine Learning (ML) approaches for DDoS detection often struggle with outdated training data, limited adaptability to evolving threats, and high false-positive rates, limiting their effectiveness against complex traffic patterns and zero-day attacks. Recent advancements in deep learning offer promising alternatives, with hybrid models showing improved performance in dynamic environments. This survey explores the limitations of conventional ML-based detection methods and reviews recent research leveraging deep learning techniques\u2014especially Recurrent Neural Networks (RNNs) such as Gated Recurrent Unit (GRU) and Long Short-Term Memory (LSTM) networks\u2014for DDoS detection in SDN. GRU offers computational efficiency in processing sequential data, while LSTM excels at capturing long-term dependencies, making their combination a compelling choice for adaptive threat detection. This survey highlights key datasets such as CICDDoS2019, discuss current challenges, and outline future research directions, including the integration of reinforcement learning, real-time mitigation strategies, and scalable deployment for enhanced SDN security.",
+  "url": "https://archive.org/details/enhancing-cybersecurity-to-predict-ddos-attack-using-deep-learning-algorithms",
+  "timestamp": "2026-03-06T02:40:40.434020",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "f8b49a5442d34fca92764e20f172162be46c30552f1739b0929eba5d4b3133ef",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "enhancing-cybersecurity-to-predict-ddos-attack-using-deep-learning-algorithms",
+    "media_type": "texts",
+    "downloads": 21,
+    "subjects": [
+      "Distributed Denial of Service (DDoS)",
+      "hybrid algorithm",
+      "Gated Recurrent Unit (GRU)",
+      "Long Short-Term Memory (LSTM)"
+    ]
+  }
+}

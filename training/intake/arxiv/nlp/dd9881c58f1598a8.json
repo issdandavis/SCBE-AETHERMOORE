@@ -1,0 +1,34 @@
+{
+  "id": "dd9881c58f1598a8",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "Federated Heterogeneous Language Model Optimization for Hybrid Automatic Speech Recognition",
+  "content": "# Federated Heterogeneous Language Model Optimization for Hybrid Automatic Speech Recognition\n\nAuthors: Mengze Hong, Yi Gu, Di Jiang, Hanlin Gu, Chen Jason Zhang, Lu Wang, Zhiyang Su\nPublished: 2026-03-05T08:42:17Z\n\nTraining automatic speech recognition (ASR) models increasingly relies on decentralized federated learning to ensure data privacy and accessibility, producing multiple local models that require effective merging. In hybrid ASR systems, while acoustic models can be merged using established methods, the language model (LM) for rescoring the N-best speech recognition list faces challenges due to the heterogeneity of non-neural n-gram models and neural network models. This paper proposes a heterogeneous LM optimization task and introduces a match-and-merge paradigm with two algorithms: the Genetic Match-and-Merge Algorithm (GMMA), using genetic operations to evolve and pair LMs, and the Reinforced Match-and-Merge Algorithm (RMMA), leveraging reinforcement learning for efficient convergence. Experiments on seven OpenSLR datasets show RMMA achieves the lowest average Character Error Rate and better generalization than baselines, converging up to seven times faster than GMMA, highlighting the paradigm's potential for scalable, privacy-preserving ASR systems.",
+  "url": "http://arxiv.org/abs/2603.04945v1",
+  "timestamp": "2026-03-05T08:42:17Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "50dca03dd7d13a54086091b58fffa4718baef08f27b4a29b7babcb2a86ac6287",
+  "parent_hash": "16d0ce1756377d90624f95cd77a8b8c8c3617be1072d906d6bb86949d177881b",
+  "metadata": {
+    "authors": [
+      "Mengze Hong",
+      "Yi Gu",
+      "Di Jiang",
+      "Hanlin Gu",
+      "Chen Jason Zhang",
+      "Lu Wang",
+      "Zhiyang Su"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.04945v1"
+  }
+}

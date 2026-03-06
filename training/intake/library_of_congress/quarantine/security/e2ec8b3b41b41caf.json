@@ -1,0 +1,38 @@
+{
+  "id": "e2ec8b3b41b41caf",
+  "source": "library_of_congress",
+  "category": "quarantine/security",
+  "title": "Mobile and wireless network security and privacy",
+  "content": "# Mobile and wireless network security and privacy\n\nContributors: makki, s. kami\nDate: 2007\nSubjects: schutz, security measures, funknetz, mobile communication systems, sicherheit\n\nIncludes bibliographical references and index.",
+  "url": "//lccn.loc.gov/2007926374",
+  "timestamp": "2026-03-06T02:38:19.805374",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "60df4b49b47e2df190c2a731858788cbb41625c2f8bcd1e073e9c21e37cb3073",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "schutz",
+      "security measures",
+      "funknetz",
+      "mobile communication systems",
+      "sicherheit",
+      "privatsph\u00e4re",
+      "wireless communication systems",
+      "computer networks"
+    ],
+    "dates": "2007",
+    "original_format": [
+      "book"
+    ]
+  }
+}

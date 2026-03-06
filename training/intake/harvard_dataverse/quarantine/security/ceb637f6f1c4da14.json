@@ -1,0 +1,31 @@
+{
+  "id": "ceb637f6f1c4da14",
+  "source": "harvard_dataverse",
+  "category": "quarantine/security",
+  "title": "The Role of Critical Frequency in Enhancing Decoherence: Towards a Quantum-to-Classical Transition Model",
+  "content": "# The Role of Critical Frequency in Enhancing Decoherence: Towards a Quantum-to-Classical Transition Model\n\nAuthors: arrabal, humberto\nPublished: 2024-09-14T00:05:50Z\nSubjects: Physics\nDOI: doi:10.7910/DVN/0YLSMP\n\nThis thesis introduces a novel model that emphasizes the role of critical frequency in accelerating the quantum-to-classical transition, proposing a new criterion for understanding decoherence. Traditional models focus primarily on environmental interactions, but this research posits that the frequency of a particle\u2014closely tied to its velocity\u2014plays a critical role in the rate of decoherence. By integrating key concepts such as Einstein's relativistic energy equation, the de Broglie wavelength, and environmental variables like temperature and pressure, this thesis establishes a critical frequency threshold at which quantum coherence rapidly diminishes, leading to classical behavior. Applications of this model to cosmological phenomena, particularly the evolution of the early universe, are also explored. Experimental setups are proposed to empirically test the model's predictions, with potential implications for quantum computing, cryptography, and cosmology\n\nCitation: arrabal, humberto, 2024, \"The Role of Critical Frequency in Enhancing Decoherence: Towards a Quantum-to-Classical Transition Model\", https://doi.org/10.7910/DVN/0YLSMP, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/0YLSMP",
+  "timestamp": "2026-03-06T02:42:03.535623",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4042479023fbae1c9452e46374cb97ea78a27c8156d90ff6d886faf3a05fd377",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/0YLSMP",
+    "subjects": [
+      "Physics"
+    ],
+    "authors": [
+      "arrabal, humberto"
+    ],
+    "file_count": 0
+  }
+}

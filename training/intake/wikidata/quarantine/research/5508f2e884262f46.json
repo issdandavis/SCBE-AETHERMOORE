@@ -1,0 +1,25 @@
+{
+  "id": "5508f2e884262f46",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "golden ratio base (Q2886580)",
+  "content": "# golden ratio base\n\nWikidata ID: Q2886580\nDescription: positional numeral system\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q2886580",
+  "timestamp": "2026-03-06T02:41:14.149632",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "0b04f758bc2596665c3bb1ab592051121605cc6e02651ab0228c68e507a05e98",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q2886580",
+    "description": "positional numeral system"
+  }
+}

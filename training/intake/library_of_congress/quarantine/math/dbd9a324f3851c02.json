@@ -1,0 +1,31 @@
+{
+  "id": "dbd9a324f3851c02",
+  "source": "library_of_congress",
+  "category": "quarantine/math",
+  "title": "Selected propositions in geometrical constructions and applications of algebra to geometry. Being a key to the appendix of Davies' Legendre.",
+  "content": "# Selected propositions in geometrical constructions and applications of algebra to geometry. Being a key to the appendix of Davies' Legendre.\n\nContributors: davies, charles, legendre, a. m. (adrien marie)\nDate: 1875\nSubjects: geometry\n\nAlso available in digital form.",
+  "url": "https://www.loc.gov/item/03020964/",
+  "timestamp": "2026-03-06T02:38:09.282430",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "b8cda03b565b23ae1d34d4c524ed69766a1aca0c7843109c092f8434faabebf1",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "geometry"
+    ],
+    "dates": "1875",
+    "original_format": [
+      "book"
+    ]
+  }
+}

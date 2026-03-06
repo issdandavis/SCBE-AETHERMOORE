@@ -1,0 +1,31 @@
+{
+  "id": "eb67fa2871fa7a0b",
+  "source": "harvard_dataverse",
+  "category": "quarantine/ai",
+  "title": "Replication Data for: Dataset of deep learning application of the discrimination of bone marrow aspiration cells in patients with myelodysplastic syndromes",
+  "content": "# Replication Data for: Dataset of deep learning application of the discrimination of bone marrow aspiration cells in patients with myelodysplastic syndromes\n\nAuthors: Lee, Nuri\nPublished: 2022-08-11T07:08:51Z\nSubjects: Medicine, Health and Life Sciences\nDOI: doi:10.7910/DVN/VIRPNT\n\nDataset of deep learning application of the discrimination of bone marrow aspiration cells in patients with myelodysplastic syndromes\n\nCitation: Lee, Nuri, 2022, \"Replication Data for: Dataset of deep learning application of the discrimination of bone marrow aspiration cells in patients with myelodysplastic syndromes\", https://doi.org/10.7910/DVN/VIRPNT, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/VIRPNT",
+  "timestamp": "2026-03-06T04:18:54.179763",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "ebd384ddf7e9ee16aaa4b8234b250c0acfcc83e9f6d995145def023931719f08",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/VIRPNT",
+    "subjects": [
+      "Medicine, Health and Life Sciences"
+    ],
+    "authors": [
+      "Lee, Nuri"
+    ],
+    "file_count": 1
+  }
+}

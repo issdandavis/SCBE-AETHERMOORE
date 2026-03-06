@@ -1,0 +1,37 @@
+{
+  "id": "1ac95e7defaacda4",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Traveling through time : the Forum guide to longitudinal data systems : effectively managing LDS data",
+  "content": "# Traveling through time : the Forum guide to longitudinal data systems : effectively managing LDS data\n\nContributors: national forum on education statistics (u.s.), national center for education statistics, institute of education sciences (u.s.)\nDate: 2011\nSubjects: planning, education, united states, educational statistics, student records\n\n\"Book three: Effectively managing LDS data\"--Spine. \"February 2011\"--P. ii. \"NFES 2011-805\"--P. [4] of cover. Format not distributed to depository libraries. Includes bibliographical references (79-80). Description based on print version record; resource not viewed.",
+  "url": "https://www.loc.gov/item/2023692197/",
+  "timestamp": "2026-03-06T02:38:15.031940",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "527591753476764b046caf48ee57c5f9052a2172c2bdb091edb120a5fed74ecb",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "planning",
+      "education",
+      "united states",
+      "educational statistics",
+      "student records",
+      "decision making",
+      "track system (education)"
+    ],
+    "dates": "2011",
+    "original_format": [
+      "book"
+    ]
+  }
+}

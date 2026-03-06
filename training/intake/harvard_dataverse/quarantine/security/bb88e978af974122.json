@@ -1,0 +1,32 @@
+{
+  "id": "bb88e978af974122",
+  "source": "harvard_dataverse",
+  "category": "quarantine/security",
+  "title": "SoK: Blockchain Decentralization",
+  "content": "# SoK: Blockchain Decentralization\n\nAuthors: Ma, Xinshi, Zhang, Luyao\nPublished: 2024-04-24T19:57:37Z\nSubjects: Computer and Information Science\nDOI: doi:10.7910/DVN/K0S0OI\n\nData and code repository for paper SoK: Blockchain Decentralization. Blockchain introduces decentralized trust in peer-to-peer networks, advancing security and democratizing systems. Yet, a unified definition for decentralization remains elusive. Our Systematization of Knowledge (SoK) seeks to bridge this gap, emphasizing quantification and methodological coherence. We've formulated a taxonomy defining blockchain decentralization across five facets: consensus, network, governance, wealth, and transaction. Despite the prevalent focus on consensus decentralization, our novel index, based on Shannon entropy, provides comprehensive insights. Moreover, we delve into alternative metrics like the Gini and Nakamoto Coefficients and the Herfindahl-Hirschman Index (HHI), supplemented by an open-source Python tool on GitHub. In terms of methodology, blockchain research has often bypassed stringent scientific methods. By employing descriptive, predictive, and causal methods, our study showcases the potential of structured research in blockchain. Descriptively, we observe a trend of converging decentralization levels over time. Examining DeFi platforms reveals exchange and lending applications as more decentralized than their payment and derivatives counterparts. Predictively, there's a notable correlation between Ether's returns and transaction decentralization in Ether-backed stablecoins. Causally, Ethereum's transition to the EIP-1559 transaction fee model has a profound impact on DeFi transaction decentralization. To conclude, our work outlines directions for blockchain research, emphasizing the delicate balance among decentralization facets, fostering long-term decentralization, and the ties between decentralization, security, privacy, and efficiency. We end by spotlighting challenges in grasping blockchain decentralization intricacies.\n\nCitation: Ma, Xinshi; Zhang, Luyao, 2024, \"SoK: Blockchain Decentralization\", https://doi.org/10.7910/DVN/K0S0OI, Harvard Dataverse, V1, UNF:6:r/5N6zosJXy+/+4UJeJGgQ== [fileUNF]",
+  "url": "https://doi.org/10.7910/DVN/K0S0OI",
+  "timestamp": "2026-03-06T02:42:29.165300",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "ea4d44f6be49904fbffca282a50b1b8b5a12dbe0f8821df8b43bca3c90992448",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/K0S0OI",
+    "subjects": [
+      "Computer and Information Science"
+    ],
+    "authors": [
+      "Ma, Xinshi",
+      "Zhang, Luyao"
+    ],
+    "file_count": 78
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "867b560025a005a3",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "Exploring COVID-19 vaccine sentiment: a Twitter-based analysis of text processing and machine learning approaches",
+  "content": "# Exploring COVID-19 vaccine sentiment: a Twitter-based analysis of text processing and machine learning approaches\n\nCreator: Bulletin of Electrical Engineering and Informatics (BEEI)\nDate: 2024-11-19T00:00:00Z\nDownloads: 26\nSubjects: COVID-19, Feature extraction, Long short-term memory, Sentiment analysis, Text frequency-inverse document frequency\n\nIn the wake of the 2020 coronavirus disease (COVID-19) pandemic, the swift development and deployment of vaccines marked a critical juncture, necessitating an understanding of public sentiments for effective health communication and policymaking. Social media platforms, especially Twitter, have emerged as rich sources for gauging public opinion. This study harnesses the power of natural language processing (NLP) and machine learning (ML) to delve into the sentiments and trends surrounding COVID-19 vaccination, utilizing a comprehensive Twitter dataset. Traditional research primarily focuses on ML algorithms, but this study brings to the forefront the underutilized potential of NLP in data preprocessing. By employing text frequency-inverse document frequency (TF-IDF) for text processing and long short-term memory (LSTM) for classification, the research evaluates six ML techniques K-nearest neighbors (KNN), decision trees (DT), random forest (RF), artificial neural networks (ANN), support vector machines (SVM), and LSTM. Our findings reveal that LSTM, particularly when combined with tweet text tokenization, stands out as the most effective approach. Furthermore, the study highlights the pivotal role of feature selection, showcasing how TF-IDF features significantly bolster the performance of SVM and LSTM, achieving an impressive accuracy exceeding 98%. These results underscore the potential of advanced NLP applications in real-world settings, paving the way for nuanced and effective analysis of public health discourse on social media.",
+  "url": "https://archive.org/details/10.11591eei.v13i6.7855",
+  "timestamp": "2026-03-06T02:40:36.587351",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "f8771b330c21f7d80fc5d256b49b22e63a0ea58a751888cf8eddcf2dbd3ca273",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "10.11591eei.v13i6.7855",
+    "media_type": "texts",
+    "downloads": 26,
+    "subjects": [
+      "COVID-19",
+      "Feature extraction",
+      "Long short-term memory",
+      "Sentiment analysis",
+      "Text frequency-inverse document frequency"
+    ]
+  }
+}

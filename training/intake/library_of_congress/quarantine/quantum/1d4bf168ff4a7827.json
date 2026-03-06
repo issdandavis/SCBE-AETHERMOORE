@@ -1,0 +1,31 @@
+{
+  "id": "1d4bf168ff4a7827",
+  "source": "library_of_congress",
+  "category": "quarantine/quantum",
+  "title": "Elementary natural philosophy : designed for high schools and academies",
+  "content": "# Elementary natural philosophy : designed for high schools and academies\n\nContributors: griffin, la roy f. (la roy freese)\nDate: 1881\nSubjects: physics\n\nIncludes index. Also available in digital form.",
+  "url": "https://www.loc.gov/item/03026557/",
+  "timestamp": "2026-03-06T04:17:18.822498",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "bc4589fa0a60a2f4e5d95c32e0bdd86371359157ba2cdd39f757ec85688331a1",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "physics"
+    ],
+    "dates": "1881",
+    "original_format": [
+      "book"
+    ]
+  }
+}

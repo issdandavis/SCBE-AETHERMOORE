@@ -1,0 +1,28 @@
+{
+  "id": "9b66f6c1106653e9",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Measurement Induced Asymmetric Entanglement in Deconfined Quantum Critical Ground State",
+  "content": "# Measurement Induced Asymmetric Entanglement in Deconfined Quantum Critical Ground State\n\nAuthors: K. G. S. H. Gunawardana\nPublished: 2026-03-05T17:57:55Z\n\nIn this work, we numerically study the effect of weak measurement on deconfined quantum critical point(DQCP). Particularly, we consider the ground state of an one-dimensional spin $1/2$ system with long range exchange interactions($K$), which shows analogues phase transition to DQCP in the thermodynamic limit. This system is in the ferromagnetic phase below the critical exchange interaction $K_c$ and in the valance bond solid phase above $K_c$. The weak measurement is carried out by coupling a secondary ancilla system to the critical system via unitary interactions and later measuring the ancilla spins projectively. We numerically calculate entanglement entropy,correlation length, and order parameters of leading post-measurement states using uniform matrix product state representation of the quantum many-body state in the thermodynamic limit. We report asymmetric restructuring of entanglement of the post measurement states across the phase boundary under weak measurements. Especially, the trajectory $\\left(\\downarrow \\downarrow\\right)$ describing a uniform measurement outcome given the all ancilla spins initiated in the same $\\left(\\downarrow \\right)$ state, shows anomalous entanglement when increasing the strength of weak measurement. The bipartite entanglement entropy strongly increases when $K<K_c$ whereas it weakly decreases when $K>K_c$. We argue with numerical evidences that observed asymmetry in entanglement would lead to a weak first order phase boundary in the thermodynamic limit. We also discuss important aspects in experimental observation of measurement induced effects linked to the strength of weak measurement and probability of post-measurement states.",
+  "url": "http://arxiv.org/abs/2603.05436v1",
+  "timestamp": "2026-03-05T17:57:55Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "fa54e013a99fc1aff4ab90e882a66360e39dc7223bc39599dfc1528f333317c3",
+  "parent_hash": "57636e571f680b8e5c8fcf6bb528e0b731fa7165b61c10895431faa7ad5026b8",
+  "metadata": {
+    "authors": [
+      "K. G. S. H. Gunawardana"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05436v1"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "116bcfb25793ce37",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "Core-based Hierarchies for Efficient GraphRAG",
+  "content": "# Core-based Hierarchies for Efficient GraphRAG\n\nAuthors: Jakir Hossain, Ahmet Erdem Sar\u0131y\u00fcce\nPublished: 2026-03-05T14:17:30Z\n\nRetrieval-Augmented Generation (RAG) enhances large language models by incorporating external knowledge. However, existing vector-based methods often fail on global sensemaking tasks that require reasoning across many documents. GraphRAG addresses this by organizing documents into a knowledge graph with hierarchical communities that can be recursively summarized. Current GraphRAG approaches rely on Leiden clustering for community detection, but we prove that on sparse knowledge graphs, where average degree is constant and most nodes have low degree, modularity optimization admits exponentially many near-optimal partitions, making Leiden-based communities inherently non-reproducible. To address this, we propose replacing Leiden with k-core decomposition, which yields a deterministic, density-aware hierarchy in linear time. We introduce a set of lightweight heuristics that leverage the k-core hierarchy to construct size-bounded, connectivity-preserving communities for retrieval and summarization, along with a token-budget-aware sampling strategy that reduces LLM costs. We evaluate our methods on real-world datasets including financial earnings transcripts, news articles, and podcasts, using three LLMs for answer generation and five independent LLM judges for head-to-head evaluation. Across datasets and models, our approach consistently improves answer comprehensiveness and diversity while reducing token usage, demonstrating that k-core-based GraphRAG is an effective and efficient framework for global sensemaking.",
+  "url": "http://arxiv.org/abs/2603.05207v1",
+  "timestamp": "2026-03-05T14:17:30Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "dc01dbfed9d688008e7683aeffc242346086ceaee62cd4b4169088fbb9eebde7",
+  "parent_hash": "9cb163d7052a45e3845aaf6d84951d0ba3155a750c2207592680a1e8f416af2b",
+  "metadata": {
+    "authors": [
+      "Jakir Hossain",
+      "Ahmet Erdem Sar\u0131y\u00fcce"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.05207v1"
+  }
+}

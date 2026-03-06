@@ -1,0 +1,30 @@
+{
+  "id": "1871844a16131302",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2022-34988 \u2014 CVSS 5.4 (MEDIUM)",
+  "content": "# CVE-2022-34988\n\nCVSS Score: 5.4 (MEDIUM)\nPublished: 2022-07-26T13:15:10.090\nCWEs: CWE-79\n\nInout Blockchain AltExchanger v1.2.1 was discovered to contain a cross-site scripting (XSS) vulnerability via the component /admin/js.\n\nReferences: https://github.com/nu11secur1ty/CVE-nu11secur1ty/tree/main/vendors/Inout-Blockchain-AltExchanger/2022/Cross-site-scripting-DOM-based-IG-js, https://github.com/nu11secur1ty/CVE-nu11secur1ty/tree/main/vendors/Inout-Blockchain-AltExchanger/2022/Cross-site-scripting-DOM-based-IG-js",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-34988",
+  "timestamp": "2026-03-06T02:41:52.057436",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "2c0d0051462739eba3d320788cfb7e4d9bf4d4ea0a829018bc57c4c486a63fb8",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2022-34988",
+    "cvss_score": 5.4,
+    "severity": "MEDIUM",
+    "cwes": [
+      "CWE-79"
+    ],
+    "published": "2022-07-26T13:15:10.090"
+  }
+}

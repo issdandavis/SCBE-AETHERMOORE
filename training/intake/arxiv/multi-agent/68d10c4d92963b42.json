@@ -1,0 +1,33 @@
+{
+  "id": "68d10c4d92963b42",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "Dual-Interaction-Aware Cooperative Control Strategy for Alleviating Mixed Traffic Congestion",
+  "content": "# Dual-Interaction-Aware Cooperative Control Strategy for Alleviating Mixed Traffic Congestion\n\nAuthors: Zhengxuan Liu, Yuxin Cai, Yijing Wang, Xiangkun He, Chen Lv, Zhiqiang Zuo\nPublished: 2026-03-04T09:00:49Z\n\nAs Intelligent Transportation System (ITS) develops, Connected and Automated Vehicles (CAVs) are expected to significantly reduce traffic congestion through cooperative strategies, such as in bottleneck areas. However, the uncertainty and diversity in the behaviors of Human-Driven Vehicles (HDVs) in mixed traffic environments present major challenges for CAV cooperation. This paper proposes a Dual-Interaction-Aware Cooperative Control (DIACC) strategy that enhances both local and global interaction perception within the Multi-Agent Reinforcement Learning (MARL) framework for Connected and Automated Vehicles (CAVs) in mixed traffic bottleneck scenarios. The DIACC strategy consists of three key innovations: 1) A Decentralized Interaction-Adaptive Decision-Making (D-IADM) module that enhances actor's local interaction perception by distinguishing CAV-CAV cooperative interactions from CAV-HDV observational interactions. 2) A Centralized Interaction-Enhanced Critic (C-IEC) that improves critic's global traffic understanding through interaction-aware value estimation, providing more accurate guidance for policy updates. 3) A reward design that employs softmin aggregation with temperature annealing to prioritize interaction-intensive scenarios in mixed traffic. Additionally, a lightweight Proactive Safety-based Action Refinement (PSAR) module applies rule-based corrections to accelerate training convergence. Experimental results demonstrate that DIACC significantly improves traffic efficiency and adaptability compared to rule-based and benchmark MARL models.",
+  "url": "http://arxiv.org/abs/2603.03848v1",
+  "timestamp": "2026-03-04T09:00:49Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "3acef78fd46103222931e4074be1a7d9fb2ebf34bb5a4b1e81292b45acbb2501",
+  "parent_hash": "3db87efabe81921283359eede04242c5f2b4c9e70ba59e7e2b92596cd138a1e2",
+  "metadata": {
+    "authors": [
+      "Zhengxuan Liu",
+      "Yuxin Cai",
+      "Yijing Wang",
+      "Xiangkun He",
+      "Chen Lv",
+      "Zhiqiang Zuo"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.03848v1"
+  }
+}

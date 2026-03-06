@@ -1,0 +1,30 @@
+{
+  "id": "048d023c5fb5f49f",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2013-1624 \u2014 CVSS 4.0 (UNKNOWN)",
+  "content": "# CVE-2013-1624\n\nCVSS Score: 4.0 (UNKNOWN)\nPublished: 2013-02-08T19:55:01.437\nCWEs: CWE-310\n\nThe TLS implementation in the Bouncy Castle Java library before 1.48 and C# library before 1.8 does not properly consider timing side-channel attacks on a noncompliant MAC check operation during the processing of malformed CBC padding, which allows remote attackers to conduct distinguishing attacks and plaintext-recovery attacks via statistical analysis of timing data for crafted packets, a related issue to CVE-2013-0169.\n\nReferences: http://openwall.com/lists/oss-security/2013/02/05/24, http://rhn.redhat.com/errata/RHSA-2014-0371.html, http://rhn.redhat.com/errata/RHSA-2014-0372.html",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2013-1624",
+  "timestamp": "2026-03-06T04:18:33.345138",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "1ea8be666dc5c0618785404b2ec5b3d5aaad6ccfb7b8ae23c0c278f65667dc28",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2013-1624",
+    "cvss_score": 4.0,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "CWE-310"
+    ],
+    "published": "2013-02-08T19:55:01.437"
+  }
+}

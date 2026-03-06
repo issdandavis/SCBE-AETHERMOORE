@@ -1,0 +1,28 @@
+{
+  "id": "8e3dd2e0bbc55d05",
+  "source": "arxiv",
+  "category": "security",
+  "title": "Lambda-randomization: multi-dimensional randomized response made easy",
+  "content": "# Lambda-randomization: multi-dimensional randomized response made easy\n\nAuthors: Nicolas Ruiz\nPublished: 2026-03-05T15:11:22Z\n\nRandomized response is a popular local anonymization approach that can deliver anonymized multi-dimensional data sets with rigorous privacy guarantees. At the same time, it can ensure validity for exploratory analysis and machine learning tasks as, under fairly general conditions, unbiased estimates of the underlying true distributions can be retrieved. However, and like for many other anonymization techniques, one of the main pitfalls of this approach is the curse of dimensionality. When coping with data sets with many attributes, one quickly runs into unsustainable computational costs for estimating true distributions, as well as a degradation in their accuracies. Relying on new theoretical insights developed in this paper, we propose an approach to multi-dimensional randomized response that avoids these traditional limitations. From simple yet intuitive parameterizations of the randomization matrices that we introduce, we develop a protocol called Lambda-randomization that entails low computational costs to retrieve estimates of multivariate distributions, and that makes use of solely three simple elements: a set of parameters ranging between 0 and 1 (one per attribute of the data set), the identity matrix, and the all-ones vector. We also present an empirical application to illustrate the proposed protocol.",
+  "url": "http://arxiv.org/abs/2603.05261v1",
+  "timestamp": "2026-03-05T15:11:22Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "7344a2fad31870bce250723245c60e4d94a156a6f541ead8a071b59c1da38158",
+  "parent_hash": "8c234724a8b879fef4a3f3020cc10a26e4878cefeda654adb9542ed8e66fdca9",
+  "metadata": {
+    "authors": [
+      "Nicolas Ruiz"
+    ],
+    "arxiv_category": "cs.CR",
+    "arxiv_id": "2603.05261v1"
+  }
+}

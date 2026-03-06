@@ -1,0 +1,29 @@
+{
+  "id": "ec1bd7812da62c66",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Mathematics simplified...",
+  "content": "# Mathematics simplified...\n\nContributors: fisher, thomas\nDate: 1853\nSubjects: \n\nAlso available in digital form.",
+  "url": "https://www.loc.gov/item/tmp96026538/",
+  "timestamp": "2026-03-06T02:38:09.282352",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "9b2b05a24bbb7716d9c2b066279765aa5bc2b634ce299595eb825da5370f9641",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [],
+    "dates": "1853",
+    "original_format": [
+      "book"
+    ]
+  }
+}

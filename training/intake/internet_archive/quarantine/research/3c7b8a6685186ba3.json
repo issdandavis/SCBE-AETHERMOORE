@@ -1,0 +1,31 @@
+{
+  "id": "3c7b8a6685186ba3",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Photocurrents in Weyl semimetals",
+  "content": "# Photocurrents in Weyl semimetals\n\nCreator: Ching-Kit Chan, Netanel H. Lindner, Gil Refael, Patrick A. Lee\nDate: 2016-07-26T00:00:00Z\nDownloads: 24\nSubjects: Mesoscale and Nanoscale Physics, Materials Science, Condensed Matter\n\nThe generation of photocurrent in an ideal two-dimensional Dirac spectrum is symmetry-forbidden. In sharp contrast, we show that three-dimensional Weyl semimetals can generically support significant photocurrent generations due to the combination of inversion symmetry breaking and finite tilts of the Weyl spectra. Symmetry properties, chirality relations and various dependences on the system and light sources are explored in details. Our results suggest that noncentrosymmetric Weyl materials can be advantageously applied to room temperature detections of mid- and far-infrared radiations.",
+  "url": "https://archive.org/details/arxiv-1607.07839",
+  "timestamp": "2026-03-06T04:17:53.893633",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "572776d4dd1075e8a7b72274d2ecec76419e8f90dff48ed8d5adc2791876d3db",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "arxiv-1607.07839",
+    "media_type": "texts",
+    "downloads": 24,
+    "subjects": [
+      "Mesoscale and Nanoscale Physics",
+      "Materials Science",
+      "Condensed Matter"
+    ]
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "id": "09f32b57b60f3f87",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "DTIC ADA612878: Auditory Demonstrations for Science, Technology, Engineering, and Mathematics (STEM) Outreach",
+  "content": "# DTIC ADA612878: Auditory Demonstrations for Science, Technology, Engineering, and Mathematics (STEM) Outreach\n\nCreator: Defense Technical Information Center\nDate: 2015-01-01T00:00:00Z\nDownloads: 128\nSubjects: DTIC Archive, ARMY RESEARCH LAB ABERDEEN PROVING GROUND MD HUMAN RESEARCH AND ENGINEERING DIRECTORATE, *ACOUSTICS, *ARMY RESEARCH, *DEMONSTRATIONS\n\nThe US Army Research Laboratory (ARL) participates in science, technology, engineering, and mathematics (STEM) outreach programs, including the Gains in the Education of Mathematics and Science (GEMS) program under the Army Educational Outreach Program. During GEMS, ARL provides STEM instruction and lab demonstrations to visiting groups of students ranging from fifth graders through high school graduates. This report documents the involvement of ARL s Human Research and Engineering Directorate s Perceptual Sciences Branch (PSB) in the 2014 GEMS program and provides detailed descriptions of lecture materials, slides, and hands-on demonstrations that were used. PSB provided education through lecture and demonstrations on 3 auditory topics: 1) the anatomy and physiology of hearing and hearing conservation, 2) acoustic resonance, and 3) bone conduction. Students learned about how the ear works, what listening levels are safe, how objects such as musical instruments or the vocal tract resonate with sound, how sound can travel through bones, and when bone-conducted hearing is used. Demonstrations included measuring earbud output levels on an acoustic test fixture, visualizing resonance nodes with a Chladni plate, and listening to sounds through bone conduction headsets.",
+  "url": "https://archive.org/details/DTIC_ADA612878",
+  "timestamp": "2026-03-06T04:17:50.074600",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "8df213749068050300cdde5b206b40b52b2318081e4090ba2d81da2a5e22bbad",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "DTIC_ADA612878",
+    "media_type": "texts",
+    "downloads": 128,
+    "subjects": [
+      "DTIC Archive",
+      "ARMY RESEARCH LAB ABERDEEN PROVING GROUND MD HUMAN RESEARCH AND ENGINEERING DIRECTORATE",
+      "*ACOUSTICS",
+      "*ARMY RESEARCH",
+      "*DEMONSTRATIONS",
+      "*EDUCATION",
+      "ANATOMY",
+      "ARMY",
+      "BONES",
+      "CONDUCTIVITY"
+    ]
+  }
+}

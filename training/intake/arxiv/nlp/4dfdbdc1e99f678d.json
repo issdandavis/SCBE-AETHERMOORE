@@ -1,0 +1,31 @@
+{
+  "id": "4dfdbdc1e99f678d",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "Distilling Formal Logic into Neural Spaces: A Kernel Alignment Approach for Signal Temporal Logic",
+  "content": "# Distilling Formal Logic into Neural Spaces: A Kernel Alignment Approach for Signal Temporal Logic\n\nAuthors: Sara Candussio, Gabriele Sarti, Gaia Saveri, Luca Bortolussi\nPublished: 2026-03-05T14:08:25Z\n\nWe introduce a framework for learning continuous neural representations of formal specifications by distilling the geometry of their semantics into a latent space. Existing approaches rely either on symbolic kernels -- which preserve behavioural semantics but are computationally prohibitive, anchor-dependent, and non-invertible -- or on syntax-based neural embeddings that fail to capture underlying structures. Our method bridges this gap: using a teacher-student setup, we distill a symbolic robustness kernel into a Transformer encoder. Unlike standard contrastive methods, we supervise the model with a continuous, kernel-weighted geometric alignment objective that penalizes errors in proportion to their semantic discrepancies. Once trained, the encoder produces embeddings in a single forward pass, effectively mimicking the kernel's logic at a fraction of its computational cost. We apply our framework to Signal Temporal Logic (STL), demonstrating that the resulting neural representations faithfully preserve the semantic similarity of STL formulae, accurately predict robustness and constraint satisfaction, and remain intrinsically invertible. Our proposed approach enables highly efficient, scalable neuro-symbolic reasoning and formula reconstruction without repeated kernel computation at runtime.",
+  "url": "http://arxiv.org/abs/2603.05198v1",
+  "timestamp": "2026-03-05T14:08:25Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "16d0ce1756377d90624f95cd77a8b8c8c3617be1072d906d6bb86949d177881b",
+  "parent_hash": "b6d242fe0fcb0e780029aa54b0ffbbbda154607c97e6ae57d2025610fbc67e65",
+  "metadata": {
+    "authors": [
+      "Sara Candussio",
+      "Gabriele Sarti",
+      "Gaia Saveri",
+      "Luca Bortolussi"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.05198v1"
+  }
+}

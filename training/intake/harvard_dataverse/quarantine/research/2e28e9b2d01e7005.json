@@ -1,0 +1,33 @@
+{
+  "id": "2e28e9b2d01e7005",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Replication Data for: \"Colliding in the shadows of giants: Planetesimal collisions during the growth and migration of gas giants\"",
+  "content": "# Replication Data for: \"Colliding in the shadows of giants: Planetesimal collisions during the growth and migration of gas giants\"\n\nAuthors: Carter, Philip J., Stewart, Sarah T.\nPublished: 2020-08-06T21:41:18Z\nSubjects: Astronomy and Astrophysics, Earth and Environmental Sciences\nDOI: doi:10.7910/DVN/5YQDU9\n\nThis dataset contains data from the article: Carter, P. J. and Stewart, S. T., 2020, \"Colliding in the shadows of giants: Planetesimal collisions during the growth and migration of gas giants\", PSJ, 1, 45. These data consist of N-body simulation input files, processed data, select simulation output and code to read input/output files. See the README file for further information.\n\nCitation: Carter, Philip J.; Stewart, Sarah T., 2020, \"Replication Data for: \"Colliding in the shadows of giants: Planetesimal collisions during the growth and migration of gas giants\"\", https://doi.org/10.7910/DVN/5YQDU9, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/5YQDU9",
+  "timestamp": "2026-03-06T04:18:49.817526",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "c168917f68deb46d132cd9a29a088ac7e1337ae124f90517611be9735717260b",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/5YQDU9",
+    "subjects": [
+      "Astronomy and Astrophysics",
+      "Earth and Environmental Sciences"
+    ],
+    "authors": [
+      "Carter, Philip J.",
+      "Stewart, Sarah T."
+    ],
+    "file_count": 297
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "ec82441b293ec5f3",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "Proposed algorithm base optimisation plan for feature selection-based intrusion detection in cloud computing",
+  "content": "# Proposed algorithm base optimisation plan for feature selection-based intrusion detection in cloud computing\n\nCreator: Imane Laassar, Moulay Youssef Hadi, Arifullah Arifullah, Hassnae Remmach, Fawad Salam Khan\nDate: 2024-02-01T00:00:00Z\nDownloads: 15\nSubjects: Classifiers, Cloud computing, Communication, Convergence, Intrusion detection system\n\nA crucial element in detecting unusual network system behavior is the network intrusion detection system (NIDS), which also helps to stop network attacks from happening. Despite the fact that a great deal of machine learning techniques has been used in intrusion detection, current solutions still struggle to provide accurate classification results. Furthermore, when dealing with imbalanced multi-category traffic data, a single classifier may not be able to produce a superior. Particularly, internet of things (IoT) gadgets is now a commonplace aspect of life. On the other hand, some problems are becoming worse and lack clear remedies. Convergence, communication speed, and security between various IoT devices are among the primary concerns. In order to achieve this goal, an enhanced artificial bee colony technique utilizing binary search equations and neural networks\u2014known as the (BABCN) algorithm for intrusion detection in terms of convergence and communication speed\u2014is presented in this study. The artificial bee is improved by the depth-first search framework and binary search equations upon which the BABCN method is based. The suggested approach has a good ability to detect intrusions in the network and enhances categorization, according to the findings obtained by using the NSL-KDD dataset.",
+  "url": "https://archive.org/details/proposed-algorithm-base-optimisation-plan-for-feature-selection-based-intrusion-",
+  "timestamp": "2026-03-06T02:40:40.433986",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "99d76074945fe2399d53c8d4939f1ce5e6f6c0d452950014d746f087f67f1240",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "proposed-algorithm-base-optimisation-plan-for-feature-selection-based-intrusion-",
+    "media_type": "texts",
+    "downloads": 15,
+    "subjects": [
+      "Classifiers",
+      "Cloud computing",
+      "Communication",
+      "Convergence",
+      "Intrusion detection system"
+    ]
+  }
+}

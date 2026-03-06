@@ -1,0 +1,30 @@
+{
+  "id": "f144d2204421a7ca",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2005-0106 \u2014 CVSS 4.6 (UNKNOWN)",
+  "content": "# CVE-2005-0106\n\nCVSS Score: 4.6 (UNKNOWN)\nPublished: 2005-05-03T04:00:00.000\nCWEs: NVD-CWE-Other\n\nSSLeay.pm in libnet-ssleay-perl before 1.25 uses the /tmp/entropy file for entropy if a source is not set in the EGD_PATH variable, which allows local users to reduce the cryptographic strength of certain operations by modifying the file.\n\nReferences: http://secunia.com/advisories/18639, http://www.mandriva.com/security/advisories?name=MDKSA-2006:023, http://www.securityfocus.com/bid/13471",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2005-0106",
+  "timestamp": "2026-03-06T02:41:32.739495",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "ce616b73ee394210920be55186187a6d3d79db6f693752fbc89138602a7aaf28",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2005-0106",
+    "cvss_score": 4.6,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-Other"
+    ],
+    "published": "2005-05-03T04:00:00.000"
+  }
+}

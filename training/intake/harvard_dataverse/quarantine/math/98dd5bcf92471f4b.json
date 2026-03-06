@@ -1,0 +1,32 @@
+{
+  "id": "98dd5bcf92471f4b",
+  "source": "harvard_dataverse",
+  "category": "quarantine/math",
+  "title": "Replication Data for: phase transitions for curvature gap",
+  "content": "# Replication Data for: phase transitions for curvature gap\n\nAuthors: Gosztolai, Adam\nPublished: 2021-06-28T14:07:58Z\nSubjects: Mathematical Sciences, Physics\nDOI: doi:10.7910/DVN/WNUSTV\n\nReplicate Figure 2h-i and Figure 3.\n\nCitation: Gosztolai, Adam, 2021, \"Replication Data for: phase transitions for curvature gap\", https://doi.org/10.7910/DVN/WNUSTV, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/WNUSTV",
+  "timestamp": "2026-03-06T04:18:54.179717",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "ce1115e043a4aeddbedff77c44a95fca97f3c29529b9252fcd33fb8f3c86f220",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/WNUSTV",
+    "subjects": [
+      "Mathematical Sciences",
+      "Physics"
+    ],
+    "authors": [
+      "Gosztolai, Adam"
+    ],
+    "file_count": 16
+  }
+}

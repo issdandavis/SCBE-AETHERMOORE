@@ -1,0 +1,40 @@
+{
+  "id": "6668d4b6682f236f",
+  "source": "library_of_congress",
+  "category": "quarantine/governance",
+  "title": "The governance of disease outbreaks : international health law : lessons from the Ebola crisis and beyond",
+  "content": "# The governance of disease outbreaks : international health law : lessons from the Ebola crisis and beyond\n\nContributors: weilert, a. katarina, villarreal liz\u00e1rraga, pedro a., vierck, leonie\nDate: 2017-01-01\nSubjects: international cooperation, conference papers and proceedings, communicable diseases, public health laws, international, epidemics\n\n\"This edited volume is directed at experts in international law, practitioners in international institutions, and other experts who would like to familiarize themselves with the legal framework of infectious disease governance. Using the West African Ebola crisis as a case study, this book is part of a larger collaborative project on international health governance. Project partners are the Forschungsstatte der Evangelischen Studiengemeinschaft e.V. - Institute for Interdisciplinary Research and the Max Planck Institute for Comparative Public Law and International Law (MPIL). The authors explain the context and substantive legal framework of the Ebola crisis, while also highlighting its human rights aspects, institutional law (such as the debate on the securitization of health), and the limits to a purely legal approach to the subject. The authors are experts in public international law, public health, political science, and anthropology.\" - Google Books",
+  "url": "https://www.loc.gov/item/2020718820/",
+  "timestamp": "2026-03-06T04:17:41.942152",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "94211c3e6de5c8e6639783ac32c363d68a0fc6ce12377ac1ba5b45d7397756bc",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "international cooperation",
+      "conference papers and proceedings",
+      "communicable diseases",
+      "public health laws, international",
+      "epidemics",
+      "africa, west",
+      "government policy",
+      "prevention",
+      "ebola virus disease",
+      "public health"
+    ],
+    "dates": "2017-01-01",
+    "original_format": [
+      "book"
+    ]
+  }
+}

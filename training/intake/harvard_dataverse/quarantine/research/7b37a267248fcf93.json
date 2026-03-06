@@ -1,0 +1,31 @@
+{
+  "id": "7b37a267248fcf93",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Neural computation_EEG",
+  "content": "# Neural computation_EEG\n\nAuthors: Li, Shuang\nPublished: 2020-12-19T14:17:17Z\nSubjects: Other\nDOI: doi:10.7910/DVN/MYSRMN\n\nThis dataset is the raw data of the EEG experiment, including EEG recordings and behavioral data\n\nCitation: Li, Shuang, 2020, \"Neural computation_EEG\", https://doi.org/10.7910/DVN/MYSRMN, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/MYSRMN",
+  "timestamp": "2026-03-06T02:42:16.312179",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "085f68e38d7dc75971c7e0815f21258755fd896b6d7802baee2ea9d1bff4ef5d",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/MYSRMN",
+    "subjects": [
+      "Other"
+    ],
+    "authors": [
+      "Li, Shuang"
+    ],
+    "file_count": 3
+  }
+}

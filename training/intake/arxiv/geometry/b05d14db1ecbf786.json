@@ -1,0 +1,34 @@
+{
+  "id": "b05d14db1ecbf786",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Capturing the Atiyah-Patodi-Singer index from the lattice",
+  "content": "# Capturing the Atiyah-Patodi-Singer index from the lattice\n\nAuthors: Shoto Aoki, Hajime Fujita, Hidenori Fukaya, Mikio Furuta, Shinichiroh Matsuo, Tetsuya Onogi, Satoshi Yamaguchi\nPublished: 2026-02-13T03:38:25Z\n\nUsing the Wilson Dirac operator in lattice gauge theory with a domain-wall mass term, we construct a discretization of the Atiyah-Patodi-Singer index for domains with compact boundary in a flat torus. We prove that, for sufficiently small lattice spacings, this discretization correctly captures the continuum Atiyah-Patodi-Singer index.",
+  "url": "http://arxiv.org/abs/2602.12576v1",
+  "timestamp": "2026-02-13T03:38:25Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "015da474ae6eb0ed6759aaef8de678fd102bc5770badc7d295f5fa6fb1d9a4dc",
+  "parent_hash": "b3480f2d510df0062e1730b9576ea970f5244ca5e3229aa42b6e8ad75ea6d072",
+  "metadata": {
+    "authors": [
+      "Shoto Aoki",
+      "Hajime Fujita",
+      "Hidenori Fukaya",
+      "Mikio Furuta",
+      "Shinichiroh Matsuo",
+      "Tetsuya Onogi",
+      "Satoshi Yamaguchi"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.12576v1"
+  }
+}

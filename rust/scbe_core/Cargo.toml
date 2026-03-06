@@ -1,0 +1,14 @@
+[package]
+name = "scbe_core"
+version = "0.1.0"
+edition = "2021"
+description = "Rust core math primitives for SCBE-AETHERMOORE"
+license = "MIT"
+
+[lib]
+name = "scbe_core"
+path = "src/lib.rs"
+
+[[bin]]
+name = "scbe_core_demo"
+path = "src/main.rs"

@@ -1,0 +1,35 @@
+{
+  "id": "d36c6accb931f1e7",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "Privacy-Aware Camera 2.0 Technical Report",
+  "content": "# Privacy-Aware Camera 2.0 Technical Report\n\nAuthors: Huan Song, Shuyu Tian, Ting Long, Jiang Liu, Cheng Yuan, Zhenyu Jia, Jiawei Shao, Xuelong Li\nPublished: 2026-03-05T03:46:20Z\n\nWith the increasing deployment of intelligent sensing technologies in highly sensitive environments such as restrooms and locker rooms, visual surveillance systems face a profound privacy-security paradox. Existing privacy-preserving approaches, including physical desensitization, encryption, and obfuscation, often compromise semantic understanding or fail to ensure mathematically provable irreversibility. Although Privacy Camera 1.0 eliminated visual data at the source to prevent leakage, it provided only textual judgments, leading to evidentiary blind spots in disputes. To address these limitations, this paper proposes a novel privacy-preserving perception framework based on the AI Flow paradigm and a collaborative edge-cloud architecture. By deploying a visual desensitizer at the edge, raw images are transformed in real time into abstract feature vectors through nonlinear mapping and stochastic noise injection under the Information Bottleneck principle, ensuring identity-sensitive information is stripped and original images are mathematically unreconstructable. The abstract representations are transmitted to the cloud for behavior recognition and semantic reconstruction via a \"dynamic contour\" visual language, achieving a critical balance between perception and privacy while enabling illustrative visual reference without exposing raw images.",
+  "url": "http://arxiv.org/abs/2603.04775v1",
+  "timestamp": "2026-03-05T03:46:20Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "cacdd4c248f926b71497aa9ecc3a014ac31e86de00b51d7632906a341b948246",
+  "parent_hash": "417fc1c8fbe4488596430ae67b16551f1df497b04aff2b6e7049cb3c3daba2c3",
+  "metadata": {
+    "authors": [
+      "Huan Song",
+      "Shuyu Tian",
+      "Ting Long",
+      "Jiang Liu",
+      "Cheng Yuan",
+      "Zhenyu Jia",
+      "Jiawei Shao",
+      "Xuelong Li"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.04775v1"
+  }
+}

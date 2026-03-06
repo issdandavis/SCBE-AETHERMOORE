@@ -1,0 +1,32 @@
+{
+  "id": "7cffcdf825b02af4",
+  "source": "library_of_congress",
+  "category": "quarantine/security",
+  "title": "H.Res.873 - 114th Congress (2015-2016): Urging that the policy of the United States should be that Government institutions use security measures known as cryptographic splitting, the strongest available form of data centric security, to secure sensitive and personal information for data at rest and data in motion.",
+  "content": "# H.Res.873 - 114th Congress (2015-2016): Urging that the policy of the United States should be that Government institutions use security measures known as cryptographic splitting, the strongest available form of data centric security, to secure sensitive and personal information for data at rest and data in motion.\n\nContributors: rep. israel, steve [d-ny-3], 114th congress, house of representatives\nDate: 2016-09-15\nSubjects: congress, science, technology, communications\n\nSummary of H.Res.873 - 114th Congress (2015-2016): Urging that the policy of the United States should be that Government institutions use security measures known as cryptographic splitting, the strongest available form of data centric security, to secure sensitive and personal information for data at rest and data in motion.",
+  "url": "https://www.congress.gov/bill/114th-congress/house-resolution/873",
+  "timestamp": "2026-03-06T02:37:46.460937",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "159276d2cc2b292300135883dc9003e4a110f025f3912d8a7b84410ac5d3f579",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "congress",
+      "science, technology, communications"
+    ],
+    "dates": "2016-09-15",
+    "original_format": [
+      "legislation"
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "1725767dcb111406",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Existence of constant mean curvature surfaces with controlled topology in 3-manifolds",
+  "content": "# Existence of constant mean curvature surfaces with controlled topology in 3-manifolds\n\nAuthors: Filippo Gaia, Xuanyu Li\nPublished: 2026-02-18T17:26:30Z\n\nWe establish the existence of a non-trivial, branched immersion of a closed Riemann surface $\u03a3$ with constant mean curvature (CMC) $H$ into any closed, orientable 3-manifold $\\mathcal{M}$, for almost every prescribed value of $H$. The genus of the surface $\u03a3$ is bounded from above by the Heegaard genus $h$ of $\\mathcal{M}$.\n  Starting from a family of sweep-outs of $\\mathcal{M}$ by surfaces of genus $h$, we apply a min-max construction for a family $\\{E_{H,\u03c3}\\}_\u03c3$ of perturbations of the energy involving the second fundamental form of the immersions to produce almost-critical points $u_k$ of $E_{H,\u03c3}$. We then show, following ideas developed by Pigati and Rivi\u00e8re, that the maps $u_k$ converge to a \"CMC-parametrized varifold\". This limiting object is then shown to be a smooth, branched immersion with the prescribed mean curvature $H$.",
+  "url": "http://arxiv.org/abs/2602.16635v2",
+  "timestamp": "2026-02-18T17:26:30Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "0fea5d0ea09a03c40c7b48b0692071b6df07f32bd771acf9ffce8d8bc73fc0c9",
+  "parent_hash": "31198014fc2db8d7f8deee05a824a39b013ff877d75db356e7af59bf5ba3c82b",
+  "metadata": {
+    "authors": [
+      "Filippo Gaia",
+      "Xuanyu Li"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.16635v2"
+  }
+}

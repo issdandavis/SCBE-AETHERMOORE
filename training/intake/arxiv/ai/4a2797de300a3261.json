@@ -1,0 +1,32 @@
+{
+  "id": "4a2797de300a3261",
+  "source": "arxiv",
+  "category": "ai",
+  "title": "Planning in 8 Tokens: A Compact Discrete Tokenizer for Latent World Model",
+  "content": "# Planning in 8 Tokens: A Compact Discrete Tokenizer for Latent World Model\n\nAuthors: Dongwon Kim, Gawon Seo, Jinsung Lee, Minsu Cho, Suha Kwak\nPublished: 2026-03-05T18:00:02Z\n\nWorld models provide a powerful framework for simulating environment dynamics conditioned on actions or instructions, enabling downstream tasks such as action planning or policy learning. Recent approaches leverage world models as learned simulators, but its application to decision-time planning remains computationally prohibitive for real-time control. A key bottleneck lies in latent representations: conventional tokenizers encode each observation into hundreds of tokens, making planning both slow and resource-intensive. To address this, we propose CompACT, a discrete tokenizer that compresses each observation into as few as 8 tokens, drastically reducing computational cost while preserving essential information for planning. An action-conditioned world model that occupies CompACT tokenizer achieves competitive planning performance with orders-of-magnitude faster planning, offering a practical step toward real-world deployment of world models.",
+  "url": "http://arxiv.org/abs/2603.05438v1",
+  "timestamp": "2026-03-05T18:00:02Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "d404a5964871fd3e7525d1a2d917ea03ce64548da3bf4af7284da6c7963ed20e",
+  "parent_hash": "89fe2fcd60ce0225f9207a0eb95fe296ec8ee6844c8918991e967565e5601e3a",
+  "metadata": {
+    "authors": [
+      "Dongwon Kim",
+      "Gawon Seo",
+      "Jinsung Lee",
+      "Minsu Cho",
+      "Suha Kwak"
+    ],
+    "arxiv_category": "cs.AI",
+    "arxiv_id": "2603.05438v1"
+  }
+}

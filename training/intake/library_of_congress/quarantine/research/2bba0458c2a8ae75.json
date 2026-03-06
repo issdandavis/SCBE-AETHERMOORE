@@ -1,0 +1,34 @@
+{
+  "id": "2bba0458c2a8ae75",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Electronic Colloquium on Computational Complexity (ECCC)",
+  "content": "# Electronic Colloquium on Computational Complexity (ECCC)\n\nContributors: N/A\nDate: 1990-01-01\nSubjects: computational complexity, electronic colloquium on computational complexity, forums (discussion and debate), computer network resources\n\nFeatures the Electronic Colloquium on Computational Complexity (ECCC), based at the University of Trier in Germany. Notes that ECCC contains research reports, surveys, and information on books in computational complexity. Highlights monographs, lecture notes, survey papers, and theses. Offers information on how to read the information, subscribe, submit information, and discuss topics on ECCC. Provides access to mathematical resources, journals, preprint servers, and societies and electronic forums.",
+  "url": "https://catalog.loc.gov/vwebv/holdingsInfo?bibId=13284903",
+  "timestamp": "2026-03-06T02:38:43.165347",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "e731649bee949b732ac912f63bf204914eef7b5ada1abbc4fb1f8edfbc7c8d0e",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "computational complexity",
+      "electronic colloquium on computational complexity",
+      "forums (discussion and debate)",
+      "computer network resources"
+    ],
+    "dates": "1990-01-01",
+    "original_format": [
+      "book"
+    ]
+  }
+}

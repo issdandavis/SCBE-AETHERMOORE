@@ -1,0 +1,25 @@
+{
+  "id": "f2cc71d0fbaf392e",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Chirality (Q2120255)",
+  "content": "# Chirality\n\nWikidata ID: Q2120255\nDescription: peer-reviewed scientific journal\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q2120255",
+  "timestamp": "2026-03-06T04:18:13.109140",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "7643ee2b5b64bd95c22fe94cf81b8289a6627f138b9443cd949b089305bbbdd7",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "wikidata_id": "Q2120255",
+    "description": "peer-reviewed scientific journal"
+  }
+}

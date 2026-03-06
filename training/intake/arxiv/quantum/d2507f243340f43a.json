@@ -1,0 +1,33 @@
+{
+  "id": "d2507f243340f43a",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Heuristics for Shuttling Sequence Optimization for a Linear Segmented Trapped-Ion Quantum Computer",
+  "content": "# Heuristics for Shuttling Sequence Optimization for a Linear Segmented Trapped-Ion Quantum Computer\n\nAuthors: J. Durandau, C. A. Brunet, F. Schmidt-Kaler, U. Poschinger, F. Mailhot, Y. B\u00e9rub\u00e9-Lauzi\u00e8re\nPublished: 2026-03-05T18:35:29Z\n\nAn algorithm for the generation of shuttling sequences is necessary for the operation of a linear segmented ion-trap quantum computer. The present work provides an implementation of an algorithm that produces sequences proved to be optimal for circuits with a quantum Fourier transform-like structure. Such optimality was proved in previous work of our group. We first present an approach for qubit mapping, i.e. determining the initial ordering of the ions, termed the common ion order, and develop a heuristic algorithm for its implementation. We explain how this heuristic is integrated in the shuttling sequence generation algorithm described in the previous work. The results show the increased performance of the heuristic in terms of reducing the number of required shuttling operations. The number of ion displacements required exhibits a polynomial increase in terms of the number of qubits, such that these operations become the main contribution to the overall resource cost. Furthermore, we show that multiple zones for gate interactions can reduce the amount of qubit register reordering.",
+  "url": "http://arxiv.org/abs/2603.05464v1",
+  "timestamp": "2026-03-05T18:35:29Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "ad2baf552afa09ca7a64cb7377cbd88c228e1945a7f7d74467253222f1068661",
+  "parent_hash": "6cf627094ace6a0a8feaddcdb12ef933db5cffabeaed1814233c7fe450767fb9",
+  "metadata": {
+    "authors": [
+      "J. Durandau",
+      "C. A. Brunet",
+      "F. Schmidt-Kaler",
+      "U. Poschinger",
+      "F. Mailhot",
+      "Y. B\u00e9rub\u00e9-Lauzi\u00e8re"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05464v1"
+  }
+}

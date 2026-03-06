@@ -1,0 +1,32 @@
+{
+  "id": "ab97be00a027412e",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Facelift: Serialized Streetview image dataset with beauty ratings",
+  "content": "# Facelift: Serialized Streetview image dataset with beauty ratings\n\nAuthors: Joglekar, Sagar\nPublished: 2019-05-20T15:23:26Z\nSubjects: Arts and Humanities, Computer and Information Science\nDOI: doi:10.7910/DVN/PSKSOE\n\nThe caffe models are trained on Street view images. These images are serialized into lmdb format for caffe. This dataset contains the train and validation lmdb sets, with the images and their respective beauty ratings.\n\nCitation: Joglekar, Sagar, 2019, \"Facelift: Serialized Streetview image dataset with beauty ratings\", https://doi.org/10.7910/DVN/PSKSOE, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/PSKSOE",
+  "timestamp": "2026-03-06T04:18:54.179674",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "84a304b27a9a578982a56d0a117ac637d3252e95a3e7620953b8609ad516c9b4",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/PSKSOE",
+    "subjects": [
+      "Arts and Humanities",
+      "Computer and Information Science"
+    ],
+    "authors": [
+      "Joglekar, Sagar"
+    ],
+    "file_count": 2
+  }
+}

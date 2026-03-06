@@ -1,0 +1,32 @@
+{
+  "id": "445492aee8e917f9",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "Layer by layer, module by module: Choose both for optimal OOD probing of ViT",
+  "content": "# Layer by layer, module by module: Choose both for optimal OOD probing of ViT\n\nAuthors: Ambroise Odonnat, Vasilii Feofanov, Laetitia Chapel, Romain Tavenard, Ievgen Redko\nPublished: 2026-03-05T15:23:41Z\n\nRecent studies have observed that intermediate layers of foundation models often yield more discriminative representations than the final layer. While initially attributed to autoregressive pretraining, this phenomenon has also been identified in models trained via supervised and discriminative self-supervised objectives. In this paper, we conduct a comprehensive study to analyze the behavior of intermediate layers in pretrained vision transformers. Through extensive linear probing experiments across a diverse set of image classification benchmarks, we find that distribution shift between pretraining and downstream data is the primary cause of performance degradation in deeper layers. Furthermore, we perform a fine-grained analysis at the module level. Our findings reveal that standard probing of transformer block outputs is suboptimal; instead, probing the activation within the feedforward network yields the best performance under significant distribution shift, whereas the normalized output of the multi-head self-attention module is optimal when the shift is weak.",
+  "url": "http://arxiv.org/abs/2603.05280v1",
+  "timestamp": "2026-03-05T15:23:41Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "cd72dbb59af5b81827cc54af2e7b84aa78ce420bc2f3e4b586c30b4cb9df50df",
+  "parent_hash": "b7e5eff13c7b6098437407aad090a24f998ad75eda506070aa6bb614ded0d997",
+  "metadata": {
+    "authors": [
+      "Ambroise Odonnat",
+      "Vasilii Feofanov",
+      "Laetitia Chapel",
+      "Romain Tavenard",
+      "Ievgen Redko"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.05280v1"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "aaee8389ca4c2aff",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2011-0837 \u2014 CVSS 4.3 (UNKNOWN)",
+  "content": "# CVE-2011-0837\n\nCVSS Score: 4.3 (UNKNOWN)\nPublished: 2011-04-20T10:55:01.747\nCWEs: NVD-CWE-noinfo\n\nUnspecified vulnerability in the Agile Technology Platform component in Oracle Supply Chain Products Suite 9.3.0.2 and 9.3.1 allows remote attackers to affect confidentiality via unknown vectors related to Security.\n\nReferences: http://www.oracle.com/technetwork/topics/security/cpuapr2011-301950.html, http://www.oracle.com/technetwork/topics/security/cpuapr2011-301950.html",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2011-0837",
+  "timestamp": "2026-03-06T02:41:59.350928",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "b4c4d2db8b4c937ca31f11841aa2d26df6f727b8e531ddad464f3eaea6f99678",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2011-0837",
+    "cvss_score": 4.3,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-noinfo"
+    ],
+    "published": "2011-04-20T10:55:01.747"
+  }
+}

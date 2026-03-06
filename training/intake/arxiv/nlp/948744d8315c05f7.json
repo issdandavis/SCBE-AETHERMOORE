@@ -1,0 +1,31 @@
+{
+  "id": "948744d8315c05f7",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "DEBISS: a Corpus of Individual, Semi-structured and Spoken Debates",
+  "content": "# DEBISS: a Corpus of Individual, Semi-structured and Spoken Debates\n\nAuthors: Klaywert Danillo Ferreira de Souza, David Eduardo Pereira, Cl\u00e1udio E. C. Campelo, Larissa Lucena Vasconcelos\nPublished: 2026-03-05T18:30:10Z\n\nThe process of debating is essential in our daily lives, whether in studying, work activities, simple everyday discussions, political debates on TV, or online discussions on social networks. The range of uses for debates is broad. Due to the diverse applications, structures, and formats of debates, developing corpora that account for these variations can be challenging, and the scarcity of debate corpora in the state of the art is notable. For this reason, the current research proposes the DEBISS corpus: a collection of spoken and individual debates with semi-structured features. With a broad range of NLP task annotations, such as speech-to-text, speaker diarization, argument mining, and debater quality assessment.",
+  "url": "http://arxiv.org/abs/2603.05459v1",
+  "timestamp": "2026-03-05T18:30:10Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "b6d242fe0fcb0e780029aa54b0ffbbbda154607c97e6ae57d2025610fbc67e65",
+  "parent_hash": "4fa71321485a67750d80cc6772c0fc32ee85d140bebc67237065b45534ccd114",
+  "metadata": {
+    "authors": [
+      "Klaywert Danillo Ferreira de Souza",
+      "David Eduardo Pereira",
+      "Cl\u00e1udio E. C. Campelo",
+      "Larissa Lucena Vasconcelos"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.05459v1"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "id": "62250ede1b0af1a4",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Designing Sustainable Energy for All : Sustainable Product-Service System Design Applied to Distributed Renewable Energy",
+  "content": "# Designing Sustainable Energy for All : Sustainable Product-Service System Design Applied to Distributed Renewable Energy\n\nContributors: diehl, jan carel, vezzoli, carlo, osanjo, lilac, ceschin, fabrizio, m'rithaa, mugendi k.\nDate: 2018\nSubjects: engineering design, renewable energy sources, industrial management-environmental aspects, sustainable development, sustainability management\n\nThis open access book addresses the issue of diffusing sustainable energy access in low- and middle-income contexts. Access to energy is one of the greatest challenges for many people living in low- income and developing contexts, as around 1.4 billion people lack access to electricity. Distributed Renewable Energy systems (DRE) are considered a promising approach to address this challenge and provide energy access to all. However, even if promising, the implementation of DRE systems is not always straightforward. The book analyses, discusses and classifies the promising Sustainable Product-Service System (S.PSS) business models to deliver Distributed Renewable Energy systems in an effective, efficient and sustainable way. Its message is supported with cases studies and examples, discussing the economic, environmental and socioethical benefits as well as its limitations and barriers to its implementation. An innovative design approach is proposed and a set of design tools are supplied, enabling readers to create and develop Sustainable Product-Service System (S.PSS) solutions to deliver Distributed Renewable Energy systems. Practical applications of the book's design approach and tools by companies and practitioners are discussed and the book will be of interest to readers in design, industry, govermanetal institution, NGOs as well as researchers.",
+  "url": "https://www.loc.gov/item/2019744717/",
+  "timestamp": "2026-03-06T02:38:15.031826",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "002549d6f91f7b3f65de60475a41f07b19ccab5e85955bc2627b41ef09007c99",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "engineering design",
+      "renewable energy sources",
+      "industrial management-environmental aspects",
+      "sustainable development",
+      "sustainability management",
+      "renewable and green energy"
+    ],
+    "dates": "2018",
+    "original_format": [
+      "book"
+    ]
+  }
+}

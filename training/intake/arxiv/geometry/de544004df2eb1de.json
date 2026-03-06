@@ -1,0 +1,30 @@
+{
+  "id": "de544004df2eb1de",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Mass-type invariants in the presence of a cosmological constant",
+  "content": "# Mass-type invariants in the presence of a cosmological constant\n\nAuthors: Virginia Agostiniani, Stefano Borghini, Lorenzo Mazzieri\nPublished: 2026-03-02T07:15:30Z\n\nIn this paper, we introduce new mass-type invariants for time-symmetric initial data in space-times obeying the Dominant Energy Condition. When the cosmological constant is positive, these invariants, unlike the total Hawking mass, turn out to be genuinely effective in providing new characterizations of de Sitter solution. From a theoretical standpoint, this opens a new perspective on how one might refine the rigidity statement originally proposed by Min-Oo in his well known conjecture, later refuted by the counterexamples of Brendle, Marques, and Neves.",
+  "url": "http://arxiv.org/abs/2603.01543v1",
+  "timestamp": "2026-03-02T07:15:30Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "d2d4a5a96c9228c9370fba2160c10affccc9e1c29aeaec621fa9b5338c5067ec",
+  "parent_hash": "58ff6f73d0a3bbcc6545787d633a95bb25ffe9bcf52354326000ec2fa0acd763",
+  "metadata": {
+    "authors": [
+      "Virginia Agostiniani",
+      "Stefano Borghini",
+      "Lorenzo Mazzieri"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.01543v1"
+  }
+}

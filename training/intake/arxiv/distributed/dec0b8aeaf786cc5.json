@@ -1,0 +1,30 @@
+{
+  "id": "dec0b8aeaf786cc5",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "FluxSieve: Unifying Streaming and Analytical Data Planes for Scalable Cloud Observability",
+  "content": "# FluxSieve: Unifying Streaming and Analytical Data Planes for Scalable Cloud Observability\n\nAuthors: Adriano Vogel, S\u00f6ren Henning, Otmar Ertl\nPublished: 2026-03-05T08:36:59Z\n\nDespite many advances in query optimization, indexing techniques, and data storage, modern data platforms still face difficulties in delivering robust query performance under high concurrency and computationally intensive queries. This challenge is particularly pronounced in large-scale observability platforms handling high-volume, high-velocity data records. For instance, recurrent, expensive filtering queries at query time impose substantial computational and storage overheads in the analytical data plane. In this paper, we propose FluxSieve, a unified architecture that reconciles traditional pull-based query processing with push-based stream processing by embedding a lightweight in-stream precomputation and filtering layer directly into the data ingestion path. This avoids the complexity and operational burden of running queries in dedicated stream processing frameworks. Concretely, this work (i) introduces a foundational architecture that unifies streaming and analytical data planes via in-stream filtering and records enrichment, (ii) designs a scalable multi-pattern matching mechanism that supports concurrent evaluation and on-the-fly updates of filtering rules with minimal per-record overhead, (iii) demonstrates how to integrate this ingestion-time processing with two open-source analytical systems -- Apache Pinot as a Real-Time Online Analytical Processing (RTOLAP) engine and DuckDB as an embedded analytical database, and (iv) performs comprehensive experimental evaluation of our approach. Our evaluation across different systems, query types, and performance metrics shows up to orders-of-magnitude improvements in query performance at the cost of negligible additional storage and very low computational overhead.",
+  "url": "http://arxiv.org/abs/2603.04937v1",
+  "timestamp": "2026-03-05T08:36:59Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "5693e131ec69064c417608fb1f6fd826a7d2f1629cb346e51518bdb0e4a82844",
+  "parent_hash": "8385deff694dea4a85428bb5750361ea6bb608152f087f941bfbe47a35c690ce",
+  "metadata": {
+    "authors": [
+      "Adriano Vogel",
+      "S\u00f6ren Henning",
+      "Otmar Ertl"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.04937v1"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "f2bd6e5532ed7d03",
+  "source": "arxiv",
+  "category": "ai",
+  "title": "Towards Provably Unbiased LLM Judges via Bias-Bounded Evaluation",
+  "content": "# Towards Provably Unbiased LLM Judges via Bias-Bounded Evaluation\n\nAuthors: Benjamin Feuer, Lucas Rosenblatt, Oussama Elachqar\nPublished: 2026-03-05T18:52:28Z\n\nAs AI models progress beyond simple chatbots into more complex workflows, we draw ever closer to the event horizon beyond which AI systems will be utilized in autonomous, self-maintaining feedback loops. Any autonomous AI system will depend on automated, verifiable rewards and feedback; in settings where ground truth is sparse or non-deterministic, one practical source of such rewards is an LLM-as-a-Judge. Although LLM judges continue to improve, the literature has yet to introduce systems capable of enforcing standards with strong guarantees, particularly when bias vectors are unknown or adversarially discovered. To remedy this issue, we propose average bias-boundedness (A-BB), an algorithmic framework which formally guarantees reductions of harm/impact as a result of any measurable bias in an LLM judge. Evaluating on Arena-Hard-Auto with four LLM judges, we achieve (tau=0.5, delta=0.01) bias-bounded guarantees while retaining 61-99% correlation with original rankings across formatting and schematic bias settings, with most judge-bias combinations exceeding 80%. The code to reproduce our findings is available at https://github.com/penfever/bias-bounded-evaluation.",
+  "url": "http://arxiv.org/abs/2603.05485v1",
+  "timestamp": "2026-03-05T18:52:28Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "febe157905e96c3deb11b01156f5919ab1b15b51de6b7c7c111cad25b01c3ce0",
+  "parent_hash": "ac2e126d1f4f653f8f7bbe26de006ac04bf80a5bd93fbfb0b81edee134be8e1d",
+  "metadata": {
+    "authors": [
+      "Benjamin Feuer",
+      "Lucas Rosenblatt",
+      "Oussama Elachqar"
+    ],
+    "arxiv_category": "cs.AI",
+    "arxiv_id": "2603.05485v1"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "e268171302d69d27",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-1999-1591 \u2014 CVSS 7.5 (UNKNOWN)",
+  "content": "# CVE-1999-1591\n\nCVSS Score: 7.5 (UNKNOWN)\nPublished: 1999-12-31T05:00:00.000\nCWEs: NVD-CWE-Other\n\nMicrosoft Internet Information Services (IIS) server 4.0 SP4, without certain hotfixes released for SP4, does not require authentication credentials under certain conditions, which allows remote attackers to bypass authentication requirements, as demonstrated by connecting via Microsoft Visual InterDev 6.0.\n\nReferences: http://archives.neohapsis.com/archives/ntbugtraq/1998-1999/msg00276.html, http://archives.neohapsis.com/archives/ntbugtraq/1998-1999/msg00277.html, http://www.securityfocus.com/bid/190",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-1999-1591",
+  "timestamp": "2026-03-06T02:41:48.082142",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "bf5f7a0b99c61ac9125e8ba92bac7008b4ba22f6eae54bc4b6be2f077f710937",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-1999-1591",
+    "cvss_score": 7.5,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-Other"
+    ],
+    "published": "1999-12-31T05:00:00.000"
+  }
+}

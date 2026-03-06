@@ -1,0 +1,31 @@
+{
+  "id": "ba8c8ce68fc4b95b",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Steam power plant engineering,",
+  "content": "# Steam power plant engineering,\n\nContributors: gebhardt, george frederick\nDate: 1913\nSubjects: steam power-plants\n\nAlso available in digital form.",
+  "url": "https://www.loc.gov/item/13014993/",
+  "timestamp": "2026-03-06T04:17:33.805755",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "6d69de3cb01bcac2ab5fd11c4ffab1d53b918dd5d83e0693de21bc475a29e224",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "steam power-plants"
+    ],
+    "dates": "1913",
+    "original_format": [
+      "book"
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "id": "a0e987eaf096d8d9",
+  "source": "harvard_dataverse",
+  "category": "quarantine/nlp",
+  "title": "Multi-Agent-Simulation of Kaizen using artisoc",
+  "content": "# Multi-Agent-Simulation of Kaizen using artisoc\n\nAuthors: Iwao, Shumpei\nPublished: 2020-03-12T17:07:02Z\nSubjects: Business and Management, Social Sciences\nDOI: doi:10.7910/DVN/UN14B7\n\nThis file is a multi-agent simulation model of continuous improvement activities using artisoc (programming language for multi-agent-system developed in Japan). You can observe how improvement activities generate innovation.\n\nCitation: Iwao, Shumpei, 2020, \"Multi-Agent-Simulation of Kaizen using artisoc\", https://doi.org/10.7910/DVN/UN14B7, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/UN14B7",
+  "timestamp": "2026-03-06T04:18:49.817407",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "453d143a90bf9fddda31498a376e00183d7419d2bccd87ff3697cbb7e2c54a55",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/UN14B7",
+    "subjects": [
+      "Business and Management",
+      "Social Sciences"
+    ],
+    "authors": [
+      "Iwao, Shumpei"
+    ],
+    "file_count": 2
+  }
+}

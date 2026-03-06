@@ -1,0 +1,37 @@
+{
+  "id": "433e4c5fa2006dbe",
+  "source": "library_of_congress",
+  "category": "quarantine/governance",
+  "title": "Development, sexual rights and global governance",
+  "content": "# Development, sexual rights and global governance\n\nContributors: lind, amy\nDate: 2010-01-01\nSubjects: sexual rights, economic aspects, political aspects, economic development, gay rights\n\nIncludes bibliographical references and index. Description based on print version record; resource not viewed.",
+  "url": "https://www.loc.gov/item/2020719904/",
+  "timestamp": "2026-03-06T04:17:41.942098",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "db701c6d763805865c31955081d39e387c254750cd1336cef16028c8306ec2db",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "sexual rights",
+      "economic aspects",
+      "political aspects",
+      "economic development",
+      "gay rights",
+      "social aspects",
+      "globalization"
+    ],
+    "dates": "2010-01-01",
+    "original_format": [
+      "book"
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "aacf14976aef5686",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Poincar\u00e9 disk model (Q2617832)",
+  "content": "# Poincar\u00e9 disk model\n\nWikidata ID: Q2617832\nDescription: model of hyperbolic geometry\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q2617832",
+  "timestamp": "2026-03-06T02:40:59.400853",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "55131c5fb7aa3cabe48810d3256e564f2418e32bd839e513e2669e179ff134f8",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q2617832",
+    "description": "model of hyperbolic geometry"
+  }
+}

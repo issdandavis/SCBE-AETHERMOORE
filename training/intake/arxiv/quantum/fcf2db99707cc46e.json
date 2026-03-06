@@ -1,0 +1,31 @@
+{
+  "id": "fcf2db99707cc46e",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Universal quantum computation with group surface codes",
+  "content": "# Universal quantum computation with group surface codes\n\nAuthors: Naren Manjunath, Vieri Mattei, Apoorv Tiwari, Tyler D. Ellison\nPublished: 2026-03-05T18:59:27Z\n\nWe introduce group surface codes, which are a natural generalization of the $\\mathbb{Z}_2$ surface code, and equivalent to quantum double models of finite groups with specific boundary conditions. We show that group surface codes can be leveraged to perform non-Clifford gates in $\\mathbb{Z}_2$ surface codes, thus enabling universal computation with well-established means of performing logical Clifford gates. Moreover, for suitably chosen groups, we demonstrate that arbitrary reversible classical gates can be implemented transversally in the group surface code. We present the logical operations in terms of a set of elementary logical operations, which include transversal logical gates, a means of transferring encoded information into and out of group surface codes, and preparation and readout. By composing these elementary operations, we implement a wide variety of logical gates and provide a unified perspective on recent constructions in the literature for sliding group surface codes and preparing magic states. We furthermore use tensor networks inspired by ZX-calculus to construct spacetime implementations of the elementary operations. This spacetime perspective also allows us to establish explicit correspondences with topological gauge theories. Our work extends recent efforts in performing universal quantum computation in topological orders without the braiding of anyons, and shows how certain group surface codes allow us to bypass the restrictions set by the Bravyi-K{\u00f6}nig theorem, which limits the computational power of topological Pauli stabilizer models.",
+  "url": "http://arxiv.org/abs/2603.05502v1",
+  "timestamp": "2026-03-05T18:59:27Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "bec480a601f3d3dc3fb44df8f4a4a251aecb47ce764cffea56d6bb53cf53e728",
+  "parent_hash": "c1379173deca644135385b152410396756978c7336d57f24c952fcd07ccf245b",
+  "metadata": {
+    "authors": [
+      "Naren Manjunath",
+      "Vieri Mattei",
+      "Apoorv Tiwari",
+      "Tyler D. Ellison"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05502v1"
+  }
+}

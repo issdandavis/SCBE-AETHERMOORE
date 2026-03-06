@@ -1,0 +1,28 @@
+{
+  "id": "7e76d468ef7f7dc4",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "The Semantic Arrow of Time, Part V: The Leibniz Bridge -- Toward a Unified Theory of Semantic Time",
+  "content": "# The Semantic Arrow of Time, Part V: The Leibniz Bridge -- Toward a Unified Theory of Semantic Time\n\nAuthors: Paul Borrill\nPublished: 2026-03-05T05:19:47Z\n\nThis is the final paper in the five-part series The Semantic Arrow of Time. Part I identified the FITO category mistake -- treating forward temporal flow as sufficient for establishing meaning. Part II presented the constructive alternative: the OAE link state machine with its mandatory reflecting phase. Part III showed the FITO fallacy operating at industrial scale in RDMA completion semantics. Part IV traced the same pattern through file synchronization, email, human memory, and language model hallucination.\n  This paper closes the series by constructing the Leibniz Bridge: a unified framework that connects the philosophical foundations (Leibniz's Identity of Indiscernibles, as formalized by Spekkens), the protocol engineering (OAE's bilateral transaction structure), and the physical substrate (indefinite causal order in quantum mechanics). The bridge rests on a single principle: mutual information conservation -- the requirement that every causal exchange preserve the total information accessible to both endpoints, with the direction of time emerging not from axiom but from entropy production when a reversible exchange commits.\n  We show that this principle dissolves the apparent impossibility of the FLP, Two Generals, and CAP theorems by revealing them as theorems about FITO systems, not about physics. We present the triangle network as the minimal topology for semantic consistency without centralized coordination. We conclude with open questions and a reflection on what distributed computing looks like when the FITO assumption is dropped.",
+  "url": "http://arxiv.org/abs/2603.04826v1",
+  "timestamp": "2026-03-05T05:19:47Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "11adbb9103cc0a8f5b1c68aefeb6549c8378d9048c53672206ae09f40a1b0d46",
+  "parent_hash": "b07932a703fce8312f92ae15b2abeec6254ca8462c581bdd9a8931e165b1e9ea",
+  "metadata": {
+    "authors": [
+      "Paul Borrill"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.04826v1"
+  }
+}

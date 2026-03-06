@@ -1,0 +1,30 @@
+{
+  "id": "ffe30632b41a8b6b",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Replication data for: The Ghosts of Banking Past: Empirical Analysis of Closed Bank Websites",
+  "content": "# Replication data for: The Ghosts of Banking Past: Empirical Analysis of Closed Bank Websites\n\nAuthors: Moore, Tyler, Clayton, Richard\nPublished: 2014-05-20T00:00:00Z\nSubjects: \nDOI: doi:10.7910/DVN/26011\n\nWe study what happens to the domains used by US banks for their customer-facing websites when the bank is shut down or merges with another institution. The Federal Deposit Insurance Corporation (FDIC) publishes detailed statistical data about the many thousands of US banks, including their website URLs. We extracted details of the 3,181 banks that have closed their doors since 2003 and determined the fate of 2,302 domain names they are known to have used. We found that 47% are still owned by a banking institution but that 33% have passed into the hands of people who are exploiting the residual good reputation attached to the domain by hosting adverts, distributing malware or carrying out search engine optimization (SEO) activities. We map out the lifecycle of domain usage after the original institution no longer requires it as their main customer contact point -- and explain our findings from an economic perspective. We present logistic regressions that help explain some of reasons why closed bank domains are let go, as well as why others choose to repurpose them. For instance, we find that smaller and troubled banks are more likely to lose control of their domains, and that the domains from bigger banks are more likely to be repurposed by others. We draw attention to other classes of domain that are best kept off the open market lest old botnets be revivified or other forms of criminality be resurrected. We end by exploring what the public policy options might be that would protect us all from ghost domains that are no longer being looked after by their original registrants.\n\nCitation: Moore, Tyler; Clayton, Richard, 2014, \"Replication data for: The Ghosts of Banking Past: Empirical Analysis of Closed Bank Websites\", https://doi.org/10.7910/DVN/26011, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/26011",
+  "timestamp": "2026-03-06T02:42:03.535846",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "45217d44228a978901f0eb872e25cd332feb593c58c16f1430e8aa580e30c35e",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/26011",
+    "subjects": [],
+    "authors": [
+      "Moore, Tyler",
+      "Clayton, Richard"
+    ],
+    "file_count": 5
+  }
+}

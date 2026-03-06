@@ -1,0 +1,40 @@
+{
+  "id": "5b40305fea561a04",
+  "source": "library_of_congress",
+  "category": "quarantine/governance",
+  "title": "Malta: Government Passes Three Laws to Encourage Blockchain Technology",
+  "content": "# Malta: Government Passes Three Laws to Encourage Blockchain Technology\n\nContributors: feikert-ahalt, clare\nDate: 2018-08-31\nSubjects: finance and financial sector, financial services, product development and innovation, communications, business investment and capital\n\n<p>(Aug. 31, 2018) On July 4, 2018, the Maltese government enacted three laws whose goal is to make Malta a haven for projects that rely on blockchain and other distributed ledger technology (DLT). The Malta Digital Innovation Authority Act (MDIA Act), Innovative Technology Arrangements and Services Act (ITAS Act), and Virtual Financial Assets Act (VFA [&hellip;]</p>",
+  "url": "https://www.loc.gov/item/global-legal-monitor/2018-08-31/malta-government-passes-three-laws-to-encourage-blockchain-technology/",
+  "timestamp": "2026-03-06T02:38:39.087999",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "b64960645d2cf7c2c2b39f19d627401f078f3178ef2a2ed34720350b20489b02",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "finance and financial sector",
+      "financial services",
+      "product development and innovation",
+      "communications",
+      "business investment and capital",
+      "contracts",
+      "telecommunications",
+      "science and technology",
+      "consumer protection",
+      "banks and financial institutions"
+    ],
+    "dates": "2018-08-31",
+    "original_format": [
+      "web page"
+    ]
+  }
+}

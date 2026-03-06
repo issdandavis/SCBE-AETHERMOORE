@@ -1,0 +1,31 @@
+{
+  "id": "4948746c572a3e71",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Maxwell Strata in the sub-Riemannian problem on solvable, nonnilpotent regular three-dimensional Lie groups",
+  "content": "# Maxwell Strata in the sub-Riemannian problem on solvable, nonnilpotent regular three-dimensional Lie groups\n\nAuthors: Adriano Da Silva, Lino Grama, Douglas Duarte Novaes, Margarita Quispe Tusco\nPublished: 2026-02-19T19:26:17Z\n\nIn this paper, we study the sub-Riemannian problem associated with contact structures on connected, simply connected, solvable, non-nilpotent, regular three-dimensional Lie groups. For these groups, the vertical component of the Hamiltonian system takes the form of a perturbed pendulum. A qualitative phase-space analysis allows us to prove that this vertical component exhibits nontrivial symmetries. In particular, we are able to fully characterize the Maxwell set corresponding to these symmetries, and show that its first Maxwell time coincides with the period of the pendulum for almost all geodesics. This result yields an explicit upper bound for the cut time in terms of the period of the pendulum.",
+  "url": "http://arxiv.org/abs/2602.17782v1",
+  "timestamp": "2026-02-19T19:26:17Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "31198014fc2db8d7f8deee05a824a39b013ff877d75db356e7af59bf5ba3c82b",
+  "parent_hash": "dbfea2358e14f4c1589e8770f6ed7e11f39bef9fa5e71234d7628b61c939b562",
+  "metadata": {
+    "authors": [
+      "Adriano Da Silva",
+      "Lino Grama",
+      "Douglas Duarte Novaes",
+      "Margarita Quispe Tusco"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.17782v1"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "id": "9d8568aab5944fd9",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2012-6437 \u2014 CVSS 10.0 (UNKNOWN)",
+  "content": "# CVE-2012-6437\n\nCVSS Score: 10.0 (UNKNOWN)\nPublished: 2013-01-24T21:55:01.523\nCWEs: CWE-287, CWE-287\n\nThe device does not properly authenticate users and the potential exists for a remote user to upload a new firmware image to the Ethernet card, whether it is a corrupt or legitimate firmware image. Successful exploitation of this vulnerability could cause loss of availability, integrity, and confidentiality and a disruption in communications with other connected devices.\n\n\n\n\n\nRockwell Automation EtherNet/IP products; 1756-ENBT, 1756-EWEB, 1768-ENBT, and 1768-EWEB communication modules; CompactLogix L32E and L35E controllers; 1788-ENBT FLEXLogix adapter; 1794-AENTR FLEX I/O EtherNet/IP adapter; ControlLogix 18 and earlier; CompactLogix 18 and earlier; GuardLogix 18 and earlier; SoftLogix 18 and earlier; CompactLogix controllers 19 and earlier; SoftLogix controllers 19 and earlier; ControlLogix controllers 20 and earlier; GuardLogix controllers 20 and earlier; and MicroLogix 1100 and 1400\n\nReferences: http://rockwellautomation.custhelp.com/app/answers/detail/a_id/54102, https://rockwellautomation.custhelp.com/app/answers/detail/a_id/470154, https://rockwellautomation.custhelp.com/app/answers/detail/aid/470155",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2012-6437",
+  "timestamp": "2026-03-06T04:18:37.160039",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "b193e3c50cc9b641b3494d2cd96fb0122daa1453b9e36807025597d2d4070306",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2012-6437",
+    "cvss_score": 10.0,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "CWE-287",
+      "CWE-287"
+    ],
+    "published": "2013-01-24T21:55:01.523"
+  }
+}

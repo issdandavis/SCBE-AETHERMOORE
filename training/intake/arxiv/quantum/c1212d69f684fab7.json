@@ -1,0 +1,28 @@
+{
+  "id": "c1212d69f684fab7",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Direct derivation of the modified Langevin noise formalism from the canonical quantization of macroscopic electromagnetism",
+  "content": "# Direct derivation of the modified Langevin noise formalism from the canonical quantization of macroscopic electromagnetism\n\nAuthors: Alessandro Ciattoni\nPublished: 2026-03-04T17:53:31Z\n\nThe modified Langevin noise formalism (MLNF) models the interaction of the quantized electromagnetic field with an arbitrary lossy magneto-dielectric object placed in vacuum using three types of non-interacting bosonic polaritons: scattering, electric, and magnetic. These respectively represent free-space photons scattered by the object, and photons radiated by quantized electric and magnetic dipolar sources embedded within its volume. Recently [A. Ciattoni, Phys. Rev. A 110, 013707 (2024)], this formalism was justified from the canonical quantization of macroscopic electromagnetism (CQME) [Philbin, New J. Phys. 12, 123008 (2010)] in the Heisenberg picture. This was achieved by identifying the polariton operators within the formal solution of the macroscopic Maxwell equations, assuming they obey bosonic commutation relations to retrieve the canonical ones, and showing they diagonalize the CQME Hamiltonian. However, the explicit functional dependence of these polaritons on the underlying canonical field operators remained undetermined. In this paper, we derive the exact analytical expressions for the polariton operators in terms of the canonical CQME field operators. Using these mappings, we provide a direct and rigorous derivation of the MLNF from the canonical theory in the Schr\u00f6dinger picture. Our derivation is structured in three foundational steps: 1) adopting the derived analytical expressions as the constitutive definitions of the polariton operators; 2) mathematically proving that these operators are strictly bosonic as a direct consequence of the canonical commutation relations; and 3) demonstrating that they exactly diagonalize the macroscopic CQME Hamiltonian.",
+  "url": "http://arxiv.org/abs/2603.04336v1",
+  "timestamp": "2026-03-04T17:53:31Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "58e3d4924725797828e8f18aeb4b43ba18311adfdbfef38caf68e023f4262e3f",
+  "parent_hash": "7d6fa6cbdbde0fdbf410f94b912f13e75e7422a3cb8c080e6afa3bf3ecd450a7",
+  "metadata": {
+    "authors": [
+      "Alessandro Ciattoni"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.04336v1"
+  }
+}

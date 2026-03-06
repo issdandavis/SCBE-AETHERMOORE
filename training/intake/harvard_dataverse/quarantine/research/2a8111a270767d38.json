@@ -1,0 +1,32 @@
+{
+  "id": "2a8111a270767d38",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Case study 3",
+  "content": "# Case study 3\n\nAuthors: Silva, Nat\u00e1ssya, Pigatto, Daniel\nPublished: 2015-09-17T17:39:37Z\nSubjects: Computer and Information Science\nDOI: doi:10.7910/DVN/IHFG0Q\n\nData obtained for the study case 3: DES.\n\nCitation: Silva, Nat\u00e1ssya; Pigatto, Daniel, 2015, \"Case study 3\", https://doi.org/10.7910/DVN/IHFG0Q, Harvard Dataverse, V1, UNF:6:dG8Tt4iycA+99qU4vrApNQ== [fileUNF]",
+  "url": "https://doi.org/10.7910/DVN/IHFG0Q",
+  "timestamp": "2026-03-06T02:42:11.933375",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "6700b6a5e6a848e186988ed66b4f3001bcccbe6cc60bd284ed7a32fa98a5a040",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/IHFG0Q",
+    "subjects": [
+      "Computer and Information Science"
+    ],
+    "authors": [
+      "Silva, Nat\u00e1ssya",
+      "Pigatto, Daniel"
+    ],
+    "file_count": 4
+  }
+}
