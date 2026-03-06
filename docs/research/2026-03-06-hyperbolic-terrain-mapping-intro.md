@@ -1,3 +1,9 @@
+---
+title: Hyperbolic Terrain Mapping Intro
+layout: default
+nav_exclude: true
+---
+
 # Hyperbolic Terrain Mapping: Practical Intro
 
 ## Poincare disk model (fast mental model)

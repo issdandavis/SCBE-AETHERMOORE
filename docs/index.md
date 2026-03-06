@@ -55,6 +55,13 @@ Built on the Poincare ball model with bounded harmonic scaling and post-quantum 
 
 ---
 
+## Interactive Geometry
+
+- [Hyperbolic Terrain Playground](research/hyperbolic-terrain-playground.html) - Poincare distance, geodesic arcs, and branching terrain toy model
+- [Hyperbolic Terrain Intro](research/2026-03-06-hyperbolic-terrain-mapping-intro) - concise explanation with practical usage notes
+
+---
+
 ## Products & Tools
 
 Ready-to-use templates and automation frameworks built on SCBE-AETHERMOORE:
