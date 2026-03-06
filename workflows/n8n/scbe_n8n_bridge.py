@@ -7,6 +7,14 @@ Endpoints:
   POST /v1/tongue/encode          — Sacred Tongue encoding
   POST /v1/buffer/post            — Content Buffer posting
   POST /v1/agent/task             — Submit web agent task
+SCBE n8n Bridge — FastAPI service connecting n8n workflows to SCBE Web Agent
+=============================================================================
+
+Endpoints:
+  POST /v1/governance/scan        — Semantic antivirus scan
+  POST /v1/tongue/encode          — Sacred Tongue encoding
+  POST /v1/buffer/post            — Content Buffer posting
+  POST /v1/agent/task             — Submit web agent task
   GET  /v1/agent/task/{id}/status — Poll task status
   GET  /v1/llm/providers          — Provider availability for tool-calling router
   POST /v1/llm/dispatch           — Unified dispatch to HF/OpenAI/Claude/Grok + Zapier callback
@@ -344,7 +352,7 @@ def _http_post_json(
     except urllib_error.URLError as exc:
         raise HTTPException(
             status_code=503,
-            detail=f"Upstream provider unavailable: {exc.reason}",
+            detail="Upstream provider unavailable",
         )
 
 
@@ -497,7 +505,8 @@ def _send_zapier_event(event_payload: Dict[str, Any]) -> Dict[str, Any]:
                 "body": body[:800],
             }
     except Exception as exc:  # noqa: BLE001
-        return {"status": "failed", "error": str(exc)}
+        logger.exception("Upstream health check error: %s", exc)
+        return {"status": "failed", "error": "Health check failed"}
 
 
 @app.get("/v1/llm/providers")
@@ -592,9 +601,10 @@ def _browser_health_check() -> Dict[str, Any]:
                 "url": url,
             }
     except Exception as exc:  # noqa: BLE001
+        logger.exception("Browser service health check failed: %s", exc)
         return {
             "reachable": False,
-            "error": str(exc),
+            "error": "Service unreachable",
             "url": url,
         }
 
@@ -628,12 +638,12 @@ def _forward_to_browser_service(payload: Dict[str, Any], bridge_api_key: str) ->
     except urllib_error.URLError as exc:
         raise HTTPException(
             status_code=503,
-            detail=f"Browser service unavailable at {_BROWSER_SERVICE_URL}: {exc.reason}",
+            detail="Browser service unavailable",
         )
     except json.JSONDecodeError as exc:
         raise HTTPException(
             status_code=502,
-            detail=f"Browser service returned invalid JSON: {exc}",
+            detail="Browser service returned invalid JSON",
         )
 
 
@@ -679,8 +689,9 @@ async def tongue_encode(req: TongueEncodeRequest, x_api_key: Optional[str] = Hea
                 "token_count": len(env.tokens),
                 "transport": "tongue",
             }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:  # noqa: BLE001
+        logger.exception("Unexpected error in tongue encode endpoint: %s", e)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/v1/buffer/post")
@@ -856,7 +867,8 @@ def _dispatch_single_provider(provider: str, prompt: str, system_prompt: str, ma
         else:
             return {"provider": p, "text": "", "status": "unsupported"}
     except Exception as exc:
-        return {"provider": p, "text": "", "status": "error", "error": str(exc)[:500]}
+        logger.exception("Provider %s dispatch failed: %s", p, exc)
+        return {"provider": p, "text": "", "status": "error", "error": "Provider request failed"}
 
 
 @app.post("/v1/council/deliberate")
@@ -1021,7 +1033,7 @@ def _get_trainer():
             logger.error("Failed to start RealTimeHFTrainer: %s", exc)
             raise HTTPException(
                 status_code=503,
-                detail=f"Training pipeline unavailable: {exc}",
+                detail="Training pipeline unavailable",
             )
     return _trainer
 
@@ -1155,7 +1167,7 @@ def _notion_request(
     except urllib_error.URLError as exc:
         raise HTTPException(
             status_code=503,
-            detail=f"Notion unavailable: {exc.reason}",
+            detail="Notion unavailable",
         )
 
 
