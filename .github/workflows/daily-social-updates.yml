@@ -54,8 +54,43 @@ jobs:
             --linkedin-article "${{ steps.generate.outputs.linkedin_article }}" \
             --github-limit 1
 
-      - name: Publish live (X + GitHub Discussions)
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.live_publish == true || (github.event_name == 'schedule' && secrets.SCBE_SOCIAL_LIVE == 'true') }}
+      - name: Resolve live mode and credential readiness
+        id: preflight
+        env:
+          SCBE_SOCIAL_LIVE: ${{ secrets.SCBE_SOCIAL_LIVE }}
+          X_CLIENT_ID: ${{ secrets.X_CLIENT_ID }}
+          X_CLIENT_SECRET: ${{ secrets.X_CLIENT_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_REFRESH_TOKEN: ${{ secrets.X_REFRESH_TOKEN }}
+        run: |
+          LIVE_ENABLED=false
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.live_publish }}" = "true" ]; then
+            LIVE_ENABLED=true
+          fi
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "${SCBE_SOCIAL_LIVE}" = "true" ]; then
+            LIVE_ENABLED=true
+          fi
+
+          X_READY=false
+          if [ -n "${X_CLIENT_ID}" ] && [ -n "${X_CLIENT_SECRET}" ] && [ -n "${X_ACCESS_TOKEN}" ] && [ -n "${X_REFRESH_TOKEN}" ]; then
+            X_READY=true
+          fi
+
+          echo "live_enabled=${LIVE_ENABLED}" >> "$GITHUB_OUTPUT"
+          echo "x_ready=${X_READY}" >> "$GITHUB_OUTPUT"
+          echo "live_enabled=${LIVE_ENABLED}"
+          echo "x_ready=${X_READY}"
+
+      - name: Publish live GitHub Discussion
+        if: ${{ steps.preflight.outputs.live_enabled == 'true' }}
+        run: |
+          python scripts/publish/post_all.py \
+            --only github \
+            --github-glob "${{ steps.generate.outputs.github_glob }}" \
+            --github-limit 1
+
+      - name: Publish live X
+        if: ${{ steps.preflight.outputs.live_enabled == 'true' && steps.preflight.outputs.x_ready == 'true' }}
         env:
           X_CLIENT_ID: ${{ secrets.X_CLIENT_ID }}
           X_CLIENT_SECRET: ${{ secrets.X_CLIENT_SECRET }}
@@ -63,10 +98,14 @@ jobs:
           X_REFRESH_TOKEN: ${{ secrets.X_REFRESH_TOKEN }}
         run: |
           python scripts/publish/post_all.py \
-            --only x,github \
-            --github-glob "${{ steps.generate.outputs.github_glob }}" \
+            --only x \
             --x-article "${{ steps.generate.outputs.x_article }}" \
             --github-limit 1
+
+      - name: Live X skipped notice
+        if: ${{ steps.preflight.outputs.live_enabled == 'true' && steps.preflight.outputs.x_ready != 'true' }}
+        run: |
+          echo "Live X publish skipped: required X OAuth secrets are not all configured."
 
       - name: Upload social evidence
         if: always()
