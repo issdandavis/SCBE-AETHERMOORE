@@ -287,7 +287,7 @@ export async function handleCreateEnvelope(req: EnvelopeRequest): Promise<Envelo
   const aad = JSON.stringify(req.aad || { timestamp: Date.now() });
 
   // Derive key (simplified - in production use Argon2id)
-  const key = createHash('sha256').update(req.password).update(salt).digest();
+  const key = require('crypto').scryptSync(req.password, salt, 32);
 
   // Encrypt (simplified - in production use XChaCha20-Poly1305)
   const ct = Buffer.from(Buffer.from(req.plaintext).map((b, i) => b ^ key[i % 32]));
