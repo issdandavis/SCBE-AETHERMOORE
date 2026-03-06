@@ -20,7 +20,9 @@ import conferenceRoutes from './routes/conferences.js';
 import fundingRoutes from './routes/funding.js';
 import zoomRoutes from './routes/zoom.js';
 import orgRoutes from './routes/orgs.js';
+import billingRoutes from './routes/billing.js';
 import { zoomService } from './services/zoom.js';
+import { billingService } from './services/billing.js';
 import { tenantResolver } from './middleware/tenant.js';
 
 const app = express();
@@ -42,6 +44,7 @@ app.get('/api/health', (_req, res) => {
     governance: 'SCBE-AETHERMOORE 14-layer pipeline',
     swarm: 'HYDRA 6-tongue audit',
     zoom: zoomService.isConfigured() ? 'configured' : 'simulated (set ZOOM_ACCOUNT_ID, ZOOM_CLIENT_ID, ZOOM_CLIENT_SECRET)',
+    billing: billingService.isConfigured() ? 'stripe-live' : 'simulated (set STRIPE_SECRET_KEY)',
     realtime: 'SSE event stream at /api/zoom/conferences/:id/events',
     caas: 'Multi-tenant org management at /api/orgs',
   });
@@ -55,6 +58,7 @@ app.use('/api/conferences', conferenceRoutes);
 app.use('/api/funding', fundingRoutes);
 app.use('/api/zoom', zoomRoutes);
 app.use('/api/orgs', orgRoutes);
+app.use('/api/billing', billingRoutes);
 
 app.listen(PORT, () => {
   console.log(`[vibe-conference] API server running on http://localhost:${PORT}`);
@@ -63,6 +67,8 @@ app.listen(PORT, () => {
   console.log(`[vibe-conference] Zoom: ${zoomService.isConfigured() ? 'LIVE' : 'simulated (dev mode)'}`);
   console.log(`[vibe-conference] Real-time: SSE event streams enabled`);
   console.log(`[vibe-conference] CaaS: multi-tenant org management active`);
+  console.log(`[vibe-conference] Billing: ${billingService.isConfigured() ? 'Stripe LIVE' : 'simulated (dev mode)'}`);
+  console.log(`[vibe-conference] Auth: JWT access tokens (15min) + refresh tokens (7d)`);
 });
 
 export default app;

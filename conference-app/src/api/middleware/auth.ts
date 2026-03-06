@@ -2,12 +2,13 @@
  * @file auth.ts
  * @module conference/api/middleware
  *
- * Simplified auth middleware for MVP.
- * Uses a bearer token that is just the user ID (replace with JWT/WebAuthn in production).
+ * JWT-based auth middleware. Verifies access tokens and attaches user to request.
+ * Backwards-compatible: also accepts raw user ID tokens for existing sessions.
  */
 
 import type { Request, Response, NextFunction } from 'express';
 import { store } from '../store.js';
+import { verifyAccessToken } from '../services/jwt.js';
 import type { User } from '../../shared/types/index.js';
 
 declare global {
@@ -25,15 +26,28 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction):
     return;
   }
 
-  const userId = authHeader.slice(7);
-  const user = store.getUser(userId);
-  if (!user) {
-    res.status(401).json({ success: false, error: 'Invalid user token' });
+  const token = authHeader.slice(7);
+
+  // Try JWT verification first
+  const payload = verifyAccessToken(token);
+  if (payload) {
+    const user = store.getUser(payload.sub);
+    if (user) {
+      req.user = user;
+      next();
+      return;
+    }
+  }
+
+  // Fallback: treat token as raw user ID (backwards compat with existing sessions)
+  const userById = store.getUser(token);
+  if (userById) {
+    req.user = userById;
+    next();
     return;
   }
 
-  req.user = user;
-  next();
+  res.status(401).json({ success: false, error: 'Invalid or expired token' });
 }
 
 export function requireRole(...roles: string[]) {

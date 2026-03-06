@@ -7,6 +7,7 @@ export default function AuthPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<'login' | 'register'>('register');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [role, setRole] = useState<'coder' | 'investor'>('coder');
   const [error, setError] = useState('');
@@ -20,17 +21,20 @@ export default function AuthPage() {
     e.preventDefault();
     setError('');
 
-    let success: boolean;
     if (mode === 'register') {
-      success = await register(email, displayName, role);
+      const result = await register(email, displayName, role, password);
+      if (result.ok) {
+        navigate('/dashboard');
+      } else {
+        setError(result.error ?? 'Registration failed');
+      }
     } else {
-      success = await login(email);
-    }
-
-    if (success) {
-      navigate('/dashboard');
-    } else {
-      setError(mode === 'register' ? 'Registration failed (email may already exist)' : 'Login failed (user not found)');
+      const result = await login(email, password);
+      if (result.ok) {
+        navigate('/dashboard');
+      } else {
+        setError(result.error ?? 'Login failed');
+      }
     }
   };
 
@@ -62,6 +66,18 @@ export default function AuthPage() {
           <div className="form-group">
             <label>Email</label>
             <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="you@example.com" />
+          </div>
+
+          <div className="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+              placeholder={mode === 'register' ? 'Min 8 characters' : 'Your password'}
+              minLength={mode === 'register' ? 8 : undefined}
+            />
           </div>
 
           {mode === 'register' && (
