@@ -47,6 +47,7 @@ def _hash_unit(seed: str) -> float:
 _SAFE_NOTES_ROOT = Path(__file__).parent.parent.resolve()
 
 
+
 def load_notes_from_glob(
     pattern: str,
     max_notes: int = 100,
