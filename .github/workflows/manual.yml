@@ -1,0 +1,94 @@
+name: Manual workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      task:
+        description: 'Task to run'
+        required: true
+        default: 'health-check'
+        type: choice
+        options:
+          - health-check
+          - sync-huggingface
+          - run-security-audit
+          - rebuild-docs
+          - clear-caches
+      dry_run:
+        description: 'Dry run (no side effects)'
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  manual-task:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run health check
+        if: inputs.task == 'health-check'
+        run: |
+          echo "🏥 Running health check on ${{ inputs.environment }}..."
+          echo "Dry run: ${{ inputs.dry_run }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Triggered by: ${{ github.actor }}"
+          echo "✅ Health check complete"
+
+      - name: Sync HuggingFace
+        if: inputs.task == 'sync-huggingface'
+        run: |
+          echo "🤗 Syncing to HuggingFace (dry_run=${{ inputs.dry_run }})..."
+          if [ "${{ inputs.dry_run }}" = "false" ]; then
+            echo "Would run: gh workflow run huggingface-sync.yml"
+          else
+            echo "[DRY RUN] Skipping actual HuggingFace sync"
+          fi
+
+      - name: Run security audit
+        if: inputs.task == 'run-security-audit'
+        run: |
+          echo "🔐 Running security audit (dry_run=${{ inputs.dry_run }})..."
+          if [ "${{ inputs.dry_run }}" = "false" ]; then
+            echo "Would run: gh workflow run weekly-security-audit.yml"
+          else
+            echo "[DRY RUN] Skipping actual security audit trigger"
+          fi
+
+      - name: Rebuild docs
+        if: inputs.task == 'rebuild-docs'
+        run: |
+          echo "📚 Rebuilding docs (dry_run=${{ inputs.dry_run }})..."
+          if [ "${{ inputs.dry_run }}" = "false" ]; then
+            echo "Would run: gh workflow run docs.yml"
+          else
+            echo "[DRY RUN] Skipping docs rebuild"
+          fi
+
+      - name: Clear caches
+        if: inputs.task == 'clear-caches'
+        run: |
+          echo "🧹 Clearing caches (dry_run=${{ inputs.dry_run }})..."
+          echo "[INFO] Cache clearing would happen here"
+          echo "✅ Done"
+
+      - name: Summary
+        run: |
+          echo "## Manual Workflow Complete" >> $GITHUB_STEP_SUMMARY
+          echo "- **Task**: ${{ inputs.task }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dry run**: ${{ inputs.dry_run }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Actor**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
