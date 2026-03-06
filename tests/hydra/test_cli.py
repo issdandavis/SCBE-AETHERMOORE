@@ -106,3 +106,23 @@ def test_parse_lattice25d_options_accepts_query_and_glob():
     assert options["cell_size"] == 0.5
     assert options["query_intent"] == [0.7, 0.2, 0.1]
     assert options["query_top_k"] == 3
+
+
+def test_parse_lattice25d_options_accepts_quadtree_params():
+    options = _parse_lattice25d_options(
+        [
+            "--index",
+            "quadtree",
+            "--qt-capacity",
+            "12",
+            "--qt-z-var",
+            "0.04",
+            "--qt-extent",
+            "0.5",
+        ]
+    )
+    assert options is not None
+    assert options["index_mode"] == "quadtree"
+    assert options["qt_capacity"] == 12
+    assert options["qt_z_variance"] == 0.04
+    assert options["qt_extent"] == 0.5

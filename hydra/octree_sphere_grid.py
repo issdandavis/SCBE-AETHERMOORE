@@ -337,6 +337,286 @@ class CyclicBundle25D:
         return (math.cos(self.phase_rad), math.sin(self.phase_rad))
 
 
+@dataclass
+class QuadtreeEntry25D:
+    """Quadtree payload entry (2D position with implied z from phase)."""
+    bundle_id: str
+    x: float
+    y: float
+    z: float
+    phase_rad: float
+
+
+class QuadtreeNode25D:
+    """Adaptive quadtree node over [-1, 1] x [-1, 1] with 2.5D split trigger.
+
+    Split policy:
+      - node exceeds capacity
+      - z-variance (implied vertical spread) is above threshold
+      - node depth < max_depth
+    """
+
+    def __init__(
+        self,
+        bounds: Tuple[float, float, float, float],
+        depth: int,
+        max_depth: int,
+        capacity: int,
+        z_variance_threshold: float,
+    ):
+        self.bounds = bounds  # (min_x, min_y, max_x, max_y)
+        self.depth = depth
+        self.max_depth = max_depth
+        self.capacity = capacity
+        self.z_variance_threshold = z_variance_threshold
+        self.entries: List[QuadtreeEntry25D] = []
+        self.children: List[QuadtreeNode25D] = []
+
+    @property
+    def is_leaf(self) -> bool:
+        return len(self.children) == 0
+
+    def contains(self, x: float, y: float) -> bool:
+        min_x, min_y, max_x, max_y = self.bounds
+        return (min_x <= x <= max_x) and (min_y <= y <= max_y)
+
+    def intersects(self, query: Tuple[float, float, float, float]) -> bool:
+        qx0, qy0, qx1, qy1 = query
+        min_x, min_y, max_x, max_y = self.bounds
+        return not (qx1 < min_x or qx0 > max_x or qy1 < min_y or qy0 > max_y)
+
+    def _z_variance(self) -> float:
+        if len(self.entries) < 2:
+            return 0.0
+        values = [e.z for e in self.entries]
+        mean = sum(values) / len(values)
+        return sum((v - mean) ** 2 for v in values) / len(values)
+
+    def _subdivide(self) -> None:
+        if not self.is_leaf:
+            return
+        min_x, min_y, max_x, max_y = self.bounds
+        mid_x = (min_x + max_x) / 2.0
+        mid_y = (min_y + max_y) / 2.0
+        child_bounds = [
+            (min_x, min_y, mid_x, mid_y),
+            (mid_x, min_y, max_x, mid_y),
+            (min_x, mid_y, mid_x, max_y),
+            (mid_x, mid_y, max_x, max_y),
+        ]
+        self.children = [
+            QuadtreeNode25D(
+                bounds=b,
+                depth=self.depth + 1,
+                max_depth=self.max_depth,
+                capacity=self.capacity,
+                z_variance_threshold=self.z_variance_threshold,
+            )
+            for b in child_bounds
+        ]
+
+    def _try_push_to_children(self, entry: QuadtreeEntry25D) -> bool:
+        for child in self.children:
+            if child.contains(entry.x, entry.y):
+                child.insert(entry)
+                return True
+        return False
+
+    def insert(self, entry: QuadtreeEntry25D) -> bool:
+        if not self.contains(entry.x, entry.y):
+            return False
+        if not self.is_leaf:
+            if self._try_push_to_children(entry):
+                return True
+            self.entries.append(entry)
+            return True
+
+        self.entries.append(entry)
+        should_split = (
+            len(self.entries) > self.capacity
+            and self.depth < self.max_depth
+            and self._z_variance() >= self.z_variance_threshold
+        )
+        if not should_split:
+            return True
+
+        carry = list(self.entries)
+        self.entries = []
+        self._subdivide()
+        for item in carry:
+            if not self._try_push_to_children(item):
+                self.entries.append(item)
+        return True
+
+    def query_range(
+        self,
+        query: Tuple[float, float, float, float],
+        out: Optional[List[QuadtreeEntry25D]] = None,
+    ) -> List[QuadtreeEntry25D]:
+        if out is None:
+            out = []
+        if not self.intersects(query):
+            return out
+
+        qx0, qy0, qx1, qy1 = query
+        for e in self.entries:
+            if qx0 <= e.x <= qx1 and qy0 <= e.y <= qy1:
+                out.append(e)
+
+        for child in self.children:
+            child.query_range(query, out)
+        return out
+
+    def lod_mesh(self, out: Optional[List[Dict[str, Any]]] = None) -> List[Dict[str, Any]]:
+        """Return a lightweight LOD mesh view from leaf nodes."""
+        if out is None:
+            out = []
+        if self.is_leaf:
+            if self.entries:
+                avg_z = sum(e.z for e in self.entries) / len(self.entries)
+                out.append(
+                    {
+                        "bounds": list(self.bounds),
+                        "lod": self.depth,
+                        "point_count": len(self.entries),
+                        "height": avg_z,
+                    }
+                )
+            return out
+        for child in self.children:
+            child.lod_mesh(out)
+        return out
+
+    def node_count(self) -> int:
+        return 1 + sum(c.node_count() for c in self.children)
+
+    def leaf_count(self) -> int:
+        if self.is_leaf:
+            return 1
+        return sum(c.leaf_count() for c in self.children)
+
+    def max_depth_used(self) -> int:
+        if self.is_leaf:
+            return self.depth
+        return max(c.max_depth_used() for c in self.children)
+
+
+class AdaptiveQuadtree25D:
+    """Adaptive quadtree index for CyclicBundle25D records."""
+
+    def __init__(
+        self,
+        max_depth: int = 8,
+        capacity: int = 8,
+        z_variance_threshold: float = 0.01,
+    ):
+        if max_depth < 1:
+            raise ValueError("max_depth must be >= 1")
+        if capacity < 1:
+            raise ValueError("capacity must be >= 1")
+        if z_variance_threshold < 0:
+            raise ValueError("z_variance_threshold must be >= 0")
+
+        self.max_depth = max_depth
+        self.capacity = capacity
+        self.z_variance_threshold = z_variance_threshold
+        self.root = QuadtreeNode25D(
+            bounds=(-1.0, -1.0, 1.0, 1.0),
+            depth=0,
+            max_depth=max_depth,
+            capacity=capacity,
+            z_variance_threshold=z_variance_threshold,
+        )
+        self._entries: Dict[str, QuadtreeEntry25D] = {}
+
+    @staticmethod
+    def _z_from_phase(phase_rad: float) -> float:
+        return max(-0.99, min(0.99, math.sin(phase_rad) * 0.98))
+
+    def insert_bundle(self, bundle: CyclicBundle25D) -> None:
+        entry = QuadtreeEntry25D(
+            bundle_id=bundle.bundle_id,
+            x=bundle.x,
+            y=bundle.y,
+            z=self._z_from_phase(bundle.phase_rad),
+            phase_rad=bundle.phase_rad,
+        )
+        self._entries[bundle.bundle_id] = entry
+        self.root.insert(entry)
+
+    @staticmethod
+    def _window_segments(center: float, half: float) -> List[Tuple[float, float]]:
+        lo = center - half
+        hi = center + half
+        if lo >= -1.0 and hi <= 1.0:
+            return [(lo, hi)]
+        if lo < -1.0:
+            return [(-1.0, hi), (lo + 2.0, 1.0)]
+        if hi > 1.0:
+            return [(-1.0, hi - 2.0), (lo, 1.0)]
+        return [(-1.0, 1.0)]
+
+    def query_window(self, x: float, y: float, half_extent: float = 0.35) -> List[str]:
+        if half_extent <= 0:
+            return []
+        xw = toroidal_wrap(x)
+        yw = toroidal_wrap(y)
+        xs = self._window_segments(xw, half_extent)
+        ys = self._window_segments(yw, half_extent)
+
+        ids: Set[str] = set()
+        for x0, x1 in xs:
+            for y0, y1 in ys:
+                for entry in self.root.query_range((x0, y0, x1, y1)):
+                    ids.add(entry.bundle_id)
+        return sorted(ids)
+
+    def query_range(self, x0: float, y0: float, x1: float, y1: float) -> List[QuadtreeEntry25D]:
+        return self.root.query_range((x0, y0, x1, y1))
+
+    def lod_mesh(self) -> List[Dict[str, Any]]:
+        return self.root.lod_mesh()
+
+    def to_signed_octree(
+        self,
+        tree: SignedOctree,
+        bundle_lookup: Optional[Dict[str, CyclicBundle25D]] = None,
+    ) -> int:
+        """Project quadtree entries into a SignedOctree.
+
+        Returns number of inserted voxels.
+        """
+        count = 0
+        for entry in self._entries.values():
+            bundle = (bundle_lookup or {}).get(entry.bundle_id)
+            tree.insert(
+                x=entry.x,
+                y=entry.y,
+                z=entry.z,
+                tongue=(bundle.tongue if bundle else "KO"),
+                authority=(bundle.authority if bundle else "public"),
+                intent_vector=list(bundle.intent_vector) if bundle is not None else [0.0, 0.0, 0.0],
+                intent_label=(bundle.intent_label if bundle else entry.bundle_id),
+                payload={
+                    "_bundle_id": entry.bundle_id,
+                    "_phase_rad": entry.phase_rad,
+                    "_source": "quadtree25d",
+                },
+            )
+            count += 1
+        return count
+
+    def stats(self) -> Dict[str, Any]:
+        return {
+            "entry_count": len(self._entries),
+            "node_count": self.root.node_count(),
+            "leaf_count": self.root.leaf_count(),
+            "max_depth_used": self.root.max_depth_used(),
+            "capacity": self.capacity,
+            "z_variance_threshold": self.z_variance_threshold,
+        }
+
+
 class HyperbolicLattice25D:
     """2.5D hyperbolic index with cyclic flow and overlap-aware lattice bundles.
 
@@ -357,16 +637,31 @@ class HyperbolicLattice25D:
         max_depth: int = 6,
         chladni_mode: Tuple[int, int] = (3, 2),
         phase_weight: float = 0.35,
+        index_mode: str = "grid",
+        quadtree_capacity: int = 8,
+        quadtree_z_variance: float = 0.01,
+        quadtree_query_extent: float = 0.35,
     ):
         if not (0 < cell_size <= 2.0):
             raise ValueError("cell_size must be in (0, 2]")
         if phase_weight < 0:
             raise ValueError("phase_weight must be >= 0")
+        if index_mode not in {"grid", "quadtree", "hybrid"}:
+            raise ValueError("index_mode must be one of: grid, quadtree, hybrid")
 
         self.cell_size = cell_size
         self.phase_weight = phase_weight
+        self.index_mode = index_mode
+        self.quadtree_query_extent = max(0.01, float(quadtree_query_extent))
         self.grid_span = max(1, int(math.ceil(2.0 / cell_size)))
         self.octree = SignedOctree(max_depth=max_depth, chladni_mode=chladni_mode)
+        self.quadtree: Optional[AdaptiveQuadtree25D] = None
+        if index_mode in {"quadtree", "hybrid"}:
+            self.quadtree = AdaptiveQuadtree25D(
+                max_depth=max_depth + 2,
+                capacity=quadtree_capacity,
+                z_variance_threshold=quadtree_z_variance,
+            )
 
         self._cells: Dict[Tuple[int, int], List[CyclicBundle25D]] = {}
         self._bundles: Dict[str, CyclicBundle25D] = {}
@@ -451,6 +746,8 @@ class HyperbolicLattice25D:
         cell = self._cell_for(xw, yw)
         self._cells.setdefault(cell, []).append(bundle)
         self._bundles[bundle.bundle_id] = bundle
+        if self.quadtree is not None:
+            self.quadtree.insert_bundle(bundle)
 
         # 3D projection for octree interoperability; keep inside open unit ball.
         z = max(-0.99, min(0.99, math.sin(phase) * 0.98))
@@ -532,7 +829,17 @@ class HyperbolicLattice25D:
         )
 
         scored: List[Tuple[CyclicBundle25D, float]] = []
-        for b in self._bundles.values():
+        if self.quadtree is not None and self.index_mode in {"quadtree", "hybrid"}:
+            candidate_ids = self.quadtree.query_window(xw, yw, half_extent=self.quadtree_query_extent)
+            candidates = [self._bundles[cid] for cid in candidate_ids if cid in self._bundles]
+            if not candidates or self.index_mode == "hybrid" or len(candidates) < max(1, top_k):
+                # Blend quadtree-local and global search to preserve deterministic top_k behavior.
+                seen = {b.bundle_id for b in candidates}
+                candidates.extend([b for b in self._bundles.values() if b.bundle_id not in seen])
+        else:
+            candidates = list(self._bundles.values())
+
+        for b in candidates:
             scored.append((b, self.bundle_distance(query, b)))
         scored.sort(key=lambda item: item[1])
         return scored[:max(1, top_k)]
@@ -561,12 +868,21 @@ class HyperbolicLattice25D:
                 intent_label=b.intent_label or b.bundle_id,
                 payload={**b.payload, "_bundle_id": b.bundle_id, "_phase_rad": b.phase_rad},
             )
+        if self.quadtree is not None:
+            rebuilt_quadtree = AdaptiveQuadtree25D(
+                max_depth=self.quadtree.max_depth,
+                capacity=self.quadtree.capacity,
+                z_variance_threshold=self.quadtree.z_variance_threshold,
+            )
+            for b in self._bundles.values():
+                rebuilt_quadtree.insert_bundle(b)
+            self.quadtree = rebuilt_quadtree
         self.octree = rebuilt
 
     def stats(self) -> Dict[str, Any]:
         overlap = self.overlapping_cells()
         weights = [b.tongue_weight for b in self._bundles.values()]
-        return {
+        out = {
             "bundle_count": len(self._bundles),
             "occupied_cells": len(self._cells),
             "overlap_cells": len(overlap),
@@ -575,7 +891,27 @@ class HyperbolicLattice25D:
             "semantic_weight_sum": float(sum(weights)),
             "semantic_weight_avg": float(sum(weights) / len(weights)) if weights else 0.0,
             "octree_voxel_count": self.octree.stats().get("count", 0),
+            "index_mode": self.index_mode,
         }
+        if self.quadtree is not None:
+            out["quadtree"] = self.quadtree.stats()
+        return out
+
+    def quadtree_lod_mesh(self) -> List[Dict[str, Any]]:
+        if self.quadtree is None:
+            return []
+        return self.quadtree.lod_mesh()
+
+    def project_quadtree_to_octree(self) -> int:
+        if self.quadtree is None:
+            return 0
+        rebuilt = SignedOctree(
+            max_depth=self.octree.max_depth,
+            chladni_mode=self.octree.chladni_mode,
+        )
+        inserted = self.quadtree.to_signed_octree(rebuilt, bundle_lookup=self._bundles)
+        self.octree = rebuilt
+        return inserted
 
 
 class OctreeNode:
@@ -951,6 +1287,14 @@ INTEROP_MATRIX = {
             "go": "type HyperbolicLattice25D struct { Cells map[[2]int][]Bundle; PhaseWeight float64 }",
             "sql": "TABLE lattice_bundles(bundle_id, cell_x, cell_y, phase_rad, tongue, authority, intent_json)",
             "glsl": "vec3 p = vec3(xy, sin(phase)); // 2.5D projection into octree-compatible z",
+        },
+        "AdaptiveQuadtree25D": {
+            "python": "AdaptiveQuadtree25D with variance-triggered subdivision on z (phase-derived)",
+            "typescript": "class AdaptiveQuadtree25D { insertBundle/queryWindow/lodMesh }",
+            "rust": "struct AdaptiveQuadtree25D { root: QuadNode, cap: usize, z_var_threshold: f64 }",
+            "go": "type AdaptiveQuadtree25D struct { Root *QuadNode; Capacity int; ZVarThreshold float64 }",
+            "sql": "Materialized leaf tiles table (min_x, min_y, max_x, max_y, avg_z, lod, count)",
+            "glsl": "Use leaf tile LOD mesh as instanced quads with height=avg_z",
         },
         "MortonCode": {
             "python": "morton_encode_3d(x, y, z) -> int",
