@@ -68,6 +68,22 @@ def _packet_hash(packet: Dict[str, Any]) -> str:
     return hashlib.sha256(canonical.encode()).hexdigest()[:16]
 
 
+def _default_env(var_name: str, fallback: str) -> str:
+    """Resolve a non-empty default value from env var or fallback."""
+    raw = os.environ.get(var_name, "")
+    value = str(raw).strip()
+    return value or fallback
+
+
+def _coalesce_cli_value(value: Optional[str], env_var: str, fallback: str) -> str:
+    """Prefer explicit CLI value, then env var, then fallback."""
+    if value is not None:
+        cleaned = str(value).strip()
+        if cleaned:
+            return cleaned
+    return _default_env(env_var, fallback)
+
+
 # ── Emission ─────────────────────────────────────────────────────────
 
 def emit_packet(
@@ -396,11 +412,11 @@ def main():
 
     # emit
     emit_p = sub.add_parser("emit", help="Emit a cross-talk packet to all lanes")
-    emit_p.add_argument("--sender", required=True)
-    emit_p.add_argument("--recipient", required=True)
+    emit_p.add_argument("--sender", default="")
+    emit_p.add_argument("--recipient", default="")
     emit_p.add_argument("--intent", default="sync")
-    emit_p.add_argument("--task-id", required=True)
-    emit_p.add_argument("--summary", required=True)
+    emit_p.add_argument("--task-id", default="")
+    emit_p.add_argument("--summary", default="")
     emit_p.add_argument("--status", default="in_progress")
     emit_p.add_argument("--proof", nargs="*", default=[])
     emit_p.add_argument("--next-action", default="")
@@ -433,12 +449,16 @@ def main():
     args = parser.parse_args()
 
     if args.command == "emit":
+        sender = _coalesce_cli_value(args.sender, "SCBE_CROSSTALK_SENDER", "agent.codex")
+        recipient = _coalesce_cli_value(args.recipient, "SCBE_CROSSTALK_RECIPIENT", "agent.claude")
+        task_id = _coalesce_cli_value(args.task_id, "SCBE_CROSSTALK_TASK_ID", "NOTE")
+        summary = _coalesce_cli_value(args.summary, "SCBE_CROSSTALK_SUMMARY", "Cross-talk note.")
         result = emit_packet(
-            sender=args.sender,
-            recipient=args.recipient,
+            sender=sender,
+            recipient=recipient,
             intent=args.intent,
-            task_id=args.task_id,
-            summary=args.summary,
+            task_id=task_id,
+            summary=summary,
             status=args.status,
             proof=args.proof,
             next_action=args.next_action,

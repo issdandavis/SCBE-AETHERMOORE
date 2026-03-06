@@ -5,11 +5,12 @@
 const fs = require('fs');
 const path = require('path');
 
-// Try public/ first (current), fallback to src/aethercode/ (legacy)
-const SRC_PUBLIC = path.resolve(__dirname, '../../public');
-const SRC_LEGACY = path.resolve(__dirname, '../../src/aethercode');
-const SRC = fs.existsSync(path.join(SRC_PUBLIC, 'arena.html')) ? SRC_PUBLIC : SRC_LEGACY;
 const WWW = path.resolve(__dirname, '../www');
+const SOURCE_CANDIDATES = [
+  path.resolve(__dirname, '../../public'),
+  path.resolve(__dirname, '../../src/aethercode'),
+  WWW,
+];
 
 // API endpoint override for packaged builds.
 // If unset, app uses same-origin API.
@@ -106,15 +107,37 @@ function patchServiceWorker(content) {
   return content;
 }
 
+function resolveSourceRoot() {
+  for (const root of SOURCE_CANDIDATES) {
+    const hasManifest = fs.existsSync(path.join(root, 'manifest.json'));
+    const hasSw = fs.existsSync(path.join(root, 'sw.js'));
+    const hasMainHtml =
+      fs.existsSync(path.join(root, 'arena.html')) ||
+      fs.existsSync(path.join(root, 'app.html')) ||
+      fs.existsSync(path.join(root, 'index.html'));
+    if (hasManifest && hasSw && hasMainHtml) {
+      return root;
+    }
+  }
+  throw new Error(
+    `No valid PWA source root found. Checked: ${SOURCE_CANDIDATES.join(', ')}`
+  );
+}
+
 // ---- Main ----
 console.log('Copying AetherCode PWA assets to kindle-app/www/...');
 ensureDir(WWW);
 ensureDir(path.join(WWW, 'static', 'icons'));
+const SRC = resolveSourceRoot();
+const sourceLabel = path.relative(path.resolve(__dirname, '..'), SRC) || '.';
+console.log(`  source: ${sourceLabel}`);
 
 // 1. Copy and patch arena.html → index.html (arena.html is the primary app)
 const appSource = fs.existsSync(path.join(SRC, 'arena.html'))
   ? path.join(SRC, 'arena.html')
-  : path.join(SRC, 'app.html');
+  : fs.existsSync(path.join(SRC, 'app.html'))
+    ? path.join(SRC, 'app.html')
+    : path.join(SRC, 'index.html');
 const appHtml = fs.readFileSync(appSource, 'utf8');
 fs.writeFileSync(path.join(WWW, 'index.html'), patchAppHtml(appHtml));
 if (API_BASE) {
@@ -135,7 +158,7 @@ console.log('  patched: sw.js (paths → relative)');
 
 // 4. Copy arena.html if it exists
 const arenaPath = path.join(SRC, 'arena.html');
-if (fs.existsSync(arenaPath)) {
+if (fs.existsSync(arenaPath) && path.resolve(arenaPath) !== path.resolve(path.join(WWW, 'arena.html'))) {
   copyFile(arenaPath, path.join(WWW, 'arena.html'));
 }
 
@@ -143,10 +166,11 @@ if (fs.existsSync(arenaPath)) {
 const iconDir = path.join(SRC, 'static', 'icons');
 if (fs.existsSync(iconDir)) {
   for (const file of fs.readdirSync(iconDir)) {
-    copyFile(
-      path.join(iconDir, file),
-      path.join(WWW, 'static', 'icons', file)
-    );
+    const sourceIcon = path.join(iconDir, file);
+    const destIcon = path.join(WWW, 'static', 'icons', file);
+    if (path.resolve(sourceIcon) !== path.resolve(destIcon)) {
+      copyFile(sourceIcon, destIcon);
+    }
   }
 } else {
   console.log('  warn: no icons found at src/aethercode/static/icons/');
