@@ -1,0 +1,34 @@
+name: AI Issue Summary
+
+on:
+  issues:
+    types:
+      - opened
+
+jobs:
+  summarize:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      models: read
+    steps:
+      - name: Summarize issue with AI
+        uses: actions/ai-inference@v1
+        id: summary
+        with:
+          model: openai/gpt-4o-mini
+          system-prompt: |
+            You are a helpful assistant that analyzes GitHub issues for the SCBE-AETHERMOORE project — a post-quantum cryptographic AI system with a Sacred Tongue protocol, Spiralverse game engine, and multi-modal training pipeline.
+            Summarize the issue in 2-3 sentences. Identify: 1) the component affected (crypto, game, CI, API, docs, etc.), 2) severity (bug/enhancement/question), 3) suggested next steps.
+            Be concise and technical.
+          prompt: "Please summarize this GitHub issue:\n\nTitle: ${{ github.event.issue.title }}\n\nBody: ${{ github.event.issue.body }}"
+      - name: Comment with AI summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🤖 **AI Issue Summary**\n\n${{ steps.summary.outputs.response }}\n\n---\n*Generated automatically by the AI Issue Summary workflow*`
+            })
