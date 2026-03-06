@@ -1,0 +1,28 @@
+{
+  "id": "8fcc55ad1397db32",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "The Semantic Arrow of Time, Part I: From Eddington to Ethernet",
+  "content": "# The Semantic Arrow of Time, Part I: From Eddington to Ethernet\n\nAuthors: Paul Borrill\nPublished: 2026-03-02T04:40:53Z\n\nThis is the first of five papers comprising The Semantic Arrow of Time. The argument begins with a claim: computing's arrow of time is semantic, not thermodynamic. The direction in which meaning is preserved or destroyed across transactions is not a consequence of the second law but of design choices embedded in protocol architectures since Shannon's 1948 channel model. These choices encode the Forward-In-Time-Only (FITO) assumption -- the commitment that causation is irreversible, acyclic, and globally monotonic.\n  We trace this assumption from Eddington's 1927 coinage of \"the arrow of time,\" through the Boltzmann--Loschmidt debate, to contemporary philosophy of physics: Price's time-symmetric ontology, Smolin's temporal naturalism, Rovelli's relational quantum mechanics, and Roberts's analysis of time-reversal symmetry. We show that fundamental physics is time-symmetric at the microscopic level, that the thermodynamic arrow emerges from boundary conditions rather than fundamental law, and that recent demonstrations of indefinite causal order confirm nature admits correlations with no well-defined temporal ordering.\n  We then identify the category mistake (Ryle, 1949): computing inherited Newton's absolute background time -- via Shannon, Lamport, and the impossibility theorems -- and encoded it as a semantic primitive. The FITO assumption is not a law of nature but a design choice, and recognizing this dissolves apparent constraints that have shaped forty years of distributed systems theory. Subsequent papers develop the constructive alternative through link semantics, RDMA, transaction failures, and the Leibniz Bridge framework.",
+  "url": "http://arxiv.org/abs/2603.01440v1",
+  "timestamp": "2026-03-02T04:40:53Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "821148ef328f73fcf5660a20cd329af896c8e7f40c9b5157695bbc4876875f83",
+  "parent_hash": "1a7d0c08bd6b269fb63747ac1ac798efb1880fb20a727bdbdff0da5ad2a305f1",
+  "metadata": {
+    "authors": [
+      "Paul Borrill"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.01440v1"
+  }
+}

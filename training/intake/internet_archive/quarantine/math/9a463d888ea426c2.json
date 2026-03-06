@@ -1,0 +1,27 @@
+{
+  "id": "9a463d888ea426c2",
+  "source": "internet_archive",
+  "category": "quarantine/math",
+  "title": "Heegaard splittings, the virtually Haken conjecture and Property tau",
+  "content": "# Heegaard splittings, the virtually Haken conjecture and Property tau\n\nCreator: Marc Lackenby\nDate: 2005-09-08T00:00:00Z\nDownloads: 83\nSubjects: \n\nWe examine three key conjectures in 3-manifold theory: the virtually Haken conjecture, the positive virtual b_1 conjecture and the virtually fibred conjecture. We explore the interaction of these conjectures with the following seemingly unrelated areas: eigenvalues of the Laplacian, and Heegaard splittings. We first give a necessary and sufficient condition, in terms of spectral geometry, for a finitely presented group to have a finite index subgroup with infinite abelianisation. For negatively curved 3-manifolds, we show that this is equivalent to a statement about generalised Heegaard splittings. We also formulate a conjecture about the behaviour of Heegaard genus under finite covers which, together with a conjecture of Lubotzky and Sarnak about Property tau, would imply the virtually Haken conjecture for hyperbolic 3-manifolds. Along the way, we prove a number of unexpected theorems about 3-manifolds. For example, we show that for any closed 3-manifold that fibres over the circle with pseudo-Anosov monodromy, any cyclic cover dual to the fibre of sufficiently large degree has an irreducible, weakly reducible Heegaard splitting. Also, we establish lower and upper bounds on the Heegaard genus of the congruence covers of an arithmetic hyperbolic 3-manifold, which are linear in volume.",
+  "url": "https://archive.org/details/arxiv-math0205327",
+  "timestamp": "2026-03-06T02:38:47.918884",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "06a2de928681e2062634d0bd121c42bc3df133fc36b580c2f14b6290f085eedf",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "arxiv-math0205327",
+    "media_type": "texts",
+    "downloads": 83,
+    "subjects": []
+  }
+}

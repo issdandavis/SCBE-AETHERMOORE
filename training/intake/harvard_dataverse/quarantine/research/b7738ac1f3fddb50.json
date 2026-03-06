@@ -1,0 +1,36 @@
+{
+  "id": "b7738ac1f3fddb50",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Modular 3D-printable resolution phantom for magnetic resonance imaging",
+  "content": "# Modular 3D-printable resolution phantom for magnetic resonance imaging\n\nAuthors: M\u00fcller, Roland, Mildner, Toralf, Schlumm, Torsten, Patzig, Franz, M\u00f6ller, Harald E.\nPublished: 2020-10-16T09:47:25Z\nSubjects: Medicine, Health and Life Sciences, Physics\nDOI: doi:10.7910/DVN/PCQHP9\n\nModular CAD model (STL format) for 3D-printing of a resolution phantom for magnetic resonance imaging (MRI). The cylindrical phantom (inner diameter 154 mm, height 44 mm) contains a central cuboid (140 mm x 30 mm x 17 mm) with diagonally opposite slots (2-mm wide, 8-mm deep) at angles of +13\u00b0 and -13\u00b0 in the top and bottom plane, respectively. Additional rods are arranged in four rows (rod spacing 10 mm). Each row contains 11 rods, whose diameters increase from 1.0 to 3.5 mm in steps of 0.25 mm. Two air-filled hollow cylinders (inner diameters of 2 and 3 mm; wall thickness 1 mm) can be optionally added. Each cylinder is mounted with four M3 nylon screws and serves as potential source of magnetic field perturbation (e.g. when testing echo-planar imaging sequences). Another holder allows to add a 40-mm ping-pong ball for the same purpose. The top and bottom plates are secured each with 24 M4 nylon screws and sealed with a 158 mm x 3 mm O-ring (FPM 75). The M6 filling screw is sealed with a 6 mm x 2 mm O-ring (NBR 70). The phantom is typically filled with an aqueous solution of a paramagnetic ion. As an example from our own experiments, a solution of 61.9 mg MnCl2.4H2O per kg of water yielded intrinsic relaxation times of T1 = 430 ms and T2* = 27 ms at room temperature and 3 T. More data on relaxivities of paramagnetic aqueous solutions may be found in Ref. 1 1. K. Thangavel & E.\u00dc. Saritas. Aqueous paramagnetic solutions for MRI phantoms at 3 T: A detailed study on relaxivities. Turk. J. Elec. Eng. & Comp. Sci. 2017; 25: 2108\u20132121. doi:10.3906/elk-1602-123\n\nCitation: M\u00fcller, Roland; Mildner, Toralf; Schlumm, Torsten; Patzig, Franz; M\u00f6ller, Harald E., 2020, \"Modular 3D-printable resolution phantom for magnetic resonance imaging\", https://doi.org/10.7910/DVN/PCQHP9, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/PCQHP9",
+  "timestamp": "2026-03-06T04:18:45.403870",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "fb2be0018a29b41a6c33797714af035de9017188240bddd8685155aa4989ff3e",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/PCQHP9",
+    "subjects": [
+      "Medicine, Health and Life Sciences",
+      "Physics"
+    ],
+    "authors": [
+      "M\u00fcller, Roland",
+      "Mildner, Toralf",
+      "Schlumm, Torsten",
+      "Patzig, Franz",
+      "M\u00f6ller, Harald E."
+    ],
+    "file_count": 9
+  }
+}

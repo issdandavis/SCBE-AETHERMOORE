@@ -1,0 +1,38 @@
+{
+  "id": "a9db0c3c2e35993b",
+  "source": "internet_archive",
+  "category": "quarantine/math",
+  "title": "The Compiled Core Chen 2026",
+  "content": "# The Compiled Core Chen 2026\n\nCreator: Bo Chen\nDate: 2026-02-24T00:00:00Z\nDownloads: 0\nSubjects: organ procurement, OPO, CMS-3409-P, regulatory compliance, artificial intelligence\n\nThe capstone paper of the AORTA (Autonomous OPO Reasoning and Triage Architecture) research program, synthesizing four prior publications into a unified framework for regulatory AI alignment in organ procurement. This paper identifies the deepest structural insight of the research program: that the reasoning methodology developed across the series is not input to a language model, but source code for a deterministic system that can be compiled and executed without AI for the vast majority of operational queries. The architecture treats large language models as compilers\u2014offline tools that manufacture reasoning artifacts\u2014rather than as runtimes invoked on every query. A three-tier system dispatches queries to fully compiled deterministic lookup (70\u201380%), grammar-guided constrained generation (15\u201325%), or full compositional reasoning (5\u201310%). The compiled tier requires no LLM, no API, no GPU, and no internet connection; it runs on commodity hardware in microseconds with zero hallucinations. The framework includes a compositional grammar of eight typed reasoning primitives, a validated trace dataset organized in four layers, a safety automaton that enforces the Human Line by topology, and a nine-field audit-grade output contract. All specifications are released under open license for adoption by all 56 U.S. organ procurement organizations.",
+  "url": "https://archive.org/details/the-compiled-core-chen-2026",
+  "timestamp": "2026-03-06T03:59:09.837252",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "165dae009e77e60fcd2718f7b15bf6de40c84120f0906f57063dd4c933ac1ab5",
+  "parent_hash": "2da5f516980cbdb270092f148839fdae59e74398586f1932c987a4886a9193c0",
+  "metadata": {
+    "ia_identifier": "the-compiled-core-chen-2026",
+    "media_type": "texts",
+    "downloads": 0,
+    "subjects": [
+      "organ procurement",
+      "OPO",
+      "CMS-3409-P",
+      "regulatory compliance",
+      "artificial intelligence",
+      "AI alignment",
+      "reasoning traces",
+      "compositional grammar",
+      "compiled systems",
+      "deterministic infrastructure"
+    ]
+  }
+}

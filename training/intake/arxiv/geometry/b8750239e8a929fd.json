@@ -1,0 +1,29 @@
+{
+  "id": "b8750239e8a929fd",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Representation Geometry as a Diagnostic for Out-of-Distribution Robustness",
+  "content": "# Representation Geometry as a Diagnostic for Out-of-Distribution Robustness\n\nAuthors: Ali Zia, Farid Hazratian\nPublished: 2026-02-03T19:13:36Z\n\nRobust generalization under distribution shift remains difficult to monitor and optimize in the absence of target-domain labels, as models with similar in-distribution accuracy can exhibit markedly different out-of-distribution (OOD) performance. While prior work has focused on training-time regularization and low-order representation statistics, little is known about whether the geometric structure of learned embeddings provides reliable post-hoc signals of robustness. We propose a geometry-based diagnostic framework that constructs class-conditional mutual k-nearest-neighbor graphs from in-distribution embeddings and extracts two complementary invariants: a global spectral complexity proxy based on the reduced log-determinant of the normalized Laplacian, and a local smoothness measure based on Ollivier--Ricci curvature. Across multiple architectures, training regimes, and corruption benchmarks, we find that lower spectral complexity and higher mean curvature consistently predict stronger OOD accuracy across checkpoints. Controlled perturbations and topological analyses further show that these signals reflect meaningful representation structure rather than superficial embedding statistics. Our results demonstrate that representation geometry enables interpretable, label-free robustness diagnosis and supports reliable unsupervised checkpoint selection under distribution shift.",
+  "url": "http://arxiv.org/abs/2602.03951v2",
+  "timestamp": "2026-02-03T19:13:36Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "db0abcc0ea8115c64bbc6d4ff315e4bf242075021090b318e196165df7a6a1f7",
+  "parent_hash": "9f798c1d6fc4bf7c00b07f84c0cddd7d041e4e43626618329bcfac74f039106d",
+  "metadata": {
+    "authors": [
+      "Ali Zia",
+      "Farid Hazratian"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.03951v2"
+  }
+}

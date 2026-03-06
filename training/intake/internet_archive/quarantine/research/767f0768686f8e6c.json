@@ -1,0 +1,31 @@
+{
+  "id": "767f0768686f8e6c",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Equilibrium configurations for generalized Frenkel-Kontorova models on quasicrystals",
+  "content": "# Equilibrium configurations for generalized Frenkel-Kontorova models on quasicrystals\n\nCreator: Rodrigo Trevi\u00f1o\nDate: 2017-03-14T00:00:00Z\nDownloads: 37\nSubjects: Mathematical Physics, Dynamical Systems, Mathematics\n\nI study classes of generalized Frenkel-Kontorova models whose potentials are given by almost-periodic functions which are closely related to aperiodic Delone sets of finite local complexity. Since such Delone sets serve as good models for quasicrytals, this setup presents Frenkel-Kontorova models for the type of aperiodic crystals which have been discovered since Shechtman's discovery of quasicrystals. Here I consider models with configurations $u:\\mathbb{Z}^r \\rightarrow \\mathbb{R}^d$, where $d$ is the dimension of the quasicrystal, for any $r$ and $d$. The almost-periodic functions used for potentials are called pattern-equivariant and I show that if the interactions of the model satisfies a mild $C^2$ requirement, and if the potential satisfies a mild non-degeneracy assumption, then there exist equilibrium configurations of any prescribed rotation rotation number/vector/plane. The assumptions are general enough to satisfy the classical Frenkel-Kontorova models and its multidimensional analogues. The proof uses the idea of the anti-integrable limit.",
+  "url": "https://archive.org/details/arxiv-1703.04811",
+  "timestamp": "2026-03-06T04:17:45.776762",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "5abe6a39b931513191a35f1042188b0252133a63ca8a1ad288e87a29a603acf9",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "arxiv-1703.04811",
+    "media_type": "texts",
+    "downloads": 37,
+    "subjects": [
+      "Mathematical Physics",
+      "Dynamical Systems",
+      "Mathematics"
+    ]
+  }
+}

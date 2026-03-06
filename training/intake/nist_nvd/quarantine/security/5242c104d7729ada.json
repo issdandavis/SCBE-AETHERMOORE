@@ -1,0 +1,31 @@
+{
+  "id": "5242c104d7729ada",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2023-21507 \u2014 CVSS 4.4 (MEDIUM)",
+  "content": "# CVE-2023-21507\n\nCVSS Score: 4.4 (MEDIUM)\nPublished: 2023-05-04T21:15:11.150\nCWEs: CWE-125, CWE-125\n\nOut-of-bounds Read vulnerability while processing BC_TUI_CMD_SEND_RESOURCE_DATA_ARRAY command in bc_tui trustlet from Samsung Blockchain Keystore prior to version 1.3.12.1 allows local attacker to read arbitrary memory.\n\nReferences: https://security.samsungmobile.com/serviceWeb.smsb?year=2023&month=05, https://security.samsungmobile.com/serviceWeb.smsb?year=2023&month=05",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-21507",
+  "timestamp": "2026-03-06T02:41:52.057474",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "ef2d5accfbb701c61c5812ccf8afff610596a9052f639e715a423162b85d6a49",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2023-21507",
+    "cvss_score": 4.4,
+    "severity": "MEDIUM",
+    "cwes": [
+      "CWE-125",
+      "CWE-125"
+    ],
+    "published": "2023-05-04T21:15:11.150"
+  }
+}

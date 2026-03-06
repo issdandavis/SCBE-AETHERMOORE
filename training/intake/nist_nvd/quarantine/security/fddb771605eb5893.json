@@ -1,0 +1,30 @@
+{
+  "id": "fddb771605eb5893",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2005-4364 \u2014 CVSS 5.8 (UNKNOWN)",
+  "content": "# CVE-2005-4364\n\nCVSS Score: 5.8 (UNKNOWN)\nPublished: 2005-12-20T01:03:00.000\nCWEs: NVD-CWE-Other\n\nCross-site scripting (XSS) vulnerability in index.cfm in Hot Banana Web Content Management Suite 5.3 allows remote attackers to inject arbitrary web script or HTML via the keywords parameter.\n\nReferences: http://pridels0.blogspot.com/2005/12/hot-banana-xss-vuln.html, http://secunia.com/advisories/18126, http://www.osvdb.org/21786",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2005-4364",
+  "timestamp": "2026-03-06T04:18:29.314767",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "143c4cbe58fc700837884321a978bd860169fa563804aed3c6d551e12992c35a",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2005-4364",
+    "cvss_score": 5.8,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-Other"
+    ],
+    "published": "2005-12-20T01:03:00.000"
+  }
+}

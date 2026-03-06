@@ -1,0 +1,30 @@
+{
+  "id": "26f99f9c82840ca5",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2012-0549 \u2014 CVSS 7.5 (UNKNOWN)",
+  "content": "# CVE-2012-0549\n\nCVSS Score: 7.5 (UNKNOWN)\nPublished: 2012-05-03T18:55:01.513\nCWEs: NVD-CWE-noinfo\n\nUnspecified vulnerability in the Oracle AutoVue Office component in Oracle Supply Chain Products Suite 20.1.1 allows remote attackers to affect confidentiality, integrity, and availability, related to Desktop API.\n\nReferences: http://secunia.com/advisories/48875, http://www.mandriva.com/security/advisories?name=MDVSA-2013:150, http://www.oracle.com/technetwork/topics/security/cpuapr2012-366314.html",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2012-0549",
+  "timestamp": "2026-03-06T02:41:59.350960",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "3bd6c4b8d99bb184464c40f98d042f6e6686a6ab4ef0085d7c6692d3572e7b98",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2012-0549",
+    "cvss_score": 7.5,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-noinfo"
+    ],
+    "published": "2012-05-03T18:55:01.513"
+  }
+}

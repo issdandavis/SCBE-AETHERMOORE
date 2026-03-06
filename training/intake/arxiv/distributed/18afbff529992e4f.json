@@ -1,0 +1,32 @@
+{
+  "id": "18afbff529992e4f",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "Undecided State Dynamics with Many Opinions",
+  "content": "# Undecided State Dynamics with Many Opinions\n\nAuthors: Colin Cooper, Frederik Mallmann-Trenn, Tomasz Radzik, Nobutaka Shimizu, Takeharu Shiraga\nPublished: 2026-03-03T06:04:15Z\n\nWe study the Undecided-State Dynamics (USD), a fundamental consensus process in which each vertex holds one of $k$ decided opinions or the undecided state. We consider both the gossip model and the population protocol model. Prior work established tight bounds on the consensus time of this process only for the regime $k = O(\\sqrt{n}/(\\log n)^2)$ (for the population protocol model) and $k = O((n/\\log n)^{1/3})$ (for the gossip model), often under restrictive assumptions on the initial configuration.\n  In this paper, we obtain the first consensus-time guarantees for USD that hold for \\emph{arbitrary} $2\\le k\\le n$ and for \\emph{arbitrary} initial configurations in both the gossip model and the population protocol model. In the gossip model, USD reaches consensus within $\\widetilde O(\\min\\{k,\\sqrt n\\})$ synchronous rounds with probability $1-p_{\\bot}-n^{-c}$, where $p_{\\bot}$ is the gossip-specific probability of collapsing to the all-undecided state in the first round. In the population protocol model, USD reaches consensus within $\\widetilde O(\\min\\{kn,n^{3/2}\\})$ asynchronous interactions with high probability. We also present lower bounds that match the upper bounds up to polylogarithmic factors for a specific initial configuration and show that our upper bounds are essentially optimal.",
+  "url": "http://arxiv.org/abs/2603.02636v1",
+  "timestamp": "2026-03-03T06:04:15Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "c656947e15485a8734f12c07f324978f2fdb08698ca7d83fbb90028c46e899a6",
+  "parent_hash": "f1edb7db1d100a74869f31a8aa476a9b6c21479e0a9b5560b483ec2a88e337bd",
+  "metadata": {
+    "authors": [
+      "Colin Cooper",
+      "Frederik Mallmann-Trenn",
+      "Tomasz Radzik",
+      "Nobutaka Shimizu",
+      "Takeharu Shiraga"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.02636v1"
+  }
+}

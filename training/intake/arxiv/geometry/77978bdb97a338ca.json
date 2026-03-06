@@ -1,0 +1,31 @@
+{
+  "id": "77978bdb97a338ca",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Counterfactual Explanations on Robust Perceptual Geodesics",
+  "content": "# Counterfactual Explanations on Robust Perceptual Geodesics\n\nAuthors: Eslam Zaher, Maciej Trzaskowski, Quan Nguyen, Fred Roosta\nPublished: 2026-01-26T16:52:54Z\n\nLatent-space optimization methods for counterfactual explanations - framed as minimal semantic perturbations that change model predictions - inherit the ambiguity of Wachter et al.'s objective: the choice of distance metric dictates whether perturbations are meaningful or adversarial. Existing approaches adopt flat or misaligned geometries, leading to off-manifold artifacts, semantic drift, or adversarial collapse. We introduce Perceptual Counterfactual Geodesics (PCG), a method that constructs counterfactuals by tracing geodesics under a perceptually Riemannian metric induced from robust vision features. This geometry aligns with human perception and penalizes brittle directions, enabling smooth, on-manifold, semantically valid transitions. Experiments on three vision datasets show that PCG outperforms baselines and reveals failure modes hidden under standard metrics.",
+  "url": "http://arxiv.org/abs/2601.18678v2",
+  "timestamp": "2026-01-26T16:52:54Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "03ff55123203b4340dbd24885039b33f82a75c719e2c44a9ec3079c1d99657b0",
+  "parent_hash": "dce061f986abd94651a9aaafa9c4ace896eaad639ed1245b5fd54db395b5cd79",
+  "metadata": {
+    "authors": [
+      "Eslam Zaher",
+      "Maciej Trzaskowski",
+      "Quan Nguyen",
+      "Fred Roosta"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2601.18678v2"
+  }
+}

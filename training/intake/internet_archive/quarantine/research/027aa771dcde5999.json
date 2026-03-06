@@ -1,0 +1,31 @@
+{
+  "id": "027aa771dcde5999",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "A short guide to pure point diffraction in cut-and-project sets",
+  "content": "# A short guide to pure point diffraction in cut-and-project sets\n\nCreator: Christoph Richard, Nicolae Strungaru\nDate: 2016-06-28T00:00:00Z\nDownloads: 31\nSubjects: Spectral Theory, Mathematical Physics, Mathematics\n\nWe briefly review the diffraction of quasicrystals and then give an elementary alternative proof of the diffraction formula for regular cut-and-project sets, which is based on Bochner's theorem from Fourier analysis. This clarifies a common view that the diffraction of a quasicrystal is determined by the diffraction of its underlying lattice. To illustrate our approach, we will also treat a number of well-known explicitly solvable examples.",
+  "url": "https://archive.org/details/arxiv-1606.08831",
+  "timestamp": "2026-03-06T04:17:45.776782",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "70deed763938b58596360f8dcd060deb3c7c1d81068d7f6e5dfa89684282b94e",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "arxiv-1606.08831",
+    "media_type": "texts",
+    "downloads": 31,
+    "subjects": [
+      "Spectral Theory",
+      "Mathematical Physics",
+      "Mathematics"
+    ]
+  }
+}

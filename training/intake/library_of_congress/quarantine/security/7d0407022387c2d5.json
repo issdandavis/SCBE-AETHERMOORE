@@ -1,0 +1,35 @@
+{
+  "id": "7d0407022387c2d5",
+  "source": "library_of_congress",
+  "category": "quarantine/security",
+  "title": "Nettowa\u0304ku sekyuriti = Network security",
+  "content": "# Nettowa\u0304ku sekyuriti = Network security\n\nContributors: seki, yoshiaki, takahashi, osamu\nDate: 2017\nSubjects: cryptography, security measures, safety measures, computer networks, internet\n\nIncludes bibliographical references and indexes.",
+  "url": "//lccn.loc.gov/2018421423",
+  "timestamp": "2026-03-06T02:38:19.805228",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "ec15a2422d22ce9ccc11dba868c3d6b4af956c5cac2a3e671e1b05885c2db550",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "cryptography",
+      "security measures",
+      "safety measures",
+      "computer networks",
+      "internet"
+    ],
+    "dates": "2017",
+    "original_format": [
+      "book"
+    ]
+  }
+}

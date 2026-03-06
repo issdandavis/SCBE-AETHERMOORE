@@ -1,0 +1,38 @@
+{
+  "id": "990722b082a67ce7",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "Leveraging LLM Parametric Knowledge for Fact Checking without Retrieval",
+  "content": "# Leveraging LLM Parametric Knowledge for Fact Checking without Retrieval\n\nAuthors: Artem Vazhentsev, Maria Marina, Daniil Moskovskiy, Sergey Pletenev, Mikhail Seleznyov, Mikhail Salnikov, Elena Tutubalina, Vasily Konovalov, Irina Nikishina, Alexander Panchenko, Viktor Moskvoretskii\nPublished: 2026-03-05T18:42:51Z\n\nTrustworthiness is a core research challenge for agentic AI systems built on Large Language Models (LLMs). To enhance trust, natural language claims from diverse sources, including human-written text, web content, and model outputs, are commonly checked for factuality by retrieving external knowledge and using an LLM to verify the faithfulness of claims to the retrieved evidence. As a result, such methods are constrained by retrieval errors and external data availability, while leaving the models intrinsic fact-verification capabilities largely unused. We propose the task of fact-checking without retrieval, focusing on the verification of arbitrary natural language claims, independent of their source. To study this setting, we introduce a comprehensive evaluation framework focused on generalization, testing robustness to (i) long-tail knowledge, (ii) variation in claim sources, (iii) multilinguality, and (iv) long-form generation. Across 9 datasets, 18 methods and 3 models, our experiments indicate that logit-based approaches often underperform compared to those that leverage internal model representations. Building on this finding, we introduce INTRA, a method that exploits interactions between internal representations and achieves state-of-the-art performance with strong generalization. More broadly, our work establishes fact-checking without retrieval as a promising research direction that can complement retrieval-based frameworks, improve scalability, and enable the use of such systems as reward signals during training or as components integrated into the generation process.",
+  "url": "http://arxiv.org/abs/2603.05471v1",
+  "timestamp": "2026-03-05T18:42:51Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "0013c05ff2120dae59555d8750dff329e795eaee94ee5c9275261ba2ddc3052a",
+  "parent_hash": "50eed435c8364fe02653d2b2d837c0981b3ddaab225ed4d41bdb23539e7c1748",
+  "metadata": {
+    "authors": [
+      "Artem Vazhentsev",
+      "Maria Marina",
+      "Daniil Moskovskiy",
+      "Sergey Pletenev",
+      "Mikhail Seleznyov",
+      "Mikhail Salnikov",
+      "Elena Tutubalina",
+      "Vasily Konovalov",
+      "Irina Nikishina",
+      "Alexander Panchenko",
+      "Viktor Moskvoretskii"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.05471v1"
+  }
+}

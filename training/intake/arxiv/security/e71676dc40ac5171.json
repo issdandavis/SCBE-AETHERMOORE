@@ -1,0 +1,36 @@
+{
+  "id": "e71676dc40ac5171",
+  "source": "arxiv",
+  "category": "security",
+  "title": "Robust Single-message Shuffle Differential Privacy Protocol for Accurate Distribution Estimation",
+  "content": "# Robust Single-message Shuffle Differential Privacy Protocol for Accurate Distribution Estimation\n\nAuthors: Xiaoguang Li, Hanyi Wang, Yaowei Huang, Jungang Yang, Qingqing Ye, Haonan Yan, Ke Pan, Zhe Sun, Hui Li\nPublished: 2026-03-05T11:40:26Z\n\nShuffler-based differential privacy (shuffle-DP) is a privacy paradigm providing high utility by involving a shuffler to permute noisy report from users. Existing shuffle-DP protocols mainly focus on the design of shuffler-based categorical frequency oracle (SCFO) for frequency estimation on categorical data. However, numerical data is a more prevalent type and many real-world applications depend on the estimation of data distribution with ordinal nature. In this paper, we study the distribution estimation under pure shuffle model, which is a prevalent shuffle-DP framework without strong security assumptions. We initially attempt to transplant existing SCFOs and the na\u00efve distribution recovery technique to this task, and demonstrate that these baseline protocols cannot simultaneously achieve outstanding performance in three metrics: 1) utility, 2) message complexity; and 3) robustness to data poisoning attacks. Therefore, we further propose a novel single-message \\textit{adaptive shuffler-based piecewise} (ASP) protocol with high utility and robustness. In ASP, we first develop a randomizer by parameter optimization using our proposed tighter bound of mutual information. We also design an \\textit{Expectation Maximization with Adaptive Smoothing} (EMAS) algorithm to accurately recover distribution with enhanced robustness. To quantify robustness, we propose a new evaluation framework to examine robustness under different attack targets, enabling us to comprehensively understand the protocol resilience under various adversarial scenarios. Extensive experiments demonstrate that ASP outperforms baseline protocols in all three metrics. Especially under small $\u03b5$ values, ASP achieves an order of magnitude improvement in utility with minimal message complexity, and exhibits over threefold robustness compared to baseline methods.",
+  "url": "http://arxiv.org/abs/2603.05073v1",
+  "timestamp": "2026-03-05T11:40:26Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "a3f3b16f65d7c9c4a30bc1ba9ad4d77ad0f8ad5c0dcdf325960093a4a38146ad",
+  "parent_hash": "bb5b8071f2e3b4f202fc690c8ffed73c9ce3e8adf89829a617798604da086f8e",
+  "metadata": {
+    "authors": [
+      "Xiaoguang Li",
+      "Hanyi Wang",
+      "Yaowei Huang",
+      "Jungang Yang",
+      "Qingqing Ye",
+      "Haonan Yan",
+      "Ke Pan",
+      "Zhe Sun",
+      "Hui Li"
+    ],
+    "arxiv_category": "cs.CR",
+    "arxiv_id": "2603.05073v1"
+  }
+}

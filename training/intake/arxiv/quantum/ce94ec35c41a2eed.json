@@ -1,0 +1,39 @@
+{
+  "id": "ce94ec35c41a2eed",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Simultaneous anti-bunched and super-bunched photons from a GaAs Quantum dot in a dielectric metasurface",
+  "content": "# Simultaneous anti-bunched and super-bunched photons from a GaAs Quantum dot in a dielectric metasurface\n\nAuthors: Sanghyeok Park, Oleg Mitrofanov, Kusal M. Abeywickrama, Samuel Prescott, Jaeyeon Yu, Stephanie C Malek, Hyunseung Jung, Emma Renteria, Sadhvikas Addamane, Alisa Javadi, Igal Brener, Prasad P Iyer\nPublished: 2026-03-03T17:45:36Z\n\nSemiconductor quantum dots host a rich manifold of excitonic complexes, including neutral excitons that emit anti-bunched single photons and charged exciton complexes capable of producing super-bunched photons via cascade emission. Accessing both emission regimes from a single emitter would open routes to novel quantum protocols, including advanced quantum imaging. In practice, however, emission from charged exciton complexes is intrinsically weak, often orders of magnitude dimmer than neutral excitons, placing simultaneous dual-mode operation out of reach. Here, we overcome this limitation by embedding the quantum dot in a dielectric Mie-resonant metasurface that provides order-of-magnitude photoluminescence enhancement across both neutral and charged exciton transitions of a single GaAs quantum dot. Under identical non-resonant pumping conditions, the emission from the neutral exciton yields anti-bunched emission ($g^{(2)}(0) < 0.5$) and the emission from positively charged exciton complexes shows super-bunched emission ($g^{(2)}(0) > 3.5$) with comparable count rates (~12 kHz). Crucially, super-bunching emerges only when charged exciton emission spectrally overlaps with the Mie resonances and vanishes in un-patterned slabs, demonstrating that photonic engineering, is essential for accessing these weak quantum light states. These results demonstrate a scalable, position-tolerant platform for harnessing the full excitonic structure of solid-state emitters.",
+  "url": "http://arxiv.org/abs/2603.03186v1",
+  "timestamp": "2026-03-03T17:45:36Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "63d560c63ad4b74adbc9cbf5a8cf6e0b3bad74bf10ed29fad2e65b0b86cae98d",
+  "parent_hash": "58e3d4924725797828e8f18aeb4b43ba18311adfdbfef38caf68e023f4262e3f",
+  "metadata": {
+    "authors": [
+      "Sanghyeok Park",
+      "Oleg Mitrofanov",
+      "Kusal M. Abeywickrama",
+      "Samuel Prescott",
+      "Jaeyeon Yu",
+      "Stephanie C Malek",
+      "Hyunseung Jung",
+      "Emma Renteria",
+      "Sadhvikas Addamane",
+      "Alisa Javadi",
+      "Igal Brener",
+      "Prasad P Iyer"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.03186v1"
+  }
+}

@@ -44,6 +44,7 @@ Linear Threshold:           38.7%
 - **SCBE Kernel Spec (Canonical):** `SPEC.md`
 - **Langues Weighting System (Layer 3 + 6):** `docs/LANGUES_WEIGHTING_SYSTEM.md`
 - **HYDRA Orchestration (Execution Plane):** `docs/hydra/ARCHITECTURE.md`
+- **HYDRA CLI User Guide:** `docs/HYDRA_CLI_USER_GUIDE.md`
 - **Concept Glossary (Indexable Terms):** `CONCEPTS.md`
 - **Research Drafts (Non-Canonical):** `docs/research/README.md`
 

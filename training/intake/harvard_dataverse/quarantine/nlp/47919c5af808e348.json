@@ -1,0 +1,31 @@
+{
+  "id": "47919c5af808e348",
+  "source": "harvard_dataverse",
+  "category": "quarantine/nlp",
+  "title": "Replication data for \"Economic uncertainty and natural language processing; The case of Russia\"",
+  "content": "# Replication data for \"Economic uncertainty and natural language processing; The case of Russia\"\n\nAuthors: Rybinski, Krzysztof\nPublished: 2022-03-18T11:58:48Z\nSubjects: Social Sciences\nDOI: doi:10.7910/DVN/XAMFQK\n\nThe paper proposes a method of constructing text-based country-specific measures for economic policy uncertainty. To avoid problems of translation and human validation costs, we apply natural language processing and sentiment analysis to construct such measures for Russia. We compare our measure with that developed earlier using direct translations from English and human validation. In this comparison, our measure does equally well at evaluating the uncertainty related to key events that affected Russia between 1994 and 2018 and performs better at detecting the effects of uncertainty in Russia\u2019s industrial production. Data used to construct uncertainty indexes We have constructed the EPU using data from four daily newspapers available electronically, which are : 1. Kommersant (Oct 1992 \u2013 Feb 2018), 579 997 articles 2. Moskovskiy Komsomolets (Jan 2005 \u2013 Feb 2018), 143 758 articles 3. Novaya Gazeta (Feb 2004 \u2013 Feb 2018), 63 884 articles 4. Vedomosti (Dec 2003 \u2013 Feb 2018), 342 309 articles These newspapers represent a good spectrum of the newspapers aimed at different categories of readers. Kommersant is a daily of broad circulation that is primarily but loosely associated with information and news on business and commerce for a wide group of readers. According to https://www.kommersant.ru/about/kommersant, 23 January 2020, its daily circulation is around 100,000 \u2014 110,000 copies. Moskovskiy Komsomolets is a popular newspaper addressed at a general audience with a print circulation of around 700,000 copies, according to https://ria.ru/20091211/198562973.html. Vedomosti is a business daily aimed at students and professionals, with quite limited circulation. According to the Russian Wikipedia page https://ru.wikipedia.org/wiki/\u0432\u0435\u0434\u043e\u043c\u043e\u0441\u0442\u0438, its daily circulation is 75,000 copies. Novaya Gazeta is regarded as relatively independent and sometimes critical towards the Russian government. It is not a proper daily, as it has been published in 2019 three times a week. Its reported circulation in August 2009 was 104,700 (https://web.archive.org/web/20090822153334/http://www.pressaudit.ru/registry ). There are four csv files, one for each newspaper, named *-sent2.csv with the following data: - date - article's number of words in economy category - number of words in policy category - number of words in uncertainty category - document id - number of the LDA topic (15 latent topics) - name of the LDA topic (15 latent topics) - number of the LDA topic (30 topics, 20 for Kommersant) - name of the LDA topic (30 topics, 20 for Kommersant) - *20/50 - article's number of words in word2vec dictionary in categories uncertainty, policy and economy, 20 or 50 words with smallest cosine distance - pos/neg/sent - percentage of words with positive/negative inclination and sent=pos-neg. - 1 for standard sentiment lexicons, 2 for Covid-augmented lexicons Uncertainty indexes and macroeconomic data Data description File U_data: data for different uncertainty indices Symbols are as \n\nCitation: Rybinski, Krzysztof, 2022, \"Replication data for \"Economic uncertainty and natural language processing; The case of Russia\"\", https://doi.org/10.7910/DVN/XAMFQK, Harvard Dataverse, V2, UNF:6:mXVUaNRd7ALrUTonuChIEQ== [fileUNF]",
+  "url": "https://doi.org/10.7910/DVN/XAMFQK",
+  "timestamp": "2026-03-06T02:42:20.598390",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "078ced5452e433132ba52704b57ba87e78910b447a685116e6fa56d1abad2639",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/XAMFQK",
+    "subjects": [
+      "Social Sciences"
+    ],
+    "authors": [
+      "Rybinski, Krzysztof"
+    ],
+    "file_count": 61
+  }
+}

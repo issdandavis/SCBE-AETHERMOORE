@@ -1,0 +1,31 @@
+{
+  "id": "e35590e8799807d4",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Riesz bases, Meyer's quasicrystals, and bounded remainder sets",
+  "content": "# Riesz bases, Meyer's quasicrystals, and bounded remainder sets\n\nCreator: Sigrid Grepstad, Nir Lev\nDate: 2016-02-01T00:00:00Z\nDownloads: 31\nSubjects: Classical Analysis and ODEs, Functional Analysis, Mathematics\n\nWe consider systems of exponentials with frequencies belonging to simple quasicrystals in $\\mathbb{R}^d$. We ask if there exist domains $S$ in $\\mathbb{R}^d$ which admit such a system as a Riesz basis for the space $L^2(S)$. We prove that the answer depends on an arithmetical condition on the quasicrystal. The proof is based on the connection of the problem to the discrepancy of multi-dimensional irrational rotations, and specifically, to the theory of bounded remainder sets. In particular it is shown that any bounded remainder set admits a Riesz basis of exponentials. This extends to several dimensions (and to the non-periodic setting) the results obtained earlier in dimension one.",
+  "url": "https://archive.org/details/arxiv-1602.00495",
+  "timestamp": "2026-03-06T04:17:45.776672",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "25c567e9bfe205a751d62ac3261db1a6c09081b816ade295be5622036356c5c3",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "arxiv-1602.00495",
+    "media_type": "texts",
+    "downloads": 31,
+    "subjects": [
+      "Classical Analysis and ODEs",
+      "Functional Analysis",
+      "Mathematics"
+    ]
+  }
+}

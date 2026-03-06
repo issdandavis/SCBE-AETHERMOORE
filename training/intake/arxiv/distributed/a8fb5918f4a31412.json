@@ -1,0 +1,29 @@
+{
+  "id": "a8fb5918f4a31412",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "Leveraging Structural Knowledge for Solving Election in Anonymous Networks with Shared Randomness",
+  "content": "# Leveraging Structural Knowledge for Solving Election in Anonymous Networks with Shared Randomness\n\nAuthors: J\u00e9r\u00e9mie Chalopin, Emmanuel Godard\nPublished: 2026-03-05T12:44:24Z\n\nWe study the classical Election problem in anonymous net- works, where solutions can rely on the use of random bits, which may be either shared or unshared among nodes. We provide a complete char- acterization of the conditions under which a randomized Election algo- rithm exists, for arbitrary structural knowledge. Our analysis considers both Las Vegas and Monte Carlo randomized algorithms, under the as- sumptions of shared and unshared randomness. In our setting, random sources are considered shared if the output bits are identical across spe- cific subsets of nodes. The algorithms and impossibility proofs are extensions of those of [5] for the deterministic setting. Our results are a complete generalization of those from [8]. Moreover, as applications, we consider many specific knowledge: no knowledge, a bound on the size, a bound on the number of nodes sharing a source, the size, or the full topology of the network. For each of them, we show how the general characterizations apply, showing they actually correspond to classes of structural knowledge. We also de- scribe also how randomized Election algorithms from the literature fits in this landscape. We therefore provide a comprehensive picture illustrating how knowledge influences the computability of the Election problem in arbitrary anonymous graphs with shared randomness.",
+  "url": "http://arxiv.org/abs/2603.05118v1",
+  "timestamp": "2026-03-05T12:44:24Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "b07932a703fce8312f92ae15b2abeec6254ca8462c581bdd9a8931e165b1e9ea",
+  "parent_hash": "ef084413b73baf73e131ac408b62d46f2e8e72ef403e7211140fdb43e7fe8f22",
+  "metadata": {
+    "authors": [
+      "J\u00e9r\u00e9mie Chalopin",
+      "Emmanuel Godard"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.05118v1"
+  }
+}

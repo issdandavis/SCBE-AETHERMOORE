@@ -1,0 +1,36 @@
+{
+  "id": "0d6444286c2a5914",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Replication Data for: Short paper: DeFi Deception\u2014Uncovering the prevalence of rugpulls in cryptocurrency projects",
+  "content": "# Replication Data for: Short paper: DeFi Deception\u2014Uncovering the prevalence of rugpulls in cryptocurrency projects\n\nAuthors: Agarwal, Sharad, Atondo Siu, Gilberto, Ordekian, Marilyne, Hutchings, Alice, Mariconti, Enrico\nPublished: 2023-03-24T13:41:49Z\nSubjects: Computer and Information Science\nDOI: doi:10.7910/DVN/SMGMW8\n\nDeFi has attracted legitimate investors and scammers alike. The paper presents an empirical investigation into the prevalence of rugpulls, a scam where cryptocurrency project developers exit without fully delivering and leave investors in the wind. Using forum data, 101 rug- pulls from 6 different types of DeFi services are documented. ICOs form the majority of the rugpulls, most of which were active for less than six months before scamming out. ICOs rugpulled in 2021 were active for a much longer time than those that were rugpulled later on, perhaps pointing to new entrants intending to pull the rug. Through qualitative thematic analysis, we discover that these schemes primarily use authoritative and financial lures at the announcement stage of the project to mimic legitimate projects.\n\nCitation: Agarwal, Sharad; Atondo Siu, Gilberto; Ordekian, Marilyne; Hutchings, Alice; Mariconti, Enrico; Vasek, Marie, 2023, \"Replication Data for: Short paper: DeFi Deception\u2014Uncovering the prevalence of rugpulls in cryptocurrency projects\", https://doi.org/10.7910/DVN/SMGMW8, Harvard Dataverse, V1, UNF:6:jPc0gOJNckJ2XMvhck6g+w== [fileUNF]",
+  "url": "https://doi.org/10.7910/DVN/SMGMW8",
+  "timestamp": "2026-03-06T02:42:03.535737",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "055f09982d5af640864748d097c3e03eac4f0c1967f2c235b85af9ed48214937",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/SMGMW8",
+    "subjects": [
+      "Computer and Information Science"
+    ],
+    "authors": [
+      "Agarwal, Sharad",
+      "Atondo Siu, Gilberto",
+      "Ordekian, Marilyne",
+      "Hutchings, Alice",
+      "Mariconti, Enrico",
+      "Vasek, Marie"
+    ],
+    "file_count": 7
+  }
+}

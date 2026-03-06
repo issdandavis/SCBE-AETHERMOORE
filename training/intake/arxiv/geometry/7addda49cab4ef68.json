@@ -1,0 +1,30 @@
+{
+  "id": "7addda49cab4ef68",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "A compensated compactness theorem for pseudodifferential operators on vector bundles",
+  "content": "# A compensated compactness theorem for pseudodifferential operators on vector bundles\n\nAuthors: Siran Li, Xiangxiang Su, Yuantu Zhu\nPublished: 2026-02-22T07:18:20Z\n\nWe establish a compensated compactness theorem in the microlocal and geometric analytic framework. For a weakly $L^2_{\\rm loc}$-convergent sequence of sections of a vector bundle over a semi-Riemannian manifold whose image under a pseudo-differential operator $\\mathscr{A}$ of order $s>0$ is precompact in $H^{-s}_{\\rm loc}$, we show that a quadratic form $Q$ acting on this sequence converges in the distributional sense, provided that $Q$ vanishes on the operator cone of $\\mathscr{A}$. This extends the classical Murat--Tartar theory of compensated compactness from constant-coefficient first-order differential constraints on Euclidean spaces to variable-coefficient pseudo-differential constraints of arbitrary order on semi-Riemannian manifolds.",
+  "url": "http://arxiv.org/abs/2602.19078v1",
+  "timestamp": "2026-02-22T07:18:20Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "0c3f42f7e3f5eb3c50ffc3d189e6baadb4b3462c04593a13bdf57c1fb2a5a50d",
+  "parent_hash": "518ff8a08ddf44fda816be68c74ef8eb9eb823ff155caba7e13dd42a6e5ab722",
+  "metadata": {
+    "authors": [
+      "Siran Li",
+      "Xiangxiang Su",
+      "Yuantu Zhu"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.19078v1"
+  }
+}

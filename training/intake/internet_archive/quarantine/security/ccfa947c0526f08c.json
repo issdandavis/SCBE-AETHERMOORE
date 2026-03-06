@@ -1,0 +1,33 @@
+{
+  "id": "ccfa947c0526f08c",
+  "source": "internet_archive",
+  "category": "quarantine/security",
+  "title": "Distributed Protocols and Heterogeneous Trust: Technical Report",
+  "content": "# Distributed Protocols and Heterogeneous Trust: Technical Report\n\nCreator: Isaac C. Sheff, Robbert van Renesse, Andrew C. Myers\nDate: 2014-12-09T00:00:00Z\nDownloads: 26\nSubjects: Distributed, Parallel, and Cluster Computing, Cryptography and Security, Databases, Computing Research Repository, Programming Languages\n\nThe robustness of distributed systems is usually phrased in terms of the number of failures of certain types that they can withstand. However, these failure models are too crude to describe the different kinds of trust and expectations of participants in the modern world of complex, integrated systems extending across different owners, networks, and administrative domains. Modern systems often exist in an environment of heterogeneous trust, in which different participants may have different opinions about the trustworthiness of other nodes, and a single participant may consider other nodes to differ in their trustworthiness. We explore how to construct distributed protocols that meet the requirements of all participants, even in heterogeneous trust environments. The key to our approach is using lattice-based information flow to analyse and prove protocol properties. To demonstrate this approach, we show how two earlier distributed algorithms can be generalized to work in the presence of heterogeneous trust: first, Heterogeneous Fast Consensus, an adaptation of the earlier Bosco Fast Consensus protocol; and second, Nysiad, an algorithm for converting crash-tolerant protocols to be Byzantine-tolerant. Through simulations, we show that customizing a protocol to a heterogeneous trust configuration yields performance improvements over the conventional protocol designed for homogeneous trust.",
+  "url": "https://archive.org/details/arxiv-1412.3136",
+  "timestamp": "2026-03-06T03:59:26.497609",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "eaff42e8ae9149237a0615eb192c7e3c40a4dca9c8c627254136270384858193",
+  "parent_hash": "12cd4a96fd71dc9d970d8a14ed6b5852b9056b4bfd16d8333f7b43b74b85d684",
+  "metadata": {
+    "ia_identifier": "arxiv-1412.3136",
+    "media_type": "texts",
+    "downloads": 26,
+    "subjects": [
+      "Distributed, Parallel, and Cluster Computing",
+      "Cryptography and Security",
+      "Databases",
+      "Computing Research Repository",
+      "Programming Languages"
+    ]
+  }
+}

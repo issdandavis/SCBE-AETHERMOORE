@@ -1,0 +1,32 @@
+{
+  "id": "63c0a2bae0de60dd",
+  "source": "library_of_congress",
+  "category": "quarantine/security",
+  "title": "H.R.7535 - 117th Congress (2021-2022): Quantum Computing Cybersecurity Preparedness Act",
+  "content": "# H.R.7535 - 117th Congress (2021-2022): Quantum Computing Cybersecurity Preparedness Act\n\nContributors: 117th congress, rep. khanna, ro [d-ca-17], house of representatives\nDate: 2022-12-21\nSubjects: government operations and politics, congress\n\nSummary of H.R.7535 - 117th Congress (2021-2022): Quantum Computing Cybersecurity Preparedness Act",
+  "url": "https://www.congress.gov/bill/117th-congress/house-bill/7535",
+  "timestamp": "2026-03-06T02:38:03.634988",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "64fb81fc10a615164674621c4ac082f18d5ea26d6dc6bcb7bf10a7e3d2915011",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "government operations and politics",
+      "congress"
+    ],
+    "dates": "2022-12-21",
+    "original_format": [
+      "legislation"
+    ]
+  }
+}

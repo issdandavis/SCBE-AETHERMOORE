@@ -1,0 +1,25 @@
+{
+  "id": "b23efeae1fb5d500",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Post-Quantum Cryptography \u2014 PQCrypto 2008 (Q28006485)",
+  "content": "# Post-Quantum Cryptography \u2014 PQCrypto 2008\n\nWikidata ID: Q28006485\nDescription: Proceedings of the Second International Workshop, PQCrypto 2008 Cincinnati, Ohio, United States, October 17-19, 2008\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q28006485",
+  "timestamp": "2026-03-06T02:41:03.050791",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "741346f8c4a952f3c86f6aad94bd2a821a71790fc73890a13143e538b28cc8b4",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q28006485",
+    "description": "Proceedings of the Second International Workshop, PQCrypto 2008 Cincinnati, Ohio, United States, October 17-19, 2008"
+  }
+}

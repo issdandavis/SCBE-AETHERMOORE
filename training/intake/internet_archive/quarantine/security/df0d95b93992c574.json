@@ -1,0 +1,27 @@
+{
+  "id": "df0d95b93992c574",
+  "source": "internet_archive",
+  "category": "quarantine/security",
+  "title": "Unconditionally secure key distillation from multi-photons",
+  "content": "# Unconditionally secure key distillation from multi-photons\n\nCreator: Kiyoshi Tamaki, Hoi-Kwong Lo\nDate: 2006-01-24T00:00:00Z\nDownloads: 100\nSubjects: \n\nIn this paper, we prove that the unconditionally secure key can be surprisingly extracted from {\\it multi}-photon emission part in the photon polarization-based QKD. One example is shown by explicitly proving that one can indeed generate an unconditionally secure key from Alice's two-photon emission part in ``Quantum cryptography protocols robust against photon number splitting attacks for weak laser pulses implementations'' proposed by V. Scarani {\\it et al.,} in Phys. Rev. Lett. {\\bf 92}, 057901 (2004), which is called SARG04. This protocol uses the same four states as in BB84 and differs only in the classical post-processing protocol. It is, thus, interesting to see how the classical post-processing of quantum key distribution might qualitatively change its security. We also show that one can generate an unconditionally secure key from the single to the four-photon part in a generalized SARG04 that uses six states. Finally, we also compare the bit error rate threshold of these protocols with the one in BB84 and the original six-state protocol assuming a depolarizing channel.",
+  "url": "https://archive.org/details/arxiv-quant-ph0412035",
+  "timestamp": "2026-03-06T03:59:05.968471",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "8bb0d604d748a71fb4e5b52561fe9072cda34384699abda0abdb6cca2ad9a001",
+  "parent_hash": "2da5f516980cbdb270092f148839fdae59e74398586f1932c987a4886a9193c0",
+  "metadata": {
+    "ia_identifier": "arxiv-quant-ph0412035",
+    "media_type": "texts",
+    "downloads": 100,
+    "subjects": []
+  }
+}

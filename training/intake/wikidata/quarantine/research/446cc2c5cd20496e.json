@@ -1,0 +1,25 @@
+{
+  "id": "446cc2c5cd20496e",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Quasicrystalline structure formation in a classical crystalline thin-film system (Q59082257)",
+  "content": "# Quasicrystalline structure formation in a classical crystalline thin-film system\n\nWikidata ID: Q59082257\nDescription: scientific article published in Nature\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q59082257",
+  "timestamp": "2026-03-06T04:18:05.821577",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "1a3a68f8c88802b5f9fbc792abaae928ecc0e7e3fbbd268ed16d64bda13a9765",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "wikidata_id": "Q59082257",
+    "description": "scientific article published in Nature"
+  }
+}

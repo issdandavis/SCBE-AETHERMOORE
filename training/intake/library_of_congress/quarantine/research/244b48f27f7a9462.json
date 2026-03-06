@@ -1,0 +1,33 @@
+{
+  "id": "244b48f27f7a9462",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Computational science-- ICCS 2004 : 4th international conference, Krako\u0301w, Poland, June 6-9, 2004 : proceedings",
+  "content": "# Computational science-- ICCS 2004 : 4th international conference, Krako\u0301w, Poland, June 6-9, 2004 : proceedings\n\nContributors: bubak, marian, iccs 2004, link (online service)\nDate: 2004\nSubjects: computational complexity, congresses, computer science\n\nIncludes bibliographical references and index. Available also through SpringerLINK via the World Wide Web. Adobe Acrobat Reader required. Complete in 4 pt.",
+  "url": "//lccn.loc.gov/2004106673",
+  "timestamp": "2026-03-06T02:38:43.165452",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "ff2e2138bb4f7d2d2449ccdf33cdc17088c56525497a7f3ccbee1ce9317b94f9",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "computational complexity",
+      "congresses",
+      "computer science"
+    ],
+    "dates": "2004",
+    "original_format": [
+      "book"
+    ]
+  }
+}

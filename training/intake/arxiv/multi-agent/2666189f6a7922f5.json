@@ -1,0 +1,35 @@
+{
+  "id": "2666189f6a7922f5",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "Adaptive Memory Admission Control for LLM Agents",
+  "content": "# Adaptive Memory Admission Control for LLM Agents\n\nAuthors: Guilin Zhang, Wei Jiang, Xiejiashan Wang, Aisha Behr, Kai Zhao, Jeffrey Friedman, Xu Chu, Amine Anoun\nPublished: 2026-03-04T19:32:02Z\n\nLLM-based agents increasingly rely on long-term memory to support multi-session reasoning and interaction, yet current systems provide little control over what information is retained. In practice, agents either accumulate large volumes of conversational content, including hallucinated or obsolete facts, or depend on opaque, fully LLM-driven memory policies that are costly and difficult to audit. As a result, memory admission remains a poorly specified and weakly controlled component in agent architectures. To address this gap, we propose Adaptive Memory Admission Control (A-MAC), a framework that treats memory admission as a structured decision problem. A-MAC decomposes memory value into five complementary and interpretable factors: future utility, factual confidence, semantic novelty, temporal recency, and content type prior. The framework combines lightweight rule-based feature extraction with a single LLM-assisted utility assessment, and learns domain-adaptive admission policies through cross-validated optimization. This design enables transparent and efficient control over long-term memory. Experiments on the LoCoMo benchmark show that A-MAC achieves a superior precision-recall tradeoff, improving F1 to 0.583 while reducing latency by 31% compared to state-of-the-art LLM-native memory systems. Ablation results identify content type prior as the most influential factor for reliable memory admission. These findings demonstrate that explicit and interpretable admission control is a critical design principle for scalable and reliable memory in LLM-based agents.",
+  "url": "http://arxiv.org/abs/2603.04549v1",
+  "timestamp": "2026-03-04T19:32:02Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "bca2a0474232e9a6a03767df34099f4c5c821854418add611f811f200e5b7a53",
+  "parent_hash": "7a6688c52612974d6a25f3356033f46ba5f5e9b94905fec19611e38af96adbd7",
+  "metadata": {
+    "authors": [
+      "Guilin Zhang",
+      "Wei Jiang",
+      "Xiejiashan Wang",
+      "Aisha Behr",
+      "Kai Zhao",
+      "Jeffrey Friedman",
+      "Xu Chu",
+      "Amine Anoun"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.04549v1"
+  }
+}

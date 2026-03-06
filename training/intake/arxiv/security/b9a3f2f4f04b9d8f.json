@@ -1,0 +1,32 @@
+{
+  "id": "b9a3f2f4f04b9d8f",
+  "source": "arxiv",
+  "category": "security",
+  "title": "Statistical Effort Modelling of Game Resource Localisation Attacks",
+  "content": "# Statistical Effort Modelling of Game Resource Localisation Attacks\n\nAuthors: Alessandro Sanna, Waldo Verstraete, Leonardo Regano, Davide Maiorca, Bjorn De Sutter\nPublished: 2026-03-04T16:46:30Z\n\nEvidence on the effectiveness of Man-At-The-End (MATE) software protections, such as code obfuscation, has mainly come from limited empirical research. Recently, however, an automatable method was proposed to obtain statistical models of the required effort to attack (protected) software. The proposed method was sketched for a number of attack strategies but not instantiated, evaluated, or validated for those that require human interaction with the attacked software.\n  In this paper, we present a full instantiation of the method to obtain statistical effort models for game resource localisation attacks, which represent a major step towards creating game cheats, a prime example of MATE attacks. We discuss in detail all relevant aspects of our instantiation and the results obtained for two game use cases. Our results confirm the feasibility of the proposed method and its utility for decision support for users of software protection tools. These results open up a new avenue for obtaining models of the impact of software protections on reverse engineering attacks, which will scale much better than empirical research involving human participants.",
+  "url": "http://arxiv.org/abs/2603.04261v1",
+  "timestamp": "2026-03-04T16:46:30Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "c8ac2aaa96ad36bf64240024f4c333207b75a0beddb9f4a32977bdf5d28509fc",
+  "parent_hash": "55ece6c80b96fb47aceaacf5b7c960d3ba440647f3b329b1668e7ea0d9e1e3e9",
+  "metadata": {
+    "authors": [
+      "Alessandro Sanna",
+      "Waldo Verstraete",
+      "Leonardo Regano",
+      "Davide Maiorca",
+      "Bjorn De Sutter"
+    ],
+    "arxiv_category": "cs.CR",
+    "arxiv_id": "2603.04261v1"
+  }
+}

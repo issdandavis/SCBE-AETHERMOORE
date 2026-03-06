@@ -1,0 +1,25 @@
+{
+  "id": "d2b7fbeeafe60cd5",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Retrieval-Augmented Generation with Quantized Large Language Models: A Comparative Analysis (Q131020762)",
+  "content": "# Retrieval-Augmented Generation with Quantized Large Language Models: A Comparative Analysis\n\nWikidata ID: Q131020762\nDescription: scientific article published on 04 May 2024\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q131020762",
+  "timestamp": "2026-03-06T02:41:28.754471",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "f347406b83d4443c9873c81df8a60aca6d3f534cbb6f50dc605f405c733b6b8c",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q131020762",
+    "description": "scientific article published on 04 May 2024"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "7036226897769bec",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Constant depth magic state cultivation with Clifford measurements by gauging",
+  "content": "# Constant depth magic state cultivation with Clifford measurements by gauging\n\nAuthors: Bence Het\u00e9nyi, Benjamin J. Brown, Dominic. J. Williamson\nPublished: 2026-03-05T17:51:50Z\n\nMagic states are a scarce resource for two-dimensional qubit stabilizer codes. Magic state cultivation was recently proposed to reduce the cost of magic state preparation by measuring the transversal Clifford operator of the color code. Cultivation achieves $\\sim 10^{-9}$ logical error rates for the $d=5$ color code, with substantially lower space-time overhead than magic state distillation. However, due to the $\\mathcal{O}(d)$ depth of the Clifford measurement circuit, magic state cultivation becomes impractical for $d>5$. Here, we perform logical $XS^\\dagger$ measurements on the color code by gauging a transversal Clifford gate, resulting in a constant-depth logical measurement circuit. We employ repeated gauging measurements with post-selection rather than performing error correction on the Clifford stabilizer code that emerges during the gauging protocol, thus gaining simplicity at the cost of scalability. Our protocol requires a regular square grid connectivity and yields logical error rates comparable to magic state cultivation. The $d=7$ version of our protocol gives access to the $10^{-12}$ logical error rate regime at $0.05\\%$ physical error rate while retaining more than $1\\%$ of the shots after the equivalent of the cultivation stage.",
+  "url": "http://arxiv.org/abs/2603.05429v1",
+  "timestamp": "2026-03-05T17:51:50Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "e0bda23d5e655639f7a0e3dfdd36eb18e3ecd790ee9fb8e080e5aa813e84db8d",
+  "parent_hash": "907420101e85694716f02c573daa2467f93b704f69885df860ade4bd4695caaf",
+  "metadata": {
+    "authors": [
+      "Bence Het\u00e9nyi",
+      "Benjamin J. Brown",
+      "Dominic. J. Williamson"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05429v1"
+  }
+}

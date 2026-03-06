@@ -1,0 +1,30 @@
+{
+  "id": "6d2b2e1f452d3137",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "MACC: Multi-Agent Collaborative Competition for Scientific Exploration",
+  "content": "# MACC: Multi-Agent Collaborative Competition for Scientific Exploration\n\nAuthors: Satoshi Oyama, Yuko Sakurai, Hisashi Kashima\nPublished: 2026-03-04T06:38:04Z\n\nScientific discovery still relies heavily on the manual efforts of individual researchers, leading to limited exploration, redundant trials, and reduced reproducibility. Human-participant data analysis competitions generate diverse approaches, yet fluctuations in participation and the lack of independent repetitions show that parallel exploration alone is insufficient for achieving reliable scientific inquiry. As advanced AI agents based on large language models (LLMs) increasingly perform analytical tasks, relying on a single highly capable agent is unlikely to overcome these structural limitations. Recent work has begun to explore how multiple LLM-based agents can collaborate or compete in scientific workflows-a growing trend we refer to as MA4Science. However, most existing MA4Science studies assume that all agents are controlled by a single organizational entity, limiting their ability to examine how institutional mechanisms-such as incentives, information sharing, and reproducibility-shape collective exploration among independently managed agents. To address this gap, we introduce MACC (Multi-Agent Collaborative Competition), an institutional architecture that integrates a blackboard-style shared scientific workspace with incentive mechanisms designed to encourage transparency, reproducibility, and exploration efficiency. MACC provides a testbed for studying how institutional design influences scalable and reliable multi-agent scientific exploration.",
+  "url": "http://arxiv.org/abs/2603.03780v1",
+  "timestamp": "2026-03-04T06:38:04Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "64a32c6f7c399ba4ed36cd6f76543277f7ad8c1844b6fbe0e968a0f4a9bc767f",
+  "parent_hash": "6367b88467aeea857b12e2f3501cf83ecaf5e2fa2606669b52faaabce8a42c9d",
+  "metadata": {
+    "authors": [
+      "Satoshi Oyama",
+      "Yuko Sakurai",
+      "Hisashi Kashima"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.03780v1"
+  }
+}

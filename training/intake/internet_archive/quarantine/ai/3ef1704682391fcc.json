@@ -1,0 +1,33 @@
+{
+  "id": "3ef1704682391fcc",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "A Novel Approach for Phase Identification in Smart Grids Using Graph Theory and Principal Component Analysis",
+  "content": "# A Novel Approach for Phase Identification in Smart Grids Using Graph Theory and Principal Component Analysis\n\nCreator: P Satya Jayadev, Aravind Rajeswaran, Nirav P Bhatt, Ramkrishna Pasumarthy\nDate: 2015-11-19T00:00:00Z\nDownloads: 37\nSubjects: Learning, Applications, Statistics, Computing Research Repository, Machine Learning\n\nConsumers with low demand, like households, are generally supplied single-phase power by connecting their service mains to one of the phases of a distribution transformer. The distribution companies face the problem of keeping a record of consumer connectivity to a phase due to uninformed changes that happen. The exact phase connectivity information is important for the efficient operation and control of distribution system. We propose a new data driven approach to the problem based on Principal Component Analysis (PCA) and its Graph Theoretic interpretations, using energy measurements in equally timed short intervals, generated from smart meters. We propose an algorithm for inferring phase connectivity from noisy measurements. The algorithm is demonstrated using simulated data for phase connectivities in distribution networks.",
+  "url": "https://archive.org/details/arxiv-1511.06063",
+  "timestamp": "2026-03-06T02:40:48.214086",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "2f63ee581f5f239ef5c8e6be8c034761c7f2e271e449b06aa94663a795de994e",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "arxiv-1511.06063",
+    "media_type": "texts",
+    "downloads": 37,
+    "subjects": [
+      "Learning",
+      "Applications",
+      "Statistics",
+      "Computing Research Repository",
+      "Machine Learning"
+    ]
+  }
+}

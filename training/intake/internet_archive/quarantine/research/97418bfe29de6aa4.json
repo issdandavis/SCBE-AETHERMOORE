@@ -1,0 +1,30 @@
+{
+  "id": "97418bfe29de6aa4",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Network Hardware-Accelerated Consensus",
+  "content": "# Network Hardware-Accelerated Consensus\n\nCreator: Huynh Tu Dang, Pietro Bressana, Han Wang, Ki Suh Lee, Hakim Weatherspoon, Marco Canini, Fernando Pedone, Robert Soul\u00e9\nDate: 2016-05-18T00:00:00Z\nDownloads: 23\nSubjects: Distributed, Parallel, and Cluster Computing, Computing Research Repository\n\nConsensus protocols are the foundation for building many fault-tolerant distributed systems and services. This paper posits that there are significant performance benefits to be gained by offering consensus as a network service (CAANS). CAANS leverages recent advances in commodity networking hardware design and programmability to implement consensus protocol logic in network devices. CAANS provides a complete Paxos protocol, is a drop-in replacement for software-based implementations of Paxos, makes no restrictions on network topologies, and is implemented in a higher-level, data-plane programming language, allowing for portability across a range of target devices. At the same time, CAANS significantly increases throughput and reduces latency for consensus operations. Consensus logic executing in hardware can transmit consensus messages at line speed, with latency only slightly higher than simply forwarding packets.",
+  "url": "https://archive.org/details/arxiv-1605.05619",
+  "timestamp": "2026-03-06T03:59:26.497653",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "f0d6261dbaea1f4635d13353217adc1cf71abb752c21d8549f599c0d3ec6076c",
+  "parent_hash": "12cd4a96fd71dc9d970d8a14ed6b5852b9056b4bfd16d8333f7b43b74b85d684",
+  "metadata": {
+    "ia_identifier": "arxiv-1605.05619",
+    "media_type": "texts",
+    "downloads": 23,
+    "subjects": [
+      "Distributed, Parallel, and Cluster Computing",
+      "Computing Research Repository"
+    ]
+  }
+}

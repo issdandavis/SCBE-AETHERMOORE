@@ -1,0 +1,29 @@
+{
+  "id": "6e4a2499a27abf0d",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "Bayes with No Shame: Admissibility Geometries of Predictive Inference",
+  "content": "# Bayes with No Shame: Admissibility Geometries of Predictive Inference\n\nAuthors: Nicholas G. Polson, Daniel Zantedeschi\nPublished: 2026-03-05T16:14:34Z\n\nFour distinct admissibility geometries govern sequential and distribution-free inference: Blackwell risk dominance over convex risk sets, anytime-valid admissibility within the nonnegative supermartingale cone, marginal coverage validity over exchangeable prediction sets, and Ces\u00e0ro approachability (CAA) admissibility, which reaches the risk-set boundary via approachability-style arguments rather than explicit priors. We prove a criterion separation theorem: the four classes of admissible procedures are pairwise non-nested. Each geometry carries a different certificate of optimality: a supporting-hyperplane prior (Blackwell), a nonnegative supermartingale (anytime-valid), an exchangeability rank (coverage), or a Ces\u00e0ro steering argument (CAA). Martingale coherence is necessary for Blackwell admissibility and necessary and sufficient for anytime-valid admissibility within e-processes, but is not sufficient for Blackwell admissibility and is not necessary for coverage validity or CAA-admissibility. All four criteria share a common optimization template (minimize Bayesian risk subject to a feasibility constraint), but the constraint sets operate over different spaces, partial orders, and performance metrics, making them geometrically incompatible. Admissibility is irreducibly criterion-relative.",
+  "url": "http://arxiv.org/abs/2603.05335v1",
+  "timestamp": "2026-03-05T16:14:34Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "dac72715498abd03e407f70c8ca451b69d5585bfb9fb1d59efcefa0a4f99b988",
+  "parent_hash": "8b9fd78b660af00570739fe58f9f4a2f5ca579d7fbd981b606f77ebdb764feb5",
+  "metadata": {
+    "authors": [
+      "Nicholas G. Polson",
+      "Daniel Zantedeschi"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.05335v1"
+  }
+}

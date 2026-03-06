@@ -1,0 +1,31 @@
+{
+  "id": "ecd910c36e93ed19",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2025-29779 \u2014 CVSS 0.0 (UNKNOWN)",
+  "content": "# CVE-2025-29779\n\nCVSS Score: 0.0 (UNKNOWN)\nPublished: 2025-03-14T18:15:32.330\nCWEs: CWE-1240, CWE-1279\n\nPost-Quantum Secure Feldman's Verifiable Secret Sharing provides a Python implementation of Feldman's Verifiable Secret Sharing (VSS) scheme. In versions 0.8.0b2 and prior, the `secure_redundant_execution` function in feldman_vss.py attempts to mitigate fault injection attacks by executing a function multiple times and comparing results. However, several critical weaknesses exist. Python's execution environment cannot guarantee true isolation between redundant executions, the constant-time comparison implementation in Python is subject to timing variations, the randomized execution order and timing provide insufficient protection against sophisticated fault attacks, and the error handling may leak timing information about partial execution results. These limitations make the protection ineffective against targeted fault injection attacks, especially from attackers with physical access to the hardware. A successful fault injection attack could allow an attacker to bypass the redundancy check mechanisms, extract secret polynomial coefficients during share generation or verification, force the acceptance of invalid shares during verification, and/or manipulate the commitment verification process to accept fraudulent commitments. This undermines the core security guarantees of the Verifiable Secret Sharing scheme. As of time of publication, no patched versions of Post-Quantum Secure Feldman's Verifiable Secret Sharing exist, but other mitigations are available. Long-term remediation requires reimplementing the security-critical functions in a lower-level language like Rust. Short-term mitigations include deploying the software in environments with physical security controls, increasing the redundancy count (from 5 to a higher number) by modifying the source code, adding external verification of cryptographic operations when possible, considering using hardware security modules (HSMs) for key operations.\n\nReferences: https://en.wikipedia.org/wiki/Fault_attack, https://eprint.iacr.org/2004/100.pdf, https://github.com/DavidOsipov/PostQuantum-Feldman-VSS/security/advisories/GHSA-r8gc-qc2c-c7vh",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-29779",
+  "timestamp": "2026-03-06T02:41:36.374085",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "11ffe25eefeed0de3daa54c2d0aa4659c94124d7a01e919c3a071d1fe08e7d18",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2025-29779",
+    "cvss_score": 0.0,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "CWE-1240",
+      "CWE-1279"
+    ],
+    "published": "2025-03-14T18:15:32.330"
+  }
+}

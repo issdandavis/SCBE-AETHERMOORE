@@ -1,0 +1,32 @@
+{
+  "id": "2a46afd2a1d2058f",
+  "source": "arxiv",
+  "category": "ai",
+  "title": "Recursive Inference Machines for Neural Reasoning",
+  "content": "# Recursive Inference Machines for Neural Reasoning\n\nAuthors: Mieszko Komisarczyk, Saurabh Mathur, Maurice Kraus, Sriraam Natarajan, Kristian Kersting\nPublished: 2026-03-05T14:51:47Z\n\nNeural reasoners such as Tiny Recursive Models (TRMs) solve complex problems by combining neural backbones with specialized inference schemes. Such inference schemes have been a central component of stochastic reasoning systems, where inference rules are applied to a stochastic model to derive answers to complex queries. In this work, we bridge these two paradigms by introducing Recursive Inference Machines (RIMs), a neural reasoning framework that explicitly incorporates recursive inference mechanisms inspired by classical inference engines. We show that TRMs can be expressed as an instance of RIMs, allowing us to extend them through a reweighting component, yielding better performance on challenging reasoning benchmarks, including ARC-AGI-1, ARC-AGI-2, and Sudoku Extreme. Furthermore, we show that RIMs can be used to improve reasoning on other tasks, such as the classification of tabular data, outperforming TabPFNs.",
+  "url": "http://arxiv.org/abs/2603.05234v1",
+  "timestamp": "2026-03-05T14:51:47Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "5adee9d605a5e07ef109f7c1f71b8cefe0761d82b44ef001ec1c40004fa08273",
+  "parent_hash": "459820bf6110b7106d275c388b2880555b45b4f07eb9763b6ecc2288946db375",
+  "metadata": {
+    "authors": [
+      "Mieszko Komisarczyk",
+      "Saurabh Mathur",
+      "Maurice Kraus",
+      "Sriraam Natarajan",
+      "Kristian Kersting"
+    ],
+    "arxiv_category": "cs.AI",
+    "arxiv_id": "2603.05234v1"
+  }
+}

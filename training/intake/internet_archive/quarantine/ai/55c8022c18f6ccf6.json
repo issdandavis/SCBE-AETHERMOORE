@@ -1,0 +1,31 @@
+{
+  "id": "55c8022c18f6ccf6",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "Logic and Constraint Logic Programming for Distributed Constraint Optimization",
+  "content": "# Logic and Constraint Logic Programming for Distributed Constraint Optimization\n\nCreator: Tiep Le, Enrico Pontelli, Tran Cao Son, William Yeoh\nDate: 2014-05-07T00:00:00Z\nDownloads: 24\nSubjects: Multiagent Systems, Computing Research Repository, Artificial Intelligence\n\nThe field of Distributed Constraint Optimization Problems (DCOPs) has gained momentum, thanks to its suitability in capturing complex problems (e.g., multi-agent coordination and resource allocation problems) that are naturally distributed and cannot be realistically addressed in a centralized manner. The state of the art in solving DCOPs relies on the use of ad-hoc infrastructures and ad-hoc constraint solving procedures. This paper investigates an infrastructure for solving DCOPs that is completely built on logic programming technologies. In particular, the paper explores the use of a general constraint solver (a constraint logic programming system in this context) to handle the agent-level constraint solving. The preliminary experiments show that logic programming provides benefits over a state-of-the-art DCOP system, in terms of performance and scalability, opening the doors to the use of more advanced technology (e.g., search strategies and complex constraints) for solving DCOPs.",
+  "url": "https://archive.org/details/arxiv-1405.1734",
+  "timestamp": "2026-03-06T04:18:02.169935",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "54e17c8bff39b09a06ad82a07cc7e14b3b3f8d27f50ec375a2e21ac5b0701fbc",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "arxiv-1405.1734",
+    "media_type": "texts",
+    "downloads": 24,
+    "subjects": [
+      "Multiagent Systems",
+      "Computing Research Repository",
+      "Artificial Intelligence"
+    ]
+  }
+}

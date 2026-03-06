@@ -1,0 +1,26 @@
+{
+  "id": "5ed17da34691f672",
+  "source": "notion",
+  "category": "governance",
+  "title": "\ud83d\udd10 Multi-Signature Governance Template",
+  "content": "# \ud83d\udd10 Multi-Signature Governance Template\n\nTemplate for implementing Roundtable Multi-Signature Governance with exponential security scaling.\nSix Sacred Tongues\nThe protocol operates on six orthogonal communication domains:\nKO (Kor'aelin): Control & Intent \u2014 orchestration, delegation, high-level coordination\nAV (Avali): I/O & Messaging \u2014 transport, routing, inter-agent communication\nRU (Runethic): Policy & Constraints \u2014 state binding, governance, execution boundaries\nCA (Cassisivadan): Logic & Computation \u2014 math operations, algorithms, data transformation\nUM (Umbroth): Security & Secrets \u2014 encryption, redaction, key rotation, access control\nDR (Draumric): Types & Schema \u2014 data structures, message formats, semantic validation\nSecurity Tier Configuration\nTier | Tongues Required | Signatures | Security Multiplier | Use Cases |",
+  "url": "https://www.notion.so/Multi-Signature-Governance-Template-2faf96de82e580609500eb8478e838fd",
+  "timestamp": "2026-02-01T07:50:00.000Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "c42a2156056fa3f47ea3bf6ca5a9808789aca3844c005d03689fa82fea77ad59",
+  "parent_hash": "eab96fdbf1e0003f9a855bd971aec03e7437a3d41d2c717fb8f56d68407eb2cf",
+  "metadata": {
+    "notion_id": "2faf96de-82e5-8060-9500-eb8478e838fd",
+    "page_type": "page",
+    "parent_type": "database_id"
+  }
+}

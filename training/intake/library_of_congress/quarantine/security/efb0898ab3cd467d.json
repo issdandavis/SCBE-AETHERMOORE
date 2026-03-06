@@ -1,0 +1,34 @@
+{
+  "id": "efb0898ab3cd467d",
+  "source": "library_of_congress",
+  "category": "quarantine/security",
+  "title": "Network-aware security for group communications",
+  "content": "# Network-aware security for group communications\n\nContributors: sun, yan (yan lindsay), liu, k. j. ray, trappe, wade\nDate: 2008\nSubjects: security measures, teleconferencing, telecommunication, computer networks\n\nIncludes bibliographical references (p. [287]-300) and index.",
+  "url": "//lccn.loc.gov/2007934648",
+  "timestamp": "2026-03-06T02:38:19.805332",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "d682e2c2807372db9b2a1005fc1db98f2710727d30eabc5e45e9445dbf69a779",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "security measures",
+      "teleconferencing",
+      "telecommunication",
+      "computer networks"
+    ],
+    "dates": "2008",
+    "original_format": [
+      "book"
+    ]
+  }
+}

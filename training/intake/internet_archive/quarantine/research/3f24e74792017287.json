@@ -1,0 +1,27 @@
+{
+  "id": "3f24e74792017287",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Distributed Consensus Resilient to Both Crash Failures and Strategic Manipulations",
+  "content": "# Distributed Consensus Resilient to Both Crash Failures and Strategic Manipulations\n\nCreator: Xiaohui Bei, Wei Chen, Jialin Zhang\nDate: 2012-06-06T00:00:00Z\nDownloads: 119\nSubjects: \n\nIn this paper, we study distributed consensus in synchronous systems subject to both unexpected crash failures and strategic manipulations by rational agents in the system. We adapt the concept of collusion-resistant Nash equilibrium to model protocols that are resilient to both crash failures and strategic manipulations of a group of colluding agents. For a system with $n$ distributed agents, we design a deterministic protocol that tolerates 2 colluding agents and a randomized protocol that tolerates $n - 1$ colluding agents, and both tolerate any number of failures. We also show that if colluders are allowed an extra communication round after each synchronous round, there is no protocol that can tolerate even 2 colluding agents and 1 crash failure.",
+  "url": "https://archive.org/details/arxiv-1203.4324",
+  "timestamp": "2026-03-06T03:59:26.497680",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "82d12f803651b4768a97b9818d721ea543412b5da0766263fdef01694a74d292",
+  "parent_hash": "12cd4a96fd71dc9d970d8a14ed6b5852b9056b4bfd16d8333f7b43b74b85d684",
+  "metadata": {
+    "ia_identifier": "arxiv-1203.4324",
+    "media_type": "texts",
+    "downloads": 119,
+    "subjects": []
+  }
+}

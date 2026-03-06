@@ -1,0 +1,31 @@
+{
+  "id": "c4b5f0c1e8b7609a",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "SCoUT: Scalable Communication via Utility-Guided Temporal Grouping in Multi-Agent Reinforcement Learning",
+  "content": "# SCoUT: Scalable Communication via Utility-Guided Temporal Grouping in Multi-Agent Reinforcement Learning\n\nAuthors: Manav Vora, Gokul Puthumanaillam, Hiroyasu Tsukamoto, Melkior Ornik\nPublished: 2026-03-05T05:33:28Z\n\nCommunication can improve coordination in partially observed multi-agent reinforcement learning (MARL), but learning \\emph{when} and \\emph{who} to communicate with requires choosing among many possible sender-recipient pairs, and the effect of any single message on future reward is hard to isolate. We introduce \\textbf{SCoUT} (\\textbf{S}calable \\textbf{Co}mmunication via \\textbf{U}tility-guided \\textbf{T}emporal grouping), which addresses both these challenges via temporal and agent abstraction within traditional MARL. During training, SCoUT resamples \\textit{soft} agent groups every \\(K\\) environment steps (macro-steps) via Gumbel-Softmax; these groups are latent clusters that induce an affinity used as a differentiable prior over recipients. Using the same assignments, a group-aware critic predicts values for each agent group and maps them to per-agent baselines through the same soft assignments, reducing critic complexity and variance. Each agent is trained with a three-headed policy: environment action, send decision, and recipient selection. To obtain precise communication learning signals, we derive counterfactual communication advantages by analytically removing each sender's contribution from the recipient's aggregated messages. This counterfactual computation enables precise credit assignment for both send and recipient-selection decisions. At execution time, all centralized training components are discarded and only the per-agent policy is run, preserving decentralized execution. Project website, videos and code: \\hyperlink{https://scout-comm.github.io/}{https://scout-comm.github.io/}",
+  "url": "http://arxiv.org/abs/2603.04833v1",
+  "timestamp": "2026-03-05T05:33:28Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "a3685c86662c1748ca087ba6a1bb9083a5605a9efc390eda6d515eee92ad019b",
+  "parent_hash": "72a74c2334524fc27538904ce5b29f7a667e7601a695978be0b07b49b030d630",
+  "metadata": {
+    "authors": [
+      "Manav Vora",
+      "Gokul Puthumanaillam",
+      "Hiroyasu Tsukamoto",
+      "Melkior Ornik"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.04833v1"
+  }
+}

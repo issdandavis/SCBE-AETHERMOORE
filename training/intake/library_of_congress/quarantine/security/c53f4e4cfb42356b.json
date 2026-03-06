@@ -1,0 +1,33 @@
+{
+  "id": "c53f4e4cfb42356b",
+  "source": "library_of_congress",
+  "category": "quarantine/security",
+  "title": "International Relations and Security Network",
+  "content": "# International Relations and Security Network\n\nContributors: N/A\nDate: 2000\nSubjects: educational, history, september 11 terrorist attacks\n\nInternational Relations and Security Network, a Web Site produced by Center for Security Studies and Conflict Research, ETH Zurich, an educational organization, is part of the Library of Congress September 11 Web Archive and preserves the web expressions of individuals, groups, the press and institutions in the United States and from around the world in the aftermath of the attacks in the United States on September 11, 2001.  Web Site.   electronic |   Electronic (Form).",
+  "url": "https://www.loc.gov/item/lcwaN0019791/",
+  "timestamp": "2026-03-06T02:38:19.805289",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "7a19eb2d4a3c94623910165728a4e8cb687a5b8bd4f9c1bf579096f05075c9d4",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "educational",
+      "history",
+      "september 11 terrorist attacks"
+    ],
+    "dates": "2000",
+    "original_format": [
+      "web archive"
+    ]
+  }
+}

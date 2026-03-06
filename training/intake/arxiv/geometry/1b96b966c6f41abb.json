@@ -1,0 +1,29 @@
+{
+  "id": "1b96b966c6f41abb",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Polynomially many surfaces of fixed Euler characteristic in a hyperbolic 3-manifold",
+  "content": "# Polynomially many surfaces of fixed Euler characteristic in a hyperbolic 3-manifold\n\nAuthors: Marc Lackenby, Anastasiia Tsvietkova\nPublished: 2026-03-04T04:36:12Z\n\nWe give an upper bound for the number of compact essential orientable non-isotopic surfaces, with Euler characteristic at least some constant $\u03c7$, properly embedded in a finite-volume hyperbolic 3-manifold $M$, closed or cusped. This bound is a polynomial function of the volume of $M$, with degree that depends linearly on $|\u03c7|$.",
+  "url": "http://arxiv.org/abs/2603.03716v1",
+  "timestamp": "2026-03-04T04:36:12Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "4ccb765190510ee4f2d4b0cf664764a3adbc0420f44da09cfcad8e80ce5c594d",
+  "parent_hash": "f3bf29e9111c151d7ac86867d2045f9f51e0110a9850918c2eaf7357cd90cce1",
+  "metadata": {
+    "authors": [
+      "Marc Lackenby",
+      "Anastasiia Tsvietkova"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.03716v1"
+  }
+}

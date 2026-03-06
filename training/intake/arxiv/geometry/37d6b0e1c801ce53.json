@@ -1,0 +1,29 @@
+{
+  "id": "37d6b0e1c801ce53",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "New minimal surfaces in the sphere from capillary minimal cones",
+  "content": "# New minimal surfaces in the sphere from capillary minimal cones\n\nAuthors: Benjy Firester, Raphael Tsiamis\nPublished: 2026-02-23T18:39:19Z\n\nFor every $p,q\\geq 1$, we construct minimal embeddings of $\\mathbb{S}^p \\times \\mathbb{S}^q \\times \\mathbb{S}^1$ in $\\mathbb{S}^{p + q + 2}$ by doubling the links of free-boundary minimal cones in $\\mathbb{R}^{p+q+3}$ with bi-orthogonal symmetry. This solves problems posed by Hsiang-Lawson and Hsiang-Hsiang. The equivariance reduces the minimal surface equation to an ODE, and we prove the existence of capillary minimal cones for every contact angle. We obtain free-boundary solutions as limits of capillary surfaces via a singular shooting problem with infinite initial slope. As the contact angle degenerates to $0$, rescalings of the capillary cones converge to a homogeneous solution of the one-phase Bernoulli problem, further illustrating the connection between one-phase free boundaries and minimal surfaces through the capillary functional.",
+  "url": "http://arxiv.org/abs/2602.20124v1",
+  "timestamp": "2026-02-23T18:39:19Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "95b82d2cd535a9398f4c2d9e67c0289a211b73506dd6aa5f54cab40de1cee856",
+  "parent_hash": "4d4c9f492351df33b5eea07353272a97804a58d1a8d274bc7bee57575758617a",
+  "metadata": {
+    "authors": [
+      "Benjy Firester",
+      "Raphael Tsiamis"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.20124v1"
+  }
+}

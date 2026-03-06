@@ -1,0 +1,31 @@
+{
+  "id": "5e218af15a7d3988",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Simulated data for 600,000 subjects from five ancestries",
+  "content": "# Simulated data for 600,000 subjects from five ancestries\n\nAuthors: Zhang, Haoyu\nPublished: 2023-02-13T18:44:52Z\nSubjects: Medicine, Health and Life Sciences\nDOI: doi:10.7910/DVN/COXHAP\n\nThis repository contains simulated genotype data for 600,000 individuals from five distinct populations, simulated based on the LD estimates from the 1000 Genomes Project (Phase 3). Each ancestry (AFR, AMR, EAS, EUR, SAS) contains 120,000 subjects, providing a diverse and comprehensive data set. In addition to genotype data, the repository also includes phenotype data, GWAS summary statistics, and SNP information. The ReadMe file provides a detailed description of the data. The download.sh file can help downloading the data to your local environment.\n\nCitation: Zhang, Haoyu, 2022, \"Simulated data for 600,000 subjects from five ancestries\", https://doi.org/10.7910/DVN/COXHAP, Harvard Dataverse, V5",
+  "url": "https://doi.org/10.7910/DVN/COXHAP",
+  "timestamp": "2026-03-06T04:18:49.817376",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "0f1759b96110c17ab889caf4957bc7deec6168a920437bf4250f50bf7ba36a35",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/COXHAP",
+    "subjects": [
+      "Medicine, Health and Life Sciences"
+    ],
+    "authors": [
+      "Zhang, Haoyu"
+    ],
+    "file_count": 605
+  }
+}

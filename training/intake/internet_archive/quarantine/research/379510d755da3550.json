@@ -1,0 +1,27 @@
+{
+  "id": "379510d755da3550",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Discovering Chiral Higgsinos at the LHC",
+  "content": "# Discovering Chiral Higgsinos at the LHC\n\nCreator: Asimina Arvanitaki\nDate: 2006-10-12T00:00:00Z\nDownloads: 95\nSubjects: \n\nThe concept of chirality is extended to the Minimal Supersymmetric Standard Model (MSSM) and the mu term is forbidden by a gauged U(1)' symmetry. R-parity automatically emerges after symmetry breaking, suppressing proton decay and protecting the LSP. Exotics charged under the SM pose a challenge to traditional SU(5) unification, but unification is still implemented in deconstructed GUTs. Because of the multitude of additional states to the MSSM, the Z' has a large width, and the SM background, neglected in previous theoretical studies, becomes important for Z' discovery. As a result, the LHC reach is reduced from 3.2 TeV, for a Z' with SM decays, to 1.5 TeV, when additional decay channels are included. This model also predicts possibly long-lived colored and electroweak exotics.",
+  "url": "https://archive.org/details/arxiv-hep-ph0610088",
+  "timestamp": "2026-03-06T04:17:53.893671",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "bbc411cf2a5702c6af71aa0b50eaf50696f7bec8a80cd93d8fd6a8fbe4731476",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "arxiv-hep-ph0610088",
+    "media_type": "texts",
+    "downloads": 95,
+    "subjects": []
+  }
+}

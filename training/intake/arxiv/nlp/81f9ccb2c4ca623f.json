@@ -1,0 +1,33 @@
+{
+  "id": "81f9ccb2c4ca623f",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "Contextualized Privacy Defense for LLM Agents",
+  "content": "# Contextualized Privacy Defense for LLM Agents\n\nAuthors: Yule Wen, Yanzhe Zhang, Jianxun Lian, Xiaoyuan Yi, Xing Xie, Diyi Yang\nPublished: 2026-03-03T13:35:33Z\n\nLLM agents increasingly act on users' personal information, yet existing privacy defenses remain limited in both design and adaptability. Most prior approaches rely on static or passive defenses, such as prompting and guarding. These paradigms are insufficient for supporting contextual, proactive privacy decisions in multi-step agent execution. We propose Contextualized Defense Instructing (CDI), a new privacy defense paradigm in which an instructor model generates step-specific, context-aware privacy guidance during execution, proactively shaping actions rather than merely constraining or vetoing them. Crucially, CDI is paired with an experience-driven optimization framework that trains the instructor via reinforcement learning (RL), where we convert failure trajectories with privacy violations into learning environments. We formalize baseline defenses and CDI as distinct intervention points in a canonical agent loop, and compare their privacy-helpfulness trade-offs within a unified simulation framework. Results show that our CDI consistently achieves a better balance between privacy preservation (94.2%) and helpfulness (80.6%) than baselines, with superior robustness to adversarial conditions and generalization.",
+  "url": "http://arxiv.org/abs/2603.02983v1",
+  "timestamp": "2026-03-03T13:35:33Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "dd36cbfc5e949b229d154f8560fa97302ab6189e7bccb25f5da3352f3a8753b6",
+  "parent_hash": "69b3a0061c62bca45b069ac47e39a051bf5d118bd42f891a3c27eb6111b355ae",
+  "metadata": {
+    "authors": [
+      "Yule Wen",
+      "Yanzhe Zhang",
+      "Jianxun Lian",
+      "Xiaoyuan Yi",
+      "Xing Xie",
+      "Diyi Yang"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.02983v1"
+  }
+}

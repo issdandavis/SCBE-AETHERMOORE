@@ -1,0 +1,34 @@
+{
+  "id": "2538c183936a1c9e",
+  "source": "internet_archive",
+  "category": "quarantine/security",
+  "title": "Block Pay A Blockchain Based Framework For Secure And Scalable Digital Payments",
+  "content": "# Block Pay A Blockchain Based Framework For Secure And Scalable Digital Payments\n\nCreator: \nDate: 2025-06-25T00:00:00Z\nDownloads: 44\nSubjects: Blockchain Architecture, Consensus Mechanism, Smart Contract Automation, Cryptographic Protocols, Decentralised Payment Systems\n\nIn recent years, blockchain has gained serious traction as a promising tool for fixing long-standing issues in how digital payments work\u2014especially around trust, data security, and transaction delays. This paper shares our experience developing BlockPay, a blockchain-based payment system designed to improve on traditional methods. Many current platforms struggle with things like limited transaction sizes and poor international support. BlockPay addresses these by using a distributed ledger that makes it hard to tamper with records. We also built smart contracts to handle payments automatically, which helps to reduce mistakes or fraud. To keep everything reliable, we rely on a consensus model so that all the network\u2019s nodes agree before a transaction goes through. We have added strong encryption and user authentication which is based on the private keys to make sure users' data stays safe. The system works smoothly across devices and is built to be user-friendly for individuals or for running a business. One highlight is its real-time payment processing and built-in currency conversion. All in all, we see BlockPay as a practical step forward in making financial systems more open, faster, and secure.",
+  "url": "https://archive.org/details/3-block-pay-a-blockchain-based-framework-for-secure-and-scalable-digital-payments-2",
+  "timestamp": "2026-03-06T03:59:26.497775",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "75cfd92cb4120a8ef84440ebe1571699ae57758237f549f7f31dff5f488fe254",
+  "parent_hash": "12cd4a96fd71dc9d970d8a14ed6b5852b9056b4bfd16d8333f7b43b74b85d684",
+  "metadata": {
+    "ia_identifier": "3-block-pay-a-blockchain-based-framework-for-secure-and-scalable-digital-payments-2",
+    "media_type": "texts",
+    "downloads": 44,
+    "subjects": [
+      "Blockchain Architecture",
+      "Consensus Mechanism",
+      "Smart Contract Automation",
+      "Cryptographic Protocols",
+      "Decentralised Payment Systems",
+      "and Real-Time Transaction Processing."
+    ]
+  }
+}

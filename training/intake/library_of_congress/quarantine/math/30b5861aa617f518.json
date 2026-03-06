@@ -1,0 +1,32 @@
+{
+  "id": "30b5861aa617f518",
+  "source": "library_of_congress",
+  "category": "quarantine/math",
+  "title": "Notes on elements of (analytical) solid geometry.",
+  "content": "# Notes on elements of (analytical) solid geometry.\n\nContributors: venable, charles s. (charles scott)\nDate: 1879\nSubjects: geometry, analytic, solid\n\n\"Additional exercises\":  2 leaves at end in manuscript. Also available in digital form.",
+  "url": "https://www.loc.gov/item/38013005/",
+  "timestamp": "2026-03-06T02:37:52.081809",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "bbb11e62927bc8ca369361590401bc3b5e4c4febeb84da4c8dd38aecef3d5dda",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "geometry, analytic",
+      "solid"
+    ],
+    "dates": "1879",
+    "original_format": [
+      "book"
+    ]
+  }
+}

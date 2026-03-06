@@ -1,0 +1,30 @@
+{
+  "id": "198cf22863db2c6c",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2013-5781 \u2014 CVSS 6.9 (UNKNOWN)",
+  "content": "# CVE-2013-5781\n\nCVSS Score: 6.9 (UNKNOWN)\nPublished: 2013-10-16T15:55:34.460\nCWEs: NVD-CWE-noinfo\n\nUnspecified vulnerability in Oracle PARC Enterprise T4 Servers running Sun System Firmware before 8.3.0.b allows local users to affect confidentiality, integrity, and availability via vectors related to Sun System Firmware/Integrated Lights Out Manager (ILOM).\n\nReferences: http://www.oracle.com/technetwork/topics/security/cpuoct2013-1899837.html, http://www.oracle.com/technetwork/topics/security/cpuoct2013-1899837.html",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2013-5781",
+  "timestamp": "2026-03-06T04:18:37.160052",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "277609c32a0ccaaa8893f38b74ec0dc3ee2509710986c65ed79ad3409c3faffc",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2013-5781",
+    "cvss_score": 6.9,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-noinfo"
+    ],
+    "published": "2013-10-16T15:55:34.460"
+  }
+}

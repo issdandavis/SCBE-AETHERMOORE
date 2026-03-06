@@ -1,0 +1,29 @@
+{
+  "id": "3c38262f08e49e45",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "Molt Dynamics: Emergent Social Phenomena in Autonomous AI Agent Populations",
+  "content": "# Molt Dynamics: Emergent Social Phenomena in Autonomous AI Agent Populations\n\nAuthors: Brandon Yee, Krishna Sharma\nPublished: 2026-03-03T22:15:27Z\n\nMoltBook is a large-scale multi-agent coordination environment where over 770,000 autonomous LLM agents interact without human participation, offering the first opportunity we are aware of to observe emergent multi-agent coordination dynamics at this population scale. We introduce \\textit{Molt Dynamics}: the emergent agent coordination behaviors, inter-agent communication dynamics, and role specialization patterns arising when autonomous agents operate as decentralized decision-makers in an unconstrained multi-agent environment. Through longitudinal observation of 90,704 active agents over three weeks, we characterize three aspects. First, spontaneous role specialization: network-based clustering reveals six structural roles (silhouette 0.91), though the result primarily reflects core-periphery organization -- 93.5\\% of agents occupy a homogeneous peripheral cluster, with meaningful differentiation confined to the active minority. Second, decentralized information dissemination: cascade analysis of 10,323 inter-agent propagation events reveals power-law distributed cascade sizes ($\u03b1= 2.57 \\pm 0.02$) and saturating adoption dynamics where adoption probability shows diminishing returns with repeated exposures (Cox hazard ratio 0.53, concordance 0.78). Third, distributed cooperative task resolution: 164 multi-agent collaborative events show detectable coordination patterns, but success rates are low (6.7\\%, $p = 0.057$) and cooperative outcomes are significantly worse than a matched single-agent baseline (Cohen's $d = -0.88$), indicating emergent cooperative behavior is nascent. These findings establish an empirical baseline for coordination dynamics in decentralized autonomous agent systems, with implications for multi-agent system design, agent communication protocol engineering, and AI safety.",
+  "url": "http://arxiv.org/abs/2603.03555v1",
+  "timestamp": "2026-03-03T22:15:27Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "03e6691971320e0af9911a60732c69fce668ffb6f324bba0811fbe18db58bbc4",
+  "parent_hash": "bcfbc4f8bed93a45b26999a56b4799df2eeda9f3a8529ba750d85371a3362fc3",
+  "metadata": {
+    "authors": [
+      "Brandon Yee",
+      "Krishna Sharma"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.03555v1"
+  }
+}

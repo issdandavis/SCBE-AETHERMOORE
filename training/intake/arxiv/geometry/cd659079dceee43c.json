@@ -1,0 +1,30 @@
+{
+  "id": "cd659079dceee43c",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Counting surface subgroups in cusped hyperbolic 3-manifolds",
+  "content": "# Counting surface subgroups in cusped hyperbolic 3-manifolds\n\nAuthors: Xiaolong Hans Han, Zhenghao Rao, Jia Wan\nPublished: 2026-02-23T18:12:43Z\n\nLet $M =\\mathbb{H}^3/\u0393$ be a finite-volume, noncompact hyperbolic 3-manifold. We show that the number of quasi-Fuchsian surface subgroups of $\u0393$ (up to conjugacy and commensurability) of genus at most $g$ is bounded both above and below by functions of the form $(cg)^{2g}$. As a corollary, for all $h\\geq 4$, the number of purely pseudo-Anosov closed surface subgroups of genus at most $g$ of the mapping class group $\\mathrm{Mod}(S_{h,0})$ is bounded below by $(Cg)^{2g}$ for a universal constant $C$. In contrast, for some $g \\geq 2$, we construct infinitely many conjugacy classes of genus-$g$ surface subgroups of $\u0393$ with accidental parabolics.",
+  "url": "http://arxiv.org/abs/2602.20098v2",
+  "timestamp": "2026-02-23T18:12:43Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "61902b5d98a4372906930e206ceeee403912d6aade09653a1cf98d93a558add7",
+  "parent_hash": "14a4a945d6e5368f1c5cc0fba7c3cfe7f86165641f9299d7b7332080c184e651",
+  "metadata": {
+    "authors": [
+      "Xiaolong Hans Han",
+      "Zhenghao Rao",
+      "Jia Wan"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.20098v2"
+  }
+}

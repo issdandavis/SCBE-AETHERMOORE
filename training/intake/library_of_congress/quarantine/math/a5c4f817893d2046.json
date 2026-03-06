@@ -1,0 +1,31 @@
+{
+  "id": "a5c4f817893d2046",
+  "source": "library_of_congress",
+  "category": "quarantine/math",
+  "title": "Strasbourg Master Class on Geometry",
+  "content": "# Strasbourg Master Class on Geometry\n\nContributors: papadopoulos, athanase\nDate: 2012\nSubjects: geometry\n\nIncludes bibliographical references.",
+  "url": "//lccn.loc.gov/2012405648",
+  "timestamp": "2026-03-06T02:37:52.081744",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "36fc05d86b18a47bf4e243f59488850f0fcec2d053a221de630a2491222e3eee",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "geometry"
+    ],
+    "dates": "2012",
+    "original_format": [
+      "book"
+    ]
+  }
+}

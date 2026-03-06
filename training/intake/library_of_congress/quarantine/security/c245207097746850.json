@@ -1,0 +1,38 @@
+{
+  "id": "c245207097746850",
+  "source": "library_of_congress",
+  "category": "quarantine/security",
+  "title": "Information security governance simplified : from the boardroom to the keyboard",
+  "content": "# Information security governance simplified : from the boardroom to the keyboard\n\nContributors: fitzgerald, todd\nDate: 2012-01-01\nSubjects: information networks, computers / information technology, information resources management, business intelligence, security measures\n\n\"Security practitioners must be able to build cost-effective security programs while also complying with government regulations. Information Security Governance Simplified: From the Boardroom to the Keyboard lays out these regulations in simple terms and explains how to use control frameworks to build an air-tight information security (IS) program and governance structure.Defining the leadership skills required by IS officers, the book examines the pros and cons of different reporting structures and highlights the various control frameworks available. It details the functions of the security department and considers the control areas, including physical, network, application, business continuity/disaster recover, and identity management. Todd Fitzgerald explains how to establish a solid foundation for building your security program and shares time-tested insights about what works and what doesn't when building an IS program. Highlighting security considerations for managerial, technical, and operational controls, it provides helpful tips for selling your program to management. It also includes tools to help you create a workable IS charter and your own IS policies. Based on proven experience rather than theory, the book gives you the tools and real-world insight needed to secure your information while ensuring compliance with government regulations. \"-- Provided by publisher.",
+  "url": "https://www.loc.gov/item/2020719058/",
+  "timestamp": "2026-03-06T04:17:41.942020",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "e8742dcbeda18228be6cba10db73353bba4f6359411c23f6f79280c511718529",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "information networks",
+      "computers / information technology",
+      "information resources management",
+      "business intelligence",
+      "security measures",
+      "business & economics / commerce",
+      "computers / security / general",
+      "information technology"
+    ],
+    "dates": "2012-01-01",
+    "original_format": [
+      "book"
+    ]
+  }
+}

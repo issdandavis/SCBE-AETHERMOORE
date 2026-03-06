@@ -1,0 +1,34 @@
+{
+  "id": "95362fe319926d46",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "MuxTune: Efficient Multi-Task LLM Fine-Tuning in Multi-Tenant Datacenters via Spatial-Temporal Backbone Multiplexing",
+  "content": "# MuxTune: Efficient Multi-Task LLM Fine-Tuning in Multi-Tenant Datacenters via Spatial-Temporal Backbone Multiplexing\n\nAuthors: Chunyu Xue, Yi Pan, Weihao Cui, Quan Chen, Shulai Zhang, Bingsheng He, Minyi Guo\nPublished: 2026-03-03T11:34:49Z\n\nParameter-Efficient Fine-Tuning (PEFT) is widely applied as the backend of fine-tuning APIs for large language model (LLM) customization in datacenters. Service providers deploy separate instances for individual PEFT tasks, giving rise to prominent resource inefficiencies, including (1) GPU underutilization from small-scale, PEFT-native operators and (2) device stalls from communication delays and data dependencies in parallelized execution. To address these issues, this paper presents MuxTune, a fine-tuning system that enables resource-efficient concurrent execution of multiple PEFT tasks. The key idea is to multiplex the backbone across independent tasks in a spatial-temporal manner for improved utilization and reduced stalls. Building on flexible, modularized backbone sharing via unified PEFT representations, MuxTune proposes hierarchical co-scheduling scheme with task, operator, and data-level optimizations. Specifically, it fuses tasks through a hybrid of spatial and temporal multiplexing, and orchestrates multi-task operator execution in two-tiered hybrid parallelism. Additionally, MuxTune employs chunk-based data alignment to mitigate inter-task ineffective tokens. Experimental results demonstrate that MuxTune achieves up to $2.33\\times$ higher throughput and $5.29\\times$ memory reduction compared to three state-of-the-art baselines.",
+  "url": "http://arxiv.org/abs/2603.02885v1",
+  "timestamp": "2026-03-03T11:34:49Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "71e49a076a496ca73cc1f78640b67c9302f40bb55f674bdf92c1da9f74ec2cd7",
+  "parent_hash": "165943a7a8d5877c229774b93ba2b9426d5d0c52d33fe04a00268371c896fe08",
+  "metadata": {
+    "authors": [
+      "Chunyu Xue",
+      "Yi Pan",
+      "Weihao Cui",
+      "Quan Chen",
+      "Shulai Zhang",
+      "Bingsheng He",
+      "Minyi Guo"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.02885v1"
+  }
+}

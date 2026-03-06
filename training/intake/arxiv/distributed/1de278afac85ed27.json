@@ -1,0 +1,28 @@
+{
+  "id": "1de278afac85ed27",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "Lamport's Arrow of Time: The Category Mistake in Logical Clocks",
+  "content": "# Lamport's Arrow of Time: The Category Mistake in Logical Clocks\n\nAuthors: Paul Borrill\nPublished: 2026-02-25T09:39:21Z\n\nLamport's 1978 paper introduced the happens-before relation and logical clocks, freeing distributed systems from dependence on synchronized physical clocks. This is widely understood as a move away from Newtonian absolute time. We argue that Lamport's formalism retains a deeper and largely unexamined assumption: that causality induces a globally well-defined directed acyclic graph (DAG) over events -- a forward-in-time-only (FITO) structure that functions as an arrow of time embedded at the semantic level. Following Ryle's analysis of category mistakes, we show that this assumption conflates an epistemic construct (the logical ordering of messages) with an ontic claim (that physical causality is globally acyclic and monotonic). We trace this conflation through Shannon's channel model, TLA+, Bell's theorem, and the impossibility results of Fischer-Lynch-Paterson and Brewer's CAP theorem. We then show that special and general relativity permit only local causal structure, and that recent work on indefinite causal order demonstrates that nature admits correlations with no well-defined causal ordering. We propose that mutual information conservation, rather than temporal precedence, provides a more fundamental primitive for distributed consistency.",
+  "url": "http://arxiv.org/abs/2602.21730v1",
+  "timestamp": "2026-02-25T09:39:21Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "0e6706006c4eef98ff52b81bca23e957a30b429ff0de6ce9d73133e3c02020f5",
+  "parent_hash": "cba4a623f3ee8f974b077df08feb4f697857b6147c0639c9f1ab0a225f1b947b",
+  "metadata": {
+    "authors": [
+      "Paul Borrill"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2602.21730v1"
+  }
+}

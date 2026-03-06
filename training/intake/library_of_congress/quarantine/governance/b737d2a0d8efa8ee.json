@@ -1,0 +1,33 @@
+{
+  "id": "b737d2a0d8efa8ee",
+  "source": "library_of_congress",
+  "category": "quarantine/governance",
+  "title": "Constitutions of value : law, governance, and political ecology",
+  "content": "# Constitutions of value : law, governance, and political ecology\n\nContributors: feichtner, isabel, gordon, geoff\nDate: 2023\nSubjects: congresses, value, law and economics\n\n\"Gathering an interdisciplinary range of cutting-edge scholars, this book addresses legal constitutions of value. Global value production and transnational value practices that rely on exploitation and extraction have left us with toxic commons and a damaged planet. Against this situation, the book examines law's fundamental role in institutions of value production and valuation. Utilising pathbreaking theoretical approaches, it problematizes mainstream efforts to redeem institutions of value production by recoupling them with progressive values. Aiming beyond radical critique, the book opens up the possibility of imagining and enacting new and different value practices. This wide-ranging and accessible book will appeal to international lawyers, socio-legal scholars, those working at the intersections of law and economy and others, in politics, economics, environmental studies and elsewhere, who are concerned with rethinking our current ideas of what has value, what does not, and whether and how value may be revalued\"-- Provided by publisher.",
+  "url": "https://www.loc.gov/item/2022042245/",
+  "timestamp": "2026-03-06T04:17:41.942067",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "505dd82edd4607d5bdf53ac96ffa5c3162cb76a34ed81535bd4499dafba0e3b5",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "congresses",
+      "value",
+      "law and economics"
+    ],
+    "dates": "2023",
+    "original_format": [
+      "book"
+    ]
+  }
+}

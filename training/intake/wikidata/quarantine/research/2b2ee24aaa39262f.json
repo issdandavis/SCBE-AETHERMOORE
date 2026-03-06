@@ -1,0 +1,25 @@
+{
+  "id": "2b2ee24aaa39262f",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "AI Alignment: A Comprehensive Survey (Q131288183)",
+  "content": "# AI Alignment: A Comprehensive Survey\n\nWikidata ID: Q131288183\nDescription: scientific article published on 30 October 2023\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q131288183",
+  "timestamp": "2026-03-06T02:41:06.702106",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "02272d29dc8da1d3763f1da164e50a3b798731eb178ce76cf4411b7c3a9605aa",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q131288183",
+    "description": "scientific article published on 30 October 2023"
+  }
+}

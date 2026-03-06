@@ -1,0 +1,33 @@
+{
+  "id": "af6721a636e23d1f",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Spin-resolved microscopy of $^{87}$Sr SU($N$) Fermi-Hubbard systems",
+  "content": "# Spin-resolved microscopy of $^{87}$Sr SU($N$) Fermi-Hubbard systems\n\nAuthors: Carlos Gas-Ferrer, Antonio Rubio-Abadal, Sandra Buob, Leonardo Bezzo, Jonatan H\u00f6schele, Leticia Tarruell\nPublished: 2026-03-05T18:49:13Z\n\nQuantum-gas microscopes provide direct access to the phases of the Hubbard model, bringing microscopic insight into the complex competition between interactions, SU(2) magnetism, and doping. Alkaline-earth(-like) fermions extend this spin-1/2 paradigm by realizing higher symmetries and giving access to SU(N) Hubbard models, with rich phase diagrams to be unveiled. Despite its fundamental interest, a microscopic exploration of SU(N) quantum systems has remained elusive. Here we report the realization of a quantum-gas microscope for fermionic $^{87}$Sr. Our imaging scheme, based on cooling and fluorescence on the narrow intercombination line at 689 nm, enables spin-resolved single-atom detection. By implementing a spin-selective optical pumping protocol, we determine the occupation of each of the 10 spin states in a single experimental realization, a crucial capability for probing site-resolved magnetic correlations. We benchmark our method by observing single-particle Larmor precession across the full spin-9/2 ground-state manifold. These results establish $^{87}$Sr quantum-gas microscopy as a powerful approach to study exotic magnetism in the SU(N) Fermi-Hubbard model, and provide a new detection tool for studies in quantum simulation, computation, and metrology.",
+  "url": "http://arxiv.org/abs/2603.05478v1",
+  "timestamp": "2026-03-05T18:49:13Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "a5cf576c480aecf7068565ea0d2b8242498c29e9fbf1c265d0961fa2b1e17adb",
+  "parent_hash": "31f8b22b8f56493105d9e18ebff5783738f461a4f33833adc0c5ca06c75ad611",
+  "metadata": {
+    "authors": [
+      "Carlos Gas-Ferrer",
+      "Antonio Rubio-Abadal",
+      "Sandra Buob",
+      "Leonardo Bezzo",
+      "Jonatan H\u00f6schele",
+      "Leticia Tarruell"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05478v1"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "0bd0a4ad6e8864be",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "cuNRTO: GPU-Accelerated Nonlinear Robust Trajectory Optimization",
+  "content": "# cuNRTO: GPU-Accelerated Nonlinear Robust Trajectory Optimization\n\nAuthors: Jiawei Wang, Arshiya Taj Abdul, Evangelos A. Theodorou\nPublished: 2026-03-03T06:17:08Z\n\nRobust trajectory optimization enables autonomous systems to operate safely under uncertainty by computing control policies that satisfy the constraints for all bounded disturbances. However, these problems often lead to large Second Order Conic Programming (SOCP) constraints, which are computationally expensive. In this work, we propose the CUDA Nonlinear Robust Trajectory Optimization (cuNRTO) framework by introducing two dynamic optimization architectures that have direct application to robust decision-making and are implemented on CUDA. The first architecture, NRTO-DR, leverages the Douglas-Rachford (DR) splitting method to solve the SOCP inner subproblems of NRTO, thereby significantly reducing the computational burden through parallel SOCP projections and sparse direct solves. The second architecture, NRTO-FullADMM, is a novel variant that further exploits the problem structure to improve scalability using the Alternating Direction Method of Multipliers (ADMM). Finally, we provide GPU implementation of the proposed methodologies using custom CUDA kernels for SOC projection steps and cuBLAS GEMM chains for feedback gain updates. We validate the performance of cuNRTO through simulated experiments on unicycle, quadcopter, and Franka manipulator models, demonstrating speedup up to 139.6$\\times$.",
+  "url": "http://arxiv.org/abs/2603.02642v1",
+  "timestamp": "2026-03-03T06:17:08Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "0eb583afe011913ef7942cdfbf16c6ebabcd378305eb663b0b3fc79bfd119274",
+  "parent_hash": "1898baf94e1f9e03337edf773db2fe7faa9d901b0ba69c6cb60050b350295b9b",
+  "metadata": {
+    "authors": [
+      "Jiawei Wang",
+      "Arshiya Taj Abdul",
+      "Evangelos A. Theodorou"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.02642v1"
+  }
+}

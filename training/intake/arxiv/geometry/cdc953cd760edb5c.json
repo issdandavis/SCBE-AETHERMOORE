@@ -1,0 +1,29 @@
+{
+  "id": "cdc953cd760edb5c",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Area minimising hypersurfaces mod $p$ do not admit immersed branch points",
+  "content": "# Area minimising hypersurfaces mod $p$ do not admit immersed branch points\n\nAuthors: Paul Minter, Sidney Stanbury\nPublished: 2026-03-03T15:34:54Z\n\nWe show that area minimising hypersurfaces mod $p$ do not admit immersed branch points, namely branch points about which all classical singularities are immersed. Furthermore, we show that if an $n$-dimensional area minimising hypersurface mod $p$ is smoothly immersed outside a $\\mathcal{H}^{n-1}$-null set, then it is in fact smoothly immersed outside a closed set of Hausdorff dimension at most $n-3$.\n  These results are consequences of a more general analysis of immersed stable minimal hypersurfaces with a certain `alternating' orientation. Indeed, our proof does not rely on the minimising property other than through stationarity, stability, and the verification of simple structural properties of the hypersurface.",
+  "url": "http://arxiv.org/abs/2603.03100v1",
+  "timestamp": "2026-03-03T15:34:54Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "6a9e1b37d9bec285b5374dbd3c80ab05ea57a43e8802c618aaebbc7a61786580",
+  "parent_hash": "306e202cf7a33e39434fbd3c84014cf95913af793759da21a6870b11bbadd395",
+  "metadata": {
+    "authors": [
+      "Paul Minter",
+      "Sidney Stanbury"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.03100v1"
+  }
+}

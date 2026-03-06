@@ -1,0 +1,25 @@
+{
+  "id": "c77eb26a13e49aa3",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Blockchain consensus node selection (Q121745195)",
+  "content": "# Blockchain consensus node selection\n\nWikidata ID: Q121745195\nDescription: US patent 11265177\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q121745195",
+  "timestamp": "2026-03-06T02:41:17.799032",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "de8de892cd75dc43b99ae47b15be7ca96e389c1791a653c096a41f400f929168",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q121745195",
+    "description": "US patent 11265177"
+  }
+}

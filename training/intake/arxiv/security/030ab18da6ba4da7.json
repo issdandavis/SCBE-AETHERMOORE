@@ -1,0 +1,31 @@
+{
+  "id": "030ab18da6ba4da7",
+  "source": "arxiv",
+  "category": "security",
+  "title": "Breaking Bad Email Habits: Bounding the Impact of Simulated Phishing Campaigns",
+  "content": "# Breaking Bad Email Habits: Bounding the Impact of Simulated Phishing Campaigns\n\nAuthors: Muhammad Zia Hydari, Idris Adjerid, Yingda Lu, Narayan Ramasubbu\nPublished: 2026-03-04T17:45:14Z\n\nSimulated phishing campaigns are widely deployed, yet the behavioral data they produce is endogenous: because training is triggered by clicking, the employees receiving intervention have already demonstrated susceptibility. This endogeneity, combined with the difficulty of separating genuine habit formation from stable individual differences, means standard analyses can mischaracterize program effectiveness. In this Research Note, we develop a generalizable analytic framework addressing both biases simultaneously. We utilize marginal structural models (MSMs) to correct for the endogenous, click-triggered assignment of training, while integrating correlated random effects (CRE) to disentangle true state dependence from stable employee heterogeneity. Applying the MSM+CRE estimator to logs from 17 campaigns delivered to university staff (192,840 observations) reveals that analyses ignoring stable differences overstate the causal persistence of clicking; most repeat clicking reflects who employees are, not the effect of recent failures. This persistence is context-dependent, amplifying when successive campaigns share persuasion cues. Teachable-moment features also matter: emotion framing and explicit reporting pitches can largely eliminate persistence, while annotated-email cues modestly exacerbate it. Finally, employees engaging with the education page exhibit greater persistence than those dismissing it, consistent with an emboldening mechanism. We contribute methodologically by integrating MSMs and CRE into a portable framework for analyzing standard simulation logs, and practically by identifying specific design levers so organizations can better sequence and evaluate their phishing programs.",
+  "url": "http://arxiv.org/abs/2603.04324v1",
+  "timestamp": "2026-03-04T17:45:14Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "55ece6c80b96fb47aceaacf5b7c960d3ba440647f3b329b1668e7ea0d9e1e3e9",
+  "parent_hash": "78a183edfebb367be037896e417cdd7b2f8ec1300c7b4cd5584c517ec3526cde",
+  "metadata": {
+    "authors": [
+      "Muhammad Zia Hydari",
+      "Idris Adjerid",
+      "Yingda Lu",
+      "Narayan Ramasubbu"
+    ],
+    "arxiv_category": "cs.CR",
+    "arxiv_id": "2603.04324v1"
+  }
+}

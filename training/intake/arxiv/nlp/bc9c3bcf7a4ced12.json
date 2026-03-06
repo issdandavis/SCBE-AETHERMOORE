@@ -1,0 +1,30 @@
+{
+  "id": "bc9c3bcf7a4ced12",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "NCTB-QA: A Large-Scale Bangla Educational Question Answering Dataset and Benchmarking Performance",
+  "content": "# NCTB-QA: A Large-Scale Bangla Educational Question Answering Dataset and Benchmarking Performance\n\nAuthors: Abrar Eyasir, Tahsin Ahmed, Muhammad Ibrahim\nPublished: 2026-03-05T18:35:03Z\n\nReading comprehension systems for low-resource languages face significant challenges in handling unanswerable questions. These systems tend to produce unreliable responses when correct answers are absent from context. To solve this problem, we introduce NCTB-QA, a large-scale Bangla question answering dataset comprising 87,805 question-answer pairs extracted from 50 textbooks published by Bangladesh's National Curriculum and Textbook Board. Unlike existing Bangla datasets, NCTB-QA maintains a balanced distribution of answerable (57.25%) and unanswerable (42.75%) questions. NCTB-QA also includes adversarially designed instances containing plausible distractors. We benchmark three transformer-based models (BERT, RoBERTa, ELECTRA) and demonstrate substantial improvements through fine-tuning. BERT achieves 313% relative improvement in F1 score (0.150 to 0.620). Semantic answer quality measured by BERTScore also increases significantly across all models. Our results establish NCTB-QA as a challenging benchmark for Bangla educational question answering. This study demonstrates that domain-specific fine-tuning is critical for robust performance in low-resource settings.",
+  "url": "http://arxiv.org/abs/2603.05462v1",
+  "timestamp": "2026-03-05T18:35:03Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "48802aa8b12324a642b09a8d9cf2ff0fa4222400ec9f32e43f559d9056460920",
+  "parent_hash": "0013c05ff2120dae59555d8750dff329e795eaee94ee5c9275261ba2ddc3052a",
+  "metadata": {
+    "authors": [
+      "Abrar Eyasir",
+      "Tahsin Ahmed",
+      "Muhammad Ibrahim"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.05462v1"
+  }
+}

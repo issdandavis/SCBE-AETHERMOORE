@@ -1,0 +1,34 @@
+{
+  "id": "afd80a71f87efb70",
+  "source": "arxiv",
+  "category": "ai",
+  "title": "WebChain: A Large-Scale Human-Annotated Dataset of Real-World Web Interaction Traces",
+  "content": "# WebChain: A Large-Scale Human-Annotated Dataset of Real-World Web Interaction Traces\n\nAuthors: Sicheng Fan, Rui Wan, Yifei Leng, Gaoning Liang, Li Ling, Yanyi Shang, Dehan Kong\nPublished: 2026-03-05T15:37:34Z\n\nWe introduce WebChain, the largest open-source dataset of human-annotated trajectories on real-world websites, designed to accelerate reproducible research in web agents. It contains 31,725 trajectories and 318k steps, featuring a core Triple Alignment of visual, structural, and action data to provide rich, multi-modal supervision. The data is collected via a scalable pipeline that ensures coverage of complex, high-value tasks often missed by synthetic methods. Leveraging this dataset, we propose a Dual Mid-Training recipe that decouples spatial grounding from planning, achieving state-of-the-art performance on our proposed WebChainBench and other public GUI benchmarks. Our work provides the data and insights necessary to build and rigorously evaluate the next generation of scalable web agents.",
+  "url": "http://arxiv.org/abs/2603.05295v1",
+  "timestamp": "2026-03-05T15:37:34Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "14d760f7b52cab4bb951d5fa2ecfbf50a9a7550efbd64e6f8662eb94eb77e9f0",
+  "parent_hash": "e2f2c77693f8a8d4b2394f18814a936a168bc76394af0c01dc889a25f050ba8b",
+  "metadata": {
+    "authors": [
+      "Sicheng Fan",
+      "Rui Wan",
+      "Yifei Leng",
+      "Gaoning Liang",
+      "Li Ling",
+      "Yanyi Shang",
+      "Dehan Kong"
+    ],
+    "arxiv_category": "cs.AI",
+    "arxiv_id": "2603.05295v1"
+  }
+}

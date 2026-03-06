@@ -1,0 +1,34 @@
+{
+  "id": "f33448fe03e23927",
+  "source": "library_of_congress",
+  "category": "quarantine/governance",
+  "title": "Distributed energy system in Southeast Asia",
+  "content": "# Distributed energy system in Southeast Asia\n\nContributors: han, phoumin, economic research institute for asean and east asia\nDate: 2018\nSubjects: southeast asia, energy policy, renewable energy sources, energy consumption\n\nIncludes bibliographical references (pages 160-164). In English.",
+  "url": "https://www.loc.gov/item/2021307509/",
+  "timestamp": "2026-03-06T02:38:15.031774",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "d1f79931ec7c5b7176ecb945844a325cc14878f9333f392088ea1d0425ae22d3",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "southeast asia",
+      "energy policy",
+      "renewable energy sources",
+      "energy consumption"
+    ],
+    "dates": "2018",
+    "original_format": [
+      "book"
+    ]
+  }
+}

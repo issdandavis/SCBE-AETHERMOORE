@@ -1,0 +1,29 @@
+{
+  "id": "b3a84ade9c00adaa",
+  "source": "internet_archive",
+  "category": "quarantine/math",
+  "title": "Fundamentals of hyperbolic geometry : selected expositions",
+  "content": "# Fundamentals of hyperbolic geometry : selected expositions\n\nCreator: \nDate: 2006-01-01T00:00:00Z\nDownloads: 16\nSubjects: Three-manifolds (Topology)\n\nxii, 335 pages : 23 cm Includes bibliographical references",
+  "url": "https://archive.org/details/fundamentalsofhy0000unse",
+  "timestamp": "2026-03-06T02:38:47.919047",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "3ed959376fefd3f114877fefee36960b4748c1b0531822dca552018881c7c284",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "fundamentalsofhy0000unse",
+    "media_type": "texts",
+    "downloads": 16,
+    "subjects": [
+      "Three-manifolds (Topology)"
+    ]
+  }
+}

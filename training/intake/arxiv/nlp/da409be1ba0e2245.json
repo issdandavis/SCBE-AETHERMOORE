@@ -1,0 +1,28 @@
+{
+  "id": "da409be1ba0e2245",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "Balancing Coverage and Draft Latency in Vocabulary Trimming for Faster Speculative Decoding",
+  "content": "# Balancing Coverage and Draft Latency in Vocabulary Trimming for Faster Speculative Decoding\n\nAuthors: Ofir Ben Shoham\nPublished: 2026-03-05T14:20:22Z\n\nSpeculative decoding accelerates inference for Large Language Models by using a lightweight draft model to propose candidate tokens that are verified in parallel by a larger target model. Prior work shows that the draft model often dominates speculative decoding latency, since it generates tokens sequentially and incurs high cost from its language modeling head as vocabulary size grows. This exposes a fundamental trade-off in draft model design: larger vocabularies improve token coverage and agreement with the target model, but incur higher draft latency, while smaller vocabularies reduce latency at the risk of missing tokens required for accurate draft generation. We address this trade-off through vocabulary trimming for draft models, motivated by the observation that domain-specific workloads use only a small fraction of the full vocabulary. We cast draft vocabulary selection as a constrained optimization problem that balances token coverage and draft latency. Coverage is computed over assistant responses in the training data, while latency is estimated using architecture-aware FLOPs that capture the cost of the language modeling head as a function of vocabulary size. We optimize a utility function with a Tree-structured Parzen Estimator to efficiently explore the coverage-latency Pareto frontier under a minimum coverage constraint. Experiments show improved speculative decoding throughput while reducing draft vocabularies by up to 97% with high coverage. On domain-specific tasks, we achieve up to 16% latency reduction and 20% throughput improvement, and up to 6.7% throughput gains on diverse out-of-distribution tasks.",
+  "url": "http://arxiv.org/abs/2603.05210v1",
+  "timestamp": "2026-03-05T14:20:22Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "6481c7b6a8733aa54f678a08604b509c8fb413271e80140397dd3be7f5a7031f",
+  "parent_hash": "a5d5295d3115d16ac72d23ca04dfc435e981534d8560e720a1c491ba71e4c2c4",
+  "metadata": {
+    "authors": [
+      "Ofir Ben Shoham"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.05210v1"
+  }
+}

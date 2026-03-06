@@ -1,0 +1,25 @@
+{
+  "id": "a7162a0a54442a2a",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Blockchain consensus method, node, and system based on honey badger byzantine fault tolerance consensus mechanism (Q123684277)",
+  "content": "# Blockchain consensus method, node, and system based on honey badger byzantine fault tolerance consensus mechanism\n\nWikidata ID: Q123684277\nDescription: US patent 11271799\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q123684277",
+  "timestamp": "2026-03-06T02:41:17.799057",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "48af2fde823ba93ad8b677e80624e3f71fa64e27787643ad922a9e25b2434c42",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q123684277",
+    "description": "US patent 11271799"
+  }
+}

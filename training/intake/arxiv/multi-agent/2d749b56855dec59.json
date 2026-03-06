@@ -1,0 +1,28 @@
+{
+  "id": "2d749b56855dec59",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "Body-Reservoir Governance in Repeated Games: Embodied Decision-Making, Dynamic Sentinel Adaptation, and Complexity-Regularized Optimization",
+  "content": "# Body-Reservoir Governance in Repeated Games: Embodied Decision-Making, Dynamic Sentinel Adaptation, and Complexity-Regularized Optimization\n\nAuthors: Yuki Nakamura\nPublished: 2026-02-24T12:36:41Z\n\nStandard game theory explains cooperation in repeated games through conditional strategies such as Tit-for-Tat (TfT), but these require continuous computation that imposes physical costs on embodied agents. We propose a three-layer Body-Reservoir Governance (BRG) architecture: (1) a body reservoir (echo state network) whose $d$-dimensional state performs implicit inference over interaction history, serving as both decision-maker and anomaly detector, (2) a cognitive filter providing costly strategic tools activated on demand, and (3) a metacognitive governance layer with receptivity parameter $\u03b1\\in [0,1]$. At full body governance ($\u03b1=1$), closed-loop dynamics satisfy a self-consistency equation: cooperation is expressed as the reservoir's fixed point, not computed. Strategy complexity cost is defined as the KL divergence between the reservoir's state distribution and its habituated baseline. Body governance reduces this cost, with action variance decreasing up to $1600\\times$ with dimension $d$. A dynamic sentinel generates a composite discomfort signal from the reservoir's own state, driving adaptive $\u03b1(t)$: near baseline during cooperation, rapidly dropping upon defection to activate cognitive retaliation. Overriding the body incurs thermodynamic cost proportional to internal state distortion. The sentinel achieves the highest payoff across all conditions, outperforming static body governance, TfT, and EMA baselines. A dimension sweep ($d \\in \\{5,\\ldots,100\\}$) shows implicit inference scales with bodily richness ($23\\times$ to $1600\\times$ variance reduction), attributable to reservoir dynamics. A phase diagram in $(d, \u03c4_{\\mathrm{env}})$ space reveals governance regime transitions near $d \\approx 20$. The framework reinterprets cooperation as the minimum-dissipation response of an adapted dynamical system -- emergent from embodied dynamics rather than computed.",
+  "url": "http://arxiv.org/abs/2602.20846v1",
+  "timestamp": "2026-02-24T12:36:41Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "2ae7aca7eb87c796e710cb9d22a1287108fb4b4693fc5d5dc60fb7e891705c22",
+  "parent_hash": "671c23d640cd12ff3b9f454d4b07c22ad8b10536a07f263edfe6e75111d5a17a",
+  "metadata": {
+    "authors": [
+      "Yuki Nakamura"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2602.20846v1"
+  }
+}

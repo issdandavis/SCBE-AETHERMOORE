@@ -1,0 +1,25 @@
+{
+  "id": "46d158e27f42118c",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Blockchain consensus unraveled (Q130870812)",
+  "content": "# Blockchain consensus unraveled\n\nWikidata ID: Q130870812\nDescription: scientific article published on 15 July 2020\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q130870812",
+  "timestamp": "2026-03-06T02:41:17.799065",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "c18b07b425209a3bc0850a6bbc494469ebdf2644507173772ef8722f6ee6cf65",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q130870812",
+    "description": "scientific article published on 15 July 2020"
+  }
+}

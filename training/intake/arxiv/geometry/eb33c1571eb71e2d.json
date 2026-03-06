@@ -1,0 +1,28 @@
+{
+  "id": "eb33c1571eb71e2d",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Topology of projective Tate-Shafarevich twists",
+  "content": "# Topology of projective Tate-Shafarevich twists\n\nAuthors: David Zhiyuan Bai\nPublished: 2026-02-25T04:20:36Z\n\nA Tate-Shafarevich twist $X^\u03c6\\to B$ of a fibration $X\\to B$ modifies it by a $1$-cocycle of flows of vector fields relative to the base, locally in the analytic topology. Sacc\u00e0 conjectured that the total spaces of two projective Lagrangian fibrations related by such a twist are deformation-equivalent.\n  Assuming that the class of the twist is torsion (which is often equivalent to the twist being realizable in the \u00e9tale topology), we show that there is an isomorphism $H^\\ast(X;\\mathbb Q)\\cong H^\\ast(X^\u03c6;\\mathbb Q)$ of graded vector spaces that respects (1) the Hodge structures and (2) the Hodge-Riemann pairing. Consequently, the rational Beauville-Bogomolov-Fujiki lattices of these two spaces are Hodge-similar.\n  Assuming further that $B$ is smooth, that the fibers of the fibrations are reduced outside of a locus of codimension $2$ in $B$, and that the integral homology classes of a general fiber in both spaces are primitive, we show Sacc\u00e0's conjecture using a recent result of Bogomolov-Kamenova-Verbitsky. We also show that Beauville-Mukai systems for primitive classes satisfy the last condition.",
+  "url": "http://arxiv.org/abs/2602.21554v1",
+  "timestamp": "2026-02-25T04:20:36Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "6b50fc3e0c07e9d8b5b1004fc02f08e857c978fa69b97dda3e6f867935901f17",
+  "parent_hash": "e38698e385f11904804a42cad88b1a1b8e86ed3627428066494ac88f1716e6f3",
+  "metadata": {
+    "authors": [
+      "David Zhiyuan Bai"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.21554v1"
+  }
+}

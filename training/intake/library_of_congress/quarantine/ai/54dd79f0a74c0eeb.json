@@ -1,0 +1,34 @@
+{
+  "id": "54dd79f0a74c0eeb",
+  "source": "library_of_congress",
+  "category": "quarantine/ai",
+  "title": "Machine learning : ECML 2006 : 17th European Conference on Machine Learning, Berlin, Germany, September 18-22, 2006 : proceedings",
+  "content": "# Machine learning : ECML 2006 : 17th European Conference on Machine Learning, Berlin, Germany, September 18-22, 2006 : proceedings\n\nContributors: spiliopoulou, myra, european conference on machine learning, scheffer, tobias, f\u00fcrnkranz, johannes\nDate: 2006\nSubjects: congr\u00e8s, congresses, machine learning, apprentissage automatique\n\nIncludes bibliographical references and index. Also issued online.",
+  "url": "//lccn.loc.gov/2006932512",
+  "timestamp": "2026-03-06T02:38:34.742567",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "1c928805a8fec6534d2bcb9d97b63cebb2ee73dacc27ef4829363d8c68338baf",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "congr\u00e8s",
+      "congresses",
+      "machine learning",
+      "apprentissage automatique"
+    ],
+    "dates": "2006",
+    "original_format": [
+      "book"
+    ]
+  }
+}

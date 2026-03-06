@@ -1,0 +1,32 @@
+{
+  "id": "a52d23d7faa9554e",
+  "source": "arxiv",
+  "category": "security",
+  "title": "OMNIINTENT: A Trusted Intent-Centric Framework for User-Friendly Web3",
+  "content": "# OMNIINTENT: A Trusted Intent-Centric Framework for User-Friendly Web3\n\nAuthors: Zhuoran Pan, Yue Li, Zhi Guan, Jianbin Hu, Zhong Chen\nPublished: 2026-03-04T15:24:47Z\n\nThe increasingly complex Web3 ecosystem and decentralized finance (DeFi) landscape demand ever higher levels of technical expertise and financial literacy from participants. The Intent-Centric paradigm in DeFi has thus emerged in response, which allows users to focus on their trading intents rather than the underlying execution details. However, existing approaches, including Typed-intent design and LLM-driven solver, trade off expressiveness, trust, privacy, and composability.\n  We present OMNIINTENT, a language-runtime co-design that reconciles these requirements. OMNIINTENT introduces ICL, a domain-specific Intent-Centric Language for precise yet flexible specification of triggers, actions, and runtime constraints; a Trusted Execution Environment (TEE)-based compiler that compiles intents into signed, state-bound transactions inside an enclave; and an execution optimizer that constructs transaction dependency graphs for safe parallel batch submission and a mempool-aware feasibility checker that predicts execution outcomes. Our full-stack prototype processes diverse DeFi scenarios, achieving 89.6% intent coverage, up to 7.3x throughput speedup via parallel execution, and feasibility-prediction accuracy up to 99.2% with low latency.",
+  "url": "http://arxiv.org/abs/2603.04168v1",
+  "timestamp": "2026-03-04T15:24:47Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "f64eeff2495562af481716bbb693907a49de6335df6b6df762e90a43c02ad550",
+  "parent_hash": "0f25e4f40146719c81366a4543d554716fbcf733b204f52526182d9a391e429e",
+  "metadata": {
+    "authors": [
+      "Zhuoran Pan",
+      "Yue Li",
+      "Zhi Guan",
+      "Jianbin Hu",
+      "Zhong Chen"
+    ],
+    "arxiv_category": "cs.CR",
+    "arxiv_id": "2603.04168v1"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "6e07ade760065bb0",
+  "source": "internet_archive",
+  "category": "quarantine/math",
+  "title": "Local covariant quantum field theory over spectral geometries",
+  "content": "# Local covariant quantum field theory over spectral geometries\n\nCreator: Mario Paschke, Rainer Verch\nDate: 2004-05-11T00:00:00Z\nDownloads: 77\nSubjects: \n\nA framework which combines ideas from Connes' noncommutative geometry, or spectral geometry, with recent ideas on generally covariant quantum field theory, is proposed in the present work. A certain type of spectral geometries modelling (possibly noncommutative) globally hyperbolic spacetimes is introduced in terms of so-called globally hyperbolic spectral triples. The concept is further generalized to a category of globally hyperbolic spectral geometries whose morphisms describe the generalization of isometric embeddings. Then a local generally covariant quantum field theory is introduced as a covariant functor between such a category of globally hyperbolic spectral geometries and the category of involutive algebras (or *-algebras). Thus, a local covariant quantum field theory over spectral geometries assigns quantum fields not just to a single noncommutative geometry (or noncommutative spacetime), but simultaneously to ``all'' spectral geometries, while respecting the covariance principle demanding that quantum field theories over isomorphic spectral geometries should also be isomorphic. It is suggested that in a quantum theory of gravity a particular class of globally hyperbolic spectral geometries is selected through a dynamical coupling of geometry and matter compatible with the covariance principle.",
+  "url": "https://archive.org/details/arxiv-gr-qc0405057",
+  "timestamp": "2026-03-06T02:38:47.918905",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "ecc3bb6bf517e501c746a9c0ceafa7f0b887446410d69e97903ea6ec5a8dcc12",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "arxiv-gr-qc0405057",
+    "media_type": "texts",
+    "downloads": 77,
+    "subjects": []
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "b29f218e96289d29",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "Model Medicine: A Clinical Framework for Understanding, Diagnosing, and Treating AI Models",
+  "content": "# Model Medicine: A Clinical Framework for Understanding, Diagnosing, and Treating AI Models\n\nAuthors: Jihoon Jeong\nPublished: 2026-03-05T01:49:29Z\n\nModel Medicine is the science of understanding, diagnosing, treating, and preventing disorders in AI models, grounded in the principle that AI models -- like biological organisms -- have internal structures, dynamic processes, heritable traits, observable symptoms, classifiable conditions, and treatable states. This paper introduces Model Medicine as a research program, bridging the gap between current AI interpretability research (anatomical observation) and the systematic clinical practice that complex AI systems increasingly require. We present five contributions: (1) a discipline taxonomy organizing 15 subdisciplines across four divisions -- Basic Model Sciences, Clinical Model Sciences, Model Public Health, and Model Architectural Medicine; (2) the Four Shell Model (v3.3), a behavioral genetics framework empirically grounded in 720 agents and 24,923 decisions from the Agora-12 program, explaining how model behavior emerges from Core--Shell interaction; (3) Neural MRI (Model Resonance Imaging), a working open-source diagnostic tool mapping five medical neuroimaging modalities to AI interpretability techniques, validated through four clinical cases demonstrating imaging, comparison, localization, and predictive capability; (4) a five-layer diagnostic framework for comprehensive model assessment; and (5) clinical model sciences including the Model Temperament Index for behavioral profiling, Model Semiology for symptom description, and M-CARE for standardized case reporting. We additionally propose the Layered Core Hypothesis -- a biologically-inspired three-layer parameter architecture -- and a therapeutic framework connecting diagnosis to treatment.",
+  "url": "http://arxiv.org/abs/2603.04722v1",
+  "timestamp": "2026-03-05T01:49:29Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "ee4e3c7f201e59b570c9976868db400081974ba50094255ca615b8c360c908c4",
+  "parent_hash": "4eb61dae8622cc2ba28ff8d8a4cb0bf589ff63af7e307fd9cd4a5d45cbe3252a",
+  "metadata": {
+    "authors": [
+      "Jihoon Jeong"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.04722v1"
+  }
+}

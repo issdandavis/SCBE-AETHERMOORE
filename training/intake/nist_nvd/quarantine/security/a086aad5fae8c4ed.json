@@ -1,0 +1,30 @@
+{
+  "id": "a086aad5fae8c4ed",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2006-7142 \u2014 CVSS 7.8 (HIGH)",
+  "content": "# CVE-2006-7142\n\nCVSS Score: 7.8 (HIGH)\nPublished: 2007-03-07T20:19:00.000\nCWEs: CWE-798\n\nThe centralized management feature for Utimaco Safeguard stores hard-coded cryptographic keys in executable programs for encrypted configuration files, which allows attackers to recover the keys from the configuration files and decrypt the disk drive.\n\nReferences: http://www.securityfocus.com/archive/1/448598/100/0/threaded, http://www.securityfocus.com/archive/1/449120/100/0/threaded, http://www.securityfocus.com/bid/20529",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2006-7142",
+  "timestamp": "2026-03-06T04:18:29.314823",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "3d7ce328974d13fa0b557c0ad2ac233be231d08246120d9f4bb6ee1c7d49f5d7",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2006-7142",
+    "cvss_score": 7.8,
+    "severity": "HIGH",
+    "cwes": [
+      "CWE-798"
+    ],
+    "published": "2007-03-07T20:19:00.000"
+  }
+}

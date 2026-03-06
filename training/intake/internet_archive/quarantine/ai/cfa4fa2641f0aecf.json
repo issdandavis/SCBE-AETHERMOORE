@@ -1,0 +1,33 @@
+{
+  "id": "cfa4fa2641f0aecf",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "Conduction in quasi-periodic and quasi-random lattices: Fibonacci, Riemann, and Anderson models",
+  "content": "# Conduction in quasi-periodic and quasi-random lattices: Fibonacci, Riemann, and Anderson models\n\nCreator: Vipin Kerala Varma, Sebastiano Pilati, Vladimir E. Kravtsov\nDate: 2016-07-21T00:00:00Z\nDownloads: 32\nSubjects: Disordered Systems and Neural Networks, Number Theory, Condensed Matter, Quantum Gases, Mathematics\n\nWe study the ground state conduction properties of noninteracting electrons in aperiodic but non-random one-dimensional models with chiral symmetry, and make comparisons against Anderson models with non-deterministic disorder. The first model we consider is the Fibonacci lattice, which is a paradigmatic model of quasicrystals; the second is the Riemann lattice, which we define inspired by Dyson's proposal on the possible connection between the Riemann hypothesis and a suitably defined quasicrystal. Our analysis is based on Kohn's many-particle localization tensor defined within the modern theory of the insulating state. In the Fibonacci quasicrystal, where all single-particle eigenstates are critical (i.e., intermediate between ergodic and localized), the noninteracting electron gas is found to be a conductor at most electron densities, including the half-filled case; however, at various specific fillings $\\rho$, including the values $\\rho = 1/g^n$, where $g$ is the golden ratio and $n$ is any integer, the gas turns into an insulator due to spectral gaps. Metallic behaviour is found at half-filling in the Riemann lattice as well; however, in contrast to the Fibonacci quasicrystal, the Riemann lattice is generically an insulator due to single-particle eigenstate localization, likely at all other fillings. Its behaviour turns out to be alike that of the off-diagonal Anderson model, albeit with different system-size scaling of the band-centre anomalies. The advantages of analysing the Kohn's localization tensor instead of other measures of localization familiar from the theory of Anderson insulators (such as the participation ratio or the Lyapunov exponent) are highlighted.",
+  "url": "https://archive.org/details/arxiv-1607.06276",
+  "timestamp": "2026-03-06T04:17:45.776739",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "c838797a68415362dcb7dae969a4bd8599438b1720546c46d676f3cd170b43e1",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "arxiv-1607.06276",
+    "media_type": "texts",
+    "downloads": 32,
+    "subjects": [
+      "Disordered Systems and Neural Networks",
+      "Number Theory",
+      "Condensed Matter",
+      "Quantum Gases",
+      "Mathematics"
+    ]
+  }
+}

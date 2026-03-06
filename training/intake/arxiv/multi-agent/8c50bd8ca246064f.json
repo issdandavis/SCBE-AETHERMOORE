@@ -1,0 +1,31 @@
+{
+  "id": "8c50bd8ca246064f",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "NERFIFY: A Multi-Agent Framework for Turning NeRF Papers into Code",
+  "content": "# NERFIFY: A Multi-Agent Framework for Turning NeRF Papers into Code\n\nAuthors: Seemandhar Jain, Keshav Gupta, Kunal Gupta, Manmohan Chandraker\nPublished: 2026-02-28T20:57:32Z\n\nThe proliferation of neural radiance field (NeRF) research requires significant efforts to reimplement papers before building upon them. We introduce NERFIFY, a multi-agent framework that reliably converts NeRF research papers into trainable Nerfstudio plugins, in contrast to generic paper-to-code methods and frontier models like GPT-5 that usually fail to produce runnable code. NERFIFY achieves domain-specific executability through six key innovations: (1) Context-free grammar (CFG): LLM synthesis is constrained by Nerfstudio formalized as a CFG, ensuring generated code satisfies architectural invariants. (2) Graph-of-Thought code synthesis: Specialized multi-file-agents generate repositories in topological dependency order, validating contracts and errors at each node. (3) Compositional citation recovery: Agents automatically retrieve and integrate components (samplers, encoders, proposal networks) from citation graphs of references. (4) Visual feedback: Artifacts are diagnosed through PSNR-minima ROI analysis, cross-view geometric validation, and VLM-guided patching to iteratively improve quality. (5) Knowledge enhancement: Beyond reproduction, methods can be improved with novel optimizations. (6) Benchmarking: An evaluation framework is designed for NeRF paper-to-code synthesis across 30 diverse papers. On papers without public implementations, NERFIFY achieves visual quality matching expert human code (+/-0.5 dB PSNR, +/-0.2 SSIM) while reducing implementation time from weeks to minutes. NERFIFY demonstrates that a domain-aware design enables code translation for complex vision papers, potentiating accelerated and democratized reproducible research. Code, data and implementations will be publicly released.",
+  "url": "http://arxiv.org/abs/2603.00805v1",
+  "timestamp": "2026-02-28T20:57:32Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "44b69484afeb4d9f435a9e41c1341133dd827c02ac734d339292d01092a1860a",
+  "parent_hash": "03e6691971320e0af9911a60732c69fce668ffb6f324bba0811fbe18db58bbc4",
+  "metadata": {
+    "authors": [
+      "Seemandhar Jain",
+      "Keshav Gupta",
+      "Kunal Gupta",
+      "Manmohan Chandraker"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.00805v1"
+  }
+}

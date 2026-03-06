@@ -1,0 +1,25 @@
+{
+  "id": "c2b15510fd81b66f",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Quasicrystals: how and why do they form? (Q63368404)",
+  "content": "# Quasicrystals: how and why do they form?\n\nWikidata ID: Q63368404\nDescription: research project\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q63368404",
+  "timestamp": "2026-03-06T04:18:05.821518",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "0aa8350a727778c0cfbec26ce1afa061b5037103fdc9270627afe850a91fbf0c",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "wikidata_id": "Q63368404",
+    "description": "research project"
+  }
+}

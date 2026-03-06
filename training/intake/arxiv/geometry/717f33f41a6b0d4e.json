@@ -1,0 +1,28 @@
+{
+  "id": "717f33f41a6b0d4e",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Obata's rigidity theorem in free probability",
+  "content": "# Obata's rigidity theorem in free probability\n\nAuthors: Charles-Philippe Diez\nPublished: 2026-03-05T18:36:43Z\n\nWe establish a free analogue of Obata's rigidity theorem. More precisely, Cheng and Zhou (2017) proved that on a weighted Riemannian manifold, the sharp spectral gap (Poincar\u00e9 constant) is achieved only when the space splits isometrically off a one-dimensional Gaussian factor, providing an infinite-dimensional counterpart of Obata's rigidity theorem. We obtain the corresponding phenomenon in free probability, extending it beyond the setting of analytic self-adjoint potentials:\n  Assume a self-adjoint $n$-tuple $X=(X_1,\\dots,X_n)$ admits Lipschitz conjugate variables in the sense of Dabrowski (2014). Under a suitable non-commutative curvature-dimension condition, we show that any non-zero saturator of Voiculescu's free Poincar\u00e9 inequality must be an affine function of the generators. Consequently, we deduce that the von Neumann algebra $M=W^*(X_1,\\dots,X_n)$ necessarily splits off a freely complemented semicircular component $W^*(Y_1)\\simeq L^{\\infty}([-2,2],\u03bc_{\\rm sc})$, which is also maximal amenable in $M$.\n  More generally, whenever the first eigenspace of the free Laplacian $\u0394=\\partial^*\\bar\\partial$ is finite-dimensional of rank $r\\ge 1$, our rigidity argument shows that these $r$ extremal directions form a free semicircular family, yielding a free product decomposition with an $L(\\mathbb{F}_r)$ factor. This provides a free-probability analogue of the classical Gaussian splitting phenomenon and reveals a rigidity mechanism under non-commutative curvature.",
+  "url": "http://arxiv.org/abs/2603.05466v1",
+  "timestamp": "2026-03-05T18:36:43Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "dd97dfcc9b588c110c6b055b5b12a8dd04f35f2d64e78c7439307ec344d9d460",
+  "parent_hash": "d340eead65aecd28f05cd17b805c50aba50e656492a73235c1e12f1e5d21f92b",
+  "metadata": {
+    "authors": [
+      "Charles-Philippe Diez"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.05466v1"
+  }
+}

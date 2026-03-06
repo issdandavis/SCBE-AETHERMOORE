@@ -1,0 +1,31 @@
+{
+  "id": "cb694027404d1e21",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2025-52473 \u2014 CVSS 5.9 (MEDIUM)",
+  "content": "# CVE-2025-52473\n\nCVSS Score: 5.9 (MEDIUM)\nPublished: 2025-07-10T19:15:25.387\nCWEs: CWE-200, NVD-CWE-noinfo\n\nliboqs is a C-language cryptographic library that provides implementations of post-quantum cryptography algorithms. Multiple secret-dependent branches have been identified in the reference implementation of the HQC key encapsulation mechanism when it is compiled with Clang for optimization levels above -O0 (-O1, -O2, etc). A proof-of-concept local attack exploits this secret-dependent information to recover the entire secret key. This vulnerability is fixed in 0.14.0.\n\nReferences: https://github.com/open-quantum-safe/liboqs/commit/4215362acbf69b88fe1777c4c052f154e29f9897, https://github.com/open-quantum-safe/liboqs/security/advisories/GHSA-qq3m-rq9v-jfgm",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-52473",
+  "timestamp": "2026-03-06T02:41:36.374119",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "15a08485d2b581e9086fc57ba17be0d93bb18e9ff31cea95db7d1b3d9026b539",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2025-52473",
+    "cvss_score": 5.9,
+    "severity": "MEDIUM",
+    "cwes": [
+      "CWE-200",
+      "NVD-CWE-noinfo"
+    ],
+    "published": "2025-07-10T19:15:25.387"
+  }
+}

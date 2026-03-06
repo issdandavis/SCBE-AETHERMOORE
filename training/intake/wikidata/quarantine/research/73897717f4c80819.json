@@ -1,0 +1,25 @@
+{
+  "id": "73897717f4c80819",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "quasicrystal (Q263214)",
+  "content": "# quasicrystal\n\nWikidata ID: Q263214\nDescription: chemical structure\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q263214",
+  "timestamp": "2026-03-06T04:18:05.821493",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "c0b6b4942e136a460045e5ffc9f03d3e27d2e45d92b4425adeaa85af58ece19d",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "wikidata_id": "Q263214",
+    "description": "chemical structure"
+  }
+}

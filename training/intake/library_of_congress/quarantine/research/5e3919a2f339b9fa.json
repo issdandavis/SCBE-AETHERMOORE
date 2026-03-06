@@ -1,0 +1,33 @@
+{
+  "id": "5e3919a2f339b9fa",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Theater and the sacred in the Middle Ages",
+  "content": "# Theater and the sacred in the Middle Ages\n\nContributors: burzy\u0144ski, jan, d\u0105br\u00f3wka, andrzej, golubiewski, miko\u0142aj\nDate: 2019-01-01\nSubjects: christianity, theater, religious aspects\n\nThe book presents a theory of relationship between the forms of devotion and early drama genres. The historical background is the circumstances of the Church becoming independent of the Empire. A theological and philosophical aspect of the transformation of piety at the time was the specification of the ontological status of the sacred (spiritualization) and \"shifting it to Heaven\" (transcendentalization). In opposition to a theory of Western civilization as a process of increasing individual self-control, the author argues for the need to take into account purely religious conditions (the idea of recapitulation). This allows the author to develop a holistic aesthetics for the religiously inspired creativity in the period spanning the 11th-15th centuries and to propose a new typology of medieval drama. --From publisher's description.",
+  "url": "https://www.loc.gov/item/2020719005/",
+  "timestamp": "2026-03-06T02:38:09.282334",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4f50cea8e8495198ae909fb2c7877db5dbdffcf68bc331e8c0edef6e4b26b8e6",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "christianity",
+      "theater",
+      "religious aspects"
+    ],
+    "dates": "2019-01-01",
+    "original_format": [
+      "book"
+    ]
+  }
+}

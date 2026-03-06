@@ -1,0 +1,33 @@
+{
+  "id": "cef360ebdb9c8283",
+  "source": "arxiv",
+  "category": "security",
+  "title": "Efficient Privacy-Preserving Sparse Matrix-Vector Multiplication Using Homomorphic Encryption",
+  "content": "# Efficient Privacy-Preserving Sparse Matrix-Vector Multiplication Using Homomorphic Encryption\n\nAuthors: Yang Gao, Gang Quan, Wujie Wen, Scott Piersall, Qian Lou, Liqiang Wang\nPublished: 2026-03-05T02:29:50Z\n\nSparse matrix-vector multiplication (SpMV) is a fundamental operation in scientific computing, data analysis, and machine learning. When the data being processed are sensitive, preserving privacy becomes critical, and homomorphic encryption (HE) has emerged as a leading approach for addressing this challenge. Although HE enables privacy-preserving computation, its application to SpMV has remained largely unaddressed. To the best of our knowledge, this paper presents the first framework that efficiently integrates HE with SpMV, addressing the dual challenges of computational efficiency and data privacy. In particular, we introduce a novel compressed matrix format, named Compressed Sparse Sorted Column (CSSC), which is specifically designed to optimize encrypted sparse matrix computations. By preserving sparsity and enabling efficient ciphertext packing, CSSC significantly reduces storage and computational overhead. Our experimental results on real-world datasets demonstrate that the proposed method achieves significant gains in both processing time and memory usage. This study advances privacy-preserving SpMV and lays the groundwork for secure applications in federated learning, encrypted databases, scientific computing, and beyond.",
+  "url": "http://arxiv.org/abs/2603.04742v1",
+  "timestamp": "2026-03-05T02:29:50Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "a52efece03b4c5612fa93fc5a547d7eec24e30f11df25a35e81d53b85b109d7e",
+  "parent_hash": "a3f3b16f65d7c9c4a30bc1ba9ad4d77ad0f8ad5c0dcdf325960093a4a38146ad",
+  "metadata": {
+    "authors": [
+      "Yang Gao",
+      "Gang Quan",
+      "Wujie Wen",
+      "Scott Piersall",
+      "Qian Lou",
+      "Liqiang Wang"
+    ],
+    "arxiv_category": "cs.CR",
+    "arxiv_id": "2603.04742v1"
+  }
+}

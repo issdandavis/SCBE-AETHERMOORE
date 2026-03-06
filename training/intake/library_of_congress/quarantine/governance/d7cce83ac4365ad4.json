@@ -1,0 +1,40 @@
+{
+  "id": "d7cce83ac4365ad4",
+  "source": "library_of_congress",
+  "category": "quarantine/governance",
+  "title": "Data of geochemistry, second edition, by Frank Wigglesworth Clarke. [U.S. Geological Survey Bulletin 491.]",
+  "content": "# Data of geochemistry, second edition, by Frank Wigglesworth Clarke. [U.S. Geological Survey Bulletin 491.]\n\nContributors: united states. congress. house, clarke, frank wigglesworth, united states. government publishing office, geological survey (u.s.), united states congress. house\nDate: 1911\nSubjects: geochemistry, petrology, government publication, bodies of water, ocean\n\n",
+  "url": "https://www.loc.gov/item/2024874372/",
+  "timestamp": "2026-03-06T04:17:25.148212",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "3ae7611e41ebf5a02d3320e7d35863be32a59147dc4ec7703292e892e1ffa382",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "geochemistry",
+      "petrology",
+      "government publication",
+      "bodies of water",
+      "ocean",
+      "coal",
+      "mines and mineral resources",
+      "volcanoes",
+      "seas",
+      "geology"
+    ],
+    "dates": "1911",
+    "original_format": [
+      "book"
+    ]
+  }
+}

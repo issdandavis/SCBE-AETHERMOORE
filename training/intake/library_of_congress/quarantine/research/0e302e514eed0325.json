@@ -1,0 +1,31 @@
+{
+  "id": "0e302e514eed0325",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Electrical engineering testing;",
+  "content": "# Electrical engineering testing;\n\nContributors: parr, george dudley aspinall\nDate: 1922\nSubjects: electric testing\n\nAlso available in digital form.",
+  "url": "https://www.loc.gov/item/22017999/",
+  "timestamp": "2026-03-06T04:17:33.805715",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "0424c69b3adec843fb9fa87e2f9cad0fe50028f99229490e78fb7a327d44a5cb",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "electric testing"
+    ],
+    "dates": "1922",
+    "original_format": [
+      "book"
+    ]
+  }
+}

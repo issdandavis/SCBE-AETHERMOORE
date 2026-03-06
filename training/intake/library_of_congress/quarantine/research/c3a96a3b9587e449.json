@@ -1,0 +1,32 @@
+{
+  "id": "c3a96a3b9587e449",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Blockchain and crypt currency : building a high quality marketplace for crypt data",
+  "content": "# Blockchain and crypt currency : building a high quality marketplace for crypt data\n\nContributors: dai, chris, yano, makoto, masuda, kenichi, kishimoto, yoshio\nDate: 2021\nSubjects: blockchains (databases), cryptocurrencies\n\n\"This open access book contributes to the creation of a cyber ecosystem supported by blockchain technology in which technology and people can coexist in harmony. Blockchains have shown that trusted records, or ledgers, of permanent data can be stored on the Internet in a decentralized manner. The decentralization of the recording process is expected to significantly economize the cost of transactions. Creating a ledger on data, a blockchain makes it possible to designate the owner of each piece of data, to trade data pieces, and to market them. This book examines the formation of markets for various types of data from the theory of market quality proposed and developed by M. Yano. Blockchains are expected to give data itself the status of a new production factor. Bringing ownership of data to the hands of data producers, blockchains can reduce the possibility of information leakage, enhance the sharing and use of IoT data, and prevent data monopoly and misuse. The industry will have a bright future as soon as better technology is developed and when a healthy infrastructure is created to support the blockchain market.\"--DOAB. Includes bibliographical references and index. Title from Directory of Open Access Books ; viewed on March 21, 2023",
+  "url": "https://www.loc.gov/item/2022360471/",
+  "timestamp": "2026-03-06T02:38:39.088157",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "90bfe524be2dbb08402ffd021b5f421de4ecd13c1d29920b17b4cb1101ebe76d",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "blockchains (databases)",
+      "cryptocurrencies"
+    ],
+    "dates": "2021",
+    "original_format": [
+      "book"
+    ]
+  }
+}

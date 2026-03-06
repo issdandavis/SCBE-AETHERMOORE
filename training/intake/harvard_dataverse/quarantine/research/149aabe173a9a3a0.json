@@ -1,0 +1,32 @@
+{
+  "id": "149aabe173a9a3a0",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Glove Word Embeddings (3 year)",
+  "content": "# Glove Word Embeddings (3 year)\n\nAuthors: Pair, Emma\nPublished: 2021-12-08T02:06:39Z\nSubjects: Computer and Information Science, Social Sciences\nDOI: doi:10.7910/DVN/XQ9685\n\nThese are GloVe word embeddings created from article text grouped into three years (e.g. 1998-2000, 2001-2003) from the Daily Nation, a Kenyan newspaper, and the corresponding vocabulary files.\n\nCitation: Pair, Emma, 2021, \"Glove Word Embeddings (3 year)\", https://doi.org/10.7910/DVN/XQ9685, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/XQ9685",
+  "timestamp": "2026-03-06T02:42:11.933317",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "bc7e711be90b0d8f2193299a64d44cdc3e1f9d0ec980a400bc1afd8c714fa152",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/XQ9685",
+    "subjects": [
+      "Computer and Information Science",
+      "Social Sciences"
+    ],
+    "authors": [
+      "Pair, Emma"
+    ],
+    "file_count": 12
+  }
+}

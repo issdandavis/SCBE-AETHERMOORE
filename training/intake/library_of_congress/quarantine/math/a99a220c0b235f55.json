@@ -1,0 +1,31 @@
+{
+  "id": "a99a220c0b235f55",
+  "source": "library_of_congress",
+  "category": "quarantine/math",
+  "title": "The elements of analytical geometry.",
+  "content": "# The elements of analytical geometry.\n\nContributors: loomis, elias\nDate: 1882\nSubjects: geometry, analytic\n\nAlso available in digital form.",
+  "url": "https://www.loc.gov/item/17030525/",
+  "timestamp": "2026-03-06T02:37:52.081839",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "c138f3cac07faadeaf9c7120e2d99fc9adac748806ce27ef71d43f5010e23c34",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "geometry, analytic"
+    ],
+    "dates": "1882",
+    "original_format": [
+      "book"
+    ]
+  }
+}

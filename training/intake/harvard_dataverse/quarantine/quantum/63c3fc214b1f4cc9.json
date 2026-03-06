@@ -1,0 +1,31 @@
+{
+  "id": "63c3fc214b1f4cc9",
+  "source": "harvard_dataverse",
+  "category": "quarantine/quantum",
+  "title": "Quantum Computing Perspective for Electromagnetic Wave Propagation in Cold Magnetized Plasma",
+  "content": "# Quantum Computing Perspective for Electromagnetic Wave Propagation in Cold Magnetized Plasma\n\nAuthors: Efstratios Koukoutsis, Kyriakos Hizanidis, George Vahala, Min Soe, Linda Vahala, Abhay K. Ram\nPublished: 2024-12-13T12:30:45Z\nSubjects: Physics\nDOI: doi:10.7910/DVN/OCSBSY\n\nElectromagnetic waves are an inherent part of all plasmas - laboratory fusion plasmas or astrophysical plasmas. The conventional methods for studying properties of electromagnetic waves rely on discretization of Maxwell equations suitable for implementing on classical, present day, computers. The traditional methodology is not efficient for quantum computing implementation - a future computational source offering a tantalizing possibility of enormous speed up and a significant reduction in computational cost. This paper addresses two topics relevant to implementing Maxwell equations on a quantum computer. The first is on formulating a quantum Schr\u00f6dinger representation of Maxwell equations for wave propagation in a cold, inhomogeneous, and magnetized plasma. This representation admits unitary, energy preserving, evolution and conveniently lends itself to appropriate discretization for a quantum computer. Riding on the coattails of these results, the second topic is on developing a sequence of unitary operators which form the basis for a qubit lattice algorithm (QLA). The QLA, suitable for quantum computers, can be implemented and tested on existing classical computers for accuracy as well as scaling of computational time with the number of available processors. In order to illustrate the QLA for Maxwell equations, results are presented from a time evolving, full wave simulation of propagation and scattering of an electromagnetic wave packet by non-dispersive dielectric medium localized in space.\n\nCitation: Efstratios Koukoutsis, Kyriakos Hizanidis, George Vahala, Min Soe, Linda Vahala, Abhay K. Ram, 2024, \"Quantum Computing Perspective for Electromagnetic Wave Propagation in Cold Magnetized Plasma\", https://doi.org/10.7910/DVN/OCSBSY, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/OCSBSY",
+  "timestamp": "2026-03-06T02:42:24.924562",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "455fc74cb1862f67efebc81a5d127b889937a63b62e6c066ebde0d05e38d1f51",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/OCSBSY",
+    "subjects": [
+      "Physics"
+    ],
+    "authors": [
+      "Efstratios Koukoutsis, Kyriakos Hizanidis, George Vahala, Min Soe, Linda Vahala, Abhay K. Ram"
+    ],
+    "file_count": 1
+  }
+}

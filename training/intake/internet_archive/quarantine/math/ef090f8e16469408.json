@@ -1,0 +1,32 @@
+{
+  "id": "ef090f8e16469408",
+  "source": "internet_archive",
+  "category": "quarantine/math",
+  "title": "Opinion Dynamics in Social Networks with Hostile Camps: Consensus vs. Polarization",
+  "content": "# Opinion Dynamics in Social Networks with Hostile Camps: Consensus vs. Polarization\n\nCreator: Anton V. Proskurnikov, Alexey Matveev, Ming Cao\nDate: 2015-08-20T00:00:00Z\nDownloads: 68\nSubjects: Systems and Control, Optimization and Control, Computing Research Repository, Mathematics\n\nMost of the distributed protocols for multi-agent consensus assume that the agents are mutually cooperative and \"trustful,\" and so the couplings among the agents bring the values of their states closer. Opinion dynamics in social groups, however, require beyond these conventional models due to ubiquitous competition and distrust between some pairs of agents, which are usually characterized by repulsive couplings and may lead to clustering of the opinions. A simple yet insightful model of opinion dynamics with both attractive and repulsive couplings was proposed recently by C. Altafini, who examined first-order consensus algorithms over static signed graphs. This protocol establishes modulus consensus, where the opinions become the same in modulus but may differ in signs. In this paper, we extend the modulus consensus model to the case where the network topology is an arbitrary time-varying signed graph and prove reaching modulus consensus under mild sufficient conditions of uniform connectivity of the graph. For cut-balanced graphs, not only sufficient, but also necessary conditions for modulus consensus are given.",
+  "url": "https://archive.org/details/arxiv-1508.05034",
+  "timestamp": "2026-03-06T03:59:26.497733",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "40058fda1bfded59e6391dca30a5a66ee9a15b2b9794f0465899d89e35326ff7",
+  "parent_hash": "12cd4a96fd71dc9d970d8a14ed6b5852b9056b4bfd16d8333f7b43b74b85d684",
+  "metadata": {
+    "ia_identifier": "arxiv-1508.05034",
+    "media_type": "texts",
+    "downloads": 68,
+    "subjects": [
+      "Systems and Control",
+      "Optimization and Control",
+      "Computing Research Repository",
+      "Mathematics"
+    ]
+  }
+}

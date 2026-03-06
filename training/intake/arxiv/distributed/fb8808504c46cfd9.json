@@ -1,0 +1,28 @@
+{
+  "id": "fb8808504c46cfd9",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "The Semantic Arrow of Time, Part IV: Why Transactions Fail",
+  "content": "# The Semantic Arrow of Time, Part IV: Why Transactions Fail\n\nAuthors: Paul Borrill\nPublished: 2026-03-05T04:54:24Z\n\nThis is the fourth of five papers comprising The Semantic Arrow of Time. Parts I-III established that computing's hidden arrow of time is semantic rather than thermodynamic, that bilateral transaction protocols create causal order through a mandatory reflecting phase, and that RDMA's completion semantics implement the FITO category mistake at industrial scale.\n  This paper traces the consequences of the FITO category mistake beyond the data center, into systems people use every day. We examine three domains where forward-only temporal assumptions destroy meaning: file synchronization, where cloud platforms silently delete user content because last-writer-wins cannot represent distributed causality; email, where timestamp-based ordering produces phantom messages, causality violations, and stuck synchronization; and memory--both human and artificial--where reconstructive processes that operate without transactional guarantees produce systematic semantic corruption.\n  In each domain, we identify the same structural pattern: a system that commits state changes forward in time without a reflecting phase, and that therefore cannot distinguish between successful semantic integration and mere temporal succession. The pattern is not coincidental. It is the FITO category mistake operating at different scales: bytes in a NIC buffer, files in a cloud, messages in an inbox, engrams in a hippocampus, tokens in a transformer.\n  We conclude that the semantic arrow of time is violated whenever a system treats the forward flow of information as sufficient evidence of meaning. Part V will show how the Leibniz Bridge provides a unified framework for closing this gap across all five domains.",
+  "url": "http://arxiv.org/abs/2603.04810v1",
+  "timestamp": "2026-03-05T04:54:24Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "2fb4678d1860a9d4c808c1007cf62077d00b40385cd6291767762f85c5d474ae",
+  "parent_hash": "e2e32a95cb0f1f1b476d6d3beff1aefda63f88831b5da692f3b0187b7a238ec9",
+  "metadata": {
+    "authors": [
+      "Paul Borrill"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.04810v1"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "9f45da76b52190fe",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2008-4453 \u2014 CVSS 9.3 (UNKNOWN)",
+  "content": "# CVE-2008-4453\n\nCVSS Score: 9.3 (UNKNOWN)\nPublished: 2008-10-06T23:25:50.630\nCWEs: CWE-264\n\nThe GdPicture (1) Light Imaging Toolkit 4.7.1 GdPicture4S.Imaging ActiveX control (gdpicture4s.ocx) 4.7.0.1 and (2) Pro Imaging SDK 5.7.1 GdPicturePro5S.Imaging ActiveX control (gdpicturepro5s.ocx) 5.7.0.1 allows remote attackers to create, overwrite, and modify arbitrary files via the SaveAsPDF method.  NOTE: this issue might only be exploitable in limited environments or non-default browser settings.  NOTE: this can be leveraged for remote code execution by accessing files using hcp:// URLs.  NOTE: some of these details are obtained from third party information.\n\nReferences: http://secunia.com/advisories/31898, http://secunia.com/advisories/31966, http://securityreason.com/securityalert/4355",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2008-4453",
+  "timestamp": "2026-03-06T02:41:44.330306",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "69ad6cdde3fa2413a9c3b44b65628334846190ca9263b4518bb06235d201ef44",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2008-4453",
+    "cvss_score": 9.3,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "CWE-264"
+    ],
+    "published": "2008-10-06T23:25:50.630"
+  }
+}

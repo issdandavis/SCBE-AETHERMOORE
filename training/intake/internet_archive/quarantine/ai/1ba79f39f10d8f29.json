@@ -1,0 +1,38 @@
+{
+  "id": "1ba79f39f10d8f29",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "NASA Technical Reports Server (NTRS) 20090020626: Utilizing Ion-Mobility Data to Estimate Molecular Masses",
+  "content": "# NASA Technical Reports Server (NTRS) 20090020626: Utilizing Ion-Mobility Data to Estimate Molecular Masses\n\nCreator: NASA Technical Reports Server (NTRS)\nDate: 2008-01-01T00:00:00Z\nDownloads: 77\nSubjects: NASA Technical Reports Server (NTRS), ION MOBILITY SPECTROSCOPY, MOLECULAR WEIGHT, MOLECULAR IONS, CHEMICAL DETECTION\n\nA method is being developed for utilizing readings of an ion-mobility spectrometer (IMS) to estimate molecular masses of ions that have passed through the spectrometer. The method involves the use of (1) some feature-based descriptors of structures of molecules of interest and (2) reduced ion mobilities calculated from IMS readings as inputs to (3) a neural network. This development is part of a larger effort to enable the use of IMSs as relatively inexpensive, robust, lightweight instruments to identify, via molecular masses, individual compounds or groups of compounds (especially organic compounds) that may be present in specific environments or samples. Potential applications include detection of organic molecules as signs of life on remote planets, modeling and detection of biochemicals of interest in the pharmaceutical and agricultural industries, and detection of chemical and biological hazards in industrial, homeland-security, and industrial settings.",
+  "url": "https://archive.org/details/NASA_NTRS_Archive_20090020626",
+  "timestamp": "2026-03-06T02:40:40.434295",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4507a34daecae5c9b22d653f7303eca4ec402af665405dd0e13bd9e441e8aa46",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "NASA_NTRS_Archive_20090020626",
+    "media_type": "texts",
+    "downloads": 77,
+    "subjects": [
+      "NASA Technical Reports Server (NTRS)",
+      "ION MOBILITY SPECTROSCOPY",
+      "MOLECULAR WEIGHT",
+      "MOLECULAR IONS",
+      "CHEMICAL DETECTION",
+      "MOLECULAR STRUCTURE",
+      "IONIC MOBILITY",
+      "NEURAL NETS",
+      "Duong, Tuan",
+      "Kanik, Isik"
+    ]
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "id": "35aac0955f285908",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "An Approach to Simultaneous Acquisition of Real-Time MRI Video, EEG, and Surface EMG for Articulatory, Brain, and Muscle Activity During Speech Production",
+  "content": "# An Approach to Simultaneous Acquisition of Real-Time MRI Video, EEG, and Surface EMG for Articulatory, Brain, and Muscle Activity During Speech Production\n\nAuthors: Jihwan Lee, Parsa Razmara, Kevin Huang, Sean Foley, Aditya Kommineni, Haley Hsu, Woojae Jeong, Prakash Kumar, Xuan Shi, Yoonjeong Lee, Tiantian Feng, Takfarinas Medani, Ye Tian, Sudarsana Reddy Kadiri, Krishna S. Nayak, Dani Byrd, Louis Goldstein, Richard M. Leahy, Shrikanth Narayanan\nPublished: 2026-03-05T05:46:30Z\n\nSpeech production is a complex process spanning neural planning, motor control, muscle activation, and articulatory kinematics. While the acoustic speech signal is the most accessible product of the speech production act, it does not directly reveal its causal neurophysiological substrates. We present the first simultaneous acquisition of real-time (dynamic) MRI, EEG, and surface EMG, capturing several key aspects of the speech production chain: brain signals, muscle activations, and articulatory movements. This multimodal acquisition paradigm presents substantial technical challenges, including MRI-induced electromagnetic interference and myogenic artifacts. To mitigate these, we introduce an artifact suppression pipeline tailored to this tri-modal setting. Once fully developed, this framework is poised to offer an unprecedented window into speech neuroscience and insights leading to brain-computer interface advances.",
+  "url": "http://arxiv.org/abs/2603.04840v1",
+  "timestamp": "2026-03-05T05:46:30Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "4eb61dae8622cc2ba28ff8d8a4cb0bf589ff63af7e307fd9cd4a5d45cbe3252a",
+  "parent_hash": "50dca03dd7d13a54086091b58fffa4718baef08f27b4a29b7babcb2a86ac6287",
+  "metadata": {
+    "authors": [
+      "Jihwan Lee",
+      "Parsa Razmara",
+      "Kevin Huang",
+      "Sean Foley",
+      "Aditya Kommineni",
+      "Haley Hsu",
+      "Woojae Jeong",
+      "Prakash Kumar",
+      "Xuan Shi",
+      "Yoonjeong Lee",
+      "Tiantian Feng",
+      "Takfarinas Medani",
+      "Ye Tian",
+      "Sudarsana Reddy Kadiri",
+      "Krishna S. Nayak",
+      "Dani Byrd",
+      "Louis Goldstein",
+      "Richard M. Leahy",
+      "Shrikanth Narayanan"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.04840v1"
+  }
+}

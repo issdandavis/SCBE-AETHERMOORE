@@ -1,0 +1,30 @@
+{
+  "id": "c6da80a2a67ccdbc",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2006-1405 \u2014 CVSS 5.8 (UNKNOWN)",
+  "content": "# CVE-2006-1405\n\nCVSS Score: 5.8 (UNKNOWN)\nPublished: 2006-03-28T11:06:00.000\nCWEs: NVD-CWE-Other\n\nCross-site scripting (XSS) vulnerability in search.aspx in SweetSuite.NET Content Management System (ssCMS) 2.1.0 and earlier allows remote attackers to inject arbitrary web script or HTML via the keywords parameter.\n\nReferences: http://pridels0.blogspot.com/2006/03/sweetsuitenet-sscms-21x-xss-vuln.html, http://secunia.com/advisories/19399, http://www.osvdb.org/24120",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2006-1405",
+  "timestamp": "2026-03-06T04:18:29.314796",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "82d04af3af09002182e245a87733226154b4a7eba338be9f81ac1c4417bb19e2",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2006-1405",
+    "cvss_score": 5.8,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-Other"
+    ],
+    "published": "2006-03-28T11:06:00.000"
+  }
+}

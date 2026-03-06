@@ -1,0 +1,30 @@
+{
+  "id": "5a34337b13be0b13",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2008-4342 \u2014 CVSS 9.3 (UNKNOWN)",
+  "content": "# CVE-2008-4342\n\nCVSS Score: 9.3 (UNKNOWN)\nPublished: 2008-09-30T17:22:09.507\nCWEs: CWE-20\n\nNuMedia Soft NMS DVD Burning SDK Activex NMSDVDX.DVDEngineX.1 ActiveX control (NMSDVDX.dll) 1.013C and earlier, as used in CDBurnerXP 4.2.1.976, BurnAware 2.1.3, Blaze Media Pro 8.02 Special Edition, and possibly other products, allows remote attackers to overwrite and create arbitrary files via calls to the EnableLog and LogMessage methods. NOTE: this issue might only be exploitable in limited environments or non-default browser settings. NOTE: some of these details are obtained from third party information. NOTE: this can be leveraged for remote code execution by accessing files using hcp:// URLs.\n\nReferences: http://retrogod.altervista.org/9sg_numedia_xpl.html, http://secunia.com/advisories/31936, http://secunia.com/advisories/31949",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2008-4342",
+  "timestamp": "2026-03-06T02:41:44.330284",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "15e4fe8843625db964f72d3e8c71293cdc2540d1cdb3362660de74b6443c0291",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2008-4342",
+    "cvss_score": 9.3,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "CWE-20"
+    ],
+    "published": "2008-09-30T17:22:09.507"
+  }
+}

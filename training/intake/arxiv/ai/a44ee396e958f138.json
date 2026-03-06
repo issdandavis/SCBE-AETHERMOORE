@@ -1,0 +1,35 @@
+{
+  "id": "a44ee396e958f138",
+  "source": "arxiv",
+  "category": "ai",
+  "title": "Ensembling Language Models with Sequential Monte Carlo",
+  "content": "# Ensembling Language Models with Sequential Monte Carlo\n\nAuthors: Robin Shing Moon Chan, Tianyu Liu, Samuel Kiegeland, Clemente Pasti, Jacob Hoover Vigly, Timothy J. O'Donnell, Ryan Cotterell, Tim Vieira\nPublished: 2026-03-05T17:54:31Z\n\nPractitioners have access to an abundance of language models and prompting strategies for solving many language modeling tasks; yet prior work shows that modeling performance is highly sensitive to both choices. Classical machine learning ensembling techniques offer a principled approach: aggregate predictions from multiple sources to achieve better performance than any single one. However, applying ensembling to language models during decoding is challenging: naively aggregating next-token probabilities yields samples from a locally normalized, biased approximation of the generally intractable ensemble distribution over strings. In this work, we introduce a unified framework for composing $K$ language models into $f$-ensemble distributions for a wide range of functions $f\\colon\\mathbb{R}_{\\geq 0}^{K}\\to\\mathbb{R}_{\\geq 0}$. To sample from these distributions, we propose a byte-level sequential Monte Carlo (SMC) algorithm that operates in a shared character space, enabling ensembles of models with mismatching vocabularies and consistent sampling in the limit. We evaluate a family of $f$-ensembles across prompt and model combinations for various structured text generation tasks, highlighting the benefits of alternative aggregation strategies over traditional probability averaging, and showing that better posterior approximations can yield better ensemble performance.",
+  "url": "http://arxiv.org/abs/2603.05432v1",
+  "timestamp": "2026-03-05T17:54:31Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "534b06566fda6b87e8da7dde997a2fe4785fc5b9cbbaf8171a82777b6cf63457",
+  "parent_hash": "9bc7cff8b06a3d667357db2b696569a0565509dd647f8509500bb03a42eb611b",
+  "metadata": {
+    "authors": [
+      "Robin Shing Moon Chan",
+      "Tianyu Liu",
+      "Samuel Kiegeland",
+      "Clemente Pasti",
+      "Jacob Hoover Vigly",
+      "Timothy J. O'Donnell",
+      "Ryan Cotterell",
+      "Tim Vieira"
+    ],
+    "arxiv_category": "cs.AI",
+    "arxiv_id": "2603.05432v1"
+  }
+}

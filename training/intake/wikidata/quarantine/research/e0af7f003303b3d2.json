@@ -1,0 +1,25 @@
+{
+  "id": "e0af7f003303b3d2",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Hyperbolic geometry of complex networks (Q27444483)",
+  "content": "# Hyperbolic geometry of complex networks\n\nWikidata ID: Q27444483\nDescription: scientific article (publication date: 9 September 2010)\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q27444483",
+  "timestamp": "2026-03-06T02:40:55.681282",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "e0dfe470a88d70dc05c61a46b0f4c7228c9d96870eb860b92e64ac16fceba314",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q27444483",
+    "description": "scientific article (publication date: 9 September 2010)"
+  }
+}

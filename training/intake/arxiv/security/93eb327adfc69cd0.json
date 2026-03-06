@@ -1,0 +1,31 @@
+{
+  "id": "93eb327adfc69cd0",
+  "source": "arxiv",
+  "category": "security",
+  "title": "Understanding the Resource Cost of Fully Homomorphic Encryption in Quantum Federated Learning",
+  "content": "# Understanding the Resource Cost of Fully Homomorphic Encryption in Quantum Federated Learning\n\nAuthors: Lukas B\u00f6hm, Arjhun Swaminathan, Anika Hannemann, Erik Buchmann\nPublished: 2026-03-03T09:36:55Z\n\nQuantum Federated Learning (QFL) enables distributed training of Quantum Machine Learning (QML) models by sharing model gradients instead of raw data. However, these gradients can still expose sensitive user information. To enhance privacy, homomorphic encryption of parameters has been proposed as a solution in QFL and related frameworks. In this work, we evaluate the overhead introduced by Fully Homomorphic Encryption (FHE) in QFL setups and assess its feasibility for real-world applications. We implemented various QML models including a Quantum Convolutional Neural Network (QCNN) trained in a federated environment with parameters encrypted using the CKKS scheme. This work marks the first QCNN trained in a federated setting with CKKS-encrypted parameters. Models of varying architectures were trained to predict brain tumors from MRI scans. The experiments reveal that memory and communication overhead remain substantial, making FHE challenging to deploy. Minimizing overhead requires reducing the number of model parameters, which, however, leads to a decline in classification performance, introducing a trade-off between privacy and model complexity.",
+  "url": "http://arxiv.org/abs/2603.02799v1",
+  "timestamp": "2026-03-03T09:36:55Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "fee683689238470e104b184947c38998d634dca60d89b712ff9a6d3c0b5facaf",
+  "parent_hash": "69fb935a205f7c893d32b3946ab5a9b21f6c051c8ecfb39f71501ed6eff1ce0f",
+  "metadata": {
+    "authors": [
+      "Lukas B\u00f6hm",
+      "Arjhun Swaminathan",
+      "Anika Hannemann",
+      "Erik Buchmann"
+    ],
+    "arxiv_category": "cs.CR",
+    "arxiv_id": "2603.02799v1"
+  }
+}

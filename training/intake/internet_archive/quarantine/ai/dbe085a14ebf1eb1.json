@@ -1,0 +1,38 @@
+{
+  "id": "dbe085a14ebf1eb1",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "PASSIO SANCTARUM PERPETUAE ET FELICITATIS",
+  "content": "# PASSIO SANCTARUM PERPETUAE ET FELICITATIS\n\nCreator: Maksin Apuleiu\nDate: 2026-02-21T00:00:00Z\nDownloads: 0\nSubjects: Latin, Classical Latin, Late Latin, Parallel Corpus, Latin Parallel Corpus\n\nThis item contains a structured Latin\u2013Bizaken parallel corpus of the Passio Sanctarum Perpetuae et Felicitatis (early 3rd century CE, Roman North Africa). The document includes: The original Classical Latin text (punctuation preserved) A fully systematic derivative text in Bizaken Paragraph-aligned formatting suitable for sentence-level comparison Bizaken is a deterministic Romance-derived linguistic system constructed through explicit transformation rules from Latin morphology: Nouns derive mechanically from the Latin accusative singular minus final -m. Verbs derive mechanically from the Latin infinitive minus -re / -ri. Tense is expressed analytically (ya-VERB construction). Passive constructions are expressed via auxiliary structures. Orthography is regularized (e.g., c \u2192 k). No arbitrary vocabulary is introduced. The transformation is rule-based and transparent. Because of its deterministic design and alignment structure, this text may be useful for: Natural Language Processing (NLP) Parallel corpus training Latin-to-Romance evolution modeling Morphological transformation analysis Low-resource language experiments Diachronic syntax research Machine learning pretraining corpora Cross-lingual embedding studies Digital humanities research The formatting preserves sentence boundaries and standard punctuation to allow computational parsing, tokenization, and alignment without preprocessing noise. The Latin text represents an important early Christian martyr narrative from Carthage (c. 203 CE), traditionally attributed in part to Vibia Perpetua and Saturus. This edition is released as an open linguistic resource for research, corpus construction, and computational experimentation.",
+  "url": "https://archive.org/details/passio-sanctarum-perpetuae-et-felicitatis",
+  "timestamp": "2026-03-06T02:40:36.587592",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "7ea1555d6eddc29630f746ed8d75ef8f0f6614041045e9e91cea6c87b2239e61",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "passio-sanctarum-perpetuae-et-felicitatis",
+    "media_type": "texts",
+    "downloads": 0,
+    "subjects": [
+      "Latin",
+      "Classical Latin",
+      "Late Latin",
+      "Parallel Corpus",
+      "Latin Parallel Corpus",
+      "Romance Linguistics",
+      "Latin Romance Evolution",
+      "Historical Linguistics",
+      "Diachronic Linguistics",
+      "Morphology"
+    ]
+  }
+}

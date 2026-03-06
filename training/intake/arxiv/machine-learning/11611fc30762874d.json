@@ -1,0 +1,33 @@
+{
+  "id": "11611fc30762874d",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "On-Policy Self-Distillation for Reasoning Compression",
+  "content": "# On-Policy Self-Distillation for Reasoning Compression\n\nAuthors: Hejian Sang, Yuanda Xu, Zhengze Zhou, Ran He, Zhipeng Wang, Jiachen Sun\nPublished: 2026-03-05T17:54:40Z\n\nReasoning models think out loud, but much of what they say is noise. We introduce OPSDC (On-Policy Self-Distillation for Reasoning Compression), a method that teaches models to reason more concisely by\n  distilling their own concise behavior back into themselves. The entire approach reduces to one idea: condition the same model on a \"be concise\" instruction to obtain teacher logits, and minimize per-token\n  reverse KL on the student's own rollouts. No ground-truth answers, no token budgets, no difficulty estimators. Just self-distillation. Yet this simplicity belies surprising sophistication: OPSDC automatically\n  compresses easy problems aggressively while preserving the deliberation needed for hard ones. On Qwen3-8B and Qwen3-14B, we achieve 57-59% token reduction on MATH-500 while improving accuracy by 9-16 points\n  absolute. On AIME 2024, the 14B model gains 10 points with 41% compression. The secret? Much of what reasoning models produce is not just redundant-it is actively harmful, compounding errors with every\n  unnecessary token.",
+  "url": "http://arxiv.org/abs/2603.05433v1",
+  "timestamp": "2026-03-05T17:54:40Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "7e1bab53a0c5ec1c4796e8bbd8926582cf7e7dc719fdd6bee55d1aed358390ec",
+  "parent_hash": "e9272e26c4cd89c7dfb0e72545a7478deec54581e1af28068cee8569750ef401",
+  "metadata": {
+    "authors": [
+      "Hejian Sang",
+      "Yuanda Xu",
+      "Zhengze Zhou",
+      "Ran He",
+      "Zhipeng Wang",
+      "Jiachen Sun"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.05433v1"
+  }
+}

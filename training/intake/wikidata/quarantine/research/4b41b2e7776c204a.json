@@ -1,0 +1,25 @@
+{
+  "id": "4b41b2e7776c204a",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "AI alignment (Q24882728)",
+  "content": "# AI alignment\n\nWikidata ID: Q24882728\nDescription: alignment of AI systems towards human goals, preferences and ethical principles\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q24882728",
+  "timestamp": "2026-03-06T02:41:06.702060",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "7de6991c11c18a6a02952ef41efe9b31e67432a80eab31f162883c513e34287c",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q24882728",
+    "description": "alignment of AI systems towards human goals, preferences and ethical principles"
+  }
+}

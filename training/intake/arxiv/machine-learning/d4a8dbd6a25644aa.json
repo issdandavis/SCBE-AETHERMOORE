@@ -1,0 +1,28 @@
+{
+  "id": "d4a8dbd6a25644aa",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "Thermodynamic Response Functions in Singular Bayesian Models",
+  "content": "# Thermodynamic Response Functions in Singular Bayesian Models\n\nAuthors: Sean Plummer\nPublished: 2026-03-05T18:50:20Z\n\nSingular statistical models-including mixtures, matrix factorization, and neural networks-violate regular asymptotics due to parameter non-identifiability and degenerate Fisher geometry. Although singular learning theory characterizes marginal likelihood behavior through invariants such as the real log canonical threshold and singular fluctuation, these quantities remain difficult to interpret operationally. At the same time, widely used criteria such as WAIC and WBIC appear disconnected from underlying singular geometry. We show that posterior tempering induces a one-parameter deformation of the posterior distribution whose associated observables generate a hierarchy of thermodynamic response functions. A universal covariance identity links derivatives of tempered expectations to posterior fluctuations, placing WAIC, WBIC, and singular fluctuation within a unified response framework. Within this framework, classical quantities from singular learning theory acquire natural thermodynamic interpretations: RLCT governs the leading free-energy slope, singular fluctuation corresponds to curvature of the tempered free energy, and WAIC measures predictive fluctuation. We formalize an observable algebra that quotients out non-identifiable directions, allowing structurally meaningful order parameters to be constructed in singular models. Across canonical singular examples-including symmetric Gaussian mixtures, reduced-rank regression, and overparameterized neural networks-we empirically demonstrate phase-transition-like behavior under tempering. Order parameters collapse, susceptibilities peak, and complexity measures align with structural reorganization in posterior geometry. Our results suggest that thermodynamic response theory provides a natural organizing framework for interpreting complexity, predictive variability, and structural reorganization in singular Bayesian learning.",
+  "url": "http://arxiv.org/abs/2603.05480v1",
+  "timestamp": "2026-03-05T18:50:20Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "48c4b29019f244b0856d20b397e5569b7cd154a6ec6f087147e52f5b1184b1df",
+  "parent_hash": "ee4e3c7f201e59b570c9976868db400081974ba50094255ca615b8c360c908c4",
+  "metadata": {
+    "authors": [
+      "Sean Plummer"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.05480v1"
+  }
+}

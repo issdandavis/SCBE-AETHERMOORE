@@ -1,0 +1,32 @@
+{
+  "id": "783a6a896ce448a9",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Engineering education;",
+  "content": "# Engineering education;\n\nContributors: baker, ray palmer\nDate: 1919\nSubjects: study and teaching, engineering\n\nAlso available in digital form.",
+  "url": "https://www.loc.gov/item/19014693/",
+  "timestamp": "2026-03-06T04:17:33.805685",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "600efd473834e1a01cb1f9c858f212df7b0e172c737f94451c7e05103493213e",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "study and teaching",
+      "engineering"
+    ],
+    "dates": "1919",
+    "original_format": [
+      "book"
+    ]
+  }
+}

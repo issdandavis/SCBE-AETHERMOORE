@@ -1,0 +1,28 @@
+{
+  "id": "6544e154ec9b0eff",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "In-Context Environments Induce Evaluation-Awareness in Language Models",
+  "content": "# In-Context Environments Induce Evaluation-Awareness in Language Models\n\nAuthors: Maheep Chaudhary\nPublished: 2026-03-04T08:22:02Z\n\nHumans often become more self-aware under threat, yet can lose self-awareness when absorbed in a task; we hypothesize that language models exhibit environment-dependent \\textit{evaluation awareness}. This raises concerns that models could strategically underperform, or \\textit{sandbag}, to avoid triggering capability-limiting interventions such as unlearning or shutdown. Prior work demonstrates sandbagging under hand-crafted prompts, but this underestimates the true vulnerability ceiling. We introduce a black-box adversarial optimization framework treating the in-context prompt as an optimizable environment, and develop two approaches to characterize sandbagging: (1) measuring whether models expressing intent to underperform can actually execute it across different task structures, and (2) causally isolating whether underperformance is driven by genuine evaluation-aware reasoning or shallow prompt-following. Evaluating Claude-3.5-Haiku, GPT-4o-mini, and Llama-3.3-70B across four benchmarks (Arithmetic, GSM8K, MMLU, and HumanEval), optimized prompts induce up to 94 percentage point (pp) degradation on arithmetic (GPT-4o-mini: 97.8\\%$\\rightarrow$4.0\\%), far exceeding hand-crafted baselines which produce near-zero behavioral change. Code generation exhibits model-dependent resistance: Claude degrades only 0.6pp, while Llama's accuracy drops to 0\\%. The intent -- execution gap reveals a monotonic resistance ordering: Arithmetic $<$ GSM8K $<$ MMLU, demonstrating that vulnerability is governed by task structure rather than prompt strength. CoT causal intervention confirms that 99.3\\% of sandbagging is causally driven by verbalized eval-aware reasoning, ruling out shallow instruction-following. These findings demonstrate that adversarially optimized prompts pose a substantially greater threat to evaluation reliability than previously understood.",
+  "url": "http://arxiv.org/abs/2603.03824v1",
+  "timestamp": "2026-03-04T08:22:02Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "827f8584d35ec84e6c1cc42f194fef24340279de88d2c57c85c83726adf9ebe5",
+  "parent_hash": "681b19a323fbb142f82f950f7c34a3bced71af8850e6ac93d792ec41a518b35d",
+  "metadata": {
+    "authors": [
+      "Maheep Chaudhary"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.03824v1"
+  }
+}

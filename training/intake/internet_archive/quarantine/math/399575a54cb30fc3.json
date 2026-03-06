@@ -1,0 +1,31 @@
+{
+  "id": "399575a54cb30fc3",
+  "source": "internet_archive",
+  "category": "quarantine/math",
+  "title": "On the asymptotics of the analytic torsion for compact hyperbolic orbifolds",
+  "content": "# On the asymptotics of the analytic torsion for compact hyperbolic orbifolds\n\nCreator: Ksenia Fedosova\nDate: 2015-11-13T00:00:00Z\nDownloads: 32\nSubjects: Differential Geometry, Spectral Theory, Mathematics\n\nWe study the analytic torsion of odd-dimensional hyperbolic orbifolds $\\Gamma \\backslash \\mathbb{H}^{2n+1}$, depending on a representation of $\\Gamma$. Our main goal is to understand the asymptotic behavior of the analytic torsion with respect to sequences of representations associated to rays of highest weights.",
+  "url": "https://archive.org/details/arxiv-1511.04281",
+  "timestamp": "2026-03-06T02:38:47.918798",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4c2fc2a4b34c78a22362b9fc7a644a04be91b8c8d8389d4e88320698416f5799",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "arxiv-1511.04281",
+    "media_type": "texts",
+    "downloads": 32,
+    "subjects": [
+      "Differential Geometry",
+      "Spectral Theory",
+      "Mathematics"
+    ]
+  }
+}

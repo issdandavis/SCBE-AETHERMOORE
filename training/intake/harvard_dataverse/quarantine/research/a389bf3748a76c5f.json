@@ -1,0 +1,35 @@
+{
+  "id": "a389bf3748a76c5f",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Architecture Descriptions and High Frequency Accuracy and Loss Data of Random Neural Networks Trained on Image Datasets",
+  "content": "# Architecture Descriptions and High Frequency Accuracy and Loss Data of Random Neural Networks Trained on Image Datasets\n\nAuthors: Keller Rorabaugh, Ariel, Ca\u00edno-Lores, Silvina, Wyatt II, Michael R., Johnston, Travis, Taufer, Michela\nPublished: 2021-12-08T20:04:31Z\nSubjects: Computer and Information Science\nDOI: doi:10.7910/DVN/ZXTCGF\n\nThis dataset supports early prediction augmentation of NAS by providing high frequency NN accuracy and loss data for collections of random NNs. The NNs are generated with randomized parameter values and trained on image datsets. Each NN is trained for 40 epochs, and all generated parameter values are recorded so that the NN can be easily reconstructed. Throughout training, the NN's training loss, validation loss, and validation accuracy are calculated and recorded with high frequency--every half epoch--allowing construction of accuracy and loss curves. For each NN, the loss and accuracy data and the generated parameter values for that network are recorded in a table. This dataset of trained NNs can be used to analyze NN loss and accuracy curves and compare NN performance with various properties and parameters of the NN, enabling construction and tuning of early prediction methods for NAS.\n\nCitation: Keller Rorabaugh, Ariel; Ca\u00edno-Lores, Silvina; Wyatt II, Michael R.; Johnston, Travis; Taufer, Michela, 2021, \"Architecture Descriptions and High Frequency Accuracy and Loss Data of Random Neural Networks Trained on Image Datasets\", https://doi.org/10.7910/DVN/ZXTCGF, Harvard Dataverse, V2",
+  "url": "https://doi.org/10.7910/DVN/ZXTCGF",
+  "timestamp": "2026-03-06T02:42:16.312038",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "82bc79461bc71fb1d7d6bb451c8eed97dbe3230ecb2ac3793bc4742b24765bbb",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/ZXTCGF",
+    "subjects": [
+      "Computer and Information Science"
+    ],
+    "authors": [
+      "Keller Rorabaugh, Ariel",
+      "Ca\u00edno-Lores, Silvina",
+      "Wyatt II, Michael R.",
+      "Johnston, Travis",
+      "Taufer, Michela"
+    ],
+    "file_count": 4
+  }
+}

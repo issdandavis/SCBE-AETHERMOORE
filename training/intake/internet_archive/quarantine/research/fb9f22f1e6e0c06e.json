@@ -1,0 +1,27 @@
+{
+  "id": "fb9f22f1e6e0c06e",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Renormalizability of a lattice chiral fermion in the overlap formulation",
+  "content": "# Renormalizability of a lattice chiral fermion in the overlap formulation\n\nCreator: Atsushi Yamada\nDate: 1997-06-10T00:00:00Z\nDownloads: 71\nSubjects: \n\nRenormalizability of a lattice chiral fermion is studied at one loop level in the overlap formulation in four dimensions. The fermion chirality is examined including the self-energy corrections due to gauge interactions. Divergent terms breaking the chiral symmetry do not appear and the chiral fermion is renormalized, preserving the correct chiral properties without adding new counter-terms or tuning the parameters involved. The divergent part of the wave function renormalization factor agrees with that of the continuum theory. The overlap formulation of a lattice chiral fermion has passed the important test, the renormalizability, at one loop level.",
+  "url": "https://archive.org/details/arxiv-hep-lat9705040",
+  "timestamp": "2026-03-06T04:17:53.893746",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "abc7efa904e356b6e0adee2c2fba9f2edea91c462e364b76e9ad03a44f276a08",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "arxiv-hep-lat9705040",
+    "media_type": "texts",
+    "downloads": 71,
+    "subjects": []
+  }
+}

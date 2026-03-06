@@ -1,0 +1,35 @@
+{
+  "id": "c3914f88c3e61e24",
+  "source": "harvard_dataverse",
+  "category": "quarantine/quantum",
+  "title": "Quantum Computing Portfolio",
+  "content": "# Quantum Computing Portfolio\n\nAuthors: Cory, Correo Hofstad\nPublished: 2024-06-09T04:45:14Z\nSubjects: Chemistry, Computer and Information Science, Engineering, Physics, Other\nDOI: doi:10.7910/DVN/GHUHKM\n\nCorreo Hofstad has partnered with Gundam, Nvidia, Boeing/HPE, Tripp Lite, Watchguard, and Logic to manufacture the world's first high bandwidth 800QGb/s networking switches. The devices are hard to sell because no one knows that they exist yet. https://www.nvidia.com/en-us/networking/infiniband-switching/\n\nCitation: Cory, Correo Hofstad, 2024, \"Quantum Computing Portfolio\", https://doi.org/10.7910/DVN/GHUHKM, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/GHUHKM",
+  "timestamp": "2026-03-06T02:42:24.924437",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "15c97bed1eeb3460ee1b29c425e265f1bcd862dc785dcdd93698fd446ac9925d",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/GHUHKM",
+    "subjects": [
+      "Chemistry",
+      "Computer and Information Science",
+      "Engineering",
+      "Physics",
+      "Other"
+    ],
+    "authors": [
+      "Cory, Correo Hofstad"
+    ],
+    "file_count": 12
+  }
+}

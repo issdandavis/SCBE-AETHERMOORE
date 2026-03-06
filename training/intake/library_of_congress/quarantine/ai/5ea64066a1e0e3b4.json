@@ -1,0 +1,32 @@
+{
+  "id": "5ea64066a1e0e3b4",
+  "source": "library_of_congress",
+  "category": "quarantine/ai",
+  "title": "Machine learning : ECML 2007 : 18th European Conference on Machine Learning, Warsaw, Poland, September 17-21, 2007 : proceedings",
+  "content": "# Machine learning : ECML 2007 : 18th European Conference on Machine Learning, Warsaw, Poland, September 17-21, 2007 : proceedings\n\nContributors: european conference on machine learning, kok, joost n.\nDate: 2007\nSubjects: congresses, machine learning\n\nIncludes bibliographical references and index. Also issued online.",
+  "url": "//lccn.loc.gov/2007934766",
+  "timestamp": "2026-03-06T02:38:34.742508",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "0a87d65115521b79df8e4a6eba10a06623bd8a48261e37347122951edad78d4d",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "congresses",
+      "machine learning"
+    ],
+    "dates": "2007",
+    "original_format": [
+      "book"
+    ]
+  }
+}

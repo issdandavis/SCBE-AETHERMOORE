@@ -1,0 +1,34 @@
+{
+  "id": "af3c2e7840de7957",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Lives of sacred poets;",
+  "content": "# Lives of sacred poets;\n\nContributors: society for promoting christian knowledge (great britain). committee of general literature and education, willmott, robert aris\nDate: 1834\nSubjects: biography, religious poetry, english, history and criticism, poets, english\n\nPub. with additions in 1839 as vol. 1 of \"Lives of English sacred poets.\" Also available in digital form.",
+  "url": "https://www.loc.gov/item/13022135/",
+  "timestamp": "2026-03-06T02:38:09.282410",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "62e19379625a054a67514696a48f6129925140b26abb0ce381dbcd17beef1f84",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "biography",
+      "religious poetry, english",
+      "history and criticism",
+      "poets, english"
+    ],
+    "dates": "1834",
+    "original_format": [
+      "book"
+    ]
+  }
+}

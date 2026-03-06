@@ -1,0 +1,25 @@
+{
+  "id": "adc2fc81aa1a78d4",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "lattice-based cryptography (Q6497083)",
+  "content": "# lattice-based cryptography\n\nWikidata ID: Q6497083\nDescription: constructions of cryptographic primitives that involve lattices\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q6497083",
+  "timestamp": "2026-03-06T02:41:25.135848",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "efd8ed373c7cf6afb1d580f36b2325f967cac4be0b9854bdc22fe19a783a57f5",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q6497083",
+    "description": "constructions of cryptographic primitives that involve lattices"
+  }
+}

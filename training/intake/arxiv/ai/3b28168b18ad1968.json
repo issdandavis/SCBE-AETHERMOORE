@@ -1,0 +1,35 @@
+{
+  "id": "3b28168b18ad1968",
+  "source": "arxiv",
+  "category": "ai",
+  "title": "Reasoning Theater: Disentangling Model Beliefs from Chain-of-Thought",
+  "content": "# Reasoning Theater: Disentangling Model Beliefs from Chain-of-Thought\n\nAuthors: Siddharth Boppana, Annabel Ma, Max Loeffler, Raphael Sarfati, Eric Bigelow, Atticus Geiger, Owen Lewis, Jack Merullo\nPublished: 2026-03-05T18:55:16Z\n\nWe provide evidence of performative chain-of-thought (CoT) in reasoning models, where a model becomes strongly confident in its final answer, but continues generating tokens without revealing its internal belief. Our analysis compares activation probing, early forced answering, and a CoT monitor across two large models (DeepSeek-R1 671B & GPT-OSS 120B) and find task difficulty-specific differences: The model's final answer is decodable from activations far earlier in CoT than a monitor is able to say, especially for easy recall-based MMLU questions. We contrast this with genuine reasoning in difficult multihop GPQA-Diamond questions. Despite this, inflection points (e.g., backtracking, 'aha' moments) occur almost exclusively in responses where probes show large belief shifts, suggesting these behaviors track genuine uncertainty rather than learned \"reasoning theater.\" Finally, probe-guided early exit reduces tokens by up to 80% on MMLU and 30% on GPQA-Diamond with similar accuracy, positioning attention probing as an efficient tool for detecting performative reasoning and enabling adaptive computation.",
+  "url": "http://arxiv.org/abs/2603.05488v1",
+  "timestamp": "2026-03-05T18:55:16Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "8c234724a8b879fef4a3f3020cc10a26e4878cefeda654adb9542ed8e66fdca9",
+  "parent_hash": "94b9281c6a57b2ab17828d1811bf9ac30e5d347c6246b344a8649e0893dc0810",
+  "metadata": {
+    "authors": [
+      "Siddharth Boppana",
+      "Annabel Ma",
+      "Max Loeffler",
+      "Raphael Sarfati",
+      "Eric Bigelow",
+      "Atticus Geiger",
+      "Owen Lewis",
+      "Jack Merullo"
+    ],
+    "arxiv_category": "cs.AI",
+    "arxiv_id": "2603.05488v1"
+  }
+}

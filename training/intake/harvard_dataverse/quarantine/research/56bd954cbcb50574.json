@@ -1,0 +1,31 @@
+{
+  "id": "56bd954cbcb50574",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "walking_resting_prior_stimulation",
+  "content": "# walking_resting_prior_stimulation\n\nAuthors: Braun, Jonas\nPublished: 2024-04-16T14:37:22Z\nSubjects: Medicine, Health and Life Sciences\nDOI: doi:10.7910/DVN/HNGVGA\n\nIndividual fly neural and behavioral responses to optogenetic stimulation Part 1: Flies were walking prior to stimulation. Each page is for a single genotype. Each row shows individual fly neural and behavioral results. The number of trials is indicated. The analyses and plots are as in Fig. 2a,c,d. The bottom row summarizes data across all flies of the genotype as in Fig. 2a,e,f. Flies were only used if they had at least 10 trials of forward walking before stimulation onset. Part 2: Flies were resting prior to stimulation. Same as for Part 1 except that flies were resting before to stimulation onset. Flies were only used if they had at least 10 trials of resting before stimulation onset.\n\nCitation: Braun, Jonas, 2024, \"walking_resting_prior_stimulation\", https://doi.org/10.7910/DVN/HNGVGA, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/HNGVGA",
+  "timestamp": "2026-03-06T02:42:16.312222",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "936e1c4a9e48b8c4762ef2edb21b764378319bb82d773fc95e262935f1b025e9",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/HNGVGA",
+    "subjects": [
+      "Medicine, Health and Life Sciences"
+    ],
+    "authors": [
+      "Braun, Jonas"
+    ],
+    "file_count": 1
+  }
+}

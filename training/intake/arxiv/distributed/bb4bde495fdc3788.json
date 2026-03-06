@@ -1,0 +1,31 @@
+{
+  "id": "bb4bde495fdc3788",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "PTOPOFL: Privacy-Preserving Personalised Federated Learning via Persistent Homology",
+  "content": "# PTOPOFL: Privacy-Preserving Personalised Federated Learning via Persistent Homology\n\nAuthors: Kelly L Vomo-Donfack, Adryel Hoszu, Gr\u00e9gory Ginot, Ian Morilla\nPublished: 2026-03-04T17:44:39Z\n\nFederated learning (FL) faces two structural tensions: gradient sharing enables data-reconstruction attacks, while non-IID client distributions degrade aggregation quality. We introduce PTOPOFL, a framework that addresses both challenges simultaneously by replacing gradient communication with topological descriptors derived from persistent homology (PH). Clients transmit only 48-dimensional PH feature vectors-compact shape summaries whose many-to-one structure makes inversion provably ill-posed-rather than model gradients. The server performs topology-guided personalised aggregation: clients are clustered by Wasserstein similarity between their PH diagrams, intra-cluster models are topology-weighted,and clusters are blended with a global consensus. We prove an information-contraction theorem showing that PH descriptors leak strictly less mutual information per sample than gradients under strongly convex loss functions, and we establish linear convergence of the Wasserstein-weighted aggregation scheme with an error floor strictly smaller than FedAvg. Evaluated against FedAvg, FedProx, SCAFFOLD, and pFedMe on a non-IID healthcare scenario (8 hospitals, 2 adversarial) and a pathological benchmark (10 clients), PTOPOFL achieves AUC 0.841 and 0.910 respectively-the highest in both settings-while reducing reconstruction risk by a factor of 4.5 relative to gradient sharing. Code is publicly available at https://github.com/MorillaLab/TopoFederatedL and data at https://doi.org/10.5281/zenodo.18827595.",
+  "url": "http://arxiv.org/abs/2603.04323v1",
+  "timestamp": "2026-03-04T17:44:39Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "732f0059c95787bb03f34131c4fcd262e5368e0f9c2cbaa282bdcb6b2877a547",
+  "parent_hash": "fad7fce8b4e44ec3ab2cc30b92c1eda22cee6fbd44d21475d10bd9006d585eb7",
+  "metadata": {
+    "authors": [
+      "Kelly L Vomo-Donfack",
+      "Adryel Hoszu",
+      "Gr\u00e9gory Ginot",
+      "Ian Morilla"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.04323v1"
+  }
+}

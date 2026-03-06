@@ -1,0 +1,32 @@
+{
+  "id": "d0354053b9199bdb",
+  "source": "harvard_dataverse",
+  "category": "quarantine/ai",
+  "title": "Replication Data for: Increasing Uptake of Social Distancing during COVID-19: How Machine Learning Strategies Can Lead to Targeted Interventions",
+  "content": "# Replication Data for: Increasing Uptake of Social Distancing during COVID-19: How Machine Learning Strategies Can Lead to Targeted Interventions\n\nAuthors: Charles, Grace\nPublished: 2021-10-26T16:11:34Z\nSubjects: Medicine, Health and Life Sciences, Social Sciences\nDOI: doi:10.7910/DVN/RBZONT\n\nData and code for replication of the Harvard Data Science Review paper \" Increasing Uptake of Social Distancing during COVID-19: How Machine Learning Strategies Can Lead to Targeted Interventions\"\n\nCitation: Charles, Grace, 2021, \"Replication Data for: Increasing Uptake of Social Distancing during COVID-19: How Machine Learning Strategies Can Lead to Targeted Interventions\", https://doi.org/10.7910/DVN/RBZONT, Harvard Dataverse, V1, UNF:6:i9gVTs4DWtjUHZ0Z2BQfag== [fileUNF]",
+  "url": "https://doi.org/10.7910/DVN/RBZONT",
+  "timestamp": "2026-03-06T02:42:33.567256",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "9acac49463c1c2110f7f04ad40e8c3de06a321ef53b242b4f3400a8f050dfe9a",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/RBZONT",
+    "subjects": [
+      "Medicine, Health and Life Sciences",
+      "Social Sciences"
+    ],
+    "authors": [
+      "Charles, Grace"
+    ],
+    "file_count": 4
+  }
+}

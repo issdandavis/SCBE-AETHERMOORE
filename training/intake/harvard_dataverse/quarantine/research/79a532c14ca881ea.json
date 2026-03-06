@@ -1,0 +1,31 @@
+{
+  "id": "79a532c14ca881ea",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Badbitcoin dataset",
+  "content": "# Badbitcoin dataset\n\nAuthors: Loddo, Andrea\nPublished: 2020-07-24T18:02:08Z\nSubjects: Computer and Information Science\nDOI: doi:10.7910/DVN/MOARX1\n\nBadbitcoin dataset\n\nCitation: Loddo, Andrea, 2020, \"Badbitcoin dataset\", https://doi.org/10.7910/DVN/MOARX1, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/MOARX1",
+  "timestamp": "2026-03-06T02:42:29.165244",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "18ab239ca6578732789537e4636b95f85b23887ea9e81c407e028233240aa078",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/MOARX1",
+    "subjects": [
+      "Computer and Information Science"
+    ],
+    "authors": [
+      "Loddo, Andrea"
+    ],
+    "file_count": 2
+  }
+}

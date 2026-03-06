@@ -1,0 +1,30 @@
+{
+  "id": "3a0990c6688a99ac",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2012-1971 \u2014 CVSS 9.3 (UNKNOWN)",
+  "content": "# CVE-2012-1971\n\nCVSS Score: 9.3 (UNKNOWN)\nPublished: 2012-08-29T10:56:39.847\nCWEs: NVD-CWE-noinfo\n\nMultiple unspecified vulnerabilities in the browser engine in Mozilla Firefox before 15.0, Thunderbird before 15.0, and SeaMonkey before 2.12 allow remote attackers to cause a denial of service (memory corruption and application crash) or possibly execute arbitrary code via vectors related to garbage collection after certain MethodJIT execution, and unknown other vectors.\n\nReferences: http://lists.opensuse.org/opensuse-security-announce/2012-09/msg00011.html, http://lists.opensuse.org/opensuse-security-announce/2012-09/msg00014.html, http://www.mozilla.org/security/announce/2012/mfsa2012-57.html",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2012-1971",
+  "timestamp": "2026-03-06T02:41:44.330329",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "8641b1f45c1dbe8ea7c2ba38354a75bb76df30e6d25bc71eb643dc38a2d6b435",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2012-1971",
+    "cvss_score": 9.3,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-noinfo"
+    ],
+    "published": "2012-08-29T10:56:39.847"
+  }
+}

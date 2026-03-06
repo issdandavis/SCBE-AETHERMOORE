@@ -1,0 +1,25 @@
+{
+  "id": "0fe88d2a584cd124",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Post-Quantum Cryptography Standardization (Q48809209)",
+  "content": "# Post-Quantum Cryptography Standardization\n\nWikidata ID: Q48809209\nDescription: project by NIST to standardize post-quantum cryptography\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q48809209",
+  "timestamp": "2026-03-06T02:41:03.050777",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "205a316b643cae496535c7f63f804a41e902f941699025a45fa72a597ca8bc21",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q48809209",
+    "description": "project by NIST to standardize post-quantum cryptography"
+  }
+}

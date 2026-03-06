@@ -1,0 +1,30 @@
+{
+  "id": "46171f3f54daa2e0",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-1999-0168 \u2014 CVSS 7.5 (UNKNOWN)",
+  "content": "# CVE-1999-0168\n\nCVSS Score: 7.5 (UNKNOWN)\nPublished: 1992-06-04T04:00:00.000\nCWEs: NVD-CWE-Other\n\nThe portmapper may act as a proxy and redirect service requests from an attacker, making the request appear to come from the local host, possibly bypassing authentication that would otherwise have taken place.  For example, NFS file systems could be mounted through the portmapper despite export restrictions.\n\nReferences: https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0168, https://exchange.xforce.ibmcloud.com/vulnerabilities/CVE-1999-0168",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-1999-0168",
+  "timestamp": "2026-03-06T02:41:48.082086",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "1a717dd913aaa99dd8e642b5a882628edbeaf818a12d66cafba6e6fe0ebc560f",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-1999-0168",
+    "cvss_score": 7.5,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-Other"
+    ],
+    "published": "1992-06-04T04:00:00.000"
+  }
+}

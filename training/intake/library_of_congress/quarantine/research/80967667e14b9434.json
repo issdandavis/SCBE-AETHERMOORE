@@ -1,0 +1,33 @@
+{
+  "id": "80967667e14b9434",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Computational science and its applications, ICCSA 2005 : international conference, Singapore, May 9-12, 2005 : proceedings",
+  "content": "# Computational science and its applications, ICCSA 2005 : international conference, Singapore, May 9-12, 2005 : proceedings\n\nContributors: gervasi, osvaldo, iccsa 2005\nDate: 2005\nSubjects: computational complexity, congresses, computer science\n\nIncludes bibliographical references and indexes. Also issued online.",
+  "url": "//lccn.loc.gov/2007279725",
+  "timestamp": "2026-03-06T02:38:43.165500",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "22bbfbdd401aa87c0c86dacde5220486a775caf28f43f42aa2b3f65540aa0614",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "computational complexity",
+      "congresses",
+      "computer science"
+    ],
+    "dates": "2005",
+    "original_format": [
+      "book"
+    ]
+  }
+}

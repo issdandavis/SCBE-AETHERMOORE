@@ -1,0 +1,38 @@
+{
+  "id": "b880ff975aaab0da",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "DTIC ADA163752: Fortran Program for Vibration and Sound Radiation of Spherical Shell,",
+  "content": "# DTIC ADA163752: Fortran Program for Vibration and Sound Radiation of Spherical Shell,\n\nCreator: Defense Technical Information Center\nDate: 1986-01-01T00:00:00Z\nDownloads: 81\nSubjects: DTIC Archive, James,J H, ADMIRALTY RESEARCH ESTABLISHMENT PORTLAND (ENGLAND), *COMPUTATIONS, *SHELLS(STRUCTURAL FORMS)\n\nMathematical formulae and a Fortran program listing are given for calculating the response and sound radiation due to prescribed time-harmonic excitation. The program is useful for bench-mark studies. Numerical results illustrate the applicability of the various DAA forms of the exterior fluid loading term. The principal features of the work contained herein are these: (1) A Fortran computer program which can be used for bench-mark studies of purely numerical formulations of the vibration and sound radiation of submerged elastic structures. (2) Numerical results of vibration and sound radiation which augment those obtained from other published studies, and reinforce the view that better fluid loading approximations are required in the intermediate frequency regime where resonances occur.",
+  "url": "https://archive.org/details/DTIC_ADA163752",
+  "timestamp": "2026-03-06T04:17:58.220030",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "c75f3a2d516ce2f5223ace7e9d5fa1201e43571edd90ee4a1220c5ae0221e747",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "DTIC_ADA163752",
+    "media_type": "texts",
+    "downloads": 81,
+    "subjects": [
+      "DTIC Archive",
+      "James,J H",
+      "ADMIRALTY RESEARCH ESTABLISHMENT PORTLAND (ENGLAND)",
+      "*COMPUTATIONS",
+      "*SHELLS(STRUCTURAL FORMS)",
+      "*ACOUSTIC RESONANCE",
+      "COMPUTER PROGRAMS",
+      "VIBRATION",
+      "EXCITATION",
+      "FORMULATIONS"
+    ]
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "id": "9d47364b48f7142c",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Table 1",
+  "content": "# Table 1\n\nAuthors: Zucker, Catherine\nPublished: 2021-08-18T23:55:12Z\nSubjects: Astronomy and Astrophysics\nDOI: doi:10.7910/DVN/CAVMAQ\n\nA machine readable version of Table 1 from Zucker et al. 2021.\n\nCitation: Zucker, Catherine, 2021, \"Table 1\", https://doi.org/10.7910/DVN/CAVMAQ, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/CAVMAQ",
+  "timestamp": "2026-03-06T04:18:41.248961",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "6a8d756ce7cbeccced32ac62ab09b6de926fbc9e43034515ecbcc804551af1d0",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/CAVMAQ",
+    "subjects": [
+      "Astronomy and Astrophysics"
+    ],
+    "authors": [
+      "Zucker, Catherine"
+    ],
+    "file_count": 1
+  }
+}

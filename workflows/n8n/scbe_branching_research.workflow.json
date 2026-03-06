@@ -1,0 +1,471 @@
+{
+  "name": "SCBE Branch: research_pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "branch-research_pipeline",
+        "responseMode": "responseNode"
+      },
+      "id": "webhook_research_pipeline",
+      "name": "Webhook: Branch Entry",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8001/v1/workflow/branch/action",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{ $env.SCBE_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"scene\": \"start\", \"action\": \"noop\", \"params\": {}}"
+      },
+      "id": "scene_start",
+      "name": "Scene: start",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8001/v1/workflow/branch/action",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{ $env.SCBE_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"scene\": \"arxiv_deep\", \"action\": \"scrape_arxiv\", \"params\": {\"source\": \"arxiv\", \"max_results\": 40}}"
+      },
+      "id": "scene_arxiv_deep",
+      "name": "Scene: arxiv_deep",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8001/v1/workflow/branch/action",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{ $env.SCBE_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"scene\": \"arxiv_analyze\", \"action\": \"llm_dispatch\", \"params\": {\"provider\": \"claude\", \"prompt\": \"Analyze arxiv results for {query}\"}}"
+      },
+      "id": "scene_arxiv_analyze",
+      "name": "Scene: arxiv_analyze",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8001/v1/workflow/branch/action",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{ $env.SCBE_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"scene\": \"web_scan\", \"action\": \"scrape_web\", \"params\": {\"source\": \"web\", \"depth\": 2}}"
+      },
+      "id": "scene_web_scan",
+      "name": "Scene: web_scan",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1600,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8001/v1/workflow/branch/action",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{ $env.SCBE_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"scene\": \"hybrid_fan\", \"action\": \"scrape_both\", \"params\": {\"source\": \"both\", \"max_results\": 20}}"
+      },
+      "id": "scene_hybrid_fan",
+      "name": "Scene: hybrid_fan",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8001/v1/workflow/branch/action",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{ $env.SCBE_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"scene\": \"fallback_web\", \"action\": \"scrape_web\", \"params\": {\"source\": \"web\", \"depth\": 1}}"
+      },
+      "id": "scene_fallback_web",
+      "name": "Scene: fallback_web",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8001/v1/workflow/branch/action",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{ $env.SCBE_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"scene\": \"council_review\", \"action\": \"council_deliberate\", \"params\": {\"providers\": [\"anthropic\", \"openai\"], \"strategy\": \"debate\"}}"
+      },
+      "id": "scene_council_review",
+      "name": "Scene: council_review",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8001/v1/workflow/branch/action",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{ $env.SCBE_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"scene\": \"governance_gate\", \"action\": \"governance_scan\", \"params\": {\"content\": \"aggregated results\"}}"
+      },
+      "id": "scene_governance_gate",
+      "name": "Scene: governance_gate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1600,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8001/v1/workflow/branch/action",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{ $env.SCBE_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"scene\": \"publish\", \"action\": \"noop\", \"params\": {\"status\": \"published\"}}"
+      },
+      "id": "scene_publish",
+      "name": "Scene: publish",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8001/v1/workflow/branch/action",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{ $env.SCBE_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"scene\": \"quarantine\", \"action\": \"noop\", \"params\": {\"status\": \"quarantined\"}}"
+      },
+      "id": "scene_quarantine",
+      "name": "Scene: quarantine",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "id": "respond_research_pipeline",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2000,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "choice_start": {
+      "main": [
+        [
+          {
+            "node": "scene_arxiv_deep",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "scene_web_scan",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "scene_hybrid_fan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "choice_arxiv_deep": {
+      "main": [
+        [
+          {
+            "node": "scene_arxiv_analyze",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "scene_fallback_web",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "scene_arxiv_analyze": {
+      "main": [
+        [
+          {
+            "node": "scene_governance_gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "scene_web_scan": {
+      "main": [
+        [
+          {
+            "node": "scene_governance_gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "choice_hybrid_fan": {
+      "main": [
+        [
+          {
+            "node": "scene_council_review",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "scene_governance_gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "scene_fallback_web": {
+      "main": [
+        [
+          {
+            "node": "scene_governance_gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "scene_council_review": {
+      "main": [
+        [
+          {
+            "node": "scene_governance_gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "choice_governance_gate": {
+      "main": [
+        [
+          {
+            "node": "scene_publish",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "scene_quarantine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "scbe"
+    },
+    {
+      "name": "branching"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "site": "science",
+  "total_items": 160,
+  "categories": [
+    "quantum",
+    "math",
+    "geometry",
+    "research"
+  ],
+  "grid_nodes": 80,
+  "updated": "2026-03-06T04:22:52.242687+00:00"
+}

@@ -1,0 +1,33 @@
+{
+  "id": "3402fb811615152e",
+  "source": "library_of_congress",
+  "category": "quarantine/ai",
+  "title": "Proceedings of 2004 International Conference on Machine Learning and Cybernetics : August 6-29, 2004, Worldfield Convention Hotel, Shanghai, China",
+  "content": "# Proceedings of 2004 International Conference on Machine Learning and Cybernetics : August 6-29, 2004, Worldfield Convention Hotel, Shanghai, China\n\nContributors: ieee systems, man and cybernetics technical committee on cybernetics, international conference on machine learning and cybernetics\nDate: 2004\nSubjects: congresses, machine learning, cybernetics\n\n\"IEEE Catalog Number: 04EX826.\" Includes bibliographical references and author index. Also issued online with additional title: Machine Learning and Cybernetics, 2004, Proceedings of 2004 International Conference on.",
+  "url": "//lccn.loc.gov/2004102345",
+  "timestamp": "2026-03-06T02:38:34.742661",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "3dbaab70aef5971655872d8b07d35707a80611c531b58c7968c14745ea11e5e7",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "congresses",
+      "machine learning",
+      "cybernetics"
+    ],
+    "dates": "2004",
+    "original_format": [
+      "book"
+    ]
+  }
+}

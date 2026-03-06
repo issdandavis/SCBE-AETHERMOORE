@@ -1,0 +1,32 @@
+{
+  "id": "f3f1fb24b7ce1035",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "H.Res.604 - 118th Congress (2023-2024): Expressing support for blockchain technology and digital assets.",
+  "content": "# H.Res.604 - 118th Congress (2023-2024): Expressing support for blockchain technology and digital assets.\n\nContributors: 118th congress, rep. johnson, dusty [r-sd-at large], house of representatives\nDate: 2023-08-21\nSubjects: finance and financial sector, congress\n\nSummary of H.Res.604 - 118th Congress (2023-2024): Expressing support for blockchain technology and digital assets.",
+  "url": "https://www.congress.gov/bill/118th-congress/house-resolution/604",
+  "timestamp": "2026-03-06T02:38:39.088144",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "ccefb84264231b1a282d309f8de6f59d60d62ba6cce705134e0bc691a45ac7e8",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "finance and financial sector",
+      "congress"
+    ],
+    "dates": "2023-08-21",
+    "original_format": [
+      "legislation"
+    ]
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "id": "8d7dbeddb0df04e7",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2022-36078 \u2014 CVSS 8.8 (HIGH)",
+  "content": "# CVE-2022-36078\n\nCVSS Score: 8.8 (HIGH)\nPublished: 2022-09-02T13:15:08.930\nCWEs: CWE-789, CWE-1284\n\nBinary provides encoding/decoding in Borsh and other formats. The vulnerability is a memory allocation vulnerability that can be exploited to allocate slices in memory with (arbitrary) excessive size value, which can either exhaust available memory or crash the whole program. When using `github.com/gagliardetto/binary` to parse unchecked (or wrong type of) data from untrusted sources of input (e.g. the blockchain) into slices, it's possible to allocate memory with excessive size. When `dec.Decode(&val)` method is used to parse data into a structure that is or contains slices of values, the length of the slice was previously read directly from the data itself without any checks on the size of it, and then a slice was allocated. This could lead to an overflow and an allocation of memory with excessive size value. Users should upgrade to `v0.7.1` or higher. A workaround is not to rely on the `dec.Decode(&val)` function to parse the data, but to use a custom `UnmarshalWithDecoder()` method that reads and checks the length of any slice.\n\nReferences: https://github.com/gagliardetto/binary/pull/7, https://github.com/gagliardetto/binary/releases/tag/v0.7.1, https://github.com/gagliardetto/binary/security/advisories/GHSA-4p6f-m4f9-ch88",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-36078",
+  "timestamp": "2026-03-06T02:41:52.057450",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "ed0f1ed0d969b4031fd65b7942daa5f9be0e36a7017386e632139849bd79fb30",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2022-36078",
+    "cvss_score": 8.8,
+    "severity": "HIGH",
+    "cwes": [
+      "CWE-789",
+      "CWE-1284"
+    ],
+    "published": "2022-09-02T13:15:08.930"
+  }
+}

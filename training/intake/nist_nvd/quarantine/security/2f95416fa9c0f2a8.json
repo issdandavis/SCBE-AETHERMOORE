@@ -1,0 +1,30 @@
+{
+  "id": "2f95416fa9c0f2a8",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2012-4776 \u2014 CVSS 9.3 (UNKNOWN)",
+  "content": "# CVE-2012-4776\n\nCVSS Score: 9.3 (UNKNOWN)\nPublished: 2012-11-14T00:55:01.747\nCWEs: CWE-20\n\nThe Web Proxy Auto-Discovery (WPAD) functionality in Microsoft .NET Framework 2.0 SP2, 3.5, 3.5.1, 4, and 4.5 does not validate configuration data that is returned during acquisition of proxy settings, which allows remote attackers to execute arbitrary JavaScript code by providing crafted data during execution of (1) an XAML browser application (aka XBAP) or (2) a .NET Framework application, aka \"Web Proxy Auto-Discovery Vulnerability.\"\n\nReferences: http://osvdb.org/87266, http://secunia.com/advisories/51236, http://www.securityfocus.com/bid/56463",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2012-4776",
+  "timestamp": "2026-03-06T02:41:44.330340",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "b7f904d08a39d88421a267953399c4862be9ba012c72bdf9f0b1ce3f1df299da",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2012-4776",
+    "cvss_score": 9.3,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "CWE-20"
+    ],
+    "published": "2012-11-14T00:55:01.747"
+  }
+}

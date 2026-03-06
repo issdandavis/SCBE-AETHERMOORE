@@ -1,0 +1,31 @@
+{
+  "id": "094c0d16dd1764c0",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Cloud Radial Profiles",
+  "content": "# Cloud Radial Profiles\n\nAuthors: Zucker, Catherine\nPublished: 2021-08-19T00:24:03Z\nSubjects: Astronomy and Astrophysics\nDOI: doi:10.7910/DVN/JBRWHB\n\nWe include here both the average radial profile and the ensemble of individual profiles taken across each cloud. For full details on how the radial profiles are built, see Section 3 of Zucker et al. 2021. To load in the results in Python, use the following code: Untitled In [ ]: import pickle\n\nfn = 'perseus_profile.pickle'\nprofile_results = pickle.load(open(fn,'rb'))\n\n#to extract an array corresponding to the midpoint of the radial distance bins\n#bins are spread equally apart between 0 and 20 pc, with a bin width of 0.5 pc (nbins = 40)\n#array is of shape (nbins,)\nradial_distance_bins = profile_results['radial_distance_bins']\n\n#to extract the ensemble of profiles, measured in volume density space\n#array is of shape (ncuts,nbins), with each cut the measured profile at a different point along psine\nensemble_radial_profiles = profile_results['ensemble_radial_profiles']\n\n#to extract the average profile of all cuts\n#array is of shape (nbins,)\naverage_profile = profile_results['average_radial_profile']\n\nCitation: Zucker, Catherine, 2021, \"Cloud Radial Profiles\", https://doi.org/10.7910/DVN/JBRWHB, Harvard Dataverse, V2",
+  "url": "https://doi.org/10.7910/DVN/JBRWHB",
+  "timestamp": "2026-03-06T04:18:41.249012",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "d5db853bac98465f60054049e0d05fe024a3336f8649457ba213507570764420",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/JBRWHB",
+    "subjects": [
+      "Astronomy and Astrophysics"
+    ],
+    "authors": [
+      "Zucker, Catherine"
+    ],
+    "file_count": 11
+  }
+}

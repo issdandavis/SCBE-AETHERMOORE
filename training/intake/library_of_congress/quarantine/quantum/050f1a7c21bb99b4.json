@@ -1,0 +1,33 @@
+{
+  "id": "050f1a7c21bb99b4",
+  "source": "library_of_congress",
+  "category": "quarantine/quantum",
+  "title": "An introduction to particle physics and the standard model",
+  "content": "# An introduction to particle physics and the standard model\n\nContributors: mann, robert\nDate: 2010-01-01\nSubjects: quark models, string models, particles (nuclear physics)\n\n\"An Introduction to the Standard Model of Particle Physics familiarizes readers with what is considered tested and accepted and in so doing, gives them a grounding in particle physics in general. Whenever possible, Dr. Mann takes an historical approach showing how the model is linked to the physics that most of us have learned in less challenging areas. Dr. Mann reviews special relativity and classical mechanics, symmetries, conservation laws, and particle classification; then working from the tested paradigm of the model itself, he describes the standard model in terms of its electromagnetic, strong, and weak components; explores the experimental tools and methods of particle physics; introduces Feynman diagrams, wave equations, and gauge invariance, building up to the theory of quantum electrodynamics; describes the theories of the strong and electroweak interactions; and uncovers frontier areas and explores what might lie beyond our current concepts of the subatomic world.\"--Publisher's description.",
+  "url": "https://www.loc.gov/item/2020717967/",
+  "timestamp": "2026-03-06T04:17:25.148163",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "facb0a4b887549a2094a272c9d6e47743fa4dd779d790774fdb94245c3bc618a",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "quark models",
+      "string models",
+      "particles (nuclear physics)"
+    ],
+    "dates": "2010-01-01",
+    "original_format": [
+      "book"
+    ]
+  }
+}

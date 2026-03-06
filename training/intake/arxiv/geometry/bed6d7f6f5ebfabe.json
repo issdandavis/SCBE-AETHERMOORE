@@ -1,0 +1,30 @@
+{
+  "id": "bed6d7f6f5ebfabe",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Convex Analysis of Relaxation Dynamics in Chemical Reaction Networks and Generalized Gradient Flows",
+  "content": "# Convex Analysis of Relaxation Dynamics in Chemical Reaction Networks and Generalized Gradient Flows\n\nAuthors: Keisuke Sugie, Dimitri Loutchko, Tetsuya J. Kobayashi\nPublished: 2026-02-21T18:45:15Z\n\nWe obtain bounds on the Kullback--Leibler divergence to equilibrium for mass-action chemical reaction networks (CRNs) with equilibrium. The associated decay rates are characterized in terms of the singular values of the stoichiometric matrix, convexity parameters, and time-integrated activities via deformed-exponential-type functions. We further extend these bounds within a generalized gradient flow framework. We highlight the biological relevance of this framework: the resulting bounds apply to quasi-steady-state regimes, where long transients and plateau-like behavior are common and functionally important. We illustrate the framework using a catalytic CRN exhibiting plateaus, where the bounds capture slow relaxation induced by local convexity and provide a bound-based approach to quantifying relaxation in CRNs.",
+  "url": "http://arxiv.org/abs/2602.18932v1",
+  "timestamp": "2026-02-21T18:45:15Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "dbfea2358e14f4c1589e8770f6ed7e11f39bef9fa5e71234d7628b61c939b562",
+  "parent_hash": "61a20086ff2acd192ed72c8477621b204678b668074d595a09bd19d2ac30e5c6",
+  "metadata": {
+    "authors": [
+      "Keisuke Sugie",
+      "Dimitri Loutchko",
+      "Tetsuya J. Kobayashi"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.18932v1"
+  }
+}

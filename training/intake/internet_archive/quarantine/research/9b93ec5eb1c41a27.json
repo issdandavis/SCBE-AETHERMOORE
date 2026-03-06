@@ -1,0 +1,29 @@
+{
+  "id": "9b93ec5eb1c41a27",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Bhagavad Gita [microform] : \"The songs of the master\"",
+  "content": "# Bhagavad Gita [microform] : \"The songs of the master\"\n\nCreator: Johnston, Charles, 1867-1931\nDate: 1908-01-01T00:00:00Z\nDownloads: 2254\nSubjects: Bhagavadgita\n\nMicrofilm",
+  "url": "https://archive.org/details/pts_bhagavadgitathes_3720-0711",
+  "timestamp": "2026-03-06T03:59:13.619005",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "b25c35dadda5dc4597e7afdf27eee80cbe5f171fa6f9005b92872cd07d407925",
+  "parent_hash": "2da5f516980cbdb270092f148839fdae59e74398586f1932c987a4886a9193c0",
+  "metadata": {
+    "ia_identifier": "pts_bhagavadgitathes_3720-0711",
+    "media_type": "texts",
+    "downloads": 2254,
+    "subjects": [
+      "Bhagavadgita"
+    ]
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "id": "1fd89b4619842866",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Boolean function complexity : advances and frontiers",
+  "content": "# Boolean function complexity : advances and frontiers\n\nContributors: jukna, stasys\nDate: 2012\nSubjects: combinatorial analysis, computational complexity, computer science, mathematics\n\nIncludes bibliographical references (pages 591-610) and index.",
+  "url": "//lccn.loc.gov/2011945088",
+  "timestamp": "2026-03-06T02:38:43.165401",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "e9bc5242d8ee792072f4104a27bd9bf38a661083c58d1218c5dea18f2bde8438",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "combinatorial analysis",
+      "computational complexity",
+      "computer science",
+      "mathematics"
+    ],
+    "dates": "2012",
+    "original_format": [
+      "book"
+    ]
+  }
+}

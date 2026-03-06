@@ -1,0 +1,28 @@
+{
+  "id": "b9285e2948bbe20a",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "The Semantic Arrow of Time, Part III: RDMA and the Completion Fallacy",
+  "content": "# The Semantic Arrow of Time, Part III: RDMA and the Completion Fallacy\n\nAuthors: Paul Borrill\nPublished: 2026-03-05T03:45:55Z\n\nThis is the third of five papers comprising The Semantic Arrow of Time. Parts I and II identified computing's hidden semantic arrow of time, the FITO category mistake, and presented the constructive alternative: the OAE link state machine with its mandatory reflecting phase.\n  This paper examines what happens when those principles are violated at industrial scale. Remote Direct Memory Access (RDMA) is the highest-performance data movement technology in production, deployed across Meta's 24,000-GPU clusters, Google's data centers, and Microsoft's Azure infrastructure. We argue that RDMA's completion semantics contain a category mistake: they guarantee placement (data written to a remote NIC buffer) but not commitment (data semantically integrated by the receiving application). We call this the completion fallacy.\n  We document the fallacy through seven temporal stages of an RDMA Write operation, showing that the gap between completion signal and application semantic satisfaction can be arbitrarily large. We trace consequences through four case studies: Meta's RoCE fabric, Google's 1RMA redesign, Microsoft's DCQCN failures, and SDR-RDMA partial completions.\n  A comparative analysis shows CXL 3.0, NVLink, and UALink each address parts of the completion fallacy but none eliminates it entirely. Only a protocol architecture with a mandatory reflecting phase can close the gap between delivery and commitment.",
+  "url": "http://arxiv.org/abs/2603.04774v1",
+  "timestamp": "2026-03-05T03:45:55Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "eab9d902f1caab44f4a0e880cb6d4f68687cb7dc56dbc4c009df351508d38db0",
+  "parent_hash": "6660b728825fa4496ac6a1627734f3cf28f59cda72aa2bd79e80ad10d92bda9d",
+  "metadata": {
+    "authors": [
+      "Paul Borrill"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.04774v1"
+  }
+}

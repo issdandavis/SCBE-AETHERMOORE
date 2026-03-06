@@ -1,0 +1,33 @@
+{
+  "id": "d27b0a612636a906",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Bitcoin metadata",
+  "content": "# Bitcoin metadata\n\nAuthors: Bartoletti, Massimo, Pompianu, Livio, Bellomy, Bryn\nPublished: 2019-03-13T14:28:22Z\nSubjects: Computer and Information Science\nDOI: doi:10.7910/DVN/MOLW81\n\nDataset containing the metadata extracted from OP_RETURN transactions in the first 480.000 blocks of the Bitcoin blockchain\n\nCitation: Bartoletti, Massimo; Pompianu, Livio; Bellomy, Bryn, 2019, \"Bitcoin metadata\", https://doi.org/10.7910/DVN/MOLW81, Harvard Dataverse, V1, UNF:6:TZjBq+jMdBPqZ7KwEAcrvw== [fileUNF]",
+  "url": "https://doi.org/10.7910/DVN/MOLW81",
+  "timestamp": "2026-03-06T02:42:03.535792",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "e2c4f6a604a6a7135291d92db17c8508cb3de4f7b89e7ccf5a34952e26a3fc8f",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/MOLW81",
+    "subjects": [
+      "Computer and Information Science"
+    ],
+    "authors": [
+      "Bartoletti, Massimo",
+      "Pompianu, Livio",
+      "Bellomy, Bryn"
+    ],
+    "file_count": 1
+  }
+}

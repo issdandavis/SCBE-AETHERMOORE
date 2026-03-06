@@ -1,0 +1,31 @@
+{
+  "id": "28aa1672ba37f3cb",
+  "source": "library_of_congress",
+  "category": "quarantine/math",
+  "title": "Elements of analytic geometry.",
+  "content": "# Elements of analytic geometry.\n\nContributors: hardy, joseph johnston\nDate: 1897\nSubjects: geometry, analytic\n\nAlso available in digital form.",
+  "url": "https://www.loc.gov/item/03023819/",
+  "timestamp": "2026-03-06T02:37:52.081781",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "331dba31b682c6cdc4e2673314946edaf13ec085819c9cac0ff71a397db42188",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "geometry, analytic"
+    ],
+    "dates": "1897",
+    "original_format": [
+      "book"
+    ]
+  }
+}

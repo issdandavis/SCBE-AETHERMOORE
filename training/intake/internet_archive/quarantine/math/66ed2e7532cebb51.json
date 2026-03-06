@@ -1,0 +1,32 @@
+{
+  "id": "66ed2e7532cebb51",
+  "source": "internet_archive",
+  "category": "quarantine/math",
+  "title": "Inducing maps between Gromov boundaries",
+  "content": "# Inducing maps between Gromov boundaries\n\nCreator: Jerzy Dydak, Ziga Virk\nDate: 2015-06-27T00:00:00Z\nDownloads: 48\nSubjects: Metric Geometry, Geometric Topology, Mathematics, General Topology\n\nIt is well known that quasi-isometric embeddings of Gromov hyperbolic spaces induce topological embeddings of their Gromov boundaries. A more general question is to detect classes of functions between Gromov hyperbolic spaces that induce continuous maps between their Gromov boundaries. In this paper we introduce the class of visual functions $f$ that do induce continuous maps $\\tilde f$ between Gromov boundaries. Its subclass, the class of radial functions, induces Hoelder maps between Gromov boundaries. Conversely, every Hoelder map between Gromov boundaries of visual hyperbolic spaces induces a radial function. We study the relationship between large scale properties of f and small scale properties of $f$, especially related to the dimension theory. In particular, we prove a form of the dimension raising theorem. We give a natural example of a radial dimension raising map and we also give a general class of radial functions that raise asymptotic dimension.",
+  "url": "https://archive.org/details/arxiv-1506.08280",
+  "timestamp": "2026-03-06T02:38:47.919036",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "28e838cd86b4be355c62d1fbd1f26c81bd561fc0caa6a124f15f8988ce58ec5d",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "arxiv-1506.08280",
+    "media_type": "texts",
+    "downloads": 48,
+    "subjects": [
+      "Metric Geometry",
+      "Geometric Topology",
+      "Mathematics",
+      "General Topology"
+    ]
+  }
+}

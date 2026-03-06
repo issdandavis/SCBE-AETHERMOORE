@@ -1,0 +1,35 @@
+{
+  "id": "72805f117082c0e0",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Daily national intelligencer (Washington City [D.C.]), May 11, 1843",
+  "content": "# Daily national intelligencer (Washington City [D.C.]), May 11, 1843\n\nContributors: library of congress, washington, dc\nDate: 1843-05-11\nSubjects: united states, district of columbia, newspapers, washington (d.c.), washington\n\nWashington City [D.C.]",
+  "url": "https://www.loc.gov/item/sn83026172/1843-05-11/ed-1/",
+  "timestamp": "2026-03-06T04:17:18.822541",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "c875b42767748bf87fe88fc15d47834b3e3044ad5858dcc5dca1d4a24996469e",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "united states",
+      "district of columbia",
+      "newspapers",
+      "washington (d.c.)",
+      "washington"
+    ],
+    "dates": "1843-05-11",
+    "original_format": [
+      "newspaper"
+    ]
+  }
+}

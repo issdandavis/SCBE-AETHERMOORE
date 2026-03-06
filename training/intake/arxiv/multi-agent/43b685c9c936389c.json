@@ -1,0 +1,38 @@
+{
+  "id": "43b685c9c936389c",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "TritonDFT: Automating DFT with a Multi-Agent Framework",
+  "content": "# TritonDFT: Automating DFT with a Multi-Agent Framework\n\nAuthors: Zhengding Hu, Kuntal Talit, Zhen Wang, Haseeb Ahmad, Yichen Lin, Prabhleen Kaur, Christopher Lane, Elizabeth A. Peterson, Zhiting Hu, Elizabeth A. Nowadnick, Yufei Ding\nPublished: 2026-03-02T22:06:41Z\n\nDensity Functional Theory (DFT) is a cornerstone of materials science, yet executing DFT in practice requires coordinating a complex, multi-step workflow. Existing tools and LLM-based solutions automate parts of the steps, but lack support for full workflow automation, diverse task adaptation, and accuracy-cost trade-off optimization in DFT configuration. To this end, we present TritonDFT, a multi-agent framework that enables efficient and accurate DFT execution through an expert-curated, extensible workflow design, Pareto-aware parameter inference, and multi-source knowledge augmentation. We further introduce DFTBench, a benchmark for evaluating the agent's multi-dimensional capabilities, spanning science expertise, trade0off optimization, HPC knowledge, and cost efficiency. TritonDFT provides an open user interface for real-world usage. Our website is at https://www.tritondft.com. Our source code and benchmark suite are available at https://github.com/Leo9660/TritonDFT.git.",
+  "url": "http://arxiv.org/abs/2603.03372v2",
+  "timestamp": "2026-03-02T22:06:41Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "7ed5f49ea42db2dca24844b781ce5b81ef34039da3a4fd156bf1ba78ff13fc3e",
+  "parent_hash": "e8c5f136c6a4b0740beb5107591a9271565a51fccc7b223f9c15673bf67482e8",
+  "metadata": {
+    "authors": [
+      "Zhengding Hu",
+      "Kuntal Talit",
+      "Zhen Wang",
+      "Haseeb Ahmad",
+      "Yichen Lin",
+      "Prabhleen Kaur",
+      "Christopher Lane",
+      "Elizabeth A. Peterson",
+      "Zhiting Hu",
+      "Elizabeth A. Nowadnick",
+      "Yufei Ding"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.03372v2"
+  }
+}

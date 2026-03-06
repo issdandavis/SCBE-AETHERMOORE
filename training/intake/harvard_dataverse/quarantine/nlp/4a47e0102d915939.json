@@ -1,0 +1,33 @@
+{
+  "id": "4a47e0102d915939",
+  "source": "harvard_dataverse",
+  "category": "quarantine/nlp",
+  "title": "Turk Talk hybrid natural language processing (NLP) virtual scenario example",
+  "content": "# Turk Talk hybrid natural language processing (NLP) virtual scenario example\n\nAuthors: Topps, David, Cullen, Michelle\nPublished: 2019-03-07T19:31:36Z\nSubjects: Computer and Information Science, Medicine, Health and Life Sciences\nDOI: doi:10.7910/DVN/66HUCD\n\nExample showing the Scenario Director's ability to redirect a User according to their free text input. Human-hybrid NLP.Using Turk Talk approach for Initial Dx and Final Dx. This case can now be made public as a demo. In the 'About' node, we have added some additional instructional materials.\n\nCitation: Topps, David; Cullen, Michelle, 2019, \"Turk Talk hybrid natural language processing (NLP) virtual scenario example\", https://doi.org/10.7910/DVN/66HUCD, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/66HUCD",
+  "timestamp": "2026-03-06T02:42:20.598451",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "6a65604eeb38877e9b32ae626619f4767024e5b548dac4ccc6e92bd93556011b",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/66HUCD",
+    "subjects": [
+      "Computer and Information Science",
+      "Medicine, Health and Life Sciences"
+    ],
+    "authors": [
+      "Topps, David",
+      "Cullen, Michelle"
+    ],
+    "file_count": 18
+  }
+}

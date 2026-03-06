@@ -1,0 +1,34 @@
+{
+  "id": "857f90658e76248e",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Datasets and Codebooks",
+  "content": "# Datasets and Codebooks\n\nAuthors: R\u00f6th, Leonce, Saldivia Gonzatti, Daniel, Kaftan, Lea, Kaiser, Andr\u00e9\nPublished: 2025-02-26T14:13:58Z\nSubjects: Social Sciences\nDOI: doi:10.7910/DVN/Z0B94F\n\nWe present three new integrated datasets that include electoral, institutional, ideological and government composition data on the country and regional level (RD|CED, RED and RPSD). With this data, we cover 337 country elections on the regional level, 2,226 regional elections and 2,825 regional cabinets in 365 regions of 21 countries from 1941 to 2019, accounting for 800 political parties and their ideological positions. The aggregated data can be inspected and displayed on the new data portal: http://multi-level-cross-level-politics.eu/. Through our GitHub repository, anyone can propose extensions and corrections to our data on a rolling basis: https://github.com/leonce-collab/Multi-level-Data\n\nCitation: R\u00f6th, Leonce; Saldivia Gonzatti, Daniel; Kaftan, Lea; Kaiser, Andr\u00e9, 2025, \"Datasets and Codebooks\", https://doi.org/10.7910/DVN/Z0B94F, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/Z0B94F",
+  "timestamp": "2026-03-06T04:18:49.817488",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "3a39825c5bccdcbc99c0cefeb44972da221faa5cd035c88c084b867e7d592bda",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/Z0B94F",
+    "subjects": [
+      "Social Sciences"
+    ],
+    "authors": [
+      "R\u00f6th, Leonce",
+      "Saldivia Gonzatti, Daniel",
+      "Kaftan, Lea",
+      "Kaiser, Andr\u00e9"
+    ],
+    "file_count": 7
+  }
+}

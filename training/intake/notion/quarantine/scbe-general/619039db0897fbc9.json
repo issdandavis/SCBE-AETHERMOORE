@@ -1,0 +1,26 @@
+{
+  "id": "619039db0897fbc9",
+  "source": "notion",
+  "category": "quarantine/scbe-general",
+  "title": "SCBE-AETHERMOORE",
+  "content": "# SCBE-AETHERMOORE\n\nSCBE-AETHERMOORE",
+  "url": "https://www.notion.so/SCBE-AETHERMOORE-300f96de82e581689086d07476aa5559",
+  "timestamp": "2026-02-07T18:16:00.000Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "3d51f5f5db5ed6d3b7af69014c7aa0a3c5f6e4b16d45bf4f15d06bf6b48db7d4",
+  "parent_hash": "eec11e6fe217d5a4b8b5efa167f96cceeaa0f44fab9e8e093703ad23b17fcbb9",
+  "metadata": {
+    "notion_id": "300f96de-82e5-8168-9086-d07476aa5559",
+    "page_type": "page",
+    "parent_type": "database_id"
+  }
+}

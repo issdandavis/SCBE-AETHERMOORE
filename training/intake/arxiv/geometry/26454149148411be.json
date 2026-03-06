@@ -1,0 +1,28 @@
+{
+  "id": "26454149148411be",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Prefactorization algebras for the conformal Laplacian: Central charge and Hilbert Fock space",
+  "content": "# Prefactorization algebras for the conformal Laplacian: Central charge and Hilbert Fock space\n\nAuthors: Yuto Moriwaki\nPublished: 2026-02-19T17:05:14Z\n\nLet $d\\geq 2$ and let $\\mathrm{Mfld}_{d,\\mathrm{emb}}^{\\mathrm{CO}}$ be the symmetric monoidal category of oriented Riemannian $d$-manifolds and conformal open embeddings. The prefactorization algebra of the conformal Laplacian defines a symmetric monoidal functor $F_{\\mathrm{CL}}:\\mathrm{Mfld}_{d,\\mathrm{emb}}^{\\mathrm{CO}}\\rightarrow \\mathrm{Vect}_\\mathbb{R}$.\n  For Euclidean domains $U\\subset\\mathbb{R}^d$, $F_{\\mathrm{CL}}(U)$ is identified with $\\mathrm{Sym} H'(U)$ via the Green function, where $H'(U)$ is the continuous dual of harmonic functions on $U$. For $d\\geq 3$ this identification is natural under all conformal transformations, while in $d=2$ the failure of naturality is governed by an explicit harmonic cocycle (the central charge). For the unit disk $\\mathbb{D}$, $F_{\\mathrm{CL}}(\\mathbb D)$ carries an algebra structure over the operad of conformal disk embeddings and admits a canonical dense embedding into the Hilbert Fock space; in $d=2$ the latter holds after restricting to a codimension-one subspace, as suggested by logarithmic CFT.",
+  "url": "http://arxiv.org/abs/2602.17549v1",
+  "timestamp": "2026-02-19T17:05:14Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "ff2d8f18d6cab57e61b99cf7714f84bb85e0ed7b73f1e0f33ad0e20146ff2343",
+  "parent_hash": "3f675b709b6d0b12b9f5662b9750f515bdeb61dfd0b09224784fc5b0e634d148",
+  "metadata": {
+    "authors": [
+      "Yuto Moriwaki"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.17549v1"
+  }
+}

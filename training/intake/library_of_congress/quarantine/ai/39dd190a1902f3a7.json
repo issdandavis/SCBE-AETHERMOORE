@@ -1,0 +1,32 @@
+{
+  "id": "39dd190a1902f3a7",
+  "source": "library_of_congress",
+  "category": "quarantine/ai",
+  "title": "AI 2005 : advances in artificial intelligence : 18th Australian Joint Conference on Artificial Intelligence, Sydney, Australia, December 5-9, 2005 : proceedings",
+  "content": "# AI 2005 : advances in artificial intelligence : 18th Australian Joint Conference on Artificial Intelligence, Sydney, Australia, December 5-9, 2005 : proceedings\n\nContributors: zhang, shichao, jarvis, raymond a. (raymond austin), australian joint conference on artificial intelligence\nDate: 2005\nSubjects: congresses, artificial intelligence\n\nIncludes bibliographical references and index. Also issued online.",
+  "url": "//lccn.loc.gov/2005936732",
+  "timestamp": "2026-03-06T02:37:58.020585",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "28fe634f0bdc32672f85c0319a641e003a63ea79e5879205fcad28540fa9de06",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "congresses",
+      "artificial intelligence"
+    ],
+    "dates": "2005",
+    "original_format": [
+      "book"
+    ]
+  }
+}

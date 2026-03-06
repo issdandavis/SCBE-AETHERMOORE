@@ -1,0 +1,36 @@
+{
+  "id": "3ca8c407a3c6b58d",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "A Decision-Theoretic Formalisation of Steganography With Applications to LLM Monitoring",
+  "content": "# A Decision-Theoretic Formalisation of Steganography With Applications to LLM Monitoring\n\nAuthors: Usman Anwar, Julianna Piskorz, David D. Baek, David Africa, Jim Weatherall, Max Tegmark, Christian Schroeder de Witt, Mihaela van der Schaar, David Krueger\nPublished: 2026-02-26T16:27:24Z\n\nLarge language models are beginning to show steganographic capabilities. Such capabilities could allow misaligned models to evade oversight mechanisms. Yet principled methods to detect and quantify such behaviours are lacking. Classical definitions of steganography, and detection methods based on them, require a known reference distribution of non-steganographic signals. For the case of steganographic reasoning in LLMs, knowing such a reference distribution is not feasible; this renders these approaches inapplicable. We propose an alternative, \\textbf{decision-theoretic view of steganography}. Our central insight is that steganography creates an asymmetry in usable information between agents who can and cannot decode the hidden content (present within a steganographic signal), and this otherwise latent asymmetry can be inferred from the agents' observable actions. To formalise this perspective, we introduce generalised $\\mathcal{V}$-information: a utilitarian framework for measuring the amount of usable information within some input. We use this to define the \\textbf{steganographic gap} -- a measure that quantifies steganography by comparing the downstream utility of the steganographic signal to agents that can and cannot decode the hidden content. We empirically validate our formalism, and show that it can be used to detect, quantify, and mitigate steganographic reasoning in LLMs.",
+  "url": "http://arxiv.org/abs/2602.23163v1",
+  "timestamp": "2026-02-26T16:27:24Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "dc5b06f2d4277cf0448108a3623c49005b1776ec09185bd60d9a4eadce31e46d",
+  "parent_hash": "271f2b9bf1f26e6021b570f14415e731d143d91a00fdad80db4a590206bdd08b",
+  "metadata": {
+    "authors": [
+      "Usman Anwar",
+      "Julianna Piskorz",
+      "David D. Baek",
+      "David Africa",
+      "Jim Weatherall",
+      "Max Tegmark",
+      "Christian Schroeder de Witt",
+      "Mihaela van der Schaar",
+      "David Krueger"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2602.23163v1"
+  }
+}

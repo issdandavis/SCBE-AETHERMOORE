@@ -1,0 +1,36 @@
+{
+  "id": "d41850610954234b",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "Scalable Real-Time Sentiment Analysis on Massive Social Media Streams Using Parallel and Distributed Computing",
+  "content": "# Scalable Real-Time Sentiment Analysis on Massive Social Media Streams Using Parallel and Distributed Computing\n\nCreator: \nDate: \nDownloads: 13\nSubjects: Big data, distributed stream processing, real-time sentiment analysis, machine learning, parallel and distributed computing\n\nThe rapid growth of social media streams has intensified the need for scalable, low-latency sentiment analysis pipelines that can operate under high-volume, real-time constraints. This paper proposes a distributed framework built on Apache Spark for massive parallel processing of text streams and seamless integration of a fine-tuned large language model (LLM), Grok-4, for sentiment classification. The system employs micro-batch streaming, distributed tokenization, and GPU-accelerated model serving to achieve real-time inference at scale. Experiments conducted on a 10-node cluster using a synthetic dataset of 10,000 tweets, extended to 1.2 million streaming events, demonstrate substantial performance gains. Our approach achieves a 5.4\u00d7 improvement in distributed training throughput and a 4.7\u00d7 reduction in inference time compared with single-node baselines. The streaming pipeline sustains 2,100 tweets per second with an end-to-end median latency of 120 ms, satisfying real-time constraints for high-volume applications. The fine-tuned Grok-4 model attains 92.8% sentiment classification accuracy, outperforming conventional machine learning baselines by 8.5% absolute, while preserving high throughput. Comparative analysis shows the framework scales nearly linearly with increasing cluster size and maintains robustness against executor failures and network-induced delays. The results highlight the effectiveness of combining parallel and distributed computing with advanced LLM-based natural language understanding for high-frequency social data analytics. The proposed architecture provides a practical foundation for scalable deployments in domains such as public health surveillance, financial market monitoring, and real-time situational awareness systems.",
+  "url": "https://archive.org/details/ijeec-nov-20252-scalable",
+  "timestamp": "2026-03-06T02:40:36.587411",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "b2d6bfdee75b9e7bd2e70c2446a6d902bb21c645b18f6d6015055f44890d327f",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "ijeec-nov-20252-scalable",
+    "media_type": "texts",
+    "downloads": 13,
+    "subjects": [
+      "Big data",
+      "distributed stream processing",
+      "real-time sentiment analysis",
+      "machine learning",
+      "parallel and distributed computing",
+      "Apache spark",
+      "sentiment analysis",
+      "large language models"
+    ]
+  }
+}

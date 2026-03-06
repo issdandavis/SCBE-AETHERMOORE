@@ -1,0 +1,29 @@
+{
+  "id": "f5227fc43b276d42",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Arithmetic structure of generalized Inoue--Bombieri manifolds",
+  "content": "# Arithmetic structure of generalized Inoue--Bombieri manifolds\n\nAuthors: Brice Flamencourt, Abdelghani Zeghib\nPublished: 2026-03-03T14:14:36Z\n\nA Generalized Inoue--Bombieri (GIB) manifold $M$ is a compact quotient of a connected Riemannian product $\\mathbb{R}^q \\times (N,g _N)$ by a discrete subgroup of $\\mathrm{Sim}(\\mathbb{R}^q) \\times \\mathrm{Isom}(N,g_N)$. The flat factor induces a transversely Riemannian foliation whose leaf closures determine, up to a natural geometric modification, a torus fibration $M \\to X$. The main goal of this article is to study the associated monodromy representation $\u03c1: \u03c0_1(X) \\to \\mathrm{GL}(n,\\mathbb{Z})$. We prove that the image of $\u03c1$ is a subgroup of a cocompact arithmetic lattice of a reductive group, and we discuss which groups may be realized as monodromy groups of GIB manifolds.\n  When $(N,g_N)$ is a symmetric space of non-compact type, the monodromy itself is arithmetic. Moreover, one may describe the fibration and the monodromy in terms of parabolic subgroups of the isometry group of $(N,g_N)$. This yields new examples of GIB manifolds, as well as obstructions, and opens the way toward a complete classification in this particular case.",
+  "url": "http://arxiv.org/abs/2603.03020v1",
+  "timestamp": "2026-03-03T14:14:36Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "e8eb8ae6550f88cc4682bb5c0d5a417be9d7675a20bdaf5c2aaeb543c69a30a2",
+  "parent_hash": "8fb8d98340ea7e35a3665c4320080af703eac98cd857a5d3fe0d7f4c5f1e721e",
+  "metadata": {
+    "authors": [
+      "Brice Flamencourt",
+      "Abdelghani Zeghib"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.03020v1"
+  }
+}

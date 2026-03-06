@@ -1,0 +1,33 @@
+{
+  "id": "e8eacf186ebe31b2",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Cheminformatics and its applications",
+  "content": "# Cheminformatics and its applications\n\nContributors: rasul, azhar, intechopen (firm), hussain, ghulam, stefaniu, amalia\nDate: 2020-01-01\nSubjects: cheminformatics, chemistry, data processing\n\nIncludes bibliographical references. Description based on print version record; resource not viewed.",
+  "url": "https://www.loc.gov/item/2022667411/",
+  "timestamp": "2026-03-06T04:17:25.148195",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "e28cca21b8d5ff431681477e735e031b373f5144273835f1d701f2074165cf2a",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "cheminformatics",
+      "chemistry",
+      "data processing"
+    ],
+    "dates": "2020-01-01",
+    "original_format": [
+      "book"
+    ]
+  }
+}

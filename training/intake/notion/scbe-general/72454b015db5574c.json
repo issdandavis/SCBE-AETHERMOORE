@@ -1,0 +1,26 @@
+{
+  "id": "72454b015db5574c",
+  "source": "notion",
+  "category": "scbe-general",
+  "title": "Screenshot 1: AWS Lambda \"Create function\" page with tutorial showing",
+  "content": "# Screenshot 1: AWS Lambda \"Create function\" page with tutorial showing\n\n- Tutorial popup visible: \"Task 1: Create the function\" with Step 1/5\n- Three options displayed: Author from scratch, Use a blueprint, Container image\n- Selected \"Use a blueprint\" option\nScreenshot 2: Blueprint configuration\n- Blueprint selected: \"Hello world function\" with nodejs22.x\n- Function name entered: mySimpleWebAppFunction\n- Runtime: nodejs22.x, Architecture: x86_64\n- Execution role: Create a new role with basic Lambda permissions\nScreenshot 3: Lambda function code preview\n- Preconfigured Hello World code shown in editor\n- Code logs event keys and demonstrates basic Lambda structure\nStep 1: Create Lambda Function\nAWS Lambda Simple Web App Tutorial\nTutorial Overview\nThis tutorial demonstrates how to create a simple serverless web application using AWS Lambda, API Gateway, and DynamoDB.\nGitHub Repository\nSteps Taken:\n/image\n1. Selected \"Use a blueprint\" option\n2. Chose \"Hello world function\" blueprint with Node.js 22.x runtime\n3. Named the function: mySimpleWebAppFunction\n4. Kept default execution role: Create a new role with basic Lambda permissions\n5. Architecture: x86_64\n6. Clicked \"Create function\u201d\nResult:\n\u2705 Function successfully created!\nFunction ARN: arn:aws:lambda:us-east-2:861870144562:function:mySimpleWebAppFunction\nExecution role: mySimpleWebAppFunction-role-xbj15t0r\nPermissions: Upload logs to Amazon CloudWatch Logs\nTask 2: Invoke the Function\nNext Tutorial: Create a Simple Web App\nTutorial Overview:\nThis is a more advanced tutorial that builds upon the Hello World function. It teaches how to:\n\u2022 Build a simple web app with a Lambda function\n\u2022 Create a function URL that outputs a webpage\n\u2022 Invoke the function through its public function URL\n\u2022 Deploy a real web application accessible via the internet\nScreenshot 4: Tutorial Panel - Create a Simple Web App\n- Tutorial panel shows next steps for web app creation\n- Includes 'Start tutorial' button\n- Tutorial focuses on function URLs for web output\nTutorial Steps Completed:\nTask 1: Create the Function (5 steps) \u2705\n1. Selected \"Use a blueprint\" option\n2. Chose \"Getting started with Lambda HTTP\" blueprint (nodejs22.x)\n3. Named function: http-function-url-tutorial\n4. Acknowledged public Function URL security statement\n5. Created function successfully\nScreenshot 5: Function Overview Page\n- Function successfully created: http-function-url-tutorial\n- Function URL generated and displayed\n- Description: \"Learn about Lambda by creating an HTTP endpoint that outputs a server-side rendered web page\u201d\n- Task 1 marked complete with green checkmark\nScreenshot 6: Code Tab - index.mjs File\n- Code editor showing the Lambda function implementation\n- File structure visible: index.html and index.mjs\n- Code imports Node.js fs module and reads HTML file\nScreenshot 7: Complete Function Code\n- Full handler function visible\n- Returns HTTP response with status 200, Content-Type: text/html, and HTML body\n- Deploy and Test buttons visible in sidebar\nTask 2: Invoke the Function (2 steps) \u2705\n1. Reviewed the function code in the Code tab\n2. Clicked the Function URL to invoke the web app\nScreenshot 8: Live Web Application Result! \ud83c\udf89\n- Page title: \"Hello from AWS Lambda!\u201d\n- Subtitle: \"The blueprint function you created rendered this page\u201d\n- Tutorial content showing next steps to make the page dynamic\n- Links to additional Lambda examples and use cases\n- Public URL: https://fptqigvehwhqkqfkikmzhfsu3y0tumhs.lambda-url.us-east-2.on.aws/",
+  "url": "https://www.notion.so/Screenshot-1-AWS-Lambda-Create-function-page-with-tutorial-showing-2d7f96de82e58015a641f70edb08ea0b",
+  "timestamp": "2025-12-28T20:01:00.000Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "9bf7e64680d0cba553a4096f0fde904936c58442b8e9c896fdd61aa41081be01",
+  "parent_hash": "1024264e9cfa8879dc105651c3dfda9afe001e5369c2fdec5e4310aae11f738d",
+  "metadata": {
+    "notion_id": "2d7f96de-82e5-8015-a641-f70edb08ea0b",
+    "page_type": "page",
+    "parent_type": "workspace"
+  }
+}

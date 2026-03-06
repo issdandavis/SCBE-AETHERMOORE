@@ -1,0 +1,29 @@
+{
+  "id": "e050f87e048a9969",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "The Extra Vanishing Structure and Nonlinear Stability of Multi-Dimensional Rarefaction Waves: The Geometric Weighted Energy Estimates",
+  "content": "# The Extra Vanishing Structure and Nonlinear Stability of Multi-Dimensional Rarefaction Waves: The Geometric Weighted Energy Estimates\n\nAuthors: Haoran He, Qichen He\nPublished: 2026-03-05T16:13:28Z\n\nWe study the resolution of discontinuous singularities in gas dynamics via multi-dimensional rarefaction waves. While the mechanism is well-understood in one spatial dimension, the rigorous construction in higher dimensions has remained a challenging open problem since Majda's proposal, primarily due to the characteristic nature of rarefaction fronts which leads to derivative losses in linearized estimates. In this paper, we establish the nonlinear stability of multi-dimensional rarefaction waves for the compressible Euler equations with ideal gas law. We prove that for initial data being small perturbations of the planar rarefaction wave in $H^s$ ($s > s_c$), there exists a unique global solution that converges asymptotically to the background rarefaction wave as $t \\to \\infty$. Our proof relies on a novel Geometric Weighted Energy Method (GWEM), which yields stable energy estimates without loss of derivatives in standard Sobolev spaces, overcoming the limitations of previous Nash-Moser schemes. A key ingredient is a detailed geometric description of the rarefaction wave fronts via the acoustical metric, where we identify a hidden extra vanishing structure in the top-order derivatives of the characteristic speed. This is the first paper in a series, providing the crucial a priori energy bounds. The existence of solutions and applications to the multi-dimensional Riemann problem will be addressed in the forthcoming companion paper.",
+  "url": "http://arxiv.org/abs/2603.05332v1",
+  "timestamp": "2026-03-05T16:13:28Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "b32534e166f70e59ee81614a4bb08ab2160b3348c29dc43cd7a3ba6a446910a7",
+  "parent_hash": "d494c6ef8361a014de86da6dc0eeba7e4fdfd446f1cdf74116c108a17b889970",
+  "metadata": {
+    "authors": [
+      "Haoran He",
+      "Qichen He"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.05332v1"
+  }
+}

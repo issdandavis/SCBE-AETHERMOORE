@@ -1,0 +1,31 @@
+{
+  "id": "0ee4d6e48bec19c9",
+  "source": "library_of_congress",
+  "category": "quarantine/quantum",
+  "title": "A system of natural philosophy, designed for the use of schools and academies,",
+  "content": "# A system of natural philosophy, designed for the use of schools and academies,\n\nContributors: moffat, j[ohn] m.\nDate: 1845\nSubjects: physics\n\nAlso available in digital form.",
+  "url": "https://www.loc.gov/item/03025712/",
+  "timestamp": "2026-03-06T04:17:18.822525",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "8dc199b1166c353a6269345b5d5270b612d25376381b98531ab1f8cf3fb4c891",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "physics"
+    ],
+    "dates": "1845",
+    "original_format": [
+      "book"
+    ]
+  }
+}

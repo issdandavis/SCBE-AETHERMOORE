@@ -1,0 +1,31 @@
+{
+  "id": "cd84ea329482e962",
+  "source": "library_of_congress",
+  "category": "quarantine/security",
+  "title": "National Security Network",
+  "content": "# National Security Network\n\nContributors: N/A\nDate: 2008\nSubjects: website\n\nThe National Security Network (NSN) was a non-profit foreign policy organization headquartered in Washington, D.C., United States, that focused on international relations, global affairs and national security. Characterizing itself as \"progressive,\" the NSN's mission statement asserts the group aimed to \"build a strong progressive national security and counter conservative spin.\" NSN \"suspended active operations\" as of March 2016, according to their website. Its founder, Rand Beers, was a Bush Administration counter-terrorism expert and is the former National Security Adviser to the John Kerry presidential campaign, 2004. Beers resigned from NSN in 2009 to serve as Counselor to Secretary of Homeland Security Janet Napolitano. Among other things, the National Security Network acts as a resource for media outlets, releasing frequent opinion papers on a wide variety of foreign policy issues and engaging in rapid responses to current events. It also hosted the liberal global affairs blog Democracy Arsenal.  Website.   electronic |   Electronic (Form).",
+  "url": "https://www.loc.gov/item/lcwaN0007150/",
+  "timestamp": "2026-03-06T02:38:19.805307",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "b600925e2f22f0181b5f0c8aae0c66cfd9eb65e5c7c55ba6181ce1cec91f4767",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "website"
+    ],
+    "dates": "2008",
+    "original_format": [
+      "web archive"
+    ]
+  }
+}

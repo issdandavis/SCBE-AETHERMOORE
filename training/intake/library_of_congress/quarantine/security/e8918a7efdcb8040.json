@@ -1,0 +1,31 @@
+{
+  "id": "e8918a7efdcb8040",
+  "source": "library_of_congress",
+  "category": "quarantine/security",
+  "title": "S.2348 - 99th Congress (1985-1986): A bill to authorize the procurement and installation of cryptographic equipment at satellite communications facilities within the United States, and for other purposes.",
+  "content": "# S.2348 - 99th Congress (1985-1986): A bill to authorize the procurement and installation of cryptographic equipment at satellite communications facilities within the United States, and for other purposes.\n\nContributors: senate, 99th congress, moynihan, daniel\nDate: 1986-04-22\nSubjects: armed forces and national security\n\nSummary of S.2348 - 99th Congress (1985-1986): A bill to authorize the procurement and installation of cryptographic equipment at satellite communications facilities within the United States, and for other purposes.",
+  "url": "https://www.congress.gov/bill/99th-congress/senate-bill/2348",
+  "timestamp": "2026-03-06T02:37:46.460817",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "89bec45e25c0a9c9d5c7e50844b3d9b249b1fa759110d831e955cd76e6e5142e",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "armed forces and national security"
+    ],
+    "dates": "1986-04-22",
+    "original_format": [
+      "legislation"
+    ]
+  }
+}

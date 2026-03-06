@@ -1,0 +1,30 @@
+{
+  "id": "554745e3a7f72561",
+  "source": "internet_archive",
+  "category": "quarantine/math",
+  "title": "Isoptic curves of generalized conic sections in the hyperbolic plane",
+  "content": "# Isoptic curves of generalized conic sections in the hyperbolic plane\n\nCreator: G\u00e9za Csima, Jen\u0151 Szirmai\nDate: 2015-04-24T00:00:00Z\nDownloads: 47\nSubjects: Mathematics, Metric Geometry\n\nAfter having investigated the real conic sections and their isoptic curves in the hyperbolic plane $\\bH^2$ we consider the problem of the isoptic curves of generalized conic sections in the extended hyperbolic plane. This topic is widely investigated in the Euclidean plane $\\BE^2$ (see for example \\cite{Lo}), but in the hyperbolic and elliptic planes there are few results (see \\cite{CsSz1}, \\cite{CsSz2} and \\cite{CsSz3}). In this paper we recall the former results on isoptic curves in the hyperbolic plane geometry, and define the notion of the generalised hyperbolic angle between proper and non-proper straight lines, summarize the notions of generalized hyperbolic conic sections classified by K.~Fladt in \\cite{KF1} and \\cite{KF2} and gy E.~Moln\\'ar in \\cite{M81}. Furthermore, we determine and visualize the generalized isoptic curves to all hyperbolic conic sections. We use for the computations the classical models which are based on the projective interpretation of the hyperbolic geometry and in this manner the isoptic curves can be visualized on the Euclidean screen of computer.",
+  "url": "https://archive.org/details/arxiv-1504.06450",
+  "timestamp": "2026-03-06T02:38:47.918989",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "7b70754cb2242395a3c1bf3a4439fb3ed88335294e1310d5793597c571561af9",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "arxiv-1504.06450",
+    "media_type": "texts",
+    "downloads": 47,
+    "subjects": [
+      "Mathematics",
+      "Metric Geometry"
+    ]
+  }
+}

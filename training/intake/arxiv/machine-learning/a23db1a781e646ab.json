@@ -1,0 +1,30 @@
+{
+  "id": "a23db1a781e646ab",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "Bayesian Supervised Causal Clustering",
+  "content": "# Bayesian Supervised Causal Clustering\n\nAuthors: Luwei Wang, Nazir Lone, Sohan Seth\nPublished: 2026-03-05T15:30:36Z\n\nFinding patient subgroups with similar characteristics is crucial for personalized decision-making in various disciplines such as healthcare and policy evaluation. While most existing approaches rely on unsupervised clustering methods, there is a growing trend toward using supervised clustering methods that identify operationalizable subgroups in the context of a specific outcome of interest. We propose Bayesian Supervised Causal Clustering (BSCC), with treatment effect as outcome to guide the clustering process. BSCC identifies homogenous subgroups of individuals who are similar in their covariate profiles as well as their treatment effects. We evaluate BSCC on simulated datasets as well as real-world dataset from the third International Stroke Trial to assess the practical usefulness of the framework.",
+  "url": "http://arxiv.org/abs/2603.05288v1",
+  "timestamp": "2026-03-05T15:30:36Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "5848535bfddb3f6e159cf6778f8f3eb329bfdab1cdfe4c8a6cb85fcf5beb19a8",
+  "parent_hash": "c1581470ea8149dc38b64a334331b36004f3cfad17e54f78e2a7a3bac7031d73",
+  "metadata": {
+    "authors": [
+      "Luwei Wang",
+      "Nazir Lone",
+      "Sohan Seth"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.05288v1"
+  }
+}

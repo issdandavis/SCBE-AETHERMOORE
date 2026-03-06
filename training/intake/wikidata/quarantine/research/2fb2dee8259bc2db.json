@@ -1,0 +1,25 @@
+{
+  "id": "2fb2dee8259bc2db",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "three-dimensional hyperbolic geometry (Q3760346)",
+  "content": "# three-dimensional hyperbolic geometry\n\nWikidata ID: Q3760346\nDescription: \n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q3760346",
+  "timestamp": "2026-03-06T02:40:55.681265",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "db6be3c8b4e771cf390d8c622b3df815850473908310ee1a5403375fed65866b",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q3760346",
+    "description": ""
+  }
+}

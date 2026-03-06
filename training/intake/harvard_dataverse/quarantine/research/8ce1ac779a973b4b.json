@@ -1,0 +1,32 @@
+{
+  "id": "8ce1ac779a973b4b",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Datasets for Stealthy False Data Injection Attacks (SFDIA) against Smart Grid",
+  "content": "# Datasets for Stealthy False Data Injection Attacks (SFDIA) against Smart Grid\n\nAuthors: Yin, Xuefei\nPublished: 2024-04-08T05:10:22Z\nSubjects: Computer and Information Science, Engineering\nDOI: doi:10.7910/DVN/K2HHQS\n\nThis database contains two FDIA datasets, \u2018FDIA-1-HV-mixed\u20130-no_sw\u2019 and \u2018FDIA-1-EHV-mixed\u20130-no_sw\u2019, generated on two power grids, \u20181-HV-mixed\u20130-no_sw\u2019 and \u20181-EHV-mixed\u20130-no_sw\u2019, respectively. The \u20181-HV-mixed\u20130-no_sw\u2019 is a high voltage level grid with 110 KV transmission lines, denoted by Grid-HV, which is monitored by 355 measurements, with 35,136 profiles for dynamical power load and generation. The \u20181-EHV-mixed\u20130-no_sw\u2019 is an extra-high voltage level grid with 220-380 KV transmission lines, denoted by GridEHV, which is monitored by 3,952 measurements, with 35,136 profiles for dynamical power load and generation.\n\nCitation: Yin, Xuefei, 2024, \"Datasets for Stealthy False Data Injection Attacks (SFDIA) against Smart Grid\", https://doi.org/10.7910/DVN/K2HHQS, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/K2HHQS",
+  "timestamp": "2026-03-06T02:42:03.535884",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "693f3b2db403571646d15ef9b2d90e12444cdf83519c436f32cde3208db8b30e",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/K2HHQS",
+    "subjects": [
+      "Computer and Information Science",
+      "Engineering"
+    ],
+    "authors": [
+      "Yin, Xuefei"
+    ],
+    "file_count": 4
+  }
+}

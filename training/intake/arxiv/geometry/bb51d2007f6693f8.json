@@ -1,0 +1,29 @@
+{
+  "id": "bb51d2007f6693f8",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "An new polar factor retraction on the Stiefel manifold with closed-form inverse",
+  "content": "# An new polar factor retraction on the Stiefel manifold with closed-form inverse\n\nAuthors: Rasmus Jensen, Ralf Zimmermann\nPublished: 2026-02-23T15:02:17Z\n\nRetractions are the workhorse in Riemannian computing applications, where computational efficiency is of the essence. This work introduces a new retraction on the compact Stiefel manifold of orthogonal frames. The retraction is second-order accurate under the Euclidean metric and features a closed-form inverse that can be efficiently computed. To the best of our knowledge, this is the first Stiefel retraction with both these properties. A variety of retractions is known on the Stiefel manifold, including the Riemannian exponential map, the polar factor retraction, the QR-retraction and the Cayley retraction, but none of them features a closed-form inverse. The only Stiefel retraction with closed-form inverse that we are aware of is based on quasi-geodesics, but this one is of first order.",
+  "url": "http://arxiv.org/abs/2602.19923v1",
+  "timestamp": "2026-02-23T15:02:17Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "64e2302b8b12fa82f2dec39aa60effe3eb3f0575f0f961c68bacd785af054438",
+  "parent_hash": "b27e06b46594cfdc1e4a327cde51618459a4a354470821cc4f045357c522f3ea",
+  "metadata": {
+    "authors": [
+      "Rasmus Jensen",
+      "Ralf Zimmermann"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.19923v1"
+  }
+}

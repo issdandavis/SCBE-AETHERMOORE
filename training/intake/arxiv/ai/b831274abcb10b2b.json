@@ -1,0 +1,35 @@
+{
+  "id": "b831274abcb10b2b",
+  "source": "arxiv",
+  "category": "ai",
+  "title": "STRUCTUREDAGENT: Planning with AND/OR Trees for Long-Horizon Web Tasks",
+  "content": "# STRUCTUREDAGENT: Planning with AND/OR Trees for Long-Horizon Web Tasks\n\nAuthors: ELita Lobo, Xu Chen, Jingjing Meng, Nan Xi, Yang Jiao, Chirag Agarwal, Yair Zick, Yan Gao\nPublished: 2026-03-05T15:37:06Z\n\nRecent advances in large language models (LLMs) have enabled agentic systems for sequential decision-making. Such agents must perceive their environment, reason across multiple time steps, and take actions that optimize long-term objectives. However, existing web agents struggle on complex, long-horizon tasks due to limited in-context memory for tracking history, weak planning abilities, and greedy behaviors that lead to premature termination. To address these challenges, we propose STRUCTUREDAGENT, a hierarchical planning framework with two core components: (1) an online hierarchical planner that uses dynamic AND/OR trees for efficient search and (2) a structured memory module that tracks and maintains candidate solutions to improve constraint satisfaction in information-seeking tasks. The framework also produces interpretable hierarchical plans, enabling easier debugging and facilitating human intervention when needed. Our results on WebVoyager, WebArena, and custom shopping benchmarks show that STRUCTUREDAGENT improves performance on long-horizon web-browsing tasks compared to standard LLM-based agents.",
+  "url": "http://arxiv.org/abs/2603.05294v1",
+  "timestamp": "2026-03-05T15:37:06Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "e33ae2c7827fb487770bd0e2198bb933620055a53c78f42b80a18363c5bb58dd",
+  "parent_hash": "4698c2ee6e994b1dd747386c9c8e7a666399a69ef89480a98f62cd1890a38738",
+  "metadata": {
+    "authors": [
+      "ELita Lobo",
+      "Xu Chen",
+      "Jingjing Meng",
+      "Nan Xi",
+      "Yang Jiao",
+      "Chirag Agarwal",
+      "Yair Zick",
+      "Yan Gao"
+    ],
+    "arxiv_category": "cs.AI",
+    "arxiv_id": "2603.05294v1"
+  }
+}

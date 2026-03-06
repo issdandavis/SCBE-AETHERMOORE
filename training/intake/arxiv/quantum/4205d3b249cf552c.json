@@ -1,0 +1,32 @@
+{
+  "id": "4205d3b249cf552c",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Spatiotemporal Pauli processes: Quantum combs for modelling correlated noise in quantum error correction",
+  "content": "# Spatiotemporal Pauli processes: Quantum combs for modelling correlated noise in quantum error correction\n\nAuthors: John F Kam, Angus Southwell, Spiro Gicev, Muhammad Usman, Kavan Modi\nPublished: 2026-03-05T18:45:06Z\n\nCorrelated noise is a critical failure mode in quantum error correction (QEC), as temporal memory and spatial structure concentrate faults into error bursts that undermine standard threshold assumptions. Yet, a fundamental gap persists between the stochastic Pauli models ubiquitous in QEC and the microscopic, non-Markovian descriptions of physical device dynamics. We close this gap by introducing \\emph{Spatiotemporal Pauli Processes} (SPPs). By applying a multi-time Pauli twirl -- operationally realised by Pauli-frame randomisation -- to a general process tensor, we map arbitrary multi-time, non-Markovian dynamics to a multi-time Pauli process. This process is represented by a process-separable comb, or equivalently, a well-defined joint probability distribution over Pauli trajectories in spacetime. We show that SPPs inherit efficient tensor network representations whose bond dimensions are bounded by the environment's Liouville-space dimension. To interpret these structures, we develop transfer operator diagnostics linking spectra to correlation decay, and exact hidden Markov representations for suitable classes of SPPs. We demonstrate the framework via surface code memory and stability simulations of up to distance \\(19\\) for (i) a temporally correlated ``storm'' model that tunes correlation length at fixed marginal error rates, and (ii) a genuinely spatiotemporal 2D quantum cellular automaton bath that maps exactly to a nonlinear probabilistic cellular automaton under twirling. Tuning coherent bath interactions drives the system into a pseudo-critical regime, exhibiting critical slowing down and macroscopic error avalanches that cause a complete breakdown of surface code distance scaling. Together, these results justify SPPs as an operationally grounded, scalable toolkit for modelling, diagnosing, and benchmarking correlated noise in QEC.",
+  "url": "http://arxiv.org/abs/2603.05474v1",
+  "timestamp": "2026-03-05T18:45:06Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "add4fa71ba8d08fec9ab5435e9bbee2a93003559d1558710fcbd74a97a311979",
+  "parent_hash": "bec480a601f3d3dc3fb44df8f4a4a251aecb47ce764cffea56d6bb53cf53e728",
+  "metadata": {
+    "authors": [
+      "John F Kam",
+      "Angus Southwell",
+      "Spiro Gicev",
+      "Muhammad Usman",
+      "Kavan Modi"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05474v1"
+  }
+}

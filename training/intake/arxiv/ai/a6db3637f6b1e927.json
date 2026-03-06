@@ -1,0 +1,33 @@
+{
+  "id": "a6db3637f6b1e927",
+  "source": "arxiv",
+  "category": "ai",
+  "title": "AgentSCOPE: Evaluating Contextual Privacy Across Agentic Workflows",
+  "content": "# AgentSCOPE: Evaluating Contextual Privacy Across Agentic Workflows\n\nAuthors: Ivoline C. Ngong, Keerthiram Murugesan, Swanand Kadhe, Justin D. Weisz, Amit Dhurandhar, Karthikeyan Natesan Ramamurthy\nPublished: 2026-03-05T07:45:31Z\n\nAgentic systems are increasingly acting on users' behalf, accessing calendars, email, and personal files to complete everyday tasks. Privacy evaluation for these systems has focused on the input and output boundaries, but each task involves several intermediate information flows, from agent queries to tool responses, that are not currently evaluated. We argue that every boundary in an agentic pipeline is a site of potential privacy violation and must be assessed independently. To support this, we introduce the Privacy Flow Graph, a Contextual Integrity-grounded framework that decomposes agentic execution into a sequence of information flows, each annotated with the five CI parameters, and traces violations to their point of origin. We present AgentSCOPE, a benchmark of 62 multi-tool scenarios across eight regulatory domains with ground truth at every pipeline stage. Our evaluation across seven state-of-the-art LLMs show that privacy violations in the pipeline occur in over 80% of scenarios, even when final outputs appear clean (24%), with most violations arising at the tool-response stage where APIs return sensitive data indiscriminately. These results indicate that output-level evaluation alone substantially underestimates the privacy risk of agentic systems.",
+  "url": "http://arxiv.org/abs/2603.04902v1",
+  "timestamp": "2026-03-05T07:45:31Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "ebdfaff82e1ac6c04a6ff7346b5ff6ead2051937c19c7ab4479780aed13ac211",
+  "parent_hash": "b4b8968a5feea6e47b608dff46c92e1d3acd858072f6abf74c1c8ead3cb60010",
+  "metadata": {
+    "authors": [
+      "Ivoline C. Ngong",
+      "Keerthiram Murugesan",
+      "Swanand Kadhe",
+      "Justin D. Weisz",
+      "Amit Dhurandhar",
+      "Karthikeyan Natesan Ramamurthy"
+    ],
+    "arxiv_category": "cs.AI",
+    "arxiv_id": "2603.04902v1"
+  }
+}

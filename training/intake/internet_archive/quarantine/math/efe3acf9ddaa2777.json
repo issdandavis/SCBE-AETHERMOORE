@@ -1,0 +1,30 @@
+{
+  "id": "efe3acf9ddaa2777",
+  "source": "internet_archive",
+  "category": "quarantine/math",
+  "title": "An Icosahedral Quasicrystal as a Golden Modification of the Icosagrid and its Connection to the E8 Lattice",
+  "content": "# An Icosahedral Quasicrystal as a Golden Modification of the Icosagrid and its Connection to the E8 Lattice\n\nCreator: Fang Fang, Klee Irwin\nDate: 2015-11-19T00:00:00Z\nDownloads: 39\nSubjects: Metric Geometry, Mathematics\n\nWe present an icosahedral quasicrystal as a modification of the icosagrid, a multigrid with 10 plane sets that are arranged with icosahedral symmetry. We use the Fibonacci chain to space the planes, thereby obtaining a quasicrystal with icosahedral symmetry. It has a surprising correlation to the Elser-Sloane quasicrystal, a 4D cut-and-project of the E8 lattice. We call this quasicrystal the Fibonacci modified icosagrid quasicrystal. We found that this structure totally embeds another quasicrystal that is a compound of 20 3D slices of the Elser-Sloane quasicrystal. The slices, which contain only regular tetrahedra, are put together by a certain golden ratio based rotation. Interesting 20-tetrahedron clusters arranged with the golden ratio based rotation appear repetitively in the structure. They are arranged with icosahedral symmetry. It turns out that this rotation is the dihedral angle of the 600-cell (the super-cell of the Elser-Sloane quasicrystal) and the angle between the tetrahedral facets in the E8 polytope known as the Gosset polytope.",
+  "url": "https://archive.org/details/arxiv-1511.07786",
+  "timestamp": "2026-03-06T04:17:45.776571",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "976dd4340af6bab6d5908b53a6045fc0506efec3bb7cb2b4365891de19cfff69",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "arxiv-1511.07786",
+    "media_type": "texts",
+    "downloads": 39,
+    "subjects": [
+      "Metric Geometry",
+      "Mathematics"
+    ]
+  }
+}

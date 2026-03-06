@@ -1,0 +1,30 @@
+{
+  "id": "1ae7fb6b15915b10",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Pulse-duration-sensitive high harmonics and attosecond locally-chiral light from a chiral topological Weyl semimetal",
+  "content": "# Pulse-duration-sensitive high harmonics and attosecond locally-chiral light from a chiral topological Weyl semimetal\n\nAuthors: Alba de las Heras, Ofer Neufeld, Angel Rubio\nPublished: 2026-03-05T16:24:01Z\n\nHigh harmonic generation (HHG) in solids results from an interplay between intraband acceleration and electron-hole recombination driven by a high-intensity laser pulse. Here, we theoretically reveal that the driving pulse duration can play a major role in extending HHG to higher photon energies by promoting higher conduction band excitations. The effect is present in a conventional semiconductor as Si, restricted in a large-gap insulator as MgO, and most prominent in RhSi, a prototypical chiral Weyl semimetal presenting numerous band crossings. Further, we elucidate the HHG selection rules in RhSi required for the synthesis of attosecond locally chiral light. The chiral crystal structure enables the generation of a local 3D electric field exhibiting an asymmetric instantaneous torsion on attosecond timescales. A pronounced circular dichroism emerges when the driving helicity is either aligned with or opposite to the crystal handedness. Our findings motivate future experiments in chiral Weyl semimetals to track high-energy band crossings and in-situ locally chiral light, paving the way for chiral compact light sources and light-wave driven topological electronics.",
+  "url": "http://arxiv.org/abs/2603.05346v1",
+  "timestamp": "2026-03-05T16:24:01Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "c9c1b6cbfd2a211ade53bd4bda52605ec83db6af274aa8413509f8ed920bbad5",
+  "parent_hash": "e56d83285b7e5a8ffc469bd295a83916b713aeef41ec5dbbc78df080a02cbea4",
+  "metadata": {
+    "authors": [
+      "Alba de las Heras",
+      "Ofer Neufeld",
+      "Angel Rubio"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05346v1"
+  }
+}

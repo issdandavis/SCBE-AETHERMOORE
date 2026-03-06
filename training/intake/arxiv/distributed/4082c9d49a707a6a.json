@@ -1,0 +1,33 @@
+{
+  "id": "4082c9d49a707a6a",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "Rudder: Steering Prefetching in Distributed GNN Training using LLM Agents",
+  "content": "# Rudder: Steering Prefetching in Distributed GNN Training using LLM Agents\n\nAuthors: Aishwarya Sarkar, Sayan Ghosh, Nathan Tallent, Aman Chadha, Tanya Roosta, Ali Jannesari\nPublished: 2026-02-26T23:39:42Z\n\nLarge-scale Graph Neural Networks (GNNs) are typically trained by sampling a vertex's neighbors to a fixed distance. Because large input graphs are distributed, training requires frequent irregular communication that stalls forward progress. Moreover, fetched data changes with graph, graph distribution, sample and batch parameters, and caching polices. Consequently, any static prefetching method will miss crucial opportunities to adapt to different dynamic conditions. In this paper, we introduce Rudder, a software module embedded in the state-of-the-art AWS DistDGL framework, to autonomously prefetch remote nodes and minimize communication. Rudder's adaptation contrasts with both standard heuristics and traditional ML classifiers. We observe that the generative AI found in contemporary Large Language Models (LLMs) exhibits emergent properties like In-Context Learning (ICL) for zero-shot tasks, with logical multi-step reasoning. We find this behavior well-suited for adaptive control even with substantial undertraining. Evaluations using standard datasets and unseen configurations on the NERSC Perlmutter supercomputer show up to 91% improvement in end-to-end training performance over baseline DistDGL (no prefetching), and an 82% improvement over static prefetching, reducing communication by over 50%. Our code is available at https://github.com/aishwaryyasarkar/rudder-llm-agent.",
+  "url": "http://arxiv.org/abs/2602.23556v1",
+  "timestamp": "2026-02-26T23:39:42Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "a919c906bbb9a375e41f28cbf072e5931d8d3ebfac8a0ce81a094a217c6ffe04",
+  "parent_hash": "04fb5ccbf4e659e381bbb6950e4f5a98d4fc27d5b5fffb3d7dc9365890a45ef9",
+  "metadata": {
+    "authors": [
+      "Aishwarya Sarkar",
+      "Sayan Ghosh",
+      "Nathan Tallent",
+      "Aman Chadha",
+      "Tanya Roosta",
+      "Ali Jannesari"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2602.23556v1"
+  }
+}

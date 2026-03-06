@@ -1,0 +1,31 @@
+{
+  "id": "8c860a7ad1f90720",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Ethereum Blockchain",
+  "content": "# Ethereum Blockchain\n\nAuthors: Somin, Shahar\nPublished: 2023-10-29T17:50:46Z\nSubjects: Computer and Information Science\nDOI: doi:10.7910/DVN/6G0D9T\n\nERC20 crypto token trading on top of the Ethereum Blockchain\n\nCitation: Somin, Shahar, 2023, \"Ethereum Blockchain\", https://doi.org/10.7910/DVN/6G0D9T, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/6G0D9T",
+  "timestamp": "2026-03-06T02:42:29.165268",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "227688090aff444377af498c76128e73f5aff23c047881540a21a436cbc4fad4",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/6G0D9T",
+    "subjects": [
+      "Computer and Information Science"
+    ],
+    "authors": [
+      "Somin, Shahar"
+    ],
+    "file_count": 90
+  }
+}

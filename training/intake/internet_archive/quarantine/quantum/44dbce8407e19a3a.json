@@ -1,0 +1,38 @@
+{
+  "id": "44dbce8407e19a3a",
+  "source": "internet_archive",
+  "category": "quarantine/quantum",
+  "title": "DTIC ADA509101: Solid State Quantum Computing Using Spin Qubits in Silicon Quantum Dots (QCCM)",
+  "content": "# DTIC ADA509101: Solid State Quantum Computing Using Spin Qubits in Silicon Quantum Dots (QCCM)\n\nCreator: Defense Technical Information Center\nDate: 2009-07-16T00:00:00Z\nDownloads: 77\nSubjects: DTIC Archive, WISCONSIN UNIV-MADISON BOARD OF REGENTS/RESEARCH SPONSORED PROGRAMS, *GERMANIUM, *QUANTUM DOTS, *SOLID STATE PHYSICS\n\nThe project goals are to fabricate qubits in quantum dots in Si/SiGe modulation-doped heterostructures, to characterize and understand those structures, and to develop the technology necessary for a Si/SiGe quantum dot quantum computer. The physical qubit in our approach is the spin of an electron confined in a top-gated silicon quantum dot in a Si/SiGe modulation-doped heterostructure. Operations on such a qubit may be performed by controlling the voltages on gates in-between neighboring quantum dots. A quantum computer and qubits in silicon offer potential advantages, both fundamental and practical. Electron spins in silicon quantum dots are expected to have long coherence times. Silicon has an isotope, Si, which has zero nuclear spin and thus no nuclear magnetic moment. As a result, electron spins in silicon have longer coherence times than they would in the presence of a fluctuating nuclear spin background. From a practical perspective, modern classical computers are made in silicon, and one hopes that this will lead to synergy in the future with a silicon quantum computer. This QCCM includes both theory and experiment focusing on (i) the development of qubits in the form of electron spins in silicon quantum dots, (ii) the measurement and manipulation of those qubits, and (iii) the science essential for understanding the properties of such qubits.",
+  "url": "https://archive.org/details/DTIC_ADA509101",
+  "timestamp": "2026-03-06T04:17:58.219960",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "c91c1a8a4197b2c5434810900fc7e986112972385ec99c956f2a77035beaa395",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "DTIC_ADA509101",
+    "media_type": "texts",
+    "downloads": 77,
+    "subjects": [
+      "DTIC Archive",
+      "WISCONSIN UNIV-MADISON BOARD OF REGENTS/RESEARCH SPONSORED PROGRAMS",
+      "*GERMANIUM",
+      "*QUANTUM DOTS",
+      "*SOLID STATE PHYSICS",
+      "*SILICON",
+      "*QUANTUM THEORY",
+      "NUCLEAR SPINS",
+      "ELECTRON SPIN RESONANCE",
+      "QUANTUM COMPUTING"
+    ]
+  }
+}

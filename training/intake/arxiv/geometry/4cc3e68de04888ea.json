@@ -1,0 +1,30 @@
+{
+  "id": "4cc3e68de04888ea",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Sheaves on Graphs and their Differential Calculi",
+  "content": "# Sheaves on Graphs and their Differential Calculi\n\nAuthors: Rita Fioresi, Angelica Simonetti, Ferdinando Zanchetta\nPublished: 2026-02-24T18:21:42Z\n\nIn this paper we explore the link between the theory of sheaves on graphs and noncommutative geometry showing that many concepts and constructions in the latter can be generalized and enhanced using methods coming from the former. They include notions such as Laplacians and connections, important in the theory of discrete noncommutative geometry, that are here explored with sheaf theoretic methods and using the language of (semi)simplicial sets.",
+  "url": "http://arxiv.org/abs/2602.21176v1",
+  "timestamp": "2026-02-24T18:21:42Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "7dbed5c402adb7814f8607cea88d2caf98e95d38fe19968c710e2565a5b33971",
+  "parent_hash": "bd2f6f5d93734c6f6c538bbd2639f00806efdd66c506a29aadf7e681c7d8485a",
+  "metadata": {
+    "authors": [
+      "Rita Fioresi",
+      "Angelica Simonetti",
+      "Ferdinando Zanchetta"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.21176v1"
+  }
+}

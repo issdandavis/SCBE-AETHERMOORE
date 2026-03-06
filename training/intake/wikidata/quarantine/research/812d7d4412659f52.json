@@ -1,0 +1,25 @@
+{
+  "id": "812d7d4412659f52",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Blockchain Consensus Protocols in the Wild (Q111690924)",
+  "content": "# Blockchain Consensus Protocols in the Wild\n\nWikidata ID: Q111690924\nDescription: conference paper published in 2017\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q111690924",
+  "timestamp": "2026-03-06T02:41:17.799049",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "90dd18211533723d893e32b17b7714fdb9b3c9f24b4feca7f64cf5e097c80c9c",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q111690924",
+    "description": "conference paper published in 2017"
+  }
+}

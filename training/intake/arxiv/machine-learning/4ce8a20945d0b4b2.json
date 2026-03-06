@@ -1,0 +1,29 @@
+{
+  "id": "4ce8a20945d0b4b2",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "Robustness of Agentic AI Systems via Adversarially-Aligned Jacobian Regularization",
+  "content": "# Robustness of Agentic AI Systems via Adversarially-Aligned Jacobian Regularization\n\nAuthors: Furkan Mumcu, Yasin Yilmaz\nPublished: 2026-03-04T18:41:45Z\n\nAs Large Language Models (LLMs) transition into autonomous multi-agent ecosystems, robust minimax training becomes essential yet remains prone to instability when highly non-linear policies induce extreme local curvature in the inner maximization. Standard remedies that enforce global Jacobian bounds are overly conservative, suppressing sensitivity in all directions and inducing a large Price of Robustness. We introduce Adversarially-Aligned Jacobian Regularization (AAJR), a trajectory-aligned approach that controls sensitivity strictly along adversarial ascent directions. We prove that AAJR yields a strictly larger admissible policy class than global constraints under mild conditions, implying a weakly smaller approximation gap and reduced nominal performance degradation. Furthermore, we derive step-size conditions under which AAJR controls effective smoothness along optimization trajectories and ensures inner-loop stability. These results provide a structural theory for agentic robustness that decouples minimax stability from global expressivity restrictions.",
+  "url": "http://arxiv.org/abs/2603.04378v1",
+  "timestamp": "2026-03-04T18:41:45Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "733efa4dd4204e20b43a2424711f565ac3db11ebb007f91e49d0784d8dee2a00",
+  "parent_hash": "2ee14c8b859f0ed641cfb6a2cd6b870f7df713926d786bfe0737eda52a895db5",
+  "metadata": {
+    "authors": [
+      "Furkan Mumcu",
+      "Yasin Yilmaz"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.04378v1"
+  }
+}

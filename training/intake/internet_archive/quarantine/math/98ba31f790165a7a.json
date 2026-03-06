@@ -1,0 +1,27 @@
+{
+  "id": "98ba31f790165a7a",
+  "source": "internet_archive",
+  "category": "quarantine/math",
+  "title": "The quantum content of the gluing equations",
+  "content": "# The quantum content of the gluing equations\n\nCreator: Tudor D. Dimofte, Stavros Garoufalidis\nDate: 2012-10-25T00:00:00Z\nDownloads: 95\nSubjects: \n\nThe gluing equations of a cusped hyperbolic 3-manifold $M$ are a system of polynomial equations in the shapes of an ideal triangulation $\\calT$ of $M$ that describe the complete hyperbolic structure of $M$ and its deformations. Given a Neumann-Zagier datum (comprising the shapes together with the gluing equations in a particular canonical form) we define a formal power series with coefficients in the invariant trace field of $M$ that should (a) agree with the asymptotic expansion of the Kashaev invariant to all orders, and (b) contain the nonabelian Reidemeister-Ray-Singer torsion of $M$ as its first subleading \"1-loop\" term. As a case study, we prove topological invariance of the 1-loop part of the constructed series and extend it into a formal power series of rational functions on the $\\PSL(2,\\BC)$ character variety of $M$. We provide a computer implementation of the first three terms of the series using the standard {\\tt SnapPy} toolbox and check numerically the agreement of our torsion with the Reidemeister-Ray-Singer for all 59924 hyperbolic knots with at most 14 crossings. Finally, we explain how the definition of our series follows from the quantization of 3d hyperbolic geometry, using principles of Topological Quantum Field Theory. Our results have a straightforward extension to any 3-manifold $M$ with torus boundary components (not necessarily hyperbolic) that admits a regular ideal triangulation with respect to some $\\PSL(2,\\BC)$ representation.",
+  "url": "https://archive.org/details/arxiv-1202.6268",
+  "timestamp": "2026-03-06T02:38:47.918972",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "449cb36d0f11b404c83c3cd7955a9d47066a76bd677b942587f8f6a841d88ffa",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "arxiv-1202.6268",
+    "media_type": "texts",
+    "downloads": 95,
+    "subjects": []
+  }
+}

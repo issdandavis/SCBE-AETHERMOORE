@@ -1,0 +1,33 @@
+{
+  "id": "6639e16aadaf9756",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "PSBench : a large-scale benchmark for estimating the accuracy of protein complex structural models",
+  "content": "# PSBench : a large-scale benchmark for estimating the accuracy of protein complex structural models\n\nAuthors: Neupane, Pawan\nPublished: 2025-10-20T12:02:56Z\nSubjects: Computer and Information Science, Engineering, Medicine, Health and Life Sciences\nDOI: doi:10.7910/DVN/75SZ1U\n\nPSBench includes four large datasets (CASP15_community_dataset, CASP15_inhouse_dataset, CASP16_community_dataset, and CASP16_inhouse_dataset) as well as two subsets of the two inhouse datasets for developing and evaluating methods for estimating protein complex model accuracy (EMA). Each dataset includes the sequence files (.fasta), predicted structural models (.tar.gz), quality (accuracy) scores of the models (.tab), and a summary table (.tab) for the protein complex targets in the dataset. Each structural model is annotated with 10 unique quality scores, which includes Global Quality Score, Local Quality Scores, and Interface Quality Scores. In addition, the inhouse datasets also include several AlphaFold features. For details, please refer to the README.md file in this repository and also the corresponding Github repository: https://github.com/BioinfoMachineLearning/PSBench\n\nCitation: Neupane, Pawan, 2025, \"PSBench : a large-scale benchmark for estimating the accuracy of protein complex structural models\", https://doi.org/10.7910/DVN/75SZ1U, Harvard Dataverse, V5",
+  "url": "https://doi.org/10.7910/DVN/75SZ1U",
+  "timestamp": "2026-03-06T04:18:41.248887",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "e0a00c34b8f818028774979bd0c0b9c8e3874fe214aa8fb233e9b5be42753b29",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/75SZ1U",
+    "subjects": [
+      "Computer and Information Science",
+      "Engineering",
+      "Medicine, Health and Life Sciences"
+    ],
+    "authors": [
+      "Neupane, Pawan"
+    ],
+    "file_count": 8
+  }
+}

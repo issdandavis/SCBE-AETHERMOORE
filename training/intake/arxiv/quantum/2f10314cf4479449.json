@@ -1,0 +1,30 @@
+{
+  "id": "2f10314cf4479449",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "High-performance syndrome extraction circuits for quantum codes",
+  "content": "# High-performance syndrome extraction circuits for quantum codes\n\nAuthors: Armands Strikis, Dan E. Browne, Michael E. Beverland\nPublished: 2026-03-05T18:50:46Z\n\nWe present a fast and effective framework for analysing and designing syndrome-extraction circuits (SECs). Our approach is based on left-right circuits, a general design for SECs which maintain low depth by staggering $X$ and $Z$ checks without interleaving gates. Initially proposed for specific classes of codes, we generalise this construction to arbitrary CSS codes and optimise the circuit structure to achieve low qubit idling time, large effective distance, and reduced minimum-weight failure mechanisms. A key component of our framework is the formal notion of residual errors and their associated distance metrics, which form lightweight tools for capturing error propagation and quantifying the potential harm of circuit-level errors. Applying our automated framework to diverse classes of codes, we observe consistent improvements in logical performance of up to an order of magnitude compared to existing single-ancilla SEC designs. We also use these tools to prove that no non-interleaving SEC can achieve circuit distance $12$ for the gross code, and identify an explicit circuit that we conjecture achieves distance $11$, exceeding previously known constructions.",
+  "url": "http://arxiv.org/abs/2603.05481v1",
+  "timestamp": "2026-03-05T18:50:46Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "b92b541924087c836c0af713f0f520a617a912de1b7f7428c685a5384c6abb6d",
+  "parent_hash": "c5735e1c59f9471d79bbac6e072bebe61530c31e62636eb6eeba2e4e0e77d447",
+  "metadata": {
+    "authors": [
+      "Armands Strikis",
+      "Dan E. Browne",
+      "Michael E. Beverland"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05481v1"
+  }
+}

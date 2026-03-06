@@ -1,0 +1,34 @@
+{
+  "id": "3179d1d1df2406e7",
+  "source": "internet_archive",
+  "category": "quarantine/security",
+  "title": "Improvement security in e-business systems using hybrid algorithm",
+  "content": "# Improvement security in e-business systems using hybrid algorithm\n\nCreator: L Sumaryanti, Dedy Hidayat Kusuma, Rosmala Widijastuti, Muhammad Najibulloh Muzaki\nDate: 2021-10-01T00:00:00Z\nDownloads: 62\nSubjects: Cryptography, Decryption, E-business security, Encryption, RSA algorithm\n\nE-business security becomes an important issue in the development of technology, to ensure the safety and comfort of transactions in the exchange of information is privacy. This study aims to improve security in e-business systems using a hybrid algorithm that combines two types of keys, namely symmetric and asymmetric keys. Encryption and decryption of messages or information carried by a symmetric key using the simple symmetric key algorithm and asymmetric keys using the Rivest Shamir Adleman (RSA) algorithm. The proposed hybrid algorithm requires a high running time in the decryption process compared to the application of a single algorithm. The level of security is stronger because it implements the process of message encryption techniques with two types of keys simultaneously.",
+  "url": "https://archive.org/details/12-20403",
+  "timestamp": "2026-03-06T02:40:52.039282",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "7f8ac1fedcb3ab57bb0cac16cc5b98079c3ffa54b7f0c3157629411ffe0b31fb",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "12-20403",
+    "media_type": "texts",
+    "downloads": 62,
+    "subjects": [
+      "Cryptography",
+      "Decryption",
+      "E-business security",
+      "Encryption",
+      "RSA algorithm",
+      "Symmetric key"
+    ]
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "568cd3151da23d5c",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "Alignment Backfire: Language-Dependent Reversal of Safety Interventions Across 16 Languages in LLM Multi-Agent Systems",
+  "content": "# Alignment Backfire: Language-Dependent Reversal of Safety Interventions Across 16 Languages in LLM Multi-Agent Systems\n\nAuthors: Hiroki Fukui\nPublished: 2026-03-05T07:46:59Z\n\nIn perpetrator treatment, a recurring observation is the dissociation between insight and action: offenders articulate remorse yet behavioral change does not follow. We report four preregistered studies (1,584 multi-agent simulations across 16 languages and three model families) demonstrating that alignment interventions in large language models produce a structurally analogous phenomenon: surface safety that masks or generates collective pathology and internal dissociation. In Study 1 (N = 150), increasing alignment-instructed agents reduced collective pathology in English (g = -1.844, p < .0001) but amplified it in Japanese (g = +0.771, p = .038)--a directional reversal we term \"alignment backfire.\" Study 2 (N = 1,174) extended to 16 languages: alignment-induced dissociation was near-universal (15/16 languages; beta = 0.0667, p < .0001), while collective pathology bifurcated along cultural-linguistic lines (interaction beta = 0.0684, p = .0003), correlating with Power Distance Index (r = 0.474, p = .064). Study 3 (N = 180) tested individuation as countermeasure; individuated agents became the primary source of both pathology and dissociation (DI = +1.120) with conformity above 84%--demonstrating iatrogenesis. Study 4 (N = 80) validated patterns across Llama 3.3 70B, GPT-4o-mini, and Qwen3-Next-80B-A3B, confirming English safety is model-general while Japanese backfire is model-specific. These findings reframe alignment as a behavioral intervention subject to risk homeostasis and iatrogenesis. Language space--the linguistic, pragmatic, and cultural properties inherited from training data--structurally determines alignment outcomes. Safety validated in English does not transfer to other languages, and prompt-level interventions cannot override language-space-level constraints.",
+  "url": "http://arxiv.org/abs/2603.04904v1",
+  "timestamp": "2026-03-05T07:46:59Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "aa0a78cc3041ecb379e0f73a122d7d1a6d58ff9c1f42fbe26c5fe09a4ba7f679",
+  "parent_hash": "29dec1170a4fe008cab69b609bdad440c77595bb8993af7185333212084546b5",
+  "metadata": {
+    "authors": [
+      "Hiroki Fukui"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.04904v1"
+  }
+}

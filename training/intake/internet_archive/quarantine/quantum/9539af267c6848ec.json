@@ -1,0 +1,30 @@
+{
+  "id": "9539af267c6848ec",
+  "source": "internet_archive",
+  "category": "quarantine/quantum",
+  "title": "Study on radiative decays of $D^*_{sJ}(2860)$ and $D^*_{s1}(2710)$ into $D_s$ by means of LFQM",
+  "content": "# Study on radiative decays of $D^*_{sJ}(2860)$ and $D^*_{s1}(2710)$ into $D_s$ by means of LFQM\n\nCreator: Hong-Wei Ke, Jia-Hui Zhou, Xue-Qian Li\nDate: 2014-11-03T00:00:00Z\nDownloads: 34\nSubjects: High Energy Physics - Phenomenology, High Energy Physics - Experiment\n\nThe observed resonance peak around 2.86 GeV has been carefully reexamined by the LHCb collaboration and it is found that under the peak there reside two states $D^*_{s1}(2860)$ and $D^*_{s3}(2860)$ which are considered as $1^3D_1(c\\bar s)$ and $1^3D_3(c\\bar s)$ with slightly different masses and total widths. Thus, the earlier assumption that the resonance $D^*_{s1}(2710)$ was a $1D$ state should not be right. We suggest to measure the partial widths of radiative decays of $D^*_{sJ}(2860)$ and $D^*_{s1}(2710)$ to confirm their quantum numbers. We would consider $D^*_{s1}(2710)$ as $2^3S_1$ or a pure $1^3D_1$ state, or their mixture and respectively calculate the corresponding branching ratios as well as those of $D^*_{sJ}(2860)$. The future precise measurement would provide us information to help identifying the structures of those resonances .",
+  "url": "https://archive.org/details/arxiv-1411.0376",
+  "timestamp": "2026-03-06T04:17:58.219980",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "7f30184a241c1807b87b75a6452cdf92595f2f6618857a5a76785b7f6eb43fb7",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "arxiv-1411.0376",
+    "media_type": "texts",
+    "downloads": 34,
+    "subjects": [
+      "High Energy Physics - Phenomenology",
+      "High Energy Physics - Experiment"
+    ]
+  }
+}

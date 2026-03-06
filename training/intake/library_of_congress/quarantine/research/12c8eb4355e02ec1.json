@@ -1,0 +1,33 @@
+{
+  "id": "12c8eb4355e02ec1",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "The logic and utility of mathematics,",
+  "content": "# The logic and utility of mathematics,\n\nContributors: davies, charles\nDate: 1869\nSubjects: study and teaching, mathematics, logic\n\nAlso available in digital form.",
+  "url": "https://www.loc.gov/item/38021956/",
+  "timestamp": "2026-03-06T02:38:09.282365",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "7307a8fdca1a3260a7addd1352175a75514278d79593d60429ac2fcdc17ce11f",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "study and teaching",
+      "mathematics",
+      "logic"
+    ],
+    "dates": "1869",
+    "original_format": [
+      "book"
+    ]
+  }
+}

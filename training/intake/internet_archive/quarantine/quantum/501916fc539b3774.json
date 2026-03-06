@@ -1,0 +1,38 @@
+{
+  "id": "501916fc539b3774",
+  "source": "internet_archive",
+  "category": "quarantine/quantum",
+  "title": "DTIC AD1050755: Spin Coherence in Silicon-based Quantum Structures and Devices",
+  "content": "# DTIC AD1050755: Spin Coherence in Silicon-based Quantum Structures and Devices\n\nCreator: Defense Technical Information Center\nDate: 2017-08-31T00:00:00Z\nDownloads: 79\nSubjects: DTIC Archive, Lyon, Stephen A, Princeton University Princeton United States, electron spin resonance, quantum dots\n\nSingle electron spins, either bound to donors or held in gated quantum dots, have long beenconsidered excellent candidate qubits because the basic properties of silicon could enable extremely longcoherence in a materials system with the advanced manufacturing capability of the microelectronics industry. Ourgoal is to understand the limits of electron spin coherence in silicon, and use that knowledge to guide thedevelopment silicon-based quantum devices. Bulk donors can exhibit spin coherence of a second, and longer, butone of our tasks is to understand decoherence processes for near-surface donors. This will require thedevelopment of new methods for higher sensitivity electron spin resonance (ESR), including low-power on-chipsuperconducting microresonators and ultra-low temperature (100 mK, or lower) measurements. New approachesto detecting the spin state of electrons are being developed. In addition to donor-electron spins, new quantum dotstructures are being studied to understand what is limiting the relaxation and coherence of electrons bound in dots,and to obtain longer spin coherence in these structures. The possibility of integrating quantum dots with donors, toharness the unique capabilities of both variety of qubit, is being investigated.",
+  "url": "https://archive.org/details/DTIC_AD1050755",
+  "timestamp": "2026-03-06T04:17:58.219898",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "8478d68b92a86f2dbb331b496c3f353d18c733e30e146c77bd63b4add50b13f6",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "DTIC_AD1050755",
+    "media_type": "texts",
+    "downloads": 79,
+    "subjects": [
+      "DTIC Archive",
+      "Lyon, Stephen A",
+      "Princeton University Princeton United States",
+      "electron spin resonance",
+      "quantum dots",
+      "semiconductors",
+      "electron beams",
+      "quantum properties",
+      "metal oxide semiconductors",
+      "low temperature"
+    ]
+  }
+}
