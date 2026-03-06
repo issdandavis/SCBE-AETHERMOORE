@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
-Post to X/Twitter via the X API v2 with OAuth 2.0 PKCE.
+Post to X/Twitter via the X API v2.
+
+Supports:
+- OAuth 2.0 PKCE user-context tokens (access/refresh)
+- OAuth 1.0a user-context tokens (API key/secret + access token/secret)
 
 Usage:
     python scripts/publish/post_to_x.py --auth          # One-time: authorize and get access token
@@ -9,15 +13,23 @@ Usage:
     python scripts/publish/post_to_x.py --thread file.md --dry-run
 
 Environment (from config/connector_oauth/.env.connector.oauth):
-    X_CLIENT_ID      - OAuth 2.0 Client ID
-    X_CLIENT_SECRET  - OAuth 2.0 Client Secret
-    X_ACCESS_TOKEN   - User access token (set after --auth)
-    X_REFRESH_TOKEN  - Refresh token (set after --auth)
+    OAuth 2.0:
+      X_CLIENT_ID            - OAuth 2.0 Client ID
+      X_CLIENT_SECRET        - OAuth 2.0 Client Secret
+      X_ACCESS_TOKEN         - User access token (set after --auth)
+      X_REFRESH_TOKEN        - Refresh token (set after --auth)
+
+    OAuth 1.0a:
+      X_API_KEY              - Consumer/API key
+      X_API_SECRET           - Consumer/API secret
+      X_ACCESS_TOKEN         - User access token
+      X_ACCESS_TOKEN_SECRET  - User access token secret
 """
 import argparse
 import base64
 import hashlib
 import http.server
+import hmac
 import json
 import os
 import re
@@ -40,6 +52,63 @@ TOKEN_URL = "https://api.x.com/2/oauth2/token"
 TWEET_URL = "https://api.x.com/2/tweets"
 REDIRECT_URI = "http://127.0.0.1:8921/callback"
 SCOPES = "tweet.read tweet.write users.read offline.access"
+
+
+def _is_present(value: str) -> bool:
+    return bool(value and value != "REPLACE_ME")
+
+
+def _pct(value: str) -> str:
+    return urllib.parse.quote(value, safe="~-._")
+
+
+def _build_oauth1_auth_header(method: str, url: str, consumer_key: str, consumer_secret: str, token: str, token_secret: str) -> str:
+    parsed = urllib.parse.urlparse(url)
+    base_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
+    query_params = urllib.parse.parse_qsl(parsed.query, keep_blank_values=True)
+
+    oauth_params = {
+        "oauth_consumer_key": consumer_key,
+        "oauth_nonce": secrets.token_hex(16),
+        "oauth_signature_method": "HMAC-SHA1",
+        "oauth_timestamp": str(int(time.time())),
+        "oauth_token": token,
+        "oauth_version": "1.0",
+    }
+
+    sig_pairs: list[tuple[str, str]] = []
+    sig_pairs.extend((k, v) for k, v in query_params)
+    sig_pairs.extend((k, v) for k, v in oauth_params.items())
+    sig_pairs.sort(key=lambda kv: (_pct(kv[0]), _pct(kv[1])))
+
+    parameter_string = "&".join(f"{_pct(k)}={_pct(v)}" for k, v in sig_pairs)
+    signature_base = "&".join([
+        method.upper(),
+        _pct(base_url),
+        _pct(parameter_string),
+    ])
+    signing_key = f"{_pct(consumer_secret)}&{_pct(token_secret)}"
+    oauth_signature = base64.b64encode(
+        hmac.new(signing_key.encode("utf-8"), signature_base.encode("utf-8"), hashlib.sha1).digest()
+    ).decode("ascii")
+
+    oauth_params["oauth_signature"] = oauth_signature
+    parts = ", ".join(
+        f'{_pct(k)}="{_pct(v)}"' for k, v in sorted(oauth_params.items(), key=lambda kv: kv[0])
+    )
+    return f"OAuth {parts}"
+
+
+def get_oauth1_credentials():
+    """Return OAuth 1.0a credentials tuple if fully configured."""
+    api_key = os.environ.get("X_API_KEY", "") or os.environ.get("X_CONSUMER_KEY", "")
+    api_secret = os.environ.get("X_API_SECRET", "") or os.environ.get("X_CONSUMER_SECRET", "")
+    access = os.environ.get("X_ACCESS_TOKEN", "")
+    access_secret = os.environ.get("X_ACCESS_TOKEN_SECRET", "")
+
+    if all(_is_present(v) for v in (api_key, api_secret, access, access_secret)):
+        return api_key, api_secret, access, access_secret
+    return None
 
 
 def load_env():
@@ -77,11 +146,11 @@ def get_access_token():
     """Get a valid access token, refreshing if needed."""
     tokens = load_tokens()
     access = tokens.get("access_token") or os.environ.get("X_ACCESS_TOKEN", "")
-    if access and access != "REPLACE_ME":
+    if _is_present(access):
         return access
 
     refresh = tokens.get("refresh_token") or os.environ.get("X_REFRESH_TOKEN", "")
-    if refresh and refresh != "REPLACE_ME":
+    if _is_present(refresh):
         new_tokens = refresh_access_token(refresh)
         if new_tokens:
             return new_tokens.get("access_token", "")
@@ -219,6 +288,11 @@ def do_auth():
 
 def post_tweet(text, reply_to=None):
     """Post a single tweet via X API v2 with user context."""
+    oauth1 = get_oauth1_credentials()
+    if oauth1:
+        return post_tweet_oauth1(text, reply_to=reply_to, creds=oauth1)
+
+    # Fallback to OAuth 2.0 PKCE user-context bearer token.
     token = get_access_token()
     if not token:
         return None
@@ -244,6 +318,39 @@ def post_tweet(text, reply_to=None):
         print(f"  ERROR {e.code}: {body[:300]}")
         if e.code == 401:
             print("  Token may be expired. Try: --auth to re-authorize")
+        return None
+
+
+def post_tweet_oauth1(text, reply_to=None, creds=None):
+    """Post a single tweet via OAuth 1.0a user context."""
+    if creds is None:
+        creds = get_oauth1_credentials()
+    if not creds:
+        return None
+
+    api_key, api_secret, access, access_secret = creds
+    payload = {"text": text}
+    if reply_to:
+        payload["reply"] = {"in_reply_to_tweet_id": reply_to}
+
+    data = json.dumps(payload).encode("utf-8")
+    ctx = ssl.create_default_context()
+    req = urllib.request.Request(TWEET_URL, data=data, method="POST")
+    req.add_header("Content-Type", "application/json")
+    req.add_header(
+        "Authorization",
+        _build_oauth1_auth_header("POST", TWEET_URL, api_key, api_secret, access, access_secret),
+    )
+
+    try:
+        resp = urllib.request.urlopen(req, context=ctx, timeout=30)
+        result = json.loads(resp.read().decode())
+        tweet_id = result.get("data", {}).get("id")
+        print(f"  Posted tweet {tweet_id}")
+        return tweet_id
+    except urllib.error.HTTPError as e:
+        body = e.read().decode() if e.fp else ""
+        print(f"  ERROR {e.code}: {body[:300]}")
         return None
 
 
