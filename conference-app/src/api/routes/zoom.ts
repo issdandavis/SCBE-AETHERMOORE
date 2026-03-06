@@ -17,6 +17,12 @@ import { liveEventBus } from '../services/liveEvents.js';
 
 const router = Router();
 
+/** Express v5 params may be string | string[]; extract safely */
+function param(req: Request, name: string): string {
+  const v = req.params[name];
+  return Array.isArray(v) ? v[0] : v;
+}
+
 router.use(authMiddleware);
 
 /**
@@ -26,7 +32,7 @@ router.use(authMiddleware);
  * Body: { hostEmail: string }
  */
 router.post('/conferences/:id/meeting', requireRole('curator'), async (req: Request, res: Response) => {
-  const conf = store.conferences.get(req.params.id);
+  const conf = store.conferences.get(param(req, 'id'));
   if (!conf) {
     res.status(404).json({ success: false, error: 'Conference not found' });
     return;
@@ -70,7 +76,7 @@ router.post('/conferences/:id/meeting', requireRole('curator'), async (req: Requ
  */
 router.get('/conferences/:id/join', (req: Request, res: Response) => {
   const user = req.user!;
-  const confId = req.params.id;
+  const confId = param(req, 'id');
 
   const conf = store.conferences.get(confId);
   if (!conf) {
@@ -134,7 +140,7 @@ router.get('/conferences/:id/join', (req: Request, res: Response) => {
  * - phase:update — HYDRA agent phase visualization
  */
 router.get('/conferences/:id/events', (req: Request, res: Response) => {
-  const confId = req.params.id;
+  const confId = param(req, 'id');
 
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
@@ -184,7 +190,7 @@ router.post('/conferences/:id/chat', (req: Request, res: Response) => {
   const sanitized = message.slice(0, 500);
 
   liveEventBus.emitChat(
-    req.params.id,
+    param(req, 'id'),
     req.user!.id,
     req.user!.displayName,
     sanitized
@@ -205,7 +211,7 @@ router.post('/conferences/:id/reaction', (req: Request, res: Response) => {
     return;
   }
 
-  liveEventBus.emitReaction(req.params.id, req.user!.id, emoji);
+  liveEventBus.emitReaction(param(req, 'id'), req.user!.id, emoji);
   res.json({ success: true });
 });
 

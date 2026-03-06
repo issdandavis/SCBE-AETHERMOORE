@@ -18,6 +18,12 @@ import type { CaasPlan } from '../../shared/types/index.js';
 
 const router = Router();
 
+/** Express v5 params may be string | string[]; extract safely */
+function param(req: Request, name: string): string {
+  const v = req.params[name];
+  return Array.isArray(v) ? v[0] : v;
+}
+
 router.use(authMiddleware);
 
 /**
@@ -61,7 +67,7 @@ router.get('/', (req: Request, res: Response) => {
  * Get organization details by slug.
  */
 router.get('/:slug', (req: Request, res: Response) => {
-  const org = tenantService.getBySlug(req.params.slug);
+  const org = tenantService.getBySlug(param(req, 'slug'));
   if (!org) {
     res.status(404).json({ success: false, error: 'Organization not found' });
     return;
@@ -90,7 +96,7 @@ router.get('/:slug', (req: Request, res: Response) => {
  * Update organization branding (admin+).
  */
 router.patch('/:slug/branding', (req: Request, res: Response) => {
-  const org = tenantService.getBySlug(req.params.slug);
+  const org = tenantService.getBySlug(param(req, 'slug'));
   if (!org) {
     res.status(404).json({ success: false, error: 'Organization not found' });
     return;
@@ -115,7 +121,7 @@ router.patch('/:slug/branding', (req: Request, res: Response) => {
  * Update governance configuration (admin+).
  */
 router.patch('/:slug/governance', (req: Request, res: Response) => {
-  const org = tenantService.getBySlug(req.params.slug);
+  const org = tenantService.getBySlug(param(req, 'slug'));
   if (!org) {
     res.status(404).json({ success: false, error: 'Organization not found' });
     return;
@@ -140,7 +146,7 @@ router.patch('/:slug/governance', (req: Request, res: Response) => {
  * Rotate API key (owner only).
  */
 router.post('/:slug/rotate-key', (req: Request, res: Response) => {
-  const org = tenantService.getBySlug(req.params.slug);
+  const org = tenantService.getBySlug(param(req, 'slug'));
   if (!org) {
     res.status(404).json({ success: false, error: 'Organization not found' });
     return;
@@ -160,7 +166,7 @@ router.post('/:slug/rotate-key', (req: Request, res: Response) => {
  * List organization members (viewer+).
  */
 router.get('/:slug/members', (req: Request, res: Response) => {
-  const org = tenantService.getBySlug(req.params.slug);
+  const org = tenantService.getBySlug(param(req, 'slug'));
   if (!org) {
     res.status(404).json({ success: false, error: 'Organization not found' });
     return;
@@ -181,7 +187,7 @@ router.get('/:slug/members', (req: Request, res: Response) => {
  * Body: { userId, role }
  */
 router.post('/:slug/members', (req: Request, res: Response) => {
-  const org = tenantService.getBySlug(req.params.slug);
+  const org = tenantService.getBySlug(param(req, 'slug'));
   if (!org) {
     res.status(404).json({ success: false, error: 'Organization not found' });
     return;
@@ -215,7 +221,7 @@ router.post('/:slug/members', (req: Request, res: Response) => {
  * Get plan limits and current usage.
  */
 router.get('/:slug/limits', (req: Request, res: Response) => {
-  const org = tenantService.getBySlug(req.params.slug);
+  const org = tenantService.getBySlug(param(req, 'slug'));
   if (!org) {
     res.status(404).json({ success: false, error: 'Organization not found' });
     return;

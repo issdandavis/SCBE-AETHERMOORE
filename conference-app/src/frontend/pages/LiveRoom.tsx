@@ -138,7 +138,7 @@ export default function LiveRoom() {
       {ticker.length > 0 && (
         <div className="ticker-bar" style={{ marginBottom: 20 }}>
           {ticker.map(t => {
-            const project = conference.slots.find((s: any) => s.projectId === t.projectId)?.project;
+            const project = (conference.slots.find((s: any) => s.projectId === t.projectId) as any)?.project;
             return (
               <div key={t.projectId} className="ticker-item">
                 <span style={{ color: 'var(--text-secondary)' }}>{project?.title ?? t.projectId.slice(0, 8)}</span>
