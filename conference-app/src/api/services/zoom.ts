@@ -130,7 +130,7 @@ export class ZoomService {
         id: Math.floor(Math.random() * 9_000_000_000) + 1_000_000_000,
         joinUrl: `https://zoom.us/j/simulated-${conferenceId.slice(0, 8)}`,
         startUrl: `https://zoom.us/s/simulated-${conferenceId.slice(0, 8)}`,
-        password: Math.random().toString(36).slice(2, 8),
+        password: require('crypto').randomBytes(6).toString('hex'),
         topic,
         hostEmail,
         createdAt: new Date().toISOString(),
