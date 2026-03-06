@@ -29,6 +29,7 @@ from __future__ import annotations
 import logging
 import json
 import os
+import subprocess
 import sys
 import threading
 import time
@@ -243,6 +244,10 @@ class LatticeNoteInput(BaseModel):
 
 class Lattice25DRequest(BaseModel):
     notes: List[LatticeNoteInput] = Field(default_factory=list)
+    include_notion_notes: bool = False
+    notion_query: str = ""
+    notion_page_size: int = 20
+    notion_max_notes: int = 20
     include_repo_notes: bool = False
     notes_glob: str = "docs/**/*.md"
     max_notes: int = 60
@@ -255,6 +260,11 @@ class Lattice25DRequest(BaseModel):
     query_y: float = 0.1
     query_phase: float = 0.0
     query_top_k: int = 5
+    hf_dataset_repo: Optional[str] = None
+    hf_output_path: str = "artifacts/hf/lattice25d_notes.jsonl"
+    hf_push: bool = False
+    hf_create_pr: bool = False
+    hf_commit_message: str = "feat(dataset): lattice25d notes export"
     include_note_payload: bool = True
 
 
@@ -1095,6 +1105,198 @@ async def training_status(x_api_key: Optional[str] = Header(None)):
 #  Hyperbolic Lattice 2.5D Workflow Route
 # ---------------------------------------------------------------------------
 
+def _notion_token() -> str:
+    token = (
+        os.environ.get("NOTION_TOKEN", "").strip()
+        or os.environ.get("NOTION_API_KEY", "").strip()
+    )
+    return token
+
+
+def _notion_request(
+    *,
+    method: str,
+    path: str,
+    payload: Optional[Dict[str, Any]] = None,
+    timeout_sec: int = 30,
+) -> Dict[str, Any]:
+    token = _notion_token()
+    if not token:
+        raise HTTPException(
+            status_code=503,
+            detail="Notion integration unavailable: NOTION_TOKEN/NOTION_API_KEY is not configured.",
+        )
+
+    url = f"https://api.notion.com{path}"
+    data = None
+    if payload is not None:
+        data = json.dumps(payload).encode("utf-8")
+
+    req = urllib_request.Request(url=url, method=method.upper(), data=data)
+    req.add_header("Authorization", f"Bearer {token}")
+    req.add_header("Notion-Version", os.environ.get("NOTION_VERSION", "2025-09-03"))
+    req.add_header("Content-Type", "application/json")
+
+    try:
+        with urllib_request.urlopen(req, timeout=timeout_sec) as resp:
+            body = resp.read().decode("utf-8")
+            return json.loads(body) if body else {}
+    except urllib_error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "error": "notion_http_error",
+                "upstream_status": exc.code,
+                "path": path,
+                "body": detail[:1800],
+            },
+        )
+    except urllib_error.URLError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Notion unavailable: {exc.reason}",
+        )
+
+
+def _notion_rich_text_to_plain(items: Any) -> str:
+    if not isinstance(items, list):
+        return ""
+    out: List[str] = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        plain = item.get("plain_text")
+        if isinstance(plain, str) and plain.strip():
+            out.append(plain.strip())
+            continue
+        text_obj = item.get("text", {})
+        if isinstance(text_obj, dict):
+            content = text_obj.get("content")
+            if isinstance(content, str) and content.strip():
+                out.append(content.strip())
+    return " ".join(out).strip()
+
+
+def _notion_page_title(page: Dict[str, Any]) -> str:
+    properties = page.get("properties", {})
+    if isinstance(properties, dict):
+        for _, prop in properties.items():
+            if not isinstance(prop, dict):
+                continue
+            if prop.get("type") == "title":
+                title = _notion_rich_text_to_plain(prop.get("title", []))
+                if title:
+                    return title
+    fallback = page.get("id", "notion-page")
+    return str(fallback)
+
+
+def _notion_page_body(page_id: str, page_size: int = 100) -> str:
+    page_size = max(1, min(100, int(page_size)))
+    cursor: Optional[str] = None
+    lines: List[str] = []
+    while True:
+        suffix = f"?page_size={page_size}"
+        if cursor:
+            suffix = f"{suffix}&start_cursor={cursor}"
+        data = _notion_request(method="GET", path=f"/v1/blocks/{page_id}/children{suffix}")
+        for block in data.get("results", []):
+            if not isinstance(block, dict):
+                continue
+            block_type = block.get("type")
+            if not isinstance(block_type, str):
+                continue
+            block_payload = block.get(block_type, {})
+            if not isinstance(block_payload, dict):
+                continue
+            plain = _notion_rich_text_to_plain(block_payload.get("rich_text", []))
+            if plain:
+                lines.append(plain)
+        if not data.get("has_more"):
+            break
+        cursor = data.get("next_cursor")
+        if not cursor:
+            break
+    return "\n".join(lines).strip()
+
+
+def _fetch_notion_notes(
+    *,
+    query: str,
+    page_size: int,
+    max_notes: int,
+) -> List[Dict[str, Any]]:
+    page_size = max(1, min(100, int(page_size)))
+    max_notes = max(1, min(200, int(max_notes)))
+
+    body: Dict[str, Any] = {
+        "filter": {"property": "object", "value": "page"},
+        "page_size": page_size,
+        "sort": {"direction": "descending", "timestamp": "last_edited_time"},
+    }
+    if query.strip():
+        body["query"] = query.strip()
+
+    data = _notion_request(method="POST", path="/v1/search", payload=body)
+    pages = data.get("results", [])
+    notes: List[Dict[str, Any]] = []
+
+    for page in pages:
+        if len(notes) >= max_notes:
+            break
+        if not isinstance(page, dict) or page.get("object") != "page":
+            continue
+        page_id = str(page.get("id", "")).strip()
+        if not page_id:
+            continue
+        title = _notion_page_title(page)
+        body_text = _notion_page_body(page_id=page_id, page_size=100)
+        text = f"{title}\n\n{body_text}".strip()
+        if not text:
+            continue
+        notes.append(
+            {
+                "note_id": f"notion:{page_id}",
+                "text": text,
+                "tags": ["notion", "workspace", "search"],
+                "source": "notion",
+                "authority": "internal",
+                "tongue": "KO",
+            }
+        )
+    return notes
+
+
+def _write_lattice_jsonl(payload: Dict[str, Any], output_path: str) -> Dict[str, Any]:
+    from pathlib import Path
+
+    out = Path(output_path)
+    if not out.is_absolute():
+        out = Path(_PROJECT) / out
+    out.parent.mkdir(parents=True, exist_ok=True)
+
+    rows = payload.get("notes", []) if isinstance(payload.get("notes"), list) else []
+    line_count = 0
+    with out.open("w", encoding="utf-8") as fh:
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            record = {
+                "note_id": row.get("note_id"),
+                "bundle_id": row.get("bundle_id"),
+                "tongue": row.get("tongue"),
+                "authority": row.get("authority"),
+                "intent_vector": row.get("intent_vector"),
+                "metric_tags": row.get("metric_tags"),
+                "metrics": row.get("metrics"),
+                "position": row.get("position"),
+                "phase_rad": row.get("phase_rad"),
+            }
+            fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+            line_count += 1
+    return {"path": str(out), "rows": line_count}
+
 @app.post("/v1/workflow/lattice25d")
 async def workflow_lattice25d(
     req: Lattice25DRequest,
@@ -1127,6 +1329,31 @@ async def workflow_lattice25d(
             )
         )
 
+    remaining = max(0, int(req.max_notes) - len(notes))
+    if req.include_notion_notes and remaining > 0:
+        notion_rows = _fetch_notion_notes(
+            query=req.notion_query,
+            page_size=req.notion_page_size,
+            max_notes=min(req.notion_max_notes, remaining),
+        )
+        for row in notion_rows:
+            if len(notes) >= int(req.max_notes):
+                break
+            text_value = str(row.get("text", "")).strip()
+            if not text_value:
+                continue
+            notes.append(
+                NoteRecord(
+                    note_id=str(row.get("note_id", f"notion-note-{len(notes)}")),
+                    text=text_value,
+                    tags=tuple(row.get("tags", [])),
+                    source=str(row.get("source", "notion")),
+                    authority=str(row.get("authority", "internal")),
+                    tongue=str(row.get("tongue", "KO")),
+                    phase_rad=row.get("phase_rad"),
+                )
+            )
+
     if req.include_repo_notes:
         remaining = max(0, int(req.max_notes) - len(notes))
         if remaining > 0:
@@ -1158,11 +1385,48 @@ async def workflow_lattice25d(
         query_top_k=req.query_top_k,
     )
 
+    if req.hf_output_path:
+        export_result = _write_lattice_jsonl(payload, req.hf_output_path)
+        export_result["status"] = "written"
+
+        if req.hf_dataset_repo:
+            export_result["dataset_repo"] = req.hf_dataset_repo
+            if req.hf_push:
+                cmd = [
+                    "hf",
+                    "upload",
+                    req.hf_dataset_repo,
+                    export_result["path"],
+                    f"lattice25d/{os.path.basename(export_result['path'])}",
+                    "--repo-type",
+                    "dataset",
+                    "--commit-message",
+                    req.hf_commit_message,
+                ]
+                if req.hf_create_pr:
+                    cmd.append("--create-pr")
+                proc = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=180,
+                )
+                if proc.returncode == 0:
+                    export_result["status"] = "uploaded"
+                else:
+                    export_result["status"] = "upload_error"
+                    export_result["error"] = (proc.stderr or proc.stdout)[-2000:]
+            else:
+                export_result["status"] = "staged"
+        payload["hf_export"] = export_result
+
     if not req.include_note_payload:
         payload.pop("notes", None)
 
     payload["source"] = "n8n-bridge"
     payload["notes_glob"] = req.notes_glob if req.include_repo_notes else None
+    payload["notion_query"] = req.notion_query if req.include_notion_notes else None
+    payload["input_notion_enabled"] = req.include_notion_notes
     payload["input_notes"] = len(req.notes)
     return payload
 
