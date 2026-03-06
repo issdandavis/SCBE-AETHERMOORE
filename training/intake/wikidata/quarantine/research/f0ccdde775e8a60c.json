@@ -1,0 +1,25 @@
+{
+  "id": "f0ccdde775e8a60c",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Penrose tiling observed in a quasi-crystal (Q59087423)",
+  "content": "# Penrose tiling observed in a quasi-crystal\n\nWikidata ID: Q59087423\nDescription: scientific article published in Nature\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q59087423",
+  "timestamp": "2026-03-06T04:18:16.815795",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "5b1d4bf3322d5298be6a1ba528bd15f691f3c33dc8a98229c4804b48881cdd68",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "wikidata_id": "Q59087423",
+    "description": "scientific article published in Nature"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "32ce009844e89f89",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "sacred geometry (Q583915)",
+  "content": "# sacred geometry\n\nWikidata ID: Q583915\nDescription: symbolic and sacred meanings ascibed to certain geometric shapes\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q583915",
+  "timestamp": "2026-03-06T02:41:10.495448",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "5c499d9a03c46c583f5fc63aa05c18da365d3228a15f56b41279a83dfbd37e22",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q583915",
+    "description": "symbolic and sacred meanings ascibed to certain geometric shapes"
+  }
+}

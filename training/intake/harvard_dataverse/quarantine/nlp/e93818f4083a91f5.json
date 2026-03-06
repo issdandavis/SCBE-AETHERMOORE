@@ -1,0 +1,33 @@
+{
+  "id": "e93818f4083a91f5",
+  "source": "harvard_dataverse",
+  "category": "quarantine/nlp",
+  "title": "A Tutorial on the Pretrain-Finetune Paradigm for Natural Language Processing",
+  "content": "# A Tutorial on the Pretrain-Finetune Paradigm for Natural Language Processing\n\nAuthors: Wang, Yu, Qu, Wen\nPublished: 2025-08-16T14:48:49Z\nSubjects: Computer and Information Science, Social Sciences\nDOI: doi:10.7910/DVN/QTT84C\n\nThe pretrain-finetune paradigm represents a transformative approach in natural language processing (NLP). This paradigm distinguishes itself through the use of large pretrained language models, demonstrating remarkable efficiency in finetuning tasks, even with limited training data. This efficiency is especially beneficial for research in social sciences, where the number of annotated samples is often quite limited. Our tutorial offers a comprehensive introduction to the pretrain-finetune paradigm. We first delve into the fundamental concepts of pretraining and finetuning, followed by practical exercises using real-world applications. We showcase the paradigm's application in diverse tasks such as binary classification, multi-class classification, and regression. Emphasizing its efficacy and user-friendliness, the tutorial aims to encourage broader adoption of this paradigm. To this end, we have provided open access to all our code and datasets. The tutorial is particularly valuable for quantitative researchers in psychology, offering them an insightful guide into this innovative approach.\n\nCitation: Wang, Yu; Qu, Wen, 2024, \"A Tutorial on the Pretrain-Finetune Paradigm for Natural Language Processing\", https://doi.org/10.7910/DVN/QTT84C, Harvard Dataverse, V5",
+  "url": "https://doi.org/10.7910/DVN/QTT84C",
+  "timestamp": "2026-03-06T02:42:20.598245",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "9e6a1e2abc76da0cd810ea89c34d929ddcc47c3b6eb3bfe991b1374ff7cb1306",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/QTT84C",
+    "subjects": [
+      "Computer and Information Science",
+      "Social Sciences"
+    ],
+    "authors": [
+      "Wang, Yu",
+      "Qu, Wen"
+    ],
+    "file_count": 12
+  }
+}

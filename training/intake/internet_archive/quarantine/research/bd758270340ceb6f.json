@@ -1,0 +1,31 @@
+{
+  "id": "bd758270340ceb6f",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Delivery Time Reduction for Order-Constrained Applications using Binary Network Codes",
+  "content": "# Delivery Time Reduction for Order-Constrained Applications using Binary Network Codes\n\nCreator: Ahmed Douik, Mohammad S. Karim, Parastoo Sadeghi, Sameh Sorour\nDate: 2016-01-08T00:00:00Z\nDownloads: 28\nSubjects: Information Theory, Computing Research Repository, Mathematics\n\nConsider a radio access network wherein a base-station is required to deliver a set of order-constrained messages to a set of users over independent erasure channels. This paper studies the delivery time reduction problem using instantly decodable network coding (IDNC). Motivated by time-critical and order-constrained applications, the delivery time is defined, at each transmission, as the number of undelivered messages. The delivery time minimization problem being computationally intractable, most of the existing literature on IDNC propose sub-optimal online solutions. This paper suggests a novel method for solving the problem by introducing the delivery delay as a measure of distance to optimality. An expression characterizing the delivery time using the delivery delay is derived, allowing the approximation of the delivery time minimization problem by an optimization problem involving the delivery delay. The problem is, then, formulated as a maximum weight clique selection problem over the IDNC graph wherein the weight of each vertex reflects its corresponding user and message's delay. Simulation results suggest that the proposed solution achieves lower delivery and completion times as compared to the best-known heuristics for delivery time reduction.",
+  "url": "https://archive.org/details/arxiv-1601.01909",
+  "timestamp": "2026-03-06T02:40:48.214043",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "613194a215959bd8e334270ce14f109fd6436f7f65c77634b090f1b16737c501",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "arxiv-1601.01909",
+    "media_type": "texts",
+    "downloads": 28,
+    "subjects": [
+      "Information Theory",
+      "Computing Research Repository",
+      "Mathematics"
+    ]
+  }
+}

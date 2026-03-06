@@ -1,0 +1,31 @@
+{
+  "id": "c74032dbbcc894da",
+  "source": "library_of_congress",
+  "category": "quarantine/math",
+  "title": "Descriptive geometry,",
+  "content": "# Descriptive geometry,\n\nContributors: ames, william l. (william lewis), wischmeyer, carl\nDate: 1918\nSubjects: geometry, descriptive\n\nEarlier editions have title: Notes on descriptive geometry. Also available in digital form.",
+  "url": "https://www.loc.gov/item/18020420/",
+  "timestamp": "2026-03-06T02:37:52.081758",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "1104980ddd22f5ec973d196dac4595539fdf0bb675751b27fd292c6ec20d8be4",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "geometry, descriptive"
+    ],
+    "dates": "1918",
+    "original_format": [
+      "book"
+    ]
+  }
+}

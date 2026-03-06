@@ -1,0 +1,31 @@
+{
+  "id": "5ca38de6637fb35e",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2024-36405 \u2014 CVSS 5.9 (MEDIUM)",
+  "content": "# CVE-2024-36405\n\nCVSS Score: 5.9 (MEDIUM)\nPublished: 2024-06-10T13:15:50.700\nCWEs: CWE-208, CWE-385\n\nliboqs is a C-language cryptographic library that provides implementations of post-quantum cryptography algorithms. A control-flow timing lean has been identified in the reference implementation of the Kyber key encapsulation mechanism when it is compiled with Clang 15-18 for `-Os`, `-O1`, and other compilation options. A proof-of-concept local attack on the reference implementation leaks the entire ML-KEM 512 secret key in ~10 minutes using end-to-end decapsulation timing measurements. The issue has been fixed in version 0.10.1. As a possible workaround, some compiler options may produce vectorized code that does not leak secret information, however relying on these compiler options as a workaround may not be reliable.\n\nReferences: https://github.com/open-quantum-safe/liboqs/blob/7eecda6095c003ddded7175a1ffdf35a2ce63ed5/src/kem/kyber/pqcrystals-kyber_kyber512_ref/poly.c#L166, https://github.com/open-quantum-safe/liboqs/commit/982c762c242ef549c914891b47bf6e0ed6321f91, https://github.com/open-quantum-safe/liboqs/security/advisories/GHSA-f2v9-5498-2vpp",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-36405",
+  "timestamp": "2026-03-06T02:41:36.374044",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "562500319788677ebe773bc14f74fe1965d9fc01ed638cb2d5ebd86ed82b0e73",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2024-36405",
+    "cvss_score": 5.9,
+    "severity": "MEDIUM",
+    "cwes": [
+      "CWE-208",
+      "CWE-385"
+    ],
+    "published": "2024-06-10T13:15:50.700"
+  }
+}

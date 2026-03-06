@@ -1,0 +1,29 @@
+{
+  "id": "01a6e165b955418a",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Mirror codes: High-threshold quantum LDPC codes beyond the CSS regime",
+  "content": "# Mirror codes: High-threshold quantum LDPC codes beyond the CSS regime\n\nAuthors: Andrey Boris Khesin, Jonathan Z. Lu\nPublished: 2026-03-05T18:58:58Z\n\nThe realization of quantum error correction protocols whose logical error rates are suppressed far below physical error rates relies on an intricate combination: the error-correcting code's efficiency, the syndrome extraction circuit's fault tolerance and overhead, the decoder's quality, and the device's constraints, such as physical qubit count and connectivity. This work makes two contributions towards error-corrected quantum devices. First, we introduce mirror codes, a simple yet flexible construction of LDPC stabilizer codes parameterized by a group $G$ and two subsets of $G$ whose total size bounds the check weight. These codes contain all abelian two-block group algebra codes, such as bivariate bicycle (BB) codes. At the same time, they are manifestly not CSS in general, thus deviating substantially from most prior constructions. Fixing a check weight of 6, we find $[[ 60, 4, 10 ]], [[ 36, 6, 6 ]], [[ 48, 8, 6 ]]$, and $[[ 85, 8, 9 ]]$ codes, all of which are not CSS; we also find several weight-7 codes with $kd > n$.\n  Next, we construct syndrome extraction circuits that trade overhead for provable fault tolerance. These circuits use 1-2, 3, and 6 ancillae per check, and respectively are partially fault-tolerant (FT), provably FT on weight-6 CSS codes, and provably FT on \\emph{all} weight-6 stabilizer codes. Using our constructions, we perform end-to-end quantum memory experiments on several representative mirror codes under circuit-level noise. We achieve an error pseudothreshold on the order of $0.2\\%$, approximately matching that of the $[[ 144, 12, 12 ]]$ BB code under the same model. These findings position mirror codes as a versatile candidate for fault-tolerant quantum memory, especially on smaller-scale devices in the near term.",
+  "url": "http://arxiv.org/abs/2603.05496v1",
+  "timestamp": "2026-03-05T18:58:58Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "b5c8714b54e8065cea1bfb7660771b8b81b7ecdaf9c86a8f530dd9c178a5dc87",
+  "parent_hash": "525afb0a9dc49d1b34890baa62eec8e8e9ca92f4984471bcc21498718d6da348",
+  "metadata": {
+    "authors": [
+      "Andrey Boris Khesin",
+      "Jonathan Z. Lu"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05496v1"
+  }
+}

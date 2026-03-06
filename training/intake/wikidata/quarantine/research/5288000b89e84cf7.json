@@ -1,0 +1,25 @@
+{
+  "id": "5288000b89e84cf7",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Blockchain Consensus Protocols, Energy Consumption and Cryptocurrency Prices (Q127573885)",
+  "content": "# Blockchain Consensus Protocols, Energy Consumption and Cryptocurrency Prices\n\nWikidata ID: Q127573885\nDescription: scholarly article\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q127573885",
+  "timestamp": "2026-03-06T02:41:17.799081",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4c0c5fe70c646a4789e9946ff768bc280578ca446c90f5344b291453fefa944f",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q127573885",
+    "description": "scholarly article"
+  }
+}

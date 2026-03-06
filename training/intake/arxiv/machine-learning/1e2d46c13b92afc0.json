@@ -1,0 +1,30 @@
+{
+  "id": "1e2d46c13b92afc0",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "Harnessing Synthetic Data from Generative AI for Statistical Inference",
+  "content": "# Harnessing Synthetic Data from Generative AI for Statistical Inference\n\nAuthors: Ahmad Abdel-Azim, Ruoyu Wang, Xihong Lin\nPublished: 2026-03-05T17:24:41Z\n\nThe emergence of generative AI models has dramatically expanded the availability and use of synthetic data across scientific, industrial, and policy domains. While these developments open new possibilities for data analysis, they also raise fundamental statistical questions about when synthetic data can be used in a valid, reliable, and principled manner. This paper reviews the current landscape of synthetic data generation and use from a statistical perspective, with the goal of clarifying the assumptions under which synthetic data can meaningfully support downstream discovery, inference, and prediction. We survey major classes of modern generative models, their intended use cases, and the benefits they offer, while also highlighting their limitations and characteristic failure modes. We additionally examine common pitfalls that arise when synthetic data are treated as surrogates for real observations, including biases from model misspecification, attenuated uncertainty, and difficulties in generalization. Building on these insights, we discuss emerging frameworks for the principled use of synthetic data. We conclude with practical recommendations, open problems, and cautions intended to guide both method developers and applied researchers.",
+  "url": "http://arxiv.org/abs/2603.05396v1",
+  "timestamp": "2026-03-05T17:24:41Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "62802faf133fbe1f99315996a5ec04adb7bdd693c746b5b4b4084ca80b1039f2",
+  "parent_hash": "b5ba993850a27da4f22a5c169861c62eca7b274fc9b690d16c99032eb7cbe5f4",
+  "metadata": {
+    "authors": [
+      "Ahmad Abdel-Azim",
+      "Ruoyu Wang",
+      "Xihong Lin"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.05396v1"
+  }
+}

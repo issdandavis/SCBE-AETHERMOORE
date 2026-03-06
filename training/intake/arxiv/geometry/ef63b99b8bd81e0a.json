@@ -1,0 +1,28 @@
+{
+  "id": "ef63b99b8bd81e0a",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Ricci curvature and metric in causal spacetimes",
+  "content": "# Ricci curvature and metric in causal spacetimes\n\nAuthors: Javier Lafuente-L\u00f3pez\nPublished: 2026-03-02T16:11:37Z\n\nA viable spacetime is one that admits a complete timelike geodesic. It is shown that a causal diffeomorphism preserving the Ricci tensor between two spacetimes is necessarily a homothety, if one of them is viable.",
+  "url": "http://arxiv.org/abs/2603.02027v1",
+  "timestamp": "2026-03-02T16:11:37Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "4369337f4f28816a4dafc2ec8952d2f58b3532cf0ed47f89a223d0e1afb7b55a",
+  "parent_hash": "af0b4ddbae558334304e8ee47645b116280768b3b4f12c4f49e8e8add74acb1d",
+  "metadata": {
+    "authors": [
+      "Javier Lafuente-L\u00f3pez"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.02027v1"
+  }
+}

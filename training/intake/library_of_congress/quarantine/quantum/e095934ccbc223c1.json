@@ -1,0 +1,31 @@
+{
+  "id": "e095934ccbc223c1",
+  "source": "library_of_congress",
+  "category": "quarantine/quantum",
+  "title": "General physics; an elementary treatise on natural philosophy,",
+  "content": "# General physics; an elementary treatise on natural philosophy,\n\nContributors: macnutt, barry, franklin, william s. (william suddards)\nDate: 1916\nSubjects: physics\n\nIncludes index. Also available in digital form.",
+  "url": "https://www.loc.gov/item/17007555/",
+  "timestamp": "2026-03-06T04:17:18.822578",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "b4494bd20c5b25139947e1cad35d78d1df94c7a41f45f2ae2700893213092ecf",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "physics"
+    ],
+    "dates": "1916",
+    "original_format": [
+      "book"
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "id": "5b275d5fbb334bea",
+  "source": "library_of_congress",
+  "category": "quarantine/security",
+  "title": "Security for multi-hop wireless networks",
+  "content": "# Security for multi-hop wireless networks\n\nContributors: shen, x. (xuemin), mahmoud, mohamed m. e. a.\nDate: 2014\nSubjects: security measures, wireless communication systems\n\nIncludes bibliographical references.",
+  "url": "//lccn.loc.gov/2014930297",
+  "timestamp": "2026-03-06T02:38:19.805386",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "e76e2cb7633943158e05d7d64f0afb0be86fc582e6b38bfed81eb3d06cc11607",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "security measures",
+      "wireless communication systems"
+    ],
+    "dates": "2014",
+    "original_format": [
+      "book"
+    ]
+  }
+}

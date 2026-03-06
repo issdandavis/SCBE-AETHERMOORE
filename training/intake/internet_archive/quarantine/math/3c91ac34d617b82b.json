@@ -1,0 +1,32 @@
+{
+  "id": "3c91ac34d617b82b",
+  "source": "internet_archive",
+  "category": "quarantine/math",
+  "title": "The golden number : Pythagorean rites and rhythms in the development of western civilization",
+  "content": "# The golden number : Pythagorean rites and rhythms in the development of western civilization\n\nCreator: Ghyka, Matila C. (Matila Costiescu), 1881-1965, author\nDate: 2016-01-01T00:00:00Z\nDownloads: 305\nSubjects: Symbolism of numbers, Pythagoras and Pythagorean school, Golden section, Rhythm\n\nxiii, 434 pages ; 24 cm \"The first English translation of Ghyka's masterwork on sacred geometry\"-- Includes bibliographical references and index",
+  "url": "https://archive.org/details/goldennumberpyth0000ghyk",
+  "timestamp": "2026-03-06T03:59:22.607374",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "89eb0ec665e5272bea3eb9d167a681f854e9cf33efe40f35809a6ca5cd16dcfa",
+  "parent_hash": "12cd4a96fd71dc9d970d8a14ed6b5852b9056b4bfd16d8333f7b43b74b85d684",
+  "metadata": {
+    "ia_identifier": "goldennumberpyth0000ghyk",
+    "media_type": "texts",
+    "downloads": 305,
+    "subjects": [
+      "Symbolism of numbers",
+      "Pythagoras and Pythagorean school",
+      "Golden section",
+      "Rhythm"
+    ]
+  }
+}

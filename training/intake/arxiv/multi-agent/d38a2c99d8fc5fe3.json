@@ -1,0 +1,31 @@
+{
+  "id": "d38a2c99d8fc5fe3",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "Scaling Inference-Time Computation via Opponent Simulation: Enabling Online Strategic Adaptation in Repeated Negotiation",
+  "content": "# Scaling Inference-Time Computation via Opponent Simulation: Enabling Online Strategic Adaptation in Repeated Negotiation\n\nAuthors: Xiangyu Liu, Di Wang, Zhe Feng, Aranyak Mehta\nPublished: 2026-02-22T19:14:12Z\n\nWhile large language models (LLMs) have emerged as powerful decision-makers across a wide range of single-agent and stationary environments, fewer efforts have been devoted to settings where LLMs must engage in \\emph{repeated} and \\emph{strategic} interactions with unknown or dynamic opponents. In such settings, recipes built upon \\emph{offline} pre-training or fine-tuning, though robust against worst-case adversaries, do not fully exploit the capability of LLMs to adapt \\emph{online} based on interaction feedback. Instead, we explore the more natural perspective of scaling inference-time computation as a mechanism for adaptation, embedding the principles of a classical game-theoretical learning dynamic, \\emph{smooth Fictitious Play (sFP)}, into LLM inference: (i) for belief formation, we employ an auxiliary opponent model that in-context learns to imitate the time-averaged behavior of the opponent; (ii) for best response, we advance best-of-$N$ (BoN) sampling by simulating against the opponent model. Empirical evaluations on two distinct forms of repeated negotiation games demonstrate that our method enables significant performance improvement over repeated online interaction compared to various baselines, offering a scalable and principled approach to repeated strategic decision-making without any parameter updates.",
+  "url": "http://arxiv.org/abs/2602.19309v2",
+  "timestamp": "2026-02-22T19:14:12Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "5d328e06b8d60ffd18fb7587407b725d40bd751d4058193dab02b18d038e2976",
+  "parent_hash": "76a9c0d6b0cf3c24d572c728f75a5788b05f24a605da668a4ffaca0787e52150",
+  "metadata": {
+    "authors": [
+      "Xiangyu Liu",
+      "Di Wang",
+      "Zhe Feng",
+      "Aranyak Mehta"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2602.19309v2"
+  }
+}

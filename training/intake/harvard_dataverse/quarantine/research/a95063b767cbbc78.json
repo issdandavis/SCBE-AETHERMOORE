@@ -1,0 +1,33 @@
+{
+  "id": "a95063b767cbbc78",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "BenthiCat - SSS-CAM",
+  "content": "# BenthiCat - SSS-CAM\n\nAuthors: Rajani, Hayat, Rajani, Hayat\nPublished: 2025-10-15T16:58:31Z\nSubjects: Computer and Information Science, Earth and Environmental Sciences\nDOI: doi:10.7910/DVN/VZD5S6\n\nThis dataset comprises co-registered optical and side-scan sonar (SSS) samples from the BenthiCat collection, designed to support multimodal learning. Each optical image is spatially associated with its corresponding SSS tile (256\u00d7256 pixels) based on geographic proximity as described in the paper. The dataset does not contain any image-level or pixel-level annotations. The dataset is organized into two primary directories: sonar and camera, which contain the matched SSS tiles and optical images, respectively. Three metadata files accompany these directories: sonar.csv \u2013 metadata for all SSS tiles. camera.csv \u2013 metadata for all optical images. correspondences.json \u2013 mapping between optical images and SSS tiles. The mapping metadata consists of dictionary objects, defined as unordered collections of values with unique keys. Each key represents the index of an SSS tile, and the corresponding value is a list of indices identifying the optical images associated with that tile based on the matching criteria. A summary of the SSS and camera metadata files is provided in Appendix B of the paper.\n\nCitation: Rajani, Hayat, 2025, \"BenthiCat - SSS-CAM\", https://doi.org/10.7910/DVN/VZD5S6, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/VZD5S6",
+  "timestamp": "2026-03-06T04:18:45.403947",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "ddd0a6ee7614953321f0f594ad5fa872fcb4f45b944da528435183049c172ce4",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/VZD5S6",
+    "subjects": [
+      "Computer and Information Science",
+      "Earth and Environmental Sciences"
+    ],
+    "authors": [
+      "Rajani, Hayat",
+      "Rajani, Hayat"
+    ],
+    "file_count": 56
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "46b4ce21b3ea1f57",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Drinfeld Correspondence in Infinite Dimensions",
+  "content": "# Drinfeld Correspondence in Infinite Dimensions\n\nAuthors: Praful Rahangdale\nPublished: 2026-03-04T21:49:59Z\n\nIn this article, we establish the Drinfeld correspondence between Poisson Lie groups and their infinitesimal counterparts, Lie bialgebras, in the infinite-dimensional setting. Specifically, we extend this correspondence to regular Lie groups modeled on convenient vector spaces, with a particular focus on those modeled on nuclear Fr\u00e9chet and nuclear Silva spaces. Important examples of interest include the smooth loop group $C^{\\infty}(\\mathbb{S}^{1}, G)$ and the analytic loop group $C^\u03c9(\\mathbb{S}^{1}, G)$ of a 1-connected real Lie group $G$, as well as $\\widetilde{\\mathrm{Diff}^{\\infty}(M)_0}$ and $\\widetilde{\\mathrm{Diff}^\u03c9(M)_0}$ -- the universal covering groups of the identity components of the groups of smooth and real-analytic diffeomorphisms of a compact manifold $M$.",
+  "url": "http://arxiv.org/abs/2603.04634v1",
+  "timestamp": "2026-03-04T21:49:59Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "e8190d280bd04d108e5dac5f0cee4b5b50f4267bf28e275a8f0665e030aca8e6",
+  "parent_hash": "50a53455a10c5a634d784d1cc9e1f216cfbb5bd41d5dd287bc81df7ac93d0756",
+  "metadata": {
+    "authors": [
+      "Praful Rahangdale"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.04634v1"
+  }
+}

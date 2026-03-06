@@ -1,0 +1,28 @@
+{
+  "id": "9a4ad22e3cfbb0f9",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "Sustainable Multi-Agent Crowdsourcing via Physics-Informed Bandits",
+  "content": "# Sustainable Multi-Agent Crowdsourcing via Physics-Informed Bandits\n\nAuthors: Chayan Banerjee\nPublished: 2026-02-25T19:52:00Z\n\nCrowdsourcing platforms face a four-way tension between allocation quality, workforce sustainability, operational feasibility, and strategic contractor behaviour--a dilemma we formalise as the Cold-Start, Burnout, Utilisation, and Strategic Agency Dilemma. Existing methods resolve at most two of these tensions simultaneously: greedy heuristics and multi-criteria decision making (MCDM) methods achieve Day-1 quality but cause catastrophic burnout, while bandit algorithms eliminate burnout only through operationally infeasible 100% workforce utilisation.To address this, we introduce FORGE, a physics-grounded $K+1$ multi-agent simulator in which each contractor is a rational agent that declares its own load-acceptance threshold based on its fatigue state, converting the standard passive Restless Multi-Armed Bandit (RMAB) into a genuine Stackelberg game. Operating within FORGE, we propose a Neural-Linear UCB allocator that fuses a Two-Tower embedding network with a Physics-Informed Covariance Prior derived from offline simulator interactions. The prior simultaneously warm-starts skill-cluster geometry and UCB exploration landscape, providing a geometry-aware belief state from episode 1 that measurably reduces cold-start regret.Over $T = 200$ cold-start episodes, the proposed method achieves the highest reward of all non-oracle methods ($\\text{LRew} = 0.555 \\pm 0.041$) at only 7.6% workforce utilisation--a combination no conventional baseline achieves--while maintaining robustness to workforce turnover up to 50% and observation noise up to $\u03c3= 0.20$.",
+  "url": "http://arxiv.org/abs/2602.22365v1",
+  "timestamp": "2026-02-25T19:52:00Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "671c23d640cd12ff3b9f454d4b07c22ad8b10536a07f263edfe6e75111d5a17a",
+  "parent_hash": "5c1406d5587357a8cb99ab1ffa167842cdb7d1a2b71e942aedbfe80761e33d2e",
+  "metadata": {
+    "authors": [
+      "Chayan Banerjee"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2602.22365v1"
+  }
+}

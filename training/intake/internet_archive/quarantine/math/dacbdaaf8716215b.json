@@ -1,0 +1,32 @@
+{
+  "id": "dacbdaaf8716215b",
+  "source": "internet_archive",
+  "category": "quarantine/math",
+  "title": "About embedded quarters and points at infinity in the hyperbolic plane",
+  "content": "# About embedded quarters and points at infinity in the hyperbolic plane\n\nCreator: Maurice Margenstern\nDate: 2015-07-30T00:00:00Z\nDownloads: 55\nSubjects: Computational Geometry, Computing Research Repository, Mathematics, Geometric Topology\n\nIn this paper, we prove two results. First, there is a family of sequences of embedded quarters of the hyperbolic plane such that any sequence converges to a limit which is an end of the hyperbolic plane. Second, there is no algorithm which would allow us to check whether two given ends are equal or not.",
+  "url": "https://archive.org/details/arxiv-1507.08495",
+  "timestamp": "2026-03-06T02:38:47.919003",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4c4b8754d8de7d4ffbb305798522bb5e0049c5121871f5ef9140e6d9cdea0f13",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "arxiv-1507.08495",
+    "media_type": "texts",
+    "downloads": 55,
+    "subjects": [
+      "Computational Geometry",
+      "Computing Research Repository",
+      "Mathematics",
+      "Geometric Topology"
+    ]
+  }
+}

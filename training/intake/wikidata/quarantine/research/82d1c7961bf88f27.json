@@ -1,0 +1,25 @@
+{
+  "id": "82d1c7961bf88f27",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "chirality (Q3734365)",
+  "content": "# chirality\n\nWikidata ID: Q3734365\nDescription: property of an object that is distinguishable from its mirror image\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q3734365",
+  "timestamp": "2026-03-06T04:18:13.109159",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "59f66457c50ce78d7f0f6de11726fd1b3a65a4e14865f78684af21ef70a61bf6",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "wikidata_id": "Q3734365",
+    "description": "property of an object that is distinguishable from its mirror image"
+  }
+}

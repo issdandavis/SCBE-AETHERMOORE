@@ -1,0 +1,30 @@
+{
+  "id": "abf77b2f27cdd307",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Coupling between Phase Separation and Geometry on a Closed Elastic Curve: Free Energy Minimization and Dynamics",
+  "content": "# Coupling between Phase Separation and Geometry on a Closed Elastic Curve: Free Energy Minimization and Dynamics\n\nAuthors: Hanchun Wang, Ronojoy Adhikari, Michael E. Cates\nPublished: 2026-02-26T13:19:06Z\n\nWe study the free energy and dynamics of a closed elastic filament (a one-dimensional curve in two dimensions) whose local internal state is specified by curvature, stretch, and a scalar density field representing, for example, the concentration of an absorbed species. The density variable has a tendency to phase-separate whereas the local spontaneous curvature is concentration-dependent. There is also a coupling between concentration and the stretching of the filament, although our main interest is in the nearly inextensible regime. We formulate and simulate the dynamics, comprising a coupled Willmore flow and Cahn-Hilliard gradient flow on the full differential geometry of a closed filament, addressing issues that previous work typically sidestepped by restricting to the Monge gauge. We use a numerical strategy for global free energy minimization, presenting the equilibrium shapes and density profiles across a wide range of model parameters. The phase diagram is dominated by a relatively small number of simple shapes that exhibit, as expected, strong coupling between local curvature and concentration. We also find regimes where curvature and/or stretching energies suppress phase separation altogether. For selected parameter values we present fully dynamical results, tracking the time evolution of the various contributions to the free energy. The dynamics often arrive at metastable minima rather than the equilibrium state - for example, at states with more than the minimum number of interfaces between coexisting phases. The metastability of these states is absent for phase separation on a rigid circular domain and thus a direct result of the coupling between geometry and density.",
+  "url": "http://arxiv.org/abs/2602.22977v1",
+  "timestamp": "2026-02-26T13:19:06Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "f7d0e2567c10cb61f7e419d1551784369519bb0f5fd28270028213ec86f00673",
+  "parent_hash": "51c1f1a010f933328bb1eefcf589ba259a3971c4aca3e8d929c69913859c388a",
+  "metadata": {
+    "authors": [
+      "Hanchun Wang",
+      "Ronojoy Adhikari",
+      "Michael E. Cates"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.22977v1"
+  }
+}

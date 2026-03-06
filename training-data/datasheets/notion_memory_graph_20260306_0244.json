@@ -1,0 +1,7219 @@
+{
+  "nodes": {
+    "410a82d3bb4a70b9": {
+      "coords": [
+        0.039222383808780764,
+        0.06346315012240084,
+        0.13691404524157547,
+        0.2215315787381099,
+        0.26883421798476403,
+        0.869965804076693
+      ],
+      "title": "\ud83d\udd2c SCBE-AETHERMOORE \u2014 Public Technical & Theory Hub",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "402994555ef2b2a0ce6999dcfe857e0e2da00ca598c38cb62a57caa83a7a92fb",
+      "edges": [],
+      "scene_id": null
+    },
+    "f25eda239702d94f": {
+      "coords": [
+        0.06350384002358336,
+        0.03425045719143128,
+        0.16625521159787718,
+        0.5380131663443419,
+        0.29017452984669884,
+        0.7042683779422193
+      ],
+      "title": "SCBE-AETHERMOORE + PHDM: Complete Mathematical & Security Specification",
+      "source": "notion",
+      "category": "phdm",
+      "chain_hash": "f5eba424e3d2893b4fb115b7428286ad6ee76a15d76be1daa85a79e21a51d8d0",
+      "edges": [
+        [
+          "410a82d3bb4a70b9",
+          0.9687057973402475,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "6da831e738f765f6": {
+      "coords": [
+        0.08557290672286266,
+        0.1384598715937162,
+        0.2987103710887718,
+        0.48332353321372673,
+        0.3910169521512493,
+        0.6326787187581128
+      ],
+      "title": "\ud83d\udcda SCBE-AETHERMORE System State Report \u2014 NotebookLM Ready (Feb 2026)",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "3839bdc03ac7a8000236bbdf0529f0130ed95cae4f81ebf5dd1dcf0bda3155a2",
+      "edges": [
+        [
+          "f25eda239702d94f",
+          0.9835581836287426,
+          "KO"
+        ],
+        [
+          "410a82d3bb4a70b9",
+          0.9617998663255226,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "04c6ceb8148c6bb4": {
+      "coords": [
+        0.13562630233210396,
+        0.43889593388362663,
+        0.11835808975797243,
+        0.5745222362157308,
+        0.30986550182988276,
+        0.501372913901793
+      ],
+      "title": "Just launched our SCBE-AETHERMOORE interactive demo on Hugging Face! Explore 14-layer post-quantum encryption, lattice-based key generation, and security analysis - all in your browser.\n\nTry it now: huggingface.co/spaces/issdandavis/SCBE-AETHERMOORE-Demo\n\n#PostQuantum #CyberSecurity #AI #OpenSource",
+      "source": "notion",
+      "category": "demo",
+      "chain_hash": "c3c6efbf2e2989a01d98c33c350a598c09fe80d1a19e22426d602f963f162fcc",
+      "edges": [
+        [
+          "6da831e738f765f6",
+          0.9740726268735495,
+          "KO"
+        ],
+        [
+          "f25eda239702d94f",
+          0.9686024709782514,
+          "KO"
+        ],
+        [
+          "410a82d3bb4a70b9",
+          0.9448723219886102,
+          "RU"
+        ]
+      ],
+      "scene_id": null
+    },
+    "d7bebb6191bc78dd": {
+      "coords": [
+        0.07955355042300596,
+        0.17162713134686966,
+        0.06942463297771939,
+        0.22466283162887363,
+        0.18175604879215623,
+        0.8822623938197792
+      ],
+      "title": "SCBE-AETHERMOORE Marketing Content Calendar",
+      "source": "notion",
+      "category": "marketing",
+      "chain_hash": "437dd7c1fd24c88b8ca860c481be99d7cd8dd66369a80afd3e188855f028cb36",
+      "edges": [
+        [
+          "410a82d3bb4a70b9",
+          0.9892928969180281,
+          "CA"
+        ],
+        [
+          "f25eda239702d94f",
+          0.9653358199977811,
+          "KO"
+        ],
+        [
+          "6da831e738f765f6",
+          0.9566300156937182,
+          "KO"
+        ],
+        [
+          "04c6ceb8148c6bb4",
+          0.9439085270442987,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "d0193100ad349773": {
+      "coords": [
+        0.1270008842591253,
+        0.10274587366627815,
+        0.1662463157958408,
+        0.40348828419317834,
+        0.4352385052579598,
+        0.7042306947200788
+      ],
+      "title": "SCBE-AETHERMOORE Operations Hub",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "8fabe765e85aa89d600fa2a789127a2414def91314fffb3e4f3a9b8b57e3b5ee",
+      "edges": [
+        [
+          "6da831e738f765f6",
+          0.9860202690126518,
+          "KO"
+        ],
+        [
+          "f25eda239702d94f",
+          0.982411960854175,
+          "RU"
+        ],
+        [
+          "410a82d3bb4a70b9",
+          0.9706584828495706,
+          "AV"
+        ],
+        [
+          "04c6ceb8148c6bb4",
+          0.9658434731571586,
+          "KO"
+        ],
+        [
+          "d7bebb6191bc78dd",
+          0.9642282080269134,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "a6904bd9c47e67e8": {
+      "coords": [
+        0.07562780937129926,
+        0.12236836605746004,
+        0.19799617542875927,
+        0.6407290829724386,
+        0.34557381127665243,
+        0.5591501722674654
+      ],
+      "title": "\ud83d\ude80 SCBE-AETHERMOORE Tech Deck - Complete Setup Guide",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "ebd51246785285652f3e7cefe8e25629e1c7f97397b820cf2dd31d3dd901bc43",
+      "edges": [
+        [
+          "6da831e738f765f6",
+          0.9834395627416533,
+          "KO"
+        ],
+        [
+          "04c6ceb8148c6bb4",
+          0.981885591318171,
+          "KO"
+        ],
+        [
+          "f25eda239702d94f",
+          0.9795408207675874,
+          "KO"
+        ],
+        [
+          "d0193100ad349773",
+          0.9733747092590557,
+          "AV"
+        ],
+        [
+          "410a82d3bb4a70b9",
+          0.95008397636509,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "c79305fd0f220e51": {
+      "coords": [
+        0.05413092321698268,
+        0.0875856736074888,
+        0.14171659682447146,
+        0.305736360575947,
+        0.37101886725643174,
+        0.8004281835845227
+      ],
+      "title": "\ud83d\udcac SCBE-AETHERMOORE Public Forum - Questions & Discussions",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "dca4a43e2916d4709154dac23203d8cf988d819a8b33474edd01e9ebd9e59a6d",
+      "edges": [
+        [
+          "410a82d3bb4a70b9",
+          0.9855727489590694,
+          "RU"
+        ],
+        [
+          "d0193100ad349773",
+          0.9845841766603539,
+          "AV"
+        ],
+        [
+          "d7bebb6191bc78dd",
+          0.9777121418994774,
+          "KO"
+        ],
+        [
+          "f25eda239702d94f",
+          0.9774518439214285,
+          "KO"
+        ],
+        [
+          "6da831e738f765f6",
+          0.973745596396929,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "e9bdf8b0747dcffd": {
+      "coords": [
+        0.0831296862554428,
+        0.0896711052236143,
+        0.14509089606057615,
+        0.5869050032104761,
+        0.3798528973447666,
+        0.6146148986289572
+      ],
+      "title": "\ud83d\udd27 SCBE-AETHERMOORE Technical Reference - Complete Function & Math Index",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "f1115c2f2035013e3e783114c5d527d276efc802e9d2d3ebeb8bfc5846a78289",
+      "edges": [
+        [
+          "a6904bd9c47e67e8",
+          0.9908045895764079,
+          "KO"
+        ],
+        [
+          "6da831e738f765f6",
+          0.987600674681157,
+          "KO"
+        ],
+        [
+          "f25eda239702d94f",
+          0.985368510328657,
+          "KO"
+        ],
+        [
+          "d0193100ad349773",
+          0.9815462074080589,
+          "AV"
+        ],
+        [
+          "04c6ceb8148c6bb4",
+          0.977563015672689,
+          "CA"
+        ]
+      ],
+      "scene_id": null
+    },
+    "da8e2467edb9dceb": {
+      "coords": [
+        0.2608783636076689,
+        0.05276375740583276,
+        0.42686776428395684,
+        0.27627462052524826,
+        0.22351086311941554,
+        0.7232963467640794
+      ],
+      "title": "\ud83d\udd2e SCBE Phase\u2013Breath Hyperbolic Governance - 14-Layer Mathematical Core v1.2",
+      "source": "notion",
+      "category": "governance",
+      "chain_hash": "460ebb9fd6081f0cd82edc6625faa71833e4a525264f782ed216a5f7ab32694f",
+      "edges": [
+        [
+          "c79305fd0f220e51",
+          0.9748253606868773,
+          "AV"
+        ],
+        [
+          "410a82d3bb4a70b9",
+          0.973326973861665,
+          "AV"
+        ],
+        [
+          "f25eda239702d94f",
+          0.9731472018885882,
+          "AV"
+        ],
+        [
+          "6da831e738f765f6",
+          0.9729352028899304,
+          "AV"
+        ],
+        [
+          "d0193100ad349773",
+          0.9722305561428043,
+          "AV"
+        ]
+      ],
+      "scene_id": null
+    },
+    "5e29b9e87fc60bea": {
+      "coords": [
+        0.021228950085564264,
+        0.03434916278391797,
+        0.08336716930422335,
+        0.13489091348010032,
+        0.7275269426144123,
+        0.5885816604407067
+      ],
+      "title": "\ud83e\udd5a SCBE-AETHERMOORE + Sacred Eggs \u2014 Complete Integration Pack",
+      "source": "notion",
+      "category": "sacred-eggs",
+      "chain_hash": "eec11e6fe217d5a4b8b5efa167f96cceeaa0f44fab9e8e093703ad23b17fcbb9",
+      "edges": [
+        [
+          "d0193100ad349773",
+          0.9621606135414146,
+          "KO"
+        ],
+        [
+          "6da831e738f765f6",
+          0.9560019855918998,
+          "KO"
+        ],
+        [
+          "c79305fd0f220e51",
+          0.9552226910756322,
+          "KO"
+        ],
+        [
+          "e9bdf8b0747dcffd",
+          0.9521602563704913,
+          "KO"
+        ],
+        [
+          "a6904bd9c47e67e8",
+          0.946600939804358,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "8c3d153b178e6e38": {
+      "coords": [
+        0.08803050539433041,
+        0.09495756651657172,
+        0.230466855169188,
+        0.4972042732587275,
+        0.40224670674215585,
+        0.6508488433715196
+      ],
+      "title": "SCBE-AETHERMOORE Hub",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "b1214be9e8079b9667a0d73434c5fe1035f26f5bffb8c8109cf11a78c043b089",
+      "edges": [
+        [
+          "6da831e738f765f6",
+          0.9947645759765092,
+          "KO"
+        ],
+        [
+          "e9bdf8b0747dcffd",
+          0.9902650601842068,
+          "KO"
+        ],
+        [
+          "d0193100ad349773",
+          0.9891380902007619,
+          "AV"
+        ],
+        [
+          "f25eda239702d94f",
+          0.98624810288659,
+          "KO"
+        ],
+        [
+          "a6904bd9c47e67e8",
+          0.983418830283545,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "99bd800c3c58164b": {
+      "coords": [
+        0.1694051518064294,
+        0.4796807636112421,
+        0.22175422264928388,
+        0.5382088040930297,
+        0.29028004602231855,
+        0.4696829807199951
+      ],
+      "title": "\ud83d\ude80 SCBE-AETHERMOORE Demo - Live Deployment",
+      "source": "notion",
+      "category": "demo",
+      "chain_hash": "d37925a01778f08928ce373d0ca5ccbbb324068a2ece797104f0e41b7250a337",
+      "edges": [
+        [
+          "04c6ceb8148c6bb4",
+          0.9917488831802314,
+          "KO"
+        ],
+        [
+          "a6904bd9c47e67e8",
+          0.9777805193514346,
+          "RU"
+        ],
+        [
+          "e9bdf8b0747dcffd",
+          0.9725364882313046,
+          "KO"
+        ],
+        [
+          "6da831e738f765f6",
+          0.9720338295000435,
+          "KO"
+        ],
+        [
+          "8c3d153b178e6e38",
+          0.9694103182944946,
+          "RU"
+        ]
+      ],
+      "scene_id": null
+    },
+    "95a98c428f82f2ff": {
+      "coords": [
+        0.03194906833298315,
+        0.02584733923582985,
+        0.12546562020696425,
+        0.6090229137433613,
+        0.10949108604047271,
+        0.7086411947144959
+      ],
+      "title": "\ud83d\udd36 Dual Lattice Cross-Stitch - Hyperbolic Multi-Agent Coordination",
+      "source": "notion",
+      "category": "math",
+      "chain_hash": "4fbab41003ba9e63dbea7c2977bacdcfc8c5b29254625f8ba02aea63d39e480e",
+      "edges": [
+        [
+          "f25eda239702d94f",
+          0.9817335804544608,
+          "AV"
+        ],
+        [
+          "e9bdf8b0747dcffd",
+          0.971481161621495,
+          "KO"
+        ],
+        [
+          "a6904bd9c47e67e8",
+          0.9702589564842323,
+          "KO"
+        ],
+        [
+          "8c3d153b178e6e38",
+          0.9691110149874776,
+          "KO"
+        ],
+        [
+          "6da831e738f765f6",
+          0.9678665811374569,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "65d989da60342547": {
+      "coords": [
+        0.07533779306077902,
+        0.09142433235730982,
+        0.14792767715289407,
+        0.31913601268027186,
+        0.25818645777539867,
+        0.8355089282310693
+      ],
+      "title": "\ud83c\udf10 SCBE-AETHERMOORE System Overview - Central Hub",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "3ed420712a63acac9b33c983e153f3b0e0679ca640366217f0a946a0d05c1eba",
+      "edges": [
+        [
+          "410a82d3bb4a70b9",
+          0.991277593860229,
+          "RU"
+        ],
+        [
+          "c79305fd0f220e51",
+          0.9883370518373015,
+          "AV"
+        ],
+        [
+          "d7bebb6191bc78dd",
+          0.9869174681856324,
+          "KO"
+        ],
+        [
+          "da8e2467edb9dceb",
+          0.9770409363373934,
+          "AV"
+        ],
+        [
+          "f25eda239702d94f",
+          0.9767225726153381,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "13882557d72a8ed4": {
+      "coords": [
+        0.09357991627801467,
+        0.113561613901648,
+        0.12249770074010599,
+        0.39641088668240926,
+        0.3207031440813107,
+        0.778362881133773
+      ],
+      "title": "SCBE-AETHERMOORE: Executive Summary",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "b64a1d0442337112af242a76d2391256ae12df53d2e7e6e4a1502ebd14459997",
+      "edges": [
+        [
+          "c79305fd0f220e51",
+          0.9909770517859663,
+          "KO"
+        ],
+        [
+          "65d989da60342547",
+          0.98898983223982,
+          "KO"
+        ],
+        [
+          "d0193100ad349773",
+          0.9855296557433697,
+          "AV"
+        ],
+        [
+          "f25eda239702d94f",
+          0.9850362701164714,
+          "KO"
+        ],
+        [
+          "410a82d3bb4a70b9",
+          0.9818135366281252,
+          "RU"
+        ]
+      ],
+      "scene_id": null
+    },
+    "015fc5c05c3a9430": {
+      "coords": [
+        0.32512310003292366,
+        0.15030292182314361,
+        0.24319523611826466,
+        0.5902472369121124,
+        0.31834669702983653,
+        0.5150957760005408
+      ],
+      "title": "SCBE Security Architecture Explainer",
+      "source": "notion",
+      "category": "architecture",
+      "chain_hash": "1a1667bfcf12e212b2f7f113c4abecd324568806e4d8f483e0b5c4d5f4b00908",
+      "edges": [
+        [
+          "a6904bd9c47e67e8",
+          0.9881102584505351,
+          "AV"
+        ],
+        [
+          "04c6ceb8148c6bb4",
+          0.9830836231100526,
+          "UM"
+        ],
+        [
+          "e9bdf8b0747dcffd",
+          0.9826786265506773,
+          "CA"
+        ],
+        [
+          "99bd800c3c58164b",
+          0.9821039188071118,
+          "RU"
+        ],
+        [
+          "6da831e738f765f6",
+          0.9799014001142355,
+          "AV"
+        ]
+      ],
+      "scene_id": null
+    },
+    "bc23475bb6f13f81": {
+      "coords": [
+        0.09562523776672346,
+        0.10314992325923246,
+        0.1669000817703814,
+        0.4050750075444208,
+        0.43695008679999536,
+        0.7070000918296093
+      ],
+      "title": "Real-World SCBE Use Cases Thread",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "5a3e164cc0249417b5ed46360f9f67cbad7984d546602205a84d72961de2bd5b",
+      "edges": [
+        [
+          "d0193100ad349773",
+          0.9987893895101234,
+          "AV"
+        ],
+        [
+          "8c3d153b178e6e38",
+          0.9890624257690194,
+          "KO"
+        ],
+        [
+          "6da831e738f765f6",
+          0.985908358987307,
+          "KO"
+        ],
+        [
+          "13882557d72a8ed4",
+          0.9856511197335406,
+          "KO"
+        ],
+        [
+          "c79305fd0f220e51",
+          0.9848652947366691,
+          "AV"
+        ]
+      ],
+      "scene_id": null
+    },
+    "f6ee0758daf2b6ed": {
+      "coords": [
+        0.08803050539433041,
+        0.09495756651657172,
+        0.230466855169188,
+        0.4972042732587275,
+        0.40224670674215585,
+        0.6508488433715196
+      ],
+      "title": "SCBE-AETHERMOORE \u2013 Live Links & Assets",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "c814bd94a6cdc2ac7e5cdcc2d64489ae81e3f05d5fae32afaddcccabe61b1f5c",
+      "edges": [
+        [
+          "8c3d153b178e6e38",
+          1.0,
+          "KO"
+        ],
+        [
+          "6da831e738f765f6",
+          0.9947645759765092,
+          "KO"
+        ],
+        [
+          "e9bdf8b0747dcffd",
+          0.9902650601842068,
+          "KO"
+        ],
+        [
+          "d0193100ad349773",
+          0.9891380902007619,
+          "AV"
+        ],
+        [
+          "bc23475bb6f13f81",
+          0.9890624257690194,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "43ac3311d70a66cb": {
+      "coords": [
+        0.2491785434749592,
+        0.13439311753655914,
+        0.4349052640564245,
+        0.46912766608636186,
+        0.18976612719766123,
+        0.6140960874385034
+      ],
+      "title": "\ud83d\ude81 Drone Fleet Architecture Upgrades - SCBE-AETHERMOORE Integration",
+      "source": "notion",
+      "category": "architecture",
+      "chain_hash": "06806bc3c7944ec7284b223aff8e9faf0d8c72d30045f18ec28fc3d4ce32fb15",
+      "edges": [
+        [
+          "da8e2467edb9dceb",
+          0.9797348611987432,
+          "KO"
+        ],
+        [
+          "6da831e738f765f6",
+          0.9781870553239042,
+          "AV"
+        ],
+        [
+          "015fc5c05c3a9430",
+          0.9773225333848832,
+          "AV"
+        ],
+        [
+          "f25eda239702d94f",
+          0.976389120715717,
+          "AV"
+        ],
+        [
+          "8c3d153b178e6e38",
+          0.9751096726743422,
+          "AV"
+        ]
+      ],
+      "scene_id": null
+    },
+    "c25f91e845f03c3d": {
+      "coords": [
+        0.055349927124297316,
+        0.05970537557462853,
+        0.09660532699082673,
+        0.3907767564136381,
+        0.252916029556282,
+        0.8184534642434746
+      ],
+      "title": "\ud83d\udcda SCBE-AETHERMOORE Reference Manuals - Quick Lookup",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "1fc60d80708a573d08c60127c5d14170dc60826dc7d15e16dfd3ce21c2e81aed",
+      "edges": [
+        [
+          "65d989da60342547",
+          0.993266442201573,
+          "KO"
+        ],
+        [
+          "13882557d72a8ed4",
+          0.9912640520211341,
+          "CA"
+        ],
+        [
+          "c79305fd0f220e51",
+          0.9865277212525961,
+          "KO"
+        ],
+        [
+          "410a82d3bb4a70b9",
+          0.9855458239009899,
+          "AV"
+        ],
+        [
+          "d7bebb6191bc78dd",
+          0.9829098518086389,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "fc58fac8525d768c": {
+      "coords": [
+        0.09132984876800539,
+        0.11083109962051534,
+        0.2391046482620258,
+        0.38687944775604627,
+        0.31299204800903613,
+        0.7596476578305889
+      ],
+      "title": "\u2601\ufe0f Google Cloud Infrastructure Setup - SCBE-AETHERMOORE",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "dfaf334f3c1f8f7974f21ac45f9704736982361acdccb39139a45c801b0c87c5",
+      "edges": [
+        [
+          "13882557d72a8ed4",
+          0.992678535228545,
+          "KO"
+        ],
+        [
+          "c79305fd0f220e51",
+          0.9886692891365471,
+          "KO"
+        ],
+        [
+          "c25f91e845f03c3d",
+          0.9872684305484999,
+          "CA"
+        ],
+        [
+          "65d989da60342547",
+          0.9870281936143158,
+          "KO"
+        ],
+        [
+          "bc23475bb6f13f81",
+          0.9858160480084267,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "096082fefdaeec41": {
+      "coords": [
+        0.09669182459540351,
+        0.07822532931480297,
+        0.1898568624187571,
+        0.3071948563909615,
+        0.33136781253981246,
+        0.8042465752006803
+      ],
+      "title": "\ud83d\udcca SCBE-AETHERMOORE v3.0.0 - Unified System Report",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "d85ec16440df01885aa8a79c765a37229ad88d5a3eee7bf817cb7714c5ba3094",
+      "edges": [
+        [
+          "c79305fd0f220e51",
+          0.9949766749796396,
+          "CA"
+        ],
+        [
+          "65d989da60342547",
+          0.9915641644686752,
+          "KO"
+        ],
+        [
+          "13882557d72a8ed4",
+          0.9913812575459114,
+          "KO"
+        ],
+        [
+          "fc58fac8525d768c",
+          0.9911126715045365,
+          "KO"
+        ],
+        [
+          "c25f91e845f03c3d",
+          0.9885208833684564,
+          "AV"
+        ]
+      ],
+      "scene_id": null
+    },
+    "551beb0543bdc632": {
+      "coords": [
+        0.09562523776672346,
+        0.10314992325923246,
+        0.1669000817703814,
+        0.4050750075444208,
+        0.43695008679999536,
+        0.7070000918296093
+      ],
+      "title": "The Avalon-SCBE Rosetta Stone",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "519e06b2fc2d6ae1dd45c358280cbb0fcd26584b9241da7022bd609a9445e5c0",
+      "edges": [
+        [
+          "bc23475bb6f13f81",
+          1.0,
+          "KO"
+        ],
+        [
+          "d0193100ad349773",
+          0.9987893895101234,
+          "AV"
+        ],
+        [
+          "8c3d153b178e6e38",
+          0.9890624257690194,
+          "KO"
+        ],
+        [
+          "f6ee0758daf2b6ed",
+          0.9890624257690194,
+          "KO"
+        ],
+        [
+          "6da831e738f765f6",
+          0.985908358987307,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "a926bfc2d974372b": {
+      "coords": [
+        0.07350761547942869,
+        0.0792918801851157,
+        0.1282969571714015,
+        0.3113832560347758,
+        0.3358857945279187,
+        0.815211947826654
+      ],
+      "title": "\ud83d\udd2c Science-Based Fantasy Magic System Builder",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "505332ea3226516af8d7ebb9d26b0e408537a65ee31f348c65fd55a10df2cdfd",
+      "edges": [
+        [
+          "c79305fd0f220e51",
+          0.9960081798493559,
+          "AV"
+        ],
+        [
+          "096082fefdaeec41",
+          0.9960030193227225,
+          "AV"
+        ],
+        [
+          "65d989da60342547",
+          0.9920544730220867,
+          "KO"
+        ],
+        [
+          "13882557d72a8ed4",
+          0.9918722004384792,
+          "RU"
+        ],
+        [
+          "c25f91e845f03c3d",
+          0.9898406055753092,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "21f52496221b059a": {
+      "coords": [
+        0.045947090975762835,
+        0.024781318294322615,
+        0.360873137576192,
+        0.06487833358056616,
+        0.20995069773361946,
+        0.8492684122368795
+      ],
+      "title": "\ud83c\udfc6 SCBE-AETHERMOORE v5.0 - FINAL CONSOLIDATED PATENT APPLICATION",
+      "source": "notion",
+      "category": "patent",
+      "chain_hash": "9bcb4b5b69f8688e161f5f1b6b842125bf60b74565960d28c98e6f7ea651604e",
+      "edges": [
+        [
+          "410a82d3bb4a70b9",
+          0.9811793401095942,
+          "KO"
+        ],
+        [
+          "d7bebb6191bc78dd",
+          0.9773953777521892,
+          "KO"
+        ],
+        [
+          "65d989da60342547",
+          0.9763994801001675,
+          "KO"
+        ],
+        [
+          "da8e2467edb9dceb",
+          0.9762098516151947,
+          "AV"
+        ],
+        [
+          "096082fefdaeec41",
+          0.9753690670636639,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "a5a4ae11b6f890c8": {
+      "coords": [
+        0.07936836671827749,
+        0.12842071498173893,
+        0.0519472704250041,
+        0.16810489834087766,
+        0.27199943919088587,
+        0.8802086750635272
+      ],
+      "title": "\ud83c\udfad SCBE-AETHERMOORE \u2014 Public Creative & Marketing Hub",
+      "source": "notion",
+      "category": "marketing",
+      "chain_hash": "a7ad668e178e22e61b819394fc7ca8737dd1e03a658e8e864e01c2b4046304eb",
+      "edges": [
+        [
+          "410a82d3bb4a70b9",
+          0.9926448752151137,
+          "UM"
+        ],
+        [
+          "d7bebb6191bc78dd",
+          0.9901291938685288,
+          "KO"
+        ],
+        [
+          "65d989da60342547",
+          0.9860420339934204,
+          "KO"
+        ],
+        [
+          "a926bfc2d974372b",
+          0.9844827694047877,
+          "KO"
+        ],
+        [
+          "096082fefdaeec41",
+          0.9827266578533985,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "f7d0b9c6350cf697": {
+      "coords": [
+        0.06224423075702934,
+        0.05035664048423254,
+        0.16295751172549441,
+        0.32958849086744935,
+        0.5332853805243175,
+        0.6902990971134135
+      ],
+      "title": "\ud83d\udd10 SCBE-AETHERMOORE \u2014 Private Technical & Production Hub",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "dd660ecd0a8a9cf097abc89057579b9716dad6e55597a1fdc480513a00fd89cf",
+      "edges": [
+        [
+          "bc23475bb6f13f81",
+          0.9886690776561757,
+          "RU"
+        ],
+        [
+          "551beb0543bdc632",
+          0.9886690776561757,
+          "RU"
+        ],
+        [
+          "d0193100ad349773",
+          0.9884750455190009,
+          "RU"
+        ],
+        [
+          "8c3d153b178e6e38",
+          0.9810549969727446,
+          "KO"
+        ],
+        [
+          "f6ee0758daf2b6ed",
+          0.9810549969727446,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "6cb5c6ff80dd1ada": {
+      "coords": [
+        0.08693780499078595,
+        0.04019094953782913,
+        0.09754548358850909,
+        0.3682744517555898,
+        0.2553773914837619,
+        0.8264185987580294
+      ],
+      "title": "\ud83d\udd2e Complete SCBE-PHDM-Symphonic Integration Architecture",
+      "source": "notion",
+      "category": "phdm",
+      "chain_hash": "ab7da311507ece19d13b3a3ed031575e7f7a0199c56a04e833175fae1255040e",
+      "edges": [
+        [
+          "c25f91e845f03c3d",
+          0.997551490699853,
+          "RU"
+        ],
+        [
+          "65d989da60342547",
+          0.9945622316717889,
+          "KO"
+        ],
+        [
+          "a926bfc2d974372b",
+          0.9907252296275346,
+          "KO"
+        ],
+        [
+          "13882557d72a8ed4",
+          0.9904468380862745,
+          "KO"
+        ],
+        [
+          "096082fefdaeec41",
+          0.9893297318774298,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "d3dc5238f3061b17": {
+      "coords": [
+        0.19796456497074066,
+        0.07118075437572118,
+        0.28793219981193663,
+        0.4658840857512396,
+        0.15076325711263527,
+        0.7318202227886497
+      ],
+      "title": "\ud83d\udd10 Unified SCBE-AETHERMOORE Security Architecture v2.5",
+      "source": "notion",
+      "category": "architecture",
+      "chain_hash": "fce3fed03535d0dc966be2f31dd36162bd72c2478500dd4434dc85c789c2058e",
+      "edges": [
+        [
+          "95a98c428f82f2ff",
+          0.983509017519536,
+          "AV"
+        ],
+        [
+          "f25eda239702d94f",
+          0.9827866098980776,
+          "AV"
+        ],
+        [
+          "43ac3311d70a66cb",
+          0.9825146620773689,
+          "CA"
+        ],
+        [
+          "fc58fac8525d768c",
+          0.9822968111957895,
+          "AV"
+        ],
+        [
+          "da8e2467edb9dceb",
+          0.981967558167067,
+          "AV"
+        ]
+      ],
+      "scene_id": null
+    },
+    "69f3c45d8cf34b6f": {
+      "coords": [
+        0.06284416816029642,
+        0.13557866677076474,
+        0.10968544549224664,
+        0.44368694719407253,
+        0.43074033655481353,
+        0.6969525048712572
+      ],
+      "title": "\u2699\ufe0f SCBE Operations Manual - Systems & Secrets",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "cbd248b910a79b2ae03bb8f5cddf7044c04f669f80b2bf43900112819418cde5",
+      "edges": [
+        [
+          "bc23475bb6f13f81",
+          0.9949662920541184,
+          "KO"
+        ],
+        [
+          "551beb0543bdc632",
+          0.9949662920541184,
+          "KO"
+        ],
+        [
+          "d0193100ad349773",
+          0.9946137264065189,
+          "UM"
+        ],
+        [
+          "8c3d153b178e6e38",
+          0.9895065890331798,
+          "KO"
+        ],
+        [
+          "f6ee0758daf2b6ed",
+          0.9895065890331798,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "e676217bec1cf326": {
+      "coords": [
+        0.1270008842591253,
+        0.10274587366627815,
+        0.1662463157958408,
+        0.40348828419317834,
+        0.4352385052579598,
+        0.7042306947200788
+      ],
+      "title": "The Comprehensive State of Notion Templates: Types, Craftsmanship, Profitability, and Unmet Community Needs",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "92c2b7d8a73bd76a980d274f746caebdcec10a41413f5f98c38ff2ecfa2e8897",
+      "edges": [
+        [
+          "d0193100ad349773",
+          1.0,
+          "KO"
+        ],
+        [
+          "bc23475bb6f13f81",
+          0.9987893895101234,
+          "AV"
+        ],
+        [
+          "551beb0543bdc632",
+          0.9987893895101234,
+          "AV"
+        ],
+        [
+          "69f3c45d8cf34b6f",
+          0.9946137264065189,
+          "UM"
+        ],
+        [
+          "8c3d153b178e6e38",
+          0.9891380902007619,
+          "AV"
+        ]
+      ],
+      "scene_id": null
+    },
+    "e747c039d33de64e": {
+      "coords": [
+        0.08330187522457043,
+        0.13478526543995772,
+        0.21808714066452814,
+        0.3528724061044859,
+        0.5709595467690141,
+        0.6158879685823334
+      ],
+      "title": "SCBE-AETHERMOORE Licensing Term Sheet Template",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "1346302c69fe5dee7bf9597e470ccbe8bcc0f66f34ada7daf9a44d781323de92",
+      "edges": [
+        [
+          "f7d0b9c6350cf697",
+          0.9888549440491454,
+          "KO"
+        ],
+        [
+          "d0193100ad349773",
+          0.9823459768799209,
+          "KO"
+        ],
+        [
+          "e676217bec1cf326",
+          0.9823459768799209,
+          "KO"
+        ],
+        [
+          "bc23475bb6f13f81",
+          0.9823059804824036,
+          "KO"
+        ],
+        [
+          "551beb0543bdc632",
+          0.9823059804824036,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "a578894d31c4eb05": {
+      "coords": [
+        0.28067906842045887,
+        0.056768534079369964,
+        0.36741367052770924,
+        0.1486219517112973,
+        0.2404753693432246,
+        0.778194642109044
+      ],
+      "title": "SCBE Phase-Breath Hyperbolic Governance",
+      "source": "notion",
+      "category": "governance",
+      "chain_hash": "7f223eef7c0ee6252469ae8aaca2ca792ed96558b11f56bc39f94fb1e408a326",
+      "edges": [
+        [
+          "da8e2467edb9dceb",
+          0.9876795941270343,
+          "AV"
+        ],
+        [
+          "21f52496221b059a",
+          0.9859214877005958,
+          "RU"
+        ],
+        [
+          "096082fefdaeec41",
+          0.9804324334976281,
+          "AV"
+        ],
+        [
+          "410a82d3bb4a70b9",
+          0.9794023508628537,
+          "AV"
+        ],
+        [
+          "65d989da60342547",
+          0.9789844132747871,
+          "AV"
+        ]
+      ],
+      "scene_id": null
+    },
+    "bfb681ff654a714d": {
+      "coords": [
+        0.0422118579101514,
+        0.06830022082690608,
+        0.4973043543167587,
+        0.26821844934594535,
+        0.2893243783010211,
+        0.702205016797477
+      ],
+      "title": "\ud83d\udccb SCBE Patent Documentation Suite",
+      "source": "notion",
+      "category": "patent",
+      "chain_hash": "ce799279b2680a36069f2473b5184e19503c95e3d330d6ba665bfe6d630c192d",
+      "edges": [
+        [
+          "da8e2467edb9dceb",
+          0.9886934434132001,
+          "AV"
+        ],
+        [
+          "a578894d31c4eb05",
+          0.9820481382584615,
+          "AV"
+        ],
+        [
+          "fc58fac8525d768c",
+          0.9807010583020256,
+          "KO"
+        ],
+        [
+          "096082fefdaeec41",
+          0.9773792906724713,
+          "AV"
+        ],
+        [
+          "43ac3311d70a66cb",
+          0.9773647663060887,
+          "AV"
+        ]
+      ],
+      "scene_id": null
+    },
+    "adacc85562e2c181": {
+      "coords": [
+        0.07471560037638643,
+        0.08059492059923179,
+        0.2608106417003121,
+        0.6330007243481635,
+        0.34140556229954394,
+        0.5524058037489319
+      ],
+      "title": "SCBE-AETHERMOORE Implementation Tracker - Math Fixes",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "425ff9a0c36154790dcd90e2a71f4e4b8829d4e7a7cc7907eb0ebc17afb8a95c",
+      "edges": [
+        [
+          "a6904bd9c47e67e8",
+          0.9956795413170175,
+          "KO"
+        ],
+        [
+          "e9bdf8b0747dcffd",
+          0.9886217330360094,
+          "KO"
+        ],
+        [
+          "015fc5c05c3a9430",
+          0.9885697978578027,
+          "RU"
+        ],
+        [
+          "6da831e738f765f6",
+          0.9839956274726085,
+          "KO"
+        ],
+        [
+          "8c3d153b178e6e38",
+          0.9831314090359513,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "6e4d198513ceaf19": {
+      "coords": [
+        0.08963318662694808,
+        0.07251477124118226,
+        0.11733136455465629,
+        0.4746153394895964,
+        0.3071775003504949,
+        0.7455354542195003
+      ],
+      "title": "SCBE-AETHERMOORE Mathematical Specification v3.1 - CORRECTED",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "628fcbeb2cb4643034ae6c34a8f4a8666266eab0fb0167fd3b48fa229aa715d0",
+      "edges": [
+        [
+          "13882557d72a8ed4",
+          0.9925316957467301,
+          "KO"
+        ],
+        [
+          "f25eda239702d94f",
+          0.9920747086889853,
+          "KO"
+        ],
+        [
+          "fc58fac8525d768c",
+          0.9899282533411026,
+          "KO"
+        ],
+        [
+          "c25f91e845f03c3d",
+          0.9878212384226761,
+          "AV"
+        ],
+        [
+          "6cb5c6ff80dd1ada",
+          0.9862761822166438,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "1aa0279954fbebad": {
+      "coords": [
+        0.08570061504929083,
+        0.10399988100489249,
+        0.22436712305581416,
+        0.3630336310623375,
+        0.4405505655886138,
+        0.712825788885367
+      ],
+      "title": "\ud83c\udf10 AETHERMOORE/SCBE Framework - Public Website",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "76d1cb70414d3cf5a9a38e2da075652aa2c4c8d94e72e35ce717a7153b17e937",
+      "edges": [
+        [
+          "bc23475bb6f13f81",
+          0.9952867348390968,
+          "AV"
+        ],
+        [
+          "551beb0543bdc632",
+          0.9952867348390968,
+          "AV"
+        ],
+        [
+          "d0193100ad349773",
+          0.9950392775770524,
+          "AV"
+        ],
+        [
+          "e676217bec1cf326",
+          0.9950392775770524,
+          "AV"
+        ],
+        [
+          "69f3c45d8cf34b6f",
+          0.9905182120062221,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "fd1d1d2c455fe4d5": {
+      "coords": [
+        0.11591887405253205,
+        0.07502427126184606,
+        0.18208773132428832,
+        0.39283218428940986,
+        0.31780791302756384,
+        0.7713360077584032
+      ],
+      "title": "SCBE Technical Math Review & Operational Definitions \u2013 Attorney Package",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "2b586649c4a9a84707d39b6fd9a10e8d79158ba933f726060feaf2532b0db276",
+      "edges": [
+        [
+          "13882557d72a8ed4",
+          0.9958640603734856,
+          "CA"
+        ],
+        [
+          "fc58fac8525d768c",
+          0.9958389680610163,
+          "KO"
+        ],
+        [
+          "096082fefdaeec41",
+          0.9922726838972867,
+          "AV"
+        ],
+        [
+          "6e4d198513ceaf19",
+          0.9919947501107972,
+          "AV"
+        ],
+        [
+          "a926bfc2d974372b",
+          0.9909844673262598,
+          "AV"
+        ]
+      ],
+      "scene_id": null
+    },
+    "ee8b6f68ac60a1e6": {
+      "coords": [
+        0.07266226854230805,
+        0.0391900067337089,
+        0.6341076291447824,
+        0.3078023089445614,
+        0.3320230651253308,
+        0.537224604421705
+      ],
+      "title": "\ud83d\udcc4 LEAN PROVISIONAL PATENT - SCBE-AETHERMOORE (Q1 2026 Filing)",
+      "source": "notion",
+      "category": "patent",
+      "chain_hash": "8da42fdc7c588a61b2b7e71424617f12f0d5735642f2e777335356f781de71bd",
+      "edges": [
+        [
+          "bfb681ff654a714d",
+          0.9777449574158089,
+          "KO"
+        ],
+        [
+          "43ac3311d70a66cb",
+          0.9751491229588849,
+          "AV"
+        ],
+        [
+          "6da831e738f765f6",
+          0.9725585772378353,
+          "KO"
+        ],
+        [
+          "da8e2467edb9dceb",
+          0.9713482991760863,
+          "AV"
+        ],
+        [
+          "8c3d153b178e6e38",
+          0.9681864910887392,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "6171de3226db639e": {
+      "coords": [
+        0.05973800932921383,
+        0.048329064757463146,
+        0.39099034711035024,
+        0.1265271341795332,
+        0.2047252036016033,
+        0.8281308444528412
+      ],
+      "title": "\u2696\ufe0f SCBE Patent Claims \u2013 Spectral Intent + Geometric Access Control",
+      "source": "notion",
+      "category": "patent",
+      "chain_hash": "488989136015fe55b689948f011acf50c46c011f076b948be2a7af5e0f9bf0b9",
+      "edges": [
+        [
+          "21f52496221b059a",
+          0.9942671444252846,
+          "KO"
+        ],
+        [
+          "a578894d31c4eb05",
+          0.9891266687200942,
+          "AV"
+        ],
+        [
+          "410a82d3bb4a70b9",
+          0.9815591908293853,
+          "KO"
+        ],
+        [
+          "da8e2467edb9dceb",
+          0.9812891505830057,
+          "AV"
+        ],
+        [
+          "65d989da60342547",
+          0.9788805265455462,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "fe1eca7da86613ac": {
+      "coords": [
+        0.08879068088525625,
+        0.07183316977829511,
+        0.17434276533138485,
+        0.47015419999804586,
+        0.30429019022014164,
+        0.73852780532904
+      ],
+      "title": "\ud83d\udcbb SCBE Implementation Proof Package - Test Vectors & Benchmarks",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "ad69bc59db223f525fe0129cd4d1e6cb592a3e6df224b391ae049ad877be5ed9",
+      "edges": [
+        [
+          "6e4d198513ceaf19",
+          0.9965020759386245,
+          "KO"
+        ],
+        [
+          "f25eda239702d94f",
+          0.9929854290161312,
+          "RU"
+        ],
+        [
+          "fd1d1d2c455fe4d5",
+          0.9927576953906913,
+          "AV"
+        ],
+        [
+          "fc58fac8525d768c",
+          0.991984809225822,
+          "KO"
+        ],
+        [
+          "13882557d72a8ed4",
+          0.9916539418172978,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "3a8f383aef7240af": {
+      "coords": [
+        0.10183265032751147,
+        0.3844602752535922,
+        0.1777342264812721,
+        0.7189500485271747,
+        0.23265712294607105,
+        0.37644713265150603
+      ],
+      "title": "\ud83d\udcbc SCBE Product Brief - Buyer Guide & Demo Requirements",
+      "source": "notion",
+      "category": "demo",
+      "chain_hash": "385e7219ae32ad254ea18efef1c765803aad0964682bc87f94eb4cc953c1bfa7",
+      "edges": [
+        [
+          "99bd800c3c58164b",
+          0.9806356609191651,
+          "KO"
+        ],
+        [
+          "04c6ceb8148c6bb4",
+          0.9794487976303702,
+          "KO"
+        ],
+        [
+          "015fc5c05c3a9430",
+          0.9746382682730215,
+          "RU"
+        ],
+        [
+          "a6904bd9c47e67e8",
+          0.9718315802485996,
+          "KO"
+        ],
+        [
+          "adacc85562e2c181",
+          0.9711892254742809,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "e9bb45c914cfdfe0": {
+      "coords": [
+        0.07464847235543896,
+        0.1207837654793572,
+        0.19543223783479613,
+        0.5270266721902556,
+        0.5116482411489496,
+        0.5519094963087353
+      ],
+      "title": "\ud83d\udcd0 SCBE Mathematical Reference - Complete Formula Sheet",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "35f9182d6e4bb5a9822607ac5ff4d815639f59b575ef5f14bf077a4770954ea2",
+      "edges": [
+        [
+          "e9bdf8b0747dcffd",
+          0.9842641757211354,
+          "KO"
+        ],
+        [
+          "8c3d153b178e6e38",
+          0.9837356628411986,
+          "KO"
+        ],
+        [
+          "f6ee0758daf2b6ed",
+          0.9837356628411986,
+          "KO"
+        ],
+        [
+          "e747c039d33de64e",
+          0.9836994921363811,
+          "KO"
+        ],
+        [
+          "6da831e738f765f6",
+          0.9833359233697918,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "dffc3551714eeae7": {
+      "coords": [
+        0.027959914503042936,
+        0.06032012265128612,
+        0.04880000432767168,
+        0.11844009847997213,
+        0.12776006998098646,
+        0.9302406103543552
+      ],
+      "title": "\ud83d\udd2e Spiralverse Protocol - Business Hub",
+      "source": "notion",
+      "category": "lore",
+      "chain_hash": "1b64ce9ce309653a16739f393df1c0baca156f658b6b17534664fc079914c0c9",
+      "edges": [
+        [
+          "d7bebb6191bc78dd",
+          0.9875168360797552,
+          "KO"
+        ],
+        [
+          "a5a4ae11b6f890c8",
+          0.9840601069047114,
+          "RU"
+        ],
+        [
+          "410a82d3bb4a70b9",
+          0.9820498461477556,
+          "AV"
+        ],
+        [
+          "21f52496221b059a",
+          0.9772654243487302,
+          "KO"
+        ],
+        [
+          "65d989da60342547",
+          0.9764667554262088,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "b9ba1ef020ac0961": {
+      "coords": [
+        0.14472294543686162,
+        0.14049998680130318,
+        0.22733375406342016,
+        0.49044498781963114,
+        0.3967783299520957,
+        0.6420008238619113
+      ],
+      "title": "Shopify Merchant Suite - Payment, Subscriptions & Shipping Components",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "1024264e9cfa8879dc105651c3dfda9afe001e5369c2fdec5e4310aae11f738d",
+      "edges": [
+        [
+          "8c3d153b178e6e38",
+          0.9967657920404315,
+          "RU"
+        ],
+        [
+          "f6ee0758daf2b6ed",
+          0.9967657920404315,
+          "RU"
+        ],
+        [
+          "6da831e738f765f6",
+          0.9950726392667744,
+          "AV"
+        ],
+        [
+          "e9bdf8b0747dcffd",
+          0.9899859191133852,
+          "KO"
+        ],
+        [
+          "69f3c45d8cf34b6f",
+          0.9888388170334271,
+          "AV"
+        ]
+      ],
+      "scene_id": null
+    },
+    "72454b015db5574c": {
+      "coords": [
+        0.0949283301377697,
+        0.15359726465818238,
+        0.16568372986396804,
+        0.4021228594541344,
+        0.4337656361667244,
+        0.7018475424694808
+      ],
+      "title": "Screenshot 1: AWS Lambda \"Create function\" page with tutorial showing",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "9bf7e64680d0cba553a4096f0fde904936c58442b8e9c896fdd61aa41081be01",
+      "edges": [
+        [
+          "bc23475bb6f13f81",
+          0.9975469698024367,
+          "KO"
+        ],
+        [
+          "551beb0543bdc632",
+          0.9975469698024367,
+          "KO"
+        ],
+        [
+          "d0193100ad349773",
+          0.997344804752993,
+          "RU"
+        ],
+        [
+          "e676217bec1cf326",
+          0.997344804752993,
+          "RU"
+        ],
+        [
+          "69f3c45d8cf34b6f",
+          0.9951871671399605,
+          "UM"
+        ]
+      ],
+      "scene_id": null
+    },
+    "28bef17a57b73443": {
+      "coords": [
+        0.1270008842591253,
+        0.10274587366627815,
+        0.1662463157958408,
+        0.40348828419317834,
+        0.4352385052579598,
+        0.7042306947200788
+      ],
+      "title": "Welcome to the EchoForge AI Central Hub - your mission control for Notion template production and business operations.",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "0a7f8d50eadc2ea8a774a448222619ff023f6cd805afbb4d36b9fe7b78031e52",
+      "edges": [
+        [
+          "d0193100ad349773",
+          1.0,
+          "KO"
+        ],
+        [
+          "e676217bec1cf326",
+          1.0,
+          "KO"
+        ],
+        [
+          "bc23475bb6f13f81",
+          0.9987893895101234,
+          "AV"
+        ],
+        [
+          "551beb0543bdc632",
+          0.9987893895101234,
+          "AV"
+        ],
+        [
+          "72454b015db5574c",
+          0.997344804752993,
+          "RU"
+        ]
+      ],
+      "scene_id": null
+    },
+    "5f1143b90fde99d5": {
+      "coords": [
+        0.01692602987450938,
+        0.0273868916315523,
+        0.04431292150606168,
+        0.07169981313761398,
+        0.11601273464367567,
+        0.9385627389064483
+      ],
+      "title": "Chapter 4: Sacred Tongue Tokenizer - The Six Languages",
+      "source": "notion",
+      "category": "tongues",
+      "chain_hash": "4e961ef97ddeb68cd1b79cb2bb571231e40658bafbbbcab4e39762dee359c471",
+      "edges": [
+        [
+          "dffc3551714eeae7",
+          0.99585766727321,
+          "KO"
+        ],
+        [
+          "d7bebb6191bc78dd",
+          0.9835610223522319,
+          "KO"
+        ],
+        [
+          "a5a4ae11b6f890c8",
+          0.9812421981387053,
+          "RU"
+        ],
+        [
+          "410a82d3bb4a70b9",
+          0.9789706470574078,
+          "KO"
+        ],
+        [
+          "21f52496221b059a",
+          0.9765790872466303,
+          "AV"
+        ]
+      ],
+      "scene_id": null
+    },
+    "2234893831e8596d": {
+      "coords": [
+        0.016903059720286922,
+        0.02734972514129353,
+        0.06637917729237067,
+        0.07160251000287399,
+        0.11585529486445445,
+        0.9372890243366421
+      ],
+      "title": "\ud83d\udcda Sacred Tongue Tokenizer \u2014 Practical Tutorials & Use Cases",
+      "source": "notion",
+      "category": "tongues",
+      "chain_hash": "a6f201c3458588ca6ae8adedd1a0ddd42355e8159524bd7af60a2d496be90336",
+      "edges": [
+        [
+          "5f1143b90fde99d5",
+          0.9986884499792114,
+          "KO"
+        ],
+        [
+          "dffc3551714eeae7",
+          0.9957611909720846,
+          "KO"
+        ],
+        [
+          "d7bebb6191bc78dd",
+          0.983679231167822,
+          "RU"
+        ],
+        [
+          "a5a4ae11b6f890c8",
+          0.981270821662095,
+          "RU"
+        ],
+        [
+          "410a82d3bb4a70b9",
+          0.9793178389088306,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "e78b3c2380fa1bb6": {
+      "coords": [
+        0.022717883567843843,
+        0.036758307765234075,
+        0.05947619133307791,
+        0.19246899819662397,
+        0.7785534521569496,
+        0.5038903790594038
+      ],
+      "title": "\ud83e\udd5a Chapter 7: Sacred Eggs \u2013 Ritual-Based Secret Distribution",
+      "source": "notion",
+      "category": "sacred-eggs",
+      "chain_hash": "ccf102297ab85619868f0be6900d5a6cf79fbffb7921e8d4c1f849928ea3619e",
+      "edges": [
+        [
+          "5e29b9e87fc60bea",
+          0.9877421203827246,
+          "KO"
+        ],
+        [
+          "e747c039d33de64e",
+          0.971082346952591,
+          "KO"
+        ],
+        [
+          "f7d0b9c6350cf697",
+          0.9652586520976626,
+          "AV"
+        ],
+        [
+          "e9bb45c914cfdfe0",
+          0.962615890522663,
+          "KO"
+        ],
+        [
+          "1aa0279954fbebad",
+          0.955733632800045,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "4fa5bc6b6d045cf8": {
+      "coords": [
+        0.018754130402114516,
+        0.030344820420069026,
+        0.04909895082218354,
+        0.07944377124225258,
+        0.12854272206443612,
+        0.9359392198800991
+      ],
+      "title": "The Six Sacred Tongues (Domain Authorization)",
+      "source": "notion",
+      "category": "tongues",
+      "chain_hash": "5025d82ded5a836a4ffe62e2cbee596f80a6f9874a8988e50c490f3a8aefe597",
+      "edges": [
+        [
+          "5f1143b90fde99d5",
+          0.9985949359041429,
+          "KO"
+        ],
+        [
+          "2234893831e8596d",
+          0.9982955532062296,
+          "KO"
+        ],
+        [
+          "dffc3551714eeae7",
+          0.9966680177170283,
+          "RU"
+        ],
+        [
+          "d7bebb6191bc78dd",
+          0.9846213604581308,
+          "RU"
+        ],
+        [
+          "a5a4ae11b6f890c8",
+          0.9825814074441784,
+          "RU"
+        ]
+      ],
+      "scene_id": null
+    },
+    "baf427d1ec33584f": {
+      "coords": [
+        0.030869730447674427,
+        0.033298848725256486,
+        0.1077573380474122,
+        0.13076627662344387,
+        0.6347528404770092,
+        0.6847011135648938
+      ],
+      "title": "\ud83e\udd5a Sacred Eggs: Ritual-Based Genesis Protocol",
+      "source": "notion",
+      "category": "sacred-eggs",
+      "chain_hash": "d90ad460ec3a78519fe59ce96af8aa68e4482468fc3e8355515d085a8b66e5b3",
+      "edges": [
+        [
+          "5e29b9e87fc60bea",
+          0.9852659590188074,
+          "AV"
+        ],
+        [
+          "f7d0b9c6350cf697",
+          0.9818431551380553,
+          "AV"
+        ],
+        [
+          "e747c039d33de64e",
+          0.9787112381573663,
+          "KO"
+        ],
+        [
+          "e78b3c2380fa1bb6",
+          0.9735310831170619,
+          "AV"
+        ],
+        [
+          "1aa0279954fbebad",
+          0.9731350102098537,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "871846f0a3b2efe2": {
+      "coords": [
+        0.019179793861694265,
+        0.031033558365437926,
+        0.05021335222713218,
+        0.1354115176542835,
+        0.17528035042626974,
+        0.9217310847865137
+      ],
+      "title": "\ud83d\udd24 Sacred Tongue Tokenizer - Practical Tutorials & Implementation Guide",
+      "source": "notion",
+      "category": "tongues",
+      "chain_hash": "6a34347ecc2f5557edffed2199038d3b89ae7e132556febe90e3d2fe1b546229",
+      "edges": [
+        [
+          "dffc3551714eeae7",
+          0.9949761663039235,
+          "RU"
+        ],
+        [
+          "4fa5bc6b6d045cf8",
+          0.9936316576941608,
+          "KO"
+        ],
+        [
+          "5f1143b90fde99d5",
+          0.9923030429239188,
+          "KO"
+        ],
+        [
+          "2234893831e8596d",
+          0.9922757214872747,
+          "KO"
+        ],
+        [
+          "d7bebb6191bc78dd",
+          0.9891859823164064,
+          "UM"
+        ]
+      ],
+      "scene_id": null
+    },
+    "9330fb074f3738af": {
+      "coords": [
+        0.03162812107602128,
+        0.05117537490129933,
+        0.05520233065154707,
+        0.17863849450482655,
+        0.7226078895198019,
+        0.5846020628909342
+      ],
+      "title": "\ud83e\udd5a\ud83d\udce6 Sacred Egg Data Packets - Geometric Ritual Transmission",
+      "source": "notion",
+      "category": "sacred-eggs",
+      "chain_hash": "80fc7217582af479e6ff2a03f8e31521e03e46a5e2610bf5f99540f164de6331",
+      "edges": [
+        [
+          "5e29b9e87fc60bea",
+          0.9961586076385813,
+          "KO"
+        ],
+        [
+          "e78b3c2380fa1bb6",
+          0.9887594558506654,
+          "KO"
+        ],
+        [
+          "baf427d1ec33584f",
+          0.984461615406118,
+          "KO"
+        ],
+        [
+          "e747c039d33de64e",
+          0.9775002780108606,
+          "KO"
+        ],
+        [
+          "f7d0b9c6350cf697",
+          0.9742750217611104,
+          "AV"
+        ]
+      ],
+      "scene_id": null
+    },
+    "2f1e626fb4239613": {
+      "coords": [
+        0.07785450755822312,
+        0.22044966896153348,
+        0.15286931022361025,
+        0.24734773977855326,
+        0.13340568333405453,
+        0.8634197197076224
+      ],
+      "title": "\u2705 System Validation Demo - Production Readiness Report",
+      "source": "notion",
+      "category": "demo",
+      "chain_hash": "48aa48b721a813a5b7cee6e30e649059b80fe5b7ce9b016b682ffe2dad951194",
+      "edges": [
+        [
+          "d7bebb6191bc78dd",
+          0.9923290924041049,
+          "KO"
+        ],
+        [
+          "65d989da60342547",
+          0.9852200915411174,
+          "KO"
+        ],
+        [
+          "410a82d3bb4a70b9",
+          0.9849150781455935,
+          "KO"
+        ],
+        [
+          "871846f0a3b2efe2",
+          0.9840222889870633,
+          "KO"
+        ],
+        [
+          "dffc3551714eeae7",
+          0.9839985132753903,
+          "UM"
+        ]
+      ],
+      "scene_id": null
+    },
+    "60228693c0e3fa01": {
+      "coords": [
+        0.018754130402114516,
+        0.030344820420069026,
+        0.04909895082218354,
+        0.07944377124225258,
+        0.12854272206443612,
+        0.9359392198800991
+      ],
+      "title": "Six Sacred Tongues Protocol Deep Dive",
+      "source": "notion",
+      "category": "tongues",
+      "chain_hash": "396fa70ce1fda1f086d46a267f00f20437d18918c504cdfe28966ef0e71935f3",
+      "edges": [
+        [
+          "4fa5bc6b6d045cf8",
+          1.0,
+          "KO"
+        ],
+        [
+          "5f1143b90fde99d5",
+          0.9985949359041429,
+          "KO"
+        ],
+        [
+          "2234893831e8596d",
+          0.9982955532062296,
+          "KO"
+        ],
+        [
+          "dffc3551714eeae7",
+          0.9966680177170283,
+          "RU"
+        ],
+        [
+          "871846f0a3b2efe2",
+          0.9936316576941608,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "aa6305ff92ac1f7b": {
+      "coords": [
+        0.016670074333585343,
+        0.040459120300092515,
+        0.04364282120031368,
+        0.17653892016760506,
+        0.11425838926735574,
+        0.9243697866719888
+      ],
+      "title": "\ud83d\udd24 SS1 Tokenizer Protocol - Sacred Tongue Integration",
+      "source": "notion",
+      "category": "tongues",
+      "chain_hash": "b766667eb97312c46d377391a29c4def7e290187f8e5d70515c7bda8bfc79751",
+      "edges": [
+        [
+          "dffc3551714eeae7",
+          0.995277180058666,
+          "KO"
+        ],
+        [
+          "871846f0a3b2efe2",
+          0.993371273700634,
+          "KO"
+        ],
+        [
+          "4fa5bc6b6d045cf8",
+          0.9924306682283259,
+          "KO"
+        ],
+        [
+          "60228693c0e3fa01",
+          0.9924306682283259,
+          "KO"
+        ],
+        [
+          "5f1143b90fde99d5",
+          0.9919184088867794,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "f519b913cac64c8e": {
+      "coords": [
+        0.016703677522954086,
+        0.040540676953886044,
+        0.04373079549221144,
+        0.10613687019220322,
+        0.17173306343052042,
+        0.9262331120757454
+      ],
+      "title": "\ud83d\udcda Sacred Tongue Tokenizer - Practical Tutorials & Developer Guide",
+      "source": "notion",
+      "category": "tongues",
+      "chain_hash": "8c62bbf52e28392f4062ee2c2bfe3ada34b1e211a5b9ae9fbca682e2dc07dfc8",
+      "edges": [
+        [
+          "871846f0a3b2efe2",
+          0.9976351257311699,
+          "KO"
+        ],
+        [
+          "dffc3551714eeae7",
+          0.9955477826701252,
+          "KO"
+        ],
+        [
+          "4fa5bc6b6d045cf8",
+          0.9952308118693737,
+          "KO"
+        ],
+        [
+          "60228693c0e3fa01",
+          0.9952308118693737,
+          "KO"
+        ],
+        [
+          "5f1143b90fde99d5",
+          0.9938672126288581,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "15940ca077fa761e": {
+      "coords": [
+        0.018754130402114516,
+        0.030344820420069026,
+        0.04909895082218354,
+        0.07944377124225258,
+        0.12854272206443612,
+        0.9359392198800991
+      ],
+      "title": "The Six Sacred Tongues (Domain Authorization)",
+      "source": "notion",
+      "category": "tongues",
+      "chain_hash": "7c828fa0bcedb52e5dc8f990ab88a88cca77096cfbf76cf42cf7ac8b3709443c",
+      "edges": [
+        [
+          "4fa5bc6b6d045cf8",
+          1.0,
+          "KO"
+        ],
+        [
+          "60228693c0e3fa01",
+          1.0,
+          "KO"
+        ],
+        [
+          "5f1143b90fde99d5",
+          0.9985949359041429,
+          "KO"
+        ],
+        [
+          "2234893831e8596d",
+          0.9982955532062296,
+          "KO"
+        ],
+        [
+          "dffc3551714eeae7",
+          0.9966680177170283,
+          "RU"
+        ]
+      ],
+      "scene_id": null
+    },
+    "852c367f6f0d7c4a": {
+      "coords": [
+        0.016866090492783103,
+        0.02728990767465453,
+        0.04415599816743763,
+        0.10716885876313825,
+        0.1156019040095298,
+        0.9352390492581099
+      ],
+      "title": "The Six Tongues Protocol: Reader-as-Protagonist, Character Integration, and System Deep Dive",
+      "source": "notion",
+      "category": "tongues",
+      "chain_hash": "1c7b3d3ca1bdff855e0207d2f15ce6125a28b8644cdf5ce089d3b0a91e5d7353",
+      "edges": [
+        [
+          "dffc3551714eeae7",
+          0.997759497779352,
+          "KO"
+        ],
+        [
+          "4fa5bc6b6d045cf8",
+          0.9975553721450323,
+          "KO"
+        ],
+        [
+          "60228693c0e3fa01",
+          0.9975553721450323,
+          "KO"
+        ],
+        [
+          "15940ca077fa761e",
+          0.9975553721450323,
+          "KO"
+        ],
+        [
+          "5f1143b90fde99d5",
+          0.9973065727443039,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "032b282850874110": {
+      "coords": [
+        0.09174791699085554,
+        0.08907074885292494,
+        0.0960796660316255,
+        0.388650413167272,
+        0.25153983129853436,
+        0.8139999931308863
+      ],
+      "title": "\ud83d\udd2e AI Workflow Architect - 6 Sacred Languages Protocol",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "8054f14016d78204905ed796fbe21cc8b4570c3a367c4f867c6ff2e719245b9b",
+      "edges": [
+        [
+          "c25f91e845f03c3d",
+          0.9980112533487722,
+          "RU"
+        ],
+        [
+          "6cb5c6ff80dd1ada",
+          0.9968486699451761,
+          "RU"
+        ],
+        [
+          "65d989da60342547",
+          0.993352093318521,
+          "AV"
+        ],
+        [
+          "13882557d72a8ed4",
+          0.9918499488525079,
+          "KO"
+        ],
+        [
+          "fd1d1d2c455fe4d5",
+          0.9903064113885928,
+          "CA"
+        ]
+      ],
+      "scene_id": null
+    },
+    "5dcb352ddba122b3": {
+      "coords": [
+        0.029684856103962525,
+        0.04803110612736115,
+        0.1165739433469855,
+        0.157183835448356,
+        0.20346303059000853,
+        0.9053277721089067
+      ],
+      "title": "\ud83d\udd2e SpiralSeal SS1 - Six Sacred Tongues Lexicon (v1)",
+      "source": "notion",
+      "category": "tongues",
+      "chain_hash": "54f371cf7fed012784c0fb6051b8a7b4d557218eef9389bbb51d0f0daf4506d2",
+      "edges": [
+        [
+          "871846f0a3b2efe2",
+          0.9945236027757167,
+          "KO"
+        ],
+        [
+          "f519b913cac64c8e",
+          0.9929899978815794,
+          "AV"
+        ],
+        [
+          "d7bebb6191bc78dd",
+          0.9909588634083799,
+          "KO"
+        ],
+        [
+          "410a82d3bb4a70b9",
+          0.9908990726174774,
+          "KO"
+        ],
+        [
+          "a5a4ae11b6f890c8",
+          0.9908045440430363,
+          "CA"
+        ]
+      ],
+      "scene_id": null
+    },
+    "91f891d5fdf7cd3e": {
+      "coords": [
+        0.018754130402114516,
+        0.030344820420069026,
+        0.04909895082218354,
+        0.07944377124225258,
+        0.12854272206443612,
+        0.9359392198800991
+      ],
+      "title": "Tutorial 1: Your First Sacred Tongue Encoding (Corrected)",
+      "source": "notion",
+      "category": "tongues",
+      "chain_hash": "0cc624c9f15b5e202e900d255db8347632cac49386dfb45c508cc93043ecfc53",
+      "edges": [
+        [
+          "4fa5bc6b6d045cf8",
+          1.0,
+          "KO"
+        ],
+        [
+          "60228693c0e3fa01",
+          1.0,
+          "KO"
+        ],
+        [
+          "15940ca077fa761e",
+          1.0,
+          "KO"
+        ],
+        [
+          "5f1143b90fde99d5",
+          0.9985949359041429,
+          "KO"
+        ],
+        [
+          "2234893831e8596d",
+          0.9982955532062296,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "9e598e24cc15118d": {
+      "coords": [
+        0.016866090492783103,
+        0.02728990767465453,
+        0.04415599816743763,
+        0.10716885876313825,
+        0.1156019040095298,
+        0.9352390492581099
+      ],
+      "title": "\ud83d\udcda Sacred Tongue Tokenizer System - Complete Reference",
+      "source": "notion",
+      "category": "tongues",
+      "chain_hash": "92a919a3b7db530c18abe9601ca94aa14914d2f6a8ed0b9e608d02523692b837",
+      "edges": [
+        [
+          "852c367f6f0d7c4a",
+          1.0,
+          "KO"
+        ],
+        [
+          "dffc3551714eeae7",
+          0.997759497779352,
+          "KO"
+        ],
+        [
+          "4fa5bc6b6d045cf8",
+          0.9975553721450323,
+          "KO"
+        ],
+        [
+          "60228693c0e3fa01",
+          0.9975553721450323,
+          "KO"
+        ],
+        [
+          "15940ca077fa761e",
+          0.9975553721450323,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "82a0d9ceda4853e7": {
+      "coords": [
+        0.016678479553162037,
+        0.026986346797686335,
+        0.04366482635084837,
+        0.17662793287133674,
+        0.11431599949938309,
+        0.9248358632395889
+      ],
+      "title": "SpiralSeal SS1 - Sacred Tongue Cryptographic Encoding",
+      "source": "notion",
+      "category": "tongues",
+      "chain_hash": "3c65cdec5fbdd32fa0c6400e4b8de7fed922a852ec50f42cc34adb94aed356d8",
+      "edges": [
+        [
+          "aa6305ff92ac1f7b",
+          0.9993722937480791,
+          "KO"
+        ],
+        [
+          "dffc3551714eeae7",
+          0.9951201057881655,
+          "KO"
+        ],
+        [
+          "852c367f6f0d7c4a",
+          0.9946332158826553,
+          "KO"
+        ],
+        [
+          "9e598e24cc15118d",
+          0.9946332158826553,
+          "KO"
+        ],
+        [
+          "871846f0a3b2efe2",
+          0.9933818666032884,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "0352294afbfd73b9": {
+      "coords": [
+        0.01200333674388429,
+        0.05826542049004582,
+        0.03142514357389956,
+        0.05084695040391484,
+        0.16454418795562886,
+        0.9318333106721048
+      ],
+      "title": "Integrate with Spiralverse 6 Sacred Languages protocol",
+      "source": "notion",
+      "category": "lore",
+      "chain_hash": "2cbc2cd1913213de8f5eccdf5ca01ad1b8729f7d053965d68d36762f8ca1facf",
+      "edges": [
+        [
+          "f519b913cac64c8e",
+          0.995596020880135,
+          "KO"
+        ],
+        [
+          "4fa5bc6b6d045cf8",
+          0.995583801117754,
+          "KO"
+        ],
+        [
+          "60228693c0e3fa01",
+          0.995583801117754,
+          "KO"
+        ],
+        [
+          "15940ca077fa761e",
+          0.995583801117754,
+          "KO"
+        ],
+        [
+          "91f891d5fdf7cd3e",
+          0.995583801117754,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "3d4391b193be55c8": {
+      "coords": [
+        0.09734950507608447,
+        0.07875740400054256,
+        0.31858039134646193,
+        0.618568681617382,
+        0.33362171707771215,
+        0.5398112776168396
+      ],
+      "title": "\ud83d\udd2c ISSAC DAVIS RESEARCH COMPENDIUM",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "687806f81f93f6d6cc1ba47dccc74ae7b560d34ca027bc8f0c18b05df1914807",
+      "edges": [
+        [
+          "adacc85562e2c181",
+          0.9959528470965224,
+          "AV"
+        ],
+        [
+          "a6904bd9c47e67e8",
+          0.9919405455417744,
+          "KO"
+        ],
+        [
+          "015fc5c05c3a9430",
+          0.9892531508739332,
+          "UM"
+        ],
+        [
+          "e9bdf8b0747dcffd",
+          0.9854035185423774,
+          "KO"
+        ],
+        [
+          "6da831e738f765f6",
+          0.9835805100424037,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "9f4fd5647cd5d7c5": {
+      "coords": [
+        0.10909926765637631,
+        0.0353052646431478,
+        0.5141260635698075,
+        0.09243038281757085,
+        0.2991110019839879,
+        0.7259576514286944
+      ],
+      "title": "AI-Orchestrated Human Microgeneration System \u2014 Patent & Design Notes",
+      "source": "notion",
+      "category": "patent",
+      "chain_hash": "d12539a864fad634e62b7b215a28a0e44004b0454ecab9cf00e4648d9580bdc6",
+      "edges": [
+        [
+          "bfb681ff654a714d",
+          0.98612096887184,
+          "RU"
+        ],
+        [
+          "a578894d31c4eb05",
+          0.9856984837850546,
+          "AV"
+        ],
+        [
+          "6171de3226db639e",
+          0.9827306870914972,
+          "AV"
+        ],
+        [
+          "da8e2467edb9dceb",
+          0.9826644460109174,
+          "AV"
+        ],
+        [
+          "21f52496221b059a",
+          0.9802905792079403,
+          "AV"
+        ]
+      ],
+      "scene_id": null
+    },
+    "9f0e3fa0324e33eb": {
+      "coords": [
+        0.08557290672286266,
+        0.1384598715937162,
+        0.2987103710887718,
+        0.48332353321372673,
+        0.3910169521512493,
+        0.6326787187581128
+      ],
+      "title": "\ud83d\udcd0 Geometric Bounds Specification - Rigorous Mathematical Definition",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "54bce62700b8725101e39d1c9b3e3fa27a41b4397cb957643f313bbdfdbedd03",
+      "edges": [
+        [
+          "6da831e738f765f6",
+          1.0,
+          "KO"
+        ],
+        [
+          "b9ba1ef020ac0961",
+          0.9950726392667744,
+          "AV"
+        ],
+        [
+          "8c3d153b178e6e38",
+          0.9947645759765092,
+          "KO"
+        ],
+        [
+          "f6ee0758daf2b6ed",
+          0.9947645759765092,
+          "KO"
+        ],
+        [
+          "e9bdf8b0747dcffd",
+          0.987600674681157,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "123e41e9d1cdc2e5": {
+      "coords": [
+        0.11893136768825446,
+        0.09621749762405338,
+        0.15568318146818058,
+        0.5038013581844679,
+        0.4075838605604146,
+        0.6594845396526486
+      ],
+      "title": "quantum-Geometric Contextual Security System \u2013 Draft Claims v2",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "14062ac42acda3578e671b8fdfb16c31180ac2ef60f1f3b4f3a4118eea5ee4ca",
+      "edges": [
+        [
+          "8c3d153b178e6e38",
+          0.9952715620009601,
+          "AV"
+        ],
+        [
+          "f6ee0758daf2b6ed",
+          0.9952715620009601,
+          "AV"
+        ],
+        [
+          "b9ba1ef020ac0961",
+          0.9945624156313007,
+          "KO"
+        ],
+        [
+          "69f3c45d8cf34b6f",
+          0.9921988785407346,
+          "KO"
+        ],
+        [
+          "e9bdf8b0747dcffd",
+          0.9911781024863483,
+          "AV"
+        ]
+      ],
+      "scene_id": null
+    },
+    "161b123f98d8d320": {
+      "coords": [
+        0.2031284293883412,
+        0.16433435141585953,
+        0.1772657107400201,
+        0.4302329175258897,
+        0.23204382787864,
+        0.7509096007745398
+      ],
+      "title": "Introducing the HYDRA Protocol - post-quantum security documentation covering 14 cryptographic layers, lattice-based key exchange, and hyperbolic geometry boundaries.\n\nProtect your systems before quantum computing breaks current encryption.\n\naetherdavis.gumroad.com/l/hydra\n\n#QuantumComputing #Security #Crypto",
+      "source": "notion",
+      "category": "hydra",
+      "chain_hash": "b35887b8d9c00ae1d1cae451ff31e13ab35a60b9b6b999dda7159f62f48e3103",
+      "edges": [
+        [
+          "fe1eca7da86613ac",
+          0.990269665964968,
+          "RU"
+        ],
+        [
+          "fc58fac8525d768c",
+          0.9896279517803859,
+          "AV"
+        ],
+        [
+          "fd1d1d2c455fe4d5",
+          0.9895846145879057,
+          "RU"
+        ],
+        [
+          "6e4d198513ceaf19",
+          0.9894738817271037,
+          "DR"
+        ],
+        [
+          "13882557d72a8ed4",
+          0.9889906441394605,
+          "AV"
+        ]
+      ],
+      "scene_id": null
+    },
+    "002c697b859d80df": {
+      "coords": [
+        0.16007269490141665,
+        0.1295015305106421,
+        0.15715340847101283,
+        0.16951970423599627,
+        0.13714432160833578,
+        0.8876166949053358
+      ],
+      "title": "\ud83e\uddbe HYDRA AI Automation Templates - Product Strategy",
+      "source": "notion",
+      "category": "hydra",
+      "chain_hash": "d8a2ca742da24da2fd4841c0702f6f4a87e1b49a477b1174d9201c16af9d97ee",
+      "edges": [
+        [
+          "2f1e626fb4239613",
+          0.9916474727688032,
+          "RU"
+        ],
+        [
+          "d7bebb6191bc78dd",
+          0.9913420997768694,
+          "DR"
+        ],
+        [
+          "5dcb352ddba122b3",
+          0.9906067981416,
+          "CA"
+        ],
+        [
+          "aa6305ff92ac1f7b",
+          0.9893095102237601,
+          "CA"
+        ],
+        [
+          "dffc3551714eeae7",
+          0.9891959472535022,
+          "UM"
+        ]
+      ],
+      "scene_id": null
+    },
+    "c5fbc52f8fd28b66": {
+      "coords": [
+        0.07350761547942869,
+        0.0792918801851157,
+        0.1282969571714015,
+        0.3113832560347758,
+        0.3358857945279187,
+        0.815211947826654
+      ],
+      "title": "Launching a Notion Template Flash Sale: Strategy, Depth, and Marketplace Insights",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "779a9430300d0aff3d9b302ccc08a5ad1bba4a186309fdf47c7fc4dbac330d14",
+      "edges": [
+        [
+          "a926bfc2d974372b",
+          1.0,
+          "KO"
+        ],
+        [
+          "c79305fd0f220e51",
+          0.9960081798493559,
+          "AV"
+        ],
+        [
+          "096082fefdaeec41",
+          0.9960030193227225,
+          "AV"
+        ],
+        [
+          "65d989da60342547",
+          0.9920544730220867,
+          "KO"
+        ],
+        [
+          "13882557d72a8ed4",
+          0.9918722004384792,
+          "RU"
+        ]
+      ],
+      "scene_id": null
+    },
+    "58124def18519790": {
+      "coords": [
+        0.07350761547942869,
+        0.0792918801851157,
+        0.1282969571714015,
+        0.3113832560347758,
+        0.3358857945279187,
+        0.815211947826654
+      ],
+      "title": "Physics Simulation API - Documentation & Revenue Plan",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "d182f7437f905ffda6452ec93a89854463947b3cc9ec80310c5056de716d86c9",
+      "edges": [
+        [
+          "a926bfc2d974372b",
+          1.0,
+          "KO"
+        ],
+        [
+          "c5fbc52f8fd28b66",
+          1.0,
+          "KO"
+        ],
+        [
+          "c79305fd0f220e51",
+          0.9960081798493559,
+          "AV"
+        ],
+        [
+          "096082fefdaeec41",
+          0.9960030193227225,
+          "AV"
+        ],
+        [
+          "65d989da60342547",
+          0.9920544730220867,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "08d41dbba07d79c6": {
+      "coords": [
+        0.008418344563381537,
+        0.040863502897677664,
+        0.06611853658782228,
+        0.10698203948549996,
+        0.11540038404888152,
+        0.9336087185294072
+      ],
+      "title": "Spiralverse Protocol",
+      "source": "notion",
+      "category": "lore",
+      "chain_hash": "8cf822646a394c394e87200ad058ab7de6bd45bdd3e7e934c7a1f38792c9ff29",
+      "edges": [
+        [
+          "852c367f6f0d7c4a",
+          0.9985129331570127,
+          "CA"
+        ],
+        [
+          "9e598e24cc15118d",
+          0.9985129331570127,
+          "CA"
+        ],
+        [
+          "dffc3551714eeae7",
+          0.9978394827666617,
+          "KO"
+        ],
+        [
+          "4fa5bc6b6d045cf8",
+          0.9972947966275613,
+          "KO"
+        ],
+        [
+          "60228693c0e3fa01",
+          0.9972947966275613,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "eb46ec6875eec50f": {
+      "coords": [
+        0.06934221745021678,
+        0.06731883881384211,
+        0.1815402821399536,
+        0.35248601619562847,
+        0.38022290317571533,
+        0.7690169757993346
+      ],
+      "title": "",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "bc1af7220e5ae5dbf2af87e24b32a5bb5074104e7074f57e33d99bfadad9f63d",
+      "edges": [
+        [
+          "c79305fd0f220e51",
+          0.9941380396299476,
+          "KO"
+        ],
+        [
+          "fd1d1d2c455fe4d5",
+          0.9930869056834517,
+          "RU"
+        ],
+        [
+          "096082fefdaeec41",
+          0.9927110518323037,
+          "AV"
+        ],
+        [
+          "13882557d72a8ed4",
+          0.9921264827811744,
+          "KO"
+        ],
+        [
+          "fc58fac8525d768c",
+          0.9919106275077906,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "d8a16b642f582df7": {
+      "coords": [
+        0.01200333674388429,
+        0.05826542049004582,
+        0.03142514357389956,
+        0.05084695040391484,
+        0.16454418795562886,
+        0.9318333106721048
+      ],
+      "title": "Just launched WorldForge - a complete worldbuilding & conlang Notion template!\n\nBuild entire fictional universes with:\n- Constructed language builder\n- Culture & society databases\n- Character trackers\n- Magic systems\n- Timeline builders\n\nFilled with real examples from the Spiralverse.\n\nhttps://aetherdavis.gumroad.com/l/worldforge",
+      "source": "notion",
+      "category": "lore",
+      "chain_hash": "d3ca481251240422c4f847e32f49e2f0ed2b3d28019b6ef298157d8385393d4e",
+      "edges": [
+        [
+          "0352294afbfd73b9",
+          1.0,
+          "KO"
+        ],
+        [
+          "f519b913cac64c8e",
+          0.995596020880135,
+          "KO"
+        ],
+        [
+          "4fa5bc6b6d045cf8",
+          0.995583801117754,
+          "KO"
+        ],
+        [
+          "60228693c0e3fa01",
+          0.995583801117754,
+          "KO"
+        ],
+        [
+          "15940ca077fa761e",
+          0.995583801117754,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "0d10950f5e98c674": {
+      "coords": [
+        0.02400092671468617,
+        0.058251472778786346,
+        0.03141762095027187,
+        0.050834778543200655,
+        0.16450479898694506,
+        0.9316102462567123
+      ],
+      "title": "\ud83e\udde0 Vector-Based Thought Processing - Spiralverse RAG Enhancement",
+      "source": "notion",
+      "category": "lore",
+      "chain_hash": "be2cb882ed5bbfb9af4912dc574522ed6a1052bf812c591014581ece70a72bdf",
+      "edges": [
+        [
+          "0352294afbfd73b9",
+          0.9995615380067026,
+          "RU"
+        ],
+        [
+          "d8a16b642f582df7",
+          0.9995615380067026,
+          "RU"
+        ],
+        [
+          "f519b913cac64c8e",
+          0.9955940154232946,
+          "KO"
+        ],
+        [
+          "4fa5bc6b6d045cf8",
+          0.9955859436002061,
+          "KO"
+        ],
+        [
+          "60228693c0e3fa01",
+          0.9955859436002061,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "9cb3bc8892fc8478": {
+      "coords": [
+        0.021045422364926344,
+        0.06810441738809603,
+        0.05509763105897436,
+        0.044574919876511195,
+        0.14424747081199676,
+        0.9335892422600764
+      ],
+      "title": "Vector-Based Thought Processing - RAG Enhancement for Spiralverse Protocol",
+      "source": "notion",
+      "category": "lore",
+      "chain_hash": "ba24d1d1ff6c699d878bcd0d5aa1d9f528823c99f582f5f8269efc22fc06b20c",
+      "edges": [
+        [
+          "0d10950f5e98c674",
+          0.9975111844403285,
+          "KO"
+        ],
+        [
+          "0352294afbfd73b9",
+          0.9974914834825046,
+          "KO"
+        ],
+        [
+          "d8a16b642f582df7",
+          0.9974914834825046,
+          "KO"
+        ],
+        [
+          "4fa5bc6b6d045cf8",
+          0.9964809128005413,
+          "KO"
+        ],
+        [
+          "60228693c0e3fa01",
+          0.9964809128005413,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "4298689868fd7515": {
+      "coords": [
+        0.02494963693702434,
+        0.040369360571075194,
+        0.02177299916936651,
+        0.14091781077223298,
+        0.17100735558727428,
+        0.92231904555483
+      ],
+      "title": "Spiralverse Master Pack Integration (RWP v2.1)",
+      "source": "notion",
+      "category": "lore",
+      "chain_hash": "3fa6055d7e67489f0c0560f27efbd3b4231451620217728ac10aa10ecfb961f1",
+      "edges": [
+        [
+          "871846f0a3b2efe2",
+          0.9981583679117908,
+          "KO"
+        ],
+        [
+          "f519b913cac64c8e",
+          0.9970304608584798,
+          "AV"
+        ],
+        [
+          "dffc3551714eeae7",
+          0.9950764736176032,
+          "KO"
+        ],
+        [
+          "aa6305ff92ac1f7b",
+          0.9938083909125964,
+          "AV"
+        ],
+        [
+          "82a0d9ceda4853e7",
+          0.993776470614707,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "4ec356349f874209": {
+      "coords": [
+        0.07934192967883633,
+        0.06418896947668061,
+        0.5192996715804938,
+        0.33609780758555874,
+        0.2719088381088781,
+        0.6599366128524864
+      ],
+      "title": "Core Theorems\ud83d\udd2e Spiralverse 6-Language (1)",
+      "source": "notion",
+      "category": "theorems",
+      "chain_hash": "8c06e195aea8600c49554994c007ee276b6bd351d86122462d0ae998fe435f76",
+      "edges": [
+        [
+          "bfb681ff654a714d",
+          0.992341788827719,
+          "AV"
+        ],
+        [
+          "da8e2467edb9dceb",
+          0.9867848385511838,
+          "AV"
+        ],
+        [
+          "43ac3311d70a66cb",
+          0.9836887872215463,
+          "AV"
+        ],
+        [
+          "ee8b6f68ac60a1e6",
+          0.9824799861869059,
+          "KO"
+        ],
+        [
+          "9f4fd5647cd5d7c5",
+          0.9797828446033171,
+          "RU"
+        ]
+      ],
+      "scene_id": null
+    },
+    "a8224c58865448e9": {
+      "coords": [
+        0.17875596929108503,
+        0.03213702600054534,
+        0.2599940018311072,
+        0.0841358263667668,
+        0.13613462673298826,
+        0.8810818123990203
+      ],
+      "title": "\ud83e\udde0 AI Cognitive Governance Mind Map",
+      "source": "notion",
+      "category": "governance",
+      "chain_hash": "eab96fdbf1e0003f9a855bd971aec03e7437a3d41d2c717fb8f56d68407eb2cf",
+      "edges": [
+        [
+          "002c697b859d80df",
+          0.9900283840023892,
+          "UM"
+        ],
+        [
+          "21f52496221b059a",
+          0.9887868099514057,
+          "AV"
+        ],
+        [
+          "6171de3226db639e",
+          0.9868252619744573,
+          "AV"
+        ],
+        [
+          "5dcb352ddba122b3",
+          0.9865154880913318,
+          "AV"
+        ],
+        [
+          "2234893831e8596d",
+          0.9852787643082793,
+          "AV"
+        ]
+      ],
+      "scene_id": null
+    },
+    "5ed17da34691f672": {
+      "coords": [
+        0.17462493673019747,
+        0.0565098165825519,
+        0.22858700982147848,
+        0.29588924102228653,
+        0.359069136659602,
+        0.774648089901756
+      ],
+      "title": "\ud83d\udd10 Multi-Signature Governance Template",
+      "source": "notion",
+      "category": "governance",
+      "chain_hash": "c42a2156056fa3f47ea3bf6ca5a9808789aca3844c005d03689fa82fea77ad59",
+      "edges": [
+        [
+          "096082fefdaeec41",
+          0.9940870234918348,
+          "AV"
+        ],
+        [
+          "eb46ec6875eec50f",
+          0.9932689027546184,
+          "AV"
+        ],
+        [
+          "c79305fd0f220e51",
+          0.9922971887682894,
+          "CA"
+        ],
+        [
+          "a926bfc2d974372b",
+          0.9910398984973929,
+          "AV"
+        ],
+        [
+          "c5fbc52f8fd28b66",
+          0.9910398984973929,
+          "AV"
+        ]
+      ],
+      "scene_id": null
+    },
+    "cc582a45d91f9d4f": {
+      "coords": [
+        0.20698894255972253,
+        0.04186439304462885,
+        0.2709520434583766,
+        0.10960240390922299,
+        0.17734041477381718,
+        0.8608284560491206
+      ],
+      "title": "Multi-Signature Governance Tutorial",
+      "source": "notion",
+      "category": "governance",
+      "chain_hash": "ae0c7e21ab7d84003df7d397cfc8c37adb525c809e462568db35568b4d076579",
+      "edges": [
+        [
+          "a8224c58865448e9",
+          0.9948161618441507,
+          "AV"
+        ],
+        [
+          "21f52496221b059a",
+          0.9907136994786638,
+          "AV"
+        ],
+        [
+          "6171de3226db639e",
+          0.9898338422485758,
+          "AV"
+        ],
+        [
+          "002c697b859d80df",
+          0.9895062042622013,
+          "KO"
+        ],
+        [
+          "5dcb352ddba122b3",
+          0.986842807050683,
+          "AV"
+        ]
+      ],
+      "scene_id": null
+    },
+    "1500dc918ae9cea1": {
+      "coords": [
+        0.28067906842045887,
+        0.056768534079369964,
+        0.36741367052770924,
+        0.1486219517112973,
+        0.2404753693432246,
+        0.778194642109044
+      ],
+      "title": "4-Tier AI Governance Explainer",
+      "source": "notion",
+      "category": "governance",
+      "chain_hash": "88c6b03de5c50b640635302f076cc63d073bd710c5ee93c31cc25bc5e105eaa9",
+      "edges": [
+        [
+          "a578894d31c4eb05",
+          1.0,
+          "KO"
+        ],
+        [
+          "6171de3226db639e",
+          0.9891266687200942,
+          "AV"
+        ],
+        [
+          "da8e2467edb9dceb",
+          0.9876795941270343,
+          "AV"
+        ],
+        [
+          "cc582a45d91f9d4f",
+          0.9863696703692123,
+          "AV"
+        ],
+        [
+          "21f52496221b059a",
+          0.9859214877005958,
+          "RU"
+        ]
+      ],
+      "scene_id": null
+    },
+    "9ef0f6b723ecf4c2": {
+      "coords": [
+        0.09383228587107745,
+        0.10121588518766658,
+        0.24565611365257733,
+        0.39747994143407717,
+        0.4287573700577697,
+        0.6937439976804879
+      ],
+      "title": "February - 5th: US Government & Civics",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "8892c8f29e94183ab83532215fa1892201ed4d57b041eb81804f25d349c25b70",
+      "edges": [
+        [
+          "1aa0279954fbebad",
+          0.9961256462373651,
+          "AV"
+        ],
+        [
+          "bc23475bb6f13f81",
+          0.9949854681571135,
+          "KO"
+        ],
+        [
+          "551beb0543bdc632",
+          0.9949854681571135,
+          "KO"
+        ],
+        [
+          "d0193100ad349773",
+          0.9949362831128337,
+          "AV"
+        ],
+        [
+          "e676217bec1cf326",
+          0.9949362831128337,
+          "AV"
+        ]
+      ],
+      "scene_id": null
+    },
+    "da68d04401917f03": {
+      "coords": [
+        0.05350001255357373,
+        0.043282419355114184,
+        0.5602594050552083,
+        0.6798890699220912,
+        0.18334727061891629,
+        0.2966621156059316
+      ],
+      "title": "\ud83d\udd04 Theorem 2: Isometric Realification",
+      "source": "notion",
+      "category": "theorems",
+      "chain_hash": "8a21fde2173f8b86a3cdb92182c14ddba1c070aeca4efc765157343f1c4318d5",
+      "edges": [
+        [
+          "3a8f383aef7240af",
+          0.9702003272582592,
+          "KO"
+        ],
+        [
+          "3d4391b193be55c8",
+          0.9638321945315482,
+          "KO"
+        ],
+        [
+          "015fc5c05c3a9430",
+          0.9627387597417691,
+          "AV"
+        ],
+        [
+          "99bd800c3c58164b",
+          0.9614512388287121,
+          "KO"
+        ],
+        [
+          "adacc85562e2c181",
+          0.9609985908745198,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "a609b9142dabdb9f": {
+      "coords": [
+        0.06163632432750427,
+        0.03324322256783798,
+        0.537886640103394,
+        0.34812754631270953,
+        0.1408205505885168,
+        0.6835573115000826
+      ],
+      "title": "\ud83d\udccf Theorem 4: Hyperbolic Metric Axioms",
+      "source": "notion",
+      "category": "axioms",
+      "chain_hash": "22d201d59fbed5796d6e0c0aa7208e5c96023e2801887d01ff6e9ceaf0faa4d8",
+      "edges": [
+        [
+          "4ec356349f874209",
+          0.9869836623864658,
+          "KO"
+        ],
+        [
+          "da8e2467edb9dceb",
+          0.9854635665707374,
+          "AV"
+        ],
+        [
+          "bfb681ff654a714d",
+          0.9841539587756556,
+          "KO"
+        ],
+        [
+          "43ac3311d70a66cb",
+          0.9832280529050875,
+          "AV"
+        ],
+        [
+          "d3dc5238f3061b17",
+          0.9810567146586536,
+          "AV"
+        ]
+      ],
+      "scene_id": null
+    },
+    "db4356e29b092dda": {
+      "coords": [
+        0.07047850662424317,
+        0.038012206398120016,
+        0.4920403355162752,
+        0.5971034900259263,
+        0.1610222902771888,
+        0.5210790772296865
+      ],
+      "title": "\ud83c\udfaf Theorem 3: Poincar\u00e9 Ball Containment",
+      "source": "notion",
+      "category": "theorems",
+      "chain_hash": "8e63a27fc2eba70f652597be6c41d88c913ec05c1d29c63f15ca5611e977b21c",
+      "edges": [
+        [
+          "43ac3311d70a66cb",
+          0.9826408607379304,
+          "RU"
+        ],
+        [
+          "3d4391b193be55c8",
+          0.9802831269840254,
+          "KO"
+        ],
+        [
+          "adacc85562e2c181",
+          0.9774478805175143,
+          "KO"
+        ],
+        [
+          "015fc5c05c3a9430",
+          0.9764292637820133,
+          "CA"
+        ],
+        [
+          "a6904bd9c47e67e8",
+          0.9743254005331178,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "f884788cfddb62ff": {
+      "coords": [
+        0.05209837595868379,
+        0.04214847152991038,
+        0.4773836165647658,
+        0.5517306551958132,
+        0.17854379054841493,
+        0.5777798431751553
+      ],
+      "title": "\ud83d\udcd0 Theorem 1: Polar Decomposition Uniqueness",
+      "source": "notion",
+      "category": "theorems",
+      "chain_hash": "4662f78b6f23e80a9c9d2181490dd0a5e9222e9ca44bed58b94ed46294feb3d7",
+      "edges": [
+        [
+          "db4356e29b092dda",
+          0.9920583046827461,
+          "AV"
+        ],
+        [
+          "43ac3311d70a66cb",
+          0.9883666307222229,
+          "UM"
+        ],
+        [
+          "3d4391b193be55c8",
+          0.9810477811475831,
+          "KO"
+        ],
+        [
+          "a609b9142dabdb9f",
+          0.9793912247208886,
+          "KO"
+        ],
+        [
+          "4ec356349f874209",
+          0.9788040168132754,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "340d2dbca6984807": {
+      "coords": [
+        0.06719413074728812,
+        0.05436119369680827,
+        0.6157078134931662,
+        0.5692778110690424,
+        0.23027771183771298,
+        0.37259716460497355
+      ],
+      "title": "Core Theorems v2.1 - Reference",
+      "source": "notion",
+      "category": "theorems",
+      "chain_hash": "a5148396d3059bb2b8ff69569b06256c9f4ba5e63e020ae6eeeee3cd17fe37ef",
+      "edges": [
+        [
+          "da68d04401917f03",
+          0.9863863419995887,
+          "KO"
+        ],
+        [
+          "db4356e29b092dda",
+          0.979330167492253,
+          "KO"
+        ],
+        [
+          "f884788cfddb62ff",
+          0.9732687491009847,
+          "KO"
+        ],
+        [
+          "3d4391b193be55c8",
+          0.9711278131186784,
+          "KO"
+        ],
+        [
+          "ee8b6f68ac60a1e6",
+          0.9703134997954028,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "07ce248646d84886": {
+      "coords": [
+        0.05432527123436062,
+        0.029300045101750813,
+        0.37926775077230146,
+        0.306834055793154,
+        0.1241169827948262,
+        0.8033019869724588
+      ],
+      "title": "\ud83e\uddea Interactive Test App - Core Theorems Demo",
+      "source": "notion",
+      "category": "theorems",
+      "chain_hash": "5a76dad5ac7142314894db7ba493d23f052656e17c1a0ba9535ff4b5abe196b8",
+      "edges": [
+        [
+          "6171de3226db639e",
+          0.9840984281039802,
+          "KO"
+        ],
+        [
+          "da8e2467edb9dceb",
+          0.9840117392509814,
+          "AV"
+        ],
+        [
+          "d3dc5238f3061b17",
+          0.9831267170846836,
+          "AV"
+        ],
+        [
+          "a609b9142dabdb9f",
+          0.9823520924059227,
+          "AV"
+        ],
+        [
+          "2f1e626fb4239613",
+          0.9817800094760291,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "43eb6c5165c6bc41": {
+      "coords": [
+        0.08950591724056203,
+        0.09654907752630974,
+        0.15621968902001776,
+        0.505537533092655,
+        0.40898845556634533,
+        0.6617572221126728
+      ],
+      "title": "\ud83c\udf4e Teacher's Hub - Complete K-12 Curriculum System",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "7c7789bfcc693f3b51dcce15c1f3753daf8d4abf1c5cbad4e985bd7e8e167ee8",
+      "edges": [
+        [
+          "123e41e9d1cdc2e5",
+          0.9988755663024573,
+          "AV"
+        ],
+        [
+          "8c3d153b178e6e38",
+          0.9953341274434113,
+          "KO"
+        ],
+        [
+          "f6ee0758daf2b6ed",
+          0.9953341274434113,
+          "KO"
+        ],
+        [
+          "b9ba1ef020ac0961",
+          0.9941492989616384,
+          "KO"
+        ],
+        [
+          "69f3c45d8cf34b6f",
+          0.9925222528106921,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "8a2602b57438ab26": {
+      "coords": [
+        0.09395358889496952,
+        0.0760100500985477,
+        0.12298684454603244,
+        0.3979937892891603,
+        0.32198373919061263,
+        0.7814709507527892
+      ],
+      "title": "\ud83d\udcd0 K-12 Math Mastery - Complete Curriculum Template",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "833055c47b9ecbb29832b9f0717f225f4a83526030f7513d12adebafe3bf3b00",
+      "edges": [
+        [
+          "13882557d72a8ed4",
+          0.9982088921037862,
+          "KO"
+        ],
+        [
+          "fd1d1d2c455fe4d5",
+          0.9961744965626342,
+          "AV"
+        ],
+        [
+          "6e4d198513ceaf19",
+          0.9926311084507512,
+          "KO"
+        ],
+        [
+          "eb46ec6875eec50f",
+          0.9923974972848751,
+          "AV"
+        ],
+        [
+          "fc58fac8525d768c",
+          0.992381470728275,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "211e69ade7c85674": {
+      "coords": [
+        0.09833887433750145,
+        0.10607709406232145,
+        0.2574545154309836,
+        0.48599851594521,
+        0.22467489065181648,
+        0.7270632189866102
+      ],
+      "title": "AETHERMOORE Cryptographic Security System",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "6d7dcc3e02566ee8a7c3f52324a2fc8cc61528dd40e80e4f865ff1583075155a",
+      "edges": [
+        [
+          "161b123f98d8d320",
+          0.9915903632004208,
+          "UM"
+        ],
+        [
+          "d3dc5238f3061b17",
+          0.9915448487066335,
+          "DR"
+        ],
+        [
+          "fe1eca7da86613ac",
+          0.990626742853782,
+          "KO"
+        ],
+        [
+          "f25eda239702d94f",
+          0.9898155225427493,
+          "KO"
+        ],
+        [
+          "6e4d198513ceaf19",
+          0.9882209937847553,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "d77b88b3de774c07": {
+      "coords": [
+        0.050194453496143626,
+        0.04060816590174319,
+        0.52564314119852,
+        0.531567792757791,
+        0.17201895120137323,
+        0.5566650195058629
+      ],
+      "title": "Part IV: The Convergence Theorem",
+      "source": "notion",
+      "category": "theorems",
+      "chain_hash": "cb96c2e217352f40c01bec2740c401bd0a91300541bea1adc26127dbc7eb0c1d",
+      "edges": [
+        [
+          "f884788cfddb62ff",
+          0.9958311774434148,
+          "KO"
+        ],
+        [
+          "db4356e29b092dda",
+          0.9930367991006267,
+          "AV"
+        ],
+        [
+          "43ac3311d70a66cb",
+          0.9868168618908595,
+          "UM"
+        ],
+        [
+          "a609b9142dabdb9f",
+          0.9790979220034725,
+          "KO"
+        ],
+        [
+          "3d4391b193be55c8",
+          0.9790140571048637,
+          "KO"
+        ]
+      ],
+      "scene_id": null
+    },
+    "695902be757dd4b5": {
+      "coords": [
+        0.02845606399853978,
+        0.0460428787356796,
+        0.22349682820265812,
+        0.8437927502892928,
+        0.19504076420411837,
+        0.31558258567401737
+      ],
+      "title": "Technical Appendix B: Hyperbolic Trust Geometry",
+      "source": "notion",
+      "category": "math",
+      "chain_hash": "6768a40e52a4c37d7dea5670f6a4ae7be7a71375d4ac8fd58cca73f4e008e9e1",
+      "edges": [
+        [
+          "3a8f383aef7240af",
+          0.9795945291626199,
+          "KO"
+        ],
+        [
+          "da68d04401917f03",
+          0.9764674384231393,
+          "AV"
+        ],
+        [
+          "340d2dbca6984807",
+          0.9680326868588791,
+          "AV"
+        ],
+        [
+          "015fc5c05c3a9430",
+          0.9649276293981321,
+          "RU"
+        ],
+        [
+          "db4356e29b092dda",
+          0.9649253191675239,
+          "AV"
+        ]
+      ],
+      "scene_id": null
+    },
+    "73b2fe97b320956f": {
+      "coords": [
+        0.07849698727958258,
+        0.05080431737313311,
+        0.08220311228496613,
+        0.46552600380334735,
+        0.4304210838861309,
+        0.6964359432023295
+      ],
+      "title": "\ud83d\udee0\ufe0f Aethermoore CLI - Complete Usage Guide",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "40f7735490e85766f65b5eb4485e4654ada4d350654a9eeade4f0cf57eeeb319",
+      "edges": [
+        [
+          "69f3c45d8cf34b6f",
+          0.9954044012890585,
+          "UM"
+        ],
+        [
+          "bc23475bb6f13f81",
+          0.9926580727030214,
+          "KO"
+        ],
+        [
+          "551beb0543bdc632",
+          0.9926580727030214,
+          "KO"
+        ],
+        [
+          "43eb6c5165c6bc41",
+          0.9926039324105435,
+          "KO"
+        ],
+        [
+          "d0193100ad349773",
+          0.9924942261268005,
+          "UM"
+        ]
+      ],
+      "scene_id": null
+    },
+    "ef53122a83fb5b22": {
+      "coords": [
+        0.09298463219521733,
+        0.0752261476616347,
+        0.18257769563886503,
+        0.3938892228417561,
+        0.3186630751801215,
+        0.7734115299014993
+      ],
+      "title": "\ud83d\udd10 AetherMoore Protocol \u2013 Harmonic Conlang Cipher System",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "b0906984fda752d605b505d22966b7af6e08cde3ebbfc33d2ec94a5ee24c023e",
+      "edges": [
+        [
+          "fd1d1d2c455fe4d5",
+          0.999118407626069,
+          "AV"
+        ],
+        [
+          "8a2602b57438ab26",
+          0.9963223902202949,
+          "KO"
+        ],
+        [
+          "13882557d72a8ed4",
+          0.9959785885724586,
+          "KO"
+        ],
+        [
+          "fc58fac8525d768c",
+          0.9958494506091586,
+          "KO"
+        ],
+        [
+          "eb46ec6875eec50f",
+          0.9932632570184822,
+          "RU"
+        ]
+      ],
+      "scene_id": null
+    },
+    "f32dd96fec407d33": {
+      "coords": [
+        0.07033438706865784,
+        0.1138034288549795,
+        0.12275854394909157,
+        0.39725499303815576,
+        0.3213860404681695,
+        0.7800203054808712
+      ],
+      "title": "\ud83d\udee3\ufe0f AetherMoore/EDE Realistic Roadmap",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "6bea3e2598b6aec3ab095c48168e691c80c247ba7606a8eb3301365917360106",
+      "edges": [
+        [
+          "13882557d72a8ed4",
+          0.9991236189315964,
+          "AV"
+        ],
+        [
+          "8a2602b57438ab26",
+          0.9980367348822485,
+          "RU"
+        ],
+        [
+          "ef53122a83fb5b22",
+          0.995861730207607,
+          "CA"
+        ],
+        [
+          "fd1d1d2c455fe4d5",
+          0.9955726585800125,
+          "CA"
+        ],
+        [
+          "fc58fac8525d768c",
+          0.992575329714771,
+          "AV"
+        ]
+      ],
+      "scene_id": null
+    },
+    "8c640362173fd8f7": {
+      "coords": [
+        0.062444417001742795,
+        0.10103718911649168,
+        0.21797547482431262,
+        0.5290375904694522,
+        0.2853336009019738,
+        0.6925191965876868
+      ],
+      "title": "\ud83d\udd0d AetherMoore/EDE Vulnerability Assessment",
+      "source": "notion",
+      "category": "scbe-general",
+      "chain_hash": "47de9619e7a1b467ae2b593e12d7bed837a382c786afd2aa7a8b906945d3052a",
+      "edges": [
+        [
+          "f25eda239702d94f",
+          0.9953497759819372,
+          "KO"
+        ],
+        [
+          "fe1eca7da86613ac",
+          0.9920351417365577,
+          "KO"
+        ],
+        [
+          "211e69ade7c85674",
+          0.9917057573872466,
+          "AV"
+        ],
+        [
+          "6e4d198513ceaf19",
+          0.989973661362271,
+          "KO"
+        ],
+        [
+          "8c3d153b178e6e38",
+          0.9874515348885121,
+          "AV"
+        ]
+      ],
+      "scene_id": null
+    }
+  },
+  "cords": [
+    {
+      "source": "f25eda239702d94f",
+      "target": "410a82d3bb4a70b9",
+      "weight": 0.9687057973402475,
+      "tongue": "KO"
+    },
+    {
+      "source": "6da831e738f765f6",
+      "target": "f25eda239702d94f",
+      "weight": 0.9835581836287426,
+      "tongue": "KO"
+    },
+    {
+      "source": "6da831e738f765f6",
+      "target": "410a82d3bb4a70b9",
+      "weight": 0.9617998663255226,
+      "tongue": "KO"
+    },
+    {
+      "source": "04c6ceb8148c6bb4",
+      "target": "6da831e738f765f6",
+      "weight": 0.9740726268735495,
+      "tongue": "KO"
+    },
+    {
+      "source": "04c6ceb8148c6bb4",
+      "target": "f25eda239702d94f",
+      "weight": 0.9686024709782514,
+      "tongue": "KO"
+    },
+    {
+      "source": "04c6ceb8148c6bb4",
+      "target": "410a82d3bb4a70b9",
+      "weight": 0.9448723219886102,
+      "tongue": "RU"
+    },
+    {
+      "source": "d7bebb6191bc78dd",
+      "target": "410a82d3bb4a70b9",
+      "weight": 0.9892928969180281,
+      "tongue": "CA"
+    },
+    {
+      "source": "d7bebb6191bc78dd",
+      "target": "f25eda239702d94f",
+      "weight": 0.9653358199977811,
+      "tongue": "KO"
+    },
+    {
+      "source": "d7bebb6191bc78dd",
+      "target": "6da831e738f765f6",
+      "weight": 0.9566300156937182,
+      "tongue": "KO"
+    },
+    {
+      "source": "d7bebb6191bc78dd",
+      "target": "04c6ceb8148c6bb4",
+      "weight": 0.9439085270442987,
+      "tongue": "KO"
+    },
+    {
+      "source": "d0193100ad349773",
+      "target": "6da831e738f765f6",
+      "weight": 0.9860202690126518,
+      "tongue": "KO"
+    },
+    {
+      "source": "d0193100ad349773",
+      "target": "f25eda239702d94f",
+      "weight": 0.982411960854175,
+      "tongue": "RU"
+    },
+    {
+      "source": "d0193100ad349773",
+      "target": "410a82d3bb4a70b9",
+      "weight": 0.9706584828495706,
+      "tongue": "AV"
+    },
+    {
+      "source": "d0193100ad349773",
+      "target": "04c6ceb8148c6bb4",
+      "weight": 0.9658434731571586,
+      "tongue": "KO"
+    },
+    {
+      "source": "d0193100ad349773",
+      "target": "d7bebb6191bc78dd",
+      "weight": 0.9642282080269134,
+      "tongue": "KO"
+    },
+    {
+      "source": "a6904bd9c47e67e8",
+      "target": "6da831e738f765f6",
+      "weight": 0.9834395627416533,
+      "tongue": "KO"
+    },
+    {
+      "source": "a6904bd9c47e67e8",
+      "target": "04c6ceb8148c6bb4",
+      "weight": 0.981885591318171,
+      "tongue": "KO"
+    },
+    {
+      "source": "a6904bd9c47e67e8",
+      "target": "f25eda239702d94f",
+      "weight": 0.9795408207675874,
+      "tongue": "KO"
+    },
+    {
+      "source": "a6904bd9c47e67e8",
+      "target": "d0193100ad349773",
+      "weight": 0.9733747092590557,
+      "tongue": "AV"
+    },
+    {
+      "source": "a6904bd9c47e67e8",
+      "target": "410a82d3bb4a70b9",
+      "weight": 0.95008397636509,
+      "tongue": "KO"
+    },
+    {
+      "source": "c79305fd0f220e51",
+      "target": "410a82d3bb4a70b9",
+      "weight": 0.9855727489590694,
+      "tongue": "RU"
+    },
+    {
+      "source": "c79305fd0f220e51",
+      "target": "d0193100ad349773",
+      "weight": 0.9845841766603539,
+      "tongue": "AV"
+    },
+    {
+      "source": "c79305fd0f220e51",
+      "target": "d7bebb6191bc78dd",
+      "weight": 0.9777121418994774,
+      "tongue": "KO"
+    },
+    {
+      "source": "c79305fd0f220e51",
+      "target": "f25eda239702d94f",
+      "weight": 0.9774518439214285,
+      "tongue": "KO"
+    },
+    {
+      "source": "c79305fd0f220e51",
+      "target": "6da831e738f765f6",
+      "weight": 0.973745596396929,
+      "tongue": "KO"
+    },
+    {
+      "source": "e9bdf8b0747dcffd",
+      "target": "a6904bd9c47e67e8",
+      "weight": 0.9908045895764079,
+      "tongue": "KO"
+    },
+    {
+      "source": "e9bdf8b0747dcffd",
+      "target": "6da831e738f765f6",
+      "weight": 0.987600674681157,
+      "tongue": "KO"
+    },
+    {
+      "source": "e9bdf8b0747dcffd",
+      "target": "f25eda239702d94f",
+      "weight": 0.985368510328657,
+      "tongue": "KO"
+    },
+    {
+      "source": "e9bdf8b0747dcffd",
+      "target": "d0193100ad349773",
+      "weight": 0.9815462074080589,
+      "tongue": "AV"
+    },
+    {
+      "source": "e9bdf8b0747dcffd",
+      "target": "04c6ceb8148c6bb4",
+      "weight": 0.977563015672689,
+      "tongue": "CA"
+    },
+    {
+      "source": "da8e2467edb9dceb",
+      "target": "c79305fd0f220e51",
+      "weight": 0.9748253606868773,
+      "tongue": "AV"
+    },
+    {
+      "source": "da8e2467edb9dceb",
+      "target": "410a82d3bb4a70b9",
+      "weight": 0.973326973861665,
+      "tongue": "AV"
+    },
+    {
+      "source": "da8e2467edb9dceb",
+      "target": "f25eda239702d94f",
+      "weight": 0.9731472018885882,
+      "tongue": "AV"
+    },
+    {
+      "source": "da8e2467edb9dceb",
+      "target": "6da831e738f765f6",
+      "weight": 0.9729352028899304,
+      "tongue": "AV"
+    },
+    {
+      "source": "da8e2467edb9dceb",
+      "target": "d0193100ad349773",
+      "weight": 0.9722305561428043,
+      "tongue": "AV"
+    },
+    {
+      "source": "5e29b9e87fc60bea",
+      "target": "d0193100ad349773",
+      "weight": 0.9621606135414146,
+      "tongue": "KO"
+    },
+    {
+      "source": "5e29b9e87fc60bea",
+      "target": "6da831e738f765f6",
+      "weight": 0.9560019855918998,
+      "tongue": "KO"
+    },
+    {
+      "source": "5e29b9e87fc60bea",
+      "target": "c79305fd0f220e51",
+      "weight": 0.9552226910756322,
+      "tongue": "KO"
+    },
+    {
+      "source": "5e29b9e87fc60bea",
+      "target": "e9bdf8b0747dcffd",
+      "weight": 0.9521602563704913,
+      "tongue": "KO"
+    },
+    {
+      "source": "5e29b9e87fc60bea",
+      "target": "a6904bd9c47e67e8",
+      "weight": 0.946600939804358,
+      "tongue": "KO"
+    },
+    {
+      "source": "8c3d153b178e6e38",
+      "target": "6da831e738f765f6",
+      "weight": 0.9947645759765092,
+      "tongue": "KO"
+    },
+    {
+      "source": "8c3d153b178e6e38",
+      "target": "e9bdf8b0747dcffd",
+      "weight": 0.9902650601842068,
+      "tongue": "KO"
+    },
+    {
+      "source": "8c3d153b178e6e38",
+      "target": "d0193100ad349773",
+      "weight": 0.9891380902007619,
+      "tongue": "AV"
+    },
+    {
+      "source": "8c3d153b178e6e38",
+      "target": "f25eda239702d94f",
+      "weight": 0.98624810288659,
+      "tongue": "KO"
+    },
+    {
+      "source": "8c3d153b178e6e38",
+      "target": "a6904bd9c47e67e8",
+      "weight": 0.983418830283545,
+      "tongue": "KO"
+    },
+    {
+      "source": "99bd800c3c58164b",
+      "target": "04c6ceb8148c6bb4",
+      "weight": 0.9917488831802314,
+      "tongue": "KO"
+    },
+    {
+      "source": "99bd800c3c58164b",
+      "target": "a6904bd9c47e67e8",
+      "weight": 0.9777805193514346,
+      "tongue": "RU"
+    },
+    {
+      "source": "99bd800c3c58164b",
+      "target": "e9bdf8b0747dcffd",
+      "weight": 0.9725364882313046,
+      "tongue": "KO"
+    },
+    {
+      "source": "99bd800c3c58164b",
+      "target": "6da831e738f765f6",
+      "weight": 0.9720338295000435,
+      "tongue": "KO"
+    },
+    {
+      "source": "99bd800c3c58164b",
+      "target": "8c3d153b178e6e38",
+      "weight": 0.9694103182944946,
+      "tongue": "RU"
+    },
+    {
+      "source": "95a98c428f82f2ff",
+      "target": "f25eda239702d94f",
+      "weight": 0.9817335804544608,
+      "tongue": "AV"
+    },
+    {
+      "source": "95a98c428f82f2ff",
+      "target": "e9bdf8b0747dcffd",
+      "weight": 0.971481161621495,
+      "tongue": "KO"
+    },
+    {
+      "source": "95a98c428f82f2ff",
+      "target": "a6904bd9c47e67e8",
+      "weight": 0.9702589564842323,
+      "tongue": "KO"
+    },
+    {
+      "source": "95a98c428f82f2ff",
+      "target": "8c3d153b178e6e38",
+      "weight": 0.9691110149874776,
+      "tongue": "KO"
+    },
+    {
+      "source": "95a98c428f82f2ff",
+      "target": "6da831e738f765f6",
+      "weight": 0.9678665811374569,
+      "tongue": "KO"
+    },
+    {
+      "source": "65d989da60342547",
+      "target": "410a82d3bb4a70b9",
+      "weight": 0.991277593860229,
+      "tongue": "RU"
+    },
+    {
+      "source": "65d989da60342547",
+      "target": "c79305fd0f220e51",
+      "weight": 0.9883370518373015,
+      "tongue": "AV"
+    },
+    {
+      "source": "65d989da60342547",
+      "target": "d7bebb6191bc78dd",
+      "weight": 0.9869174681856324,
+      "tongue": "KO"
+    },
+    {
+      "source": "65d989da60342547",
+      "target": "da8e2467edb9dceb",
+      "weight": 0.9770409363373934,
+      "tongue": "AV"
+    },
+    {
+      "source": "65d989da60342547",
+      "target": "f25eda239702d94f",
+      "weight": 0.9767225726153381,
+      "tongue": "KO"
+    },
+    {
+      "source": "13882557d72a8ed4",
+      "target": "c79305fd0f220e51",
+      "weight": 0.9909770517859663,
+      "tongue": "KO"
+    },
+    {
+      "source": "13882557d72a8ed4",
+      "target": "65d989da60342547",
+      "weight": 0.98898983223982,
+      "tongue": "KO"
+    },
+    {
+      "source": "13882557d72a8ed4",
+      "target": "d0193100ad349773",
+      "weight": 0.9855296557433697,
+      "tongue": "AV"
+    },
+    {
+      "source": "13882557d72a8ed4",
+      "target": "f25eda239702d94f",
+      "weight": 0.9850362701164714,
+      "tongue": "KO"
+    },
+    {
+      "source": "13882557d72a8ed4",
+      "target": "410a82d3bb4a70b9",
+      "weight": 0.9818135366281252,
+      "tongue": "RU"
+    },
+    {
+      "source": "015fc5c05c3a9430",
+      "target": "a6904bd9c47e67e8",
+      "weight": 0.9881102584505351,
+      "tongue": "AV"
+    },
+    {
+      "source": "015fc5c05c3a9430",
+      "target": "04c6ceb8148c6bb4",
+      "weight": 0.9830836231100526,
+      "tongue": "UM"
+    },
+    {
+      "source": "015fc5c05c3a9430",
+      "target": "e9bdf8b0747dcffd",
+      "weight": 0.9826786265506773,
+      "tongue": "CA"
+    },
+    {
+      "source": "015fc5c05c3a9430",
+      "target": "99bd800c3c58164b",
+      "weight": 0.9821039188071118,
+      "tongue": "RU"
+    },
+    {
+      "source": "015fc5c05c3a9430",
+      "target": "6da831e738f765f6",
+      "weight": 0.9799014001142355,
+      "tongue": "AV"
+    },
+    {
+      "source": "bc23475bb6f13f81",
+      "target": "d0193100ad349773",
+      "weight": 0.9987893895101234,
+      "tongue": "AV"
+    },
+    {
+      "source": "bc23475bb6f13f81",
+      "target": "8c3d153b178e6e38",
+      "weight": 0.9890624257690194,
+      "tongue": "KO"
+    },
+    {
+      "source": "bc23475bb6f13f81",
+      "target": "6da831e738f765f6",
+      "weight": 0.985908358987307,
+      "tongue": "KO"
+    },
+    {
+      "source": "bc23475bb6f13f81",
+      "target": "13882557d72a8ed4",
+      "weight": 0.9856511197335406,
+      "tongue": "KO"
+    },
+    {
+      "source": "bc23475bb6f13f81",
+      "target": "c79305fd0f220e51",
+      "weight": 0.9848652947366691,
+      "tongue": "AV"
+    },
+    {
+      "source": "f6ee0758daf2b6ed",
+      "target": "8c3d153b178e6e38",
+      "weight": 1.0,
+      "tongue": "KO"
+    },
+    {
+      "source": "f6ee0758daf2b6ed",
+      "target": "6da831e738f765f6",
+      "weight": 0.9947645759765092,
+      "tongue": "KO"
+    },
+    {
+      "source": "f6ee0758daf2b6ed",
+      "target": "e9bdf8b0747dcffd",
+      "weight": 0.9902650601842068,
+      "tongue": "KO"
+    },
+    {
+      "source": "f6ee0758daf2b6ed",
+      "target": "d0193100ad349773",
+      "weight": 0.9891380902007619,
+      "tongue": "AV"
+    },
+    {
+      "source": "f6ee0758daf2b6ed",
+      "target": "bc23475bb6f13f81",
+      "weight": 0.9890624257690194,
+      "tongue": "KO"
+    },
+    {
+      "source": "43ac3311d70a66cb",
+      "target": "da8e2467edb9dceb",
+      "weight": 0.9797348611987432,
+      "tongue": "KO"
+    },
+    {
+      "source": "43ac3311d70a66cb",
+      "target": "6da831e738f765f6",
+      "weight": 0.9781870553239042,
+      "tongue": "AV"
+    },
+    {
+      "source": "43ac3311d70a66cb",
+      "target": "015fc5c05c3a9430",
+      "weight": 0.9773225333848832,
+      "tongue": "AV"
+    },
+    {
+      "source": "43ac3311d70a66cb",
+      "target": "f25eda239702d94f",
+      "weight": 0.976389120715717,
+      "tongue": "AV"
+    },
+    {
+      "source": "43ac3311d70a66cb",
+      "target": "8c3d153b178e6e38",
+      "weight": 0.9751096726743422,
+      "tongue": "AV"
+    },
+    {
+      "source": "c25f91e845f03c3d",
+      "target": "65d989da60342547",
+      "weight": 0.993266442201573,
+      "tongue": "KO"
+    },
+    {
+      "source": "c25f91e845f03c3d",
+      "target": "13882557d72a8ed4",
+      "weight": 0.9912640520211341,
+      "tongue": "CA"
+    },
+    {
+      "source": "c25f91e845f03c3d",
+      "target": "c79305fd0f220e51",
+      "weight": 0.9865277212525961,
+      "tongue": "KO"
+    },
+    {
+      "source": "c25f91e845f03c3d",
+      "target": "410a82d3bb4a70b9",
+      "weight": 0.9855458239009899,
+      "tongue": "AV"
+    },
+    {
+      "source": "c25f91e845f03c3d",
+      "target": "d7bebb6191bc78dd",
+      "weight": 0.9829098518086389,
+      "tongue": "KO"
+    },
+    {
+      "source": "fc58fac8525d768c",
+      "target": "13882557d72a8ed4",
+      "weight": 0.992678535228545,
+      "tongue": "KO"
+    },
+    {
+      "source": "fc58fac8525d768c",
+      "target": "c79305fd0f220e51",
+      "weight": 0.9886692891365471,
+      "tongue": "KO"
+    },
+    {
+      "source": "fc58fac8525d768c",
+      "target": "c25f91e845f03c3d",
+      "weight": 0.9872684305484999,
+      "tongue": "CA"
+    },
+    {
+      "source": "fc58fac8525d768c",
+      "target": "65d989da60342547",
+      "weight": 0.9870281936143158,
+      "tongue": "KO"
+    },
+    {
+      "source": "fc58fac8525d768c",
+      "target": "bc23475bb6f13f81",
+      "weight": 0.9858160480084267,
+      "tongue": "KO"
+    },
+    {
+      "source": "096082fefdaeec41",
+      "target": "c79305fd0f220e51",
+      "weight": 0.9949766749796396,
+      "tongue": "CA"
+    },
+    {
+      "source": "096082fefdaeec41",
+      "target": "65d989da60342547",
+      "weight": 0.9915641644686752,
+      "tongue": "KO"
+    },
+    {
+      "source": "096082fefdaeec41",
+      "target": "13882557d72a8ed4",
+      "weight": 0.9913812575459114,
+      "tongue": "KO"
+    },
+    {
+      "source": "096082fefdaeec41",
+      "target": "fc58fac8525d768c",
+      "weight": 0.9911126715045365,
+      "tongue": "KO"
+    },
+    {
+      "source": "096082fefdaeec41",
+      "target": "c25f91e845f03c3d",
+      "weight": 0.9885208833684564,
+      "tongue": "AV"
+    },
+    {
+      "source": "551beb0543bdc632",
+      "target": "bc23475bb6f13f81",
+      "weight": 1.0,
+      "tongue": "KO"
+    },
+    {
+      "source": "551beb0543bdc632",
+      "target": "d0193100ad349773",
+      "weight": 0.9987893895101234,
+      "tongue": "AV"
+    },
+    {
+      "source": "551beb0543bdc632",
+      "target": "8c3d153b178e6e38",
+      "weight": 0.9890624257690194,
+      "tongue": "KO"
+    },
+    {
+      "source": "551beb0543bdc632",
+      "target": "f6ee0758daf2b6ed",
+      "weight": 0.9890624257690194,
+      "tongue": "KO"
+    },
+    {
+      "source": "551beb0543bdc632",
+      "target": "6da831e738f765f6",
+      "weight": 0.985908358987307,
+      "tongue": "KO"
+    },
+    {
+      "source": "a926bfc2d974372b",
+      "target": "c79305fd0f220e51",
+      "weight": 0.9960081798493559,
+      "tongue": "AV"
+    },
+    {
+      "source": "a926bfc2d974372b",
+      "target": "096082fefdaeec41",
+      "weight": 0.9960030193227225,
+      "tongue": "AV"
+    },
+    {
+      "source": "a926bfc2d974372b",
+      "target": "65d989da60342547",
+      "weight": 0.9920544730220867,
+      "tongue": "KO"
+    },
+    {
+      "source": "a926bfc2d974372b",
+      "target": "13882557d72a8ed4",
+      "weight": 0.9918722004384792,
+      "tongue": "RU"
+    },
+    {
+      "source": "a926bfc2d974372b",
+      "target": "c25f91e845f03c3d",
+      "weight": 0.9898406055753092,
+      "tongue": "KO"
+    },
+    {
+      "source": "21f52496221b059a",
+      "target": "410a82d3bb4a70b9",
+      "weight": 0.9811793401095942,
+      "tongue": "KO"
+    },
+    {
+      "source": "21f52496221b059a",
+      "target": "d7bebb6191bc78dd",
+      "weight": 0.9773953777521892,
+      "tongue": "KO"
+    },
+    {
+      "source": "21f52496221b059a",
+      "target": "65d989da60342547",
+      "weight": 0.9763994801001675,
+      "tongue": "KO"
+    },
+    {
+      "source": "21f52496221b059a",
+      "target": "da8e2467edb9dceb",
+      "weight": 0.9762098516151947,
+      "tongue": "AV"
+    },
+    {
+      "source": "21f52496221b059a",
+      "target": "096082fefdaeec41",
+      "weight": 0.9753690670636639,
+      "tongue": "KO"
+    },
+    {
+      "source": "a5a4ae11b6f890c8",
+      "target": "410a82d3bb4a70b9",
+      "weight": 0.9926448752151137,
+      "tongue": "UM"
+    },
+    {
+      "source": "a5a4ae11b6f890c8",
+      "target": "d7bebb6191bc78dd",
+      "weight": 0.9901291938685288,
+      "tongue": "KO"
+    },
+    {
+      "source": "a5a4ae11b6f890c8",
+      "target": "65d989da60342547",
+      "weight": 0.9860420339934204,
+      "tongue": "KO"
+    },
+    {
+      "source": "a5a4ae11b6f890c8",
+      "target": "a926bfc2d974372b",
+      "weight": 0.9844827694047877,
+      "tongue": "KO"
+    },
+    {
+      "source": "a5a4ae11b6f890c8",
+      "target": "096082fefdaeec41",
+      "weight": 0.9827266578533985,
+      "tongue": "KO"
+    },
+    {
+      "source": "f7d0b9c6350cf697",
+      "target": "bc23475bb6f13f81",
+      "weight": 0.9886690776561757,
+      "tongue": "RU"
+    },
+    {
+      "source": "f7d0b9c6350cf697",
+      "target": "551beb0543bdc632",
+      "weight": 0.9886690776561757,
+      "tongue": "RU"
+    },
+    {
+      "source": "f7d0b9c6350cf697",
+      "target": "d0193100ad349773",
+      "weight": 0.9884750455190009,
+      "tongue": "RU"
+    },
+    {
+      "source": "f7d0b9c6350cf697",
+      "target": "8c3d153b178e6e38",
+      "weight": 0.9810549969727446,
+      "tongue": "KO"
+    },
+    {
+      "source": "f7d0b9c6350cf697",
+      "target": "f6ee0758daf2b6ed",
+      "weight": 0.9810549969727446,
+      "tongue": "KO"
+    },
+    {
+      "source": "6cb5c6ff80dd1ada",
+      "target": "c25f91e845f03c3d",
+      "weight": 0.997551490699853,
+      "tongue": "RU"
+    },
+    {
+      "source": "6cb5c6ff80dd1ada",
+      "target": "65d989da60342547",
+      "weight": 0.9945622316717889,
+      "tongue": "KO"
+    },
+    {
+      "source": "6cb5c6ff80dd1ada",
+      "target": "a926bfc2d974372b",
+      "weight": 0.9907252296275346,
+      "tongue": "KO"
+    },
+    {
+      "source": "6cb5c6ff80dd1ada",
+      "target": "13882557d72a8ed4",
+      "weight": 0.9904468380862745,
+      "tongue": "KO"
+    },
+    {
+      "source": "6cb5c6ff80dd1ada",
+      "target": "096082fefdaeec41",
+      "weight": 0.9893297318774298,
+      "tongue": "KO"
+    },
+    {
+      "source": "d3dc5238f3061b17",
+      "target": "95a98c428f82f2ff",
+      "weight": 0.983509017519536,
+      "tongue": "AV"
+    },
+    {
+      "source": "d3dc5238f3061b17",
+      "target": "f25eda239702d94f",
+      "weight": 0.9827866098980776,
+      "tongue": "AV"
+    },
+    {
+      "source": "d3dc5238f3061b17",
+      "target": "43ac3311d70a66cb",
+      "weight": 0.9825146620773689,
+      "tongue": "CA"
+    },
+    {
+      "source": "d3dc5238f3061b17",
+      "target": "fc58fac8525d768c",
+      "weight": 0.9822968111957895,
+      "tongue": "AV"
+    },
+    {
+      "source": "d3dc5238f3061b17",
+      "target": "da8e2467edb9dceb",
+      "weight": 0.981967558167067,
+      "tongue": "AV"
+    },
+    {
+      "source": "69f3c45d8cf34b6f",
+      "target": "bc23475bb6f13f81",
+      "weight": 0.9949662920541184,
+      "tongue": "KO"
+    },
+    {
+      "source": "69f3c45d8cf34b6f",
+      "target": "551beb0543bdc632",
+      "weight": 0.9949662920541184,
+      "tongue": "KO"
+    },
+    {
+      "source": "69f3c45d8cf34b6f",
+      "target": "d0193100ad349773",
+      "weight": 0.9946137264065189,
+      "tongue": "UM"
+    },
+    {
+      "source": "69f3c45d8cf34b6f",
+      "target": "8c3d153b178e6e38",
+      "weight": 0.9895065890331798,
+      "tongue": "KO"
+    },
+    {
+      "source": "69f3c45d8cf34b6f",
+      "target": "f6ee0758daf2b6ed",
+      "weight": 0.9895065890331798,
+      "tongue": "KO"
+    },
+    {
+      "source": "e676217bec1cf326",
+      "target": "d0193100ad349773",
+      "weight": 1.0,
+      "tongue": "KO"
+    },
+    {
+      "source": "e676217bec1cf326",
+      "target": "bc23475bb6f13f81",
+      "weight": 0.9987893895101234,
+      "tongue": "AV"
+    },
+    {
+      "source": "e676217bec1cf326",
+      "target": "551beb0543bdc632",
+      "weight": 0.9987893895101234,
+      "tongue": "AV"
+    },
+    {
+      "source": "e676217bec1cf326",
+      "target": "69f3c45d8cf34b6f",
+      "weight": 0.9946137264065189,
+      "tongue": "UM"
+    },
+    {
+      "source": "e676217bec1cf326",
+      "target": "8c3d153b178e6e38",
+      "weight": 0.9891380902007619,
+      "tongue": "AV"
+    },
+    {
+      "source": "e747c039d33de64e",
+      "target": "f7d0b9c6350cf697",
+      "weight": 0.9888549440491454,
+      "tongue": "KO"
+    },
+    {
+      "source": "e747c039d33de64e",
+      "target": "d0193100ad349773",
+      "weight": 0.9823459768799209,
+      "tongue": "KO"
+    },
+    {
+      "source": "e747c039d33de64e",
+      "target": "e676217bec1cf326",
+      "weight": 0.9823459768799209,
+      "tongue": "KO"
+    },
+    {
+      "source": "e747c039d33de64e",
+      "target": "bc23475bb6f13f81",
+      "weight": 0.9823059804824036,
+      "tongue": "KO"
+    },
+    {
+      "source": "e747c039d33de64e",
+      "target": "551beb0543bdc632",
+      "weight": 0.9823059804824036,
+      "tongue": "KO"
+    },
+    {
+      "source": "a578894d31c4eb05",
+      "target": "da8e2467edb9dceb",
+      "weight": 0.9876795941270343,
+      "tongue": "AV"
+    },
+    {
+      "source": "a578894d31c4eb05",
+      "target": "21f52496221b059a",
+      "weight": 0.9859214877005958,
+      "tongue": "RU"
+    },
+    {
+      "source": "a578894d31c4eb05",
+      "target": "096082fefdaeec41",
+      "weight": 0.9804324334976281,
+      "tongue": "AV"
+    },
+    {
+      "source": "a578894d31c4eb05",
+      "target": "410a82d3bb4a70b9",
+      "weight": 0.9794023508628537,
+      "tongue": "AV"
+    },
+    {
+      "source": "a578894d31c4eb05",
+      "target": "65d989da60342547",
+      "weight": 0.9789844132747871,
+      "tongue": "AV"
+    },
+    {
+      "source": "bfb681ff654a714d",
+      "target": "da8e2467edb9dceb",
+      "weight": 0.9886934434132001,
+      "tongue": "AV"
+    },
+    {
+      "source": "bfb681ff654a714d",
+      "target": "a578894d31c4eb05",
+      "weight": 0.9820481382584615,
+      "tongue": "AV"
+    },
+    {
+      "source": "bfb681ff654a714d",
+      "target": "fc58fac8525d768c",
+      "weight": 0.9807010583020256,
+      "tongue": "KO"
+    },
+    {
+      "source": "bfb681ff654a714d",
+      "target": "096082fefdaeec41",
+      "weight": 0.9773792906724713,
+      "tongue": "AV"
+    },
+    {
+      "source": "bfb681ff654a714d",
+      "target": "43ac3311d70a66cb",
+      "weight": 0.9773647663060887,
+      "tongue": "AV"
+    },
+    {
+      "source": "adacc85562e2c181",
+      "target": "a6904bd9c47e67e8",
+      "weight": 0.9956795413170175,
+      "tongue": "KO"
+    },
+    {
+      "source": "adacc85562e2c181",
+      "target": "e9bdf8b0747dcffd",
+      "weight": 0.9886217330360094,
+      "tongue": "KO"
+    },
+    {
+      "source": "adacc85562e2c181",
+      "target": "015fc5c05c3a9430",
+      "weight": 0.9885697978578027,
+      "tongue": "RU"
+    },
+    {
+      "source": "adacc85562e2c181",
+      "target": "6da831e738f765f6",
+      "weight": 0.9839956274726085,
+      "tongue": "KO"
+    },
+    {
+      "source": "adacc85562e2c181",
+      "target": "8c3d153b178e6e38",
+      "weight": 0.9831314090359513,
+      "tongue": "KO"
+    },
+    {
+      "source": "6e4d198513ceaf19",
+      "target": "13882557d72a8ed4",
+      "weight": 0.9925316957467301,
+      "tongue": "KO"
+    },
+    {
+      "source": "6e4d198513ceaf19",
+      "target": "f25eda239702d94f",
+      "weight": 0.9920747086889853,
+      "tongue": "KO"
+    },
+    {
+      "source": "6e4d198513ceaf19",
+      "target": "fc58fac8525d768c",
+      "weight": 0.9899282533411026,
+      "tongue": "KO"
+    },
+    {
+      "source": "6e4d198513ceaf19",
+      "target": "c25f91e845f03c3d",
+      "weight": 0.9878212384226761,
+      "tongue": "AV"
+    },
+    {
+      "source": "6e4d198513ceaf19",
+      "target": "6cb5c6ff80dd1ada",
+      "weight": 0.9862761822166438,
+      "tongue": "KO"
+    },
+    {
+      "source": "1aa0279954fbebad",
+      "target": "bc23475bb6f13f81",
+      "weight": 0.9952867348390968,
+      "tongue": "AV"
+    },
+    {
+      "source": "1aa0279954fbebad",
+      "target": "551beb0543bdc632",
+      "weight": 0.9952867348390968,
+      "tongue": "AV"
+    },
+    {
+      "source": "1aa0279954fbebad",
+      "target": "d0193100ad349773",
+      "weight": 0.9950392775770524,
+      "tongue": "AV"
+    },
+    {
+      "source": "1aa0279954fbebad",
+      "target": "e676217bec1cf326",
+      "weight": 0.9950392775770524,
+      "tongue": "AV"
+    },
+    {
+      "source": "1aa0279954fbebad",
+      "target": "69f3c45d8cf34b6f",
+      "weight": 0.9905182120062221,
+      "tongue": "KO"
+    },
+    {
+      "source": "fd1d1d2c455fe4d5",
+      "target": "13882557d72a8ed4",
+      "weight": 0.9958640603734856,
+      "tongue": "CA"
+    },
+    {
+      "source": "fd1d1d2c455fe4d5",
+      "target": "fc58fac8525d768c",
+      "weight": 0.9958389680610163,
+      "tongue": "KO"
+    },
+    {
+      "source": "fd1d1d2c455fe4d5",
+      "target": "096082fefdaeec41",
+      "weight": 0.9922726838972867,
+      "tongue": "AV"
+    },
+    {
+      "source": "fd1d1d2c455fe4d5",
+      "target": "6e4d198513ceaf19",
+      "weight": 0.9919947501107972,
+      "tongue": "AV"
+    },
+    {
+      "source": "fd1d1d2c455fe4d5",
+      "target": "a926bfc2d974372b",
+      "weight": 0.9909844673262598,
+      "tongue": "AV"
+    },
+    {
+      "source": "ee8b6f68ac60a1e6",
+      "target": "bfb681ff654a714d",
+      "weight": 0.9777449574158089,
+      "tongue": "KO"
+    },
+    {
+      "source": "ee8b6f68ac60a1e6",
+      "target": "43ac3311d70a66cb",
+      "weight": 0.9751491229588849,
+      "tongue": "AV"
+    },
+    {
+      "source": "ee8b6f68ac60a1e6",
+      "target": "6da831e738f765f6",
+      "weight": 0.9725585772378353,
+      "tongue": "KO"
+    },
+    {
+      "source": "ee8b6f68ac60a1e6",
+      "target": "da8e2467edb9dceb",
+      "weight": 0.9713482991760863,
+      "tongue": "AV"
+    },
+    {
+      "source": "ee8b6f68ac60a1e6",
+      "target": "8c3d153b178e6e38",
+      "weight": 0.9681864910887392,
+      "tongue": "KO"
+    },
+    {
+      "source": "6171de3226db639e",
+      "target": "21f52496221b059a",
+      "weight": 0.9942671444252846,
+      "tongue": "KO"
+    },
+    {
+      "source": "6171de3226db639e",
+      "target": "a578894d31c4eb05",
+      "weight": 0.9891266687200942,
+      "tongue": "AV"
+    },
+    {
+      "source": "6171de3226db639e",
+      "target": "410a82d3bb4a70b9",
+      "weight": 0.9815591908293853,
+      "tongue": "KO"
+    },
+    {
+      "source": "6171de3226db639e",
+      "target": "da8e2467edb9dceb",
+      "weight": 0.9812891505830057,
+      "tongue": "AV"
+    },
+    {
+      "source": "6171de3226db639e",
+      "target": "65d989da60342547",
+      "weight": 0.9788805265455462,
+      "tongue": "KO"
+    },
+    {
+      "source": "fe1eca7da86613ac",
+      "target": "6e4d198513ceaf19",
+      "weight": 0.9965020759386245,
+      "tongue": "KO"
+    },
+    {
+      "source": "fe1eca7da86613ac",
+      "target": "f25eda239702d94f",
+      "weight": 0.9929854290161312,
+      "tongue": "RU"
+    },
+    {
+      "source": "fe1eca7da86613ac",
+      "target": "fd1d1d2c455fe4d5",
+      "weight": 0.9927576953906913,
+      "tongue": "AV"
+    },
+    {
+      "source": "fe1eca7da86613ac",
+      "target": "fc58fac8525d768c",
+      "weight": 0.991984809225822,
+      "tongue": "KO"
+    },
+    {
+      "source": "fe1eca7da86613ac",
+      "target": "13882557d72a8ed4",
+      "weight": 0.9916539418172978,
+      "tongue": "KO"
+    },
+    {
+      "source": "3a8f383aef7240af",
+      "target": "99bd800c3c58164b",
+      "weight": 0.9806356609191651,
+      "tongue": "KO"
+    },
+    {
+      "source": "3a8f383aef7240af",
+      "target": "04c6ceb8148c6bb4",
+      "weight": 0.9794487976303702,
+      "tongue": "KO"
+    },
+    {
+      "source": "3a8f383aef7240af",
+      "target": "015fc5c05c3a9430",
+      "weight": 0.9746382682730215,
+      "tongue": "RU"
+    },
+    {
+      "source": "3a8f383aef7240af",
+      "target": "a6904bd9c47e67e8",
+      "weight": 0.9718315802485996,
+      "tongue": "KO"
+    },
+    {
+      "source": "3a8f383aef7240af",
+      "target": "adacc85562e2c181",
+      "weight": 0.9711892254742809,
+      "tongue": "KO"
+    },
+    {
+      "source": "e9bb45c914cfdfe0",
+      "target": "e9bdf8b0747dcffd",
+      "weight": 0.9842641757211354,
+      "tongue": "KO"
+    },
+    {
+      "source": "e9bb45c914cfdfe0",
+      "target": "8c3d153b178e6e38",
+      "weight": 0.9837356628411986,
+      "tongue": "KO"
+    },
+    {
+      "source": "e9bb45c914cfdfe0",
+      "target": "f6ee0758daf2b6ed",
+      "weight": 0.9837356628411986,
+      "tongue": "KO"
+    },
+    {
+      "source": "e9bb45c914cfdfe0",
+      "target": "e747c039d33de64e",
+      "weight": 0.9836994921363811,
+      "tongue": "KO"
+    },
+    {
+      "source": "e9bb45c914cfdfe0",
+      "target": "6da831e738f765f6",
+      "weight": 0.9833359233697918,
+      "tongue": "KO"
+    },
+    {
+      "source": "dffc3551714eeae7",
+      "target": "d7bebb6191bc78dd",
+      "weight": 0.9875168360797552,
+      "tongue": "KO"
+    },
+    {
+      "source": "dffc3551714eeae7",
+      "target": "a5a4ae11b6f890c8",
+      "weight": 0.9840601069047114,
+      "tongue": "RU"
+    },
+    {
+      "source": "dffc3551714eeae7",
+      "target": "410a82d3bb4a70b9",
+      "weight": 0.9820498461477556,
+      "tongue": "AV"
+    },
+    {
+      "source": "dffc3551714eeae7",
+      "target": "21f52496221b059a",
+      "weight": 0.9772654243487302,
+      "tongue": "KO"
+    },
+    {
+      "source": "dffc3551714eeae7",
+      "target": "65d989da60342547",
+      "weight": 0.9764667554262088,
+      "tongue": "KO"
+    },
+    {
+      "source": "b9ba1ef020ac0961",
+      "target": "8c3d153b178e6e38",
+      "weight": 0.9967657920404315,
+      "tongue": "RU"
+    },
+    {
+      "source": "b9ba1ef020ac0961",
+      "target": "f6ee0758daf2b6ed",
+      "weight": 0.9967657920404315,
+      "tongue": "RU"
+    },
+    {
+      "source": "b9ba1ef020ac0961",
+      "target": "6da831e738f765f6",
+      "weight": 0.9950726392667744,
+      "tongue": "AV"
+    },
+    {
+      "source": "b9ba1ef020ac0961",
+      "target": "e9bdf8b0747dcffd",
+      "weight": 0.9899859191133852,
+      "tongue": "KO"
+    },
+    {
+      "source": "b9ba1ef020ac0961",
+      "target": "69f3c45d8cf34b6f",
+      "weight": 0.9888388170334271,
+      "tongue": "AV"
+    },
+    {
+      "source": "72454b015db5574c",
+      "target": "bc23475bb6f13f81",
+      "weight": 0.9975469698024367,
+      "tongue": "KO"
+    },
+    {
+      "source": "72454b015db5574c",
+      "target": "551beb0543bdc632",
+      "weight": 0.9975469698024367,
+      "tongue": "KO"
+    },
+    {
+      "source": "72454b015db5574c",
+      "target": "d0193100ad349773",
+      "weight": 0.997344804752993,
+      "tongue": "RU"
+    },
+    {
+      "source": "72454b015db5574c",
+      "target": "e676217bec1cf326",
+      "weight": 0.997344804752993,
+      "tongue": "RU"
+    },
+    {
+      "source": "72454b015db5574c",
+      "target": "69f3c45d8cf34b6f",
+      "weight": 0.9951871671399605,
+      "tongue": "UM"
+    },
+    {
+      "source": "28bef17a57b73443",
+      "target": "d0193100ad349773",
+      "weight": 1.0,
+      "tongue": "KO"
+    },
+    {
+      "source": "28bef17a57b73443",
+      "target": "e676217bec1cf326",
+      "weight": 1.0,
+      "tongue": "KO"
+    },
+    {
+      "source": "28bef17a57b73443",
+      "target": "bc23475bb6f13f81",
+      "weight": 0.9987893895101234,
+      "tongue": "AV"
+    },
+    {
+      "source": "28bef17a57b73443",
+      "target": "551beb0543bdc632",
+      "weight": 0.9987893895101234,
+      "tongue": "AV"
+    },
+    {
+      "source": "28bef17a57b73443",
+      "target": "72454b015db5574c",
+      "weight": 0.997344804752993,
+      "tongue": "RU"
+    },
+    {
+      "source": "5f1143b90fde99d5",
+      "target": "dffc3551714eeae7",
+      "weight": 0.997302954239371,
+      "tongue": "DR"
+    },
+    {
+      "source": "5f1143b90fde99d5",
+      "target": "d7bebb6191bc78dd",
+      "weight": 0.9871198706224525,
+      "tongue": "KO"
+    },
+    {
+      "source": "5f1143b90fde99d5",
+      "target": "a5a4ae11b6f890c8",
+      "weight": 0.9828684177904528,
+      "tongue": "RU"
+    },
+    {
+      "source": "5f1143b90fde99d5",
+      "target": "410a82d3bb4a70b9",
+      "weight": 0.9815849718252425,
+      "tongue": "KO"
+    },
+    {
+      "source": "5f1143b90fde99d5",
+      "target": "65d989da60342547",
+      "weight": 0.976591240255887,
+      "tongue": "KO"
+    },
+    {
+      "source": "5f1143b90fde99d5",
+      "target": "dffc3551714eeae7",
+      "weight": 0.99585766727321,
+      "tongue": "KO"
+    },
+    {
+      "source": "5f1143b90fde99d5",
+      "target": "d7bebb6191bc78dd",
+      "weight": 0.9835610223522319,
+      "tongue": "KO"
+    },
+    {
+      "source": "5f1143b90fde99d5",
+      "target": "a5a4ae11b6f890c8",
+      "weight": 0.9812421981387053,
+      "tongue": "RU"
+    },
+    {
+      "source": "5f1143b90fde99d5",
+      "target": "410a82d3bb4a70b9",
+      "weight": 0.9789706470574078,
+      "tongue": "KO"
+    },
+    {
+      "source": "5f1143b90fde99d5",
+      "target": "21f52496221b059a",
+      "weight": 0.9765790872466303,
+      "tongue": "AV"
+    },
+    {
+      "source": "2234893831e8596d",
+      "target": "5f1143b90fde99d5",
+      "weight": 0.9986884499792114,
+      "tongue": "KO"
+    },
+    {
+      "source": "2234893831e8596d",
+      "target": "dffc3551714eeae7",
+      "weight": 0.9957611909720846,
+      "tongue": "KO"
+    },
+    {
+      "source": "2234893831e8596d",
+      "target": "d7bebb6191bc78dd",
+      "weight": 0.983679231167822,
+      "tongue": "RU"
+    },
+    {
+      "source": "2234893831e8596d",
+      "target": "a5a4ae11b6f890c8",
+      "weight": 0.981270821662095,
+      "tongue": "RU"
+    },
+    {
+      "source": "2234893831e8596d",
+      "target": "410a82d3bb4a70b9",
+      "weight": 0.9793178389088306,
+      "tongue": "KO"
+    },
+    {
+      "source": "e78b3c2380fa1bb6",
+      "target": "5e29b9e87fc60bea",
+      "weight": 0.9877421203827246,
+      "tongue": "KO"
+    },
+    {
+      "source": "e78b3c2380fa1bb6",
+      "target": "e747c039d33de64e",
+      "weight": 0.971082346952591,
+      "tongue": "KO"
+    },
+    {
+      "source": "e78b3c2380fa1bb6",
+      "target": "f7d0b9c6350cf697",
+      "weight": 0.9652586520976626,
+      "tongue": "AV"
+    },
+    {
+      "source": "e78b3c2380fa1bb6",
+      "target": "e9bb45c914cfdfe0",
+      "weight": 0.962615890522663,
+      "tongue": "KO"
+    },
+    {
+      "source": "e78b3c2380fa1bb6",
+      "target": "1aa0279954fbebad",
+      "weight": 0.955733632800045,
+      "tongue": "KO"
+    },
+    {
+      "source": "4fa5bc6b6d045cf8",
+      "target": "5f1143b90fde99d5",
+      "weight": 0.9985949359041429,
+      "tongue": "KO"
+    },
+    {
+      "source": "4fa5bc6b6d045cf8",
+      "target": "2234893831e8596d",
+      "weight": 0.9982955532062296,
+      "tongue": "KO"
+    },
+    {
+      "source": "4fa5bc6b6d045cf8",
+      "target": "dffc3551714eeae7",
+      "weight": 0.9966680177170283,
+      "tongue": "RU"
+    },
+    {
+      "source": "4fa5bc6b6d045cf8",
+      "target": "d7bebb6191bc78dd",
+      "weight": 0.9846213604581308,
+      "tongue": "RU"
+    },
+    {
+      "source": "4fa5bc6b6d045cf8",
+      "target": "a5a4ae11b6f890c8",
+      "weight": 0.9825814074441784,
+      "tongue": "RU"
+    },
+    {
+      "source": "baf427d1ec33584f",
+      "target": "5e29b9e87fc60bea",
+      "weight": 0.9852659590188074,
+      "tongue": "AV"
+    },
+    {
+      "source": "baf427d1ec33584f",
+      "target": "f7d0b9c6350cf697",
+      "weight": 0.9818431551380553,
+      "tongue": "AV"
+    },
+    {
+      "source": "baf427d1ec33584f",
+      "target": "e747c039d33de64e",
+      "weight": 0.9787112381573663,
+      "tongue": "KO"
+    },
+    {
+      "source": "baf427d1ec33584f",
+      "target": "e78b3c2380fa1bb6",
+      "weight": 0.9735310831170619,
+      "tongue": "AV"
+    },
+    {
+      "source": "baf427d1ec33584f",
+      "target": "1aa0279954fbebad",
+      "weight": 0.9731350102098537,
+      "tongue": "KO"
+    },
+    {
+      "source": "871846f0a3b2efe2",
+      "target": "dffc3551714eeae7",
+      "weight": 0.9949761663039235,
+      "tongue": "RU"
+    },
+    {
+      "source": "871846f0a3b2efe2",
+      "target": "4fa5bc6b6d045cf8",
+      "weight": 0.9936316576941608,
+      "tongue": "KO"
+    },
+    {
+      "source": "871846f0a3b2efe2",
+      "target": "5f1143b90fde99d5",
+      "weight": 0.9923030429239188,
+      "tongue": "KO"
+    },
+    {
+      "source": "871846f0a3b2efe2",
+      "target": "2234893831e8596d",
+      "weight": 0.9922757214872747,
+      "tongue": "KO"
+    },
+    {
+      "source": "871846f0a3b2efe2",
+      "target": "d7bebb6191bc78dd",
+      "weight": 0.9891859823164064,
+      "tongue": "UM"
+    },
+    {
+      "source": "9330fb074f3738af",
+      "target": "5e29b9e87fc60bea",
+      "weight": 0.9961586076385813,
+      "tongue": "KO"
+    },
+    {
+      "source": "9330fb074f3738af",
+      "target": "e78b3c2380fa1bb6",
+      "weight": 0.9887594558506654,
+      "tongue": "KO"
+    },
+    {
+      "source": "9330fb074f3738af",
+      "target": "baf427d1ec33584f",
+      "weight": 0.984461615406118,
+      "tongue": "KO"
+    },
+    {
+      "source": "9330fb074f3738af",
+      "target": "e747c039d33de64e",
+      "weight": 0.9775002780108606,
+      "tongue": "KO"
+    },
+    {
+      "source": "9330fb074f3738af",
+      "target": "f7d0b9c6350cf697",
+      "weight": 0.9742750217611104,
+      "tongue": "AV"
+    },
+    {
+      "source": "2f1e626fb4239613",
+      "target": "d7bebb6191bc78dd",
+      "weight": 0.9923290924041049,
+      "tongue": "KO"
+    },
+    {
+      "source": "2f1e626fb4239613",
+      "target": "65d989da60342547",
+      "weight": 0.9852200915411174,
+      "tongue": "KO"
+    },
+    {
+      "source": "2f1e626fb4239613",
+      "target": "410a82d3bb4a70b9",
+      "weight": 0.9849150781455935,
+      "tongue": "KO"
+    },
+    {
+      "source": "2f1e626fb4239613",
+      "target": "871846f0a3b2efe2",
+      "weight": 0.9840222889870633,
+      "tongue": "KO"
+    },
+    {
+      "source": "2f1e626fb4239613",
+      "target": "dffc3551714eeae7",
+      "weight": 0.9839985132753903,
+      "tongue": "UM"
+    },
+    {
+      "source": "60228693c0e3fa01",
+      "target": "4fa5bc6b6d045cf8",
+      "weight": 1.0,
+      "tongue": "KO"
+    },
+    {
+      "source": "60228693c0e3fa01",
+      "target": "5f1143b90fde99d5",
+      "weight": 0.9985949359041429,
+      "tongue": "KO"
+    },
+    {
+      "source": "60228693c0e3fa01",
+      "target": "2234893831e8596d",
+      "weight": 0.9982955532062296,
+      "tongue": "KO"
+    },
+    {
+      "source": "60228693c0e3fa01",
+      "target": "dffc3551714eeae7",
+      "weight": 0.9966680177170283,
+      "tongue": "RU"
+    },
+    {
+      "source": "60228693c0e3fa01",
+      "target": "871846f0a3b2efe2",
+      "weight": 0.9936316576941608,
+      "tongue": "KO"
+    },
+    {
+      "source": "aa6305ff92ac1f7b",
+      "target": "dffc3551714eeae7",
+      "weight": 0.995277180058666,
+      "tongue": "KO"
+    },
+    {
+      "source": "aa6305ff92ac1f7b",
+      "target": "871846f0a3b2efe2",
+      "weight": 0.993371273700634,
+      "tongue": "KO"
+    },
+    {
+      "source": "aa6305ff92ac1f7b",
+      "target": "4fa5bc6b6d045cf8",
+      "weight": 0.9924306682283259,
+      "tongue": "KO"
+    },
+    {
+      "source": "aa6305ff92ac1f7b",
+      "target": "60228693c0e3fa01",
+      "weight": 0.9924306682283259,
+      "tongue": "KO"
+    },
+    {
+      "source": "aa6305ff92ac1f7b",
+      "target": "5f1143b90fde99d5",
+      "weight": 0.9919184088867794,
+      "tongue": "KO"
+    },
+    {
+      "source": "f519b913cac64c8e",
+      "target": "871846f0a3b2efe2",
+      "weight": 0.9976351257311699,
+      "tongue": "KO"
+    },
+    {
+      "source": "f519b913cac64c8e",
+      "target": "dffc3551714eeae7",
+      "weight": 0.9955477826701252,
+      "tongue": "KO"
+    },
+    {
+      "source": "f519b913cac64c8e",
+      "target": "4fa5bc6b6d045cf8",
+      "weight": 0.9952308118693737,
+      "tongue": "KO"
+    },
+    {
+      "source": "f519b913cac64c8e",
+      "target": "60228693c0e3fa01",
+      "weight": 0.9952308118693737,
+      "tongue": "KO"
+    },
+    {
+      "source": "f519b913cac64c8e",
+      "target": "5f1143b90fde99d5",
+      "weight": 0.9938672126288581,
+      "tongue": "KO"
+    },
+    {
+      "source": "15940ca077fa761e",
+      "target": "4fa5bc6b6d045cf8",
+      "weight": 1.0,
+      "tongue": "KO"
+    },
+    {
+      "source": "15940ca077fa761e",
+      "target": "60228693c0e3fa01",
+      "weight": 1.0,
+      "tongue": "KO"
+    },
+    {
+      "source": "15940ca077fa761e",
+      "target": "5f1143b90fde99d5",
+      "weight": 0.9985949359041429,
+      "tongue": "KO"
+    },
+    {
+      "source": "15940ca077fa761e",
+      "target": "2234893831e8596d",
+      "weight": 0.9982955532062296,
+      "tongue": "KO"
+    },
+    {
+      "source": "15940ca077fa761e",
+      "target": "dffc3551714eeae7",
+      "weight": 0.9966680177170283,
+      "tongue": "RU"
+    },
+    {
+      "source": "852c367f6f0d7c4a",
+      "target": "dffc3551714eeae7",
+      "weight": 0.997759497779352,
+      "tongue": "KO"
+    },
+    {
+      "source": "852c367f6f0d7c4a",
+      "target": "4fa5bc6b6d045cf8",
+      "weight": 0.9975553721450323,
+      "tongue": "KO"
+    },
+    {
+      "source": "852c367f6f0d7c4a",
+      "target": "60228693c0e3fa01",
+      "weight": 0.9975553721450323,
+      "tongue": "KO"
+    },
+    {
+      "source": "852c367f6f0d7c4a",
+      "target": "15940ca077fa761e",
+      "weight": 0.9975553721450323,
+      "tongue": "KO"
+    },
+    {
+      "source": "852c367f6f0d7c4a",
+      "target": "5f1143b90fde99d5",
+      "weight": 0.9973065727443039,
+      "tongue": "KO"
+    },
+    {
+      "source": "032b282850874110",
+      "target": "c25f91e845f03c3d",
+      "weight": 0.9980112533487722,
+      "tongue": "RU"
+    },
+    {
+      "source": "032b282850874110",
+      "target": "6cb5c6ff80dd1ada",
+      "weight": 0.9968486699451761,
+      "tongue": "RU"
+    },
+    {
+      "source": "032b282850874110",
+      "target": "65d989da60342547",
+      "weight": 0.993352093318521,
+      "tongue": "AV"
+    },
+    {
+      "source": "032b282850874110",
+      "target": "13882557d72a8ed4",
+      "weight": 0.9918499488525079,
+      "tongue": "KO"
+    },
+    {
+      "source": "032b282850874110",
+      "target": "fd1d1d2c455fe4d5",
+      "weight": 0.9903064113885928,
+      "tongue": "CA"
+    },
+    {
+      "source": "5dcb352ddba122b3",
+      "target": "871846f0a3b2efe2",
+      "weight": 0.9945236027757167,
+      "tongue": "KO"
+    },
+    {
+      "source": "5dcb352ddba122b3",
+      "target": "f519b913cac64c8e",
+      "weight": 0.9929899978815794,
+      "tongue": "AV"
+    },
+    {
+      "source": "5dcb352ddba122b3",
+      "target": "d7bebb6191bc78dd",
+      "weight": 0.9909588634083799,
+      "tongue": "KO"
+    },
+    {
+      "source": "5dcb352ddba122b3",
+      "target": "410a82d3bb4a70b9",
+      "weight": 0.9908990726174774,
+      "tongue": "KO"
+    },
+    {
+      "source": "5dcb352ddba122b3",
+      "target": "a5a4ae11b6f890c8",
+      "weight": 0.9908045440430363,
+      "tongue": "CA"
+    },
+    {
+      "source": "91f891d5fdf7cd3e",
+      "target": "4fa5bc6b6d045cf8",
+      "weight": 1.0,
+      "tongue": "KO"
+    },
+    {
+      "source": "91f891d5fdf7cd3e",
+      "target": "60228693c0e3fa01",
+      "weight": 1.0,
+      "tongue": "KO"
+    },
+    {
+      "source": "91f891d5fdf7cd3e",
+      "target": "15940ca077fa761e",
+      "weight": 1.0,
+      "tongue": "KO"
+    },
+    {
+      "source": "91f891d5fdf7cd3e",
+      "target": "5f1143b90fde99d5",
+      "weight": 0.9985949359041429,
+      "tongue": "KO"
+    },
+    {
+      "source": "91f891d5fdf7cd3e",
+      "target": "2234893831e8596d",
+      "weight": 0.9982955532062296,
+      "tongue": "KO"
+    },
+    {
+      "source": "9e598e24cc15118d",
+      "target": "852c367f6f0d7c4a",
+      "weight": 1.0,
+      "tongue": "KO"
+    },
+    {
+      "source": "9e598e24cc15118d",
+      "target": "dffc3551714eeae7",
+      "weight": 0.997759497779352,
+      "tongue": "KO"
+    },
+    {
+      "source": "9e598e24cc15118d",
+      "target": "4fa5bc6b6d045cf8",
+      "weight": 0.9975553721450323,
+      "tongue": "KO"
+    },
+    {
+      "source": "9e598e24cc15118d",
+      "target": "60228693c0e3fa01",
+      "weight": 0.9975553721450323,
+      "tongue": "KO"
+    },
+    {
+      "source": "9e598e24cc15118d",
+      "target": "15940ca077fa761e",
+      "weight": 0.9975553721450323,
+      "tongue": "KO"
+    },
+    {
+      "source": "82a0d9ceda4853e7",
+      "target": "aa6305ff92ac1f7b",
+      "weight": 0.9993722937480791,
+      "tongue": "KO"
+    },
+    {
+      "source": "82a0d9ceda4853e7",
+      "target": "dffc3551714eeae7",
+      "weight": 0.9951201057881655,
+      "tongue": "KO"
+    },
+    {
+      "source": "82a0d9ceda4853e7",
+      "target": "852c367f6f0d7c4a",
+      "weight": 0.9946332158826553,
+      "tongue": "KO"
+    },
+    {
+      "source": "82a0d9ceda4853e7",
+      "target": "9e598e24cc15118d",
+      "weight": 0.9946332158826553,
+      "tongue": "KO"
+    },
+    {
+      "source": "82a0d9ceda4853e7",
+      "target": "871846f0a3b2efe2",
+      "weight": 0.9933818666032884,
+      "tongue": "KO"
+    },
+    {
+      "source": "0352294afbfd73b9",
+      "target": "f519b913cac64c8e",
+      "weight": 0.995596020880135,
+      "tongue": "KO"
+    },
+    {
+      "source": "0352294afbfd73b9",
+      "target": "4fa5bc6b6d045cf8",
+      "weight": 0.995583801117754,
+      "tongue": "KO"
+    },
+    {
+      "source": "0352294afbfd73b9",
+      "target": "60228693c0e3fa01",
+      "weight": 0.995583801117754,
+      "tongue": "KO"
+    },
+    {
+      "source": "0352294afbfd73b9",
+      "target": "15940ca077fa761e",
+      "weight": 0.995583801117754,
+      "tongue": "KO"
+    },
+    {
+      "source": "0352294afbfd73b9",
+      "target": "91f891d5fdf7cd3e",
+      "weight": 0.995583801117754,
+      "tongue": "KO"
+    },
+    {
+      "source": "3d4391b193be55c8",
+      "target": "adacc85562e2c181",
+      "weight": 0.9959528470965224,
+      "tongue": "AV"
+    },
+    {
+      "source": "3d4391b193be55c8",
+      "target": "a6904bd9c47e67e8",
+      "weight": 0.9919405455417744,
+      "tongue": "KO"
+    },
+    {
+      "source": "3d4391b193be55c8",
+      "target": "015fc5c05c3a9430",
+      "weight": 0.9892531508739332,
+      "tongue": "UM"
+    },
+    {
+      "source": "3d4391b193be55c8",
+      "target": "e9bdf8b0747dcffd",
+      "weight": 0.9854035185423774,
+      "tongue": "KO"
+    },
+    {
+      "source": "3d4391b193be55c8",
+      "target": "6da831e738f765f6",
+      "weight": 0.9835805100424037,
+      "tongue": "KO"
+    },
+    {
+      "source": "9f4fd5647cd5d7c5",
+      "target": "bfb681ff654a714d",
+      "weight": 0.98612096887184,
+      "tongue": "RU"
+    },
+    {
+      "source": "9f4fd5647cd5d7c5",
+      "target": "a578894d31c4eb05",
+      "weight": 0.9856984837850546,
+      "tongue": "AV"
+    },
+    {
+      "source": "9f4fd5647cd5d7c5",
+      "target": "6171de3226db639e",
+      "weight": 0.9827306870914972,
+      "tongue": "AV"
+    },
+    {
+      "source": "9f4fd5647cd5d7c5",
+      "target": "da8e2467edb9dceb",
+      "weight": 0.9826644460109174,
+      "tongue": "AV"
+    },
+    {
+      "source": "9f4fd5647cd5d7c5",
+      "target": "21f52496221b059a",
+      "weight": 0.9802905792079403,
+      "tongue": "AV"
+    },
+    {
+      "source": "9f0e3fa0324e33eb",
+      "target": "6da831e738f765f6",
+      "weight": 1.0,
+      "tongue": "KO"
+    },
+    {
+      "source": "9f0e3fa0324e33eb",
+      "target": "b9ba1ef020ac0961",
+      "weight": 0.9950726392667744,
+      "tongue": "AV"
+    },
+    {
+      "source": "9f0e3fa0324e33eb",
+      "target": "8c3d153b178e6e38",
+      "weight": 0.9947645759765092,
+      "tongue": "KO"
+    },
+    {
+      "source": "9f0e3fa0324e33eb",
+      "target": "f6ee0758daf2b6ed",
+      "weight": 0.9947645759765092,
+      "tongue": "KO"
+    },
+    {
+      "source": "9f0e3fa0324e33eb",
+      "target": "e9bdf8b0747dcffd",
+      "weight": 0.987600674681157,
+      "tongue": "KO"
+    },
+    {
+      "source": "123e41e9d1cdc2e5",
+      "target": "8c3d153b178e6e38",
+      "weight": 0.9952715620009601,
+      "tongue": "AV"
+    },
+    {
+      "source": "123e41e9d1cdc2e5",
+      "target": "f6ee0758daf2b6ed",
+      "weight": 0.9952715620009601,
+      "tongue": "AV"
+    },
+    {
+      "source": "123e41e9d1cdc2e5",
+      "target": "b9ba1ef020ac0961",
+      "weight": 0.9945624156313007,
+      "tongue": "KO"
+    },
+    {
+      "source": "123e41e9d1cdc2e5",
+      "target": "69f3c45d8cf34b6f",
+      "weight": 0.9921988785407346,
+      "tongue": "KO"
+    },
+    {
+      "source": "123e41e9d1cdc2e5",
+      "target": "e9bdf8b0747dcffd",
+      "weight": 0.9911781024863483,
+      "tongue": "AV"
+    },
+    {
+      "source": "161b123f98d8d320",
+      "target": "fe1eca7da86613ac",
+      "weight": 0.990269665964968,
+      "tongue": "RU"
+    },
+    {
+      "source": "161b123f98d8d320",
+      "target": "fc58fac8525d768c",
+      "weight": 0.9896279517803859,
+      "tongue": "AV"
+    },
+    {
+      "source": "161b123f98d8d320",
+      "target": "fd1d1d2c455fe4d5",
+      "weight": 0.9895846145879057,
+      "tongue": "RU"
+    },
+    {
+      "source": "161b123f98d8d320",
+      "target": "6e4d198513ceaf19",
+      "weight": 0.9894738817271037,
+      "tongue": "DR"
+    },
+    {
+      "source": "161b123f98d8d320",
+      "target": "13882557d72a8ed4",
+      "weight": 0.9889906441394605,
+      "tongue": "AV"
+    },
+    {
+      "source": "002c697b859d80df",
+      "target": "2f1e626fb4239613",
+      "weight": 0.9916474727688032,
+      "tongue": "RU"
+    },
+    {
+      "source": "002c697b859d80df",
+      "target": "d7bebb6191bc78dd",
+      "weight": 0.9913420997768694,
+      "tongue": "DR"
+    },
+    {
+      "source": "002c697b859d80df",
+      "target": "5dcb352ddba122b3",
+      "weight": 0.9906067981416,
+      "tongue": "CA"
+    },
+    {
+      "source": "002c697b859d80df",
+      "target": "aa6305ff92ac1f7b",
+      "weight": 0.9893095102237601,
+      "tongue": "CA"
+    },
+    {
+      "source": "002c697b859d80df",
+      "target": "dffc3551714eeae7",
+      "weight": 0.9891959472535022,
+      "tongue": "UM"
+    },
+    {
+      "source": "c5fbc52f8fd28b66",
+      "target": "a926bfc2d974372b",
+      "weight": 1.0,
+      "tongue": "KO"
+    },
+    {
+      "source": "c5fbc52f8fd28b66",
+      "target": "c79305fd0f220e51",
+      "weight": 0.9960081798493559,
+      "tongue": "AV"
+    },
+    {
+      "source": "c5fbc52f8fd28b66",
+      "target": "096082fefdaeec41",
+      "weight": 0.9960030193227225,
+      "tongue": "AV"
+    },
+    {
+      "source": "c5fbc52f8fd28b66",
+      "target": "65d989da60342547",
+      "weight": 0.9920544730220867,
+      "tongue": "KO"
+    },
+    {
+      "source": "c5fbc52f8fd28b66",
+      "target": "13882557d72a8ed4",
+      "weight": 0.9918722004384792,
+      "tongue": "RU"
+    },
+    {
+      "source": "58124def18519790",
+      "target": "a926bfc2d974372b",
+      "weight": 1.0,
+      "tongue": "KO"
+    },
+    {
+      "source": "58124def18519790",
+      "target": "c5fbc52f8fd28b66",
+      "weight": 1.0,
+      "tongue": "KO"
+    },
+    {
+      "source": "58124def18519790",
+      "target": "c79305fd0f220e51",
+      "weight": 0.9960081798493559,
+      "tongue": "AV"
+    },
+    {
+      "source": "58124def18519790",
+      "target": "096082fefdaeec41",
+      "weight": 0.9960030193227225,
+      "tongue": "AV"
+    },
+    {
+      "source": "58124def18519790",
+      "target": "65d989da60342547",
+      "weight": 0.9920544730220867,
+      "tongue": "KO"
+    },
+    {
+      "source": "08d41dbba07d79c6",
+      "target": "852c367f6f0d7c4a",
+      "weight": 0.9985129331570127,
+      "tongue": "CA"
+    },
+    {
+      "source": "08d41dbba07d79c6",
+      "target": "9e598e24cc15118d",
+      "weight": 0.9985129331570127,
+      "tongue": "CA"
+    },
+    {
+      "source": "08d41dbba07d79c6",
+      "target": "dffc3551714eeae7",
+      "weight": 0.9978394827666617,
+      "tongue": "KO"
+    },
+    {
+      "source": "08d41dbba07d79c6",
+      "target": "4fa5bc6b6d045cf8",
+      "weight": 0.9972947966275613,
+      "tongue": "KO"
+    },
+    {
+      "source": "08d41dbba07d79c6",
+      "target": "60228693c0e3fa01",
+      "weight": 0.9972947966275613,
+      "tongue": "KO"
+    },
+    {
+      "source": "eb46ec6875eec50f",
+      "target": "c79305fd0f220e51",
+      "weight": 0.9941380396299476,
+      "tongue": "KO"
+    },
+    {
+      "source": "eb46ec6875eec50f",
+      "target": "fd1d1d2c455fe4d5",
+      "weight": 0.9930869056834517,
+      "tongue": "RU"
+    },
+    {
+      "source": "eb46ec6875eec50f",
+      "target": "096082fefdaeec41",
+      "weight": 0.9927110518323037,
+      "tongue": "AV"
+    },
+    {
+      "source": "eb46ec6875eec50f",
+      "target": "13882557d72a8ed4",
+      "weight": 0.9921264827811744,
+      "tongue": "KO"
+    },
+    {
+      "source": "eb46ec6875eec50f",
+      "target": "fc58fac8525d768c",
+      "weight": 0.9919106275077906,
+      "tongue": "KO"
+    },
+    {
+      "source": "d8a16b642f582df7",
+      "target": "0352294afbfd73b9",
+      "weight": 1.0,
+      "tongue": "KO"
+    },
+    {
+      "source": "d8a16b642f582df7",
+      "target": "f519b913cac64c8e",
+      "weight": 0.995596020880135,
+      "tongue": "KO"
+    },
+    {
+      "source": "d8a16b642f582df7",
+      "target": "4fa5bc6b6d045cf8",
+      "weight": 0.995583801117754,
+      "tongue": "KO"
+    },
+    {
+      "source": "d8a16b642f582df7",
+      "target": "60228693c0e3fa01",
+      "weight": 0.995583801117754,
+      "tongue": "KO"
+    },
+    {
+      "source": "d8a16b642f582df7",
+      "target": "15940ca077fa761e",
+      "weight": 0.995583801117754,
+      "tongue": "KO"
+    },
+    {
+      "source": "0d10950f5e98c674",
+      "target": "0352294afbfd73b9",
+      "weight": 0.9995615380067026,
+      "tongue": "RU"
+    },
+    {
+      "source": "0d10950f5e98c674",
+      "target": "d8a16b642f582df7",
+      "weight": 0.9995615380067026,
+      "tongue": "RU"
+    },
+    {
+      "source": "0d10950f5e98c674",
+      "target": "f519b913cac64c8e",
+      "weight": 0.9955940154232946,
+      "tongue": "KO"
+    },
+    {
+      "source": "0d10950f5e98c674",
+      "target": "4fa5bc6b6d045cf8",
+      "weight": 0.9955859436002061,
+      "tongue": "KO"
+    },
+    {
+      "source": "0d10950f5e98c674",
+      "target": "60228693c0e3fa01",
+      "weight": 0.9955859436002061,
+      "tongue": "KO"
+    },
+    {
+      "source": "9cb3bc8892fc8478",
+      "target": "0d10950f5e98c674",
+      "weight": 0.9975111844403285,
+      "tongue": "KO"
+    },
+    {
+      "source": "9cb3bc8892fc8478",
+      "target": "0352294afbfd73b9",
+      "weight": 0.9974914834825046,
+      "tongue": "KO"
+    },
+    {
+      "source": "9cb3bc8892fc8478",
+      "target": "d8a16b642f582df7",
+      "weight": 0.9974914834825046,
+      "tongue": "KO"
+    },
+    {
+      "source": "9cb3bc8892fc8478",
+      "target": "4fa5bc6b6d045cf8",
+      "weight": 0.9964809128005413,
+      "tongue": "KO"
+    },
+    {
+      "source": "9cb3bc8892fc8478",
+      "target": "60228693c0e3fa01",
+      "weight": 0.9964809128005413,
+      "tongue": "KO"
+    },
+    {
+      "source": "4298689868fd7515",
+      "target": "871846f0a3b2efe2",
+      "weight": 0.9981583679117908,
+      "tongue": "KO"
+    },
+    {
+      "source": "4298689868fd7515",
+      "target": "f519b913cac64c8e",
+      "weight": 0.9970304608584798,
+      "tongue": "AV"
+    },
+    {
+      "source": "4298689868fd7515",
+      "target": "dffc3551714eeae7",
+      "weight": 0.9950764736176032,
+      "tongue": "KO"
+    },
+    {
+      "source": "4298689868fd7515",
+      "target": "aa6305ff92ac1f7b",
+      "weight": 0.9938083909125964,
+      "tongue": "AV"
+    },
+    {
+      "source": "4298689868fd7515",
+      "target": "82a0d9ceda4853e7",
+      "weight": 0.993776470614707,
+      "tongue": "KO"
+    },
+    {
+      "source": "4ec356349f874209",
+      "target": "bfb681ff654a714d",
+      "weight": 0.992341788827719,
+      "tongue": "AV"
+    },
+    {
+      "source": "4ec356349f874209",
+      "target": "da8e2467edb9dceb",
+      "weight": 0.9867848385511838,
+      "tongue": "AV"
+    },
+    {
+      "source": "4ec356349f874209",
+      "target": "43ac3311d70a66cb",
+      "weight": 0.9836887872215463,
+      "tongue": "AV"
+    },
+    {
+      "source": "4ec356349f874209",
+      "target": "ee8b6f68ac60a1e6",
+      "weight": 0.9824799861869059,
+      "tongue": "KO"
+    },
+    {
+      "source": "4ec356349f874209",
+      "target": "9f4fd5647cd5d7c5",
+      "weight": 0.9797828446033171,
+      "tongue": "RU"
+    },
+    {
+      "source": "a8224c58865448e9",
+      "target": "002c697b859d80df",
+      "weight": 0.9900283840023892,
+      "tongue": "UM"
+    },
+    {
+      "source": "a8224c58865448e9",
+      "target": "21f52496221b059a",
+      "weight": 0.9887868099514057,
+      "tongue": "AV"
+    },
+    {
+      "source": "a8224c58865448e9",
+      "target": "6171de3226db639e",
+      "weight": 0.9868252619744573,
+      "tongue": "AV"
+    },
+    {
+      "source": "a8224c58865448e9",
+      "target": "5dcb352ddba122b3",
+      "weight": 0.9865154880913318,
+      "tongue": "AV"
+    },
+    {
+      "source": "a8224c58865448e9",
+      "target": "2234893831e8596d",
+      "weight": 0.9852787643082793,
+      "tongue": "AV"
+    },
+    {
+      "source": "5ed17da34691f672",
+      "target": "096082fefdaeec41",
+      "weight": 0.9940870234918348,
+      "tongue": "AV"
+    },
+    {
+      "source": "5ed17da34691f672",
+      "target": "eb46ec6875eec50f",
+      "weight": 0.9932689027546184,
+      "tongue": "AV"
+    },
+    {
+      "source": "5ed17da34691f672",
+      "target": "c79305fd0f220e51",
+      "weight": 0.9922971887682894,
+      "tongue": "CA"
+    },
+    {
+      "source": "5ed17da34691f672",
+      "target": "a926bfc2d974372b",
+      "weight": 0.9910398984973929,
+      "tongue": "AV"
+    },
+    {
+      "source": "5ed17da34691f672",
+      "target": "c5fbc52f8fd28b66",
+      "weight": 0.9910398984973929,
+      "tongue": "AV"
+    },
+    {
+      "source": "cc582a45d91f9d4f",
+      "target": "a8224c58865448e9",
+      "weight": 0.9948161618441507,
+      "tongue": "AV"
+    },
+    {
+      "source": "cc582a45d91f9d4f",
+      "target": "21f52496221b059a",
+      "weight": 0.9907136994786638,
+      "tongue": "AV"
+    },
+    {
+      "source": "cc582a45d91f9d4f",
+      "target": "6171de3226db639e",
+      "weight": 0.9898338422485758,
+      "tongue": "AV"
+    },
+    {
+      "source": "cc582a45d91f9d4f",
+      "target": "002c697b859d80df",
+      "weight": 0.9895062042622013,
+      "tongue": "KO"
+    },
+    {
+      "source": "cc582a45d91f9d4f",
+      "target": "5dcb352ddba122b3",
+      "weight": 0.986842807050683,
+      "tongue": "AV"
+    },
+    {
+      "source": "1500dc918ae9cea1",
+      "target": "a578894d31c4eb05",
+      "weight": 1.0,
+      "tongue": "KO"
+    },
+    {
+      "source": "1500dc918ae9cea1",
+      "target": "6171de3226db639e",
+      "weight": 0.9891266687200942,
+      "tongue": "AV"
+    },
+    {
+      "source": "1500dc918ae9cea1",
+      "target": "da8e2467edb9dceb",
+      "weight": 0.9876795941270343,
+      "tongue": "AV"
+    },
+    {
+      "source": "1500dc918ae9cea1",
+      "target": "cc582a45d91f9d4f",
+      "weight": 0.9863696703692123,
+      "tongue": "AV"
+    },
+    {
+      "source": "1500dc918ae9cea1",
+      "target": "21f52496221b059a",
+      "weight": 0.9859214877005958,
+      "tongue": "RU"
+    },
+    {
+      "source": "9ef0f6b723ecf4c2",
+      "target": "1aa0279954fbebad",
+      "weight": 0.9961256462373651,
+      "tongue": "AV"
+    },
+    {
+      "source": "9ef0f6b723ecf4c2",
+      "target": "bc23475bb6f13f81",
+      "weight": 0.9949854681571135,
+      "tongue": "KO"
+    },
+    {
+      "source": "9ef0f6b723ecf4c2",
+      "target": "551beb0543bdc632",
+      "weight": 0.9949854681571135,
+      "tongue": "KO"
+    },
+    {
+      "source": "9ef0f6b723ecf4c2",
+      "target": "d0193100ad349773",
+      "weight": 0.9949362831128337,
+      "tongue": "AV"
+    },
+    {
+      "source": "9ef0f6b723ecf4c2",
+      "target": "e676217bec1cf326",
+      "weight": 0.9949362831128337,
+      "tongue": "AV"
+    },
+    {
+      "source": "da68d04401917f03",
+      "target": "3a8f383aef7240af",
+      "weight": 0.9702003272582592,
+      "tongue": "KO"
+    },
+    {
+      "source": "da68d04401917f03",
+      "target": "3d4391b193be55c8",
+      "weight": 0.9638321945315482,
+      "tongue": "KO"
+    },
+    {
+      "source": "da68d04401917f03",
+      "target": "015fc5c05c3a9430",
+      "weight": 0.9627387597417691,
+      "tongue": "AV"
+    },
+    {
+      "source": "da68d04401917f03",
+      "target": "99bd800c3c58164b",
+      "weight": 0.9614512388287121,
+      "tongue": "KO"
+    },
+    {
+      "source": "da68d04401917f03",
+      "target": "adacc85562e2c181",
+      "weight": 0.9609985908745198,
+      "tongue": "KO"
+    },
+    {
+      "source": "a609b9142dabdb9f",
+      "target": "4ec356349f874209",
+      "weight": 0.9869836623864658,
+      "tongue": "KO"
+    },
+    {
+      "source": "a609b9142dabdb9f",
+      "target": "da8e2467edb9dceb",
+      "weight": 0.9854635665707374,
+      "tongue": "AV"
+    },
+    {
+      "source": "a609b9142dabdb9f",
+      "target": "bfb681ff654a714d",
+      "weight": 0.9841539587756556,
+      "tongue": "KO"
+    },
+    {
+      "source": "a609b9142dabdb9f",
+      "target": "43ac3311d70a66cb",
+      "weight": 0.9832280529050875,
+      "tongue": "AV"
+    },
+    {
+      "source": "a609b9142dabdb9f",
+      "target": "d3dc5238f3061b17",
+      "weight": 0.9810567146586536,
+      "tongue": "AV"
+    },
+    {
+      "source": "db4356e29b092dda",
+      "target": "43ac3311d70a66cb",
+      "weight": 0.9826408607379304,
+      "tongue": "RU"
+    },
+    {
+      "source": "db4356e29b092dda",
+      "target": "3d4391b193be55c8",
+      "weight": 0.9802831269840254,
+      "tongue": "KO"
+    },
+    {
+      "source": "db4356e29b092dda",
+      "target": "adacc85562e2c181",
+      "weight": 0.9774478805175143,
+      "tongue": "KO"
+    },
+    {
+      "source": "db4356e29b092dda",
+      "target": "015fc5c05c3a9430",
+      "weight": 0.9764292637820133,
+      "tongue": "CA"
+    },
+    {
+      "source": "db4356e29b092dda",
+      "target": "a6904bd9c47e67e8",
+      "weight": 0.9743254005331178,
+      "tongue": "KO"
+    },
+    {
+      "source": "f884788cfddb62ff",
+      "target": "db4356e29b092dda",
+      "weight": 0.9920583046827461,
+      "tongue": "AV"
+    },
+    {
+      "source": "f884788cfddb62ff",
+      "target": "43ac3311d70a66cb",
+      "weight": 0.9883666307222229,
+      "tongue": "UM"
+    },
+    {
+      "source": "f884788cfddb62ff",
+      "target": "3d4391b193be55c8",
+      "weight": 0.9810477811475831,
+      "tongue": "KO"
+    },
+    {
+      "source": "f884788cfddb62ff",
+      "target": "a609b9142dabdb9f",
+      "weight": 0.9793912247208886,
+      "tongue": "KO"
+    },
+    {
+      "source": "f884788cfddb62ff",
+      "target": "4ec356349f874209",
+      "weight": 0.9788040168132754,
+      "tongue": "KO"
+    },
+    {
+      "source": "340d2dbca6984807",
+      "target": "da68d04401917f03",
+      "weight": 0.9863863419995887,
+      "tongue": "KO"
+    },
+    {
+      "source": "340d2dbca6984807",
+      "target": "db4356e29b092dda",
+      "weight": 0.979330167492253,
+      "tongue": "KO"
+    },
+    {
+      "source": "340d2dbca6984807",
+      "target": "f884788cfddb62ff",
+      "weight": 0.9732687491009847,
+      "tongue": "KO"
+    },
+    {
+      "source": "340d2dbca6984807",
+      "target": "3d4391b193be55c8",
+      "weight": 0.9711278131186784,
+      "tongue": "KO"
+    },
+    {
+      "source": "340d2dbca6984807",
+      "target": "ee8b6f68ac60a1e6",
+      "weight": 0.9703134997954028,
+      "tongue": "KO"
+    },
+    {
+      "source": "07ce248646d84886",
+      "target": "6171de3226db639e",
+      "weight": 0.9840984281039802,
+      "tongue": "KO"
+    },
+    {
+      "source": "07ce248646d84886",
+      "target": "da8e2467edb9dceb",
+      "weight": 0.9840117392509814,
+      "tongue": "AV"
+    },
+    {
+      "source": "07ce248646d84886",
+      "target": "d3dc5238f3061b17",
+      "weight": 0.9831267170846836,
+      "tongue": "AV"
+    },
+    {
+      "source": "07ce248646d84886",
+      "target": "a609b9142dabdb9f",
+      "weight": 0.9823520924059227,
+      "tongue": "AV"
+    },
+    {
+      "source": "07ce248646d84886",
+      "target": "2f1e626fb4239613",
+      "weight": 0.9817800094760291,
+      "tongue": "KO"
+    },
+    {
+      "source": "43eb6c5165c6bc41",
+      "target": "123e41e9d1cdc2e5",
+      "weight": 0.9988755663024573,
+      "tongue": "AV"
+    },
+    {
+      "source": "43eb6c5165c6bc41",
+      "target": "8c3d153b178e6e38",
+      "weight": 0.9953341274434113,
+      "tongue": "KO"
+    },
+    {
+      "source": "43eb6c5165c6bc41",
+      "target": "f6ee0758daf2b6ed",
+      "weight": 0.9953341274434113,
+      "tongue": "KO"
+    },
+    {
+      "source": "43eb6c5165c6bc41",
+      "target": "b9ba1ef020ac0961",
+      "weight": 0.9941492989616384,
+      "tongue": "KO"
+    },
+    {
+      "source": "43eb6c5165c6bc41",
+      "target": "69f3c45d8cf34b6f",
+      "weight": 0.9925222528106921,
+      "tongue": "KO"
+    },
+    {
+      "source": "8a2602b57438ab26",
+      "target": "13882557d72a8ed4",
+      "weight": 0.9982088921037862,
+      "tongue": "KO"
+    },
+    {
+      "source": "8a2602b57438ab26",
+      "target": "fd1d1d2c455fe4d5",
+      "weight": 0.9961744965626342,
+      "tongue": "AV"
+    },
+    {
+      "source": "8a2602b57438ab26",
+      "target": "6e4d198513ceaf19",
+      "weight": 0.9926311084507512,
+      "tongue": "KO"
+    },
+    {
+      "source": "8a2602b57438ab26",
+      "target": "eb46ec6875eec50f",
+      "weight": 0.9923974972848751,
+      "tongue": "AV"
+    },
+    {
+      "source": "8a2602b57438ab26",
+      "target": "fc58fac8525d768c",
+      "weight": 0.992381470728275,
+      "tongue": "KO"
+    },
+    {
+      "source": "211e69ade7c85674",
+      "target": "161b123f98d8d320",
+      "weight": 0.9915903632004208,
+      "tongue": "UM"
+    },
+    {
+      "source": "211e69ade7c85674",
+      "target": "d3dc5238f3061b17",
+      "weight": 0.9915448487066335,
+      "tongue": "DR"
+    },
+    {
+      "source": "211e69ade7c85674",
+      "target": "fe1eca7da86613ac",
+      "weight": 0.990626742853782,
+      "tongue": "KO"
+    },
+    {
+      "source": "211e69ade7c85674",
+      "target": "f25eda239702d94f",
+      "weight": 0.9898155225427493,
+      "tongue": "KO"
+    },
+    {
+      "source": "211e69ade7c85674",
+      "target": "6e4d198513ceaf19",
+      "weight": 0.9882209937847553,
+      "tongue": "KO"
+    },
+    {
+      "source": "d77b88b3de774c07",
+      "target": "f884788cfddb62ff",
+      "weight": 0.9958311774434148,
+      "tongue": "KO"
+    },
+    {
+      "source": "d77b88b3de774c07",
+      "target": "db4356e29b092dda",
+      "weight": 0.9930367991006267,
+      "tongue": "AV"
+    },
+    {
+      "source": "d77b88b3de774c07",
+      "target": "43ac3311d70a66cb",
+      "weight": 0.9868168618908595,
+      "tongue": "UM"
+    },
+    {
+      "source": "d77b88b3de774c07",
+      "target": "a609b9142dabdb9f",
+      "weight": 0.9790979220034725,
+      "tongue": "KO"
+    },
+    {
+      "source": "d77b88b3de774c07",
+      "target": "3d4391b193be55c8",
+      "weight": 0.9790140571048637,
+      "tongue": "KO"
+    },
+    {
+      "source": "695902be757dd4b5",
+      "target": "3a8f383aef7240af",
+      "weight": 0.9795945291626199,
+      "tongue": "KO"
+    },
+    {
+      "source": "695902be757dd4b5",
+      "target": "da68d04401917f03",
+      "weight": 0.9764674384231393,
+      "tongue": "AV"
+    },
+    {
+      "source": "695902be757dd4b5",
+      "target": "340d2dbca6984807",
+      "weight": 0.9680326868588791,
+      "tongue": "AV"
+    },
+    {
+      "source": "695902be757dd4b5",
+      "target": "015fc5c05c3a9430",
+      "weight": 0.9649276293981321,
+      "tongue": "RU"
+    },
+    {
+      "source": "695902be757dd4b5",
+      "target": "db4356e29b092dda",
+      "weight": 0.9649253191675239,
+      "tongue": "AV"
+    },
+    {
+      "source": "73b2fe97b320956f",
+      "target": "69f3c45d8cf34b6f",
+      "weight": 0.9954044012890585,
+      "tongue": "UM"
+    },
+    {
+      "source": "73b2fe97b320956f",
+      "target": "bc23475bb6f13f81",
+      "weight": 0.9926580727030214,
+      "tongue": "KO"
+    },
+    {
+      "source": "73b2fe97b320956f",
+      "target": "551beb0543bdc632",
+      "weight": 0.9926580727030214,
+      "tongue": "KO"
+    },
+    {
+      "source": "73b2fe97b320956f",
+      "target": "43eb6c5165c6bc41",
+      "weight": 0.9926039324105435,
+      "tongue": "KO"
+    },
+    {
+      "source": "73b2fe97b320956f",
+      "target": "d0193100ad349773",
+      "weight": 0.9924942261268005,
+      "tongue": "UM"
+    },
+    {
+      "source": "ef53122a83fb5b22",
+      "target": "fd1d1d2c455fe4d5",
+      "weight": 0.999118407626069,
+      "tongue": "AV"
+    },
+    {
+      "source": "ef53122a83fb5b22",
+      "target": "8a2602b57438ab26",
+      "weight": 0.9963223902202949,
+      "tongue": "KO"
+    },
+    {
+      "source": "ef53122a83fb5b22",
+      "target": "13882557d72a8ed4",
+      "weight": 0.9959785885724586,
+      "tongue": "KO"
+    },
+    {
+      "source": "ef53122a83fb5b22",
+      "target": "fc58fac8525d768c",
+      "weight": 0.9958494506091586,
+      "tongue": "KO"
+    },
+    {
+      "source": "ef53122a83fb5b22",
+      "target": "eb46ec6875eec50f",
+      "weight": 0.9932632570184822,
+      "tongue": "RU"
+    },
+    {
+      "source": "f32dd96fec407d33",
+      "target": "13882557d72a8ed4",
+      "weight": 0.9991236189315964,
+      "tongue": "AV"
+    },
+    {
+      "source": "f32dd96fec407d33",
+      "target": "8a2602b57438ab26",
+      "weight": 0.9980367348822485,
+      "tongue": "RU"
+    },
+    {
+      "source": "f32dd96fec407d33",
+      "target": "ef53122a83fb5b22",
+      "weight": 0.995861730207607,
+      "tongue": "CA"
+    },
+    {
+      "source": "f32dd96fec407d33",
+      "target": "fd1d1d2c455fe4d5",
+      "weight": 0.9955726585800125,
+      "tongue": "CA"
+    },
+    {
+      "source": "f32dd96fec407d33",
+      "target": "fc58fac8525d768c",
+      "weight": 0.992575329714771,
+      "tongue": "AV"
+    },
+    {
+      "source": "8c640362173fd8f7",
+      "target": "f25eda239702d94f",
+      "weight": 0.9953497759819372,
+      "tongue": "KO"
+    },
+    {
+      "source": "8c640362173fd8f7",
+      "target": "fe1eca7da86613ac",
+      "weight": 0.9920351417365577,
+      "tongue": "KO"
+    },
+    {
+      "source": "8c640362173fd8f7",
+      "target": "211e69ade7c85674",
+      "weight": 0.9917057573872466,
+      "tongue": "AV"
+    },
+    {
+      "source": "8c640362173fd8f7",
+      "target": "6e4d198513ceaf19",
+      "weight": 0.989973661362271,
+      "tongue": "KO"
+    },
+    {
+      "source": "8c640362173fd8f7",
+      "target": "8c3d153b178e6e38",
+      "weight": 0.9874515348885121,
+      "tongue": "AV"
+    }
+  ],
+  "stats": {
+    "total_nodes": 102,
+    "total_cords": 500,
+    "total_scenes": 0
+  }
+}

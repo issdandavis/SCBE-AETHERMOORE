@@ -1,0 +1,31 @@
+{
+  "id": "36c10b988c5d0835",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Bergman kernels and Poincar\u00e9 series",
+  "content": "# Bergman kernels and Poincar\u00e9 series\n\nAuthors: Louis Ioos, Wen Lu, Xiaonan Ma, George Marinescu\nPublished: 2026-03-05T05:50:36Z\n\nWe show that the Bergman kernel of a finite-volume quotient of a Hermitian manifold $\\widetilde{X}$ with bounded geometry by a discrete group $\u0393$ of its isometries is the same as the averaging over $\u0393$ of the Bergman kernel on $\\widetilde{X}$. We then use these results when $\\widetilde{X}$ is a Hermitian symmetric space to show that a large class of relative Poincar\u00e9 series does not vanish. This extends the results of Borthwick-Paul-Uribe and Barron (formerly Foth) to the case of general locally symmetric spaces of finite volume.",
+  "url": "http://arxiv.org/abs/2603.04842v1",
+  "timestamp": "2026-03-05T05:50:36Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "50a53455a10c5a634d784d1cc9e1f216cfbb5bd41d5dd287bc81df7ac93d0756",
+  "parent_hash": "dcc98820323abf42de2c5e90a94ab850c3aed24cced970cbbb48c1c803d9f0a5",
+  "metadata": {
+    "authors": [
+      "Louis Ioos",
+      "Wen Lu",
+      "Xiaonan Ma",
+      "George Marinescu"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.04842v1"
+  }
+}

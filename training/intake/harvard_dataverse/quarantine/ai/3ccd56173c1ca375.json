@@ -1,0 +1,35 @@
+{
+  "id": "3ccd56173c1ca375",
+  "source": "harvard_dataverse",
+  "category": "quarantine/ai",
+  "title": "Base data for publication - The association of Coronavirus Disease-19 mortality and prior bacille Calmette-Guerin vaccination: a robust ecological evaluation using unsupervised machine learning",
+  "content": "# Base data for publication - The association of Coronavirus Disease-19 mortality and prior bacille Calmette-Guerin vaccination: a robust ecological evaluation using unsupervised machine learning\n\nAuthors: Nag, Swapnika, Puri, Ankur, Brooks, Nathan, Garg, Sanya, Hegarty, Paul\nPublished: 2020-06-15T18:12:08Z\nSubjects: Medicine, Health and Life Sciences\nDOI: doi:10.7910/DVN/BFXCAM\n\nBase data for publication - The association of Coronavirus Disease-19 mortality and prior bacille Calmette-Guerin vaccination: a robust ecological evaluation using unsupervised machine learning\n\nCitation: Nag, Swapnika; Puri, Ankur; Brooks, Nathan; Garg, Sanya; Hegarty, Paul, 2020, \"Base data for publication - The association of Coronavirus Disease-19 mortality and prior bacille Calmette-Guerin vaccination: a robust ecological evaluation using unsupervised machine learning\", https://doi.org/10.7910/DVN/BFXCAM, Harvard Dataverse, V1, UNF:6:Omw8FstbeoNJC3WwLCNERw== [fileUNF]",
+  "url": "https://doi.org/10.7910/DVN/BFXCAM",
+  "timestamp": "2026-03-06T02:42:07.859489",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "cfa0909e4caf672a6fd024f2400c827c476da6357c79e128aadc6f115c932f19",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/BFXCAM",
+    "subjects": [
+      "Medicine, Health and Life Sciences"
+    ],
+    "authors": [
+      "Nag, Swapnika",
+      "Puri, Ankur",
+      "Brooks, Nathan",
+      "Garg, Sanya",
+      "Hegarty, Paul"
+    ],
+    "file_count": 1
+  }
+}

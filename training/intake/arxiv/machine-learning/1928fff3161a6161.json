@@ -1,0 +1,32 @@
+{
+  "id": "1928fff3161a6161",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "POET-X: Memory-efficient LLM Training by Scaling Orthogonal Transformation",
+  "content": "# POET-X: Memory-efficient LLM Training by Scaling Orthogonal Transformation\n\nAuthors: Zeju Qiu, Lixin Liu, Adrian Weller, Han Shi, Weiyang Liu\nPublished: 2026-03-05T18:59:23Z\n\nEfficient and stable training of large language models (LLMs) remains a core challenge in modern machine learning systems. To address this challenge, Reparameterized Orthogonal Equivalence Training (POET), a spectrum-preserving framework that optimizes each weight matrix through orthogonal equivalence transformation, has been proposed. Although POET provides strong training stability, its original implementation incurs high memory consumption and computational overhead due to intensive matrix multiplications. To overcome these limitations, we introduce POET-X, a scalable and memory-efficient variant that performs orthogonal equivalence transformations with significantly reduced computational cost. POET-X maintains the generalization and stability benefits of POET while achieving substantial improvements in throughput and memory efficiency. In our experiments, POET-X enables the pretraining of billion-parameter LLMs on a single Nvidia H100 GPU, and in contrast, standard optimizers such as AdamW run out of memory under the same settings.",
+  "url": "http://arxiv.org/abs/2603.05500v1",
+  "timestamp": "2026-03-05T18:59:23Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "37308794c36049abfa1a3f218d4c68734cc07d13739fae4406c94d4a1f114e3a",
+  "parent_hash": "c798184662c5f26e3e460fcc319b33c60fe18072938ec21079b6f99d6cecffdb",
+  "metadata": {
+    "authors": [
+      "Zeju Qiu",
+      "Lixin Liu",
+      "Adrian Weller",
+      "Han Shi",
+      "Weiyang Liu"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.05500v1"
+  }
+}

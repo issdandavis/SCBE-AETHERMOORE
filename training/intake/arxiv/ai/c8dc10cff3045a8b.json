@@ -1,0 +1,35 @@
+{
+  "id": "c8dc10cff3045a8b",
+  "source": "arxiv",
+  "category": "ai",
+  "title": "EVMbench: Evaluating AI Agents on Smart Contract Security",
+  "content": "# EVMbench: Evaluating AI Agents on Smart Contract Security\n\nAuthors: Justin Wang, Andreas Bigger, Xiaohai Xu, Justin W. Lin, Andy Applebaum, Tejal Patwardhan, Alpin Yukseloglu, Olivia Watkins\nPublished: 2026-03-05T07:59:14Z\n\nSmart contracts on public blockchains now manage large amounts of value, and vulnerabilities in these systems can lead to substantial losses. As AI agents become more capable at reading, writing, and running code, it is natural to ask how well they can already navigate this landscape, both in ways that improve security and in ways that might increase risk. We introduce EVMbench, an evaluation that measures the ability of agents to detect, patch, and exploit smart contract vulnerabilities. EVMbench draws on 117 curated vulnerabilities from 40 repositories and, in the most realistic setting, uses programmatic grading based on tests and blockchain state under a local Ethereum execution environment. We evaluate a range of frontier agents and find that they are capable of discovering and exploiting vulnerabilities end-to-end against live blockchain instances. We release code, tasks, and tooling to support continued measurement of these capabilities and future work on security.",
+  "url": "http://arxiv.org/abs/2603.04915v1",
+  "timestamp": "2026-03-05T07:59:14Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "b4b8968a5feea6e47b608dff46c92e1d3acd858072f6abf74c1c8ead3cb60010",
+  "parent_hash": "6d901d970717326d8c79f7a05b1d1cc5b73bcc5fe85da5179478abd48e8e7961",
+  "metadata": {
+    "authors": [
+      "Justin Wang",
+      "Andreas Bigger",
+      "Xiaohai Xu",
+      "Justin W. Lin",
+      "Andy Applebaum",
+      "Tejal Patwardhan",
+      "Alpin Yukseloglu",
+      "Olivia Watkins"
+    ],
+    "arxiv_category": "cs.AI",
+    "arxiv_id": "2603.04915v1"
+  }
+}

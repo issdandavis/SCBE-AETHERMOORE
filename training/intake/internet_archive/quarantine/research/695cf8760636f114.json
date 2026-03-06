@@ -1,0 +1,33 @@
+{
+  "id": "695cf8760636f114",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Reflection Quasilattices and the Maximal Quasilattice",
+  "content": "# Reflection Quasilattices and the Maximal Quasilattice\n\nCreator: Latham Boyle, Paul J. Steinhardt\nDate: 2016-04-21T00:00:00Z\nDownloads: 32\nSubjects: High Energy Physics - Theory, Mathematical Physics, Materials Science, Condensed Matter, Mathematics\n\nWe introduce the concept of a {\\it reflection quasilattice}, the quasiperiodic generalization of a Bravais lattice with irreducible reflection symmetry. Among their applications, reflection quasilattices are the reciprocal (i.e. Bragg diffraction) lattices for quasicrystals and quasicrystal tilings, such as Penrose tilings, with irreducible reflection symmetry and discrete scale invariance. In a follow-up paper, we will show that reflection quasilattices can be used to generate tilings in real space with properties analogous to those in Penrose tilings, but with different symmetries and in various dimensions. Here we explain that reflection quasilattices only exist in dimensions two, three and four, and we prove that there is a unique reflection quasilattice in dimension four: the \"maximal reflection quasilattice\" in terms of dimensionality and symmetry. Unlike crystallographic Bravais lattices, all reflection quasilattices are invariant under rescaling by certain discrete scale factors. We tabulate the complete set of scale factors for all reflection quasilattices in dimension $d>2$, and for all those with quadratic irrational scale factors in $d=2$.",
+  "url": "https://archive.org/details/arxiv-1604.06426",
+  "timestamp": "2026-03-06T04:17:45.776714",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "941e3cddf25a4df7a6bd7f6aac535c1b7799f82719bfa88573e1f88f3e48d7cb",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "arxiv-1604.06426",
+    "media_type": "texts",
+    "downloads": 32,
+    "subjects": [
+      "High Energy Physics - Theory",
+      "Mathematical Physics",
+      "Materials Science",
+      "Condensed Matter",
+      "Mathematics"
+    ]
+  }
+}

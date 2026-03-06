@@ -1,0 +1,32 @@
+{
+  "id": "7d4f32cf240a87e8",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Identification of quantum generative circuits with parallel quantum neural network",
+  "content": "# Identification of quantum generative circuits with parallel quantum neural network\n\nAuthors: Zheping Wu, Xiaopeng Huang, Hengyue Jia, Haobin Shi, Wei-Wei Zhang\nPublished: 2026-03-03T10:31:04Z\n\nThe rapid emergence of quantum technology has raised new challenges in distinguishing various quantum circuits of similar functions. In this work, we propose parallel quantum embedding neural network (ParaQuanNet) for the efficient identification of quantum generative circuits via classifications of the corresponding output data. Specifically, we generated W-like states with eight generative quantum circuits realizing the generative quantum denoising diffusion probabilistic models (QDDPM). Our ParaQuanNet can classify these eight classes of generated quantum data with an accuracy of {$99.5\\%$}, even though all of them are trained to generate the same types of quantum data. With a novel design of parallel quantum embedding unit (PQEU) in our neural networks, our ParaQuanNet enables the quantum kernel circuit parallelly process all the receptive fields of quantum data, which empowers the quantum data processing efficiency. We also integrate the mutually unbiased measurements into our ParaQuanNet and further improve its performance. We apply our ParaQuanNet on the classification of classical data sets and demonstrate a good performance of quantum neural networks on these tasks. Our approach demonstrates good robustness to noisy data and the circuit-level noise with a Python realization in a classical GPU. Our results highlight ParaQuanNet as a scalable and effective framework for quantum circuits identification, contributing to the broader development of quantum machine intelligence.",
+  "url": "http://arxiv.org/abs/2603.02834v1",
+  "timestamp": "2026-03-03T10:31:04Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "91e704c61df7126cfc94e1bf1f3020497b72054e4c96dff22e8af837b62dc7b1",
+  "parent_hash": "b4e72478ca886dee14555bedd8a81c5cbd507e46e7b6dbb4d4b252086bee5a7a",
+  "metadata": {
+    "authors": [
+      "Zheping Wu",
+      "Xiaopeng Huang",
+      "Hengyue Jia",
+      "Haobin Shi",
+      "Wei-Wei Zhang"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.02834v1"
+  }
+}

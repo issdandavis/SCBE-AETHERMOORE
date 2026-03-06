@@ -1,0 +1,30 @@
+{
+  "id": "e2611db4f1393957",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2013-1618 \u2014 CVSS 4.0 (UNKNOWN)",
+  "content": "# CVE-2013-1618\n\nCVSS Score: 4.0 (UNKNOWN)\nPublished: 2013-02-08T19:55:01.093\nCWEs: CWE-310\n\nThe TLS implementation in Opera before 12.13 does not properly consider timing side-channel attacks on a MAC check operation during the processing of malformed CBC padding, which allows remote attackers to conduct distinguishing attacks and plaintext-recovery attacks via statistical analysis of timing data for crafted packets, a related issue to CVE-2013-0169.\n\nReferences: http://lists.opensuse.org/opensuse-updates/2013-02/msg00038.html, http://openwall.com/lists/oss-security/2013/02/05/24, http://www.isg.rhul.ac.uk/tls/TLStiming.pdf",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2013-1618",
+  "timestamp": "2026-03-06T04:18:33.345059",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "3650d59cecdad3e1a0137e39cb447018a27aa56967b79e0e9830af5e26697d12",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2013-1618",
+    "cvss_score": 4.0,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "CWE-310"
+    ],
+    "published": "2013-02-08T19:55:01.093"
+  }
+}

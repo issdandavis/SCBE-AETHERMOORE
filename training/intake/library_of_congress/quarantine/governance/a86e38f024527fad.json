@@ -1,0 +1,34 @@
+{
+  "id": "a86e38f024527fad",
+  "source": "library_of_congress",
+  "category": "quarantine/governance",
+  "title": "Bitcoin and beyond : cryptocurrencies, blockchains and global governance",
+  "content": "# Bitcoin and beyond : cryptocurrencies, blockchains and global governance\n\nContributors: campbell-verduyn, malcolm\nDate: 2018-01-01\nSubjects: financial institutions, bitcoin, international finance, electronic funds transfers\n\nIncludes bibliographical references and index. Description based on print version record; resource not viewed.",
+  "url": "https://www.loc.gov/item/2020718946/",
+  "timestamp": "2026-03-06T04:17:41.942112",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "318be40962036078fd09397e4875265932e0e1f1c3244a381c9ce6e0b8ddb5a5",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "financial institutions",
+      "bitcoin",
+      "international finance",
+      "electronic funds transfers"
+    ],
+    "dates": "2018-01-01",
+    "original_format": [
+      "book"
+    ]
+  }
+}

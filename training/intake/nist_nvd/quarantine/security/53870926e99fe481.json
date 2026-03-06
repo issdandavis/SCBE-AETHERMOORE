@@ -1,0 +1,30 @@
+{
+  "id": "53870926e99fe481",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-1999-1311 \u2014 CVSS 4.6 (UNKNOWN)",
+  "content": "# CVE-1999-1311\n\nCVSS Score: 4.6 (UNKNOWN)\nPublished: 1997-01-07T05:00:00.000\nCWEs: NVD-CWE-Other\n\nVulnerability in dtlogin and dtsession in HP-UX 10.20 and 10.10 allows local users to bypass authentication and gain privileges.\n\nReferences: http://ciac.llnl.gov/ciac/bulletins/h-21.shtml, http://ciac.llnl.gov/ciac/bulletins/h-21.shtml, http://ciac.llnl.gov/ciac/bulletins/h-21.shtml",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-1999-1311",
+  "timestamp": "2026-03-06T02:41:48.082117",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "c54140f33894d9e647c4b8f6c612e985a69f580007b92cdb993c2d54000d3c0e",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-1999-1311",
+    "cvss_score": 4.6,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-Other"
+    ],
+    "published": "1997-01-07T05:00:00.000"
+  }
+}

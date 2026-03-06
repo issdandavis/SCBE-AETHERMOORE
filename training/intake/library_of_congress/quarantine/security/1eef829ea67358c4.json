@@ -1,0 +1,36 @@
+{
+  "id": "1eef829ea67358c4",
+  "source": "library_of_congress",
+  "category": "quarantine/security",
+  "title": "Limiting institutions? : the challenge of Eurasian security governance",
+  "content": "# Limiting institutions? : the challenge of Eurasian security governance\n\nContributors: kay, sean, papacosma, s. victor, sperling, james\nDate: 2003-01-01\nSubjects: europe, politics and government, foreign relations, geopolitics, former soviet republics\n\nIncludes bibliographical references (pages 263-284) and index. Description based on print version record; resource not viewed.",
+  "url": "https://www.loc.gov/item/2020719125/",
+  "timestamp": "2026-03-06T04:17:41.942135",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "2226d4ce6e48c15f2e1ece9430ed271b56767498677bfa7335498fdf123cdda5",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "europe",
+      "politics and government",
+      "foreign relations",
+      "geopolitics",
+      "former soviet republics",
+      "national security"
+    ],
+    "dates": "2003-01-01",
+    "original_format": [
+      "book"
+    ]
+  }
+}

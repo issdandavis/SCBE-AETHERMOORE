@@ -1,0 +1,25 @@
+{
+  "id": "acd78929586ec819",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Golden-ratio rotated stack-of-stars acquisition for improved volumetric MRI. (Q46172491)",
+  "content": "# Golden-ratio rotated stack-of-stars acquisition for improved volumetric MRI.\n\nWikidata ID: Q46172491\nDescription: scientific article published on 6 February 2017\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q46172491",
+  "timestamp": "2026-03-06T02:41:14.149660",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "0da1d75c7b1523276cb5c5651866755a8e2771a28bfdccbd6df39abc7f71b243",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q46172491",
+    "description": "scientific article published on 6 February 2017"
+  }
+}

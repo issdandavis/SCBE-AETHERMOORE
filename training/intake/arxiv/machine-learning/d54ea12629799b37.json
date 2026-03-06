@@ -1,0 +1,33 @@
+{
+  "id": "d54ea12629799b37",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "InfoFlow KV: Information-Flow-Aware KV Recomputation for Long Context",
+  "content": "# InfoFlow KV: Information-Flow-Aware KV Recomputation for Long Context\n\nAuthors: Xin Teng, Canyu Zhang, Shaoyi Zheng, Danyang Zhuo, Tianyi Zhou, Shengjie Wang\nPublished: 2026-03-05T16:33:20Z\n\nRetrieval-augmented generation (RAG) for long-context question answering is bottlenecked by inference-time prefilling over large retrieved contexts. A common strategy is to precompute key-value (KV) caches for individual documents and selectively recompute a small subset of tokens to restore global causal dependencies, but existing methods rely on heuristics or representation discrepancies without modeling whether selected tokens can effectively influence generation. We cast selective KV recomputation as an information flow problem and show that a simple attention-norm signal from the query reliably identifies tokens that are both semantically relevant and structurally positioned to propagate information, when computed under an inference-consistent RoPE geometry. We therefore reconstruct global positional assignments for retrieved chunks and introduce an information-flow-guided chunk reordering strategy. Experiments on LLM and VLM benchmarks demonstrate consistent gains over prior methods under comparable efficiency budgets.",
+  "url": "http://arxiv.org/abs/2603.05353v1",
+  "timestamp": "2026-03-05T16:33:20Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "33a55901445ea384d9bf708bc12efbd5e3e86d682eb14c5514a501c2b6cd4bed",
+  "parent_hash": "fa5c8d69ed8a82172a037e8803f1980138f33d60103cb994a742472e48ca6592",
+  "metadata": {
+    "authors": [
+      "Xin Teng",
+      "Canyu Zhang",
+      "Shaoyi Zheng",
+      "Danyang Zhuo",
+      "Tianyi Zhou",
+      "Shengjie Wang"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.05353v1"
+  }
+}

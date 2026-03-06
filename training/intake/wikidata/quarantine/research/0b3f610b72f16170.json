@@ -1,0 +1,25 @@
+{
+  "id": "0b3f610b72f16170",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Icosahedral symmetry versus local icosahedral environments in Al\u2013Mn alloys from NMR (Q58969719)",
+  "content": "# Icosahedral symmetry versus local icosahedral environments in Al\u2013Mn alloys from NMR\n\nWikidata ID: Q58969719\nDescription: scientific article published in Nature\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q58969719",
+  "timestamp": "2026-03-06T04:18:20.467294",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "599644d2e5fa76b8a4756ee552b3a061380281a063a64f764f54614897054263",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "wikidata_id": "Q58969719",
+    "description": "scientific article published in Nature"
+  }
+}

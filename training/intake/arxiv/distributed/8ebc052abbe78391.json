@@ -1,0 +1,30 @@
+{
+  "id": "8ebc052abbe78391",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "Exploiting network topology in brain-scale simulations of spiking neural networks",
+  "content": "# Exploiting network topology in brain-scale simulations of spiking neural networks\n\nAuthors: Melissa Lober, Markus Diesmann, Susanne Kunkel\nPublished: 2026-02-26T17:49:13Z\n\nSimulation code for conventional supercomputers serves as a reference for neuromorphic computing systems. The present bottleneck of distributed large-scale spiking neuronal network simulations is the communication between compute nodes. Communication speed seems limited by the interconnect between the nodes and the software library orchestrating the data transfer. Profiling reveals, however, that the variability of the time required by the compute nodes between communication calls is large. The bottleneck is in fact the waiting time for the slowest node. A statistical model explains total simulation time on the basis of the distribution of computation times between communication calls. A fundamental cure is to avoid communication calls because this requires fewer synchronizations and reduces the variability of computation times across compute nodes. The organization of the mammalian brain into areas lends itself to such an optimization strategy. Connections between neurons within an area have short delays, but the delays of the long-range connections across areas are an order of magnitude longer. This suggests a structure-aware mapping of areas to compute nodes allowing for a partition into more frequent communication between nodes simulating a particular area and less frequent global communication. We demonstrate a substantial performance gain on a real-world example. This work proposes a local-global hybrid communication architecture for large-scale neuronal network simulations as a first step in mapping the structure of the brain to the structure of a supercomputer. It challenges the long-standing belief that the bottleneck of simulation is synchronization inherent in the collective calls of standard communication libraries. We provide guidelines for the energy efficient simulation of neuronal networks on conventional computing systems and raise the bar for neuromorphic systems.",
+  "url": "http://arxiv.org/abs/2602.23274v1",
+  "timestamp": "2026-02-26T17:49:13Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "42141c27b46573d437619e32fbc377b6f616d1fbd310e7f996c2c8b6627a8af5",
+  "parent_hash": "a919c906bbb9a375e41f28cbf072e5931d8d3ebfac8a0ce81a094a217c6ffe04",
+  "metadata": {
+    "authors": [
+      "Melissa Lober",
+      "Markus Diesmann",
+      "Susanne Kunkel"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2602.23274v1"
+  }
+}

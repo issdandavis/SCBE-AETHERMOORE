@@ -1,0 +1,33 @@
+{
+  "id": "7a060c9a72d6e3f6",
+  "source": "internet_archive",
+  "category": "quarantine/quantum",
+  "title": "Asymptotic tensor rank of graph tensors: beyond matrix multiplication",
+  "content": "# Asymptotic tensor rank of graph tensors: beyond matrix multiplication\n\nCreator: Matthias Christandl, P\u00e9ter Vrana, Jeroen Zuiddam\nDate: 2016-09-23T00:00:00Z\nDownloads: 49\nSubjects: Combinatorics, Quantum Physics, Computational Complexity, Computing Research Repository, Mathematics\n\nWe present an upper bound on the exponent of the asymptotic behaviour of the tensor rank of a family of tensors defined by the complete graph on $k$ vertices. For $k\\geq4$, we show that the exponent per edge is at most 0.77, outperforming the best known upper bound on the exponent per edge for matrix multiplication ($k=3$), which is approximately 0.79. We raise the question whether for some $k$ the exponent per edge can be below $2/3$, i.e. can outperform matrix multiplication even if the matrix multiplication exponent equals 2. In order to obtain our results, we generalise to higher order tensors a result by Strassen on the asymptotic subrank of tight tensors and a result by Coppersmith and Winograd on the asymptotic rank of matrix multiplication. Our results have applications in entanglement theory and communication complexity.",
+  "url": "https://archive.org/details/arxiv-1609.07476",
+  "timestamp": "2026-03-06T02:40:48.214065",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "044b0e680a531a365dd83ca0fa37ada2268c4fea48a195760a178c559aee74a7",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "arxiv-1609.07476",
+    "media_type": "texts",
+    "downloads": 49,
+    "subjects": [
+      "Combinatorics",
+      "Quantum Physics",
+      "Computational Complexity",
+      "Computing Research Repository",
+      "Mathematics"
+    ]
+  }
+}

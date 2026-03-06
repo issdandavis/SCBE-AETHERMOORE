@@ -1,0 +1,30 @@
+{
+  "id": "ccdfbf27a39d9b84",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2015-6403 \u2014 CVSS 7.2 (UNKNOWN)",
+  "content": "# CVE-2015-6403\n\nCVSS Score: 7.2 (UNKNOWN)\nPublished: 2015-12-15T05:59:04.853\nCWEs: CWE-20\n\nThe TFTP implementation on Cisco Small Business SPA30x, SPA50x, SPA51x phones 7.5.7 improperly validates firmware-image file integrity, which allows local users to load a Trojan horse image by leveraging shell access, aka Bug ID CSCut67400.\n\nReferences: http://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-20151209-ipp, http://www.securityfocus.com/bid/78739, http://www.securitytracker.com/id/1034376",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2015-6403",
+  "timestamp": "2026-03-06T04:18:37.160089",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "93deff72dfa5bdbf6970591a042b7dab1e7f868a48e1937f0b1243565092fa9c",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2015-6403",
+    "cvss_score": 7.2,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "CWE-20"
+    ],
+    "published": "2015-12-15T05:59:04.853"
+  }
+}

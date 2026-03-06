@@ -1,0 +1,30 @@
+{
+  "id": "6eb103803668a1c9",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "The character of ideal circle patterns",
+  "content": "# The character of ideal circle patterns\n\nAuthors: Chang Li, Aijin Lin, Liangming Shen\nPublished: 2026-02-23T11:55:34Z\n\nLet $S$ be an oriented closed surface with a cellular decomposition $\\mathcal{D}$ and a weight $\u03a6\\in(0, \u03c0)$. It is crucial to determine when $S$ supports an ideal $\\mathcal{D}$-type circle pattern $\\mathcal{P}$ with the exterior intersection angles given by $\u03a6$. Rivin, Bobenko-Springborn and Ge-Hua-Zhou provided perfect solutions and gave wonderful criteria for the existence and uniqueness of ideal circle patterns. However, all criteria established by Rivin, Bobenko-Springborn and Ge-Hua-Zhou are extremely difficult to verify for the given cellular decomposition $\\mathcal{D}$ and the weight $\u03a6$. In this paper, we introduce the character $\\mathcal{L}(\\mathcal{D},\u03a6)$ depends only on the data of the weighted cellular decomposition $(\\mathcal D, \u03a6)$ on $S$, and give some quite simple criteria for the existence of ideal circle patterns realizing $(\\mathcal{D},\u03a6)$. It seems that our character-type criteria are the first conditions totally different from criteria of Rivin, Bobenko-Springborn and Ge-Hua-Zhou, and provide more easily verifiable criteria. Our new character-type theorems may be of some independent interest. As an application, we give a new descriptions of the curvature image set $\\mathbf{K}(\\mathbb{R}^N_{>0})$. To approach our results, we shall use the combinatorial Ricci flows with ideal circle patterns introduced by Ge-Hua-Zhou as a fundamental tool. The main difficulty in the proof of our results is to establish the compactness of the solution to the flows. To circumvent the difficulty, we borrow the techniques developed by Ge and his collaborators.",
+  "url": "http://arxiv.org/abs/2602.19748v1",
+  "timestamp": "2026-02-23T11:55:34Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "151f896bf0d6c01730e69619451e046534778949035e378488994c1ffc30b6aa",
+  "parent_hash": "9bf92194e4f669086aaccb9f08d283974b019e48b44fb68b380d6212782b070f",
+  "metadata": {
+    "authors": [
+      "Chang Li",
+      "Aijin Lin",
+      "Liangming Shen"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.19748v1"
+  }
+}

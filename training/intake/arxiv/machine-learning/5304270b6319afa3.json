@@ -1,0 +1,30 @@
+{
+  "id": "5304270b6319afa3",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "On the Statistical Optimality of Optimal Decision Trees",
+  "content": "# On the Statistical Optimality of Optimal Decision Trees\n\nAuthors: Zineng Xu, Subhroshekhar Ghosh, Yan Shuo Tan\nPublished: 2026-03-05T16:16:25Z\n\nWhile globally optimal empirical risk minimization (ERM) decision trees have become computationally feasible and empirically successful, rigorous theoretical guarantees for their statistical performance remain limited. In this work, we develop a comprehensive statistical theory for ERM trees under random design in both high-dimensional regression and classification. We first establish sharp oracle inequalities that bound the excess risk of the ERM estimator relative to the best possible approximation achievable by any tree with at most $L$ leaves, thereby characterizing the interpretability-accuracy trade-off. We derive these results using a novel uniform concentration framework based on empirically localized Rademacher complexity. Furthermore, we derive minimax optimal rates over a novel function class: the piecewise sparse heterogeneous anisotropic Besov (PSHAB) space. This space explicitly captures three key structural features encountered in practice: sparsity, anisotropic smoothness, and spatial heterogeneity. While our main results are established under sub-Gaussianity, we also provide robust guarantees that hold under heavy-tailed noise settings. Together, these findings provide a principled foundation for the optimality of ERM trees and introduce empirical process tools broadly applicable to other highly adaptive, data-driven procedures.",
+  "url": "http://arxiv.org/abs/2603.05340v1",
+  "timestamp": "2026-03-05T16:16:25Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "8b9fd78b660af00570739fe58f9f4a2f5ca579d7fbd981b606f77ebdb764feb5",
+  "parent_hash": "ad90ec77bfddbb2f024c5b74966b5d1822474e7a5805286d2cf4f1fa5bc7b96d",
+  "metadata": {
+    "authors": [
+      "Zineng Xu",
+      "Subhroshekhar Ghosh",
+      "Yan Shuo Tan"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.05340v1"
+  }
+}

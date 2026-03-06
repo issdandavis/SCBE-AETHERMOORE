@@ -1,0 +1,31 @@
+{
+  "id": "6546e9a76c4834c7",
+  "source": "harvard_dataverse",
+  "category": "quarantine/ai",
+  "title": "Impact of Geo-Political Risk on Stock Return Volatility Prediction of Islamic and Conventional banks: Using Machine Learning approach",
+  "content": "# Impact of Geo-Political Risk on Stock Return Volatility Prediction of Islamic and Conventional banks: Using Machine Learning approach\n\nAuthors: Khan, Saifullah\nPublished: 2025-06-24T08:45:22Z\nSubjects: Business and Management\nDOI: doi:10.7910/DVN/YJUTXW\n\nThis is the data of article title \"Impact of Geo-Political Risk on Stock Return Volatility Prediction of Islamic and Conventional banks: Using Machine Learning approach\"\n\nCitation: Khan, Saifullah, 2025, \"Impact of Geo-Political Risk on Stock Return Volatility Prediction of Islamic and Conventional banks: Using Machine Learning approach\", https://doi.org/10.7910/DVN/YJUTXW, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/YJUTXW",
+  "timestamp": "2026-03-06T02:42:07.859444",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "6cd4ed3e296d3bd7e07ccafd04f9f2660ba65513af80ff7d1db7abe6e383db15",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/YJUTXW",
+    "subjects": [
+      "Business and Management"
+    ],
+    "authors": [
+      "Khan, Saifullah"
+    ],
+    "file_count": 1
+  }
+}

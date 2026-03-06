@@ -228,7 +228,6 @@ class LLMDispatchRequest(BaseModel):
     metadata: Dict[str, Any] = {}
     passthrough: Dict[str, Any] = {}
     route_to_zapier: bool = False
-    zapier_hook_url: Optional[str] = None
 
 
 # ---------------------------------------------------------------------------
@@ -428,7 +427,8 @@ def _dispatch_anthropic(req: LLMDispatchRequest) -> Dict[str, Any]:
     )
 
 
-def _send_zapier_event(hook_url: str, event_payload: Dict[str, Any]) -> Dict[str, Any]:
+def _send_zapier_event(event_payload: Dict[str, Any]) -> Dict[str, Any]:
+    hook_url = _ZAPIER_WEBHOOK_URL
     if not hook_url:
         return {"status": "skipped", "reason": "missing_hook_url"}
     # SSRF protection: only allow known webhook domains
@@ -524,9 +524,7 @@ async def llm_dispatch(req: LLMDispatchRequest, x_api_key: Optional[str] = Heade
     }
 
     if req.route_to_zapier:
-        hook = req.zapier_hook_url or _ZAPIER_WEBHOOK_URL
         result["zapier"] = _send_zapier_event(
-            hook_url=hook,
             event_payload={
                 "event": "llm_dispatch",
                 "provider": provider,
@@ -1063,3 +1061,142 @@ async def training_status(x_api_key: Optional[str] = Header(None)):
     _check_key(x_api_key)
     trainer = _get_trainer()
     return trainer.get_status_dict()
+
+
+# ---------------------------------------------------------------------------
+#  ChoiceScript Branching Workflow Engine
+# ---------------------------------------------------------------------------
+
+class BranchExploreRequest(BaseModel):
+    """Execute a branching scene graph with multi-path exploration."""
+    graph_name: str = "research_pipeline"
+    topic: str = ""
+    strategy: str = "all_paths"
+    context: Dict[str, Any] = {}
+    max_paths: int = 20
+    max_depth: int = 50
+    export_n8n: bool = False
+    export_choicescript: bool = False
+
+
+class BranchActionRequest(BaseModel):
+    """Single scene action callback from n8n branching workflow."""
+    scene: str
+    action: str
+    params: Dict[str, Any] = {}
+
+
+@app.post("/v1/workflow/branch")
+async def workflow_branch_explore(req: BranchExploreRequest, x_api_key: Optional[str] = Header(None)):
+    """Execute a ChoiceScript branching workflow with multi-path exploration.
+
+    Supports pre-built graphs (research_pipeline, content_publisher, training_funnel)
+    or custom graphs via the graph_name parameter.
+    """
+    _check_key(x_api_key)
+
+    try:
+        from workflows.n8n.choicescript_branching_engine import (
+            BranchingEngine,
+            ExploreStrategy,
+            build_research_pipeline_graph,
+            build_content_publishing_graph,
+            build_training_funnel_graph,
+        )
+    except ImportError:
+        # Fallback: direct import from same directory
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "choicescript_branching_engine",
+            os.path.join(os.path.dirname(__file__), "choicescript_branching_engine.py"),
+        )
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        BranchingEngine = mod.BranchingEngine
+        ExploreStrategy = mod.ExploreStrategy
+        build_research_pipeline_graph = mod.build_research_pipeline_graph
+        build_content_publishing_graph = mod.build_content_publishing_graph
+        build_training_funnel_graph = mod.build_training_funnel_graph
+
+    # Select graph template
+    graph_builders = {
+        "research_pipeline": lambda: build_research_pipeline_graph(req.topic or "general research"),
+        "content_publisher": build_content_publishing_graph,
+        "training_funnel": build_training_funnel_graph,
+    }
+
+    builder = graph_builders.get(req.graph_name)
+    if not builder:
+        raise HTTPException(status_code=400, detail=f"Unknown graph: {req.graph_name}. Available: {list(graph_builders.keys())}")
+
+    graph = builder()
+    engine = BranchingEngine(
+        bridge_url=f"http://127.0.0.1:{os.environ.get('PORT', '8001')}",
+        max_depth=req.max_depth,
+        max_paths=req.max_paths,
+    )
+
+    # Map strategy string
+    strategy_map = {s.value: s for s in ExploreStrategy}
+    strategy = strategy_map.get(req.strategy, ExploreStrategy.ALL_PATHS)
+
+    ctx = dict(req.context)
+    if req.topic:
+        ctx["query"] = req.topic
+
+    result = engine.explore_sync(graph, context=ctx, strategy=strategy)
+
+    response: Dict[str, Any] = {
+        "graph_name": result.graph_name,
+        "strategy": result.strategy.value,
+        "total_scenes": result.total_scenes,
+        "coverage": round(result.coverage, 3),
+        "paths_explored": len(result.paths),
+        "best_path": {
+            "scenes": result.best_path.scenes_visited,
+            "score": result.best_path.score,
+            "actions": len(result.best_path.actions_taken),
+        } if result.best_path else None,
+        "all_paths": [
+            {
+                "id": p.path_id,
+                "scenes": p.scenes_visited,
+                "score": p.score,
+                "terminal": p.terminal,
+                "error": p.error,
+            }
+            for p in result.paths
+        ],
+        "timestamp": result.timestamp,
+    }
+
+    if req.export_choicescript:
+        response["choicescript"] = graph.to_choicescript()
+
+    if req.export_n8n:
+        response["n8n_workflow"] = graph.to_n8n_workflow()
+
+    return response
+
+
+@app.post("/v1/workflow/branch/action")
+async def workflow_branch_action(req: BranchActionRequest, x_api_key: Optional[str] = Header(None)):
+    """Execute a single scene action from a branching workflow (callback from n8n)."""
+    _check_key(x_api_key)
+
+    # Route to existing bridge endpoints based on action type
+    action_routes = {
+        "governance_scan": lambda p: _antivirus.scan(p.get("content", "")).to_dict(),
+        "noop": lambda p: {"status": "ok"},
+    }
+
+    handler = action_routes.get(req.action)
+    if handler:
+        return {"scene": req.scene, "action": req.action, "result": handler(req.params)}
+
+    # Default: return stub result
+    return {
+        "scene": req.scene,
+        "action": req.action,
+        "result": {"status": "stub", "params": req.params},
+    }

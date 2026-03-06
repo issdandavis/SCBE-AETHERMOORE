@@ -1,0 +1,30 @@
+{
+  "id": "ccdcf47869822ce8",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2007-6414 \u2014 CVSS 7.5 (UNKNOWN)",
+  "content": "# CVE-2007-6414\n\nCVSS Score: 7.5 (UNKNOWN)\nPublished: 2007-12-17T23:46:00.000\nCWEs: CWE-255\n\nadmin/administrator.php in Adult Script 1.6 and earlier sends a redirect to the web browser but does not exit, which allows remote attackers to bypass authentication and obtain administrative credentials via a direct request.  NOTE: this can be leveraged for arbitrary code execution through a request to admin/videolinks_view.php.\n\nReferences: http://secunia.com/advisories/28064, http://www.securityfocus.com/bid/26870, https://exchange.xforce.ibmcloud.com/vulnerabilities/39034",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2007-6414",
+  "timestamp": "2026-03-06T02:41:44.330272",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "e61c61d32215fb7c5ca547934a39bb85309306ee794b1c7bc4a12cd1fef68a89",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2007-6414",
+    "cvss_score": 7.5,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "CWE-255"
+    ],
+    "published": "2007-12-17T23:46:00.000"
+  }
+}

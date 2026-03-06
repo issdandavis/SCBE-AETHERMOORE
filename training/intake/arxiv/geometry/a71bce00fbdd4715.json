@@ -1,0 +1,28 @@
+{
+  "id": "a71bce00fbdd4715",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Dispersive estimates for a system of tensorial quasilinear wave equations satisfying the weak-null condition",
+  "content": "# Dispersive estimates for a system of tensorial quasilinear wave equations satisfying the weak-null condition\n\nAuthors: Sari Ghanem\nPublished: 2026-03-02T14:56:08Z\n\nWe establish both global existence and decay properties for solutions with small data for a general class of coupled system of tensorial quasilinear hyperbolic wave equations in three space dimensions, that covers the dynamical Einstein equations coupled to a class of non-linear matter sources that do not satisfy the null condition of Christodoulou and Klainerman, and have new different non-linearities than the one treated by Lindblad-Rodnianski, for which their celebrated seminal $L^\\infty$-estimate does not work, to the best of our knowledge. Global existence of solutions for a general class of quasilinear wave equations satisfying the weak-null condition, with small initial data, is largely an open problem at present. There is no known theory to prove decay for the class of non-linear hyperbolic partial differential equations that we treat in this paper. We establish a technique based on novel decoupling of the higher order energy estimates, at the level of the $L^2$-norm of the Lie derivatives of the tangential components, without involving all the other components, up to some good factor. This generalizes our previous results to include new non-linearities that are not present in the Einstein-Yang-Mills system in the Lorenz gauge.",
+  "url": "http://arxiv.org/abs/2603.01939v1",
+  "timestamp": "2026-03-02T14:56:08Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "e450495e3da65b4d66a8294824f952f69c58995cbcbc238ce5e8a3eb07760896",
+  "parent_hash": "f3c648b22a41084cff3cd6453bc423e419f4743ccf93ec21b684de873ce02022",
+  "metadata": {
+    "authors": [
+      "Sari Ghanem"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.01939v1"
+  }
+}

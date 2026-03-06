@@ -1,0 +1,33 @@
+{
+  "id": "e241321865fc9d4c",
+  "source": "arxiv",
+  "category": "ai",
+  "title": "RealWonder: Real-Time Physical Action-Conditioned Video Generation",
+  "content": "# RealWonder: Real-Time Physical Action-Conditioned Video Generation\n\nAuthors: Wei Liu, Ziyu Chen, Zizhang Li, Yue Wang, Hong-Xing Yu, Jiajun Wu\nPublished: 2026-03-05T18:22:54Z\n\nCurrent video generation models cannot simulate physical consequences of 3D actions like forces and robotic manipulations, as they lack structural understanding of how actions affect 3D scenes. We present RealWonder, the first real-time system for action-conditioned video generation from a single image. Our key insight is using physics simulation as an intermediate bridge: instead of directly encoding continuous actions, we translate them through physics simulation into visual representations (optical flow and RGB) that video models can process. RealWonder integrates three components: 3D reconstruction from single images, physics simulation, and a distilled video generator requiring only 4 diffusion steps. Our system achieves 13.2 FPS at 480x832 resolution, enabling interactive exploration of forces, robot actions, and camera controls on rigid objects, deformable bodies, fluids, and granular materials. We envision RealWonder opens new opportunities to apply video models in immersive experiences, AR/VR, and robot learning. Our code and model weights are publicly available in our project website: https://liuwei283.github.io/RealWonder/",
+  "url": "http://arxiv.org/abs/2603.05449v1",
+  "timestamp": "2026-03-05T18:22:54Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "656d1c8dc9e3ceef950909a108919804f3aa8ecf486a1cd58a5f5ee726410ef3",
+  "parent_hash": "4166efcba464270e2fa25fb81beb2195734531f36fc110caa08718e34570482d",
+  "metadata": {
+    "authors": [
+      "Wei Liu",
+      "Ziyu Chen",
+      "Zizhang Li",
+      "Yue Wang",
+      "Hong-Xing Yu",
+      "Jiajun Wu"
+    ],
+    "arxiv_category": "cs.AI",
+    "arxiv_id": "2603.05449v1"
+  }
+}

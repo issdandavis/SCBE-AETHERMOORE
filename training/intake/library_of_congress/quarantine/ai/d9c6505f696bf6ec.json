@@ -1,0 +1,32 @@
+{
+  "id": "d9c6505f696bf6ec",
+  "source": "library_of_congress",
+  "category": "quarantine/ai",
+  "title": "MICAI 2005 : advances in artificial intelligence : 4th Mexican International Conference on Artificial Intelligence, Monterrey, Mexico, November 14-18, 2005 : proceedings",
+  "content": "# MICAI 2005 : advances in artificial intelligence : 4th Mexican International Conference on Artificial Intelligence, Monterrey, Mexico, November 14-18, 2005 : proceedings\n\nContributors: albornoz, \u00e1lvaro de, gelbukh, alexander, terashima-mar\u00edn, hugo, mexican international conference on artificial intelligence\nDate: 2005\nSubjects: congresses, artificial intelligence\n\nIncludes bibliographical references and index. Also issued online.",
+  "url": "//lccn.loc.gov/2005540288",
+  "timestamp": "2026-03-06T02:37:58.020599",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "777111d13d4eca578d9495c0d2a5b22bffb78a9b2cde63dabecc742ba869afd6",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "congresses",
+      "artificial intelligence"
+    ],
+    "dates": "2005",
+    "original_format": [
+      "book"
+    ]
+  }
+}

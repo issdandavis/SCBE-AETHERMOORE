@@ -1,0 +1,27 @@
+{
+  "id": "6eecbe349200e7df",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "The Structure of Adaptive Competition in Minority Games",
+  "content": "# The Structure of Adaptive Competition in Minority Games\n\nCreator: Radu Manuca, Yi Li, Rick Riolo, Robert Savit\nDate: 1998-11-26T00:00:00Z\nDownloads: 70\nSubjects: \n\nIn this paper we present results and analyses of a class of games in which heterogeneous agents are rewarded for being in a minority group. Each agent possesses a number of fixed strategies each of which are predictors of the next minority group. The strategies use a set of aggregate, publicly available information (reflecting the agents' collective previous decisions) to make their predictions. An agent chooses which group to join at a given moment by using one of his strategies. These games are adaptive in that agents can choose, at different points of the game, to exercise different strategies in making their choice of which group to join. We find, rather generally, that such systems evidence a phase change from a maladaptive, informationally efficient phase in which the system performs poorly at generating resources, to an inefficient phase in which there is an emergent cooperation among the agents, and the system more effectively generates resources. The best emergent coordination is achieved in a transition region between these two phases. This transition occurs when the dimension of the strategy space is of the order of the number of agents playing the game. We present explanations for this general behavior, based in part on an information theoretic analysis of the system and its publicly available information. We also propose a mean-field like model of the game which is most accurate in the maladaptive, efficient phase. In addition, we show that the best individual agent performance in the two different phases is achieved by sets of strategies with markedly different characteristics. We discuss implications of our results for various aspects of the study of complex adaptive systems.",
+  "url": "https://archive.org/details/arxiv-adap-org9811005",
+  "timestamp": "2026-03-06T04:18:02.169899",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "97b9ed47a9a5f1cd6b3694e22b5bc4b94e13b59b9eca60872df49c4b509c4079",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "arxiv-adap-org9811005",
+    "media_type": "texts",
+    "downloads": 70,
+    "subjects": []
+  }
+}

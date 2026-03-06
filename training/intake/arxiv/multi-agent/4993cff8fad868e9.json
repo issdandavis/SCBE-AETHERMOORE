@@ -1,0 +1,30 @@
+{
+  "id": "4993cff8fad868e9",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "The effect of a toroidal opinion space on opinion bi-polarisation",
+  "content": "# The effect of a toroidal opinion space on opinion bi-polarisation\n\nAuthors: Frank P. Pijpers, Benedikt V. Meylahn, Michel R. H. Mandjes\nPublished: 2026-03-05T16:15:45Z\n\nMany models of opinion dynamics include measures of distance between opinions. Such models are susceptible to boundary effects where the choice of the topology of the opinion space may influence the dynamics. In this paper we study an opinion dynamics model following the seminal model by Axelrod, with the goal of understanding the effect of a toroidal opinion space. To do this we systematically compare two versions of the model: one with toroidal opinion space and one with cubic opinion space.\n  In their most basic form the two versions of our model result in similar dynamics (consensus is attained eventually). However, as we include bounded confidence and eventually per agent weighting of opinion elements the dynamics become quite contrasting. The toroidal opinion space consistently allows for a greater number of groups in steady state than the cubic opinion space model. Furthermore, the outcome of the dynamics in the toroidal opinion space model are more sensitive to the inclusion of extensions than in the cubic opinion space model.",
+  "url": "http://arxiv.org/abs/2603.05337v1",
+  "timestamp": "2026-03-05T16:15:45Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "5807d4718d5dff279a4043d1a9f4dd2d2cf0625e2b466269bc297279c7324cd3",
+  "parent_hash": "012edf63b3919634d0f68b9410ad39ce232258523721a24388a85e4f9fe873da",
+  "metadata": {
+    "authors": [
+      "Frank P. Pijpers",
+      "Benedikt V. Meylahn",
+      "Michel R. H. Mandjes"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.05337v1"
+  }
+}

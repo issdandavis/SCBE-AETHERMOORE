@@ -1,0 +1,30 @@
+{
+  "id": "6ccbbc1c0a71a6a8",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2024-54137 \u2014 CVSS 7.4 (HIGH)",
+  "content": "# CVE-2024-54137\n\nCVSS Score: 7.4 (HIGH)\nPublished: 2024-12-06T16:15:22.637\nCWEs: CWE-200\n\nliboqs is a C-language cryptographic library that provides implementations of post-quantum cryptography algorithms. A correctness error has been identified in the reference implementation of the HQC key encapsulation mechanism. Due to an indexing error, part of the secret key is incorrectly treated as non-secret data. This results in an incorrect shared secret value being returned when the decapsulation function is called with a malformed ciphertext. This vulnerability is fixed in 0.12.0.\n\nReferences: https://github.com/open-quantum-safe/liboqs/commit/cce1bfde4e52c524b087b9687020d283fbde0f24, https://github.com/open-quantum-safe/liboqs/security/advisories/GHSA-gpf4-vrrw-r8v7",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2024-54137",
+  "timestamp": "2026-03-06T02:41:36.374072",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "d9d8a2dcdf882fdc062332ceca77700f80130b0bd29f37ad9f3e9cd2527b0712",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2024-54137",
+    "cvss_score": 7.4,
+    "severity": "HIGH",
+    "cwes": [
+      "CWE-200"
+    ],
+    "published": "2024-12-06T16:15:22.637"
+  }
+}

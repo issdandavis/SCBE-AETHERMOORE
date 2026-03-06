@@ -1,0 +1,32 @@
+{
+  "id": "d8a6e46eef0be17f",
+  "source": "library_of_congress",
+  "category": "quarantine/ai",
+  "title": "Artificial Intelligence: The Copyright Connection",
+  "content": "# Artificial Intelligence: The Copyright Connection\n\nContributors: andreadis, steve\nDate: 2021-10-13\nSubjects: blogs, copyright\n\nDevelopments in artificial intelligence raise copyright questions, some of which will be discussed at a virtual event on October 26, 2021.",
+  "url": "https://blogs.loc.gov/copyright/2021/10/artificial-intelligence-the-copyright-connection/",
+  "timestamp": "2026-03-06T02:37:58.020531",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "0dac32676f97611d3e047cac1dbfcbfb5d364fbb1e0f65c14a2c5a59015bb05b",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "blogs",
+      "copyright"
+    ],
+    "dates": "2021-10-13",
+    "original_format": [
+      "web page"
+    ]
+  }
+}

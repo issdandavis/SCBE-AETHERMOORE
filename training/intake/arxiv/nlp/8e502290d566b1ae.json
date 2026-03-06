@@ -1,0 +1,29 @@
+{
+  "id": "8e502290d566b1ae",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "VisionPangu: A Compact and Fine-Grained Multimodal Assistant with 1.7B Parameters",
+  "content": "# VisionPangu: A Compact and Fine-Grained Multimodal Assistant with 1.7B Parameters\n\nAuthors: Jiaxin Fan, Wenpo Song\nPublished: 2026-03-05T08:51:33Z\n\nLarge Multimodal Models (LMMs) have achieved strong performance in vision-language understanding, yet many existing approaches rely on large-scale architectures and coarse supervision, which limits their ability to generate detailed image captions. In this work, we present VisionPangu, a compact 1.7B-parameter multimodal model designed to improve detailed image captioning through efficient multimodal alignment and high-quality supervision. Our model combines an InternVL-derived vision encoder with the OpenPangu-Embedded language backbone via a lightweight MLP projector and adopts an instruction-tuning pipeline inspired by LLaVA. By incorporating dense human-authored descriptions from the DOCCI dataset, VisionPangu improves semantic coherence and descriptive richness without relying on aggressive model scaling. Experimental results demonstrate that compact multimodal models can achieve competitive performance while producing more structured and detailed captions. The code and model weights will be publicly available at https://www.modelscope.cn/models/asdfgh007/visionpangu.",
+  "url": "http://arxiv.org/abs/2603.04957v1",
+  "timestamp": "2026-03-05T08:51:33Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "d49bd9a8a42fbf0e0018d0285007b5c57e5a054b16d3b3a3777f709602b6877e",
+  "parent_hash": "cc6ec9bcac47d9e337c2df64ad5ad5b1add5e8e0bae60bf40be609d249e74da7",
+  "metadata": {
+    "authors": [
+      "Jiaxin Fan",
+      "Wenpo Song"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.04957v1"
+  }
+}

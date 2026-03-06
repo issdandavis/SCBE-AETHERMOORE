@@ -1,0 +1,32 @@
+{
+  "id": "854e2e431e84b5ca",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Functional structures of US state governments",
+  "content": "# Functional structures of US state governments\n\nAuthors: Coscia, Michele\nPublished: 2018-10-16T07:24:36Z\nSubjects: Computer and Information Science, Social Sciences\nDOI: doi:10.7910/DVN/CPEZPK\n\nReplication Data & Code for the paper \"Functional structures of US state governments\".\n\nCitation: Coscia, Michele, 2018, \"Functional structures of US state governments\", https://doi.org/10.7910/DVN/CPEZPK, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/CPEZPK",
+  "timestamp": "2026-03-06T04:18:41.248838",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "3fffcdb6828880e7b4b6855c7c8caf339467ea186023bd8932f06baaef4b3d0c",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/CPEZPK",
+    "subjects": [
+      "Computer and Information Science",
+      "Social Sciences"
+    ],
+    "authors": [
+      "Coscia, Michele"
+    ],
+    "file_count": 2
+  }
+}

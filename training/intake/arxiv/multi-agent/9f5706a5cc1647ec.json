@@ -1,0 +1,28 @@
+{
+  "id": "9f5706a5cc1647ec",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "BMC4TimeSec: Verification Of Timed Security Protocols",
+  "content": "# BMC4TimeSec: Verification Of Timed Security Protocols\n\nAuthors: Agnieszka M. Zbrzezny\nPublished: 2026-02-19T18:12:01Z\n\nWe present BMC4TimeSec, an end-to-end tool for verifying Timed Security Protocols (TSP) based on SMT-based bounded model checking and multi-agent modelling in the form of Timed Interpreted Systems (TIS) and Timed Interleaved Interpreted Systems (TIIS). In BMC4TimeSec, TSP executions implement the TIS/TIIS environment (join actions, interleaving, delays, lifetimes), and knowledge automata implement the agents (evolution of participant knowledge, including the intruder). The code is publicly available on \\href{https://github.com/agazbrzezny/BMC4TimeSec}{GitHub}, as is a \\href{https://youtu.be/aNybKz6HwdA}{video} demonstration.",
+  "url": "http://arxiv.org/abs/2602.17590v1",
+  "timestamp": "2026-02-19T18:12:01Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "3e4257e82a1939c28892696f6769b9b7bf6100fe40101af0fb4f299f12a51812",
+  "parent_hash": "dc5b06f2d4277cf0448108a3623c49005b1776ec09185bd60d9a4eadce31e46d",
+  "metadata": {
+    "authors": [
+      "Agnieszka M. Zbrzezny"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2602.17590v1"
+  }
+}

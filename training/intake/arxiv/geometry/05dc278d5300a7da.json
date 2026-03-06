@@ -1,0 +1,30 @@
+{
+  "id": "05dc278d5300a7da",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Submanifolds of class $C^{1,\u03b1}$ and sets with positive $\u03bc$-reach",
+  "content": "# Submanifolds of class $C^{1,\u03b1}$ and sets with positive $\u03bc$-reach\n\nAuthors: Vincent Borrelli, Jean-Baptiste Follet, Boris Thibert\nPublished: 2026-02-13T15:09:38Z\n\nIt is well-known since the seminal work of Herbert Federer [Trans. of the AMS, 1959] that submanifolds of class $C^{1,1}$ have positive reach. In this paper, we extend this property to less regular submanifolds by using the notion of $\u03bc$-reach that was introduced in the 2000's. We first show that every compact $C^1$ submanifold of the Euclidean space $\\E^n$ has positive $\u03bc$-reach for all $\u03bc<1$. We then show that intermediate regularities $C^{1,\u03b1}$ induce more quantitative results on the norm $\\|\\nabla \\d_M\\|$ of the generalized gradient of the distance function~$\\d_M$ to the submanifold. More precisely, if $M\\subset \\E^n$ is a submanifold of class $C^{1,\u03b1}$, with $\u03b1<1$, then there exists a constant $C>0$ such that\n  $$\\forall p\\in\\E^n\\setminus M,\\quad 1 - \\| \\nabla \\d_M(p) \\|^2 \\leq C ~ \\d_M(p)^{\\frac{2 \u03b1}{1- \u03b1}}.$$ We finally show that the exponent $2\u03b1/(1-\u03b1)$ in this estimate is sharp.",
+  "url": "http://arxiv.org/abs/2602.12999v1",
+  "timestamp": "2026-02-13T15:09:38Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "1b48ca5fb444cb9e08837b0add47fdb3182c55fdddfd98ae266522e6e31ba9ba",
+  "parent_hash": "84bae02d78c43b80a739c219c2f0a32706913cb2b870007a63b10afbdbe11013",
+  "metadata": {
+    "authors": [
+      "Vincent Borrelli",
+      "Jean-Baptiste Follet",
+      "Boris Thibert"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.12999v1"
+  }
+}

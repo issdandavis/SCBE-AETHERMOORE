@@ -1,0 +1,33 @@
+{
+  "id": "9bbdbf6d91d5f3f2",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "GEOM",
+  "content": "# GEOM\n\nAuthors: Axelrod, Simon, Gomez-Bombarelli, Rafael\nPublished: 2022-02-11T05:12:59Z\nSubjects: Chemistry, Computer and Information Science\nDOI: doi:10.7910/DVN/JNGTDF\n\nHere you can find GEOM, a dataset with over 37 million molecular conformations annotated by energy and statistical weight for over 450,000 molecules. Over 317,000 species contain experimental data related to biophysics, physiology, and physical chemistry, and the remaining 133,000 species are from the QM9 dataset.\n\nCitation: Axelrod, Simon; Gomez-Bombarelli, Rafael, 2021, \"GEOM\", https://doi.org/10.7910/DVN/JNGTDF, Harvard Dataverse, V4",
+  "url": "https://doi.org/10.7910/DVN/JNGTDF",
+  "timestamp": "2026-03-06T02:42:07.859328",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "5fb33a9c4e5fbbd3f3fcbb4524335d08f8157a53a4ac04052c242f89e48d7639",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/JNGTDF",
+    "subjects": [
+      "Chemistry",
+      "Computer and Information Science"
+    ],
+    "authors": [
+      "Axelrod, Simon",
+      "Gomez-Bombarelli, Rafael"
+    ],
+    "file_count": 11
+  }
+}

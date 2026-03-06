@@ -1,0 +1,29 @@
+{
+  "id": "d49b8ad6cfd431ac",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "Blockchain Communication Vulnerabilities",
+  "content": "# Blockchain Communication Vulnerabilities\n\nAuthors: Andrei Lebedev, Vincent Gramoli\nPublished: 2026-03-03T06:50:47Z\n\nBlockchains are diverse in the way they handle communications between their nodes to disseminate information, mitigate attacks, and agree on the next block. While security vulnerabilities have been identified, they rely on an attack custom-made for a specific blockchain communication protocol. To our knowledge, the vulnerabilities of multiple blockchain communication protocols to adversarial conditions have never been compared.\n  In this paper, we compare empirically the vulnerabilities of the communication protocols of five modern in-production blockchains, Algorand, Aptos, Avalanche, Redbelly and Solana, when attacked in five different ways. We conclude that Algorand is vulnerable to packet loss attacks, Aptos is vulnerable to targeted load attacks and leader isolation attacks, Avalanche is vulnerable to transient failure attacks, Redbelly's performance is impacted by packet loss attacks and Solana is vulnerable to stopping attacks and leader isolation attacks. Our system is open source.",
+  "url": "http://arxiv.org/abs/2603.02661v1",
+  "timestamp": "2026-03-03T06:50:47Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "eaedb7cf8cb32d01cd8c7beaf7eab210bd7261a9a9773c7085ee6bfad17bfd0e",
+  "parent_hash": "aa1a453c8bcc215ff630d4b11982236cb545fbda664bf404bee435c8ccb79b9e",
+  "metadata": {
+    "authors": [
+      "Andrei Lebedev",
+      "Vincent Gramoli"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.02661v1"
+  }
+}

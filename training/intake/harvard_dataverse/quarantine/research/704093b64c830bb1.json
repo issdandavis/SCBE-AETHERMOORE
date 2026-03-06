@@ -1,0 +1,34 @@
+{
+  "id": "704093b64c830bb1",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "CAF3_structural_models",
+  "content": "# CAF3_structural_models\n\nAuthors: Neupane, Pawan, Liu, Jian, Cheng, Jianlin, Cheng, Jianlin\nPublished: 2026-01-31T22:38:41Z\nSubjects: Computer and Information Science\nDOI: doi:10.7910/DVN/XJIMQN\n\nThis dataset contains the structural models for results in the manuscript \"Improving AlphaFold3 by Engineering MSA and Template Inputs\"\n\nCitation: Neupane, Pawan; Liu, Jian; Cheng, Jianlin, 2026, \"CAF3_structural_models\", https://doi.org/10.7910/DVN/XJIMQN, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/XJIMQN",
+  "timestamp": "2026-03-06T04:18:41.248922",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "037b9a8b39f95f90e138ab0152a3686897859fa1e042c4ddf27d0d79f722ce63",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/XJIMQN",
+    "subjects": [
+      "Computer and Information Science"
+    ],
+    "authors": [
+      "Neupane, Pawan",
+      "Liu, Jian",
+      "Cheng, Jianlin",
+      "Cheng, Jianlin"
+    ],
+    "file_count": 3
+  }
+}

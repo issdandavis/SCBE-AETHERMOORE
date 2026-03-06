@@ -1,0 +1,29 @@
+{
+  "id": "21e7228832ad9e43",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Extending spin-lattice relaxation theory to three-phonon processes",
+  "content": "# Extending spin-lattice relaxation theory to three-phonon processes\n\nAuthors: Nilanjana Chanda, Alessandro Lunghi\nPublished: 2026-03-05T17:23:45Z\n\nSpin-lattice relaxation theory has been developed over almost a century, but some cardinal assumptions on the nature of the interactions involved have never been fully verified. This includes the weak coupling approximation, which makes it possible to describe spin dynamics perturbatively and leads to the canonical description of spin relaxation in terms of one- and two-phonon processes. Here, we extend the first-principles theory of spin relaxation to three-phonon processes and apply it to the vdW crystal of a spin-1/2 Chromium nitride complex. Results show that three-phonon contributions to spin relaxation only become relevant at temperatures inaccessible to experiments for this molecule, thus providing unprecedented evidence for the validity of the weak spin-phonon coupling assumption in spin relaxation theory. At the same time, we numerically show that a relatively small increase in spin-phonon coupling would lead to a crossover between three- and two-phonon processes' efficiency at room temperature, illustrating the possibility for three-phonon effects in molecular materials as well as paving the way to a systematic exploration of strong coupling in spin systems.",
+  "url": "http://arxiv.org/abs/2603.05393v1",
+  "timestamp": "2026-03-05T17:23:45Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "37b7523069cc928d05b44d7489f637bf5d3532bd79a49879214dc232613e9c85",
+  "parent_hash": "702ce59b9961f44b23f3b2331c9548a84d6b5bcccae171670e7f65e85abd5ae1",
+  "metadata": {
+    "authors": [
+      "Nilanjana Chanda",
+      "Alessandro Lunghi"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05393v1"
+  }
+}

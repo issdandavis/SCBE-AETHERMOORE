@@ -1,0 +1,31 @@
+{
+  "id": "6ab23b697be882c2",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2020-2040 \u2014 CVSS 9.8 (CRITICAL)",
+  "content": "# CVE-2020-2040\n\nCVSS Score: 9.8 (CRITICAL)\nPublished: 2020-09-09T17:15:25.900\nCWEs: CWE-120, CWE-120\n\nA buffer overflow vulnerability in PAN-OS allows an unauthenticated attacker to disrupt system processes and potentially execute arbitrary code with root privileges by sending a malicious request to the Captive Portal or Multi-Factor Authentication interface. This issue impacts: All versions of PAN-OS 8.0; PAN-OS 8.1 versions earlier than PAN-OS 8.1.15; PAN-OS 9.0 versions earlier than PAN-OS 9.0.9; PAN-OS 9.1 versions earlier than PAN-OS 9.1.3.\n\nReferences: https://security.paloaltonetworks.com/CVE-2020-2040, https://security.paloaltonetworks.com/CVE-2020-2040",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2020-2040",
+  "timestamp": "2026-03-06T04:18:24.195300",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "678fa1545cfaba9c59b61636e4a49d252f1cb3dcd37a9f8fddff0e5247ae66bc",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2020-2040",
+    "cvss_score": 9.8,
+    "severity": "CRITICAL",
+    "cwes": [
+      "CWE-120",
+      "CWE-120"
+    ],
+    "published": "2020-09-09T17:15:25.900"
+  }
+}

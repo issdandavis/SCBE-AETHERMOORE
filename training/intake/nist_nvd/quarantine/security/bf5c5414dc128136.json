@@ -1,0 +1,30 @@
+{
+  "id": "bf5c5414dc128136",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2006-2804 \u2014 CVSS 6.8 (UNKNOWN)",
+  "content": "# CVE-2006-2804\n\nCVSS Score: 6.8 (UNKNOWN)\nPublished: 2006-06-03T10:02:00.000\nCWEs: NVD-CWE-Other\n\nCross-site scripting (XSS) vulnerability in index.cfm in Goss Intelligent Content Management (iCM) 7.0 and earlier allows remote attackers to inject arbitrary web script or HTML via the keyword parameter.  NOTE: the provenance of this information is unknown; the details are obtained solely from third party sources.\n\nReferences: http://secunia.com/advisories/20372, http://www.securityfocus.com/bid/18221, http://www.vupen.com/english/advisories/2006/2089",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2006-2804",
+  "timestamp": "2026-03-06T04:18:29.314810",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "01e0d81c2ed5f06a2a3c78a853386a0c84a4e9100a3a3e68c5749185d8abc3cb",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2006-2804",
+    "cvss_score": 6.8,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-Other"
+    ],
+    "published": "2006-06-03T10:02:00.000"
+  }
+}

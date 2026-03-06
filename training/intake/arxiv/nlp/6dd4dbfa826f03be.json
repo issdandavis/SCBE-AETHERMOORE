@@ -1,0 +1,31 @@
+{
+  "id": "6dd4dbfa826f03be",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "From Threat Intelligence to Firewall Rules: Semantic Relations in Hybrid AI Agent and Expert System Architectures",
+  "content": "# From Threat Intelligence to Firewall Rules: Semantic Relations in Hybrid AI Agent and Expert System Architectures\n\nAuthors: Chiara Bonfanti, Davide Colaiacomo, Luca Cagliero, Cataldo Basile\nPublished: 2026-03-04T10:18:01Z\n\nWeb security demands rapid response capabilities to evolving cyber threats. Agentic Artificial Intelligence (AI) promises automation, but the need for trustworthy security responses is of the utmost importance. This work investigates the role of semantic relations in extracting information for sensitive operational tasks, such as configuring security controls for mitigating threats. To this end, it proposes to leverage hypernym-hyponym textual relations to extract relevant information from Cyber Threat Intelligence (CTI) reports. By leveraging a neuro-symbolic approach, the multi-agent system automatically generates CLIPS code for an expert system creating firewall rules to block malicious network traffic. Experimental results show the superior performance of the hypernym-hyponym retrieval strategy compared to various baselines and the higher effectiveness of the agentic approach in mitigating threats.",
+  "url": "http://arxiv.org/abs/2603.03911v1",
+  "timestamp": "2026-03-04T10:18:01Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "6ea9a81063cd45876697dc00e560374b58aa473c53ddb403c76cd1d85a884c6d",
+  "parent_hash": "f64a95b6845757b24aef5e56cd8d6720acdf41d8497ccb3e22f96dfa5e111c1b",
+  "metadata": {
+    "authors": [
+      "Chiara Bonfanti",
+      "Davide Colaiacomo",
+      "Luca Cagliero",
+      "Cataldo Basile"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.03911v1"
+  }
+}

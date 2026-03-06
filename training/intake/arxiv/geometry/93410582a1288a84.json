@@ -1,0 +1,29 @@
+{
+  "id": "93410582a1288a84",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Topological and rigidity results for four-dimensional hypersurfaces in space forms",
+  "content": "# Topological and rigidity results for four-dimensional hypersurfaces in space forms\n\nAuthors: Davide Dameno, Aaron J. Tyrrell\nPublished: 2026-03-04T06:29:47Z\n\nExploiting the special features of four-dimensional Riemannian Geometry, we derive topological and rigidity results for hypersurfaces immersed in space forms of dimension 5: we characterize isoparametric hypersurfaces by means of the Weyl tensor, we prove sharp topological bounds on the Weyl functional and, inspired by a famous conjecture by Chern, we find estimates for the norm of the second fundamental form in terms of the Euler characteristic in the minimal, constant scalar curvature case, under some volume constraints. Finally, we prove some rigidity results by means of integral inequalities on the derivatives of the second fundamental form. We also extend some of the results to the case of a locally conformally flat 5-dimensional ambient space.",
+  "url": "http://arxiv.org/abs/2603.03775v1",
+  "timestamp": "2026-03-04T06:29:47Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "af46d8aa1e4cb9696be9aa9da69f72abdb2c7531f89582fe1a2386c4ed53af2f",
+  "parent_hash": "61808d722d6ee2ab3076ef4a752ca0984f2b7a287ffc9f5928ce10b23db92b61",
+  "metadata": {
+    "authors": [
+      "Davide Dameno",
+      "Aaron J. Tyrrell"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.03775v1"
+  }
+}

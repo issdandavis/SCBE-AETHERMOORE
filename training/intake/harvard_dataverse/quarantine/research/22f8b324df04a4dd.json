@@ -1,0 +1,31 @@
+{
+  "id": "22f8b324df04a4dd",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Stochastic resonance data",
+  "content": "# Stochastic resonance data\n\nAuthors: Okamura, Akihiro\nPublished: 2024-12-19T21:29:38Z\nSubjects: Medicine, Health and Life Sciences\nDOI: doi:10.7910/DVN/PVEKM9\n\nSets of experimental data from patch clamp recordings and calcium imaging to examine the role of stochastic resonance in sinoatrial node cells from rabbit hearts. The data was obtained in the current clamp configuration of perforated patch clamp. The protocol included sine waves and noise of different amplitudes. We also supply an Excel file containing information about protocols applied in each experimental file.\n\nCitation: Okamura, Akihiro, 2024, \"Stochastic resonance data\", https://doi.org/10.7910/DVN/PVEKM9, Harvard Dataverse, V2",
+  "url": "https://doi.org/10.7910/DVN/PVEKM9",
+  "timestamp": "2026-03-06T04:18:45.403966",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "df09d00fec8891ef44160c201edb74225ac38ba2d996cdf7d2e59bc85c1ce51d",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/PVEKM9",
+    "subjects": [
+      "Medicine, Health and Life Sciences"
+    ],
+    "authors": [
+      "Okamura, Akihiro"
+    ],
+    "file_count": 594
+  }
+}
