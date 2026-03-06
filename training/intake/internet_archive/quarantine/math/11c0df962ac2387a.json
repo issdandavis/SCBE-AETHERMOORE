@@ -1,0 +1,36 @@
+{
+  "id": "11c0df962ac2387a",
+  "source": "internet_archive",
+  "category": "quarantine/math",
+  "title": "HOPE Spiral Path Whitepaper",
+  "content": "# HOPE Spiral Path Whitepaper\n\nCreator: HOPE Collective, hope_collective\nDate: 2025-08-24T00:00:00Z\nDownloads: 17\nSubjects: hope, spiral path, HOPE Spiral Path, collective intelligence, AI ethics\n\nThe HOPE Spiral Path is an open framework uniting science, ethics, resilience, and consciousness into a practical model for human systems in the age of accelerating AI and ecological instability.\u00a0 This first public release (v1.0, 2025) establishes the HOPE Spiral Path as public knowledge and places it under an open license (CC BY-SA 4.0), ensuring it remains accessible to humanity and cannot be enclosed by private interests.",
+  "url": "https://archive.org/details/hope-spiral-path-whitepaper",
+  "timestamp": "2026-03-06T03:59:22.607299",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "380bec89489ec2b71a07aefb6e06e416b24a2f9cc51ac2927258e87cdad5d66f",
+  "parent_hash": "12cd4a96fd71dc9d970d8a14ed6b5852b9056b4bfd16d8333f7b43b74b85d684",
+  "metadata": {
+    "ia_identifier": "hope-spiral-path-whitepaper",
+    "media_type": "texts",
+    "downloads": 17,
+    "subjects": [
+      "hope",
+      "spiral path",
+      "HOPE Spiral Path",
+      "collective intelligence",
+      "AI ethics",
+      "resilience",
+      "sacred geometry",
+      "open commons"
+    ]
+  }
+}

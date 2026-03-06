@@ -1,0 +1,28 @@
+{
+  "id": "7a675abaa85a6e3f",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Special Lagrangian smoothings, Calabi ansatz and stability conditions",
+  "content": "# Special Lagrangian smoothings, Calabi ansatz and stability conditions\n\nAuthors: Jacopo Stoppa\nPublished: 2026-03-03T08:49:52Z\n\nAs part of his work on special Lagrangian (sLag) submanifolds with isolated conical singularities, Joyce proved a criterion for the existence of sLag smoothings, along a small variation of complex structure, for the union of two connected, compact, embedded sLags, with the same phase, intersecting transversely. Here we construct infinitely many examples of pairs of non-compact, embedded sLags, of the same phase and with arbitrary dimension, intersecting only at infinity in a non-transverse way, which satisfy Joyce's criterion: along a small variation of complex structure, a sLag smoothing of their union exists on the stable locus where a slope inequality for periods of the holomorphic volume form holds. At least under a natural symmetry assumption, this slope inequality is also necessary for the existence of such smoothing. Our approach uses the Leung-Yau-Zaslow transform and the analysis of deformed Hermitian Yang-Mills connections with Calabi ansatz, due to Jacob and Sheu. In the unstable case, we prove that if a family of Lagrangian smoothings evolving under the natural Calabi-symmetric version of the mean curvature flow (due to Chan and Jacob) admits a limit, then this must be the union of the original sLags. As an application we show that in our examples, in dimension two, the condition for the existence of the sLag smoothing is in fact equivalent to the stability of the corresponding object in the Fukaya-Seidel category, with respect to a known Bridgeland stability condition imported from algebraic geometry, and in the unstable case the limit of the Calabi-symmetric mean curvature flow in our result coincides with the Harder-Narasimhan decomposition, consistently with a general conjecture of Joyce. A similar (although weaker) result also holds in dimension three.",
+  "url": "http://arxiv.org/abs/2603.02749v1",
+  "timestamp": "2026-03-03T08:49:52Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "83660e2821e2952c508a75222619bc6ce53bcf07325b4860e09656d155ff859b",
+  "parent_hash": "3b5f7497c9590aa8382c79d926e308f50062cce45e9ca14c1688e762cda054ae",
+  "metadata": {
+    "authors": [
+      "Jacopo Stoppa"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.02749v1"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "id": "6f8af6c6b3dbb617",
+  "source": "library_of_congress",
+  "category": "quarantine/ai",
+  "title": "Robotics & artificial intelligence",
+  "content": "# Robotics & artificial intelligence\n\nContributors: issitt, micah l.\nDate: 2020\nSubjects: public opinion, robotics, artificial intelligence, history, sources\n\n\"This volume explores automatons, computing, mechanical engineering, automation in the Industrial Revolution, digital technology, the search for artificial intelligence, and technological singularity--a hypothetical future point when technological growth becomes uncontrollable and irreversible, resulting in unfathomable changes to human civilization.\"-- From publisher description",
+  "url": "//lccn.loc.gov/2022303183",
+  "timestamp": "2026-03-06T02:37:58.020404",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "44a487f752f9e0a5408bbb479c4bd518b2af3fe560b57daf87a0e934ec002216",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "public opinion",
+      "robotics",
+      "artificial intelligence",
+      "history",
+      "sources",
+      "automation"
+    ],
+    "dates": "2020",
+    "original_format": [
+      "book"
+    ]
+  }
+}

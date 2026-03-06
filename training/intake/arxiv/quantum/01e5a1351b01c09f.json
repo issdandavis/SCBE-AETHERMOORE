@@ -1,0 +1,32 @@
+{
+  "id": "01e5a1351b01c09f",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Interplay of internal and external coupling phases in cavity magnonics: from level repulsion to attraction",
+  "content": "# Interplay of internal and external coupling phases in cavity magnonics: from level repulsion to attraction\n\nAuthors: Guillaume Bourcin, Mufti Avicena, Vincent Vlaminck, Jeremy Bourhill, Vincent Castel\nPublished: 2026-03-05T11:02:03Z\n\nWe experimentally validate a unified input--output model that incorporates internal and external coupling phases in a room-temperature cavity magnonic system. By explicitly accounting for phase effects, the model provides full control of interference-induced antiresonances and enables a clear interpretation of the transition from level repulsion to level attraction. Nonreciprocal transmission -- originating from internal phases -- is accurately reproduced under specific coupling conditions. Quantitative agreement between experiments and simulations is obtained across all coupling regimes, demonstrating a practical route toward phase-controlled cavity--magnon devices.",
+  "url": "http://arxiv.org/abs/2603.05051v1",
+  "timestamp": "2026-03-05T11:02:03Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "e9328af6fa86913ab1da3e18c62ca5697856cc0c669850066ec382860c3b8bc4",
+  "parent_hash": "b92b541924087c836c0af713f0f520a617a912de1b7f7428c685a5384c6abb6d",
+  "metadata": {
+    "authors": [
+      "Guillaume Bourcin",
+      "Mufti Avicena",
+      "Vincent Vlaminck",
+      "Jeremy Bourhill",
+      "Vincent Castel"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05051v1"
+  }
+}

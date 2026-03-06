@@ -1,0 +1,30 @@
+{
+  "id": "b97156c7e1c18bdf",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Replication data for: Identifying Risk Factors for Webserver Compromise",
+  "content": "# Replication data for: Identifying Risk Factors for Webserver Compromise\n\nAuthors: Vasek, Marie, Moore, Tyler\nPublished: 2014-04-29T00:00:00Z\nSubjects: \nDOI: doi:10.7910/DVN/25608\n\nWe describe a case-control study to identify risk factors that are associated with higher rates of webserver compromise. We inspect a random sample of around 200,000 webservers and automatically identify attributes hypothesized to affect the susceptibility to compromise, notably content management system (CMS) and webserver type. We then cross-list this information with data on webservers hacked to serve phishing pages or redirect to unlicensed online pharmacies. We find that webservers running WordPress and Joomla are more likely to be hacked than those not running any CMS, and that servers running Apache and Nginx are more likely to be hacked than those running Microsoft IIS. Furthermore, using a series of logistic regressions, we find that a CMS's market share is positively correlated with website compromise. Finally, we examine the link between webservers running outdated software and being compromised. Contrary to conventional wisdom, we find that servers running outdated versions of WordPress (the most popular CMS platform) are less likely to be hacked than those running more recent versions. We present evidence that this may be explained by the low install base of outdated software.\n\nCitation: Vasek, Marie; Moore, Tyler, 2014, \"Replication data for: Identifying Risk Factors for Webserver Compromise\", https://doi.org/10.7910/DVN/25608, Harvard Dataverse, V2",
+  "url": "https://doi.org/10.7910/DVN/25608",
+  "timestamp": "2026-03-06T02:42:03.535817",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "7d26bfc20f321a795cf9021b82c50b3245439fe2b94e6e6379c32584dd2fee50",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/25608",
+    "subjects": [],
+    "authors": [
+      "Vasek, Marie",
+      "Moore, Tyler"
+    ],
+    "file_count": 4
+  }
+}

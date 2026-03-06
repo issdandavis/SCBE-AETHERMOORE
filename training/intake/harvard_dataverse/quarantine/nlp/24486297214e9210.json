@@ -1,0 +1,34 @@
+{
+  "id": "24486297214e9210",
+  "source": "harvard_dataverse",
+  "category": "quarantine/nlp",
+  "title": "Replication Data for: Troubles in Text: Using Natural Language Processing to recognize government rationalizations for rights abuses",
+  "content": "# Replication Data for: Troubles in Text: Using Natural Language Processing to recognize government rationalizations for rights abuses\n\nAuthors: Dreier, Sarah, Serrano, Sofia, Gade, Emily, Smith, Noah A\nPublished: 2024-07-29T18:43:20Z\nSubjects: Social Sciences\nDOI: doi:10.7910/DVN/D5DXCE\n\nDo natural language processing (NLP) innovations in capturing words\u2019 contextual meanings yield increased performance in computationally recognizing political concepts in text? We evaluate how one model (RoBERTa) performs on a uniquely challenging task: classifying government rationalizations for internment without trial within imperfectly digitized archive text. RoBERTa reliability outperforms conventional supervised methods at identifying and classifying internment rationalizations but remains inadequate for certain objectives. However, with proper model specifications and targeted manual interventions, RoBERTa serves as a reliable tool to reduce manual annotation. Our illustrative example demonstrates how researchers may combine NLP and manual annotation to analyze context-specific government policy discussions and/or poorly digitized historical records. RoBERTa and similar models would likely achieve even stronger performance on contemporary texts. This article demonstrates the value and limitations of using NLP to classify political concepts, discusses when applying such models could be beneficial, and offers practical instruction for NLP application in political science.\n\nCitation: Dreier, Sarah; Serrano, Sofia; Gade, Emily; Smith, Noah A, 2024, \"Replication Data for: Troubles in Text: Using Natural Language Processing to recognize government rationalizations for rights abuses\", https://doi.org/10.7910/DVN/D5DXCE, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/D5DXCE",
+  "timestamp": "2026-03-06T02:42:20.598588",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "0a3a3b128fc882363829316ffa85a89ccb519970bcbceb46801b9acb047084c7",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/D5DXCE",
+    "subjects": [
+      "Social Sciences"
+    ],
+    "authors": [
+      "Dreier, Sarah",
+      "Serrano, Sofia",
+      "Gade, Emily",
+      "Smith, Noah A"
+    ],
+    "file_count": 3
+  }
+}

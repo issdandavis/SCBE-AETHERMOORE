@@ -1,0 +1,30 @@
+{
+  "id": "5266bcf373af344a",
+  "source": "arxiv",
+  "category": "ai",
+  "title": "Enhancing Zero-shot Commonsense Reasoning by Integrating Visual Knowledge via Machine Imagination",
+  "content": "# Enhancing Zero-shot Commonsense Reasoning by Integrating Visual Knowledge via Machine Imagination\n\nAuthors: Hyuntae Park, Yeachan Kim, SangKeun Lee\nPublished: 2026-03-05T10:47:22Z\n\nRecent advancements in zero-shot commonsense reasoning have empowered Pre-trained Language Models (PLMs) to acquire extensive commonsense knowledge without requiring task-specific fine-tuning. Despite this progress, these models frequently suffer from limitations caused by human reporting biases inherent in textual knowledge, leading to understanding discrepancies between machines and humans. To bridge this gap, we introduce an additional modality to enrich the reasoning capabilities of PLMs. We propose Imagine (Machine Imagination-based Reasoning), a novel zero-shot commonsense reasoning framework that supplements textual inputs with visual signals from machine-generated images. Specifically, we enhance PLMs with the ability to imagine by embedding an image generator directly into the reasoning pipeline. To facilitate effective utilization of this imagined visual context, we construct synthetic datasets designed to emulate visual question-answering scenarios. Through comprehensive evaluations on multiple commonsense reasoning benchmarks, we demonstrate that Imagine substantially outperforms existing zero-shot approaches and even surpasses advanced large language models. These results underscore the capability of machine imagination to mitigate reporting bias and significantly enhance the generalization ability of commonsense reasoning models",
+  "url": "http://arxiv.org/abs/2603.05040v1",
+  "timestamp": "2026-03-05T10:47:22Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "777849f2489cd8903e18c90d5179f34ce7768c18c00fcbef02409b403a3e534d",
+  "parent_hash": "d23da2f1412f2ceac005601a36481dc02950b664206f777492f66ddec2388ae7",
+  "metadata": {
+    "authors": [
+      "Hyuntae Park",
+      "Yeachan Kim",
+      "SangKeun Lee"
+    ],
+    "arxiv_category": "cs.AI",
+    "arxiv_id": "2603.05040v1"
+  }
+}

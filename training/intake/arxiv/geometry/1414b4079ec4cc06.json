@@ -1,0 +1,28 @@
+{
+  "id": "1414b4079ec4cc06",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Dolbeault-Dirac operators on compact K\u00e4hler manifolds in Banach noncommutative geometry",
+  "content": "# Dolbeault-Dirac operators on compact K\u00e4hler manifolds in Banach noncommutative geometry\n\nAuthors: C\u00e9dric Arhancet\nPublished: 2026-02-17T08:27:08Z\n\nWe develop an $\\mathrm{L}^p$-theory for Dolbeault-Dirac operators on compact K\u00e4hler manifolds with coefficients in a Hermitian holomorphic vector bundle $E$. For each $p \\in (1,\\infty)$ we consider the closed $\\mathrm{L}^p$-realization $\\mathcal{D}_{E,p}$ of the Dolbeault-Dirac operator $\\mathcal{D}_{E}$ on the Banach space $\\mathrm{L}^p(\u03a9^{0,\\bullet}(M,E))$. We prove that $\\mathcal{D}_{E,p}$ is bisectorial and admits a bounded $\\mathrm{H}^\\infty$ functional calculus. We establish a Gaffney-type estimate controlling covariant derivatives in $\\mathrm{L}^p$, and also obtain $\\mathrm{L}^p$-Hodge decompositions. As an application, we show that the closed operator $\\mathcal{D}_{E,p}$ yields a compact Banach spectral triple, and we identify the index of the associated Fredholm operator with the holomorphic Euler characteristic, proving in particular that it is independent of $p$. This work initiates a connection between complex geometry, $\\mathrm{L}^p$-analysis and Banach noncommutative geometry, beyond the Hilbert space setting.",
+  "url": "http://arxiv.org/abs/2602.15419v1",
+  "timestamp": "2026-02-17T08:27:08Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "42d54e128bfe5b056d709face4b61a0a24ca4a57ac5408c5ff047cd8dc938a09",
+  "parent_hash": "6b50fc3e0c07e9d8b5b1004fc02f08e857c978fa69b97dda3e6f867935901f17",
+  "metadata": {
+    "authors": [
+      "C\u00e9dric Arhancet"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.15419v1"
+  }
+}

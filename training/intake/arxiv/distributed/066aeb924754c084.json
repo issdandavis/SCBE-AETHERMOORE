@@ -1,0 +1,31 @@
+{
+  "id": "066aeb924754c084",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "Overcoming Latency-bound Limitations of Distributed Graph Algorithms using the HPX Runtime System",
+  "content": "# Overcoming Latency-bound Limitations of Distributed Graph Algorithms using the HPX Runtime System\n\nAuthors: Karame Mohammadiporshokooh, Panagiotis Syskakis, Andrew Lumsdaine, Hartmut Kaiser\nPublished: 2026-03-04T20:26:30Z\n\nGraph processing at scale presents many challenges, including the irregular structure of graphs, the latency-bound nature of graph algorithms, and the overhead associated with distributed execution. While existing frameworks such as Spark GraphX and the Parallel Boost Graph Library (PBGL) have introduced abstractions for distributed graph processing, they continue to struggle with inherent issues like load imbalance and synchronization overhead. In this work, we present a distributed library prototype and a distributed implementation of three key graph algorithms - Breadth-First Search (BFS), PageRank, and Triangle Counting, using C++ mechanisms from the NWgraph library and leveraging HPX's distributed containers and asynchronous constructs. These algorithms span the categories of Traversal, centrality, and Pattern matching, and are selected to represent diverse computational characteristics. We evaluate our HPX-based implementations against GraphX, and PBGL, showing that a high-performance runtime such as HPX enables the construction of algorithms that significantly outperform conventional frameworks by exploiting asynchronous execution, latency hiding, and fine-grained parallelism in shared memory. All algorithms in our prototype follow a unified execution model in which local and remote computations are expressed using the same programming abstractions, with asynchrony managed transparently by the runtime. This design explicitly leverages shared-memory parallelism within each locality while overlapping communication and computation across localities, providing a practical foundation for extending this approach to a broader class of distributed graph algorithms.",
+  "url": "http://arxiv.org/abs/2603.04583v1",
+  "timestamp": "2026-03-04T20:26:30Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "6031d6a326e6b8a75f631aa94c59b44237918454c62d177a28a7676bf0062df9",
+  "parent_hash": "856ca16d2ed11d99929efdd30218ab27c36b52deecd7245e1635cbbf718872ad",
+  "metadata": {
+    "authors": [
+      "Karame Mohammadiporshokooh",
+      "Panagiotis Syskakis",
+      "Andrew Lumsdaine",
+      "Hartmut Kaiser"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.04583v1"
+  }
+}

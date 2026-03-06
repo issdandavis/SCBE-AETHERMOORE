@@ -1,0 +1,31 @@
+{
+  "id": "3f647c577cb76110",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Principles and practice of electrical engineering,",
+  "content": "# Principles and practice of electrical engineering,\n\nContributors: gray, alexander\nDate: 1914\nSubjects: electrical engineering\n\nAlso available in digital form.",
+  "url": "https://www.loc.gov/item/14018538/",
+  "timestamp": "2026-03-06T04:17:33.805728",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "5df893fd37277b8269a718bfcd1b989ee73a97a5b0f49ca944976c22e039de4f",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "electrical engineering"
+    ],
+    "dates": "1914",
+    "original_format": [
+      "book"
+    ]
+  }
+}

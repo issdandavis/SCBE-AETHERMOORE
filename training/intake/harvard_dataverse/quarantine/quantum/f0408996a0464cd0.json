@@ -1,0 +1,31 @@
+{
+  "id": "f0408996a0464cd0",
+  "source": "harvard_dataverse",
+  "category": "quarantine/quantum",
+  "title": "Quantum Computing Approach to Electromagnetic Wave Propagation in Plasma",
+  "content": "# Quantum Computing Approach to Electromagnetic Wave Propagation in Plasma\n\nAuthors: Efstratios Koukoutsis, Kyriakos Hizanidis, Abhay K. Ram\nPublished: 2024-03-06T17:56:46Z\nSubjects: Physics\nDOI: doi:10.7910/DVN/RMDNBJ\n\nQuantum computing (QC) has shown enormous promise for solving classes of problems for which a quantum algorithm can obtain a speedup (advantage) over the classical counterpart. Such a speed up would be extremely desirable to be exploited in favor of classical,high demanding in computational resources, simulations of electromagnetic wave propagation in plasma. We propose a formalism, appropriate for application of Quantum Computation methods in plasma electromagnetic wave propagation, based on the Schrodinger representation of Maxwell Equations for a cold, homogeneous, collision-less, two species magnetized plasma. The \"quantal\" electromagnetic picture retains all the attributes of classical theory whereas provides new insights in the framework of plasma electrodynamics as well as to other quantum-based descriptions.\n\nCitation: Efstratios Koukoutsis, Kyriakos Hizanidis, Abhay K. Ram, 2024, \"Quantum Computing Approach to Electromagnetic Wave Propagation in Plasma\", https://doi.org/10.7910/DVN/RMDNBJ, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/RMDNBJ",
+  "timestamp": "2026-03-06T02:42:24.924528",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4378ba82c0cac81f2f35d0d8f815c9fa31d57cc6dcbb793d4666f42a8e3f5151",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/RMDNBJ",
+    "subjects": [
+      "Physics"
+    ],
+    "authors": [
+      "Efstratios Koukoutsis, Kyriakos Hizanidis, Abhay K. Ram"
+    ],
+    "file_count": 1
+  }
+}

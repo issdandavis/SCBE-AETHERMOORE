@@ -1,0 +1,29 @@
+{
+  "id": "e304d53f3378a501",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "On the Calabi-Yau Conjectures for Minimal Hypersurfaces in Higher Dimensions",
+  "content": "# On the Calabi-Yau Conjectures for Minimal Hypersurfaces in Higher Dimensions\n\nAuthors: Shrey Aryan, Alexander D. McWeeney\nPublished: 2026-02-17T21:57:20Z\n\nIn this paper, we study the Calabi-Yau conjectures for complete minimal hypersurfaces $\u03a3^{n}\\subset \\mathbb{R}^{n+1}$ in dimensions $n\\ge 3$. These conjectures ask whether a complete minimal hypersurface must be unbounded, and more strongly, whether it must be proper. For the unboundedness question, we prove a chord-arc estimate for an embedded minimal disk with bounded curvature, showing that intrinsic distance is controlled by a polynomial of the extrinsic distance. On the other hand, using gluing techniques, we construct a complete, improperly embedded minimal hypersurface in $\\mathbb{R}^{n+1}$ for every $n\\ge 3$. This example shows that the properness conjecture suggested by the deep work of Colding-Minicozzi [CM08] in the case $n=2$ fails in higher dimensions.",
+  "url": "http://arxiv.org/abs/2602.16048v3",
+  "timestamp": "2026-02-17T21:57:20Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "04ab7b1f7216755f3406b871e18dbca65723aa36e3f02e1872678c27986ebb4a",
+  "parent_hash": "0fea5d0ea09a03c40c7b48b0692071b6df07f32bd771acf9ffce8d8bc73fc0c9",
+  "metadata": {
+    "authors": [
+      "Shrey Aryan",
+      "Alexander D. McWeeney"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.16048v3"
+  }
+}

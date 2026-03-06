@@ -1,0 +1,31 @@
+{
+  "id": "917900d801361c2f",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "When travel meets robots: The role of embedding trust",
+  "content": "# When travel meets robots: The role of embedding trust\n\nAuthors: Xu, Jiaqi\nPublished: 2026-02-05T03:17:38Z\nSubjects: Business and Management\nDOI: doi:10.7910/DVN/R0OZEL\n\nSupplementary materials for the research, including appendices\n\nCitation: Xu, Jiaqi, 2026, \"When travel meets robots: The role of embedding trust\", https://doi.org/10.7910/DVN/R0OZEL, Harvard Dataverse, V1, UNF:6:/Z4EslXxRwsSQJBBy8GyWA== [fileUNF]",
+  "url": "https://doi.org/10.7910/DVN/R0OZEL",
+  "timestamp": "2026-03-06T02:42:11.933231",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "c8812da8000c67e9ea4678d724aff14ba8f713069565b47a5775cbdf8ca3aa69",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/R0OZEL",
+    "subjects": [
+      "Business and Management"
+    ],
+    "authors": [
+      "Xu, Jiaqi"
+    ],
+    "file_count": 2
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "2b51c15d974a131f",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Computational science -- ICCS 2007 : 7th international conference, Beijing, China, May 27-30, 2007 : proceedings",
+  "content": "# Computational science -- ICCS 2007 : 7th international conference, Beijing, China, May 27-30, 2007 : proceedings\n\nContributors: shi, yong, iccs 2007\nDate: 2007\nSubjects: computational complexity, congresses, computer science\n\nIncludes bibliographical references and index. Also issued online. Complete in 4 v. according to external OCLC record.",
+  "url": "//lccn.loc.gov/2007927049",
+  "timestamp": "2026-03-06T02:38:43.165485",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "ee38deb43a58f552018c6ca04eb9451811ea6622cd216d568fd743fcc5514e84",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "computational complexity",
+      "congresses",
+      "computer science"
+    ],
+    "dates": "2007",
+    "original_format": [
+      "book"
+    ]
+  }
+}

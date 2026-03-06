@@ -1,0 +1,30 @@
+{
+  "id": "4429403ed96ad29b",
+  "source": "internet_archive",
+  "category": "quarantine/math",
+  "title": "Probing chirality fluctuations in molecules by nonlinear optical spectroscopy",
+  "content": "# Probing chirality fluctuations in molecules by nonlinear optical spectroscopy\n\nCreator: N. Mann, P. Nalbach, S. Mukamel, M. Thorwart\nDate: 2014-12-03T00:00:00Z\nDownloads: 28\nSubjects: Physics, Chemical Physics\n\nSymmetry breaking caused by geometric fluctuations can enable processes that are otherwise forbidden. An example is a perylene bisimide dyad whose dipole moments are perpendicular to each other. F\\\"orster-type energy transfer is thus forbidden at the equilibrium geometry since the dipolar coupling vanishes. Yet, fluctuations of the geometric arrangement have been shown to induce finite energy transfer that depends on the dipole variance, rather than the mean. We demonstrate an analogous effect associated with chirality symmetry breaking. In its equilibrium geometry this dimer is non chiral. The linear chiral response which depends on the average geometry thus vanishes. However, we show that certain 2D chiral optical signals are finite due to geometric fluctuations. Furthermore, the correlation time of these fluctuations can be experimentally revealed by the waiting time dependence of the 2D signal.",
+  "url": "https://archive.org/details/arxiv-1412.1263",
+  "timestamp": "2026-03-06T04:17:53.893419",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "6477c58761596b557d57ba46d3364b02ffa587a874b637e517d59e4e4351fdcc",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "arxiv-1412.1263",
+    "media_type": "texts",
+    "downloads": 28,
+    "subjects": [
+      "Physics",
+      "Chemical Physics"
+    ]
+  }
+}

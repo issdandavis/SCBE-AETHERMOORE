@@ -1,0 +1,32 @@
+{
+  "id": "2b67ee6b41232aeb",
+  "source": "library_of_congress",
+  "category": "quarantine/quantum",
+  "title": "Law and policy for the quantum age",
+  "content": "# Law and policy for the quantum age\n\nContributors: garfinkel, simson, hoofnagle, chris jay\nDate: 2021\nSubjects: quantum computing, quantum theory\n\n\"the smallest scales-why a molecule of water gets hot in a microwave oven, or how a uranium atom splits in a nuclear reactor. The rules of quantum mechanics are often counterintuitive and seem incompatible with our everyday experiences. Over the past century, deeper understanding of quantum mechanics has given scientists better control of the quantum world and quantum effects. This control provides technologists with new ways to acquire, process, and transmit information as part of a new scientific field known as quantum information science (QIS)\"-- Provided by publisher.",
+  "url": "https://www.loc.gov/item/2021026038/",
+  "timestamp": "2026-03-06T02:38:03.634924",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "492846c94ba35bd578a880b7b5f67ee4b4327cca5ae48eec2a0d9c8ebe121ae1",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "quantum computing",
+      "quantum theory"
+    ],
+    "dates": "2021",
+    "original_format": [
+      "book"
+    ]
+  }
+}

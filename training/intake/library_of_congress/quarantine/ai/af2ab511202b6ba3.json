@@ -1,0 +1,32 @@
+{
+  "id": "af2ab511202b6ba3",
+  "source": "library_of_congress",
+  "category": "quarantine/ai",
+  "title": "APL Machine Learning",
+  "content": "# APL Machine Learning\n\nContributors: N/A\nDate: 2023\nSubjects: science, website\n\nWebsite.   electronic |   Electronic (Form).",
+  "url": "https://www.loc.gov/item/lcwaN0041344/",
+  "timestamp": "2026-03-06T02:38:34.742595",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "cb8a7a887d3567281786c5dc3247fd95166fe31d6c62ce49273a4ac18f98410a",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "science",
+      "website"
+    ],
+    "dates": "2023",
+    "original_format": [
+      "web archive"
+    ]
+  }
+}

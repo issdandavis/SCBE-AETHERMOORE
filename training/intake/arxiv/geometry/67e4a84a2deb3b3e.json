@@ -1,0 +1,30 @@
+{
+  "id": "67e4a84a2deb3b3e",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Thermodynamics a la Souriau on K\u00e4hler Non Compact Symmetric Spaces for Cartan Neural Networks",
+  "content": "# Thermodynamics a la Souriau on K\u00e4hler Non Compact Symmetric Spaces for Cartan Neural Networks\n\nAuthors: Pietro G. Fr\u00e9, Alexander S. Sorin, Mario Trigiante\nPublished: 2025-12-18T17:04:43Z\n\nIn this paper, we clarify several issues concerning the abstract geometrical formulation of thermodynamics on non compact symmetric spaces $\\mathrm{U/H}$ that are the mathematical model of hidden layers in the new paradigm of Cartan Neural Networks. We introduce a distinction between the generalized thermodynamics associated with Dynamical Systems and the challenging proposal of Gibbs probability distributions on $\\mathrm{U/H}$ provided by generalized thermodynamics {\u00e0} la Souriau. Main result is the proof that $\\mathrm{U/H}$.s supporting Gibbs distributions are only the K\u00e4hler ones. For the latter, we solve the problem of determining the space of temperatures, namely of Lie algebra elements for which the partition function converges. The space of generalized temperatures is the orbit under the adjoint action of $\\mathrm{U}$ of a positivity domain in the Cartan subalgebra $C_c\\subset\\mathbb{H}$ of the maximal compact subalgebra $\\mathbb{H}\\subset\\mathbb{U}$. We illustrate how our explicit constructions for the Poincar\u00e9 and Siegel planes might be extended to the whole class of Calabi-Vesentini manifolds utilizing Paint Group symmetry. Furthermore we claim that Rao's, Chentsov's, Amari's Information Geometry and the thermodynamical geometry of Ruppeiner and Lychagin are the very same thing. The most important property of the Gibbs probability distributions provided by the here introduced setup is their covariance with respect to the action of the full group of symmetries $\\mathrm{U}$. The partition function is invariant against $\\mathrm{U}$ transformations and the set of its arguments, namely the generalized temperatures, can be always reduced to a minimal set whose cardinality is equal to the rank of the compact denominator group $\\mathrm{H}\\subset \\mathrm{U}$.",
+  "url": "http://arxiv.org/abs/2512.16772v1",
+  "timestamp": "2025-12-18T17:04:43Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "ae39565e2da3d36e3249edcd6ff17159effbdcc9074a9fa4739aeba5fcbcbe34",
+  "parent_hash": "47a2ac36891232e25e4c49f39335bb4ab78e87f69d57a71972fffdf37080f870",
+  "metadata": {
+    "authors": [
+      "Pietro G. Fr\u00e9",
+      "Alexander S. Sorin",
+      "Mario Trigiante"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2512.16772v1"
+  }
+}

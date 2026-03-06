@@ -34,7 +34,10 @@
       "Bash(docker rmi:*)",
       "Bash(docker builder:*)",
       "Bash(docker system:*)",
-      "Bash(npm cache:*)"
+      "Bash(npm cache:*)",
+      "Bash(PYTHONPATH=. python:*)",
+      "WebSearch",
+      "Bash(pip install:*)"
     ]
   }
 }

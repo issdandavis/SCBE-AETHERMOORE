@@ -1,0 +1,28 @@
+{
+  "id": "9db0818d407a34d3",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Elliptic genera and $SL(2,Z)$ modular forms for fibre bundles",
+  "content": "# Elliptic genera and $SL(2,Z)$ modular forms for fibre bundles\n\nAuthors: Yong Wang\nPublished: 2026-03-04T23:32:53Z\n\nBy the family index theory, we generalize some well-known $SL(2,Z)$ modular forms to the family case and obtain some new anomaly cancellation formulas for the determinant line bundle and index gerbes, and certain results about eta invariants. Moreover, for the higher degree case, we give some anomaly cancellation formulas of residue Chern forms.",
+  "url": "http://arxiv.org/abs/2603.04675v1",
+  "timestamp": "2026-03-04T23:32:53Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "ccf002ba296b9f371c780639f40e0bb2252b88fa2fd361ecef3dc4162a6253ca",
+  "parent_hash": "2f4ecf3a3cac0dde3e484d4387d7cdd3f932e310b3cf944ee635b87f4251871b",
+  "metadata": {
+    "authors": [
+      "Yong Wang"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.04675v1"
+  }
+}

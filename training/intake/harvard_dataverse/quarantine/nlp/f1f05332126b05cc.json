@@ -1,0 +1,33 @@
+{
+  "id": "f1f05332126b05cc",
+  "source": "harvard_dataverse",
+  "category": "quarantine/nlp",
+  "title": "chandassu",
+  "content": "# chandassu\n\nAuthors: Boddu Sri Pavan\nPublished: 2025-11-02T20:01:50Z\nSubjects: Arts and Humanities, Computer and Information Science, Engineering\nDOI: doi:10.7910/DVN/QMOVTK\n\nFirst ever dataset for \"Chandassu\", metrical poetry in Telugu Language (\u0c24\u0c46\u0c32\u0c41\u0c17\u0c41 \u0c1a\u0c02\u0c27\u0c38\u0c4d\u0c38\u0c41). Our dataset comprises 4,651 carefully curated Telugu padyams spanning three primary prosodic classes (Vruttamu, Jaathi, Vupajaathi) and eight distinct types (Vutpalamaala, Champakamaala, Saardulamu, Mattebhamu, Kandamu, Teytageethi, Aataveladi, Seesamu).\n\nCitation: Boddu Sri Pavan, 2025, \"chandassu\", https://doi.org/10.7910/DVN/QMOVTK, Harvard Dataverse, V1, UNF:6:5DqeRzI8w6D0zt6PKD8T0g== [fileUNF]",
+  "url": "https://doi.org/10.7910/DVN/QMOVTK",
+  "timestamp": "2026-03-06T02:42:20.598491",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "cb10a591b7138fe14b9239f2d3994b25f882ee928ebeec403040eeb5ee22400e",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/QMOVTK",
+    "subjects": [
+      "Arts and Humanities",
+      "Computer and Information Science",
+      "Engineering"
+    ],
+    "authors": [
+      "Boddu Sri Pavan"
+    ],
+    "file_count": 1
+  }
+}

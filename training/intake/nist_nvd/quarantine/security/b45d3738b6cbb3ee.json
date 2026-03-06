@@ -1,0 +1,31 @@
+{
+  "id": "b45d3738b6cbb3ee",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2023-24025 \u2014 CVSS 7.5 (HIGH)",
+  "content": "# CVE-2023-24025\n\nCVSS Score: 7.5 (HIGH)\nPublished: 2023-01-20T21:15:11.273\nCWEs: CWE-347, CWE-347\n\nCRYSTALS-DILITHIUM (in Post-Quantum Cryptography Selected Algorithms 2022) in PQClean d03da30 may allow universal forgeries of digital signatures via a template side-channel attack because of intermediate data leakage of one vector.\n\nReferences: https://csrc.nist.gov/Projects/post-quantum-cryptography/selected-algorithms-2022, https://eprint.iacr.org/2023/050, https://github.com/PQClean/PQClean/tree/d03da3053491e767ef842deaef43fc5bdb6bc911",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2023-24025",
+  "timestamp": "2026-03-06T02:41:36.374002",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "f20918401b354fd9198cdf7752c5ceae7008f38d72fb801b5f1717f9f47e7a57",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2023-24025",
+    "cvss_score": 7.5,
+    "severity": "HIGH",
+    "cwes": [
+      "CWE-347",
+      "CWE-347"
+    ],
+    "published": "2023-01-20T21:15:11.273"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "aceb305c69ab7fe3",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Integral Inequalities and Rigidity for $V$-Static-Type Equations on Manifolds with Boundary",
+  "content": "# Integral Inequalities and Rigidity for $V$-Static-Type Equations on Manifolds with Boundary\n\nAuthors: Maria Andrade\nPublished: 2026-02-24T16:37:20Z\n\nIn this work, we study compact Riemannian manifolds with boundary satisfying V-static-type equations. By combining a generalized Reilly formula with Steklov-type boundary value problems, we derive integral inequalities for geometric quantities associated with the boundary. These inequalities lead to rigidity results, including characterizations of geodesic balls in space forms. In particular, our results offer new insights into several known rigidity theorems in the literature.",
+  "url": "http://arxiv.org/abs/2602.21075v1",
+  "timestamp": "2026-02-24T16:37:20Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "e0812740396f011e4b570d3c48080032b106e518c21f90ed979660cae937760a",
+  "parent_hash": "352b6cc898456b61922fe57be731b80e89c1bbc2c9ad0c231ddb1090d87fa8e1",
+  "metadata": {
+    "authors": [
+      "Maria Andrade"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.21075v1"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "4ac27a99607f7b05",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Retrieval-Augmented Generation with Knowledge Graphs for Customer Service Question Answering (Q136411263)",
+  "content": "# Retrieval-Augmented Generation with Knowledge Graphs for Customer Service Question Answering\n\nWikidata ID: Q136411263\nDescription: \n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q136411263",
+  "timestamp": "2026-03-06T02:41:28.754450",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "6709da44c2772965e312e73821f27202a3d9cc10486f808eab7585e2e4e22f76",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q136411263",
+    "description": ""
+  }
+}

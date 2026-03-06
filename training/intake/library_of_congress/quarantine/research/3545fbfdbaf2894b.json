@@ -1,0 +1,32 @@
+{
+  "id": "3545fbfdbaf2894b",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Producers' cooperative milk distributing plants",
+  "content": "# Producers' cooperative milk distributing plants\n\nContributors: swarthout, a. v. (arthur vance), barber, warren h., jesness, oscar b. (oscar bernard), clement, clarence elbert\nDate: 1922\nSubjects: milk, dairying\n\nContribution from the Bureau of animal industry and the Bureau of agricultural economics. Also available in digital form.",
+  "url": "https://www.loc.gov/item/agr22001076/",
+  "timestamp": "2026-03-06T02:38:15.031893",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "d973885c06648e0879da3545ddf0cb708c4c944426d7ba36dee9ca9e14e12ca3",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "milk",
+      "dairying"
+    ],
+    "dates": "1922",
+    "original_format": [
+      "book"
+    ]
+  }
+}

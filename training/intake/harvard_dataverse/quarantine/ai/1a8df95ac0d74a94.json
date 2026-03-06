@@ -1,0 +1,31 @@
+{
+  "id": "1a8df95ac0d74a94",
+  "source": "harvard_dataverse",
+  "category": "quarantine/ai",
+  "title": "Multitask machine learning collective variable for 5D models and alanine dipeptide",
+  "content": "# Multitask machine learning collective variable for 5D models and alanine dipeptide\n\nAuthors: Sun, Lixin\nPublished: 2021-12-30T16:47:05Z\nSubjects: Physics\nDOI: doi:10.7910/DVN/XLD7VD\n\nSimulation scripts, training scripts, and training/test sets for 5D Mueller-Brown and three-hole model published in the paper.\n\nCitation: Sun, Lixin, 2021, \"Multitask machine learning collective variable for 5D models and alanine dipeptide\", https://doi.org/10.7910/DVN/XLD7VD, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/XLD7VD",
+  "timestamp": "2026-03-06T02:42:33.567221",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "66c19dc4655069ecdd3c1a0947cafa806d5c6f47e40ec608b2f710adc3945736",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/XLD7VD",
+    "subjects": [
+      "Physics"
+    ],
+    "authors": [
+      "Sun, Lixin"
+    ],
+    "file_count": 156
+  }
+}

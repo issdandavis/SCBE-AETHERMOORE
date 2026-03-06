@@ -1,0 +1,29 @@
+{
+  "id": "6e5207eff5879700",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Similarity Algebra: A Framework for Approximate Algebraic and Lie Structures with Collapse to Classical Algebra",
+  "content": "# Similarity Algebra: A Framework for Approximate Algebraic and Lie Structures with Collapse to Classical Algebra\n\nAuthors: Benyamin Ghojogh, Golbahar Amanpour\nPublished: 2026-02-15T09:56:38Z\n\nClassical algebraic structures require exact satisfaction of their defining axioms. We propose similarity algebra, a framework extending algebraic and Lie structures to settings where operations satisfy quantitative bounds up to a tolerance $\\varepsilon$. Instead of strict associativity, inverses, or distributivity, we study families of operations controlled by explicit $\\varepsilon$-estimates and analyze their behavior under limit collapse.\n  Under uniform error control and $C^1_{\\mathrm{loc}}$ convergence of the structure maps, we prove a general collapse theorem showing that similarity structures converge to classical algebraic objects, as $\\varepsilon \\rightarrow 0$. We develop a hierarchy of approximate structures, including similarity groups, rings, fields, vector spaces, and Lie groups, formalized through axioms satisfied within metric distance $\\varepsilon$. We further define a category of similarity algebras governing morphisms between approximate systems. Moreover, we clarify the relationship between similarity algebra and fuzzy algebra, showing that the former generalizes the latter. The proposed similarity algebra can be useful to model real-world phenomena where operations or relations are inherently approximate.",
+  "url": "http://arxiv.org/abs/2602.14075v1",
+  "timestamp": "2026-02-15T09:56:38Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "3c4c0be64d02e252031fb5ad09c7e87cb660e9fb121ec23fb94a748dd1b053e9",
+  "parent_hash": "b64352b5b45364c973ce0a06c401398b03823c641c33831c3e89d0e622b631ac",
+  "metadata": {
+    "authors": [
+      "Benyamin Ghojogh",
+      "Golbahar Amanpour"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.14075v1"
+  }
+}

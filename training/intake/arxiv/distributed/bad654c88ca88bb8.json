@@ -1,0 +1,31 @@
+{
+  "id": "bad654c88ca88bb8",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "SLO-Aware Compute Resource Allocation for Prefill-Decode Disaggregated LLM Inference",
+  "content": "# SLO-Aware Compute Resource Allocation for Prefill-Decode Disaggregated LLM Inference\n\nAuthors: Luchang Li, Dongfang Li, Bozhao Gong, Yu Zhang\nPublished: 2026-03-05T01:41:09Z\n\nPrefill-Decode (P/D) disaggregation has emerged as a widely adopted optimization strategy for Large Language Model (LLM) inference. However, there currently exists no well-established methodology for determining the optimal number of P/D hardware resources, subject to constraints on total throughput, service level objectives (SLOs), and request characteristics - specifically input and output lengths. To address this gap, we propose a hybrid approach that combines theoretical modeling with empirical benchmarking. First, we present a theoretical model for calculating P/D resource counts, which is based on total throughput requirements, request input and output lengths, as well as prefill and decode throughput. Then, to obtain the actual prefill and decode throughput under SLO constraints, we model the prefill process using M/M/1 queuing theory, deriving the achieved prefill throughput from the benchmarked maximum prefill throughput and Time-To-First-Token (TTFT). For the decode phase, we determine the decode batch sizes that meet Time-Per-Output-Token (TPOT) requirements and obtain the corresponding decode throughput through empirical measurements. Our experimental results demonstrate that the proposed method can accurately predict optimal P/D resource allocation in real-world LLM inference scenarios.",
+  "url": "http://arxiv.org/abs/2603.04716v1",
+  "timestamp": "2026-03-05T01:41:09Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "2668bf5f6c2cd0d5771e27f8c511d76492ec3a5f174570ea93bad90990bd4fc3",
+  "parent_hash": "5693e131ec69064c417608fb1f6fd826a7d2f1629cb346e51518bdb0e4a82844",
+  "metadata": {
+    "authors": [
+      "Luchang Li",
+      "Dongfang Li",
+      "Bozhao Gong",
+      "Yu Zhang"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.04716v1"
+  }
+}

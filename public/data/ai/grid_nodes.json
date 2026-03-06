@@ -1,0 +1,3967 @@
+{
+  "8af9046f98b5e59f": {
+    "id": "8af9046f98b5e59f",
+    "index": 534,
+    "title": "RoboPocket: Improve Robot Policies Instantly with Your Phone",
+    "category": "machine-learning",
+    "coords_6d": [
+      0.774207389355656,
+      0.19002354362761922,
+      0.14643343217949806,
+      0.3360192456547755,
+      0.10915062466412537,
+      0.3474599671321304
+    ],
+    "fib_coords": [
+      0.9330047096662423,
+      0.17569128849420546,
+      0.03129752206831051,
+      0.010501286052007909,
+      0.003916103736534295,
+      0.005443815116166433
+    ],
+    "tongue_coords": [
+      0.058256120902868504,
+      0.09426038367356446,
+      0.2287747568646494,
+      0.6169422206249935,
+      0.1996466964132152,
+      0.6460702810764278
+    ],
+    "content_hash": "c798184662c5",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "25576c282f681f52",
+        "distance": 0.0062,
+        "tongue": "KO"
+      },
+      {
+        "target": "c1d4970fce2bc81d",
+        "distance": 0.0067,
+        "tongue": "KO"
+      },
+      {
+        "target": "aa2130366e119d1f",
+        "distance": 0.0071,
+        "tongue": "CA"
+      },
+      {
+        "target": "1834092eb3dcc4be",
+        "distance": 0.0087,
+        "tongue": "CA"
+      },
+      {
+        "target": "1e2d46c13b92afc0",
+        "distance": 0.0091,
+        "tongue": "UM"
+      }
+    ]
+  },
+  "38b55fc720e9be13": {
+    "id": "38b55fc720e9be13",
+    "index": 537,
+    "title": "Censored LLMs as a Natural Testbed for Secret Knowledge Elicitation",
+    "category": "machine-learning",
+    "coords_6d": [
+      0.5844947615810774,
+      -0.32186474454712877,
+      0.0763734796233188,
+      0.49675081385317926,
+      -0.034905680797145705,
+      0.451061275101742
+    ],
+    "fib_coords": [
+      0.7096448469457932,
+      -0.47179327695391654,
+      0.048709053846822566,
+      0.2392653302363118,
+      -0.3006450975314927,
+      0.16219540737919166
+    ],
+    "tongue_coords": [
+      0.056032441505353824,
+      0.09066239482830281,
+      0.07334741816682831,
+      0.5933930779048986,
+      0.3840520674956161,
+      0.6214092986575755
+    ],
+    "content_hash": "836a125d2726",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "e241321865fc9d4c",
+        "distance": 0.0098,
+        "tongue": "KO"
+      },
+      {
+        "target": "babfd424fcaccee3",
+        "distance": 0.0098,
+        "tongue": "AV"
+      },
+      {
+        "target": "9fcb54db6adc375a",
+        "distance": 0.0143,
+        "tongue": "AV"
+      },
+      {
+        "target": "ea21cac6038a1d9b",
+        "distance": 0.0198,
+        "tongue": "AV"
+      },
+      {
+        "target": "a54167be60628969",
+        "distance": 0.0202,
+        "tongue": "AV"
+      }
+    ]
+  },
+  "9fcb54db6adc375a": {
+    "id": "9fcb54db6adc375a",
+    "index": 338,
+    "title": "SurvHTE-Bench: A Benchmark for Heterogeneous Treatment Effect Estimation in Survival Analysis",
+    "category": "machine-learning",
+    "coords_6d": [
+      0.6383865505341713,
+      -0.31879971262166956,
+      0.15599359522979817,
+      0.4443135858617575,
+      -0.14268791670252678,
+      0.3888713790219899
+    ],
+    "fib_coords": [
+      0.7524297774792743,
+      -0.459343650141312,
+      0.09015131356628008,
+      0.13307908349888864,
+      -0.31229718847373056,
+      0.04456461944321698
+    ],
+    "tongue_coords": [
+      0.059217866693909695,
+      0.09581652105200626,
+      0.15503438774591594,
+      0.6271272719948054,
+      0.2029426482719191,
+      0.6567362053417605
+    ],
+    "content_hash": "af88a2e9809f",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "e241321865fc9d4c",
+        "distance": 0.0104,
+        "tongue": "CA"
+      },
+      {
+        "target": "1fb711824df524f2",
+        "distance": 0.0114,
+        "tongue": "AV"
+      },
+      {
+        "target": "a54167be60628969",
+        "distance": 0.0146,
+        "tongue": "AV"
+      },
+      {
+        "target": "925aed03e54e6e45",
+        "distance": 0.0162,
+        "tongue": "CA"
+      },
+      {
+        "target": "9658d8a7077075bb",
+        "distance": 0.022,
+        "tongue": "AV"
+      }
+    ]
+  },
+  "990722b082a67ce7": {
+    "id": "990722b082a67ce7",
+    "index": 411,
+    "title": "Leveraging LLM Parametric Knowledge for Fact Checking without Retrieval",
+    "category": "nlp",
+    "coords_6d": [
+      0.7914238694541134,
+      0.1009328644023882,
+      0.02741193129648507,
+      0.1500215591582415,
+      0.0605627843982778,
+      0.488912142105371
+    ],
+    "fib_coords": [
+      0.9473147070158404,
+      0.07117642972997253,
+      0.005302444659680146,
+      0.0007832519256167313,
+      0.00016721516422248375,
+      6.601914594369068e-05
+    ],
+    "tongue_coords": [
+      0.032379203152869025,
+      0.07858597684496975,
+      0.042384927191424435,
+      0.27432101122565744,
+      0.11096517999783881,
+      0.8977271640212658
+    ],
+    "content_hash": "0013c05ff212",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "a9388c045e262034",
+        "distance": 0.0135,
+        "tongue": "KO"
+      },
+      {
+        "target": "86e6a91cacd982a3",
+        "distance": 0.014,
+        "tongue": "KO"
+      },
+      {
+        "target": "185b48a29a768df8",
+        "distance": 0.0141,
+        "tongue": "DR"
+      },
+      {
+        "target": "b9285e2948bbe20a",
+        "distance": 0.0147,
+        "tongue": "KO"
+      },
+      {
+        "target": "43b685c9c936389c",
+        "distance": 0.015,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "1348f070a0c9e8c7": {
+    "id": "1348f070a0c9e8c7",
+    "index": 293,
+    "title": "Distributed Partial Information Puzzles: Examining Common Ground Construction Under Epistemic Asymmetry",
+    "category": "nlp",
+    "coords_6d": [
+      0.6617913764985889,
+      0.38231288084924464,
+      0.12548246770280486,
+      0.21463087542194517,
+      -0.05454005717214534,
+      0.5035694141896798
+    ],
+    "fib_coords": [
+      0.8208513611055229,
+      0.4132157712292766,
+      0.11872789917230596,
+      -0.0024686526876587355,
+      -0.18337804427914792,
+      0.1011229645876629
+    ],
+    "tongue_coords": [
+      0.04946457163512034,
+      0.120053037216868,
+      0.0647499648898495,
+      0.41907057584855534,
+      0.16951760885198836,
+      0.8228557584423816
+    ],
+    "content_hash": "0b4bdb55dc49",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "185b48a29a768df8",
+        "distance": 0.0105,
+        "tongue": "KO"
+      },
+      {
+        "target": "7e76d468ef7f7dc4",
+        "distance": 0.0144,
+        "tongue": "KO"
+      },
+      {
+        "target": "fb8808504c46cfd9",
+        "distance": 0.0164,
+        "tongue": "KO"
+      },
+      {
+        "target": "c4b5f0c1e8b7609a",
+        "distance": 0.0191,
+        "tongue": "KO"
+      },
+      {
+        "target": "c53dfac76087427a",
+        "distance": 0.0196,
+        "tongue": "CA"
+      }
+    ]
+  },
+  "948744d8315c05f7": {
+    "id": "948744d8315c05f7",
+    "index": 609,
+    "title": "DEBISS: a Corpus of Individual, Semi-structured and Spoken Debates",
+    "category": "nlp",
+    "coords_6d": [
+      -0.5950777180801075,
+      -0.3253849622799309,
+      0.07484512365221528,
+      0.019964454574432834,
+      -0.16045354033387993,
+      0.6409067211225157
+    ],
+    "fib_coords": [
+      -0.7034490158644363,
+      -0.47277858368755765,
+      0.0414523119036344,
+      -0.2551605872994136,
+      -0.2931536842812944,
+      0.1771315635478568
+    ],
+    "tongue_coords": [
+      0.04916020575112814,
+      0.15908576759852674,
+      0.06435154477519575,
+      0.4164919466993098,
+      0.16847453145002322,
+      0.817792554374552
+    ],
+    "content_hash": "b6d242fe0fcb",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "bf5ec2c56eaf13a7",
+        "distance": 0.0083,
+        "tongue": "KO"
+      },
+      {
+        "target": "e67960698064a4f4",
+        "distance": 0.0116,
+        "tongue": "KO"
+      },
+      {
+        "target": "9ba01fc9a11e5ab9",
+        "distance": 0.0123,
+        "tongue": "CA"
+      },
+      {
+        "target": "bbb868638a77fae7",
+        "distance": 0.0162,
+        "tongue": "KO"
+      },
+      {
+        "target": "b3f59aa6b034a5c1",
+        "distance": 0.0196,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "2d28b14f251a0556": {
+    "id": "2d28b14f251a0556",
+    "index": 490,
+    "title": "FlashAttention-4: Algorithm and Kernel Pipelining Co-Design for Asymmetric Hardware Scaling",
+    "category": "nlp",
+    "coords_6d": [
+      0.3873979847854078,
+      -0.25401191126975114,
+      -0.21648901770348827,
+      0.6606392755658204,
+      0.07655350656402404,
+      0.44578982014363205
+    ],
+    "fib_coords": [
+      0.49206347413221224,
+      -0.4209130144769924,
+      -0.32214526938181626,
+      0.6147708046421883,
+      0.015687638711413446,
+      0.035198761839052115
+    ],
+    "tongue_coords": [
+      0.037877489696405135,
+      0.1225741314746149,
+      0.0495822777168563,
+      0.40112905292755013,
+      0.12980808830236634,
+      0.8401355955515055
+    ],
+    "content_hash": "c3c76a95ce9d",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "f7dd711d748b9c0c",
+        "distance": 0.0051,
+        "tongue": "KO"
+      },
+      {
+        "target": "ebe788009b2b1908",
+        "distance": 0.0128,
+        "tongue": "KO"
+      },
+      {
+        "target": "bad654c88ca88bb8",
+        "distance": 0.0144,
+        "tongue": "KO"
+      },
+      {
+        "target": "38b55fc720e9be13",
+        "distance": 0.0148,
+        "tongue": "UM"
+      },
+      {
+        "target": "f2bd6e5532ed7d03",
+        "distance": 0.0187,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "6cf281a664b55645": {
+    "id": "6cf281a664b55645",
+    "index": 536,
+    "title": "Cheap Thrills: Effective Amortized Optimization Using Inexpensive Labels",
+    "category": "machine-learning",
+    "coords_6d": [
+      -0.04813380677761432,
+      -0.02680758481881387,
+      -0.7365274988955797,
+      0.3095802207424595,
+      0.040841634256839614,
+      0.5093955057204368
+    ],
+    "fib_coords": [
+      -0.09663803848614416,
+      -0.09613674160977181,
+      -0.9207121508868282,
+      -0.057268262936350886,
+      -0.08850661316013186,
+      0.15841362670784512
+    ],
+    "tongue_coords": [
+      0.05981829235760967,
+      0.09678803018359054,
+      0.0783031612706001,
+      0.6334858818119767,
+      0.2050003376329955,
+      0.6633950279907818
+    ],
+    "content_hash": "525feb5095ab",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "339f998d486fe899",
+        "distance": 0.0083,
+        "tongue": "RU"
+      },
+      {
+        "target": "26f0b719f1b021a8",
+        "distance": 0.0095,
+        "tongue": "RU"
+      },
+      {
+        "target": "0889537f3c490894",
+        "distance": 0.0104,
+        "tongue": "AV"
+      },
+      {
+        "target": "c53dfac76087427a",
+        "distance": 0.0118,
+        "tongue": "KO"
+      },
+      {
+        "target": "f047fe91e83213f7",
+        "distance": 0.0146,
+        "tongue": "AV"
+      }
+    ]
+  },
+  "d4a8dbd6a25644aa": {
+    "id": "d4a8dbd6a25644aa",
+    "index": 614,
+    "title": "Thermodynamic Response Functions in Singular Bayesian Models",
+    "category": "machine-learning",
+    "coords_6d": [
+      -0.7747819059741355,
+      -0.054945444726500405,
+      0.11096726821095207,
+      0.365731462781878,
+      0.1186684976082919,
+      0.3728787289072816
+    ],
+    "fib_coords": [
+      -0.936230123789247,
+      -0.15882591340913327,
+      0.025766511822157796,
+      0.007972122667261586,
+      0.00294488190279094,
+      -0.003368135775330958
+    ],
+    "tongue_coords": [
+      0.0588449185020022,
+      0.14281961730218568,
+      0.1540579967034593,
+      0.6231776872622911,
+      0.2016645358041879,
+      0.6526001465132922
+    ],
+    "content_hash": "48c4b29019f2",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "494f539b52f71b30",
+        "distance": 0.006,
+        "tongue": "KO"
+      },
+      {
+        "target": "ebe788009b2b1908",
+        "distance": 0.0111,
+        "tongue": "KO"
+      },
+      {
+        "target": "6dd4dbfa826f03be",
+        "distance": 0.0113,
+        "tongue": "RU"
+      },
+      {
+        "target": "b239270f022d7950",
+        "distance": 0.0124,
+        "tongue": "KO"
+      },
+      {
+        "target": "b9a3f2f4f04b9d8f",
+        "distance": 0.0128,
+        "tongue": "DR"
+      }
+    ]
+  },
+  "e241321865fc9d4c": {
+    "id": "e241321865fc9d4c",
+    "index": 160,
+    "title": "RealWonder: Real-Time Physical Action-Conditioned Video Generation",
+    "category": "ai",
+    "coords_6d": [
+      0.6025034523113268,
+      -0.30272935835514375,
+      0.12490537106507901,
+      0.4437688117091302,
+      -0.11985559117371945,
+      0.47005005354810386
+    ],
+    "fib_coords": [
+      0.7143325582150437,
+      -0.470919514997669,
+      0.05400145572379707,
+      0.2272710951670564,
+      -0.30542801493359695,
+      0.1503636473463958
+    ],
+    "tongue_coords": [
+      0.12810211646130215,
+      0.10363678923259215,
+      0.1676878474632432,
+      0.5426492733916707,
+      0.2195062420795393,
+      0.7103371208549141
+    ],
+    "content_hash": "656d1c8dc9e3",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "a54167be60628969",
+        "distance": 0.0124,
+        "tongue": "RU"
+      },
+      {
+        "target": "9658d8a7077075bb",
+        "distance": 0.0135,
+        "tongue": "AV"
+      },
+      {
+        "target": "e71676dc40ac5171",
+        "distance": 0.025,
+        "tongue": "RU"
+      },
+      {
+        "target": "bed448b4bc63b052",
+        "distance": 0.0254,
+        "tongue": "KO"
+      },
+      {
+        "target": "d54ea12629799b37",
+        "distance": 0.026,
+        "tongue": "RU"
+      }
+    ]
+  },
+  "4a2797de300a3261": {
+    "id": "4a2797de300a3261",
+    "index": 201,
+    "title": "Planning in 8 Tokens: A Compact Discrete Tokenizer for Latent World Model",
+    "category": "ai",
+    "coords_6d": [
+      0.2249956065732912,
+      0.23750822214993492,
+      -0.7921429018694448,
+      0.1488286121862249,
+      -0.07531210819552665,
+      0.3743722412327292
+    ],
+    "fib_coords": [
+      0.14960464917192032,
+      0.14773794272748345,
+      -0.8804899468457297,
+      -0.13163019550131982,
+      -0.18220524611373898,
+      -0.1802890530490344
+    ],
+    "tongue_coords": [
+      0.09676189408589322,
+      0.11742302508509452,
+      0.18999444564951443,
+      0.40988996097947855,
+      0.16580397212804113,
+      0.8048293871187324
+    ],
+    "content_hash": "d404a5964871",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "445492aee8e917f9",
+        "distance": 0.0091,
+        "tongue": "AV"
+      },
+      {
+        "target": "ef9ee1b2fed465ea",
+        "distance": 0.0189,
+        "tongue": "KO"
+      },
+      {
+        "target": "2f10314cf4479449",
+        "distance": 0.0233,
+        "tongue": "RU"
+      },
+      {
+        "target": "dec0b8aeaf786cc5",
+        "distance": 0.0248,
+        "tongue": "RU"
+      },
+      {
+        "target": "eda2dd1c73d7babb",
+        "distance": 0.0249,
+        "tongue": "RU"
+      }
+    ]
+  },
+  "262fa51436b667ab": {
+    "id": "262fa51436b667ab",
+    "index": 480,
+    "title": "SAIL: Similarity-Aware Guidance and Inter-Caption Augmentation-based Learning for Weakly-Supervised Dense Video Captioning",
+    "category": "ai",
+    "coords_6d": [
+      -0.37529078655826614,
+      0.38597443169617385,
+      -0.13026891506316376,
+      0.6855755524695134,
+      0.10651663652389541,
+      0.3381581602879303
+    ],
+    "fib_coords": [
+      -0.5274710642321689,
+      0.4386950710961262,
+      -0.25196583746350715,
+      0.5953875868615682,
+      0.023191722622203828,
+      -0.11536851025316473
+    ],
+    "tongue_coords": [
+      0.0738852305982905,
+      0.07969920958310518,
+      0.1289560299819655,
+      0.4173104791301414,
+      0.16880563477351812,
+      0.8193997636681605
+    ],
+    "content_hash": "263dd30cde4c",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "a7b828435b88099c",
+        "distance": 0.0092,
+        "tongue": "CA"
+      },
+      {
+        "target": "cf1d92d3f2b384f3",
+        "distance": 0.0124,
+        "tongue": "CA"
+      },
+      {
+        "target": "25e326d926320df1",
+        "distance": 0.015,
+        "tongue": "AV"
+      },
+      {
+        "target": "af6721a636e23d1f",
+        "distance": 0.0156,
+        "tongue": "KO"
+      },
+      {
+        "target": "0f6524bdc0e4d110",
+        "distance": 0.0162,
+        "tongue": "UM"
+      }
+    ]
+  },
+  "25576c282f681f52": {
+    "id": "25576c282f681f52",
+    "index": 123,
+    "title": "RelaxFlow: Text-Driven Amodal 3D Generation",
+    "category": "ai",
+    "coords_6d": [
+      0.8023544018632662,
+      0.13772903969609024,
+      0.09652319035303815,
+      0.2840792524065233,
+      0.11469826118537148,
+      0.36957365489480865
+    ],
+    "fib_coords": [
+      0.9438084663786892,
+      0.10757897652533462,
+      0.012021993251137559,
+      0.0026328561798124117,
+      0.0007902371816313618,
+      0.0005078124367318821
+    ],
+    "tongue_coords": [
+      0.12810211646130215,
+      0.10363678923259215,
+      0.1676878474632432,
+      0.5426492733916707,
+      0.2195062420795393,
+      0.7103371208549141
+    ],
+    "content_hash": "0cf4c2fa097d",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "aa2130366e119d1f",
+        "distance": 0.0071,
+        "tongue": "RU"
+      },
+      {
+        "target": "1e2d46c13b92afc0",
+        "distance": 0.0074,
+        "tongue": "KO"
+      },
+      {
+        "target": "807baf1592dd02b9",
+        "distance": 0.0157,
+        "tongue": "AV"
+      },
+      {
+        "target": "8e3dd2e0bbc55d05",
+        "distance": 0.0162,
+        "tongue": "KO"
+      },
+      {
+        "target": "262fa51436b667ab",
+        "distance": 0.0165,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "bf5ec2c56eaf13a7": {
+    "id": "bf5ec2c56eaf13a7",
+    "index": 54,
+    "title": "MobileFetalCLIP: Selective Repulsive Knowledge Distillation for Mobile Fetal Ultrasound Analysis",
+    "category": "machine-learning",
+    "coords_6d": [
+      -0.5901373242798983,
+      -0.3564024580629987,
+      0.04216582619546982,
+      0.06723613543055372,
+      -0.08565918573014282,
+      0.6431011393801765
+    ],
+    "fib_coords": [
+      -0.6668179975335204,
+      -0.47494913315985043,
+      -0.007053052617676618,
+      -0.3481522097702108,
+      -0.2268270102719884,
+      0.24406327001016623
+    ],
+    "tongue_coords": [
+      0.05943395833496797,
+      0.14424924700788497,
+      0.07780006150344564,
+      0.6294157191970364,
+      0.20368320534285295,
+      0.6591326983645205
+    ],
+    "content_hash": "b5ba993850a2",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "f5ff8e7dca2742c0",
+        "distance": 0.0159,
+        "tongue": "AV"
+      },
+      {
+        "target": "e050f87e048a9969",
+        "distance": 0.021,
+        "tongue": "RU"
+      },
+      {
+        "target": "948744d8315c05f7",
+        "distance": 0.0325,
+        "tongue": "AV"
+      },
+      {
+        "target": "ff502be683444f34",
+        "distance": 0.0393,
+        "tongue": "RU"
+      },
+      {
+        "target": "4a2797de300a3261",
+        "distance": 0.0403,
+        "tongue": "AV"
+      }
+    ]
+  },
+  "a54167be60628969": {
+    "id": "a54167be60628969",
+    "index": 50,
+    "title": "Transducing Language Models",
+    "category": "nlp",
+    "coords_6d": [
+      0.6736760177948272,
+      -0.3259629863464011,
+      0.11629958935121626,
+      0.2966083909256904,
+      -0.16986825983743678,
+      0.46049038733642633
+    ],
+    "fib_coords": [
+      0.7744847026732252,
+      -0.4485144082473959,
+      0.10490200366929199,
+      0.0837528132940979,
+      -0.2885334513515851,
+      -0.01541928215866407
+    ],
+    "tongue_coords": [
+      0.03801618442966354,
+      0.0922672177946702,
+      0.04976383147972184,
+      0.40259785372305956,
+      0.1302834022243338,
+      0.8432118918757828
+    ],
+    "content_hash": "2c8577d29c51",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "6cf281a664b55645",
+        "distance": 0.0149,
+        "tongue": "AV"
+      },
+      {
+        "target": "262fa51436b667ab",
+        "distance": 0.0281,
+        "tongue": "RU"
+      },
+      {
+        "target": "dec0b8aeaf786cc5",
+        "distance": 0.0303,
+        "tongue": "AV"
+      },
+      {
+        "target": "142b65deb9424f49",
+        "distance": 0.0354,
+        "tongue": "KO"
+      },
+      {
+        "target": "a6db3637f6b1e927",
+        "distance": 0.0362,
+        "tongue": "RU"
+      }
+    ]
+  },
+  "ff502be683444f34": {
+    "id": "ff502be683444f34",
+    "index": 51,
+    "title": "Guidelines for the Annotation and Visualization of Legal Argumentation Structures in Chinese Judicial Decisions",
+    "category": "nlp",
+    "coords_6d": [
+      -0.760746097041374,
+      0.16971270990741297,
+      0.08624812967215853,
+      0.236706420278471,
+      0.09782953657034472,
+      0.47108776722988327
+    ],
+    "fib_coords": [
+      -0.9427070725467862,
+      0.11658584083244815,
+      0.014085411784163112,
+      -0.003322386306943725,
+      0.0010549530099237042,
+      0.0007530510635602995
+    ],
+    "tongue_coords": [
+      0.09785521851294503,
+      0.11874980214786975,
+      0.128094144021719,
+      0.41452135757393105,
+      0.1676774114043423,
+      0.8139232523934752
+    ],
+    "content_hash": "4b9e2a4c8b31",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "3b4adde6d430e84d",
+        "distance": 0.0115,
+        "tongue": "KO"
+      },
+      {
+        "target": "25576c282f681f52",
+        "distance": 0.0147,
+        "tongue": "KO"
+      },
+      {
+        "target": "e8270ace35c9eb06",
+        "distance": 0.019,
+        "tongue": "KO"
+      },
+      {
+        "target": "7e76d468ef7f7dc4",
+        "distance": 0.019,
+        "tongue": "KO"
+      },
+      {
+        "target": "38b55fc720e9be13",
+        "distance": 0.0204,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "f0ddf69ac3c1b182": {
+    "id": "f0ddf69ac3c1b182",
+    "index": 453,
+    "title": "LBM: Hierarchical Large Auto-Bidding Model via Reasoning and Acting",
+    "category": "nlp",
+    "coords_6d": [
+      0.7959674322180124,
+      -0.08093154687780575,
+      0.06210205666380248,
+      0.22133717944882092,
+      0.0965207021976475,
+      0.44746270589543957
+    ],
+    "fib_coords": [
+      0.932491636436116,
+      -0.17820120885245305,
+      0.032159993364447456,
+      -0.010909641004667939,
+      0.004062964112594796,
+      -0.005820998435538934
+    ],
+    "tongue_coords": [
+      0.04946457163512034,
+      0.120053037216868,
+      0.0647499648898495,
+      0.41907057584855534,
+      0.16951760885198836,
+      0.8228557584423816
+    ],
+    "content_hash": "df07d53dc806",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "262fa51436b667ab",
+        "distance": 0.0053,
+        "tongue": "UM"
+      },
+      {
+        "target": "d54ea12629799b37",
+        "distance": 0.0074,
+        "tongue": "KO"
+      },
+      {
+        "target": "86e6a91cacd982a3",
+        "distance": 0.0097,
+        "tongue": "KO"
+      },
+      {
+        "target": "990722b082a67ce7",
+        "distance": 0.0119,
+        "tongue": "KO"
+      },
+      {
+        "target": "fb8808504c46cfd9",
+        "distance": 0.0123,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "339f998d486fe899": {
+    "id": "339f998d486fe899",
+    "index": 53,
+    "title": "Aura: Universal Multi-dimensional Exogenous Integration for Aviation Time Series",
+    "category": "nlp",
+    "coords_6d": [
+      0.05644898922883014,
+      0.03794358488494139,
+      -0.7541165408971757,
+      0.23960174340320062,
+      0.0839764524529807,
+      0.5145104456840113
+    ],
+    "fib_coords": [
+      0.03462106202474127,
+      -0.03459806412262897,
+      -0.946218242086539,
+      0.007541763710258189,
+      -0.012450266917353457,
+      0.06755373431373315
+    ],
+    "tongue_coords": [
+      0.04946457163512034,
+      0.120053037216868,
+      0.0647499648898495,
+      0.41907057584855534,
+      0.16951760885198836,
+      0.8228557584423816
+    ],
+    "content_hash": "1566f50493b5",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "8af9046f98b5e59f",
+        "distance": 0.0131,
+        "tongue": "KO"
+      },
+      {
+        "target": "e937afc16e368637",
+        "distance": 0.0143,
+        "tongue": "UM"
+      },
+      {
+        "target": "a8fb5918f4a31412",
+        "distance": 0.0209,
+        "tongue": "KO"
+      },
+      {
+        "target": "d4a8dbd6a25644aa",
+        "distance": 0.0264,
+        "tongue": "KO"
+      },
+      {
+        "target": "2d28b14f251a0556",
+        "distance": 0.0313,
+        "tongue": "RU"
+      }
+    ]
+  },
+  "1e2d46c13b92afc0": {
+    "id": "1e2d46c13b92afc0",
+    "index": 55,
+    "title": "Harnessing Synthetic Data from Generative AI for Statistical Inference",
+    "category": "machine-learning",
+    "coords_6d": [
+      0.8013239053102593,
+      0.012511736628219373,
+      0.08580563358147196,
+      0.33880592765012935,
+      0.10973568166385277,
+      0.3550062985771488
+    ],
+    "fib_coords": [
+      0.9487606154227521,
+      -0.04844748021774043,
+      0.002464233743423745,
+      -0.00024969497057420104,
+      3.7318912386335114e-05,
+      -9.745275178365721e-06
+    ],
+    "tongue_coords": [
+      0.059217866693909695,
+      0.09581652105200626,
+      0.15503438774591594,
+      0.6271272719948054,
+      0.2029426482719191,
+      0.6567362053417605
+    ],
+    "content_hash": "62802faf133f",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "aa2130366e119d1f",
+        "distance": 0.0114,
+        "tongue": "CA"
+      },
+      {
+        "target": "a6db3637f6b1e927",
+        "distance": 0.0145,
+        "tongue": "KO"
+      },
+      {
+        "target": "262fa51436b667ab",
+        "distance": 0.0155,
+        "tongue": "KO"
+      },
+      {
+        "target": "142b65deb9424f49",
+        "distance": 0.0185,
+        "tongue": "KO"
+      },
+      {
+        "target": "8e3dd2e0bbc55d05",
+        "distance": 0.0208,
+        "tongue": "CA"
+      }
+    ]
+  },
+  "cffc7499b16eb371": {
+    "id": "cffc7499b16eb371",
+    "index": 498,
+    "title": "GALACTIC: Global and Local Agnostic Counterfactuals for Time-series Clustering",
+    "category": "machine-learning",
+    "coords_6d": [
+      0.16598395913113614,
+      -0.10277594372337262,
+      -0.6289161812469792,
+      0.44234569356616504,
+      -0.10685015199807843,
+      0.5116289671921403
+    ],
+    "fib_coords": [
+      0.18344094705727165,
+      -0.17998857396374737,
+      -0.8463764688712608,
+      0.19077445381573285,
+      -0.23891349865373473,
+      0.16317430269066371
+    ],
+    "tongue_coords": [
+      0.04452169928853846,
+      0.07203762268575725,
+      0.058279660987147854,
+      0.5657908339801588,
+      0.15257813331717435,
+      0.7406298169416026
+    ],
+    "content_hash": "d340eead65ae",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "b831274abcb10b2b",
+        "distance": 0.0096,
+        "tongue": "AV"
+      },
+      {
+        "target": "f047fe91e83213f7",
+        "distance": 0.0107,
+        "tongue": "KO"
+      },
+      {
+        "target": "fcf2db99707cc46e",
+        "distance": 0.0184,
+        "tongue": "KO"
+      },
+      {
+        "target": "2a286a59cfc4b7f2",
+        "distance": 0.0185,
+        "tongue": "KO"
+      },
+      {
+        "target": "26f0b719f1b021a8",
+        "distance": 0.0193,
+        "tongue": "AV"
+      }
+    ]
+  },
+  "445492aee8e917f9": {
+    "id": "445492aee8e917f9",
+    "index": 57,
+    "title": "Layer by layer, module by module: Choose both for optimal OOD probing of ViT",
+    "category": "machine-learning",
+    "coords_6d": [
+      0.15675041919486016,
+      0.1986120023246221,
+      -0.824632966768959,
+      0.22031895884671554,
+      -0.04028648041962297,
+      0.32908905269054967
+    ],
+    "fib_coords": [
+      0.1312711067478065,
+      0.13001183832261615,
+      -0.8962755161317653,
+      -0.1030404179706114,
+      -0.1490765353582148,
+      -0.1794822455897808
+    ],
+    "tongue_coords": [
+      0.04696114892256044,
+      0.11397710266117246,
+      0.06147294201500436,
+      0.4973265478436426,
+      0.1609382515837329,
+      0.7812106834573843
+    ],
+    "content_hash": "cd72dbb59af5",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "d4a8dbd6a25644aa",
+        "distance": 0.0206,
+        "tongue": "DR"
+      },
+      {
+        "target": "e241321865fc9d4c",
+        "distance": 0.0245,
+        "tongue": "AV"
+      },
+      {
+        "target": "339f998d486fe899",
+        "distance": 0.0271,
+        "tongue": "CA"
+      },
+      {
+        "target": "a8fb5918f4a31412",
+        "distance": 0.0319,
+        "tongue": "CA"
+      },
+      {
+        "target": "8af9046f98b5e59f",
+        "distance": 0.0336,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "f7dd711d748b9c0c": {
+    "id": "f7dd711d748b9c0c",
+    "index": 58,
+    "title": "SlideSparse: Fast and Flexible (2N-2):2N Structured Sparsity",
+    "category": "machine-learning",
+    "coords_6d": [
+      0.3960411908726319,
+      -0.27570174229542366,
+      -0.13310987901063168,
+      0.670402624237005,
+      0.08336226672444481,
+      0.44219083938943143
+    ],
+    "fib_coords": [
+      0.538764646171424,
+      -0.4437452626480978,
+      -0.22990835767417092,
+      0.5850482985664089,
+      0.017932759858222125,
+      0.14093207389779558
+    ],
+    "tongue_coords": [
+      0.04452169928853846,
+      0.07203762268575725,
+      0.058279660987147854,
+      0.5657908339801588,
+      0.15257813331717435,
+      0.7406298169416026
+    ],
+    "content_hash": "9bf92194e4f6",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "389fd4761f540fc0",
+        "distance": 0.0261,
+        "tongue": "AV"
+      },
+      {
+        "target": "6cf281a664b55645",
+        "distance": 0.0297,
+        "tongue": "AV"
+      },
+      {
+        "target": "dec0b8aeaf786cc5",
+        "distance": 0.0308,
+        "tongue": "AV"
+      },
+      {
+        "target": "1e2d46c13b92afc0",
+        "distance": 0.0361,
+        "tongue": "UM"
+      },
+      {
+        "target": "a6db3637f6b1e927",
+        "distance": 0.0391,
+        "tongue": "AV"
+      }
+    ]
+  },
+  "44bdb5e7a92a412a": {
+    "id": "44bdb5e7a92a412a",
+    "index": 120,
+    "title": "Residual RL--MPC for Robust Microrobotic Cell Pushing Under Time-Varying Flow",
+    "category": "ai",
+    "coords_6d": [
+      0.5809561518670705,
+      0.49418407872730746,
+      -0.167671773806094,
+      -0.2647767763510987,
+      0.15885505581003037,
+      0.44420327796818215
+    ],
+    "fib_coords": [
+      0.4883149196927163,
+      0.4188671494371494,
+      -0.32963069626362634,
+      -0.6156614271286787,
+      0.012865080290733962,
+      -0.027165258394522614
+    ],
+    "tongue_coords": [
+      0.1256781441144162,
+      0.10167575441006647,
+      0.24677223970091183,
+      0.532381161754682,
+      0.21535270367230783,
+      0.6968959882219568
+    ],
+    "content_hash": "6a313c6e165e",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "a6db3637f6b1e927",
+        "distance": 0.0172,
+        "tongue": "AV"
+      },
+      {
+        "target": "de9c863a43d70958",
+        "distance": 0.0184,
+        "tongue": "AV"
+      },
+      {
+        "target": "4205d3b249cf552c",
+        "distance": 0.0193,
+        "tongue": "DR"
+      },
+      {
+        "target": "f0ddf69ac3c1b182",
+        "distance": 0.0251,
+        "tongue": "KO"
+      },
+      {
+        "target": "8c50bd8ca246064f",
+        "distance": 0.0319,
+        "tongue": "AV"
+      }
+    ]
+  },
+  "cafe89ef16c905d8": {
+    "id": "cafe89ef16c905d8",
+    "index": 599,
+    "title": "The Spatial and Temporal Resolution of Motor Intention in Multi-Target Prediction",
+    "category": "ai",
+    "coords_6d": [
+      0.33549072258469104,
+      0.3369211480166094,
+      -0.6130744480262863,
+      -0.10291403698348107,
+      -0.18649663150366969,
+      0.5051708064462783
+    ],
+    "fib_coords": [
+      0.28014113616598557,
+      0.26768399515229657,
+      -0.7165384224271264,
+      -0.38229458179177844,
+      -0.30377780290313483,
+      -0.02255683817768514
+    ],
+    "tongue_coords": [
+      0.09785521851294501,
+      0.11874980214786976,
+      0.128094144021719,
+      0.414521357573931,
+      0.16767741140434228,
+      0.8139232523934752
+    ],
+    "content_hash": "9247ba36ba49",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "b119ea8f3501b994",
+        "distance": 0.0112,
+        "tongue": "RU"
+      },
+      {
+        "target": "c1d4970fce2bc81d",
+        "distance": 0.0128,
+        "tongue": "KO"
+      },
+      {
+        "target": "4a2797de300a3261",
+        "distance": 0.0295,
+        "tongue": "KO"
+      },
+      {
+        "target": "206bb9f6fd37a697",
+        "distance": 0.0302,
+        "tongue": "RU"
+      },
+      {
+        "target": "4dfdbdc1e99f678d",
+        "distance": 0.0328,
+        "tongue": "RU"
+      }
+    ]
+  },
+  "1e999daf3cf8319f": {
+    "id": "1e999daf3cf8319f",
+    "index": 130,
+    "title": "Dissociating Direct Access from Inference in AI Introspection",
+    "category": "nlp",
+    "coords_6d": [
+      -0.45032884370494924,
+      -0.3428945461503353,
+      -0.19142829365801828,
+      -0.36183812612068045,
+      0.08474703396604832,
+      0.6382582407257507
+    ],
+    "fib_coords": [
+      -0.5311050494634666,
+      -0.4403543786770882,
+      -0.2448457566257347,
+      -0.5922778772214643,
+      0.0219091804832273,
+      0.12366449385852457
+    ],
+    "tongue_coords": [
+      0.032379203152869025,
+      0.07858597684496975,
+      0.042384927191424435,
+      0.27432101122565744,
+      0.11096517999783881,
+      0.8977271640212658
+    ],
+    "content_hash": "920510c1e3a5",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "9fa92a8ff086805e",
+        "distance": 0.0204,
+        "tongue": "AV"
+      },
+      {
+        "target": "e937afc16e368637",
+        "distance": 0.0213,
+        "tongue": "AV"
+      },
+      {
+        "target": "bb4bde495fdc3788",
+        "distance": 0.037,
+        "tongue": "AV"
+      },
+      {
+        "target": "dfbfc2797afd8a36",
+        "distance": 0.0382,
+        "tongue": "KO"
+      },
+      {
+        "target": "bf5ec2c56eaf13a7",
+        "distance": 0.039,
+        "tongue": "AV"
+      }
+    ]
+  },
+  "185b48a29a768df8": {
+    "id": "185b48a29a768df8",
+    "index": 170,
+    "title": "A Multilingual Human Annotated Corpus of Original and Easy-to-Read Texts to Support Access to Democratic Participatory Processes",
+    "category": "nlp",
+    "coords_6d": [
+      0.691765155363342,
+      0.3290011532510611,
+      0.11259159610932755,
+      0.2420873142204044,
+      0.04772956912518468,
+      0.4920954825994978
+    ],
+    "fib_coords": [
+      0.8700119591393102,
+      0.349422822864395,
+      0.10380360770791483,
+      0.036625735177104664,
+      -0.050708450220951565,
+      0.09378113585260045
+    ],
+    "tongue_coords": [
+      0.04946457163512034,
+      0.120053037216868,
+      0.0647499648898495,
+      0.41907057584855534,
+      0.16951760885198836,
+      0.8228557584423816
+    ],
+    "content_hash": "6009de7830c0",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "de9c863a43d70958",
+        "distance": 0.0098,
+        "tongue": "KO"
+      },
+      {
+        "target": "fb8808504c46cfd9",
+        "distance": 0.0106,
+        "tongue": "KO"
+      },
+      {
+        "target": "a44ee396e958f138",
+        "distance": 0.014,
+        "tongue": "KO"
+      },
+      {
+        "target": "38b55fc720e9be13",
+        "distance": 0.0154,
+        "tongue": "KO"
+      },
+      {
+        "target": "aa2130366e119d1f",
+        "distance": 0.016,
+        "tongue": "RU"
+      }
+    ]
+  },
+  "a3ea70abd118a6c2": {
+    "id": "a3ea70abd118a6c2",
+    "index": 493,
+    "title": "WavSLM: Single-Stream Speech Language Modeling via WavLM Distillation",
+    "category": "nlp",
+    "coords_6d": [
+      -0.24387921111551666,
+      0.29439852723179677,
+      -0.43683547518301913,
+      0.5529468646175919,
+      -0.11069992611399906,
+      0.4975163278114373
+    ],
+    "fib_coords": [
+      -0.34551617855603267,
+      0.32185372791296774,
+      -0.6062515010663497,
+      0.5019567256695329,
+      -0.23474660741181708,
+      0.07015227368462504
+    ],
+    "tongue_coords": [
+      0.03930813836096155,
+      0.09540285585377904,
+      0.05145502113174046,
+      0.3330238923320006,
+      0.13471099421474064,
+      0.8718678691909634
+    ],
+    "content_hash": "bef132acaa61",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "cca1b5512ca03a17",
+        "distance": 0.007,
+        "tongue": "KO"
+      },
+      {
+        "target": "95362fe319926d46",
+        "distance": 0.0088,
+        "tongue": "KO"
+      },
+      {
+        "target": "122e63e75b4306b6",
+        "distance": 0.0158,
+        "tongue": "KO"
+      },
+      {
+        "target": "f8b4fa2fdc494348",
+        "distance": 0.0213,
+        "tongue": "AV"
+      },
+      {
+        "target": "cf1d92d3f2b384f3",
+        "distance": 0.0246,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "9fa92a8ff086805e": {
+    "id": "9fa92a8ff086805e",
+    "index": 600,
+    "title": "Learning Causal Structure of Time Series using Best Order Score Search",
+    "category": "ai",
+    "coords_6d": [
+      0.37442643372318385,
+      -0.21236804116454938,
+      -0.2614738980821291,
+      0.747109116039082,
+      0.021434278574226494,
+      0.3003408095419448
+    ],
+    "fib_coords": [
+      0.4066130079230403,
+      -0.36748555285168305,
+      -0.4916574722929928,
+      0.5825578305265171,
+      -0.11623048415050674,
+      -0.0866603070494895
+    ],
+    "tongue_coords": [
+      0.09394620916723376,
+      0.15200815954679123,
+      0.24595436871402496,
+      0.5306167043477549,
+      0.21463896565828042,
+      0.6945862834904384
+    ],
+    "content_hash": "4afc97294ee9",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "4bd8c37b1cd113a8",
+        "distance": 0.0043,
+        "tongue": "KO"
+      },
+      {
+        "target": "f2bd6e5532ed7d03",
+        "distance": 0.0077,
+        "tongue": "DR"
+      },
+      {
+        "target": "389fd4761f540fc0",
+        "distance": 0.0121,
+        "tongue": "AV"
+      },
+      {
+        "target": "dfbfc2797afd8a36",
+        "distance": 0.0123,
+        "tongue": "CA"
+      },
+      {
+        "target": "6dd4dbfa826f03be",
+        "distance": 0.0128,
+        "tongue": "AV"
+      }
+    ]
+  },
+  "d54ea12629799b37": {
+    "id": "d54ea12629799b37",
+    "index": 97,
+    "title": "InfoFlow KV: Information-Flow-Aware KV Recomputation for Long Context",
+    "category": "machine-learning",
+    "coords_6d": [
+      0.783943360015724,
+      -0.20558328558644215,
+      0.09046038879995125,
+      0.23588260755676568,
+      0.07006363962123666,
+      0.42063727947977736
+    ],
+    "fib_coords": [
+      0.9021980052152828,
+      -0.2825823115580117,
+      0.0749123855003998,
+      -0.03199234654509434,
+      -0.0010001587534508164,
+      -0.04527273488250001
+    ],
+    "tongue_coords": [
+      0.03668686147589341,
+      0.05936058880855467,
+      0.048023725142224034,
+      0.4662241172790082,
+      0.12572774468872544,
+      0.8137270569409073
+    ],
+    "content_hash": "33a55901445e",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "262fa51436b667ab",
+        "distance": 0.0044,
+        "tongue": "KO"
+      },
+      {
+        "target": "1e2d46c13b92afc0",
+        "distance": 0.0155,
+        "tongue": "RU"
+      },
+      {
+        "target": "fb8808504c46cfd9",
+        "distance": 0.0165,
+        "tongue": "KO"
+      },
+      {
+        "target": "e71676dc40ac5171",
+        "distance": 0.0184,
+        "tongue": "KO"
+      },
+      {
+        "target": "2666189f6a7922f5",
+        "distance": 0.0204,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "f047fe91e83213f7": {
+    "id": "f047fe91e83213f7",
+    "index": 176,
+    "title": "Preserving Continuous Symmetry in Discrete Spaces: Geometric-Aware Quantization for SO(3)-Equivariant GNNs",
+    "category": "machine-learning",
+    "coords_6d": [
+      0.14063510103574206,
+      -0.05300937101385356,
+      -0.651918481173529,
+      0.36420394372557474,
+      -0.051003639402583574,
+      0.5653920630750054
+    ],
+    "fib_coords": [
+      0.14260820348647021,
+      -0.14099226853099153,
+      -0.8867423797129639,
+      0.12039830115952257,
+      -0.16962730119214448,
+      0.18083932178043113
+    ],
+    "tongue_coords": [
+      0.04666894732835226,
+      0.11326791449467885,
+      0.12218089032480481,
+      0.49423208330314344,
+      0.15993686182303113,
+      0.7763498354509795
+    ],
+    "content_hash": "827bfa544bca",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "4a2797de300a3261",
+        "distance": 0.0082,
+        "tongue": "AV"
+      },
+      {
+        "target": "3b4adde6d430e84d",
+        "distance": 0.0143,
+        "tongue": "KO"
+      },
+      {
+        "target": "7e76d468ef7f7dc4",
+        "distance": 0.0164,
+        "tongue": "AV"
+      },
+      {
+        "target": "339f998d486fe899",
+        "distance": 0.0189,
+        "tongue": "KO"
+      },
+      {
+        "target": "990722b082a67ce7",
+        "distance": 0.0192,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "a44ee396e958f138": {
+    "id": "a44ee396e958f138",
+    "index": 533,
+    "title": "Ensembling Language Models with Sequential Monte Carlo",
+    "category": "nlp",
+    "coords_6d": [
+      -0.7172749564226869,
+      -0.3338043951911385,
+      0.13669157844598132,
+      0.2652326472036991,
+      -0.12102845790415086,
+      0.4158249995569269
+    ],
+    "fib_coords": [
+      -0.8088081891080499,
+      -0.42426375189343507,
+      0.11754752537824759,
+      -0.020002753626597206,
+      -0.2159710659213908,
+      -0.08642077221736051
+    ],
+    "tongue_coords": [
+      0.036597663777167735,
+      0.08882439585044737,
+      0.04790696383873299,
+      0.46509057473329274,
+      0.12542205962761513,
+      0.811748621665989
+    ],
+    "content_hash": "c13463d3a093",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "e1679f31b4dae535",
+        "distance": 0.0048,
+        "tongue": "KO"
+      },
+      {
+        "target": "e304d53f3378a501",
+        "distance": 0.0073,
+        "tongue": "RU"
+      },
+      {
+        "target": "4205d3b249cf552c",
+        "distance": 0.0084,
+        "tongue": "CA"
+      },
+      {
+        "target": "049d9a2676cbfdd3",
+        "distance": 0.0129,
+        "tongue": "KO"
+      },
+      {
+        "target": "abf77b2f27cdd307",
+        "distance": 0.0175,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "d3181bc98740f675": {
+    "id": "d3181bc98740f675",
+    "index": 132,
+    "title": "Oral to Web: Digitizing 'Zero Resource'Languages of Bangladesh",
+    "category": "nlp",
+    "coords_6d": [
+      -0.6431751240562433,
+      0.37254139630386013,
+      0.12194693248544335,
+      0.16931224614939752,
+      -0.05155902014317362,
+      0.5512192342782665
+    ],
+    "fib_coords": [
+      -0.8310884360463926,
+      0.40260431174152367,
+      0.11830363389016488,
+      -0.010134987411413238,
+      -0.15432938233222065,
+      0.10856221084982869
+    ],
+    "tongue_coords": [
+      0.03930813836096155,
+      0.09540285585377904,
+      0.05145502113174046,
+      0.3330238923320006,
+      0.13471099421474064,
+      0.8718678691909634
+    ],
+    "content_hash": "d681ee0dd5c4",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "066aeb924754c084",
+        "distance": 0.0073,
+        "tongue": "KO"
+      },
+      {
+        "target": "f047fe91e83213f7",
+        "distance": 0.0122,
+        "tongue": "KO"
+      },
+      {
+        "target": "1f786c58b36af277",
+        "distance": 0.0187,
+        "tongue": "KO"
+      },
+      {
+        "target": "ff502be683444f34",
+        "distance": 0.0209,
+        "tongue": "RU"
+      },
+      {
+        "target": "e241321865fc9d4c",
+        "distance": 0.0245,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "3d8d42ac0c83fb03": {
+    "id": "3d8d42ac0c83fb03",
+    "index": 173,
+    "title": "Diffusion LLMs can think EoS-by-EoS",
+    "category": "nlp",
+    "coords_6d": [
+      0.7608470437023412,
+      -0.30723040074095753,
+      0.1288631773549521,
+      0.1508818241904934,
+      -0.06809777291650813,
+      0.4303636914572431
+    ],
+    "fib_coords": [
+      0.8321461921390471,
+      -0.40143894072201736,
+      0.11818287510279211,
+      -0.01131065620196244,
+      -0.151298285412724,
+      -0.10905593840024187
+    ],
+    "tongue_coords": [
+      0.04853357982089945,
+      0.07852898174592134,
+      0.04235418718894026,
+      0.27412205775032283,
+      0.11088470162652099,
+      0.8970760803205085
+    ],
+    "content_hash": "ce9261c1f5d1",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "a54167be60628969",
+        "distance": 0.0155,
+        "tongue": "AV"
+      },
+      {
+        "target": "d54ea12629799b37",
+        "distance": 0.0156,
+        "tongue": "KO"
+      },
+      {
+        "target": "262fa51436b667ab",
+        "distance": 0.0179,
+        "tongue": "DR"
+      },
+      {
+        "target": "e71676dc40ac5171",
+        "distance": 0.0223,
+        "tongue": "KO"
+      },
+      {
+        "target": "e241321865fc9d4c",
+        "distance": 0.0238,
+        "tongue": "AV"
+      }
+    ]
+  },
+  "9ba01fc9a11e5ab9": {
+    "id": "9ba01fc9a11e5ab9",
+    "index": 615,
+    "title": "Kraus Constrained Sequence Learning For Quantum Trajectories from Continuous Measurement",
+    "category": "machine-learning",
+    "coords_6d": [
+      0.6815699994230393,
+      0.39394207037997186,
+      0.1328653095417969,
+      0.3058114674564639,
+      -0.08214182330081402,
+      0.4060182974060699
+    ],
+    "fib_coords": [
+      0.799210249594208,
+      0.4320602947117984,
+      0.11535707325163061,
+      -0.035912765580045004,
+      -0.23984055520016198,
+      0.07047273002804873
+    ],
+    "tongue_coords": [
+      0.08950591724056205,
+      0.09654907752630974,
+      0.07810984451000888,
+      0.6319219163658186,
+      0.20449422778317267,
+      0.6617572221126728
+    ],
+    "content_hash": "acba75b926e5",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "c8dc10cff3045a8b",
+        "distance": 0.007,
+        "tongue": "KO"
+      },
+      {
+        "target": "b8ac495ef80fb578",
+        "distance": 0.009,
+        "tongue": "KO"
+      },
+      {
+        "target": "0e1e91b37142f6f8",
+        "distance": 0.0132,
+        "tongue": "KO"
+      },
+      {
+        "target": "1348f070a0c9e8c7",
+        "distance": 0.014,
+        "tongue": "AV"
+      },
+      {
+        "target": "5018b3805b54e856",
+        "distance": 0.0149,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "cf1d92d3f2b384f3": {
+    "id": "cf1d92d3f2b384f3",
+    "index": 137,
+    "title": "Boosting ASR Robustness via Test-Time Reinforcement Learning with Audio-Text Semantic Rewards",
+    "category": "machine-learning",
+    "coords_6d": [
+      -0.29440685602895,
+      0.34317322214792506,
+      -0.2579045168900579,
+      0.6828491203514225,
+      0.05722894393507253,
+      0.40247227196768526
+    ],
+    "fib_coords": [
+      -0.4542283700616742,
+      0.39894254832981596,
+      -0.3977539727316918,
+      0.6137383071184629,
+      -0.02794720849388383,
+      0.03684361616544491
+    ],
+    "tongue_coords": [
+      0.07033438706865787,
+      0.11380342885497952,
+      0.06137927197454579,
+      0.4965687412976948,
+      0.16069302023408477,
+      0.7800203054808712
+    ],
+    "content_hash": "e288fac71b05",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "a7b828435b88099c",
+        "distance": 0.0042,
+        "tongue": "CA"
+      },
+      {
+        "target": "2f10314cf4479449",
+        "distance": 0.0152,
+        "tongue": "KO"
+      },
+      {
+        "target": "bad654c88ca88bb8",
+        "distance": 0.0189,
+        "tongue": "KO"
+      },
+      {
+        "target": "b8750239e8a929fd",
+        "distance": 0.0277,
+        "tongue": "CA"
+      },
+      {
+        "target": "e67960698064a4f4",
+        "distance": 0.0292,
+        "tongue": "UM"
+      }
+    ]
+  },
+  "f069b0f6ef7bbbca": {
+    "id": "f069b0f6ef7bbbca",
+    "index": 138,
+    "title": "The Geometric Inductive Bias of Grokking: Bypassing Phase Transitions via Architectural Topology",
+    "category": "machine-learning",
+    "coords_6d": [
+      -0.1664487344872702,
+      -0.12383450580667851,
+      -0.7266746030829189,
+      0.13750490733136422,
+      -0.15416108100010786,
+      0.5373365954019467
+    ],
+    "fib_coords": [
+      -0.22867630533568795,
+      -0.22195244694462715,
+      -0.7912435473352808,
+      -0.2786553481695796,
+      -0.29234047088454423,
+      0.10847190185981917
+    ],
+    "tongue_coords": [
+      0.08893364837266228,
+      0.14389766581049937,
+      0.07761043806105387,
+      0.6278816333227683,
+      0.20318676472560754,
+      0.6575261827803225
+    ],
+    "content_hash": "8577483c7a54",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "2d28b14f251a0556",
+        "distance": 0.0119,
+        "tongue": "KO"
+      },
+      {
+        "target": "8af9046f98b5e59f",
+        "distance": 0.02,
+        "tongue": "RU"
+      },
+      {
+        "target": "cafe89ef16c905d8",
+        "distance": 0.02,
+        "tongue": "KO"
+      },
+      {
+        "target": "fcf2db99707cc46e",
+        "distance": 0.0215,
+        "tongue": "RU"
+      },
+      {
+        "target": "4a2797de300a3261",
+        "distance": 0.0258,
+        "tongue": "AV"
+      }
+    ]
+  },
+  "5018b3805b54e856": {
+    "id": "5018b3805b54e856",
+    "index": 403,
+    "title": "PACE: A Personalized Adaptive Curriculum Engine for 9-1-1 Call-taker Training",
+    "category": "ai",
+    "coords_6d": [
+      0.7004031102585625,
+      0.3212870780208301,
+      0.1649292738488544,
+      0.3002586943485911,
+      0.06442354697017802,
+      0.4326693360159916
+    ],
+    "fib_coords": [
+      0.8653474023766099,
+      0.3570811359941005,
+      0.10667368649017468,
+      0.035323766041235265,
+      -0.06141278562944814,
+      0.0988350213320543
+    ],
+    "tongue_coords": [
+      0.09646103007744425,
+      0.10405148350342049,
+      0.16835883688838332,
+      0.5448206407836076,
+      0.2203845786400936,
+      0.713179477671991
+    ],
+    "content_hash": "3a2463069455",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "185b48a29a768df8",
+        "distance": 0.0091,
+        "tongue": "KO"
+      },
+      {
+        "target": "aa2130366e119d1f",
+        "distance": 0.0095,
+        "tongue": "KO"
+      },
+      {
+        "target": "b8ac495ef80fb578",
+        "distance": 0.0113,
+        "tongue": "AV"
+      },
+      {
+        "target": "25576c282f681f52",
+        "distance": 0.0136,
+        "tongue": "CA"
+      },
+      {
+        "target": "7e76d468ef7f7dc4",
+        "distance": 0.015,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "eda2dd1c73d7babb": {
+    "id": "eda2dd1c73d7babb",
+    "index": 163,
+    "title": "Building AI Coding Agents for the Terminal: Scaffolding, Harness, Context Engineering, and Lessons Learned",
+    "category": "ai",
+    "coords_6d": [
+      0.0410071928371412,
+      0.15681697199631636,
+      -0.7881354355653606,
+      0.3635167181548709,
+      0.10031202437382135,
+      0.3359501094264761
+    ],
+    "fib_coords": [
+      -0.06239008434527381,
+      0.062255393352534036,
+      -0.9377431677604025,
+      0.024285010713279046,
+      -0.03923409694399347,
+      -0.11506701779502976
+    ],
+    "tongue_coords": [
+      0.15815478461762433,
+      0.15353989019684117,
+      0.16562184064494384,
+      0.5359635348856759,
+      0.2168018040438909,
+      0.7015853755306198
+    ],
+    "content_hash": "c703dd8eaf45",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "2f10314cf4479449",
+        "distance": 0.0139,
+        "tongue": "CA"
+      },
+      {
+        "target": "dec0b8aeaf786cc5",
+        "distance": 0.0164,
+        "tongue": "AV"
+      },
+      {
+        "target": "a6db3637f6b1e927",
+        "distance": 0.0177,
+        "tongue": "KO"
+      },
+      {
+        "target": "1725767dcb111406",
+        "distance": 0.0179,
+        "tongue": "KO"
+      },
+      {
+        "target": "445492aee8e917f9",
+        "distance": 0.018,
+        "tongue": "AV"
+      }
+    ]
+  },
+  "0e1e91b37142f6f8": {
+    "id": "0e1e91b37142f6f8",
+    "index": 492,
+    "title": "DiSCTT: Consensus-Guided Self-Curriculum for Efficient Test-Time Adaptation in Reasoning",
+    "category": "nlp",
+    "coords_6d": [
+      0.6775992099072791,
+      0.3466166951559567,
+      0.1179956950628362,
+      0.2764863001472292,
+      0.010217898223509686,
+      0.48243560576062583
+    ],
+    "fib_coords": [
+      0.852541168924305,
+      0.3761360419012836,
+      0.11292956710018366,
+      0.02909287995790665,
+      -0.09396411933713678,
+      0.10847347491221883
+    ],
+    "tongue_coords": [
+      0.04696114892256045,
+      0.11397710266117246,
+      0.061472942015004375,
+      0.4973265478436427,
+      0.16093825158373293,
+      0.7812106834573844
+    ],
+    "content_hash": "df37518eb933",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "185b48a29a768df8",
+        "distance": 0.0047,
+        "tongue": "RU"
+      },
+      {
+        "target": "1348f070a0c9e8c7",
+        "distance": 0.0083,
+        "tongue": "KO"
+      },
+      {
+        "target": "5018b3805b54e856",
+        "distance": 0.0087,
+        "tongue": "KO"
+      },
+      {
+        "target": "2bd2e6a009110137",
+        "distance": 0.0098,
+        "tongue": "KO"
+      },
+      {
+        "target": "b8ac495ef80fb578",
+        "distance": 0.0127,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "cca1b5512ca03a17": {
+    "id": "cca1b5512ca03a17",
+    "index": 171,
+    "title": "PersianPunc: A Large-Scale Dataset and BERT-Based Approach for Persian Punctuation Restoration",
+    "category": "nlp",
+    "coords_6d": [
+      -0.267296057867153,
+      0.30997521694316404,
+      -0.37462924179005175,
+      0.582424823044562,
+      -0.054701162798974225,
+      0.5024044404814509
+    ],
+    "fib_coords": [
+      -0.3837874929028175,
+      0.35107528879417155,
+      -0.5354730984082948,
+      0.5571376214034733,
+      -0.16298519463105685,
+      0.09085901121207543
+    ],
+    "tongue_coords": [
+      0.03930813836096155,
+      0.09540285585377904,
+      0.05145502113174046,
+      0.3330238923320006,
+      0.13471099421474064,
+      0.8718678691909634
+    ],
+    "content_hash": "a5d5295d3115",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "bad654c88ca88bb8",
+        "distance": 0.0053,
+        "tongue": "AV"
+      },
+      {
+        "target": "e937afc16e368637",
+        "distance": 0.0172,
+        "tongue": "KO"
+      },
+      {
+        "target": "cf1d92d3f2b384f3",
+        "distance": 0.0192,
+        "tongue": "KO"
+      },
+      {
+        "target": "a7b828435b88099c",
+        "distance": 0.0226,
+        "tongue": "AV"
+      },
+      {
+        "target": "b8750239e8a929fd",
+        "distance": 0.0299,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "da409be1ba0e2245": {
+    "id": "da409be1ba0e2245",
+    "index": 172,
+    "title": "Balancing Coverage and Draft Latency in Vocabulary Trimming for Faster Speculative Decoding",
+    "category": "nlp",
+    "coords_6d": [
+      -0.2727746614539959,
+      -0.22833321668783535,
+      -0.6270796190939629,
+      -0.19785508843575442,
+      -0.2086369818423666,
+      0.5477709843816134
+    ],
+    "fib_coords": [
+      -0.30402605301480384,
+      -0.28803679975824975,
+      -0.6780397505876671,
+      -0.4286418596547039,
+      -0.28870440596082986,
+      -0.0167624528885632
+    ],
+    "tongue_coords": [
+      0.031645582551721944,
+      0.07680544224371508,
+      0.04142460535709933,
+      0.33513209719168846,
+      0.10845102479543706,
+      0.8773872211688738
+    ],
+    "content_hash": "6481c7b6a873",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "cafe89ef16c905d8",
+        "distance": 0.0094,
+        "tongue": "KO"
+      },
+      {
+        "target": "2d28b14f251a0556",
+        "distance": 0.0219,
+        "tongue": "KO"
+      },
+      {
+        "target": "f069b0f6ef7bbbca",
+        "distance": 0.0271,
+        "tongue": "KO"
+      },
+      {
+        "target": "8dbf22b4ebde3305",
+        "distance": 0.0306,
+        "tongue": "KO"
+      },
+      {
+        "target": "3d8d42ac0c83fb03",
+        "distance": 0.0324,
+        "tongue": "DR"
+      }
+    ]
+  },
+  "5304270b6319afa3": {
+    "id": "5304270b6319afa3",
+    "index": 496,
+    "title": "On the Statistical Optimality of Optimal Decision Trees",
+    "category": "machine-learning",
+    "coords_6d": [
+      -0.7366235967557405,
+      0.2547129186620886,
+      0.08633685323947478,
+      0.25652997070695815,
+      0.09401315599295394,
+      0.4614183071479863
+    ],
+    "fib_coords": [
+      -0.9125144143939212,
+      0.2538037878467857,
+      0.062121349397384965,
+      -0.026047272427819346,
+      0.004726091582413381,
+      0.029003834305421628
+    ],
+    "tongue_coords": [
+      0.047150051787178085,
+      0.07629038636297186,
+      0.06172021907507497,
+      0.4993270612828045,
+      0.1615856313316359,
+      0.7843531307645905
+    ],
+    "content_hash": "8b9fd78b660a",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "ff502be683444f34",
+        "distance": 0.0045,
+        "tongue": "RU"
+      },
+      {
+        "target": "948744d8315c05f7",
+        "distance": 0.0091,
+        "tongue": "UM"
+      },
+      {
+        "target": "a8fb5918f4a31412",
+        "distance": 0.0133,
+        "tongue": "DR"
+      },
+      {
+        "target": "b9a3f2f4f04b9d8f",
+        "distance": 0.0141,
+        "tongue": "KO"
+      },
+      {
+        "target": "3b28168b18ad1968",
+        "distance": 0.0142,
+        "tongue": "UM"
+      }
+    ]
+  },
+  "22b140a2ed383ffd": {
+    "id": "22b140a2ed383ffd",
+    "index": 178,
+    "title": "How important are the genes to explain the outcome - the asymmetric Shapley value as an honest importance metric for high-dimensional features",
+    "category": "machine-learning",
+    "coords_6d": [
+      0.7953960315153018,
+      0.09226128822891398,
+      0.038456737407126455,
+      0.40150268402842176,
+      0.09278788662425988,
+      0.3000668090706239
+    ],
+    "fib_coords": [
+      0.9481066062554518,
+      0.05982935718226222,
+      0.0037528850388493296,
+      0.000467970946517403,
+      8.529216535814244e-05,
+      2.7861293657511285e-05
+    ],
+    "tongue_coords": [
+      0.05007736491037507,
+      0.0810268784920182,
+      0.06555212170119663,
+      0.74245892663044,
+      0.1716176826484024,
+      0.5553664871912163
+    ],
+    "content_hash": "f1130389d320",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "807baf1592dd02b9",
+        "distance": 0.005,
+        "tongue": "KO"
+      },
+      {
+        "target": "fcf2db99707cc46e",
+        "distance": 0.0071,
+        "tongue": "KO"
+      },
+      {
+        "target": "1e2d46c13b92afc0",
+        "distance": 0.0095,
+        "tongue": "KO"
+      },
+      {
+        "target": "25576c282f681f52",
+        "distance": 0.013,
+        "tongue": "KO"
+      },
+      {
+        "target": "aa2130366e119d1f",
+        "distance": 0.0148,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "1928fff3161a6161": {
+    "id": "1928fff3161a6161",
+    "index": 535,
+    "title": "POET-X: Memory-efficient LLM Training by Scaling Orthogonal Transformation",
+    "category": "machine-learning",
+    "coords_6d": [
+      -0.4218907592986374,
+      0.39838075071220264,
+      -0.10590973804329024,
+      0.6957041954019034,
+      0.07585983880749238,
+      0.25460763818922283
+    ],
+    "fib_coords": [
+      -0.5671290829080846,
+      0.4549836283388864,
+      -0.17562568337549425,
+      0.5504855683254767,
+      -0.01140073766317371,
+      -0.19961408479468518
+    ],
+    "tongue_coords": [
+      0.047150051787178085,
+      0.07629038636297186,
+      0.06172021907507497,
+      0.4993270612828045,
+      0.1615856313316359,
+      0.7843531307645905
+    ],
+    "content_hash": "37308794c360",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "262fa51436b667ab",
+        "distance": 0.0108,
+        "tongue": "AV"
+      },
+      {
+        "target": "6dd4dbfa826f03be",
+        "distance": 0.0149,
+        "tongue": "KO"
+      },
+      {
+        "target": "1b96b966c6f41abb",
+        "distance": 0.0165,
+        "tongue": "KO"
+      },
+      {
+        "target": "a7b828435b88099c",
+        "distance": 0.0185,
+        "tongue": "CA"
+      },
+      {
+        "target": "6c98fe8797c024e1",
+        "distance": 0.0203,
+        "tongue": "AV"
+      }
+    ]
+  },
+  "3b28168b18ad1968": {
+    "id": "3b28168b18ad1968",
+    "index": 538,
+    "title": "Reasoning Theater: Disentangling Model Beliefs from Chain-of-Thought",
+    "category": "machine-learning",
+    "coords_6d": [
+      -0.7819013719701062,
+      0.05491225918885888,
+      0.03519544654970083,
+      0.28338323206153637,
+      0.09170649532642072,
+      0.44515169475754096
+    ],
+    "fib_coords": [
+      -0.9499020107660128,
+      0.01364300330159049,
+      0.00019588751105189398,
+      -5.623400805985527e-06,
+      2.418323618333461e-07,
+      1.739714742309393e-08
+    ],
+    "tongue_coords": [
+      0.047150051787178085,
+      0.07629038636297186,
+      0.06172021907507497,
+      0.4993270612828045,
+      0.1615856313316359,
+      0.7843531307645905
+    ],
+    "content_hash": "ba7165f4dfbb",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "948744d8315c05f7",
+        "distance": 0.0044,
+        "tongue": "KO"
+      },
+      {
+        "target": "ff502be683444f34",
+        "distance": 0.0078,
+        "tongue": "KO"
+      },
+      {
+        "target": "5304270b6319afa3",
+        "distance": 0.0103,
+        "tongue": "UM"
+      },
+      {
+        "target": "3649202efdebac29",
+        "distance": 0.0104,
+        "tongue": "KO"
+      },
+      {
+        "target": "4bd8c37b1cd113a8",
+        "distance": 0.0125,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "c53dfac76087427a": {
+    "id": "c53dfac76087427a",
+    "index": 413,
+    "title": "An Exploration-Analysis-Disambiguation Reasoning Framework for Word Sense Disambiguation with Low-Parameter LLMs",
+    "category": "nlp",
+    "coords_6d": [
+      0.038792398322516845,
+      0.07963930360687423,
+      -0.7867645875696825,
+      0.2417530319309968,
+      0.09684334197395904,
+      0.4558849126338705
+    ],
+    "fib_coords": [
+      0.011714789918938137,
+      0.011713899195564825,
+      -0.949566666135186,
+      -0.0008663822085150503,
+      -0.0014423971883111557,
+      -0.02336372615657371
+    ],
+    "tongue_coords": [
+      0.04946457163512034,
+      0.120053037216868,
+      0.0647499648898495,
+      0.41907057584855534,
+      0.16951760885198836,
+      0.8228557584423816
+    ],
+    "content_hash": "f486ca977d2b",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "a44ee396e958f138",
+        "distance": 0.0065,
+        "tongue": "AV"
+      },
+      {
+        "target": "339f998d486fe899",
+        "distance": 0.0078,
+        "tongue": "CA"
+      },
+      {
+        "target": "37058da04d502b78",
+        "distance": 0.0107,
+        "tongue": "RU"
+      },
+      {
+        "target": "6cf281a664b55645",
+        "distance": 0.0123,
+        "tongue": "KO"
+      },
+      {
+        "target": "26f0b719f1b021a8",
+        "distance": 0.0142,
+        "tongue": "DR"
+      }
+    ]
+  },
+  "494f539b52f71b30": {
+    "id": "494f539b52f71b30",
+    "index": 216,
+    "title": "Latent Wasserstein Adversarial Imitation Learning",
+    "category": "machine-learning",
+    "coords_6d": [
+      -0.7818352702882463,
+      0.0262971578954423,
+      0.08173270856478392,
+      0.3934047292134616,
+      0.10608295996918861,
+      0.34327970899435567
+    ],
+    "fib_coords": [
+      -0.9495930870677881,
+      -0.02779041137133811,
+      0.0008122578266417334,
+      4.742019855685599e-05,
+      4.130044481771506e-06,
+      -6.087799491279157e-07
+    ],
+    "tongue_coords": [
+      0.05424524418886106,
+      0.08777064882561492,
+      0.14201589301447598,
+      0.6893596255202726,
+      0.18590121742728344,
+      0.6015889766946578
+    ],
+    "content_hash": "baefc9cc8bf9",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "142b65deb9424f49",
+        "distance": 0.0043,
+        "tongue": "CA"
+      },
+      {
+        "target": "e1679f31b4dae535",
+        "distance": 0.0112,
+        "tongue": "KO"
+      },
+      {
+        "target": "9fa92a8ff086805e",
+        "distance": 0.0121,
+        "tongue": "KO"
+      },
+      {
+        "target": "6eb103803668a1c9",
+        "distance": 0.0126,
+        "tongue": "KO"
+      },
+      {
+        "target": "8af9046f98b5e59f",
+        "distance": 0.0127,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "3850071c32834399": {
+    "id": "3850071c32834399",
+    "index": 616,
+    "title": "An interpretable prototype parts-based neural network for medical tabular data",
+    "category": "machine-learning",
+    "coords_6d": [
+      -0.16599141713961485,
+      0.2596409940857515,
+      -0.5838701006844931,
+      0.6179192193740702,
+      -0.1423754572768636,
+      0.2540357782796914
+    ],
+    "fib_coords": [
+      -0.2423954063940629,
+      0.2343722821820385,
+      -0.7725091933130244,
+      0.30632747709601416,
+      -0.3011092487686786,
+      -0.08683515205637142
+    ],
+    "tongue_coords": [
+      0.05441119599066076,
+      0.1320587467221317,
+      0.07122518023604094,
+      0.6914685748605088,
+      0.18646994271279246,
+      0.6034294103790879
+    ],
+    "content_hash": "626801d2c1cb",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "3b4adde6d430e84d",
+        "distance": 0.0087,
+        "tongue": "KO"
+      },
+      {
+        "target": "b8750239e8a929fd",
+        "distance": 0.0097,
+        "tongue": "UM"
+      },
+      {
+        "target": "a6db3637f6b1e927",
+        "distance": 0.014,
+        "tongue": "KO"
+      },
+      {
+        "target": "b5dd783eea2eee9e",
+        "distance": 0.0145,
+        "tongue": "KO"
+      },
+      {
+        "target": "3a544822347a1bf8",
+        "distance": 0.0184,
+        "tongue": "AV"
+      }
+    ]
+  },
+  "7572938dcc881f7f": {
+    "id": "7572938dcc881f7f",
+    "index": 617,
+    "title": "On the Necessity of Learnable Sheaf Laplacians",
+    "category": "machine-learning",
+    "coords_6d": [
+      -0.4625408341552975,
+      -0.35509901077174344,
+      -0.4300771104897304,
+      -0.3122691359025954,
+      0.0661963330127059,
+      0.5249765524087453
+    ],
+    "fib_coords": [
+      -0.4417405918647044,
+      -0.39107996146435764,
+      -0.4226086073488244,
+      -0.6086413956443459,
+      -0.04855320224549528,
+      -0.05497195916606139
+    ],
+    "tongue_coords": [
+      0.04696114892256044,
+      0.11397710266117246,
+      0.06147294201500436,
+      0.4973265478436426,
+      0.1609382515837329,
+      0.7812106834573843
+    ],
+    "content_hash": "4a3974733ec0",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "9658d8a7077075bb",
+        "distance": 0.0089,
+        "tongue": "KO"
+      },
+      {
+        "target": "a23db1a781e646ab",
+        "distance": 0.0182,
+        "tongue": "KO"
+      },
+      {
+        "target": "4933be2c5f59f465",
+        "distance": 0.0187,
+        "tongue": "KO"
+      },
+      {
+        "target": "1e999daf3cf8319f",
+        "distance": 0.0201,
+        "tongue": "KO"
+      },
+      {
+        "target": "d2507f243340f43a",
+        "distance": 0.026,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "3649202efdebac29": {
+    "id": "3649202efdebac29",
+    "index": 491,
+    "title": "Progressive Residual Warmup for Language Model Pretraining",
+    "category": "nlp",
+    "coords_6d": [
+      -0.7650695168591723,
+      -0.1532698773505575,
+      0.09253280530366331,
+      0.26633611458899625,
+      0.10228065371850846,
+      0.4513517485875108
+    ],
+    "fib_coords": [
+      -0.911758471934045,
+      -0.25608579580214613,
+      0.06311934817554106,
+      0.026541368945885532,
+      0.004470927042036067,
+      -0.030134174563684748
+    ],
+    "tongue_coords": [
+      0.04946457163512034,
+      0.120053037216868,
+      0.0647499648898495,
+      0.41907057584855534,
+      0.16951760885198836,
+      0.8228557584423816
+    ],
+    "content_hash": "98c4079f4003",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "3b28168b18ad1968",
+        "distance": 0.0064,
+        "tongue": "KO"
+      },
+      {
+        "target": "7572938dcc881f7f",
+        "distance": 0.0088,
+        "tongue": "KO"
+      },
+      {
+        "target": "948744d8315c05f7",
+        "distance": 0.0115,
+        "tongue": "KO"
+      },
+      {
+        "target": "a3ea70abd118a6c2",
+        "distance": 0.0122,
+        "tongue": "KO"
+      },
+      {
+        "target": "2c0471270895d2ca",
+        "distance": 0.0128,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "f2bd6e5532ed7d03": {
+    "id": "f2bd6e5532ed7d03",
+    "index": 401,
+    "title": "Towards Provably Unbiased LLM Judges via Bias-Bounded Evaluation",
+    "category": "ai",
+    "coords_6d": [
+      0.3918736320534134,
+      -0.24654564430051576,
+      -0.1950909800843142,
+      0.7425773886859026,
+      0.08900442235844953,
+      0.30124217148419924
+    ],
+    "fib_coords": [
+      0.46616521674984424,
+      -0.4061830206515073,
+      -0.3739165243800908,
+      0.6164410306954761,
+      -0.010805898094737598,
+      -0.016597152284829816
+    ],
+    "tongue_coords": [
+      0.11775141912850627,
+      0.09526289918672885,
+      0.15413860875098195,
+      0.623503769844277,
+      0.20177005834434641,
+      0.6529416246264038
+    ],
+    "content_hash": "febe157905e9",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "a52d23d7faa9554e",
+        "distance": 0.0071,
+        "tongue": "KO"
+      },
+      {
+        "target": "b4e739f5cc3f89f0",
+        "distance": 0.0095,
+        "tongue": "KO"
+      },
+      {
+        "target": "dfbfc2797afd8a36",
+        "distance": 0.0134,
+        "tongue": "AV"
+      },
+      {
+        "target": "9db0818d407a34d3",
+        "distance": 0.0161,
+        "tongue": "KO"
+      },
+      {
+        "target": "c4b5f0c1e8b7609a",
+        "distance": 0.0179,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "86e6a91cacd982a3": {
+    "id": "86e6a91cacd982a3",
+    "index": 530,
+    "title": "The Spike, the Sparse and the Sink: Anatomy of Massive Activations and Attention Sinks",
+    "category": "nlp",
+    "coords_6d": [
+      -0.702824703494507,
+      0.29931752333163386,
+      0.09601201889325522,
+      0.11843975423269819,
+      0.0455946025831795,
+      0.5418683469673204
+    ],
+    "fib_coords": [
+      -0.8875826281762389,
+      0.31641813442070993,
+      0.09004609833799926,
+      -0.03694327147144523,
+      -0.017796681258243043,
+      0.06918681502107782
+    ],
+    "tongue_coords": [
+      0.032379203152869025,
+      0.07858597684496975,
+      0.042384927191424435,
+      0.27432101122565744,
+      0.11096517999783881,
+      0.8977271640212658
+    ],
+    "content_hash": "f2e4250af6df",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "066aeb924754c084",
+        "distance": 0.0099,
+        "tongue": "KO"
+      },
+      {
+        "target": "d3181bc98740f675",
+        "distance": 0.011,
+        "tongue": "KO"
+      },
+      {
+        "target": "de9c863a43d70958",
+        "distance": 0.0121,
+        "tongue": "KO"
+      },
+      {
+        "target": "ff502be683444f34",
+        "distance": 0.0148,
+        "tongue": "RU"
+      },
+      {
+        "target": "5304270b6319afa3",
+        "distance": 0.0152,
+        "tongue": "RU"
+      }
+    ]
+  },
+  "bc9c3bcf7a4ced12": {
+    "id": "bc9c3bcf7a4ced12",
+    "index": 412,
+    "title": "NCTB-QA: A Large-Scale Bangla Educational Question Answering Dataset and Benchmarking Performance",
+    "category": "nlp",
+    "coords_6d": [
+      -0.5495188093201451,
+      0.47341174083330456,
+      0.0022739120380847935,
+      0.5373311035569279,
+      -0.08710477725369412,
+      0.2830075513099807
+    ],
+    "fib_coords": [
+      -0.6503051087774582,
+      0.47406143439960025,
+      -0.03172081929194658,
+      0.38824192977654604,
+      -0.18873399580261335,
+      -0.25982781669432947
+    ],
+    "tongue_coords": [
+      0.03930813836096155,
+      0.09540285585377904,
+      0.05145502113174046,
+      0.3330238923320006,
+      0.13471099421474064,
+      0.8718678691909634
+    ],
+    "content_hash": "48802aa8b123",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "d4a8dbd6a25644aa",
+        "distance": 0.0116,
+        "tongue": "KO"
+      },
+      {
+        "target": "cffc7499b16eb371",
+        "distance": 0.0131,
+        "tongue": "KO"
+      },
+      {
+        "target": "ea21cac6038a1d9b",
+        "distance": 0.0135,
+        "tongue": "KO"
+      },
+      {
+        "target": "6028e1615acf5a07",
+        "distance": 0.0168,
+        "tongue": "CA"
+      },
+      {
+        "target": "0e1e91b37142f6f8",
+        "distance": 0.0176,
+        "tongue": "AV"
+      }
+    ]
+  },
+  "a23db1a781e646ab": {
+    "id": "a23db1a781e646ab",
+    "index": 418,
+    "title": "Bayesian Supervised Causal Clustering",
+    "category": "machine-learning",
+    "coords_6d": [
+      -0.5281116742843721,
+      -0.4142990800532739,
+      -0.2328406727998981,
+      -0.22258056741888305,
+      0.17858164405125151,
+      0.5624109176190476
+    ],
+    "fib_coords": [
+      -0.49996846482891527,
+      -0.42512804849545727,
+      -0.3063829673076793,
+      -0.6121652013334451,
+      0.02042015059575922,
+      0.052573164531274405
+    ],
+    "tongue_coords": [
+      0.059217866693909695,
+      0.09581652105200626,
+      0.15503438774591594,
+      0.6271272719948054,
+      0.2029426482719191,
+      0.6567362053417605
+    ],
+    "content_hash": "5848535bfddb",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "1e999daf3cf8319f",
+        "distance": 0.0173,
+        "tongue": "KO"
+      },
+      {
+        "target": "a8fb5918f4a31412",
+        "distance": 0.0191,
+        "tongue": "KO"
+      },
+      {
+        "target": "9c9791254432463b",
+        "distance": 0.021,
+        "tongue": "KO"
+      },
+      {
+        "target": "0bd0a4ad6e8864be",
+        "distance": 0.0271,
+        "tongue": "KO"
+      },
+      {
+        "target": "3649202efdebac29",
+        "distance": 0.0276,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "194247e4dd7bacbb": {
+    "id": "194247e4dd7bacbb",
+    "index": 601,
+    "title": "Latent-Mark: An Audio Watermark Robust to Neural Resynthesis",
+    "category": "ai",
+    "coords_6d": [
+      -0.7465902640634214,
+      -0.25744627657194713,
+      0.17635797630901479,
+      0.2286410362216502,
+      0.05158866809445977,
+      0.4390719102343825
+    ],
+    "fib_coords": [
+      -0.8797886910945367,
+      -0.3319393767146373,
+      0.0967322532688633,
+      0.03768547246686401,
+      -0.030819057485160454,
+      -0.0809998225100763
+    ],
+    "tongue_coords": [
+      0.05838109900922953,
+      0.06297506833167081,
+      0.15284370150673574,
+      0.3297417386723226,
+      0.13338333517032594,
+      0.8632750793536264
+    ],
+    "content_hash": "2321234bb94f",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "3649202efdebac29",
+        "distance": 0.0091,
+        "tongue": "KO"
+      },
+      {
+        "target": "2c0471270895d2ca",
+        "distance": 0.0092,
+        "tongue": "KO"
+      },
+      {
+        "target": "983662b8be445603",
+        "distance": 0.0095,
+        "tongue": "KO"
+      },
+      {
+        "target": "4993cff8fad868e9",
+        "distance": 0.0107,
+        "tongue": "KO"
+      },
+      {
+        "target": "0889537f3c490894",
+        "distance": 0.0175,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "b831274abcb10b2b": {
+    "id": "b831274abcb10b2b",
+    "index": 443,
+    "title": "STRUCTUREDAGENT: Planning with AND/OR Trees for Long-Horizon Web Tasks",
+    "category": "ai",
+    "coords_6d": [
+      0.24178383950735235,
+      -0.12659721544874572,
+      -0.5539876801820022,
+      0.5293858376601785,
+      -0.12046270202828051,
+      0.47576332614562394
+    ],
+    "fib_coords": [
+      0.23079941881140592,
+      -0.22388458159852948,
+      -0.7884031752854677,
+      0.28292266495865176,
+      -0.29395256125598984,
+      0.10523503685702257
+    ],
+    "tongue_coords": [
+      0.09646103007744425,
+      0.10405148350342049,
+      0.16835883688838332,
+      0.5448206407836076,
+      0.2203845786400936,
+      0.713179477671991
+    ],
+    "content_hash": "e33ae2c7827f",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "f047fe91e83213f7",
+        "distance": 0.0194,
+        "tongue": "KO"
+      },
+      {
+        "target": "142b65deb9424f49",
+        "distance": 0.0203,
+        "tongue": "KO"
+      },
+      {
+        "target": "a72822b8b89e5d47",
+        "distance": 0.0218,
+        "tongue": "RU"
+      },
+      {
+        "target": "26f0b719f1b021a8",
+        "distance": 0.0243,
+        "tongue": "AV"
+      },
+      {
+        "target": "6cf281a664b55645",
+        "distance": 0.0246,
+        "tongue": "DR"
+      }
+    ]
+  },
+  "116bcfb25793ce37": {
+    "id": "116bcfb25793ce37",
+    "index": 451,
+    "title": "Core-based Hierarchies for Efficient GraphRAG",
+    "category": "nlp",
+    "coords_6d": [
+      -0.06712568261076193,
+      0.14906778259618098,
+      -0.8122042728961888,
+      0.2592536373859526,
+      -0.0028772984210837177,
+      0.3858450863637104
+    ],
+    "fib_coords": [
+      -0.09932820223518406,
+      0.09878378440949367,
+      -0.9190709853855064,
+      0.06039975960274672,
+      -0.09294168940624775,
+      -0.1609282679059905
+    ],
+    "tongue_coords": [
+      0.03930813836096155,
+      0.09540285585377904,
+      0.05145502113174046,
+      0.3330238923320006,
+      0.13471099421474064,
+      0.8718678691909634
+    ],
+    "content_hash": "dc01dbfed9d6",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "a44ee396e958f138",
+        "distance": 0.0085,
+        "tongue": "RU"
+      },
+      {
+        "target": "7572938dcc881f7f",
+        "distance": 0.0117,
+        "tongue": "KO"
+      },
+      {
+        "target": "445492aee8e917f9",
+        "distance": 0.0119,
+        "tongue": "RU"
+      },
+      {
+        "target": "c53dfac76087427a",
+        "distance": 0.0139,
+        "tongue": "RU"
+      },
+      {
+        "target": "eda2dd1c73d7babb",
+        "distance": 0.0146,
+        "tongue": "AV"
+      }
+    ]
+  },
+  "4dfdbdc1e99f678d": {
+    "id": "4dfdbdc1e99f678d",
+    "index": 610,
+    "title": "Distilling Formal Logic into Neural Spaces: A Kernel Alignment Approach for Signal Temporal Logic",
+    "category": "nlp",
+    "coords_6d": [
+      0.7969986399543486,
+      0.05549948647621571,
+      0.028022861091448244,
+      0.1812614058084693,
+      0.07332171962999437,
+      0.47454812439085897
+    ],
+    "fib_coords": [
+      0.949989920862473,
+      0.004376054542676485,
+      2.0157312641585015e-05,
+      1.856943581083162e-07,
+      2.5656515501776546e-09,
+      5.910303008224378e-11
+    ],
+    "tongue_coords": [
+      0.03930813836096155,
+      0.09540285585377904,
+      0.05145502113174046,
+      0.3330238923320006,
+      0.13471099421474064,
+      0.8718678691909634
+    ],
+    "content_hash": "16d0ce175637",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "990722b082a67ce7",
+        "distance": 0.0038,
+        "tongue": "RU"
+      },
+      {
+        "target": "f0ddf69ac3c1b182",
+        "distance": 0.0083,
+        "tongue": "KO"
+      },
+      {
+        "target": "a9388c045e262034",
+        "distance": 0.0125,
+        "tongue": "KO"
+      },
+      {
+        "target": "c25ce3ba0d214a1b",
+        "distance": 0.0139,
+        "tongue": "UM"
+      },
+      {
+        "target": "fb8808504c46cfd9",
+        "distance": 0.0141,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "1834092eb3dcc4be": {
+    "id": "1834092eb3dcc4be",
+    "index": 618,
+    "title": "Robust Node Affinities via Jaccard-Biased Random Walks and Rank Aggregation",
+    "category": "machine-learning",
+    "coords_6d": [
+      0.8014996374837735,
+      -0.1739177552665626,
+      0.11412855196486861,
+      0.32225373834317184,
+      0.10605043706016183,
+      0.31895368326141177
+    ],
+    "fib_coords": [
+      0.8938469356450776,
+      -0.3027531802893389,
+      0.08398033759226246,
+      -0.03536655877931856,
+      -0.009343633841179247,
+      -0.05905398705621914
+    ],
+    "tongue_coords": [
+      0.08893364837266228,
+      0.14389766581049937,
+      0.07761043806105387,
+      0.6278816333227683,
+      0.20318676472560754,
+      0.6575261827803225
+    ],
+    "content_hash": "2f4ecf3a3cac",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "1e2d46c13b92afc0",
+        "distance": 0.0099,
+        "tongue": "KO"
+      },
+      {
+        "target": "9b66f6c1106653e9",
+        "distance": 0.0102,
+        "tongue": "RU"
+      },
+      {
+        "target": "030ab18da6ba4da7",
+        "distance": 0.0116,
+        "tongue": "KO"
+      },
+      {
+        "target": "4454a46f9c78e560",
+        "distance": 0.0126,
+        "tongue": "DR"
+      },
+      {
+        "target": "5497f26fe3565d81",
+        "distance": 0.0145,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "6e4a2499a27abf0d": {
+    "id": "6e4a2499a27abf0d",
+    "index": 497,
+    "title": "Bayes with No Shame: Admissibility Geometries of Predictive Inference",
+    "category": "machine-learning",
+    "coords_6d": [
+      0.5717289094171065,
+      0.5205201697932553,
+      -0.22937150002829315,
+      -0.20993375665455866,
+      0.16336212526486737,
+      0.425809999642737
+    ],
+    "fib_coords": [
+      0.49437499263299034,
+      0.42215957672493176,
+      -0.3175325791762259,
+      -0.6141111179604903,
+      0.017244771725368268,
+      -0.0402227826698695
+    ],
+    "tongue_coords": [
+      0.059217866693909695,
+      0.09581652105200626,
+      0.15503438774591594,
+      0.6271272719948054,
+      0.2029426482719191,
+      0.6567362053417605
+    ],
+    "content_hash": "dac72715498a",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "44bdb5e7a92a412a",
+        "distance": 0.0061,
+        "tongue": "KO"
+      },
+      {
+        "target": "f551d44c7991ac4b",
+        "distance": 0.0172,
+        "tongue": "CA"
+      },
+      {
+        "target": "f5ff8e7dca2742c0",
+        "distance": 0.02,
+        "tongue": "RU"
+      },
+      {
+        "target": "7e76d468ef7f7dc4",
+        "distance": 0.021,
+        "tongue": "AV"
+      },
+      {
+        "target": "bb4bde495fdc3788",
+        "distance": 0.0237,
+        "tongue": "UM"
+      }
+    ]
+  },
+  "c25ce3ba0d214a1b": {
+    "id": "c25ce3ba0d214a1b",
+    "index": 602,
+    "title": "Visual-Informed Speech Enhancement Using Attention-Based Beamforming",
+    "category": "ai",
+    "coords_6d": [
+      0.719121501590178,
+      0.29747415957745493,
+      0.13202860124451385,
+      0.2396491590013491,
+      0.07565570113461745,
+      0.4650659461448097
+    ],
+    "fib_coords": [
+      0.8908445922737569,
+      0.3094454717089779,
+      0.0869653552690707,
+      0.03622836289356694,
+      -0.013163889268793113,
+      0.06395824559591255
+    ],
+    "tongue_coords": [
+      0.0735623482124607,
+      0.11902637970001652,
+      0.1283924852749848,
+      0.4154868101499916,
+      0.16806794517499035,
+      0.8158189431374648
+    ],
+    "content_hash": "459820bf6110",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "185b48a29a768df8",
+        "distance": 0.0047,
+        "tongue": "CA"
+      },
+      {
+        "target": "5018b3805b54e856",
+        "distance": 0.0065,
+        "tongue": "KO"
+      },
+      {
+        "target": "0e1e91b37142f6f8",
+        "distance": 0.0077,
+        "tongue": "RU"
+      },
+      {
+        "target": "2bd2e6a009110137",
+        "distance": 0.0083,
+        "tongue": "KO"
+      },
+      {
+        "target": "babfd424fcaccee3",
+        "distance": 0.0108,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "2a46afd2a1d2058f": {
+    "id": "2a46afd2a1d2058f",
+    "index": 603,
+    "title": "Recursive Inference Machines for Neural Reasoning",
+    "category": "ai",
+    "coords_6d": [
+      -0.2736054934483813,
+      0.32666314733001506,
+      -0.20808244556348937,
+      0.7386324758866186,
+      0.051161637185200684,
+      0.359774193662869
+    ],
+    "fib_coords": [
+      -0.4339734639995941,
+      0.386046365963037,
+      -0.43800362020711414,
+      0.6043330379879323,
+      -0.06250498294229791,
+      0.06451953859140248
+    ],
+    "tongue_coords": [
+      0.0871795270016757,
+      0.09403962520790035,
+      0.22823896481352623,
+      0.6154973377089612,
+      0.19917912247963435,
+      0.6445571800428532
+    ],
+    "content_hash": "5adee9d605a5",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "a7b828435b88099c",
+        "distance": 0.007,
+        "tongue": "AV"
+      },
+      {
+        "target": "cf1d92d3f2b384f3",
+        "distance": 0.0074,
+        "tongue": "KO"
+      },
+      {
+        "target": "948744d8315c05f7",
+        "distance": 0.0085,
+        "tongue": "RU"
+      },
+      {
+        "target": "262fa51436b667ab",
+        "distance": 0.0096,
+        "tongue": "AV"
+      },
+      {
+        "target": "122e63e75b4306b6",
+        "distance": 0.0152,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "dd9881c58f1598a8": {
+    "id": "dd9881c58f1598a8",
+    "index": 611,
+    "title": "Federated Heterogeneous Language Model Optimization for Hybrid Automatic Speech Recognition",
+    "category": "nlp",
+    "coords_6d": [
+      -0.5739664922869845,
+      0.4902430974256144,
+      0.0630843609569923,
+      0.5045053141554596,
+      -0.06876536256320916,
+      0.2636100291366277
+    ],
+    "fib_coords": [
+      -0.6975369883997743,
+      0.47354374316683023,
+      0.03425810902262118,
+      0.27033990852198775,
+      -0.2848396083919223,
+      -0.19054549703253038
+    ],
+    "tongue_coords": [
+      0.044830886630444315,
+      0.14507579662770428,
+      0.05868439247214824,
+      0.47476670814537153,
+      0.30727546820244517,
+      0.7457732271908907
+    ],
+    "content_hash": "50dca03dd7d1",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "bc9c3bcf7a4ced12",
+        "distance": 0.0054,
+        "tongue": "KO"
+      },
+      {
+        "target": "0f6524bdc0e4d110",
+        "distance": 0.0089,
+        "tongue": "AV"
+      },
+      {
+        "target": "1414b4079ec4cc06",
+        "distance": 0.0113,
+        "tongue": "KO"
+      },
+      {
+        "target": "8fa756097574f3a2",
+        "distance": 0.013,
+        "tongue": "KO"
+      },
+      {
+        "target": "6028e1615acf5a07",
+        "distance": 0.0143,
+        "tongue": "KO"
+      }
+    ]
+  },
+  "35aac0955f285908": {
+    "id": "35aac0955f285908",
+    "index": 612,
+    "title": "An Approach to Simultaneous Acquisition of Real-Time MRI Video, EEG, and Surface EMG for Articulatory, Brain, and Muscle Activity During Speech Production",
+    "category": "nlp",
+    "coords_6d": [
+      0.10709072708915132,
+      0.12838668134150016,
+      -0.8236927136153547,
+      0.21090398733935103,
+      0.02381409401365865,
+      0.3886272594830138
+    ],
+    "fib_coords": [
+      0.07869421224564714,
+      0.078423755320864,
+      -0.930533315959655,
+      -0.038356244344198855,
+      -0.06082400097086991,
+      -0.13818076159597217
+    ],
+    "tongue_coords": [
+      0.05696728932309321,
+      0.09217501037171379,
+      0.049714099898269,
+      0.4021955167775347,
+      0.13015320325377597,
+      0.8423692264371316
+    ],
+    "content_hash": "4eb61dae8622",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "116bcfb25793ce37",
+        "distance": 0.0078,
+        "tongue": "RU"
+      },
+      {
+        "target": "445492aee8e917f9",
+        "distance": 0.0102,
+        "tongue": "RU"
+      },
+      {
+        "target": "c53dfac76087427a",
+        "distance": 0.0117,
+        "tongue": "KO"
+      },
+      {
+        "target": "4a2797de300a3261",
+        "distance": 0.0127,
+        "tongue": "RU"
+      },
+      {
+        "target": "eda2dd1c73d7babb",
+        "distance": 0.0154,
+        "tongue": "AV"
+      }
+    ]
+  },
+  "b29f218e96289d29": {
+    "id": "b29f218e96289d29",
+    "index": 613,
+    "title": "Model Medicine: A Clinical Framework for Understanding, Diagnosing, and Treating AI Models",
+    "category": "nlp",
+    "coords_6d": [
+      0.4364296794604946,
+      -0.2697558530191282,
+      -0.07512282864792612,
+      0.5738212161124323,
+      0.05589724325714042,
+      0.5488371210107494
+    ],
+    "fib_coords": [
+      0.5814836624088394,
+      -0.45983123587939173,
+      -0.14893391512790963,
+      0.5285165718004767,
+      -0.0343126402968626,
+      0.22415073016619066
+    ],
+    "tongue_coords": [
+      0.04946457163512034,
+      0.120053037216868,
+      0.0647499648898495,
+      0.41907057584855534,
+      0.16951760885198836,
+      0.8228557584423816
+    ],
+    "content_hash": "ee4e3c7f201e",
+    "depth": 0,
+    "parent_id": "",
+    "children": [],
+    "connections": [
+      {
+        "target": "b9285e2948bbe20a",
+        "distance": 0.0136,
+        "tongue": "AV"
+      },
+      {
+        "target": "f7dd711d748b9c0c",
+        "distance": 0.0155,
+        "tongue": "AV"
+      },
+      {
+        "target": "2d28b14f251a0556",
+        "distance": 0.0166,
+        "tongue": "AV"
+      },
+      {
+        "target": "38b55fc720e9be13",
+        "distance": 0.0191,
+        "tongue": "AV"
+      },
+      {
+        "target": "8c50bd8ca246064f",
+        "distance": 0.0213,
+        "tongue": "AV"
+      }
+    ]
+  }
+}

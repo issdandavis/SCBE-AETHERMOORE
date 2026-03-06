@@ -1,0 +1,25 @@
+{
+  "id": "04fe77308da81fcc",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Golden Ratio (Q111120539)",
+  "content": "# Golden Ratio\n\nWikidata ID: Q111120539\nDescription: guesthouse in Rome\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q111120539",
+  "timestamp": "2026-03-06T02:41:14.149618",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "ff6d4f3aa93dea6931ef39ad53cd97660ae02c69df93824a8080a0d127b42482",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q111120539",
+    "description": "guesthouse in Rome"
+  }
+}

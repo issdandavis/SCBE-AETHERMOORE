@@ -1,0 +1,33 @@
+{
+  "id": "38b55fc720e9be13",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "Censored LLMs as a Natural Testbed for Secret Knowledge Elicitation",
+  "content": "# Censored LLMs as a Natural Testbed for Secret Knowledge Elicitation\n\nAuthors: Helena Casademunt, Bartosz Cywi\u0144ski, Khoi Tran, Arya Jakkli, Samuel Marks, Neel Nanda\nPublished: 2026-03-05T18:58:14Z\n\nLarge language models sometimes produce false or misleading responses. Two approaches to this problem are honesty elicitation -- modifying prompts or weights so that the model answers truthfully -- and lie detection -- classifying whether a given response is false. Prior work evaluates such methods on models specifically trained to lie or conceal information, but these artificial constructions may not resemble naturally-occurring dishonesty. We instead study open-weights LLMs from Chinese developers, which are trained to censor politically sensitive topics: Qwen3 models frequently produce falsehoods about subjects like Falun Gong or the Tiananmen protests while occasionally answering correctly, indicating they possess knowledge they are trained to suppress. Using this as a testbed, we evaluate a suite of elicitation and lie detection techniques. For honesty elicitation, sampling without a chat template, few-shot prompting, and fine-tuning on generic honesty data most reliably increase truthful responses. For lie detection, prompting the censored model to classify its own responses performs near an uncensored-model upper bound, and linear probes trained on unrelated data offer a cheaper alternative. The strongest honesty elicitation techniques also transfer to frontier open-weights models including DeepSeek R1. Notably, no technique fully eliminates false responses. We release all prompts, code, and transcripts.",
+  "url": "http://arxiv.org/abs/2603.05494v1",
+  "timestamp": "2026-03-05T18:58:14Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "836a125d27269e9212e7b8f29c0dba4fc11e987278aa6ecf6ef53c313cb15ecb",
+  "parent_hash": "525feb5095abb6364d8115e6275fdd26b2bb5031bcaa121202c561b2e20fe2d0",
+  "metadata": {
+    "authors": [
+      "Helena Casademunt",
+      "Bartosz Cywi\u0144ski",
+      "Khoi Tran",
+      "Arya Jakkli",
+      "Samuel Marks",
+      "Neel Nanda"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.05494v1"
+  }
+}

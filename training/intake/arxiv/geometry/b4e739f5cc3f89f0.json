@@ -1,0 +1,29 @@
+{
+  "id": "b4e739f5cc3f89f0",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Ultralimits of Sobolev maps and stability of Dehn functions",
+  "content": "# Ultralimits of Sobolev maps and stability of Dehn functions\n\nAuthors: Toni Ikonen, Stefan Wenger\nPublished: 2026-03-05T14:59:37Z\n\nWe show that the ultralimit of a bounded sequence of Lipschitz maps into pointed metric spaces extends naturally to $p$-bounded sequences of Sobolev maps and that this ultralimit for Sobolev maps enjoys desirable properties. We use this to prove the stability of Dehn functions under ultraconvergence of pointed length spaces, thus resolving a problem posed by several researchers in the field. As an application, we obtain a simpler proof of a recent result of Stadler--Wenger, previously proved in the locally compact case by Lytchak--Wenger, characterizing spaces of curvature bounded above by $\u03ba$ via an isoperimetric inequality for curves.",
+  "url": "http://arxiv.org/abs/2603.05246v1",
+  "timestamp": "2026-03-05T14:59:37Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "b3d79635c1488b9866f2d1f263be6551a469846156cfb302585c2800a82f5508",
+  "parent_hash": "c3f79015b30faffcc9c2f42940c91f581659f1e0b439455e7fc3185f22a6e20e",
+  "metadata": {
+    "authors": [
+      "Toni Ikonen",
+      "Stefan Wenger"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.05246v1"
+  }
+}

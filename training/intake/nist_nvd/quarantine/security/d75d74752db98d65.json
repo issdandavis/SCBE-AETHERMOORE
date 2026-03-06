@@ -1,0 +1,30 @@
+{
+  "id": "d75d74752db98d65",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2009-2265 \u2014 CVSS 7.5 (UNKNOWN)",
+  "content": "# CVE-2009-2265\n\nCVSS Score: 7.5 (UNKNOWN)\nPublished: 2009-07-05T16:30:00.377\nCWEs: CWE-22\n\nMultiple directory traversal vulnerabilities in FCKeditor before 2.6.4.1 allow remote attackers to create executable files in arbitrary directories via directory traversal sequences in the input to unspecified connector modules, as exploited in the wild for remote code execution in July 2009, related to the file browser and the editor/filemanager/connectors/ directory.\n\nReferences: http://isc.sans.org/diary.html?storyid=6724, http://mail.zope.org/pipermail/zope-dev/2009-July/037195.html, http://packetstormsecurity.com/files/163271/Adobe-ColdFusion-8-Remote-Command-Execution.html",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2009-2265",
+  "timestamp": "2026-03-06T02:41:44.330317",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "5d725cd3d4879b9c3b3debad3522a51f24825ba4c1c7a7f39ff22279260fb643",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2009-2265",
+    "cvss_score": 7.5,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "CWE-22"
+    ],
+    "published": "2009-07-05T16:30:00.377"
+  }
+}

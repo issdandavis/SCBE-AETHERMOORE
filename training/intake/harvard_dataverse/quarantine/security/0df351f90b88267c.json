@@ -1,0 +1,34 @@
+{
+  "id": "0df351f90b88267c",
+  "source": "harvard_dataverse",
+  "category": "quarantine/security",
+  "title": "Quantum Blockchain",
+  "content": "# Quantum Blockchain\n\nAuthors: Delija, Milaim\nPublished: 2025-01-19T14:59:34Z\nSubjects: Computer and Information Science, Engineering, Mathematical Sciences, Physics\nDOI: doi:10.7910/DVN/FRS3JF\n\nIn a world where data forms the foundation of progress and prosperity, security gaps and inefficiencies threaten the stability of global systems. The world is at a turning point: data is the backbone of modern societies, and its security determines the stability of economies, healthcare systems, and democratic structures. At the same time, technological advances in quantum physics present both opportunities and risks to existing systems. This paper explores how the fusion of quantum computing and blockchain technology can address security problems while creating a more just and sustainable world. Through interdisciplinary analyses and global case studies, this paper highlights how this synergy extends far beyond technology \u2014 it is a tool for humanity and progress.\n\nCitation: Delija, Milaim, 2025, \"Quantum Blockchain\", https://doi.org/10.7910/DVN/FRS3JF, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/FRS3JF",
+  "timestamp": "2026-03-06T02:42:29.165288",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "707e8538383f64aa95993cae0314434c6e5c037fbbb4dc862025b584ce020224",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/FRS3JF",
+    "subjects": [
+      "Computer and Information Science",
+      "Engineering",
+      "Mathematical Sciences",
+      "Physics"
+    ],
+    "authors": [
+      "Delija, Milaim"
+    ],
+    "file_count": 1
+  }
+}

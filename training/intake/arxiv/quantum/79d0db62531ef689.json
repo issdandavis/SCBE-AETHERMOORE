@@ -1,0 +1,30 @@
+{
+  "id": "79d0db62531ef689",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Tight inapproximability of max-LINSAT and implications for decoded quantum interferometry",
+  "content": "# Tight inapproximability of max-LINSAT and implications for decoded quantum interferometry\n\nAuthors: Maximilian J. Kramer, Carsten Schubert, Jens Eisert\nPublished: 2026-03-04T19:26:26Z\n\nWe establish tight inapproximability bounds for max-LINSAT, the problem of maximizing the number of satisfied linear constraints over the finite field $\\mathbb{F}_q$, where each constraint accepts $r$ values. Specifically, we prove by a direct reduction from H\u00e5stad's theorem that no polynomial-time algorithm can exceed the random-assignment ratio $r/q$ by any constant, assuming $\\mathsf{P} \\neq \\mathsf{NP}$. This threshold coincides with the $\\ell/m \\to 0$ limit of the semicircle law governing decoded quantum interferometry (DQI), where $\\ell$ is the decoding radius of the underlying code: as the decodable structure vanishes, DQI's approximation ratio degrades to exactly the worst-case bound established by our result. Together, these observations delineate the boundary between worst-case hardness and potential quantum advantage, showing that any algorithm surpassing $r/q$ must exploit algebraic structure specific to the instance.",
+  "url": "http://arxiv.org/abs/2603.04540v1",
+  "timestamp": "2026-03-04T19:26:26Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "c372dcc982576661dbf42acba99bb3874a414948afb8443d961c96479c35de84",
+  "parent_hash": "20637597f087ceb0557e3a7177cc9eff2b60d9d71b7528c0264609ba0edbfe93",
+  "metadata": {
+    "authors": [
+      "Maximilian J. Kramer",
+      "Carsten Schubert",
+      "Jens Eisert"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.04540v1"
+  }
+}

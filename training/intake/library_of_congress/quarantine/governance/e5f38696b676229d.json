@@ -1,0 +1,37 @@
+{
+  "id": "e5f38696b676229d",
+  "source": "library_of_congress",
+  "category": "quarantine/governance",
+  "title": "Environmental governance in Latin America",
+  "content": "# Environmental governance in Latin America\n\nContributors: hogenboom, barbara, baud, michiel, castro, f\u00e1bio de\nDate: 2016-01-01\nSubjects: latin america, political science / government / state & provincial, sustainable development, environmental policy, law / environmental\n\nIncludes bibliographical references and index. Description based on print version record; resource not viewed.",
+  "url": "https://www.loc.gov/item/2020719503/",
+  "timestamp": "2026-03-06T04:17:41.942083",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "fad88985be1a00226c9c8c02a4d178657ccb508285f02a436e2059871c5e94a9",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "latin america",
+      "political science / government / state & provincial",
+      "sustainable development",
+      "environmental policy",
+      "law / environmental",
+      "case studies",
+      "political science / public policy / environmental policy"
+    ],
+    "dates": "2016-01-01",
+    "original_format": [
+      "book"
+    ]
+  }
+}

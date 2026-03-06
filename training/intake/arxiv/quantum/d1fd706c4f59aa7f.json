@@ -1,0 +1,28 @@
+{
+  "id": "d1fd706c4f59aa7f",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Recursive Magic State Distillation on the Surface Code",
+  "content": "# Recursive Magic State Distillation on the Surface Code\n\nAuthors: Jonathan E. Moussa\nPublished: 2026-03-05T17:33:16Z\n\nI reduce the cost to prepare magic states with lattice surgery operations on the surface code by using a recursive implementation of 15-to-1 magic state distillation. On a rotated surface code with distance $d$, $|T\\rangle$ preparation requires a $d$-by-$3 d$ grid of data qubits for up to $15 d$ error correction cycles, and $|CCZ\\rangle$ preparation requires a $3 d$-by-$2 d$ grid for up to $10.5 d$ cycles. However, a significantly lower physical error threshold than that of the underlying surface code is required to match the error probability of the output magic state with the logical error rate of the output surface code at large code distances.",
+  "url": "http://arxiv.org/abs/2603.05409v1",
+  "timestamp": "2026-03-05T17:33:16Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "702ce59b9961f44b23f3b2331c9548a84d6b5bcccae171670e7f65e85abd5ae1",
+  "parent_hash": "aa4d266675137ae2dbac189b20004dca9217e7f81b7b47fa56b78af43159c3ea",
+  "metadata": {
+    "authors": [
+      "Jonathan E. Moussa"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05409v1"
+  }
+}

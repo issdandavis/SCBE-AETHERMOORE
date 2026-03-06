@@ -1,0 +1,32 @@
+{
+  "id": "8ab8aadd1a62d0f2",
+  "source": "library_of_congress",
+  "category": "quarantine/security",
+  "title": "Network hardening : an automated approach to improving network security",
+  "content": "# Network hardening : an automated approach to improving network security\n\nContributors: wang, lingyu, albanese, massimiliano, jajodia, sushil\nDate: 2014\nSubjects: security measures, computer networks\n\nIncludes bibliographical references.",
+  "url": "//lccn.loc.gov/2014932046",
+  "timestamp": "2026-03-06T02:38:19.805319",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "3cc6b3d17885284b728f86e0ccf187336d07ee1077dbe1285c256d8647fa286d",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "security measures",
+      "computer networks"
+    ],
+    "dates": "2014",
+    "original_format": [
+      "book"
+    ]
+  }
+}

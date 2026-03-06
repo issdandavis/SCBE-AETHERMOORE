@@ -1,0 +1,32 @@
+{
+  "id": "2926a1b0c7afdb6b",
+  "source": "library_of_congress",
+  "category": "quarantine/governance",
+  "title": "Distributed ledgers : design and regulation of financial infrastructure and payment systems",
+  "content": "# Distributed ledgers : design and regulation of financial infrastructure and payment systems\n\nContributors: townsend, robert m.\nDate: 2020\nSubjects: financial services industry, technological innovations\n\n\"An exploration of the economic applications of distributed ledger technology\"-- Provided by publisher.",
+  "url": "https://www.loc.gov/item/2020004676/",
+  "timestamp": "2026-03-06T02:38:15.031806",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "cbca3682d852bfd13741381f928aa2a0dbd4e966fe4442017b317c4402e06f09",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "financial services industry",
+      "technological innovations"
+    ],
+    "dates": "2020",
+    "original_format": [
+      "book"
+    ]
+  }
+}

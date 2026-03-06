@@ -1,0 +1,32 @@
+{
+  "id": "0151d3be70e76887",
+  "source": "harvard_dataverse",
+  "category": "quarantine/nlp",
+  "title": "Replication Data for: Quality of Legislation and Compliance: A Natural Language Processing Approach",
+  "content": "# Replication Data for: Quality of Legislation and Compliance: A Natural Language Processing Approach\n\nAuthors: Osnabr\u00fcgge, Moritz, Vannoni, Matia\nPublished: 2024-04-24T23:28:53Z\nSubjects: Social Sciences\nDOI: doi:10.7910/DVN/Z8LCHG\n\nSeveral disciplines, such as economics, law and political science, emphasize the importance of legislative quality, namely well-written legislation. Low-quality legislation cannot be easily implemented because the texts create interpretation problems. To measure the quality of legal texts, we use information from the syntactic and lexical features of their language and apply these measures to a dataset of European Union legislation that contains detailed information on its transposition and decision-making process. We find that syntactic complexity and vagueness are negatively related to member states' compliance with legislation. The finding on vagueness is robust to controlling for member states' preferences, administrative resources, discretion and the length of texts. However, the results for syntactic complexity are less robust.\n\nCitation: Osnabr\u00fcgge, Moritz; Vannoni, Matia, 2024, \"Replication Data for: Quality of Legislation and Compliance: A Natural Language Processing Approach\", https://doi.org/10.7910/DVN/Z8LCHG, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/Z8LCHG",
+  "timestamp": "2026-03-06T02:42:20.598433",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "a36b1806112e44233f97dfc386b0bbf05b60e8a68a9251c9640b324427cfeb6a",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/Z8LCHG",
+    "subjects": [
+      "Social Sciences"
+    ],
+    "authors": [
+      "Osnabr\u00fcgge, Moritz",
+      "Vannoni, Matia"
+    ],
+    "file_count": 25
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "4311684a13c2b8ff",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Retrieval-Augmented Generation for Large Language Models: A Survey (Q131918793)",
+  "content": "# Retrieval-Augmented Generation for Large Language Models: A Survey\n\nWikidata ID: Q131918793\nDescription: scientific article published on 18 December 2023\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q131918793",
+  "timestamp": "2026-03-06T02:41:28.754491",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "9e3a32516ce5b02a1af23b36360b529a1a439cf89b5cb03389a6b4e56fe8f50c",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q131918793",
+    "description": "scientific article published on 18 December 2023"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "e6d09680c9c97c20",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Theory and applications of models of computation : 4th international conference, TAMC 2007, Shanghai, China, May 22-25, 2007 : proceedings",
+  "content": "# Theory and applications of models of computation : 4th international conference, TAMC 2007, Shanghai, China, May 22-25, 2007 : proceedings\n\nContributors: tamc 2007, zhu, hong, cooper, s. b. (s. barry), cai, jin-yi\nDate: 2007\nSubjects: computational complexity, congresses, computable functions\n\nIncludes bibliographical references and author index. Also issued online.",
+  "url": "//lccn.loc.gov/2007926619",
+  "timestamp": "2026-03-06T02:38:43.165417",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "45529c9e3f099571f87a7c6f612fd1c114e03a7bcd9bf064a8271a46a7eb6a49",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "computational complexity",
+      "congresses",
+      "computable functions"
+    ],
+    "dates": "2007",
+    "original_format": [
+      "book"
+    ]
+  }
+}

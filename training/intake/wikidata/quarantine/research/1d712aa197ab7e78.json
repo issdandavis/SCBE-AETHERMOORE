@@ -1,0 +1,25 @@
+{
+  "id": "1d712aa197ab7e78",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Post-Quantum Cryptography - 11th International Conference, PQCrypto 2020, Paris, France, April 15-17, 2020 (Q105891131)",
+  "content": "# Post-Quantum Cryptography - 11th International Conference, PQCrypto 2020, Paris, France, April 15-17, 2020\n\nWikidata ID: Q105891131\nDescription: academic conference\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q105891131",
+  "timestamp": "2026-03-06T02:41:03.050871",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "925bc5e4939b47cc36a3cc5b007ceb0195af3f2d9ad9c2b615849c7c09f2d898",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q105891131",
+    "description": "academic conference"
+  }
+}

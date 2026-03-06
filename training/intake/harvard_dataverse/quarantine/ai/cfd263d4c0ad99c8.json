@@ -1,0 +1,34 @@
+{
+  "id": "cfd263d4c0ad99c8",
+  "source": "harvard_dataverse",
+  "category": "quarantine/ai",
+  "title": "Adversarial Machine Learning in Entrepreneurship: How AI Vulnerabilities Impact Business Innovation and Sustainability",
+  "content": "# Adversarial Machine Learning in Entrepreneurship: How AI Vulnerabilities Impact Business Innovation and Sustainability\n\nAuthors: Nur Ramadhan, Zarkasih, Lukiyanto, Kukuh\nPublished: 2025-04-30T11:46:42Z\nSubjects: Business and Management, Computer and Information Science, Engineering\nDOI: doi:10.7910/DVN/57UCY6\n\nThe research & publication metadata dataset of innovations in social entrepreneurship, which was indexed by Scopus between 2020-2024. The dataset contains 717 documents data: authors, authors ID Scopus, title, year, source title, volume, issue, article number in Scopus, DOI, link, affiliation, abstract, index keywords, references, correspondence address, editors, publisher, conference name, conference date, conference code, ISSN, language, document type, access type, and EID. The dataset also contains images of the results of bibliometric analysis with the R tool Biblioshiny.\n\nCitation: Nur Ramadhan, Zarkasih; Lukiyanto, Kukuh, 2025, \"Adversarial Machine Learning in Entrepreneurship: How AI Vulnerabilities Impact Business Innovation and Sustainability\", https://doi.org/10.7910/DVN/57UCY6, Harvard Dataverse, V1, UNF:6:woBoOKSJAYJfCWrR9/rRtA== [fileUNF]",
+  "url": "https://doi.org/10.7910/DVN/57UCY6",
+  "timestamp": "2026-03-06T02:42:33.567209",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "489efcbce420285dc9b94b5958d86e35ce8982b2ca1e8eccdca5b88552054350",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/57UCY6",
+    "subjects": [
+      "Business and Management",
+      "Computer and Information Science",
+      "Engineering"
+    ],
+    "authors": [
+      "Nur Ramadhan, Zarkasih",
+      "Lukiyanto, Kukuh"
+    ],
+    "file_count": 4
+  }
+}

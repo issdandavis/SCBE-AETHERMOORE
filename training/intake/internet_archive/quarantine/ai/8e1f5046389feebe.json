@@ -1,0 +1,35 @@
+{
+  "id": "8e1f5046389feebe",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "Integrating multi-criteria decision making and reinforcement learning for consensus protocol selection",
+  "content": "# Integrating multi-criteria decision making and reinforcement learning for consensus protocol selection\n\nCreator: Bulletin of Electrical Engineering and Informatics\nDate: 2025-08-01T00:00:00Z\nDownloads: 13\nSubjects: Consensus protocol, Control systems, Internet of things, Machine learning, Mathematical modeling\n\nThe rapid progress in artificial intelligence technologies in recent years has been largely driven by advances in reinforcement learning (RL). RL methods have proven to be highly effective in solving many practical problems. Distributed ledger technologies are finding wide application in the internet of things (IoTs), providing new approaches to solving problems of traditional IoT systems. Consensus is a fundamental component of distributed ledger technologies, responsible for ensuring data consistency between nodes, its security and accuracy. This paper is devoted to the study of the optimal choice of blockchain consensus protocol for IoT networks based on a combination of multi-criteria decision making (MCDM) and RL methods. The paper discusses the potential of merging MCDM and RL methods for selecting blockchain consensus protocols in IoT networks. It suggests a combined framework for effective protocol selection and management.\u00a0",
+  "url": "https://archive.org/details/10.11591eei.v14i4.9552",
+  "timestamp": "2026-03-06T03:59:17.368109",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "c9b695a7ebcb942f5b386924fffb21be6186afa88074ced5172c681297a6289f",
+  "parent_hash": "2da5f516980cbdb270092f148839fdae59e74398586f1932c987a4886a9193c0",
+  "metadata": {
+    "ia_identifier": "10.11591eei.v14i4.9552",
+    "media_type": "texts",
+    "downloads": 13,
+    "subjects": [
+      "Consensus protocol",
+      "Control systems",
+      "Internet of things",
+      "Machine learning",
+      "Mathematical modeling",
+      "Multi-criteria decision making",
+      "Reinforcement learning"
+    ]
+  }
+}

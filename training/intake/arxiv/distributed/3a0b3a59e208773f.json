@@ -1,0 +1,28 @@
+{
+  "id": "3a0b3a59e208773f",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "Why Atomicity Matters to AI/ML Infrastructure: Snapshots, Firmware Updates, and the Cost of the Forward-In-Time-Only Category Mistake",
+  "content": "# Why Atomicity Matters to AI/ML Infrastructure: Snapshots, Firmware Updates, and the Cost of the Forward-In-Time-Only Category Mistake\n\nAuthors: Paul Borrill\nPublished: 2026-03-03T05:08:55Z\n\nLarge-scale AI/ML training systems depend on two assumptions that are rarely examined: (1) that checkpoints represent atomic snapshots of global training state, and (2) that infrastructure updates can be applied without inducing mixed-protocol cluster states. Both assumptions are instances of a deeper structural error: the Forward-In-Time-Only (FITO) category mistake, which confuses protocol convergence properties with temporal predicates.\n  We formalize this confusion as a type error: the identification of a temporal snapshot $\\mathsf{Snap}(t)$ with a convergence property $\\mathsf{Conv}(\\mathcal{P},e)$. We model checkpoint execution in a process-algebraic framework and prove that under asynchronous composition with crash-recovery failures, no temporal instant can serve as an atomicity boundary. We reformulate checkpoint inconsistency on an epoch lattice and show that atomicity is a measure-zero event whose complement grows exponentially with the number of independent persistence domains. We formalize mixed-epoch recovery as a type violation in the optimization algebra and show that the resulting update is not a valid step of any standard optimizer.\n  For firmware fleet updates, we strengthen the known consensus-hardness result: atomic deployment requires not merely agreement but common knowledge of the epoch transition, which is strictly unattainable in asynchronous systems with unreliable communication.\n  We conclude by sketching a bilateral convergence protocol, inspired by Open Atomic Ethernet, that achieves $\\mathsf{Conv}(\\mathcal{P},e)$ without requiring $\\mathsf{Snap}(t)$ -- replacing the FITO assumption with constraint semantics.",
+  "url": "http://arxiv.org/abs/2603.02603v1",
+  "timestamp": "2026-03-03T05:08:55Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "c4db899a20c74404852b8f0f644a9d2e177567ae18b6129fbf225ca5474421d7",
+  "parent_hash": "c656947e15485a8734f12c07f324978f2fdb08698ca7d83fbb90028c46e899a6",
+  "metadata": {
+    "authors": [
+      "Paul Borrill"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.02603v1"
+  }
+}

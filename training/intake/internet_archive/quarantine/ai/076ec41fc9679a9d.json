@@ -1,0 +1,34 @@
+{
+  "id": "076ec41fc9679a9d",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "Depression prognosis using natural language processing and machine learning from social media status",
+  "content": "# Depression prognosis using natural language processing and machine learning from social media status\n\nCreator: International Journal of Electrical and Computer Engineering (IJECE)\nDate: 2022-06-01T00:00:00Z\nDownloads: 81\nSubjects: Depression, Logistic regression, Machine learning, Multinomial NB, NLP\n\nDepression is an acute problem throughout the world. Due to worst and prolong depression many people dies in every year. The problem is that most of the people are not concern of the fact that they are suffering from depression. In this research, our aim was to find out whether an individual is depressed or not by analyzing social media status. Therefore, we focused on real data. Our dataset consists of 2,000 sentences, which was collected from different social media platforms Facebook, Twitter, and Instagram. Then, we have performed five data pre-processing approaches for natural language processing (NLP) such as tokenization, removal of stop words, removing empty string, removing punctuations, stemming and lemmatization. For our selected model, we considered that processed data as an input. Finally, we applied six machine learning (ML) classifiers multinomial Naive Bayes (NB), logistic regression, liner support vector classifier, random forest, K-nearest neighbour, and decision tree to achieve better accuracy over our dataset. Among six algorithms, multinomial NB and logistic regression performed well on our dataset and obtained 98% accuracy.",
+  "url": "https://archive.org/details/10.11591ijece.v12i3.pp2847-2855",
+  "timestamp": "2026-03-06T02:40:36.587472",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "0586b1ebebf3a84c463985982a173f7be825c7831620fa503fca617e0ad77280",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "10.11591ijece.v12i3.pp2847-2855",
+    "media_type": "texts",
+    "downloads": 81,
+    "subjects": [
+      "Depression",
+      "Logistic regression",
+      "Machine learning",
+      "Multinomial NB",
+      "NLP",
+      "Social media"
+    ]
+  }
+}

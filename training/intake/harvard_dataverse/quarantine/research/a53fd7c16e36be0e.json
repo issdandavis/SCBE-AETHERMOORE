@@ -1,0 +1,31 @@
+{
+  "id": "a53fd7c16e36be0e",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Static bracket problem",
+  "content": "# Static bracket problem\n\nAuthors: Zhong, Weiheng\nPublished: 2025-05-15T19:36:24Z\nSubjects: Engineering\nDOI: doi:10.7910/DVN/3QKTEI\n\nBracket dataset\n\nCitation: Zhong, Weiheng, 2025, \"Static bracket problem\", https://doi.org/10.7910/DVN/3QKTEI, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/3QKTEI",
+  "timestamp": "2026-03-06T02:42:16.312305",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "481a86e40281edf4984a563cd5c85fc0cca78f3dd6649bf509bd02c6b6d81aac",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/3QKTEI",
+    "subjects": [
+      "Engineering"
+    ],
+    "authors": [
+      "Zhong, Weiheng"
+    ],
+    "file_count": 1
+  }
+}

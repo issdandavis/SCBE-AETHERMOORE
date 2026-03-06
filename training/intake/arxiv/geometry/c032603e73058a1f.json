@@ -1,0 +1,29 @@
+{
+  "id": "c032603e73058a1f",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Spherically symmetric solutions to the Einstein-scalar field conformal constraint equations",
+  "content": "# Spherically symmetric solutions to the Einstein-scalar field conformal constraint equations\n\nAuthors: Philippe Castillon, The-Cang Nguyen\nPublished: 2026-02-23T18:14:13Z\n\nRecent works by the second author and Dilts et al. have shown that the Einstein-scalar field conformal constraint equations are highly complex and generally intractable, even in the vacuum case. In this article, to gain a clearer understanding and offer a new perspective, we study these equations under special assumptions: the manifold $(M,g)$ is harmonic and data is radial.\n  In this setting, the system reduces to a single nonlinear equation and is completely resolved in the standard cases. In particular, on the sphere, our results reveal phenomena that contrast with the well-known achievements on compact manifolds without conformal Killing vector fields, including nonexistence of solutions in the near-CMC regime and instability when the mean curvature is non-constant. By contrast, on Euclidean or hyperbolic manifolds, the equations are always solvable, with all expected properties of solutions satisfied. These findings support the view that, although the conformal method appears to present some drawbacks on compact manifolds, it remains a promising tool for parametrizing solutions to the constraint equations on asymptotically flat and hyperbolic manifolds in arbitrary mean curvature regimes.\n  In this article, we also investigate the sign of mass, showing that the ADM and asymptotically hyperbolic mass can take arbitrary sign when the decay rate of symmetric $(0,2)$-tensor $k$ at infinity is critical. Finally, most solution classes in our framework are explicit, providing a variety of models in general relativity and offering insights into the structure and behavior of initial data, particularly in numerical applications.",
+  "url": "http://arxiv.org/abs/2602.20099v1",
+  "timestamp": "2026-02-23T18:14:13Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "14a4a945d6e5368f1c5cc0fba7c3cfe7f86165641f9299d7b7332080c184e651",
+  "parent_hash": "942ef524f7c6f7daf53fd006be3c04626f3a0004e042c02828880c74c0d86e58",
+  "metadata": {
+    "authors": [
+      "Philippe Castillon",
+      "The-Cang Nguyen"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.20099v1"
+  }
+}

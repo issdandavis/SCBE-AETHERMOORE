@@ -1,0 +1,30 @@
+{
+  "id": "dadc3544ba544f98",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2021-22515 \u2014 CVSS 4.8 (MEDIUM)",
+  "content": "# CVE-2021-22515\n\nCVSS Score: 4.8 (MEDIUM)\nPublished: 2021-07-12T11:15:07.713\nCWEs: CWE-863\n\nMulti-Factor Authentication (MFA) functionality can be bypassed, allowing the use of single factor authentication in NetIQ Advanced Authentication versions prior to 6.3 SP4 Patch 1.\n\nReferences: https://www.netiq.com/documentation/advanced-authentication-63/advanced-authentication-releasenotes-6341/data/advanced-authentication-releasenotes-6341.html, https://www.netiq.com/documentation/advanced-authentication-63/advanced-authentication-releasenotes-6341/data/advanced-authentication-releasenotes-6341.html",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-22515",
+  "timestamp": "2026-03-06T04:18:24.195417",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "c58dc704cd3d6217684ccdb16e6dc5bd798eafd867696872005775048a38f046",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2021-22515",
+    "cvss_score": 4.8,
+    "severity": "MEDIUM",
+    "cwes": [
+      "CWE-863"
+    ],
+    "published": "2021-07-12T11:15:07.713"
+  }
+}

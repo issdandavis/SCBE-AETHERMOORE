@@ -1,0 +1,33 @@
+{
+  "id": "9d44e035947378de",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Blockchain technology in project finance : a legal and practical model for financing mega-investments",
+  "content": "# Blockchain technology in project finance : a legal and practical model for financing mega-investments\n\nContributors: lenio, pawe, sobiecki, grzegorz, srokosz, witold\nDate: 2025\nSubjects: blockchains (databases), finance, investments\n\n\"There is currently no comprehensive scientific study that addresses the problem of financing projects using Distributed Ledger (blockchain) Technology (DLT) that are not themselves embedded in the blockchain ecosystem, particularly in the context of long-term and capital-intensive investments. This book fills this gap. It poses a number of research questions such as what financing model/mechanism is the most effective in the long term where very large financial resources are concerned; are there appropriate legal regulations in place; and can DLT (blockchain) technology provide usability and solutions that can be used in the process of financing capital-intensive investments? The book ultimately shows that it is possible to build a legal and economic model that would effectively enable the financing of long-term and capital-intensive investments, based on a specially prepared integrated platform operating on the basis of blockchain technology. As a result of the mechanisms of smart contracts, the platform would enable, the issuance and service of tokens, including equity tokens, but also auxiliary and payment or utility tokens, and the automation of relations between stakeholders. It would also allow the creation of a virtual decentralized autonomous organization (DAO) that would control the implementation of the project, and a decentralized exchange that would enable token trading. The core readership for the book is academics, scholars and researchers in the fields of economics, finance and law, particularly those focused on blockchain technology, distributed ledger systems, and innovative financing mechanisms for large-scale investments. Policymakers and regulators involved in developing policies and legal frameworks for blockchain technology, cryptocurrencies, and financial innovation would find it to be a practical reference\"-- Provided by publisher.",
+  "url": "https://www.loc.gov/item/2024046769/",
+  "timestamp": "2026-03-06T02:38:39.088033",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "7fa6e6414054142d7e6bd5569126ccc5fe01838fd2d2a606935b7aaa98721236",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "blockchains (databases)",
+      "finance",
+      "investments"
+    ],
+    "dates": "2025",
+    "original_format": [
+      "book"
+    ]
+  }
+}

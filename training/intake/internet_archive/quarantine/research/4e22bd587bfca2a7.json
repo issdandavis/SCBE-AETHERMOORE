@@ -1,0 +1,30 @@
+{
+  "id": "4e22bd587bfca2a7",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Scroll wave drift along steps, troughs and corners",
+  "content": "# Scroll wave drift along steps, troughs and corners\n\nCreator: Hua Ke, Zhihui Zhang, Oliver Steinbock\nDate: 2015-03-17T00:00:00Z\nDownloads: 49\nSubjects: Nonlinear Sciences, Pattern Formation and Solitons\n\nThree-dimensional excitable systems can create nonlinear scroll waves that rotate around one-dimensional phase singularities. Recent theoretical work predicts that these filaments drift along step-like height variations. Here we test this prediction using experiments with thin layers of the Belousov-Zhabotinsky reaction. We observe that over short distances scroll waves are attracted towards the step and then rapidly commence a steady drift along the step line. The translating filaments always reside in the shallow subsystem and terminate on the step plateau near the edge. Accordingly filaments in the deep subsystem initially collide with and shorten at the step wall. The drift speeds obey the predicted proportional dependence on the logarithm of the height ratio and the direction depends on the vortex chirality. We also observe drift along the perimeter of rectangular plateaus and find that the filaments perform sharp turns at the corners. In addition, we investigate rectangular troughs for which vortices of equal chirality can drift in different directions. The latter two effects are reproduced in numerical simulations with the Barkley model. The simulations show that narrow troughs instigate scroll wave encounters that induce repulsive interaction and symmetry breaking. Similar phenomena could exist in the geometrical complicated ventricles of the human heart where reentrant vortex waves cause tachycardia and fibrillation.",
+  "url": "https://archive.org/details/arxiv-1503.05212",
+  "timestamp": "2026-03-06T04:17:53.893595",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "7550dea188d793373ea2fea1777a0202b46826113a7201271073a2ad95ec2679",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "arxiv-1503.05212",
+    "media_type": "texts",
+    "downloads": 49,
+    "subjects": [
+      "Nonlinear Sciences",
+      "Pattern Formation and Solitons"
+    ]
+  }
+}

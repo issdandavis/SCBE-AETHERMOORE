@@ -1,0 +1,34 @@
+{
+  "id": "08b16e5b288b67b2",
+  "source": "harvard_dataverse",
+  "category": "quarantine/security",
+  "title": "A systematic study on classical cryptographic cypher in order to design a smallest cipher",
+  "content": "# A systematic study on classical cryptographic cypher in order to design a smallest cipher\n\nAuthors: Biswas, Md Shamim Hossain\nPublished: 2019-12-13T11:51:11Z\nSubjects: Computer and Information Science, Engineering, Mathematical Sciences, Other\nDOI: doi:10.7910/DVN/K1GGQW\n\nThe cryptography is the branch of Cryptology. It is a combination of mathematics and computer Science. It is the study of obscuring information in cyberspace. Cipher is a set of algorithm which comprise of encryption and decryption. The cipher paly important role in modern technology. The technologies involving communication including the Internet, Mobile Phones, Digital Television, and ATM machine rely on cipher in order to maintain security and privacy. Thinking about aforesaid importance of cipher in cryptography, in this article, we have designed a smallest cipher which may be efficient in RFID chips. The smallest cipher has been comprised of five mathematical operation: Exponentiation, Multiplication, Addition, Subtraction and Division based on systematic study of classical cipher. The proposed cipher is a keyless cipher, but it is very efficient in secret information passing.\n\nCitation: Biswas, Md Shamim Hossain, 2019, \"A systematic study on classical cryptographic cypher in order to design a smallest cipher\", https://doi.org/10.7910/DVN/K1GGQW, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/K1GGQW",
+  "timestamp": "2026-03-06T02:42:03.535424",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "7b12531f5be8448fb22d71668349c822c0b79e2a31635c46cb534906b341bfcf",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/K1GGQW",
+    "subjects": [
+      "Computer and Information Science",
+      "Engineering",
+      "Mathematical Sciences",
+      "Other"
+    ],
+    "authors": [
+      "Biswas, Md Shamim Hossain"
+    ],
+    "file_count": 0
+  }
+}

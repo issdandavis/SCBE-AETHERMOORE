@@ -1,0 +1,28 @@
+{
+  "id": "ea21cac6038a1d9b",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Extrinsic bi-Conformal Heat Flow and its smoothness",
+  "content": "# Extrinsic bi-Conformal Heat Flow and its smoothness\n\nAuthors: Woongbae Park\nPublished: 2026-03-04T16:45:53Z\n\nIn this paper we introduce conformal heat flow of (extrinsic) biharmonic maps on $4$-manifold, simply called bi-conformal heat flow (bi-CHF), and study its properties. Similar to other CHF of harmonic maps and regularized $n$-harmonic maps, (CHF and regularized $n$-CHF respectively), we obtain global smoothness and no finite time singularity.",
+  "url": "http://arxiv.org/abs/2603.04258v1",
+  "timestamp": "2026-03-04T16:45:53Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "833e817755703919614fd043d310bde40ed7fbd38fb2d2bcfe782e9f88aa06b7",
+  "parent_hash": "e8190d280bd04d108e5dac5f0cee4b5b50f4267bf28e275a8f0665e030aca8e6",
+  "metadata": {
+    "authors": [
+      "Woongbae Park"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.04258v1"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "adc97fe78e28ed58",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2004-2397 \u2014 CVSS 7.5 (HIGH)",
+  "content": "# CVE-2004-2397\n\nCVSS Score: 7.5 (HIGH)\nPublished: 2004-12-31T05:00:00.000\nCWEs: CWE-312\n\nThe web-based Management Console in Blue Coat Security Gateway OS 3.0 through 3.1.3.13 and 3.2.1, when importing a private key, stores the key and its passphrase in plaintext in a log file, which allows attackers to steal digital certificates.\n\nReferences: http://secunia.com/advisories/11627, http://www.bluecoat.com/support/knowledge/advisory_private_key_compromise.html, http://www.osvdb.org/6218",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2004-2397",
+  "timestamp": "2026-03-06T04:18:29.314738",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "322630fdadb44676671258c2bee38e5eaaa52b1303f57e72c53fe44875ad76ea",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2004-2397",
+    "cvss_score": 7.5,
+    "severity": "HIGH",
+    "cwes": [
+      "CWE-312"
+    ],
+    "published": "2004-12-31T05:00:00.000"
+  }
+}

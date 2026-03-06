@@ -1,0 +1,31 @@
+{
+  "id": "278fcb883343ef80",
+  "source": "library_of_congress",
+  "category": "quarantine/math",
+  "title": "An elementary treatise on analytical geometry : embracing plane co-ordinate geometry, and an introduction to geometry of three dimensions",
+  "content": "# An elementary treatise on analytical geometry : embracing plane co-ordinate geometry, and an introduction to geometry of three dimensions\n\nContributors: johnson, william woolsey\nDate: 1869\nSubjects: geometry, analytic\n\n\"Designed as a text-book for colleges and scientific schools.\" Also available in digital form.",
+  "url": "https://www.loc.gov/item/03023821/",
+  "timestamp": "2026-03-06T02:37:52.081793",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "cde17d0b93ac9f00dc0d36f14458df112d5a1593d2d980fbc6eb15b83cbd3716",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "geometry, analytic"
+    ],
+    "dates": "1869",
+    "original_format": [
+      "book"
+    ]
+  }
+}

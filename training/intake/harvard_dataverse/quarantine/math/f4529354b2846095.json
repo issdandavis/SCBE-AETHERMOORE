@@ -1,0 +1,32 @@
+{
+  "id": "f4529354b2846095",
+  "source": "harvard_dataverse",
+  "category": "quarantine/math",
+  "title": "Replication Data for: European power grid clustering",
+  "content": "# Replication Data for: European power grid clustering\n\nAuthors: Gosztolai, Adam\nPublished: 2021-06-28T15:24:48Z\nSubjects: Mathematical Sciences, Physics\nDOI: doi:10.7910/DVN/8ZWOXQ\n\nMultiscale clustering of the European power grid network using the geometric modularity algorithm.\n\nCitation: Gosztolai, Adam, 2021, \"Replication Data for: European power grid clustering\", https://doi.org/10.7910/DVN/8ZWOXQ, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/8ZWOXQ",
+  "timestamp": "2026-03-06T04:18:54.179686",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "e8abb1c22e5385d831854a099e45bad3da7c0dd2f45baeeef70006d7f097b895",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/8ZWOXQ",
+    "subjects": [
+      "Mathematical Sciences",
+      "Physics"
+    ],
+    "authors": [
+      "Gosztolai, Adam"
+    ],
+    "file_count": 6
+  }
+}

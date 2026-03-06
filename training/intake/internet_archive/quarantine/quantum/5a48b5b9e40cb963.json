@@ -1,0 +1,38 @@
+{
+  "id": "5a48b5b9e40cb963",
+  "source": "internet_archive",
+  "category": "quarantine/quantum",
+  "title": "DTIC ADA386690: Femtosecond Near-Field Spin Microscopy of Magnetic/Superconducting Heterostructures",
+  "content": "# DTIC ADA386690: Femtosecond Near-Field Spin Microscopy of Magnetic/Superconducting Heterostructures\n\nCreator: Defense Technical Information Center\nDate: 1998-06-01T00:00:00Z\nDownloads: 61\nSubjects: DTIC Archive, Awschalom, David D, CALIFORNIA UNIV SANTA BARBARA QUANTUM INST, *MAGNETIC FIELDS, *QUANTUM WELLS\n\nUnder the AASERT program, our student developed magnetically active II-VI diluted magnetic semiconductor (DMS) surface quantum well substrates upon which to epitaxially grow and pattern ferromagnetic Fe films in order to produce spin-dependent potentials. This material phase produced a variety of flux-focusing magnetic patterns including planar wedges and variable-spaced single domain particle arrays with nominally 0.1-0.5 micron feature sizes. These patterns are designed to create a field-driven spin-dependent energy landscape for optically-pumped or doped carriers and provide a basis for spatial measurements of electronic spin transport.",
+  "url": "https://archive.org/details/DTIC_ADA386690",
+  "timestamp": "2026-03-06T04:17:58.219761",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "caf86407992221c8e62e72075750a6bc4c2d104c6795ca7790b1217f0628938a",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "DTIC_ADA386690",
+    "media_type": "texts",
+    "downloads": 61,
+    "subjects": [
+      "DTIC Archive",
+      "Awschalom, David D",
+      "CALIFORNIA UNIV SANTA BARBARA QUANTUM INST",
+      "*MAGNETIC FIELDS",
+      "*QUANTUM WELLS",
+      "*SUPERCONDUCTORS",
+      "*SEMICONDUCTORS",
+      "*NANOSTRUCTURES",
+      "SPATIAL DISTRIBUTION",
+      "ELECTRON TRANSPORT"
+    ]
+  }
+}

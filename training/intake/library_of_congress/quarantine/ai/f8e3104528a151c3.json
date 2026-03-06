@@ -1,0 +1,35 @@
+{
+  "id": "f8e3104528a151c3",
+  "source": "library_of_congress",
+  "category": "quarantine/ai",
+  "title": "Multi-agent machine learning : a reinforcement approach",
+  "content": "# Multi-agent machine learning : a reinforcement approach\n\nContributors: schwartz, howard m.\nDate: 2014\nSubjects: technology & engineering / electronics / general, swarm intelligence, reinforcement learning, machine learning, differential games\n\n\"Multi-Agent Machine Learning: A Reinforcement Learning Approach is a framework to understanding different methods and approaches in multi-agent machine learning. It also provides cohesive coverage of the latest advances in multi-agent differential games and presents applications in game theory and robotics. Framework for understanding a variety of methods and approaches in multi-agent machine learning. Discusses methods of reinforcement learning such as a number of forms of multi-agent Q-learning Applicable to research professors and graduate students studying electrical and computer engineering, computer science, and mechanical and aerospace engineering\"-- Provided by publisher. \"Provide an in-depth coverage of multi-player, differential games and Gam theory\"-- Provided by publisher.",
+  "url": "//lccn.loc.gov/2014021985",
+  "timestamp": "2026-03-06T02:38:34.742633",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "377c03768092836cc9046d7743416f8a9e804522ae7f154264ba377ddd31f997",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "technology & engineering / electronics / general",
+      "swarm intelligence",
+      "reinforcement learning",
+      "machine learning",
+      "differential games"
+    ],
+    "dates": "2014",
+    "original_format": [
+      "book"
+    ]
+  }
+}

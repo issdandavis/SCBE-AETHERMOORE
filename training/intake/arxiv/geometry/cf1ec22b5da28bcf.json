@@ -1,0 +1,30 @@
+{
+  "id": "cf1ec22b5da28bcf",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Equivariant finite energy proper minimal surfaces in $\\mathbb{CH}^2$",
+  "content": "# Equivariant finite energy proper minimal surfaces in $\\mathbb{CH}^2$\n\nAuthors: Indranil Biswas, Pradip Kumar, John Loftin\nPublished: 2026-02-27T17:41:31Z\n\nGiven a noncompact Riemann surface $\u03a3_0\\,=\\, \u03a3\\setminus P$, where $P$ is a finite subset of a compact connected Riemann surface $\u03a3$, and a reductive representation $\u03c1\\,:\\,\u03c0_1(\u03a3_0)\\,\\longrightarrow\\, \\mathrm{PU}(2,1)$, we prove that any finite--energy $\u03c1$--equivariant conformal minimal immersion is proper around every cusp if and only if the peripheral holonomy of $\u03c1$ is parabolic. Assuming parabolic peripheral holonomy, we give an explicit parametrization of complete finite--energy immersions in the mixed case in terms of tame parabolic $\\mathrm{PU}(2,1)$--Higgs bundles with nilpotent residues and satisfying concrete parabolic slope inequalities. We also discuss complete ends and construct explicit families of $\u03c1$ equivariant proper $\\mathbb{CH}^2$ $n$--noids on $\\mathbb{CP}^1\\setminus P$ for $|P|\\,\\ge\\, 5$.",
+  "url": "http://arxiv.org/abs/2602.24213v1",
+  "timestamp": "2026-02-27T17:41:31Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "c1379173deca644135385b152410396756978c7336d57f24c952fcd07ccf245b",
+  "parent_hash": "299045aec10ea9a8f4c5c83286dca3f64468f8029058ea2393465900eaf3f90a",
+  "metadata": {
+    "authors": [
+      "Indranil Biswas",
+      "Pradip Kumar",
+      "John Loftin"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.24213v1"
+  }
+}

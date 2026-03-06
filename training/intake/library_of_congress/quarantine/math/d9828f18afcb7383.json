@@ -1,0 +1,31 @@
+{
+  "id": "d9828f18afcb7383",
+  "source": "library_of_congress",
+  "category": "quarantine/math",
+  "title": "Notes on the first book of Benson's Geometry, and Concerning the circle; showing the decided improvement effected in the science of geometry",
+  "content": "# Notes on the first book of Benson's Geometry, and Concerning the circle; showing the decided improvement effected in the science of geometry\n\nContributors: benson, lawrence s. (lawrence sluter)\nDate: 1873\nSubjects: circle-squaring\n\nAlso available in digital form.",
+  "url": "https://www.loc.gov/item/05005405/",
+  "timestamp": "2026-03-06T02:38:09.282420",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "a5207ebc10a66035104fc68d0e7220490083a3e20036fde8724f4713eb8a4a16",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "circle-squaring"
+    ],
+    "dates": "1873",
+    "original_format": [
+      "book"
+    ]
+  }
+}

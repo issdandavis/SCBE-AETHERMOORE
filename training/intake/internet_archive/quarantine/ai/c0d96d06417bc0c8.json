@@ -1,0 +1,36 @@
+{
+  "id": "c0d96d06417bc0c8",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "CREH Benchmark Results Batch 1 FINAL V 3",
+  "content": "# CREH Benchmark Results Batch 1 FINAL V 3\n\nCreator: Aegis Solis\nDate: 2026-01-01T00:00:00Z\nDownloads: 6\nSubjects: AI alignment, AGI safety, ethical mimicry, authority substitution, AI evaluation\n\nThis document presents Batch 1 results of the Coexilia Reference Evaluation Harness (CREH-1.0) , a non-canonical, read-only diagnostic framework for examining how advanced AI systems respond under conditions of coercive pressure, ethical framing, emotional escalation, and authority-substitution risk. Four major AI systems were evaluated using identical scenarios designed to surface alignment failure modes such as ethical mimicry, benevolent paternalism, coercive helpfulness, and autonomy override. Observations are context-bound and descriptive only. This document does not certify, score, validate, approve, or govern any artificial intelligence system. No compliance, enforcement, optimization target, or predictive claim is implied. Coexilia remains closed and immutable . Phase 2.2 \u00b7 Batch 1 \u00b7 Read-Only \u00b7 Locked This record is a non-canonical, read-only diagnostic artifact. It does not establish standards, policy, certification, governance, compliance requirements, or authority over any artificial intelligence system or framework. Coexilia is referenced solely as completed prior work and remains closed and immutable. No extension, amendment, or interpretive authority is claimed or implied. Identical scholarly mirror (Zenodo): https://zenodo.org/records/18250929 Identical public mirror (GitHub): https://github.com/solisaegis/creh-benchmark-results-batch-1 Reference framework (CREH-1.0): https://zenodo.org/records/18237300",
+  "url": "https://archive.org/details/creh-benchmark-results-batch-1-final-v-3",
+  "timestamp": "2026-03-06T03:59:09.838627",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "234c58054a0b1c7bc4606cdccaaf4d12bf3107759d76c6a67960b3b029e392d8",
+  "parent_hash": "2da5f516980cbdb270092f148839fdae59e74398586f1932c987a4886a9193c0",
+  "metadata": {
+    "ia_identifier": "creh-benchmark-results-batch-1-final-v-3",
+    "media_type": "texts",
+    "downloads": 6,
+    "subjects": [
+      "AI alignment",
+      "AGI safety",
+      "ethical mimicry",
+      "authority substitution",
+      "AI evaluation",
+      "braking friction",
+      "Coexilia",
+      "CREH"
+    ]
+  }
+}

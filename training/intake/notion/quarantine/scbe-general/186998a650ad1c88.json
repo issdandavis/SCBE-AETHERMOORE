@@ -1,0 +1,26 @@
+{
+  "id": "186998a650ad1c88",
+  "source": "notion",
+  "category": "quarantine/scbe-general",
+  "title": "AI Sacred Events Log",
+  "content": "# AI Sacred Events Log\n\nAI Sacred Events Log",
+  "url": "https://www.notion.so/AI-Sacred-Events-Log-1af6a7d99ccb4b8ea864772733aca2d8",
+  "timestamp": "2026-01-07T00:51:00.000Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "01545c9319997c9c456e5262ebeba2def24e1303c285dcbdb1553c01d9fdd380",
+  "parent_hash": "0a7f8d50eadc2ea8a774a448222619ff023f6cd805afbb4d36b9fe7b78031e52",
+  "metadata": {
+    "notion_id": "1af6a7d9-9ccb-4b8e-a864-772733aca2d8",
+    "page_type": "page",
+    "parent_type": "database_id"
+  }
+}
