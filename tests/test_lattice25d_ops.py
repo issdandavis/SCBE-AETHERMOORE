@@ -47,9 +47,17 @@ def test_build_lattice25d_payload_from_notes():
         ),
     ]
 
-    payload = build_lattice25d_payload(notes, query_top_k=2)
+    payload = build_lattice25d_payload(
+        notes,
+        query_top_k=2,
+        index_mode="quadtree",
+        quadtree_capacity=2,
+        quadtree_z_variance=0.0,
+    )
     assert payload["ingested_count"] == 2
+    assert payload["index_mode"] == "quadtree"
     assert payload["stats"]["bundle_count"] == 2
+    assert "quadtree" in payload["stats"]
     assert len(payload["nearest"]) == 2
     assert payload["dimensions"] == ["x", "y", "phase", "tongue", "authority", "intent"]
 
