@@ -1308,6 +1308,7 @@ def _write_lattice_jsonl(payload: Dict[str, Any], output_path: str) -> Dict[str,
             line_count += 1
     return {"path": str(out), "rows": line_count}
 
+
 @app.post("/v1/workflow/lattice25d")
 async def workflow_lattice25d(
     req: Lattice25DRequest,
