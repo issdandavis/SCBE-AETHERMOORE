@@ -26,6 +26,94 @@
 import { REALM_CENTERS } from './adaptiveNavigator.js';
 
 // ═══════════════════════════════════════════════════════════════
+// L6 Breathing + Phase-Lock Dynamics (optional)
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Optional runtime dynamics context.
+ * If omitted, FluxStateGate behaves exactly as before (static policy).
+ */
+export interface FluxDynamicsContext {
+  /** Wall clock time in seconds (or monotonic seconds). */
+  tSec?: number;
+  /** Breathing parameters for L6-like policy modulation. */
+  breathing?: BreathingParams;
+  /** Phase-lock context for ENTANGLED (swarm synchronization). */
+  phase?: PhaseLockContext;
+}
+
+/** Breathing parameters (b(t) clamped to remain > 0). */
+export interface BreathingParams {
+  /** Angular frequency (rad/s). Default: 2π/60 (one minute cycle). */
+  omega?: number;
+  /** Amplitude A in b(t)=1 + A·sin(ωt). Recommended 0 ≤ A < 1. */
+  amplitude?: number;
+  /** Clamp lower bound for b(t). Default: 0.25 */
+  min?: number;
+  /** Clamp upper bound for b(t). Default: 2.5 */
+  max?: number;
+}
+
+/** Phase-lock context for ENTANGLED (Kuramoto-lite). */
+export interface PhaseLockContext {
+  /** Self phase angle in radians. */
+  selfTheta: number;
+  /** Partner phase angle in radians. */
+  partnerTheta: number;
+  /** Score threshold [0,1] required to treat pair as "locked". Default: 0.8 */
+  lockThreshold?: number;
+  /** If true, an "unlocked" ENTANGLED pair becomes observe-only. Default: true. */
+  unlockDisablesNavigation?: boolean;
+}
+
+function clamp(x: number, lo: number, hi: number): number {
+  return Math.max(lo, Math.min(hi, x));
+}
+
+/**
+ * L6-style breathing factor: b(t) = 1 + A·sin(ωt), clamped to (min,max).
+ * Not an isometry unless b(t)=1; this is a smooth ball-preserving diffeomorphism.
+ */
+export function breathingFactor(tSec: number, params: BreathingParams = {}): number {
+  const omega = params.omega ?? (2 * Math.PI) / 60;
+  const amplitude = params.amplitude ?? 0.25;
+  const lo = params.min ?? 0.25;
+  const hi = params.max ?? 2.5;
+  const b = 1 + amplitude * Math.sin(omega * tSec);
+  return clamp(b, lo, hi);
+}
+
+/**
+ * Convert a static maxStepNorm into an effective bound under breathing.
+ * b(t) > 1 ("expansion") tightens steps; b(t) < 1 ("contraction") relaxes steps.
+ */
+export function breathingAdjustedMaxStepNorm(
+  baseMaxStepNorm: number | null,
+  tSec: number,
+  params?: BreathingParams
+): number | null {
+  if (baseMaxStepNorm === null) return null;
+  const b = breathingFactor(tSec, params);
+  return baseMaxStepNorm / b;
+}
+
+/** Circular distance on S^1 in [0, π]. */
+export function circularDistanceRad(a: number, b: number): number {
+  const twoPi = 2 * Math.PI;
+  let d = (a - b) % twoPi;
+  if (d < -Math.PI) d += twoPi;
+  if (d > Math.PI) d -= twoPi;
+  return Math.abs(d);
+}
+
+/**
+ * Phase-lock score in [0,1]. 1 = identical phase, 0 = opposite phase.
+ */
+export function phaseLockScore(selfTheta: number, partnerTheta: number): number {
+  return 1 - circularDistanceRad(selfTheta, partnerTheta) / Math.PI;
+}
+
+// ═══════════════════════════════════════════════════════════════
 // Flux State Enum
 // ═══════════════════════════════════════════════════════════════
 
@@ -208,51 +296,105 @@ export class FluxStateGate {
   }
 
   /**
+   * Derive an effective policy from the static policy using optional dynamics context.
+   *
+   * Enables:
+   * - L6-like "breathing" modulation of maxStepNorm (time-dependent tightening/relaxing)
+   * - Phase-locking checks for ENTANGLED (navigation disabled unless sufficiently locked)
+   *
+   * Determinism: given the same ctx inputs, the result is replayable/non-random.
+   */
+  private deriveEffectivePolicy(ctx?: FluxDynamicsContext): FluxAccessPolicy {
+    const effective: FluxAccessPolicy = {
+      ...this.policy,
+      allowedOps: [...this.policy.allowedOps],
+      allowedRealms: this.policy.allowedRealms === null ? null : [...this.policy.allowedRealms],
+    };
+
+    // L6: breathing-adjust step limits
+    if (ctx?.tSec !== undefined) {
+      effective.maxStepNorm = breathingAdjustedMaxStepNorm(
+        effective.maxStepNorm,
+        ctx.tSec,
+        ctx.breathing
+      );
+    }
+
+    // Phase-locking: ENTANGLED requires lock to allow navigation
+    if (this.state === FluxState.ENTANGLED && ctx?.phase) {
+      const score = phaseLockScore(ctx.phase.selfTheta, ctx.phase.partnerTheta);
+      const threshold = ctx.phase.lockThreshold ?? 0.8;
+      const disable = ctx.phase.unlockDisablesNavigation ?? true;
+
+      if (disable && score < threshold) {
+        // Remove movement ops; keep read/observe/encrypt
+        effective.allowedOps = effective.allowedOps.filter(
+          (op) =>
+            op !== NavigationOp.FULL_NAVIGATE &&
+            op !== NavigationOp.REALM_NAVIGATE &&
+            op !== NavigationOp.LIMBIC_ONLY
+        );
+
+        // Defense-in-depth: tighten step norm when unlocked
+        if (effective.maxStepNorm !== null) {
+          const t = clamp((threshold - score) / Math.max(1e-9, threshold), 0, 1);
+          effective.maxStepNorm = effective.maxStepNorm * (1 - 0.5 * t);
+        }
+      }
+    }
+
+    return effective;
+  }
+
+  /**
    * Check if a navigation operation to a target realm is allowed.
    *
    * @param targetRealm - Target Sacred Tongue realm
    * @param stepVector - The navigation step vector (to check magnitude)
+   * @param ctx - Optional dynamics context for L6 breathing + phase-lock
    * @returns FluxGateResult with allowed/denied status
    */
-  checkNavigation(targetRealm: RealmID, stepVector: number[]): FluxGateResult {
+  checkNavigation(targetRealm: RealmID, stepVector: number[], ctx?: FluxDynamicsContext): FluxGateResult {
+    const policy = this.deriveEffectivePolicy(ctx);
+
     // Check operation type
-    const requiredOp = this.policy.allowedRealms === null
+    const requiredOp = policy.allowedRealms === null
       ? NavigationOp.FULL_NAVIGATE
       : NavigationOp.REALM_NAVIGATE;
 
-    if (!this.policy.allowedOps.includes(requiredOp) &&
-        !this.policy.allowedOps.includes(NavigationOp.LIMBIC_ONLY)) {
+    if (!policy.allowedOps.includes(requiredOp) &&
+        !policy.allowedOps.includes(NavigationOp.LIMBIC_ONLY)) {
       return {
         allowed: false,
         reason: `Operation ${requiredOp} not permitted in ${this.state} state`,
-        policy: this.policy,
+        policy,
       };
     }
 
     // Check realm access (COLLAPSED uses dynamic nearest-realm check)
-    if (this.state !== FluxState.COLLAPSED && this.policy.allowedRealms !== null) {
-      if (!this.policy.allowedRealms.includes(targetRealm)) {
+    if (this.state !== FluxState.COLLAPSED && policy.allowedRealms !== null) {
+      if (!policy.allowedRealms.includes(targetRealm)) {
         return {
           allowed: false,
-          reason: `Realm ${targetRealm} not accessible in ${this.state} state. Allowed: ${this.policy.allowedRealms.join(', ')}`,
-          policy: this.policy,
+          reason: `Realm ${targetRealm} not accessible in ${this.state} state. Allowed: ${policy.allowedRealms.join(', ')}`,
+          policy,
         };
       }
     }
 
     // Check step magnitude
-    if (this.policy.maxStepNorm !== null) {
+    if (policy.maxStepNorm !== null) {
       const normSq = stepVector.reduce((sum, x) => sum + x * x, 0);
-      if (normSq > this.policy.maxStepNorm * this.policy.maxStepNorm) {
+      if (normSq > policy.maxStepNorm * policy.maxStepNorm) {
         return {
           allowed: false,
-          reason: `Step magnitude ‖v‖=${Math.sqrt(normSq).toFixed(4)} exceeds max ${this.policy.maxStepNorm} for ${this.state} state`,
-          policy: this.policy,
+          reason: `Step magnitude ‖v‖=${Math.sqrt(normSq).toFixed(4)} exceeds max ${policy.maxStepNorm} for ${this.state} state`,
+          policy,
         };
       }
     }
 
-    return { allowed: true, policy: this.policy };
+    return { allowed: true, policy };
   }
 
   /**
