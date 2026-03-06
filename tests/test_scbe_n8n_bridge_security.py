@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -111,3 +112,68 @@ async def test_workflow_lattice25d_rejects_empty_input(monkeypatch) -> None:
         await bridge.workflow_lattice25d(req, x_api_key="test-key")
 
     assert exc.value.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_workflow_lattice25d_includes_notion_notes(monkeypatch) -> None:
+    monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
+    monkeypatch.setattr(
+        bridge,
+        "_fetch_notion_notes",
+        lambda **kwargs: [
+            {
+                "note_id": "notion:abc",
+                "text": "Notion lane note with governance details",
+                "tags": ["notion", "governance"],
+                "source": "notion",
+                "authority": "internal",
+                "tongue": "KO",
+            }
+        ],
+    )
+
+    req = bridge.Lattice25DRequest.model_validate(
+        {
+            "notes": [],
+            "include_notion_notes": True,
+            "include_repo_notes": False,
+            "max_notes": 5,
+        }
+    )
+    result = await bridge.workflow_lattice25d(req, x_api_key="test-key")
+    assert result["ingested_count"] == 1
+    assert result["input_notion_enabled"] is True
+    assert result["notes"][0]["note_id"] == "notion:abc"
+
+
+@pytest.mark.asyncio
+async def test_workflow_lattice25d_hf_export_staged(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
+    out_path = tmp_path / "lattice_export.jsonl"
+
+    req = bridge.Lattice25DRequest.model_validate(
+        {
+            "notes": [
+                {
+                    "note_id": "n1",
+                    "text": "Export note",
+                    "tags": ["export"],
+                    "source": "repo",
+                    "authority": "internal",
+                    "tongue": "DR",
+                }
+            ],
+            "include_repo_notes": False,
+            "hf_output_path": str(out_path),
+            "hf_dataset_repo": "issdandavis/scbe-lattice-notes",
+            "hf_push": False,
+        }
+    )
+    result = await bridge.workflow_lattice25d(req, x_api_key="test-key")
+
+    assert result["hf_export"]["status"] == "staged"
+    assert out_path.exists()
+    lines = out_path.read_text(encoding="utf-8").strip().splitlines()
+    assert len(lines) == 1
+    first = json.loads(lines[0])
+    assert first["note_id"] == "n1"

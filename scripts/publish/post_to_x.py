@@ -273,12 +273,13 @@ def post_thread(filepath, dry_run=False):
     tweets = parse_thread_file(filepath)
     if not tweets:
         print("No tweets found in file")
-        return
+        return False
 
     print(f"Thread: {len(tweets)} tweets")
     print("=" * 60)
 
     reply_to = None
+    success = True
     for i, tweet in enumerate(tweets):
         print(f"\n--- Tweet {i+1}/{len(tweets)} ({len(tweet)} chars) ---")
         print(tweet)
@@ -294,13 +295,18 @@ def post_thread(filepath, dry_run=False):
                 time.sleep(2)
         else:
             print("  FAILED - stopping thread")
+            success = False
             break
 
     print("\n" + "=" * 60)
     if dry_run:
         print(f"DRY RUN complete. {len(tweets)} tweets ready.")
-    else:
+        return True
+    if success:
         print(f"Thread posted. {len(tweets)} tweets.")
+    else:
+        print(f"Thread failed. Posted fewer than {len(tweets)} tweets.")
+    return success
 
 
 def main():
@@ -315,16 +321,18 @@ def main():
 
     if args.auth:
         do_auth()
-    elif args.thread:
-        post_thread(args.thread, dry_run=args.dry_run)
-    elif args.text:
+        return 0
+    if args.thread:
+        ok = post_thread(args.thread, dry_run=args.dry_run)
+        return 0 if ok else 1
+    if args.text:
         if args.dry_run:
             print(f"[DRY RUN] Would post: {args.text}")
-        else:
-            post_tweet(args.text)
-    else:
-        parser.print_help()
+            return 0
+        return 0 if post_tweet(args.text) else 1
+    parser.print_help()
+    return 1
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

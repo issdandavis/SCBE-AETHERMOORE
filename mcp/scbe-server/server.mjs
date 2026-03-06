@@ -101,8 +101,8 @@ function stripHtml(html) {
   // Iteratively strip tags to handle nested/malformed HTML
   let text = String(html);
   // Remove script and style blocks first (non-greedy, case-insensitive)
-  text = text.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-  text = text.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
+  text = text.replace(/<script[\s\S]*?<\/script\s*>/gi, '');
+  text = text.replace(/<style[\s\S]*?<\/style\s*>/gi, '');
   // Strip remaining tags iteratively until stable
   let prev;
   do {
