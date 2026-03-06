@@ -1,0 +1,77 @@
+name: Daily Social Updates
+
+on:
+  schedule:
+    - cron: '20 15 * * *'
+  workflow_dispatch:
+    inputs:
+      live_publish:
+        description: 'Publish live (otherwise dry-run)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  discussions: write
+
+jobs:
+  social-updates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Generate daily update content
+        id: generate
+        run: |
+          python scripts/publish/generate_daily_system_update.py --json > /tmp/daily_update.json
+          cat /tmp/daily_update.json
+          readarray -t OUTS < <(python - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path('/tmp/daily_update.json').read_text())
+          print(data.get('github_glob', ''))
+          print(data.get('files', {}).get('x_thread', ''))
+          print(data.get('files', {}).get('linkedin', ''))
+          PY
+          )
+          echo "github_glob=${OUTS[0]}" >> "$GITHUB_OUTPUT"
+          echo "x_article=${OUTS[1]}" >> "$GITHUB_OUTPUT"
+          echo "linkedin_article=${OUTS[2]}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish dry-run evidence
+        run: |
+          python scripts/publish/post_all.py \
+            --dry-run \
+            --only x,github,linkedin \
+            --github-glob "${{ steps.generate.outputs.github_glob }}" \
+            --x-article "${{ steps.generate.outputs.x_article }}" \
+            --linkedin-article "${{ steps.generate.outputs.linkedin_article }}" \
+            --github-limit 1
+
+      - name: Publish live (X + GitHub Discussions)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.live_publish == true || (github.event_name == 'schedule' && secrets.SCBE_SOCIAL_LIVE == 'true') }}
+        env:
+          X_CLIENT_ID: ${{ secrets.X_CLIENT_ID }}
+          X_CLIENT_SECRET: ${{ secrets.X_CLIENT_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_REFRESH_TOKEN: ${{ secrets.X_REFRESH_TOKEN }}
+        run: |
+          python scripts/publish/post_all.py \
+            --only x,github \
+            --github-glob "${{ steps.generate.outputs.github_glob }}" \
+            --x-article "${{ steps.generate.outputs.x_article }}" \
+            --github-limit 1
+
+      - name: Upload social evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-social-evidence
+          path: artifacts/publish_browser/
+          if-no-files-found: ignore
