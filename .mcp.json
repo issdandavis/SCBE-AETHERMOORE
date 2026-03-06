@@ -25,23 +25,15 @@
     },
     "github": {
       "type": "stdio",
-      "command": "docker",
+      "command": "cmd",
       "args": [
-        "run",
-        "-i",
-        "--rm",
-        "-e",
-        "GITHUB_PERSONAL_ACCESS_TOKEN",
-        "-e",
-        "GITHUB_READ_ONLY",
-        "-e",
-        "GITHUB_DYNAMIC_TOOLSETS",
-        "ghcr.io/github/github-mcp-server"
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-github"
       ],
       "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PAT}",
-        "GITHUB_READ_ONLY": "1",
-        "GITHUB_DYNAMIC_TOOLSETS": "1"
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PAT}"
       }
     },
     "scbe-orchestrator": {
