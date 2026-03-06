@@ -62,6 +62,9 @@ jobs:
           X_CLIENT_SECRET: ${{ secrets.X_CLIENT_SECRET }}
           X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
           X_REFRESH_TOKEN: ${{ secrets.X_REFRESH_TOKEN }}
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
         run: |
           LIVE_ENABLED=false
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.live_publish }}" = "true" ]; then
@@ -72,14 +75,26 @@ jobs:
           fi
 
           X_READY=false
+          OAUTH2_READY=false
+          OAUTH1_READY=false
           if [ -n "${X_CLIENT_ID}" ] && [ -n "${X_CLIENT_SECRET}" ] && [ -n "${X_ACCESS_TOKEN}" ] && [ -n "${X_REFRESH_TOKEN}" ]; then
+            OAUTH2_READY=true
+          fi
+          if [ -n "${X_API_KEY}" ] && [ -n "${X_API_SECRET}" ] && [ -n "${X_ACCESS_TOKEN}" ] && [ -n "${X_ACCESS_TOKEN_SECRET}" ]; then
+            OAUTH1_READY=true
+          fi
+          if [ "${OAUTH2_READY}" = "true" ] || [ "${OAUTH1_READY}" = "true" ]; then
             X_READY=true
           fi
 
           echo "live_enabled=${LIVE_ENABLED}" >> "$GITHUB_OUTPUT"
           echo "x_ready=${X_READY}" >> "$GITHUB_OUTPUT"
+          echo "oauth2_ready=${OAUTH2_READY}" >> "$GITHUB_OUTPUT"
+          echo "oauth1_ready=${OAUTH1_READY}" >> "$GITHUB_OUTPUT"
           echo "live_enabled=${LIVE_ENABLED}"
           echo "x_ready=${X_READY}"
+          echo "oauth2_ready=${OAUTH2_READY}"
+          echo "oauth1_ready=${OAUTH1_READY}"
 
       - name: Publish live GitHub Discussion
         if: ${{ steps.preflight.outputs.live_enabled == 'true' }}
@@ -96,6 +111,9 @@ jobs:
           X_CLIENT_SECRET: ${{ secrets.X_CLIENT_SECRET }}
           X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
           X_REFRESH_TOKEN: ${{ secrets.X_REFRESH_TOKEN }}
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
         run: |
           python scripts/publish/post_all.py \
             --only x \
