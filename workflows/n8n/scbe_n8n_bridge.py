@@ -34,7 +34,7 @@ import sys
 import threading
 import time
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 from urllib import error as urllib_error
 from urllib import request as urllib_request
 
@@ -254,6 +254,10 @@ class Lattice25DRequest(BaseModel):
     cell_size: float = 0.4
     max_depth: int = 6
     phase_weight: float = 0.35
+    index_mode: Literal["grid", "quadtree", "hybrid"] = "grid"
+    quadtree_capacity: int = 8
+    quadtree_z_variance: float = 0.01
+    quadtree_query_extent: float = 0.35
     radius: float = 0.72
     query_intent: List[float] = Field(default_factory=lambda: [0.9, 0.1, 0.1])
     query_x: float = 0.1
@@ -1274,6 +1278,13 @@ def _write_lattice_jsonl(payload: Dict[str, Any], output_path: str) -> Dict[str,
     out = Path(output_path)
     if not out.is_absolute():
         out = Path(_PROJECT) / out
+    # Guard against path traversal
+    _safe_root = Path(_PROJECT).resolve()
+    out = out.resolve()
+    try:
+        out.relative_to(_safe_root)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Invalid output path") from exc
     out.parent.mkdir(parents=True, exist_ok=True)
 
     rows = payload.get("notes", []) if isinstance(payload.get("notes"), list) else []
@@ -1377,6 +1388,10 @@ async def workflow_lattice25d(
         cell_size=req.cell_size,
         max_depth=req.max_depth,
         phase_weight=req.phase_weight,
+        index_mode=req.index_mode,
+        quadtree_capacity=req.quadtree_capacity,
+        quadtree_z_variance=req.quadtree_z_variance,
+        quadtree_query_extent=req.quadtree_query_extent,
         radius=req.radius,
         query_intent=list(req.query_intent),
         query_x=req.query_x,

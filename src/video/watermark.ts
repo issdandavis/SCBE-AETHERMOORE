@@ -44,9 +44,10 @@ function randomPolynomial(n: number, q: number): number[] {
 
   for (let i = 0; i < n; i++) {
     // Rejection sampling to avoid modulo bias
-    const val = bytes.readUInt32LE(i * 4);
+    let val = bytes.readUInt32LE(i * 4);
     const limit = Math.floor(0x100000000 / q) * q;
-    poly[i] = val < limit ? val % q : crypto.randomBytes(4).readUInt32LE(0) % q;
+    while (val >= limit) { val = crypto.randomBytes(4).readUInt32LE(0); }
+    poly[i] = val % q;
   }
 
   return poly;
@@ -63,9 +64,10 @@ function errorPolynomial(n: number, errorBound: number): number[] {
 
   for (let i = 0; i < n; i++) {
     // Rejection sampling to avoid modulo bias
-    const val = bytes.readUInt32LE(i * 4);
+    let val = bytes.readUInt32LE(i * 4);
     const limit = Math.floor(0x100000000 / range) * range;
-    poly[i] = (val < limit ? val % range : crypto.randomBytes(4).readUInt32LE(0) % range) - errorBound;
+    while (val >= limit) { val = crypto.randomBytes(4).readUInt32LE(0); }
+    poly[i] = (val % range) - errorBound;
   }
 
   return poly;
