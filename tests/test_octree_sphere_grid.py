@@ -30,6 +30,8 @@ from hydra.octree_sphere_grid import (
     OctreeVoxel,
     OctreeNode,
     SignedOctree,
+    CyclicBundle25D,
+    HyperbolicLattice25D,
     OCTANT_NAMES,
     FACE_PLANES,
     INTEROP_MATRIX,
@@ -515,3 +517,60 @@ class TestInteropMatrix:
         assert "np.ndarray" in mappings
         assert "dataclass" in mappings
         assert "Enum" in mappings
+
+
+# ===================================================================
+#  2.5D Hyperbolic Lattice (cyclic flow + semantic weighting)
+# ===================================================================
+
+class TestHyperbolicLattice25D:
+    def test_phase_normalization(self):
+        lat = HyperbolicLattice25D(cell_size=0.25)
+        b = lat.insert_bundle(0.1, 0.1, phase_rad=8.5, tongue="KO")
+        assert 0.0 <= b.phase_rad < (2.0 * math.pi)
+
+    def test_overlap_cells_detected(self):
+        lat = HyperbolicLattice25D(cell_size=0.5)
+        lat.insert_bundle(0.10, 0.10, phase_rad=0.1, tongue="KO", intent_vector=[1, 0, 0])
+        lat.insert_bundle(0.12, 0.11, phase_rad=0.2, tongue="DR", intent_vector=[1, 0, 0])
+        overlaps = lat.overlapping_cells(min_bundles=2)
+        assert len(overlaps) >= 1
+
+    def test_cyclic_phase_distance_wraps(self):
+        a = 0.05
+        b = 2 * math.pi - 0.05
+        d = HyperbolicLattice25D.cyclic_phase_distance(a, b)
+        assert d < 0.05
+
+    def test_query_nearest_prefers_semantic_alignment(self):
+        lat = HyperbolicLattice25D(cell_size=0.5, phase_weight=0.2)
+        near_sem = lat.insert_bundle(0.1, 0.1, phase_rad=0.1, tongue="DR", intent_vector=[1, 0, 0], intent_label="near_sem")
+        lat.insert_bundle(0.1, 0.1, phase_rad=0.1, tongue="KO", intent_vector=[0, 1, 0], intent_label="off_sem")
+
+        res = lat.query_nearest(0.1, 0.1, phase_rad=0.1, intent_vector=[1, 0, 0], tongue="DR", top_k=1)
+        assert len(res) == 1
+        assert res[0][0].bundle_id == near_sem.bundle_id
+
+    def test_lace_edges_exist_between_neighbor_cells(self):
+        lat = HyperbolicLattice25D(cell_size=0.5)
+        lat.insert_bundle(-0.75, -0.75, phase_rad=0.0, tongue="KO")
+        lat.insert_bundle(-0.26, -0.76, phase_rad=0.1, tongue="AV")
+        edges = lat.lace_edges()
+        assert len(edges) >= 1
+
+    def test_advance_cycle_rebuilds_octree_projection(self):
+        lat = HyperbolicLattice25D(cell_size=0.5)
+        lat.insert_bundle(0.2, 0.2, phase_rad=0.0, tongue="KO", intent_label="c0")
+        before = lat.octree.stats()["count"]
+        lat.advance_cycle(math.pi / 2)
+        after = lat.octree.stats()["count"]
+        assert before == after == 1
+
+    def test_stats_include_overlap_and_semantic_weight(self):
+        lat = HyperbolicLattice25D(cell_size=0.5)
+        lat.insert_bundle(0.1, 0.1, phase_rad=0.0, tongue="KO")
+        lat.insert_bundle(0.12, 0.12, phase_rad=0.3, tongue="DR")
+        s = lat.stats()
+        assert s["bundle_count"] == 2
+        assert s["semantic_weight_sum"] > 0.0
+        assert "overlap_cells" in s
