@@ -20,7 +20,7 @@ bedrock-agentcore-starter-toolkit==0.2.5
 black==25.12.0
 blinker==1.9.0
 boto3==1.42.59
-botocore==1.42.16
+botocore==1.42.59
 cachetools==6.2.4
 cattrs==25.3.0
 certifi==2026.1.4
