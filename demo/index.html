@@ -132,9 +132,16 @@
             el.querySelector('.layer-icon').textContent = success ? '✓' : '✗';
         }
         
+        function escapeHtml(str) {
+          return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
         function log(msg, type = 'info') {
             const t = new Date().toLocaleTimeString();
-            document.getElementById('log').innerHTML = '<div class="log-entry '+type+'">['+t+'] '+msg+'</div>' + document.getElementById('log').innerHTML;
+            const entry = document.createElement('div');
+            entry.className = 'log-entry ' + escapeHtml(type);
+            entry.textContent = '[' + t + '] ' + msg;
+            const logEl = document.getElementById('log');
+            logEl.insertBefore(entry, logEl.firstChild);
         }
         
         function updateBalance() {
@@ -154,7 +161,10 @@
             };
         }
         
-        function showEnvelope(e) { document.getElementById('envelope').innerHTML = '<pre>'+JSON.stringify(e, null, 2)+'</pre>'; }
+        function showEnvelope(e) { 
+          const pre = document.getElementById('envelope');
+          pre.textContent = JSON.stringify(e, null, 2);
+        }
         
         async function sendMoney() {
             const recipient = document.getElementById('recipient').value;
