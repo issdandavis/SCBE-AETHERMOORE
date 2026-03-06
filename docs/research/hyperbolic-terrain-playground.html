@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hyperbolic Terrain Playground</title>
+  <style>
+    :root {
+      --bg: #f3f7f5;
+      --ink: #102316;
+      --accent: #0f6d48;
+      --disk: #ffffff;
+      --line: #1f5f4a;
+      --muted: #537060;
+    }
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      background: radial-gradient(circle at 20% 20%, #ecf8f1, var(--bg));
+      color: var(--ink);
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      gap: 18px;
+    }
+    .panel {
+      background: #fff;
+      border: 1px solid #d7e5dc;
+      border-radius: 14px;
+      padding: 14px;
+    }
+    h1, h2 { margin: 0 0 8px 0; }
+    h1 { font-size: 1.4rem; }
+    h2 { font-size: 1.05rem; color: var(--accent); }
+    .grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    }
+    canvas {
+      width: 100%;
+      height: auto;
+      background: var(--disk);
+      border: 1px solid #d7e5dc;
+      border-radius: 10px;
+      touch-action: none;
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 8px;
+      align-items: center;
+      margin: 8px 0;
+    }
+    .small {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    code {
+      background: #eff8f3;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="panel">
+      <h1>Hyperbolic Terrain Playground</h1>
+      <p class="small">
+        Interactive examples for the Poincare disk model, geodesics, and branching terrain.
+      </p>
+    </div>
+
+    <div class="grid">
+      <section class="panel">
+        <h2>1) Poincare Disk Distance</h2>
+        <canvas id="distanceCanvas" width="420" height="420"></canvas>
+        <p class="small" id="distanceOut"></p>
+      </section>
+
+      <section class="panel">
+        <h2>2) Geodesic Arc</h2>
+        <canvas id="geodesicCanvas" width="420" height="420"></canvas>
+        <p class="small">
+          Geodesics are circles orthogonal to the boundary (or diameters).
+        </p>
+      </section>
+    </div>
+
+    <section class="panel">
+      <h2>3) Hyperbolic Branching Terrain (Toy)</h2>
+      <div class="controls">
+        <label for="depth">Depth</label>
+        <input id="depth" type="range" min="2" max="8" value="5" />
+        <span id="depthOut">5</span>
+      </div>
+      <div class="controls">
+        <label for="branch">Branching</label>
+        <input id="branch" type="range" min="2" max="6" value="3" />
+        <span id="branchOut">3</span>
+      </div>
+      <canvas id="terrainCanvas" width="960" height="520"></canvas>
+      <p class="small">
+        This is a visual intuition model: nodes are placed radially using increasing hyperbolic radius.
+      </p>
+    </section>
+  </div>
+
+  <script>
+    const EPS = 1e-9;
+
+    function acosh(x) {
+      return Math.log(x + Math.sqrt(x * x - 1));
+    }
+
+    function poincareDistance(a, b) {
+      const na2 = a.x * a.x + a.y * a.y;
+      const nb2 = b.x * b.x + b.y * b.y;
+      if (na2 >= 1 || nb2 >= 1) return Infinity;
+      const dx = a.x - b.x;
+      const dy = a.y - b.y;
+      const diff2 = dx * dx + dy * dy;
+      const denom = (1 - na2) * (1 - nb2);
+      if (denom <= 0) return Infinity;
+      const arg = 1 + (2 * diff2) / denom;
+      return acosh(Math.max(1, arg));
+    }
+
+    function toCanvas(pt, c, r) {
+      return { x: c.x + pt.x * r, y: c.y - pt.y * r };
+    }
+
+    function fromCanvas(x, y, c, r) {
+      return { x: (x - c.x) / r, y: (c.y - y) / r };
+    }
+
+    function clampToDisk(pt) {
+      const n = Math.hypot(pt.x, pt.y);
+      if (n >= 0.99) {
+        const s = 0.99 / n;
+        return { x: pt.x * s, y: pt.y * s };
+      }
+      return pt;
+    }
+
+    function drawDisk(ctx, w, h) {
+      const r = Math.min(w, h) * 0.45;
+      const c = { x: w / 2, y: h / 2 };
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = "#1f5f4a";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, r, 0, Math.PI * 2);
+      ctx.stroke();
+      return { c, r };
+    }
+
+    function drawPoint(ctx, p, c, r, color) {
+      const cp = toCanvas(p, c, r);
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(cp.x, cp.y, 6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function setupDistanceDemo() {
+      const canvas = document.getElementById("distanceCanvas");
+      const out = document.getElementById("distanceOut");
+      const ctx = canvas.getContext("2d");
+      const state = {
+        a: { x: -0.35, y: 0.1 },
+        b: { x: 0.4, y: -0.2 },
+        drag: null,
+      };
+
+      function render() {
+        const { c, r } = drawDisk(ctx, canvas.width, canvas.height);
+        const ca = toCanvas(state.a, c, r);
+        const cb = toCanvas(state.b, c, r);
+        ctx.strokeStyle = "#0f6d48";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(ca.x, ca.y);
+        ctx.lineTo(cb.x, cb.y);
+        ctx.stroke();
+        drawPoint(ctx, state.a, c, r, "#0f6d48");
+        drawPoint(ctx, state.b, c, r, "#a13f31");
+        const d = poincareDistance(state.a, state.b);
+        out.innerHTML =
+          "d<sub>H</sub>(a,b) = <code>" + (Number.isFinite(d) ? d.toFixed(5) : "inf") + "</code>";
+      }
+
+      function pick(evt) {
+        const rect = canvas.getBoundingClientRect();
+        const x = (evt.clientX - rect.left) * (canvas.width / rect.width);
+        const y = (evt.clientY - rect.top) * (canvas.height / rect.height);
+        const { c, r } = { c: { x: canvas.width / 2, y: canvas.height / 2 }, r: Math.min(canvas.width, canvas.height) * 0.45 };
+        const pa = toCanvas(state.a, c, r);
+        const pb = toCanvas(state.b, c, r);
+        const da = Math.hypot(x - pa.x, y - pa.y);
+        const db = Math.hypot(x - pb.x, y - pb.y);
+        state.drag = da < db ? "a" : "b";
+      }
+
+      canvas.addEventListener("pointerdown", (e) => { pick(e); canvas.setPointerCapture(e.pointerId); });
+      canvas.addEventListener("pointerup", () => { state.drag = null; });
+      canvas.addEventListener("pointermove", (e) => {
+        if (!state.drag) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+        const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+        const c = { x: canvas.width / 2, y: canvas.height / 2 };
+        const r = Math.min(canvas.width, canvas.height) * 0.45;
+        state[state.drag] = clampToDisk(fromCanvas(x, y, c, r));
+        render();
+      });
+
+      render();
+    }
+
+    function geodesicCircle(a, b) {
+      const cross = a.x * b.y - a.y * b.x;
+      if (Math.abs(cross) < EPS) return null;
+      const a2 = a.x * a.x + a.y * a.y;
+      const b2 = b.x * b.x + b.y * b.y;
+      const rhs1 = (a2 + 1) / 2;
+      const rhs2 = (b2 + 1) / 2;
+      const det = a.x * b.y - a.y * b.x;
+      const cx = (rhs1 * b.y - rhs2 * a.y) / det;
+      const cy = (a.x * rhs2 - b.x * rhs1) / det;
+      const R = Math.hypot(cx - a.x, cy - a.y);
+      return { cx, cy, R };
+    }
+
+    function setupGeodesicDemo() {
+      const canvas = document.getElementById("geodesicCanvas");
+      const ctx = canvas.getContext("2d");
+      const a = { x: -0.45, y: -0.1 };
+      const b = { x: 0.5, y: 0.25 };
+      const { c, r } = drawDisk(ctx, canvas.width, canvas.height);
+      const gc = geodesicCircle(a, b);
+      if (!gc) {
+        const ca = toCanvas(a, c, r);
+        const cb = toCanvas(b, c, r);
+        ctx.strokeStyle = "#1f5f4a";
+        ctx.beginPath();
+        ctx.moveTo(ca.x, ca.y);
+        ctx.lineTo(cb.x, cb.y);
+        ctx.stroke();
+      } else {
+        const cc = toCanvas({ x: gc.cx, y: gc.cy }, c, r);
+        ctx.strokeStyle = "#1f5f4a";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(cc.x, cc.y, gc.R * r, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      drawPoint(ctx, a, c, r, "#0f6d48");
+      drawPoint(ctx, b, c, r, "#a13f31");
+    }
+
+    function generateTree(depth, branch) {
+      const nodes = [{ id: 0, parent: null, d: 0, angle: 0 }];
+      let id = 1;
+      for (let d = 1; d <= depth; d++) {
+        const parentLayer = nodes.filter(n => n.d === d - 1);
+        for (const p of parentLayer) {
+          for (let k = 0; k < branch; k++) {
+            const spread = (Math.PI / (2 + d * 0.3));
+            const offset = ((k / Math.max(1, branch - 1)) - 0.5) * spread;
+            nodes.push({
+              id: id++,
+              parent: p.id,
+              d,
+              angle: p.angle + offset + (k % 2 ? 0.06 : -0.06),
+            });
+          }
+        }
+      }
+      return nodes;
+    }
+
+    function drawTerrain() {
+      const depth = Number(document.getElementById("depth").value);
+      const branch = Number(document.getElementById("branch").value);
+      document.getElementById("depthOut").textContent = String(depth);
+      document.getElementById("branchOut").textContent = String(branch);
+
+      const canvas = document.getElementById("terrainCanvas");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      const r = Math.min(w, h) * 0.42;
+      const c = { x: w / 2, y: h / 2 };
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = "#d7e5dc";
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, r, 0, Math.PI * 2);
+      ctx.stroke();
+
+      const nodes = generateTree(depth, branch);
+      const byId = new Map();
+      for (const n of nodes) {
+        const rho = Math.tanh((n.d + 1) / (depth + 2));
+        const p = { x: rho * Math.cos(n.angle), y: rho * Math.sin(n.angle) };
+        byId.set(n.id, p);
+      }
+
+      ctx.strokeStyle = "#5d8a74";
+      ctx.lineWidth = 1.2;
+      for (const n of nodes) {
+        if (n.parent == null) continue;
+        const p = byId.get(n.id);
+        const q = byId.get(n.parent);
+        const cp = toCanvas(p, c, r);
+        const cq = toCanvas(q, c, r);
+        ctx.beginPath();
+        ctx.moveTo(cq.x, cq.y);
+        ctx.lineTo(cp.x, cp.y);
+        ctx.stroke();
+      }
+
+      for (const n of nodes) {
+        const p = byId.get(n.id);
+        const cp = toCanvas(p, c, r);
+        const t = n.d / Math.max(1, depth);
+        const red = Math.round(16 + 50 * t);
+        const green = Math.round(120 + 80 * (1 - t));
+        const blue = Math.round(70 + 40 * t);
+        ctx.fillStyle = "rgb(" + red + "," + green + "," + blue + ")";
+        ctx.beginPath();
+        ctx.arc(cp.x, cp.y, Math.max(1.8, 4 - n.d * 0.28), 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    document.getElementById("depth").addEventListener("input", drawTerrain);
+    document.getElementById("branch").addEventListener("input", drawTerrain);
+    setupDistanceDemo();
+    setupGeodesicDemo();
+    drawTerrain();
+  </script>
+</body>
+</html>
